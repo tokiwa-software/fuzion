@@ -273,31 +273,6 @@ public class Block extends AbstractBlock
 
 
   /**
-   * Check if this value might need boxing or tagging and wrap this
-   * into Box()/Tag()/Tag(Box()) if this is the case.
-   *
-   * @param frmlT the formal type this is assigned to.
-   *
-   * @param context the source code context where this Expr is used
-   *
-   * @return this or an instance of Box/Tag wrapping this.
-   */
-  @Override
-  Expr boxAndTag(AbstractType frmlT, Context context)
-  {
-    var r = removeResultExpression();
-    if (CHECKS) check
-      (r != null || Types.resolved.t_unit.compareTo(frmlT) == 0);
-    if (r != null)
-      {
-        _expressions.add(r.boxAndTag(frmlT, context));
-      }
-    return this;
-  }
-
-
-
-  /**
    * Does this block produce a result that does not explicitly appear in source
    * code? This is the case, e.g., for loops that implicitly return the last
    * value of the index variable for true/false to indicate success or failure.
@@ -374,22 +349,27 @@ public class Block extends AbstractBlock
         _expressions.add(new Block(new List<>()));
       }
 
-    // we must not remove result expression just yet.
-    // we rely on it being present in SourceModule.inScope()
-    var idx = resultExpressionIndex();
     Expr resExpr = resultExpression();
-
+    Expr result = this;
     if (resExpr != null)
       {
-        var x = resExpr.propagateExpectedType(res, context, type, from);
-        _expressions.remove(idx);
-        _expressions.add(x);
+        // this may do partial application for the whole block
+        result = super.propagateExpectedType(res, context, type, from);
+        if (result == this)
+          {
+            // we must not remove result expression just yet.
+            // we rely on it being present in SourceModule.inScope()
+            var idx = resultExpressionIndex();
+            var x = resExpr.propagateExpectedType(res, context, type, from);
+            _expressions.remove(idx);
+            _expressions.add(x);
+          }
       }
     else if (Types.resolved.t_unit.compareTo(type) != 0)
       {
         _expressions.add(new Call(pos(), FuzionConstants.UNIT_NAME).resolveTypes(res, context));
       }
-    return this;
+    return result;
   }
 
 

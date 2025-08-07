@@ -30,7 +30,6 @@ package dev.flang.lsp.shared;
 import java.util.stream.Collectors;
 
 import dev.flang.ast.AbstractType;
-import dev.flang.ast.FormalGenerics;
 import dev.flang.ast.Types;
 import dev.flang.ast.UnresolvedType;
 import dev.flang.util.ANY;
@@ -65,20 +64,6 @@ public class TypeTool extends ANY
     return ErrorHandling.resultOrDefault(() -> type.containsError(), true);
   }
 
-  /**
-   * human readable label for formal generics.
-   * @param generics
-   * @param brief
-   * @return
-   */
-  public static String label(FormalGenerics generics, boolean brief)
-  {
-    if (!generics.isOpen() && generics.list.isEmpty() || brief)
-      {
-        return "";
-      }
-    return " " + generics.list + (generics.isOpen() ? "... ": "");
-  }
 
   private static String labelNoErrorOrUndefined(AbstractType type)
   {

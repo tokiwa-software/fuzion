@@ -1,0 +1,107 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature request_msg
+#
+# -----------------------------------------------------------------------
+
+
+# HTTP request message
+#
+public request_msg(
+  # the HTTP request method
+  public method http.req_method,
+  # the target of the request
+  public target String,
+  # the major version
+  public version_major i32,
+  # the minor version
+  public version_minor i32,
+  # the header fields, capitalization will be ignored
+  header_fields container.Map String String,
+  # body of the request
+  # (
+  # public redef body option (Sequence u8)) : Message
+  public redef body io.Read_Handler) : Message
+# pre debug: has_field "Host"  # NYI: how to handle case insensitivity?
+is
+
+  # request line of the message
+  public request_line String => "$method $target {version_str version_major version_minor}" + crlf
+
+  public redef start_line => request_line
+
+  public redef header := http.canonical_header_map.from_map header_fields
+
+
+
+# HTTP request method GET
+public get is
+
+# HTTP request method HEAD
+public head is
+
+# HTTP request method POST
+public post_r is
+
+# HTTP request method PUT
+public put is
+
+# HTTP request method DELETE
+public delete is
+
+# HTTP request method CONNECT
+public connect is
+
+# HTTP request method OPTIONS
+public options is
+
+# HTTP request method TRACE
+public trace is
+
+# HTTP request method PATCH
+public patch is # NYI: is this part of HTTP 1.1
+
+# HTTP request method
+public req_method : choice http.get http.head http.post_r http.put http.delete
+                           http.connect http.options http.trace http.patch, property.equatable is
+
+  public fixed redef type.equality(a, b http.req_method) bool =>
+    match a
+      http.get     => b ? http.get     => true | * => false
+      http.head    => b ? http.head    => true | * => false
+      http.post_r  => b ? http.post_r  => true | * => false
+      http.put     => b ? http.put     => true | * => false
+      http.delete  => b ? http.delete  => true | * => false
+      http.connect => b ? http.connect => true | * => false
+      http.options => b ? http.options => true | * => false
+      http.trace   => b ? http.trace   => true | * => false
+      http.patch   => b ? http.patch   => true | * => false
+
+  public redef as_string =>
+    match req_method.this
+      http.get     => "GET"
+      http.head    => "HEAD"
+      http.post_r  => "POST"
+      http.put     => "PUT"
+      http.delete  => "DELETE"
+      http.connect => "CONNECT"
+      http.options => "OPTIONS"
+      http.trace   => "TRACE"
+      http.patch   => "PATCH"

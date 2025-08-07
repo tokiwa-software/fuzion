@@ -78,11 +78,9 @@ public class ParsedOperatorCall extends ParsedCall
    *
    * @param name the name of the called feature
    *
-   * @param op the plain operator, i.e., `+` instead of `infix/infix_right +`.
-   *
    * @param precedence the operator precedence
    */
-  public ParsedOperatorCall(Expr target, ParsedName name, String op, int precedence)
+  public ParsedOperatorCall(Expr target, ParsedName name, int precedence)
   {
     super(target, name);
     _precedence = precedence;
@@ -98,13 +96,11 @@ public class ParsedOperatorCall extends ParsedCall
    *
    * @param name the name of the called feature
    *
-   * @param op the plain operator, i.e., `+` instead of `infix/infix_right +`.
-   *
    * @param precedence the operator precedence
    *
    * @param rhs the right hand side
    */
-  public ParsedOperatorCall(Expr target, ParsedName name, String op, int precedence, Expr rhs)
+  public ParsedOperatorCall(Expr target, ParsedName name, int precedence, Expr rhs)
   {
     super(target, name, new List<>(rhs));
     if (PRECONDITIONS) require
@@ -229,8 +225,10 @@ public class ParsedOperatorCall extends ParsedCall
     _resolvedFor = null;
     _actualsResolvedFor = null;
     _calledFeature = null;
-    _resolvedFormalArgumentTypes = null;
     _type = null;
+    _pendingError = null; // original attempt to resolve might have caused an
+                          // error that might be fixed in new attempt, see #5467
+                          // or tests/reg_issue5467
   }
 
 }

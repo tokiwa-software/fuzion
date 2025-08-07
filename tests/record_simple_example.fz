@@ -23,9 +23,11 @@ envir_var_kv := [
   "FUZION_JAVA_OPTIONS",
   "FUZION_JVM_BACKEND_OPTIONS",
   "FUZION_C_BACKEND_OPTIONS",
+  "FUZION_RANDOM_SEED",
   # set in simple.mk
   "LD_LIBRARY_PATH",
   "DYLD_FALLBACK_LIBRARY_PATH",
+  "C_INCLUDE_PATH",
   "LANGUAGE"
 ].map k->
   (envir.vars.get k).bind v->
@@ -94,7 +96,7 @@ write_to_file(dest String, data String) =>
 
 
 type_ := envir.args[1]
-fz_run   := envir.args[2]
+fz_run   := envir.args[2] # NYI: UNDER DEVELOPMENT: code should be same as check_simple_example.fz
 file     := envir.args[3]
 
 res :=
@@ -123,8 +125,8 @@ if type_ != "effect"
       "_$type_"
 
   write_to_file "$file.expected_out$sfx" res.out
-  # NYI: replace with fuzion
-  cur_dir := (!!"../_cur_dir.sh").out.trim
+  # NYI: add intrinsic to get current directory
+  cur_dir := (envir.vars.get "PWD").val
   write_to_file "$file.expected_err$sfx" (res.err.replace cur_dir "--CURDIR--")
 else
   write_to_file "$file.effect" res.out

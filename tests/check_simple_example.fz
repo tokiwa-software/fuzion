@@ -1,0 +1,317 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of check_simple_example.fz
+#
+# -----------------------------------------------------------------------
+
+########### Extensions ###############
+
+# used for protecting spaces when splitting command string
+#
+protected_space := codepoint codepoint.utf8_encoded_in_four_bytes.as_list.last.val
+
+# stores the results of a process
+#
+process_result(out String, err String, exit_code u32) is
+  ok => exit_code = 0
+
+  type.empty_success =>
+    process_result "" "" 0
+
+is_windows =>
+  ((envir.vars.get "OS").val "").lower_case.contains "windows"
+
+path_separator := is_windows ? ";" : ":"
+
+# specified environment variables as key,value array
+#
+envir_var_kv := [
+  "PATH",
+  "LANG",
+  "JAVA_HOME",
+  "POSTCONDITIONS",
+  "PRECONDITIONS",
+  "dev_flang_tools_serializeFUIR",
+  "CPATH",
+  "LIBRARY_PATH",
+  "FUZION_CLANG_INSTALLED_DIR",
+  "OS",
+  "FUZION_HOME",
+  "FUZION_JAVA",
+  "FUZION_JAVA_STACK_SIZE",
+  "FUZION_JAVA_OPTIONS",
+  "FUZION_JVM_BACKEND_OPTIONS",
+  "FUZION_C_BACKEND_OPTIONS",
+  "FUZION_RANDOM_SEED",
+  # set in simple.mk
+  "LD_LIBRARY_PATH",
+  "DYLD_FALLBACK_LIBRARY_PATH",
+  "C_INCLUDE_PATH",
+  "LANGUAGE",
+  "dev_flang_fuir_analysis_dfa_TRACE_ALL_EFFECT_ENVS",
+  # without this test/socket fails on windows,
+  # winsock2 seems to need this to properly load the dlls
+  "SYSTEMROOT"
+].map k->
+  if k="DYLD_FALLBACK_LIBRARY_PATH"||k="PATH"||k="LD_LIBRARY_PATH"
+    (envir.vars.get k)
+      .bind v->(k,"$v$path_separator../../lib")
+      .or_else (k,"../../lib")
+  else
+    (envir.vars.get k).bind v->
+      (k,v)
+ .filter (.ok)
+ .map (.val)
+ .as_array
+
+# envir vars as map
+#
+envir_vars :=
+  (container.ordered_map
+    (envir_var_kv
+      .map x->x.0
+      .as_array)
+    (envir_var_kv
+      .map x->x.1
+      .as_array))
+  .add "FUZION_DISABLE_ANSI_ESCAPES" "true"
+
+# helper to get out, err, exit_code from started process
+#
+record_process(
+      p os.process,
+      # the command, for error messages
+      cmd String,
+      # feed .stdin file to executed process?
+      feed_stdin bool
+) process_result =>
+  lm : mutate is
+  (concur.thread_pool 2 ()->
+      fout := concur.thread_pool.env.submit _ ()->
+        lm ! ()->
+          match p.with_out String lm (()->String.from_bytes (io.buffered lm).read_fully)
+            e error => panic "failed reading stdout from $cmd, error is: $e"
+            out String => out
+      ferr := concur.thread_pool.env.submit _ ()->
+        lm ! ()->
+          match p.with_err String lm (()->String.from_bytes (io.buffered lm).read_fully)
+            e error => panic "failed reading stderr from $cmd, error is: $e"
+            err String => err
+
+      stdin_file := "$file.stdin"
+      if feed_stdin && io.file.exists stdin_file
+        lm ! ()->
+          _ := p.with_in unit lm ()->
+            _ := (io.buffered lm).writer.env.write (read_file_fully stdin_file).val.utf8
+
+      match p.wait
+        e error => panic "failed waiting for $cmd, error is: $e"
+        ec u32 => process_result fout.get ferr.get ec)
+    .get
+
+# execute this Sequence of process+args
+#
+Sequence.excecute(
+  # feed .stdin file to executed process?
+  feed_stdin bool
+) =>
+  seq := map x->x.as_string
+  match os.process.start seq.first.val (seq.drop 1) envir_vars
+    e error => panic "failed executing {Sequence.this}, error is $e"
+    p os.process => record_process p Sequence.this.as_string feed_stdin
+
+# execute this string by splitting at all whitespaces
+#
+String.excecute(
+  # feed .stdin file to executed process?
+  feed_stdin bool
+) =>
+  ((split_if (=" ")).map (.replace protected_space " ")).excecute feed_stdin
+
+# execute this string by splitting at all whitespaces
+#
+String.excecute =>
+  String.this.excecute false
+
+# write data to file dest
+#
+write_to_file(dest String, data String) =>
+  _ := io.file.delete dest
+  check (io.file.use dest io.file.mode.write ()->
+    check (data.write_to io.file.file_mutate).ok).ok
+
+# write file from src to dest
+#
+copy(src, dest String) =>
+  contents := (io.file.use src io.file.mode.read (() -> String.from_bytes (io.buffered io.file.file_mutate).read_fully)).val
+  write_to_file dest contents
+
+# read file f fully
+#
+read_file_fully(f String) outcome String =>
+  io.file.use f io.file.mode.read ()->
+    String.from_bytes (io.buffered io.file.file_mutate).read_fully
+
+############################################################################
+
+
+# limit cpu time and stack size for executing test
+cpu_time_limit   := 120
+stack_size_limit := 1024
+
+
+# check exit code for validity
+#
+check_exit_code(run process_result) =>
+  # 152 - 128 = 24 -> signal SIGXCPU
+  if run.exit_code = 152
+    say "{"*** CANCELLED:".bold.red} test $file exceeded cpu time limit of $cpu_time_limit s"
+    exit 1
+  # 139 - 128 = 11 -> signal SIGSEGV
+  else if run.exit_code = 139
+    say "{"*** CANCELLED:".bold.red} test $file exceeded stack size limit of $stack_size_limit KB"
+    exit 1
+  # pipe to head may result in exit code 141 -- broken pipe.
+  else if run.exit_code != 0 && run.exit_code != 1 && run.exit_code != 141
+    say "unexpected exit code {run.exit_code}"
+    exit 1
+
+
+# clean error output from random names
+# like loop4, preandcall19 etc.
+#
+clean_err(f String) =>
+  check "sed -i s#.*/#--CURDIR--/# $f".excecute.ok
+  # line numbers
+  check "sed -E -i s/\\.fz:[0-9]+:[0-9]+:/\\.fz:n:n:/g $f".excecute.ok
+  # lambdas
+  check "sed -E -i s/#fun[0-9]+/fun/g $f".excecute.ok
+  check "sed -E -i s/INTERN_fun[0-9]+/fun/g $f".excecute.ok
+  # loops
+  check "sed -E -i s/#loop[0-9]+/loop/g $f".excecute.ok
+  check "sed -E -i s/INTERN_loop[0-9]+/loop/g $f".excecute.ok
+  # preconditions
+  check "sed -E -i s/#pre[0-9]+/pre/g $f".excecute.ok
+  check "sed -E -i s/INTERN_pre[0-9]+/pre/g $f".excecute.ok
+  # pre bools
+  check "sed -E -i s/#prebool[0-9]+/prebool/g $f".excecute.ok
+  check "sed -E -i s/INTERN_prebool[0-9]+/prebool/g $f".excecute.ok
+  # pre bools
+  check "sed -E -i s/#preandcall[0-9]+/preandcall/g $f".excecute.ok
+  check "sed -E -i s/INTERN_preandcall[0-9]+/preandcall/g $f".excecute.ok
+  # postconditions
+  check "sed -E -i s/#post[0-9]+/post/g $f".excecute.ok
+  check "sed -E -i s/INTERN_post[0-9]+/post/g $f".excecute.ok
+
+
+# delete temporary files
+#
+delete_tmp_files =>
+  _ := io.file.delete "tmp_out.txt"
+  _ := io.file.delete "tmp_err.txt"
+  _ := io.file.delete "testbin"
+  _ := io.file.delete exp_err_cleaned
+
+
+be     := envir.args[1]
+# can not execute bash script fz on windows with CreateProcess
+fz_run := envir.args[2].replace "../../bin/fz" "java {is_windows ? "-Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8" : ""} --enable-preview --enable-native-access=ALL-UNNAMED --class-path ../../classes {(envir.vars.get "FUZION_JAVA_OPTIONS").or_else ""} -Xss5m -Dline.separator=\n -Dfile.encoding=UTF-8 -Dfuzion.home=../../ -Dfuzion.command=fz dev.flang.tools.Fuzion"
+file   := envir.args[3]
+exp_out := if be = "effect"
+             "$file.effect"
+           else
+             if io.file.exists "$file.expected_out_$be" then "$file.expected_out_$be" else "$file.expected_out"
+exp_err := if io.file.exists "$file.expected_err_$be" then "$file.expected_err_$be" else "$file.expected_err"
+exp_err_cleaned := "$exp_err.cleaned"
+
+if io.file.exists "$file.skip" || (be = "effect" && !(io.file.exists "$file.effect"))
+    say "SKIP $file"
+else
+    yak "RUN $file "
+
+    delete_tmp_files
+
+    # NYI:
+    # if !"ulimit -S -t $cpu_time_limit".excecute.ok
+    #   say "failed setting limit via ulimit"
+
+    backend_options(x) =>
+      String.join ((((envir.vars.get x).val "").replace " " protected_space).split "|") " "
+
+    if be = "c"
+      compile := "$fz_run -XmaxErrors=-1 -c {backend_options "FUZION_C_BACKEND_OPTIONS"} $file -o=testbin".excecute
+      if compile.ok
+        run := "./testbin".excecute true
+
+        check_exit_code run
+
+        write_to_file "tmp_out.txt" run.out
+        write_to_file "tmp_err.txt" run.err
+      else
+        write_to_file "tmp_out.txt" compile.out
+        write_to_file "tmp_err.txt" compile.err
+    else if be = "jvm"
+      run := "$fz_run -XmaxErrors=-1 -jvm {backend_options "FUZION_JVM_BACKEND_OPTIONS"} $file".excecute true
+
+      check_exit_code run
+
+      write_to_file "tmp_out.txt" run.out
+      write_to_file "tmp_err.txt" run.err
+    else if be = "int"
+      run := "$fz_run -XmaxErrors=-1 -interpreter $file".excecute true
+
+      check_exit_code run
+
+      write_to_file "tmp_out.txt" run.out
+      write_to_file "tmp_err.txt" run.err
+    else if be = "effect"
+      run := "$fz_run -XmaxErrors=-1 -effects $file".excecute
+
+      check_exit_code run
+
+      write_to_file "tmp_out.txt" run.out
+    else
+      panic "backend unknown: $be"
+
+    out := "diff --strip-trailing-cr {exp_out} tmp_out.txt".excecute
+
+    err :=
+      if be != "effect"
+        copy exp_err exp_err_cleaned
+        clean_err "tmp_err.txt"
+        clean_err exp_err_cleaned
+        "diff --strip-trailing-cr {exp_err_cleaned} tmp_err.txt".excecute
+      else
+        process_result.empty_success
+
+    delete_tmp_files
+
+    if !out.ok
+      say "{"*** FAILED".bold.red} out on $file"
+      say out.out
+    if !err.ok
+      say "{"*** FAILED".bold.red} err on $file"
+      say err.out
+
+    if out.ok && err.ok
+      say "{"PASSED".bold.green}."
+    else
+      exit 1
+

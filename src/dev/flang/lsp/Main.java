@@ -40,7 +40,6 @@ import org.eclipse.lsp4j.MessageType;
 import org.eclipse.lsp4j.jsonrpc.Launcher;
 import org.eclipse.lsp4j.services.LanguageClient;
 
-import dev.flang.be.jvm.runtime.Any;
 import dev.flang.lsp.enums.Transport;
 import dev.flang.lsp.shared.Concurrency;
 import dev.flang.lsp.shared.Context;
@@ -65,6 +64,16 @@ public class Main extends ANY
       if (Config.languageClient() != null)
         Config.languageClient().logMessage(new MessageParams(MessageType.Error, "err: " + line));
     });
+
+
+    Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+      @Override
+      public void uncaughtException(Thread arg0, Throwable arg1)
+      {
+        arg1.printStackTrace(IO.SYS_ERR);
+      }
+    });
+
 
     Context.logger = new LSP4jLogger();
 
@@ -111,14 +120,6 @@ public class Main extends ANY
       }
 
 
-    Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
-      @Override
-      public void uncaughtException(Thread arg0, Throwable arg1)
-      {
-        ErrorHandling.writeStackTrace(arg1);
-      }
-    });
-
     var launcher = launcher();
     launcher.startListening();
     var languageClient = launcher.getRemoteProxy();
@@ -135,7 +136,7 @@ public class Main extends ANY
    */
   private static void printUsageAndExit()
   {
-    IO.SYS_ERR.println("usage: [-stdio | -socket=<port>]");
+    IO.SYS_ERR.println("usage: [-stdio | -socket --port=<port>]");
     System.exit(1);
   }
 

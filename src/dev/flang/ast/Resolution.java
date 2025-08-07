@@ -30,7 +30,9 @@ import java.util.LinkedList;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.FuzionOptions;
+import dev.flang.util.List;
 
 
 /**
@@ -132,6 +134,17 @@ public class Resolution extends ANY
   private static final boolean DEBUG = "true".equals(FuzionOptions.propertyOrEnv("dev.flang.ast.Resolution.DEBUG"));
 
 
+  /*------------------------  static variables  -------------------------*/
+
+
+  /**
+   * Counter for assigning unique names to cotype() results. This is
+   * currently used only for non-constructors since they do not create a type
+   * name.
+   */
+  private int _cotypeId_ = 0;
+
+
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -199,11 +212,6 @@ public class Resolution extends ANY
    * List of features scheduled for second syntactic sugar resolution
    */
   final LinkedList<Feature> forSyntacticSugar2 = new LinkedList<>();
-
-  /**
-   * List of features scheduled for boxing
-   */
-  final LinkedList<Feature> forBoxing = new LinkedList<>();
 
   /**
    * List of features scheduled for second pass of type checking
@@ -337,25 +345,12 @@ public class Resolution extends ANY
 
 
   /**
-   * Add a feature to the set of features schedule for boxing
-   */
-  void scheduleForBoxing(Feature f)
-  {
-    if (PRECONDITIONS) require
-      (f.state() == State.RESOLVED_SUGAR2);
-
-    forBoxing.add(f);
-  }
-
-
-
-  /**
    * Add a feature to the set of features schedule for type checking
    */
   void scheduleForCheckTypes(Feature f)
   {
     if (PRECONDITIONS) require
-      (f.state() == State.BOXED);
+      (f.state() == State.RESOLVED_SUGAR2);
 
     forCheckTypes.add(f);
   }
@@ -375,33 +370,20 @@ public class Resolution extends ANY
 
 
   /**
-   * Resolve all entries in the lists for resolution (forInheritance, etc.) up
-   * to state RESOLVED_TYPES.
-   */
-  void resolveTypes()
-  {
-    while (resolveOne(false));
-  }
-
-
-  /**
    * Resolve all entries in the lists for resolution (forInheritance, etc.)
    */
   public void resolve()
   {
-    while (resolveOne(true));
+    while (resolveOne());
   }
 
 
   /**
    * Resolve one entry in the lists for resolution (forInheritance, etc.)
    *
-   * @param moreThanTypes true to fully resolve everything, false to resolve
-   * everything to be at least type resolved.
-   *
    * @return true if one such entry was found.
    */
-  private boolean resolveOne(boolean moreThanTypes)
+  private boolean resolveOne()
   {
     boolean result = true;
     if (!forInheritance.isEmpty())
@@ -431,10 +413,6 @@ public class Resolution extends ANY
           }
         f.internalResolveTypes(this);
       }
-    else if (!moreThanTypes)
-      {
-        result = false;
-      }
     else if (!forSyntacticSugar1.isEmpty())
       {
         Feature f = forSyntacticSugar1.removeFirst();
@@ -462,12 +440,6 @@ public class Resolution extends ANY
             if (DEBUG) sayDebug("resolve syntax sugar 2: " + f);
             f.resolveSyntacticSugar2(this);
           }
-      }
-    else if (!forBoxing.isEmpty())
-      {
-        Feature f = forBoxing.removeFirst();
-        if (DEBUG) sayDebug("resolve boxing: " + f);
-        f.box(this);
       }
     else if (!forCheckTypes.isEmpty())
       {
@@ -579,6 +551,171 @@ public class Resolution extends ANY
   {
     return f.resultTypeIfPresent(this);
   }
+
+
+  /**
+   * For every feature 'f', this produces the corresponding type feature
+   * 'f.type'.  This feature inherits from the abstract type features of all
+   * direct ancestors of this, and, if there are no direct ancestors (for
+   * Object), this inherits from 'Type'.
+   *
+   * @return The feature that should be the direct ancestor of this feature's
+   * type feature.
+   */
+  public AbstractFeature cotype(AbstractFeature af)
+  {
+    if (PRECONDITIONS) require
+      (Errors.any() || !af.isUniverse(),
+       Errors.any() || state(af).atLeast(State.RESOLVED_DECLARATIONS),
+       !af.isCotype());
+
+    if (af._cotype == null)
+      {
+        resolveDeclarations(af);
+        if (af.hasCotype())
+          {
+            af._cotype = af.cotype();
+          }
+        else if (af.isUniverse())
+          {
+            if (CHECKS) check
+              (Errors.any());
+            af._cotype = Types.f_ERROR;
+          }
+        else
+          {
+            var name = af.featureName().baseName() + ".";
+            if (!af.isConstructor() && !af.isChoice())
+              {
+                name = name + "_" + (_cotypeId_++) + "_" + _module.name();
+              }
+            name = name + FuzionConstants.TYPE_NAME;
+
+            var p = af.pos();
+            var inh = cotypeInherits(af);
+            var typeArg = new Feature(p,
+                                      Visi.PRIV,
+                                      0,
+                                      af.selfType(),
+                                      FuzionConstants.COTYPE_THIS_TYPE,
+                                      Contract.EMPTY_CONTRACT,
+                                      Impl.TYPE_PARAMETER)
+              {
+                @Override
+                public boolean isCoTypesThisType()
+                {
+                  return true;
+                }
+              };
+            var typeArgs = new List<AbstractFeature>(typeArg);
+            for (var t : af.typeArguments())
+              {
+                var i = t.isOpenTypeParameter() ? Impl.TYPE_PARAMETER_OPEN
+                                                : Impl.TYPE_PARAMETER;
+                var constraint0 = (t instanceof Feature tf ? tf.returnType().functionReturnType() : t.resultType())
+                  .resolve(this, af.context());
+                var constraint = af.rebaseTypeForCotype(constraint0);
+                var ta = new Feature(p, t.visibility(), t.modifiers() & FuzionConstants.MODIFIER_REDEFINE, constraint, t.featureName().baseName(),
+                                     Contract.EMPTY_CONTRACT,
+                                     i);
+                typeArgs.add(ta);
+              }
+
+            if (inh.isEmpty() && !Errors.any())
+              { // let `Any.type` inherit from `Type`
+                if (CHECKS) check
+                  (af instanceof Feature && af.featureName().baseName().equals(FuzionConstants.ANY_NAME));
+                inh.add(new Call(af.pos(), FuzionConstants.TYPE_FEAT));
+              }
+            existingOrNewCotype(af, name, typeArgs, inh);
+          }
+      }
+    return af._cotype;
+  }
+
+
+  /**
+   * Helper method for cotype() to create the list of inherits calls of
+   * this' type feature.
+   */
+  private List<AbstractCall> cotypeInherits(AbstractFeature af)
+  {
+    if (PRECONDITIONS) require
+      (af.state().atLeast(State.RESOLVED_INHERITANCE));
+
+    return af.inherits()
+      .stream()
+      .filter(pc -> pc.calledFeature() != Types.f_ERROR)
+      .map(pc -> pc.cotypeInheritanceCall(this, af))
+      .collect(List.collector());
+  }
+
+
+  /**
+   * Helper method for cotype to create a new feature with given name and
+   * inherits clause iff no such feature exists in outer().cotype().
+   *
+   * The new type feature will be stored in _cotype.
+   *
+   * @param name the name of the type feature to be created
+   *
+   * @param typeArgs arguments of the type feature.
+   * NYI: OPTIMIZATION: typeArgs should be determined within this method and
+   * only when needed.
+   *
+   * @param inh the inheritance clause of the new type feature.
+   */
+  private void existingOrNewCotype(AbstractFeature af, String name, List<AbstractFeature> typeArgs, List<AbstractCall> inh)
+  {
+    if (PRECONDITIONS) require
+      (!af.isUniverse(),
+       Errors.any() || state(af).atLeast(State.RESOLVED_DECLARATIONS));
+
+    var outerType = af.outer().isUniverse() ? universe :
+                    af.outer().isCotype()   ? af.outer()
+                                            : cotype(af.outer());
+
+    af._cotype = _module
+      .declaredOrInheritedFeatures(outerType,
+                                   FeatureName.get(name, typeArgs.size()))
+      .getFirstOrNull();
+
+    if (af._cotype == null)
+      {
+        var p = af.pos();
+        var cotype = new Feature(p, af.visibility().typeVisibility(), 0, NoType.INSTANCE, new List<>(name), typeArgs,
+                                      inh,
+                                      Contract.EMPTY_CONTRACT,
+                                      new Impl(p, new Block(new List<>()), Impl.Kind.Routine));
+
+        // we need to set _cotype early to avoid endless recursion during
+        // res._module.addCotype for `Any.type`:
+        af._cotype = cotype;
+
+        cotype._cotypeOrigin = af;
+        _module.addCotype(outerType, cotype);
+      }
+  }
+
+
+  /**
+   * Convenience function to resolve all types in a list of types.
+   *
+   * @param types the types to resolve
+   *
+   * @param context the context to use when resolving the types
+   *
+   * @return a list of resolved types
+   */
+  public List<AbstractType> resolveTypes(List<AbstractType> types, Context context)
+  {
+    if (!(types instanceof FormalGenerics.AsActuals))
+      {
+        types = types.map(t -> t.resolve(this, context));
+      }
+    return types;
+  }
+
 
 }
 

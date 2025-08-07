@@ -1,0 +1,6 @@
+in Type of 'test1.g test1.r'
+in Type of '(test1a unit).g (test1a unit).r'
+in Type of '(test1b unit nil false_ Any String bool).g (test1b unit nil false_ Any String bool).r'
+in Type of 'test2.f test2.q'
+in Type of '(test2a unit).f (test2a unit).q'
+in Type of '(test2b (Sequence (option (array u8))) bool String (Lazy (Unary (num.complex f32) i32))).f (test2b (Sequence (option (array u8))) bool String (Lazy (Unary (num.complex f32) i32))).q'

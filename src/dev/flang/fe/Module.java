@@ -27,9 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.fe;
 
 import dev.flang.ast.AbstractFeature;
-import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
-import dev.flang.ast.State;
 import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
 
@@ -43,7 +41,6 @@ import dev.flang.util.List;
 import dev.flang.util.SourceFile;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -87,16 +84,6 @@ public abstract class Module extends ANY implements FeatureLookup
      * is collected during RESOLVING_DECLARATIONS.
      */
     Set<AbstractFeature> _heirs = new TreeSet<>();
-
-    /**
-     * Cached result of SourceModule.allInnerAndInheritedFeatures().
-     */
-    Set<AbstractFeature> _allInnerAndInheritedFeatures = null;
-
-    /**
-     * offset of this feature's data in .mir file.
-     */
-    int _mirOffset = -1;
 
   }
 
@@ -434,9 +421,6 @@ public abstract class Module extends ANY implements FeatureLookup
    */
   private SortedMap<FeatureName, List<AbstractFeature>> declaredOrInheritedFeatures(AbstractFeature outer, Module[] modules)
   {
-    if (PRECONDITIONS) require
-      (outer.state().atLeast(State.RESOLVING_DECLARATIONS) || outer.isUniverse());
-
     var d = data(outer);
     var s = d._declaredOrInheritedFeatures;
     if (s == null)
@@ -537,75 +521,14 @@ public abstract class Module extends ANY implements FeatureLookup
 
 
   /**
-   * Are {@code a} and {@code b} defined in the same module?
-   */
-  private boolean sameModule(AbstractFeature a, AbstractFeature b)
-  {
-    return a instanceof Feature && b instanceof Feature
-     || (a instanceof LibraryFeature lf && b instanceof LibraryFeature olf && lf._libModule == olf._libModule);
-  }
-
-
-  /**
-   * allInnerAndInheritedFeatures returns a complete set of inner features, used
-   * by Clazz.layout and Clazz.hasState.
-   *
-   * NYI: UNDER DEVELOPMENT: result includes features that are redefined and thus not relevant.
-   */
-  public Collection<AbstractFeature> allInnerAndInheritedFeatures(AbstractFeature f)
-  {
-    var d = data(f);
-    var result = d._allInnerAndInheritedFeatures;
-
-    if (result == null)
-      {
-        result = new TreeSet<>();
-        for (var s : declaredOrInheritedFeatures(f).values())
-          {
-            result.addAll(s);
-          }
-
-        for (var p : f.inherits())
-          {
-            var cf = p.calledFeature();
-            if (CHECKS) check
-              (Errors.any() || cf != null);
-
-            if (cf != null)
-              {
-                result.addAll(allInnerAndInheritedFeatures(cf));
-              }
-          }
-        d._allInnerAndInheritedFeatures = result;
-      }
-    return result;
-  }
-
-
-  /**
    * Find feature with given name in outer.
    *
    * @param outer the declaring or inheriting feature
    */
-  public AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name, AbstractFeature original)
+  @Override
+  public AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name)
   {
-    if (PRECONDITIONS) require
-      (outer.state().atLeast(State.RESOLVED_DECLARATIONS));
-
-    var result = declaredOrInheritedFeatures(outer, name).getFirstOrNull();
-
-    /* NYI: CLEANUP: can this be removed?
-     *
-     * Was feature f added to the declared features of its outer features late,
-     * i.e., after the RESOLVING_DECLARATIONS phase?  These late features are
-     * currently not added to the sets of declared or inherited features by
-     * children of their outer clazz.
-     *
-     * This is a fix for #978 but it might need to be removed when fixing #932.
-     */
-    return result == null
-      ? original
-      : result;
+    return declaredOrInheritedFeatures(outer, name).getFirstOrNull();
   }
 
 

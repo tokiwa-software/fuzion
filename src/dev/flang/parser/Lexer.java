@@ -186,7 +186,7 @@ public class Lexer extends SourceFile
     t_in("in"),
     t_do("do"),
     t_fixed("fixed"),
-    t_loop("loop"),
+    t_loop("loop"),                   // unused
     t_while("while"),
     t_until("until"),
     t_variant("variant"),
@@ -195,7 +195,6 @@ public class Lexer extends SourceFile
     t_inv("inv"),
     t_var("var"),
     t_match("match"),
-    t_value("value"),
     t_ref("ref"),
     t_redef("redef"),
     t_const("const"),                 // unused
@@ -558,10 +557,10 @@ public class Lexer extends SourceFile
          else if (x.equals("-stringLiteralEscapes"))
            {
              say("""
-[options=\"header\",cols=\"1,1\"]
-|====
-   | escape sequence | resulting code point
-                                """);
+                 [options=\"header\",cols=\"1,1\"]
+                 |====
+                    | escape sequence | resulting code point
+                 """);
              for (int i = 0; i < StringLexer.escapeChars.length; i++)
                {
                  var c      = StringLexer.escapeChars[i][0];
@@ -3131,13 +3130,13 @@ PIPE        : "|"
               if (escaped)
                 {
                   var i = 0;
-                  while (i < escapeChars.length && p != (int) escapeChars[i][0])
+                  while (i < escapeChars.length && p != escapeChars[i][0])
                     {
                       i++;
                     }
                   if (i < escapeChars.length)
                     {
-                      c = (int) escapeChars[i][1];
+                      c = escapeChars[i][1];
                     }
                   else
                     {
@@ -3646,8 +3645,6 @@ PIPE        : "|"
    * Parse singe-char t_op.
    *
 STAR        : "*"
-            ;
-QUESTION    : "?"
             ;
    *
    * @param op the single-char operator

@@ -1,0 +1,79 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature time.duration
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# time.duration.unit -- unit type defining units used in duration
+#
+# time units used to present durations as Strings to humans to read
+#
+public time_unit(# the next smaller unit, like seconds is smaller than minutes, if it exists
+            public smaller Lazy (option time_unit),
+
+            # the next larger unit, like day is larger than hour, if it exists
+            public larger  Lazy (option time_unit),
+
+            # the number of nanoseconds in one of this unit
+            public in_ns u64,
+
+            # a short name of at most two codepoints
+            public short_name String,
+
+            # a longer, but still short name of this unit
+            public name String) is
+
+  # nanoseconds unit
+  #
+  public type.ns  => time.time_unit nil µs  1                  "ns" "ns"
+
+  # microseconds unit
+  #
+  public type.µs  => time.time_unit ns  ms  1_000              "µs" "µs"
+
+  # milliseconds unit
+  #
+  public type.ms  => time.time_unit µs  s   1_000_000          "ms" "ms"
+
+  #seconds unit
+  #
+  public type.s   => time.time_unit ms  m   1_000_000_000      "s"  "sec"
+
+  # minutes unit
+  #
+  public type.m   => time.time_unit s   h   s.in_ns*60         "m"  "min"
+
+  # hours unit
+  #
+  public type.h   => time.time_unit m   d   m.in_ns*60         "h"  "hours"
+
+  # days unit
+  #
+  public type.d   => time.time_unit h   w   h.in_ns*24         "d"  "days"
+
+  # weeks unit
+  #
+  public type.w   => time.time_unit d   a   d.in_ns*7          "w"  "weeks"
+
+  # years unit
+  #
+  public type.a   => time.time_unit h   nil s.in_ns*31_556_952 "a"  "years"

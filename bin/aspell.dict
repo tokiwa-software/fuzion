@@ -267,7 +267,6 @@ cotype
 cotypes
 createMIR
 createOuter
-createThisType
 cryptographically
 css
 CStmnt
@@ -452,7 +451,6 @@ findGenerics
 findInheritedFeatures
 findOpeningBracket
 findOperatorOnOuter
-findUsedFeatures
 firstDigit
 fixup
 fixups

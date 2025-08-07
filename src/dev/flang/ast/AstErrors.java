@@ -375,7 +375,7 @@ public class AstErrors extends ANY
           {
             assignableToSB
               .append("assignable to       : ")
-              .append(st(actlT.asRef().toString(true)));
+              .append(st(actlT.asRef(true).toString(true)));
             if (!frmlT.isAssignableFromWithoutBoxing(actlT, context).no())
               {
                 remedy = "To solve this, you could create a new value instance by calling the constructor of " + s(actlT) + ".\n";
@@ -394,9 +394,9 @@ public class AstErrors extends ANY
                   .append(st(ts));
               }
           }
-        if (remedy == null && frmlT.asRef().isAssignableFromWithoutBoxing(actlT, context).yes())
+        if (remedy == null && !frmlT.isGenericArgument() && frmlT.asRef(true).isAssignableFromWithoutBoxing(actlT, context).yes())
           {
-            remedy = "To solve this, you could change the type of " + ss(target) + " to a " + st("ref")+ " type like " + s(frmlT.asRef()) + ".\n";
+            remedy = "To solve this, you could change the type of " + ss(target) + " to a " + st("ref")+ " type like " + s(frmlT.asRef(true)) + ".\n";
           }
         else if (integerType(frmlT) && integerType(actlT))
           {
@@ -576,14 +576,15 @@ public class AstErrors extends ANY
           "Was defined as loop index variable at " + f.pos().show());
   }
 
-  static void wrongNumberOfActualArguments(Call call)
+  static void wrongNumberOfActualArguments(Resolution res, Context context, Call call)
   {
-    int fsz = call._resolvedFormalArgumentTypes.length;
+    var resolvedFormalArgumentTypes = call.resolvedFormalArgumentTypes(res, context);
+    int fsz = resolvedFormalArgumentTypes.length;
     boolean ferror = false;
     StringBuilder fstr = new StringBuilder();
     var fargs = call.calledFeature().valueArguments().iterator();
     AbstractFeature farg = null;
-    for (var t : call._resolvedFormalArgumentTypes)
+    for (var t : resolvedFormalArgumentTypes)
       {
         if (CHECKS) check
           (t != null);
@@ -630,7 +631,7 @@ public class AstErrors extends ANY
           "Wrong number of type parameters",
           "Wrong number of actual type parameters in " + detail1 + ":\n" +
           detail2 +
-          "expected " + fg.sizeText() + (fg == FormalGenerics.NONE ? "" : " for " + s(fg) + "") + "\n" +
+          "expected " + fg.sizeText() + (fg._feature.typeArguments().isEmpty() ? "" : " for " + s(fg) + "") + "\n" +
           "found " + (actualGenerics.size() == 0 ? "none" : "" + actualGenerics.size() + ": " + s(actualGenerics) + "" ) + ".\n");
   }
 
@@ -660,16 +661,42 @@ public class AstErrors extends ANY
     if (!any() || !redefinedFeature.isCotype() // cotypes generated from broken original features may cause subsequent errors
         )
       {
+        String what, is, should_be1, should_be2, what2;
+        if (originalArg.isOpenTypeParameter() != redefinedArg.isOpenTypeParameter() ||
+            originalArg.isTypeParameter()     != redefinedArg.isTypeParameter()        )
+          {
+            what = "argument kind";
+            what2 = what;
+            is         = redefinedArg.kind().toString();
+            should_be1 = originalArg .kind().toString();
+            should_be2 = originalArg .kind().toString();
+          }
+        else
+          {
+            if (originalArg.isTypeParameter())
+              {
+                what = "type parameter constraint";
+                what2 = "constraint of type parameter";
+              }
+            else
+              {
+                what = "argument type";
+                what2 = "type of argument";
+              }
+            is = s(redefinedArg.resultType());
+            // originalArg.resultType() might be a type parameter that has been replaced by originalArgType, so
+            // we explain where this type comes from:
+            should_be1 = typeWithFrom(originalArgType, originalArg.resultType());
+            should_be2 = s(originalArgType);
+          }
         error(redefinedArg.pos(),
-              "Wrong argument type in redefined feature",
+              "Wrong " + what + " in redefined feature",
               "In " + s(redefinedFeature) + " that redefines " + s(originalFeature) + "\n" +
-              "argument type is       : " + s(redefinedArg.resultType()) + "\n" +
-              "argument type should be: " +
-              // originalArg.resultType() might be a type parameter that has been replaced by originalArgType:
-              typeWithFrom(originalArgType, originalArg.resultType()) + "\n\n" +
+              what + " is       : " + is + "\n" +
+              what + " should be: " + should_be1 + "\n\n" +
               "Original argument declared at " + originalArg.pos().show() + "\n" +
               (suggestAddingFixed ? "To solve this, add " + code("fixed") + " modifier at declaration of "+s(redefinedFeature) + " at " + redefinedFeature.pos().show()
-                                  : "To solve this, change type of argument to " + s(originalArgType) + " at " + redefinedArg.pos().show()));
+               : "To solve this, change " + what2 +" to " + should_be2 + " at " + redefinedArg.pos().show()));
       }
   }
 
@@ -715,6 +742,18 @@ public class AstErrors extends ANY
           "Wrong number of arguments in redefined feature",
           "In " + s(redefinedFeature) + " that redefines " + s(originalFeature) + " " +
           "argument count is " + actualNumArgs + ", argument count should be " + originalNumArgs + ".\n" +
+          "Original feature declared at " + originalFeature.pos().show());
+  }
+
+  public static void formalTypeParametersLengthsMismatch(AbstractFeature originalFeature,
+                                                         AbstractFeature redefinedFeature)
+  {
+    error(redefinedFeature.pos(),
+          "Wrong number of type parameters in redefined feature",
+          "In " + s(redefinedFeature) + " that redefines " + s(originalFeature) + " " +
+          "type parameter count is " + redefinedFeature.typeArguments().size() + " while it should be " + originalFeature.typeArguments().size() + ".\n" +
+          "Original type parameters: "  + s(originalFeature .generics()) + "\n" +
+          "redefined type parameters: " + s(redefinedFeature.generics()) + "\n" +
           "Original feature declared at " + originalFeature.pos().show());
   }
 
@@ -835,9 +874,11 @@ public class AstErrors extends ANY
       }
     else
       {
+        var n = missingMatches.size();
         error(pos,
               "" + skw("match") + " expression does not cover all of the subject's types",
-              "Missing cases for types: " + typeListConjunction(missingMatches) + "\n" +
+              "Missing " + StringHelpers.plural(n,"case") +
+              " for "    + StringHelpers.plural(n,"type") + ": " + typeListConjunction(missingMatches) + "\n" +
               subjectTypes(choiceGenerics));
       }
   }
@@ -1289,7 +1330,7 @@ public class AstErrors extends ANY
                                     List<FeatureAndOuter> candidatesArgCountMismatch,
                                     List<FeatureAndOuter> candidatesHidden)
   {
-    if (!any() || !errorInOuterFeatures(targetFeature) && noErrorInArguments(call))
+    if (!any() || !errorInOuterFeatures(targetFeature) && !call.errorInActuals())
       {
         var msg = !candidatesHidden.isEmpty()
           ? StringHelpers.plural(candidatesHidden.size(), "Feature") + " not visible at call site"
@@ -1314,11 +1355,6 @@ public class AstErrors extends ANY
                solution4 != "" ? solution4 :
                solution5 != "" ? solution5 : ""));
       }
-  }
-
-  private static boolean noErrorInArguments(Call call)
-  {
-    return call.actuals().stream().allMatch(x -> x != Call.ERROR);
   }
 
   private static String solutionLambda(Call call)
@@ -1569,6 +1605,16 @@ public class AstErrors extends ANY
           );
   }
 
+  static void argNameExpectedInLambda(Expr e)
+  {
+    error(e.pos(),
+          "Argument name expected in left hand side (before " + code("->") +") of lambda expression",
+          "Instead, found expression: " + s(e) + "\n" +
+          "To solve this, replace the expression with an argument name like " + code("x") + " and use "+
+          "that variable in the implementation of the right hand side of the lambda expression."
+          );
+  }
+
   /**
    * Produce error in case a lambda expression is not assigned to a function type.
    *
@@ -1787,11 +1833,14 @@ public class AstErrors extends ANY
 
   static void failedToInferActualGeneric(SourcePosition pos, AbstractFeature cf, List<AbstractFeature> missing)
   {
-    error(pos,
-          "Failed to infer actual type parameters",
-          "In call to " + s(cf) + ", no actual type parameters are given and inference of the type parameters failed.\n" +
-          "Expected type parameters: " + s(cf.generics()) + "\n"+
-          "Type inference failed for " + StringHelpers.singularOrPlural(missing.size(), "type parameter") + " " + slg(missing) + "\n");
+    if (!any() || (cf != Types.f_ERROR && !missing.isEmpty()))
+      {
+        error(pos,
+              "Failed to infer actual type parameters",
+              "In call to " + s(cf) + ", no actual type parameters are given and inference of the type parameters failed.\n" +
+              "Expected type parameters: " + s(cf.generics()) + "\n"+
+              "Type inference failed for " + StringHelpers.singularOrPlural(missing.size(), "type parameter") + " " + slg(missing) + "\n");
+      }
   }
 
   static void cannotCallChoice(SourcePosition pos, AbstractFeature cf)
@@ -2110,7 +2159,7 @@ public class AstErrors extends ANY
               "\n"+
               "To solve this, create a helper feature " + sqn("lazy_value") + " that calculates the value as follows:\n" +
               "\n" +
-              "  lazy_value => " + lazy + "\n" +
+              "  lazy_value => " + s(lazy) + "\n" +
               "\n" +
               "and then use " + expr("lazy_value") + " as instead of the original expression.\n");
       }
@@ -2285,13 +2334,6 @@ public class AstErrors extends ANY
     error(expr.pos(),
       "Wrong syntax in " + skw(type) + " expression.",
       "To solve this, make sure the expression to the left of " + skw(type) + " denotes a type.");
-  }
-
-  public static void illegalResultTypeThisType(Feature f)
-  {
-    error(f.pos(),
-      "Illegal " + skw(".this") + " type: " + s(f.resultType()),
-      "No suitable surrounding feature was found that matches the type.");
   }
 
   public static void illegalVisibilityArgument(Feature f)

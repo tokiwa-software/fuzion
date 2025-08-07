@@ -70,8 +70,10 @@ public class Value extends Val
         else if (a == UNIT                    || b == UNIT                   ) { return a == UNIT  ? +1 : -1; }
         else if (a instanceof TaggedValue  at && b instanceof TaggedValue  bt) { return at.compareTo(bt);     }
         else if (a instanceof ValueSet     as && b instanceof ValueSet     bs) { return as.compareTo(bs);     }
+        else if (a instanceof SysArray     sa && b instanceof SysArray     sb) { return sa.compareTo(this, sb);     }
         else if (a instanceof TaggedValue ) { return +1; } else if (b instanceof TaggedValue    ) { return -1; }
         else if (a instanceof ValueSet    ) { return +1; } else if (b instanceof ValueSet       ) { return -1; }
+        else if (a instanceof SysArray    ) { return +1; } else if (b instanceof SysArray       ) { return -1; }
         else if (a._id >= 0 && b._id >= 0 ) { return Integer.compare(a._id, b._id); }
         else
           {

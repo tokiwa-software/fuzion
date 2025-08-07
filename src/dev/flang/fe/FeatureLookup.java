@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fe;
 
-import java.util.Collection;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.FeatureName;
@@ -39,19 +38,13 @@ public interface FeatureLookup {
 
 
   /**
-   * Get all inner and inherited features of {@code f}.
-   */
-  public Collection<AbstractFeature> allInnerAndInheritedFeatures(AbstractFeature f);
-
-
-  /**
    * Find feature with given name in outer.
    *
    * @param outer the declaring or inheriting feature
    *
    * @param name the feature name that we are searching for
    */
-  public AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name, AbstractFeature original);
+  public AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name);
 
 
 }

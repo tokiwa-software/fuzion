@@ -25,7 +25,7 @@ private:public jvm : effect is
 
   # NYI: UNDER DEVELOPMENT: support starting multiple jvms?
   #
-  create_jvm(option_string universe.Array u8) unit => intrinsic
+  create_jvm(option_string universe.Array u8) i32 => intrinsic
   destroy_jvm unit => intrinsic
 
   module is_null0(java_ref Java_Ref) bool => intrinsic
@@ -42,10 +42,14 @@ private:public jvm : effect is
   # - run code on the jvm
   # - destroy jvm (if jvm had to be started)
   #
-  public type.use(T type, class_path String, code ()->T) T =>
+  public type.use(T type, option_string String, code ()->T) T =>
     fuzion.jvm ! ()->
-      fuzion.jvm.env.create_jvm (fuzion.sys.c_string "-Djava.class.path=$class_path")
-      code.call
+      # NYI: UNDER DEVELOPMENT: return error code
+      res := fuzion.jvm.env.create_jvm (fuzion.sys.c_string option_string)
+      if res != 0
+        panic "JVM failed to start, error code {res}"
+      else
+        code.call
 
 
   # cleanup the started jvm

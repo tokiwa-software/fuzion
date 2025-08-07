@@ -1,0 +1,102 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature time.nano
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# time.Clock -- class of effects that implement a clock
+#
+# This is a `ref` feature such that code that requires an arbitrary `Clock`
+# effect could be written in a way that permits its execution using different
+# actual `Clock` implementations like `time.nano` that provides high
+# precision with low accuray or a different clock that provides higher accuracy.
+#
+public Clock ref : effect is
+
+  # read the time of this clock
+  #
+  public read time.instant => abstract
+
+
+  # halt the current thread during the given period of time
+  #
+  public sleep(d time.duration) unit => abstract
+
+
+  # install default effect time using default_nano_time
+  #
+  type.install_default =>
+    time.Clock.default (time.nano nano.default_nano_time)
+
+  # short-hand for accessing time.Clock.env effect in current environment
+  #
+  public type.clock Clock.this =>
+    if !Clock.this.is_instated
+      Clock.this.install_default
+    Clock.this.env
+
+
+  # run the given code once at the provided instant within the current thread
+  #
+  # In case the instant is in the past, do not run the code. In case the instant is
+  # in the future, wait until this clock reached the time specified by instant.
+  #
+  # return true if the code was actually run, false if the given time `t` is already
+  # in the past.
+  #
+  public run_once(t instant,
+                  code ()->unit) bool
+  =>
+    abstract
+
+
+  # run the given code periodically at time `first`, `first+p`, `first+p*2`, etc.
+  # until this clock has reached `last`.
+  #
+  # In case any of the instants `first`, `first+p`, `first+p*2`, etc. happen to
+  # be in the past when this is called or after the previous execution of code,
+  # respectively, do not run code for that instant.
+  #
+  # return the number of times the code was run
+  #
+  public run_periodic(first time.instant,
+                      period time.duration,
+                      last time.instant,
+                      code ()->unit) u64
+  pre
+    debug: period > time.duration.ns 0
+  post
+    debug: ((last >= first): result <= ((last- first) / period) + 1)
+    debug: ((last <  first): result = 0)
+  =>
+    for
+      cnt := u64 0, cnt + 1
+      ima := read
+      next1 := first, next + period
+      skip := if ima > next1 then (ima - next1 + period - time.duration.ns 1) / period else 0
+      next := next1 + period * skip
+    while next <= last
+      if ima < next
+        sleep next-ima
+      code()
+    else
+      cnt

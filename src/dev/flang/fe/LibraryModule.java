@@ -41,7 +41,7 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Expr;
 import dev.flang.ast.FeatureName;
-import dev.flang.ast.TypeMode;
+import dev.flang.ast.TypeKind;
 import dev.flang.ast.UnresolvedType;
 import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
@@ -262,7 +262,7 @@ public class LibraryModule extends Module implements MirModule
   /**
    * The universe
    */
-  private AbstractFeature universe()
+  public AbstractFeature universe()
   {
     return _universe;
   }
@@ -297,7 +297,7 @@ public class LibraryModule extends Module implements MirModule
       {
         var d = main == null
           ? universe()
-          : lookupFeature(universe(), FeatureName.get(main, 0), null);
+          : lookupFeature(universe(), FeatureName.get(main, 0));
 
         if (CHECKS) check
           (d != null);
@@ -462,7 +462,7 @@ public class LibraryModule extends Module implements MirModule
   {
     var tp = feature(offset);
     var o = tp.outer();
-    for (var g : o.generics().list)
+    for (var g : o.typeArguments())
       {
         if (g == tp)
           {
@@ -525,17 +525,10 @@ public class LibraryModule extends Module implements MirModule
                   }
               }
             var outer = type(typeOuterPos(at));
-            switch (TypeMode.fromInt(typeValRefOrThis(at)))
-              {
-              case ThisType:
-                result = feature.thisType();
-                break;
-              default:
-                result = new NormalType(this, at, feature,
-                                        TypeMode.fromInt(typeValRefOrThis(at)),
-                                        generics, outer);
-                break;
-              }
+            var tk = TypeKind.fromInt(typeValRefOrThis(at));
+            result = tk == TypeKind.ThisType
+              ? new ThisType(this, at, feature)
+              : new NormalType(this, at, feature, tk, generics, outer);
           }
         _libraryTypes.put(at, result);
       }
@@ -575,7 +568,7 @@ Module File
 |====
    |cond.     | repeat | type          | what
 
-.8+|true      | 1      | byte[]        | MIR_FILE_MAGIC
+.8+|true      | 1      | byte[4]       | MIR_FILE_MAGIC
 
               | 1      | Name          | module name
 
@@ -600,7 +593,7 @@ Module File
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | byte[]        | MIR_FILE_MAGIC                                |
+   *   | true   | 1      | byte[4]       | MIR_FILE_MAGIC                                |
    *   +        +--------+---------------+-----------------------------------------------+
    *   |        | 1      | Name          | module name                                   |
    *   +        +--------+---------------+-----------------------------------------------+
@@ -1660,12 +1653,10 @@ Expression
     return switch (k)
       {
       case Assign      -> assignNextPos(eAt);
-      case Box         -> boxNextPos  (eAt);
       case Const       -> constNextPos(eAt);
       case Current     -> eAt;
       case Match       -> matchNextPos(eAt);
       case Call        -> callNextPos (eAt);
-      case Tag         -> tagNextPos  (eAt);
       case Pop         -> eAt;
       case Unit        -> eAt;
       case InlineArray -> inlineArrayNextPos(eAt);
@@ -1720,55 +1711,6 @@ Assign
 
     return assignFieldPos(at) + 4;
   }
-
-
-  /*
---asciidoc--
-
-Box
-^^^
-
-[options="header",cols="1,1,2,5"]
-|====
-   |cond.     | repeat | type          | what
-
-   | true     | 1      | Type          | box result type
-|====
-
---asciidoc--
-   *   +---------------------------------------------------------------------------------+
-   *   | Box                                                                             |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | cond.  | repeat | type          | what                                          |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | Type          | box result type                               |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   */
-  int boxTypePos(int at)
-  {
-    if (PRECONDITIONS) require
-     (expressionKindRaw(at-1) ==  MirExprKind.Box.ordinal()         ||
-      expressionKindRaw(at-9) == (MirExprKind.Box.ordinal() | 0x80)     );
-
-    return at;
-  }
-  AbstractType boxType(int at)
-  {
-    if (PRECONDITIONS) require
-     (expressionKindRaw(at-1) ==  MirExprKind.Box.ordinal()         ||
-      expressionKindRaw(at-9) == (MirExprKind.Box.ordinal() | 0x80)     );
-
-    return type(boxTypePos(at));
-  }
-  int boxNextPos(int at)
-  {
-    if (PRECONDITIONS) require
-     (expressionKindRaw(at-1) ==  MirExprKind.Box.ordinal()         ||
-      expressionKindRaw(at-9) == (MirExprKind.Box.ordinal() | 0x80)     );
-
-    return typeNextPos(boxTypePos(at));
-  }
-
 
   /*
 --asciidoc--
@@ -2195,44 +2137,6 @@ Case
 
 --asciidoc--
 
-Tag
-^^^^
-
-[options="header",cols="1,1,2,5"]
-|====
-   |cond.     | repeat | type          | what
-
-   | true     | 1      | Type          | resulting tagged union type
-|====
-
---asciidoc--
-   *   +---------------------------------------------------------------------------------+
-   *   | Tag                                                                             |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | cond.  | repeat | type          | what                                          |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | Type          | resulting tagged union type                   |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   */
-  int tagTypePos(int at)
-  {
-    return at;
-  }
-  AbstractType tagType(int at)
-  {
-    return type(tagTypePos(at));
-  }
-  int tagNextPos(int at)
-  {
-    return typeNextPos(tagTypePos(at));
-  }
-
-
-
-  /*
-
---asciidoc--
-
 InlineArray
 ^^^^^^^^^^^^
 
@@ -2522,6 +2426,18 @@ SourceFile
   public ByteBuffer data(String name)
   {
     throw new UnsupportedOperationException("Unimplemented method 'data'");
+  }
+
+
+  /**
+   * Is this module the same as the provided one or does this module depend on the provided one?
+   *
+   * @param lm the LibraryModule against which this module should be checked
+   * @return true iff they are the same or this module depends on the provided one
+   */
+  public boolean sameOrDependent(LibraryModule lm)
+  {
+    return lm == this || Arrays.asList(_modules).stream().map(r->r._module).anyMatch(x->x==lm);
   }
 
 }

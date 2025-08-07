@@ -41,18 +41,19 @@ import dev.flang.ast.AbstractCurrent;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
-import dev.flang.ast.Box;
 import dev.flang.ast.Constant;
 import dev.flang.ast.Expr;
 import dev.flang.ast.InlineArray;
 import dev.flang.ast.NumLiteral;
-import dev.flang.ast.Tag;
 import dev.flang.ast.Types;
 import dev.flang.ast.Universe;
 
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.LibraryFeature;
 import dev.flang.fe.LibraryModule;
+
+import dev.flang.ir.Box;
+import dev.flang.ir.Tag;
 
 import dev.flang.mir.MIR;
 
@@ -484,8 +485,8 @@ public class GeneratingFUIR extends FUIR
         var tclazz = clazz(c.target(), outerClazz, inh);
         if (!tclazz.isVoidType())
           {
-            var at = outerClazz.handDownThroughInheritsCalls(c.actualTypeParameters(), inh);
-            var typePars = outerClazz.actualGenerics(at);
+            var at = handDownThroughInheritsCalls(c.actualTypeParameters(), inh);
+            var typePars = outerClazz.actualGenerics(at, inh);
             result = tclazz.lookupCall(c, typePars).resultClazz();
           }
         else
@@ -538,6 +539,31 @@ public class GeneratingFUIR extends FUIR
       (result != null);
 
     return result;
+  }
+
+
+  /**
+   * Hand down a list of types along a given inheritance chain.
+   *
+   * @param tl the original list of types to be handed down
+   *
+   * @param inh the inheritance chain from the parent down to the child
+   *
+   * @return a new list of types as they are appear after inheritance. The
+   * length might be different due to open type parameters being replaced by a
+   * list of types.
+   */
+  private static List<AbstractType> handDownThroughInheritsCalls(List<AbstractType> tl, List<AbstractCall> inh)
+  {
+    for (AbstractCall c : inh)
+      {
+        var f = c.calledFeature();
+        var actualTypes = c.actualTypeParameters();
+        tl = tl.flatMap(t -> t.isOpenGeneric()
+                             ? t.genericArgument().replaceOpen(actualTypes)
+                             : new List<>(t.applyTypePars(f, actualTypes)));
+      }
+    return tl;
   }
 
 
@@ -968,7 +994,8 @@ public class GeneratingFUIR extends FUIR
                  yield res;
                }
         case Field,
-             Choice -> NO_ARGS;
+             Choice,
+             TypeParameter -> NO_ARGS;
         };
   }
 
@@ -1031,7 +1058,8 @@ public class GeneratingFUIR extends FUIR
                  Abstract,
                  Native -> c.argumentFields().length;
             case Field,
-                 Choice -> 0;
+                 Choice,
+                 TypeParameter -> 0;
             };
       }
   }
@@ -1236,10 +1264,11 @@ public class GeneratingFUIR extends FUIR
                     argFields[i] = c.lookupNeeded(cfa);
                   }
               }
+            var fat = p.formalArgumentTypes();
             for (var i = 0; i < p.actuals().size(); i++)
               {
                 var a = p.actuals().get(i);
-                toStack(code, a);
+                toStack(code, boxAndTag(a, fat[i]));
                 while (inhe.size() < code.size()) { inhe.add(inh); }
                 while (_inh.size() < _allCode.size()) { _inh.add(inh); }
                 code.add(ExprKind.Current);
@@ -1398,27 +1427,6 @@ public class GeneratingFUIR extends FUIR
       ? c.typeName()
       : "-- clazzTypeName called on none cotype --")
         .getBytes(StandardCharsets.UTF_8);
-  }
-
-
-  /**
-   * If cl is a type parameter, return the type parameter's actual type.
-   *
-   * @param cl a clazz id
-   *
-   * @return if cl is a type parameter, clazz id of cl's actual type or -1 if cl
-   * is not a type parameter.
-   */
-  @Override
-  public int clazzTypeParameterActualType(int cl)
-  {
-    if (PRECONDITIONS) require
-      (cl >= CLAZZ_BASE,
-       cl < CLAZZ_BASE + _clazzes.size());
-
-    var cc = id2clazz(cl);
-    return cc.feature().isTypeParameter() ? cc.typeParameterActualType()._id
-                                          : NO_CLAZZ;
   }
 
 
@@ -1836,20 +1844,22 @@ public class GeneratingFUIR extends FUIR
    */
   private boolean isConst(InlineArray ia)
   {
-    return
-      !ia.type().dependsOnGenerics() &&
-      !ia.type().containsThisType() &&
+    return !ia.type().dependsOnGenerics()
+      && ia.type().containsThisType()
       // some backends have special handling for array void.
-      !ia.elementType().isVoid() &&
-      ia._elements
+      && !ia.elementType().isVoid()
+      && ia._elements
         .stream()
         .allMatch(el -> {
           var s = new List<>();
-          super.toStack(s, el);
+          // NYI: CLEANUP: unexpected sideEffect of isConst
+          toStack(s, el);
           return s
             .stream()
             .allMatch(x -> isConst(x));
-        });
+        })
+      // NYI: UNDER DEVELOPMENT: remove this restriction?
+      && ia._elements.stream().allMatch(x -> ia.elementType().isAssignableFromDirectly(x.type()).yes());
   }
 
 
@@ -2020,6 +2030,7 @@ public class GeneratingFUIR extends FUIR
    *
    * @return pair of untagged and tagged types.
    */
+  @SuppressWarnings("unchecked")
   private Pair<Clazz,Clazz> tagValueAndResultClazz(int s)
   {
     if (PRECONDITIONS) require
@@ -2035,7 +2046,7 @@ public class GeneratingFUIR extends FUIR
         var outerClazz = clazz(cl);
         var t = (Tag) getExpr(s);
         Clazz vc = clazz(t._value, outerClazz, _inh.get(s - SITE_BASE));
-        var tc = outerClazz.handDown(t._taggedType, _inh.get(s - SITE_BASE));
+        var tc = outerClazz.handDown(outerClazz.replaceThisTypeForCotype(t._taggedType), _inh.get(s - SITE_BASE));
         tc.instantiatedChoice(t);
         res = new Pair<>(vc, tc);
         _siteClazzCache.put(s, res);
@@ -2119,6 +2130,7 @@ public class GeneratingFUIR extends FUIR
    *
    * @return a pair consisting of the original type and the new boxed type
    */
+  @SuppressWarnings("unchecked")
   private Pair<Clazz,Clazz> boxValueAndResultClazz(int s)
   {
     if (PRECONDITIONS) require
@@ -2292,10 +2304,9 @@ public class GeneratingFUIR extends FUIR
 
     Clazz innerClazz = null;
     var cf      = c.calledFeature();
-    var callToOuterRef = c.target().isCallToOuterRef();
-    var dynamic = c.isDynamic() && (tclazz.isRef() || callToOuterRef);
+    var dynamic = c.isDynamic() && tclazz.isRef();
     var needsCode = !dynamic || explicitTarget != null;
-    var typePars = outerClazz.actualGenerics(c.actualTypeParameters());
+    var typePars = outerClazz.actualGenerics(c.actualTypeParameters(), inh);
     // NYI: HACK
     // can happen e.g. in compile_time_type_casts
     // since toStack currently puts illegal code in _allCode
@@ -2539,7 +2550,7 @@ public class GeneratingFUIR extends FUIR
       {
         innerClazz = switch (clazzKind(innerClazz))
           {
-          case Routine, Intrinsic, Native, Field -> innerClazz;
+          case Routine, Intrinsic, Native, Field, TypeParameter -> innerClazz;
           case Abstract, Choice -> NO_CLAZZ;
           };
       }
@@ -2969,19 +2980,22 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
-   * Get the source file the clazz originates from.
+   * Get the source code position of the declaration of the underlying feature
+   * of a given clazz.
    *
-   * e.g. /fuzion/tests/hello/HelloWorld.fz, $FUZION/lib/panic.fz
+   * @param cl index of the clazz
+   *
+   * @return the source code position or null if not available.
    */
   @Override
-  public String clazzSrcFile(int cl)
+  public SourcePosition clazzDeclarationPos(int cl)
   {
     if (PRECONDITIONS) require
       (cl >= CLAZZ_BASE,
        cl < CLAZZ_BASE + _clazzes.size());
 
     var c = id2clazz(cl);
-    return c.feature().pos()._sourceFile._fileName.toString();
+    return c.feature().pos();
   }
 
 

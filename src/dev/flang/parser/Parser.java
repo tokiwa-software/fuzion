@@ -59,6 +59,20 @@ public class Parser extends Lexer
   }
 
 
+  /**
+   * Exception used for control flow to exit a call.
+   */
+  static class GiveUp extends RuntimeException
+  {
+
+    /**
+     * Pre-allocated instance of `GiveUp`
+     */
+    static GiveUp _INSTANCE_ = new GiveUp();
+
+  };
+
+
   /*----------------------------  constants  ----------------------------*/
 
 
@@ -353,14 +367,14 @@ field       : returnType
    */
   boolean skipFeaturePrefix()
   {
-    if (!skipQual())
+    do
       {
-        return false;
+        if (!skipQual())
+          {
+            return false;
+          }
       }
-    if (skipComma())
-      {
-        return true;
-      }
+    while (skipComma());
     switch (skipFormArgsNotActualArgs())
       {
       case formal: return true;
@@ -857,7 +871,12 @@ argType     : "type"
                                     else if (isTypePrefix())
                                       {
                                         i = Impl.FIELD;
-                                        t = type();
+                                        var ut = type();
+                                        if (skip("..."))
+                                          {
+                                            ut.setFollowedByDots();
+                                          }
+                                        t = ut;
                                       }
                                     else
                                       {
@@ -1069,20 +1088,10 @@ returnType  : boundType
    */
   ReturnType returnType()
   {
-    ReturnType result;
-    if (isType())
-      {
-        result = new FunctionReturnType(boundType());
-      }
-    else
-      {
-        switch (current())
-          {
-          case t_ref   : next(); result = RefType   .INSTANCE; break;
-          default      :         result = NoType    .INSTANCE; break;
-          }
-      }
-    return result;
+    return
+      isType()          ? new FunctionReturnType(boundType()) :
+      skip(Token.t_ref) ? RefType.INSTANCE
+                        : NoType .INSTANCE;
   }
 
 
@@ -1127,12 +1136,7 @@ EXCLAMATION : "!"
    */
   boolean isNonFuncReturnTypePrefix()
   {
-    switch (current())
-      {
-      case t_value :
-      case t_ref   : return true;
-      default      : return false;
-      }
+    return current() == Token.t_ref;
   }
 
 
@@ -1146,9 +1150,7 @@ EXCLAMATION : "!"
    */
   boolean skipNonFuncReturnType()
   {
-    return
-      skip(Token.t_value ) ||
-      skip(Token.t_ref   );
+    return skip(Token.t_ref);
   }
 
 
@@ -1258,9 +1260,8 @@ inheritanceCallList    : inheritanceCall ( COMMA inheritanceCallList
    */
   private boolean skipInheritanceCall()
   {
-    return call0() instanceof AbstractCall
-      ? true
-      : expr() instanceof AbstractCall;
+    return call0() instanceof AbstractCall ||
+           expr()  instanceof AbstractCall;
   }
 
 
@@ -1341,7 +1342,7 @@ indexTail   : ":=" exprInLine
     do
       {
         SourcePosition pos = tokenSourcePos();
-        var l = bracketTermWithNLs(BRACKETS, "indexCall", () -> actualCommas());
+        var l = bracketTermWithNLs(BRACKETS, "indexCall", () -> actualCommas(true));
         String n = FuzionConstants.FEATURE_NAME_INDEX;
         if (skip(":="))
           {
@@ -1414,7 +1415,7 @@ dotCall     : dot call   callTail
           }
         else
           {
-            result = callTail(false, new ParsedCall(new DotType(sourceRange(target.pos()), target), new ParsedName(sourceRange(target.pos()), "from_env")));
+            result = callTail(false, new ParsedCall(Call.typeAsValue(sourceRange(target.pos()), t), new ParsedName(sourceRange(target.pos()), "from_env")));
           }
       }
     else if (skip(Token.t_type))
@@ -1428,7 +1429,7 @@ dotCall     : dot call   callTail
           }
         else
           {
-            result = callTail(false, new DotType(sourceRange(target.pos()), target));
+            result = callTail(false, Call.typeAsValue(sourceRange(target.pos()), t));
           }
       }
     else if (skip(Token.t_this))
@@ -1554,7 +1555,7 @@ actualArgs  : actualSpaces
   {
     return (ignoredTokenBefore() || current() != Token.t_lparen)
       ? actualSpaces()
-      : bracketTermWithNLs(PARENS, "actualArgs", () -> actualCommas());
+      : bracketTermWithNLs(PARENS, "actualArgs", () -> actualCommas(true));
   }
 
 
@@ -1650,6 +1651,12 @@ actualArgs  : actualSpaces
   /**
    * Parse actualCommas
    *
+   * @param endAtComma true to treat `x, v->2*v` as two actuals `x` and `v->2*v`
+   * instead of one `(x,v)->2*v`.
+   *
+   * NYI: CLEANUP: It might be better to omit the case endAtComma==true and to always
+   * parse the case `x, v->2*v` as one actual.
+   *
 actualCommas: actualSome
             |
             ;
@@ -1660,7 +1667,7 @@ actualMore  : COMMA actualSome
             |
             ;
    */
-  List<Expr> actualCommas()
+  List<Expr> actualCommas(boolean endAtComma)
   {
     var result = new List<Expr>();
     if (current() != Token.t_rparen   &&
@@ -1668,7 +1675,7 @@ actualMore  : COMMA actualSome
       {
         do
           {
-            var oldEAc = endAtComma(true);   /* see #3798 for an example where this is necessary: a call `f(x, v->2*v)` */
+            var oldEAc = endAtComma(endAtComma);   /* see #3798 for an example where this is necessary: a call `f(x, v->2*v)` */
             result.add(operatorExpr());
             endAtComma(oldEAc);
           }
@@ -1891,51 +1898,83 @@ opsTerms    : ops
   /**
    * Parse klammer is either a single parenthesized expression or a tuple
    *
-klammer     : klammerExpr
+klammer     : LPAREN block RPAREN
             | tuple
-            | klammerLambd
-            ;
-klammerExpr : LPAREN expr RPAREN
-            ;
-tuple       : LPAREN RPAREN
-            | LPAREN operatorExpr (COMMA operatorExpr)+ RPAREN
-            ;
-klammerLambd: tuple lambda
+            | tuple lambda
             ;
    */
   Expr klammer()
   {
-    SourcePosition pos = tokenSourcePos();
-    var tupleElements = new List<Expr>();
-    bracketTermWithNLs(PARENS, "klammer",
-                       () -> {
-                         do
-                           {
-                             tupleElements.add(operatorExpr());
-                           }
-                         while (skipComma());
-                         return Void.TYPE;
-                       },
-                       () -> Void.TYPE);
-
-
-    if (isLambdaPrefix())                  // a lambda expression
+    Expr res;
+    var f = fork();
+    try
       {
-        return lambda(tupleElements);
-      }
-    else if (tupleElements.size() == 1)    // an expr wrapped in parentheses, not a tuple
-      {
-        var e = tupleElements.get(0);
-        if (e instanceof ParsedOperatorCall oc)
-          { // disable chained boolean optimization:
-            oc.putInParentheses();
+        var forked_t = f.tuple();
+        if (f.isLambdaPrefix())                  // a lambda expression
+          {
+            // a little overkill: we first permit an arbitrary tuple, just to later
+            // extract either the argument names or types.
+            res = lambda(tuple());
           }
-        return e;
+        else if (forked_t.size() != 1)
+          {
+            res = new ParsedCall(null, new ParsedName(tokenSourcePos(), "tuple"), tuple());
+          }
+        else
+          {
+            // NYI: UNDER DEVELOPMENT: This case of a single operatorExpr in parentheses is parsed slightly different than
+            // a block.  Would be good to avoid the special handling here and always use the `else` case below.
+            //
+            // in particular:
+            //
+            //   _ := ("bla"
+            //          + "blub")           # NYI: BUG: #5543: as block, causes indentation error
+            //   _ := (a).this              # as block, causes qualifier expected for '.this' expression.
+            //
+            // I suggest the cases `(a,b -> unit)` and `(a).this` should be
+            // supported when parsing a block in parentheses, while the indentation
+            // problem is maybe acceptable to cause an error.
+            //
+            res = tuple().get(0);
+            if (res instanceof ParsedOperatorCall oc)
+              { // disable chained boolean optimization:
+                oc.putInParentheses();
+              }
+          }
       }
-    else                                   // a tuple
+    catch (GiveUp _)
       {
-        return new ParsedCall(null, new ParsedName(pos, "tuple"), tupleElements);
+        res = bracketTermWithNLs(PARENS, "klammer",
+                                 () -> block(),
+                                 () -> emptyBlock());
       }
+    return res;
+  }
+
+
+  /**
+   * Parse tuple, return null in case this is not a tuple, but a block (leaving
+   * the Parser instance in an undefined state).
+   *
+   * @throws GiveUp in case this is not a tuple but has to be parsed as a block
+   * in parentheses.
+   *
+tuple       : LPAREN actualCommas RPAREN
+            ;
+   */
+  List<Expr> tuple()
+  {
+    return bracketTermWithNLs(PARENS, "klammer",
+                              () -> {
+                                var l = actualCommas(false);
+                                if (currentAtMinIndent() != Token.t_rparen ) // there is more, so this might be a block
+                                  {
+                                    throw GiveUp._INSTANCE_;
+                                  }
+                                return l;
+                              },
+                              () -> new List<Expr>() // default for `()` is an empty tuple
+                              );
   }
 
 
@@ -2677,7 +2716,7 @@ loopEpilog  : "until" exprInLine thenPart loopElseBlock
         List<Feature> nextValues = new List<>();
         var hasFor   = current() == Token.t_for; if (hasFor) { indexVars(indexVars, nextValues); }
         var hasVar   = skip(true, Token.t_variant); var v   = hasVar              ? exprInLine()    : null;
-                                                    var i   = hasFor || v != null ? invariant(true) : null;
+                                                    var i   = hasFor || v != null ? invariant() : null;
         var hasWhile = skip(true, Token.t_while  ); var w   = hasWhile            ? exprInLine()    : null;
         var hasDo    = skip(true, Token.t_do     ); var b   = hasWhile || hasDo   ? block()         : null;
         var hasUntil = skip(true, Token.t_until  ); var u   = hasUntil            ? exprInLine()    : null;
@@ -2805,7 +2844,7 @@ nextValue   : COMMA exprInLine
   /**
    * Parse ifexpr
    */
-  Match ifexpr()
+  Expr ifexpr()
   {
     return ifexpr(false);
   }
@@ -2818,7 +2857,7 @@ nextValue   : COMMA exprInLine
 ifexpr      : "if" exprInLine thenPart elseBlock
             ;
    */
-  Match ifexpr(boolean elif)
+  Expr ifexpr(boolean elif)
   {
     return relaxLineAndSpaceLimit(() -> {
         SourcePosition pos = tokenSourcePos();
@@ -2975,7 +3014,7 @@ checkexpr   : "check" block
   Expr checkexpr()
   {
     match(Token.t_check, "checkexpr");
-    return new Check(Cond.from(block())).asIfs();
+    return Contract.asFault(Cond.from(block()), "checkcondition_fault");
   }
 
 
@@ -3114,7 +3153,7 @@ anonymous   : "ref"
   {
     var oldIndent = setMinIndent(tokenPos());
     var sl = sameLine(line());
-    SourcePosition pos = tokenSourcePos();
+    SourcePosition pos = tokenSourceRange();
     if (CHECKS) check
       (current() == Token.t_ref);
     ReturnType r = returnType();  // only `ref` return type allowed.
@@ -3122,7 +3161,7 @@ anonymous   : "ref"
     match(Token.t_is, "anonymous");
     Block      b = block();
     var f = Feature.anonymous(pos, r, i, Contract.EMPTY_CONTRACT, b);
-    var ca = new Call(pos, f);
+    var ca = new Call(SourceRange.range(new List<>(pos, b)), f);
     sameLine(sl);
     setMinIndent(oldIndent);
     return new Block(new List<>(f, ca));
@@ -3225,10 +3264,10 @@ invariant   : "inv" block
             |
             ;
    */
-  List<Cond> invariant(boolean atMinIndent)
+  List<Cond> invariant()
   {
     List<Cond> result = null;
-    if (skip(atMinIndent, Token.t_inv))
+    if (skip(true, Token.t_inv))
       {
         result = Cond.from(block());
       }
@@ -3401,10 +3440,6 @@ freeType    : name ":" type
         skipColon())
       {
         result = new FreeType(result.pos(), result.freeTypeName(), type());
-      }
-    if (skip("..."))
-      {
-        result.setFollowedByDots();
       }
     return result;
   }

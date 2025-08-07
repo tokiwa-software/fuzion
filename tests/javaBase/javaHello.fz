@@ -36,7 +36,11 @@ javaHello : Java is
     panic.instate unit (panic (msg -> say msg; panic.abort) unit) fun _->unit
 
 
-  fuzion.jvm.use ()->
+  is_windows =>
+    ((envir.vars.get "OS").val "").lower_case.contains "windows"
+
+
+  fuzion.jvm.use _ (is_windows ? "-Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8" : "") ()->
 
     # we can call code in Java package directly using fully
     # qualified class names

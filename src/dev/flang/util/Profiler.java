@@ -261,7 +261,7 @@ public class Profiler extends ANY
             }
           if (!collectFlameGraphData())
             {
-              StackTraceElement[] s = (StackTraceElement[]) _results_.keySet().toArray(new StackTraceElement[0]);
+              StackTraceElement[] s = _results_.keySet().toArray(new StackTraceElement[0]);
               var c = new Comparator<>()
                 {
                   public int compare(Object o1, Object o2)

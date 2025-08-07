@@ -149,8 +149,9 @@ public class Function extends AbstractLambda
     super(pos);
 
     _namesAsExprs = names;
-    _names = names.map2(n->n.asParsedName());
-    _names.removeIf(n -> n==null);
+    _names = names
+      .map2(n -> n.asParsedName())
+      .filter(n -> n != null);
     _originalExpr = e;
     _expr = e;
   }
@@ -422,7 +423,7 @@ public class Function extends AbstractLambda
                  && lmbdRt.feature() != frmlRt.feature()
                  && lmbdRt.feature().inheritsFrom(frmlRt.feature()))
           {
-            result = ResolvedNormalType.create(lmbdRt.generics(), Call.NO_GENERICS, frmlRt.outer(), frmlRt.feature());
+            result = ResolvedNormalType.create(lmbdRt.generics(), frmlRt.outer(), frmlRt.feature());
             _feature.setRefinedResultType(res, context, result);
           }
       }
@@ -465,6 +466,13 @@ public class Function extends AbstractLambda
   {
     if (CHECKS) check
       (this._call == null || this._feature != null);
+
+    if (_namesAsExprs != null)
+      {
+        _namesAsExprs.stream()
+          .filter(n -> n.asParsedName() == null)
+          .forEach(AstErrors::argNameExpectedInLambda);
+      }
 
     if (this._call == null)
       {

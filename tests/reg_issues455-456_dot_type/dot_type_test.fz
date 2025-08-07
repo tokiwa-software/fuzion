@@ -42,7 +42,7 @@ testTypes is
   t is
   say (testTypes.t.type)     # works
   x := testTypes.t.type
-  say x                      # crashes
+  say x                      # works as well
 
 _ := testType0
 _ := testType1

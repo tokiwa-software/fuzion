@@ -29,8 +29,10 @@ package dev.flang.tools.docs;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
@@ -39,7 +41,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractFeature;
-import dev.flang.ast.AbstractType;
 import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
 import dev.flang.fe.LibraryFeature;
@@ -53,7 +54,7 @@ public class Html extends ANY
 {
   final DocsOptions config;
   private final Map<AbstractFeature, Map<AbstractFeature.Kind,TreeSet<AbstractFeature>>> mapOfDeclaredFeatures;
-  private final String navigation;
+  private final String navigationBareHTML;
   private final LibraryModule lm;
   private final List<LibraryModule> libModules;
 
@@ -66,7 +67,9 @@ public class Html extends ANY
     this.mapOfDeclaredFeatures = mapOfDeclaredFeatures;
     this.lm = lm;
     this.libModules = libModules;
-    this.navigation = navigation(universe);
+
+    // cache navigation if URLs absolute to webserver root are used
+    navigationBareHTML = config.bare() ? navigation(universe, null) : null;
   }
 
 
@@ -78,6 +81,7 @@ public class Html extends ANY
       <div class="mb-15 runcode" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%,40ch), min(100%, 80ch))); max-width: 49rem; opacity: 0;">
         <div class="position-relative">
           <form id="##ID##">
+            <label for="##ID##.code" class="visually-hidden">Code input</label>
             <textarea class="codeinput" required="required" maxlength="4096" id="##ID##.code" name="code" rows="3" spellcheck="false">##CODE##</textarea>
             <div class="position-absolute runbuttons">
               <input type="button" onclick="runit('##ID##')" class="runbutton" name="run" value="Run!" />
@@ -108,7 +112,7 @@ public class Html extends ANY
   /*
    * html containing the inherited features of af or constraint in case of a type parameter
    */
-  private String inherited(AbstractFeature af)
+  private String inherited(AbstractFeature af, AbstractFeature relativeTo)
   {
     if (af.inherits().isEmpty() || signatureWithArrow(af)) // don't show inheritance for function features
       {
@@ -118,7 +122,7 @@ public class Html extends ANY
       {
         var constraint = af.resultType().feature();
         return "<div class='fd-keyword mx-5'>:</div><a class='fd-feature fd-inherited' href='$1'>$2</a>"
-          .replace("$1", featureAbsoluteURL(constraint))
+          .replace("$1", featureRelativeURL(constraint, relativeTo))
           .replace("$2", htmlEncodedQualifiedName(constraint));
       }
     else
@@ -127,7 +131,7 @@ public class Html extends ANY
           .stream()
           .<String>map(c -> {
             var f = c.calledFeature();
-            return "<a class='fd-feature fd-inherited' href='$1'>".replace("$1", featureAbsoluteURL(f))
+            return "<a class='fd-feature fd-inherited' href='$1'>".replace("$1", featureRelativeURL(f, relativeTo))
               + htmlEncodedBasename(f)
               + (c.actualTypeParameters().size() > 0 ? "&nbsp;" : "")
               + c.actualTypeParameters().stream()
@@ -145,15 +149,16 @@ public class Html extends ANY
    * @param context the feature to which the name should be relative to, full qualified name if null
    * @return
    */
-  private String anchor(AbstractType at, AbstractFeature context)
+  private String anchorType(AbstractFeature af, AbstractFeature context, AbstractFeature relativeTo)
   {
+    var at = af.resultType();
     if (at.isGenericArgument())
       {
         return htmlEncodeNbsp(at.toString(false, context))
                + (at.isOpenGeneric() ? "..." : "");
       }
     return "<a class='fd-type' href='$2'>$1</a>".replace("$1", htmlEncodeNbsp(at.toString(false, context)))
-      .replace("$2", featureAbsoluteURL(at.feature()));
+      .replace("$2", featureRelativeURL(at.feature(), relativeTo));
   }
 
 
@@ -163,18 +168,18 @@ public class Html extends ANY
    */
   private String anchorTags(AbstractFeature f)
   {
-    return anchorTags0(f).collect(Collectors.joining("."));
+    return anchorTags0(f, f).collect(Collectors.joining("."));
   }
 
-  private Stream<String> anchorTags0(AbstractFeature f)
+  private Stream<String> anchorTags0(AbstractFeature f, AbstractFeature relativeTo)
   {
     if (f.isUniverse())
       {
         return Stream.empty();
       }
-    return Stream.concat(anchorTags0(f.outer()),
+    return Stream.concat(anchorTags0(f.outer(), relativeTo),
       Stream.of(typePrfx(f) + "<a class='fd-feature font-weight-600' href='$2'>$1</a>".replace("$1", htmlEncodedBasename(f))
-        .replace("$2", featureAbsoluteURL(f))));
+        .replace("$2", featureRelativeURL(f, relativeTo))));
   }
 
 
@@ -207,17 +212,19 @@ public class Html extends ANY
    */
   private String summary(AbstractFeature af, AbstractFeature outer)
   {
+    AbstractFeature relativeTo = outer != null ? outer : af;
+
     return
       "<div class='d-grid' style='grid-template-columns: 1fr min-content;'>"
         + "<div class='d-flex flex-wrap word-break-break-word'>"
           + "<div class='d-flex flex-wrap word-break-break-word fz-code'>"
-            + anchor(af)
-            + arguments(af)
+            + anchor(af, relativeTo)
+            + arguments(af, (outer != null ? outer : af))
             + (af.isRef() ? "<div class='fd-keyword'>&nbsp;ref</div>" : "")
-            + inherited(af)
-            + (signatureWithArrow(af) ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" => ") + "</div>" + anchor(af.resultType(), af)
+            + inherited(af, relativeTo)
+            + (signatureWithArrow(af) ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" => ") + "</div>" + anchorType(af, af, relativeTo)
                : af.isConstructor()   ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" is") + "</div>"
-               : af.isField()         ? "&nbsp;" + anchor(af.resultType(), outer) //+ "_af:" + af.featureName().baseName() + "_out:" + (outer != null ? outer.featureName().baseName() : "_out=null")
+               : af.isField()         ? "&nbsp;" + anchorType(af, outer, relativeTo) //+ "_af:" + af.featureName().baseName() + "_out:" + (outer != null ? outer.featureName().baseName() : "_out=null")
                                       : "")
             + annotateInherited(af, outer)
             + annotateRedef(af, outer)
@@ -248,7 +255,8 @@ public class Html extends ANY
       }
     else
       {
-        String anchorParent = "<a class='' href='" + featureAbsoluteURL(af.outer()) + "'>"
+        AbstractFeature relativeTo = outer != null ? outer : af;
+        String anchorParent = "<a class='' href='" + featureRelativeURL(af.outer(), relativeTo) + "'>"
                               + htmlEncodedBasename(af.outer()) + "</a>";
         return "<div class='fd-parent ml-10'>[Inherited from&nbsp; <span class=fz-code>$0</span>]</div>"
           .replace("$0", anchorParent);
@@ -284,11 +292,12 @@ public class Html extends ANY
 
     var redefs = af.redefines();
 
+    AbstractFeature relativeTo = outer != null ? outer : af;
     return redefs.isEmpty()
             ? ""
             : "<div class='fd-parent ml-10'>[Redefinition of&nbsp; <span class=fz-code>$0</span>]</div>"
               .replace("$0", (redefs.stream()
-                                    .map(f->"<a class='' href='" + featureAbsoluteURL(f) + "'>" +
+                                    .map(f->"<a class='' href='" + featureRelativeURL(f, relativeTo) + "'>" +
                                               htmlEncodedQualifiedName(f) + "</a>")
                                     .collect(Collectors.joining(",&nbsp;")) ));
   }
@@ -332,9 +341,12 @@ public class Html extends ANY
     var allInner = new List<AbstractFeature>();
     lm.forEachDeclaredOrInheritedFeature(af, f -> allInner.add(f));
 
-    return allInner.stream().filter(f->isVisible(f)).anyMatch(f->f.isAbstract())
+    return allInner.stream()
+        .filter(f->isVisible(f))
+        .filter(f->f instanceof LibraryFeature lf && lm.sameOrDependent(lf._libModule))
+        .anyMatch(f->f.isAbstract())
              ? "<div class='fd-parent ml-10' title='This feature contains inner or inherited features " +
-               "which are abstract.'>[Contains abstract features]</div>"
+               "which are abstract.'>[Contains abstract features]</div>" // NYI: replace title attribute with proper tooltip
              : "";
   }
 
@@ -354,15 +366,13 @@ public class Html extends ANY
 
   private boolean isVisible(AbstractFeature af)
   {
-    var vis = af.visibility();
-    return vis.typeVisibility() == Visi.PUB;
-
+    return af.visibility().typeVisibility() == Visi.PUB;
   }
 
 
-  private String anchor(AbstractFeature af) {
+  private String anchor(AbstractFeature af, AbstractFeature relativeTo) {
     return "<div class='font-weight-600 ml-2'>"
-            + (noFeatureLink(af) ? "" : "<a class='fd-feature' href='" + featureAbsoluteURL(af, lm) + "'>")
+            + (noFeatureLink(af) ? "" : "<a class='fd-feature' href='" + featureRelativeURL(af, lm, relativeTo) + "'>")
             + typePrfx(af) + htmlEncodedBasename(af)
             + (noFeatureLink(af) ? "" : "</a>")
             + "</div>";
@@ -385,13 +395,13 @@ public class Html extends ANY
    * @param af
    * @return list of redefined features, as HTML
    */
-  private String redefines(AbstractFeature af)
+  private String redefines(AbstractFeature af, AbstractFeature relativeTo)
   {
     var result = "";
 
     if (!af.redefines().isEmpty())
       {
-        result = "<div class='fd-redefines'><br />redefines: <br /><ul>" + redefines0(af) + "</ul><br /></div>";
+        result = "<div class='fd-redefines'><br />redefines: <br /><ul>" + redefines0(af, relativeTo) + "</ul><br /></div>";
       }
 
     return result;
@@ -406,14 +416,14 @@ public class Html extends ANY
    * @param af
    * @return list of redefined features, wrapped in {@code <li>} and {@code <a>} HTML tags
    */
-  private String redefines0(AbstractFeature af)
+  private String redefines0(AbstractFeature af, AbstractFeature relativeTo)
   {
     return af
       .redefines()
       .stream()
       .map(f -> """
         <li><a href="$1">$2</a></li>$3
-      """.replace("$1", featureAbsoluteURL(f)).replace("$2", htmlEncodeNbsp(f.qualifiedName())).replace("$3", redefines0(f)))
+      """.replace("$1", featureRelativeURL(f, relativeTo)).replace("$2", htmlEncodeNbsp(f.qualifiedName())).replace("$3", redefines0(f, relativeTo)))
       .collect(Collectors.joining(System.lineSeparator()));
   }
 
@@ -491,7 +501,7 @@ public class Html extends ANY
   {
     if (set == null) { return ""; }
 
-    heading = "<h4>" + heading + "</h4>\n";
+    heading = "<h2 class=\"f-category\">" + heading + "</h2>\n";
     var features = set.stream();
 
     // e.g. don't filter or sort type parameters and fields
@@ -511,7 +521,7 @@ public class Html extends ANY
         .replace("$0", (config.ignoreVisibility() && !Util.isVisible(af)) ? "class='fd-private cursor-pointer' hidden" : "class='cursor-pointer'")
         .replace("$1", summary(af, outer))
         .replace("$2", Util.commentOf(af))
-        .replace("$3", redefines(af))
+        .replace("$3", redefines(af, (outer != null ? outer : af)))
     )
     .collect(Collectors.joining(System.lineSeparator()));
 
@@ -526,14 +536,12 @@ public class Html extends ANY
    */
   private String headingSection(AbstractFeature f)
   {
-    return "$0<h1 class='$1'>$2</h1><h2>$3</h2><div class='heading-summary'>$4</div><div class='fd-comment'>$5</div>$6"
-      .replace("$0", f.isUniverse() ? "<h1 hidden>" + lm.name() + "</h1>" : "") // short version of title for navtitle
-      .replace("$1", f.isUniverse() ? "": "d-none")
-      .replace("$2", f.isUniverse() ? "API-Documentation: module <code style=\"font-size: 1.4em; vertical-align: bottom;\">" + lm.name() + "</code>" : htmlEncodedBasename(f))
-      .replace("$3", anchorTags(f))
-      .replace("$4", f.isUniverse() ? "": summary(f))
-      .replace("$5", Util.commentOf(f))
-      .replace("$6", redefines(f));
+    return "<h1 hidden>$0</h1><h1>$1</h1><div class='heading-summary'>$2</div><div class='fd-comment'>$3</div>$4"
+      .replace("$0", f.isUniverse() ? lm.name() : htmlEncodedBasename(f)) // short version of title for navtitle
+      .replace("$1", f.isUniverse() ? "API-Documentation: module <code style=\"font-size: 1.4em; vertical-align: bottom;\">" + lm.name() + "</code>" : anchorTags(f))
+      .replace("$2", f.isUniverse() ? "": summary(f))
+      .replace("$3", Util.commentOf(f))
+      .replace("$4", redefines(f, f));
   }
 
   /**
@@ -715,21 +723,25 @@ public class Html extends ANY
    */
   private static String fullHtml(String qualifiedName, String bareHtml)
   {
+    int upDirCorrection = qualifiedName.equals("Modules") || qualifiedName.endsWith(".universe") ? 0 : 1;
+
     return ("""
       <!DOCTYPE html>
       <html lang="en">
       <head>
         <meta charset="utf-8" />
-        <title>Fuzion Docs - $qualifiedName</title>
-        <link rel="stylesheet" type="text/css" href="/style.css" />
+        <title>$qualifiedName | Fuzion Docs</title>
+        <link rel="icon" sizes="32x32" href="$root32.png">
+        <link rel="stylesheet" type="text/css" href="$rootstyle.css" />
       </head>
       <body>""" +
       bareHtml
       + """
         </body>
         </html>
-                    """)
-        .replace("$qualifiedName", qualifiedName);
+        """)
+        .replace("$qualifiedName", String.join(" • ", java.util.List.of(qualifiedName.split("\\.")).reversed()))
+        .replace("$root", upDirs((int) qualifiedName.chars().filter(c -> c == '.').count() + upDirCorrection));
   }
 
 
@@ -772,6 +784,93 @@ public class Html extends ANY
       .encode(tmp, StandardCharsets.UTF_8);
   }
 
+  /**
+   * The URL of the feature
+   * for full HTML URLs are relative, for bare HTML they are absolute
+   * @param f the feature for which to create the relative URL
+   * @param relativeTo the feature to which the URL should be relative to, ignored when bare HTML is generated
+   * @return URL of feature f
+   */
+  private String featureRelativeURL(AbstractFeature f, AbstractFeature relativeTo)
+  {
+    return featureRelativeURL(f, null, relativeTo);
+  }
+
+  /**
+   * The URL of the feature
+   * for full HTML URLs are relative, for bare HTML they are absolute
+   * @param f the feature for which to create the relative URL
+   * @param module the module to which the link should point, e.g. for base module feature String there are different
+   *               pages in base (docs/base/String+(no+arguments)/) and terminal (docs/terminal/String+(no+arguments)/)
+   * @param relativeTo the feature to which the URL should be relative to, ignored when bare HTML is generated
+   * @return URL of feature f
+   */
+  private String featureRelativeURL(AbstractFeature f, LibraryModule lm, AbstractFeature relativeTo)
+  {
+    String result;
+
+    if (config.bare())
+      {
+        // use absolute URLs on the website to avoid links breaking
+        // e.g. these two URLs show the exact same page, but a link starting with ../ behaves differently
+        // https://fuzion-lang.dev/docs/base/Any+(no+arguments)
+        // https://fuzion-lang.dev/docs/base/Any+(no+arguments)/index.html
+        result = lm == null ? featureAbsoluteURL(f) : featureAbsoluteURL(f, lm);
+      }
+    else
+      {
+        if (relativeTo == null)
+          {
+            result = lm == null ? featureAbsoluteURL(f) : featureAbsoluteURL(f, lm);
+          }
+        else
+          {
+            String absURL = lm == null ? featureAbsoluteURL(f) : featureAbsoluteURL(f, lm);
+            String absRef = lm == null ? featureAbsoluteURL(relativeTo) : featureAbsoluteURL(relativeTo, lm);
+
+            result = relativePath(absURL, absRef);
+          }
+      }
+    return result;
+  }
+
+  /**
+   * Make a path relative based on another one
+   * e.g. /foo/bar/file_1 based on /foo/other results in ../bar/file_1
+   *
+   * @param absolutePath the path that should be made relative
+   * @param relativeTo the path to which it should be made relative to
+   * @return a relative path
+   */
+  private String relativePath(String absoluteURL, String relativeTo)
+  {
+    // relative path should not be used when bare HTML with absolute paths is generated
+    if (CHECKS) check
+      (!config.bare());
+
+    var u = new LinkedList<>(Arrays.asList(absoluteURL.split("/")));
+    var r = new LinkedList<>(Arrays.asList(relativeTo.split("/")));
+    while (!u.isEmpty() && !r.isEmpty() && u.get(0).equals(r.get(0)))
+      {
+        u.remove(0);
+        r.remove(0);
+      }
+
+    String path = String.join("/", u);
+
+    return upDirs(r.size()) + path + (path.isEmpty() ? "" : "/") + "index.html";
+  }
+
+  /**
+   * Create a String to go up n directories
+   */
+  private static String upDirs(int n)
+  {
+    if (PRECONDITIONS) require
+      (n >= 0);
+
+    return n == 0 ? "./" : "../".repeat(n);
+  }
 
   /**
    * the absolute URL of this feature
@@ -813,7 +912,7 @@ public class Html extends ANY
    * @param f
    * @return
    */
-  private String arguments(AbstractFeature f)
+  private String arguments(AbstractFeature f, AbstractFeature relativeTo)
   {
     if (f.arguments()
          .stream()
@@ -827,12 +926,12 @@ public class Html extends ANY
       .filter(a -> a.isTypeParameter() || (f.visibility().eraseTypeVisibility() == Visi.PUB))
       .map(a ->
         htmlEncodedBasename(a) + "&nbsp;"
-        + (a.isTypeParameter() ? typeArgAsString(a) : anchor(a.resultType(), f)))
+        + (a.isTypeParameter() ? typeArgAsString(a, relativeTo) : anchorType(a, f, relativeTo)))
       .collect(Collectors.joining(htmlEncodeNbsp(", "))) + ")";
   }
 
 
-  private String typeArgAsString(AbstractFeature f)
+  private String typeArgAsString(AbstractFeature f, AbstractFeature relativeTo)
   {
     if (f.resultType().dependsOnGenerics())
       {
@@ -848,7 +947,7 @@ public class Html extends ANY
                 + (f.isOpenTypeParameter() ? "..." : "")
                 + (f.resultType().compareTo(Types.resolved.t_Any) == 0 ? "" :
                     "<div class='mx-5'>:</div><a class='fd-feature fd-inherited' href='$1'>$2</a>"
-                    .replace("$1", featureAbsoluteURL(constraint))
+                    .replace("$1", featureRelativeURL(constraint, relativeTo))
                     .replace("$2", htmlEncodedQualifiedName(constraint)));
       }
   }
@@ -859,9 +958,11 @@ public class Html extends ANY
    * @param start feature from which to start the list of features
    * @return html for the navigation, consisting of a list of modules and a list of features from the current module
    */
-  private String navigation(AbstractFeature start)
+  private String navigation(AbstractFeature start, AbstractFeature relativeTo)
   {
-    return navigationModules() + navigationFeatures(java.util.List.of(start), "");
+    return config.bare() && navigationBareHTML != null
+      ? navigationBareHTML  // cached navigation if absolute URLs are used
+      : navigationModules(relativeTo) + navigationFeatures(java.util.List.of(start), "", relativeTo);
   }
 
 
@@ -871,7 +972,7 @@ public class Html extends ANY
    * @param outerPrefix prefix for the tree structure e.g. "│  │  "
    * @return rendered tree style block with sub blocks for inner features
    */
-  private String navigationFeatures(java.util.List<AbstractFeature> features, String outerPrefix)
+  private String navigationFeatures(java.util.List<AbstractFeature> features, String outerPrefix, AbstractFeature relativeTo)
   {
     if (features.isEmpty())
       {
@@ -904,8 +1005,8 @@ public class Html extends ANY
           """
 
           <li>$0$1</li>"""
-            .replace("$0", navFeatHtml(f, outerPrefix + featPrfx))
-            .replace("$1", navigationFeatures(innerFeatures, outerPrefix + subPrfx)));
+            .replace("$0", navFeatHtml(f, outerPrefix + featPrfx, relativeTo))
+            .replace("$1", navigationFeatures(innerFeatures, outerPrefix + subPrfx, relativeTo)));
       }
     while (iter.hasNext());
 
@@ -922,10 +1023,10 @@ public class Html extends ANY
    * @param prefix prefix of the tree style structure for this feature
    * @return rendered html for the feature f
    */
-  private String navFeatHtml(AbstractFeature f, String prefix)
+  private String navFeatHtml(AbstractFeature f, String prefix, AbstractFeature relativeTo)
   {
     var fName = htmlEncodedBasename(f) + (f.isUniverse() ? " (module " + lm.name() + ")" : "");
-    var fHTML = "<a href='" + featureAbsoluteURL(f) + "'>" + fName + args(f) + "</a>";
+    var fHTML = "<a href='" + featureRelativeURL(f, relativeTo) + "'>" + fName + args(f) + "</a>";
     return "<div>" + prefix + fHTML + "</div>";
   }
 
@@ -933,8 +1034,10 @@ public class Html extends ANY
   /**
    * render list with modules for the navigation at the left side
    */
-  private String navigationModules()
+  private String navigationModules(AbstractFeature relativeTo)
   {
+    String relativeToStr = relativeTo == null ? "" : featureAbsoluteURL(relativeTo);
+
     return """
       <ul class="white-space-no-wrap">
         <li>
@@ -946,9 +1049,12 @@ public class Html extends ANY
       </ul>
       """
       .replace("$1", libModules.stream()
-                               .map(m->"<li><a href=$0" + m.name() + ">" + m.name() + "</a></li>")
+                               .map(m->m.name())
+                               .map(s->(config.bare()
+                                          ? ("<li><a href=" + config.docsRoot() + "/" + s + ">" + s + "</a></li>")
+                                          : ("<li><a href=" + relativePath("/" + s, relativeToStr) + ">" + s + "</a></li>")))
                                .collect(Collectors.joining("\n")))
-      .replace("$0", config.docsRoot() + "/");
+      .replace("$0", config.bare() ? config.docsRoot() + "/" : relativePath("", relativeToStr));
   }
 
 
@@ -989,8 +1095,22 @@ public class Html extends ANY
       """
           <!-- GENERATED BY FZDOCS -->
           <div class='fd'>
-            <div class="sidenav">
-              <div onclick="document.querySelector('.fd .sidenav nav').style.display = (document.querySelector('.fd .sidenav nav').style.display === 'none' ?  '' : 'none'); this.textContent = this.textContent === '»' ? '«' : '»';" class="toggle-nav cursor-pointer">»</div>
+            <div class="sidenav" id="sidenav">
+              <button
+                class="toggle-nav"
+                aria-expanded="true"
+                aria-controls="sidenav"
+                aria-label="Toggle navigation"
+                onclick="
+                  const nav = document.querySelector('.fd .sidenav nav');
+                  const hidden = nav.style.display === 'none';
+                  nav.style.display = hidden ? '' : 'none';
+                  this.textContent = hidden ? '«' : '»';
+                  this.setAttribute('aria-expanded', hidden);
+                "
+              >
+                »
+              </button>
               <nav style="display: none">$2</nav>
             </div>
             <div class="container">
@@ -1003,12 +1123,15 @@ public class Html extends ANY
         """
         .replace("$0", headingSection(af))
         .replace("$1", mainSection(mapOfDeclaredFeatures.get(af), af))
-        .replace("$2", navigation)
+        .replace("$2", navigation(lm.universe(), af))
         .replace("$3", config.ignoreVisibility() ? """
           <button onclick="for (let element of document.getElementsByClassName('fd-private')) { element.hidden = !element.hidden; }">Toggle hidden features</button>
         """ : "")
         .replace("$4", Tool.fullVersion());
-    return config.bare() ? bareHtml: fullHtml(af.qualifiedName(), bareHtml);
+
+    return config.bare()
+      ? bareHtml
+      : fullHtml(lm.name() + "." + af.qualifiedName(), bareHtml);
   }
 
   /**
@@ -1020,50 +1143,63 @@ public class Html extends ANY
     // NYI: BUG: some things (e.g. html id or links) might break if there are spaces in a module name
     StringBuilder modPage = new StringBuilder();
     modPage.append("""
-<!-- GENERATED BY FZDOCS -->
-<div class="fd">
-<div class="sidenav">
-  <div onclick="document.querySelector('.fd .sidenav nav').style.display = (document.querySelector('.fd .sidenav nav').style.display === 'none' ?  '' : 'none'); this.textContent = this.textContent === '»' ? '«' : '»';" class="toggle-nav cursor-pointer">»</div>
-  <nav style="display: none">$0</nav>
-</div>
-<div class="container">
-  <section><h1 hidden>Library Modules</h1><h1>Fuzion Library Modules</h1>
-    <div class='fd-comment'></div>
-  </section>
-  <section>
-        """.replace("$0", navigationModules()));
+      <!-- GENERATED BY FZDOCS -->
+      <div class="fd">
+      <div class="sidenav" id="sidenav">
+        <button
+        class="toggle-nav"
+        aria-expanded="true"
+        aria-controls="sidenav"
+        aria-label="Toggle navigation"
+        onclick="
+          const nav = document.querySelector('.fd .sidenav nav');
+          const hidden = nav.style.display === 'none';
+          nav.style.display = hidden ? '' : 'none';
+          this.textContent = hidden ? '«' : '»';
+          this.setAttribute('aria-expanded', hidden);
+        "
+        >
+          »
+        </button>
+        <nav style="display: none">$0</nav>
+      </div>
+      <div class="container">
+        <section><h1 hidden>Library Modules</h1><h1>Fuzion Library Modules</h1>
+          <div class='fd-comment'></div>
+        </section>
+        <section>
+      """.replace("$0", navigationModules(null)));
 
     for (LibraryModule mod : libModules)
       {
         modPage.append("""
-    <div class="cursor_pointer">
-      <details id='"$2"'$0>
-        <summary>
-          <div class="d-grid" style="grid-template-columns: 1fr min-content;">
-            <div class="d-flex flex-wrap word-break-break-word">
-              <a class="fd-anchor-sign mr-2" href="#$2">§</a>
-              <div class="d-flex flex-wrap word-break-break-word fz-code">
-                <div class="font-weight-600"><a class="fd-feature" href="$1">$2</a></div>
-                <div class="flex-grow-1"></div>
-              </div>
-            </div>
+          <div class="cursor_pointer">
+            <details id="$2" $0>
+              <summary>
+                <div class="d-grid" style="grid-template-columns: 1fr min-content;">
+                  <div class="d-flex flex-wrap word-break-break-word">
+                    <div class="d-flex flex-wrap word-break-break-word fz-code">
+                      <div class="font-weight-600 ml-2"><a class="fd-feature" href="$1">$2</a></div>
+                      <div class="flex-grow-1"></div>
+                      <a class="fd-anchor-sign mr-2" href="#$2">¶</a>
+                    </div>
+                  </div>
+                </div>
+              </summary>
+            </details>
           </div>
-        </summary>
-      </details>
-    </div>
-            """.replace("$0", config.ignoreVisibility() ? "class='fd-private cursor-pointer' hidden" : "class='cursor-pointer'")
-               .replace("$1", mod.name())
-               .replace("$2", mod.name()));
+          """.replace("$0", config.ignoreVisibility() ? "class='fd-private cursor-pointer' hidden" : "class='cursor-pointer'")
+             .replace("$1", mod.name() + "/index.html")
+             .replace("$2", mod.name()));
       }
     // modulePage += "</ul>";
 
     modPage.append("""
-  </section>
-  $3
-</div>
-</div>
-        """
-          .replace("$3", config.ignoreVisibility() ? """
+        </section>
+        $3
+      </div>
+      </div>
+      """.replace("$3", config.ignoreVisibility() ? """
             <button onclick="for (let element of document.getElementsByClassName('fd-private')) { element.hidden = !element.hidden; }">Toggle hidden features</button>
           """ : ""));
 

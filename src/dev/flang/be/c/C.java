@@ -452,7 +452,7 @@ public class C extends ANY
              {
                var sl = new List<CStmnt>();
                var field = _fuir.matchCaseField(s, mc);
-               if (field != -1)
+               if (field != NO_CLAZZ)
                  {
                    var fclazz = _fuir.clazzResultClazz(field);     // static clazz of assigned field
                    var cl     = _fuir.clazzAt(s);
@@ -1820,7 +1820,7 @@ public class C extends ANY
         var oc = _fuir.clazzOuterClazz(cc);
         var or = _fuir.clazzOuterRef(cc);
         result = new List<>();
-        if (or != -1 && _fuir.hasData(oc))
+        if (or != NO_CLAZZ && _fuir.hasData(oc))
           {
             result.add(_fuir.clazzIsRef(oc)             ? tvalue        .castTo(_types.clazzField(_fuir.clazzOuterRef(cc))) :
                        /* NYI: special handling in backend should be
@@ -1850,7 +1850,7 @@ public class C extends ANY
     var argts = new List<String>();
     var argns = new List<CIdent>();
     var or = _fuir.clazzOuterRef(cl);
-    if (or != -1)
+    if (or != NO_CLAZZ)
       {
         argts.add(_types.clazzField(or));
         argns.add(CNames.OUTER);
@@ -2176,6 +2176,7 @@ public class C extends ANY
       {
         var at = _fuir.clazzArgClazz(cl, i);
         var c = _fuir.lookupCall(at);
+        // NYI: CLEANUP: simplify ternary with &&/||
         var isComplexValue = c != NO_CLAZZ
           // 1. pass as function pointer
           ? false

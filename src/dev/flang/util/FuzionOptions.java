@@ -90,7 +90,7 @@ public class FuzionOptions extends ANY
    * Helper to convert property name to anv var name. Replaces {@code .} by {@code _} since
    * {@code .} is not permitted in an env var.
    */
-  private static String envVarName(String propertyName)
+  public static String envVarName(String propertyName)
   {
     return propertyName.replace(".","_");
   }

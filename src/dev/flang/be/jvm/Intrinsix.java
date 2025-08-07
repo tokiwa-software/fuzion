@@ -261,7 +261,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
         });
 
     put("fuzion.jvm.create_jvm",
-        (jvm, si, cc, tvalue, args) -> new Pair<>(Expr.UNIT, Expr.UNIT));
+        (jvm, si, cc, tvalue, args) -> new Pair<>(Expr.iconst(0), Expr.UNIT));
     put("fuzion.jvm.destroy_jvm",
         (jvm, si, cc, tvalue, args) -> new Pair<>(Expr.UNIT, Expr.UNIT));
 
@@ -1196,7 +1196,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
    * @param c
    * @return a descriptor for the class, e.g. String => Ljava.lang.String;
    */
-  private static String descriptor(Class c)
+  private static String descriptor(Class<?> c)
   {
     if(c==byte.class)
         return "B";
@@ -1230,7 +1230,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
    *      and {@code int fuzion_sys_net_listen(){}}
    *      it returns: ()I
    */
-  private static String methodDescriptor(Class c, String m)
+  private static String methodDescriptor(Class<?> c, String m)
   {
     return Arrays
       .stream(c.getMethods())

@@ -32,6 +32,12 @@ public java is
   #
   public Java_Object(public java_ref Java_Ref) ref
   is
+
+    # convenience feature to get JVM effect from current environment. This avoids DFA limitations
+    # that is currently not accurate enough to find the presence of the jvm effect for Strings
+    #
+    jvm => (fuzion.jvm.get_if_instated.or_else (panic "jvm effect required but not instated"))
+
     public is_null bool ! fuzion.jvm =>
       fuzion.jvm.env.is_null0 java_ref
 
@@ -104,6 +110,5 @@ public java is
   #
   public Java_String(public redef java_ref Java_Ref) ref : String, Java_Object java_ref
   is
-    public redef utf8 Sequence u8  ! fuzion.jvm =>
-      (fuzion.jvm.env.java_string_to_string java_ref).utf8
-
+    public redef utf8 Sequence u8 =>
+      (jvm.java_string_to_string java_ref).utf8

@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.c;
 
+import static dev.flang.ir.IR.NO_CLAZZ;
+
 import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeMap;
@@ -107,15 +109,7 @@ public class Intrinsics extends ANY
             {
               var f = c.accessField(outer, ac, v);
               CExpr eq;
-              if (c._fuir.clazzIsRef(rc) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_i8  ) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_i16 ) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_i32 ) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_i64 ) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_u8  ) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_u16 ) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_u32 ) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_u64 ))
+              if (isIntegerOrRef(c, rc))
                 {
                   code = CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, expected),
                                     CExpr.call("atomic_compare_exchange_strong_explicit", new List<>(
@@ -130,7 +124,7 @@ public class Intrinsics extends ANY
                 {
                   var res = c._names.newTemp();
                   code = CStmnt.seq(locked(CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, f),
-                                                      CStmnt.seq(res.decl("bool", res),
+                                                      CStmnt.seq(CLocal.decl("bool", res),
                                                                  compareValues(c, tmp, expected, rc, res),
                                                                  CStmnt.iff(res,
                                                                             f.assign(new_value))))),
@@ -154,15 +148,7 @@ public class Intrinsics extends ANY
             {
               var f = c.accessField(outer, ac, v);
               CExpr eq;
-              if (c._fuir.clazzIsRef(rc) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_i8  ) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_i16 ) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_i32 ) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_i64 ) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_u8  ) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_u16 ) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_u32 ) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_u64 ))
+              if (isIntegerOrRef(c, rc))
                 {
                   code = CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, expected),
                                     CStmnt.iff(CExpr.call("atomic_compare_exchange_strong_explicit",
@@ -959,7 +945,7 @@ public class Intrinsics extends ANY
     put("fuzion.jvm.create_jvm", (c,cl,outer,in) -> {
       return  C.JAVA_HOME == null
         ? noJava
-        : CExpr.call("fzE_create_jvm", new List<>(A0.castTo("char *")));
+        : CExpr.call("fzE_create_jvm", new List<>(A0.castTo("char *"))).ret();
     });
     put("fuzion.jvm.destroy_jvm", (c,cl,outer,in) -> {
       return  C.JAVA_HOME == null
@@ -1004,6 +990,22 @@ public class Intrinsics extends ANY
     put("native_string_length", (c,cl,outer,in) -> CExpr.call("strlen",   new List<>(A0.castTo("void *"))).ret());
     // essentially a NOP in c-backend
     put("native_array", (c,cl,outer,in) -> A0.castTo("void *" /* NYI: should be cast to array with element type cl._dfa._fuir.clazzActualGeneric(cl._cc, 0) */).ret());
+  }
+
+  /**
+   * Is cl an integer i8..u64 or a reference?
+   */
+  private static boolean isIntegerOrRef(C c, int cl)
+  {
+    return c._fuir.clazzIsRef(cl) ||
+        c._fuir.clazzIs(cl, SpecialClazzes.c_i8  ) ||
+        c._fuir.clazzIs(cl, SpecialClazzes.c_i16 ) ||
+        c._fuir.clazzIs(cl, SpecialClazzes.c_i32 ) ||
+        c._fuir.clazzIs(cl, SpecialClazzes.c_i64 ) ||
+        c._fuir.clazzIs(cl, SpecialClazzes.c_u8  ) ||
+        c._fuir.clazzIs(cl, SpecialClazzes.c_u16 ) ||
+        c._fuir.clazzIs(cl, SpecialClazzes.c_u32 ) ||
+        c._fuir.clazzIs(cl, SpecialClazzes.c_u64 );
   }
 
 
@@ -1057,7 +1059,7 @@ public class Intrinsics extends ANY
   {
     var or = c._fuir.clazzOuterRef(cl);
     var outer =
-      or == -1                                         ? null :
+      or == NO_CLAZZ                                   ? null :
       c._fuir.clazzFieldIsAdrOfValue(or)               ? CNames.OUTER.deref() :
       c._fuir.clazzIsRef(c._fuir.clazzResultClazz(or)) ? CNames.OUTER.deref().field(CNames.FIELDS_IN_REF_CLAZZ)
                                                        : CNames.OUTER;
@@ -1072,22 +1074,13 @@ public class Intrinsics extends ANY
       }
     else
       {
-        var at = c._fuir.clazzTypeParameterActualType(cl);
-        if (at >= 0)
-          {
-            // intrinsic is a type parameter, type instances are unit types, so nothing to be done:
-            result = CStmnt.EMPTY;
-          }
-        else
-          {
-            var msg = "code for intrinsic " + c._fuir.clazzOriginalName(cl) + " is missing";
-            Errors.warning(msg);
-            result = CStmnt.seq(CExpr.call("fprintf",
-                                           new List<>(new CIdent("stderr"),
-                                                      CExpr.string("*** error: NYI: %s\n"),
-                                                      CExpr.string(msg))),
-                                CExpr.call("exit", new List<>(CExpr.int32const(1))));
-          }
+        var msg = "code for intrinsic " + c._fuir.clazzOriginalName(cl) + " is missing";
+        Errors.warning(msg);
+        result = CStmnt.seq(CExpr.call("fprintf",
+                                        new List<>(new CIdent("stderr"),
+                                                  CExpr.string("*** error: NYI: %s\n"),
+                                                  CExpr.string(msg))),
+                            CExpr.call("exit", new List<>(CExpr.int32const(1))));
       }
 
     return result;
@@ -1169,15 +1162,7 @@ public class Intrinsics extends ANY
       { // unit-type values are always equal:
         result = tmp.assign(new CIdent("true"));
       }
-    else if (c._fuir.clazzIsRef(rt) ||
-             c._fuir.clazzIs(rt, SpecialClazzes.c_i8  ) ||
-             c._fuir.clazzIs(rt, SpecialClazzes.c_i16 ) ||
-             c._fuir.clazzIs(rt, SpecialClazzes.c_i32 ) ||
-             c._fuir.clazzIs(rt, SpecialClazzes.c_i64 ) ||
-             c._fuir.clazzIs(rt, SpecialClazzes.c_u8  ) ||
-             c._fuir.clazzIs(rt, SpecialClazzes.c_u16 ) ||
-             c._fuir.clazzIs(rt, SpecialClazzes.c_u32 ) ||
-             c._fuir.clazzIs(rt, SpecialClazzes.c_u64 )    )
+    else if (isIntegerOrRef(c, rt))
       {
         result = tmp.assign(CExpr.eq(value1, value2));
       }

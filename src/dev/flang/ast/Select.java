@@ -210,7 +210,7 @@ public class Select extends Call {
   {
     var result = Call.ERROR;
 
-    var typeParameter = at.isGenericArgument() ? at.genericArgument().constraint(context).feature() : at.feature();
+    var typeParameter = at.selfOrConstraint(context).feature();
     var f = res._module.lookupOpenTypeParameterResult(typeParameter, this);
 
     if (f != null)

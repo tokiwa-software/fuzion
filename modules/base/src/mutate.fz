@@ -43,15 +43,13 @@
 #
 #     v := mut 42
 #
-# NYI: syntax sugar to read mutable field using
+# syntax sugar to read mutable field using
 #
 #     w := v + 1
 #
 # instead of
 #
 #     w := v.get + 1
-#
-# is not supported yet.
 #
 public mutate : linear_effect is
 
@@ -62,9 +60,7 @@ public mutate : linear_effect is
 
   # short-hand to access effect type
   #
-  # NYI: This does not work yet
-  #
-  # M := mutate.this.type
+  M := mutate.this.type
 
   # an id used for runtime checks to verify that mutation made with the same effect
   # the mutable value was created with
@@ -92,7 +88,7 @@ public mutate : linear_effect is
     # `mutate.this`
     #
     is_currently_instated =>
-      match mutate.this.get_if_instated
+      match M.get_if_instated
         x mutate.this => my_id = x.id
         nil           => false
 
@@ -102,7 +98,7 @@ public mutate : linear_effect is
     module check_and_replace
     =>
       if !is_currently_instated
-        mpanic "*** invalid mutate for {mutate.this.type}"
+        mpanic "*** invalid mutate for {M}"
       mutate.this.env.replace
 
 
@@ -189,7 +185,7 @@ public mutate : linear_effect is
 
     # unwrap this mutable value
     #
-    public redef unwrap T ! mutate => get
+    public redef unwrap T ! mutate.this => get
 
 
     # returns `as_string` of the current value

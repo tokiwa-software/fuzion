@@ -29,7 +29,7 @@
 case1 =>
   e is
     me => e.this
-    type.x(a e.this) => $a.me   # 1. Should flag an error: `Call has an ambiguous result type...`
+    type.x(a e.this) => $a.me   # 1. should flag an error: `Call has an ambiguous result type...`
 
   p ref : e is
 
@@ -62,7 +62,7 @@ case2 =>
 case3 =>
   e is
     me => option e.this
-    type.x(a e.this) => $a.me   # 2. Should flag an error: `Call has an ambiguous result type...`
+    type.x(a e.this) => $a.me   # 2. should flag an error: `Call has an ambiguous result type...`
 
   p ref : e is
 
@@ -81,8 +81,8 @@ case4 =>
     me option d.this => abstract
     s String => abstract
   e : d is
-    redef me => option e.this   # 3. Should flag an error: `Call has an ambiguous result type...`
-    redef s => $me              # 4. Should flag an error: `Call has an ambiguous result type...`
+    redef me => option e.this   # 3. should flag an error: `Call has an ambiguous result type...`
+    redef s => $me              # 4. should flag an error: `Call has an ambiguous result type...`
 
   p ref : e is
 

@@ -86,7 +86,7 @@ public class Util
 
     Collections.reverse(commentLines);
 
-    var result = Html.processComment(af.qualifiedName(), commentLines
+    var result = Html.processComment(af.qualifiedName() + af.featureName().argCount() + "_", commentLines
       .stream()
       .map(l -> l.trim())
       .map(l -> l

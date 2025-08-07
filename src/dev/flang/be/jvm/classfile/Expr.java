@@ -1773,22 +1773,7 @@ public abstract class Expr extends ByteCode
   public static Expr branch(byte bc, Expr pos, Expr neg)
   {
     if (PRECONDITIONS) require
-      (bc == ClassFileConstants.O_ifeq      ||
-       bc == ClassFileConstants.O_ifne      ||
-       bc == ClassFileConstants.O_iflt      ||
-       bc == ClassFileConstants.O_ifge      ||
-       bc == ClassFileConstants.O_ifgt      ||
-       bc == ClassFileConstants.O_ifle      ||
-       bc == ClassFileConstants.O_if_icmpeq ||
-       bc == ClassFileConstants.O_if_icmpne ||
-       bc == ClassFileConstants.O_if_icmplt ||
-       bc == ClassFileConstants.O_if_icmpge ||
-       bc == ClassFileConstants.O_if_icmpgt ||
-       bc == ClassFileConstants.O_if_icmple ||
-       bc == ClassFileConstants.O_if_acmpeq ||
-       bc == ClassFileConstants.O_if_acmpne ||
-       bc == ClassFileConstants.O_ifnull    ||
-       bc == ClassFileConstants.O_ifnonnull   );
+      (isIfInstruction(bc));
 
     Label lStart = new Label();
     Label lEnd   = new Label();
@@ -1926,24 +1911,34 @@ public abstract class Expr extends ByteCode
   public static Expr branch(byte bc, Expr pos)
   {
     if (PRECONDITIONS) require
-      (bc == ClassFileConstants.O_ifeq      ||
-       bc == ClassFileConstants.O_ifne      ||
-       bc == ClassFileConstants.O_iflt      ||
-       bc == ClassFileConstants.O_ifge      ||
-       bc == ClassFileConstants.O_ifgt      ||
-       bc == ClassFileConstants.O_ifle      ||
-       bc == ClassFileConstants.O_if_icmpeq ||
-       bc == ClassFileConstants.O_if_icmpne ||
-       bc == ClassFileConstants.O_if_icmplt ||
-       bc == ClassFileConstants.O_if_icmpge ||
-       bc == ClassFileConstants.O_if_icmpgt ||
-       bc == ClassFileConstants.O_if_icmple ||
-       bc == ClassFileConstants.O_if_acmpeq ||
-       bc == ClassFileConstants.O_if_acmpne ||
-       bc == ClassFileConstants.O_ifnull    ||
-       bc == ClassFileConstants.O_ifnonnull   );
+      (isIfInstruction(bc));
 
     return branch(bc, pos, UNIT);
+  }
+
+
+  /**
+   * Is bc an `if` instruction?
+   */
+  private static boolean isIfInstruction(byte bc)
+  {
+    return
+      bc == ClassFileConstants.O_ifeq      ||
+      bc == ClassFileConstants.O_ifne      ||
+      bc == ClassFileConstants.O_iflt      ||
+      bc == ClassFileConstants.O_ifge      ||
+      bc == ClassFileConstants.O_ifgt      ||
+      bc == ClassFileConstants.O_ifle      ||
+      bc == ClassFileConstants.O_if_icmpeq ||
+      bc == ClassFileConstants.O_if_icmpne ||
+      bc == ClassFileConstants.O_if_icmplt ||
+      bc == ClassFileConstants.O_if_icmpge ||
+      bc == ClassFileConstants.O_if_icmpgt ||
+      bc == ClassFileConstants.O_if_icmple ||
+      bc == ClassFileConstants.O_if_acmpeq ||
+      bc == ClassFileConstants.O_if_acmpne ||
+      bc == ClassFileConstants.O_ifnull    ||
+      bc == ClassFileConstants.O_ifnonnull;
   }
 
   public static Expr checkcast(JavaType type)
@@ -2035,6 +2030,7 @@ public abstract class Expr extends ByteCode
    * trick the classfile verifier not to report errors after a call to, e.g.,
    * Runtime.fatal.
    */
+  @SuppressWarnings("unchecked")
   public static Expr endless_loop()
   {
     Label l = new Label();

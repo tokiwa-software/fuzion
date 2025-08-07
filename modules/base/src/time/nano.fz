@@ -34,25 +34,25 @@
 # not be the right source of time to, e.g., feed an alarm clock that should
 # wake you up at 6h30 every morning.
 #
-public nano (p Nano_Time_Handler) : effect is
+public nano (p Nano_Time_Handler) : Clock is
 
   # no guarantee can be given for precision nor resolution
   #
-  public read instant =>
+  public redef read time.instant =>
     res := p.read
     replace
-    instant res
+    time.instant res
 
 
   # no guarantee can be given for precision nor resolution
   #
-  public sleep(d time.duration) unit =>
+  public redef sleep(d time.duration) unit =>
     res := p.sleep d
     replace
     res
 
 
-  type.default_nano_time =>
+  module type.default_nano_time =>
 
     ref : time.Nano_Time_Handler is
 
@@ -73,10 +73,10 @@ public nano (p Nano_Time_Handler) : effect is
 
 # short-hand for accessing time.nano effect in current environment
 #
-public nano nano =>
+public nano time.nano =>
   if !nano.is_instated
     nano.install_default
-  nano.env
+  time.nano.env
 
 
 # abstract handler that can deliver a nano time

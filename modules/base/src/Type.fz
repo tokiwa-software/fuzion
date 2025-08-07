@@ -73,13 +73,16 @@ module:public Type ref is
   #     say (is_of_integer_type 1234)    # true
   #     say (is_of_integer_type 3.14)    # false
   #
-  # it is most useful in conjunction preconditions or `if` statements as in
+  # it is most useful in conjunction with preconditions or `if` statements as in
   #
   #     pair(a,b T) is
   #       same
   #         pre T : property.equatable
-  #     =>
-  #       a = b
+  #       =>
+  #         a = b
+  #
+  #     pair 3 3     .same |> say
+  #     pair "A" "B" .same |> say
   #
   # or
   #
@@ -91,9 +94,14 @@ module:public Type ref is
   #       #
   #       more_than_zero option bool =>
   #         if T : numeric then
-  #           n > T.zero
+  #           n > 0
   #         else
   #           nil
+  #
+  #     val 3.14   .more_than_zero |> say   # "true"
+  #     val -3     .more_than_zero |> say   # "false"
+  #     val "drei" .more_than_zero |> say   # "--nil--"
+  #
   #
   public infix : (T type) bool =>
 
@@ -122,6 +130,7 @@ module:public Type ref is
 # Internally, Fuzion's front end implements `x.type` using
 # `type_as_value x`. The middle end then replaces calls to
 # `type_as_value` by `T`'s type clazz.
+# The type clazz is then used to call the correct type feature.
 #
 public type_as_value(T type) Type => T
 

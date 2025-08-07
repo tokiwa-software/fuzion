@@ -227,12 +227,6 @@ public class LibraryFuir extends FUIR {
   }
 
   @Override
-  public int clazzTypeParameterActualType(int cl)
-  {
-    return _clazzes[clazzId2num(cl)].clazzTypeParameterActualType();
-  }
-
-  @Override
   public SpecialClazzes getSpecialClazz(int cl)
   {
     for (int i = 0; i < _specialClazzes.length; i++)
@@ -581,16 +575,20 @@ public class LibraryFuir extends FUIR {
   }
 
   @Override
-  public int inlineArrayElementClazz(int constCl)
-  {
-    return _clazzes[clazzId2num(constCl)].inlineArrayElementClazz();
-  }
-
-  @Override
   public String clazzSrcFile(int cl)
   {
     return _clazzes[clazzId2num(cl)].clazzSrcFile();
   }
+
+
+  @Override
+  public SourcePosition clazzDeclarationPos(int cl)
+  {
+    var r = _clazzes[clazzId2num(cl)];
+    return new SourcePosition(new dev.flang.util.SourceFile(java.nio.file.Path.of(r.clazzSrcFile())),
+                              r.clazzSrcBytePos());
+  }
+
 
   @Override
   public boolean withinCode(int s)

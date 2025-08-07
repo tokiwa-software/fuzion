@@ -1,0 +1,15 @@
+
+--CURDIR--/reg_issue5353.fz:26:23: error 1: Could not find called feature
+  (1..100).for_each x ->
+----------------------^^
+Feature not found: 'infix/infix_right ->' (one argument)
+Target feature: 'unit'
+In call: 
+(1..100).for_each x ->
+    if x ∈ squares
+      say "$x in squares"
+    else
+      say "$x not in squares"
+
+
+one error.

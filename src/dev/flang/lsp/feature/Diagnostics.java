@@ -28,28 +28,19 @@ package dev.flang.lsp.feature;
 
 import java.net.URI;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
-import org.eclipse.lsp4j.DiagnosticTag;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
 import org.eclipse.lsp4j.Range;
 
-import dev.flang.ast.AbstractFeature;
 import dev.flang.lsp.Config;
-import dev.flang.lsp.shared.ASTWalker;
-import dev.flang.lsp.shared.FeatureTool;
-import dev.flang.lsp.shared.LexerTool;
 import dev.flang.lsp.shared.ParserTool;
 import dev.flang.lsp.shared.QueryAST;
 import dev.flang.lsp.shared.Util;
 import dev.flang.lsp.util.Bridge;
-import dev.flang.lsp.util.LSP4jUtils;
 
 /**
  * provide diagnostics for a given uri

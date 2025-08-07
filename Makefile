@@ -25,8 +25,10 @@
 
 JAVA = java --enable-preview --enable-native-access=ALL-UNNAMED
 MIN_JAVA_VERSION = 21 # NYI: when updating to Java version 22 or higher: remove this hack (revert #4264) and remove option '--enable-preview'
-JAVA_VERSION = $(shell v=$$(java -version 2>&1 | grep 'version' | cut -d '"' -f2 | cut -d. -f1); [ $$v -lt $(MIN_JAVA_VERSION) ] && echo $(MIN_JAVA_VERSION) || echo $$v)
-JAVAC = javac -encoding UTF8 --release $(JAVA_VERSION) --enable-preview
+JAVA_VERSION = $(shell v=$$(java -version 2>&1 | grep 'version' | cut -d '"' -f2 | cut -d. -f1 | grep -o '[[:digit:]]*'); [ $$v -lt $(MIN_JAVA_VERSION) ] && echo $(MIN_JAVA_VERSION) || echo $$v)
+# NYI: CLEANUP: remove some/all of the exclusions
+LINT = -Xlint:all,-preview,-serial
+JAVAC = javac $(LINT) -encoding UTF8 --release $(JAVA_VERSION) --enable-preview
 FZ_SRC = $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 SRC = $(FZ_SRC)/src
 BUILD_DIR = ./build
@@ -126,6 +128,7 @@ MOD_TERMINAL          = $(BUILD_DIR)/modules/terminal.fum
 MOD_LOCK_FREE         = $(BUILD_DIR)/modules/lock_free.fum
 MOD_NOM               = $(BUILD_DIR)/modules/nom.fum
 MOD_UUID              = $(BUILD_DIR)/modules/uuid.fum
+MOD_HTTP              = $(BUILD_DIR)/modules/http.fum
 MOD_CLANG             = $(BUILD_DIR)/modules/clang.fum
 MOD_WOLFSSL           = $(BUILD_DIR)/modules/wolfssl.fum
 MOD_JSON_ENCODE       = $(BUILD_DIR)/modules/json_encode.fum
@@ -454,6 +457,7 @@ FZ_MODULES = \
 			$(MOD_LOCK_FREE) \
 			$(MOD_NOM) \
 			$(MOD_UUID) \
+			$(MOD_HTTP) \
 			$(MOD_CLANG) \
 			$(MOD_WOLFSSL) \
 			$(MOD_JSON_ENCODE)
@@ -692,6 +696,12 @@ $(MOD_UUID): $(MOD_BASE) $(FZ) $(shell find $(FZ_SRC)/modules/uuid/src -name "*.
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC)/modules/uuid $(@D)
 	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/uuid/src -saveModule=$@
+
+$(MOD_HTTP): $(MOD_BASE) $(FZ) $(shell find $(FZ_SRC)/modules/http/src -name "*.fz")
+	rm -rf $(@D)/http
+	mkdir -p $(@D)
+	cp -rf $(FZ_SRC)/modules/http $(@D)
+	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/http/src -saveModule=$@
 
 $(MOD_CLANG): $(MOD_BASE) $(FZ) $(shell find $(FZ_SRC)/modules/clang/src -name "*.fz")
 	rm -rf $(@D)/clang
@@ -1138,7 +1148,9 @@ $(BUILD_DIR)/tests: $(FUZION_FILES_TESTS)
 	rm -rf $@
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC_TESTS) $@
-	chmod +x $@/*.sh
+	@echo "pre building check_simple_example"
+	$(FZ) -modules=terminal -c -o=$(BUILD_DIR)/tests/check_simple_example $(BUILD_DIR)/tests/check_simple_example.fz
+	@echo " + $(BUILD_DIR)/tests/check_simple_example"
 
 $(BUILD_DIR)/include: $(FUZION_FILES_RT)
 	rm -rf $@
@@ -1233,6 +1245,7 @@ $(BUILD_DIR)/apidocs/index.html: $(FUZION_BASE) $(CLASS_FILES_TOOLS_DOCS) $(FUZI
 debug_api_docs: $(FUZION_BASE) $(CLASS_FILES_TOOLS_DOCS)
 	mkdir -p $(BUILD_DIR)/debugdocs
 	cp assets/docs/style.css $(BUILD_DIR)/debugdocs/
+	cp assets/docs/32.png $(BUILD_DIR)/debugdocs/
 	$(JAVA) --class-path $(CLASSES_DIR) -Xss64m -Dfuzion.home=$(BUILD_DIR) dev.flang.tools.docs.Docs $(BUILD_DIR)/debugdocs
 	jwebserver --port 15306 --directory $$(realpath $(BUILD_DIR)/debugdocs)
 
@@ -1360,11 +1373,11 @@ spellcheck:
 	bin/spell_check_java.sh
 
 # target to do a syntax check of fz files.
-# currently only examples/ are checked.
+# currently only code in bin/ and examples/ are checked.
 .PHONY: syntaxcheck
 syntaxcheck: min-java
-	find ./examples/ -name '*.fz' -print0 | xargs -0L1 $(FZ) -modules=clang,java.base,java.datatransfer,java.xml,java.desktop -noBackend
-	find ./bin/ -name '*.fz' -print0 | xargs -0L1 $(FZ) -modules=clang,java.base,java.datatransfer,java.xml,java.desktop -noBackend
+	find ./examples/ -name '*.fz' -print0 | xargs -0L1 $(FZ) -modules=terminal,clang,java.base,java.datatransfer,java.xml,java.desktop -noBackend
+	find ./bin/ -name '*.fz' -print0 | xargs -0L1 $(FZ) -modules=terminal,clang,java.base,java.datatransfer,java.xml,java.desktop -noBackend
 
 .PHONY: add_simple_test
 add_simple_test: no-java

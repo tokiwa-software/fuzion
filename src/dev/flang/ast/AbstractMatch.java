@@ -112,24 +112,6 @@ public abstract class AbstractMatch extends ExprWithPos
 
 
   /**
-   * visit all the expressions within this Match.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited expressions
-   */
-  public void visitExpressions(ExpressionVisitor v)
-  {
-    subject().visitExpressions(v);
-    super.visitExpressions(v);
-    var c = cases();
-    for (int i = 0; i < c.size(); i++)
-      {
-        c.get(i).visitExpressions(this, v);
-      }
-  }
-
-
-  /**
    * type returns the type of this expression or Types.t_ERROR if the type is
    * still unknown, i.e., before or during type resolution.
    *

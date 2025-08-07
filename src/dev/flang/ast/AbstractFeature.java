@@ -81,6 +81,22 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
       return values()[ordinal];
     }
+
+    @Override
+    public String toString()
+    {
+      return switch (this)
+        {
+          case Routine           -> "routine";
+          case Field             -> "field";
+          case TypeParameter     -> "type parameter";
+          case OpenTypeParameter -> "open type parameter";
+          case Intrinsic         -> "intrinsic";
+          case Abstract          -> "abstract";
+          case Choice            -> "choice";
+          case Native            -> "native";
+        };
+    }
   }
 
 
@@ -100,16 +116,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   public static final AbstractType[] HAND_DOWN_FAILED = new AbstractType[0];
 
-
-  /*------------------------  static variables  -------------------------*/
-
-
-  /**
-   * Counter for assigning unique names to cotype() results. This is
-   * currently used only for non-constructors since they do not create a type
-   * name.
-   */
-  static int _cotypeId_ = 0;
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -144,21 +150,15 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * cached result of typeArguments();
-   */
-  private List<AbstractFeature> _typeArguments = null;
-
-
-  /**
    * cached result of cotype()
    */
-  private AbstractFeature _cotype = null;
+  protected AbstractFeature _cotype = null;
 
 
   /**
    * The formal generic arguments of this feature, cached result of generics()
    */
-  protected FormalGenerics _generics;
+  private FormalGenerics _generics;
 
 
   /**
@@ -402,23 +402,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * get a reference to the outermost feature.
-   */
-  private AbstractFeature universe()
-  {
-    if (PRECONDITIONS) require
-      (state().atLeast(State.LOADED));
-
-    AbstractFeature r = this;
-    while (!r.isUniverse() && r != Types.f_ERROR)
-      {
-        r = r.outer();
-      }
-    return r;
-  }
-
-
-  /**
    * is this the outermost feature?
    */
   public boolean isUniverse()
@@ -489,7 +472,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     var result = featureName();
     if (hasOpenGenericsArgList(res))
       {
-        var argCount = arguments().size() + actualGenerics.size() - outer().generics().list.size();
+        var argCount = arguments().size() + actualGenerics.size() - outer().typeArguments().size();
         if (CHECKS) check
           (Errors.any() || argCount >= 0);
         if (argCount < 0)
@@ -507,10 +490,8 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * Return the state of this feature.
    *
    * This is only relevant for ast.Feature to document the resolution state.
-   *
-   * NYI: Remove, replace by Resolution.state(Feature).
    */
-  public State state()
+  State state()
   {
     return State.RESOLVED;
   }
@@ -562,7 +543,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     else
       {
         result = null;
-        AbstractCall lastP = null;
         for (var p: inherits())
           {
             if (CHECKS) check
@@ -570,11 +550,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
             if (p.calledFeature().isChoice())
               {
-                if (lastP != null)
-                  {
-                    AstErrors.repeatedInheritanceOfChoice(p.pos(), lastP.pos());
-                  }
-                lastP = p;
                 result = p.calledFeature().isBaseChoice()
                   ? p.actualTypeParameters()
                   : p.calledFeature().choiceGenerics();
@@ -622,7 +597,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     AbstractFeature o = this;
     while (o != null && !result)
       {
-        for (var g : o.generics().list)
+        for (var g : o.typeArguments())
           {
             if (g.isOpenTypeParameter())
               {
@@ -786,7 +761,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
                                               o.generics().asActuals().map(that::rebaseTypeForCotype)),
                                 res, that, null);
 
-    var tf = cotype(res);
+    var tf = res.cotype(this);
     return new Call(p,
                     oc,
                     typeParameters,
@@ -840,158 +815,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     t = t.applyTypePars(this, tl);
     t = t.clone(this);
     return t;
-  }
-
-
-  /**
-   * For every feature 'f', this produces the corresponding type feature
-   * 'f.type'.  This feature inherits from the abstract type features of all
-   * direct ancestors of this, and, if there are no direct ancestors (for
-   * Object), this inherits from 'Type'.
-   *
-   * @param res Resolution instance used to resolve this for types.
-   *
-   * @return The feature that should be the direct ancestor of this feature's
-   * type feature.
-   *
-   * NYI: CLEANUP: move to resolution
-   */
-  public AbstractFeature cotype(Resolution res)
-  {
-    if (PRECONDITIONS) require
-      (res != null,
-       Errors.any() || !isUniverse(),
-       Errors.any() || res.state(this).atLeast(State.FINDING_DECLARATIONS),
-       !isCotype());
-
-    if (_cotype == null)
-      {
-        if (hasCotype())
-          {
-            _cotype = cotype();
-          }
-        else if (isUniverse())
-          {
-            if (CHECKS) check
-              (Errors.any());
-            _cotype = Types.f_ERROR;
-          }
-        else
-          {
-            var name = featureName().baseName() + ".";
-            if (!isConstructor() && !isChoice())
-              {
-                name = name + "_" + (_cotypeId_++) + "_" + res._module.name();
-              }
-            name = name + FuzionConstants.TYPE_NAME;
-
-            var p = pos();
-            var inh = cotypeInherits(res);
-            var typeArg = new Feature(p,
-                                      Visi.PRIV,
-                                      0,
-                                      selfType(),
-                                      FuzionConstants.COTYPE_THIS_TYPE,
-                                      Contract.EMPTY_CONTRACT,
-                                      Impl.TYPE_PARAMETER)
-              {
-                @Override
-                public boolean isCoTypesThisType()
-                {
-                  return true;
-                }
-              };
-            var typeArgs = new List<AbstractFeature>(typeArg);
-            for (var t : typeArguments())
-              {
-                var i = t.isOpenTypeParameter() ? Impl.TYPE_PARAMETER_OPEN
-                                                : Impl.TYPE_PARAMETER;
-                var constraint0 = t instanceof Feature tf ? tf.returnType().functionReturnType() : t.resultType();
-                var constraint = rebaseTypeForCotype(constraint0);
-                var ta = new Feature(p, t.visibility(), t.modifiers() & FuzionConstants.MODIFIER_REDEFINE, constraint, t.featureName().baseName(),
-                                     Contract.EMPTY_CONTRACT,
-                                     i);
-                typeArgs.add(ta);
-              }
-
-            if (inh.isEmpty() && !Errors.any())
-              { // let `Any.type` inherit from `Type`
-                if (CHECKS) check
-                  (this instanceof Feature && featureName().baseName().equals(FuzionConstants.ANY_NAME));
-                inh.add(new Call(pos(), FuzionConstants.TYPE_FEAT));
-              }
-            existingOrNewCotype(res, name, typeArgs, inh);
-          }
-      }
-    return _cotype;
-  }
-
-
-  /**
-   * Helper method for cotype(res) to create the list of inherits calls of
-   * this' type feature.
-   *
-   * @param res Resolution instance used to resolve this for types.
-   */
-  private List<AbstractCall> cotypeInherits(Resolution res)
-  {
-    if (PRECONDITIONS) require
-      (state().atLeast(State.RESOLVED_INHERITANCE));
-
-    return inherits()
-      .stream()
-      .filter(pc -> pc.calledFeature() != Types.f_ERROR)
-      .map(pc -> pc.cotypeInheritanceCall(res, this))
-      .collect(List.collector());
-  }
-
-
-  /**
-   * Helper method for cotype to create a new feature with given name and
-   * inherits clause iff no such feature exists in outer().cotype().
-   *
-   * The new type feature will be stored in _cotype.
-   *
-   * @param res Resolution instance used to resolve this for types.
-   *
-   * @param name the name of the type feature to be created
-   *
-   * @param typeArgs arguments of the type feature.
-   * NYI: OPTIMIZATION: typeArgs should be determined within this method and
-   * only when needed.
-   *
-   * @param inh the inheritance clause of the new type feature.
-   */
-  private void existingOrNewCotype(Resolution res, String name, List<AbstractFeature> typeArgs, List<AbstractCall> inh)
-  {
-    if (PRECONDITIONS) require
-      (!isUniverse());
-
-    var outerType = outer().isUniverse()    ? universe() :
-                    outer().isCotype() ? outer()
-                                            : outer().cotype(res);
-
-    _cotype = res
-      ._module
-      .declaredOrInheritedFeatures(outerType,
-                                   FeatureName.get(name, typeArgs.size()))
-      .getFirstOrNull();
-
-    if (_cotype == null)
-      {
-        var p = pos();
-        var cotype = new Feature(p, visibility().typeVisibility(), 0, NoType.INSTANCE, new List<>(name), typeArgs,
-                                      inh,
-                                      Contract.EMPTY_CONTRACT,
-                                      new Impl(p, new Block(new List<>()), Impl.Kind.Routine));
-
-        // we need to set _cotype early to avoid endless recursion during
-        // res._module.addCotype for `Any.type`:
-        _cotype = cotype;
-
-        cotype._cotypeOrigin = this;
-        res._module.addCotype(outerType, cotype);
-      }
   }
 
 
@@ -1113,9 +936,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     if (PRECONDITIONS) require
       (state().atLeast(State.FINDING_DECLARATIONS));
 
-    var o = isUniverse() || outer().isUniverse() ? null : outer().selfType().asThis();
+    var o = isUniverse() || outer().isUniverse() ? null : outer().selfType();
     var g = generics().asActuals();
-    var result = ResolvedNormalType.create(g, g, o, this);
+    var result = ResolvedNormalType.create(g, o, this);
 
     if (POSTCONDITIONS) ensure
       (result != null,
@@ -1395,7 +1218,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
             else
               {
                 var actualTypes = c.actualTypeParameters();
-                actualTypes = FormalGenerics.resolve(res, actualTypes, heir);
+                actualTypes = res == null ? actualTypes : res.resolveTypes(actualTypes, heir.context());
                 ti = ti.applyTypePars(c.calledFeature(), actualTypes);
                 a[i] = ti;
               }
@@ -1549,7 +1372,8 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       !isField() &&
       !isChoice() &&
       !isUniverse() &&
-      !outer().isUniverse();
+      !outer().isUniverse() &&
+      !isTypeParameter();
   }
 
 
@@ -1573,24 +1397,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     if (isRoutine())
       {
         code().visit(fv, this);
-      }
-  }
-
-
-  /**
-   * Call v.action(s) on all expressions s within this feature.
-   *
-   * @param v the action to be performed on the expressions.
-   */
-  public void visitExpressions(ExpressionVisitor v)
-  {
-    for (var c: inherits())
-      {
-        c.visitExpressions(v);
-      }
-    if (isRoutine())
-      {
-        code().visitExpressions(v);
       }
   }
 
@@ -1705,24 +1511,19 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   /**
    * List of arguments that are types, i.e., not type parameters or effects.
    */
+  private List<AbstractFeature> _typeArguments;
+  private int taCachedSize = -1;
   public List<AbstractFeature> typeArguments()
   {
-    if (_typeArguments == null)
+    // need to update when arguments change (free types)
+    if (arguments().size() != taCachedSize)
       {
-        var args = arguments();
-        if (args.stream().anyMatch(a -> a.isTypeParameter()))
-          {
-            _typeArguments = new List<>();
-            _typeArguments.addAll(args.stream().filter(a -> a.isTypeParameter()).toList());
-          }
-        else if (args.stream().anyMatch(a -> !a.isTypeParameter()))
-          {
-            _typeArguments = new List<>();
-          }
-        else
-          {
-            _typeArguments = args;
-          }
+        taCachedSize = arguments().size();
+        _typeArguments = arguments()
+          .stream()
+          .filter(a -> a.isTypeParameter())
+          .collect(List.collector());
+        _typeArguments.freeze();
       }
     return _typeArguments;
   }
@@ -1754,17 +1555,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   {
     if (_generics == null)
       {
-        // Recreate FormalGenerics from typeParameters
-        // NYI: Remove, FormalGenerics should use AbstractFeature.typeArguments() instead of its own list of Generics.
-        if (typeArguments().isEmpty())
-          {
-            _generics = FormalGenerics.NONE;
-          }
-        else
-          {
-            // NYI: use this
-            _generics = new FormalGenerics(typeArguments());
-          }
+        _generics = new FormalGenerics(this);
       }
     return _generics;
   }
@@ -1902,15 +1693,21 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   public String toString()
   {
-    return visibility() + " " +
+    return (visibility() + " " +
       FuzionConstants.modifierToString(modifiers()) +
       (isCotype() ? "type." : "") +
       featureName().baseNameHuman() +
       (arguments().isEmpty() ? "" : "("+arguments()+")") + " " +
-      (state().atLeast(State.RESOLVED_TYPES) ? resultType() : "***not yet known***") + " " +
+      (state().atLeast(State.TYPES_INFERENCED) ? resultType() : "#unknown") + " " +
       (inherits().isEmpty() ? "" : ": " + inherits() + " ") +
-      ((contract() == Contract.EMPTY_CONTRACT) ? "" : "🤝 ")
-       +  "is " + kind();
+      ((contract() == Contract.EMPTY_CONTRACT) ? "" : "<contract> ") +
+      (switch (kind())
+        {
+          case Abstract,Intrinsic,Native -> "=> " + kind();
+          case Choice, Routine -> "is";
+          case Field -> isArgument() ? "" : ":= ...";
+          case OpenTypeParameter, TypeParameter -> "(type parameter)";
+        })).trim();
 
   }
 
@@ -1941,9 +1738,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   /**
    * @return RefType if Feature is a reference otherwise ValueType
    */
-  public TypeMode defaultTypeMode()
+  public TypeKind defaultTypeKind()
   {
-    return isRef() ? TypeMode.RefType : TypeMode.ValueType;
+    return isRef() ? TypeKind.RefType : TypeKind.ValueType;
   }
 
 
@@ -2054,10 +1851,10 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
        outer().generics().sizeMatches(actuals));
 
     if (CHECKS) check
-      (outer().generics().list.getLast() == this);
+      (outer().typeArguments().getLast() == this);
 
     return outer().generics().sizeMatches(actuals)
-      ? new List<>(actuals.subList(outer().generics().list.size()-1, actuals.size()).iterator())
+      ? new List<>(actuals.subList(outer().typeArguments().size()-1, actuals.size()).iterator())
       : new List<AbstractType>(Types.t_ERROR);
   }
 
@@ -2085,7 +1882,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     var o = outer();
     if (!isThisTypeInCotype() && o.isCotype())
       {
-        result = o.cotypeOrigin().generics().list.get(typeParameterIndex()-1);
+        result = o.cotypeOrigin().typeArguments().get(typeParameterIndex()-1);
       }
     return result;
   }

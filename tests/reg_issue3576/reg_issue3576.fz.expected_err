@@ -1,5 +1,12 @@
 
---CURDIR--/reg_issue3576.fz:24:22: error 1: Incompatible types in assignment
+--CURDIR--/reg_issue3576.fz:24:16: error 1: Argument name expected in left hand side (before '->') of lambda expression
+_ ()->i32 :=  (a b)->
+---------------^
+Instead, found expression: 'a b'
+To solve this, replace the expression with an argument name like 'x' and use that variable in the implementation of the right hand side of the lambda expression.
+
+
+--CURDIR--/reg_issue3576.fz:24:22: error 2: Incompatible types in assignment
 _ ()->i32 :=  (a b)->
 ---------------------^
 assignment to field : 'λ.call.result'
@@ -10,4 +17,4 @@ for value assigned  :
 
 To solve this, you could change the type of the target 'λ.call.result' to 'unit' or convert the type of the assigned value to 'i32'.
 
-one error.
+2 errors.
