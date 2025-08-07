@@ -2002,14 +2002,10 @@ public class AstErrors extends ANY
 
   static void noActualCallFound(AbstractFeature formalArg)
   {
-    // only show error for features that are not required to have a type specified manually
-    if (!formalArg.outer().explicitTypeRequired())
-    {
-        error(formalArg.pos(),
-              "Type inference from actual arguments failed since no actual call was found",
-              "For the formal argument " + s(formalArg) + " " +
-              "the type can only be derived if there is a call to " + s(formalArg.outer()) + ".");
-      }
+    error(formalArg.pos(),
+          "Type inference from actual arguments failed since no actual call was found",
+          "For the formal argument " + s(formalArg) + " " +
+          "the type can only be derived if there is a call to " + s(formalArg.outer()) + ".");
   }
 
 
