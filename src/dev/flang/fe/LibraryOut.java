@@ -420,7 +420,7 @@ class LibraryOut extends ANY
    *   |        |        |               | hasRT = !isConstructor && !isChoice           |
    *   |        |        |               |         && !isTypeParameter                   |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | O      | 1      | int           | open type Feature index                       |
+   *   | O=1    | 1      | int           | open type Feature index                       |
    *   |        |        |               | O = hasRT && resultType.isOpenGeneric()       |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | isType | 1      | Type          | constraint of (open) type parameters          |

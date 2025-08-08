@@ -885,7 +885,7 @@ Feature
    | C=1      | 1      | Feature       | the cotype origin
    | hasRT    | 1      | Type          | optional result type,
                                          hasRT = !isConstructor && !isChoice && !isTypeParameter
-   | O        | 1      | int           | open type Feature index,
+   | O=1      | 1      | int           | open type Feature index,
                                          O = hasRT && resultType.isOpenGeneric()
    | isTypeParameter | 1 | Type        | constraint of (open) type parameters
 .2+| true NYI! !isField? !isIntrinsc
@@ -936,7 +936,7 @@ Feature
    *   |        |        |               | hasRT = !isConstructor && !isChoice           |
    *   |        |        |               |         && !isTypeParameter                   |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | O      | 1      | int           | open type Feature index                       |
+   *   | O=1    | 1      | int           | open type Feature index                       |
    *   |        |        |               | O = hasRT && resultType.isOpenGeneric()       |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | isType | 1      | Type          | constraint of (open) type parameters          |
