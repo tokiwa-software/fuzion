@@ -513,7 +513,7 @@ public abstract class Module extends ANY implements FeatureLookup
    */
   public void forEachDeclaredOrInheritedFeature(AbstractFeature af, Consumer<AbstractFeature> fun)
   {
-    for (var l: declaredOrInheritedFeatures(af).values())
+    for (var l: new List<List<AbstractFeature>>(declaredOrInheritedFeatures(af).values().iterator()))
       {
         l.forEach(fun);
       }
