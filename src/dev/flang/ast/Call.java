@@ -315,7 +315,7 @@ public class Call extends AbstractCall
    *
    * @param calledFeature
    */
-  Call(SourcePosition pos,
+  public Call(SourcePosition pos,
        Expr target,
        List<AbstractType> generics,
        List<Expr> actuals,
