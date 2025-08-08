@@ -1432,6 +1432,23 @@ public class Feature extends AbstractFeature
   }
 
 
+  public void propagateResultType(Resolution res)
+  {
+    // NYI: BUG: this currently does not work here:
+    // since resultTypeIfPresentUrgent lets numliteral fix their types
+    //
+    // var a = resultTypeIfPresentUrgent(res, false);
+    if (isRoutine() &&
+        (_returnType instanceof FunctionReturnType frt) &&
+        frt.functionReturnType(false) != null &&
+        // NYI: BUG: without this, some issue in lock_free module
+        !featureName().isInternal())
+      {
+        _impl.propagateExpectedType(res, context(), _returnType.functionReturnType(false));
+      }
+  }
+
+
   /**
    * Perform an action as soon as this feature has reached
    * State.atLeast(State.RESOLVED_DECLARATIONS).  Perform the action immediately
@@ -1541,6 +1558,26 @@ public class Feature extends AbstractFeature
     if (_state == State.RESOLVED_DECLARATIONS)
       {
         _state = State.RESOLVING_TYPES;
+
+
+        // NYI: BUG: does not work currently
+        // because propagateExpectedType is misused
+        // to add result field currently
+        //
+        // visit(new FeatureVisitor()
+        //   {
+        //   @Override
+        //     public Expr action(Feature f, AbstractFeature outer)
+        //     {
+        //       if (f.impl().hasInitialValue())
+        //         {
+        //           f.propagateResultType(res);
+        //         }
+        //       return super.action(f, outer);
+        //     }
+        //   });
+
+        propagateResultType(res);
 
         if (Contract.requiresPreConditionsFeature(this) && preFeature() == null)
           {
