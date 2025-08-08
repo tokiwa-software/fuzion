@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import java.util.ListIterator;
+import java.util.function.Supplier;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
@@ -2337,6 +2338,15 @@ public class Call extends AbstractCall
    */
   boolean needsToInferTypeParametersFromArgs()
   {
+    if (_generics == NO_GENERICS &&
+        _propagatedType != null &&
+        _propagatedType.isNormalType() &&
+        // if features do not match we will get an error later (in checktypes)
+        _propagatedType.feature() == _calledFeature)
+      {
+        _generics = new List<>(_propagatedType.generics());
+      }
+
     return _calledFeature != null && (_generics == NO_GENERICS || _generics.stream().anyMatch(g -> g.containsUndefined(false))) && !_calledFeature.typeArguments().isEmpty();
   }
 
@@ -2352,6 +2362,12 @@ public class Call extends AbstractCall
    * context and resolve will have to be repeated.
    */
   protected Context _resolvedFor;
+
+
+  /**
+   * The type this call should result in.
+   */
+  private AbstractType _propagatedType;
 
 
   /**
@@ -2674,6 +2690,34 @@ public class Call extends AbstractCall
             _target = _target.propagateExpectedType(res, context, t, null);
           }
       }
+  }
+
+
+  /**
+   * During type inference: Inform this expression that it is used in an
+   * environment that expects the given type.  In particular, if this
+   * expression's result is assigned to a field, this will be called with the
+   * type of the field.
+   *
+   * @param res this is called during type inference, res gives the resolution
+   * instance.
+   *
+   * @param context the source code context where this Expr is used
+   *
+   * @param t the expected type.
+   *
+   * @param from for error output: if non-null, produces a String describing
+   * where the expected type came from.
+   *
+   * @return either this or a new Expr that replaces thiz and produces the
+   * result. In particular, if the result is assigned to a temporary field, this
+   * will be replaced by the expression that reads the field.
+   */
+  @Override
+  Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
+  {
+    _propagatedType = t;
+    return super.propagateExpectedType(res, context, t, from);
   }
 
 
