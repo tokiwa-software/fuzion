@@ -658,22 +658,11 @@ class Clazz extends ANY implements Comparable<Clazz>
       {
         t = _type.generics().get(0).actualType(t);
       }
-    else if (outer() != null)
+    else if (_outer != null)
       {
-        t = outer().replaceThisTypeForCotype(t);
+        t = _outer.replaceThisTypeForCotype(t);
       }
     return t;
-  }
-
-
-  /**
-   * Get outer of this clazz via outerRef or _outer
-   */
-  private Clazz outer()
-  {
-    return outerRef() != null
-      ? outerRef().resultClazz()
-      : _outer;
   }
 
 
@@ -1836,12 +1825,12 @@ class Clazz extends ANY implements Comparable<Clazz>
     /* starting with feature(), follow outer references
      * until we find o.
      */
-    var of = handDown(o, NO_SELECT, (t1,t2)->{}, inh).feature();
+    var of = handDown(o, NO_SELECT, (_,_)->{}, inh).feature();
     var res = this;
     var i = feature();
     while (i != null && i != of)
       {
-        res = res.outer();
+        res = res._outer;
         i = res == null
           ? null
           : res.feature();
@@ -2002,8 +1991,7 @@ class Clazz extends ANY implements Comparable<Clazz>
           }
         t = t.applyTypeParsLocally(child._type, select);
         t = t.replace_this_type_by_actual_outer_locally(child._type, foundRef);
-        child = child.outerRef() != null ? child.outerRef().resultClazz()
-                                         : child._outer;
+        child = child._outer;
         parent = childf.outer();
       }
     if (CHECKS) check
