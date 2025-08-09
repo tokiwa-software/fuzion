@@ -2006,13 +2006,13 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @return the type of t's type.
    */
-  public AbstractType typeType()
+  public AbstractType cotypeType()
   {
     if (PRECONDITIONS) require
       (!isGenericArgument(),
        feature().state().atLeast(State.RESOLVED));
 
-    return typeType(null);
+    return cotypeType(null);
   }
 
 
@@ -2025,7 +2025,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @return the type of t's type.
    */
-  AbstractType typeType(Resolution res)
+  AbstractType cotypeType(Resolution res)
   {
     if (PRECONDITIONS) require
       (!isGenericArgument(),
@@ -2050,7 +2050,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         if (CHECKS) check
           (tf != null);
         result = ResolvedNormalType.create(g,
-                                           outerTypeType(res),
+                                           outerCotypeType(res),
                                            tf);
       }
     return result;
@@ -2058,17 +2058,17 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * Create typeType of the outer of this type.
-   * In case this is a this-type, the typeType of the features outer.
+   * Create cotypeType of the outer of this type.
+   * In case this is a this-type, the cotypeType of the features outer.
    *
    * @param res Resolution instance used to resolve the type feature that might
    * need to be created.
    */
-  private AbstractType outerTypeType(Resolution res)
+  private AbstractType outerCotypeType(Resolution res)
   {
     return isThisType()
-      ? feature().outer().selfType().typeType(res)
-      : outer().typeType(res);
+      ? feature().outer().selfType().cotypeType(res)
+      : outer().cotypeType(res);
   }
 
 
@@ -2321,8 +2321,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     else
       {
         var f = feature();
-        var typeType = f.isCotype();
-        if (typeType)
+        var cotypeType = f.isCotype();
+        if (cotypeType)
           {
             f = f.cotypeOrigin();
           }
@@ -2352,13 +2352,13 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           {
             result = result + ".this";
           }
-        if (typeType)
+        if (cotypeType)
           {
             result = result + ".type";
           }
         if (isNormalType())
           {
-            var skip = typeType;
+            var skip = cotypeType;
             for (var g : generics())
               {
                 if (!skip) // skip first generic 'THIS#TYPE' for types of type features.

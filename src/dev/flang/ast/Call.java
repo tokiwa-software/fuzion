@@ -1519,7 +1519,7 @@ public class Call extends AbstractCall
           }
         else if (!t.isGenericArgument())
           {
-            t = t.typeType(res);
+            t = t.cotypeType(res);
           }
         t = t.resolve(res, tt.feature().context());
       }
