@@ -1922,14 +1922,14 @@ A ((Choice)) declaration must not contain a result type.
       {
         _state = State.TYPES_INFERENCING;
 
-       if (outer() instanceof Feature o)
+        if (outer() instanceof Feature o)
           {
             o.typeInference(res);
           }
 
-        _resultType = resultTypeIfPresentUrgent(res, true);
+        var rt = resultTypeIfPresentUrgent(res, true);
 
-        if (_resultType.isThisType() && _resultType.feature() == this)
+        if (rt.isThisType() && rt.feature() == this)
           { // we are in the case of issue #1186: A routine returns itself:
             //
             //  a => a.this
@@ -2351,54 +2351,57 @@ A ((Choice)) declaration must not contain a result type.
       {
         result = _resultType;
       }
-    else if (outer() != null && this == outer().resultField())
-      {
-        result = outer().resultTypeIfPresent(res);
-      }
-    else if (_impl.typeInferable())
-      {
-        if (CHECKS) check
-          (!state().atLeast(State.TYPES_INFERENCED));
-        result = _impl.inferredType(res, this, urgent);
-      }
-    else if (_returnType.isConstructorType())
-      {
-        result = selfType();
-      }
-    else if (_returnType == NoType.INSTANCE)
-      {
-        if (urgent)
-          {
-            AstErrors.failedToInferResultType(this);
-          }
-        result = urgent ? Types.t_ERROR : null;
-      }
-    else if (isOuterRef())
-      {
-        result = outer().outer().thisType(outer().isFixed());
-      }
     else
       {
-        result = _returnType.functionReturnType(true);
-        if (result != null && result.isIncompleteType())
+        if (outer() != null && this == outer().resultField())
           {
-            // we need to resolve _outer which contains
-            // this case field before having a usable functionReturnType
-            res.resolveTypes(_outer);
+            result = outer().resultTypeIfPresent(res);
           }
-        result = _returnType.functionReturnType();
-        result = urgent && result == null ? Types.t_ERROR : result;
-      }
-    if (res != null && result != null && outer() != null)
-      {
-        result = result.resolve(res, outer().context());
-      }
+        else if (_impl.typeInferable())
+          {
+            if (CHECKS) check
+              (!state().atLeast(State.TYPES_INFERENCED));
+            result = _impl.inferredType(res, this, urgent);
+          }
+        else if (_returnType.isConstructorType())
+          {
+            result = selfType();
+          }
+        else if (_returnType == NoType.INSTANCE)
+          {
+            if (urgent)
+              {
+                AstErrors.failedToInferResultType(this);
+              }
+            result = urgent ? Types.t_ERROR : null;
+          }
+        else if (isOuterRef())
+          {
+            result = outer().outer().thisType(outer().isFixed());
+          }
+        else
+          {
+            result = _returnType.functionReturnType(true);
+            if (result != null && result.isIncompleteType())
+              {
+                // we need to resolve _outer which contains
+                // this case field before having a usable functionReturnType
+                res.resolveTypes(_outer);
+              }
+            result = _returnType.functionReturnType();
+            result = urgent && result == null ? Types.t_ERROR : result;
+          }
+        if (res != null && result != null && outer() != null)
+          {
+            result = result.resolve(res, outer().context());
+          }
 
-    if (result != null)
-      {
-        // FORWARD_CYCLIC should be returned only once.
-        // We then want to return t_ERROR.
-        _resultType = result == Types.t_FORWARD_CYCLIC ? Types.t_ERROR : result;
+        if (result != null)
+          {
+            // FORWARD_CYCLIC should be returned only once.
+            // We then want to return t_ERROR.
+            _resultType = result == Types.t_FORWARD_CYCLIC ? Types.t_ERROR : result;
+          }
       }
 
     if (POSTCONDITIONS) ensure
