@@ -403,7 +403,7 @@ public class Function extends AbstractLambda
   private AbstractType refineResultType(Resolution res, Context context, AbstractType frmlRt, AbstractType lmbdRt)
   {
     var result = lmbdRt;
-    if (!frmlRt.isGenericArgument())
+    if (!frmlRt.isGenericArgument() && result != Types.t_ERROR)
       {
         if (frmlRt.isChoice()
             // NYI: UNDER DEVELOPMENT: We may want to go further here and support more than

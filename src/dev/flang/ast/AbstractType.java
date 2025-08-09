@@ -2242,7 +2242,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         var no = o != null ? f.apply(o) : null;
         if (ng != g || no != o)
           {
-            result = ResolvedNormalType.create(this, ng, unresolvedGenerics(), no);
+            result = replaceGenericsAndOuter(ng, no);
           }
       }
     return result;
