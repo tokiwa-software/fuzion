@@ -673,20 +673,24 @@ public class AstErrors extends ANY
           }
         else
           {
+            AbstractType originalFrom;
             if (originalArg.isTypeParameter())
               {
                 what = "type parameter constraint";
                 what2 = "constraint of type parameter";
+                originalFrom = originalArg.constraint();
+                is = s(redefinedArg.constraint());
               }
             else
               {
                 what = "argument type";
                 what2 = "type of argument";
+                originalFrom = originalArg.resultType();
+                is = s(redefinedArg.resultType());
               }
-            is = s(redefinedArg.resultType());
             // originalArg.resultType() might be a type parameter that has been replaced by originalArgType, so
             // we explain where this type comes from:
-            should_be1 = typeWithFrom(originalArgType, originalArg.resultType());
+            should_be1 = typeWithFrom(originalArgType, originalFrom);
             should_be2 = s(originalArgType);
           }
         error(redefinedArg.pos(),
