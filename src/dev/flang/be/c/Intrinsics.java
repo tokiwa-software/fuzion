@@ -124,7 +124,7 @@ public class Intrinsics extends ANY
                 {
                   var res = c._names.newTemp();
                   code = CStmnt.seq(locked(CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, f),
-                                                      CStmnt.seq(res.decl("bool", res),
+                                                      CStmnt.seq(CLocal.decl("bool", res),
                                                                  compareValues(c, tmp, expected, rc, res),
                                                                  CStmnt.iff(res,
                                                                             f.assign(new_value))))),
@@ -945,7 +945,7 @@ public class Intrinsics extends ANY
     put("fuzion.jvm.create_jvm", (c,cl,outer,in) -> {
       return  C.JAVA_HOME == null
         ? noJava
-        : CExpr.call("fzE_create_jvm", new List<>(A0.castTo("char *")));
+        : CExpr.call("fzE_create_jvm", new List<>(A0.castTo("char *"))).ret();
     });
     put("fuzion.jvm.destroy_jvm", (c,cl,outer,in) -> {
       return  C.JAVA_HOME == null

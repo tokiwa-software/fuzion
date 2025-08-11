@@ -27,7 +27,7 @@ JAVA = java --enable-preview --enable-native-access=ALL-UNNAMED
 MIN_JAVA_VERSION = 21 # NYI: when updating to Java version 22 or higher: remove this hack (revert #4264) and remove option '--enable-preview'
 JAVA_VERSION = $(shell v=$$(java -version 2>&1 | grep 'version' | cut -d '"' -f2 | cut -d. -f1 | grep -o '[[:digit:]]*'); [ $$v -lt $(MIN_JAVA_VERSION) ] && echo $(MIN_JAVA_VERSION) || echo $$v)
 # NYI: CLEANUP: remove some/all of the exclusions
-LINT = -Xlint:all,-preview,-this-escape,-rawtypes,-serial,-static,-cast,-unchecked,-fallthrough
+LINT = -Xlint:all,-preview,-serial
 JAVAC = javac $(LINT) -encoding UTF8 --release $(JAVA_VERSION) --enable-preview
 FZ_SRC = $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 SRC = $(FZ_SRC)/src
@@ -1373,7 +1373,7 @@ spellcheck:
 	bin/spell_check_java.sh
 
 # target to do a syntax check of fz files.
-# currently only examples/ are checked.
+# currently only code in bin/ and examples/ are checked.
 .PHONY: syntaxcheck
 syntaxcheck: min-java
 	find ./examples/ -name '*.fz' -print0 | xargs -0L1 $(FZ) -modules=terminal,clang,java.base,java.datatransfer,java.xml,java.desktop -noBackend

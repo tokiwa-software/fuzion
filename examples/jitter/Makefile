@@ -17,15 +17,19 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature time.stopwatch
+#  Source code of Fuzion pythagorean_triple example Makefile
 #
-#  Author: Michael Lill (michael.lill@tokiwa.software)
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# stopwatch measures the execution duration of f
-public stopwatch(f () -> unit) time.duration =>
-  start := nano.read
-  f()
-  end := nano.read
-  end - start
+all: jvm
+
+jvm:
+	../../bin/fz -modules=terminal jitter.fz
+
+c: jitter
+	./$^
+
+jitter:
+	../../bin/fz -modules=terminal -c -o=$@ jitter.fz

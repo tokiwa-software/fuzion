@@ -306,13 +306,12 @@ else
     if !out.ok
       say "{"*** FAILED".bold.red} out on $file"
       say out.out
-      exit 1
-    else if !err.ok
+    if !err.ok
       say "{"*** FAILED".bold.red} err on $file"
       say err.out
-      exit 1
-    else
+
+    if out.ok && err.ok
       say "{"PASSED".bold.green}."
-
-
+    else
+      exit 1
 

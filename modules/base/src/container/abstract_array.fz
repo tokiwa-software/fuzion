@@ -255,7 +255,7 @@ public abstract_array
 
   # returns a copy of this array as a mutable array
   #
-  public as_mutable(LM type : mutate) /* NYI: BUG: LM.array T*/ =>
+  public as_mutable(LM type : mutate) LM.array T =>
     data := fuzion.sys.internal_array_init T length
 
     # NYI: PERFORMANCE: copy complete array at once

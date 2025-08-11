@@ -1,0 +1,439 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature time.histogram
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# time.histogram -- feature to collect and output timing data
+#
+# This is particularly useful to analyse variations in release or
+# execution times of repeatedly executed tasks or events.
+#
+# For this, it distributes time.duration values into a list of
+# buckets that correspond to different ranges of durations.  These
+# buckets may be equally spaced (linear) or growing by an equal
+# factor (logarithmic).
+#
+# The use of buckets permits the collection of large numbers of
+# sampe durations since only the counts per bucket are recorded
+#
+public histogram(# title to be printed for this histogram
+                 public title String,
+
+                 # For measuring a periodic jitter, this gives the period.
+                 #
+                 # If the period is given it becomes possible to detect drift,
+                 # i.e, the actual times are measured relative to the expected
+                 # times for given `period`. A cumulative drift, i.e., an actual
+                 # period that is slightly longer or shorter in average, will add
+                 # up to a significant jitter.
+                 #
+                 # Note that periods like `1/60` cannot be traced accurately, the
+                 # rounding error in 16666666ns (or 16666667ns) will add up over
+                 # time!
+                 #
+                 public period option time.duration,
+
+                 # the maximum duration that will be recorded in this histogram
+                 #
+                 # if specified, the histogram will use a linear time scale from
+                 # 0 up to max_recorded
+                 #
+                 # if `nil`, the histogram will use a generic logarithmic time scale
+                 # from 1ns up to about 1day.
+                 #
+                 public max_recorded option time.duration,
+
+                 # number of initial recordings that should be ignored (i.e.,
+                 # that are considered to be part of a _warm up_ phase).
+                 #
+                 public ignore_first u64,
+
+                 # number of final recordings that should be ignored. This permits
+                 # errors introduces by starting of the shutdown process to be
+                 # ignored.
+                 #
+                 public ignore_last u64
+                 )
+is
+
+
+  # a local mutate instance we are using to modify our state
+  #
+  private local_mutate : mutate is
+
+
+  # get local mutate instance from env, install it if necessary
+  #
+  lm =>
+    # NYI: should be done via effect configuration file, see `effect.type.default`.
+    #
+    if !local_mutate.is_instated
+      local_mutate.default
+    local_mutate.env
+
+
+  # total number of measurements, including ignored ones.
+  #
+  total_number := lm.new (u64 0)
+
+
+  # buffer of measurements at the end that should be ignored.
+  #
+  ignore_last_buffer := lm.new_array ignore_last.as_i64 (option time.duration nil)
+
+
+  # current index to add new data to ignore_last_buffer
+  #
+  ignore_last_buffer_index := lm.new (i64 0)
+
+
+  # Number of distinct buckets that are recorded
+  #
+  num_buckets => i64 66
+
+
+  # Total number of samples recorded.  The values are not stored, only
+  # the counts for different value ranges corresponding to buckets are
+  # stored in buckets.
+  #
+  size := lm.new (u64 0)
+
+
+  # min and max recorded durations
+  #
+  min_ := lm.new (option time.duration) nil
+  max_ := lm.new (option time.duration) nil
+
+
+  # sum of recorded durations
+  #
+  sum := lm.new time.duration.zero
+
+
+  # sum of squares of recorded ns values
+  #
+  squares := lm.new 0.0
+
+
+  # time of first sample
+  #
+  start_time := lm.new (option time.instant) nil
+
+
+  # table of durations in each bucket, each entry gives the maximum duration for that index
+  #
+  # the last entry is always time.duration.max
+  #
+  table array time.duration :=
+    match max_recorded
+      mr time.duration => n := num_buckets.as_i32
+                          array n i->
+                            if i<n-1 then mr.times ((i+1).as_f64 / (num_buckets.as_f64-1))
+                                     else time.duration.max
+      nil              => log_table
+
+  check
+    debug: table.length = num_buckets.as_i32
+    debug: table[num_buckets.as_i32-1] = time.duration.max
+
+
+  # table of durations for logarithmic histogram
+  #
+  log_table
+  post
+    debug: result.length = num_buckets.as_i32
+  =>
+    step := 1.65  # step factor determined via trial and error
+    (1.0 :: *step).map f->(time.duration.ns 1 .times f)
+                  .dedup     # some lower values might be duplicates like 1ns*1.65=1ns
+                  .take num_buckets.as_i32-1
+                  .concat [time.duration.max]
+                  .as_array
+
+
+  # The frequency counts for each bucket
+  #
+  buckets := lm.new_array (indx time.duration.max)+1 (u64 0)
+
+
+  # create an empty histogram
+  #
+  public type.new(title String,
+                  max_recorded option time.duration,
+                  ignore_first, ignore_last u64
+                  ) time.histogram
+  =>
+    time.histogram title nil max_recorded ignore_first ignore_last
+
+
+
+  # Construct a new empty histogram for jitter on a known period using
+  #
+  public type.new(title String,
+                  period option time.duration,
+                  max_recorded option time.duration,
+                  ignore_first, ignore_last u64
+                  ) time.histogram
+  =>
+    time.histogram title period max_recorded ignore_first ignore_last
+
+
+  # Construct a new empty histogram for jitter
+  #
+  public type.new(title String,
+                  max_recorded option time.duration
+                  ) time.histogram
+  =>
+    time.histogram title nil max_recorded 0 0
+
+
+  u64.log2
+  post
+    debug: true || (val != 0: (u64 1 << result.as_u64) >= val > (u64 1 << result.as_u64-1)) # NYI: incorrect for val=1 / result=0
+    debug: (val =  0: result = -1)
+  =>
+    (val = 0) ? -1 : (val.highest_one_bit-1).ones_count
+
+
+  # search for index in table, i.e., the smallest index for which l <= table[result].
+  #
+  indx(l time.duration)
+  post
+    debug: result.as_i32 ∈ table.indices
+    debug: l <= table[result.as_i32]
+    debug: result = 0 || table[result.as_i32-1] < l
+  =>
+    # binary search in range s..e:
+    for
+      m := i64 0, (s+e)/2
+      v := l, table[m.as_i32]
+      s := i64 0      , l >  v ? m+1 : s
+      e := num_buckets, l <= v ? m   : e
+    while s < e
+    else
+      l <= v ? m : m+1
+
+
+  # for given index, what is the smallest duration
+  #
+  smallest(i i64) time.duration
+  pre
+    debug: i64 0 <= i < num_buckets
+  post
+    debug: indx result = i
+    debug: i = 0 || indx (result - time.duration.ns 1) = i-1
+  =>
+    if i=0 then
+      time.duration.zero
+    else
+      largest i-1 + time.duration.ns 1
+
+
+  # for given index, what is the largest duration
+  #
+  largest(i i64) time.duration
+  pre
+    debug: i64 0 <= i < num_buckets
+  post
+    debug: indx result = i
+    debug: indx (result + time.duration.ns 1) = i+1
+  =>
+    table[i.as_i32]
+
+
+  # record the given time instant, i.e., create the difference to the previous instant
+  # and record that
+  #
+  public add_instant(t time.instant) unit
+  =>
+    total_number <- total_number + 1
+    if total_number.get > ignore_first
+      match start_time.get
+        nil             => start_time <- t
+        st time.instant =>
+          match period
+            p time.duration => add (t - st - p*size)
+            nil             => start_time <- t
+                               add t-st
+
+
+  # record the given duration
+  #
+  # if `ignore_first` or `ignore_last` are non-zero, this will ignore the
+  # first or last records accordingly
+  #
+  public add(d time.duration) unit
+  =>
+    total_number <- total_number + 1
+    if total_number.get > ignore_first
+      if ignore_last > 0
+        ld := ignore_last_buffer[ignore_last_buffer_index]
+        ignore_last_buffer[ignore_last_buffer_index] := d
+        ignore_last_buffer_index <- (ignore_last_buffer_index.get = 0 ? ignore_last_buffer.length
+                                                                      : ignore_last_buffer_index.get)- 1
+        ld.bind add0 |> ignore
+      else
+        add0 d
+
+  # internal feature to record the given duration in its bucket
+  #
+  # this is called by `add` after handing `ignore_first` and `ignore_last`
+  #
+  private add0(d time.duration)
+  =>
+    i := indx d
+    buckets[i] := buckets[i] + 1
+    size <- size.get + 1
+    min_ <- min d (min_.or_else d)
+    max_ <- max d (max_.or_else d)
+    sum  <- sum.get + d
+    ns := d.nanos.as_f64
+    squares <- squares.get + ns * ns
+
+
+  # number of measurements in this histogram.
+  #
+  public count u64 => size.get
+
+
+  # Determine the minimum value in this histogram.
+  #
+  public min option time.duration => min_.get
+
+
+  # Determine the maximum value in this histogram.
+  #
+  public max option time.duration => max_.get
+
+
+  # Determine the average value in this histogram or 0 in case there are
+  # no recorded values.
+  #
+  public average time.duration
+  =>
+    if size.get > 0
+      sum.get.times 1.0/size.get.as_f64
+    else
+      time.duration.zero
+
+
+  # Determine the standard deviation of the difference of the recorded values
+  # in this histogram to a given value m, result is 0 in case there are no
+  # recorded values.
+  #
+  # result is `time.duration.zero` if no measurements were made yet
+  #
+  public sigma(# the expected value
+               m time.duration) time.duration
+  =>
+    n := size.get
+    if size.get > 0
+      #   sum((ti - m)^2)
+      # = sum(ti^2  - 2 * ti      * m +     m^2)
+      # = sum(ti^2) - 2 * sum(ti) * m + n * m^2
+      # = squares   - 2 * sum     * m + n * m^2
+      #
+      mf := m.nanos.as_f64
+      sumf := sum.nanos.as_f64
+      nf := n.as_f64
+      sqs := squares.get - 2.0 * sumf * mf + nf * mf * mf
+      ns := (sqs / nf).square_root.as_i64.as_u64
+      time.duration.ns ns
+    else
+      time.duration.zero
+
+
+  # Determine the standard deviation from the average of the
+  # difference of the values in this histogram to a given value m.
+  #
+  public sigma time.duration
+  =>
+    sigma average
+
+
+  # Find the highest count recorded for this histogram, or 0 if no times were recorded.
+  #
+  public highest u64
+  =>
+    buckets.indices.map i->buckets[i] .max.or_else 0
+
+
+  # Create a string with a graphical representation of this histogram.
+  #
+  public redef as_string String
+  =>
+    h := highest
+    if h > 0
+      titl := """
+              {"---  $title  ---".pad_center 78}
+              count
+              """
+      for
+        res := titl, res + str
+        c := h.log2, c-1
+      while c >= 0 do
+        units := " KMGTPEZY"; /* Kilo, Mega, Giga, Tera, etc. */
+        unit0 := min units.byte_length-1 c/10  # 2^10 is times 1024
+        cnt := u64 1 << (c - unit0 * 10).as_u64
+        str := for
+                 str1 := "{($cnt).pad_left 3}{units.substring unit0 unit0+1} ", str1 + str2 + str3
+                 i in buckets.indices
+                 str2 := i = num_buckets ? "       " : ""
+                 str3 := buckets[i].log2 < c ? " " : "*"
+               else
+                 str1 + "\n"
+      else
+        t2 := (i64 0 .. 64 : 8).map (i-> largest i .as_string.trim.pad_center 8)
+                               .as_string ""
+        bot :=    ("     |       |       |       |       |       |       |       |       |       |\n" +
+                    "  "+t2+"   >\n")
+        res + bot + "\n" + (" average |" +
+                            "   min   |" +
+                            "   max   |" +
+                            "  sigma  |" +
+                            "  count  |\n"+
+                            ($average()).pad_center 9 + "|" +
+                            ($min_     ).pad_center 9 + "|" +
+                            ($max_     ).pad_center 9 + "|" +
+                            ($sigma()  ).pad_center 9 + "|" +
+                            ($size     ).pad_center 9 + "|\n")
+    else
+      "not data"
+
+
+  # Create semicolon-separated CSV data for these measurments to import into Excel or
+  # OpenOffice. First lines will be descriptions.
+  #
+  public csv String
+  =>
+    h := highest
+    if h > 0
+      non_zero_buckets := buckets.indices.filter i->buckets[i]!=0
+      first := non_zero_buckets.first.get
+      last  := non_zero_buckets.last .get
+      ("from/ns;to/ns;count\n" +
+        (first..last).map i->"{smallest i .nanos};{largest i .nanos};{buckets[i]}"
+                     .as_string "\n"
+      )
+    else
+      ""

@@ -871,7 +871,12 @@ argType     : type
                                     else if (isTypePrefix())
                                       {
                                         i = Impl.FIELD;
-                                        t = type();
+                                        var ut = type();
+                                        if (skip("..."))
+                                          {
+                                            ut.setFollowedByDots();
+                                          }
+                                        t = ut;
                                       }
                                     else
                                       {
@@ -1077,28 +1082,16 @@ argNames    : name ( COMMA argNames
    * Parse returnType
    *
 returnType  : boundType
-            | "value"
             | "ref"
             |
             ;
    */
   ReturnType returnType()
   {
-    ReturnType result;
-    if (isType())
-      {
-        result = new FunctionReturnType(boundType());
-      }
-    else
-      {
-        switch (current())
-          {
-          case t_value : next(); result = ValueType .INSTANCE; break;
-          case t_ref   : next(); result = RefType   .INSTANCE; break;
-          default      :         result = NoType    .INSTANCE; break;
-          }
-      }
-    return result;
+    return
+      isType()          ? new FunctionReturnType(boundType()) :
+      skip(Token.t_ref) ? RefType.INSTANCE
+                        : NoType .INSTANCE;
   }
 
 
@@ -1143,12 +1136,7 @@ EXCLAMATION : "!"
    */
   boolean isNonFuncReturnTypePrefix()
   {
-    switch (current())
-      {
-      case t_value :
-      case t_ref   : return true;
-      default      : return false;
-      }
+    return current() == Token.t_ref;
   }
 
 
@@ -1162,9 +1150,7 @@ EXCLAMATION : "!"
    */
   boolean skipNonFuncReturnType()
   {
-    return
-      skip(Token.t_value ) ||
-      skip(Token.t_ref   );
+    return skip(Token.t_ref);
   }
 
 
@@ -1429,7 +1415,7 @@ dotCall     : dot call   callTail
           }
         else
           {
-            result = callTail(false, new ParsedCall(new DotType(sourceRange(target.pos()), target), new ParsedName(sourceRange(target.pos()), "from_env")));
+            result = callTail(false, new ParsedCall(Call.typeAsValue(sourceRange(target.pos()), t), new ParsedName(sourceRange(target.pos()), "from_env")));
           }
       }
     else if (skip(Token.t_type))
@@ -1443,7 +1429,7 @@ dotCall     : dot call   callTail
           }
         else
           {
-            result = callTail(false, new DotType(sourceRange(target.pos()), target));
+            result = callTail(false, Call.typeAsValue(sourceRange(target.pos()), t));
           }
       }
     else if (skip(Token.t_this))
@@ -3454,10 +3440,6 @@ freeType    : name ":" type
         skipColon())
       {
         result = new FreeType(result.pos(), result.freeTypeName(), type());
-      }
-    if (skip("..."))
-      {
-        result.setFollowedByDots();
       }
     return result;
   }

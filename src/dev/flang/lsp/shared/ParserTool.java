@@ -41,7 +41,6 @@ import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Block;
 import dev.flang.ast.Call;
-import dev.flang.ast.DotType;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureVisitor;
@@ -253,7 +252,6 @@ public class ParserTool extends ANY
         @Override public void         actionAfter (Block          b) { FoundPos(b.pos()); }
         @Override public void         action      (AbstractCall   c) { FoundPos(c.pos()); }
         @Override public Expr         action      (Call           c) { FoundPos(c.pos()); return c; }
-        @Override public Expr         action      (DotType        d) { FoundPos(d.pos()); return d; }
         @Override public void         actionBefore(AbstractCase   c, AbstractMatch m) { FoundPos(c.pos()); }
         @Override public void         actionAfter (AbstractCase   c, AbstractMatch m) { FoundPos(c.pos()); }
         @Override public Expr         action      (Feature        f, AbstractFeature outer) { FoundPos(f.pos()); return f; }

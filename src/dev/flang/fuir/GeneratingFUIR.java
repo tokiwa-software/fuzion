@@ -484,7 +484,7 @@ public class GeneratingFUIR extends FUIR
         var tclazz = clazz(c.target(), outerClazz, inh);
         if (!tclazz.isVoidType())
           {
-            var at = outerClazz.handDownThroughInheritsCalls(c.actualTypeParameters(), inh);
+            var at = handDownThroughInheritsCalls(c.actualTypeParameters(), inh);
             var typePars = outerClazz.actualGenerics(at, inh);
             result = tclazz.lookupCall(c, typePars).resultClazz();
           }
@@ -538,6 +538,31 @@ public class GeneratingFUIR extends FUIR
       (result != null);
 
     return result;
+  }
+
+
+  /**
+   * Hand down a list of types along a given inheritance chain.
+   *
+   * @param tl the original list of types to be handed down
+   *
+   * @param inh the inheritance chain from the parent down to the child
+   *
+   * @return a new list of types as they are appear after inheritance. The
+   * length might be different due to open type parameters being replaced by a
+   * list of types.
+   */
+  private static List<AbstractType> handDownThroughInheritsCalls(List<AbstractType> tl, List<AbstractCall> inh)
+  {
+    for (AbstractCall c : inh)
+      {
+        var f = c.calledFeature();
+        var actualTypes = c.actualTypeParameters();
+        tl = tl.flatMap(t -> t.isOpenGeneric()
+                             ? t.genericArgument().replaceOpen(actualTypes)
+                             : new List<>(t.applyTypePars(f, actualTypes)));
+      }
+    return tl;
   }
 
 
@@ -1919,6 +1944,7 @@ public class GeneratingFUIR extends FUIR
    *
    * @return pair of untagged and tagged types.
    */
+  @SuppressWarnings("unchecked")
   private Pair<Clazz,Clazz> tagValueAndResultClazz(int s)
   {
     if (PRECONDITIONS) require
@@ -2018,6 +2044,7 @@ public class GeneratingFUIR extends FUIR
    *
    * @return a pair consisting of the original type and the new boxed type
    */
+  @SuppressWarnings("unchecked")
   private Pair<Clazz,Clazz> boxValueAndResultClazz(int s)
   {
     if (PRECONDITIONS) require

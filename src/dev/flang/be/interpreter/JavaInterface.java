@@ -211,7 +211,7 @@ public class JavaInterface extends FUIRContext
             for (var e : Layout.get(rc)._offsets.entrySet())
               {
                 var f = e.getKey();
-                var off = (Integer) e.getValue();
+                var off = e.getValue();
                 var v = switch (fuir().clazzBaseName(f))
                   {
                   case "java_ref"   -> new JavaRef(o);

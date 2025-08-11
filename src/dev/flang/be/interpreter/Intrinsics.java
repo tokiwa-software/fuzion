@@ -291,7 +291,7 @@ public class Intrinsics extends ANY
         {
           Errors.runTime(utf8ByteArrayDataToString(args.get(1)),
                          utf8ByteArrayDataToString(args.get(2)),
-                         executor.callStack(executor.fuir()));
+                         Executor.callStack(executor.fuir()));
           return Value.EMPTY_VALUE;
         });
 
@@ -390,7 +390,7 @@ public class Intrinsics extends ANY
             ._array;
           return new JavaRef(res);
         });
-    putUnsafe("fuzion.jvm.create_jvm", (executor, innerClazz) -> args -> Value.EMPTY_VALUE);
+    putUnsafe("fuzion.jvm.create_jvm", (executor, innerClazz) -> args -> new i32Value(0));
     putUnsafe("fuzion.jvm.destroy_jvm", (executor, innerClazz) -> args -> Value.EMPTY_VALUE);
     putUnsafe("fuzion.jvm.string_to_java_object0", (executor, innerClazz) -> args ->
         {
@@ -847,6 +847,7 @@ public class Intrinsics extends ANY
                   ignore = executor.callOnNewInstance(NO_SITE, call_def, args.get(3), new List<>(final_ev));
                 }
             }
+            break;
           case "effect.type.is_instated0": return new boolValue(effects.get(ecl) != null /* NOTE not containsKey since ecl may map to null! */ );
           case "effect.type.replace0"    : check(effects.get(ecl) != null, fuir.clazzIsUnitType(ecl) || ev != Value.EMPTY_VALUE); effects.put(ecl, ev);   break;
           default: throw new Error("unexpected effect intrinsic '"+in+"'");

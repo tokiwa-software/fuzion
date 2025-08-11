@@ -658,22 +658,11 @@ class Clazz extends ANY implements Comparable<Clazz>
       {
         t = _type.generics().get(0).actualType(t);
       }
-    else if (outer() != null)
+    else if (_outer != null)
       {
-        t = outer().replaceThisTypeForCotype(t);
+        t = _outer.replaceThisTypeForCotype(t);
       }
     return t;
-  }
-
-
-  /**
-   * Get outer of this clazz via outerRef or _outer
-   */
-  private Clazz outer()
-  {
-    return outerRef() != null
-      ? outerRef().resultClazz()
-      : _outer;
   }
 
 
@@ -897,6 +886,7 @@ class Clazz extends ANY implements Comparable<Clazz>
             }
           _layouting = LayoutStatus.After;
         }
+        break;
       case After: break;
       }
     return result;
@@ -1275,8 +1265,8 @@ class Clazz extends ANY implements Comparable<Clazz>
         var o = _outer;
         String outer = o != null && !o.feature().isUniverse() ? StringHelpers.wrapInParentheses(o.toString(humanReadable)) + "." : "";
         var f = feature();
-        var typeType = f.isCotype();
-        if (typeType)
+        var cotypeType = f.isCotype();
+        if (cotypeType)
           {
             f = (LibraryFeature) f.cotypeOrigin();
           }
@@ -1303,12 +1293,12 @@ class Clazz extends ANY implements Comparable<Clazz>
           + ( isRef()   && !feature().isRef() ? "ref "   : "" )
           + ( isValue() &&  feature().isRef() ? "value " : "" )
           + fname;
-        if (typeType)
+        if (cotypeType)
           {
             result = result + ".type";
           }
 
-        var skip = typeType;
+        var skip = cotypeType;
         for (var g : actualTypeParameters())
           {
             if (!skip) // skip first generic 'THIS#TYPE' for types of type features.
@@ -1800,7 +1790,7 @@ class Clazz extends ANY implements Comparable<Clazz>
           }
         else
           {
-            var tt = _type.typeType();
+            var tt = _type.cotypeType();
             var ty = Types.resolved.f_Type.selfType();
             _typeClazz = _type.containsError()  ? _fuir.error() :
                          feature().isUniverse() ? this    :
@@ -1835,12 +1825,12 @@ class Clazz extends ANY implements Comparable<Clazz>
     /* starting with feature(), follow outer references
      * until we find o.
      */
-    var of = handDown(o, NO_SELECT, (t1,t2)->{}, inh).feature();
+    var of = handDown(o, NO_SELECT, (_,_)->{}, inh).feature();
     var res = this;
     var i = feature();
     while (i != null && i != of)
       {
-        res = res.outer();
+        res = res._outer;
         i = res == null
           ? null
           : res.feature();
@@ -1865,31 +1855,6 @@ class Clazz extends ANY implements Comparable<Clazz>
       (Errors.any() || i == of);
 
     return i == null ? _fuir.error() : res;
-  }
-
-
-  /**
-   * Hand down a list of types along a given inheritance chain.
-   *
-   * @param tl the original list of types to be handed down
-   *
-   * @param inh the inheritance chain from the parent down to the child
-   *
-   * @return a new list of types as they are appear after inheritance. The
-   * length might be different due to open type parameters being replaced by a
-   * list of types.
-   */
-  List<AbstractType> handDownThroughInheritsCalls(List<AbstractType> tl, List<AbstractCall> inh)
-  {
-    for (AbstractCall c : inh)
-      {
-        var f = c.calledFeature();
-        var actualTypes = c.actualTypeParameters();
-        tl = tl.flatMap(t -> t.isOpenGeneric()
-                             ? t.genericArgument().replaceOpen(actualTypes)
-                             : new List<>(t.applyTypePars(f, actualTypes)));
-      }
-    return tl;
   }
 
 
@@ -1924,7 +1889,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    *
    * @return the type {@code t} as seen after inheritance
    */
-  private AbstractType handDownThroughInheritsCalls(AbstractType t, int select, List<AbstractCall> inh)
+  private static AbstractType handDownThroughInheritsCalls(AbstractType t, int select, List<AbstractCall> inh)
   {
     if (PRECONDITIONS) require
       (t != null,
@@ -2026,8 +1991,7 @@ class Clazz extends ANY implements Comparable<Clazz>
           }
         t = t.applyTypeParsLocally(child._type, select);
         t = t.replace_this_type_by_actual_outer_locally(child._type, foundRef);
-        child = child.outerRef() != null ? child.outerRef().resultClazz()
-                                         : child._outer;
+        child = child._outer;
         parent = childf.outer();
       }
     if (CHECKS) check

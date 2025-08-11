@@ -345,8 +345,6 @@ public class Call extends AbstractCall
    * @param actuals
    *
    * @param calledFeature
-   *
-   * @param type
    */
   Call(SourcePosition pos,
        Expr target,
@@ -455,6 +453,42 @@ public class Call extends AbstractCall
 
 
   /**
+   * Get the type of the target feature.
+   *
+   * NYI: CLEANUP: can we merge targetFeatureType/targetType?
+   *
+   * @return the type of the targetFeature or null if unknown.
+   */
+  private AbstractType targetFeatureType(Resolution res, Context context)
+  {
+    if (PRECONDITIONS) require
+      (target() != null);
+
+    var result = res == null
+      ? target().type()
+      : target().typeForInferencing();
+
+    result = result == null
+      ? null
+      : res == null
+      ? result.selfOrConstraint(context)
+      : result.selfOrConstraint(res, context);
+
+    // NYI: CLEANUP: the whole method should proably be moved to sth. like Expr.effectiveType
+    if (result != null && result != Types.t_ERROR && target().isTypeAsValueCall() && !result.feature().isCotype())
+      {
+        result = (res != null
+          ? res.cotype(result.feature())
+          : result.feature().cotype()).selfType();
+      }
+
+    if (POSTCONDITIONS) ensure
+      (result == null || !result.isGenericArgument());
+    return result;
+  }
+
+
+  /**
    * Get the feature of the target of this call.
    *
    * @param res this is called during type resolution, res gives the resolution
@@ -493,7 +527,7 @@ public class Call extends AbstractCall
       {
         _target.loadCalledFeature(res, context);
         _target = res.resolveType(_target, context);
-        var tt = targetTypeOrConstraint(res, context);
+        var tt = targetFeatureType(res, context);
 
         if (tt == null && _target instanceof Call c)
           {
@@ -1156,6 +1190,10 @@ public class Call extends AbstractCall
           }
         setToErrorState0();
       }
+
+    if (POSTCONDITIONS)
+      ensure(result != null);
+
     return result;
   }
 
@@ -1483,7 +1521,7 @@ public class Call extends AbstractCall
           }
         else if (!t.isGenericArgument())
           {
-            t = t.typeType(res);
+            t = t.cotypeType(res);
           }
         t = t.resolve(res, tt.feature().context());
       }
@@ -2382,7 +2420,7 @@ public class Call extends AbstractCall
                   // we found a feature that fits a dot-type-call.
                   _calledFeature = f;
                   _pendingError = null;
-                  _target = new DotType(_pos, _target).resolveTypes(res, context);
+                  _target = Call.typeAsValue(_pos, _target.asParsedType()).resolveTypes(res, context);
                 }
             }
           if (_calledFeature != null &&
@@ -2523,7 +2561,8 @@ public class Call extends AbstractCall
   {
     Call result = this;
     // NYI: Separate pass? This currently does not work if type was inferred
-    if (_type != null && _type != Types.t_ERROR)
+    var t = typeForInferencing();
+    if (t != null && t != Types.t_ERROR)
       {
         // Convert a call "f.g a b" into "f.g.call a b" in case f.g takes no
         // arguments and returns a Function or Routine
@@ -2678,7 +2717,7 @@ public class Call extends AbstractCall
    */
   void applyToActualsAndFormalTypes(AbstractType[] resolvedFormalArgumentTypes, java.util.function.BiFunction<Expr, AbstractType, Expr> f)
   {
-    if (_type != Types.t_ERROR &&
+    if (typeForInferencing() != Types.t_ERROR &&
         _actuals.size() == resolvedFormalArgumentTypes.length /* this will cause an error in checkTypes() */ )
       {
         int count = 0;
@@ -2713,8 +2752,7 @@ public class Call extends AbstractCall
   {
     reportPendingError();
 
-    if (CHECKS) check
-      (res._options.isLanguageServer() || Errors.any() || _type != null);
+    var t = type();
 
     if (_calledFeature != null &&
         context.outerFeature() != Types.resolved.f_effect_static_finally &&
@@ -2725,15 +2763,15 @@ public class Call extends AbstractCall
         AstErrors.mustNotCallEffectFinally(this);
       }
 
-    if (_type != null && _type != Types.t_ERROR)
+    if (t != Types.t_ERROR)
       {
-        var o = _type;
+        var o = t;
         while (o != null && o.isNormalType())
           {
             o = o.outer();
             if (o != null && o.isRef() && !o.feature().isRef())
               {
-                AstErrors.illegalCallResultType(this, _type, o);
+                AstErrors.illegalCallResultType(this, t, o);
                 o = null;
               }
           }
@@ -2940,6 +2978,27 @@ public class Call extends AbstractCall
         return this;
       }
     };
+  }
+
+
+  /**
+   * Create a call to {@code type_as_value} with {@code t} as
+   * the argument.
+   *
+   * @param pos the source position of the call
+   *
+   * @param t the actual type
+   *
+   */
+  public static Call typeAsValue(SourcePosition pos, AbstractType t)
+  {
+    return new Call(pos,
+                    Universe.instance,
+                    "type_as_value",
+                    FuzionConstants.NO_SELECT,
+                    new List<>(t),
+                    new List<>(),
+                    null);
   }
 
 
