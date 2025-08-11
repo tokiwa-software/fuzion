@@ -432,23 +432,27 @@ public class Call extends AbstractCall
    */
   protected AbstractType targetType(Context context)
   {
-    return targetIsTypeParameter()
-      ?
-       (calledFeature().resultType().isThisTypeInCotype()
-          // a call B.f for a type parameter target B. resultType() is the
-          // constraint of B, so we create the corresponding type feature's
-          // selfType:
-          // NYI: CLEANUP: remove this special handling!
-          ? _target.type().feature().selfType()
-          // NYI: CLEANUP: For a type parameter, the feature result type is abused
-          // and holds the type parameter constraint.  As a consequence, we have to
-          // fix this here and set the type of the target explicitly here.
-          //
-          // Would be better if AbstractFeature.resultType() would do this for us:
-          : ((Call)_target).calledFeature().asGenericType())
-      : calledFeature().isConstructor()
-      ? _target.type()
-      : _target.type().selfOrConstraint(context);
+    var tt = _target.type();
+    var cf = calledFeature();
+    return
+      // first, check if have a situation like `x.this.T.from_u32 0` where `T type : integer`
+      //
+      // This occurs, e.g., in String.fz at the line
+      //
+      //     t := parse_integer.this.T.from_u32 b.as_u32  # i converted to T
+      //
+      // NYI: UNDER DEVELOPMENT: this special handling is not needed if we change that line to
+      //
+      //     t := T.from_u32 b.as_u32  # i converted to T
+      //
+      // we need to check why the implicit `parse_integer.this` target makes a difference here and
+      // remove the special handling if possible.
+      targetIsTypeParameter() &&
+      cf.resultType().isThisTypeInCotype() ? tt.feature().selfType() :
+
+      // NYI: UNDER DEVELOPMENT: Also unclear why we need special handling for a constructor here
+      cf.isConstructor() ? tt
+                         : tt.selfOrConstraint(context);
   }
 
 
