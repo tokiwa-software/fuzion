@@ -2055,7 +2055,8 @@ A ((Choice)) declaration must not contain a result type.
   private void checkLegalNativeArg(Resolution res, SourcePosition pos, AbstractType at)
   {
     ensureTypeSetsInitialized(res);
-    if (!(Types.resolved.legalNativeArgumentTypes.contains(at)
+    if (!(isTypeParameter()
+          || Types.resolved.legalNativeArgumentTypes.contains(at)
           || at.selfOrConstraint(Context.NONE).isFunctionTypeExcludingLazy()
           // NYI: BUG: check if array element type is valid
           || !at.isGenericArgument() && at.feature() == Types.resolved.f_array
