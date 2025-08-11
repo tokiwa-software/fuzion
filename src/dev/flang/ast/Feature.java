@@ -1477,12 +1477,13 @@ public class Feature extends AbstractFeature
       return f;
     }
     @Override public Function     action      (Function        f) {        f.resolveTypes      (res,   _context); return f; }
-    @Override public void         action      (AbstractMatch   m)
+    @Override public Expr         action      (AbstractMatch   m)
     {
       if (m instanceof Match mm)
         {
           mm.resolveTypes(res, _context);
         }
+      return super.action(m);
     }
 
     @Override public Expr         action      (This            t) { return t.resolveTypes      (res,   _context); }
@@ -1956,19 +1957,6 @@ A ((Choice)) declaration must not contain a result type.
             @Override public void  action(Impl           i) { i.propagateExpectedType(res, _context); }
           });
 
-        /*
-         * extra pass to automatically wrap values into 'Lazy'
-         * or unwrap values inheriting {@code unwrap}
-         */
-        visit(new ContextVisitor(context()) {
-            // we must do this from the outside of calls towards the inside to
-            // get the corrected nesting of Lazy features created during this
-            // phase
-            public boolean visitActualsLate() { return true; }
-            @Override public void  action(AbstractAssign a) { a.wrapValueInLazy  (res, _context); a.unwrapValue  (res, _context); }
-            @Override public Expr  action(Call           c) { c.wrapActualsInLazy(res, _context); c.unwrapActuals(res, _context); return c; }
-          });
-
         if (isConstructor())
           {
             _impl.propagateExpectedType(res, context(), Types.resolved.t_unit);
@@ -2009,7 +1997,7 @@ A ((Choice)) declaration must not contain a result type.
         @Override public void         action(AbstractAssign a) {        a.checkTypes(res,  _context);           }
         @Override public Call         action(Call           c) {        c.checkTypes(res,  _context); return c; }
         @Override public Expr         action(Constant       c) {        c.checkRange(); return c;               }
-        @Override public void         action(AbstractMatch  m) {        m.checkTypes(_context);                 }
+        @Override public Expr         action(AbstractMatch  m) {        m.checkTypes(_context); return m;       }
         @Override public Expr         action(InlineArray    i) {        i.checkTypes(      _context); return i; }
         @Override public AbstractType action(AbstractType   t) { return t.checkConstraints(_context);           }
         @Override public void         actionBefore(Block    b) {        b.checkTypes();                         }
@@ -2155,12 +2143,34 @@ A ((Choice)) declaration must not contain a result type.
 
     _state = State.RESOLVING_SUGAR2;
 
+
+     /*
+      * extra pass to automatically wrap values into 'Lazy'
+      * or unwrap values inheriting {@code unwrap}
+      */
+    visit(new ContextVisitor(context()) {
+        // we must do this from the outside of calls towards the inside to
+        // get the corrected nesting of Lazy features created during this
+        // phase
+        public boolean visitActualsLate() { return true; }
+        @Override public void  action(AbstractAssign a) { a.wrapValueInLazy  (res, _context); a.unwrapValue  (res, _context); }
+        @Override public Expr  action(Call           c) { c.wrapActualsInLazy(res, _context); c.unwrapActuals(res, _context); return c; }
+        @Override public Expr action(AbstractMatch am){
+          Expr result = am;
+          if (am instanceof Match m)
+            {
+              result = m.addResultField(res, _context);
+            }
+          return result;
+        }
+      });
+
+
     visit(new ContextVisitor(context()) {
         @Override public Expr action(Function    f) { return f.resolveSyntacticSugar2(res); }
         @Override public Expr action(InlineArray i) { return i.resolveSyntacticSugar2(res, _context); }
         @Override public void action(Impl        i) {        i.resolveSyntacticSugar2(res, _context); }
         @Override public Expr action(Constant    c) { return c.resolveSyntacticSugar2(res, _context); }
-        @Override public void action(AbstractMatch am){ if (am instanceof Match m) { m.addFieldsForSubject(res, _context); } }
       });
 
 

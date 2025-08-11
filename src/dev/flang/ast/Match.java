@@ -121,7 +121,7 @@ public class Match extends AbstractMatch
    *
    * @return this.
    */
-  public Match visit(FeatureVisitor v, AbstractFeature outer)
+  public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     var os = _subject;
     var ns = _subject.visit(v, outer);
@@ -130,12 +130,12 @@ public class Match extends AbstractMatch
       // while okay for it to change after a visit
       (os == _subject);
     _subject = ns;
-    v.action(this);
+    var result = v.action(this);
     for (var c: cases())
       {
         c.visit(v, this, outer);
       }
-    return this;
+    return result;
   }
 
 
@@ -241,11 +241,8 @@ public class Match extends AbstractMatch
   @Override
   Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
   {
-    // NYI: CLEANUP: there should be another mechanism, for
-    // adding missing result fields instead of misusing
-    // `propagateExpectedType`.
-    //
-    return addFieldForResult(res, context, t);
+    _type = t;
+    return this;
   }
 
 
@@ -256,41 +253,28 @@ public class Match extends AbstractMatch
    * @param res the resolution instance.
    *
    * @param context the source code context where this assignment is used
-   *
-   * @param t the type to use for the result field
    */
-  private Expr addFieldForResult(Resolution res, Context context, AbstractType t)
+  Expr addResultField(Resolution res, Context context)
   {
     Expr result = this;
-    if (!t.isVoid())
+    if (!_assignedToField)
       {
-        var pos = pos();
-        Feature r = new Feature(res,
-                                pos,
-                                Visi.PRIV,
-                                t,
-                                FuzionConstants.EXPRESSION_RESULT_PREFIX + (_id_++),
-                                context.outerFeature());
-        res.resolveTypes(r);
-        result = new Block(new List<>(assignToField(res, context, r),
-                                      new Call(pos, new Current(pos, context.outerFeature()), r).resolveTypes(res, context)));
+        var t = _type;
+        if (t != null && !t.isVoid())
+          {
+            var pos = pos();
+            Feature r = new Feature(res,
+                                    pos,
+                                    Visi.PRIV,
+                                    t,
+                                    FuzionConstants.EXPRESSION_RESULT_PREFIX + (_id_++),
+                                    context.outerFeature());
+            res.resolveTypes(r);
+            result = new Block(new List<>(assignToField(res, context, r),
+                                          new Call(pos, new Current(pos, context.outerFeature()), r).resolveTypes(res, context)));
+          }
       }
     return result;
-  }
-
-
-  /**
-   * This will trigger addFieldForResult in some cases, e.g.:
-   * `match (if true then true else true) * =>`
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
-   * @param context the source code context where this Expr is used
-   */
-  void addFieldsForSubject(Resolution res, Context context)
-  {
-    _subject = subject().propagateExpectedType(res, context, subject().type(), null);
   }
 
 
