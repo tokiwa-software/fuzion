@@ -1891,7 +1891,7 @@ public class Call extends AbstractCall
                               {
                                 var tp = t.genericArgument();
                                 res.resolveTypes(tp);
-                                inferGeneric(res, context, tp.resultType(), actualType, actual.pos(), conflict, foundAt, count-1);
+                                inferGeneric(res, context, tp.constraint(), actualType, actual.pos(), conflict, foundAt, count-1);
                               }
                             inferGeneric(res, context, t, actualType, actual.pos(), conflict, foundAt, count-1);
                             checked[vai] = true;
