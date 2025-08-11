@@ -258,7 +258,7 @@ public class ParserTool extends ANY
         @Override public Expr         action      (Function       f) { FoundPos(f.pos()); return f; }
         @Override public void         action      (Impl           i) { FoundPos(i.pos); }
         @Override public Expr         action      (InlineArray    i) { FoundPos(i.pos()); return i; }
-        @Override public void         action      (AbstractMatch  m) { FoundPos(m.pos()); }
+        @Override public Expr         action      (AbstractMatch  m) { FoundPos(m.pos()); return super.action(m); }
         @Override public Expr         action      (This           t) { FoundPos(t.pos()); return t; }
         @Override public AbstractType action      (AbstractType   t) { FoundPos(t.declarationPos()); return t; }
       };
