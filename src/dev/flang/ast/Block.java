@@ -348,7 +348,7 @@ public class Block extends AbstractBlock
     if (type.compareTo(Types.resolved.t_unit) == 0 && hasImplicitResult() ||
         resExpr == null && Types.resolved.t_unit.compareTo(type) != 0)
       {
-        _expressions.add(Types.resolved.unitCall(res, context));
+        _expressions.add(new Call(pos(), FuzionConstants.UNIT_NAME).resolveTypes(res, context));
       }
     else if (resExpr != null)
       {
