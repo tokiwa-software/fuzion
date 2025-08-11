@@ -160,7 +160,7 @@ Check [fuzion-lang.dev](https://fuzion-lang.dev) for language and implementation
 
 ## Clone
 
-> Note that the current directory must not contain any spaces.
+> Note that the current directory must not contain any spaces. Make sure you have `git` installed.
 
     git clone https://github.com/tokiwa-software/fuzion
 
@@ -170,18 +170,20 @@ Check [fuzion-lang.dev](https://fuzion-lang.dev) for language and implementation
 
 > For Debian based systems this command should install all requirements:
 >
->     sudo apt-get install make clang libgc1 libgc-dev openjdk-21-jdk
+>     sudo apt-get install make clang libgc1 libgc-dev pcregrep antlr4 openjdk-21-jdk
 
 - OpenJDK 21, e.g. [Adoptium](https://github.com/adoptium/temurin21-binaries/releases/)
 - clang LLVM C compiler
 - GNU make
 - libgc
+- pcregrep
+- antlr
 
 ### MacOS
 
 > This command should install all requirements:
 >
->     brew install bdw-gc gnu-sed make temurin llvm
+>     brew install bdw-gc gnu-sed make temurin llvm pcre antlr
 >
 > Additionally you may need to update your PATH environment variable e.g.:
 >
@@ -191,6 +193,8 @@ Check [fuzion-lang.dev](https://fuzion-lang.dev) for language and implementation
 - clang LLVM C compiler
 - GNU make
 - libgc
+- pcregrep
+- antlr
 
 
 ### Windows
