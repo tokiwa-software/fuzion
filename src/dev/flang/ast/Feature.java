@@ -2380,7 +2380,7 @@ A ((Choice)) declaration must not contain a result type.
           }
         else if (isTypeParameter())
           { // NYI: CLEANUP: handling of isOpenTypeParameter() will be added in PR #5681
-            result = Types.resolved.f_Type.resultType();
+            result = Types.resolved.f_Type.resultTypeIfPresentUrgent(res, urgent);
           }
         else
           {
