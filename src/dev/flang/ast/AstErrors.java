@@ -1306,7 +1306,7 @@ public class AstErrors extends ANY
         cf.resultType().isGenericArgument()                                     &&
         cf.resultType().genericArgument() instanceof Feature tp                 &&
         tp.isFreeType()                                                         &&
-        tp.resultType().compareTo(Types.resolved.t_Any) == 0)
+        tp.constraint().compareTo(Types.resolved.t_Any) == 0)
       {
         solution = "To solve this, you might replace the free type " + s(tp) + " by a different type.  " +
                    "Is the type name spelled correctly?  The free type is declared at " + tp.pos().show();
