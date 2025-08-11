@@ -241,7 +241,7 @@ int32_t fzE_create_jvm(char * option_string) {
 
   vm_args.version = JNI_VERSION_10;
   vm_args.options = options;
-  vm_args.nOptions = 1;
+  vm_args.nOptions = option_string[0] == '\0' ? 0 : 1;
 
   int result = JNI_CreateJavaVM(&fzE_jvm, (void **)&fzE_jni_env, &vm_args);
   if (result != JNI_OK) {
