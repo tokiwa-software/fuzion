@@ -2226,6 +2226,14 @@ public class AstErrors extends ANY
     );
   }
 
+  public static void constraintMoreRestrictiveVisibility(AbstractFeature f, Set<AbstractFeature> s)
+  {
+    error(f.pos(), "Type parameter constraint or any of its generics have more restrictive visibility than feature.",
+      "To solve this, increase the visibility of " + slbn(s.stream().map(x -> x.featureName()).collect(List.collector())) +
+      " or specify a different type parameter constraint."
+    );
+  }
+
   public static void redefMoreRestrictiveVisibility(Feature f, AbstractFeature redefined)
   {
     error(f.pos(), "Redefinition must not have more restrictive visibility.",

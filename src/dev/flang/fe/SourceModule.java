@@ -1941,14 +1941,25 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
    */
   private void checkArgTypesVisibility(Feature f)
   {
-    for (AbstractFeature arg : f.arguments())
+    if (!f.isCotype())
       {
-        if (!arg.isCoTypesThisType())
+        for (AbstractFeature arg : f.arguments())
           {
-            var s = arg.resultType().moreRestrictiveVisibility(effectiveFeatureVisibility(f));
-            if (!s.isEmpty())
+            if (arg.isTypeParameter())
               {
-                AstErrors.argTypeMoreRestrictiveVisibility(f, arg, s);
+                var s = arg.constraint().moreRestrictiveVisibility(effectiveFeatureVisibility(f));
+                if (!s.isEmpty())
+                  {
+                    AstErrors.constraintMoreRestrictiveVisibility(arg, s);
+                  }
+              }
+            else
+              {
+                var s = arg.resultType().moreRestrictiveVisibility(effectiveFeatureVisibility(f));
+                if (!s.isEmpty())
+                  {
+                    AstErrors.argTypeMoreRestrictiveVisibility(f, arg, s);
+                  }
               }
           }
       }
