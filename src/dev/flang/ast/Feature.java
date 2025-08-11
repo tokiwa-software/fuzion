@@ -2438,6 +2438,28 @@ A ((Choice)) declaration must not contain a result type.
   }
 
 
+  /**
+   * constraint returns the constraint type of this type parameter, Any if no
+   * constraint was set.  This ignores any context constraints like `pre T : numeric`
+   *
+   * @return the constraint.
+   */
+  @Override
+  public AbstractType constraint()
+  {
+    if (PRECONDITIONS) require
+      (state().atLeast(State.RESOLVED_TYPES),
+       isTypeParameter());
+
+    var result = _returnType.functionReturnType();
+
+    if (POSTCONDITIONS) ensure
+      (result != null);
+
+    return result;
+  }
+
+
   public FeatureName featureName()
   {
     if (CHECKS) check

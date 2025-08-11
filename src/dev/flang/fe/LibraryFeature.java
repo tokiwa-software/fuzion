@@ -470,6 +470,27 @@ public class LibraryFeature extends AbstractFeature
 
 
   /**
+   * constraint returns the constraint type of this type parameter, Any if no
+   * constraint was set.  This ignores any context constraints like `pre T : numeric`
+   *
+   * @return the constraint.
+   */
+  @Override
+  public AbstractType constraint()
+  {
+    if (PRECONDITIONS) require
+      (isTypeParameter());
+
+    var result = _libModule.type(_libModule.featureResultTypePos(_index));
+
+    if (POSTCONDITIONS) ensure
+      (result != null);
+
+    return result;
+  }
+
+
+  /**
    * The sourcecode position of this feature declaration's result type, null if
    * not available.
    */
