@@ -1856,7 +1856,7 @@ public class Call extends AbstractCall
                           {
                             count++;
                             var actual = resolveTypeForNextActual(Types.t_UNDEFINED, aargs, res, context);
-                            var actualType = typeFromActual(actual, context);
+                            var actualType = typeFromActual(res, context, actual);
                             if (actualType == null)
                               {
                                 actualType = Types.t_ERROR;
@@ -1878,7 +1878,7 @@ public class Call extends AbstractCall
                     */
                     if (t.dependsOnGenerics())
                       {
-                        var actualType = typeFromActual(actual, context);
+                        var actualType = typeFromActual(res, context, actual);
                         if (actualType != null)
                           {
                             /**
@@ -1960,9 +1960,12 @@ public class Call extends AbstractCall
    * @param context the source code context where this Call is used
    *
    * @return the type of actual as seen within context, or null if not known.
+   *
+   * NYI: CLEANUP: can we merge typeFromActual/actualArgType?
    */
-  AbstractType typeFromActual(Expr actual,
-                              Context context)
+  AbstractType typeFromActual(Resolution res,
+                              Context context,
+                              Expr actual)
   {
     var actualType = actual == null ? null : actual.typeForInferencing();
     if (actualType != null)
@@ -2827,7 +2830,13 @@ public class Call extends AbstractCall
         if (!errorInActuals())
           {
             // Check that generics match formal generic constraints
-            AbstractType.checkActualTypePars(context, _calledFeature, _generics, _originalGenerics, this);
+            AbstractType.checkActualTypePars(
+              context,
+              _calledFeature,
+              _generics,
+              _originalGenerics,
+              pos(),
+              constraint -> adjustResultType(res, context, targetType(context), constraint, null, false));
           }
       }
   }
