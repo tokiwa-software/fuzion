@@ -1349,7 +1349,7 @@ public class Call extends AbstractCall
          *      .fold bool.all
          */
         result = _calledFeature.isTypeParameter()
-          ? _calledFeature.constraint(context)
+          ? _calledFeature.constraint(res, context)
           : _calledFeature.resultTypeIfPresentUrgent(res, urgent);
         _recursiveResolveType = false;
 
