@@ -82,58 +82,71 @@ main =>
     !split
 
 
+  # check if exe is installed by trying
+  # to execute it once
+  #
+  is_installed(exe String) =>
+    (os.process.start exe).ok
+
+
   ########### EBNF ###############
 
+  if !is_installed "pcregrep"
+    io.err.println "not generating ebnf due to missing dependency pcregrep"
+    exit 0
+  else if !(is_installed "antlr" || is_installed "antlr4")
+    io.err.println "not generating ebnf due to missing dependency antlr"
+    exit 0
+  else
+    new_line := "\n"
 
-  new_line := "\n"
+    if envir.args.count < 2
+      panic "expecting at least one file name argument"
 
-  if envir.args.count < 2
-    panic "expecting at least one file name argument"
+    # first, strip out asciidoc code that is enclosed as blocks of the form
+    #
+    #   // tag::bla_bla
+    #   ...
+    #   // end::bla_bla
+    #
+    asciidoc_matcher        := ["pcregrep", "--invert-match", "--multiline", "// tag::(\\n|.)*?// end::"]
 
-  # first, strip out asciidoc code that is enclosed as blocks of the form
-  #
-  #   // tag::bla_bla
-  #   ...
-  #   // end::bla_bla
-  #
-  asciidoc_matcher        := ["pcregrep", "--invert-match", "--multiline", "// tag::(\\n|.)*?// end::"]
+    # then, extract EBNF rules of the form
+    #
+    # bla_bla : rhs
+    #         | rhs
+    #         ;
+    #
+    # or
+    #
+    # fragment
+    # bla_bla : rhs
+    #         | rhs
+    #         ;
+    #
+    rule_matcher := ["pcregrep", "--multiline",  "^(fragment\\n)*[a-zA-Z0-9_]+[ ]*:(\\n|.)*?( ;)"]
 
-  # then, extract EBNF rules of the form
-  #
-  # bla_bla : rhs
-  #         | rhs
-  #         ;
-  #
-  # or
-  #
-  # fragment
-  # bla_bla : rhs
-  #         | rhs
-  #         ;
-  #
-  rule_matcher := ["pcregrep", "--multiline",  "^(fragment\\n)*[a-zA-Z0-9_]+[ ]*:(\\n|.)*?( ;)"]
+    # header
+    ebnf_header := "grammar Fuzion;$new_line$new_line"
 
-  # header
-  ebnf_header := "grammar Fuzion;$new_line$new_line"
+    ebnf := envir.args.drop 1
+      .map src->
+        if !io.file.exists src
+          panic "file not found '$src'."
 
-  ebnf := envir.args.drop 1
-    .map src->
-      if !io.file.exists src
-        panic "file not found '$src'."
+        src_without_asciidoc  := !(asciidoc_matcher ++ [src])
+        (src_without_asciidoc | rule_matcher)
+          .replace "\"" "'"     # replace " by '
 
-      src_without_asciidoc  := !(asciidoc_matcher ++ [src])
-      (src_without_asciidoc | rule_matcher)
-        .replace "\"" "'"     # replace " by '
+      .reduce ebnf_header (+)
 
-    .reduce ebnf_header (+)
+    say ebnf
 
-  say ebnf
-
-  # test grammar with antlr4
-  tmp := !!"mktemp --directory"
-  _ := !!"mkdir $tmp/fuzion_grammar"
-  _ := io.file.write "$tmp/fuzion_grammar/Fuzion.g4" ebnf
-  antlr := if ((os.process.start "antlr4").bind u32 p->p.wait).as_equatable = 0 then "antlr4" else "antlr"
-  # NYI: UNDER DEVELOPMENT: add option -Werror
-  _ := !!"$antlr -long-messages -o $tmp/fuzion_grammar $tmp/fuzion_grammar/Fuzion.g4"
-  !!"rm -Rf $tmp"
+    # test grammar with antlr4
+    tmp := !!"mktemp --directory"
+    _ := !!"mkdir $tmp/fuzion_grammar"
+    _ := io.file.write "$tmp/fuzion_grammar/Fuzion.g4" ebnf
+    antlr := if ((os.process.start "antlr4").bind u32 p->p.wait).as_equatable = 0 then "antlr4" else "antlr"
+    # NYI: UNDER DEVELOPMENT: add option -Werror
+    _ := !!"$antlr -long-messages -o $tmp/fuzion_grammar $tmp/fuzion_grammar/Fuzion.g4"
+    _ := !!"rm -Rf $tmp"
