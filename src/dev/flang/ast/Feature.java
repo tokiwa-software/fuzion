@@ -2378,6 +2378,10 @@ A ((Choice)) declaration must not contain a result type.
           {
             result = outer().outer().thisType(outer().isFixed());
           }
+        else if (isTypeParameter())
+          { // NYI: CLEANUP: handling of isOpenTypeParameter() will be added in PR #5681
+            result = Types.resolved.f_Type.resultType();
+          }
         else
           {
             result = _returnType.functionReturnType(true);
