@@ -23,6 +23,7 @@ Scorecard](https://api.securityscorecards.dev/projects/github.com/tokiwa-softwar
      * [Windows](#windows)
    * [Build](#build)
    * [Run](#run)
+   * [Soft dependencies](#soft-dependencies)
    * [Install prebuilt](#install-prebuilt)
    * [Language server](#language-server)
      * [Install](#install)
@@ -170,20 +171,18 @@ Check [fuzion-lang.dev](https://fuzion-lang.dev) for language and implementation
 
 > For Debian based systems this command should install all requirements:
 >
->     sudo apt-get install make clang libgc1 libgc-dev pcregrep antlr4 openjdk-21-jdk
+>     sudo apt-get install make clang libgc1 libgc-dev openjdk-21-jdk
 
 - OpenJDK 21, e.g. [Adoptium](https://github.com/adoptium/temurin21-binaries/releases/)
 - clang LLVM C compiler
 - GNU make
 - libgc
-- pcregrep
-- antlr
 
 ### MacOS
 
 > This command should install all requirements:
 >
->     brew install bdw-gc gnu-sed make temurin llvm pcre antlr
+>     brew install bdw-gc gnu-sed make temurin llvm
 >
 > Additionally you may need to update your PATH environment variable e.g.:
 >
@@ -193,8 +192,6 @@ Check [fuzion-lang.dev](https://fuzion-lang.dev) for language and implementation
 - clang LLVM C compiler
 - GNU make
 - libgc
-- pcregrep
-- antlr
 
 
 ### Windows
@@ -233,6 +230,21 @@ To compile the same example (requires clang C compiler):
     ./factors
 
 Have fun!
+
+
+## Soft dependencies
+
+The compiler can be built and used without these dependencies.
+
+But the following tools/dependencies are used e.g. for generating the documentation or for running the test suite:
+
+- antlr, for the ebnf grammar
+- pcregrep, for the ebnf grammar
+- asciidoctor, asciidoctor-pdf
+- sed, for normalizing test output
+- wget / curl, for downloading jar dependencies
+- org.eclipse.lsp4j and others, for the language server
+
 
 ## Install prebuilt
 

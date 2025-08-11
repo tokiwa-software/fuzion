@@ -582,7 +582,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * Check if this features argument list contains arguments of open generic
+   * Check if this feature's argument list contains arguments of open generic
    * type. If this is the case, then the argCount of the feature name may change
    * when inherited.
    *

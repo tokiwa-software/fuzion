@@ -143,3 +143,23 @@ is
   # unwrap this atomic value
   #
   public redef unwrap T ! atomic_access => read
+
+
+  # atomic increment
+  #
+  public incr unit
+    pre T : integer
+  =>
+    _ :=
+      for current_value := read
+      while !(compare_and_set current_value current_value+1)
+
+
+  # atomic decrement
+  #
+  public decr unit
+    pre T : integer
+  =>
+    _ :=
+      for current_value := read
+      while !(compare_and_set current_value current_value-1)
