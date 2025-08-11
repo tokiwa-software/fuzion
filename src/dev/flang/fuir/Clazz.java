@@ -658,22 +658,11 @@ class Clazz extends ANY implements Comparable<Clazz>
       {
         t = _type.generics().get(0).actualType(t);
       }
-    else if (outer() != null)
+    else if (_outer != null)
       {
-        t = outer().replaceThisTypeForCotype(t);
+        t = _outer.replaceThisTypeForCotype(t);
       }
     return t;
-  }
-
-
-  /**
-   * Get outer of this clazz via outerRef or _outer
-   */
-  private Clazz outer()
-  {
-    return outerRef() != null
-      ? outerRef().resultClazz()
-      : _outer;
   }
 
 
@@ -1277,8 +1266,8 @@ class Clazz extends ANY implements Comparable<Clazz>
         var o = _outer;
         String outer = o != null && !o.feature().isUniverse() ? StringHelpers.wrapInParentheses(o.toString(humanReadable)) + "." : "";
         var f = feature();
-        var typeType = f.isCotype();
-        if (typeType)
+        var cotypeType = f.isCotype();
+        if (cotypeType)
           {
             f = (LibraryFeature) f.cotypeOrigin();
           }
@@ -1305,12 +1294,12 @@ class Clazz extends ANY implements Comparable<Clazz>
           + ( isRef()   && !feature().isRef() ? "ref "   : "" )
           + ( isValue() &&  feature().isRef() ? "value " : "" )
           + fname;
-        if (typeType)
+        if (cotypeType)
           {
             result = result + ".type";
           }
 
-        var skip = typeType;
+        var skip = cotypeType;
         for (var g : actualTypeParameters())
           {
             if (!skip) // skip first generic 'THIS#TYPE' for types of type features.
@@ -1802,7 +1791,7 @@ class Clazz extends ANY implements Comparable<Clazz>
           }
         else
           {
-            var tt = _type.typeType();
+            var tt = _type.cotypeType();
             var ty = Types.resolved.f_Type.selfType();
             _typeClazz = _type.containsError()  ? _fuir.error() :
                          feature().isUniverse() ? this    :
@@ -1837,12 +1826,12 @@ class Clazz extends ANY implements Comparable<Clazz>
     /* starting with feature(), follow outer references
      * until we find o.
      */
-    var of = handDown(o, NO_SELECT, (t1,t2)->{}, inh).feature();
+    var of = handDown(o, NO_SELECT, (_,_)->{}, inh).feature();
     var res = this;
     var i = feature();
     while (i != null && i != of)
       {
-        res = res.outer();
+        res = res._outer;
         i = res == null
           ? null
           : res.feature();
@@ -2003,8 +1992,7 @@ class Clazz extends ANY implements Comparable<Clazz>
           }
         t = t.applyTypeParsLocally(child._type, select);
         t = t.replace_this_type_by_actual_outer_locally(child._type, foundRef);
-        child = child.outerRef() != null ? child.outerRef().resultClazz()
-                                         : child._outer;
+        child = child._outer;
         parent = childf.outer();
       }
     if (CHECKS) check

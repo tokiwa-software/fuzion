@@ -607,23 +607,16 @@ part of the (((inner features))) declarations of the corresponding
     inner.setState(State.FINDING_DECLARATIONS);
     inner.checkName();
 
-    if (outer == null)
-      {
-        inner.addOuterRef(_res);
-      }
-    else
+    if (outer != null)
       {
         // fixes issue #1787
-        // We need to wait until `inner` has its final type parameters.
+        // We need to wait until `outer` has its final type parameters.
         // This may include type parameters received via free types.
         // (Creating outer ref uses `outer.selfType()` which calls `generics()`.)
         outer.whenResolvedDeclarations(() -> {
           inner.addOuterRef(_res);
         });
-      }
 
-    if (outer != null)
-      {
         addDeclaredInnerFeature(outer, inner);
         if (outer instanceof LibraryFeature ol)
           {
@@ -996,7 +989,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
   void addDeclaredInnerFeature(AbstractFeature outer, Feature f)
   {
     if (PRECONDITIONS) require
-      (_res.state(outer).atLeast(State.LOADING));
+      (_res.state(outer).atLeast(State.FINDING_DECLARATIONS));
 
     var fn = f.featureName();
     var df = declaredFeatures(outer);
