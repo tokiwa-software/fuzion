@@ -1754,7 +1754,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
           {
             AstErrors.constraintMustNotBeGenericArgument(f);
           }
-        if (f.resultType().isChoice())
+        if (f.constraint().isChoice())
           {
             AstErrors.constraintMustNotBeChoice(f);
           }

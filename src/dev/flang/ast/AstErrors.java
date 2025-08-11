@@ -1497,7 +1497,7 @@ public class AstErrors extends ANY
     error(typeParameter.pos(),
           "Constraint for type parameter must not be a choice type",
           "Affected type parameter: " + s(typeParameter) + "\n" +
-          "constraint: " + s(typeParameter.resultType()) + "\n");
+          "constraint: " + s(typeParameter.constraint()) + "\n");
   }
 
   static void loopElseBlockRequiresWhileOrIterator(SourcePosition pos, Expr elseBlock)
