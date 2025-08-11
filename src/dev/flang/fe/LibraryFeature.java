@@ -462,6 +462,10 @@ public class LibraryFeature extends AbstractFeature
       {
         return Types.resolved.t_void;
       }
+    else if (isTypeParameter())
+      { // NYI: CLEANUP: handling of isOpenTypeParameter() will be added in PR #5681
+        return Types.resolved.f_Type.resultType();
+      }
     else
       {
         return _libModule.type(_libModule.featureResultTypePos(_index));
