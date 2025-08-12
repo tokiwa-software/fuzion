@@ -1,0 +1,91 @@
+
+--CURDIR--/reg_issue5095_pre_else_err.fz:40:7: error 1: Precodition added, although implicit 'pre true' was inherited
+      pre true          # 1. should flag an error: implicit `pre true` inherited
+------^^^^^^^^
+'test_1.child_1.foo' redefines features 'test_1.grandparent.foo' and 'test_1.parent_2.foo' which do not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/reg_issue5095_pre_else_err.fz:46:7: error 2: Precodition added, although implicit 'pre true' was inherited
+      pre else true     # 2. should flag an error: implicit `pre true` inherited
+------^^^^^^^^^^^^^
+'test_1.child_2.foo' redefines features 'test_1.grandparent.foo' and 'test_1.parent_2.foo' which do not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/reg_issue5095_pre_else_err.fz:54:7: error 3: Precodition added, although implicit 'pre true' was inherited
+      pre true          # 3. should flag an error: implicit `pre true` inherited
+------^^^^^^^^
+'test_1.child_3.bar' redefines feature 'test_1.parent_2.bar' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/reg_issue5095_pre_else_err.fz:59:7: error 4: Precodition added, although implicit 'pre true' was inherited
+      pre else true     # 4. should flag an error: implicit `pre true` inherited
+------^^^^^^^^^^^^^
+'test_1.child_4.bar' redefines feature 'test_1.parent_2.bar' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/reg_issue5095_pre_else_err.fz:66:7: error 5: Precodition added, although implicit 'pre true' was inherited
+      pre true          # 5. should flag an error: implicit `pre true` inherited
+------^^^^^^^^
+'test_1.child_5.foo' redefines feature 'test_1.grandparent.foo' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/reg_issue5095_pre_else_err.fz:71:7: error 6: Precodition added, although implicit 'pre true' was inherited
+      pre else true     # 6. should flag an error: implicit `pre true` inherited
+------^^^^^^^^^^^^^
+'test_1.child_6.foo' redefines feature 'test_1.grandparent.foo' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/reg_issue5095_pre_else_err.fz:98:7: error 7: Precodition added, although implicit 'pre true' was inherited
+      pre true          # 7. should flag an error: implicit `pre true` inherited (see #5149)
+------^^^^^^^^
+'test_2.child_1.foo' redefines feature 'test_2.parent_2.foo' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/reg_issue5095_pre_else_err.fz:104:7: error 8: Precodition added, although implicit 'pre true' was inherited
+      pre else true     # 8. should flag an error: implicit `pre true` inherited (see #5149)
+------^^^^^^^^^^^^^
+'test_2.child_2.foo' redefines feature 'test_2.parent_2.foo' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/reg_issue5095_pre_else_err.fz:112:7: error 9: Precondition must use 'else' in a feature that redefines another feature with a precondition.
+      pre true          # 9. should flag an error: else missing
+------^^^^^^^^
+Affected feature: 'test_2.child_3.bar'
+Redefines: 'test_2.parent_2.bar' from --CURDIR--/reg_issue5095_pre_else_err.fz:90:7:
+      pre true
+------^^^^^^^^
+To solve this, check if you are accidentally redefining another feature or, if you intend to redefine, add the 'else' keyword 
+
+
+--CURDIR--/reg_issue5095_pre_else_err.fz:124:7: error 10: Precondition must use 'else' in a feature that redefines another feature with a precondition.
+      pre true          # 10. should flag an error: else missing
+------^^^^^^^^
+Affected feature: 'test_2.child_5.foo'
+Redefines: 'test_2.parent_1.foo' from --CURDIR--/reg_issue5095_pre_else_err.fz:84:9:
+        pre else true
+--------^^^^^^^^^^^^^
+To solve this, check if you are accidentally redefining another feature or, if you intend to redefine, add the 'else' keyword 
+
+
+--CURDIR--/reg_issue5095_pre_else_err.fz:162:7: error 11: Precodition added, although implicit 'pre true' was inherited
+      pre else true     # 11. should flag an error: implicit `pre true` inherited (see #5149)
+------^^^^^^^^^^^^^
+'test_4.child.foo' redefines feature 'test_4.parent_2.foo' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/reg_issue5095_pre_else_err.fz:172:5: error 12: Precondition must use 'else' only in a feature that redefines another feature with a precondition.
+    pre else true       # 12. should flag an error: must not use else
+----^^^^^^^^^^^^^
+Surrounding feature: 'test_5.other_1.foo'
+To solve this, check if you are properly redefining another feature or, if you do not intend to do so, remove the 'else' keyword 
+
+12 errors.
