@@ -1341,13 +1341,6 @@ Type
   {
     return data().getInt(at);
   }
-  int typeAddressPos(int at)
-  {
-    if (PRECONDITIONS) require
-      (typeKind(at) == -4);
-
-    return at+4;
-  }
   int typeUniversePos(int at)
   {
     if (PRECONDITIONS) require
@@ -1435,11 +1428,7 @@ Type
   int typeNextPos(int at)
   {
     var k = typeKind(at);
-    if (k == -4)
-      {
-        return typeAddressPos(at) + 0;
-      }
-    else if (k == -3)
+    if (k == -3)
       {
         return typeUniversePos(at) + 0;
       }
