@@ -2153,16 +2153,7 @@ A ((Choice)) declaration must not contain a result type.
         // get the corrected nesting of Lazy features created during this
         // phase
         public boolean visitActualsLate() { return true; }
-        @Override public void  action(AbstractAssign a) { a.wrapValueInLazy  (res, _context); a.unwrapValue  (res, _context); }
         @Override public Expr  action(Call           c) { c.wrapActualsInLazy(res, _context); c.unwrapActuals(res, _context); return c; }
-        @Override public Expr action(AbstractMatch am){
-          Expr result = am;
-          if (am instanceof Match m)
-            {
-              result = m.addResultField(res, _context);
-            }
-          return result;
-        }
       });
 
 
@@ -2171,6 +2162,16 @@ A ((Choice)) declaration must not contain a result type.
         @Override public Expr action(InlineArray i) { return i.resolveSyntacticSugar2(res, _context); }
         @Override public void action(Impl        i) {        i.resolveSyntacticSugar2(res, _context); }
         @Override public Expr action(Constant    c) { return c.resolveSyntacticSugar2(res, _context); }
+        @Override public Expr action(AbstractMatch am){
+          Expr result = am;
+          if (am instanceof Match m)
+            {
+              result = m.addResultField(res, _context);
+            }
+          return result;
+        }
+        // Match.addResultField may add Assigns that need wrapping/unwrapping
+        @Override public void  action(AbstractAssign a) { a.wrapValueInLazy  (res, _context); a.unwrapValue  (res, _context); }
       });
 
 

@@ -241,6 +241,8 @@ public class Match extends AbstractMatch
   @Override
   Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
   {
+    if (CHECKS) check
+      (_type == null || t.isAssignableFrom(_type, context).yes());
     _type = t;
     return this;
   }
@@ -257,22 +259,24 @@ public class Match extends AbstractMatch
   Expr addResultField(Resolution res, Context context)
   {
     Expr result = this;
+    // we have not received type via type propagation
+    if (_type == null)
+      {
+        _type = typeFromCases(true);
+      }
     if (!_assignedToField)
       {
         var t = _type;
-        if (t != null && !t.isVoid())
-          {
-            var pos = pos();
-            Feature r = new Feature(res,
-                                    pos,
-                                    Visi.PRIV,
-                                    t,
-                                    FuzionConstants.EXPRESSION_RESULT_PREFIX + (_id_++),
-                                    context.outerFeature());
-            res.resolveTypes(r);
-            result = new Block(new List<>(assignToField(res, context, r),
-                                          new Call(pos, new Current(pos, context.outerFeature()), r).resolveTypes(res, context)));
-          }
+        var pos = pos();
+        Feature r = new Feature(res,
+                                pos,
+                                Visi.PRIV,
+                                t,
+                                FuzionConstants.EXPRESSION_RESULT_PREFIX + (_id_++),
+                                context.outerFeature());
+        res.resolveTypes(r);
+        result = new Block(new List<>(assignToField(res, context, r),
+                                      new Call(pos, new Current(pos, context.outerFeature()), r).resolveTypes(res, context)));
       }
     return result;
   }
