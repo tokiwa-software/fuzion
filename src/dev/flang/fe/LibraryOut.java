@@ -539,10 +539,6 @@ class LibraryOut extends ANY
       {
         type(f.constraint());
       }
-    if (f.isTypeParameter())
-      {
-        type(f.constraint());
-      }
     // NYI: Suppress output of inherits for fields, intrinsics, etc.?
     var i = f.inherits();
     _data.writeInt(i.size());
