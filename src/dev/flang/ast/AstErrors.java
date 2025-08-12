@@ -673,20 +673,24 @@ public class AstErrors extends ANY
           }
         else
           {
+            AbstractType originalFrom;
             if (originalArg.isTypeParameter())
               {
                 what = "type parameter constraint";
                 what2 = "constraint of type parameter";
+                originalFrom = originalArg.constraint();
+                is = s(redefinedArg.constraint());
               }
             else
               {
                 what = "argument type";
                 what2 = "type of argument";
+                originalFrom = originalArg.resultType();
+                is = s(redefinedArg.resultType());
               }
-            is = s(redefinedArg.resultType());
             // originalArg.resultType() might be a type parameter that has been replaced by originalArgType, so
             // we explain where this type comes from:
-            should_be1 = typeWithFrom(originalArgType, originalArg.resultType());
+            should_be1 = typeWithFrom(originalArgType, originalFrom);
             should_be2 = s(originalArgType);
           }
         error(redefinedArg.pos(),
@@ -1306,7 +1310,7 @@ public class AstErrors extends ANY
         cf.resultType().isGenericArgument()                                     &&
         cf.resultType().genericArgument() instanceof Feature tp                 &&
         tp.isFreeType()                                                         &&
-        tp.resultType().compareTo(Types.resolved.t_Any) == 0)
+        tp.constraint().compareTo(Types.resolved.t_Any) == 0)
       {
         solution = "To solve this, you might replace the free type " + s(tp) + " by a different type.  " +
                    "Is the type name spelled correctly?  The free type is declared at " + tp.pos().show();
@@ -1488,7 +1492,7 @@ public class AstErrors extends ANY
     error(tp.pos(),
           "Constraint for type parameter must not be a type parameter",
           "Affected type parameter: " + s(tp) + "\n" +
-          "constraint: " + s(tp.resultType()) + "\n" +
+          "constraint: " + s(tp.constraint()) + "\n" +
           "To solve this, change the type provided, e.g. to the unconstrained " + st("type") + ".\n");
   }
 
@@ -1497,7 +1501,7 @@ public class AstErrors extends ANY
     error(typeParameter.pos(),
           "Constraint for type parameter must not be a choice type",
           "Affected type parameter: " + s(typeParameter) + "\n" +
-          "constraint: " + s(typeParameter.resultType()) + "\n");
+          "constraint: " + s(typeParameter.constraint()) + "\n");
   }
 
   static void loopElseBlockRequiresWhileOrIterator(SourcePosition pos, Expr elseBlock)
@@ -2214,6 +2218,14 @@ public class AstErrors extends ANY
     error(f.pos(), "Result type or any of its generics have more restrictive visibility than feature.",
       "To solve this, increase the visibility of " + slbn(s.stream().map(x -> x.featureName()).collect(List.collector())) +
       " or specify a different return type."
+    );
+  }
+
+  public static void constraintMoreRestrictiveVisibility(AbstractFeature f, Set<AbstractFeature> s)
+  {
+    error(f.pos(), "Type parameter constraint or any of its generics have more restrictive visibility than feature.",
+      "To solve this, increase the visibility of " + slbn(s.stream().map(x -> x.featureName()).collect(List.collector())) +
+      " or specify a different type parameter constraint."
     );
   }
 

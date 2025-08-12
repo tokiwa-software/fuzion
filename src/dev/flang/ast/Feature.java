@@ -2044,7 +2044,7 @@ A ((Choice)) declaration must not contain a result type.
       {
         for (var arg : arguments())
           {
-            checkLegalNativeArg(res, arg.pos(), arg.resultType());
+            checkLegalNativeArg(res, arg);
           }
 
         checkLegalNativeResultType(res, resultTypePos(), resultType());
@@ -2052,10 +2052,12 @@ A ((Choice)) declaration must not contain a result type.
   }
 
 
-  private void checkLegalNativeArg(Resolution res, SourcePosition pos, AbstractType at)
+  private void checkLegalNativeArg(Resolution res, AbstractFeature arg)
   {
     ensureTypeSetsInitialized(res);
-    if (!(Types.resolved.legalNativeArgumentTypes.contains(at)
+    var at = arg.resultType();
+    if (!(arg.isTypeParameter()
+          || Types.resolved.legalNativeArgumentTypes.contains(at)
           || at.selfOrConstraint(Context.NONE).isFunctionTypeExcludingLazy()
           // NYI: BUG: check if array element type is valid
           || !at.isGenericArgument() && at.feature() == Types.resolved.f_array
@@ -2064,7 +2066,7 @@ A ((Choice)) declaration must not contain a result type.
           )
         )
       {
-        AstErrors.illegalNativeType(pos, "Argument type", at);
+        AstErrors.illegalNativeType(arg.pos(), "Argument type", at);
       }
   }
 
@@ -2378,10 +2380,12 @@ A ((Choice)) declaration must not contain a result type.
           {
             result = outer().outer().thisType(outer().isFixed());
           }
-        else if (isOpenTypeParameter())
-          {
-            result = Types.resolved != null ? Types.resolved.f_OpenType.resultTypeIfPresentUrgent(res, urgent)
-                                            : null;
+        else if (isTypeParameter())
+          { // NYI: CLEANUP: handling of isOpenTypeParameter() will be added in PR #5681
+            result =
+              (isOpenTypeParameter()
+               ? Types.resolved.f_OpenType
+               : Types.resolved.f_Type    ).resultTypeIfPresentUrgent(res, urgent);
           }
         else
           {
