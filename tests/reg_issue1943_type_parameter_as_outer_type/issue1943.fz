@@ -30,7 +30,7 @@ test_outer_as_type_parameter is
   # here the test from #1943
   x is
     y is
-      public redef as_string => "y in {x.this}"
+      public redef as_string String => "y in {x.this}"
 
   z : x is
 

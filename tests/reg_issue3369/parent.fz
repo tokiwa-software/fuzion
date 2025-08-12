@@ -4,4 +4,4 @@ public parent is
 
   name := get_name
 
-  public introduce => "I'm $name"
+  public introduce String => "I'm $name"

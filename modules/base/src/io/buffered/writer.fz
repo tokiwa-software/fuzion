@@ -40,7 +40,7 @@ is
   # finally
   # i.e. flush all unwritten bytes
   #
-  public redef finally =>
+  public redef finally unit =>
     match flush
       e error =>
         fuzion.runtime.fault.cause ("{writer.this.type.name}.finally", e.msg)

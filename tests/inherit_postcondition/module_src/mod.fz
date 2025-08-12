@@ -31,10 +31,10 @@ public mod is
   ok(s String) => {say s; true}
 
   public post_accessing_result is
-    public n := 333
-    public m => 333
-    public r => 666
-    public f
+    public n i32 := 333
+    public m i32 => 333
+    public r i32 => 666
+    public f i32
       post
         m * 2 = r
         ok "original $result $m $r"
@@ -46,11 +46,11 @@ public mod is
     =>
       42
 
-    public g
+    public g i32
     => 420
 
   public post_accessing_result_child : post_accessing_result is
-    public redef f
+    public redef f i32
       post then
         ok "redef $result"
         { io.Out.env.println "hi"; true }
@@ -58,7 +58,7 @@ public mod is
     =>
       4711
 
-    public redef g
+    public redef g i32
       post then
         ok "redef g $result"
         { io.Out.env.println "ho"; true }
@@ -66,7 +66,7 @@ public mod is
     => 69
 
   public post_accessing_result_child2 : post_accessing_result_child is
-    public redef f
+    public redef f i32
       post then
         ok "redef2 $result"
         { io.Out.env.println "hi"; true }
@@ -74,7 +74,7 @@ public mod is
     =>
       4716
 
-    public redef g
+    public redef g i32
       post then
         ok "redef g $result"
         { io.Out.env.println "he"; true }
@@ -82,12 +82,12 @@ public mod is
     => 42069
 
   public post_accessing_result_child3 : post_accessing_result is
-    public redef f
+    public redef f i32
       post then
     =>
       32168
 
   public post_accessing_result_child4 : post_accessing_result is
-    public redef f
+    public redef f i32
     =>
       112

@@ -111,7 +111,7 @@ is
   # notify all threads to wake up,
   # wait for all threads to finish
   #
-  public redef finally =>
+  public redef finally unit =>
 
     # initiate shutdown of thread pool
     # i.e. stop accepting jobs
