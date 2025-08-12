@@ -127,7 +127,7 @@ public tuple(public A type...,
   public redef as_string String =>
 
    concat : TypedApplicator String is
-     public redef apply(V type, e String, v V) => e="" ? $v : e + ", " + $v
+     public redef apply(V type, e String, v V) String => e="" ? $v : e + ", " + $v
 
    "({values.foldf "" concat})"
 

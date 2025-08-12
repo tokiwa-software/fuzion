@@ -56,7 +56,7 @@ public TypedSequence ref : property.countable is
     foldf 0 count_elements
 
   count_elements : TypedApplicator i32 is
-    public redef apply(A type, e i32, v A) => e + 1
+    public redef apply(A type, e i32, v A) i32 => e + 1
 
 /*
 
