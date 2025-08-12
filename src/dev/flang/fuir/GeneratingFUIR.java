@@ -1370,6 +1370,12 @@ public class GeneratingFUIR extends FUIR
       (_currentClazz == c); /* make sure no recursive call accidentally changed this */
     _currentClazz = ocur;
   }
+
+  /**
+   * During addCode, this is the current clazz we are adding code to.
+   *
+   * This is needed during `toStack` when replacing intrinsics by code.
+   */
   private Clazz _currentClazz;
 
 
@@ -2329,7 +2335,6 @@ public class GeneratingFUIR extends FUIR
       }
     if (!tclazz.isVoidType())
       {
-        //System.out.println("in "+tclazz+" lookup for "+cf.qualifiedName()+" sel: "+c.select());
         innerClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars), c.select(), c.isInheritanceCall());
         if (c.calledFeature() == Types.resolved.f_Type_infix_colon)
           {

@@ -493,7 +493,7 @@ public class LibraryModule extends Module implements MirModule
             var at2 = typeIndex(at);
             var k2 = typeKind(at2);
             if (CHECKS) check
-              (k2 == -1 || k2 >= 0 || k2 == -4);
+              (k2 == -1 || k2 >= 0);
             return type(at2);
             // we do not cache references to types, so don't add this to _libraryTypes for at.
           }
