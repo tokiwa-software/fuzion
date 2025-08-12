@@ -875,7 +875,7 @@ Feature
 [options="header",cols="1,1,2,5"]
 |====
    |cond.     | repeat | type          | what
-.6+| true  .6+| 1      | short         | 000OREvvvFCYkkkk  k = kind, Y = has cotype (i.e., 'f.type'), C = is cotype, F = has 'fixed' modifier, v = visibility, R/E = has pre-/post-condition feature, O = has open type feature
+.6+| true  .6+| 1      | short         | 000OREvvvFCYkkkk  k = kind, Y = has cotype (i.e., 'f.type'), C = is cotype, F = has 'fixed' modifier, v = visibility, R/E = has pre-/post-condition feature, O = hasValuesAsOpenTypeFeature
                        | Name          | name
                        | int           | arg count
                        | int           | name id
@@ -915,7 +915,7 @@ Feature
    *   |        |        |               |           v = visibility                      |
    *   |        |        |               |           R = has precondition feature        |
    *   |        |        |               |           E = has postcondition feature       |
-   *   |        |        |               |           O = hasOpenTypeFeature              |
+   *   |        |        |               |           O = hasValuesAsOpenTypeFeature      |
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | Name          | name                                          |
    *   |        |        +---------------+-----------------------------------------------+
@@ -1139,7 +1139,7 @@ Feature
        );
 
   }
-  int featureOpenTypeFeaturePos(int at)
+  int featureValuesAsOpenTypeFeaturePos(int at)
   {
     var i = featureResultTypePos(at);
     if (featureHasResultType(at))
@@ -1148,13 +1148,13 @@ Feature
       }
     return i;
   }
-  AbstractFeature featureOpenTypeFeature(int at)
+  AbstractFeature featureValuesAsOpenTypeFeature(int at)
   {
-    return feature(data().getInt(featureOpenTypeFeaturePos(at)));
+    return feature(data().getInt(featureValuesAsOpenTypeFeaturePos(at)));
   }
   int featureInheritsCountPos(int at)
   {
-    return featureOpenTypeFeaturePos(at) + (featureHasOpenTypeFeature(at) ? 4 : 0);
+    return featureValuesAsOpenTypeFeaturePos(at) + (featureHasOpenTypeFeature(at) ? 4 : 0);
   }
   int featureInheritsCount(int at)
   {

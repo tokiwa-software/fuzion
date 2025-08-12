@@ -302,7 +302,7 @@ public class Feature extends AbstractFeature
 
 
   /**
-   * if hasOpenTypeFeature(), this will be the open type feature, i.e., the
+   * if hasValuesAsOpenTypeFeature(), this will be the open type feature, i.e., the
    * feature that is called when a field whose type is an open type parameter is
    * called without selecting one specific variant.
    */
@@ -1205,7 +1205,7 @@ public class Feature extends AbstractFeature
   public AbstractFeature openTypeFeature()
   {
     if (PRECONDITIONS) require
-      (hasOpenTypeFeature(),
+      (hasValuesAsOpenTypeFeature(),
        _state.atLeast(State.RESOLVED_TYPES));
 
     if (CHECKS) check
@@ -1220,16 +1220,16 @@ public class Feature extends AbstractFeature
    * type is an open type parameter is called without selecting one specific
    * variant.
    */
-  void addOpenTypeFeature(Resolution res)
+  void addValuesAsOpenTypeFeature(Resolution res)
   {
     if (PRECONDITIONS) require
-      (hasOpenTypeFeature());
+      (hasValuesAsOpenTypeFeature());
 
     if (_openType == null)
       {
-        var name = FuzionConstants.OPEN_TYPE_PREFIX + _id;
+        var name = FuzionConstants.VALUES_AS_OPEN_TYPE_PREFIX + _id;
         var otf = new Feature(pos(), visibility().typeVisibility(), 0, NoType.INSTANCE, new List<>(name), new List<>(),
-                              new List<>(new Call(pos(), Universe.instance, new List<>(), new List<>(), Types.resolved.f_ValuesOfOpenType)),
+                              new List<>(new Call(pos(), Universe.instance, Types.resolved.f_ValuesOfOpenType)),
                               Contract.EMPTY_CONTRACT,
                               new Impl(pos(), new Block(), Impl.Kind.Routine));
 
@@ -2481,7 +2481,7 @@ A ((Choice)) declaration must not contain a result type.
 
             if (result.isOpenGeneric())
               {
-                addOpenTypeFeature(res);
+                addValuesAsOpenTypeFeature(res);
               }
           }
       }

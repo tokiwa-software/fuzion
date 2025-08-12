@@ -877,7 +877,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * result that is produced when calling a field whose type is an open type
    * parameter and not selecting one specific variant.
    */
-  public boolean hasOpenTypeFeature()
+  public boolean hasValuesAsOpenTypeFeature()
   {
     return resultType().isOpenGeneric();
   }

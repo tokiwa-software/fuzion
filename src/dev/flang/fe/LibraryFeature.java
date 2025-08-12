@@ -372,16 +372,16 @@ public class LibraryFeature extends AbstractFeature
 
 
   @Override
-  public boolean hasOpenTypeFeature()
+  public boolean hasValuesAsOpenTypeFeature()
   {
-    /* this should produce the same as super.hasOpenTypeFeature(), just for
+    /* this should produce the same as super.hasValuesAsOpenTypeFeature(), just for
      * efficiency and to avoid complex recursion we use the O-flag in the
      * feature data in the library module directly:
      */
     var result = _libModule.featureHasOpenTypeFeature(_index);
 
     if (CHECKS) check
-      (result == super.hasOpenTypeFeature());
+      (result == super.hasValuesAsOpenTypeFeature());
 
     return result;
   }
@@ -390,7 +390,7 @@ public class LibraryFeature extends AbstractFeature
   @Override
   public AbstractFeature openTypeFeature()
   {
-    return _libModule.featureHasOpenTypeFeature(_index) ? _libModule.featureOpenTypeFeature(_index) : null;
+    return _libModule.featureHasOpenTypeFeature(_index) ? _libModule.featureValuesAsOpenTypeFeature(_index) : null;
   }
 
   /**

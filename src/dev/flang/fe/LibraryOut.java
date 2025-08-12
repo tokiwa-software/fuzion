@@ -400,7 +400,7 @@ class LibraryOut extends ANY
    *   |        |        |               |           v = visibility                      |
    *   |        |        |               |           R = has precondition feature        |
    *   |        |        |               |           E = has postcondition feature       |
-   *   |        |        |               |           O = hasOpenTypeFeature              |
+   *   |        |        |               |           O = hasValuesAsOpenTypeFeature      |
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | Name          | name                                          |
    *   |        |        +---------------+-----------------------------------------------+
@@ -494,7 +494,7 @@ class LibraryOut extends ANY
       {
         k = k | FuzionConstants.MIR_FILE_KIND_HAS_POST_CONDITION_FEATURE;
       }
-    if (f.hasOpenTypeFeature())
+    if (f.hasValuesAsOpenTypeFeature())
       {
         k = k | FuzionConstants.MIR_FILE_KIND_HAS_VALUES_OF_OPEN_TYPE_FEATURE;
       }
@@ -527,7 +527,7 @@ class LibraryOut extends ANY
       {
         type(f.resultType());
       }
-    if (f.hasOpenTypeFeature())
+    if (f.hasValuesAsOpenTypeFeature())
       {
         _data.writeOffset(f.openTypeFeature());
       }

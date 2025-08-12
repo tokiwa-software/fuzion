@@ -312,7 +312,7 @@ public class FuzionConstants extends ANY
    * a field whose type is an open type parameter is called without selecting
    * one specific variant.
    */
-  public static final String OPEN_TYPE_PREFIX = INTERNAL_NAME_PREFIX + "ValuesOfOpenType";
+  public static final String VALUES_AS_OPEN_TYPE_PREFIX = INTERNAL_NAME_PREFIX + "ValuesOfOpenType";
 
 
   /**
