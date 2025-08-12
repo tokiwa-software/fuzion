@@ -150,7 +150,6 @@ public class GeneratingFUIR extends FUIR
          var aa = call.actuals().get(1);
          for (var i = 0; i<fields.size(); i++)
            {
-             var fi = i;
              var f = fields.get(i);
              if (CHECKS) check
                (i == f._select); // we expect that `fields` come in the order of their `_select`
@@ -162,18 +161,12 @@ public class GeneratingFUIR extends FUIR
                                    false /* isInheritanceCall */);
              var openTypeInstance = new Call(call.pos(),
                                              new Current(call.pos(), currentClazz._type.feature()),
-                                             Call.NO_GENERICS,
-                                             Expr.NO_EXPRS,
                                              currentClazz.feature().outerRef());
              var featureWithOpenTypeParamter = new Call(call.pos(),
                                                         openTypeInstance,
-                                                        Call.NO_GENERICS,
-                                                        Expr.NO_EXPRS,
                                                         currentClazz._outer.feature().outerRef());
              var field = new Call(call.pos(),
                                   featureWithOpenTypeParamter,
-                                  Call.NO_GENERICS,
-                                  Expr.NO_EXPRS,
                                   f.feature())
                {
                  @Override public int select() { return f._select; }
@@ -190,8 +183,7 @@ public class GeneratingFUIR extends FUIR
                };
            }
          return e;
-       }
-       );
+       });
   }
 
 

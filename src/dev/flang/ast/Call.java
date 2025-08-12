@@ -280,7 +280,7 @@ public class Call extends AbstractCall
    *
    * @param calledFeature the called feature, must not be null
    */
-  Call(SourcePosition pos, Expr t, AbstractFeature calledFeature)
+  public Call(SourcePosition pos, Expr t, AbstractFeature calledFeature)
   {
     this(pos, t, calledFeature.featureName().baseName(), FuzionConstants.NO_SELECT, NO_GENERICS, Expr.NO_EXPRS, calledFeature);
   }
