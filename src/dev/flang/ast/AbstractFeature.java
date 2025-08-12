@@ -865,64 +865,22 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * Return `OpenType` corresponding to this open type parameter.  An instance of
-   # `OpenType` is returned as the result of a call to a field whose type is
-   # an open type parameter auch as `tuple.values`.
+   * Return `OpenType` feature corresponding to this open type parameter.  An instance of
+   * this feature is returned as the result of a call to a field whose type is
+   * an open type parameter auch as `tuple.values`.
    */
-  public AbstractFeature openTypeFeature0()
+  public abstract AbstractFeature openTypeFeature();
+
+
+  /**
+   * Does this feature come with a corresponding `OpenType` feature, i.e., the
+   * result that is produced when calling a field whose type is an open type
+   * parameter and not selecting one specific variant.
+   */
+  public boolean hasOpenTypeFeature()
   {
-    if (PRECONDITIONS) require
-     (isOpenTypeParameter());
-
-    if (_openType == null)
-      {
-        //        System.out.println("OpenType for "+qualifiedName());
-        var name = "OpenType #"+(_opentype_id++);
-        _openType = new Feature(pos(), visibility().typeVisibility(), 0, NoType.INSTANCE, new List<>(name), new List<>(),
-                                new List<>(new Call(pos(), Universe.instance, new List<>(), new List<>(), Types.resolved.f_OpenType)),
-                                Contract.EMPTY_CONTRACT,
-                                new Impl(pos(), new Block(new List<>() /* NYI: add redef of `foldf`*/), Impl.Kind.Routine));
-      }
-    var result = _openType;
-
-    if (POSTCONDITIONS) ensure
-      (result != null);
-
-    return result;
+    return resultType().isOpenGeneric();
   }
-  public AbstractFeature openTypeFeature()
-  {
-    if (_openType == null) throw new Error("No openTypeFeature in "+getClass());
-    return _openType;
-  }
-  public AbstractFeature openTypeFeature(Resolution res)
-  {
-    if (PRECONDITIONS) require
-      (resultType().isOpenGeneric());
-
-    if (_openType == null) // NYI: Move to Feature.java!
-      {
-        //        System.out.println("OpenType for "+qualifiedName());
-        var name = "OpenType #"+(_opentype_id++);
-        var otf = new Feature(pos(), visibility().typeVisibility(), 0, NoType.INSTANCE, new List<>(name), new List<>(),
-                              new List<>(new Call(pos(), Universe.instance, new List<>(), new List<>(), Types.resolved.f_OpenType)),
-                              Contract.EMPTY_CONTRACT,
-                              new Impl(pos(), new Block(new List<>() /* NYI: add redef of `foldf`*/), Impl.Kind.Routine));
-
-        res._module.findDeclarations(otf, outer());
-        res.resolveTypes(otf);
-        //        System.out.println("resolved, new state "+f.state());
-        _openType = otf;
-      }
-    var result = _openType;
-
-    if (POSTCONDITIONS) ensure
-      (result != null);
-
-    return result;
-  }
-  AbstractFeature _openType = null;
-  static int _opentype_id = 0;
 
 
   /**

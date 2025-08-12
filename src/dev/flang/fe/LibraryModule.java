@@ -886,7 +886,6 @@ Feature
    | hasRT    | 1      | Type          | optional result type,
                                          hasRT = !isConstructor && !isChoice && !isTypeParameter
    | O=1      | 1      | int           | open type Feature index,
-                                         O = hasRT && resultType.isOpenGeneric()
    | isTypeParameter | 1 | Type        | constraint of (open) type parameters
 .2+| true NYI! !isField? !isIntrinsc
               | 1      | int           | inherits count i
@@ -916,7 +915,7 @@ Feature
    *   |        |        |               |           v = visibility                      |
    *   |        |        |               |           R = has precondition feature        |
    *   |        |        |               |           E = has postcondition feature       |
-   *   |        |        |               |           O = has open type feature           |
+   *   |        |        |               |           O = hasOpenTypeFeature              |
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | Name          | name                                          |
    *   |        |        +---------------+-----------------------------------------------+
@@ -937,7 +936,6 @@ Feature
    *   |        |        |               |         && !isTypeParameter                   |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | O=1    | 1      | int           | open type Feature index                       |
-   *   |        |        |               | O = hasRT && resultType.isOpenGeneric()       |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | isType | 1      | Type          | constraint of (open) type parameters          |
    *   | Parame |        |               |                                               |

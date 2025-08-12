@@ -302,6 +302,14 @@ public class Feature extends AbstractFeature
 
 
   /**
+   * if hasOpenTypeFeature(), this will be the open type feature, i.e., the
+   * feature that is called when a field whose type is an open type parameter is
+   * called without selecting one specific variant.
+   */
+  private AbstractFeature _openType = null;
+
+
+  /**
    * Actions collected to be executed as soon as this feature has reached
    * State.RESOLVED_DECLARATIONS, see method whenResolvedDeclarations().
    */
@@ -1191,6 +1199,44 @@ public class Feature extends AbstractFeature
   boolean isChoiceAfterTypesResolved()
   {
     return choiceGenerics() != null;
+  }
+
+  @Override
+  public AbstractFeature openTypeFeature()
+  {
+    if (PRECONDITIONS) require
+      (hasOpenTypeFeature(),
+       _state.atLeast(State.RESOLVED_TYPES));
+
+    if (CHECKS) check
+      (_openType != null);
+
+    return _openType;
+  }
+
+
+  /**
+   * Add open type feature, i.e., the feature that is called when a field whose
+   * type is an open type parameter is called without selecting one specific
+   * variant.
+   */
+  void addOpenTypeFeature(Resolution res)
+  {
+    if (PRECONDITIONS) require
+      (hasOpenTypeFeature());
+
+    if (_openType == null)
+      {
+        var name = "OpenType #" + _id;
+        var otf = new Feature(pos(), visibility().typeVisibility(), 0, NoType.INSTANCE, new List<>(name), new List<>(),
+                              new List<>(new Call(pos(), Universe.instance, new List<>(), new List<>(), Types.resolved.f_OpenType)),
+                              Contract.EMPTY_CONTRACT,
+                              new Impl(pos(), new Block(new List<>() /* NYI: add redef of `foldf`*/), Impl.Kind.Routine));
+
+        res._module.findDeclarations(otf, outer());
+        res.resolveTypes(otf);
+        _openType = otf;
+      }
   }
 
 
@@ -2381,7 +2427,7 @@ A ((Choice)) declaration must not contain a result type.
             result = outer().outer().thisType(outer().isFixed());
           }
         else if (isTypeParameter())
-          { // NYI: CLEANUP: handling of isOpenTypeParameter() will be added in PR #5681
+          {
             result =
               (isOpenTypeParameter()
                ? Types.resolved.f_OpenType
@@ -2410,9 +2456,9 @@ A ((Choice)) declaration must not contain a result type.
             // We then want to return t_ERROR.
             _resultType = result == Types.t_FORWARD_CYCLIC ? Types.t_ERROR : result;
 
-            if (_resultType.isOpenGeneric())
+            if (result.isOpenGeneric())
               {
-                var ignore = openTypeFeature(res);
+                addOpenTypeFeature(res);
               }
           }
       }

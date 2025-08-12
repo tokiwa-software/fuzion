@@ -400,7 +400,7 @@ class LibraryOut extends ANY
    *   |        |        |               |           v = visibility                      |
    *   |        |        |               |           R = has precondition feature        |
    *   |        |        |               |           E = has postcondition feature       |
-   *   |        |        |               |           O = has open type feature           |
+   *   |        |        |               |           O = hasOpenTypeFeature              |
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | Name          | name                                          |
    *   |        |        +---------------+-----------------------------------------------+
@@ -421,7 +421,6 @@ class LibraryOut extends ANY
    *   |        |        |               |         && !isTypeParameter                   |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | O=1    | 1      | int           | open type Feature index                       |
-   *   |        |        |               | O = hasRT && resultType.isOpenGeneric()       |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | isType | 1      | Type          | constraint of (open) type parameters          |
    *   | Parame |        |               |                                               |
@@ -495,9 +494,7 @@ class LibraryOut extends ANY
       {
         k = k | FuzionConstants.MIR_FILE_KIND_HAS_POST_CONDITION_FEATURE;
       }
-    var hasRT = !f.isConstructor() && !f.isChoice() && !f.isTypeParameter();
-    var hasOpenType = hasRT && f.resultType().isOpenGeneric();
-    if (hasOpenType)
+    if (f.hasOpenTypeFeature())
       {
         k = k | FuzionConstants.MIR_FILE_KIND_HAS_OPEN_TYPE_FEATURE;
       }
@@ -526,14 +523,13 @@ class LibraryOut extends ANY
       }
     if (CHECKS) check
       (f.arguments().size() == argCount);
-    if (hasRT)
+    if (!f.isConstructor() && !f.isChoice() && !f.isTypeParameter())
       {
-        var rt = f.resultType();
-        type(rt);
-        if (rt.isOpenGeneric())
-          {
-            _data.writeOffset(f.openTypeFeature());
-          }
+        type(f.resultType());
+      }
+    if (f.hasOpenTypeFeature())
+      {
+        _data.writeOffset(f.openTypeFeature());
       }
     if (f.isTypeParameter())
       {

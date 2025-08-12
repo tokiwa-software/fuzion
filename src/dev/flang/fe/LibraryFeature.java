@@ -370,6 +370,23 @@ public class LibraryFeature extends AbstractFeature
     return _libModule.featureIsCotype(_index) ? _libModule.featureCotypeOrigin(_index) : null;
   }
 
+
+  @Override
+  public boolean hasOpenTypeFeature()
+  {
+    /* this should produce the same as super.hasOpenTypeFeature(), just for
+     * efficiency and to avoid complex recursion we use the O-flag in the
+     * feature data in the library module directly:
+     */
+    var result = _libModule.featureHasOpenTypeFeature(_index);
+
+    if (CHECKS) check
+      (result == super.hasOpenTypeFeature());
+
+    return result;
+  }
+
+
   @Override
   public AbstractFeature openTypeFeature()
   {
@@ -468,8 +485,11 @@ public class LibraryFeature extends AbstractFeature
         return Types.resolved.t_void;
       }
     else if (isTypeParameter())
-      { // NYI: CLEANUP: handling of isOpenTypeParameter() will be added in PR #5681
-        return Types.resolved.f_Type.resultType();
+      {
+        return
+          (isOpenTypeParameter()
+           ? Types.resolved.f_OpenType
+           : Types.resolved.f_Type    ).resultType();
       }
     else
       {
