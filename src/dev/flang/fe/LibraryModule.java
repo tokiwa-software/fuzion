@@ -501,11 +501,6 @@ public class LibraryModule extends Module implements MirModule
           {
             result = new GenericType(this, at, genericArgument(typeTypeParameter(at)));
           }
-        else if (k == -4)
-          {
-            var feature = libraryFeature(typeSelfTypeFeature(at));
-            result = feature.selfType();
-          }
         else
           {
             if (CHECKS) check
@@ -1336,7 +1331,6 @@ Type
    | tk==-3   | 1      | unit          | type of universe
    | tk==-2   | 1      | int           | index of type
    | tk==-1   | 1      | int           | index of type parameter feature
-   | tk==-4   | 1      | int           | index of feature f, type is f.selfType()
 .4+| tk>=0    | 1      | int           | index of feature of type
               | 1      | byte          | 0: isValue, 1: isRef, 2: isThisType
               | tk     | Type          | actual generics
@@ -1356,8 +1350,6 @@ Type
    *   | tk==-2 | 1      | int           | index of type                                 |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | tk==-1 | 1      | int           | index of type parameter feature               |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | tk==-4 | 1      | int           | index of feature f, type is f.selfType()      |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | tk>=0  | 1      | int           | index of feature of type                      |
    *   |        +--------+---------------+-----------------------------------------------+
@@ -1407,20 +1399,6 @@ Type
       (typeKind(at) == -1);
 
     return data().getInt(typeTypeParameterPos(at));
-  }
-  int typeSelfTypeFeaturePos(int at)
-  {
-    if (PRECONDITIONS) require
-      (typeKind(at) == -4);
-
-    return at+4;
-  }
-  int typeSelfTypeFeature(int at)
-  {
-    if (PRECONDITIONS) require
-      (typeKind(at) == -4);
-
-    return data().getInt(typeSelfTypeFeaturePos(at));
   }
   int CotypePos(int at)
   {
@@ -1474,11 +1452,7 @@ Type
   int typeNextPos(int at)
   {
     var k = typeKind(at);
-    if (k == -4)
-      {
-        return typeSelfTypeFeaturePos(at) + 4;
-      }
-    else if (k == -3)
+    if (k == -3)
       {
         return typeUniversePos(at) + 0;
       }

@@ -580,8 +580,6 @@ class LibraryOut extends ANY
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | tk==-1 | 1      | int           | index of type parameter feature               |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | tk==-4 | 1      | int           | index of feature f, type is f.selfType()      |
-   *   +--------+--------+---------------+-----------------------------------------------+
    *   | tk>=0  | 1      | int           | index of feature of type                      |
    *   |        +--------+---------------+-----------------------------------------------+
    *   |        | 1      | byte          | 0: isValue, 1: isRef, 2: isThisType           |
@@ -609,12 +607,6 @@ class LibraryOut extends ANY
     else if (!t.isGenericArgument() && t.feature().isUniverse())
       {
         _data.writeInt(-3);
-      }
-    else if (!t.isGenericArgument() && t.feature().selfType() == t)
-      {
-        _data.addOffset(t, _data.offset());
-        _data.writeInt(-4);
-        _data.writeOffset(t.feature());
       }
     else
       {
