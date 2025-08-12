@@ -125,7 +125,7 @@ public class FuzionConstants extends ANY
   /**
    * Name of TypedAplicator feature.
    */
-  public static final String TYPED_APPLICATOR_FEAT = "TypedApplicator";
+  public static final String TYPED_APPLICATOR_FEAT = "Typed_Applicator";
 
 
   /**

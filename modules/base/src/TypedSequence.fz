@@ -50,7 +50,7 @@ public TypedSequence ref : Sequence Typed_Value is
   #
   public redef as_list list Typed_Value =>
 
-    as_reverse_list : TypedApplicator (list Typed_Value) is
+    as_reverse_list : Typed_Applicator (list Typed_Value) is
 
       public redef apply(A type, e (list Typed_Value), v A) list Typed_Value
       =>
@@ -68,7 +68,7 @@ public TypedSequence ref : Sequence Typed_Value is
   =>
     typed_foldf 0 count_elements
 
-  count_elements : TypedApplicator i32 is
+  count_elements : Typed_Applicator i32 is
     public redef apply(A type, e i32, v A) i32 => e + 1
 
 
@@ -79,12 +79,12 @@ public TypedSequence ref : Sequence Typed_Value is
   #
   # e.g., to find the product of a Sequence of i32, use `s.foldf (*) 1`
   #
-  public typed_foldf(B type, A type : TypedApplicator B, e B, a A) B
+  public typed_foldf(B type, A type : Typed_Applicator B, e B, a A) B
   =>
     abstract
 
 
-public TypedApplicator(B type) is
+public Typed_Applicator(B type) is
 
 
   # Apply an operation on a value v of type A using the cumulative value
@@ -123,13 +123,13 @@ public Typed_Value ref is
   #       =>
   #         e + $v
   #
-  public applyTo(B type, a TypedApplicator B, e B) B
+  public applyTo(B type, a Typed_Applicator B, e B) B
   =>
     abstract
 
 
 public typed_value(A type, v A) : Typed_Value is
 
-  public redef applyTo(B type, a TypedApplicator B, e B) B
+  public redef applyTo(B type, a Typed_Applicator B, e B) B
   =>
     a.apply A e v
