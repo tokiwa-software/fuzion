@@ -306,7 +306,7 @@ public class Feature extends AbstractFeature
    * feature that is called when a field whose type is an open type parameter is
    * called without selecting one specific variant.
    */
-  private AbstractFeature _openType = null;
+  private AbstractFeature _valuesAsOpenType = null;
 
 
   /**
@@ -1209,9 +1209,9 @@ public class Feature extends AbstractFeature
        _state.atLeast(State.RESOLVED_TYPES));
 
     if (CHECKS) check
-      (_openType != null);
+      (_valuesAsOpenType != null);
 
-    return _openType;
+    return _valuesAsOpenType;
   }
 
 
@@ -1225,7 +1225,7 @@ public class Feature extends AbstractFeature
     if (PRECONDITIONS) require
       (hasValuesAsOpenTypeFeature());
 
-    if (_openType == null)
+    if (_valuesAsOpenType == null)
       {
         var name = FuzionConstants.VALUES_AS_OPEN_TYPE_PREFIX + _id;
         var otf = new Feature(pos(), visibility().typeVisibility(), 0, NoType.INSTANCE, new List<>(name), new List<>(),
@@ -1235,7 +1235,7 @@ public class Feature extends AbstractFeature
 
         res._module.findDeclarations(otf, outer());
         res.resolveTypes(otf);
-        _openType = otf;
+        _valuesAsOpenType = otf;
       }
   }
 
