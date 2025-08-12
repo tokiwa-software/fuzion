@@ -1022,7 +1022,7 @@ Feature
   }
   boolean featureHasOpenTypeFeature(int at)
   {
-    var res = ((featureKind(at) & FuzionConstants.MIR_FILE_KIND_HAS_OPEN_TYPE_FEATURE) != 0);
+    var res = ((featureKind(at) & FuzionConstants.MIR_FILE_KIND_HAS_VALUES_OF_OPEN_TYPE_FEATURE) != 0);
     if (CHECKS) check
       (true ||  // checking this would cause endless recursion
        res == featureHasResultType(at) && libraryFeature(at).resultType().isOpenGeneric());

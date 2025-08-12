@@ -1229,7 +1229,7 @@ public class Feature extends AbstractFeature
       {
         var name = FuzionConstants.OPEN_TYPE_PREFIX + _id;
         var otf = new Feature(pos(), visibility().typeVisibility(), 0, NoType.INSTANCE, new List<>(name), new List<>(),
-                              new List<>(new Call(pos(), Universe.instance, new List<>(), new List<>(), Types.resolved.f_OpenType)),
+                              new List<>(new Call(pos(), Universe.instance, new List<>(), new List<>(), Types.resolved.f_ValuesOfOpenType)),
                               Contract.EMPTY_CONTRACT,
                               new Impl(pos(), new Block(), Impl.Kind.Routine));
 
@@ -2453,7 +2453,7 @@ A ((Choice)) declaration must not contain a result type.
           {
             result =
               (isOpenTypeParameter()
-               ? Types.resolved.f_OpenType
+               ? Types.resolved.f_ValuesOfOpenType
                : Types.resolved.f_Type    ).resultTypeIfPresentUrgent(res, urgent);
           }
         else

@@ -192,7 +192,7 @@ public class Types extends ANY
     public final AbstractFeature f_concur;
     public final AbstractFeature f_concur_atomic;
     public final AbstractFeature f_concur_atomic_v;
-    public final AbstractFeature f_OpenType;
+    public final AbstractFeature f_ValuesOfOpenType;
     public final AbstractFeature f_TypedApplicator;
     public final AbstractFeature f_TypedApplicator_apply;
     public final AbstractFeature f_Type;
@@ -262,7 +262,7 @@ public class Types extends ANY
       f_concur                  = universe.get(mod, "concur", 0);
       f_concur_atomic           = f_concur.get(mod, "atomic", 2);
       f_concur_atomic_v         = f_concur_atomic.get(mod, "v", 0);
-      f_OpenType                = universe.get(mod, FuzionConstants.OPEN_TYPE_FEAT, 0);
+      f_ValuesOfOpenType        = universe.get(mod, FuzionConstants.VALUES_OF_OPEN_TYPE_FEAT, 0);
       f_TypedApplicator         = universe.get(mod, FuzionConstants.TYPED_APPLICATOR_FEAT, 1);
       f_TypedApplicator_apply   = f_TypedApplicator.get(mod, FuzionConstants.TYPED_APPLICATOR_APPLY_FEAT, 3);
       f_Type                    = universe.get(mod, FuzionConstants.TYPE_FEAT, 0);

@@ -117,9 +117,9 @@ public class FuzionConstants extends ANY
 
 
   /**
-   * Name of OpenType feature.
+   * Name of ValuesOfOpenType feature.
    */
-  public static final String OPEN_TYPE_FEAT = "OpenType";
+  public static final String VALUES_OF_OPEN_TYPE_FEAT = "ValuesOfOpenType";
 
 
   /**
@@ -312,7 +312,7 @@ public class FuzionConstants extends ANY
    * a field whose type is an open type parameter is called without selecting
    * one specific variant.
    */
-  public static final String OPEN_TYPE_PREFIX = INTERNAL_NAME_PREFIX + "OpenType";
+  public static final String OPEN_TYPE_PREFIX = INTERNAL_NAME_PREFIX + "ValuesOfOpenType";
 
 
   /**
@@ -513,9 +513,9 @@ public class FuzionConstants extends ANY
 
 
   /**
-   * Flag OR'ed to kind for features with open type feature
+   * Flag OR'ed to kind for features with a values of open type feature
    */
-  public static final int MIR_FILE_KIND_HAS_OPEN_TYPE_FEATURE = 0x1000;
+  public static final int MIR_FILE_KIND_HAS_VALUES_OF_OPEN_TYPE_FEATURE = 0x1000;
 
 
   /**

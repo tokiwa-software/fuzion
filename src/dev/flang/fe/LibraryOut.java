@@ -496,7 +496,7 @@ class LibraryOut extends ANY
       }
     if (f.hasOpenTypeFeature())
       {
-        k = k | FuzionConstants.MIR_FILE_KIND_HAS_OPEN_TYPE_FEATURE;
+        k = k | FuzionConstants.MIR_FILE_KIND_HAS_VALUES_OF_OPEN_TYPE_FEATURE;
       }
     var n = f.featureName();
     _data.writeShort(k);
