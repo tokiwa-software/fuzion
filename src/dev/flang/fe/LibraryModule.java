@@ -879,7 +879,8 @@ Feature
    | Y=1      | 1      | Feature       | the cotype
    | C=1      | 1      | Feature       | the cotype origin
    | hasRT    | 1      | Type          | optional result type,
-                                       hasRT = !isConstructor && !isChoice
+                                         hasRT = !isConstructor && !isChoice && !isTypeParameter
+   | isTypeParameter | 1 | Type        | constraint of (open) type parameters
 .2+| true NYI! !isField? !isIntrinsc
               | 1      | int           | inherits count i
               | i      | Code          | inherits calls
@@ -925,6 +926,11 @@ Feature
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | hasRT  | 1      | Type          | optional result type,                         |
    *   |        |        |               | hasRT = !isConstructor && !isChoice           |
+   *   |        |        |               |         && !isTypeParameter                   |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | isType | 1      | Type          | constraint of (open) type parameters          |
+   *   | Parame |        |               |                                               |
+   *   | ter    |        |               |                                               |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | int           | inherits count i                              |
    *   | NYI!   |        |               |                                               |

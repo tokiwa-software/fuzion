@@ -273,7 +273,8 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * resultType returns the result type of this feature using.
+   * resultType returns the result type of this feature, i.e., the type of the
+   * value returned when calling this feature.
    *
    * @return the result type, t_ERROR in case of an error.
    * Never null.
@@ -1703,13 +1704,32 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     var result = context.constraintFor(this);
     if (result == null)
       {
-        result = resultType();
+        result = constraint();
       }
 
     if (POSTCONDITIONS) ensure
       (result != null);
 
     return result;
+  }
+
+
+  /**
+   * constraint returns the constraint type of this type parameter, Any if no
+   * constraint was set.  This ignores any context constraints like `pre T : numeric`
+   *
+   * @return the constraint.
+   */
+  public AbstractType constraint()
+  {
+    if (PRECONDITIONS) require
+      (state().atLeast(State.RESOLVED_TYPES),
+       isTypeParameter());
+
+    throw new Error("constraint() not redefined for "+getClass());
+
+    // if (POSTCONDITIONS) ensure
+    //   (result != null);
   }
 
 

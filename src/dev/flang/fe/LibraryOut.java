@@ -417,6 +417,11 @@ class LibraryOut extends ANY
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | hasRT  | 1      | Type          | optional result type,                         |
    *   |        |        |               | hasRT = !isConstructor && !isChoice           |
+   *   |        |        |               |         && !isTypeParameter                   |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | isType | 1      | Type          | constraint of (open) type parameters          |
+   *   | Parame |        |               |                                               |
+   *   | ter    |        |               |                                               |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | int           | inherits count i                              |
    *   | NYI!   |        |               |                                               |
@@ -486,6 +491,7 @@ class LibraryOut extends ANY
       {
         k = k | FuzionConstants.MIR_FILE_KIND_HAS_POST_CONDITION_FEATURE;
       }
+    var hasRT = !f.isConstructor() && !f.isChoice() && !f.isTypeParameter();
     var n = f.featureName();
     _data.writeShort(k);
     var bn = n.baseName();
@@ -511,9 +517,13 @@ class LibraryOut extends ANY
       }
     if (CHECKS) check
       (f.arguments().size() == argCount);
-    if (!f.isConstructor() && !f.isChoice())
+    if (hasRT)
       {
         type(f.resultType());
+      }
+    if (f.isTypeParameter())
+      {
+        type(f.constraint());
       }
     // NYI: Suppress output of inherits for fields, intrinsics, etc.?
     var i = f.inherits();

@@ -462,10 +462,35 @@ public class LibraryFeature extends AbstractFeature
       {
         return Types.resolved.t_void;
       }
+    else if (isTypeParameter())
+      { // NYI: CLEANUP: handling of isOpenTypeParameter() will be added in PR #5681
+        return Types.resolved.f_Type.resultType();
+      }
     else
       {
         return _libModule.type(_libModule.featureResultTypePos(_index));
       }
+  }
+
+
+  /**
+   * constraint returns the constraint type of this type parameter, Any if no
+   * constraint was set.  This ignores any context constraints like `pre T : numeric`
+   *
+   * @return the constraint.
+   */
+  @Override
+  public AbstractType constraint()
+  {
+    if (PRECONDITIONS) require
+      (isTypeParameter());
+
+    var result = _libModule.type(_libModule.featureResultTypePos(_index));
+
+    if (POSTCONDITIONS) ensure
+      (result != null);
+
+    return result;
   }
 
 
