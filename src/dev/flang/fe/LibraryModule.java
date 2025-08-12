@@ -127,7 +127,7 @@ public class LibraryModule extends Module implements MirModule
   /**
    * Map from offset in _data to LibraryType for types in this module.
    */
-  private final TreeMap<Integer, AbstractType> _libraryTypes = new TreeMap<>();
+  private final TreeMap<Integer, LibraryType> _libraryTypes = new TreeMap<>();
 
 
   /**
@@ -480,7 +480,7 @@ public class LibraryModule extends Module implements MirModule
    */
   AbstractType type(int at)
   {
-    AbstractType result = _libraryTypes.get(at);
+    var result = _libraryTypes.get(at);
     if (result == null)
       {
         var k = typeKind(at);
