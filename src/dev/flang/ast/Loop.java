@@ -158,6 +158,11 @@ public class Loop extends ANY
    */
   static private long _id_ = 0;
 
+  /**
+   * quick-and-dirty way to make unique names for loop variants
+   */
+  static private long _id_var_ = 0;
+
 
   /**
    * env var to enable debug output for code generated for loops:
@@ -254,7 +259,7 @@ public class Loop extends ANY
   public Loop(SourcePosition pos,
               List<Feature> iv,
               List<Feature> nv,
-              Expr var,        /* NYI: loop variant currently ignored */
+              Expr var,
               List<Cond> inv,
               Expr whileCond,
               Block block,
@@ -328,6 +333,60 @@ public class Loop extends ANY
       {
         block = new Block(new List<>(Contract.asFault(inv, "invariantcondition_fault"), block));
       }
+    if (var != null)
+      {
+        var i64one = new ParsedCall(new ParsedCall(new ParsedName(SourcePosition.builtIn, "i64")), new ParsedName(SourcePosition.builtIn, "one"));
+        var i64minusOne = new ParsedOperatorCall(i64one, new ParsedName(SourcePosition.builtIn, FuzionConstants.PREFIX_OPERATOR_PREFIX + "-"), 10);
+
+        // variant is internally reduced by one so initially value is guaranteed to be smaller than i64.max, therefore check for variant >= -1
+        var = new ParsedOperatorCall(var,  new ParsedName(var.sourceRange(), FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "-^"),  5, i64one);
+
+        // current value of loop variant
+        var varFn = new ParsedName(SourcePosition.builtIn, "#variantExp" + _id_var_++);
+        var f = new Feature(SourcePosition.builtIn,
+                  Visi.PRIV,
+                  0,
+                  new ParsedType(SourcePosition.builtIn, "i64", new List<>(), null),
+                  varFn._name,
+                  Contract.EMPTY_CONTRACT,
+                  Impl.FIELD);
+        var varAss = new Assign(SourcePosition.builtIn, varFn , var);
+        var varCurVal = new ParsedCall(varFn);
+
+        // previous value of loop variant
+        var varPrevValName = "#var_prev_value" + _id_var_++;
+        var varPrevVal = new ParsedCall(new ParsedName(SourcePosition.builtIn, varPrevValName));
+
+        // condition that variant must be non negative
+        // because variant is internally decremented by one, check is made for `>= -1` instead of `>= 0`
+        var varNonNegative    = new ParsedOperatorCall(varCurVal,  new ParsedName(SourcePosition.builtIn, FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + ">="),  5, i64minusOne);
+
+        // condition that variant must decrease in each iteration
+        var varDecreasing     = new ParsedOperatorCall(varCurVal,  new ParsedName(SourcePosition.builtIn, FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "<"),   5, varPrevVal);
+
+        // combine variant conditions
+        var variantCondition  = new ParsedOperatorCall(varNonNegative, new ParsedName(var.sourceRange(),  FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "&&"),  4, varDecreasing);
+
+        // add definition and assignment of current variant value as well as check for variant conditions
+        block = new Block(new List<>(f, varAss, asVarFault(variantCondition), block));
+
+        // add formal argument for variant value
+        formalArguments.add(
+          new Feature(SourcePosition.builtIn,
+                  Visi.PRIV,
+                  0,
+                  new ParsedType(SourcePosition.builtIn, "i64", new List<>(), null),
+                  varPrevValName,
+                  Contract.EMPTY_CONTRACT,
+                  Impl.FIELD)
+        );
+
+        // initial value for previous variant is set to i64.max, therefore variant defined by user is internally decremented by one
+        initialActuals.add(new ParsedCall(new ParsedCall(new ParsedName(SourcePosition.builtIn, "i64")), new ParsedName(SourcePosition.builtIn, "max")));
+
+        // add current variant value
+        nextActuals.add(varCurVal);
+      }
     var p = block.pos();
     Feature loop = new Feature(p,
                                Visi.PRIV,
@@ -360,6 +419,20 @@ public class Loop extends ANY
         say(_impl);
       }
     return _impl;
+  }
+
+  /**
+   * Creates code for the given loop variant expression
+   *
+   * @param variantExpr the loop variant expression
+   */
+  Expr asVarFault(Expr variantExpr)
+  {
+    var p = variantExpr.sourceRange();
+    var f = new Call(p, "fuzion");
+    var r = new Call(p, f, "runtime");
+    var e = new Call(p, r, "variantcondition_fault", new List<>(new StrConst(p, p.sourceText())));
+    return Match.createIf(p, variantExpr, new Block(), e, false);
   }
 
 
