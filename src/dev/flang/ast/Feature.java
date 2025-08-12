@@ -2454,7 +2454,7 @@ A ((Choice)) declaration must not contain a result type.
             result =
               (isOpenTypeParameter()
                ? Types.resolved.f_ValuesOfOpenType
-               : Types.resolved.f_Type    ).resultTypeIfPresentUrgent(res, urgent);
+               : Types.resolved.f_Type            ).resultTypeIfPresentUrgent(res, urgent);
           }
         else
           {
