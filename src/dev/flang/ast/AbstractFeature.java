@@ -1681,22 +1681,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     return isRef() ? TypeKind.RefType : TypeKind.ValueType;
   }
 
-  /**
-   * Must this feature have an explicitly specified type?
-   *
-   * Public features and arguments of public feature must have the type explicitly specified,
-   * regardless of whether type inference is possible
-   */
-  public boolean explicitTypeRequired()
-  {
-    return !isCotype()
-      && !featureName().isInternal()
-      && !isUniverse()
-      && ((visibility().eraseTypeVisibility() == Visi.PUB)
-          || (outer().visibility().eraseTypeVisibility() == Visi.PUB) && isArgument())
-      && !(featureName().toString().startsWith(FuzionConstants.COTYPE_THIS_TYPE));
-  }
-
 
   /**
    * constraint returns the constraint type of this generic, ANY if no
