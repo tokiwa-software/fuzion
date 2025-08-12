@@ -705,7 +705,6 @@ class Clazz extends ANY implements Comparable<Clazz>
       case Abstract          -> IR.FeatureKind.Abstract;
       case Choice            -> IR.FeatureKind.Choice;
       case Native            -> IR.FeatureKind.Native;
-      case OpenTypeParameter -> IR.FeatureKind.Intrinsic; // NYI: strange, currently needed for type_as_value arg
       default                -> throw new Error("clazzKind: " + feature().kind());
       };
   }
