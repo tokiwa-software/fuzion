@@ -42,11 +42,10 @@
 public Typed_Sequence ref : Sequence Typed_Value is
 
 
-  # create a list from this TypeSequence.
+  # create a list from this Typed_Sequence.
   #
-  # A list is immutable, so it can be reused and shared between threads.
-  #
-  # Heirs must provide an implementation of as_list.
+  # Note that this creates boxed ref instances of `Typed_Value`.  The preferred
+  # means to acces the values is via a call to `typed_foldf`.
   #
   public redef as_list list Typed_Value =>
 
@@ -59,25 +58,24 @@ public Typed_Sequence ref : Sequence Typed_Value is
     typed_foldf nil as_reverse_list .reverse_list
 
 
-  # count the number of elements in this Sequence.  Note that this typically
+  # count the number of elements in this Typed_Sequence.  Note that this typically
   # runs forever if executed on an endless Sequence
   #
-  # For Sequences that are not array backed, this might require time in O(count).
+  # This is redefined and implemented using `typed_foldf` to avoid creation of
+  # boxed `Typed_Value`s.
   #
   public redef count i32
   =>
+    count_elements : Typed_Applicator i32 is
+      public redef apply(A type, e i32, v A) i32 => e + 1
+
     typed_foldf 0 count_elements
 
-  count_elements : Typed_Applicator i32 is
-    public redef apply(A type, e i32, v A) i32 => e + 1
 
-
-  # fold the elements of this Sequence using the given function and initial
-  # value.
+  # fold the elements of this `Typed_Sequence` using the given `Typed_Applicator`
+  # and initial value.
   #
-  # In case this Sequence is empty, the result is `e`.
-  #
-  # e.g., to find the product of a Sequence of i32, use `s.foldf (*) 1`
+  # In case this `Typed_Sequence` is empty, the result is `e`.
   #
   public typed_foldf(B type, A type : Typed_Applicator B, e B, a A) B
   =>
@@ -95,7 +93,7 @@ public Typed_Applicator(B type) is
   #
   # to concatenate the String representation of all values, use
   #
-  #     my_concat : TypeApplicator String is
+  #     my_concat : container.Typed_Applicator String is
   #
   #       public redef apply(A type, e String, v A) String
   #       =>
@@ -106,30 +104,36 @@ public Typed_Applicator(B type) is
     abstract
 
 
+# Typed_Value -- a ref type to hold a value of an arbitrary type
+#
+# The value can be extracted by a call to `Typed_Value.eapplyTo`
+#
 public Typed_Value ref is
 
 
-  # Apply an operation on a value v of type A using the cumulative value
-  # `e`, and type type / value pair `A`/`v`,  create a new value of type
-  # `B` and return it
-  #
-  # ex:
-  #
-  # to concatenate the String representation of all values, use
-  #
-  #     my_concat : TypeApplicator String is
-  #
-  #       public redef apply(A type, e String, v A) String
-  #       =>
-  #         e + $v
+  # Feed this value and its type into `a.apply`.  Add the
+  # cumulative value `e` and return the resulting cumulative value.
   #
   public applyTo(B type, a Typed_Applicator B, e B) B
   =>
     abstract
 
 
-public typed_value(A type, v A) : Typed_Value is
+# typed_value -- value type heir of `Typed_Value`.
+#
+# This must be a heir of `Typed_Value` since we need to be able to
+# have different actual type parameters and still create ref values
+# of all the same type  `Typed_Value`
+#
+public typed_value(# the type
+                   A type,
 
+                   # the value
+                   v A)
+  : Typed_Value is
+
+  # apply `a` to `A` `e` `v`
+  #
   public redef applyTo(B type, a Typed_Applicator B, e B) B
   =>
     a.apply A e v
