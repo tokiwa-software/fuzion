@@ -129,15 +129,7 @@ public tuple(public A type...,
    concat : TypedApplicator String is
      public redef apply(V type, e String, v V) String => e="" ? $v : e + ", " + $v
 
-   "({values.foldf "" concat})"
-
-  values0 : TypedSequence is
-    public redef foldf(B type, TA type : TypedApplicator B, e B, a TA) B
-    =>
-      e1 := a.apply e "hi"
-      e2 := a.apply e1 3.14
-      e3 := a.apply e2 [1,2,3]
-      e3
+   "({values.typed_foldf "" concat})"
 
 
 # create a one tuple
