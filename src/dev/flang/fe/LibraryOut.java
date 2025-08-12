@@ -529,7 +529,7 @@ class LibraryOut extends ANY
       }
     if (f.hasValuesAsOpenTypeFeature())
       {
-        _data.writeOffset(f.openTypeFeature());
+        _data.writeOffset(f.valuesAsOpenTypeFeature());
       }
     if (f.isTypeParameter())
       {

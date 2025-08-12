@@ -1450,7 +1450,7 @@ public class Call extends AbstractCall
             if (CHECKS) check
               (Errors.any() || _calledFeature.isField());
 
-            var otf = _calledFeature.openTypeFeature();
+            var otf = _calledFeature.valuesAsOpenTypeFeature();
             res.resolveTypes(otf);
             _calledFeature = otf;
             t = otf.resultType();

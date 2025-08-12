@@ -1202,7 +1202,7 @@ public class Feature extends AbstractFeature
   }
 
   @Override
-  public AbstractFeature openTypeFeature()
+  public AbstractFeature valuesAsOpenTypeFeature()
   {
     if (PRECONDITIONS) require
       (hasValuesAsOpenTypeFeature(),

@@ -865,15 +865,15 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * Return `OpenType` feature corresponding to this open type parameter.  An instance of
-   * this feature is returned as the result of a call to a field whose type is
-   * an open type parameter auch as `tuple.values`.
+   * Return `ValuesAsOpenType` feature corresponding to this open type parameter.
+   * An instance of this feature is returned as the result of a call to a field whose
+   * type is an open type parameter auch as `tuple.values`.
    */
-  public abstract AbstractFeature openTypeFeature();
+  public abstract AbstractFeature valuesAsOpenTypeFeature();
 
 
   /**
-   * Does this feature come with a corresponding `OpenType` feature, i.e., the
+   * Does this feature come with a corresponding `ValuesAsOpenType` feature, i.e., the
    * result that is produced when calling a field whose type is an open type
    * parameter and not selecting one specific variant.
    */

@@ -388,7 +388,7 @@ public class LibraryFeature extends AbstractFeature
 
 
   @Override
-  public AbstractFeature openTypeFeature()
+  public AbstractFeature valuesAsOpenTypeFeature()
   {
     return _libModule.featureHasOpenTypeFeature(_index) ? _libModule.featureValuesAsOpenTypeFeature(_index) : null;
   }
