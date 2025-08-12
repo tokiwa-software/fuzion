@@ -427,14 +427,7 @@ public class Impl extends ANY
       }
     if (needsImplicitAssignmentToResult(outer))
       {
-        var resultField = outer.resultField();
-        Assign ass = new Assign(res,
-                                this._expr.pos(),
-                                resultField,
-                                this._expr,
-                                context);
-        ass._value = this._expr;
-        this._expr = ass;
+        this._expr = _expr.assignToField(res, context, (Feature) outer.resultField());
       }
 
     // Add call to post condition feature:
