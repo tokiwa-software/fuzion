@@ -667,7 +667,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   /**
    * Create '.this.type' for this feature.
    */
-  public AbstractType thisType()
+  AbstractType thisType()
   {
     return thisType(false);
   }
