@@ -1227,11 +1227,11 @@ public class Feature extends AbstractFeature
 
     if (_openType == null)
       {
-        var name = "OpenType #" + _id;
+        var name = FuzionConstants.OPEN_TYPE_PREFIX + _id;
         var otf = new Feature(pos(), visibility().typeVisibility(), 0, NoType.INSTANCE, new List<>(name), new List<>(),
                               new List<>(new Call(pos(), Universe.instance, new List<>(), new List<>(), Types.resolved.f_OpenType)),
                               Contract.EMPTY_CONTRACT,
-                              new Impl(pos(), new Block(new List<>() /* NYI: add redef of `foldf`*/), Impl.Kind.Routine));
+                              new Impl(pos(), new Block(), Impl.Kind.Routine));
 
         res._module.findDeclarations(otf, outer());
         res.resolveTypes(otf);

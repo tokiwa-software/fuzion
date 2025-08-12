@@ -308,6 +308,14 @@ public class FuzionConstants extends ANY
 
 
   /**
+   * Prefix of name of open type feature, i.e., the feature that is called when
+   * a field whose type is an open type parameter is called without selecting
+   * one specific variant.
+   */
+  public static final String OPEN_TYPE_PREFIX = INTERNAL_NAME_PREFIX + "OpenType";
+
+
+  /**
    * Field introduced in, e.g.,
    *
    * <pre>{@code
