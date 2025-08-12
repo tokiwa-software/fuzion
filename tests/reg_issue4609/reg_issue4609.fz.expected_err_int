@@ -1,7 +1,7 @@
 
 error 1: FATAL FAULT `check`: false
 Call stack:
-fuzion.type.runtime.type.fault.type.install_default.λ.call#1: {base.fum}/fuzion/runtime/fault.fz:38:7:
+fuzion.type.runtime.type.fault.type.install_default.λ.call#1: {base.fum}/fuzion/runtime/fault.fz:43:7:
       fuzion.sys.fatal_fault kind msg
 ------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 fuzion.runtime.fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
@@ -22,9 +22,9 @@ fuzion.runtime.check_fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
 fuzion.runtime.checkcondition_fault#1: {base.fum}/fuzion/runtime/check_fault.fz:58:49:
 public checkcondition_fault(msg String) void => check_fault.cause msg
 ------------------------------------------------^^^^^^^^^^^^^^^^^^^^^
-reg_issue4609.s.call: --CURDIR--/reg_issue4609.fz:33:32:
-    public redef call => check false
--------------------------------^^^^^
+reg_issue4609.s.call: --CURDIR--/reg_issue4609.fz:33:37:
+    public redef call unit => check false
+------------------------------------^^^^^
 reg_issue4609.r#1: --CURDIR--/reg_issue4609.fz:36:20:
   r(f ()->unit) => f.call
 -------------------^^^^^^

@@ -17,17 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test fixed_alongside_abstract_negative
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-fixed_alongside_abstract_negative =>
-
-  a is
-    me a.this => abstract
-    fixed me => a
-    public redef as_string String => $"a"
-
-  b : a is
-
-  say b.me
+override NAME = reg_issue5106
+include ../simple.mk

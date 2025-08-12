@@ -2076,7 +2076,30 @@ A ((Choice)) declaration must not contain a result type.
 
     checkNative(res);
 
+    if (explicitTypeRequired(_returnType))
+      {
+        AstErrors.explicitTypeRequired(this, resultType());
+      }
+
     _state = State.RESOLVED;
+  }
+
+
+  /**
+   * Must this feature have an explicitly specified type?
+   *
+   * Public features and arguments of public feature must have the type explicitly specified,
+   * regardless of whether type inference is possible
+   */
+  public boolean explicitTypeRequired(ReturnType rt)
+  {
+    return !isCotype()
+      && !featureName().isInternal()
+      && !isUniverse()
+      && ((visibility().eraseTypeVisibility() == Visi.PUB)
+          || (outer().visibility().eraseTypeVisibility() == Visi.PUB) && isArgument())
+      && !(featureName().toString().startsWith(FuzionConstants.COTYPE_THIS_TYPE))
+      && rt == NoType.INSTANCE;
   }
 
 

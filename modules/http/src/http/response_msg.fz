@@ -48,11 +48,11 @@ public response_msg(
   public redef body io.Read_Handler) : Message
 is
   # the start line of the message, for a response this is also called status line
-  public redef start_line => status_line
+  public redef start_line String => status_line
 
   # the status line of the response message
   public status_line String =>
     "{version_str version_major version_minor} $status_code $reason_phrase$crlf"
 
   # header fields with all lower case
-  public redef header := http.canonical_header_map.from_map header_fields
+  public redef header http.canonical_header_map := http.canonical_header_map.from_map header_fields

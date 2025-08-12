@@ -300,9 +300,9 @@ is
 
   # the zero duration, representing a time span of zero
   #
-  public type.zero => time.duration 0
+  public type.zero time.duration => time.duration 0
 
 
   # the maximum duration
   #
-  public type.max => time.duration.ns time.duration.max_duration_nanos
+  public type.max time.duration => time.duration.ns time.duration.max_duration_nanos

@@ -39,7 +39,7 @@ public json_value : choice String f64 bool nil (Sequence json_value) (container.
 
 # a json parser
 #
-public json =>
+public json Parser String (Sequence codepoint) json_value =>
 
   # parser for a json string
   parser_string =>
