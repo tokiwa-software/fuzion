@@ -107,13 +107,6 @@ public class SourceModule extends Module implements SrcModule
 
 
   /**
-   * Flag to forbid loading of source code for new features for this module once
-   * MIR was created.
-   */
-  private boolean _closed = false;
-
-
-  /**
    * In case this module defines a main feature, this is its fully qualified
    * name.
    */
@@ -398,8 +391,7 @@ Fuzion source files may have an arbitrary file name ending with the file name ex
    */
   void loadInnerFeatures(AbstractFeature f)
   {
-    if (!f._loadedInner &&
-        !_closed)  /* NYI: restrict this to f.isVisibleFrom(this) or similar */
+    if (!f._loadedInner)  /* NYI: restrict this to f.isVisibleFrom(this) or similar */
       {
         f._loadedInner = true;
         for (var root : _sourceDirs)
