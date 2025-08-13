@@ -55,7 +55,9 @@ import dev.flang.be.jvm.JVMOptions;
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
 
+import dev.flang.fuir.OptimizedFUIR;
 import dev.flang.fuir.FUIR;
+import dev.flang.fuir.GeneratingFUIR;
 import dev.flang.fuir.LibraryFuir;
 import dev.flang.fuir.analysis.dfa.DFA;
 
@@ -325,7 +327,7 @@ public class Fuzion extends Tool
       {
         var o    = fe._options;
         var mir  = fe.createMIR();                             f.timer("createMIR");
-        var fuir = new Optimizer(o, fe, mir).fuir();           f.timer("ir");
+        var fuir = new GeneratingFUIR(fe, mir);                f.timer("ir");
         new Effects(o, new DFA(o, fuir)).find();
       }
     },
@@ -551,10 +553,7 @@ public class Fuzion extends Tool
      */
     void processFrontEnd(Fuzion f, FrontEnd fe)
     {
-      var o    = fe._options;
-      var mir  = fe.createMIR();                             f.timer("createMIR");
-      var fuir = new Optimizer(o, fe, mir).fuir();           f.timer("ir");
-      process(o, new DFA(o, fuir).new_fuir());
+      process(fe._options, fuir(f, fe));
     }
 
     /**
@@ -1146,12 +1145,9 @@ public class Fuzion extends Tool
             Path fuirFile = fuirFile(options);
             if (!Files.exists(fuirFile))
               {
-                var fe = new FrontEnd(options);                       timer("fe");
+                var fe = new FrontEnd(options);                   timer("fe");
                 Errors.showAndExit();
-                var mir  = fe.createMIR();                            timer("createMIR");
-                var fuir = new Optimizer(options, fe, mir).fuir();    timer("ir");
-                var dfuir = new DFA(options, fuir).new_fuir();        timer("dfa");
-                var data = dfuir.serialize();                         timer("serializeFUIR");
+                var data = fuir(this, fe).serialize();            timer("serializeFUIR");
 
                 try (FileOutputStream stream = new FileOutputStream(fuirFile.toFile()))
                   {
@@ -1176,6 +1172,22 @@ public class Fuzion extends Tool
           }
         options.verbosePrintln(1, "Elapsed time for phases: " + _times);
       };
+  }
+
+
+  /**
+   * mir -> dfa -> optimizer
+   *
+   * @return the optimized fuir representation
+   */
+  private static OptimizedFUIR fuir(Fuzion f, FrontEnd fe)
+  {
+    var options = fe._options;
+    var mir  = fe.createMIR();                            f.timer("createMIR");
+    var fuir = new GeneratingFUIR(fe, mir);               f.timer("ir");
+    var dfuir = new DFA(options, fuir).new_fuir();        f.timer("dfa");
+    var ofuir = new Optimizer(options, dfuir).fuir();     f.timer("opt");
+    return ofuir;
   }
 
 

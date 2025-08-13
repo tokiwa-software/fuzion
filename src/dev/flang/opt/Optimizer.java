@@ -26,11 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.opt;
 
-import dev.flang.fe.FrontEnd;
-
 import dev.flang.fuir.GeneratingFUIR;
-
-import dev.flang.mir.MIR;
+import dev.flang.fuir.OptimizedFUIR;
 
 import dev.flang.util.ANY;
 import dev.flang.util.FuzionOptions;
@@ -53,28 +50,26 @@ public class Optimizer extends ANY
    */
   public final FuzionOptions _options;
 
-  private final FrontEnd _fe;
-
-  private final MIR _mir;
+  private final OptimizedFUIR _fuir;
 
 
   /*--------------------------  constructors  ---------------------------*/
 
 
-  public Optimizer(FuzionOptions options, FrontEnd fe, MIR mir)
+  public Optimizer(FuzionOptions options, GeneratingFUIR fuir)
   {
     _options = options;
-    _fe = fe;
-    _mir = mir;
+    // NYI: UNDER DEVELOPMENT:
+    _fuir = new OptimizedFUIR(fuir);
   }
 
 
   /*-----------------------------  methods  -----------------------------*/
 
 
-  public GeneratingFUIR fuir()
+  public OptimizedFUIR fuir()
   {
-    return new GeneratingFUIR(_fe, _mir);
+    return _fuir;
   }
 
 

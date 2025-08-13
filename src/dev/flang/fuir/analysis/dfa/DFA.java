@@ -39,7 +39,7 @@ import java.util.function.Supplier;
 
 import java.util.stream.Stream;
 
-import dev.flang.fuir.DfaFUIR;
+import dev.flang.fuir.OptimizedFUIR;
 import dev.flang.fuir.FUIR;
 import dev.flang.fuir.FUIR.LifeTime;
 import dev.flang.fuir.GeneratingFUIR;
@@ -378,8 +378,8 @@ public class DFA extends ANY
           Errors.error("Call to abstract feature encountered.",
                        "Found call to  " + _fuir.clazzAsString(cc));
           break;
-        case Routine  : 
-        case Intrinsic: 
+        case Routine  :
+        case Intrinsic:
         case Native   :
           {
             if (_fuir.clazzNeedsCode(cc))
@@ -1224,11 +1224,11 @@ public class DFA extends ANY
    * DFA analysis. In particular, Let 'clazzNeedsCode' return false for
    * routines that were found never to be called.
    */
-  public DfaFUIR new_fuir()
+  public GeneratingFUIR new_fuir()
   {
     dfa();
     _options.timer("dfa");
-    var res = new DfaFUIR(_fuir)
+    var res = new GeneratingFUIR(_fuir)
       {
         /**
          * Determine the lifetime of the instance of a call to clazz cl.
@@ -1300,7 +1300,7 @@ public class DFA extends ANY
 
 
         @Override
-        public synchronized int[] matchCaseTags(int s, int cix)
+        public int[] matchCaseTags(int s, int cix)
         {
           var key = ((long)s<<32)|((long)cix);
           return _takenMatchCases.contains(key) ? super.matchCaseTags(s, cix) : new int[0];
