@@ -120,6 +120,13 @@ public class AstErrors extends ANY
   {
     return sbn(fn.baseNameHuman()) + fn.argCountAndIdString();
   }
+  static String sc(AbstractFeature f)
+  {
+    if (PRECONDITIONS) require
+      (f.isTypeParameter());
+
+    return sbn(f.featureName().baseNameHuman() + " : " + f.constraint());
+  }
   static String slbn(List<FeatureName> l)
   {
     var sl = new List<String>();
@@ -652,7 +659,7 @@ public class AstErrors extends ANY
   {
     return t.compareTo(from) == 0
       ? s(t)
-      : s(t) + " (from " + s(from) + ")";
+      : s(t) + " (from " + (from.isGenericArgument() ? s(from.genericArgument()) : s(from)) + ")";
   }
 
   public static void argumentTypeMismatchInRedefinition(AbstractFeature originalFeature, AbstractFeature originalArg, AbstractType originalArgType,
@@ -1871,7 +1878,9 @@ public class AstErrors extends ANY
       {
         error(pos,
               "Incompatible type parameter",
-              "formal type parameter " + sbnf(f) + " with constraint " + s(constraint) + "\n"+
+              "formal type parameter " + sc(f)
+                + (f.constraint().compareTo(constraint)==0 ? "" : " with constraint " + s(constraint))
+                + "\n" +
               "actual type parameter " + s(g) + "\n");
       }
   }
