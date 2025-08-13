@@ -155,7 +155,7 @@ public class GeneratingFUIR extends FUIR
                (i == f._select); // we expect that `fields` come in the order of their `_select`
              var t = f.resultClazz()._type;
              var ta = currentClazz.actualTypeParameters()[1];
-             var apply = ta.lookup(new FeatureAndActuals(Types.resolved.f_Typed_Applicator_apply,
+             var apply = ta.lookup(new FeatureAndActuals(Types.resolved.f_typed_applicator_apply,
                                                          new List<>(t)),
                                    FuzionConstants.NO_SELECT,
                                    false /* isInheritanceCall */);

@@ -50,7 +50,7 @@ public Typed_Sequence ref : Sequence container.Typed_Value is
   public redef as_list list container.Typed_Value =>
 
     as_reverse_list : /* NYI: BUG: #5712: explicit `container.` required as workaround for this bug */
-                      container.Typed_Applicator (list container.Typed_Value) is
+                      container.typed_applicator (list container.Typed_Value) is
 
       public redef apply(A type, e (list container.Typed_Value), v A) list container.Typed_Value
       =>
@@ -68,40 +68,42 @@ public Typed_Sequence ref : Sequence container.Typed_Value is
   public redef count i32
   =>
     count_elements : /* NYI: BUG: #5712: explicit `container.` required as workaround for this bug */
-                     container.Typed_Applicator i32 is
+                     container.typed_applicator i32 is
       public redef apply(A type, e i32, v A) i32 => e + 1
 
     typed_foldf 0 count_elements
 
 
-  # fold the elements of this `Typed_Sequence` using the given `Typed_Applicator`
+  # fold the elements of this `Typed_Sequence` using the given `typed_applicator`
   # and initial value.
   #
   # In case this `Typed_Sequence` is empty, the result is `e`.
   #
-  public typed_foldf(B type, A type : Typed_Applicator B, e B, a A) B
+  public typed_foldf(B type, A type : typed_applicator B, e B, a A) B
   =>
     abstract
 
 
-public Typed_Applicator(B type) is
+# a function that operates on a value of type that is given by the caller
+#
+public typed_applicator(B type) is
 
 
-  # Apply an operation on a value v of type A using the cumulative value
-  # `e`, and type type / value pair `A`/`v`,  create a new value of type
+  # Apply an operation on a value v of type T using the cumulative value
+  # `e`, and type type / value pair `T`/`v`,  create a new value of type
   # `B` and return it
   #
   # ex:
   #
   # to concatenate the String representation of all values, use
   #
-  #     my_concat : container.Typed_Applicator String is
+  #     my_concat : container.typed_applicator String is
   #
-  #       public redef apply(A type, e String, v A) String
+  #       public redef apply(T type, e String, v T) String
   #       =>
   #         e + $v
   #
-  public apply(A type, e B, v A) B
+  public apply(T type, e B, v T) B
   =>
     abstract
 
@@ -116,7 +118,7 @@ public Typed_Value ref is
   # Feed this value and its type into `a.apply`.  Add the
   # cumulative value `e` and return the resulting cumulative value.
   #
-  public applyTo(B type, a Typed_Applicator B, e B) B
+  public applyTo(B type, a typed_applicator B, e B) B
   =>
     abstract
 
@@ -136,7 +138,7 @@ public typed_value(# the type
 
   # apply `a` to `A` `e` `v`
   #
-  public redef applyTo(B type, a Typed_Applicator B, e B) B
+  public redef applyTo(B type, a typed_applicator B, e B) B
   =>
     a.apply A e v
 

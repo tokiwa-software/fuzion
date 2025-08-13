@@ -194,8 +194,8 @@ public class Types extends ANY
     public final AbstractFeature f_concur_atomic_v;
     public final AbstractFeature f_ValuesOfOpenType;
     public final AbstractFeature f_container;
-    public final AbstractFeature f_Typed_Applicator;
-    public final AbstractFeature f_Typed_Applicator_apply;
+    public final AbstractFeature f_typed_applicator;
+    public final AbstractFeature f_typed_applicator_apply;
     public final AbstractFeature f_Type;
     public final AbstractFeature f_Type_infix_colon;
     public final AbstractFeature f_Type_infix_colon_true;
@@ -265,8 +265,8 @@ public class Types extends ANY
       f_concur_atomic_v         = f_concur_atomic.get(mod, "v", 0);
       f_ValuesOfOpenType        = universe.get(mod, FuzionConstants.VALUES_OF_OPEN_TYPE_FEAT, 0);
       f_container               = universe.get(mod, "container", 0);
-      f_Typed_Applicator        = f_container.get(mod, FuzionConstants.TYPED_APPLICATOR_FEAT, 1);
-      f_Typed_Applicator_apply  = f_Typed_Applicator.get(mod, FuzionConstants.TYPED_APPLICATOR_APPLY_FEAT, 3);
+      f_typed_applicator        = f_container.get(mod, FuzionConstants.TYPED_APPLICATOR_FEAT, 1);
+      f_typed_applicator_apply  = f_typed_applicator.get(mod, FuzionConstants.TYPED_APPLICATOR_APPLY_FEAT, 3);
       f_Type                    = universe.get(mod, FuzionConstants.TYPE_FEAT, 0);
       f_Type_infix_colon        = f_Type.get(mod, "infix :", 1);
       f_Type_infix_colon_true   = f_Type.get(mod, "infix_colon_true", 1);
