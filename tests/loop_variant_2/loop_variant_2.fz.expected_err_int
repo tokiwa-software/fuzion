@@ -1,5 +1,5 @@
 
-error 1: FATAL FAULT `variant`: min
+error 1: FATAL FAULT `variant`: i64.min
 Call stack:
 fuzion.type.runtime.type.fault.type.install_default.λ.call#1: {base.fum}/fuzion/runtime/fault.fz:43:7:
       fuzion.sys.fatal_fault kind msg
@@ -22,9 +22,9 @@ fuzion.runtime.variant_fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
 fuzion.runtime.variantcondition_fault#1: {base.fum}/fuzion/runtime/variant_fault.fz:56:51:
 public variantcondition_fault(msg String) void => variant_fault.cause msg
 --------------------------------------------------^^^^^^^^^^^^^^^^^^^^^^^
-loop_variant_2.test_6.loop: --CURDIR--/loop_variant_2.fz:82:17:
+loop_variant_2.test_6.loop: --CURDIR--/loop_variant_2.fz:82:13:
     variant i64.min        # 5. should flag an error: variant violated in first iteration
-----------------^^^
+------------^^^^^^^
 loop_variant_2.test_6: --CURDIR--/loop_variant_2.fz:81:5:
     for i in (0..3)
 ----^

@@ -1,5 +1,5 @@
 
-error 1: FATAL FAULT `variant`: min
+error 1: FATAL FAULT `variant`: i64.min
 Call stack:
 fuzion.sys.fatal_fault#2
 fuzion.type.runtime.type.fault.type.install_default.λ.call#1

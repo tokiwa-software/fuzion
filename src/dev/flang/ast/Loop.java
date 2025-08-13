@@ -422,7 +422,7 @@ public class Loop extends ANY
         var varDecreasing     = new ParsedOperatorCall(varCurVal,  new ParsedName(SourcePosition.builtIn, FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "<"),   5, varPrevVal);
 
         // combine variant conditions
-        var variantCondition  = new ParsedOperatorCall(varNonNegative, new ParsedName(var1.sourceRange(),  FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "&&"),  4, varDecreasing);
+        var variantCondition  = new ParsedOperatorCall(varNonNegative, new ParsedName(variant.sourceRange(),  FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "&&"),  4, varDecreasing);
 
         // add definition and assignment of current variant value as well as check for variant conditions
         block = new Block(new List<>(f, varAss, asVarFault(variantCondition), block));
