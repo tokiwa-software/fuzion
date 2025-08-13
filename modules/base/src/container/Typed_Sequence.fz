@@ -49,7 +49,8 @@ public Typed_Sequence ref : Sequence container.Typed_Value is
   #
   public redef as_list list container.Typed_Value =>
 
-    as_reverse_list : Typed_Applicator (list container.Typed_Value) is
+    as_reverse_list : /* NYI: BUG: #5712: explicit `container.` required as workaround for this bug */
+                      container.Typed_Applicator (list container.Typed_Value) is
 
       public redef apply(A type, e (list container.Typed_Value), v A) list container.Typed_Value
       =>
@@ -66,7 +67,8 @@ public Typed_Sequence ref : Sequence container.Typed_Value is
   #
   public redef count i32
   =>
-    count_elements : Typed_Applicator i32 is
+    count_elements : /* NYI: BUG: #5712: explicit `container.` required as workaround for this bug */
+                     container.Typed_Applicator i32 is
       public redef apply(A type, e i32, v A) i32 => e + 1
 
     typed_foldf 0 count_elements
