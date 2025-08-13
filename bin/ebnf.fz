@@ -103,29 +103,6 @@ main =>
     if envir.args.count < 2
       panic "expecting at least one file name argument"
 
-    # first, strip out asciidoc code that is enclosed as blocks of the form
-    #
-    #   // tag::bla_bla
-    #   ...
-    #   // end::bla_bla
-    #
-    asciidoc_matcher        := ["pcregrep", "--invert-match", "--multiline", "// tag::(\\n|.)*?// end::"]
-
-    # then, extract EBNF rules of the form
-    #
-    # bla_bla : rhs
-    #         | rhs
-    #         ;
-    #
-    # or
-    #
-    # fragment
-    # bla_bla : rhs
-    #         | rhs
-    #         ;
-    #
-    rule_matcher := ["pcregrep", "--multiline",  "^(fragment\\n)*[a-zA-Z0-9_]+[ ]*:(\\n|.)*?( ;)"]
-
     # header
     ebnf_header := "grammar Fuzion;$new_line$new_line"
 
@@ -134,9 +111,68 @@ main =>
         if !io.file.exists src
           panic "file not found '$src'."
 
-        src_without_asciidoc  := !(asciidoc_matcher ++ [src])
-        (src_without_asciidoc | rule_matcher)
-          .replace "\"" "'"     # replace " by '
+
+        # read src file
+        src_lines :=
+          io.file.use _ src io.file.mode.read ()->
+            (io.buffered io.file.file_mutate).read_lines
+
+        # first, strip out asciidoc code that is enclosed as blocks of the form
+        #
+        #   // tag::bla_bla
+        #   ...
+        #   // end::bla_bla
+        #
+        src_without_asciidoc :=
+          for
+              res Sequence String := [], new_res # source without asciidoc comments
+              in_asciidoc bool := false, new_in_asciidoc
+              l in src_lines.ok ? src_lines.val : []
+          do
+            new_res, new_in_asciidoc :=
+              if in_asciidoc || l.trim.starts_with "// tag::"
+                (res, !l.trim.starts_with "// end::")
+              else
+                (res ++ [l], false)
+          else
+            res
+
+
+        # helper feature to determine the start of an EBNF rule
+        starts_rule(s String) =>
+          # NYI: BUG: rule must start with "[a-zA-Z0-9_]+", not checked here
+          parts := s.split ":"
+          !s.starts_with " " && parts.count >= 2 && !parts[0].trim.contains " "
+
+        # then, extract EBNF rules of the form
+        #
+        # bla_bla : rhs
+        #         | rhs
+        #         ;
+        #
+        # or
+        #
+        # fragment
+        # bla_bla : rhs
+        #         | rhs
+        #         ;
+        #
+        ebnf_rules :=
+          for
+            res Sequence String := [], new_res # the extracted EBNF rules
+            in_rule bool := false, new_in_rule
+            l in src_without_asciidoc
+          do
+            new_res, new_in_rule :=
+              if in_rule || l = "fragment" || starts_rule l
+                (res ++ [l], !l.ends_with ";")
+              else
+                (res, in_rule)
+          else
+            res.is_empty ? "" : (res.as_string "\n") + "\n"
+
+
+        ebnf_rules.replace "\"" "'"     # replace " by '
 
       .reduce ebnf_header (+)
 
