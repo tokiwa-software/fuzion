@@ -2475,6 +2475,13 @@ public class AstErrors extends ANY
           + inferredMsg);
   }
 
+  public static void wrongLoopVariantType(Expr variant)
+  {
+    error(variant.sourceRange(),
+          "Loop variant must be of type " + type("i64"),
+          "Type of loop variant must be " + type("i64") + ", but found variant of type " + s(variant.type()));
+  }
+
 }
 
 /* end of file */
