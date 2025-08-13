@@ -84,7 +84,33 @@ public Typed_Sequence ref : Sequence container.Typed_Value is
     abstract
 
 
+# typed_fold -- convenience feature to fold the elements of a `Typed_Sequence`.
+#
+# ex:
+#
+#     # print all value arguments into numbered lines
+#     #
+#     printn(A type ..., a A...) : container.typed_fold 1 a
+#     =>
+#       public redef apply(T type, n i32, v T) i32
+#       =>
+#         say "$n: $v"
+#         n + 1
+#
+public typed_fold(B type, e B, s container.Typed_Sequence) : container.typed_applicator B is
+
+  # the result of the fold
+  #
+  # the fold is done eagerly to ensure any side-effects will be performed even if `res` is
+  # never read.
+  #
+  public res B := s.typed_foldf e typed_fold.this
+
+
 # a function that operates on a value of type that is given by the caller
+#
+# This is used as an argument to `Typed_Sequence.typed_foldf` to process the typed
+# values.
 #
 public typed_applicator(B type) is
 
