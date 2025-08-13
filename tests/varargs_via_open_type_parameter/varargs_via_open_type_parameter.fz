@@ -1,0 +1,135 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test varargs_via_open_type_parameter
+#
+# -----------------------------------------------------------------------
+
+# This uses available infrastructure to process variable argument lists using
+# open type parameters
+#
+varargs_via_open_type_parameter =>
+
+  # A simple example that prints an arbitrary long list of arguments
+  #
+  test(A type ..., a A...) =>
+
+    # to print, this uses just `$a`, i.e., `a.as_string` that will use the inherited
+    # `(Sequence containter.Typed_Value).as_string`.
+    #
+    # Efficiency-wise, this is not very satisfactory since all values will be boxed
+    # as heap allocated ref instances.
+    #
+    say "a is $a"
+
+    # The type of `a` is a compiler generated internal feature
+    #
+    say "type is {type_of a .name}"
+
+  test 3.14 42 true [1,2,3]
+
+
+  # ------  different examples how `printf` could be implemented  ------
+  #
+  # all of thses use `typed_applicator`, i.e., there is no need for
+  # heap allocated boxed values.
+
+
+  # printf that replaces %0/%1/... by a.0/a.1/...
+  #
+  # this implementation uses a lokal instance of `typed_applicator`
+  #
+  printf1(A type ..., s String, a A...) =>
+
+    doit : container.typed_applicator (String, i32) is
+
+      public redef apply(T type, e (String, i32), v T) (String, i32)
+      =>
+        vs := if      T : numeric then "(number: $v)"
+              else if T : String  then "\"$v\""
+              else                     "(*** unkowon type `{T.name}` ***)"
+        (e.0.replace "%"+e.1 vs, e.1+1)
+
+    say (a.typed_foldf (s, 0) doit .0)
+
+
+  # printf that replaces %0/%1/... by a.0/a.1/...
+  #
+  # this implementation uses a lokal instance of `typed_fold`
+  #
+  printf2(A type ..., s String, a A...) =>
+
+    doit : container.typed_fold (s, 0) a is
+
+      public redef apply(T type, e (String, i32), v T) (String, i32)
+      =>
+        vs := if      T : numeric then "(number: $v)"
+              else if T : String  then "\"$v\""
+              else                     "(*** unkowon type `{T.name}` ***)"
+        (e.0.replace "%"+e.1 vs, e.1+1)
+
+    say doit.res.0
+
+
+  # printf that replaces %0/%1/... by a.0/a.1/...
+  #
+  # this implementation inherits `typed_fold`
+  #
+  printf3(A type ..., s String, a A...) : container.typed_fold (s, 0) a
+  =>
+    public redef apply(T type, e (String, i32), v T) (String, i32)
+    =>
+      vs := if      T : numeric then "(number: $v)"
+            else if T : String  then "\"$v\""
+            else                     "(*** unkowon type `{T.name}` ***)"
+      (e.0.replace "%"+e.1 vs, e.1+1)
+
+    say res.0
+
+
+  printf1 "first %0, second %1, third %2, fourth %3" 42 "Hello World!" unit (num.complex 3 4)
+  printf2 "first %0, second %1, third %2, fourth %3" 42 "Hello World!" unit (num.complex 3 4)
+  printf3 "first %0, second %1, third %2, fourth %3" 42 "Hello World!" unit (num.complex 3 4)
+
+
+  # ------  more examples  ------
+
+
+  # print all value arguments into numbered lines
+  #
+  printn(A type ..., a A...) : container.typed_fold 1 a
+  =>
+    public redef apply(T type, n i32, v T) i32
+    =>
+      say "$n: $v"
+      n + 1
+
+  printn 42 "Hello World!" unit (num.complex 3 4)
+
+
+  # concat all values into one string
+  #
+  as_one_string(A type ..., a A...) : container.typed_fold "" a
+  =>
+    public redef apply(T type, s String, v T) String
+    =>
+      s+v
+    res
+
+  say <| as_one_string 42 "Hello World!" unit (num.complex 3 4)
