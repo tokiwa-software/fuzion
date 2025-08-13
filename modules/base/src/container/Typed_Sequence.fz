@@ -39,7 +39,7 @@
 # `Sequence` is available here, but at the cost of boxing into `Typed_Value`
 # references values.
 #
-public Typed_Sequence ref : Sequence Typed_Value is
+public Typed_Sequence ref : Sequence container.Typed_Value is
 
 
   # create a list from this Typed_Sequence.
@@ -47,13 +47,13 @@ public Typed_Sequence ref : Sequence Typed_Value is
   # Note that this creates boxed ref instances of `Typed_Value`.  The preferred
   # means to acces the values is via a call to `typed_foldf`.
   #
-  public redef as_list list Typed_Value =>
+  public redef as_list list container.Typed_Value =>
 
-    as_reverse_list : Typed_Applicator (list Typed_Value) is
+    as_reverse_list : Typed_Applicator (list container.Typed_Value) is
 
-      public redef apply(A type, e (list Typed_Value), v A) list Typed_Value
+      public redef apply(A type, e (list container.Typed_Value), v A) list container.Typed_Value
       =>
-        typed_value v : e
+        container.typed_value v : e
 
     typed_foldf nil as_reverse_list .reverse_list
 
