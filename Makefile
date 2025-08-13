@@ -1144,7 +1144,7 @@ $(MOD_JDK_XML_DOM): $(MOD_JAVA_BASE) $(MOD_JAVA_XML) $(MOD_JDK_XML_DOM_FZ_FILES)
 $(MOD_JDK_ZIPFS): $(MOD_JAVA_BASE) $(MOD_JDK_ZIPFS_FZ_FILES)
 	$(FZ) -sourceDirs=$(MOD_JDK_ZIPFS_DIR) -modules=java.base -saveModule=$@
 
-$(BUILD_DIR)/tests: $(FUZION_FILES_TESTS)
+$(BUILD_DIR)/tests: $(FUZION_FILES_TESTS) $(MOD_TERMINAL)
 	rm -rf $@
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC_TESTS) $@
