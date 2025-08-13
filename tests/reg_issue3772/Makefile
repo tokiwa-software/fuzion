@@ -49,16 +49,16 @@ c: clean modules/mod.fum
 	$(ENV) ../../bin/check_simple_example c "$(FUZION_RUN)" $(FILE) || exit 1
 
 record: clean modules/mod.fum
-	$(ENV) $(FUZION) ../../bin/record_simple_example any "$(FUZION_RUN)" $(FILE)
+	$(ENV) ../../bin/record_simple_example any "$(FUZION_RUN)" $(FILE)
 
 record_int: clean modules/mod.fum
-	$(ENV) $(FUZION) ../../bin/record_simple_example int "$(FUZION_RUN)" $(FILE)
+	$(ENV) ../../bin/record_simple_example int "$(FUZION_RUN)" $(FILE)
 
 record_jvm: clean modules/mod.fum
-	$(ENV) $(FUZION) ../../bin/record_simple_example jvm "$(FUZION_RUN)" $(FILE)
+	$(ENV) ../../bin/record_simple_example jvm "$(FUZION_RUN)" $(FILE)
 
 record_c: clean modules/mod.fum
-	$(ENV) $(FUZION) ../../bin/record_simple_example c "$(FUZION_RUN)" $(FILE)
+	$(ENV) ../../bin/record_simple_example c "$(FUZION_RUN)" $(FILE)
 
 
 # compile mod into mod.fum

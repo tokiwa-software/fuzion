@@ -75,16 +75,16 @@ effect: $(FUZION_DEPENDENCIES)
 	$(ENV) ../../bin/check_simple_example effect "$(FUZION_RUN)" $(FILE) || exit 1
 
 record: $(FUZION_DEPENDENCIES)
-	$(ENV) $(FUZION) ../../bin/record_simple_example any "$(FUZION_RUN)" $(FILE)
+	$(ENV) ../../bin/record_simple_example any "$(FUZION_RUN)" $(FILE)
 
 record_int: $(FUZION_DEPENDENCIES)
-	$(ENV) $(FUZION) ../../bin/record_simple_example int "$(FUZION_RUN)" $(FILE)
+	$(ENV) ../../bin/record_simple_example int "$(FUZION_RUN)" $(FILE)
 
 record_jvm: $(FUZION_DEPENDENCIES)
-	$(ENV) $(FUZION) ../../bin/record_simple_example jvm "$(FUZION_RUN)" $(FILE)
+	$(ENV) ../../bin/record_simple_example jvm "$(FUZION_RUN)" $(FILE)
 
 record_c: $(FUZION_DEPENDENCIES)
-	$(ENV) $(FUZION) ../../bin/record_simple_example c "$(FUZION_RUN)" $(FILE)
+	$(ENV) ../../bin/record_simple_example c "$(FUZION_RUN)" $(FILE)
 
 record_effect: $(FUZION_DEPENDENCIES)
-	$(ENV) $(FUZION) ../../bin/record_simple_example effect "$(FUZION_RUN)" $(FILE)
+	$(ENV) ../../bin/record_simple_example effect "$(FUZION_RUN)" $(FILE)
