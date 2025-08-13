@@ -139,3 +139,22 @@ public typed_value(# the type
   public redef applyTo(B type, a Typed_Applicator B, e B) B
   =>
     a.apply A e v
+
+
+  # create a String of the form `"<type> <value>"` where `<type>`
+  # is the name of the type, enclosed by `(`/`)` in case it contains
+  # spaces.
+  #
+  # Examples:
+  #
+  #     i32 42
+  #     (array i32) [1, 2, 3]
+  #     String Hello World!
+  #
+  public redef as_string String
+  =>
+    t := A.name
+    if t.find " " ??
+      "($t) $v"
+    else
+      "$t $v"
