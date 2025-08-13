@@ -117,7 +117,7 @@ reader =>
 # read n bytes using the currently installed byte reader effect
 # if the returned sequence is empty or count is less than n, end of file has been reached.
 #
-public read_bytes(n i32) Sequence u8 ! reader =>
+public read_bytes(n i32) array u8 ! reader =>
 
   res := (mutate.array u8).new LM
 
@@ -230,14 +230,14 @@ public read_line switch String io.end_of_file ! reader =>
   read_delimiter encodings.ascii.lf true
 
 
-# Read input fully into an array of bytes until end_of_file is reached
+# Read input fully into an array of bytes until end_of_file or error is reached
+#
+# NOTE: if input is longer than `array.max_length` you
+# may need to call this several times or use another api
+# like memory-mapped access.
 #
 public read_fully array u8 ! reader =>
-  for
-    r Sequence u8 := [], r++n
-    n := read_bytes 8192
-  while n.count > 0 else
-    r.as_array
+  read_bytes (array u8).max_length
 
 
 # Read input fully and split it at the given delimiter. If specified, delete
