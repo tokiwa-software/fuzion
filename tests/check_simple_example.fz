@@ -173,7 +173,7 @@ read_file_fully(f String) outcome String =>
 
 
 # limit cpu time and stack size for executing test
-cpu_time_limit   := 120
+cpu_time_limit   := u64 600  # NYI: UNDER DEVELOPMENT: we should decrease this value
 stack_size_limit := 1024
 
 
@@ -248,9 +248,15 @@ else
 
     delete_tmp_files
 
-    # NYI:
-    # if !"ulimit -S -t $cpu_time_limit".excecute.ok
-    #   say "failed setting limit via ulimit"
+
+    # NYI: UNDER DEVELOPMENT:
+    # setrlimit for executed processes
+    # stack_size_limit, cpu_time_limit
+
+    _ := concur.threads.spawn ()->
+      time.nano.sleep <| time.duration.s cpu_time_limit
+      say "{"*** CANCELLED:".bold.red} test $file exceeded cpu time limit of $cpu_time_limit s"
+      exit 1
 
     backend_options(x) =>
       String.join ((((envir.vars.get x).val "").replace " " protected_space).split "|") " "
