@@ -95,7 +95,7 @@ public sync is
     => cnd_signal cnd
 
 
-    # signal all waiting thread to wake up
+    # signal all waiting threads to wake up
     #
     public broadcast bool
       pre is_locked.read

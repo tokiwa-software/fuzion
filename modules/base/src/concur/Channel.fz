@@ -47,7 +47,7 @@ public Channel(T type/*, buf_size i32*/) ref : Iterator T, Sending_Channel T, Re
   # has_next will return nil once Channel is empty
   #
   public redef close unit =>
-    bq.is_closed.write true
+    bq.close
     # NYI free/dispose cnd
 
 

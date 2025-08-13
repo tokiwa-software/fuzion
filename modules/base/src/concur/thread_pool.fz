@@ -57,10 +57,9 @@ Computable_Future(
   public redef is_done bool => compute_result.read.exists
 
   public redef get T =>
-    if !is_done
-      cnd.synchronized ()->
-        if !is_done
-          check cnd.wait
+    cnd.synchronized ()->
+      if !is_done
+        check cnd.wait
 
     compute_result.read.val
 
@@ -116,7 +115,7 @@ is
     # initiate shutdown of thread pool
     # i.e. stop accepting jobs
     #
-    bq.is_closed.write true
+    bq.close
 
     # wake up all threads
     cnd.synchronized unit ()->
