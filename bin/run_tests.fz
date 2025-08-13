@@ -61,20 +61,28 @@ envir_vars :=
 
 # helper to get out, err, exit_code from started process
 #
-record_process(p os.process,
+record_process(
+      p os.process,
       # the command, for error messages
-      cmd String) process_result =>
+      cmd String
+) process_result =>
   lm : mutate is
-  lm ! ()->
-    match p.with_out String lm (()->String.from_bytes (io.buffered lm).read_fully)
-      e error => panic "failed reading stdout from $cmd, error is: $e"
-      out String =>
-        match p.with_err String lm (()->String.from_bytes (io.buffered lm).read_fully)
-          e error => panic "failed reading stderr from $cmd, error is: $e"
-          err String =>
-            match p.wait
-              e error => panic "failed waiting for $cmd, error is: $e"
-              ec u32 => process_result out err ec
+  (concur.thread_pool 2 ()->
+      fout := concur.thread_pool.env.submit _ ()->
+        lm ! ()->
+          match p.with_out String lm (()->String.from_bytes (io.buffered lm).read_fully)
+            e error => panic "failed reading stdout from $cmd, error is: $e"
+            out String => out
+      ferr := concur.thread_pool.env.submit _ ()->
+        lm ! ()->
+          match p.with_err String lm (()->String.from_bytes (io.buffered lm).read_fully)
+            e error => panic "failed reading stderr from $cmd, error is: $e"
+            err String => err
+
+      match p.wait
+        e error => panic "failed waiting for $cmd, error is: $e"
+        ec u32 => process_result fout.get ferr.get ec)
+    .get
 
 # execute this Sequence of process+args
 #
