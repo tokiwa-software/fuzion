@@ -39,29 +39,26 @@ CHECK = && echo $(OK) || (echo $(FAIL); exit 1)
 
 all: jvm c int
 
-../check_simple_example:
-	$(FUZION) -modules=terminal -c -o=../check_simple_example ../check_simple_example.fz
+int: clean modules/mod.fum
+	$(ENV) ../../bin/check_simple_example int "$(FUZION_RUN)" $(FILE) || exit 1
 
-int: clean modules/mod.fum ../check_simple_example
-	$(ENV) ../check_simple_example int "$(FUZION_RUN)" $(FILE) || exit 1
+jvm: clean modules/mod.fum
+	$(ENV) ../../bin/check_simple_example jvm "$(FUZION_RUN)" $(FILE) || exit 1
 
-jvm: clean modules/mod.fum ../check_simple_example
-	$(ENV) ../check_simple_example jvm "$(FUZION_RUN)" $(FILE) || exit 1
-
-c: clean modules/mod.fum ../check_simple_example
-	$(ENV) ../check_simple_example c "$(FUZION_RUN)" $(FILE) || exit 1
+c: clean modules/mod.fum
+	$(ENV) ../../bin/check_simple_example c "$(FUZION_RUN)" $(FILE) || exit 1
 
 record: clean modules/mod.fum
-	$(ENV) $(FUZION) ../record_simple_example.fz any "$(FUZION_RUN)" $(FILE)
+	$(ENV) $(FUZION) ../../bin/record_simple_example any "$(FUZION_RUN)" $(FILE)
 
 record_int: clean modules/mod.fum
-	$(ENV) $(FUZION) ../record_simple_example.fz int "$(FUZION_RUN)" $(FILE)
+	$(ENV) $(FUZION) ../../bin/record_simple_example int "$(FUZION_RUN)" $(FILE)
 
 record_jvm: clean modules/mod.fum
-	$(ENV) $(FUZION) ../record_simple_example.fz jvm "$(FUZION_RUN)" $(FILE)
+	$(ENV) $(FUZION) ../../bin/record_simple_example jvm "$(FUZION_RUN)" $(FILE)
 
 record_c: clean modules/mod.fum
-	$(ENV) $(FUZION) ../record_simple_example.fz c "$(FUZION_RUN)" $(FILE)
+	$(ENV) $(FUZION) ../../bin/record_simple_example c "$(FUZION_RUN)" $(FILE)
 
 
 # compile mod into mod.fum

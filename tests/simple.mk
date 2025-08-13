@@ -62,32 +62,29 @@ export LANGUAGE = en_US:en
 
 all: jvm c int
 
-../check_simple_example:
-	$(FUZION) -modules=terminal -c -o=../check_simple_example ../check_simple_example.fz
+int: $(FUZION_DEPENDENCIES)
+	$(ENV) ../../bin/check_simple_example int "$(FUZION_RUN)" $(FILE) || exit 1
 
-int: $(FUZION_DEPENDENCIES) ../check_simple_example
-	$(ENV) ../check_simple_example int "$(FUZION_RUN)" $(FILE) || exit 1
+jvm: $(FUZION_DEPENDENCIES)
+	$(ENV) ../../bin/check_simple_example jvm "$(FUZION_RUN)" $(FILE) || exit 1
 
-jvm: $(FUZION_DEPENDENCIES) ../check_simple_example
-	$(ENV) ../check_simple_example jvm "$(FUZION_RUN)" $(FILE) || exit 1
+c: $(FUZION_DEPENDENCIES)
+	$(ENV) ../../bin/check_simple_example c "$(FUZION_RUN)" $(FILE) || exit 1
 
-c: $(FUZION_DEPENDENCIES) ../check_simple_example
-	$(ENV) ../check_simple_example c "$(FUZION_RUN)" $(FILE) || exit 1
-
-effect: $(FUZION_DEPENDENCIES) ../check_simple_example
-	$(ENV) ../check_simple_example effect "$(FUZION_RUN)" $(FILE) || exit 1
+effect: $(FUZION_DEPENDENCIES)
+	$(ENV) ../../bin/check_simple_example effect "$(FUZION_RUN)" $(FILE) || exit 1
 
 record: $(FUZION_DEPENDENCIES)
-	$(ENV) $(FUZION) ../record_simple_example.fz any "$(FUZION_RUN)" $(FILE)
+	$(ENV) $(FUZION) ../../bin/record_simple_example any "$(FUZION_RUN)" $(FILE)
 
 record_int: $(FUZION_DEPENDENCIES)
-	$(ENV) $(FUZION) ../record_simple_example.fz int "$(FUZION_RUN)" $(FILE)
+	$(ENV) $(FUZION) ../../bin/record_simple_example int "$(FUZION_RUN)" $(FILE)
 
 record_jvm: $(FUZION_DEPENDENCIES)
-	$(ENV) $(FUZION) ../record_simple_example.fz jvm "$(FUZION_RUN)" $(FILE)
+	$(ENV) $(FUZION) ../../bin/record_simple_example jvm "$(FUZION_RUN)" $(FILE)
 
 record_c: $(FUZION_DEPENDENCIES)
-	$(ENV) $(FUZION) ../record_simple_example.fz c "$(FUZION_RUN)" $(FILE)
+	$(ENV) $(FUZION) ../../bin/record_simple_example c "$(FUZION_RUN)" $(FILE)
 
 record_effect: $(FUZION_DEPENDENCIES)
-	$(ENV) $(FUZION) ../record_simple_example.fz effect "$(FUZION_RUN)" $(FILE)
+	$(ENV) $(FUZION) ../../bin/record_simple_example effect "$(FUZION_RUN)" $(FILE)
