@@ -2475,6 +2475,11 @@ public class AstErrors extends ANY
           + inferredMsg);
   }
 
+  public static void illegalIntrinsic(Feature f)
+  {
+    error(f.pos(), "Intrinsics may only be defined in the base library", "Did you mean to create a native feature?");
+  }
+
 }
 
 /* end of file */

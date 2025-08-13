@@ -1769,6 +1769,16 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
     checkDuplicateFeatures(f);
     checkLegalQualThisType(f);
     checkLegalDefinesType(f);
+    checkIllegalIntrinsic(f);
+  }
+
+
+  private void checkIllegalIntrinsic(Feature f)
+  {
+    if (_options._loadBaseMod && f.isIntrinsic())
+      {
+        AstErrors.illegalIntrinsic(f);
+      }
   }
 
 
