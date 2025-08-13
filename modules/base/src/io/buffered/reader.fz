@@ -232,8 +232,12 @@ public read_line switch String io.end_of_file ! reader =>
 
 # Read input fully into an array of bytes until end_of_file or error is reached
 #
+# NOTE: if input is longer than `array.max_length` you
+# may need to call this several times or use another api
+# like memory-mapped access.
+#
 public read_fully array u8 ! reader =>
-  read_bytes i32.max
+  read_bytes (array u8).max_length
 
 
 # Read input fully and split it at the given delimiter. If specified, delete
