@@ -24,7 +24,7 @@ jobs:
     - name: install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install ruby-asciidoctor-pdf antlr4 pcregrep asciidoc-base
+        sudo apt-get install ruby-asciidoctor-pdf antlr4 asciidoc-base
 
     - name: build release
       run: make release
