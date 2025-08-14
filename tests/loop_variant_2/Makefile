@@ -17,43 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion concur.Channel
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-
-# a Channel can be used to send values
-# to another thread
-#
-# NYI: UNDER DEVELOPMENT: max buf size
-public Channel(T type/*, buf_size i32*/) ref : Iterator T, Sending_Channel T, Receiving_Channel T is
-
-  cnd := concur.sync.condition.new.val # NYI: error handling
-  bq := Blocking_Queue T cnd
-
-
-  # send a value to this Channel
-  # returns true if sending was successful,
-  # false if not
-  #
-  public redef infix <- (to T) bool
-  =>
-    bq.enqueue to
-
-
-  # close the Channel
-  #
-  # infix <- will now always return false
-  # has_next will return nil once Channel is empty
-  #
-  public redef close unit =>
-    bq.close
-    # NYI free/dispose cnd
-
-
-  # returns nil when Channel is closed and empty
-  # otherwise returns the next received value
-  #
-  public redef has_next option T =>
-    bq.dequeue
-
+override NAME = loop_variant_2
+include ../simple.mk

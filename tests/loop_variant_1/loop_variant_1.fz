@@ -17,43 +17,46 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion concur.Channel
+#  Source code of Fuzion test loop_variant_1
 #
 # -----------------------------------------------------------------------
 
-
-# a Channel can be used to send values
-# to another thread
+# Loop variants of wrong type
 #
-# NYI: UNDER DEVELOPMENT: max buf size
-public Channel(T type/*, buf_size i32*/) ref : Iterator T, Sending_Channel T, Receiving_Channel T is
+loop_variant_1 =>
 
-  cnd := concur.sync.condition.new.val # NYI: error handling
-  bq := Blocking_Queue T cnd
-
-
-  # send a value to this Channel
-  # returns true if sending was successful,
-  # false if not
-  #
-  public redef infix <- (to T) bool
-  =>
-    bq.enqueue to
+  test_1 is
+    for i in (0..10)
+    variant "bla"    # 1. should flag an error: wrong type of variant
+    do
+      say "i=$i"
 
 
-  # close the Channel
-  #
-  # infix <- will now always return false
-  # has_next will return nil once Channel is empty
-  #
-  public redef close unit =>
-    bq.close
-    # NYI free/dispose cnd
+  test_2 is
+    for i in (0..10)
+    variant foo      # 2. should flag an error: feature not found
+    do
+      say "i=$i"
 
 
-  # returns nil when Channel is closed and empty
-  # otherwise returns the next received value
-  #
-  public redef has_next option T =>
-    bq.dequeue
+  test_3 is
+    for i in (0..10)
+    variant 0.1      # 3. should flag an error: wrong type of variant
+    do
+      say "i=$i"
 
+
+  test_4 is
+    n := 10
+
+    for i in (0..n)
+    variant (n-i)    # 4. should flag an error: wrong type of variant
+    do
+      say "i=$i"
+
+
+  test_5 is
+    for i in (0..10)
+    variant true     # 5. should flag an error: wrong type of variant
+    do
+      say "i=$i"
