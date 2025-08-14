@@ -91,7 +91,7 @@ main =>
 
   ########### EBNF ###############
 
-  else if !(is_installed "antlr" || is_installed "antlr4")
+  if !(is_installed "antlr" || is_installed "antlr4")
     io.err.println "not generating ebnf due to missing dependency antlr"
     exit 0
   else
