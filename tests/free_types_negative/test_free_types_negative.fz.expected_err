@@ -75,7 +75,7 @@ Type inference failed for 2 type parameters 'A', 'B'
 --CURDIR--/test_free_types_negative.fz:35:3: error 8: Incompatible type parameter
   a2 "fourty two"    # 1. should flag an error: type constraint not respected
 --^^
-formal type parameter 'T' with constraint 'numeric'
+formal type parameter 'T : numeric'
 actual type parameter 'String'
 
 
@@ -94,7 +94,7 @@ To solve this, you could change the type of the target 'v' to 'f64' or convert t
 --CURDIR--/test_free_types_negative.fz:91:3: error 10: Incompatible type parameter
   g ga3              # 6. should flag an error since type arguments are in the wrong order such that constraint is not matched
 --^
-formal type parameter 'B' with constraint 'numeric'
+formal type parameter 'B : numeric'
 actual type parameter 'String'
 
 
@@ -115,12 +115,12 @@ actual is value of type 'f64' at --CURDIR--/test_free_types_negative.fz:76:5:
 ----------------------------------^
 Actual type for argument #1 's' does not match expected type.
 In call to          : 'Sequence.infix ++'
-expected formal type: 'Sequence test_free_type_negative.x2.U'
-actual type found   : 'Sequence test_free_type_negative.x2.T'
+expected formal type: 'Sequence U'
+actual type found   : 'Sequence T'
 assignable to       : 'Any',
-                      'Sequence test_free_type_negative.x2.T',
+                      'Sequence T',
                       'property.ref countable'
 for value assigned  : 's'
-To solve this, you could change the type of the target 's' to 'Sequence test_free_type_negative.x2.T' or convert the type of the assigned value to 'Sequence test_free_type_negative.x2.U'.
+To solve this, you could change the type of the target 's' to 'Sequence T' or convert the type of the assigned value to 'Sequence U'.
 
 12 errors.
