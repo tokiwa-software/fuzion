@@ -522,7 +522,7 @@ is
 
 
   # lookup key k
-  public redef index [] (k CTK) option CTV =>
+  public redef get (k CTK) option CTV =>
     r := read_root
     match lookup r k 0 nil r.gen
       restart =>
