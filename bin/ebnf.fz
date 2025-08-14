@@ -137,9 +137,11 @@ main =>
 
         # helper feature to determine the start of an EBNF rule
         starts_rule(s String) =>
-          # NYI: BUG: rule must start with "[a-zA-Z0-9_]+", not checked here
           parts := s.split ":"
-          !s.starts_with " " && parts.count >= 2 && !parts[0].trim.contains " "
+          rule := parts[0].trim
+          (!s.starts_with " " && parts.count >= 2 && !rule.contains " "
+           && !rule.is_empty && (rule.as_codepoints ∀ c->c.is_ascii_alpha_num || c = "_"))
+
 
         # then, extract EBNF rules of the form
         #
