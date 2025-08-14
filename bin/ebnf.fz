@@ -91,9 +91,6 @@ main =>
 
   ########### EBNF ###############
 
-  if !is_installed "pcregrep"
-    io.err.println "not generating ebnf due to missing dependency pcregrep"
-    exit 0
   else if !(is_installed "antlr" || is_installed "antlr4")
     io.err.println "not generating ebnf due to missing dependency antlr"
     exit 0

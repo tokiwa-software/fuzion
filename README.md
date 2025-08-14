@@ -239,7 +239,6 @@ The compiler can be built and used without these dependencies.
 But the following tools/dependencies are used e.g. for generating the documentation or for running the test suite:
 
 - antlr, for the ebnf grammar
-- pcregrep, for the ebnf grammar
 - asciidoctor, asciidoctor-pdf
 - sed, for normalizing test output
 - wget / curl, for downloading jar dependencies

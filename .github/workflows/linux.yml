@@ -50,7 +50,7 @@ jobs:
       - name: install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install sqlite3 libgc1 libgc-dev shellcheck asciidoc asciidoctor ruby-asciidoctor-pdf pcregrep antlr4 libclang1 libclang-dev libwolfssl-dev
+          sudo apt-get install sqlite3 libgc1 libgc-dev shellcheck asciidoc asciidoctor ruby-asciidoctor-pdf antlr4 libclang1 libclang-dev libwolfssl-dev
 
       - name: link libclang
         run: |
