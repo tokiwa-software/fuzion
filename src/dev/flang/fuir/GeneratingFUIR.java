@@ -42,7 +42,6 @@ import dev.flang.ast.AbstractCurrent;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
-import dev.flang.ast.Call; // NYI: CLEANUP: remove this import
 import dev.flang.ast.Constant;
 import dev.flang.ast.Current;
 import dev.flang.ast.Expr;
@@ -165,27 +164,39 @@ public class GeneratingFUIR extends FUIR
                                                          new List<>(t)),
                                    FuzionConstants.NO_SELECT,
                                    false /* isInheritanceCall */);
-             var openTypeInstance = new Call(call.pos(),
-                                             new Current(call.pos(), currentClazz._type.feature()),
-                                             currentClazz.feature().outerRef());
-             var featureWithOpenTypeParamter = new Call(call.pos(),
-                                                        openTypeInstance,
-                                                        currentClazz._outer.feature().outerRef());
-             var field = new Call(call.pos(),
-                                  featureWithOpenTypeParamter,
-                                  f.feature())
+             var cur = new Current(call.pos(),                     // e.g. tuple.#Values_Of_Open_Type<n>.typed_foldf
+                                   currentClazz._type.feature());
+             var openTypeInstance = new AbstractCall()             // e.g. tuple.#Values_Of_Open_Type<n>
                {
-                 @Override public int select() { return f._select; }
-                 @Override public AbstractType type() { return t; }
+                 @Override public SourcePosition     pos()                  { return call.pos(); }
+                 @Override public Expr               target()               { return new Current(call.pos(), currentClazz._type.feature()); }
+                 @Override public AbstractFeature    calledFeature()        { return currentClazz.feature().outerRef(); }
+                 @Override public AbstractType       type()                 { return currentClazz.feature().outerRef().resultType(); }
                };
-             var fe = e;
-             e = new Call(call.pos(),
-                          aa,
-                          new List<>(t),
-                          new List<>(fe, field),
-                          apply.feature())
+             var featureWithOpenTypeParamter = new AbstractCall()  // e.g. tuple
                {
-                 @Override public AbstractType type() { return fe.type(); }
+                 @Override public SourcePosition     pos()                  { return call.pos(); }
+                 @Override public Expr               target()               { return openTypeInstance; }
+                 @Override public AbstractFeature    calledFeature()        { return currentClazz._outer.feature().outerRef(); }
+                 @Override public AbstractType       type()                 { return currentClazz._outer.feature().outerRef().resultType(); }
+               };
+             var field = new AbstractCall()                        // e.g. tuple.values.3
+               {
+                 @Override public SourcePosition     pos()                  { return call.pos(); }
+                 @Override public Expr               target()               { return featureWithOpenTypeParamter; }
+                 @Override public AbstractFeature    calledFeature()        { return f.feature(); }
+                 @Override public int                select()               { return f._select; }
+                 @Override public AbstractType       type()                 { return t; }
+               };
+             var fe = e; // effectively final copy of e
+             e = new AbstractCall()                                // e.g. aa.apply <type of tuple.values.3> e tuple.values.3
+               {
+                 @Override public SourcePosition     pos()                  { return call.pos(); }
+                 @Override public Expr               target()               { return aa; }
+                 @Override public AbstractFeature    calledFeature()        { return apply.feature(); }
+                 @Override public List<AbstractType> actualTypeParameters() { return new List<>(t); }
+                 @Override public List<Expr>         actuals()              { return new List<>(fe, field); }
+                 @Override public AbstractType       type()                 { return fe.type(); }
                };
            }
          return e;
