@@ -122,6 +122,14 @@ public tuple(public A type...,
              public values A...) is
 
 
+  # create a String from this instance.
+  #
+  public redef as_string String =>
+
+    concat : container.typed_applicator String is
+      public redef apply(V type, e String, v V) String => e="" ? $v : "$e, $v"
+
+    "({values.typed_foldf "" concat})"
 # create a one tuple
 #
 public tuple1(t T) T => (t)

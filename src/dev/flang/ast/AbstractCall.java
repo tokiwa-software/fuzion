@@ -62,8 +62,13 @@ public abstract class AbstractCall extends Expr
 
   /**
    * The type parameters used for calling {@code calledFeature}, never null.
+   *
+   * The default implementations returns an empty list.
    */
-  public abstract List<AbstractType> actualTypeParameters();
+  public List<AbstractType> actualTypeParameters()
+  {
+    return NO_GENERICS;
+  }
 
 
   /**
@@ -80,15 +85,25 @@ public abstract class AbstractCall extends Expr
 
   /**
    * The actual arguments of the call, never null.
+   *
+   * The default implementations returns an empty list.
    */
-  public abstract List<Expr> actuals();
+  public List<Expr> actuals()
+  {
+    return NO_EXPRS;
+  }
 
 
   /**
    * For a call a.b.4 with a select clause ".4" to pick a variant from a field
    * of an open generic type, this is the chosen variant.
+   *
+   * The default implementations returns -1.
    */
-  public abstract int select();
+  public int select()
+  {
+    return -1;
+  }
 
 
   /**
@@ -99,8 +114,31 @@ public abstract class AbstractCall extends Expr
    *     a : b.c.d is
    *     # ------^  for call d isInheritanceCall is true
    *
+   * The default implementations returns false.
    */
-  public abstract boolean isInheritanceCall();
+  public boolean isInheritanceCall()
+  {
+    return false;
+  }
+
+
+  /**
+   * visit all the expressions within this feature.
+   *
+   * @param v the visitor instance that defines an action to be performed on
+   * visited objects.
+   *
+   * @param outer the feature surrounding this expression.
+   *
+   * @return this.
+   */
+  @Override
+  public Expr visit(FeatureVisitor v, AbstractFeature outer)
+  {
+    // visit should be only required by the `Call` or `ParsedCall`, not by `LibraryCall`
+    throw new Error("AbstractCall.visit on implemented by " + getClass());
+  }
+
 
 
   /**

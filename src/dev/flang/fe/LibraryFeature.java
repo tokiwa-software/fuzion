@@ -371,6 +371,29 @@ public class LibraryFeature extends AbstractFeature
   }
 
 
+  @Override
+  public boolean hasValuesAsOpenTypeFeature()
+  {
+    /* this should produce the same as super.hasValuesAsOpenTypeFeature(), just for
+     * efficiency and to avoid complex recursion we use the O-flag in the
+     * feature data in the library module directly:
+     */
+    var result = _libModule.featureHasOpenTypeFeature(_index);
+
+    if (CHECKS) check
+      (result == super.hasValuesAsOpenTypeFeature());
+
+    return result;
+  }
+
+
+  @Override
+  public AbstractFeature valuesAsOpenTypeFeature()
+  {
+    return _libModule.featureHasOpenTypeFeature(_index) ? _libModule.featureValuesAsOpenTypeFeature(_index)
+                                                        : null;
+  }
+
   /**
    * Get inner feature with given name, ignoring the argument count.
    *
@@ -463,8 +486,11 @@ public class LibraryFeature extends AbstractFeature
         return Types.resolved.t_void;
       }
     else if (isTypeParameter())
-      { // NYI: CLEANUP: handling of isOpenTypeParameter() will be added in PR #5681
-        return Types.resolved.f_Type.resultType();
+      {
+        return
+          (isOpenTypeParameter()
+           ? Types.resolved.f_Values_Of_Open_Type
+           : Types.resolved.f_Type    ).resultType();
       }
     else
       {

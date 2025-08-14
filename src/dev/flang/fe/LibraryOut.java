@@ -392,7 +392,7 @@ class LibraryOut extends ANY
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | short         | 0000REvvvFCYkkkk                              |
+   *   | true   | 1      | short         | 000OREvvvFCYkkkk                              |
    *   |        |        |               |           k = kind                            |
    *   |        |        |               |           Y = has Type feature (i.e. 'f.type')|
    *   |        |        |               |           C = is cotype                       |
@@ -400,6 +400,7 @@ class LibraryOut extends ANY
    *   |        |        |               |           v = visibility                      |
    *   |        |        |               |           R = has precondition feature        |
    *   |        |        |               |           E = has postcondition feature       |
+   *   |        |        |               |           O = hasValuesAsOpenTypeFeature      |
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | Name          | name                                          |
    *   |        |        +---------------+-----------------------------------------------+
@@ -418,6 +419,8 @@ class LibraryOut extends ANY
    *   | hasRT  | 1      | Type          | optional result type,                         |
    *   |        |        |               | hasRT = !isConstructor && !isChoice           |
    *   |        |        |               |         && !isTypeParameter                   |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | O=1    | 1      | int           | open type Feature index                       |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | isType | 1      | Type          | constraint of (open) type parameters          |
    *   | Parame |        |               |                                               |
@@ -491,7 +494,10 @@ class LibraryOut extends ANY
       {
         k = k | FuzionConstants.MIR_FILE_KIND_HAS_POST_CONDITION_FEATURE;
       }
-    var hasRT = !f.isConstructor() && !f.isChoice() && !f.isTypeParameter();
+    if (f.hasValuesAsOpenTypeFeature())
+      {
+        k = k | FuzionConstants.MIR_FILE_KIND_HAS_VALUES_OF_OPEN_TYPE_FEATURE;
+      }
     var n = f.featureName();
     _data.writeShort(k);
     var bn = n.baseName();
@@ -517,9 +523,13 @@ class LibraryOut extends ANY
       }
     if (CHECKS) check
       (f.arguments().size() == argCount);
-    if (hasRT)
+    if (!f.isConstructor() && !f.isChoice() && !f.isTypeParameter())
       {
         type(f.resultType());
+      }
+    if (f.hasValuesAsOpenTypeFeature())
+      {
+        _data.writeOffset(f.valuesAsOpenTypeFeature());
       }
     if (f.isTypeParameter())
       {

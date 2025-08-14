@@ -302,6 +302,14 @@ public class Feature extends AbstractFeature
 
 
   /**
+   * if hasValuesAsOpenTypeFeature(), this will be the open type feature, i.e., the
+   * feature that is called when a field whose type is an open type parameter is
+   * called without selecting one specific variant.
+   */
+  private AbstractFeature _valuesAsOpenType = null;
+
+
+  /**
    * Actions collected to be executed as soon as this feature has reached
    * State.RESOLVED_DECLARATIONS, see method whenResolvedDeclarations().
    */
@@ -1191,6 +1199,44 @@ public class Feature extends AbstractFeature
   boolean isChoiceAfterTypesResolved()
   {
     return choiceGenerics() != null;
+  }
+
+  @Override
+  public AbstractFeature valuesAsOpenTypeFeature()
+  {
+    if (PRECONDITIONS) require
+      (hasValuesAsOpenTypeFeature(),
+       _state.atLeast(State.RESOLVED_TYPES));
+
+    if (CHECKS) check
+      (_valuesAsOpenType != null);
+
+    return _valuesAsOpenType;
+  }
+
+
+  /**
+   * Add open type feature, i.e., the feature that is called when a field whose
+   * type is an open type parameter is called without selecting one specific
+   * variant.
+   */
+  void addValuesAsOpenTypeFeature(Resolution res)
+  {
+    if (PRECONDITIONS) require
+      (hasValuesAsOpenTypeFeature());
+
+    if (_valuesAsOpenType == null)
+      {
+        var name = FuzionConstants.VALUES_AS_OPEN_TYPE_PREFIX + _id;
+        var otf = new Feature(pos(), visibility().typeVisibility(), 0, NoType.INSTANCE, new List<>(name), new List<>(),
+                              new List<>(new Call(pos(), Universe.instance, Types.resolved.f_Values_Of_Open_Type)),
+                              Contract.EMPTY_CONTRACT,
+                              new Impl(pos(), new Block(), Impl.Kind.Routine));
+
+        res._module.findDeclarations(otf, outer());
+        res.resolveTypes(otf);
+        _valuesAsOpenType = otf;
+      }
   }
 
 
@@ -2404,8 +2450,11 @@ A ((Choice)) declaration must not contain a result type.
             result = outer().outer().thisType(outer().isFixed());
           }
         else if (isTypeParameter())
-          { // NYI: CLEANUP: handling of isOpenTypeParameter() will be added in PR #5681
-            result = Types.resolved.f_Type.resultTypeIfPresentUrgent(res, urgent);
+          {
+            result =
+              (isOpenTypeParameter()
+               ? Types.resolved.f_Values_Of_Open_Type
+               : Types.resolved.f_Type            ).resultTypeIfPresentUrgent(res, urgent);
           }
         else
           {
@@ -2429,6 +2478,11 @@ A ((Choice)) declaration must not contain a result type.
             // FORWARD_CYCLIC should be returned only once.
             // We then want to return t_ERROR.
             _resultType = result == Types.t_FORWARD_CYCLIC ? Types.t_ERROR : result;
+
+            if (result.isOpenGeneric())
+              {
+                addValuesAsOpenTypeFeature(res);
+              }
           }
       }
 

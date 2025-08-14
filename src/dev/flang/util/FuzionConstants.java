@@ -117,6 +117,24 @@ public class FuzionConstants extends ANY
 
 
   /**
+   * Name of Values_Of_Open_Type feature.
+   */
+  public static final String VALUES_OF_OPEN_TYPE_FEAT = "Values_Of_Open_Type";
+
+
+  /**
+   * Name of TypedAplicator feature.
+   */
+  public static final String TYPED_APPLICATOR_FEAT = "typed_applicator";
+
+
+  /**
+   * Name of TypedAplicator.apply feature.
+   */
+  public static final String TYPED_APPLICATOR_APPLY_FEAT = "apply";
+
+
+  /**
    * Name of String feature.
    */
   public static final String STRING_NAME = "String";
@@ -287,6 +305,14 @@ public class FuzionConstants extends ANY
    * this not being found in redefinitions.
    */
   public static final String COTYPE_THIS_TYPE = "THIS" + INTERNAL_NAME_PREFIX + "TYPE";
+
+
+  /**
+   * Prefix of name of open type feature, i.e., the feature that is called when
+   * a field whose type is an open type parameter is called without selecting
+   * one specific variant.
+   */
+  public static final String VALUES_AS_OPEN_TYPE_PREFIX = INTERNAL_NAME_PREFIX + "Values_Of_Open_Type";
 
 
   /**
@@ -484,6 +510,12 @@ public class FuzionConstants extends ANY
    * Flag OR'ed to kind for features with postcondition feature
    */
   public static final int MIR_FILE_KIND_HAS_POST_CONDITION_FEATURE = 0x800;
+
+
+  /**
+   * Flag OR'ed to kind for features with a values of open type feature
+   */
+  public static final int MIR_FILE_KIND_HAS_VALUES_OF_OPEN_TYPE_FEATURE = 0x1000;
 
 
   /**
