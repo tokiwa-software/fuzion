@@ -34,10 +34,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 
-public class DfaFUIR extends GeneratingFUIR {
+public class OptimizedFUIR extends GeneratingFUIR {
 
 
   /*--------------------------  constructors  ---------------------------*/
+
+
+  private final GeneratingFUIR _original;
 
 
   /**
@@ -46,10 +49,21 @@ public class DfaFUIR extends GeneratingFUIR {
    *
    * @param original the original FUIR instance that we are cloning.
    */
-  public DfaFUIR(GeneratingFUIR original)
+  public OptimizedFUIR(GeneratingFUIR original)
   {
     super(original);
+    _original = original;
   }
+
+  // passthrough methods that DFA overrides
+  @Override public LifeTime lifeTime(int cl) {  return _original.lifeTime(cl); }
+  @Override public boolean doesResultEscape(int s) { return _original.doesResultEscape(s); }
+  @Override public boolean alwaysResultsInVoid(int s){ return _original.alwaysResultsInVoid(s); }
+  @Override public int[] matchCaseTags(int s, int cix){ return _original.matchCaseTags(s, cix); }
+  @Override public int matchCaseField(int s, int cix){ return _original.matchCaseField(s, cix); }
+  @Override public boolean clazzIsUnitType(int cl){ return _original.clazzIsUnitType(cl); }
+  @Override public int clazzOuterRef(int cl){  return _original.clazzOuterRef(cl); }
+  @Override public int accessedClazz(int s){ return _original.accessedClazz(s); }
 
 
   /*----------------------  serializing FUIR  ----------------------*/
@@ -93,7 +107,7 @@ public class DfaFUIR extends GeneratingFUIR {
   /**
    * for choice `cl` get the choice element clazzes.
    */
-  protected int[] clazzChoices(int cl)
+  private int[] clazzChoices(int cl)
   {
     var numChoices = clazzChoiceCount(cl);
     var result = new int[numChoices > 0 ? numChoices : 0];
