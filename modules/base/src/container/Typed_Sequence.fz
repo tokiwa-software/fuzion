@@ -136,7 +136,7 @@ public typed_applicator(B type) is
 
 # Typed_Value -- a ref type to hold a value of an arbitrary type
 #
-# The value can be extracted by a call to `Typed_Value.eapplyTo`
+# The value can be extracted by a call to `Typed_Value.applyTo`
 #
 public Typed_Value ref is
 
