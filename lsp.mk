@@ -99,8 +99,3 @@ lsp/debug/socket: $(CLASS_FILES_LSP)
 
 $(LSP_JAR): $(CLASS_FILES_LSP)
 	jar cfm $(LSP_JAR) assets/Manifest.txt -C $(BUILD_DIR)/classes . -C $(CLASSES_DIR_LSP) .
-
-lsp/release: clean all $(LSP_JAR)
-	7z a -tzip $(BUILD_DIR)/fuzion_language_server_$(VERSION).zip \
-	$(LSP_JAR) README.md LICENSE $(BUILD_DIR)/jars/ \
-	$(BUILD_DIR)/bin/ $(BUILD_DIR)/modules/
