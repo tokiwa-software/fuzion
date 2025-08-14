@@ -55,7 +55,7 @@ public class OptimizedFUIR extends GeneratingFUIR {
     _original = original;
   }
 
-  // passthrough methods DFA that overrides
+  // passthrough methods that DFA overrides
   @Override public LifeTime lifeTime(int cl) {  return _original.lifeTime(cl); }
   @Override public boolean doesResultEscape(int s) { return _original.doesResultEscape(s); }
   @Override public boolean alwaysResultsInVoid(int s){ return _original.alwaysResultsInVoid(s); }
