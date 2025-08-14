@@ -129,7 +129,7 @@ module fileio is
     if open_results[0] = 0
       res
     else
-      error "failed opening file, error number: {open_results[0]}"
+      error "failed opening file \"$path\", error number: {open_results[0]}"
 
 
   # Closes an IO source using an i64 representing the source handler (file descriptor)
@@ -182,4 +182,4 @@ module fileio is
     if open_results[0] = 0
       res
     else
-      error "failed opening directory, error number: {open_results[0]}"
+      error "failed opening directory \"$path\", error number: {open_results[0]}"

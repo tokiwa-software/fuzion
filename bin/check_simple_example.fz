@@ -119,7 +119,7 @@ record_process(
       if feed_stdin && io.file.exists stdin_file
         lm ! ()->
           _ := p.with_in unit lm ()->
-            _ := (io.buffered lm).writer.env.write (read_file_fully stdin_file).val.utf8
+            _ := (io.buffered lm).writer.env.write (read_file_fully stdin_file).or_panic.utf8
 
       match p.wait
         e error => panic "failed waiting for $cmd, error is: $e"
@@ -160,7 +160,7 @@ write_to_file(dest String, data String) =>
 # write file from src to dest
 #
 copy(src, dest String) =>
-  contents := (io.file.use src io.file.mode.read (() -> String.from_bytes (io.buffered io.file.file_mutate).read_fully)).val
+  contents := (io.file.use src io.file.mode.read (() -> String.from_bytes (io.buffered io.file.file_mutate).read_fully)).or_panic
   write_to_file dest contents
 
 # read file f fully

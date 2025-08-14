@@ -208,6 +208,14 @@ is
       b B => (exception T).env.cause (e b)
 
 
+  # get A or panic with `B.as_string`
+  #
+  public or_panic A =>
+    match switch.this
+      a A => a
+      b B => panic b.as_string
+
+
   # converts switch to a string
   #
   public redef as_string String =>
