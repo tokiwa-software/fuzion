@@ -59,7 +59,7 @@ public class Optimizer extends ANY
   public Optimizer(FuzionOptions options, GeneratingFUIR fuir)
   {
     _options = options;
-    // NYI: UNDER DEVELOPMENT:
+    // NYI: UNDER DEVELOPMENT: optimizer implementation still missing
     _fuir = new OptimizedFUIR(fuir);
   }
 
