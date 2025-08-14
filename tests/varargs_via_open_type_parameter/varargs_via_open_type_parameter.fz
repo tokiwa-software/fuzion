@@ -47,7 +47,7 @@ varargs_via_open_type_parameter =>
 
   # ------  different examples how `printf` could be implemented  ------
   #
-  # all of thses use `typed_applicator`, i.e., there is no need for
+  # all of these use `typed_applicator`, i.e., there is no need for
   # heap allocated boxed values.
 
 
