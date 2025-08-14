@@ -489,7 +489,7 @@ public class LibraryFeature extends AbstractFeature
       {
         return
           (isOpenTypeParameter()
-           ? Types.resolved.f_ValuesOfOpenType
+           ? Types.resolved.f_Values_Of_Open_Type
            : Types.resolved.f_Type    ).resultType();
       }
     else

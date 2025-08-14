@@ -117,9 +117,9 @@ public class FuzionConstants extends ANY
 
 
   /**
-   * Name of ValuesOfOpenType feature.
+   * Name of Values_Of_Open_Type feature.
    */
-  public static final String VALUES_OF_OPEN_TYPE_FEAT = "ValuesOfOpenType";
+  public static final String VALUES_OF_OPEN_TYPE_FEAT = "Values_Of_Open_Type";
 
 
   /**
@@ -312,7 +312,7 @@ public class FuzionConstants extends ANY
    * a field whose type is an open type parameter is called without selecting
    * one specific variant.
    */
-  public static final String VALUES_AS_OPEN_TYPE_PREFIX = INTERNAL_NAME_PREFIX + "ValuesOfOpenType";
+  public static final String VALUES_AS_OPEN_TYPE_PREFIX = INTERNAL_NAME_PREFIX + "Values_Of_Open_Type";
 
 
   /**
