@@ -1144,13 +1144,25 @@ $(MOD_JDK_XML_DOM): $(MOD_JAVA_BASE) $(MOD_JAVA_XML) $(MOD_JDK_XML_DOM_FZ_FILES)
 $(MOD_JDK_ZIPFS): $(MOD_JAVA_BASE) $(MOD_JDK_ZIPFS_FZ_FILES)
 	$(FZ) -sourceDirs=$(MOD_JDK_ZIPFS_DIR) -modules=java.base -saveModule=$@
 
-$(BUILD_DIR)/tests: $(FUZION_FILES_TESTS) $(MOD_TERMINAL)
+# this target may fail when executed standalone, see comment on $(BUILD_DIR)/tests
+#
+$(BUILD_DIR)/bin/check_simple_example: bin/check_simple_example.fz
+	$(FZ) -modules=terminal -c -o=$@ bin/check_simple_example.fz
+	@echo " + $@"
+
+# this target may fail when executed standalone, see comment on $(BUILD_DIR)/tests
+#
+$(BUILD_DIR)/bin/record_simple_example: bin/record_simple_example.fz
+	$(FZ) -modules=terminal -c -o=$@ bin/record_simple_example.fz
+	@echo " + $@"
+
+# tricky, we need MOD_TERMINAL to build (check|record)_simple_example
+# but we are not adding this to those targets because we do not want
+# (check|record)_simple_example to rebuild any time sth is changed in base lib
+$(BUILD_DIR)/tests: $(FUZION_FILES_TESTS) $(MOD_TERMINAL) $(BUILD_DIR)/bin/check_simple_example $(BUILD_DIR)/bin/record_simple_example
 	rm -rf $@
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC_TESTS) $@
-	@echo "pre building check_simple_example"
-	$(FZ) -modules=terminal -c -o=$(BUILD_DIR)/tests/check_simple_example $(BUILD_DIR)/tests/check_simple_example.fz
-	@echo " + $(BUILD_DIR)/tests/check_simple_example"
 
 $(BUILD_DIR)/include: $(FUZION_FILES_RT)
 	rm -rf $@
