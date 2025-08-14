@@ -126,12 +126,10 @@ public tuple(public A type...,
   #
   public redef as_string String =>
 
-   concat : container.typed_applicator String is
-     public redef apply(V type, e String, v V) String => e="" ? $v : "$e, $v"
+    concat : container.typed_applicator String is
+      public redef apply(V type, e String, v V) String => e="" ? $v : "$e, $v"
 
-   "({values.typed_foldf "" concat})"
-
-
+    "({values.typed_foldf "" concat})"
 # create a one tuple
 #
 public tuple1(t T) T => (t)
