@@ -58,6 +58,7 @@ import dev.flang.ast.FeatureName;
 import dev.flang.ast.FeatureAndOuter;
 import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.Function;
+import dev.flang.ast.Impl;
 import dev.flang.ast.ParsedOperatorCall;
 import dev.flang.ast.Resolution;
 import dev.flang.ast.SrcModule;
@@ -1761,6 +1762,16 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
     checkDuplicateFeatures(f);
     checkLegalQualThisType(f);
     checkLegalDefinesType(f);
+    checkIllegalIntrinsic(f);
+  }
+
+
+  private void checkIllegalIntrinsic(Feature f)
+  {
+    if (_options._loadBaseMod && f.isIntrinsic() && f.impl() != Impl.ERROR)
+      {
+        AstErrors.illegalIntrinsic(f);
+      }
   }
 
 
