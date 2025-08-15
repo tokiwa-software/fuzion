@@ -470,13 +470,15 @@ C_FILES = $(shell find $(FZ_SRC) \( -path ./build -o -path ./.git \) -prune -o -
 .DELETE_ON_ERROR:
 
 
+# default make target
+.PHONY: all
+all: $(FUZION_BASE) $(FUZION_JAVA_MODULES) $(FUZION_FILES) $(MOD_FZ_CMD) $(FUZION_EBNF) $(LSP_JAR)
+
+
 # rules relevant for language server protocol
 #
 include $(FZ_SRC)/lsp.mk
 
-
-.PHONY: all
-all: $(FUZION_BASE) $(FUZION_JAVA_MODULES) $(FUZION_FILES) $(MOD_FZ_CMD) $(FUZION_EBNF) $(LSP_JAR)
 
 # everything but rarely used java modules
 .PHONY: min-java
@@ -1152,14 +1154,14 @@ $(MOD_JDK_ZIPFS): $(MOD_JAVA_BASE) $(MOD_JDK_ZIPFS_FZ_FILES)
 
 # this target may fail when executed standalone, see comment on $(BUILD_DIR)/tests
 #
-$(BUILD_DIR)/bin/check_simple_example: bin/check_simple_example.fz
-	$(FZ) -modules=terminal -c -o=$@ bin/check_simple_example.fz
+$(BUILD_DIR)/bin/check_simple_example: $(FZ_SRC)/bin/check_simple_example.fz
+	$(FZ) -modules=terminal -c -o=$@ $^
 	@echo " + $@"
 
 # this target may fail when executed standalone, see comment on $(BUILD_DIR)/tests
 #
-$(BUILD_DIR)/bin/record_simple_example: bin/record_simple_example.fz
-	$(FZ) -modules=terminal -c -o=$@ bin/record_simple_example.fz
+$(BUILD_DIR)/bin/record_simple_example: $(FZ_SRC)/bin/record_simple_example.fz
+	$(FZ) -modules=terminal -c -o=$@ $^
 	@echo " + $@"
 
 # tricky, we need MOD_TERMINAL to build (check|record)_simple_example
