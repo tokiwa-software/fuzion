@@ -164,7 +164,7 @@ is
     two_pow_32 := ((u64 1)<<32)
     b1, b2 := equalize other
     s, _ := b1
-      .zip b2 (tuple)
+      .zip b2 tuple
       .reverse
       .reduce ((Sequence u32).empty, u64 0) r,t->
         minuend, subtrahend := t
@@ -246,7 +246,7 @@ is
     if a.data.count = b.data.count
       a.data
         # zip the two equally long lists of digits
-        .zip b.data (tuple)
+        .zip b.data tuple
         # skip to first unequal
         .drop_while (x -> c, d := x; c = d)
         # compare

@@ -91,7 +91,7 @@ public class Call extends AbstractCall
   {
     // force reresolve, detected partial application
     // of open type parameter.
-    // e.g.: `(1..3).zip 7..9 (tuple) |> say`
+    // e.g.: `(1..3).zip 7..9 tuple |> say`
     if (actualTypeParameters().isEmpty() && !actuals().isEmpty() && calledFeature().hasOpenGenericsArgList() && _type != null)
       {
         _generics = NO_GENERICS;

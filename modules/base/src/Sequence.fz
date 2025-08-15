@@ -597,7 +597,7 @@ public Sequence(public T type) ref : property.countable is
   #     (Sequence.this.last, b.last)
   #
   public pairs(U type, b Sequence U) Sequence ((T, U)) =>
-    combine b (tuple)
+    combine b tuple
 
 
   # takes a transducer xf, a reducer f and an initial value
