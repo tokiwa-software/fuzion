@@ -1,0 +1,114 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature percent
+#
+# -----------------------------------------------------------------------
+
+# percent (url) encoding and decoding
+#
+# bytes of non ascii and reserved characters are individually converted
+# to hexadecimal representation with leading percent sign '%'
+#
+public percent is
+
+
+  # apply percent encoding (url encoding) to an utf8 string, spaces are encoded as "%20" not "+"
+  #
+  # e.g.
+  #   space is encoded as '%20' NOT '+'
+  #   ö is encoded as '%C3%B6' (utf8) and NOT '%F6' (Windows-1252)
+  #
+  public encode(str String) String =>
+
+    # helper feature to encode a codepoint
+    enc_c(c codepoint) String =>
+      if c.is_ascii_alpha_num || c = "-" || c = "_" || c = "~" || c = "."
+        $c
+      else
+        c.utf8.map (val -> "%" + val.as_string 16 .upper_case)
+         .as_string ""
+
+    str.as_codepoints.map enc_c .as_string ""
+
+
+  # decode a percent encoded (url encoding) utf8 string
+  # decodes '+' as space
+  #
+  public decode(enc_str String) outcome String
+  # NYI: does this restriction make sense? Should non ascii characters be allowed? Decoding works without it
+  pre debug: enc_str.as_codepoints ∀ (c->c.is_ascii)
+  =>
+    enc := enc_str.as_codepoints
+    len := enc.count
+    dec(res String, i i32) outcome String =>
+      if i >= len
+        res
+      else if enc[i] != "%"
+        dec (res + (enc[i] = "+" ? " " : enc[i])) i+1
+      else
+        # decode percent encoded characters, for multi-byte codepoints each byte is individually percent encoded
+        for bytes := outcome (Sequence u8) (id (Sequence u8) []), new_bytes
+            j := i, j+3
+        while j < len && enc[j] = "%"
+          new_bytes outcome (Sequence u8) :=
+            if j+3 > len
+              error "unexpected end of input, expected two hex characters after '%' at position $j"
+            else
+              match encodings.base16.decode_str (enc_str.substring_codepoint j+1 j+3).upper_case
+                b array u8 => bytes.val ++ b
+                e error => error "broken string, failed to decode '{enc_str.substring_codepoint j j+3}' at position $j"
+        until !new_bytes.ok
+          new_bytes.err
+        else
+          dec (res + String.from_bytes bytes.val) j
+    dec "" 0
+
+
+  # decode a percent encoded (url encoding) into a sequence of bytes
+  # decodes '+' as space
+  #
+  public decode_binary(enc_str String) outcome (Sequence u8)
+  # NYI: does this restriction make sense? Should non ascii characters be allowed? Decoding works without it
+  pre debug: enc_str.as_codepoints ∀ (c->c.is_ascii)
+  =>
+    enc := enc_str.utf8
+    len := enc.count
+    dec(res Sequence u8, i i32) outcome (Sequence u8) =>
+      if i >= len
+        res
+      else if enc[i].as_u32 != "%".val
+        dec (res ++ (enc[i].as_u32 = "+".val ? [" ".val.as_u8] : [enc[i]])) i+1
+      else
+        # decode percent encoded characters, for multi-byte codepoints each byte is individually percent encoded
+        for bytes := outcome (Sequence u8) (id (Sequence u8) []), new_bytes
+            j := i, j+3
+        while j < len && enc[j].as_u32 = "%".val
+          new_bytes outcome (Sequence u8) :=
+            if j+3 > len
+              error "unexpected end of input, expected two hex characters after '%' at position $j"
+            else
+              match encodings.base16.decode_str (enc_str.substring_codepoint j+1 j+3).upper_case
+                b array u8 => bytes.val ++ b
+                e error => error "broken string, failed to decode '{enc_str.substring j j+3}' at position $j"
+        until !new_bytes.ok
+          new_bytes.err
+        else
+          dec (res ++ bytes.val) j
+    dec "".utf8 0
