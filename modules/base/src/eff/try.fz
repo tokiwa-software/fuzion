@@ -52,6 +52,15 @@ public try(ERROR type, F type : fallible ERROR, T type, code_try ()->T) is
       F.instate T v code_try (_ -> code_catch m.get.get)
 
 
+  # on failure try if code `alt` succeeds
+  #
+  public or_try(alt ERROR->T) try ERROR F T =>
+    try ERROR F _ ()->
+      catch e->
+        alt e
+
+
+
   # infix alias for catch
   #
   infix || (code_catch ERROR->T) => catch code_catch
