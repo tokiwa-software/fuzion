@@ -177,14 +177,12 @@ main =>
   # source: https://stackoverflow.com/questions/45181115/portable-way-to-find-the-number-of-processors-cpus-in-a-shell-script
   # first, try third arg then try a few executables, if everything fails use default value
   tc :=
-    (fuzion.runtime.contract_fault.try ()->(envir.args.nth 3).val.trim.parse_i32.val)
-      .catch _->
-        (fuzion.runtime.contract_fault.try ()->(!!"nproc --all").out.trim.parse_i32.val)
-          .catch _->
-            (fuzion.runtime.contract_fault.try ()->(!!"getconf _NPROCESSORS_ONLN").out.trim.parse_i32.val)
-              .catch _->
-                (fuzion.runtime.contract_fault.try ()->(!!"sysctl -n hw.ncpu").out.trim.parse_i32.val)
-                  .catch _->4
+    fuzion.runtime.contract_fault
+      .try ()->(envir.args.nth 3).val.trim.parse_i32.val
+      .or_try _->(!!"nproc --all").out.trim.parse_i32.val
+      .or_try _->(!!"getconf _NPROCESSORS_ONLN").out.trim.parse_i32.val
+      .or_try _->(!!"sysctl -n hw.ncpu").out.trim.parse_i32.val
+      .catch  _->4
   thread_count := tc > 6 ? 6 : tc
 
   tests := find_tests "$build_dir/tests"
