@@ -188,18 +188,18 @@ public class Env extends ANY implements Comparable<Env>
 
 
   /**
-   * Compare two environoments by looking only at those effect values of effects
+   * Compare two environments by looking only at those effect values of effects
    * in the given set of effect types
    *
    * NOTE: iterating the elements of `which` must be deterministic!
    *
    * @param which set of clazz ids of effect types to compare
    *
-   * @param a first environemnt
+   * @param a first environment
    *
    * @param b second environment
    *
-   * @return -1/0/+1 defining a total order while ingoring effects not in
+   * @return -1/0/+1 defining a total order while ignoring effects not in
    * `which`.
    */
   static int compare(Set<Integer> which, Env a, Env b)

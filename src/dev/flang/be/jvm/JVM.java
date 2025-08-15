@@ -1390,11 +1390,11 @@ should be avoided as much as possible.
   /**
    * Create code that is supposed to be unreachable.
    *
-   * @param site a site index where this unreachable code occured
+   * @param site a site index where this unreachable code occurred
    *
    * @param msg some text explaining what kind of statement we are trying to execute.
    *
-   * @return an Expr to reprot the error and exit(1).
+   * @return an Expr to report the error and exit(1).
    */
   Expr reportUnreachable(int site, String msg)
   {

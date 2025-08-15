@@ -1544,7 +1544,7 @@ public class Feature extends AbstractFeature
    *
    *   String.danish => String.this.replace "a" "å"
    *
-   * i.e., a feature declaration that is located syntactially outside of the
+   * i.e., a feature declaration that is located syntactically outside of the
    * outer feature's declaration.
    */
   public boolean isExtensionFeature()
@@ -2096,8 +2096,8 @@ A ((Choice)) declaration must not contain a result type.
     return !isCotype()
       && !featureName().isInternal()
       && !isUniverse()
-      && ((visibility().eraseTypeVisibility() == Visi.PUB)
-          || (outer().visibility().eraseTypeVisibility() == Visi.PUB) && isArgument())
+      && (visibility().eraseTypeVisibility() == Visi.PUB
+          || outer().visibility().eraseTypeVisibility() == Visi.PUB && isArgument())
       && !(featureName().toString().startsWith(FuzionConstants.COTYPE_THIS_TYPE))
       && rt == NoType.INSTANCE;
   }

@@ -176,7 +176,7 @@ public class Select extends Call {
             _currentlyResolving = _calledFeature.resultTypeIfPresentUrgent(res, true).isOpenGeneric()
               // explicit
               ? new Call(pos(), _target, _name, select(), Call.NO_GENERICS, NO_EXPRS, null)
-              // implict
+              // implicit
               : resolveImplicit(res, context, getActualResultType(res, context, true));
           }
         else if (_target != null)

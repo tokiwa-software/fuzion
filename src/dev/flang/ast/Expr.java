@@ -543,7 +543,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
 
 
   /**
-   * NYI: UNDER DEVELOPMENT: better throw away completly and reparse?
+   * NYI: UNDER DEVELOPMENT: better throw away completely and reparse?
    *
    * resets all features in this expression so that they can have _new_ outers.
    */
@@ -707,7 +707,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
 
   /**
    * Source text for this Expr. This is used in error message: It takes the
-   * source code at `sourceRange()`. Only for artifical expressions, this should
+   * source code at `sourceRange()`. Only for artificial expressions, this should
    * probably be redefined to create more useful text.
    */
   public String sourceText()
@@ -728,7 +728,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
   // NYI: CLEANUP: move this logic to isAssignableFrom?
   /**
    * check if assigning this expr to frmlT might
-   * be ambigous
+   * be ambiguous
    *
    * @param frmlT
    */
