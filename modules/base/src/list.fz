@@ -273,24 +273,24 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
               | c Cons => f c.head (c.tail.foldrf e f)
 
 
-  # map this Sequence to a list that contains the result of folding
+  # map this list to a list that contains the result of folding
   # all prefixes using the given monoid.
   #
-  # e.g., for a Sequence of i32 s, s.scan i32.sum creates a list of
+  # e.g., for a list of i32 s, s.scan i32.sum creates a list of
   # partial sums (0..).map x->(s.take x).fold i32.sum
   #
-  public redef scan (m Monoid A) list A => scan m.e m
+  public scan_list (m Monoid A) list A => scan_list m.e m
 
 
-  # map this Sequence to a list that contains the result of folding
+  # map this list to a list that contains the result of folding
   # all prefixes using the given monoid and initial value
   #
-  # Used to scan a list tail-recursively
+  # Used to scan a list lazily
   #
-  public scan (s A, m Monoid A) list A =>
+  public scan_list (s A, m Monoid A) list A =>
     list.this ? nil    => nil
               | c Cons => acc := m.op s c.head
-                          list acc (c.tail.scan acc m)
+                          list acc (c.tail.scan_list acc m)
 
 
   # map this list to a list that contains the result of folding
