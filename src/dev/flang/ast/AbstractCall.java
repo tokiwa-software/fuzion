@@ -315,7 +315,7 @@ public abstract class AbstractCall extends Expr
   {
     var t1 = rt == Types.t_ERROR ? rt : adjustThisTypeForTarget(context, rt, foundRef);
     var t2 = t1 == Types.t_ERROR ? t1 : t1.applyTypePars(tt);
-    var t3 = t2 == Types.t_ERROR ? t2 : t2.applyTypePars(calledFeature(), actualTypeParameters());
+    var t3 = t2 == Types.t_ERROR ? t2 : t2.applyTypePars(calledFeature(), actualTypeParameters(res, context));
     var t4 = t3 == Types.t_ERROR ? t3 : tt.isGenericArgument() ? t3 : t3.resolve(res, tt.feature().context());
     var t5 = t4 == Types.t_ERROR || forArg ? t4 : adjustThisTypeForTarget(context, t4, foundRef);
 
@@ -323,6 +323,12 @@ public abstract class AbstractCall extends Expr
       (t5 != null);
 
     return t5;
+  }
+
+
+  protected List<AbstractType> actualTypeParameters(Resolution res, Context context)
+  {
+    return actualTypeParameters();
   }
 
 

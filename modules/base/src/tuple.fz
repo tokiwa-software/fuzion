@@ -130,30 +130,3 @@ public tuple(public A type...,
       public redef apply(V type, e String, v V) String => e="" ? $v : "$e, $v"
 
     "({values.typed_foldf "" concat})"
-# create a one tuple
-#
-public tuple1(t T) T => (t)
-
-# create a two tuple
-#
-public tuple2(t T, u U) tuple T U => (t, u)
-
-# create a three tuple
-#
-public tuple3(t T, u U, v V) tuple T U V => (t, u, v)
-
-# create a four tuple
-#
-public tuple4(t T, u U, v V, w W) tuple T U V W => (t, u, v, w)
-
-# create a five tuple
-#
-public tuple5(t T, u U, v V, w W, x X) tuple T U V W X => (t, u, v, w, x)
-
-# create a six tuple
-#
-public tuple6(t T, u U, v V, w W, x X, y Y) tuple T U V W X Y => (t, u, v, w, x, y)
-
-# create a seven tuple
-#
-public tuple7(t T, u U, v V, w W, x X, y Y, z Z) tuple T U V W X Y Z => (t, u, v, w, x, y, z)
