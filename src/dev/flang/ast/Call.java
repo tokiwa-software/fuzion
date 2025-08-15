@@ -86,6 +86,25 @@ public class Call extends AbstractCall
   private final List<AbstractType> _originalGenerics;
 
 
+  @Override
+  protected List<AbstractType> actualTypeParameters(Resolution res, Context context)
+  {
+    // force reresolve, detected partial application
+    // of open type parameter.
+    // e.g.: `(1..3).zip 7..9 (tuple) |> say`
+    if (actualTypeParameters().isEmpty() && !actuals().isEmpty() && calledFeature().hasOpenGenericsArgList() && _type != null)
+      {
+        _generics = NO_GENERICS;
+        _resolvedFor = null;
+        _actualsResolvedFor = null;
+        _type = null;
+        resolveTypes(res, context);
+      }
+    return actualTypeParameters();
+  }
+
+
+
   /**
    * actual generic arguments, set by parser
    */
