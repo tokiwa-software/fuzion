@@ -21,6 +21,14 @@
 #
 # -----------------------------------------------------------------------
 
+#
+# fzextract can be used to extract
+# fuzion native feature definitions from
+# c header files. Use it like this:
+#
+# fz -modules=clang fzextract.fz some_header_file.h
+#
+
 string_option : option String is
   public redef as_string String =>
     match string_option.this
@@ -49,12 +57,13 @@ to_fuzion_type(c_type String) string_option =>
   else if c_type = "size_t" || c_type = "long"
     "i64"
   else
+    # NYI: UNDER DEVELOPMENT: we could support more complex types
     nil
 
 
 if envir.args.count != 2
   say "usage: "
-  say "fz fzextract.fz some_header_file.h"
+  say "fz -modules=clang fzextract.fz some_header_file.h"
   exit 1
 
 match (clang.parse_header envir.args[1] f_decl->
