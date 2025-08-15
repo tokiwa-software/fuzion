@@ -89,10 +89,12 @@ public class Call extends AbstractCall
   @Override
   protected List<AbstractType> actualTypeParameters(Resolution res, Context context)
   {
-    // force reresolve, detected partial application
+    // force re-resolve, detected partial application
     // of open type parameter.
     // e.g.: `(1..3).zip 7..9 tuple |> say`
-    if (actualTypeParameters().isEmpty() && !actuals().isEmpty() && calledFeature().hasOpenGenericsArgList() && _type != null)
+    if (actualTypeParameters().size() < calledFeature().typeArguments().size() &&
+        calledFeature().hasOpenGenericsArgList() &&
+        _type != null)
       {
         _generics = NO_GENERICS;
         _resolvedFor = null;
@@ -1391,7 +1393,11 @@ public class Call extends AbstractCall
           ? result
           : adjustResultType(res, context, result);
       }
-    return result;
+
+    // see test #5391 when this might happen
+    return result != null && result.containsUndefined(false)
+      ? null
+      : result;
   }
 
 
@@ -1671,7 +1677,9 @@ public class Call extends AbstractCall
 
     var rt = _calledFeature.resultTypeIfPresentUrgent(res, false);
 
-    if (mustReportMissingImmediately(rt))
+    if (mustReportMissingImmediately(rt) &&
+      // see test #5391 for when this might happen
+        !_calledFeature.hasOpenGenericsArgList())
       {
         reportConflicts(conflict, foundAt);
         reportMissingInferred(missing);
