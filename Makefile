@@ -472,12 +472,7 @@ C_FILES = $(shell find $(FZ_SRC) \( -path ./build -o -path ./.git \) -prune -o -
 
 # default make target
 .PHONY: all
-all: $(FUZION_BASE) $(FUZION_JAVA_MODULES) $(FUZION_FILES) $(MOD_FZ_CMD) $(FUZION_EBNF) $(LSP_JAR)
-
-
-# rules relevant for language server protocol
-#
-include $(FZ_SRC)/lsp.mk
+all: $(FUZION_BASE) $(FUZION_JAVA_MODULES) $(FUZION_FILES) $(MOD_FZ_CMD) $(FUZION_EBNF) $(BUILD_DIR)/lsp.jar
 
 
 # everything but rarely used java modules
@@ -1537,3 +1532,8 @@ endif
 
 $(DOC_JAVA): $(JAVA_FILE_UTIL_VERSION) $(JAVA_FILE_FUIR_ANALYSIS_ABSTRACT_INTERPRETER2)
 	javadoc --release $(JAVA_VERSION) --enable-preview -d $(dir $(DOC_JAVA)) $(JAVA_FILES_FOR_JAVA_DOC)
+
+
+# rules relevant for language server protocol
+#
+include $(FZ_SRC)/lsp.mk
