@@ -41,7 +41,7 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Expr;
 import dev.flang.ast.FeatureName;
-import dev.flang.ast.Generic;
+import dev.flang.ast.TypeKind;
 import dev.flang.ast.UnresolvedType;
 import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
@@ -262,7 +262,7 @@ public class LibraryModule extends Module implements MirModule
   /**
    * The universe
    */
-  private AbstractFeature universe()
+  public AbstractFeature universe()
   {
     return _universe;
   }
@@ -297,7 +297,7 @@ public class LibraryModule extends Module implements MirModule
       {
         var d = main == null
           ? universe()
-          : lookupFeature(universe(), FeatureName.get(main, 0), null);
+          : lookupFeature(universe(), FeatureName.get(main, 0));
 
         if (CHECKS) check
           (d != null);
@@ -458,13 +458,13 @@ public class LibraryModule extends Module implements MirModule
    *
    * @param offset the offset of the Generic
    */
-  Generic genericArgument(int offset)
+  AbstractFeature genericArgument(int offset)
   {
     var tp = feature(offset);
     var o = tp.outer();
-    for (var g : o.generics().list)
+    for (var g : o.typeArguments())
       {
-        if (g.typeParameter() == tp)
+        if (g == tp)
           {
             return g;
           }
@@ -484,11 +484,7 @@ public class LibraryModule extends Module implements MirModule
     if (result == null)
       {
         var k = typeKind(at);
-        if (k == -4)
-          {
-            return Types.t_ADDRESS;
-          }
-        else if (k == -3)
+        if (k == -3)
           {
             return universe().selfType();
           }
@@ -524,9 +520,10 @@ public class LibraryModule extends Module implements MirModule
                   }
               }
             var outer = type(typeOuterPos(at));
-            result = new NormalType(this, at, feature,
-                                    typeValRefOrThis(at),
-                                    generics, outer);
+            var tk = TypeKind.fromInt(typeValRefOrThis(at));
+            result = tk == TypeKind.ThisType
+              ? new ThisType(this, at, feature)
+              : new NormalType(this, at, feature, tk, generics, outer);
           }
         _libraryTypes.put(at, result);
       }
@@ -566,7 +563,7 @@ Module File
 |====
    |cond.     | repeat | type          | what
 
-.8+|true      | 1      | byte[]        | MIR_FILE_MAGIC
+.8+|true      | 1      | byte[4]       | MIR_FILE_MAGIC
 
               | 1      | Name          | module name
 
@@ -591,7 +588,7 @@ Module File
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | byte[]        | MIR_FILE_MAGIC                                |
+   *   | true   | 1      | byte[4]       | MIR_FILE_MAGIC                                |
    *   +        +--------+---------------+-----------------------------------------------+
    *   |        | 1      | Name          | module name                                   |
    *   +        +--------+---------------+-----------------------------------------------+
@@ -873,7 +870,7 @@ Feature
 [options="header",cols="1,1,2,5"]
 |====
    |cond.     | repeat | type          | what
-.6+| true  .6+| 1      | short         | 0000REvvvFCYkkkk  k = kind, Y = has cotype (i.e., 'f.type'), C = is cotype, F = has 'fixed' modifier, v = visibility, R/E = has pre-/post-condition feature
+.6+| true  .6+| 1      | short         | 000OREvvvFCYkkkk  k = kind, Y = has cotype (i.e., 'f.type'), C = is cotype, F = has 'fixed' modifier, v = visibility, R/E = has pre-/post-condition feature, O = hasValuesAsOpenTypeFeature
                        | Name          | name
                        | int           | arg count
                        | int           | name id
@@ -882,7 +879,9 @@ Feature
    | Y=1      | 1      | Feature       | the cotype
    | C=1      | 1      | Feature       | the cotype origin
    | hasRT    | 1      | Type          | optional result type,
-                                       hasRT = !isConstructor && !isChoice
+                                         hasRT = !isConstructor && !isChoice && !isTypeParameter
+   | O=1      | 1      | int           | open type Feature index,
+   | isTypeParameter | 1 | Type        | constraint of (open) type parameters
 .2+| true NYI! !isField? !isIntrinsc
               | 1      | int           | inherits count i
               | i      | Code          | inherits calls
@@ -903,7 +902,7 @@ Feature
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | short         | 0000REvvvFCYkkkk                              |
+   *   | true   | 1      | short         | 000OREvvvFCYkkkk                              |
    *   |        |        |               |           k = kind                            |
    *   |        |        |               |           Y = has Type feature (i.e. 'f.type')|
    *   |        |        |               |           C = is cotype                       |
@@ -911,6 +910,7 @@ Feature
    *   |        |        |               |           v = visibility                      |
    *   |        |        |               |           R = has precondition feature        |
    *   |        |        |               |           E = has postcondition feature       |
+   *   |        |        |               |           O = hasValuesAsOpenTypeFeature      |
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | Name          | name                                          |
    *   |        |        +---------------+-----------------------------------------------+
@@ -922,12 +922,19 @@ Feature
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | int           | outer feature index, 0 for outer()==null      |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | Y=1    | 1      | int           | type feature index                            |
+   *   | Y=1    | 1      | int           | cotype index                                  |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | C=1    | 1      | int           | cotype index                                  |
+   *   | C=1    | 1      | int           | cotypeorigin index                            |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | hasRT  | 1      | Type          | optional result type,                         |
    *   |        |        |               | hasRT = !isConstructor && !isChoice           |
+   *   |        |        |               |         && !isTypeParameter                   |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | O=1    | 1      | int           | open type Feature index                       |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | isType | 1      | Type          | constraint of (open) type parameters          |
+   *   | Parame |        |               |                                               |
+   *   | ter    |        |               |                                               |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | int           | inherits count i                              |
    *   | NYI!   |        |               |                                               |
@@ -1007,6 +1014,14 @@ Feature
   boolean featureIsFixed(int at)
   {
     return ((featureKind(at) & FuzionConstants.MIR_FILE_KIND_IS_FIXED) != 0);
+  }
+  boolean featureHasOpenTypeFeature(int at)
+  {
+    var res = ((featureKind(at) & FuzionConstants.MIR_FILE_KIND_HAS_VALUES_OF_OPEN_TYPE_FEATURE) != 0);
+    if (CHECKS) check
+      (true ||  // checking this would cause endless recursion
+       res == featureHasResultType(at) && libraryFeature(at).resultType().isOpenGeneric());
+    return res;
   }
   int featureNamePos(int at)
   {
@@ -1113,9 +1128,13 @@ Feature
     return
       (k != FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF   &&
        k != FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_VALUE &&
-       k != AbstractFeature.Kind.Choice.ordinal());
+       k != AbstractFeature.Kind.Choice.ordinal()
+       // NYI: && k != AbstractFeature.Kind.TypeParameter.ordinal()
+       //      && k != AbstractFeature.Kind.OpenTypeParameter.ordinal()
+       );
+
   }
-  int featureInheritsCountPos(int at)
+  int featureValuesAsOpenTypeFeaturePos(int at)
   {
     var i = featureResultTypePos(at);
     if (featureHasResultType(at))
@@ -1123,6 +1142,14 @@ Feature
         i = typeNextPos(i);
       }
     return i;
+  }
+  AbstractFeature featureValuesAsOpenTypeFeature(int at)
+  {
+    return feature(data().getInt(featureValuesAsOpenTypeFeaturePos(at)));
+  }
+  int featureInheritsCountPos(int at)
+  {
+    return featureValuesAsOpenTypeFeaturePos(at) + (featureHasOpenTypeFeature(at) ? 4 : 0);
   }
   int featureInheritsCount(int at)
   {
@@ -1301,7 +1328,6 @@ Type
    |cond.     | repeat | type          | what
 
    | true     | 1      | int           | the kind of this type tk
-   | tk==-4   | 1      | unit          | ADDRESS
    | tk==-3   | 1      | unit          | type of universe
    | tk==-2   | 1      | int           | index of type
    | tk==-1   | 1      | int           | index of type parameter feature
@@ -1318,8 +1344,6 @@ Type
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | int           | the kind of this type tk                      |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | tk==-4 | 1      | unit          | ADDRESS                                       |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | tk==-3 | 1      | unit          | type of universe                              |
    *   +--------+--------+---------------+-----------------------------------------------+
@@ -1340,13 +1364,6 @@ Type
   int typeKind(int at)
   {
     return data().getInt(at);
-  }
-  int typeAddressPos(int at)
-  {
-    if (PRECONDITIONS) require
-      (typeKind(at) == -4);
-
-    return at+4;
   }
   int typeUniversePos(int at)
   {
@@ -1435,11 +1452,7 @@ Type
   int typeNextPos(int at)
   {
     var k = typeKind(at);
-    if (k == -4)
-      {
-        return typeAddressPos(at) + 0;
-      }
-    else if (k == -3)
+    if (k == -3)
       {
         return typeUniversePos(at) + 0;
       }
@@ -1612,12 +1625,10 @@ Expression
     return switch (k)
       {
       case Assign      -> assignNextPos(eAt);
-      case Box         -> boxNextPos  (eAt);
       case Const       -> constNextPos(eAt);
       case Current     -> eAt;
       case Match       -> matchNextPos(eAt);
       case Call        -> callNextPos (eAt);
-      case Tag         -> tagNextPos  (eAt);
       case Pop         -> eAt;
       case Unit        -> eAt;
       case InlineArray -> inlineArrayNextPos(eAt);
@@ -1672,55 +1683,6 @@ Assign
 
     return assignFieldPos(at) + 4;
   }
-
-
-  /*
---asciidoc--
-
-Box
-^^^
-
-[options="header",cols="1,1,2,5"]
-|====
-   |cond.     | repeat | type          | what
-
-   | true     | 1      | Type          | box result type
-|====
-
---asciidoc--
-   *   +---------------------------------------------------------------------------------+
-   *   | Box                                                                             |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | cond.  | repeat | type          | what                                          |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | Type          | box result type                               |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   */
-  int boxTypePos(int at)
-  {
-    if (PRECONDITIONS) require
-     (expressionKindRaw(at-1) ==  MirExprKind.Box.ordinal()         ||
-      expressionKindRaw(at-9) == (MirExprKind.Box.ordinal() | 0x80)     );
-
-    return at;
-  }
-  AbstractType boxType(int at)
-  {
-    if (PRECONDITIONS) require
-     (expressionKindRaw(at-1) ==  MirExprKind.Box.ordinal()         ||
-      expressionKindRaw(at-9) == (MirExprKind.Box.ordinal() | 0x80)     );
-
-    return type(boxTypePos(at));
-  }
-  int boxNextPos(int at)
-  {
-    if (PRECONDITIONS) require
-     (expressionKindRaw(at-1) ==  MirExprKind.Box.ordinal()         ||
-      expressionKindRaw(at-9) == (MirExprKind.Box.ordinal() | 0x80)     );
-
-    return typeNextPos(boxTypePos(at));
-  }
-
 
   /*
 --asciidoc--
@@ -2008,7 +1970,7 @@ Match
    |cond.     | repeat | type          | what
 
 .2+| true     | 1      | int           | number of cases
-   |          | n      | Case          | cases
+              | n      | Case          | cases
 |====
 
 --asciidoc--
@@ -2141,44 +2103,6 @@ Case
   {
     return codeNextPos(caseCodePos(at));
   }
-
-
-  /*
-
---asciidoc--
-
-Tag
-^^^^
-
-[options="header",cols="1,1,2,5"]
-|====
-   |cond.     | repeat | type          | what
-
-   | true     | 1      | Type          | resulting tagged union type
-|====
-
---asciidoc--
-   *   +---------------------------------------------------------------------------------+
-   *   | Tag                                                                             |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | cond.  | repeat | type          | what                                          |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | Type          | resulting tagged union type                   |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   */
-  int tagTypePos(int at)
-  {
-    return at;
-  }
-  AbstractType tagType(int at)
-  {
-    return type(tagTypePos(at));
-  }
-  int tagNextPos(int at)
-  {
-    return typeNextPos(tagTypePos(at));
-  }
-
 
 
   /*
@@ -2474,6 +2398,18 @@ SourceFile
   public ByteBuffer data(String name)
   {
     throw new UnsupportedOperationException("Unimplemented method 'data'");
+  }
+
+
+  /**
+   * Is this module the same as the provided one or does this module depend on the provided one?
+   *
+   * @param lm the LibraryModule against which this module should be checked
+   * @return true iff they are the same or this module depends on the provided one
+   */
+  public boolean sameOrDependent(LibraryModule lm)
+  {
+    return lm == this || Arrays.asList(_modules).stream().map(r->r._module).anyMatch(x->x==lm);
   }
 
 }

@@ -39,26 +39,30 @@ FUZION_RUN = $(FUZION) $(FUZION_OPTIONS)
 
 all: jvm c int
 
+
 int:
-	cat $(STDIN) | ../check_simple_example_int.sh "$(FUZION_RUN)" $(FILE) || exit 1
+	cat $(STDIN) | ../../bin/check_simple_example int "$(FUZION_RUN)" $(FILE) || exit 1
 
 c:
-	cat $(STDIN) | ../check_simple_example_c.sh "$(FUZION_RUN)" $(FILE) || exit 1
+	cat $(STDIN) | ../../bin/check_simple_example c "$(FUZION_RUN)" $(FILE) || exit 1
 
 jvm:
-	cat $(STDIN) | ../check_simple_example_jvm.sh "$(FUZION_RUN)" $(FILE) || exit 1
+	cat $(STDIN) | ../../bin/check_simple_example jvm "$(FUZION_RUN)" $(FILE) || exit 1
 
 record:
-	cat $(STDIN) | ../record_simple_example_int.sh "$(FUZION_RUN)" $(FILE)
+	cat $(STDIN) | ../../bin/record_simple_example any "$(FUZION_RUN)" $(FILE)
+
+record_int:
+	cat $(STDIN) | ../../bin/record_simple_example int "$(FUZION_RUN)" $(FILE)
 
 record_c:
-	cat $(STDIN) | ../record_simple_example_c.sh "$(FUZION_RUN)" $(FILE)
+	cat $(STDIN) | ../../bin/record_simple_example c "$(FUZION_RUN)" $(FILE)
 
 record_jvm:
-	cat $(STDIN) | ../record_simple_example_jvm.sh "$(FUZION_RUN)" $(FILE)
+	cat $(STDIN) | ../../bin/record_simple_example jvm "$(FUZION_RUN)" $(FILE)
 
 effect:
-	$(ENV) ../check_simple_example_effect.sh "$(FUZION_RUN)" $(FILE) || exit 1
+	$(ENV) ../../bin/check_simple_example effect "$(FUZION_RUN)" $(FILE) || exit 1
 
 record_effect: $(FUZION_DEPENDENCIES)
-	$(ENV) ../record_simple_example_effect.sh "$(FUZION_RUN)" $(FILE)
+	$(ENV) ../../bin/record_simple_example effect "$(FUZION_RUN)" $(FILE)

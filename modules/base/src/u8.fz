@@ -30,19 +30,19 @@ public u8(public val u8) : num.wrap_around, has_interval is
   # overflow checking
 
   # would negation cause an overflow?
-  public redef wrapped_on_neg => !is_zero
+  public redef wrapped_on_neg bool => !is_zero
 
   # would addition + other cause an overflow or underflow?
-  public fixed redef overflow_on_add (other u8) => u8.max -° val < other
-  public fixed redef underflow_on_add(other u8) => false
+  public fixed redef overflow_on_add (other u8) bool => u8.max -° val < other
+  public fixed redef underflow_on_add(other u8) bool => false
 
   # would subtraction - other cause an overflow or underflow?
-  public fixed redef overflow_on_sub (other u8) => false
-  public fixed redef underflow_on_sub(other u8) => val < other
+  public fixed redef overflow_on_sub (other u8) bool => false
+  public fixed redef underflow_on_sub(other u8) bool => val < other
 
   # would multiplication * other cause an overflow or underflow?
-  public fixed redef overflow_on_mul (other u8) => as_i32 *° other.as_i32 > u8.max.as_i32
-  public fixed redef underflow_on_mul(other u8) => false
+  public fixed redef overflow_on_mul (other u8) bool => as_i32 *° other.as_i32 > u8.max.as_i32
+  public fixed redef underflow_on_mul(other u8) bool => false
 
   # neg, add, sub, mul with wrap-around semantics
   public fixed redef prefix -° u8 => intrinsic
@@ -51,8 +51,8 @@ public u8(public val u8) : num.wrap_around, has_interval is
   public fixed redef infix *° (other u8) u8 => intrinsic
 
   # division and remainder with check for div-by-zero
-  public fixed redef infix / (other u8) => div other
-  public fixed redef infix % (other u8) => mod other
+  public fixed redef infix / (other u8) u8 => div other
+  public fixed redef infix % (other u8) u8 => mod other
 
   # division and remainder with crash in case of div-by-zero
   div (other u8) u8 => intrinsic
@@ -69,24 +69,23 @@ public u8(public val u8) : num.wrap_around, has_interval is
 
   # does this u8 fit into an u8?
   #
-  public fixed redef fits_in_u8  => true
+  public fixed redef fits_in_u8 bool => true
 
   public as_i8 i8
     pre
       debug: val ≤ i8.max.as_u8
     =>
       cast_to_i8
-  public as_i16 => as_i32.as_i16
-  public as_i32 i32 => intrinsic
-  public as_i64  => as_i32.as_i64
-# as_i128 => as_i32.as_i128
-  public redef as_u8   => val
-  public as_u16  => as_i32.as_u16
-  public as_u32  => as_i32.as_u32
-  public as_u64  => as_i32.as_u64
-  public as_u128 => as_i32.as_u128
-  public as_i128 => i128 0 as_u64
-  public as_int  => int as_i64
+  public as_i16 i16   => as_i32.as_i16
+  public as_i32 i32   => intrinsic
+  public as_i64 i64   => as_i32.as_i64
+  public as_i128 i128 => as_i32.as_i128
+  public redef as_u8 u8 => val
+  public as_u16 u16   => as_i32.as_u16
+  public as_u32 u32   => as_i32.as_u32
+  public as_u64 u64   => as_i32.as_u64
+  public as_u128 u128 => as_i32.as_u128
+  public as_int int   => int as_i64
 
   public cast_to_i8 i8 => intrinsic
 
@@ -100,20 +99,20 @@ public u8(public val u8) : num.wrap_around, has_interval is
   # this single bit set or 0 if this is 0.
   #
   public highest_one_bit u8 =>
-    (v , s)  := (val, u8 0)
-    (v1, s1) := if (v  < 0x10) (v , s ) else (v  >> 4, s  + 4)
-    (v2, s2) := if (v1 < 4   ) (v1, s1) else (v1 >> 2, s1 + 2)
-    (v3, s3) := if (v2 < 2   ) (v2, s2) else (v2 >> 1, s2 + 1)
+    v , s  := (val, u8 0)
+    v1, s1 := if (v  < 0x10) (v , s ) else (v  >> 4, s  + 4)
+    v2, s2 := if (v1 < 4   ) (v1, s1) else (v1 >> 2, s1 + 2)
+    v3, s3 := if (v2 < 2   ) (v2, s2) else (v2 >> 1, s2 + 1)
     v3 << s3
 
 
   # count the number of trailing zeros in this integer.
   #
   public trailing_zeros i32 =>
-    (v , s)  := (val, 0)
-    (v1, s1) := if (v  & 0xf) != 0 then (v , s ) else (v  >> 4, s  + 4)
-    (v2, s2) := if (v1 &   3) != 0 then (v1, s1) else (v1 >> 2, s1 + 2)
-    (v3, s3) := if (v2 &   1) != 0 then (v2, s2) else (v2 >> 1, s2 + 1)
+    v , s  := (val, 0)
+    v1, s1 := if (v  & 0xf) != 0 then (v , s ) else (v  >> 4, s  + 4)
+    v2, s2 := if (v1 &   3) != 0 then (v1, s1) else (v1 >> 2, s1 + 2)
+    v3, s3 := if (v2 &   1) != 0 then (v2, s2) else (v2 >> 1, s2 + 1)
     if             (v3 &   1) != 0 then      s3  else           8
 
 
@@ -135,7 +134,7 @@ public u8(public val u8) : num.wrap_around, has_interval is
 
   # is this u8 an ASCII white-space character?
   #
-  public is_ascii_white_space =>
+  public is_ascii_white_space bool =>
     (val = 9  ||  # HT
      val = 10 ||  # LF
      val = 11 ||  # VT
@@ -172,14 +171,14 @@ public u8(public val u8) : num.wrap_around, has_interval is
 
 
   # returns the number in whose bit representation all bits are ones
-  public fixed redef type.all_bits_set => u8 0xff
+  public fixed redef type.all_bits_set u8 => u8 0xff
 
 
   # minimum
   #
-  public fixed redef type.min => u8 0
+  public fixed redef type.min u8 => u8 0
 
 
   # maximum
   #
-  public fixed redef type.max => u8 0xff
+  public fixed redef type.max u8 => u8 0xff

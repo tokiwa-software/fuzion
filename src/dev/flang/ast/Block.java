@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import java.util.ListIterator;
+import java.util.function.Supplier;
 
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
@@ -182,7 +183,7 @@ public class Block extends AbstractBlock
       || _expressions.getFirst().pos().isBuiltIn()
       || _expressions.getLast().pos().isBuiltIn()
       ? SourcePosition.notAvailable
-      // NYI hack, positions used for loops are not always in right order.
+      // NYI: UNDER DEVELOPMENT: hack, positions used for loops are not always in ascending order.
       : _expressions.getFirst().pos().bytePos() > _expressions.getLast().pos().byteEndPos()
       ? SourcePosition.notAvailable
       : new SourceRange(
@@ -272,31 +273,6 @@ public class Block extends AbstractBlock
 
 
   /**
-   * Check if this value might need boxing or tagging and wrap this
-   * into Box()/Tag()/Tag(Box()) if this is the case.
-   *
-   * @param frmlT the formal type this is assigned to.
-   *
-   * @param context the source code context where this Expr is used
-   *
-   * @return this or an instance of Box/Tag wrapping this.
-   */
-  @Override
-  Expr boxAndTag(AbstractType frmlT, Context context)
-  {
-    var r = removeResultExpression();
-    if (CHECKS) check
-      (r != null || Types.resolved.t_unit.compareTo(frmlT) == 0);
-    if (r != null)
-      {
-        _expressions.add(r.boxAndTag(frmlT, context));
-      }
-    return this;
-  }
-
-
-
-  /**
    * Does this block produce a result that does not explicitly appear in source
    * code? This is the case, e.g., for loops that implicitly return the last
    * value of the index variable for true/false to indicate success or failure.
@@ -328,7 +304,7 @@ public class Block extends AbstractBlock
   Block assignToField(Resolution res, Context context, Feature r)
   {
     Expr resExpr = removeResultExpression();
-    if (resExpr == null && r.resultType().isAssignableFrom(Types.resolved.t_unit, context))
+    if (resExpr == null && r.resultType().isAssignableFromWithoutBoxing(Types.resolved.t_unit, context).yes())
       {
         resExpr = new Call(pos(), FuzionConstants.UNIT_NAME)
           .resolveTypes(res, context);
@@ -358,45 +334,37 @@ public class Block extends AbstractBlock
    *
    * @param type the expected type.
    *
+   * @param from for error output: if non-null, produces a String describing
+   * where the expected type came from.
+   *
    * @return either this or a new Expr that replaces thiz and produces the
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  Expr propagateExpectedType(Resolution res, Context context, AbstractType type)
+  Expr propagateExpectedType(Resolution res, Context context, AbstractType type, Supplier<String> from)
   {
-    if (type.compareTo(Types.resolved.t_unit) == 0 && hasImplicitResult())
-      { // return unit if this is expected even if we would implicitly return
-        // something else:
-        _expressions.add(new Block(new List<>()));
-      }
-
-    // we must not remove result expression just yet.
-    // we rely on it being present in SourceModule.inScope()
-    var idx = resultExpressionIndex();
+    Expr result = this;
     Expr resExpr = resultExpression();
-
-    if (resExpr != null)
-      {
-        var x = resExpr.propagateExpectedType(res, context, type);
-        _expressions.remove(idx);
-        _expressions.add(x);
-      }
-    else if (Types.resolved.t_unit.compareTo(type) != 0)
+    if (type.compareTo(Types.resolved.t_unit) == 0 && hasImplicitResult() ||
+        resExpr == null && Types.resolved.t_unit.compareTo(type) != 0)
       {
         _expressions.add(new Call(pos(), FuzionConstants.UNIT_NAME).resolveTypes(res, context));
       }
-    return this;
-  }
-
-
-  /**
-   * Some Expressions do not produce a result, e.g., a Block that is empty or
-   * whose last expression is not an expression that produces a result.
-   */
-  public boolean producesResult()
-  {
-    var expr = resultExpression();
-    return expr != null && expr.producesResult();
+    else if (resExpr != null)
+      {
+        // this may do partial application for the whole block
+        result = super.propagateExpectedType(res, context, type, from);
+        if (result == this)
+          {
+            // we must not remove result expression just yet.
+            // we rely on it being present in SourceModule.inScope()
+            var idx = resultExpressionIndex();
+            var x = resExpr.propagateExpectedType(res, context, type, from);
+            _expressions.remove(idx);
+            _expressions.add(x);
+          }
+      }
+    return result;
   }
 
 

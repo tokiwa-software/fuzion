@@ -1,0 +1,56 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature variant_fault
+#
+# -----------------------------------------------------------------------
+
+# variant_fault -- effect that terminates a computation due to a failed
+# condition in a var statement
+#
+public variant_fault (
+  # the handler this effect uses to fail
+  p String -> void
+  ) : eff.fallible p
+is
+
+
+  # install default variant_fault handler
+  type.install_default =>
+    (fuzion.runtime.variant_fault msg->
+      fuzion.runtime.contract_fault.cause ("variant", msg)).default
+
+
+  # create an instance of `variant_fault` with the given error handler.
+  #
+  public fixed redef type.new(h String -> void) fuzion.runtime.variant_fault => fuzion.runtime.variant_fault h
+
+
+# variant_fault with no argument returns variant_fault.env, the currently installed
+# runtime variant_fault handler.
+#
+public variant_fault variant_fault =>
+  variant_fault.install_default
+  variant_fault.env
+
+
+# cause a var fault with given msg argument, i.e., call variant_fault.cause
+# msg, i.e., use the current variant_fault effect to fail with the given message.
+#
+public variantcondition_fault(msg String) void => variant_fault.cause msg

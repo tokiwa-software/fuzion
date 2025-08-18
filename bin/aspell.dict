@@ -267,7 +267,6 @@ cotype
 cotypes
 createMIR
 createOuter
-createThisType
 cryptographically
 css
 CStmnt
@@ -452,7 +451,6 @@ findGenerics
 findInheritedFeatures
 findOpeningBracket
 findOperatorOnOuter
-findUsedFeatures
 firstDigit
 fixup
 fixups
@@ -1023,7 +1021,6 @@ semiOrFlatLF
 semiSepElmts
 sep
 setElse
-setenv
 setField
 setFieldSlot
 setjmp
@@ -1223,7 +1220,6 @@ UnicodeData
 unistd
 unitValue
 unsafeIntrinsics
-unsetenv
 UnsupportedOperationException
 untagged
 Unterminated

@@ -29,6 +29,7 @@ package dev.flang.be.jvm;
 import dev.flang.fuir.FUIR;
 import dev.flang.fuir.SpecialClazzes;
 import dev.flang.fuir.analysis.AbstractInterpreter;
+import dev.flang.ir.IR.FeatureKind;
 
 import static dev.flang.ir.IR.NO_CLAZZ;
 import static dev.flang.ir.IR.NO_SITE;
@@ -45,7 +46,6 @@ import dev.flang.util.Pair;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
-import java.util.stream.Collectors;
 
 
 
@@ -209,8 +209,6 @@ class CodeGen
    *
    * @param s cl id of clazz we are interpreting
    *
-   * @param tc clazz id of the target instance
-   *
    * @param f clazz id of the assigned field
    *
    * @param tvalue the target instance
@@ -220,7 +218,7 @@ class CodeGen
    * @return statement to perform the given assignment
    */
   @Override
-  public Expr assignStatic(int s, int tc, int f, Expr tvalue, Expr val)
+  public Expr assignStatic(int s, int f, Expr tvalue, Expr val)
   {
     return _jvm.assignField(s, f, _fuir.clazzResultClazz(f), tvalue, val);
   }
@@ -585,20 +583,12 @@ class CodeGen
           res = makePair(callNative(si, args, cc, rt), rt);
           break;
         }
-      case Intrinsic:
+      case Routine, Intrinsic  :
         {
-          if (_fuir.clazzTypeParameterActualType(cc) != -1)  /* type parameter is also of Kind Intrinsic, NYI: CLEANUP: should better have its own kind?  */
-            {
-              return new Pair<>(Expr.UNIT, tvalue.drop());
-            }
-          else if (!Intrinsix.inRuntime(_jvm, cc))
+          if (_fuir.clazzKind(cc) == FeatureKind.Intrinsic && !Intrinsix.inRuntime(_jvm, cc))
             {
               return Intrinsix.inlineCode(_jvm, si, cc, tvalue, args);
             }
-          // fall through!
-        }
-      case Routine  :
-        {
           if (_types.clazzNeedsCode(cc))
             {
               var cl = si == NO_SITE ? FUIR.NO_CLAZZ
@@ -922,9 +912,9 @@ class CodeGen
                                : args(needTarget, tvalue, args, cc, argCount-1);
 
     // then add tvalue/arg #argCount:
-    var add = argCount > 0                                 ? args.get(argCount-1) :
-              !needTarget && _fuir.clazzOuterRef(cc) == -1 ? tvalue.drop()
-                                                           : tvalue;
+    var add = argCount > 0                                       ? args.get(argCount-1) :
+              !needTarget && _fuir.clazzOuterRef(cc) == NO_CLAZZ ? tvalue.drop()
+                                                                 : tvalue;
     return result.andThen(add);
   }
 

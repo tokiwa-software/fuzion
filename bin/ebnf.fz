@@ -34,20 +34,25 @@ main =>
   #
   Sequence.prefix ! String =>
 
-    # NYI: CLEANUP: #5039: Workaround to avoid DFA performance problem: use `unit`
-    # as outer feature for `lm` to reduce number of DFA values for
-    # `lm1` (while `Sequence` has many values).
-    unit.lm1 : mutate is
-    unit.new_lm1 => lm1
+    lm : mutate is
 
-    unit.new_lm1 ! ()->
+    lm ! ()->
       seq := map x->x.as_string
       match os.process.start seq.first.val (seq.drop 1)
         e error => panic "failed executing {Sequence.this}, error is $e"
         p os.process =>
-          match p.with_out String unit.lm1 (()->String.from_bytes (io.buffered unit.lm1).read_fully)
-            e error => panic "failed reading stdout from {Sequence.this}, error is: $e"
-            s String => s
+          res :=
+            match p.with_out String lm (()->String.from_bytes (io.buffered lm).read_fully)
+              e error => panic "failed reading stdout from {Sequence.this}, error is: $e"
+              s String => s.trim_end
+          err :=
+            match p.with_err String lm (()->String.from_bytes (io.buffered lm).read_fully)
+              e error => panic "failed reading stderr from {Sequence.this}, error is: $e"
+              s String => s.trim_end
+          ec := p.wait.get 1
+          if ec != 0
+            panic "error $ec when executing $seq, stderr: $err"
+          res
 
 
   # feed this string to a new process
@@ -55,21 +60,17 @@ main =>
   #
   String.infix | (seq Sequence String) String =>
 
-    # NYI: CLEANUP: #5039: Workaround to avoid DFA performance problem: use `unit`
-    # as outer feature for `lm` to reduce number of DFA values for
-    # `lm2` (while `String` has many values).
-    unit.lm2 : mutate is
-    unit.new_lm2 => lm2
+    lm : mutate is
 
-    unit.new_lm2 ! ()->
+    lm ! ()->
       match os.process.start seq.first.val (seq.drop 1)
         e error => panic "failed executing $seq, error is $e"
         p os.process =>
-          _ := p.with_in unit unit.lm2 ()->
-            _ := (io.buffered unit.lm2).writer.env.write String.this.utf8
-            _ := (io.buffered unit.lm2).writer.env.flush
+          _ := p.with_in unit lm ()->
+            _ := (io.buffered lm).writer.env.write String.this.utf8
+            _ := (io.buffered lm).writer.env.flush
             _ := p.wait # close stdin
-          match p.with_out String unit.lm2 (()->String.from_bytes (io.buffered unit.lm2).read_fully)
+          match p.with_out String lm (()->String.from_bytes (io.buffered lm).read_fully)
             e error => panic "failed reading stdout from $seq, error is: $e"
             s String => s
 
@@ -81,58 +82,106 @@ main =>
     !split
 
 
+  # check if exe is installed by trying
+  # to execute it once
+  #
+  is_installed(exe String) =>
+    (os.process.start exe).ok
+
+
   ########### EBNF ###############
 
+  if !(is_installed "antlr" || is_installed "antlr4")
+    io.err.println "not generating ebnf due to missing dependency antlr"
+    exit 0
+  else
+    new_line := "\n"
 
-  new_line := "\n"
+    if envir.args.count < 2
+      panic "expecting at least one file name argument"
 
-  if envir.args.count < 2
-    panic "expecting at least one file name argument"
+    # header
+    ebnf_header := "grammar Fuzion;$new_line$new_line"
 
-  # first, strip out asciidoc code that is enclosed as blocks of the form
-  #
-  #   // tag::bla_bla
-  #   ...
-  #   // end::bla_bla
-  #
-  asciidoc_matcher        := ["pcregrep", "--invert-match", "--multiline", "// tag::(\\n|.)*?// end::"]
+    ebnf := envir.args.drop 1
+      .map src->
+        if !io.file.exists src
+          panic "file not found '$src'."
 
-  # then, extract EBNF rules of the form
-  #
-  # bla_bla : rhs
-  #         | rhs
-  #         ;
-  #
-  # or
-  #
-  # fragment
-  # bla_bla : rhs
-  #         | rhs
-  #         ;
-  #
-  rule_matcher := ["pcregrep", "--multiline",  "^(fragment\\n)*[a-zA-Z0-9_]+[ ]*:(\\n|.)*?( ;)"]
 
-  # header
-  ebnf_header := "grammar Fuzion;$new_line$new_line"
+        # read src file
+        src_lines :=
+          io.file.use _ src io.file.mode.read ()->
+            (io.buffered io.file.file_mutate).read_lines
 
-  ebnf := envir.args.drop 1
-    .map src->
-      if !io.file.exists src
-        panic "file not found '$src'."
+        # first, strip out asciidoc code that is enclosed as blocks of the form
+        #
+        #   // tag::bla_bla
+        #   ...
+        #   // end::bla_bla
+        #
+        src_without_asciidoc :=
+          for
+              res Sequence String := [], new_res # source without asciidoc comments
+              in_asciidoc bool := false, new_in_asciidoc
+              l in src_lines.ok ? src_lines.val : []
+          do
+            new_res, new_in_asciidoc :=
+              if in_asciidoc || l.trim.starts_with "// tag::"
+                (res, !l.trim.starts_with "// end::")
+              else
+                (res ++ [l], false)
+          else
+            res
 
-      src_without_asciidoc  := !(asciidoc_matcher ++ [src])
-      (src_without_asciidoc | rule_matcher)
-        .replace "\"" "'"     # replace " by '
 
-    .reduce ebnf_header (+)
+        # helper feature to determine the start of an EBNF rule
+        starts_rule(s String) =>
+          parts := s.split ":"
+          rule := parts[0].trim
+          (!s.starts_with " " && parts.count >= 2 && !rule.contains " "
+           && !rule.is_empty && (rule.as_codepoints ∀ c->c.is_ascii_alpha_num || c = "_"))
 
-  say ebnf
 
-  # test grammar with antlr4
-  tmp := !!"mktemp --directory"
-  _ := !!"mkdir --tmpdir=$tmp/fuzion_grammar"
-  _ := io.file.write "$tmp/fuzion_grammar/Fuzion.g4" ebnf
-  antlr := if ((os.process.start "antlr4").bind u32 p->p.wait).as_equatable = 0 then "antlr4" else "antlr"
-  # NYI add option -Werror
-  _ := !!"$antlr -long-messages -o $tmp/fuzion_grammar $tmp/fuzion_grammar/Fuzion.g4"
-  !!"rm --recursive --force $tmp"
+        # then, extract EBNF rules of the form
+        #
+        # bla_bla : rhs
+        #         | rhs
+        #         ;
+        #
+        # or
+        #
+        # fragment
+        # bla_bla : rhs
+        #         | rhs
+        #         ;
+        #
+        ebnf_rules :=
+          for
+            res Sequence String := [], new_res # the extracted EBNF rules
+            in_rule bool := false, new_in_rule
+            l in src_without_asciidoc
+          do
+            new_res, new_in_rule :=
+              if in_rule || l = "fragment" || starts_rule l
+                (res ++ [l], !l.ends_with ";")
+              else
+                (res, in_rule)
+          else
+            res.is_empty ? "" : (res.as_string new_line) + new_line
+
+
+        ebnf_rules.replace "\"" "'"     # replace " by '
+
+      .reduce ebnf_header (+)
+
+    say ebnf
+
+    # test grammar with antlr4
+    tmp := !!"mktemp --directory"
+    _ := !!"mkdir $tmp/fuzion_grammar"
+    _ := io.file.write "$tmp/fuzion_grammar/Fuzion.g4" ebnf
+    antlr := if ((os.process.start "antlr4").bind u32 p->p.wait).as_equatable = 0 then "antlr4" else "antlr"
+    # NYI: UNDER DEVELOPMENT: add option -Werror
+    _ := !!"$antlr -long-messages -o $tmp/fuzion_grammar $tmp/fuzion_grammar/Fuzion.g4"
+    _ := !!"rm -Rf $tmp"

@@ -93,8 +93,8 @@ public abstract class AbstractCase extends ANY implements HasSourcePosition
 
 
   /**
-   * List of types to be matched against. null if we match against type or match
-   * everything.
+   * List of types to be matched against.
+   * null if we match everything.
    */
   public abstract List<AbstractType> types();
 
@@ -116,37 +116,14 @@ public abstract class AbstractCase extends ANY implements HasSourcePosition
   public void visit(FeatureVisitor v, AbstractMatch m, AbstractFeature outer)
   {
     v.actionBefore(this, m);
-    if (field() instanceof Feature f)
+    if (field() != null)
       {
-        f.visit(v, outer);
-      }
-    if (types() != null)
-      {
-        var i = types().listIterator();
-        while (i.hasNext())
-          {
-            i.set(i.next().visit(v, outer));
-          }
+        field().visit(v, outer);
       }
     var nc = code().visit(v, outer);
     if (CHECKS) check
       (nc == code());
-    v.actionAfter(this);
-  }
-
-
-  /**
-   * visit all the expressions within this Case.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited expressions
-   */
-  public void visitExpressions(AbstractMatch m, ExpressionVisitor v)
-  {
-    if (v.action(m, this))
-      {
-        code().visitExpressions(v);
-      }
+    v.actionAfter(this, m);
   }
 
 }

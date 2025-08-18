@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import java.util.function.Supplier;
+
 import dev.flang.util.SourcePosition;
 
 
@@ -72,7 +74,7 @@ public abstract class AbstractLambda extends ExprWithPos
    */
   AbstractType inferLambdaResultType(Resolution res, Context context, AbstractType t)
   {
-    return propagateTypeAndInferResult(res, context, t, true);
+    return propagateTypeAndInferResult(res, context, t, true, null);
   }
 
 
@@ -90,6 +92,9 @@ public abstract class AbstractLambda extends ExprWithPos
    * @param inferResultType true if the result type of this lambda should be
    * inferred.
    *
+   * @param from for error output: if non-null, produces a String describing
+   * where the expected type came from.
+   *
    * @return if inferResultType, the result type inferred from this lambda or
    * Types.t_UNDEFINED if not result type available.  if !inferResultType, t. In
    * case of error, return Types.t_ERROR.
@@ -97,7 +102,8 @@ public abstract class AbstractLambda extends ExprWithPos
   abstract AbstractType propagateTypeAndInferResult(Resolution res,
                                                     Context context,
                                                     AbstractType t,
-                                                    boolean inferResultType);
+                                                    boolean inferResultType,
+                                                    Supplier<String> from);
 
 }
 

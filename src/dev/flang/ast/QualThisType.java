@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import java.util.Optional;
+
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -48,9 +50,10 @@ public class QualThisType extends UnresolvedType
    */
   public QualThisType(List<ParsedName> qual)
   {
+    // NYI: BUG: need to take complete qualifier into account!
     super(SourcePosition.range(qual),
           qual.getLast()._name,
-          Call.NO_GENERICS, null, RefOrVal.ThisType);
+          Call.NO_GENERICS, null, Optional.of(TypeKind.ThisType));
   }
 
 

@@ -55,7 +55,9 @@ import dev.flang.be.jvm.JVMOptions;
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
 
+import dev.flang.fuir.OptimizedFUIR;
 import dev.flang.fuir.FUIR;
+import dev.flang.fuir.GeneratingFUIR;
 import dev.flang.fuir.LibraryFuir;
 import dev.flang.fuir.analysis.dfa.DFA;
 
@@ -325,7 +327,7 @@ public class Fuzion extends Tool
       {
         var o    = fe._options;
         var mir  = fe.createMIR();                             f.timer("createMIR");
-        var fuir = new Optimizer(o, fe, mir).fuir();           f.timer("ir");
+        var fuir = new GeneratingFUIR(fe, mir);                f.timer("ir");
         new Effects(o, new DFA(o, fuir)).find();
       }
     },
@@ -347,7 +349,7 @@ public class Fuzion extends Tool
       }
     },
 
-    saveMod("-save-module=<file>")
+    saveMod("-saveModule=<file>")
     {
       boolean runsCode() { return false; }
       void parseBackendArg(Fuzion f, String a)
@@ -393,7 +395,7 @@ public class Fuzion extends Tool
                   }
                 catch (IOException io)
                   {
-                    Errors.error("-save-module: I/O error when writing module file",
+                    Errors.error("-saveModule: I/O error when writing module file",
                                  "While trying to write file '"+ f._saveMod + "' received '" + io + "'");
                   }
               }
@@ -406,7 +408,7 @@ public class Fuzion extends Tool
      * any errors that happened in the frontend.
      * Can be used for syntax checking of fz files.
      */
-    frontEndOnly("-frontend-only")
+    frontEndOnly("-frontendOnly")
     {
       void processFrontEnd(Fuzion f, FrontEnd fe)
       {
@@ -419,7 +421,7 @@ public class Fuzion extends Tool
      * any errors that happened in the stages up to
      * and including the DFA.
      */
-    noBackend("-no-backend")
+    noBackend("-noBackend")
     {
       void process(FuzionOptions options, FUIR fuir)
       {
@@ -476,7 +478,7 @@ public class Fuzion extends Tool
     /**
      * parse the argument that activates this backend. This is not needed for
      * backends like {@code -c} or {@code -dfa}, but for those that require additional
-     * argument like {@code -save-module=<path>}.
+     * argument like {@code -saveModule=<path>}.
      */
     void parseBackendArg(Fuzion f, String a)
     {
@@ -551,10 +553,7 @@ public class Fuzion extends Tool
      */
     void processFrontEnd(Fuzion f, FrontEnd fe)
     {
-      var o    = fe._options;
-      var mir  = fe.createMIR();                             f.timer("createMIR");
-      var fuir = new Optimizer(o, fe, mir).fuir();           f.timer("ir");
-      process(o, new DFA(o, fuir).new_fuir());
+      process(fe._options, fuir(f, fe));
     }
 
     /**
@@ -586,7 +585,7 @@ public class Fuzion extends Tool
   /**
    * Home directory of the Fuzion installation.
    */
-  Path _fuzionHome = (new FuzionHome())._fuzionHome;
+  Path _fuzionHome = FuzionHome._fuzionHome;
 
 
   /**
@@ -597,7 +596,7 @@ public class Fuzion extends Tool
 
   /**
    * Should we load the base module? We do not want to load if when using
-   * -save-module= backend to create the base module file.
+   * -saveModule= backend to create the base module file.
    */
   boolean _loadBaseMod = true;
 
@@ -609,7 +608,7 @@ public class Fuzion extends Tool
 
 
   /**
-   * Flag to enable intrinsic functions such as fuzion.java.call_virtual. These are
+   * Flag to enable intrinsic functions such as fuzion.jvm.env.call_virtual. These are
    * not allowed if run in a web playground.
    */
   boolean _enableUnsafeIntrinsics = true;
@@ -1146,12 +1145,9 @@ public class Fuzion extends Tool
             Path fuirFile = fuirFile(options);
             if (!Files.exists(fuirFile))
               {
-                var fe = new FrontEnd(options);                       timer("fe");
+                var fe = new FrontEnd(options);                   timer("fe");
                 Errors.showAndExit();
-                var mir  = fe.createMIR();                            timer("createMIR");
-                var fuir = new Optimizer(options, fe, mir).fuir();    timer("ir");
-                var dfuir = new DFA(options, fuir).new_fuir();        timer("dfa");
-                var data = dfuir.serialize();                         timer("serializeFUIR");
+                var data = fuir(this, fe).serialize();            timer("serializeFUIR");
 
                 try (FileOutputStream stream = new FileOutputStream(fuirFile.toFile()))
                   {
@@ -1176,6 +1172,22 @@ public class Fuzion extends Tool
           }
         options.verbosePrintln(1, "Elapsed time for phases: " + _times);
       };
+  }
+
+
+  /**
+   * mir -> dfa -> optimizer
+   *
+   * @return the optimized fuir representation
+   */
+  private static OptimizedFUIR fuir(Fuzion f, FrontEnd fe)
+  {
+    var options = fe._options;
+    var mir  = fe.createMIR();                            f.timer("createMIR");
+    var fuir = new GeneratingFUIR(fe, mir);               f.timer("ir");
+    var dfuir = new DFA(options, fuir).new_fuir();        f.timer("dfa");
+    var ofuir = new Optimizer(options, dfuir).fuir();     f.timer("opt");
+    return ofuir;
   }
 
 

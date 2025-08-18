@@ -37,7 +37,6 @@ import java.lang.foreign.Linker;
 import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.SegmentAllocator;
-import java.lang.foreign.StructLayout;
 import java.lang.foreign.SymbolLookup;
 import java.lang.foreign.ValueLayout;
 import java.lang.foreign.ValueLayout.OfBoolean;
@@ -57,7 +56,6 @@ import java.lang.reflect.Method;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
@@ -219,18 +217,6 @@ public class Runtime extends ANY
 
       return true;
     }
-  };
-
-
-  /**
-   * This contains all started threads.
-   */
-  static OpenResources<Thread> _startedThreads_ = new OpenResources<Thread>() {
-    @Override
-    protected boolean close(Thread f)
-    {
-      return true;
-    };
   };
 
 
@@ -828,7 +814,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Helper method called by the fuzion.java.string_to_java_object0 intrinsic.
+   * Helper method called by the fuzion.jvm.env.string_to_java_object0 intrinsic.
    *
    * Creates a new instance of String from the byte array passed as argument,
    * assuming the byte array contains an UTF-8 encoded string.
@@ -865,7 +851,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Helper method called by the fuzion.java.get_static_field0 intrinsic.
+   * Helper method called by the fuzion.jvm.env.get_static_field0 intrinsic.
    *
    * Retrieves the content of a given static field.
    *
@@ -889,7 +875,7 @@ public class Runtime extends ANY
       }
     catch (IllegalAccessException | ClassNotFoundException | NoSuchFieldException e)
       {
-        Errors.fatal(e.toString()+" when calling fuzion.java.get_static_field for field "+clazz+"."+field);
+        Errors.fatal(e.toString()+" when calling fuzion.jvm.env.get_static_field for field "+clazz+"."+field);
         result = null;
       }
 
@@ -898,7 +884,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Helper method called by the fuzion.java.set_static_field0 intrinsic.
+   * Helper method called by the fuzion.jvm.env.set_static_field0 intrinsic.
    *
    * Sets the static field to the given content
    *
@@ -920,14 +906,14 @@ public class Runtime extends ANY
       }
     catch (IllegalAccessException | ClassNotFoundException | NoSuchFieldException e)
       {
-        Errors.fatal(e.toString()+" when calling fuzion.java.set_static_field for field "
+        Errors.fatal(e.toString()+" when calling fuzion.jvm.env.set_static_field for field "
                      +clazz+"."+field+" and value "+value);
       }
   }
 
 
   /**
-   * Helper method called by the fuzion.java.get_field0 intrinsic.
+   * Helper method called by the fuzion.jvm.env.get_field0 intrinsic.
    *
    * Given some instance of a Java class, retrieves the content of a given field in
    * this instance.
@@ -954,7 +940,7 @@ public class Runtime extends ANY
     catch (IllegalAccessException | NoSuchFieldException e)
       {
         Errors.fatal(e.toString()
-          + " when calling fuzion.java.get_field for field "
+          + " when calling fuzion.jvm.env.get_field for field "
           + (clazz !=null ? clazz.getName() : "")+"."+field
         );
         result = null;
@@ -965,7 +951,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Helper method called by the fuzion.java.set_field0 intrinsic.
+   * Helper method called by the fuzion.jvm.env.set_field0 intrinsic.
    *
    * Given some instance of a Java class, set the given field in
    * this instance to the given content
@@ -991,7 +977,7 @@ public class Runtime extends ANY
     catch (IllegalAccessException | NoSuchFieldException e)
       {
         Errors.fatal(e.toString()
-          + " when calling fuzion.java.set_field for field "
+          + " when calling fuzion.jvm.env.set_field for field "
           + (clazz !=null ? clazz.getName() : "")+"."+field
           + "and value "+value
         );
@@ -1035,7 +1021,7 @@ public class Runtime extends ANY
       }
     catch (ClassNotFoundException e)
       {
-        Errors.fatal("ClassNotFoundException when calling fuzion.java.call_"+what+" for class" +
+        Errors.fatal("ClassNotFoundException when calling fuzion.jvm.env.call_"+what+" for class" +
                            clName + " calling " + ((name != null) ? name : ("new " + clName)) + sig);
         cl = Object.class; // not reached.
       }
@@ -1045,7 +1031,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Helper method called by the fuzion.java.call_v0 intrinsic.
+   * Helper method called by the fuzion.jvm.env.call_v0 intrinsic.
    *
    * Calls a Java method on a specified instance.
    *
@@ -1079,7 +1065,7 @@ public class Runtime extends ANY
       }
     catch (NoSuchMethodException e)
       {
-        Errors.fatal("NoSuchMethodException when calling fuzion.java.call_virtual calling " +
+        Errors.fatal("NoSuchMethodException when calling fuzion.jvm.env.call_virtual calling " +
                            (cl.getName() + "." + name) + sig);
       }
     return invoke(m, thiz, args);
@@ -1137,7 +1123,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Helper method called by the fuzion.java.call_s0 intrinsic.
+   * Helper method called by the fuzion.jvm.env.call_s0 intrinsic.
    *
    * Calls a static Java method of a specified class.
    *
@@ -1169,7 +1155,7 @@ public class Runtime extends ANY
       }
     catch (NoSuchMethodException e)
       {
-        Errors.fatal("NoSuchMethodException when calling fuzion.java.call_static calling " +
+        Errors.fatal("NoSuchMethodException when calling fuzion.jvm.env.call_static calling " +
                            (cl.getName() + "." + name) + sig);
       }
     return invoke(m, null, args);
@@ -1177,7 +1163,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Helper method called by the fuzion.java.call_c0 intrinsic.
+   * Helper method called by the fuzion.jvm.env.call_c0 intrinsic.
    *
    * Calls a Java constructor of a specified class.
    *
@@ -1207,7 +1193,7 @@ public class Runtime extends ANY
       }
     catch (NoSuchMethodException e)
       {
-        Errors.fatal("NoSuchMethodException when calling fuzion.java.call_constructor calling " +
+        Errors.fatal("NoSuchMethodException when calling fuzion.jvm.env.call_constructor calling " +
                            ("new " + clName) + sig);
         return null; // not reached
       }
@@ -1219,9 +1205,9 @@ public class Runtime extends ANY
    *
    * @param call the Java clazz of the Unary instance to be executed.
    */
-  public static long thread_spawn(Any code, Class call)
+  public static Object thread_spawn(Any code, Class call)
   {
-    long result = 0;
+    Object result = null;
     Method r = null;
     for (var m : call.getDeclaredMethods())
       {
@@ -1236,8 +1222,7 @@ public class Runtime extends ANY
       }
     else
       {
-        var t = new FuzionThread(r, code);
-        result = _startedThreads_.add(t);
+        result = new FuzionThread(r, code);
       }
     return result;
   }
@@ -1405,10 +1390,29 @@ public class Runtime extends ANY
    */
   public static MethodHandle get_method_handle(String str, FunctionDescriptor desc, String[] libraries)
   {
-    var llu = SymbolLookup.libraryLookup(System.mapLibraryName("fuzion_rt" /* NYI */), arena);
+    SymbolLookup llu = null;
+    try
+      {
+        llu = SymbolLookup.libraryLookup(System.mapLibraryName("fuzion_rt"), arena);
+      }
+    catch (IllegalArgumentException e)
+      {
+        Errors.error(e.getMessage());
+        System.exit(1);
+      }
     for (String library : libraries)
       {
-        llu = llu.or(SymbolLookup.libraryLookup(System.mapLibraryName(library), arena));
+        var ln = System.mapLibraryName(library);
+        try
+          {
+            llu = llu.or(SymbolLookup.libraryLookup(ln, arena));
+          }
+        catch (IllegalArgumentException e)
+          {
+            Errors.error("'" + ln + "' not found on your system. "
+                        + "Make sure to install the corresponding package, that provides '" + ln + "'.");
+            System.exit(1);
+          }
       }
 
     var memSeg = llu

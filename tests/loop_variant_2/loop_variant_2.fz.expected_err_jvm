@@ -1,0 +1,17 @@
+
+error 1: FATAL FAULT `variant`: i64.min
+Call stack:
+fuzion.sys.fatal_fault#2
+fuzion.type.runtime.type.fault.type.install_default.λ.call#1
+fuzion.runtime.fault.cause#1
+fuzion.type.runtime.type.contract_fault.type.install_default.λ.call#1
+fuzion.runtime.contract_fault.cause#1
+fuzion.type.runtime.type.variant_fault.type.install_default.λ.call#1
+fuzion.runtime.variant_fault.cause#1
+fuzion.runtime.variantcondition_fault#1
+loop_variant_2.test_6.loop
+loop_variant_2.test_6
+loop_variant_2
+
+*** fatal errors encountered, stopping.
+one error.

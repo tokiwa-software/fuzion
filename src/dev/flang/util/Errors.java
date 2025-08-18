@@ -803,6 +803,15 @@ public class Errors extends ANY
                 "To solve this, enclose the expression in parentheses '(' and ')'.");
   }
 
+  public static void commaNotAllowedHere(SourcePosition pos, String detail)
+  {
+    syntaxError(pos,
+                "No comma ',' may occur at this position",
+                "This code is part of a comma separated actual argument list that must not itself contain commas.\n" +
+                detail + "\n" +
+                "To solve this, enclose the expression in parentheses '(' and ')'.");
+  }
+
   public static void colonPartOfTernary(SourcePosition pos, String detail)
   {
     syntaxError(pos,

@@ -40,7 +40,7 @@
 # BQN tutorial: https://mlochbaum.github.io/BQN/tutorial/index.html
 #
 # Talk for Fullstack Academy by Gabriel Lebec: Lambda Calculus - Fundamentals of Lambda Calculus & Functional
-# Pragramming in JavaScript
+# Programming in JavaScript
 # https://www.youtube.com/watch?v=3VQ382QG-y4
 #
 # David C Keenan
@@ -80,7 +80,7 @@ public composition is
   # we can emulate this if we require the argument to be given twice:
   public M(T, U, V type, f0 (T->U)->(T->V), f1 T->U) T->V => f0 f1
   # applying M to id:
-  public Mid(T type) => M T T T x->x x->x   # NYI: should also work:  (composition.this.id T) (composition.this.id T)
+  public Mid(T type) Unary T T => M T T T x->x x->x   # NYI: should also work:  (composition.this.id T) (composition.this.id T)
   # applying M to M
   # public MM(T type) => M T T T x->(MM x) x->(MM x)
 
@@ -105,14 +105,14 @@ public composition is
   # Bird: thrush
   # BQN: ?
   # Haskell: flip id
-  public thrush(T, U, V type, x T, f (T,U)->V) U->V => y->f x y  # NYI just `f x` with partial application should do , but does not
+  public thrush(T, U, V type, x T, f (T,U)->V) U->V => y->f x y  # NYI: UNDER DEVELOPMENT: just `f x` with partial application should do , but does not
 
   # V
   # hold a pair of arguments
   # Bird: vireo
   # BQN: ?
   # Haskell: flip . flip id
-  public vireo(T, U, V, W type, x T, y U, f (T,U,V)->W) V->W => z->f x y z  # NYI just `f x y` with partial application should do , but does not
+  public vireo(T, U, V, W type, x T, y U, f (T,U,V)->W) V->W => z->f x y z  # NYI: UNDER DEVELOPMENT: just `f x y` with partial application should do , but does not
 
   # K
   # Elementary Cancellator, first
@@ -243,10 +243,10 @@ public composition is
   #
   # this can be used as follows:
   #
-  #   f (Lazy i32)->i32 := x->3
-  #   say <| fix i32 f
+  #     f (Lazy i32)->i32 := x->3
+  #     say <| fix i32 f
   #
-  #   g (Lazy (list i32))->list i32 := x->3:x
-  #   say <| (fix (list i32) g).take 10
+  #     g (Lazy (list i32))->list i32 := x->3:x
+  #     say <| (fix (list i32) g).take 10
   #
   fix(A type, f Lazy ((Lazy A)->A)) => f.call (fix A f)

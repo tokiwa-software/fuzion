@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
-import java.util.Collection;
 import java.util.function.Consumer;
 
 import dev.flang.util.List;
@@ -59,7 +58,7 @@ public interface SrcModule extends AbstractModule
 
   List<AbstractFeature> declaredOrInheritedFeatures(AbstractFeature outer, FeatureName fn);
   void forEachDeclaredOrInheritedFeature(AbstractFeature af, Consumer<AbstractFeature> f);
-  AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name, AbstractFeature original);
+  AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name);
   void findDeclaredOrInheritedFeatures(Feature outer);
   List<FeatureAndOuter> lookup(AbstractFeature thiz, String name, Expr use, boolean traverseOuter, boolean hidden);
   AbstractFeature lookupOpenTypeParameterResult(AbstractFeature outer, Expr use);
@@ -79,15 +78,6 @@ public interface SrcModule extends AbstractModule
   /*----------------------  methods needed by AIR  ----------------------*/
 
   /* NYI: cleanup: methods for AIR phase should not be defined in package ast! */
-
-  /**
-   * allInnerAndInheritedFeatures returns a complete set of inner features, used
-   * by Clazz.layout and Clazz.hasState.
-   *
-   * @return
-   */
-  Collection<AbstractFeature> allInnerAndInheritedFeatures(AbstractFeature f);
-
 
   String name();
 

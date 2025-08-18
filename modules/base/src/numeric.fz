@@ -27,8 +27,8 @@
 #
 public numeric : property.hashable, property.orderable is
 
-  public is_zero => numeric.this = numeric.this.zero
-  public is_one  => numeric.this = numeric.this.one
+  public is_zero bool => numeric.this = numeric.this.zero
+  public is_one  bool => numeric.this = numeric.this.one
 
   # basic operations: 'prefix +' (identity)
   public prefix + numeric.this
@@ -119,9 +119,9 @@ public numeric : property.hashable, property.orderable is
 
 
   # sign function resulting in `-1`/`0`/`+1` depending on whether `numeric.this`
-  # is less than, equal or larger than zero
+  # is less than, equal or greater than zero
   #
-  public sign =>
+  public sign i32 =>
     if      numeric.this = numeric.this.zero then  0
     else if numeric.this > numeric.this.zero then  1
     else                                          -1
@@ -129,7 +129,7 @@ public numeric : property.hashable, property.orderable is
 
   # absolute value
   #
-  public abs =>
+  public abs numeric.this =>
     if sign ≥ 0 then  numeric.this
     else             -numeric.this
 
@@ -146,18 +146,18 @@ public numeric : property.hashable, property.orderable is
 
     # only useful operation is the corresponding `prefix |`
     #
-    public postfix | => numeric.this.abs
+    public postfix | numeric.this => numeric.this.abs
 
     # redefine as_string to try to explain what is wrong if only one `|` is used
     #
-    public redef as_string =>
+    public redef as_string String =>
       "*** numeric.postfix |, requires corresponding prefix | for abs value ***"
 
 
   # does this numeric value fit into an u8? This is redefined by children
   # of numeric that support `as_u8`.
   #
-  public fits_in_u8 => false
+  public fits_in_u8 bool => false
 
 
   # this numeric value as an u8
@@ -210,45 +210,45 @@ public numeric : property.hashable, property.orderable is
 
   # the constant '2' in whatever integer implementation we have, maximum in case of overflow
   #
-  public type.two => from_u32 2
+  public type.two numeric.this => from_u32 2
 
 
   # the constant '10' in whatever integer implementation we have, maximum in case of overflow
   #
-  public type.ten => from_u32 10
+  public type.ten numeric.this => from_u32 10
 
 
   # monoid of numeric with infix + operation.  Will create sum of all elements it
   # is applied to.
   #
-  public type.sum =>
+  public type.sum Monoid numeric.this =>
     ref : Monoid numeric.this is
-      public redef infix ∙ (a, b numeric.this) => a + b
-      public redef e => zero
+      public redef infix ∙ (a, b numeric.this) numeric.this => a + b
+      public redef e numeric.this => zero
 
 
   # monoid of numeric with infix * operation.  Will create product of all elements
   # it is applied to.
   #
-  public type.product =>
+  public type.product Monoid numeric.this =>
     ref : Monoid numeric.this is
-      public redef infix ∙ (a, b numeric.this) => a * b
-      public redef e => one
+      public redef infix ∙ (a, b numeric.this) numeric.this => a * b
+      public redef e numeric.this => one
 
 
   # monoid of numeric with infix +^ operation.  Will create sum of all elements it
   # is applied to, stopping at max/min value in case of overflow.
   #
-  public type.sum_saturating =>
+  public type.sum_saturating Monoid (numeric.this) =>
     ref : Monoid numeric.this is
-      public redef infix ∙ (a, b numeric.this) => a +^ b
-      public redef e => zero
+      public redef infix ∙ (a, b numeric.this) numeric.this => a +^ b
+      public redef e numeric.this => zero
 
 
   # monoid of numeric with infix *^ operation.  Will create product of all elements
   # it is applied to, stopping at max/min value in case of overflow.
   #
-  public type.product_saturating =>
+  public type.product_saturating Monoid (numeric.this) =>
     ref : Monoid numeric.this is
-      public redef infix ∙ (a, b numeric.this) => a *^ b
-      public redef e => one
+      public redef infix ∙ (a, b numeric.this) numeric.this => a *^ b
+      public redef e numeric.this => one

@@ -349,14 +349,14 @@ choice_mix is
            i := 0, i + 1
          while i < 25
            yak "$i ==> "
-           match f(i)
+           match f i
              x i32    => yak x
              b1 bool  => { if b1 { yak  "true" } else { yak "false" } }
              s String => yak s
            say ""
 
     # check that pipe also works as operator:
-    (1..10) ! yak
+    (1..10).for_each yak
     say ""
   alternatives1
 

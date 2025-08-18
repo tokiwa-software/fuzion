@@ -54,15 +54,15 @@ factors is
   yak "factors filtering and printing a Sequence: "
   say ((1..n).filter (x -> n %% x))
 
-  yak "factors using pipes to filter and print a Sequence: "
-  (1..n & x -> n %% x) ! print
+  yak "factors using filter and print a Sequence: "
+  ((1..n).filter (x -> n %% x)).for_each print
   say ""
 
-  say "factors embedded in String: {(1..n) &  (x -> n %% x)}"
+  say "factors embedded in String: {(1..n).filter (x -> n %% x)}"
 
-  (1..n) ! m ->
+  (1..n).for_each m->
     say("factors of $m: " +
-        (1..m & x -> m %% x))
+        ((1..m).filter (x -> m %% x)))
 
   factors(n0 i32) => (1..n0).filter x->n0%%x
   say factors(42)

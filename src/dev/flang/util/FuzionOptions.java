@@ -90,7 +90,7 @@ public class FuzionOptions extends ANY
    * Helper to convert property name to anv var name. Replaces {@code .} by {@code _} since
    * {@code .} is not permitted in an env var.
    */
-  private static String envVarName(String propertyName)
+  public static String envVarName(String propertyName)
   {
     return propertyName.replace(".","_");
   }
@@ -194,7 +194,7 @@ public class FuzionOptions extends ANY
 
 
   /**
-   * Flag to enable intrinsic functions such as fuzion.java.call_virtual. These are
+   * Flag to enable intrinsic functions such as fuzion.jvm.env.call_virtual. These are
    * not allowed if run in a web playground.
    */
   final boolean _enableUnsafeIntrinsics;

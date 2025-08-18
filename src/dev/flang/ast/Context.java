@@ -139,16 +139,15 @@ abstract class Context extends ANY
                         .applyToGenericsAndOuter(x ->
                           x instanceof ResolvedParametricType rpt
                             ? f
-                              .generics()
-                              .list
+                              .typeArguments()
                               .stream()
                               .filter(y ->
-                                  y.feature().origin() == rpt.genericArgument().feature().origin() &&
-                                  y.toString().equals(rpt.genericArgument().typeParameter().featureName().baseName())
+                                  y.outer().origin() == rpt.genericArgument().outer().origin() &&
+                                  y.featureName().baseName().toString().equals(rpt.genericArgument().featureName().baseName())
                                 )
                               .findFirst()
                               .get()
-                              .type()
+                              .asGenericType()
                             : x);
                     }
                 }

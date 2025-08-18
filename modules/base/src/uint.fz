@@ -25,7 +25,7 @@
 
 # unsigned integer of arbitrary size, including zero
 # represented by its bit sequence
-module:public uint (public b Sequence u32, _ unit) : has_interval
+module:public uint (module b Sequence u32, _ unit) : has_interval
 is
 
   # the actually relevant data of this uint.
@@ -38,17 +38,17 @@ is
 
   # bitwise and
   public fixed redef infix & (other uint) uint =>
-    (b1, b2) := equalize other
+    b1, b2 := equalize other
     uint (b1.zip b2 x,y->x&y) unit
 
   # bitwise or
   public fixed redef infix | (other uint) uint =>
-    (b1, b2) := equalize other
+    b1, b2 := equalize other
     uint (b1.zip b2 x,y->x|y) unit
 
   # bitwise xor
   public fixed redef infix ^ (other uint) uint =>
-    (b1, b2) := equalize other
+    b1, b2 := equalize other
     uint (b1.zip b2 x,y->x^y) unit
 
 
@@ -66,9 +66,9 @@ is
       (uint (data.take data.count-discard) unit) >> (other % (uint 32))
     else
       shift := other.as_u32
-      (l, _) := data
+      l, _ := data
         .reduce ((Sequence u32).empty, u32 0) r,t->
-          (res, carry_over) := r
+          res, carry_over := r
           next := t>>shift | carry_over
           (res ++ [next], t << (u32 32)-shift)
       uint l unit
@@ -85,10 +85,10 @@ is
       uint (data ++ zeros (other.as_i32 / 32)) unit << other % (uint 32)
     else
       shift := other.as_u32
-      (l, carry_over) := data
+      l, carry_over := data
         .reverse
         .reduce ((Sequence u32).empty, u32 0) r,t->
-          (res, co) := r
+          res, co := r
           next := t<<shift | co
           ([next] ++ res, t >> ((u32 32)-shift))
       uint ([carry_over] ++ l) unit
@@ -97,7 +97,7 @@ is
   # return two sequences of equal length
   # by prepending zero(s) to the shorter sequence
   equalize(other uint)
-  post debug: result.values.0.count = result.values.1.count
+  post debug: result.0.count = result.1.count
   =>
     if other.data.count < data.count
       (data, zeros data.count-other.data.count ++ other.data)
@@ -107,7 +107,7 @@ is
 
   # divide with remainder the two given positive ints
   # returns the quotient and the remainder
-  # NYI performance: https://cs.opensource.google/go/go/+/refs/tags/go1.19:src/math/big/natdiv.go
+  # NYI: PERFORMANCE: https://cs.opensource.google/go/go/+/refs/tags/go1.19:src/math/big/natdiv.go
   fixed divide_with_remainder (divisor uint) tuple uint uint
   pre safety: divisor > uint.zero
   =>
@@ -126,7 +126,7 @@ is
       highest_bit_diff uint := highest_bit - divisor.highest_bit
       shift := if uint.this -! (divisor << highest_bit_diff) then highest_bit_diff else highest_bit_diff-uint.one
       remainder := uint.this - (divisor << shift)
-      (q, rem) := remainder.divide_with_remainder divisor
+      q, rem := remainder.divide_with_remainder divisor
       ((uint.one << shift) + q, rem)
 
 
@@ -144,12 +144,12 @@ is
 
   # add two unsigned ints
   public fixed redef infix +  (other uint) uint =>
-    (b1, b2) := equalize other
-    (d, _, _) := ([u32 0] ++ b1)
+    b1, b2 := equalize other
+    d, _, _ := ([u32 0] ++ b1)
       .reverse
       .reduce (((Sequence u32).empty), ([u32 0] ++ b2).reverse, u64 0) r,t->
 
-        (bits, rest, carry_over) := r
+        bits, rest, carry_over := r
 
         s := t.as_u64 + rest.first.get.as_u64 + carry_over
 
@@ -162,13 +162,13 @@ is
   public fixed redef infix - (other uint) uint
   =>
     two_pow_32 := ((u64 1)<<32)
-    (b1, b2) := equalize other
-    (s, _) := b1
-      .zip b2 (x, y -> (x,y))
+    b1, b2 := equalize other
+    s, _ := b1
+      .zip b2 tuple2
       .reverse
       .reduce ((Sequence u32).empty, u64 0) r,t->
-        (minuend, subtrahend) := t
-        (res, carry_over) := r
+        minuend, subtrahend := t
+        res, carry_over := r
 
         difference := two_pow_32 + minuend.as_u64 - subtrahend.as_u64 - carry_over
 
@@ -182,20 +182,20 @@ is
     array n (_ -> u32 0)
 
 
-  # NYI make faster: https://en.wikipedia.org/wiki/Multiplication_algorithm#Computational_complexity_of_multiplication
+  # NYI: PERFORMANCE: make faster: https://en.wikipedia.org/wiki/Multiplication_algorithm#Computational_complexity_of_multiplication
   # multiply these unsigned ints
   public fixed redef infix *  (other uint) uint =>
     data
       .reverse
       .indexed
       .map x->
-        (i, v) := x
+        i, v := x
         other
           .data
           .reverse
           .indexed
           .map ox->
-            (oi, ov) := ox
+            oi, ov := ox
             tmp := v.as_u64 * ov.as_u64
             uint ([(tmp>>32).low32bits , tmp.low32bits] ++ zeros i+oi) unit
       .flat_map id
@@ -205,7 +205,7 @@ is
   # divide these unsigned ints
   public fixed redef infix /  (other uint) uint
   =>
-    (quotient, _) := (divide_with_remainder other)
+    quotient, _ := divide_with_remainder other
     quotient
 
 
@@ -213,7 +213,7 @@ is
   # returns the remainder of the division
   public fixed redef infix %  (other uint) uint
   =>
-    (_, remainder) := (divide_with_remainder other)
+    _, remainder := divide_with_remainder other
     remainder
 
 
@@ -242,15 +242,15 @@ is
 
   # total order
   #
-  public fixed redef type.lteq(a, b uint) =>
+  public fixed redef type.lteq(a, b uint) bool =>
     if a.data.count = b.data.count
       a.data
         # zip the two equally long lists of digits
-        .zip b.data (c,d -> (c,d))
+        .zip b.data tuple2
         # skip to first unequal
-        .drop_while (x -> (c,d) := x; c = d)
+        .drop_while (x -> c, d := x; c = d)
         # compare
-        .map (x -> (c,d) := x; c ≤ d)
+        .map (x -> c, d := x; c ≤ d)
         # fallback, if all are equal
         .first true
     else
@@ -296,7 +296,7 @@ is
 
   # does this uint fit into an u8?
   #
-  public redef fits_in_u8 =>
+  public redef fits_in_u8 bool =>
     data.count ≤ 1 && data[0].fits_in_u8
 
 
@@ -310,7 +310,7 @@ is
 
   # does this uint fit in 64 bits?
   #
-  public fits_in_u64 =>
+  public fits_in_u64 bool =>
     data.count ≤ 2
 
 
@@ -325,7 +325,7 @@ is
 
 
   # does this uint fit into an u128?
-  public fits_in_u128 =>
+  public fits_in_u128 bool =>
     data.count ≤ 4
 
 
@@ -340,7 +340,7 @@ is
 
 
   # does this uint fit into an i128?
-  public fits_in_i128 =>
+  public fits_in_i128 bool =>
     data.count < 4 | (data.count = 4 && ((data[0] & i32.min.cast_to_u32) = u32 0))
 
 
@@ -357,14 +357,14 @@ is
   # this uint as an int
   public as_int int
   =>
-    int num.plus (uint b unit)
+    int true (uint b unit)
 
 
   # this uint as a string, may contain leading zeros
   #
   as_string0 String =>
     mrd := uint 1_000_000_000
-    (q, rem) := uint.this.divide_with_remainder mrd
+    q, rem := uint.this.divide_with_remainder mrd
 
     if q = uint.zero
       (rem.data.first 0).as_string

@@ -52,16 +52,15 @@ public record ClazzRecord(
   int[] clazzFields,
   int clazzCode,
   int clazzResultField,
-  int clazzTypeParameterActualType,
   String clazzOriginalName,
   int[] clazzActualGenerics,
   int lookupCall,
   int lookup_static_finally,
   LifeTime lifeTime,
   byte[] clazzTypeName,
-  int inlineArrayElementClazz,
   String clazzAsStringHuman,
   String clazzSrcFile,
+  int clazzSrcBytePos,
   int lookupJavaRef
   ) implements Serializable
 {

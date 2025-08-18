@@ -43,7 +43,7 @@ module:public array(
 
   # the length of the array
   #
-  public redef length => internal_array.length
+  public redef length i32 => internal_array.length
 
 
   # get the contents of this array at the given index
@@ -82,7 +82,7 @@ module:public array(
 
   # collect the contents of this Sequence into an array
   #
-  public fixed redef as_array =>
+  public fixed redef as_array array T =>
     array.this
 
 
@@ -108,7 +108,12 @@ module:public array(
     array internal unit unit unit
 
 
+  # return the maximum length of an array
+  #
+  public type.max_length i32 => i32.max
+
+
 # array -- create initialized one-dimensional immutable array
 #
-public array(T type, length i32, init i32 -> T) =>
+public array(T type, length i32, init i32 -> T) array T =>
   (array T).new length init

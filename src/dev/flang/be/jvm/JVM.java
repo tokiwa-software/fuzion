@@ -54,10 +54,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.lang.foreign.FunctionDescriptor;
-import java.lang.foreign.MemoryLayout;
-import java.lang.foreign.MemorySegment;
-import java.lang.foreign.ValueLayout;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -461,11 +457,12 @@ should be avoided as much as possible.
         var k = jvm._fuir.clazzKind(cl);
         switch (k)
           {
-          case Intrinsic    :
           case Routine      : jvm.code(cl); break;
           case Choice       : jvm._types._choices.createCode(cl); break;
           case Native       : jvm.native0(cl); break;
+          case TypeParameter:
           case Abstract     :
+          case Intrinsic    :
           case Field        : break;
           default           : throw new Error ("Unexpected feature kind: " + k);
           };
@@ -612,7 +609,6 @@ should be avoided as much as possible.
               "dev/flang/be/jvm/runtime/Runtime$1.class",
               "dev/flang/be/jvm/runtime/Runtime$2.class",
               "dev/flang/be/jvm/runtime/Runtime$3.class",
-              "dev/flang/be/jvm/runtime/Runtime$4.class",
               "dev/flang/be/jvm/runtime/Runtime$Abort.class",
               "dev/flang/util/ANY.class",
               "dev/flang/util/Errors.class",
@@ -983,7 +979,6 @@ should be avoided as much as possible.
         switch (ck)
           {
           case Routine:
-          case Intrinsic:
             {
               codeForRoutine(cl);
             }
@@ -1386,7 +1381,7 @@ should be avoided as much as possible.
    */
   Expr reportErrorInCode(String msg)
   {
-    return Expr.stringconst(msg)
+    return Expr.stringconst(msg, true)
       .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,"fatal","(Ljava/lang/String;)V", PrimitiveType.type_void))
       .andThen(Expr.endless_loop());
   }
@@ -1395,11 +1390,11 @@ should be avoided as much as possible.
   /**
    * Create code that is supposed to be unreachable.
    *
-   * @param site a site index where this unreachable code occured
+   * @param site a site index where this unreachable code occurred
    *
    * @param msg some text explaining what kind of statement we are trying to execute.
    *
-   * @return an Expr to reprot the error and exit(1).
+   * @return an Expr to report the error and exit(1).
    */
   Expr reportUnreachable(int site, String msg)
   {
@@ -1481,8 +1476,7 @@ should be avoided as much as possible.
   void codeForRoutine(int cl)
   {
     if (PRECONDITIONS) require
-      (_fuir.clazzKind(cl) == FUIR.FeatureKind.Routine ||
-       _fuir.clazzKind(cl) == FUIR.FeatureKind.Intrinsic);
+      (_fuir.clazzKind(cl) == FUIR.FeatureKind.Routine);
 
     var cf = _types.classFile(cl);
     if (cf == null) return;
@@ -1491,43 +1485,37 @@ should be avoided as much as possible.
     Expr code;
     var name = _names.function(cl);
 
-    // for an intrinsic that is not type type parameter, we do not generate code:
-    if (_fuir.clazzKind(cl) == FUIR.FeatureKind.Routine ||
-        _fuir.clazzTypeParameterActualType(cl) >= 0)
+    if (_fuir.clazzKind(cl) == FUIR.FeatureKind.Routine)
       {
-        if (_fuir.clazzKind(cl) == FUIR.FeatureKind.Routine)
-          {
-            setNumLocals(cl, current_index(cl) + Math.max(1, _types.javaType(cl).stackSlots()));
-            prolog = prolog(cl);
-            code = _ai.processClazz(cl).v1();
-            epilog = epilog(cl);
-          }
-        else // intrinsic is a type parameter, type instances are unit types, so nothing to be done:
-          {
-            code = Expr.RETURN;
-            name = Names.ROUTINE_NAME;
-          }
-
-        check
-          (cf != null);
-
-        var sl = _startLabels[_fuir.clazzId2num(cl)];
-        var sl2 = _startLabels2[_fuir.clazzId2num(cl)];
-        var bc_cl = (sl != null ? sl : Expr.UNIT)
-          .andThen(prolog)
-          .andThen(sl2 != null ? sl2 : Expr.UNIT)
-          .andThen(code)
-          .andThen(epilog);
-
-        var locals = initialLocals(cl);
-
-        var code_cl = cf.codeAttribute(_fuir.clazzAsString(cl),
-                                       bc_cl,
-                                       new List<>(), ClassFile.StackMapTable.fromCode(cf, locals, bc_cl));
-
-        cf.method(ClassFileConstants.ACC_STATIC | ClassFileConstants.ACC_PUBLIC, name, _types.descriptor(cl), new List<>(code_cl));
-
+        setNumLocals(cl, current_index(cl) + Math.max(1, _types.javaType(cl).stackSlots()));
+        prolog = prolog(cl);
+        code = _ai.processClazz(cl).v1();
+        epilog = epilog(cl);
       }
+    else // intrinsic is a type parameter, type instances are unit types, so nothing to be done:
+      {
+        code = Expr.RETURN;
+        name = Names.ROUTINE_NAME;
+      }
+
+    check
+      (cf != null);
+
+    var sl = _startLabels[_fuir.clazzId2num(cl)];
+    var sl2 = _startLabels2[_fuir.clazzId2num(cl)];
+    var bc_cl = (sl != null ? sl : Expr.UNIT)
+      .andThen(prolog)
+      .andThen(sl2 != null ? sl2 : Expr.UNIT)
+      .andThen(code)
+      .andThen(epilog);
+
+    var locals = initialLocals(cl);
+
+    var code_cl = cf.codeAttribute(_fuir.clazzAsString(cl),
+                                    bc_cl,
+                                    new List<>(), ClassFile.StackMapTable.fromCode(cf, locals, bc_cl));
+
+    cf.method(ClassFileConstants.ACC_STATIC | ClassFileConstants.ACC_PUBLIC, name, _types.descriptor(cl), new List<>(code_cl));
   }
 
 
@@ -1595,7 +1583,7 @@ should be avoided as much as possible.
   public JavaType javaTypeOfTarget(int cl)
   {
     var o = _fuir.clazzOuterRef(cl);
-    return o == -1 ? PrimitiveType.type_void
+    return o == NO_CLAZZ ? PrimitiveType.type_void
                    : _types.javaType(_fuir.clazzResultClazz(o));
   }
 
@@ -2041,7 +2029,7 @@ should be avoided as much as possible.
    * @param rt the Fuzion type of the value
    *
    * @param f iff this is called to assign the cloned value to a field, the
-   * field id. -1 if not assigned to a field.  This is used to not clone a value
+   * field id. NO_CLAZZ if not assigned to a field.  This is used to not clone a value
    * if assigned to an outer ref.
    *
    * @return value iff cloning was not required, or an expression that creates a
@@ -2050,7 +2038,7 @@ should be avoided as much as possible.
   Expr cloneValue(int s, Expr value, int rt, int f)
   {
     if (!_fuir.clazzIsRef(rt) &&
-        (f == -1 || !_fuir.clazzFieldIsAdrOfValue(f)) && // an outer ref field must not be cloned
+        (f == NO_CLAZZ || !_fuir.clazzFieldIsAdrOfValue(f)) && // an outer ref field must not be cloned
         !_fuir.isScalar(rt) &&
         (!_fuir.clazzIsChoice(rt) || _types._choices.kind(rt) == Choices.ImplKind.general))
       {
@@ -2086,7 +2074,7 @@ should be avoided as much as possible.
                         var fn = _types._choices.generalValueFieldName(rt, i);
                         var v = Expr.aload(vl, jt)
                           .andThen(Expr.getfield(cc, fn, ft));
-                        var cv = cloneValueOrNull(s, v, tc, -1);
+                        var cv = cloneValueOrNull(s, v, tc, NO_CLAZZ);
                         e = e
                           .andThen(Expr.aload(nl, jt))
                           .andThen(cv)

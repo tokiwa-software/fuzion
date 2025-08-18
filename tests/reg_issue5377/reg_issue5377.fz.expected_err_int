@@ -1,0 +1,27 @@
+
+error 1: FATAL FAULT `*** panic ***`: 
+Call stack:
+fuzion.type.runtime.type.fault.type.install_default.λ.call#1: {base.fum}/fuzion/runtime/fault.fz:43:7:
+      fuzion.sys.fatal_fault kind msg
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+fuzion.runtime.fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
+  => h e
+-----^
+panic.type.install_default.λ.call#1: {base.fum}/panic.fz:36:18:
+    (panic (msg->fuzion.runtime.fault.cause ("*** panic ***", msg)) unit).default
+-----------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+panic.cause#1: {base.fum}/eff/fallible.fz:35:6:
+  => h e
+-----^
+panic#1: {base.fum}/panic.fz:56:34:
+public panic(msg String) void => panic.cause msg
+---------------------------------^^^^^^^^^^^^^^^
+reg_issue5377.join: --CURDIR--/reg_issue5377.fz:31:19:
+      if a=1 then panic "" else unit
+------------------^^^^^^^^
+reg_issue5377: --CURDIR--/reg_issue5377.fz:34:3:
+  join
+--^^^^
+
+*** fatal errors encountered, stopping.
+one error.

@@ -38,7 +38,7 @@ public processes (ph os.Process_Handler, public running_processes container.Set 
 
   # cleanup effect
   #
-  public redef finally =>
+  public redef finally unit =>
     running_processes.for_each p->
       _ := wait p
 
@@ -58,11 +58,11 @@ public processes (ph os.Process_Handler, public running_processes container.Set 
   #
   wait0(p os.process) outcome u32 =>
     _ := fzE_pipe_close p.std_in = 0
-    r := fzE_process_wait p.id
+    r := fzE_process_wait p.pid
     if r<0
-      error "Waiting for process with id {p.id} was unsuccessful."
+      error "Waiting for process with id {p.pid} was unsuccessful."
     else
-      # NYI close these:
+      # NYI: UNDER DEVELOPMENT: close these:
       # check fzE_pipe_close p.std_out = 0
       # check fzE_pipe_close p.std_err = 0
       r.as_u32
@@ -86,18 +86,18 @@ install_default =>
       NULL := [u8 0].internal_array.data
 
       # posix_spawn needs last arg to be NULL
-      arg_data := array Array args.count+2 i->
+      arg_data := array (Array u8) args.count+2 i->
         if i=0 then sys.c_string n else if i<=args.count then sys.c_string args[i-1] else NULL
 
       env_var_strings := env_vars
         .items
         .map x->
-          (k, v) := x
+          k, v := x
           "$k=$v"
         .as_array
 
       # posix_spawn needs last arg to be NULL
-      env_data := array Array env_var_strings.count+1 (i -> if i<env_var_strings.count then sys.c_string env_var_strings[i] else NULL)
+      env_data := array (Array u8) env_var_strings.count+1 (i -> if i<env_var_strings.count then sys.c_string env_var_strings[i] else NULL)
 
       res_data := sys.internal_array_init i64 4
 
@@ -112,7 +112,6 @@ install_default =>
 
 # short-hand to processes effect
 #
-public processes =>
+public processes processes =>
   install_default
   processes.env
-

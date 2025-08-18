@@ -43,45 +43,68 @@ is
 
   # this duration in micro seconds, omitting fractional part
   #
-  public micros => nanos / units.nanos_per_micro
+  public micros u64 => nanos / time_unit.µs.in_ns
 
   # this duration in milli seconds, omitting fractional part
   #
-  public millis => nanos / units.nanos_per_milli
+  public millis u64 => nanos / time_unit.ms.in_ns
 
   # this duration in whole seconds, omitting fractional part
   #
-  public seconds => nanos / units.nanos_per_second
+  public seconds u64 => nanos / time_unit.s.in_ns
 
   # this duration in whole minutes, omitting fractional part
   #
-  public minutes => nanos / units.nanos_per_minute
+  public minutes u64 => nanos / time_unit.m.in_ns
 
   # this duration in whole hours, omitting fractional part
   #
-  public hours => nanos / units.nanos_per_hour
+  public hours u64 => nanos / time_unit.h.in_ns
 
   # this duration in whole days, omitting fractional part
   #
-  public days => nanos / units.nanos_per_day
+  public days u64 => nanos / time_unit.d.in_ns
 
   # this duration in whole weeks, omitting fractional part
   #
-  public weeks => nanos / units.nanos_per_week
+  public weeks u64 => nanos / time_unit.w.in_ns
 
   # this duration in whole Julian years, omitting fractional part
   #
-  public years => nanos / units.nanos_per_year
+  public years u64 => nanos / time_unit.a.in_ns
 
 
   # this duration and another one combined
   #
-  public infix + (other duration) => duration (nanos + other.nanos)
+  public infix + (other duration) duration
+  pre
+    safety: nanos +! other.nanos
+  =>
+    duration (nanos + other.nanos)
 
 
-  # this duration multiplied by n
+  # this duration minus another duration
   #
-  public infix * (n u64) => (duration nanos*n)
+  public fixed infix - (other duration) duration
+  pre
+    safety: duration.this >= other
+  =>
+    duration (nanos - other.nanos)
+
+
+  # this duration multiplied by factor n
+  #
+  public infix *(n u64) duration => duration nanos*n
+
+
+  # this duration multiplied by factor f
+  #
+  public times(f f64) duration => duration (nanos.as_f64 * f).as_i64.as_u64
+
+
+  # this duration divided by duration d, rounding down
+  #
+  public infix / (other duration) u64 => nanos / other.nanos
 
 
   # create a string representation of this duration. The string
@@ -89,15 +112,26 @@ is
   # and at most 4 decimal digits followed by a time unit string.
   #
   public redef as_string String =>
-    (f,u,_) := for
-                 x := units.unit_names.first.get, n0
-                 # NYI : name n leads to duplicate feature declaration
-                 n0 in units.unit_names.drop 1
-                 nf := n0.values.0
-               while (!(nf = 0 || nanos / nf < 10)) else
-                 x
-    n := $(nanos / f)
-    " "*(max 0 4-n.byte_length) + n + u
+    as_string unit_for_as_string
+
+
+  # create a string representation of this duration using the given unit.
+  #
+  public as_string(u time.time_unit) String =>
+    n := $(nanos / u.in_ns)
+    " "*(max 0 4-n.byte_length) + n + u.short_name
+
+
+  # create a string representation of this duration. The string
+  # representation is not accurate, it consists of at least two
+  # and at most 4 decimal digits followed by a time unit string.
+  #
+  public unit_for_as_string time.time_unit =>
+    for
+      x := time.time_unit.ns, nx.get
+      nx := x.larger
+    while nx >>? (u -> nanos / u.in_ns >= 10) else
+      x
 
 
   # total order
@@ -107,38 +141,38 @@ is
 
 
   # max value for a duration given in nanos
-  public type.max_duration_nanos   => u64.max
+  public type.max_duration_nanos   u64 => u64.max
 
   # max value for a duration given in micros
-  public type.max_duration_micros  => u64.max / time.units.nanos_per_micro
+  public type.max_duration_micros  u64 => u64.max / time.time_unit.µs.in_ns
 
   # max value for a duration given in millis
-  public type.max_duration_millis  => u64.max / time.units.nanos_per_milli
+  public type.max_duration_millis  u64 => u64.max / time.time_unit.ms.in_ns
 
   # max value for a duration given in seconds
-  public type.max_duration_seconds => u64.max / time.units.nanos_per_second
+  public type.max_duration_seconds u64 => u64.max / time.time_unit.s.in_ns
 
   # max value for a duration given in minutes
-  public type.max_duration_minutes => u64.max / time.units.nanos_per_minute
+  public type.max_duration_minutes u64 => u64.max / time.time_unit.m.in_ns
 
   # max value for a duration given in hours
-  public type.max_duration_hours   => u64.max / time.units.nanos_per_hour
+  public type.max_duration_hours   u64 => u64.max / time.time_unit.h.in_ns
 
   # max value for a duration given in days
-  public type.max_duration_days    => u64.max / time.units.nanos_per_day
+  public type.max_duration_days    u64 => u64.max / time.time_unit.d.in_ns
 
   # max value for a duration given in weeks
-  public type.max_duration_weeks   => u64.max / time.units.nanos_per_week
+  public type.max_duration_weeks   u64 => u64.max / time.time_unit.w.in_ns
 
   # max value for a duration given in years
-  public type.max_duration_years   => u64.max / time.units.nanos_per_year
+  public type.max_duration_years   u64 => u64.max / time.time_unit.a.in_ns
 
 
   # create duration of n ns
   #
   # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
-  public type.ns (n u64)
+  public type.ns (n u64) time.duration
   pre
     debug: n ≤ max_duration_nanos
   => time.duration n
@@ -148,37 +182,37 @@ is
   #
   # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
-  public type.µs (n u64)
+  public type.µs (n u64) time.duration
   pre
     debug: n ≤ max_duration_micros
-  => time.duration n*time.units.nanos_per_micro
+  => time.duration n*time_unit.µs.in_ns
 
 
   # create duration of n ms
   #
   # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
-  public type.ms (n u64)
+  public type.ms (n u64) time.duration
   pre
     debug: n ≤ max_duration_millis
-  => time.duration n*time.units.nanos_per_milli
+  => time.duration n*time_unit.ms.in_ns
 
 
   # create duration of n seconds
   #
   # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
-  public type.s (n u64)
+  public type.s (n u64) time.duration
   pre
     debug: n ≤ max_duration_seconds
-  => time.duration n*time.units.nanos_per_second
+  => time.duration n*time_unit.s.in_ns
 
 
   # create duration of n seconds
   #
   # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
-  public type.seconds (n u64)
+  public type.seconds (n u64) time.duration
   pre
     debug: n ≤ max_duration_seconds
   => s n
@@ -188,17 +222,17 @@ is
   #
   # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
-  public type.min (n u64)
+  public type.min (n u64) time.duration
   pre
     debug: n ≤ max_duration_minutes
-  => time.duration n*time.units.nanos_per_minute
+  => time.duration n*time_unit.m.in_ns
 
 
   # create duration of n min
   #
   # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
-  public type.minutes (n u64)
+  public type.minutes (n u64) time.duration
   pre
     debug: n ≤ max_duration_minutes
   => min n
@@ -208,17 +242,17 @@ is
   #
   # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
-  public type.h (n u64)
+  public type.h (n u64) time.duration
   pre
     debug: n ≤ max_duration_hours
-  => time.duration n*time.units.nanos_per_hour
+  => time.duration n*time.time_unit.h.in_ns
 
 
   # create duration of n hours
   #
   # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
-  public type.hours (n u64)
+  public type.hours (n u64) time.duration
   pre
     debug: n ≤ max_duration_hours
   => h n
@@ -228,88 +262,47 @@ is
   #
   # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
-  public type.days  (n u64)
+  public type.days  (n u64) time.duration
   pre
     debug: n ≤ max_duration_days
-  => time.duration n*time.units.nanos_per_day
+  => time.duration n*time.time_unit.d.in_ns
 
 
   # create duration of n weeks
   #
   # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
-  public type.weeks (n u64)
+  public type.weeks (n u64) time.duration
   pre
     debug: n ≤ max_duration_weeks
-  => time.duration n*time.units.nanos_per_week
+  => time.duration n*time.time_unit.w.in_ns
 
 
   # create duration of n years
   #
   # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
-  public type.a (n u64)
+  public type.a (n u64) time.duration
   pre
     debug: n ≤ max_duration_years
-  => time.duration n*time.units.nanos_per_year
+  => time.duration n*time.time_unit.a.in_ns
 
 
   # create duration of n years
   #
   # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
-  public type.years (n u64)
+  public type.years (n u64) time.duration
   pre
     debug: n ≤ max_duration_years
   => a n
 
 
-# time.duration.units -- unit time defining units used in duration
-#
-public units is
-
-  # factor converting nanos to nanos, just for completeness
-  public nanos_per_nano   => u64 1
-
-  # factor converting micros to nanos
-  public nanos_per_micro  => u64 1_000
-
-  # factor converting millis to nanos
-  public nanos_per_milli  => nanos_per_micro * 1_000
-
-  # factor converting seconds to nanos
-  public nanos_per_second => nanos_per_milli * 1_000
-
-  # factor converting minutes to nanos
-  public nanos_per_minute => nanos_per_second * 60
-
-  # factor converting hours to nanos
-  public nanos_per_hour   => nanos_per_minute * 60
-
-  # factor converting days to nanos
-  public nanos_per_day    => nanos_per_hour * 24
-
-  # factor converting weeks to nanos
-  public nanos_per_week   => nanos_per_day * 7
-
-  # factor converting years to nanos
-  public nanos_per_year   => nanos_per_second * 31_557_600
-
-
-  # array of tuples consisting of the nanos_per_* conversion
-  # factors and an (mostly ISO) name of the corresponding unit.
+  # the zero duration, representing a time span of zero
   #
-  # Entries are sorted by increasing duration size.  The last
-  # entry is an ((u64 0), "--end marker--").
+  public type.zero time.duration => time.duration 0
+
+
+  # the maximum duration
   #
-  unit_names =>
-    [ (nanos_per_nano   , "ns", "ns"),
-      (nanos_per_micro  , "µs", "µs"),
-      (nanos_per_milli  , "ms", "ms"),
-      (nanos_per_second , "s ", "sec"),
-      (nanos_per_minute , "m ", "min"),
-      (nanos_per_hour   , "h ", "hours"),
-      (nanos_per_day    , "d ", "days"),
-      (nanos_per_year   , "a ", "years"),
-      ((u64 0          ), "--end marker--", "--end marker--"),
-      ]
+  public type.max time.duration => time.duration.ns time.duration.max_duration_nanos

@@ -1,0 +1,80 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue5436
+#
+# -----------------------------------------------------------------------
+
+# this contains tests using open type parameters in a ways that used to
+# result in IndexOutOfBounds, ClassCast or precondition failures during fz
+# compilation since handling of open type parameters was missing.
+#
+# To avoid errors, the tests from #5436 where changed to not contain abstract
+# features
+
+# the first test from #5436 which uses an empty list of actual generics
+
+test1.q
+test1(A type...) is
+  q => g r
+  g (B type) unit => say "in {type_of g.this}"
+  r is
+
+
+# the first test from #5436, but using a non empty list of actual generics
+
+(test1a unit).q
+test1a(A type...) is
+  q => g r
+  g (B type) unit => say "in {type_of g.this}"
+  r is
+
+
+# the first test from #5436, but using a long list of actual generics
+
+(test1b unit nil false_ Any String bool).q
+test1b(A type...) is
+  q => g r
+  g (B type) unit => say "in {type_of g.this}"
+  r is
+
+
+# the second test from #5436 which uses an empty list of actual generics
+
+test2
+test2(A type...) =>
+  f q
+  f(X type) unit => say "in {type_of f.this}"
+  q is
+
+# the second test from #5436, but using a non empty list of actual generics
+
+test2a unit
+test2a(A type...) =>
+  f q
+  f(X type) unit => say "in {type_of f.this}"
+  q is
+
+# the second test from #5436, but using a long list of actual generics
+
+test2b (Sequence (option (array u8))) bool String (Lazy i32->(num.complex f32))
+test2b(A type...) =>
+  f q
+  f(X type) unit => say "in {type_of f.this}"
+  q is

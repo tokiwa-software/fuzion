@@ -8,8 +8,8 @@ this is fine
 this is fine
 this is fine
 this is fine
-declared field a
-declared field b
+declared field a=1
+declared field b=2
 field f1 assigned
 feature f4 assigned
 '1' is a number

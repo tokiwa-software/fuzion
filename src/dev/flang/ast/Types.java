@@ -80,13 +80,6 @@ public class Types extends ANY
   public static Resolved resolved = null;
 
   /**
-   * Dummy name used for address type Types.t_ADDRESS which is used for
-   * references to value types.
-   */
-  static final String ADDRESS_NAME = "--ADDRESS--";
-
-
-  /**
    * Dummy name used for undefined type t_UNDEFINED which is used for undefined
    * types that are expected to be replaced by the correct type during type
    * inference.  Examples are the result of union of distinct types on different
@@ -105,7 +98,7 @@ public class Types extends ANY
 
   /**
    * Dummy name used for type t_FORWARD_CYCLIC which is used to
-   * indicate a forward or cylic type inference.
+   * indicate a forward or cyclic type inference.
    */
   private static final String FORWARD_CYCLIC_NAME = "FORWARD_CYCLIC";
 
@@ -114,12 +107,8 @@ public class Types extends ANY
    * Names of internal types that are not backed by physical feature definitions.
    */
   static Set<String> INTERNAL_NAMES = Collections.<String>unmodifiableSet
-    (new TreeSet<>(Arrays.asList(ADDRESS_NAME,
-                                 UNDEFINED_NAME,
+    (new TreeSet<>(Arrays.asList(UNDEFINED_NAME,
                                  ERROR_NAME)));
-
-  /* artificial type for the address of a value type, used for outer refs to value instances */
-  public static AbstractType t_ADDRESS;
 
   /* artificial type for Expr that does not have a well defined type such as the
    * union of two distinct types */
@@ -188,6 +177,7 @@ public class Types extends ANY
     public final AbstractFeature f_array;
     public final AbstractFeature f_array_internal_array;
     public final AbstractFeature f_effect;
+    public final AbstractFeature f_effect_finally;
     public final AbstractFeature f_effect_static_finally;
     public final AbstractFeature f_error;
     public final AbstractFeature f_error_msg;
@@ -202,6 +192,10 @@ public class Types extends ANY
     public final AbstractFeature f_concur;
     public final AbstractFeature f_concur_atomic;
     public final AbstractFeature f_concur_atomic_v;
+    public final AbstractFeature f_Values_Of_Open_Type;
+    public final AbstractFeature f_container;
+    public final AbstractFeature f_typed_applicator;
+    public final AbstractFeature f_typed_applicator_apply;
     public final AbstractFeature f_Type;
     public final AbstractFeature f_Type_infix_colon;
     public final AbstractFeature f_Type_infix_colon_true;
@@ -235,7 +229,7 @@ public class Types extends ANY
       t_codepoint               = universe.get(mod, "codepoint", 1).selfType();
       f_id                      = universe.get(mod, "id", 2);
       f_void                    = universe.get(mod, "void", 0);
-      f_choice                  = universe.get(mod, "choice", 1);
+      f_choice                  = universe.get(mod, FuzionConstants.CHOICE_NAME, 1);
       f_TRUE                    = universe.get(mod, "true_", 0);
       f_FALSE                   = universe.get(mod, "false_", 0);
       f_true                    = universe.get(mod, "true", 0);
@@ -254,6 +248,7 @@ public class Types extends ANY
       f_array                   = universe.get(mod, FuzionConstants.ARRAY_NAME, 5);
       f_array_internal_array    = f_array.get(mod, "internal_array", 0);
       f_effect                  = universe.get(mod, "effect", 0);
+      f_effect_finally          = f_effect.get(mod, "finally", 0);
       f_effect_static_finally   = f_effect.get(mod, "static_finally", 0);
       f_error                   = universe.get(mod, "error", 1);
       f_error_msg               = f_error.get(mod, "msg", 0);
@@ -268,6 +263,10 @@ public class Types extends ANY
       f_concur                  = universe.get(mod, "concur", 0);
       f_concur_atomic           = f_concur.get(mod, "atomic", 2);
       f_concur_atomic_v         = f_concur_atomic.get(mod, "v", 0);
+      f_Values_Of_Open_Type        = universe.get(mod, FuzionConstants.VALUES_OF_OPEN_TYPE_FEAT, 0);
+      f_container               = universe.get(mod, "container", 0);
+      f_typed_applicator        = f_container.get(mod, FuzionConstants.TYPED_APPLICATOR_FEAT, 1);
+      f_typed_applicator_apply  = f_typed_applicator.get(mod, FuzionConstants.TYPED_APPLICATOR_APPLY_FEAT, 3);
       f_Type                    = universe.get(mod, FuzionConstants.TYPE_FEAT, 0);
       f_Type_infix_colon        = f_Type.get(mod, "infix :", 1);
       f_Type_infix_colon_true   = f_Type.get(mod, "infix_colon_true", 1);
@@ -294,7 +293,6 @@ public class Types extends ANY
       legalNativeArgumentTypes = new TreeSet<AbstractType>();
 
       resolved = this;
-      ((ArtificialBuiltInType) t_ADDRESS  ).resolveArtificialType(universe.get(mod, FuzionConstants.ANY_NAME));
       ((ArtificialBuiltInType) t_UNDEFINED).resolveArtificialType(
         new Feature(true) {
           FeatureName fn = FeatureName.get(UNDEFINED_NAME, 0);
@@ -367,7 +365,7 @@ public class Types extends ANY
   /**
    * The current options as a static field.
    */
-  // NYI remove this when we have a better way of accessing current Resolution.
+  // NYI: CLEANUP: remove this when we have a better way of accessing current Resolution.
   static FuzionOptions _options;
 
 
@@ -383,7 +381,6 @@ public class Types extends ANY
   public static void reset(FuzionOptions options)
   {
     resolved = null;
-    t_ADDRESS   = new ArtificialBuiltInType(ADDRESS_NAME  );
     t_UNDEFINED = new ArtificialBuiltInType(UNDEFINED_NAME);
     t_ERROR     = new ArtificialBuiltInType(ERROR_NAME    );
     _options    = options;

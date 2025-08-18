@@ -2,36 +2,36 @@
 --CURDIR--/reg_issues4992_5001_negative.fz:82:9: error 1: Incompatible type parameter
       X.i (tuple i32 bool)  # 2. should flag an error: wrong number of type parameters
 --------^
-formal type parameter 'U' with constraint 'tuple i32'
+formal type parameter 'U : tuple i32'
 actual type parameter 'tuple i32 bool'
 
 
 --CURDIR--/reg_issues4992_5001_negative.fz:97:9: error 2: Incompatible type parameter
       X.i (tuple unit true_) # 3. should flag an error: wrong type parameter `true_` instead of `X`
 --------^
-formal type parameter 'U' with constraint 'tuple unit (reg_issues4992_5000.case5.x.this.type (in type feature))'
+formal type parameter 'U : tuple unit reg_issues4992_5000.case5.x.this.type' with constraint 'tuple unit X'
 actual type parameter 'tuple unit true_'
 
 
 --CURDIR--/reg_issues4992_5001_negative.fz:150:9: error 3: Incompatible type parameter
       X.i (tuple i32 i32 i32) (42,43,44)  # 4. should flag an error: wrong type parameter `tuple i32 i32 i32` instead of `tuple Any unit f32`
 --------^
-formal type parameter 'U' with constraint 'tuple reg_issues4992_5000.case6.x.type.A reg_issues4992_5000.case6.x.type.B reg_issues4992_5000.case6.x.type.C'
+formal type parameter 'U : tuple A B C' with constraint 'tuple Any unit f32'
 actual type parameter 'tuple i32 i32 i32'
 
 
 --CURDIR--/reg_issues4992_5001_negative.fz:162:13: error 4: Incompatible type parameter
     (x f32).i (box i32)  # 5. should flag an error: wrong type parameter `box i32` instead of `box f32`
 ------------^
-formal type parameter 'U' with constraint 'reg_issues4992_5000.this.case7.this.box reg_issues4992_5000.case7.x.type.A'
-actual type parameter 'reg_issues4992_5000.this.case7.this.box i32'
+formal type parameter 'U : reg_issues4992_5000.case7.this.box A' with constraint 'reg_issues4992_5000.case7.this.box f32'
+actual type parameter 'reg_issues4992_5000.case7.this.box i32'
 
 
 --CURDIR--/reg_issues4992_5001_negative.fz:64:14: error 5: Constraint for type parameter must not be a type parameter
       type.i(U type : x.this) =>  # 1. should flag an error: .this-type not allowed directly
 -------------^
 Affected type parameter: 'reg_issues4992_5000.case3.x.type.i.U'
-constraint: 'reg_issues4992_5000.case3.x.this.type (in type feature)'
+constraint: 'reg_issues4992_5000.case3.x.this.type'
 To solve this, change the type provided, e.g. to the unconstrained 'type'.
 
 5 errors.

@@ -37,33 +37,32 @@ ENV = \
 
 CHECK = && echo $(OK) || (echo $(FAIL); exit 1)
 
-
 int: clean modules/mod.fum
-	$(ENV) ../check_simple_example_int.sh "$(FUZION_RUN)" $(FILE) || exit 1
+	$(ENV) ../../bin/check_simple_example int "$(FUZION_RUN)" $(FILE) || exit 1
 
 jvm: clean modules/mod.fum
-	$(ENV) ../check_simple_example_jvm.sh "$(FUZION_RUN)" $(FILE) || exit 1
+	$(ENV) ../../bin/check_simple_example jvm "$(FUZION_RUN)" $(FILE) || exit 1
 
 c: clean modules/mod.fum
-	$(ENV) ../check_simple_example_c.sh "$(FUZION_RUN)" $(FILE) || exit 1
+	$(ENV) ../../bin/check_simple_example c "$(FUZION_RUN)" $(FILE) || exit 1
 
 record: clean modules/mod.fum
-	$(ENV) ../record_simple_example.sh "$(FUZION_RUN)" $(FILE)
+	$(ENV) ../../bin/record_simple_example any "$(FUZION_RUN)" $(FILE)
 
 record_int: clean modules/mod.fum
-	$(ENV) ../record_simple_example_int.sh "$(FUZION_RUN)" $(FILE)
+	$(ENV) ../../bin/record_simple_example int "$(FUZION_RUN)" $(FILE)
 
 record_jvm: clean modules/mod.fum
-	$(ENV) ../record_simple_example_jvm.sh "$(FUZION_RUN)" $(FILE)
+	$(ENV) ../../bin/record_simple_example jvm "$(FUZION_RUN)" $(FILE)
 
 record_c: clean modules/mod.fum
-	$(ENV) ../record_simple_example_c.sh "$(FUZION_RUN)" $(FILE)
+	$(ENV) ../../bin/record_simple_example c "$(FUZION_RUN)" $(FILE)
 
 
 # compile mod into mod.fum
 modules/mod.fum:
 	mkdir -p $(@D)
-	$(FUZION) -sourceDirs=./mod -save-module=$@  $(CHECK)
+	$(FUZION) -sourceDirs=./mod -saveModule=$@  $(CHECK)
 
 clean:
 	rm -rf modules *~ */*~ */*/*~

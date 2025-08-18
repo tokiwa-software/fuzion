@@ -28,6 +28,7 @@ package dev.flang.ast;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.function.Supplier;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
@@ -124,9 +125,38 @@ public class InlineArray extends ExprWithPos
   @Override
   AbstractType typeForInferencing()
   {
+    return type(false);
+  }
+
+
+  /**
+   * type returns the type of this expression or Types.t_ERROR if the type is
+   * still unknown, i.e., before or during type resolution.
+   *
+   * @return this Expr's type or t_ERROR in case it is not known yet.
+   * t_FORWARD_CYCLIC in case the type can not be inferred due to circular inference.
+   */
+  @Override
+  public AbstractType type()
+  {
+    return type(true);
+  }
+
+
+  /**
+   * type of this inline array.
+   *
+   * @param urgent true iff we really need a type and an error should be
+   * produced if we can't get one.
+   *
+   * @return this Expr's type or null if !urgent and it is not known
+   * yet. t_ERROR if urgent and type is not known.
+   */
+  private AbstractType type(boolean urgent)
+  {
     if (_type == null && !_elements.isEmpty())
       {
-        var t = Expr.union(_elements, Context.NONE);
+        var t = Expr.union(_elements, Context.NONE, urgent);
         if (t == Types.t_ERROR)
           {
             new IncompatibleResultsOnBranches(pos(),
@@ -141,6 +171,10 @@ public class InlineArray extends ExprWithPos
               : ResolvedNormalType.create(Types.resolved.f_array,
                                           new List<>(t));
           }
+      }
+    else if (_type == null && urgent)
+      {
+        _type = super.type();
       }
     return _type;
   }
@@ -164,7 +198,7 @@ public class InlineArray extends ExprWithPos
    * will be replaced by the expression that reads the field.
    */
   @Override
-  Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
+  Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
   {
     if (_type == null)
       {
@@ -178,7 +212,7 @@ public class InlineArray extends ExprWithPos
             var li = _elements.listIterator();
             while (li.hasNext())
               {
-                li.set(li.next().propagateExpectedType(res, context, elementType));
+                li.set(li.next().propagateExpectedType(res, context, elementType, null));
               }
             var arr = Types.resolved.f_array;
             _type = arr.resultType()
@@ -201,7 +235,7 @@ public class InlineArray extends ExprWithPos
     if (PRECONDITIONS) require
       (t != null);
 
-    // NYI see issue: #1817
+    // NYI: UNDER DEVELOPMENT: see issue: #1817
     if (Types.resolved.f_array.inheritsFrom(t.feature()) &&
         t.generics().size() == 1)
       {
@@ -248,45 +282,6 @@ public class InlineArray extends ExprWithPos
 
 
   /**
-   * visit all the expressions within this InlineArray.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited expressions
-   */
-  public void visitExpressions(ExpressionVisitor v)
-  {
-    super.visitExpressions(v);
-    for (var e : _elements)
-      {
-        e.visitExpressions(v);
-      }
-    if (_code != null)
-      {
-        _code.visitExpressions(v);
-      }
-  }
-
-
-  /**
-   * Boxing for actual arguments: Find actual arguments of value type that are
-   * assigned to formal argument types that are references and box them.
-   *
-   * @param context the source code context where this Expr is used
-   */
-  void boxElements(Context context)
-  {
-    var li = _elements.listIterator();
-    while (li.hasNext())
-      {
-        var e = li.next();
-        var eb = e.boxAndTag(elementType(), context);
-        if (CHECKS) check
-          (e == eb);
-      }
-  }
-
-
-  /**
    * check the types in this InlineArray
    *
    * @param context the source code context where this InlineArray is used
@@ -303,13 +298,10 @@ public class InlineArray extends ExprWithPos
 
     for (var e : _elements)
       {
-        if (!elementType.isAssignableFromWithoutBoxing(e.type(), context))
+        if (elementType.isAssignableFrom(e.type(), context).no())
           {
             AstErrors.incompatibleTypeInArrayInitialization(e.pos(), _type, elementType, e, context);
           }
-
-        if (CHECKS) check
-          (Errors.any() || e.type().isVoid() || e.needsBoxing(elementType, context) == null || e.isBoxed());
       }
   }
 
@@ -414,12 +406,11 @@ public class InlineArray extends ExprWithPos
     var sys          = Types.resolved.fuzionSysCall(res, context);
     var sysArrayCall = new Call(SourcePosition.builtIn, sys, "internal_array_init",
                                 FuzionConstants.NO_SELECT, eT, argsE, null).resolveTypes(res, context);
-    var sysArrayT    = new ParsedType(SourcePosition.builtIn, "internal_array", eT, sys.calledFeature().selfType());
+    var sysArrayT    = new ParsedType(SourcePosition.builtIn, "internal_array", eT, sys.type());
     var sysArrayName = FuzionConstants.INLINE_SYS_ARRAY_PREFIX + (_id_++);
     var sysArrayVar  = new Feature(SourcePosition.builtIn, Visi.PRIV, sysArrayT, sysArrayName, Impl.FIELD);
     res._module.findDeclarations(sysArrayVar, context.outerFeature());
     res.resolveDeclarations(sysArrayVar);
-    res.resolveTypes();
     var sysArrayAssign = new Assign(res, SourcePosition.builtIn, sysArrayVar, sysArrayCall, context);
     var exprs = new List<Expr>(sysArrayAssign);
     var readSysArrayVar = new Call(SourcePosition.builtIn,

@@ -41,7 +41,7 @@ reg_issue3362 is
 
   dec_test =>
     for tup in base32_test_vectors do
-      (plain_expected, code) := tup
+      plain_expected, code := tup
       out :=
         match dummy_decode code.utf8.as_array
           arr array u8 =>

@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import dev.flang.util.ANY;
@@ -66,15 +67,6 @@ public abstract class Expr extends ANY implements HasSourcePosition
     @Override public SourcePosition pos() { return SourcePosition.notAvailable; }
     @Override public Expr visit(FeatureVisitor v, AbstractFeature outer) { return this; }
   };
-
-
-  /*-------------------------  static variables -------------------------*/
-
-
-  /**
-   * quick-and-dirty way to make unique names for expression result vars
-   */
-  static private long _id_ = 0;
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -125,7 +117,9 @@ public abstract class Expr extends ANY implements HasSourcePosition
   public void setSourceRange(SourceRange r)
   {
     if (PRECONDITIONS) require
-      (/* make sure we do not accidentally set this repeatedly, as for special
+      (Errors.any() || // in case of earlier (syntax-) errors, do not care, otherwise:
+
+       /* make sure we do not accidentally set this repeatedly, as for special
         * Exprs like Call.ERROR, but we might extend it as in adding
         * parentheses around the Expr:
         */
@@ -194,10 +188,15 @@ public abstract class Expr extends ANY implements HasSourcePosition
    *
    * @param exprs the expression to unionize
    *
-   * @return the union of exprs result type, null if
-   * no expression can be inferred yet.
+   * @param context the source code context where this Expr is used
+   *
+   * @param urgent true if we really need a type and an error should be produced
+   * if we do not get one.
+   *
+   * @return the union of exprs result type, null if no expression can be
+   * inferred yet, Types.resolved.t_void if exprs.isEmpty() && urgent.
    */
-  static AbstractType union(List<Expr> exprs, Context context)
+  static AbstractType union(List<Expr> exprs, Context context, boolean urgent)
   {
     AbstractType t = Types.resolved.t_void;
 
@@ -238,9 +237,28 @@ public abstract class Expr extends ANY implements HasSourcePosition
           }
       }
 
-    return foundType
-      ? result
-      : null;
+    // Third pass:
+    // In case we have not found any type yet, but we need one, force a type
+    if (urgent && !foundType)
+      {
+        for (var e : exprs)
+          {
+            var et = e.type();
+            if (et != null)
+              {
+                foundType = true;
+                result = result.union(et, context);
+              }
+          }
+      }
+
+    result = foundType || urgent ? result : null;
+
+    if (POSTCONDITIONS) check
+      (!urgent ||                     result != null,
+       !urgent || !exprs.isEmpty() || result == Types.resolved.t_void);
+
+    return result;
   }
 
 
@@ -299,18 +317,6 @@ public abstract class Expr extends ANY implements HasSourcePosition
    * visit replaces this by the alternative.
    */
   public abstract Expr visit(FeatureVisitor v, AbstractFeature outer);
-
-
-  /**
-   * visit all the expressions within this Expr.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited expressions
-   */
-  public void visitExpressions(ExpressionVisitor v)
-  {
-    v.action(this);
-  }
 
 
   /**
@@ -445,7 +451,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
                                   new List<>(),
                                   result);
 
-            result = fn.propagateExpectedType(res, context, t);
+            result = fn.propagateExpectedType(res, context, t, null);
             fn.resolveTypes(res, context);
             fn.updateTarget(res);
           }
@@ -471,13 +477,37 @@ public abstract class Expr extends ANY implements HasSourcePosition
    *
    * @param t the expected type.
    *
+   * @param from for error output: if non-null, produces a String describing
+   * where the expected type came from.
+   *
    * @return either this or a new Expr that replaces thiz and produces the
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
+  Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
   {
-    return this;
+    Expr result = this;
+    if (mayBePartial(t))
+      {
+        result = propagateExpectedTypeForPartial(res, context, t);
+      }
+    if (result != this)
+      {
+        result = result.propagateExpectedType(res, context, t, from);
+      }
+    return result;
+  }
+
+
+  /**
+   * Is this type applicable for partial application?
+   */
+  private boolean mayBePartial(AbstractType t)
+  {
+    return t.isFunctionTypeExcludingLazy()         &&
+        !(this instanceof Call c && c._wasImplicitImmediateCall) &&
+        typeForInferencing() != Types.t_ERROR     &&
+        (typeForInferencing() == null || !typeForInferencing().isFunctionType());
   }
 
 
@@ -506,6 +536,36 @@ public abstract class Expr extends ANY implements HasSourcePosition
    */
   Expr propagateExpectedTypeForPartial(Resolution res, Context context, AbstractType expectedType)
   {
+    return expectedType.isFunctionType() && expectedType.arity() == 0 && typeForInferencing() != null && !typeForInferencing().isFunctionType()
+      ? new Function(pos(), NO_EXPRS, reset())
+      : this;
+  }
+
+
+  /**
+   * NYI: UNDER DEVELOPMENT: better throw away completely and reparse?
+   *
+   * resets all features in this expression so that they can have _new_ outers.
+   */
+  private Expr reset()
+  {
+    visit(new FeatureVisitor() {
+      @Override
+      public Expr action(Feature f, AbstractFeature outer)
+      {
+        return new Feature(f.pos(),
+                           f.visibility(),
+                           f._modifiers,
+                           f._returnType,
+                           f._qname,
+                           f.arguments(),
+                           f.inherits(),
+                           f.contract(),
+                           f.impl(),
+                           null
+                          );
+      }
+    }, null);
     return this;
   }
 
@@ -557,27 +617,6 @@ public abstract class Expr extends ANY implements HasSourcePosition
   }
 
 
-  protected Expr addFieldForResult(Resolution res, Context context, AbstractType t)
-  {
-    var result = this;
-    if (!t.isVoid())
-      {
-        var pos = pos();
-        Feature r = new Feature(res,
-                                pos,
-                                Visi.PRIV,
-                                t,
-                                FuzionConstants.EXPRESSION_RESULT_PREFIX + (_id_++),
-                                context.outerFeature());
-        r.scheduleForResolution(res);
-        res.resolveTypes();
-        result = new Block(new List<>(assignToField(res, context, r),
-                                      new Call(pos, new Current(pos, context.outerFeature()), r).resolveTypes(res, context)));
-      }
-    return result;
-  }
-
-
   /**
    * Does this expression consist of nothing but declarations? I.e., it has no
    * code that actually would be executed at runtime.
@@ -591,178 +630,9 @@ public abstract class Expr extends ANY implements HasSourcePosition
   /**
    * Is this Expr a call to an outer ref?
    */
-  public boolean isCallToOuterRef()
+  boolean isCallToOuterRef()
   {
     return false;
-  }
-
-
-  /**
-   * Check if this value might need boxing or tagging and wrap this
-   * into Box()/Tag()/Tag(Box()) if this is the case.
-   *
-   * @param frmlT the formal type this value is assigned to
-   *
-   * @param context the source code context where this Expr is used
-   *
-   * @return this or an instance of Box/Tag wrapping this.
-   */
-  Expr boxAndTag(AbstractType frmlT, Context context)
-  {
-    if (PRECONDITIONS) require
-      (frmlT != null);
-
-    var result = this;
-    var t = type();
-
-    if (!t.isVoid() && (frmlT.isAssignableFrom(t, context) || frmlT.isAssignableFrom(t.asRef(), context)))
-      {
-        var rt = needsBoxing(frmlT, context);
-        if (rt != null)
-          {
-            result = new Box(result, rt);
-          }
-        if (frmlT.isChoice() && frmlT.isAssignableFrom(result.type(), context))
-          {
-            result = tag(frmlT, result, context);
-            if (CHECKS) check
-              (result.needsBoxing(frmlT, context) == null);
-          }
-      }
-
-    if (POSTCONDITIONS) ensure
-      (Errors.any()
-        || type().isVoid()
-        || frmlT.isGenericArgument()
-        || frmlT.isThisType()
-        || result.needsBoxing(frmlT, context) == null
-        || !(frmlT.isAssignableFrom(t, context) || frmlT.isAssignableFrom(t.asRef(), context)));
-
-    return result;
-  }
-
-
-  /**
-   * handle tagging when assigning value to choice frmlT
-   * @param frmlT
-   * @param value
-   * @return
-   */
-  private Expr tag(AbstractType frmlT, Expr value, Context context)
-  {
-    if(PRECONDITIONS) require
-      (frmlT.isChoice() || frmlT == Types.t_ERROR);
-
-    // Case 1: types are equal, no tagging necessary
-    if (frmlT.compareTo(value.type()) == 0)
-      {
-        return value;
-      }
-    // Case 2.1: ambiguous assignment via subtype
-    //
-    // example:
-    //
-    //  A ref is
-    //  B ref is
-    //  C ref : B, A is
-    //  t choice A B := C
-    //
-    else if (frmlT
-             .choiceGenerics(context)
-              .stream()
-             .filter(cg -> cg.isAssignableFromWithoutTagging(value.type(), context))
-              .count() > 1)
-      {
-        AstErrors.ambiguousAssignmentToChoice(frmlT, value);
-        return Call.ERROR;
-      }
-    // Case 2.2: no nested tagging necessary:
-    // there is a choice generic in this choice
-    // that this value is "directly" assignable to
-    else if (frmlT
-              .choiceGenerics(context)
-              .stream()
-             .anyMatch(cg -> cg.isAssignableFromWithoutTagging(value.type(), context)))
-      {
-        return new Tag(value, frmlT, context);
-      }
-    // Case 3: nested tagging necessary
-    // value is only assignable to choice element
-    // that itself is a choice
-    else
-      {
-        // we assign to the choice generic
-        // that expr is assignable to
-        var cgs = frmlT
-          .choiceGenerics(context)
-          .stream()
-          .filter(cg -> cg.isChoice() && cg.isAssignableFrom(value.type(), context))
-          .collect(Collectors.toList());
-
-        if (cgs.size() > 1)
-          {
-            AstErrors.ambiguousAssignmentToChoice(frmlT, value);
-          }
-
-        if (CHECKS) check
-          (Errors.any() || cgs.size() == 1);
-
-        return cgs.size() == 1 ? tag(frmlT, tag(cgs.get(0), value, context), context)
-                               : Call.ERROR;
-      }
-  }
-
-
-  /**
-   * Is boxing needed when we assign to frmlT?
-   *
-   * @param frmlT the formal type we are assigning to.
-   *
-   * @return the type after boxing or null if boxing is not needed
-   */
-  protected AbstractType needsBoxing(AbstractType frmlT, Context context)
-  {
-    var t = type();
-    if (t == Types.t_ERROR)
-      {
-        return null;
-      }
-    else if (frmlT.isGenericArgument() || frmlT.isThisType() && !frmlT.isChoice())
-      { /* Boxing needed when we assign to frmlT since frmlT is generic (so it
-         * could be a ref) or frmlT is this type and the underlying feature is by
-         * default a ref?
-         */
-        return frmlT;
-      }
-    else if (t.isRef().yes() && !isCallToOuterRef())
-      {
-        return null;
-      }
-    else if (frmlT.isRef().yes())
-      {
-        return frmlT;
-      }
-    else
-      {
-        var tr = t.asRef();
-        if (frmlT.isChoice() &&
-            !frmlT.isAssignableFrom(t , context) &&
-             frmlT.isAssignableFrom(tr, context))
-          { // we do both, box and then tag:
-            for (var cg : frmlT.choiceGenerics(context))
-              {
-                if (cg.isAssignableFrom(tr, context))
-                  {
-                    return cg;
-                  }
-              }
-            throw new Error("Expr.needsBoxing confused for choice type "+frmlT+" which is assignable from "+t.asRef()+" but not from "+t);
-          }
-        else
-          {
-            return null;
-          }
-      }
   }
 
 
@@ -782,7 +652,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
   {
     var t = type();
     return this != Call.ERROR && t != Types.t_ERROR
-      && !expectedType.isAssignableFrom(t, context)
+      && expectedType.isAssignableFromWithoutBoxing(t, context).no()
       && expectedType.compareTo(Types.resolved.t_Any) != 0
       && !t.isGenericArgument()
       && allInherited(t.feature())
@@ -790,8 +660,8 @@ public abstract class Expr extends ANY implements HasSourcePosition
           .anyMatch(c ->
             c.calledFeature().equals(Types.resolved.f_auto_unwrap)
             && !c.actualTypeParameters().isEmpty()
-                    && expectedType.isAssignableFrom(c.actualTypeParameters().get(0).applyTypePars(t), context))
-      ? new ParsedCall(this, new ParsedName(pos(), "unwrap")).resolveTypes(res, context)
+                    && expectedType.isAssignableFromWithoutBoxing(c.actualTypeParameters().get(0).applyTypePars(t), context).yes())
+      ? new ParsedCall(this, new ParsedName(pos(), FuzionConstants.UNWRAP)).resolveTypes(res, context)
       : this;
   }
 
@@ -817,7 +687,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
 
 
   /**
-   * Some Expressions do not produce a result, e.g., a Block that is empty or
+   * Some Expressions do not produce a result, e.g., a Block
    * whose last expression is not an expression that produces a result.
    */
   public boolean producesResult()
@@ -836,11 +706,176 @@ public abstract class Expr extends ANY implements HasSourcePosition
 
 
   /**
-   * Is the result of this expression boxed?
+   * Source text for this Expr. This is used in error message: It takes the
+   * source code at `sourceRange()`. Only for artificial expressions, this should
+   * probably be redefined to create more useful text.
    */
-  public boolean isBoxed()
+  public String sourceText()
+  {
+    return sourceRange().sourceText();
+  }
+
+
+  /**
+   * Is this expression a call to `type_as_value`?
+   */
+  boolean isTypeAsValueCall()
   {
     return false;
+  }
+
+
+  // NYI: CLEANUP: move this logic to isAssignableFrom?
+  /**
+   * check if assigning this expr to frmlT might
+   * be ambiguous
+   *
+   * @param frmlT
+   */
+  void checkAmbiguousAssignmentToChoice(AbstractType frmlT)
+  {
+    var t = type();
+    if (frmlT.isChoice() && !t.isVoid() && frmlT.isAssignableFrom(t).yes())
+      {
+        var needsBoxing = needsBoxing(frmlT);
+        var boxedType = needsBoxing == null ? type() : needsBoxing;
+        if (frmlT.isChoice() && frmlT.isAssignableFrom(boxedType).yes())
+          {
+            checkTagging(this, boxedType, frmlT);
+          }
+      }
+  }
+
+
+  /**
+   * Is boxing needed when we assign to frmlT?
+   *
+   * @param frmlT the formal type we are assigning to.
+   *
+   * @return the type after boxing or null if boxing is not needed
+   */
+  public AbstractType needsBoxing(AbstractType frmlT)
+  {
+    var t = type();
+    if (t.isRef())
+      {
+        return null;
+      }
+    else if (frmlT.isRef() || frmlT.isGenericArgument() || frmlT.isThisType() && !frmlT.isChoice())
+      {
+        /* Boxing needed when we assign to generic argument (so it
+         * could be a ref) or frmlT is this type and the underlying feature is by
+         * default a ref?
+         */
+        return frmlT;
+      }
+    else
+      {
+        if (frmlT.isChoice() &&
+            frmlT.isAssignableFromWithoutBoxing(t).no() &&
+            frmlT.isAssignableFrom(t).yes())
+          { // we do both, box and then tag:
+            for (var cg : frmlT.choiceGenerics())
+              {
+                if (cg.isAssignableFrom(t).yes())
+                  {
+                    return cg;
+                  }
+              }
+            throw new Error("Expr.needsBoxing confused for choice type "+frmlT+" which is assignable from "+t.asRef()+" but not from "+t);
+          }
+        else
+          {
+            return null;
+          }
+      }
+  }
+
+
+  /**
+   * check tagging for ambiguity when assigning at to frmlT
+   *
+   * @param frmlT
+   *
+   * @return
+   */
+  private static void checkTagging(Expr expr, AbstractType at, AbstractType frmlT)
+  {
+    if(PRECONDITIONS) require
+      (frmlT.isChoice());
+
+    // Case 1: types are equal, no tagging necessary
+    if (frmlT.compareTo(at) == 0)
+      {
+        return;
+      }
+    // Case 1.1: types are equal, no tagging necessary
+    // NYI: BUG: soundness issue?
+    else if(at.isChoice() && frmlT.asThis().compareTo(at.asThis()) == 0)
+      {
+        return;
+      }
+    // Case 2.1: ambiguous assignment via subtype
+    //
+    // example:
+    //
+    //  A ref is
+    //  B ref is
+    //  C ref : B, A is
+    //  t choice A B := C
+    //
+    else if (frmlT
+             .choiceGenerics()
+              .stream()
+             .filter(cg -> cg.isAssignableFromWithoutTagging(at).yes())
+              .count() > 1)
+      {
+        AstErrors.ambiguousAssignmentToChoice(frmlT, expr);
+        return;
+      }
+    // Case 2.2: no nested tagging necessary:
+    // there is a choice generic in this choice
+    // that this value is "directly" assignable to
+    else if (frmlT
+              .choiceGenerics()
+              .stream()
+             .anyMatch(cg -> cg.isAssignableFromWithoutTagging(at).yes()))
+      {
+        return;
+      }
+    // Case 3: nested tagging necessary
+    // value is only assignable to choice element
+    // that itself is a choice
+    else
+      {
+        // we assign to the choice generic
+        // that expr is assignable to
+        var cgs = frmlT
+          .choiceGenerics()
+          .stream()
+          .filter(cg -> cg.isChoice() && cg.isAssignableFromWithoutBoxing(at).yes())
+          .collect(Collectors.toList());
+
+        if (cgs.size() > 1)
+          {
+            AstErrors.ambiguousAssignmentToChoice(frmlT, expr);
+          }
+
+        if (CHECKS) check
+          (Errors.any() || cgs.size() == 1);
+
+        checkTagging(expr, cgs.get(0), frmlT);
+      }
+  }
+
+
+  /**
+   * If this expression is a Call to a type parameter,
+   * return the type parameters type, otherwise null.
+   */
+  AbstractType asTypeParameterType()
+  {
+    return null;
   }
 
 

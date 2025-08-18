@@ -23,11 +23,11 @@
 
 # type denoting a started process
 #
-module:public process(module id, std_in, std_out, std_err i64) : property.orderable is
+module:public process(public pid i64, module std_in, std_out, std_err i64) : property.orderable is
 
   # how many bytes are read at a time
   # POSIX.1 requires PIPE_BUF to be at least 512 bytes
-  # NYI move this to effect?
+  # NYI: UNDER DEVELOPMENT: move this to effect?
   pipe_buffer_size := 4096
 
 
@@ -129,8 +129,8 @@ module:public process(module id, std_in, std_out, std_err i64) : property.ordera
   =>
     (os.process.start process_and_args.first.val (process_and_args.drop 1)).bind p->
 
-      # NYI should wire pipe directly to process
-      # NYI this works only when pipes buffer is large enough for
+      # NYI: UNDER DEVELOPMENT: should wire pipe directly to process
+      # NYI: UNDER DEVELOPMENT: this works only when pipes buffer is large enough for
       # what is being written/read to/from pipes
       # thread to pipe from one process to other
       _ := concur.threads.spawn ()->
@@ -141,7 +141,7 @@ module:public process(module id, std_in, std_out, std_err i64) : property.ordera
               s array u8 => (write_bytes p.std_in s).ok
               * => false
 
-        # NYI error handling
+        # NYI: UNDER DEVELOPMENT: error handling
         _ := fzE_pipe_close p.std_in
         _ := fzE_pipe_close process.this.std_out
         _ := fzE_pipe_close process.this.std_err
@@ -149,37 +149,59 @@ module:public process(module id, std_in, std_out, std_err i64) : property.ordera
       p
 
 
+  # close standard input of this process
+  #
+  public close_in outcome unit =>
+    if fzE_pipe_close std_in != 0
+      error "closing standard in was not successful, error code: $fzE_last_error"
+
+
   # wait for this process
   #
-  public wait =>
+  public wait outcome u32 =>
     # NYI: process should be ref?
-    os.processes.wait (os.process id std_in std_out std_err)
+    os.processes.wait (os.process pid std_in std_out std_err)
+
+
+  # send signal to process
+  #
+  public send_signal(sig signal) outcome unit =>
+    fzE_send_signal pid sig.as_i32 = 0 ? unit : error "error sending signal to process $pid: $fzE_last_error"
 
 
   # start a process with name, arguments and environment variables
   #
-  public type.start(n String, args Sequence String, env_vars container.Map String String) =>
+  public type.start(n String, args Sequence String, env_vars container.Map String String) outcome os.process =>
     os.processes.start n args env_vars
 
 
   # start a process with name and arguments
   #
-  public type.start(n String, args Sequence String) =>
+  public type.start(n String, args Sequence String) outcome os.process =>
     start n args (container.ps_map String String).empty
 
 
   # start a process with name and no arguments
   #
-  public type.start(n String) =>
+  public type.start(n String) outcome os.process =>
     start n []
 
 
   # equality
   #
-  public fixed redef type.equality(a, b process.this) => a.id = b.id
+  public fixed redef type.equality(a, b process.this) bool => a.pid = b.pid
 
 
   # lteq
   #
   public fixed redef type.lteq(a, b process.this) bool =>
-    a.id <= b.id
+    a.pid <= b.pid
+
+
+
+  # NYI: UNDER DEVELOPMENT:
+  # - check if process is still running
+  # - send signal to process
+  # - get the exit code from a process?
+  # - change nice level
+  # - ...

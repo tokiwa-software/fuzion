@@ -56,28 +56,26 @@ To solve this, you might replace the free type 'test_free_type_negative.neg.i33'
 --------^^^
 
 
---CURDIR--/test_free_types_negative.fz:142:28: error 6: No type information can be inferred from a lambda expression
+--CURDIR--/test_free_types_negative.fz:142:9: error 6: Failed to infer actual type parameters
   say ((apply2             a,b->"$a $b").call true 3.14)   # 10. should flag an error, unable to infer actual type parameters
----------------------------^^^^^^^^^^^^
-A lambda expression can only be used if assigned to a field or argument of type 'Function'
-with argument count of the lambda expression equal to the number of type parameters of the type.  The type of the
-assigned field must be given explicitly.
-To solve this, declare an explicit type for the target field, e.g., 'f (i32, i32) -> bool := x, y -> x > y'.
+--------^^^^^^
+In call to 'test_free_type_negative.apply2', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: 'A, B'
+Type inference failed for 2 type parameters 'A', 'B'
 
 
---CURDIR--/test_free_types_negative.fz:150:25: error 7: No type information can be inferred from a lambda expression
+--CURDIR--/test_free_types_negative.fz:150:9: error 7: Failed to infer actual type parameters
   say ((apply3a         a,b->"$a $b").call true (u8 127))  # 11. should flag an error, unable to infer actual type parameters
-------------------------^^^^^^^^^^^^
-A lambda expression can only be used if assigned to a field or argument of type 'Function'
-with argument count of the lambda expression equal to the number of type parameters of the type.  The type of the
-assigned field must be given explicitly.
-To solve this, declare an explicit type for the target field, e.g., 'f (i32, i32) -> bool := x, y -> x > y'.
+--------^^^^^^^
+In call to 'test_free_type_negative.apply3a', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: 'A, B'
+Type inference failed for 2 type parameters 'A', 'B'
 
 
 --CURDIR--/test_free_types_negative.fz:35:3: error 8: Incompatible type parameter
   a2 "fourty two"    # 1. should flag an error: type constraint not respected
 --^^
-formal type parameter 'T' with constraint 'numeric'
+formal type parameter 'T : numeric'
 actual type parameter 'String'
 
 
@@ -96,7 +94,7 @@ To solve this, you could change the type of the target 'v' to 'f64' or convert t
 --CURDIR--/test_free_types_negative.fz:91:3: error 10: Incompatible type parameter
   g ga3              # 6. should flag an error since type arguments are in the wrong order such that constraint is not matched
 --^
-formal type parameter 'B' with constraint 'numeric'
+formal type parameter 'B : numeric'
 actual type parameter 'String'
 
 
@@ -117,12 +115,12 @@ actual is value of type 'f64' at --CURDIR--/test_free_types_negative.fz:76:5:
 ----------------------------------^
 Actual type for argument #1 's' does not match expected type.
 In call to          : 'Sequence.infix ++'
-expected formal type: 'Sequence test_free_type_negative.x2.U'
-actual type found   : 'Sequence test_free_type_negative.x2.T'
+expected formal type: 'Sequence U'
+actual type found   : 'Sequence T'
 assignable to       : 'Any',
-                      'Sequence test_free_type_negative.x2.T',
+                      'Sequence T',
                       'property.ref countable'
 for value assigned  : 's'
-To solve this, you could change the type of the target 's' to 'Sequence test_free_type_negative.x2.T' or convert the type of the assigned value to 'Sequence test_free_type_negative.x2.U'.
+To solve this, you could change the type of the target 's' to 'Sequence T' or convert the type of the assigned value to 'Sequence U'.
 
 12 errors.

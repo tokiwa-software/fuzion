@@ -35,6 +35,7 @@ import java.math.BigInteger;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -420,7 +421,7 @@ public class NumLiteral extends Constant
     var result = _propagatedType;
     if (result == null)
       {
-        var i = hasDot() ? null : intValue(ConstantType.ct_i32);
+        var i = hasDot() ? null : intValue();
         result = i == null
           ? Types.resolved.t_f64
           : Types.resolved.t_i32;
@@ -479,18 +480,6 @@ public class NumLiteral extends Constant
    * @return the integer represented by this,
    */
   public BigInteger intValue()
-  {
-    return intValue(findConstantType(type()));
-  }
-
-
-  /**
-   * Get this value if it is an integer. In case the value is above/below
-   * +/-2^max, the result might get replaced by 2^max.
-   *
-   * @return the integer represented by this,
-   */
-  private BigInteger intValue(ConstantType ct)
   {
     var v = _mantissa;
     var e2 = _exponent2;
@@ -715,7 +704,7 @@ public class NumLiteral extends Constant
       }
     else
       {
-        var i = intValue(ct);
+        var i = intValue();
         if (i == null)
           {
             AstErrors.nonWholeNumberUsedAsIntegerConstant(pos(),
@@ -803,19 +792,22 @@ public class NumLiteral extends Constant
   @Override
   Expr propagateExpectedTypeForPartial(Resolution res, Context context, AbstractType t)
   {
-    Expr result = super.propagateExpectedTypeForPartial(res, context, t);
+    Expr result;
     if (t.isFunctionTypeExcludingLazy() && t.arity() == 1 && explicitSign() != null)
       { // convert `map -1` into `map x->x-1`
         var pns = new List<Expr>();
         pns.add(Partial.argName(pos()));
-        var fn = new Function(pos(),
+        result = new Function(pos(),
                               pns,
                               new ParsedCall(pns.get(0),                                  // target #p<n>
                                              new ParsedName(signPos(),
                                                             FuzionConstants.INFIX_OPERATOR_PREFIX +
                                                             explicitSign()),              // `infix +` or `infix -`
                                              new List<>(stripSign())));                   // constant w/o sign
-        result = fn;
+      }
+    else
+      {
+        result = super.propagateExpectedTypeForPartial(res, context, t);
       }
     return result;
   }
@@ -834,11 +826,14 @@ public class NumLiteral extends Constant
    *
    * @param t the expected type.
    *
+   * @param from for error output: if non-null, produces a String describing
+   * where the expected type came from.
+   *
    * @return either this or a new Expr that replaces thiz and produces the
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
+  Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
   {
     // if expected type is choice, examine if there is exactly one numeric
     // constant type in choice generics, if so use that for further type
@@ -848,7 +843,7 @@ public class NumLiteral extends Constant
       {
         _propagatedType = t;
       }
-    return this;
+    return super.propagateExpectedType(res, context, t, from);
   }
 
 
@@ -869,7 +864,7 @@ public class NumLiteral extends Constant
   {
     if (t.isLazyType())
       {
-        propagateExpectedType(res, context, t.generics().get(0));
+        propagateExpectedType(res, context, t.generics().get(0), null);
       }
     return super.wrapInLazy(res, context, t);
   }
@@ -891,7 +886,7 @@ public class NumLiteral extends Constant
       }
     else
       {
-        var i = intValue(ct);
+        var i = intValue();
         var b = i.toByteArray();
         var bytes = ct._bytes;
         result = new byte[bytes];
@@ -924,21 +919,21 @@ public class NumLiteral extends Constant
         if (_originalString.equals("0"))
           {
             result = new ParsedCall(
-                          new ParsedCall(new ParsedName(pos(), _propagatedType.genericArgument().typeParameter().featureName().baseName())),
+                          new ParsedCall(new ParsedName(pos(), _propagatedType.genericArgument().featureName().baseName())),
                           new ParsedName(pos(), "zero"))
                   .resolveTypes(res, _context);
           }
         else if (_originalString.equals("1"))
           {
             result = new ParsedCall(
-                          new ParsedCall(new ParsedName(pos(), _propagatedType.genericArgument().typeParameter().featureName().baseName())),
+                          new ParsedCall(new ParsedName(pos(), _propagatedType.genericArgument().featureName().baseName())),
                           new ParsedName(pos(), "one"))
                   .resolveTypes(res, _context);
           }
         else
           {
             result = new ParsedCall(
-                      new ParsedCall(new ParsedName(pos(), _propagatedType.genericArgument().typeParameter().featureName().baseName())),
+                      new ParsedCall(new ParsedName(pos(), _propagatedType.genericArgument().featureName().baseName())),
                       new ParsedName(pos(), "from_u32"),
                       new List<>(this))
                   .resolveTypes(res, _context);

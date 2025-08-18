@@ -66,7 +66,7 @@ public class ModuleRef extends ANY
   /**
    * this module as loaded.
    */
-  final LibraryModule _module;
+  public final LibraryModule _module;
 
 
   /*--------------------------  constructors  ---------------------------*/

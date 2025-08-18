@@ -1,0 +1,93 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature Blocking_Queue
+#
+# -----------------------------------------------------------------------
+
+
+# NYI: replace by better queue implementation, e.g. https://arxiv.org/pdf/2305.07229
+module Blocking_Queue(T type, cnd concur.sync.condition) ref is
+
+  # is closed for taking any new elements?
+  #
+  # atomic just for convenience
+  #
+  # accessed only by one thread at a time
+  #
+  is_closed := concur.atomic false
+
+
+  module close =>
+    cnd.synchronized ()->
+      is_closed.write true
+
+
+  # the data this queue currently holds
+  #
+  # atomic just for convenience
+  #
+  # accessed only by one thread at a time
+  #
+  data := concur.atomic (array T) []
+
+
+  # enqueue an element
+  # if queue is already closed, returns false
+  # otherwise enqueues the element and returns true
+  #
+  module enqueue(el T) bool =>
+    cnd.synchronized ()->
+      if is_closed.read
+        false
+      else
+        old := data.read
+        new := old.put old.length el
+        data.write new
+        # signal a waiting thread to pick up the work
+        check cnd.signal
+        true
+
+
+  # dequeue an element
+  # returns nil, if queue is closed and empty
+  # otherwise returns the dequeued element
+  #
+  module dequeue option T =>
+
+    depleted is
+    retry is
+
+    res :=
+      cnd.synchronized (choice T depleted retry) ()->
+        d := data.read
+        if is_closed.read && d.is_empty
+          depleted
+        else if d.is_empty
+          check cnd.wait
+          retry
+        else
+          data.write (array d.count-1 i->d[i+1])
+          d[0]
+
+    match res
+      t T => t
+      depleted => nil
+      retry => dequeue
+

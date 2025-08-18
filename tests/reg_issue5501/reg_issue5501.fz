@@ -1,0 +1,48 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue5501
+#
+# -----------------------------------------------------------------------
+
+# test that should produce an error due to wrong argument type in
+# redefined feature where the original argument type is an open type
+# parameter that was replaced by an actual argument list during inheritance.
+#
+reg_issue5501 =>
+
+  # the original test from #5501
+  #
+  f : Function unit unit unit is
+    public redef call(x unit,
+                      y u8  # wrong type, should cause error
+                     ) unit
+    => unit
+
+
+  # another test using way more arguments
+  #
+  g : Function i32 String bool (option u8) (Sequence i64) f32 is
+    public redef call(v String,
+                      w bool,
+                      x option u8,
+                      y Sequence i64,
+                      z f64   # wrong type, should cause error
+                      ) i32
+    => 42

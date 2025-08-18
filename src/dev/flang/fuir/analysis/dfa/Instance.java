@@ -89,6 +89,9 @@ public class Instance extends Value
   final int _site;
 
 
+  CallGroup _group;
+
+
   /*---------------------------  constructors  ---------------------------*/
 
 
@@ -191,7 +194,7 @@ public class Instance extends Value
     Val res = v;
     if (v == null)
       {
-        if (dfa._reportResults && !Errors.any())
+        if (!Errors.any())
           {
             DfaErrors.readingUninitializedField(site == -1 ? dev.flang.util.SourcePosition.notAvailable : // NYI: REMOVE
                                                 site == IR.NO_SITE ? null : dfa._fuir.sitePos(site),

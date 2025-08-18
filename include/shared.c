@@ -98,6 +98,15 @@ void * fzE_malloc_safe(size_t size) {
 }
 
 
+void fzE_free(void * ptr) {
+#ifdef GC_THREADS
+  GC_FREE(ptr);
+#else
+  free(ptr);
+#endif
+}
+
+
 void fzE_memcpy(void *restrict dest, const void *restrict src, size_t sz){
   // NYI: UNDER DEVELOPMENT: use bounds checked version, e.g. memcpy_s
   memcpy(dest, src, sz);
@@ -153,7 +162,7 @@ struct fzE_jvm_result
   union
   {
     jvalue v0;
-    jstring v1; // NYI should probably better be jthrowable
+    jstring v1; // NYI: UNDER DEVELOPMENT: should probably better be jthrowable
   }fzChoice;
 };
 
@@ -209,7 +218,7 @@ JNIEnv * getJNIEnv()
 {
   if (!jvm_running)
     {
-      printf("JVM has not been started via: `fuzion.java.create_jvm0 ...`\n");
+      printf("JVM has not been started via: `fuzion.jvm.env.create_jvm0 ...`\n");
       exit(EXIT_FAILURE);
     }
   if (fzE_jni_env == NULL) {
@@ -219,9 +228,12 @@ JNIEnv * getJNIEnv()
   return fzE_jni_env;
 }
 
+
+
+static_assert(JNI_OK == 0, "assume JNI_OK to be zero.");
 // initialize the JVM
 // executed once at the start of the application
-void fzE_create_jvm(char * option_string) {
+int32_t fzE_create_jvm(char * option_string) {
   JavaVMInitArgs vm_args;
 
   JavaVMOption options[1];
@@ -229,10 +241,11 @@ void fzE_create_jvm(char * option_string) {
 
   vm_args.version = JNI_VERSION_10;
   vm_args.options = options;
-  vm_args.nOptions = 1;
-  if (JNI_CreateJavaVM(&fzE_jvm, (void **)&fzE_jni_env, &vm_args) != JNI_OK) {
-    printf("Failed to start Java VM");
-    exit(EXIT_FAILURE);
+  vm_args.nOptions = option_string[0] == '\0' ? 0 : 1;
+
+  int result = JNI_CreateJavaVM(&fzE_jvm, (void **)&fzE_jni_env, &vm_args);
+  if (result != JNI_OK) {
+    return result;
   }
 
   jvm_running = true;
@@ -263,10 +276,12 @@ void fzE_create_jvm(char * option_string) {
   fzE_integer_value   = (*getJNIEnv())->GetMethodID(getJNIEnv(), fzE_class_integer, "intValue", "()I");
   fzE_long_value      = (*getJNIEnv())->GetMethodID(getJNIEnv(), fzE_class_long, "longValue", "()J");
   fzE_boolean_value   = (*getJNIEnv())->GetMethodID(getJNIEnv(), fzE_class_boolean, "booleanValue", "()Z");
+
+  return 0;
 }
 
 // close the JVM.
-void fzE_destroy_jvm()
+void fzE_destroy_jvm(void)
 {
   (*fzE_jvm)->DestroyJavaVM(fzE_jvm);
 }
@@ -409,7 +424,7 @@ jvalue *fzE_convert_args(const char *sig, jvalue *args) {
       }
       break;
     default:
-      // NYI array
+      // NYI: UNDER DEVELOPMENT: array
       printf("unhandled %c", *sig);
       exit(EXIT_FAILURE);
       break;
@@ -431,7 +446,7 @@ fzE_jvm_result fzE_jvm_not_found(jstring jstr)
 // convert a 0-terminated utf8-bytes array to a jstring.
 jvalue fzE_string_to_java_object(const void * utf8_bytes, int byte_length)
 {
-  // NYI we don't really need 4*byte_length, see modifiedUtf8LengthOfUtf8:
+  // NYI: UNDER DEVELOPMENT: we don't really need 4*byte_length, see modifiedUtf8LengthOfUtf8:
   // https://github.com/openjdk/jdk/blob/eb9e754b3a439cc3ce36c2c9393bc8b250343844/src/java.instrument/share/native/libinstrument/EncodingSupport.c#L98
   char outstr[4*byte_length];
   utf8_to_mod_utf8(utf8_bytes, outstr);
@@ -847,22 +862,22 @@ uint64_t fzE_unique_id()
 }
 
 
-uint8_t fzE_mapped_buffer_get(void * addr, int64_t idx)
+extern inline uint8_t fzE_mapped_buffer_get(void * addr, int64_t idx)
 {
   return ((uint8_t *)addr)[idx];
 }
 
-void fzE_mapped_buffer_set(void * addr, int64_t idx, uint8_t x)
+extern inline void fzE_mapped_buffer_set(void * addr, int64_t idx, uint8_t x)
 {
   ((uint8_t *)addr)[idx] = x;
 }
 
-void * fzE_null(void)
+extern inline void * fzE_null(void)
 {
   return NULL;
 }
 
-int fzE_is_null(void * p)
+extern inline int fzE_is_null(void * p)
 {
   return p == NULL
     ? 0

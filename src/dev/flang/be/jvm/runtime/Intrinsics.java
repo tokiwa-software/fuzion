@@ -112,7 +112,7 @@ public class Intrinsics extends ANY
   public static boolean i64_type_equality           (long   a, long   b) { return                 (a ==  b); }
   public static boolean i64_type_lteq               (long   a, long   b) { return                 (a <=  b); }
   public static int     u8_as_i32                   (byte a            ) { return                  0xff & (      a) ; }
-  public static byte    u8_cast_to_i8               (byte   a          ) { return (byte) ((int) (byte)    (      a)); }
+  public static byte    u8_cast_to_i8               (byte   a          ) { return                 (      a); }
   public static byte    u8_prefix_minusDEGREE       (byte   a          ) { return (byte)          (  -   (0xff & a)); }
   public static byte    u8_infix_plusDEGREE         (byte   a, byte   b) { return (byte)          ((0xff & a) +   (0xff & b)); }
   public static byte    u8_infix_minusDEGREE        (byte   a, byte   b) { return (byte)          ((0xff & a) -   (0xff & b)); }
@@ -230,7 +230,7 @@ public class Intrinsics extends ANY
   public static double  f64_sinh                    (double a          ) { return         Math.sinh (         a); }
   public static double  f64_tan                     (double a          ) { return         Math.tan  (         a); }
   public static double  f64_tanh                    (double a          ) { return         Math.tanh (         a); }
-  public static float   f32_type_epsilon            (                  ) { return (float) Math.ulp  ((float)  1); }
+  public static float   f32_type_epsilon            (                  ) { return Math.ulp  ((float)  1); }
   public static float   f32_type_max                (                  ) { return Float.MAX_VALUE;                }
   public static int     f32_type_max_exp            (                  ) { return Float.MAX_EXPONENT;             }
   public static float   f32_type_min_positive       (                  ) { return Float.MIN_NORMAL;               }
@@ -251,15 +251,14 @@ public class Intrinsics extends ANY
     return System.getenv(Runtime.utf8ByteArrayDataToString((byte[]) s)) != null;
   }
 
-  public static void fuzion_sys_thread_join0(long threadId)
+  public static void fuzion_sys_thread_join0(Object thread)
   {
-    var thread = Runtime._startedThreads_.get(threadId);
     var result = false;
     do
       {
         try
           {
-            thread.join();
+            ((Thread)thread).join();
             result = true;
           }
         catch (InterruptedException e)
@@ -268,12 +267,6 @@ public class Intrinsics extends ANY
           }
       }
     while (!result);
-
-    // NYI: UNDER DEVELOPMENT: remove should probably not be called by join, but
-    // either by the Thread itself or by some cleanup mechanism that removes
-    // terminated threads, either when new threads are started or by a system
-    // thread that joins and removes threads that are about to terminate.
-    Runtime._startedThreads_.remove(threadId);
   }
 
 }

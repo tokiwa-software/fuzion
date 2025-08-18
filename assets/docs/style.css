@@ -61,6 +61,14 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   margin-right: .5em;
 }
 
+.ml-2{
+  margin-left: .2em;
+}
+
+.ml-10{
+  margin-left: 1em;
+}
+
 .container{
   padding: 15px;
 }
@@ -107,12 +115,11 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 }
 
 .fd-type{
-  color: #267f99;
+  color: #1b5a6c;
   font-style: italic;
 }
 
 .fd-comment{
-  color: rgba(0, 0, 0);
   padding: 1em;
 }
 
@@ -136,12 +143,31 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 }
 
 .fd-anchor-sign{
-  color: rgba(0,0,0,0.6);
-  opacity: 0;
+  color: #535353;
+  margin-left: 0.3em;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(100%);
+  white-space: nowrap;
+  border: 0;
 }
 
-.fd summary:hover .fd-anchor-sign{
-  opacity: 1;
+.fd summary:hover .fd-anchor-sign,
+.fd summary:focus-within .fd-anchor-sign {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0 0 0 0.3em;
+  overflow: visible;
+  clip: auto;
+  clip-path: none;
+  white-space: normal;
+  border: none;
 }
 
 .fd-inherited{
@@ -177,7 +203,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 }
 
 .fd-parent{
-  color: grey;
+  color: #535353;
   font-size: 0.7em;
   display: flex;
   justify-content: center;
@@ -197,7 +223,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 /* Version hash at the bottom of api docs */
 .version-hash{
   text-align: center;
-  color:grey;
+  color: #535353;
   font-size:0.7em;
 }
 
@@ -214,4 +240,21 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 .space-3{
   display: inline-block;
   width: 3ch;
+}
+
+.heading-summary{
+  font-size: 120%;
+  margin-bottom: 0.5em;
+  font-weight: 700;
+}
+
+.toggle-nav {
+  all: unset; /* removes default button styles */
+  cursor: pointer;
+  font-size: 1.2em;
+  padding: 0.5em;
+}
+
+.f-category {
+  font-size: 1em;
 }

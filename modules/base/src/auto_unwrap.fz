@@ -21,5 +21,15 @@
 #
 # -----------------------------------------------------------------------
 
+# auto_unwrap adds compiler support for automatic unwrapping.
+#
+# this is used by e.g. concur.atomic, mutate.new
+#
+# example:
+#
+#     a := mut 3
+#     a <- 4 + a   # no need to write a.get, compiler does this automatically.
+#
+#
 public auto_unwrap(T type, E type... : effect) is
   public unwrap T => abstract

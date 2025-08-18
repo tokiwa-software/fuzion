@@ -1,0 +1,274 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code run_tests script
+#
+# -----------------------------------------------------------------------
+
+
+########### Extensions ###############
+
+# stores the results of a process
+#
+process_result(out String, err String, exit_code u32) is
+
+# specified environment variables as key,value array
+#
+envir_var_kv := [
+  "PATH",
+  "LANG",
+  "JAVA_HOME",
+  "POSTCONDITIONS",
+  "PRECONDITIONS",
+  "dev_flang_tools_serializeFUIR",
+  "CPATH",
+  "LIBRARY_PATH",
+  "FUZION_CLANG_INSTALLED_DIR",
+  "OS"
+].map k->
+  (envir.vars.get k).bind v->
+    (k,v)
+ .filter o->o.ok
+ .map o->o.val
+ .as_array
+
+# envir vars as map
+#
+envir_vars :=
+  (container.ordered_map
+    (envir_var_kv
+      .map x->x.0
+      .as_array)
+    (envir_var_kv
+      .map x->x.1
+      .as_array))
+
+# helper to get out, err, exit_code from started process
+#
+record_process(
+      p os.process,
+      # the command, for error messages
+      cmd String
+) process_result =>
+  lm : mutate is
+  (concur.thread_pool 2 ()->
+      fout := concur.thread_pool.env.submit _ ()->
+        lm ! ()->
+          match p.with_out String lm (()->String.from_bytes (io.buffered lm).read_fully)
+            e error => panic "failed reading stdout from $cmd, error is: $e"
+            out String => out
+      ferr := concur.thread_pool.env.submit _ ()->
+        lm ! ()->
+          match p.with_err String lm (()->String.from_bytes (io.buffered lm).read_fully)
+            e error => panic "failed reading stderr from $cmd, error is: $e"
+            err String => err
+
+      match p.wait
+        e error => panic "failed waiting for $cmd, error is: $e"
+        ec u32 => process_result fout.get ferr.get ec)
+    .get
+
+# execute this Sequence of process+args
+#
+Sequence.prefix ! =>
+  seq := map x->x.as_string
+  match os.process.start seq.first.val (seq.drop 1) envir_vars
+    e error => panic "failed executing {Sequence.this}, error is $e"
+    p os.process => record_process p Sequence.this.as_string
+
+
+# feed this string to a new process
+#
+String.infix | (seq Sequence String) =>
+
+  lm : mutate is
+  lm ! ()->
+    match os.process.start seq.first.val (seq.drop 1) envir_vars
+      e error => panic "failed executing $seq, error is $e"
+      p os.process =>
+        _ := p.with_in unit lm ()->
+          # NYI: ambiguous result type:
+          # _ := write_to lm
+          _ := (io.buffered lm).writer.env.write String.this.utf8
+          _ := (io.buffered lm).writer.env.flush
+          _ := p.close_in
+        record_process p seq.as_string
+
+
+# execute this string by splitting at all whitespaces
+#
+String.prefix !! =>
+  !split
+
+
+append_line(mtx concur.sync.mutex, dest String, str String) =>
+
+  mtx.synchronized ()->
+    check (io.file.use $dest io.file.mode.append ()->
+            check ("$str\n".write_to io.file.file_mutate).ok).ok
+
+
+# read file f fully
+#
+read_file_fully(f String) outcome String =>
+  io.file.use f io.file.mode.read ()->
+    String.from_bytes (io.buffered io.file.file_mutate).read_fully
+
+
+is_windows =>
+  ((envir.vars.get "OS").val "").lower_case.contains "windows"
+
+
+########### run_tests ###############
+
+
+find_tests(dir String) array String =>
+  m : mutate is
+  tests := m ! ()->
+    io.dir.use _ dir ()->
+      res := (mutate.array String).type.new m 0 ""
+      _ :=
+        for x := io.dir.open.read
+        while x.ok
+          if io.file.exists "$dir/{x.val}/Makefile"
+            res.add "$dir/{x.val}"
+      res.as_array
+
+  tests
+    .val
+    .as_array
+
+
+main =>
+
+  mtx := concur.sync.mutex.new.val
+
+  append_line(dest String, str String) =>
+    append_line mtx dest str
+
+  # NYI: UNDER DEVELOPMENT: react to Ctrl+c like in bash scripts (trap)
+
+  if (envir.args.count != 3 && envir.args.count != 4)
+    say "wrong argument count"
+    say "usage:"
+    say "run_tests.fz <build_dir> <target> [<n_threads>]"
+    exit 1
+
+  build_dir := envir.args[1]
+  target := envir.args[2]
+
+
+  # source: https://stackoverflow.com/questions/45181115/portable-way-to-find-the-number-of-processors-cpus-in-a-shell-script
+  # first, try third arg then try a few executables, if everything fails use default value
+  tc :=
+    (fuzion.runtime.contract_fault.try ()->(envir.args.nth 3).val.trim.parse_i32.val)
+      .catch _->
+        (fuzion.runtime.contract_fault.try ()->(!!"nproc --all").out.trim.parse_i32.val)
+          .catch _->
+            (fuzion.runtime.contract_fault.try ()->(!!"getconf _NPROCESSORS_ONLN").out.trim.parse_i32.val)
+              .catch _->
+                (fuzion.runtime.contract_fault.try ()->(!!"sysctl -n hw.ncpu").out.trim.parse_i32.val)
+                  .catch _->4
+  thread_count := tc > 6 ? 6 : tc
+
+  tests := find_tests "$build_dir/tests"
+
+  check tests.count>500
+
+  results := "$build_dir/run_tests.results"
+  failures := "$build_dir/run_tests.failures"
+
+  _ := io.file.delete results
+  _ := io.file.delete failures
+
+  say "{tests.count} tests, running $thread_count tests in parallel."
+
+  start_time_total := time.nano.read
+
+  _ := concur.thread_pool thread_count ()->
+    for test in tests do
+      check concur.thread_pool.env.submit ()->
+        if io.file.exists "$test/skip" || io.file.exists "$test/skip_$target" || (is_windows && (io.file.exists "$test/skip_win"))
+          yak "_"
+          append_line results "$test: skipped"
+        else
+
+          start_time := time.nano.read
+          # NYI: UNDER DEVELOPMENT: use fuzion to do the timeout
+          with_to := if is_windows then "" else "timeout --kill-after=600s 600s "
+          res := !!"{with_to}make $target --environment-overrides --directory=$test"
+          end_time := time.nano.read
+
+          if res.exit_code = 0 then
+            yak "."
+            append_line results "$test in {end_time-start_time}: ok"
+          else
+            yak "#"
+            append_line results "$test in {end_time-start_time}: failed"
+            append_line failures res.out
+            append_line failures res.err
+
+  end_time_total := time.nano.read
+
+  results_content := read_file_fully results
+    .val
+    .lines
+    .filter (x -> !x.is_blank)
+    .as_array
+
+  ok, skipped, failed := results_content
+    .reduce (0,0,0) (r, t)->
+      if t.ends_with "ok"
+        (r.0+1, r.1, r.2)
+      else if t.ends_with "skipped"
+        (r.0, r.1+1, r.2)
+      else if t.ends_with "failed"
+        (r.0, r.1, r.2+1)
+      else
+        r
+
+  say ""
+  say "$ok/{tests.count} tests passed, $skipped skipped, $failed failed in {(end_time_total-start_time_total).as_string.trim}."
+
+  if failed > 0
+    say "Failed tests:"
+
+    failed_tests := results_content.filter (.ends_with "failed")
+
+    failed_tests.for_each say
+
+    say "============= run_tests.failures START ============="
+    say (read_file_fully failures)
+    say "============= run_tests.failures END ============="
+
+    say "To re-run all failed tests, use this command:"
+    say <| failed_tests
+      .map x->x.split[0]
+      .map x->"make $target -C $x"
+      .as_string " && "
+
+    say "To re-record all failed tests, use this command:"
+    say <| failed_tests
+      .map x->x.split[0]
+      .map x->"make record -C $x" # NYI: UNDER DEVELOPMENT: if _target file exists: "make record_$target -C $x"
+      .as_string " && "
+
+    exit 1
+
+_ := main

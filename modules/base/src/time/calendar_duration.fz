@@ -55,13 +55,15 @@ module:public calendar_duration (
   public nanos u64
   ) : property.orderable
 
+# NYI: UNDER DEVELOPMENT: pre condition upper bounds for arguments
+
 is
 
   # this duration and another one combined
   #
-  # NYI overflow handling
+  # NYI: UNDER DEVELOPMENT: overflow handling
   #
-  public infix + (other calendar_duration) =>
+  public infix + (other calendar_duration) calendar_duration =>
     calendar_duration
       (years + other.years)
       (months + other.months)
@@ -74,9 +76,9 @@ is
 
   # this duration multiplied by n
   #
-  # NYI overflow handling
+  # NYI: UNDER DEVELOPMENT: overflow handling
   #
-  public infix * (n u64) =>
+  public infix * (n u64) calendar_duration =>
     calendar_duration
       (years * n)
       (months * n)
@@ -137,4 +139,23 @@ is
   # total order
   #
   public fixed redef type.lteq(a, b time.calendar_duration) bool =>
-    false # NYI
+    helper(mappers Sequence (time.calendar_duration->u64)) =>
+      if mappers.is_empty
+        true
+      else
+        # NYI: UNDER DEVELOPMENT: can not omit `.call`
+        match (mappers[0].call a) ⋄ (mappers[0].call b)
+          greater => false
+          less => true
+          equal => helper (mappers.drop 1)
+
+
+    helper [
+      # NYI: UNDER DEVELOPMENT: can not omit parens
+      (x->x.years),
+      (x->x.months),
+      (x->x.days),
+      (x->x.hours),
+      (x->x.minutes),
+      (x->x.seconds),
+      (x->x.nanos)]

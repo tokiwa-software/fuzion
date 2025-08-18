@@ -143,8 +143,8 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(Expr.iconst(r ? 1 : 0), Expr.UNIT);
         });
 
-    put("concur.util.loadFence",
-        "concur.util.storeFence",
+    put("concur.util.load_fence",
+        "concur.util.store_fence",
         (jvm, si, cc, tvalue, args) ->
         {
           return new Pair<>(Expr.UNIT,
@@ -237,7 +237,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(Expr.iconst(jvm._options.fuzionDebugLevel()), Expr.UNIT);
         });
 
-    put("fuzion.java.Java_Object.is_null0",
+    put("fuzion.jvm.is_null0",
         (jvm, si, cc, tvalue, args) ->
         {
           var res = args.get(0)
@@ -248,7 +248,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(res, Expr.UNIT);
         });
 
-    put("fuzion.java.primitive_to_java_object",
+    put("fuzion.jvm.primitive_to_java_object",
         (jvm, si, cc, tvalue, args) ->
         {
           var java_type = jvm._fuir.javaDescriptor(jvm._fuir.clazzActualGeneric(cc, 0));
@@ -260,10 +260,12 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(res, Expr.UNIT);
         });
 
-    put("fuzion.java.create_jvm",
+    put("fuzion.jvm.create_jvm",
+        (jvm, si, cc, tvalue, args) -> new Pair<>(Expr.iconst(0), Expr.UNIT));
+    put("fuzion.jvm.destroy_jvm",
         (jvm, si, cc, tvalue, args) -> new Pair<>(Expr.UNIT, Expr.UNIT));
 
-    put("fuzion.java.string_to_java_object0",
+    put("fuzion.jvm.string_to_java_object0",
         (jvm, si, cc, tvalue, args) ->
         {
           var data = jvm._fuir.lookup_fuzion_sys_internal_array_data(jvm._fuir.clazzArgClazz(cc,0));
@@ -274,7 +276,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(res, Expr.UNIT);
         });
 
-    put("fuzion.java.java_string_to_string",
+    put("fuzion.jvm.java_string_to_string",
         (jvm, si, cc, tvalue, args) ->
         {
           return jvm.boxedConstString(args.get(0)
@@ -282,7 +284,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
                                  .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS, "fuzion_java_string_to_bytes_array", "(Ljava/lang/String;)[B", PrimitiveType.type_byte.array())));
         });
 
-    put("fuzion.java.array_to_java_object0",
+    put("fuzion.jvm.array_to_java_object0",
         (jvm, si, cc, tvalue, args) ->
         {
           var et = jvm._types.javaType(jvm._fuir.clazzActualGeneric(cc, 0)); // possibly resultType
@@ -293,7 +295,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(res, Expr.UNIT);
         });
 
-    put("fuzion.java.array_length",
+    put("fuzion.jvm.array_length",
         (jvm, si, cc, tvalue, args) ->
         {
           var et = jvm._types.javaType(jvm._fuir.clazzActualGeneric(cc, 0)); // possibly resultType
@@ -303,7 +305,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(res, Expr.UNIT);
         });
 
-    put("fuzion.java.array_get",
+    put("fuzion.jvm.array_get",
         (jvm, si, cc, tvalue, args) ->
         {
           var et = jvm._types.javaType(jvm._fuir.clazzActualGeneric(cc, 0)); // possibly resultType
@@ -322,7 +324,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(res, Expr.UNIT);
         });
 
-    put("fuzion.java.get_static_field0",
+    put("fuzion.jvm.get_static_field0",
         (jvm, si, cc, tvalue, args) ->
         {
           var rc = jvm._fuir.clazzResultClazz(cc);
@@ -337,7 +339,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(res.andThen(returnNewJavaObject(jvm, rc)), Expr.UNIT);
         });
 
-    put("fuzion.java.set_static_field0",
+    put("fuzion.jvm.set_static_field0",
         (jvm, si, cc, tvalue, args) ->
         {
           var res = args.get(0)
@@ -352,7 +354,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(Expr.UNIT, res);
         });
 
-    put("fuzion.java.get_field0",
+    put("fuzion.jvm.get_field0",
         (jvm, si, cc, tvalue, args) ->
         {
           var rc = jvm._fuir.clazzResultClazz(cc);
@@ -370,7 +372,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(res.andThen(returnNewJavaObject(jvm, rc)), Expr.UNIT);
         });
 
-    put("fuzion.java.set_field0",
+    put("fuzion.jvm.set_field0",
         (jvm, si, cc, tvalue, args) ->
         {
           var res = args
@@ -521,7 +523,8 @@ public class Intrinsix extends ANY implements ClassFileConstants
            c_File_Descriptor,
            c_Directory_Descriptor,
            c_Java_Ref,
-           c_Mapped_Memory ->
+           c_Mapped_Memory,
+           c_Thread ->
         Expr.aload(slot, JAVA_LANG_OBJECT);
       default -> {
         var rt = jvm._types.javaType(rc0);
@@ -561,7 +564,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
 
   static
   {
-    put("fuzion.java.call_v0",
+    put("fuzion.jvm.call_v0",
         (jvm, si, cc, tvalue, args) ->
         {
           var rc = jvm._fuir.clazzResultClazz(cc);
@@ -580,7 +583,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return returnResult(jvm, si, rc, exec);
         });
 
-    put("fuzion.java.call_s0",
+    put("fuzion.jvm.call_s0",
         (jvm, si, cc, tvalue, args) ->
         {
           var rc = jvm._fuir.clazzResultClazz(cc);
@@ -598,7 +601,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return returnResult(jvm, si, rc, exec);
         });
 
-    put("fuzion.java.call_c0",
+    put("fuzion.jvm.call_c0",
         (jvm, si, cc, tvalue, args) ->
         {
           var rc = jvm._fuir.clazzResultClazz(cc);
@@ -615,7 +618,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return returnResult(jvm, si, rc, exec);
         });
 
-    put("fuzion.java.cast0",
+    put("fuzion.jvm.cast0",
         (jvm, si, cc, tvalue, args) ->
         {
           var rc = jvm._fuir.clazzResultClazz(cc);
@@ -876,18 +879,6 @@ public class Intrinsix extends ANY implements ClassFileConstants
             methodDescriptor(Runtime.class, "fuzion_sys_env_vars_get0"),
             PrimitiveType.type_byte.array())));
     });
-    put("fuzion.sys.env_vars.set0", (jvm, si, cc, tvalue, args) -> {
-      var res =
-        tvalue.drop()
-          .andThen(Expr.iconst(0)); // false
-      return new Pair<>(res, Expr.UNIT);
-    });
-    put("fuzion.sys.env_vars.unset0", (jvm, si, cc, tvalue, args) -> {
-      var res =
-        tvalue.drop()
-          .andThen(Expr.iconst(0)); // false
-      return new Pair<>(res, Expr.UNIT);
-    });
 
     put("fuzion.sys.thread.spawn0",
         (jvm, si, cc, tvalue, args) ->
@@ -903,11 +894,10 @@ public class Intrinsix extends ANY implements ClassFileConstants
                 .andThen(Expr.classconst(call_ct))
                 .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                            "thread_spawn",
-                                           "(" + (// Names.ANY_DESCR +
-                                                  Names.ANY_DESCR +
+                                           "(" + (Names.ANY_DESCR +
                                                   JAVA_LANG_CLASS.descriptor()) +
-                                           ")J",
-                                           ClassFileConstants.PrimitiveType.type_long));
+                                           ")" + JAVA_LANG_OBJECT.descriptor(),
+                                           JAVA_LANG_OBJECT));
               return new Pair<>(result, Expr.UNIT);
             }
           else
@@ -1206,7 +1196,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
    * @param c
    * @return a descriptor for the class, e.g. String => Ljava.lang.String;
    */
-  private static String descriptor(Class c)
+  private static String descriptor(Class<?> c)
   {
     if(c==byte.class)
         return "B";
@@ -1240,7 +1230,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
    *      and {@code int fuzion_sys_net_listen(){}}
    *      it returns: ()I
    */
-  private static String methodDescriptor(Class c, String m)
+  private static String methodDescriptor(Class<?> c, String m)
   {
     return Arrays
       .stream(c.getMethods())

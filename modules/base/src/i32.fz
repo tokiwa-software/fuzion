@@ -30,19 +30,19 @@ public i32(public val i32) : num.wrap_around, has_interval, java_primitive is
   # overflow checking
 
   # would negation cause an overflow?
-  public redef wrapped_on_neg => is_min
+  public redef wrapped_on_neg bool => is_min
 
   # would addition + other cause an overflow or underflow?
-  public fixed redef overflow_on_add (other i32) => val > 0 && i32.max -° val < other
-  public fixed redef underflow_on_add(other i32) => val < 0 && i32.min -° val > other
+  public fixed redef overflow_on_add (other i32) bool => val > 0 && i32.max -° val < other
+  public fixed redef underflow_on_add(other i32) bool => val < 0 && i32.min -° val > other
 
   # would subtraction - other cause an overflow or underflow?
-  public fixed redef overflow_on_sub (other i32) => val > 0 && val -° i32.max > other
-  public fixed redef underflow_on_sub(other i32) => val < 0 && val -° i32.min < other
+  public fixed redef overflow_on_sub (other i32) bool => val > 0 && val -° i32.max > other
+  public fixed redef underflow_on_sub(other i32) bool => val < 0 && val -° i32.min < other
 
   # would multiplication * other cause an overflow or underflow?
-  public fixed redef overflow_on_mul (other i32) => as_i64 *° other.as_i64 > i32.max.as_i64
-  public fixed redef underflow_on_mul(other i32) => as_i64 *° other.as_i64 < i32.min.as_i64
+  public fixed redef overflow_on_mul (other i32) bool => as_i64 *° other.as_i64 > i32.max.as_i64
+  public fixed redef underflow_on_mul(other i32) bool => as_i64 *° other.as_i64 < i32.min.as_i64
 
   # neg, add, sub, mul with wrap-around semantics
   public fixed redef prefix -° i32 => intrinsic
@@ -51,8 +51,8 @@ public i32(public val i32) : num.wrap_around, has_interval, java_primitive is
   public fixed redef infix *° (other i32) i32 => intrinsic
 
   # division and remainder with check for div-by-zero
-  public fixed redef infix / (other i32) => div other
-  public fixed redef infix % (other i32) => mod other
+  public fixed redef infix / (other i32) i32 => div other
+  public fixed redef infix % (other i32) i32 => mod other
 
   # division and remainder with crash in case of div-by-zero
   div (other i32) i32 => intrinsic
@@ -69,7 +69,7 @@ public i32(public val i32) : num.wrap_around, has_interval, java_primitive is
 
   # does this i32 fit into an u8?
   #
-  public fixed redef fits_in_u8  => 0 ≤ val ≤ u8.max.as_i32
+  public fixed redef fits_in_u8 bool => 0 ≤ val ≤ u8.max.as_i32
 
   # conversion to u32, i64 and u64, with range check
   public as_i8 i8
@@ -85,7 +85,7 @@ public i32(public val i32) : num.wrap_around, has_interval, java_primitive is
     =>
       low16bits.cast_to_i16
   public as_i64 i64 => intrinsic
-  public as_i128 =>
+  public as_i128 i128 =>
     as_i64.as_i128
   public redef as_u8  u8  => low8bits
   public as_u16 u16
@@ -114,15 +114,15 @@ public i32(public val i32) : num.wrap_around, has_interval, java_primitive is
 
 
   # casting bit representation to unsigned
-  public redef low8bits    u8   => cast_to_u32.low8bits    # 0x1234_5678 ->        0x78, -0x1234_5678 -> 0x88
-  public low16bits   u16  => cast_to_u32.low16bits   # 0x1234_5678 ->      0x5678, -0x1234_5678 -> 0xa988
-  public cast_to_u32  u32  => intrinsic              # 0x1234_5678 -> 0x1234_5678, -0x1234_5678 -> 0xedcb_a988
-  public cast_to_u64  u64  => cast_to_u32.as_u64     # 0x1234_5678 -> 0x1234_5678, -0x1234_5678 -> 0x0000_0000_edcb_a988
-  public cast_to_u128 u128 => cast_to_u32.as_u128    # 0x1234_5678 -> 0x1234_5678, -0x1234_5678 -> 0x0000_0000_0000_0000_0000_0000_edcb_a988
+  public redef low8bits  u8 => cast_to_u32.low8bits   # 0x1234_5678 ->        0x78, -0x1234_5678 -> 0x88
+  public low16bits      u16 => cast_to_u32.low16bits  # 0x1234_5678 ->      0x5678, -0x1234_5678 -> 0xa988
+  public cast_to_u32    u32 => intrinsic              # 0x1234_5678 -> 0x1234_5678, -0x1234_5678 -> 0xedcb_a988
+  public cast_to_u64    u64 => cast_to_u32.as_u64     # 0x1234_5678 -> 0x1234_5678, -0x1234_5678 -> 0x0000_0000_edcb_a988
+  public cast_to_u128  u128 => cast_to_u32.as_u128    # 0x1234_5678 -> 0x1234_5678, -0x1234_5678 -> 0x0000_0000_0000_0000_0000_0000_edcb_a988
 
   # conversion to float
   public as_f64 f64 => intrinsic
-  public as_f32 => as_f64.as_f32
+  public as_f32 f32 => as_f64.as_f32
 
 
   # create hash code from this number
@@ -176,14 +176,14 @@ public i32(public val i32) : num.wrap_around, has_interval, java_primitive is
 
 
   # returns the number in whose bit representation all bits are ones
-  public fixed redef type.all_bits_set => i32 -1
+  public fixed redef type.all_bits_set i32 => i32 -1
 
 
   # minimum
   #
-  public fixed redef type.min => i32 -0x_8000_0000
+  public fixed redef type.min i32 => i32 -0x_8000_0000
 
 
   # maximum
   #
-  public fixed redef type.max => i32 0x_7fff_ffff
+  public fixed redef type.max i32 => i32 0x_7fff_ffff

@@ -38,6 +38,8 @@ import dev.flang.util.ANY;
 import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
 
+import static dev.flang.ir.IR.NO_CLAZZ;
+
 import java.util.TreeMap;
 
 
@@ -374,14 +376,14 @@ public class Types extends ANY implements ClassFileConstants
       case c_u64     -> PrimitiveType.type_long;
       case c_f32     -> PrimitiveType.type_float;
       case c_f64     -> PrimitiveType.type_double;
-      case c_Array,
-           c_Mutex,
+      case c_Mutex,
            c_Condition,
            c_File_Descriptor,
            c_Directory_Descriptor,
            c_Java_Ref,
            c_Mapped_Memory,
-           c_Native_Ref -> JAVA_LANG_OBJECT;
+           c_Native_Ref,
+           c_Thread -> JAVA_LANG_OBJECT;
       default        ->
         {
           if (cl == _fuir.clazzUniverse()                        ||
@@ -398,6 +400,10 @@ public class Types extends ANY implements ClassFileConstants
           else if (_fuir.clazzIsChoice(cl))
             {
               yield _choices.javaType(cl);
+            }
+          else if (_fuir.clazzIsArrayRef(cl))
+            {
+              yield JAVA_LANG_OBJECT;
             }
           else
             {
@@ -431,7 +437,7 @@ public class Types extends ANY implements ClassFileConstants
   boolean hasOuterRef(int cl)
   {
     var or = _fuir.clazzOuterRef(cl);
-    return or != -1 && !_fuir.clazzIsUnitType(_fuir.clazzResultClazz(or));
+    return or != NO_CLAZZ && !_fuir.clazzIsUnitType(_fuir.clazzResultClazz(or));
   }
 
 

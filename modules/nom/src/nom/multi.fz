@@ -19,21 +19,21 @@ module multi is
 
   # apply parser multiple times, return results as sequence
   #
-  public many0 (I, O type, p Parser I I O) =>
+  public many0 (I, O type, p Parser I I O) Parser I I (Sequence O) =>
     parse(input I) parse_result I (Sequence O) =>
       match p.call input
         s1 success I O =>
           match (parse s1.rest)
             s2 success I (Sequence O) => success s2.rest [s1.out]++s2.out
             error => panic "invalid state, many0 must always succeed."
-        # NYI type inference should infer correct type of empty array
+        # NYI: UNDER DEVELOPMENT: type inference should infer correct type of empty array
         error => success input (Sequence O).type.empty
     parser I _ _ (input -> parse input)
 
 
   # apply parser at least once, return results as sequence
   #
-  public many1 (I, O type, p Parser I I O) =>
+  public many1 (I, O type, p Parser I I O) Parser I I (Sequence O) =>
     parser I I (Sequence O) input->
       p.call input .bind _->
         (many0 p).call input
@@ -41,12 +41,12 @@ module multi is
 
   # apply parser between m and n times, return results as sequence
   #
-  public many_m_n (I, O type, m, n i32, p Parser I I O)
+  public many_m_n (I, O type, m, n i32, p Parser I I O)  Parser I I (Sequence O)
   pre m<=n
       n>0
   =>
     parser I I (Sequence O) input->
-      (rest, acc) := (1..n)
+      rest, acc := (1..n)
         .reduce (input, (Sequence O).type.empty) r,t->
           match p.call r.0
             s success =>
@@ -62,21 +62,21 @@ module multi is
 
   # parse a separated list of values, zero or more values
   #
-  public separated_list0(I, O, D type, p_sep Parser I I D, p_value Parser I I O) =>
+  public separated_list0(I, O, D type, p_sep Parser I I D, p_value Parser I I O) Parser I I (Sequence O) =>
     parse(input I) parse_result I (Sequence O) =>
       match p_value.call input
         s1 success =>
           match (many0 (sequence.preceded p_sep p_value)).call s1.rest
             s2 success => success s2.rest [s1.out]++s2.out
             error      => panic "invalid state, many0 always succeeds"
-        # NYI type inference should infer correct type of empty array
+        # NYI: UNDER DEVELOPMENT: type inference should infer correct type of empty array
         error => success input (Sequence O).type.empty
     parser I _ _ (input -> parse input)
 
 
   # parse a separated list of values, one or more values
   #
-  public separated_list1(I, O, D type, p_sep Parser I I D, p_value () -> (Parser I I O)) =>
+  public separated_list1(I, O, D type, p_sep Parser I I D, p_value () -> (Parser I I O)) Parser I I (Sequence O) =>
     parse(input I) parse_result I (Sequence O) =>
       p_value().call input .bind s1->
         match (many0 (sequence.preceded p_sep p_value())).call s1.rest

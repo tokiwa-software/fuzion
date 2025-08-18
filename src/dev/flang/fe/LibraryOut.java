@@ -42,15 +42,12 @@ import dev.flang.ast.AbstractCurrent;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
-import dev.flang.ast.Box;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
-import dev.flang.ast.FormalGenerics;
 import dev.flang.ast.InlineArray;
 import dev.flang.ast.Nop;
 import dev.flang.ast.ResolvedType;
 import dev.flang.ast.State;
-import dev.flang.ast.Tag;
 import dev.flang.ast.Types;
 import dev.flang.ast.Universe;
 
@@ -111,7 +108,7 @@ class LibraryOut extends ANY
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | byte[]        | MIR_FILE_MAGIC                                |
+   *   | true   | 1      | byte[4]       | MIR_FILE_MAGIC                                |
    *   +        +--------+---------------+-----------------------------------------------+
    *   |        | 1      | Name          | module name                                   |
    *   +        +--------+---------------+-----------------------------------------------+
@@ -395,7 +392,7 @@ class LibraryOut extends ANY
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | short         | 0000REvvvFCYkkkk                              |
+   *   | true   | 1      | short         | 000OREvvvFCYkkkk                              |
    *   |        |        |               |           k = kind                            |
    *   |        |        |               |           Y = has Type feature (i.e. 'f.type')|
    *   |        |        |               |           C = is cotype                       |
@@ -403,6 +400,7 @@ class LibraryOut extends ANY
    *   |        |        |               |           v = visibility                      |
    *   |        |        |               |           R = has precondition feature        |
    *   |        |        |               |           E = has postcondition feature       |
+   *   |        |        |               |           O = hasValuesAsOpenTypeFeature      |
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | Name          | name                                          |
    *   |        |        +---------------+-----------------------------------------------+
@@ -420,6 +418,13 @@ class LibraryOut extends ANY
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | hasRT  | 1      | Type          | optional result type,                         |
    *   |        |        |               | hasRT = !isConstructor && !isChoice           |
+   *   |        |        |               |         && !isTypeParameter                   |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | O=1    | 1      | int           | open type Feature index                       |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | isType | 1      | Type          | constraint of (open) type parameters          |
+   *   | Parame |        |               |                                               |
+   *   | ter    |        |               |                                               |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | int           | inherits count i                              |
    *   | NYI!   |        |               |                                               |
@@ -460,7 +465,7 @@ class LibraryOut extends ANY
                                 : FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_VALUE);
     if (CHECKS) check
       (k >= 0,
-       Errors.any() || f.isRoutine() || f.isChoice() || f.isIntrinsic() || f.isAbstract() || f.isNative() || f.generics() == FormalGenerics.NONE);
+       Errors.any() || f.isRoutine() || f.isChoice() || f.isIntrinsic() || f.isAbstract() || f.isNative() || f.typeArguments().isEmpty());
     if (f.hasCotype())
       {
         k = k | FuzionConstants.MIR_FILE_KIND_HAS_COTYPE;
@@ -489,6 +494,10 @@ class LibraryOut extends ANY
       {
         k = k | FuzionConstants.MIR_FILE_KIND_HAS_POST_CONDITION_FEATURE;
       }
+    if (f.hasValuesAsOpenTypeFeature())
+      {
+        k = k | FuzionConstants.MIR_FILE_KIND_HAS_VALUES_OF_OPEN_TYPE_FEATURE;
+      }
     var n = f.featureName();
     _data.writeShort(k);
     var bn = n.baseName();
@@ -514,9 +523,17 @@ class LibraryOut extends ANY
       }
     if (CHECKS) check
       (f.arguments().size() == argCount);
-    if (!f.isConstructor() && !f.isChoice())
+    if (!f.isConstructor() && !f.isChoice() && !f.isTypeParameter())
       {
         type(f.resultType());
+      }
+    if (f.hasValuesAsOpenTypeFeature())
+      {
+        _data.writeOffset(f.valuesAsOpenTypeFeature());
+      }
+    if (f.isTypeParameter())
+      {
+        type(f.constraint());
       }
     // NYI: Suppress output of inherits for fields, intrinsics, etc.?
     var i = f.inherits();
@@ -557,8 +574,6 @@ class LibraryOut extends ANY
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | int           | the kind of this type tk                      |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | tk==-4 | 1      | unit          | ADDRESS                                       |
-   *   +--------+--------+---------------+-----------------------------------------------+
    *   | tk==-3 | 1      | unit          | type of universe                              |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | tk==-2 | 1      | int           | index of type                                 |
@@ -580,15 +595,14 @@ class LibraryOut extends ANY
     if (PRECONDITIONS) require
       (t != null, t != Types.t_ERROR, t != Types.t_UNDEFINED, t instanceof ResolvedType);
 
+    // NYI: UNDER DEVELOPMENT: tk used as size of generics, therefor typekind written _twice_
+    // clean this up and merge the two type kinds?
+
     var off = _data.offset(t);
     if (off >= 0)
       {
         _data.writeInt(-2);     // NYI: optimization: maybe write just one integer, e.g., -index-2
         _data.writeInt(off);
-      }
-    else if (t == Types.t_ADDRESS)
-      {
-        _data.writeInt(-4);
       }
     else if (!t.isGenericArgument() && t.feature().isUniverse())
       {
@@ -599,21 +613,20 @@ class LibraryOut extends ANY
         _data.addOffset(t, _data.offset());
         if (t.isGenericArgument())
           {
-            if (CHECKS) check
-              (t.isRef().no());
             _data.writeInt(-1);
-            _data.writeOffset(t.genericArgument().typeParameter());
+            _data.writeOffset(t.genericArgument());
           }
         else
           {
-            _data.writeInt(t.generics().size());
+            _data.writeInt(t.isNormalType() ? t.generics().size() : 0);
             _data.writeOffset(t.feature());
-            _data.writeByte(t.isThisType()       ? FuzionConstants.MIR_FILE_TYPE_IS_THIS :
-                            t.isRef().yes() ? FuzionConstants.MIR_FILE_TYPE_IS_REF
-                                                 : FuzionConstants.MIR_FILE_TYPE_IS_VALUE);
-            for (var gt : t.generics())
+            _data.writeByte(t.kind().num);
+            if (t.isNormalType())
               {
-                type(gt);
+                for (var gt : t.generics())
+                  {
+                    type(gt);
+                  }
               }
             type(t.outer());
           }
@@ -728,21 +741,6 @@ class LibraryOut extends ANY
    */
         _data.writeOffset(a._assignedField);
       }
-    else if (e instanceof Box b)
-      {
-  /*
-   *   +---------------------------------------------------------------------------------+
-   *   | Box                                                                             |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | cond.  | repeat | type          | what                                          |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | Type          | box result type                               |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   */
-        lastPos = expressions(b._value, lastPos);
-        lastPos = exprKindAndPos(MirExprKind.Box, lastPos, e.sourceRange());
-        type(e.type());
-      }
     else if (e instanceof AbstractBlock b)
       {
         int i = 0;
@@ -845,7 +843,7 @@ class LibraryOut extends ANY
           }
         else
           {
-            n = cf.generics().list.size();
+            n = cf.typeArguments().size();
             if (CHECKS) check
               (c.actualTypeParameters().size() == n);
           }
@@ -918,21 +916,6 @@ class LibraryOut extends ANY
             var cc = c.code();
             code(cc);
           }
-      }
-    else if (e instanceof Tag t)
-      {
-        lastPos = expressions(t._value, lastPos);
-        lastPos = exprKindAndPos(MirExprKind.Tag, lastPos, e.sourceRange());
-  /*
-   *   +---------------------------------------------------------------------------------+
-   *   | Tag                                                                             |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | cond.  | repeat | type          | what                                          |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | Type          | resulting tagged union type                   |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   */
-        type(t.type());
       }
     else if (e instanceof Nop)
       {

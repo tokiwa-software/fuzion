@@ -375,7 +375,7 @@ public class Impl extends ANY
   {
     if (needsImplicitAssignmentToResult(context.outerFeature()))
       {
-        _expr = _expr.propagateExpectedType(res, context, context.outerFeature().resultType());
+        _expr = _expr.propagateExpectedType(res, context, context.outerFeature().resultType(), null);
       }
   }
 
@@ -392,7 +392,7 @@ public class Impl extends ANY
    */
   void propagateExpectedType(Resolution res, Context context, AbstractType t)
   {
-    _expr = _expr.propagateExpectedType(res, context, t);
+    _expr = _expr.propagateExpectedType(res, context, t, null);
   }
 
 
@@ -422,19 +422,12 @@ public class Impl extends ANY
     if (outer.isConstructor() && outer.preFeature() != null)
       { // For constructors, the constructor itself checks the precondition (while
         // for functions, this is done by the caller):
-        var c = outer.contract().callPreCondition(res, outer, context);
+        var c = Contract.callPreCondition(res, outer, context);
         _expr = new Block(new List<>(c, _expr));
       }
     if (needsImplicitAssignmentToResult(outer))
       {
-        var resultField = outer.resultField();
-        Assign ass = new Assign(res,
-                                this._expr.pos(),
-                                resultField,
-                                this._expr,
-                                context);
-        ass._value = this._expr;
-        this._expr = ass;
+        this._expr = _expr.assignToField(res, context, (Feature) outer.resultField());
       }
 
     // Add call to post condition feature:
@@ -546,7 +539,7 @@ public class Impl extends ANY
         var iv = initialValueFromCall(i, res);
         exprs.add(iv);
       }
-    var result = Expr.union(exprs, Context.NONE);
+    var result = Expr.union(exprs, Context.NONE, urgent);
     if (urgent)
       {
         if (_initialCalls.size() == 0)
@@ -577,6 +570,8 @@ public class Impl extends ANY
             AstErrors.incompatibleTypesOfActualArguments(formalArg, types, positions);
           }
       }
+    if (POSTCONDITIONS) ensure
+      (!urgent || result != null);
 
     return result;
   }
@@ -647,8 +642,13 @@ public class Impl extends ANY
       (!urgent || result != null);
 
     return result != null &&
-           result.isTypeType() &&
-           !(_expr instanceof Call c && c.calledFeature() == Types.resolved.f_type_as_value)
+           result.isCotypeType() &&
+           /**
+            * this allows code like:
+            * p := codepoint.type
+            * p.some_type_feature
+            */
+           !_expr.isTypeAsValueCall()
       ? Types.resolved.f_Type.selfType()
       : result;
   }

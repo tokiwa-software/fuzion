@@ -26,18 +26,19 @@
 # This tries establishing a connection to `host`
 # on success returns an active connection.
 #
-# Minimal example:
+# Minimal example: NYI: CLEANUP: example broken
 #
-#     net.client net.family.ipv4 net.protocol.tcp "tokiwa.software" 80
-#       .bind c->
-#         net.connections.with unit mutate c ()->
-#           say net.channel.env.get_peer_address
-#           say ((io.buffered lm).writer.write [0,1,2]).bytes_written
+#     mutate ! ()->
+#       _ := net.client net.family.ipv4 net.protocol.tcp "tokiwa.software" 80
+#         .bind c->
+#           c.with _ mutate ()->
+#             say net.channel.env.get_peer_address
+#             say ((io.buffered mutate).writer.env.write [0,1,2]).bytes_written
 #
-# Blocks until connection is establised.
-# NYI blocking / none blocking
+# Blocks until connection is established.
+# NYI: UNDER DEVELOPMENT: blocking / none blocking
 #
-public client(f net.family.val, p net.protocol.val, host String, port u16) outcome net.connection
+public type.client(f net.family.val, p net.protocol.val, host String, port u16) outcome net.connection
 =>
   s := net.socket_type.by_protocol p
   fuzion.sys.net.connect f.as_num s.as_num p.as_num host port

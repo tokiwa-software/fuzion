@@ -41,7 +41,7 @@
 #
 # void is the result type of the endless loop
 #
-#   do { <loop body> }
+#     do { <loop body> }
 #
 # If used as the result type of a field, the field can never be assigned a value,
 # since no such value can be produced, and the field can never be read since it
@@ -50,7 +50,7 @@
 # Type void is assignable to all other types, e.g, we can assign void to a value
 # of type i32:
 #
-#   i i32 := exit 1
+#     i i32 := exit 1
 #
 # Since no value of type void can ever be produced, the assignment is dead code that
 # will be removed by the fuzion implementation.
@@ -62,12 +62,12 @@
 # well).  An example could be a stack of capacity zero: stack void 0 with an
 # absurd
 #
-#   stack.push(void)
+#     stack.push(void)
 #
 # and a pop function with a precondition that is always false
 #
-#   pop void
-#     pre size > 0
+#     pop void
+#       pre size > 0
 #
 # The memory required to store a value of void type is not defined since these
 # values do not exist.  The Fuzion code generators typically will not generate

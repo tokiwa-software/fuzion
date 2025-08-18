@@ -28,17 +28,49 @@
 # this can be used both as plain or as a oneway monad to store a state
 # in a way orthogonal to the actual computation.
 #
+# use as follows to store data of type `u8` for purpose `demo`:
+#
+#      # first, declare a type that holds a value of `u8` that describes the purpose
+#      #
+#      demo(contents u8) is
+#
+#      # then, create an instate an instance of `state` with initial value `23`
+#      #
+#      state demo unit (demo 23) ()->
+#
+#        # now, we can access the value using `state_get demo`
+#        # or, to unwrap it `state_get demo .contents`
+#        #
+#        say "state value is {state_get demo .contents}"
+#
+#        # we can now modify the value, e.g, doubling it via
+#        #
+#        new_demo := state_modify demo (x -> demo x.contents*2)
+#        say "state value is {new_demo.get.contents}"
+#        say "state value is {state_get demo .contents}"
+#
+# NYI: BUG: #5634: use `infix !` in this example once #5634 is fixed
+#
+# note that access to the state value is possible in any code executed while the state
+# is instated, also, e.g., in lambdas that are passed to a call and then called
+# further down the call chain.
+#
+# The wrapper type, `demo` in the example, is not strictly required, we could use
+# just `u8` instead.  However, this would permit unrelated code to read and modify
+# the value using `state_get u8`, while the wrapper type `demo` restricts this to
+# code for which `demo` is visible.  To avoid accidental and intentional (malicious)
+# accesses to state effects, we need our own local type!
 #
 public state(
 
   # types of contained and the state value
-  T, S type,
+  public T, S type,
 
   # the contained value
-  val T,
+  public val T,
 
   # the current state
-  get S,
+  public get S,
 
   # `plain` monad or effect to be `inst`alled or `repl`aced by new value?
   mode oneway_monad_mode.val
@@ -47,7 +79,7 @@ is
 
   # monadic operator
   #
-  public redef infix >>= (f T -> state T S) => state.this.bind f
+  public redef infix >>= (f T -> state T S) state T S => state.this.bind f
 
 
   # monadic operator
@@ -60,7 +92,7 @@ is
 
   # return function
   #
-  public return (a T) => state a get mode.next
+  public return (a T) state T S => state a get mode.next
 
 
   # map this using f
@@ -71,13 +103,13 @@ is
 
   # modify the state, leaving the contents unchanged
   #
-  public modify (f S -> S) =>
+  public modify (f S -> S) state T S =>
     state val (f get) mode.next
 
 
   # set state to new, leaving the contents unchanged
   #
-  public put (new S) =>
+  public put (new S) state T S =>
     state val new mode.next
 
 
@@ -93,14 +125,14 @@ is
 # state with 1 argument is short hand for a state containing unit and
 # initial_value
 #
-public state(S type, initial_value S) => state unit initial_value oneway_monad_mode.plain
+public state(S type, initial_value S) state unit S => state unit initial_value oneway_monad_mode.plain
 
 
 # install new state monad for type S and run r within that state monad
 #
 # return result of r.
 #
-public state(S, R type, initial_value S, r ()->R) =>
+public state(S, R type, initial_value S, r ()->R) R =>
   res option R := nil
   (state unit S) <- (state unit S unit initial_value oneway_monad_mode.inst) ! (()->set res := r.call)
   res.get
@@ -108,19 +140,19 @@ public state(S, R type, initial_value S, r ()->R) =>
 
 # short-hand for accessing state monad for given type in current environment
 #
-public state_of(S type) => (state unit S).env
+public state_of(S type) state unit S => (state unit S).env
 
 
 # short-hand for getting state monad for given type in current environment
 #
-public state_get(S type) => (state_of S).get
+public state_get(S type) S => (state_of S).get
 
 
 # short-hand for modifying state monad for given type in current environment
 #
-public state_modify(S type, f S->S) => (state_of S).modify f
+public state_modify(S type, f S->S) state unit S => (state_of S).modify f
 
 
 # short-hand for setting state monad for given type in current environment
 #
-public state_put(S type, new S) => (state_of S).put new
+public state_put(S type, new S) state unit S => (state_of S).put new

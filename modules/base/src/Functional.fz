@@ -1,0 +1,52 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature Functional
+#
+# -----------------------------------------------------------------------
+
+# NYI: UNDER DEVELOPMENT: name Functional might be misleading?
+#
+# a Functional is a special type of unary that takes
+# a Function R and produces a value R.
+#
+public Functional(R type) ref : Unary R (Function R) is
+
+
+  # infix variant of call
+  #
+  public infix ! (code ()->R) R =>
+    call code
+
+
+  # NYI: UNDER DEVELOPMENT: name compose might be misleading?
+  #
+  # compose this Functional with another Functional
+  #
+  public compose(other Functional R) Functional R =>
+    ref : Functional R is
+      public redef call(code Function R) R =>
+        Functional.this.call ()->
+          other.call code
+
+
+  # fluent interface for using multiple effects together
+  #
+  public and(E type: effect, e Lazy E) Functional R =>
+    compose (e.as_functional R)

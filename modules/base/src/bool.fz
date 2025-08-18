@@ -59,28 +59,28 @@ public bool : choice false_ true_, property.equatable, java_primitive is
       false
 
   # or
-  public infix |   (other bool) => bool.this || other
+  public infix |   (other bool) bool => bool.this || other
 
   # and
-  public infix &   (other bool) => bool.this && other
+  public infix &   (other bool) bool => bool.this && other
 
   # equivalence
   #
   # note that we do not use '==' for this to avoid confusion since
   # a == b == c for booleans might not behave as expected
   # ('true <=> false <=> false' evaluates to 'true')
-  public infix <=> (other bool) => if bool.this other else !other
+  public infix <=> (other bool) bool => if bool.this other else !other
 
   # equality check implementation for inherited property.equatable
   #
-  public fixed redef type.equality(a, b bool) =>
+  public fixed redef type.equality(a, b bool) bool =>
     if a
       b
     else
       !b
 
   # xor
-  public infix ^   (other bool) => if bool.this (!other) else  other
+  public infix ^   (other bool) bool => if bool.this (!other) else  other
 
   # implies
   #
@@ -92,7 +92,7 @@ public bool : choice false_ true_, property.equatable, java_primitive is
 
   # ternary ? : -- NYI: This will be replaced by a more powerful match syntax
   #
-  public ternary ? : (T type, a, b Lazy T) => if bool.this a else b
+  public ternary ? : (T type, a, b Lazy T) T => if bool.this a else b
 
 
   # create an option from a lazily evaluated value depending on this bool
@@ -105,34 +105,34 @@ public bool : choice false_ true_, property.equatable, java_primitive is
 
 
   # human readable string
-  public redef as_string => if bool.this "true" else "false"
+  public redef as_string String => if bool.this "true" else "false"
 
 
   # monoid of bool with infix & operation.  Will be true iff all elements are
   # true.
   #
-  public type.all =>
+  public type.all Monoid bool =>
     ref : Monoid bool is
-      public redef infix ∙ (a, b bool) => a & b
-      public redef e => true
+      public redef infix ∙ (a, b bool) bool => a & b
+      public redef e bool => true
 
 
   # monoid of bool with infix | operation.  Will be false iff all elements are
   # false.
   #
-  public type.any =>
+  public type.any Monoid bool =>
     ref : Monoid bool is
-      public redef infix ∙ (a, b bool) => a | b
-      public redef e => false
+      public redef infix ∙ (a, b bool) bool => a | b
+      public redef e bool => false
 
 
   # monoid of bool with infix ^ operation.  Will be true iff an odd number of
   # elements is true. This gives the even parity.
   #
-  public type.parity =>
+  public type.parity Monoid bool =>
     ref: Monoid bool is
-      public redef infix ∙ (a, b bool) => a ^ b
-      public redef e => false
+      public redef infix ∙ (a, b bool) bool => a ^ b
+      public redef e bool => false
 
 
 # boolean value "false"
@@ -140,7 +140,7 @@ public bool : choice false_ true_, property.equatable, java_primitive is
 # Note that this value is of unit type >>false_<<, not of type >>bool<<, i.e.,
 # if it is used for type inference as in
 #
-#    my_boolean := false_
+#     my_boolean := false_
 #
 # you will get a variable of type >>false_<<, it will not be possible to assign
 # >>true_<< to it.  You can use >>false<< as an alternative to get type >>bool<<.
@@ -154,7 +154,7 @@ module:public false_ is
 # Note that this value is of unit type >>true_<<, not of type >>bool<<, i.e.,
 # if it is used for type inference as in
 #
-#    my_boolean := true_
+#     my_boolean := true_
 #
 # you will get a variable of type >>true_<<, it will not be possible to assign
 # >>false_<< to it.  You can use >>true<< as an alternative to get type >>bool<<.

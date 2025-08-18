@@ -3,10 +3,10 @@
       nil  # should flag an error: Incompatible types in assignment
 ------^^^
 assignment to field : 'issue1739.a.type.empty.result'
-expected formal type: 'issue1739.a.this.type (in type feature)'
+expected formal type: 'issue1739.a.this.type'
 actual type found   : 'nil'
 assignable to       : 'nil'
 for value assigned  : 'nil'
-To solve this, you could change the type of the target 'issue1739.a.type.empty.result' to 'nil' or convert the type of the assigned value to 'issue1739.a.this.type (in type feature)'.
+To solve this, you could change the type of the target 'issue1739.a.type.empty.result' to 'nil' or convert the type of the assigned value to 'issue1739.a.this.type'.
 
 one error.

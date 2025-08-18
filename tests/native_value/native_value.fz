@@ -98,7 +98,7 @@ to_fuzion_type(c_type String) =>
 ex =>
 
   visitor : Function i32 CXCursor Native_Ref Native_Ref is
-    public redef call(crsr CXCursor, parent Native_Ref, client_data Native_Ref) =>
+    public redef call(crsr CXCursor, parent Native_Ref, client_data Native_Ref) i32 =>
 
       check !(clang_equalCursors crsr clang_getNullCursor)
 
@@ -142,9 +142,6 @@ ex =>
   idx := clang_createIndex 0 0
 
   check !(ffi.is_null idx)
-
-  String.as_c_string =>
-    (String.this + codepoint 0).utf8.as_array
 
   header_file := "./fz.h"
 

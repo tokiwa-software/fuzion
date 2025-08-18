@@ -48,21 +48,9 @@ public class FormalGenerics extends ANY
 
 
   /**
-   * Convenience constant for an empty formal generics instance.
+   * The feature that this is the formal generics of.
    */
-  public static final FormalGenerics NONE = new FormalGenerics(new List<>());
-
-
-  /*----------------------------  variables  ----------------------------*/
-
-
-  /**
-   * Field with type from this.type created in case fieldName != null.
-   *
-   * This is private to prevent direct access that does not take care about
-   * isOpen.
-   */
-  public final List<Generic> list;
+  final AbstractFeature _feature;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -71,12 +59,11 @@ public class FormalGenerics extends ANY
   /**
    * Constructor for a FormalGenerics instance
    *
-   * @param l the list of formal generics. May not be empty.
+   * @param af the features for which this is the generics.
    */
-  public FormalGenerics(List<Generic> l)
+  public FormalGenerics(AbstractFeature af)
   {
-    list = l;
-    list.freeze();
+    _feature = af;
   }
 
 
@@ -88,7 +75,7 @@ public class FormalGenerics extends ANY
    */
   public boolean isOpen()
   {
-    return !list.isEmpty() && list.getLast().isOpen();
+    return !_feature.typeArguments().isEmpty() && _feature.typeArguments().getLast().isOpenTypeParameter();
   }
 
 
@@ -105,18 +92,9 @@ public class FormalGenerics extends ANY
    */
   public boolean sizeMatches(List<AbstractType> actualGenerics)
   {
-    if (_asActuals == actualGenerics)
-      {
-        return true;
-      }
-    else if (isOpen())
-      {
-        return (list.size()-1) <= actualGenerics.size();
-      }
-    else
-      {
-        return list.size() == actualGenerics.size();
-      }
+    return isOpen()
+      ? (_feature.typeArguments().size()-1) <= actualGenerics.size()
+      : _feature.typeArguments().size() == actualGenerics.size();
   }
 
 
@@ -157,26 +135,6 @@ public class FormalGenerics extends ANY
   }
 
 
-  /**
-   * Convenience function to resolve all types in a list of actual generic
-   * arguments of a call or a type.
-   *
-   * @param generics the actual generic arguments that should be resolved
-   *
-   * @return a new array of the resolved generics
-   */
-  public static List<AbstractType> resolve(Resolution res, List<AbstractType> generics, AbstractFeature outer)
-  {
-    if (!(generics instanceof FormalGenerics.AsActuals))
-      {
-        generics = generics.map(t -> t.resolve(res, outer.context()));
-      }
-    return generics;
-  }
-
-
-  private List<AbstractType> _asActuals = null;
-
 
   /**
    * Wrapper class for result of asActuals(). This is used to quickly identify
@@ -193,9 +151,9 @@ public class FormalGenerics extends ANY
       // NYI: This is a bit ugly, can we avoid adding all these types
       // here?  They should never be used since AsActuals is only a
       // placeholder for the actual generics.
-      for (Generic g : list)
+      for (var g : _feature.typeArguments())
         {
-          add(g.type());
+          add(g.asGenericType());
         }
       freeze();
     }
@@ -237,37 +195,14 @@ public class FormalGenerics extends ANY
    *
    * @return actual generics that match these formal generics.
    */
+  private AsActuals _asActuals = null;
   public List<AbstractType> asActuals()
   {
-    var result = _asActuals;
-    if (result == null)
+    if (_asActuals == null || !_feature.state().atLeast(State.RESOLVED_DECLARATIONS))
       {
-        if (this == FormalGenerics.NONE)
-          {
-            result = UnresolvedType.NONE;
-          }
-        else
-          {
-            result = new AsActuals();
-          }
-        _asActuals = result;
+        _asActuals = new AsActuals();
       }
-
-    if (POSTCONDITIONS) ensure
-      (sizeMatches(result));
-
-    return result;
-  }
-
-
-  /**
-   * Add type parameter g to this list of formal generics.
-   *
-   * @param g the new type parameter
-   */
-  FormalGenerics addTypeParameter(Generic g)
-  {
-    return new FormalGenerics(list.addAfterUnfreeze(g));
+    return _asActuals;
   }
 
 
@@ -279,8 +214,8 @@ public class FormalGenerics extends ANY
    */
   public String sizeText()
   {
-    int sz = isOpen() ? list.size() - 1
-                      : list.size();
+    int sz = isOpen() ? _feature.typeArguments().size() - 1
+                      : _feature.typeArguments().size();
     return
       isOpen()    && (sz == 0) ? "any number of generic arguments"
       :  isOpen() && (sz == 1) ? "at least one generic argument"
@@ -298,8 +233,9 @@ public class FormalGenerics extends ANY
    */
   public String toString()
   {
-    return !isOpen() && list.isEmpty() ? ""
-                                       : list + (isOpen() ? "..." : "");
+    return !isOpen() && _feature.typeArguments().isEmpty()
+      ? ""
+      : _feature.typeArguments().map2(f -> f.featureName().baseNameHuman()) + (isOpen() ? "..." : "");
   }
 
 }

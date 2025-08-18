@@ -546,17 +546,6 @@ public abstract class FUIR extends IR
   public abstract byte[] clazzTypeName(int cl);
 
 
-  /**
-   * If cl is a type parameter, return the type parameter's actual type.
-   *
-   * @param cl a clazz id
-   *
-   * @return if cl is a type parameter, clazz id of cl's actual type or -1 if cl
-   * is not a type parameter.
-   */
-  public abstract int clazzTypeParameterActualType(int cl);
-
-
   /*----------------------  special clazzes  ---------------------*/
 
 
@@ -1513,7 +1502,18 @@ public abstract class FUIR extends IR
    */
   public boolean clazzIsArray(int cl)
   {
+    // NYI: UNDER DEVELOPMENT: get rid of string comparison
     return clazzOriginalName(cl).compareTo(FuzionConstants.ARRAY_NAME) == 0 && isConstructor(cl);
+  }
+
+
+  /**
+   * Is {@code cl} an Array?
+   */
+  public boolean clazzIsArrayRef(int cl)
+  {
+    // NYI: UNDER DEVELOPMENT: get rid of string comparison
+    return clazzOriginalName(cl).compareTo("Array") == 0 && isConstructor(cl);
   }
 
 
@@ -1618,7 +1618,21 @@ public abstract class FUIR extends IR
    *
    * e.g. /fuzion/tests/hello/HelloWorld.fz, $FUZION/lib/panic.fz
    */
-  public abstract String clazzSrcFile(int cl);
+  public String clazzSrcFile(int cl)
+  {
+    return clazzDeclarationPos(cl)._sourceFile._fileName.toString();
+  }
+
+
+  /**
+   * Get the source code position of the declaration of the underlying feature
+   * of a given clazz.
+   *
+   * @param cl index of the clazz
+   *
+   * @return the source code position or null if not available.
+   */
+  public abstract SourcePosition clazzDeclarationPos(int cl);
 
 
   /*----------------------  Interpreter  ----------------------*/

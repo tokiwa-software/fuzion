@@ -1,0 +1,9 @@
+
+--CURDIR--/reg_issue5394.fz:30:14: error 1: Could not find called feature
+    items := m.items
+-------------^
+Feature not found: 'm' (no arguments)
+Target feature: 'case_insensitive_map.type.map_of'
+In call: 'm'
+
+one error.

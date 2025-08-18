@@ -29,6 +29,7 @@ package dev.flang.fuir.analysis;
 import java.util.Stack;
 
 import dev.flang.fuir.FUIR;
+import dev.flang.ir.IR.FeatureKind;
 
 import static dev.flang.ir.IR.NO_SITE;
 
@@ -125,8 +126,6 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
      *
      * @param s site of the expression causing this assignment
      *
-     * @param tc clazz id of the target instance
-     *
      * @param f clazz id of the assigned field
      *
      * @param tvalue the target instance
@@ -135,7 +134,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
      *
      * @return resulting code of this assignment.
      */
-    public abstract RESULT assignStatic(int s, int tc, int f, VALUE tvalue, VALUE val);
+    public abstract RESULT assignStatic(int s, int f, VALUE tvalue, VALUE val);
 
     /**
      * Perform an assignment of a value to a field in tvalue. The type of tvalue
@@ -450,7 +449,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
             l.add(cur.v1());
             var out = _processor.outer(s);
             l.add(out.v1());
-            l.add(_processor.assignStatic(s, cl, or, cur.v0(), out.v0()));
+            l.add(_processor.assignStatic(s, or, cur.v0(), out.v0()));
           }
       }
 
@@ -464,7 +463,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
             l.add(cur.v1());
             var af = _fuir.clazzArg(cl, i);
             var ai = _processor.arg(s, i);
-            l.add(_processor.assignStatic(s, cl, af, cur.v0(), ai));
+            l.add(_processor.assignStatic(s, af, cur.v0(), ai));
           }
       }
   }
@@ -600,7 +599,9 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
           var args = args(cc0, stack, _fuir.clazzArgCount(cc0));
           var tc = _fuir.accessTargetClazz(s);
           var tvalue = pop(stack, tc);
-          var r = _processor.call(s, tvalue, args);
+          var r = _fuir.clazzKind(cc0) == FeatureKind.TypeParameter
+            ? new Pair<>(_processor.unitValue(), _processor.drop(tvalue, tc))
+            : _processor.call(s, tvalue, args);
           if (r.v0() == null)  // this may happen even if rt is not void (e.g., in case of tail recursion or error)
             {
               stack.push(null);

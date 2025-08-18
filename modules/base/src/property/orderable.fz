@@ -53,7 +53,7 @@ is
   # result is true iff 'a' is considered to represent the same abstract value
   # as 'b'.
   #
-  public redef type.equality(a,b property.orderable.this)
+  public redef type.equality(a,b property.orderable.this) bool
 
   # NYI: BUG: see #4676
   #

@@ -41,8 +41,8 @@ public class BoolConst extends Constant
   /*------------------------  static variables  -------------------------*/
 
 
-  static final BoolConst TRUE  = new BoolConst(true);
-  static final BoolConst FALSE = new BoolConst(false);
+  static final Expr TRUE  = new BoolConst(true);
+  static final Expr FALSE = new BoolConst(false);
 
 
   /**

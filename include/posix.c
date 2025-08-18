@@ -32,7 +32,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #endif
 
 #include <stdio.h>
-#include <stdlib.h>     // setenv, unsetenv
+#include <stdlib.h>
 #include <errno.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -49,6 +49,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <sys/stat.h>   // mkdir
 #include <sys/types.h>  // mkdir
 #include <sys/wait.h>
+#include <signal.h>
 #include <unistd.h>     // close
 #include <time.h>
 #include <assert.h>
@@ -58,6 +59,21 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #endif
 
 #include "fz.h"
+
+
+static_assert(SIGHUP == 1, "signal definition different than expected");
+static_assert(SIGINT == 2, "signal definition different than expected");
+static_assert(SIGQUIT == 3, "signal definition different than expected");
+static_assert(SIGILL == 4, "signal definition different than expected");
+static_assert(SIGTRAP == 5, "signal definition different than expected");
+static_assert(SIGABRT == 6, "signal definition different than expected");
+static_assert(SIGFPE == 8, "signal definition different than expected");
+static_assert(SIGKILL == 9, "signal definition different than expected");
+static_assert(SIGSEGV == 11, "signal definition different than expected");
+static_assert(SIGPIPE == 13, "signal definition different than expected");
+static_assert(SIGALRM == 14, "signal definition different than expected");
+static_assert(SIGTERM == 15, "signal definition different than expected");
+
 
 // thread local to hold the last
 // error that occurred in fuzion runtime.
@@ -72,14 +88,14 @@ int64_t fzE_last_error(void){
 
 // helper to set last_error
 // if return value of some function is -1.
-inline int set_last_error(int ret_val)
+int set_last_error(int ret_val)
 {
   last_error = ret_val == -1 ? errno : 0;
   return ret_val;
 }
 
 // zero memory
-void fzE_mem_zero(void *dest, size_t sz)
+void fzE_mem_zero_secure(void *dest, size_t sz)
 {
 #ifdef __STDC_LIB_EXT1__
   memset_s(dest, sz, 0, sz);
@@ -97,19 +113,6 @@ int fzE_mkdir(const char *pathname){
   return mkdir(pathname, S_IRWXU);
 }
 
-
-// set environment variable, return zero on success
-int fzE_setenv(const char *name, const char *value, int overwrite){
-  return setenv(name, value, overwrite);
-}
-
-
-// unset environment variable, return zero on success
-int fzE_unsetenv(const char *name){
-  return unsetenv(name);
-}
-
-
 void * fzE_opendir(const char *pathname, int64_t * result) {
   errno = 0;
   void * res = opendir(pathname);
@@ -118,7 +121,7 @@ void * fzE_opendir(const char *pathname, int64_t * result) {
 }
 
 
-int fzE_dir_read(intptr_t * dir, void * result) {
+int fzE_dir_read(intptr_t * dir, int8_t * result) {
   errno = 0;
 
   DIR * dir1 = (DIR *)dir;
@@ -133,7 +136,7 @@ int fzE_dir_read(intptr_t * dir, void * result) {
     return errno == 0
       // end reached
       ? 0
-      // some error occured
+      // some error occurred
       : -1;
   }
   else {
@@ -232,7 +235,7 @@ int fzE_socket(int family, int type, int protocol){
 int fzE_getaddrinfo(int family, int socktype, int protocol, int flags, char * host, char * port, struct addrinfo ** result){
   struct addrinfo hints;
 
-  fzE_mem_zero(&hints, sizeof hints);
+  fzE_mem_zero_secure(&hints, sizeof hints);
 
   hints.ai_family = fzE_get_family(family);
   hints.ai_socktype = fzE_get_socket_type(socktype);
@@ -310,7 +313,7 @@ int fzE_connect(int family, int socktype, int protocol, char * host, char * port
   int con_res = connect(result[0], addr_info->ai_addr, addr_info->ai_addrlen);
   if(con_res == -1)
   {
-    // NYI do we want to try another address in addr_info->ai_next?
+    // NYI: UNDER DEVELOPMENT: do we want to try another address in addr_info->ai_next?
     fzE_close(result[0]);
     result[0] = errno;
   }
@@ -326,7 +329,7 @@ int fzE_get_peer_address(int sockfd, void * buf) {
   // sockaddr_storage: A structure at least as large
   // as any other sockaddr_* address structures.
   struct sockaddr_storage peeraddr;
-  fzE_mem_zero(&peeraddr, sizeof(peeraddr));
+  fzE_mem_zero_secure(&peeraddr, sizeof(peeraddr));
   socklen_t peeraddrlen = sizeof(peeraddr);
   if (set_last_error(getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen)) == 0) {
     if (peeraddr.ss_family == AF_INET) {
@@ -348,7 +351,7 @@ unsigned short fzE_get_peer_port(int sockfd) {
   // sockaddr_storage: A structure at least as large
   // as any other sockaddr_* address structures.
   struct sockaddr_storage peeraddr;
-  fzE_mem_zero(&peeraddr, sizeof(peeraddr));
+  fzE_mem_zero_secure(&peeraddr, sizeof(peeraddr));
   socklen_t peeraddrlen = sizeof(peeraddr);
   if (set_last_error(getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen)) == 0) {
     if (peeraddr.ss_family == AF_INET) {
@@ -521,7 +524,7 @@ void fzE_init()
 
 #ifdef FUZION_ENABLE_THREADS
   pthread_mutexattr_t attr;
-  fzE_mem_zero(&fzE_global_mutex, sizeof(fzE_global_mutex));
+  fzE_mem_zero_secure(&fzE_global_mutex, sizeof(fzE_global_mutex));
   bool res = pthread_mutexattr_init(&attr) == 0 &&
             pthread_mutexattr_setprotocol(&attr, PTHREAD_PRIO_INHERIT) == 0 &&
             pthread_mutex_init(&fzE_global_mutex, &attr) == 0;
@@ -537,7 +540,7 @@ void fzE_init()
 /**
  * Start a new thread, returns a pointer to the thread.
  */
-int64_t fzE_thread_create(void *(*code)(void *),
+void * fzE_thread_create(void *(*code)(void *),
                           void *restrict args)
 {
 #ifdef FUZION_ENABLE_THREADS
@@ -552,12 +555,11 @@ int64_t fzE_thread_create(void *(*code)(void *),
     fprintf(stderr,"*** pthread_create failed with return code %d\012",res);
     exit(EXIT_FAILURE);
   }
-  // NYI: BUG: free pt
-  return (int64_t)pt;
+  return pt;
 #else
   printf("You discovered a severe bug. (fzE_thread_join)");
   exit(EXIT_FAILURE);
-  return -1;
+  return NULL;
 #endif
 }
 
@@ -565,7 +567,7 @@ int64_t fzE_thread_create(void *(*code)(void *),
 /**
  * Join with a running thread.
  */
-void fzE_thread_join(int64_t thrd)
+void fzE_thread_join(void * thrd)
 {
 #ifdef FUZION_ENABLE_THREADS
 #ifdef GC_THREADS
@@ -573,6 +575,7 @@ void fzE_thread_join(int64_t thrd)
 #else
   pthread_join(*(pthread_t *)thrd, NULL);
 #endif
+  fzE_free(thrd);
 #endif
 }
 
@@ -605,8 +608,8 @@ void fzE_unlock()
 }
 
 
-// NYI make this thread safe
-// NYI option to pass stdin,stdout,stderr
+// NYI: UNDER DEVELOPMENT: make this thread safe
+// NYI: UNDER DEVELOPMENT: option to pass stdin,stdout,stderr
 // zero on success, -1 error
 int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLen, int64_t * result)
 {
@@ -743,13 +746,13 @@ int fzE_pipe_write(int64_t desc, char * buf, size_t nbytes){
 
 // return -1 on error, 0 on success
 int fzE_pipe_close(int64_t desc){
-// NYI do we need to flush?
+// NYI: UNDER DEVELOPMENT: do we need to flush?
   return set_last_error(close((int) desc));
 }
 
 
 // open_results[0] the error number
-void * fzE_file_open(char * file_name, int64_t * open_results, int8_t mode)
+void * fzE_file_open(char * file_name, int64_t * open_results, file_open_mode mode)
 {
   assert( mode >= 0 && mode <= 2 );
   //"In  multithreaded programs, using fcntl() F_SETFD to set the close-on-exec flag
@@ -762,7 +765,7 @@ void * fzE_file_open(char * file_name, int64_t * open_results, int8_t mode)
   // make sure no fork is done while we open file
   fzE_lock();
 
-  FILE * fp = fopen(file_name, mode==0 ? "rb" : "a+b");
+  FILE * fp = fopen(file_name, mode==FZ_FILE_MODE_READ ? "rb" : "a+b");
   if (fp!=NULL)
   {
     fcntl(fileno(fp), F_SETFD, FD_CLOEXEC);
@@ -788,7 +791,7 @@ void * fzE_mtx_init() {
 #endif
 }
 
-int32_t fzE_mtx_lock(void *mtx) {
+int32_t fzE_mtx_lock(void * mtx) {
 #ifdef FUZION_ENABLE_THREADS
   return pthread_mutex_lock((pthread_mutex_t *)mtx) == 0 ? 0 : -1;
 #else
@@ -796,7 +799,7 @@ int32_t fzE_mtx_lock(void *mtx) {
 #endif
 }
 
-int32_t fzE_mtx_trylock(void *mtx) {
+int32_t fzE_mtx_trylock(void * mtx) {
 #ifdef FUZION_ENABLE_THREADS
   return pthread_mutex_trylock((pthread_mutex_t *)mtx) == 0 ? 0 : -1;
 #else
@@ -804,7 +807,7 @@ int32_t fzE_mtx_trylock(void *mtx) {
 #endif
 }
 
-int32_t fzE_mtx_unlock(void *mtx) {
+int32_t fzE_mtx_unlock(void * mtx) {
 #ifdef FUZION_ENABLE_THREADS
   return pthread_mutex_unlock((pthread_mutex_t *)mtx) == 0 ? 0 : -1;
 #else
@@ -812,7 +815,7 @@ int32_t fzE_mtx_unlock(void *mtx) {
 #endif
 }
 
-void fzE_mtx_destroy(void *mtx) {
+void fzE_mtx_destroy(void * mtx) {
 #ifdef FUZION_ENABLE_THREADS
   pthread_mutex_destroy((pthread_mutex_t *)mtx);
   // NYI: free(mtx);
@@ -829,7 +832,7 @@ void * fzE_cnd_init() {
 #endif
 }
 
-int32_t fzE_cnd_signal(void *cnd) {
+int32_t fzE_cnd_signal(void * cnd) {
 #ifdef FUZION_ENABLE_THREADS
   return pthread_cond_signal((pthread_cond_t *)cnd) == 0 ? 0 : -1;
 #else
@@ -837,7 +840,7 @@ int32_t fzE_cnd_signal(void *cnd) {
 #endif
 }
 
-int32_t fzE_cnd_broadcast(void *cnd) {
+int32_t fzE_cnd_broadcast(void * cnd) {
 #ifdef FUZION_ENABLE_THREADS
   return pthread_cond_broadcast((pthread_cond_t *)cnd) == 0 ? 0 : -1;
 #else
@@ -845,7 +848,7 @@ int32_t fzE_cnd_broadcast(void *cnd) {
 #endif
 }
 
-int32_t fzE_cnd_wait(void *cnd, void *mtx) {
+int32_t fzE_cnd_wait(void * cnd, void * mtx) {
 #ifdef FUZION_ENABLE_THREADS
   return pthread_cond_wait((pthread_cond_t *)cnd, (pthread_mutex_t *)mtx) == 0 ? 0 : -1;
 #else
@@ -853,7 +856,7 @@ int32_t fzE_cnd_wait(void *cnd, void *mtx) {
 #endif
 }
 
-void fzE_cnd_destroy(void *cnd) {
+void fzE_cnd_destroy(void * cnd) {
 #ifdef FUZION_ENABLE_THREADS
   pthread_cond_destroy((pthread_cond_t *)cnd);
   // NYI: free(cnd);
@@ -891,7 +894,7 @@ int32_t fzE_file_read(void * file, void * buf, int32_t size)
  * result[5] = sec
  * result[6] = nanosec;
  */
-void fzE_date_time(void * result)
+void fzE_date_time(int32_t * result)
 {
   struct timespec ts;
   struct tm ptm;
@@ -944,4 +947,9 @@ void * fzE_file_stderr(void) { return stderr; }
 int32_t fzE_file_flush(void * file)
 {
   return fflush(file) == 0 ? 0 : -1;
+}
+
+int fzE_send_signal(int64_t pid, int sig)
+{
+  return kill(pid, sig);
 }

@@ -22,8 +22,7 @@
 # -----------------------------------------------------------------------
 
 
+# os -- unit feature to group features that relate to
+# operating system specific things like starting processes
+#
 public os is
-
-  # NYI send_signal(p i64, signal i32) unit => intrinsic
-  # NYI is_alive(p i64) unit => intrinsic
-  # NYI exit_code(p i64) unit => intrinsic

@@ -193,7 +193,7 @@ test_local_mutate is
     =>
       m : mutate is
 
-      ring2(from list T) Cell T m =>   # NYI '=>' causes error cyclic type inference
+      ring2(from list T) Cell T m =>   # NYI: UNDER DEVELOPMENT: '=>' causes error cyclic type inference
         c := Cell T m from.head.get
         match from.tail
           nil    => _ := c
@@ -245,10 +245,10 @@ test_local_mutate is
       prev Ring T => abstract
       data T => abstract
 
-      public redef as_string =>
+      public redef as_string String =>
         for
           s := "[ ", s + "{e.data} <-> "
-          # e2 := r, e2.next    # NYI causes crash!
+          # e2 := r, e2.next    # NYI: BUG: causes crash!
           e Ring T := Ring.this, e.next
           i in 0..3
         else

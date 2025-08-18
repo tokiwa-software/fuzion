@@ -1,6 +1,7 @@
 mutate
 io.Out
 fuzion.runtime.pre_fault
+fuzion.runtime.contract_fault
 fuzion.runtime.fault
 fuzion.runtime.post_fault
 io.Err

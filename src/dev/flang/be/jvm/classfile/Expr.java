@@ -198,7 +198,7 @@ public abstract class Expr extends ByteCode
       smt.stacks.put(_handler._posFinal, s);
 
       // in principle, we need to unify all locals from all possibly throwing bytecodes in in the try-area,
-      // just using the inital locals for now since our bytecode currently would not change any locals
+      // just using the initial locals for now since our bytecode currently would not change any locals
       // here anyway:
       smt.locals.add(new Pair<>(_handler._posFinal , locals.clone()));
     }
@@ -1207,7 +1207,20 @@ public abstract class Expr extends ByteCode
    */
   public static Expr stringconst(String s)
   {
-    return new LoadConst()
+    return stringconst(s, false);
+  }
+
+
+  /**
+   * Load a java.lang.String constant given by a Java string
+   *
+   * @param needsStackMapFrame output a StackMapFrame, sometimes needed since
+   * code might be unreachable, i.e. after a goto
+   */
+  public static Expr stringconst(String s, boolean needsStackMapFrame)
+  {
+    var label = new Label();
+    var strConst = new LoadConst()
       {
         public String toString() { return "String constant '" + s + "'"; }
         public JavaType type()   { return JAVA_LANG_STRING;              }
@@ -1215,10 +1228,22 @@ public abstract class Expr extends ByteCode
         @Override
         public void buildStackMapTable(StackMapTable smt, Stack<VerificationType> stack, List<VerificationType> locals)
         {
+          if (needsStackMapFrame)
+            {
+              // save stack and locals at branch
+              smt.stacks.put(label._posFinal, clone(stack));
+              smt.locals.add(new Pair<>(label._posFinal, locals.clone()));
+
+              // add frames at branch and jump position.
+              smt.stackMapFrames.add(new StackMapFullFrame(smt, label._posFinal));
+            }
+
           stack.push(new VerificationType(type().className(), (cf)->cpEntry(cf).index()));
         }
       };
+    return label.andThen(strConst);
   }
+
 
   /**
    * Load a java.lang.String constant given by utf8 encoded bytes
@@ -1748,22 +1773,7 @@ public abstract class Expr extends ByteCode
   public static Expr branch(byte bc, Expr pos, Expr neg)
   {
     if (PRECONDITIONS) require
-      (bc == ClassFileConstants.O_ifeq      ||
-       bc == ClassFileConstants.O_ifne      ||
-       bc == ClassFileConstants.O_iflt      ||
-       bc == ClassFileConstants.O_ifge      ||
-       bc == ClassFileConstants.O_ifgt      ||
-       bc == ClassFileConstants.O_ifle      ||
-       bc == ClassFileConstants.O_if_icmpeq ||
-       bc == ClassFileConstants.O_if_icmpne ||
-       bc == ClassFileConstants.O_if_icmplt ||
-       bc == ClassFileConstants.O_if_icmpge ||
-       bc == ClassFileConstants.O_if_icmpgt ||
-       bc == ClassFileConstants.O_if_icmple ||
-       bc == ClassFileConstants.O_if_acmpeq ||
-       bc == ClassFileConstants.O_if_acmpne ||
-       bc == ClassFileConstants.O_ifnull    ||
-       bc == ClassFileConstants.O_ifnonnull   );
+      (isIfInstruction(bc));
 
     Label lStart = new Label();
     Label lEnd   = new Label();
@@ -1901,24 +1911,34 @@ public abstract class Expr extends ByteCode
   public static Expr branch(byte bc, Expr pos)
   {
     if (PRECONDITIONS) require
-      (bc == ClassFileConstants.O_ifeq      ||
-       bc == ClassFileConstants.O_ifne      ||
-       bc == ClassFileConstants.O_iflt      ||
-       bc == ClassFileConstants.O_ifge      ||
-       bc == ClassFileConstants.O_ifgt      ||
-       bc == ClassFileConstants.O_ifle      ||
-       bc == ClassFileConstants.O_if_icmpeq ||
-       bc == ClassFileConstants.O_if_icmpne ||
-       bc == ClassFileConstants.O_if_icmplt ||
-       bc == ClassFileConstants.O_if_icmpge ||
-       bc == ClassFileConstants.O_if_icmpgt ||
-       bc == ClassFileConstants.O_if_icmple ||
-       bc == ClassFileConstants.O_if_acmpeq ||
-       bc == ClassFileConstants.O_if_acmpne ||
-       bc == ClassFileConstants.O_ifnull    ||
-       bc == ClassFileConstants.O_ifnonnull   );
+      (isIfInstruction(bc));
 
     return branch(bc, pos, UNIT);
+  }
+
+
+  /**
+   * Is bc an `if` instruction?
+   */
+  private static boolean isIfInstruction(byte bc)
+  {
+    return
+      bc == ClassFileConstants.O_ifeq      ||
+      bc == ClassFileConstants.O_ifne      ||
+      bc == ClassFileConstants.O_iflt      ||
+      bc == ClassFileConstants.O_ifge      ||
+      bc == ClassFileConstants.O_ifgt      ||
+      bc == ClassFileConstants.O_ifle      ||
+      bc == ClassFileConstants.O_if_icmpeq ||
+      bc == ClassFileConstants.O_if_icmpne ||
+      bc == ClassFileConstants.O_if_icmplt ||
+      bc == ClassFileConstants.O_if_icmpge ||
+      bc == ClassFileConstants.O_if_icmpgt ||
+      bc == ClassFileConstants.O_if_icmple ||
+      bc == ClassFileConstants.O_if_acmpeq ||
+      bc == ClassFileConstants.O_if_acmpne ||
+      bc == ClassFileConstants.O_ifnull    ||
+      bc == ClassFileConstants.O_ifnonnull;
   }
 
   public static Expr checkcast(JavaType type)
@@ -1928,7 +1948,7 @@ public abstract class Expr extends ByteCode
 
     return new Expr()
       {
-        // NYI checkcasts where isRedundant=true should
+        // NYI: UNDER DEVELOPMENT: checkcasts where isRedundant=true should
         // not be present in the first place...
         // isRedundant is set to true if the checkcast
         // checks for the exact same type that is on the stack.
@@ -2010,6 +2030,7 @@ public abstract class Expr extends ByteCode
    * trick the classfile verifier not to report errors after a call to, e.g.,
    * Runtime.fatal.
    */
+  @SuppressWarnings("unchecked")
   public static Expr endless_loop()
   {
     Label l = new Label();

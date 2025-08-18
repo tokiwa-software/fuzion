@@ -34,6 +34,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -45,7 +46,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractFeature;
-import dev.flang.ast.Types;
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
 import dev.flang.fe.LibraryFeature;
@@ -62,7 +62,7 @@ public class Docs extends ANY
 
   private final FrontEndOptions frontEndOptions = new FrontEndOptions(
     /* verbose                 */ 0,
-    /* fuzionHome              */ new FuzionHome()._fuzionHome,
+    /* fuzionHome              */ FuzionHome._fuzionHome,
     /* loadBaseMod             */ true,
     /* eraseInternalNamesInMod */ false,
     /* modules                 */ allModules(), // generate API docs for all modules (except Java ones)
@@ -89,7 +89,7 @@ public class Docs extends ANY
     List<String> modules = new List<>();
 
     try {
-      modules.addAll((Files.list(new FuzionHome()._fuzionHome.resolve("modules"))
+      modules.addAll((Files.list(FuzionHome._fuzionHome.resolve("modules"))
                             .filter(Files::isRegularFile)
                             .map(Path::getFileName)
                             .map(Path::toString)
@@ -126,22 +126,21 @@ public class Docs extends ANY
       }
     var head = queue.remove();
     c.accept(head);
-    queue.addAll(declaredFeatures(head).collect(Collectors.toList()));
+    queue.addAll(declaredFeatures(head));
     breadthFirstTraverse0(c, queue);
   }
 
 
   /**
-   * Get the declared features of f as stream
+   * Get the declared features of f as collection
    * @param f the feature for which the declared features are to be returned
-   * @return a stream of the declared features of f
+   * @return a collection of the declared features of f
    */
-  private Stream<AbstractFeature> declaredFeatures(AbstractFeature f)
+  private Collection<AbstractFeature> declaredFeatures(AbstractFeature f)
   {
     return fe.feModule()
       .declaredFeatures(f)
-      .values()
-      .stream();
+      .values();
   }
 
 
@@ -264,7 +263,7 @@ public class Docs extends ANY
    * @param af
    * @return
    */
-  // NYI we want to ignore most but not all fields
+  // NYI: UNDER DEVELOPMENT: we want to ignore most but not all fields
   // but how to distinguish?
   private static boolean ignoreFeature(AbstractFeature af, boolean ignoreVisibility)
   {
@@ -273,8 +272,7 @@ public class Docs extends ANY
         return false;
       }
 
-    return af.resultType().equals(Types.t_ADDRESS)
-      || af.featureName().isInternal()
+    return af.featureName().isInternal()
       || af.featureName().isNameless()
       || !(ignoreVisibility || Util.isVisible(af))
       || af.isCotype()
@@ -408,11 +406,9 @@ public class Docs extends ANY
       var htmlTool = new Html(config, mapOfDeclaredFeatures, universe, all_modules.getFirst(), all_modules);
 
       var file = new File(path.toFile(), "index.html");
-      try
+      try (FileWriter writer = new FileWriter(file))
         {
-          FileWriter writer = new FileWriter(file);
           writer.write(htmlTool.modulePage());
-          writer.close();
         }
       catch (IOException e)
         {

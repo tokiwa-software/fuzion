@@ -41,7 +41,7 @@ is
   # in case the buffer is empty it fills the buffer
   # before returning it.
   #
-  public read => read buf_size
+  public read switch (array u8) (outcome io.end_of_file) => read buf_size
 
 
   # read returns the current buffer or end of file.
@@ -101,9 +101,7 @@ is
 
   # discard complete buffer
   #
-  # NYI naming this feature discard leads to error: Duplicate feature declaration
-  #
-  public discard_all unit
+  public discard unit
   =>
     discard buf_size
 
@@ -119,7 +117,7 @@ reader =>
 # read n bytes using the currently installed byte reader effect
 # if the returned sequence is empty or count is less than n, end of file has been reached.
 #
-public read_bytes(n i32) Sequence u8 ! reader =>
+public read_bytes(n i32) array u8 ! reader =>
 
   res := (mutate.array u8).new LM
 
@@ -167,9 +165,9 @@ pre debug: n >= 0
     next_bytes Sequence u8 := (reader.read ? outcome => []   | a array => a), rest ++ (reader.read ? outcome => [] | a array => a)
     next_codepoints        := take_valid_codepoints next_bytes n, take_valid_codepoints next_bytes n-codepoint_count
     # if we did not use any bytes and `next_bytes` contains not enough bytes for a codepoint potentially,
-    # we trigger a `discard_all` and remember what we read so far via `rest`.
+    # we trigger a `discard` and remember what we read so far via `rest`.
     # this is necesarry e.g. for stdin where we read one byte at a time.
-    rest Sequence u8       := if n>0 && next_codepoints.is_empty && next_bytes.count < 4 then reader.discard_all; next_bytes else []
+    rest Sequence u8       := if n>0 && next_codepoints.is_empty && next_bytes.count < 4 then reader.discard; next_bytes else []
     codepoint_count        := next_codepoints.count, codepoint_count+next_codepoints.count
     res Sequence String    := next_codepoints, res ++ next_codepoints
   while !is_eof && codepoint_count < n
@@ -217,7 +215,7 @@ public read_delimiter (delim u8, strip_cr bool) switch String io.end_of_file ! r
               false
             nil =>
               add_to_res a
-              reader.discard_all
+              reader.discard
               true
 
     ref : String is
@@ -232,14 +230,14 @@ public read_line switch String io.end_of_file ! reader =>
   read_delimiter encodings.ascii.lf true
 
 
-# Read input fully into an array of bytes until end_of_file is reached
+# Read input fully into an array of bytes until end_of_file or error is reached
+#
+# NOTE: if input is longer than `array.max_length` you
+# may need to call this several times or use another api
+# like memory-mapped access.
 #
 public read_fully array u8 ! reader =>
-  for
-    r Sequence u8 := [], r++n
-    n := read_bytes 8192
-  while n.count > 0 else
-    r.as_array
+  read_bytes (array u8).max_length
 
 
 # Read input fully and split it at the given delimiter. If specified, delete
@@ -265,7 +263,7 @@ public read_lines array String ! reader =>
 # Read input line by line calling `f` for each line until `f` returns false
 # or end_of_file is reached.
 #
-public read_line_while(f String -> bool) ! reader =>
+public read_line_while(f String -> bool) String ! reader =>
   for s := "",  s + "\n" + match rl
                              s1 String => s1
                              io.end_of_file => panic "unreachable code path"

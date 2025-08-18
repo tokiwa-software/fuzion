@@ -26,7 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
-import dev.flang.util.Errors;
+import java.util.function.Supplier;
+
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
@@ -40,6 +41,49 @@ import dev.flang.util.SourcePosition;
  */
 public class Partial extends AbstractLambda
 {
+
+
+  /*-----------------------------  classes  -----------------------------*/
+
+
+  /**
+   * Call used to access automatically generated arguments in partial call, i.e,
+   * if you do
+   *
+   *   f (i32,i32)->i32 => (+)
+   *
+   * this will be converted into
+   *
+   *   f (i32,i32)->i32 => pa1,pa2 -> pa1 + pa2
+   *
+   * Then the two calls `pa1` and `pa2` on the right hand side will be done
+   * using `PartialArg`. This is used in AstErrors to decide if a call is an
+   * automatically generated partial call.
+   */
+  static class PartialArg extends ParsedCall
+  {
+    PartialArg(SourcePosition pos)
+    {
+      super(new ParsedName(pos, argName()));
+    }
+
+    @Override
+    public AbstractType asType()
+    {
+      return null;
+    }
+
+    /**
+     * The source text produced by Expr.sourceText would be the original call,
+     * i.e., `+`, which is very confusing, so we create a verbose text with the
+     * actual argument name here.
+     */
+    @Override
+    public String sourceText()
+    {
+      return "partial application argument " + argName();
+    }
+  }
 
 
   /*----------------------------  constants  ----------------------------*/
@@ -111,14 +155,7 @@ public class Partial extends AbstractLambda
    */
   static ParsedCall argName(SourcePosition pos)
   {
-    return new ParsedCall(new ParsedName(pos, argName()))
-      {
-        @Override
-        public AbstractType asType()
-        {
-          return null;
-        }
-      };
+    return new PartialArg(pos);
   }
 
 
@@ -159,19 +196,22 @@ public class Partial extends AbstractLambda
    *
    * @param t the expected type.
    *
+   * @param from for error output: if non-null, produces a String describing
+   * where the expected type came from.
+   *
    * @return either this or a new Expr that replaces thiz and produces the
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
   @Override
-  Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
+  Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
   {
     Expr result = this;
     t = t.functionTypeFromChoice(context);
-    var type = propagateTypeAndInferResult(res, context, t, false);
+    var type = propagateTypeAndInferResult(res, context, t, false, from);
     if (_function != null)
       {
-        result = _function.propagateExpectedType(res, context, type);
+        result = _function.propagateExpectedType(res, context, type, from);
       }
     return result;
   }
@@ -191,12 +231,15 @@ public class Partial extends AbstractLambda
    * @param inferResultType true if the result type of this lambda should be
    * inferred.
    *
+   * @param from for error output: if non-null, produces a String describing
+   * where the expected type came from.
+   *
    * @return if inferResultType, the result type inferred from this lambda or
    * Types.t_UNDEFINED if not result type available.  if !inferResultType, t. In
    * case of error, return Types.t_ERROR.
    */
   @Override
-  AbstractType propagateTypeAndInferResult(Resolution res, Context context, AbstractType t, boolean inferResultType)
+  AbstractType propagateTypeAndInferResult(Resolution res, Context context, AbstractType t, boolean inferResultType, Supplier<String> from)
   {
     AbstractType result = inferResultType ? Types.t_UNDEFINED : t;
     if (_function == null && t.isFunctionType() && (t.arity() == 1 || t.arity() == 2))
@@ -210,7 +253,7 @@ public class Partial extends AbstractLambda
             var b = argName(pos());
             args.add(b);
             actuals.add(b);
-            op = FuzionConstants.INFIX_OPERATOR_PREFIX + _op;
+            op = FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + _op;
           }
         _function = new Function(pos(),
                                  args,
@@ -220,7 +263,7 @@ public class Partial extends AbstractLambda
       }
     if (_function != null)
       {
-        result = _function.propagateTypeAndInferResult(res, context, t, inferResultType);
+        result = _function.propagateTypeAndInferResult(res, context, t, inferResultType, from);
       }
     return result;
   }

@@ -43,7 +43,7 @@ public abstract_array
   # redefines Sequence.count for array,
   # reducing complexity from O(n) to O(1).
   #
-  public redef count => length
+  public redef count i32 => length
 
 
   # is this sequence known to be finite?  For infinite sequences, features like
@@ -55,14 +55,14 @@ public abstract_array
   # is this Sequence known to be array backed? If so, this means that operations
   # like index[] are fast.
   #
-  public redef is_array_backed => true
+  public redef is_array_backed bool => true
 
 
   # check if argument is a valid index in this array.
   #
   # Unlike for general Sequences, this performs in O(1).
   #
-  public redef is_valid_index(i i32) => 0 ≤ i ≤ length
+  public redef is_valid_index(i i32) bool => 0 ≤ i ≤ length
 
 
   # create a list that consists of the elements of this Sequence except the first
@@ -77,10 +77,10 @@ public abstract_array
   # a sequence of all valid indices to access this array. Useful e.g., for
   # `for`-loops:
   #
-  #   for i in arr.indices do
-  #     say arr[i]
+  #     for i in arr.indices do
+  #       say arr[i]
   #
-  public indices => 0..length-1
+  public indices interval i32 => 0..length-1
 
 
   # get the contents of this array at the given index
@@ -94,12 +94,12 @@ public abstract_array
   #
   public redef for_each (f T -> unit) unit =>
     for i in indices do
-      f index[](i)
+      f (index[] i)
 
 
   # create a list from this array
   #
-  public redef as_list => as_list 0
+  public redef as_list list T => as_list 0
 
 
   # create a list from this array starting at the given index
@@ -129,7 +129,7 @@ public abstract_array
         if to ≤ from
           nil
         else
-          unit.new_array_cons abstract_array.this from to
+          array_cons abstract_array.this from to
 
 
       # get the contents of this slice at the given index
@@ -147,20 +147,20 @@ public abstract_array
       # is this Sequence known to be array backed? If so, this means that operations
       # like index[] are fast.
       #
-      public redef is_array_backed => true
+      public redef is_array_backed bool => true
 
 
       # redefines Sequence.count for array.slice,
       # reducing complexity from O(n) to O(1).
       #
-      public redef count => to-from
+      public redef count i32 => to-from
 
 
       # check if argument is a valid index in this array.
       #
       # Unlike for general Sequences, this performs in O(1).
       #
-      public redef is_valid_index(i i32) => 0 ≤ i ≤ arrayslice.this.count
+      public redef is_valid_index(i i32) bool => 0 ≤ i ≤ arrayslice.this.count
 
 
       # create a list that consists of the elements of this Sequence except the first
@@ -168,7 +168,7 @@ public abstract_array
       #
       # For arrays, this has performance in O(1).
       #
-      public redef drop (n i32) =>
+      public redef drop (n i32) Sequence T =>
         abstract_array.this.slice from+(max 0 n) to
 
     arrayslice
@@ -177,18 +177,12 @@ public abstract_array
   # create a cons cell for a list of this array starting at the given
   # index `i` and up to `to`
   #
-  # NYI: CLEANUP: #5039: Workaround to avoid DFA performance problem: use `unit`
-  # as outer feature for `array_const` to reduce number of DFA values for
-  # `array_cons` (while `abstract_array` has many values).
-  #
-  unit.array_cons(a A : container.abstract_array T, i, to i32) : Cons T (list T)
+  array_cons(a A : container.abstract_array T, i, to i32) : Cons T (list T)
     pre
       debug: 0 ≤ i < to ≤ a.length
   is
-    public redef head => a[i]
-    public redef tail => (a.slice i+1 to).as_list
-
-  unit.new_array_cons(a A : container.abstract_array T, i, to i32) => array_cons T A a i to
+    public redef head T => a[i]
+    public redef tail list T => (a.slice i+1 to).as_list
 
 
   # map the array to a new array applying function f to all elements
@@ -208,7 +202,7 @@ public abstract_array
   #
   # e.g., to sum the elements of an array of i32, use a.fold i32.sum
   #
-  public redef fold (m Monoid T) => fold 0 m.e m
+  public redef fold (m Monoid T) T => fold 0 m.e m
 
 
   # fold the elements of this array using the given monoid and initial value
@@ -232,7 +226,7 @@ public abstract_array
 
   # reverse the order of the elements in this array
   #
-  public reverse_array =>
+  public reverse_array array T =>
     array abstract_array.this.length (i -> abstract_array.this[abstract_array.this.length-1-i])
 
 
@@ -253,7 +247,7 @@ public abstract_array
       debug: 0 ≤ i
       debug: i < length
   is
-    public redef head => (i, index[] i)
+    public redef head tuple i32 T => (i, index[] i)
     public redef tail list (tuple i32 T) =>
       if i < length-1 then enumerate_cons i+1
       else                 nil
@@ -261,7 +255,7 @@ public abstract_array
 
   # returns a copy of this array as a mutable array
   #
-  public as_mutable(LM type : mutate) =>
+  public as_mutable(LM type : mutate) LM.array T =>
     data := fuzion.sys.internal_array_init T length
 
     # NYI: PERFORMANCE: copy complete array at once

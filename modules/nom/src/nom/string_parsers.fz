@@ -18,7 +18,7 @@
 module string_parsers is
 
   # match str
-  public tag(str String) =>
+  public tag(str String) Parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) =>
     parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) input->
       if (String.type.from_codepoints input).starts_with str
         success (input.drop str.codepoint_length) str.as_codepoints
@@ -27,28 +27,27 @@ module string_parsers is
 
 
   # match zero or more whitespace
-  public whitespace0 =>
+  public whitespace0 Parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) =>
     parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) input->
       ws := input.take_while (x -> x.is_blank)
       success (input.drop ws.count) ws
 
 
   # match one or more digits
-  public digit1 =>
+  public digit1 Parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) =>
     sequences.take_while1 codepoint (c -> codepoint.type.ascii_digit.contains c.val)
 
 
   # convert a parser taking a sequence of codepoints to a parser that takes a string
-  public to_string_input(R, O type, p Parser (Sequence codepoint) R O) =>
+  public to_string_input(R, O type, p Parser (Sequence codepoint) R O) Parser String R O =>
     p.map_input String (str -> str.as_codepoints)
 
 
   # convert a parser returning a sequence of codepoints to a parser that returns a string
-  public to_string_output(I, R type, p Parser I R (Sequence codepoint)) =>
+  public to_string_output(I, R type, p Parser I R (Sequence codepoint)) Parser I R String =>
     p.map String (seq -> String.type.from_codepoints seq)
 
 
   # convert a parser taking and returning to codepoints to a parser taking and returning a string
-  public to_string_parser(R type, p Parser (Sequence codepoint) R (Sequence codepoint)) =>
+  public to_string_parser(R type, p Parser (Sequence codepoint) R (Sequence codepoint)) Parser String R String =>
     to_string_output (to_string_input p)
-

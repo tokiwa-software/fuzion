@@ -93,7 +93,7 @@ public class This extends ExprWithPos
    *
    * @param f the outer feature whose instance we want to access.
    */
-  public This(SourcePosition pos, AbstractFeature cur, AbstractFeature f)
+  private This(SourcePosition pos, AbstractFeature cur, AbstractFeature f)
   {
     super(pos);
 
@@ -137,7 +137,7 @@ public class This extends ExprWithPos
    *
    * @param f the outer feature whose instance we want to access.
    *
-   * @return the type resolved expression to access f.this.
+   * @return the expression to access f.this.
    */
   static Expr thiz(Resolution res, SourcePosition pos, Context context, AbstractFeature f)
   {
@@ -145,7 +145,14 @@ public class This extends ExprWithPos
       (context != null,
        f != null);
 
-    return new This(pos, context.outerFeature(), f).resolveTypes(res, context);
+    var outer = context.outerFeature();
+
+    var result = new This(pos, outer, f);
+
+    return res.state(outer) != State.RESOLVING_INHERITANCE &&
+           res.state(outer) != State.RESOLVING
+      ? result.resolveTypes(res, context)
+      : result;
   }
 
 
@@ -213,12 +220,9 @@ public class This extends ExprWithPos
       {
         this._feature = getThisFeature(pos(), this, _qual, outer);
       }
-    else
+    else if (this._feature == null)  /* convenience for This(pos) constructor that does not provide outer */
       {
-        if (this._feature == null)  /* convenience for This(pos) constructor that does not provide outer */
-          {
-            this._feature = outer;
-          }
+        this._feature = outer;
       }
 
     Expr getOuter;
@@ -252,18 +256,7 @@ public class This extends ExprWithPos
               (Errors.any() || (or != null));
             if (or != null)
               {
-                var t = cur.outer().thisType(cur.isFixed());
-                var isAdr = cur.isOuterRefAdrOfValue();
-                Expr c = new Call(pos(), getOuter, or)
-                  {
-                    @Override
-                    AbstractType typeForInferencing()
-                    {
-                      return isAdr ? t : super.typeForInferencing();
-                    }
-                  }.resolveTypes(res, context);
-
-                getOuter = c;
+                getOuter = new Call(pos(), getOuter, or).resolveTypes(res, context);
               }
             cur = cur.outer();
           }

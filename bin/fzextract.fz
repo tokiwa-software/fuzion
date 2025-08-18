@@ -22,7 +22,7 @@
 # -----------------------------------------------------------------------
 
 string_option : option String is
-  public redef as_string =>
+  public redef as_string String =>
     match string_option.this
       nil => "*** unknown type ***"
       s String => s

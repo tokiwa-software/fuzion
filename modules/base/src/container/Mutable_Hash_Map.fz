@@ -129,7 +129,7 @@ is
     old_contents := contents.get.as_array
     contents <- LM.env.new_array (option (tuple HK V)) allocated_size.get.as_i64 nil
     for tup in (old_contents.filter o->o??) do
-      (ok, ov) := tup.get
+      ok, ov := tup.get
       store (idx ok) ok ov false
 
 
@@ -142,7 +142,7 @@ is
         contents.get[at] := (k, v) # insert new key value pair
         if update_size then load <- load.get + 1
       t tuple =>
-        (ek, _) := t
+        ek, _ := t
         if ek = k                 # no conflict, but remapping of k
           contents.get[at] := (k, v)
         else                      # conflict
@@ -151,7 +151,7 @@ is
 
   # number of entries in this map
   #
-  public redef size =>
+  public redef size i32 =>
     load.get
 
 
@@ -173,7 +173,7 @@ is
       match contents.get[at]
         nil     => nil
         t tuple =>
-          (ek, v) := t
+          ek, v := t
           if ek = k
             v
           else
@@ -191,7 +191,7 @@ is
       match contents.get[del_idx]
         nil => nil
         t tuple =>
-          (ek, v) := t
+          ek, v := t
           if ek = k
             contents.get[del_idx] := nil
             load <- load.get - 1
@@ -208,7 +208,7 @@ is
       match contents.get[next_idx]
         nil     => # done
         t tuple =>
-          (ek, _) := t
+          ek, _ := t
 
           if (
             # not having passed array end: move elements saved at a larger index
@@ -237,7 +237,7 @@ is
 
   # get a list of all key/value pairs in this map
   #
-  public redef items =>
+  public redef items Sequence (tuple HK V) =>
     contents.get.as_array
       .filter o->o??
       .map (o -> o.get (panic "filter failed"))
@@ -247,9 +247,9 @@ is
   #
   public redef as_map container.Map HK V =>
     pairs := items
-    container.hash_map HK V (pairs.map (.values.0) ).as_array (pairs.map (.values.1)).as_array
+    container.hash_map HK V (pairs.map (.0) ).as_array (pairs.map (.1)).as_array
 
 
   # create an empty instance of Mutable_Hash_Map
   #
-  public fixed redef type.empty => container.Mutable_Hash_Map LM HK V 11 0.25 0.5 2
+  public fixed redef type.empty container.Mutable_Hash_Map LM HK V => container.Mutable_Hash_Map LM HK V 11 0.25 0.5 2

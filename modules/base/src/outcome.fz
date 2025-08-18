@@ -31,14 +31,14 @@
 # Several error conditions are needed if there are several very different
 # reasons for an operation to fail, e.g.
 #
-#   get_data (u User, t Type) outcome data IO_Error Permission_Error is
-#     if u.allowed_to_access T
-#       (read_file t.file_name)?
-#     else
-#       Permission_Error u, t
+#     get_data (u User, t Type) outcome data IO_Error Permission_Error is
+#       if u.allowed_to_access T
+#         (read_file t.file_name)?
+#       else
+#         Permission_Error u, t
 #
-#   read_file t Type outcome data IO_Error is
-#     [..]
+#     read_file t Type outcome data IO_Error is
+#       [..]
 #
 # Note that 'outcome data IO_Error' is not assignment compatible with
 # 'outcome data IO_Error Permission_Error', it has to be unwrapped first.
@@ -54,7 +54,7 @@ is
 
   # Does this outcome contain an error
   #
-  public is_error => !ok
+  public is_error bool => !ok
 
 
   # error of an outcome that is known to contain an error
@@ -75,7 +75,7 @@ is
   # returns the result of T.as_string for a successful outcome, or
   # "--$e--" for e error.
   #
-  public redef as_string =>
+  public redef as_string String =>
     outcome.this ? v T     => v.as_string
                  | e error => "--$e--"
 
@@ -125,10 +125,10 @@ is
 #
 # Using this enables to write
 #
-#   o := outcome x
+#     o := outcome x
 #
 # instead of
 #
-#   o outcome TypeOfX := x
+#     o outcome TypeOfX := x
 #
-public outcome(T type, o outcome T) => o
+public outcome(T type, o outcome T) outcome T => o

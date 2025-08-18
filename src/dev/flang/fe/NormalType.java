@@ -29,13 +29,9 @@ package dev.flang.fe;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
-import dev.flang.ast.FeatureVisitor;
-import dev.flang.ast.Generic;
+import dev.flang.ast.TypeKind;
 
 import dev.flang.util.List;
-import dev.flang.util.FuzionConstants;
-import dev.flang.util.SourcePosition;
-import dev.flang.util.YesNo;
 
 
 /**
@@ -43,7 +39,7 @@ import dev.flang.util.YesNo;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class NormalType extends LibraryType
+class NormalType extends LibraryType
 {
 
 
@@ -58,12 +54,9 @@ public class NormalType extends LibraryType
 
 
   /**
-   * Is this a value, ref or this type?  This is one of the Constants
-   * FuzionConstants.MIR_FILE_TYPE_IS_VALUE,
-   * FuzionConstants.MIR_FILE_TYPE_IS_REF, or
-   * FuzionConstants.MIR_FILE_TYPE_IS_THIS.
+   * Is this a value, ref or this type?
    */
-  int _valRefOrThis;
+  TypeKind _typeKind;
 
 
   /**
@@ -75,15 +68,6 @@ public class NormalType extends LibraryType
 
   AbstractType _outer;
 
-
-  /**
-   * Cached result of asRef()
-   */
-  AbstractType _asRef = null;
-  AbstractType _asValue = null;
-  AbstractType _asThis = null;
-
-
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -94,14 +78,17 @@ public class NormalType extends LibraryType
   NormalType(LibraryModule mod,
              int at,
              AbstractFeature feature,
-             int valRefOrThis,
+             TypeKind typeKind,
              List<AbstractType> generics,
              AbstractType outer)
   {
     super(mod, at);
 
+    if (PRECONDITIONS) require
+      (typeKind == TypeKind.RefType || typeKind == TypeKind.ValueType);
+
     this._feature = feature;
-    this._valRefOrThis = valRefOrThis;
+    this._typeKind = typeKind;
     this._generics = generics;
     this._generics.freeze();
     this._outer = outer;
@@ -112,22 +99,21 @@ public class NormalType extends LibraryType
 
 
   /**
-   * The sourcecode position of the declaration point of this type, or, for
-   * unresolved types, the source code position of its use.
-   */
-  public SourcePosition declarationPos() { return feature().pos(); }
-
-
-  /**
-   * Dummy visit() for types.
+   * `this` as a value.
    *
-   * NYI: This is called during me.MiddleEnd.findUsedFeatures(). It should be
-   * replaced by a different mechanism not using FeatureVisitor.
+   * Requires that at isNormalType().
    */
-  public AbstractType visit(FeatureVisitor v, AbstractFeature outerfeat)
+  @Override
+  public AbstractType asValue()
   {
-    return this;
+    return switch (kind())
+      {
+      case ValueType -> this;
+      case RefType   -> new NormalType(_libModule, _at, _feature, TypeKind.ValueType, generics(), outer());
+      default        -> throw new Error("unexpected kind "+kind()+" for NormalType");
+      };
   }
+
 
 
   /**
@@ -142,12 +128,10 @@ public class NormalType extends LibraryType
    * @return a new type with same feature(), but using g2/o2 as generics
    * and outer type.
    */
-  public AbstractType applyTypePars(List<AbstractType> g2, AbstractType o2)
+  @Override
+  public AbstractType replaceGenericsAndOuter(List<AbstractType> g2, AbstractType o2)
   {
-    if (PRECONDITIONS) require
-      (!isGenericArgument());
-
-    return new NormalType(_libModule, _at, _feature, _valRefOrThis, g2, o2);
+    return new NormalType(_libModule, _at, _feature, _typeKind, g2, o2);
   }
 
 
@@ -158,103 +142,36 @@ public class NormalType extends LibraryType
    *
    * @throws Error if this is not resolved or isGenericArgument().
    */
-  public AbstractFeature feature()
+  @Override
+  protected AbstractFeature backingFeature()
   {
     return _feature;
   }
 
-  public boolean isGenericArgument()
-  {
-    return false;
-  }
 
   /**
    * For a normal type, this is the list of actual type parameters given to the type.
    */
+  @Override
   public List<AbstractType> generics()
   {
     return _generics;
   }
 
-  public Generic genericArgument()
-  {
-    throw new Error("genericArgument() is not defined for NormalType");
-  }
-
 
   /**
-   * A normal type may be an explicit ref type.
+   * The mode of the type: ThisType, RefType or ValueType.
    */
-  public YesNo isRef()
+  @Override
+  public TypeKind kind()
   {
-    return switch (_valRefOrThis)
-      {
-      case FuzionConstants.MIR_FILE_TYPE_IS_VALUE -> YesNo.no;
-      case FuzionConstants.MIR_FILE_TYPE_IS_REF   -> YesNo.yes;
-      case FuzionConstants.MIR_FILE_TYPE_IS_THIS  -> YesNo.dontKnow;
-      default -> throw new Error("unexpected NormalType._valRefOrThis: "+_valRefOrThis);
-      };
+    return _typeKind;
   }
 
-  /**
-   * isThisType
-   */
-  public boolean isThisType()
-  {
-    return switch (_valRefOrThis)
-      {
-      case FuzionConstants.MIR_FILE_TYPE_IS_VALUE -> false;
-      case FuzionConstants.MIR_FILE_TYPE_IS_REF   -> false;
-      case FuzionConstants.MIR_FILE_TYPE_IS_THIS  -> true;
-      default -> throw new Error("unexpected NormalType._valRefOrThis: "+_valRefOrThis);
-      };
-  }
-
-
+  @Override
   public AbstractType outer()
   {
     return _outer;
-  }
-
-
-  public AbstractType asRef()
-  {
-    var result = _asRef;
-    if (result == null)
-      {
-        result = isRef().yes() ? this :  new NormalType(_libModule, _at, _feature, FuzionConstants.MIR_FILE_TYPE_IS_REF, _generics, _outer);
-        _asRef = result;
-      }
-    return result;
-  }
-
-  public AbstractType asValue()
-  {
-    var result = _asValue;
-    if (result == null)
-      {
-        result = isRef().no() ? this :  new NormalType(_libModule, _at, _feature, FuzionConstants.MIR_FILE_TYPE_IS_VALUE, _generics, _outer);
-        _asValue = result;
-      }
-    return result;
-  }
-
-  public AbstractType asThis()
-  {
-    var result = _asThis;
-    if (result == null)
-      {
-        if (isThisType())
-          {
-            result = this;
-          }
-        else
-          {
-            result = new NormalType(_libModule, _at, _feature, FuzionConstants.MIR_FILE_TYPE_IS_THIS, _generics, _outer);
-          }
-        _asThis = result;
-      }
-    return result;
   }
 
 

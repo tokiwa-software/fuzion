@@ -371,6 +371,7 @@ public class Choices extends ANY implements ClassFileConstants
                     }
                 }
             }
+            break;
           default:
             break;
           }

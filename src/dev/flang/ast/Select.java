@@ -45,13 +45,57 @@ public class Select extends Call {
   private Call _currentlyResolving;
 
 
-  public Select(SourcePosition pos, Expr target, String name, int select)
+  private boolean _allowValueArgumentAccess;
+
+
+  private int _totalNames;
+
+
+  /**
+   * @param pos the sourcecode position, used for error messages.
+   *
+   * @param target the target of the call, null if none.
+   *
+   * @param name the name of the called feature,
+   *             null on partial application, e.g.:
+   *               say ([(3,4),(5,6)].map (.1) .sum)
+   *
+   * @param select for selecting a open type parameter field, this gives the
+   * index '.0', '.1', etc. NO_SELECT for none.
+   *
+   * @param allowValueArgumentAccess whether to enable access to value arguments
+   * via select
+   *
+   * @param totalNames how many fields is being destructured into in total
+   */
+  public Select(SourcePosition pos, Expr target, String name, int select, boolean allowValueArgumentAccess, int totalNames)
   {
     super(pos, target, name, select, NO_GENERICS, Expr.NO_EXPRS, null);
 
     if (PRECONDITIONS) require
       (select >= 0,
        target != Call.ERROR);
+
+    _allowValueArgumentAccess = allowValueArgumentAccess;
+    _totalNames = totalNames;
+  }
+
+
+  /**
+   * @param pos the sourcecode position, used for error messages.
+   *
+   * @param target the target of the call, null if none.
+   *
+   * @param name the name of the called feature,
+   *             null on partial application, e.g.:
+   *               say ([(3,4),(5,6)].map (.1) .sum)
+   *
+   * @param select for selecting a open type parameter field, this gives the
+   * index '.0', '.1', etc. NO_SELECT for none.
+   */
+  public Select(SourcePosition pos, Expr target, String name, int select)
+  {
+    this(pos, target, name, select, false, -1);
   }
 
 
@@ -132,12 +176,17 @@ public class Select extends Call {
             _currentlyResolving = _calledFeature.resultTypeIfPresentUrgent(res, true).isOpenGeneric()
               // explicit
               ? new Call(pos(), _target, _name, select(), Call.NO_GENERICS, NO_EXPRS, null)
-              // implict
+              // implicit
               : resolveImplicit(res, context, getActualResultType(res, context, true));
+          }
+        else if (_target != null)
+          {
+            AstErrors.useOfSelectorRequiresCallWithOpenGeneric(pos(), _calledFeature, null, select(), _target.type());
           }
         else
           {
-            AstErrors.useOfSelectorRequiresCallWithOpenGeneric(pos(), _calledFeature, null, select(), _target.type());
+            if (CHECKS)  check
+              (Errors.any());
           }
       }
     if (_currentlyResolving != null)
@@ -161,7 +210,7 @@ public class Select extends Call {
   {
     var result = Call.ERROR;
 
-    var typeParameter = at.isGenericArgument() ? at.genericArgument().constraint(context).feature() : at.feature();
+    var typeParameter = at.selfOrConstraint(context).feature();
     var f = res._module.lookupOpenTypeParameterResult(typeParameter, this);
 
     if (f != null)
@@ -174,6 +223,20 @@ public class Select extends Call {
           {
             var selectTarget = new Call(pos(), _target, _name, FuzionConstants.NO_SELECT, Call.NO_GENERICS, NO_EXPRS, null);
             result = new Call(pos(), selectTarget, f.featureName().baseName(), select(), Call.NO_GENERICS, NO_EXPRS, null);
+          }
+      }
+    else if (_allowValueArgumentAccess && _calledFeature != null)
+      {
+        var va = at.feature().valueArguments().size();
+
+        if (select() < va && _totalNames == va)
+          {
+            var selectTarget = new Call(pos(), _target, _name, FuzionConstants.NO_SELECT, Call.NO_GENERICS, NO_EXPRS, null);
+            result = new Call(pos(), selectTarget, at.feature().valueArguments().get(select()).featureName().baseName(), FuzionConstants.NO_SELECT, Call.NO_GENERICS, NO_EXPRS, null);
+          }
+        else
+          {
+            AstErrors.destructuringMisMatch(pos(), va, _totalNames);
           }
       }
     else

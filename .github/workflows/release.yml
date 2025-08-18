@@ -16,7 +16,7 @@ jobs:
     - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v2.6.0
 
     - name: Setup jdk
-      uses: actions/setup-java@3a4f6e1af504cf6a31855fa899c6aa5355ba6c12 # main
+      uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # main
       with:
         java-version: 21
         distribution: 'adopt'
@@ -24,7 +24,7 @@ jobs:
     - name: install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install ruby-asciidoctor-pdf antlr4 pcregrep asciidoc-base
+        sudo apt-get install ruby-asciidoctor-pdf antlr4 asciidoc-base
 
     - name: build release
       run: make release
@@ -33,7 +33,7 @@ jobs:
       id: getversion
       run: echo "version=$(cat version.txt)" >> $GITHUB_OUTPUT
 
-    - uses: ncipollo/release-action@440c8c1cb0ed28b9f43e4d1d670870f059653174 # v1.16.0
+    - uses: ncipollo/release-action@bcfe5470707e8832e12347755757cec0eb3c22af # v1.18.0
       with:
         artifacts: "fuzion_${{ steps.getversion.outputs.version }}.tar.gz"
         tag: "v${{ steps.getversion.outputs.version }}"

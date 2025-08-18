@@ -41,7 +41,7 @@ int: mod_int
 	echo "m is _ := a" | $(FUZION) -interpreter -sourceDirs=src -
 
 a.fum: $(FUZION_HOME)/modules/base.fum
-	$(FUZION) -save-module=a.fum -sourceDirs=src
+	$(FUZION) -saveModule=a.fum -sourceDirs=src
 
 mod_jvm: a.fum
 	echo "m is _ := a" | $(FUZION) -jvm -modules=a -moduleDirs=. -

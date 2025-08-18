@@ -197,16 +197,8 @@ public class CFG extends ANY
       }
     else
       {
-        var at = _fuir.clazzTypeParameterActualType(cl);
-        if (at >= 0)
-          {
-            // intrinsic is a type parameter
-          }
-        else
-          {
-            var msg = "code for intrinsic " + _fuir.clazzOriginalName(cl) + " is missing";
-            Errors.warning(msg);
-          }
+        var msg = "code for intrinsic " + _fuir.clazzOriginalName(cl) + " is missing";
+        Errors.warning(msg);
       }
   }
 
@@ -220,8 +212,8 @@ public class CFG extends ANY
     put("concur.atomic.racy_accesses_supported", (cfg, cl) -> { } );
     put("concur.atomic.read0"            , (cfg, cl) -> { } );
     put("concur.atomic.write0"           , (cfg, cl) -> { } );
-    put("concur.util.loadFence"          , (cfg, cl) -> { } );
-    put("concur.util.storeFence"         , (cfg, cl) -> { } );
+    put("concur.util.load_fence"          , (cfg, cl) -> { } );
+    put("concur.util.store_fence"         , (cfg, cl) -> { } );
 
     put("safety"                         , (cfg, cl) -> { } );
     put("debug"                          , (cfg, cl) -> { } );
@@ -436,8 +428,6 @@ public class CFG extends ANY
                                          , (cfg, cl) -> { } );
     put("fuzion.sys.env_vars.has0"       , (cfg, cl) -> { } );
     put("fuzion.sys.env_vars.get0"       , (cfg, cl) -> { } );
-    put("fuzion.sys.env_vars.set0"       , (cfg, cl) -> { } );
-    put("fuzion.sys.env_vars.unset0"     , (cfg, cl) -> { } );
     put("fuzion.sys.thread.spawn0"       , (cfg, cl) -> { } );
     put("fuzion.sys.thread.join0"        , (cfg, cl) -> { } );
 
@@ -456,22 +446,23 @@ public class CFG extends ANY
     put("effect.type.is_instated0"          , (cfg, cl) -> { } );
     put("effect.type.from_env"              , (cfg, cl) -> { } );
     put("effect.type.unsafe_from_env"       , (cfg, cl) -> { } );
-    put("fuzion.java.Java_Object.is_null0"  , (cfg, cl) -> { } );
-    put("fuzion.java.array_get"             , (cfg, cl) -> { } );
-    put("fuzion.java.array_length"          , (cfg, cl) -> { } );
-    put("fuzion.java.array_to_java_object0" , (cfg, cl) -> { } );
-    put("fuzion.java.call_c0"               , (cfg, cl) -> { } );
-    put("fuzion.java.call_s0"               , (cfg, cl) -> { } );
-    put("fuzion.java.call_v0"               , (cfg, cl) -> { } );
-    put("fuzion.java.cast0"                 , (cfg, cl) -> { } );
-    put("fuzion.java.get_field0"            , (cfg, cl) -> { } );
-    put("fuzion.java.get_static_field0"     , (cfg, cl) -> { } );
-    put("fuzion.java.set_field0"            , (cfg, cl) -> { } );
-    put("fuzion.java.set_static_field0"     , (cfg, cl) -> { } );
-    put("fuzion.java.java_string_to_string" , (cfg, cl) -> { } );
-    put("fuzion.java.string_to_java_object0", (cfg, cl) -> { } );
-    put("fuzion.java.primitive_to_java_object", (cfg, cl) -> { } );
-    put("fuzion.java.create_jvm"            , (cfg, cl) -> { } );
+    put("fuzion.jvm.is_null0"               , (cfg, cl) -> { } );
+    put("fuzion.jvm.array_get"              , (cfg, cl) -> { } );
+    put("fuzion.jvm.array_length"           , (cfg, cl) -> { } );
+    put("fuzion.jvm.array_to_java_object0"  , (cfg, cl) -> { } );
+    put("fuzion.jvm.call_c0"                , (cfg, cl) -> { } );
+    put("fuzion.jvm.call_s0"                , (cfg, cl) -> { } );
+    put("fuzion.jvm.call_v0"                , (cfg, cl) -> { } );
+    put("fuzion.jvm.cast0"                  , (cfg, cl) -> { } );
+    put("fuzion.jvm.get_field0"             , (cfg, cl) -> { } );
+    put("fuzion.jvm.get_static_field0"      , (cfg, cl) -> { } );
+    put("fuzion.jvm.set_field0"             , (cfg, cl) -> { } );
+    put("fuzion.jvm.set_static_field0"      , (cfg, cl) -> { } );
+    put("fuzion.jvm.java_string_to_string"  , (cfg, cl) -> { } );
+    put("fuzion.jvm.string_to_java_object0" , (cfg, cl) -> { } );
+    put("fuzion.jvm.primitive_to_java_object", (cfg, cl) -> { } );
+    put("fuzion.jvm.create_jvm"             , (cfg, cl) -> { } );
+    put("fuzion.jvm.destroy_jvm"            , (cfg, cl) -> { } );
 
     put("concur.sync.mtx_init"              , (cfg, cl) -> { } );
     put("concur.sync.mtx_lock"              , (cfg, cl) -> { } );

@@ -109,11 +109,11 @@ public memoize(MM type : container.Mutable_Map T R, T type : property.equatable,
 #     > ./build//bin/fz -effects fib.fz
 #      ...
 #
-# NOTE: Currently, memoizaion requires keys to be orderable. Would be great
+# NOTE: Currently, memoization requires keys to be orderable. Would be great
 #       to support hashable as well
 #
 # NOTE: Memoization is currently not thread safe. In case we want memoization
-#       to be used amoung threads, we will need a thread safe variant. However,
+#       to be used among threads, we will need a thread safe variant. However,
 #       this should currently be usable in multiple threads as long as each
 #       thread has its own instance of memoized. We just do not profit from
 #       values memoized in another thread.
@@ -149,9 +149,9 @@ public memoize is
                 #
                 k K,
 
-                # the function to caculate the result
+                # the function to calculate the result
                 #
-                f K->V)
+                f K->V) V
     =>
       store[k].or_else ()->
         v := f k
@@ -163,7 +163,7 @@ public memoize is
       memoized.this.replace memoized.this
 
 
-  # use golabal memoized effect to retrieve the value for a given key or,
+  # use global memoized effect to retrieve the value for a given key or,
   # if that value was not calculated yet, to return it
   #
   public keep(# the key type, i.e, input type of memoized function
@@ -178,7 +178,7 @@ public memoize is
               #
               k K,
 
-              # the function to caculate the result
+              # the function to calculate the result
               #
               f K->V
               ) V

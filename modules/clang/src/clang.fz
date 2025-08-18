@@ -82,7 +82,7 @@ public clang is
   public parse_header(header_file String, cb (function_decl)->unit) outcome unit =>
 
     visitor : Function i32 CXCursor Native_Ref Native_Ref is
-      public redef call(crsr CXCursor, parent Native_Ref, client_data Native_Ref) =>
+      public redef call(crsr CXCursor, parent Native_Ref, client_data Native_Ref) i32 =>
 
         check !(clang_equalCursors crsr clang_getNullCursor)
 
@@ -122,9 +122,6 @@ public clang is
     idx := clang_createIndex 0 0
 
     check !(ffi.is_null idx)
-
-    String.as_c_string =>
-      (String.this + codepoint 0).utf8.as_array
 
     # NYI: DFA mark value arg fields as read/written
     cxc := CXCursor 0 0 ffi.null ffi.null ffi.null

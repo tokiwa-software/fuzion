@@ -1,10 +1,11 @@
 fuzion.runtime.pre_fault
+fuzion.runtime.contract_fault
 fuzion.runtime.fault
 io.Err
 concur.atomic_access
 fuzion.runtime.post_fault
 io.Out
 unique_id
-panic
 concur.threads
+panic
 envir.args

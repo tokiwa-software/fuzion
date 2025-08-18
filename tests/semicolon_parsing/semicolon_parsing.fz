@@ -71,7 +71,7 @@ semicolon_parsing =>
 
   # print "declared field a
   #        declared field b"
-  public a := 1; say "declared field a"; public b := 2; say "declared field b"
+  a := 1; say "declared field a=$a"; b := 2; say "declared field b=$b"
 
   # print "f1 assigned"
   public f1 ()->unit := say "I'm f1"; say "field f1 assigned"

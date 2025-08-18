@@ -59,6 +59,20 @@ public class Parser extends Lexer
   }
 
 
+  /**
+   * Exception used for control flow to exit a call.
+   */
+  static class GiveUp extends RuntimeException
+  {
+
+    /**
+     * Pre-allocated instance of `GiveUp`
+     */
+    static GiveUp _INSTANCE_ = new GiveUp();
+
+  };
+
+
   /*----------------------------  constants  ----------------------------*/
 
 
@@ -254,11 +268,11 @@ semi        : SEMI semi
   /**
    * Parse a feature:
    *
-feature     : modAndName routOrField
+feature     : modAndNames routOrField
             ;
-modAndName  : visibility
+modAndNames : visibility
               modifiers
-              qual
+              featNames
             ;
    */
   FList feature()
@@ -266,7 +280,7 @@ modAndName  : visibility
     var pos = tokenSourcePos();
     var v = visibility();
     var m = modifiers();
-    var n = qual(true);
+    var n = featNames();
     return routOrField(pos, new List<Feature>(), v, m, n, 0);
   }
 
@@ -293,8 +307,10 @@ field       : returnType
               implFldOrRout
             ;
    */
-  FList routOrField(SourcePosition pos, List<Feature> l, Visi v, int m, List<ParsedName> n, int i)
+  FList routOrField(SourcePosition pos, List<Feature> l, Visi v, int m, List<List<ParsedName>> n, int i)
   {
+    var name = n.get(i);
+    var p2 = (i+1 < n.size()) ? fork() : null;
     var forkAtFormArgs = isEmptyFormArgs() ? null : fork();
     var a = formArgsOpt(false);
     var r = returnType();
@@ -302,79 +318,29 @@ field       : returnType
     var hasType = r instanceof FunctionReturnType;
     var inh = inherits();
     Contract c = contract(forkAtFormArgs);
-    Impl p =
-      a  .isEmpty()    &&
-      eff == UnresolvedType.NONE &&
-      inh.isEmpty()       ? implFldOrRout(hasType)
-                          : implRout(hasType);
-    l.add(new Feature(v,m,r,n,a,inh,c,p,eff));
-    return new FList(l);
-  }
+    Impl p;
 
-
-  /**
-   * For a feature declaration of the form
-   *
-   *   a, b, c : choice of x, y, z.
-   *
-   * add features x, y, z to list and the types to g.
-   *
-   * @param first true if this is called for the first ('a') out of several
-   * feature names.
-   *
-   * @param list list of features the inner features ('x', 'y', 'z') will be
-   * added to provided that first is true.
-   *
-   * @param e the expressions containing the feature declarations to be added, in
-   * this case "x, y, z."
-   *
-   * @param g the list of types to be collected, will be added as generic
-   * arguments to 'choice' in this example
-   *
-   * @param p Impl that contains the position of 'of' for error messages.
-   *
-   * @param v the visibility to be used for the features defined in of {@code <block>}
-   *
-   */
-  private void addFeaturesFromBlock(boolean first, List<Feature> list, Expr e, List<AbstractType> g, Impl p, Visi v)
-  {
-    if (e instanceof Block b)
+    if (a.isEmpty() &&
+        eff == UnresolvedType.NONE &&
+        inh.isEmpty())
       {
-        b._expressions.forEach(x -> addFeaturesFromBlock(first, list, x, g, p, v));
-      }
-    else if (e instanceof Feature f)
-      {
-        boolean ok = true;
-        if (f._qname.size() > 1)
-          {
-            AstErrors.featureOfMustContainOnlyUnqualifiedNames(f, p.pos);
-            ok = false;
-          }
-        if (!f.generics().list.isEmpty())
-          {
-            AstErrors.featureOfMustNotHaveFormalGenerics(f, p.pos);
-            ok = false;
-          }
-        if (!f.isConstructor())
-          {
-            AstErrors.featureOfMustContainOnlyConstructors(f, p.pos);
-            ok = false;
-          }
-        if (ok)
-          {
-            if (first)
-              {
-                f.setVisibility(v);
-
-                list.add(f);
-              }
-            g.add(new ParsedType(f.pos(), f.featureName().baseName(), new List<>(), new OuterType(f.pos())));
-          }
+        p = implFldOrRout(hasType, l, (n.size() > 1) ? i : FuzionConstants.NO_SELECT, n.size());
       }
     else
       {
-        AstErrors.featureOfMustContainOnlyDeclarations(e, p.pos);
+        if (n.size() > 1)
+          {
+            AstErrors.destructuringNonFields(pos, n);
+          }
+
+        p = implRout(hasType);
       }
+
+    l.add(new Feature(v, m, r, name, a, inh, c, p, eff));
+
+    return p2 == null
+      ? new FList(l)
+      : p2.routOrField(pos, l, v, m, n, i+1);
   }
 
 
@@ -401,14 +367,14 @@ field       : returnType
    */
   boolean skipFeaturePrefix()
   {
-    if (!skipQual())
+    do
       {
-        return false;
+        if (!skipQual())
+          {
+            return false;
+          }
       }
-    if (skipComma())
-      {
-        return true;
-      }
+    while (skipComma());
     switch (skipFormArgsNotActualArgs())
       {
       case formal: return true;
@@ -513,9 +479,11 @@ visiFlag    : "private" colon "module"
   /**
    * Parse qualified name
    *
-qual        : name
+qual        : namequal
+            | "type" dot namequal
+            ;
+namequal    : name
             | name dot qual
-            | type dot qual
             ;
    */
   List<ParsedName> qual(boolean mayBeAtMinIndent)
@@ -526,16 +494,9 @@ qual        : name
         if (skip(mayBeAtMinIndent, Token.t_type))
           {
             result.add(new ParsedName(SourcePosition.builtIn, FuzionConstants.TYPE_NAME));
-            if (!isDot())
-              {
-                matchOperator(".", "qual");
-                result.add(ParsedName.ERROR_NAME);
-              }
+            dot();
           }
-        else
-          {
-            result.add(name(mayBeAtMinIndent, false));
-          }
+        result.add(name(mayBeAtMinIndent, false));
         mayBeAtMinIndent = false;
       }
     while (skipDot());
@@ -595,6 +556,7 @@ name        : IDENT                            // all parts of name must be in s
                           next();
                           break;
           case t_infix  :
+          case t_infix_right:
           case t_prefix :
           case t_postfix: result = opName(mayBeAtMinIndent, ignoreError);  break;
           case t_ternary:
@@ -691,14 +653,15 @@ name        : IDENT                            // all parts of name must be in s
   {
     switch (current(mayBeAtMinIndent))
       {
-      case t_ident  :
-      case t_infix  :
-      case t_prefix :
-      case t_postfix:
-      case t_ternary:
-      case t_index  :
-      case t_set    : return true;
-      default       : return false;
+      case t_ident      :
+      case t_infix      :
+      case t_infix_right:
+      case t_prefix     :
+      case t_postfix    :
+      case t_ternary    :
+      case t_index      :
+      case t_set        : return true;
+      default           : return false;
       }
   }
 
@@ -722,9 +685,10 @@ name        : IDENT                            // all parts of name must be in s
   /**
    * Parse opName
    *
-opName      : "infix"   OPERATOR
-            | "prefix"  OPERATOR
-            | "postfix" OPERATOR
+opName      : "infix"       OPERATOR
+            | "infix_right" OPERATOR
+            | "prefix"      OPERATOR
+            | "postfix"     OPERATOR
             ;
    *
    * @param ignoreError to not report an error but just return
@@ -741,7 +705,7 @@ opName      : "infix"   OPERATOR
     String res = operatorOrError();
     if (!ignoreError || res != Errors.ERROR_STRING)
       {
-        match(Token.t_op, "infix/prefix/postfix name");
+        match(Token.t_op, "infix/infix_right/prefix/postfix name");
         res = inPrePost + " " + res;
       }
     return new ParsedName(sourceRange(pos), res);
@@ -803,6 +767,25 @@ modifier    : "redef"
       case t_fixed       : return true;
       default            : return false;
       }
+  }
+
+
+  /**
+   * Parse featNames
+   *
+featNames   : qual (COMMA featNames
+                   |
+                   )
+            ;
+   */
+  List<List<ParsedName>> featNames()
+  {
+    var result = new List<List<ParsedName>>(qual(true));
+    while (skipComma())
+      {
+        result.add(qual(true));
+      }
+    return result;
   }
 
 
@@ -888,7 +871,12 @@ argType     : type
                                     else if (isTypePrefix())
                                       {
                                         i = Impl.FIELD;
-                                        t = type();
+                                        var ut = type();
+                                        if (skip("..."))
+                                          {
+                                            ut.setFollowedByDots();
+                                          }
+                                        t = ut;
                                       }
                                     else
                                       {
@@ -1080,16 +1068,12 @@ argNames    : name ( COMMA argNames
    */
   boolean skipArgNames()
   {
-    return skipArgNames(true);
-  }
-  boolean skipArgNames(boolean mayUseCommas)
-  {
     boolean result;
     do
       {
         result = skipName();
       }
-    while (result && mayUseCommas && skipComma());
+    while (result && skipComma());
     return result;
   }
 
@@ -1098,28 +1082,16 @@ argNames    : name ( COMMA argNames
    * Parse returnType
    *
 returnType  : boundType
-            | "value"
             | "ref"
             |
             ;
    */
   ReturnType returnType()
   {
-    ReturnType result;
-    if (isType())
-      {
-        result = new FunctionReturnType(boundType());
-      }
-    else
-      {
-        switch (current())
-          {
-          case t_value : next(); result = ValueType .INSTANCE; break;
-          case t_ref   : next(); result = RefType   .INSTANCE; break;
-          default      :         result = NoType    .INSTANCE; break;
-          }
-      }
-    return result;
+    return
+      isType()          ? new FunctionReturnType(boundType()) :
+      skip(Token.t_ref) ? RefType.INSTANCE
+                        : NoType .INSTANCE;
   }
 
 
@@ -1164,12 +1136,7 @@ EXCLAMATION : "!"
    */
   boolean isNonFuncReturnTypePrefix()
   {
-    switch (current())
-      {
-      case t_value :
-      case t_ref   : return true;
-      default      : return false;
-      }
+    return current() == Token.t_ref;
   }
 
 
@@ -1183,9 +1150,7 @@ EXCLAMATION : "!"
    */
   boolean skipNonFuncReturnType()
   {
-    return
-      skip(Token.t_value ) ||
-      skip(Token.t_ref   );
+    return skip(Token.t_ref);
   }
 
 
@@ -1295,9 +1260,8 @@ inheritanceCallList    : inheritanceCall ( COMMA inheritanceCallList
    */
   private boolean skipInheritanceCall()
   {
-    return call0() instanceof AbstractCall
-      ? true
-      : expr() instanceof AbstractCall;
+    return call0() instanceof AbstractCall ||
+           expr()  instanceof AbstractCall;
   }
 
 
@@ -1326,43 +1290,14 @@ inheritanceCall    : call0
 
 
   /**
-   * Parse pure call, i.e. a call that is really a call and not a.b.env or x.y.type.
-   *
-   * @param target the target of the call or null if none.
-   */
-  Call pureCall(Expr target)
-  {
-    if (PRECONDITIONS) require
-      (target == null || target instanceof Call || target instanceof Universe);
-
-    return (Call) call(true, target);
-  }
-
-
-  /**
-   * Parse call, including {@code .env} and {@code .type} calls
-   *
-   * @param target the target of the call or null if none.
-   */
-  Expr call(Expr target)
-  {
-    return call(false, target);
-  }
-
-
-  /**
    * Parse pure or non-pure call depending on {@code pure} argument.
    *
-   * @param pure true iff {@code pureCall} is to be parsed, otherwise {@code call} is parsed.
-   *
    * @param target the target of the call or null if none.
    *
-pureCall    : name actualArgs pureCallTail
-            ;
 call        : name actualArgs callTail
             ;
    */
-  Expr call(boolean pure, Expr target)
+  Expr call(Expr target)
   {
     var n = name();
     Call result;
@@ -1388,8 +1323,7 @@ call        : name actualArgs callTail
     // replace calls with erroneous name by ParsedCall.ERROR.
     result = n == ParsedName.ERROR_NAME ? ParsedCall.ERROR : result;
 
-    return pure ? pureCallTail(skippedDot, result)
-                : callTail(    skippedDot, result);
+    return callTail(skippedDot, result);
   }
 
 
@@ -1408,7 +1342,7 @@ indexTail   : ":=" exprInLine
     do
       {
         SourcePosition pos = tokenSourcePos();
-        var l = bracketTermWithNLs(BRACKETS, "indexCall", () -> actualCommas());
+        var l = bracketTermWithNLs(BRACKETS, "indexCall", () -> actualCommas(true));
         String n = FuzionConstants.FEATURE_NAME_INDEX;
         if (skip(":="))
           {
@@ -1429,45 +1363,14 @@ indexTail   : ":=" exprInLine
 
 
   /**
-   * Parse callTail and pureCallTail
-   *
-   * @param skippedDot true if a dot was already skipDot()ed.
-   *
-   * @param target the target of the call
-   *
-pureCallTail: indexCall pureCallTail
-            | dot call  pureCallTail
-            |
-            ;
-   */
-  Call pureCallTail(boolean skippedDot, Call target)
-  {
-    var result = target;
-    if (!skippedDot && !ignoredTokenBefore() && current() == Token.t_lbracket)
-      {
-        result = pureCallTail(false, indexCall(result));
-      }
-    else if (skippedDot || skipDot())
-      {
-        result = pureCallTail(false, pureCall(result));
-      }
-    return result;
-  }
-
-
-  /**
    * Parse callTail
    *
    * @param skippedDot true if a dot was already skipDot()ed.
    *
    * @param target the target of the call
    *
-callTail    : indexCall  callTail
-            | dot call   callTail
-            | dot "env"  callTail
-            | dot "type" callTail
-            | dot "this" callTail
-            | dot select callTail
+callTail    : indexCall callTail
+            | dotCall
             |
             ;
    */
@@ -1480,54 +1383,75 @@ callTail    : indexCall  callTail
       }
     else if (skippedDot || skipDot())
       {
-        if (skip(Token.t_env))
+        result = dotCall(target);
+      }
+    return result;
+  }
+
+
+  /**
+   * Parse dotCall
+   *
+   * @param target the target of the call
+   *
+dotCall     : dot call   callTail
+            | dot "env"  callTail
+            | dot "type" callTail
+            | dot "this" callTail
+            | dot select callTail
+            ;
+   */
+  Expr dotCall(Expr target)
+  {
+    Expr result;
+    if (skip(Token.t_env))
+      {
+        AbstractType t = target.asParsedType();
+        if (t == null)
           {
-            AbstractType t = result.asParsedType();
-            if (t == null)
-              {
-                AstErrors.noValidLHSInExpresssion(result, ".env");
-                t = Types.t_ERROR;
-                result = Call.ERROR;
-              }
-            else
-              {
-                result = callTail(false, new ParsedCall(new DotType(sourceRange(target.pos()), result), new ParsedName(sourceRange(target.pos()), "from_env")));
-              }
-          }
-        else if (skip(Token.t_type))
-          {
-            AbstractType t = result.asParsedType();
-            if (t == null)
-              {
-                AstErrors.noValidLHSInExpresssion(result, ".type");
-                t = Types.t_ERROR;
-                result = Call.ERROR;
-              }
-            else
-              {
-                result = callTail(false, new DotType(sourceRange(target.pos()), result));
-              }
-          }
-        else if (skip(Token.t_this))
-          {
-            var q = result.asQualifier();
-            if (q == null)
-              {
-                AstErrors.qualifierExpectedForDotThis(tokenSourcePos(), result);
-              }
-            else
-              {
-                result = callTail(false, new This(q));
-              }
-          }
-        else if (current() == Token.t_numliteral)
-          {
-            result = callTail(false, select(result, null));
+            AstErrors.noValidLHSInExpresssion(target, ".env");
+            t = Types.t_ERROR;
+            result = Call.ERROR;
           }
         else
           {
-            result = call(result);
+            result = callTail(false, new ParsedCall(Call.typeAsValue(sourceRange(target.pos()), t), new ParsedName(sourceRange(target.pos()), "from_env")));
           }
+      }
+    else if (skip(Token.t_type))
+      {
+        AbstractType t = target.asParsedType();
+        if (t == null)
+          {
+            AstErrors.noValidLHSInExpresssion(target, ".type");
+            t = Types.t_ERROR;
+            result = Call.ERROR;
+          }
+        else
+          {
+            result = callTail(false, Call.typeAsValue(sourceRange(target.pos()), t));
+          }
+      }
+    else if (skip(Token.t_this))
+      {
+        var q = target.asQualifier();
+        if (q == null)
+          {
+            AstErrors.qualifierExpectedForDotThis(target);
+            result = Call.ERROR;
+          }
+        else
+          {
+            result = callTail(false, new This(q));
+          }
+      }
+    else if (current() == Token.t_numliteral)
+      {
+        result = callTail(false, select(target, null));
+      }
+    else
+      {
+        result = call(target);
       }
     return result;
   }
@@ -1631,7 +1555,7 @@ actualArgs  : actualSpaces
   {
     return (ignoredTokenBefore() || current() != Token.t_lparen)
       ? actualSpaces()
-      : bracketTermWithNLs(PARENS, "actualArgs", () -> actualCommas());
+      : bracketTermWithNLs(PARENS, "actualArgs", () -> actualCommas(true));
   }
 
 
@@ -1647,8 +1571,19 @@ actualArgs  : actualSpaces
   boolean endsActuals(boolean atMinIndent)
   {
     return
-      // `.call` ends immediately
-      isOperator('.') ||
+      // The `.` in `f a b c .xyz` ends actuals `a b c` immediately;
+      //
+      current() == Token.t_period ||
+
+      // the multi-line case
+      //
+      //    f a b c
+      //      .xyz
+      //
+      // will stop the actual arguments after `c` due to `t_spaceOrSemiLimit` and will be parsed as
+      //
+      //   (f a b c).xyz
+      //
 
       switch (current(atMinIndent))
       {
@@ -1676,6 +1611,7 @@ actualArgs  : actualSpaces
            t_indentationLimit,
            t_lineLimit       ,
            t_spaceOrSemiLimit,
+           t_commaLimit      ,
            t_colonLimit      ,
            t_barLimit        ,
            t_eof             -> true;
@@ -1715,16 +1651,23 @@ actualArgs  : actualSpaces
   /**
    * Parse actualCommas
    *
+   * @param endAtComma true to treat `x, v->2*v` as two actuals `x` and `v->2*v`
+   * instead of one `(x,v)->2*v`.
+   *
+   * NYI: CLEANUP: It might be better to omit the case endAtComma==true and to always
+   * parse the case `x, v->2*v` as one actual.
+   *
 actualCommas: actualSome
             |
             ;
-actualSome  : operatorExpr actualMore
+actualSome  : operatorExpr          // may not contain `,` unless enclosed in { }, [ ], or ( ).
+              actualMore
             ;
 actualMore  : COMMA actualSome
             |
             ;
    */
-  List<Expr> actualCommas()
+  List<Expr> actualCommas(boolean endAtComma)
   {
     var result = new List<Expr>();
     if (current() != Token.t_rparen   &&
@@ -1732,7 +1675,9 @@ actualMore  : COMMA actualSome
       {
         do
           {
-            result.add(operatorExpr(false /* see #3978 for an example where this is necessary */));
+            var oldEAc = endAtComma(endAtComma);   /* see #3798 for an example where this is necessary: a call `f(x, v->2*v)` */
+            result.add(operatorExpr());
+            endAtComma(oldEAc);
           }
         while (skipComma());
       }
@@ -1794,7 +1739,7 @@ bracketTerm : brblock
   /**
    * An actual that ends in white space or semicolon unless enclosed in { }, [ ], or ( ).
    *
-actualSpace :  operatorExpr         // no white space or semicolon except enclosed in { }, [ ], or ( ).
+actualSpace :  operatorExpr         // no white space or semicolon unless enclosed in { }, [ ], or ( ).
             ;
 
    */
@@ -1826,20 +1771,18 @@ exprInLine  : operatorExpr   // within one line
   /**
    * Parse
    *
-operatorExpr  : opExpr
-                ( QUESTION expr  COLON expr
-                | QUESTION casesBars
-                |
-                )
-              ;
-   */
+operatorExpr: opExpr
+              ( QUESTION exprNoColon COLON expr
+              | QUESTION casesBars
+              |
+              )
+            ;
+exprNoColon : operatorExpr          // may not contain `:` unless enclosed in { }, [ ], or ( ).
+            ;
+  */
   Expr operatorExpr()
   {
-    return operatorExpr(true);
-  }
-  Expr operatorExpr(boolean mayUseCommas)
-  {
-    Expr result = opExpr(mayUseCommas);
+    Expr result = opExpr();
     if (current() == Token.t_question)
       {
         SourcePosition pos = tokenSourcePos();
@@ -1854,12 +1797,12 @@ operatorExpr  : opExpr
           {
             i.ok();
             var eac = endAtColon(true);
-            Expr f = operatorExpr(mayUseCommas);
+            Expr f = operatorExpr();
             endAtColon(eac);
             i.next();
             i.ok();
             matchOperator(":", "expr of the form >>a ? b : c<<");
-            Expr g = operatorExpr(mayUseCommas);
+            Expr g = operatorExpr();
             i.end();
             result = new ParsedCall(result, new ParsedName(pos, "ternary ? :"), new List<>(f, g));
           }
@@ -1871,124 +1814,167 @@ operatorExpr  : opExpr
   /**
    * Parse opExpr
    *
-opExpr      :     opTail
-            | ops opTail
+opExpr      : opsOpt term opsTail callTail
             | OPERATOR
-            | callTail
+            ;
+opsOpt      : ops
+            |
             ;
    */
-  Expr opExpr(boolean mayUseCommas)
+  Expr opExpr()
   {
-    if (!skipDot())
+    Expr result;
+    int pos = tokenPos();
+    var oe = new OpExpr();
+    if (current() == Token.t_op)
       {
-        var oe = new OpExpr();
-        skipOps(oe);
-        if (oe.size() != 1 || isTermPrefix())
-          {
-            opTail(oe, mayUseCommas);
-            return oe.toExpr();
-          }
-        else
-          {
-            return new Partial(oe.op(0)._pos,
-                               oe.op(0)._text);
-          }
+        ops(oe);
+      }
+    if (oe.size() != 1 || isTermPrefix(true))
+      {
+        oe.add(term());
+        result = opsTail(oe);
+        result.setSourceRange(sourceRange(pos));
       }
     else
       {
-        return Partial.dotCall(tokenSourcePos(), a -> callTail(true, a));
+        result = new Partial(sourceRange(pos), oe.op(0)._text);
       }
+    return result;
   }
 
 
   /**
-   * Parse ops
+   * Parse ops -- not empty sequence of operators
    *
-   * @param oe OpExpr instance the dotCallOrOp()s should be added to
+   * @param oe OpExpr instance the ops()s should be added to
    *
-   * @return true iff ops was parsed and dotCallOrOp()s were added to oe
+   * @return true iff last OPERATOR has white space before
    *
-ops         : dotCallOrOp ops
-            | dotCallOrOp
+ops         : OPERATOR
+            | OPERATOR ops
             ;
    */
-  boolean skipOps(OpExpr oe)
+  boolean ops(OpExpr oe)
   {
-    var oldcount = oe.size();
+    var result = false;
+    do
+      {
+        result = ignoredTokenBefore();
+        oe.add(new Operator(tokenSourceRange(), operator(), ignoredTokenBefore(), ignoredTokenAfter()));
+        match(Token.t_op, "op");
+      }
+    while (current() == Token.t_op);
+    return result;
+  }
+
+
+  /**
+   * Parse opsTail -- optional additional ops and terms
+   *
+   * @param oe OpExpr instance the ops()s should be added to
+   *
+opsTail     : opsTerms callTail
+            ;
+opsTerms    : ops
+            | ops term opsTerms
+            |
+            ;
+   */
+  Expr opsTail(OpExpr oe)
+  {
     while (current() == Token.t_op)
       {
-        oe.add(dotCallOrOp());
+        var spaceBeforeLastOperator = ops(oe);
+        if (isTermPrefix(spaceBeforeLastOperator))
+          {
+            oe.add(term());
+          }
       }
-    return oldcount < oe.size();
-  }
-
-
-  /**
-   * Parse opTail
-   *
-opTail      : term
-            | term ops
-            | term ops opTail
-            ;
-   */
-  void opTail(OpExpr oe, boolean mayUseCommas)
-  {
-    oe.add(term(mayUseCommas));
-    if (skipOps(oe) && isTermPrefix())
-      {
-        opTail(oe, mayUseCommas);
-      }
+    return callTail(false, oe.toExpr());
   }
 
 
   /**
    * Parse klammer is either a single parenthesized expression or a tuple
    *
-klammer     : klammerExpr
+klammer     : LPAREN block RPAREN
             | tuple
-            | klammerLambd
-            ;
-klammerExpr : LPAREN expr RPAREN
-            ;
-tuple       : LPAREN RPAREN
-            | LPAREN operatorExpr (COMMA operatorExpr)+ RPAREN
-            ;
-klammerLambd: tuple lambda
+            | tuple lambda
             ;
    */
   Expr klammer()
   {
-    SourcePosition pos = tokenSourcePos();
-    var tupleElements = new List<Expr>();
-    bracketTermWithNLs(PARENS, "klammer",
-                       () -> {
-                         do
-                           {
-                             tupleElements.add(operatorExpr());
-                           }
-                         while (skipComma());
-                         return Void.TYPE;
-                       },
-                       () -> Void.TYPE);
-
-
-    if (isLambdaPrefix())                  // a lambda expression
+    Expr res;
+    var f = fork();
+    try
       {
-        return lambda(tupleElements);
-      }
-    else if (tupleElements.size() == 1)    // an expr wrapped in parentheses, not a tuple
-      {
-        var e = tupleElements.get(0);
-        if (e instanceof ParsedOperatorCall oc)
-          { // disable chained boolean optimization:
-            oc.putInParentheses();
+        var forked_t = f.tuple();
+        if (f.isLambdaPrefix())                  // a lambda expression
+          {
+            // a little overkill: we first permit an arbitrary tuple, just to later
+            // extract either the argument names or types.
+            res = lambda(tuple());
           }
-        return e;
+        else if (forked_t.size() != 1)
+          {
+            res = new ParsedCall(null, new ParsedName(tokenSourcePos(), "tuple"), tuple());
+          }
+        else
+          {
+            // NYI: UNDER DEVELOPMENT: This case of a single operatorExpr in parentheses is parsed slightly different than
+            // a block.  Would be good to avoid the special handling here and always use the `else` case below.
+            //
+            // in particular:
+            //
+            //   _ := ("bla"
+            //          + "blub")           # NYI: BUG: #5543: as block, causes indentation error
+            //   _ := (a).this              # as block, causes qualifier expected for '.this' expression.
+            //
+            // I suggest the cases `(a,b -> unit)` and `(a).this` should be
+            // supported when parsing a block in parentheses, while the indentation
+            // problem is maybe acceptable to cause an error.
+            //
+            res = tuple().get(0);
+            if (res instanceof ParsedOperatorCall oc)
+              { // disable chained boolean optimization:
+                oc.putInParentheses();
+              }
+          }
       }
-    else                                   // a tuple
+    catch (GiveUp _)
       {
-        return new ParsedCall(null, new ParsedName(pos, "tuple"), tupleElements);
+        res = bracketTermWithNLs(PARENS, "klammer",
+                                 () -> block(),
+                                 () -> emptyBlock());
       }
+    return res;
+  }
+
+
+  /**
+   * Parse tuple, return null in case this is not a tuple, but a block (leaving
+   * the Parser instance in an undefined state).
+   *
+   * @throws GiveUp in case this is not a tuple but has to be parsed as a block
+   * in parentheses.
+   *
+tuple       : LPAREN actualCommas RPAREN
+            ;
+   */
+  List<Expr> tuple()
+  {
+    return bracketTermWithNLs(PARENS, "klammer",
+                              () -> {
+                                var l = actualCommas(false);
+                                if (currentAtMinIndent() != Token.t_rparen ) // there is more, so this might be a block
+                                  {
+                                    throw GiveUp._INSTANCE_;
+                                  }
+                                return l;
+                              },
+                              () -> new List<Expr>() // default for `()` is an empty tuple
+                              );
   }
 
 
@@ -2040,10 +2026,10 @@ plainLambda : argNames lambda
    * @return true iff the next token(s) start a plainLambda.
    *
    */
-  boolean isPlainLambdaPrefix(boolean mayUseCommas)
+  boolean isPlainLambdaPrefix()
   {
     var f = fork();
-    return f.skipArgNames(mayUseCommas) && f.isLambdaPrefix();
+    return f.skipArgNames() && f.isLambdaPrefix();
   }
 
 
@@ -2102,6 +2088,10 @@ addSemiElmts: SEMI semiSepElmts
    * Parse term
    *
 term        : simpleterm callTail
+            | dotCall   // if white space before last OPERATOR, i.e.,
+                        // `1.. ∀ .is_even` is fully parsed as opExpr while
+                        // `1.. .filter %%2` returns `x..`, which becomes the
+                        // target in a call `(x..).filter %%2`
             ;
 simpleterm  : bracketTerm
             | stringTerm
@@ -2112,10 +2102,12 @@ simpleterm  : bracketTerm
             | callOrFeatOrThis
             ;
    */
-  Expr term(boolean mayUseCommas)
+  Expr term()
   {
     int pos = tokenPos();
-    var result = switch (current()) // even if this is t_lbrace, we want a term to be indented, so do not use currentAtMinIndent().
+    var result = skipDot()
+      ? Partial.dotCall(tokenSourcePos(), a -> dotCall(a))
+      : switch (current()) // even if this is t_lbrace, we want a term to be indented, so do not use currentAtMinIndent().
       {
       case t_lbrace, t_lparen, t_lbracket ->  bracketTerm();
       case t_numliteral -> {
@@ -2141,7 +2133,7 @@ simpleterm  : bracketTerm
                               }
                             else
                               {
-                                var res = callOrFeatOrThis(mayUseCommas);
+                                var res = callOrFeatOrThis();
                                 if (res == null)
                                   {
                                     syntaxError(pos, "term (lbrace, lparen, lbracket, fun, string, integer, old, match, or name)", "term");
@@ -2222,12 +2214,15 @@ stringTermB : '}any chars&quot;'
 
 
   /**
-   * Check if the current position starts a term.  Does not change the position
+   * Check if the current position starts a term that is not a loop.  Does not change the position
    * of the parser.
+   *
+   * @param mayBeDotCall true if this may be a `dotCall` (which is forbidden
+   * in opExpr after operator stuck at previous operand like `(x)++ .bla`.
    *
    * @return true iff the next token(s) start a term.
    */
-  boolean isTermPrefix()
+  boolean isTermPrefix(boolean mayBeDotCall)
   {
     switch (current()) // even if this is t_lbrace, we want a term to be indented, so do not use currentAtMinIndent().
       {
@@ -2235,40 +2230,19 @@ stringTermB : '}any chars&quot;'
       case t_lbracket  :
       case t_lbrace    :
       case t_numliteral:
+      case t_if        :
       case t_match     : return true;
+      case t_for       :
+      case t_do        :
+      case t_while     : return false;
       default          :
         return
-          isStartedString(current())
+          mayBeDotCall && isDot()
+          || isStartedString(current())
           || isNamePrefix()      // Matches call
           || isAnonymousPrefix() // matches anonymous inner feature declaration
           ;
       }
-  }
-
-
-  /**
-   * Parse dotCallOrOp
-   *
-dotCallOrOp : dot call
-            | OPERATOR
-            ;
-   */
-  Object dotCallOrOp()
-  {
-    if (PRECONDITIONS) require
-      (current() == Token.t_op);
-
-    Object result; // Function or Operator
-    if (skipDot())
-      {
-        result = Partial.dotCall(tokenSourcePos(), a->pureCall(a));
-      }
-    else
-      {
-        result = new Operator(tokenSourceRange(), operator(), ignoredTokenBefore(), ignoredTokenAfter());
-        match(Token.t_op, "op");
-      }
-    return result;
   }
 
 
@@ -2334,9 +2308,10 @@ casesNoBars : caze semiOrFlatLF casesNoBars
    * @param in the Indentation instance created at the position of '?' or at
    * current position (for a 'match'-expression).
    *
-casesBars   : caze ( '|' casesBars
-                   |
-                   )
+casesBars   : caze                  // may not contain `|` unless enclosed in { }, [ ], or ( ).
+              ( '|' casesBars
+              |
+              )
             ;
    */
   List<AbstractCase> casesBars(Indentation in)
@@ -2512,6 +2487,7 @@ brblock     : BRACEL exprs BRACER
         t_indentationLimit,
         t_lineLimit,
         t_spaceOrSemiLimit,
+        t_commaLimit,
         t_colonLimit,
         t_barLimit,
         t_rbrace,
@@ -2690,7 +2666,6 @@ exprs       : expr semiOrFlatLF exprs (semiOrFlatLF | )
    *
 expr        : checkexpr
             | assign
-            | destructure
             | feature
             | operatorExpr
             ;
@@ -2703,7 +2678,6 @@ expr        : checkexpr
     var e =
       isCheckPrefix()       ? checkexpr()   :
       isAssignPrefix()      ? assign()      :
-      isDestructurePrefix() ? destructure() :
       isFeaturePrefix()     ? feature()     : operatorExpr();
     var p2 = lastTokenEndPos();
     e.setSourceRange(sourceRange(p0, p1, p2));
@@ -2742,11 +2716,12 @@ loopEpilog  : "until" exprInLine thenPart loopElseBlock
         List<Feature> nextValues = new List<>();
         var hasFor   = current() == Token.t_for; if (hasFor) { indexVars(indexVars, nextValues); }
         var hasVar   = skip(true, Token.t_variant); var v   = hasVar              ? exprInLine()    : null;
-                                                    var i   = hasFor || v != null ? invariant(true) : null;
+                                                    var i   = hasFor || v != null ? invariant() : null;
         var hasWhile = skip(true, Token.t_while  ); var w   = hasWhile            ? exprInLine()    : null;
         var hasDo    = skip(true, Token.t_do     ); var b   = hasWhile || hasDo   ? block()         : null;
         var hasUntil = skip(true, Token.t_until  ); var u   = hasUntil            ? exprInLine()    : null;
                                                     var ub  = hasUntil            ? thenPart(true)  : null;
+                                                    var ePos = tokenSourcePos();
                                                     var els1= fork().loopElseBlock();
                                                     var els2= fork().loopElseBlock();
                                                     var els =        loopElseBlock();
@@ -2764,7 +2739,7 @@ loopEpilog  : "until" exprInLine thenPart loopElseBlock
                 syntaxError(tokenPos(), "loopBody or loopEpilog: 'while', 'do', 'until' or 'else'", "loop");
               }
           }
-        return new Loop(pos, indexVars, nextValues, v, i, w, b, u, ub, els, els1, els2).tailRecursiveLoop();
+        return new Loop(pos, indexVars, nextValues, v, i, w, b, u, ub, ePos, els, els1, els2).tailRecursiveLoop();
       });
   }
 
@@ -2830,8 +2805,8 @@ nextValue   : COMMA exprInLine
       }
     else
       {
-        p1 =        implFldInit(hasType);
-        p2 = forked.implFldInit(hasType);
+        p1 =        implFldInit(hasType, null, -1, -1);
+        p2 = forked.implFldInit(hasType, null, -1, -1);
         // up to here, this and forked parse the same, i.e, v1, m1, .. p1 is the
         // same as v2, m2, .. p2.  Now, we check if there is a comma, which
         // means there is a different value for the second and following
@@ -2869,7 +2844,7 @@ nextValue   : COMMA exprInLine
   /**
    * Parse ifexpr
    */
-  Match ifexpr()
+  Expr ifexpr()
   {
     return ifexpr(false);
   }
@@ -2882,7 +2857,7 @@ nextValue   : COMMA exprInLine
 ifexpr      : "if" exprInLine thenPart elseBlock
             ;
    */
-  Match ifexpr(boolean elif)
+  Expr ifexpr(boolean elif)
   {
     return relaxLineAndSpaceLimit(() -> {
         SourcePosition pos = tokenSourcePos();
@@ -3039,7 +3014,7 @@ checkexpr   : "check" block
   Expr checkexpr()
   {
     match(Token.t_check, "checkexpr");
-    return new Check(Cond.from(block())).asIfs();
+    return Contract.asFault(Cond.from(block()), "checkcondition_fault");
   }
 
 
@@ -3100,73 +3075,6 @@ assign      : "set" name ":=" exprInLine
 
 
   /**
-   * Parse destructure
-   *
-destructure : destructr
-            ;
-destructr   : "(" argNames ")"       ":=" exprInLine
-            ;
-   */
-  Expr destructure()
-  {
-    if (fork().skipFormArgs())
-      {
-        var a = formArgs(false);
-        var pos = tokenSourcePos();
-        matchOperator(":=", "destructure");
-        return Destructure.create(pos, a, null, exprInLine());
-      }
-    else
-      {
-        match(Token.t_lparen, "destructure");
-        var names = argNames();
-        match(Token.t_rparen, "destructure");
-        var pos = tokenSourcePos();
-        matchOperator(":=", "destructure");
-        return Destructure.create(pos, null, names, exprInLine());
-      }
-  }
-
-
-  /**
-   * Check if the current position starts destructure.  Does not change the
-   * position of the parser.
-   *
-   * @return true iff the next token(s) start a destructure.
-   */
-  boolean isDestructurePrefix()
-  {
-    return (current() == Token.t_lparen) && fork().skipDestructrPrefix() ||
-      (current() == Token.t_set) && (fork().skipDestructrPrefix());
-  }
-
-
-  /**
-   * Check if the current position starts a destructr and skip an unspecified part
-   * of it.
-   *
-   * @return true iff the next token(s) start a destructure.
-   */
-  boolean skipDestructrPrefix()
-  {
-    boolean result = false;
-    skip(Token.t_set);
-    if (skip(Token.t_lparen))
-      {
-        do
-          {
-            result = skipName();
-          }
-        while (result && skipComma());
-        result = result
-          && skip(Token.t_rparen)
-          && isOperator(":=");
-      }
-    return result;
-  }
-
-
-  /**
    * Parse call or anonymous feature or this
    *
 callOrFeatOrThis  : anonymous
@@ -3174,11 +3082,11 @@ callOrFeatOrThis  : anonymous
                   | call0
                   ;
    */
-  Expr callOrFeatOrThis(boolean mayUseCommas)
+  Expr callOrFeatOrThis()
   {
     return
-      isAnonymousPrefix()               ? anonymous()      : // starts with value/ref/:/fun/name
-      isPlainLambdaPrefix(mayUseCommas) ? plainLambda()    : // x,y,z post result = x*y*z -> x*y*z
+      isAnonymousPrefix()   ? anonymous()      : // starts with value/ref/:/fun/name
+      isPlainLambdaPrefix() ? plainLambda()    : // x,y,z post result = x*y*z -> x*y*z
       call0();
   }
 
@@ -3227,25 +3135,8 @@ universeCall      : universe dot call
   Expr universeCall()
   {
     var universe = universe();
-    matchOperator(".", "universeCall");
+    dot();
     return call(universe);
-  }
-
-
-  /**
-   * Parse universePureCall
-   *
-   * Note that we do not allow {@code universe} which is not followed by {@code .}, i.e., it
-   * is not possible to get the value of the {@code universe}.
-   *
-universePureCall  : universe dot pureCall
-                  ;
-   */
-  Call universePureCall()
-  {
-    var universe = universe();
-    matchOperator(".", "universePureCall");
-    return pureCall(universe);
   }
 
 
@@ -3262,7 +3153,7 @@ anonymous   : "ref"
   {
     var oldIndent = setMinIndent(tokenPos());
     var sl = sameLine(line());
-    SourcePosition pos = tokenSourcePos();
+    SourcePosition pos = tokenSourceRange();
     if (CHECKS) check
       (current() == Token.t_ref);
     ReturnType r = returnType();  // only `ref` return type allowed.
@@ -3270,7 +3161,7 @@ anonymous   : "ref"
     match(Token.t_is, "anonymous");
     Block      b = block();
     var f = Feature.anonymous(pos, r, i, Contract.EMPTY_CONTRACT, b);
-    var ca = new Call(pos, f);
+    var ca = new Call(SourceRange.range(new List<>(pos, b)), f);
     sameLine(sl);
     setMinIndent(oldIndent);
     return new Block(new List<>(f, ca));
@@ -3373,10 +3264,10 @@ invariant   : "inv" block
             |
             ;
    */
-  List<Cond> invariant(boolean atMinIndent)
+  List<Cond> invariant()
   {
     List<Cond> result = null;
-    if (skip(atMinIndent, Token.t_inv))
+    if (skip(true, Token.t_inv))
       {
         result = Cond.from(block());
       }
@@ -3447,17 +3338,22 @@ implFldOrRout   : implRout           // may start at min indent
                 |
                 ;
    */
-  Impl implFldOrRout(boolean hasType)
+  Impl implFldOrRout(boolean hasType, List<Feature> l, int select, int totalNames)
   {
     if (currentAtMinIndent() == Token.t_lbrace ||
         currentAtMinIndent() == Token.t_is     ||
         isOperator(true, "=>"))
       {
+        if (select != FuzionConstants.NO_SELECT)
+          {
+            AstErrors.destructuringNonFields(tokenSourcePos(), null);
+          }
+
         return implRout(hasType);
       }
     else if (isOperator(true, ":="))
       {
-        return implFldInit(hasType);
+        return implFldInit(hasType, l, select, totalNames);
       }
     else
       {
@@ -3473,17 +3369,40 @@ implFldOrRout   : implRout           // may start at min indent
 implFldInit : ":=" operatorExpr      // may start at min indent
             ;
    */
-  Impl implFldInit(boolean hasType)
+  Impl implFldInit(boolean hasType, List<Feature> l, int select, int totalNames)
   {
     SourcePosition pos = tokenSourcePos();
+    Impl result;
     if (!skip(true, ":="))
       {
         syntaxError(tokenPos(), "':='", "implFldInit");
       }
-    return new Impl(pos,
-                    operatorExpr(), // block()?
-                    hasType ? Impl.Kind.FieldInit
-                            : Impl.Kind.FieldDef);
+
+    if (select == FuzionConstants.NO_SELECT)
+      {
+        result = new Impl(pos,
+                          operatorExpr(), // block()?
+                          hasType ? Impl.Kind.FieldInit
+                                  : Impl.Kind.FieldDef);
+      }
+    else
+      {
+        if (CHECKS) check
+          (l != null, totalNames > 0);
+
+        if (l.size() == 0)
+          {
+            l.add(Feature.destructure(pos, operatorExpr()));
+          }
+
+        var tmpName = l.getFirst().featureName().baseName();
+        var s = new Select(pos, null, tmpName, select, true, totalNames);
+        result = new Impl(pos,
+                          s,
+                          hasType ? Impl.Kind.FieldInit
+                                  : Impl.Kind.FieldDef);
+      }
+    return result;
   }
 
 
@@ -3522,10 +3441,6 @@ freeType    : name ":" type
       {
         result = new FreeType(result.pos(), result.freeTypeName(), type());
       }
-    if (skip("..."))
-      {
-        result.setFollowedByDots();
-      }
     return result;
   }
 
@@ -3546,7 +3461,7 @@ boundType   : onetype ( PIPE onetype ) *
           {
             l.add(onetype());
           }
-        result = new ParsedType(result.pos(), "choice", l, null);
+        result = new ParsedType(result.pos(), FuzionConstants.CHOICE_NAME, l, null);
       }
     return result;
   }
@@ -3781,7 +3696,7 @@ typeTail    : dot simpletype
             var qn = lhs.asQualifier();
             if (qn == null)
               {
-                AstErrors.qualifierExpectedForDotThis(sourceRange(lhs.pos()), lhs);
+                AstErrors.qualifierExpectedForDotThis(lhs);
                 result = new ParsedType(tokenSourcePos(), Errors.ERROR_STRING, new List<>(), null);
               }
             else
@@ -3846,7 +3761,7 @@ typePars    : typeInParens typePars
    * while '(u8)', '((()->i32))' or '((((u8,bool)->f64)))' are types in parentheses.
    *
 typeInParens: "(" typeInParens ")"
-            | type         // no white space except enclosed in { }, [ ], or ( ).
+            | type         // no white space unless enclosed in { }, [ ], or ( ).
             ;
    */
   AbstractType typeInParens()
@@ -4032,20 +3947,32 @@ colon       : ":"
 
 
   /**
-   * Parse "." if it is found.
+   * Parse dot.
    *
-dot         : "."      // either preceded by white space or not followed by white space
+dot         : PERIOD   // may appear in new line even if parsed as part of exprInLine
             ;
+   */
+  void dot()
+  {
+    if (!skipDot())
+      {
+        syntaxError(Token.t_period.toString(), "dot");
+      }
+  }
+
+
+  /**
+   * Parse "." if it is found.
    *
    * @return true iff a "." was found and skipped.
    */
   boolean skipDot()
   {
-    var result = skip('.');
+    var result = skip(Token.t_period);
     if (!result)
       { // allow dot to appear in new line
         var oldLine = sameLine(-1);
-        result = skip('.');
+        result = skip(Token.t_period);
         sameLine(result ? line() : oldLine);
       }
     return result;
@@ -4058,7 +3985,7 @@ dot         : "."      // either preceded by white space or not followed by whit
   boolean isDot()
   {
     var oldLine = sameLine(-1);
-    var result = isOperator('.');
+    var result = current() == Token.t_period;
     sameLine(oldLine);
     return result;
   }

@@ -1,0 +1,188 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature Typed_Sequence
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# Typed_Sequence -- ancestor for features representing sequence of typed values
+#
+# Unlike `Sequence`, which contains values of all the same type, a `Typed_Sequence`
+# contains values of different types.  This is similar to `Sequence Any`, only that
+# values are not forced to be boxed into references.
+#
+# Actual implementations of this must provide an implementation of abstract feature
+# `typed_foldf`.
+#
+# The desired way to use this feature is via calls to `typed_foldf` since this will
+# avoid the creation of boxed `Typed_Value` instances.
+#
+# `Typed_Sequence` inherits from `Sequence Typed_Value` such that all the power of
+# `Sequence` is available here, but at the cost of boxing into `Typed_Value`
+# references values.
+#
+public Typed_Sequence ref : Sequence container.Typed_Value is
+
+
+  # create a list from this Typed_Sequence.
+  #
+  # Note that this creates boxed ref instances of `Typed_Value`.  The preferred
+  # means to acces the values is via a call to `typed_foldf`.
+  #
+  public redef as_list list container.Typed_Value =>
+
+    as_reverse_list : /* NYI: BUG: #5712: explicit `container.` required as workaround for this bug */
+                      container.typed_applicator (list container.Typed_Value) is
+
+      public redef apply(A type, e (list container.Typed_Value), v A) list container.Typed_Value
+      =>
+        container.typed_value v : e
+
+    typed_foldf nil as_reverse_list .reverse_list
+
+
+  # count the number of elements in this Typed_Sequence.  Note that this typically
+  # runs forever if executed on an endless Sequence
+  #
+  # This is redefined and implemented using `typed_foldf` to avoid creation of
+  # boxed `Typed_Value`s.
+  #
+  public redef count i32
+  =>
+    count_elements : /* NYI: BUG: #5712: explicit `container.` required as workaround for this bug */
+                     container.typed_applicator i32 is
+      public redef apply(A type, e i32, v A) i32 => e + 1
+
+    typed_foldf 0 count_elements
+
+
+  # fold the elements of this `Typed_Sequence` using the given `typed_applicator`
+  # and initial value.
+  #
+  # In case this `Typed_Sequence` is empty, the result is `e`.
+  #
+  public typed_foldf(B type, A type : typed_applicator B, e B, a A) B
+  =>
+    abstract
+
+
+# typed_fold -- convenience feature to fold the elements of a `Typed_Sequence`.
+#
+# ex:
+#
+#     # print all value arguments into numbered lines
+#     #
+#     printn(A type ..., a A...) : container.typed_fold 1 a
+#     =>
+#       public redef apply(T type, n i32, v T) i32
+#       =>
+#         say "$n: $v"
+#         n + 1
+#
+public typed_fold(B type, e B, s container.Typed_Sequence) : container.typed_applicator B is
+
+  # the result of the fold
+  #
+  # the fold is done eagerly to ensure any side-effects will be performed even if `res` is
+  # never read.
+  #
+  public res B := s.typed_foldf e typed_fold.this
+
+
+# a function that operates on a value of type that is given by the caller
+#
+# This is used as an argument to `Typed_Sequence.typed_foldf` to process the typed
+# values.
+#
+public typed_applicator(B type) is
+
+
+  # Apply an operation on a value v of type T using the cumulative value
+  # `e`, and type type / value pair `T`/`v`,  create a new value of type
+  # `B` and return it
+  #
+  # ex:
+  #
+  # to concatenate the String representation of all values, use
+  #
+  #     my_concat : container.typed_applicator String is
+  #
+  #       public redef apply(T type, e String, v T) String
+  #       =>
+  #         e + $v
+  #
+  public apply(T type, e B, v T) B
+  =>
+    abstract
+
+
+# Typed_Value -- a ref type to hold a value of an arbitrary type
+#
+# The value can be extracted by a call to `Typed_Value.applyTo`
+#
+public Typed_Value ref is
+
+
+  # Feed this value and its type into `a.apply`.  Add the
+  # cumulative value `e` and return the resulting cumulative value.
+  #
+  public applyTo(B type, a typed_applicator B, e B) B
+  =>
+    abstract
+
+
+# typed_value -- value type heir of `Typed_Value`.
+#
+# This must be a heir of `Typed_Value` since we need to be able to
+# have different actual type parameters and still create ref values
+# of all the same type  `Typed_Value`
+#
+public typed_value(# the type
+                   A type,
+
+                   # the value
+                   v A)
+  : Typed_Value is
+
+  # apply `a` to `A` `e` `v`
+  #
+  public redef applyTo(B type, a typed_applicator B, e B) B
+  =>
+    a.apply A e v
+
+
+  # create a String of the form `"<type> <value>"` where `<type>`
+  # is the name of the type, enclosed by `(`/`)` in case it contains
+  # spaces.
+  #
+  # Examples:
+  #
+  #     i32 42
+  #     (array i32) [1, 2, 3]
+  #     String Hello World!
+  #
+  public redef as_string String
+  =>
+    t := A.name
+    if t.find " " ??
+      "($t) $v"
+    else
+      "$t $v"

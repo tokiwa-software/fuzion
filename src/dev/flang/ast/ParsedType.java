@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import java.util.Optional;
 
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
@@ -74,10 +75,8 @@ public class ParsedType extends UnresolvedType
    * @param generics list of type parameters
    *
    * @param outer outer type or null if unqualified.
-   *
-   * @param rov UnresolvedType.RefOrVal.Boxed or UnresolvedType.RefOrVal.LikeUnderlyingFeature
    */
-  ParsedType(HasSourcePosition pos, String name, List<AbstractType> generics, AbstractType outer, RefOrVal rov)
+  ParsedType(HasSourcePosition pos, String name, List<AbstractType> generics, AbstractType outer, Optional<TypeKind> rov)
   {
     super(pos, name, generics, outer, rov);
   }
@@ -99,24 +98,6 @@ public class ParsedType extends UnresolvedType
 
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * For a type that is not a type parameter, create a new variant using given
-   * actual generics and outer type.
-   *
-   * @param g2 the new actual generics to be used
-   *
-   * @param o2 the new outer type to be used (which may also differ in its
-   * actual generics).
-   *
-   * @return a new type with same feature(), but using g2/o2 as generics
-   * and outer type.
-   */
-  public AbstractType applyTypePars(List<AbstractType> g2, AbstractType o2)
-  {
-    return new ParsedType(_pos, name(), g2, o2, _refOrVal);
-  }
 
 
   /**
@@ -154,7 +135,7 @@ public class ParsedType extends UnresolvedType
     return
       outer() == null      &&
       generics().isEmpty() &&
-      _refOrVal == RefOrVal.LikeUnderlyingFeature;
+      _typeKind.isEmpty();
   }
 
 

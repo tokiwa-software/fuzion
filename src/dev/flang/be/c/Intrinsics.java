@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.c;
 
+import static dev.flang.ir.IR.NO_CLAZZ;
+
 import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeMap;
@@ -107,15 +109,7 @@ public class Intrinsics extends ANY
             {
               var f = c.accessField(outer, ac, v);
               CExpr eq;
-              if (c._fuir.clazzIsRef(rc) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_i8  ) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_i16 ) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_i32 ) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_i64 ) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_u8  ) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_u16 ) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_u32 ) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_u64 ))
+              if (isIntegerOrRef(c, rc))
                 {
                   code = CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, expected),
                                     CExpr.call("atomic_compare_exchange_strong_explicit", new List<>(
@@ -130,7 +124,7 @@ public class Intrinsics extends ANY
                 {
                   var res = c._names.newTemp();
                   code = CStmnt.seq(locked(CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, f),
-                                                      CStmnt.seq(res.decl("bool", res),
+                                                      CStmnt.seq(CLocal.decl("bool", res),
                                                                  compareValues(c, tmp, expected, rc, res),
                                                                  CStmnt.iff(res,
                                                                             f.assign(new_value))))),
@@ -154,15 +148,7 @@ public class Intrinsics extends ANY
             {
               var f = c.accessField(outer, ac, v);
               CExpr eq;
-              if (c._fuir.clazzIsRef(rc) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_i8  ) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_i16 ) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_i32 ) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_i64 ) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_u8  ) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_u16 ) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_u32 ) ||
-                  c._fuir.clazzIs(rc, SpecialClazzes.c_u64 ))
+              if (isIntegerOrRef(c, rc))
                 {
                   code = CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, expected),
                                     CStmnt.iff(CExpr.call("atomic_compare_exchange_strong_explicit",
@@ -285,12 +271,12 @@ public class Intrinsics extends ANY
           return code;
         });
 
-    put("concur.util.loadFence", (c,cl,outer,in) ->
+    put("concur.util.load_fence", (c,cl,outer,in) ->
         {
           return CExpr.call("atomic_thread_fence", new List<>(new CIdent("memory_order_seq_cst")));
         });
 
-    put("concur.util.storeFence", (c,cl,outer,in) ->
+    put("concur.util.store_fence", (c,cl,outer,in) ->
         {
           return CExpr.call("atomic_thread_fence", new List<>(new CIdent("memory_order_seq_cst")));
         });
@@ -588,22 +574,6 @@ public class Intrinsics extends ANY
                             str.assign(CExpr.call("getenv",new List<>(A0.castTo("char*")))),
                             c.boxedConstString(str, CExpr.call("strlen",new List<>(str))).ret());
         });
-    put("fuzion.sys.env_vars.set0", (c,cl,outer,in) ->
-        {
-          return CStmnt.seq(CStmnt.iff(CExpr.call("fzE_setenv",new List<>(A0.castTo("char*") /* name */,
-                                                                      A1.castTo("char*") /* value */,
-                                                                      CExpr.int32const(1) /* overwrite */))
-                                            .eq(CExpr.int32const(0)),
-                                       c._names.FZ_TRUE.ret()),
-                            c._names.FZ_FALSE.ret());
-        });
-     put("fuzion.sys.env_vars.unset0", (c,cl,outer,in) ->
-        {
-          return CStmnt.seq(CStmnt.iff(CExpr.call("fzE_unsetenv",new List<>(A0.castTo("char*") /* name */))
-                                            .eq(CExpr.int32const(0)),
-                                       c._names.FZ_TRUE.ret()),
-                            c._names.FZ_FALSE.ret());
-        });
      put("fuzion.sys.thread.spawn0", (c,cl,outer,in) ->
         {
           var oc = c._fuir.clazzActualGeneric(cl, 0);
@@ -748,21 +718,18 @@ public class Intrinsics extends ANY
         });
 
     var noJava = CStmnt.seq(
-                 CExpr.fprintfstderr("*** Set environment variable JAVA_HOME when compiling to be able to use intrinsics fuzion.java.*.\n"),
+                 CExpr.fprintfstderr("*** Set environment variable JAVA_HOME when compiling to be able to use intrinsics fuzion.jvm.*.\n"),
                  CExpr.fprintfstderr("*** Example: JAVA_HOME=/usr/lib/jvm/java-" + Version.JAVA_VERSION + "-openjdk-amd64 fz -c file.fz\n"),
                  CExpr.exit(1));
-    put("fuzion.java.Java_Object.is_null0", (c, cl, outer, in) -> C.JAVA_HOME == null
-                                                                                       ? noJava
-                                                                                       : CExpr.call(
-                                                                                         "fzE_java_object_is_null",
-                                                                                         new List<CExpr>(outer.field(
-                                                                                           c._names.fieldName(c._fuir
-                                                                                             .lookupJavaRef(c._fuir.clazzOuterClazz(cl))))
-                                                                                           .castTo("jobject")))
-                                                                                         .cond(c._names.FZ_TRUE,
-                                                                                           c._names.FZ_FALSE)
-                                                                                         .ret());
-    put("fuzion.java.array_get"             , (c, cl, outer, in) -> {
+    put("fuzion.jvm.is_null0", (c, cl, outer, in) -> C.JAVA_HOME == null
+          ? noJava
+          : CExpr
+             .call("fzE_java_object_is_null",
+                   new List<CExpr>(A0.castTo("jobject")))
+             .cond(c._names.FZ_TRUE, c._names.FZ_FALSE)
+             .ret()
+       );
+    put("fuzion.jvm.array_get"             , (c, cl, outer, in) -> {
       if (C.JAVA_HOME == null)
         {
           return noJava;
@@ -778,8 +745,8 @@ public class Intrinsics extends ANY
             false);
         }
     });
-    put("fuzion.java.array_length"          , (c,cl,outer,in) -> C.JAVA_HOME == null ? noJava : CExpr.call("fzE_array_length", new List<>(A0.castTo("jarray"))).ret());
-    put("fuzion.java.array_to_java_object0", (c, cl, outer, in) -> {
+    put("fuzion.jvm.array_length"          , (c,cl,outer,in) -> C.JAVA_HOME == null ? noJava : CExpr.call("fzE_array_length", new List<>(A0.castTo("jarray"))).ret());
+    put("fuzion.jvm.array_to_java_object0", (c, cl, outer, in) -> {
       if (C.JAVA_HOME == null)
         {
           return noJava;
@@ -807,7 +774,7 @@ public class Intrinsics extends ANY
                 .ret();
         }
     });
-    put("fuzion.java.get_field0",
+    put("fuzion.jvm.get_field0",
       (c, cl, outer, in) ->
         C.JAVA_HOME == null
           ? noJava
@@ -817,7 +784,7 @@ public class Intrinsics extends ANY
                   A1.castTo("jstring"),
                   A2.castTo("char *"))),
             false));
-    put("fuzion.java.get_static_field0",
+    put("fuzion.jvm.get_static_field0",
       (c, cl, outer, in) ->
         C.JAVA_HOME == null
           ? noJava
@@ -827,7 +794,7 @@ public class Intrinsics extends ANY
                   A1.castTo("jstring"),
                   A2.castTo("char *"))),
               false));
-    put("fuzion.java.set_field0",
+    put("fuzion.jvm.set_field0",
       (c, cl, outer, in) ->
         C.JAVA_HOME == null
           ? noJava
@@ -837,7 +804,7 @@ public class Intrinsics extends ANY
                   A1.castTo("jstring"),
                   A2.castTo("jvalue"),
                   A3.castTo("char *"))));
-    put("fuzion.java.set_static_field0",
+    put("fuzion.jvm.set_static_field0",
       (c, cl, outer, in) ->
         C.JAVA_HOME == null
           ? noJava
@@ -847,7 +814,7 @@ public class Intrinsics extends ANY
                   A1.castTo("jstring"),
                   A2.castTo("jvalue"),
                   A3.castTo("char *"))));
-    put("fuzion.java.call_c0", (c, cl, outer, in) -> {
+    put("fuzion.jvm.call_c0", (c, cl, outer, in) -> {
       if (C.JAVA_HOME == null)
         {
           return noJava;
@@ -866,7 +833,7 @@ public class Intrinsics extends ANY
                     A2.field(c._names.fieldName(data)).castTo("jvalue *"))), true));
         }
     });
-    put("fuzion.java.cast0", (c, cl, outer, in) -> {
+    put("fuzion.jvm.cast0", (c, cl, outer, in) -> {
       if (C.JAVA_HOME == null)
         {
           return noJava;
@@ -876,7 +843,7 @@ public class Intrinsics extends ANY
           return c.returnJavaObject(c._fuir.clazzResultClazz(cl), CExpr.compoundLiteral("jvalue", ".l="+A0.castTo("jobject").code()), false);
         }
     });
-    put("fuzion.java.call_s0", (c, cl, outer, in) -> {
+    put("fuzion.jvm.call_s0", (c, cl, outer, in) -> {
       if (C.JAVA_HOME == null)
         {
           return noJava;
@@ -887,7 +854,7 @@ public class Intrinsics extends ANY
           var data          = c._fuir.lookup_fuzion_sys_internal_array_data(internalArray);
           return CStmnt
             .seq(
-              // NYI methods where result clazz is e.g. unit, f64 etc. that does
+              // NYI: UNDER DEVELOPMENT: methods where result clazz is e.g. unit, f64 etc. that does
               // not inherit Java_Object or Java_String
               c.returnJavaObject(c._fuir.clazzResultClazz(cl), CExpr
                 .call("fzE_call_s0",
@@ -898,7 +865,7 @@ public class Intrinsics extends ANY
                     A3.field(c._names.fieldName(data)).castTo("jvalue *"))), true));
         }
     });
-    put("fuzion.java.call_v0", (c, cl, outer, in) -> {
+    put("fuzion.jvm.call_v0", (c, cl, outer, in) -> {
       var internalArray = c._fuir.clazzArgClazz(cl, 4);
       var data          = c._fuir.lookup_fuzion_sys_internal_array_data(internalArray);
       if (C.JAVA_HOME == null)
@@ -919,7 +886,7 @@ public class Intrinsics extends ANY
                     A4.field(c._names.fieldName(data)).castTo("jvalue *"))), true));
         }
     });
-    put("fuzion.java.primitive_to_java_object",
+    put("fuzion.jvm.primitive_to_java_object",
       (c, cl, outer, in) ->
         {
           if (C.JAVA_HOME == null)
@@ -940,7 +907,7 @@ public class Intrinsics extends ANY
             }
         }
     );
-    put("fuzion.java.java_string_to_string" , (c,cl,outer,in) ->
+    put("fuzion.jvm.java_string_to_string" , (c,cl,outer,in) ->
         {
           if (C.JAVA_HOME == null)
             {
@@ -957,7 +924,7 @@ public class Intrinsics extends ANY
                   .ret());
             }
         });
-      put("fuzion.java.string_to_java_object0", (c,cl,outer,in) -> {
+      put("fuzion.jvm.string_to_java_object0", (c,cl,outer,in) -> {
           var rc = c._fuir.clazzResultClazz(cl);
           var internalArray = c._fuir.clazzArgClazz(cl, 0);
           var data          = c._fuir.lookup_fuzion_sys_internal_array_data  (internalArray);
@@ -975,12 +942,16 @@ public class Intrinsics extends ANY
         });
 
 
-    put("fuzion.java.create_jvm", (c,cl,outer,in) -> {
+    put("fuzion.jvm.create_jvm", (c,cl,outer,in) -> {
       return  C.JAVA_HOME == null
         ? noJava
-        : CExpr.call("fzE_create_jvm", new List<>(A0.castTo("char *")));
+        : CExpr.call("fzE_create_jvm", new List<>(A0.castTo("char *"))).ret();
     });
-    // NYI: UNDER DEVELOPMENT: put("fuzion.java.destroy_jvm", (c,cl,outer,in) -> {});
+    put("fuzion.jvm.destroy_jvm", (c,cl,outer,in) -> {
+      return  C.JAVA_HOME == null
+        ? noJava
+        : CExpr.call("fzE_destroy_jvm", new List<>());
+    });
 
     put("concur.sync.mtx_init",      (c,cl,outer,in) ->
       {
@@ -1019,6 +990,22 @@ public class Intrinsics extends ANY
     put("native_string_length", (c,cl,outer,in) -> CExpr.call("strlen",   new List<>(A0.castTo("void *"))).ret());
     // essentially a NOP in c-backend
     put("native_array", (c,cl,outer,in) -> A0.castTo("void *" /* NYI: should be cast to array with element type cl._dfa._fuir.clazzActualGeneric(cl._cc, 0) */).ret());
+  }
+
+  /**
+   * Is cl an integer i8..u64 or a reference?
+   */
+  private static boolean isIntegerOrRef(C c, int cl)
+  {
+    return c._fuir.clazzIsRef(cl) ||
+        c._fuir.clazzIs(cl, SpecialClazzes.c_i8  ) ||
+        c._fuir.clazzIs(cl, SpecialClazzes.c_i16 ) ||
+        c._fuir.clazzIs(cl, SpecialClazzes.c_i32 ) ||
+        c._fuir.clazzIs(cl, SpecialClazzes.c_i64 ) ||
+        c._fuir.clazzIs(cl, SpecialClazzes.c_u8  ) ||
+        c._fuir.clazzIs(cl, SpecialClazzes.c_u16 ) ||
+        c._fuir.clazzIs(cl, SpecialClazzes.c_u32 ) ||
+        c._fuir.clazzIs(cl, SpecialClazzes.c_u64 );
   }
 
 
@@ -1072,7 +1059,7 @@ public class Intrinsics extends ANY
   {
     var or = c._fuir.clazzOuterRef(cl);
     var outer =
-      or == -1                                         ? null :
+      or == NO_CLAZZ                                   ? null :
       c._fuir.clazzFieldIsAdrOfValue(or)               ? CNames.OUTER.deref() :
       c._fuir.clazzIsRef(c._fuir.clazzResultClazz(or)) ? CNames.OUTER.deref().field(CNames.FIELDS_IN_REF_CLAZZ)
                                                        : CNames.OUTER;
@@ -1087,22 +1074,13 @@ public class Intrinsics extends ANY
       }
     else
       {
-        var at = c._fuir.clazzTypeParameterActualType(cl);
-        if (at >= 0)
-          {
-            // intrinsic is a type parameter, type instances are unit types, so nothing to be done:
-            result = CStmnt.EMPTY;
-          }
-        else
-          {
-            var msg = "code for intrinsic " + c._fuir.clazzOriginalName(cl) + " is missing";
-            Errors.warning(msg);
-            result = CStmnt.seq(CExpr.call("fprintf",
-                                           new List<>(new CIdent("stderr"),
-                                                      CExpr.string("*** error: NYI: %s\n"),
-                                                      CExpr.string(msg))),
-                                CExpr.call("exit", new List<>(CExpr.int32const(1))));
-          }
+        var msg = "code for intrinsic " + c._fuir.clazzOriginalName(cl) + " is missing";
+        Errors.warning(msg);
+        result = CStmnt.seq(CExpr.call("fprintf",
+                                        new List<>(new CIdent("stderr"),
+                                                  CExpr.string("*** error: NYI: %s\n"),
+                                                  CExpr.string(msg))),
+                            CExpr.call("exit", new List<>(CExpr.int32const(1))));
       }
 
     return result;
@@ -1182,17 +1160,9 @@ public class Intrinsics extends ANY
       }
     else if (c._fuir.clazzIsUnitType(rt))
       { // unit-type values are always equal:
-        result = tmp.assign(new CIdent("true"));
+        result = tmp.assign(CIdent.TRUE);
       }
-    else if (c._fuir.clazzIsRef(rt) ||
-             c._fuir.clazzIs(rt, SpecialClazzes.c_i8  ) ||
-             c._fuir.clazzIs(rt, SpecialClazzes.c_i16 ) ||
-             c._fuir.clazzIs(rt, SpecialClazzes.c_i32 ) ||
-             c._fuir.clazzIs(rt, SpecialClazzes.c_i64 ) ||
-             c._fuir.clazzIs(rt, SpecialClazzes.c_u8  ) ||
-             c._fuir.clazzIs(rt, SpecialClazzes.c_u16 ) ||
-             c._fuir.clazzIs(rt, SpecialClazzes.c_u32 ) ||
-             c._fuir.clazzIs(rt, SpecialClazzes.c_u64 )    )
+    else if (isIntegerOrRef(c, rt))
       {
         result = tmp.assign(CExpr.eq(value1, value2));
       }
@@ -1222,7 +1192,7 @@ public class Intrinsics extends ANY
           {
             var tc = c._fuir.clazzChoice(rt, i);
             var fld = c._fuir.clazzIsRef(tc) ? CNames.CHOICE_REF_ENTRY_NAME
-                                             : new CIdent(CNames.CHOICE_ENTRY_NAME + i);
+                                             : CIdent.choiceEntry(i);
             var entry1  = union1.field(fld);
             var entry2  = union2.field(fld);
             var cmp = compareValues(c, entry1, entry2, tc, tmp);
@@ -1234,11 +1204,11 @@ public class Intrinsics extends ANY
                             CStmnt.suitch(value1.field(CNames.TAG_NAME),
                                           cazes,
                                           null),
-                            tmp.assign(new CIdent("false")));
+                            tmp.assign(CIdent.FALSE));
       }
     else // not a choice, so a 'normal' product type
       {
-        result = tmp.assign(new CIdent("true"));
+        result = tmp.assign(CIdent.TRUE);
         for (var i = 0; i < c._fuir.clazzFieldCount(rt); i++)
           {
             var fi = c._fuir.clazzField(rt, i);

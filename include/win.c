@@ -36,7 +36,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #endif
 
 #include <stdio.h>
-#include <stdlib.h>     // setenv, unsetenv
+#include <stdlib.h>
 #include <errno.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -70,7 +70,7 @@ wchar_t* utf8_to_wide_str(const char* str)
 }
 
 // zero memory
-void fzE_mem_zero(void *dest, size_t sz)
+void fzE_mem_zero_secure(void *dest, size_t sz)
 {
   SecureZeroMemory(dest, sz);
 }
@@ -89,7 +89,7 @@ int64_t fzE_last_error(void){
     : last_error;
 }
 
-// NYI missing set_last_error, see posix.c
+// NYI: UNDER DEVELOPMENT: missing set_last_error, see posix.c
 
 // make directory, return zero on success
 int fzE_mkdir(const char *pathname){
@@ -100,19 +100,6 @@ int fzE_mkdir(const char *pathname){
   free(wideStr);
   return result;
 }
-
-
-// set environment variable, return zero on success
-int fzE_setenv(const char *name, const char *value, int overwrite){
-  return -1;
-}
-
-
-// unset environment variable, return zero on success
-int fzE_unsetenv(const char *name){
-  return -1;
-}
-
 
 
 typedef struct {
@@ -149,7 +136,7 @@ void * fzE_opendir(const char *pathname, int64_t * result) {
   }
 }
 
-int fzE_dir_read(intptr_t * dir, void * result) {
+int fzE_dir_read(intptr_t * dir, int8_t * result) {
   fzE_dir_struct *d = (fzE_dir_struct *)dir;
   BOOL res = FALSE;
   while ((res = FindNextFileW(d->handle, &d->findData)) &&
@@ -164,7 +151,7 @@ int fzE_dir_read(intptr_t * dir, void * result) {
     assert (sizeNeeded != 0);
     assert(sizeNeeded >= 0 && sizeNeeded<1024); // NYI:
 
-    int len = WideCharToMultiByte(CP_UTF8, 0, d->findData.cFileName, -1, result, sizeNeeded, NULL, NULL) - 1;
+    int len = WideCharToMultiByte(CP_UTF8, 0, d->findData.cFileName, -1, (void *)result, sizeNeeded, NULL, NULL) - 1;
 
     return len == 0
       ? -1
@@ -254,6 +241,7 @@ int fzE_close(int sockfd)
 // family, socket_type, protocol
 int fzE_socket(int family, int type, int protocol){
   WSADATA wsaData;
+  // NYI: CLEANUP: call only once
   return WSAStartup(MAKEWORD(2,2), &wsaData) != 0
     ? -1
     : socket(fzE_get_family(family), fzE_get_socket_type(type), fzE_get_protocol(protocol));
@@ -282,7 +270,7 @@ int fzE_bind(int family, int socktype, int protocol, char * host, char * port, i
   result[0] = fzE_socket(family, socktype, protocol);
   if (result[0] == -1)
   {
-    result[0] = fzE_net_error();
+    last_error = fzE_net_error();
     return -1;
   }
   struct addrinfo *addr_info = NULL;
@@ -297,8 +285,8 @@ int fzE_bind(int family, int socktype, int protocol, char * host, char * port, i
 
   if(bind_res == -1)
   {
+    last_error = fzE_net_error();
     fzE_close(result[0]);
-    result[0] = fzE_net_error();
     return -1;
   }
   freeaddrinfo(addr_info);
@@ -344,7 +332,7 @@ int fzE_connect(int family, int socktype, int protocol, char * host, char * port
   int con_res = connect(result[0], addr_info->ai_addr, addr_info->ai_addrlen);
   if(con_res == -1)
   {
-    // NYI do we want to try another address in addr_info->ai_next?
+    // NYI: UNDER DEVELOPMENT: do we want to try another address in addr_info->ai_next?
     fzE_close(result[0]);
     result[0] = fzE_net_error();
   }
@@ -642,7 +630,7 @@ unsigned int __stdcall trampoline_wrapper(void* raw_arg) {
 /**
  * Start a new thread, returns a pointer to the thread.
  */
-int64_t fzE_thread_create(void *(*code)(void *),
+void * fzE_thread_create(void *(*code)(void *),
                           void *restrict args)
 {
   thread_trampoline_t* trampoline = (thread_trampoline_t*)fzE_malloc_safe(sizeof(thread_trampoline_t));
@@ -704,7 +692,7 @@ void fzE_unlock()
 wchar_t *build_unicode_args(char *args[], size_t argsLen) {
   size_t totalLen = 2;
   for (size_t i = 0; i < argsLen - 1; ++i) {
-    totalLen += MultiByteToWideChar(CP_UTF8, 0, args[i], -1, NULL, 0)+1;
+    totalLen += MultiByteToWideChar(CP_UTF8, 0, args[i], -1, NULL, 0) + 1 + sizeof(L"\"\" ");
   }
   wchar_t *cmd = (wchar_t *)malloc(totalLen * sizeof(wchar_t));
   assert(!!cmd);
@@ -894,7 +882,7 @@ int fzE_pipe_write(int64_t desc, char * buf, size_t nbytes){
 
 // return -1 on error, 0 on success
 int fzE_pipe_close(int64_t desc){
-// NYI do we need to flush?
+// NYI: UNDER DEVELOPMENT: do we need to flush?
   return CloseHandle((HANDLE)desc)
     ? 0
     : -1;
@@ -902,7 +890,7 @@ int fzE_pipe_close(int64_t desc){
 
 
 // open_results[0] the error number
-void * fzE_file_open(char * file_name, int64_t * open_results, int8_t mode)
+void * fzE_file_open(char * file_name, int64_t * open_results, file_open_mode mode)
 {
   assert(mode >= 0 && mode <= 2);
 
@@ -915,7 +903,7 @@ void * fzE_file_open(char * file_name, int64_t * open_results, int8_t mode)
 
   HANDLE hFile = CreateFileW(
       file_name_w,
-      GENERIC_READ | GENERIC_WRITE,
+      GENERIC_READ | GENERIC_WRITE, // NYI: UNDER DEVELOPMENT: consider mode
       FILE_SHARE_READ,
       &sa,
       OPEN_ALWAYS,
@@ -926,6 +914,17 @@ void * fzE_file_open(char * file_name, int64_t * open_results, int8_t mode)
   open_results[0] = hFile == INVALID_HANDLE_VALUE
     ? (int64_t)GetLastError()
     : 0;
+
+  if (hFile != INVALID_HANDLE_VALUE && mode == FZ_FILE_MODE_APPEND)
+  {
+    LARGE_INTEGER zero = {0}, new_pos = {0};
+    if (!SetFilePointerEx(hFile, zero, &new_pos, FILE_END)) {
+      open_results[0] = (int64_t)GetLastError();
+      CloseHandle(hFile);
+      return NULL;
+    }
+  }
+
   return (void *)hFile;
 }
 
@@ -1010,7 +1009,7 @@ int32_t fzE_file_read(void * file, void * buf, int32_t size)
  * result[5] = sec
  * result[6] = nanosec;
  */
-void fzE_date_time(void * result)
+void fzE_date_time(int32_t * result)
 {
   time_t rawtime;
   LARGE_INTEGER counter;
@@ -1085,3 +1084,9 @@ int32_t fzE_file_flush(void *file)
 void * fzE_file_stdin (void) { return GetStdHandle(STD_INPUT_HANDLE); }
 void * fzE_file_stdout(void) { return GetStdHandle(STD_OUTPUT_HANDLE); }
 void * fzE_file_stderr(void) { return GetStdHandle(STD_ERROR_HANDLE); }
+
+int fzE_send_signal(int64_t pid, int sig)
+{
+  // windows does not have signals
+  return -1;
+}

@@ -27,26 +27,31 @@
 #
 public fault (
   # the handler this effect uses to fail
-  p ((String, String))->void
+  p (
+      # the kind of the fault, e.g. "postcondition"
+     (String,
+      # the error message of the fault
+      String)
+    ) -> void
   ) : eff.fallible p
 is
 
   # install default fault handler
   type.install_default =>
     (new kind_and_msg->
-      (kind, msg) := kind_and_msg
+      kind, msg := kind_and_msg
       fuzion.sys.fatal_fault kind msg
     ).default
 
 
   # create an instance of `fault` with the given error handler.
   #
-  public fixed redef type.new(h ((String,String))->void) => fuzion.runtime.fault h
+  public fixed redef type.new(h ((String,String))->void) fuzion.runtime.fault => fuzion.runtime.fault h
 
 
 # fault with no argument returns fault.env, the currently installed
 # runtime fault handler.
 #
-public fault =>
+public fault fault =>
   fault.install_default
   fault.env
