@@ -30,10 +30,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 // https://stackoverflow.com/questions/11040133/what-does-defining-win32-lean-and-mean-exclude-exactly#comment108482188_11040230
 #define WIN32_LEAN_AND_MEAN
 
-#ifdef GC_THREADS
 #define GC_DONT_INCLUDE_WINDOWS_H
 #include <gc.h>
-#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -51,6 +49,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <process.h>
 #include <synchapi.h> // WaitForSingleObject
 #include <namedpipeapi.h>
+
 #include "fz.h"
 
 static_assert(sizeof(L'\0') == 2, "wide char, unexpected bytes");
@@ -608,9 +607,7 @@ void fzE_init()
   InitializeCriticalSection(&fzE_global_mutex);
   // NYI: DeleteCriticalSection(&fzE_global_mutex);
 
-#ifdef GC_THREADS
   GC_INIT();
-#endif
 }
 
 typedef void* (*posix_thread_func)(void*);
@@ -636,7 +633,6 @@ void * fzE_thread_create(void *(*code)(void *),
   thread_trampoline_t* trampoline = (thread_trampoline_t*)fzE_malloc_safe(sizeof(thread_trampoline_t));
   trampoline->func = code;
   trampoline->arg = args;
-#ifdef GC_THREADS
   HANDLE handle = (HANDLE)GC_beginthreadex(
     NULL,                // security attributes
     0,                   // stack size
@@ -645,26 +641,16 @@ void * fzE_thread_create(void *(*code)(void *),
     0,                   // creation flags
     NULL                 // thread ID (optional, can be NULL)
   );
-#else
-  HANDLE handle = (HANDLE)_beginthreadex(
-    NULL,                // security attributes
-    0,                   // stack size
-    trampoline_wrapper,  // thread function
-    trampoline,          // argument to thread function
-    0,                   // creation flags
-    NULL                 // thread ID (optional, can be NULL)
-  );
-#endif
 
   assert(handle != NULL);
 
-  return (int64_t)handle;
+  return handle;
 }
 
 /**
 * Join with a running thread.
 */
-void fzE_thread_join(int64_t thrd) {
+void fzE_thread_join(void * thrd) {
   WaitForSingleObject((HANDLE)thrd, INFINITE);
   CloseHandle((HANDLE)thrd);
 }

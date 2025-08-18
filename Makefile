@@ -1508,9 +1508,10 @@ ifeq ($(OS),Windows_NT)
 	clang --target=x86_64-w64-windows-gnu -Wall -Werror -O3 -shared \
 	-DFUZION_ENABLE_THREADS \
 	-DPTW32_STATIC_LIB \
+	-DGC_THREADS -DGC_WIN32_THREADS \
 	-fno-trigraphs -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -std=c11 \
 	$(BUILD_DIR)/include/win.c $(BUILD_DIR)/include/shared.c -o $@ \
-	-lMswsock -lAdvApi32 -lWs2_32
+	-lMswsock -lAdvApi32 -lWs2_32 -lgc
 else
 	clang -Wall -Werror -O3 -shared -fPIC \
 	-DFUZION_ENABLE_THREADS \
