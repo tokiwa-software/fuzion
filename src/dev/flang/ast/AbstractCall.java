@@ -326,6 +326,14 @@ public abstract class AbstractCall extends Expr
   }
 
 
+  /**
+   * get actual type parameters during resolution
+   *
+   * @param res the resolution instance.
+   *
+   * @param context the source code context where this Call is used
+   *
+   */
   protected List<AbstractType> actualTypeParameters(Resolution res, Context context)
   {
     return actualTypeParameters();

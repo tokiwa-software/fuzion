@@ -86,6 +86,14 @@ public class Call extends AbstractCall
   private final List<AbstractType> _originalGenerics;
 
 
+  /**
+   * get actual type parameters during resolution
+   *
+   * @param res the resolution instance.
+   *
+   * @param context the source code context where this Call is used
+   *
+   */
   @Override
   protected List<AbstractType> actualTypeParameters(Resolution res, Context context)
   {
@@ -101,6 +109,7 @@ public class Call extends AbstractCall
         _actualsResolvedFor = null;
         _type = null;
         resolveTypes(res, context);
+        reportMissingInferred(missingGenerics());
       }
     return actualTypeParameters();
   }
@@ -1679,11 +1688,27 @@ public class Call extends AbstractCall
 
     if (mustReportMissingImmediately(rt) &&
       // see test #5391 for when this might happen
-        !_calledFeature.hasOpenGenericsArgList())
+        !(_calledFeature.hasOpenGenericsArgList() && !foundConflicts(conflict)))
       {
         reportConflicts(conflict, foundAt);
         reportMissingInferred(missing);
       }
+  }
+
+
+  /**
+   * Checks if a conflict was found when inferring generics.
+   *
+   * @param conflict
+   * @return
+   */
+  private boolean foundConflicts(boolean[] conflict)
+  {
+    for (var c : conflict)
+      {
+        if (c) { return c; }
+      }
+    return false;
   }
 
 
