@@ -37,8 +37,6 @@ JARS_LSP_LSP4J_GENERATOR = $(BUILD_DIR)/jars/org.eclipse.lsp4j.generator-0.23.1.
 JARS_LSP_LSP4J_JSONRPC   = $(BUILD_DIR)/jars/org.eclipse.lsp4j.jsonrpc-0.23.1.jar
 JARS_LSP_GSON            = $(BUILD_DIR)/jars/gson-2.11.0.jar
 
-LSP_JAR = $(BUILD_DIR)/lsp.jar
-
 $(JARS_LSP_LSP4J):
 	mkdir -p $(@D)
 	curl $(LSP_LSP4J_URL) --output $@
@@ -97,5 +95,5 @@ lsp/debug/socket: $(CLASS_FILES_LSP)
 	mkdir -p runDir
 	java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=127.0.0.1:8000 -cp $(CLASSES_DIR):$(CLASSES_DIR_LSP):$(JARS_LSP_LSP4J):$(JARS_LSP_LSP4J_GENERATOR):$(JARS_LSP_LSP4J_JSONRPC):$(JARS_LSP_GSON) $(LSP_JAVA_ARGS) dev.flang.lsp.Main -socket --port=$(LANGUAGE_SERVER_PORT)
 
-$(LSP_JAR): $(CLASS_FILES_LSP)
-	jar cfm $(LSP_JAR) assets/Manifest.txt -C $(BUILD_DIR)/classes . -C $(CLASSES_DIR_LSP) .
+$(BUILD_DIR)/lsp.jar: $(CLASS_FILES_LSP)
+	jar cfm $@ assets/Manifest.txt -C $(BUILD_DIR)/classes . -C $(CLASSES_DIR_LSP) .
