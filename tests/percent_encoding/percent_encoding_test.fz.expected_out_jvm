@@ -1,0 +1,48 @@
+ENCODING:
+
+'' [expected]
+'' [OK]
+true
+'%20' [expected]
+'%20' [OK]
+true
+'fuzion-lang.dev%2Fdocs%2Fbase%2Fcontainer%20%28no%20arguments%29%2FMutable_Map%20%282%20arguments%29%2Findex%20%5B%20%5D%20%3A%3D%20%20%282%20arguments%29%2F' [expected]
+'fuzion-lang.dev%2Fdocs%2Fbase%2Fcontainer%20%28no%20arguments%29%2FMutable_Map%20%282%20arguments%29%2Findex%20%5B%20%5D%20%3A%3D%20%20%282%20arguments%29%2F' [OK]
+true
+'%F0%9F%91%8B%F0%9F%8C%8F%E2%9D%97%EF%B8%8F' [expected]
+'%F0%9F%91%8B%F0%9F%8C%8F%E2%9D%97%EF%B8%8F' [OK]
+true
+'%21%22%C2%A7%24%25%26%2F%7B%28%5B%29%5D%3D%7D%C3%9F%3F%5C%C2%B4%60%40%C3%9C%C3%BC%2A%2B~%C3%96%C3%B6%C3%84%C3%A4%27%23%3E%3C%7C%3B%2C%3A._-' [expected]
+'%21%22%C2%A7%24%25%26%2F%7B%28%5B%29%5D%3D%7D%C3%9F%3F%5C%C2%B4%60%40%C3%9C%C3%BC%2A%2B~%C3%96%C3%B6%C3%84%C3%A4%27%23%3E%3C%7C%3B%2C%3A._-' [OK]
+true
+
+
+DECODING:
+
+'' [expected]
+'' [OK]
+'' [OK]
+true
+' ' [expected]
+' ' [OK]
+' ' [OK]
+true
+'fuzion-lang.dev/docs/base/container (no arguments)/Mutable_Map (2 arguments)/index [ ] :=  (2 arguments)/' [expected]
+'fuzion-lang.dev/docs/base/container (no arguments)/Mutable_Map (2 arguments)/index [ ] :=  (2 arguments)/' [OK]
+'fuzion-lang.dev/docs/base/container (no arguments)/Mutable_Map (2 arguments)/index [ ] :=  (2 arguments)/' [OK]
+true
+'fuzion-lang.dev/docs/base/container (no arguments)/Mutable_Map (2 arguments)/index [ ] :=  (2 arguments)/' [expected]
+'fuzion-lang.dev/docs/base/container (no arguments)/Mutable_Map (2 arguments)/index [ ] :=  (2 arguments)/' [OK]
+'fuzion-lang.dev/docs/base/container (no arguments)/Mutable_Map (2 arguments)/index [ ] :=  (2 arguments)/' [OK]
+true
+'👋🌏❗️' [expected]
+'👋🌏❗️' [OK]
+'👋🌏❗️' [OK]
+true
+'!"§$%&/{([)]=}ß?\´`@Üü*+~ÖöÄä'#><|;,:._-' [expected]
+'!"§$%&/{([)]=}ß?\´`@Üü*+~ÖöÄä'#><|;,:._-' [OK]
+'!"§$%&/{([)]=}ß?\´`@Üü*+~ÖöÄä'#><|;,:._-' [OK]
+true
+--error: broken string, failed to decode '%gh' at position 3--
+--error: unexpected end of input, expected two hex characters after '%' at position 3--
+--error: unexpected end of input, expected two hex characters after '%' at position 0--
