@@ -34,6 +34,6 @@ public Database ref is
   #
   public close outcome unit => abstract
 
-  # exeute a query
+  # execute a query
   #
   public query(q String, cb Function i32 (Sequence (String, String))) outcome unit => abstract
