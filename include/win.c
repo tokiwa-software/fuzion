@@ -1127,3 +1127,9 @@ int fzE_send_signal(int64_t pid, int sig)
   // windows does not have signals
   return -1;
 }
+
+int32_t fzE_path_max(void)
+{
+  return MAX_PATH;
+}
+

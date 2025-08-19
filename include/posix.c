@@ -51,6 +51,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <sys/wait.h>
 #include <signal.h>
 #include <unistd.h>     // close
+#include <limits.h>
 #include <time.h>
 #include <assert.h>
 #include <dirent.h>
@@ -953,3 +954,9 @@ int fzE_send_signal(int64_t pid, int sig)
 {
   return kill(pid, sig);
 }
+
+int32_t fzE_path_max(void)
+{
+  return PATH_MAX;
+}
+
