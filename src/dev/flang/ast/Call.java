@@ -940,7 +940,13 @@ public class Call extends AbstractCall
       {
         var fos = res._module.lookup(targetFeature, _name, this, traverseOuter, false);
         var calledName = FeatureName.get(_name, n);
-        result = FeatureAndOuter.filter(fos, pos(), FuzionConstants.OPERATION_CALL, calledName, ff -> ff.valueArguments().size() == n);
+        result = FeatureAndOuter.filter(
+          fos,
+          pos(),
+          FuzionConstants.OPERATION_CALL,
+          calledName,
+          ff -> ff.valueArguments().size() == n ||
+                ff.valueArguments().size() <= n && ff.hasOpenGenericsArgList(res));
       }
     return result;
   }
