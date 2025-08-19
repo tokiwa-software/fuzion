@@ -24,6 +24,6 @@
 # get the page size of the OS
 #
 public page_size i64
-  post result > 0
+  post debug: result > 0
 => fzE_page_size
 
