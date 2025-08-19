@@ -21,20 +21,26 @@ DECODING:
 
 '' [expected]
 '' [OK]
+'' [OK]
 true
 ' ' [expected]
+' ' [OK]
 ' ' [OK]
 true
 'fuzion-lang.dev/docs/base/container (no arguments)/Mutable_Map (2 arguments)/index [ ] :=  (2 arguments)/' [expected]
 'fuzion-lang.dev/docs/base/container (no arguments)/Mutable_Map (2 arguments)/index [ ] :=  (2 arguments)/' [OK]
+'fuzion-lang.dev/docs/base/container (no arguments)/Mutable_Map (2 arguments)/index [ ] :=  (2 arguments)/' [OK]
 true
 'fuzion-lang.dev/docs/base/container (no arguments)/Mutable_Map (2 arguments)/index [ ] :=  (2 arguments)/' [expected]
+'fuzion-lang.dev/docs/base/container (no arguments)/Mutable_Map (2 arguments)/index [ ] :=  (2 arguments)/' [OK]
 'fuzion-lang.dev/docs/base/container (no arguments)/Mutable_Map (2 arguments)/index [ ] :=  (2 arguments)/' [OK]
 true
 '👋🌏❗️' [expected]
 '👋🌏❗️' [OK]
+'👋🌏❗️' [OK]
 true
 '!"§$%&/{([)]=}ß?\´`@Üü*+~ÖöÄä'#><|;,:._-' [expected]
+'!"§$%&/{([)]=}ß?\´`@Üü*+~ÖöÄä'#><|;,:._-' [OK]
 '!"§$%&/{([)]=}ß?\´`@Üü*+~ÖöÄä'#><|;,:._-' [OK]
 true
 --error: broken string, failed to decode '%gh' at position 3--

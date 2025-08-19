@@ -28,15 +28,18 @@ percent_encoding_test =>
 
   test_encode(plain String, exp_enc String) unit =>
     say "'$exp_enc' [expected]"
-    act_enc := encodings.percent.encode plain
+    act_enc := encodings.percent.encode_str plain
     say "'$act_enc' {$act_enc = exp_enc ? "[OK]" : "[FAILED]"}"
-    say ($(encodings.percent.decode (act_enc)) = plain)
+    say ($(encodings.percent.decode_as_str (act_enc)) = plain)
 
   test_decode(enc String, exp_plain String) unit =>
     say "'$exp_plain' [expected]"
-    act_plain := encodings.percent.decode enc
+    act_plain := encodings.percent.decode_as_str enc
     say "'$act_plain' {$act_plain = exp_plain ? "[OK]" : "[FAILED]"}"
-    say (encodings.percent.encode (act_plain.val) = enc.replace "+" "%20")
+    bytes := encodings.percent.decode_as_bytes enc
+    act_plain_from_bytes := bytes.ok ? String.from_bytes bytes.val : $bytes
+    say "'$act_plain_from_bytes' {$act_plain_from_bytes = exp_plain ? "[OK]" : "[FAILED]"}"
+    say (encodings.percent.encode_str (act_plain.val) = enc.replace "+" "%20")
 
 
   test_encode "" ""
@@ -56,9 +59,10 @@ percent_encoding_test =>
   test_decode "%F0%9F%91%8B%F0%9F%8C%8F%E2%9D%97%EF%B8%8F" "👋🌏❗️"
   test_decode "%21%22%C2%A7%24%25%26%2F%7B%28%5B%29%5D%3D%7D%C3%9F%3F%5C%C2%B4%60%40%C3%9C%C3%BC%2A%2B~%C3%96%C3%B6%C3%84%C3%A4%27%23%3E%3C%7C%3B%2C%3A._-" "!\"§\$%&/\{([)]=\}ß?\\´`@Üü*+~ÖöÄä'#><|;,:._-"
 
-  say (encodings.percent.decode "012%gh678")
-  say (encodings.percent.decode "012%4")
-  say (encodings.percent.decode "%")
+  say (encodings.percent.decode_as_str "012%gh678")
+  say (encodings.percent.decode_as_str "012%4")
+  say (encodings.percent.decode_as_str "%")
+  say (encodings.percent.decode_as_bytes "/§@")
 
 
   # NYI: test binary decoding
