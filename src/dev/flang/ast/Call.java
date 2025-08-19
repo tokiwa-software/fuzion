@@ -945,7 +945,7 @@ public class Call extends AbstractCall
           pos(),
           FuzionConstants.OPERATION_CALL,
           calledName,
-          ff -> ff.generics().sizeMatches(n));
+          ff -> ff.valueArguments().size() == n || ff.generics().sizeMatches(n));
       }
     return result;
   }
