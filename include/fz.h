@@ -761,5 +761,6 @@ int fzE_is_null(void * p);
 
 int fzE_send_signal(int64_t pid, int sig);
 
+int64_t fzE_page_size(void);
 
 #endif /* fz.h  */
