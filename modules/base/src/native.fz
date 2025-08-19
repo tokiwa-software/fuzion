@@ -407,5 +407,8 @@ module fzE_is_null(p Native_Ref) i32 => native
 
 module fzE_send_signal(pid i64, signal i32) i32 => native
 
+
 module fzE_path_max i32 => native
 
+
+module fzE_page_size i64 => native

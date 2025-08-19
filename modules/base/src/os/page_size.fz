@@ -17,12 +17,13 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature os.max_path_length
+#  Source code of Fuzion standard library feature os.page_size
 #
 # -----------------------------------------------------------------------
 
-# get the maximum path length of the OS
+# get the page size of the OS
 #
-public max_path_length i32
-  post debug: result > 0
-=> fzE_path_max
+public page_size i64
+  post result > 0
+=> fzE_page_size
+

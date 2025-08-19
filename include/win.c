@@ -1133,3 +1133,9 @@ int32_t fzE_path_max(void)
   return MAX_PATH;
 }
 
+int64_t fzE_page_size(void)
+{
+  SYSTEM_INFO sys_info;
+  GetSystemInfo(&sys_info);
+  return (int64_t)(uint64_t)sys_info.dwPageSize;
+}

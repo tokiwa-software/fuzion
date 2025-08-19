@@ -960,3 +960,7 @@ int32_t fzE_path_max(void)
   return PATH_MAX;
 }
 
+int64_t fzE_page_size(void)
+{
+  return sysconf(_SC_PAGESIZE);
+}
