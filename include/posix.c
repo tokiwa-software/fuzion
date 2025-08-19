@@ -964,3 +964,10 @@ int64_t fzE_page_size(void)
 {
   return sysconf(_SC_PAGESIZE);
 }
+
+int fzE_cwd(void * buf, size_t size)
+{
+  return getcwd(buf, size) == NULL
+    ? -1
+    : 0;
+}
