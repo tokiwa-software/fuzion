@@ -933,19 +933,19 @@ public class Html extends ANY
 
   private String typeArgAsString(AbstractFeature f, AbstractFeature relativeTo)
   {
-    if (f.resultType().dependsOnGenerics())
+    if (f.constraint().dependsOnGenerics())
       {
         return "<div class='fd-keyword'>type</div>"
                + (f.isOpenTypeParameter() ? "..." : "")
-               + "<span class='mx-5'>:</span>" + htmlEncodeNbsp(f.resultType().toString(true));
+               + "<span class='mx-5'>:</span>" + htmlEncodeNbsp(f.constraint().toString(true));
       }
     else
       {
-        var constraint = f.resultType().feature();
+        var constraint = f.constraint().feature();
 
         return "<div class='fd-keyword'>type</div>"
                 + (f.isOpenTypeParameter() ? "..." : "")
-                + (f.resultType().compareTo(Types.resolved.t_Any) == 0 ? "" :
+                + (f.constraint().compareTo(Types.resolved.t_Any) == 0 ? "" :
                     "<div class='mx-5'>:</div><a class='fd-feature fd-inherited' href='$1'>$2</a>"
                     .replace("$1", featureRelativeURL(constraint, relativeTo))
                     .replace("$2", htmlEncodedQualifiedName(constraint)));
