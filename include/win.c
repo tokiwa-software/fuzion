@@ -1128,6 +1128,11 @@ int fzE_send_signal(int64_t pid, int sig)
   return -1;
 }
 
+int32_t fzE_path_max(void)
+{
+  return MAX_PATH;
+}
+
 int64_t fzE_page_size(void)
 {
   SYSTEM_INFO sys_info;
