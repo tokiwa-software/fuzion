@@ -21,41 +21,56 @@
 #
 # -----------------------------------------------------------------------
 
-# percent (url) encoding and decoding
+# Percent (url) encoding and decoding as specified in RFC 3986 section 2.1
 #
-# bytes of non ascii and reserved characters are individually converted
-# to hexadecimal representation with leading percent sign '%'
+# * The alphanumeric characters "a" through "z", "A" through "Z" and "0" through "9" remain the same.
+# * The special characters "-", ".", "_", and "~" remain the same.
+# * All other characters are unsafe and get converted.
 #
 public percent is
 
+  # NYI: UNDER DEVELOPMENT: add encoding with space as "+" ?
+  # NYI: UNDER DEVELOPMENT: add encoding to application/x-www-form-urlencoded MIME format ?
 
-  # apply percent encoding (url encoding) to an utf8 string, spaces are encoded as "%20" not "+"
+
+  # is this the value of an ascii character that is considered save (unreserved) according to RFC 3986 section 2.3
+  u32.save_chr =>
+    ("A".val <= val <= "Z".val || "a".val <= val <= "z".val || "0".val <= val <= "9".val
+     || val = "-".val || val = ".".val || val = "_".val || val = "~".val)
+
+
+  # Percent encode (url encode) a Sequence of bytes, as specified in RFC 3986 section 2.1
   #
-  # e.g.
-  #   space is encoded as '%20' NOT '+'
-  #   ö is encoded as '%C3%B6' (utf8) and NOT '%F6' (Windows-1252)
+  # * Bytes values of a save (unreserved) character (A-Z, a-z, 0-9, "-", ".", "_" and "~") are encoded as that character.
+  # * All other values are encoded as "%HH", where HH is the hexadecimal representation of the byte, using uppercase letters
   #
-  public encode(str String) String =>
-
-    # helper feature to encode a codepoint
-    enc_c(c codepoint) String =>
-      if c.is_ascii_alpha_num || c = "-" || c = "_" || c = "~" || c = "."
-        $c
-      else
-        c.utf8.map (val -> "%" + val.as_string 16 .upper_case)
-         .as_string ""
-
-    str.as_codepoints.map enc_c .as_string ""
+  public encode_bytes(data Sequence u8) String =>
+    data.map b->(b.as_u32.save_chr ? (codepoint b.as_u32) : ("%" + b.as_string 16 .upper_case))
+        .as_string ""
 
 
-  # decode a percent encoded (url encoding) utf8 string
-  # decodes '+' as space
+  # Percent encode (url encode) an utf8 string, as specified in RFC 3986 section 2.1
   #
-  public decode(enc_str String) outcome String
-  # NYI: does this restriction make sense? Should non ascii characters be allowed? Decoding works without it
-  pre debug: enc_str.as_codepoints ∀ (c->c.is_ascii)
+  # * The alphanumeric characters "a" through "z", "A" through "Z" and "0" through "9" remain the same.
+  # * The special characters "-", ".", "_", and "~" remain the same.
+  # * All other characters are unsafe, their bytes are individually converted to a 3-character string "%HH",
+  #   where HH is the two-digit hexadecimal representation of the byte. This also applies to the space character.
+  #
+  public encode_str(str String) String => encode_bytes str.utf8
+
+
+  # Decode a percent encoded (url encoded) utf8 string
+  #
+  # * Percent encoded bytes ("%HH" where HH is the two-digit hexadecimal representation of the byte),
+  #   or sequences of those, are converted to the corresponding codepoint(s) in utf8
+  # * The plus character "+" is converted to a space " ".
+  #
+  public decode_as_str(enc_utf8 String) outcome String
+  # NYI: CLEANUP: does this restriction make sense? Should non ascii characters be allowed? Decoding works without it
+  # pre debug: enc_str.as_codepoints ∀ v-> ("A" <= v <= "Z" || "a" <= v <= "z"
+  #               || "0" <= v <= "9" || v = "-" || v = "." || v = "_" || v = "~" || v = "%" || v = "+")
   =>
-    enc := enc_str.as_codepoints
+    enc := enc_utf8.as_codepoints
     len := enc.count
     dec(res String, i i32) outcome String =>
       if i >= len
@@ -71,9 +86,9 @@ public percent is
             if j+3 > len
               error "unexpected end of input, expected two hex characters after '%' at position $j"
             else
-              match encodings.base16.decode_str (enc_str.substring_codepoint j+1 j+3).upper_case
+              match encodings.base16.decode_str (enc_utf8.substring_codepoint j+1 j+3).upper_case
                 b array u8 => bytes.val ++ b
-                e error => error "broken string, failed to decode '{enc_str.substring_codepoint j j+3}' at position $j"
+                e error => error "broken string, failed to decode '{enc_utf8.substring_codepoint j j+3}' at position $j"
         until !new_bytes.ok
           new_bytes.err
         else
@@ -81,12 +96,16 @@ public percent is
     dec "" 0
 
 
-  # decode a percent encoded (url encoding) into a sequence of bytes
-  # decodes '+' as space
+  # Decode a percent encoded (url encoded) string into a sequence of bytes
   #
-  public decode_binary(enc_str String) outcome (Sequence u8)
-  # NYI: does this restriction make sense? Should non ascii characters be allowed? Decoding works without it
-  pre debug: enc_str.as_codepoints ∀ (c->c.is_ascii)
+  # * The alphanumeric characters "a" through "z", "A" through "Z" and "0" through "9",
+  #   as well as the special characters "-", ".", "_", and "~" are converted to the corresponding ascii value.
+  # * Percent encoded bytes ("%xy") are simply converted to a byte.
+  # * The plus character "+" is converted to the ascii value of the space character " ".
+  #
+  public decode_as_bytes(enc_str String) outcome (Sequence u8)
+  pre debug: enc_str.as_codepoints ∀ v-> ("A" <= v <= "Z" || "a" <= v <= "z"
+                || "0" <= v <= "9" || v = "-" || v = "." || v = "_" || v = "~" || v = "%" || v = "+")
   =>
     enc := enc_str.utf8
     len := enc.count
@@ -112,3 +131,5 @@ public percent is
         else
           dec (res ++ bytes.val) j
     dec "".utf8 0
+
+    # NYI: CLEANUP: merge/unify decode versions?
