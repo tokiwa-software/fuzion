@@ -22,7 +22,7 @@
 # -----------------------------------------------------------------------
 
 
-# read a HTTP response message
+# read a HTTP request message
 #
 public read_request(
   # mutate effect from which to read the bytes of the request
