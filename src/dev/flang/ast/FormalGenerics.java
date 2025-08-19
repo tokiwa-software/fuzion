@@ -92,9 +92,26 @@ public class FormalGenerics extends ANY
    */
   public boolean sizeMatches(List<AbstractType> actualGenerics)
   {
+    return sizeMatches(actualGenerics.size());
+  }
+
+
+  /**
+   * Check if the number of actual generics provided as an argument matches the
+   * number of formal arguments required by this.  This takes into account that
+   * the formal generics list might be open, i.e, the last argument can be
+   * repeated zero or more times.
+   *
+   * @param n the number of actual generics.
+   *
+   * @return true iff the number of actual arguments fits with the number of
+   * expected arguments.
+   */
+  public boolean sizeMatches(int n)
+  {
     return isOpen()
-      ? (_feature.typeArguments().size()-1) <= actualGenerics.size()
-      : _feature.typeArguments().size() == actualGenerics.size();
+      ? (_feature.typeArguments().size()-1) <= n
+      : _feature.typeArguments().size() == n;
   }
 
 
