@@ -241,7 +241,7 @@ But the following tools/dependencies are used e.g. for generating the documentat
 - antlr, for the ebnf grammar
 - asciidoctor, asciidoctor-pdf
 - sed, for normalizing test output
-- wget / curl, for downloading jar dependencies
+- wget, for downloading jar dependencies
 - org.eclipse.lsp4j and others, for the language server
 
 

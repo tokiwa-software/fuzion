@@ -39,19 +39,19 @@ JARS_LSP_GSON            = $(BUILD_DIR)/jars/gson-2.11.0.jar
 
 $(JARS_LSP_LSP4J):
 	mkdir -p $(@D)
-	curl $(LSP_LSP4J_URL) --output $@
+	wget --output-document $@ $(LSP_LSP4J_URL)
 
 $(JARS_LSP_LSP4J_GENERATOR):
 	mkdir -p $(@D)
-	curl $(LSP_LSP4J_GENERATOR_URL) --output $@
+	wget --output-document $@ $(LSP_LSP4J_GENERATOR_URL)
 
 $(JARS_LSP_LSP4J_JSONRPC):
 	mkdir -p $(@D)
-	curl $(LSP_LSP4J_JSONRPC_URL) --output $@
+	wget --output-document $@ $(LSP_LSP4J_JSONRPC_URL)
 
 $(JARS_LSP_GSON):
 	mkdir -p $(@D)
-	curl $(LSP_GSON_URL) --output $@
+	wget --output-document $@ $(LSP_GSON_URL)
 
 
 $(BUILD_DIR)/jars/lsp.sha256: $(JARS_LSP_LSP4J) $(JARS_LSP_LSP4J_GENERATOR) $(JARS_LSP_LSP4J_JSONRPC) $(JARS_LSP_GSON)
