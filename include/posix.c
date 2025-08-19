@@ -953,3 +953,8 @@ int fzE_send_signal(int64_t pid, int sig)
 {
   return kill(pid, sig);
 }
+
+int64_t fzE_page_size(void)
+{
+  return sysconf(_SC_PAGESIZE);
+}
