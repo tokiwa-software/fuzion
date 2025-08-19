@@ -30,14 +30,14 @@ mmap_test =>
 
   say <| io.file.use testfile io.file.mode.append ()->
 
-    io.file.writer.write (array u8 page_size.as_i32 i->0)
+    io.file.writer.write (array u8 os.page_size.as_i32 i->0)
       .error.get
     io.file.writer.write "hello!".utf8
       .error.get
     io.file.writer.flush
       .get
 
-    offset := page_size
+    offset := os.page_size
 
     # map 6 bytes of file starting from the end of the '+'s.
     say <| f.mmap offset (i64 6) ()->
@@ -49,6 +49,6 @@ mmap_test =>
 
 
   say <| io.file.use testfile io.file.mode.read ()->
-    String.from_bytes ((io.buffered io.file.file_mutate).read_fully.drop page_size.as_i32)
+    String.from_bytes ((io.buffered io.file.file_mutate).read_fully.drop os.page_size.as_i32)
 
   say (io.file.delete testfile)
