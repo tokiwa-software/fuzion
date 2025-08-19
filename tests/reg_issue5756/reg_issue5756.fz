@@ -21,6 +21,10 @@
 #
 # -----------------------------------------------------------------------
 
+w(f ()->Any) => f.call
+say (w ()->0815)
+say (w tuple)
+
 x(f (i32)->Any) => f.call 1
 say (x XS_->0815)
 say (x tuple)
@@ -32,3 +36,7 @@ say (y tuple)
 z(f (i32,i32,i32)->Any) => f.call 1 1 1
 say (z _,_,_->42069)
 say (z tuple)
+
+zz(f (i32,i32,i32,i32)->Any) => f.call 1 1 1 1
+say (zz _,_,_,_->42069)
+say (zz tuple)
