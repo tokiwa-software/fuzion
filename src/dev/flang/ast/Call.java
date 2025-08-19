@@ -687,8 +687,6 @@ public class Call extends AbstractCall
         addPendingError(res, targetFeature);
       }
 
-    resolveTypesOfActuals(res, context);
-
     if (POSTCONDITIONS) ensure
       (Errors.any() || !calledFeatureKnown() || _calledFeature != Types.f_ERROR || targetVoid,
        Errors.any() || _target        != Call.ERROR,
