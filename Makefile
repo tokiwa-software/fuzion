@@ -132,6 +132,8 @@ MOD_HTTP              = $(BUILD_DIR)/modules/http.fum
 MOD_CLANG             = $(BUILD_DIR)/modules/clang.fum
 MOD_WOLFSSL           = $(BUILD_DIR)/modules/wolfssl.fum
 MOD_JSON_ENCODE       = $(BUILD_DIR)/modules/json_encode.fum
+MOD_DATABASE          = $(BUILD_DIR)/modules/database.fum
+MOD_SQLITE            = $(BUILD_DIR)/modules/sqlite.fum
 
 MOD_JAVA_BASE_DIR              = $(BUILD_DIR)/modules/java.base
 MOD_JAVA_XML_DIR               = $(BUILD_DIR)/modules/java.xml
@@ -460,7 +462,9 @@ FZ_MODULES = \
 			$(MOD_HTTP) \
 			$(MOD_CLANG) \
 			$(MOD_WOLFSSL) \
-			$(MOD_JSON_ENCODE)
+			$(MOD_JSON_ENCODE) \
+			$(MOD_DATABASE) \
+			$(MOD_SQLITE)
 
 C_FILES = $(shell find $(FZ_SRC) \( -path ./build -o -path ./.git \) -prune -o -name '*.c' -print)
 
@@ -693,6 +697,18 @@ $(MOD_NOM): $(MOD_BASE) $(FZ) $(shell find $(FZ_SRC)/modules/nom/src -name "*.fz
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC)/modules/nom $(@D)
 	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/nom/src -saveModule=$@
+
+$(MOD_DATABASE): $(MOD_BASE) $(FZ) $(shell find $(FZ_SRC)/modules/database/src -name "*.fz")
+	rm -rf $(@D)/database
+	mkdir -p $(@D)
+	cp -rf $(FZ_SRC)/modules/database $(@D)
+	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/database/src -saveModule=$@
+
+$(MOD_SQLITE): $(MOD_DATABASE) $(FZ) $(shell find $(FZ_SRC)/modules/sqlite/src -name "*.fz")
+	rm -rf $(@D)/sqlite
+	mkdir -p $(@D)
+	cp -rf $(FZ_SRC)/modules/sqlite $(@D)
+	$(FZ) -modules=database -sourceDirs=$(BUILD_DIR)/modules/sqlite/src -saveModule=$@
 
 $(MOD_UUID): $(MOD_BASE) $(FZ) $(shell find $(FZ_SRC)/modules/uuid/src -name "*.fz")
 	rm -rf $(@D)/uuid
