@@ -81,24 +81,15 @@ public class OptimizedFUIR extends GeneratingFUIR {
   {
     return
       _original.codeAt(s) == ExprKind.Call &&
-      _original.accessedClazz(s) != NO_CLAZZ &&
-      _original.clazzIsUnitType(_original.accessedClazz(s)) &&
-      clazzIsConstructor(_original.accessedClazz(s)) &&
-      _original.clazzOuterRef(_original.accessedClazz(s)) == NO_CLAZZ
+      accessedClazz(s) != NO_CLAZZ &&
+      clazzIsUnitType(accessedClazz(s)) &&
+      isConstructor(accessedClazz(s)) &&
+      clazzOuterRef(accessedClazz(s)) == NO_CLAZZ &&
+      // no side effects
+      !withinCode(clazzCode(accessedClazz(s)))
     ||
       _original.codeAt(s) == ExprKind.Pop &&
       isUnitLikeConstructor(s-1);
-  }
-
-
-  /**
-   * Is the clazz a constructor?
-   *
-   * @return
-   */
-  private boolean clazzIsConstructor(int cl)
-  {
-    return clazzResultClazz(cl) == cl;
   }
 
 
@@ -106,10 +97,10 @@ public class OptimizedFUIR extends GeneratingFUIR {
   public String comment(int s)
   {
     return _original.codeAt(s) == ExprKind.Call
-      ? "Call is a NOP, eliminated:" + _original.clazzAsStringHuman(_original.accessedClazz(s))
+      ? "Call is a NOP, eliminated:" + clazzAsStringHuman(accessedClazz(s))
       : _original.codeAt(s) == ExprKind.Pop
       ? "Call of Pop is a NOP, eliminated."
-      : _original.comment(s);
+      : comment(s);
   }
 
 
