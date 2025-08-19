@@ -30,10 +30,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 // https://stackoverflow.com/questions/11040133/what-does-defining-win32-lean-and-mean-exclude-exactly#comment108482188_11040230
 #define WIN32_LEAN_AND_MEAN
 
-#ifdef GC_THREADS
 #define GC_DONT_INCLUDE_WINDOWS_H
 #include <gc.h>
-#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -48,13 +46,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <windows.h>
 #include <ws2tcpip.h>
 #include <winbase.h>
+#include <process.h>
 #include <synchapi.h> // WaitForSingleObject
 #include <namedpipeapi.h>
-
-#ifdef FUZION_ENABLE_THREADS
-// NYI: UNDER DEVELOPMENT: remove POSIX imports
-#include <pthread.h>
-#endif
 
 #include "fz.h"
 
@@ -597,9 +591,7 @@ int fzE_lstat(const char *pathname, int64_t * metadata)
   return fzE_stat(pathname, metadata);
 }
 
-#ifdef FUZION_ENABLE_THREADS
-pthread_mutex_t fzE_global_mutex;
-#endif
+CRITICAL_SECTION fzE_global_mutex;
 
 /**
  * Run plattform specific initialisation code
@@ -611,21 +603,26 @@ void fzE_init()
   SetConsoleOutputCP(CP_UTF8);
   // also set input code page
   SetConsoleCP(CP_UTF8);
-#ifdef FUZION_ENABLE_THREADS
-  pthread_mutexattr_t attr;
-  fzE_mem_zero_secure(&fzE_global_mutex, sizeof(fzE_global_mutex));
-  bool res = pthread_mutexattr_init(&attr) == 0 &&
-            // NYI: UNDER DEVELOPMENT: #1646 setprotocol returns EINVAL on windows.
-            // pthread_mutexattr_setprotocol(&attr, PTHREAD_PRIO_INHERIT) == 0 &&
-            pthread_mutex_init(&fzE_global_mutex, &attr) == 0;
-  assert(res);
-#endif
 
-#ifdef GC_THREADS
+  InitializeCriticalSection(&fzE_global_mutex);
+  // NYI: DeleteCriticalSection(&fzE_global_mutex);
+
   GC_INIT();
-#endif
 }
 
+typedef void* (*posix_thread_func)(void*);
+typedef struct {
+  posix_thread_func func;
+  void* arg;
+} thread_trampoline_t;
+
+
+unsigned int __stdcall trampoline_wrapper(void* raw_arg) {
+  thread_trampoline_t* trampoline = (thread_trampoline_t*)raw_arg;
+  trampoline->func(trampoline->arg);
+  // NYI: free: trampoline
+  return 0;
+}
 
 /**
  * Start a new thread, returns a pointer to the thread.
@@ -633,40 +630,29 @@ void fzE_init()
 void * fzE_thread_create(void *(*code)(void *),
                           void *restrict args)
 {
-#ifdef FUZION_ENABLE_THREADS
-  pthread_t * pt = fzE_malloc_safe(sizeof(pthread_t));
-#ifdef GC_THREADS
-  int res = GC_pthread_create(pt,NULL,code,args);
-#else
-  int res = pthread_create(pt,NULL,code,args);
-#endif
-  if (res!=0)
-  {
-    fprintf(stderr,"*** pthread_create failed with return code %d\012",res);
-    exit(EXIT_FAILURE);
-  }
-  return pt;
-#else
-  printf("You discovered a severe bug. (fzE_thread_join)");
-  exit(EXIT_FAILURE);
-  return NULL;
-#endif
+  thread_trampoline_t* trampoline = (thread_trampoline_t*)fzE_malloc_safe(sizeof(thread_trampoline_t));
+  trampoline->func = code;
+  trampoline->arg = args;
+  HANDLE handle = (HANDLE)GC_beginthreadex(
+    NULL,                // security attributes
+    0,                   // stack size
+    trampoline_wrapper,  // thread function
+    trampoline,          // argument to thread function
+    0,                   // creation flags
+    NULL                 // thread ID (optional, can be NULL)
+  );
+
+  assert(handle != NULL);
+
+  return handle;
 }
 
-
 /**
- * Join with a running thread.
- */
-void fzE_thread_join(void * thrd)
-{
-#ifdef FUZION_ENABLE_THREADS
-#ifdef GC_THREADS
-  GC_pthread_join(*(pthread_t *)thrd, NULL);
-#else
-  pthread_join(*(pthread_t *)thrd, NULL);
-#endif
-  fzE_free(thrd);
-#endif
+* Join with a running thread.
+*/
+void fzE_thread_join(void * thrd) {
+  WaitForSingleObject((HANDLE)thrd, INFINITE);
+  CloseHandle((HANDLE)thrd);
 }
 
 
@@ -675,12 +661,7 @@ void fzE_thread_join(void * thrd)
  */
 void fzE_lock()
 {
-#ifdef FUZION_ENABLE_THREADS
-  int res = pthread_mutex_lock(&fzE_global_mutex);
-  assert( res == 0 );
-#else
-  printf("You discovered a severe bug. (fzE_lock)");
-#endif
+  EnterCriticalSection(&fzE_global_mutex);
 }
 
 
@@ -689,12 +670,7 @@ void fzE_lock()
  */
 void fzE_unlock()
 {
-#ifdef FUZION_ENABLE_THREADS
-  int res = pthread_mutex_unlock(&fzE_global_mutex);
-  assert( res == 0 );
-#else
-  printf("You discovered a severe bug. (fzE_unlock)");
-#endif
+  LeaveCriticalSection(&fzE_global_mutex);
 }
 
 
@@ -940,85 +916,58 @@ void * fzE_file_open(char * file_name, int64_t * open_results, file_open_mode mo
 
 
 void * fzE_mtx_init() {
-#ifdef FUZION_ENABLE_THREADS
-  pthread_mutex_t *mtx = (pthread_mutex_t *)fzE_malloc_safe(sizeof(pthread_mutex_t));
-  return pthread_mutex_init(mtx, NULL) == 0 ? (void *)mtx : NULL;
-#else
-  return NULL;
-#endif
+  CRITICAL_SECTION *mtx = (CRITICAL_SECTION *)fzE_malloc_safe(sizeof(CRITICAL_SECTION));
+  InitializeCriticalSection(mtx);
+  return (void *)mtx;
 }
 
-int32_t fzE_mtx_lock(void * mtx) {
-#ifdef FUZION_ENABLE_THREADS
-  return pthread_mutex_lock((pthread_mutex_t *)mtx) == 0 ? 0 : -1;
-#else
+int32_t fzE_mtx_lock(void *mtx) {
+  EnterCriticalSection((CRITICAL_SECTION *)mtx);
   return 0;
-#endif
 }
 
-int32_t fzE_mtx_trylock(void * mtx) {
-#ifdef FUZION_ENABLE_THREADS
-  return pthread_mutex_trylock((pthread_mutex_t *)mtx) == 0 ? 0 : -1;
-#else
+int32_t fzE_mtx_trylock(void *mtx) {
+  return TryEnterCriticalSection((CRITICAL_SECTION *)mtx) ? 0 : -1;
+}
+
+int32_t fzE_mtx_unlock(void *mtx) {
+  LeaveCriticalSection((CRITICAL_SECTION *)mtx);
   return 0;
-#endif
 }
 
-int32_t fzE_mtx_unlock(void * mtx) {
-#ifdef FUZION_ENABLE_THREADS
-  return pthread_mutex_unlock((pthread_mutex_t *)mtx) == 0 ? 0 : -1;
-#else
-  return 0;
-#endif
-}
-
-void fzE_mtx_destroy(void * mtx) {
-#ifdef FUZION_ENABLE_THREADS
-  pthread_mutex_destroy((pthread_mutex_t *)mtx);
+void fzE_mtx_destroy(void *mtx) {
+  DeleteCriticalSection((CRITICAL_SECTION *)mtx);
   // NYI: free(mtx);
-#else
-#endif
 }
 
 void * fzE_cnd_init() {
-#ifdef FUZION_ENABLE_THREADS
-  pthread_cond_t *cnd = (pthread_cond_t *)fzE_malloc_safe(sizeof(pthread_cond_t));
-  return pthread_cond_init(cnd, NULL) == 0 ? (void *)cnd : NULL;
-#else
- return NULL;
-#endif
+  CONDITION_VARIABLE *cnd = (CONDITION_VARIABLE *)fzE_malloc_safe(sizeof(CONDITION_VARIABLE));
+  InitializeConditionVariable(cnd);
+  return (void *)cnd;
 }
 
-int32_t fzE_cnd_signal(void * cnd) {
-#ifdef FUZION_ENABLE_THREADS
-  return pthread_cond_signal((pthread_cond_t *)cnd) == 0 ? 0 : -1;
-#else
+int32_t fzE_cnd_signal(void *cnd) {
+  WakeConditionVariable((CONDITION_VARIABLE *)cnd);
   return 0;
-#endif
 }
 
-int32_t fzE_cnd_broadcast(void * cnd) {
-#ifdef FUZION_ENABLE_THREADS
-  return pthread_cond_broadcast((pthread_cond_t *)cnd) == 0 ? 0 : -1;
-#else
+int32_t fzE_cnd_broadcast(void *cnd) {
+  WakeAllConditionVariable((CONDITION_VARIABLE *)cnd);
   return 0;
-#endif
 }
 
-int32_t fzE_cnd_wait(void * cnd, void * mtx) {
-#ifdef FUZION_ENABLE_THREADS
-  return pthread_cond_wait((pthread_cond_t *)cnd, (pthread_mutex_t *)mtx) == 0 ? 0 : -1;
-#else
-  return 0;
-#endif
+int32_t fzE_cnd_wait(void *cnd, void *mtx) {
+  return SleepConditionVariableCS(
+      (CONDITION_VARIABLE *)cnd,
+      (CRITICAL_SECTION *)mtx,
+      INFINITE)
+    ? 0
+    : -1;
 }
 
-void fzE_cnd_destroy(void * cnd) {
-#ifdef FUZION_ENABLE_THREADS
-  pthread_cond_destroy((pthread_cond_t *)cnd);
+void fzE_cnd_destroy(void *cnd) {
+  // Windows CONDITION_VARIABLEs do not need explicit destruction.
   // NYI: free(cnd);
-#else
-#endif
 }
 
 

@@ -68,7 +68,10 @@ envir_var_kv := [
   "dev_flang_fuir_analysis_dfa_TRACE_ALL_EFFECT_ENVS",
   # without this test/socket fails on windows,
   # winsock2 seems to need this to properly load the dlls
-  "SYSTEMROOT"
+  "SYSTEMROOT",
+  # next two are sometimes needed on windows
+  "TEMP",
+  "TMP"
 ].map k->
   if k="DYLD_FALLBACK_LIBRARY_PATH"||k="PATH"||k="LD_LIBRARY_PATH"
     (envir.vars.get k)
