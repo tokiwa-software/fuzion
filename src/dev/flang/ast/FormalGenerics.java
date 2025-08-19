@@ -104,8 +104,8 @@ public class FormalGenerics extends ANY
    *
    * @param n the number of actual generics.
    *
-   * @return true iff the number of actual arguments fits with the number of
-   * expected arguments.
+   * @return true iff the number of actual type parameters fits with the number of
+   * expected type parameters.
    */
   public boolean sizeMatches(int n)
   {
