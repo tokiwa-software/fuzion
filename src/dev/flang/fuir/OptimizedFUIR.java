@@ -68,7 +68,10 @@ public class OptimizedFUIR extends GeneratingFUIR {
   @Override
   public ExprKind codeAt(int s)
   {
-    return isUnitLikeConstructor(s)
+    // NYI: BUG: logic due to bug in c backend:  s == NO_SITE && s == -1
+    return s == NO_SITE || s == -1
+      ? ExprKind.Comment
+      : isUnitLikeConstructor(s)
       ? ExprKind.Comment
       : _original.codeAt(s);
   }
@@ -76,8 +79,15 @@ public class OptimizedFUIR extends GeneratingFUIR {
 
   private boolean isUnitLikeConstructor(int s)
   {
-    return _original.codeAt(s) == ExprKind.Call && _original.clazzIsUnitType(_original.accessedClazz(s)) && clazzIsConstructor(_original.accessedClazz(s)) && _original.clazzOuterRef(_original.accessedClazz(s)) == NO_CLAZZ ||
-        _original.codeAt(s) == ExprKind.Pop  && _original.codeAt(s-1) == ExprKind.Call && _original.clazzIsUnitType(_original.accessedClazz(s-1)) && clazzIsConstructor(_original.accessedClazz(s-1)) && _original.clazzOuterRef(_original.accessedClazz(s-1)) == NO_CLAZZ;
+    return
+      _original.codeAt(s) == ExprKind.Call &&
+      _original.accessedClazz(s) != NO_CLAZZ &&
+      _original.clazzIsUnitType(_original.accessedClazz(s)) &&
+      clazzIsConstructor(_original.accessedClazz(s)) &&
+      _original.clazzOuterRef(_original.accessedClazz(s)) == NO_CLAZZ
+    ||
+      _original.codeAt(s) == ExprKind.Pop &&
+      isUnitLikeConstructor(s-1);
   }
 
 
