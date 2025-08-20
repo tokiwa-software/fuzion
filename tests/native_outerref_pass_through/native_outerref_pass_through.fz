@@ -17,9 +17,14 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test mod_sqlite
+#  Source code of Fuzion test native_outerref_pass_through
 #
 # -----------------------------------------------------------------------
+
+# If we pass a Function to a native feature we may need to create a wrapper
+# if the Function accesses the outer_ref and pass the wrapper function to
+# the native code.
+# this tests if this works as expected.
 
 
 # int sqlite3_open(
@@ -75,7 +80,6 @@ sqlite_database(db Native_Ref) : Database is
 
 
   public redef close outcome unit =>
-    # NYI: proper error handling
     check sqlite3_close db = 0
     unit
 
