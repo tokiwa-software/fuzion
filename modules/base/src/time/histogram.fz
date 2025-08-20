@@ -39,7 +39,7 @@
 public histogram(# title to be printed for this histogram
                  public title String,
 
-                 # For measuring a periodic jitter, this gives the period.
+                 # To measure period jitter, this provides the period.
                  #
                  # If the period is given it becomes possible to detect drift,
                  # i.e, the actual times are measured relative to the expected
@@ -50,6 +50,11 @@ public histogram(# title to be printed for this histogram
                  # Note that periods like `1/60` cannot be traced accurately, the
                  # rounding error in 16666666ns (or 16666667ns) will add up over
                  # time!
+                 #
+                 # if period is `nil`, this will measure cycle jitter.
+                 #
+                 # See JEDEC Standard No. 65B for definition of period and cycle
+                 # jitter.
                  #
                  public period option time.duration,
 
