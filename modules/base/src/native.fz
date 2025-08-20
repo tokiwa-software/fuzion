@@ -412,3 +412,6 @@ module fzE_path_max i32 => native
 
 
 module fzE_page_size i64 => native
+
+
+module fzE_cwd(buf Array u8, size i64) i32 => native
