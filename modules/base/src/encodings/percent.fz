@@ -33,8 +33,8 @@ public percent is
   # NYI: UNDER DEVELOPMENT: add encoding to application/x-www-form-urlencoded MIME format ?
 
 
-  # is this the value of an ascii character that is considered save (unreserved) according to RFC 3986 section 2.3
-  u32.save_chr =>
+  # is this the value of an ascii character that is considered safe (unreserved) according to RFC 3986 section 2.3
+  u32.safe_chr =>
     ("A".val <= val <= "Z".val || "a".val <= val <= "z".val || "0".val <= val <= "9".val
      || val = "-".val || val = ".".val || val = "_".val || val = "~".val)
 
@@ -45,7 +45,7 @@ public percent is
   # * All other values are encoded as "%HH", where HH is the hexadecimal representation of the byte, using uppercase letters
   #
   public encode_bytes(data Sequence u8) String =>
-    data.map b->(b.as_u32.save_chr ? (codepoint b.as_u32) : ("%" + b.as_string 16 .upper_case))
+    data.map b->(b.as_u32.safe_chr ? (codepoint b.as_u32) : ("%" + b.as_string 16 .upper_case))
         .as_string ""
 
 
