@@ -74,11 +74,11 @@ public class ParserTool extends ANY
 
   private static final int END_OF_FEATURE_CACHE_MAX_SIZE = 1;
 
-  private static List<String> javaModules = List.<String>of();
+  private static List<String> _modules = List.<String>of();
 
-  public static void setJavaModules(List<String> javaModules)
+  public static void setModules(List<String> modules)
   {
-    javaModules = javaModules;
+    _modules = modules;
   }
 
   private static ParserCache parserCache = new ParserCache();
@@ -126,7 +126,7 @@ public class ParserTool extends ANY
         /* fuzionHome              */ SourceText.fuzionHome,
         /* loadBaseLib             */ !isStdLib,
         /* eraseInternalNamesInLib */ false,
-        /* modules                 */ isStdLib ? new dev.flang.util.List<String>() : new dev.flang.util.List<String>(javaModules.iterator()),
+        /* modules                 */ isStdLib ? new dev.flang.util.List<String>() : new dev.flang.util.List<String>(_modules.iterator()),
         /* moduleDirs              */ new dev.flang.util.List<String>(),
         /* dumpModules             */ new dev.flang.util.List<String>(),
         /* fuzionDebugLevel        */ 1,
