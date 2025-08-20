@@ -26,9 +26,11 @@
 module:public process(public pid i64, module std_in, std_out, std_err i64) : property.orderable is
 
   # how many bytes are read at a time
+  pipe_buffer_size := os.page_size.as_i32
+
   # POSIX.1 requires PIPE_BUF to be at least 512 bytes
-  # NYI: UNDER DEVELOPMENT: move this to effect?
-  pipe_buffer_size := 4096
+  # NYI: UNDER DEVELOPMENT: post conditions for fields not supported yet
+  check pipe_buffer_size >= 512
 
 
   # predefined read handler for reading from
