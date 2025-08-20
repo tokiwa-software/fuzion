@@ -668,17 +668,7 @@ part of the (((inner features))) declarations of the corresponding
         }
       });
 
-    if (
-        inner.impl().hasInitialValue() &&
-        !outer.isUniverse() &&
-        !outer.pos()._sourceFile.sameAs(inner.pos()._sourceFile) &&
-        !inner.isLegalPartOfUniverse() &&
-        !outer.pos().isBuiltIn() && // some generated features in loops do not have source position
-        !inner.isIndexVarUpdatedByLoop() /* required for loop in universe, e.g.
-                                          *
-                                          *   echo "for i in 1..10 do stdout.println(i)" | fz -
-                                          */
-        )
+    if (inner.impl().hasInitialValue() && !mayHaveInitialValue(inner))
       { // declaring field with initial value in different file than outer
         // feature.  We would have to add this to the expressions of the outer
         // feature.  But if there are several such fields, in what order?
@@ -690,6 +680,27 @@ part of the (((inner features))) declarations of the corresponding
     if (POSTCONDITIONS) ensure
       (inner.outer() == outer,
        inner.state() == State.LOADED);
+  }
+
+
+  /**
+   * May feature f have an initial value?
+   */
+  private boolean mayHaveInitialValue(Feature f)
+  {
+    if (PRECONDITIONS) require
+      (f.impl().hasInitialValue());
+
+    var outer = f.outer();
+    return
+      // same source file, so embedded in outer feature
+      outer.pos()._sourceFile.sameAs(f.pos()._sourceFile) ||
+      // not compiling module and marked as legal in universe
+      f.isLegalPartOfUniverse() && !_options._compilingModule ||
+      // some generated features in loops do not have source position
+      outer.pos().isBuiltIn() ||
+      // some internal feature
+      f.pos().isBuiltIn();
   }
 
 
