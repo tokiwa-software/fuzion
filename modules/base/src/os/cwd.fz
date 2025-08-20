@@ -21,6 +21,8 @@
 #
 # -----------------------------------------------------------------------
 
+# get the current working directory
+#
 public cwd outcome String =>
 
   pm := fzE_path_max
