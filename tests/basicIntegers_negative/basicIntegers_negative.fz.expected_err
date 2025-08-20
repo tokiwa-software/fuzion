@@ -2,7 +2,7 @@
 --CURDIR--/basicIntegers_negative.fz:150:6: error 1: Numeric literal used for integer type is not a whole number
   sa 123.456       # 53. should flag an error, must be integer
 -----^^^^^^^
-Type propagation results in an integer type that cannot hold a value that is not integer.
+Type propagation results in integer type 'i32' that cannot hold the value '123.456' since it is not a whole number.
 Numeric literal: '123.456'
 Assigned to type: 'i32'
 
@@ -10,7 +10,7 @@ Assigned to type: 'i32'
 --CURDIR--/basicIntegers_negative.fz:151:6: error 2: Numeric literal used for integer type is not a whole number
   sa 123456.789    # 54. should flag an error, must be integer
 -----^^^^^^^^^^
-Type propagation results in an integer type that cannot hold a value that is not integer.
+Type propagation results in integer type 'i32' that cannot hold the value '123456.789' since it is not a whole number.
 Numeric literal: '123456.789'
 Assigned to type: 'i32'
 
@@ -18,7 +18,7 @@ Assigned to type: 'i32'
 --CURDIR--/basicIntegers_negative.fz:153:6: error 3: Numeric literal used for integer type is not a whole number
   sa 123456.789E2  # 55. should flag an error, must be integer
 -----^^^^^^^^^^^^
-Type propagation results in an integer type that cannot hold a value that is not integer.
+Type propagation results in integer type 'i32' that cannot hold the value '123456.789E2' since it is not a whole number.
 Numeric literal: '123456.789E2'
 Assigned to type: 'i32'
 
@@ -26,7 +26,7 @@ Assigned to type: 'i32'
 --CURDIR--/basicIntegers_negative.fz:157:6: error 4: Numeric literal used for integer type is not a whole number
   sa 123456780E-2  # 56. should flag an error, must be integer
 -----^^^^^^^^^^^^
-Type propagation results in an integer type that cannot hold a value that is not integer.
+Type propagation results in integer type 'i32' that cannot hold the value '123456780E-2' since it is not a whole number.
 Numeric literal: '123456780E-2'
 Assigned to type: 'i32'
 
@@ -34,7 +34,7 @@ Assigned to type: 'i32'
 --CURDIR--/basicIntegers_negative.fz:158:6: error 5: Numeric literal used for integer type is not a whole number
   sa 123456780E-3  # 57. should flag an error, must be integer
 -----^^^^^^^^^^^^
-Type propagation results in an integer type that cannot hold a value that is not integer.
+Type propagation results in integer type 'i32' that cannot hold the value '123456780E-3' since it is not a whole number.
 Numeric literal: '123456780E-3'
 Assigned to type: 'i32'
 
