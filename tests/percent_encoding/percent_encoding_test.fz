@@ -32,14 +32,19 @@ percent_encoding_test =>
     say "'$act_enc' {$act_enc = exp_enc ? "[OK]" : "[FAILED]"}"
     say ($(encodings.percent.decode_as_str (act_enc)) = plain)
 
+  test_dec_tol(enc String, exp_plain String) unit =>
+    test_decode enc exp_plain true
   test_decode(enc String, exp_plain String) unit =>
+      test_decode enc exp_plain false
+  test_decode(enc String, exp_plain String, tolerant bool) unit =>
     say "'$exp_plain' [expected]"
-    act_plain := encodings.percent.decode_as_str enc
+    act_plain := encodings.percent.decode_as_str_tolerant enc
     say "'$act_plain' {$act_plain = exp_plain ? "[OK]" : "[FAILED]"}"
-    bytes := encodings.percent.decode_as_bytes enc
-    act_plain_from_bytes := bytes.ok ? String.from_bytes bytes.val : $bytes
-    say "'$act_plain_from_bytes' {$act_plain_from_bytes = exp_plain ? "[OK]" : "[FAILED]"}"
-    say (encodings.percent.encode_str (act_plain.val) = enc.replace "+" "%20")
+    if !tolerant
+      bytes := encodings.percent.decode_as_bytes enc
+      act_plain_from_bytes := bytes.ok ? String.from_bytes bytes.val : $bytes
+      say "'$act_plain_from_bytes' {$act_plain_from_bytes = exp_plain ? "[OK]" : "[FAILED]"}"
+      say (encodings.percent.encode_str (act_plain.val) = enc.replace "+" "%20")
 
 
   test_encode "" ""
@@ -54,15 +59,13 @@ percent_encoding_test =>
 
   test_decode "" ""
   test_decode "%20" " "
-  test_decode "fuzion-lang.dev%2Fdocs%2Fbase%2Fcontainer+%28no+arguments%29%2FMutable_Map+%282+arguments%29%2Findex+%5B+%5D+%3A%3D++%282+arguments%29%2F" "fuzion-lang.dev/docs/base/container (no arguments)/Mutable_Map (2 arguments)/index [ ] :=  (2 arguments)/"
-  test_decode "fuzion-lang.dev%2Fdocs%2Fbase%2Fcontainer%20%28no%20arguments%29%2FMutable_Map%20%282%20arguments%29%2Findex%20%5B%20%5D%20%3A%3D%20%20%282%20arguments%29%2F" "fuzion-lang.dev/docs/base/container (no arguments)/Mutable_Map (2 arguments)/index [ ] :=  (2 arguments)/"
+  test_dec_tol "fuzion-lang.dev/docs/base/container+%28no+arguments%29/Mutable_Map+%282+arguments%29/index+%5B+%5D+%3A%3D++%282+arguments%29/" "fuzion-lang.dev/docs/base/container (no arguments)/Mutable_Map (2 arguments)/index [ ] :=  (2 arguments)/"
+  test_dec_tol "fuzion-lang.dev/docs/base/container%20%28no%20arguments%29/Mutable_Map%20%282%20arguments%29/index%20%5B%20%5D%20%3A%3D%20%20%282%20arguments%29/" "fuzion-lang.dev/docs/base/container (no arguments)/Mutable_Map (2 arguments)/index [ ] :=  (2 arguments)/"
   test_decode "%F0%9F%91%8B%F0%9F%8C%8F%E2%9D%97%EF%B8%8F" "👋🌏❗️"
   test_decode "%21%22%C2%A7%24%25%26%2F%7B%28%5B%29%5D%3D%7D%C3%9F%3F%5C%C2%B4%60%40%C3%9C%C3%BC%2A%2B~%C3%96%C3%B6%C3%84%C3%A4%27%23%3E%3C%7C%3B%2C%3A._-" "!\"§\$%&/\{([)]=\}ß?\\´`@Üü*+~ÖöÄä'#><|;,:._-"
 
   say (encodings.percent.decode_as_str "012%gh678")
   say (encodings.percent.decode_as_str "012%4")
   say (encodings.percent.decode_as_str "%")
+  say (encodings.percent.decode_as_str "/§@")
   say (encodings.percent.decode_as_bytes "/§@")
-
-
-  # NYI: test binary decoding

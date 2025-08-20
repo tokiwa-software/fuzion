@@ -34,7 +34,7 @@ public percent is
 
 
   # is this the value of an ascii character that is considered safe (unreserved) according to RFC 3986 section 2.3
-  u32.safe_chr =>
+  u32.safe_char =>
     ("A".val <= val <= "Z".val || "a".val <= val <= "z".val || "0".val <= val <= "9".val
      || val = "-".val || val = ".".val || val = "_".val || val = "~".val)
 
@@ -45,7 +45,7 @@ public percent is
   # * All other values are encoded as "%HH", where HH is the hexadecimal representation of the byte, using uppercase letters
   #
   public encode_bytes(data Sequence u8) String =>
-    data.map b->(b.as_u32.safe_chr ? (codepoint b.as_u32) : ("%" + b.as_string 16 .upper_case))
+    data.map b->(b.as_u32.safe_char ? (codepoint b.as_u32) : ("%" + b.as_string 16 .upper_case))
         .as_string ""
 
 
@@ -61,75 +61,78 @@ public percent is
 
   # Decode a percent encoded (url encoded) utf8 string
   #
+  # The encoded input string may only contain the following characters
+  # "A"-"Z", "a"-"z", "0"-"9", "-", ".", "_", "~", and "+"
+  # or the string "%HH" where H is a hexadecimal digit (case insensitive).
+  #
+  # Any other character or broken encoding will return an error.
+  #
   # * Percent encoded bytes ("%HH" where HH is the two-digit hexadecimal representation of the byte),
   #   or sequences of those, are converted to the corresponding codepoint(s) in utf8
   # * The plus character "+" is converted to a space " ".
   #
-  public decode_as_str(enc_utf8 String) outcome String
-  # NYI: CLEANUP: does this restriction make sense? Should non ascii characters be allowed? Decoding works without it
-  # pre debug: enc_str.as_codepoints ∀ v-> ("A" <= v <= "Z" || "a" <= v <= "z"
-  #               || "0" <= v <= "9" || v = "-" || v = "." || v = "_" || v = "~" || v = "%" || v = "+")
-  =>
-    enc := enc_utf8.as_codepoints
-    len := enc.count
-    dec(res String, i i32) outcome String =>
-      if i >= len
-        res
-      else if enc[i] != "%"
-        dec (res + (enc[i] = "+" ? " " : enc[i])) i+1
-      else
-        # decode percent encoded characters, for multi-byte codepoints each byte is individually percent encoded
-        for bytes := outcome (Sequence u8) (id (Sequence u8) []), new_bytes
-            j := i, j+3
-        while j < len && enc[j] = "%"
-          new_bytes outcome (Sequence u8) :=
-            if j+3 > len
-              error "unexpected end of input, expected two hex characters after '%' at position $j"
-            else
-              match encodings.base16.decode_str (enc_utf8.substring_codepoint j+1 j+3).upper_case
-                b array u8 => bytes.val ++ b
-                e error => error "broken string, failed to decode '{enc_utf8.substring_codepoint j j+3}' at position $j"
-        until !new_bytes.ok
-          new_bytes.err
-        else
-          dec (res + String.from_bytes bytes.val) j
-    dec "" 0
+  public decode_as_str(enc_utf8 String) outcome String =>
+    match decode enc_utf8 false
+      bytes Sequence u8 => String.from_bytes bytes
+      e error => e
+
+
+  # Decode a percent encoded (url encoded) utf8 string
+  #
+  # Codepoint not allowed in percent encoded string are included in the output unmodified.
+  # Broken percent encoded bytes still return an error.
+  #
+  # * Percent encoded bytes ("%HH" where HH is the two-digit hexadecimal representation of the byte),
+  #   or sequences of those, are converted to the corresponding codepoint(s) in utf8
+  # * The plus character "+" is converted to a space " ".
+  #
+  public decode_as_str_tolerant(enc_utf8 String) outcome String =>
+    match decode enc_utf8 true
+      bytes Sequence u8 => String.from_bytes bytes
+      e error => e
 
 
   # Decode a percent encoded (url encoded) string into a sequence of bytes
   #
+  # The encoded input string may only contain the following characters
+  # "A"-"Z", "a"-"z", "0"-"9", "-", ".", "_", "~", and "+"
+  # or the string "%HH" where H is a hexadecimal digit (case insensitive).
+  #
+  # Any other character or broken encoding will return an error.
+  #
   # * The alphanumeric characters "a" through "z", "A" through "Z" and "0" through "9",
   #   as well as the special characters "-", ".", "_", and "~" are converted to the corresponding ascii value.
-  # * Percent encoded bytes ("%xy") are simply converted to a byte.
+  # * Percent encoded bytes ("%HH") are simply converted to a byte.
   # * The plus character "+" is converted to the ascii value of the space character " ".
   #
-  public decode_as_bytes(enc_str String) outcome (Sequence u8)
-  pre debug: enc_str.as_codepoints ∀ v-> ("A" <= v <= "Z" || "a" <= v <= "z"
-                || "0" <= v <= "9" || v = "-" || v = "." || v = "_" || v = "~" || v = "%" || v = "+")
-  =>
-    enc := enc_str.utf8
+  #
+  public decode_as_bytes(enc_str String) outcome (Sequence u8) =>
+    decode enc_str false
+
+
+  # does the actual decoding
+  #
+  decode(enc_str String, tolerant bool) outcome (Sequence u8) =>
+    enc := enc_str.as_codepoints
     len := enc.count
+
     dec(res Sequence u8, i i32) outcome (Sequence u8) =>
       if i >= len
         res
-      else if enc[i].as_u32 != "%".val
-        dec (res ++ (enc[i].as_u32 = "+".val ? [" ".val.as_u8] : [enc[i]])) i+1
-      else
-        # decode percent encoded characters, for multi-byte codepoints each byte is individually percent encoded
-        for bytes := outcome (Sequence u8) (id (Sequence u8) []), new_bytes
-            j := i, j+3
-        while j < len && enc[j].as_u32 = "%".val
-          new_bytes outcome (Sequence u8) :=
-            if j+3 > len
-              error "unexpected end of input, expected two hex characters after '%' at position $j"
-            else
-              match encodings.base16.decode_str (enc_str.substring_codepoint j+1 j+3).upper_case
-                b array u8 => bytes.val ++ b
-                e error => error "broken string, failed to decode '{enc_str.substring j j+3}' at position $j"
-        until !new_bytes.ok
-          new_bytes.err
+      # decode percent encoded byte "%HH"
+      else if enc[i] = "%"
+        if i+3 > len
+          error "unexpected end of input, expected two hex characters after '%' at position $i"
         else
-          dec (res ++ bytes.val) j
-    dec "".utf8 0
+          match encodings.base16.decode_str (enc_str.substring_codepoint i+1 i+3).upper_case
+            byte array u8 => dec (res ++ byte) i+3
+            error => error "broken string, failed to decode '{enc_str.substring_codepoint i i+3}' at position $i"
+      # non encoded characters
+      else
+        c := enc[i]
+        if (tolerant || c.is_ascii_alpha_num || c = "-" || c = "." || c = "_" || c = "~" || c = "+")
+          dec (res ++ (c = "+" ? " ".utf8 : c.utf8)) i+1
+        else
+          error "codepoint '$c' at position $i is not allowed in encoded string"
 
-    # NYI: CLEANUP: merge/unify decode versions?
+    dec "".utf8 0

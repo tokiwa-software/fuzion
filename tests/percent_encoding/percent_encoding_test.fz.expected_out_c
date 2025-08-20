@@ -29,12 +29,8 @@ true
 true
 'fuzion-lang.dev/docs/base/container (no arguments)/Mutable_Map (2 arguments)/index [ ] :=  (2 arguments)/' [expected]
 'fuzion-lang.dev/docs/base/container (no arguments)/Mutable_Map (2 arguments)/index [ ] :=  (2 arguments)/' [OK]
-'fuzion-lang.dev/docs/base/container (no arguments)/Mutable_Map (2 arguments)/index [ ] :=  (2 arguments)/' [OK]
-true
 'fuzion-lang.dev/docs/base/container (no arguments)/Mutable_Map (2 arguments)/index [ ] :=  (2 arguments)/' [expected]
 'fuzion-lang.dev/docs/base/container (no arguments)/Mutable_Map (2 arguments)/index [ ] :=  (2 arguments)/' [OK]
-'fuzion-lang.dev/docs/base/container (no arguments)/Mutable_Map (2 arguments)/index [ ] :=  (2 arguments)/' [OK]
-true
 '👋🌏❗️' [expected]
 '👋🌏❗️' [OK]
 '👋🌏❗️' [OK]
@@ -46,3 +42,5 @@ true
 --error: broken string, failed to decode '%gh' at position 3--
 --error: unexpected end of input, expected two hex characters after '%' at position 3--
 --error: unexpected end of input, expected two hex characters after '%' at position 0--
+--error: codepoint '/' at position 0 is not allowed in encoded string--
+--error: codepoint '/' at position 0 is not allowed in encoded string--

@@ -1,2 +1,0 @@
-*** failed precondition: `debug: enc_str.as_codepoints ∀ v-> ("A" <= v <= "Z" || "a" <= v <= "z"
-                || "0" <= v <= "9" || v = "-" || v = "." || v = "_" || v = "~" || v = "%" || v = "+")`
