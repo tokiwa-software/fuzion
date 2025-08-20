@@ -35,8 +35,6 @@ static_assert(sizeof(int)    == 4, "implementation restriction, int must be 4 by
 // the current thread
 int fzE_last_error(void);
 
-// NYI: UNDER DEVELOPMENT: fzE_last_error_as_string, returning the error as a human readable string
-
 // make directory, return zero on success
 int fzE_mkdir(const char *pathname);
 
