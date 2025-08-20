@@ -80,8 +80,6 @@ install_default =>
     #
     public redef start(n String, args Sequence String, env_vars container.Map String String) outcome os.process
     =>
-      # NYI: UNDER DEVELOPMENT: what about quotes(") ?
-
       sys => fuzion.sys
       NULL := [u8 0].internal_array.data
 
