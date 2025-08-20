@@ -142,13 +142,13 @@ jitter =>
               e := error "*** overrun: run started at {actual_release-expected_rel}  and took {actual_finish-actual_release}, which is larger than period $period"
               (exception jitter_too_high).env.cause e
 
-    match exception jitter_too_high .on unit /* NYI: CLEANUP: remove `unit` when #5636 is fixed */ ()->
+    match exception jitter_too_high .on ()->
 
          for p := period_default, p.times 0.5 do
            run_for_period p
 
       e error => say $e
-      unit    => # will not happen
+      void    => # will not happen
 
   time.nano ! ()->
     test_jitter time.nano time.nano
