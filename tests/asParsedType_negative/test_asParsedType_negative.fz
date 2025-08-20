@@ -122,7 +122,7 @@ test_asParsedType_negative is
   x ()
   x (())
   x ((()))
-  # x ( )   # NYI: currently does not work, no space allowed in empty tuple
+  x ( )
   x (( ))
   x ((( )))
   x ( ( ) )
