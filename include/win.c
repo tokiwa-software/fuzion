@@ -700,6 +700,9 @@ void fzE_unlock()
 
 // combine NULL-terminated UTF-8 string array into wide string
 wchar_t *build_unicode_args(char *args[], size_t argsLen) {
+
+  // NYI: UNDER DEVELOPMENT: need to escape quotes (") ?
+
   size_t totalLen = 2;
   for (size_t i = 0; i < argsLen - 1; ++i) {
     totalLen += MultiByteToWideChar(CP_UTF8, 0, args[i], -1, NULL, 0) + 1 + sizeof(L"\"\" ");
