@@ -170,24 +170,23 @@ public class Config
       }
   }
 
-  private static void setJavaModules(JsonObject json)
+  private static void setModules(JsonObject json)
   {
     try
       {
         var modules = json
-          .getAsJsonObject("java")
           .getAsJsonArray("modules");
 
         var result = Util.streamOf(modules.iterator())
           .map(x -> x.getAsString())
           .collect(Collectors.toUnmodifiableList());
 
-        Context.logger.log("[Config] Java modules: " + result.stream().collect(Collectors.joining(", ")));
+        Context.logger.log("[Config] modules: " + result.stream().collect(Collectors.joining(", ")));
         ParserTool.setModules(result);
       }
     catch (Exception e)
       {
-        Context.logger.error("[Config] parsing of java modules failed.");
+        Context.logger.error("[Config] parsing of modules failed.");
       }
   }
 
