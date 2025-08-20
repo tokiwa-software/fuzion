@@ -108,7 +108,7 @@ public class Config
 
     Context.logger.info("[Config] received: " + json);
 
-    setJavaModules(json);
+    setModules(json);
     setFuzionOptions(json);
     setCodeLensOptions(json);
     setFuirEnabled(json);
@@ -183,7 +183,7 @@ public class Config
           .collect(Collectors.toUnmodifiableList());
 
         Context.logger.log("[Config] Java modules: " + result.stream().collect(Collectors.joining(", ")));
-        ParserTool.setJavaModules(result);
+        ParserTool.setModules(result);
       }
     catch (Exception e)
       {
