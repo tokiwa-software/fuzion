@@ -106,14 +106,6 @@ is
     discard buf_size
 
 
-# short hand for getting the currently installed `buffered.reader`
-#
-# NYI: CLEANUP: remove?
-#
-reader =>
-  reader.env
-
-
 # read n bytes using the currently installed byte reader effect
 # if the returned sequence is empty or count is less than n, end of file has been reached.
 #
@@ -124,10 +116,10 @@ public read_bytes(n i32) array u8 ! reader =>
   _ :=
     for n_read := 0, n_read + r
     while n_read < n
-      r := match reader.read   # NYI: we should limit the number of byted read by reader.read, we can exceed n!
+      r := match reader.env.read   # NYI: we should limit the number of byted read by reader.env.read, we can exceed n!
           outcome => -1
           a (array u8) =>
-            reader.discard a.length
+            reader.env.discard a.length
             for b in a do
               res.add b
             a.length
@@ -157,17 +149,17 @@ pre debug: n >= 0
       .as_array
 
     bytes_used := (v.map c->c.as_string.byte_length).fold i32.sum
-    reader.discard bytes_used
+    reader.env.discard bytes_used
     v
 
   for
-    is_eof                 := reader.read  ? outcome => true | array => false
-    next_bytes Sequence u8 := (reader.read ? outcome => []   | a array => a), rest ++ (reader.read ? outcome => [] | a array => a)
+    is_eof                 := reader.env.read  ? outcome => true | array => false
+    next_bytes Sequence u8 := (reader.env.read ? outcome => []   | a array => a), rest ++ (reader.env.read ? outcome => [] | a array => a)
     next_codepoints        := take_valid_codepoints next_bytes n, take_valid_codepoints next_bytes n-codepoint_count
     # if we did not use any bytes and `next_bytes` contains not enough bytes for a codepoint potentially,
     # we trigger a `discard` and remember what we read so far via `rest`.
     # this is necesarry e.g. for stdin where we read one byte at a time.
-    rest Sequence u8       := if n>0 && next_codepoints.is_empty && next_bytes.count < 4 then reader.discard; next_bytes else []
+    rest Sequence u8       := if n>0 && next_codepoints.is_empty && next_bytes.count < 4 then reader.env.discard; next_bytes else []
     codepoint_count        := next_codepoints.count, codepoint_count+next_codepoints.count
     res Sequence String    := next_codepoints, res ++ next_codepoints
   while !is_eof && codepoint_count < n
@@ -187,13 +179,13 @@ pre debug: n >= 0
 #
 public read_delimiter (delim u8, strip_cr bool) switch String io.end_of_file ! reader =>
 
-  if reader.read ? outcome => true | * => false
+  if reader.env.read ? outcome => true | * => false
     io.end_of_file
   else
     res := (mutate.array u8).new LM
 
     while
-      match reader.read
+      match reader.env.read
         outcome =>
           false
         a array =>
@@ -211,11 +203,11 @@ public read_delimiter (delim u8, strip_cr bool) switch String io.end_of_file ! r
           match a.index_of delim
             idx i32 =>
               add_to_res (a.slice 0 idx)
-              reader.discard idx+1
+              reader.env.discard idx+1
               false
             nil =>
               add_to_res a
-              reader.discard
+              reader.env.discard
               true
 
     ref : String is
