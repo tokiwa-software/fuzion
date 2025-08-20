@@ -39,7 +39,7 @@
 public histogram(# title to be printed for this histogram
                  public title String,
 
-                 # For measuring a period jitter, this gives the period.
+                 # To measure period jitter, this provides the period.
                  #
                  # If the period is given it becomes possible to detect drift,
                  # i.e, the actual times are measured relative to the expected
