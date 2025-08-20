@@ -1691,9 +1691,7 @@ public class Call extends AbstractCall
 
     var rt = _calledFeature.resultTypeIfPresentUrgent(res, false);
 
-    if (mustReportMissingImmediately(rt) &&
-      // see test #5391 for when this might happen
-        !(_calledFeature.hasOpenGenericsArgList() && !foundConflicts(conflict)))
+    if (mustReportMissingImmediately(rt, conflict))
       {
         reportConflicts(conflict, foundAt);
         reportMissingInferred(missing);
@@ -1722,13 +1720,18 @@ public class Call extends AbstractCall
    * or do we wait for result type propagation
    * which may allow inference later.
    */
-  private boolean mustReportMissingImmediately(AbstractType rt)
+  private boolean mustReportMissingImmediately(AbstractType rt, boolean[] conflict)
   {
-    return (rt == null ||
+    var x = (rt == null ||
         !rt.isGenericArgument() ||
          rt.genericArgument().outer().outer() != _calledFeature.outer()) ||
          // NYI: CLEANUP: why true, i.e., must report errors, in case of previous errors in the actuals?
          _actuals.stream().anyMatch(a -> a.typeForInferencing() == Types.t_ERROR);
+
+    // see test #5391 for when this might happen
+    var y = !_calledFeature.hasOpenGenericsArgList() || foundConflicts(conflict);
+
+    return x && y;
   }
 
 
