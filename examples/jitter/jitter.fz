@@ -98,19 +98,19 @@ jitter =>
     run_for_period(period time.duration)
     =>
 
+      start := C.clock.read + start_delay
+      end := start + test_duration
+      yak "testing period $period for $test_duration..."
+
       # time for next release used by state effect
       next_release(t time.instant) is
 
       # NYI: BUG: #5634: use `infix !` in this example once #5634 is fixed
-      state next_release unit (next_release TIMER.clock.read+start_delay) ()->
-
-        start := C.clock.read + start_delay
-        end := start + test_duration
-        yak "testing period $period for $test_duration..."
+      state _ _ (next_release start) ()->
 
         # record jitter using linear and log histograms
-        h  := time.histogram.new "period $period, log count / linear time" period period*2 1 0
-        h2 := time.histogram.new "period $period, log count / log time"    nil nil 1 0
+        h  := time.histogram.new "period jitter $period, log count / linear time" period period*2 1 0
+        h2 := time.histogram.new "cycle jitter $period, log count / log time"     nil    nil      1 0
 
         # run test
         _ := C.clock.run_periodic start period end run_one_release
@@ -135,12 +135,12 @@ jitter =>
           next_rel     := state_modify next_release (x -> next_release x.t+period) .get.t
           if actual_release >= next_rel
             (exception jitter_too_high).env.cause <| error "release time jitter exceeded period"
-          else
-            payload
-            actual_finish := TIMER.clock.read
-            if actual_finish >= next_rel
-              e := error "*** overrun: run started at {actual_release-expected_rel}  and took {actual_finish-actual_release}, which is larger than period $period"
-              (exception jitter_too_high).env.cause e
+
+          payload
+          actual_finish := TIMER.clock.read
+          if actual_finish >= next_rel
+            e := error "*** overrun: run started at {actual_release-expected_rel}  and took {actual_finish-actual_release}, which is larger than period $period"
+            (exception jitter_too_high).env.cause e
 
     match exception jitter_too_high .on unit /* NYI: CLEANUP: remove `unit` when #5636 is fixed */ ()->
 
