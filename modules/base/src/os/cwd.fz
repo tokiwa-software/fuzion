@@ -17,14 +17,18 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test Makefile
+#  Source code of Fuzion os.cwd
 #
 # -----------------------------------------------------------------------
 
-CREATE_DB := $(shell echo "CREATE TABLE table_name (id INTEGER PRIMARY KEY, name TEXT NOT NULL, email TEXT NOT NULL UNIQUE); INSERT INTO table_name (name, email) VALUES ('Mario', 'admin@example.com');" | sqlite3 test.db > /dev/null 2> /dev/null || true)
+# get the current working directory
+#
+public cwd outcome String =>
 
-override NAME = mod_sqlite
-override FUZION_OPTIONS = -modules=sqlite
-override FUZION_JVM_BACKEND_OPTIONS = -JLibraries=sqlite3
-override FUZION_C_BACKEND_OPTIONS = -CLink=sqlite3|-CInclude=sqlite3.h
-include ../simple.mk
+  pm := fzE_path_max
+  a := array u8 pm _->0
+
+  if fzE_cwd a.internal_array.data pm.as_i64 = 0
+    String.from_bytes (a.take_while x->x!=0)
+  else
+    error "error getting current working directory, error code {fzE_last_error}"

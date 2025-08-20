@@ -51,6 +51,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <sys/wait.h>
 #include <signal.h>
 #include <unistd.h>     // close
+#include <limits.h>
 #include <time.h>
 #include <assert.h>
 #include <dirent.h>
@@ -952,4 +953,21 @@ int32_t fzE_file_flush(void * file)
 int fzE_send_signal(int64_t pid, int sig)
 {
   return kill(pid, sig);
+}
+
+int32_t fzE_path_max(void)
+{
+  return PATH_MAX;
+}
+
+int64_t fzE_page_size(void)
+{
+  return sysconf(_SC_PAGESIZE);
+}
+
+int fzE_cwd(void * buf, size_t size)
+{
+  return getcwd(buf, size) == NULL
+    ? -1
+    : 0;
 }

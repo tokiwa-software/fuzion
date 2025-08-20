@@ -1127,3 +1127,22 @@ int fzE_send_signal(int64_t pid, int sig)
   // windows does not have signals
   return -1;
 }
+
+int32_t fzE_path_max(void)
+{
+  return MAX_PATH;
+}
+
+int64_t fzE_page_size(void)
+{
+  SYSTEM_INFO sys_info;
+  GetSystemInfo(&sys_info);
+  return (int64_t)(uint64_t)sys_info.dwPageSize;
+}
+
+int fzE_cwd(void * buf, size_t size)
+{
+  return _getcwd(buf, size) == NULL
+    ? -1
+    : 0;
+}

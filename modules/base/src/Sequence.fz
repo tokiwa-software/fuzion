@@ -479,7 +479,7 @@ public Sequence(public T type) ref : property.countable is
   # e.g., for a Sequence of i32 s, s.scan i32.sum creates a list of
   # partial sums (0..).map x->(s.take x).fold i32.sum
   #
-  public scan (m Monoid T) list T => as_list.scan m.e m
+  public scan (m Monoid T) Sequence T => as_list.scan_list m
 
 
   # map this Sequence to a Sequence that contains the result of folding

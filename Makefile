@@ -132,6 +132,8 @@ MOD_HTTP              = $(BUILD_DIR)/modules/http.fum
 MOD_CLANG             = $(BUILD_DIR)/modules/clang.fum
 MOD_WOLFSSL           = $(BUILD_DIR)/modules/wolfssl.fum
 MOD_JSON_ENCODE       = $(BUILD_DIR)/modules/json_encode.fum
+MOD_DATABASE          = $(BUILD_DIR)/modules/database.fum
+MOD_SQLITE            = $(BUILD_DIR)/modules/sqlite.fum
 
 MOD_JAVA_BASE_DIR              = $(BUILD_DIR)/modules/java.base
 MOD_JAVA_XML_DIR               = $(BUILD_DIR)/modules/java.xml
@@ -460,7 +462,9 @@ FZ_MODULES = \
 			$(MOD_HTTP) \
 			$(MOD_CLANG) \
 			$(MOD_WOLFSSL) \
-			$(MOD_JSON_ENCODE)
+			$(MOD_JSON_ENCODE) \
+			$(MOD_DATABASE) \
+			$(MOD_SQLITE)
 
 C_FILES = $(shell find $(FZ_SRC) \( -path ./build -o -path ./.git \) -prune -o -name '*.c' -print)
 
@@ -470,13 +474,10 @@ C_FILES = $(shell find $(FZ_SRC) \( -path ./build -o -path ./.git \) -prune -o -
 .DELETE_ON_ERROR:
 
 
-# rules relevant for language server protocol
-#
-include $(FZ_SRC)/lsp.mk
-
-
+# default make target
 .PHONY: all
-all: $(FUZION_BASE) $(FUZION_JAVA_MODULES) $(FUZION_FILES) $(MOD_FZ_CMD) $(FUZION_EBNF) $(LSP_JAR)
+all: $(FUZION_BASE) $(FUZION_JAVA_MODULES) $(FUZION_FILES) $(MOD_FZ_CMD) $(FUZION_EBNF) $(BUILD_DIR)/lsp.jar
+
 
 # everything but rarely used java modules
 .PHONY: min-java
@@ -635,7 +636,7 @@ $(CLASS_FILES_TOOLS_DOCS): $(JAVA_FILES_TOOLS_DOCS) $(CLASS_FILES_TOOLS) $(CLASS
 
 $(JARS_JFREE_SVG_JAR):
 	mkdir -p $(@D)
-	curl $(JFREE_SVG_URL) --output $@
+	wget --output-document $@ $(JFREE_SVG_URL)
 
 $(CLASS_FILES_MISC_LOGO): $(JAVA_FILES_MISC_LOGO) $(CLASS_FILES_UTIL_UNICODE) $(JARS_JFREE_SVG_JAR)
 	mkdir -p $(CLASSES_DIR_LOGO)
@@ -696,6 +697,18 @@ $(MOD_NOM): $(MOD_BASE) $(FZ) $(shell find $(FZ_SRC)/modules/nom/src -name "*.fz
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC)/modules/nom $(@D)
 	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/nom/src -saveModule=$@
+
+$(MOD_DATABASE): $(MOD_BASE) $(FZ) $(shell find $(FZ_SRC)/modules/database/src -name "*.fz")
+	rm -rf $(@D)/database
+	mkdir -p $(@D)
+	cp -rf $(FZ_SRC)/modules/database $(@D)
+	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/database/src -saveModule=$@
+
+$(MOD_SQLITE): $(MOD_DATABASE) $(FZ) $(shell find $(FZ_SRC)/modules/sqlite/src -name "*.fz")
+	rm -rf $(@D)/sqlite
+	mkdir -p $(@D)
+	cp -rf $(FZ_SRC)/modules/sqlite $(@D)
+	$(FZ) -modules=database -sourceDirs=$(BUILD_DIR)/modules/sqlite/src -saveModule=$@
 
 $(MOD_UUID): $(MOD_BASE) $(FZ) $(shell find $(FZ_SRC)/modules/uuid/src -name "*.fz")
 	rm -rf $(@D)/uuid
@@ -1152,14 +1165,14 @@ $(MOD_JDK_ZIPFS): $(MOD_JAVA_BASE) $(MOD_JDK_ZIPFS_FZ_FILES)
 
 # this target may fail when executed standalone, see comment on $(BUILD_DIR)/tests
 #
-$(BUILD_DIR)/bin/check_simple_example: bin/check_simple_example.fz
-	$(FZ) -modules=terminal -c -o=$@ bin/check_simple_example.fz
+$(BUILD_DIR)/bin/check_simple_example: $(FZ_SRC)/bin/check_simple_example.fz
+	$(FZ) -modules=terminal -c -o=$@ $^
 	@echo " + $@"
 
 # this target may fail when executed standalone, see comment on $(BUILD_DIR)/tests
 #
-$(BUILD_DIR)/bin/record_simple_example: bin/record_simple_example.fz
-	$(FZ) -modules=terminal -c -o=$@ bin/record_simple_example.fz
+$(BUILD_DIR)/bin/record_simple_example: $(FZ_SRC)/bin/record_simple_example.fz
+	$(FZ) -modules=terminal -c -o=$@ $^
 	@echo " + $@"
 
 # tricky, we need MOD_TERMINAL to build (check|record)_simple_example
@@ -1535,3 +1548,8 @@ endif
 
 $(DOC_JAVA): $(JAVA_FILE_UTIL_VERSION) $(JAVA_FILE_FUIR_ANALYSIS_ABSTRACT_INTERPRETER2)
 	javadoc --release $(JAVA_VERSION) --enable-preview -d $(dir $(DOC_JAVA)) $(JAVA_FILES_FOR_JAVA_DOC)
+
+
+# rules relevant for language server protocol
+#
+include $(FZ_SRC)/lsp.mk

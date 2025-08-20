@@ -38,18 +38,42 @@
 #
 public try(ERROR type, F type : fallible ERROR, T type, code_try ()->T) is
 
+  # a local mutate
+  lm : mutate is
 
   # define code to execute in case of fault and run code
   #
   public catch(code_catch ERROR->T) T =>
-    lm : mutate is
-
     lm ! ()->
-      m := lm.env.new (option ERROR nil)
-      v := F.new e->
-                m <- e
-                F.abort
-      F.instate T v code_try (_ -> code_catch m.get.get)
+      catch0 code_catch
+
+
+  # catch that uses an already instated local mutate
+  #
+  # this is necessary e.g. for `or_try` to avoid
+  # an `invalid mutate` error.
+  #
+  catch0(code_catch ERROR->T) T ! lm =>
+    m := lm.env.new (option ERROR nil)
+    v := F.new e->
+              m <- e
+              F.abort
+    F.instate T v code_try (_ -> code_catch m.get.get)
+
+
+  # on failure try if code `alt` succeeds
+  #
+  # usage example:
+  #
+  #     fuzion.runtime.contract_fault
+  #       .try ()->(envir.args.nth 3).val.trim.parse_i32.val
+  #       .or_try _->(envir.vars.get "DEBUG_LEVEL").val.trim.parse_i32.val
+  #       .catch  _->4
+  #
+  public or_try(alt ERROR->T) try ERROR F T =>
+    try ERROR F _ ()->
+      catch0 alt
+
 
 
   # infix alias for catch
