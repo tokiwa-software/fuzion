@@ -1,9 +1,9 @@
-unique_id
-fuzion.runtime.pre_fault
+concur.atomic_access
 fuzion.runtime.contract_fault
 fuzion.runtime.fault
-io.Err
-concur.atomic_access
-panic
 fuzion.runtime.post_fault
+fuzion.runtime.pre_fault
+io.Err
 io.Out
+panic
+unique_id

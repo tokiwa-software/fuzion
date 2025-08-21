@@ -292,7 +292,7 @@ else
 
       check_exit_code run
 
-      write_to_file "tmp_out.txt" run.out
+      write_to_file "tmp_out.txt" ((run.out.lines.filter (l -> !l.is_empty)).sort.as_string "\n")
     else
       panic "backend unknown: $be"
 

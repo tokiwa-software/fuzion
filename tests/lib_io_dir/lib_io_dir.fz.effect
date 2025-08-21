@@ -1,10 +1,10 @@
-io.file.delete
-fuzion.runtime.pre_fault
 fuzion.runtime.contract_fault
 fuzion.runtime.fault
-io.Err
-io.dir.make
-io.Out
 fuzion.runtime.post_fault
-panic
+fuzion.runtime.pre_fault
+io.Err
+io.Out
+io.dir.make
 io.dir.read
+io.file.delete
+panic

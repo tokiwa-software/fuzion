@@ -1,11 +1,11 @@
-unique_id
-fuzion.runtime.pre_fault
+concur.atomic_access
 fuzion.runtime.contract_fault
 fuzion.runtime.fault
-io.Err
-mutate
-concur.atomic_access
-io.Out
 fuzion.runtime.post_fault
-panic
+fuzion.runtime.pre_fault
+io.Err
+io.Out
 lib_memoize.#loop0.fib1#1.memoized i64 i64
+mutate
+panic
+unique_id
