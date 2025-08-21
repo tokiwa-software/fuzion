@@ -128,6 +128,6 @@ if type_ != "effect"
   cur_dir := os.cwd.val
   write_to_file "$file.expected_err$sfx" (res.err.replace cur_dir "--CURDIR--")
 else
-  write_to_file "$file.effect" res.out
+  write_to_file "$file.effect" ((res.out.lines.filter (l -> !l.is_empty)).sort.as_string "\n")+"\n"
 
 say "RECORDED $file"
