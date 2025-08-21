@@ -50,6 +50,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <winbase.h>
 #include <synchapi.h> // WaitForSingleObject
 #include <namedpipeapi.h>
+#include <direct.h>
 
 #ifdef FUZION_ENABLE_THREADS
 // NYI: UNDER DEVELOPMENT: remove POSIX imports
