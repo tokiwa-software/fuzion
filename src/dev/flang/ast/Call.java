@@ -87,6 +87,36 @@ public class Call extends AbstractCall
 
 
   /**
+   * get actual type parameters during resolution
+   *
+   * @param res the resolution instance.
+   *
+   * @param context the source code context where this Call is used
+   *
+   */
+  @Override
+  protected List<AbstractType> actualTypeParameters(Resolution res, Context context)
+  {
+    // force re-resolve, detected partial application
+    // of open type parameter.
+    // e.g.: `(1..3).zip 7..9 tuple |> say`
+    if (actualTypeParameters().size() < calledFeature().typeArguments().size() &&
+        calledFeature().hasOpenGenericsArgList() &&
+        _type != null)
+      {
+        _generics = NO_GENERICS;
+        _resolvedFor = null;
+        _actualsResolvedFor = null;
+        _type = null;
+        resolveTypes(res, context);
+        reportMissingInferred(missingGenerics());
+      }
+    return actualTypeParameters();
+  }
+
+
+
+  /**
    * actual generic arguments, set by parser
    */
   /*final*/ List<AbstractType> _generics; // NYI: Make this final again when resolveTypes can replace a call
@@ -910,7 +940,12 @@ public class Call extends AbstractCall
       {
         var fos = res._module.lookup(targetFeature, _name, this, traverseOuter, false);
         var calledName = FeatureName.get(_name, n);
-        result = FeatureAndOuter.filter(fos, pos(), FuzionConstants.OPERATION_CALL, calledName, ff -> ff.valueArguments().size() == n);
+        result = FeatureAndOuter.filter(
+          fos,
+          pos(),
+          FuzionConstants.OPERATION_CALL,
+          calledName,
+          ff -> ff.valueArguments().size() == n || ff.generics().sizeMatches(n));
       }
     return result;
   }
@@ -1372,7 +1407,11 @@ public class Call extends AbstractCall
           ? result
           : adjustResultType(res, context, result);
       }
-    return result;
+
+    // see test #5391 when this might happen
+    return result != null && result.containsUndefined(false)
+      ? null
+      : result;
   }
 
 
@@ -1652,7 +1691,7 @@ public class Call extends AbstractCall
 
     var rt = _calledFeature.resultTypeIfPresentUrgent(res, false);
 
-    if (mustReportMissingImmediately(rt))
+    if (mustReportMissingImmediately(rt, conflict))
       {
         reportConflicts(conflict, foundAt);
         reportMissingInferred(missing);
@@ -1661,17 +1700,38 @@ public class Call extends AbstractCall
 
 
   /**
+   * Checks if a conflict was found when inferring generics.
+   *
+   * @param conflict
+   * @return
+   */
+  private boolean foundConflicts(boolean[] conflict)
+  {
+    for (var c : conflict)
+      {
+        if (c) { return c; }
+      }
+    return false;
+  }
+
+
+  /**
    * Do we want to report missing generics now
    * or do we wait for result type propagation
    * which may allow inference later.
    */
-  private boolean mustReportMissingImmediately(AbstractType rt)
+  private boolean mustReportMissingImmediately(AbstractType rt, boolean[] conflict)
   {
-    return (rt == null ||
+    var x = (rt == null ||
         !rt.isGenericArgument() ||
          rt.genericArgument().outer().outer() != _calledFeature.outer()) ||
          // NYI: CLEANUP: why true, i.e., must report errors, in case of previous errors in the actuals?
          _actuals.stream().anyMatch(a -> a.typeForInferencing() == Types.t_ERROR);
+
+    // see test #5391 for when this might happen
+    var y = !_calledFeature.hasOpenGenericsArgList() || foundConflicts(conflict);
+
+    return x && y;
   }
 
 

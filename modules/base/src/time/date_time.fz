@@ -99,7 +99,7 @@ is
   public redef type.lteq(a, b date_time.this) bool =>
     private ternary_compare trit =>
       a.args_in_order
-       .zip b.args_in_order tuple2
+       .zip b.args_in_order tuple
        .reduce trit.unknown r,t->
          if t.0 = t.1
            trit.unknown
