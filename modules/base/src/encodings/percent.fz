@@ -1,0 +1,138 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature percent
+#
+# -----------------------------------------------------------------------
+
+# Percent (url) encoding and decoding as specified in RFC 3986 section 2.1
+#
+# * The alphanumeric characters "a" through "z", "A" through "Z" and "0" through "9" remain the same.
+# * The special characters "-", ".", "_", and "~" remain the same.
+# * All other characters are unsafe and get converted.
+#
+public percent is
+
+  # NYI: UNDER DEVELOPMENT: add encoding with space as "+" ?
+  # NYI: UNDER DEVELOPMENT: add encoding to application/x-www-form-urlencoded MIME format ?
+
+
+  # is this the value of an ascii character that is considered safe (unreserved) according to RFC 3986 section 2.3
+  u32.safe_char =>
+    ("A".val <= val <= "Z".val || "a".val <= val <= "z".val || "0".val <= val <= "9".val
+     || val = "-".val || val = ".".val || val = "_".val || val = "~".val)
+
+
+  # Percent encode (url encode) a Sequence of bytes, as specified in RFC 3986 section 2.1
+  #
+  # * Bytes values of a save (unreserved) character (A-Z, a-z, 0-9, "-", ".", "_" and "~") are encoded as that character.
+  # * All other values are encoded as "%HH", where HH is the hexadecimal representation of the byte, using uppercase letters
+  #
+  public encode_bytes(data Sequence u8) String =>
+    data.map b->(b.as_u32.safe_char ? (codepoint b.as_u32) : ("%" + b.as_string 16 .upper_case))
+        .as_string ""
+
+
+  # Percent encode (url encode) an utf8 string, as specified in RFC 3986 section 2.1
+  #
+  # * The alphanumeric characters "a" through "z", "A" through "Z" and "0" through "9" remain the same.
+  # * The special characters "-", ".", "_", and "~" remain the same.
+  # * All other characters are unsafe, their bytes are individually converted to a 3-character string "%HH",
+  #   where HH is the two-digit hexadecimal representation of the byte. This also applies to the space character.
+  #
+  public encode_str(str String) String => encode_bytes str.utf8
+
+
+  # Decode a percent encoded (url encoded) utf8 string
+  #
+  # The encoded input string may only contain the following characters
+  # "A"-"Z", "a"-"z", "0"-"9", "-", ".", "_", "~", and "+"
+  # or the string "%HH" where H is a hexadecimal digit (case insensitive).
+  #
+  # Any other character or broken encoding will return an error.
+  #
+  # * Percent encoded bytes ("%HH" where HH is the two-digit hexadecimal representation of the byte),
+  #   or sequences of those, are converted to the corresponding codepoint(s) in utf8
+  # * The plus character "+" is converted to a space " ".
+  #
+  public decode_as_str(enc_utf8 String) outcome String =>
+    match decode enc_utf8 false
+      bytes Sequence u8 => String.from_bytes bytes
+      e error => e
+
+
+  # Decode a percent encoded (url encoded) utf8 string
+  #
+  # Codepoint not allowed in percent encoded string are included in the output unmodified.
+  # Broken percent encoded bytes still return an error.
+  #
+  # * Percent encoded bytes ("%HH" where HH is the two-digit hexadecimal representation of the byte),
+  #   or sequences of those, are converted to the corresponding codepoint(s) in utf8
+  # * The plus character "+" is converted to a space " ".
+  #
+  public decode_as_str_tolerant(enc_utf8 String) outcome String =>
+    match decode enc_utf8 true
+      bytes Sequence u8 => String.from_bytes bytes
+      e error => e
+
+
+  # Decode a percent encoded (url encoded) string into a sequence of bytes
+  #
+  # The encoded input string may only contain the following characters
+  # "A"-"Z", "a"-"z", "0"-"9", "-", ".", "_", "~", and "+"
+  # or the string "%HH" where H is a hexadecimal digit (case insensitive).
+  #
+  # Any other character or broken encoding will return an error.
+  #
+  # * The alphanumeric characters "a" through "z", "A" through "Z" and "0" through "9",
+  #   as well as the special characters "-", ".", "_", and "~" are converted to the corresponding ascii value.
+  # * Percent encoded bytes ("%HH") are simply converted to a byte.
+  # * The plus character "+" is converted to the ascii value of the space character " ".
+  #
+  #
+  public decode_as_bytes(enc_str String) outcome (Sequence u8) =>
+    decode enc_str false
+
+
+  # does the actual decoding
+  #
+  decode(enc_str String, tolerant bool) outcome (Sequence u8) =>
+    enc := enc_str.as_codepoints
+    len := enc.count
+
+    dec(res Sequence u8, i i32) outcome (Sequence u8) =>
+      if i >= len
+        res
+      # decode percent encoded byte "%HH"
+      else if enc[i] = "%"
+        if i+3 > len
+          error "unexpected end of input, expected two hex characters after '%' at position $i"
+        else
+          match encodings.base16.decode_str (enc_str.substring_codepoint i+1 i+3).upper_case
+            byte array u8 => dec (res ++ byte) i+3
+            error => error "broken string, failed to decode '{enc_str.substring_codepoint i i+3}' at position $i"
+      # non encoded characters
+      else
+        c := enc[i]
+        if (tolerant || c.is_ascii_alpha_num || c = "-" || c = "." || c = "_" || c = "~" || c = "+")
+          dec (res ++ (c = "+" ? " ".utf8 : c.utf8)) i+1
+        else
+          error "codepoint '$c' at position $i is not allowed in encoded string"
+
+    dec "".utf8 0
