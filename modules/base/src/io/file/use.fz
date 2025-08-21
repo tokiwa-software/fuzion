@@ -75,12 +75,12 @@ public use(R type, file_name String, m mode.val, code ()-> outcome R) outcome R 
     # NYI: BUG: unclear why DFA does not accept this
     # file_mutate
     #   .and (outcome R) open (open fd file_name)
-    #   .and ((io.buffered file_mutate).reader (read_handler fd) 1024)
-    #   .and ((io.buffered file_mutate).writer (write_handler fd) 1024)
+    #   .and ((io.buffered file_mutate).reader (read_handler fd) os.page_size.as_i32)
+    #   .and ((io.buffered file_mutate).writer (write_handler fd) os.page_size.as_i32)
     #   .call code
 
     file_mutate ! ()->
       open fd file_name
-        .and (outcome R) _ ((io.buffered file_mutate).reader (read_handler fd) 1024)
-        .and ((io.buffered file_mutate).writer (write_handler fd) 1024)
+        .and (outcome R) _ ((io.buffered file_mutate).reader (read_handler fd) os.page_size.as_i32)
+        .and ((io.buffered file_mutate).writer (write_handler fd) os.page_size.as_i32)
         .call code

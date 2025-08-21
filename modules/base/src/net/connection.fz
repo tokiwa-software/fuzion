@@ -62,7 +62,7 @@ module:public connection(desc i32) is
           fuzion.sys.net.write desc data.as_array
 
       (io.buffered LM)
-        .writer write_handler 1024
+        .writer write_handler os.page_size.as_i32
 
     channel_ =>
       net

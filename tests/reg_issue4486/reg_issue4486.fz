@@ -52,7 +52,7 @@ reg_issue4486 =>
 
     LM ! ()->
       b := io.buffered LM
-      b.reader (read_handler input) 1024 ! ()->
+      b.reader (read_handler input) os.page_size.as_i32 ! ()->
         for l := b.read_line
             i in 1..
         while l??
@@ -62,7 +62,7 @@ reg_issue4486 =>
 
     LM ! ()->
       b := io.buffered LM
-      b.reader (read_handler input) 1024 ! ()->
+      b.reader (read_handler input) os.page_size.as_i32 ! ()->
         for l in b.read_lines
             i in 1..
         do

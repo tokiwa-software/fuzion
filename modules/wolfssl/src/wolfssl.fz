@@ -92,8 +92,8 @@ public wolfssl(T type, LM type : mutate, LM2 type: mutate, code ()->T) T ! LM, L
         error "error writing to ssl connection."
 
 
-  r := ((io.buffered LM2).reader wolf_ssl_read_handler 1E2) ! ()->
-    (io.buffered LM2).writer wolf_ssl_writer_handler 1E2 ! ()->
+  r := ((io.buffered LM2).reader wolf_ssl_read_handler os.page_size.as_i32) ! ()->
+    (io.buffered LM2).writer wolf_ssl_writer_handler os.page_size.as_i32 ! ()->
       code.call
 
 
