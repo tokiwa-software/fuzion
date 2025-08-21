@@ -118,10 +118,12 @@ JARS_JFREE_SVG_JAR = $(BUILD_DIR)/jars/org.jfree.svg-5.0.1.jar
 
 FUZION_EBNF = $(BUILD_DIR)/fuzion.ebnf
 
-FZ_SRC_TESTS         = $(FZ_SRC)/tests
-FUZION_FILES_TESTS   = $(shell find $(FZ_SRC_TESTS))
-FZ_SRC_INCLUDE       = $(FZ_SRC)/include
-FUZION_FILES_RT      = $(shell find $(FZ_SRC_INCLUDE))
+FZ_SRC_TESTS          = $(FZ_SRC)/tests
+FUZION_FILES_TESTS    = $(shell find $(FZ_SRC_TESTS))
+FZ_SRC_INCLUDE        = $(FZ_SRC)/include
+FUZION_FILES_RT       = $(shell find $(FZ_SRC_INCLUDE))
+FZ_SRC_EXAMPLES       = $(FZ_SRC)/examples
+FUZION_FILES_EXAMPLES = $(shell find $(FZ_SRC_EXAMPLES))
 
 MOD_BASE              = $(BUILD_DIR)/modules/base.fum
 MOD_TERMINAL          = $(BUILD_DIR)/modules/terminal.fum
@@ -1188,9 +1190,10 @@ $(BUILD_DIR)/include: $(FUZION_FILES_RT)
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC_INCLUDE) $@
 
-$(BUILD_DIR)/examples: $(FZ_SRC)/examples
+$(BUILD_DIR)/examples: $(FUZION_FILES_EXAMPLES)
+	rm -rf $@
 	mkdir -p $(@D)
-	cp -rf $^ $@
+	cp -rf $(FZ_SRC_EXAMPLES) $@
 
 $(BUILD_DIR)/UnicodeData.txt:
 	cd $(BUILD_DIR) && wget $(UNICODE_SOURCE)
