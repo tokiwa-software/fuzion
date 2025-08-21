@@ -109,21 +109,23 @@ is
 # read n bytes using the currently installed byte reader effect
 # if the returned sequence is empty or count is less than n, end of file has been reached.
 #
-public read_bytes(n i32) array u8 ! reader =>
+public read_bytes(n i32) array u8 ! reader
+  post debug: result.length <= n
+=>
 
   res := (mutate.array u8).new LM
 
   _ :=
-    for n_read := 0, n_read + r
-    while n_read < n
-      r := match reader.env.read   # NYI: we should limit the number of byted read by reader.env.read, we can exceed n!
-          outcome => -1
-          a (array u8) =>
-            reader.env.discard a.length
-            for b in a do
-              res.add b
-            a.length
-    until r < 0
+    while res.length.as_i32 < n
+    until
+      match reader.env.read n-res.length.as_i32
+        outcome => true
+        a (array u8) =>
+          reader.env.discard a.length
+          for b in a do
+            res.add b
+          false
+
   res.as_array
 
 
