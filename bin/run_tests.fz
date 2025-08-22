@@ -255,17 +255,24 @@ main =>
     say (read_file_fully failures)
     say "============= run_tests.failures END ============="
 
-    say "To re-run all failed tests, use this command:"
-    say <| failed_tests
-      .map x->x.split[0]
-      .map x->"make $target -C $x"
-      .as_string " && "
+    failed_test_names := failed_tests
+                           .map x->x.split[0]
+                           .map x->(x.substring 14) # remove "./build/tests/"
+                           .as_string " "
 
-    say "To re-record all failed tests, use this command:"
-    say <| failed_tests
-      .map x->x.split[0]
-      .map x->"make record -C $x" # NYI: UNDER DEVELOPMENT: if _target file exists: "make record_$target -C $x"
-      .as_string " && "
+    say "\nTo re-run all failed tests, use this command:"
+    say """
+        for t in $failed_test_names; do
+          make $target -C ./build/tests/\$t
+        done"""
+
+    say "\nTo re-record all failed tests, use this command:"
+    # NYI: UNDER DEVELOPMENT: if _target file exists: "make record_$target -C $x"
+    say """
+        for t in $failed_test_names; do
+          make record -C ./build/tests/\$t
+        done
+        """
 
     exit 1
 
