@@ -1,20 +1,20 @@
 
 error 1: FATAL FAULT `*** panic ***`: unexpected abort in Type of 'reg_issue2231.ef'
 Call stack:
-fuzion.sys.fatal_fault#2
-fuzion.type.runtime.type.fault.type.install_default.λ.call#1
-fuzion.runtime.fault.cause#1
-panic.type.install_default.λ.call#1
-panic.cause#1
-panic#1
-(reg_issue2231.type.ef.type.instate#3 void).λ.call#1
-(instate_helper void reg_issue2231.ef).call_def.call#1
-instate_helper void reg_issue2231.ef
-reg_issue2231.type.ef.type.instate#4 void
-reg_issue2231.type.ef.type.instate#3 void
-reg_issue2231.ef.instate_self#2 void
-reg_issue2231.ef.infix !#2 void
-reg_issue2231
+fuzion.sys.fatal_fault#2 at {base.fum}/fuzion/sys.fz:55
+fuzion.type.runtime.type.fault.type.install_default.λ.call#1 at {base.fum}/fuzion/runtime/fault.fz:43
+fuzion.runtime.fault.cause#1 at {base.fum}/eff/fallible.fz:35
+panic.type.install_default.λ.call#1 at {base.fum}/panic.fz:36
+panic.cause#1 at {base.fum}/eff/fallible.fz:35
+panic#1 at {base.fum}/panic.fz:56
+(reg_issue2231.type.ef.type.instate#3 void).λ.call#1 at {base.fum}/effect.fz:187
+(instate_helper void reg_issue2231.ef).call_def.call#1 at {base.fum}/effect.fz:440
+instate_helper void reg_issue2231.ef at {base.fum}/effect.fz:430
+reg_issue2231.type.ef.type.instate#4 void at {base.fum}/effect.fz:166
+reg_issue2231.type.ef.type.instate#3 void at {base.fum}/effect.fz:187
+reg_issue2231.ef.instate_self#2 void at {base.fum}/effect.fz:208
+reg_issue2231.ef.infix !#2 void at {base.fum}/effect.fz:225
+reg_issue2231 at --CURDIR--/reg_issue2231.fz:32
 
 *** fatal errors encountered, stopping.
 one error.

@@ -1,17 +1,17 @@
 
 error 1: FATAL FAULT `variant`: i64.min
 Call stack:
-fuzion.sys.fatal_fault#2
-fuzion.type.runtime.type.fault.type.install_default.λ.call#1
-fuzion.runtime.fault.cause#1
-fuzion.type.runtime.type.contract_fault.type.install_default.λ.call#1
-fuzion.runtime.contract_fault.cause#1
-fuzion.type.runtime.type.variant_fault.type.install_default.λ.call#1
-fuzion.runtime.variant_fault.cause#1
-fuzion.runtime.variantcondition_fault#1
-loop_variant_2.test_6.loop
-loop_variant_2.test_6
-loop_variant_2
+fuzion.sys.fatal_fault#2 at {base.fum}/fuzion/sys.fz:55
+fuzion.type.runtime.type.fault.type.install_default.λ.call#1 at {base.fum}/fuzion/runtime/fault.fz:43
+fuzion.runtime.fault.cause#1 at {base.fum}/eff/fallible.fz:35
+fuzion.type.runtime.type.contract_fault.type.install_default.λ.call#1 at {base.fum}/fuzion/runtime/contract_fault.fz:39
+fuzion.runtime.contract_fault.cause#1 at {base.fum}/eff/fallible.fz:35
+fuzion.type.runtime.type.variant_fault.type.install_default.λ.call#1 at {base.fum}/fuzion/runtime/variant_fault.fz:37
+fuzion.runtime.variant_fault.cause#1 at {base.fum}/eff/fallible.fz:35
+fuzion.runtime.variantcondition_fault#1 at {base.fum}/fuzion/runtime/variant_fault.fz:56
+loop_variant_2.test_6.loop at --builtin--:82
+loop_variant_2.test_6 at --CURDIR--/loop_variant_2.fz:81
+loop_variant_2 at --CURDIR--/loop_variant_2.fz:85
 
 *** fatal errors encountered, stopping.
 one error.
