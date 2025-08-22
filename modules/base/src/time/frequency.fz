@@ -34,7 +34,7 @@
 #
 # This is different to `duration.s 1 / 60` since `duration` can only be represented as
 # `16666667 ns`, resulting in a drift of 1/3ns per period.  This would result in a drift
-# of 1.7ms (a whole period) per day. Such inaccuracy can result in catastrophic failure, see
+# of 17ms (a whole period) in 10 days. Such inaccuracy can result in catastrophic failure, see
 # (The Patriot Missile Failure)[https://www-users.cse.umn.edu/~arnold/disasters/patriot.html].
 #
 public frequency(# the frequence per base
