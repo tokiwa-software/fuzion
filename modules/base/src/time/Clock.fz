@@ -47,7 +47,7 @@ public Clock ref : effect is
     sleep_until t read
 
 
-  # internal helper to implement `sleep_unil` if the current time has already been
+  # internal helper to implement `sleep_until` if the current time has already been
   # read and is passed as `ima`.
   #
   sleep_until(# the instant we should wait for
