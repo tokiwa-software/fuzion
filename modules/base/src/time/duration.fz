@@ -42,7 +42,7 @@ module:public duration (
 
 is
 
-  # For `duration`, this feature redefined form `Period` will just return an equal `duration`
+  # For `duration`, this feature redefined from `Period` will just return an equal `duration`
   # like `duration.this`.
   #
   public redef fixed as_duration time.duration
