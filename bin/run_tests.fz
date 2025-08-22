@@ -267,6 +267,18 @@ main =>
       .map x->"make record -C $x" # NYI: UNDER DEVELOPMENT: if _target file exists: "make record_$target -C $x"
       .as_string " && "
 
-    exit 1
+    check (set_exit_code 1).ok
+
+
+  num_slowest := 10
+  say "\n\nSlowest $num_slowest tests using $target backend:\n"
+  slowest_tests := ![
+    "bash",
+    "-c",
+    "sed -E 's|\\./build/tests/([^\\]+)\\sin\\s(.*):\\sok|\\2 \\1|g' $build_dir/run_tests.results | sort -t 'm' -k1,1nr | head -n $num_slowest"]
+
+  say slowest_tests.out
+
+  exit
 
 _ := main
