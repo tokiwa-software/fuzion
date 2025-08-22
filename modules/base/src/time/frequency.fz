@@ -1,0 +1,70 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature time.frequency
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# time.frequncy -- a child of Period that is defined by a frequency per duration
+#
+# This provices abstract features that define a period of time and that
+# permit multiplications with large integers avoiding drift.
+#
+# An example is a frequency of 60Hz that can be specified as
+#
+#     f := frequency 60 (time.duration.s 1)
+#
+# This is different to `duration.s 1 / 60` since `duration` can only be represented as
+# `16666667 ns`, resulting in a drift of 1/3ns per period.  This would result in a drift
+# of 17ms (a whole period) in 10 days. Such inaccuracy can result in catastrophic failure, see
+# (The Patriot Missile Failure)[https://www-users.cse.umn.edu/~arnold/disasters/patriot.html].
+#
+public frequency(# the frequence per base
+                 f u64,
+
+                 # the base duration
+                 base time.duration)
+                 : Period
+is
+
+
+  public redef is_infinity bool
+  =>
+    f = 0
+
+  # this frequency represented as a duration.  Note that the duration might
+  # be inaccurate, it will be truncated to full nanoseconds.
+  #
+  public redef as_duration time.duration
+  =>
+    time.duration (base.nanos / f)
+
+
+  # this frequency multiplied by factor n
+  #
+  # NYI: UNDER DEVELOPMENT: #5801: rename as `divide_by` or similar since `infix *` is inappropriate for a frequency.
+  #
+  public redef infix *(n u64) time.duration
+  =>
+    ns := base.nanos.as_u128
+    nn := n         .as_u128
+    ff := f         .as_u128
+    time.duration (ns * nn / ff).as_u64
