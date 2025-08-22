@@ -30,7 +30,7 @@
 #
 # An example is a frequency of 60Hz that can be specified as
 #
-#     f := frequence 60 (time.duration.s 1)
+#     f := frequency 60 (time.duration.s 1)
 #
 # This is different to `duration.s 1 / 60` since `duration` can only be represented as
 # `16666667 ns`, resulting in a drift of 1/3ns per period.  This would result in a drift
