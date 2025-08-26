@@ -196,6 +196,8 @@ public class Types extends ANY
     public final AbstractFeature f_container;
     public final AbstractFeature f_typed_applicator;
     public final AbstractFeature f_typed_applicator_apply;
+    public final AbstractFeature f_typed_zipper;
+    public final AbstractFeature f_typed_zipper_apply;
     public final AbstractFeature f_Type;
     public final AbstractFeature f_Type_infix_colon;
     public final AbstractFeature f_Type_infix_colon_true;
@@ -267,6 +269,8 @@ public class Types extends ANY
       f_container               = universe.get(mod, "container", 0);
       f_typed_applicator        = f_container.get(mod, FuzionConstants.TYPED_APPLICATOR_FEAT, 1);
       f_typed_applicator_apply  = f_typed_applicator.get(mod, FuzionConstants.TYPED_APPLICATOR_APPLY_FEAT, 3);
+      f_typed_zipper            = f_container.get(mod, FuzionConstants.TYPED_ZIPPER_FEAT, 1);
+      f_typed_zipper_apply      = f_typed_zipper.get(mod, FuzionConstants.TYPED_ZIPPER_APPLY_FEAT, 4);
       f_Type                    = universe.get(mod, FuzionConstants.TYPE_FEAT, 0);
       f_Type_infix_colon        = f_Type.get(mod, "infix :", 1);
       f_Type_infix_colon_true   = f_Type.get(mod, "infix_colon_true", 1);
