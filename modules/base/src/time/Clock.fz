@@ -48,16 +48,16 @@ public Clock ref : effect is
 
 
   # internal helper to implement `sleep_until` if the current time has already been
-  # read and is passed as `ima`.
+  # read and is passed as `just_now`.
   #
   sleep_until(# the instant we should wait for
               t,
 
               # the current instant that has just been `read`.
-              ima time.instant)
+              just_now time.instant)
   =>
-    if ima < t
-      sleep t-ima
+    if just_now < t
+      sleep t-just_now
 
   # halt the current thread during the given period of time
   #
@@ -115,13 +115,13 @@ public Clock ref : effect is
   =>
     for
       cnt := u64 0, cnt + 1
-      ima := read
+      just_now := read
       next1 := first + period * cnt
-      skipped := if ima > next1 then (ima - next1) / period.as_duration + 1
-                                else 0
+      skipped := if just_now > next1 then (just_now - next1) / period.as_duration + 1
+                                     else 0
       next := first + period * (cnt + skipped)
     while next <= last
-      sleep_until next ima
+      sleep_until next just_now
       code()
     else
       cnt
