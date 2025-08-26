@@ -771,7 +771,7 @@ public class Runtime extends ANY
                   {
                     stacktrace.write("\n");
                   }
-                stacktrace.write(str);
+                stacktrace.write(str + " at " + s.getFileName()+ ":" + s.getLineNumber());
                 last = str;
                 count = 1;
               }
