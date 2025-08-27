@@ -497,8 +497,8 @@ base-only: $(FZ) $(MOD_BASE) $(FUZION_FILES)
 .PHONY: javac
 javac: $(CLASS_FILES_TOOLS) $(CLASS_FILES_TOOLS_FZJAVA) $(CLASS_FILES_TOOLS_DOCS)
 
-.PHONY: lint/c
-lint/c:
+.PHONY: lint-c
+lint-c:
 	clang-tidy $(C_FILES) -- -std=c11
 
 $(BUILD_DIR)/%.md: $(FZ_SRC)/%.md
@@ -1441,8 +1441,8 @@ $(MOD_FZ_CMD_FZ_FILES): $(MOD_FZ_CMD_DIR).jmod $(MOD_JAVA_BASE) $(MOD_JAVA_MANAG
 $(MOD_FZ_CMD): $(MOD_FZ_CMD_FZ_FILES)
 	$(FZ) -sourceDirs=$(MOD_FZ_CMD_DIR) -modules=java.base,java.management,java.desktop -saveModule=$@
 
-.PHONY: lint/java
-lint/java:
+.PHONY: lint-java
+lint-java:
 	$(JAVAC) -Xlint --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) \
 		$(JAVA_FILES_UTIL) \
 		$(JAVA_FILES_UTIL_UNICODE) \
@@ -1466,8 +1466,8 @@ lint/java:
 		$(JAVA_FILES_TOOLS_FZJAVA) \
 		$(JAVA_FILES_TOOLS_DOCS)
 
-.PHONY: lint/javadoc
-lint/javadoc:
+.PHONY: lint-javadoc
+lint-javadoc:
 	$(JAVAC) -Xdoclint:all,-missing --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) \
 		$(JAVA_FILES_UTIL) \
 		$(JAVA_FILES_UTIL_UNICODE) \
@@ -1508,9 +1508,10 @@ $(BUILD_DIR)/pmd: $(BUILD_DIR)/pmd.zip
 
 # this linter detects different things than standard java linter
 # but gives a lot of suggestions.
-# use grep, e.g.: make lint/pmd | grep 'UnusedLocalVariable'
+# use grep, e.g.: make lint-pmd | grep 'UnusedLocalVariable'
 #
-lint/pmd: $(BUILD_DIR)/pmd
+.PHONY: lint-pmd
+lint-pmd: $(BUILD_DIR)/pmd
 	$(BUILD_DIR)/pmd/pmd-bin-7.3.0/bin/pmd check -d src -R rulesets/java/quickstart.xml -f text
 
 
