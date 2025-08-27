@@ -169,7 +169,7 @@ private tuple_zip_equals(TUPLE type) : container.typed_zipper bool is
                      v, w T) bool
   =>
     if T : property.equatable then
-      e && v=w
+      e && v = w
     else
       # NYI: UNDER DEVELOPMENT: Would be nice if this could be a compile-time check
       #
