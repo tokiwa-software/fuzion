@@ -249,7 +249,9 @@ public class Html extends ANY
    */
   private String annotateInherited(AbstractFeature af, AbstractFeature outer)
   {
-    if (isDeclared(af, outer))
+    if (isDeclared(af, outer)
+        || af.outer().isUniverse()) // features can not inherit from universe,
+                                    // this avoid false annotation in the applicable universe features section
       {
         return ""; // not inherited, nothing to display
       }
@@ -479,29 +481,54 @@ public class Html extends ANY
     // Choice Types
     var choices = map.getOrDefault(AbstractFeature.Kind.Choice, new TreeSet<AbstractFeature>());
 
-    return mainSection0("Type Parameters",   typeParameters,     outer, false)
-         + mainSection0("Fields",            fields,             outer, false)
-         + mainSection0("Constructors",      normalConstructors, outer, true)
-         + mainSection0("Type Constructors", typeConstructors,   outer, true)
-         + mainSection0("Functions",         normalFunctions,    outer, true)
-         + mainSection0("Type Functions",    typeFunctions,      outer, true)
-         + mainSection0("Choice Types",      choices,            outer, true);
+    // Applicable universe features
+    var univFuncDesc = "These are features in universe, that have an argument with a type constraint "
+                      + "that matches this features type and can therefore be used with it.";
+
+    var universeFunctions = new TreeSet<AbstractFeature>();
+
+    if (!signatureWithArrow(outer) && !outer.isUniverse())
+      {
+        var allUniverseFeat = mapOfDeclaredFeatures.get(lm.universe());
+        universeFunctions.addAll(allUniverseFeat.getOrDefault(AbstractFeature.Kind.Routine, new TreeSet<AbstractFeature>()));
+        universeFunctions.removeIf(f->f.isConstructor());
+        universeFunctions.addAll(allUniverseFeat.getOrDefault(AbstractFeature.Kind.Abstract, new TreeSet<AbstractFeature>()));
+        universeFunctions.addAll(allUniverseFeat.getOrDefault(AbstractFeature.Kind.Intrinsic, new TreeSet<AbstractFeature>()));
+        universeFunctions.addAll(allUniverseFeat.getOrDefault(AbstractFeature.Kind.Native, new TreeSet<AbstractFeature>()));
+
+        // only keep features that have a matching type argument with a type other than Any
+        universeFunctions.removeIf(
+          af->af.typeArguments().isEmpty()
+          || af.typeArguments().stream().noneMatch(typeParam->typeParam.constraint().compareTo(Types.resolved.t_Any ) != 0
+                                                              && typeParam.constraint().constraintAssignableFrom(outer.resultType())));
+      }
+
+    return mainSection0("Type Parameters",              null,         typeParameters,     outer, false)
+         + mainSection0("Fields",                       null,         fields,             outer, false)
+         + mainSection0("Constructors",                 null,         normalConstructors, outer, true)
+         + mainSection0("Type Constructors",            null,         typeConstructors,   outer, true)
+         + mainSection0("Functions",                    null,         normalFunctions,    outer, true)
+         + mainSection0("Type Functions",               null,         typeFunctions,      outer, true)
+         + mainSection0("Choice Types",                 null,         choices,            outer, true)
+         + mainSection0("Applicable universe features", univFuncDesc, universeFunctions,  outer, true);
   }
 
 
   /**
    * The summaries and the comments of the features
    * @param heading the title for this section
+   * @param description text block shown under the headline, can be null
    * @param set the features to be included in the summary
    * @param outer the outer feature of the features in the summary
    * @param filterAndSort should features from other modules (including not having a module) be removed and the list sorted?
    * @return
    */
-  private String mainSection0(String heading, Collection<AbstractFeature> set, AbstractFeature outer, boolean filterAndSort)
+  private String mainSection0(String heading, String description, Collection<AbstractFeature> set, AbstractFeature outer, boolean filterAndSort)
   {
     if (set == null) { return ""; }
 
     heading = "<h2 class=\"f-category\">" + heading + "</h2>\n";
+    description = (description != null && !description.isEmpty()) ? "<div>" + description + "</div>\n" : "";
     var features = set.stream();
 
     // e.g. don't filter or sort type parameters and fields
@@ -525,7 +552,7 @@ public class Html extends ANY
     )
     .collect(Collectors.joining(System.lineSeparator()));
 
-    return content.equals("") ? "" : heading + content;
+    return content.equals("") ? "" : heading + description + content;
   }
 
 
