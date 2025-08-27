@@ -749,10 +749,14 @@ public class AstErrors extends ANY
   public static void argumentLengthsMismatch(AbstractFeature originalFeature, int originalNumArgs,
                                              AbstractFeature redefinedFeature, int actualNumArgs)
   {
+    var typeArgs = originalFeature.typeArguments().stream().map(f->sbnf(f)).collect(Collectors.toList());
+    var valArgs  = originalFeature.valueArguments().stream().map(f->sbnf(f)).collect(Collectors.toList());
     error(redefinedFeature.pos(),
           "Wrong number of arguments in redefined feature",
           "In " + s(redefinedFeature) + " that redefines " + s(originalFeature) + " " +
-          "argument count is " + actualNumArgs + ", argument count should be " + originalNumArgs + ".\n" +
+          "argument count is " + actualNumArgs + ", argument count should be " + originalNumArgs + ": " +
+          StringHelpers.singularOrPlural(typeArgs.size(), "(free) type parameter") + " " +  StringHelpers.listConj(typeArgs) +
+          " and " + StringHelpers.singularOrPlural(valArgs.size(), "value argument") + " " + StringHelpers.listConj(valArgs) + ".\n" +
           "Original feature declared at " + originalFeature.pos().show());
   }
 
