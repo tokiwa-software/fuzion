@@ -249,7 +249,9 @@ public class Html extends ANY
    */
   private String annotateInherited(AbstractFeature af, AbstractFeature outer)
   {
-    if (isDeclared(af, outer) || af.outer().isUniverse())
+    if (isDeclared(af, outer)
+        || af.outer().isUniverse()) // features can not inherit from universe,
+                                    // this avoid false annotation in the applicable universe features section
       {
         return ""; // not inherited, nothing to display
       }
@@ -480,9 +482,8 @@ public class Html extends ANY
     var choices = map.getOrDefault(AbstractFeature.Kind.Choice, new TreeSet<AbstractFeature>());
 
     // Applicable universe features
-    var univFuncDesc = """
-      These are features in universe, that have an argument with a type constraint that matches this features type and can therefore be used with it.<br>
-      E.g. <code>infix </code> is defined in universe and can be used with all features with constraint <code>property.orderable</code>.""";
+    var univFuncDesc = "These are features in universe, that have an argument with a type constraint "
+                      + "that matches this features type and can therefore be used with it.";
 
     var universeFunctions = new TreeSet<AbstractFeature>();
 
