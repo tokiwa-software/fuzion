@@ -401,6 +401,7 @@ class LibraryOut extends ANY
    *   |        |        |               |           R = has precondition feature        |
    *   |        |        |               |           E = has postcondition feature       |
    *   |        |        |               |           O = hasValuesAsOpenTypeFeature      |
+   *   |        |        |               |               || isOpenTypeParameter          |
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | Name          | name                                          |
    *   |        |        +---------------+-----------------------------------------------+
@@ -494,8 +495,10 @@ class LibraryOut extends ANY
       {
         k = k | FuzionConstants.MIR_FILE_KIND_HAS_POST_CONDITION_FEATURE;
       }
-    if (f.hasValuesAsOpenTypeFeature())
+    if (f.hasValuesAsOpenTypeFeature() || f.isOpenTypeParameter())
       {
+        if (CHECKS) check
+          (f.hasValuesAsOpenTypeFeature() != f.isOpenTypeParameter()); //  only one of these two holds
         k = k | FuzionConstants.MIR_FILE_KIND_HAS_VALUES_OF_OPEN_TYPE_FEATURE;
       }
     var n = f.featureName();
@@ -525,11 +528,21 @@ class LibraryOut extends ANY
       (f.arguments().size() == argCount);
     if (!f.isConstructor() && !f.isChoice() && !f.isTypeParameter())
       {
+        check
+          (!f.isOpenTypeParameter());
         type(f.resultType());
       }
     if (f.hasValuesAsOpenTypeFeature())
       {
         _data.writeOffset(f.valuesAsOpenTypeFeature());
+      }
+    else if (f.isOpenTypeParameter())
+      {
+        if (CHECKS) check
+          (!f.hasValuesAsOpenTypeFeature(),
+           f.openTypesFeature() != null,
+           (k & FuzionConstants.MIR_FILE_KIND_HAS_VALUES_OF_OPEN_TYPE_FEATURE) != 0);
+        _data.writeOffset(f.openTypesFeature());
       }
     if (f.isTypeParameter())
       {

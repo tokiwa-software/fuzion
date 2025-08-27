@@ -1387,8 +1387,14 @@ public class Call extends AbstractCall
          *    zip (drop 1) (T.lteq)
          *      .fold bool.all
          */
-        result = _calledFeature.isTypeParameter()
-          ? _calledFeature.constraint(res, context)
+        if (_calledFeature.isOpenTypeParameter() && _calledFeature instanceof Feature cf)
+          {
+            cf.addOpenTypesFeature(res);
+          }
+        result = _calledFeature.isOpenTypeParameter()
+          ? _calledFeature.openTypesFeature().resultTypeIfPresentUrgent(res, urgent) // Types.resolved.f_Open_Types.resultTypeIfPresentUrgent(res, urgent)
+          : _calledFeature.isTypeParameter()
+          ? _calledFeature.constraint(res, context) /* NYI: does this make sense??? */
           : _calledFeature.resultTypeIfPresentUrgent(res, urgent);
         _recursiveResolveType = false;
 
@@ -1544,7 +1550,11 @@ public class Call extends AbstractCall
    */
   private AbstractType resolveForCalledFeature(Resolution res, AbstractType t, AbstractType tt, Context context)
   {
-    if (_calledFeature.isTypeParameter())
+    if (_calledFeature.isOpenTypeParameter())
+      {
+        // nothing to be done for open type parameter resolution
+      }
+    else if (_calledFeature.isTypeParameter())
       {
         if (!t.isGenericArgument())  // See AstErrors.constraintMustNotBeGenericArgument
           {
@@ -2039,7 +2049,14 @@ public class Call extends AbstractCall
         actualType = actualType.replace_type_parameters_of_cotype_origin(context.outerFeature());
         if (!actualType.isGenericArgument() && actualType.feature().isCotype())
           {
-            actualType = Types.resolved.f_Type.selfType();
+            if (actual instanceof Call c && c.calledFeature().isOpenTypeParameter())
+              {
+                actualType = Types.resolved.f_Open_Types.selfType();
+              }
+            else
+              {
+                actualType = Types.resolved.f_Type.selfType();
+              }
           }
       }
     return actualType;
@@ -2887,10 +2904,6 @@ public class Call extends AbstractCall
               {
                 AstErrors.cannotCallChoice(pos(), _calledFeature);
               }
-          }
-        if (_calledFeature.isOpenTypeParameter())
-          {
-            AstErrors.mustNotCallOpenTypeParameter(this);
           }
 
         if (!errorInActuals())

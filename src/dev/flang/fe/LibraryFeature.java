@@ -394,6 +394,20 @@ public class LibraryFeature extends AbstractFeature
                                                         : null;
   }
 
+
+  @Override
+  public AbstractFeature openTypesFeature()
+  {
+    if (PRECONDITIONS) require
+      (isOpenTypeParameter());
+
+    if (CHECKS) check
+      (_libModule.featureHasOpenTypeFeature(_index));
+
+    return _libModule.featureValuesAsOpenTypeFeature(_index);
+  }
+
+
   /**
    * Get inner feature with given name, ignoring the argument count.
    *
@@ -489,8 +503,8 @@ public class LibraryFeature extends AbstractFeature
       {
         return
           (isOpenTypeParameter()
-           ? Types.resolved.f_Values_Of_Open_Type
-           : Types.resolved.f_Type    ).resultType();
+           ? Types.resolved.f_Open_Types
+           : Types.resolved.f_Type      ).resultType();
       }
     else
       {
