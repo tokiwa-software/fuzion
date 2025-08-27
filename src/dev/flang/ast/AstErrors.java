@@ -897,35 +897,17 @@ public class AstErrors extends ANY
   /**
    * Create list of the form "'i32', 'string' or 'bool'"
    */
-  private static String typeListAlternatives(List<AbstractType> tl)  { return typeList(tl, "or" ); }
+  private static String typeListAlternatives(List<AbstractType> tl)
+  {
+    return StringHelpers.listAlt(tl.stream().map(t->s(t)).collect(Collectors.toList()));
+  }
 
   /**
    * Create list of the form "'i32', 'string' and 'bool'"
    */
-  private static String typeListConjunction (List<AbstractType> tl)  { return typeList(tl, "and"); }
-
-  /**
-   * Create list of the form "'i32', 'string' " + conj + " 'bool'"
-   */
-  private static String typeList(List<AbstractType> tl, String conj)
+  private static String typeListConjunction (List<AbstractType> tl)
   {
-    StringBuilder mt = new StringBuilder();
-    String comma = "", last = "";
-    for (var t : tl)
-      {
-        if (last != "")
-          {
-            mt.append(comma).append(last);
-            comma = ", ";
-          }
-        last = s(t);
-      }
-    mt.append(switch (tl.size()) {
-      case 0, 1 -> "";
-      case 2    -> " " + conj + " ";
-      default   -> ", " + conj + " ";})
-      .append(last);
-    return mt.toString();
+    return StringHelpers.listConj(tl.stream().map(t->s(t)).collect(Collectors.toList()));
   }
 
   private static String typeOrAnyType(AbstractType typeOrNull)
