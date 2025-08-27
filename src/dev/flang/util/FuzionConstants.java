@@ -141,7 +141,7 @@ public class FuzionConstants extends ANY
 
 
   /**
-   * Name of type_zipper.apply feature.
+   * Name of typed_zipper.apply feature.
    */
   public static final String TYPED_ZIPPER_APPLY_FEAT = "apply";
 
