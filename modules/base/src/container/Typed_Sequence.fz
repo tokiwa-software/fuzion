@@ -79,7 +79,17 @@ public Typed_Sequence ref : Sequence container.Typed_Value is
   #
   # In case this `Typed_Sequence` is empty, the result is `e`.
   #
-  public typed_foldf(B type, A type : typed_applicator B, e B, a A) B
+  public typed_foldf(E type, A type : typed_applicator E, e E, a A) E
+  =>
+    abstract
+
+
+  # zip the elements of this `Typed_Sequence` using the given `typed_zipper`
+  # and initial value.
+  #
+  # In case this `Typed_Sequence` is empty, the result is `e`.
+  #
+  public typed_zip_and_fold(E type, Z type : typed_zipper E, b Typed_Sequence.this, e E, z Z) E
   =>
     abstract
 
@@ -130,6 +140,40 @@ public typed_applicator(B type) is
   #         e + $v
   #
   public apply(T type, e B, v T) B
+  =>
+    abstract
+
+
+# a function that operates on two values of type that is given by the caller.
+#
+# This is used as an argument to `Typed_Sequence.typed_zipper` to process two
+# equals streams of typed values.
+#
+public typed_zipper(# the result type of two values that were zipped
+                    #
+                    B type
+                   ) is
+
+
+  # Zip values `v` and `w` of type T,  create a new value of type
+  # `B` and return it
+  #
+  # ex:
+  #
+  # to check if all values are equal, use
+  #
+  #     my_zip : container.typed_zipper bool is
+  #
+  #       public redef apply(T type, e bool, v, w T) bool
+  #       =>
+  #         if T : property.equatable then
+  #           b && v = w
+  #         else
+  #           panic "$T is not `property.equatable`!"
+  #
+  public apply(T type,
+               e B,
+               v, w T) B
   =>
     abstract
 
