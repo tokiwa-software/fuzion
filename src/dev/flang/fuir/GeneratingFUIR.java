@@ -1978,14 +1978,31 @@ public class GeneratingFUIR extends FUIR
             else if (cf.isOpenTypeParameter())
               {
                 var t = call.target();
+                toStack(l, t, true);   // we must evaluate `t` since strange code structure like #5816 could have side-effects
                 var op = cf.openTypesFeature();
                 var cur = _currentClazz;
+                Expr target = new Current(call.pos(), cur._type.feature());
+                while (!cur._type.feature().inheritsFrom(cf.outer()))
+                  {
+                    var ft = target;
+                    var fcur = cur;
+                    target = new AbstractCall()
+                      {
+                        @Override public SourcePosition     pos()                  { return call.pos(); }
+                        @Override public Expr               target()               { return ft; }
+                        @Override public AbstractFeature    calledFeature()        { return fcur.feature().outerRef(); }
+                        @Override public AbstractType       type()                 { return fcur.feature().outerRef().resultType(); }
+                      };
+                    cur = cur._outer;
+                  }
+                var ft = target;
+                var fcur = cur;
                 e = new AbstractCall()             // e.g. tuple.#Values_Of_Open_Type<n>
                   {
                     @Override public SourcePosition     pos()                  { return call.pos(); }
-                    @Override public Expr               target()               { return new Current(call.pos(), cur._type.feature()); }
+                    @Override public Expr               target()               { return ft; }
                     @Override public AbstractFeature    calledFeature()        { return op; }
-                    @Override public AbstractType       type()                 { return cur.replaceThisType(op.resultType(), new List<>()); }
+                    @Override public AbstractType       type()                 { return fcur.replaceThisType(op.resultType(), new List<>()); }
                   };
               }
           }
