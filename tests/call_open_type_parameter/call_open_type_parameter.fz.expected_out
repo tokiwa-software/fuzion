@@ -15,23 +15,27 @@ Type of 'u16'
 Type of 'Type'
 ----
 
+case4: expecing 3 numerics and 3 strings
+4 numeric and 3 String types
+----
+
 case5: i32 [bool unit]
 A: Type of 'i32'
 Type of 'Type'
 [Type of 'bool', Type of 'unit']
-Type of '(call_open_type_parameter.case5.a i32 bool unit).#Open_Types14'
+Type of '(call_open_type_parameter.case5.a i32 bool unit).#Open_Types24'
 a.q: Type of 'i32' [Type of 'bool', Type of 'unit']
 case5: u32 [f32]
 A: Type of 'u32'
 Type of 'Type'
 [Type of 'f32']
-Type of '(call_open_type_parameter.case5.a u32 f32).#Open_Types14'
+Type of '(call_open_type_parameter.case5.a u32 f32).#Open_Types24'
 a.q: Type of 'u32' [Type of 'f32']
 case5: u8 []
 A: Type of 'u8'
 Type of 'Type'
 []
-Type of '(call_open_type_parameter.case5.a u8).#Open_Types14'
+Type of '(call_open_type_parameter.case5.a u8).#Open_Types24'
 a.q: Type of 'u8' []
 ----
 
