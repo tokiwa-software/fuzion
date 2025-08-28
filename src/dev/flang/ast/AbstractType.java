@@ -752,7 +752,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param genericsToReplace a list of possibly generic types
    *
-   * @param actualGenerics the actual generics to feat that should replace the
+   * @param actualGenerics the actual generics that should replace the
    * formal generics found in genericsToReplace.
    *
    * @param locally true iff this should not be applied to outer types and
@@ -778,7 +778,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     else
       {
         result = genericsToReplace.flatMap
-          (t -> t.isOpenGeneric() && t.genericArgument().outer().generics() == f.generics()
+          (t -> t.isOpenGeneric() && t.genericArgument().outer() == f
                 ? t.genericArgument().replaceOpen(actualGenerics)
                 : new List<>(locally ? t.applyTypeParsLocally(f, actualGenerics, NO_SELECT)
                                      : t.applyTypePars       (f, actualGenerics           )));
