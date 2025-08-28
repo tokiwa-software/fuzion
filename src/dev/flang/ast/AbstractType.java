@@ -756,7 +756,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @return a new list of types with all formal generic arguments from this
    * replaced by the corresponding actualGenerics entry.
    */
-  private static List<AbstractType> applyTypePars(AbstractFeature f, List<AbstractType> genericsToReplace, List<AbstractType> actualGenerics)
+  private static List<AbstractType> applyTypePars(AbstractFeature f,
+                                                  List<AbstractType> genericsToReplace,
+                                                  List<AbstractType> actualGenerics,
+                                                  boolean locally /* NYI: UNDER DEVELOPMENT: Document or (better) remove! */)
   {
     if (PRECONDITIONS) require
       (Errors.any() ||
@@ -772,7 +775,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         result = genericsToReplace.flatMap
           (t -> t.isOpenGeneric() && t.genericArgument().outer().generics() == f.generics()
                 ? t.genericArgument().replaceOpen(actualGenerics)
-                : new List<>(t.applyTypePars(f, actualGenerics)));
+                : new List<>(locally ? t.applyTypeParsLocally(f, actualGenerics, FuzionConstants.NO_SELECT)
+                                     : t.applyTypePars       (f, actualGenerics                           )));
       }
     return result;
   }
@@ -794,7 +798,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
        Errors.any() ||
        feature().generics().sizeMatches(generics()));
 
-    return applyTypePars(feature(), genericsToReplace, generics());
+    return applyTypePars(feature(), genericsToReplace, generics(), false /* NYI: UNDER DEVELOPMENT locally */);
   }
 
 
@@ -1220,7 +1224,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
             var result = this;
 
             var g1 = generics();
-            var g2 = applyTypePars(f, g1, actualGenerics);
+            var g2 = applyTypePars(f, g1, actualGenerics, true /* NYI: UNDER DEVELOPMENT locally */);
             var g3 = cotypeActualGenerics(g2);
 
             var o1 = outer();
