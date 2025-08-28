@@ -211,7 +211,7 @@ public class StringHelpers extends ANY
    */
   public static <T> String listAlt(java.util.List<T> ls)
   {
-    return list(ls, "and");
+    return list(ls, "or");
   }
 
 
