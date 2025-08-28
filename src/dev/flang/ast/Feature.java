@@ -1248,7 +1248,6 @@ public class Feature extends AbstractFeature
   }
 
 
-
   @Override
   public AbstractFeature openTypesFeature()
   {
@@ -1263,12 +1262,8 @@ public class Feature extends AbstractFeature
   }
 
 
-  /**
-   * Add open types feature, i.e., the feature that is called when a field whose
-   * type is an open type parameter is called without selecting one specific
-   * variant.
-   */
-  void addOpenTypesFeature(Resolution res)
+  @Override
+  public AbstractFeature openTypesFeature(Resolution res)
   {
     if (PRECONDITIONS) require
       (isOpenTypeParameter());
@@ -1285,6 +1280,7 @@ public class Feature extends AbstractFeature
         res.resolveTypes(otf);
         _openTypes = otf;
       }
+    return _openTypes;
   }
 
 
@@ -1643,7 +1639,7 @@ public class Feature extends AbstractFeature
 
         if (isOpenTypeParameter())
           {
-            addOpenTypesFeature(res);
+            var ignore = openTypesFeature(res);
           }
         visit(res.resolveTypesFully(this));
 

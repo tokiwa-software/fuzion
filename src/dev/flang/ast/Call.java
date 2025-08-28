@@ -1376,26 +1376,22 @@ public class Call extends AbstractCall
     else
       {
         _recursiveResolveType = true;
-        /**
-         * The following enables
-         * calling type feature on type parameter:
-         *
-         *  Sequence.is_sorted bool
-         *    pre
-         *      T : property.orderable
-         *  =>
-         *    zip (drop 1) (T.lteq)
-         *      .fold bool.all
-         */
-        if (_calledFeature.isOpenTypeParameter() && _calledFeature instanceof Feature cf)
-          {
-            cf.addOpenTypesFeature(res);
-          }
-        result = _calledFeature.isOpenTypeParameter()
-          ? _calledFeature.openTypesFeature().resultTypeIfPresentUrgent(res, urgent) // Types.resolved.f_Open_Types.resultTypeIfPresentUrgent(res, urgent)
-          : _calledFeature.isTypeParameter()
-          ? _calledFeature.constraint(res, context) /* NYI: does this make sense??? */
-          : _calledFeature.resultTypeIfPresentUrgent(res, urgent);
+        var cf = _calledFeature;
+        result =
+          cf.isOpenTypeParameter() ? cf.openTypesFeature(res).resultTypeIfPresentUrgent(res, urgent) :
+          /*
+           * The following enables
+           * calling type feature on type parameter:
+           *
+           *  Sequence.is_sorted bool
+           *    pre
+           *      T : property.orderable
+           *  =>
+           *    zip (drop 1) (T.lteq)
+           *      .fold bool.all
+           */
+          cf.isTypeParameter()     ? cf.constraint(res, context)
+                                   : cf.resultTypeIfPresentUrgent(res, urgent);
         _recursiveResolveType = false;
 
         if (result == Types.t_FORWARD_CYCLIC)
