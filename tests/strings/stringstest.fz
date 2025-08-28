@@ -50,4 +50,6 @@ stringstest is
 
   chck "Nested: { "-{ a + b }-" * 3 }"="Nested: -7--7--7-" "nested \{}"
 
+  chck ("abcdefabcdefabcdef".find "abcdef" 11).as_equatable=(option 12).as_equatable "find(substring, from)"
+
   exit
