@@ -1,0 +1,155 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test call_open_type_parameter
+#
+# -----------------------------------------------------------------------
+
+# this tests several cases of calls to type parameters, some from #5738
+#
+call_open_type_parameter =>
+
+  # first case from #5738
+  #
+  case1 =>
+    x(O type ...) =>
+      say O
+      say (type_of O)
+
+    say "case1: expecing 'i32 unit f64' and `Type of '...#Open_Types<n>'`"
+    x i32 unit f64
+
+  say "----"
+  say ""
+  case1
+
+  # first case from #5738, but using intermediate variable
+  #
+  case2 =>
+    x(O type ...) =>
+      o := O
+      say o
+      say (type_of o)
+
+    say "case2: expecing 'i32 unit f64' and `Type of '...#Open_Types<n>'`"
+    x i32 unit f64
+
+  say "----"
+  say ""
+  case2
+
+  # second case from #5738
+  #
+  case3 =>
+    x(A type) =>
+      say A
+      say (type_of A)
+
+    say "case3: expecing 'Type of 'u16'' and `Type of 'Type'`"
+    x u16
+
+  say "----"
+  say ""
+  case3
+
+/* NYI: crashes!
+
+  # let's work with the types:
+  #
+  case4 =>
+    x(O type...) =>
+      count_numeric : container.type_applicator (i32,i32) is
+        public redef apply(e i32, T type) =>
+          if      T : numeric then (e.0+1, e.1)
+          else if T : String  then (e.0  , e.1+1)
+          else                     e
+
+      n,s := O.type_foldf 0 count_numeric
+      say "$n numeric and $s String types"
+
+    say "case4: expecing 3 numerics and 3 strings"
+    x u16 u8 u64 "Hi" "A"+"B"+"C" (codepoint 0x0fcb) (complex 3.14 2.71)
+
+  say "----"
+  say ""
+  case4
+
+*/
+
+  # accessing type parameter and open type parameter from declaring
+  # feature and from inner feature:
+  #
+  case5 =>
+    a(A type, B type...) =>
+      say "A: $A"
+      say (type_of A)
+      say B
+      say (type_of B)
+
+      # try accessing `A` and `B` from inner feature
+      q => say "a.q: $A $B"
+      q
+
+    say "case5: i32 [bool unit]"
+    a i32 bool unit
+    say "case5: u32 [f32]"
+    a u32 f32
+    say "case5: u8 []"
+    a u8
+
+  say "----"
+  say ""
+  case5
+
+
+  # accessing type parameter and open type parameter from declaring
+  # feature `a`, from deeply nested inner feature `u` and from inner
+  # feature `g` inherited into a child `b` of the declaring feature
+  # `a`:
+  #
+  case6 =>
+
+    a(B type...) is
+      r is
+        s is
+          t is
+            u => B
+      say r.s.t.u
+      f is
+        g =>
+          say B
+
+    b : a i32 unit bool is
+
+    say ""
+    say "case6: a.r.s.t.u []"
+    _ := a
+    say ""
+    say "case6: a.r.s.t.u [String codepoint bool unit (Sequence (i32,f64))]"
+    _ := a String codepoint bool unit (Sequence (i32,f64))
+    say ""
+    say "case6: a.f.g [u32 bool unit]"
+    _ := (a u32 bool unit).f.g
+    say ""
+    say "case6: b.f.g [i32 unit bool]"
+    _ := b.f.g
+
+  say "----"
+  say ""
+  case6
