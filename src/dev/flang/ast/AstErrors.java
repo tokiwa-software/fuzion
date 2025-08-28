@@ -755,8 +755,8 @@ public class AstErrors extends ANY
           "Wrong number of arguments in redefined feature",
           "In " + s(redefinedFeature) + " that redefines " + s(originalFeature) + " " +
           "argument count is " + actualNumArgs + ", argument count should be " + originalNumArgs + ": " +
-          StringHelpers.singularOrPlural(typeArgs.size(), "(free) type parameter") + " " +  StringHelpers.listConj(typeArgs) +
-          " and " + StringHelpers.singularOrPlural(valArgs.size(), "value argument") + " " + StringHelpers.listConj(valArgs) + ".\n" +
+          StringHelpers.singularOrPlural(typeArgs.size(), "(free) type parameter") + " " +  StringHelpers.listConjunction(typeArgs) +
+          " and " + StringHelpers.singularOrPlural(valArgs.size(), "value argument") + " " + StringHelpers.listConjunction(valArgs) + ".\n" +
           "Original feature declared at " + originalFeature.pos().show());
   }
 
@@ -903,7 +903,7 @@ public class AstErrors extends ANY
    */
   private static String typeListAlternatives(List<AbstractType> tl)
   {
-    return StringHelpers.listAlt(tl.stream().map(t->s(t)).collect(Collectors.toList()));
+    return StringHelpers.listAlternatives(tl.stream().map(t->s(t)).collect(Collectors.toList()));
   }
 
   /**
@@ -911,7 +911,7 @@ public class AstErrors extends ANY
    */
   private static String typeListConjunction (List<AbstractType> tl)
   {
-    return StringHelpers.listConj(tl.stream().map(t->s(t)).collect(Collectors.toList()));
+    return StringHelpers.listConjunction(tl.stream().map(t->s(t)).collect(Collectors.toList()));
   }
 
   private static String typeOrAnyType(AbstractType typeOrNull)

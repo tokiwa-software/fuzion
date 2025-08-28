@@ -209,7 +209,7 @@ public class StringHelpers extends ANY
    * @param ls the list from which to create a String
    * @return list as a String, elements are comma separated, last one with "or"
    */
-  public static <T> String listAlt(java.util.List<T> ls)
+  public static <T> String listAlternatives(java.util.List<T> ls)
   {
     return list(ls, "or");
   }
@@ -222,7 +222,7 @@ public class StringHelpers extends ANY
    * @param ls the list from which to create a String
    * @return list as a String, elements are comma separated, last one with "and"
    */
-  public static <T> String listConj(java.util.List<T> ls)
+  public static <T> String listConjunction(java.util.List<T> ls)
   {
     return list(ls, "and");
   }
