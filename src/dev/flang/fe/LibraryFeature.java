@@ -511,7 +511,7 @@ public class LibraryFeature extends AbstractFeature
     if (PRECONDITIONS) require
       (isTypeParameter());
 
-    var result = _libModule.type(_libModule.featureResultTypePos(_index));
+    var result = _libModule.type(_libModule.featureConstraintPos(_index));
 
     if (POSTCONDITIONS) ensure
       (result != null);
