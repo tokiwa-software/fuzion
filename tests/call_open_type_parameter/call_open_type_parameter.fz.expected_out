@@ -52,4 +52,3 @@ case6: a.f.g [u32 bool unit]
 
 case6: b.f.g [i32 unit bool]
 [Type of 'i32', Type of 'unit', Type of 'bool']
-[Type of 'i32', Type of 'unit', Type of 'bool']

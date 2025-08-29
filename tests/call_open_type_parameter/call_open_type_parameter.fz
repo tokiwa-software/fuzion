@@ -130,8 +130,10 @@ call_open_type_parameter =>
             u => B
       say r.s.t.u
       f is
-        g =>
-          say B
+        g(doit bool)  =>
+          x := B
+          if doit
+            say x
 
     b : a i32 unit bool is
 
@@ -143,10 +145,10 @@ call_open_type_parameter =>
     _ := a String codepoint bool unit (Sequence (i32,f64))
     say ""
     say "case6: a.f.g [u32 bool unit]"
-    _ := (a u32 bool unit).f.g
+    _ := (a u32 bool unit).f.g true
     say ""
     say "case6: b.f.g [i32 unit bool]"
-    _ := b.f.g
+    _ := b.f.g false /* NYI: does not work yet! */
 
   say "----"
   say ""
