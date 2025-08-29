@@ -427,7 +427,8 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # splits this string in chunks of codepoint length n, the last part might be shorter
   #
   public chunk(n i32) Sequence String
-    pre n>0
+    pre
+      debug: n > 0
   =>
     as_codepoints.chunk n
                  .map String.type.from_codepoints
@@ -454,13 +455,19 @@ public String ref : property.equatable, property.hashable, property.orderable is
     utf8.find substring.utf8
 
 
-  # find (utf8-byte-) index of 'substring' within this string.
+  # find (utf8-byte-) index of 'substring' within this string,
+  # starting the search at 'from'.
+  #
+  # the index of 'substring' is given in relation to the start
+  # of the entire string.
   #
   public find(substring String,
               # start search at this index
               from i32) option i32
+    pre
+      debug: from ≥ 0
   =>
-    (utf8.drop from).find substring.utf8
+    ((utf8.drop from).find substring.utf8) >>= i -> i + from
 
 
   # find (utf8-byte-) index of last occurrence of 'substring'
