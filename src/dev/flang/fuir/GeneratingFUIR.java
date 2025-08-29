@@ -286,10 +286,18 @@ public class GeneratingFUIR extends FUIR
        {
          Expr e = call.actuals().get(0);
          var aa = call.actuals().get(1);
-         var outer = currentClazz._outer._outer;
-         for (var i = outer.feature().typeArguments().size()-1; i<outer._type.generics().size() /* fields.size() */; i++)
+         var type_foldf                = currentClazz.feature();                // Open_Types.type_foldf
+
+         if (CHECKS) check
+           (type_foldf.outer() == Types.resolved.f_Open_Types);                 // make sure noone tries to call this in a different context
+
+         var openTypesFeature          = currentClazz._outer.feature();         // the actual outer instance of (xyz T U O...).#Open_Types<n>
+         var featWithOpenTypeParameter = openTypesFeature.outer();              // the feature with open type parameter: `xyz(T, U type, O type...)`
+         var openTypePar = featWithOpenTypeParameter.typeArguments().getLast(); // the open type parameter `xyz.O`
+         var openType    = openTypePar.asGenericType();                         // the open type parameter as a type `O`
+
+         for (var t : currentClazz.replaceOpen(openType, openTypePar))          // for all actual types assigned to the open type parameter
            {
-             var t = outer._type.generics().get(i);
              var ta = currentClazz.actualTypeParameters()[1];
              var apply = ta.lookup(new FeatureAndActuals(Types.resolved.f_type_applicator_apply,
                                                          new List<>(t)),
@@ -300,16 +308,16 @@ public class GeneratingFUIR extends FUIR
              var openTypeInstance = new AbstractCall()             // e.g. tuple.#Open_Types<n>
                {
                  @Override public SourcePosition     pos()                  { return call.pos(); }
-                 @Override public Expr               target()               { return new Current(call.pos(), currentClazz._type.feature()); }
-                 @Override public AbstractFeature    calledFeature()        { return currentClazz.feature().outerRef(); }
-                 @Override public AbstractType       type()                 { return currentClazz.feature().outerRef().resultType(); }
+                 @Override public Expr               target()               { return new Current(call.pos(), type_foldf); }
+                 @Override public AbstractFeature    calledFeature()        { return type_foldf.outerRef(); }
+                 @Override public AbstractType       type()                 { return type_foldf.outerRef().resultType(); }
                };
              var featureWithOpenTypeParamter = new AbstractCall()  // e.g. tuple
                {
                  @Override public SourcePosition     pos()                  { return call.pos(); }
                  @Override public Expr               target()               { return openTypeInstance; }
-                 @Override public AbstractFeature    calledFeature()        { return currentClazz._outer.feature().outerRef(); }
-                 @Override public AbstractType       type()                 { return currentClazz._outer.feature().outerRef().resultType(); }
+                 @Override public AbstractFeature    calledFeature()        { return openTypesFeature.outerRef(); }
+                 @Override public AbstractType       type()                 { return openTypesFeature.outerRef().resultType(); }
                };
              var fe = e; // effectively final copy of e
              e = new AbstractCall()                                // e.g. aa.apply <type of tuple.values.3> e
