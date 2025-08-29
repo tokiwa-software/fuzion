@@ -2545,6 +2545,20 @@ A ((Choice)) declaration must not contain a result type.
 
 
   /**
+   * For a type parameter, this gives the ResolvedParametricType instance
+   * corresponding to this type parameter.
+   */
+  @Override
+  public AbstractType asGenericType()
+  {
+    if (PRECONDITIONS) require
+      (isTypeParameter());
+
+    return new ResolvedParametricType(this);
+  }
+
+
+  /**
    * After type resolution, resultType returns the result type of this
    * feature using the formal generic argument.
    *

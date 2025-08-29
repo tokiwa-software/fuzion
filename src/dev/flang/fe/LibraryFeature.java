@@ -443,6 +443,20 @@ public class LibraryFeature extends AbstractFeature
 
 
   /**
+   * For a type parameter, this gives the ResolvedParametricType instance
+   * corresponding to this type parameter.
+   */
+  @Override
+  public AbstractType asGenericType()
+  {
+    if (PRECONDITIONS) require
+      (isTypeParameter());
+
+    return new GenericType(_libModule, -1, this);
+  }
+
+
+  /**
    * createSelfType returns a new instance of the type of this feature's frame
    * object.
    *

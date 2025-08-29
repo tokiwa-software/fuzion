@@ -629,14 +629,11 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   /**
    * For a type parameter, this gives the ResolvedParametricType instance
    * corresponding to this type parameter.
+   *
+   * require
+   *   (isTypeParameter());
    */
-  AbstractType asGenericType()
-  {
-    if (PRECONDITIONS) require
-      (isTypeParameter());
-
-    return new ResolvedParametricType(this);
-  }
+  public abstract AbstractType asGenericType();
 
 
   /**
