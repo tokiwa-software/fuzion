@@ -17,39 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test stringstest
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# A small test for strings with embedded identifiers and expressions
-#
-stringstest is
-
-
-  chck(b0 bool, msg String) =>
-    s := if b0
-           "PASSED: "
-         else
-           _ := set_exit_code 1
-           "FAILED: "
-    say (s + msg)
-
-  x := 42
-  chck "x is $x."="x is 42." "\$<ident>"
-
-  chck "the answer is $42."="the answer is 42." "\$<number>"
-
-  a := 3
-  b := 4
-  chck "sum is {a+b} product is {a*b}"="sum is 7 product is 12" "\{a+b} and \{a*b}"
-
-  chck "max(a,b) is {if (a>b) a else b}."="max(a,b) is 4." "\{if...}"
-  chck "min(a,b) is {if (a<b) a else b}."="min(a,b) is 3." "\{if...}"
-
-  chck "Nested: { "-{ a + b }-" * 3 }"="Nested: -7--7--7-" "nested \{}"
-
-  chck ("abcdefabcdefabcdef".find "abcdef" 11).as_equatable=(option 12).as_equatable "find(substring, from)"
-
-  exit
+override NAME = reg_issue5808
+include ../simple.mk

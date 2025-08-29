@@ -200,6 +200,62 @@ public class StringHelpers extends ANY
       i % 10 == 3 && i % 100 != 13 ? "" + i + "rd" :
       i + "th";
   }
+
+
+  /**
+   * Turns a list [A,B,C] into a String "A, B or C"
+   *
+   * @param <T> type of the list elements
+   * @param ls the list from which to create a String
+   * @return list as a String, elements are comma separated, last one with "or"
+   */
+  public static <T> String listAlternatives(java.util.List<T> ls)
+  {
+    return list(ls, "or");
+  }
+
+
+  /**
+   * Turns a list [A,B,C] into a String "A, B and C"
+   *
+   * @param <T> type of the list elements
+   * @param ls the list from which to create a String
+   * @return list as a String, elements are comma separated, last one with "and"
+   */
+  public static <T> String listConjunction(java.util.List<T> ls)
+  {
+    return list(ls, "and");
+  }
+
+
+  /**
+   * Creates String from a list, elements are comma separated, last separator can be specified
+   *
+   * @param <T> type of the list elements
+   * @param ls the list from which to create a String
+   * @param conj separator for the last element
+   * @return list as a String, elements are comma separated, last one with " " + conj + " "
+   */
+  private static <T> String list(java.util.List<T> ls, String conj)
+  {
+    StringBuilder mt = new StringBuilder();
+    String comma = "", last = "";
+    for (var e : ls)
+      {
+        if (last != "")
+          {
+            mt.append(comma).append(last);
+            comma = ", ";
+          }
+        last = e.toString();
+      }
+    mt.append(switch (ls.size()) {
+      case 0, 1 -> "";
+      case 2    -> " " + conj + " ";
+      default   -> ", " + conj + " ";})
+      .append(last);
+    return mt.toString();
+  }
 }
 
 /* end of file */

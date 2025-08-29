@@ -749,10 +749,14 @@ public class AstErrors extends ANY
   public static void argumentLengthsMismatch(AbstractFeature originalFeature, int originalNumArgs,
                                              AbstractFeature redefinedFeature, int actualNumArgs)
   {
+    var typeArgs = originalFeature.typeArguments().stream().map(f->sbnf(f)).collect(Collectors.toList());
+    var valArgs  = originalFeature.valueArguments().stream().map(f->sbnf(f)).collect(Collectors.toList());
     error(redefinedFeature.pos(),
           "Wrong number of arguments in redefined feature",
           "In " + s(redefinedFeature) + " that redefines " + s(originalFeature) + " " +
-          "argument count is " + actualNumArgs + ", argument count should be " + originalNumArgs + ".\n" +
+          "argument count is " + actualNumArgs + ", argument count should be " + originalNumArgs + ": " +
+          StringHelpers.singularOrPlural(typeArgs.size(), "(free) type parameter") + " " +  StringHelpers.listConjunction(typeArgs) +
+          " and " + StringHelpers.singularOrPlural(valArgs.size(), "value argument") + " " + StringHelpers.listConjunction(valArgs) + ".\n" +
           "Original feature declared at " + originalFeature.pos().show());
   }
 
@@ -897,35 +901,17 @@ public class AstErrors extends ANY
   /**
    * Create list of the form "'i32', 'string' or 'bool'"
    */
-  private static String typeListAlternatives(List<AbstractType> tl)  { return typeList(tl, "or" ); }
+  private static String typeListAlternatives(List<AbstractType> tl)
+  {
+    return StringHelpers.listAlternatives(tl.stream().map(t->s(t)).collect(Collectors.toList()));
+  }
 
   /**
    * Create list of the form "'i32', 'string' and 'bool'"
    */
-  private static String typeListConjunction (List<AbstractType> tl)  { return typeList(tl, "and"); }
-
-  /**
-   * Create list of the form "'i32', 'string' " + conj + " 'bool'"
-   */
-  private static String typeList(List<AbstractType> tl, String conj)
+  private static String typeListConjunction (List<AbstractType> tl)
   {
-    StringBuilder mt = new StringBuilder();
-    String comma = "", last = "";
-    for (var t : tl)
-      {
-        if (last != "")
-          {
-            mt.append(comma).append(last);
-            comma = ", ";
-          }
-        last = s(t);
-      }
-    mt.append(switch (tl.size()) {
-      case 0, 1 -> "";
-      case 2    -> " " + conj + " ";
-      default   -> ", " + conj + " ";})
-      .append(last);
-    return mt.toString();
+    return StringHelpers.listConjunction(tl.stream().map(t->s(t)).collect(Collectors.toList()));
   }
 
   private static String typeOrAnyType(AbstractType typeOrNull)
