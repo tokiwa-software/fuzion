@@ -117,9 +117,27 @@ public class FuzionConstants extends ANY
 
 
   /**
+   * Name of Open_Types feature.
+   */
+  public static final String OPEN_TYPES_FEAT = "Open_Types";
+
+
+  /**
    * Name of Values_Of_Open_Type feature.
    */
   public static final String VALUES_OF_OPEN_TYPE_FEAT = "Values_Of_Open_Type";
+
+
+  /**
+   * Name of type_applicator feature.
+   */
+  public static final String TYPE_APPLICATOR_FEAT = "type_applicator";
+
+
+  /**
+   * Name of type_applicator.apply feature.
+   */
+  public static final String TYPE_APPLICATOR_APPLY_FEAT = "apply";
 
 
   /**
@@ -325,6 +343,13 @@ public class FuzionConstants extends ANY
    * one specific variant.
    */
   public static final String VALUES_AS_OPEN_TYPE_PREFIX = INTERNAL_NAME_PREFIX + "Values_Of_Open_Type";
+
+
+  /**
+   * Prefix of name of open type parameter, i.e., the feature that is called when
+   * an open type parameter is called.
+   */
+  public static final String OPEN_TYPES_PREFIX = INTERNAL_NAME_PREFIX + "Open_Types";
 
 
   /**

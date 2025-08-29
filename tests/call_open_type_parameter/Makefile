@@ -17,17 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test reg_issue2647
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# when calling as_string on open type parameter: check-condition failed
-#
-# With fix of #5738, this has even become legal code that runs!
-#
-reg_issue2647 =>
-
-  a(ELEMENT_TYPE type...) is
-      public redef as_string String => ELEMENT_TYPE.as_string
-
-  say (a 3)
+override NAME = call_open_type_parameter
+include ../simple.mk

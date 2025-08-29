@@ -1,23 +1,41 @@
 
---CURDIR--/reg_issue5433.fz:35:6: error 1: Wrong number of actual arguments in call
+--CURDIR--/reg_issue5433.fz:37:6: error 1: Wrong number of actual arguments in call
     .c
 -----^
 Number of actual arguments is 0, while call expects 2 arguments.
 Called feature: 'reg_issue5433.a.b.c'
 Formal arguments: 'arg' 'u64', 'arg' 'String'
-Declared at --CURDIR--/reg_issue5433.fz:30:7:
+Declared at --CURDIR--/reg_issue5433.fz:32:7:
       c(arg A...) unit => abstract
 ------^
 
 
---CURDIR--/reg_issue5433.fz:39:6: error 2: Wrong number of actual arguments in call
+--CURDIR--/reg_issue5433.fz:41:6: error 2: Wrong number of actual arguments in call
     .c "asdf"
 -----^
 Number of actual arguments is 1, while call expects 2 arguments.
 Called feature: 'reg_issue5433.a.b.c'
 Formal arguments: 'arg' 'u64', 'arg' 'String'
-Declared at --CURDIR--/reg_issue5433.fz:30:7:
+Declared at --CURDIR--/reg_issue5433.fz:32:7:
       c(arg A...) unit => abstract
 ------^
 
-2 errors.
+
+--CURDIR--/reg_issue5433.fz:29:19: error 3: Visibility of outer features type is more restrictive than features type.
+           public A type...) is
+------------------^
+Parent feature is here: --CURDIR--/reg_issue5433.fz:28:3:
+  a(public R type,
+--^
+To solve this, either decrease the type visibility of this feature or increase the visibility of the type of the outer feature.
+
+
+--CURDIR--/reg_issue5433.fz:28:3: error 4: Visibility of outer features type is more restrictive than features type.
+  a(public R type,
+--^
+Parent feature is here: --CURDIR--/reg_issue5433.fz:28:3:
+  a(public R type,
+--^
+To solve this, either decrease the type visibility of this feature or increase the visibility of the type of the outer feature.
+
+4 errors.

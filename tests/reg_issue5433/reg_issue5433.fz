@@ -21,6 +21,8 @@
 #
 # -----------------------------------------------------------------------
 
+# this used to cause failure of a require condition in AbstractFeature.replaceOpen
+#
 reg_issue5433 =>
 
   a(public R type,

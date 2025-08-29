@@ -629,14 +629,11 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   /**
    * For a type parameter, this gives the ResolvedParametricType instance
    * corresponding to this type parameter.
+   *
+   * require
+   *   (isTypeParameter());
    */
-  AbstractType asGenericType()
-  {
-    if (PRECONDITIONS) require
-      (isTypeParameter());
-
-    return new ResolvedParametricType(this);
-  }
+  public abstract AbstractType asGenericType();
 
 
   /**
@@ -881,6 +878,28 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   {
     return resultType().isOpenGeneric();
   }
+
+
+  /**
+   * Return `Open_Types` feature corresponding to this open type parameter.
+   * An instance of this feature is returned as the result of a call to a field whose
+   * type is an open type parameter auch as `tuple.values`.
+   *
+   * In case this feature is part of the currently compiled module and does not have an
+   * open types feature yet, add one.
+   */
+  public AbstractFeature openTypesFeature(Resolution res)
+  {
+    return openTypesFeature();
+  }
+
+
+  /**
+   * Return `Open_Types` feature corresponding to this open type parameter.
+   * An instance of this feature is returned as the result of a call to a field whose
+   * type is an open type parameter auch as `tuple.values`.
+   */
+  public abstract AbstractFeature openTypesFeature();
 
 
   /**
