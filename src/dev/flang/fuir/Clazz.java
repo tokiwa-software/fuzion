@@ -1109,7 +1109,11 @@ class Clazz extends ANY implements Comparable<Clazz>
       {
         AbstractType t = null;
         var f = fa._f;
-        if (f.isTypeParameter())
+        if (f.isOpenTypeParameter())
+          {
+            t = f.openTypesFeature().selfType();
+          }
+        else if (f.isTypeParameter())
           { // type parameters do not get inherited, but replaced by the actual
             // type given in the inherits call:
             t = f.selfType();   // e.g., {@code (Types.get T).T}

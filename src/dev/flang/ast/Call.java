@@ -1546,9 +1546,11 @@ public class Call extends AbstractCall
    */
   private AbstractType resolveForCalledFeature(Resolution res, AbstractType t, AbstractType tt, Context context)
   {
-    if (_calledFeature.isOpenTypeParameter())
-      {
-        // nothing to be done for open type parameter resolution
+    if (_calledFeature.isConstructor()       ||
+        _calledFeature.isOpenTypeParameter() // calling constructor of _calledFeature.openTypesFeature().
+        )
+      {  /* specialize t for the target type here */
+        t = ResolvedNormalType.newType(t, tt);
       }
     else if (_calledFeature.isTypeParameter())
       {
@@ -1580,10 +1582,6 @@ public class Call extends AbstractCall
       {
         var o = t.feature().outer();
         t = o == null || o.isUniverse() || t.isThisType() ? t : ResolvedNormalType.newType(t, o.thisType(t.feature().isFixed()));
-      }
-    else if (_calledFeature.isConstructor())
-      {  /* specialize t for the target type here */
-        t = ResolvedNormalType.newType(t, tt);
       }
     else
       {
