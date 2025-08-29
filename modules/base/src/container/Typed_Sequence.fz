@@ -231,6 +231,17 @@ public typed_value(# the type
       "$t $v"
 
 
+# Types -- sequence of `Type` that may be processed without being boxed
+#
+# This inherits from `Sequence Type` for convenience of all the
+# infrastructure provided by `Sequence`.  Nevertheless, the
+# prefererd use is via calls to `Types.type_foldf` only since
+# these calls do not require boxing of the types and permit
+# code specialization of the actual types.
+#
+# This is a parent of `Open_Types`, which itself is the parent of
+# the types generated for calls to open type parameters.
+#
 public Types ref : Sequence Type is
 
 
