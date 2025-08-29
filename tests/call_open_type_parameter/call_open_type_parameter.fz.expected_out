@@ -49,6 +49,11 @@ case6: a.r.s.t.u [String codepoint bool unit (Sequence (i32,f64))]
 case6: a.f.g [u32 bool unit]
 [Type of 'u32', Type of 'bool', Type of 'unit']
 [Type of 'u32', Type of 'bool', Type of 'unit']
+[Type of 'u32', Type of 'bool', Type of 'unit'] Type of '(call_open_type_parameter.case6.a u32 bool unit).#Open_Types28'  ——internal value type of `B`
+[Type of 'u32', Type of 'bool', Type of 'unit'] Type of 'Open_Types'  ——boxed `Open_Types` value
 
 case6: b.f.g [i32 unit bool]
 [Type of 'i32', Type of 'unit', Type of 'bool']
+[Type of 'i32', Type of 'unit', Type of 'bool']
+[Type of 'i32', Type of 'unit', Type of 'bool'] Type of 'call_open_type_parameter.case6.b.#Open_Types28'  ——internal value type of `B`
+[Type of 'i32', Type of 'unit', Type of 'bool'] Type of 'Open_Types'  ——boxed `Open_Types` value

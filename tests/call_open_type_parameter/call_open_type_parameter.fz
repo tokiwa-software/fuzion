@@ -130,10 +130,14 @@ call_open_type_parameter =>
             u => B
       say r.s.t.u
       f is
-        g(doit bool)  =>
+        g =>
+          say B
+
           x := B
-          if doit
-            say x
+          say "$x {type_of x}  ——internal value type of `B`"
+
+          y Open_Types := B
+          say "$y {type_of y}  ——boxed `Open_Types` value"
 
     b : a i32 unit bool is
 
@@ -145,10 +149,10 @@ call_open_type_parameter =>
     _ := a String codepoint bool unit (Sequence (i32,f64))
     say ""
     say "case6: a.f.g [u32 bool unit]"
-    _ := (a u32 bool unit).f.g true
+    _ := (a u32 bool unit).f.g
     say ""
     say "case6: b.f.g [i32 unit bool]"
-    _ := b.f.g false /* NYI: does not work yet! */
+    _ := b.f.g
 
   say "----"
   say ""
