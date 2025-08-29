@@ -114,13 +114,14 @@ public class Html extends ANY
    */
   private String inherited(AbstractFeature af, AbstractFeature relativeTo)
   {
-    if (af.inherits().isEmpty() || signatureWithArrow(af)) // don't show inheritance for function features
+    if (signatureWithArrow(af) // inheritance does not make sense for function features since no instance can be obtained
+        || !af.isTypeParameter() && af.inherits().isEmpty()) // type parameters always have a constraint to show
       {
         return "";
       }
-    else if (af.kind() == AbstractFeature.Kind.TypeParameter || af.kind() == AbstractFeature.Kind.OpenTypeParameter)
+    else if (af.isTypeParameter())
       {
-        var constraint = af.resultType().feature();
+        var constraint = af.constraint().feature();
         return "<div class='fd-keyword mx-5'>:</div><a class='fd-feature fd-inherited' href='$1'>$2</a>"
           .replace("$1", featureRelativeURL(constraint, relativeTo))
           .replace("$2", htmlEncodedQualifiedName(constraint));
