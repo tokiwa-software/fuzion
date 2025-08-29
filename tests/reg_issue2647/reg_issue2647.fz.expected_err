@@ -1,6 +1,0 @@
-
---CURDIR--/reg_issue2647.fz:27:40: error 1: Open type parameters must not be called.
-      public redef as_string String => ELEMENT_TYPE.as_string
----------------------------------------^^^^^^^^^^^^
-
-one error.

@@ -21,6 +21,10 @@
 #
 # -----------------------------------------------------------------------
 
+# when calling as_string on open type parameter: check-condition failed
+#
+# With fix of #5738, this has even become legal code that runs!
+#
 reg_issue2647 =>
 
   a(ELEMENT_TYPE type...) is
