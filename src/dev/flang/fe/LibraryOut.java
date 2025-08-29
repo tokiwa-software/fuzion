@@ -528,8 +528,6 @@ class LibraryOut extends ANY
       (f.arguments().size() == argCount);
     if (!f.isConstructor() && !f.isChoice() && !f.isTypeParameter())
       {
-        check
-          (!f.isOpenTypeParameter());
         type(f.resultType());
       }
     if (f.hasValuesAsOpenTypeFeature())
