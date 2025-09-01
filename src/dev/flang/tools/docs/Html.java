@@ -957,20 +957,14 @@ public class Html extends ANY
    */
   private String arguments(AbstractFeature f, AbstractFeature relativeTo)
   {
-    if (f.arguments()
-         .stream()
-         .filter(a -> a.isTypeParameter() || (f.visibility().eraseTypeVisibility() == Visi.PUB))
-         .count() == 0)
-      {
-        return "";
-      }
-    return "(" + f.arguments()
+    var res = f.arguments()
       .stream()
       .filter(a -> a.isTypeParameter() || (f.visibility().eraseTypeVisibility() == Visi.PUB))
       .map(a ->
         htmlEncodedBasename(a) + "&nbsp;"
         + (a.isTypeParameter() ? typeArgAsString(a, relativeTo) : anchorType(a, f, relativeTo)))
-      .collect(Collectors.joining(htmlEncodeNbsp(", "))) + ")";
+      .collect(Collectors.joining(htmlEncodeNbsp(", ")));
+    return res.isEmpty() ? "" : "(" + res + ")";
   }
 
 
@@ -980,7 +974,9 @@ public class Html extends ANY
       {
         return "<div class='fd-keyword'>type</div>"
                + (f.isOpenTypeParameter() ? "..." : "")
-               + "<span class='mx-5'>:</span>" + htmlEncodeNbsp(f.constraint().toString(true));
+               + "<span class='mx-5'>:</span>  <a class='fd-feature fd-inherited' href='$1'>$2</a>"
+               .replace("$1", featureRelativeURL(f.constraint().feature(), relativeTo))
+               .replace("$2", htmlEncodeNbsp(f.constraint().toString(true)));
       }
     else
       {
