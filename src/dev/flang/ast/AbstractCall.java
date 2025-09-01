@@ -236,10 +236,7 @@ public abstract class AbstractCall extends Expr
             else
               {
                 typeParameters.removeTail(1);
-                for (var atp : actualTypeParameters())
-                  {
-                    typeParameters.add(that.rebaseTypeForCotype(atp));
-                  }
+                typeParameters.addAll(actualTypeParameters().map(that::rebaseTypeForCotype));
               }
           });
       }
