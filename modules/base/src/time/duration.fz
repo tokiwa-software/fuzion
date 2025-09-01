@@ -38,7 +38,9 @@ module:public duration (
   #
   public nanos u64
   )
-  : Period, property.orderable
+  : Period,
+    property.orderable,
+    property.hashable
 
 is
 
@@ -163,6 +165,12 @@ is
   #
   public fixed redef type.lteq(a, b time.duration) bool =>
     u64.type.lteq a.nanos b.nanos
+
+
+  # create hash code from a duration
+  #
+  public redef type.hash_code(d duration.this) u64 =>
+    d.nanos
 
 
   # max value for a duration given in nanos
