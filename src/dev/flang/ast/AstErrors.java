@@ -634,12 +634,17 @@ public class AstErrors extends ANY
                                             String detail1,
                                             String detail2)
   {
-    error(pos,
-          "Wrong number of type parameters",
-          "Wrong number of actual type parameters in " + detail1 + ":\n" +
-          detail2 +
-          "expected " + fg.sizeText() + (fg._feature.typeArguments().isEmpty() ? "" : " for " + s(fg) + "") + "\n" +
-          "found " + (actualGenerics.size() == 0 ? "none" : "" + actualGenerics.size() + ": " + s(actualGenerics) + "" ) + ".\n");
+    // supress errors in cotypes unless we found the original error (in the
+    // original feature):
+    if (!fg._feature.isCotype() || !Errors.any())
+      {
+        error(pos,
+              "Wrong number of type parameters",
+              "Wrong number of actual type parameters in " + detail1 + ":\n" +
+              detail2 +
+              "expected " + fg.sizeText() + (fg._feature.typeArguments().isEmpty() ? "" : " for " + s(fg) + "") + "\n" +
+              "found " + (actualGenerics.size() == 0 ? "none" : "" + actualGenerics.size() + ": " + s(actualGenerics) + "" ) + ".\n");
+      }
   }
 
   /**
