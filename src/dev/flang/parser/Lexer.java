@@ -1059,16 +1059,23 @@ public class Lexer extends SourceFile
     var nl = line();
     relaxLineAndSpaceLimit(() ->
                            {
-                            if (current(true) != end._token)
+                            var hasIndentProblem = current(true) != end._token;
+                            var tsp = tokenSourcePos();
+                            if (hasIndentProblem)
                               {
                                 // if indentation decreases before closing bracket, discard everything until closing bracket
-                                Errors.indentationProblemEncountered(tokenSourcePos(), sourcePos(indentRef), Parser.parserDetail(rule));
                                 while (current(true) != end._token && current(true) != Token.t_eof)
                                   {
                                       next();
                                   }
                               }
+                            var errCount = Errors.count();
                             match(true, end, rule);
+                            // emit indent problem only if no other problems are encountered
+                            if (hasIndentProblem && errCount == Errors.count())
+                              {
+                                Errors.indentationProblemEncountered(tsp, sourcePos(indentRef), Parser.parserDetail(rule));
+                              }
                             return Void.TYPE; // is there a better unit type in Java?
                            });
     var sl = sameLine(-1);
