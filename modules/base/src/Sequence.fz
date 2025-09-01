@@ -45,12 +45,14 @@ public Sequence(public T type) ref : property.countable is
   public as_list list T => abstract
 
 
-  # is this sequence known to be finite?  For infinite sequences, features like
+  # is this `Sequence` known to be finite?  For infinite `Sequence`s, features like
   # count diverge.
   #
-  # TRUE  = known finite
-  # FALSE = known infinite
-  # nil   = unknown
+  # result is one of
+  #
+  # - trit.yet     = known finite
+  # - trit.no      = known infinite
+  # - trit.unknown = unknown
   #
   public redef finite trit => nil
 

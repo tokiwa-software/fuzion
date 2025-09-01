@@ -59,12 +59,8 @@ public Typed_Sequence ref : Sequence container.Typed_Value is
     typed_foldf nil as_reverse_list .reverse_list
 
 
-  # is this sequence known to be finite?  For infinite sequences, features like
-  # count diverge.
-  #
-  # TRUE  = known finite
-  # FALSE = known infinite
-  # nil   = unknown
+  # `Typed_Sequence` is usually a finite `Sequence`, so this is redefined to
+  # return `trit.yes`
   #
   public redef finite trit => trit.yes
 
@@ -271,12 +267,8 @@ public Types ref : Sequence Type is
     type_foldf nil as_reverse_list .reverse_list
 
 
-  # is this sequence known to be finite?  For infinite sequences, features like
-  # count diverge.
-  #
-  # TRUE  = known finite
-  # FALSE = known infinite
-  # nil   = unknown
+  # `Types` is usually a finite `Sequence`, so this is redefined to return
+  # `trit.yes`
   #
   public redef finite trit => trit.yes
 
