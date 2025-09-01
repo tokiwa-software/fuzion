@@ -271,6 +271,16 @@ public Types ref : Sequence Type is
     type_foldf nil as_reverse_list .reverse_list
 
 
+  # is this sequence known to be finite?  For infinite sequences, features like
+  # count diverge.
+  #
+  # TRUE  = known finite
+  # FALSE = known infinite
+  # nil   = unknown
+  #
+  public redef finite trit => trit.yes
+
+
   # count the number of elements in this `Types` instance.
   #
   # This is redefined and implemented using `type_foldf` to avoid creation of
