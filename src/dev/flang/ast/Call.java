@@ -1376,20 +1376,22 @@ public class Call extends AbstractCall
     else
       {
         _recursiveResolveType = true;
-        /**
-         * The following enables
-         * calling type feature on type parameter:
-         *
-         *  Sequence.is_sorted bool
-         *    pre
-         *      T : property.orderable
-         *  =>
-         *    zip (drop 1) (T.lteq)
-         *      .fold bool.all
-         */
-        result = _calledFeature.isTypeParameter()
-          ? _calledFeature.constraint(res, context)
-          : _calledFeature.resultTypeIfPresentUrgent(res, urgent);
+        var cf = _calledFeature;
+        result =
+          cf.isOpenTypeParameter() ? cf.openTypesFeature(res).resultTypeIfPresentUrgent(res, urgent) :
+          /*
+           * The following enables
+           * calling type feature on type parameter:
+           *
+           *  Sequence.is_sorted bool
+           *    pre
+           *      T : property.orderable
+           *  =>
+           *    zip (drop 1) (T.lteq)
+           *      .fold bool.all
+           */
+          cf.isTypeParameter()     ? cf.constraint(res, context)
+                                   : cf.resultTypeIfPresentUrgent(res, urgent);
         _recursiveResolveType = false;
 
         if (result == Types.t_FORWARD_CYCLIC)
@@ -1544,7 +1546,13 @@ public class Call extends AbstractCall
    */
   private AbstractType resolveForCalledFeature(Resolution res, AbstractType t, AbstractType tt, Context context)
   {
-    if (_calledFeature.isTypeParameter())
+    if (_calledFeature.isConstructor()       ||
+        _calledFeature.isOpenTypeParameter() // calling constructor of _calledFeature.openTypesFeature().
+        )
+      {  /* specialize t for the target type here */
+        t = ResolvedNormalType.newType(t, tt);
+      }
+    else if (_calledFeature.isTypeParameter())
       {
         if (!t.isGenericArgument())  // See AstErrors.constraintMustNotBeGenericArgument
           {
@@ -1574,10 +1582,6 @@ public class Call extends AbstractCall
       {
         var o = t.feature().outer();
         t = o == null || o.isUniverse() || t.isThisType() ? t : ResolvedNormalType.newType(t, o.thisType(t.feature().isFixed()));
-      }
-    else if (_calledFeature.isConstructor())
-      {  /* specialize t for the target type here */
-        t = ResolvedNormalType.newType(t, tt);
       }
     else
       {
@@ -2039,7 +2043,9 @@ public class Call extends AbstractCall
         actualType = actualType.replace_type_parameters_of_cotype_origin(context.outerFeature());
         if (!actualType.isGenericArgument() && actualType.feature().isCotype())
           {
-            actualType = Types.resolved.f_Type.selfType();
+            actualType = actual instanceof Call c && c.calledFeature().isOpenTypeParameter()
+              ? Types.resolved.f_Open_Types.selfType()
+              : Types.resolved.f_Type.selfType();
           }
       }
     return actualType;
@@ -2887,10 +2893,6 @@ public class Call extends AbstractCall
               {
                 AstErrors.cannotCallChoice(pos(), _calledFeature);
               }
-          }
-        if (_calledFeature.isOpenTypeParameter())
-          {
-            AstErrors.mustNotCallOpenTypeParameter(this);
           }
 
         if (!errorInActuals())

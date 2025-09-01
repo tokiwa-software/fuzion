@@ -69,8 +69,7 @@ public Typed_Sequence ref : Sequence container.Typed_Value is
   public redef finite trit => trit.yes
 
 
-  # count the number of elements in this Typed_Sequence.  Note that this typically
-  # runs forever if executed on an endless Sequence
+  # count the number of elements in this Typed_Sequence.
   #
   # This is redefined and implemented using `typed_foldf` to avoid creation of
   # boxed `Typed_Value`s.
@@ -240,3 +239,91 @@ public typed_value(# the type
       "($t) $v"
     else
       "$t $v"
+
+
+# Types -- sequence of `Type` that may be processed without being boxed
+#
+# This inherits from `Sequence Type` for convenience of all the
+# infrastructure provided by `Sequence`.  Nevertheless, the
+# prefererd use is via calls to `Types.type_foldf` only since
+# these calls do not require boxing of the types and permit
+# code specialization of the actual types.
+#
+# This is a parent of `Open_Types`, which itself is the parent of
+# the types generated for calls to open type parameters.
+#
+public Types ref : Sequence Type is
+
+
+  # create a list from this `Types` instance.
+  #
+  # Note that this creates boxed ref instances of `Type`.  The preferred
+  # means to acces the values is via a call to `type_foldf`.
+  #
+  public redef as_list list Type =>
+
+    as_reverse_list : container.type_applicator (list Type) is
+
+      public redef apply(A type, e (list Type)) list Type
+      =>
+        list (id Type A) e
+
+    type_foldf nil as_reverse_list .reverse_list
+
+
+  # is this sequence known to be finite?  For infinite sequences, features like
+  # count diverge.
+  #
+  # TRUE  = known finite
+  # FALSE = known infinite
+  # nil   = unknown
+  #
+  public redef finite trit => trit.yes
+
+
+  # count the number of elements in this `Types` instance.
+  #
+  # This is redefined and implemented using `type_foldf` to avoid creation of
+  # boxed `Type`s.
+  #
+  public redef count i32
+  =>
+    count_elements : container.type_applicator i32 is
+      public redef apply(A type, e i32) i32 => e + 1
+
+    type_foldf 0 count_elements
+
+
+  # fold the elements of this `Types` instance using the given `type_applicator`
+  # and initial value.
+  #
+  # In case this `Types` instance is empty, the result is `e`.
+  #
+  public type_foldf(B type, A type : type_applicator B, e B, a A) B
+  =>
+    abstract
+
+
+# a function that operates on a type that is given by the caller
+#
+# This is used as an argument to `Types.type_foldf` to process the types.
+#
+public type_applicator(E type) is
+
+
+  # Apply an operation on a type `T` using the cumulative value
+  # `e`,  create a new value of type `E` and return it
+  #
+  # ex:
+  #
+  # to concatenate the String representation of all types, use
+  #
+  #     my_concat : container.type_applicator String is
+  #
+  #       public redef apply(T type, e String) String
+  #       =>
+  #         e + $T
+  #
+  public apply(T type, e E) E
+  =>
+    abstract

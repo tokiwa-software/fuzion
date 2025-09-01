@@ -702,6 +702,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       case Routine           -> IR.FeatureKind.Routine;
       case Field             -> IR.FeatureKind.Field;
       case TypeParameter     -> IR.FeatureKind.TypeParameter;
+      case OpenTypeParameter -> IR.FeatureKind.TypeParameter;
       case Intrinsic         -> IR.FeatureKind.Intrinsic;
       case Abstract          -> IR.FeatureKind.Abstract;
       case Choice            -> IR.FeatureKind.Choice;
@@ -729,7 +730,9 @@ class Clazz extends ANY implements Comparable<Clazz>
       {
       case RefType -> true;
       case ValueType -> false;
-      default -> throw new Error("unexpected this type");
+      case GenericArgument -> throw new Error("unexpected generic argument type: " + _type);
+      case ThisType        -> throw new Error("unexpected this type: " + _type);
+      default              -> throw new Error("unexpected type kind: " + _type.kind() + " type: " + _type);
       };
   }
 
@@ -1106,7 +1109,11 @@ class Clazz extends ANY implements Comparable<Clazz>
       {
         AbstractType t = null;
         var f = fa._f;
-        if (f.isTypeParameter())
+        if (f.isOpenTypeParameter())
+          {
+            t = f.openTypesFeature().selfType();
+          }
+        else if (f.isTypeParameter())
           { // type parameters do not get inherited, but replaced by the actual
             // type given in the inherits call:
             t = f.selfType();   // e.g., {@code (Types.get T).T}
@@ -1690,7 +1697,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     var result = _resultClazz;
     if (result == null)
       {
-        var f = feature();
+        AbstractFeature f = feature();
         var o  = _outer;
         var of = o != null ? o.feature() : null;
 
@@ -1701,6 +1708,12 @@ class Clazz extends ANY implements Comparable<Clazz>
         else if (f.isOuterRef())
           {
             result = o.inheritedOuterRefClazz(o._outer, null, f, o.feature(), null);
+          }
+        else if (f.isOpenTypeParameter())
+          {
+            f = f.openTypesFeature();
+            var ft = replaceThisTypeForCotype(f.resultType());
+            result = handDown(ft, _select, new List<>());
           }
         else if (f.isTypeParameter())
           {

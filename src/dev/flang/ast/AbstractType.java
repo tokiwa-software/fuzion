@@ -2087,7 +2087,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       (tpt.isGenericArgument());
 
     var result = this;
-    if (isGenericArgument())
+    if (isGenericArgument() && tf.isCotype())
       {
         if (genericArgument() == tf.arguments().get(0))
           { // a call of the form `T.f x` where `f` is declared as
