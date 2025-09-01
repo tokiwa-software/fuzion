@@ -114,13 +114,14 @@ public class Html extends ANY
    */
   private String inherited(AbstractFeature af, AbstractFeature relativeTo)
   {
-    if (af.inherits().isEmpty() || signatureWithArrow(af)) // don't show inheritance for function features
+    if (signatureWithArrow(af) // inheritance does not make sense for function features since no instance can be obtained
+        || !af.isTypeParameter() && af.inherits().isEmpty()) // type parameters always have a constraint to show
       {
         return "";
       }
-    else if (af.kind() == AbstractFeature.Kind.TypeParameter || af.kind() == AbstractFeature.Kind.OpenTypeParameter)
+    else if (af.isTypeParameter())
       {
-        var constraint = af.resultType().feature();
+        var constraint = af.constraint().feature();
         return "<div class='fd-keyword mx-5'>:</div><a class='fd-feature fd-inherited' href='$1'>$2</a>"
           .replace("$1", featureRelativeURL(constraint, relativeTo))
           .replace("$2", htmlEncodedQualifiedName(constraint));
@@ -129,6 +130,9 @@ public class Html extends ANY
       {
         return "<div class='fd-keyword mx-5'>:</div>" + af.inherits()
           .stream()
+          // don't show inheritance from features that are not public
+          .filter(c->c.calledFeature().visibility().typeVisibility() == Visi.PUB ||
+                     c.calledFeature().visibility().eraseTypeVisibility() == Visi.PUB)
           .<String>map(c -> {
             var f = c.calledFeature();
             return "<a class='fd-feature fd-inherited' href='$1'>".replace("$1", featureRelativeURL(f, relativeTo))
@@ -250,6 +254,7 @@ public class Html extends ANY
   private String annotateInherited(AbstractFeature af, AbstractFeature outer)
   {
     if (isDeclared(af, outer)
+        || nonPublicInheritanceChain(af) // don't show annotation if feature was inherited from feature with non public outer
         || af.outer().isUniverse()) // features can not inherit from universe,
                                     // this avoid false annotation in the applicable universe features section
       {
@@ -294,6 +299,9 @@ public class Html extends ANY
 
     var redefs = af.redefines();
 
+    // don't show annotation if redefining a feature from a non public feature
+    redefs.removeIf(f->nonPublicInheritanceChain(f));
+
     AbstractFeature relativeTo = outer != null ? outer : af;
     return redefs.isEmpty()
             ? ""
@@ -304,6 +312,14 @@ public class Html extends ANY
                                     .collect(Collectors.joining(",&nbsp;")) ));
   }
 
+  /**
+   * Is this feature or any one of the features it inherits from not public
+   * i.e. has a type visibility other than public
+   */
+  private boolean nonPublicInheritanceChain(AbstractFeature f)
+  {
+    return !f.isUniverse() && (f.visibility().typeVisibility() != Visi.PUB || nonPublicInheritanceChain(f.outer()));
+  }
 
   /**
    * Returns a html formatted annotation to indicate if a feature is abstract
