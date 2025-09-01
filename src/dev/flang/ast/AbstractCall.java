@@ -221,9 +221,9 @@ public abstract class AbstractCall extends Expr
                                   new List<>(),
                                   null);
     var typeParameters = new List<AbstractType>(selfType);
-    typeParameters.addAll(actualTypeParameters().map(that::rebaseTypeForCotype));
     if (this instanceof Call cpc && cpc.needsToInferTypeParametersFromArgs())
       {
+        typeParameters.addAll(actualTypeParameters());
         cpc.whenInferredTypeParameters(() ->
           {
             if (CHECKS) check
@@ -239,6 +239,10 @@ public abstract class AbstractCall extends Expr
                 typeParameters.addAll(actualTypeParameters().map(that::rebaseTypeForCotype));
               }
           });
+      }
+    else
+      {
+        typeParameters.addAll(actualTypeParameters().map(that::rebaseTypeForCotype));
       }
 
     return calledFeature().cotypeInheritanceCall(pos(), typeParameters, res, that, target());
