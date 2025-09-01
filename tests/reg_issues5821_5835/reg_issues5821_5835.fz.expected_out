@@ -1,19 +1,22 @@
-problem 0 vs. 1 for b31.this.#^<reg_issues5821_5835.b31>.a3 at /home/fridi/fuzion/fuzion/build/tests/reg_issues5821_5835/reg_issues5821_5835.fz:69:9:
-  b31 : a3         is {}; ignore b31.dynamic_type; say b31$
---------^^
-problem 1 vs. 2 for b41.this.#^<reg_issues5821_5835.b41>.a4 f64 (LibraryFeature.Constant of type f64) at /home/fridi/fuzion/fuzion/build/tests/reg_issues5821_5835/reg_issues5821_5835.fz:83:9:
-  b41 : a4 3.14                        is {}; ignore b41.dynamic_type; say b41$
---------^^
 original test:
 tests using 0, 1 and 2 actual types passed to open type:
 []
 [Type of 'unit']
 [Type of 'unit', Type of 'i32']
+
+------
+
 tests using one plain type parameter and 0, 1 and 2 actual types passed to open type:
 []
 Type of 'bool' [Type of 'unit']
 Type of 'void' [Type of 'unit', Type of 'i32']
+
+------
+
 tests using argument of open type and 0, 1 and 2 actual types passed to open type:
 [] []
+
+------
+
 tests using one plain type parameter and value argument and 0, 1 and 2 actual types passed to open type and corresponding value argument:
 Type of 'f64' [] 3.14 []

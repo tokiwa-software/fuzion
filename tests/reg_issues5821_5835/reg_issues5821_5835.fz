@@ -46,6 +46,8 @@ reg_issues5821_5835 =>
   b12 : a1 unit     is {}; ignore b12.dynamic_type; say b12$
   b13 : a1 unit i32 is {}; ignore b13.dynamic_type; say b13$
 
+  say "\n------\n"
+
 
   # Same test, but using an additional, closed type parameter
   #
@@ -57,6 +59,8 @@ reg_issues5821_5835 =>
   b21 : a2 String        is {}; ignore b21.dynamic_type; say b11$
   b22 : a2 bool unit     is {}; ignore b22.dynamic_type; say b22$
   b23 : a2 void unit i32 is {}; ignore b23.dynamic_type; say b23$
+
+  say "\n------\n"
 
 
   # test of #5835: try to use arguments of open type in inheritance
@@ -72,6 +76,9 @@ reg_issues5821_5835 =>
   b33 : a3 "" unit is {}; ignore b33.dynamic_type; say b33$
   */
 
+  say "\n------\n"
+
+
   # test of #5835: try to use closed type parameter, one argument of that closed type
   # parameter type and 0, 1 and 2 actual types passed to open type in inheritance
   # call
@@ -81,7 +88,7 @@ reg_issues5821_5835 =>
   a4(A type, B type..., va A, vb B...) is
     postfix $ => "$A $B $va $vb"
   b41 : a4 3.14                        is {}; ignore b41.dynamic_type; say b41$
-  /*
+  /* NYI: BUG #5835: this does not work for more than zero args yet
   b42 : a4 nil true                    is {}; ignore b42.dynamic_type; say b42$
   b43 : a4 (option bool false) "" unit is {}; ignore b43.dynamic_type; say b43$
   */
