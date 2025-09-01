@@ -38,6 +38,7 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
 import dev.flang.tools.FuzionHome;
+import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 
 public class Util
@@ -111,6 +112,7 @@ public class Util
       }
     catch (IOException e)
       {
+        Errors.fatal("File universe.fz not found");
         return "";
       }
   }
