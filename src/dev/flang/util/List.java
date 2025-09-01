@@ -387,6 +387,9 @@ public class List<T>
    */
   public void removeTail(int from)
   {
+    if (ANY.PRECONDITIONS) ANY.require
+      (!isFrozen() || from == size());
+
     removeRange(from, size());
   }
 
@@ -396,6 +399,9 @@ public class List<T>
    */
   public T removeLast()
   {
+    if (ANY.PRECONDITIONS) ANY.require
+      (!isFrozen());
+
     return remove(size()-1);
   }
 
