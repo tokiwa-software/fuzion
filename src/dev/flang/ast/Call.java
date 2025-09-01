@@ -2043,14 +2043,9 @@ public class Call extends AbstractCall
         actualType = actualType.replace_type_parameters_of_cotype_origin(context.outerFeature());
         if (!actualType.isGenericArgument() && actualType.feature().isCotype())
           {
-            if (actual instanceof Call c && c.calledFeature().isOpenTypeParameter())
-              {
-                actualType = Types.resolved.f_Open_Types.selfType();
-              }
-            else
-              {
-                actualType = Types.resolved.f_Type.selfType();
-              }
+            actualType = actual instanceof Call c && c.calledFeature().isOpenTypeParameter()
+              ? Types.resolved.f_Open_Types.selfType()
+              : Types.resolved.f_Type.selfType();
           }
       }
     return actualType;
