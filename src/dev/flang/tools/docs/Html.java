@@ -957,20 +957,14 @@ public class Html extends ANY
    */
   private String arguments(AbstractFeature f, AbstractFeature relativeTo)
   {
-    if (f.arguments()
-         .stream()
-         .filter(a -> a.isTypeParameter() || (f.visibility().eraseTypeVisibility() == Visi.PUB))
-         .count() == 0)
-      {
-        return "";
-      }
-    return "(" + f.arguments()
+    var res = f.arguments()
       .stream()
       .filter(a -> a.isTypeParameter() || (f.visibility().eraseTypeVisibility() == Visi.PUB))
       .map(a ->
         htmlEncodedBasename(a) + "&nbsp;"
         + (a.isTypeParameter() ? typeArgAsString(a, relativeTo) : anchorType(a, f, relativeTo)))
-      .collect(Collectors.joining(htmlEncodeNbsp(", "))) + ")";
+      .collect(Collectors.joining(htmlEncodeNbsp(", ")));
+    return res.isEmpty() ? "" : "(" + res + ")";
   }
 
 
