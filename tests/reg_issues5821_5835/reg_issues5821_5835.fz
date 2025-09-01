@@ -1,0 +1,87 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issues5821_5835
+#
+# -----------------------------------------------------------------------
+
+# inheriting from a feature with open type parameters
+#
+reg_issues5821_5835 =>
+
+  # the original code from #5821
+  #
+  say "original test:"
+
+  a(B type...) is
+  b : a is
+  ignore b.dynamic_type
+
+
+  # a more comprehensive set of tests using 0, 1 and 2 actual
+  # type parameters in the inheritance call and printing the
+  # actual values to io.out:
+  #
+  say "tests using 0, 1 and 2 actual types passed to open type:"
+
+  a1(B type...) is
+    postfix $ => $B
+  b11 : a1          is {}; ignore b11.dynamic_type; say b11$
+  b12 : a1 unit     is {}; ignore b12.dynamic_type; say b12$
+  b13 : a1 unit i32 is {}; ignore b13.dynamic_type; say b13$
+
+
+  # Same test, but using an additional, closed type parameter
+  #
+  #
+  say "tests using one plain type parameter and 0, 1 and 2 actual types passed to open type:"
+
+  a2(A type, B type...) is
+    postfix $ => "$A $B"
+  b21 : a2 String        is {}; ignore b21.dynamic_type; say b11$
+  b22 : a2 bool unit     is {}; ignore b22.dynamic_type; say b22$
+  b23 : a2 void unit i32 is {}; ignore b23.dynamic_type; say b23$
+
+
+  # test of #5835: try to use arguments of open type in inheritance
+  # call
+  #
+  say "tests using argument of open type and 0, 1 and 2 actual types passed to open type:"
+
+  a3(B type..., vb B...) is
+    postfix $ => "$B $vb"
+  b31 : a3         is {}; ignore b31.dynamic_type; say b31$
+  /* NYI: BUG #5835: this does not work for more than zero args yet
+  b32 : a3 true    is {}; ignore b32.dynamic_type; say b32$
+  b33 : a3 "" unit is {}; ignore b33.dynamic_type; say b33$
+  */
+
+  # test of #5835: try to use closed type parameter, one argument of that closed type
+  # parameter type and 0, 1 and 2 actual types passed to open type in inheritance
+  # call
+  #
+  say "tests using one plain type parameter and value argument and 0, 1 and 2 actual types passed to open type and corresponding value argument:"
+
+  a4(A type, B type..., va A, vb B...) is
+    postfix $ => "$A $B $va $vb"
+  b41 : a4 3.14                        is {}; ignore b41.dynamic_type; say b41$
+  /*
+  b42 : a4 nil true                    is {}; ignore b42.dynamic_type; say b42$
+  b43 : a4 (option bool false) "" unit is {}; ignore b43.dynamic_type; say b43$
+  */

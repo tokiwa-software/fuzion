@@ -383,6 +383,15 @@ public class List<T>
 
 
   /**
+   * Remove all elements at indices >=from.
+   */
+  public void removeTail(int from)
+  {
+    removeRange(from, size());
+  }
+
+
+  /**
    * Remove the last element of the list.
    */
   public T removeLast()
