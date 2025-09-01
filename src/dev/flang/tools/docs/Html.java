@@ -980,7 +980,9 @@ public class Html extends ANY
       {
         return "<div class='fd-keyword'>type</div>"
                + (f.isOpenTypeParameter() ? "..." : "")
-               + "<span class='mx-5'>:</span>" + htmlEncodeNbsp(f.constraint().toString(true));
+               + "<span class='mx-5'>:</span>  <a class='fd-feature fd-inherited' href='$1'>$2</a>"
+               .replace("$1", featureRelativeURL(f.constraint().feature(), relativeTo))
+               .replace("$2", htmlEncodeNbsp(f.constraint().toString(true)));
       }
     else
       {
