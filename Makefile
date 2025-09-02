@@ -1410,8 +1410,8 @@ spellcheck:
 # currently only code in bin/ and examples/ are checked.
 .PHONY: syntaxcheck
 syntaxcheck: min-java
-	find ./examples/ -name '*.fz' -print0 | xargs -0L1 $(FZ) -modules=terminal,clang,java.base,java.datatransfer,java.xml,java.desktop -noBackend
-	find ./bin/ -name '*.fz' -print0 | xargs -0L1 $(FZ) -modules=terminal,clang,java.base,java.datatransfer,java.xml,java.desktop -noBackend
+	find ./examples/ -name '*.fz' -print0 | xargs -0L1 $(FZ) -modules=terminal,clang,lock_free,java.base,java.datatransfer,java.xml,java.desktop -noBackend
+	find ./bin/ -name '*.fz' -print0 | xargs -0L1 $(FZ) -modules=terminal,clang,lock_free,java.base,java.datatransfer,java.xml,java.desktop -noBackend
 
 .PHONY: add_simple_test
 add_simple_test: no-java
