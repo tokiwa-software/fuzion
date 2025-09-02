@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import static dev.flang.util.FuzionConstants.NO_SELECT;
+
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
 import java.util.function.BiConsumer;
@@ -102,7 +104,7 @@ public abstract class AbstractCall extends Expr
    */
   public int select()
   {
-    return -1;
+    return NO_SELECT;
   }
 
 

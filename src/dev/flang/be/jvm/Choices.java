@@ -28,6 +28,9 @@ package dev.flang.be.jvm;
 
 import dev.flang.fuir.FUIR;
 import dev.flang.fuir.SpecialClazzes;
+
+import static dev.flang.ir.IR.NO_CLAZZ;
+
 import dev.flang.be.jvm.classfile.ClassFile;
 import dev.flang.be.jvm.classfile.ClassFileConstants;
 import dev.flang.be.jvm.classfile.Expr;
@@ -533,7 +536,7 @@ public class Choices extends ANY implements ClassFileConstants
                   var tc = _fuir.clazzChoice(subjClazz, tagNum);
                   if (_fuir.clazzIsRef(tc))
                     {
-                      if (field != -1 && jvm.fieldExists(field))
+                      if (field != NO_CLAZZ && jvm.fieldExists(field))
                         {                                                                      // sub
                           pos =
                             (cl == _fuir.clazzUniverse()
@@ -587,7 +590,7 @@ public class Choices extends ANY implements ClassFileConstants
                   var tc = _fuir.clazzChoice(subjClazz, tagNum);
                   if (!_fuir.clazzIsVoidType(tc))
                     {
-                      if (field != -1 && jvm.fieldExists(field))
+                      if (field != NO_CLAZZ && jvm.fieldExists(field))
                         {
                           var rt = _types.resultType(_fuir.clazzResultClazz(field));
                           pos =                                                 // stack is sub, tag
@@ -639,7 +642,7 @@ public class Choices extends ANY implements ClassFileConstants
                   var tc = _fuir.clazzChoice(subjClazz, tagNum);
                   if (!_fuir.clazzIsVoidType(tc))
                     {
-                      if (field != -1 && jvm.fieldExists(field))
+                      if (field != NO_CLAZZ && jvm.fieldExists(field))
                         {
                           var rc = _fuir.clazzResultClazz(field);
                           var rt = _types.resultType(rc);
