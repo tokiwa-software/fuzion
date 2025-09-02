@@ -24,8 +24,8 @@
 # value types / structs
 
 CXCursor(kind i32 /*cursor_kind*/, xdata i32, data1, data2, data3 Native_Ref) is
-CXString(data Native_Ref, private_flags u32, padding i32 /* NYI: padding set manually */) is
-CXType(kind i32 /*type_kind*/, padding i32 /* NYI: padding set manually */, data1, data2 Native_Ref) is
+CXString(data Native_Ref, private_flags u32, padding i32 /* NYI: UNDER DEVELOPMENT: padding set manually */) is
+CXType(kind i32 /*type_kind*/, padding i32 /* NYI: UNDER DEVELOPMENT: padding set manually */, data1, data2 Native_Ref) is
 
 # clang native api definitions
 
