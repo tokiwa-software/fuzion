@@ -1,0 +1,34 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue5854
+#
+# -----------------------------------------------------------------------
+
+man_or_boy2 is
+
+  a(k0 i32, x1, x2, x3, x4, x5 () -> i32) =>
+    k := mut k0
+    b => k <- k.get - 1; a k.get (() -> b) x1 x2 x3 x4
+    k.get <= 0 ? x4() + x5() : b
+
+  K(n i32) () -> i32 => () -> n
+
+  (0..10).for_each n->
+    say "manorboy a($n) = {a n (K 1) (K -1) (K -1) (K 1) (K 0)}"
