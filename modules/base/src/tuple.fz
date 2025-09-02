@@ -171,9 +171,7 @@ private tuple_zip_equals(TUPLE type) : container.typed_zipper bool is
     if T : property.equatable then
       e && v = w
     else
-      # NYI: UNDER DEVELOPMENT: Would be nice if this could be a compile-time check
-      #
-      panic "in $TUPLE.equality, element $T is not equatable"
+      compile_time_panic
 
 
 # helper feature for `tuple.type.lteq` to compare elements in a tuple of type `TUPLE`
@@ -190,6 +188,4 @@ private tuple_zip_lteq(TUPLE type) : container.typed_zipper i32 is
       else if v < w  then -1
       else                +1
     else
-      # NYI: UNDER DEVELOPMENT: Would be nice if this could be a compile-time check
-      #
-      panic "in $TUPLE.lteq, element $T is not orderable"
+      compile_time_panic
