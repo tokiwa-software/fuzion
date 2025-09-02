@@ -216,7 +216,6 @@ public abstract class AbstractCall extends Expr
    */
   Call cotypeInheritanceCall(Resolution res, AbstractFeature that)
   {
-    Call result;
     var selfType = new ParsedType(pos(),
                                   FuzionConstants.COTYPE_THIS_TYPE,
                                   new List<>(),
@@ -225,22 +224,25 @@ public abstract class AbstractCall extends Expr
     if (this instanceof Call cpc && cpc.needsToInferTypeParametersFromArgs())
       {
         typeParameters.addAll(actualTypeParameters());
-        result = calledFeature().cotypeInheritanceCall(pos(), typeParameters, res, that, target());
         cpc.whenInferredTypeParameters(() ->
           {
             if (CHECKS) check
               (actualTypeParameters().stream().allMatch(atp -> !atp.containsUndefined(false)));
-            result._generics = new List<AbstractType>(selfType);
-            result._generics.addAll(actualTypeParameters().map(t -> that.rebaseTypeForCotype(t)
-                                                                        .resolve(res, calledFeature().outer().context())));
+            if (CHECKS) check
+              (Errors.any() || !typeParameters.isFrozen());
+            if (!typeParameters.isFrozen())
+              {
+                typeParameters.removeTail(1);
+                typeParameters.addAll(actualTypeParameters().map(that::rebaseTypeForCotype));
+              }
           });
       }
     else
       {
         typeParameters.addAll(actualTypeParameters().map(that::rebaseTypeForCotype));
-        result = calledFeature().cotypeInheritanceCall(pos(), typeParameters, res, that, target());
       }
-    return result;
+
+    return calledFeature().cotypeInheritanceCall(pos(), typeParameters, res, that, target());
   }
 
 

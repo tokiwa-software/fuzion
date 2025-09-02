@@ -70,8 +70,8 @@ reg_issues5821_5835 =>
 
   a3(B type..., vb B...) is
     postfix $ => "$B $vb"
+  /* NYI: BUG #5835: this does not work yet
   b31 : a3         is {}; ignore b31.dynamic_type; say b31$
-  /* NYI: BUG #5835: this does not work for more than zero args yet
   b32 : a3 true    is {}; ignore b32.dynamic_type; say b32$
   b33 : a3 "" unit is {}; ignore b33.dynamic_type; say b33$
   */
@@ -87,8 +87,8 @@ reg_issues5821_5835 =>
 
   a4(A type, B type..., va A, vb B...) is
     postfix $ => "$A $B $va $vb"
+  /* NYI: BUG #5835: this does not work yet
   b41 : a4 3.14                        is {}; ignore b41.dynamic_type; say b41$
-  /* NYI: BUG #5835: this does not work for more than zero args yet
   b42 : a4 nil true                    is {}; ignore b42.dynamic_type; say b42$
   b43 : a4 (option bool false) "" unit is {}; ignore b43.dynamic_type; say b43$
   */

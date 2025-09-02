@@ -2567,10 +2567,6 @@ public class Call extends AbstractCall
             if (needsToInferTypeParametersFromArgs())
               {
                 inferGenericsFromArgs(res, context);
-                for (var r : _whenInferredTypeParameters)
-                  {
-                    r.run();
-                  }
               }
             if (!genericSizesMatch())
               {
@@ -2580,6 +2576,7 @@ public class Call extends AbstractCall
             setActualResultType(res, context);
           }
         resolveTypesOfActuals(res, context);
+        notifyInferred();
 
         result = isErroneous(res)
           ? resolveTypesErrorResult()
@@ -3091,6 +3088,7 @@ public class Call extends AbstractCall
       {
         r.run();
       }
+    _whenInferredTypeParameters = NO_RUNNABLE;
   }
 
 
