@@ -51,12 +51,7 @@ public processes (ph os.Process_Handler, public running_processes container.Set 
   pre running_processes.contains p
   =>
     (os.processes ph (running_processes ∖ (container.set_of_ordered [p]))).replace
-    wait0 p
-
-
-  # helper feature wait
-  #
-  wait0(p os.process) outcome u32 =>
+    # NYI: UNDER DEVELOPMENT: register errors in runtime_errors_effect
     _ := fzE_pipe_close p.std_in = 0
     r := fzE_process_wait p.pid
     if r<0
