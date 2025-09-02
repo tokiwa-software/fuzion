@@ -195,34 +195,41 @@ main =>
   _ := io.file.delete results
   _ := io.file.delete failures
 
+  # for storing the elapsed time of each test
+  test_durations := (lock_free.Map String time.duration).empty
+
+  run_single_test(test String) =>
+    if io.file.exists "$test/skip" || io.file.exists "$test/skip_$target" || (is_windows && (io.file.exists "$test/skip_win"))
+      yak "_"
+      append_line results "$test: skipped"
+    else
+
+      res, elapsed_time := time.stopwatch process_result ()->
+        # NYI: UNDER DEVELOPMENT: use fuzion to do the timeout
+        with_to := if is_windows then "" else "timeout --kill-after=600s 600s "
+        !!"{with_to}make $target --environment-overrides --directory=$test"
+
+      test_durations.put test elapsed_time
+
+      if res.exit_code = 0 then
+        yak "."
+        append_line results "$test in {elapsed_time}: ok"
+      else
+        yak "#"
+        append_line results "$test in {elapsed_time}: failed"
+        append_line failures res.out
+        append_line failures res.err
+
+
   say "{tests.count} tests, running $thread_count tests in parallel."
 
-  start_time_total := time.nano.read
 
-  _ := concur.thread_pool thread_count ()->
-    for test in tests do
-      check concur.thread_pool.env.submit ()->
-        if io.file.exists "$test/skip" || io.file.exists "$test/skip_$target" || (is_windows && (io.file.exists "$test/skip_win"))
-          yak "_"
-          append_line results "$test: skipped"
-        else
 
-          start_time := time.nano.read
-          # NYI: UNDER DEVELOPMENT: use fuzion to do the timeout
-          with_to := if is_windows then "" else "timeout --kill-after=600s 600s "
-          res := !!"{with_to}make $target --environment-overrides --directory=$test"
-          end_time := time.nano.read
+  elapsed_time_total := time.stopwatch ()->
+    _ := concur.thread_pool thread_count ()->
+      for t in tests do
+        check concur.thread_pool.env.submit (run_single_test t)
 
-          if res.exit_code = 0 then
-            yak "."
-            append_line results "$test in {end_time-start_time}: ok"
-          else
-            yak "#"
-            append_line results "$test in {end_time-start_time}: failed"
-            append_line failures res.out
-            append_line failures res.err
-
-  end_time_total := time.nano.read
 
   results_content := read_file_fully results
     .val
@@ -242,7 +249,7 @@ main =>
         r
 
   say ""
-  say "$ok/{tests.count} tests passed, $skipped skipped, $failed failed in {(end_time_total-start_time_total).as_string.trim}."
+  say "$ok/{tests.count} tests passed, $skipped skipped, $failed failed in {elapsed_time_total.as_string.trim}."
 
   if failed > 0
     say "Failed tests:"
@@ -274,6 +281,18 @@ main =>
         done
         """
 
-    exit 1
+    check (set_exit_code 1).ok
+
+
+  num_slowest := 10
+  say "\n\nSlowest $num_slowest tests using $target backend:\n"
+
+  test_durations
+    .items
+    .sort_by (td1,td2 -> td2.1<=td1.1)
+    .take num_slowest
+    .for_each (td -> say "{td.1} {td.0}")
+
+  exit
 
 _ := main
