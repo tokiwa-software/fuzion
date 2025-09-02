@@ -162,13 +162,12 @@ public class Interpreter extends FUIRContext
 
   /**
    * Get the result clazz of thiz
-   * or if thiz is an address to a value
-   * c_address.
+   * or if thiz is an address to clazz Any.
    */
   private static int clazzForField(int thiz)
   {
     return fuir().clazzFieldIsAdrOfValue(thiz)
-      ? fuir().clazz(SpecialClazzes.c_Array)
+      ? fuir().clazzAny()
       : fuir().clazzResultClazz(thiz);
   }
 
