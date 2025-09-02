@@ -2357,7 +2357,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /**
    * create String representation of the outer of this type
    */
-  private String outerToString(boolean humanReadable)
+  protected String outerToString(boolean humanReadable)
   {
     var o = outer();
     return isThisType()
