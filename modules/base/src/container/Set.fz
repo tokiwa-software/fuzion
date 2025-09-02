@@ -51,7 +51,7 @@ is
   # all elements in this Set and `k`.
   #
   public add (k E) Set E =>
-    panic "*** NYI: REMOVE Set.add, we need some support for mutable Sets ***"
+    compile_time_panic # "*** NYI: REMOVE Set.add, we need some support for mutable Sets ***"
 
 
   # list representation of values in this set
