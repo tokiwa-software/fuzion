@@ -1982,6 +1982,13 @@ A ((Choice)) declaration must not contain a result type.
             _resultType = Types.t_ERROR;
           }
 
+        // make sure all called features are loaded, even those of actuals
+        // which may not have been visited during resolve types
+        // fixes #5826
+        visit(new FeatureVisitor() {
+          @Override public Call action(Call c) { c.loadCalledFeature(res, context()); return c; }
+        });
+
         /**
          * Perform type inference from outside to the inside, i.e., propagate the
          * expected type as in
