@@ -2046,7 +2046,14 @@ A ((Choice)) declaration must not contain a result type.
          */
         visit(new ContextVisitor(context()) {
             @Override public void  action(AbstractAssign a) { a.propagateExpectedType(res, _context); }
-            @Override public Call  action(Call           c) { c.propagateExpectedType(res, _context); return c; }
+            @Override public Call  action(Call           c) {
+              // make sure all called features are loaded, even those of actuals
+              // which may not have been visited during resolve types
+              // fixes #5826
+              c.loadCalledFeature(res, _context);
+              c.propagateExpectedType(res, _context);
+              return c;
+            }
             @Override public void  action(Impl           i) { i.propagateExpectedType(res, _context); }
           });
 
