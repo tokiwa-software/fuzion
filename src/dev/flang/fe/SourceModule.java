@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fe;
 
+import static dev.flang.util.FuzionConstants.NO_SELECT;
+
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
@@ -296,7 +298,7 @@ public class SourceModule extends Module implements SrcModule
       @Override public Expr target() { return Universe.instance; }
       @Override public AbstractType type() { return calledFeature().resultType(); }
       @Override public List<Expr> actuals() { return NO_EXPRS; }
-      @Override public int select() { return -1; }
+      @Override public int select() { return NO_SELECT; }
       @Override public boolean isInheritanceCall() { return false; }
       @Override public Expr visit(FeatureVisitor v, AbstractFeature outer) { v.action(this); return this; }
     };

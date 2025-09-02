@@ -37,6 +37,28 @@ public Clock ref : effect is
   public read time.instant => abstract
 
 
+  # halt the current thread until the given instant. In case `t` is in the past,
+  # return immediately.
+  #
+  public sleep_until(# the instant we should wait for
+                     t time.instant
+                     ) unit
+  =>
+    sleep_until t read
+
+
+  # internal helper to implement `sleep_until` if the current time has already been
+  # read and is passed as `just_now`.
+  #
+  sleep_until(# the instant we should wait for
+              t,
+
+              # the current instant that has just been `read`.
+              just_now time.instant)
+  =>
+    if just_now < t
+      sleep t-just_now
+
   # halt the current thread during the given period of time
   #
   public sleep(d time.duration) unit => abstract
@@ -69,34 +91,37 @@ public Clock ref : effect is
     abstract
 
 
-  # run the given code periodically at time `first`, `first+p`, `first+p*2`, etc.
-  # until this clock has reached `last`.
+  # run the given `code` periodically at time `first+p*0`, `first+p*1`, `first+p*2`,
+  # etc. until this clock has reached the time `last`.
   #
-  # In case any of the instants `first`, `first+p`, `first+p*2`, etc. happen to
-  # be in the past when this is called or after the previous execution of code,
-  # respectively, do not run code for that instant.
+  # In case any of the instants `first+p*0`, `first+p*1`, `first+p*2`, etc. happen to
+  # be in the past when this is called or after the previous execution of `code`,
+  # respectively, do not run `code` for that instant.
   #
-  # return the number of times the code was run
+  # In case `period.is_infinity`, run `code` once unless `first > last`.
   #
-  public run_periodic(first time.instant,
-                      period time.duration,
+  # return the number of times the `code` was run.
+  #
+  public run_periodic(P type : Period,
+                      first time.instant,
+                      period P,
                       last time.instant,
                       code ()->unit) u64
   pre
-    debug: period > time.duration.ns 0
+    debug: period.is_infinity || period.as_duration > time.duration.ns 0
   post
-    debug: ((last >= first): result <= ((last- first) / period) + 1)
+    debug: ((last >= first): result <= ((last - first) / period.as_duration) + 1)
     debug: ((last <  first): result = 0)
   =>
     for
       cnt := u64 0, cnt + 1
-      ima := read
-      next1 := first, next + period
-      skip := if ima > next1 then (ima - next1 + period - time.duration.ns 1) / period else 0
-      next := next1 + period * skip
+      just_now := read
+      next1 := first + period * cnt
+      skipped := if just_now > next1 then (just_now - next1) / period.as_duration + 1
+                                     else 0
+      next := first + period * (cnt + skipped)
     while next <= last
-      if ima < next
-        sleep next-ima
+      sleep_until next just_now
       code()
     else
       cnt

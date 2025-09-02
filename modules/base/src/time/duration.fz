@@ -37,9 +37,30 @@ module:public duration (
   # the duration in nano seconds
   #
   public nanos u64
-  ) : property.orderable
+  )
+  : Period,
+    property.orderable,
+    property.hashable
 
 is
+
+  # For `duration`, this feature redefined from `Period` will just return an equal `duration`
+  # like `duration.this`.
+  #
+  public redef fixed as_duration time.duration
+  =>
+    # NYI: UNDER DEVELOPMENT: #5595: Once `time` is declared `final` or similar, this should work:
+    #
+    #   duration.this
+    time.duration nanos
+
+
+  # is this period infinite, i.e., it never ends?
+  #
+  public redef is_infinity bool
+  =>
+    false
+
 
   # this duration in micro seconds, omitting fractional part
   #
@@ -94,17 +115,23 @@ is
 
   # this duration multiplied by factor n
   #
-  public infix *(n u64) duration => duration nanos*n
+  public redef infix * (n u64) time.duration
+  =>
+    time.duration nanos*n
 
 
   # this duration multiplied by factor f
   #
-  public times(f f64) duration => duration (nanos.as_f64 * f).as_i64.as_u64
+  public times(f f64) time.duration
+  =>
+    time.duration (nanos.as_f64 * f).as_i64.as_u64
 
 
-  # this duration divided by duration d, rounding down
+  # this duration divided by duration other, rounding down
   #
-  public infix / (other duration) u64 => nanos / other.nanos
+  public infix / (other duration.this) u64
+  =>
+    nanos / other.nanos
 
 
   # create a string representation of this duration. The string
@@ -138,6 +165,12 @@ is
   #
   public fixed redef type.lteq(a, b time.duration) bool =>
     u64.type.lteq a.nanos b.nanos
+
+
+  # create hash code from a duration
+  #
+  public redef type.hash_code(d duration.this) u64 =>
+    d.nanos
 
 
   # max value for a duration given in nanos

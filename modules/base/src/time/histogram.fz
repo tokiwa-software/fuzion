@@ -389,6 +389,11 @@ is
   =>
     h := highest
     if h > 0
+      empt => " "  # unicode 0x0020 Space
+      hori => "_"  # unicode 0x005f Low Line
+      vert => "|"  # unicode 0x007c Vertical Line
+      bar => "▉"   # unicode 0x2589 LEFT SEVEN EIGHTHS BLOCK
+
       titl := """
               {"---  $title  ---".pad_center 78}
               count
@@ -401,17 +406,20 @@ is
         unit0 := min units.byte_length-1 c/10  # 2^10 is times 1024
         cnt := u64 1 << (c - unit0 * 10).as_u64
         str := for
-                 str1 := "{($cnt).pad_left 3}{units.substring unit0 unit0+1} ", str1 + str2 + str3
+                 hgap := c %% 4 ? hori : empt
+                 str1 := "{($cnt).pad_left 3}{units.substring unit0 unit0+1}$hgap", str1 + str2 + str3
                  i in buckets.indices
-                 str2 := i = num_buckets ? "       " : ""
-                 str3 := buckets[i].log2 < c ? " " : "*"
+                 last := i = num_buckets-1
+                 gap :=  i %% 8 || last ? vert : hgap
+                 str2 := last ? hgap + empt*6 : ""
+                 str3 := buckets[i].log2 < c ? gap : bar
                else
                  str1 + "\n"
       else
-        t2 := (i64 0 .. 64 : 8).map (i-> largest i .as_string.trim.pad_center 8)
+        t2 := (i64 0 .. 64 : 8).map (i -> largest i .as_string.trim.pad_center 8)
                                .as_string ""
-        bot :=    ("     |       |       |       |       |       |       |       |       |       |\n" +
-                    "  "+t2+"   >\n")
+        bot :=    ("     " + (vert + empt*7)*9 + vert + "\n" +
+                   "  "+t2+"   >\n")
         res + bot + "\n" + (" average |" +
                             "   min   |" +
                             "   max   |" +

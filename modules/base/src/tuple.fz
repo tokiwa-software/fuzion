@@ -119,7 +119,35 @@
 # is a type that has only one single value: '()'.
 #
 public tuple(public A type...,
-             public values A...) is
+             public values A...
+             ) : property.orderable is
+
+
+  # equality of two tuple `a` and `b` is defined only if all elements of the tuple
+  # are equatable and all elements are equal.
+  #
+  # This will result in a runtime `panic` in case any element type is not equatable.
+  #
+  public redef type.equality(a, b tuple.this) bool
+  =>
+    # NYI: BUG: omitting type parameters results in crash (Unimplemented method 'generics' in ThisType):
+    # a.values.typed_zip_and_fold b.values true (tuple_zip_equals tuple.this)
+
+    a.values.typed_zip_and_fold bool (tuple_zip_equals tuple.this) b.values true (tuple_zip_equals tuple.this)
+
+
+  # A total order between two tuples `a` and `b` is defined by the total order of
+  # their first elements. If the first `i` element pairs are equal, the order is defined by
+  # the `i+1`th element pair.
+  #
+  # This will result in a runtime `panic` in case any element type is not orderable.
+    #
+  public redef type.lteq(a, b tuple.this) bool
+  =>
+    # NYI: BUG: omitting type parameters results in crash (Unimplemented method 'generics' in ThisType):
+    # a.values.typed_zip_and_fold b.values true (tuple_zip_lteq tuple.this)
+
+    a.values.typed_zip_and_fold i32 (tuple_zip_lteq tuple.this) b.values 0 (tuple_zip_lteq tuple.this) <= 0
 
 
   # create a String from this instance.
@@ -130,30 +158,34 @@ public tuple(public A type...,
       public redef apply(V type, e String, v V) String => e="" ? $v : "$e, $v"
 
     "({values.typed_foldf "" concat})"
-# create a one tuple
-#
-public tuple1(t T) T => (t)
 
-# create a two tuple
-#
-public tuple2(t T, u U) tuple T U => (t, u)
 
-# create a three tuple
+# helper feature for `tuple.type.equality` to compare elements in a tuple of type `TUPLE`
 #
-public tuple3(t T, u U, v V) tuple T U V => (t, u, v)
+private tuple_zip_equals(TUPLE type) : container.typed_zipper bool is
 
-# create a four tuple
-#
-public tuple4(t T, u U, v V, w W) tuple T U V W => (t, u, v, w)
+  public redef apply(T type,
+                     e bool,
+                     v, w T) bool
+  =>
+    if T : property.equatable then
+      e && v = w
+    else
+      compile_time_panic
 
-# create a five tuple
-#
-public tuple5(t T, u U, v V, w W, x X) tuple T U V W X => (t, u, v, w, x)
 
-# create a six tuple
+# helper feature for `tuple.type.lteq` to compare elements in a tuple of type `TUPLE`
 #
-public tuple6(t T, u U, v V, w W, x X, y Y) tuple T U V W X Y => (t, u, v, w, x, y)
+private tuple_zip_lteq(TUPLE type) : container.typed_zipper i32 is
 
-# create a seven tuple
-#
-public tuple7(t T, u U, v V, w W, x X, y Y, z Z) tuple T U V W X Y Z => (t, u, v, w, x, y, z)
+  public redef apply(T type,
+                     e i32,
+                     v, w T) i32
+  =>
+    if T : property.orderable then
+      if      e != 0 then  e
+      else if v = w  then  0
+      else if v < w  then -1
+      else                +1
+    else
+      compile_time_panic

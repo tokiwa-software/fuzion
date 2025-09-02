@@ -310,6 +310,14 @@ public class Feature extends AbstractFeature
 
 
   /**
+   * if hasOpenTypesFeature(), this will be the open type feature, i.e., the
+   * feature that is called when a field whose type is an open type parameter is
+   * called without selecting one specific variant.
+   */
+  private AbstractFeature _openTypes = null;
+
+
+  /**
    * Actions collected to be executed as soon as this feature has reached
    * State.RESOLVED_DECLARATIONS, see method whenResolvedDeclarations().
    */
@@ -1240,6 +1248,42 @@ public class Feature extends AbstractFeature
   }
 
 
+  @Override
+  public AbstractFeature openTypesFeature()
+  {
+    if (PRECONDITIONS) require
+      (isOpenTypeParameter(),
+       _state.atLeast(State.RESOLVED_TYPES));
+
+    if (CHECKS) check
+      (_openTypes != null);
+
+    return _openTypes;
+  }
+
+
+  @Override
+  public AbstractFeature openTypesFeature(Resolution res)
+  {
+    if (PRECONDITIONS) require
+      (isOpenTypeParameter());
+
+    if (_openTypes == null)
+      {
+        var name = FuzionConstants.OPEN_TYPES_PREFIX + _id;
+        var otf = new Feature(pos(), visibility().typeVisibility(), 0, NoType.INSTANCE, new List<>(name), new List<>(),
+                              new List<>(new Call(pos(), Universe.instance, Types.resolved.f_Open_Types)),
+                              Contract.EMPTY_CONTRACT,
+                              new Impl(pos(), new Block(), Impl.Kind.Routine));
+
+        res._module.findDeclarations(otf, outer());
+        res.resolveTypes(otf);
+        _openTypes = otf;
+      }
+    return _openTypes;
+  }
+
+
   /*
    * Inheritance resolution for a feature f: recursively, perform inheritance
    * resolution for the outer feature of f and for all direct ancestors of a f,
@@ -1593,6 +1637,10 @@ public class Feature extends AbstractFeature
             Contract.addPreFeature(res, this, context(), false);
           }
 
+        if (isOpenTypeParameter())
+          {
+            var ignore = openTypesFeature(res);
+          }
         visit(res.resolveTypesFully(this));
 
         if (_effects != null)
@@ -1998,7 +2046,14 @@ A ((Choice)) declaration must not contain a result type.
          */
         visit(new ContextVisitor(context()) {
             @Override public void  action(AbstractAssign a) { a.propagateExpectedType(res, _context); }
-            @Override public Call  action(Call           c) { c.propagateExpectedType(res, _context); return c; }
+            @Override public Call  action(Call           c) {
+              // make sure all called features are loaded, even those of actuals
+              // which may not have been visited during resolve types
+              // fixes #5826
+              c.loadCalledFeature(res, _context);
+              c.propagateExpectedType(res, _context);
+              return c;
+            }
             @Override public void  action(Impl           i) { i.propagateExpectedType(res, _context); }
           });
 
@@ -2453,8 +2508,8 @@ A ((Choice)) declaration must not contain a result type.
           {
             result =
               (isOpenTypeParameter()
-               ? Types.resolved.f_Values_Of_Open_Type
-               : Types.resolved.f_Type            ).resultTypeIfPresentUrgent(res, urgent);
+               ? Types.resolved.f_Open_Types
+               : Types.resolved.f_Type      ).resultTypeIfPresentUrgent(res, urgent);
           }
         else
           {
@@ -2493,6 +2548,20 @@ A ((Choice)) declaration must not contain a result type.
        result == null || result instanceof ResolvedType);
 
     return result;
+  }
+
+
+  /**
+   * For a type parameter, this gives the ResolvedParametricType instance
+   * corresponding to this type parameter.
+   */
+  @Override
+  public AbstractType asGenericType()
+  {
+    if (PRECONDITIONS) require
+      (isTypeParameter());
+
+    return new ResolvedParametricType(this);
   }
 
 

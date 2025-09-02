@@ -1,7 +1,7 @@
 
 error 1: FATAL FAULT `*** panic ***`: bah
 Call stack:
-fuzion.type.runtime.type.fault.type.install_default.λ.call#1: {base.fum}/fuzion/runtime/fault.fz:38:7:
+fuzion.type.runtime.type.fault.type.install_default.λ.call#1: {base.fum}/fuzion/runtime/fault.fz:43:7:
       fuzion.sys.fatal_fault kind msg
 ------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 fuzion.runtime.fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
@@ -22,19 +22,19 @@ p => panic "bah"
 λ.call#1: --CURDIR--/reg_issue2304.fz:25:20:
 _ := [1].filter x->p
 -------------------^
-(list i32).filter_list#1.λ.call#1: {base.fum}/list.fz:514:35:
+(list i32).filter_list#1.λ.call#1: {base.fum}/list.fz:509:35:
     match drop_while_list (a -> !(p a))
 ----------------------------------^
-(list i32).drop_while_list#1: {base.fum}/list.fz:493:12:
+(list i32).drop_while_list#1: {base.fum}/list.fz:488:12:
         if p c.head
 -----------^
-(list i32).filter_list#1: {base.fum}/list.fz:514:11:
+(list i32).filter_list#1: {base.fum}/list.fz:509:11:
     match drop_while_list (a -> !(p a))
 ----------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(list i32).filter#1: {base.fum}/list.fz:505:5:
+(list i32).filter#1: {base.fum}/list.fz:500:5:
     filter_list p
 ----^^^^^^^^^^^^^
-(array i32).filter#1: {base.fum}/Sequence.fz:190:47:
+(array i32).filter#1: {base.fum}/Sequence.fz:184:47:
   public filter   (f T -> bool) Sequence T => as_list.filter f
 ----------------------------------------------^^^^^^^^^^^^^^^^
 universe: --CURDIR--/reg_issue2304.fz:25:6:

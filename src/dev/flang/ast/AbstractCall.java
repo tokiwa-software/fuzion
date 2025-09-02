@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import static dev.flang.util.FuzionConstants.NO_SELECT;
+
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
 import java.util.function.BiConsumer;
@@ -102,7 +104,7 @@ public abstract class AbstractCall extends Expr
    */
   public int select()
   {
-    return -1;
+    return NO_SELECT;
   }
 
 
@@ -223,37 +225,23 @@ public abstract class AbstractCall extends Expr
     var typeParameters = new List<AbstractType>(selfType);
     if (this instanceof Call cpc && cpc.needsToInferTypeParametersFromArgs())
       {
-        var git = cpc._generics.iterator();
-        for (var ignore : cpc.calledFeature().typeArguments())
-          {
-            typeParameters.add(git.hasNext() ? git.next() : Types.t_UNDEFINED);
-          }
+        typeParameters.addAll(actualTypeParameters());
         cpc.whenInferredTypeParameters(() ->
           {
             if (CHECKS) check
               (actualTypeParameters().stream().allMatch(atp -> !atp.containsUndefined(false)));
-            int i = 0;
-            for (var atp : cpc.actualTypeParameters())
+            if (CHECKS) check
+              (Errors.any() || !typeParameters.isFrozen());
+            if (!typeParameters.isFrozen())
               {
-                if (typeParameters.isFrozen())
-                  {
-                    if (CHECKS) check
-                      (Errors.any());
-                  }
-                else
-                  {
-                    typeParameters.set(i+1, that.rebaseTypeForCotype(atp));
-                  }
-                i++;
+                typeParameters.removeTail(1);
+                typeParameters.addAll(actualTypeParameters().map(that::rebaseTypeForCotype));
               }
           });
       }
     else
       {
-        for (var atp : actualTypeParameters())
-          {
-            typeParameters.add(that.rebaseTypeForCotype(atp));
-          }
+        typeParameters.addAll(actualTypeParameters().map(that::rebaseTypeForCotype));
       }
 
     return calledFeature().cotypeInheritanceCall(pos(), typeParameters, res, that, target());
@@ -315,7 +303,7 @@ public abstract class AbstractCall extends Expr
   {
     var t1 = rt == Types.t_ERROR ? rt : adjustThisTypeForTarget(context, rt, foundRef);
     var t2 = t1 == Types.t_ERROR ? t1 : t1.applyTypePars(tt);
-    var t3 = t2 == Types.t_ERROR ? t2 : t2.applyTypePars(calledFeature(), actualTypeParameters());
+    var t3 = t2 == Types.t_ERROR ? t2 : t2.applyTypePars(calledFeature(), actualTypeParameters(res, context));
     var t4 = t3 == Types.t_ERROR ? t3 : tt.isGenericArgument() ? t3 : t3.resolve(res, tt.feature().context());
     var t5 = t4 == Types.t_ERROR || forArg ? t4 : adjustThisTypeForTarget(context, t4, foundRef);
 
@@ -323,6 +311,20 @@ public abstract class AbstractCall extends Expr
       (t5 != null);
 
     return t5;
+  }
+
+
+  /**
+   * get actual type parameters during resolution
+   *
+   * @param res the resolution instance.
+   *
+   * @param context the source code context where this Call is used
+   *
+   */
+  protected List<AbstractType> actualTypeParameters(Resolution res, Context context)
+  {
+    return actualTypeParameters();
   }
 
 

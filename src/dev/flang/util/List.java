@@ -383,10 +383,25 @@ public class List<T>
 
 
   /**
+   * Remove all elements at indices >=from.
+   */
+  public void removeTail(int from)
+  {
+    if (ANY.PRECONDITIONS) ANY.require
+      (!isFrozen() || from == size());
+
+    removeRange(from, size());
+  }
+
+
+  /**
    * Remove the last element of the list.
    */
   public T removeLast()
   {
+    if (ANY.PRECONDITIONS) ANY.require
+      (!isFrozen());
+
     return remove(size()-1);
   }
 

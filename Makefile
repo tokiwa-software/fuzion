@@ -118,10 +118,12 @@ JARS_JFREE_SVG_JAR = $(BUILD_DIR)/jars/org.jfree.svg-5.0.1.jar
 
 FUZION_EBNF = $(BUILD_DIR)/fuzion.ebnf
 
-FZ_SRC_TESTS         = $(FZ_SRC)/tests
-FUZION_FILES_TESTS   = $(shell find $(FZ_SRC_TESTS))
-FZ_SRC_INCLUDE       = $(FZ_SRC)/include
-FUZION_FILES_RT      = $(shell find $(FZ_SRC_INCLUDE))
+FZ_SRC_TESTS          = $(FZ_SRC)/tests
+FUZION_FILES_TESTS    = $(shell find $(FZ_SRC_TESTS))
+FZ_SRC_INCLUDE        = $(FZ_SRC)/include
+FUZION_FILES_RT       = $(shell find $(FZ_SRC_INCLUDE))
+FZ_SRC_EXAMPLES       = $(FZ_SRC)/examples
+FUZION_FILES_EXAMPLES = $(shell find $(FZ_SRC_EXAMPLES))
 
 MOD_BASE              = $(BUILD_DIR)/modules/base.fum
 MOD_TERMINAL          = $(BUILD_DIR)/modules/terminal.fum
@@ -495,8 +497,8 @@ base-only: $(FZ) $(MOD_BASE) $(FUZION_FILES)
 .PHONY: javac
 javac: $(CLASS_FILES_TOOLS) $(CLASS_FILES_TOOLS_FZJAVA) $(CLASS_FILES_TOOLS_DOCS)
 
-.PHONY: lint/c
-lint/c:
+.PHONY: lint-c
+lint-c:
 	clang-tidy $(C_FILES) -- -std=c11
 
 $(BUILD_DIR)/%.md: $(FZ_SRC)/%.md
@@ -1188,9 +1190,10 @@ $(BUILD_DIR)/include: $(FUZION_FILES_RT)
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC_INCLUDE) $@
 
-$(BUILD_DIR)/examples: $(FZ_SRC)/examples
+$(BUILD_DIR)/examples: $(FUZION_FILES_EXAMPLES)
+	rm -rf $@
 	mkdir -p $(@D)
-	cp -rf $^ $@
+	cp -rf $(FZ_SRC_EXAMPLES) $@
 
 $(BUILD_DIR)/UnicodeData.txt:
 	cd $(BUILD_DIR) && wget $(UNICODE_SOURCE)
@@ -1306,25 +1309,25 @@ run_tests: run_tests_jvm run_tests_c run_tests_int run_tests_effect run_tests_ja
 .PHONY .SILENT: run_tests_effect
 run_tests_effect: $(FZ) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests
 	printf "testing effects: "
-	$(FZ) $(FZ_SRC)/bin/run_tests.fz $(BUILD_DIR) effect 1
+	$(FZ) -modules=lock_free $(FZ_SRC)/bin/run_tests.fz $(BUILD_DIR) effect 1
 
 # phony target to run Fuzion tests using interpreter and report number of failures
 .PHONY .SILENT: run_tests_int
 run_tests_int: $(FZ_INT) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests
 	printf "testing interpreter: "
-	$(FZ) $(FZ_SRC)/bin/run_tests.fz $(BUILD_DIR) int 1
+	$(FZ) -modules=lock_free $(FZ_SRC)/bin/run_tests.fz $(BUILD_DIR) int 1
 
 # phony target to run Fuzion tests using c backend and report number of failures
 .PHONY .SILENT: run_tests_c
 run_tests_c: $(FZ_C) $(FZ_MODULES) $(MOD_JAVA_BASE) $(BUILD_DIR)/tests
 	printf "testing C backend: "; \
-	$(FZ) $(FZ_SRC)/bin/run_tests.fz $(BUILD_DIR) c 1
+	$(FZ) -modules=lock_free $(FZ_SRC)/bin/run_tests.fz $(BUILD_DIR) c 1
 
 # phony target to run Fuzion tests using c backend and report number of failures
 .PHONY .SILENT: run_tests_jvm
 run_tests_jvm: $(FZ_JVM) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests
 	printf "testing JVM backend: "; \
-	$(FZ) $(FZ_SRC)/bin/run_tests.fz $(BUILD_DIR) jvm 1
+	$(FZ) -modules=lock_free $(FZ_SRC)/bin/run_tests.fz $(BUILD_DIR) jvm 1
 
 # phony target to run Fuzion tests and report number of failures
 .PHONY: run_tests_parallel
@@ -1334,25 +1337,25 @@ run_tests_parallel: run_tests_jvm_parallel run_tests_c_parallel run_tests_int_pa
 .PHONY .SILENT: run_tests_effect_parallel
 run_tests_effect_parallel: $(FZ) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests
 	printf "testing effects: "
-	$(FZ) $(FZ_SRC)/bin/run_tests.fz $(BUILD_DIR) effect
+	$(FZ) -modules=lock_free $(FZ_SRC)/bin/run_tests.fz $(BUILD_DIR) effect
 
 # phony target to run Fuzion tests using interpreter and report number of failures
 .PHONY .SILENT: run_tests_int_parallel
 run_tests_int_parallel: $(FZ_INT) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests
 	printf "testing interpreter: "
-	$(FZ) $(FZ_SRC)/bin/run_tests.fz $(BUILD_DIR) int
+	$(FZ) -modules=lock_free $(FZ_SRC)/bin/run_tests.fz $(BUILD_DIR) int
 
 # phony target to run Fuzion tests using c backend and report number of failures
 .PHONY .SILENT: run_tests_c_parallel
 run_tests_c_parallel: $(FZ_C) $(FZ_MODULES) $(MOD_JAVA_BASE) $(BUILD_DIR)/tests
 	printf "testing C backend: "; \
-	$(FZ) $(FZ_SRC)/bin/run_tests.fz $(BUILD_DIR) c
+	$(FZ) -modules=lock_free $(FZ_SRC)/bin/run_tests.fz $(BUILD_DIR) c
 
 # phony target to run Fuzion tests using jvm backend and report number of failures
 .PHONY .SILENT: run_tests_jvm_parallel
 run_tests_jvm_parallel: $(FZ_JVM) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests
 	printf "testing JVM backend: "; \
-	$(FZ) $(FZ_SRC)/bin/run_tests.fz $(BUILD_DIR) jvm
+	$(FZ) -modules=lock_free $(FZ_SRC)/bin/run_tests.fz $(BUILD_DIR) jvm
 
 .PHONY .SILENT: run_tests_jar_build
 run_tests_jar_build: $(FZ_JVM) $(BUILD_DIR)/tests
@@ -1438,8 +1441,8 @@ $(MOD_FZ_CMD_FZ_FILES): $(MOD_FZ_CMD_DIR).jmod $(MOD_JAVA_BASE) $(MOD_JAVA_MANAG
 $(MOD_FZ_CMD): $(MOD_FZ_CMD_FZ_FILES)
 	$(FZ) -sourceDirs=$(MOD_FZ_CMD_DIR) -modules=java.base,java.management,java.desktop -saveModule=$@
 
-.PHONY: lint/java
-lint/java:
+.PHONY: lint-java
+lint-java:
 	$(JAVAC) -Xlint --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) \
 		$(JAVA_FILES_UTIL) \
 		$(JAVA_FILES_UTIL_UNICODE) \
@@ -1463,8 +1466,8 @@ lint/java:
 		$(JAVA_FILES_TOOLS_FZJAVA) \
 		$(JAVA_FILES_TOOLS_DOCS)
 
-.PHONY: lint/javadoc
-lint/javadoc:
+.PHONY: lint-javadoc
+lint-javadoc:
 	$(JAVAC) -Xdoclint:all,-missing --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) \
 		$(JAVA_FILES_UTIL) \
 		$(JAVA_FILES_UTIL_UNICODE) \
@@ -1505,9 +1508,10 @@ $(BUILD_DIR)/pmd: $(BUILD_DIR)/pmd.zip
 
 # this linter detects different things than standard java linter
 # but gives a lot of suggestions.
-# use grep, e.g.: make lint/pmd | grep 'UnusedLocalVariable'
+# use grep, e.g.: make lint-pmd | grep 'UnusedLocalVariable'
 #
-lint/pmd: $(BUILD_DIR)/pmd
+.PHONY: lint-pmd
+lint-pmd: $(BUILD_DIR)/pmd
 	$(BUILD_DIR)/pmd/pmd-bin-7.3.0/bin/pmd check -d src -R rulesets/java/quickstart.xml -f text
 
 

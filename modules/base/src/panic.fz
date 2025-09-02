@@ -54,3 +54,9 @@ public panic panic =>
 # current panic effect to panic with the given message.
 #
 public panic(msg String) void => panic.cause msg
+
+
+# a variant of panic for code paths that are guaranteed to
+# never be taken. compilation fails if assumption does not hold
+#
+public compile_time_panic void => abstract

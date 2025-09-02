@@ -624,6 +624,9 @@ of an instance to a xref:fuzion_field[field].
 ((Target)):: The _target_ is part of a xref:fuzion_call[feature call]. The xref:dynamic_type[dynamic type] of the target
 together with the xref:feature_name[feature name] of the call determines the xref:call_destination[destination] of the call.
 
+[#fuzion_template]
+((Template Feature)):: A _template feature_ is a xref:fuzion_feature[feature] that is the xref:outer_feature[outer feature] of at least one xref:fuzion_abstract[abstract feature].
+
 [#fuzion_type]
 ((Type)):: A _type_ is either a reference to a xref:fuzion_typeparameter[type parameter] or based on a
 xref:fuzion_feature[feature] of type xref:fuzion_constructor[constructor] or

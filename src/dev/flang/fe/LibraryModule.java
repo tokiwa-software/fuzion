@@ -1020,7 +1020,8 @@ Feature
     var res = ((featureKind(at) & FuzionConstants.MIR_FILE_KIND_HAS_VALUES_OF_OPEN_TYPE_FEATURE) != 0);
     if (CHECKS) check
       (true ||  // checking this would cause endless recursion
-       res == featureHasResultType(at) && libraryFeature(at).resultType().isOpenGeneric());
+       res == (featureHasResultType(at) && libraryFeature(at).resultType().isOpenGeneric() ||
+               (featureKind(at) & FuzionConstants.MIR_FILE_KIND_MASK) == AbstractFeature.Kind.OpenTypeParameter.ordinal()));
     return res;
   }
   int featureNamePos(int at)
@@ -1126,11 +1127,11 @@ Feature
   {
     var k = featureKind(at) & FuzionConstants.MIR_FILE_KIND_MASK;
     return
-      (k != FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF   &&
-       k != FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_VALUE &&
-       k != AbstractFeature.Kind.Choice.ordinal()
-       // NYI: && k != AbstractFeature.Kind.TypeParameter.ordinal()
-       //      && k != AbstractFeature.Kind.OpenTypeParameter.ordinal()
+      (k != FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF    &&
+       k != FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_VALUE  &&
+       k != AbstractFeature.Kind.Choice           .ordinal() &&
+       k != AbstractFeature.Kind.TypeParameter    .ordinal() &&
+       k != AbstractFeature.Kind.OpenTypeParameter.ordinal()
        );
 
   }
@@ -1147,9 +1148,25 @@ Feature
   {
     return feature(data().getInt(featureValuesAsOpenTypeFeaturePos(at)));
   }
-  int featureInheritsCountPos(int at)
+  int featureConstraintPos(int at)
   {
     return featureValuesAsOpenTypeFeaturePos(at) + (featureHasOpenTypeFeature(at) ? 4 : 0);
+  }
+  boolean featureHasConstraint(int at)
+  {
+    var k = featureKind(at) & FuzionConstants.MIR_FILE_KIND_MASK;
+    return
+      (k == AbstractFeature.Kind.TypeParameter    .ordinal() ||
+       k == AbstractFeature.Kind.OpenTypeParameter.ordinal()    );
+  }
+  int featureInheritsCountPos(int at)
+  {
+    var i = featureConstraintPos(at);
+    if (featureHasConstraint(at))
+      {
+        i = typeNextPos(i);
+      }
+    return i;
   }
   int featureInheritsCount(int at)
   {

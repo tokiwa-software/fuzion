@@ -634,12 +634,17 @@ public class AstErrors extends ANY
                                             String detail1,
                                             String detail2)
   {
-    error(pos,
-          "Wrong number of type parameters",
-          "Wrong number of actual type parameters in " + detail1 + ":\n" +
-          detail2 +
-          "expected " + fg.sizeText() + (fg._feature.typeArguments().isEmpty() ? "" : " for " + s(fg) + "") + "\n" +
-          "found " + (actualGenerics.size() == 0 ? "none" : "" + actualGenerics.size() + ": " + s(actualGenerics) + "" ) + ".\n");
+    // supress errors in cotypes unless we did not find the original error (in
+    // the original feature):
+    if (!fg._feature.isCotype() || !Errors.any())
+      {
+        error(pos,
+              "Wrong number of type parameters",
+              "Wrong number of actual type parameters in " + detail1 + ":\n" +
+              detail2 +
+              "expected " + fg.sizeText() + (fg._feature.typeArguments().isEmpty() ? "" : " for " + s(fg) + "") + "\n" +
+              "found " + (actualGenerics.size() == 0 ? "none" : "" + actualGenerics.size() + ": " + s(actualGenerics) + "" ) + ".\n");
+      }
   }
 
   /**
@@ -749,10 +754,14 @@ public class AstErrors extends ANY
   public static void argumentLengthsMismatch(AbstractFeature originalFeature, int originalNumArgs,
                                              AbstractFeature redefinedFeature, int actualNumArgs)
   {
+    var typeArgs = originalFeature.typeArguments().stream().map(f->sbnf(f)).collect(Collectors.toList());
+    var valArgs  = originalFeature.valueArguments().stream().map(f->sbnf(f)).collect(Collectors.toList());
     error(redefinedFeature.pos(),
           "Wrong number of arguments in redefined feature",
           "In " + s(redefinedFeature) + " that redefines " + s(originalFeature) + " " +
-          "argument count is " + actualNumArgs + ", argument count should be " + originalNumArgs + ".\n" +
+          "argument count is " + actualNumArgs + ", argument count should be " + originalNumArgs + ": " +
+          StringHelpers.singularOrPlural(typeArgs.size(), "(free) type parameter") + " " +  StringHelpers.listConjunction(typeArgs) +
+          " and " + StringHelpers.singularOrPlural(valArgs.size(), "value argument") + " " + StringHelpers.listConjunction(valArgs) + ".\n" +
           "Original feature declared at " + originalFeature.pos().show());
   }
 
@@ -897,35 +906,17 @@ public class AstErrors extends ANY
   /**
    * Create list of the form "'i32', 'string' or 'bool'"
    */
-  private static String typeListAlternatives(List<AbstractType> tl)  { return typeList(tl, "or" ); }
+  private static String typeListAlternatives(List<AbstractType> tl)
+  {
+    return StringHelpers.listAlternatives(tl.stream().map(t->s(t)).collect(Collectors.toList()));
+  }
 
   /**
    * Create list of the form "'i32', 'string' and 'bool'"
    */
-  private static String typeListConjunction (List<AbstractType> tl)  { return typeList(tl, "and"); }
-
-  /**
-   * Create list of the form "'i32', 'string' " + conj + " 'bool'"
-   */
-  private static String typeList(List<AbstractType> tl, String conj)
+  private static String typeListConjunction (List<AbstractType> tl)
   {
-    StringBuilder mt = new StringBuilder();
-    String comma = "", last = "";
-    for (var t : tl)
-      {
-        if (last != "")
-          {
-            mt.append(comma).append(last);
-            comma = ", ";
-          }
-        last = s(t);
-      }
-    mt.append(switch (tl.size()) {
-      case 0, 1 -> "";
-      case 2    -> " " + conj + " ";
-      default   -> ", " + conj + " ";})
-      .append(last);
-    return mt.toString();
+    return StringHelpers.listConjunction(tl.stream().map(t->s(t)).collect(Collectors.toList()));
   }
 
   private static String typeOrAnyType(AbstractType typeOrNull)
@@ -2361,13 +2352,6 @@ public class AstErrors extends ANY
   {
     error(f.pos(), "Argument features of non-constructors must not have visibility modifier.",
       "To solve this, remove the visibility modifier " + s(f.visibility()) + " from feature " + s(f) + ".");
-  }
-
-  public static void mustNotCallOpenTypeParameter(Call call)
-  {
-    error(call.pos(),
-      "Open type parameters must not be called.",
-      "" /* NYI: UNDER DEVELOPMENT: can we give some useful suggestion here? */);
   }
 
   public static void illegalFeatureDefiningType(Feature f)

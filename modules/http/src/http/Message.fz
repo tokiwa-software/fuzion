@@ -104,26 +104,25 @@ module:public body_reader(
 
     public redef read(count i32) choice (array u8) io.end_of_file error =>
 
-      if remaining.get = 0
-        io.end_of_file
-      else
-        res choice (array u8) io.end_of_file error := match (io.buffered LM).reader.env.read count
-          c array u8 => c
-          o outcome io.end_of_file =>
-            match o
-              io.end_of_file =>
-                if remaining.get > 0
-                  error "input closed after {reader_size - remaining.get} bytes, but specified content-length: {reader_size}"
-                else
-                  io.end_of_file
-              e error => e
+      res choice (array u8) io.end_of_file error := match (io.buffered LM).reader.env.read count
+        c array u8 =>
+          (io.buffered LM).reader.env.discard c.length
+          # decrease remaining if reader has a size limit
+          if reader_size >= 0
+            new_remaining := remaining.get - c.length
+            check new_remaining >= 0 # more bytes available than what is specified in content-length header field
+            remaining <- (new_remaining >= 0 ? new_remaining : 0)
+          c
+        o outcome io.end_of_file =>
+          match o
+            io.end_of_file =>
+              if remaining.get > 0
+                error "input closed after {reader_size - remaining.get} bytes, but specified content-length: {reader_size}"
+              else
+                io.end_of_file
+            e error => e
 
-        # decrease remaining
-        if reader_size >= 0
-          new_remaining := remaining.get - count
-          remaining <- (new_remaining >= 0 ? new_remaining : 0)
-
-        res
+      res
 
 
 

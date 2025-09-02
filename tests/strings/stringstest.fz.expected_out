@@ -4,3 +4,4 @@ PASSED: {a+b} and {a*b}
 PASSED: {if...}
 PASSED: {if...}
 PASSED: nested {}
+PASSED: find(substring, from)

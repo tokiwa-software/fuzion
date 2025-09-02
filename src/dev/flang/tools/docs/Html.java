@@ -114,13 +114,14 @@ public class Html extends ANY
    */
   private String inherited(AbstractFeature af, AbstractFeature relativeTo)
   {
-    if (af.inherits().isEmpty() || signatureWithArrow(af)) // don't show inheritance for function features
+    if (signatureWithArrow(af) // inheritance does not make sense for function features since no instance can be obtained
+        || !af.isTypeParameter() && af.inherits().isEmpty()) // type parameters always have a constraint to show
       {
         return "";
       }
-    else if (af.kind() == AbstractFeature.Kind.TypeParameter || af.kind() == AbstractFeature.Kind.OpenTypeParameter)
+    else if (af.isTypeParameter())
       {
-        var constraint = af.resultType().feature();
+        var constraint = af.constraint().feature();
         return "<div class='fd-keyword mx-5'>:</div><a class='fd-feature fd-inherited' href='$1'>$2</a>"
           .replace("$1", featureRelativeURL(constraint, relativeTo))
           .replace("$2", htmlEncodedQualifiedName(constraint));
@@ -129,6 +130,9 @@ public class Html extends ANY
       {
         return "<div class='fd-keyword mx-5'>:</div>" + af.inherits()
           .stream()
+          // don't show inheritance from features that are not public
+          .filter(c->c.calledFeature().visibility().typeVisibility() == Visi.PUB ||
+                     c.calledFeature().visibility().eraseTypeVisibility() == Visi.PUB)
           .<String>map(c -> {
             var f = c.calledFeature();
             return "<a class='fd-feature fd-inherited' href='$1'>".replace("$1", featureRelativeURL(f, relativeTo))
@@ -249,7 +253,10 @@ public class Html extends ANY
    */
   private String annotateInherited(AbstractFeature af, AbstractFeature outer)
   {
-    if (isDeclared(af, outer))
+    if (isDeclared(af, outer)
+        || nonPublicInheritanceChain(af) // don't show annotation if feature was inherited from feature with non public outer
+        || af.outer().isUniverse()) // features can not inherit from universe,
+                                    // this avoid false annotation in the applicable universe features section
       {
         return ""; // not inherited, nothing to display
       }
@@ -292,6 +299,9 @@ public class Html extends ANY
 
     var redefs = af.redefines();
 
+    // don't show annotation if redefining a feature from a non public feature
+    redefs.removeIf(f->nonPublicInheritanceChain(f));
+
     AbstractFeature relativeTo = outer != null ? outer : af;
     return redefs.isEmpty()
             ? ""
@@ -302,6 +312,14 @@ public class Html extends ANY
                                     .collect(Collectors.joining(",&nbsp;")) ));
   }
 
+  /**
+   * Is this feature or any one of the features it inherits from not public
+   * i.e. has a type visibility other than public
+   */
+  private boolean nonPublicInheritanceChain(AbstractFeature f)
+  {
+    return !f.isUniverse() && (f.visibility().typeVisibility() != Visi.PUB || nonPublicInheritanceChain(f.outer()));
+  }
 
   /**
    * Returns a html formatted annotation to indicate if a feature is abstract
@@ -479,29 +497,54 @@ public class Html extends ANY
     // Choice Types
     var choices = map.getOrDefault(AbstractFeature.Kind.Choice, new TreeSet<AbstractFeature>());
 
-    return mainSection0("Type Parameters",   typeParameters,     outer, false)
-         + mainSection0("Fields",            fields,             outer, false)
-         + mainSection0("Constructors",      normalConstructors, outer, true)
-         + mainSection0("Type Constructors", typeConstructors,   outer, true)
-         + mainSection0("Functions",         normalFunctions,    outer, true)
-         + mainSection0("Type Functions",    typeFunctions,      outer, true)
-         + mainSection0("Choice Types",      choices,            outer, true);
+    // Applicable universe features
+    var univFuncDesc = "These are features in universe, that have an argument with a type constraint "
+                      + "that matches this features type and can therefore be used with it.";
+
+    var universeFunctions = new TreeSet<AbstractFeature>();
+
+    if (!signatureWithArrow(outer) && !outer.isUniverse())
+      {
+        var allUniverseFeat = mapOfDeclaredFeatures.get(lm.universe());
+        universeFunctions.addAll(allUniverseFeat.getOrDefault(AbstractFeature.Kind.Routine, new TreeSet<AbstractFeature>()));
+        universeFunctions.removeIf(f->f.isConstructor());
+        universeFunctions.addAll(allUniverseFeat.getOrDefault(AbstractFeature.Kind.Abstract, new TreeSet<AbstractFeature>()));
+        universeFunctions.addAll(allUniverseFeat.getOrDefault(AbstractFeature.Kind.Intrinsic, new TreeSet<AbstractFeature>()));
+        universeFunctions.addAll(allUniverseFeat.getOrDefault(AbstractFeature.Kind.Native, new TreeSet<AbstractFeature>()));
+
+        // only keep features that have a matching type argument with a type other than Any
+        universeFunctions.removeIf(
+          af->af.typeArguments().isEmpty()
+          || af.typeArguments().stream().noneMatch(typeParam->typeParam.constraint().compareTo(Types.resolved.t_Any ) != 0
+                                                              && typeParam.constraint().constraintAssignableFrom(outer.resultType())));
+      }
+
+    return mainSection0("Type Parameters",              null,         typeParameters,     outer, false)
+         + mainSection0("Fields",                       null,         fields,             outer, false)
+         + mainSection0("Constructors",                 null,         normalConstructors, outer, true)
+         + mainSection0("Type Constructors",            null,         typeConstructors,   outer, true)
+         + mainSection0("Functions",                    null,         normalFunctions,    outer, true)
+         + mainSection0("Type Functions",               null,         typeFunctions,      outer, true)
+         + mainSection0("Choice Types",                 null,         choices,            outer, true)
+         + mainSection0("Applicable universe features", univFuncDesc, universeFunctions,  outer, true);
   }
 
 
   /**
    * The summaries and the comments of the features
    * @param heading the title for this section
+   * @param description text block shown under the headline, can be null
    * @param set the features to be included in the summary
    * @param outer the outer feature of the features in the summary
    * @param filterAndSort should features from other modules (including not having a module) be removed and the list sorted?
    * @return
    */
-  private String mainSection0(String heading, Collection<AbstractFeature> set, AbstractFeature outer, boolean filterAndSort)
+  private String mainSection0(String heading, String description, Collection<AbstractFeature> set, AbstractFeature outer, boolean filterAndSort)
   {
     if (set == null) { return ""; }
 
     heading = "<h2 class=\"f-category\">" + heading + "</h2>\n";
+    description = (description != null && !description.isEmpty()) ? "<div>" + description + "</div>\n" : "";
     var features = set.stream();
 
     // e.g. don't filter or sort type parameters and fields
@@ -525,7 +568,7 @@ public class Html extends ANY
     )
     .collect(Collectors.joining(System.lineSeparator()));
 
-    return content.equals("") ? "" : heading + content;
+    return content.equals("") ? "" : heading + description + content;
   }
 
 
@@ -914,20 +957,14 @@ public class Html extends ANY
    */
   private String arguments(AbstractFeature f, AbstractFeature relativeTo)
   {
-    if (f.arguments()
-         .stream()
-         .filter(a -> a.isTypeParameter() || (f.visibility().eraseTypeVisibility() == Visi.PUB))
-         .count() == 0)
-      {
-        return "";
-      }
-    return "(" + f.arguments()
+    var res = f.arguments()
       .stream()
       .filter(a -> a.isTypeParameter() || (f.visibility().eraseTypeVisibility() == Visi.PUB))
       .map(a ->
         htmlEncodedBasename(a) + "&nbsp;"
         + (a.isTypeParameter() ? typeArgAsString(a, relativeTo) : anchorType(a, f, relativeTo)))
-      .collect(Collectors.joining(htmlEncodeNbsp(", "))) + ")";
+      .collect(Collectors.joining(htmlEncodeNbsp(", ")));
+    return res.isEmpty() ? "" : "(" + res + ")";
   }
 
 
@@ -937,7 +974,9 @@ public class Html extends ANY
       {
         return "<div class='fd-keyword'>type</div>"
                + (f.isOpenTypeParameter() ? "..." : "")
-               + "<span class='mx-5'>:</span>" + htmlEncodeNbsp(f.constraint().toString(true));
+               + "<span class='mx-5'>:</span>  <a class='fd-feature fd-inherited' href='$1'>$2</a>"
+               .replace("$1", featureRelativeURL(f.constraint().feature(), relativeTo))
+               .replace("$2", htmlEncodeNbsp(f.constraint().toString(true)));
       }
     else
       {

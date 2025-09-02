@@ -38,6 +38,7 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
 import dev.flang.tools.FuzionHome;
+import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 
 public class Util
@@ -99,7 +100,7 @@ public class Util
 
   private static String universeComment()
   {
-    var uri = FuzionHome._fuzionHome.normalize().toAbsolutePath().resolve("lib").resolve("universe.fz").toUri();
+    var uri = FuzionHome._fuzionHome.normalize().toAbsolutePath().resolve("modules/base/src/universe.fz").toUri();
     try
       {
         return Files.readAllLines(Path.of(uri), StandardCharsets.UTF_8)
@@ -111,6 +112,7 @@ public class Util
       }
     catch (IOException e)
       {
+        Errors.fatal("File universe.fz not found");
         return "";
       }
   }

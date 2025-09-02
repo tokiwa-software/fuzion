@@ -356,8 +356,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
     var g = feature().choiceGenerics();
            // NYI: UNDER DEVELOPMENT: a bit weird, choice this types.
-    return isThisType() ? g : replaceGenerics(g)
-      .map(t -> t.replace_this_type_by_actual_outer(this, context));
+    return
+      isThisType()
+      ? g
+      : replaceGenerics(g).map(t -> t.replace_this_type_by_actual_outer(this, context));
   }
 
 
@@ -753,13 +755,19 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param genericsToReplace a list of possibly generic types
    *
-   * @param actualGenerics the actual generics to feat that should replace the
+   * @param actualGenerics the actual generics that should replace the
    * formal generics found in genericsToReplace.
+   *
+   * @param locally true iff this should not be applied to outer types and
+   * inheritance calls.
    *
    * @return a new list of types with all formal generic arguments from this
    * replaced by the corresponding actualGenerics entry.
    */
-  private static List<AbstractType> applyTypePars(AbstractFeature f, List<AbstractType> genericsToReplace, List<AbstractType> actualGenerics)
+  private static List<AbstractType> applyTypePars(AbstractFeature f,
+                                                  List<AbstractType> genericsToReplace,
+                                                  List<AbstractType> actualGenerics,
+                                                  boolean locally)
   {
     if (PRECONDITIONS) require
       (Errors.any() ||
@@ -773,9 +781,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     else
       {
         result = genericsToReplace.flatMap
-          (t -> t.isOpenGeneric() && t.genericArgument().outer().generics() == f.generics()
+          (t -> t.isOpenGeneric() && t.genericArgument().outer() == f
                 ? t.genericArgument().replaceOpen(actualGenerics)
-                : new List<>(t.applyTypePars(f, actualGenerics)));
+                : new List<>(locally ? t.applyTypeParsLocally(f, actualGenerics, NO_SELECT)
+                                     : t.applyTypePars       (f, actualGenerics           )));
       }
     return result;
   }
@@ -797,7 +806,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
        Errors.any() ||
        feature().generics().sizeMatches(generics()));
 
-    return applyTypePars(feature(), genericsToReplace, generics());
+    return applyTypePars(feature(), genericsToReplace, generics(), false /* NYI: UNDER DEVELOPMENT locally */);
   }
 
 
@@ -1090,7 +1099,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * replace t by the corresponding actual generic parameter from the list
    * provided.
    *
-   * Unlike applyTypePars(), this does not traverse outer types.
+   * Unlike applyTypePars(), this does not traverse outer types or inheritance
+   * calls.
    *
    * @param target the target whose actuals type parameters should be applied to
    * this.
@@ -1122,7 +1132,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * replace t by the corresponding actual generic parameter from the list
    * provided.
    *
-   * Unlike applyTypePars(), this does not traverse outer types.
+   * Unlike applyTypePars(), this does not traverse outer types or inheritance
+   * calls.
    *
    * @param f the feature actualGenerics belong to.
    *
@@ -1148,7 +1159,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * replace t by the corresponding actual generic parameter from the list
    * provided.
    *
-   * Unlike applyTypePars(), this does not traverse outer types.
+   * Unlike applyTypePars(), this does not traverse outer types or inheritance
+   * calls.
    *
    * @param f the feature actualGenerics belong to.
    *
@@ -1221,25 +1233,23 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         case RefType, ValueType ->
           {
             var result = this;
-            var generics = result.generics();
-            var g2 = generics instanceof FormalGenerics.AsActuals aa && aa.actualsOf(f)
-              ? actualGenerics
-              : generics.map(t -> t.applyTypeParsLocally(f, actualGenerics, FuzionConstants.NO_SELECT));
-            var ro = result.outer();
-            var o2 = ro != null ? ro.applyTypeParsLocally(f, actualGenerics, select, feature().outer())
+
+            var g1 = generics();
+            var g2 = applyTypePars(f, g1, actualGenerics, true /* NYI: UNDER DEVELOPMENT locally */);
+            var g3 = cotypeActualGenerics(g2);
+
+            var o1 = outer();
+            var o2 = o1 != null ? o1.applyTypeParsLocally(f, actualGenerics, select, feature().outer())
                                 : null;
 
-            g2 = cotypeActualGenerics(g2);
-
-            if (g2 != result.generics() ||
-                o2 != result.outer()       )
+            if (g3 != g1 || o2 != o1)
               {
                 var hasError = o2 == Types.t_ERROR;
-                for (var t : g2)
+                for (var t : g3)
                   {
                     hasError = hasError || (t == Types.t_ERROR);
                   }
-                result = hasError ? Types.t_ERROR : result.replaceGenericsAndOuter(g2, o2);
+                result = hasError ? Types.t_ERROR : result.replaceGenericsAndOuter(g3, o2);
               }
             yield result;
           }
@@ -2080,7 +2090,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       (tpt.isGenericArgument());
 
     var result = this;
-    if (isGenericArgument())
+    if (isGenericArgument() && tf.isCotype())
       {
         if (genericArgument() == tf.arguments().get(0))
           { // a call of the form `T.f x` where `f` is declared as
@@ -2350,7 +2360,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /**
    * create String representation of the outer of this type
    */
-  private String outerToString(boolean humanReadable)
+  protected String outerToString(boolean humanReadable)
   {
     var o = outer();
     return isThisType()
