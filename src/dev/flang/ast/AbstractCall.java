@@ -225,37 +225,23 @@ public abstract class AbstractCall extends Expr
     var typeParameters = new List<AbstractType>(selfType);
     if (this instanceof Call cpc && cpc.needsToInferTypeParametersFromArgs())
       {
-        var git = cpc._generics.iterator();
-        for (var ignore : cpc.calledFeature().typeArguments())
-          {
-            typeParameters.add(git.hasNext() ? git.next() : Types.t_UNDEFINED);
-          }
+        typeParameters.addAll(actualTypeParameters());
         cpc.whenInferredTypeParameters(() ->
           {
             if (CHECKS) check
               (actualTypeParameters().stream().allMatch(atp -> !atp.containsUndefined(false)));
-            int i = 0;
-            for (var atp : cpc.actualTypeParameters())
+            if (CHECKS) check
+              (Errors.any() || !typeParameters.isFrozen());
+            if (!typeParameters.isFrozen())
               {
-                if (typeParameters.isFrozen())
-                  {
-                    if (CHECKS) check
-                      (Errors.any());
-                  }
-                else
-                  {
-                    typeParameters.set(i+1, that.rebaseTypeForCotype(atp));
-                  }
-                i++;
+                typeParameters.removeTail(1);
+                typeParameters.addAll(actualTypeParameters().map(that::rebaseTypeForCotype));
               }
           });
       }
     else
       {
-        for (var atp : actualTypeParameters())
-          {
-            typeParameters.add(that.rebaseTypeForCotype(atp));
-          }
+        typeParameters.addAll(actualTypeParameters().map(that::rebaseTypeForCotype));
       }
 
     return calledFeature().cotypeInheritanceCall(pos(), typeParameters, res, that, target());

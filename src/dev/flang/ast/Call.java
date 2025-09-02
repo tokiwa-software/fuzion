@@ -2567,10 +2567,6 @@ public class Call extends AbstractCall
             if (needsToInferTypeParametersFromArgs())
               {
                 inferGenericsFromArgs(res, context);
-                for (var r : _whenInferredTypeParameters)
-                  {
-                    r.run();
-                  }
               }
             if (!genericSizesMatch())
               {
@@ -2580,6 +2576,7 @@ public class Call extends AbstractCall
             setActualResultType(res, context);
           }
         resolveTypesOfActuals(res, context);
+        notifyInferred();
 
         result = isErroneous(res)
           ? resolveTypesErrorResult()
@@ -3085,12 +3082,25 @@ public class Call extends AbstractCall
   public void notifyInferred()
   {
     if (PRECONDITIONS) require
-      (!actualTypeParameters().stream().anyMatch(atp -> atp.containsUndefined(false)));
+      (/* NYI: UNDER DEVELOPMENT: This currently fails within loops as in
+
+                    call to (loop.this.i.infix %% 5).ternary ? : --UNDEFINED-- 0 loop.this.n ATP --UNDEFINED-- ./build/modules/base/src/encodings/base32.fz:61:31:
+                          last_n u64 := 0, i %% 5 ?  0 : n
+                                                  ^
+
+          need to check why actualTypeParameters still contain t_UNDEFINED in this case.
+
+          For now, let's just ignore this as long as there is nothing to do anyway, i.e.,
+          as long as `_whenInferredTypeParameters.isEmpty()`.
+       */
+       _whenInferredTypeParameters.isEmpty() ||
+       !actualTypeParameters().stream().anyMatch(atp -> atp.containsUndefined(false)));
 
     for (var r : _whenInferredTypeParameters)
       {
         r.run();
       }
+    _whenInferredTypeParameters = NO_RUNNABLE;
   }
 
 
