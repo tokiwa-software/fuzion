@@ -1726,14 +1726,11 @@ public class Call extends AbstractCall
    */
   private boolean mustReportMissingImmediately(AbstractType rt, boolean[] conflict)
   {
-    var x = _calledFeature != Types.resolved.f_bool_TERNARY;
-      /*
-      !true || (rt == null ||
-             false && !rt.isGenericArgument() ||
-             false && rt.genericArgument().outer().outer() != _calledFeature.outer()) ||
+    var x = (rt == null ||
+        !rt.isGenericArgument() ||
+         rt.genericArgument().outer().outer() != _calledFeature.outer()) ||
          // NYI: CLEANUP: why true, i.e., must report errors, in case of previous errors in the actuals?
-         false && _actuals.stream().anyMatch(a -> a.typeForInferencing() == Types.t_ERROR);
-      */
+         _actuals.stream().anyMatch(a -> a.typeForInferencing() == Types.t_ERROR);
 
     // see test #5391 for when this might happen
     var y = !_calledFeature.hasOpenGenericsArgList() || foundConflicts(conflict);
@@ -3081,14 +3078,13 @@ public class Call extends AbstractCall
 
 
   /**
-   * Notify this call that it is fully inferred.
+   * Notify this call that it all of its type parameters have been inferred.
    */
   public void notifyInferred()
   {
     if (PRECONDITIONS) require
-      (// NYI: CLEANUP: remove this special handling for `bool.ternary ? :` once #5866 is solved
-       _calledFeature == Types.resolved.f_bool_TERNARY ||
-
+      (// NYI: CLEANUP: #5866 breaks this precondition, but there are also other case
+       true ||
        !actualTypeParameters().stream().anyMatch(atp -> atp.containsUndefined(false)));
 
     for (var r : _whenInferredTypeParameters)
