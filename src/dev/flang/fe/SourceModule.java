@@ -804,7 +804,7 @@ part of the (((inner features))) declarations of the corresponding
               }
           }
 
-        // NYI: cleanup: See #462: Remove once sub-directories are loaded
+        // NYI: CLEANUP: See #462: Remove once sub-directories are loaded
         // directly, not implicitly when outer feature is found
         for (var inner : s.values())
           {

@@ -195,7 +195,7 @@ public abstract class Module extends ANY implements FeatureLookup
    * During resolution, load all inner features of f that are defined in
    * separate files within this module.
    *
-   * NYI: cleanup: See #462: Remove once sub-directories are loaded
+   * NYI: CLEANUP: See #462: Remove once sub-directories are loaded
    * directly, not implicitly when outer feature is found
    *
    * @param f the outer feature whose inner features should be loaded from
@@ -315,7 +315,7 @@ public abstract class Module extends ANY implements FeatureLookup
   private boolean redefines(AbstractFeature f1, AbstractFeature f2)
   {
     return this instanceof SourceModule  && f1.redefines().contains(f2) ||
-        !(this instanceof SourceModule) && f1.outer().inheritsFrom(f2.outer()); // NYI: cleanup: #478: better check f1.redefines(f2)
+        !(this instanceof SourceModule) && f1.outer().inheritsFrom(f2.outer()); // NYI: CLEANUP: #478: better check f1.redefines(f2)
   }
 
 
@@ -429,7 +429,7 @@ public abstract class Module extends ANY implements FeatureLookup
 
         if (outer instanceof LibraryFeature olf)
           {
-            // NYI: cleanup: See #462: Remove once sub-directories are loaded
+            // NYI: CLEANUP: See #462: Remove once sub-directories are loaded
             // directly, not implicitly when outer feature is found
             loadInnerFeatures(outer);
 

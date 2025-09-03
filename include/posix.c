@@ -819,7 +819,7 @@ int32_t fzE_mtx_unlock(void * mtx) {
 void fzE_mtx_destroy(void * mtx) {
 #ifdef FUZION_ENABLE_THREADS
   pthread_mutex_destroy((pthread_mutex_t *)mtx);
-  // NYI: free(mtx);
+  // NYI: BUG: free(mtx);
 #else
 #endif
 }
@@ -860,7 +860,7 @@ int32_t fzE_cnd_wait(void * cnd, void * mtx) {
 void fzE_cnd_destroy(void * cnd) {
 #ifdef FUZION_ENABLE_THREADS
   pthread_cond_destroy((pthread_cond_t *)cnd);
-  // NYI: free(cnd);
+  // NYI: BUG: free(cnd);
 #else
 #endif
 }

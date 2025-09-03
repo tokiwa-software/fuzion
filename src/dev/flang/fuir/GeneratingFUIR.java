@@ -2131,7 +2131,7 @@ public class GeneratingFUIR extends FUIR
   @Override
   public LifeTime lifeTime(int cl)
   {
-    throw new Error("NYI");
+    throw new Error("NYI: UNDER DEVELOPMENT: GenFuir.lifeTime");
   }
 
 
@@ -2409,7 +2409,7 @@ public class GeneratingFUIR extends FUIR
   @Override
   public String comment(int s)
   {
-    throw new Error("NYI");
+    throw new Error("NYI: UNDER DEVELOPMENT: GenFuir.lifeTime");
   }
 
 

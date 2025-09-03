@@ -118,7 +118,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
      */
     public RESULT drop(VALUE v, int type)
     {
-      return nop(); // NYI, should be implemented by BEs.
+      return nop(); // NYI: UNDER DEVELOPMENT: should be implemented by BEs.
     }
 
     /**

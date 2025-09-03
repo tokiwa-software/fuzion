@@ -98,7 +98,7 @@ is
     c3 := java.awt.Color.new_III 130 106 175
 
 
-    G2D (g0 Java.java.awt.Graphics, tx, ty, rot f64) ref is  # NYI: #167: 'ref' due to lack of 'like this'
+    G2D (g0 Java.java.awt.Graphics, tx, ty, rot f64) ref is  # NYI: UNDER DEVELOPMENT: #167: 'ref' due to lack of 'like this'
 
       rotate (d f64) => G2D g0 tx ty rot+d
 
@@ -167,7 +167,7 @@ is
           else  # draw logo
             f.setVisible true
 
-            # NYI: cannot redefine Frame.paint, so instead we use a hack: wait for 200ms
+            # NYI: UNDER DEVELOPMENT: cannot redefine Frame.paint, so instead we use a hack: wait for 200ms
             # for the Frame to perform its paint(), and then just draw over it:
             _ := java.lang.Thread.sleep_J 200
             _ := (G2D f.getGraphics 400 400 0).draw_logo
