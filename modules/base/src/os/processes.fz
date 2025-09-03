@@ -52,8 +52,6 @@ public processes (ph os.Process_Handler, public running_processes container.Set 
   pre running_processes.contains p
   =>
     start := time.nano.read
-    # NYI: UNDER DEVELOPMENT: replace polling by signaled waits (POSIX) / events (WIN) or similar.
-    polling_time := time.duration.ms 500
 
     (os.processes ph (running_processes ∖ (container.set_of_ordered [p]))).replace
     # NYI: UNDER DEVELOPMENT: register errors in runtime_errors_effect
@@ -62,6 +60,9 @@ public processes (ph os.Process_Handler, public running_processes container.Set 
     for
       r := fzE_process_wait p.pid
       elapsed_time := time.nano.read-start
+      # NYI: UNDER DEVELOPMENT: replace polling by signaled waits (POSIX) / events (WIN) or similar.
+      # 1ms, 2ms, 4ms, 8ms, 16ms, 32ms,...
+      polling_time := time.duration.ms 1, polling_time*2
     while r < 0 && elapsed_time <= timeout
       time.nano.sleep (min timeout-elapsed_time polling_time)
     else
