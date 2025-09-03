@@ -32,6 +32,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
@@ -268,10 +269,15 @@ public class FrontEnd extends ANY
           }
         _modules.put(m, result);
       }
+    catch (NoSuchFileException io)
+      {
+        Errors.error("Module file " + p.getFileName().toString() + " does not exist.",
+                     "Full path where file was expected: " + p.normalize());
+      }
     catch (IOException io)
       {
-        Errors.error("FrontEnd I/O error when reading module file",
-                     "While trying to read file '"+ p + "' received '" + io + "'");
+        Errors.fatal("FrontEnd I/O error when reading module file",
+                     "While trying to read file '"+ p.normalize() + "' received '" + io + "'");
       }
     return result;
   }
