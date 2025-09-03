@@ -52,8 +52,8 @@ is
   public entry(i i32) : property.orderable is
 
 
-    key => ks[i]
-    val => vs[i]
+    public key OK => ks[i]
+    public val V  => vs[i]
 
 
     # total order over entries.
