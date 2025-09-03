@@ -722,13 +722,16 @@ int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLe
 // wait for process to finish
 // returns exit code or -1 on wait-failure.
 int64_t fzE_process_wait(int64_t p){
+
+  assert(p>0);
+
   int status;
-  return set_last_error(waitpid(p, &status, WUNTRACED | WCONTINUED)) == -1
-    ? -1
-    : WIFEXITED(status)
+  int ret = waitpid(p, &status, WNOHANG);
+  assert(ret >= 0);
+  return ret > 0 && WIFEXITED(status)
     // man waitpid: "This macro should be employed only if WIFEXITED returned true."
     ? WEXITSTATUS(status)
-    : 1;
+    : -1;
 }
 
 

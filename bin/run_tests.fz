@@ -59,6 +59,10 @@ envir_vars :=
       .map x->x.1
       .as_array))
 
+# max time a test may take
+#
+max_test_time := (time.duration.min 10)
+
 # helper to get out, err, exit_code from started process
 #
 record_process(
@@ -79,7 +83,7 @@ record_process(
             e error => panic "failed reading stderr from $cmd, error is: $e"
             err String => err
 
-      match p.wait
+      match p.wait max_test_time
         e error => panic "failed waiting for $cmd, error is: $e"
         ec u32 => process_result fout.get ferr.get ec)
     .get

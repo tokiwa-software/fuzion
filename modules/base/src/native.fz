@@ -229,7 +229,7 @@ module fzE_process_create(
 
 # wait for process to exit
 #
-module fzE_process_wait(p i64) i64 => native
+module fzE_process_wait(process i64) i64 => native
 
 
 # returns -1 on error, 0 on end_of_file, number of read bytes otherwise.
