@@ -770,23 +770,14 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       (Errors.any() ||
        f.generics().sizeMatches(actualGenerics));
 
-    List<AbstractType> result;
-    if (genericsToReplace instanceof FormalGenerics.AsActuals aa && aa.actualsOf(f))  /* shortcut for properly handling open generics list */
-      {
-        result = actualGenerics;
-      }
-    else
-      {
-        result = genericsToReplace.flatMap
-          (t -> {
-            var tp = t.matchingTypeParameter(f);
-            return (tp != null && tp.isOpenTypeParameter())
-                ? tp.replaceOpen(actualGenerics)
-                : new List<>(locally ? t.applyTypeParsLocally(f, actualGenerics, NO_SELECT)
-                                     : t.applyTypePars       (f, actualGenerics           ));
-          });
-      }
-    return result;
+    return genericsToReplace.flatMap
+      (t -> {
+        var tp = t.matchingTypeParameter(f);
+        return (tp != null && tp.isOpenTypeParameter())
+          ? tp.replaceOpen(actualGenerics)
+          : new List<>(locally ? t.applyTypeParsLocally(f, actualGenerics, NO_SELECT)
+                               : t.applyTypePars       (f, actualGenerics           ));
+      });
   }
 
 
