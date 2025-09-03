@@ -2156,8 +2156,9 @@ public class Call extends AbstractCall
                 if (nt == Types.t_ERROR)
                   {
                     conflict[i] = true;
+                    nt = Types.t_UNDEFINED;
                   }
-                _generics = _generics.setOrClone(i, nt == Types.t_ERROR ? Types.t_UNDEFINED : nt);
+                _generics = _generics.setOrClone(i, nt);
                 addPair(foundAt, i, pos, actualType);
               }
           }
@@ -3077,23 +3078,14 @@ public class Call extends AbstractCall
 
 
   /**
-   * Notify this call that it is fully inferred.
+   * Notify this call that it all of its type parameters have been inferred.
    */
   public void notifyInferred()
   {
     if (PRECONDITIONS) require
-      (/* NYI: UNDER DEVELOPMENT: This currently fails within loops as in
-
-                    call to (loop.this.i.infix %% 5).ternary ? : --UNDEFINED-- 0 loop.this.n ATP --UNDEFINED-- ./build/modules/base/src/encodings/base32.fz:61:31:
-                          last_n u64 := 0, i %% 5 ?  0 : n
-                                                  ^
-
-          need to check why actualTypeParameters still contain t_UNDEFINED in this case.
-
-          For now, let's just ignore this as long as there is nothing to do anyway, i.e.,
-          as long as `_whenInferredTypeParameters.isEmpty()`.
-       */
-       _whenInferredTypeParameters.isEmpty() ||
+      (// NYI: CLEANUP: #5866 breaks this precondition, but there are also other cases where
+       // the actuals still contain t_UNDEFINED that still need to be checked.
+       true ||
        !actualTypeParameters().stream().anyMatch(atp -> atp.containsUndefined(false)));
 
     for (var r : _whenInferredTypeParameters)
