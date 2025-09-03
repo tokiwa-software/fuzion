@@ -5,6 +5,7 @@ pipeline {
     DOCS_DEPLOY_HOST  = "fuzion-lang.dev"
     DOCS_DEPLOY_USER  = "deploy_docs"
     DOCS_DEPLOY_DEST  = "/home/deploy_docs/docs_git/"
+    SRC_DEPLOY_DEST  = "/home/deploy_docs/src_git/"
     SSH_CRED_ID  = "flangdev-ssh"
   }
 
@@ -22,18 +23,20 @@ pipeline {
         sh '''
           cid=$(docker create "$IMAGE_NAME")
           mkdir -p docs_out
-          docker cp "$cid":/fuzion/apidocs/ .
+          docker cp "$cid":/fuzion/apidocs_git/ .
           docker rm "$cid"
         '''
       }
     }
 
-    stage('Deploy docs') {
+    stage('Deploy docs and src') {
       steps {
         sshagent(credentials: [env.SSH_CRED_ID]) {
           sh '''
             rsync -az --delete --delete-delay --delay-updates \
-              ./apidocs/ "${DOCS_DEPLOY_USER}@${DOCS_DEPLOY_HOST}:${DOCS_DEPLOY_DEST}"
+              ./apidocs_git/ "${DOCS_DEPLOY_USER}@${DOCS_DEPLOY_HOST}:${DOCS_DEPLOY_DEST}"
+            rsync -az --delete --delete-delay --delay-updates \
+              ./modules/ "${DOCS_DEPLOY_USER}@${DOCS_DEPLOY_HOST}:${SRC_DEPLOY_DEST}"
           '''
         }
       }
