@@ -1726,11 +1726,14 @@ public class Call extends AbstractCall
    */
   private boolean mustReportMissingImmediately(AbstractType rt, boolean[] conflict)
   {
-    var x = (rt == null ||
-        !rt.isGenericArgument() ||
-         rt.genericArgument().outer().outer() != _calledFeature.outer()) ||
+    var x = _calledFeature != Types.resolved.f_bool_TERNARY;
+      /*
+      !true || (rt == null ||
+             false && !rt.isGenericArgument() ||
+             false && rt.genericArgument().outer().outer() != _calledFeature.outer()) ||
          // NYI: CLEANUP: why true, i.e., must report errors, in case of previous errors in the actuals?
-         _actuals.stream().anyMatch(a -> a.typeForInferencing() == Types.t_ERROR);
+         false && _actuals.stream().anyMatch(a -> a.typeForInferencing() == Types.t_ERROR);
+      */
 
     // see test #5391 for when this might happen
     var y = !_calledFeature.hasOpenGenericsArgList() || foundConflicts(conflict);
@@ -2156,8 +2159,9 @@ public class Call extends AbstractCall
                 if (nt == Types.t_ERROR)
                   {
                     conflict[i] = true;
+                    nt = Types.t_UNDEFINED;
                   }
-                _generics = _generics.setOrClone(i, nt == Types.t_ERROR ? Types.t_UNDEFINED : nt);
+                _generics = _generics.setOrClone(i, nt);
                 addPair(foundAt, i, pos, actualType);
               }
           }
@@ -3082,18 +3086,9 @@ public class Call extends AbstractCall
   public void notifyInferred()
   {
     if (PRECONDITIONS) require
-      (/* NYI: UNDER DEVELOPMENT: This currently fails within loops as in
+      (// NYI: CLEANUP: remove this special handling for `bool.ternary ? :` once #5866 is solved
+       _calledFeature == Types.resolved.f_bool_TERNARY ||
 
-                    call to (loop.this.i.infix %% 5).ternary ? : --UNDEFINED-- 0 loop.this.n ATP --UNDEFINED-- ./build/modules/base/src/encodings/base32.fz:61:31:
-                          last_n u64 := 0, i %% 5 ?  0 : n
-                                                  ^
-
-          need to check why actualTypeParameters still contain t_UNDEFINED in this case.
-
-          For now, let's just ignore this as long as there is nothing to do anyway, i.e.,
-          as long as `_whenInferredTypeParameters.isEmpty()`.
-       */
-       _whenInferredTypeParameters.isEmpty() ||
        !actualTypeParameters().stream().anyMatch(atp -> atp.containsUndefined(false)));
 
     for (var r : _whenInferredTypeParameters)
