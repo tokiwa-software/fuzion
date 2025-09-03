@@ -127,6 +127,18 @@ macOS) exist and can be used in some cases.
 
 `strace` can be used to find blocking system calls.
 
+==== Java Flight Recorder (JFR) / Java Mission Control
+
+Profile by setting FUZION_JAVA_OPTIONS e.g. like:
+[source,bash]
+----
+FUZION_JAVA_OPTIONS=-XX:StartFlightRecording=filename=recording.jfr,settings=profile fz test.fz
+----
+
+Then use Java Mission Control to inspect to generated file recording.jfr. One source to download precompiled JMC from is Azul:
+https://www.azul.com/products/components/azul-mission-control/#downloads
+
+
 == Fuzion-specific Tooling
 
 === Increased Verbosity
