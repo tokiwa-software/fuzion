@@ -25,10 +25,10 @@
 
 # bitset -- persistent set of unsigned integers
 #
-private:public bitset : choice nil          # empty bitset
-                               u64          # unit bitset
-                               (array bool) # general
-                        , property.equatable
+public bitset : choice nil          # empty bitset
+                       u64          # unit bitset
+                       (array bool) # general
+                , property.equatable
 is
 
   # test if the given bit is part of this bitset
