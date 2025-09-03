@@ -33,7 +33,7 @@
 # For performance, this implementation uses mutable state. It can consequently
 # only be used as an effect (oneway_monad).
 #
-private:public handles2(
+private /* NYI: CLEANUP: remove eventually */ handles2(
   T, X type,
 
   # the inner value of this monad

@@ -54,7 +54,7 @@
 # given to other features, only values can. handles essentially provide an
 # abstraction of pointers, implemented natively in Fuzion.
 #
-private:public handles(
+private /* NYI: CLEANUP: remove eventually */ handles(
   T, X type,
 
   # the inner value of this monad
@@ -181,12 +181,12 @@ public handles(T type, rr ()->unit) unit =>
 
 # short-hand for creating an empty set of handles of given type.
 #
-public handles_(T type) handles T unit => handles unit (array T 0 x->do) oneway_monad_mode.plain
+handles_(T type) handles T unit => handles unit (array T 0 x->do) oneway_monad_mode.plain
 
 
 # short-hand for accessing handles monad for given type in current environment
 #
-public handles(T type) handles T unit =>
+handles(T type) handles T unit =>
   (handles_type T).install_default
   (handles T unit).env
 
