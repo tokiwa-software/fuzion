@@ -1275,6 +1275,10 @@ $(BUILD_DIR)/apidocs/index.html: $(FUZION_BASE) $(CLASS_FILES_TOOLS_DOCS) $(FUZI
 	$(JAVA) --class-path $(CLASSES_DIR) -Xss64m -Dfuzion.home=$(BUILD_DIR) dev.flang.tools.docs.Docs -bare -api-src=/api $(@D)
 
 # NYI: UNDER DEVELOPMENT: integrate into fz: fz -docs
+$(BUILD_DIR)/apidocs_git/index.html: $(FUZION_BASE) $(CLASS_FILES_TOOLS_DOCS) $(FUZION_FILES) $(MOD_FZ_CMD)
+	$(JAVA) --class-path $(CLASSES_DIR) -Xss64m -Dfuzion.home=$(BUILD_DIR) dev.flang.tools.docs.Docs -bare -docs-root=/docs_git -api-src=/api_git $(@D)
+
+# NYI: UNDER DEVELOPMENT: integrate into fz: fz -docs
 .phony: debug_api_docs
 debug_api_docs: $(FUZION_BASE) $(CLASS_FILES_TOOLS_DOCS)
 	mkdir -p $(BUILD_DIR)/debugdocs
