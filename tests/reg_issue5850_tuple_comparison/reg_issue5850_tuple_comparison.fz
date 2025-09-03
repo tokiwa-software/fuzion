@@ -1,0 +1,96 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue5850_tuple_comparison
+#
+# -----------------------------------------------------------------------
+
+# test comparing of tuples
+#
+reg_issue5850_tuple_comparison =>
+
+  # the original example from #5850
+  #
+  ex =>
+    a := (1,2)
+    b := (1,3)
+    say a=a
+    say a=b
+
+  say ""
+  say "original example, should print `true` and `false`"
+  ex
+
+  # a more complex example
+  twelve_tuples := [ (123, "abc", "false"),
+                     (123, "abc", "true "),
+                     (123, "abc", "true "),
+                     (456, "def", "false"),
+                     (789, "ghi", "true "),
+                     (123, "abc", "false"),
+                     (123, "abd", "false"),
+                     (123, "abd", "true "),
+                     (122, "abc", "false"),
+                     (122, "abc", "true "),
+                     (124, "abc", "false"),
+                     (124, "abc", "true ") ]
+  tuples := twelve_tuples.unique.as_array
+
+  c => container
+
+  say ""
+  say "more complex example: "
+
+  say ""
+  say "first, let's see if dedup and unique work, should print 12, 11 and 10: "
+  say twelve_tuples.count
+  say twelve_tuples.dedup.count
+  say tuples.count
+
+  say ""
+  say "check if tuples is sorted (expecting `false`): {tuples.is_sorted}"
+
+  say ""
+  say "creating map from tuples to their indices:"
+  map1 := c.ordered_map tuples tuples.indices
+  say map1
+  say "map1 sorted (expecting `true`): {map1.sorted_entries.map (.key) .is_sorted}"
+
+  say ""
+  say "show sorted keys from map, should be sorted:"
+  say (map1.sorted_entries .map (.key))
+
+  say ""
+  say "show sorted values from map, should be mixed:"
+  say (map1.sorted_entries .map (.val))
+
+  say ""
+  say "while keys from sorted entries now have a different order than tuples:"
+  say "map1 keys equals original tuples (expecting `false`): {map1.sorted_entries.map (.key) .zip tuples (=) .fold bool.all}"
+
+  say ""
+  say "now, creating a map inverting values and keys, i.e., sorted by the original indices"
+  map2 := c.ordered_map map1.values map1.keys
+  say map2
+
+  say ""
+  say "printing the sorted values"
+  say (map2.sorted_entries .map (.val))
+  say "map2 sorted (expecting `false`): {map2.sorted_entries.map (.val) .is_sorted}"
+  say "map2 values equals original tuples (expecting `true`): {map2.sorted_entries.map (.val) .zip tuples (=) .fold bool.all}"
