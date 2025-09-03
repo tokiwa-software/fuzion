@@ -3083,7 +3083,8 @@ public class Call extends AbstractCall
   public void notifyInferred()
   {
     if (PRECONDITIONS) require
-      (// NYI: CLEANUP: #5866 breaks this precondition, but there are also other case
+      (// NYI: CLEANUP: #5866 breaks this precondition, but there are also other cases where
+       // the actuals still contain t_UNDEFINED that still need to be checked.
        true ||
        !actualTypeParameters().stream().anyMatch(atp -> atp.containsUndefined(false)));
 
