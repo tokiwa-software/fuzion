@@ -1302,7 +1302,7 @@ logo: $(BUILD_DIR)/assets/logo.svg $(BUILD_DIR)/assets/logo_bleed.svg $(BUILD_DI
 	cp $^ $(FZ_SRC)/assets/
 
 $(BUILD_DIR)/bin/run_tests: $(FZ) $(FZ_MODULES)
-	fz -modules=lock_free -c $(FZ_SRC)/bin/run_tests.fz -o=$@
+	$(FZ) -modules=lock_free -c $(FZ_SRC)/bin/run_tests.fz -o=$@
 
 # phony target to run Fuzion tests and report number of failures
 .PHONY: run_tests
