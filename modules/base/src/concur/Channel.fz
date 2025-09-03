@@ -48,7 +48,7 @@ public Channel(T type/*, buf_size i32*/) ref : Iterator T, Sending_Channel T, Re
   #
   public redef close unit =>
     bq.close
-    # NYI free/dispose cnd
+    # NYI: BUG: free/dispose cnd
 
 
   # returns nil when Channel is closed and empty

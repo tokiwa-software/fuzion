@@ -36,7 +36,7 @@ wolfSSL_CTX_free(ssl Native_Ref) unit => native
 wolfSSL_Cleanup unit => native
 
 
-# NYI define effect
+# NYI: UNDER DEVELOPMENT: define effect
 public wolfssl(T type, LM type : mutate, LM2 type: mutate, code ()->T) T ! LM, LM2 =>
 
 

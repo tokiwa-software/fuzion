@@ -102,7 +102,7 @@ public Clock ref : effect is
   #
   # return the number of times the `code` was run.
   #
-  public run_periodic(P type : Period,
+  public run_periodic(P type : time.Period,
                       first time.instant,
                       period P,
                       last time.instant,

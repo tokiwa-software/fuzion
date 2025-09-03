@@ -766,7 +766,7 @@ $(MOD_JAVA_DATATRANSFER_FZ_FILES): $(FZJAVA)
 	mkdir -p $(@D)
 # wrapping in /bin/sh -c "..." is a workaround for building on windows (msys2)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) java.datatransfer -to=$(@D) -modules=java.base,java.xml -verbose=0"
-# NYI: cleanup: see #462: manually move these features to the main directory
+# NYI: CLEANUP: see #462: manually move these features to the main directory
 # since otherwise they would not be found automatically.
 	mv $(BUILD_DIR)/modules/java.datatransfer/Java/sun/datatransfer_pkg.fz $(BUILD_DIR)/modules/java.datatransfer/
 	mv $(BUILD_DIR)/modules/java.datatransfer/Java/java/awt_pkg.fz  $(BUILD_DIR)/modules/java.datatransfer/
@@ -777,7 +777,7 @@ $(MOD_JAVA_DESKTOP_FZ_FILES): $(FZJAVA)
 	mkdir -p $(@D)
 # wrapping in /bin/sh -c "..." is a workaround for building on windows (msys2)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) java.desktop -to=$(@D) -modules=java.base,java.xml,java.datatransfer -verbose=0"
-# NYI: cleanup: see #462: manually move these features to the main directory
+# NYI: CLEANUP: see #462: manually move these features to the main directory
 # since otherwise they would not be found automatically.
 	mv $(BUILD_DIR)/modules/java.desktop/Java/com/sun/*.fz $(BUILD_DIR)/modules/java.desktop/
 	mv $(BUILD_DIR)/modules/java.desktop/Java/java/*.fz $(BUILD_DIR)/modules/java.desktop/
@@ -1410,8 +1410,8 @@ spellcheck:
 # currently only code in bin/ and examples/ are checked.
 .PHONY: syntaxcheck
 syntaxcheck: min-java
-	find ./examples/ -name '*.fz' -print0 | xargs -0L1 $(FZ) -modules=terminal,clang,java.base,java.datatransfer,java.xml,java.desktop -noBackend
-	find ./bin/ -name '*.fz' -print0 | xargs -0L1 $(FZ) -modules=terminal,clang,java.base,java.datatransfer,java.xml,java.desktop -noBackend
+	find ./examples/ -name '*.fz' -print0 | xargs -0L1 $(FZ) -modules=terminal,clang,lock_free,java.base,java.datatransfer,java.xml,java.desktop -noBackend
+	find ./bin/ -name '*.fz' -print0 | xargs -0L1 $(FZ) -modules=terminal,clang,lock_free,java.base,java.datatransfer,java.xml,java.desktop -noBackend
 
 .PHONY: add_simple_test
 add_simple_test: no-java

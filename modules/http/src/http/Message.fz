@@ -33,15 +33,15 @@ public Message ref is
   # header fields with all lower case
   public header http.canonical_header_map => abstract
 
-  # NYI: can only be called once
+  # NYI: BUG: can only be called once
   # body of the message, if it has one
   # public body option (Sequence u8) => abstract
   public body io.Read_Handler => abstract
 
-  # NYI: can only be called once
+  # NYI: BUG: can only be called once
   # the whole message as a sequence of bytes
   public bytes Sequence u8 =>
-    # NYI BUG, read fully
+    # NYI: BUG: read fully
     (start_line + header.as_string + crlf).utf8 ++ (match (body.read 1E6)
                                                 a array u8 => a
                                                 * => [])
@@ -49,7 +49,7 @@ public Message ref is
   # String representation of the message header
   public redef as_string String => start_line + header.as_string + crlf
 
-  # NYI: can only be called once
+  # NYI: BUG: can only be called once
   # String representation of the message header
   public as_string_with_body String => start_line + header.as_string + crlf
 

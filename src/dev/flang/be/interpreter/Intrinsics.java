@@ -416,7 +416,7 @@ public class Intrinsics extends ANY
             case c_i64  -> Long     .valueOf(args.get(1).i64Value());
             case c_i8   -> Byte     .valueOf((byte)args.get(1).i8Value());
             case c_u16  -> Character.valueOf((char)args.get(1).u16Value());
-            default -> throw new Error("NYI");
+            default -> throw new Error("NYI: BUG: primitive_to_java_object not implemented for " + executor.fuir().clazzAsString(executor.fuir().clazzActualGeneric(innerClazz, 0)));
           };
           return new JavaRef(res);
         });
