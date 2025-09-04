@@ -1305,7 +1305,7 @@ $(BUILD_DIR)/unicode_data.fz: $(CLASS_FILES_UTIL_UNICODE) $(BUILD_DIR)/UnicodeDa
 logo: $(BUILD_DIR)/assets/logo.svg $(BUILD_DIR)/assets/logo_bleed.svg $(BUILD_DIR)/assets/logo_bleed_cropmark.svg
 	cp $^ $(FZ_SRC)/assets/
 
-$(BUILD_DIR)/bin/run_tests: $(FZ) $(FZ_MODULES)
+$(BUILD_DIR)/bin/run_tests: $(FZ) $(FZ_MODULES) $(FZ_SRC)/bin/run_tests.fz
 	$(FZ) -modules=lock_free -c $(FZ_SRC)/bin/run_tests.fz -o=$@
 
 # phony target to run Fuzion tests and report number of failures
