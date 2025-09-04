@@ -368,7 +368,7 @@ public class Value extends Val
   Val readFieldFromInstance(DFA dfa, int field, int site, Context why)
   {
     var rt = dfa._fuir.clazzResultClazz(field);
-    if (dfa._reportResults && !dfa._fuir.clazzIsUnitType(rt) && !Errors.any())
+    if (dfa._reportResults && !dfa._fuir.clazzIsUnitType(rt) && !Errors.any() && !dfa._fuir.clazzIsUnitType(rt))
       {
         throw new Error("Value.readField '"+dfa._fuir.clazzAsString(field)+"' called on class " + this + " (" + getClass() + "), expected " + Instance.class +
                         " field type " + dfa._fuir.clazzAsString(rt) + " in "+this);

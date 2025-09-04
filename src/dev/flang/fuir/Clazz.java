@@ -759,6 +759,10 @@ class Clazz extends ANY implements Comparable<Clazz>
   boolean isUnitType()
   {
     var res = _isUnitType;
+    if (_specialClazzId == SpecialClazzes.c_unit)
+      {
+        res = YesNo.yes;
+      }
     if (res == YesNo.dontKnow)
       {
         res = YesNo.no;
