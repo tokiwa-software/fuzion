@@ -107,7 +107,7 @@ public class ANY
         p = p.resolve(fn);
         if (Files.exists(p))
           {
-            try (Stream<String> lines = Files.lines(p))
+            try (var lines = Files.lines(p))
               {
                 var l = lines.skip(ln-1)
                              .map(str -> str.trim())
