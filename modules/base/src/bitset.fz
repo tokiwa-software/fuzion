@@ -26,7 +26,7 @@
 # bitset -- persistent set of unsigned integers
 #
 public bitset : choice nil          # empty bitset
-                       u64          # unit bitset
+                       u64          # bitset with one element
                        (array bool) # general
                 , property.equatable
 is

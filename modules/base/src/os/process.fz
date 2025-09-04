@@ -161,8 +161,14 @@ module:public process(public pid i64, module std_in, std_out, std_err i64) : pro
   # wait for this process
   #
   public wait outcome u32 =>
+    wait time.duration.max
+
+
+  # wait for this process
+  #
+  public wait(timeout time.duration) outcome u32 =>
     # NYI: process should be ref?
-    os.processes.wait (os.process pid std_in std_out std_err)
+    os.processes.wait (os.process pid std_in std_out std_err) timeout
 
 
   # send signal to process

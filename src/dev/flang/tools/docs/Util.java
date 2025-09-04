@@ -106,7 +106,10 @@ public class Util
         return Files.readAllLines(Path.of(uri), StandardCharsets.UTF_8)
           .stream()
           .dropWhile(l -> !l.startsWith("# universe is the mother"))
-          .map(l -> l.replaceAll("^#", "").trim())
+          .map(l -> l.trim())
+          .map(l -> l
+            .replaceAll("^#", "")
+            .replaceAll("^ ", ""))
           .collect(Collectors.joining(System.lineSeparator()))
           .trim();
       }
