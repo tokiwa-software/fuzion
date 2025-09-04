@@ -38,18 +38,18 @@ reg_issue5850_tuple_comparison =>
   ex
 
   # a more complex example
-  twelve_tuples := [ (123, "abc", "false"),
-                     (123, "abc", "true "),
-                     (123, "abc", "true "),
-                     (456, "def", "false"),
-                     (789, "ghi", "true "),
-                     (123, "abc", "false"),
-                     (123, "abd", "false"),
-                     (123, "abd", "true "),
-                     (122, "abc", "false"),
-                     (122, "abc", "true "),
-                     (124, "abc", "false"),
-                     (124, "abc", "true ") ]
+  twelve_tuples := [ (123, "abc", unit, "false"),
+                     (123, "abc", unit, "true "),
+                     (123, "abc", unit, "true "),
+                     (456, "def", unit, "false"),
+                     (789, "ghi", unit, "true "),
+                     (123, "abc", unit, "false"),
+                     (123, "abd", unit, "false"),
+                     (123, "abd", unit, "true "),
+                     (122, "abc", unit, "false"),
+                     (122, "abc", unit, "true "),
+                     (124, "abc", unit, "false"),
+                     (124, "abc", unit, "true ") ]
   tuples := twelve_tuples.unique.as_array
 
   c => container
