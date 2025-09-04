@@ -26,8 +26,13 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.util;
 
+import java.io.IOException;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
+
+import java.util.Arrays;
+
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -61,6 +66,18 @@ public class ANY
   public static final String FUZION_COMMAND_PROPERTY = "fuzion.command";
 
 
+  /**
+   * Where to find most of our Java sources?
+   */
+  public static final Path _mainSourceDir = Path.of(Version.REPO_PATH).resolve("src");
+
+
+  /**
+   * Additional directories to search for Java sources can be added to this list:
+   */
+  public static final List<Path> _sourceDirs = new List<>(_mainSourceDir);
+
+
   /*-----------------------------  methods  -----------------------------*/
 
 
@@ -74,18 +91,40 @@ public class ANY
       {
         return "Unknown origin.";
       }
-    try (Stream<String> lines = Files.lines(Path.of(Version.REPO_PATH).resolve("src").resolve(st[2].getClassName().replaceAll("\\.", "/") + ".java")))
+    var fn = st[2].getFileName();
+    var ln = st[2].getLineNumber();
+    var cn = st[2].getClassName();
+    var res = fn + ":" + ln;
+    var pkgscl = cn.split("\\.");
+    var pkgs = Arrays.copyOf(pkgscl, pkgscl.length-1);
+    for (var dir : _sourceDirs)
       {
-        var l = lines.skip(st[2].getLineNumber()-1).map(str -> str.trim()).collect(Collectors.toList());
-        return st[2].getFileName() + ":" + st[2].getLineNumber() + Terminal.BLUE + " \""
-          + l.stream().limit(Math.min(l.stream().takeWhile(s->!s.endsWith(");")).count()+1,7))
-            .collect(Collectors.joining(" ")) + "\""
-          + Terminal.REGULAR_COLOR;
+        var p = dir;
+        for (var pkg : pkgs)
+          {
+            p = p.resolve(pkg);
+          }
+        p = p.resolve(fn);
+        if (Files.exists(p))
+          {
+            try (Stream<String> lines = Files.lines(p))
+              {
+                var l = lines.skip(ln-1)
+                             .map(str -> str.trim())
+                             .limit(7)
+                             .collect(Collectors.toList());
+                var n = l.stream().takeWhile(s -> !s.endsWith(");")).count()+1;
+                var cond = l.stream().limit(n)
+                            .collect(Collectors.joining(" "));
+                return res + Terminal.BLUE + " \"" + cond + "\"" + Terminal.REGULAR_COLOR;
+              }
+            catch (IOException e)
+              {
+                Errors.warning("got " + e + " when reading source file: " + p);
+              }
+          }
       }
-    catch (Exception e)
-      {
-        return st[2].getFileName() + ":" + st[2].getLineNumber();
-      }
+    return res;
   }
 
 
