@@ -273,6 +273,9 @@ public class Function extends AbstractLambda
     AbstractType result = inferResultType ? Types.t_UNDEFINED : t;
     if (_call == null)
       {
+        // fixes #5854
+        _resultTypeLastResort = ()->{};
+
         if (!t.isFunctionType())
           {
             // suppress error for t_UNDEFINED, but only if other error was already reported
