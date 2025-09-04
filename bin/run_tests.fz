@@ -209,9 +209,7 @@ main =>
     else
 
       res, elapsed_time := time.stopwatch process_result ()->
-        # NYI: UNDER DEVELOPMENT: use fuzion to do the timeout
-        with_to := if is_windows then "" else "timeout --kill-after=600s 600s "
-        !!"{with_to}make $target --environment-overrides --directory=$test"
+        !!"make $target --environment-overrides --directory=$test"
 
       test_durations.put test elapsed_time
 
