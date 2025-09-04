@@ -270,7 +270,7 @@ public class OptimizedFUIR extends GeneratingFUIR {
    */
   private boolean invalidSite(int s)
   {
-    return !withinCode(s) || !_accessedSites.contains(s);
+    return !withinCode(s);
   }
 
 
