@@ -758,45 +758,40 @@ class Clazz extends ANY implements Comparable<Clazz>
    */
   boolean isUnitType()
   {
-    if (_isUnitType != YesNo.dontKnow)
+    var res = _isUnitType;
+    if (res == YesNo.dontKnow)
       {
-        return _isUnitType == YesNo.yes;
-      }
-
-    var res = YesNo.no;
-    if (_specialClazzId == SpecialClazzes.c_unit)
-      {
-        res = YesNo.yes;
-      }
-    else if ( _fuir._lookupDone && (isValue()                       &&
-                                    !feature().isBuiltInPrimitive() &&
-                                    !isVoidType()                   &&
-                                    !isChoice()                       ))
-      {
-        // Tricky: To avoid endless recursion, we set _isUnitType to No. In case we
-        // have a recursive type, isUnitType() will return false, so recursion will
-        // stop and the result for the recursive type will be false.
-        //
-        // Object layout will later report an error for this case. (NYI: check this with a test!)
-        _isUnitType = YesNo.no;
-
-        res = YesNo.yes;
-
-        // NOTE: We cannot use {@code for (var i : _inner)} since {@code resultClazz} may
-        // add inner clazzes even if lookupDone() is set.
-        for (var ix = 0; ix < _inner.size(); ix++)
+        res = YesNo.no;
+        if ( _fuir._lookupDone && (isValue()                       &&
+                                   !feature().isBuiltInPrimitive() &&
+                                   !isVoidType()                   &&
+                                   !isChoice()                       ))
           {
-            var i = _inner.get(ix);
-            res =
-              i.clazzKind() != IR.FeatureKind.Field ||
-              i.resultClazz().isUnitType()             ? res
-                                                       : YesNo.no;
+            // Tricky: To avoid endless recursion, we set _isUnitType to No. In case we
+            // have a recursive type, isUnitType() will return false, so recursion will
+            // stop and the result for the recursive type will be false.
+            //
+            // Object layout will later report an error for this case. (NYI: check this with a test!)
+            _isUnitType = YesNo.no;
+
+            res = YesNo.yes;
+
+            // NOTE: We cannot use {@code for (var i : _inner)} since {@code resultClazz} may
+            // add inner clazzes even if lookupDone() is set.
+            for (var ix = 0; ix < _inner.size(); ix++)
+              {
+                var i = _inner.get(ix);
+                res =
+                  i.clazzKind() != IR.FeatureKind.Field ||
+                  i.resultClazz().isUnitType()             ? res
+                                                           : YesNo.no;
+              }
+            _isUnitType = YesNo.dontKnow;
           }
-        _isUnitType = YesNo.dontKnow;
-      }
-    if (_fuir._lookupDone)
-      {
-        _isUnitType = res;
+        if (_fuir._lookupDone)
+          {
+            _isUnitType = res;
+          }
       }
     return res == YesNo.yes;
   }
