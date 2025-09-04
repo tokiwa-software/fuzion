@@ -28,17 +28,17 @@
 public hash_map(
         public HK type : property.hashable,
         public V  type,
-        ks array HK,
-        vs array V) : Map HK V
+        ks Sequence HK,
+        vs Sequence V) : Map HK V
   pre
-    ks.length = vs.length
+    ks.count = vs.count
 
 is
 
 
   # number of entries in this map
   #
-  public redef size i32 => ks.length
+  public redef size i32 => ks.count
 
 
   # size of allocated contents array, allows for some empty slots

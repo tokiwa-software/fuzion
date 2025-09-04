@@ -120,7 +120,9 @@
 #
 public tuple(public A type...,
              public values A...
-             ) : property.orderable is
+             ) : property.orderable,
+                 property.hashable
+is
 
 
   # equality of two tuple `a` and `b` is defined only if all elements of the tuple
@@ -141,13 +143,53 @@ public tuple(public A type...,
   # the `i+1`th element pair.
   #
   # This will result in a runtime `panic` in case any element type is not orderable.
-    #
+  #
   public redef type.lteq(a, b tuple.this) bool
   =>
     # NYI: BUG: omitting type parameters results in crash (Unimplemented method 'generics' in ThisType):
     # a.values.typed_zip_and_fold b.values true (tuple_zip_lteq tuple.this)
 
     a.values.typed_zip_and_fold i32 (tuple_zip_lteq tuple.this) b.values 0 (tuple_zip_lteq tuple.this) <= 0
+
+
+  # create hash code for this tuple
+  #
+  # This should satisfy the following condition:
+  #
+  #   (T.equality a b) : (T.hash_code a = T.hash_code b)
+  #
+  # This will result in a compile-time `panic` in case any element type is not hashable.
+  #
+  # The algorithm used here is a variation of (XXXHash)[https://xxhash.com] as used in
+  # (Python's tuple)[https://github.com/python/cpython/blob/849a80ec412c36bbca5d400a7db5645b8cf54f1f/Objects/tupleobject.c#L305]:
+  #
+  #   we start with a constant `hash_prime1`
+  #   for each value:
+  #     we take its hash code * `hash_prime2` and add it
+  #     then we rotate by `hash_rotate`
+  #     and multiply by `hash_prime3`
+  #
+  public redef fixed type.hash_code(a tuple.this) u64 : container.typed_fold xxh_prime_5 a.values
+  =>
+    public redef apply(T type, h u64, v T) u64
+    =>
+      if T : property.hashable then
+        h2 := h +° T.hash_code v *° xxh_prime_2
+        h3 := (h2 << xxh_rotate) | (h2 >> (u64 64 - xxh_rotate))
+        h3 *° xxh_prime_1
+      else
+        compile_time_panic  # tuple is not hashable since one element type is not
+    res
+
+
+  # XXH constants from https://xxhash.com/doc/v0.8.3/group___x_x_h64__impl.html
+  #
+  private type.xxh_prime_1 => u64 0x9E3779B185EBCA87  # factor after each value's hash code was added and result was rotated
+  private type.xxh_prime_2 => u64 0xC2B2AE3D27D4EB4F  # factor for adding hash code of values
+  private type.xxh_prime_3 => u64 0x165667B19E3779F9  # not needed here
+  private type.xxh_prime_4 => u64 0x85EBCA77C2B2AE63  # not needed here
+  private type.xxh_prime_5 => u64 0x27D4EB2F165667C5  # initial hash used for empty tuple
+  private type.xxh_rotate => u64 31                   # rotation after adding hash code of values
 
 
   # create a String from this instance.
