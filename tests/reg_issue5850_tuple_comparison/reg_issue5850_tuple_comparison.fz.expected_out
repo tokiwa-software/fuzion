@@ -1,0 +1,34 @@
+
+original example, should print `true` and `false`
+true
+false
+
+more complex example: 
+
+first, let's see if dedup and unique work, should print 12, 11 and 10: 
+12
+11
+10
+
+check if tuples is sorted (expecting `false`): false
+
+creating map from tuples to their indices:
+((123, abc, false) => 0), ((123, abc, true ) => 1), ((456, def, false) => 2), ((789, ghi, true ) => 3), ((123, abd, false) => 4), ((123, abd, true ) => 5), ((122, abc, false) => 6), ((122, abc, true ) => 7), ((124, abc, false) => 8), ((124, abc, true ) => 9)
+map1 sorted (expecting `true`): true
+
+show sorted keys from map, should be sorted:
+[(122, abc, false), (122, abc, true ), (123, abc, false), (123, abc, true ), (123, abd, false), (123, abd, true ), (124, abc, false), (124, abc, true ), (456, def, false), (789, ghi, true )]
+
+show sorted values from map, should be mixed:
+[6, 7, 0, 1, 4, 5, 8, 9, 2, 3]
+
+while keys from sorted entries now have a different order than tuples:
+map1 keys equals original tuples (expecting `false`): false
+
+now, creating a map inverting values and keys, i.e., sorted by the original indices
+(6 => (122, abc, false)), (7 => (122, abc, true )), (0 => (123, abc, false)), (1 => (123, abc, true )), (4 => (123, abd, false)), (5 => (123, abd, true )), (8 => (124, abc, false)), (9 => (124, abc, true )), (2 => (456, def, false)), (3 => (789, ghi, true ))
+
+printing the sorted values
+[(123, abc, false), (123, abc, true ), (456, def, false), (789, ghi, true ), (123, abd, false), (123, abd, true ), (122, abc, false), (122, abc, true ), (124, abc, false), (124, abc, true )]
+map2 sorted (expecting `false`): false
+map2 values equals original tuples (expecting `true`): true

@@ -778,10 +778,13 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     else
       {
         result = genericsToReplace.flatMap
-          (t -> t.isOpenGeneric() && t.genericArgument().outer() == f
-                ? t.genericArgument().replaceOpen(actualGenerics)
+          (t -> {
+            var tp = t.matchingTypeParameter(f);
+            return (tp != null && tp.isOpenTypeParameter())
+                ? tp.replaceOpen(actualGenerics)
                 : new List<>(locally ? t.applyTypeParsLocally(f, actualGenerics, NO_SELECT)
-                                     : t.applyTypePars       (f, actualGenerics           )));
+                                     : t.applyTypePars       (f, actualGenerics           ));
+          });
       }
     return result;
   }
@@ -1152,6 +1155,35 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
+   * Is this a type parameter of given feature `f`, including a type parameter
+   * of `f`'s cotype.
+   *
+   * @param f a feature
+   *
+   * @return the actual type parameter feature corresponding to `this` or `null`
+   * if `this` is not a type parameter of `f` or `f`'s cotype.
+   */
+  private AbstractFeature matchingTypeParameter(AbstractFeature f)
+  {
+    AbstractFeature res = null;
+
+    if (isGenericArgument())
+      {
+        res = genericArgument();
+        if (res.outer().generics() != f.generics())  // if g is not formal generic of f, and g is a type feature generic, try g's origin:
+          {
+            res = res.cotypeOriginGeneric();
+          }
+        if (res.outer().generics() != f.generics()) // if g is a formal generic defined by f, then replace it by the actual generic:
+          {
+            res = null;
+          }
+      }
+    return res;
+  }
+
+
+  /**
    * Check if type t depends on a formal generic parameter of this. If so,
    * replace t by the corresponding actual generic parameter from the list
    * provided.
@@ -1189,12 +1221,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         case GenericArgument ->
           {
             var result = this;
-            AbstractFeature g = result.genericArgument();
-            if (g.outer().generics() != f.generics())  // if g is not formal generic of f, and g is a type feature generic, try g's origin:
-              {
-                g = g.cotypeOriginGeneric();
-              }
-            if (g.outer().generics() == f.generics()) // if g is a formal generic defined by f, then replace it by the actual generic:
+            AbstractFeature g = result.matchingTypeParameter(f);
+            if (g != null)  // if this is a formal generic defined by f, then replace it by the actual generic:
               {
                 if (g.isOpenTypeParameter())
                   {
