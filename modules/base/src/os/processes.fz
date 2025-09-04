@@ -40,27 +40,42 @@ public processes (ph os.Process_Handler, public running_processes container.Set 
   #
   public redef finally unit =>
     running_processes.for_each p->
-      _ := wait p
+      # NYI: UNDER DEVELOPMENT: register failures
+      _ := p.wait
 
 
   # wait for process to finish
   #
   # returns the exit code of the process or an error
   #
-  module wait(p os.process) outcome u32
+  module wait(p os.process, timeout time.duration) outcome u32
   pre running_processes.contains p
   =>
+    start := time.nano.read
+
     (os.processes ph (running_processes ∖ (container.set_of_ordered [p]))).replace
     # NYI: UNDER DEVELOPMENT: register errors in runtime_errors_effect
     _ := fzE_pipe_close p.std_in = 0
-    r := fzE_process_wait p.pid
-    if r<0
-      error "Waiting for process with id {p.pid} was unsuccessful."
+
+    for
+      r := fzE_process_wait p.pid
+      elapsed_time := time.nano.read-start
+      # NYI: UNDER DEVELOPMENT: replace polling by signaled waits (POSIX) / events (WIN) or similar.
+      # 1ms, 2ms, 4ms, 8ms, 16ms, 32ms,...
+      polling_time := time.duration.ms 1, polling_time*2
+    while r < 0 && elapsed_time <= timeout
+      time.nano.sleep (min timeout-elapsed_time polling_time)
     else
-      # NYI: UNDER DEVELOPMENT: close these:
-      # check fzE_pipe_close p.std_out = 0
-      # check fzE_pipe_close p.std_err = 0
-      r.as_u32
+      if r >= 0
+        # NYI: UNDER DEVELOPMENT: close these:
+        # check fzE_pipe_close p.std_out = 0
+        # check fzE_pipe_close p.std_err = 0
+        (id (outcome u32) r.as_u32)
+      else
+        if elapsed_time > timeout
+          error "Waiting for process with id {p.pid} timed out."
+        else
+          error "Waiting for process with id {p.pid} was unsuccessful: $fzE_last_error."
 
 
 
