@@ -1185,7 +1185,7 @@ public class Fuzion extends Tool
     var options = fe._options;
     var mir  = fe.createMIR();                            f.timer("createMIR");
     var fuir = new GeneratingFUIR(fe, mir);               f.timer("ir");
-    var dfuir = new DFA(options, fuir).new_fuir();        f.timer("dfa");
+    var dfuir = new DFA(options, fuir).new_fuir();
     var ofuir = new Optimizer(options, dfuir).fuir();     f.timer("opt");
     return ofuir;
   }
