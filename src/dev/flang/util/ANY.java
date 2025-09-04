@@ -113,9 +113,10 @@ public class ANY
                              .map(str -> str.trim())
                              .limit(7)
                              .collect(Collectors.toList());
-                var n = l.stream().takeWhile(s -> !s.endsWith(");")).count()+1;
+                var n = l.stream().takeWhile(s -> !s.endsWith(");"))
+                                  .count()+1;
                 var cond = l.stream().limit(n)
-                            .collect(Collectors.joining(" "));
+                                     .collect(Collectors.joining(" "));
                 return res + Terminal.BLUE + " \"" + cond + "\"" + Terminal.REGULAR_COLOR;
               }
             catch (IOException e)
