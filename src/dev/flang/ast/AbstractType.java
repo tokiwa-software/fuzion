@@ -672,7 +672,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
               (actual.feature() != null || Errors.any());
             if (actual.feature() != null)
               {
-                // NYI: BUG: soundness issues probable
+                // NYI: BUG: #5714 soundness issues probable
                 // NYI: BUG: Check: What about open generics?
                 result = actual.feature() == feature() &&
                   (actual.isThisType() || (genericsAssignable(actual, context) &&
