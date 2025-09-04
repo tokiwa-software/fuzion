@@ -179,7 +179,7 @@ public class OptimizedFUIR extends GeneratingFUIR {
         var clazzes = new ClazzRecord[lastClazz-firstClazz+1];
         for (int cl = firstClazz; cl <= lastClazz; cl++)
           {
-            var needsCode = clazzKind(cl) == FeatureKind.Routine && clazzNeedsCode(cl) && _accessedCode.contains(cl);
+            var needsCode = clazzKind(cl) == FeatureKind.Routine && clazzNeedsCode(cl);
             clazzes[clazzId2num(cl)] = new ClazzRecord(
                 clazzBaseName(cl),
                 clazzOuterClazz(cl),

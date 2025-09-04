@@ -422,7 +422,6 @@ public class GeneratingFUIR extends FUIR
    * Used when serializing the FUIR.
    */
   protected TreeSet<Integer> _accessedSites = new TreeSet<>();
-  protected TreeSet<Integer> _accessedCode = new TreeSet<>();
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -495,7 +494,6 @@ public class GeneratingFUIR extends FUIR
     _specialClazzes = original._specialClazzes;
     _inh = original._inh;
     _clazzesForTypes = original._clazzesForTypes;
-    _accessedCode = original._accessedCode;
     _accessedSites = original._accessedSites;
   }
 
@@ -1421,7 +1419,6 @@ public class GeneratingFUIR extends FUIR
     var result = c._code;
     if (result == NO_SITE && !_lookupDone)
       {
-        _accessedCode.add(cl);
         c.doesNeedCode();
         result = addCode(cl, c);
         c._code = result;
