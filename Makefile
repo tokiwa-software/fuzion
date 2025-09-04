@@ -1180,7 +1180,7 @@ $(BUILD_DIR)/bin/record_simple_example: $(FZ_SRC)/bin/record_simple_example.fz
 # tricky, we need MOD_TERMINAL to build (check|record)_simple_example
 # but we are not adding this to those targets because we do not want
 # (check|record)_simple_example to rebuild any time sth is changed in base lib
-$(BUILD_DIR)/tests: $(FUZION_FILES_TESTS) $(MOD_TERMINAL) $(BUILD_DIR)/bin/check_simple_example $(BUILD_DIR)/bin/record_simple_example
+$(BUILD_DIR)/tests: $(FUZION_FILES_TESTS) $(MOD_TERMINAL) $(BUILD_DIR)/include $(BUILD_DIR)/bin/check_simple_example $(BUILD_DIR)/bin/record_simple_example
 	rm -rf $@
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC_TESTS) $@
