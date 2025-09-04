@@ -1227,7 +1227,6 @@ public class DFA extends ANY
   public GeneratingFUIR new_fuir()
   {
     dfa();
-    _options.timer("dfa");
     var res = new GeneratingFUIR(_fuir)
       {
         /**
@@ -1359,6 +1358,7 @@ public class DFA extends ANY
     _newCallRecursiveAnalyzeClazzes = new int[MAX_NEW_CALL_RECURSION];
     _real = false;
     findFixPoint();
+    _options.timer("dfa_pre");
 
     for (var k : _callGroupsQuick.keySet())
       {
@@ -1387,6 +1387,7 @@ public class DFA extends ANY
 
     _real = true;
     findFixPoint();
+    _options.timer("dfa_real");
 
     _fuir.reportAbstractMissing();
     Errors.showAndExit();
