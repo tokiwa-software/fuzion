@@ -588,7 +588,10 @@ public class Fuzion extends Tool
    */
   Path _fuzionHome = FuzionHome._fuzionHome;
   {
-    ANY._sourceDirs.add(_fuzionHome.resolve("generated").resolve("src"));
+    if (_fuzionHome != null)
+      {
+        ANY._sourceDirs.add(_fuzionHome.resolve("generated").resolve("src"));
+      }
   }
 
 
