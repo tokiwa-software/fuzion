@@ -31,14 +31,14 @@ public hash_map(
         ks Sequence HK,
         vs Sequence V) : Map HK V
   pre
-    ks.count = vs.count
+    debug: ks.count = vs.count
 
 is
 
 
   # number of entries in this map
   #
-  public redef size i32 => ks.count
+  public redef size i32 := ks.count
 
 
   # size of allocated contents array, allows for some empty slots
