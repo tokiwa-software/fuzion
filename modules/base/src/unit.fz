@@ -81,7 +81,7 @@
 # type, so these are very efficient as well.
 #
 #
-public unit is
+public unit : property.orderable, property.hashable is
 
 # NYI: possible alternative definitions based on tuple types
 #
@@ -102,3 +102,22 @@ public unit is
     ref : Monoid unit is
       public redef infix ∙ (a, b unit) unit => unit
       public redef e unit => unit
+
+  # equality for two `unit` values always returns `true`
+  #
+  public redef fixed type.equality(a, b unit) bool
+  =>
+    true
+
+
+  # The total order for `unit` is trivial since there is only one value. `lteq` always
+  # returns `true`
+  #
+  public redef fixed type.lteq(a, b unit) bool
+  =>
+    true
+
+
+  # the hash code for `unit` is a constant
+  #
+  public redef fixed type.hash_code(a unit) u64 => 8577314602347175514
