@@ -31,10 +31,14 @@ public hash_map(
         ks array HK,
         vs array V) : Map HK V
   pre
-    ks.length = vs.length
+    debug: ks.length = vs.length
+    debug: ks.length.as_u64 <= (hash_map HK V).max_size  # we impose a max. size due to our collision avoidance algorithm
 
 is
 
+  # maximum size
+  #
+  public type.max_size u64 => 100_000_000_000_000_000
 
   # number of entries in this map
   #
@@ -48,14 +52,94 @@ is
 
   # calculate the index of k within contents array in case of no conflict
   #
-  at (k HK) => ((hash k).low32bits.cast_to_i32 & i32.max) % allocated_size
+  at (h u64) => h % allocated_size.as_u64
 
 
   # in case of a collision at given position,
   # return the next alternative position to check
   #
-  collision (at i32) =>
-    (at + 1) % allocated_size  # NYI: dumb collision function, check literature and improve!
+  collision (at u64, h u64) =>
+    # a simple collision avoidance woud just advance to the next cell. This, however, is problematic
+    # in case the hash function produces values that are close to one another: Assume
+    #
+    #  hash k1 = 7
+    #  hash k2 = 7
+    #  hash k3 = 8
+    #  hash k4 = 7
+    #  hash k5 = 8
+    #
+    # then, we have collisions for 7 and 8, but adding 1 results in k1/k2/k3 colliding also with k3/k5.
+    #
+    # To avoid this, we instead advance by p that depends on `h`:
+    #
+    # In case of a collision, we advance by a prime number p of cells wich p > allocated_size.  Then,
+    # since p % allocated_size != 0, repeated addition of p will not return to the same cell before all
+    # cells were visited.
+    #
+    # And, neighboring hash values like `7` and `8` as above would not result in clusters of collisions.
+    #
+    # However, neighboring hash values that differ by `primes.count` will cause collisions.  This is
+    # why we chose a prime for `primes.count` (31) to keep this unlikely.
+    #
+    p := prime h
+    check
+      debug: size.as_u64 <= p
+    (at + p) % allocated_size.as_u64  # NYI: dumb collision function, check literature and improve!
+
+
+  # for a given hash code, return a prime number larger than `max_size`
+  #
+  prime(h) => primes[h.as_i32 % primes.count]
+
+
+  # 31 primes that are all larger than `max_size`, for use in collision handling
+  #
+  primes
+    post
+      # NYI: OPTIMIZATION: this post-conditions causes sever performance degradation in the example from #5885, need to check why.
+      #
+      # debug: result.min.get > (hash_map HK V).max_size
+  =>
+    cached_primes(p array u64) is
+    (cache cached_primes ()->
+      ps := [# generated using https://bigprimes.org/
+             u64
+             904644503766293287,
+             273661186099400849,
+             334046234297393963,
+             741897359597713663,
+             397344200611950061,
+             569354700928729277,
+             122921628140331893,
+             798110498943838499,
+             397474344583484809,
+             454177314234609187,
+             160486382462582443,
+             894962757252268423,
+             239643940612081871,
+             659159027127300797,
+             263678202614407153,
+             467352024101294113,
+             962186220974124121,
+             305257249802330333,
+             629392008633749299,
+             913535742779912377,
+             253544983966072991,
+             704658375926768441,
+             954522022665259159,
+             143760886812584159,
+             398952305741082427,
+             482296154841239663,
+             241093767448102817,
+             322274479876339043,
+             983886456891355613,
+             234844915899376649,
+             859627742854685113]
+      check
+        debug: ps.min.get > (hash_map HK V).max_size
+      cached_primes ps
+    ).p
+
 
   mi : mutate is
 
@@ -67,10 +151,11 @@ is
       k in ks
       v in vs
     do
-      store (at k)
+      h := hash k
+      store (at h)
 
       # store k,v for index at,
-      store (at i32) unit =>
+      store (at u64) unit =>
 
         match mcontents[at.as_i64]
           nil     =>     # slot is free, so use it:
@@ -81,7 +166,7 @@ is
             if ek = k    # no conflict, but remapping of k
               mcontents[at.as_i64] := (k, v)
             else         # conflict
-              store (collision at)
+              store (collision at h)
 
 /* NYI: With better pattern matching, this could be:
         match mcontents[at]
@@ -97,18 +182,19 @@ is
   # get the value k is mapped to
   #
   public redef index [] (k HK) option V =>
+    h := hash k
 
-    retrieve (at i32) option V =>
-      match contents[at]
+    retrieve (at u64) option V =>
+      match contents[at.as_i32]
         nil     => nil
         t tuple =>
           ek, v := t
           if ek = k
             v
           else
-            retrieve (collision at)
+            retrieve (collision at h)
 
-    retrieve (at k)
+    retrieve (at h)
 
 
   # get a list of all key/value pairs in this map
