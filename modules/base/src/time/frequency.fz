@@ -68,3 +68,10 @@ is
     nn := n         .as_u128
     ff := f         .as_u128
     time.duration (ns * nn / ff).as_u64
+
+
+  # create a string representation of this frequency
+  #
+  public redef as_string String
+  =>
+    "$f/{base.as_string.trim}"
