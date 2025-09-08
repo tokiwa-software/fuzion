@@ -765,6 +765,8 @@ int32_t fzE_path_max(void);
 
 int64_t fzE_page_size(void);
 
+int64_t fzE_mmap_offset_multiple(void);
+
 int fzE_cwd(void * buf, size_t size);
 
 #endif /* fz.h  */

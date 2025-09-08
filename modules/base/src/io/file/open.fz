@@ -45,7 +45,7 @@ module:public open(fd File_Descriptor,
 
   # install mmap effect an run code
   #
-  # note: the offset must be a multiple of the pagesize which usually is 4096, windows 65536?
+  # note: the offset must be a multiple of the `os.mmap_offset_multiple` which usually is 4096, windows 65536?
   # note: offset+size must not exceed size of file
   #
   # example usage:
@@ -55,7 +55,7 @@ module:public open(fd File_Descriptor,
   #         io.file.open.mmap[99] := 42
   #
   public mmap(R type, offset i64, size i64, code ()->R) outcome R
-    pre safety: offset % os.page_size = 0
+    pre safety: offset % os.mmap_offset_multiple = 0
   =>
 
     res := fuzion.sys.internal_array_init i32 1
