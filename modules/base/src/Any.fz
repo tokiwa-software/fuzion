@@ -66,14 +66,14 @@ public Any ref is
   public type.type_value Type => Any.this.type
 
 
-  # dynamic_apply -- apply `f.call` to Any.this's dynamic type and value
+  # dynamic_apply -- apply `f.call` to `Any.this`'s dynamic type and value
   #
   # This can be used to perform operation on values depending on their dynamic
   # type.
   #
   # Here is an example that takes a `Sequence Any` that may contain boxed values
   # of types `i32` and `f64`.  We can now write a feature `get_f64` that extracts
-  # these values converte to `f64` and build a function `sum` that sums them up
+  # these values converted to `f64` and build a function `sum` that sums them up
   # as follows:
   #
   #     sum(values Sequence Any)
