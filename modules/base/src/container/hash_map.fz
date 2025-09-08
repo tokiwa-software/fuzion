@@ -84,7 +84,7 @@ is
     p := prime h
     check
       debug: size.as_u64 <= p
-    (at + p) % allocated_size.as_u64  # NYI: dumb collision function, check literature and improve!
+    (at + p) % allocated_size.as_u64
 
 
   # for a given hash code, return a prime number larger than `max_size`
