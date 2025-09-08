@@ -34,7 +34,7 @@ map2 sorted (expecting `false`): false
 map2 values equals original tuples (expecting `true`): true
 
 hash table: from tuples to their indices
-{((124, abc, true ) => 1001), ((122, abc, true ) => 111), ((123, abd, false) => 100), ((123, abc, false) => 0), ((123, abd, true ) => 101), ((122, abc, false) => 110), ((124, abc, false) => 1000), ((123, abc, true ) => 1), ((789, ghi, true ) => 11), ((456, def, false) => 10)}
+{((123, abc, true ) => 1), ((122, abc, true ) => 111), ((123, abd, true ) => 101), ((456, def, false) => 10), ((123, abd, false) => 100), ((122, abc, false) => 110), ((123, abc, false) => 0), ((789, ghi, true ) => 11), ((124, abc, false) => 1000), ((124, abc, true ) => 1001)}
 get (123, abc, false) from hm is 0 expected 0 OK
 get (123, abc, true ) from hm is 1 expected 1 OK
 get (456, def, false) from hm is 2 expected 2 OK

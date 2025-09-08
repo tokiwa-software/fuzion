@@ -89,7 +89,7 @@ is
 
   # for a given hash code, return a prime number larger than `max_size`
   #
-  prime(h) => primes[h.as_i32 % primes.count]
+  prime(h) => primes[(h % primes.count.as_u64).as_i32]
 
 
   # 31 primes that are all larger than `max_size`, for use in collision handling
