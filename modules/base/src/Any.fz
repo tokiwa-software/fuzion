@@ -64,3 +64,52 @@ public Any ref is
   # difference to `dynamic_type`.
   #
   public type.type_value Type => Any.this.type
+
+
+  # dynamic_apply -- apply `f.call` to `Any.this`'s dynamic type and value
+  #
+  # This can be used to perform operation on values depending on their dynamic
+  # type.
+  #
+  # Here is an example that takes a `Sequence Any` that may contain boxed values
+  # of types `i32` and `f64`.  We can now write a feature `get_f64` that extracts
+  # these values converted to `f64` and build a function `sum` that sums them up
+  # as follows:
+  #
+  #     sum(values Sequence Any)
+  #     =>
+  #       get_f64 : Typed_Function f64 is
+  #         public redef call(T type, v T) f64
+  #         =>
+  #           if      T : i32 then v.as_f64
+  #           else if T : f64 then v.val
+  #                           else compile_time_panic
+  #
+  #       values.map (.dynamic_apply get_f64)
+  #             .foldf 0.0 (+)
+  #
+  #     say <| sum [3.14, 32, 16.0, 8]
+  #
+  # NYI: IMPROVEMENT: #5892: If this is fixed, we could write
+  #
+  #     sum(values Sequence Any)
+  #     =>
+  #       values.map .dynamic_apply T,v->
+  #                     if      T : i32 then v.as_f64
+  #                     else if T : f64 then v.val
+  #                                     else compile_time_panic
+  #             .foldf 0.0 (+)
+  #
+  #     say <| sum [3.14, 32, 16.0, 8]
+  #
+  public dynamic_apply(R type,
+                       F type : Typed_Function R,
+                       f F
+                       ) R
+  =>
+    # NYI: BUG: #5894 if fixed, we should be able to write
+    #
+    #   f.call Any.this Any.this
+    #
+    # for now, using type inference for `T` works:
+    f.call Any.this

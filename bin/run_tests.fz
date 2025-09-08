@@ -84,7 +84,7 @@ record_process(
             err String => err
 
       match p.wait max_test_time
-        e error => panic "failed waiting for $cmd, error is: $e"
+        e error => process_result "" "failed waiting for $cmd, error is: $e" 1
         ec u32 => process_result fout.get ferr.get ec)
     .get
 

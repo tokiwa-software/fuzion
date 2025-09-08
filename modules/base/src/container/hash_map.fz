@@ -31,9 +31,9 @@ public hash_map(
         ks Sequence HK,
         vs Sequence V) : Map HK V
   pre
-    debug: ks.count = vs.count
-    debug: ks.count.as_u64 <= (hash_map HK V).max_size  # we impose a max. size due to our collision avoidance algorithm
-
+    debug   : ks.count        = vs.count
+    debug 2 : ks.unique.count = ks.count
+    debug   : ks.count.as_u64 <= (hash_map HK V).max_size  # we impose a max. size due to our collision avoidance algorithm
 is
 
   # maximum size

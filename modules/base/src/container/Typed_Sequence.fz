@@ -107,7 +107,7 @@ public Typed_Sequence ref : Sequence container.Typed_Value is
 #
 # ex:
 #
-#     # print all value arguments into numbered lines
+#     # print all value arguments into numbered lines, return next line number
 #     #
 #     printn(A type ..., a A...) : container.typed_fold 1 a
 #     =>
@@ -116,14 +116,44 @@ public Typed_Sequence ref : Sequence container.Typed_Value is
 #         say "$n: $v"
 #         n + 1
 #
-public typed_fold(B type, e B, s container.Typed_Sequence) : container.typed_applicator B is
+#       res    # field `res` will receive the result of last `apply`
+#
+public typed_fold(E type, e E, s container.Typed_Sequence) : container.typed_applicator E is
 
   # the result of the fold
   #
   # the fold is done eagerly to ensure any side-effects will be performed even if `res` is
   # never read.
   #
-  public res B := s.typed_foldf e typed_fold.this
+  public res E := s.typed_foldf e typed_fold.this
+
+
+# variadic -- convenience feature to fold the elements of a `Typed_Sequence`.
+#
+# ex:
+#
+#     # print all value arguments into numbered lines, return next line number
+#     #
+#     printn(A type ..., a A...) : container.variadic i32
+#     =>
+#       public redef apply(T type, n i32, v T) i32
+#       =>
+#         say "$n: $v"
+#         n + 1
+#
+#       process 1 a    # precess returns result of last `apply`
+#
+# NYI: CLEANUP: This is somewhat redundant with `typed_fold`, we should decide on
+# only one of these variant, maybe once lambdas for `typed_applicator` are
+# supported #5892 and we can compare the usability.
+#
+public variadic(E type) : container.typed_applicator E is
+
+  # the result of the fold
+  #
+  public process(e E, s container.Typed_Sequence) E
+  =>
+    s.typed_foldf e variadic.this
 
 
 # a function that operates on a value of type that is given by the caller
@@ -131,7 +161,7 @@ public typed_fold(B type, e B, s container.Typed_Sequence) : container.typed_app
 # This is used as an argument to `Typed_Sequence.typed_foldf` to process the typed
 # values.
 #
-public typed_applicator(B type) is
+public typed_applicator(E type) is
 
 
   # Apply an operation on a value v of type T using the cumulative value
@@ -148,7 +178,7 @@ public typed_applicator(B type) is
   #       =>
   #         e + $v
   #
-  public apply(T type, e B, v T) B
+  public apply(T type, e E, v T) E
   =>
     abstract
 
@@ -160,7 +190,7 @@ public typed_applicator(B type) is
 #
 public typed_zipper(# the result type of two values that were zipped
                     #
-                    B type
+                    E type
                    ) is
 
 
@@ -181,8 +211,8 @@ public typed_zipper(# the result type of two values that were zipped
   #           panic "$T is not `property.equatable`!"
   #
   public apply(T type,
-               e B,
-               v, w T) B
+               e E,
+               v, w T) E
   =>
     abstract
 
@@ -197,7 +227,7 @@ public Typed_Value ref is
   # Feed this value and its type into `a.apply`.  Add the
   # cumulative value `e` and return the resulting cumulative value.
   #
-  public applyTo(B type, a typed_applicator B, e B) B
+  public applyTo(E type, a typed_applicator E, e E) E
   =>
     abstract
 
@@ -217,7 +247,7 @@ public typed_value(# the type
 
   # apply `a` to `A` `e` `v`
   #
-  public redef applyTo(B type, a typed_applicator B, e B) B
+  public redef applyTo(E type, a typed_applicator E, e E) E
   =>
     a.apply A e v
 
@@ -299,7 +329,7 @@ public Types ref : Sequence Type is
   #
   # In case this `Types` instance is empty, the result is `e`.
   #
-  public type_foldf(B type, A type : type_applicator B, e B, a A) B
+  public type_foldf(E type, A type : type_applicator E, e E, a A) E
   =>
     abstract
 

@@ -1148,6 +1148,13 @@ int64_t fzE_page_size(void)
   return (int64_t)(uint64_t)sys_info.dwPageSize;
 }
 
+int64_t fzE_mmap_offset_multiple(void)
+{
+  SYSTEM_INFO sys_info;
+  GetSystemInfo(&sys_info);
+  return (int64_t)(uint64_t)sys_info.dwAllocationGranularity;
+}
+
 int fzE_cwd(void * buf, size_t size)
 {
   return _getcwd(buf, size) == NULL
