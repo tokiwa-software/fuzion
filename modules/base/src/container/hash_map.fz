@@ -31,8 +31,8 @@ public hash_map(
         ks Sequence HK,
         vs Sequence V) : Map HK V
   pre
-    debug: ks.count = vs.count
-
+    debug   : ks.count        = vs.count
+    debug 2 : ks.unique.count = ks.count
 is
 
 
