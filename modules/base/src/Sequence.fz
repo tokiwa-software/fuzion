@@ -1167,6 +1167,7 @@ public Sequence(public T type) ref : property.countable is
 
   # the arithmetic mean of the sequence
   # https://en.wikipedia.org/wiki/Arithmetic_mean
+  #
   public average option T
     pre
       T : numeric
@@ -1178,8 +1179,37 @@ public Sequence(public T type) ref : property.countable is
       sum / cnt
 
 
+  # convert this Sequence to an ordered map
+  # via mapping all elements to key value pairs
+  #
+  public as_ordered_map(KEY type : property.orderable, VALUE type, mapper T -> (KEY,VALUE)) container.ordered_map KEY VALUE
+  =>
+
+    keys, values :=
+      reduce ((Sequence KEY).empty,(Sequence VALUE).empty) (r,t)->
+        kv := mapper t
+        (r.0++[kv.0],r.1++[kv.1])
+
+    container.ordered_map keys values
+
+
+  # convert this Sequence to a hash map
+  # via mapping all elements to key value pairs
+  #
+  public as_hash_map(KEY type : property.hashable, VALUE type, mapper T -> (KEY,VALUE)) container.hash_map KEY VALUE
+  =>
+
+    keys, values :=
+      reduce ((Sequence KEY).empty,(Sequence VALUE).empty) (r,t)->
+        kv := mapper t
+        (r.0++[kv.0],r.1++[kv.1])
+
+    container.hash_map keys.as_array values.as_array
+
+
   # the variance of the sequence
   # https://en.wikipedia.org/wiki/Variance
+  #
   public variance option T
     pre
       T : numeric
@@ -1191,6 +1221,7 @@ public Sequence(public T type) ref : property.countable is
 
 
   # minimum value in the sequence
+  #
   public min option T
     pre
       T : property.orderable
@@ -1201,6 +1232,7 @@ public Sequence(public T type) ref : property.countable is
 
 
   # maximum value in the sequence
+  #
   public max option T
     pre
       T : property.orderable
@@ -1212,6 +1244,7 @@ public Sequence(public T type) ref : property.countable is
 
   # the median of the sequence
   # https://en.wikipedia.org/wiki/Median
+  #
   public median option T
     pre
       T : numeric
@@ -1229,6 +1262,7 @@ public Sequence(public T type) ref : property.countable is
 
   # the standard deviation of the sequence
   # https://en.wikipedia.org/wiki/Standard_deviation
+  #
   public std_dev option T
     pre
       T : float

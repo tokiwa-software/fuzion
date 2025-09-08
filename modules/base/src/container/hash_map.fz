@@ -29,7 +29,7 @@ public hash_map(
         public HK type : property.hashable,
         public V  type,
         ks Sequence HK,
-        vs Sequence V) : Map HK V
+        vs Sequence V) : container.Map HK V
   pre
     debug: ks.count = vs.count
 
