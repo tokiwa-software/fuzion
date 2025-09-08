@@ -51,7 +51,8 @@ TODO:
     say "\nCREATE REQUEST:\n"
 
     my_req http.request_msg := (http.request_msg http.get "/docs/base" 2 0
-                                                 (container.map_of [("Host", "fuzion-lang.dev"),
+                                                 (http.canonical_header_map.map_of [
+                                                                    ("Host", "fuzion-lang.dev"),
                                                                     ("User-Agent", "Fuzion HTTP Module"),
                                                                     ("DNT", $"1")])
                                                  (read_handler lm "".utf8.as_array))
@@ -62,7 +63,8 @@ TODO:
     say "\nCREATE RESPONSE:\n"
 
     my_resp http.response_msg := http.response_msg my_req 2 0 200 "OK"
-                                                   (container.map_of [("content-type", "text/html"),
+                                                   (http.canonical_header_map.map_of [
+                                                                      ("content-type", "text/html"),
                                                                       ("server", "FuzionWebServer v0.016"),
                                                                       ("x-frame-options", "DENY")])
                                                    (read_handler lm "  <body>\n    <p>Hello World!</p>\n  </body>".utf8.as_array)

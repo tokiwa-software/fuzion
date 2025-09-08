@@ -28,3 +28,16 @@ module container.Map.add(k K, v V) container.Map K V
 =>
   orig := container.ordered_map K V keys values
   orig.add k v
+
+
+module String.canonical_header_key String =>
+  # NYI: OPTIMIZATION: see validHeaderFieldByte() in https://go.dev/src/net/textproto/reader.go
+  valid_header_field_byte(c codepoint) bool =>
+    "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#\$%&'*+-.^_|~".contains c
+
+  if as_codepoints.drop_while valid_header_field_byte .is_empty
+    split "-"
+      .map (s->(s.substring 0 1 .upper_case) + s.substring 1 .lower_case)
+      .as_string "-"
+  else
+    String.this

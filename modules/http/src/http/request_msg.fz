@@ -33,11 +33,9 @@ public request_msg(
   public version_major i32,
   # the minor version
   public version_minor i32,
-  # the header fields, capitalization will be ignored
-  header_fields container.Map String String,
+  # the header fields
+  public redef header http.canonical_header_map,
   # body of the request
-  # (
-  # public redef body option (Sequence u8)) : Message
   public redef body io.Read_Handler) : Message
 # pre debug: has_field "Host"  # NYI: how to handle case insensitivity?
 is
@@ -46,8 +44,6 @@ is
   public request_line String => "$method $target {version_str version_major version_minor}" + crlf
 
   public redef start_line String => request_line
-
-  public redef header http.canonical_header_map := http.canonical_header_map.from_map header_fields
 
 
 

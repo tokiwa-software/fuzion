@@ -41,10 +41,9 @@ public response_msg(
   public status_code i32,
   # the reason-phrase of the response
   public reason_phrase String,
-  header_fields container.Map String String,
+  # the header fields
+  public redef header http.canonical_header_map,
   # the body of the response
-  # (
-  # public redef body option (Sequence u8)) : Message
   public redef body io.Read_Handler) : Message
 is
   # the start line of the message, for a response this is also called status line
@@ -54,5 +53,3 @@ is
   public status_line String =>
     "{version_str version_major version_minor} $status_code $reason_phrase$crlf"
 
-  # header fields with all lower case
-  public redef header http.canonical_header_map := http.canonical_header_map.from_map header_fields

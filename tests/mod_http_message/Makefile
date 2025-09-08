@@ -22,4 +22,5 @@
 # -----------------------------------------------------------------------
 
 override NAME = http_message_test
+FUZION_OPTIONS = -modules=http
 include ../simple.mk
