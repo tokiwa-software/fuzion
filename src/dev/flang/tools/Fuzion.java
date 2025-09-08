@@ -63,6 +63,7 @@ import dev.flang.fuir.analysis.dfa.DFA;
 
 import dev.flang.opt.Optimizer;
 
+import dev.flang.util.ANY;
 import dev.flang.util.List;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
@@ -586,6 +587,12 @@ public class Fuzion extends Tool
    * Home directory of the Fuzion installation.
    */
   Path _fuzionHome = FuzionHome._fuzionHome;
+  {
+    if (_fuzionHome != null)
+      {
+        ANY._sourceDirs.add(_fuzionHome.resolve("generated").resolve("src"));
+      }
+  }
 
 
   /**
