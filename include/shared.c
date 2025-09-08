@@ -218,7 +218,7 @@ JNIEnv * getJNIEnv()
 {
   if (!jvm_running)
     {
-      printf("JVM has not been started via: `fuzion.jvm.env.create_jvm0 ...`\n");
+      printf("JVM has not been started via: `fuzion.jvm.use ...`\n");
       exit(EXIT_FAILURE);
     }
   if (fzE_jni_env == NULL) {
@@ -233,15 +233,18 @@ JNIEnv * getJNIEnv()
 static_assert(JNI_OK == 0, "assume JNI_OK to be zero.");
 // initialize the JVM
 // executed once at the start of the application
-int32_t fzE_create_jvm(char * option_string) {
+int32_t fzE_create_jvm(void * options, int32_t len) {
   JavaVMInitArgs vm_args;
 
-  JavaVMOption options[1];
-  options[0].optionString = option_string;
+  JavaVMOption vm_options[len];
+  for (int i = 0; i < len; i++)
+  {
+    vm_options[i].optionString = ((char **)options)[i];
+  }
 
-  vm_args.version = JNI_VERSION_10;
-  vm_args.options = options;
-  vm_args.nOptions = option_string[0] == '\0' ? 0 : 1;
+  vm_args.version = JNI_VERSION_21;
+  vm_args.options = vm_options;
+  vm_args.nOptions = len;
 
   int result = JNI_CreateJavaVM(&fzE_jvm, (void **)&fzE_jni_env, &vm_args);
   if (result != JNI_OK) {
@@ -435,14 +438,6 @@ jvalue *fzE_convert_args(const char *sig, jvalue *args) {
 }
 
 
-// convert jstring to error result
-fzE_jvm_result fzE_jvm_not_found(jstring jstr)
-{
-  assert ( jstr != NULL );
-  return (fzE_jvm_result){ .fzTag = 1, .fzChoice = { .v1 = jstr /* NYI: should be: "Not found" + jv */ } };
-}
-
-
 // convert a 0-terminated utf8-bytes array to a jstring.
 jvalue fzE_string_to_java_object(const void * utf8_bytes, int byte_length)
 {
@@ -459,6 +454,24 @@ fzE_jvm_result fzE_jvm_error(const char * str)
 {
   jvalue jstr = fzE_string_to_java_object(str, strlen(str));
   return (fzE_jvm_result){ .fzTag = 1, .fzChoice = { .v1 = jstr.l } };
+}
+
+
+// convert jstring to error result
+fzE_jvm_result fzE_jvm_not_found(jstring jstr)
+{
+  assert ( jstr != NULL );
+  const char * s1 = "class not found: ";
+  const char * s2 = fzE_java_string_to_utf8_bytes(jstr);
+  size_t len1 = strlen(s1);
+  size_t len2 = strlen(s2);
+
+  char *result = fzE_malloc_safe(len1 + len2 + 1);
+
+  strcpy(result, s1);
+  strcat(result, s2);
+
+  return fzE_jvm_error(result);
 }
 
 

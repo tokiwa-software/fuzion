@@ -40,7 +40,7 @@ javaHello : Java is
     ((envir.vars.get "OS").val "").lower_case.contains "windows"
 
 
-  fuzion.jvm.use _ (is_windows ? "-Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8" : "") ()->
+  fuzion.jvm.use _ (is_windows ? ["-Dsun.stdout.encoding=UTF-8", "-Dsun.stderr.encoding=UTF-8"] : []) ()->
 
     # we can call code in Java package directly using fully
     # qualified class names
