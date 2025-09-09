@@ -17,38 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test mmap_test
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-mmap_test =>
-
-  testfile := "testfile"
-
-  f =>
-    io.file.open
-
-  say <| io.file.use testfile io.file.mode.append ()->
-
-    io.file.writer.write (array u8 os.mmap_offset_multiple.as_i32 i->0)
-      .error.get
-    io.file.writer.write "hello!".utf8
-      .error.get
-    io.file.writer.flush
-      .get
-
-    offset := os.mmap_offset_multiple
-
-    # map 6 bytes of file starting from the end of the '+'s.
-    say <| f.mmap offset (i64 6) ()->
-            # change the 'e' in hello to an 'a'.
-            io.file.mapped_buffer.env[1] := io.file.mapped_buffer.env[1] - 4
-
-    # mmap should fail, since offset+size exceeds file size.
-    say <| f.mmap offset (i64 7) ()->
-
-
-  say <| io.file.use testfile io.file.mode.read ()->
-    String.from_bytes ((io.buffered io.file.file_mutate).read_fully.drop os.mmap_offset_multiple.as_i32)
-
-  say (io.file.delete testfile)
+override NAME = reg_issue5714_1
+include ../simple.mk

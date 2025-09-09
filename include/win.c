@@ -516,12 +516,12 @@ void fzE_nanosleep(uint64_t n)
   uint64_t end = start + n;
 
   while (fzE_nanotime() < end) {
-      uint64_t remaining_ns = end - fzE_nanotime();
-      if (remaining_ns > 1000000ULL) {
-          Sleep((DWORD)(remaining_ns / 1000000ULL));
-      } else {
-          YieldProcessor();
-      }
+    uint64_t remaining_ns = end - fzE_nanotime();
+    if (remaining_ns > 1000000ULL) {
+      Sleep((DWORD)(remaining_ns / 1000000ULL));
+    } else if (remaining_ns > 0) {
+      Sleep(1);
+    }
   }
 }
 
@@ -862,14 +862,16 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
 // returns exit code or -1 on wait-failure.
 int64_t fzE_process_wait(int64_t p){
   DWORD status = 0;
-  if (WaitForSingleObject((HANDLE)p, 0) != WAIT_OBJECT_0){
-    return -1;
+  if (GetExitCodeProcess((HANDLE)p, &status)){
+    if (status == STILL_ACTIVE){
+      return -1;
+    }
+    else {
+      CloseHandle((HANDLE)p);
+      return (int64_t)status;
+    }
   }
-  if (!GetExitCodeProcess((HANDLE)p, &status)){
-    return -1;
-  }
-  CloseHandle((HANDLE)p);
-  return (int64_t)status;
+  return 255;
 }
 
 
@@ -1144,6 +1146,13 @@ int64_t fzE_page_size(void)
   SYSTEM_INFO sys_info;
   GetSystemInfo(&sys_info);
   return (int64_t)(uint64_t)sys_info.dwPageSize;
+}
+
+int64_t fzE_mmap_offset_multiple(void)
+{
+  SYSTEM_INFO sys_info;
+  GetSystemInfo(&sys_info);
+  return (int64_t)(uint64_t)sys_info.dwAllocationGranularity;
 }
 
 int fzE_cwd(void * buf, size_t size)

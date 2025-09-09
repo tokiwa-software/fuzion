@@ -198,7 +198,6 @@ public class JavaInterface extends FUIRContext
         case SpecialClazzes.c_bool -> o instanceof Boolean z ? new boolValue(z): new boolValue(((Value) o).boolValue());
         case SpecialClazzes.c_unit -> new Instance(rc);
         // NYI: UNDER DEVELOPMENT: remove this, abusing javaObjectToPlainInstance in mtx_*, cnd_* intrinsics
-        case SpecialClazzes.c_Array -> new JavaRef(o);
         case SpecialClazzes.c_Mutex -> new JavaRef(o);
         case SpecialClazzes.c_Condition -> new JavaRef(o);
         case SpecialClazzes.c_File_Descriptor -> new JavaRef(o);
@@ -266,7 +265,7 @@ public class JavaInterface extends FUIRContext
     var result = new Object[sz];
     for (var ix = 0; ix < sz; ix++)
       {
-        result[ix] = ((JavaRef)(((Object[])a._array)[ix]))._javaRef;
+        result[ix] = ((JavaRef)(((Object[])a._data)[ix]))._javaRef;
       }
     return result;
   }

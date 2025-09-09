@@ -32,3 +32,16 @@ printing the sorted values
 [(123, abc, false), (123, abc, true ), (456, def, false), (789, ghi, true ), (123, abd, false), (123, abd, true ), (122, abc, false), (122, abc, true ), (124, abc, false), (124, abc, true )]
 map2 sorted (expecting `false`): false
 map2 values equals original tuples (expecting `true`): true
+
+hash table: from tuples to their indices
+{((123, abc, true ) => 1), ((122, abc, true ) => 111), ((123, abd, true ) => 101), ((456, def, false) => 10), ((123, abd, false) => 100), ((122, abc, false) => 110), ((123, abc, false) => 0), ((789, ghi, true ) => 11), ((124, abc, false) => 1000), ((124, abc, true ) => 1001)}
+get (123, abc, false) from hm is 0 expected 0 OK
+get (123, abc, true ) from hm is 1 expected 1 OK
+get (456, def, false) from hm is 2 expected 2 OK
+get (789, ghi, true ) from hm is 3 expected 3 OK
+get (123, abd, false) from hm is 4 expected 4 OK
+get (123, abd, true ) from hm is 5 expected 5 OK
+get (122, abc, false) from hm is 6 expected 6 OK
+get (122, abc, true ) from hm is 7 expected 7 OK
+get (124, abc, false) from hm is 8 expected 8 OK
+get (124, abc, true ) from hm is 9 expected 9 OK

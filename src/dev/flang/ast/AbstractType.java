@@ -672,8 +672,11 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
               (actual.feature() != null || Errors.any());
             if (actual.feature() != null)
               {
-                result = actual.feature() == feature() && (actual.isThisType() ||
-                  genericsAssignable(actual, context)); // NYI: Check: What about open generics?
+                // NYI: BUG: #5714 soundness issues probable
+                // NYI: BUG: Check: What about open generics?
+                result = actual.feature() == feature() &&
+                  (actual.isThisType() || (genericsAssignable(actual, context) &&
+                                          (outer() == null || actual.outer() != null && outer().constraintAssignableFrom(actual.outer()))));
                 for (var p: actual.feature().inherits())
                   {
                     result |= !p.calledFeature().isChoice() &&

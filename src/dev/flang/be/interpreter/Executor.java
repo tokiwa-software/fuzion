@@ -457,7 +457,11 @@ public class Executor extends ProcessExpression<Value, Object>
             var bb = ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN);
             var elCount = bb.getInt();
 
-            var arrayData = ArrayData.alloc(elCount, _fuir, elementType);
+            Instance result = new Instance(constCl);
+            var internalArray = _fuir.lookup_array_internal_array(constCl);
+            var saCl = _fuir.clazzResultClazz(internalArray);
+
+            var arrayData = ArrayData.alloc(saCl, elCount, _fuir, elementType);
 
             for (int idx = 0; idx < elCount; idx++)
               {
@@ -466,13 +470,9 @@ public class Executor extends ProcessExpression<Value, Object>
                 arrayData.set(idx, c, fuir(), elementType);
               }
 
-            Instance result = new Instance(constCl);
-            var internalArray = _fuir.lookup_array_internal_array(constCl);
-            var sysArray = _fuir.clazzResultClazz(internalArray);
-            var saCl = sysArray;
             Instance sa = new Instance(saCl);
-            Interpreter.setField(_fuir.lookup_fuzion_sys_internal_array_length(sysArray), saCl,                               sa,     new i32Value(elCount));
-            Interpreter.setField(_fuir.lookup_fuzion_sys_internal_array_data(sysArray)  , saCl,                               sa,     arrayData);
+            Interpreter.setField(_fuir.lookup_fuzion_sys_internal_array_length(saCl), saCl,                               sa,     new i32Value(elCount));
+            Interpreter.setField(_fuir.lookup_fuzion_sys_internal_array_data(saCl)  , saCl,                               sa,     arrayData);
             Interpreter.setField(internalArray                                          , constCl,                            result, sa);
             yield result;
           }
