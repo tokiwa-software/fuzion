@@ -945,7 +945,7 @@ public class Intrinsics extends ANY
     put("fuzion.jvm.create_jvm", (c,cl,outer,in) -> {
       return  C.JAVA_HOME == null
         ? noJava
-        : CExpr.call("fzE_create_jvm", new List<>(A0.castTo("char *"))).ret();
+        : CExpr.call("fzE_create_jvm", new List<>(A0.castTo("void *"), A1)).ret();
     });
     put("fuzion.jvm.destroy_jvm", (c,cl,outer,in) -> {
       return  C.JAVA_HOME == null

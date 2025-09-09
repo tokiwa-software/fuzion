@@ -26,6 +26,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.util;
 
+import java.lang.foreign.FunctionDescriptor;
+import java.lang.foreign.Linker;
+import java.lang.foreign.ValueLayout;
+import java.lang.invoke.MethodHandle;
 
 /**
  * Terminal provides constants to modify the text output style and color.
@@ -51,15 +55,10 @@ public class Terminal extends ANY
 
   /**
    * Are ANSI escapes enabled.
-   *
-   * Would be nice to check this via isattay(stdout), but this does not work in
-   * Java. Alternatives such as System.console() != null do not work, since
-   * System.console() is null if stdin is a file. System.getenv("TERM") also
-   * does not work, this remains set if stdout/stderr is piped into a file.
    */
   public static final boolean ENABLED =
     !FuzionOptions.boolPropertyOrEnv("FUZION_DISABLE_ANSI_ESCAPES") &&
-    System.getenv().get("TERM") != null;
+    isTerminal();
 
   public static final String RESET                     = ENABLED ? "\033[0m" : "";
   public static final String BOLD                      = ENABLED ? "\033[1m" : "";
@@ -159,6 +158,42 @@ public class Terminal extends ANY
    */
   public static final String UNDERLINE_LINE_RED        = ENABLED ? "\033[58;5;1m" : "";
   public static final String UNDERLINE_LINE_COLOR_OFF  = ENABLED ? "\033[59m" : "";
+
+
+  /**
+   * Are we writing to a terminal when writing to stdout?
+   *
+   * System.console() != null does not work, since
+   * System.console() is null if stdin is a file. System.getenv("TERM") also
+   * does not work, this remains set if stdout/stderr is piped into a file.
+   * Hence this hackery
+   */
+  private static boolean isTerminal()
+  {
+    try
+      {
+        var isattyAddr = Linker
+          .nativeLinker()
+          .defaultLookup()
+          .find("isatty")
+          .orElseThrow();
+
+        var isattyDesc = FunctionDescriptor.of(
+            ValueLayout.JAVA_INT,
+            ValueLayout.JAVA_INT
+        );
+
+        MethodHandle isattyHandle = Linker
+          .nativeLinker()
+          .downcallHandle(isattyAddr, isattyDesc);
+
+        return (int) isattyHandle.invokeExact(1) == 1;
+      }
+    catch (Throwable e)
+      {
+        return System.getenv().get("TERM") != null;
+      }
+  }
 
 }
 
