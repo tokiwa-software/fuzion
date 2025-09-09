@@ -54,6 +54,10 @@ public processes (ph os.Process_Handler, public running_processes container.Set 
   =>
     start := time.nano.read
 
+    # the min poll time for process exit
+    #
+    upper_bound_poll_time := time.duration.s 1
+
     os.processes ph (running_processes ∖ (container.set_of_ordered [p]))
       .replace
     # NYI: UNDER DEVELOPMENT: register errors in runtime_errors_effect
@@ -64,7 +68,7 @@ public processes (ph os.Process_Handler, public running_processes container.Set 
       elapsed_time := time.nano.read-start
       # NYI: UNDER DEVELOPMENT: replace polling by signaled waits (POSIX) / events (WIN) or similar.
       # 1ms, 2ms, 4ms, 8ms, 16ms, 32ms, ..., 1s
-      polling_time := time.duration.ms 1, min (time.duration.s 1) polling_time*2
+      polling_time := time.duration.ms 1, min upper_bound_poll_time polling_time*2
     while r < 0 && elapsed_time <= timeout
       time.nano.sleep (min timeout-elapsed_time polling_time)
     else
