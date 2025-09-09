@@ -576,8 +576,8 @@ public abstract class AbstractCall extends Expr
         for (var frml : fargs)
           {
             int argnum = count;  // effectively final copy of count
-            frml.whenResolvedTypes
-              (() -> result[0] = resolveFormalArg(res, context, result[0], argnum, frml));
+            check(frml.state().atLeast(State.RESOLVED_TYPES));
+            result[0] = resolveFormalArg(res, context, result[0], argnum, frml);
             count++;
           }
       }
