@@ -72,7 +72,8 @@ public json Parser String (Sequence codepoint) json_value =>
         ]
 
     parser_regular_codepoint :=
-      (take_while1 codepoint (c-> (c != "\"") & (c != "\\")))
+      take_while1 codepoint c->
+        c!="\"" & c!="\\"
 
 
     p :=

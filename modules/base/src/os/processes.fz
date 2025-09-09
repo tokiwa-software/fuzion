@@ -31,7 +31,8 @@ public processes (ph os.Process_Handler, public running_processes container.Set 
   #
   module start(name String, args Sequence String, env_vars container.Map String String) =>
     (ph.start name args env_vars).bind p->
-      (os.processes ph (running_processes ∪ (container.set_of_ordered [p]))).replace
+      os.processes ph (running_processes ∪ (container.set_of_ordered [p]))
+        .replace
       p
 
 
@@ -53,7 +54,8 @@ public processes (ph os.Process_Handler, public running_processes container.Set 
   =>
     start := time.nano.read
 
-    (os.processes ph (running_processes ∖ (container.set_of_ordered [p]))).replace
+    os.processes ph (running_processes ∖ (container.set_of_ordered [p]))
+      .replace
     # NYI: UNDER DEVELOPMENT: register errors in runtime_errors_effect
     _ := fzE_pipe_close p.std_in = 0
 

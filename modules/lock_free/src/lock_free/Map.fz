@@ -209,7 +209,9 @@ Indirection_Node(CTK type : property.hashable, CTV type, data concur.atomic (Mai
 # a linked list node
 # NYI: UNDER DEVELOPMENT: instead of Sequence we should use something like the original implementation ListMap(Scala).
 list_node(CTK type : property.hashable, CTV type, from Sequence (singleton_node CTK CTV)) : Sequence (tuple CTK CTV)
-pre from ∀ (sn -> (from.filter (snn -> (hash sn.k) = (hash snn.k))).count = 1)
+  pre from ∀ sn->
+    from.filter (snn -> hash sn.k = hash snn.k)
+        .count = 1
 is
   public redef as_list list (tuple CTK CTV) => from
     .map sn->(sn.k, sn.v)
