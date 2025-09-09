@@ -137,7 +137,7 @@ public class Intrinsics extends ANY
   private static String utf8ByteArrayDataToString(Value internalArray)
   {
     var strA = internalArray.arrayData();
-    var ba = (byte[]) strA._array;
+    var ba = (byte[]) strA._data;
     var l = 0;
     while (l < ba.length && ba[l] != 0)
       {
@@ -387,7 +387,7 @@ public class Intrinsics extends ANY
           var res = Interpreter
             .getField(executor.fuir().lookup_fuzion_sys_internal_array_data(sac), sac, argz, false)
             .arrayData()
-            ._array;
+            ._data;
           return new JavaRef(res);
         });
     putUnsafe("fuzion.jvm.create_jvm", (executor, innerClazz) -> args -> new i32Value(0));
@@ -423,7 +423,8 @@ public class Intrinsics extends ANY
     put("fuzion.sys.type.alloc", (executor, innerClazz) -> args ->
         {
           var et = executor.fuir().clazzActualGeneric(innerClazz, 0); // element type
-          return ArrayData.alloc(/* size */ args.get(1).i32Value(),
+          return ArrayData.alloc(executor.fuir().clazzResultClazz(innerClazz),
+                                 /* size */ args.get(1).i32Value(),
                                  executor.fuir(),
                                  /* type */ et);
         });
