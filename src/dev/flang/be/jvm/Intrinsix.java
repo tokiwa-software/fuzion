@@ -517,8 +517,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
             Expr.checkcast(new ClassType("java/lang/Boolean"))
               .andThen(Expr.invokeVirtual("java/lang/Boolean", "booleanValue", "()Z", PrimitiveType.type_boolean)));
       }
-      case c_Array,
-           c_Mutex,
+      case c_Mutex,
            c_Condition,
            c_File_Descriptor,
            c_Directory_Descriptor,
