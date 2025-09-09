@@ -54,7 +54,7 @@ public processes (ph os.Process_Handler, public running_processes container.Set 
   =>
     start := time.nano.read
 
-    # the min poll time for process exit
+    # the maximum poll time for process exit
     #
     upper_bound_poll_time := time.duration.s 1
 
