@@ -9,9 +9,9 @@ fuzion.runtime.contract_fault.cause#1 at {base.fum}/eff/fallible.fz:35
 fuzion.type.runtime.type.pre_fault.type.install_default.λ.call#1 at {base.fum}/fuzion/runtime/pre_fault.fz:39
 fuzion.runtime.pre_fault.cause#1 at {base.fum}/eff/fallible.fz:35
 fuzion.runtime.precondition_fault#1 at {base.fum}/fuzion/runtime/pre_fault.fz:58
-(interval i32).pre sliding at {base.fum}/Sequence.fz:1306
-(interval i32).precall sliding at {base.fum}/Sequence.fz:1305
-(interval i32).sliding#1 at {base.fum}/Sequence.fz:1291
+(interval i32).pre sliding at {base.fum}/Sequence.fz:1310
+(interval i32).precall sliding at {base.fum}/Sequence.fz:1309
+(interval i32).sliding#1 at {base.fum}/Sequence.fz:1295
 sequence_sliding at --CURDIR--/sequence_sliding.fz:41
 
 *** fatal errors encountered, stopping.

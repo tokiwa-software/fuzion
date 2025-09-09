@@ -22,17 +22,17 @@ fuzion.runtime.pre_fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
 fuzion.runtime.precondition_fault#1: {base.fum}/fuzion/runtime/pre_fault.fz:58:47:
 public precondition_fault(msg String) void => pre_fault.cause msg
 ----------------------------------------------^^^^^^^^^^^^^^^^^^^
-(interval i32).pre sliding: {base.fum}/Sequence.fz:1306:7:
+(interval i32).pre sliding: {base.fum}/Sequence.fz:1310:7:
       debug: size > 0
 ------^^^^^^^^^^^^^^^
-(interval i32).precall sliding: {base.fum}/Sequence.fz:1305:5:
+(interval i32).precall sliding: {base.fum}/Sequence.fz:1309:5:
     pre
 ----^^^
       debug: size > 0
 ------^^^^^^^^^^^^^^^
       debug: step > 0
 ------^^^^^^^^^^^^^^^
-(interval i32).sliding#1: {base.fum}/Sequence.fz:1291:5:
+(interval i32).sliding#1: {base.fum}/Sequence.fz:1295:5:
     sliding size 1
 ----^^^^^^^^^^^^^^
 sequence_sliding: --CURDIR--/sequence_sliding.fz:41:10:
