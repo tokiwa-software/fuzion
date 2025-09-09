@@ -63,7 +63,7 @@ varargs_via_open_type_parameter =>
       =>
         vs := if      T : numeric then "(number: $v)"
               else if T : String  then "\"$v\""
-              else                     "(*** unkowon type `{T.name}` ***)"
+              else                     "(*** unknown type `{T.name}` ***)"
         (e.0.replace "%"+e.1 vs, e.1+1)
 
     say (a.typed_foldf (s, 0) doit .0)
@@ -81,7 +81,7 @@ varargs_via_open_type_parameter =>
       =>
         vs := if      T : numeric then "(number: $v)"
               else if T : String  then "\"$v\""
-              else                     "(*** unkowon type `{T.name}` ***)"
+              else                     "(*** unknown type `{T.name}` ***)"
         (e.0.replace "%"+e.1 vs, e.1+1)
 
     say doit.res.0
@@ -97,7 +97,7 @@ varargs_via_open_type_parameter =>
     =>
       vs := if      T : numeric then "(number: $v)"
             else if T : String  then "\"$v\""
-            else                     "(*** unkowon type `{T.name}` ***)"
+            else                     "(*** unknown type `{T.name}` ***)"
       (e.0.replace "%"+e.1 vs, e.1+1)
 
     say res.0
