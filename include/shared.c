@@ -37,6 +37,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <stdatomic.h>
 #include <time.h>
 
+#include "fz.h"
+
 
 /**
  * Perform bitwise comparison of two float values. This is used by
@@ -151,21 +153,6 @@ jmethodID fzE_character_value   = NULL;
 jmethodID fzE_integer_value     = NULL;
 jmethodID fzE_long_value        = NULL;
 jmethodID fzE_boolean_value     = NULL;
-
-// definition of a struct for a jvm result
-// in case of success v0 is used
-// in case of exception v1 is used
-typedef struct fzE_jvm_result fzE_jvm_result;
-struct fzE_jvm_result
-{
-  int32_t fzTag;
-  union
-  {
-    jvalue v0;
-    jstring v1; // NYI: UNDER DEVELOPMENT: should probably better be jthrowable
-  }fzChoice;
-};
-
 
 // convert 0-terminated utf-8 to modified utf-8 as
 // used by the JVM.
