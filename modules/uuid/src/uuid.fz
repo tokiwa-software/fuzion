@@ -138,7 +138,7 @@ private:public uuid(val u128) : property.orderable is
   #
   type.data_mask => u128 0xffff_ffff_ffff_0fff 0x3fff_ffff_ffff_ffff
 
-  
+
   # Version and variant bits for RFC9562 version 4
   # https://datatracker.ietf.org/doc/html/rfc9562#name-uuid-version-4
   #
@@ -230,7 +230,11 @@ private:public uuid(val u128) : property.orderable is
     # check format: length and required "-" in correct position
     if uuid_str.byte_length = 36 && ls[8] = ls[13] = ls[18] = ls[23] = "-"
       # decode hexadecimal digits, illegal characters or wrong "-" are found here
-      (encodings.base16.decode_str (uuid_str.upper_case.replace "-" "")).bind (uuid) (byte_arr ->
-        (uuid (byte_arr.foldf u128 u128.zero ((res,byte) -> res << 8.as_u128 | byte.as_u128))))
+      encodings
+        .base16
+        .decode_str (uuid_str.upper_case.replace "-" "")
+        .bind (uuid) byte_arr->
+          uuid (byte_arr.foldf u128 u128.zero (res,byte)->
+                                                           res << 8.as_u128 | byte.as_u128)
     else
       error "uuid must have format XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX where X is a hexadecimal digit"

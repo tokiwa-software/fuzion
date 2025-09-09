@@ -603,7 +603,8 @@ is
       tomb_node =>
         clean parent (lev - width)
       ln list_node =>
-        gcas i m (list_node ([singleton_node k v] ++ (ln.from.filter (sn -> sn.k != k))))
+        new_node := list_node <| [singleton_node k v] ++ (ln.from.filter (sn -> sn.k != k))
+        gcas i m new_node
 
 
   # remove key from ctrie
