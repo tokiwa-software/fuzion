@@ -1182,13 +1182,15 @@ public Sequence(public T type) ref : property.countable is
   # convert this Sequence to an ordered map
   # via mapping all elements to key value pairs
   #
-  public as_ordered_map(KEY type : property.orderable, VALUE type, mapper T -> (KEY,VALUE)) container.ordered_map KEY VALUE
+  public as_ordered_map(KEY type : property.orderable, 
+                          VALUE type, 
+                          mapper T -> (KEY,VALUE)
+                          ) container.ordered_map KEY VALUE
   =>
 
     keys, values :=
       reduce ((Sequence KEY).empty,(Sequence VALUE).empty) (r,t)->
-        kv := mapper t
-        (r.0++[kv.0],r.1++[kv.1])
+        mapper t ||> k,v->(r.0++[k],r.1++[v])
 
     container.ordered_map keys values
 
@@ -1196,13 +1198,15 @@ public Sequence(public T type) ref : property.countable is
   # convert this Sequence to a hash map
   # via mapping all elements to key value pairs
   #
-  public as_hash_map(KEY type : property.hashable, VALUE type, mapper T -> (KEY,VALUE)) container.hash_map KEY VALUE
+  public as_hash_map(KEY type : property.hashable, 
+                     VALUE type,
+                     mapper T -> (KEY,VALUE)
+                     ) container.hash_map KEY VALUE
   =>
 
     keys, values :=
       reduce ((Sequence KEY).empty,(Sequence VALUE).empty) (r,t)->
-        kv := mapper t
-        (r.0++[kv.0],r.1++[kv.1])
+        mapper t ||> k,v->(r.0++[k],r.1++[v])
 
     container.hash_map keys.as_array values.as_array
 
