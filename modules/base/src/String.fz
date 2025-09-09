@@ -520,8 +520,11 @@ public String ref : property.equatable, property.hashable, property.orderable is
     if l.is_empty
       nil
     else
-      h :=  String.from_bytes (l.take_while (c -> !c.is_ascii_white_space)).as_array
-      t := (String.from_bytes (l.drop_while (c -> !c.is_ascii_white_space))).split
+      # NYI: UNDER DEVELOPMENT: type inference for lambda
+      cnd u8->bool := c -> !c.is_ascii_white_space
+      h :=  String.from_bytes (l.take_while cnd).as_array
+      t := (String.from_bytes <| l.drop_while cnd)
+                  .split
       ref : Cons String (list String) is
         public redef head String => h
         public redef tail list String => t
