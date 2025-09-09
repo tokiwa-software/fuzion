@@ -221,10 +221,20 @@ JNIEnv * getJNIEnv()
       printf("JVM has not been started via: `fuzion.jvm.env.create_jvm0 ...`\n");
       exit(EXIT_FAILURE);
     }
-  if (fzE_jni_env == NULL) {
-    // NYI: DetachCurrentThread
-    (*fzE_jvm)->AttachCurrentThread(fzE_jvm, (void **)&fzE_jni_env, NULL);
+
+  assert(fzE_jvm != NULL);
+
+  jint getEnvStat = (*fzE_jvm)->GetEnv(fzE_jvm, (void **)&fzE_jni_env, JNI_VERSION_10);
+  if (getEnvStat == JNI_EDETACHED) {
+    // NYI: UNDER DEVELOPMENT: DetachCurrentThread
+
+    jint res = (*fzE_jvm)->AttachCurrentThread(fzE_jvm, (void **)&fzE_jni_env, NULL);
+
+    assert(res == JNI_OK);
   }
+
+  assert(fzE_jni_env != NULL);
+
   return fzE_jni_env;
 }
 
@@ -234,6 +244,12 @@ static_assert(JNI_OK == 0, "assume JNI_OK to be zero.");
 // initialize the JVM
 // executed once at the start of the application
 int32_t fzE_create_jvm(char * option_string) {
+  fzE_lock();
+  if (fzE_jvm != NULL){
+    fzE_unlock();
+    return 0;
+  }
+
   JavaVMInitArgs vm_args;
 
   JavaVMOption options[1];
@@ -245,6 +261,7 @@ int32_t fzE_create_jvm(char * option_string) {
 
   int result = JNI_CreateJavaVM(&fzE_jvm, (void **)&fzE_jni_env, &vm_args);
   if (result != JNI_OK) {
+    fzE_unlock();
     return result;
   }
 
@@ -277,13 +294,16 @@ int32_t fzE_create_jvm(char * option_string) {
   fzE_long_value      = (*getJNIEnv())->GetMethodID(getJNIEnv(), fzE_class_long, "longValue", "()J");
   fzE_boolean_value   = (*getJNIEnv())->GetMethodID(getJNIEnv(), fzE_class_boolean, "booleanValue", "()Z");
 
+  fzE_unlock();
   return 0;
 }
 
 // close the JVM.
 void fzE_destroy_jvm(void)
 {
-  (*fzE_jvm)->DestroyJavaVM(fzE_jvm);
+  // NYI: BUG: does not work
+  // JVM is not re-entrant, The JVM is not designed to be cleanly restarted within the same process.
+  // (*fzE_jvm)->DestroyJavaVM(fzE_jvm);
 }
 
 // helper function to replace char `find`
