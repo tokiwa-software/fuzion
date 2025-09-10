@@ -2036,13 +2036,13 @@ A ((Choice)) declaration must not contain a result type.
          *
          *   f (b bool) i64              { if (b) { 23 } else { -17 } }
          *   g (b bool) choice<A, f32> } { b ? 3.4 : A }
-         *   abstract myfun { abstract x(a i32) i32 }
-         *   h myfun { fun (a) => a*a }
+         *   myfun : Function i32 i32 is
+         *   h myfun => a->a*a
          *
-         * Here, i64 will be propagated to be used as the type of "23" and
-         * "-17", choice<A, f32> will be used as the type of "3.4" and "A", and
-         * myfun will be used as the type of "fun (a) => a*a", which implies
-         * that i32 will be the type for "a".
+         * Here, i64 will be propagated to be used as the type of `23` and
+         * `-17`, choice<A, f32> will be used as the type of `3.4` and `A`, and
+         * myfun will be used as the type of `a->a*a`, which implies
+         * that i32 will be the type for `a`.
          */
         visit(new ContextVisitor(context()) {
             @Override public void  action(AbstractAssign a) { a.propagateExpectedType(res, _context); }
