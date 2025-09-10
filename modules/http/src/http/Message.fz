@@ -89,9 +89,9 @@ module parse_header_fields(LM type : mutate) outcome http.canonical_header_map =
           parts := cur.split_n ":" 1
           if parts.count != 2 then cause "broken header field '$cur'"
           # NYI: UNDER DEVELOPMENT: must duplicate header fields cause an error?
-          fields.put parts[0].lower_case parts[1].trim
+          fields.put parts[0].lower_case.canonical_header_key parts[1].trim
 
-      http.canonical_header_map.from_map fields.as_map
+      http.canonical_header_map fields.as_map
 
 
 module:public body_reader(
