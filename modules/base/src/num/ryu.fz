@@ -819,11 +819,12 @@ public ryū(public T type : float) is
       bits10 := m_high * table[i.as_i32][3]
       bits00 := m_low  * table[i.as_i32][3]
 
-      ((((((
-          ((bits00 >> 31) + bits01 + bits10) >> 31)
-                          + bits02 + bits11) >> 31)
-                          + bits03 + bits12) >> 21)
-                          + (bits13 << 10)) >> (actual_shift j)
+      a := bits00 >> 31
+      b := (a + bits01 + bits10) >> 31
+      c := (b + bits02 + bits11) >> 31
+      d := (c + bits03 + bits12) >> 21
+      e := d + (bits13 << 10)
+      e >> actual_shift j
 
 
     mul_pow5_div_pow2(m, i, j i64)
@@ -887,7 +888,9 @@ public ryū(public T type : float) is
         else
           (dv, dp -  1, dm, false, true, e10)
       else if q < 63
-        (dv, dp, dm, false, (mv & (((i64 1) << (q - 1)) - 1)) = 0, e10)
+        a := i64.one << q-1
+        b := mv & a-1
+        (dv, dp, dm, false, b=0, e10)
       else
         (dv, dp, dm, false, false, e10)
 

@@ -259,7 +259,12 @@ else
       exit 1
 
     backend_options(x) =>
-      String.join ((((envir.vars.get x).val "").replace " " protected_space).split "|") " "
+      s := envir.vars
+                .get x
+                .val ""
+                .replace " " protected_space
+                .split "|"
+      String.join s " "
 
     if be = "c"
       compile := "$fz_run -XmaxErrors=-1 -c {backend_options "FUZION_C_BACKEND_OPTIONS"} $file -o=testbin".excecute
