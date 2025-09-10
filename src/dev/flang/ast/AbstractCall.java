@@ -561,31 +561,31 @@ public abstract class AbstractCall extends Expr
   {
     // NYI: UNDER DEVELOPMENT: cache this? cache key: calledFeature/target
 
-    // wrap result in Array to make effectively final
-    var result = new AbstractType[][]{new AbstractType[0]};
+    var result = new AbstractType[0];
 
     if (!(this instanceof Call c) || c.calledFeatureKnown())
       {
         var fargs = calledFeature().valueArguments();
-        result[0] = fargs.size() == 0
+        result = fargs.size() == 0
           ? UnresolvedType.NO_TYPES
           : new AbstractType[fargs.size()];
-        Arrays.fill(result[0], Types.t_UNDEFINED);
+        Arrays.fill(result, Types.t_UNDEFINED);
 
         int count = 0;
         for (var frml : fargs)
           {
             int argnum = count;  // effectively final copy of count
-            check(frml.state().atLeast(State.RESOLVED_TYPES));
-            result[0] = resolveFormalArg(res, context, result[0], argnum, frml);
+            if (CHECKS)
+              check(frml.state().atLeast(State.RESOLVED_TYPES));
+            result = resolveFormalArg(res, context, result, argnum, frml);
             count++;
           }
       }
 
     if (POSTCONDITIONS) ensure
-      (result[0] != null);
+      (result != null);
 
-    return result[0];
+    return result;
   }
 
 
