@@ -108,6 +108,27 @@ module:public array(
     array internal unit unit unit
 
 
+  # array -- create initialized one-dimensional immutable array
+  #
+  # reducing X at each step
+  #
+  # NYI: UNDER DEVELOPMENT: find better name!
+  #
+  public type.newr(X type, length i32, start X, init (i32, X) -> (T,X)) array T
+    pre
+      safety: length ≥ 0
+  =>
+
+    indices => 0..length-1
+
+    internal := fuzion.sys.internal_array_init T length
+    for x in indices
+        t := init x start, init x t.1 do
+      internal[x] := t.0
+
+    array internal unit unit unit
+
+
   # return the maximum length of an array
   #
   public type.max_length i32 => i32.max
