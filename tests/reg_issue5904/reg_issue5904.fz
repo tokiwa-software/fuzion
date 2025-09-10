@@ -36,5 +36,59 @@ reg_issue5904 =>
     else
       nil
 
+  # nested loop
+  find3(a array i32, v i32) option i32 =>
+    for e in a
+    until e=v then
+      for eb in a
+      until eb=v then v
+                  else nil
+    else
+      for ec in a
+      until ec=v then v
+                  else nil
+
+  /* NYI: UNDER DEVELOPMENT: does not work yet
+
+  fields =>
+
+    a := [4]
+    v := 4
+
+    find4 option i32 :=
+      for e in a
+      until e=v then v
+                else nil
+
+    find5 option i32 :=
+      for
+        i := 0, i+1
+      while i < a.length
+      until a[i]=v
+        a[i]
+      else
+        nil
+
+    # nested loop
+    find6 option i32 :=
+      for e in a
+      until e=v then
+        for eb in a
+        until eb=v then v
+                    else nil
+      else
+        for ec in a
+        until ec=v then v
+                    else nil
+
+
+    say find4
+    say find5
+    say find6
+
+  */
+
   say (find [4] 4)
   say (find2 [4] 4)
+  say (find3 [4] 4)
+  # fields

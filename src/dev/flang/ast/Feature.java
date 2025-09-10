@@ -2872,7 +2872,9 @@ A ((Choice)) declaration must not contain a result type.
   protected void setFunctionReturnType(AbstractType frt)
   {
     if (PRECONDITIONS) require
-      (!state().atLeast(State.RESOLVING));
+      (!state().atLeast(State.RESOLVING),
+       _returnType == NoType.INSTANCE,
+       _impl._kind == Impl.Kind.RoutineDef);
 
     this._impl = new Impl(impl().pos, impl().expr(), Impl.Kind.Routine);
     this._returnType = new FunctionReturnType(frt);

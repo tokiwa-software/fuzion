@@ -468,10 +468,19 @@ public class Loop extends ANY
          */
         private void propagateResultType(AbstractFeature outer)
         {
-          var of = (Feature)outer;
-          if (((Block)of.impl().expr()).resultExpression() == _impl && of.returnType() instanceof FunctionReturnType frt)
+          var setExplicitResultType =
+             ((Block)outer.code()).resultExpression() == _impl ||
+             outer.featureName().baseName().startsWith(FuzionConstants.REC_LOOP_PREFIX);
+          if (((Feature)outer).returnType() instanceof FunctionReturnType frt && setExplicitResultType)
             {
               this.setFunctionReturnType(frt.functionReturnType());
+              if (_loopElse != null)
+                {
+                  for (int i = 0; i < _loopElse.length; i++)
+                    {
+                      _loopElse[i].setFunctionReturnType(frt.functionReturnType());
+                    }
+                }
             }
         }
       };
