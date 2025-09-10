@@ -571,14 +571,13 @@ public abstract class AbstractCall extends Expr
       : new AbstractType[fargs.size()];
     Arrays.fill(result, Types.t_UNDEFINED);
 
-    int count = 0;
+    int argnum = 0;
     for (var frml : fargs)
       {
-        int argnum = count;  // effectively final copy of count
         if (CHECKS)
           check(frml.state().atLeast(State.RESOLVED_TYPES));
         result = resolveFormalArg(res, context, result, argnum, frml);
-        count++;
+        argnum++;
       }
 
     if (POSTCONDITIONS) ensure
