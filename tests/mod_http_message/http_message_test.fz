@@ -68,13 +68,13 @@ TODO:
                                                                       ("server", "FuzionWebServer v0.016"),
                                                                       ("x-frame-options", "DENY")])
                                                    (read_handler lm "  <body>\n    <p>Hello World!</p>\n  </body>".utf8.as_array)
-    say my_resp
+    say my_resp.as_string_with_body
 
 
 
-  say "\nPARSE REQUEST:\n"
+  say "\n\n\nPARSE REQUEST:\n"
 
-  req_path := "/home/simon/fuzion/tests/http_message/http_req.txt"
+  req_path := "http_req.txt"
 
   parse_req :=
     io.file.use _ req_path io.file.mode.read ()->
@@ -90,7 +90,7 @@ TODO:
 
   say "\nPARSE RESPONSE:\n"
 
-  resp_path := "/home/simon/fuzion/tests/http_message/http_resp.txt"
+  resp_path := "http_resp.txt"
 
   _ := io.file.use _ resp_path io.file.mode.read ()->
     resp := http.read_response io.file.file_mutate parse_req.val
