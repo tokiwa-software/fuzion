@@ -453,7 +453,28 @@ public class Loop extends ANY
                                formalArguments,
                                Function.NO_CALLS,
                                Contract.EMPTY_CONTRACT,
-                               new Impl(p, block, Impl.Kind.RoutineDef));
+                               new Impl(p, block, Impl.Kind.RoutineDef))
+      {
+        @Override public void setOuter(AbstractFeature outer) {
+          propagateResultType(outer);
+          super.setOuter(outer);
+        }
+
+        /**
+         * if loop is the result of outer feature
+         * and outer has an explicit result type
+         * propagate this result type to the loop.
+         * @param outer
+         */
+        private void propagateResultType(AbstractFeature outer)
+        {
+          var of = (Feature)outer;
+          if (((Block)of.impl().expr()).resultExpression() == _impl && of.returnType() instanceof FunctionReturnType frt)
+            {
+              this.setFunctionReturnType(frt.functionReturnType());
+            }
+        }
+      };
 
     var initialCall = new Call(pos, null, loopName, initialActuals);
     prologSuccessBlock.add(initialCall);
