@@ -50,6 +50,8 @@ import java.util.Map;
 public class Profiler extends ANY
 {
 
+  // NYI: UNDER DEVELOPMENT: add methods to pause/resume the profiler
+
 
   /*----------------------------  constants  ----------------------------*/
 
