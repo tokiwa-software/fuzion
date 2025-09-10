@@ -539,7 +539,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
                         AstErrors.formalGenericWithGenericArgs(pos(), this, f);
                       }
                     var gt = f.asGenericType();
-                    if (gt.isOpenGeneric() && !(outer instanceof Feature off && off.isLastArgType(this)))
+                    if (gt.isOpenGeneric() && !isValidOpenGeneric(f, outer))
                       {
                         AstErrors.illegalUseOfOpenFormalGeneric(pos(), gt.genericArgument());
                         _resolved = Types.t_ERROR;
@@ -574,7 +574,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
                 if (generics.isEmpty())
                   {
                     var gt = f.asGenericType();
-                    if (!gt.isOpenGeneric() || (outerfeat instanceof Feature off && off.isLastArgType(this)))
+                    if (!gt.isOpenGeneric() || isValidOpenGeneric(f, outer))
                       {
                         _resolved = gt;
                       }
@@ -602,6 +602,32 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
       }
 
     return _resolved;
+  }
+
+  /**
+   * After it was found that `this` resolves ast the open type parameter `otp`
+   * in the context `outer`, check if this is a legal use of an open type
+   * parameters.
+   *
+   * Check if this is the last argument of a feature and t is its return type.
+   * This is needed during type resolution since this is the only place where an
+   * open formal generic may be used.
+   *
+   * @return true iff this is the last argument of a feature and t is its return
+   * type.
+   */
+  boolean isValidOpenGeneric(AbstractFeature otp, AbstractFeature outer)
+  {
+    if (PRECONDITIONS) require
+      (otp.isOpenTypeParameter(),
+       outer != null);
+
+    return
+      outer instanceof Feature off &&
+      off.outer() != null &&
+      off.outer().arguments().contains(outer) &&
+      (off.outer().arguments().getLast() == off ||
+       otp.outer() != off.outer());
   }
 
 

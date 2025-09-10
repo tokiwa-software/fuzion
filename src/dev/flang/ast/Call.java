@@ -1916,23 +1916,37 @@ public class Call extends AbstractCall
               {
                 var t = frml.resultTypeIfPresent(res);
                 var g = t.isGenericArgument() ? t.genericArgument() : null;
-                if (g != null && g.outer() == _calledFeature && g.isOpenTypeParameter())
+                if (t.isOpenGeneric())
                   {
-                    if (pass == 1)
+                    if (g.outer() == _calledFeature && g.isOpenTypeParameter())
                       {
-                        checked[vai] = true;
-                        foundAt.set(g.typeParameterIndex(), new List<>()); // set to something not null to avoid missing argument error below
-                        while (aargs.hasNext())
+                        if (pass == 1)
                           {
-                            count++;
-                            var actual = resolveTypeForNextActual(Types.t_UNDEFINED, aargs, res, context);
-                            var actualType = typeFromActual(res, context, actual);
-                            if (actualType == null)
+                            checked[vai] = true;
+                            foundAt.set(g.typeParameterIndex(), new List<>()); // set to something not null to avoid missing argument error below
+                            while (aargs.hasNext())
                               {
-                                actualType = Types.t_ERROR;
-                                AstErrors.failedToInferOpenGenericArg(pos(), count, actual);
+                                count++;
+                                var actual = resolveTypeForNextActual(Types.t_UNDEFINED, aargs, res, context);
+                                var actualType = typeFromActual(res, context, actual);
+                                if (actualType == null)
+                                  {
+                                    actualType = Types.t_ERROR;
+                                    AstErrors.failedToInferOpenGenericArg(pos(), count, actual);
+                                  }
+                                _generics.add(actualType);
                               }
-                            _generics.add(actualType);
+                          }
+                      }
+                    else
+                      {
+                        for (var _ : handDownForTarget(res, t, false))
+                          {
+                            if (aargs.hasNext())
+                              {
+                                var ignore = aargs.next();
+                                count++;
+                              }
                           }
                       }
                   }

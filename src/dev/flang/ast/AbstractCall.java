@@ -399,6 +399,25 @@ public abstract class AbstractCall extends Expr
   }
 
 
+  AbstractType[] handDownForTarget(Resolution res, AbstractType tp, boolean oldstyle)
+  {
+    var tt = target().type();
+    var r =
+      tt.isGenericArgument()
+      ? tt.genericArgument()
+          .constraint()
+          .replaceGenerics(new List<AbstractType>(tp))
+          .toArray(new AbstractType[0])
+      : calledFeature().handDown(res,
+                                 oldstyle || tt.isThisType()
+                                 ? new AbstractType[] { tp }
+                                 : tt.replaceGenerics(new List<AbstractType>(tp))
+                                     .toArray(new AbstractType[0]),
+                                 tt.feature());
+    return r;
+  }
+
+
   /**
    * Helper routine for resolveFormalArgumentTypes to determine the actual type
    * of a formal argument after inheritance and determination of actual type
@@ -423,7 +442,7 @@ public abstract class AbstractCall extends Expr
     var tt = target().type();
     if (!tt.isGenericArgument() && declF != tt.feature())
       {
-        var a = calledFeature().handDown(res, new AbstractType[] { frmlT }, tt.feature());
+        var a = handDownForTarget(res, frmlT, true);
         if (a.length != 1)
           {
             // Check that the number or args can only change for the
@@ -574,10 +593,13 @@ public abstract class AbstractCall extends Expr
     int argnum = 0;
     for (var frml : fargs)
       {
+        var old_result = result;
         if (CHECKS)
           check(frml.state().atLeast(State.RESOLVED_TYPES));
         result = resolveFormalArg(res, context, result, argnum, frml);
-        argnum++;
+        argnum = argnum + 1
+          /* argument of open type might resolve to 0..n args, so adjust: */
+          + result.length - old_result.length;
       }
 
     if (POSTCONDITIONS) ensure

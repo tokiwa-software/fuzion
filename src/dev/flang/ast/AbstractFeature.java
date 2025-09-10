@@ -1141,7 +1141,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   {
     if (PRECONDITIONS) require
       (heir != null,
-       state().atLeast(State.RESOLVING_TYPES));
+       state().atLeast(State.RESOLVING_DECLARATIONS));
 
     var result = HAND_DOWN_FAILED;
 

@@ -1351,24 +1351,6 @@ public class Feature extends AbstractFeature
 
 
   /**
-   * Check if this is the last argument of a feature and t is its return type.
-   * This is needed during type resolution since this is the only place where an
-   * open formal generic may be used.
-   *
-   * @return true iff this is the last argument of a feature and t is its return
-   * type.
-   */
-  boolean isLastArgType(AbstractType t)
-  {
-    return
-      outer() != null &&
-      !outer().arguments().isEmpty() &&
-      outer().arguments().getLast() == this &&
-      t == _returnType.functionReturnType();
-  }
-
-
-  /**
    * buffer to collect cycle part of error message shown by
    * cyclicInheritanceError().
    */
