@@ -1685,7 +1685,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
         {
           case Abstract,Intrinsic,Native -> "=> " + kind();
           case Choice, Routine -> "is";
-          case Field -> isArgument() ? "" : ":= ...";
+          case Field -> state().atLeast(State.FINDING_DECLARATIONS) && isArgument() ? "" : ":= ...";
           case OpenTypeParameter, TypeParameter -> "(type parameter)";
         })).trim();
 
