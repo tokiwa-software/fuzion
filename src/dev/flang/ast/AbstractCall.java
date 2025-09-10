@@ -556,36 +556,34 @@ public abstract class AbstractCall extends Expr
    * @param res the resolution instance.
    *
    * @param context the source code context where this Call is used
+   *
+   * @return the resolved formal arguments, due to open type parameters, this
+   * might be shorter or longer than calledFeature().valueArguments().size().
+   * In case the called feature is not known yet, result will be the empty
+   * array.
    */
   AbstractType[] resolvedFormalArgumentTypes(Resolution res, Context context)
   {
     // NYI: UNDER DEVELOPMENT: cache this? cache key: calledFeature/target
+    var fargs = calledFeature().valueArguments();
+    var result = fargs.size() == 0
+      ? UnresolvedType.NO_TYPES
+      : new AbstractType[fargs.size()];
+    Arrays.fill(result, Types.t_UNDEFINED);
 
-    // wrap result in Array to make effectively final
-    var result = new AbstractType[][]{new AbstractType[0]};
-
-    if (!(this instanceof Call c) || c.calledFeatureKnown())
+    int argnum = 0;
+    for (var frml : fargs)
       {
-        var fargs = calledFeature().valueArguments();
-        result[0] = fargs.size() == 0
-          ? UnresolvedType.NO_TYPES
-          : new AbstractType[fargs.size()];
-        Arrays.fill(result[0], Types.t_UNDEFINED);
-
-        int count = 0;
-        for (var frml : fargs)
-          {
-            int argnum = count;  // effectively final copy of count
-            frml.whenResolvedTypes
-              (() -> result[0] = resolveFormalArg(res, context, result[0], argnum, frml));
-            count++;
-          }
+        if (CHECKS)
+          check(frml.state().atLeast(State.RESOLVED_TYPES));
+        result = resolveFormalArg(res, context, result, argnum, frml);
+        argnum++;
       }
 
     if (POSTCONDITIONS) ensure
-      (result[0] != null);
+      (result != null);
 
-    return result[0];
+    return result;
   }
 
 
