@@ -548,11 +548,10 @@ public class Names extends ANY implements ClassFileConstants
         else if ('°' == cp) { sb.append("DEGREE"); }
         else if ('[' == cp) { }  // convert "index []" just into "index "
         else if (']' == cp) { }
-        else if ('#' == cp &&
-                 off < length &&
-                 s.codePointAt(off + Character.charCount(cp)) == '^')
-                            { sb.append("OUTER_"); off++; }  // join #^ used for outer refs
-        else if ('#' == cp) { sb.append("INTERN_"); }
+        else if ('#' == cp)
+          if      (off + Character.charCount(cp) >= length)             { sb.append("_INTERN"); }
+          else if (s.codePointAt(off + Character.charCount(cp)) == '^') { sb.append("OUTER_"); off += Character.charCount('^' ); }  // join #^ used for outer refs
+          else                                                          { sb.append("INTERN_"); }
         else
           {
             sb.append("_U").append(Integer.toHexString(cp)).append("_");
