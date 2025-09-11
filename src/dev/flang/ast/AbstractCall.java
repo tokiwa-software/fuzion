@@ -402,19 +402,35 @@ public abstract class AbstractCall extends Expr
   AbstractType[] handDownForTarget(Resolution res, AbstractType tp, boolean oldstyle)
   {
     var tt = target().type();
-    var r =
-      tt.isGenericArgument()
-      ? tt.genericArgument()
+    if (tt.isGenericArgument())
+      {
+        return tt.genericArgument()
           .constraint()
           .replaceGenerics(new List<AbstractType>(tp))
-          .toArray(new AbstractType[0])
-      : calledFeature().handDown(res,
+          .toArray(new AbstractType[0]);
+      }
+    else
+      {
+    var a = oldstyle
+      ? new AbstractType[] { tp }
+      : AbstractFeature.handDownInheritance(res,
+                                            tt.feature().findInheritanceChain(tp.genericArgument().outer()),
+                                            new AbstractType[] { tp },
+                                            tt.feature());
+    a = oldstyle
+      ? a
+      : tt.replaceGenerics(new List<AbstractType>(a))
+         .toArray(new AbstractType[0]);
+    //x    System.out.println("handDown for "+calledFeature().qualifiedName()+" tt: "+tt+" a is "+Arrays.toString(a));
+    var r =
+      calledFeature().handDown(res,
                                  oldstyle || tt.isThisType()
-                                 ? new AbstractType[] { tp }
-                                 : tt.replaceGenerics(new List<AbstractType>(tp))
-                                     .toArray(new AbstractType[0]),
+                                 ? a // new AbstractType[] { tp }
+                               : a, // tt.replaceGenerics(new List<AbstractType>(tp))
+                               //                                     .toArray(new AbstractType[0]),
                                  tt.feature());
     return r;
+      }
   }
 
 
@@ -443,20 +459,6 @@ public abstract class AbstractCall extends Expr
     if (!tt.isGenericArgument() && declF != tt.feature())
       {
         var a = handDownForTarget(res, frmlT, true);
-        if (a.length != 1)
-          {
-            // Check that the number or args can only change for the
-            // last argument (when it is of an open generic type).  if
-            // it would change for other arguments, changing the
-            // _resolvedFormalArgumentTypes array would invalidate
-            // argnum for following arguments.
-            if (CHECKS) check
-              (Errors.any() || argnum == rfat.length - 1);
-            if (argnum != rfat.length -1)
-              {
-                a = new AbstractType[] { Types.t_ERROR }; /* do not change _resolvedFormalArgumentTypes array length */
-              }
-          }
         rfat = addToResolvedFormalArgumentTypes(rfat, a, argnum);
         cnt = a.length;
       }

@@ -1174,7 +1174,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * @return a new array of types as they are visible in heir. The length might
    * be different due to open type parameters being replaced by a list of types.
    */
-  private static AbstractType[] handDownInheritance(Resolution res, List<AbstractCall> inh, AbstractType[] a, AbstractFeature heir)
+  /* private */ static AbstractType[] handDownInheritance(Resolution res, List<AbstractCall> inh, AbstractType[] a, AbstractFeature heir)
   {
     for (AbstractCall c : inh)
       {
@@ -1183,6 +1183,10 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
             var ti = a[i];
             if (ti.isOpenGeneric())
               {
+                if (!true || ti.genericArgument().outer() == c.calledFeature())
+                  {
+                    //                System.out.println("ti.genericArgument() is "+ti.genericArgument().qualifiedName()+" "+ti.genericArgument().outer().qualifiedName());
+                    // System.out.println("c.calledFeature() is "+c.calledFeature().qualifiedName());
                 var frmlTs = ti.genericArgument().replaceOpen(c.actualTypeParameters());
                 a = Arrays.copyOf(a, a.length - 1 + frmlTs.size());
                 for (var tg : frmlTs)
@@ -1191,6 +1195,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
                     i++;
                   }
                 i = i - 1;
+                  }
               }
             else
               {
