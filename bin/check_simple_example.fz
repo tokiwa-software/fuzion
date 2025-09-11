@@ -201,6 +201,7 @@ clean_err(f String) =>
   check "sed -i s#.*/#--CURDIR--/# $f".excecute.ok
   # line numbers
   check "sed -E -i s/\\.fz:[0-9]+:[0-9]+:/\\.fz:n:n:/g $f".excecute.ok
+  check "sed -E -i s/\\.fz:[0-9]+/\\.fz:n/g $f".excecute.ok
   # lambdas
   check "sed -E -i s/#fun[0-9]+/fun/g $f".excecute.ok
   check "sed -E -i s/INTERN_fun[0-9]+/fun/g $f".excecute.ok
