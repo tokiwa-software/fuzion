@@ -68,7 +68,7 @@ TODO:
                                                                       ("server", "FuzionWebServer v0.016"),
                                                                       ("x-frame-options", "DENY")])
                                                    (read_handler lm "  <body>\n    <p>Hello World!</p>\n  </body>".utf8.as_array)
-    say my_resp.as_string_with_body
+    say <| my_resp.as_string_with_body 1E4
 
 
 
@@ -81,7 +81,7 @@ TODO:
       req := http.read_request io.file.file_mutate
 
       say <| match req
-               r http.request_msg => r.as_string_with_body
+               r http.request_msg => r.as_string_with_body 1E4
                e error => $e
       req.val
   _:=parse_req
@@ -96,5 +96,5 @@ TODO:
     resp := http.read_response io.file.file_mutate parse_req.val
 
     say <| match resp
-              r http.response_msg => r.as_string_with_body
+              r http.response_msg => r.as_string_with_body 1E4
               e error => $e
