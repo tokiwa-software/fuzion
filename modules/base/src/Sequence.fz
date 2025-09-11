@@ -1098,11 +1098,13 @@ public Sequence(public T type) ref : property.countable is
               n u32 => n > 0
     =>
       match (find s)
-        nil     => (id (Sequence T) Sequence.this) : nil  # NYI: With better type propagation, this could be `Sequence.this : nil` or `[Sequence.this].as_list`
+        nil     =>
+          # NYI: With better type propagation, this could be `Sequence.this : nil` or `[Sequence.this].as_list`
+          (id (Sequence T) Sequence.this) : nil
         idx i32 =>
-          ref : Cons (Sequence T) (list (Sequence T)) is
-            public redef head Sequence T := take (if split_after then idx + s.count else idx)
-            public redef tail list (Sequence T) =>
+          head Sequence T => take (if split_after then idx + s.count else idx)
+
+          tail list (Sequence T) =>
               rest := drop (idx + s.count)
 
               match limit
@@ -1113,6 +1115,8 @@ public Sequence(public T type) ref : property.countable is
                   else
                     res Sequence T := rest
                     res : nil
+
+          head : tail
 
 
   # filter out consecutive duplicate elements.
