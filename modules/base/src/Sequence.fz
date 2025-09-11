@@ -197,7 +197,9 @@ public Sequence(public T type) ref : property.countable is
   # create a Sequence that consists only of the first n elements of this
   # Sequence, fewer if this Sequence has fewer elements
   #
-  public take (n i32) Sequence T => as_list.take n
+  public take (n i32) Sequence T
+    post debug: n>0 || result.is_empty
+  => as_list.take n
 
 
   # reverse the order of the elements in this Sequence
@@ -211,7 +213,9 @@ public Sequence(public T type) ref : property.countable is
   # NOTE: this may have performance in O(n) unless it is backed by an immutable array.
   #
   #
-  public drop (n i32) Sequence T => as_list.drop n
+  public drop (n i32) Sequence T
+    post debug: n>0 || count=result.count
+  => as_list.drop n
 
 
   # get a function that, given an index, returns the element at that index
