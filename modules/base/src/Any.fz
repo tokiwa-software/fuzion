@@ -90,7 +90,7 @@ public Any ref is
   #
   #     say <| sum [3.14, 32, 16.0, 8]
   #
-  # NYI: IMPROVEMENT: #5892: If this is fixed, we could write
+  # NYI: ENHANCEMENT: #5892: If this is fixed, we could write
   #
   #     sum(values Sequence Any)
   #     =>
