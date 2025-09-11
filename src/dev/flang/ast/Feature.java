@@ -64,8 +64,7 @@ public class Feature extends AbstractFeature
 
 
   /**
-   * Unique identifier to define a total ordered over Features (used in
-   * compareTo)
+   * Unique identifier to define a total order over Features (used in compareTo)
    */
   int _id = _ids_++;
 
@@ -1235,7 +1234,9 @@ public class Feature extends AbstractFeature
 
     if (_valuesAsOpenType == null)
       {
-        var name = FuzionConstants.VALUES_AS_OPEN_TYPE_PREFIX + _id;
+        // we mangle the field's base name into the name such that during
+        // monomorphization, we know what field to use
+        var name = FuzionConstants.createValuesAsOpenTypeName(featureName().baseName(), _id);
         var otf = new Feature(pos(), visibility().typeVisibility(), 0, NoType.INSTANCE, new List<>(name), new List<>(),
                               new List<>(new Call(pos(), Universe.instance, Types.resolved.f_Values_Of_Open_Type)),
                               Contract.EMPTY_CONTRACT,

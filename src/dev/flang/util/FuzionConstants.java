@@ -670,6 +670,44 @@ public class FuzionConstants extends ANY
       };
   }
 
+
+  /**
+   * Create name of open type feature, i.e., the feature that is called when
+   * a field whose type is an open type parameter is called without selecting
+   * one specific variant.
+   *
+   * @param argFieldBaseName the base name of the argument field
+   *
+   * @param uniqueId a unique id that is mangled into the name, just used to
+   * avoid confusing subsequent errors in case, e.g., there are to fields with
+   * the same name, we do not want an error that there are two features called
+   * `#Values_Of_Open_Type#fieldName#`.
+   *
+   * @return the names, looks something like `#Values_Of_Open_Type#argFieldBaseName#uniqueId`.
+   */
+  public static String createValuesAsOpenTypeName(String argFieldBaseName, int uniqueId)
+  {
+    return VALUES_AS_OPEN_TYPE_PREFIX + "#" + argFieldBaseName + "#" + uniqueId;
+  }
+
+
+  /**
+   * Extract the field base name from a name created by `createValuesAsOpenTypeName`.
+   *
+   * @param valuesAsOpenTypeName the name obtained form `createValuesAsOpenTypeName`.
+   *
+   * @return the original `argFieldBaseName` passed to `createValuesAsOpenTypeName`.
+   */
+  public static String extractBaseNameFromValuesAsOpenTypeName(String valuesAsOpenTypeName)
+  {
+    var start = VALUES_AS_OPEN_TYPE_PREFIX.length() + 1;
+    var end   = valuesAsOpenTypeName.lastIndexOf("#");
+    if (CHECKS) check
+      (start < end,
+       end < valuesAsOpenTypeName.length());
+    return valuesAsOpenTypeName.substring(start, end);
+  }
+
 }
 
 /* end of file */
