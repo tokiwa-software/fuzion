@@ -2864,6 +2864,23 @@ A ((Choice)) declaration must not contain a result type.
   }
 
 
+  /**
+   * update return type early in the resolving phase
+   *
+   * this is used for setting the result type for loops
+   */
+  protected void setFunctionReturnType(AbstractType frt)
+  {
+    if (PRECONDITIONS) require
+      (!state().atLeast(State.RESOLVING),
+       _returnType == NoType.INSTANCE,
+       _impl._kind == Impl.Kind.RoutineDef);
+
+    this._impl = new Impl(impl().pos, impl().expr(), Impl.Kind.Routine);
+    this._returnType = new FunctionReturnType(frt);
+  };
+
+
 }
 
 /* end of file */
