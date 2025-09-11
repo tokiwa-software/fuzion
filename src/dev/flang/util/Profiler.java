@@ -64,7 +64,7 @@ public class Profiler extends ANY
 
 
   /**
-   * Command to be excecuted to create flame graph
+   * Command to be executed to create flame graph
    */
   private static String FLAMEGRAPH_PL = "flamegraph.pl";
 

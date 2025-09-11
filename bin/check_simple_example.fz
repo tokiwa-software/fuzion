@@ -128,7 +128,7 @@ record_process(
 
 # execute this Sequence of process+args
 #
-Sequence.excecute(
+Sequence.execute(
   # feed .stdin file to executed process?
   feed_stdin bool
 ) =>
@@ -139,16 +139,16 @@ Sequence.excecute(
 
 # execute this string by splitting at all whitespaces
 #
-String.excecute(
+String.execute(
   # feed .stdin file to executed process?
   feed_stdin bool
 ) =>
-  ((split_if (=" ")).map (.replace protected_space " ")).excecute feed_stdin
+  ((split_if (=" ")).map (.replace protected_space " ")).execute feed_stdin
 
 # execute this string by splitting at all whitespaces
 #
-String.excecute =>
-  String.this.excecute false
+String.execute =>
+  String.this.execute false
 
 # write data to file dest
 #
@@ -198,27 +198,28 @@ check_exit_code(run process_result) =>
 # like loop4, preandcall19 etc.
 #
 clean_err(f String) =>
-  check "sed -i s#.*/#--CURDIR--/# $f".excecute.ok
+  check "sed -i s#.*/#--CURDIR--/# $f".execute.ok
   # line numbers
-  check "sed -E -i s/\\.fz:[0-9]+:[0-9]+:/\\.fz:n:n:/g $f".excecute.ok
+  check "sed -E -i s/\\.fz:[0-9]+:[0-9]+:/\\.fz:n:n:/g $f".execute.ok
+  check "sed -E -i s/\\.fz:[0-9]+/\\.fz:n/g $f".execute.ok
   # lambdas
-  check "sed -E -i s/#fun[0-9]+/fun/g $f".excecute.ok
-  check "sed -E -i s/INTERN_fun[0-9]+/fun/g $f".excecute.ok
+  check "sed -E -i s/#fun[0-9]+/fun/g $f".execute.ok
+  check "sed -E -i s/INTERN_fun[0-9]+/fun/g $f".execute.ok
   # loops
-  check "sed -E -i s/#loop[0-9]+/loop/g $f".excecute.ok
-  check "sed -E -i s/INTERN_loop[0-9]+/loop/g $f".excecute.ok
+  check "sed -E -i s/#loop[0-9]+/loop/g $f".execute.ok
+  check "sed -E -i s/INTERN_loop[0-9]+/loop/g $f".execute.ok
   # preconditions
-  check "sed -E -i s/#pre[0-9]+/pre/g $f".excecute.ok
-  check "sed -E -i s/INTERN_pre[0-9]+/pre/g $f".excecute.ok
+  check "sed -E -i s/#pre[0-9]+/pre/g $f".execute.ok
+  check "sed -E -i s/INTERN_pre[0-9]+/pre/g $f".execute.ok
   # pre bools
-  check "sed -E -i s/#prebool[0-9]+/prebool/g $f".excecute.ok
-  check "sed -E -i s/INTERN_prebool[0-9]+/prebool/g $f".excecute.ok
+  check "sed -E -i s/#prebool[0-9]+/prebool/g $f".execute.ok
+  check "sed -E -i s/INTERN_prebool[0-9]+/prebool/g $f".execute.ok
   # pre bools
-  check "sed -E -i s/#preandcall[0-9]+/preandcall/g $f".excecute.ok
-  check "sed -E -i s/INTERN_preandcall[0-9]+/preandcall/g $f".excecute.ok
+  check "sed -E -i s/#preandcall[0-9]+/preandcall/g $f".execute.ok
+  check "sed -E -i s/INTERN_preandcall[0-9]+/preandcall/g $f".execute.ok
   # postconditions
-  check "sed -E -i s/#post[0-9]+/post/g $f".excecute.ok
-  check "sed -E -i s/INTERN_post[0-9]+/post/g $f".excecute.ok
+  check "sed -E -i s/#post[0-9]+/post/g $f".execute.ok
+  check "sed -E -i s/INTERN_post[0-9]+/post/g $f".execute.ok
 
 
 # delete temporary files
@@ -267,9 +268,9 @@ else
       String.join s " "
 
     if be = "c"
-      compile := "$fz_run -XmaxErrors=-1 -c {backend_options "FUZION_C_BACKEND_OPTIONS"} $file -o=testbin".excecute
+      compile := "$fz_run -XmaxErrors=-1 -c {backend_options "FUZION_C_BACKEND_OPTIONS"} $file -o=testbin".execute
       if compile.ok
-        run := "./testbin".excecute true
+        run := "./testbin".execute true
 
         check_exit_code run
 
@@ -279,21 +280,21 @@ else
         write_to_file "tmp_out.txt" compile.out
         write_to_file "tmp_err.txt" compile.err
     else if be = "jvm"
-      run := "$fz_run -XmaxErrors=-1 -jvm {backend_options "FUZION_JVM_BACKEND_OPTIONS"} $file".excecute true
+      run := "$fz_run -XmaxErrors=-1 -jvm {backend_options "FUZION_JVM_BACKEND_OPTIONS"} $file".execute true
 
       check_exit_code run
 
       write_to_file "tmp_out.txt" run.out
       write_to_file "tmp_err.txt" run.err
     else if be = "int"
-      run := "$fz_run -XmaxErrors=-1 -interpreter $file".excecute true
+      run := "$fz_run -XmaxErrors=-1 -interpreter $file".execute true
 
       check_exit_code run
 
       write_to_file "tmp_out.txt" run.out
       write_to_file "tmp_err.txt" run.err
     else if be = "effect"
-      run := "$fz_run -XmaxErrors=-1 -effects $file".excecute
+      run := "$fz_run -XmaxErrors=-1 -effects $file".execute
 
       check_exit_code run
 
@@ -301,14 +302,14 @@ else
     else
       panic "backend unknown: $be"
 
-    out := "diff --strip-trailing-cr {exp_out} tmp_out.txt".excecute
+    out := "diff --strip-trailing-cr {exp_out} tmp_out.txt".execute
 
     err :=
       if be != "effect"
         copy exp_err exp_err_cleaned
         clean_err "tmp_err.txt"
         clean_err exp_err_cleaned
-        "diff --strip-trailing-cr {exp_err_cleaned} tmp_err.txt".excecute
+        "diff --strip-trailing-cr {exp_err_cleaned} tmp_err.txt".execute
       else
         process_result.empty_success
 
