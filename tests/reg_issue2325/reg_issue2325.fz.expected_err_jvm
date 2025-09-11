@@ -13,7 +13,7 @@ i32.pre infix + at {base.fum}/numeric.fz:48
 i32.precall infix + at {base.fum}/numeric.fz:47
 i32.type.sum.anonymous.infix ∙#2 at {base.fum}/numeric.fz:226
 i32.type.sum.anonymous.op#2 at {base.fum}/Monoid.fz:60
-(list i32).fold#2 at {base.fum}/list.fz:221
+(list i32).fold#2 at {base.fum}/list.fz:211
 (interval i32).fold#1 at {base.fum}/Sequence.fz:422
 reg_issue2325 at --CURDIR--/reg_issue2325.fz:25
 
