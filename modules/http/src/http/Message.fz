@@ -25,33 +25,57 @@
 # HTTP message, can be a request or a response
 #
 public Message ref is
+
   module version_str(major, minor i32) => "HTTP/" + (major > 1 && minor = 0 ? $major : "$major.$minor")
 
+
   # the start line of the message, for requests it is the request line, for responses the status line
+  #
   public start_line String => abstract
 
+
   # header fields with all lower case
+  #
   public header http.canonical_header_map => abstract
+
 
   # NYI: BUG: can only be called once
   # body of the message, if it has one
-  # public body option (Sequence u8) => abstract
+  #
   public body io.Read_Handler => abstract
+
 
   # NYI: BUG: can only be called once
   # the whole message as a sequence of bytes
-  public bytes Sequence u8 =>
+  #
+  public bytes(
+    # the maximum number of bytes to read from the body,
+    # does not account for the size of the header
+    max_body_bytes i32) Sequence u8
+  =>
     # NYI: BUG: read fully
-    (start_line + header.as_string + crlf).utf8 ++ (match (body.read 1E6)
+    (start_line + header.as_string + crlf).utf8 ++ (match (body.read max_body_bytes)
                                                 a array u8 => a
                                                 * => [])
 
+
   # String representation of the message header
+  #
   public redef as_string String => start_line + header.as_string + crlf
 
+
   # NYI: BUG: can only be called once
-  # String representation of the message header
-  public as_string_with_body String => start_line + header.as_string + crlf
+  # String representation of the whole message, i.e. header and body
+  #
+  public as_string_with_body(
+    # the maximum number of bytes to read from the body,
+    # does not account for the size of the header
+    max_body_bytes i32) outcome String
+  =>
+    match (body.read max_body_bytes)
+      a array u8 => Message.this.as_string + String.from_bytes a
+      e error => e
+      io.end_of_file => Message.this.as_string
 
 
 
@@ -94,6 +118,7 @@ module parse_header_fields(LM type : mutate) outcome http.canonical_header_map =
       http.canonical_header_map fields.as_map
 
 
+
 module:public body_reader(
   # mutate effect from which to read
   LM type : mutate,
@@ -104,13 +129,14 @@ module:public body_reader(
 
     public redef read(count i32) choice (array u8) io.end_of_file error =>
 
-      res choice (array u8) io.end_of_file error := match (io.buffered LM).reader.env.read count
+      to_read := min remaining.get count
+
+      res choice (array u8) io.end_of_file error => match (io.buffered LM).reader.env.read to_read
         c array u8 =>
           (io.buffered LM).reader.env.discard c.length
           # decrease remaining if reader has a size limit
           if reader_size >= 0
             new_remaining := remaining.get - c.length
-            check new_remaining >= 0 # more bytes available than what is specified in content-length header field
             remaining <- (new_remaining >= 0 ? new_remaining : 0)
           c
         o outcome io.end_of_file =>
@@ -122,7 +148,7 @@ module:public body_reader(
                 io.end_of_file
             e error => e
 
-      res
+      to_read = 0 ? io.end_of_file : res
 
 
 
@@ -171,7 +197,6 @@ module body_helper(LM type : mutate, is_req bool, header_fields container.Map St
           # (content.count = length) ? option content : (cause "input closed after {content.count} bytes, but specified content-length: $length")
           body_reader LM length
 
-
     # If this is a request message and none of the above are true, then the message body length is zero (no message body is present).
     # Otherwise, this is a response message without a declared message body length, so the message body length is determined by the number of octets received prior to the server closing the connection.
     # https://datatracker.ietf.org/doc/html/rfc9112#section-6.3-2.7
@@ -179,6 +204,7 @@ module body_helper(LM type : mutate, is_req bool, header_fields container.Map St
       # is_req ? nil : option (Sequence u8) (io.buffered LM).read_fully
       body_reader LM (is_req ? 0 : -1)
 
+      
 
 /*
 NYI:
