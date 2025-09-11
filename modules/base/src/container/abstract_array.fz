@@ -71,7 +71,26 @@ public abstract_array
   # For arrays, this has performance in O(1).
   #
   public redef drop (n i32) Sequence T =>
-    n >= count ? (list T).empty : as_list (max 0 n)
+    if n >= count
+      (list T).empty
+    else if n < 0
+      abstract_array.this
+    else
+      slice n count
+
+
+  # create a Sequence that consists only of the first n elements of this
+  # Sequence, fewer if this Sequence has fewer elements
+  #
+  # For arrays, this has performance in O(1).
+  #
+  public redef take (n i32) Sequence T =>
+    if n >= count
+      abstract_array.this
+    else if n < 0
+      []
+    else
+      slice 0 n
 
 
   # a sequence of all valid indices to access this array. Useful e.g., for
