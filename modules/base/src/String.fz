@@ -346,9 +346,9 @@ public String ref : property.equatable, property.hashable, property.orderable is
                     if (b3 & 0xc0) != 0x80
                       e3 "expected two continuation bytes in the range 0x80..0xbf."
                     else if b1 ≤ 0xef       # 0x0800..0xffff encoded in 3 bytes
-                      res := (((b1.as_u32 & 0x0f) << 12) |
-                              ((b2.as_u32 & 0x3f) <<  6) |
-                              ((b3.as_u32 & 0x3f)      )   )
+                      res := (b1.as_u32 & 0x0f) << 12 |
+                             (b2.as_u32 & 0x3f) <<  6 |
+                             (b3.as_u32 & 0x3f)
                       if res ∉ p.utf8_encoded_in_three_bytes
                         e3 "codepoint $res uses overlong 3-byte encoding, allowed for range {p.utf8_encoded_in_two_bytes}."
                       else if res ∈ p.utf16_surrogate
@@ -366,10 +366,10 @@ public String ref : property.equatable, property.hashable, property.orderable is
                           if (b4 & 0xc0) != 0x80
                             e4 "expected three continuation bytes in the range 0x80..0xbf."
                           else
-                            res := (((b1.as_u32 & 0x07) << 18) |
-                                    ((b2.as_u32 & 0x3f) << 12) |
-                                    ((b3.as_u32 & 0x3f) <<  6) |
-                                    ((b4.as_u32 & 0x3f)      )   )
+                            res := (b1.as_u32 & 0x07) << 18 |
+                                   (b2.as_u32 & 0x3f) << 12 |
+                                   (b3.as_u32 & 0x3f) <<  6 |
+                                   (b4.as_u32 & 0x3f)
                             if res ∉ p.utf8_encoded_in_four_bytes
                               e4 "codepoint $res uses overlong 4-byte encoding."
                             else if res > 0x10ffff
