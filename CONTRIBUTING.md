@@ -166,9 +166,9 @@ The available categories are
 
 - _HACK_ -- the code is incorrect but was made to work in common cases
 - _BUG_ -- the code is incorrect and needs to be fixed
-- _IMPROVEMENT_ -- the code can be improved (preferable use _OPTIMIZATION_ or _CLEANUP_ if applicable)
-- _OPTIMIZATION_ -- code code could be made more efficient
-- _CLEANUP_ -- code codes maintainability could be improved
+- _ENHANCEMENT_ -- the code can be improved or new functionality added (preferably use _OPTIMIZATION_ or _CLEANUP_ if applicable)
+- _OPTIMIZATION_ -- the code could be made more efficient
+- _CLEANUP_ -- the codes’s maintainability could be improved
 - _FUTURE PROBLEM_ -- the code works but might need to be changed in the future, e.g., to support an expected change in the OS, CPU architecture, external libraries, etc.
 - _UNDER DEVELOPMENT_ -- the code is being worked on
 - _COMMENT_ -- the code needs better documentation
