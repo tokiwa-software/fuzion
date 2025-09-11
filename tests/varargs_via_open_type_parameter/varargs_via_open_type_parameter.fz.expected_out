@@ -1,5 +1,5 @@
 a is [f64 3.14, i32 42, bool true, (array i32) [1, 2, 3]]
-type is (varargs_via_open_type_parameter.test f64 i32 bool (array i32)).#Values_Of_Open_Type4
+type is (varargs_via_open_type_parameter.test f64 i32 bool (array i32)).a.#
 first (number: 42), second "Hello World!", third (*** unknown type `unit` ***), fourth (number: 3+4i)
 first (number: 42), second "Hello World!", third (*** unknown type `unit` ***), fourth (number: 3+4i)
 first (number: 42), second "Hello World!", third (*** unknown type `unit` ***), fourth (number: 3+4i)

@@ -342,7 +342,7 @@ public class FuzionConstants extends ANY
    * a field whose type is an open type parameter is called without selecting
    * one specific variant.
    */
-  public static final String VALUES_AS_OPEN_TYPE_PREFIX = INTERNAL_NAME_PREFIX + "Values_Of_Open_Type";
+  public static final String VALUES_OF_OPEN_TYPE_SUFFIX = "." + INTERNAL_NAME_PREFIX; /* e.g., `values.#` which stands for `values.0`/`values.1`/etc. */
 
 
   /**
@@ -678,34 +678,29 @@ public class FuzionConstants extends ANY
    *
    * @param argFieldBaseName the base name of the argument field
    *
-   * @param uniqueId a unique id that is mangled into the name, just used to
-   * avoid confusing subsequent errors in case, e.g., there are to fields with
-   * the same name, we do not want an error that there are two features called
-   * `#Values_Of_Open_Type#fieldName#`.
-   *
    * @return the names, looks something like `#Values_Of_Open_Type#argFieldBaseName#uniqueId`.
    */
-  public static String createValuesAsOpenTypeName(String argFieldBaseName, int uniqueId)
+  public static String createFieldsOfOpenTypeName(String argFieldBaseName)
   {
-    return VALUES_AS_OPEN_TYPE_PREFIX + "#" + argFieldBaseName + "#" + uniqueId;
+    return argFieldBaseName + VALUES_OF_OPEN_TYPE_SUFFIX;
   }
 
 
   /**
-   * Extract the field base name from a name created by `createValuesAsOpenTypeName`.
+   * Extract the field base name from a name created by `createValuesOfOpenTypeName`.
    *
-   * @param valuesAsOpenTypeName the name obtained form `createValuesAsOpenTypeName`.
+   * @param valuesAsOpenTypeName the name obtained form `createValuesOfOpenTypeName`.
    *
-   * @return the original `argFieldBaseName` passed to `createValuesAsOpenTypeName`.
+   * @return the original `argFieldBaseName` passed to `createValuesOfOpenTypeName`.
    */
-  public static String extractBaseNameFromValuesAsOpenTypeName(String valuesAsOpenTypeName)
+  public static String extractBaseNameFromFieldsOfOpenTypeName(String valuesAsOpenTypeName)
   {
-    var start = VALUES_AS_OPEN_TYPE_PREFIX.length() + 1;
-    var end   = valuesAsOpenTypeName.lastIndexOf("#");
+    var end = valuesAsOpenTypeName.lastIndexOf(VALUES_OF_OPEN_TYPE_SUFFIX);
+
     if (CHECKS) check
-      (start < end,
-       end < valuesAsOpenTypeName.length());
-    return valuesAsOpenTypeName.substring(start, end);
+      (end >= 0);
+
+    return valuesAsOpenTypeName.substring(0, end);
   }
 
 }

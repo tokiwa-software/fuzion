@@ -1236,7 +1236,7 @@ public class Feature extends AbstractFeature
       {
         // we mangle the field's base name into the name such that during
         // monomorphization, we know what field to use
-        var name = FuzionConstants.createValuesAsOpenTypeName(featureName().baseName(), _id);
+        var name = FuzionConstants.createFieldsOfOpenTypeName(featureName().baseName());
         var otf = new Feature(pos(), visibility().typeVisibility(), 0, NoType.INSTANCE, new List<>(name), new List<>(),
                               new List<>(new Call(pos(), Universe.instance, Types.resolved.f_Values_Of_Open_Type)),
                               Contract.EMPTY_CONTRACT,
