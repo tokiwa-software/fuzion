@@ -89,29 +89,69 @@ reg_issue5895 =>
   heir2 : open i8     is
   heir3 : open i8 nil is
 
-  chk "f0 [] f64, 1.2 []"                                                                   <| heir1.f0 (f64 1.2)
-  chk "f0 [i8] f64, 1.2 [i8 -12]"                                                           <| heir2.f0 (f64 1.2) -12
-  chk "f0 [i8, nil] f64, 1.2 [i8 -12, nil --nil--]"                                         <| heir3.f0 (f64 1.2) -12 nil
+  chk "f0 [] f64, 1.2 []"                           <| heir1.f0 (f64 1.2)
+  chk "f0 [i8] f64, 1.2 [i8 -12]"                   <| heir2.f0 (f64 1.2) -12
+  chk "f0 [i8, nil] f64, 1.2 [i8 -12, nil --nil--]" <| heir3.f0 (f64 1.2) -12 nil
 
-  chk "f1 [] f64, [] 1.2"                                                                   <| heir1.f1             (f64 1.2)
-  chk "f1 [i8] f64, [i8 -12] 1.2"                                                           <| heir2.f1 -12         (f64 1.2)
-  chk "f1 [i8, nil] f64, [i8 -12, nil --nil--] 1.2"                                                <| heir3.f1 -12 nil     (f64 1.2)
+  chk "f1 [] f64, [] 1.2"                           <| heir1.f1         (f64 1.2)
+  chk "f1 [i8] f64, [i8 -12] 1.2"                   <| heir2.f1 -12     (f64 1.2)
+  chk "f1 [i8, nil] f64, [i8 -12, nil --nil--] 1.2" <| heir3.f1 -12 nil (f64 1.2)
 
-  chk "f2 [] f64, array (option String), [] 1.2 [hi]"                         <| heir1.f2              (f64 1.2) [option "hi"]
-  chk "f2 [i8] f64, array (option String), [i8 -12] 1.2 [hi]"            <| heir2.f2 -12         (f64 1.2) [option "hi"]
-  chk "f2 [i8, nil] f64, array (option String), [i8 -12, nil --nil--] 1.2 [hi]" <| heir3.f2 -12 nil      (f64 1.2) [option "hi"]
+  chk "f2 [] f64, array (option String), [] 1.2 [hi]"                           <| heir1.f2         (f64 1.2) [option "hi"]
+  chk "f2 [i8] f64, array (option String), [i8 -12] 1.2 [hi]"                   <| heir2.f2 -12     (f64 1.2) [option "hi"]
+  chk "f2 [i8, nil] f64, array (option String), [i8 -12, nil --nil--] 1.2 [hi]" <| heir3.f2 -12 nil (f64 1.2) [option "hi"]
 
-  chk "f3 [] f64, aos, [] [] 1.2 aos []"                                       <| heir1.f3             1.2 aos
-  chk "f3 [i8] f64, aos, [] [i8 -12] 1.2 aos []"                               <| heir2.f3 -12         1.2 aos
-  chk "f3 [i8, nil] f64, aos, [] [i8 -12, nil --nil--] 1.2 aos []"                    <| heir3.f3 -12 nil      1.2 aos
+  chk "f3 [] f64, aos, [] [] 1.2 aos []"                                                   <| heir1.f3         1.2 aos
+  chk "f3 [i8] f64, aos, [] [i8 -12] 1.2 aos []"                                           <| heir2.f3 -12     1.2 aos
+  chk "f3 [i8, nil] f64, aos, [] [i8 -12, nil --nil--] 1.2 aos []"                         <| heir3.f3 -12 nil 1.2 aos
 
-  chk "f3 [] f64, aos, [bool] [] 1.2 aos [bool true]"                                       <| heir1.f3             1.2 aos true
-  chk "f3 [i8] f64, aos, [bool] [i8 -12] 1.2 aos [bool true]"                               <| heir2.f3 -12         1.2 aos true
-  chk "f3 [i8, nil] f64, aos, [bool] [i8 -12, nil --nil--] 1.2 aos [bool true]"                    <| heir3.f3 -12 nil      1.2 aos true
+  chk "f3 [] f64, aos, [bool] [] 1.2 aos [bool true]"                                      <| heir1.f3         1.2 aos true
+  chk "f3 [i8] f64, aos, [bool] [i8 -12] 1.2 aos [bool true]"                              <| heir2.f3 -12     1.2 aos true
+  chk "f3 [i8, nil] f64, aos, [bool] [i8 -12, nil --nil--] 1.2 aos [bool true]"            <| heir3.f3 -12 nil 1.2 aos true
 
-  chk "f3 [] f64, aos, [bool, nf] [] 1.2 aos [bool true, nf nf]"                                       <| heir1.f3             1.2 aos true nf
-  chk "f3 [i8] f64, aos, [bool, nf] [i8 -12] 1.2 aos [bool true, nf nf]"                               <| heir2.f3 -12         1.2 aos true nf
-  chk "f3 [i8, nil] f64, aos, [bool, nf] [i8 -12, nil --nil--] 1.2 aos [bool true, nf nf]"                    <| heir3.f3 -12 nil      1.2 aos true nf
+  chk "f3 [] f64, aos, [bool, nf] [] 1.2 aos [bool true, nf nf]"                           <| heir1.f3         1.2 aos true nf
+  chk "f3 [i8] f64, aos, [bool, nf] [i8 -12] 1.2 aos [bool true, nf nf]"                   <| heir2.f3 -12     1.2 aos true nf
+  chk "f3 [i8, nil] f64, aos, [bool, nf] [i8 -12, nil --nil--] 1.2 aos [bool true, nf nf]" <| heir3.f3 -12 nil 1.2 aos true nf
+
+  redef1 : open        is
+    redef f0(T   type,            t T             ) => "r1.f0 {T.name}, $t"
+    redef f1(T   type,            t T             ) => "r1.f1 {T.name}, $t"
+    redef f2(T,U type,            t T, u U        ) => "r1.f2 {T.name}, {U.name}, $t $u"
+    redef f3(T,U type, V type..., t T, u U, v V...) => "r1.f3 {T.name}, {U.name}, {V.map (.name)} $t $u $v"
+  redef2 : open i8     is
+    redef f0(T   type,            t T, a1 i8                  ) => "r2.f0 {T.name}, $t $a1"
+    redef f1(T   type,                 a1 i8, t T             ) => "r2.f1 {T.name}, $a1 $t"
+    redef f2(T,U type,                 a1 i8, t T, u U        ) => "r2.f2 {T.name}, {U.name}, $a1 $t $u"
+    redef f3(T,U type, V type...,      a1 i8, t T, u U, v V...) => "r2.f3 {T.name}, {U.name}, {V.map (.name)} $a1 $t $u $v"
+  redef3 : open i8 nil is
+    redef f0(T   type,            t T, a1 i8, a2 nil                  ) => "r3.f0 {T.name}, $t $a1 $a2"
+    redef f1(T   type,                 a1 i8, a2 nil, t T             ) => "r3.f1 {T.name}, $a1 $a2 $t"
+    redef f2(T,U type,                 a1 i8, a2 nil, t T, u U        ) => "r3.f2 {T.name}, {U.name}, $a1 $a2 $t $u"
+    redef f3(T,U type, V type...,      a1 i8, a2 nil, t T, u U, v V...) => "r3.f3 {T.name}, {U.name}, {V.map (.name)} $a1 $a2 $t $u $v"
+
+  chk "r1.f0 f64, 1.2"             <| redef1.f0 (f64 1.2)
+  chk "r2.f0 f64, 1.2 -12"         <| redef2.f0 (f64 1.2) -12
+  chk "r3.f0 f64, 1.2 -12 --nil--" <| redef3.f0 (f64 1.2) -12 nil
+
+  chk "r1.f1 f64, 1.2"             <| redef1.f1         (f64 1.2)
+  chk "r2.f1 f64, -12 1.2"         <| redef2.f1 -12     (f64 1.2)
+  chk "r3.f1 f64, -12 --nil-- 1.2" <| redef3.f1 -12 nil (f64 1.2)
+
+  chk "r1.f2 f64, array (option String), 1.2 [hi]"             <| redef1.f2         (f64 1.2) [option "hi"]
+  chk "r2.f2 f64, array (option String), -12 1.2 [hi]"         <| redef2.f2 -12     (f64 1.2) [option "hi"]
+  chk "r3.f2 f64, array (option String), -12 --nil-- 1.2 [hi]" <| redef3.f2 -12 nil (f64 1.2) [option "hi"]
+
+  chk "r1.f3 f64, aos, [] 1.2 aos []"                                     <| redef1.f3         1.2 aos
+  chk "r2.f3 f64, aos, [] -12 1.2 aos []"                                 <| redef2.f3 -12     1.2 aos
+  chk "r3.f3 f64, aos, [] -12 --nil-- 1.2 aos []"                         <| redef3.f3 -12 nil 1.2 aos
+
+  chk "r1.f3 f64, aos, [bool] 1.2 aos [bool true]"                        <| redef1.f3         1.2 aos true
+  chk "r2.f3 f64, aos, [bool] -12 1.2 aos [bool true]"                    <| redef2.f3 -12     1.2 aos true
+  chk "r3.f3 f64, aos, [bool] -12 --nil-- 1.2 aos [bool true]"            <| redef3.f3 -12 nil 1.2 aos true
+
+  chk "r1.f3 f64, aos, [bool, nf] 1.2 aos [bool true, nf nf]"             <| redef1.f3         1.2 aos true nf
+  chk "r2.f3 f64, aos, [bool, nf] -12 1.2 aos [bool true, nf nf]"         <| redef2.f3 -12     1.2 aos true nf
+  chk "r3.f3 f64, aos, [bool, nf] -12 --nil-- 1.2 aos [bool true, nf nf]" <| redef3.f3 -12 nil 1.2 aos true nf
 
 # short instead of `array (option String)`
 aos is

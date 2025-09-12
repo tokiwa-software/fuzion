@@ -46,3 +46,21 @@ PASS: f3 [i8, nil] f64, aos, [bool] [i8 -12, nil --nil--] 1.2 aos [bool true]
 PASS: f3 [] f64, aos, [bool, nf] [] 1.2 aos [bool true, nf nf]
 PASS: f3 [i8] f64, aos, [bool, nf] [i8 -12] 1.2 aos [bool true, nf nf]
 PASS: f3 [i8, nil] f64, aos, [bool, nf] [i8 -12, nil --nil--] 1.2 aos [bool true, nf nf]
+PASS: r1.f0 f64, 1.2
+PASS: r2.f0 f64, 1.2 -12
+PASS: r3.f0 f64, 1.2 -12 --nil--
+PASS: r1.f1 f64, 1.2
+PASS: r2.f1 f64, -12 1.2
+PASS: r3.f1 f64, -12 --nil-- 1.2
+PASS: r1.f2 f64, array (option String), 1.2 [hi]
+PASS: r2.f2 f64, array (option String), -12 1.2 [hi]
+PASS: r3.f2 f64, array (option String), -12 --nil-- 1.2 [hi]
+PASS: r1.f3 f64, aos, [] 1.2 aos []
+PASS: r2.f3 f64, aos, [] -12 1.2 aos []
+PASS: r3.f3 f64, aos, [] -12 --nil-- 1.2 aos []
+PASS: r1.f3 f64, aos, [bool] 1.2 aos [bool true]
+PASS: r2.f3 f64, aos, [bool] -12 1.2 aos [bool true]
+PASS: r3.f3 f64, aos, [bool] -12 --nil-- 1.2 aos [bool true]
+PASS: r1.f3 f64, aos, [bool, nf] 1.2 aos [bool true, nf nf]
+PASS: r2.f3 f64, aos, [bool, nf] -12 1.2 aos [bool true, nf nf]
+PASS: r3.f3 f64, aos, [bool, nf] -12 --nil-- 1.2 aos [bool true, nf nf]
