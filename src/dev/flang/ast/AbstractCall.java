@@ -420,7 +420,7 @@ public abstract class AbstractCall extends Expr
     var l = new List<>(frmlT);
     if (!tt.isGenericArgument() && declF != tt.feature())
       {
-        l = calledFeature().handDown(res, l, tt.feature());
+        l = calledFeature().outer().handDown(res, l, tt.feature());
       }
 
     // next, replace generics given in the target type and in this call

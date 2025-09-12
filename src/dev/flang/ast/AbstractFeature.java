@@ -549,17 +549,10 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
             if (CHECKS) check
               (Errors.any() || p.calledFeature() != null);
 
-            if (p.calledFeature().isChoice())
-              {
-                result = p.calledFeature().isBaseChoice()
-                  ? p.actualTypeParameters()
-                  : p.calledFeature().choiceGenerics();
-                // we need to do a hand down to get the actual choice generics
-                if (!p.calledFeature().isBaseChoice())
-                  {
-                    var inh = this.findInheritanceChain(p.calledFeature());
-                    result = handDownInheritance(null, inh, result, this);
-                  }
+            var pf = p.calledFeature();
+            if (pf.isChoice())
+              { // we need to do a hand down to get the actual choice generics
+                result = pf.handDown(null, pf.choiceGenerics(), this);
               }
           }
       }
@@ -1148,7 +1141,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
     if (heir != Types.f_ERROR)
       {
-        var inh = heir.findInheritanceChain(outer());
+        var inh = heir.findInheritanceChain(this);
         if (CHECKS) check
           (Errors.any() || inh != null);
 
@@ -1172,8 +1165,8 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    *
    * @param heir the feature that inherits the types
    *
-   * @return a new array of types as they are visible in heir. The length might
-   * be different due to open type parameters being replaced by a list of types.
+   * @return a List of types as they are visible in heir. The length might be
+   * different due to open type parameters being replaced by a list of types.
    */
   private static List<AbstractType> handDownInheritance(Resolution res, List<AbstractCall> inh, List<AbstractType> a, AbstractFeature heir)
   {
@@ -1186,34 +1179,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
                                                                               : new List<>(ti));
       }
     return a;
-  }
-
-
-  /**
-   * Get the actual type from a type used in this feature after it was inherited
-   * by heir.  During inheritance, formal generics may be replaced by actual
-   * generics.
-   *
-   * @param t a type used in this feature, must not be an open generic type
-   * (which can be replaced by several types during inheritance).
-   *
-   * @param heir an heir of this, might be equal to this.
-   *
-   * @return interned type that represents t seen as it is seen from heir.
-   */
-  public AbstractType handDownNonOpen(Resolution res, AbstractType t, AbstractFeature heir)
-  {
-    if (PRECONDITIONS) require
-      (!t.isOpenGeneric(),
-       heir != null,
-       res == null || res.state(heir).atLeast(State.CHECKING_TYPES));
-
-    var l = handDown(res, new List<>(t), heir);
-
-    if (CHECKS) check
-      (Errors.any() || l.size() == 1);
-
-    return l.size() == 1 ? l.get(0) : Types.t_ERROR;
   }
 
 
