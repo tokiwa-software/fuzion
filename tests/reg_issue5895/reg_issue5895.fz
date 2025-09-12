@@ -101,17 +101,17 @@ reg_issue5895 =>
   chk "f2 [i8] f64, array (option String), [i8 -12] 1.2 [hi]"            <| heir2.f2 -12         (f64 1.2) [option "hi"]
   chk "f2 [i8, nil] f64, array (option String), [i8 -12, nil --nil--] 1.2 [hi]" <| heir3.f2 -12 nil      (f64 1.2) [option "hi"]
 
-#  chk "f3 [] f64, aos, [] [] 1.2 aos []"                                       <| heir1.f3             1.2 aos
-#  chk "f3 [i8] f64, aos, [] [i8 -12] 1.2 aos []"                               <| heir2.f3 -12         1.2 aos
-#  chk "f3 [i8, nil] f64, aos, [] [i8 -12, nil --nil--] 1.2 aos []"                    <| heir3.f3 -12 nil      1.2 aos
+  chk "f3 [] f64, aos, [] [] 1.2 aos []"                                       <| heir1.f3             1.2 aos
+  chk "f3 [i8] f64, aos, [] [i8 -12] 1.2 aos []"                               <| heir2.f3 -12         1.2 aos
+  chk "f3 [i8, nil] f64, aos, [] [i8 -12, nil --nil--] 1.2 aos []"                    <| heir3.f3 -12 nil      1.2 aos
 
-#  chk "f3 [] f64, aos, [bool] [] 1.2 aos [bool true]"                                       <| heir1.f3             1.2 aos true
-#  chk "f3 [i8] f64, aos, [bool] [i8 -12] 1.2 aos [bool true]"                               <| heir2.f3 -12         1.2 aos true
-#  chk "f3 [i8, nil] f64, aos, [bool] [i8 -12, nil --nil--] 1.2 aos [bool true]"                    <| heir3.f3 -12 nil      1.2 aos true
+  chk "f3 [] f64, aos, [bool] [] 1.2 aos [bool true]"                                       <| heir1.f3             1.2 aos true
+  chk "f3 [i8] f64, aos, [bool] [i8 -12] 1.2 aos [bool true]"                               <| heir2.f3 -12         1.2 aos true
+  chk "f3 [i8, nil] f64, aos, [bool] [i8 -12, nil --nil--] 1.2 aos [bool true]"                    <| heir3.f3 -12 nil      1.2 aos true
 
-#  chk "f3 [] f64, aos, [bool, nf] [] 1.2 aos [bool true, nf nf]"                                       <| heir1.f3             1.2 aos true nf
-#  chk "f3 [i8] f64, aos, [bool, nf] [i8 -12] 1.2 aos [bool true, nf nf]"                               <| heir2.f3 -12         1.2 aos true nf
-#  chk "f3 [i8, nil] f64, aos, [bool, nf] [i8 -12, nil --nil--] 1.2 aos [bool true, nf nf]"                    <| heir3.f3 -12 nil      1.2 aos true nf
+  chk "f3 [] f64, aos, [bool, nf] [] 1.2 aos [bool true, nf nf]"                                       <| heir1.f3             1.2 aos true nf
+  chk "f3 [i8] f64, aos, [bool, nf] [i8 -12] 1.2 aos [bool true, nf nf]"                               <| heir2.f3 -12         1.2 aos true nf
+  chk "f3 [i8, nil] f64, aos, [bool, nf] [i8 -12, nil --nil--] 1.2 aos [bool true, nf nf]"                    <| heir3.f3 -12 nil      1.2 aos true nf
 
 # short instead of `array (option String)`
 aos is
