@@ -428,6 +428,8 @@ public abstract class AbstractCall extends Expr
    *
    * The result will be stored in _resolvedFormalArgumentTypes[argnum..].
    *
+   * NYI: CLEANUP: Instead of modifying the array rfat[], this should return a List of the type(s) created for argnum.
+   *
    * @param res Resolution instance
    *
    * @param context the source code context where this Call is used
@@ -514,31 +516,25 @@ public abstract class AbstractCall extends Expr
 
 
   /**
-   * Helper routine for resolveFormalArg and replaceGenericsInFormalArg to
-   * extend the _resolvedFormalArgumentTypes array.
+   * Helper routine for resolveFormalArg to extend the rfat array.
    *
-   * In case frml.resultType().isOpenGeneric(), this will call frml.select() for
-   * all the actual types the open generic is replaced by to make sure the
-   * corresponding features exist.
+   * @param l the new elements to add to rfat
    *
-   * @param a the new elements to add to _resolvedFormalArgumentTypes
+   * @param argnum index in rfat at which we add new elements
    *
-   * @param argnum index in _resolvedFormalArgumentTypes at which we add new
-   * elements
+   * @return the new array
    */
-  private AbstractType[] addToResolvedFormalArgumentTypes(AbstractType[] rfat, List<AbstractType> a, int argnum)
+  private AbstractType[] addToResolvedFormalArgumentTypes(AbstractType[] rfat, List<AbstractType> l, int argnum)
   {
-    var na = new AbstractType[rfat.length - 1 + a.size()];
+    var na = new AbstractType[rfat.length - 1 + l.size()];
     var j = 0;
     for (var i = 0; i < rfat.length; i++)
       {
         if (i == argnum)
           {
-            for (var at : a)
+            for (var t : l)
               {
-                if (CHECKS) check
-                  (at != null);
-                na[j] = at;
+                na[j] = t;
                 j++;
               }
           }
