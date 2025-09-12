@@ -650,7 +650,7 @@ public Sequence(public T type) ref : property.countable is
   #
   public is_valid_index(i i32) bool =>
     (0 ≤ i && (if is_array_backed then i ≤ count
-                                  else !(drop i-1).is_empty))
+                                  else !(drop i).is_empty))
 
 
   # the nth element in the sequence, must exist
