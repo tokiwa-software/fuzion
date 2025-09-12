@@ -178,10 +178,10 @@ is
       #
       expanding_array.this
 
-    else if s.finite != trit.yes || count < s.count
+    else if s.finite.is_no_or_unknown || count < s.count
 
       # use lazy version in case `s` might be infinite, since then code below would not
-      # terminate, if if `s` is larger than `this`, which would avoids quadratic performance
+      # terminate, if `s` is larger than `this`, which would avoids quadratic performance
       # in code like the following:
       #
       #  for i in 0..n
