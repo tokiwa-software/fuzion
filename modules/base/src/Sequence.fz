@@ -622,7 +622,7 @@ public Sequence(public T type) ref : property.countable is
   public into(TA type, xf transducer (Sequence TA) TA T) Sequence TA =>
     red := xf.call ((res,val) -> res ++ [val])
     for
-      res (list TA) := (list TA).empty , (red.call res el).as_list
+      res (Sequence TA) := (Sequence TA).empty , (red.call res el)
       el in Sequence.this do
     else
       res
@@ -1548,9 +1548,12 @@ is
   =>
     match a.as_list
       nil     => true
-      ac Cons => match b.as_list
-                   nil     => false
-                   bc Cons => ac.head <= bc.head && (!(ac.head >= bc.head) || unwrapped_lteq ac.tail bc.tail)
+      ac Cons =>
+        match b.as_list
+          nil     => false
+          bc Cons =>
+            ac.head <= bc.head &&
+              (ac.head < bc.head || unwrapped_lteq ac.tail bc.tail)
 
 
 
