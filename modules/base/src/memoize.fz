@@ -136,7 +136,7 @@ public memoize is
 
     # the store used for memoization
     #
-    # NYI: IMPROVEMENT: would be nice to also support property.hashable keys
+    # NYI: ENHANCEMENT: would be nice to also support property.hashable keys
     # using a tree map here
     #
     private store := (container.ps_map K V).empty # (lock_free.Map K V).empty

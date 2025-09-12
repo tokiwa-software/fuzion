@@ -154,19 +154,24 @@ is
 
     while nxt < data.length && !last_err
     do
-      quintets := (nxt :: +1).map(i->dec_input i).take 8
-      is_err := (quintets ∃ .is_error)
+      quintets :=
+        (nxt :: +1)
+          .map dec_input
+          .take 8
+      is_err := quintets ∃ .is_error
 
       # convert quintets in 40 bit number, break up in three bytes
       bits := if is_err then 0
-              else quintets.map (.val)
-                           .zip (((u64 35) :: -5).take 8) (<<)
-                           .foldf (u64 0) (|)
-      bytes := [(u64 32), 24, 16, 8, 0].map (i->(bits >> i).low8bits)
+              else
+                other := ((u64 35) :: -5).take 8
+                quintets.map (.val)
+                        .zip other (<<)
+                        .foldf (u64 0) (|)
+      bytes := [(u64 32), 24, 16, 8, 0].map (i -> (bits >> i).low8bits)
 
     else
       if last_err
-        (qnt_last.filter (e -> e.is_error)).first.get.err
+        (qnt_last.filter (.is_error)).first.get.err
       else
         dump_size := 5 - ((40 - (pad_size * 5)) / 8)    # number of decoded bytes caused by zeroed padding
         outcome (res.take res.count-dump_size).as_array # remove zero bytes caused by padding

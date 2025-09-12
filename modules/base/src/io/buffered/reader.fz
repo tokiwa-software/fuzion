@@ -49,6 +49,8 @@ is
   # with up to n bytes before returning it.
   #
   public read(n i32) switch (array u8) (outcome io.end_of_file)
+    pre
+      debug: n > 0
     post
       debug: (result ? outcome => true | a array => !a.is_empty)
   =>

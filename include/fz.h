@@ -591,7 +591,7 @@ struct fzE_jvm_result
 
 // initialize the JVM
 // executed once at the start of the application
-int32_t fzE_create_jvm(char * option_string);
+int32_t fzE_create_jvm(void * options, int32_t len);
 
 // close the JVM.
 void fzE_destroy_jvm(void);
@@ -630,11 +630,11 @@ jvalue fzE_array_get(jarray array, jsize index, const char *sig);
 // get a non-static field on obj.
 jvalue fzE_get_field0(jobject obj, jstring name, const char *sig);
 // set a non-static field on obj.
-jvalue fzE_set_field0(jobject obj, jstring name, jobject value, const char *sig);
+void fzE_set_field0(jobject obj, jstring name, jvalue value, const char *sig);
 // get a static field in class.
 jvalue fzE_get_static_field0(jstring class_name, jstring name, const char *sig);
 // set a static field in class.
-jvalue fzE_set_static_field0(jstring class_name, jstring name, jobject value, const char *sig);
+void fzE_set_static_field0(jstring class_name, jstring name, jvalue value, const char *sig);
 
 #endif
 

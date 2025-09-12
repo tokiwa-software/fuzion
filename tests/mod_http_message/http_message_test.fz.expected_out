@@ -1,0 +1,58 @@
+
+HTTP TEST
+
+CREATE REQUEST:
+
+GET /docs/base HTTP/2
+Dnt: 1
+Host: fuzion-lang.dev
+User-Agent: Fuzion HTTP Module
+
+
+
+CREATE RESPONSE:
+
+HTTP/2 200 OK
+Content-Type: text/html
+Server: FuzionWebServer v0.016
+X-Frame-Options: DENY
+
+  <body>
+    <p>Hello World!</p>
+  </body>
+
+
+
+PARSE REQUEST:
+
+GET / HTTP/1.1
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+Accept-Encoding: gzip, deflate, br
+Accept-Language: en-GB,en;q=0.5
+Connection: keep-alive
+Host: www.example.com
+User-Agent: Mozilla/5.0
+
+
+
+PARSE RESPONSE:
+
+HTTP/1.1 200 OK
+Accept-Ranges: bytes
+Connection: close
+Content-Length: 149
+Content-Type: text/html; charset=UTF-8
+Date: Mon, 23 May 2005 22:38:34 GMT
+Etag: "3f80f-1b6-3e1cb03b"
+Last-Modified: Wed, 08 Jan 2003 23:11:55 GMT
+Server: Apache/1.3.3.7 (Unix) (Red-Hat/Linux)
+
+<html>
+  <head>
+    <title>An Example Page</title>
+  </head>
+  <body>
+    <p>Hello World, this is a very simple HTML document.</p>
+  </body>
+</html>
+

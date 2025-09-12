@@ -21,5 +21,5 @@
 #
 # -----------------------------------------------------------------------
 
-override NAME = http_message_test
+override NAME = reg_issue5941
 include ../simple.mk

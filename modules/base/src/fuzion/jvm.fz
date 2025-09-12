@@ -25,7 +25,7 @@ private:public jvm : effect is
 
   # NYI: UNDER DEVELOPMENT: support starting multiple jvms?
   #
-  create_jvm(option_string universe.Array u8) i32 => intrinsic
+  create_jvm(option_strings universe.Array (universe.Array u8), length i32) i32 => intrinsic
   destroy_jvm unit => intrinsic
 
   module is_null0(java_ref Java_Ref) bool => intrinsic
@@ -34,7 +34,7 @@ private:public jvm : effect is
   # short-hand to for jvm with no additional class path
   #
   public type.use(T type, code ()->T) T =>
-    fuzion.jvm.use T "" code
+    fuzion.jvm.use _ [] code
 
 
   # - start jvm (or use an exisiting jvm)
@@ -42,10 +42,10 @@ private:public jvm : effect is
   # - run code on the jvm
   # - destroy jvm (if jvm had to be started)
   #
-  public type.use(T type, option_string String, code ()->T) T =>
+  public type.use(T type, option_strings array String, code ()->T) T =>
     fuzion.jvm ! ()->
       # NYI: UNDER DEVELOPMENT: return error code
-      res := fuzion.jvm.env.create_jvm (fuzion.sys.c_string option_string)
+      res := fuzion.jvm.env.create_jvm (option_strings.map (str -> fuzion.sys.c_string str)).as_array.internal_array.data option_strings.count
       if res != 0
         panic "JVM failed to start, error code {res}"
       else
@@ -114,11 +114,11 @@ private:public jvm : effect is
   # on instance thiz with given arguments
   #
   public call_virtual(T type,
-                     class_name String,
-                     name String,
-                     signature String,
-                     thiz fuzion.java.Java_Object,
-                     args array fuzion.java.Java_Object) outcome T
+                      class_name String,
+                      name String,
+                      signature String,
+                      thiz fuzion.java.Java_Object,
+                      args array fuzion.java.Java_Object) outcome T
   pre
     safety: !thiz.is_null
   =>
@@ -134,10 +134,10 @@ private:public jvm : effect is
   # arguments
   #
   public call_static(T type,
-                    class_name String,
-                    name String,
-                    signature String,
-                    args array fuzion.java.Java_Object) outcome T
+                     class_name String,
+                     name String,
+                     signature String,
+                     args array fuzion.java.Java_Object) outcome T
   =>
     c := string_to_java_object1 class_name
     n := string_to_java_object1 name
@@ -150,9 +150,9 @@ private:public jvm : effect is
   # with given arguments
   #
   public call_constructor(T type,
-                         class_name String,
-                         signature String,
-                         args array fuzion.java.Java_Object) outcome T
+                          class_name String,
+                          signature String,
+                          args array fuzion.java.Java_Object) outcome T
   =>
     c := string_to_java_object1 class_name
     s := string_to_java_object1 signature
@@ -163,27 +163,27 @@ private:public jvm : effect is
   # intrinsic to call given Java instance method
   #
   call_v0(T type,
-                 class_name Java_Ref,
-                 name Java_Ref,
-                 signature Java_Ref,
-                 thiz Java_Ref,
-                 args fuzion.sys.internal_array Java_Ref) outcome T => intrinsic
+          class_name Java_Ref,
+          name Java_Ref,
+          signature Java_Ref,
+          thiz Java_Ref,
+          args fuzion.sys.internal_array Java_Ref) outcome T => intrinsic
 
   # intrinsic to call given Java static method
   #
   call_s0(T type,
-                 class_name Java_Ref,
-                 name Java_Ref,
-                 signature Java_Ref,
-                 args fuzion.sys.internal_array Java_Ref) outcome T => intrinsic
+          class_name Java_Ref,
+          name Java_Ref,
+          signature Java_Ref,
+          args fuzion.sys.internal_array Java_Ref) outcome T => intrinsic
 
 
   # intrinsic to call given Java constructor
   #
   call_c0(T type,
-                 class_name Java_Ref,
-                 signature Java_Ref,
-                 args fuzion.sys.internal_array Java_Ref) outcome T => intrinsic
+          class_name Java_Ref,
+          signature Java_Ref,
+          args fuzion.sys.internal_array Java_Ref) outcome T => intrinsic
 
 
   # get a null value of type T

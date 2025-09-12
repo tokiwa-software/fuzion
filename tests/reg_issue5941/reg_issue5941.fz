@@ -1,0 +1,77 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue5941
+#
+# -----------------------------------------------------------------------
+
+# a feature with open type parameters `V` is inherited from a feature with
+# type parameters, which used to mess up the actual types assigned types.
+#
+reg_issue5941 =>
+
+  # example code from #5941
+  #
+  p(X type) is
+
+    f(V type..., v V...) =>
+
+  # using inheritance
+  h : p unit is
+  h.f
+
+  # --- more tests that go beyond the example from #5941:
+
+  # no inheritance
+  #
+  (p unit).f
+
+  # complex inheritance
+  h2 : Sequence (f64,bool), h, unit is
+    public redef as_string String => "h2"
+  h2.f
+
+  # --- same thing but with output and using actual type pars for `f`
+
+  # example code from #5941
+  #
+  q(X type) is
+
+    f(V type..., v V...) => say v
+
+  # using inheritance
+  hq : q unit is
+  hq.f
+  hq.f "hi"
+  hq.f true u8.zero "X"
+
+  # --- more tests that go beyond the example from #5941:
+
+  # no inheritance
+  #
+  (q unit).f
+  (q unit).f "hi"
+  (q unit).f true u8.zero "X"
+
+  # complex inheritance
+  hq2 : Sequence (f64,bool), hq, unit is
+    public redef as_string String => "h2"
+  hq2.f
+  hq2.f "hi"
+  hq2.f true u8.zero "X"

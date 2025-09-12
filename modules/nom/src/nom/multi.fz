@@ -79,7 +79,7 @@ module multi is
   public separated_list1(I, O, D type, p_sep Parser I I D, p_value () -> (Parser I I O)) Parser I I (Sequence O) =>
     parse(input I) parse_result I (Sequence O) =>
       p_value().call input .bind s1->
-        match (many0 (sequence.preceded p_sep p_value())).call s1.rest
+        match (many0 <| sequence.preceded p_sep p_value.call).call s1.rest
           s2 success => id (parse_result I (Sequence O)) (success s2.rest [s1.out]++s2.out)
           error => panic "invalid state, many0 always succeeds"
     parser I _ _ (input -> parse input)

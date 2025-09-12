@@ -17,12 +17,10 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test sequence
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-sequence =>
-
-  say [4,1,2,2,3,2,2,2,4].unique
-
-  say ((Sequence i32).empty.is_valid_index 0)
+override NAME = http_message_test
+FUZION_OPTIONS = -modules=http
+include ../simple.mk

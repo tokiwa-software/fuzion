@@ -50,6 +50,8 @@ import java.util.Map;
 public class Profiler extends ANY
 {
 
+  // NYI: UNDER DEVELOPMENT: add methods to pause/resume the profiler
+
 
   /*----------------------------  constants  ----------------------------*/
 
@@ -62,7 +64,7 @@ public class Profiler extends ANY
 
 
   /**
-   * Command to be excecuted to create flame graph
+   * Command to be executed to create flame graph
    */
   private static String FLAMEGRAPH_PL = "flamegraph.pl";
 
