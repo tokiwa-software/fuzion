@@ -399,27 +399,6 @@ public abstract class AbstractCall extends Expr
   }
 
 
-  List<AbstractType> handDownForTarget(Resolution res, AbstractType tp)
-  {
-    var tt = target().type();
-
-    if (tt.isGenericArgument())
-      {
-        return tt.genericArgument()
-          .constraint()
-          .replaceGenerics(new List<AbstractType>(tp));
-      }
-    else
-      {
-        var a = tt.replaceGenerics(AbstractFeature.handDownInheritance(res,
-                                                                       tt.feature().findInheritanceChain(tp.genericArgument().outer()),
-                                                                       new List<>(tp),
-                                                                       tt.feature()));
-        return a; // calledFeature().handDown(res, a, tt.feature());
-      }
-  }
-
-
   /**
    * Helper routine for resolveFormalArgumentTypes to determine the actual type
    * of a formal argument after inheritance and determination of actual type

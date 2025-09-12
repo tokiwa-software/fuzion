@@ -1876,6 +1876,22 @@ public class Call extends AbstractCall
   }
 
 
+  private List<AbstractType> handDownForTarget(Resolution res, AbstractType tp)
+  {
+    var tt = target().type();
+    var l = new List<>(tp);
+    if (tt.isGenericArgument())
+      {
+        tt = tt.genericArgument().constraint();
+      }
+    else
+      {
+        l = tp.genericArgument().handDown(res, l, tt.feature());
+      }
+    return tt.replaceGenerics(l);
+  }
+
+
   /**
    * infer the missing generic arguments to this call by inspecting the types of
    * the actual arguments.
