@@ -1003,17 +1003,19 @@ public Sequence(public T type) ref : property.countable is
           nil => false
           n Node => !n.top.is_empty && n.top[0] = x
 
+      ab := as_array_backed
+      pc  := pattern.count
+
       fold_until(acc option (Node T), step (option (Node T), T)->option (Node T), data Sequence T) option i32 =>
         if is_done acc
-          Sequence.this.count - data.count - pattern.count
+          ab.count - data.count - pc
         else if data.is_empty
           nil
         else
-          acc_star =>
-            fold_until.this.step acc data[0]
+          acc_star := fold_until.this.step acc data[0]
           fold_until acc_star fold_until.this.step (data.drop 1)
 
-      fold_until init step Sequence.this
+      fold_until init step ab
 
 
 
