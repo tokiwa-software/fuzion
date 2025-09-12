@@ -950,7 +950,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * Check if type t depends on a formal generic parameter of this. If so,
+   * Check if type this depends on a formal generic parameter of f. If so,
    * replace t by the corresponding actual generic parameter from the list
    * provided.
    *
@@ -965,9 +965,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public AbstractType applyTypePars(AbstractFeature f, List<AbstractType> actualGenerics)
   {
     if (PRECONDITIONS) require
-      (Errors.any() ||
-       f.generics().sizeMatches(actualGenerics),
-       Errors.any() || !isOpenGeneric() || genericArgument().outer().generics() != f.generics());
+      (Errors.any() || f.generics().sizeMatches(actualGenerics));
 
     AbstractType result;
     if (typeParCachingEnabled &&
@@ -1221,14 +1219,18 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                 if (g.isOpenTypeParameter())
                   {
                     var tl = g.replaceOpen(actualGenerics);
-                    if (CHECKS) check
-                      (Errors.any() || select >= 0 && select < tl.size());
                     if (select >= 0 && select < tl.size())
                       {
                         result = tl.get(select);
                       }
+                    else if (select == NO_SELECT && tl.size() == 1 && tl.get(0).isOpenGeneric())
+                      {
+                        result = tl.get(0);
+                      }
                     else
                       {
+                        if (CHECKS) check
+                          (Errors.any());
                         result = Types.t_ERROR;
                       }
                   }
