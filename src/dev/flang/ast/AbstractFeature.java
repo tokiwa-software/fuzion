@@ -1128,7 +1128,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * @param res resolution instance, required only when run in front end phase,
    * null otherwise.
    *
-   * @param a an array of types to be handed down
+   * @param l a list of types to be handed down
    *
    * @param heir a feature that inherits from outer()
    *
