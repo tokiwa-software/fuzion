@@ -472,39 +472,6 @@ public abstract class AbstractCall extends Expr
 
 
   /**
-   * Helper routine for resolveFormalArg to extend the rfat array.
-   *
-   * @param l the new elements to add to rfat
-   *
-   * @param argnum index in rfat at which we add new elements
-   *
-   * @return the new array
-   */
-  private AbstractType[] addToResolvedFormalArgumentTypes(AbstractType[] rfat, List<AbstractType> l, int argnum)
-  {
-    var na = new AbstractType[rfat.length - 1 + l.size()];
-    var j = 0;
-    for (var i = 0; i < rfat.length; i++)
-      {
-        if (i == argnum)
-          {
-            for (var t : l)
-              {
-                na[j] = t;
-                j++;
-              }
-          }
-        else
-          {
-            na[j] = rfat[i];
-            j++;
-          }
-      }
-    return na;
-  }
-
-
-  /**
    * For static type analysis: This gives the resolved formal argument types for
    * the arguments of this call.  During type checking, it has to be checked
    * that the actual arguments can be assigned to these types.
@@ -525,29 +492,12 @@ public abstract class AbstractCall extends Expr
   AbstractType[] resolvedFormalArgumentTypes(Resolution res, Context context)
   {
     // NYI: UNDER DEVELOPMENT: cache this? cache key: calledFeature/target
-    var fargs = calledFeature().valueArguments();
-    var result = fargs.size() == 0
-      ? UnresolvedType.NO_TYPES
-      : new AbstractType[fargs.size()];
-    Arrays.fill(result, Types.t_UNDEFINED);
+    if (CHECKS) check
+      (calledFeature().valueArguments().stream().allMatch(frml -> frml.state().atLeast(State.RESOLVED_TYPES)));
 
-    int argnum = 0;
-    for (var frml : fargs)
-      {
-        var old_result = result;
-        if (CHECKS)
-          check(frml.state().atLeast(State.RESOLVED_TYPES));
-        var l = resolveFormalArg(res, context, frml);
-        result = addToResolvedFormalArgumentTypes(result, l, argnum);
-        argnum = argnum + 1
-          /* argument of open type might resolve to 0..n args, so adjust: */
-          + result.length - old_result.length;
-      }
-
-    if (POSTCONDITIONS) ensure
-      (result != null);
-
-    return result;
+    var result = calledFeature().valueArguments()
+                                .flatMap2(frml -> resolveFormalArg(res, context, frml));
+    return result.toArray(new AbstractType[result.size()]);
   }
 
 
