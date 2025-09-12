@@ -1938,17 +1938,7 @@ public class Call extends AbstractCall
                   }
                 else if (t.isOpenGeneric())
                   { // open type that is set by outer feature, we only have to find the number and skip those args:
-                    var l = new List<>(t);
-                    var tt = target().type();
-                    if (tt.isGenericArgument())
-                      {
-                        tt = tt.genericArgument().constraint();
-                      }
-                    else
-                      {
-                        l = g.handDown(res, l, tt.feature());
-                      }
-                    for (var _ : tt.replaceGenerics(l))
+                    for (var _ : resolveFormalArg(res, context, frml))
                       {
                         if (aargs.hasNext())
                           {

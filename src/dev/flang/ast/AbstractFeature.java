@@ -1175,11 +1175,11 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * @return a new array of types as they are visible in heir. The length might
    * be different due to open type parameters being replaced by a list of types.
    */
-  /* private */ static List<AbstractType> handDownInheritance(Resolution res, List<AbstractCall> inh, List<AbstractType> a, AbstractFeature heir)
+  private static List<AbstractType> handDownInheritance(Resolution res, List<AbstractCall> inh, List<AbstractType> a, AbstractFeature heir)
   {
     for (AbstractCall c : inh)
       {
-        // NYI: CLEANUP: This should be replacable by `c.resultType().replaceGenerics(a)`
+        // NYI: CLEANUP: This should be replacable by `c.resultType().replaceGenerics(a)` or similar
         var actualTypes = c.actualTypeParameters();
         a = a.flatMap(ti -> !ti.isOpenGeneric()                               ? new List<>(ti.applyTypePars(c.calledFeature(), actualTypes)) :
                             ti.genericArgument().outer() == c.calledFeature() ? ti.genericArgument().replaceOpen(actualTypes)

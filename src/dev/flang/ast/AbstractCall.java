@@ -404,61 +404,39 @@ public abstract class AbstractCall extends Expr
    * of a formal argument after inheritance and determination of actual type
    * from the target type and generics provided to the call.
    *
-   * The result will be stored in _resolvedFormalArgumentTypes[argnum..].
-   *
-   * NYI: CLEANUP: Instead of modifying the array rfat[], this should return a List of the type(s) created for argnum.
-   *
    * @param res Resolution instance
    *
    * @param context the source code context where this Call is used
    *
-   * @param argnum the number of this formal argument
-   *
    * @param frml the formal argument
+   *
+   * @return the formal argument type(s)
    */
-  AbstractType[] resolveFormalArg(Resolution res, Context context, AbstractType[] rfat, int argnum, AbstractFeature frml)
+  List<AbstractType> resolveFormalArg(Resolution res, Context context, AbstractFeature frml)
   {
-    int cnt = 1;
     var frmlT = frml.resultTypeIfPresentUrgent(res, true);
-
     var declF = calledFeature().outer();
     var tt = target().type();
+    var l = new List<>(frmlT);
     if (!tt.isGenericArgument() && declF != tt.feature())
       {
-        var l = calledFeature().handDown(res, new List<>(frmlT), tt.feature());
-        rfat = addToResolvedFormalArgumentTypes(rfat, l, argnum);
-        cnt = l.size();
-      }
-    else
-      {
-        rfat[argnum] = frmlT;
+        l = calledFeature().handDown(res, l, tt.feature());
       }
 
     // next, replace generics given in the target type and in this call
-    for (int i = 0; i < cnt; i++)
-      {
-        if (CHECKS) check
-          (Errors.any() || argnum + i <= rfat.length);
-
-        if (argnum + i < rfat.length)
-          {
-            frmlT = rfat[argnum + i];
-
-            if (frmlT.isOpenGeneric())
-              { // formal arg is open generic, i.e., this expands to 0 or more actual args depending on actual generics for target:
-                var g = frmlT.genericArgument();
-                var frmlTs = g.replaceOpen(openGenericsFor(res, context, g.outer()));
-                rfat = addToResolvedFormalArgumentTypes(rfat, frmlTs, argnum + i);
-                i   = i   + frmlTs.size() - 1;
-                cnt = cnt + frmlTs.size() - 1;
-              }
-            else
-              {
-                rfat[argnum + i] = actualArgType(res, context, frmlT, frml);
-              }
-          }
-      }
-    return rfat;
+    return
+      l.flatMap(ft ->
+                {
+                  if (ft.isOpenGeneric())
+                    { // formal arg is open generic, i.e., this expands to 0 or more actual args depending on actual generics for target:
+                      var g = ft.genericArgument();
+                      return g.replaceOpen(openGenericsFor(res, context, g.outer()));
+                    }
+                  else
+                    {
+                      return new List<>(actualArgType(res, context, ft, frml));
+                    }
+                });
   }
 
 
@@ -559,7 +537,8 @@ public abstract class AbstractCall extends Expr
         var old_result = result;
         if (CHECKS)
           check(frml.state().atLeast(State.RESOLVED_TYPES));
-        result = resolveFormalArg(res, context, result, argnum, frml);
+        var l = resolveFormalArg(res, context, frml);
+        result = addToResolvedFormalArgumentTypes(result, l, argnum);
         argnum = argnum + 1
           /* argument of open type might resolve to 0..n args, so adjust: */
           + result.length - old_result.length;
