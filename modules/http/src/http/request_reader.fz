@@ -71,16 +71,17 @@ public read_request(
     tmp_parsed_fields := parse_header_fields LM .or_cause unit id
 
     header_fields :=
-      # request target in absolute-form
-      # https://datatracker.ietf.org/doc/html/rfc9112#name-absolute-form
-      if target.starts_with "http"
-        # MUST replace Host field if target is in absolute-form
-        t1 := target.split_n "//" 1
-        if t1.count != 2 then cause "broken target '$target in request"
-        host := (t1[1].split_n "/" 1)[0]
-        tmp_parsed_fields.add_canonical "Host" host
-      else
-        tmp_parsed_fields
+      {
+        # request target in absolute-form
+        # https://datatracker.ietf.org/doc/html/rfc9112#name-absolute-form
+        if target.starts_with "http"
+          # MUST replace Host field if target is in absolute-form
+          t1 := target.split_n "//" 1
+          if t1.count != 2 then cause "broken target '$target in request"
+          host := (t1[1].split_n "/" 1)[0]
+          tmp_parsed_fields.put "Host".lower_case host
+        tmp_parsed_fields.as_map
+      }
 
 
     # The presence of a message body in a request is signaled by a Content-Length or Transfer-Encoding header field. Request message framing is independent of method semantics.
