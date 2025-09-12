@@ -33,6 +33,15 @@ public trit : choice true_ false_ nil, property.equatable is
   public type.no  trit     => false_
   public type.unknown trit => nil
 
+
+  public is_yes           bool => trit.this =  trit.yes
+  public is_no            bool => trit.this =  trit.no
+  public is_unknown       bool => trit.this =  trit.unknown
+  public is_known         bool => trit.this != trit.unknown
+  public is_yes_or_unkown bool => trit.this != trit.no
+  public is_no_or_unknown bool => trit.this != trit.yes
+
+
   public fixed redef type.equality(a,b trit) bool =>
     match a
       true_ =>

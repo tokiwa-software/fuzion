@@ -53,7 +53,7 @@ is
   # write bytes (without explicit flushing)
   #
   public write(b Sequence u8) outcome unit
-    pre b.finite = trit.yes
+    pre b.finite.is_yes
   => abstract
 
 

@@ -108,7 +108,7 @@ is
          else
            abort trit.no
 
-    ternary_compare != trit.no
+    ternary_compare.is_yes_or_unkown
 
 
 

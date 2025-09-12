@@ -253,7 +253,7 @@ public Sequence(public T type) ref : property.countable is
   # by all the elements of s
   #
   # General case: This will perform `as_list.concat_list` in case one of
-  # `Sequence.this` or `s`is not known to be finite (`finite != trit.yet`) or
+  # `Sequence.this` or `s`is not known to be finite (`finite.is_no_or_unknown`) or
   # `s.count` is larger than `count`.
   #
   # Otherwise, if `Sequence.this` or `s` is empty, the result will be `s` or
@@ -275,8 +275,8 @@ public Sequence(public T type) ref : property.countable is
   # in `O(n²)` performance for the concatenations.
   #
   public concat (s Sequence T) Sequence T =>
-    c1 :=   finite != trit.yes ? -1 :   count
-    c2 := s.finite != trit.yes ? -1 : s.count
+    c1 :=   finite.is_yes ? count   : -1
+    c2 := s.finite.is_yes ? s.count : -1
     if c1 < 0 || c2 < 0 || max 1 c1 < c2 then
       as_list.concat_list s.as_list
     else if c1 = 0
@@ -330,7 +330,7 @@ public Sequence(public T type) ref : property.countable is
   # if finite), you may use `as_string_all`.
   #
   public redef as_string String =>
-    if finite = trit.yes
+    if finite.is_yes
       as_string_all
     else
       max0 := (Sequence T).AS_STRING_NON_FINITE_MAX_ELEMENTS
@@ -1576,11 +1576,11 @@ is
     au := a.unwrap
     bu := b.unwrap
 
-    if au.finite=trit.yes && bu.finite=trit.yes
+    if au.finite.is_yes && bu.finite.is_yes
       au.count = bu.count && equality0 a b
-    else if au.finite=trit.yes
+    else if au.finite.is_yes
       au.count = (bu.take (au.count+1)).count && equality0 a b
-    else if bu.finite=trit.yes
+    else if bu.finite.is_yes
       bu.count = (au.take (bu.count+1)).count && equality0 a b
     else
       equality0 a b &&

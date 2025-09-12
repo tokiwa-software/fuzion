@@ -30,7 +30,7 @@ public countable is
   #
   public count i32
   pre
-    analysis: finite != trit.no  # in practice, we do not always have this information
+    analysis: finite.is_yes_or_unkown  # in practice, we do not always have this information
   => abstract
 
 
