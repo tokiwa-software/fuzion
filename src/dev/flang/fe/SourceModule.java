@@ -1615,27 +1615,23 @@ A post-condition of a feature that does not redefine an inherited feature must s
    * inheritance chain and then replaces the type parameters by the type
    * parameters used in the redefinition.
    */
-  AbstractType[] handDownForRedef(AbstractType type,
-                                  AbstractFeature original,
-                                  AbstractFeature redefinition)
+  List<AbstractType> handDownForRedef(AbstractType type,
+                                      AbstractFeature original,
+                                      AbstractFeature redefinition)
   {
-    var result = original.handDown(_res, new AbstractType[] { type }, redefinition.outer());
-    for (var i = 0; i<result.length; i++)
-      {
-        // if we redef
-        //
-        //    x(A type, v option A)
-        //
-        // by
-        //
-        //    x(B type, w option B)
-        //
-        // we must replace `option A` (th) by `option B` (to), i.e.,
-        // replace o's type parameterss by f's:
-        //
-        result[i] = result[i].applyTypePars(original, redefinition.generics().asActuals());
-      }
-    return result;
+    return original.handDown(_res, new List<>(type), redefinition.outer())
+                   .map(// if we redef
+                        //
+                        //    x(A type, v option A)
+                        //
+                        // by
+                        //
+                        //    x(B type, w option B)
+                        //
+                        // we must replace `option A` (th) by `option B` (to), i.e.,
+                        // replace o's type parameterss by f's:
+                        //
+                        t -> t.applyTypePars(original, redefinition.generics().asActuals()));
   }
 
 
@@ -1661,14 +1657,14 @@ A post-condition of a feature that does not redefine an inherited feature must s
             if (CHECKS) check
               (Errors.any());
           }
-        else if (ah.length != ar.length)
+        else if (ah.size() != ar.size())
           {
             /*
     // tag::fuzion_rule_REDEF_ARG_COUNT[]
 A redefined feature must have the same total number of formal arguments (type parameters and value arguments) as the original feature.
     // end::fuzion_rule_REDEF_ARG_COUNT[]
             */
-            AstErrors.argumentLengthsMismatch(o, ah.length, f, ar.length);
+            AstErrors.argumentLengthsMismatch(o, ah.size(), f, ar.size());
           }
         else if (o.typeArguments().size() != f.typeArguments().size())
           {
@@ -1686,10 +1682,10 @@ A redefined feature must have the same total number of formal type parameters as
             for (var argo : o.arguments())  // for all original args
               {
                 // for all handed down types (of original was open type, we might have 0..n types now):
-                for (var to : handDownForRedef(ao[io], o, f))
+                for (var to : handDownForRedef(ao.get(io), o, f))
                   {
                     var argr = args.get(ir);  // arg in redefinition
-                    var tr = ar[ir];          // type in redefinition
+                    var tr = ar.get(ir);          // type in redefinition
                     if (
             /*
     // tag::fuzion_rule_REDEF_TYPE_PAR[]
@@ -1731,8 +1727,8 @@ A xref:fuzion_value_argument[value argument] must be redefined using a type that
 
         var result_os = handDownForRedef(o.resultType(), o, f);
         if (CHECKS) check
-          (Errors.any() || result_os.length == 1);
-        var result_o = result_os.length == 1 ? result_os[0]
+          (Errors.any() || result_os.size() == 1);
+        var result_o = result_os.size() == 1 ? result_os.get(0)
                                              : Types.t_ERROR;
         var result_r = f.resultType();
         if (o.isConstructor() ||
@@ -1826,27 +1822,11 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
    *
    * @return a new array containing this feature's formal argument types.
    */
-  private AbstractType[] argTypesOrConstraints(AbstractFeature af)
+  private List<AbstractType> argTypesOrConstraints(AbstractFeature af)
   {
-    int argnum = 0;
-    var args = af.arguments();
-    var result = new AbstractType[args.size()];
-    for (var frml : args)
-      {
-        if (CHECKS) check
-          (Errors.any() || _res.state(frml).atLeast(State.RESOLVED_DECLARATIONS));
-
-        var frmlT = frml.isTypeParameter() ? frml.constraint()
-                                           : frml.resultType();
-
-        result[argnum] = frmlT;
-        argnum++;
-      }
-
-    if (POSTCONDITIONS) ensure
-      (result != null);
-
-    return result;
+    return af.arguments()
+             .map2(frml -> frml.isTypeParameter() ? frml.constraint()
+                                                  : frml.resultType());
   }
 
 

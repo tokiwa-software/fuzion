@@ -399,37 +399,24 @@ public abstract class AbstractCall extends Expr
   }
 
 
-  AbstractType[] handDownForTarget(Resolution res, AbstractType tp, boolean oldstyle)
+  List<AbstractType> handDownForTarget(Resolution res, AbstractType tp, boolean oldstyle)
   {
     var tt = target().type();
     if (tt.isGenericArgument())
       {
         return tt.genericArgument()
           .constraint()
-          .replaceGenerics(new List<AbstractType>(tp))
-          .toArray(new AbstractType[0]);
+          .replaceGenerics(new List<AbstractType>(tp));
       }
     else
       {
-    var a = oldstyle
-      ? new AbstractType[] { tp }
-      : AbstractFeature.handDownInheritance(res,
-                                            tt.feature().findInheritanceChain(tp.genericArgument().outer()),
-                                            new AbstractType[] { tp },
-                                            tt.feature());
-    a = oldstyle
-      ? a
-      : tt.replaceGenerics(new List<AbstractType>(a))
-         .toArray(new AbstractType[0]);
-    //x    System.out.println("handDown for "+calledFeature().qualifiedName()+" tt: "+tt+" a is "+Arrays.toString(a));
-    var r =
-      calledFeature().handDown(res,
-                                 oldstyle || tt.isThisType()
-                                 ? a // new AbstractType[] { tp }
-                               : a, // tt.replaceGenerics(new List<AbstractType>(tp))
-                               //                                     .toArray(new AbstractType[0]),
-                                 tt.feature());
-    return r;
+        var a = oldstyle
+          ? new List<>(tp)
+          : tt.replaceGenerics(AbstractFeature.handDownInheritance(res,
+                                                                   tt.feature().findInheritanceChain(tp.genericArgument().outer()),
+                                                                   new List<>(tp),
+                                                                   tt.feature()));
+        return calledFeature().handDown(res, a, tt.feature());
       }
   }
 
@@ -460,7 +447,7 @@ public abstract class AbstractCall extends Expr
       {
         var a = handDownForTarget(res, frmlT, true);
         rfat = addToResolvedFormalArgumentTypes(rfat, a, argnum);
-        cnt = a.length;
+        cnt = a.size();
       }
     else
       {
@@ -481,7 +468,7 @@ public abstract class AbstractCall extends Expr
               { // formal arg is open generic, i.e., this expands to 0 or more actual args depending on actual generics for target:
                 var g = frmlT.genericArgument();
                 var frmlTs = g.replaceOpen(openGenericsFor(res, context, g.outer()));
-                rfat = addToResolvedFormalArgumentTypes(rfat, frmlTs.toArray(new AbstractType[frmlTs.size()]), argnum + i);
+                rfat = addToResolvedFormalArgumentTypes(rfat, frmlTs, argnum + i);
                 i   = i   + frmlTs.size() - 1;
                 cnt = cnt + frmlTs.size() - 1;
               }
@@ -539,9 +526,9 @@ public abstract class AbstractCall extends Expr
    * @param argnum index in _resolvedFormalArgumentTypes at which we add new
    * elements
    */
-  private AbstractType[] addToResolvedFormalArgumentTypes(AbstractType[] rfat, AbstractType[] a, int argnum)
+  private AbstractType[] addToResolvedFormalArgumentTypes(AbstractType[] rfat, List<AbstractType> a, int argnum)
   {
-    var na = new AbstractType[rfat.length - 1 + a.length];
+    var na = new AbstractType[rfat.length - 1 + a.size()];
     var j = 0;
     for (var i = 0; i < rfat.length; i++)
       {

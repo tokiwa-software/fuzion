@@ -114,7 +114,8 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * Result of `handDown(Resolution, AbstractType[], AbstractFeature) in case of
    * failure due to previous errors.
    */
-  public static final AbstractType[] HAND_DOWN_FAILED = new AbstractType[0];
+  public static final List<AbstractType> HAND_DOWN_FAILED = new List<>();
+  static { HAND_DOWN_FAILED.freeze(); }
 
 
 
@@ -556,10 +557,8 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
                 // we need to do a hand down to get the actual choice generics
                 if (!p.calledFeature().isBaseChoice())
                   {
-                    var arr = new AbstractType[result.size()];
-                    result.toArray(arr);
                     var inh = this.findInheritanceChain(p.calledFeature());
-                    result = new List<>(AbstractFeature.handDownInheritance(null, inh, arr, this));
+                    result = handDownInheritance(null, inh, result, this);
                   }
               }
           }
@@ -1137,7 +1136,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * heir. Their number might have changed due to open generics.  Result may be
    * HAND_DOWN_FAILED in case of previous errors.
    */
-  public AbstractType[] handDown(Resolution res, AbstractType[] a, AbstractFeature heir)  // NYI: This does not distinguish different inheritance chains yet
+  public List<AbstractType> handDown(Resolution res,
+                                     List<AbstractType> l,
+                                     AbstractFeature heir)  // NYI: This does not distinguish different inheritance chains yet
   {
     if (PRECONDITIONS) require
       (heir != null,
@@ -1153,7 +1154,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
         if (inh != null)
           {
-            result = AbstractFeature.handDownInheritance(res, inh, a, heir);
+            result = AbstractFeature.handDownInheritance(res, inh, l, heir);
           }
       }
     return result;
@@ -1174,40 +1175,15 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * @return a new array of types as they are visible in heir. The length might
    * be different due to open type parameters being replaced by a list of types.
    */
-  /* private */ static AbstractType[] handDownInheritance(Resolution res, List<AbstractCall> inh, AbstractType[] a, AbstractFeature heir)
+  /* private */ static List<AbstractType> handDownInheritance(Resolution res, List<AbstractCall> inh, List<AbstractType> a, AbstractFeature heir)
   {
     for (AbstractCall c : inh)
       {
-        for (int i = 0; i < a.length; i++)
-          {
-            var ti = a[i];
-            if (ti.isOpenGeneric() && ti.genericArgument().outer() == c.calledFeature())
-              {
-                if (!true || ti.genericArgument().outer() == c.calledFeature())
-                  {
-                    //                System.out.println("ti.genericArgument() is "+ti.genericArgument().qualifiedName()+" "+ti.genericArgument().outer().qualifiedName());
-                    // System.out.println("c.calledFeature() is "+c.calledFeature().qualifiedName());
-                var frmlTs = ti.genericArgument().replaceOpen(c.actualTypeParameters());
-                var delta = frmlTs.size() - 1;
-                var old_a = a;
-                a = Arrays.copyOf(a, a.length + delta);
-                System.arraycopy(old_a, i+1, a, i+1+delta, old_a.length-i-1);
-                for (var tg : frmlTs)
-                  {
-                    a[i] = tg;
-                    i++;
-                  }
-                i = i - 1;
-                  }
-              }
-            else if (!ti.isOpenGeneric())
-              {
-                var actualTypes = c.actualTypeParameters();
-                actualTypes = res == null ? actualTypes : res.resolveTypes(actualTypes, heir.context());
-                ti = ti.applyTypePars(c.calledFeature(), actualTypes);
-                a[i] = ti;
-              }
-          }
+        // NYI: CLEANUP: This should be replacable by `c.resultType().replaceGenerics(a)`
+        var actualTypes = c.actualTypeParameters();
+        a = a.flatMap(ti -> !ti.isOpenGeneric()                               ? new List<>(ti.applyTypePars(c.calledFeature(), actualTypes)) :
+                            ti.genericArgument().outer() == c.calledFeature() ? ti.genericArgument().replaceOpen(actualTypes)
+                                                                              : new List<>(ti));
       }
     return a;
   }
@@ -1232,12 +1208,12 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
        heir != null,
        res == null || res.state(heir).atLeast(State.CHECKING_TYPES));
 
-    var a = handDown(res, new AbstractType[] { t }, heir);
+    var l = handDown(res, new List<>(t), heir);
 
     if (CHECKS) check
-      (Errors.any() || a.length == 1);
+      (Errors.any() || l.size() == 1);
 
-    return a.length == 1 ? a[0] : Types.t_ERROR;
+    return l.size() == 1 ? l.get(0) : Types.t_ERROR;
   }
 
 
