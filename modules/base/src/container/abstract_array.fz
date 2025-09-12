@@ -72,7 +72,7 @@ public abstract_array
   #
   public redef drop (n i32) Sequence T =>
     if n >= count
-      (list T).empty
+      []
     else if n < 0
       abstract_array.this
     else
