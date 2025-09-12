@@ -184,12 +184,12 @@ is
 
   # XXH constants from https://xxhash.com/doc/v0.8.3/group___x_x_h64__impl.html
   #
-  private type.xxh_prime_1 => u64 0x9E3779B185EBCA87  # factor after each value's hash code was added and result was rotated
-  private type.xxh_prime_2 => u64 0xC2B2AE3D27D4EB4F  # factor for adding hash code of values
-  private type.xxh_prime_3 => u64 0x165667B19E3779F9  # not needed here
-  private type.xxh_prime_4 => u64 0x85EBCA77C2B2AE63  # not needed here
-  private type.xxh_prime_5 => u64 0x27D4EB2F165667C5  # initial hash used for empty tuple
-  private type.xxh_rotate => u64 31                   # rotation after adding hash code of values
+  type.xxh_prime_1 => u64 0x9E3779B185EBCA87  # factor after each value's hash code was added and result was rotated
+  type.xxh_prime_2 => u64 0xC2B2AE3D27D4EB4F  # factor for adding hash code of values
+  type.xxh_prime_3 => u64 0x165667B19E3779F9  # not needed here
+  type.xxh_prime_4 => u64 0x85EBCA77C2B2AE63  # not needed here
+  type.xxh_prime_5 => u64 0x27D4EB2F165667C5  # initial hash used for empty tuple
+  type.xxh_rotate  => u64 31                  # rotation after adding hash code of values
 
 
   # create a String from this instance.
@@ -204,7 +204,7 @@ is
 
 # helper feature for `tuple.type.equality` to compare elements in a tuple of type `TUPLE`
 #
-private tuple_zip_equals(TUPLE type) : container.typed_zipper bool is
+tuple_zip_equals(TUPLE type) : container.typed_zipper bool is
 
   public redef apply(T type,
                      e bool,
@@ -218,7 +218,7 @@ private tuple_zip_equals(TUPLE type) : container.typed_zipper bool is
 
 # helper feature for `tuple.type.lteq` to compare elements in a tuple of type `TUPLE`
 #
-private tuple_zip_lteq(TUPLE type) : container.typed_zipper i32 is
+tuple_zip_lteq(TUPLE type) : container.typed_zipper i32 is
 
   public redef apply(T type,
                      e i32,

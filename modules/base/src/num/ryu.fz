@@ -176,7 +176,7 @@ public ryū(public T type : float) is
     ***************/
 
     pow5_split_cache_key(val array (array i64)) is
-    pow5_split array (array i64) := (cache pow5_split_cache_key ()->
+    pow5_split := (cache pow5_split_cache_key ()->
       pow5_split_cache_key [
         [134217728,0,0,0],
         [167772160,0,0,0],

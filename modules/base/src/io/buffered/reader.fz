@@ -141,15 +141,9 @@ pre debug: n >= 0
   take_valid_codepoints(a Sequence u8, max i32) =>
     v := String.from_bytes a
       .codepoints_and_errors
-      .take_while x->
-        match x
-          codepoint => true
-          error => false
+      .take_while (.ok)
       .take max
-      .map String x->
-        match x
-          c codepoint => c
-          error => exit 1
+      .map String (.val)
       .as_array
 
     bytes_used := (v.map c->c.as_string.byte_length).fold i32.sum
@@ -168,12 +162,10 @@ pre debug: n >= 0
     res Sequence String    := next_codepoints, res ++ next_codepoints
   while !is_eof && codepoint_count < n
   else
-    tmp outcome String :=
-      if is_eof && res.is_empty
-        error "-- end of file --"
-      else
-        String.join res
-    tmp
+    if is_eof && res.is_empty
+      error "-- end of file --"
+    else
+      String.join res
 
 
 # use the currently installed byte reader effect
@@ -198,9 +190,9 @@ public read_delimiter (delim u8, strip_cr bool) switch String io.end_of_file ! r
           add_to_res(a0 Sequence u8) unit =>
             if !a0.is_empty
               a1 := if strip_cr && a0.last.as_equatable = encodings.ascii.cr
-                        (a0.slice 0 a0.count-1)
+                      (a0.slice 0 a0.count-1)
                     else
-                       a0
+                      a0
               for b in a1 do
                 res.add b
 
@@ -214,8 +206,7 @@ public read_delimiter (delim u8, strip_cr bool) switch String io.end_of_file ! r
               reader.env.discard
               true
 
-    ref : String is
-      public redef utf8 Sequence u8 := res.as_array
+    String.from_bytes res.as_array
 
 
 # use the currently installed byte reader effect

@@ -96,7 +96,7 @@ is
   # Complexity: O(1) if no allocation is required, O(new_capacity)
   # otherwise.
   #
-  private realloc(new_capacity i32)
+  realloc(new_capacity i32)
   =>
     if capacity >= new_capacity && (length=capacity || !data[length])
       data
@@ -238,19 +238,19 @@ is
 
 # unit type value for an unused slot
 #
-private unused is
+unused is
 
 
 # unit type value for a reserved slot, i.e., during `expand` a slot that was not
 # set by the `filler` yet.
 #
-private reserved is
+reserved is
 
 
 # internal arrays used by `expanding_array` will use values of type `slot` such that
 # we can distinguish slots that are used from those that are unused or reserved.
 #
-private slot(T type) : choice reserved unused T is
+slot(T type) : choice reserved unused T is
 
   # is this slot unused?
   #

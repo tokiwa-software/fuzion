@@ -123,7 +123,7 @@ is
       # the shifted divisor is still positive.
       # This is done recursively and the results
       # are added up.
-      highest_bit_diff uint := highest_bit - divisor.highest_bit
+      highest_bit_diff := highest_bit - divisor.highest_bit
       shift := if uint.this -! (divisor << highest_bit_diff) then highest_bit_diff else highest_bit_diff-uint.one
       remainder := uint.this - (divisor << shift)
       q, rem := remainder.divide_with_remainder divisor

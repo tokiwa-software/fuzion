@@ -84,7 +84,7 @@ is
 
   # a local mutate instance we are using to modify our state
   #
-  private local_mutate : mutate is
+  local_mutate : mutate is
 
 
   # get local mutate instance from env, install it if necessary
@@ -304,7 +304,7 @@ is
   #
   # this is called by `add` after handing `ignore_first` and `ignore_last`
   #
-  private add0(d time.duration)
+  add0(d time.duration)
   =>
     i := indx d
     buckets[i] := buckets[i] + 1
