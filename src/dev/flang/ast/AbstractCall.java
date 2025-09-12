@@ -399,9 +399,10 @@ public abstract class AbstractCall extends Expr
   }
 
 
-  List<AbstractType> handDownForTarget(Resolution res, AbstractType tp, boolean oldstyle)
+  List<AbstractType> handDownForTarget(Resolution res, AbstractType tp)
   {
     var tt = target().type();
+
     if (tt.isGenericArgument())
       {
         return tt.genericArgument()
@@ -410,13 +411,11 @@ public abstract class AbstractCall extends Expr
       }
     else
       {
-        var a = oldstyle
-          ? new List<>(tp)
-          : tt.replaceGenerics(AbstractFeature.handDownInheritance(res,
-                                                                   tt.feature().findInheritanceChain(tp.genericArgument().outer()),
-                                                                   new List<>(tp),
-                                                                   tt.feature()));
-        return calledFeature().handDown(res, a, tt.feature());
+        var a = tt.replaceGenerics(AbstractFeature.handDownInheritance(res,
+                                                                       tt.feature().findInheritanceChain(tp.genericArgument().outer()),
+                                                                       new List<>(tp),
+                                                                       tt.feature()));
+        return a; // calledFeature().handDown(res, a, tt.feature());
       }
   }
 
@@ -447,9 +446,9 @@ public abstract class AbstractCall extends Expr
     var tt = target().type();
     if (!tt.isGenericArgument() && declF != tt.feature())
       {
-        var a = handDownForTarget(res, frmlT, true);
-        rfat = addToResolvedFormalArgumentTypes(rfat, a, argnum);
-        cnt = a.size();
+        var l = calledFeature().handDown(res, new List<>(frmlT), tt.feature());
+        rfat = addToResolvedFormalArgumentTypes(rfat, l, argnum);
+        cnt = l.size();
       }
     else
       {

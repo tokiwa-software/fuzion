@@ -1940,7 +1940,7 @@ public class Call extends AbstractCall
                       }
                     else
                       {
-                        for (var _ : handDownForTarget(res, t, false))
+                        for (var _ : handDownForTarget(res, t))
                           {
                             if (aargs.hasNext())
                               {
