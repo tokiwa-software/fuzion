@@ -242,9 +242,9 @@ public String ref : property.equatable, property.hashable, property.orderable is
   =>
 
     d outcome u8 :=
-      if      (String.zero_char  ≤ c ≤ String.nine_char ) c - String.zero_char
-      else if (String.a_char     ≤ c ≤ String.z_char    ) c - String.a_char    + 10
-      else if (String.cap_a_char ≤ c ≤ String.cap_z_char) c - String.cap_a_char + 10
+      if      String.zero_char  ≤ c ≤ String.nine_char  then c - String.zero_char
+      else if String.a_char     ≤ c ≤ String.z_char     then c - String.a_char    + 10
+      else if String.cap_a_char ≤ c ≤ String.cap_z_char then c - String.cap_a_char + 10
       else parse_error "non-digit found"
 
     d.bind b->
@@ -892,11 +892,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # create string from the given codepoints
   #
   public type.from_codepoints(codepoints Sequence codepoint) String =>
-    ref : String is
-      public redef utf8 Sequence u8 =>
-        codepoints
-          .flat_map (.utf8)
-          .as_array_backed
+    String.from_bytes (codepoints.flat_map (.utf8))
 
 
   # NYI: remove the convenience functions when Fuzion supports char literals
@@ -917,4 +913,4 @@ public String ref : property.equatable, property.hashable, property.orderable is
 # since it would then define a type whose outer type is `String.this` which is
 # a ref type that currently cannot be used a result type.
 #
-private split_if_state(l Sequence String, in_run bool, start_pos, current_pos i32) is
+split_if_state(l Sequence String, in_run bool, start_pos, current_pos i32) is

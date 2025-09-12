@@ -105,7 +105,7 @@ is
   # defines a partial order for date time
   #
   public redef type.lteq(a, b date_time.this) bool =>
-    private ternary_compare trit =>
+    ternary_compare trit =>
       a.args_in_order
        .zip b.args_in_order tuple
        .reduce trit.unknown r,t->
