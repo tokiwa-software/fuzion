@@ -516,12 +516,13 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # The result is a, possibly empty, list of separate non-empty strings.
   #
   public split list String =>
-    l := utf8.as_list.drop_while (c -> c.is_ascii_white_space)
+    l := utf8.drop_while (.is_ascii_white_space)
     if l.is_empty
       nil
     else
       # NYI: UNDER DEVELOPMENT: type inference for lambda
       cnd u8->bool := c -> !c.is_ascii_white_space
+      # NYI: PERFORMANCE: do take_while/drop_while at the same time
       h :=  String.from_bytes (l.take_while cnd).as_array
       t := (String.from_bytes <| l.drop_while cnd)
                   .split
