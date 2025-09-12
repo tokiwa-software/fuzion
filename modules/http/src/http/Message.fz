@@ -26,6 +26,13 @@
 #
 public Message ref is
 
+  container.Map.as_string2 =>
+    items.map kv->
+            k, v := kv
+            "$k: $v" + crlf
+         .as_string ""
+
+
   module version_str(major, minor i32) => "HTTP/" + (major > 1 && minor = 0 ? $major : "$major.$minor")
 
 
@@ -36,7 +43,7 @@ public Message ref is
 
   # header fields with all lower case
   #
-  public header http.canonical_header_map => abstract
+  public header container.Map String String => abstract
 
 
   # NYI: BUG: can only be called once
@@ -54,14 +61,14 @@ public Message ref is
     max_body_bytes i32) Sequence u8
   =>
     # NYI: BUG: read fully
-    (start_line + header.as_string + crlf).utf8 ++ (match (body.read max_body_bytes)
+    (start_line + header.as_string2 + crlf).utf8 ++ (match (body.read max_body_bytes)
                                                 a array u8 => a
                                                 * => [])
 
 
   # String representation of the message header
   #
-  public redef as_string String => start_line + header.as_string + crlf
+  public redef as_string String => start_line + header.as_string2 + crlf
 
 
   # NYI: BUG: can only be called once
@@ -87,35 +94,32 @@ module next_line(LM type : mutate) => (io.buffered LM).read_delimiter "\n".utf8[
 
 
 
-module parse_header_fields(LM type : mutate) outcome http.canonical_header_map =>
+module parse_header_fields(LM type : mutate) outcome (container.mutable_tree_map LM String String) =>
 
-  exception unit http.canonical_header_map ()->
+  exception unit _ ()->
 
     cause(s String) void =>
       (exception unit).env.cause (error s)
 
-    lm : mutate is
-    lm ! ()->
+    fields := (container.mutable_tree_map LM String String) .empty
 
-      fields := container.mutable_tree_map lm String String .empty
+    _ :=
+      for cur := match next_line LM
+                    io.end_of_file => cause "unexpected end of input"
+                    s String => s
+      while cur != ""
+      do
 
-      _ :=
-        for cur := match next_line LM
-                      io.end_of_file => cause "unexpected end of input"
-                      s String => s
-        while cur != ""
-        do
+        # A recipient that receives whitespace between the start-line and the first header field MUST either reject the message as invalid or consume each whitespace-preceded line without further processing of it
+        # https://datatracker.ietf.org/doc/html/rfc9112#section-2.2-8
+        if cur.starts_with " " then cause "whitespace between start line and header field"
 
-          # A recipient that receives whitespace between the start-line and the first header field MUST either reject the message as invalid or consume each whitespace-preceded line without further processing of it
-          # https://datatracker.ietf.org/doc/html/rfc9112#section-2.2-8
-          if cur.starts_with " " then cause "whitespace between start line and header field"
+        parts := cur.split_n ":" 1
+        if parts.count != 2 then cause "broken header field '$cur'"
+        # NYI: UNDER DEVELOPMENT: must duplicate header fields cause an error?
+        fields.put parts[0].lower_case parts[1].trim
 
-          parts := cur.split_n ":" 1
-          if parts.count != 2 then cause "broken header field '$cur'"
-          # NYI: UNDER DEVELOPMENT: must duplicate header fields cause an error?
-          fields.put parts[0].lower_case.canonical_header_key parts[1].trim
-
-      http.canonical_header_map fields.as_map
+    fields
 
 
 
@@ -204,7 +208,7 @@ module body_helper(LM type : mutate, is_req bool, header_fields container.Map St
       # is_req ? nil : option (Sequence u8) (io.buffered LM).read_fully
       body_reader LM (is_req ? 0 : -1)
 
-      
+
 
 /*
 NYI:

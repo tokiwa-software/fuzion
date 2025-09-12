@@ -28,3 +28,16 @@
 #
 #
 public http is
+
+
+module as_map(kvs array (String,String)) =>
+  lm : mutate is
+  lm ! ()->
+    fields := (container.mutable_tree_map lm String String) .empty
+    for kv in kvs do
+      fields.put kv.0.lower_case kv.1
+    fields.as_map
+
+
+# line separator in the HTTP header
+module crlf => "\r\n"

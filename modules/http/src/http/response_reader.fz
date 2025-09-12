@@ -68,7 +68,7 @@ public read_response(
 
     reason := sl[2]
 
-    header_fields := parse_header_fields LM .or_cause unit id
+    header_fields := (parse_header_fields LM .or_cause unit id).as_map
 
     # NYI: UNDER DEVELOPMENT: make this lazy?
     #
