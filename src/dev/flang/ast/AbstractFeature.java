@@ -1181,10 +1181,13 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
         for (int i = 0; i < a.length; i++)
           {
             var ti = a[i];
-            if (ti.isOpenGeneric())
+            if (ti.isOpenGeneric() && ti.genericArgument().outer() == c.calledFeature())
               {
                 var frmlTs = ti.genericArgument().replaceOpen(c.actualTypeParameters());
-                a = Arrays.copyOf(a, a.length - 1 + frmlTs.size());
+                var delta = frmlTs.size() - 1;
+                var old_a = a;
+                a = Arrays.copyOf(a, a.length + delta);
+                System.arraycopy(old_a, i+1, a, i+1+delta, old_a.length-i-1);
                 for (var tg : frmlTs)
                   {
                     a[i] = tg;
@@ -1192,7 +1195,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
                   }
                 i = i - 1;
               }
-            else
+            else if (!ti.isOpenGeneric())
               {
                 var actualTypes = c.actualTypeParameters();
                 actualTypes = res == null ? actualTypes : res.resolveTypes(actualTypes, heir.context());
