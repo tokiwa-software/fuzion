@@ -539,7 +539,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
                         AstErrors.formalGenericWithGenericArgs(pos(), this, f);
                       }
                     var gt = f.asGenericType();
-                    if (gt.isOpenGeneric() && !isValidOpenGeneric(f, outer))
+                    if (gt.isOpenGeneric() && !isValidUseOfOpenType(context, f))
                       {
                         AstErrors.illegalUseOfOpenFormalGeneric(pos(), gt.genericArgument());
                         _resolved = Types.t_ERROR;
@@ -574,7 +574,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
                 if (generics.isEmpty())
                   {
                     var gt = f.asGenericType();
-                    if (!gt.isOpenGeneric() || isValidOpenGeneric(f, outer))
+                    if (!gt.isOpenGeneric() || isValidUseOfOpenType(context, f))
                       {
                         _resolved = gt;
                       }
@@ -605,22 +605,27 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
   }
 
   /**
-   * After it was found that `this` resolves ast the open type parameter `otp`
-   * in the context `outer`, check if this is a legal use of an open type
-   * parameters.
+   * After it was found that `this` resolves as the open type parameter `otp` in
+   * the `context`, check if this is a legal use of an open type parameter.
    *
    * Check if this is the last argument of a feature and t is its return type.
    * This is needed during type resolution since this is the only place where an
    * open formal generic may be used.
    *
+   * @param context the source code context where this type is used
+   *
+   * @param otp the open type parameter that was found then looking up this
+   *
    * @return true iff this is the last argument of a feature and t is its return
    * type.
    */
-  boolean isValidOpenGeneric(AbstractFeature otp, AbstractFeature outer)
+  boolean isValidUseOfOpenType(Context context, AbstractFeature otp)
   {
     if (PRECONDITIONS) require
       (otp.isOpenTypeParameter(),
-       outer != null);
+       context != null);
+
+    var outer = context.outerFeature();
 
     return
       outer instanceof Feature off &&
