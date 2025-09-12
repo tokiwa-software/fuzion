@@ -1876,22 +1876,6 @@ public class Call extends AbstractCall
   }
 
 
-  private List<AbstractType> handDownForTarget(Resolution res, AbstractType tp)
-  {
-    var tt = target().type();
-    var l = new List<>(tp);
-    if (tt.isGenericArgument())
-      {
-        tt = tt.genericArgument().constraint();
-      }
-    else
-      {
-        l = tp.genericArgument().handDown(res, l, tt.feature());
-      }
-    return tt.replaceGenerics(l);
-  }
-
-
   /**
    * infer the missing generic arguments to this call by inspecting the types of
    * the actual arguments.
@@ -1932,37 +1916,44 @@ public class Call extends AbstractCall
               {
                 var t = frml.resultTypeIfPresent(res);
                 var g = t.isGenericArgument() ? t.genericArgument() : null;
-                if (t.isOpenGeneric())
-                  {
-                    if (g.outer() == _calledFeature && g.isOpenTypeParameter())
+                if (t.isOpenGeneric() && g.outer() == _calledFeature)
+                  { // open type that must be inferred as in `tuple 42 "x"`
+                    if (pass == 1)
                       {
-                        if (pass == 1)
+                        checked[vai] = true;
+                        foundAt.set(g.typeParameterIndex(), new List<>()); // set to something not null to avoid missing argument error below
+                        while (aargs.hasNext())
                           {
-                            checked[vai] = true;
-                            foundAt.set(g.typeParameterIndex(), new List<>()); // set to something not null to avoid missing argument error below
-                            while (aargs.hasNext())
+                            count++;
+                            var actual = resolveTypeForNextActual(Types.t_UNDEFINED, aargs, res, context);
+                            var actualType = typeFromActual(res, context, actual);
+                            if (actualType == null)
                               {
-                                count++;
-                                var actual = resolveTypeForNextActual(Types.t_UNDEFINED, aargs, res, context);
-                                var actualType = typeFromActual(res, context, actual);
-                                if (actualType == null)
-                                  {
-                                    actualType = Types.t_ERROR;
-                                    AstErrors.failedToInferOpenGenericArg(pos(), count, actual);
-                                  }
-                                _generics.add(actualType);
+                                actualType = Types.t_ERROR;
+                                AstErrors.failedToInferOpenGenericArg(pos(), count, actual);
                               }
+                            _generics.add(actualType);
                           }
+                      }
+                  }
+                else if (t.isOpenGeneric())
+                  { // open type that is set by outer feature, we only have to find the number and skip those args:
+                    var l = new List<>(t);
+                    var tt = target().type();
+                    if (tt.isGenericArgument())
+                      {
+                        tt = tt.genericArgument().constraint();
                       }
                     else
                       {
-                        for (var _ : handDownForTarget(res, t))
+                        l = g.handDown(res, l, tt.feature());
+                      }
+                    for (var _ : tt.replaceGenerics(l))
+                      {
+                        if (aargs.hasNext())
                           {
-                            if (aargs.hasNext())
-                              {
-                                var ignore = aargs.next();
-                                count++;
-                              }
+                            var ignore = aargs.next();
+                            count++;
                           }
                       }
                   }
@@ -1989,9 +1980,8 @@ public class Call extends AbstractCall
                              */
                             if (t.isGenericArgument())
                               {
-                                var tp = t.genericArgument();
-                                res.resolveTypes(tp);
-                                inferGeneric(res, context, tp.constraint(), actualType, actual.pos(), conflict, foundAt, count-1);
+                                res.resolveTypes(g);
+                                inferGeneric(res, context, g.constraint(), actualType, actual.pos(), conflict, foundAt, count-1);
                               }
                             inferGeneric(res, context, t, actualType, actual.pos(), conflict, foundAt, count-1);
                             checked[vai] = true;
