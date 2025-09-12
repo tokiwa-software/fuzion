@@ -2,7 +2,7 @@
 --CURDIR--/generics_negative.fz:54:31: error 1: Illegal use of open formal type parameter type
     f6(D type..., a A, b B, d D..., a1 A  ) unit => abstract  # 6a. should flag an error, open generic can only be used for last argument
 ------------------------------^
-Open formal type parameter type is permitted only as the type of the last argument in a formal arguments list of an abstract feature.
+Open formal type parameter type is permitted only as the type of an argument.  If the argument and the formal type parameter are part of the same argument list, the argument must be the last argument.
 Open formal argument: 'D'
 
 
@@ -16,7 +16,7 @@ To solve this, remove '...' after the highlighted error.
 --CURDIR--/generics_negative.fz:55:31: error 3: Illegal use of open formal type parameter type
     f7(D type..., a A, b B, d D..., c C...) unit => abstract  # 6b. should flag an error, open generic can only be used for last argument
 ------------------------------^
-Open formal type parameter type is permitted only as the type of the last argument in a formal arguments list of an abstract feature.
+Open formal type parameter type is permitted only as the type of an argument.  If the argument and the formal type parameter are part of the same argument list, the argument must be the last argument.
 Open formal argument: 'D'
 
 
@@ -30,21 +30,21 @@ To solve this, remove '...' after the highlighted error.
 --CURDIR--/generics_negative.fz:61:61: error 5: Illegal use of open formal type parameter type
   opengenerics9 (A type, B type, C type...) : opengenerics6 C A A A is # 7. should flag an error: open generic cannot be used as generic argument
 ------------------------------------------------------------^
-Open formal type parameter type is permitted only as the type of the last argument in a formal arguments list of an abstract feature.
+Open formal type parameter type is permitted only as the type of an argument.  If the argument and the formal type parameter are part of the same argument list, the argument must be the last argument.
 Open formal argument: 'C'
 
 
 --CURDIR--/generics_negative.fz:38:7: error 6: Illegal use of open formal type parameter type
     _ C := any; # 4. should flag an error, open generic cannot be field type.
 ------^
-Open formal type parameter type is permitted only as the type of the last argument in a formal arguments list of an abstract feature.
+Open formal type parameter type is permitted only as the type of an argument.  If the argument and the formal type parameter are part of the same argument list, the argument must be the last argument.
 Open formal argument: 'C'
 
 
 --CURDIR--/generics_negative.fz:66:19: error 7: Illegal use of open formal type parameter type
     x3 : choice A C B is  # 8. should flag an error: choice cannot use open generic
 ------------------^
-Open formal type parameter type is permitted only as the type of the last argument in a formal arguments list of an abstract feature.
+Open formal type parameter type is permitted only as the type of an argument.  If the argument and the formal type parameter are part of the same argument list, the argument must be the last argument.
 Open formal argument: 'C'
 
 
