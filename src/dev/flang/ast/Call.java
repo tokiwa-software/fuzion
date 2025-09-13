@@ -742,6 +742,16 @@ public class Call extends AbstractCall
 
 
   /**
+   * is this Call defunct, i.e., an error occured or this is unreachable due to
+   * target resutling in `void`.
+   */
+  private boolean isDefunct()
+  {
+    return _calledFeature == Types.f_ERROR;
+  }
+
+
+  /**
    * set _calledFeature and _target fields according to `fo`
    */
   private void setCalledFeatureAndTarget(Resolution res, Context context, FeatureAndOuter fo)
@@ -898,11 +908,8 @@ public class Call extends AbstractCall
   {
     if (!Types._options.isLanguageServer())
       {
-        _calledFeature = Types.f_ERROR;
+        setDefunct();
         _target = Call.ERROR;
-        _actuals = new List<>();
-        _generics = new List<>();
-        _type = Types.t_ERROR;
         if (_movedTo != null)
           {
             _movedTo.setToErrorState();
@@ -1016,7 +1023,7 @@ public class Call extends AbstractCall
              while (i.hasNext() &&
                     _actualsResolvedFor == context  && // Abandon resolution if context changed.
                     _calledFeature != null &&          // call itself is not resolved (due to partial application)
-                    _calledFeature != Types.f_ERROR)   // or call itself could not be resolved
+                    !isDefunct())                      // or call itself could not be resolved
                {
                  var a = i.next();
                  var a1 = res.resolveType(a, context);
@@ -1592,7 +1599,7 @@ public class Call extends AbstractCall
 
 
   /**
-   * Helper routine for inferGenericsFromArgs: Get the next element from aargs,
+   * Helper routine for inferGenericsFromArgs: For argument argnum
    * perform type resolution (which includes possibly replacing it by a
    * different Expr) and return it.
    *
@@ -1604,45 +1611,35 @@ public class Call extends AbstractCall
    *
    * @param formalTypeForPropagation  the formal argument type
    *
-   * @param aargs iterator whose next value is the actual to process
+   * @param argnum index of the actual argument
    *
    * @param res the resolution instance.
    *
    * @param context the source code context where this Call is used
    */
   private Expr resolveTypeForNextActual(AbstractType formalTypeForPropagation,
-                                        ListIterator<Expr> aargs,
+                                        int argnum,
                                         Resolution res,
                                         Context context)
   {
-    Expr actual = aargs.next();
-    var actualWantsPropagation = actual instanceof NumLiteral;
-    if (formalTypeForPropagation != null && actualWantsPropagation)
-      {
-        if (formalTypeForPropagation.isGenericArgument())
-          {
-            var g = formalTypeForPropagation.genericArgument();
-            if (g.outer() == _calledFeature)
-              { // we found a use of a generic type, so record it:
-                var t = _generics.get(g.typeParameterIndex());
-                if (t != Types.t_UNDEFINED)
-                  {
-                    actual = actual.propagateExpectedType(res, context, t, null);
-                  }
-              }
-          }
-      }
-    if ((formalTypeForPropagation != null) || !actualWantsPropagation)
-      {
+    var actual = _actuals.get(argnum);
+    if (!(actual instanceof NumLiteral))
+      { // not a NumLiteral, so we are happy to provide the type
         actual = res.resolveType(actual, context);
-        if (CHECKS) check
-          (actual != null,
-           actual != Universe.instance);
-        aargs.set(actual);
+        _actuals.set(argnum, actual);
       }
-    else
-      {
+    else if (formalTypeForPropagation == null)
+      { // a NumLiteral in first pass, no type provided
         actual = null;
+      }
+    else if (formalTypeForPropagation.isGenericArgument() &&
+             formalTypeForPropagation.genericArgument().outer() == _calledFeature)
+      { // a NumLiteral in second pass and type is a type parameter, e.g., `T`
+        // in `f(T type, a,b T)` in a call `f 12 x` where x returns `f64`, so we
+        // propagate this to NumLiteral `12`:
+        var t = _generics.get(formalTypeForPropagation.genericArgument().typeParameterIndex());
+        actual = actual.propagateExpectedType(res, context, t, null);
+        _actuals.set(argnum, actual);
       }
     return actual;
   }
@@ -1829,7 +1826,7 @@ public class Call extends AbstractCall
     // the types of the actuals:
     if (!missing.isEmpty() &&
         !_calledFeature.isCotype() &&
-        _calledFeature != Types.f_ERROR &&
+        !isDefunct() &&
         !errorInActuals())
       {
         AstErrors.failedToInferActualGeneric(pos(), _calledFeature, missing);
@@ -1851,22 +1848,19 @@ public class Call extends AbstractCall
   {
     var cf = _calledFeature;
 
-    ListIterator<Expr> aargs = _actuals.listIterator();
     var va = cf.valueArguments();
     var vai = 0;
     for (var frml : va)
       {
-        if (aargs.hasNext())
+        if (vai < _actuals.size())
           {
-            var actual = aargs.next();
+            var actual = _actuals.get(vai);
             var t = frml.resultTypeIfPresent(res);
             if (t != null && t.isFunctionTypeExcludingLazy())
               {
                 Expr l = actual.propagateExpectedTypeForPartial(res, context, t);
-                if (l != actual)
+                if (l != actual && !isDefunct())
                   {
-                    if (CHECKS) check
-                      (l != Universe.instance);
                     _actuals = _actuals.setOrClone(vai, l);
                   }
               }
@@ -1904,8 +1898,7 @@ public class Call extends AbstractCall
     // run two passes: first, ignore numeric literals and open generics, do these in second pass
     for (var pass = 0; pass < 2; pass++)
       {
-        int count = 1; // argument count, for error messages
-        ListIterator<Expr> aargs = _actuals.listIterator();
+        int argnum = 0;
         for (var vai = 0; vai < _calledFeature.valueArguments().size(); vai++)
           {
             var frml = _calledFeature.valueArguments().get(vai);
@@ -1916,29 +1909,33 @@ public class Call extends AbstractCall
               {
                 var t = frml.resultTypeIfPresent(res);
                 var g = t.isGenericArgument() ? t.genericArgument() : null;
-                if (g != null && g.outer() == _calledFeature && g.isOpenTypeParameter())
-                  {
+                if (t.isOpenGeneric() && g.outer() == _calledFeature)
+                  { // open type that must be inferred as in `tuple 42 "x"`
                     if (pass == 1)
                       {
                         checked[vai] = true;
                         foundAt.set(g.typeParameterIndex(), new List<>()); // set to something not null to avoid missing argument error below
-                        while (aargs.hasNext())
+                        while (argnum < _actuals.size())
                           {
-                            count++;
-                            var actual = resolveTypeForNextActual(Types.t_UNDEFINED, aargs, res, context);
+                            var actual = resolveTypeForNextActual(Types.t_UNDEFINED, argnum, res, context);
                             var actualType = typeFromActual(res, context, actual);
                             if (actualType == null)
                               {
                                 actualType = Types.t_ERROR;
-                                AstErrors.failedToInferOpenGenericArg(pos(), count, actual);
+                                AstErrors.failedToInferOpenGenericArg(pos(), argnum+1, actual);
                               }
                             _generics.add(actualType);
+                            argnum++;
                           }
                       }
                   }
-                else if (aargs.hasNext())
+                else if (t.isOpenGeneric())
+                  { // open type that is set by outer feature, we only have to find the number and skip those args:
+                    argnum += resolveFormalArg(res, context, frml).size();
+                  }
+                else if (argnum < _actuals.size())
                   {
-                    var actual = resolveTypeForNextActual(pass == 0 ? null : t, aargs, res, context);
+                    var actual = resolveTypeForNextActual(pass == 0 ? null : t, argnum, res, context);
                     /*
                       without this if, type inference in this example would not work:
                       ```
@@ -1959,11 +1956,10 @@ public class Call extends AbstractCall
                              */
                             if (t.isGenericArgument())
                               {
-                                var tp = t.genericArgument();
-                                res.resolveTypes(tp);
-                                inferGeneric(res, context, tp.constraint(), actualType, actual.pos(), conflict, foundAt, count-1);
+                                res.resolveTypes(g);
+                                inferGeneric(res, context, g.constraint(), actualType, actual.pos(), conflict, foundAt, argnum);
                               }
-                            inferGeneric(res, context, t, actualType, actual.pos(), conflict, foundAt, count-1);
+                            inferGeneric(res, context, t, actualType, actual.pos(), conflict, foundAt, argnum);
                             checked[vai] = true;
                           }
                         else if (resultExpression(actual) instanceof AbstractLambda al)
@@ -1971,12 +1967,12 @@ public class Call extends AbstractCall
                             checked[vai] = inferGenericLambdaResult(res, context, t, frml, al, actual.pos(), conflict, foundAt);
                           }
                       }
-                    count++;
+                    argnum++;
                   }
               }
-            else if (aargs.hasNext())
+            else
               {
-                aargs.next();
+                argnum++;
               }
           }
       }
@@ -2807,21 +2803,18 @@ public class Call extends AbstractCall
     if (typeForInferencing() != Types.t_ERROR &&
         _actuals.size() == resolvedFormalArgumentTypes.length /* this will cause an error in checkTypes() */ )
       {
-        int count = 0;
-        ListIterator<Expr> i = _actuals.listIterator();
-        while (i.hasNext())
+        for (var i = 0; i < _actuals.size(); i++)
           {
-            Expr actl = i.next();
-            var frmlT = resolvedFormalArgumentTypes[count];
+            Expr actl = _actuals.get(i);
+            var frmlT = resolvedFormalArgumentTypes[i];
             if (actl != null && frmlT != Types.t_ERROR)
               {
                 var a = f.apply(actl, frmlT);
-                if (CHECKS) check
-                  (a != null,
-                   a != Universe.instance);
-                i.set(a);
+                if (!isDefunct())
+                  {
+                    _actuals = _actuals.setOrClone(i, a);
+                  }
               }
-            count++;
           }
       }
   }
@@ -2873,21 +2866,20 @@ public class Call extends AbstractCall
           }
         else
           {
-            int count = 0;
-            for (Expr actl : _actuals)
+            for (var i = 0; i < _actuals.size(); i++)
               {
-                var frmlT = resolvedFormalArgumentTypes[count];
+                var actl = _actuals.get(i);
+                var frmlT = resolvedFormalArgumentTypes[i];
                 if (CHECKS) check
                   (Errors.any() || (actl != Call.ERROR && actl != Call.ERROR));
                 if (frmlT != Types.t_ERROR && actl != Call.ERROR && actl != Call.ERROR && frmlT.isAssignableFrom(actl.type(), context).no())
                   {
-                    AstErrors.incompatibleArgumentTypeInCall(_calledFeature, count, frmlT, actl, context);
+                    AstErrors.incompatibleArgumentTypeInCall(_calledFeature, i, frmlT, actl, context);
                   }
                 else
                   {
                     actl.checkAmbiguousAssignmentToChoice(frmlT);
                   }
-                count++;
               }
           }
         if (_calledFeature.isChoice())

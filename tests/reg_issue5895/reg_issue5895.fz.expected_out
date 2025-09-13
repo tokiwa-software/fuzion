@@ -1,0 +1,66 @@
+PASS: f0 [] f64, 1.2 []
+PASS: f0 [unit] f64, 1.2 [unit unit]
+PASS: f0 [unit, u8] f64, 1.2 [unit unit, u8 42]
+PASS: f0 [unit, u8, String] f64, 1.2 [unit unit, u8 42, String hi]
+PASS: f0 [unit, Sequence String, String] f64, 1.2 [unit unit, (Sequence String) [], String hi]
+PASS: f1 [] f64, [] 1.2
+PASS: f1 [unit] f64, [unit unit] 1.2
+PASS: f1 [unit, u8] f64, [unit unit, u8 42] 1.2
+PASS: f1 [unit, u8, String] f64, [unit unit, u8 42, String hi] 1.2
+PASS: f1 [unit, Sequence String, String] f64, [unit unit, (Sequence String) [], String hi] 1.2
+PASS: f2 [] f64, array (option String), [] 1.2 [hi]
+PASS: f2 [unit] f64, array (option String), [unit unit] 1.2 [hi]
+PASS: f2 [unit, u8] f64, array (option String), [unit unit, u8 42] 1.2 [hi]
+PASS: f2 [unit, u8, String] f64, array (option String), [unit unit, u8 42, String hi] 1.2 [hi]
+PASS: f2 [unit, Sequence String, String] f64, array (option String), [unit unit, (Sequence String) [], String hi] 1.2 [hi]
+PASS: f3 [] f64, aos, [] [] 1.2 aos []
+PASS: f3 [unit] f64, aos, [] [unit unit] 1.2 aos []
+PASS: f3 [unit, u8] f64, aos, [] [unit unit, u8 42] 1.2 aos []
+PASS: f3 [unit, u8, String] f64, aos, [] [unit unit, u8 42, String hi] 1.2 aos []
+PASS: f3 [unit, ss, String] f64, aos, [] [unit unit, ss ss, String hi] 1.2 aos []
+PASS: f3 [] f64, aos, [bool] [] 1.2 aos [bool true]
+PASS: f3 [unit] f64, aos, [bool] [unit unit] 1.2 aos [bool true]
+PASS: f3 [unit, u8] f64, aos, [bool] [unit unit, u8 42] 1.2 aos [bool true]
+PASS: f3 [unit, u8, String] f64, aos, [bool] [unit unit, u8 42, String hi] 1.2 aos [bool true]
+PASS: f3 [unit, ss, String] f64, aos, [bool] [unit unit, ss ss, String hi] 1.2 aos [bool true]
+PASS: f3 [] f64, aos, [bool, nf] [] 1.2 aos [bool true, nf nf]
+PASS: f3 [unit] f64, aos, [bool, nf] [unit unit] 1.2 aos [bool true, nf nf]
+PASS: f3 [unit, u8] f64, aos, [bool, nf] [unit unit, u8 42] 1.2 aos [bool true, nf nf]
+PASS: f3 [unit, u8, String] f64, aos, [bool, nf] [unit unit, u8 42, String hi] 1.2 aos [bool true, nf nf]
+PASS: f3 [unit, ss, String] f64, aos, [bool, nf] [unit unit, ss ss, String hi] 1.2 aos [bool true, nf nf]
+PASS: f0 [] f64, 1.2 []
+PASS: f0 [i8] f64, 1.2 [i8 -12]
+PASS: f0 [i8, nil] f64, 1.2 [i8 -12, nil --nil--]
+PASS: f1 [] f64, [] 1.2
+PASS: f1 [i8] f64, [i8 -12] 1.2
+PASS: f1 [i8, nil] f64, [i8 -12, nil --nil--] 1.2
+PASS: f2 [] f64, array (option String), [] 1.2 [hi]
+PASS: f2 [i8] f64, array (option String), [i8 -12] 1.2 [hi]
+PASS: f2 [i8, nil] f64, array (option String), [i8 -12, nil --nil--] 1.2 [hi]
+PASS: f3 [] f64, aos, [] [] 1.2 aos []
+PASS: f3 [i8] f64, aos, [] [i8 -12] 1.2 aos []
+PASS: f3 [i8, nil] f64, aos, [] [i8 -12, nil --nil--] 1.2 aos []
+PASS: f3 [] f64, aos, [bool] [] 1.2 aos [bool true]
+PASS: f3 [i8] f64, aos, [bool] [i8 -12] 1.2 aos [bool true]
+PASS: f3 [i8, nil] f64, aos, [bool] [i8 -12, nil --nil--] 1.2 aos [bool true]
+PASS: f3 [] f64, aos, [bool, nf] [] 1.2 aos [bool true, nf nf]
+PASS: f3 [i8] f64, aos, [bool, nf] [i8 -12] 1.2 aos [bool true, nf nf]
+PASS: f3 [i8, nil] f64, aos, [bool, nf] [i8 -12, nil --nil--] 1.2 aos [bool true, nf nf]
+PASS: r1.f0 f64, 1.2
+PASS: r2.f0 f64, 1.2 -12
+PASS: r3.f0 f64, 1.2 -12 --nil--
+PASS: r1.f1 f64, 1.2
+PASS: r2.f1 f64, -12 1.2
+PASS: r3.f1 f64, -12 --nil-- 1.2
+PASS: r1.f2 f64, array (option String), 1.2 [hi]
+PASS: r2.f2 f64, array (option String), -12 1.2 [hi]
+PASS: r3.f2 f64, array (option String), -12 --nil-- 1.2 [hi]
+PASS: r1.f3 f64, aos, [] 1.2 aos []
+PASS: r2.f3 f64, aos, [] -12 1.2 aos []
+PASS: r3.f3 f64, aos, [] -12 --nil-- 1.2 aos []
+PASS: r1.f3 f64, aos, [bool] 1.2 aos [bool true]
+PASS: r2.f3 f64, aos, [bool] -12 1.2 aos [bool true]
+PASS: r3.f3 f64, aos, [bool] -12 --nil-- 1.2 aos [bool true]
+PASS: r1.f3 f64, aos, [bool, nf] 1.2 aos [bool true, nf nf]
+PASS: r2.f3 f64, aos, [bool, nf] -12 1.2 aos [bool true, nf nf]
+PASS: r3.f3 f64, aos, [bool, nf] -12 --nil-- 1.2 aos [bool true, nf nf]

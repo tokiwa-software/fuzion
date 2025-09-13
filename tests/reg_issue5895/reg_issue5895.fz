@@ -1,0 +1,168 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue5895
+#
+# -----------------------------------------------------------------------
+
+# Test different configurations of open type parameters that are not the last
+# argument
+#
+reg_issue5895 =>
+
+  # an outer feature with open type parameter
+  #
+  open(A type ...) is
+
+    # just an outer open type as last argument
+    #
+    f0(T   type,            t T, a A...                  ) => "f0 {A.map (.name)} {T.name}, $t $a"
+
+    # followed by another argument
+    #
+    f1(T   type,                 a A..., t T             ) => "f1 {A.map (.name)} {T.name}, $a $t"
+
+    # followed by another two arguments
+    #
+    f2(T,U type,                 a A..., t T, u U        ) => "f2 {A.map (.name)} {T.name}, {U.name}, $a $t $u"
+
+    # followed by another two arguments and an open type declared in this feature
+    #
+    f3(T,U type, V type...,      a A..., t T, u U, v V...) => "f3 {A.map (.name)} {T.name}, {U.name}, {V.map (.name)} $a $t $u $v"
+
+  chk(e,r) =>
+    if e=r then say "PASS: $r"
+           else say "FAIL: got $r"
+                say "      exp $e"
+
+  chk "f0 [] f64, 1.2 []"                                                                        <| open                               .f0 (f64 1.2)
+  chk "f0 [unit] f64, 1.2 [unit unit]"                                                           <| open unit                          .f0 (f64 1.2) unit
+  chk "f0 [unit, u8] f64, 1.2 [unit unit, u8 42]"                                                <| open unit u8                       .f0 (f64 1.2) unit 42
+  chk "f0 [unit, u8, String] f64, 1.2 [unit unit, u8 42, String hi]"                             <| open unit u8 String                .f0 (f64 1.2) unit 42 "hi"
+  chk "f0 [unit, Sequence String, String] f64, 1.2 [unit unit, (Sequence String) [], String hi]" <| open unit (Sequence String) String .f0 (f64 1.2) unit [] "hi"
+  chk "f1 [] f64, [] 1.2"                                                                        <| open                               .f1              (f64 1.2)
+  chk "f1 [unit] f64, [unit unit] 1.2"                                                           <| open unit                          .f1 unit         (f64 1.2)
+  chk "f1 [unit, u8] f64, [unit unit, u8 42] 1.2"                                                <| open unit u8                       .f1 unit 42      (f64 1.2)
+  chk "f1 [unit, u8, String] f64, [unit unit, u8 42, String hi] 1.2"                             <| open unit u8 String                .f1 unit 42 "hi" (f64 1.2)
+  chk "f1 [unit, Sequence String, String] f64, [unit unit, (Sequence String) [], String hi] 1.2" <| open unit (Sequence String) String .f1 unit [] "hi" (f64 1.2)
+  chk "f2 [] f64, array (option String), [] 1.2 [hi]"                                                                        <| open                               .f2              (f64 1.2) [option "hi"]
+  chk "f2 [unit] f64, array (option String), [unit unit] 1.2 [hi]"                                                           <| open unit                          .f2 unit         (f64 1.2) [option "hi"]
+  chk "f2 [unit, u8] f64, array (option String), [unit unit, u8 42] 1.2 [hi]"                                                <| open unit u8                       .f2 unit 42      (f64 1.2) [option "hi"]
+  chk "f2 [unit, u8, String] f64, array (option String), [unit unit, u8 42, String hi] 1.2 [hi]"                             <| open unit u8 String                .f2 unit 42 "hi" (f64 1.2) [option "hi"]
+  chk "f2 [unit, Sequence String, String] f64, array (option String), [unit unit, (Sequence String) [], String hi] 1.2 [hi]" <| open unit (Sequence String) String .f2 unit [] "hi" (f64 1.2) [option "hi"]
+
+  chk "f3 [] f64, aos, [] [] 1.2 aos []"                                            <| open                .f3              1.2 aos
+  chk "f3 [unit] f64, aos, [] [unit unit] 1.2 aos []"                               <| open unit           .f3 unit         1.2 aos
+  chk "f3 [unit, u8] f64, aos, [] [unit unit, u8 42] 1.2 aos []"                    <| open unit u8        .f3 unit 42      1.2 aos
+  chk "f3 [unit, u8, String] f64, aos, [] [unit unit, u8 42, String hi] 1.2 aos []" <| open unit u8 String .f3 unit 42 "hi" 1.2 aos
+  chk "f3 [unit, ss, String] f64, aos, [] [unit unit, ss ss, String hi] 1.2 aos []" <| open unit ss String .f3 unit ss "hi" 1.2 aos
+
+  chk "f3 [] f64, aos, [bool] [] 1.2 aos [bool true]"                                            <| open                .f3              1.2 aos true
+  chk "f3 [unit] f64, aos, [bool] [unit unit] 1.2 aos [bool true]"                               <| open unit           .f3 unit         1.2 aos true
+  chk "f3 [unit, u8] f64, aos, [bool] [unit unit, u8 42] 1.2 aos [bool true]"                    <| open unit u8        .f3 unit 42      1.2 aos true
+  chk "f3 [unit, u8, String] f64, aos, [bool] [unit unit, u8 42, String hi] 1.2 aos [bool true]" <| open unit u8 String .f3 unit 42 "hi" 1.2 aos true
+  chk "f3 [unit, ss, String] f64, aos, [bool] [unit unit, ss ss, String hi] 1.2 aos [bool true]" <| open unit ss String .f3 unit ss "hi" 1.2 aos true
+
+  chk "f3 [] f64, aos, [bool, nf] [] 1.2 aos [bool true, nf nf]"                                            <| open                .f3              1.2 aos true nf
+  chk "f3 [unit] f64, aos, [bool, nf] [unit unit] 1.2 aos [bool true, nf nf]"                               <| open unit           .f3 unit         1.2 aos true nf
+  chk "f3 [unit, u8] f64, aos, [bool, nf] [unit unit, u8 42] 1.2 aos [bool true, nf nf]"                    <| open unit u8        .f3 unit 42      1.2 aos true nf
+  chk "f3 [unit, u8, String] f64, aos, [bool, nf] [unit unit, u8 42, String hi] 1.2 aos [bool true, nf nf]" <| open unit u8 String .f3 unit 42 "hi" 1.2 aos true nf
+  chk "f3 [unit, ss, String] f64, aos, [bool, nf] [unit unit, ss ss, String hi] 1.2 aos [bool true, nf nf]" <| open unit ss String .f3 unit ss "hi" 1.2 aos true nf
+
+  heir1 : open        is
+  heir2 : open i8     is
+  heir3 : open i8 nil is
+
+  chk "f0 [] f64, 1.2 []"                           <| heir1.f0 (f64 1.2)
+  chk "f0 [i8] f64, 1.2 [i8 -12]"                   <| heir2.f0 (f64 1.2) -12
+  chk "f0 [i8, nil] f64, 1.2 [i8 -12, nil --nil--]" <| heir3.f0 (f64 1.2) -12 nil
+
+  chk "f1 [] f64, [] 1.2"                           <| heir1.f1         (f64 1.2)
+  chk "f1 [i8] f64, [i8 -12] 1.2"                   <| heir2.f1 -12     (f64 1.2)
+  chk "f1 [i8, nil] f64, [i8 -12, nil --nil--] 1.2" <| heir3.f1 -12 nil (f64 1.2)
+
+  chk "f2 [] f64, array (option String), [] 1.2 [hi]"                           <| heir1.f2         (f64 1.2) [option "hi"]
+  chk "f2 [i8] f64, array (option String), [i8 -12] 1.2 [hi]"                   <| heir2.f2 -12     (f64 1.2) [option "hi"]
+  chk "f2 [i8, nil] f64, array (option String), [i8 -12, nil --nil--] 1.2 [hi]" <| heir3.f2 -12 nil (f64 1.2) [option "hi"]
+
+  chk "f3 [] f64, aos, [] [] 1.2 aos []"                                                   <| heir1.f3         1.2 aos
+  chk "f3 [i8] f64, aos, [] [i8 -12] 1.2 aos []"                                           <| heir2.f3 -12     1.2 aos
+  chk "f3 [i8, nil] f64, aos, [] [i8 -12, nil --nil--] 1.2 aos []"                         <| heir3.f3 -12 nil 1.2 aos
+
+  chk "f3 [] f64, aos, [bool] [] 1.2 aos [bool true]"                                      <| heir1.f3         1.2 aos true
+  chk "f3 [i8] f64, aos, [bool] [i8 -12] 1.2 aos [bool true]"                              <| heir2.f3 -12     1.2 aos true
+  chk "f3 [i8, nil] f64, aos, [bool] [i8 -12, nil --nil--] 1.2 aos [bool true]"            <| heir3.f3 -12 nil 1.2 aos true
+
+  chk "f3 [] f64, aos, [bool, nf] [] 1.2 aos [bool true, nf nf]"                           <| heir1.f3         1.2 aos true nf
+  chk "f3 [i8] f64, aos, [bool, nf] [i8 -12] 1.2 aos [bool true, nf nf]"                   <| heir2.f3 -12     1.2 aos true nf
+  chk "f3 [i8, nil] f64, aos, [bool, nf] [i8 -12, nil --nil--] 1.2 aos [bool true, nf nf]" <| heir3.f3 -12 nil 1.2 aos true nf
+
+  redef1 : open        is
+    redef f0(T   type,            t T             ) => "r1.f0 {T.name}, $t"
+    redef f1(T   type,            t T             ) => "r1.f1 {T.name}, $t"
+    redef f2(T,U type,            t T, u U        ) => "r1.f2 {T.name}, {U.name}, $t $u"
+    redef f3(T,U type, V type..., t T, u U, v V...) => "r1.f3 {T.name}, {U.name}, {V.map (.name)} $t $u $v"
+  redef2 : open i8     is
+    redef f0(T   type,            t T, a1 i8                  ) => "r2.f0 {T.name}, $t $a1"
+    redef f1(T   type,                 a1 i8, t T             ) => "r2.f1 {T.name}, $a1 $t"
+    redef f2(T,U type,                 a1 i8, t T, u U        ) => "r2.f2 {T.name}, {U.name}, $a1 $t $u"
+    redef f3(T,U type, V type...,      a1 i8, t T, u U, v V...) => "r2.f3 {T.name}, {U.name}, {V.map (.name)} $a1 $t $u $v"
+  redef3 : open i8 nil is
+    redef f0(T   type,            t T, a1 i8, a2 nil                  ) => "r3.f0 {T.name}, $t $a1 $a2"
+    redef f1(T   type,                 a1 i8, a2 nil, t T             ) => "r3.f1 {T.name}, $a1 $a2 $t"
+    redef f2(T,U type,                 a1 i8, a2 nil, t T, u U        ) => "r3.f2 {T.name}, {U.name}, $a1 $a2 $t $u"
+    redef f3(T,U type, V type...,      a1 i8, a2 nil, t T, u U, v V...) => "r3.f3 {T.name}, {U.name}, {V.map (.name)} $a1 $a2 $t $u $v"
+
+  chk "r1.f0 f64, 1.2"             <| redef1.f0 (f64 1.2)
+  chk "r2.f0 f64, 1.2 -12"         <| redef2.f0 (f64 1.2) -12
+  chk "r3.f0 f64, 1.2 -12 --nil--" <| redef3.f0 (f64 1.2) -12 nil
+
+  chk "r1.f1 f64, 1.2"             <| redef1.f1         (f64 1.2)
+  chk "r2.f1 f64, -12 1.2"         <| redef2.f1 -12     (f64 1.2)
+  chk "r3.f1 f64, -12 --nil-- 1.2" <| redef3.f1 -12 nil (f64 1.2)
+
+  chk "r1.f2 f64, array (option String), 1.2 [hi]"             <| redef1.f2         (f64 1.2) [option "hi"]
+  chk "r2.f2 f64, array (option String), -12 1.2 [hi]"         <| redef2.f2 -12     (f64 1.2) [option "hi"]
+  chk "r3.f2 f64, array (option String), -12 --nil-- 1.2 [hi]" <| redef3.f2 -12 nil (f64 1.2) [option "hi"]
+
+  chk "r1.f3 f64, aos, [] 1.2 aos []"                                     <| redef1.f3         1.2 aos
+  chk "r2.f3 f64, aos, [] -12 1.2 aos []"                                 <| redef2.f3 -12     1.2 aos
+  chk "r3.f3 f64, aos, [] -12 --nil-- 1.2 aos []"                         <| redef3.f3 -12 nil 1.2 aos
+
+  chk "r1.f3 f64, aos, [bool] 1.2 aos [bool true]"                        <| redef1.f3         1.2 aos true
+  chk "r2.f3 f64, aos, [bool] -12 1.2 aos [bool true]"                    <| redef2.f3 -12     1.2 aos true
+  chk "r3.f3 f64, aos, [bool] -12 --nil-- 1.2 aos [bool true]"            <| redef3.f3 -12 nil 1.2 aos true
+
+  chk "r1.f3 f64, aos, [bool, nf] 1.2 aos [bool true, nf nf]"             <| redef1.f3         1.2 aos true nf
+  chk "r2.f3 f64, aos, [bool, nf] -12 1.2 aos [bool true, nf nf]"         <| redef2.f3 -12     1.2 aos true nf
+  chk "r3.f3 f64, aos, [bool, nf] -12 --nil-- 1.2 aos [bool true, nf nf]" <| redef3.f3 -12 nil 1.2 aos true nf
+
+# short instead of `array (option String)`
+aos is
+  public redef as_string String => "aos"
+
+# short instead of `Sequence String`
+ss is
+  public redef as_string String => "ss"
+
+# short instead of `num.fraction i32`
+nf is
+  public redef as_string String => "nf"
+
+reg_issue5895

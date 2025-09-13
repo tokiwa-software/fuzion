@@ -1545,7 +1545,7 @@ public class AstErrors extends ANY
   {
     error(pos,
           "Illegal use of open formal type parameter type",
-          "Open formal type parameter type is permitted only as the type of the last argument in a formal arguments list of an abstract feature.\n" +
+          "Open formal type parameter type is permitted only as the type of an argument.  If the argument and the formal type parameter are part of the same argument list, the argument must be the last argument.\n" +
           "Open formal argument: " + sbnf(generic) + "");
   }
 
