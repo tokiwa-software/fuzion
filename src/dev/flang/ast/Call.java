@@ -742,6 +742,16 @@ public class Call extends AbstractCall
 
 
   /**
+   * is this Call defunct, i.e., an error occured or this is unreachable due to
+   * target resutling in `void`.
+   */
+  private boolean isDefunct()
+  {
+    return _calledFeature == Types.f_ERROR;
+  }
+
+
+  /**
    * set _calledFeature and _target fields according to `fo`
    */
   private void setCalledFeatureAndTarget(Resolution res, Context context, FeatureAndOuter fo)
@@ -898,11 +908,8 @@ public class Call extends AbstractCall
   {
     if (!Types._options.isLanguageServer())
       {
-        _calledFeature = Types.f_ERROR;
+        setDefunct();
         _target = Call.ERROR;
-        _actuals = new List<>();
-        _generics = new List<>();
-        _type = Types.t_ERROR;
         if (_movedTo != null)
           {
             _movedTo.setToErrorState();
@@ -1016,7 +1023,7 @@ public class Call extends AbstractCall
              while (i.hasNext() &&
                     _actualsResolvedFor == context  && // Abandon resolution if context changed.
                     _calledFeature != null &&          // call itself is not resolved (due to partial application)
-                    _calledFeature != Types.f_ERROR)   // or call itself could not be resolved
+                    !isDefunct())                      // or call itself could not be resolved
                {
                  var a = i.next();
                  var a1 = res.resolveType(a, context);
@@ -1819,7 +1826,7 @@ public class Call extends AbstractCall
     // the types of the actuals:
     if (!missing.isEmpty() &&
         !_calledFeature.isCotype() &&
-        _calledFeature != Types.f_ERROR &&
+        !isDefunct() &&
         !errorInActuals())
       {
         AstErrors.failedToInferActualGeneric(pos(), _calledFeature, missing);
@@ -1852,10 +1859,8 @@ public class Call extends AbstractCall
             if (t != null && t.isFunctionTypeExcludingLazy())
               {
                 Expr l = actual.propagateExpectedTypeForPartial(res, context, t);
-                if (l != actual)
+                if (l != actual && !isDefunct())
                   {
-                    if (CHECKS) check
-                      (l != Universe.instance);
                     _actuals = _actuals.setOrClone(vai, l);
                   }
               }
@@ -2805,10 +2810,10 @@ public class Call extends AbstractCall
             if (actl != null && frmlT != Types.t_ERROR)
               {
                 var a = f.apply(actl, frmlT);
-                if (CHECKS) check
-                  (a != null,
-                   a != Universe.instance);
-                _actuals = _actuals.setOrClone(i, a);
+                if (!isDefunct())
+                  {
+                    _actuals = _actuals.setOrClone(i, a);
+                  }
               }
           }
       }
