@@ -1592,7 +1592,7 @@ public class Call extends AbstractCall
 
 
   /**
-   * Helper routine for inferGenericsFromArgs: Get the next element from aargs,
+   * Helper routine for inferGenericsFromArgs: For argument argnum
    * perform type resolution (which includes possibly replacing it by a
    * different Expr) and return it.
    *
@@ -1604,45 +1604,35 @@ public class Call extends AbstractCall
    *
    * @param formalTypeForPropagation  the formal argument type
    *
-   * @param aargs iterator whose next value is the actual to process
+   * @param argnum index of the actual argument
    *
    * @param res the resolution instance.
    *
    * @param context the source code context where this Call is used
    */
   private Expr resolveTypeForNextActual(AbstractType formalTypeForPropagation,
-                                        ListIterator<Expr> aargs,
+                                        int argnum,
                                         Resolution res,
                                         Context context)
   {
-    Expr actual = aargs.next();
-    var actualWantsPropagation = actual instanceof NumLiteral;
-    if (formalTypeForPropagation != null && actualWantsPropagation)
-      {
-        if (formalTypeForPropagation.isGenericArgument())
-          {
-            var g = formalTypeForPropagation.genericArgument();
-            if (g.outer() == _calledFeature)
-              { // we found a use of a generic type, so record it:
-                var t = _generics.get(g.typeParameterIndex());
-                if (t != Types.t_UNDEFINED)
-                  {
-                    actual = actual.propagateExpectedType(res, context, t, null);
-                  }
-              }
-          }
-      }
-    if ((formalTypeForPropagation != null) || !actualWantsPropagation)
-      {
+    var actual = _actuals.get(argnum);
+    if (!(actual instanceof NumLiteral))
+      { // not a NumLiteral, so we are happy to provide the type
         actual = res.resolveType(actual, context);
-        if (CHECKS) check
-          (actual != null,
-           actual != Universe.instance);
-        aargs.set(actual);
+        _actuals.set(argnum, actual);
       }
-    else
-      {
+    else if (formalTypeForPropagation == null)
+      { // a NumLiteral in first pass, no type provided
         actual = null;
+      }
+    else if (formalTypeForPropagation.isGenericArgument() &&
+             formalTypeForPropagation.genericArgument().outer() == _calledFeature)
+      { // a NumLiteral in second pass and type is a type parameter, e.g., `T`
+        // in `f(T type, a,b T)` in a call `f 12 x` where x returns `f64`, so we
+        // propagate this to NumLiteral `12`:
+        var t = _generics.get(formalTypeForPropagation.genericArgument().typeParameterIndex());
+        actual = actual.propagateExpectedType(res, context, t, null);
+        _actuals.set(argnum, actual);
       }
     return actual;
   }
@@ -1904,8 +1894,7 @@ public class Call extends AbstractCall
     // run two passes: first, ignore numeric literals and open generics, do these in second pass
     for (var pass = 0; pass < 2; pass++)
       {
-        int count = 1; // argument count, for error messages
-        ListIterator<Expr> aargs = _actuals.listIterator();
+        int argnum = 0;
         for (var vai = 0; vai < _calledFeature.valueArguments().size(); vai++)
           {
             var frml = _calledFeature.valueArguments().get(vai);
@@ -1922,34 +1911,27 @@ public class Call extends AbstractCall
                       {
                         checked[vai] = true;
                         foundAt.set(g.typeParameterIndex(), new List<>()); // set to something not null to avoid missing argument error below
-                        while (aargs.hasNext())
+                        while (argnum < _actuals.size())
                           {
-                            count++;
-                            var actual = resolveTypeForNextActual(Types.t_UNDEFINED, aargs, res, context);
+                            var actual = resolveTypeForNextActual(Types.t_UNDEFINED, argnum, res, context);
                             var actualType = typeFromActual(res, context, actual);
                             if (actualType == null)
                               {
                                 actualType = Types.t_ERROR;
-                                AstErrors.failedToInferOpenGenericArg(pos(), count, actual);
+                                AstErrors.failedToInferOpenGenericArg(pos(), argnum+1, actual);
                               }
                             _generics.add(actualType);
+                            argnum++;
                           }
                       }
                   }
                 else if (t.isOpenGeneric())
                   { // open type that is set by outer feature, we only have to find the number and skip those args:
-                    for (var _ : resolveFormalArg(res, context, frml))
-                      {
-                        if (aargs.hasNext())
-                          {
-                            var ignore = aargs.next();
-                            count++;
-                          }
-                      }
+                    argnum += resolveFormalArg(res, context, frml).size();
                   }
-                else if (aargs.hasNext())
+                else if (argnum < _actuals.size())
                   {
-                    var actual = resolveTypeForNextActual(pass == 0 ? null : t, aargs, res, context);
+                    var actual = resolveTypeForNextActual(pass == 0 ? null : t, argnum, res, context);
                     /*
                       without this if, type inference in this example would not work:
                       ```
@@ -1971,9 +1953,9 @@ public class Call extends AbstractCall
                             if (t.isGenericArgument())
                               {
                                 res.resolveTypes(g);
-                                inferGeneric(res, context, g.constraint(), actualType, actual.pos(), conflict, foundAt, count-1);
+                                inferGeneric(res, context, g.constraint(), actualType, actual.pos(), conflict, foundAt, argnum);
                               }
-                            inferGeneric(res, context, t, actualType, actual.pos(), conflict, foundAt, count-1);
+                            inferGeneric(res, context, t, actualType, actual.pos(), conflict, foundAt, argnum);
                             checked[vai] = true;
                           }
                         else if (resultExpression(actual) instanceof AbstractLambda al)
@@ -1981,12 +1963,12 @@ public class Call extends AbstractCall
                             checked[vai] = inferGenericLambdaResult(res, context, t, frml, al, actual.pos(), conflict, foundAt);
                           }
                       }
-                    count++;
+                    argnum++;
                   }
               }
-            else if (aargs.hasNext())
+            else
               {
-                aargs.next();
+                argnum++;
               }
           }
       }
