@@ -1841,14 +1841,13 @@ public class Call extends AbstractCall
   {
     var cf = _calledFeature;
 
-    ListIterator<Expr> aargs = _actuals.listIterator();
     var va = cf.valueArguments();
     var vai = 0;
     for (var frml : va)
       {
-        if (aargs.hasNext())
+        if (vai < _actuals.size())
           {
-            var actual = aargs.next();
+            var actual = _actuals.get(vai);
             var t = frml.resultTypeIfPresent(res);
             if (t != null && t.isFunctionTypeExcludingLazy())
               {
@@ -2799,21 +2798,18 @@ public class Call extends AbstractCall
     if (typeForInferencing() != Types.t_ERROR &&
         _actuals.size() == resolvedFormalArgumentTypes.length /* this will cause an error in checkTypes() */ )
       {
-        int count = 0;
-        ListIterator<Expr> i = _actuals.listIterator();
-        while (i.hasNext())
+        for (var i = 0; i < _actuals.size(); i++)
           {
-            Expr actl = i.next();
-            var frmlT = resolvedFormalArgumentTypes[count];
+            Expr actl = _actuals.get(i);
+            var frmlT = resolvedFormalArgumentTypes[i];
             if (actl != null && frmlT != Types.t_ERROR)
               {
                 var a = f.apply(actl, frmlT);
                 if (CHECKS) check
                   (a != null,
                    a != Universe.instance);
-                i.set(a);
+                _actuals = _actuals.setOrClone(i, a);
               }
-            count++;
           }
       }
   }
@@ -2865,21 +2861,20 @@ public class Call extends AbstractCall
           }
         else
           {
-            int count = 0;
-            for (Expr actl : _actuals)
+            for (var i = 0; i < _actuals.size(); i++)
               {
-                var frmlT = resolvedFormalArgumentTypes[count];
+                var actl = _actuals.get(i);
+                var frmlT = resolvedFormalArgumentTypes[i];
                 if (CHECKS) check
                   (Errors.any() || (actl != Call.ERROR && actl != Call.ERROR));
                 if (frmlT != Types.t_ERROR && actl != Call.ERROR && actl != Call.ERROR && frmlT.isAssignableFrom(actl.type(), context).no())
                   {
-                    AstErrors.incompatibleArgumentTypeInCall(_calledFeature, count, frmlT, actl, context);
+                    AstErrors.incompatibleArgumentTypeInCall(_calledFeature, i, frmlT, actl, context);
                   }
                 else
                   {
                     actl.checkAmbiguousAssignmentToChoice(frmlT);
                   }
-                count++;
               }
           }
         if (_calledFeature.isChoice())
