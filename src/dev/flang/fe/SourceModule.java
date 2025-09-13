@@ -1682,24 +1682,24 @@ A redefined feature must have the same total number of formal type parameters as
             var ir = 0;  // redefinition's index
             for (var argo : o.arguments())  // for all original args
               {
-                // for all handed down types (of original was open type, we might have 0..n types now):
+                // for all handed down types (if original was open type, we might have 0..n types now):
                 for (var to : handDownForRedef(ao.get(io), o, f))
                   {
                     var argr = args.get(ir);  // arg in redefinition
-                    var tr = ar.get(ir);          // type in redefinition
+                    var tr = ar.get(ir);      // type in redefinition
                     if (
             /*
     // tag::fuzion_rule_REDEF_TYPE_PAR[]
 A xref:fuzion_typeparameter[type parameter] argument to a feature that is redefined must be replaced by a corresponding xref:fuzion_typeparameter[type parameter] in the redefined feature.
     // end::fuzion_rule_REDEF_TYPE_PAR[]
             */
-                        (argo.isTypeParameter()     != argr.isTypeParameter()               ) ||
+                        (argo.isTypeParameter()     != argr.isTypeParameter()                    ) ||
             /*
     // tag::fuzion_rule_REDEF_OPEN_TYPE_PAR[]
 An xref:fuzion_opentypeparameter[open type parameter] argument to a feature that is redefined must be replaced by a corresponding xref:fuzion_opentypeparameter[open type parameter] in the redefined feature.
     // end::fuzion_rule_REDEF_OPEN_TYPE_PAR[]
             */
-                        (argo.isOpenTypeParameter() != argr.isOpenTypeParameter()           ) ||
+                        (argo.isOpenTypeParameter() != argr.isOpenTypeParameter()                ) ||
             /*
     // tag::fuzion_rule_REDEF_TYPE_CONSTRAINTS[]
 A xref:fuzion_type_constraint[type constraint] of a xref:fuzion_typeparameter[type parameter] must be redefined using a xref:fuzion_type_constraint[type constraint] that is xref:fuzion_constraint_assignable[constraint assignable] from the original  xref:fuzion_typeparameter[type parameter]'s  xref:fuzion_type_constraint[type constraint].
