@@ -1629,7 +1629,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
                         //
                         //    x(B type, w option B)
                         //
-                        // we must replace `option A` (th) by `option B` (to), i.e.,
+                        // we must replace `option A` by `option B`, i.e.,
                         // replace o's type parameterss by f's:
                         //
                         t -> t.applyTypePars(original, redefinition.generics().asActuals()));
