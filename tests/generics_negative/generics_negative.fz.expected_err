@@ -6,49 +6,35 @@ Open formal type parameter type is permitted only as the type of an argument.  I
 Open formal argument: 'D'
 
 
---CURDIR--/generics_negative.fz:54:31: error 2: type is followed by '...' but is not an open type
-    f6(D type..., a A, b B, d D..., a1 A  ) unit => abstract  # 6a. should flag an error, open generic can only be used for last argument
-------------------------------^
-'...' is only permitted after open type.
-To solve this, remove '...' after the highlighted error.
-
-
---CURDIR--/generics_negative.fz:55:31: error 3: Illegal use of open formal type parameter type
+--CURDIR--/generics_negative.fz:55:31: error 2: Illegal use of open formal type parameter type
     f7(D type..., a A, b B, d D..., c C...) unit => abstract  # 6b. should flag an error, open generic can only be used for last argument
 ------------------------------^
 Open formal type parameter type is permitted only as the type of an argument.  If the argument and the formal type parameter are part of the same argument list, the argument must be the last argument.
 Open formal argument: 'D'
 
 
---CURDIR--/generics_negative.fz:55:31: error 4: type is followed by '...' but is not an open type
-    f7(D type..., a A, b B, d D..., c C...) unit => abstract  # 6b. should flag an error, open generic can only be used for last argument
-------------------------------^
-'...' is only permitted after open type.
-To solve this, remove '...' after the highlighted error.
-
-
---CURDIR--/generics_negative.fz:61:61: error 5: Illegal use of open formal type parameter type
+--CURDIR--/generics_negative.fz:61:61: error 3: Illegal use of open formal type parameter type
   opengenerics9 (A type, B type, C type...) : opengenerics6 C A A A is # 7. should flag an error: open generic cannot be used as generic argument
 ------------------------------------------------------------^
 Open formal type parameter type is permitted only as the type of an argument.  If the argument and the formal type parameter are part of the same argument list, the argument must be the last argument.
 Open formal argument: 'C'
 
 
---CURDIR--/generics_negative.fz:38:7: error 6: Illegal use of open formal type parameter type
+--CURDIR--/generics_negative.fz:38:7: error 4: Illegal use of open formal type parameter type
     _ C := any; # 4. should flag an error, open generic cannot be field type.
 ------^
 Open formal type parameter type is permitted only as the type of an argument.  If the argument and the formal type parameter are part of the same argument list, the argument must be the last argument.
 Open formal argument: 'C'
 
 
---CURDIR--/generics_negative.fz:66:19: error 7: Illegal use of open formal type parameter type
+--CURDIR--/generics_negative.fz:66:19: error 5: Illegal use of open formal type parameter type
     x3 : choice A C B is  # 8. should flag an error: choice cannot use open generic
 ------------------^
 Open formal type parameter type is permitted only as the type of an argument.  If the argument and the formal type parameter are part of the same argument list, the argument must be the last argument.
 Open formal argument: 'C'
 
 
---CURDIR--/generics_negative.fz:108:11: error 8: Type not found
+--CURDIR--/generics_negative.fz:108:11: error 6: Type not found
     f(a A.i32) i32 => 3          # 23. should flag an error: generic used as outer type
 ----------^^^
 Type 'i32' was not found, no corresponding feature nor formal type parameter exists
@@ -57,7 +43,7 @@ in feature: 'Any'
 To solve this, check the spelling of the type you have used.
 
 
---CURDIR--/generics_negative.fz:109:7: error 9: Formal type parameter must not have type parameters
+--CURDIR--/generics_negative.fz:109:7: error 7: Formal type parameter must not have type parameters
     _ A i32 := any               # 24. should flag an error: generic must not have generic args
 ------^
 In a type with type parameters >>A B<<, the base type >>A<< must not be a formal type parameter.
@@ -68,7 +54,7 @@ Formal type parameter declared in --CURDIR--/generics_negative.fz:107:18:
 -----------------^
 
 
---CURDIR--/generics_negative.fz:112:8: error 10: Wrong number of type parameters
+--CURDIR--/generics_negative.fz:112:8: error 8: Wrong number of type parameters
     x1 Function := any           # 25. should flag an error: not enough generics
 -------^^^^^^^^
 Wrong number of actual type parameters in type:
@@ -77,7 +63,7 @@ expected at least one generic argument for 'R, A...'
 found none.
 
 
---CURDIR--/generics_negative.fz:135:7: error 11: Wrong number of type parameters
+--CURDIR--/generics_negative.fz:135:7: error 9: Wrong number of type parameters
     _ g := any                  # 38. should flag an error: not enough generics
 ------^
 Wrong number of actual type parameters in type:
@@ -86,7 +72,7 @@ expected 3 generic arguments for 'A, B, C'
 found none.
 
 
---CURDIR--/generics_negative.fz:136:7: error 12: Wrong number of type parameters
+--CURDIR--/generics_negative.fz:136:7: error 10: Wrong number of type parameters
     _ g i32 := any              # 39. should flag an error: not enough generics
 ------^
 Wrong number of actual type parameters in type:
@@ -95,7 +81,7 @@ expected 3 generic arguments for 'A, B, C'
 found 1: 'i32'.
 
 
---CURDIR--/generics_negative.fz:137:7: error 13: Wrong number of type parameters
+--CURDIR--/generics_negative.fz:137:7: error 11: Wrong number of type parameters
     _ g i32 i32 := any          # 40. should flag an error: not enough generics
 ------^
 Wrong number of actual type parameters in type:
@@ -104,7 +90,7 @@ expected 3 generic arguments for 'A, B, C'
 found 2: 'i32, i32'.
 
 
---CURDIR--/generics_negative.fz:139:7: error 14: Wrong number of type parameters
+--CURDIR--/generics_negative.fz:139:7: error 12: Wrong number of type parameters
     _ g i32 i32 i32 i32 := any  # 41. should flag an error: too many generics
 ------^
 Wrong number of actual type parameters in type:
@@ -113,7 +99,7 @@ expected 3 generic arguments for 'A, B, C'
 found 4: 'i32, i32, i32, i32'.
 
 
---CURDIR--/generics_negative.fz:209:15: error 15: Type not found
+--CURDIR--/generics_negative.fz:209:15: error 13: Type not found
       g1      PARENT_TYPE_PARAMETER => v       # 54. should flag an error: PARENT_TYPE_PARAMETER not visible
 --------------^^^^^^^^^^^^^^^^^^^^^
 Type 'PARENT_TYPE_PARAMETER' was not found, no corresponding feature nor formal type parameter exists
@@ -122,7 +108,7 @@ in feature: 'generics_negative.inheriting_type_parameter.child.g1'
 To solve this, check the spelling of the type you have used.
 
 
---CURDIR--/generics_negative.fz:210:15: error 16: Type not found
+--CURDIR--/generics_negative.fz:210:15: error 14: Type not found
       g2 list PARENT_TYPE_PARAMETER => v : g2  # 55. should flag an error: PARENT_TYPE_PARAMETER not visible
 --------------^^^^^^^^^^^^^^^^^^^^^
 Type 'PARENT_TYPE_PARAMETER' was not found, no corresponding feature nor formal type parameter exists
@@ -131,7 +117,7 @@ in feature: 'generics_negative.inheriting_type_parameter.child.g2'
 To solve this, check the spelling of the type you have used.
 
 
---CURDIR--/generics_negative.fz:144:5: error 17: Failed to infer actual type parameters
+--CURDIR--/generics_negative.fz:144:5: error 15: Failed to infer actual type parameters
     qwerty.uiop.asdfg                                       # 42. should flag an error: missing generic argument to qwerty
 ----^^^^^^
 In call to 'qwerty', no actual type parameters are given and inference of the type parameters failed.
@@ -139,7 +125,7 @@ Expected type parameters: 'T'
 Type inference failed for one type parameter 'T'
 
 
---CURDIR--/generics_negative.fz:145:39: error 18: Failed to infer actual type parameters
+--CURDIR--/generics_negative.fz:145:39: error 16: Failed to infer actual type parameters
     asdfg1 (qwerty i32).uiop.asdfg := qwerty.uiop.asdfg      # 43. should flag an error: missing generic argument to qwerty
 --------------------------------------^^^^^^
 In call to 'qwerty', no actual type parameters are given and inference of the type parameters failed.
@@ -147,7 +133,7 @@ Expected type parameters: 'T'
 Type inference failed for one type parameter 'T'
 
 
---CURDIR--/generics_negative.fz:193:22: error 19: Ambiguous type
+--CURDIR--/generics_negative.fz:193:22: error 17: Ambiguous type
         _  := option X  nil      # 52. should flag an error: ambiguous type parameter
 ---------------------^
 For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
@@ -163,7 +149,7 @@ and 'generics_negative.ambiguousTypeParameterName.outer.X' defined at --CURDIR--
 To solve this, rename these features such that each one has a unique name.
 
 
---CURDIR--/generics_negative.fz:196:22: error 20: Ambiguous type
+--CURDIR--/generics_negative.fz:196:22: error 18: Ambiguous type
         _  := option Z  nil      # 53. should flag an error: ambiguous type parameter
 ---------------------^
 For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
@@ -179,7 +165,7 @@ and 'generics_negative.ambiguousTypeParameterName.outer.Z' defined at --CURDIR--
 To solve this, rename these features such that each one has a unique name.
 
 
---CURDIR--/generics_negative.fz:211:20: error 21: Type not found
+--CURDIR--/generics_negative.fz:211:20: error 19: Type not found
       g3 => option PARENT_TYPE_PARAMETER nil   # 56. should flag an error: PARENT_TYPE_PARAMETER not visible
 -------------------^^^^^^^^^^^^^^^^^^^^^
 Type 'PARENT_TYPE_PARAMETER' was not found, no corresponding feature nor formal type parameter exists
@@ -188,7 +174,7 @@ in feature: 'generics_negative.inheriting_type_parameter.child.g3'
 To solve this, check the spelling of the type you have used.
 
 
---CURDIR--/generics_negative.fz:149:34: error 22: Different count of arguments needed when calling feature
+--CURDIR--/generics_negative.fz:149:34: error 20: Different count of arguments needed when calling feature
     set hjkl := qwert.uiop.asdfg.hjkl                       # 44. should flag an error: missing actual argument to hjkl
 ---------------------------------^^^^
 Feature not found: 'hjkl' (no arguments)
@@ -201,7 +187,7 @@ To call 'hjkl' you must provide one argument.
 
 
 
---CURDIR--/generics_negative.fz:79:11: error 23: Wrong number of actual arguments in call
+--CURDIR--/generics_negative.fz:79:11: error 21: Wrong number of actual arguments in call
   _ := f1.call 7              #  9. should flag an error, wrong number of arguments
 ----------^^^^
 Number of actual arguments is 1, while call expects no arguments.
@@ -212,7 +198,7 @@ Declared at {base.fum}/Function.fz:35:10:
 ---------^^^^
 
 
---CURDIR--/generics_negative.fz:81:8: error 24: Wrong number of actual arguments in call
+--CURDIR--/generics_negative.fz:81:8: error 22: Wrong number of actual arguments in call
   _ := f1 7                   # 10. should flag an error, wrong number of arguments
 -------^^
 Number of actual arguments is 1, while call expects no arguments.
@@ -223,7 +209,7 @@ Declared at {base.fum}/Function.fz:35:10:
 ---------^^^^
 
 
---CURDIR--/generics_negative.fz:84:11: error 25: Wrong number of actual arguments in call
+--CURDIR--/generics_negative.fz:84:11: error 23: Wrong number of actual arguments in call
   _ := f2.call()              # 11. should flag an error, wrong number of arguments
 ----------^^^^
 Number of actual arguments is 0, while call expects one argument.
@@ -234,7 +220,7 @@ Declared at {base.fum}/Function.fz:35:10:
 ---------^^^^
 
 
---CURDIR--/generics_negative.fz:86:11: error 26: Wrong number of actual arguments in call
+--CURDIR--/generics_negative.fz:86:11: error 24: Wrong number of actual arguments in call
   _ := f2.call true false     # 12. should flag an error, wrong number of arguments
 ----------^^^^
 Number of actual arguments is 2, while call expects one argument.
@@ -245,7 +231,7 @@ Declared at {base.fum}/Function.fz:35:10:
 ---------^^^^
 
 
---CURDIR--/generics_negative.fz:87:8: error 27: Wrong number of actual arguments in call
+--CURDIR--/generics_negative.fz:87:8: error 25: Wrong number of actual arguments in call
   _ := f2()                   # 13. should flag an error, wrong number of arguments
 -------^^
 Number of actual arguments is 0, while call expects one argument.
@@ -256,7 +242,7 @@ Declared at {base.fum}/Function.fz:35:10:
 ---------^^^^
 
 
---CURDIR--/generics_negative.fz:89:8: error 28: Wrong number of actual arguments in call
+--CURDIR--/generics_negative.fz:89:8: error 26: Wrong number of actual arguments in call
   _ := f2 true false          # 14. should flag an error, wrong number of arguments
 -------^^
 Number of actual arguments is 2, while call expects one argument.
@@ -267,7 +253,7 @@ Declared at {base.fum}/Function.fz:35:10:
 ---------^^^^
 
 
---CURDIR--/generics_negative.fz:93:11: error 29: Wrong number of actual arguments in call
+--CURDIR--/generics_negative.fz:93:11: error 27: Wrong number of actual arguments in call
   _ := r1.call 7              # 15. should flag an error, wrong number of arguments
 ----------^^^^
 Number of actual arguments is 1, while call expects no arguments.
@@ -278,7 +264,7 @@ Declared at {base.fum}/Function.fz:35:10:
 ---------^^^^
 
 
---CURDIR--/generics_negative.fz:95:8: error 30: Wrong number of actual arguments in call
+--CURDIR--/generics_negative.fz:95:8: error 28: Wrong number of actual arguments in call
   _ := r1 7                   # 16. should flag an error, wrong number of arguments
 -------^^
 Number of actual arguments is 1, while call expects no arguments.
@@ -289,7 +275,7 @@ Declared at {base.fum}/Function.fz:35:10:
 ---------^^^^
 
 
---CURDIR--/generics_negative.fz:98:11: error 31: Wrong number of actual arguments in call
+--CURDIR--/generics_negative.fz:98:11: error 29: Wrong number of actual arguments in call
   _ := r2.call()              # 17. should flag an error, wrong number of arguments
 ----------^^^^
 Number of actual arguments is 0, while call expects 2 arguments.
@@ -300,7 +286,7 @@ Declared at {base.fum}/Function.fz:35:10:
 ---------^^^^
 
 
---CURDIR--/generics_negative.fz:99:11: error 32: Wrong number of actual arguments in call
+--CURDIR--/generics_negative.fz:99:11: error 30: Wrong number of actual arguments in call
   _ := r2.call 3              # 18. should flag an error, wrong number of arguments
 ----------^^^^
 Number of actual arguments is 1, while call expects 2 arguments.
@@ -311,7 +297,7 @@ Declared at {base.fum}/Function.fz:35:10:
 ---------^^^^
 
 
---CURDIR--/generics_negative.fz:101:11: error 33: Wrong number of actual arguments in call
+--CURDIR--/generics_negative.fz:101:11: error 31: Wrong number of actual arguments in call
   _ := r2.call 3 false 7      # 19. should flag an error, wrong number of arguments
 ----------^^^^
 Number of actual arguments is 3, while call expects 2 arguments.
@@ -322,7 +308,7 @@ Declared at {base.fum}/Function.fz:35:10:
 ---------^^^^
 
 
---CURDIR--/generics_negative.fz:102:8: error 34: Wrong number of actual arguments in call
+--CURDIR--/generics_negative.fz:102:8: error 32: Wrong number of actual arguments in call
   _ := r2()                   # 20. should flag an error, wrong number of arguments
 -------^^
 Number of actual arguments is 0, while call expects 2 arguments.
@@ -333,7 +319,7 @@ Declared at {base.fum}/Function.fz:35:10:
 ---------^^^^
 
 
---CURDIR--/generics_negative.fz:103:8: error 35: Wrong number of actual arguments in call
+--CURDIR--/generics_negative.fz:103:8: error 33: Wrong number of actual arguments in call
   _ := r2 3                   # 21. should flag an error, wrong number of arguments
 -------^^
 Number of actual arguments is 1, while call expects 2 arguments.
@@ -344,7 +330,7 @@ Declared at {base.fum}/Function.fz:35:10:
 ---------^^^^
 
 
---CURDIR--/generics_negative.fz:105:8: error 36: Wrong number of actual arguments in call
+--CURDIR--/generics_negative.fz:105:8: error 34: Wrong number of actual arguments in call
   _ := r2 3 false 7           # 22. should flag an error, wrong number of arguments
 -------^^
 Number of actual arguments is 3, while call expects 2 arguments.
@@ -355,7 +341,7 @@ Declared at {base.fum}/Function.fz:35:10:
 ---------^^^^
 
 
---CURDIR--/generics_negative.fz:162:5: error 37: Incompatible types in assignment
+--CURDIR--/generics_negative.fz:162:5: error 35: Incompatible types in assignment
     x2 (A i32 i32   ).B String bool := (A i64 bool).B String bool true  # 45. should flag an error: incompatible types
 ----^^
 assignment to field : 'generics_negative.outerGenerics.x2'
@@ -369,7 +355,7 @@ To solve this you could:
   • convert the type of the assigned value to '(generics_negative.outerGenerics.this.A i32 i32).B String bool'.
 
 
---CURDIR--/generics_negative.fz:163:5: error 38: Incompatible types in assignment
+--CURDIR--/generics_negative.fz:163:5: error 36: Incompatible types in assignment
     x3 (A i32 String).B String bool := x1                               # 46. should flag an error: incompatible types
 ----^^
 assignment to field : 'generics_negative.outerGenerics.x3'
@@ -383,7 +369,7 @@ To solve this you could:
   • convert the type of the assigned value to '(generics_negative.outerGenerics.this.A i32 String).B String bool'.
 
 
---CURDIR--/generics_negative.fz:179:9: error 39: Incompatible types when passing argument in a call
+--CURDIR--/generics_negative.fz:179:9: error 37: Incompatible types when passing argument in a call
     x.f "String" false 7  # 47. should flag an error: incompatible argument #1
 --------^^^^^^^^
 Actual type for argument #1 'a0' does not match expected type.
@@ -395,7 +381,7 @@ for value assigned  : '"String"'
 To solve this, you could change the type of the target 'a0' to 'String' or convert the type of the assigned value to 'i32'.
 
 
---CURDIR--/generics_negative.fz:180:11: error 40: Incompatible types when passing argument in a call
+--CURDIR--/generics_negative.fz:180:11: error 38: Incompatible types when passing argument in a call
     x.f 4 3 7             # 48. should flag an error: incompatible argument #2
 ----------^
 Actual type for argument #2 'a1' does not match expected type.
@@ -407,7 +393,7 @@ for value assigned  : '3'
 To solve this, you could change the type of the target 'a1' to 'i32' or convert the type of the assigned value to 'bool'.
 
 
---CURDIR--/generics_negative.fz:181:17: error 41: Incompatible types when passing argument in a call
+--CURDIR--/generics_negative.fz:181:17: error 39: Incompatible types when passing argument in a call
     x.f 4 false "false"   # 49.a should flag an error: incompatible argument #3
 ----------------^^^^^^^
 Actual type for argument #3 'a2' does not match expected type.
@@ -419,7 +405,7 @@ for value assigned  : '"false"'
 To solve this, you could change the type of the target 'a2' to 'String' or convert the type of the assigned value to 'i32'.
 
 
---CURDIR--/generics_negative.fz:184:9: error 42: Incompatible types when passing argument in a call
+--CURDIR--/generics_negative.fz:184:9: error 40: Incompatible types when passing argument in a call
     y.f "String" false 8  # 49.b should flag an error: incompatible argument #1
 --------^^^^^^^^
 Actual type for argument #1 'a' does not match expected type.
@@ -431,7 +417,7 @@ for value assigned  : '"String"'
 To solve this, you could change the type of the target 'a' to 'String' or convert the type of the assigned value to 'i32'.
 
 
---CURDIR--/generics_negative.fz:185:11: error 43: Incompatible types when passing argument in a call
+--CURDIR--/generics_negative.fz:185:11: error 41: Incompatible types when passing argument in a call
     y.f 9 10 8            # 50. should flag an error: incompatible argument #2
 ----------^^
 Actual type for argument #2 does not match expected type.
@@ -443,7 +429,7 @@ for value assigned  : '10'
 To solve this, you could change the type of the target 'argument #2' to 'i32' or convert the type of the assigned value to 'bool'.
 
 
---CURDIR--/generics_negative.fz:186:17: error 44: Incompatible types when passing argument in a call
+--CURDIR--/generics_negative.fz:186:17: error 42: Incompatible types when passing argument in a call
     y.f 9 false "8"       # 51. should flag an error: incompatible argument #3
 ----------------^^^
 Actual type for argument #3 does not match expected type.
@@ -455,7 +441,7 @@ for value assigned  : '"8"'
 To solve this, you could change the type of the target 'argument #3' to 'codepoint' or convert the type of the assigned value to 'i32'.
 
 
---CURDIR--/generics_negative.fz:117:23: error 45: Incompatible types when passing argument in a call
+--CURDIR--/generics_negative.fz:117:23: error 43: Incompatible types when passing argument in a call
     _ i32  := x2.call 3         # 26. should flag an error: wrong argument type
 ----------------------^
 Actual type for argument #1 'a' does not match expected type.
@@ -467,7 +453,7 @@ for value assigned  : '3'
 To solve this, you could change the type of the target 'a' to 'i32' or convert the type of the assigned value to 'bool'.
 
 
---CURDIR--/generics_negative.fz:118:5: error 46: Incompatible types in assignment
+--CURDIR--/generics_negative.fz:118:5: error 44: Incompatible types in assignment
     _ bool := x2.call true      # 27. should flag an error: wrong type in assignment
 ----^
 assignment to field : 'generics_negative.opengenerics24._'
@@ -478,7 +464,7 @@ for value assigned  : 'x2.call true'
 To solve this, you could change the type of the target 'generics_negative.opengenerics24._' to 'i32' or convert the type of the assigned value to 'bool'.
 
 
---CURDIR--/generics_negative.fz:120:18: error 47: Incompatible types when passing argument in a call
+--CURDIR--/generics_negative.fz:120:18: error 45: Incompatible types when passing argument in a call
     _ i32  := x2 3              # 28. should flag an error: wrong argument type
 -----------------^
 Actual type for argument #1 'a' does not match expected type.
@@ -490,7 +476,7 @@ for value assigned  : '3'
 To solve this, you could change the type of the target 'a' to 'i32' or convert the type of the assigned value to 'bool'.
 
 
---CURDIR--/generics_negative.fz:121:5: error 48: Incompatible types in assignment
+--CURDIR--/generics_negative.fz:121:5: error 46: Incompatible types in assignment
     _ bool := x2 true           # 29. should flag an error: wrong type in assignment
 ----^
 assignment to field : 'generics_negative.opengenerics24._'
@@ -501,7 +487,7 @@ for value assigned  : 'x2'
 To solve this, you could change the type of the target 'generics_negative.opengenerics24._' to 'i32' or convert the type of the assigned value to 'bool'.
 
 
---CURDIR--/generics_negative.fz:124:13: error 49: Incompatible types when passing argument in a call
+--CURDIR--/generics_negative.fz:124:13: error 47: Incompatible types when passing argument in a call
     x3.call false false          # 30. should flag an error: wrong argument type
 ------------^^^^^
 Actual type for argument #1 'a' does not match expected type.
@@ -513,7 +499,7 @@ for value assigned  : 'false'
 To solve this, you could change the type of the target 'a' to 'bool' or convert the type of the assigned value to 'i32'.
 
 
---CURDIR--/generics_negative.fz:125:15: error 50: Incompatible types when passing argument in a call
+--CURDIR--/generics_negative.fz:125:15: error 48: Incompatible types when passing argument in a call
     x3.call 3 3                  # 31. should flag an error: wrong argument type
 --------------^
 Actual type for argument #2 does not match expected type.
@@ -525,7 +511,7 @@ for value assigned  : '3'
 To solve this, you could change the type of the target 'argument #2' to 'i32' or convert the type of the assigned value to 'bool'.
 
 
---CURDIR--/generics_negative.fz:126:8: error 51: Wrong number of actual arguments in call
+--CURDIR--/generics_negative.fz:126:8: error 49: Wrong number of actual arguments in call
     x3.call 3 true 3             # 32. should flag an error: wrong argument count
 -------^^^^
 Number of actual arguments is 3, while call expects 2 arguments.
@@ -536,7 +522,7 @@ Declared at {base.fum}/Function.fz:35:10:
 ---------^^^^
 
 
---CURDIR--/generics_negative.fz:127:8: error 52: Wrong number of actual arguments in call
+--CURDIR--/generics_negative.fz:127:8: error 50: Wrong number of actual arguments in call
     x3.call 3                    # 33. should flag an error: wrong argument count
 -------^^^^
 Number of actual arguments is 1, while call expects 2 arguments.
@@ -547,7 +533,7 @@ Declared at {base.fum}/Function.fz:35:10:
 ---------^^^^
 
 
---CURDIR--/generics_negative.fz:129:8: error 53: Incompatible types when passing argument in a call
+--CURDIR--/generics_negative.fz:129:8: error 51: Incompatible types when passing argument in a call
     x3 false false               # 34. should flag an error: wrong argument type
 -------^^^^^
 Actual type for argument #1 'a' does not match expected type.
@@ -559,7 +545,7 @@ for value assigned  : 'false'
 To solve this, you could change the type of the target 'a' to 'bool' or convert the type of the assigned value to 'i32'.
 
 
---CURDIR--/generics_negative.fz:130:10: error 54: Incompatible types when passing argument in a call
+--CURDIR--/generics_negative.fz:130:10: error 52: Incompatible types when passing argument in a call
     x3 3 3                       # 35. should flag an error: wrong argument type
 ---------^
 Actual type for argument #2 does not match expected type.
@@ -571,7 +557,7 @@ for value assigned  : '3'
 To solve this, you could change the type of the target 'argument #2' to 'i32' or convert the type of the assigned value to 'bool'.
 
 
---CURDIR--/generics_negative.fz:131:5: error 55: Wrong number of actual arguments in call
+--CURDIR--/generics_negative.fz:131:5: error 53: Wrong number of actual arguments in call
     x3 3 true 3                  # 36. should flag an error: wrong argument count
 ----^^
 Number of actual arguments is 3, while call expects 2 arguments.
@@ -582,7 +568,7 @@ Declared at {base.fum}/Function.fz:35:10:
 ---------^^^^
 
 
---CURDIR--/generics_negative.fz:132:5: error 56: Wrong number of actual arguments in call
+--CURDIR--/generics_negative.fz:132:5: error 54: Wrong number of actual arguments in call
     x3 3                         # 37. should flag an error: wrong argument count
 ----^^
 Number of actual arguments is 1, while call expects 2 arguments.
@@ -592,4 +578,4 @@ Declared at {base.fum}/Function.fz:35:10:
   public call(a A...) R => abstract
 ---------^^^^
 
-56 errors.
+54 errors.

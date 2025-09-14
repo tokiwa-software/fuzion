@@ -488,8 +488,15 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
         var ot = outer();
         if (ot != null && ot.isGenericArgument())
           {
-            if (tolerant) { return null; }
-            else { AstErrors.formalGenericAsOuterType(pos(), this); }
+            if (tolerant)
+              {
+                return null;
+              }
+            else
+              {
+                AstErrors.formalGenericAsOuterType(pos(), this);
+                _resolved = Types.t_ERROR;
+              }
           }
 
         var mayBeFreeType = mayBeFreeType() && outer.isValueArgument();
@@ -591,14 +598,17 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
           }
       }
 
-    if (_resolved != null && _resolved.isOpenGeneric() && !_followedByDots)
+    if (_resolved != null && _resolved != Types.t_ERROR && (_resolved.isOpenGeneric() != _followedByDots))
       {
-        AstErrors.openGenericMissingDots(pos(), _resolved);
-      }
-
-    if (_resolved != null && !_resolved.isOpenGeneric() && _followedByDots)
-      {
-        AstErrors.dotsButNotOpenGeneric(pos(), _resolved);
+        if (_resolved.isOpenGeneric())
+          {
+            AstErrors.openGenericMissingDots(pos(), _resolved);
+          }
+        else
+          {
+            AstErrors.dotsButNotOpenGeneric(pos(), _resolved);
+          }
+        _resolved = Types.t_ERROR;
       }
 
     return _resolved;
