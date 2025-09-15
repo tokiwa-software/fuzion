@@ -30,7 +30,9 @@
 public http is
 
 
-module as_map(kvs array (String,String)) =>
+# create case insensitiv Map from array of key/values
+#
+module as_header_map(kvs array (String,String)) =>
   lm : mutate is
   lm ! ()->
     fields := (container.mutable_tree_map lm String String) .empty
@@ -40,4 +42,5 @@ module as_map(kvs array (String,String)) =>
 
 
 # line separator in the HTTP header
+#
 module crlf => "\r\n"

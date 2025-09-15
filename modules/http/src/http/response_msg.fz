@@ -70,4 +70,4 @@ is
     # the body of the response
     body io.Read_Handler) http.response_msg
   =>
-    http.response_msg req version_major version_minor status_code reason_phrase (as_map header) body
+    http.response_msg req version_major version_minor status_code reason_phrase (as_header_map header) body

@@ -59,7 +59,7 @@ is
     # body of the request
     body io.Read_Handler) http.request_msg
   =>
-    http.request_msg method target version_major version_minor (as_map header) body
+    http.request_msg method target version_major version_minor (as_header_map header) body
 
 
 
