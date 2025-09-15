@@ -425,11 +425,10 @@ public abstract class AbstractCall extends Expr
 
     // next, replace generics given in the target type and in this call
     return
-      l.flatMap(ft ->
-                  ft.isOpenGeneric()
-                    // formal arg is open generic, i.e., this expands to 0 or more actual args depending on actual generics for target
-                    ? ft.genericArgument().replaceOpen(openGenericsFor(res, context, ft.genericArgument().outer()))
-                    : new List<>(actualArgType(res, context, ft, frml));
+      l.flatMap(ft -> ft.isOpenGeneric()
+                      // formal arg is open generic, i.e., this expands to 0 or more actual args depending on actual generics for target
+                      ? ft.genericArgument().replaceOpen(openGenericsFor(res, context, ft.genericArgument().outer()))
+                      : new List<>(actualArgType(res, context, ft, frml)));
   }
 
 
