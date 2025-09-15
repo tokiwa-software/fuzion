@@ -29,6 +29,7 @@
 #
 public reader(rh Read_Handler, buf_size i32) : effect
 pre debug: buf_size > 0
+    debug: buf_size % os.page_size.as_i32 = 0
 is
 
 

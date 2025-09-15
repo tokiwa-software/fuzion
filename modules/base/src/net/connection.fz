@@ -50,7 +50,7 @@ module:public connection(desc i32) is
                 a
             e error => e
       (io.buffered LM)
-        .reader read_handler 1024
+        .reader read_handler os.page_size.as_i32
 
     writer =>
 
