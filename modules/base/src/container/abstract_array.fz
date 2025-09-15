@@ -182,13 +182,12 @@ public abstract_array
       public redef is_valid_index(i i32) bool => 0 ≤ i ≤ arrayslice.this.count
 
 
-      # create a list that consists of the elements of this Sequence except the first
-      # n elements
+      # a slice of a slice, need to adjust from and to args
       #
-      # For arrays, this has performance in O(1).
-      #
-      public redef drop (n i32) Sequence T =>
-        abstract_array.this.slice from+(max 0 n) to
+      public redef slice(from_, to_ i32) Sequence T
+      =>
+        abstract_array.this.slice from+from_ from+to_
+
 
     arrayslice
 
