@@ -64,8 +64,7 @@ public class Feature extends AbstractFeature
 
 
   /**
-   * Unique identifier to define a total ordered over Features (used in
-   * compareTo)
+   * Unique identifier to define a total order over Features (used in compareTo)
    */
   int _id = _ids_++;
 
@@ -1235,7 +1234,9 @@ public class Feature extends AbstractFeature
 
     if (_valuesAsOpenType == null)
       {
-        var name = FuzionConstants.VALUES_AS_OPEN_TYPE_PREFIX + _id;
+        // we mangle the field's base name into the name such that during
+        // monomorphization, we know what field to use
+        var name = FuzionConstants.createFieldsOfOpenTypeName(featureName().baseName());
         var otf = new Feature(pos(), visibility().typeVisibility(), 0, NoType.INSTANCE, new List<>(name), new List<>(),
                               new List<>(new Call(pos(), Universe.instance, Types.resolved.f_Values_Of_Open_Type)),
                               Contract.EMPTY_CONTRACT,
@@ -1347,24 +1348,6 @@ public class Feature extends AbstractFeature
   public boolean isLegalPartOfUniverse()
   {
     return _legalPartOfUniverse;
-  }
-
-
-  /**
-   * Check if this is the last argument of a feature and t is its return type.
-   * This is needed during type resolution since this is the only place where an
-   * open formal generic may be used.
-   *
-   * @return true iff this is the last argument of a feature and t is its return
-   * type.
-   */
-  boolean isLastArgType(AbstractType t)
-  {
-    return
-      outer() != null &&
-      !outer().arguments().isEmpty() &&
-      outer().arguments().getLast() == this &&
-      t == _returnType.functionReturnType();
   }
 
 
@@ -2036,13 +2019,13 @@ A ((Choice)) declaration must not contain a result type.
          *
          *   f (b bool) i64              { if (b) { 23 } else { -17 } }
          *   g (b bool) choice<A, f32> } { b ? 3.4 : A }
-         *   abstract myfun { abstract x(a i32) i32 }
-         *   h myfun { fun (a) => a*a }
+         *   myfun : Function i32 i32 is
+         *   h myfun => a->a*a
          *
-         * Here, i64 will be propagated to be used as the type of "23" and
-         * "-17", choice<A, f32> will be used as the type of "3.4" and "A", and
-         * myfun will be used as the type of "fun (a) => a*a", which implies
-         * that i32 will be the type for "a".
+         * Here, i64 will be propagated to be used as the type of `23` and
+         * `-17`, choice<A, f32> will be used as the type of `3.4` and `A`, and
+         * myfun will be used as the type of `a->a*a`, which implies
+         * that i32 will be the type for `a`.
          */
         visit(new ContextVisitor(context()) {
             @Override public void  action(AbstractAssign a) { a.propagateExpectedType(res, _context); }
