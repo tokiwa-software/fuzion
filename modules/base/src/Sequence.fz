@@ -197,7 +197,12 @@ public Sequence(public T type) ref : property.countable is
   # create a Sequence that consists only of the first n elements of this
   # Sequence, fewer if this Sequence has fewer elements
   #
-  public take (n i32) Sequence T => as_list.take n
+  # NOTE: for negative n an empty Sequence is returned
+  #
+  public take (n i32) Sequence T
+    # NYI: BUG: breaks tail call optimization
+    # post debug: n>0 || result.is_empty
+  => as_list.take n
 
 
   # reverse the order of the elements in this Sequence
@@ -210,8 +215,12 @@ public Sequence(public T type) ref : property.countable is
   #
   # NOTE: this may have performance in O(n) unless it is backed by an immutable array.
   #
+  # NOTE: for negative n the Sequence is returned as is
   #
-  public drop (n i32) Sequence T => as_list.drop n
+  public drop (n i32) Sequence T
+    # NYI: BUG: breaks tail call optimization
+    # post debug: n>0 || count=result.count
+  => as_list.drop n
 
 
   # get a function that, given an index, returns the element at that index
@@ -253,7 +262,7 @@ public Sequence(public T type) ref : property.countable is
   # by all the elements of s
   #
   # General case: This will perform `as_list.concat_list` in case one of
-  # `Sequence.this` or `s`is not known to be finite (`finite != trit.yet`) or
+  # `Sequence.this` or `s`is not known to be finite (`finite.is_no_or_unknown`) or
   # `s.count` is larger than `count`.
   #
   # Otherwise, if `Sequence.this` or `s` is empty, the result will be `s` or
@@ -275,8 +284,8 @@ public Sequence(public T type) ref : property.countable is
   # in `O(n²)` performance for the concatenations.
   #
   public concat (s Sequence T) Sequence T =>
-    c1 :=   finite != trit.yes ? -1 :   count
-    c2 := s.finite != trit.yes ? -1 : s.count
+    c1 :=   finite.is_yes ? count   : -1
+    c2 := s.finite.is_yes ? s.count : -1
     if c1 < 0 || c2 < 0 || max 1 c1 < c2 then
       as_list.concat_list s.as_list
     else if c1 = 0
@@ -330,7 +339,7 @@ public Sequence(public T type) ref : property.countable is
   # if finite), you may use `as_string_all`.
   #
   public redef as_string String =>
-    if finite = trit.yes
+    if finite.is_yes
       as_string_all
     else
       max0 := (Sequence T).AS_STRING_NON_FINITE_MAX_ELEMENTS
@@ -622,7 +631,7 @@ public Sequence(public T type) ref : property.countable is
   public into(TA type, xf transducer (Sequence TA) TA T) Sequence TA =>
     red := xf.call ((res,val) -> res ++ [val])
     for
-      res (list TA) := (list TA).empty , (red.call res el).as_list
+      res := (Sequence TA).empty, (red.call res el)
       el in Sequence.this do
     else
       res
@@ -1025,8 +1034,7 @@ public Sequence(public T type) ref : property.countable is
     pre
       T : property.equatable
   =>
-    nil_list list T := nil
-    replace old new nil_list Sequence.this nil
+    replace old new (list T).empty Sequence.this nil
 
 
   # replace the first n occurrences of old by new
@@ -1035,8 +1043,7 @@ public Sequence(public T type) ref : property.countable is
     pre
       T : property.equatable
   =>
-    nil_list list T := nil
-    replace old new nil_list Sequence.this n
+    replace old new (list T).empty Sequence.this n
 
 
   # tail recursive helper for the replace features
@@ -1107,16 +1114,15 @@ public Sequence(public T type) ref : property.countable is
           head Sequence T => take (if split_after then idx + s.count else idx)
 
           tail list (Sequence T) =>
-              rest := drop (idx + s.count)
+            rest := drop (idx + s.count)
 
-              match limit
-                nil => rest.split0 s nil split_after
-                n u32 =>
-                  if n > 1
-                    rest.split0 s (n - 1) split_after
-                  else
-                    res Sequence T := rest
-                    res : nil
+            match limit
+              nil => rest.split0 s nil split_after
+              n u32 =>
+                if n > 1
+                  rest.split0 s (n - 1) split_after
+                else
+                  rest : nil
 
           head : tail
 
@@ -1548,9 +1554,12 @@ is
   =>
     match a.as_list
       nil     => true
-      ac Cons => match b.as_list
-                   nil     => false
-                   bc Cons => ac.head <= bc.head && (!(ac.head >= bc.head) || unwrapped_lteq ac.tail bc.tail)
+      ac Cons =>
+        match b.as_list
+          nil     => false
+          bc Cons =>
+            ac.head <= bc.head &&
+              (ac.head < bc.head || unwrapped_lteq ac.tail bc.tail)
 
 
 
@@ -1576,11 +1585,11 @@ is
     au := a.unwrap
     bu := b.unwrap
 
-    if au.finite=trit.yes && bu.finite=trit.yes
+    if au.finite.is_yes && bu.finite.is_yes
       au.count = bu.count && equality0 a b
-    else if au.finite=trit.yes
+    else if au.finite.is_yes
       au.count = (bu.take (au.count+1)).count && equality0 a b
-    else if bu.finite=trit.yes
+    else if bu.finite.is_yes
       bu.count = (au.take (bu.count+1)).count && equality0 a b
     else
       equality0 a b &&

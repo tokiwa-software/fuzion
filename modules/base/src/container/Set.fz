@@ -134,8 +134,8 @@ is
   #
   public fixed redef type.equality(a, b container.Set E) bool
   pre else
-    debug: a.finite != trit.no
-    debug: b.finite != trit.no
+    debug: a.finite.is_yes_or_unkown
+    debug: b.finite.is_yes_or_unkown
   =>
     # NYI: a bit expensive
     (a ∪ b).size_option.val = a.size_option.val

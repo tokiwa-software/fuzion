@@ -1512,16 +1512,6 @@ public class AstErrors extends ANY
           "The else block of this loop is declared at " + elseBlock.pos().show());
   }
 
-  static void formalGenericAsOuterType(SourcePosition pos, UnresolvedType t)
-  {
-    error(pos,
-          "Formal type parameter must not be used as outer type",
-          "In a type >>a.b<<, the outer type >>a<< must not be a formal type parameter.\n" +
-          "Type used: " + s(t) + "\n" +
-          "Formal type parameter used " + s(t.outer()) + "\n" +
-          "Formal type parameter declared in " + t.outer().declarationPos().show() + "\n");
-  }
-
   static void formalGenericWithGenericArgs(SourcePosition pos, UnresolvedType t, AbstractFeature generic)
   {
     error(pos,
