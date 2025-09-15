@@ -50,7 +50,7 @@ module:public connection(desc i32) is
                 a
             e error => e
       (io.buffered LM)
-        .reader read_handler os.page_size.as_i32
+        .reader read_handler
 
     writer =>
 
@@ -62,7 +62,7 @@ module:public connection(desc i32) is
           fuzion.sys.net.write desc data.as_array
 
       (io.buffered LM)
-        .writer write_handler os.page_size.as_i32
+        .writer write_handler
 
     channel_ =>
       net
