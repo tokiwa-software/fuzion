@@ -29,6 +29,7 @@ package dev.flang.ast;
 import java.util.Optional;
 import java.util.Set;
 
+import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
@@ -452,142 +453,105 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
       }
     if (_resolved == null)
       {
-        var of = outer;
-        var o = _outer;
-        var inCotype = false;
-        if (!tolerant && (o != null && !o.isThisType()))
+        AbstractFeature of;
+        var ot = outer();
+        if (ot instanceof UnresolvedType ut && ut.name().equals(FuzionConstants.UNIVERSE_NAME))
           {
-            // workaround for not yet resolved universe: #4141
-            if (!(o instanceof UnresolvedType ut && ut.name().equals(FuzionConstants.UNIVERSE_NAME)))
-              {
-                o = o.resolve(res, context);
-                var ot2 = o.selfOrConstraint(res, context); // see tests/reg_issue1943 for examples
-                of = ot2.feature();
-              }
-            else
-              {
-                o = null;
-                of = res.universe;
-              }
-          }
-        else if (tolerant && (o instanceof UnresolvedType ut))
-          {
-            o = ut.resolve(res, context, true);
-            if (o == null || o == Types.t_ERROR)
-              {
-                return null;
-              }
-            var ot2 = o.selfOrConstraint(res, context); // see tests/reg_issue1943 for examples
-            of = ot2.feature();
+            ot = null;
+            of = res.universe;
           }
         else
           {
-            inCotype = of != originalOuterFeature(of);
+            ot = ot == null                      ? ot
+               : ot instanceof UnresolvedType ut ? ut.resolve(res, context, tolerant)
+                                                 : ot.resolve(res, context);
+            of = ot != null ? ot.selfOrConstraint(res, context).feature() // see tests/reg_issue1943 for examples
+                            : outer;
           }
-
-        var ot = outer();
-        if (ot != null && ot.isGenericArgument())
+        if (ot != Types.t_ERROR && of != Types.f_ERROR)
           {
-            if (tolerant) { return null; }
-            else { AstErrors.formalGenericAsOuterType(pos(), this); }
-          }
-
-        var mayBeFreeType = mayBeFreeType() && outer.isValueArgument();
-
-        var traverseOuter = ot == null && _name != FuzionConstants.COTYPE_THIS_TYPE;
-        var fo = tolerant ? res._module.lookupType(pos(), of, _name, traverseOuter,
-                                                   true /* ignore ambiguous */ ,
-                                                   true /* ignore not found */)
-                          : res._module.lookupType(pos(), of, _name, traverseOuter,
-                                                   false                           /* ignore ambiguous */,
-                                                   mayBeFreeType || inCotype       /* ignore not found */);
-        if (fo == null || !fo._feature.isTypeParameter() && inCotype)
-          { // if we are in a type feature, type lookup happens in the
-            // original feature, except for type parameters that we just
-            // checked in the type feature (of).
-            of = originalOuterFeature(of);
-            fo = tolerant ? res._module.lookupType(pos(), of, _name, traverseOuter,
-                                                   true /* ignore ambiguous */ ,
-                                                   true /* ignore not found */)
-                          : res._module.lookupType(pos(), of, _name, traverseOuter,
-                                                   false          /* ignore ambiguous */,
-                                                   mayBeFreeType  /* ignore not found */);
-          }
-        if (!tolerant && _resolved == null)
-          {
-            if (fo == FeatureAndOuter.ERROR)
-              {
-                _resolved = Types.t_ERROR;
+            var inCotype = of != originalOuterFeature(of);
+            var mayBeFreeType = mayBeFreeType() && outer.isValueArgument();
+            var traverseOuter = outer() == null && _name != FuzionConstants.COTYPE_THIS_TYPE;
+            var fo = res._module.lookupType(pos(), of, _name, traverseOuter,
+                                            tolerant                                /* ignore ambiguous */,
+                                            tolerant || mayBeFreeType || inCotype   /* ignore not found */);
+            if (fo == null || !fo._feature.isTypeParameter() && inCotype)
+              { // if we are in a type feature, type lookup happens in the
+                // original feature, except for type parameters that we just
+                // checked in the type feature (of).
+                of = originalOuterFeature(of);
+                fo = res._module.lookupType(pos(), of, _name, traverseOuter,
+                                            tolerant                   /* ignore ambiguous */,
+                                            tolerant || mayBeFreeType  /* ignore not found */);
               }
-            else if (fo == null)
+            if (_resolved == null)
               {
-                _resolved = addAsFreeType(res, context);
-              }
-            else if (isFreeType())
-              {
-                AstErrors.freeTypeMustNotMaskExistingType(this, fo._feature);
-                _resolved = Types.t_ERROR;
-              }
-            else
-              {
-                var f = fo._feature;
-                var generics = generics();
-                if (o == null && f.isTypeParameter())
+                if (fo == FeatureAndOuter.ERROR ||
+                    fo == null                  ||
+                    isFreeType()                  )
                   {
-                    if (!generics.isEmpty())
+                    if (!tolerant)
                       {
-                        AstErrors.formalGenericWithGenericArgs(pos(), this, f);
-                      }
-                    var gt = f.asGenericType();
-                    if (gt.isOpenGeneric() && !(outer instanceof Feature off && off.isLastArgType(this)))
-                      {
-                        AstErrors.illegalUseOfOpenFormalGeneric(pos(), gt.genericArgument());
-                        _resolved = Types.t_ERROR;
-                      }
-                    else
-                      {
-                        _resolved = gt;
+                        if (fo == FeatureAndOuter.ERROR)
+                          {
+                            _resolved = Types.t_ERROR;
+                          }
+                        else if (fo == null)
+                          {
+                            _resolved = addAsFreeType(res, context);
+                          }
+                        else // if (isFreeType())
+                          {
+                            AstErrors.freeTypeMustNotMaskExistingType(this, fo._feature);
+                            _resolved = Types.t_ERROR;
+                          }
                       }
                   }
                 else
                   {
-                    if (o == null && !fo._outer.isUniverse())
+                    var f = fo._feature;
+                    var generics = generics();
+                    if (ot == null && f.isTypeParameter())
                       {
-                        o = fo._outer.thisType(fo.isNextInnerFixed());
+                        if (!generics.isEmpty())
+                          {
+                            if (!tolerant)
+                              {
+                                AstErrors.formalGenericWithGenericArgs(pos(), this, f);
+                                _resolved = Types.t_ERROR;
+                              }
+                          }
+                        else
+                          {
+                            var gt = f.asGenericType();
+                            if (gt.isOpenGeneric() && !(outer instanceof Feature off && off.isLastArgType(this)))
+                              {
+                                if (!tolerant)
+                                  {
+                                    AstErrors.illegalUseOfOpenFormalGeneric(pos(), gt.genericArgument());
+                                    _resolved = Types.t_ERROR;
+                                  }
+                              }
+                            else
+                              {
+                                _resolved = gt;
+                              }
+                          }
                       }
-                    _resolved = finishResolve(res, context, this, this, f, generics, generics(), o, _typeKind.orElse(f.defaultTypeKind()), _ignoreActualTypePars, tolerant);
-                  }
-              }
-          }
-
-        var outerfeat = context.outerFeature();
-
-        if (tolerant && CHECKS) check
-          (fo != FeatureAndOuter.ERROR);
-
-        if (tolerant && fo != null)
-          {
-            var f = fo._feature;
-            var generics = generics();
-            if (o == null && f.isTypeParameter())
-              {
-                if (generics.isEmpty())
-                  {
-                    var gt = f.asGenericType();
-                    if (!gt.isOpenGeneric() || (outerfeat instanceof Feature off && off.isLastArgType(this)))
+                    else
                       {
-                        _resolved = gt;
+                        if (ot == null && !fo._outer.isUniverse())
+                          {
+                            ot = fo._outer.thisType(fo.isNextInnerFixed());
+                          }
+                        _resolved = finishResolve(res, context, this, this, f, generics, generics(), ot, _typeKind.orElse(f.defaultTypeKind()), _ignoreActualTypePars, tolerant);
                       }
                   }
               }
-            else
-              {
-                if (o == null && !fo._outer.isUniverse())
-                  {
-                    o = fo._outer.thisType(fo.isNextInnerFixed());
-                  }
-                _resolved = finishResolve(res, context, this, this, f, generics, null, o, _typeKind.orElse(f.defaultTypeKind()), _ignoreActualTypePars, tolerant);
-              }
+
+            if (CHECKS) check
+              (tolerant || Errors.any() || fo != FeatureAndOuter.ERROR);
           }
       }
 
