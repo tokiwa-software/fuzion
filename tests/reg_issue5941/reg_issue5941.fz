@@ -71,7 +71,7 @@ reg_issue5941 =>
 
   # complex inheritance
   hq2 : Sequence (f64,bool), hq, unit is
-    public redef as_string String => "h2"
+    public redef as_string String => "hq2"
   hq2.f
   hq2.f "hi"
   hq2.f true u8.zero "X"
