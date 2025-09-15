@@ -2047,18 +2047,14 @@ class Clazz extends ANY implements Comparable<Clazz>
 
     List<AbstractType> types;
     var inh = _outer == null ? null : _outer.feature().tryFindInheritanceChain(fouter.outer());
+    var declaredIn = ft.genericArgument().outer();
     if (inh != null &&
-        inh.size() > 0)
+        inh.stream().anyMatch(c -> c.calledFeature() == declaredIn))
       {
-        var typesa = new AbstractType[] { ft };
-        typesa = fouter.handDown(null, typesa, _outer.feature());
-        types = new List<AbstractType>();
-        for (var t : typesa)
-          {
-            types.add(t);
-          }
+        var a = fouter.handDown(null, new AbstractType[] { ft }, _outer.feature());
+        types = new List<AbstractType>(a);
       }
-    else if (ft.isOpenGeneric() && feature().generics() == ft.genericArgument().outer().generics())
+    else if (feature() == declaredIn)
       {
         types = ft.genericArgument().replaceOpen(_type.generics());
       }
