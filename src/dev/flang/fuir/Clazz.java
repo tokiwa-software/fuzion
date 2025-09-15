@@ -936,17 +936,14 @@ class Clazz extends ANY implements Comparable<Clazz>
 
     var fn = f.featureName();
     var tf = feature();
-    if (f != Types.f_ERROR && tf != Types.resolved.f_void)
+    var chain = tf.findInheritanceChain(f.outer());
+    if (CHECKS) check
+      (chain != null || Errors.any());
+    if (f != Types.f_ERROR && tf != Types.resolved.f_void && chain != null)
       {
-        var chain = tf.findInheritanceChain(f.outer());
-        if (CHECKS) check
-          (chain != null || Errors.any());
-        if (chain != null)
+        for (var p: chain)
           {
-            for (var p: chain)
-              {
-                fn = f.outer().handDown(null, f, fn, p, feature());  // NYI: need to update f/f.outer() to support several levels of inheritance correctly!
-              }
+            fn = f.outer().handDown(null, f, fn, p, feature());  // NYI: need to update f/f.outer() to support several levels of inheritance correctly!
           }
       }
 
@@ -961,7 +958,6 @@ class Clazz extends ANY implements Comparable<Clazz>
 
     // the inherited feature might not be
     // visible to the inheriting feature
-    var chain = tf.findInheritanceChain(f.outer());
     if (result == null && chain != null)
       {
         for (var p: chain)
@@ -2051,8 +2047,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     if (inh != null &&
         inh.stream().anyMatch(c -> c.calledFeature() == declaredIn))
       {
-        var a = fouter.handDown(null, new AbstractType[] { ft }, _outer.feature());
-        types = new List<AbstractType>(a);
+        types = fouter.outer().handDown(null, new List<>(ft), _outer.feature());
       }
     else if (feature() == declaredIn)
       {

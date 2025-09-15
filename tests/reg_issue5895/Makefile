@@ -17,23 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature Typed_Function
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# Typed_Function -- generic function with type parameter `T` and argument `v` of that type
-#
-# R is the result type of the function, `A` are the argument types of the function in
-# addition to `T` and `v`.
-#
-# This is used, e.g., as an argument to `Any.dynamic_apply`.
-#
-public Typed_Function(public R type,
-                      public A type...) ref is
-
-
-  # call this function for type `T` on arguments `a...` and `v`.
-  #
-  public call(T type, a A..., v T) R => abstract
+override NAME = reg_issue5895
+include ../simple.mk
