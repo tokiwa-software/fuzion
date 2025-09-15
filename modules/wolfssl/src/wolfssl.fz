@@ -42,11 +42,11 @@ public wolfssl(T type, LM type : mutate, LM2 type: mutate, code ()->T) T ! LM, L
 
   my_IORecv : Function i32 Native_Ref Native_Ref i32 Native_Ref is
     public redef call(ssl Native_Ref, buf Native_Ref, sz i32, ctx Native_Ref) i32 =>
-      match (io.buffered LM).reader.env.read sz
-        a array =>
+      match (io.buffered LM).reader.env.read
+        s Sequence =>
           (io.buffered LM).reader.env.discard sz
-          x := (min sz a.count)
-          _ := memcpy buf a x
+          x := (min sz s.count)
+          _ := memcpy buf s.as_array x
           x
         outcome => exit 1
 

@@ -131,12 +131,14 @@ module:public body_reader(
 
       to_read := min remaining.get count
 
-      res choice (array u8) io.end_of_file error => match (io.buffered LM).reader.env.read to_read
-        c array u8 =>
-          (io.buffered LM).reader.env.discard c.length
+      res choice (array u8) io.end_of_file error => match (io.buffered LM).reader.env.read
+        s Sequence u8 =>
+          c := s.take to_read .as_array
+
+          (io.buffered LM).reader.env.discard c.count
           # decrease remaining if reader has a size limit
           if reader_size >= 0
-            new_remaining := remaining.get - c.length
+            new_remaining := remaining.get - c.count
             remaining <- (new_remaining >= 0 ? new_remaining : 0)
           c
         o outcome io.end_of_file =>
@@ -204,7 +206,7 @@ module body_helper(LM type : mutate, is_req bool, header_fields container.Map St
       # is_req ? nil : option (Sequence u8) (io.buffered LM).read_fully
       body_reader LM (is_req ? 0 : -1)
 
-      
+
 
 /*
 NYI:
