@@ -49,9 +49,8 @@ public Any.json_members array (String, Any) => abstract
 
 
 
-public redef Sequence.json_encode String
-  pre finite.is_yes
-=>
+public redef Sequence.json_encode String =>
+  check debug: finite.is_yes
   "[{ String.join (map (.json_encode)) "," }]"
 
 
