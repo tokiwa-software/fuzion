@@ -525,7 +525,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
                         else
                           {
                             var gt = f.asGenericType();
-                            if (gt.isOpenGeneric() && !isValidUseOfOpenType(f))
+                            if (gt.isOpenGeneric() && !isValidUseOfOpenType(context, f))
                               {
                                 if (!tolerant)
                                   {
