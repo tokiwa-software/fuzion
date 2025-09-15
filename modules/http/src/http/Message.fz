@@ -26,11 +26,6 @@
 #
 public Message ref is
 
-  container.Map.as_string2 =>
-    items.map kv->
-            k, v := kv
-            "$k: $v" + crlf
-         .as_string ""
 
 
   module version_str(major, minor i32) => "HTTP/" + (major > 1 && minor = 0 ? $major : "$major.$minor")
@@ -61,14 +56,14 @@ public Message ref is
     max_body_bytes i32) Sequence u8
   =>
     # NYI: BUG: read fully
-    (start_line + header.as_string2 + crlf).utf8 ++ (match (body.read max_body_bytes)
+    (start_line + header_as_canonical_string + crlf).utf8 ++ (match (body.read max_body_bytes)
                                                 a array u8 => a
                                                 * => [])
 
 
   # String representation of the message header
   #
-  public redef as_string String => start_line + header.as_string2 + crlf
+  public redef as_string String => start_line + header_as_canonical_string + crlf
 
 
   # NYI: BUG: can only be called once
@@ -83,6 +78,47 @@ public Message ref is
       a array u8 => Message.this.as_string + String.from_bytes a
       e error => e
       io.end_of_file => Message.this.as_string
+
+
+  # NYI: PERFORMANCE: see validHeaderFieldByte() in https://go.dev/src/net/textproto/reader.go
+  valid_header_field_byte(c codepoint) bool =>
+    "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#\$%&'*+-.^_|~".contains c
+
+
+  # e.g.:
+  #
+  # accept-language -> Accept-Language
+  #
+  canonical_header_key(str String) String =>
+    if str.as_codepoints.drop_while valid_header_field_byte .is_empty
+      str
+        .split "-"
+        .map s->
+          (s.substring 0 1 .upper_case) + s.substring 1 .lower_case
+        .as_string "-"
+    else
+      str
+
+
+  # the header as a canonical string (with normalized keys).
+  #
+  # e.g.:
+  #
+  # Accept-Encoding: gzip, deflate, br
+  # Accept-Language: en-GB,en;q=0.5
+  # Connection: keep-alive
+  # Host: www.example.com
+  # User-Agent: Mozilla/5.0
+  #
+  # NYI: PERFORMANCE: compute this only once
+  #
+  header_as_canonical_string =>
+    header
+      .items
+      .map kv->
+        k, v := kv
+        "{canonical_header_key k}: $v" + crlf
+      .as_string ""
 
 
 
