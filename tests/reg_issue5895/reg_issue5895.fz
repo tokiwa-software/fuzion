@@ -153,6 +153,94 @@ reg_issue5895 =>
   chk "r2.f3 f64, aos, [bool, nf] -12 1.2 aos [bool true, nf nf]"         <| redef2.f3 -12     1.2 aos true nf
   chk "r3.f3 f64, aos, [bool, nf] -12 --nil-- 1.2 aos [bool true, nf nf]" <| redef3.f3 -12 nil 1.2 aos true nf
 
+  # check type parameter whose constraint has open type parameters:
+  #
+
+  typepar1(O type : open,
+           o O)
+  is
+    g0 => o.f0 nil
+    g1 => o.f1 unit
+    g2 => o.f2 3.14 314
+    g3 => o.f3 1 2 3
+
+  chk "f0 [] nil, --nil-- []"                (typepar1 open).g0
+  chk "f1 [] unit, [] unit"                  (typepar1 open).g1
+  chk "f2 [] f64, i32, [] 3.14 314"          (typepar1 open).g2
+  chk "f3 [] i32, i32, [i32] [] 1 2 [i32 3]" (typepar1 open).g3
+
+  chk "r1.f0 nil, --nil--"                (typepar1 redef1).g0
+  chk "r1.f1 unit, unit"                  (typepar1 redef1).g1
+  chk "r1.f2 f64, i32, 3.14 314"          (typepar1 redef1).g2
+  chk "r1.f3 i32, i32, [i32] 1 2 [i32 3]" (typepar1 redef1).g3
+
+  typepar2(O type : open i8,
+           o O)
+  is
+    g0 => o.f0 nil -12
+    g1 => o.f1 -12 unit
+    g2 => o.f2 -12 3.14 314
+    g3 => o.f3 -12 1 2 3
+
+  chk "r2.f0 nil, --nil-- -12"                (typepar2 redef2).g0
+  chk "r2.f1 unit, -12 unit"                  (typepar2 redef2).g1
+  chk "r2.f2 f64, i32, -12 3.14 314"          (typepar2 redef2).g2
+  chk "r2.f3 i32, i32, [i32] -12 1 2 [i32 3]" (typepar2 redef2).g3
+
+  typepar3(O type : open i8 nil,
+           o O)
+  is
+    g0 => o.f0 unit -12 nil
+    g1 => o.f1 -12 nil unit
+    g2 => o.f2 -12 nil 3.14 314
+    g3 => o.f3 -12 nil 1 2 3 (u8 3) (u8 4)
+
+  chk "r3.f0 unit, unit -12 --nil--"                                      (typepar3 redef3).g0
+  chk "r3.f1 unit, -12 --nil-- unit"                                      (typepar3 redef3).g1
+  chk "r3.f2 f64, i32, -12 --nil-- 3.14 314"                              (typepar3 redef3).g2
+  chk "r3.f3 i32, i32, [i32, u8, u8] -12 --nil-- 1 2 [i32 3, u8 3, u8 4]" (typepar3 redef3).g3
+
+  typepar4(O type : open codepoint codepoint,
+           o O)
+  is
+    g0 => o.f0 nil "x" "y"
+    g1 => o.f1 "x" "y" unit
+    g2 => o.f2 "x" "y" 3.14 314
+    g3 => o.f3 "x" "y" 1 2 3
+
+  occ : open codepoint codepoint is
+
+  chk "f0 [codepoint, codepoint] nil, --nil-- [codepoint x, codepoint y]"                (typepar4 occ).g0
+  chk "f1 [codepoint, codepoint] unit, [codepoint x, codepoint y] unit"                  (typepar4 occ).g1
+  chk "f2 [codepoint, codepoint] f64, i32, [codepoint x, codepoint y] 3.14 314"          (typepar4 occ).g2
+  chk "f3 [codepoint, codepoint] i32, i32, [i32] [codepoint x, codepoint y] 1 2 [i32 3]" (typepar4 occ).g3
+
+  # regression test from #5961
+  fo(O type ...) is
+    call(v O...) =>
+
+  fo0 : fo is
+  fo1 : fo i32 is
+  fo2 : fo i32 i32 is
+
+  q0(F type : fo0, f F) => f.call
+  q1(F type : fo1, f F) => f.call 42
+  q2(F type : fo2, f F) => f.call 42 42
+
+  _ := q0 fo0
+  _ := q1 fo1
+  _ := q2 fo2
+
+  # regression test from #5961 using non-open type parameter
+  fc(C type) is
+    call(v C) =>
+
+  fc1 : fc i32 is
+
+  qc(F type : fc1, f F) => f.call 42
+
+  _ := qc fc1
+
 # short instead of `array (option String)`
 aos is
   public redef as_string String => "aos"
