@@ -621,6 +621,26 @@ public class List<T>
 
 
   /**
+   * Create a mapping of this list by applying f to all elements and
+   * concatenating the resulting lists.
+   *
+   * @return a new list that is the concatenation of the results of applying f
+   * to all elements.
+   */
+  public <V> List<V> flatMap2(Function<T,List<V>> f)
+  {
+    var result = new List<V>();
+    for (var i = 0; i < size(); i++)
+      {
+        var e = get(i);
+        var l = f.apply(e);
+        result.addAll(l);
+      }
+    return result;
+  }
+
+
+  /**
    * Filter elements that match a given predicate.
    *
    * @return this (if the predicate holds for all elements) or a new list with

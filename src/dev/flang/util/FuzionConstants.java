@@ -342,7 +342,7 @@ public class FuzionConstants extends ANY
    * a field whose type is an open type parameter is called without selecting
    * one specific variant.
    */
-  public static final String VALUES_AS_OPEN_TYPE_PREFIX = INTERNAL_NAME_PREFIX + "Values_Of_Open_Type";
+  public static final String VALUES_OF_OPEN_TYPE_SUFFIX = "." + INTERNAL_NAME_PREFIX; /* e.g., `values.#` which stands for `values.0`/`values.1`/etc. */
 
 
   /**
@@ -668,6 +668,39 @@ public class FuzionConstants extends ANY
         (byte) (i >>  8),
         (byte) (i      )
       };
+  }
+
+
+  /**
+   * Create name of open type feature, i.e., the feature that is called when
+   * a field whose type is an open type parameter is called without selecting
+   * one specific variant.
+   *
+   * @param argFieldBaseName the base name of the argument field
+   *
+   * @return the names, looks something like `#Values_Of_Open_Type#argFieldBaseName#uniqueId`.
+   */
+  public static String createFieldsOfOpenTypeName(String argFieldBaseName)
+  {
+    return argFieldBaseName + VALUES_OF_OPEN_TYPE_SUFFIX;
+  }
+
+
+  /**
+   * Extract the field base name from a name created by `createValuesOfOpenTypeName`.
+   *
+   * @param valuesAsOpenTypeName the name obtained form `createValuesOfOpenTypeName`.
+   *
+   * @return the original `argFieldBaseName` passed to `createValuesOfOpenTypeName`.
+   */
+  public static String extractBaseNameFromFieldsOfOpenTypeName(String valuesAsOpenTypeName)
+  {
+    var end = valuesAsOpenTypeName.lastIndexOf(VALUES_OF_OPEN_TYPE_SUFFIX);
+
+    if (CHECKS) check
+      (end >= 0);
+
+    return valuesAsOpenTypeName.substring(0, end);
   }
 
 }
