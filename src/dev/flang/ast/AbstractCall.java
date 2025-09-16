@@ -427,7 +427,7 @@ public abstract class AbstractCall extends Expr
     return
       l.flatMap(ft -> ft.isOpenGeneric()
                       // formal arg is open generic, i.e., this expands to 0 or more actual args depending on actual generics for target
-                      ? ft.genericArgument().replaceOpen(openGenericsFor(res, context, ft))
+                      ? openGenericsFor(res, context, ft)
                       : new List<>(actualArgType(res, context, ft, frml)));
   }
 
@@ -447,7 +447,7 @@ public abstract class AbstractCall extends Expr
   {
     var f = ft.genericArgument().outer();
     return
-      calledFeature() == f ? actualTypeParameters()
+      calledFeature() == f ? ft.applyTypeParsMaybeOpen(f, actualTypeParameters())
                            : openGenericsFor(res, context, ft, target().type());
   }
 
@@ -473,8 +473,10 @@ public abstract class AbstractCall extends Expr
 
     var x = res == null ? tt.selfOrConstraint(context) : tt.selfOrConstraint(res, context);
     var f = ft.genericArgument().outer();
+
     return
-      x.feature().inheritsFrom(f) ? x.generics() :
+      x.feature().inheritsFrom(f) ? f.handDown(res, new List<>(ft), x.feature())
+                                     .flatMap(t -> t.applyTypeParsMaybeOpen(x.feature(), x.generics())) :
       tt.outer() != null          ? openGenericsFor(res, context, ft, tt.outer())
                                   : new List<>()
                                     {

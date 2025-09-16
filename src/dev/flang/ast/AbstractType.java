@@ -774,13 +774,33 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
        f.generics().sizeMatches(actualGenerics));
 
     return genericsToReplace.flatMap
-      (t -> {
+      (t -> { // NYI: CLEANUP: use applyTypeParsMaybeOpen?
         var tp = t.matchingTypeParameter(f);
         return (tp != null && tp.isOpenTypeParameter())
           ? tp.replaceOpen(actualGenerics)
           : new List<>(locally ? t.applyTypeParsLocally(f, actualGenerics, NO_SELECT)
                                : t.applyTypePars       (f, actualGenerics           ));
       });
+  }
+
+
+  /**
+   * Check if type this depends on a formal type parameters of f. If so,
+   * replace the type parameter by the corresponding type from actualTypes.
+   *
+   * @param f the feature actualGenerics belong to.
+   *
+   * @param actualGenerics the actual generic parameters
+   *
+   * @return this iff this does not depend on a formal type parameter of f,
+   * otherwise the type that results by replacing all formal type parameters
+   * of f by the corresponding type from actualTypes.
+   */
+  public List<AbstractType> applyTypeParsMaybeOpen(AbstractFeature f,
+                                                   List<AbstractType> actualTypes)
+  {
+    return isOpenGeneric() ? genericArgument().replaceOpen(actualTypes)
+                           : new List<>(applyTypePars(f, actualTypes));
   }
 
 

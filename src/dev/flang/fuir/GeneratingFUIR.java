@@ -796,9 +796,7 @@ public class GeneratingFUIR extends FUIR
       {
         var f = c.calledFeature();
         var actualTypes = c.actualTypeParameters();
-        tl = tl.flatMap(t -> t.isOpenGeneric()
-                             ? t.genericArgument().replaceOpen(actualTypes)
-                             : new List<>(t.applyTypePars(f, actualTypes)));
+        tl = tl.flatMap(t -> t.applyTypeParsMaybeOpen(f, actualTypes));
       }
     return tl;
   }
