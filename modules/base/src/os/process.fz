@@ -26,7 +26,7 @@
 module:public process(public pid i64, module std_in, std_out, std_err i64) : property.orderable is
 
   # how many bytes are read at a time
-  pipe_buffer_size := os.page_size.as_i32
+  pipe_buffer_size := io.buffer_size.as_i32
 
   # POSIX.1 requires PIPE_BUF to be at least 512 bytes
   # NYI: UNDER DEVELOPMENT: post conditions for fields not supported yet
@@ -103,17 +103,17 @@ module:public process(public pid i64, module std_in, std_out, std_err i64) : pro
   # install buffered reader for reading from stdout of process
   # and run `f`.
   public with_out(T type, LM type : mutate, f () -> outcome T) outcome T =>
-    (io.buffered LM).reader (std_out_read_handler) pipe_buffer_size ! f
+    (io.buffered LM).reader (std_out_read_handler) ! f
 
 
   # install buffered reader for reading from stdout of process
   # and run `f`.
   public with_err(T type, LM type : mutate, f () -> outcome T) outcome T =>
-    (io.buffered LM).reader (std_err_read_handler) pipe_buffer_size ! f
+    (io.buffered LM).reader (std_err_read_handler) ! f
 
 
   public with_in(T type, LM type : mutate, f () -> T) outcome T =>
-    (io.buffered LM).writer std_in_write_handler pipe_buffer_size ! f
+    (io.buffered LM).writer std_in_write_handler ! f
 
 
   # write string to stdin of child process

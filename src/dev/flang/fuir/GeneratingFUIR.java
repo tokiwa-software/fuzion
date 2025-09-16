@@ -29,10 +29,10 @@ package dev.flang.fuir;
 import java.nio.charset.StandardCharsets;
 
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -431,8 +431,11 @@ public class GeneratingFUIR extends FUIR
   /**
    * For recording which sites and code where used by DFA.
    * Used when serializing the FUIR.
+   *
+   * NYI: CLEANUP: should we remove this?
+   * We currently need it when serializing fuir.
    */
-  protected TreeSet<Integer> _accessedSites = new TreeSet<>();
+  protected BitSet _accessedSites = new BitSet(4096);
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -796,9 +799,7 @@ public class GeneratingFUIR extends FUIR
       {
         var f = c.calledFeature();
         var actualTypes = c.actualTypeParameters();
-        tl = tl.flatMap(t -> t.isOpenGeneric()
-                             ? t.genericArgument().replaceOpen(actualTypes)
-                             : new List<>(t.applyTypePars(f, actualTypes)));
+        tl = tl.flatMap(t -> t.applyTypeParsMaybeOpen(f, actualTypes));
       }
     return tl;
   }
@@ -1395,7 +1396,7 @@ public class GeneratingFUIR extends FUIR
   {
     if (!_lookupDone)
       {
-        _accessedSites.add(s);
+        _accessedSites.set(s-SITE_BASE);
       }
     return super.getExpr(s);
   }
@@ -2162,7 +2163,7 @@ public class GeneratingFUIR extends FUIR
 
     if (!_lookupDone)
       {
-        _accessedSites.add(s);
+        _accessedSites.set(s-SITE_BASE);
       }
 
     return _siteClazzes.get(s - SITE_BASE);

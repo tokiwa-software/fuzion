@@ -17,36 +17,28 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test mod_json_encode
+#  Source code of Fuzion module io.Buffer_Size
 #
 # -----------------------------------------------------------------------
 
-mod_json_encode =>
-  some_custom_feature(a i32, b String) is
-    c := 4.5
-    d := true
+# effect for configuring the default buffer size
+# used by buffered.reader/writer
+#
+public Buffer_Size ref : effect is
 
-    public redef json_members array (String, Any) =>
-      [
-       ($"a", id Any a),
-       ($"b", id Any b),
-       ($"c", id Any c),
-       ($"d", id Any d)
-      ]
-
-  some_custom_feature2(a i32, b String) is
-    c := 4.5
-    d := true
-    e := some_custom_feature a "inner"
-
-    public redef json_members array (String, Any) =>
-      [
-       ($"a", id Any a),
-       ($"b", id Any b),
-       ($"c", id Any c),
-       ($"d", id Any d),
-       ($"f", id Any [id Any e, id Any e])
-      ]
+  public get i64
+  post
+    debug: result > 0
+    debug: result % os.page_size = 0
+  =>
+    # NYI: UNDER DEVELOPMENT: document thoughts gone into choosing default buffer size
+    os.page_size
 
 
-  say (some_custom_feature2 2 "json").json_encode
+# get the current buffer size from effect Buffer_Size
+#
+public type.buffer_size i64 ! io.Buffer_Size =>
+  io.Buffer_Size.default
+  io.Buffer_Size.env.get
+
+
