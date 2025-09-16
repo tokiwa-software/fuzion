@@ -30,7 +30,7 @@
 #
 # WARNING: Due to the high worst-case time for addition, this structure should
 # not be used in situations when adding a single element repeatedly to the same
-# instance of `expanding_array` is performance critical.  If the resulting
+# instance of `expanding_array`.  If the resulting
 # `expanding_array`'s length is `l`, this will trigger the worst-case
 # addition time, resulting in cumulative time O(m*l) for adding an element m
 # times.
