@@ -30,7 +30,9 @@ public Buffer_Size ref : effect is
   post
     debug: result > 0
     debug: result % os.page_size = 0
-  => os.page_size * 32
+  =>
+    # NYI: UNDER DEVELOPMENT: document thoughts gone into choosing default buffer size
+    os.page_size
 
 
 # get the current buffer size from effect Buffer_Size
