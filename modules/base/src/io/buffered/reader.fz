@@ -56,11 +56,13 @@ is
       match rh.read buf_size
         a array u8 =>
           buffer <- a
+          replace
           buffer
         io.end_of_file =>
           io.end_of_file
         e error => e
     else
+      replace
       buffer
 
 
@@ -70,8 +72,8 @@ is
     pre
       debug: n >= 0
   =>
-    m := min n buffer.count
-    buffer <- buffer.slice m buffer.count
+    buffer <- buffer.drop (min n buffer.count)
+    replace
 
 
   # discard complete buffer
@@ -79,6 +81,7 @@ is
   public discard unit
   =>
     buffer <- []
+    replace
 
 
 # read n bytes using the currently installed byte reader effect
