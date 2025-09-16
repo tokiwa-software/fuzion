@@ -42,7 +42,7 @@ public read(ro Dir_Read_Handler) : effect is
   type.default_read_handler =>
     ref : io.dir.Dir_Read_Handler is
       redef read(dd Directory_Descriptor) outcome String =>
-        internal_array := fuzion.sys.internal_array_init u8 1024
+        internal_array := fuzion.sys.internal_array_init u8 os.max_path_length
         len := fzE_dir_read dd internal_array.data
         if len = 0
           error "no more directory entries"

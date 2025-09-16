@@ -162,6 +162,13 @@ public abstract_array
       #
       public redef length i32 => to-from
 
+
+      # a slice of a slice, need to adjust from and to args
+      #
+      public redef slice(from_, to_ i32) Sequence T
+      =>
+        abstract_array.this.slice from+from_ from+to_
+
     array_slice
 
 

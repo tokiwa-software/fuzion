@@ -631,7 +631,7 @@ public Sequence(public T type) ref : property.countable is
   public into(TA type, xf transducer (Sequence TA) TA T) Sequence TA =>
     red := xf.call ((res,val) -> res ++ [val])
     for
-      res (Sequence TA) := (Sequence TA).empty , (red.call res el)
+      res := (Sequence TA).empty, (red.call res el)
       el in Sequence.this do
     else
       res
@@ -1034,8 +1034,7 @@ public Sequence(public T type) ref : property.countable is
     pre
       T : property.equatable
   =>
-    nil_list list T := nil
-    replace old new nil_list Sequence.this nil
+    replace old new (list T).empty Sequence.this nil
 
 
   # replace the first n occurrences of old by new
@@ -1044,8 +1043,7 @@ public Sequence(public T type) ref : property.countable is
     pre
       T : property.equatable
   =>
-    nil_list list T := nil
-    replace old new nil_list Sequence.this n
+    replace old new (list T).empty Sequence.this n
 
 
   # tail recursive helper for the replace features
@@ -1116,16 +1114,15 @@ public Sequence(public T type) ref : property.countable is
           head Sequence T => take (if split_after then idx + s.count else idx)
 
           tail list (Sequence T) =>
-              rest := drop (idx + s.count)
+            rest := drop (idx + s.count)
 
-              match limit
-                nil => rest.split0 s nil split_after
-                n u32 =>
-                  if n > 1
-                    rest.split0 s (n - 1) split_after
-                  else
-                    res Sequence T := rest
-                    res : nil
+            match limit
+              nil => rest.split0 s nil split_after
+              n u32 =>
+                if n > 1
+                  rest.split0 s (n - 1) split_after
+                else
+                  rest : nil
 
           head : tail
 
@@ -1182,6 +1179,7 @@ public Sequence(public T type) ref : property.countable is
 
   # the arithmetic mean of the sequence
   # https://en.wikipedia.org/wiki/Arithmetic_mean
+  #
   public average option T
     pre
       T : numeric
@@ -1193,8 +1191,41 @@ public Sequence(public T type) ref : property.countable is
       sum / cnt
 
 
+  # convert this Sequence to an ordered map
+  # via mapping all elements to key value pairs
+  #
+  public as_ordered_map(KEY type : property.orderable, 
+                          VALUE type, 
+                          mapper T -> (KEY,VALUE)
+                          ) container.ordered_map KEY VALUE
+  =>
+
+    keys, values :=
+      reduce ((Sequence KEY).empty,(Sequence VALUE).empty) (r,t)->
+        mapper t ||> k,v->(r.0++[k],r.1++[v])
+
+    container.ordered_map keys values
+
+
+  # convert this Sequence to a hash map
+  # via mapping all elements to key value pairs
+  #
+  public as_hash_map(KEY type : property.hashable, 
+                     VALUE type,
+                     mapper T -> (KEY,VALUE)
+                     ) container.hash_map KEY VALUE
+  =>
+
+    keys, values :=
+      reduce ((Sequence KEY).empty,(Sequence VALUE).empty) (r,t)->
+        mapper t ||> k,v->(r.0++[k],r.1++[v])
+
+    container.hash_map keys.as_array values.as_array
+
+
   # the variance of the sequence
   # https://en.wikipedia.org/wiki/Variance
+  #
   public variance option T
     pre
       T : numeric
@@ -1206,6 +1237,7 @@ public Sequence(public T type) ref : property.countable is
 
 
   # minimum value in the sequence
+  #
   public min option T
     pre
       T : property.orderable
@@ -1216,6 +1248,7 @@ public Sequence(public T type) ref : property.countable is
 
 
   # maximum value in the sequence
+  #
   public max option T
     pre
       T : property.orderable
@@ -1227,6 +1260,7 @@ public Sequence(public T type) ref : property.countable is
 
   # the median of the sequence
   # https://en.wikipedia.org/wiki/Median
+  #
   public median option T
     pre
       T : numeric
@@ -1244,6 +1278,7 @@ public Sequence(public T type) ref : property.countable is
 
   # the standard deviation of the sequence
   # https://en.wikipedia.org/wiki/Standard_deviation
+  #
   public std_dev option T
     pre
       T : float
