@@ -474,10 +474,15 @@ public abstract class AbstractCall extends Expr
     var x = res == null ? tt.selfOrConstraint(context) : tt.selfOrConstraint(res, context);
     var f = ft.genericArgument().outer();
     return
-      x.feature() == f            ? x.generics() :
-      x.feature().inheritsFrom(f) ? f.handDown(res, new List<>(ft), x.feature()) :
+      x.feature().inheritsFrom(f) ? x.generics() :
       tt.outer() != null          ? openGenericsFor(res, context, ft, tt.outer())
-                                  : /* earlier errors must have occured */ new List<>();
+                                  : new List<>()
+                                    {
+                                      { /* earlier errors must have occured */
+                                        if (CHECKS) check
+                                          (Errors.any());
+                                      }
+                                    };
   }
 
 
