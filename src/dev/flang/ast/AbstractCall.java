@@ -418,7 +418,7 @@ public abstract class AbstractCall extends Expr
     var declF = calledFeature().outer();
     var tt = target().type();
     var l = new List<>(frmlT);
-    if (!tt.isGenericArgument() && declF != tt.feature())
+    if (!tt.isGenericArgument() && declF != tt.feature() && calledFeature() != Types.f_ERROR)
       {
         l = calledFeature().outer().handDown(res, l, tt.feature());
       }
@@ -427,39 +427,57 @@ public abstract class AbstractCall extends Expr
     return
       l.flatMap(ft -> ft.isOpenGeneric()
                       // formal arg is open generic, i.e., this expands to 0 or more actual args depending on actual generics for target
-                      ? ft.genericArgument().replaceOpen(openGenericsFor(res, context, ft.genericArgument().outer()))
+                      ? ft.genericArgument().replaceOpen(openGenericsFor(res, context, ft))
                       : new List<>(actualArgType(res, context, ft, frml)));
   }
 
 
   /**
-   * Find the actual generics of the open generic argument in f.
+   * Find the actual argument types of the open type ft.
    *
-   * @param f the feature having the open type parameter
+   * @param res the resolution instance, or null.
+   *
+   * @param context the source code context where this Call is used
+   *
+   * @param ft the open type parameter type to replace
+   *
+   * @return the actual type parameters, or the empty list in case of an error.
    */
-  private List<AbstractType> openGenericsFor(Resolution res, Context context, AbstractFeature f)
+  private List<AbstractType> openGenericsFor(Resolution res, Context context, AbstractType ft)
   {
-    return calledFeature().inheritsFrom(f)
-      ? actualTypeParameters()
-      : openGenericsFor(res, context, f, target().type());
+    var f = ft.genericArgument().outer();
+    return
+      calledFeature() == f ? actualTypeParameters()
+                           : openGenericsFor(res, context, ft, target().type());
   }
 
 
   /**
-   * In the target type of this call,
-   * find the actual generics of the open generic argument in f .
+   * In the target type tt of this call, and, recursively, in tt.outer(),
+   * find the actual argument types for the open type ft.
    *
-   * @param f the feature having the open type parameter
+   * @param res the resolution instance, or null.
+   *
+   * @param context the source code context where this Call is used
+   *
+   * @param ft the open type parameter type to replace
+   *
+   * @param tt the target type to find the actual type parameters for ft
+   *
+   * @return the actual type parameters, or the empty list in case of an error.
    */
-  private List<AbstractType> openGenericsFor(Resolution res, Context context, AbstractFeature f, AbstractType tt)
+  private List<AbstractType> openGenericsFor(Resolution res, Context context, AbstractType ft, AbstractType tt)
   {
     if (PRECONDITIONS) require
       (tt != null);
 
     var x = res == null ? tt.selfOrConstraint(context) : tt.selfOrConstraint(res, context);
-    return x.feature().inheritsFrom(f)
-      ? x.generics()
-      : openGenericsFor(res, context, f, tt.outer());
+    var f = ft.genericArgument().outer();
+    return
+      x.feature() == f            ? x.generics() :
+      x.feature().inheritsFrom(f) ? f.handDown(res, new List<>(ft), x.feature()) :
+      tt.outer() != null          ? openGenericsFor(res, context, ft, tt.outer())
+                                  : /* earlier errors must have occured */ new List<>();
   }
 
 
