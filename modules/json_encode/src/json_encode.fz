@@ -33,16 +33,16 @@ public Any.json_encode /* NYI: UNDER DEVELOPMENT: option-args? */ String =>
 #
 # example:
 #
-#     some_custom_feature(a i32, b String) is
-#       c := 4.5
-#       d := true
+#     some_custom_feature(num i32, str String) is
+#       constant := 4.5
+#       cond := true
 #
 #       public redef json_members array (String, Any) =>
 #         [
-#          ($"a", id Any a),
-#          ($"b", id Any b),
-#          ($"c", id Any c),
-#          ($"d", id Any d)
+#          ("num", id Any num),
+#          ("str", id Any str),
+#          ("constant", id Any constant),
+#          ("cond", id Any cond)
 #         ]
 #
 public Any.json_members array (String, Any) => abstract
