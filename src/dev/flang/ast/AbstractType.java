@@ -790,7 +790,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param f the feature actualGenerics belong to.
    *
-   * @param actualGenerics the actual generic parameters
+   * @param actualTypes the actual type parameters
    *
    * @return this iff this does not depend on a formal type parameter of f,
    * otherwise the type that results by replacing all formal type parameters
