@@ -67,6 +67,7 @@ import dev.flang.util.FuzionOptions;
 import dev.flang.util.IntArray;
 import dev.flang.util.IntMap;
 import dev.flang.util.List;
+import dev.flang.util.LongMap;
 import dev.flang.util.Pair;
 import dev.flang.util.SourcePosition;
 
@@ -2707,6 +2708,11 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
+   * In my measurements
+   * brings ~20% in tests/mod_http_message while having no effect on HelloWorld.
+   */
+  private LongMap<Integer> lookupCache = new LongMap<>();
+  /**
    * Get the possible inner clazz for a call or assignment to a field with given
    * target clazz.
    *
@@ -2723,45 +2729,54 @@ public class GeneratingFUIR extends FUIR
    */
   public int lookup(int s, int tclazz)
   {
-    if (PRECONDITIONS) require
-      (s >= SITE_BASE,
-       s < SITE_BASE + _allCode.size(),
-       withinCode(s),
-       codeAt(s) == ExprKind.Call   ||
-       codeAt(s) == ExprKind.Assign    ,
-       tclazz >= CLAZZ_BASE &&
-       tclazz < CLAZZ_BASE  + _clazzes.size());
-
-    int innerClazz;
-    if (accessIsDynamic(s))
+    Long key = (long)s << 32 | (long) tclazz;
+    var innerClazz = lookupCache.get(key);
+    if (innerClazz != null)
       {
-        var inner = accessedClazz(s, id2clazz(tclazz));
-        innerClazz = inner == null ? NO_CLAZZ : inner._id;
-        if (inner != null)
-          {
-            addToAccessedClazzes(s, tclazz, innerClazz);
-          }
+        return innerClazz;
       }
     else
       {
-        innerClazz = accessedClazz(s);
-        if (CHECKS) check
-          (Errors.any() || tclazz == clazzOuterClazz(innerClazz) || clazzAsValue(tclazz) == clazzOuterClazz(innerClazz));
-      }
-    if (innerClazz != NO_CLAZZ)
-      {
-        innerClazz = switch (clazzKind(innerClazz))
-          {
-          case Routine, Intrinsic, Native, Field, TypeParameter -> innerClazz;
-          case Abstract, Choice -> NO_CLAZZ;
-          };
-      }
-    if (innerClazz != NO_CLAZZ && codeAt(s) == ExprKind.Call)
-      {
-        doesNeedCode(innerClazz);
-      }
+        if (PRECONDITIONS) require
+          (s >= SITE_BASE,
+           s < SITE_BASE + _allCode.size(),
+           withinCode(s),
+           codeAt(s) == ExprKind.Call   ||
+           codeAt(s) == ExprKind.Assign    ,
+           tclazz >= CLAZZ_BASE &&
+           tclazz < CLAZZ_BASE  + _clazzes.size());
 
-    return innerClazz;
+        if (accessIsDynamic(s))
+          {
+            var inner = accessedClazz(s, id2clazz(tclazz));
+            innerClazz = inner == null ? NO_CLAZZ : inner._id;
+            if (inner != null)
+              {
+                addToAccessedClazzes(s, tclazz, innerClazz);
+              }
+          }
+        else
+          {
+            innerClazz = accessedClazz(s);
+            if (CHECKS) check
+              (Errors.any() || tclazz == clazzOuterClazz(innerClazz) || clazzAsValue(tclazz) == clazzOuterClazz(innerClazz));
+          }
+        if (innerClazz != NO_CLAZZ)
+          {
+            innerClazz = switch (clazzKind(innerClazz))
+              {
+              case Routine, Intrinsic, Native, Field, TypeParameter -> innerClazz;
+              case Abstract, Choice -> NO_CLAZZ;
+              };
+          }
+        if (innerClazz != NO_CLAZZ && codeAt(s) == ExprKind.Call)
+          {
+            doesNeedCode(innerClazz);
+          }
+
+        lookupCache.put(key, innerClazz);
+        return innerClazz;
+      }
   }
 
 
