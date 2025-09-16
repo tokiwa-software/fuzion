@@ -140,7 +140,7 @@ public abstract_array
   #
   public redef slice(from, to i32) Sequence T
   =>
-    arrayslice : Sequence T is
+    array_slice : container.abstract_array T is
 
       # this array slice as a list
       #
@@ -148,7 +148,7 @@ public abstract_array
         if to ≤ from
           nil
         else
-          array_cons abstract_array.this from to
+          array_slice.this.array_cons abstract_array.this from to
 
 
       # get the contents of this slice at the given index
@@ -157,29 +157,10 @@ public abstract_array
       =>
         abstract_array.this[from+i]
 
-      # is this sequence known to be finite?  For infinite sequences, features like
-      # count diverge.
+
+      # redefines abstract_array.length for array.
       #
-      public redef finite trit => trit.yes
-
-
-      # is this Sequence known to be array backed? If so, this means that operations
-      # like index[] are fast.
-      #
-      public redef is_array_backed bool => true
-
-
-      # redefines Sequence.count for array.slice,
-      # reducing complexity from O(n) to O(1).
-      #
-      public redef count i32 => to-from
-
-
-      # check if argument is a valid index in this array.
-      #
-      # Unlike for general Sequences, this performs in O(1).
-      #
-      public redef is_valid_index(i i32) bool => 0 ≤ i ≤ arrayslice.this.count
+      public redef length i32 => to-from
 
 
       # a slice of a slice, need to adjust from and to args
@@ -188,8 +169,7 @@ public abstract_array
       =>
         abstract_array.this.slice from+from_ from+to_
 
-
-    arrayslice
+    array_slice
 
 
   # create a cons cell for a list of this array starting at the given
