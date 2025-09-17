@@ -42,6 +42,7 @@ is
   post
     debug: result ≥ 0 & result ≤ 999
   =>
+    # NYI: BUG: wrong! we should then not expose nano_second
     nano_second / 1E6
 
 
@@ -82,6 +83,13 @@ is
     (y + y/4 - y/100 + y/400 + t[month-1] + day) % 7
 
 
+
+  public type.from_seconds(n u64) time.date_time =>
+    # NYI: UNDER DEVELOPMENT: seconds from 1970-01-01 00:00:00 +0000
+    panic "NYI: UNDER DEVELOPMENT: date_time.type.from_seconds"
+
+
+
   # defines an equality relation for date time
   #
   public redef type.equality(a, b date_time.this) bool =>
@@ -97,7 +105,7 @@ is
   # defines a partial order for date time
   #
   public redef type.lteq(a, b date_time.this) bool =>
-    private ternary_compare trit =>
+    ternary_compare trit =>
       a.args_in_order
        .zip b.args_in_order tuple
        .reduce trit.unknown r,t->
@@ -108,7 +116,7 @@ is
          else
            abort trit.no
 
-    ternary_compare != trit.no
+    ternary_compare.is_yes_or_unkown
 
 
 

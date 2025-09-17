@@ -71,7 +71,26 @@ public abstract_array
   # For arrays, this has performance in O(1).
   #
   public redef drop (n i32) Sequence T =>
-    n >= count ? (list T).empty : as_list (max 0 n)
+    if n >= count
+      []
+    else if n < 0
+      abstract_array.this
+    else
+      slice n count
+
+
+  # create a Sequence that consists only of the first n elements of this
+  # Sequence, fewer if this Sequence has fewer elements
+  #
+  # For arrays, this has performance in O(1).
+  #
+  public redef take (n i32) Sequence T =>
+    if n >= count
+      abstract_array.this
+    else if n < 0
+      []
+    else
+      slice 0 n
 
 
   # a sequence of all valid indices to access this array. Useful e.g., for
@@ -121,7 +140,7 @@ public abstract_array
   #
   public redef slice(from, to i32) Sequence T
   =>
-    arrayslice : Sequence T is
+    array_slice : container.abstract_array T is
 
       # this array slice as a list
       #
@@ -129,7 +148,7 @@ public abstract_array
         if to ≤ from
           nil
         else
-          array_cons abstract_array.this from to
+          array_slice.this.array_cons abstract_array.this from to
 
 
       # get the contents of this slice at the given index
@@ -138,40 +157,19 @@ public abstract_array
       =>
         abstract_array.this[from+i]
 
-      # is this sequence known to be finite?  For infinite sequences, features like
-      # count diverge.
+
+      # redefines abstract_array.length for array.
       #
-      public redef finite trit => trit.yes
+      public redef length i32 => to-from
 
 
-      # is this Sequence known to be array backed? If so, this means that operations
-      # like index[] are fast.
+      # a slice of a slice, need to adjust from and to args
       #
-      public redef is_array_backed bool => true
+      public redef slice(from_, to_ i32) Sequence T
+      =>
+        abstract_array.this.slice from+from_ from+to_
 
-
-      # redefines Sequence.count for array.slice,
-      # reducing complexity from O(n) to O(1).
-      #
-      public redef count i32 => to-from
-
-
-      # check if argument is a valid index in this array.
-      #
-      # Unlike for general Sequences, this performs in O(1).
-      #
-      public redef is_valid_index(i i32) bool => 0 ≤ i ≤ arrayslice.this.count
-
-
-      # create a list that consists of the elements of this Sequence except the first
-      # n elements
-      #
-      # For arrays, this has performance in O(1).
-      #
-      public redef drop (n i32) Sequence T =>
-        abstract_array.this.slice from+(max 0 n) to
-
-    arrayslice
+    array_slice
 
 
   # create a cons cell for a list of this array starting at the given

@@ -36,9 +36,4 @@ public Typed_Function(public R type,
 
   # call this function for type `T` on arguments `a...` and `v`.
   #
-  # NYI: CLEANUP: #5895 if this is fixed, we should change the argument order to
-  # macht the order used in `container.typed_applicator`:
-  #
-  #     public call(T type, a A..., v T) R => abstract
-  #
-  public call(T type, v T, a A...) R => abstract
+  public call(T type, a A..., v T) R => abstract

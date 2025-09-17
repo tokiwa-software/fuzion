@@ -1512,16 +1512,6 @@ public class AstErrors extends ANY
           "The else block of this loop is declared at " + elseBlock.pos().show());
   }
 
-  static void formalGenericAsOuterType(SourcePosition pos, UnresolvedType t)
-  {
-    error(pos,
-          "Formal type parameter must not be used as outer type",
-          "In a type >>a.b<<, the outer type >>a<< must not be a formal type parameter.\n" +
-          "Type used: " + s(t) + "\n" +
-          "Formal type parameter used " + s(t.outer()) + "\n" +
-          "Formal type parameter declared in " + t.outer().declarationPos().show() + "\n");
-  }
-
   static void formalGenericWithGenericArgs(SourcePosition pos, UnresolvedType t, AbstractFeature generic)
   {
     error(pos,
@@ -1545,7 +1535,7 @@ public class AstErrors extends ANY
   {
     error(pos,
           "Illegal use of open formal type parameter type",
-          "Open formal type parameter type is permitted only as the type of the last argument in a formal arguments list of an abstract feature.\n" +
+          "Open formal type parameter type is permitted only as the type of an argument.  If the argument and the formal type parameter are part of the same argument list, the argument must be the last argument.\n" +
           "Open formal argument: " + sbnf(generic) + "");
   }
 

@@ -35,6 +35,14 @@ private:public meta_data(
           # boolean to check if the pathname is a directory
           public is_dir bool) is
 
+  public redef as_string String =>
+    """
+      size in bytes   : $size
+      time            : {universe.time.date_time.from_seconds meta_data.this.time.as_u64}
+      is regular file : $is_regular
+      is directory    : $is_dir
+    """
+
 # stat -- effect providing operations to retrieve file stats
 #
 public stat(ps Stat_Handler) : effect is

@@ -774,13 +774,33 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
        f.generics().sizeMatches(actualGenerics));
 
     return genericsToReplace.flatMap
-      (t -> {
+      (t -> { // NYI: CLEANUP: use applyTypeParsMaybeOpen?
         var tp = t.matchingTypeParameter(f);
         return (tp != null && tp.isOpenTypeParameter())
           ? tp.replaceOpen(actualGenerics)
           : new List<>(locally ? t.applyTypeParsLocally(f, actualGenerics, NO_SELECT)
                                : t.applyTypePars       (f, actualGenerics           ));
       });
+  }
+
+
+  /**
+   * Check if type this depends on a formal type parameters of f. If so,
+   * replace the type parameter by the corresponding type from actualTypes.
+   *
+   * @param f the feature actualGenerics belong to.
+   *
+   * @param actualTypes the actual type parameters
+   *
+   * @return this iff this does not depend on a formal type parameter of f,
+   * otherwise the type that results by replacing all formal type parameters
+   * of f by the corresponding type from actualTypes.
+   */
+  public List<AbstractType> applyTypeParsMaybeOpen(AbstractFeature f,
+                                                   List<AbstractType> actualTypes)
+  {
+    return isOpenGeneric() ? genericArgument().replaceOpen(actualTypes)
+                           : new List<>(applyTypePars(f, actualTypes));
   }
 
 
@@ -950,7 +970,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * Check if type t depends on a formal generic parameter of this. If so,
+   * Check if type this depends on a formal generic parameter of f. If so,
    * replace t by the corresponding actual generic parameter from the list
    * provided.
    *
@@ -965,9 +985,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public AbstractType applyTypePars(AbstractFeature f, List<AbstractType> actualGenerics)
   {
     if (PRECONDITIONS) require
-      (Errors.any() ||
-       f.generics().sizeMatches(actualGenerics),
-       Errors.any() || !isOpenGeneric() || genericArgument().outer().generics() != f.generics());
+      (Errors.any() || f.generics().sizeMatches(actualGenerics));
 
     AbstractType result;
     if (typeParCachingEnabled &&
@@ -1221,14 +1239,18 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                 if (g.isOpenTypeParameter())
                   {
                     var tl = g.replaceOpen(actualGenerics);
-                    if (CHECKS) check
-                      (Errors.any() || select >= 0 && select <= tl.size());
-                    if (select >= 0 && select <= tl.size())
+                    if (select >= 0 && select < tl.size())
                       {
                         result = tl.get(select);
                       }
+                    else if (select == NO_SELECT && tl.size() == 1 && tl.get(0).isOpenGeneric())
+                      {
+                        result = tl.get(0);
+                      }
                     else
                       {
+                        if (CHECKS) check
+                          (Errors.any());
                         result = Types.t_ERROR;
                       }
                   }

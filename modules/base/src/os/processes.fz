@@ -76,7 +76,7 @@ public processes (ph os.Process_Handler, public running_processes container.Set 
         # NYI: UNDER DEVELOPMENT: close these:
         # check fzE_pipe_close p.std_out = 0
         # check fzE_pipe_close p.std_err = 0
-        (id (outcome u32) r.as_u32)
+        r.as_u32
       else
         if elapsed_time > timeout
           error "Waiting for process with id {p.pid} timed out."
