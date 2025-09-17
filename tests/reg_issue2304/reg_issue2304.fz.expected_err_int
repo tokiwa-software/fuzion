@@ -22,16 +22,16 @@ p => panic "bah"
 λ.call#1: --CURDIR--/reg_issue2304.fz:25:20:
 _ := [1].filter x->p
 -------------------^
-(list i32).filter_list#1.λ.call#1: {base.fum}/list.fz:509:35:
+(list i32).filter_list#1.λ.call#1: {base.fum}/list.fz:499:35:
     match drop_while_list (a -> !(p a))
 ----------------------------------^
-(list i32).drop_while_list#1: {base.fum}/list.fz:488:12:
+(list i32).drop_while_list#1: {base.fum}/list.fz:478:12:
         if p c.head
 -----------^
-(list i32).filter_list#1: {base.fum}/list.fz:509:11:
+(list i32).filter_list#1: {base.fum}/list.fz:499:11:
     match drop_while_list (a -> !(p a))
 ----------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(list i32).filter#1: {base.fum}/list.fz:500:5:
+(list i32).filter#1: {base.fum}/list.fz:490:5:
     filter_list p
 ----^^^^^^^^^^^^^
 (array i32).filter#1: {base.fum}/Sequence.fz:184:47:
