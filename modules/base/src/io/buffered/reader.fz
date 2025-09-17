@@ -38,63 +38,32 @@ is
   := io.buffer_size.as_i32
 
 
-  # circular buffer backing this reader
+  # buffer backing this reader
   #
-  buffer := (mutate.circular_buffer u8).new LM buf_size.as_i64 0
+  buffer := LM.env.new (Sequence u8) []
 
 
   # read returns the current buffer or end of file.
   # in case the buffer is empty it fills the buffer
   # before returning it.
   #
-  public read switch (array u8) (outcome io.end_of_file) => read buf_size
-
-
-  # read returns the current buffer or end of file.
-  # in case the buffer is empty it fills the buffer
-  # with up to n bytes before returning it.
-  #
-  public read(n i32) switch (array u8) (outcome io.end_of_file)
-    pre
-      debug: n > 0
+  public read switch (Sequence u8) (outcome io.end_of_file)
     post
-      debug: (result ? outcome => true | a array => !a.is_empty)
+      debug: (result ? outcome => true | s Sequence => !s.is_empty)
+      debug: (result ? outcome => true | s Sequence => s.is_array_backed)
   =>
-    if buffer.buffered = 0
-      match fill_buffer
-        unit =>
-          # NYI: remove double buffering implementation outside of the reader,
-          # just flush the buffer here.
-          # m := min n.as_i64 buffer.buffered
-          # buffer.flush m
-          m := min n buffer.buffered.as_i32
-          (buffer.as_array.slice 0 m).as_array
-        o outcome io.end_of_file => o
+    if buffer.is_empty
+      match rh.read buf_size
+        a array u8 =>
+          buffer <- a
+          replace
+          buffer
+        io.end_of_file =>
+          io.end_of_file
+        e error => e
     else
-      # NYI: remove double buffering implementation outside of the reader,
-      # just flush the buffer here.
-      # m := min n.as_i64 buffer.buffered
-      # buffer.flush m
-      m := min n buffer.buffered.as_i32
-      (buffer.as_array.slice 0 m).as_array
-
-
-
-  # fill the currently empty buffer with up to buf_size bytes
-  #
-  fill_buffer switch unit (outcome io.end_of_file)
-    pre
-      debug: buffer.buffered = 0
-  =>
-    match rh.read buffer.available.as_i32
-      a array u8 =>
-        match buffer.enqueue a
-          unit => unit
-          e error => e
-      io.end_of_file =>
-        replace
-        io.end_of_file
-      e error => e
+      replace
+      buffer
 
 
   # discard n items from buffer
@@ -103,15 +72,16 @@ is
     pre
       debug: n >= 0
   =>
-    m := min n.as_i64 buffer.buffered
-    _ := buffer.flush m
+    buffer <- buffer.drop (min n buffer.count)
+    replace
 
 
   # discard complete buffer
   #
   public discard unit
   =>
-    discard buf_size
+    buffer <- []
+    replace
 
 
 # read n bytes using the currently installed byte reader effect
@@ -126,10 +96,11 @@ public read_bytes(n i32) array u8 ! reader
   _ :=
     while res.length.as_i32 < n
     until
-      match reader.env.read n-res.length.as_i32
+      match reader.env.read
         outcome => true
-        a (array u8) =>
-          reader.env.discard a.length
+        s Sequence u8 =>
+          a := s.take n-res.length.as_i32 .as_array_backed
+          reader.env.discard a.count
           for b in a do
             res.add b
           false
@@ -157,8 +128,8 @@ pre debug: n >= 0
     v
 
   for
-    is_eof                 := reader.env.read  ? outcome => true | array => false
-    next_bytes Sequence u8 := (reader.env.read ? outcome => []   | a array => a), rest ++ (reader.env.read ? outcome => [] | a array => a)
+    is_eof                 := reader.env.read  ? outcome => true | Sequence => false
+    next_bytes Sequence u8 := (reader.env.read ? outcome => []   | s Sequence => s), rest ++ (reader.env.read ? outcome => [] | s Sequence => s)
     next_codepoints        := take_valid_codepoints next_bytes n, take_valid_codepoints next_bytes n-codepoint_count
     # if we did not use any bytes and `next_bytes` contains not enough bytes for a codepoint potentially,
     # we trigger a `discard` and remember what we read so far via `rest`.
@@ -190,7 +161,7 @@ public read_delimiter (delim u8, strip_cr bool) switch String io.end_of_file ! r
       match reader.env.read
         outcome =>
           false
-        a array =>
+        s Sequence =>
 
           # trailing carriage returns are dropped
           add_to_res(a0 Sequence u8) unit =>
@@ -202,13 +173,13 @@ public read_delimiter (delim u8, strip_cr bool) switch String io.end_of_file ! r
               for b in a1 do
                 res.add b
 
-          match a.index_of delim
+          match s.index_of delim
             idx i32 =>
-              add_to_res (a.slice 0 idx)
+              add_to_res (s.slice 0 idx)
               reader.env.discard idx+1
               false
             nil =>
-              add_to_res a
+              add_to_res s
               reader.env.discard
               true
 
