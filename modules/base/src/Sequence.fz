@@ -240,13 +240,42 @@ public Sequence(public T type) ref : property.countable is
     drop(from).take to-from
 
 
-  # create a tuple of two Sequences by splitting this at the given index, i.e.,
-  # a Sequence of length 'at' and one of length 'count-at'.
+  # create a tuple of two Sequences by splitting this at
   #
-  # at may be <= 0 or >= count, in which case the resulting tuple will be the
-  # (empty list, Sequence.this.as_list) or (Sequence.this.as_list, empty list), resp.
+  # either
   #
-  public split_at(at i32) tuple (Sequence T) (Sequence T) => ((take at), (drop at))
+  #    the given index,
+  #    i.e., a Sequence of length 'at' and one of length 'count-at'.
+  #    at may be <= 0 or >= count, in which case the resulting tuple will be the
+  #    (empty list, Sequence.this.as_list) or (Sequence.this.as_list, empty list), resp.
+  #
+  # or
+  #
+  #    at first result of condition function
+  #
+  public split_at(c i32 | T->bool) tuple (Sequence T) (Sequence T) =>
+    match c
+      at i32 => ((take at), (drop at))
+      cond T->bool =>
+        a := as_array_backed
+        at := a.first_index_of (el -> cond el)
+        (a.take at, a.drop at)
+
+
+  # returns the index of the first element
+  # where `cond` is true.
+  # If never true returns `count`
+  #
+  # NYI: UNDER DEVELOPMENT: do we want this public?
+  #
+  first_index_of(cond T->bool) i32
+  =>
+    for i:=0, i+1
+        el in Sequence.this
+    while !cond el
+    else
+      i
+
 
   # Lazily take the first elements of this Sequence for which predicate 'p' holds.
   #
@@ -1194,8 +1223,8 @@ public Sequence(public T type) ref : property.countable is
   # convert this Sequence to an ordered map
   # via mapping all elements to key value pairs
   #
-  public as_ordered_map(KEY type : property.orderable, 
-                          VALUE type, 
+  public as_ordered_map(KEY type : property.orderable,
+                          VALUE type,
                           mapper T -> (KEY,VALUE)
                           ) container.ordered_map KEY VALUE
   =>
@@ -1210,7 +1239,7 @@ public Sequence(public T type) ref : property.countable is
   # convert this Sequence to a hash map
   # via mapping all elements to key value pairs
   #
-  public as_hash_map(KEY type : property.hashable, 
+  public as_hash_map(KEY type : property.hashable,
                      VALUE type,
                      mapper T -> (KEY,VALUE)
                      ) container.hash_map KEY VALUE
