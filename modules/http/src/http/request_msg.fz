@@ -24,7 +24,7 @@
 
 # HTTP request message
 #
-public request_msg(
+module:public request_msg(
   # the HTTP request method
   public method http.req_method,
   # the target of the request
@@ -34,7 +34,7 @@ public request_msg(
   # the minor version
   public version_minor i32,
   # the header fields
-  public redef header http.canonical_header_map,
+  public redef header container.Map String String,
   # body of the request
   public redef body io.Read_Handler) : Message
 # pre debug: has_field "Host"  # NYI: how to handle case insensitivity?
@@ -44,6 +44,24 @@ is
   public request_line String => "$method $target {version_str version_major version_minor}" + crlf
 
   public redef start_line String => request_line
+
+  public type.new(
+    # the HTTP request method
+    method http.req_method,
+    # the target of the request
+    target String,
+    # the major version
+    version_major i32,
+    # the minor version
+    version_minor i32,
+    # the header fields
+    header array (String,String),
+    # body of the request
+    body io.Read_Handler) http.request_msg
+  =>
+    http.request_msg method target version_major version_minor (as_header_map header) body
+
+
 
 
 
