@@ -649,6 +649,7 @@ public Sequence(public T type) ref : property.countable is
     if is_array_backed
       if (is_valid_index n) then Sequence.this[n] else nil
     else
+      say "nth used on non array backed Sequence"
       (drop n).first
 
 
@@ -1194,8 +1195,8 @@ public Sequence(public T type) ref : property.countable is
   # convert this Sequence to an ordered map
   # via mapping all elements to key value pairs
   #
-  public as_ordered_map(KEY type : property.orderable, 
-                          VALUE type, 
+  public as_ordered_map(KEY type : property.orderable,
+                          VALUE type,
                           mapper T -> (KEY,VALUE)
                           ) container.ordered_map KEY VALUE
   =>
@@ -1210,7 +1211,7 @@ public Sequence(public T type) ref : property.countable is
   # convert this Sequence to a hash map
   # via mapping all elements to key value pairs
   #
-  public as_hash_map(KEY type : property.hashable, 
+  public as_hash_map(KEY type : property.hashable,
                      VALUE type,
                      mapper T -> (KEY,VALUE)
                      ) container.hash_map KEY VALUE
