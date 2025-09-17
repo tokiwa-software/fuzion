@@ -2731,11 +2731,7 @@ public class GeneratingFUIR extends FUIR
   {
     Long key = (long)s << 32 | (tclazz & 0xFFFFFFFFL);
     var innerClazz = lookupCache.get(key);
-    if (innerClazz != null)
-      {
-        return innerClazz;
-      }
-    else
+    if (innerClazz == null)
       {
         if (PRECONDITIONS) require
           (s >= SITE_BASE,
@@ -2775,8 +2771,8 @@ public class GeneratingFUIR extends FUIR
           }
 
         lookupCache.put(key, innerClazz);
-        return innerClazz;
       }
+    return innerClazz;
   }
 
 
