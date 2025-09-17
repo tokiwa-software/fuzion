@@ -1,0 +1,112 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+# -----------------------------------------------------------------------
+
+
+# the arithmetic mean of the sequence
+# https://en.wikipedia.org/wiki/Arithmetic_mean
+#
+public average option T
+  pre
+    T : numeric
+=>
+  if is_empty
+    nil
+  else
+    cnt := (map _->T.one).sum
+    sum / cnt
+
+
+# the variance of the sequence
+# https://en.wikipedia.org/wiki/Variance
+#
+public variance option T
+  pre
+    T : numeric
+=>
+  average.bind avg->
+    cnt := (map (_ -> T.one           )).sum
+    ssd := (map (x -> (x - avg)**T.two)).sum # sum of squared deviations
+    ssd / cnt
+
+
+# the median of the sequence
+# https://en.wikipedia.org/wiki/Median
+#
+public median option T
+  pre
+    T : numeric
+=>
+  if is_empty
+    nil
+  else
+    sorted := sort
+    if sorted.length % 2 = 1
+      sorted[sorted.length / 2]
+    else
+      (sorted[(sorted.length / 2) - 1] + sorted[(sorted.length / 2)]) / (T.two)
+
+
+# the standard deviation of the sequence
+# https://en.wikipedia.org/wiki/Standard_deviation
+#
+public std_dev option T
+  pre
+    T : float
+=>
+  variance.and_then (.sqrt)
+
+
+# the euclidean norm of this sequence
+# i.e. the square of the sum of squares of this sequence
+#
+public euclidean_norm T
+  pre
+    T : float
+=>
+  ((map x->x**T.two).fold T.sum).sqrt
+
+
+# generic sum of the elements of a Sequence of numeric.
+#
+# This allows summing the elements of a list, as in
+#
+#     l := [1,2,3]
+#     say <| l.sum     # '6'
+#
+#
+public sum T
+  pre
+    T : numeric
+=> fold T.sum
+
+
+# generic product of the elements of a Sequence of numeric.
+#
+# This allows multiplying the elements of a list, as in
+#
+#     l := [1,2,3]
+#     say <| l.product     # '6'
+#
+#
+public product T
+  pre
+    T : numeric
+=> fold T.product

@@ -1,0 +1,99 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+# -----------------------------------------------------------------------
+
+
+# minimum value in the sequence
+#
+public min option T
+  pre
+    T : property.orderable
+=>
+  match first
+    nil => nil
+    v T => reduce v ((r,t) -> if r ≤ t then r else t)
+
+
+# maximum value in the sequence
+#
+public max option T
+  pre
+    T : property.orderable
+=>
+  match first
+    nil => nil
+    v T => reduce v ((r,t) -> if r ≤ t then t else r)
+
+
+# filter out duplicate elements.
+#
+# Keep the order of elements unchanged.
+#
+# Other languages call this 'distinct' (eg., Java, C# or Kotlin)
+# or `nub` (Haskell).
+#
+# ex.
+#
+#     [4,1,2,2,3,2,2,2,4].unique = [4, 1, 2, 3]
+#
+public unique Sequence T
+  pre
+    T : property.orderable
+  =>
+    as_list.unique_list
+
+
+# sort this Sequence
+#
+public sort container.sorted_array T
+pre
+  T : property.orderable
+post
+  result.map_pairs (<=)
+        .reduce true (&&)
+=>
+  sort_by (<=)
+
+
+# is this Sequence sorted?
+#
+public is_sorted bool
+  pre
+    T : property.orderable
+=>
+  zip (drop 1) (T.lteq)
+    .fold bool.all
+
+
+
+# wrap this sequence into an orderable type.
+#
+# This requires the underlying element type to be orderable.
+#
+# An empty `Sequence` is always less or equal to any other `Sequence`. Two non
+# empty `Sequence`s whose first elements are unequal are ordered by the
+# order of those two elements. If those two elements are equal, the tail
+# of both `Sequence`s will be used to find the order.
+#
+public as_orderable orderable_sequence T
+  pre
+    T : property.orderable
+=>
+  orderable_sequence T Sequence.this
