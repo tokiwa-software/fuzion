@@ -1,0 +1,136 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+# -----------------------------------------------------------------------
+
+#
+# Module with helpers to work with processes
+#
+# NYI: UNDER DEVELOPMENT: this is work in progress!
+#
+
+
+# settings to be used when starting/recording a process
+#
+# use custom settings like this:
+#
+#       Custom_Process_Env : Process_Env is
+#         public redef envir_vars container.Map String String => universe.envir_vars
+#
+#
+#       Process_Env.instate Custom_Process_Env ()->
+#         your_code...
+#
+public Process_Env ref : effect is
+
+  # used for protecting spaces when splitting command string
+  #
+  public protected_space codepoint => codepoint codepoint.utf8_encoded_in_four_bytes.as_list.last.val
+
+  # max time a process may take
+  #
+  public max_time time.duration => (time.duration.min 10)
+
+  # the environment variables to use when starting process
+  #
+  public envir_vars container.Map String String => (container.Map String String).empty
+
+
+
+# stores the results of a process
+#
+public process_result(public out, err String, public exit_code u32) is
+
+  public ok bool => exit_code = 0
+
+  public type.empty_success process_result =>
+    process_result "" "" 0
+
+
+
+# helper to get out, err, exit_code from started process
+#
+public os.process.record(
+  # the command, for error messages
+  cmd String,
+  feed_stdin option (Sequence u8)
+) process_result ! Process_Env =>
+
+  lm : mutate is
+
+  res :=
+    concur.thread_pool 2 ()->
+      fout := concur.thread_pool.env.submit _ ()->
+        lm ! ()->
+          match with_out String lm (()->String.from_bytes (io.buffered lm).read_fully)
+            e error => panic "failed reading stdout from $cmd, error is: $e"
+            out String => out
+      ferr := concur.thread_pool.env.submit _ ()->
+        lm ! ()->
+          match with_err String lm (()->String.from_bytes (io.buffered lm).read_fully)
+            e error => panic "failed reading stderr from $cmd, error is: $e"
+            err String => err
+
+      if feed_stdin.ok
+        lm ! ()->
+          _ := with_in unit lm ()->
+            _ := (io.buffered lm).writer.env.write feed_stdin.val
+
+      match wait Process_Env.env.max_time
+        e error => process_result "" "failed waiting for $cmd, error is: $e" 1
+        ec u32 => process_result fout.get ferr.get ec
+
+  res.get
+
+
+
+# execute this Sequence of process+args
+#
+public Sequence.execute(
+  stdin option (Sequence u8)
+) process_result ! Process_Env
+  pre T : String
+=>
+  # NYI: BUG: constraint not applied to result type ((drop 1).map (.as_string)) could be just (drop 1)
+  match os.process.start first.val ((drop 1).map (.as_string)) Process_Env.env.envir_vars
+    e error => process_result "" "failed executing {Sequence.this}, error is $e" 1
+    p os.process => p.record Sequence.this.as_string stdin
+
+
+
+# execute this string by splitting at all whitespaces
+#
+public String.execute(
+  stdin option (Sequence u8)
+) process_result ! Process_Env =>
+  ((split_if (=" ")).map (.replace Process_Env.env.protected_space " ")).execute stdin
+
+
+
+# execute this Sequence of process+args
+#
+public Sequence.execute process_result ! Process_Env =>
+  Sequence.this.execute nil
+
+
+
+# execute this string by splitting at all whitespaces
+#
+public String.execute process_result ! Process_Env =>
+  String.this.execute nil

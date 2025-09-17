@@ -129,6 +129,7 @@ MOD_BASE              = $(BUILD_DIR)/modules/base.fum
 MOD_TERMINAL          = $(BUILD_DIR)/modules/terminal.fum
 MOD_LOCK_FREE         = $(BUILD_DIR)/modules/lock_free.fum
 MOD_NOM               = $(BUILD_DIR)/modules/nom.fum
+MOD_PROCESS           = $(BUILD_DIR)/modules/process.fum
 MOD_UUID              = $(BUILD_DIR)/modules/uuid.fum
 MOD_HTTP              = $(BUILD_DIR)/modules/http.fum
 MOD_CLANG             = $(BUILD_DIR)/modules/clang.fum
@@ -460,6 +461,7 @@ FZ_MODULES = \
 			$(MOD_TERMINAL) \
 			$(MOD_LOCK_FREE) \
 			$(MOD_NOM) \
+			$(MOD_PROCESS) \
 			$(MOD_UUID) \
 			$(MOD_HTTP) \
 			$(MOD_CLANG) \
@@ -699,6 +701,12 @@ $(MOD_NOM): $(MOD_BASE) $(FZ) $(shell find $(FZ_SRC)/modules/nom/src -name "*.fz
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC)/modules/nom $(@D)
 	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/nom/src -saveModule=$@
+
+$(MOD_PROCESS): $(MOD_BASE) $(FZ) $(shell find $(FZ_SRC)/modules/process/src -name "*.fz")
+	rm -rf $(@D)/process
+	mkdir -p $(@D)
+	cp -rf $(FZ_SRC)/modules/process $(@D)
+	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/process/src -saveModule=$@
 
 $(MOD_DATABASE): $(MOD_BASE) $(FZ) $(shell find $(FZ_SRC)/modules/database/src -name "*.fz")
 	rm -rf $(@D)/database
@@ -1168,13 +1176,13 @@ $(MOD_JDK_ZIPFS): $(MOD_JAVA_BASE) $(MOD_JDK_ZIPFS_FZ_FILES)
 # this target may fail when executed standalone, see comment on $(BUILD_DIR)/tests
 #
 $(BUILD_DIR)/bin/check_simple_example: $(FZ_SRC)/bin/check_simple_example.fz
-	$(FZ) -modules=terminal -c -o=$@ $^
+	$(FZ) -modules=terminal,process -c -o=$@ $^
 	@echo " + $@"
 
 # this target may fail when executed standalone, see comment on $(BUILD_DIR)/tests
 #
 $(BUILD_DIR)/bin/record_simple_example: $(FZ_SRC)/bin/record_simple_example.fz
-	$(FZ) -modules=terminal -c -o=$@ $^
+	$(FZ) -modules=terminal,process -c -o=$@ $^
 	@echo " + $@"
 
 # tricky, we need MOD_TERMINAL to build (check|record)_simple_example
@@ -1306,7 +1314,7 @@ logo: $(BUILD_DIR)/assets/logo.svg $(BUILD_DIR)/assets/logo_bleed.svg $(BUILD_DI
 	cp $^ $(FZ_SRC)/assets/
 
 $(BUILD_DIR)/bin/run_tests: $(FZ) $(FZ_MODULES) $(FZ_SRC)/bin/run_tests.fz
-	$(FZ) -modules=lock_free -c $(FZ_SRC)/bin/run_tests.fz -o=$@
+	$(FZ) -modules=lock_free,process -c $(FZ_SRC)/bin/run_tests.fz -o=$@
 
 # phony target to run Fuzion tests and report number of failures
 .PHONY: run_tests
