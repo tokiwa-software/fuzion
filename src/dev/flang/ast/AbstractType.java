@@ -753,10 +753,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param f the feature the generics belong to.
    *
-   * @param genericsToReplace a list of possibly generic types
+   * @param typesToReplace a list of possibly generic types
    *
-   * @param actualGenerics the actual generics that should replace the
-   * formal generics found in genericsToReplace.
+   * @param actualTypes the actual types that should replace the
+   * formal type parameters found in typesToReplace.
    *
    * @param locally true iff this should not be applied to outer types and
    * inheritance calls.
@@ -764,23 +764,25 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @return a new list of types with all formal generic arguments from this
    * replaced by the corresponding actualGenerics entry.
    */
-  private static List<AbstractType> applyTypePars(AbstractFeature f,
-                                                  List<AbstractType> genericsToReplace,
-                                                  List<AbstractType> actualGenerics,
+  private static List<AbstractType> applyTypeParsXXX(AbstractFeature f,
+                                                  List<AbstractType> typesToReplace,
+                                                  List<AbstractType> actualTypes,
                                                   boolean locally)
   {
     if (PRECONDITIONS) require
       (Errors.any() ||
-       f.generics().sizeMatches(actualGenerics));
+       f.generics().sizeMatches(actualTypes));
 
-    return genericsToReplace.flatMap
-      (t -> { // NYI: CLEANUP: use applyTypeParsMaybeOpen?
-        var tp = t.matchingTypeParameter(f);
-        return (tp != null && tp.isOpenTypeParameter())
-          ? tp.replaceOpen(actualGenerics)
-          : new List<>(locally ? t.applyTypeParsLocally(f, actualGenerics, NO_SELECT)
-                               : t.applyTypePars       (f, actualGenerics           ));
-      });
+    if (true)
+      return typesToReplace.flatMap
+        (t -> { // NYI: CLEANUP: use applyTypeParsMaybeOpen?
+          var tp = t.matchingTypeParameter(f);
+          return (tp != null && tp.isOpenTypeParameter())
+            ? tp.replaceOpen(actualTypes)
+            : new List<>(locally ? t.applyTypeParsLocally(f, actualTypes, NO_SELECT)
+                                 : t.applyTypePars       (f, actualTypes           ));
+        });
+    return typesToReplace.flatMap(t -> t.applyTypeParsMaybeOpen(f, actualTypes));
   }
 
 
@@ -799,8 +801,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public List<AbstractType> applyTypeParsMaybeOpen(AbstractFeature f,
                                                    List<AbstractType> actualTypes)
   {
-    return isOpenGeneric() ? genericArgument().replaceOpen(actualTypes)
-                           : new List<>(applyTypePars(f, actualTypes));
+    return
+      isOpenGeneric() &&
+      matchingTypeParameter(f)!=null ? genericArgument().replaceOpen(actualTypes)
+                                     : new List<>(applyTypePars(f, actualTypes));
   }
 
 
@@ -808,19 +812,21 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * Replace formal generics from this type's feature in given list by the
    * actual generic arguments of this type.
    *
-   * @param genericsToReplace a list of possibly generic types
+   * @param typesToReplace a list of possibly generic types
    *
    * @return a new list of types with all formal generic arguments from
    * feature() replaced by the corresponding generics entry of this type.
    */
-  public List<AbstractType> replaceGenerics(List<AbstractType> genericsToReplace)
+  public List<AbstractType> replaceGenerics(List<AbstractType> typesToReplace)
   {
     if (PRECONDITIONS) require
       (isNormalType(),
        Errors.any() ||
        feature().generics().sizeMatches(generics()));
 
-    return applyTypePars(feature(), genericsToReplace, generics(), false /* NYI: UNDER DEVELOPMENT locally */);
+    if (!true)
+      return applyTypeParsXXX(feature(), typesToReplace, generics(), false /* NYI: UNDER DEVELOPMENT locally */);
+    return typesToReplace.flatMap(t -> t.applyTypeParsMaybeOpen(feature(), generics()));
   }
 
 
@@ -1276,7 +1282,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
             var result = this;
 
             var g1 = generics();
-            var g2 = applyTypePars(f, g1, actualGenerics, true /* NYI: UNDER DEVELOPMENT locally */);
+            var g2 = applyTypeParsXXX(f, g1, actualGenerics, true /* NYI: UNDER DEVELOPMENT locally */);
+            var g2a = g1.flatMap(t -> t.applyTypeParsMaybeOpen(f, actualGenerics));
+            if (false) if (!g2.toString().equals(g2a.toString())) System.out.println("DIFF: "+g2+"\n      "+g2a);
             var g3 = cotypeActualGenerics(g2);
 
             var o1 = outer();
