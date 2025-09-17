@@ -24,10 +24,6 @@
 
 ########### Extensions ###############
 
-# stores the results of a process
-#
-process_result(out String, err String, exit_code u32) is
-
 # specified environment variables as key,value array
 #
 envir_var_kv := [
@@ -59,66 +55,6 @@ envir_vars :=
       .map x->x.1
       .as_array))
 
-# max time a test may take
-#
-max_test_time := (time.duration.min 10)
-
-# helper to get out, err, exit_code from started process
-#
-record_process(
-      p os.process,
-      # the command, for error messages
-      cmd String
-) process_result =>
-  lm : mutate is
-  (concur.thread_pool 2 ()->
-      fout := concur.thread_pool.env.submit _ ()->
-        lm ! ()->
-          match p.with_out String lm (()->String.from_bytes (io.buffered lm).read_fully)
-            e error => panic "failed reading stdout from $cmd, error is: $e"
-            out String => out
-      ferr := concur.thread_pool.env.submit _ ()->
-        lm ! ()->
-          match p.with_err String lm (()->String.from_bytes (io.buffered lm).read_fully)
-            e error => panic "failed reading stderr from $cmd, error is: $e"
-            err String => err
-
-      match p.wait max_test_time
-        e error => process_result "" "failed waiting for $cmd, error is: $e" 1
-        ec u32 => process_result fout.get ferr.get ec)
-    .get
-
-# execute this Sequence of process+args
-#
-Sequence.prefix ! =>
-  seq := map x->x.as_string
-  match os.process.start seq.first.val (seq.drop 1) envir_vars
-    e error => panic "failed executing {Sequence.this}, error is $e"
-    p os.process => record_process p Sequence.this.as_string
-
-
-# feed this string to a new process
-#
-String.infix | (seq Sequence String) =>
-
-  lm : mutate is
-  lm ! ()->
-    match os.process.start seq.first.val (seq.drop 1) envir_vars
-      e error => panic "failed executing $seq, error is $e"
-      p os.process =>
-        _ := p.with_in unit lm ()->
-          # NYI: ambiguous result type:
-          # _ := write_to lm
-          _ := (io.buffered lm).writer.env.write String.this.utf8
-          _ := (io.buffered lm).writer.env.flush
-          _ := p.close_in
-        record_process p seq.as_string
-
-
-# execute this string by splitting at all whitespaces
-#
-String.prefix !! =>
-  !split
 
 
 append_line(mtx concur.sync.mutex, dest String, str String) =>
@@ -183,9 +119,9 @@ main =>
   tc :=
     fuzion.runtime.contract_fault
       .try ()->(envir.args.nth 3).val.trim.parse_i32.val
-      .or_try _->(!!"nproc --all").out.trim.parse_i32.val
-      .or_try _->(!!"getconf _NPROCESSORS_ONLN").out.trim.parse_i32.val
-      .or_try _->(!!"sysctl -n hw.ncpu").out.trim.parse_i32.val
+      .or_try _->"nproc --all".execute.out.trim.parse_i32.val
+      .or_try _->"getconf _NPROCESSORS_ONLN".execute.out.trim.parse_i32.val
+      .or_try _->"sysctl -n hw.ncpu".execute.out.trim.parse_i32.val
       .catch  _->4
   thread_count := tc > 6 ? 6 : tc
 
@@ -209,7 +145,7 @@ main =>
     else
 
       res, elapsed_time := time.stopwatch process_result ()->
-        !!"make $target --environment-overrides --directory=$test"
+        "make $target --environment-overrides --directory=$test".execute
 
       test_durations.put test elapsed_time
 
@@ -230,7 +166,9 @@ main =>
   elapsed_time_total := time.stopwatch ()->
     _ := concur.thread_pool thread_count ()->
       for t in tests do
-        check concur.thread_pool.env.submit (run_single_test t)
+        check concur.thread_pool.env.submit ()->
+          Process_Env.instate cpe ()->
+            run_single_test t
 
 
   results_content := read_file_fully results
@@ -297,4 +235,11 @@ main =>
 
   exit
 
-_ := main
+
+Custom_Process_Env : Process_Env is
+  public redef envir_vars container.Map String String => universe.envir_vars
+
+cpe := Custom_Process_Env
+
+Process_Env.instate cpe ()->
+  _ := main
