@@ -2729,7 +2729,7 @@ public class GeneratingFUIR extends FUIR
    */
   public int lookup(int s, int tclazz)
   {
-    Long key = (long)s << 32 | (long) tclazz;
+    Long key = (long)s << 32 | (tclazz & 0xFFFFFFFFL);
     var innerClazz = lookupCache.get(key);
     if (innerClazz != null)
       {
