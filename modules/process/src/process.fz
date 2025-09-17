@@ -49,7 +49,7 @@ public Process_Env ref : effect is
 
   # the environment variables to use when starting process
   #
-  public envir_vars container.Map String String => (container.Map String String).empty
+  public envir_vars container.Map String String => (container.ordered_map String String).empty
 
 
 
