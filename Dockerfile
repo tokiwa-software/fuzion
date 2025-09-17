@@ -1,8 +1,7 @@
 FROM ubuntu:24.04@sha256:7c06e91f61fa88c08cc74f7e1b7c69ae24910d745357e0dfe1d2c0322aaf20f9 AS builder
 WORKDIR /fuzion
 COPY . .
-RUN apt-get update
-RUN apt-get -y --no-install-recommends install \
+RUN apt-get update && apt-get -y --no-install-recommends install \
   openjdk-21-jdk-headless \
   git \
   make \
