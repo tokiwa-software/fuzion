@@ -2583,7 +2583,7 @@ A ((Choice)) declaration must not contain a result type.
   public AbstractType constraint()
   {
     if (PRECONDITIONS) require
-      (state().atLeast(State.RESOLVED_TYPES),
+      (state().atLeast(State.RESOLVED_DECLARATIONS),
        isTypeParameter());
 
     var result = _returnType.functionReturnType();
