@@ -1970,8 +1970,7 @@ public class Call extends AbstractCall
                         if (t.isGenericArgument())
                           {
                             res.resolveTypes(g);
-                            var c = g.constraint().resolve(res, g.context());
-                            res.resolveTypes(c.feature());
+                            var c = g.constraint();
                             if (actualType != null)
                               { /* infer via constraint of type parameter:
                                  *
