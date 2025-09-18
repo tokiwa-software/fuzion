@@ -2273,6 +2273,8 @@ public class Call extends AbstractCall
    *
    * @param foundAt the position of the expressions from which actual generics
    * were taken.
+   *
+   * @return true iff lambda result could be inferred
    */
   private boolean inferGenericLambdaResult(Resolution res,
                                            Context context,
@@ -2283,17 +2285,17 @@ public class Call extends AbstractCall
                                            boolean[] conflict,
                                            List<List<Pair<SourcePosition, AbstractType>>> foundAt)
   {
-    var result = new boolean[] { false };
+    var result = false;
     if (formalType.isFunctionTypeExcludingLazy() || formalType.isLazyType())
       {
         var at = actualArgType(res, context, formalType, frml);
         if (!at.containsUndefined(true))
           {
             var lambdaResultType = formalType.generics().get(0);
-            inferGenericLambdaResult(res, context, al, pos, conflict, foundAt, result, lambdaResultType, new List<>(lambdaResultType), at);
+            result = inferGenericLambdaResult(res, context, al, pos, conflict, foundAt, lambdaResultType, new List<>(lambdaResultType), at);
           }
       }
-    return result[0];
+    return result;
   }
 
 
@@ -2312,17 +2314,20 @@ public class Call extends AbstractCall
    *
    * @param foundAt the position of the expressions from which actual generics
    * were taken.
+   *
+   * @return true iff lambda result could be inferred
    */
-  private void inferGenericLambdaResult(Resolution res, Context context, AbstractLambda al, SourcePosition pos, boolean[] conflict,
-    List<List<Pair<SourcePosition, AbstractType>>> foundAt, boolean[] result, AbstractType lambdaResultType, List<AbstractType> generics,
+  private boolean inferGenericLambdaResult(Resolution res, Context context, AbstractLambda al, SourcePosition pos, boolean[] conflict,
+    List<List<Pair<SourcePosition, AbstractType>>> foundAt, AbstractType lambdaResultType, List<AbstractType> generics,
     AbstractType argumentType)
   {
-    generics
+    return generics
       .stream()
-      .forEach(g -> {
+      .map(g -> {
+        var result = false;
         if (!g.isGenericArgument())
           {
-            inferGenericLambdaResult(res, context, al, pos, conflict, foundAt, result, lambdaResultType, g.generics(), argumentType);
+            result = inferGenericLambdaResult(res, context, al, pos, conflict, foundAt, lambdaResultType, g.generics(), argumentType);
           }
         else
           {
@@ -2334,11 +2339,13 @@ public class Call extends AbstractCall
                 if (rt != null)
                   {
                       inferGeneric(res, context, lambdaResultType, rt, pos, conflict, foundAt);
-                      result[0] = true;
+                      result = true;
                   }
               }
           }
-      });
+        return result;
+      })
+      .anyMatch(x->x);
   }
 
 
