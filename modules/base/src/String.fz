@@ -602,7 +602,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
     split encodings.ascii.lf_str
 
 
-  # is_ascii_white_space lambda
+  # lambda testing if byte is is_ascii_white_space
   #
   is_ascii_white_space =>
     (id (u8->bool) (.is_ascii_white_space))
@@ -616,7 +616,9 @@ public String ref : property.equatable, property.hashable, property.orderable is
 
   # remove leading and trailing bytes where cond matches
   #
-  public trim(cond choice (u8->bool) (codepoint->bool)) String =>
+  # cond can be a predicate of either an u8 or a codepoint.
+  #
+  public trim(cond choice u8->bool codepoint->bool) String =>
     match cond
       b_cond u8->bool =>
         s := utf8
@@ -645,7 +647,9 @@ public String ref : property.equatable, property.hashable, property.orderable is
 
   # remove leading bytes where cond matches
   #
-  public trim_start(cond choice (u8->bool) (codepoint->bool)) String =>
+  # cond can be a predicate of either an u8 or a codepoint.
+  #
+  public trim_start(cond choice u8->bool codepoint->bool) String =>
     match cond
       b_cond u8->bool =>
         String.from_bytes <| utf8.drop_while b_cond
@@ -662,7 +666,9 @@ public String ref : property.equatable, property.hashable, property.orderable is
 
   # remove trailing bytes where cond matches
   #
-  public trim_end(cond choice (u8->bool) (codepoint->bool)) String =>
+  # cond can be a predicate of either an u8 or a codepoint.
+  #
+  public trim_end(cond choice u8->bool codepoint->bool) String =>
     match cond
       b_cond u8->bool =>
         s := utf8
