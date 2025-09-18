@@ -70,6 +70,9 @@ public find(pattern Sequence T) option i32
 
   find_lm ! ()->
 
+    p := pattern.as_array_backed
+    ab := as_array_backed
+
     make(t Sequence T, r option (Node T)) =>
       n option (Node T) =>
         if t.is_empty then nil else make (t.drop 1) (step r t[0])
@@ -82,7 +85,7 @@ public find(pattern Sequence T) option i32
           r
       Node t (once find_lm (option (Node T)) ()->n) r_star
 
-    init := make pattern nil
+    init := make p nil
 
     step(acc option (Node T), x T) =>
       match acc
@@ -99,12 +102,9 @@ public find(pattern Sequence T) option i32
         nil => false
         n Node => !n.top.is_empty && n.top[0] = x
 
-    ab := as_array_backed
-    pc  := pattern.count
-
     fold_until(acc option (Node T), step (option (Node T), T)->option (Node T), data Sequence T) option i32 =>
       if is_done acc
-        ab.count - data.count - pc
+        ab.count - data.count - p.count
       else if data.is_empty
         nil
       else
@@ -121,7 +121,7 @@ public replace(old, new Sequence T) Sequence T
   pre
     T : property.equatable
 =>
-  replace old new (list T).empty Sequence.this nil
+  replace old.as_array_backed new.as_array_backed [] as_array_backed nil
 
 
 # replace the first n occurrences of old by new
@@ -130,7 +130,7 @@ public replace (old, new Sequence T, n u64) Sequence T
   pre
     T : property.equatable
 =>
-  replace old new (list T).empty Sequence.this n
+  replace old.as_array_backed new.as_array_backed [] as_array_backed n
 
 
 # tail recursive helper for the replace features
@@ -142,6 +142,9 @@ replace(old, new,
         )
   pre
     T : property.equatable
+    debug: old.is_array_backed
+    debug: new.is_array_backed
+    debug: to_be_replaced.is_array_backed
 =>
   match to_be_replaced.find old
     nil   => already_replaced ++ to_be_replaced
