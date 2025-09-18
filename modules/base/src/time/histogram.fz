@@ -34,7 +34,7 @@
 # factor (logarithmic).
 #
 # The use of buckets permits the collection of large numbers of
-# sampe durations since only the counts per bucket are recorded
+# sample durations since only the counts per bucket are recorded
 #
 public histogram(# title to be printed for this histogram
                  public title String,
