@@ -17,46 +17,51 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature request_msg
+#  Source code of Fuzion standard library feature response_message
 #
 # -----------------------------------------------------------------------
 
 
-# HTTP request message
+# HTTP response message
 #
-module:public request_msg(
-  # the HTTP request method
-  public method http.req_method,
-  # the target of the request
-  public target String,
+module:public response_message(
+  # the request message for which this response was generated
+  public req option http.request_message,
   # the major version
   public version_major i32,
   # the minor version
   public version_minor i32,
+  # the status code of the response
+  public status_code i32,
+  # the reason-phrase of the response
+  public reason_phrase String,
   # the header fields
   public redef header container.Map String String,
-  # body of the request
+  # the body of the response
   public redef body io.Read_Handler) : Message
-# pre debug: has_field "Host"  # NYI: how to handle case insensitivity?
 is
+  # the start line of the message, for a response this is also called status line
+  public redef start_line String => status_line
 
-  # request line of the message
-  public request_line String => "$method $target {version_str version_major version_minor}" + crlf
+  # the status line of the response message
+  public status_line String =>
+    "{version_str version_major version_minor} $status_code $reason_phrase$crlf"
 
-  public redef start_line String => request_line
 
   public type.new(
-    # the HTTP request method
-    method http.req_method,
-    # the target of the request
-    target String,
+    # the request message for which this response was generated
+    req option http.request_message,
     # the major version
     version_major i32,
     # the minor version
     version_minor i32,
+    # the status code of the response
+    status_code i32,
+    # the reason-phrase of the response
+    reason_phrase String,
     # the header fields
     header Sequence (String,String),
-    # body of the request
-    body io.Read_Handler) http.request_msg
+    # the body of the response
+    body io.Read_Handler) http.response_message
   =>
-    http.request_msg method target version_major version_minor (as_header_map header) body
+    http.response_message req version_major version_minor status_code reason_phrase (as_header_map header) body
