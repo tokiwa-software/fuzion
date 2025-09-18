@@ -66,7 +66,7 @@ is
     # the reason-phrase of the response
     reason_phrase String,
     # the header fields
-    header array (String,String),
+    header Sequence (String,String),
     # the body of the response
     body io.Read_Handler) http.response_msg
   =>

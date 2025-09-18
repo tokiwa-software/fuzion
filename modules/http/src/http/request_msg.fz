@@ -55,7 +55,7 @@ is
     # the minor version
     version_minor i32,
     # the header fields
-    header array (String,String),
+    header Sequence (String,String),
     # body of the request
     body io.Read_Handler) http.request_msg
   =>
