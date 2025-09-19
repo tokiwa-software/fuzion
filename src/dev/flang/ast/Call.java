@@ -1854,19 +1854,40 @@ public class Call extends AbstractCall
       {
         if (vai < _actuals.size())
           {
-            var actual = _actuals.get(vai);
-            var t = frml.resultTypeIfPresent(res);
-            if (t != null && t.isFunctionTypeExcludingLazy())
-              {
-                Expr l = actual.propagateExpectedTypeForPartial(res, context, t);
-                if (l != actual && !isDefunct())
-                  {
-                    _actuals = _actuals.setOrClone(vai, l);
-                  }
-              }
+            propagateForPartial(res, context, vai, frml.resultTypeIfPresent(res));
           }
         vai++;
       }
+  }
+
+
+  /**
+   * Helper for propagateForPartial(res, context) and inferGenericsFromArgs to
+   * propagate type for partial application of argument number argnum.
+   *
+   * @param res the resolution instance.
+   *
+   * @param context the source code context where this Call is used
+   *
+   * @param argnum the argument number we want to handle
+   *
+   * @param t the expected type
+   *
+   * @return the original or the new, partially applied expression if it was
+   * replaced.
+   */
+  private Expr propagateForPartial(Resolution res, Context context, int argnum, AbstractType t)
+  {
+    var actual = _actuals.get(argnum);
+    if (t != null && t.isFunctionTypeExcludingLazy())
+      {
+        actual = actual.propagateExpectedTypeForPartial(res, context, t);
+        if (!isDefunct())
+          {
+            _actuals = _actuals.setOrClone(argnum, actual);
+          }
+      }
+    return actual;
   }
 
 
@@ -1946,23 +1967,38 @@ public class Call extends AbstractCall
                     if (t.dependsOnGenerics())
                       {
                         var actualType = typeFromActual(res, context, actual);
+                        if (t.isGenericArgument())
+                          {
+                            res.resolveTypes(g);
+                            var c = g.constraint();
+                            if (actualType != null)
+                              { /* infer via constraint of type parameter:
+                                 *
+                                 *     a(T type, S type : array T, s S) is
+                                 *     _ := a [32]
+                                 */
+                                inferGeneric(res, context, c, actualType, actual.pos(), conflict, foundAt, argnum);
+                              }
+                            else if (c.isFunctionTypeExcludingLazy())
+                              { /* propagate constraint for partial or lambda:
+                                 *
+                                 *     a(F type : Function bool i32, f F) =>
+                                 *     _ := a x->x>3
+                                 *     _ := a %%2
+                                 */
+                                actual = propagateForPartial(res, context, argnum, c);
+                                actual = actual.propagateExpectedType(res, context, c,
+                                                                      () -> "formal argument type in call to " + AstErrors.s(_calledFeature));
+                                _actuals = _actuals.setOrClone(argnum, actual);
+                                actualType = typeFromActual(res, context, actual);
+                              }
+                          }
                         if (actualType != null)
                           {
-                            /**
-                             * infer via constraint of type parameter:
-                             *
-                             *     a(T type, S type : array T, s S) is
-                             *     _ := a [32]
-                             */
-                            if (t.isGenericArgument())
-                              {
-                                res.resolveTypes(g);
-                                inferGeneric(res, context, g.constraint(), actualType, actual.pos(), conflict, foundAt, argnum);
-                              }
                             inferGeneric(res, context, t, actualType, actual.pos(), conflict, foundAt, argnum);
                             checked[vai] = true;
                           }
-                        else if (resultExpression(actual) instanceof AbstractLambda al)
+                        if (resultExpression(actual) instanceof AbstractLambda al)
                           {
                             checked[vai] = inferGenericLambdaResult(res, context, t, frml, al, actual.pos(), conflict, foundAt);
                           }

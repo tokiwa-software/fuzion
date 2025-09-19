@@ -1685,7 +1685,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   AbstractType constraint(Context context)
   {
     if (PRECONDITIONS) require
-      (state().atLeast(State.RESOLVED_TYPES),
+      (state().atLeast(State.RESOLVED_DECLARATIONS),
        isTypeParameter());
 
     var result = context.constraintFor(this);
@@ -1710,7 +1710,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public AbstractType constraint()
   {
     if (PRECONDITIONS) require
-      (state().atLeast(State.RESOLVED_TYPES),
+      (state().atLeast(State.RESOLVED_DECLARATIONS),
        isTypeParameter());
 
     throw new Error("constraint() not redefined for "+getClass());
