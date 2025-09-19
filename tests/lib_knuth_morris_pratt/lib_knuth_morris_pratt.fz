@@ -24,9 +24,9 @@
 lib_knuth_morris_pratt =>
 
   functionality =>
-    say ("Helló World".as_codepoints.find "World".as_codepoints)
-    say ("Helló World".as_codepoints.find "Helló".as_codepoints)
-    say ("Helló World".as_codepoints.find "Internet".as_codepoints)
+    say ("Helló World".codepoints.find "World".codepoints)
+    say ("Helló World".codepoints.find "Helló".codepoints)
+    say ("Helló World".codepoints.find "Internet".codepoints)
 
     say ("Helló World".utf8.find "World".utf8)
     say ("Helló World".utf8.find "Helló".utf8)

@@ -21,7 +21,7 @@ module string_parsers is
   public tag(str String) Parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) =>
     parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) input->
       if (String.type.from_codepoints input).starts_with str
-        success (input.drop str.codepoint_length) str.as_codepoints
+        success (input.drop str.codepoint_length) str.codepoints
       else
         error "tag ($str) not found"
 
@@ -40,7 +40,7 @@ module string_parsers is
 
   # convert a parser taking a sequence of codepoints to a parser that takes a string
   public to_string_input(R, O type, p Parser (Sequence codepoint) R O) Parser String R O =>
-    p.map_input String (str -> str.as_codepoints)
+    p.map_input String (str -> str.codepoints)
 
 
   # convert a parser returning a sequence of codepoints to a parser that returns a string

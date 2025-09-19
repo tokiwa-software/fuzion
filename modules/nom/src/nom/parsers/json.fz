@@ -56,7 +56,7 @@ public json Parser String (Sequence codepoint) json_value =>
           [(codepoint v)]
 
     parse_and_map(t, r String) =>
-      (tag t).map (Sequence codepoint) _->r.as_codepoints
+      (tag t).map (Sequence codepoint) _->r.codepoints
 
     parser_escapings :=
       alt [

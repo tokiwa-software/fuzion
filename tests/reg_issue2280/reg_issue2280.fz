@@ -33,7 +33,7 @@ reg_issue2280 is
       l := (io.buffered lm).read_line ? str String => str | io.end_of_file => ""
       # NYI: read_line should return a choice of String | end_of_file or similar
 
-      l2 := l.as_codepoints
+      l2 := l.codepoints
               .as_list       # NYI: would be good not to need this
               .map (.val)    # NYI: would be good not to need this
               .filter codepoint.type.ascii_digit.contains    # using brand new partial application!
