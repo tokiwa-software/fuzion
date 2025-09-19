@@ -17,7 +17,7 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature req_method
+#  Source code of Fuzion standard library feature request_method
 #
 # -----------------------------------------------------------------------
 
@@ -50,10 +50,10 @@ public trace is
 public patch is # NYI: is this part of HTTP 1.1
 
 # HTTP request method
-public req_method : choice http.get http.head http.post_r http.put http.delete
-                           http.connect http.options http.trace http.patch, property.equatable is
+public request_method : choice http.get http.head http.post_r http.put http.delete
+                               http.connect http.options http.trace http.patch, property.equatable is
 
-  public fixed redef type.equality(a, b http.req_method) bool =>
+  public fixed redef type.equality(a, b http.request_method) bool =>
     match a
       http.get     => b ? http.get     => true | * => false
       http.head    => b ? http.head    => true | * => false
@@ -66,7 +66,7 @@ public req_method : choice http.get http.head http.post_r http.put http.delete
       http.patch   => b ? http.patch   => true | * => false
 
   public redef as_string String =>
-    match req_method.this
+    match request_method.this
       http.get     => "GET"
       http.head    => "HEAD"
       http.post_r  => "POST"
