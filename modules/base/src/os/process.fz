@@ -23,7 +23,7 @@
 
 # type denoting a started process
 #
-module:public process(public pid i64, module std_in, std_out, std_err i64) : property.orderable is
+module:public process(public pid i64, module std_in, std_out, std_err i64, name String, args Sequence String) : property.orderable is
 
   # how many bytes are read at a time
   pipe_buffer_size := io.buffer_size.as_i32
@@ -168,7 +168,7 @@ module:public process(public pid i64, module std_in, std_out, std_err i64) : pro
   #
   public wait(timeout time.duration) outcome u32 =>
     # NYI: process should be ref?
-    os.processes.wait (os.process pid std_in std_out std_err) timeout
+    os.processes.wait (os.process pid std_in std_out std_err name args) timeout
 
 
   # send signal to process
@@ -205,6 +205,13 @@ module:public process(public pid i64, module std_in, std_out, std_err i64) : pro
   public fixed redef type.lteq(a, b process.this) bool =>
     a.pid <= b.pid
 
+
+  # this process as a human readable String
+  #
+  public redef as_string String =>
+    match wait time.duration.zero
+      error  => "$name {String.join args " "} (running, PID: $pid)"
+      ec u32 => "$name {String.join args " "} (exited with exit code: $ec)"
 
 
   # NYI: UNDER DEVELOPMENT:
