@@ -294,7 +294,7 @@ public class Completion
       .range(0, arguments.size())
       .<String>mapToObj(index -> {
         var argument = arguments.get(index);
-        if (!argument.resultType().isFunctionType())
+        if (!argument.resultType().isFunctionType(null))
           {
             return " ${" + (index + 1) + ":" + argument.featureName().baseName() + "}";
           }
@@ -329,7 +329,7 @@ public class Completion
    */
   private static String argPlaceholder(AbstractType arg, int x, int offset)
   {
-    if (arg.isFunctionType())
+    if (arg.isFunctionType(null))
       {
         return getFunArgument(offset * 100, arg.generics());
       }
