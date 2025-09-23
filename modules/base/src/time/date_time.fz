@@ -86,6 +86,8 @@ is
 
   # create a date_time from given seconds since 1970-01-01T00:00:00
   #
+  # NOTE: this does not adjust for leap seconds
+  #
   public type.from_seconds(n u64) time.date_time
     pre debug    : n < 3E11 # this restriction is arbitrary (year 11476)
     post analysis: result >= (time.date_time 1970 1 1 0 0 0 0)
