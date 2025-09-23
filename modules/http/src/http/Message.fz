@@ -57,7 +57,7 @@ public Message ref is
   =>
     # NYI: BUG: read fully
     (start_line + header_as_canonical_string + crlf).utf8 ++ (match (body.read max_body_bytes)
-                                                a array u8 => a
+                                                a array => a
                                                 * => [])
 
 
@@ -75,7 +75,7 @@ public Message ref is
     max_body_bytes i32) outcome String
   =>
     match (body.read max_body_bytes)
-      a array u8 => Message.this.as_string + String.from_bytes a
+      a array => Message.this.as_string + String.from_bytes a
       e error => e
       io.end_of_file => Message.this.as_string
 
@@ -172,7 +172,7 @@ module:public body_reader(
       to_read := min remaining.get count
 
       res choice (array u8) io.end_of_file error => match (io.buffered LM).reader.env.read
-        s Sequence u8 =>
+        s Sequence =>
           c := s.take to_read .as_array
 
           (io.buffered LM).reader.env.discard c.count
@@ -181,7 +181,7 @@ module:public body_reader(
             new_remaining := remaining.get - c.count
             remaining <- (new_remaining >= 0 ? new_remaining : 0)
           c
-        o outcome io.end_of_file =>
+        o outcome =>
           match o
             io.end_of_file =>
               if remaining.get > 0
