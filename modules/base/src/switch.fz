@@ -219,6 +219,16 @@ is
 
   # fold this choice to new type `C`.
   #
+  # this is useful when you don't want to break
+  # fluent-style code.
+  #
+  # example:
+  #
+  #     "haystack"
+  #       .find "needle"
+  #       .fold (idx -> "found needle at {idx}") (_ -> "could not find needle")
+  #
+  #
   public fold(C type, fa A->C, fb B->C) C =>
     match switch.this
       a A => fa a
