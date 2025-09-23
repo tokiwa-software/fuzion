@@ -434,11 +434,11 @@ public class ParsedCall extends Call
    * @return true if expectedType.arity() is 1, this is an operator call of a
    * pre- or postfix operator.
    */
-  boolean isPartialInfix(AbstractType expectedType)
+  boolean isPartialInfix(Resolution res, AbstractType expectedType)
   {
     return
-      expectedType.arity() == 1 &&
-      isOperatorCall(true)      &&
+      expectedType.arity(res) == 1 &&
+      isOperatorCall(true)         &&
       (_name.startsWith(FuzionConstants.PREFIX_OPERATOR_PREFIX ) ||
        _name.startsWith(FuzionConstants.POSTFIX_OPERATOR_PREFIX)    );
   }
@@ -465,7 +465,7 @@ public class ParsedCall extends Call
   Expr propagateExpectedTypeForPartial(Resolution res, Context context, AbstractType expectedType)
   {
     if (PRECONDITIONS) require
-      (expectedType.isFunctionTypeExcludingLazy());
+      (expectedType.isFunctionTypeExcludingLazy(res));
 
     var paa = partiallyApplicableAlternative(res, context, expectedType);
     Expr l = paa != null ? resolveTypes(res, context)  // this ensures _calledFeature is set such that possible ambiguity is reported
@@ -478,12 +478,12 @@ public class ParsedCall extends Call
             _pendingError != null                       ||
 
             // convert pre/postfix to infix, e.g., `1-` -> `x->1-x` */
-            isPartialInfix(expectedType)                ||
+            isPartialInfix(res, expectedType)           ||
 
             // otherwise, try to solve inconsistent type
             paa != null                              &&
             (typeForInferencing() == null ||
-             !typeForInferencing().isFunctionType())       )
+             !typeForInferencing().isFunctionType(res))       )
           {
             l = applyPartially(res, context, expectedType);
           }
@@ -544,7 +544,7 @@ public class ParsedCall extends Call
   Expr applyPartially(Resolution res, Context context, AbstractType t)
   {
     Expr result;
-    var n = t.arity();
+    var n = t.arity(res);
     if (mustNotContainDeclarations("a partially applied function call", context.outerFeature()))
       {
         _pendingError = null;
@@ -573,7 +573,7 @@ public class ParsedCall extends Call
                 _actuals.add(c);
               }
           }
-        if (isPartialInfix(t))
+        if (isPartialInfix(res, t))
           {
             _name =
               _name.startsWith(FuzionConstants.PREFIX_OPERATOR_PREFIX)
@@ -709,7 +709,7 @@ public class ParsedCall extends Call
         @Override
         Expr propagateExpectedType(Resolution res, Context context, AbstractType expectedType, Supplier<String> from)
         {
-          if (expectedType.isFunctionTypeExcludingLazy())
+          if (expectedType.isFunctionTypeExcludingLazy(res))
             { // produce an error if the original call is ambiguous with partial application
               ParsedCall.this.checkPartialAmbiguity(res, context, expectedType);
             }
@@ -730,7 +730,7 @@ public class ParsedCall extends Call
     Call result = this;
 
     // replace Function or Lazy value `l` by `l.call`:
-    if (isImmediateFunctionCall() && !_pushedImplicitImmediateCall)
+    if (isImmediateFunctionCall(res) && !_pushedImplicitImmediateCall)
       {
         _pushedImplicitImmediateCall = true;
         result = pushCall(res, context, FuzionConstants.OPERATION_CALL).resolveTypes(res, context);
@@ -743,10 +743,10 @@ public class ParsedCall extends Call
    * Is this call returning a Function/lambda that should
    * immediately be called?
    */
-  private boolean isImmediateFunctionCall()
+  private boolean isImmediateFunctionCall(Resolution res)
   {
     return typeForInferencing() != null &&
-      typeForInferencing().isFunctionTypeExcludingLazy() &&
+      typeForInferencing().isFunctionTypeExcludingLazy(res) &&
       _calledFeature != Types.resolved.f_Function && // exclude inherits call in function type
       _calledFeature.arguments().size() == 0      &&
       _actuals != NO_PARENTHESES

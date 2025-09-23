@@ -57,6 +57,12 @@ public class Types extends ANY
    */
   public static final String FUNCTION_NAME = "Function";
 
+
+  /**
+   * Name of abstract features for typed function types:
+   */
+  public static final String TYPED_FUNCTION_NAME = "Typed_Function";
+
   /**
    * Name of abstract features for Nullary types:
    */
@@ -173,6 +179,7 @@ public class Types extends ANY
     public final AbstractFeature f_debug_level;
     public final AbstractFeature f_Function;
     public final AbstractFeature f_Function_call;
+    public final AbstractFeature f_Typed_Function;
     public final AbstractFeature f_safety;
     public final AbstractFeature f_array;
     public final AbstractFeature f_array_internal_array;
@@ -185,6 +192,7 @@ public class Types extends ANY
     public final AbstractFeature f_fuzion_java;
     public final AbstractFeature f_fuzion_Java_Object;
     public final AbstractFeature f_fuzion_Java_Object_Ref;
+    public final AbstractFeature f_fuzion_lambda_target;
     public final AbstractFeature f_fuzion_sys;
     public final AbstractFeature f_fuzion_sys_array;
     public final AbstractFeature f_fuzion_sys_array_length;
@@ -249,6 +257,7 @@ public class Types extends ANY
       f_debug_level             = universe.get(mod, "debug_level", 0);
       f_Function                = universe.get(mod, FUNCTION_NAME, 2);
       f_Function_call           = f_Function.get(mod, FuzionConstants.OPERATION_CALL, 1);
+      f_Typed_Function          = universe.get(mod, TYPED_FUNCTION_NAME, 2);
       f_safety                  = universe.get(mod, "safety", 0);
       f_array                   = universe.get(mod, FuzionConstants.ARRAY_NAME, 5);
       f_array_internal_array    = f_array.get(mod, "internal_array", 0);
@@ -261,6 +270,7 @@ public class Types extends ANY
       f_fuzion_java             = f_fuzion.get(mod, "java", 0);
       f_fuzion_Java_Object      = f_fuzion_java.get(mod, "Java_Object", 1);
       f_fuzion_Java_Object_Ref  = f_fuzion_Java_Object.get(mod, "java_ref", 0);
+      f_fuzion_lambda_target    = f_fuzion.get(mod, "lambda_target", 0);
       f_fuzion_sys              = f_fuzion.get(mod, "sys", 0);
       f_fuzion_sys_array        = f_fuzion_sys.get(mod, "internal_array", 3);
       f_fuzion_sys_array_data   = f_fuzion_sys_array.get(mod, "data", 0);
