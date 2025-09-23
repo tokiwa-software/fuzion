@@ -553,6 +553,10 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
             if (CHECKS) check
               (tolerant || Errors.any() || fo != FeatureAndOuter.ERROR);
           }
+        else if (!tolerant)
+          {
+            _resolved = Types.t_ERROR;
+          }
       }
 
     if (_resolved != null && _resolved != Types.t_ERROR && (_resolved.isOpenGeneric() != _followedByDots))
@@ -567,6 +571,9 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
           }
         _resolved = Types.t_ERROR;
       }
+
+    if (POSTCONDITIONS) ensure
+      (tolerant || _resolved != null);
 
     return _resolved;
   }
