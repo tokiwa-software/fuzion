@@ -283,10 +283,11 @@ public class Function extends AbstractLambda
             if (t != Types.t_UNDEFINED || !Errors.any())
               {
                 AstErrors.expectedFunctionTypeForLambda(pos(), t, from);
-                Thread.dumpStack();
               }
             t = Types.t_ERROR;
           }
+        else
+          {
         var cl = res._module.findLambdaTarget(t.feature());
         var tf = t;
         var argTypes = cl.valueArguments().flatMap2(a -> cl.outer().handDown(res, new List<>(a.resultType()), tf.feature())).flatMap(at -> at.applyTypeParsMaybeOpen(tf.feature(),tf.generics()));
@@ -430,6 +431,7 @@ public class Function extends AbstractLambda
           {
             _expr = Expr.NO_VALUE;
             result = Types.t_ERROR;
+          }
           }
       }
     // System.out.println("LAMBDA RESULT IS "+result);
