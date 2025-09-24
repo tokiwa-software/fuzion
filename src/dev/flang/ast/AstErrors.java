@@ -1625,7 +1625,7 @@ public class AstErrors extends ANY
     if (t != Types.t_ERROR)
       {
         error(pos,
-              "Target type of a lambda expression must be " + s(Types.resolved.f_Function) + " or " + s(Types.resolved.f_Typed_Function) + ".",
+              "Target type of a lambda expression must be " + sqn("Function") + " or " + sqn("Typed_Function") + "."  /* NYI: use `fuzion.lambda_target` */,
               "A lambda expression can only be used if assigned to a field or argument of type "+ s(Types.resolved.f_Function) + "\n" +
               "with argument count of the lambda expression equal to the number of type parameters of the type.\n" +
               "Target type: " + s(t) + (from == null ? "" : " from " + from.get()) + "\n" +
