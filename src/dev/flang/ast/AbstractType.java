@@ -1483,27 +1483,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     var result =
       !isGenericArgument() &&
       (res._module.findLambdaTarget(feature()) != null ||
-       feature().featureName().baseName().startsWith("#fun") /* NYI: why? */);
-    /*
-    var result_old = isFunctionType0();
-    if (result != result_old)
-      {
-        System.out.println("for "+this+" old "+result_old+" new "+result);
-      }
-    return result_old;
-    */
+       !false && feature().featureName().baseName().startsWith("#fun") /* NYI: why? */);
     return result;
   }
-    /*
-  private boolean isFunctionType0()
-  {
-    return
-      !isGenericArgument() &&
-      (feature() == Types.resolved.f_Function       ||
-       feature() == Types.resolved.f_Typed_Function ||
-       feature().inherits().stream().anyMatch(c -> c.calledFeature().selfType().isFunctionType0()));
-  }
-    */
 
 
   /**
@@ -1548,12 +1530,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       (isFunctionType(res));
 
     var cl = res._module.findLambdaTarget(feature());
-    for (var a : cl.valueArguments())
-      {
-        res.resolveTypes(a);
-      }
-    var argTypes = cl.valueArguments().flatMap2(a -> cl.outer().handDown(res, new List<>(a.resultTypeIfPresent(res) /* NYI: check for null! */), feature())).flatMap(at -> at.applyTypeParsMaybeOpen(feature(),generics()));
-    return argTypes.size();
+    return cl.valueArguments().flatMap2(a -> cl.outer().handDown(res, new List<>(a.resultTypeIfPresent(res) /* NYI: check for null! */), feature())).flatMap(at -> at.applyTypeParsMaybeOpen(feature(),generics())).size();
   }
 
 

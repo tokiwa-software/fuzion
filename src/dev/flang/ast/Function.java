@@ -270,62 +270,59 @@ public class Function extends AbstractLambda
   @Override
   AbstractType propagateTypeAndInferResult(Resolution res, Context context, AbstractType t, boolean inferResultType, Supplier<String> from)
   {
+    List<AbstractFeature> args = null;
     AbstractType result = inferResultType ? Types.t_UNDEFINED : t;
-    if (_call == null)
-      {
-        // fixes #5854
-        _resultTypeLastResort = ()->{};
+    // fixes #5854
+    _resultTypeLastResort = ()->{};
 
-        t = t.selfOrConstraint(res, context);
-        if (!t.isFunctionType(res))
+    t = t.selfOrConstraint(res, context);
+    if (_call != null)
+      { // we are all set, nothing to be done.
+      }
+    else if (!t.isFunctionType(res))
+      {
+        // suppress error for t_UNDEFINED, but only if other error was already reported
+        if (t != Types.t_UNDEFINED || !Errors.any())
           {
-            // suppress error for t_UNDEFINED, but only if other error was already reported
-            if (t != Types.t_UNDEFINED || !Errors.any())
-              {
-                AstErrors.expectedFunctionTypeForLambda(pos(), t, from);
-              }
+            AstErrors.expectedFunctionTypeForLambda(pos(), t, from);
+          }
+      }
+    else
+      {
+        var cl = res._module.findLambdaTarget(t.feature());
+        var tf = t;
+        var argTypes = cl.valueArguments().flatMap2(a -> cl.outer().handDown(res, new List<>(a.resultType()), tf.feature())).flatMap(at -> at.applyTypeParsMaybeOpen(tf.feature(),tf.generics()));
+        if (_names.size() != argTypes.size())
+          {
+            AstErrors.wrongNumberOfArgumentsInLambda(pos(), _names, t);
+            t = Types.t_ERROR;
+          }
+        else if (argTypes.stream().anyMatch(at -> at == Types.t_UNDEFINED))
+          {
             t = Types.t_ERROR;
           }
         else
           {
-        var cl = res._module.findLambdaTarget(t.feature());
-        var tf = t;
-        var argTypes = cl.valueArguments().flatMap2(a -> cl.outer().handDown(res, new List<>(a.resultType()), tf.feature())).flatMap(at -> at.applyTypeParsMaybeOpen(tf.feature(),tf.generics()));
-        // System.out.println("++++++ "+cl.qualifiedName()+" args: "+argTypes+" +++ cl "+cl.qualifiedName()+" t: "+t+" at "+pos().show());
-
-        /* We have an expression of the form
-         *
-         *   (o, i) -> o.hash_code + i
-         *
-         * so we replace it by
-         *
-         * --Fun<id>-- : Function<R,A1,A2,...>
-         * {
-         *   public redef R call(A1 a1, A2 a2, ...)
-         *   {
-         *     result = o.hash_code + i;
-         *   }
-         * }
-         * [..]
-         *         --Fun<id>--()
-         * [..]
-         */
-        var a = new List<AbstractFeature>();
-        var gsXXX = t.generics();
-        gsXXX = argTypes;
-        var arity = argTypes.size();
-        int i = 0;
-        // System.out.println("t.generics() is "+t.generics());
-        // System.out.println("_names is "+_names);
-        // System.out.println("argTypes is "+argTypes+" at "+pos().show());
-        for (var n : _names)
-          {
-            if (i < argTypes.size() && argTypes.get(i) == Types.t_UNDEFINED)
-              {
-                // System.out.println("args#"+i+" --> "+argTypes.get(i)+" *** not ok ***");
-                t = Types.t_ERROR;
-              }
-            else
+            /* We have an expression of the form
+             *
+             *   (o, i) -> o.hash_code + i
+             *
+             * so we replace it by
+             *
+             * --Fun<id>-- : Function<R,A1,A2,...>
+             * {
+             *   public redef R call(A1 a1, A2 a2, ...)
+             *   {
+             *     result = o.hash_code + i;
+             *   }
+             * }
+             * [..]
+             *         --Fun<id>--()
+             * [..]
+             */
+            args = new List<AbstractFeature>();
+            int i = 0;
+            for (var n : _names)
               {
                 var arg = (i == 0 && t.isTypedFunctionType()
                            ? new Feature(n._pos,
@@ -351,39 +348,16 @@ public class Function extends AbstractLambda
                                          Contract.EMPTY_CONTRACT,
                                          Impl.FIELD)
                            );
-                a.add(arg);
+                args.add(arg);
                 i++;
               }
           }
-        // System.out.println("ARGS SIZE is "+a.size());
         if (t != Types.t_ERROR)
           {
-            if (t.isTypedFunctionType())
-              {
-                if (i != argTypes.size()+2)
-                  {
-                    // System.out.println("i: "+i+" argTypes "+argTypes);
-                    AstErrors.wrongNumberOfArgumentsInLambda(pos(), _names, t);
-                    t = Types.t_ERROR;
-                  }
-              }
-            else
-              {
-                if (i != argTypes.size())
-                  {
-                    // System.out.println("i: "+i+" argTypes "+argTypes);
-                    AstErrors.wrongNumberOfArgumentsInLambda(pos(), _names, t);
-                    t = Types.t_ERROR;
-                  }
-              }
-          }
-        if (t != Types.t_ERROR)
-          {
-            //            var rt0 = t.resultType(res);
             var rt0 = cl.outer().handDown(res,  new List<>(cl.resultType()),tf.feature()).map(at -> at.applyTypePars(tf.feature(),tf.generics())).get(0);
             var rt = inferResultType ? NoType.INSTANCE      : new FunctionReturnType(rt0);
             var im = inferResultType ? Impl.Kind.RoutineDef : Impl.Kind.Routine;
-            var feature = new Feature(pos(), Visi.PRIV, FuzionConstants.MODIFIER_REDEFINE, rt, new List<String>(FuzionConstants.OPERATION_CALL), a, NO_CALLS, Contract.EMPTY_CONTRACT, new Impl(_expr.pos(), _expr, im))
+            var feature = new Feature(pos(), Visi.PRIV, FuzionConstants.MODIFIER_REDEFINE, rt, new List<String>(FuzionConstants.OPERATION_CALL), args, NO_CALLS, Contract.EMPTY_CONTRACT, new Impl(_expr.pos(), _expr, im))
               {
                 @Override
                 public boolean isLambdaCall()
@@ -431,7 +405,6 @@ public class Function extends AbstractLambda
           {
             _expr = Expr.NO_VALUE;
             result = Types.t_ERROR;
-          }
           }
       }
     // System.out.println("LAMBDA RESULT IS "+result);
