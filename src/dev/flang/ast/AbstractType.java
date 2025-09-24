@@ -1489,21 +1489,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * Check if this any function type, i.e., inherits directly or indirectly from
-   * {@code Function}.
-   *
-   * @return true if this is a type based on a feature that is or inherits from {@code Function}.
-   */
-  public boolean isTypedFunctionType()
-  {
-    return
-      !isGenericArgument() &&
-      (feature() == Types.resolved.f_Typed_Function ||
-       feature().inherits().stream().anyMatch(c -> c.calledFeature().selfType().isTypedFunctionType()));
-  }
-
-
-  /**
    * If this is a choice type, extract function type that might be one of the
    * choices.
    *
