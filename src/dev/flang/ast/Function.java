@@ -382,19 +382,10 @@ public class Function extends AbstractLambda
             _feature = feature;
             feature._sourceCodeContext = context;
 
-            var inheritsName = t.feature().featureName().baseName(); // NYI: handling of outer feature!
-            /*
-            var inheritsName =
-              (t.feature() == Types.resolved.f_Unary   && argTypes.size() == 1) ? Types.UNARY_NAME   :
-              (t.feature() == Types.resolved.f_Binary  && argTypes.size() == 2) ? Types.BINARY_NAME  :
-              (t.feature() == Types.resolved.f_Nullary && argTypes.size() == 0) ? Types.NULLARY_NAME :
-              (t.feature() == Types.resolved.f_Lazy    && argTypes.size() == 0) ? Types.LAZY_NAME
-                                                                                : Types.FUNCTION_NAME;
-            */
-
             // inherits clause for wrapper feature: Function<R,A,B,C,...>
-            _inheritsCall = new Call(pos(), null, inheritsName);
+            _inheritsCall = targetCalls(res, context, t.feature());
             _inheritsCall._generics = t.generics();
+            _inheritsCall._generics.freeze();
             List<Expr> expressions = new List<Expr>(feature);
             String wrapperName = FuzionConstants.LAMBDA_PREFIX + id++;
             _wrapper = new Feature(pos(),
@@ -424,8 +415,20 @@ public class Function extends AbstractLambda
             result = Types.t_ERROR;
           }
       }
-    // System.out.println("LAMBDA RESULT IS "+result);
     return result;
+  }
+
+
+  private Call targetCalls(Resolution res, Context context, AbstractFeature f)
+  {
+    if (f == null || f.isUniverse())
+      {
+        return null;
+      }
+    else
+      { // NYI: check that arg list is empty!
+        return new Call(pos(), targetCalls(res, context, f.outer()), f.featureName().baseName());
+      }
   }
 
 
@@ -547,24 +550,6 @@ public class Function extends AbstractLambda
       }
     else
       {
-        List<AbstractType> generics = new List<>();
-
-        var f = this._feature;
-        if (CHECKS) check
-          (Errors.any() || f != null);
-
-        if (f != null)
-          {
-            res.resolveTypes(f);
-            generics.add(f.resultType());
-            for (var a : f.arguments())
-              {
-                res.resolveTypes(a);
-                generics.add(a.resultType());
-              }
-          }
-
-        _inheritsCall._generics = generics;
         Call inheritsCall2 = _inheritsCall.resolveTypes(res, context);
         // Call.resolveType returns something different than this only for an
         // immediate function call, which is never the case in an inherits
