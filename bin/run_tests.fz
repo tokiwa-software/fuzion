@@ -159,6 +159,11 @@ find_tests(dir String) array String =>
     .as_array
 
 
+say_section(str String) =>
+  say ""
+  say <| " $str ".pad_center "⎯" 80
+  say ""
+
 main =>
 
   mtx := concur.sync.mutex.new.val
@@ -254,30 +259,31 @@ main =>
   say "$ok/{tests.count} tests passed, $skipped skipped, $failed failed in {elapsed_time_total.as_string.trim}."
 
   if failed > 0
-    say "Failed tests:"
+    say_section "Failed tests"
 
     failed_tests := results_content.filter (.ends_with "failed")
 
     failed_tests.for_each say
 
-    say "============= run_tests.failures START ============="
+    say_section "run_tests.failures START"
     say (read_file_fully failures)
-    say "============= run_tests.failures END ============="
+    say_section "run_tests.failures END"
 
     failed_test_names := failed_tests
                            .map x->x.split[0]
                            .map x->(x.substring 14) # remove "./build/tests/"
                            .as_string " "
 
-    say "\nTo re-run all failed tests, use this command:"
     say """
+        To re-run all failed tests, use this command:
         for t in $failed_test_names; do
           make $target -C ./build/tests/\$t
-        done"""
+        done
+        """
 
-    say "\nTo re-record all failed tests, use this command:"
     # NYI: UNDER DEVELOPMENT: if _target file exists: "make record_$target -C $x"
     say """
+        To re-record all failed tests, use this command:
         for t in $failed_test_names; do
           make record -C ./build/tests/\$t
         done
@@ -287,13 +293,15 @@ main =>
 
 
   num_slowest := 10
-  say "\n\nSlowest $num_slowest tests using $target backend:\n"
+  say_section "Slowest $num_slowest tests using $target backend"
 
   test_durations
     .items
     .sort_by (td1,td2 -> td2.1<=td1.1)
     .take num_slowest
     .for_each (td -> say "{td.1} {td.0}")
+
+  say_section "$target done"
 
   exit
 
