@@ -3304,7 +3304,7 @@ public class DFA extends ANY
           }
         e = r;
         var rf = r;
-        wasChanged(() -> "DFA.newCall to " + rf);
+        // wasChanged(() -> "DFA.newCall to " + rf);
         analyzeNewCall(r);
       }
     else
