@@ -483,7 +483,7 @@ public class ParsedCall extends Call
             // otherwise, try to solve inconsistent type
             paa != null                              &&
             (typeForInferencing() == null                             ||
-             (!typeForInferencing().isGenericArgument() && !typeForInferencing().feature().inheritsFrom(expectedType.feature()))
+             !typeForInferencing().selfOrConstraint().feature().inheritsFrom(expectedType.feature())
              // !typeForInferencing().isFunctionType(res)                    -- original code
              // expectedType.isAssignableFrom(typeForInferencing()).no()     -- new code, does not work, unclear why!
             ))
