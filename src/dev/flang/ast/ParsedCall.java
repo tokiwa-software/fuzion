@@ -482,8 +482,8 @@ public class ParsedCall extends Call
 
             // otherwise, try to solve inconsistent type
             paa != null                              &&
-            (typeForInferencing() == null ||
-             !typeForInferencing().isFunctionType(res))       )
+            (typeForInferencing() == null                             ||
+             expectedType.isAssignableFrom(typeForInferencing()).no()    ))
           {
             l = applyPartially(res, context, expectedType);
           }
