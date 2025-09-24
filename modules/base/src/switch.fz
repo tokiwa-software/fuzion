@@ -35,8 +35,9 @@ is
 
   # Does this switch contain a value of type A?
   #
-  public exists bool => (switch.this ? A => true
-                                     | B => false)
+  public exists bool =>
+    switch.this ? A => true
+                | B => false
 
 
   # Does this switch contain a value of type A?
@@ -214,6 +215,24 @@ is
     match switch.this
       a A => a
       b B => panic b.as_string
+
+
+  # fold this choice to new type `C`.
+  #
+  # this is useful when you don't want to break
+  # fluent-style code.
+  #
+  # example:
+  #
+  #     "haystack"
+  #       .find "needle"
+  #       .fold (idx -> "found needle at {idx}") (_ -> "could not find needle")
+  #
+  #
+  public fold(C type, fa A->C, fb B->C) C =>
+    match switch.this
+      a A => fa a
+      b B => fb b
 
 
   # converts switch to a string

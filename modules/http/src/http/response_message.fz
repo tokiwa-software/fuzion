@@ -17,22 +17,16 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature response_msg
-#  * Message
-#  * request_msg,
-#  * req_method
-#  * response_msg,
-#  * parse_request,
-#  * parse_response
+#  Source code of Fuzion standard library feature response_message
 #
 # -----------------------------------------------------------------------
 
 
 # HTTP response message
 #
-module:public response_msg(
+module:public response_message(
   # the request message for which this response was generated
-  public req option http.request_msg,
+  public req option http.request_message,
   # the major version
   public version_major i32,
   # the minor version
@@ -56,7 +50,7 @@ is
 
   public type.new(
     # the request message for which this response was generated
-    req option http.request_msg,
+    req option http.request_message,
     # the major version
     version_major i32,
     # the minor version
@@ -68,6 +62,6 @@ is
     # the header fields
     header Sequence (String,String),
     # the body of the response
-    body io.Read_Handler) http.response_msg
+    body io.Read_Handler) http.response_message
   =>
-    http.response_msg req version_major version_minor status_code reason_phrase (as_header_map header) body
+    http.response_message req version_major version_minor status_code reason_phrase (as_header_map header) body
