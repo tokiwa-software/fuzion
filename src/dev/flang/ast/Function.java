@@ -292,7 +292,7 @@ public class Function extends AbstractLambda
         var cl = res._module.findLambdaTarget(t.feature());
         var tf = t;
         var argTypes = cl.valueArguments().flatMap2(a -> cl.outer().handDown(res, new List<>(a.resultType()), tf.feature())).flatMap(at -> at.applyTypeParsMaybeOpen(tf.feature(),tf.generics()));
-        if (_names.size() != argTypes.size())
+        if (_names.size() != cl.typeArguments().size() + argTypes.size())
           {
             AstErrors.wrongNumberOfArgumentsInLambda(pos(), _names, t);
             t = Types.t_ERROR;
@@ -321,35 +321,49 @@ public class Function extends AbstractLambda
              * [..]
              */
             args = new List<AbstractFeature>();
-            int i = 0;
+            var tps_as_actuals = new List<AbstractType>();
+            int itp = 0;
+            int iva = 0;
             for (var n : _names)
               {
-                var arg = (i == 0 && t.isTypedFunctionType()
-                           ? new Feature(n._pos,
-                                         Visi.PRIV,
-                                         0,
-                                         new BuiltInType(FuzionConstants.ANY_NAME),
-                                         n._name,
-                                         Contract.EMPTY_CONTRACT,
-                                         Impl.TYPE_PARAMETER) :
-                           i == _names.size()-1 && t.isTypedFunctionType()
-                           ? new Feature(n._pos,
-                                         Visi.PRIV,
-                                         0,
-                                         new ParsedType(_names.get(0)._pos, _names.get(0)._name, new List<>(), null),
-                                         n._name,
-                                         Contract.EMPTY_CONTRACT,
-                                         Impl.FIELD)
-                           : new Feature(n._pos,
-                                         Visi.PRIV,
-                                         0,
-                                         i < argTypes.size() ? argTypes.get(i) : Types.t_ERROR,
-                                         n._name,
-                                         Contract.EMPTY_CONTRACT,
-                                         Impl.FIELD)
-                           );
+                Feature arg;
+                if (itp < cl.typeArguments().size())
+                  {
+                    arg = new Feature(n._pos,
+                                      Visi.PRIV,
+                                      0,
+                                      new BuiltInType(FuzionConstants.ANY_NAME),
+                                      n._name,
+                                      Contract.EMPTY_CONTRACT,
+                                      Impl.TYPE_PARAMETER);
+                    tps_as_actuals.add(arg.asGenericType());
+                    itp++;
+                  }
+                else
+                  {
+                    var at = argTypes.get(iva)
+                      // if we redef
+                      //
+                      //    x(A type, v option A)
+                      //
+                      // by
+                      //
+                      //    x(B type, w option B)
+                      //
+                      // we must replace `option A` by `option B`, i.e.,
+                      // replace original's type parameters by redefinition's:
+                      //
+                      .applyTypePars(cl, tps_as_actuals);
+                    arg = new Feature(n._pos,
+                                      Visi.PRIV,
+                                      0,
+                                      at,
+                                      n._name,
+                                      Contract.EMPTY_CONTRACT,
+                                      Impl.FIELD);
+                    iva++;
+                  }
                 args.add(arg);
-                i++;
               }
           }
         if (t != Types.t_ERROR)
@@ -357,7 +371,7 @@ public class Function extends AbstractLambda
             var rt0 = cl.outer().handDown(res,  new List<>(cl.resultType()),tf.feature()).map(at -> at.applyTypePars(tf.feature(),tf.generics())).get(0);
             var rt = inferResultType ? NoType.INSTANCE      : new FunctionReturnType(rt0);
             var im = inferResultType ? Impl.Kind.RoutineDef : Impl.Kind.Routine;
-            var feature = new Feature(pos(), Visi.PRIV, FuzionConstants.MODIFIER_REDEFINE, rt, new List<String>(FuzionConstants.OPERATION_CALL), args, NO_CALLS, Contract.EMPTY_CONTRACT, new Impl(_expr.pos(), _expr, im))
+            var feature = new Feature(pos(), Visi.PRIV, FuzionConstants.MODIFIER_REDEFINE, rt, new List<String>(cl.featureName().baseName()), args, NO_CALLS, Contract.EMPTY_CONTRACT, new Impl(_expr.pos(), _expr, im))
               {
                 @Override
                 public boolean isLambdaCall()
@@ -368,12 +382,15 @@ public class Function extends AbstractLambda
             _feature = feature;
             feature._sourceCodeContext = context;
 
+            var inheritsName = t.feature().featureName().baseName(); // NYI: handling of outer feature!
+            /*
             var inheritsName =
               (t.feature() == Types.resolved.f_Unary   && argTypes.size() == 1) ? Types.UNARY_NAME   :
               (t.feature() == Types.resolved.f_Binary  && argTypes.size() == 2) ? Types.BINARY_NAME  :
               (t.feature() == Types.resolved.f_Nullary && argTypes.size() == 0) ? Types.NULLARY_NAME :
               (t.feature() == Types.resolved.f_Lazy    && argTypes.size() == 0) ? Types.LAZY_NAME
                                                                                 : Types.FUNCTION_NAME;
+            */
 
             // inherits clause for wrapper feature: Function<R,A,B,C,...>
             _inheritsCall = new Call(pos(), null, inheritsName);
