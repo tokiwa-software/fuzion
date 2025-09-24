@@ -304,7 +304,7 @@ public abstract class AbstractCall extends Expr
     var t1 = rt == Types.t_ERROR ? rt : adjustThisTypeForTarget(context, rt, foundRef);
     var t2 = t1 == Types.t_ERROR ? t1 : t1.applyTypePars(tt);
     var t3 = t2 == Types.t_ERROR ? t2 : t2.applyTypePars(calledFeature(), actualTypeParameters(res, context));
-    if (t3 == Types.t_UNDEFINED && t2.isGenericArgument() && t2.genericArgument().outer()==calledFeature())
+    if (t3 == Types.t_UNDEFINED && forArg && t2.isGenericArgument() && t2.genericArgument().outer()==calledFeature())
       {
         t3 = t2.genericArgument().constraint();
       }
