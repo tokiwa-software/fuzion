@@ -1,0 +1,63 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature float_rounding
+#
+# -----------------------------------------------------------------------
+
+
+# Effect to set the rounding mode for float operations
+#
+# Note: this currently works only with the C backend
+#
+public float_rounding : effect is
+
+  public redef finally unit =>
+    set_result := float_rounding.fesetround float_rounding.FE_TONEAREST
+
+    if set_result != 0 then panic "failed to reset rounding mode"
+
+  public type.to_nearest(R type, code ()->R) outcome R =>
+    float_rounding.use R float_rounding.FE_TONEAREST code
+
+  public type.downward(R type, code ()->R) outcome R =>
+    float_rounding.use R float_rounding.FE_DOWNWARD code
+
+  public type.upward(R type, code ()->R) outcome R =>
+    float_rounding.use R float_rounding.FE_UPWARD code
+
+  public type.toward_zero(R type, code ()->R) outcome R =>
+    float_rounding.use R float_rounding.FE_TOWARDZERO code
+
+  type.use(R type, mode i32, code ()->R) outcome R =>
+    float_rounding ! () ->
+      set_result := float_rounding.fesetround mode
+
+      if set_result = 0
+        outcome code.call
+      else
+        error "could not set rounding mode $mode"
+
+  type.FE_TONEAREST  i32 => 0
+  type.FE_DOWNWARD   i32 => 0x400
+  type.FE_UPWARD     i32 => 0x800
+  type.FE_TOWARDZERO i32 => 0xc00
+
+  type.fegetround() i32 => native
+  type.fesetround(mode i32) i32 => native
