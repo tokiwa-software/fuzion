@@ -1,13 +1,12 @@
 
---CURDIR--/reg_issue2775.fz:28:3: error 1: Incompatible types when passing argument in a call
+--CURDIR--/reg_issue2775.fz:28:22: error 1: Incompatible types in assignment
 a (match (v) unit => 4711)
---^^^^^^^^^^^^^^^^^^^^^^^^
-Actual type for argument #1 'v' does not match expected type.
-In call to          : 'a'
+---------------------^^^^
+assignment to field : 'result'
 expected formal type: 'void'
 actual type found   : 'i32'
 assignable to       : 'i32'
-for value assigned  : '(match (v) unit => 4711)'
-To solve this, you could change the type of the target 'v' to 'i32' or convert the type of the assigned value to 'void'.
+for value assigned  : '4711'
+To solve this, you could change the type of the target 'result' to 'i32' or convert the type of the assigned value to 'void'.
 
 one error.

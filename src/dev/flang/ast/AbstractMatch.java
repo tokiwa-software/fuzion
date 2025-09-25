@@ -102,12 +102,17 @@ public abstract class AbstractMatch extends ExprWithPos
     if (CHECKS) check
       (Errors.any() || subject() == ns);
 
-    v.action(this);
+    var result = v.action(this);
+
+    if (CHECKS) check
+      // replacing, currently only used for Match
+      (result == this);
+
     for (var c: cases())
       {
         c.visit(v, this, outer);
       }
-    return this;
+    return result;
   }
 
 
