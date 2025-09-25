@@ -630,7 +630,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
         String.from_bytes s
 
       c_cond codepoint->bool =>
-        s := as_codepoints
+        s := codepoints
           .drop_while c_cond
           .reverse
           .drop_while c_cond
@@ -655,7 +655,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
         String.from_bytes <| utf8.drop_while b_cond
 
       c_cond codepoint->bool =>
-        String.from_codepoints <| as_codepoints.drop_while c_cond
+        String.from_codepoints <| codepoints.drop_while c_cond
 
 
   # remove trailing white space from this string
@@ -678,7 +678,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
         String.from_bytes s
 
       c_cond codepoint->bool =>
-        s := as_codepoints
+        s := codepoints
          .reverse
          .drop_while c_cond
          .reverse
