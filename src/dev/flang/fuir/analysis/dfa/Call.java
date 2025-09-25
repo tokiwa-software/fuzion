@@ -39,6 +39,7 @@ import static dev.flang.util.FuzionConstants.EFFECT_INSTATE_NAME;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 
+import java.util.LinkedList;
 import java.util.TreeSet;
 
 
@@ -103,7 +104,9 @@ public class Call extends ANY implements Comparable<Call>, Context
    * true means that the call may return, false means the call has not been
    * found to return, i.e., the result is null (aka void).
    */
-  boolean _returns = false;
+  private boolean _returns = false;
+
+  private LinkedList<Runnable> ll = new LinkedList<>();
 
 
   /**
@@ -266,7 +269,10 @@ public class Call extends ANY implements Comparable<Call>, Context
     if (!_returns)
       {
         _returns = true;
-        _dfa.wasChanged(() -> "Call.returns for " + this);
+        while (!ll.isEmpty())
+          {
+            ll.removeFirst().run();
+          }
       }
   }
 
@@ -276,6 +282,10 @@ public class Call extends ANY implements Comparable<Call>, Context
    * never returns.
    */
   public Val result()
+  {
+    return result(null);
+  }
+  public Val result(Runnable cb)
   {
     Val result = null;
     if (_dfa._fuir.clazzKind(calledClazz()) == IR.FeatureKind.Intrinsic)
@@ -325,6 +335,10 @@ public class Call extends ANY implements Comparable<Call>, Context
 
             result = _instance.readField(_dfa, rf, -1, this);
           }
+      }
+    else if (cb != null)
+      {
+        ll.add(cb);
       }
     return result;
   }
