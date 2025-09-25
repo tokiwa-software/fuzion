@@ -385,7 +385,7 @@ public class DFA extends ANY
             if (_fuir.clazzNeedsCode(cc))
               {
                 var ca = newCall(_call, cc, s, tvalue.value(), args, _call._env, _call);
-                res = ca.result();
+                res = ca.result(_call);
                 if (_options.needsEscapeAnalysis() && res != null && res != Value.UNIT && !_fuir.clazzIsRef(_fuir.clazzResultClazz(cc)))
                   {
                     res = newEmbeddedValue(s, res.value());
@@ -2259,7 +2259,7 @@ public class DFA extends ANY
                                     cl);
           cll._group.mayHaveEffect(ecl);
 
-          var result = cll.result();
+          var result = cll.result(cl);
           Value ev;
           if (cl._dfa._real)
             {
@@ -2292,7 +2292,7 @@ public class DFA extends ANY
           if (aborted)
             { // default result, only if abort is ever called
               var def = cl._dfa.newCall(cl, call_def, NO_SITE, a2, new List<>(ev), cl._env, cl);
-              var res = def.result();
+              var res = def.result(cl);
               result =
                 result != null && res != null ? result.value().join(cl._dfa, res.value(), fuir(cl).clazzResultClazz(cl.calledClazz())) :
                 result != null                ? result
@@ -3303,8 +3303,6 @@ public class DFA extends ANY
               (false);
           }
         e = r;
-        var rf = r;
-        wasChanged(() -> "DFA.newCall to " + rf);
         analyzeNewCall(r);
       }
     else
