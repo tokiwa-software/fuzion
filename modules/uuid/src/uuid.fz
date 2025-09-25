@@ -221,7 +221,7 @@ private:public uuid(val u128) : property.orderable is
   #
   public type.from_string(uuid_str String) outcome uuid =>
 
-    ls := uuid_str.as_codepoints
+    ls := uuid_str.codepoints
 
     #           1         2         3
     # 012345678901234567890123456789012345
