@@ -174,7 +174,10 @@ public class Instance extends Value
     if (oldv != v)
       {
         var fv = v;
-        _dfa.wasChanged(() -> "setField: new values " + fv + " (was " + oldv + ") for " + this);
+        if (dfa.isRead(field))
+          {
+            _dfa.wasChanged(() -> "setField: new values " + fv + " (was " + oldv + ") for " + this);
+          }
       }
     dfa._writtenFields.set(field);
     _fields.put(field, v);
