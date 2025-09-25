@@ -51,3 +51,16 @@ lib_time_date_time =>
   say "c is_before b = {c < b}"
   say "c is_before c = {c < c}"
 
+  say "time.date_time.from_seconds 1758620705 = time.date_time 2025 9 23 9 45 5 0 = {time.date_time.from_seconds 1758620705 = time.date_time 2025 9 23 9 45 5 0}"
+
+  one_day_eleven_seconds := ((u64 60)*60*24)+11
+  for i in (u64 0)..1E6 : one_day_eleven_seconds do
+    say <| time
+      .date_time
+      .from_seconds i
+
+  thirty_days_forty_seven_seconds := ((u64 60)*60*24*30)+47
+  for i in (u64 0)..1E7 : thirty_days_forty_seven_seconds do
+    say <| time
+      .date_time
+      .from_seconds i
