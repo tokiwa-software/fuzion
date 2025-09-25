@@ -54,7 +54,7 @@ is
   =>
     if buffer.is_empty
       match rh.read buf_size
-        a array u8 =>
+        a array =>
           buffer <- a
           replace
           buffer
@@ -98,7 +98,7 @@ public read_bytes(n i32) array u8 ! reader
     until
       match reader.env.read
         outcome => true
-        s Sequence u8 =>
+        s Sequence =>
           a := s.take n-res.length.as_i32 .as_array_backed
           reader.env.discard a.count
           for b in a do

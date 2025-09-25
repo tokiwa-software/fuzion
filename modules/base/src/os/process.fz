@@ -140,7 +140,7 @@ module:public process(public pid i64, module std_in, std_out, std_err i64) : pro
           for p1rb := std_out_read_handler.read pipe_buffer_size
           while
             match p1rb
-              s array u8 => (write_bytes p.std_in s).ok
+              s array => (write_bytes p.std_in s).ok
               * => false
 
         # NYI: UNDER DEVELOPMENT: error handling
