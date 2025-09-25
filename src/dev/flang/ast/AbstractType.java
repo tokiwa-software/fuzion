@@ -1458,17 +1458,45 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * isFunctionTypeExcludingLazy checks if this is a function type used for lambda expressions,
-   * e.g., "(i32, i32) -> String".
+   * isLambdaTargetButNotLazy checks if this is can be the target of a lambda expressions,
+   * e.g., `(i32, i32) -> String`, but is not a lazy value.
    *
    * @return true iff this is a function type but not a {@code Lazy}.
    */
-  public boolean isFunctionTypeExcludingLazy(Resolution res)
+  public boolean isLambdaTargetButNotLazy(Resolution res)
   {
     return
       this != Types.t_ERROR &&
-      isFunctionType(res) &&
-      feature() != Types.resolved.f_Lazy;
+      isLambdaTarget(res) &&
+      !isLazyType();
+  }
+
+
+  /**
+   * Check if this is a possible target for a lambda expression.
+   *
+   * @param res Resolution instance.
+   *
+   * @return true iff this type may be the target of a lambda expression.
+   */
+  public boolean isLambdaTarget(Resolution res)
+  {
+    return
+      !isGenericArgument() &&
+      res._module.findLambdaTarget(feature()) != null;
+  }
+
+
+  /**
+   * Check if this a type created for a lambda expression.
+   *
+   * @return true if this is a type created for a lambda expression.
+   */
+  public boolean isLambda()
+  {
+    return
+      !isGenericArgument() &&
+      feature().featureName().baseName().startsWith(FuzionConstants.LAMBDA_PREFIX);
   }
 
 
@@ -1480,11 +1508,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   public boolean isFunctionType(Resolution res)
   {
-    var result =
-      !isGenericArgument() &&
-      (res._module.findLambdaTarget(feature()) != null ||
-       !false && feature().featureName().baseName().startsWith("#fun") /* NYI: why? */);
-    return result;
+    return isLambdaTarget(res) || isLambda();
   }
 
 
@@ -1495,7 +1519,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @param context the source code context where this Type is used
    *
    * @return if this is a choice and there is exactly one choice for which
-   * isFunctionTypeExcludingLazy() holds, return that type, otherwise return this.
+   * isFunctionType() holds, return that type, otherwise return this.
    */
   AbstractType functionTypeFromChoice(Resolution res, Context context)
   {

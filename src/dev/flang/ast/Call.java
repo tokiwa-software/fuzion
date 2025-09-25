@@ -932,7 +932,7 @@ public class Call extends AbstractCall
   FeatureAndOuter partiallyApplicableAlternative(Resolution res, Context context, AbstractType expectedType)
   {
     if (PRECONDITIONS) require
-      (expectedType.isFunctionTypeExcludingLazy(res),
+      (expectedType.isLambdaTargetButNotLazy(res),
        _name != null);
 
     FeatureAndOuter result = null;
@@ -1880,7 +1880,7 @@ public class Call extends AbstractCall
   private Expr propagateForPartial(Resolution res, Context context, int argnum, AbstractType t)
   {
     var actual = _actuals.get(argnum);
-    if (t != null && t.isFunctionTypeExcludingLazy(res))
+    if (t != null && t.isLambdaTargetButNotLazy(res))
       {
         actual = actual.propagateExpectedTypeForPartial(res, context, t);
         if (!isDefunct())
@@ -1980,7 +1980,7 @@ public class Call extends AbstractCall
                                  */
                                 inferGeneric(res, context, c, actualType, actual.pos(), conflict, foundAt, argnum);
                               }
-                            else if (c.isFunctionTypeExcludingLazy(res))
+                            else if (c.isLambdaTargetButNotLazy(res))
                               { /* propagate constraint for partial or lambda:
                                  *
                                  *     a(F type : Function bool i32, f F) =>
@@ -2326,7 +2326,7 @@ public class Call extends AbstractCall
                                            List<List<Pair<SourcePosition, AbstractType>>> foundAt)
   {
     var result = false;
-    if (formalType.isFunctionTypeExcludingLazy(res) || formalType.isLazyType())
+    if (formalType.isLambdaTarget(res))
       {
         var at = actualArgType(res, context, formalType, frml);
         if (!at.containsUndefined(true))

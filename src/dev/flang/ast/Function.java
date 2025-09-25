@@ -279,7 +279,7 @@ public class Function extends AbstractLambda
     if (_call != null)
       { // we are all set, nothing to be done.
       }
-    else if (!t.isFunctionType(res))
+    else if (!t.isLambdaTarget(res))
       {
         // suppress error for t_UNDEFINED, but only if other error was already reported
         if (t != Types.t_UNDEFINED || !Errors.any())
@@ -375,7 +375,7 @@ public class Function extends AbstractLambda
             var feature = new Feature(pos(), Visi.PRIV, FuzionConstants.MODIFIER_REDEFINE, rt, new List<String>(cl.featureName().baseName()), args, NO_CALLS, Contract.EMPTY_CONTRACT, new Impl(_expr.pos(), _expr, im))
               {
                 @Override
-                public boolean isLambdaCall()
+                public boolean isLambdaCall()  // NYI: what is this for?
                 {
                   return true;
                 }

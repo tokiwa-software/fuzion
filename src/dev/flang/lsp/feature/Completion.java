@@ -294,7 +294,7 @@ public class Completion
       .range(0, arguments.size())
       .<String>mapToObj(index -> {
         var argument = arguments.get(index);
-        if (!argument.resultType().isFunctionType(null))
+        if (true || !argument.resultType().isLambdaTargetButNotLazy(null)) // NYI: Support for lambda target
           {
             return " ${" + (index + 1) + ":" + argument.featureName().baseName() + "}";
           }

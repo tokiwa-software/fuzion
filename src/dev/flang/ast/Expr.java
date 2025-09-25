@@ -504,9 +504,9 @@ public abstract class Expr extends ANY implements HasSourcePosition
    */
   private boolean mayBePartial(Resolution res, AbstractType t)
   {
-    return t.isFunctionTypeExcludingLazy(res)         &&
+    return t.isLambdaTargetButNotLazy(res)                       &&
         !(this instanceof Call c && c._wasImplicitImmediateCall) &&
-        typeForInferencing() != Types.t_ERROR     &&
+        typeForInferencing() != Types.t_ERROR                    &&
         (typeForInferencing() == null || !typeForInferencing().isFunctionType(res));
   }
 
@@ -536,7 +536,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
    */
   Expr propagateExpectedTypeForPartial(Resolution res, Context context, AbstractType expectedType)
   {
-    return expectedType.isFunctionType(res) && expectedType.arity(res) == 0 && typeForInferencing() != null && !typeForInferencing().isFunctionType(res)
+    return expectedType.isLambdaTarget(res) && expectedType.arity(res) == 0 && typeForInferencing() != null && !typeForInferencing().isFunctionType(res)
       ? new Function(pos(), NO_EXPRS, reset())
       : this;
   }

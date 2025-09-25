@@ -793,7 +793,7 @@ public class NumLiteral extends Constant
   Expr propagateExpectedTypeForPartial(Resolution res, Context context, AbstractType t)
   {
     Expr result;
-    if (t.isFunctionTypeExcludingLazy(res) && t.arity(res) == 1 && explicitSign() != null)
+    if (t.isLambdaTarget(res) && t.arity(res) == 1 && explicitSign() != null)
       { // convert `map -1` into `map x->x-1`
         var pns = new List<Expr>();
         pns.add(Partial.argName(pos()));

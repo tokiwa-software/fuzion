@@ -465,7 +465,7 @@ public class ParsedCall extends Call
   Expr propagateExpectedTypeForPartial(Resolution res, Context context, AbstractType expectedType)
   {
     if (PRECONDITIONS) require
-      (expectedType.isFunctionTypeExcludingLazy(res));
+      (expectedType.isLambdaTargetButNotLazy(res));
 
     var paa = partiallyApplicableAlternative(res, context, expectedType);
     Expr l = paa != null ? resolveTypes(res, context)  // this ensures _calledFeature is set such that possible ambiguity is reported
@@ -712,7 +712,7 @@ public class ParsedCall extends Call
         @Override
         Expr propagateExpectedType(Resolution res, Context context, AbstractType expectedType, Supplier<String> from)
         {
-          if (expectedType.isFunctionTypeExcludingLazy(res))
+          if (expectedType.isLambdaTargetButNotLazy(res))
             { // produce an error if the original call is ambiguous with partial application
               ParsedCall.this.checkPartialAmbiguity(res, context, expectedType);
             }
@@ -748,17 +748,13 @@ public class ParsedCall extends Call
    */
   private boolean isImmediateFunctionCall(Resolution res)
   {
-    return typeForInferencing() != null &&
-      typeForInferencing().isFunctionTypeExcludingLazy(res) &&
-      _calledFeature != Types.resolved.f_Function && // exclude inherits call in function type
-      _calledFeature.arguments().size() == 0      &&
-      _actuals != NO_PARENTHESES
-      ||
+    return
       typeForInferencing() != null &&
-      typeForInferencing().isLazyType()           &&   // we are `Lazy T`
-      _calledFeature != Types.resolved.f_Lazy     &&   // but not an explicit call to `Lazy` (e.g., in inherits clause)
-      _calledFeature.arguments().size() == 0      &&   // no arguments (NYI: maybe allow args for `Lazy (Function R V)`, then `l a` could become `l.call.call a`
-      _actuals.isEmpty();                              // dto.
+      typeForInferencing().isLambdaTarget(res) &&
+      !isInheritanceCall()                     && // exclude inherits call in function type
+      _calledFeature.arguments().size() == 0   && // no arguments (NYI: maybe allow args for `Lazy (Function R V)`, then `l a` could become `l.call.call a`
+      (!typeForInferencing().isLazyType() && _actuals != NO_PARENTHESES ||
+        typeForInferencing().isLazyType() && _actuals.isEmpty()            );
   }
 
 }
