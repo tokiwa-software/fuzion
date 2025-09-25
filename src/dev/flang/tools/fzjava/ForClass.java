@@ -759,7 +759,7 @@ class ForClass extends ANY
           }
         else if (t == String.class)
           {
-            mt = FuzionConstants.STRING_NAME;
+            mt = "option " + FuzionConstants.STRING_NAME;
           }
         else
           {
@@ -882,8 +882,8 @@ class ForClass extends ANY
         else if (t == Float    .TYPE) { res.append("fuzion.jvm.env.f32_to_java_object "   ); }
         else if (t == Double   .TYPE) { res.append("fuzion.jvm.env.f64_to_java_object "   ); }
         else if (t == Boolean  .TYPE) { res.append("fuzion.jvm.env.bool_to_java_object "  ); }
-        else if (t == String.class  ) { res.append("fuzion.jvm.env.string_to_java_object "); }
         res.append( outer + ".this." + mp );
+        if (t == String.class) { res.append(".fold fuzion.jvm.env.string_to_java_object (_ -> (fuzion.jvm.env.null Java.java.lang.__jString).val)"); }
         res.append(")");
       }
     res.append("]");
