@@ -161,7 +161,7 @@ public variadic(E type) : container.typed_applicator E is
 # This is used as an argument to `Typed_Sequence.typed_foldf` to process the typed
 # values.
 #
-public typed_applicator(E type) : Typed_Function E E is
+public typed_applicator(E type) is
 
 
   # Apply an operation on a value v of type T using the cumulative value
@@ -178,7 +178,7 @@ public typed_applicator(E type) : Typed_Function E E is
   #       =>
   #         e + $v
   #
-  public redef apply(T type, e E, v T) E
+  public apply(T type, e E, v T) E
     : fuzion.lambda_target
   =>
     abstract

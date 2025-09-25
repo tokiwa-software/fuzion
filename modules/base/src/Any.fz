@@ -109,7 +109,7 @@ public Any ref is
   =>
     # NYI: BUG: #5894 if fixed, we should be able to write
     #
-    #   f.apply Any.this Any.this
+    #   f.call Any.this Any.this
     #
     # for now, using type inference for `T` works:
-    f.apply Any.this
+    f.call Any.this

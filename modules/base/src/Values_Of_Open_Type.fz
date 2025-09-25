@@ -41,9 +41,9 @@ module:public Values_Of_Open_Type ref : container.Typed_Sequence is
   # In case the actual open type parameter list is empty, the result is `e`.
   #
   public redef typed_foldf(B type,
-                           TA type : container.typed_applicator B,
+                           A type : container.typed_applicator B,
                            e B,
-                           a TA
+                           a A
                            ) B
   =>
 
@@ -67,10 +67,10 @@ module:public Values_Of_Open_Type ref : container.Typed_Sequence is
   # In case this `Typed_Sequence` is empty, the result is `e`.
   #
   public redef typed_zip_and_fold(E type,
-                                  TZ type : container.typed_zipper E,
+                                  Z type : container.typed_zipper E,
                                   other Values_Of_Open_Type.this,
                                   e E,
-                                  z TZ
+                                  z Z
                                   ) E
   =>
 
