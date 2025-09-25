@@ -1357,7 +1357,7 @@ public class DFA extends ANY
   {
     _newCallRecursiveAnalyzeClazzes = new int[MAX_NEW_CALL_RECURSION];
     _real = false;
-    findFixPoint();
+    var preIter = findFixPoint();
     _options.timer("dfa_pre");
 
     for (var k : _callGroupsQuick.keySet())
@@ -1386,8 +1386,10 @@ public class DFA extends ANY
     _unitCalls = new IntMap<>();
 
     _real = true;
-    findFixPoint();
+    var realIter = findFixPoint();
     _options.timer("dfa_real");
+
+    _options.verbosePrintln(2, "DFA needed " + (preIter+realIter) +  " iterations (pre/real) ("+ preIter + "/" + realIter + ").");
 
     _fuir.reportAbstractMissing();
     Errors.showAndExit();
@@ -1404,7 +1406,7 @@ public class DFA extends ANY
   /**
    * Iteratively perform data flow analysis until a fix point is reached.
    */
-  void findFixPoint()
+  int findFixPoint()
   {
     var cnt = 0;
     do
@@ -1474,6 +1476,7 @@ public class DFA extends ANY
       (!_changed);
 
     showCallStatistics();
+    return cnt;
   }
 
 
