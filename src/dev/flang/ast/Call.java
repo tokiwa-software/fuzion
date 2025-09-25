@@ -1988,7 +1988,7 @@ public class Call extends AbstractCall
                                  *     _ := a %%2
                                  */
                                 actual = propagateForPartial(res, context, argnum, c);
-                                actual = actual.propagateExpectedType(res, context, c,
+                                actual = actual.propagateExpectedType(res, context, c.applyTypePars(calledFeature(), actualTypeParameters()),
                                                                       () -> "formal argument type in call to " + AstErrors.s(_calledFeature));
                                 _actuals = _actuals.setOrClone(argnum, actual);
                                 actualType = typeFromActual(res, context, actual);
@@ -2171,7 +2171,10 @@ public class Call extends AbstractCall
     if (PRECONDITIONS) require
       (actualType.compareTo(actualType.replace_type_parameters_of_cotype_origin(context.outerFeature())) == 0);
 
-    if (formalType.isLazyType() && !actualType.isLazyType())
+    if (actualType.equals(formalType))
+      { // nothing can be gained here, we typically replace type parameter `B` by type `B`...
+      }
+    else if (formalType.isLazyType() && !actualType.isLazyType())
       {
         inferGeneric(res, context, formalType.generics().get(0), actualType, pos, conflict, foundAt);
       }

@@ -297,10 +297,6 @@ public class Function extends AbstractLambda
             AstErrors.wrongNumberOfArgumentsInLambda(pos(), _names, t);
             t = Types.t_ERROR;
           }
-        else if (argTypes.stream().anyMatch(at -> at == Types.t_UNDEFINED))
-          {
-            t = Types.t_ERROR;
-          }
         else
           {
             /* We have an expression of the form
@@ -354,6 +350,11 @@ public class Function extends AbstractLambda
                       // replace original's type parameters by redefinition's:
                       //
                       .applyTypePars(cl, tps_as_actuals);
+                    if (at == Types.t_UNDEFINED)
+                      {
+                        t = Types.t_ERROR;
+                        break;
+                      }
                     arg = new Feature(n._pos,
                                       Visi.PRIV,
                                       0,
@@ -407,7 +408,11 @@ public class Function extends AbstractLambda
                 _inheritsCall.notifyInferred();
               }
 
-            _call = new Call(pos(), new Current(pos(), context.outerFeature()), _wrapper).resolveTypes(res, context);
+            _call = new Call(pos(), new Current(pos(), context.outerFeature()), _wrapper);
+            if (_inheritsCall._generics.stream().allMatch(at -> at != Types.t_UNDEFINED))
+              {
+                _call = _call.resolveTypes(res, context);
+              }
           }
         else
           {
@@ -551,12 +556,13 @@ public class Function extends AbstractLambda
     else
       {
         Call inheritsCall2 = _inheritsCall.resolveTypes(res, context);
+        _type = _call.type();
+
         // Call.resolveType returns something different than this only for an
         // immediate function call, which is never the case in an inherits
         // clause.
         if (CHECKS) check
-          (Errors.any() || _inheritsCall == inheritsCall2,
-           _type == null || _type.isAssignableFromDirectly(_call.type()).yes());
+          (Errors.any() || _inheritsCall == inheritsCall2);
       }
   }
 
@@ -601,13 +607,16 @@ public class Function extends AbstractLambda
   @Override
   AbstractType typeForInferencing()
   {
+    var t2 = _call != null ? _call.typeForInferencing() : null;
     // unlike type(), we do not produce an error but just return null here since
     // everything might eventually turn out fine in this case.
     // NYI: UNDER DEVELOPMENT: ugly in case result type is error
     // we should probably have replaced Function already...
     return _feature != null && _feature.resultTypeIfPresent(null) == Types.t_ERROR
       ? Types.t_ERROR
-      : _type;
+      : t2 == null
+      ? _type
+      : t2;
   }
 
 
