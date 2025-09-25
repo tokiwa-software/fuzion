@@ -113,7 +113,7 @@ public percent is
   # does the actual decoding
   #
   decode(enc_str String, tolerant bool) outcome (Sequence u8) =>
-    enc := enc_str.as_codepoints
+    enc := enc_str.codepoints
     len := enc.count
 
     dec(res Sequence u8, i i32) outcome (Sequence u8) =>

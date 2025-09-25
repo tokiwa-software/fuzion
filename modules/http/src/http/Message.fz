@@ -90,7 +90,7 @@ public Message ref is
   # accept-language -> Accept-Language
   #
   canonical_header_key(str String) String =>
-    if str.as_codepoints.drop_while valid_header_field_byte .is_empty
+    if str.codepoints.drop_while valid_header_field_byte .is_empty
       str
         .split "-"
         .map s->
