@@ -253,6 +253,12 @@ main =>
   say ""
   say "$ok/{tests.count} tests passed, $skipped skipped, $failed failed in {elapsed_time_total.as_string.trim}."
 
+  h := time.histogram target nil nil 0 0
+  test_durations
+    .values
+    .for_each h.add
+  say h
+
   if failed > 0
     say "Failed tests:"
 
