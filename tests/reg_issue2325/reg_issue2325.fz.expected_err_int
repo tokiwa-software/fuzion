@@ -36,7 +36,7 @@ i32.type.sum.anonymous.infix ∙#2: {base.fum}/numeric.fz:226:64:
 i32.type.sum.anonymous.op#2: {base.fum}/Monoid.fz:60:26:
   public op(a, b T) T => infix ∙  a b
 -------------------------^^^^^^^^^^^^
-(list i32).fold#2: {base.fum}/list.fz:221:39:
+(list i32).fold#2: {base.fum}/list.fz:211:39:
               | c Cons => c.tail.fold (m.op s c.head) m
 --------------------------------------^^^^^^^^^^^^^^^
 (interval i32).fold#1: {base.fum}/Sequence.fz:422:33:
