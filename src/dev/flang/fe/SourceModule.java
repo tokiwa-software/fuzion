@@ -422,10 +422,6 @@ part of the (((inner features))) declarations of the corresponding
                                  for (var inner : parseAndGetFeatures(p))
                                    {
                                      findDeclarations(inner, f);
-                                     if (inner.state().atLeast(State.LOADED))
-                                       {
-                                         inner.scheduleForResolution(_res);
-                                       }
                                    }
                                });
                   }
