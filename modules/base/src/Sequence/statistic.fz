@@ -23,7 +23,7 @@
 # the arithmetic mean of the sequence
 # https://en.wikipedia.org/wiki/Arithmetic_mean
 #
-public average option T
+public mean option T
   pre
     T : numeric
 =>
@@ -41,7 +41,7 @@ public variance option T
   pre
     T : numeric
 =>
-  average.bind avg->
+  mean.bind avg->
     cnt := (map (_ -> T.one           )).sum
     ssd := (map (x -> (x - avg)**T.two)).sum # sum of squared deviations
     ssd / cnt
