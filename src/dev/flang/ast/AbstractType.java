@@ -436,6 +436,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * {@code Types.t_UNDEFINED}.  This is used in a lambda {@code x -> f x} of
    * type {@code Function<R,X>} when {@code R} is unknown and to be inferred. -1
    * to not ignore any argument.
+   *
+   * @return true if this depends on {@code Types.t_UNDEFINED} except for only
+   * type parameter #`except` being {@code Types.t_UNDEFINED}.
    */
   public boolean containsUndefined(int except)
   {
@@ -461,6 +464,13 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
     return result;
   }
+
+
+  /**
+   * Check if this or any of its generic arguments is {@code Types.t_UNDEFINED}.
+   *
+   * @return true if this depends on {@code Types.t_UNDEFINED}.
+   */
   public boolean containsUndefined()
   {
     return containsUndefined(-1);

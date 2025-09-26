@@ -418,6 +418,19 @@ public class Function extends AbstractLambda
   }
 
 
+  /**
+   * Create the calls for the target instance(s) of a feature created for a
+   * lambda.
+   *
+   * @param res the resolution instance.
+   *
+   * @param context the source code context where this Call is used
+   *
+   * @param f the (inner) feature for which we want an outer instance.
+   *
+   * @return the code to create the outer instances of {@code null} if outer is
+   * the unverse.
+   */
   private Call targetCalls(Resolution res, Context context, AbstractFeature f)
   {
     if (f == null || f.isUniverse())

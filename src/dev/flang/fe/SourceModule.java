@@ -1246,24 +1246,13 @@ A post-condition of a feature that does not redefine an inherited feature must s
           {
             if (f.isAbstract() && f.inheritsFrom(Types.resolved.f_fuzion_lambda_target))
               {
-                if (cnt == 1)
-                  {
-                    System.out.print("###### cnt is "+0+" ###### "+res.qualifiedName());
-                  }
-                if (cnt >= 1)
-                  {
-                    System.out.print("###### cnt is "+cnt+" ###### "+f.qualifiedName());
-                  }
-
-                //         System.out.println("found "+f.qualifiedName());
                 cnt++;
                 res = f;
               }
           }
-
       }
-    // if (cnt != 1) System.out.println("###### cnt is "+cnt+" ###### for "+outer.qualifiedName());
-    return res;
+    // NYI: UNDER DEVELOPMENT: We might want to report an error if there are several (cnt>1) ambiguous lambda targets.
+    return cnt == 1 ? res : null;
   }
 
   /**
