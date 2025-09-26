@@ -403,8 +403,13 @@ public class Function extends AbstractLambda
             if (inferResultType)
               {
                 result = refineResultType(res, context, rt0, _feature.resultType());
-                _inheritsCall._generics = _inheritsCall._generics.setOrClone(0, result);
-                _inheritsCall.notifyInferred();
+                var g = t.lambdaTargetResultTypeParameter(res);
+                if (g != null)
+                  {
+                    int idx = g.typeParameterIndex();
+                    _inheritsCall._generics = _inheritsCall._generics.setOrClone(idx, result);
+                    _inheritsCall.notifyInferred();
+                  }
               }
 
             _call = new Call(pos(), new Current(pos(), context.outerFeature()), _wrapper);

@@ -432,12 +432,16 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /**
    * Check if this or any of its generic arguments is {@code Types.t_UNDEFINED}.
    *
-   * @param exceptFirst if true, the first generic argument may be
-   * {@code Types.t_UNDEFINED}.  This is used in a lambda {@code x -> f x} of type
-   * {@code Function<R,X>} when {@code R} is unknown and to be inferred.
+   * @param except index of a generic argument should be ignored, it may be
+   * {@code Types.t_UNDEFINED}.  This is used in a lambda {@code x -> f x} of
+   * type {@code Function<R,X>} when {@code R} is unknown and to be inferred. -1
+   * to not ignore any argument.
    */
-  public boolean containsUndefined(boolean exceptFirst)
+  public boolean containsUndefined(int except)
   {
+    if (PRECONDITIONS) require
+      (except == -1 || except >= 0 && except <= generics().size());
+
     boolean result = false;
     if (this == Types.t_UNDEFINED)
       {
@@ -445,18 +449,22 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       }
     else if (isNormalType())
       {
+        int ix = 0;
         for (var t: generics())
           {
             if (CHECKS) check
               (Errors.any() || t != null);
-            result = result || !exceptFirst && t != null && t.containsUndefined(false);
-            exceptFirst = false;
+            result = result || ix != except && t != null && t.containsUndefined(-1);
+            ix++;
           }
       }
 
     return result;
   }
-
+  public boolean containsUndefined()
+  {
+    return containsUndefined(-1);
+  }
 
   /**
    * Is actual assignable to this?
@@ -1602,6 +1610,46 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     var cl = res._module.findLambdaTarget(feature());
     return lambdaTargetHandDownType(res, cl.resultTypeIfPresentUrgent(res, true))
       .getFirstOrElse(Types.t_ERROR);
+  }
+
+
+  /**
+   * If this is a lambdaTarget and the formal result type is a type parameter,
+   * return this type parameter.
+   *
+   * ex. in the following code
+   *
+   *     x(T type, f Function (option T) i32)
+   *     =>
+   *       say (f.call 32)
+   *
+   *     x (i -> i.as_string)
+   *
+   * for the lambda `i -> i.as_string`, this will return `Function.R`.
+   *
+   * This is used by `Call.inferGenericLambdaResult` and `Function.propagateTypeAndInferResult` to
+   * determine that `T` must be `String`.
+   *
+   * @param res the resolution instance
+   *
+   * @return null if the formal result type is not a type parameter, otherwise
+   * that type parameter, i.e. `Function.R` in the example above.
+   */
+  AbstractFeature lambdaTargetResultTypeParameter(Resolution res)
+  {
+    if (PRECONDITIONS) require
+      (isLambdaTarget(res));
+
+    AbstractFeature result = null;
+
+    var g = replaceGenericsAndOuter(feature().generics().asActuals(), outer())
+      .lambdaTargetResultType(res);
+
+    if (g.isGenericArgument() && g.genericArgument().outer() == feature())
+      {
+        result = g.genericArgument();
+      }
+    return result;
   }
 
 

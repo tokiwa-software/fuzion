@@ -1419,7 +1419,7 @@ public class Call extends AbstractCall
       }
 
     // see test #5391 when this might happen
-    return result != null && result.containsUndefined(false)
+    return result != null && result.containsUndefined()
       ? null
       : result;
   }
@@ -2328,11 +2328,15 @@ public class Call extends AbstractCall
     var result = false;
     if (formalType.isLambdaTarget(res))
       {
-        var at = actualArgType(res, context, formalType, frml);
-        if (!at.containsUndefined(true))
+        var g = formalType.lambdaTargetResultTypeParameter(res);
+        if (g != null)
           {
-            var lambdaResultType = formalType.generics().get(0);
-            result = inferGenericLambdaResult(res, context, al, pos, conflict, foundAt, lambdaResultType, new List<>(lambdaResultType), at);
+            var at = actualArgType(res, context, formalType, frml);
+            if (!at.containsUndefined(g.typeParameterIndex()))
+              {
+                var lambdaResultType = formalType.lambdaTargetResultType(res);
+                result = inferGenericLambdaResult(res, context, al, pos, conflict, foundAt, lambdaResultType, new List<>(lambdaResultType), at);
+              }
           }
       }
     return result;
@@ -2458,7 +2462,7 @@ public class Call extends AbstractCall
    */
   boolean needsToInferTypeParametersFromArgs()
   {
-    return _calledFeature != null && (_generics == NO_GENERICS || _generics.stream().anyMatch(g -> g.containsUndefined(false))) && !_calledFeature.typeArguments().isEmpty();
+    return _calledFeature != null && (_generics == NO_GENERICS || _generics.stream().anyMatch(g -> g.containsUndefined())) && !_calledFeature.typeArguments().isEmpty();
   }
 
 
@@ -3040,7 +3044,7 @@ public class Call extends AbstractCall
   private Expr createIf(Resolution res, Context context, Expr true_, Expr false_, AbstractType rt)
   {
     var result = Match.createIf(pos(), _target, true_, false_, false);
-    if (!rt.containsUndefined(false))
+    if (!rt.containsUndefined())
       {
         result = result.propagateExpectedType(res, context, rt, null);;
       }
@@ -3139,7 +3143,7 @@ public class Call extends AbstractCall
       (// NYI: CLEANUP: #5866 breaks this precondition, but there are also other cases where
        // the actuals still contain t_UNDEFINED that still need to be checked.
        true ||
-       !actualTypeParameters().stream().anyMatch(atp -> atp.containsUndefined(false)));
+       !actualTypeParameters().stream().anyMatch(atp -> atp.containsUndefined()));
 
     for (var r : _whenInferredTypeParameters)
       {

@@ -2567,7 +2567,7 @@ A ((Choice)) declaration must not contain a result type.
 
     if (POSTCONDITIONS) ensure
       (Errors.any() || result != Types.t_ERROR,
-       Errors.any() || !result.containsUndefined(false));
+       Errors.any() || !result.containsUndefined());
 
     return result;
   }
