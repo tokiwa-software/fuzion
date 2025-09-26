@@ -194,7 +194,7 @@ Number of actual arguments is 1, while call expects no arguments.
 Called feature: 'Function.call'
 Formal arguments: 
 Declared at {base.fum}/Function.fz:35:10:
-  public call(a A...) R => abstract
+  public call(a A...) R
 ---------^^^^
 
 
@@ -205,7 +205,7 @@ Number of actual arguments is 1, while call expects no arguments.
 Called feature: 'Function.call'
 Formal arguments: 
 Declared at {base.fum}/Function.fz:35:10:
-  public call(a A...) R => abstract
+  public call(a A...) R
 ---------^^^^
 
 
@@ -216,7 +216,7 @@ Number of actual arguments is 0, while call expects one argument.
 Called feature: 'Function.call'
 Formal arguments: 'a' 'bool'
 Declared at {base.fum}/Function.fz:35:10:
-  public call(a A...) R => abstract
+  public call(a A...) R
 ---------^^^^
 
 
@@ -227,7 +227,7 @@ Number of actual arguments is 2, while call expects one argument.
 Called feature: 'Function.call'
 Formal arguments: 'a' 'bool'
 Declared at {base.fum}/Function.fz:35:10:
-  public call(a A...) R => abstract
+  public call(a A...) R
 ---------^^^^
 
 
@@ -238,7 +238,7 @@ Number of actual arguments is 0, while call expects one argument.
 Called feature: 'Function.call'
 Formal arguments: 'a' 'bool'
 Declared at {base.fum}/Function.fz:35:10:
-  public call(a A...) R => abstract
+  public call(a A...) R
 ---------^^^^
 
 
@@ -249,7 +249,7 @@ Number of actual arguments is 2, while call expects one argument.
 Called feature: 'Function.call'
 Formal arguments: 'a' 'bool'
 Declared at {base.fum}/Function.fz:35:10:
-  public call(a A...) R => abstract
+  public call(a A...) R
 ---------^^^^
 
 
@@ -260,7 +260,7 @@ Number of actual arguments is 1, while call expects no arguments.
 Called feature: 'Function.call'
 Formal arguments: 
 Declared at {base.fum}/Function.fz:35:10:
-  public call(a A...) R => abstract
+  public call(a A...) R
 ---------^^^^
 
 
@@ -271,7 +271,7 @@ Number of actual arguments is 1, while call expects no arguments.
 Called feature: 'Function.call'
 Formal arguments: 
 Declared at {base.fum}/Function.fz:35:10:
-  public call(a A...) R => abstract
+  public call(a A...) R
 ---------^^^^
 
 
@@ -282,7 +282,7 @@ Number of actual arguments is 0, while call expects 2 arguments.
 Called feature: 'Function.call'
 Formal arguments: 'a' 'i32', 'a' 'bool'
 Declared at {base.fum}/Function.fz:35:10:
-  public call(a A...) R => abstract
+  public call(a A...) R
 ---------^^^^
 
 
@@ -293,7 +293,7 @@ Number of actual arguments is 1, while call expects 2 arguments.
 Called feature: 'Function.call'
 Formal arguments: 'a' 'i32', 'a' 'bool'
 Declared at {base.fum}/Function.fz:35:10:
-  public call(a A...) R => abstract
+  public call(a A...) R
 ---------^^^^
 
 
@@ -304,7 +304,7 @@ Number of actual arguments is 3, while call expects 2 arguments.
 Called feature: 'Function.call'
 Formal arguments: 'a' 'i32', 'a' 'bool'
 Declared at {base.fum}/Function.fz:35:10:
-  public call(a A...) R => abstract
+  public call(a A...) R
 ---------^^^^
 
 
@@ -315,7 +315,7 @@ Number of actual arguments is 0, while call expects 2 arguments.
 Called feature: 'Function.call'
 Formal arguments: 'a' 'i32', 'a' 'bool'
 Declared at {base.fum}/Function.fz:35:10:
-  public call(a A...) R => abstract
+  public call(a A...) R
 ---------^^^^
 
 
@@ -326,7 +326,7 @@ Number of actual arguments is 1, while call expects 2 arguments.
 Called feature: 'Function.call'
 Formal arguments: 'a' 'i32', 'a' 'bool'
 Declared at {base.fum}/Function.fz:35:10:
-  public call(a A...) R => abstract
+  public call(a A...) R
 ---------^^^^
 
 
@@ -337,7 +337,7 @@ Number of actual arguments is 3, while call expects 2 arguments.
 Called feature: 'Function.call'
 Formal arguments: 'a' 'i32', 'a' 'bool'
 Declared at {base.fum}/Function.fz:35:10:
-  public call(a A...) R => abstract
+  public call(a A...) R
 ---------^^^^
 
 
@@ -518,7 +518,7 @@ Number of actual arguments is 3, while call expects 2 arguments.
 Called feature: 'Function.call'
 Formal arguments: 'a' 'i32', 'a' 'bool'
 Declared at {base.fum}/Function.fz:35:10:
-  public call(a A...) R => abstract
+  public call(a A...) R
 ---------^^^^
 
 
@@ -529,7 +529,7 @@ Number of actual arguments is 1, while call expects 2 arguments.
 Called feature: 'Function.call'
 Formal arguments: 'a' 'i32', 'a' 'bool'
 Declared at {base.fum}/Function.fz:35:10:
-  public call(a A...) R => abstract
+  public call(a A...) R
 ---------^^^^
 
 
@@ -564,7 +564,7 @@ Number of actual arguments is 3, while call expects 2 arguments.
 Called feature: 'Function.call'
 Formal arguments: 'a' 'i32', 'a' 'bool'
 Declared at {base.fum}/Function.fz:35:10:
-  public call(a A...) R => abstract
+  public call(a A...) R
 ---------^^^^
 
 
@@ -575,7 +575,7 @@ Number of actual arguments is 1, while call expects 2 arguments.
 Called feature: 'Function.call'
 Formal arguments: 'a' 'i32', 'a' 'bool'
 Declared at {base.fum}/Function.fz:35:10:
-  public call(a A...) R => abstract
+  public call(a A...) R
 ---------^^^^
 
 54 errors.

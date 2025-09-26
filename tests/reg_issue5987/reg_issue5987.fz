@@ -32,9 +32,6 @@ reg_issue5987 =>
   test i32->i32 (-)
   test i32->i32 (+1)
 
-  # NYI: UNDER DEVELOPMENT: The following should best infer the internal type of lambda for `F`
-  # Instead, they currently infer `Unary i32 i32`, i.e., a ref type that will cause boxing
-  #
   test x->x+1
   test (-)
   test (+1)

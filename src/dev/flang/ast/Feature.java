@@ -2165,7 +2165,7 @@ A ((Choice)) declaration must not contain a result type.
     var at = arg.resultType();
     if (!(arg.isTypeParameter()
           || Types.resolved.legalNativeArgumentTypes.contains(at)
-          || at.selfOrConstraint(Context.NONE).isFunctionTypeExcludingLazy()
+          || at.selfOrConstraint(Context.NONE).isLambdaTargetButNotLazy(res)
           // NYI: BUG: check if array element type is valid
           || !at.isGenericArgument() && at.feature() == Types.resolved.f_array
           || !at.isGenericArgument() && at.feature().mayBeNativeValue()
@@ -2567,7 +2567,7 @@ A ((Choice)) declaration must not contain a result type.
 
     if (POSTCONDITIONS) ensure
       (Errors.any() || result != Types.t_ERROR,
-       Errors.any() || !result.containsUndefined(false));
+       Errors.any() || !result.containsUndefined());
 
     return result;
   }

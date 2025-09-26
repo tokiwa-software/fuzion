@@ -179,6 +179,7 @@ public typed_applicator(E type) is
   #         e + $v
   #
   public apply(T type, e E, v T) E
+    : fuzion.lambda_target
   =>
     abstract
 

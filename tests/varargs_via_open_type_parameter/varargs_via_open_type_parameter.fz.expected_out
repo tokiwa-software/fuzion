@@ -3,8 +3,15 @@ type is (varargs_via_open_type_parameter.test f64 i32 bool (array i32)).a.#
 first (number: 42), second "Hello World!", third (*** unknown type `unit` ***), fourth (number: 3+4i)
 first (number: 42), second "Hello World!", third (*** unknown type `unit` ***), fourth (number: 3+4i)
 first (number: 42), second "Hello World!", third (*** unknown type `unit` ***), fourth (number: 3+4i)
+first (number: 42), second "Hello World!", third (*** unknown type `unit` ***), fourth (number: 3+4i)
+first (number: 42), second "Hello World!", third (*** unknown type `unit` ***), fourth (number: 3+4i)
 1: 42
 2: Hello World!
 3: unit
 4: 3+4i
+1: 42
+2: Hello World!
+3: unit
+4: 3+4i
+42Hello World!unit3+4i
 42Hello World!unit3+4i

@@ -1,0 +1,102 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test infer_lambda_result
+#
+# -----------------------------------------------------------------------
+
+# this tests type inference from a lambda expression result to a type parameter
+# of the called feature that receives the lambda as an argument
+#
+infer_lambda_result =>
+
+  # plain case inferring the type directly
+  #
+  case1 =>
+
+    x(T type, f ()->T) =>
+      f.call
+
+    y => x ()->3.14
+
+    say "{type_of y .name}: $y"
+
+  # next, the inferred type is the argument to an option
+  #
+  case2 =>
+
+    x(T type, f ()->option T) =>
+      f.call
+
+    y => x ()->(u8 42)
+
+    say "{type_of y .name}: $y"
+
+  # next, we use our own lambda target which has the result type
+  # as the first type paramater
+  #
+  case3 =>
+
+    x(T type, f (ft3 (option T) i32 unit)) =>
+      f.c 42 unit
+
+    y => x _,_->(i128 1 1)
+
+    say "{type_of y .name}: $y"
+
+  # now, the same but the result type is the third type parameter
+  #
+  case4 =>
+
+    x(T type, f (ft4 i32 unit (option T))) =>
+      f.c 42 unit
+
+    y => x _,_->(u16 65535)
+
+    say "{type_of y .name}: $y"
+
+
+  # and, the same but adding more type parameters to the function
+  # receiving the lambda.
+  #
+  case5 =>
+
+    x(AA, BB, CC, T type, aa AA, bb BB, cc CC, f (ft5 AA BB (outcome T))) =>
+      f.c aa bb
+
+    y => x true unit [3,4] _,_->(u32 4000000000)
+
+    say "{type_of y .name}: $y"
+
+  case1
+  case2
+  case3
+  case4
+  case5
+
+
+ft3(R,A,B type) ref is
+  c(a1 A, b1 B) R : fuzion.lambda_target => abstract
+ft4(A,B,R type) ref is
+  c(a1 A, b1 B) R : fuzion.lambda_target => abstract
+ft5(A,B,R type) ref is
+  c(a1 A, b1 B) R : fuzion.lambda_target => abstract
+
+
+infer_lambda_result
