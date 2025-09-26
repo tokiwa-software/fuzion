@@ -317,26 +317,11 @@ public class Function extends AbstractLambda
              */
             args = new List<AbstractFeature>();
             var tps_as_actuals = new List<AbstractType>();
-            int itp = 0;
-            int iva = 0;
-            for (var n : _names)
+            for (var i = 0; t != Types.t_ERROR && i < _names.size(); i++)
               {
-                Feature arg;
-                if (itp < cl.typeArguments().size())
-                  {
-                    arg = new Feature(n._pos,
-                                      Visi.PRIV,
-                                      0,
-                                      new BuiltInType(FuzionConstants.ANY_NAME),
-                                      n._name,
-                                      Contract.EMPTY_CONTRACT,
-                                      Impl.TYPE_PARAMETER);
-                    tps_as_actuals.add(arg.asGenericType());
-                    itp++;
-                  }
-                else
-                  {
-                    var at = argTypes.get(iva)
+                var at = i < cl.typeArguments().size()
+                  ? new BuiltInType(FuzionConstants.ANY_NAME) /* constraint */
+                  : argTypes.get(i - cl.typeArguments().size())
                       // if we redef
                       //
                       //    x(A type, v option A)
@@ -349,21 +334,26 @@ public class Function extends AbstractLambda
                       // replace original's type parameters by redefinition's:
                       //
                       .applyTypePars(cl, tps_as_actuals);
-                    if (at == Types.t_UNDEFINED)
-                      {
-                        t = Types.t_ERROR;
-                        break;
-                      }
-                    arg = new Feature(n._pos,
-                                      Visi.PRIV,
-                                      0,
-                                      at,
-                                      n._name,
-                                      Contract.EMPTY_CONTRACT,
-                                      Impl.FIELD);
-                    iva++;
+                if (at == Types.t_UNDEFINED)
+                  {
+                    t = Types.t_ERROR;
                   }
-                args.add(arg);
+                else
+                  {
+                    var n = _names.get(i);
+                    var arg = new Feature(n._pos,
+                                          Visi.PRIV,
+                                          0,
+                                          at,
+                                          n._name,
+                                          Contract.EMPTY_CONTRACT,
+                                          i < cl.typeArguments().size() ? Impl.TYPE_PARAMETER : Impl.FIELD);
+                    if (i < cl.typeArguments().size())
+                      {
+                        tps_as_actuals.add(arg.asGenericType());
+                      }
+                    args.add(arg);
+                  }
               }
           }
         if (t != Types.t_ERROR)
