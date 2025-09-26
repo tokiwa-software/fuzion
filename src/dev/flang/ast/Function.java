@@ -425,7 +425,10 @@ public class Function extends AbstractLambda
         return null;
       }
     else
-      { // NYI: check that arg list is empty!
+      { // NYI: UNDER DEVELOPMENT: Report error if arg list is not empty. Also
+        // handle the case that one of the outer features in context is the same
+        // as f.outer() and use the correct chain of current and outer refs
+        // instead.
         return new Call(pos(), targetCalls(res, context, f.outer()), f.featureName().baseName());
       }
   }
