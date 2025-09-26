@@ -255,8 +255,7 @@ main =>
 
   max_recorded := test_durations
     .values
-    .sort
-    .last
+    .max
   h := time.histogram target nil max_recorded 0 0
   test_durations
     .values
