@@ -1544,18 +1544,79 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * For a function type (see isFunctionType()), return the arity of the
-   * function.
+   * For a lambda target (@see isLambdaTarget()), hand down a type from the
+   * lambda target signature and hand it down along the inheritance chain down
+   * to this type and apply this type's type parameters.
+   *
+   * @param res the resolution instance.
+   *
+   * @param t the original type used by the lambda target.
+   *
+   * @return the resulting type.
+   */
+  List<AbstractType> lambdaTargetHandDownType(Resolution res, AbstractType t)
+  {
+    if (PRECONDITIONS) require
+      (isLambdaTarget(res));
+
+    var cl = res._module.findLambdaTarget(feature());
+    return cl
+      .outer()
+      .handDown(res, new List<>(t), feature())
+      .flatMap(at -> at.applyTypeParsMaybeOpen(feature(), generics()));
+  }
+
+
+  /**
+   * For a lambda target (@see isLambdaTarget()), return the actual argument
+   * types as seen by this type.
+   *
+   * @param res the resolution instance.
+   *
+   * @return the argument types.
+   */
+  List<AbstractType> lambdaTargetArgumentTypes(Resolution res)
+  {
+    if (PRECONDITIONS) require
+      (isLambdaTarget(res));
+
+    var cl = res._module.findLambdaTarget(feature());
+    return cl.valueArguments()
+      .flatMap2(a -> lambdaTargetHandDownType(res, a.resultTypeIfPresentUrgent(res, true)));
+  }
+
+
+  /**
+   * For a lambda target (@see isLambdaTarget()), return the actual result type
+   * as seen by this type.
+   *
+   * @param res the resolution instance.
+   *
+   * @return the result type.
+   */
+  AbstractType lambdaTargetResultType(Resolution res)
+  {
+    if (PRECONDITIONS) require
+      (isLambdaTarget(res));
+
+    var cl = res._module.findLambdaTarget(feature());
+    return lambdaTargetHandDownType(res, cl.resultTypeIfPresentUrgent(res, true))
+      .getFirstOrElse(Types.t_ERROR);
+  }
+
+
+  /**
+   * For a lambda target (@see isLambdaTarget()), return the actual arity of the
+   * lamda.
    *
    * @return the number of arguments to be passed to this function type.
    */
   int arity(Resolution res)
   {
     if (PRECONDITIONS) require
-      (isFunctionType(res));
+      (isLambdaTarget(res));
 
-    var cl = res._module.findLambdaTarget(feature());
-    return cl.valueArguments().flatMap2(a -> cl.outer().handDown(res, new List<>(a.resultTypeIfPresent(res) /* NYI: check for null! */), feature())).flatMap(at -> at.applyTypeParsMaybeOpen(feature(),generics())).size();
+    return lambdaTargetArgumentTypes(res).size();
   }
 
 

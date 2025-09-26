@@ -290,8 +290,7 @@ public class Function extends AbstractLambda
     else
       {
         var cl = res._module.findLambdaTarget(t.feature());
-        var tf = t;
-        var argTypes = cl.valueArguments().flatMap2(a -> cl.outer().handDown(res, new List<>(a.resultType()), tf.feature())).flatMap(at -> at.applyTypeParsMaybeOpen(tf.feature(),tf.generics()));
+        var argTypes = t.lambdaTargetArgumentTypes(res);
         if (_names.size() != cl.typeArguments().size() + argTypes.size())
           {
             AstErrors.wrongNumberOfArgumentsInLambda(pos(), _names, t);
@@ -369,7 +368,7 @@ public class Function extends AbstractLambda
           }
         if (t != Types.t_ERROR)
           {
-            var rt0 = cl.outer().handDown(res,  new List<>(cl.resultType()),tf.feature()).map(at -> at.applyTypePars(tf.feature(),tf.generics())).get(0);
+            var rt0 = t.lambdaTargetResultType(res);
             var rt = inferResultType ? NoType.INSTANCE      : new FunctionReturnType(rt0);
             var im = inferResultType ? Impl.Kind.RoutineDef : Impl.Kind.Routine;
             var feature = new Feature(pos(), Visi.PRIV, FuzionConstants.MODIFIER_REDEFINE, rt, new List<String>(cl.featureName().baseName()), args, NO_CALLS, Contract.EMPTY_CONTRACT, new Impl(_expr.pos(), _expr, im))
