@@ -29,59 +29,6 @@ main =>
 
   ########### Extensions ###############
 
-  # execute this Sequence of process+args
-  # return what we read from stdout as the result
-  #
-  Sequence.prefix ! String =>
-
-    lm : mutate is
-
-    lm ! ()->
-      seq := map x->x.as_string
-      match os.process.start seq.first.val (seq.drop 1)
-        e error => panic "failed executing {Sequence.this}, error is $e"
-        p os.process =>
-          res :=
-            match p.with_out String lm (()->String.from_bytes (io.buffered lm).read_fully)
-              e error => panic "failed reading stdout from {Sequence.this}, error is: $e"
-              s String => s.trim_end
-          err :=
-            match p.with_err String lm (()->String.from_bytes (io.buffered lm).read_fully)
-              e error => panic "failed reading stderr from {Sequence.this}, error is: $e"
-              s String => s.trim_end
-          ec := p.wait.get 1
-          if ec != 0
-            panic "error $ec when executing $seq, stderr: $err"
-          res
-
-
-  # feed this string to a new process
-  # return what we read from stdout as the result
-  #
-  String.infix | (seq Sequence String) String =>
-
-    lm : mutate is
-
-    lm ! ()->
-      match os.process.start seq.first.val (seq.drop 1)
-        e error => panic "failed executing $seq, error is $e"
-        p os.process =>
-          _ := p.with_in unit lm ()->
-            _ := (io.buffered lm).writer.env.write String.this.utf8
-            _ := (io.buffered lm).writer.env.flush
-            _ := p.wait # close stdin
-          match p.with_out String lm (()->String.from_bytes (io.buffered lm).read_fully)
-            e error => panic "failed reading stdout from $seq, error is: $e"
-            s String => s
-
-
-  # execute this string by splitting at all whitespaces
-  # return what we read from stdout as the result
-  #
-  String.prefix !! String =>
-    !split
-
-
   # check if exe is installed by trying
   # to execute it once
   #
@@ -177,11 +124,23 @@ main =>
 
     say ebnf
 
+    # extension to ensure process exited with 0
+    #
+    process_result.out_or_panic =>
+      if !ok
+        panic "got error code when executing process"
+      out
+
+
     # test grammar with antlr4
-    tmp := !!"mktemp --directory"
-    _ := !!"mkdir $tmp/fuzion_grammar"
+    tmp := "mktemp --directory".execute.out_or_panic
+    _ := "mkdir -p $tmp/fuzion_grammar".execute.out_or_panic
     _ := io.file.write "$tmp/fuzion_grammar/Fuzion.g4" ebnf
     antlr := if ((os.process.start "antlr4").bind u32 p->p.wait).as_equatable = 0 then "antlr4" else "antlr"
     # NYI: UNDER DEVELOPMENT: add option -Werror
-    _ := !!"$antlr -long-messages -o $tmp/fuzion_grammar $tmp/fuzion_grammar/Fuzion.g4"
-    _ := !!"rm -Rf $tmp"
+    _ := "$antlr -long-messages -o $tmp/fuzion_grammar $tmp/fuzion_grammar/Fuzion.g4".execute
+    _ := "rm -Rf $tmp".execute.out_or_panic
+
+
+Process_Env.instate Process_Env ()->
+  _ := main

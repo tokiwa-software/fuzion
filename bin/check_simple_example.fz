@@ -23,18 +23,6 @@
 
 ########### Extensions ###############
 
-# used for protecting spaces when splitting command string
-#
-protected_space := codepoint codepoint.utf8_encoded_in_four_bytes.as_list.last.val
-
-# stores the results of a process
-#
-process_result(out String, err String, exit_code u32) is
-  ok => exit_code = 0
-
-  type.empty_success =>
-    process_result "" "" 0
-
 is_windows =>
   ((envir.vars.get "OS").val "").lower_case.contains "windows"
 
@@ -93,62 +81,6 @@ envir_vars :=
       .as_array))
   .add "FUZION_DISABLE_ANSI_ESCAPES" "true"
 
-# helper to get out, err, exit_code from started process
-#
-record_process(
-      p os.process,
-      # the command, for error messages
-      cmd String,
-      # feed .stdin file to executed process?
-      feed_stdin bool
-) process_result =>
-  lm : mutate is
-  (concur.thread_pool 2 ()->
-      fout := concur.thread_pool.env.submit _ ()->
-        lm ! ()->
-          match p.with_out String lm (()->String.from_bytes (io.buffered lm).read_fully)
-            e error => panic "failed reading stdout from $cmd, error is: $e"
-            out String => out
-      ferr := concur.thread_pool.env.submit _ ()->
-        lm ! ()->
-          match p.with_err String lm (()->String.from_bytes (io.buffered lm).read_fully)
-            e error => panic "failed reading stderr from $cmd, error is: $e"
-            err String => err
-
-      stdin_file := "$file.stdin"
-      if feed_stdin && io.file.exists stdin_file
-        lm ! ()->
-          _ := p.with_in unit lm ()->
-            _ := (io.buffered lm).writer.env.write (read_file_fully stdin_file).or_panic.utf8
-
-      match p.wait
-        e error => panic "failed waiting for $cmd, error is: $e"
-        ec u32 => process_result fout.get ferr.get ec)
-    .get
-
-# execute this Sequence of process+args
-#
-Sequence.execute(
-  # feed .stdin file to executed process?
-  feed_stdin bool
-) =>
-  seq := map x->x.as_string
-  match os.process.start seq.first.val (seq.drop 1) envir_vars
-    e error => panic "failed executing {Sequence.this}, error is $e"
-    p os.process => record_process p Sequence.this.as_string feed_stdin
-
-# execute this string by splitting at all whitespaces
-#
-String.execute(
-  # feed .stdin file to executed process?
-  feed_stdin bool
-) =>
-  ((split_if (=" ")).map (.replace protected_space " ")).execute feed_stdin
-
-# execute this string by splitting at all whitespaces
-#
-String.execute =>
-  String.this.execute false
 
 # write data to file dest
 #
@@ -244,8 +176,14 @@ exp_err := if io.file.exists "$file.expected_err_$be" then "$file.expected_err_$
 exp_err_cleaned := "$exp_err.cleaned"
 
 if io.file.exists "$file.skip" || (be = "effect" && !(io.file.exists "$file.effect"))
-    say "SKIP $file"
+  say "SKIP $file"
 else
+
+  Custom_Process_Env : Process_Env is
+    public redef envir_vars container.Map String String => universe.envir_vars
+
+  Process_Env.instate Custom_Process_Env ()->
+
     yak "RUN $file "
 
     delete_tmp_files
@@ -264,14 +202,23 @@ else
       s := envir.vars
                 .get x
                 .val ""
-                .replace " " protected_space
+                .replace " " Process_Env.env.protected_space
                 .split "|"
       String.join s " "
+
+    stdin_file := "$file.stdin"
+    stdin option (Sequence u8) :=
+      if io.file.exists stdin_file
+        read_file_fully stdin_file
+          .or_panic
+          .utf8
+      else
+        nil
 
     if be = "c"
       compile := "$fz_run -XmaxErrors=-1 -c {backend_options "FUZION_C_BACKEND_OPTIONS"} $file -o=testbin".execute
       if compile.ok
-        run := "./testbin".execute true
+        run := "./testbin".execute stdin
 
         check_exit_code run
 
@@ -281,14 +228,14 @@ else
         write_to_file "tmp_out.txt" compile.out
         write_to_file "tmp_err.txt" compile.err
     else if be = "jvm"
-      run := "$fz_run -XmaxErrors=-1 -jvm {backend_options "FUZION_JVM_BACKEND_OPTIONS"} $file".execute true
+      run := "$fz_run -XmaxErrors=-1 -jvm {backend_options "FUZION_JVM_BACKEND_OPTIONS"} $file".execute stdin
 
       check_exit_code run
 
       write_to_file "tmp_out.txt" run.out
       write_to_file "tmp_err.txt" run.err
     else if be = "int"
-      run := "$fz_run -XmaxErrors=-1 -interpreter $file".execute true
+      run := "$fz_run -XmaxErrors=-1 -interpreter $file".execute stdin
 
       check_exit_code run
 
