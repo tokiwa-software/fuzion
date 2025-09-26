@@ -9,4 +9,9 @@ first (number: 42), second "Hello World!", third (*** unknown type `unit` ***), 
 2: Hello World!
 3: unit
 4: 3+4i
+1: 42
+2: Hello World!
+3: unit
+4: 3+4i
+42Hello World!unit3+4i
 42Hello World!unit3+4i
