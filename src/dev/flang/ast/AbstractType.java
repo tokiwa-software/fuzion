@@ -343,6 +343,22 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
+   * Is this a plain-type, i.e., a value or a ref type created by a feature and
+   * actual type parameters?
+   */
+  public boolean isPlainType()
+  {
+    return
+      this != Types.t_ERROR &&
+      switch (kind())
+      {
+        case RefType, ValueType        -> true;
+        case ThisType, GenericArgument -> false;
+      };
+  }
+
+
+  /**
    * For a resolved type, check if it is a choice type and if so, return the
    * list of choices.
    *
@@ -1482,7 +1498,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public boolean isLambdaTarget(Resolution res)
   {
     return
-      !isGenericArgument() &&
+      isPlainType() &&
       res._module.findLambdaTarget(feature()) != null;
   }
 
@@ -1495,7 +1511,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public boolean isLambda()
   {
     return
-      !isGenericArgument() &&
+      isPlainType() &&
       feature().featureName().baseName().startsWith(FuzionConstants.LAMBDA_PREFIX);
   }
 
@@ -1552,7 +1568,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   {
     return
       this != Types.t_ERROR &&
-      !isGenericArgument() &&
+      isPlainType() &&
       feature() == Types.resolved.f_Lazy;
   }
 
