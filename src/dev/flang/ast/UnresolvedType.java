@@ -870,7 +870,8 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
                          freeTypeConstraint().resolve(res, context),
                          _name,
                          Contract.EMPTY_CONTRACT,
-                         Impl.TYPE_PARAMETER)
+                         _followedByDots ? Impl.TYPE_PARAMETER_OPEN
+                                         : Impl.TYPE_PARAMETER)
       {
         /**
          * Is this type a free type?
