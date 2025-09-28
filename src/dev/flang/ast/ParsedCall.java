@@ -615,9 +615,7 @@ public class ParsedCall extends Call
   {
     return !isSpecialWrtArgs(calledFeature) &&
             calledFeature != Types.f_ERROR &&
-            _generics.isEmpty() &&
-            _actuals.size() != calledFeature.valueArguments().size() &&
-            !calledFeature.hasOpenGenericsArgList(res);
+            _generics.isEmpty();
   }
 
 
@@ -626,15 +624,71 @@ public class ParsedCall extends Call
   {
     if (mustSplitOffTypeArgs(res, calledFeature))
       {
-        var g = new List<AbstractType>();
+        var g = NO_GENERICS;
         var a = new List<Expr>();
         var ts = calledFeature.typeArguments();
         var tn = ts.size();
         var ti = 0;
         var vs = calledFeature.valueArguments();
         var vn = vs.size();
+        /*
+        if (pos().show().indexOf("hash_map.fz:163")>=0)
+          {
+            System.out.println("vn is "+vn+" tn is "+tn+" at "+pos().show());
+            System.out.println("cf: "+calledFeature.qualifiedName()+" ts: "+ts);
+            if (ts.size()>0)
+              System.out.println(""+ts.getLast().isOpenTypeParameter()+" "+(vs.getLast() instanceof Feature fa));
+            if (vs.size() > 0)
+              {
+                System.out.println("fa "+(vs.getLast() instanceof Feature fa));
+                System.out.println(vs.getLast() instanceof Feature fa && fa.returnType() instanceof FunctionReturnType frt);
+                System.out.println("ut "+(vs.getLast() instanceof Feature fa && fa.returnType() instanceof FunctionReturnType frt && frt.functionReturnType() instanceof UnresolvedType ut));
+                System.out.println("ut "+(vs.getLast() instanceof Feature fa && fa.returnType() instanceof FunctionReturnType frt? frt.functionReturnType().getClass():null));
+                System.out.println("ut "+(vs.getLast() instanceof Feature fa && fa.returnType() instanceof FunctionReturnType frt? frt.functionReturnType().isOpenGeneric():"?!?"));
+                System.out.println(vs.getLast() instanceof Feature fa
+                                   ? fa.returnType() instanceof FunctionReturnType frt && frt.functionReturnType() instanceof UnresolvedType ut && ut._followedByDots
+                                   : vs.getLast().resultType().isOpenGeneric());
+              }
+          }
+        */
+        var firstValueIndex = _actuals.size() - vn;
+        if (vn > 0 && tn > 0 &&
+            ts.getLast().isOpenTypeParameter() &&
+            (vs.getLast() instanceof Feature fa
+             ? fa.returnType() instanceof FunctionReturnType frt && frt.functionReturnType().isOpenGeneric()
+             : vs.getLast().resultType().isOpenGeneric()) &&
+            (_actuals.size() < tn || _actuals.get(tn-1).asType() != Types.t_UNDEFINED))
+          {
+            tn--;
+              // System.out.println("DROP LAST TYPE PAR, tn is "+tn+" at "+pos().show());
+            firstValueIndex = tn;
+          }
+        else if (vn > 0 && tn > 0 &&
+            ts.getLast().isOpenTypeParameter() &&
+            (vs.getLast() instanceof Feature fa
+             ? fa.returnType() instanceof FunctionReturnType frt && frt.functionReturnType().isOpenGeneric()
+             : vs.getLast().resultType().isOpenGeneric()) &&
+                 (_actuals.size() >= tn && _actuals.get(tn-1).asType() == Types.t_UNDEFINED))
+          {
+            firstValueIndex = tn;
+            // System.out.println("KEEP LAST TYPE PAR, tn is "+tn+" at "+pos().show());
+          }
+        else if (false)
+          {
+
+            System.out.println("DO NOT DROP LAST TYPE PAR, tn is "+tn+
+                               ts.getLast().isOpenTypeParameter() +
+            (vs.getLast() instanceof Feature fa
+             ? fa.returnType() instanceof FunctionReturnType frt && frt.functionReturnType().isOpenGeneric()
+             : vs.getLast().resultType().isOpenGeneric()) +
+            (_actuals.size() < tn || _actuals.get(tn-1).asType() != Types.t_UNDEFINED)+
+                                 (_actuals.size() < tn)+" || "+(_actuals.get(tn-1).asType() != Types.t_UNDEFINED)+_actuals.get(tn-1)+_actuals.get(tn-1).asType()+
+                               " at "+pos().show());
+          }
+        //        System.out.println("firstValIndex: "+firstValueIndex);
         var i = 0;
         ListIterator<Expr> ai = _actuals.listIterator();
+        var startedOpenTypes = false;
         while (ai.hasNext())
           {
             var aa = ai.next();
@@ -648,27 +702,43 @@ public class ParsedCall extends Call
                ts.get(ti).kind() == AbstractFeature.Kind.TypeParameter     ||
                ts.get(ti).kind() == AbstractFeature.Kind.OpenTypeParameter);
 
-            if (_actuals.size() - i > vn)
+            var t = ti < tn &&
+                    i < firstValueIndex ? _actuals.get(i).asType()
+                                        : null;
+            if (t != null && !(startedOpenTypes && t == Types.t_UNDEFINED))
               {
-                AbstractType t = _actuals.get(i).asType();
-                if (t != null)
-                  {
-                    g.add(t);
-                  }
                 ai.set(Expr.NO_VALUE);  // make sure visit() no longer visits this
-                if (ti > ts.size() && ts.get(ti).kind() != AbstractFeature.Kind.OpenTypeParameter)
+                if (ti < tn  && ts.get(ti).kind() != AbstractFeature.Kind.OpenTypeParameter)
                   {
                     ti++;
+                    g = g == NO_GENERICS ? new List<AbstractType>() : g;
+                    g.add(t);
+                  }
+                else
+                  {
+                    startedOpenTypes = true;
+                    if (ti < tn && ts.get(ti).kind() == AbstractFeature.Kind.OpenTypeParameter && t == Types.t_UNDEFINED)
+                      {
+                        firstValueIndex = i;
+                      }
+                    else
+                      {
+                        g = g == NO_GENERICS ? new List<AbstractType>() : g;
+                        g.add(t);
+                      }
                   }
               }
             else
               {
+                firstValueIndex = i;
                 a.add(aa);
               }
             i++;
           }
         _generics = g;
         _actuals = a;
+        // System.out.println("after split off: gen: "+_generics);
+        // System.out.println("after split off: val: "+_actuals+" at "+pos().show());
       }
   }
 

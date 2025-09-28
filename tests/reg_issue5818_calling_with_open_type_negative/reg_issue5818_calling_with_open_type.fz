@@ -1,0 +1,152 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue5818_calling_with_open_type
+#
+# -----------------------------------------------------------------------
+
+# Several test cases that call features with type and value arguments of
+# open type.
+#
+reg_issue5818_calling_with_open_type =>
+
+
+  # ------------------------------
+
+
+  # Start with a simple case of just one open type parameter
+  #
+  f(A type ...) =>
+    say "hi $A"
+
+  f                                                                # ok
+  f u8                                                             # ok
+  f u8 unit i32 f64  (array String)   String (num.complex f64)     # ok
+  f _                                                              # ok
+  f u8 _                                                           #  1. should flag an error: undefined open type parameter
+  f _ u8                                                           #  2. should flag an error: extra open type parameter
+  f _ _                                                            #  3. should flag an error: extra open type parameter
+  f             3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  #  4. should flag an error: too many value arguments
+  f u8 unit i32 3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  #  5. should flag an error: too many value arguments
+  f _           3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  #  6. should flag an error: too many value arguments
+
+
+  # ------------------------------
+
+
+  # Add two normal type parameters
+  #
+  g(T,U type, A type ...) =>
+    say "hi $T $U $A"
+  g u8 unit                                                        # ok
+  g u8 unit i32                                                    # ok
+  g u8 unit i32 f64                                                # ok
+  g u8 unit i32 f64  (array String)   String (num.complex f64)     # ok
+  g             3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  #  7. should flag an error: failed to infer type parameter T, U
+  g u8 unit i32 3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  #  8. should flag an error: too many value arguments
+  g _                                                              #  9. should flag an error: wrong number of arguments
+  g _  _                                                           # 10. should flag an error: failed to infer T, U
+  g _  _    _                                                      # 11. should flag an error: failed to infer T, U
+  g _                                                              # 12. should flag an error: too many value arguments
+  g u8 _                                                           # 13. should flag an error: too many value arguments
+  g u8 unit                                                        # ok
+  g u8 unit _                                                      # ok
+
+
+  # ------------------------------
+
+  # Now an open type argument that is used as the type of a value arguemnt.
+  #
+  # if open type parameters are used as type of value arguments, the types must be inferred:
+  #
+  h(A type ..., a A...) =>
+    say "hi $A $a"
+
+  # giving no type parameters is ok:
+  h                    3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  # ok.
+
+  # giving `_` as type parameter is ok:
+  h _                  3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  # ok.
+
+  # but giving types is not ok, the parser cannot tell them apart from calls:
+  (h                                                                      # 14. should flag an error: failed to infer open type parameters
+     f64                                                                  # 15. should flag an error: cannot call `f64`
+     (array String)                                                       # 16. should flag an error: cannot call `array String`
+     3.14
+     ["true","false"])
+
+
+  # ------------------------------
+
+
+  i(T,U type, A type ..., a A...) =>
+    say "hi $T $U $A $a"
+  i u8 unit                    3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  # ok.
+  i u8 unit _                  3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  # ok.
+  (i u8 unit                                                              # 17. should flag an error: failed to infer open type parameters
+     f64                                                                  # 18. should flag an error: cannot call `f64`
+     (array String)                                                       # 19. should flag an error: cannot call `array String`
+     3.14
+     ["true","false"])
+
+
+  # ------------------------------
+
+
+  j(T,U type, A type ..., t T, a A...) =>
+    say "hi $T $U $A $t $a"
+  j f64 unit _         3.14                                               # ok.
+  j _   unit _         3.14                                               # ok.
+  j f64 unit _         3.14 ["true","false"]                              # ok.
+  j _   unit _         3.14 ["true","false"]                              # ok.
+  j f64 unit _         3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  # ok.
+  j _   unit _         3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  # ok.
+  j f64 unit           3.14                                               # ok???
+  /*
+  j _   unit           3.14                                               #
+  j f64 unit           3.14 ["true","false"]                              #
+  j _   unit           3.14 ["true","false"]                              #
+  j f64 unit           3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  #
+  j _   unit           3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  #
+
+
+  # ------------------------------
+
+
+  k(T,U type, A type ..., t T, u U, a A...) =>
+    say "hi $T $U $A $t $u $a"
+  k f64 (array String) _ 3.14 ["true","false"]                              # ok.
+  k _   (array String) _ 3.14 ["true","false"]                              # ok.
+  k _   _              _ 3.14 ["true","false"]                              # ok.
+  k f64 (array String) _ 3.14 ["true","false"] "?!?"                        # ok.
+  k _   (array String) _ 3.14 ["true","false"] "?!?"                        # ok.
+  k _   _              _ 3.14 ["true","false"] "?!?"                        # ok.
+  k f64 (array String) _ 3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  # ok.
+  k _   (array String) _ 3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  # ok.
+  k _   _              _ 3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  # ok.
+  k f64 (array String)   3.14 ["true","false"]                              #
+  k _   (array String)   3.14 ["true","false"]                              #
+  k _   _                3.14 ["true","false"]                              #
+  k f64 (array String)   3.14 ["true","false"] "?!?"                        #
+  k _   (array String)   3.14 ["true","false"] "?!?"                        #
+  k _   _                3.14 ["true","false"] "?!?"                        #
+  k f64 (array String)   3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  #
+  k _   (array String)   3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  #
+  k _   _                3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  #
+  */

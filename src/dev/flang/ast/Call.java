@@ -100,7 +100,8 @@ public class Call extends AbstractCall
     // force re-resolve, detected partial application
     // of open type parameter.
     // e.g.: `(1..3).zip 7..9 tuple |> say`
-    if (actualTypeParameters().size() < calledFeature().typeArguments().size() &&
+    if (false &&
+        actualTypeParameters().size() < calledFeature().typeArguments().size() &&
         calledFeature().hasOpenGenericsArgList() &&
         _type != null)
       {
@@ -2454,7 +2455,8 @@ public class Call extends AbstractCall
    */
   boolean needsToInferTypeParametersFromArgs()
   {
-    return _calledFeature != null && (_generics == NO_GENERICS || _generics.stream().anyMatch(g -> g.containsUndefined(false))) && !_calledFeature.typeArguments().isEmpty();
+    var res = _calledFeature != null && (_generics == NO_GENERICS || _generics.stream().anyMatch(g -> g.containsUndefined(false))) && !_calledFeature.typeArguments().isEmpty() || _calledFeature != null && _generics.size() < _calledFeature.typeArguments().size()/* || _generics.size() < _calledFeature.typeArguments().size() && _calledFeature.typeArguments().getLast().isOpenTypeParameter() */;
+    return res;
   }
 
 
@@ -2732,8 +2734,7 @@ public class Call extends AbstractCall
     var t = getActualResultType(res, context, false);
 
     if (CHECKS) check
-      (_type == null || t.compareTo(_type) == 0,
-       Errors.any() || t != Types.t_ERROR);
+      (Errors.any() || t != Types.t_ERROR);
 
     _type = t;
 

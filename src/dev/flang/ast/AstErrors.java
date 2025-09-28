@@ -223,30 +223,32 @@ public class AstErrors extends ANY
 
   private static String argCountStr(AbstractFeature f)
   {
-    int typeCount  = f.typeArguments().size();
-    int valueCount = f.valueArguments().size();
-    String typeArgStr = StringHelpers.singularOrPlural(typeCount, "type argument");
-    String valArgStr  = StringHelpers.singularOrPlural(valueCount, "value argument");
-
-    return
-      typeCount == 0
-        ? valueCount == 0
-            ? "(no arguments)"
-            : "(" + valArgStr + ")"
-        : valueCount == 0
-            ? "(" + typeArgStr + ")"
-            : " (" + typeArgStr + ", " + valArgStr + ")";
+    var msg = new List<String>();
+    var ta = f.typeArguments();
+    var va = f.valueArguments();
+    var typeCount  = ta.size();
+    var valueCount = va.size();
+    String open = null;
+    if (typeCount > 0 && f.typeArguments().getLast().isOpenTypeParameter())
+      {
+        typeCount--;
+        open = "one open type argument";
+      }
+    if (typeCount > 0 ) { msg.add(StringHelpers.typeArgumentsString( typeCount ) + " " + ta.take(typeCount).map2(a->a.featureName().baseName()).toString("", " ", "")); }
+    if (open != null  ) { msg.add(open + " " + ta.getLast().featureName());    }
+    if (valueCount > 0) { msg.add(StringHelpers.valueArgumentsString(valueCount) + " " + va                .map2(a->a.featureName().baseName()).toString(" "));  }
+    return msg.size() == 0 ? "(no arguments)" :  msg.toString("(", ", ", ")");
   }
 
   private static String callableArgCountMsg(AbstractFeature f)
   {
     return "To call " + sbn(f.featureName().baseName())
       + (f.arguments().isEmpty()
-          ? " you must not provide arguments."
-          : " you must provide "
+          ? ", you must not provide arguments."
+          : ", you must provide "
             + StringHelpers.singularOrPlural(f.arguments().size(), "argument") + "."
             + (f.typeArguments().size() > 0
-                ? " The type arguments may be omitted or `_` may be used in place of a type argument."
+                ? " The type arguments may be omitted or `_` may be used in place of a type argument if they can be inferred from the value arguments.."
                 : ""));
   }
 
@@ -586,29 +588,52 @@ public class AstErrors extends ANY
   static void wrongNumberOfActualArguments(Resolution res, Context context, Call call)
   {
     var resolvedFormalArgumentTypes = call.resolvedFormalArgumentTypes(res, context);
+    var actualValueArguments = call._actuals;
     int fsz = resolvedFormalArgumentTypes.length;
     boolean ferror = false;
-    StringBuilder fstr = new StringBuilder();
     var fargs = call.calledFeature().valueArguments().iterator();
     AbstractFeature farg = null;
-    for (var t : resolvedFormalArgumentTypes)
+    StringBuilder fstr = new StringBuilder();
+    if (resolvedFormalArgumentTypes.length == 0)
       {
-        if (CHECKS) check
-          (t != null);
-        ferror = t == Types.t_ERROR;
-        fstr.append(fstr.length
-                    () > 0 ? ", " : "");
-        farg = fargs.hasNext() ? fargs.next() : farg;
-        fstr.append(farg != null ? sbnf(farg) + " " : "");
-        fstr.append(s(t));
+        fstr.append("--none--");
+      }
+    else
+      {
+        for (var t : resolvedFormalArgumentTypes)
+          {
+            if (CHECKS) check
+                          (t != null);
+            ferror = t == Types.t_ERROR;
+            fstr.append(fstr.length
+                        () > 0 ? ", " : "");
+            farg = fargs.hasNext() ? fargs.next() : farg;
+            fstr.append(farg != null ? sbnf(farg) + " " : "");
+            fstr.append(s(t));
+          }
+      }
+    StringBuilder astr = new StringBuilder();
+    if (actualValueArguments.size() == 0)
+      {
+        astr.append("--none--");
+      }
+    else
+      {
+        for (var va : actualValueArguments)
+          {
+            astr.append(astr.length
+                        () > 0 ? ", " : "");
+            astr.append(s(va));
+          }
       }
     if (!ferror) // if something went wrong earlier, report no error here
       {
         error(call.pos(),
-              "Wrong number of actual arguments in call",
-              "Number of actual arguments is " + call._actuals.size() + ", while call expects " + StringHelpers.argumentsString(fsz) + ".\n" +
+              "Wrong number of actual value arguments in call",
+              "Number of actual value arguments is " + actualValueArguments.size() + ", while call expects " + StringHelpers.valueArgumentsString(fsz) + ".\n" +
+              "Actual value arguments: " + astr + "\n" +
               "Called feature: " + s(call.calledFeature())+ "\n"+
-              "Formal arguments: " + fstr + "\n" +
+              "Formal value arguments: " + fstr + "\n" +
               "Declared at " + call.calledFeature().pos().show());
       }
   }

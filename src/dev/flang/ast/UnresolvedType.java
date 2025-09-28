@@ -904,6 +904,13 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
   }
 
 
+  @Override
+  public boolean isOpenGeneric()
+  {
+    return _followedByDots;
+  }
+
+
   /**
    * The mode of the type: ThisType, RefType or ValueType.
    */
