@@ -676,6 +676,7 @@ public class ParsedCall extends Call
             System.out.println("DROP LAST TYPE PAR, tn is "+tn+" at "+pos().show());
             firstValueIndex = tn;
           }
+          */
         else if (vn > 0 && tn > 0 &&
             ts.getLast().isOpenTypeParameter() &&
             (vs.getLast() instanceof Feature fa
@@ -684,8 +685,9 @@ public class ParsedCall extends Call
                  (_actuals.size() >= tn && _actuals.get(tn-1).asType() == Types.t_UNDEFINED))
           {
             firstValueIndex = tn;
-            System.out.println("KEEP LAST TYPE PAR, tn is "+tn+" at "+pos().show());
+            // System.out.println("KEEP LAST TYPE PAR, tn is "+tn+" at "+pos().show());
           }
+        /*
         else if (false)
           {
 
@@ -776,8 +778,8 @@ public class ParsedCall extends Call
           }
         _generics = g;
         _actuals = a;
-        //        System.out.println("after split off: gen: "+_generics);
-        //        System.out.println("after split off: val: "+_actuals+" at "+pos().show());
+        // System.out.println("after split off: gen: "+_generics);
+        // System.out.println("after split off: val: "+_actuals+" at "+pos().show());
       }
   }
 
