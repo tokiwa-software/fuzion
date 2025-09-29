@@ -1745,7 +1745,7 @@ public class Call extends AbstractCall
     // we failed inferring all type parameters, so report errors
     for (var a : _actuals)
       {
-        if (a instanceof Call)
+        if (a instanceof Call && !(a instanceof Select)) /* NYI: CLEANUP: would be better if `Select` would not inherit `Call` */
           {
             var ignore = a.type();
           }
