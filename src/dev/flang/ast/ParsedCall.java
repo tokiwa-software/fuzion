@@ -654,7 +654,9 @@ public class ParsedCall extends Call
         */
         var firstValueIndex = _actuals.size() - vn;
 
-        if ((vs.size()>0 && vs.getLast().state().atLeast(State.RESOLVED_TYPES) && vs.getLast().resultType().isOpenGeneric() ||
+        if ((vs.size()>0 && vs.getLast().state().atLeast(State.RESOLVED_TYPES) &&
+             vs.getLast().resultTypeIfPresent(res) != null &&
+             vs.getLast().resultTypeIfPresent(res).isOpenGeneric() ||
             vs.size()>0 &&
             vs.getLast() instanceof Feature f &&
             f.returnType() instanceof FunctionReturnType fr &&
@@ -780,6 +782,7 @@ public class ParsedCall extends Call
         _actuals = a;
         // System.out.println("after split off: gen: "+_generics);
         // System.out.println("after split off: val: "+_actuals+" at "+pos().show());
+        // System.out.println("NOW: "+this);
       }
   }
 
