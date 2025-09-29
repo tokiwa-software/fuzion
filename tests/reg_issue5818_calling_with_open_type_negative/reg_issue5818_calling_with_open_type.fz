@@ -38,13 +38,13 @@ reg_issue5818_calling_with_open_type =>
   f                                                                # ok
   f u8                                                             # ok
   f u8 unit i32 f64  (array String)   String (num.complex f64)     # ok
-  f _                                                              # ok
-  f u8 _                                                           #  1. should flag an error: undefined open type parameter
-  f _ u8                                                           #  2. should flag an error: extra open type parameter
-  f _ _                                                            #  3. should flag an error: extra open type parameter
-  f             3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  #  4. should flag an error: too many value arguments
-  f u8 unit i32 3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  #  5. should flag an error: too many value arguments
-  f _           3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  #  6. should flag an error: too many value arguments
+  f _                                                              #  1. should flag an error: failed to infer type parameter A
+  f u8 _                                                           #  2. should flag an error: undefined open type parameter
+  f _ u8                                                           #  3. should flag an error: extra open type parameter
+  f _ _                                                            #  4. should flag an error: extra open type parameter
+  f             3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  #  5. should flag an error: too many value arguments
+  f u8 unit i32 3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  #  6. should flag an error: too many value arguments
+  f _           3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  #  7. should flag an error: too many value arguments
 
 
   # ------------------------------
@@ -58,15 +58,15 @@ reg_issue5818_calling_with_open_type =>
   g u8 unit i32                                                    # ok
   g u8 unit i32 f64                                                # ok
   g u8 unit i32 f64  (array String)   String (num.complex f64)     # ok
-  g             3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  #  7. should flag an error: failed to infer type parameter T, U
-  g u8 unit i32 3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  #  8. should flag an error: too many value arguments
-  g _                                                              #  9. should flag an error: wrong number of arguments
-  g _  _                                                           # 10. should flag an error: failed to infer T, U
-  g _  _    _                                                      # 11. should flag an error: failed to infer T, U
-  g _                                                              # 12. should flag an error: too many value arguments
-  g u8 _                                                           # 13. should flag an error: too many value arguments
+  g             3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  #  8. should flag an error: failed to infer type parameter T, U
+  g u8 unit i32 3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  #  9. should flag an error: too many value arguments
+  g _                                                              # 10. should flag an error: wrong number of arguments
+  g _  _                                                           # 11. should flag an error: failed to infer T, U
+  g _  _    _                                                      # 12. should flag an error: failed to infer T, U, A
+  g _                                                              # 13. should flag an error: too many value arguments
+  g u8 _                                                           # 14. should flag an error: too many value arguments
   g u8 unit                                                        # ok
-  g u8 unit _                                                      # ok
+  g u8 unit _                                                      # 15. should flag an error: failed to infer type parameter A
 
 
   # ------------------------------
@@ -85,9 +85,9 @@ reg_issue5818_calling_with_open_type =>
   h _                  3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  # ok.
 
   # but giving types is not ok, the parser cannot tell them apart from calls:
-  (h                                                                      # 14. should flag an error: failed to infer open type parameters
-     f64                                                                  # 15. should flag an error: cannot call `f64`
-     (array String)                                                       # 16. should flag an error: cannot call `array String`
+  (h                                                                      # 16. should flag an error: failed to infer open type parameters
+     f64                                                                  # 17. should flag an error: cannot call `f64`
+     (array String)                                                       # 18. should flag an error: cannot call `array String`
      3.14
      ["true","false"])
 
@@ -97,11 +97,11 @@ reg_issue5818_calling_with_open_type =>
 
   i(T,U type, A type ..., a A...) =>
     say "hi $T $U $A $a"
-  i u8 unit                    3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  # ok.
-  i u8 unit _                  3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  # ok.
-  (i u8 unit                                                              # 17. should flag an error: failed to infer open type parameters
-     f64                                                                  # 18. should flag an error: cannot call `f64`
-     (array String)                                                       # 19. should flag an error: cannot call `array String`
+  i nil unit           3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  # 19. should flag an error: failed to infer T, U
+  i nil unit _         3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  # ok.
+  (i nil unit                                                             # 20. should flag an error: failed to infer T, U
+     f64                                                                  # 21. should flag an error: cannot call `f64`
+     (array String)                                                       # 22. should flag an error: cannot call `array String`
      3.14
      ["true","false"])
 
@@ -117,7 +117,7 @@ reg_issue5818_calling_with_open_type =>
   j _   unit _         3.14 ["true","false"]                              # ok.
   j f64 unit _         3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  # ok.
   j _   unit _         3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  # ok.
-  j f64 unit           3.14                                               # ok???
+  j f64 unit           3.14                                               # 23. should flag an error: failed to infer T, U
   /*
   j _   unit           3.14                                               #
   j f64 unit           3.14 ["true","false"]                              #
