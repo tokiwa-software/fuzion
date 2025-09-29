@@ -2494,28 +2494,37 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   static boolean checkActualTypePars(Context context, AbstractFeature af, List<AbstractType> actuals, List<AbstractType> unresolvedActuals, SourcePosition pos, Function<AbstractType, AbstractType> adjustConstraint)
   {
     var result = true;
+    List<AbstractFeature> failed = null;
+    SourcePosition failed_pos = null;
     var fi = af.typeArguments().iterator();
     var ai = actuals.iterator();
     var ui = unresolvedActuals.iterator();
-    while (fi.hasNext() &&
-           ai.hasNext()    ) // NYI: handling of open generic arguments
+    while (fi.hasNext())
       {
         var f = fi.next();
-        var a = ai.next();
+        var a = ai.hasNext() ? ai.next() : null;
         var u = ui.hasNext() ? ui.next() : null;
         var c = adjustConstraint == null
           ? f.constraint(context)
           : adjustConstraint.apply(f.constraint(context));
         if (CHECKS) check
-          (Errors.any() || f != null && a != null);
+          (Errors.any() || f != null);
 
         var p = u instanceof UnresolvedType ut ? ut.pos() :
                 pos != null                    ? pos
                                                : af.pos();
 
-        if (a == Types.t_UNDEFINED)
+        if (a == null && f.isOpenTypeParameter())
+          { // ok, no actuals given for open generic
+          }
+        else if (a == null || a == Types.t_UNDEFINED)
           {
-            AstErrors.failedToInferActualGeneric(p, af, new List<>(f));
+            if (failed == null)
+              {
+                failed = new List<AbstractFeature>();
+                failed_pos = p;
+              }
+            failed.add(f);
           }
         else
           {
@@ -2538,6 +2547,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                   }
               }
           }
+      }
+    if (failed != null)
+      {
+        AstErrors.failedToInferActualGeneric(failed_pos, af, failed);
       }
     return result;
   }
