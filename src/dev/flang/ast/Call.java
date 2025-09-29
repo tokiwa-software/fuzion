@@ -1795,7 +1795,7 @@ public class Call extends AbstractCall
     for (var g : _calledFeature.typeArguments())
       {
         int i = g.typeParameterIndex();
-        if (!g.isOpenTypeParameter() && _generics.get(i) == Types.t_UNDEFINED)
+        if (!g.isOpenTypeParameter() && (i >= _generics.size() || _generics.get(i) == Types.t_UNDEFINED))
           {
             missing.add(g);
           }
