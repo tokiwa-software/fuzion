@@ -1683,7 +1683,6 @@ public class Call extends AbstractCall
       }
     while (last < next);
 
-
     List<AbstractFeature> missing = missingGenerics();
 
     if (!missing.isEmpty())
@@ -2876,6 +2875,7 @@ public class Call extends AbstractCall
   void checkTypes(Resolution res, Context context)
   {
     reportPendingError();
+    reportMissingInferred(missingGenerics());
 
     var t = type();
 
