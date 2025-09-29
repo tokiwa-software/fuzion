@@ -1853,7 +1853,7 @@ public class AstErrors extends ANY
     if (!any() || (cf != Types.f_ERROR && !missing.isEmpty()))
       {
         error(pos,
-              "Failed to infer actual type parameters",
+              "Failed to infer actual type parameters",  // NYI: give more detail here on type and value arguments
               "In call to " + s(cf) + ", no actual type parameters are given and inference of the type parameters failed.\n" +
               "Expected type parameters: " + s(cf.generics()) + "\n"+
               "Type inference failed for " + StringHelpers.singularOrPlural(missing.size(), "type parameter") + " " + slg(missing) + "\n");
