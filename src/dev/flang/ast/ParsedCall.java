@@ -631,6 +631,7 @@ public class ParsedCall extends Call
         var ti = 0;
         var vs = calledFeature.valueArguments();
         var vn = vs.size();
+        var vi = 0;
         /*
         if (pos().show().indexOf("hash_map.fz:163")>=0)
           {
@@ -652,7 +653,19 @@ public class ParsedCall extends Call
           }
         */
         var firstValueIndex = _actuals.size() - vn;
-        if (vn > 0 && tn > 0 &&
+
+        if ((vs.size()>0 && vs.getLast().state().atLeast(State.RESOLVED_TYPES) && vs.getLast().resultType().isOpenGeneric() ||
+            vs.size()>0 &&
+            vs.getLast() instanceof Feature f &&
+            f.returnType() instanceof FunctionReturnType fr &&
+             fr.functionReturnType().isOpenGeneric()) &&
+            (_actuals.size() < tn ||
+             _actuals.take(tn).stream().allMatch(ac->ac.asType() != Types.t_UNDEFINED)))
+          {
+            firstValueIndex = 0;
+          }
+        /*
+        else if (vn > 0 && tn > 0 &&
             ts.getLast().isOpenTypeParameter() &&
             (vs.getLast() instanceof Feature fa
              ? fa.returnType() instanceof FunctionReturnType frt && frt.functionReturnType().isOpenGeneric()
@@ -660,7 +673,7 @@ public class ParsedCall extends Call
             (_actuals.size() < tn || _actuals.get(tn-1).asType() != Types.t_UNDEFINED))
           {
             tn--;
-              // System.out.println("DROP LAST TYPE PAR, tn is "+tn+" at "+pos().show());
+            System.out.println("DROP LAST TYPE PAR, tn is "+tn+" at "+pos().show());
             firstValueIndex = tn;
           }
         else if (vn > 0 && tn > 0 &&
@@ -671,7 +684,7 @@ public class ParsedCall extends Call
                  (_actuals.size() >= tn && _actuals.get(tn-1).asType() == Types.t_UNDEFINED))
           {
             firstValueIndex = tn;
-            // System.out.println("KEEP LAST TYPE PAR, tn is "+tn+" at "+pos().show());
+            System.out.println("KEEP LAST TYPE PAR, tn is "+tn+" at "+pos().show());
           }
         else if (false)
           {
@@ -685,7 +698,8 @@ public class ParsedCall extends Call
                                  (_actuals.size() < tn)+" || "+(_actuals.get(tn-1).asType() != Types.t_UNDEFINED)+_actuals.get(tn-1)+_actuals.get(tn-1).asType()+
                                " at "+pos().show());
           }
-        //        System.out.println("firstValIndex: "+firstValueIndex);
+        System.out.println("firstValIndex: "+firstValueIndex);
+        */
         var i = 0;
         ListIterator<Expr> ai = _actuals.listIterator();
         var startedOpenTypes = false;
@@ -719,11 +733,27 @@ public class ParsedCall extends Call
                     startedOpenTypes = true;
                     if (ti < tn && ts.get(ti).kind() == AbstractFeature.Kind.OpenTypeParameter && t == Types.t_UNDEFINED)
                       {
-                        firstValueIndex = i;
+                        firstValueIndex = i+1;
+                        if (vs.size()>0 && vs.getLast().state().atLeast(State.RESOLVED_TYPES) && vs.getLast().resultType().isOpenGeneric() ||
+                            vs.size()>0 &&
+                            vs.getLast() instanceof Feature f &&
+                            f.returnType() instanceof FunctionReturnType fr &&
+                            fr.functionReturnType().isOpenGeneric())
+                          {
+                          }
+                        else
+                          {
+                            g = g == NO_GENERICS ? new List<AbstractType>() : g;
+                            //                            System.out.println("A adding "+g.size()+": "+t);
+                            //                            if (vs.size()>0) System.out.println(""+vs.getLast().resultType().isOpenGeneric()+vs.getLast().resultType()+(vs.getLast().resultType().getClass())+" "+
+                            //                                                                (vs.getLast() instanceof Feature lf ? lf.returnType() instanceof FunctionReturnType fr ? fr.functionReturnType().isOpenGeneric() : null : null));
+                            g.add(t);
+                          }
                       }
                     else
                       {
                         g = g == NO_GENERICS ? new List<AbstractType>() : g;
+                        //                            System.out.println("B adding "+g.size()+": "+t);
                         g.add(t);
                       }
                   }
@@ -732,13 +762,22 @@ public class ParsedCall extends Call
               {
                 firstValueIndex = i;
                 a.add(aa);
+                if (false && (vi < vs.size()-1 || vi == vs.size()-1 && !vs.get(vi).resultType().isOpenGeneric()))
+                  {
+                    vi++;
+                  }
+                else
+                  {
+                    //     g = g == NO_GENERICS ? new List<AbstractType>() : g;
+                    //     g.add(Types.t_UNDEFINED);
+                  }
               }
             i++;
           }
         _generics = g;
         _actuals = a;
-        // System.out.println("after split off: gen: "+_generics);
-        // System.out.println("after split off: val: "+_actuals+" at "+pos().show());
+        //        System.out.println("after split off: gen: "+_generics);
+        //        System.out.println("after split off: val: "+_actuals+" at "+pos().show());
       }
   }
 
