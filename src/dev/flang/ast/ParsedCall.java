@@ -748,16 +748,12 @@ A `_` may be used as placeholder for a xref:fuzion_actual_typeparameter[actual t
                         else
                           {
                             g = g == NO_GENERICS ? new List<AbstractType>() : g;
-                            //                            System.out.println("A adding "+g.size()+": "+t);
-                            //                            if (vs.size()>0) System.out.println(""+vs.getLast().resultType().isOpenGeneric()+vs.getLast().resultType()+(vs.getLast().resultType().getClass())+" "+
-                            //                                                                (vs.getLast() instanceof Feature lf ? lf.returnType() instanceof FunctionReturnType fr ? fr.functionReturnType().isOpenGeneric() : null : null));
                             g.add(t);
                           }
                       }
                     else
                       {
                         g = g == NO_GENERICS ? new List<AbstractType>() : g;
-                        //                            System.out.println("B adding "+g.size()+": "+t);
                         g.add(t);
                       }
                   }
@@ -766,29 +762,11 @@ A `_` may be used as placeholder for a xref:fuzion_actual_typeparameter[actual t
               {
                 firstValueIndex = i;
                 a.add(aa);
-                if (false && (vi < vs.size()-1 || vi == vs.size()-1 && !vs.get(vi).resultType().isOpenGeneric()))
-                  {
-                    vi++;
-                  }
-                else
-                  {
-                    //     g = g == NO_GENERICS ? new List<AbstractType>() : g;
-                    //     g.add(Types.t_UNDEFINED);
-                  }
               }
             i++;
           }
         _generics = g;
         _actuals = a;
-        // System.out.println("after split off: gen: "+_generics);
-        // System.out.println("after split off: val: "+_actuals+" at "+pos().show());
-        // System.out.println("NOW: "+this);
-      }
-    else
-      {
-        // System.out.println("no split off: gen: "+_generics);
-        // System.out.println("no split off: val: "+_actuals+" at "+pos().show());
-        // System.out.println("NOW: "+this);
       }
   }
 
