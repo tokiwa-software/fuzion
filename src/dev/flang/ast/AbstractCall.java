@@ -276,17 +276,12 @@ public abstract class AbstractCall extends Expr
    */
   AbstractType actualArgType(Resolution res, Context context, AbstractType frmlT, AbstractFeature arg)
   {
-    return actualArgType(res, context, frmlT, arg, true);
-  }
-  AbstractType actualArgType(Resolution res, Context context, AbstractType frmlT, AbstractFeature arg, boolean urgent)
-  {
     if (PRECONDITIONS) require
       (!frmlT.isOpenGeneric());
 
-    var tt = urgent ? target().type() : target().typeForInferencing();
-    if (tt == null) return frmlT;
+    var tt = target().type();
     return adjustResultType(res, context, tt, frmlT,
-                                                (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, true, arg, frmlT, from, to), true);
+                            (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, true, arg, frmlT, from, to), true);
   }
 
 
@@ -309,7 +304,7 @@ public abstract class AbstractCall extends Expr
   {
     var t1 = rt == Types.t_ERROR ? rt : adjustThisTypeForTarget(context, rt, foundRef);
     var t2 = t1 == Types.t_ERROR ? t1 : t1.applyTypePars(tt);
-    var t3 = t2 == Types.t_ERROR ? t2 : t2.applyTypePars(calledFeature(), actualTypeParameters(res, context));
+    var t3 = t2 == Types.t_ERROR ? t2 : t2.applyTypePars(calledFeature(), actualTypeParameters());
     var t4 = t3 == Types.t_ERROR ? t3 : tt.isGenericArgument() ? t3 : t3.resolve(res, tt.feature().context());
     var t5 = t4 == Types.t_ERROR || forArg ? t4 : adjustThisTypeForTarget(context, t4, foundRef);
 
@@ -317,20 +312,6 @@ public abstract class AbstractCall extends Expr
       (t5 != null);
 
     return t5;
-  }
-
-
-  /**
-   * get actual type parameters during resolution
-   *
-   * @param res the resolution instance.
-   *
-   * @param context the source code context where this Call is used
-   *
-   */
-  protected List<AbstractType> actualTypeParameters(Resolution res, Context context)
-  {
-    return actualTypeParameters();
   }
 
 

@@ -87,37 +87,6 @@ public class Call extends AbstractCall
 
 
   /**
-   * get actual type parameters during resolution
-   *
-   * @param res the resolution instance.
-   *
-   * @param context the source code context where this Call is used
-   *
-   */
-  @Override
-  protected List<AbstractType> actualTypeParameters(Resolution res, Context context)
-  {
-    // force re-resolve, detected partial application
-    // of open type parameter.
-    // e.g.: `(1..3).zip 7..9 tuple |> say`
-    if (false &&
-        actualTypeParameters().size() < calledFeature().typeArguments().size() &&
-        calledFeature().hasOpenGenericsArgList() &&
-        _type != null)
-      {
-        _generics = NO_GENERICS;
-        _resolvedFor = null;
-        _actualsResolvedFor = null;
-        _type = null;
-        resolveTypes(res, context);
-        reportMissingInferred(missingGenerics());
-      }
-    return actualTypeParameters();
-  }
-
-
-
-  /**
    * actual generic arguments, set by parser
    */
   /*final*/ List<AbstractType> _generics; // NYI: Make this final again when resolveTypes can replace a call
@@ -2540,10 +2509,7 @@ public class Call extends AbstractCall
                   _target = Call.typeAsValue(_pos, _target.asParsedType()).resolveTypes(res, context);
                 }
             }
-          if (_calledFeature != null &&
-              _generics.isEmpty() &&
-              _actuals.size() != f.valueArguments().size() &&
-              !f.hasOpenGenericsArgList(res))
+          if (_calledFeature != null)
             {
               splitOffTypeArgs(res, context);
             }

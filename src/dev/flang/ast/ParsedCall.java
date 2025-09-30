@@ -613,15 +613,9 @@ public class ParsedCall extends Call
    */
   private boolean mustSplitOffTypeArgs(Resolution res, AbstractFeature calledFeature)
   {
-    if (true)
     return !isSpecialWrtArgs(calledFeature) &&
             calledFeature != Types.f_ERROR &&
       _generics.isEmpty();
-      //_actuals.size() != calledFeature.valueArguments().size() &&
-      //      !calledFeature.hasOpenGenericsArgList(res);
-    return !isSpecialWrtArgs(calledFeature) &&
-            calledFeature != Types.f_ERROR &&
-            _generics.isEmpty();
   }
 
 
@@ -673,7 +667,7 @@ types passed to `T`.  The actual types of `T` will always be inferred from the a
               {
                 vn = resolvedFormalArgumentTypes(res, context).length;
               }
-            if (tn > 0 && ts.stream().anyMatch(t->t.isOpenTypeParameter()))
+            if (cf.hasOpenTypeArgList())
               {
                 /*
     // tag::fuzion_rule_CALL_OPEN_TYPE_ARGS[]
