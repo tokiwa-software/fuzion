@@ -276,10 +276,16 @@ public abstract class AbstractCall extends Expr
    */
   AbstractType actualArgType(Resolution res, Context context, AbstractType frmlT, AbstractFeature arg)
   {
+    return actualArgType(res, context, frmlT, arg, true);
+  }
+  AbstractType actualArgType(Resolution res, Context context, AbstractType frmlT, AbstractFeature arg, boolean urgent)
+  {
     if (PRECONDITIONS) require
       (!frmlT.isOpenGeneric());
 
-    return adjustResultType(res, context, target().type(), frmlT,
+    var tt = urgent ? target().type() : target().typeForInferencing();
+    if (tt == null) return frmlT;
+    return adjustResultType(res, context, tt, frmlT,
                                                 (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, true, arg, frmlT, from, to), true);
   }
 
@@ -414,15 +420,19 @@ public abstract class AbstractCall extends Expr
    */
   List<AbstractType> resolveFormalArg(Resolution res, Context context, AbstractFeature frml)
   {
-    var frmlT = frml.resultTypeIfPresentUrgent(res, !true);
+    return resolveFormalArg(res, context, frml, true);
+  }
+  List<AbstractType> resolveFormalArg(Resolution res, Context context, AbstractFeature frml, boolean urgent)
+  {
+    var frmlT = frml.resultTypeIfPresentUrgent(res, urgent);
     if (frmlT == null)
       {
         frmlT = Types.t_UNDEFINED;
       }
     var declF = calledFeature().outer();
-    var tt = target().type();
+    var tt = urgent ? target().type() : target().typeForInferencing();
     var l = new List<>(frmlT);
-    if (!tt.isGenericArgument() && declF != tt.feature() && calledFeature() != Types.f_ERROR)
+    if (tt != null && !tt.isGenericArgument() && declF != tt.feature() && calledFeature() != Types.f_ERROR)
       {
         l = calledFeature().outer().handDown(res, l, tt.feature());
       }
@@ -432,7 +442,7 @@ public abstract class AbstractCall extends Expr
       l.flatMap(ft -> ft.isOpenGeneric()
                       // formal arg is open generic, i.e., this expands to 0 or more actual args depending on actual generics for target
                       ? openGenericsFor(res, context, ft)
-                      : new List<>(actualArgType(res, context, ft, frml)));
+                      : new List<>(actualArgType(res, context, ft, frml, urgent)));
   }
 
 
@@ -512,12 +522,16 @@ public abstract class AbstractCall extends Expr
    */
   AbstractType[] resolvedFormalArgumentTypes(Resolution res, Context context)
   {
+    return resolvedFormalArgumentTypes(res, context, true);
+  }
+  AbstractType[] resolvedFormalArgumentTypes(Resolution res, Context context, boolean urgent)
+  {
     // NYI: UNDER DEVELOPMENT: cache this? cache key: calledFeature/target
-    //    if (CHECKS) check
-                  //      (calledFeature().valueArguments().stream().allMatch(frml -> frml.state().atLeast(State.RESOLVED_TYPES)));
+    if (CHECKS) check
+      (!urgent || calledFeature().valueArguments().stream().allMatch(frml -> frml.state().atLeast(State.RESOLVED_TYPES)));
 
     var result = calledFeature().valueArguments()
-                                .flatMap2(frml -> resolveFormalArg(res, context, frml));
+                                .flatMap2(frml -> resolveFormalArg(res, context, frml, urgent));
     return result.toArray(new AbstractType[result.size()]);
   }
 

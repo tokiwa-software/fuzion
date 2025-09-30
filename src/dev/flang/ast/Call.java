@@ -2757,10 +2757,10 @@ public class Call extends AbstractCall
 
 
   @Override
-  AbstractType[] resolvedFormalArgumentTypes(Resolution res, Context context)
+  AbstractType[] resolvedFormalArgumentTypes(Resolution res, Context context, boolean urgent)
   {
     // we might not know the called feature yet, e.g., during propagateExpectedType
-    var result = calledFeatureKnown() ? super.resolvedFormalArgumentTypes(res, context)
+    var result = calledFeatureKnown() ? super.resolvedFormalArgumentTypes(res, context, urgent)
                                       : UnresolvedType.NO_TYPES;
 
     if (POSTCONDITIONS) ensure
