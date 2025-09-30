@@ -616,6 +616,20 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       }
     return result;
   }
+
+
+  /**
+   * Check if this feature's argument list contains value arguments of an open
+   * type parameter of this feature.
+   *
+   * Note that in contrast to `hasOpenGenericsArgList()`, this does not consider
+   * arguments whose type is an open type from an outer feature.
+   *
+   * @param res resolution used before type resolution is done to resolve
+   * argument types. May be null after type resolution.
+   *
+   * @return true iff arg list has an open value args list.
+   */
   boolean hasOpenValueArgList(Resolution res)
   {
     boolean result = false;
@@ -644,6 +658,17 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       }
     return result;
   }
+
+
+  /**
+   * Check if this feature's argument list contains type parameters of an open
+   * type parameter of this feature.
+   *
+   * @param res resolution used before type resolution is done to resolve
+   * argument types. May be null after type resolution.
+   *
+   * @return true iff arg list has an open type parameter.
+   */
   boolean hasOpenTypeArgList()
   {
     boolean result = false;
