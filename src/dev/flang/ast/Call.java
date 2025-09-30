@@ -690,8 +690,8 @@ public class Call extends AbstractCall
         var fo = findOnTarget(res, targetFeature, true).v1();
         if (fo != null)
           {
-            splitOffTypeArgs(res, fo._feature, outer);
             setCalledFeatureAndTarget(res, context, fo);
+            splitOffTypeArgs(res, context);
           }
       }
 
@@ -1105,11 +1105,15 @@ public class Call extends AbstractCall
    * split the actuals list (i32, 10, i->i*i) into generics (i32) and actuals
    * (10, i->i*i).
    *
+   * @param res the resolution instance.
+   *
+   * @param context the source code context where this Call is used
+   *
    * @param calledFeature the feature we are calling
    *
    * @param outer the feature surrounding this call
    */
-  protected void splitOffTypeArgs(Resolution res, AbstractFeature calledFeature, AbstractFeature outer)
+  protected void splitOffTypeArgs(Resolution res, Context context)
   {
   }
 
@@ -2545,7 +2549,7 @@ public class Call extends AbstractCall
               _actuals.size() != f.valueArguments().size() &&
               !f.hasOpenGenericsArgList(res))
             {
-              splitOffTypeArgs(res, f, outer);
+              splitOffTypeArgs(res, context);
             }
         }
     }

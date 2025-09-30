@@ -613,6 +613,12 @@ public class ParsedCall extends Call
    */
   private boolean mustSplitOffTypeArgs(Resolution res, AbstractFeature calledFeature)
   {
+    if (true)
+    return !isSpecialWrtArgs(calledFeature) &&
+            calledFeature != Types.f_ERROR &&
+      _generics.isEmpty();
+      //_actuals.size() != calledFeature.valueArguments().size() &&
+      //      !calledFeature.hasOpenGenericsArgList(res);
     return !isSpecialWrtArgs(calledFeature) &&
             calledFeature != Types.f_ERROR &&
             _generics.isEmpty();
@@ -620,16 +626,17 @@ public class ParsedCall extends Call
 
 
   @Override
-  protected void splitOffTypeArgs(Resolution res, AbstractFeature calledFeature, AbstractFeature outer)
+  protected void splitOffTypeArgs(Resolution res, Context context)
   {
-    if (mustSplitOffTypeArgs(res, calledFeature))
+    var cf = calledFeature();
+    if (mustSplitOffTypeArgs(res, cf))
       {
         var g = NO_GENERICS;
         var a = new List<Expr>();
-        var ts = calledFeature.typeArguments();
+        var ts = cf.typeArguments();
         var tn = ts.size();
         var ti = 0;
-        var vs = calledFeature.valueArguments();
+        var vs = cf.valueArguments();  // NYI: must hand down to get the correct number!
         var vn = vs.size();
         var vi = 0;
         /*
@@ -654,6 +661,8 @@ public class ParsedCall extends Call
         */
         var firstValueIndex = _actuals.size() - vn;
 
+        if (cf.hasOpenValueArgList(res))
+            {
         if ((vs.size()>0 && vs.getLast().state().atLeast(State.RESOLVED_TYPES) &&
              vs.getLast().resultTypeIfPresent(res) != null &&
              vs.getLast().resultTypeIfPresent(res).isOpenGeneric() ||
@@ -704,6 +713,29 @@ public class ParsedCall extends Call
           }
         System.out.println("firstValIndex: "+firstValueIndex);
         */
+        //            System.out.println("hasOpenGenericsArgList: firstValIndex: "+firstValueIndex+" at "+pos().show());
+            }
+        else
+          {
+            vn = resolvedFormalArgumentTypes(res, context).length;
+            if (!false && tn > 0 && vn == 0 && ts.getLast().isOpenTypeParameter())
+              {
+                firstValueIndex = _actuals.size();  // only type arguments, last is an open type
+              }
+            else if (_actuals.size() == tn+vn)
+              {
+                firstValueIndex = tn;
+              }
+            else if (_actuals.size() == vn)
+              {
+                firstValueIndex = 0;
+              }
+            else
+              {
+                System.out.println("**** PANIC; does not add up: "+_actuals.size()+" != "+tn+" + "+vn+" for "+pos().show());
+              }
+            //System.out.println("firstValIndex: "+firstValueIndex+" at "+pos().show());
+          }
         var i = 0;
         ListIterator<Expr> ai = _actuals.listIterator();
         var startedOpenTypes = false;
@@ -782,6 +814,12 @@ public class ParsedCall extends Call
         _actuals = a;
         // System.out.println("after split off: gen: "+_generics);
         // System.out.println("after split off: val: "+_actuals+" at "+pos().show());
+        // System.out.println("NOW: "+this);
+      }
+    else
+      {
+        // System.out.println("no split off: gen: "+_generics);
+        // System.out.println("no split off: val: "+_actuals+" at "+pos().show());
         // System.out.println("NOW: "+this);
       }
   }

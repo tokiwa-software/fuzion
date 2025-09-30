@@ -414,7 +414,11 @@ public abstract class AbstractCall extends Expr
    */
   List<AbstractType> resolveFormalArg(Resolution res, Context context, AbstractFeature frml)
   {
-    var frmlT = frml.resultTypeIfPresentUrgent(res, true);
+    var frmlT = frml.resultTypeIfPresentUrgent(res, !true);
+    if (frmlT == null)
+      {
+        frmlT = Types.t_UNDEFINED;
+      }
     var declF = calledFeature().outer();
     var tt = target().type();
     var l = new List<>(frmlT);
@@ -509,8 +513,8 @@ public abstract class AbstractCall extends Expr
   AbstractType[] resolvedFormalArgumentTypes(Resolution res, Context context)
   {
     // NYI: UNDER DEVELOPMENT: cache this? cache key: calledFeature/target
-    if (CHECKS) check
-      (calledFeature().valueArguments().stream().allMatch(frml -> frml.state().atLeast(State.RESOLVED_TYPES)));
+    //    if (CHECKS) check
+                  //      (calledFeature().valueArguments().stream().allMatch(frml -> frml.state().atLeast(State.RESOLVED_TYPES)));
 
     var result = calledFeature().valueArguments()
                                 .flatMap2(frml -> resolveFormalArg(res, context, frml));

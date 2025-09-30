@@ -616,6 +616,43 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       }
     return result;
   }
+  boolean hasOpenValueArgList(Resolution res)
+  {
+    boolean result = false;
+    for (var g : typeArguments())
+      {
+        if (g.isOpenTypeParameter())
+          {
+            for (AbstractFeature a : arguments())
+              {
+                AbstractType t;
+                if (a instanceof Feature af)
+                  {
+                    if (res != null)
+                      {
+                        af.visit(res.resolveTypesOnly(af));
+                      }
+                    t = af.returnType().functionReturnType();
+                  }
+                else
+                  {
+                    t = a.resultType();
+                  }
+                result = result || t.isGenericArgument() && t.genericArgument() == g;
+              }
+          }
+      }
+    return result;
+  }
+  boolean hasOpenTypeArgList()
+  {
+    boolean result = false;
+    for (var g : typeArguments())
+      {
+        result = result || g.isOpenTypeParameter();
+      }
+    return result;
+  }
 
 
   /**
