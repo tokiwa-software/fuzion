@@ -2494,8 +2494,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   static boolean checkActualTypePars(Context context, AbstractFeature af, List<AbstractType> actuals, List<AbstractType> unresolvedActuals, SourcePosition pos, Function<AbstractType, AbstractType> adjustConstraint)
   {
     var result = true;
-    List<AbstractFeature> failed = null;
-    SourcePosition failed_pos = null;
     var fi = af.typeArguments().iterator();
     var ai = actuals.iterator();
     var ui = unresolvedActuals.iterator();
@@ -2517,16 +2515,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         if (a == null && f.isOpenTypeParameter())
           { // ok, no actuals given for open generic
           }
-        else if (a == null || a == Types.t_UNDEFINED)
-          {
-            if (failed == null)
-              {
-                failed = new List<AbstractFeature>();
-                failed_pos = p;
-              }
-            failed.add(f);
-          }
-        else
+        else if (a != null && a != Types.t_UNDEFINED && a != Types.t_ERROR)
           {
             a.checkLegalThisType(p, context);
             a.checkChoice(p, context);
@@ -2547,10 +2536,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                   }
               }
           }
-      }
-    if (failed != null)
-      {
-        //      AstErrors.failedToInferActualGeneric(failed_pos, af, failed);
       }
     return result;
   }
