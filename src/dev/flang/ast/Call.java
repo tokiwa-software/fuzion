@@ -702,7 +702,7 @@ public class Call extends AbstractCall
   /**
    * set this Call to defunct since its target is void
    */
-  private void setDefunct()
+  public void setDefunct()
   {
     _calledFeature = Types.f_ERROR;
     _actuals = new List<>();

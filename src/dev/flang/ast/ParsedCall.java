@@ -644,8 +644,9 @@ types passed to `T`.  The actual types of `T` will always be inferred from the a
               }
             else
               {
-                  AstErrors.typeParametersWithOpenValueArg(this,
-                                                           _actuals.size() >= tn ? _actuals.get(tn-1) : null);
+                AstErrors.typeParametersWithOpenValueArg(this,
+                                                         _actuals.size() >= tn ? _actuals.get(tn-1) : null);
+                setDefunct();
               }
           }
         else

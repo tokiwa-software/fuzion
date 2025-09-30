@@ -118,9 +118,9 @@ reg_issue5818_calling_with_open_type =>
   j f64 unit _         3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  # ok.
   j _   unit _         3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  # ok.
   j f64 unit           3.14                                               # 23. should flag an error: failed to infer T, U
+  j _   unit           3.14                                               # 24. should flag an error: open type must be inferred
   /*
-  j _   unit           3.14                                               #
-  j f64 unit           3.14 ["true","false"]                              #
+  j f64 unit           3.14 ["true","false"]                              # 25. sxxxhould flag an error: failed to infer T, U, A
   j _   unit           3.14 ["true","false"]                              #
   j f64 unit           3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  #
   j _   unit           3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  #
