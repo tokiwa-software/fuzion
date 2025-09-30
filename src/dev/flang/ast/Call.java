@@ -715,7 +715,7 @@ public class Call extends AbstractCall
    * is this Call defunct, i.e., an error occured or this is unreachable due to
    * target resutling in `void`.
    */
-  private boolean isDefunct()
+  protected boolean isDefunct()
   {
     return _calledFeature == Types.f_ERROR;
   }
@@ -833,7 +833,7 @@ public class Call extends AbstractCall
     if (fo == null && mayBeSpecialWrtArgs)
       { // handle implicit calls `f()` that expand to `f.call()`:
         fo =
-          FeatureAndOuter.filter(fos, pos(), FuzionConstants.OPERATION_CALL, calledName, ff -> isSpecialWrtArgs(ff));
+          FeatureAndOuter.filter(fos, pos(), FuzionConstants.OPERATION_CALL, calledName, ff -> ff.arguments().size()==0);
       }
     return new Pair<>(fos, fo);
   }
@@ -1080,23 +1080,6 @@ public class Call extends AbstractCall
    */
   protected void splitOffTypeArgs(Resolution res, Context context)
   {
-  }
-
-
-  /**
-   * Check if this call would need special handling of the argument count
-   * in case the _calledFeature would be ff. This is the case for open generics,
-   * "fun a.b.f" calls and implicit calls using f() for f returning Function value.
-   *
-   * @param ff the called feature candidate.
-   *
-   * @return true iff ff may be the called feature due to the special cases
-   * listed above.
-   */
-  protected boolean isSpecialWrtArgs(AbstractFeature ff)
-  {
-    /* maybe an implicit call to a Function / Routine, see resolveImmediateFunctionCall() */
-    return ff.arguments().size()==0;
   }
 
 

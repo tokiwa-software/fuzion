@@ -608,22 +608,11 @@ public class ParsedCall extends Call
   }
 
 
-  /**
-   * Do we have to split of type args?
-   */
-  private boolean mustSplitOffTypeArgs(Resolution res, AbstractFeature calledFeature)
-  {
-    return !isSpecialWrtArgs(calledFeature) &&
-            calledFeature != Types.f_ERROR &&
-      _generics.isEmpty();
-  }
-
-
   @Override
   protected void splitOffTypeArgs(Resolution res, Context context)
   {
     var cf = calledFeature();
-    if (mustSplitOffTypeArgs(res, cf))
+    if (!isDefunct() && cf.arguments().size()!=0 && _generics.isEmpty())
       {
         var g = NO_GENERICS;
         var a = new List<Expr>();
@@ -729,8 +718,6 @@ A `_` may be used as placeholder for a xref:fuzion_actual_typeparameter[actual t
                 if (ti < tn  && ts.get(ti).kind() != AbstractFeature.Kind.OpenTypeParameter)
                   {
                     ti++;
-                    g = g == NO_GENERICS ? new List<AbstractType>() : g;
-                    g.add(t);
                   }
                 else
                   {
@@ -744,18 +731,14 @@ A `_` may be used as placeholder for a xref:fuzion_actual_typeparameter[actual t
                             f.returnType() instanceof FunctionReturnType fr &&
                             fr.functionReturnType().isOpenGeneric())
                           {
-                          }
-                        else
-                          {
-                            g = g == NO_GENERICS ? new List<AbstractType>() : g;
-                            g.add(t);
+                            t = null;
                           }
                       }
-                    else
-                      {
-                        g = g == NO_GENERICS ? new List<AbstractType>() : g;
-                        g.add(t);
-                      }
+                  }
+                if (t != null)
+                  {
+                    g = g == NO_GENERICS ? new List<AbstractType>() : g;
+                    g.add(t);
                   }
               }
             else
