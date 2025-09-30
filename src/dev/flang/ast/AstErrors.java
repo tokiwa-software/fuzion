@@ -672,6 +672,31 @@ public class AstErrors extends ANY
       }
   }
 
+  static void typeParametersWithOpenValueArg(ParsedCall c,
+                                             Expr openTypeArg)
+  {
+    error(c.pos(),
+          "In call with value arguments of open type, open type parameters must be inferred",
+          """
+          A call to a feature of the form
+
+              f(T,U type, A type..., x T, y U, a A...) =>
+
+          must either provide only actual arguments and infer types
+
+              f "hi" 42 false 3.14   # T=String, U=i32, A=[false, f64]
+
+          or use '_' as placeholder for the open type
+
+              f String i32 _ "hi" 42 false 3.14       # A=[false, f64]
+
+          """ +
+          (openTypeArg != null
+           ? "To solve this, replace argument "+s(openTypeArg) + " by " + code("_") + " at " + openTypeArg.pos().show()
+           : "")
+          );
+  }
+
   /**
    * A type that might originally be a type parameter could be a concrete type
    * when we detect an error. So if we have both, the original type and the

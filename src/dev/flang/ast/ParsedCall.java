@@ -639,116 +639,76 @@ public class ParsedCall extends Call
         var vs = cf.valueArguments();  // NYI: must hand down to get the correct number!
         var vn = vs.size();
         var vi = 0;
-        /*
-        if (pos().show().indexOf("hash_map.fz:163")>=0)
-          {
-            System.out.println("vn is "+vn+" tn is "+tn+" at "+pos().show());
-            System.out.println("cf: "+calledFeature.qualifiedName()+" ts: "+ts);
-            if (ts.size()>0)
-              System.out.println(""+ts.getLast().isOpenTypeParameter()+" "+(vs.getLast() instanceof Feature fa));
-            if (vs.size() > 0)
-              {
-                System.out.println("fa "+(vs.getLast() instanceof Feature fa));
-                System.out.println(vs.getLast() instanceof Feature fa && fa.returnType() instanceof FunctionReturnType frt);
-                System.out.println("ut "+(vs.getLast() instanceof Feature fa && fa.returnType() instanceof FunctionReturnType frt && frt.functionReturnType() instanceof UnresolvedType ut));
-                System.out.println("ut "+(vs.getLast() instanceof Feature fa && fa.returnType() instanceof FunctionReturnType frt? frt.functionReturnType().getClass():null));
-                System.out.println("ut "+(vs.getLast() instanceof Feature fa && fa.returnType() instanceof FunctionReturnType frt? frt.functionReturnType().isOpenGeneric():"?!?"));
-                System.out.println(vs.getLast() instanceof Feature fa
-                                   ? fa.returnType() instanceof FunctionReturnType frt && frt.functionReturnType() instanceof UnresolvedType ut && ut._followedByDots
-                                   : vs.getLast().resultType().isOpenGeneric());
-              }
-          }
-        */
         var firstValueIndex = _actuals.size() - vn;
 
         if (cf.hasOpenValueArgList(res))
-            {
-        if ((vs.size()>0 && vs.getLast().state().atLeast(State.RESOLVED_TYPES) &&
-             vs.getLast().resultTypeIfPresent(res) != null &&
-             vs.getLast().resultTypeIfPresent(res).isOpenGeneric() ||
-            vs.size()>0 &&
-            vs.getLast() instanceof Feature f &&
-            f.returnType() instanceof FunctionReturnType fr &&
-             fr.functionReturnType().isOpenGeneric()) &&
-            (_actuals.size() < tn ||
-             _actuals.take(tn).stream().allMatch(ac->ac.asType() != Types.t_UNDEFINED)))
           {
-            firstValueIndex = 0;
+                /*
+    // tag::fuzion_rule_CALL_OPEN_VALUE_ARGS[]
+A xref:fuzion_call[call] to a xref:fuzion_feature[feature] that expects an xref:fuzion_opentypeparameter[open type parameter] `T`
+and a xref:fuzion_value_argument[value argument] of type `T` must either provide no actual
+type parameters and infer all actual type parameters from the xref:fuzion_value_argument[value arguments], or use `_` as a placeholder for the actual
+types passed to `T`.  The actual types of `T` will always be inferred from the actual arguments.
+    // end::fuzion_rule_CALL_OPEN_VALUE_ARGS[]
+                */
+            if (_actuals.take(tn).stream().allMatch(ac->ac.asType() != Types.t_UNDEFINED))
+              { // no type parameters are given, so use _actuals all as values to infer types
+                firstValueIndex = 0;
+              }
+            else if ((_actuals.size() >= tn && _actuals.get(tn-1).asType() == Types.t_UNDEFINED))
+              { // the type parameters are given and the open type parameter is '_'
+                firstValueIndex = tn;
+              }
+            else
+              {
+                  AstErrors.typeParametersWithOpenValueArg(this,
+                                                           _actuals.size() >= tn ? _actuals.get(tn-1) : null);
+              }
           }
-        /*
-        else if (vn > 0 && tn > 0 &&
-            ts.getLast().isOpenTypeParameter() &&
-            (vs.getLast() instanceof Feature fa
-             ? fa.returnType() instanceof FunctionReturnType frt && frt.functionReturnType().isOpenGeneric()
-             : vs.getLast().resultType().isOpenGeneric()) &&
-            (_actuals.size() < tn || _actuals.get(tn-1).asType() != Types.t_UNDEFINED))
-          {
-            tn--;
-            System.out.println("DROP LAST TYPE PAR, tn is "+tn+" at "+pos().show());
-            firstValueIndex = tn;
-          }
-          */
-        else if (vn > 0 && tn > 0 &&
-            ts.getLast().isOpenTypeParameter() &&
-            (vs.getLast() instanceof Feature fa
-             ? fa.returnType() instanceof FunctionReturnType frt && frt.functionReturnType().isOpenGeneric()
-             : vs.getLast().resultType().isOpenGeneric()) &&
-                 (_actuals.size() >= tn && _actuals.get(tn-1).asType() == Types.t_UNDEFINED))
-          {
-            firstValueIndex = tn;
-            // System.out.println("KEEP LAST TYPE PAR, tn is "+tn+" at "+pos().show());
-          }
-        /*
-        else if (false)
-          {
-
-            System.out.println("DO NOT DROP LAST TYPE PAR, tn is "+tn+
-                               ts.getLast().isOpenTypeParameter() +
-            (vs.getLast() instanceof Feature fa
-             ? fa.returnType() instanceof FunctionReturnType frt && frt.functionReturnType().isOpenGeneric()
-             : vs.getLast().resultType().isOpenGeneric()) +
-            (_actuals.size() < tn || _actuals.get(tn-1).asType() != Types.t_UNDEFINED)+
-                                 (_actuals.size() < tn)+" || "+(_actuals.get(tn-1).asType() != Types.t_UNDEFINED)+_actuals.get(tn-1)+_actuals.get(tn-1).asType()+
-                               " at "+pos().show());
-          }
-        System.out.println("firstValIndex: "+firstValueIndex);
-        */
-        //            System.out.println("hasOpenGenericsArgList: firstValIndex: "+firstValueIndex+" at "+pos().show());
-            }
-        else if (true)
+        else
           {
             if (vs.stream().map(v->v.resultTypeIfPresent(res))
                                     .filter(t->t!=null)
                                     .anyMatch(t->t.isOpenGeneric()))
               {
-                for (var v : vs)
-                  {
-                    res.resolveTypes(v);
-                  }
                 vn = resolvedFormalArgumentTypes(res, context).length;
               }
-            if (!false && tn > 0 && vn == 0 && ts.getLast().isOpenTypeParameter())
+            if (tn > 0 && ts.stream().anyMatch(t->t.isOpenTypeParameter()))
               {
-                firstValueIndex = _actuals.size();  // only type arguments, last is an open type
-              }
-            else if (_actuals.size() == tn+vn)
-              {
-                firstValueIndex = tn;
-              }
-            else if (_actuals.size() == vn)
-              {
-                firstValueIndex = 0;
+                /*
+    // tag::fuzion_rule_CALL_OPEN_TYPE_ARGS[]
+A xref:fuzion_call[call] to a xref:fuzion_feature[feature] that expects an xref:fuzion_opentypeparameter[open type parameter] must provide
+xref:fuzion_actual[actual arguments] for all xref:fuzion_actual_typeparameter[actual type paramaters] and all xref:fuzion_actual_value_argument[actual value arguments]
+expected by the called feature. For the non-open type paramaters, `_` may be used as a placeholder for a type inferred from the actual value arguments.
+    // end::fuzion_rule_CALL_OPEN_TYPE_ARGS[]
+                */
+                firstValueIndex = _actuals.size() - vn;  // number of value arguments is fixed, so all others are type parameters
               }
             else
               {
-                firstValueIndex = tn;
-                //   System.out.println("**** PANIC; does not add up: "+_actuals.size()+" != "+tn+" + "+vn+" for "+pos().show());
+                /*
+    // tag::fuzion_rule_CALL_NON_VARIADIC_ARGS[]
+A xref:fuzion_call[call] to a xref:fuzion_feature[feature] that expects no xref:fuzion_opentypeparameter[open type parameter] may either provide
+xref:fuzion_actual[actual arguments] for all xref:fuzion_actual_typeparameter[actual type paramater] and all xref:fuzion_actual_value_argument[actual value arguments]
+expected by the called feature, or, it may receive only xref:fuzion_actual_value_argument[actual value arguments] and infer the actual type parameter values from the
+static types of the actual value arguments. +
+A `_` may be used as placeholder for a xref:fuzion_actual_typeparameter[actual type paramaters] that shall be inferred from the xref:fuzion_actual_value_argument[actual value arguments].
+    // end::fuzion_rule_CALL_NON_VARIADIC_ARGS[]
+                */
+                if (_actuals.size() == tn+vn)  // type and value args are present
+                  {
+                    firstValueIndex = tn;
+                  }
+                else if (_actuals.size() == vn)  // value args are present, type args are inferred
+                  {
+                    firstValueIndex = 0;
+                  }
+                else  // an error will be reported later, argument count does not match.
+                  {
+                    // NYI: UNDER DEVELOPMENT: report the error right here!
+                    firstValueIndex = tn;
+                  }
               }
-            //System.out.println("firstValIndex: "+firstValueIndex+" at "+pos().show());
-          }
-        else
-          {
-            var _ = resolvedFormalArgumentTypes(res, context).length;
           }
         var i = 0;
         ListIterator<Expr> ai = _actuals.listIterator();

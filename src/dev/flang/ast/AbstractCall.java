@@ -420,17 +420,17 @@ public abstract class AbstractCall extends Expr
    */
   List<AbstractType> resolveFormalArg(Resolution res, Context context, AbstractFeature frml)
   {
-    return resolveFormalArg(res, context, frml, true);
-  }
-  List<AbstractType> resolveFormalArg(Resolution res, Context context, AbstractFeature frml, boolean urgent)
-  {
-    var frmlT = frml.resultTypeIfPresentUrgent(res, urgent);
+    if (res != null)
+      {
+        res.resolveTypes(frml);
+      }
+    var frmlT = frml.resultType();
     if (frmlT == null)
       {
         frmlT = Types.t_UNDEFINED;
       }
     var declF = calledFeature().outer();
-    var tt = urgent ? target().type() : target().typeForInferencing();
+    var tt = target().type();
     var l = new List<>(frmlT);
     if (tt != null && !tt.isGenericArgument() && declF != tt.feature() && calledFeature() != Types.f_ERROR)
       {
@@ -442,7 +442,7 @@ public abstract class AbstractCall extends Expr
       l.flatMap(ft -> ft.isOpenGeneric()
                       // formal arg is open generic, i.e., this expands to 0 or more actual args depending on actual generics for target
                       ? openGenericsFor(res, context, ft)
-                      : new List<>(actualArgType(res, context, ft, frml, urgent)));
+                      : new List<>(actualArgType(res, context, ft, frml)));
   }
 
 
@@ -523,9 +523,6 @@ public abstract class AbstractCall extends Expr
   AbstractType[] resolvedFormalArgumentTypes(Resolution res, Context context)
   {
     // NYI: UNDER DEVELOPMENT: cache this? cache key: calledFeature/target
-    if (CHECKS) check
-      (calledFeature().valueArguments().stream().allMatch(frml -> frml.state().atLeast(State.RESOLVED_TYPES)));
-
     var result = calledFeature().valueArguments()
                                 .flatMap2(frml -> resolveFormalArg(res, context, frml));
     return result.toArray(new AbstractType[result.size()]);
