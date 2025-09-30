@@ -1108,10 +1108,6 @@ public class Call extends AbstractCall
    * @param res the resolution instance.
    *
    * @param context the source code context where this Call is used
-   *
-   * @param calledFeature the feature we are calling
-   *
-   * @param outer the feature surrounding this call
    */
   protected void splitOffTypeArgs(Resolution res, Context context)
   {
