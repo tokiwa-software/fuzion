@@ -695,7 +695,6 @@ A `_` may be used as placeholder for a xref:fuzion_actual_typeparameter[actual t
           }
         var i = 0;
         ListIterator<Expr> ai = _actuals.listIterator();
-        var startedOpenTypes = false;
         while (ai.hasNext())
           {
             var aa = ai.next();
@@ -712,28 +711,16 @@ A `_` may be used as placeholder for a xref:fuzion_actual_typeparameter[actual t
             var t = ti < tn &&
                     i < firstValueIndex ? _actuals.get(i).asType()
                                         : null;
-            if (t != null && !(startedOpenTypes && t == Types.t_UNDEFINED))
+            if (t != null && (i <= ti || t != Types.t_UNDEFINED /* open type parameters except first must not be `_` */))
               {
                 ai.set(Expr.NO_VALUE);  // make sure visit() no longer visits this
-                if (ti < tn  && ts.get(ti).kind() != AbstractFeature.Kind.OpenTypeParameter)
+                if (ti < tn && ts.get(ti).kind() != AbstractFeature.Kind.OpenTypeParameter)
                   {
                     ti++;
                   }
-                else
+                else if (ti < tn && t == Types.t_UNDEFINED && cf.hasOpenValueArgList(res))
                   {
-                    startedOpenTypes = true;
-                    if (ti < tn && ts.get(ti).kind() == AbstractFeature.Kind.OpenTypeParameter && t == Types.t_UNDEFINED)
-                      {
-                        firstValueIndex = i+1;
-                        if (vs.size()>0 && vs.getLast().state().atLeast(State.RESOLVED_TYPES) && vs.getLast().resultType().isOpenGeneric() ||
-                            vs.size()>0 &&
-                            vs.getLast() instanceof Feature f &&
-                            f.returnType() instanceof FunctionReturnType fr &&
-                            fr.functionReturnType().isOpenGeneric())
-                          {
-                            t = null;
-                          }
-                      }
+                    t = null;
                   }
                 if (t != null)
                   {

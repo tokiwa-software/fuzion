@@ -7,7 +7,15 @@ Expected type parameters: 'A...'
 Type inference failed for one type parameter 'A'
 
 
---CURDIR--/reg_issue5818_calling_with_open_type.fz:64:3: error 2: Failed to infer actual type parameters
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:43:3: error 2: Failed to infer actual type parameters
+  f _ u8                                                           #  3. should flag an error: too many value arguments
+--^
+In call to 'reg_issue5818_calling_with_open_type.f', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: 'A...'
+Type inference failed for one type parameter 'A'
+
+
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:64:3: error 3: Failed to infer actual type parameters
   g _  _                                                           # 11. should flag an error: failed to infer T, U
 --^
 In call to 'reg_issue5818_calling_with_open_type.g', no actual type parameters are given and inference of the type parameters failed.
@@ -15,7 +23,7 @@ Expected type parameters: 'T, U, A...'
 Type inference failed for 2 type parameters 'T', 'U'
 
 
---CURDIR--/reg_issue5818_calling_with_open_type.fz:65:3: error 3: Failed to infer actual type parameters
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:65:3: error 4: Failed to infer actual type parameters
   g _  _    _                                                      # 12. should flag an error: failed to infer T, U, A
 --^
 In call to 'reg_issue5818_calling_with_open_type.g', no actual type parameters are given and inference of the type parameters failed.
@@ -23,7 +31,7 @@ Expected type parameters: 'T, U, A...'
 Type inference failed for 3 type parameters 'T', 'U', 'A'
 
 
---CURDIR--/reg_issue5818_calling_with_open_type.fz:67:3: error 4: Failed to infer actual type parameters
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:67:3: error 5: Failed to infer actual type parameters
   g u8 _                                                           # 14. should flag an error: too many value arguments
 --^
 In call to 'reg_issue5818_calling_with_open_type.g', no actual type parameters are given and inference of the type parameters failed.
@@ -31,7 +39,7 @@ Expected type parameters: 'T, U, A...'
 Type inference failed for one type parameter 'U'
 
 
---CURDIR--/reg_issue5818_calling_with_open_type.fz:69:3: error 5: Failed to infer actual type parameters
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:69:3: error 6: Failed to infer actual type parameters
   g u8 unit _                                                      # 15. should flag an error: failed to infer type parameter A
 --^
 In call to 'reg_issue5818_calling_with_open_type.g', no actual type parameters are given and inference of the type parameters failed.
@@ -39,7 +47,7 @@ Expected type parameters: 'T, U, A...'
 Type inference failed for one type parameter 'A'
 
 
---CURDIR--/reg_issue5818_calling_with_open_type.fz:88:4: error 6: Failed to infer open type parameter type from actual argument.
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:88:4: error 7: Failed to infer open type parameter type from actual argument.
   (h                                                                      # 16. should flag an error: failed to infer open type parameters
 ---^
 Type of first actual argument could not be inferred at --CURDIR--/reg_issue5818_calling_with_open_type.fz:89:6:
@@ -47,7 +55,7 @@ Type of first actual argument could not be inferred at --CURDIR--/reg_issue5818_
 -----^^^
 
 
---CURDIR--/reg_issue5818_calling_with_open_type.fz:102:4: error 7: Failed to infer open type parameter type from actual argument.
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:102:4: error 8: Failed to infer open type parameter type from actual argument.
   (i nil unit                                                             # 20. should flag an error: failed to infer T, U
 ---^
 Type of third actual argument could not be inferred at --CURDIR--/reg_issue5818_calling_with_open_type.fz:103:6:
@@ -55,7 +63,7 @@ Type of third actual argument could not be inferred at --CURDIR--/reg_issue5818_
 -----^^^
 
 
---CURDIR--/reg_issue5818_calling_with_open_type.fz:103:6: error 8: Different count of arguments needed when calling feature
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:103:6: error 9: Different count of arguments needed when calling feature
      f64                                                                  # 21. should flag an error: cannot call `f64`
 -----^^^
 Feature not found: 'f64' (no arguments)
@@ -68,7 +76,7 @@ To call 'f64', you must provide one argument.
 
 
 
---CURDIR--/reg_issue5818_calling_with_open_type.fz:104:7: error 9: Different count of arguments needed when calling feature
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:104:7: error 10: Different count of arguments needed when calling feature
      (array String)                                                       # 22. should flag an error: cannot call `array String`
 ------^^^^^
 Feature not found: 'array' (one argument)
@@ -81,7 +89,7 @@ To call 'array', you must provide 3 arguments. The type arguments may be omitted
 
 
 
---CURDIR--/reg_issue5818_calling_with_open_type.fz:120:5: error 10: Different count of arguments needed when calling feature
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:120:5: error 11: Different count of arguments needed when calling feature
   j f64 unit           3.14                                               # 23. should flag an error: failed to infer T, U
 ----^^^
 Feature not found: 'f64' (no arguments)
@@ -94,7 +102,7 @@ To call 'f64', you must provide one argument.
 
 
 
---CURDIR--/reg_issue5818_calling_with_open_type.fz:63:3: error 11: Different count of arguments needed when calling feature
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:63:3: error 12: Different count of arguments needed when calling feature
   g _                                                              # 10. should flag an error: wrong number of arguments
 --^
 Feature not found: 'g' (one argument)
@@ -107,7 +115,7 @@ To call 'g', you must provide 3 arguments. The type arguments may be omitted or 
 
 
 
---CURDIR--/reg_issue5818_calling_with_open_type.fz:66:3: error 12: Different count of arguments needed when calling feature
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:66:3: error 13: Different count of arguments needed when calling feature
   g _                                                              # 13. should flag an error: too many value arguments
 --^
 Feature not found: 'g' (one argument)
@@ -120,7 +128,7 @@ To call 'g', you must provide 3 arguments. The type arguments may be omitted or 
 
 
 
---CURDIR--/reg_issue5818_calling_with_open_type.fz:42:3: error 13: Wrong number of actual value arguments in call
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:42:3: error 14: Wrong number of actual value arguments in call
   f u8 _                                                           #  2. should flag an error: undefined open type parameter
 --^
 Number of actual value arguments is 1, while call expects no value arguments.
@@ -132,20 +140,8 @@ Declared at --CURDIR--/reg_issue5818_calling_with_open_type.fz:35:3:
 --^
 
 
---CURDIR--/reg_issue5818_calling_with_open_type.fz:43:3: error 14: Wrong number of actual value arguments in call
-  f _ u8                                                           #  3. should flag an error: extra open type parameter
---^
-Number of actual value arguments is 1, while call expects no value arguments.
-Actual value arguments: ''
-Called feature: 'reg_issue5818_calling_with_open_type.f'
-Formal value arguments: --none--
-Declared at --CURDIR--/reg_issue5818_calling_with_open_type.fz:35:3:
-  f(A type ...) =>
---^
-
-
 --CURDIR--/reg_issue5818_calling_with_open_type.fz:44:3: error 15: Wrong number of actual value arguments in call
-  f _ _                                                            #  4. should flag an error: extra open type parameter
+  f _ _                                                            #  4. should flag an error: too many value arguments
 --^
 Number of actual value arguments is 1, while call expects no value arguments.
 Actual value arguments: ''

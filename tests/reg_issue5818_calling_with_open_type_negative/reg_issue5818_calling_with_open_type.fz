@@ -40,8 +40,8 @@ reg_issue5818_calling_with_open_type =>
   f u8 unit i32 f64  (array String)   String (num.complex f64)     # ok
   f _                                                              #  1. should flag an error: failed to infer type parameter A
   f u8 _                                                           #  2. should flag an error: undefined open type parameter
-  f _ u8                                                           #  3. should flag an error: extra open type parameter
-  f _ _                                                            #  4. should flag an error: extra open type parameter
+  f _ u8                                                           #  3. should flag an error: too many value arguments
+  f _ _                                                            #  4. should flag an error: too many value arguments
   f             3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  #  5. should flag an error: too many value arguments
   f u8 unit i32 3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  #  6. should flag an error: too many value arguments
   f _           3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  #  7. should flag an error: too many value arguments
