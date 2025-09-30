@@ -715,9 +715,18 @@ public class ParsedCall extends Call
         */
         //            System.out.println("hasOpenGenericsArgList: firstValIndex: "+firstValueIndex+" at "+pos().show());
             }
-        else if (!false)
+        else if (true)
           {
-            vn = resolvedFormalArgumentTypes(res, context, false).length;
+            if (vs.stream().map(v->v.resultTypeIfPresent(res))
+                                    .filter(t->t!=null)
+                                    .anyMatch(t->t.isOpenGeneric()))
+              {
+                for (var v : vs)
+                  {
+                    res.resolveTypes(v);
+                  }
+                vn = resolvedFormalArgumentTypes(res, context).length;
+              }
             if (!false && tn > 0 && vn == 0 && ts.getLast().isOpenTypeParameter())
               {
                 firstValueIndex = _actuals.size();  // only type arguments, last is an open type
@@ -732,13 +741,14 @@ public class ParsedCall extends Call
               }
             else
               {
-                System.out.println("**** PANIC; does not add up: "+_actuals.size()+" != "+tn+" + "+vn+" for "+pos().show());
+                firstValueIndex = tn;
+                //   System.out.println("**** PANIC; does not add up: "+_actuals.size()+" != "+tn+" + "+vn+" for "+pos().show());
               }
             //System.out.println("firstValIndex: "+firstValueIndex+" at "+pos().show());
           }
         else
           {
-            var _ = resolvedFormalArgumentTypes(res, context, false).length;
+            var _ = resolvedFormalArgumentTypes(res, context).length;
           }
         var i = 0;
         ListIterator<Expr> ai = _actuals.listIterator();

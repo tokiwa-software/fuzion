@@ -522,16 +522,12 @@ public abstract class AbstractCall extends Expr
    */
   AbstractType[] resolvedFormalArgumentTypes(Resolution res, Context context)
   {
-    return resolvedFormalArgumentTypes(res, context, true);
-  }
-  AbstractType[] resolvedFormalArgumentTypes(Resolution res, Context context, boolean urgent)
-  {
     // NYI: UNDER DEVELOPMENT: cache this? cache key: calledFeature/target
     if (CHECKS) check
-      (!urgent || calledFeature().valueArguments().stream().allMatch(frml -> frml.state().atLeast(State.RESOLVED_TYPES)));
+      (calledFeature().valueArguments().stream().allMatch(frml -> frml.state().atLeast(State.RESOLVED_TYPES)));
 
     var result = calledFeature().valueArguments()
-                                .flatMap2(frml -> resolveFormalArg(res, context, frml, urgent));
+                                .flatMap2(frml -> resolveFormalArg(res, context, frml));
     return result.toArray(new AbstractType[result.size()]);
   }
 
