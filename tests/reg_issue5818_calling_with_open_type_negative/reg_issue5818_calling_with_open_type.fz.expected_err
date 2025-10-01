@@ -353,7 +353,7 @@ To solve this, replace argument '3.14' by '_' at --CURDIR--/reg_issue5818_callin
 Feature not found: 'g' (one argument)
 Target feature: 'reg_issue5818_calling_with_open_type'
 In call: 'g _'
-To solve this, you might change the actual number of arguments to match the feature 'g' (2 type parameters T U, one open type argument A (no arguments)) at --CURDIR--/reg_issue5818_calling_with_open_type.fz:59:3:
+To solve this, you might change the actual number of arguments to match the feature 'g' (2 type parameters T U, one open type parameter A (no arguments)) at --CURDIR--/reg_issue5818_calling_with_open_type.fz:59:3:
   g(T,U type, A type ...) =>
 --^
 To call 'g', you must provide 3 arguments. The type arguments may be omitted or `_` may be used in place of a type argument if they can be inferred from the value arguments..
@@ -366,7 +366,7 @@ To call 'g', you must provide 3 arguments. The type arguments may be omitted or 
 Feature not found: 'g' (one argument)
 Target feature: 'reg_issue5818_calling_with_open_type'
 In call: 'g _'
-To solve this, you might change the actual number of arguments to match the feature 'g' (2 type parameters T U, one open type argument A (no arguments)) at --CURDIR--/reg_issue5818_calling_with_open_type.fz:59:3:
+To solve this, you might change the actual number of arguments to match the feature 'g' (2 type parameters T U, one open type parameter A (no arguments)) at --CURDIR--/reg_issue5818_calling_with_open_type.fz:59:3:
   g(T,U type, A type ...) =>
 --^
 To call 'g', you must provide 3 arguments. The type arguments may be omitted or `_` may be used in place of a type argument if they can be inferred from the value arguments..

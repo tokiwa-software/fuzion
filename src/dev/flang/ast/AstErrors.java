@@ -232,7 +232,7 @@ public class AstErrors extends ANY
     if (typeCount > 0 && f.typeArguments().getLast().isOpenTypeParameter())
       {
         typeCount--;
-        open = "one open type argument";
+        open = "one open type parameter";
       }
     if (typeCount > 0 ) { msg.add(StringHelpers.typeParametersString( typeCount ) + " " + ta.take(typeCount).map2(a->a.featureName().baseName()).toString("", " ", "")); }
     if (open != null  ) { msg.add(open + " " + ta.getLast().featureName()); }
