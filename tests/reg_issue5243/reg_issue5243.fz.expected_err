@@ -3,7 +3,7 @@
   say (1 .. .filter %%2)  # should fail
 ------------^^^^^^^^^^^
 A lambda expression can only be used if assigned to a field or argument whose type contains an abstract lambda target feature 
-with argument count of the lambda expression equal to the effective argument count of the lamda target.
+with argument count of the lambda expression equal to the effective argument count of the lambda target.
 Target type: 'i32' from formal argument type in call to 'has_interval.infix ..'
 To solve this, assign the lambda expression to a type that is a lambda target, e.g., 'f (i32, i32) -> bool := x, y -> x > y'.
 
@@ -12,7 +12,7 @@ To solve this, assign the lambda expression to a type that is a lambda target, e
   say (1 +  .filter %%2)  # should fail
 ------------^^^^^^^^^^^
 A lambda expression can only be used if assigned to a field or argument whose type contains an abstract lambda target feature 
-with argument count of the lambda expression equal to the effective argument count of the lamda target.
+with argument count of the lambda expression equal to the effective argument count of the lambda target.
 Target type: 'i32' from formal argument type in call to 'num.wrap_around.precall infix +'
 To solve this, assign the lambda expression to a type that is a lambda target, e.g., 'f (i32, i32) -> bool := x, y -> x > y'.
 

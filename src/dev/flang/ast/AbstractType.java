@@ -1665,7 +1665,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
   /**
    * For a lambda target (@see isLambdaTarget()), return the actual arity of the
-   * lamda.
+   * lambda.
    *
    * @return the number of arguments to be passed to this function type.
    */
