@@ -1530,6 +1530,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   {
     return
       isPlainType() &&
+      // NYI: UNDER DEVELOPMENT: Replace String comparison by a flag or similar
       feature().featureName().baseName().startsWith(FuzionConstants.LAMBDA_PREFIX);
   }
 
