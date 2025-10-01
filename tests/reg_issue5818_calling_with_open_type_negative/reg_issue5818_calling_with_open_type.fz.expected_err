@@ -1,0 +1,493 @@
+
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:45:3: error 1: Failed to infer actual type parameters
+  f _                                                              #  1. should flag an error: failed to infer type parameter A
+--^
+In call to 'reg_issue5818_calling_with_open_type.f', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: 'A...'
+Type inference failed for one type parameter 'A'
+
+
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:47:3: error 2: Failed to infer actual type parameters
+  f _ u8                                                           #  3. should flag an error: too many value arguments
+--^
+In call to 'reg_issue5818_calling_with_open_type.f', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: 'A...'
+Type inference failed for one type parameter 'A'
+
+
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:69:3: error 3: Failed to infer actual type parameters
+  g _  _                                                           # 11. should flag an error: failed to infer T, U
+--^
+In call to 'reg_issue5818_calling_with_open_type.g', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: 'T, U, A...'
+Type inference failed for 2 type parameters 'T', 'U'
+
+
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:70:3: error 4: Failed to infer actual type parameters
+  g _  _    _                                                      # 12. should flag an error: failed to infer T, U, A
+--^
+In call to 'reg_issue5818_calling_with_open_type.g', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: 'T, U, A...'
+Type inference failed for 3 type parameters 'T', 'U', 'A'
+
+
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:72:3: error 5: Failed to infer actual type parameters
+  g u8 _                                                           # 14. should flag an error: too many value arguments
+--^
+In call to 'reg_issue5818_calling_with_open_type.g', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: 'T, U, A...'
+Type inference failed for one type parameter 'U'
+
+
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:74:3: error 6: Failed to infer actual type parameters
+  g u8 unit _                                                      # 15. should flag an error: failed to infer type parameter A
+--^
+In call to 'reg_issue5818_calling_with_open_type.g', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: 'T, U, A...'
+Type inference failed for one type parameter 'A'
+
+
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:97:4: error 7: Failed to infer open type parameter type from actual argument.
+  (h                                                                      # 16. should flag an error: failed to infer open type parameters
+---^
+Type of first actual argument could not be inferred at --CURDIR--/reg_issue5818_calling_with_open_type.fz:98:6:
+     f64                                                                  # 17. should flag an error: cannot call `f64`
+-----^^^
+
+
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:114:4: error 8: Failed to infer open type parameter type from actual argument.
+  (i nil unit                                                             # 20. should flag an error: failed to infer T, U
+---^
+Type of third actual argument could not be inferred at --CURDIR--/reg_issue5818_calling_with_open_type.fz:115:6:
+     f64                                                                  # 21. should flag an error: cannot call `f64`
+-----^^^
+
+
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:115:6: error 9: Different count of arguments needed when calling feature
+     f64                                                                  # 21. should flag an error: cannot call `f64`
+-----^^^
+Feature not found: 'f64' (no arguments)
+Target feature: 'reg_issue5818_calling_with_open_type'
+In call: 'f64'
+To solve this, you might change the actual number of arguments to match the feature 'f64' (one value argument val) at {base.fum}/f64.fz:32:8:
+public f64(public val f64) : float, java_primitive is
+-------^^^
+To call 'f64', you must provide one argument.
+
+
+
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:116:7: error 10: Different count of arguments needed when calling feature
+     (array String)                                                       # 22. should flag an error: cannot call `array String`
+------^^^^^
+Feature not found: 'array' (one argument)
+Target feature: 'reg_issue5818_calling_with_open_type'
+In call: '(array String)'
+To solve this, you might change the actual number of arguments to match the feature 'array' (one type parameter T, 2 value arguments length init) at {base.fum}/array.fz:118:8:
+public array(T type, length i32, init i32 -> T) array T =>
+-------^^^^^
+To call 'array', you must provide 3 arguments. The type arguments may be omitted or `_` may be used in place of a type argument if they can be inferred from the value arguments..
+
+
+
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:133:5: error 11: Different count of arguments needed when calling feature
+  j f64 unit           3.14                                               # 23. should flag an error: failed to infer T, U
+----^^^
+Feature not found: 'f64' (no arguments)
+Target feature: 'reg_issue5818_calling_with_open_type'
+In call: 'f64'
+To solve this, you might change the actual number of arguments to match the feature 'f64' (one value argument val) at {base.fum}/f64.fz:32:8:
+public f64(public val f64) : float, java_primitive is
+-------^^^
+To call 'f64', you must provide one argument.
+
+
+
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:134:3: error 12: In call with value arguments of open type, open type parameters must be inferred
+  j _   unit           3.14                                               # 24. should flag an error: open type must be inferred using `_`
+--^
+A call to a feature of the form
+
+    f(T,U type, A type..., x T, y U, a A...) =>
+
+must either provide only actual arguments and infer types
+
+    f "hi" 42 false 3.14   # T=String, U=i32, A=[false, f64]
+
+or use '_' as placeholder for the open type
+
+    f String i32 _ "hi" 42 false 3.14       # A=[false, f64]
+
+To solve this, replace argument '3.14' by '_' at --CURDIR--/reg_issue5818_calling_with_open_type.fz:134:24:
+  j _   unit           3.14                                               # 24. should flag an error: open type must be inferred using `_`
+-----------------------^^^^
+
+
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:135:5: error 13: Different count of arguments needed when calling feature
+  j f64 unit           3.14 ["true","false"]                              # 25. should flag an error: feature not found `f64`
+----^^^
+Feature not found: 'f64' (no arguments)
+Target feature: 'reg_issue5818_calling_with_open_type'
+In call: 'f64'
+To solve this, you might change the actual number of arguments to match the feature 'f64' (one value argument val) at {base.fum}/f64.fz:32:8:
+public f64(public val f64) : float, java_primitive is
+-------^^^
+To call 'f64', you must provide one argument.
+
+
+
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:136:3: error 14: In call with value arguments of open type, open type parameters must be inferred
+  j _   unit           3.14 ["true","false"]                              # 26. should flag an error: open type must be inferred using `_`
+--^
+A call to a feature of the form
+
+    f(T,U type, A type..., x T, y U, a A...) =>
+
+must either provide only actual arguments and infer types
+
+    f "hi" 42 false 3.14   # T=String, U=i32, A=[false, f64]
+
+or use '_' as placeholder for the open type
+
+    f String i32 _ "hi" 42 false 3.14       # A=[false, f64]
+
+To solve this, replace argument '3.14' by '_' at --CURDIR--/reg_issue5818_calling_with_open_type.fz:136:24:
+  j _   unit           3.14 ["true","false"]                              # 26. should flag an error: open type must be inferred using `_`
+-----------------------^^^^
+
+
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:137:5: error 15: Different count of arguments needed when calling feature
+  j f64 unit           3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  # 27. should flag an error: feature not found `f64`
+----^^^
+Feature not found: 'f64' (no arguments)
+Target feature: 'reg_issue5818_calling_with_open_type'
+In call: 'f64'
+To solve this, you might change the actual number of arguments to match the feature 'f64' (one value argument val) at {base.fum}/f64.fz:32:8:
+public f64(public val f64) : float, java_primitive is
+-------^^^
+To call 'f64', you must provide one argument.
+
+
+
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:138:3: error 16: In call with value arguments of open type, open type parameters must be inferred
+  j _   unit           3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  # 28. should flag an error: open type must be inferred using `_`
+--^
+A call to a feature of the form
+
+    f(T,U type, A type..., x T, y U, a A...) =>
+
+must either provide only actual arguments and infer types
+
+    f "hi" 42 false 3.14   # T=String, U=i32, A=[false, f64]
+
+or use '_' as placeholder for the open type
+
+    f String i32 _ "hi" 42 false 3.14       # A=[false, f64]
+
+To solve this, replace argument '3.14' by '_' at --CURDIR--/reg_issue5818_calling_with_open_type.fz:138:24:
+  j _   unit           3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  # 28. should flag an error: open type must be inferred using `_`
+-----------------------^^^^
+
+
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:156:5: error 17: Different count of arguments needed when calling feature
+  k f64 Any   3.14 ["true","false"]                                         # 29. should flag an error: feature not found `f64`
+----^^^
+Feature not found: 'f64' (no arguments)
+Target feature: 'reg_issue5818_calling_with_open_type'
+In call: 'f64'
+To solve this, you might change the actual number of arguments to match the feature 'f64' (one value argument val) at {base.fum}/f64.fz:32:8:
+public f64(public val f64) : float, java_primitive is
+-------^^^
+To call 'f64', you must provide one argument.
+
+
+
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:157:3: error 18: In call with value arguments of open type, open type parameters must be inferred
+  k _   Any   3.14 ["true","false"]                                         # 30. should flag an error: open type must be inferred using `_`
+--^
+A call to a feature of the form
+
+    f(T,U type, A type..., x T, y U, a A...) =>
+
+must either provide only actual arguments and infer types
+
+    f "hi" 42 false 3.14   # T=String, U=i32, A=[false, f64]
+
+or use '_' as placeholder for the open type
+
+    f String i32 _ "hi" 42 false 3.14       # A=[false, f64]
+
+To solve this, replace argument '3.14' by '_' at --CURDIR--/reg_issue5818_calling_with_open_type.fz:157:15:
+  k _   Any   3.14 ["true","false"]                                         # 30. should flag an error: open type must be inferred using `_`
+--------------^^^^
+
+
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:158:3: error 19: In call with value arguments of open type, open type parameters must be inferred
+  k _   _     3.14 ["true","false"]                                         # 31. should flag an error: open type must be inferred using `_`
+--^
+A call to a feature of the form
+
+    f(T,U type, A type..., x T, y U, a A...) =>
+
+must either provide only actual arguments and infer types
+
+    f "hi" 42 false 3.14   # T=String, U=i32, A=[false, f64]
+
+or use '_' as placeholder for the open type
+
+    f String i32 _ "hi" 42 false 3.14       # A=[false, f64]
+
+To solve this, replace argument '3.14' by '_' at --CURDIR--/reg_issue5818_calling_with_open_type.fz:158:15:
+  k _   _     3.14 ["true","false"]                                         # 31. should flag an error: open type must be inferred using `_`
+--------------^^^^
+
+
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:159:5: error 20: Different count of arguments needed when calling feature
+  k f64 Any   3.14 ["true","false"] "?!?"                                   # 32. should flag an error: feature not found `f64`
+----^^^
+Feature not found: 'f64' (no arguments)
+Target feature: 'reg_issue5818_calling_with_open_type'
+In call: 'f64'
+To solve this, you might change the actual number of arguments to match the feature 'f64' (one value argument val) at {base.fum}/f64.fz:32:8:
+public f64(public val f64) : float, java_primitive is
+-------^^^
+To call 'f64', you must provide one argument.
+
+
+
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:160:3: error 21: In call with value arguments of open type, open type parameters must be inferred
+  k _   Any   3.14 ["true","false"] "?!?"                                   # 33. should flag an error: open type must be inferred using `_`
+--^
+A call to a feature of the form
+
+    f(T,U type, A type..., x T, y U, a A...) =>
+
+must either provide only actual arguments and infer types
+
+    f "hi" 42 false 3.14   # T=String, U=i32, A=[false, f64]
+
+or use '_' as placeholder for the open type
+
+    f String i32 _ "hi" 42 false 3.14       # A=[false, f64]
+
+To solve this, replace argument '3.14' by '_' at --CURDIR--/reg_issue5818_calling_with_open_type.fz:160:15:
+  k _   Any   3.14 ["true","false"] "?!?"                                   # 33. should flag an error: open type must be inferred using `_`
+--------------^^^^
+
+
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:161:3: error 22: In call with value arguments of open type, open type parameters must be inferred
+  k _   _     3.14 ["true","false"] "?!?"                                   # 34. should flag an error: open type must be inferred using `_`
+--^
+A call to a feature of the form
+
+    f(T,U type, A type..., x T, y U, a A...) =>
+
+must either provide only actual arguments and infer types
+
+    f "hi" 42 false 3.14   # T=String, U=i32, A=[false, f64]
+
+or use '_' as placeholder for the open type
+
+    f String i32 _ "hi" 42 false 3.14       # A=[false, f64]
+
+To solve this, replace argument '3.14' by '_' at --CURDIR--/reg_issue5818_calling_with_open_type.fz:161:15:
+  k _   _     3.14 ["true","false"] "?!?"                                   # 34. should flag an error: open type must be inferred using `_`
+--------------^^^^
+
+
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:162:5: error 23: Different count of arguments needed when calling feature
+  k f64 Any   3.14 ["true","false"] "?!?"  (num.complex 3.14 4)             # 35. should flag an error: feature not found `f64`
+----^^^
+Feature not found: 'f64' (no arguments)
+Target feature: 'reg_issue5818_calling_with_open_type'
+In call: 'f64'
+To solve this, you might change the actual number of arguments to match the feature 'f64' (one value argument val) at {base.fum}/f64.fz:32:8:
+public f64(public val f64) : float, java_primitive is
+-------^^^
+To call 'f64', you must provide one argument.
+
+
+
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:163:3: error 24: In call with value arguments of open type, open type parameters must be inferred
+  k _   Any   3.14 ["true","false"] "?!?"  (num.complex 3.14 4)             # 36. should flag an error: open type must be inferred using `_`
+--^
+A call to a feature of the form
+
+    f(T,U type, A type..., x T, y U, a A...) =>
+
+must either provide only actual arguments and infer types
+
+    f "hi" 42 false 3.14   # T=String, U=i32, A=[false, f64]
+
+or use '_' as placeholder for the open type
+
+    f String i32 _ "hi" 42 false 3.14       # A=[false, f64]
+
+To solve this, replace argument '3.14' by '_' at --CURDIR--/reg_issue5818_calling_with_open_type.fz:163:15:
+  k _   Any   3.14 ["true","false"] "?!?"  (num.complex 3.14 4)             # 36. should flag an error: open type must be inferred using `_`
+--------------^^^^
+
+
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:164:3: error 25: In call with value arguments of open type, open type parameters must be inferred
+  k _   _     3.14 ["true","false"] "?!?"  (num.complex 3.14 4)             # 37. should flag an error: open type must be inferred using `_`
+--^
+A call to a feature of the form
+
+    f(T,U type, A type..., x T, y U, a A...) =>
+
+must either provide only actual arguments and infer types
+
+    f "hi" 42 false 3.14   # T=String, U=i32, A=[false, f64]
+
+or use '_' as placeholder for the open type
+
+    f String i32 _ "hi" 42 false 3.14       # A=[false, f64]
+
+To solve this, replace argument '3.14' by '_' at --CURDIR--/reg_issue5818_calling_with_open_type.fz:164:15:
+  k _   _     3.14 ["true","false"] "?!?"  (num.complex 3.14 4)             # 37. should flag an error: open type must be inferred using `_`
+--------------^^^^
+
+
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:68:3: error 26: Different count of arguments needed when calling feature
+  g _                                                              # 10. should flag an error: wrong number of arguments
+--^
+Feature not found: 'g' (one argument)
+Target feature: 'reg_issue5818_calling_with_open_type'
+In call: 'g _'
+To solve this, you might change the actual number of arguments to match the feature 'g' (2 type parameters T U, one open type parameter A (no arguments)) at --CURDIR--/reg_issue5818_calling_with_open_type.fz:59:3:
+  g(T,U type, A type ...) =>
+--^
+To call 'g', you must provide 3 arguments. The type arguments may be omitted or `_` may be used in place of a type argument if they can be inferred from the value arguments..
+
+
+
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:71:3: error 27: Different count of arguments needed when calling feature
+  g _                                                              # 13. should flag an error: too many value arguments
+--^
+Feature not found: 'g' (one argument)
+Target feature: 'reg_issue5818_calling_with_open_type'
+In call: 'g _'
+To solve this, you might change the actual number of arguments to match the feature 'g' (2 type parameters T U, one open type parameter A (no arguments)) at --CURDIR--/reg_issue5818_calling_with_open_type.fz:59:3:
+  g(T,U type, A type ...) =>
+--^
+To call 'g', you must provide 3 arguments. The type arguments may be omitted or `_` may be used in place of a type argument if they can be inferred from the value arguments..
+
+
+
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:46:3: error 28: Wrong number of actual value arguments in call
+  f u8 _                                                           #  2. should flag an error: undefined open type parameter
+--^
+Number of actual value arguments is 1, while call expects no value arguments.
+Actual value arguments: '_'
+Called feature: 'reg_issue5818_calling_with_open_type.f'
+Formal value arguments: --none--
+Declared at --CURDIR--/reg_issue5818_calling_with_open_type.fz:39:3:
+  f(A type ...) =>
+--^
+
+
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:48:3: error 29: Wrong number of actual value arguments in call
+  f _ _                                                            #  4. should flag an error: too many value arguments
+--^
+Number of actual value arguments is 1, while call expects no value arguments.
+Actual value arguments: ''
+Called feature: 'reg_issue5818_calling_with_open_type.f'
+Formal value arguments: --none--
+Declared at --CURDIR--/reg_issue5818_calling_with_open_type.fz:39:3:
+  f(A type ...) =>
+--^
+
+
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:49:3: error 30: Wrong number of actual value arguments in call
+  f             3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  #  5. should flag an error: too many value arguments
+--^
+Number of actual value arguments is 4, while call expects no value arguments.
+Actual value arguments: '3.14', '["true","false"]', '"?!?"', '(num.complex 3.14 4)'
+Called feature: 'reg_issue5818_calling_with_open_type.f'
+Formal value arguments: --none--
+Declared at --CURDIR--/reg_issue5818_calling_with_open_type.fz:39:3:
+  f(A type ...) =>
+--^
+
+
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:50:3: error 31: Wrong number of actual value arguments in call
+  f u8 unit i32 3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  #  6. should flag an error: too many value arguments
+--^
+Number of actual value arguments is 4, while call expects no value arguments.
+Actual value arguments: '3.14', '["true","false"]', '"?!?"', '(num.complex 3.14 4)'
+Called feature: 'reg_issue5818_calling_with_open_type.f'
+Formal value arguments: --none--
+Declared at --CURDIR--/reg_issue5818_calling_with_open_type.fz:39:3:
+  f(A type ...) =>
+--^
+
+
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:51:3: error 32: Wrong number of actual value arguments in call
+  f _           3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  #  7. should flag an error: too many value arguments
+--^
+Number of actual value arguments is 4, while call expects no value arguments.
+Actual value arguments: '3.14', '["true","false"]', '"?!?"', ''
+Called feature: 'reg_issue5818_calling_with_open_type.f'
+Formal value arguments: --none--
+Declared at --CURDIR--/reg_issue5818_calling_with_open_type.fz:39:3:
+  f(A type ...) =>
+--^
+
+
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:66:3: error 33: Wrong number of actual value arguments in call
+  g             3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  #  8. should flag an error: failed to infer type parameter T, U
+--^
+Number of actual value arguments is 4, while call expects no value arguments.
+Actual value arguments: '3.14', '["true","false"]', '"?!?"', ''
+Called feature: 'reg_issue5818_calling_with_open_type.g'
+Formal value arguments: --none--
+Declared at --CURDIR--/reg_issue5818_calling_with_open_type.fz:59:3:
+  g(T,U type, A type ...) =>
+--^
+
+
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:67:3: error 34: Wrong number of actual value arguments in call
+  g u8 unit i32 3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  #  9. should flag an error: too many value arguments
+--^
+Number of actual value arguments is 4, while call expects no value arguments.
+Actual value arguments: '3.14', '["true","false"]', '"?!?"', '(num.complex 3.14 4)'
+Called feature: 'reg_issue5818_calling_with_open_type.g'
+Formal value arguments: --none--
+Declared at --CURDIR--/reg_issue5818_calling_with_open_type.fz:59:3:
+  g(T,U type, A type ...) =>
+--^
+
+
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:98:6: error 35: Different count of arguments needed when calling feature
+     f64                                                                  # 17. should flag an error: cannot call `f64`
+-----^^^
+Feature not found: 'f64' (no arguments)
+Target feature: 'reg_issue5818_calling_with_open_type'
+In call: 'f64'
+To solve this, you might change the actual number of arguments to match the feature 'f64' (one value argument val) at {base.fum}/f64.fz:32:8:
+public f64(public val f64) : float, java_primitive is
+-------^^^
+To call 'f64', you must provide one argument.
+
+
+
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:99:7: error 36: Different count of arguments needed when calling feature
+     (array String)                                                       # 18. should flag an error: cannot call `array String`
+------^^^^^
+Feature not found: 'array' (one argument)
+Target feature: 'reg_issue5818_calling_with_open_type'
+In call: '(array String)'
+To solve this, you might change the actual number of arguments to match the feature 'array' (one type parameter T, 2 value arguments length init) at {base.fum}/array.fz:118:8:
+public array(T type, length i32, init i32 -> T) array T =>
+-------^^^^^
+To call 'array', you must provide 3 arguments. The type arguments may be omitted or `_` may be used in place of a type argument if they can be inferred from the value arguments..
+
+
+
+--CURDIR--/reg_issue5818_calling_with_open_type.fz:110:3: error 37: Failed to infer actual type parameters
+  i nil unit           3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  # 19. should flag an error: failed to infer T, U
+--^
+In call to 'reg_issue5818_calling_with_open_type.i', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: 'T, U, A...'
+Type inference failed for 2 type parameters 'T', 'U'
+
+37 errors.

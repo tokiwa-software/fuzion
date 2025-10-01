@@ -608,31 +608,92 @@ public class ParsedCall extends Call
   }
 
 
-  /**
-   * Do we have to split of type args?
-   */
-  private boolean mustSplitOffTypeArgs(Resolution res, AbstractFeature calledFeature)
-  {
-    return !isSpecialWrtArgs(calledFeature) &&
-            calledFeature != Types.f_ERROR &&
-            _generics.isEmpty() &&
-            _actuals.size() != calledFeature.valueArguments().size() &&
-            !calledFeature.hasOpenGenericsArgList(res);
-  }
-
-
   @Override
-  protected void splitOffTypeArgs(Resolution res, AbstractFeature calledFeature, AbstractFeature outer)
+  protected void splitOffTypeArgs(Resolution res, Context context)
   {
-    if (mustSplitOffTypeArgs(res, calledFeature))
+    var cf = calledFeature();
+    if (!isDefunct() && cf.arguments().size()!=0 && _generics.isEmpty())
       {
-        var g = new List<AbstractType>();
+        var g = NO_GENERICS;
         var a = new List<Expr>();
-        var ts = calledFeature.typeArguments();
+        var ts = cf.typeArguments();
         var tn = ts.size();
         var ti = 0;
-        var vs = calledFeature.valueArguments();
+        var vs = cf.valueArguments();  // NYI: must hand down to get the correct number!
         var vn = vs.size();
+        var vi = 0;
+        var firstValueIndex = _actuals.size() - vn;
+
+        if (cf.hasOpenValueArgList(res))
+          {
+                /*
+    // tag::fuzion_rule_CALL_OPEN_VALUE_ARGS[]
+A xref:fuzion_call[call] to a xref:fuzion_feature[feature] that expects an xref:fuzion_opentypeparameter[open type parameter] `T`
+and a xref:fuzion_value_argument[value argument] of type `T` must either provide no actual
+type parameters and infer all actual type parameters from the xref:fuzion_value_argument[value arguments], or use `_` as a placeholder for the actual
+types passed to `T`.  The actual types of `T` will always be inferred from the actual arguments.
+    // end::fuzion_rule_CALL_OPEN_VALUE_ARGS[]
+                */
+            if (_actuals.take(tn).stream().allMatch(ac->ac.asType() != Types.t_UNDEFINED))
+              { // no type parameters are given, so use _actuals all as values to infer types
+                firstValueIndex = 0;
+              }
+            else if ((_actuals.size() >= tn && _actuals.get(tn-1).asType() == Types.t_UNDEFINED))
+              { // the type parameters are given and the open type parameter is '_'
+                firstValueIndex = tn;
+              }
+            else
+              {
+                AstErrors.typeParametersWithOpenValueArg(this,
+                                                         _actuals.size() >= tn ? _actuals.get(tn-1) : null);
+                setDefunct();
+              }
+          }
+        else
+          {
+            if (vs.stream().map(v->v.resultTypeIfPresent(res))
+                                    .filter(t->t!=null)
+                                    .anyMatch(t->t.isOpenGeneric()))
+              {
+                vn = resolvedFormalArgumentTypes(res, context).length;
+              }
+            if (cf.hasOpenTypeArgList())
+              {
+                /*
+    // tag::fuzion_rule_CALL_OPEN_TYPE_ARGS[]
+A xref:fuzion_call[call] to a xref:fuzion_feature[feature] that expects an xref:fuzion_opentypeparameter[open type parameter] must provide
+xref:fuzion_actual[actual arguments] for all xref:fuzion_actual_typeparameter[actual type paramaters] and all xref:fuzion_actual_value_argument[actual value arguments]
+expected by the called feature. For the non-open type paramaters, `_` may be used as a placeholder for a type inferred from the actual value arguments.
+    // end::fuzion_rule_CALL_OPEN_TYPE_ARGS[]
+                */
+                firstValueIndex = _actuals.size() - vn;  // number of value arguments is fixed, so all others are type parameters
+              }
+            else
+              {
+                /*
+    // tag::fuzion_rule_CALL_NON_VARIADIC_ARGS[]
+A xref:fuzion_call[call] to a xref:fuzion_feature[feature] that expects no xref:fuzion_opentypeparameter[open type parameter] may either provide
+xref:fuzion_actual[actual arguments] for all xref:fuzion_actual_typeparameter[actual type paramater] and all xref:fuzion_actual_value_argument[actual value arguments]
+expected by the called feature, or, it may receive only xref:fuzion_actual_value_argument[actual value arguments] and infer the actual type parameter values from the
+static types of the actual value arguments. +
+A `_` may be used as placeholder for a xref:fuzion_actual_typeparameter[actual type paramaters] that shall be inferred from the xref:fuzion_actual_value_argument[actual value arguments].
+    // end::fuzion_rule_CALL_NON_VARIADIC_ARGS[]
+                */
+                if (_actuals.size() == tn+vn)  // type and value args are present
+                  {
+                    firstValueIndex = tn;
+                  }
+                else if (_actuals.size() == vn)  // value args are present, type args are inferred
+                  {
+                    firstValueIndex = 0;
+                  }
+                else  // an error will be reported later, argument count does not match.
+                  {
+                    // NYI: UNDER DEVELOPMENT: report the error right here!
+                    firstValueIndex = tn;
+                  }
+              }
+          }
         var i = 0;
         ListIterator<Expr> ai = _actuals.listIterator();
         while (ai.hasNext())
@@ -648,21 +709,29 @@ public class ParsedCall extends Call
                ts.get(ti).kind() == AbstractFeature.Kind.TypeParameter     ||
                ts.get(ti).kind() == AbstractFeature.Kind.OpenTypeParameter);
 
-            if (_actuals.size() - i > vn)
+            var t = ti < tn &&
+                    i < firstValueIndex ? _actuals.get(i).asType()
+                                        : null;
+            if (t != null && (i <= ti || t != Types.t_UNDEFINED /* open type parameters except first must not be `_` */))
               {
-                AbstractType t = _actuals.get(i).asType();
-                if (t != null)
-                  {
-                    g.add(t);
-                  }
                 ai.set(Expr.NO_VALUE);  // make sure visit() no longer visits this
-                if (ti > ts.size() && ts.get(ti).kind() != AbstractFeature.Kind.OpenTypeParameter)
+                if (ti < tn && ts.get(ti).kind() != AbstractFeature.Kind.OpenTypeParameter)
                   {
                     ti++;
+                  }
+                else if (ti < tn && t == Types.t_UNDEFINED && cf.hasOpenValueArgList(res))
+                  {
+                    t = null;
+                  }
+                if (t != null)
+                  {
+                    g = g == NO_GENERICS ? new List<AbstractType>() : g;
+                    g.add(t);
                   }
               }
             else
               {
+                firstValueIndex = i;
                 a.add(aa);
               }
             i++;

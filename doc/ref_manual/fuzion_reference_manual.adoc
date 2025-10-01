@@ -429,6 +429,37 @@ include::rule.adoc[]
 :RULE_ID: SEMANTIC_CONTRACT_POST_ORDER
 include::rule.adoc[]
 
+=== Calls
+
+=== Non-Variadic Calls
+
+Non-variadic calls are normal calls to features with a fixed number of
+xref:fuzion_actual[actual arguments] that is determined by the number of
+xref:fuzion_argument[arguments] expected by the called
+xref:fuzion_feature[feature].  The call expects xref:fuzion_actual[actual
+arguments] that are xref:fuzion_typeparameter[type parameters] and
+xref:fuzion_actual_value_argument[value arguments].
+
+:RULE_SRC: src/dev/flang/ast/ParsedCall.java
+:RULE_ID: CALL_NON_VARIADIC_ARGS
+include::rule.adoc[]
+
+=== Variadic Calls
+
+Variadic calls are calls to features that use xref:fuzion_opentypeparameter[open
+type parameters] as their formal arguments. There are two main cases to be
+distinguished: First, calls with a variable number of  xref:fuzion_value_argument[value arguments]:
+
+:RULE_SRC: src/dev/flang/ast/ParsedCall.java
+:RULE_ID: CALL_OPEN_VALUE_ARGS
+include::rule.adoc[]
+
+Second, calls with a fixed number of xref:fuzion_value_argument[value arguments] but with an  xref:fuzion_opentypeparameter[open
+type parameters] that expects an arbitrary list of xref:fuzion_actual_typeparameter[actual type parameters]:
+
+:RULE_SRC: src/dev/flang/ast/ParsedCall.java
+:RULE_ID: CALL_OPEN_TYPE_ARGS
+include::rule.adoc[]
 
 [appendix]
 
@@ -439,11 +470,16 @@ include::rule.adoc[]
 
 [#fuzion_actual]
 ((Actual)):: An _actual argument_ is an expression that is parsed as an `actual` as part of a
-xref:feature_call[call] or the right hand side of an infix operator call.
+xref:feature_call[call] or the right hand side of an infix operator call. An _actual argument_ is either
+an xref:fuzion_actual_typeparameter[actual type paramater] or an xref:fuzion_actual_value_argument[actual value argument].
 
 [#fuzion_actual_typeparameter]
 ((Actual Type Parameter)):: An _actual type parameter_ is a xref:fuzion_type[type] that replaces a
 xref:fuzion_typeparameter[type parameter] of the feature a type is based on.
+
+[#fuzion_actual_value_argument]
+((Actual Value Argument)):: An _actual value argument_ is an expression that replaces a
+xref:fuzion_value_argument[value argument] in a xref:fuzion_call[call].
 
 [#fuzion_argument]
 ((Argument)):: An _argument_ is a xref:fuzion_typeparameter[type parameter] or a xref:fuzion_value_argument[value argument].

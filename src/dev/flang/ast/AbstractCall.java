@@ -280,7 +280,7 @@ public abstract class AbstractCall extends Expr
       (!frmlT.isOpenGeneric());
 
     return adjustResultType(res, context, target().type(), frmlT,
-                                                (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, true, arg, frmlT, from, to), true);
+                            (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, true, arg, frmlT, from, to), true);
   }
 
 
@@ -303,7 +303,7 @@ public abstract class AbstractCall extends Expr
   {
     var t1 = rt == Types.t_ERROR ? rt : adjustThisTypeForTarget(context, rt, foundRef);
     var t2 = t1 == Types.t_ERROR ? t1 : t1.applyTypePars(tt);
-    var t3 = t2 == Types.t_ERROR ? t2 : t2.applyTypePars(calledFeature(), actualTypeParameters(res, context));
+    var t3 = t2 == Types.t_ERROR ? t2 : t2.applyTypePars(calledFeature(), actualTypeParameters());
     var t4 = t3 == Types.t_ERROR ? t3 : tt.isGenericArgument() ? t3 : t3.resolve(res, tt.feature().context());
     var t5 = t4 == Types.t_ERROR || forArg ? t4 : adjustThisTypeForTarget(context, t4, foundRef);
 
@@ -311,20 +311,6 @@ public abstract class AbstractCall extends Expr
       (t5 != null);
 
     return t5;
-  }
-
-
-  /**
-   * get actual type parameters during resolution
-   *
-   * @param res the resolution instance.
-   *
-   * @param context the source code context where this Call is used
-   *
-   */
-  protected List<AbstractType> actualTypeParameters(Resolution res, Context context)
-  {
-    return actualTypeParameters();
   }
 
 
@@ -414,11 +400,19 @@ public abstract class AbstractCall extends Expr
    */
   List<AbstractType> resolveFormalArg(Resolution res, Context context, AbstractFeature frml)
   {
-    var frmlT = frml.resultTypeIfPresentUrgent(res, true);
+    if (res != null)
+      {
+        res.resolveTypes(frml);
+      }
+    var frmlT = frml.resultType();
+    if (frmlT == null)
+      {
+        frmlT = Types.t_UNDEFINED;
+      }
     var declF = calledFeature().outer();
     var tt = target().type();
     var l = new List<>(frmlT);
-    if (!tt.isGenericArgument() && declF != tt.feature() && calledFeature() != Types.f_ERROR)
+    if (tt != null && !tt.isGenericArgument() && declF != tt.feature() && calledFeature() != Types.f_ERROR)
       {
         l = calledFeature().outer().handDown(res, l, tt.feature());
       }
@@ -509,9 +503,6 @@ public abstract class AbstractCall extends Expr
   AbstractType[] resolvedFormalArgumentTypes(Resolution res, Context context)
   {
     // NYI: UNDER DEVELOPMENT: cache this? cache key: calledFeature/target
-    if (CHECKS) check
-      (calledFeature().valueArguments().stream().allMatch(frml -> frml.state().atLeast(State.RESOLVED_TYPES)));
-
     var result = calledFeature().valueArguments()
                                 .flatMap2(frml -> resolveFormalArg(res, context, frml));
     return result.toArray(new AbstractType[result.size()]);

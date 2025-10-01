@@ -2497,27 +2497,25 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     var fi = af.typeArguments().iterator();
     var ai = actuals.iterator();
     var ui = unresolvedActuals.iterator();
-    while (fi.hasNext() &&
-           ai.hasNext()    ) // NYI: handling of open generic arguments
+    while (fi.hasNext())
       {
         var f = fi.next();
-        var a = ai.next();
+        var a = ai.hasNext() ? ai.next() : null;
         var u = ui.hasNext() ? ui.next() : null;
         var c = adjustConstraint == null
           ? f.constraint(context)
           : adjustConstraint.apply(f.constraint(context));
         if (CHECKS) check
-          (Errors.any() || f != null && a != null);
+          (Errors.any() || f != null);
 
         var p = u instanceof UnresolvedType ut ? ut.pos() :
                 pos != null                    ? pos
                                                : af.pos();
 
-        if (a == Types.t_UNDEFINED)
-          {
-            AstErrors.failedToInferActualGeneric(p, af, new List<>(f));
+        if (a == null && f.isOpenTypeParameter())
+          { // ok, no actuals given for open generic
           }
-        else
+        else if (a != null && a != Types.t_UNDEFINED && a != Types.t_ERROR)
           {
             a.checkLegalThisType(p, context);
             a.checkChoice(p, context);
