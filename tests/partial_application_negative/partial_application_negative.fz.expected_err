@@ -86,7 +86,7 @@ This call was created automatically by partial application. To solve this, you m
 Feature not found: 'map' (no arguments)
 Target feature: 'interval'
 In call: 'map'
-To solve this, you might change the actual number of arguments to match the feature 'map' (one type argument B, one value argument f) at {base.fum}/Sequence.fz:407:10:
+To solve this, you might change the actual number of arguments to match the feature 'map' (one type parameter B, one value argument f) at {base.fum}/Sequence.fz:407:10:
   public map(B type, f T->B) Sequence B =>
 ---------^^^
 To call 'map', you must provide 2 arguments. The type arguments may be omitted or `_` may be used in place of a type argument if they can be inferred from the value arguments..

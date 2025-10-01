@@ -138,9 +138,9 @@ public class StringHelpers extends ANY
    * @return a string like "no type arguments", "one type argument", "2 type
    * arguments"
    */
-  public static String typeArgumentsString(int count)
+  public static String typeParametersString(int count)
   {
-    return singularOrPlural(count, "type argument");
+    return singularOrPlural(count, "type parameter");
   }
 
 

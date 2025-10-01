@@ -234,7 +234,7 @@ public class AstErrors extends ANY
         typeCount--;
         open = "one open type argument";
       }
-    if (typeCount > 0 ) { msg.add(StringHelpers.typeArgumentsString( typeCount ) + " " + ta.take(typeCount).map2(a->a.featureName().baseName()).toString("", " ", "")); }
+    if (typeCount > 0 ) { msg.add(StringHelpers.typeParametersString( typeCount ) + " " + ta.take(typeCount).map2(a->a.featureName().baseName()).toString("", " ", "")); }
     if (open != null  ) { msg.add(open + " " + ta.getLast().featureName()); }
     if (valueCount > 0) { msg.add(StringHelpers.valueArgumentsString(valueCount) + " " + va                .map2(a->a.featureName().baseName()).toString("", " ", "")); }
     return msg.size() == 0 ? "(no arguments)" :  msg.toString("(", ", ", ")");
