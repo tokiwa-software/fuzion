@@ -673,7 +673,7 @@ public class AstErrors extends ANY
   }
 
   static void typeParametersWithOpenValueArg(ParsedCall c,
-                                             Expr openTypeArg)
+                                             Expr openTypePar)
   {
     error(c.pos(),
           "In call with value arguments of open type, open type parameters must be inferred",
@@ -691,8 +691,8 @@ public class AstErrors extends ANY
               f String i32 _ "hi" 42 false 3.14       # A=[false, f64]
 
           """ +
-          (openTypeArg != null
-           ? "To solve this, replace argument "+s(openTypeArg) + " by " + code("_") + " at " + openTypeArg.pos().show()
+          (openTypePar != null
+           ? "To solve this, replace argument "+s(openTypePar) + " by " + code("_") + " at " + openTypePar.pos().show()
            : "")
           );
   }
@@ -1878,7 +1878,7 @@ public class AstErrors extends ANY
     if (!any() || (cf != Types.f_ERROR && !missing.isEmpty()))
       {
         error(pos,
-              "Failed to infer actual type parameters",  // NYI: give more detail here on type and value arguments
+              "Failed to infer actual type parameters",  // NYI: give more detail here on type parameters and value arguments
               "In call to " + s(cf) + ", no actual type parameters are given and inference of the type parameters failed.\n" +
               "Expected type parameters: " + s(cf.generics()) + "\n"+
               "Type inference failed for " + StringHelpers.singularOrPlural(missing.size(), "type parameter") + " " + slg(missing) + "\n");
