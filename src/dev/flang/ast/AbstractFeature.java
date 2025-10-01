@@ -632,31 +632,28 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   boolean hasOpenValueArgList(Resolution res)
   {
-    boolean result = false;
-    for (var g : typeArguments())
-      {
-        if (g.isOpenTypeParameter())
+    return typeArguments().stream()
+      .filter(g -> g.isOpenTypeParameter())
+      .anyMatch
+        (g -> arguments().stream().anyMatch
+         (a ->
           {
-            for (AbstractFeature a : arguments())
+            AbstractType t;
+            if (a instanceof Feature af)
               {
-                AbstractType t;
-                if (a instanceof Feature af)
+                if (res != null)
                   {
-                    if (res != null)
-                      {
-                        af.visit(res.resolveTypesOnly(af));
-                      }
-                    t = af.returnType().functionReturnType();
+                    af.visit(res.resolveTypesOnly(af));
                   }
-                else
-                  {
-                    t = a.resultType();
-                  }
-                result = result || t.isGenericArgument() && t.genericArgument() == g;
+                t = af.returnType().functionReturnType();
               }
-          }
-      }
-    return result;
+            else
+              {
+                t = a.resultType();
+              }
+            return t.isGenericArgument() && t.genericArgument() == g;
+          })
+         );
   }
 
 
@@ -671,12 +668,8 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   boolean hasOpenTypeArgList()
   {
-    boolean result = false;
-    for (var g : typeArguments())
-      {
-        result = result || g.isOpenTypeParameter();
-      }
-    return result;
+    return typeArguments().stream()
+                          .anyMatch(g -> g.isOpenTypeParameter());
   }
 
 

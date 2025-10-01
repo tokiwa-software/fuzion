@@ -279,8 +279,7 @@ public abstract class AbstractCall extends Expr
     if (PRECONDITIONS) require
       (!frmlT.isOpenGeneric());
 
-    var tt = target().type();
-    return adjustResultType(res, context, tt, frmlT,
+    return adjustResultType(res, context, target().type(), frmlT,
                             (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, true, arg, frmlT, from, to), true);
   }
 
