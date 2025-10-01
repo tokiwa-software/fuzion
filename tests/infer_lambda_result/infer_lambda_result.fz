@@ -91,6 +91,9 @@ infer_lambda_result =>
   case5
 
 
+# NYI: UNDER DEVELOPMENT: declaring these within case3/case4/case5 does not work
+# yet. See comment in targetCalls() in src/dev/flang/ast/Function.java.
+#
 ft3(R,A,B type) ref is
   c(a1 A, b1 B) R : fuzion.lambda_target => abstract
 ft4(A,B,R type) ref is
