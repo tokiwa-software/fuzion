@@ -17,16 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature Read_Handler
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-public Read_Handler ref is
-
-  # read up to count bytes
-  #
-  # returns either an array of the bytes read, end_of_file or an error
-  #
-  public read(count i32) choice (array u8) io.end_of_file error
-    post debug: (result ? a array => a.count>0 && a.count<=count | * => true)
-  => abstract
+override NAME = reg_issue5818_calling_with_open_type
+include ../simple.mk

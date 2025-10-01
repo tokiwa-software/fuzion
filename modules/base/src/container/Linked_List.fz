@@ -41,7 +41,7 @@ public Linked_List(public T type) ref : Sequence T is
   #
   as_string0(pfx String) =>
     match next
-      ll Linked_List T => ll.as_string0 "{pfx} -> {ll.data}"
+      ll Linked_List => ll.as_string0 "{pfx} -> {ll.data}"
       nil => "{pfx} ]"
 
 
@@ -55,5 +55,5 @@ public Linked_List(public T type) ref : Sequence T is
   #
   public redef as_list list T =>
     match next
-      ll Linked_List T => (data : ()->ll.as_list)
+      ll Linked_List => (data : ()->ll.as_list)
       nil => (data : ()->nil)

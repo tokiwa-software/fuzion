@@ -619,6 +619,61 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
+   * Check if this feature's argument list contains value arguments of an open
+   * type parameter of this feature.
+   *
+   * Note that in contrast to `hasOpenGenericsArgList()`, this does not consider
+   * arguments whose type is an open type from an outer feature.
+   *
+   * @param res resolution used before type resolution is done to resolve
+   * argument types. May be null after type resolution.
+   *
+   * @return true iff arg list has an open value args list.
+   */
+  boolean hasOpenValueArgList(Resolution res)
+  {
+    return typeArguments().stream()
+      .filter(g -> g.isOpenTypeParameter())
+      .anyMatch
+        (g -> arguments().stream().anyMatch
+         (a ->
+          {
+            AbstractType t;
+            if (a instanceof Feature af)
+              {
+                if (res != null)
+                  {
+                    af.visit(res.resolveTypesOnly(af));
+                  }
+                t = af.returnType().functionReturnType();
+              }
+            else
+              {
+                t = a.resultType();
+              }
+            return t.isGenericArgument() && t.genericArgument() == g;
+          })
+         );
+  }
+
+
+  /**
+   * Check if this feature's argument list contains type parameters of an open
+   * type parameter of this feature.
+   *
+   * @param res resolution used before type resolution is done to resolve
+   * argument types. May be null after type resolution.
+   *
+   * @return true iff arg list has an open type parameter.
+   */
+  boolean hasOpenTypeArgList()
+  {
+    return typeArguments().stream()
+                          .anyMatch(g -> g.isOpenTypeParameter());
+  }
+
+
+  /**
    * For a type parameter, this gives the ResolvedParametricType instance
    * corresponding to this type parameter.
    *

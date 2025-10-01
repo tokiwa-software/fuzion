@@ -87,36 +87,6 @@ public class Call extends AbstractCall
 
 
   /**
-   * get actual type parameters during resolution
-   *
-   * @param res the resolution instance.
-   *
-   * @param context the source code context where this Call is used
-   *
-   */
-  @Override
-  protected List<AbstractType> actualTypeParameters(Resolution res, Context context)
-  {
-    // force re-resolve, detected partial application
-    // of open type parameter.
-    // e.g.: `(1..3).zip 7..9 tuple |> say`
-    if (actualTypeParameters().size() < calledFeature().typeArguments().size() &&
-        calledFeature().hasOpenGenericsArgList() &&
-        _type != null)
-      {
-        _generics = NO_GENERICS;
-        _resolvedFor = null;
-        _actualsResolvedFor = null;
-        _type = null;
-        resolveTypes(res, context);
-        reportMissingInferred(missingGenerics());
-      }
-    return actualTypeParameters();
-  }
-
-
-
-  /**
    * actual generic arguments, set by parser
    */
   /*final*/ List<AbstractType> _generics; // NYI: Make this final again when resolveTypes can replace a call
@@ -689,8 +659,8 @@ public class Call extends AbstractCall
         var fo = findOnTarget(res, targetFeature, true).v1();
         if (fo != null)
           {
-            splitOffTypeArgs(res, fo._feature, outer);
             setCalledFeatureAndTarget(res, context, fo);
+            splitOffTypeArgs(res, context);
           }
       }
 
@@ -732,7 +702,7 @@ public class Call extends AbstractCall
   /**
    * set this Call to defunct since its target is void
    */
-  private void setDefunct()
+  public void setDefunct()
   {
     _calledFeature = Types.f_ERROR;
     _actuals = new List<>();
@@ -745,7 +715,7 @@ public class Call extends AbstractCall
    * is this Call defunct, i.e., an error occured or this is unreachable due to
    * target resutling in `void`.
    */
-  private boolean isDefunct()
+  protected boolean isDefunct()
   {
     return _calledFeature == Types.f_ERROR;
   }
@@ -863,7 +833,7 @@ public class Call extends AbstractCall
     if (fo == null && mayBeSpecialWrtArgs)
       { // handle implicit calls `f()` that expand to `f.call()`:
         fo =
-          FeatureAndOuter.filter(fos, pos(), FuzionConstants.OPERATION_CALL, calledName, ff -> isSpecialWrtArgs(ff));
+          FeatureAndOuter.filter(fos, pos(), FuzionConstants.OPERATION_CALL, calledName, ff -> ff.arguments().size()==0);
       }
     return new Pair<>(fos, fo);
   }
@@ -1105,29 +1075,12 @@ public class Call extends AbstractCall
    * split the actuals list (i32, 10, i->i*i) into generics (i32) and actuals
    * (10, i->i*i).
    *
-   * @param calledFeature the feature we are calling
+   * @param res the resolution instance.
    *
-   * @param outer the feature surrounding this call
+   * @param context the source code context where this Call is used
    */
-  protected void splitOffTypeArgs(Resolution res, AbstractFeature calledFeature, AbstractFeature outer)
+  protected void splitOffTypeArgs(Resolution res, Context context)
   {
-  }
-
-
-  /**
-   * Check if this call would need special handling of the argument count
-   * in case the _calledFeature would be ff. This is the case for open generics,
-   * "fun a.b.f" calls and implicit calls using f() for f returning Function value.
-   *
-   * @param ff the called feature candidate.
-   *
-   * @return true iff ff may be the called feature due to the special cases
-   * listed above.
-   */
-  protected boolean isSpecialWrtArgs(AbstractFeature ff)
-  {
-    /* maybe an implicit call to a Function / Routine, see resolveImmediateFunctionCall() */
-    return ff.arguments().size()==0;
   }
 
 
@@ -1683,7 +1636,6 @@ public class Call extends AbstractCall
       }
     while (last < next);
 
-
     List<AbstractFeature> missing = missingGenerics();
 
     if (!missing.isEmpty())
@@ -1746,7 +1698,7 @@ public class Call extends AbstractCall
     // we failed inferring all type parameters, so report errors
     for (var a : _actuals)
       {
-        if (a instanceof Call)
+        if (a instanceof Call && !(a instanceof Select)) /* NYI: CLEANUP: would be better if `Select` would not inherit `Call` */
           {
             var ignore = a.type();
           }
@@ -1795,7 +1747,8 @@ public class Call extends AbstractCall
     for (var g : _calledFeature.typeArguments())
       {
         int i = g.typeParameterIndex();
-        if (!g.isOpenTypeParameter() && _generics.get(i) == Types.t_UNDEFINED)
+        if (i >= _generics.size() && !g.isOpenTypeParameter() ||
+            i <  _generics.size() && _generics.get(i) == Types.t_UNDEFINED)
           {
             missing.add(g);
           }
@@ -2462,7 +2415,7 @@ public class Call extends AbstractCall
    */
   boolean needsToInferTypeParametersFromArgs()
   {
-    return _calledFeature != null && (_generics == NO_GENERICS || _generics.stream().anyMatch(g -> g.containsUndefined())) && !_calledFeature.typeArguments().isEmpty();
+    return _calledFeature != null && (_generics == NO_GENERICS || _generics.stream().anyMatch(g -> g.containsUndefined())) && !_calledFeature.typeArguments().isEmpty() || _calledFeature != null && _generics.size() < _calledFeature.typeArguments().size();
   }
 
 
@@ -2546,12 +2499,9 @@ public class Call extends AbstractCall
                   _target = Call.typeAsValue(_pos, _target.asParsedType()).resolveTypes(res, context);
                 }
             }
-          if (_calledFeature != null &&
-              _generics.isEmpty() &&
-              _actuals.size() != f.valueArguments().size() &&
-              !f.hasOpenGenericsArgList(res))
+          if (_calledFeature != null)
             {
-              splitOffTypeArgs(res, f, outer);
+              splitOffTypeArgs(res, context);
             }
         }
     }
@@ -2740,8 +2690,7 @@ public class Call extends AbstractCall
     var t = getActualResultType(res, context, false);
 
     if (CHECKS) check
-      (_type == null || t.compareTo(_type) == 0,
-       Errors.any() || t != Types.t_ERROR);
+      (Errors.any() || t != Types.t_ERROR);
 
     _type = t;
 
@@ -2882,6 +2831,7 @@ public class Call extends AbstractCall
   void checkTypes(Resolution res, Context context)
   {
     reportPendingError();
+    reportMissingInferred(missingGenerics());
 
     var t = type();
 

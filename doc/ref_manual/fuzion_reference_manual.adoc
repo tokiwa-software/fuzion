@@ -321,7 +321,7 @@ include::rule.adoc[]
 CAUTION: *NYI*: Text Missing
 
 
-==== Redefining inherited features
+=== Redefining inherited features
 
 If and only if a feature redefines an inherited feature, it must use the
 modifier `redef` in its declaration:
@@ -342,7 +342,7 @@ include::rule.adoc[]
 :RULE_ID: PARS_REDEF_AS_KIND
 include::rule.adoc[]
 
-=== Redefining formal arguments
+==== Redefining formal arguments
 
 For redefined features, the number of formal value arguments as well as the
 number of xref:fuzion_typeparameter[type parameters] must not change compared to the original feature,
@@ -386,7 +386,7 @@ features:
 include::rule.adoc[]
 
 
-=== Redefining pre- and postconditions
+==== Redefining pre- and postconditions
 
 Pre- and postconditions of features are introduced using the `pre` or `post`
 keyword if those features do not redefine an inherited feature:
@@ -410,11 +410,12 @@ include::rule.adoc[]
 :RULE_ID: PARS_CONTR_POST_THEN
 include::rule.adoc[]
 
-==== Choice features
+=== Choice features
 
 :RULE_SRC: src/dev/flang/ast/Feature.java
 :RULE_ID: CHOICE_RESULT
 include::rule.adoc[]
+
 
 == Semantics
 
@@ -428,6 +429,37 @@ include::rule.adoc[]
 :RULE_ID: SEMANTIC_CONTRACT_POST_ORDER
 include::rule.adoc[]
 
+=== Calls
+
+=== Non-Variadic Calls
+
+Non-variadic calls are normal calls to features with a fixed number of
+xref:fuzion_actual[actual arguments] that is determined by the number of
+xref:fuzion_argument[arguments] expected by the called
+xref:fuzion_feature[feature].  The call expects xref:fuzion_actual[actual
+arguments] that are xref:fuzion_typeparameter[type parameters] and
+xref:fuzion_actual_value_argument[value arguments].
+
+:RULE_SRC: src/dev/flang/ast/ParsedCall.java
+:RULE_ID: CALL_NON_VARIADIC_ARGS
+include::rule.adoc[]
+
+=== Variadic Calls
+
+Variadic calls are calls to features that use xref:fuzion_opentypeparameter[open
+type parameters] as their formal arguments. There are two main cases to be
+distinguished: First, calls with a variable number of  xref:fuzion_value_argument[value arguments]:
+
+:RULE_SRC: src/dev/flang/ast/ParsedCall.java
+:RULE_ID: CALL_OPEN_VALUE_ARGS
+include::rule.adoc[]
+
+Second, calls with a fixed number of xref:fuzion_value_argument[value arguments] but with an  xref:fuzion_opentypeparameter[open
+type parameters] that expects an arbitrary list of xref:fuzion_actual_typeparameter[actual type parameters]:
+
+:RULE_SRC: src/dev/flang/ast/ParsedCall.java
+:RULE_ID: CALL_OPEN_TYPE_ARGS
+include::rule.adoc[]
 
 [appendix]
 
@@ -438,11 +470,16 @@ include::rule.adoc[]
 
 [#fuzion_actual]
 ((Actual)):: An _actual argument_ is an expression that is parsed as an `actual` as part of a
-xref:feature_call[call] or the right hand side of an infix operator call.
+xref:feature_call[call] or the right hand side of an infix operator call. An _actual argument_ is either
+an xref:fuzion_actual_typeparameter[actual type paramater] or an xref:fuzion_actual_value_argument[actual value argument].
 
 [#fuzion_actual_typeparameter]
 ((Actual Type Parameter)):: An _actual type parameter_ is a xref:fuzion_type[type] that replaces a
 xref:fuzion_typeparameter[type parameter] of the feature a type is based on.
+
+[#fuzion_actual_value_argument]
+((Actual Value Argument)):: An _actual value argument_ is an expression that replaces a
+xref:fuzion_value_argument[value argument] in a xref:fuzion_call[call].
 
 [#fuzion_argument]
 ((Argument)):: An _argument_ is a xref:fuzion_typeparameter[type parameter] or a xref:fuzion_value_argument[value argument].
