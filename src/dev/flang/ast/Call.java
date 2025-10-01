@@ -2415,7 +2415,12 @@ public class Call extends AbstractCall
    */
   boolean needsToInferTypeParametersFromArgs()
   {
-    return _calledFeature != null && (_generics == NO_GENERICS || _generics.stream().anyMatch(g -> g.containsUndefined())) && !_calledFeature.typeArguments().isEmpty() || _calledFeature != null && _generics.size() < _calledFeature.typeArguments().size();
+    return
+      _calledFeature != null                                       &&
+      !_calledFeature.typeArguments().isEmpty()                    &&
+      (_generics == NO_GENERICS                                ||
+       _generics.stream().anyMatch(g -> g.containsUndefined()) ||
+       _generics.size() < _calledFeature.typeArguments().size()  );
   }
 
 
