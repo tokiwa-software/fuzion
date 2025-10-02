@@ -42,9 +42,36 @@
 #
 #
 #
-public list(public A type) : choice nil (Cons A (list A)), Sequence A is
+public list(public A type)
+  : choice nil (Cons A (list A)),
 # NYI: #530 (review comment): The following should work but causes an error:
 # list(A type) : nil | Cons A (list A), Sequence A is
+    Sequence A
+is
+
+  # equality of two list is true iff `a` and `b` are both empty or `a` and `b` are both
+  # non-empty and `T` and T.equality a.get b.get.
+  #
+  # This is defined only if T : property.equatable, it will result in a compile-time panic
+  # if this is not the case.
+  #
+  public redef fixed type.equality(a, b list A) bool
+  =>
+    (a.head = b.head &&
+     a.tail = b.tail    )
+
+
+  # A total order between two lists is defined as follows: An empty list `nil` is always
+  # less-than-or-equal any other value and iff `a` and `b` are both non-empty, and the
+  # `a.head` and `b.head` differ, then `T.lteq a.head b.head`, otherwise `T.lteq a.tail b.tail`.
+  #
+  # This is defined only if T : property.orderable, it will result in a compile-time panic
+  # if this is not the case.
+  #
+  public redef fixed type.lteq(a, b list A) bool
+  =>
+    a.head <= b.head && (a.head <  b.head ||
+                         a.tail <= b.tail   )
 
 
   # Return this list as a list.

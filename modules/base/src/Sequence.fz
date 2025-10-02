@@ -33,7 +33,59 @@
 #
 # Heirs of Sequence must implement 'as_list'.
 #
-public Sequence(public T type) ref : property.countable is
+public Sequence(public T type) ref
+  : property.countable,
+    property.orderable,
+    property.hashable
+is
+
+  # equality of two Sequences is true iff `a` and `b` are both empty or `a` and `b` are both
+  # `T` and T.equality a.get b.get.
+  #
+  # This is defined only if T : property.equatable, it will result in a compile-time panic
+  # if this is not the case.
+  #
+  public redef fixed type.equality(a, b Sequence T) bool
+  =>
+    a.as_list = b.as_list
+
+
+  # A total order between of two Sequences is defined as follows: `nil` is always less-than-or-equal
+  # ny other value and iff `a` and `b` are both `T` and T.lteq a.get b.get.
+  #
+  # This is defined only if T : property.orderable, it will result in a compile-time panic
+  # if this is not the case.
+  #
+  public redef fixed type.lteq(a, b Sequence T) bool
+  =>
+    a.as_list <= b.as_list
+
+
+  # create hash code for this Sequence
+  #
+  # This should satisfy the following condition:
+  #
+  #   (T.equality a b) : (T.hash_code a = T.hash_code b)
+  #
+  # This will result in a compile-time `panic` in case T : property.hashable does not hold.
+  #
+  # The algorithm used here is a variation of (XXXHash)[https://xxhash.com] as used in
+  # (Python's tuple)[https://github.com/python/cpython/blob/849a80ec412c36bbca5d400a7db5645b8cf54f1f/Objects/tupleobject.c#L305]:
+  #
+  #   we start with a constant `hash_prime1`
+  #   for each value:
+  #     we take its hash code * `hash_prime2` and add it
+  #     then we rotate by `hash_rotate`
+  #     and multiply by `hash_prime3`
+  #
+  public redef fixed type.hash_code(a Sequence T) u64
+  =>
+    if T : property.hashable then
+      h0 := xxh_next xxh_first 0x9a632220e62c17c8  # created using https://cryptotools.dev/
+      a.map (T.hash_code)
+       .foldf h0 xxh_next
+    else
+      compile_time_panic  # tuple is not hashable since one element type is not
 
 
   # create a list from this Sequence.
@@ -1188,74 +1240,3 @@ public Sequence(public T type) ref : property.countable is
 # NYI: UNDER DEVELOPMENT: move to Sequence/equatable once we can do universe.find_lm
 module find_lm : mutate is
 module Node(T type, module top Sequence T, module next once find_lm (option (Node T)), module rest option (Node T)) ref is
-
-
-# Wrapper type to make a `Sequence` of an orderable element type itself orderable.
-#
-# NYI: UNDER DEVELOPMENT: move to Sequence/orderable once we can do universe.find_lm
-public orderable_sequence(# the element type of the Sequence we are wrapping
-                          #
-                          public T type : property.orderable,
-
-                          # the wrapped Sequence
-                          #
-                          public unwrap Sequence T)
-
-                          : property.orderable
-is
-
-  # does `a` come before `b` or is equal to `b`?
-  #
-  public redef type.lteq(a, b orderable_sequence.this) bool
-  =>
-    unwrapped_lteq a.unwrap b.unwrap
-
-
-  # does `a` come before `b` or is equal to `b`?
-  #
-  type.unwrapped_lteq(a, b Sequence T) bool
-  =>
-    match a.as_list
-      nil     => true
-      ac Cons =>
-        match b.as_list
-          nil     => false
-          bc Cons =>
-            ac.head <= bc.head &&
-              (ac.head < bc.head || unwrapped_lteq ac.tail bc.tail)
-
-
-
-# Wrapper type to make a `Sequence` of an equatable element type itself equatable.
-#
-# NYI: UNDER DEVELOPMENT: move to Sequence/orderable once we can do universe.find_lm
-public equatable_sequence(# the element type of the Sequence we are wrapping
-                          #
-                          public T type : property.equatable,
-
-                          # the wrapped Sequence
-                          #
-                          public unwrap Sequence T)
-
-                          : property.equatable
-is
-
-  # equality
-  #
-  public redef type.equality(a, b equatable_sequence.this) bool =>
-    equality0(a1, b1 equatable_sequence.this) =>
-      (a1.unwrap.zip b1.unwrap x,y->x=y) ∀ id
-
-    au := a.unwrap
-    bu := b.unwrap
-
-    if au.finite.is_yes && bu.finite.is_yes
-      au.count = bu.count && equality0 a b
-    else if au.finite.is_yes
-      au.count = (bu.take (au.count+1)).count && equality0 a b
-    else if bu.finite.is_yes
-      bu.count = (au.take (bu.count+1)).count && equality0 a b
-    else
-      equality0 a b &&
-        {zip_count := (au.zip bu x,y->unit).count
-         (au.drop zip_count).is_empty && (bu.drop zip_count).is_empty}
