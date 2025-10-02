@@ -57,8 +57,8 @@ is
   #
   public redef fixed type.equality(a, b list A) bool
   =>
-    (a.head = b.head &&
-     a.tail = b.tail    )
+    (a.head = b.head                 &&
+     (a.is_empty || a.tail = b.tail)    )
 
 
   # A total order between two lists is defined as follows: An empty list `nil` is always
