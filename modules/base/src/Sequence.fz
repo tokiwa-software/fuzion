@@ -39,8 +39,8 @@ public Sequence(public T type) ref
     property.hashable
 is
 
-  # equality of two Sequences is true iff `a` and `b` are both empty or `a` and `b` are both
-  # `T` and T.equality a.get b.get.
+
+  # equality of two Sequences is defined by `list.equality` of `a.as_list` and `b.as_list`.
   #
   # This is defined only if T : property.equatable, it will result in a compile-time panic
   # if this is not the case.
@@ -50,8 +50,8 @@ is
     a.as_list = b.as_list
 
 
-  # A total order between of two Sequences is defined as follows: `nil` is always less-than-or-equal
-  # ny other value and iff `a` and `b` are both `T` and T.lteq a.get b.get.
+  # A total order between of two Sequences is defined by the total order defined by
+  # `list.lteq` applied to `a.as_list` and `b.as_list`.
   #
   # This is defined only if T : property.orderable, it will result in a compile-time panic
   # if this is not the case.

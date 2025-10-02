@@ -36,9 +36,79 @@ module:public array(
       module internal_array fuzion.sys.internal_array T,
       _ unit,
       _ unit,
-      _ unit) : container.abstract_array T is
+      _ unit)
+  : container.abstract_array T
+is
 
   internal_array.freeze
+
+
+  # equality of two arrays is true iff `a` and `b` have the same length and for all
+  # `in in indices` we have `a[i] = b[i]`.
+  #
+  # For performance, this will compare the length of the arrays first.
+  #
+  # This is defined only if T : property.equatable, it will result in a compile-time panic
+  # if this is not the case.
+  #
+  public redef fixed type.equality(a, b array T) bool
+  =>
+    if T : property.equatable then
+      (a.length = b.length && (for ae in a
+                                   be in b
+                               until ae != be
+                                 false
+                               else
+                                 true))
+    else
+      compile_time_panic  # tuple is not hashable since one element type is not
+
+
+  # A total order between of two arrays is defined by the lowest index `i` for
+  # which `a[i] != b[i]`. If this exists, the result is `a[i] <= b[i]`, otherwise
+  # it is `a.length <= b.length`.
+  #
+  # This is defined only if T : property.orderable, it will result in a compile-time panic
+  # if this is not the case.
+  #
+  public redef fixed type.lteq(a, b array T) bool
+  =>
+    if T : property.orderable then
+      for ae in a
+          be in b
+      until ae != be
+        ae >= be
+      else
+        a.length <= b.length
+    else
+      compile_time_panic  # tuple is not hashable since one element type is not
+
+
+  # create hash code for this array.
+  #
+  # This should satisfy the following condition:
+  #
+  #   (T.equality a b) : (T.hash_code a = T.hash_code b)
+  #
+  # This will result in a compile-time `panic` in case T : property.hashable does not hold.
+  #
+  # The algorithm used here is a variation of (XXXHash)[https://xxhash.com] as used in
+  # (Python's tuple)[https://github.com/python/cpython/blob/849a80ec412c36bbca5d400a7db5645b8cf54f1f/Objects/tupleobject.c#L305]:
+  #
+  #   we start with a constant `hash_prime1`
+  #   for each value:
+  #     we take its hash code * `hash_prime2` and add it
+  #     then we rotate by `hash_rotate`
+  #     and multiply by `hash_prime3`
+  #
+  public redef fixed type.hash_code(a array T) u64
+  =>
+    if T : property.hashable then
+      h0 := xxh_next xxh_first 0x4f8fbfd3cba601a9  # created using https://cryptotools.dev/
+      a.map (T.hash_code)
+       .foldf h0 xxh_next
+    else
+      compile_time_panic  # tuple is not hashable since one element type is not
 
 
   # the length of the array
