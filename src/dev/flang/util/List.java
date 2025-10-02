@@ -374,6 +374,17 @@ public class List<T>
 
 
   /**
+   * Get first element of the list, alternative if list is empty.
+   *
+   * @param alternative an alternative value to return in case the list is empty.
+   */
+  public T getFirstOrElse(T alternative)
+  {
+    return size() == 0 ? alternative : get(0);
+  }
+
+
+  /**
    * Get last element of the list.
    */
   public T getLast()
@@ -676,7 +687,7 @@ public class List<T>
   public List<T> take(int n)
   {
     var result = new List<T>();
-    for (var i = 0; i < n; i++)
+    for (var i = 0; i < n && i < size(); i++)
       {
         result.add(get(i));
       }

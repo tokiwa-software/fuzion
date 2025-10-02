@@ -343,6 +343,22 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
+   * Is this a plain-type, i.e., a value or a ref type created by a feature and
+   * actual type parameters?
+   */
+  public boolean isPlainType()
+  {
+    return
+      this != Types.t_ERROR &&
+      switch (kind())
+      {
+        case RefType, ValueType        -> true;
+        case ThisType, GenericArgument -> false;
+      };
+  }
+
+
+  /**
    * For a resolved type, check if it is a choice type and if so, return the
    * list of choices.
    *
@@ -416,12 +432,19 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /**
    * Check if this or any of its generic arguments is {@code Types.t_UNDEFINED}.
    *
-   * @param exceptFirst if true, the first generic argument may be
-   * {@code Types.t_UNDEFINED}.  This is used in a lambda {@code x -> f x} of type
-   * {@code Function<R,X>} when {@code R} is unknown and to be inferred.
+   * @param except index of a generic argument should be ignored, it may be
+   * {@code Types.t_UNDEFINED}.  This is used in a lambda {@code x -> f x} of
+   * type {@code Function<R,X>} when {@code R} is unknown and to be inferred. -1
+   * to not ignore any argument.
+   *
+   * @return true if this depends on {@code Types.t_UNDEFINED} except for only
+   * type parameter #`except` being {@code Types.t_UNDEFINED}.
    */
-  public boolean containsUndefined(boolean exceptFirst)
+  public boolean containsUndefined(int except)
   {
+    if (PRECONDITIONS) require
+      (except == -1 || except >= 0 && except <= generics().size());
+
     boolean result = false;
     if (this == Types.t_UNDEFINED)
       {
@@ -429,18 +452,29 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       }
     else if (isNormalType())
       {
+        int ix = 0;
         for (var t: generics())
           {
             if (CHECKS) check
               (Errors.any() || t != null);
-            result = result || !exceptFirst && t != null && t.containsUndefined(false);
-            exceptFirst = false;
+            result = result || ix != except && t != null && t.containsUndefined(-1);
+            ix++;
           }
       }
 
     return result;
   }
 
+
+  /**
+   * Check if this or any of its generic arguments is {@code Types.t_UNDEFINED}.
+   *
+   * @return true if this depends on {@code Types.t_UNDEFINED}.
+   */
+  public boolean containsUndefined()
+  {
+    return containsUndefined(-1);
+  }
 
   /**
    * Is actual assignable to this?
@@ -1458,17 +1492,46 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * isFunctionTypeExcludingLazy checks if this is a function type used for lambda expressions,
-   * e.g., "(i32, i32) -> String".
+   * isLambdaTargetButNotLazy checks if this is can be the target of a lambda expressions,
+   * e.g., `(i32, i32) -> String`, but is not a lazy value.
    *
    * @return true iff this is a function type but not a {@code Lazy}.
    */
-  public boolean isFunctionTypeExcludingLazy()
+  public boolean isLambdaTargetButNotLazy(Resolution res)
   {
     return
       this != Types.t_ERROR &&
-      isFunctionType() &&
-      feature() != Types.resolved.f_Lazy;
+      isLambdaTarget(res) &&
+      !isLazyType();
+  }
+
+
+  /**
+   * Check if this is a possible target for a lambda expression.
+   *
+   * @param res Resolution instance.
+   *
+   * @return true iff this type may be the target of a lambda expression.
+   */
+  public boolean isLambdaTarget(Resolution res)
+  {
+    return
+      isPlainType() &&
+      res._module.findLambdaTarget(feature()) != null;
+  }
+
+
+  /**
+   * Check if this a type created for a lambda expression.
+   *
+   * @return true if this is a type created for a lambda expression.
+   */
+  public boolean isLambda()
+  {
+    return
+      isPlainType() &&
+      // NYI: UNDER DEVELOPMENT: Replace String comparison by a flag or similar
+      feature().featureName().baseName().startsWith(FuzionConstants.LAMBDA_PREFIX);
   }
 
 
@@ -1478,12 +1541,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @return true if this is a type based on a feature that is or inherits from {@code Function}.
    */
-  public boolean isFunctionType()
+  public boolean isFunctionType(Resolution res)
   {
-    return
-      !isGenericArgument() &&
-      (feature() == Types.resolved.f_Function ||
-       feature().inherits().stream().anyMatch(c -> c.calledFeature().selfType().isFunctionType()));
+    return isLambdaTarget(res) || isLambda();
   }
 
 
@@ -1494,64 +1554,128 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @param context the source code context where this Type is used
    *
    * @return if this is a choice and there is exactly one choice for which
-   * isFunctionTypeExcludingLazy() holds, return that type, otherwise return this.
+   * isFunctionType() holds, return that type, otherwise return this.
    */
-  AbstractType functionTypeFromChoice(Context context)
+  AbstractType functionTypeFromChoice(Resolution res, Context context)
   {
-    return findInChoice(cg -> cg.isFunctionType(), context);
+    return findInChoice(cg -> cg.isFunctionType(res), context);
   }
 
 
   /**
-   * For a function type (see isFunctionType()), return the arity of the
-   * function.
+   * For a lambda target (@see isLambdaTarget()), hand down a type from the
+   * lambda target signature and hand it down along the inheritance chain down
+   * to this type and apply this type's type parameters.
+   *
+   * @param res the resolution instance.
+   *
+   * @param t the original type used by the lambda target.
+   *
+   * @return the resulting type.
+   */
+  List<AbstractType> lambdaTargetHandDownType(Resolution res, AbstractType t)
+  {
+    if (PRECONDITIONS) require
+      (isLambdaTarget(res));
+
+    var cl = res._module.findLambdaTarget(feature());
+    return cl
+      .outer()
+      .handDown(res, new List<>(t), feature())
+      .flatMap(at -> at.applyTypeParsMaybeOpen(feature(), generics()));
+  }
+
+
+  /**
+   * For a lambda target (@see isLambdaTarget()), return the actual argument
+   * types as seen by this type.
+   *
+   * @param res the resolution instance.
+   *
+   * @return the argument types.
+   */
+  List<AbstractType> lambdaTargetArgumentTypes(Resolution res)
+  {
+    if (PRECONDITIONS) require
+      (isLambdaTarget(res));
+
+    var cl = res._module.findLambdaTarget(feature());
+    return cl.valueArguments()
+      .flatMap2(a -> lambdaTargetHandDownType(res, a.resultTypeIfPresentUrgent(res, true)));
+  }
+
+
+  /**
+   * For a lambda target (@see isLambdaTarget()), return the actual result type
+   * as seen by this type.
+   *
+   * @param res the resolution instance.
+   *
+   * @return the result type.
+   */
+  AbstractType lambdaTargetResultType(Resolution res)
+  {
+    if (PRECONDITIONS) require
+      (isLambdaTarget(res));
+
+    var cl = res._module.findLambdaTarget(feature());
+    return lambdaTargetHandDownType(res, cl.resultTypeIfPresentUrgent(res, true))
+      .getFirstOrElse(Types.t_ERROR);
+  }
+
+
+  /**
+   * If this is a lambdaTarget and the formal result type is a type parameter,
+   * return this type parameter.
+   *
+   * ex. in the following code
+   *
+   *     x(T type, f Function (option T) i32)
+   *     =>
+   *       say (f.call 32)
+   *
+   *     x (i -> i.as_string)
+   *
+   * for the lambda `i -> i.as_string`, this will return `Function.R`.
+   *
+   * This is used by `Call.inferGenericLambdaResult` and `Function.propagateTypeAndInferResult` to
+   * determine that `T` must be `String`.
+   *
+   * @param res the resolution instance
+   *
+   * @return null if the formal result type is not a type parameter, otherwise
+   * that type parameter, i.e. `Function.R` in the example above.
+   */
+  AbstractFeature lambdaTargetResultTypeParameter(Resolution res)
+  {
+    if (PRECONDITIONS) require
+      (isLambdaTarget(res));
+
+    AbstractFeature result = null;
+
+    var g = replaceGenericsAndOuter(feature().generics().asActuals(), outer())
+      .lambdaTargetResultType(res);
+
+    if (g.isGenericArgument() && g.genericArgument().outer() == feature())
+      {
+        result = g.genericArgument();
+      }
+    return result;
+  }
+
+
+  /**
+   * For a lambda target (@see isLambdaTarget()), return the actual arity of the
+   * lambda.
    *
    * @return the number of arguments to be passed to this function type.
    */
-  int arity()
+  int arity(Resolution res)
   {
     if (PRECONDITIONS) require
-      (isFunctionType());
+      (isLambdaTarget(res));
 
-    var f = feature();
-    if (f == Types.resolved.f_Function)
-      {
-        return generics().size() - 1;
-      }
-    else
-      {
-        var result = arityFromParents(f);
-        if (result >= 0)
-          {
-            return result;
-          }
-        throw new Error("AbstractType.arity failed to find arity of " + this);
-      }
-  }
-
-
-  /**
-   * Recursive helper for {@code arity} to determine the arity by inspecting the
-   * parents of {@code f}.
-   *
-   * @param f a feature
-   *
-   * @return the arity in case f inherits from {@code Function}, -1 otherwise.
-   */
-  private int arityFromParents(AbstractFeature f)
-  {
-    for (var p : f.inherits())
-      {
-        var pf = p.calledFeature();
-        var result = pf.equals(Types.resolved.f_Function)
-          ? p.actualTypeParameters().size() - 1
-          : arityFromParents(pf);
-        if (result >= 0)
-          {
-            return result;
-          }
-      }
-    return -1;
+    return lambdaTargetArgumentTypes(res).size();
   }
 
 
@@ -1564,7 +1688,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   {
     return
       this != Types.t_ERROR &&
-      !isGenericArgument() &&
+      isPlainType() &&
       feature() == Types.resolved.f_Lazy;
   }
 
@@ -2497,27 +2621,25 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     var fi = af.typeArguments().iterator();
     var ai = actuals.iterator();
     var ui = unresolvedActuals.iterator();
-    while (fi.hasNext() &&
-           ai.hasNext()    ) // NYI: handling of open generic arguments
+    while (fi.hasNext())
       {
         var f = fi.next();
-        var a = ai.next();
+        var a = ai.hasNext() ? ai.next() : null;
         var u = ui.hasNext() ? ui.next() : null;
         var c = adjustConstraint == null
           ? f.constraint(context)
           : adjustConstraint.apply(f.constraint(context));
         if (CHECKS) check
-          (Errors.any() || f != null && a != null);
+          (Errors.any() || f != null);
 
         var p = u instanceof UnresolvedType ut ? ut.pos() :
                 pos != null                    ? pos
                                                : af.pos();
 
-        if (a == Types.t_UNDEFINED)
-          {
-            AstErrors.failedToInferActualGeneric(p, af, new List<>(f));
+        if (a == null && f.isOpenTypeParameter())
+          { // ok, no actuals given for open generic
           }
-        else
+        else if (a != null && a != Types.t_UNDEFINED && a != Types.t_ERROR)
           {
             a.checkLegalThisType(p, context);
             a.checkChoice(p, context);

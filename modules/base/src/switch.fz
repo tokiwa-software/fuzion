@@ -28,7 +28,8 @@
 #
 public switch(A type, B type /* NYI: B should be open generic */) :
   choice A B,
-  monad A switch.this
+  monad A switch.this,
+  Sequence A
 is
 
   # NYI: CLEANUP: decide name: exists/ok, get/val?
@@ -138,7 +139,7 @@ is
   # converts switch into a list of either a single element in case
   # switch.this.exists or `nil`otherwise
   #
-  public as_list list A
+  public redef as_list list A
   =>
     switch.this ? a A => a : nil
                 | B => nil
@@ -192,7 +193,7 @@ is
 
   # this switch as an equatable_switch
   #
-  public as_equatable equatable_switch A B
+  public as_equatable_switch equatable_switch A B
   pre
     A : property.equatable
   =>
@@ -261,3 +262,15 @@ is
         y ? ya A => xa = ya
           | _  B => false
       | _  B => false
+
+
+  # as_string copied from `switch.as_string` due to repeated inheritance of
+  # conflicting `switch.as_astring` and `Any.as_string` (via `property.equatable`).
+  #
+  # NYI: UNDER DEVELOPMENT: If we have an Eiffel-style `select` or `undefine`, we could
+  # use that instead and select `switch.as_string` or undefine `Any.as_string`.
+  #
+  public redef as_string String =>
+    match equatable_switch.this
+      a A => a.as_string
+      b B => b.as_string

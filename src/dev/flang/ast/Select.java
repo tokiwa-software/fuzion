@@ -279,8 +279,7 @@ public class Select extends Call {
   @Override
   public AbstractType asType()
   {
-    AstErrors.selectIsNoType(_target != null ? _target.pos().rangeTo(pos().byteEndPos()) : pos());
-    return Types.t_ERROR;
+    return null;
   }
 
 

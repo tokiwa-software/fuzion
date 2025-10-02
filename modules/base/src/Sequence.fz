@@ -1108,7 +1108,7 @@ public Sequence(public T type) ref : property.countable is
         key := key_f x
         match res[key]
           nil => res.put key [(f x)]
-          y Sequence B => res.put key (y ++  [(f x)])
+          y Sequence => res.put key (y ++  [(f x)])
 
       res.as_map
 
@@ -1126,7 +1126,7 @@ public Sequence(public T type) ref : property.countable is
       key := f x
       match res[key]
         nil => res.put key [x]
-        s Sequence T => res.put key s++[x]
+        s Sequence => res.put key s++[x]
 
     res.as_map
 

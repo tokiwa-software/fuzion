@@ -553,6 +553,10 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
             if (CHECKS) check
               (tolerant || Errors.any() || fo != FeatureAndOuter.ERROR);
           }
+        else if (!tolerant)
+          {
+            _resolved = Types.t_ERROR;
+          }
       }
 
     if (_resolved != null && _resolved != Types.t_ERROR && (_resolved.isOpenGeneric() != _followedByDots))
@@ -567,6 +571,9 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
           }
         _resolved = Types.t_ERROR;
       }
+
+    if (POSTCONDITIONS) ensure
+      (tolerant || _resolved != null);
 
     return _resolved;
   }
@@ -870,7 +877,8 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
                          freeTypeConstraint().resolve(res, context),
                          _name,
                          Contract.EMPTY_CONTRACT,
-                         Impl.TYPE_PARAMETER)
+                         _followedByDots ? Impl.TYPE_PARAMETER_OPEN
+                                         : Impl.TYPE_PARAMETER)
       {
         /**
          * Is this type a free type?
@@ -901,6 +909,13 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
   public void setFollowedByDots()
   {
     _followedByDots = true;
+  }
+
+
+  @Override
+  public boolean isOpenGeneric()
+  {
+    return _followedByDots;
   }
 
 
