@@ -1,11 +1,10 @@
 
---CURDIR--/reg_issue6024.fz:31:10: error 1: Wrong number of type parameters
+--CURDIR--/reg_issue6024.fz:31:18: error 1: Could not find called feature
   say <| id     (_ bla "bla" [bla]) 42    #  1. should flag an error, wrong number of args
----------^^
-Wrong number of actual type parameters in call:
-Called feature: id
-expected one generic argument for 'T'
-found none.
+-----------------^
+Feature not found: '_' (3 arguments)
+Target feature: 'reg_issue6024'
+In call: '(_ bla "bla" [bla])'
 
 
 --CURDIR--/reg_issue6024.fz:36:22: error 2: Type not found
@@ -62,13 +61,12 @@ in feature: 'reg_issue6024'
 To solve this, check the spelling of the type you have used.
 
 
---CURDIR--/reg_issue6024.fz:43:10: error 8: Wrong number of type parameters
+--CURDIR--/reg_issue6024.fz:43:18: error 8: Could not find called feature
   say <| option (_ bla "bla" [bla]) 42    #  8. should flag an error, wrong number of args
----------^^^^^^
-Wrong number of actual type parameters in call:
-Called feature: option
-expected one generic argument for 'T'
-found none.
+-----------------^
+Feature not found: '_' (3 arguments)
+Target feature: 'reg_issue6024'
+In call: '(_ bla "bla" [bla])'
 
 
 --CURDIR--/reg_issue6024.fz:46:22: error 9: Type not found
