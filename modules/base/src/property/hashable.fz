@@ -49,8 +49,6 @@ public hashable : equatable is
   #     then we rotate by `hash_rotate`
   #     and multiply by `hash_prime3`
   #
-  # see https://xxhash.com/doc/v0.8.3 for details.
-  #
   module type.xxh_next(# the existing hash code, start with `xxh_first`
                 h0 u64,
 
