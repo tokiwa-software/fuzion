@@ -149,7 +149,7 @@ replace(old, new,
   match to_be_replaced.find old
     nil   => already_replaced ++ to_be_replaced
     n i32 =>
-      if limit.as_equatable = 0
+      if limit.as_equatable_switch = 0
         already_replaced ++ to_be_replaced
       else
         a := already_replaced ++ (to_be_replaced.take n) ++ new
