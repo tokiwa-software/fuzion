@@ -195,7 +195,7 @@ Actual value arguments: '7'
 Called feature: 'Function.call'
 Formal value arguments: --none--
 Declared at {base.fum}/Function.fz:35:10:
-  public call(a A...) R => abstract
+  public call(a A...) R
 ---------^^^^
 
 
@@ -207,7 +207,7 @@ Actual value arguments: '7'
 Called feature: 'Function.call'
 Formal value arguments: --none--
 Declared at {base.fum}/Function.fz:35:10:
-  public call(a A...) R => abstract
+  public call(a A...) R
 ---------^^^^
 
 
@@ -219,7 +219,7 @@ Actual value arguments: --none--
 Called feature: 'Function.call'
 Formal value arguments: 'a' 'bool'
 Declared at {base.fum}/Function.fz:35:10:
-  public call(a A...) R => abstract
+  public call(a A...) R
 ---------^^^^
 
 
@@ -231,7 +231,7 @@ Actual value arguments: 'true', 'false'
 Called feature: 'Function.call'
 Formal value arguments: 'a' 'bool'
 Declared at {base.fum}/Function.fz:35:10:
-  public call(a A...) R => abstract
+  public call(a A...) R
 ---------^^^^
 
 
@@ -243,7 +243,7 @@ Actual value arguments: --none--
 Called feature: 'Function.call'
 Formal value arguments: 'a' 'bool'
 Declared at {base.fum}/Function.fz:35:10:
-  public call(a A...) R => abstract
+  public call(a A...) R
 ---------^^^^
 
 
@@ -255,7 +255,7 @@ Actual value arguments: 'true', 'false'
 Called feature: 'Function.call'
 Formal value arguments: 'a' 'bool'
 Declared at {base.fum}/Function.fz:35:10:
-  public call(a A...) R => abstract
+  public call(a A...) R
 ---------^^^^
 
 
@@ -267,7 +267,7 @@ Actual value arguments: '7'
 Called feature: 'Function.call'
 Formal value arguments: --none--
 Declared at {base.fum}/Function.fz:35:10:
-  public call(a A...) R => abstract
+  public call(a A...) R
 ---------^^^^
 
 
@@ -279,7 +279,7 @@ Actual value arguments: '7'
 Called feature: 'Function.call'
 Formal value arguments: --none--
 Declared at {base.fum}/Function.fz:35:10:
-  public call(a A...) R => abstract
+  public call(a A...) R
 ---------^^^^
 
 
@@ -291,7 +291,7 @@ Actual value arguments: --none--
 Called feature: 'Function.call'
 Formal value arguments: 'a' 'i32', 'a' 'bool'
 Declared at {base.fum}/Function.fz:35:10:
-  public call(a A...) R => abstract
+  public call(a A...) R
 ---------^^^^
 
 
@@ -303,7 +303,7 @@ Actual value arguments: '3'
 Called feature: 'Function.call'
 Formal value arguments: 'a' 'i32', 'a' 'bool'
 Declared at {base.fum}/Function.fz:35:10:
-  public call(a A...) R => abstract
+  public call(a A...) R
 ---------^^^^
 
 
@@ -315,7 +315,7 @@ Actual value arguments: '3', 'false', '7'
 Called feature: 'Function.call'
 Formal value arguments: 'a' 'i32', 'a' 'bool'
 Declared at {base.fum}/Function.fz:35:10:
-  public call(a A...) R => abstract
+  public call(a A...) R
 ---------^^^^
 
 
@@ -327,7 +327,7 @@ Actual value arguments: --none--
 Called feature: 'Function.call'
 Formal value arguments: 'a' 'i32', 'a' 'bool'
 Declared at {base.fum}/Function.fz:35:10:
-  public call(a A...) R => abstract
+  public call(a A...) R
 ---------^^^^
 
 
@@ -339,7 +339,7 @@ Actual value arguments: '3'
 Called feature: 'Function.call'
 Formal value arguments: 'a' 'i32', 'a' 'bool'
 Declared at {base.fum}/Function.fz:35:10:
-  public call(a A...) R => abstract
+  public call(a A...) R
 ---------^^^^
 
 
@@ -351,7 +351,7 @@ Actual value arguments: '3', 'false', '7'
 Called feature: 'Function.call'
 Formal value arguments: 'a' 'i32', 'a' 'bool'
 Declared at {base.fum}/Function.fz:35:10:
-  public call(a A...) R => abstract
+  public call(a A...) R
 ---------^^^^
 
 
@@ -533,7 +533,7 @@ Actual value arguments: '3', 'true', '3'
 Called feature: 'Function.call'
 Formal value arguments: 'a' 'i32', 'a' 'bool'
 Declared at {base.fum}/Function.fz:35:10:
-  public call(a A...) R => abstract
+  public call(a A...) R
 ---------^^^^
 
 
@@ -545,7 +545,7 @@ Actual value arguments: '3'
 Called feature: 'Function.call'
 Formal value arguments: 'a' 'i32', 'a' 'bool'
 Declared at {base.fum}/Function.fz:35:10:
-  public call(a A...) R => abstract
+  public call(a A...) R
 ---------^^^^
 
 
@@ -581,7 +581,7 @@ Actual value arguments: '3', 'true', '3'
 Called feature: 'Function.call'
 Formal value arguments: 'a' 'i32', 'a' 'bool'
 Declared at {base.fum}/Function.fz:35:10:
-  public call(a A...) R => abstract
+  public call(a A...) R
 ---------^^^^
 
 
@@ -593,7 +593,7 @@ Actual value arguments: '3'
 Called feature: 'Function.call'
 Formal value arguments: 'a' 'i32', 'a' 'bool'
 Declared at {base.fum}/Function.fz:35:10:
-  public call(a A...) R => abstract
+  public call(a A...) R
 ---------^^^^
 
 54 errors.

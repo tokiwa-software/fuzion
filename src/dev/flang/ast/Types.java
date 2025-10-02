@@ -57,6 +57,7 @@ public class Types extends ANY
    */
   public static final String FUNCTION_NAME = "Function";
 
+
   /**
    * Name of abstract features for Nullary types:
    */
@@ -185,6 +186,7 @@ public class Types extends ANY
     public final AbstractFeature f_fuzion_java;
     public final AbstractFeature f_fuzion_Java_Object;
     public final AbstractFeature f_fuzion_Java_Object_Ref;
+    public final AbstractFeature f_fuzion_lambda_target;
     public final AbstractFeature f_fuzion_sys;
     public final AbstractFeature f_fuzion_sys_array;
     public final AbstractFeature f_fuzion_sys_array_length;
@@ -208,8 +210,6 @@ public class Types extends ANY
     public final AbstractFeature f_type_as_value;
     public final AbstractFeature f_Nullary;
     public final AbstractFeature f_Lazy;
-    public final AbstractFeature f_Unary;
-    public final AbstractFeature f_Binary;
     public final AbstractFeature f_auto_unwrap;
     public final Set<AbstractType> numericTypes;
     public Resolved(AbstractModule mod, AbstractFeature universe, boolean forFrontEnd)
@@ -261,6 +261,7 @@ public class Types extends ANY
       f_fuzion_java             = f_fuzion.get(mod, "java", 0);
       f_fuzion_Java_Object      = f_fuzion_java.get(mod, "Java_Object", 1);
       f_fuzion_Java_Object_Ref  = f_fuzion_Java_Object.get(mod, "java_ref", 0);
+      f_fuzion_lambda_target    = f_fuzion.get(mod, "lambda_target", 0);
       f_fuzion_sys              = f_fuzion.get(mod, "sys", 0);
       f_fuzion_sys_array        = f_fuzion_sys.get(mod, "internal_array", 3);
       f_fuzion_sys_array_data   = f_fuzion_sys_array.get(mod, "data", 0);
@@ -284,8 +285,6 @@ public class Types extends ANY
       f_type_as_value           = universe.get(mod, "type_as_value", 1);
       f_Nullary                 = universe.get(mod, NULLARY_NAME, 1);
       f_Lazy                    = universe.get(mod, LAZY_NAME, 1);
-      f_Unary                   = universe.get(mod, UNARY_NAME, 2);
-      f_Binary                  = universe.get(mod, BINARY_NAME, 3);
       f_auto_unwrap             = universe.get(mod, "auto_unwrap", 2);
       numericTypes = new TreeSet<AbstractType>(new List<>(
         t_i8,

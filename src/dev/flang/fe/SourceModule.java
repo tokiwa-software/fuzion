@@ -1235,6 +1235,25 @@ A post-condition of a feature that does not redefine an inherited feature must s
     return result;
   }
 
+  @Override
+  public AbstractFeature findLambdaTarget(AbstractFeature outer)
+  {
+    AbstractFeature res = null;
+    int cnt = 0;
+    for (var fs : declaredOrInheritedFeatures(outer).values())
+      {
+        for (var f : fs)
+          {
+            if (f.isAbstract() && f.inheritsFrom(Types.resolved.f_fuzion_lambda_target))
+              {
+                cnt++;
+                res = f;
+              }
+          }
+      }
+    // NYI: UNDER DEVELOPMENT: We might want to report an error if there are several (cnt>1) ambiguous lambda targets.
+    return cnt == 1 ? res : null;
+  }
 
   /**
    * true if {@code use} is happening in same or some

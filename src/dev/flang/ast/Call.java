@@ -902,20 +902,21 @@ public class Call extends AbstractCall
   FeatureAndOuter partiallyApplicableAlternative(Resolution res, Context context, AbstractType expectedType)
   {
     if (PRECONDITIONS) require
-      (expectedType.isFunctionTypeExcludingLazy(),
+      (expectedType.isLambdaTargetButNotLazy(res),
        _name != null);
 
     FeatureAndOuter result = null;
-    var n = expectedType.arity() + (_wasImplicitImmediateCall ? _originalArgCount : _actuals.size());
 
     // if loadCalledFeatureUnlessTargetVoid has found a suitable called
     // feature in an outer feature, it will have replaced a null _target, so
     // we check _originalTarget here to not check all outer features:
     var traverseOuter = _originalTarget == null;
     var targetFeature = traverseOuter ? context.outerFeature() : targetFeature(res, context);
-    if (targetFeature != null)
+    var a = expectedType.arity(res);
+    if (targetFeature != null && a >= 0)
       {
         var fos = res._module.lookup(targetFeature, _name, this, traverseOuter, false);
+        var n = a + (_wasImplicitImmediateCall ? _originalArgCount : _actuals.size());
         var calledName = FeatureName.get(_name, n);
         result = FeatureAndOuter.filter(
           fos,
@@ -1371,7 +1372,7 @@ public class Call extends AbstractCall
       }
 
     // see test #5391 when this might happen
-    return result != null && result.containsUndefined(false)
+    return result != null && result.containsUndefined()
       ? null
       : result;
   }
@@ -1832,7 +1833,7 @@ public class Call extends AbstractCall
   private Expr propagateForPartial(Resolution res, Context context, int argnum, AbstractType t)
   {
     var actual = _actuals.get(argnum);
-    if (t != null && t.isFunctionTypeExcludingLazy())
+    if (t != null && t.isLambdaTargetButNotLazy(res))
       {
         actual = actual.propagateExpectedTypeForPartial(res, context, t);
         if (!isDefunct())
@@ -1932,7 +1933,7 @@ public class Call extends AbstractCall
                                  */
                                 inferGeneric(res, context, c, actualType, actual.pos(), conflict, foundAt, argnum);
                               }
-                            else if (c.isFunctionTypeExcludingLazy())
+                            else if (c.isLambdaTargetButNotLazy(res))
                               { /* propagate constraint for partial or lambda:
                                  *
                                  *     a(F type : Function bool i32, f F) =>
@@ -1940,7 +1941,7 @@ public class Call extends AbstractCall
                                  *     _ := a %%2
                                  */
                                 actual = propagateForPartial(res, context, argnum, c);
-                                actual = actual.propagateExpectedType(res, context, c,
+                                actual = actual.propagateExpectedType(res, context, c.applyTypePars(calledFeature(), actualTypeParameters()),
                                                                       () -> "formal argument type in call to " + AstErrors.s(_calledFeature));
                                 _actuals = _actuals.setOrClone(argnum, actual);
                                 actualType = typeFromActual(res, context, actual);
@@ -2123,7 +2124,10 @@ public class Call extends AbstractCall
     if (PRECONDITIONS) require
       (actualType.compareTo(actualType.replace_type_parameters_of_cotype_origin(context.outerFeature())) == 0);
 
-    if (formalType.isLazyType() && !actualType.isLazyType())
+    if (actualType.equals(formalType))
+      { // nothing can be gained here, we typically replace type parameter `B` by type `B`...
+      }
+    else if (formalType.isLazyType() && !actualType.isLazyType())
       {
         inferGeneric(res, context, formalType.generics().get(0), actualType, pos, conflict, foundAt);
       }
@@ -2275,13 +2279,17 @@ public class Call extends AbstractCall
                                            List<List<Pair<SourcePosition, AbstractType>>> foundAt)
   {
     var result = false;
-    if (formalType.isFunctionTypeExcludingLazy() || formalType.isLazyType())
+    if (formalType.isLambdaTarget(res))
       {
-        var at = actualArgType(res, context, formalType, frml);
-        if (!at.containsUndefined(true))
+        var g = formalType.lambdaTargetResultTypeParameter(res);
+        if (g != null)
           {
-            var lambdaResultType = formalType.generics().get(0);
-            result = inferGenericLambdaResult(res, context, al, pos, conflict, foundAt, lambdaResultType, new List<>(lambdaResultType), at);
+            var at = actualArgType(res, context, formalType, frml);
+            if (!at.containsUndefined(g.typeParameterIndex()))
+              {
+                var lambdaResultType = formalType.lambdaTargetResultType(res);
+                result = inferGenericLambdaResult(res, context, al, pos, conflict, foundAt, lambdaResultType, new List<>(lambdaResultType), at);
+              }
           }
       }
     return result;
@@ -2407,7 +2415,12 @@ public class Call extends AbstractCall
    */
   boolean needsToInferTypeParametersFromArgs()
   {
-    return _calledFeature != null && (_generics == NO_GENERICS || _generics.stream().anyMatch(g -> g.containsUndefined(false))) && !_calledFeature.typeArguments().isEmpty() || _calledFeature != null && _generics.size() < _calledFeature.typeArguments().size();
+    return
+      _calledFeature != null                                       &&
+      !_calledFeature.typeArguments().isEmpty()                    &&
+      (_generics == NO_GENERICS                                ||
+       _generics.stream().anyMatch(g -> g.containsUndefined()) ||
+       _generics.size() < _calledFeature.typeArguments().size()  );
   }
 
 
@@ -2986,7 +2999,7 @@ public class Call extends AbstractCall
   private Expr createIf(Resolution res, Context context, Expr true_, Expr false_, AbstractType rt)
   {
     var result = Match.createIf(pos(), _target, true_, false_, false);
-    if (!rt.containsUndefined(false))
+    if (!rt.containsUndefined())
       {
         result = result.propagateExpectedType(res, context, rt, null);;
       }
@@ -3085,7 +3098,7 @@ public class Call extends AbstractCall
       (// NYI: CLEANUP: #5866 breaks this precondition, but there are also other cases where
        // the actuals still contain t_UNDEFINED that still need to be checked.
        true ||
-       !actualTypeParameters().stream().anyMatch(atp -> atp.containsUndefined(false)));
+       !actualTypeParameters().stream().anyMatch(atp -> atp.containsUndefined()));
 
     for (var r : _whenInferredTypeParameters)
       {

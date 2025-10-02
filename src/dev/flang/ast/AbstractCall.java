@@ -229,7 +229,7 @@ public abstract class AbstractCall extends Expr
         cpc.whenInferredTypeParameters(() ->
           {
             if (CHECKS) check
-              (actualTypeParameters().stream().allMatch(atp -> !atp.containsUndefined(false)));
+              (actualTypeParameters().stream().allMatch(atp -> !atp.containsUndefined()));
             if (CHECKS) check
               (Errors.any() || !typeParameters.isFrozen());
             if (!typeParameters.isFrozen())
@@ -468,7 +468,11 @@ public abstract class AbstractCall extends Expr
     var x = res == null ? tt.selfOrConstraint(context) : tt.selfOrConstraint(res, context);
     var f = ft.genericArgument().outer();
 
+    if (CHECKS) check
+      (x.isPlainType() || Errors.any());
+
     return
+      !x.isPlainType()            ? new List<>() :
       x.feature().inheritsFrom(f) ? f.handDown(res, new List<>(ft), x.feature())
                                      .flatMap(t -> t.applyTypeParsMaybeOpen(x.feature(), x.generics())) :
       tt.outer() != null          ? openGenericsFor(res, context, ft, tt.outer())

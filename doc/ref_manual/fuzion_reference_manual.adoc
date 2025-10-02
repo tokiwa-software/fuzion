@@ -618,8 +618,12 @@ declaration of `f`.  If `f` is not declared inside any other feature, `f`'s oute
 xref:universe[universe], which itself does not have an outer feature.
 
 [#fuzion_outer_type]
-((Outer Type)):: For any xref:fuzion_type[type] that is based on a feature whose outer feature `o` exists and is not the xref:universe[universe],
+((Outer Type)):: For any xref:fuzion_plain_type[plain type] that is based on a feature whose outer feature `o` exists and is not the xref:universe[universe],
 there is a corresponding _outer type_ based on a xref:child_feature[child] of `o`.
+
+[#fuzion_parametric_type]
+((Parametric Type)):: A _parametric type_ is reference to a xref:fuzion_typeparameter[type parameter] that is used as a placeholder for an
+xref:fuzion_actual_typeparameters[actual type] the code will be specialized for.
 
 [#parent_feature]
 ((Parent)):: A _parent_ of a xref:fuzion_feature[feature] `f` is any feature `g` such that `f` xref:inheritance[inherits] from `g`.
@@ -627,6 +631,13 @@ A _parent_ is hence used synonymously to an _ancestor_.
 
 [#parentheses]
 ((Parentheses)):: In this manual, _parentheses_ are round brackets `(` and `)`, in contrast to xref:brackets[brackets] and xref:braces[braces].
+
+[#fuzion_plain_type]
+((Plain Type)):: A _plain type_ is a type based on a
+xref:fuzion_feature[feature] of type xref:fuzion_constructor[constructor] or
+xref:fuzion_choice[choice].  If that feature has xref:fuzion_typeparameter[type parameters], a _plain type_ has
+corresponding xref:fuzion_actual_typeparameters[actual type parameters].  If the base has an xref:outer_feature[outer feature] that is
+not the xref:universe[universe], the type has an xref:fuzion_outer_type[outer type].
 
 [#fuzion_routine]
 ((Routine)):: A _routine_ is a xref:fuzion_feature[Feature] declared using `is` or `=>` that is neither
@@ -664,12 +675,11 @@ together with the xref:feature_name[feature name] of the call determines the xre
 [#fuzion_template]
 ((Template Feature)):: A _template feature_ is a xref:fuzion_feature[feature] that is the xref:outer_feature[outer feature] of at least one xref:fuzion_abstract[abstract feature].
 
+[#fuzion_this_type]
+((This Type)):: A _this type_ is a type that represents the xref:runtime_type[runtime type] of the instance of one of the xref:outer_feature[outer features] referenced by an expression like `name.this`.  When used as a xref:fuzion_type[type], the same expression refers to this xref:runtime_type[runtime type].
+
 [#fuzion_type]
-((Type)):: A _type_ is either a reference to a xref:fuzion_typeparameter[type parameter] or based on a
-xref:fuzion_feature[feature] of type xref:fuzion_constructor[constructor] or
-xref:fuzion_choice[choice].  If that feature has xref:fuzion_typeparameter[type parameters], a type has
-corresponding xref:fuzion_actual_typeparameters[actual type parameters].  If the base has an xref:outer_feature[outer feature] that is
-not the xref:universe[universe], the type has an xref:fuzion_outer_type[outer type].
+((Type)):: A _type_ is either a xref:fuzion_plain_type[plain type], a xref:fuzion_this_type[this type] or a  xref:fuzion_parametric_type[parametric type].
 
 [#fuzion_type_constraint]
 ((Type Constraint)):: A _type constraint_ is a type provided in the declaration of a xref:fuzion_typeparameter[type parameter] following a colon, e.g., `A type : b` which places the constraint `b` on xref:fuzion_typeparameter[type parameter] `A`.

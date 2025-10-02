@@ -1675,11 +1675,11 @@ public class AstErrors extends ANY
     if (t != Types.t_ERROR)
       {
         error(pos,
-              "Target type of a lambda expression must be " + s(Types.resolved.f_Function) + ".",
-              "A lambda expression can only be used if assigned to a field or argument of type "+ s(Types.resolved.f_Function) + "\n" +
-              "with argument count of the lambda expression equal to the number of type parameters of the type.\n" +
+              "Target type of a lambda expression must be a plain type whose feature inherits " + sqn("fuzion.lambda_target") + ", e.g., " + sqn("Function") + ".",
+              "A lambda expression can only be used if assigned to a field or argument whose type contains an abstract lambda target feature \n" +
+              "with argument count of the lambda expression equal to the effective argument count of the lambda target.\n" +
               "Target type: " + s(t) + (from == null ? "" : " from " + from.get()) + "\n" +
-              "To solve this, assign the lambda expression to a field of function type, e.g., " + ss("f (i32, i32) -> bool := x, y -> x > y") + ".");
+              "To solve this, assign the lambda expression to a type that is a lambda target, e.g., " + ss("f (i32, i32) -> bool := x, y -> x > y") + ".");
       }
   }
 
