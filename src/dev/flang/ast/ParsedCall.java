@@ -163,7 +163,7 @@ public class ParsedCall extends Call
   @Override
   public AbstractType asType()
   {
-    return name().equals("_")
+    return name().equals("_") && _target == null && actuals() == NO_PARENTHESES
       ? Types.t_UNDEFINED
       : asParsedType();
   }
