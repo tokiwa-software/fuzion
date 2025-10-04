@@ -108,7 +108,7 @@ is
       a.map (T.hash_code)
        .foldf h0 xxh_next
     else
-      compile_time_panic  # tuple is not hashable since one element type is not
+      compile_time_panic  # array is not hashable since element type is not
 
 
   # the length of the array

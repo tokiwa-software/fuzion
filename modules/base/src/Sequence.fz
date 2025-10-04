@@ -40,25 +40,55 @@ public Sequence(public T type) ref
 is
 
 
-  # equality of two Sequences is defined by `list.equality` of `a.as_list` and `b.as_list`.
+  # equality of two Sequences is true iff both a element-wise equal and have
+  # the same `count`.
+  #
+  # This works as long as one of the Sequences is finite, it will diverge if
+  # both are equal and infinite.
   #
   # This is defined only if T : property.equatable, it will result in a compile-time panic
   # if this is not the case.
   #
-  public redef fixed type.equality(a, b Sequence T) bool
+  public redef fixed type.equality(a, b Sequence T /* NYI: UNDER DEVELOPMENT: Sequence.this causes error */
+                                  ) bool
   =>
-    a.as_list = b.as_list
+    if T : property.equatable
+      (a.zip b (=) ∀ id) && count_order a b .is_equal
+    else
+      compile_time_panic  # Sequence is not equatable since element type is not
 
 
-  # A total order between of two Sequences is defined by the total order defined by
-  # `list.lteq` applied to `a.as_list` and `b.as_list`.
+  # A total order between of two Sequences is defined by element-wise comparison.
+  # The first pair of elements that differ define the order.
   #
   # This is defined only if T : property.orderable, it will result in a compile-time panic
   # if this is not the case.
   #
-  public redef fixed type.lteq(a, b Sequence T) bool
+  public redef fixed type.lteq(a, b Sequence T /* NYI: UNDER DEVELOPMENT: Sequence.this causes error */
+                              ) bool
   =>
-    a.as_list <= b.as_list
+    if T : property.orderable
+      a.zip b (<>)
+       .filter (.is_unequal)
+       .first
+       .or_else (count_order a b)
+       .is_less_or_equal
+    else
+      compile_time_panic  # Sequence is not orderable since element type is not
+
+
+  # The total order between of two Sequences defined only by their element count.
+  #
+  # This works as long as one of the Sequences is finite, it will diverge if
+  # both are equal and infinite.
+  #
+  public type.count_order(a, b Sequence T /* NYI: UNDER DEVELOPMENT: Sequence.this causes error */
+                         ) order
+  =>
+    l := a.zip b _,_->unit .count
+    al := a.drop l .take 1
+    bl := b.drop l .take 1
+    al.count <> bl.count
 
 
   # create hash code for this Sequence
@@ -85,7 +115,7 @@ is
       a.map (T.hash_code)
        .foldf h0 xxh_next
     else
-      compile_time_panic  # tuple is not hashable since one element type is not
+      compile_time_panic  # Sequence is not hashable since element type is not
 
 
   # create a list from this Sequence.

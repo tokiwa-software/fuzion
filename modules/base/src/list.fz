@@ -70,8 +70,36 @@ is
   #
   public redef fixed type.lteq(a, b list A) bool
   =>
-    a.head <= b.head && (a.head <  b.head ||
-                         a.tail <= b.tail   )
+    a.head <= b.head && (a.head <  b.head   ||
+                         lteq a.tail b.tail  # a.tail <= b.tail currently does not result in tail recursion optimization
+                        )
+
+
+  # create hash code for this list.
+  #
+  # This should satisfy the following condition:
+  #
+  #   (T.equality a b) : (T.hash_code a = T.hash_code b)
+  #
+  # This will result in a compile-time `panic` in case T : property.hashable does not hold.
+  #
+  # The algorithm used here is a variation of (XXXHash)[https://xxhash.com] as used in
+  # (Python's tuple)[https://github.com/python/cpython/blob/849a80ec412c36bbca5d400a7db5645b8cf54f1f/Objects/tupleobject.c#L305]:
+  #
+  #   we start with a constant `hash_prime1`
+  #   for each value:
+  #     we take its hash code * `hash_prime2` and add it
+  #     then we rotate by `hash_rotate`
+  #     and multiply by `hash_prime3`
+  #
+  public redef fixed type.hash_code(a list A) u64
+  =>
+    if A : property.hashable then
+      h0 := xxh_next xxh_first 0xf9284f0baf063243  # created using https://cryptotools.dev/
+      a.map A.hash_code
+       .foldf h0 xxh_next
+    else
+      compile_time_panic  # list is not hashable since element type is not
 
 
   # Return this list as a list.
