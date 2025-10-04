@@ -149,7 +149,7 @@ replace(old, new,
   match to_be_replaced.find old
     nil   => already_replaced ++ to_be_replaced
     n i32 =>
-      if limit.as_equatable_switch = 0
+      if limit = 0
         already_replaced ++ to_be_replaced
       else
         a := already_replaced ++ (to_be_replaced.take n) ++ new
@@ -247,14 +247,3 @@ public dedup(by (T,T) -> bool) Sequence T
     T : property.equatable
   =>
     as_list.dedup_list by
-
-
-# wrap this sequence into an equatable type.
-#
-# This requires the underlying element type to be equatable.
-#
-public as_equatable equatable_sequence T
-  pre
-    T : property.equatable
-=>
-  equatable_sequence T Sequence.this

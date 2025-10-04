@@ -80,20 +80,3 @@ public is_sorted bool
 =>
   zip (drop 1) (T.lteq)
     .fold bool.all
-
-
-
-# wrap this sequence into an orderable type.
-#
-# This requires the underlying element type to be orderable.
-#
-# An empty `Sequence` is always less or equal to any other `Sequence`. Two non
-# empty `Sequence`s whose first elements are unequal are ordered by the
-# order of those two elements. If those two elements are equal, the tail
-# of both `Sequence`s will be used to find the order.
-#
-public as_orderable orderable_sequence T
-  pre
-    T : property.orderable
-=>
-  orderable_sequence T Sequence.this
