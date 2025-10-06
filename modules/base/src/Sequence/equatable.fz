@@ -247,14 +247,3 @@ public dedup(by (T,T) -> bool) Sequence T
     T : property.equatable
   =>
     as_list.dedup_list by
-
-
-# wrap this sequence into an equatable type.
-#
-# This requires the underlying element type to be equatable.
-#
-public as_equatable equatable_sequence T
-  pre
-    T : property.equatable
-=>
-  equatable_sequence T Sequence.this

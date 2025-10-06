@@ -26,10 +26,11 @@
 # e.g.    option  (something/nil)
 #      or outcome (something/error)
 #
-public switch(A type, B type /* NYI: B should be open generic */) :
-  choice A B,
-  monad A switch.this,
-  Sequence A
+public switch(A type, B type /* NYI: B should be open generic */)
+  : choice A B,
+    monad A switch.this,
+    Sequence A,
+    property.equatable
 is
 
   # NYI: CLEANUP: decide name: exists/ok, get/val?
@@ -191,17 +192,6 @@ is
   # public redef type.return (a A) switch.this => a
 
 
-  # this switch as an equatable_switch
-  #
-  public as_equatable_switch equatable_switch A B
-  pre
-    A : property.equatable
-  =>
-    match switch.this
-      a A => a
-      b B => b
-
-
   # get A or cause an `exception T`
   #
   public or_cause(T type, e B->error) A =>
@@ -244,33 +234,17 @@ is
       b B => b.as_string
 
 
-# Wrapper type to make a `switch` of an equatable elements itself equatable.
-#
-public equatable_switch(A type : property.equatable,
-                        B type)
-  : switch A B,
-    property.equatable
-is
-
   # equality implementation
   #
   # result is only true if both x and y or
   # of choice type A and x.A = y.A
   #
-  public fixed redef type.equality(x, y equatable_switch A B) bool =>
-    x ? xa A =>
-        y ? ya A => xa = ya
-          | _  B => false
-      | _  B => false
-
-
-  # as_string copied from `switch.as_string` due to repeated inheritance of
-  # conflicting `switch.as_astring` and `Any.as_string` (via `property.equatable`).
-  #
-  # NYI: UNDER DEVELOPMENT: If we have an Eiffel-style `select` or `undefine`, we could
-  # use that instead and select `switch.as_string` or undefine `Any.as_string`.
-  #
-  public redef as_string String =>
-    match equatable_switch.this
-      a A => a.as_string
-      b B => b.as_string
+  public redef fixed type.equality(x, y switch A B) bool
+  =>
+    if A : property.equatable
+      x ? xa A =>
+          y ? ya A => xa = ya
+            | _  B => false
+        | _  B => false
+    else
+      compile_time_panic
