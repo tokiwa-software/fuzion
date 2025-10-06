@@ -508,6 +508,13 @@ public String ref : property.equatable, property.hashable, property.orderable is
     utf8.count_matches substring.utf8
 
 
+  public split_at_byte(idx i32) (String, String)
+    pre
+      debug: 0 ≤ idx ≤ byte_length
+  =>
+    (substring 0 idx, substring idx byte_length)
+
+
   # Split string separated by (ASCII) white space
   #
   # Leading and trailing white space is ignored, repeated white space is treated
