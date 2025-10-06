@@ -64,7 +64,7 @@ is
       compile_time_panic  # tuple is not hashable since one element type is not
 
 
-  # A total order between of two arrays is defined by the lowest index `i` for
+  # A total order for arrays is defined by the lowest index `i` for
   # which `a[i] != b[i]`. If this exists, the result is `a[i] <= b[i]`, otherwise
   # it is `a.length <= b.length`.
   #

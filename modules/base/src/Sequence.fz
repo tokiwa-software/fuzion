@@ -62,7 +62,7 @@ is
       compile_time_panic  # Sequence is not equatable since element type is not
 
 
-  # A total order of Sequences is defined by element-wise comparison. The first
+  # A total order for Sequences is defined by element-wise comparison. The first
   # pair of elements that differ define the order.
   #
   # This works as long as one of the Sequences is finite, it will diverge if
@@ -88,7 +88,7 @@ is
       compile_time_panic  # Sequence is not orderable since element type is not
 
 
-  # The total order of Sequences defined only by `i32.lteq` applied to their
+  # The total order for Sequences defined only by `i32.lteq` applied to their
   # element count.
   #
   # This works as long as one of the Sequences is finite, it will diverge if

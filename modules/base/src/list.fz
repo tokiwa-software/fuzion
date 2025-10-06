@@ -61,7 +61,7 @@ is
      (a.is_empty || a.tail = b.tail)    )
 
 
-  # A total order between two lists is defined as follows: An empty list `nil` is always
+  # A total order for lists is defined as follows: An empty list `nil` is always
   # less-than-or-equal any other value and iff `a` and `b` are both non-empty, and the
   # `a.head` and `b.head` differ, then `T.lteq a.head b.head`, otherwise `T.lteq a.tail b.tail`.
   #
