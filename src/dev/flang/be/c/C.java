@@ -762,7 +762,8 @@ public class C extends ANY
           "-Wold-style-definition",
           "-Wredundant-decls",
           "-Wnested-externs",
-          "-Wmissing-include-dirs"
+          "-Wmissing-include-dirs",
+          "-Wstack-usage=8192" // what is a sensible value here?
           );
 
         command.addAll("-O3");
