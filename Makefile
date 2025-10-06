@@ -136,6 +136,7 @@ MOD_WOLFSSL           = $(BUILD_DIR)/modules/wolfssl.fum
 MOD_JSON_ENCODE       = $(BUILD_DIR)/modules/json_encode.fum
 MOD_DATABASE          = $(BUILD_DIR)/modules/database.fum
 MOD_SQLITE            = $(BUILD_DIR)/modules/sqlite.fum
+MOD_COMPILER          = $(BUILD_DIR)/modules/compiler.fum
 
 MOD_JAVA_BASE_DIR              = $(BUILD_DIR)/modules/java.base
 MOD_JAVA_XML_DIR               = $(BUILD_DIR)/modules/java.xml
@@ -478,7 +479,7 @@ C_FILES = $(shell find $(FZ_SRC) \( -path ./build -o -path ./.git \) -prune -o -
 
 # default make target
 .PHONY: all
-all: $(FUZION_BASE) $(FUZION_JAVA_MODULES) $(FUZION_FILES) $(MOD_FZ_CMD) $(FUZION_EBNF) $(BUILD_DIR)/lsp.jar
+all: $(FUZION_BASE) $(FUZION_JAVA_MODULES) $(FUZION_FILES) $(MOD_FZ_CMD) $(MOD_COMPILER) $(FUZION_EBNF) $(BUILD_DIR)/lsp.jar
 
 
 # everything but rarely used java modules
@@ -741,6 +742,12 @@ $(MOD_JSON_ENCODE): $(MOD_BASE) $(FZ) $(shell find $(FZ_SRC)/modules/json_encode
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC)/modules/json_encode $(@D)
 	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/json_encode/src -saveModule=$@
+
+$(MOD_COMPILER): $(MOD_FZ_CMD) $(shell find $(FZ_SRC)/modules/compiler/src -name "*.fz")
+	rm -rf $(@D)/compiler
+	mkdir -p $(@D)
+	cp -rf $(FZ_SRC)/modules/compiler $(@D)
+	$(FZ) -modules=java.base,fz_cmd -sourceDirs=$(BUILD_DIR)/modules/compiler/src -saveModule=$@
 
 $(FZJAVA): $(FZ_SRC)/bin/fzjava $(CLASS_FILES_TOOLS_FZJAVA)
 	mkdir -p $(@D)
