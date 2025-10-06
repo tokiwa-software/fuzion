@@ -37,7 +37,7 @@ env:
   POSTCONDITIONS: true
   FUZION_REPRODUCIBLE_BUILD: true
   dev_flang_tools_serializeFUIR: true
-  dev_flang_fuir_analysis_dfa_DFA_MAX_ITERATIONS: 10
+  dev_flang_fuir_analysis_dfa_DFA_MAX_ITERATIONS: 50
 
 
 jobs:
