@@ -819,6 +819,13 @@ public class DFA extends ANY
 
 
   /**
+   * To spot potential problems early where DFA takes a lot of iterations.
+   */
+  private static int MAX_ITERATIONS =
+    FuzionOptions.intPropertyOrEnv("dev.flang.fuir.analysis.dfa.DFA.MAX_ITERATIONS", Integer.MAX_VALUE);
+
+
+  /**
    * Should instance of certain clazzes be joined into a single Instance for
    * performance?  This is used to avoid large number of instances of, e.g.,
    * `array u8` where tracking the individual instances gives no benefit.
@@ -1390,6 +1397,13 @@ public class DFA extends ANY
     _options.timer("dfa_real");
 
     _options.verbosePrintln(2, "DFA needed " + (preIter+realIter) +  " iterations (pre/real) ("+ preIter + "/" + realIter + ").");
+
+    if (preIter+realIter > MAX_ITERATIONS)
+      {
+        Errors.fatal(
+          "DFA exceeded MAX_ITERATIONS iterations.",
+          "DFA took " + (preIter+realIter) + " iterations, allowed: " + MAX_ITERATIONS);
+      }
 
     _fuir.reportAbstractMissing();
     Errors.showAndExit();
@@ -3215,7 +3229,6 @@ public class DFA extends ANY
    */
   Call newCall(Call from, int cl, int site, Value tvalue, List<Val> args, Env env, Context context)
   {
-    var oenv = env;
     CallGroup g;
     var kg = CallGroup.quickHash(this, cl, site, tvalue);
     if (kg != -1)
