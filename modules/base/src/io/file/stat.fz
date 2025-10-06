@@ -26,21 +26,27 @@
 # meta_data will be a feature storing the metadata of file/dir
 #
 private:public meta_data(
+          public path String,
           # the size of the file/dir
           public size i64,
-          # the time of last modification of the file/dir
-          public time i64,
+          # the mod_time_stamp of last modification of the file/dir
+          public mod_time_stamp i64,
           # boolean to check if the pathname is a regular file
           public is_regular bool,
           # boolean to check if the pathname is a directory
           public is_dir bool) is
 
+
+  public modification_time time.date_time =>
+    time.date_time.from_seconds mod_time_stamp.as_u64
+
   public redef as_string String =>
     """
-      size in bytes   : $size
-      time            : {universe.time.date_time.from_seconds meta_data.this.time.as_u64}
-      is regular file : $is_regular
-      is directory    : $is_dir
+      path              : $path
+      size in bytes     : $size
+      modification_time : $modification_time
+      is regular file   : $is_regular
+      is directory      : $is_dir
     """
 
 # stat -- effect providing operations to retrieve file stats
@@ -59,7 +65,7 @@ public stat(ps Stat_Handler) : effect is
     # will contain: [size, time of last modification in seconds, regular file? 1 : 0, dir? 1 : 0]
     res := fuzion.sys.internal_array_init i64 4
     if ps.stats (fuzion.sys.c_string path) res.data = 0
-      meta_data res[0] res[1] (res[2] = 1) (res[3] = 1)
+      meta_data path res[0] res[1] (res[2] = 1) (res[3] = 1)
     else
       error "stat error {res[0]} for {path}"
 
@@ -75,7 +81,7 @@ public stat(ps Stat_Handler) : effect is
     # will contain: [size, time of last modification in seconds, regular file? 1 : 0, dir? 1 : 0]
     res := fuzion.sys.internal_array_init i64 4
     if ps.stats (fuzion.sys.c_string path) res.data = 0
-      meta_data res[0] res[1] (res[2] = 1) (res[3] = 1)
+      meta_data path res[0] res[1] (res[2] = 1) (res[3] = 1)
     else
       error "lstat error {res[0]} for {path}"
 
