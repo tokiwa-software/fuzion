@@ -44,7 +44,8 @@ is
   # the same `count`.
   #
   # This works as long as one of the Sequences is finite, it will diverge if
-  # both are equal and infinite.
+  # both are equal and infinite.  A `check` will fail if `debug` is enabled and
+  # both `a.finite.is_no` and `b.infinite.is_no`.
   #
   # This is defined only if T : property.equatable, it will result in a compile-time panic
   # if this is not the case.
@@ -52,14 +53,21 @@ is
   public redef fixed type.equality(a, b Sequence T /* NYI: UNDER DEVELOPMENT: Sequence.this causes error */
                                   ) bool
   =>
+    check
+      debug: !(a.finite.is_no && b.finite.is_no)
+
     if T : property.equatable
       (a.zip b (=) ∀ id) && count_order a b .is_equal
     else
       compile_time_panic  # Sequence is not equatable since element type is not
 
 
-  # A total order between of two Sequences is defined by element-wise comparison.
-  # The first pair of elements that differ define the order.
+  # A total order of Sequences is defined by element-wise comparison. The first
+  # pair of elements that differ define the order.
+  #
+  # This works as long as one of the Sequences is finite, it will diverge if
+  # both are equal and infinite.  A `check` will fail if `debug` is enabled and
+  # both `a.finite.is_no` and `b.infinite.is_no`.
   #
   # This is defined only if T : property.orderable, it will result in a compile-time panic
   # if this is not the case.
@@ -67,6 +75,9 @@ is
   public redef fixed type.lteq(a, b Sequence T /* NYI: UNDER DEVELOPMENT: Sequence.this causes error */
                               ) bool
   =>
+    check
+      debug: !(a.finite.is_no && b.finite.is_no)
+
     if T : property.orderable
       a.zip b (<>)
        .filter (.is_unequal)
@@ -77,14 +88,19 @@ is
       compile_time_panic  # Sequence is not orderable since element type is not
 
 
-  # The total order between of two Sequences defined only by their element count.
+  # The total order of Sequences defined only by `i32.lteq` applied to their
+  # element count.
   #
   # This works as long as one of the Sequences is finite, it will diverge if
-  # both are equal and infinite.
+  # both are equal and infinite.  A `check` will fail if `debug` is enabled and
+  # both `a.finite.is_no` and `b.infinite.is_no`.
   #
   public type.count_order(a, b Sequence T /* NYI: UNDER DEVELOPMENT: Sequence.this causes error */
                          ) order
   =>
+    check
+      debug: !(a.finite.is_no && b.finite.is_no)
+
     l := a.zip b _,_->unit .count
     al := a.drop l .take 1
     bl := b.drop l .take 1
