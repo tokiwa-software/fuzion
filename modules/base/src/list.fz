@@ -517,7 +517,9 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # is 'nil', returns 'nil'
   #
   public redef cycle Sequence A =>
-    cycle_list
+    ref : Sequence A is
+      public redef finite trit => trit.yes
+      public redef as_list list A => cycle_list
 
 
   # create a list that repeats the current list indefinitely.  In case 'list.this'

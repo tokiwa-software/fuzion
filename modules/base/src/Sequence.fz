@@ -158,7 +158,11 @@ public Sequence(public T type) ref : property.countable is
   #       .peek say
   #       .drop_while <10
   #
-  public peek (f T -> unit) Sequence T =>
+  public peek (f T -> unit) Sequence T
+    post
+      debug: finite = result.finite
+      debug: finite.is_no_or_unknown || count = result.count
+  =>
     map x->
       f x
       x
@@ -181,7 +185,11 @@ public Sequence(public T type) ref : property.countable is
   # filter elements using predicate f
   # values for which f is false are dropped
   #
-  public filter   (f T -> bool) Sequence T => as_list.filter f
+  public filter   (f T -> bool) Sequence T
+    post
+      debug: finite = result.finite
+      debug: finite.is_no_or_unknown || count >= result.count
+  => as_list.filter f
 
 
   # check if predicate f holds for all elements
@@ -207,7 +215,13 @@ public Sequence(public T type) ref : property.countable is
 
   # reverse the order of the elements in this Sequence
   #
-  public reverse Sequence T => as_list.reverse_list
+  public reverse Sequence T
+    pre
+      debug: finite.is_yes_or_unknown
+    post
+      debug: finite = result.finite
+      debug: count = result.count
+  => as_list.reverse_list
 
 
   # create a Sequence that consists of the elements of this Sequence except the first
@@ -236,6 +250,9 @@ public Sequence(public T type) ref : property.countable is
       debug: from ≥ 0
       debug: to = 0 || is_valid_index to-1
       debug: from <= to
+    post
+      debug: result.finite.is_yes_or_unknown
+      debug: result.count = to-from
   =>
     drop(from).take to-from
 
@@ -279,12 +296,26 @@ public Sequence(public T type) ref : property.countable is
 
   # Lazily take the first elements of this Sequence for which predicate 'p' holds.
   #
-  public take_while (p T -> bool) Sequence T => as_list.take_while p
+  public take_while (p T -> bool) Sequence T
+    post
+      analysis: result ∀ p
+      analysis: {
+        n := nth result.count
+        !n || !(p n.get)
+      }
+  => as_list.take_while p
 
 
   # Lazily drop the first elements of this Sequence for which predicate 'p' holds.
   #
-  public drop_while (p T -> bool) Sequence T => as_list.drop_while p
+  public drop_while (p T -> bool) Sequence T
+    post
+      analysis: result ∀ (x -> !(p x))
+      analysis: {
+        n := nth result.count
+        !n || p n.get
+      }
+  => as_list.drop_while p
 
 
   # create a Sequence that consists of all the elements of this Sequence followed
@@ -335,7 +366,9 @@ public Sequence(public T type) ref : property.countable is
   # create a Sequence that repeats the current Sequence indefinitely.  In case 'Sequence.this'
   # is empty, returns 'nil'
   #
-  public cycle Sequence T => as_list.cycle
+  public cycle Sequence T
+   post debug: result.finite.is_no
+  => as_list.cycle
 
 
   # create a Sequence that repeats the current Sequence `n` times.
@@ -404,7 +437,11 @@ public Sequence(public T type) ref : property.countable is
   # This performs a lazy mapping, f is called only when the elements
   # in the resulting list are accessed.
   #
-  public map(B type, f T->B) Sequence B =>
+  public map(B type, f T->B) Sequence B
+    post
+      debug: finite = result.finite
+      debug: finite.is_no_or_unknown || count = result.count
+  =>
     as_list.map_to_list f
 
 
@@ -1156,7 +1193,11 @@ public Sequence(public T type) ref : property.countable is
 
   # create an empty Sequence
   #
-  public fixed type.empty Sequence T =>
+  public fixed type.empty Sequence T
+    post
+      result.finite.is_yes_or_unknown
+      result.count = 0
+  =>
     (list T).type.empty
 
 
