@@ -38,5 +38,13 @@ lib_property_equatable =>
   say (option 0).as_equatable_switch=1
   say (option 0).as_equatable_switch=nil
 
+  say (option 0 = 0)
+  say (option 0 = 1)
+  say (option 0 = nil)
+
+  say (0 = option 0)
+  say (0 = option 1)
+  say (0 = option i32 nil)
+
   # NYI: UNDER DEVELOPMENT: ugly that we have to use (id (container.Set i32) ...)
   say (id (container.Set i32) ((container.ps_set i32).empty))=((container.ps_set i32).empty)
