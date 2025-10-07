@@ -1175,11 +1175,11 @@ public class Call extends AbstractCall
     if (result == null)
       {
         // NYI: CLEANUP: Why can't we use `errorInActuals()` in the following condition?
-        if (hasPendingError || _actuals.stream().anyMatch(a -> a.type() == Types.t_ERROR))
+        if (hasPendingError || errorInActuals()) // _actuals.stream().anyMatch(a -> a.typeForInferencing() == Types.t_ERROR))
           {
             result = Types.t_ERROR;
           }
-        else if (calledFeatureKnown() && calledFeature().state().atLeast(State.RESOLVED_TYPES))
+        else if (calledFeatureKnown() && calledFeature().state().atLeast(State.RESOLVED_TYPES) && !missingGenerics().isEmpty())
           {
             AstErrors.failedToInferActualGeneric(_pos, _calledFeature, missingGenerics());
             result = Types.t_ERROR;

@@ -641,8 +641,10 @@ public class Impl extends ANY
     if (CHECKS) check
       (!urgent || result != null);
 
-    return result != null &&
-           result.isCotypeType() &&
+    return result != null                   &&
+           result != Types.t_FORWARD_CYCLIC &&
+           result != Types.t_ERROR          &&
+           result.isCotypeType()            &&
            /**
             * this allows code like:
             * p := codepoint.type
