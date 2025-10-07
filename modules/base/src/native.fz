@@ -207,7 +207,18 @@ module fzE_rm(path Array u8) i32 => native
 module fzE_stat(
       # the internal array data representing the file/dir path in bytes
       path Array u8,
-      # the internal array data representing the metadata fields [size in bytes, creation_time in seconds, regular file? 1 : 0, dir? 1 : 0]
+      # the internal array data representing the metadata fields
+      #
+      # [size in bytes,
+      #  Time of last access,
+      #  Time of last modification,
+      #  Time of last status change,
+      #  regular file? 1 : 0,
+      #  dir? 1 : 0,
+      #  is link ? 1 : 0,
+      #  uid,
+      #  gid]
+      #
       meta_data Array i64) i32 => native
 
 

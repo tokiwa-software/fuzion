@@ -47,16 +47,6 @@ module fileio is
       (buf.slice 0 res).as_array
 
 
-  # retrieves the file size in bytes and returns an outcome of error in case of an error
-  #
-  get_file_size(
-                        # the (relative or absolute) file name, using platform specific path separators
-                        path String) outcome i64 =>
-    md := fuzion.sys.internal_array_init i64 4
-    if fzE_stat (fuzion.sys.c_string path) md.data = 0 then md[0]
-    else error "error getting file size for: $path"
-
-
   # writes the content of an array of bytes to a file opened as fd
   #
   # this might overwrite parts or all of an existing file.

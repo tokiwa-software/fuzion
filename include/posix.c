@@ -458,9 +458,14 @@ int fzE_stat(const char *pathname, int64_t * metadata)
   if (result == 0)
   {
     metadata[0] = statbuf.st_size;
-    metadata[1] = statbuf.st_mtime;
-    metadata[2] = S_ISREG(statbuf.st_mode);
-    metadata[3] = S_ISDIR(statbuf.st_mode);
+    metadata[1] = statbuf.st_atime;  /* Time of last access */
+    metadata[2] = statbuf.st_mtime;  /* Time of last modification */
+    metadata[3] = statbuf.st_ctime;  /* Time of last status change */
+    metadata[4] = S_ISREG(statbuf.st_mode);
+    metadata[5] = S_ISDIR(statbuf.st_mode);
+    metadata[6] = S_ISLNK(statbuf.st_mode);
+    metadata[7] = statbuf.st_uid;
+    metadata[8] = statbuf.st_gid;
   }
   return result;
 }
@@ -476,9 +481,14 @@ int fzE_lstat(const char *pathname, int64_t * metadata)
   if (result == 0)
   {
     metadata[0] = statbuf.st_size;
-    metadata[1] = statbuf.st_mtime;
-    metadata[2] = S_ISREG(statbuf.st_mode);
-    metadata[3] = S_ISDIR(statbuf.st_mode);
+    metadata[1] = statbuf.st_atime;  /* Time of last access */
+    metadata[2] = statbuf.st_mtime;  /* Time of last modification */
+    metadata[3] = statbuf.st_ctime;  /* Time of last status change */
+    metadata[4] = S_ISREG(statbuf.st_mode);
+    metadata[5] = S_ISDIR(statbuf.st_mode);
+    metadata[6] = S_ISLNK(statbuf.st_mode);
+    metadata[7] = statbuf.st_uid;
+    metadata[8] = statbuf.st_gid;
   }
   return result;
 }
