@@ -542,15 +542,27 @@ int fzE_stat(const char *pathname, int64_t * metadata)
     fileSize.HighPart = fileInfo.nFileSizeHigh;
     fileSize.LowPart = fileInfo.nFileSizeLow;
 
-    FILETIME ft = fileInfo.ftLastWriteTime;
     ULARGE_INTEGER ull;
-    ull.LowPart = ft.dwLowDateTime;
-    ull.HighPart = ft.dwHighDateTime;
+    ull.LowPart =  fileInfo.ftCreationTime.dwLowDateTime;
+    ull.HighPart = fileInfo.ftCreationTime.dwHighDateTime;
+
+    ULARGE_INTEGER ull;
+    ull.LowPart =  fileInfo.ftLastAccessTime.dwLowDateTime;
+    ull.HighPart = fileInfo.ftLastAccessTime.dwHighDateTime;
+
+    ULARGE_INTEGER ull;
+    ull.LowPart =  fileInfo.ftLastWriteTime.dwLowDateTime;
+    ull.HighPart = fileInfo.ftLastWriteTime.dwHighDateTime;
 
     metadata[0] = fileSize.QuadPart;
-    metadata[1] = (ull.QuadPart / 10000000ULL) - 11644473600ULL;
-    metadata[2] = (fileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? 0 : 1;
-    metadata[3] = (fileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? 1 : 0;
+    metadata[1] = (ull.QuadPart / 10000000ULL) - 11644473600ULL; /* Time of last access */
+    metadata[2] = (ull.QuadPart / 10000000ULL) - 11644473600ULL; /* Time of last modification */
+    metadata[3] = (ull.QuadPart / 10000000ULL) - 11644473600ULL; /* Time of last status change */
+    metadata[4] = (fileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? 0 : 1;
+    metadata[5] = (fileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? 1 : 0;
+    metadata[6] = 0; /* NYI: UNDER DEVELOPMENT: is link  */
+    metadata[7] = 0; /* NYI: UNDER DEVELOPMENT: uid  */
+    metadata[8] = 0; /* NYI: UNDER DEVELOPMENT: gid  */
 
     result = 0;
   }
@@ -906,6 +918,8 @@ void * fzE_file_open(char * file_name, int64_t * open_results, file_open_mode mo
       FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN,
       NULL
   );
+
+  free(file_name_w);
 
   open_results[0] = hFile == INVALID_HANDLE_VALUE
     ? (int64_t)GetLastError()
