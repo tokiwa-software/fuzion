@@ -208,7 +208,7 @@ int fzE_get_protocol(int protocol)
 
 
 // close a socket descriptor
-int fzE_close(int sockfd)
+int fzE_socket_close(int sockfd)
 {
   return set_last_error(close(sockfd));
 }
@@ -248,29 +248,18 @@ int fzE_getaddrinfo(int family, int socktype, int protocol, int flags, char * ho
 
 
 // create a new socket and bind to given host:port
-// result[0] contains either an errorcode or a socket descriptor
 // -1 error, 0 success
-int fzE_bind(int family, int socktype, int protocol, char * host, char * port, int32_t * result){
-  result[0] = fzE_socket(family, socktype, protocol);
-  if (result[0] == -1)
-  {
-    result[0] = errno;
-    return -1;
-  }
+int fzE_bind(int sockfd, int family, int socktype, int protocol, char * host, char * port){
   struct addrinfo *addr_info = NULL;
   int addrRes = fzE_getaddrinfo(family, socktype, protocol, AI_PASSIVE, host, port, &addr_info);
   if (addrRes != 0)
   {
-    fzE_close(result[0]);
-    result[0] = addrRes;
     return -1;
   }
-  int bind_res = bind(result[0], addr_info->ai_addr, (int)addr_info->ai_addrlen);
+  int bind_res = bind(sockfd, addr_info->ai_addr, (int)addr_info->ai_addrlen);
 
   if(bind_res == -1)
   {
-    fzE_close(result[0]);
-    result[0] = errno;
     return -1;
   }
   freeaddrinfo(addr_info);
@@ -293,31 +282,15 @@ int fzE_accept(int sockfd){
 
 
 // create connection for given parameters
-// result[0] contains either an errorcode or a socket descriptor
 // -1 error, 0 success
-int fzE_connect(int family, int socktype, int protocol, char * host, char * port, int32_t * result){
-  // get socket
-  result[0] = fzE_socket(family, socktype, protocol);
-  if (result[0] == -1)
-  {
-    result[0] = errno;
-    return -1;
-  }
+int fzE_connect(int sockfd, int family, int socktype, int protocol, char * host, char * port){
   struct addrinfo *addr_info = NULL;
   int addrRes = fzE_getaddrinfo(family, socktype, protocol, 0, host, port, &addr_info);
   if (addrRes != 0)
   {
-    fzE_close(result[0]);
-    result[0] = addrRes;
     return -1;
   }
-  int con_res = connect(result[0], addr_info->ai_addr, addr_info->ai_addrlen);
-  if(con_res == -1)
-  {
-    // NYI: UNDER DEVELOPMENT: do we want to try another address in addr_info->ai_next?
-    fzE_close(result[0]);
-    result[0] = errno;
-  }
+  int con_res = connect(sockfd, addr_info->ai_addr, addr_info->ai_addrlen);
   freeaddrinfo(addr_info);
   return con_res;
 }

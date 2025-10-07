@@ -87,18 +87,23 @@ module fzE_set_blocking(sd i32, blocking i32) i32 => native
 #
 # returns zero on success, anything else is an error.
 #
-module fzE_close(sd i32) i32 => native
+module fzE_socket_close(sd i32) i32 => native
 
 
-# NYI: int fzE_socket(int family, int type, int protocol);
+# create a new socket
+#
+# -1 => error
+# anything else => success
+#
+module fzE_socket(family, socket_type, protocol i32) i32 => native
 
 
 # bind a name to a newly created socket
 #
-# 0  => arr_result[0] is the socket descriptor
-# -1 => arr_result[0] is an error number
+# 0  => success
+# -1 => error
 #
-module fzE_bind (family, socket_type, protocol i32, host Array u8, port Array u8, arr_result Array i32) i32 => native
+module fzE_bind (sockfd, family, socket_type, protocol i32, host Array u8, port Array u8) i32 => native
 
 
 # activates a server socket, setting a backlog
@@ -120,10 +125,10 @@ module fzE_accept(sd i32) i32 => native
 
 # open and connect a client socket
 #
-# 0  => arr_result[0] is the socket descriptor
-# -1 => arr_result[0] is an error number
+# 0  => success
+# -1 => error
 #
-module fzE_connect(family, socket_type, protocol i32, host Array u8, port Array u8, arr_result Array i32) i32 => native
+module fzE_connect(sockfd, family, socket_type, protocol i32, host Array u8, port Array u8) i32 => native
 
 
 # get a socket's peer's ip address
