@@ -742,6 +742,8 @@ public class Contract extends ANY
        Errors.any() || !f.isUniverse() || (f.contract()._declared_preconditions.isEmpty () &&
                                            f.contract()._declared_postconditions.isEmpty()   ));
 
+    res.resolveTypes(f);
+
     var fc = f.contract();
 
     // add precondition feature
