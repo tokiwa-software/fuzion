@@ -39,6 +39,8 @@ public fetch(url String) outcome String
   #
   ssl_lm : mutate is
 
+  # extract host and target from url
+  #
   host, target :=
     url
       .find "/" "https://".byte_length
@@ -47,27 +49,37 @@ public fetch(url String) outcome String
       # NYI: error handling
       .get
 
-  # NYI: reduce code nesting
 
+  # read the response
+  #
+  read_reponse =>
+    http
+      .read_response ssl_lm
+      .bind (.body_as_string)
+
+
+  # do the get request
+  #
+  write_request ! ssl_lm =>
+    rm := http
+      .request_message
+      .new http.get target 1 1 [("Host", host)]
+
+    (io.buffered ssl_lm).writer.env
+      .write (rm.bytes 0)
+      .error
+      .bind _->
+        (io.buffered ssl_lm).writer.env.flush
+
+
+  # connect and setup ssl
+  #
   net_lm ! ()->
-
-    match net.client net.family.ipv4 net.protocol.tcp host 443
-      e error => e
-      c net.connection =>
+    net
+      .client net.family.ipv4 net.protocol.tcp host 443
+      .bind c->
         c.with _ net_lm ()->
           ssl_lm ! ()->
-            wolfssl _ net_lm ssl_lm ()->
+            wolfssl _ net_lm ssl_lm (write_request.bind _->read_reponse)
 
-              rm := http
-                .request_message
-                .new http.get target 1 1 [("Host", host)]
 
-              (io.buffered ssl_lm).writer.env
-                .write (rm.bytes 0)
-                .error
-                .bind _->
-                  (io.buffered ssl_lm).writer.env.flush.bind _->
-                    http
-                      .read_response ssl_lm
-                      .bind resp->
-                        resp.body_as_string
