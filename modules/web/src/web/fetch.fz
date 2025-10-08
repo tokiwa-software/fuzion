@@ -21,11 +21,24 @@
 #
 # -----------------------------------------------------------------------
 
+
+# fetch url via ipv4 using standard ssl port
+#
+public fetch4(url String) outcome String =>
+  fetch net.family.ipv4 443 url
+
+
+# fetch url via ipv6 using standard ssl port
+#
+public fetch6(url String) outcome String =>
+  fetch net.family.ipv6 443 url
+
+
 # eagerly fetch an url via https, return response as a String
 #
-# NYI: support http, custom port etc.
+# NYI: support http
 #
-public fetch(url String) outcome String
+public fetch(family net.family.val, port u16, url String) outcome String
   pre
     debug: url.starts_with "https://"
     debug: !url.contains_whitespace
@@ -76,7 +89,7 @@ public fetch(url String) outcome String
   #
   net_lm ! ()->
     net
-      .client net.family.ipv4 net.protocol.tcp host 443
+      .client family net.protocol.tcp host port
       .bind c->
         c.with _ net_lm ()->
           ssl_lm ! ()->
