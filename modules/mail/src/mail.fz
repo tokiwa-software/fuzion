@@ -24,7 +24,13 @@
 public mail is
 
 
-  # send a plain text mail via ipv4 on port 587
+  # send a plain text mail via ipv4 on port 587, using STARTTLS
+  #
+  public send_starttls(host, username, password, from, to, subject, text String) outcome unit =>
+    send net.family.ipv4 587 host username password from to subject text
+
+
+  # send a plain text mail via ipv4 on port 465, using implicit TLS
   #
   public send(host, username, password, from, to, subject, text String) outcome unit =>
     send net.family.ipv4 587 host username password from to subject text
@@ -40,20 +46,19 @@ public mail is
     # to init the connection to the SMTP server
     #
     init => """
-      EHLO $host
+      EHLO fuzion
     """.replace "\n" "\r\n"
 
-    # username in base64
-    #
-    username_b => """
-      {encodings.base64.encode_to_string username.utf8.as_array}
-    """.replace "\n" "\r\n"
 
-    # password in base64
+    # the credentials separated by NUL, base64 encoded
+    cred =>
+      encodings.base64.encode_to_string "{codepoint 0}{username}{codepoint 0}{password}".utf8.as_array
+
+
+    # from: https://en.wikipedia.org/wiki/List_of_SMTP_server_return_codes
     #
-    password_b => """
-      {encodings.base64.encode_to_string password.utf8.as_array}
-    """.replace "\n" "\r\n"
+    auth_succeded => 235
+
 
     # the actual mail
     #
@@ -65,7 +70,10 @@ public mail is
       To: $to
       Subject: $subject
 
-      $text
+      {
+        # 2.1.1.  Line Length Limits, see https://datatracker.ietf.org/doc/html/rfc5322#section-2.1.1
+        String.join (text.chunk 78) "\n"
+      }
       .
       QUIT
     """.replace "\n" "\r\n"
@@ -91,17 +99,14 @@ public mail is
     # do the get request
     #
     write_request ! ssl_lm =>
+
       write_or_cause ssl_lm init
-      write_or_cause ssl_lm "AUTH LOGIN\r\n"
-      _ := (io.buffered ssl_lm).read_line_while (s -> s != "334 VXNlcm5hbWU6") # Username: in base64
-      write_or_cause ssl_lm username_b
-      pw := (io.buffered ssl_lm).read_line
-      if pw != "334 UGFzc3dvcmQ6" # Password: in base64
-        (exception unit).env.cause (error "Expected to be requested for password, got {pw}")
-      write_or_cause ssl_lm password_b
-      auth_succeded := (io.buffered ssl_lm).read_line
-      if auth_succeded != "235 Authentication succeeded"
-        (exception unit).env.cause (error "Expected auth succeeded, got {auth_succeded}")
+
+      write_or_cause ssl_lm "AUTH PLAIN $cred\r\n"
+
+      _ := (io.buffered ssl_lm).read_line_while (s -> !s.starts_with $auth_succeded)
+
+      # NYI: UNDER DEVELOPMENT: do not assume SMTP PIPELINING, send each command separately
       write_or_cause ssl_lm mail_data
 
 
@@ -114,10 +119,15 @@ public mail is
           c.with _ net_lm ()->
             ssl_lm ! ()->
               exception unit _ ()->
-                write_or_cause net_lm init
-                _ := (io.buffered net_lm).read_line_while (s -> s != "250 STARTTLS")
-                write_or_cause net_lm "STARTTLS\r\n"
-                ok := (io.buffered net_lm).read_line
-                if ok != "220 OK"
-                  (exception unit).env.cause (error "Expected 220 OK, got {ok}")
+
+                # do we need to initiate STARTTLS
+                #
+                if port = 587
+                  write_or_cause net_lm init
+                  _ := (io.buffered net_lm).read_line_while (s -> s != "250 STARTTLS")
+                  write_or_cause net_lm "STARTTLS\r\n"
+                  ok := (io.buffered net_lm).read_line
+                  if ok != "220 OK"
+                    (exception unit).env.cause (error "Expected 220 OK, got {ok}")
+
                 wolfssl _ net_lm ssl_lm write_request
