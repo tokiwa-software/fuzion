@@ -41,7 +41,12 @@ public mail is
 
   # send a plain text mail
   #
-  public send(family net.family.val, port u16, host, username, password, from, to, subject, text String) outcome unit =>
+  public send(family net.family.val, port u16, host, username, password, from, to, subject, text String) outcome unit
+    pre
+      debug: !host.contains_whitespace
+      debug: !from.contains_whitespace
+      debug: !to.contains_whitespace
+  =>
 
     # to init the connection to the SMTP server
     #
@@ -68,11 +73,14 @@ public mail is
       DATA
       From: <$from>
       To: $to
-      Subject: $subject
+      Subject: =?UTF-8?B?{encodings.base64.encode_to_string subject.utf8.as_array}?=
+      MIME-Version: 1.0
+      Content-Type: text/plain; charset="UTF-8"
+      Content-Transfer-Encoding: 8bit
 
       {
         # 2.1.1.  Line Length Limits, see https://datatracker.ietf.org/doc/html/rfc5322#section-2.1.1
-        String.join (text.chunk 78) "\n"
+        String.join (text.lines.flat_map (.chunk 78)) "\n"
       }
       .
       QUIT
