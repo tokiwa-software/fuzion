@@ -33,7 +33,7 @@ public mail is
   # send a plain text mail via ipv4 on port 465, using implicit TLS
   #
   public send(host, username, password, from, to, subject, text String) outcome unit =>
-    send net.family.ipv4 587 host username password from to subject text
+    send net.family.ipv4 465 host username password from to subject text
 
 
   # NYI: UNDER DEVELOPMENT: this will just hang if any read_line_while condition never matches
