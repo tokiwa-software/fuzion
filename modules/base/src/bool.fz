@@ -173,3 +173,33 @@ public false bool => false_
 #
 #
 public true bool => true_
+
+
+# takes an arbitrary amount of bool arguments and returns true if and only if
+# all of them are true
+#
+public all_of (B type..., values B...) bool =>
+  all_of_helper : container.typed_applicator bool is
+    public redef apply(T type, e bool, v T) bool =>
+      if T : bool
+        # NYI: BUG: #6071: cannot use && here
+        v & e
+      else
+        compile_time_panic
+
+  values.typed_foldf true all_of_helper
+
+
+# takes an arbitrary amount of bool arguments and returns true if and only if
+# any of them is true
+#
+public any_of (B type..., values B...) bool =>
+  any_of_helper : container.typed_applicator bool is
+    public redef apply(T type, e bool, v T) bool =>
+      if T : bool
+        # NYI: BUG: #6071: cannot use || here
+        v | e
+      else
+        compile_time_panic
+
+  values.typed_foldf false any_of_helper
