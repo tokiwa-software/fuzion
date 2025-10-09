@@ -26,5 +26,5 @@
 #
 # Universe can not be called but you can use it in a call as part of a full qualifier, e.g.:
 #
-#     universe.this.say "hello"
+#     universe.say "hello"
 #
