@@ -118,7 +118,7 @@ public class Interpreter extends FUIRContext
     var saCl = fuir().clazz_fuzionSysArray_u8();
     Instance sa = new Instance(saCl);
     setField(fuir().clazz_fuzionSysArray_u8_length(), saCl, sa, new i32Value(bytes.length));
-    var arrayData = new ArrayData(bytes);
+    var arrayData = new ArrayData(bytes, saCl);
     setField(fuir().clazz_fuzionSysArray_u8_data(), saCl, sa, arrayData);
     setField(fuir().lookup_array_internal_array(clArr), clArr, arr, sa);
     setField(fuir().clazz_const_string_utf8_data(), cl, result, arr);
@@ -162,13 +162,12 @@ public class Interpreter extends FUIRContext
 
   /**
    * Get the result clazz of thiz
-   * or if thiz is an address to a value
-   * c_address.
+   * or if thiz is an address to clazz Any.
    */
   private static int clazzForField(int thiz)
   {
     return fuir().clazzFieldIsAdrOfValue(thiz)
-      ? fuir().clazz(SpecialClazzes.c_Array)
+      ? fuir().clazzAny()
       : fuir().clazzResultClazz(thiz);
   }
 

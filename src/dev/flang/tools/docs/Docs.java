@@ -34,6 +34,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -125,22 +126,21 @@ public class Docs extends ANY
       }
     var head = queue.remove();
     c.accept(head);
-    queue.addAll(declaredFeatures(head).collect(Collectors.toList()));
+    queue.addAll(declaredFeatures(head));
     breadthFirstTraverse0(c, queue);
   }
 
 
   /**
-   * Get the declared features of f as stream
+   * Get the declared features of f as collection
    * @param f the feature for which the declared features are to be returned
-   * @return a stream of the declared features of f
+   * @return a collection of the declared features of f
    */
-  private Stream<AbstractFeature> declaredFeatures(AbstractFeature f)
+  private Collection<AbstractFeature> declaredFeatures(AbstractFeature f)
   {
     return fe.feModule()
       .declaredFeatures(f)
-      .values()
-      .stream();
+      .values();
   }
 
 
@@ -188,7 +188,7 @@ public class Docs extends ANY
 
     if (Stream.of(args).anyMatch(arg -> arg.equals("-styles")))
       {
-        return new DocsOptions(null, null, false, true, false);
+        return new DocsOptions(null, null, null, false, true, false);
       }
 
     String apiSrcDir = null;
@@ -205,11 +205,25 @@ public class Docs extends ANY
           }
       }
 
+    String docsRoot = null;
+    var docsRootArg = Stream.of(args).filter(s->s.startsWith("-docs-root=")).collect(Collectors.toList());
+    if (docsRootArg.size() >= 1)
+      {
+        if (docsRootArg.size() == 1)
+          {
+            docsRoot = docsRootArg.getFirst().replace("-docs-root=", "");
+          }
+        else
+          {
+            Errors.fatal("option '-docs-root' specified multiple times");
+          }
+      }
+
     var destination = parseDestination(args);
 
     var bare = Stream.of(args).anyMatch(arg -> arg.equals("-bare"));
     var ignoreVisibility = Stream.of(args).anyMatch(arg -> arg.equals("-ignoreVisibility"));
-    return new DocsOptions(destination, apiSrcDir, bare, false, ignoreVisibility);
+    return new DocsOptions(destination, docsRoot, apiSrcDir, bare, false, ignoreVisibility);
   }
 
 
@@ -406,11 +420,9 @@ public class Docs extends ANY
       var htmlTool = new Html(config, mapOfDeclaredFeatures, universe, all_modules.getFirst(), all_modules);
 
       var file = new File(path.toFile(), "index.html");
-      try
+      try (FileWriter writer = new FileWriter(file))
         {
-          FileWriter writer = new FileWriter(file);
           writer.write(htmlTool.modulePage());
-          writer.close();
         }
       catch (IOException e)
         {

@@ -40,7 +40,7 @@ module:public thread(thrd Thread) : property.equatable is
     else
       # NYI: UNDER DEVELOPMENT:
       # better busy loop
-      while joined.read != trit.yes
+      while joined.read.is_no_or_unknown
 
     # NYI: UNDER DEVELOPMENT:
     # should we send message to the thread that spawned this

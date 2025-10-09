@@ -174,7 +174,10 @@ public class Instance extends Value
     if (oldv != v)
       {
         var fv = v;
-        _dfa.wasChanged(() -> "setField: new values " + fv + " (was " + oldv + ") for " + this);
+        if (dfa.isRead(field))
+          {
+            _dfa.wasChanged(() -> "setField: new values " + fv + " (was " + oldv + ") for " + this);
+          }
       }
     dfa._writtenFields.set(field);
     _fields.put(field, v);
@@ -194,7 +197,7 @@ public class Instance extends Value
     Val res = v;
     if (v == null)
       {
-        if (dfa._reportResults && !Errors.any())
+        if (!Errors.any())
           {
             DfaErrors.readingUninitializedField(site == -1 ? dev.flang.util.SourcePosition.notAvailable : // NYI: REMOVE
                                                 site == IR.NO_SITE ? null : dfa._fuir.sitePos(site),

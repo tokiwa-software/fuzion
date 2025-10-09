@@ -81,6 +81,7 @@ public class Html extends ANY
       <div class="mb-15 runcode" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%,40ch), min(100%, 80ch))); max-width: 49rem; opacity: 0;">
         <div class="position-relative">
           <form id="##ID##">
+            <label for="##ID##.code" class="visually-hidden">Code input</label>
             <textarea class="codeinput" required="required" maxlength="4096" id="##ID##.code" name="code" rows="3" spellcheck="false">##CODE##</textarea>
             <div class="position-absolute runbuttons">
               <input type="button" onclick="runit('##ID##')" class="runbutton" name="run" value="Run!" />
@@ -113,13 +114,14 @@ public class Html extends ANY
    */
   private String inherited(AbstractFeature af, AbstractFeature relativeTo)
   {
-    if (af.inherits().isEmpty() || signatureWithArrow(af)) // don't show inheritance for function features
+    if (signatureWithArrow(af) // inheritance does not make sense for function features since no instance can be obtained
+        || !af.isTypeParameter() && af.inherits().isEmpty()) // type parameters always have a constraint to show
       {
         return "";
       }
-    else if (af.kind() == AbstractFeature.Kind.TypeParameter || af.kind() == AbstractFeature.Kind.OpenTypeParameter)
+    else if (af.isTypeParameter())
       {
-        var constraint = af.resultType().feature();
+        var constraint = af.constraint().feature();
         return "<div class='fd-keyword mx-5'>:</div><a class='fd-feature fd-inherited' href='$1'>$2</a>"
           .replace("$1", featureRelativeURL(constraint, relativeTo))
           .replace("$2", htmlEncodedQualifiedName(constraint));
@@ -128,6 +130,9 @@ public class Html extends ANY
       {
         return "<div class='fd-keyword mx-5'>:</div>" + af.inherits()
           .stream()
+          // don't show inheritance from features that are not public
+          .filter(c->c.calledFeature().visibility().typeVisibility() == Visi.PUB ||
+                     c.calledFeature().visibility().eraseTypeVisibility() == Visi.PUB)
           .<String>map(c -> {
             var f = c.calledFeature();
             return "<a class='fd-feature fd-inherited' href='$1'>".replace("$1", featureRelativeURL(f, relativeTo))
@@ -248,7 +253,10 @@ public class Html extends ANY
    */
   private String annotateInherited(AbstractFeature af, AbstractFeature outer)
   {
-    if (isDeclared(af, outer))
+    if (isDeclared(af, outer)
+        || nonPublicInheritanceChain(af) // don't show annotation if feature was inherited from feature with non public outer
+        || af.outer().isUniverse()) // features can not inherit from universe,
+                                    // this avoid false annotation in the applicable universe features section
       {
         return ""; // not inherited, nothing to display
       }
@@ -291,6 +299,9 @@ public class Html extends ANY
 
     var redefs = af.redefines();
 
+    // don't show annotation if redefining a feature from a non public feature
+    redefs.removeIf(f->nonPublicInheritanceChain(f));
+
     AbstractFeature relativeTo = outer != null ? outer : af;
     return redefs.isEmpty()
             ? ""
@@ -301,6 +312,14 @@ public class Html extends ANY
                                     .collect(Collectors.joining(",&nbsp;")) ));
   }
 
+  /**
+   * Is this feature or any one of the features it inherits from not public
+   * i.e. has a type visibility other than public
+   */
+  private boolean nonPublicInheritanceChain(AbstractFeature f)
+  {
+    return !f.isUniverse() && (f.visibility().typeVisibility() != Visi.PUB || nonPublicInheritanceChain(f.outer()));
+  }
 
   /**
    * Returns a html formatted annotation to indicate if a feature is abstract
@@ -478,29 +497,54 @@ public class Html extends ANY
     // Choice Types
     var choices = map.getOrDefault(AbstractFeature.Kind.Choice, new TreeSet<AbstractFeature>());
 
-    return mainSection0("Type Parameters",   typeParameters,     outer, false)
-         + mainSection0("Fields",            fields,             outer, false)
-         + mainSection0("Constructors",      normalConstructors, outer, true)
-         + mainSection0("Type Constructors", typeConstructors,   outer, true)
-         + mainSection0("Functions",         normalFunctions,    outer, true)
-         + mainSection0("Type Functions",    typeFunctions,      outer, true)
-         + mainSection0("Choice Types",      choices,            outer, true);
+    // Applicable universe features
+    var univFuncDesc = "These are features in universe, that have an argument with a type constraint "
+                      + "that matches this features type and can therefore be used with it.";
+
+    var universeFunctions = new TreeSet<AbstractFeature>();
+
+    if (!signatureWithArrow(outer) && !outer.isUniverse())
+      {
+        var allUniverseFeat = mapOfDeclaredFeatures.get(lm.universe());
+        universeFunctions.addAll(allUniverseFeat.getOrDefault(AbstractFeature.Kind.Routine, new TreeSet<AbstractFeature>()));
+        universeFunctions.removeIf(f->f.isConstructor());
+        universeFunctions.addAll(allUniverseFeat.getOrDefault(AbstractFeature.Kind.Abstract, new TreeSet<AbstractFeature>()));
+        universeFunctions.addAll(allUniverseFeat.getOrDefault(AbstractFeature.Kind.Intrinsic, new TreeSet<AbstractFeature>()));
+        universeFunctions.addAll(allUniverseFeat.getOrDefault(AbstractFeature.Kind.Native, new TreeSet<AbstractFeature>()));
+
+        // only keep features that have a matching type argument with a type other than Any
+        universeFunctions.removeIf(
+          af->af.typeArguments().isEmpty()
+          || af.typeArguments().stream().noneMatch(typeParam->typeParam.constraint().compareTo(Types.resolved.t_Any ) != 0
+                                                              && typeParam.constraint().constraintAssignableFrom(outer.resultType())));
+      }
+
+    return mainSection0("Type Parameters",              null,         typeParameters,     outer, false)
+         + mainSection0("Fields",                       null,         fields,             outer, false)
+         + mainSection0("Constructors",                 null,         normalConstructors, outer, true)
+         + mainSection0("Type Constructors",            null,         typeConstructors,   outer, true)
+         + mainSection0("Functions",                    null,         normalFunctions,    outer, true)
+         + mainSection0("Type Functions",               null,         typeFunctions,      outer, true)
+         + mainSection0("Choice Types",                 null,         choices,            outer, true)
+         + mainSection0("Applicable universe features", univFuncDesc, universeFunctions,  outer, true);
   }
 
 
   /**
    * The summaries and the comments of the features
    * @param heading the title for this section
+   * @param description text block shown under the headline, can be null
    * @param set the features to be included in the summary
    * @param outer the outer feature of the features in the summary
    * @param filterAndSort should features from other modules (including not having a module) be removed and the list sorted?
    * @return
    */
-  private String mainSection0(String heading, Collection<AbstractFeature> set, AbstractFeature outer, boolean filterAndSort)
+  private String mainSection0(String heading, String description, Collection<AbstractFeature> set, AbstractFeature outer, boolean filterAndSort)
   {
     if (set == null) { return ""; }
 
-    heading = "<h4>" + heading + "</h4>\n";
+    heading = "<h2 class=\"f-category\">" + heading + "</h2>\n";
+    description = (description != null && !description.isEmpty()) ? "<div>" + description + "</div>\n" : "";
     var features = set.stream();
 
     // e.g. don't filter or sort type parameters and fields
@@ -524,7 +568,7 @@ public class Html extends ANY
     )
     .collect(Collectors.joining(System.lineSeparator()));
 
-    return content.equals("") ? "" : heading + content;
+    return content.equals("") ? "" : heading + description + content;
   }
 
 
@@ -535,14 +579,12 @@ public class Html extends ANY
    */
   private String headingSection(AbstractFeature f)
   {
-    return "$0<h1 class='$1'>$2</h1><h2>$3</h2><div class='heading-summary'>$4</div><div class='fd-comment'>$5</div>$6"
-      .replace("$0", f.isUniverse() ? "<h1 hidden>" + lm.name() + "</h1>" : "") // short version of title for navtitle
-      .replace("$1", f.isUniverse() ? "": "d-none")
-      .replace("$2", f.isUniverse() ? "API-Documentation: module <code style=\"font-size: 1.4em; vertical-align: bottom;\">" + lm.name() + "</code>" : htmlEncodedBasename(f))
-      .replace("$3", anchorTags(f))
-      .replace("$4", f.isUniverse() ? "": summary(f))
-      .replace("$5", Util.commentOf(f))
-      .replace("$6", redefines(f, f));
+    return "<h1 hidden>$0</h1><h1>$1</h1><div class='heading-summary'>$2</div><div class='fd-comment'>$3</div>$4"
+      .replace("$0", f.isUniverse() ? lm.name() : htmlEncodedBasename(f)) // short version of title for navtitle
+      .replace("$1", f.isUniverse() ? "API-Documentation: module <code style=\"font-size: 1.4em; vertical-align: bottom;\">" + lm.name() + "</code>" : anchorTags(f))
+      .replace("$2", f.isUniverse() ? "": summary(f))
+      .replace("$3", Util.commentOf(f))
+      .replace("$4", redefines(f, f));
   }
 
   /**
@@ -740,7 +782,7 @@ public class Html extends ANY
       + """
         </body>
         </html>
-                    """)
+        """)
         .replace("$qualifiedName", String.join(" • ", java.util.List.of(qualifiedName.split("\\.")).reversed()))
         .replace("$root", upDirs((int) qualifiedName.chars().filter(c -> c == '.').count() + upDirCorrection));
   }
@@ -915,38 +957,34 @@ public class Html extends ANY
    */
   private String arguments(AbstractFeature f, AbstractFeature relativeTo)
   {
-    if (f.arguments()
-         .stream()
-         .filter(a -> a.isTypeParameter() || (f.visibility().eraseTypeVisibility() == Visi.PUB))
-         .count() == 0)
-      {
-        return "";
-      }
-    return "(" + f.arguments()
+    var res = f.arguments()
       .stream()
       .filter(a -> a.isTypeParameter() || (f.visibility().eraseTypeVisibility() == Visi.PUB))
       .map(a ->
         htmlEncodedBasename(a) + "&nbsp;"
         + (a.isTypeParameter() ? typeArgAsString(a, relativeTo) : anchorType(a, f, relativeTo)))
-      .collect(Collectors.joining(htmlEncodeNbsp(", "))) + ")";
+      .collect(Collectors.joining(htmlEncodeNbsp(", ")));
+    return res.isEmpty() ? "" : "(" + res + ")";
   }
 
 
   private String typeArgAsString(AbstractFeature f, AbstractFeature relativeTo)
   {
-    if (f.resultType().dependsOnGenerics())
+    if (f.constraint().dependsOnGenerics())
       {
         return "<div class='fd-keyword'>type</div>"
                + (f.isOpenTypeParameter() ? "..." : "")
-               + "<span class='mx-5'>:</span>" + htmlEncodeNbsp(f.resultType().toString(true));
+               + "<span class='mx-5'>:</span>  <a class='fd-feature fd-inherited' href='$1'>$2</a>"
+               .replace("$1", featureRelativeURL(f.constraint().feature(), relativeTo))
+               .replace("$2", htmlEncodeNbsp(f.constraint().toString(true)));
       }
     else
       {
-        var constraint = f.resultType().feature();
+        var constraint = f.constraint().feature();
 
         return "<div class='fd-keyword'>type</div>"
                 + (f.isOpenTypeParameter() ? "..." : "")
-                + (f.resultType().compareTo(Types.resolved.t_Any) == 0 ? "" :
+                + (f.constraint().compareTo(Types.resolved.t_Any) == 0 ? "" :
                     "<div class='mx-5'>:</div><a class='fd-feature fd-inherited' href='$1'>$2</a>"
                     .replace("$1", featureRelativeURL(constraint, relativeTo))
                     .replace("$2", htmlEncodedQualifiedName(constraint)));
@@ -1096,8 +1134,22 @@ public class Html extends ANY
       """
           <!-- GENERATED BY FZDOCS -->
           <div class='fd'>
-            <div class="sidenav">
-              <div onclick="document.querySelector('.fd .sidenav nav').style.display = (document.querySelector('.fd .sidenav nav').style.display === 'none' ?  '' : 'none'); this.textContent = this.textContent === '»' ? '«' : '»';" class="toggle-nav cursor-pointer">»</div>
+            <div class="sidenav" id="sidenav">
+              <button
+                class="toggle-nav"
+                aria-expanded="true"
+                aria-controls="sidenav"
+                aria-label="Toggle navigation"
+                onclick="
+                  const nav = document.querySelector('.fd .sidenav nav');
+                  const hidden = nav.style.display === 'none';
+                  nav.style.display = hidden ? '' : 'none';
+                  this.textContent = hidden ? '«' : '»';
+                  this.setAttribute('aria-expanded', hidden);
+                "
+              >
+                »
+              </button>
               <nav style="display: none">$2</nav>
             </div>
             <div class="container">
@@ -1130,50 +1182,63 @@ public class Html extends ANY
     // NYI: BUG: some things (e.g. html id or links) might break if there are spaces in a module name
     StringBuilder modPage = new StringBuilder();
     modPage.append("""
-<!-- GENERATED BY FZDOCS -->
-<div class="fd">
-<div class="sidenav">
-  <div onclick="document.querySelector('.fd .sidenav nav').style.display = (document.querySelector('.fd .sidenav nav').style.display === 'none' ?  '' : 'none'); this.textContent = this.textContent === '»' ? '«' : '»';" class="toggle-nav cursor-pointer">»</div>
-  <nav style="display: none">$0</nav>
-</div>
-<div class="container">
-  <section><h1 hidden>Library Modules</h1><h1>Fuzion Library Modules</h1>
-    <div class='fd-comment'></div>
-  </section>
-  <section>
-        """.replace("$0", navigationModules(null)));
+      <!-- GENERATED BY FZDOCS -->
+      <div class="fd">
+      <div class="sidenav" id="sidenav">
+        <button
+        class="toggle-nav"
+        aria-expanded="true"
+        aria-controls="sidenav"
+        aria-label="Toggle navigation"
+        onclick="
+          const nav = document.querySelector('.fd .sidenav nav');
+          const hidden = nav.style.display === 'none';
+          nav.style.display = hidden ? '' : 'none';
+          this.textContent = hidden ? '«' : '»';
+          this.setAttribute('aria-expanded', hidden);
+        "
+        >
+          »
+        </button>
+        <nav style="display: none">$0</nav>
+      </div>
+      <div class="container">
+        <section><h1 hidden>Library Modules</h1><h1>Fuzion Library Modules</h1>
+          <div class='fd-comment'></div>
+        </section>
+        <section>
+      """.replace("$0", navigationModules(null)));
 
     for (LibraryModule mod : libModules)
       {
         modPage.append("""
-    <div class="cursor_pointer">
-      <details id='"$2"'$0>
-        <summary>
-          <div class="d-grid" style="grid-template-columns: 1fr min-content;">
-            <div class="d-flex flex-wrap word-break-break-word">
-              <div class="d-flex flex-wrap word-break-break-word fz-code">
-                <div class="font-weight-600 ml-2"><a class="fd-feature" href="$1">$2</a></div>
-                <div class="flex-grow-1"></div>
-                <a class="fd-anchor-sign mr-2" href="#$2">¶</a>
-              </div>
-            </div>
+          <div class="cursor_pointer">
+            <details id="$2" $0>
+              <summary>
+                <div class="d-grid" style="grid-template-columns: 1fr min-content;">
+                  <div class="d-flex flex-wrap word-break-break-word">
+                    <div class="d-flex flex-wrap word-break-break-word fz-code">
+                      <div class="font-weight-600 ml-2"><a class="fd-feature" href="$1">$2</a></div>
+                      <div class="flex-grow-1"></div>
+                      <a class="fd-anchor-sign mr-2" href="#$2">¶</a>
+                    </div>
+                  </div>
+                </div>
+              </summary>
+            </details>
           </div>
-        </summary>
-      </details>
-    </div>
-            """.replace("$0", config.ignoreVisibility() ? "class='fd-private cursor-pointer' hidden" : "class='cursor-pointer'")
-               .replace("$1", mod.name() + "/index.html")
-               .replace("$2", mod.name()));
+          """.replace("$0", config.ignoreVisibility() ? "class='fd-private cursor-pointer' hidden" : "class='cursor-pointer'")
+             .replace("$1", mod.name() + "/index.html")
+             .replace("$2", mod.name()));
       }
     // modulePage += "</ul>";
 
     modPage.append("""
-  </section>
-  $3
-</div>
-</div>
-        """
-          .replace("$3", config.ignoreVisibility() ? """
+        </section>
+        $3
+      </div>
+      </div>
+      """.replace("$3", config.ignoreVisibility() ? """
             <button onclick="for (let element of document.getElementsByClassName('fd-private')) { element.hidden = !element.hidden; }">Toggle hidden features</button>
           """ : ""));
 

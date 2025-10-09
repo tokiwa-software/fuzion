@@ -343,28 +343,28 @@ public class Block extends AbstractBlock
    */
   Expr propagateExpectedType(Resolution res, Context context, AbstractType type, Supplier<String> from)
   {
-    if (type.compareTo(Types.resolved.t_unit) == 0 && hasImplicitResult())
-      { // return unit if this is expected even if we would implicitly return
-        // something else:
-        _expressions.add(new Block(new List<>()));
-      }
-
-    // we must not remove result expression just yet.
-    // we rely on it being present in SourceModule.inScope()
-    var idx = resultExpressionIndex();
+    Expr result = this;
     Expr resExpr = resultExpression();
-
-    if (resExpr != null)
-      {
-        var x = resExpr.propagateExpectedType(res, context, type, from);
-        _expressions.remove(idx);
-        _expressions.add(x);
-      }
-    else if (Types.resolved.t_unit.compareTo(type) != 0)
+    if (type.compareTo(Types.resolved.t_unit) == 0 && hasImplicitResult() ||
+        resExpr == null && Types.resolved.t_unit.compareTo(type) != 0)
       {
         _expressions.add(new Call(pos(), FuzionConstants.UNIT_NAME).resolveTypes(res, context));
       }
-    return this;
+    else if (resExpr != null)
+      {
+        // this may do partial application for the whole block
+        result = super.propagateExpectedType(res, context, type, from);
+        if (result == this)
+          {
+            // we must not remove result expression just yet.
+            // we rely on it being present in SourceModule.inScope()
+            var idx = resultExpressionIndex();
+            var x = resExpr.propagateExpectedType(res, context, type, from);
+            _expressions.remove(idx);
+            _expressions.add(x);
+          }
+      }
+    return result;
   }
 
 

@@ -124,7 +124,7 @@ public class Intrinsics extends ANY
                 {
                   var res = c._names.newTemp();
                   code = CStmnt.seq(locked(CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, f),
-                                                      CStmnt.seq(res.decl("bool", res),
+                                                      CStmnt.seq(CLocal.decl("bool", res),
                                                                  compareValues(c, tmp, expected, rc, res),
                                                                  CStmnt.iff(res,
                                                                             f.assign(new_value))))),
@@ -945,7 +945,7 @@ public class Intrinsics extends ANY
     put("fuzion.jvm.create_jvm", (c,cl,outer,in) -> {
       return  C.JAVA_HOME == null
         ? noJava
-        : CExpr.call("fzE_create_jvm", new List<>(A0.castTo("char *")));
+        : CExpr.call("fzE_create_jvm", new List<>(A0.castTo("void *"), A1)).ret();
     });
     put("fuzion.jvm.destroy_jvm", (c,cl,outer,in) -> {
       return  C.JAVA_HOME == null
@@ -1074,22 +1074,13 @@ public class Intrinsics extends ANY
       }
     else
       {
-        var at = c._fuir.clazzTypeParameterActualType(cl);
-        if (at >= 0)
-          {
-            // intrinsic is a type parameter, type instances are unit types, so nothing to be done:
-            result = CStmnt.EMPTY;
-          }
-        else
-          {
-            var msg = "code for intrinsic " + c._fuir.clazzOriginalName(cl) + " is missing";
-            Errors.warning(msg);
-            result = CStmnt.seq(CExpr.call("fprintf",
-                                           new List<>(new CIdent("stderr"),
-                                                      CExpr.string("*** error: NYI: %s\n"),
-                                                      CExpr.string(msg))),
-                                CExpr.call("exit", new List<>(CExpr.int32const(1))));
-          }
+        var msg = "code for intrinsic " + c._fuir.clazzOriginalName(cl) + " is missing";
+        Errors.warning(msg);
+        result = CStmnt.seq(CExpr.call("fprintf",
+                                        new List<>(new CIdent("stderr"),
+                                                  CExpr.string("*** error: NYI: %s\n"),
+                                                  CExpr.string(msg))),
+                            CExpr.call("exit", new List<>(CExpr.int32const(1))));
       }
 
     return result;
@@ -1169,7 +1160,7 @@ public class Intrinsics extends ANY
       }
     else if (c._fuir.clazzIsUnitType(rt))
       { // unit-type values are always equal:
-        result = tmp.assign(new CIdent("true"));
+        result = tmp.assign(CIdent.TRUE);
       }
     else if (isIntegerOrRef(c, rt))
       {
@@ -1201,7 +1192,7 @@ public class Intrinsics extends ANY
           {
             var tc = c._fuir.clazzChoice(rt, i);
             var fld = c._fuir.clazzIsRef(tc) ? CNames.CHOICE_REF_ENTRY_NAME
-                                             : new CIdent(CNames.CHOICE_ENTRY_NAME + i);
+                                             : CIdent.choiceEntry(i);
             var entry1  = union1.field(fld);
             var entry2  = union2.field(fld);
             var cmp = compareValues(c, entry1, entry2, tc, tmp);
@@ -1213,11 +1204,11 @@ public class Intrinsics extends ANY
                             CStmnt.suitch(value1.field(CNames.TAG_NAME),
                                           cazes,
                                           null),
-                            tmp.assign(new CIdent("false")));
+                            tmp.assign(CIdent.FALSE));
       }
     else // not a choice, so a 'normal' product type
       {
-        result = tmp.assign(new CIdent("true"));
+        result = tmp.assign(CIdent.TRUE);
         for (var i = 0; i < c._fuir.clazzFieldCount(rt); i++)
           {
             var fi = c._fuir.clazzField(rt, i);

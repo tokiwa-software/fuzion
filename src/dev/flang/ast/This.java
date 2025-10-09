@@ -220,12 +220,9 @@ public class This extends ExprWithPos
       {
         this._feature = getThisFeature(pos(), this, _qual, outer);
       }
-    else
+    else if (this._feature == null)  /* convenience for This(pos) constructor that does not provide outer */
       {
-        if (this._feature == null)  /* convenience for This(pos) constructor that does not provide outer */
-          {
-            this._feature = outer;
-          }
+        this._feature = outer;
       }
 
     Expr getOuter;

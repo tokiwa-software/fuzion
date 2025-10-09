@@ -282,26 +282,6 @@ public class InlineArray extends ExprWithPos
 
 
   /**
-   * visit all the expressions within this InlineArray.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited expressions
-   */
-  public void visitExpressions(ExpressionVisitor v)
-  {
-    super.visitExpressions(v);
-    for (var e : _elements)
-      {
-        e.visitExpressions(v);
-      }
-    if (_code != null)
-      {
-        _code.visitExpressions(v);
-      }
-  }
-
-
-  /**
    * check the types in this InlineArray
    *
    * @param context the source code context where this InlineArray is used
@@ -431,7 +411,6 @@ public class InlineArray extends ExprWithPos
     var sysArrayVar  = new Feature(SourcePosition.builtIn, Visi.PRIV, sysArrayT, sysArrayName, Impl.FIELD);
     res._module.findDeclarations(sysArrayVar, context.outerFeature());
     res.resolveDeclarations(sysArrayVar);
-    res.resolveTypes();
     var sysArrayAssign = new Assign(res, SourcePosition.builtIn, sysArrayVar, sysArrayCall, context);
     var exprs = new List<Expr>(sysArrayAssign);
     var readSysArrayVar = new Call(SourcePosition.builtIn,

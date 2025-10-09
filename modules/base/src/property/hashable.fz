@@ -36,3 +36,40 @@ public hashable : equatable is
   #   (T.equality a b) : (T.hash_code a = T.hash_code b)
   #
   public type.hash_code(a hashable.this) u64 => abstract
+
+
+  # helper for an xxh-style quick hash function.
+  #
+  # The algorithm used here is a variation of (XXXHash)[https://xxhash.com] as used in
+  # (Python's tuple)[https://github.com/python/cpython/blob/849a80ec412c36bbca5d400a7db5645b8cf54f1f/Objects/tupleobject.c#L305]:
+  #
+  #   we start with a constant `hash_prime5`
+  #   for each value:
+  #     we take its hash code * `hash_prime2` and add it
+  #     then we rotate by `hash_rotate`
+  #     and multiply by `hash_prime3`
+  #
+  module type.xxh_next(# the existing hash code, start with `xxh_first`
+                h0 u64,
+
+                # the additional hash code to be incorporated
+                h1 u64)
+  =>
+    h2 := h0 +° h1 *° xxh_prime_2
+    h3 := (h2 << xxh_rotate) | (h2 >> (u64 64 - xxh_rotate))
+    h3 *° xxh_prime_1
+
+
+  # Preferred initial value für `h0` when calling `xxh_next`.
+  #
+  module type.xxh_first => xxh_prime_5
+
+
+  # XXH constants from https://xxhash.com/doc/v0.8.3/group___x_x_h64__impl.html
+  #
+  type.xxh_prime_1 => u64 0x9E3779B185EBCA87  # factor after each value's hash code was added and result was rotated
+  type.xxh_prime_2 => u64 0xC2B2AE3D27D4EB4F  # factor for adding hash code of values
+  type.xxh_prime_3 => u64 0x165667B19E3779F9  # not needed here
+  type.xxh_prime_4 => u64 0x85EBCA77C2B2AE63  # not needed here
+  type.xxh_prime_5 => u64 0x27D4EB2F165667C5  # initial hash used for empty values list
+  type.xxh_rotate  => u64 31                  # rotation after adding hash code of values

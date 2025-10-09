@@ -61,7 +61,7 @@ public class NumericValue extends Value
       case c_i8   -> (long) data.get      ();
       case c_i16  -> (long) data.getShort ();
       case c_i32  -> (long) data.getInt   ();
-      case c_i64  -> (long) data.getLong  ();
+      case c_i64  ->        data.getLong  ();
       case c_u8   -> (long) data.get      () & 0xff;
       case c_u16  -> (long) data.getChar  ();
       case c_u32  -> (long) data.getInt   ();

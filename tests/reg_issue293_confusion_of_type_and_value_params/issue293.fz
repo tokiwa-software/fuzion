@@ -44,9 +44,9 @@ issue293 is
   # a Transducer mappping values from T to U
   map(TACC, T, U type, mapper T -> U) Transducer TACC U T =>
     ref : Transducer TACC U T is
-      public redef call(red reducing_fn TACC U) =>
+      public redef call(red reducing_fn TACC U) reducing_fn TACC T =>
         ref : reducing_fn TACC T is
-          public redef call(res TACC, val T) =>
+          public redef call(res TACC, val T) TACC =>
             red.call res (mapper val)
 
 

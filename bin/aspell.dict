@@ -267,7 +267,6 @@ cotype
 cotypes
 createMIR
 createOuter
-createThisType
 cryptographically
 css
 CStmnt
@@ -1394,7 +1393,7 @@ FuzionInstance
 flamegraph
 fixOuterThisType
 Filepath
-excecuted
+executed
 equalsBitWise
 dev's
 defineClass

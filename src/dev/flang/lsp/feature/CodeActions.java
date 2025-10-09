@@ -101,7 +101,7 @@ public class CodeActions
   }
 
   /**
-   * if renameing of identifier is possible
+   * if renaming of identifier is possible
    * return code action for fixing identifier name
    *
    * @param tdi

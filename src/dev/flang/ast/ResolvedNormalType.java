@@ -99,7 +99,8 @@ public class ResolvedNormalType extends ResolvedType
   public static ResolvedType create(AbstractType t, List<AbstractType> g, List<AbstractType> ug, AbstractType o)
   {
     if (PRECONDITIONS) require
-      ( (t.generics() instanceof FormalGenerics.AsActuals   ) || t.generics().size() == g.size(),
+      ( (t.generics() instanceof FormalGenerics.AsActuals   ) ||
+        (g            instanceof FormalGenerics.AsActuals   ) || t.generics().size() == g.size(),
        !(t.generics() instanceof FormalGenerics.AsActuals aa) || aa.sizeMatches(g),
         t == Types.t_ERROR || (t.outer() == null) == (o == null));
 
@@ -145,8 +146,7 @@ public class ResolvedNormalType extends ResolvedType
                             TypeKind typeKind)
   {
     if (PRECONDITIONS) require
-      (true // disabled for now since generics may be empty when resolving a type in a match case, actual generics will be inferred later.
-       || Errors.any() || f == null || f.generics().sizeMatches(g == null ? UnresolvedType.NONE : g),
+      (Errors.any() || f == null || f.generics().sizeMatches(g == null ? UnresolvedType.NONE : g),
        typeKind == TypeKind.ValueType || typeKind == TypeKind.RefType
        /* NYI: Types.resolved == null
          || f.compareTo(Types.resolved.f_void) != 0*/);
@@ -261,15 +261,6 @@ public class ResolvedNormalType extends ResolvedType
 
     if (POSTCONDITIONS) ensure
       (feature().generics().sizeMatches(generics()));
-  }
-
-
-  /**
-   * Instantiate a new ResolvedNormalType.
-   */
-  public static ResolvedNormalType create(ResolvedNormalType original, AbstractFeature originalOuterFeature)
-  {
-    return new ResolvedNormalType(original, originalOuterFeature);
   }
 
 
@@ -390,6 +381,26 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
+   * `this` as a value.
+   *
+   * Requires that at isNormalType().
+   */
+  @Override
+  public AbstractType asValue()
+  {
+    if (PRECONDITIONS) require
+      (isNormalType());
+
+    return switch (kind())
+      {
+      case ValueType -> this;
+      case RefType   -> create(generics(), Call.NO_GENERICS, outer(), feature(), TypeKind.ValueType);
+      default        -> throw new Error("unexpected kind "+kind()+" for ResolvedNormalType");
+    };
+  }
+
+
+  /**
    * For a type that is not a type parameter, create a new variant using given
    * actual generics and outer type.
    *
@@ -401,7 +412,6 @@ public class ResolvedNormalType extends ResolvedType
    * @return a new type with same feature(), but using g2/o2 as generics
    * and outer type.
    */
-  // NYI: CLEANUP: remove, why does this behave differently from super.replaceGenericsAndOuter?
   @Override
   public AbstractType replaceGenericsAndOuter(List<AbstractType> g2, AbstractType o2)
   {
@@ -429,9 +439,10 @@ public class ResolvedNormalType extends ResolvedType
         {
           return originalOuterFeature;
         }
-        ResolvedType _resolved = null;
+        AbstractType _resolved = null;
 
         /**
+         * NYI: CLEANUP:
          * This is a bit ugly, even though this type is a ResolvedType, the generics are not.
          */
         @Override

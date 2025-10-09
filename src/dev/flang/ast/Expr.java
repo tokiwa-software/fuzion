@@ -320,18 +320,6 @@ public abstract class Expr extends ANY implements HasSourcePosition
 
 
   /**
-   * visit all the expressions within this Expr.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited expressions
-   */
-  public void visitExpressions(ExpressionVisitor v)
-  {
-    v.action(this);
-  }
-
-
-  /**
    * Convert this Expression into an assignment to the given field.  In case
    * this is a expression with several branches such as an "if" or a "match"
    * expression, add corresponding assignments in each branch and convert this
@@ -499,18 +487,27 @@ public abstract class Expr extends ANY implements HasSourcePosition
   Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
   {
     Expr result = this;
-    if (t.isFunctionTypeExcludingLazy()         &&
-        !(this instanceof Call c && c._wasImplicitImmediateCall) &&
-        typeForInferencing() != Types.t_ERROR     &&
-        (typeForInferencing() == null || !typeForInferencing().isFunctionType()))
+    if (mayBePartial(res, t))
       {
         result = propagateExpectedTypeForPartial(res, context, t);
-        if (result != this)
-          {
-            result = result.propagateExpectedType(res, context, t, from);
-          }
+      }
+    if (result != this)
+      {
+        result = result.propagateExpectedType(res, context, t, from);
       }
     return result;
+  }
+
+
+  /**
+   * Is this type applicable for partial application?
+   */
+  private boolean mayBePartial(Resolution res, AbstractType t)
+  {
+    return t.isLambdaTargetButNotLazy(res)                       &&
+        !(this instanceof Call c && c._wasImplicitImmediateCall) &&
+        typeForInferencing() != Types.t_ERROR                    &&
+        (typeForInferencing() == null || !typeForInferencing().isFunctionType(res));
   }
 
 
@@ -539,14 +536,14 @@ public abstract class Expr extends ANY implements HasSourcePosition
    */
   Expr propagateExpectedTypeForPartial(Resolution res, Context context, AbstractType expectedType)
   {
-    return expectedType.isFunctionType() && expectedType.arity() == 0 && typeForInferencing() != null && !typeForInferencing().isFunctionType()
+    return expectedType.isLambdaTarget(res) && expectedType.arity(res) == 0 && typeForInferencing() != null && !typeForInferencing().isFunctionType(res)
       ? new Function(pos(), NO_EXPRS, reset())
       : this;
   }
 
 
   /**
-   * NYI: UNDER DEVELOPMENT: better throw away completly and reparse?
+   * NYI: UNDER DEVELOPMENT: better throw away completely and reparse?
    *
    * resets all features in this expression so that they can have _new_ outers.
    */
@@ -633,7 +630,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
   /**
    * Is this Expr a call to an outer ref?
    */
-  public boolean isCallToOuterRef()
+  boolean isCallToOuterRef()
   {
     return false;
   }
@@ -710,7 +707,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
 
   /**
    * Source text for this Expr. This is used in error message: It takes the
-   * source code at `sourceRange()`. Only for artifical expressions, this should
+   * source code at `sourceRange()`. Only for artificial expressions, this should
    * probably be redefined to create more useful text.
    */
   public String sourceText()
@@ -731,7 +728,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
   // NYI: CLEANUP: move this logic to isAssignableFrom?
   /**
    * check if assigning this expr to frmlT might
-   * be ambigous
+   * be ambiguous
    *
    * @param frmlT
    */
@@ -760,19 +757,16 @@ public abstract class Expr extends ANY implements HasSourcePosition
   public AbstractType needsBoxing(AbstractType frmlT)
   {
     var t = type();
-    if (frmlT.isGenericArgument() || frmlT.isThisType() && !frmlT.isChoice())
-      { /* Boxing needed when we assign to frmlT since frmlT is generic (so it
-         * could be a ref) or frmlT is this type and the underlying feature is by
-         * default a ref?
-         */
-        return frmlT;
-      }
-    else if (t.isRef() && !isCallToOuterRef())
+    if (t.isRef())
       {
         return null;
       }
-    else if (frmlT.isRef())
+    else if (frmlT.isRef() || frmlT.isGenericArgument() || frmlT.isThisType() && !frmlT.isChoice())
       {
+        /* Boxing needed when we assign to generic argument (so it
+         * could be a ref) or frmlT is this type and the underlying feature is by
+         * default a ref?
+         */
         return frmlT;
       }
     else

@@ -26,11 +26,31 @@
 # encoding to json
 #
 public Any.json_encode /* NYI: UNDER DEVELOPMENT: option-args? */ String =>
-  abstract
+  "\{{ String.join (Any.this.json_members.map (x -> "{x.0.json_encode}:{x.1.json_encode}" )) "," }\}"
 
 
-public redef Sequence.json_encode String
-=>
+# Define the members from this feature to encode
+#
+# example:
+#
+#     some_custom_feature(num i32, str String) is
+#       constant := 4.5
+#       cond := true
+#
+#       public redef json_members array (String, Any) =>
+#         [
+#          ("num", id Any num),
+#          ("str", id Any str),
+#          ("constant", id Any constant),
+#          ("cond", id Any cond)
+#         ]
+#
+public Any.json_members array (String, Any) => abstract
+
+
+
+public redef Sequence.json_encode String =>
+  check debug: finite.is_yes
   "[{ String.join (map (.json_encode)) "," }]"
 
 
@@ -54,21 +74,3 @@ public redef option.json_encode String =>
     nil => "null"
     t T => t.json_encode
 
-
-# helper feature for implementing json_encode
-# in custom features.
-#
-# example:
-#
-#     public redef json_encode String =>
-#       [
-#         ("<membername1>", id Any child_feat1),
-#         ("<membername2>", id Any child_feat2),
-#         ...
-#       ].json_encode_feature
-#
-#
-public Sequence.json_encode_feature String
-pre T : tuple String Any
-=>
-  "\{{ String.join (map (x -> "{x.0.json_encode}:{x.1.json_encode}" )) "," }\}"

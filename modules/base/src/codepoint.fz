@@ -69,6 +69,10 @@ is
   #
   public is_lowercase_ascii_letter bool => codepoint.a_to_z.contains val
 
+  # is this an ASCII letter or digit i.e. A-Z, a-z or 0-9
+  #
+  public is_ascii_alpha_num bool => is_ascii_letter || is_ascii_digit
+
   # is this a codepoint reserved for utf16 surrogate pairs
   #
   public is_utf16_surrogate bool => codepoint.utf16_surrogate.contains val

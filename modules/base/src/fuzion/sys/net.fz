@@ -44,11 +44,13 @@ module net is
   # bind a name to a newly created socket, wrapper for fzE_bind native
   #
   module bind    (family, socket_type, protocol i32, host String, port u16) outcome i32 =>
-    arr := fuzion.sys.internal_array_init i32 1
-    r := fzE_bind family socket_type protocol (fuzion.sys.c_string host) (fuzion.sys.c_string port.as_string) arr.data = 0
-    if r
-      arr[0]
+    sockfd := fzE_socket family socket_type protocol
+    if sockfd = -1
+      error "net.connect failed creating socket, error number: $fzE_last_error"
+    else if fzE_bind sockfd family socket_type protocol (fuzion.sys.c_string host) (fuzion.sys.c_string port.as_string) = 0
+      sockfd
     else
+      _ := fzE_socket_close sockfd # NYI: register potential failure somewhere...
       error "net.bind failed (host=$host, port=$port), error number: $fzE_last_error"
 
 
@@ -63,12 +65,14 @@ module net is
   # open and connect a client socket
   #
   module connect(family, socket_type, protocol i32, host String, port u16) outcome i32 =>
-    arr := fuzion.sys.internal_array_init i32 1
-    res := fzE_connect family socket_type protocol (fuzion.sys.c_string host) (fuzion.sys.c_string port.as_string) arr.data = 0
-    if res
-      arr[0]
+    sockfd := fzE_socket family socket_type protocol
+    if sockfd = -1
+      error "net.connect failed creating socket, error number: $fzE_last_error"
+    else if fzE_connect sockfd family socket_type protocol (fuzion.sys.c_string host) (fuzion.sys.c_string port.as_string) = 0
+      sockfd
     else
-      error "net.connect failed (host=$host, port=$port), error number: {arr[0]}"
+      _ := fzE_socket_close sockfd # NYI: register potential failure somewhere...
+      error "net.connect failed (host=$host, port=$port), error number: $fzE_last_error"
 
 
   # read a maximum of max_bytes from descriptor, wrapper for read native
@@ -97,7 +101,7 @@ module net is
 
   # close socket descriptor
   module close(sd i32) outcome unit =>
-    res := fzE_close sd
+    res := fzE_socket_close sd
     if res = -1 then error "error: $res" else unit
 
 

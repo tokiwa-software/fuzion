@@ -22,10 +22,11 @@
 # -----------------------------------------------------------------------
 
 public Read_Handler ref is
+
+  # read up to count bytes
+  #
+  # returns either an array of the bytes read, end_of_file or an error
+  #
   public read(count i32) choice (array u8) io.end_of_file error
-  # NYI
-  # post debug: match result
-  #               a array => !a.is_empty
-  #               io.end_of_file => true
-  #               error => true
+    post debug: (result ? a array => a.count>0 && a.count<=count | * => true)
   => abstract

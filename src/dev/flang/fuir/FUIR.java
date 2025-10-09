@@ -546,17 +546,6 @@ public abstract class FUIR extends IR
   public abstract byte[] clazzTypeName(int cl);
 
 
-  /**
-   * If cl is a type parameter, return the type parameter's actual type.
-   *
-   * @param cl a clazz id
-   *
-   * @return if cl is a type parameter, clazz id of cl's actual type or -1 if cl
-   * is not a type parameter.
-   */
-  public abstract int clazzTypeParameterActualType(int cl);
-
-
   /*----------------------  special clazzes  ---------------------*/
 
 
@@ -1474,7 +1463,23 @@ public abstract class FUIR extends IR
    *
    * @return true for effect.install and similar features.
    */
-  public abstract boolean isEffectIntrinsic(int cl);
+  public boolean isEffectIntrinsic(int cl)
+  {
+    if (PRECONDITIONS) require
+      (cl != NO_CLAZZ);
+
+    return
+      (clazzKind(cl) == FeatureKind.Intrinsic) &&
+      switch(clazzOriginalName(cl))
+      {
+      case "effect.type.abort0"  ,
+           "effect.type.default0",
+           FuzionConstants.EFFECT_INSTATE_NAME,
+           "effect.type.is_instated0",
+           "effect.type.replace0" -> true;
+      default -> false;
+      };
+  }
 
 
   /**
@@ -1486,7 +1491,13 @@ public abstract class FUIR extends IR
    *
    * @return the type of the outer feature of cl
    */
-  public abstract int effectTypeFromIntrinsic(int cl);
+  public int effectTypeFromIntrinsic(int cl)
+  {
+    if (PRECONDITIONS) require
+      (isEffectIntrinsic(cl));
+
+    return clazzActualGeneric(clazzOuterClazz(cl), 0);
+  }
 
 
   /*------------------------------  arrays  -----------------------------*/

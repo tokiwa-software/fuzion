@@ -7,7 +7,7 @@ argument type is       : 'u8'
 argument type should be: 'unit' (from 'Function.A')
 
 Original argument declared at {base.fum}/Function.fz:35:15:
-  public call(a A...) R => abstract
+  public call(a A...) R
 --------------^
 To solve this, change type of argument to 'unit' at --CURDIR--/reg_issue5501.fz:34:23:
                       y u8  # wrong type, should cause error
@@ -22,7 +22,7 @@ argument type is       : 'f64'
 argument type should be: 'f32' (from 'Function.A')
 
 Original argument declared at {base.fum}/Function.fz:35:15:
-  public call(a A...) R => abstract
+  public call(a A...) R
 --------------^
 To solve this, change type of argument to 'f32' at --CURDIR--/reg_issue5501.fz:46:23:
                       z f64   # wrong type, should cause error

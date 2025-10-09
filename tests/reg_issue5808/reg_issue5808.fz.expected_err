@@ -1,0 +1,19 @@
+
+--CURDIR--/reg_issue5808.fz:32:11: error 1: Wrong number of arguments in redefined feature
+    redef f(x,y i32) => say "hi y"
+----------^
+In 'reg_issue5808.y.f' that redefines 'reg_issue5808.x.f' argument count is 2, argument count should be 3: one (free) type parameter 'Q' and 2 value arguments 'x' and 'y'.
+Original feature declared at --CURDIR--/reg_issue5808.fz:29:5:
+    f(x,y Q) => say "hi x"
+----^
+
+
+--CURDIR--/reg_issue5808.fz:41:11: error 2: Wrong number of arguments in redefined feature
+    redef f(x,y,z i32) => say "hi y"
+----------^
+In 'reg_issue5808.b.f' that redefines 'reg_issue5808.a.f' argument count is 3, argument count should be 5: 2 (free) type parameters 'P' and 'Q' and 3 value arguments 'x', 'y', and 'z'.
+Original feature declared at --CURDIR--/reg_issue5808.fz:38:5:
+    f(x P, y Q, z i32) => say "hi x"
+----^
+
+2 errors.

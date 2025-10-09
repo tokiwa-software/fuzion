@@ -137,7 +137,7 @@ public class Intrinsics extends ANY
   private static String utf8ByteArrayDataToString(Value internalArray)
   {
     var strA = internalArray.arrayData();
-    var ba = (byte[]) strA._array;
+    var ba = (byte[]) strA._data;
     var l = 0;
     while (l < ba.length && ba[l] != 0)
       {
@@ -291,7 +291,7 @@ public class Intrinsics extends ANY
         {
           Errors.runTime(utf8ByteArrayDataToString(args.get(1)),
                          utf8ByteArrayDataToString(args.get(2)),
-                         executor.callStack(executor.fuir()));
+                         Executor.callStack(executor.fuir()));
           return Value.EMPTY_VALUE;
         });
 
@@ -387,10 +387,10 @@ public class Intrinsics extends ANY
           var res = Interpreter
             .getField(executor.fuir().lookup_fuzion_sys_internal_array_data(sac), sac, argz, false)
             .arrayData()
-            ._array;
+            ._data;
           return new JavaRef(res);
         });
-    putUnsafe("fuzion.jvm.create_jvm", (executor, innerClazz) -> args -> Value.EMPTY_VALUE);
+    putUnsafe("fuzion.jvm.create_jvm", (executor, innerClazz) -> args -> new i32Value(0));
     putUnsafe("fuzion.jvm.destroy_jvm", (executor, innerClazz) -> args -> Value.EMPTY_VALUE);
     putUnsafe("fuzion.jvm.string_to_java_object0", (executor, innerClazz) -> args ->
         {
@@ -416,14 +416,15 @@ public class Intrinsics extends ANY
             case c_i64  -> Long     .valueOf(args.get(1).i64Value());
             case c_i8   -> Byte     .valueOf((byte)args.get(1).i8Value());
             case c_u16  -> Character.valueOf((char)args.get(1).u16Value());
-            default -> throw new Error("NYI");
+            default -> throw new Error("NYI: BUG: primitive_to_java_object not implemented for " + executor.fuir().clazzAsString(executor.fuir().clazzActualGeneric(innerClazz, 0)));
           };
           return new JavaRef(res);
         });
     put("fuzion.sys.type.alloc", (executor, innerClazz) -> args ->
         {
           var et = executor.fuir().clazzActualGeneric(innerClazz, 0); // element type
-          return ArrayData.alloc(/* size */ args.get(1).i32Value(),
+          return ArrayData.alloc(executor.fuir().clazzResultClazz(innerClazz),
+                                 /* size */ args.get(1).i32Value(),
                                  executor.fuir(),
                                  /* type */ et);
         });
@@ -847,6 +848,7 @@ public class Intrinsics extends ANY
                   ignore = executor.callOnNewInstance(NO_SITE, call_def, args.get(3), new List<>(final_ev));
                 }
             }
+            break;
           case "effect.type.is_instated0": return new boolValue(effects.get(ecl) != null /* NOTE not containsKey since ecl may map to null! */ );
           case "effect.type.replace0"    : check(effects.get(ecl) != null, fuir.clazzIsUnitType(ecl) || ev != Value.EMPTY_VALUE); effects.put(ecl, ev);   break;
           default: throw new Error("unexpected effect intrinsic '"+in+"'");

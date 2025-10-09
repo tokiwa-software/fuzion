@@ -140,7 +140,7 @@ public class IO
           System.setErr(outputStream);
           runnable.run();
           // close outputstream so that reading of inputstream does not run
-          // inifinitly.
+          // infinitely.
           outputStream.close();
           return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
         } finally

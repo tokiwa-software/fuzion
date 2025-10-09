@@ -195,7 +195,6 @@ public class Lexer extends SourceFile
     t_inv("inv"),
     t_var("var"),
     t_match("match"),
-    t_value("value"),
     t_ref("ref"),
     t_redef("redef"),
     t_const("const"),                 // unused
@@ -558,10 +557,10 @@ public class Lexer extends SourceFile
          else if (x.equals("-stringLiteralEscapes"))
            {
              say("""
-[options=\"header\",cols=\"1,1\"]
-|====
-   | escape sequence | resulting code point
-                                """);
+                 [options=\"header\",cols=\"1,1\"]
+                 |====
+                    | escape sequence | resulting code point
+                 """);
              for (int i = 0; i < StringLexer.escapeChars.length; i++)
                {
                  var c      = StringLexer.escapeChars[i][0];
@@ -1060,16 +1059,23 @@ public class Lexer extends SourceFile
     var nl = line();
     relaxLineAndSpaceLimit(() ->
                            {
-                            if (current(true) != end._token)
+                            var hasIndentProblem = current(true) != end._token;
+                            var tsp = tokenSourcePos();
+                            if (hasIndentProblem)
                               {
                                 // if indentation decreases before closing bracket, discard everything until closing bracket
-                                Errors.indentationProblemEncountered(tokenSourcePos(), sourcePos(indentRef), Parser.parserDetail(rule));
                                 while (current(true) != end._token && current(true) != Token.t_eof)
                                   {
                                       next();
                                   }
                               }
+                            var errCount = Errors.count();
                             match(true, end, rule);
+                            // emit indent problem only if no other problems are encountered
+                            if (hasIndentProblem && errCount == Errors.count())
+                              {
+                                Errors.indentationProblemEncountered(tsp, sourcePos(indentRef), Parser.parserDetail(rule));
+                              }
                             return Void.TYPE; // is there a better unit type in Java?
                            });
     var sl = sameLine(-1);
@@ -3131,13 +3137,13 @@ PIPE        : "|"
               if (escaped)
                 {
                   var i = 0;
-                  while (i < escapeChars.length && p != (int) escapeChars[i][0])
+                  while (i < escapeChars.length && p != escapeChars[i][0])
                     {
                       i++;
                     }
                   if (i < escapeChars.length)
                     {
-                      c = (int) escapeChars[i][1];
+                      c = escapeChars[i][1];
                     }
                   else
                     {

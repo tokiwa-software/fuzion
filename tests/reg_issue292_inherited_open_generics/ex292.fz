@@ -35,6 +35,6 @@ ex292 is
 
   a fn(i32, i32) =>
     ref : fn i32 i32 is
-      public redef call(r, v i32) => 42
+      public redef call(r, v i32) i32 => 42
 
   say (a.call 1 2)

@@ -25,8 +25,10 @@
 
 JAVA = java --enable-preview --enable-native-access=ALL-UNNAMED
 MIN_JAVA_VERSION = 21 # NYI: when updating to Java version 22 or higher: remove this hack (revert #4264) and remove option '--enable-preview'
-JAVA_VERSION = $(shell v=$$(java -version 2>&1 | grep 'version' | cut -d '"' -f2 | cut -d. -f1); [ $$v -lt $(MIN_JAVA_VERSION) ] && echo $(MIN_JAVA_VERSION) || echo $$v)
-JAVAC = javac -encoding UTF8 --release $(JAVA_VERSION) --enable-preview
+JAVA_VERSION = $(shell v=$$(java -version 2>&1 | grep 'version' | cut -d '"' -f2 | cut -d. -f1 | grep -o '[[:digit:]]*'); [ $$v -lt $(MIN_JAVA_VERSION) ] && echo $(MIN_JAVA_VERSION) || echo $$v)
+# NYI: CLEANUP: remove some/all of the exclusions
+LINT = -Xlint:all,-preview,-serial,-this-escape
+JAVAC = javac $(LINT) -encoding UTF8 --release $(JAVA_VERSION) --enable-preview
 FZ_SRC = $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 SRC = $(FZ_SRC)/src
 BUILD_DIR = ./build
@@ -116,10 +118,12 @@ JARS_JFREE_SVG_JAR = $(BUILD_DIR)/jars/org.jfree.svg-5.0.1.jar
 
 FUZION_EBNF = $(BUILD_DIR)/fuzion.ebnf
 
-FZ_SRC_TESTS         = $(FZ_SRC)/tests
-FUZION_FILES_TESTS   = $(shell find $(FZ_SRC_TESTS))
-FZ_SRC_INCLUDE       = $(FZ_SRC)/include
-FUZION_FILES_RT      = $(shell find $(FZ_SRC_INCLUDE))
+FZ_SRC_TESTS          = $(FZ_SRC)/tests
+FUZION_FILES_TESTS    = $(shell find $(FZ_SRC_TESTS))
+FZ_SRC_INCLUDE        = $(FZ_SRC)/include
+FUZION_FILES_RT       = $(shell find $(FZ_SRC_INCLUDE))
+FZ_SRC_EXAMPLES       = $(FZ_SRC)/examples
+FUZION_FILES_EXAMPLES = $(shell find $(FZ_SRC_EXAMPLES))
 
 MOD_BASE              = $(BUILD_DIR)/modules/base.fum
 MOD_TERMINAL          = $(BUILD_DIR)/modules/terminal.fum
@@ -130,6 +134,8 @@ MOD_HTTP              = $(BUILD_DIR)/modules/http.fum
 MOD_CLANG             = $(BUILD_DIR)/modules/clang.fum
 MOD_WOLFSSL           = $(BUILD_DIR)/modules/wolfssl.fum
 MOD_JSON_ENCODE       = $(BUILD_DIR)/modules/json_encode.fum
+MOD_DATABASE          = $(BUILD_DIR)/modules/database.fum
+MOD_SQLITE            = $(BUILD_DIR)/modules/sqlite.fum
 
 MOD_JAVA_BASE_DIR              = $(BUILD_DIR)/modules/java.base
 MOD_JAVA_XML_DIR               = $(BUILD_DIR)/modules/java.xml
@@ -458,7 +464,9 @@ FZ_MODULES = \
 			$(MOD_HTTP) \
 			$(MOD_CLANG) \
 			$(MOD_WOLFSSL) \
-			$(MOD_JSON_ENCODE)
+			$(MOD_JSON_ENCODE) \
+			$(MOD_DATABASE) \
+			$(MOD_SQLITE)
 
 C_FILES = $(shell find $(FZ_SRC) \( -path ./build -o -path ./.git \) -prune -o -name '*.c' -print)
 
@@ -467,8 +475,11 @@ C_FILES = $(shell find $(FZ_SRC) \( -path ./build -o -path ./.git \) -prune -o -
 # would prevent a second run of `make` from re-applying the failing rule.
 .DELETE_ON_ERROR:
 
+
+# default make target
 .PHONY: all
-all: $(FUZION_BASE) $(FUZION_JAVA_MODULES) $(FUZION_FILES) $(MOD_FZ_CMD) $(FUZION_EBNF)
+all: $(FUZION_BASE) $(FUZION_JAVA_MODULES) $(FUZION_FILES) $(MOD_FZ_CMD) $(FUZION_EBNF) $(BUILD_DIR)/lsp.jar
+
 
 # everything but rarely used java modules
 .PHONY: min-java
@@ -486,8 +497,8 @@ base-only: $(FZ) $(MOD_BASE) $(FUZION_FILES)
 .PHONY: javac
 javac: $(CLASS_FILES_TOOLS) $(CLASS_FILES_TOOLS_FZJAVA) $(CLASS_FILES_TOOLS_DOCS)
 
-.PHONY: lint/c
-lint/c:
+.PHONY: lint-c
+lint-c:
 	clang-tidy $(C_FILES) -- -std=c11
 
 $(BUILD_DIR)/%.md: $(FZ_SRC)/%.md
@@ -627,7 +638,7 @@ $(CLASS_FILES_TOOLS_DOCS): $(JAVA_FILES_TOOLS_DOCS) $(CLASS_FILES_TOOLS) $(CLASS
 
 $(JARS_JFREE_SVG_JAR):
 	mkdir -p $(@D)
-	curl $(JFREE_SVG_URL) --output $@
+	wget --output-document $@ $(JFREE_SVG_URL)
 
 $(CLASS_FILES_MISC_LOGO): $(JAVA_FILES_MISC_LOGO) $(CLASS_FILES_UTIL_UNICODE) $(JARS_JFREE_SVG_JAR)
 	mkdir -p $(CLASSES_DIR_LOGO)
@@ -689,6 +700,18 @@ $(MOD_NOM): $(MOD_BASE) $(FZ) $(shell find $(FZ_SRC)/modules/nom/src -name "*.fz
 	cp -rf $(FZ_SRC)/modules/nom $(@D)
 	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/nom/src -saveModule=$@
 
+$(MOD_DATABASE): $(MOD_BASE) $(FZ) $(shell find $(FZ_SRC)/modules/database/src -name "*.fz")
+	rm -rf $(@D)/database
+	mkdir -p $(@D)
+	cp -rf $(FZ_SRC)/modules/database $(@D)
+	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/database/src -saveModule=$@
+
+$(MOD_SQLITE): $(MOD_DATABASE) $(FZ) $(shell find $(FZ_SRC)/modules/sqlite/src -name "*.fz")
+	rm -rf $(@D)/sqlite
+	mkdir -p $(@D)
+	cp -rf $(FZ_SRC)/modules/sqlite $(@D)
+	$(FZ) -modules=database -sourceDirs=$(BUILD_DIR)/modules/sqlite/src -saveModule=$@
+
 $(MOD_UUID): $(MOD_BASE) $(FZ) $(shell find $(FZ_SRC)/modules/uuid/src -name "*.fz")
 	rm -rf $(@D)/uuid
 	mkdir -p $(@D)
@@ -743,7 +766,7 @@ $(MOD_JAVA_DATATRANSFER_FZ_FILES): $(FZJAVA)
 	mkdir -p $(@D)
 # wrapping in /bin/sh -c "..." is a workaround for building on windows (msys2)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) java.datatransfer -to=$(@D) -modules=java.base,java.xml -verbose=0"
-# NYI: cleanup: see #462: manually move these features to the main directory
+# NYI: CLEANUP: see #462: manually move these features to the main directory
 # since otherwise they would not be found automatically.
 	mv $(BUILD_DIR)/modules/java.datatransfer/Java/sun/datatransfer_pkg.fz $(BUILD_DIR)/modules/java.datatransfer/
 	mv $(BUILD_DIR)/modules/java.datatransfer/Java/java/awt_pkg.fz  $(BUILD_DIR)/modules/java.datatransfer/
@@ -754,7 +777,7 @@ $(MOD_JAVA_DESKTOP_FZ_FILES): $(FZJAVA)
 	mkdir -p $(@D)
 # wrapping in /bin/sh -c "..." is a workaround for building on windows (msys2)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) java.desktop -to=$(@D) -modules=java.base,java.xml,java.datatransfer -verbose=0"
-# NYI: cleanup: see #462: manually move these features to the main directory
+# NYI: CLEANUP: see #462: manually move these features to the main directory
 # since otherwise they would not be found automatically.
 	mv $(BUILD_DIR)/modules/java.desktop/Java/com/sun/*.fz $(BUILD_DIR)/modules/java.desktop/
 	mv $(BUILD_DIR)/modules/java.desktop/Java/java/*.fz $(BUILD_DIR)/modules/java.desktop/
@@ -1142,22 +1165,35 @@ $(MOD_JDK_XML_DOM): $(MOD_JAVA_BASE) $(MOD_JAVA_XML) $(MOD_JDK_XML_DOM_FZ_FILES)
 $(MOD_JDK_ZIPFS): $(MOD_JAVA_BASE) $(MOD_JDK_ZIPFS_FZ_FILES)
 	$(FZ) -sourceDirs=$(MOD_JDK_ZIPFS_DIR) -modules=java.base -saveModule=$@
 
-$(BUILD_DIR)/tests: $(FUZION_FILES_TESTS)
+# this target may fail when executed standalone, see comment on $(BUILD_DIR)/tests
+#
+$(BUILD_DIR)/bin/check_simple_example: $(FZ_SRC)/bin/check_simple_example.fz
+	$(FZ) -modules=terminal -c -o=$@ $^
+	@echo " + $@"
+
+# this target may fail when executed standalone, see comment on $(BUILD_DIR)/tests
+#
+$(BUILD_DIR)/bin/record_simple_example: $(FZ_SRC)/bin/record_simple_example.fz
+	$(FZ) -modules=terminal -c -o=$@ $^
+	@echo " + $@"
+
+# tricky, we need MOD_TERMINAL to build (check|record)_simple_example
+# but we are not adding this to those targets because we do not want
+# (check|record)_simple_example to rebuild any time sth is changed in base lib
+$(BUILD_DIR)/tests: $(FUZION_FILES_TESTS) $(MOD_TERMINAL) $(BUILD_DIR)/include $(BUILD_DIR)/bin/check_simple_example $(BUILD_DIR)/bin/record_simple_example
 	rm -rf $@
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC_TESTS) $@
-	@echo "pre building check_simple_example"
-	$(FZ) -modules=terminal -c -o=$(BUILD_DIR)/tests/check_simple_example $(BUILD_DIR)/tests/check_simple_example.fz
-	@echo " + $(BUILD_DIR)/tests/check_simple_example"
 
 $(BUILD_DIR)/include: $(FUZION_FILES_RT)
 	rm -rf $@
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC_INCLUDE) $@
 
-$(BUILD_DIR)/examples: $(FZ_SRC)/examples
+$(BUILD_DIR)/examples: $(FUZION_FILES_EXAMPLES)
+	rm -rf $@
 	mkdir -p $(@D)
-	cp -rf $^ $@
+	cp -rf $(FZ_SRC_EXAMPLES) $@
 
 $(BUILD_DIR)/UnicodeData.txt:
 	cd $(BUILD_DIR) && wget $(UNICODE_SOURCE)
@@ -1239,6 +1275,10 @@ $(BUILD_DIR)/apidocs/index.html: $(FUZION_BASE) $(CLASS_FILES_TOOLS_DOCS) $(FUZI
 	$(JAVA) --class-path $(CLASSES_DIR) -Xss64m -Dfuzion.home=$(BUILD_DIR) dev.flang.tools.docs.Docs -bare -api-src=/api $(@D)
 
 # NYI: UNDER DEVELOPMENT: integrate into fz: fz -docs
+$(BUILD_DIR)/apidocs_git/index.html: $(FUZION_BASE) $(CLASS_FILES_TOOLS_DOCS) $(FUZION_FILES) $(MOD_FZ_CMD)
+	$(JAVA) --class-path $(CLASSES_DIR) -Xss64m -Dfuzion.home=$(BUILD_DIR) dev.flang.tools.docs.Docs -bare -docs-root=/docs_git -api-src=/api_git $(@D)
+
+# NYI: UNDER DEVELOPMENT: integrate into fz: fz -docs
 .phony: debug_api_docs
 debug_api_docs: $(FUZION_BASE) $(CLASS_FILES_TOOLS_DOCS)
 	mkdir -p $(BUILD_DIR)/debugdocs
@@ -1253,7 +1293,7 @@ debug_api_docs: $(FUZION_BASE) $(CLASS_FILES_TOOLS_DOCS)
 .phony: unicode
 unicode: $(BUILD_DIR)/UnicodeData.java $(BUILD_DIR)/unicode_data.fz
 	cp $(BUILD_DIR)/UnicodeData.java $(SRC)/dev/flang/util/UnicodeData.java
-	cp $(BUILD_DIR)/unicode_data.fz $(FZ_SRC_LIB)/encodings/unicode/data.fz
+	cp $(BUILD_DIR)/unicode_data.fz $(FZ_SRC)/modules/base/src/encodings/unicode/data.fz
 
 # generate $(BUILD_DIR)/unicode_data.fz using the latest UnicodeData.txt.
 $(BUILD_DIR)/unicode_data.fz: $(CLASS_FILES_UTIL_UNICODE) $(BUILD_DIR)/UnicodeData.txt
@@ -1265,33 +1305,36 @@ $(BUILD_DIR)/unicode_data.fz: $(CLASS_FILES_UTIL_UNICODE) $(BUILD_DIR)/UnicodeDa
 logo: $(BUILD_DIR)/assets/logo.svg $(BUILD_DIR)/assets/logo_bleed.svg $(BUILD_DIR)/assets/logo_bleed_cropmark.svg
 	cp $^ $(FZ_SRC)/assets/
 
+$(BUILD_DIR)/bin/run_tests: $(FZ) $(FZ_MODULES) $(FZ_SRC)/bin/run_tests.fz
+	$(FZ) -modules=lock_free -c $(FZ_SRC)/bin/run_tests.fz -o=$@
+
 # phony target to run Fuzion tests and report number of failures
 .PHONY: run_tests
 run_tests: run_tests_jvm run_tests_c run_tests_int run_tests_effect run_tests_jar
 
 # phony target to run Fuzion tests using interpreter and report number of failures
 .PHONY .SILENT: run_tests_effect
-run_tests_effect: $(FZ) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests
+run_tests_effect: $(FZ) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests $(BUILD_DIR)/bin/run_tests
 	printf "testing effects: "
-	$(FZ) $(FZ_SRC)/bin/run_tests.fz $(BUILD_DIR) effect 1
+	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) effect 1
 
 # phony target to run Fuzion tests using interpreter and report number of failures
 .PHONY .SILENT: run_tests_int
-run_tests_int: $(FZ_INT) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests
+run_tests_int: $(FZ_INT) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests $(BUILD_DIR)/bin/run_tests
 	printf "testing interpreter: "
-	$(FZ) $(FZ_SRC)/bin/run_tests.fz $(BUILD_DIR) int 1
+	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) int 1
 
 # phony target to run Fuzion tests using c backend and report number of failures
 .PHONY .SILENT: run_tests_c
-run_tests_c: $(FZ_C) $(FZ_MODULES) $(MOD_JAVA_BASE) $(BUILD_DIR)/tests
+run_tests_c: $(FZ_C) $(FZ_MODULES) $(MOD_JAVA_BASE) $(BUILD_DIR)/tests $(BUILD_DIR)/bin/run_tests
 	printf "testing C backend: "; \
-	$(FZ) $(FZ_SRC)/bin/run_tests.fz $(BUILD_DIR) c 1
+	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) c 1
 
 # phony target to run Fuzion tests using c backend and report number of failures
 .PHONY .SILENT: run_tests_jvm
-run_tests_jvm: $(FZ_JVM) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests
+run_tests_jvm: $(FZ_JVM) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests $(BUILD_DIR)/bin/run_tests
 	printf "testing JVM backend: "; \
-	$(FZ) $(FZ_SRC)/bin/run_tests.fz $(BUILD_DIR) jvm 1
+	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) jvm 1
 
 # phony target to run Fuzion tests and report number of failures
 .PHONY: run_tests_parallel
@@ -1299,27 +1342,27 @@ run_tests_parallel: run_tests_jvm_parallel run_tests_c_parallel run_tests_int_pa
 
 # phony target to run Fuzion test effects and report number of failures
 .PHONY .SILENT: run_tests_effect_parallel
-run_tests_effect_parallel: $(FZ) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests
+run_tests_effect_parallel: $(FZ) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests $(BUILD_DIR)/bin/run_tests
 	printf "testing effects: "
-	$(FZ) $(FZ_SRC)/bin/run_tests.fz $(BUILD_DIR) effect
+	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) effect
 
 # phony target to run Fuzion tests using interpreter and report number of failures
 .PHONY .SILENT: run_tests_int_parallel
-run_tests_int_parallel: $(FZ_INT) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests
+run_tests_int_parallel: $(FZ_INT) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests $(BUILD_DIR)/bin/run_tests
 	printf "testing interpreter: "
-	$(FZ) $(FZ_SRC)/bin/run_tests.fz $(BUILD_DIR) int
+	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) int
 
 # phony target to run Fuzion tests using c backend and report number of failures
 .PHONY .SILENT: run_tests_c_parallel
-run_tests_c_parallel: $(FZ_C) $(FZ_MODULES) $(MOD_JAVA_BASE) $(BUILD_DIR)/tests
+run_tests_c_parallel: $(FZ_C) $(FZ_MODULES) $(MOD_JAVA_BASE) $(BUILD_DIR)/tests $(BUILD_DIR)/bin/run_tests
 	printf "testing C backend: "; \
-	$(FZ) $(FZ_SRC)/bin/run_tests.fz $(BUILD_DIR) c
+	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) c
 
 # phony target to run Fuzion tests using jvm backend and report number of failures
 .PHONY .SILENT: run_tests_jvm_parallel
-run_tests_jvm_parallel: $(FZ_JVM) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests
+run_tests_jvm_parallel: $(FZ_JVM) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests $(BUILD_DIR)/bin/run_tests
 	printf "testing JVM backend: "; \
-	$(FZ) $(FZ_SRC)/bin/run_tests.fz $(BUILD_DIR) jvm
+	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) jvm
 
 .PHONY .SILENT: run_tests_jar_build
 run_tests_jar_build: $(FZ_JVM) $(BUILD_DIR)/tests
@@ -1371,11 +1414,11 @@ spellcheck:
 	bin/spell_check_java.sh
 
 # target to do a syntax check of fz files.
-# currently only examples/ are checked.
+# currently only code in bin/ and examples/ are checked.
 .PHONY: syntaxcheck
 syntaxcheck: min-java
-	find ./examples/ -name '*.fz' -print0 | xargs -0L1 $(FZ) -modules=clang,java.base,java.datatransfer,java.xml,java.desktop -noBackend
-	find ./bin/ -name '*.fz' -print0 | xargs -0L1 $(FZ) -modules=clang,java.base,java.datatransfer,java.xml,java.desktop -noBackend
+	find ./examples/ -name '*.fz' -print0 | xargs -0L1 $(FZ) -modules=terminal,clang,lock_free,java.base,java.datatransfer,java.xml,java.desktop -noBackend
+	find ./bin/ -name '*.fz' -print0 | xargs -0L1 $(FZ) -modules=terminal,clang,lock_free,java.base,java.datatransfer,java.xml,java.desktop -noBackend
 
 .PHONY: add_simple_test
 add_simple_test: no-java
@@ -1405,8 +1448,8 @@ $(MOD_FZ_CMD_FZ_FILES): $(MOD_FZ_CMD_DIR).jmod $(MOD_JAVA_BASE) $(MOD_JAVA_MANAG
 $(MOD_FZ_CMD): $(MOD_FZ_CMD_FZ_FILES)
 	$(FZ) -sourceDirs=$(MOD_FZ_CMD_DIR) -modules=java.base,java.management,java.desktop -saveModule=$@
 
-.PHONY: lint/java
-lint/java:
+.PHONY: lint-java
+lint-java:
 	$(JAVAC) -Xlint --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) \
 		$(JAVA_FILES_UTIL) \
 		$(JAVA_FILES_UTIL_UNICODE) \
@@ -1430,8 +1473,8 @@ lint/java:
 		$(JAVA_FILES_TOOLS_FZJAVA) \
 		$(JAVA_FILES_TOOLS_DOCS)
 
-.PHONY: lint/javadoc
-lint/javadoc:
+.PHONY: lint-javadoc
+lint-javadoc:
 	$(JAVAC) -Xdoclint:all,-missing --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) \
 		$(JAVA_FILES_UTIL) \
 		$(JAVA_FILES_UTIL_UNICODE) \
@@ -1472,9 +1515,10 @@ $(BUILD_DIR)/pmd: $(BUILD_DIR)/pmd.zip
 
 # this linter detects different things than standard java linter
 # but gives a lot of suggestions.
-# use grep, e.g.: make lint/pmd | grep 'UnusedLocalVariable'
+# use grep, e.g.: make lint-pmd | grep 'UnusedLocalVariable'
 #
-lint/pmd: $(BUILD_DIR)/pmd
+.PHONY: lint-pmd
+lint-pmd: $(BUILD_DIR)/pmd
 	$(BUILD_DIR)/pmd/pmd-bin-7.3.0/bin/pmd check -d src -R rulesets/java/quickstart.xml -f text
 
 
@@ -1486,14 +1530,12 @@ $(FUZION_RT): $(BUILD_DIR)/include $(FUZION_FILES_RT)
 	mkdir -p $(BUILD_DIR)/lib
 ifeq ($(OS),Windows_NT)
 	clang --target=x86_64-w64-windows-gnu -Wall -Werror -O3 -shared \
-	-DFUZION_ENABLE_THREADS \
 	-DPTW32_STATIC_LIB \
 	-fno-trigraphs -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -std=c11 \
 	$(BUILD_DIR)/include/win.c $(BUILD_DIR)/include/shared.c -o $@ \
 	-lMswsock -lAdvApi32 -lWs2_32
 else
 	clang -Wall -Werror -O3 -shared -fPIC \
-	-DFUZION_ENABLE_THREADS \
 	-fno-trigraphs -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -std=c11 \
 	$(BUILD_DIR)/include/posix.c $(BUILD_DIR)/include/shared.c -o $@
 endif

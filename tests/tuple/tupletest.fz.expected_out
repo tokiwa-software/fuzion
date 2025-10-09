@@ -4,15 +4,15 @@ PASSED: g1a A infer A==string
 PASSED: g1a A infer A==i32
 PASSED: g1b AAAA infer AAAA==bool
 PASSED: g1b AAAA infer AAAA==string
-nothing1 is instance[tuple]
-nothing2 is instance[tuple]
-nothing3 is instance[tuple]
-nothing4 is instance[tuple]
-nothing5 is instance[tuple]
-nothing6 is instance[tuple]
-nothing7 is instance[tuple]
-nothing8 is instance[tuple]
-nothing9 is instance[tuple]
+nothing1 is ()
+nothing2 is ()
+nothing3 is ()
+nothing4 is ()
+nothing5 is ()
+nothing6 is ()
+nothing7 is ()
+nothing8 is ()
+nothing9 is ()
 one2 is 42
 PASSED: one2
 two2 is 4, 2

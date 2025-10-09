@@ -36,9 +36,9 @@ public class JavaInterface {
    *
    * @return a new parameter type array.
    */
-  public static Class[] getPars(String sig)
+  public static Class<?>[] getPars(String sig)
   {
-    Class[] result;
+    Class<?>[] result;
 
     /* count parameters: */
     int cnt = 0;
@@ -54,7 +54,7 @@ public class JavaInterface {
         i = e;
       }
 
-    result = new Class[cnt];
+    result = new Class<?>[cnt];
 
     /* get parameters: */
     cnt = 0;
@@ -77,7 +77,7 @@ public class JavaInterface {
    *
    * @return the type, e.g. Boolean.TYPE, String.class, etc.
    */
-  private static Class str2type(String str) {
+  private static Class<?> str2type(String str) {
     switch (str.charAt(0)) {
     case 'Z': return Boolean.TYPE;
     case 'B': return Byte.TYPE;
@@ -104,9 +104,9 @@ public class JavaInterface {
    *
    * @return the loaded class.
    */
-  private static Class forName(String name)
+  private static Class<?> forName(String name)
   {
-    Class result;
+    Class<?> result;
     try
       {
         result = Class.forName(name);

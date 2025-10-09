@@ -1,10 +1,13 @@
 
---CURDIR--/reg_issue4420.fz:24:23: error 1: Wrong number of type parameters
+--CURDIR--/reg_issue4420.fz:24:23: error 1: Wrong number of actual value arguments in call
 [""].reduce unit unit id
 ----------------------^^
-Wrong number of actual type parameters in call:
-Called feature: id
-expected one generic argument for 'T'
-found none.
+Number of actual value arguments is 2, while call expects one value argument.
+Actual value arguments: 'partial application argument #partialFunctionArg2', 'partial application argument #partialFunctionArg3'
+Called feature: 'id'
+Formal value arguments: 'x' 'unit'
+Declared at {base.fum}/id.fz:31:8:
+public id(T type, x T) T => x
+-------^^
 
 one error.

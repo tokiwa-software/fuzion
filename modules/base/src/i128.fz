@@ -109,7 +109,7 @@ public i128(public hi i64, public lo u64) : num.wrap_around, has_interval is
     else
       (hi < 0) ^ (other.hi < 0) ? -res.as_i128 : res.as_i128
 
-  private abs_to_u128(val i128) =>
+  abs_to_u128(val i128) =>
     val.is_min ? (u128 0x_8000_0000_0000_0000 0) : val.abs.as_u128
 
 

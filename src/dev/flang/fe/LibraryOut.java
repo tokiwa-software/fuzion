@@ -44,7 +44,6 @@ import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
-import dev.flang.ast.FormalGenerics;
 import dev.flang.ast.InlineArray;
 import dev.flang.ast.Nop;
 import dev.flang.ast.ResolvedType;
@@ -393,7 +392,7 @@ class LibraryOut extends ANY
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | short         | 0000REvvvFCYkkkk                              |
+   *   | true   | 1      | short         | 000OREvvvFCYkkkk                              |
    *   |        |        |               |           k = kind                            |
    *   |        |        |               |           Y = has Type feature (i.e. 'f.type')|
    *   |        |        |               |           C = is cotype                       |
@@ -401,6 +400,8 @@ class LibraryOut extends ANY
    *   |        |        |               |           v = visibility                      |
    *   |        |        |               |           R = has precondition feature        |
    *   |        |        |               |           E = has postcondition feature       |
+   *   |        |        |               |           O = hasValuesAsOpenTypeFeature      |
+   *   |        |        |               |               || isOpenTypeParameter          |
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | Name          | name                                          |
    *   |        |        +---------------+-----------------------------------------------+
@@ -418,6 +419,13 @@ class LibraryOut extends ANY
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | hasRT  | 1      | Type          | optional result type,                         |
    *   |        |        |               | hasRT = !isConstructor && !isChoice           |
+   *   |        |        |               |         && !isTypeParameter                   |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | O=1    | 1      | int           | open type Feature index                       |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | isType | 1      | Type          | constraint of (open) type parameters          |
+   *   | Parame |        |               |                                               |
+   *   | ter    |        |               |                                               |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | int           | inherits count i                              |
    *   | NYI!   |        |               |                                               |
@@ -487,6 +495,12 @@ class LibraryOut extends ANY
       {
         k = k | FuzionConstants.MIR_FILE_KIND_HAS_POST_CONDITION_FEATURE;
       }
+    if (f.hasValuesAsOpenTypeFeature() || f.isOpenTypeParameter())
+      {
+        if (CHECKS) check
+          (f.hasValuesAsOpenTypeFeature() != f.isOpenTypeParameter()); //  only one of these two holds
+        k = k | FuzionConstants.MIR_FILE_KIND_HAS_VALUES_OF_OPEN_TYPE_FEATURE;
+      }
     var n = f.featureName();
     _data.writeShort(k);
     var bn = n.baseName();
@@ -512,9 +526,25 @@ class LibraryOut extends ANY
       }
     if (CHECKS) check
       (f.arguments().size() == argCount);
-    if (!f.isConstructor() && !f.isChoice())
+    if (!f.isConstructor() && !f.isChoice() && !f.isTypeParameter())
       {
         type(f.resultType());
+      }
+    if (f.hasValuesAsOpenTypeFeature())
+      {
+        _data.writeOffset(f.valuesAsOpenTypeFeature());
+      }
+    else if (f.isOpenTypeParameter())
+      {
+        if (CHECKS) check
+          (!f.hasValuesAsOpenTypeFeature(),
+           f.openTypesFeature() != null,
+           (k & FuzionConstants.MIR_FILE_KIND_HAS_VALUES_OF_OPEN_TYPE_FEATURE) != 0);
+        _data.writeOffset(f.openTypesFeature());
+      }
+    if (f.isTypeParameter())
+      {
+        type(f.constraint());
       }
     // NYI: Suppress output of inherits for fields, intrinsics, etc.?
     var i = f.inherits();

@@ -1,0 +1,6 @@
+
+--CURDIR--/reg_issue1022.fz:28:1: error 1: Syntax error: expected right parenthesis ')', found end-of-file
+^
+While parsing: klammer, parse stack: klammer, bracketTerm, term, opExpr, operatorExpr, implFldInit, implFldOrRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
+
+one error.

@@ -45,17 +45,17 @@ module:public Mutable_Hash_Map(
 
         # initial size, also the size of the hash map will not decrease below this
         #
-        private min_size i32,
+        min_size i32,
 
         # NYI: use fractions instead of floats (3x)
 
         # lower boundary at which the size of the internal array is decreased
         #
-        private lower_load_factor f32,
+        lower_load_factor f32,
 
         # upper boundary at which the size of the internal array is increased
         #
-        private upper_load_factor f32,
+        upper_load_factor f32,
 
         # factor by which the allocated_size is increased if load reaches upper_load_factor
         #

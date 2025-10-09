@@ -41,7 +41,6 @@ import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Block;
 import dev.flang.ast.Call;
-import dev.flang.ast.DotType;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureVisitor;
@@ -75,11 +74,11 @@ public class ParserTool extends ANY
 
   private static final int END_OF_FEATURE_CACHE_MAX_SIZE = 1;
 
-  private static List<String> javaModules = List.<String>of();
+  private static List<String> _modules = List.<String>of();
 
-  public static void setJavaModules(List<String> javaModules)
+  public static void setModules(List<String> modules)
   {
-    javaModules = javaModules;
+    _modules = modules;
   }
 
   private static ParserCache parserCache = new ParserCache();
@@ -127,7 +126,7 @@ public class ParserTool extends ANY
         /* fuzionHome              */ SourceText.fuzionHome,
         /* loadBaseLib             */ !isStdLib,
         /* eraseInternalNamesInLib */ false,
-        /* modules                 */ isStdLib ? new dev.flang.util.List<String>() : new dev.flang.util.List<String>(javaModules.iterator()),
+        /* modules                 */ isStdLib ? new dev.flang.util.List<String>() : new dev.flang.util.List<String>(_modules.iterator()),
         /* moduleDirs              */ new dev.flang.util.List<String>(),
         /* dumpModules             */ new dev.flang.util.List<String>(),
         /* fuzionDebugLevel        */ 1,
@@ -253,7 +252,6 @@ public class ParserTool extends ANY
         @Override public void         actionAfter (Block          b) { FoundPos(b.pos()); }
         @Override public void         action      (AbstractCall   c) { FoundPos(c.pos()); }
         @Override public Expr         action      (Call           c) { FoundPos(c.pos()); return c; }
-        @Override public Expr         action      (DotType        d) { FoundPos(d.pos()); return d; }
         @Override public void         actionBefore(AbstractCase   c, AbstractMatch m) { FoundPos(c.pos()); }
         @Override public void         actionAfter (AbstractCase   c, AbstractMatch m) { FoundPos(c.pos()); }
         @Override public Expr         action      (Feature        f, AbstractFeature outer) { FoundPos(f.pos()); return f; }

@@ -371,6 +371,43 @@ public class LibraryFeature extends AbstractFeature
   }
 
 
+  @Override
+  public boolean hasValuesAsOpenTypeFeature()
+  {
+    /* this should produce the same as super.hasValuesAsOpenTypeFeature(), just for
+     * efficiency and to avoid complex recursion we use the O-flag in the
+     * feature data in the library module directly:
+     */
+    var result = _libModule.featureHasOpenTypeFeature(_index);
+
+    if (CHECKS) check
+      (result == super.hasValuesAsOpenTypeFeature());
+
+    return result;
+  }
+
+
+  @Override
+  public AbstractFeature valuesAsOpenTypeFeature()
+  {
+    return _libModule.featureHasOpenTypeFeature(_index) ? _libModule.featureValuesAsOpenTypeFeature(_index)
+                                                        : null;
+  }
+
+
+  @Override
+  public AbstractFeature openTypesFeature()
+  {
+    if (PRECONDITIONS) require
+      (isOpenTypeParameter());
+
+    if (CHECKS) check
+      (_libModule.featureHasOpenTypeFeature(_index));
+
+    return _libModule.featureValuesAsOpenTypeFeature(_index);
+  }
+
+
   /**
    * Get inner feature with given name, ignoring the argument count.
    *
@@ -406,6 +443,20 @@ public class LibraryFeature extends AbstractFeature
 
 
   /**
+   * For a type parameter, this gives the ResolvedParametricType instance
+   * corresponding to this type parameter.
+   */
+  @Override
+  public AbstractType asGenericType()
+  {
+    if (PRECONDITIONS) require
+      (isTypeParameter());
+
+    return new GenericType(_libModule, -1, this);
+  }
+
+
+  /**
    * createSelfType returns a new instance of the type of this feature's frame
    * object.
    *
@@ -434,7 +485,7 @@ public class LibraryFeature extends AbstractFeature
 
 
   /**
-   * type of this Expr. Since LibraryFature is no longer an expression, this
+   * type of this Expr. Since LibraryFeature is no longer an expression, this
    * will cause an error.
    *
    * NYI: CLEANUP: AbstractFeature should best not inherit from Expr. Instead,
@@ -462,10 +513,38 @@ public class LibraryFeature extends AbstractFeature
       {
         return Types.resolved.t_void;
       }
+    else if (isTypeParameter())
+      {
+        return
+          (isOpenTypeParameter()
+           ? Types.resolved.f_Open_Types
+           : Types.resolved.f_Type      ).resultType();
+      }
     else
       {
         return _libModule.type(_libModule.featureResultTypePos(_index));
       }
+  }
+
+
+  /**
+   * constraint returns the constraint type of this type parameter, Any if no
+   * constraint was set.  This ignores any context constraints like `pre T : numeric`
+   *
+   * @return the constraint.
+   */
+  @Override
+  public AbstractType constraint()
+  {
+    if (PRECONDITIONS) require
+      (isTypeParameter());
+
+    var result = _libModule.type(_libModule.featureConstraintPos(_index));
+
+    if (POSTCONDITIONS) ensure
+      (result != null);
+
+    return result;
   }
 
 

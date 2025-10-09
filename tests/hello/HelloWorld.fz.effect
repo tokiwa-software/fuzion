@@ -1,7 +1,7 @@
-io.Out
-fuzion.runtime.pre_fault
 fuzion.runtime.contract_fault
 fuzion.runtime.fault
-io.Err
 fuzion.runtime.post_fault
+fuzion.runtime.pre_fault
+io.Err
+io.Out
 panic

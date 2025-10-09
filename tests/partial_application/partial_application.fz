@@ -48,7 +48,6 @@ partial_application is
   test "qqq partials" (qqq    2*     3*)  "84 126"
 
   data := 1..10
-  # NYI:  m := data.map x->2*x; say m   # see #2251, semicolon does not work after lambda
   test "data.map x->2*x    " (data.map x->2*x       ) "[2, 4, 6, 8, 10, 12, 14, 16, 18, 20]"
   test "data.map    2*     " (data.map    2*        ) "[2, 4, 6, 8, 10, 12, 14, 16, 18, 20]"
   test "data.map    *2     " (data.map    *2        ) "[2, 4, 6, 8, 10, 12, 14, 16, 18, 20]"

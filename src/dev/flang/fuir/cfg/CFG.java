@@ -197,16 +197,8 @@ public class CFG extends ANY
       }
     else
       {
-        var at = _fuir.clazzTypeParameterActualType(cl);
-        if (at >= 0)
-          {
-            // intrinsic is a type parameter
-          }
-        else
-          {
-            var msg = "code for intrinsic " + _fuir.clazzOriginalName(cl) + " is missing";
-            Errors.warning(msg);
-          }
+        var msg = "code for intrinsic " + _fuir.clazzOriginalName(cl) + " is missing";
+        Errors.warning(msg);
       }
   }
 

@@ -19,7 +19,7 @@ module sequence is
 
   # apply p1 then p2 and return their results as a tuple.
   #
-  public tuple2(I, O1, O2 type, p1 Parser I I O1, p2 Parser I I O2) =>
+  public tuple2(I, O1, O2 type, p1 Parser I I O1, p2 Parser I I O2) Parser I I (tuple O1 O2) =>
     parse(input I) parse_result I (tuple O1 O2) =>
       p1.call input .bind s1->
         p2.call s1.rest .bind s2->
@@ -29,7 +29,7 @@ module sequence is
 
   # apply p1 then p2 then p3 and return their results as a tuple.
   #
-  public tuple3(I, O1, O2, O3 type, p1 Parser I I O1, p2 Parser I I O2, p3 Parser I I O3) =>
+  public tuple3(I, O1, O2, O3 type, p1 Parser I I O1, p2 Parser I I O2, p3 Parser I I O3) Parser I I (tuple O1 O2 O3) =>
     parse(input I) parse_result I (tuple O1 O2 O3) =>
       p1.call input .bind s1->
         p2.call s1.rest .bind s2->
@@ -46,7 +46,7 @@ module sequence is
     p2 Parser I I O2,
     p3 Parser I I O3,
     p4 Parser I I O4
-    ) =>
+    ) Parser I I (tuple O1 O2 O3 O4) =>
     parse(input I) parse_result I (tuple O1 O2 O3 O4) =>
       p1.call input .bind s1->
         p2.call s1.rest .bind s2->
@@ -58,7 +58,7 @@ module sequence is
 
   # discard the output of the first parser, return the result of the second parser
   #
-  public preceded(I, O1, O2 type, p1 Parser I I O1, p2 Parser I I O2) =>
+  public preceded(I, O1, O2 type, p1 Parser I I O1, p2 Parser I I O2) Parser I I O2 =>
     parse(input I) parse_result I O2 =>
       p1.call input .bind s1->
         p2.call s1.rest
@@ -67,7 +67,7 @@ module sequence is
 
   # discard p1 and p3, return result of p2
   #
-  public delimited(I, O1, O2, O3 type, p1 Parser I I O1, p2 Parser I I O2, p3 Parser I I O3) =>
+  public delimited(I, O1, O2, O3 type, p1 Parser I I O1, p2 Parser I I O2, p3 Parser I I O3) Parser I I O2 =>
     parse(input I) parse_result I O2 =>
       p1.call input .bind s1->
         p2.call s1.rest .bind s2->
@@ -78,7 +78,7 @@ module sequence is
 
   # return result of p1 and p2 as tuple, drop result of p_sep
   #
-  public separated_pair(I type, R1, R2, R3, O1, O2, O3 type, p1 Parser I R1 O1, p_sep Parser R1 R2 O2, p2 () -> (Parser R2 R3 O3)) =>
+  public separated_pair(I type, R1, R2, R3, O1, O2, O3 type, p1 Parser I R1 O1, p_sep Parser R1 R2 O2, p2 () -> (Parser R2 R3 O3)) Parser I R3 (tuple O1 O3) =>
     parser I R3 (tuple O1 O3) input->
       p1.call input .bind s1->
          p_sep.call s1.rest .bind s2->

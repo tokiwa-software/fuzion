@@ -194,7 +194,7 @@ public integer : numeric is
 
   # create hexadecimal representation with given number of digits.
   #
-  public hex(len i32) String=> integer.this.as_string len 16
+  public hex(len i32) String => integer.this.as_string len 16
 
 
   # the least significant byte of this integer

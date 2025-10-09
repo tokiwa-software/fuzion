@@ -52,8 +52,6 @@ typeinference is
 
   chck (match (typeInferencingFromIf2 true ) { i2 i32  => { i2 = 3       }; String, bool => false }) "typeinference from if 2"
   chck (match (typeInferencingFromIf2 false) { b2 bool => { b2 <=> false }; i32, String  => false }) "typeinference from if 2"
-  # chck (typeInferencingFromIf2(true ) == 3    ) "typeinference from if 2" # NYI: should cause a compile-time error
-  # chck (typeInferencingFromIf2(false) == false) "typeinference from if 2" # NYI: should cause a compile-time error
 
   typeInferencingFromMatch1 is
     A is
@@ -71,14 +69,13 @@ typeinference is
         e E => e
 
   r := typeInferencingFromMatch1.f typeInferencingFromMatch1.A
-#  r2 := r ? i i32 => i==3 * => false  # NYI: does not work yet
-  r2 := match r { i i32 => { i = 3 }; String,bool,typeInferencingFromMatch1.E => false }
+  r2 := r ? i i32 => i=3 | * => false
   chck r2 "typeInferencingFromMatch1 A"
-#  chck ((typeInferencingFromMatch1.f(typeInferencingFromMatch1.A) ? i i32 => i==3, * => false),"typeInferencingFromMatch1 A")  # NYI: does not work yet
+  # chck ((typeInferencingFromMatch1.f(typeInferencingFromMatch1.A) ? i i32 => i=3 | * => false),"typeInferencingFromMatch1 A")  # NYI: BUG: require-condition, does not work yet
   r3 := typeInferencingFromMatch1.f typeInferencingFromMatch1.D
   r4 := match r3 { b bool => { b <=> false }; i32, String,typeInferencingFromMatch1.E => false }
   chck r4 "typeInferencingFromMatch1 D"
-  #  chck((typeInferencingFromMatch1.f(typeInferencingFromMatch1.D) ? b bool => b==false, * => false),"typeInferencingFromMatch1 D");  # NYI: does not work yet
+  chck((typeInferencingFromMatch1.f(typeInferencingFromMatch1.D) ? b bool => b=false | * => false),"typeInferencingFromMatch1 D");
 
   typeInferencingFromMatch2 is
     A is

@@ -55,9 +55,9 @@ In call: ':= true'
 Matched type: 'i32', which is not a choice type
 
 
---CURDIR--/choice_negative.fz:162:11: error 9: 'match' subject type must be a choice type
-    _ := (42 ? true_ => true   # 35. should flag an error, match subject must be choice
-----------^^
+--CURDIR--/choice_negative.fz:162:10: error 9: 'match' subject type must be a choice type
+    _ := 42 ? true_ => true   # 35. should flag an error, match subject must be choice
+---------^^
 Matched type: 'i32', which is not a choice type
 
 

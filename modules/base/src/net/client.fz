@@ -26,7 +26,7 @@
 # This tries establishing a connection to `host`
 # on success returns an active connection.
 #
-# Minimal example:
+# Minimal example: NYI: CLEANUP: example broken
 #
 #     mutate ! ()->
 #       _ := net.client net.family.ipv4 net.protocol.tcp "tokiwa.software" 80

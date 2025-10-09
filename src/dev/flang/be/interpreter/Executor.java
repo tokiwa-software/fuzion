@@ -281,13 +281,7 @@ public class Executor extends ProcessExpression<Value, Object>
 
         yield fres;
       case Intrinsic :
-        yield _fuir.clazzTypeParameterActualType(cc) != NO_CLAZZ  /* type parameter is also of Kind Intrinsic, NYI: CLEANUP: should better have its own kind?  */
-          ? pair(unitValue())
-          : pair(Intrinsics.call(this, s, cc).call(new List<>(tvalue, args)));
-      case Abstract:
-        throw new Error("Calling abstract not possible: " + _fuir.codeAtAsString(s));
-      case Choice :
-        throw new Error("Calling choice not possible: " + _fuir.codeAtAsString(s));
+        yield pair(Intrinsics.call(this, s, cc).call(new List<>(tvalue, args)));
       case Native:
         var mh = Linker.nativeLinker()
           .downcallHandle(
@@ -318,6 +312,8 @@ public class Executor extends ProcessExpression<Value, Object>
               }
           }
         yield pair(JavaInterface.javaObjectToPlainInstance(tmp, rt));
+      default:
+        throw new Error("Calling " + _fuir.clazzKind(cc) + " not possible: " + _fuir.codeAtAsString(s));
       };
 
     return result;
@@ -461,7 +457,11 @@ public class Executor extends ProcessExpression<Value, Object>
             var bb = ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN);
             var elCount = bb.getInt();
 
-            var arrayData = ArrayData.alloc(elCount, _fuir, elementType);
+            Instance result = new Instance(constCl);
+            var internalArray = _fuir.lookup_array_internal_array(constCl);
+            var saCl = _fuir.clazzResultClazz(internalArray);
+
+            var arrayData = ArrayData.alloc(saCl, elCount, _fuir, elementType);
 
             for (int idx = 0; idx < elCount; idx++)
               {
@@ -470,13 +470,9 @@ public class Executor extends ProcessExpression<Value, Object>
                 arrayData.set(idx, c, fuir(), elementType);
               }
 
-            Instance result = new Instance(constCl);
-            var internalArray = _fuir.lookup_array_internal_array(constCl);
-            var sysArray = _fuir.clazzResultClazz(internalArray);
-            var saCl = sysArray;
             Instance sa = new Instance(saCl);
-            Interpreter.setField(_fuir.lookup_fuzion_sys_internal_array_length(sysArray), saCl,                               sa,     new i32Value(elCount));
-            Interpreter.setField(_fuir.lookup_fuzion_sys_internal_array_data(sysArray)  , saCl,                               sa,     arrayData);
+            Interpreter.setField(_fuir.lookup_fuzion_sys_internal_array_length(saCl), saCl,                               sa,     new i32Value(elCount));
+            Interpreter.setField(_fuir.lookup_fuzion_sys_internal_array_data(saCl)  , saCl,                               sa,     arrayData);
             Interpreter.setField(internalArray                                          , constCl,                            result, sa);
             yield result;
           }

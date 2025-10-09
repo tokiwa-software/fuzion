@@ -50,6 +50,8 @@ import java.util.Map;
 public class Profiler extends ANY
 {
 
+  // NYI: UNDER DEVELOPMENT: add methods to pause/resume the profiler
+
 
   /*----------------------------  constants  ----------------------------*/
 
@@ -62,7 +64,7 @@ public class Profiler extends ANY
 
 
   /**
-   * Command to be excecuted to create flame graph
+   * Command to be executed to create flame graph
    */
   private static String FLAMEGRAPH_PL = "flamegraph.pl";
 
@@ -261,7 +263,7 @@ public class Profiler extends ANY
             }
           if (!collectFlameGraphData())
             {
-              StackTraceElement[] s = (StackTraceElement[]) _results_.keySet().toArray(new StackTraceElement[0]);
+              StackTraceElement[] s = _results_.keySet().toArray(new StackTraceElement[0]);
               var c = new Comparator<>()
                 {
                   public int compare(Object o1, Object o2)

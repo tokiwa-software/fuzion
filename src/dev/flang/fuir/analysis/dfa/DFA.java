@@ -39,7 +39,7 @@ import java.util.function.Supplier;
 
 import java.util.stream.Stream;
 
-import dev.flang.fuir.DfaFUIR;
+import dev.flang.fuir.OptimizedFUIR;
 import dev.flang.fuir.FUIR;
 import dev.flang.fuir.FUIR.LifeTime;
 import dev.flang.fuir.GeneratingFUIR;
@@ -377,6 +377,7 @@ public class DFA extends ANY
         case Abstract :
           Errors.error("Call to abstract feature encountered.",
                        "Found call to  " + _fuir.clazzAsString(cc));
+          break;
         case Routine  :
         case Intrinsic:
         case Native   :
@@ -384,7 +385,7 @@ public class DFA extends ANY
             if (_fuir.clazzNeedsCode(cc))
               {
                 var ca = newCall(_call, cc, s, tvalue.value(), args, _call._env, _call);
-                res = ca.result();
+                res = ca.result(_call);
                 if (_options.needsEscapeAnalysis() && res != null && res != Value.UNIT && !_fuir.clazzIsRef(_fuir.clazzResultClazz(cc)))
                   {
                     res = newEmbeddedValue(s, res.value());
@@ -818,6 +819,13 @@ public class DFA extends ANY
 
 
   /**
+   * To spot potential problems early where DFA takes a lot of iterations.
+   */
+  private static int MAX_ITERATIONS =
+    FuzionOptions.intPropertyOrEnv("dev.flang.fuir.analysis.dfa.DFA.MAX_ITERATIONS", Integer.MAX_VALUE);
+
+
+  /**
    * Should instance of certain clazzes be joined into a single Instance for
    * performance?  This is used to avoid large number of instances of, e.g.,
    * `array u8` where tracking the individual instances gives no benefit.
@@ -1223,11 +1231,10 @@ public class DFA extends ANY
    * DFA analysis. In particular, Let 'clazzNeedsCode' return false for
    * routines that were found never to be called.
    */
-  public DfaFUIR new_fuir()
+  public GeneratingFUIR new_fuir()
   {
     dfa();
-    _options.timer("dfa");
-    var res = new DfaFUIR((GeneratingFUIR) _fuir)
+    var res = new GeneratingFUIR(_fuir)
       {
         /**
          * Determine the lifetime of the instance of a call to clazz cl.
@@ -1293,13 +1300,13 @@ public class DFA extends ANY
           else
             {
               var code = _fuir.codeAt(s);
-              return (code == ExprKind.Call || code == ExprKind.Match) && site(s).alwaysResultsInVoid() || super.alwaysResultsInVoid(s);
+              return (code == ExprKind.Call && _fuir.clazzKind(_fuir.accessedClazz(s)) != FeatureKind.TypeParameter || code == ExprKind.Match) && site(s).alwaysResultsInVoid() || super.alwaysResultsInVoid(s);
             }
         }
 
 
         @Override
-        public synchronized int[] matchCaseTags(int s, int cix)
+        public int[] matchCaseTags(int s, int cix)
         {
           var key = ((long)s<<32)|((long)cix);
           return _takenMatchCases.contains(key) ? super.matchCaseTags(s, cix) : new int[0];
@@ -1357,7 +1364,8 @@ public class DFA extends ANY
   {
     _newCallRecursiveAnalyzeClazzes = new int[MAX_NEW_CALL_RECURSION];
     _real = false;
-    findFixPoint();
+    var preIter = findFixPoint();
+    _options.timer("dfa_pre");
 
     for (var k : _callGroupsQuick.keySet())
       {
@@ -1385,7 +1393,17 @@ public class DFA extends ANY
     _unitCalls = new IntMap<>();
 
     _real = true;
-    findFixPoint();
+    var realIter = findFixPoint();
+    _options.timer("dfa_real");
+
+    _options.verbosePrintln(2, "DFA needed " + (preIter+realIter) +  " iterations (pre/real) ("+ preIter + "/" + realIter + ").");
+
+    if (preIter+realIter > MAX_ITERATIONS)
+      {
+        Errors.fatal(
+          "DFA exceeded MAX_ITERATIONS iterations.",
+          "DFA took " + (preIter+realIter) + " iterations, allowed: " + MAX_ITERATIONS);
+      }
 
     _fuir.reportAbstractMissing();
     Errors.showAndExit();
@@ -1393,7 +1411,7 @@ public class DFA extends ANY
 
 
   /**
-   * When using two-pased DFA, is this the first phase to find required effects,
+   * When using two-phased DFA, is this the first phase to find required effects,
    * or the real phase?
    */
   boolean _real;
@@ -1402,7 +1420,7 @@ public class DFA extends ANY
   /**
    * Iteratively perform data flow analysis until a fix point is reached.
    */
-  void findFixPoint()
+  int findFixPoint()
   {
     var cnt = 0;
     do
@@ -1472,6 +1490,7 @@ public class DFA extends ANY
       (!_changed);
 
     showCallStatistics();
+    return cnt;
   }
 
 
@@ -2182,7 +2201,7 @@ public class DFA extends ANY
           // NYI: spawn0 needs to set up an environment representing the new
           // thread and perform thread-related checks (race-detection. etc.)!
           var ignore = cl._dfa.newCall(cl, call, NO_SITE, cl._args.get(0).value(), new List<>(), null /* new environment */, cl);
-          return cl._dfa.newInstance(fuir(cl).clazzResultClazz(cl.calledClazz()), NO_SITE, cl._context);
+          return genericResult(cl);
         });
     put("fuzion.sys.thread.join0"        , cl -> Value.UNIT);
 
@@ -2257,7 +2276,7 @@ public class DFA extends ANY
                                     cl);
           cll._group.mayHaveEffect(ecl);
 
-          var result = cll.result();
+          var result = cll.result(cl);
           Value ev;
           if (cl._dfa._real)
             {
@@ -2290,7 +2309,7 @@ public class DFA extends ANY
           if (aborted)
             { // default result, only if abort is ever called
               var def = cl._dfa.newCall(cl, call_def, NO_SITE, a2, new List<>(ev), cl._env, cl);
-              var res = def.result();
+              var res = def.result(cl);
               result =
                 result != null && res != null ? result.value().join(cl._dfa, res.value(), fuir(cl).clazzResultClazz(cl.calledClazz())) :
                 result != null                ? result
@@ -2369,10 +2388,21 @@ public class DFA extends ANY
         return Value.UNIT;
       });
     put("fuzion.jvm.java_string_to_string" , cl -> cl._dfa.newConstString(null, cl) );
-    put("fuzion.jvm.create_jvm", cl -> Value.UNIT);
+    put("fuzion.jvm.create_jvm", cl -> genericResult(cl));
     put("fuzion.jvm.destroy_jvm", cl -> Value.UNIT);
     put("fuzion.jvm.string_to_java_object0", cl -> Value.UNKNOWN_JAVA_REF);
     put("fuzion.jvm.primitive_to_java_object", cl -> Value.UNKNOWN_JAVA_REF);
+  }
+
+
+  /**
+   * create generic result base on calls result clazz
+   *
+   * @param cl
+   */
+  private static Value genericResult(Call cl)
+  {
+    return cl._dfa.newInstance(fuir(cl).clazzResultClazz(cl.calledClazz()), NO_SITE, cl._context);
   }
 
 
@@ -3199,7 +3229,6 @@ public class DFA extends ANY
    */
   Call newCall(Call from, int cl, int site, Value tvalue, List<Val> args, Env env, Context context)
   {
-    var oenv = env;
     CallGroup g;
     var kg = CallGroup.quickHash(this, cl, site, tvalue);
     if (kg != -1)
@@ -3290,8 +3319,6 @@ public class DFA extends ANY
               (false);
           }
         e = r;
-        var rf = r;
-        wasChanged(() -> "DFA.newCall to " + rf);
         analyzeNewCall(r);
       }
     else

@@ -25,12 +25,21 @@ sockets_test is
 
   lm : mutate is
 
+  servers :=
+    concur.atomic [(u16 0),
+                   (u16 0),
+                   (u16 0),
+                   (u16 0)]
+
+  set_server_port(idx i32, new u16) =>
+    _ :=
+      for r := servers.read
+      while !(servers.compare_and_set r (r.put idx new))
+
 
   # server handles one connection at a time
   #
   server(family net.family.val, protocol net.protocol.val) =>
-
-    port := (port family protocol)
 
     say_silent(s Any) => unit
 
@@ -71,11 +80,17 @@ sockets_test is
 
         _ := c.close).ok
 
-    # install server in env
-    say <| net.server.start family protocol port ()->
-      say "opened $protocol/$family-server on port $port."
-      while accept
-      do
+
+    for port := u16 30000, port+1
+        # install server in env
+        r := net.server.start family protocol port ()->
+               set_server_port (server_ident family protocol) port
+               while accept
+               do
+    until r.ok || port > 30100
+      if !r.ok
+        panic "last error: $r"
+
 
 
   # client
@@ -84,7 +99,7 @@ sockets_test is
 
     match net.client family protocol host port
       error =>
-        say "$protocol/$family-client {sockets_test.client.this.num}, $host:$port: error establishing connection"
+        say "$protocol/$family-client {sockets_test.client.this.num}, $host: error establishing connection"
       c net.connection =>
 
         res := c.with String lm ()->
@@ -99,14 +114,14 @@ sockets_test is
               _ := (io.buffered lm).writer.env.write req.utf8.as_array
               _ := (io.buffered lm).writer.env.flush
 
-            str := "$protocol/$family-client {sockets_test.client.this.num}, write to $host:$port => {w}"
+            str := "$protocol/$family-client {sockets_test.client.this.num}, write to $host => {w}"
 
             match protocol
               net.protocol.tcp =>
 
                 rr := (io.buffered lm).read_line_while (s -> !s.is_empty)
 
-                str + "\n" + "$protocol/$family-client {sockets_test.client.this.num}, read lines from  $host:$port: >{rr}<"
+                str + "\n" + "$protocol/$family-client {sockets_test.client.this.num}, read lines from  $host: >{rr}<"
 
               # for UDP reading would block indefinitely
               net.protocol.udp =>
@@ -138,9 +153,26 @@ sockets_test is
       net.family.ipv6 => 3
 
 
-  # For now use a different port for every test.
-  port(f net.family.val, p net.protocol.val) => u16 40000 + (protocol_num p) + (family_num f)
+  # get server identifier for given family/protocol
+  #
+  server_ident(f net.family.val, p net.protocol.val) =>
+    match f
+      net.family.ipv4 =>
+        match p
+          net.protocol.tcp => 0
+          net.protocol.udp => 1
+          nil => panic "unexpected case"
+      net.family.ipv6 =>
+        match p
+          net.protocol.tcp => 2
+          net.protocol.udp => 3
+          nil => panic "unexpected case"
 
+
+  port(f net.family.val, p net.protocol.val) =>
+    while servers.read[server_ident f p] = 0
+      time.nano.sleep (time.duration.s 1)
+    servers.read[server_ident f p]
 
 ########### Tests ################
 
@@ -148,12 +180,9 @@ sockets_test is
   protocols array net.protocol.val := [net.protocol.tcp, net.protocol.udp]
   for f in families do
     for p in protocols do
-      time.nano.sleep (time.duration.s 1)
       _ := concur.threads.spawn ()->
         lm ! ()->
           _ := server f p
-
-  time.nano.sleep (time.duration.seconds 10)
 
   for f in families do
     for p in protocols do

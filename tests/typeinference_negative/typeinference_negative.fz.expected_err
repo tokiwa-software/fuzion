@@ -93,7 +93,15 @@ Referenced feature: 'typeinference_negative.result5.y' at --CURDIR--/typeinferen
 ----^
 
 
---CURDIR--/typeinference_negative.fz:211:5: error 11: Incompatible types in branches of if expression
+--CURDIR--/typeinference_negative.fz:29:11: error 11: Could not find called feature
+     x := x  # 1. c0.a should flag an error, cyclic type inference from oneself
+----------^
+Feature not found: 'x' (no arguments)
+Target feature: 'typeinference_negative.cyclic0'
+In call: 'x'
+
+
+--CURDIR--/typeinference_negative.fz:211:5: error 12: Incompatible types in branches of if expression
     if       b     { 3 }         # 46. should flag an error: incompatible types in branches of if expression
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     else if !b     { "String" }
@@ -120,14 +128,6 @@ and at --CURDIR--/typeinference_negative.fz:214:20:
 block returns value of type 'bool' at --CURDIR--/typeinference_negative.fz:215:22:
     else           { false }
 ---------------------^^^^^
-
-
---CURDIR--/typeinference_negative.fz:29:11: error 12: Could not find called feature
-     x := x  # 1. c0.a should flag an error, cyclic type inference from oneself
-----------^
-Feature not found: 'x' (no arguments)
-Target feature: 'typeinference_negative.cyclic0'
-In call: 'x'
 
 
 --CURDIR--/typeinference_negative.fz:37:11: error 13: Could not find called feature

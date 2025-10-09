@@ -422,19 +422,12 @@ public class Impl extends ANY
     if (outer.isConstructor() && outer.preFeature() != null)
       { // For constructors, the constructor itself checks the precondition (while
         // for functions, this is done by the caller):
-        var c = outer.contract().callPreCondition(res, outer, context);
+        var c = Contract.callPreCondition(res, outer, context);
         _expr = new Block(new List<>(c, _expr));
       }
     if (needsImplicitAssignmentToResult(outer))
       {
-        var resultField = outer.resultField();
-        Assign ass = new Assign(res,
-                                this._expr.pos(),
-                                resultField,
-                                this._expr,
-                                context);
-        ass._value = this._expr;
-        this._expr = ass;
+        this._expr = _expr.assignToField(res, context, (Feature) outer.resultField());
       }
 
     // Add call to post condition feature:

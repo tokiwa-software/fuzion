@@ -52,7 +52,6 @@ public record ClazzRecord(
   int[] clazzFields,
   int clazzCode,
   int clazzResultField,
-  int clazzTypeParameterActualType,
   String clazzOriginalName,
   int[] clazzActualGenerics,
   int lookupCall,

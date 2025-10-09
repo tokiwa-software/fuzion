@@ -108,7 +108,8 @@ public abstract class IR extends ANY
     Intrinsic,
     Abstract,
     Choice,
-    Native;
+    Native,
+    TypeParameter;
 
 
     /**

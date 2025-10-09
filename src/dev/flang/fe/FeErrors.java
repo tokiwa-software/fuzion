@@ -55,7 +55,7 @@ public class FeErrors extends AstErrors
     var a = m.valueArguments();
     error(m.pos(),
           "Main feature must not have arguments",
-          "Main feature has " + StringHelpers.argumentsString(a.size()) + " (" + sfn(a) + "), but should have no arguments to be used as main feature in an application\n" +
+          "Main feature has " + StringHelpers.valueArgumentsString(a.size()) + " (" + sfn(a) + "), but should have no arguments to be used as main feature in an application\n" +
           "To solve this, remove the arguments from feature " + s(m) + "\n");
   }
 

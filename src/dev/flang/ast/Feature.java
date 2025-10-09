@@ -64,8 +64,7 @@ public class Feature extends AbstractFeature
 
 
   /**
-   * Unique identifier to define a total ordered over Features (used in
-   * compareTo)
+   * Unique identifier to define a total order over Features (used in compareTo)
    */
   int _id = _ids_++;
 
@@ -299,6 +298,22 @@ public class Feature extends AbstractFeature
    * result type during resolveTypes.
    */
   private AbstractType _resultType = null;
+
+
+  /**
+   * if hasValuesAsOpenTypeFeature(), this will be the open type feature, i.e., the
+   * feature that is called when a field whose type is an open type parameter is
+   * called without selecting one specific variant.
+   */
+  private AbstractFeature _valuesAsOpenType = null;
+
+
+  /**
+   * if hasOpenTypesFeature(), this will be the open type feature, i.e., the
+   * feature that is called when a field whose type is an open type parameter is
+   * called without selecting one specific variant.
+   */
+  private AbstractFeature _openTypes = null;
 
 
   /**
@@ -842,6 +857,8 @@ public class Feature extends AbstractFeature
                         (p._kind != Impl.Kind.FieldDef   ) &&
                         (p._kind != Impl.Kind.FieldInit  ) &&
                         (p._kind != Impl.Kind.Field      ) &&
+                        (p._kind != Impl.Kind.TypeParameter ) &&
+                        (p._kind != Impl.Kind.TypeParameterOpen ) &&
                         (qname.size() != 1 || (!qname.getFirst().equals(FuzionConstants.ANY_NAME  ) &&
                                                !qname.getFirst().equals(FuzionConstants.UNIVERSE_NAME))))
       ? new List<>(new Call(_pos, FuzionConstants.ANY_NAME))
@@ -1191,6 +1208,82 @@ public class Feature extends AbstractFeature
     return choiceGenerics() != null;
   }
 
+  @Override
+  public AbstractFeature valuesAsOpenTypeFeature()
+  {
+    if (PRECONDITIONS) require
+      (hasValuesAsOpenTypeFeature(),
+       _state.atLeast(State.RESOLVED_TYPES));
+
+    if (CHECKS) check
+      (_valuesAsOpenType != null);
+
+    return _valuesAsOpenType;
+  }
+
+
+  /**
+   * Add open type feature, i.e., the feature that is called when a field whose
+   * type is an open type parameter is called without selecting one specific
+   * variant.
+   */
+  void addValuesAsOpenTypeFeature(Resolution res)
+  {
+    if (PRECONDITIONS) require
+      (hasValuesAsOpenTypeFeature());
+
+    if (_valuesAsOpenType == null)
+      {
+        // we mangle the field's base name into the name such that during
+        // monomorphization, we know what field to use
+        var name = FuzionConstants.createFieldsOfOpenTypeName(featureName().baseName());
+        var otf = new Feature(pos(), visibility().typeVisibility(), 0, NoType.INSTANCE, new List<>(name), new List<>(),
+                              new List<>(new Call(pos(), Universe.instance, Types.resolved.f_Values_Of_Open_Type)),
+                              Contract.EMPTY_CONTRACT,
+                              new Impl(pos(), new Block(), Impl.Kind.Routine));
+
+        res._module.findDeclarations(otf, outer());
+        res.resolveTypes(otf);
+        _valuesAsOpenType = otf;
+      }
+  }
+
+
+  @Override
+  public AbstractFeature openTypesFeature()
+  {
+    if (PRECONDITIONS) require
+      (isOpenTypeParameter(),
+       _state.atLeast(State.RESOLVED_TYPES));
+
+    if (CHECKS) check
+      (_openTypes != null);
+
+    return _openTypes;
+  }
+
+
+  @Override
+  public AbstractFeature openTypesFeature(Resolution res)
+  {
+    if (PRECONDITIONS) require
+      (isOpenTypeParameter());
+
+    if (_openTypes == null)
+      {
+        var name = FuzionConstants.OPEN_TYPES_PREFIX + _id;
+        var otf = new Feature(pos(), visibility().typeVisibility(), 0, NoType.INSTANCE, new List<>(name), new List<>(),
+                              new List<>(new Call(pos(), Universe.instance, Types.resolved.f_Open_Types)),
+                              Contract.EMPTY_CONTRACT,
+                              new Impl(pos(), new Block(), Impl.Kind.Routine));
+
+        res._module.findDeclarations(otf, outer());
+        res.resolveTypes(otf);
+        _openTypes = otf;
+      }
+    return _openTypes;
+  }
+
 
   /*
    * Inheritance resolution for a feature f: recursively, perform inheritance
@@ -1255,24 +1348,6 @@ public class Feature extends AbstractFeature
   public boolean isLegalPartOfUniverse()
   {
     return _legalPartOfUniverse;
-  }
-
-
-  /**
-   * Check if this is the last argument of a feature and t is its return type.
-   * This is needed during type resolution since this is the only place where an
-   * open formal generic may be used.
-   *
-   * @return true iff this is the last argument of a feature and t is its return
-   * type.
-   */
-  boolean isLastArgType(AbstractType t)
-  {
-    return
-      outer() != null &&
-      !outer().arguments().isEmpty() &&
-      outer().arguments().getLast() == this &&
-      t == _returnType.functionReturnType();
   }
 
 
@@ -1404,24 +1479,18 @@ public class Feature extends AbstractFeature
       {
         _state = State.RESOLVING_DECLARATIONS;
 
-        if (CHECKS) check
-          (_state == State.RESOLVING_DECLARATIONS);
-
         this._returnType = _impl.checkReturnType(this);
         res._module.findDeclaredOrInheritedFeatures(this);
 
-        if (CHECKS) check
-          (_state.atLeast(State.RESOLVING_DECLARATIONS));
 
-        if (_state == State.RESOLVING_DECLARATIONS)
-          {
-            /**
-             * Find all the types used in this that refer to formal generic arguments of
-             * this or any of this' outer classes.
-             */
-            resolveArgumentTypes(res);
-            visit(res.resolveTypesOnly(this));
-          }
+        if (CHECKS) check
+          (_state == State.RESOLVING_DECLARATIONS);
+        /**
+         * Find all the types used in this that refer to formal generic arguments of
+         * this or any of this' outer classes.
+         */
+        resolveArgumentTypes(res);
+        visit(res.resolveTypesOnly(this));
 
         _state = State.RESOLVED_DECLARATIONS;
         while (!whenResolvedDeclarations.isEmpty())
@@ -1468,7 +1537,6 @@ public class Feature extends AbstractFeature
     @Override public void         action      (AbstractAssign  a) {        a.resolveTypes      (res,   _context); }
     @Override public void         actionBefore(Call            c) {        c.tryResolveTypeCall(res,   _context); }
     @Override public Call         action      (Call            c) { return c.resolveTypes      (res,   _context); }
-    @Override public Expr         action      (DotType         d) { return d.resolveTypes      (res,   _context); }
     @Override public Expr         action      (Feature         f, AbstractFeature outer)
     {
       if (f.isExtensionFeature() && f.outer() != null)
@@ -1503,7 +1571,7 @@ public class Feature extends AbstractFeature
    *
    *   String.danish => String.this.replace "a" "å"
    *
-   * i.e., a feature declaration that is located syntactially outside of the
+   * i.e., a feature declaration that is located syntactically outside of the
    * outer feature's declaration.
    */
   public boolean isExtensionFeature()
@@ -1552,7 +1620,10 @@ public class Feature extends AbstractFeature
             Contract.addPreFeature(res, this, context(), false);
           }
 
-        resolveArgumentTypes(res);
+        if (isOpenTypeParameter())
+          {
+            var ignore = openTypesFeature(res);
+          }
         visit(res.resolveTypesFully(this));
 
         if (_effects != null)
@@ -1628,10 +1699,15 @@ public class Feature extends AbstractFeature
           {
             res.cotype(this);
           }
-        visit(new ContextVisitor(context())
+        var context = context();
+        // we can not use ContextVisitor here, because we
+        // - want to visit actuals of Calls
+        // - they may not be resolved yet
+        // - ContextVisitor relies on actuals being resolved because it calls {@code calledFeature}
+        visit(new FeatureVisitor()
           {
-            @Override public Expr action(Feature f, AbstractFeature outer) { return f.resolveSyntacticSugar1(res, _context, this); }
-            @Override public Expr action(Call    c) { return c.resolveSyntacticSugar1(res, _context      ); }
+            @Override public Expr action(Feature f, AbstractFeature outer) { return f.resolveSyntacticSugar1(res, context, this); }
+            @Override public Expr action(Call    c) { return c.resolveSyntacticSugar1(res, context      ); }
           });
 
 
@@ -1659,17 +1735,24 @@ public class Feature extends AbstractFeature
    * Find list of all accesses to this feature's closure by any of its inner
    * features.
    */
-  private List<AbstractCall> closureAccesses(Resolution res)
+  List<AbstractCall> closureAccesses(Resolution res)
   {
     List<AbstractCall> result = new List<>();
-    res._module.forEachDeclaredOrInheritedFeature(this,
-                                                  af -> af.visitExpressions(s -> {
-          if (s instanceof AbstractCall c && dependsOnOuterRef(c))
-            {
-              result.add(c);
-            }
-        })
-      );
+    var v = new FeatureVisitor() {
+      @Override public void action(AbstractCall c)
+      {
+        if (dependsOnOuterRef(c))
+          {
+            result.add(c);
+          }
+      }
+      @Override public Expr action(Feature f, AbstractFeature outer)
+      {
+        f.visit(this);
+        return super.action(f, outer);
+      }
+    };
+    res._module.forEachDeclaredOrInheritedFeature(this, af -> { if (af instanceof Feature f) { f.visit(v); }; } );
     return result;
   }
 
@@ -1915,14 +1998,14 @@ A ((Choice)) declaration must not contain a result type.
       {
         _state = State.TYPES_INFERENCING;
 
-       if (outer() instanceof Feature o)
+        if (outer() instanceof Feature o)
           {
             o.typeInference(res);
           }
 
-        _resultType = resultTypeIfPresentUrgent(res, true);
+        var rt = resultTypeIfPresentUrgent(res, true);
 
-        if (_resultType.isThisType() && _resultType.feature() == this)
+        if (rt.isThisType() && rt.feature() == this)
           { // we are in the case of issue #1186: A routine returns itself:
             //
             //  a => a.this
@@ -1936,17 +2019,24 @@ A ((Choice)) declaration must not contain a result type.
          *
          *   f (b bool) i64              { if (b) { 23 } else { -17 } }
          *   g (b bool) choice<A, f32> } { b ? 3.4 : A }
-         *   abstract myfun { abstract x(a i32) i32 }
-         *   h myfun { fun (a) => a*a }
+         *   myfun : Function i32 i32 is
+         *   h myfun => a->a*a
          *
-         * Here, i64 will be propagated to be used as the type of "23" and
-         * "-17", choice<A, f32> will be used as the type of "3.4" and "A", and
-         * myfun will be used as the type of "fun (a) => a*a", which implies
-         * that i32 will be the type for "a".
+         * Here, i64 will be propagated to be used as the type of `23` and
+         * `-17`, choice<A, f32> will be used as the type of `3.4` and `A`, and
+         * myfun will be used as the type of `a->a*a`, which implies
+         * that i32 will be the type for `a`.
          */
         visit(new ContextVisitor(context()) {
             @Override public void  action(AbstractAssign a) { a.propagateExpectedType(res, _context); }
-            @Override public Call  action(Call           c) { c.propagateExpectedType(res, _context); return c; }
+            @Override public Call  action(Call           c) {
+              // make sure all called features are loaded, even those of actuals
+              // which may not have been visited during resolve types
+              // fixes #5826
+              c.loadCalledFeature(res, _context);
+              c.propagateExpectedType(res, _context);
+              return c;
+            }
             @Override public void  action(Impl           i) { i.propagateExpectedType(res, _context); }
           });
 
@@ -2024,7 +2114,30 @@ A ((Choice)) declaration must not contain a result type.
 
     checkNative(res);
 
+    if (explicitTypeRequired(_returnType))
+      {
+        AstErrors.explicitTypeRequired(this, resultType());
+      }
+
     _state = State.RESOLVED;
+  }
+
+
+  /**
+   * Must this feature have an explicitly specified type?
+   *
+   * Public features and arguments of public feature must have the type explicitly specified,
+   * regardless of whether type inference is possible
+   */
+  public boolean explicitTypeRequired(ReturnType rt)
+  {
+    return !isCotype()
+      && !featureName().isInternal()
+      && !isUniverse()
+      && (visibility().eraseTypeVisibility() == Visi.PUB
+          || outer().visibility().eraseTypeVisibility() == Visi.PUB && isArgument())
+      && !(featureName().toString().startsWith(FuzionConstants.COTYPE_THIS_TYPE))
+      && rt == NoType.INSTANCE;
   }
 
 
@@ -2038,7 +2151,7 @@ A ((Choice)) declaration must not contain a result type.
       {
         for (var arg : arguments())
           {
-            checkLegalNativeArg(res, arg.pos(), arg.resultType());
+            checkLegalNativeArg(res, arg);
           }
 
         checkLegalNativeResultType(res, resultTypePos(), resultType());
@@ -2046,11 +2159,13 @@ A ((Choice)) declaration must not contain a result type.
   }
 
 
-  private void checkLegalNativeArg(Resolution res, SourcePosition pos, AbstractType at)
+  private void checkLegalNativeArg(Resolution res, AbstractFeature arg)
   {
     ensureTypeSetsInitialized(res);
-    if (!(Types.resolved.legalNativeArgumentTypes.contains(at)
-          || at.selfOrConstraint(Context.NONE).isFunctionTypeExcludingLazy()
+    var at = arg.resultType();
+    if (!(arg.isTypeParameter()
+          || Types.resolved.legalNativeArgumentTypes.contains(at)
+          || at.selfOrConstraint(Context.NONE).isLambdaTargetButNotLazy(res)
           // NYI: BUG: check if array element type is valid
           || !at.isGenericArgument() && at.feature() == Types.resolved.f_array
           || !at.isGenericArgument() && at.feature().mayBeNativeValue()
@@ -2058,7 +2173,7 @@ A ((Choice)) declaration must not contain a result type.
           )
         )
       {
-        AstErrors.illegalNativeType(pos, "Argument type", at);
+        AstErrors.illegalNativeType(arg.pos(), "Argument type", at);
       }
   }
 
@@ -2215,7 +2330,7 @@ A ((Choice)) declaration must not contain a result type.
    *
    * @param rss1 the visitor to resolve syntax sugar 1, used to visit recursively.
    */
-  Expr resolveSyntacticSugar1(Resolution res, Context context, ContextVisitor rss1)
+  Expr resolveSyntacticSugar1(Resolution res, Context context, FeatureVisitor rss1)
   {
     var outer = context.outerFeature();
 
@@ -2289,7 +2404,6 @@ A ((Choice)) declaration must not contain a result type.
     res._module.findDeclarations(ta, this);
 
     res._module.addTypeParameter(this, ta);
-    this.whenResolvedTypes(()->res.resolveTypes(ta));
 
     return ta;
   }
@@ -2345,55 +2459,92 @@ A ((Choice)) declaration must not contain a result type.
       {
         result = _resultType;
       }
-    else if (outer() != null && this == outer().resultField())
-      {
-        result = outer().resultTypeIfPresent(res);
-      }
-    else if (_impl.typeInferable())
-      {
-        if (CHECKS) check
-          (!state().atLeast(State.TYPES_INFERENCED));
-        result = _impl.inferredType(res, this, urgent);
-      }
-    else if (_returnType.isConstructorType())
-      {
-        result = selfType();
-      }
-    else if (_returnType == NoType.INSTANCE)
-      {
-        if (urgent)
-          {
-            AstErrors.failedToInferResultType(this);
-          }
-        result = urgent ? Types.t_ERROR : null;
-      }
-    else if (isOuterRef())
-      {
-        result = outer().outer().thisType(outer().isFixed());
-      }
     else
       {
-        result = _returnType.functionReturnType();
-        result = urgent && result == null ? Types.t_ERROR : result;
-      }
-    if (res != null && result != null && outer() != null)
-      {
-        result = result.resolve(res, outer().context());
-      }
+        if (outer() != null && this == outer().resultField())
+          {
+            result = outer().resultTypeIfPresent(res);
+          }
+        else if (_impl.typeInferable())
+          {
+            if (CHECKS) check
+              (!state().atLeast(State.TYPES_INFERENCED));
+            result = _impl.inferredType(res, this, urgent);
+          }
+        else if (_returnType.isConstructorType())
+          {
+            result = selfType();
+          }
+        else if (_returnType == NoType.INSTANCE)
+          {
+            if (urgent)
+              {
+                AstErrors.failedToInferResultType(this);
+              }
+            result = urgent ? Types.t_ERROR : null;
+          }
+        else if (isOuterRef())
+          {
+            result = outer().outer().thisType(outer().isFixed());
+          }
+        else if (isTypeParameter())
+          {
+            result =
+              (isOpenTypeParameter()
+               ? Types.resolved.f_Open_Types
+               : Types.resolved.f_Type      ).resultTypeIfPresentUrgent(res, urgent);
+          }
+        else
+          {
+            result = _returnType.functionReturnType(true);
+            if (result != null && result.isIncompleteType())
+              {
+                // we need to resolve _outer which contains
+                // this case field before having a usable functionReturnType
+                res.resolveTypes(_outer);
+              }
+            result = _returnType.functionReturnType();
+            result = urgent && result == null ? Types.t_ERROR : result;
+          }
+        if (res != null && result != null && outer() != null)
+          {
+            result = result.resolve(res, outer().context());
+          }
 
-    if (result != null)
-      {
-        // FORWARD_CYCLIC should be returned only once.
-        // We then want to return t_ERROR.
-        _resultType = result == Types.t_FORWARD_CYCLIC ? Types.t_ERROR : result;
+        if (result != null)
+          {
+            // FORWARD_CYCLIC should be returned only once.
+            // We then want to return t_ERROR.
+            _resultType = result == Types.t_FORWARD_CYCLIC ? Types.t_ERROR : result;
+
+            if (result.isOpenGeneric())
+              {
+                addValuesAsOpenTypeFeature(res);
+              }
+          }
       }
 
     if (POSTCONDITIONS) ensure
       (!urgent || result != null,
        result != Types.t_UNDEFINED,
-       Errors.any() || result != Types.t_ERROR);
+       Errors.any() || result != Types.t_ERROR,
+       result == null || result instanceof ResolvedType);
 
     return result;
+  }
+
+
+  /**
+   * For a type parameter, this gives the ResolvedParametricType instance
+   * corresponding to this type parameter.
+   */
+  @Override
+  public AbstractType asGenericType()
+  {
+    if (PRECONDITIONS) require
+      (isTypeParameter());
+
+    return new ResolvedParametricType(this);
   }
 
 
@@ -2416,7 +2567,29 @@ A ((Choice)) declaration must not contain a result type.
 
     if (POSTCONDITIONS) ensure
       (Errors.any() || result != Types.t_ERROR,
-       Errors.any() || !result.containsUndefined(false));
+       Errors.any() || !result.containsUndefined());
+
+    return result;
+  }
+
+
+  /**
+   * constraint returns the constraint type of this type parameter, Any if no
+   * constraint was set.  This ignores any context constraints like `pre T : numeric`
+   *
+   * @return the constraint.
+   */
+  @Override
+  public AbstractType constraint()
+  {
+    if (PRECONDITIONS) require
+      (state().atLeast(State.RESOLVED_DECLARATIONS),
+       isTypeParameter());
+
+    var result = _returnType.functionReturnType();
+
+    if (POSTCONDITIONS) ensure
+      (result != null);
 
     return result;
   }
@@ -2672,6 +2845,23 @@ A ((Choice)) declaration must not contain a result type.
 
     _resultType = refinedResultType;
   }
+
+
+  /**
+   * update return type early in the resolving phase
+   *
+   * this is used for setting the result type for loops
+   */
+  protected void setFunctionReturnType(AbstractType frt)
+  {
+    if (PRECONDITIONS) require
+      (!state().atLeast(State.RESOLVING),
+       _returnType == NoType.INSTANCE,
+       _impl._kind == Impl.Kind.RoutineDef);
+
+    this._impl = new Impl(impl().pos, impl().expr(), Impl.Kind.Routine);
+    this._returnType = new FunctionReturnType(frt);
+  };
 
 
 }

@@ -57,8 +57,8 @@ test_atomic is
     test0 a b c d (v1,v2)->v1=v2
 
   p(x, y i64) : property.equatable is
-    public fixed redef type.equality(a, b test_atomic.p) => a.x = b.x && a.y = b.y
-    public redef as_string => "$x,$y"
+    public fixed redef type.equality(a, b test_atomic.p) bool => a.x = b.x && a.y = b.y
+    public redef as_string String => "$x,$y"
 
   test 1 2 3 4
   test 0.1 0.2 0.3 0.4
@@ -73,7 +73,7 @@ test_atomic is
   unit_like : choice unit is
     ord => match unit_like.this
       unit => 0
-    public redef as_string => match unit_like.this
+    public redef as_string String => match unit_like.this
       unit => "unit"
   test0 unit_like unit unit unit unit ((a,b)-> a.ord=b.ord)
 
@@ -82,7 +82,7 @@ test_atomic is
     ord => match unit_like2.this
       unit => 0
       void => 1   # cannot happen!
-    public redef as_string => match unit_like2.this
+    public redef as_string String => match unit_like2.this
       unit => "unit"
       void => "*** cannot happen ***"
   test0 unit_like2 unit unit unit unit ((a,b)-> a.ord=b.ord)
@@ -94,7 +94,7 @@ test_atomic is
     ord => match my_switch.this
       on => 0
       off => 1
-    public redef as_string => match my_switch.this
+    public redef as_string String => match my_switch.this
       on => "on"
       off => "off"
     type.equality(a, b my_switch.this) => a.ord = b.ord
@@ -109,7 +109,7 @@ test_atomic is
       red => 0
       yellow => 1
       green => 2
-    public redef as_string => match lights.this
+    public redef as_string String => match lights.this
       red => "red"
       yellow => "yellow"
       green => "green"
@@ -118,9 +118,9 @@ test_atomic is
   # test refs-and-units choice
   Sign ref is
   yield : Sign is
-    public redef as_string => "yield sign"
+    public redef as_string String => "yield sign"
   prio : Sign is
-    public redef as_string => "priority sign"
+    public redef as_string String => "priority sign"
   lights2 : choice red yellow green String Sign is
     ord => match lights2.this
       red => 0
@@ -128,7 +128,7 @@ test_atomic is
       green => 2
       String => 3
       Sign => 4
-    public redef as_string => match lights2.this
+    public redef as_string String => match lights2.this
       red => "red"
       yellow => "yellow"
       green => "green"
@@ -144,7 +144,7 @@ test_atomic is
       green => 2
       String => 3
       error => 4
-    public redef as_string => match lights3.this
+    public redef as_string String => match lights3.this
       red => "red"
       yellow => "yellow"
       green => "green"

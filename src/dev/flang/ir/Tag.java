@@ -29,7 +29,6 @@ package dev.flang.ir;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Expr;
-import dev.flang.ast.ExpressionVisitor;
 import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.Types;
 import dev.flang.util.Errors;
@@ -52,7 +51,7 @@ public class Tag extends Expr
   /**
    * the original value instance.
    */
-  public Expr _value;
+  public final Expr _value;
 
 
   /**
@@ -134,19 +133,6 @@ public class Tag extends Expr
   public AbstractType type()
   {
     return _taggedType;
-  }
-
-
-  /**
-   * visit all the expressions within this Tag.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited expressions
-   */
-  public void visitExpressions(ExpressionVisitor v)
-  {
-    super.visitExpressions(v);
-    _value.visitExpressions(v);
   }
 
 

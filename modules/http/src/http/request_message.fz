@@ -1,0 +1,62 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature request_message
+#
+# -----------------------------------------------------------------------
+
+
+# HTTP request message
+#
+module:public request_message(
+  # the HTTP request method
+  public method http.request_method,
+  # the target of the request
+  public target String,
+  # the major version
+  public version_major i32,
+  # the minor version
+  public version_minor i32,
+  # the header fields
+  public redef header container.Map String String,
+  # body of the request
+  public redef body io.Read_Handler) : Message
+# pre debug: has_field "Host"  # NYI: how to handle case insensitivity?
+is
+
+  # request line of the message
+  public request_line String => "$method $target {version_str version_major version_minor}" + crlf
+
+  public redef start_line String => request_line
+
+  public type.new(
+    # the HTTP request method
+    method http.request_method,
+    # the target of the request
+    target String,
+    # the major version
+    version_major i32,
+    # the minor version
+    version_minor i32,
+    # the header fields
+    header Sequence (String,String),
+    # body of the request
+    body io.Read_Handler) http.request_message
+  =>
+    http.request_message method target version_major version_minor (as_header_map header) body

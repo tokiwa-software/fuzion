@@ -27,8 +27,24 @@ module Blocking_Queue(T type, cnd concur.sync.condition) ref is
 
   # is closed for taking any new elements?
   #
-  module is_closed := concur.atomic false
+  # atomic just for convenience
+  #
+  # accessed only by one thread at a time
+  #
+  is_closed := concur.atomic false
 
+
+  module close =>
+    cnd.synchronized ()->
+      is_closed.write true
+
+
+  # the data this queue currently holds
+  #
+  # atomic just for convenience
+  #
+  # accessed only by one thread at a time
+  #
   data := concur.atomic (array T) []
 
 
@@ -37,16 +53,15 @@ module Blocking_Queue(T type, cnd concur.sync.condition) ref is
   # otherwise enqueues the element and returns true
   #
   module enqueue(el T) bool =>
-    if is_closed.read
-      false
-    else
-      for old := data.read
-          new := old.put old.length el
-      while !data.compare_and_set old new
+    cnd.synchronized ()->
+      if is_closed.read
+        false
       else
-        cnd.synchronized ()->
-          # signal a waiting thread to pick up the work
-          check cnd.signal
+        old := data.read
+        new := old.put old.length el
+        data.write new
+        # signal a waiting thread to pick up the work
+        check cnd.signal
         true
 
 
@@ -55,23 +70,24 @@ module Blocking_Queue(T type, cnd concur.sync.condition) ref is
   # otherwise returns the dequeued element
   #
   module dequeue option T =>
-    o := data.read
-    if o.is_empty
-      if is_closed.read
-        nil
-      else
-        cnd.synchronized ()->
-          # check the two conditions again, otherwise we MUST NOT wait
-          if !is_closed.read && data.read.is_empty
-            # NYI: BUG: possible dead lock? what if we write to data in the meantime?
-            # we should use TLA+ or similar to prove correctness
-            # https://www.hillelwayne.com/post/list-of-tla-examples/
-            check cnd.wait
-        dequeue
-    else
-      res := o[0]
-      n := array o.count-1 i->o[i+1]
-      if data.compare_and_set o n
-        res
-      else
-        dequeue
+
+    depleted is
+    retry is
+
+    res :=
+      cnd.synchronized (choice T depleted retry) ()->
+        d := data.read
+        if is_closed.read && d.is_empty
+          depleted
+        else if d.is_empty
+          check cnd.wait
+          retry
+        else
+          data.write (array d.count-1 i->d[i+1])
+          d[0]
+
+    match res
+      t T => t
+      depleted => nil
+      retry => dequeue
+

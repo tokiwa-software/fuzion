@@ -126,6 +126,20 @@ class CIdent extends CExpr
     };
   }
 
+
+  /**
+   * create identifier for choice entry.
+   *
+   * @param tagNum The tag number 0..
+   */
+  public static CIdent choiceEntry(int tagNum)
+  {
+    if (PRECONDITIONS) require
+      (tagNum >= 0);
+
+    return new CIdent(CNames.CHOICE_ENTRY_NAME + tagNum);
+  }
+
 }
 
 /* end of file */

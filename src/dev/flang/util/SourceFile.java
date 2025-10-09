@@ -230,7 +230,7 @@ public class SourceFile extends ANY
         catch (IOException e)
           {
             sf = new byte[0];
-            Errors.error(new SourcePosition(/* cannt use `this` here since `_bytes` etc. is not intialized yet */
+            Errors.error(new SourcePosition(/* cannot use `this` here since `_bytes` etc. is not initialized yet */
                                             new SourceFile(fileName, sf),
                                             0),
                          "I/O Error: " + e.getMessage(),
