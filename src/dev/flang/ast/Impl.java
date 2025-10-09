@@ -499,9 +499,34 @@ public class Impl extends ANY
                 if (res != null && !_infiniteRecursionInResolveTypes)
                   {
                     _infiniteRecursionInResolveTypes = true;
+                    System.out.println("RESOLVE "+actl+" for "+ic.resolvedFor());
                     actl = res.resolveType(actl, ic.resolvedFor());
                     aargs.set(actl);
                     _infiniteRecursionInResolveTypes = false;
+                  }
+                else if (true)
+                  {
+                    //                    actl = null;
+                  }
+                else if (false)
+                  {
+                    actl = new Call(actl.pos(), "RECURSIVE CALL")
+                      {
+                        {
+                          _calledFeature = null;
+                        }
+                        @Override AbstractType typeForInferencing() { return Types.resolved.t_void; }
+                        @Override public AbstractType type() { return Types.resolved.t_void; }
+                        @Override
+                        protected AbstractType targetType(Resolution res, Context context)
+                        {
+                          return Types.resolved.t_void;
+                        }
+                        public Expr visit(FeatureVisitor v, AbstractFeature outer)
+                        {
+                          return this;
+                        }
+                      };
                   }
                 if (CHECKS) check
                   (result == Call.ERROR);
@@ -537,7 +562,10 @@ public class Impl extends ANY
     for (var i = 0; i < _initialCalls.size(); i++)
       {
         var iv = initialValueFromCall(i, res);
-        exprs.add(iv);
+        if (iv != null)
+          {
+            exprs.add(iv);
+          }
       }
     var result = Expr.union(exprs, Context.NONE, urgent);
     if (urgent)
@@ -547,7 +575,7 @@ public class Impl extends ANY
             AstErrors.noActualCallFound(formalArg);
             result = Types.t_ERROR;
           }
-        else if (result == Types.t_ERROR)
+        else if (result == Types.resolved.t_void)
           {
             var types = new List<AbstractType>();
             var positions = new TreeMap<AbstractType, List<SourcePosition>>();
@@ -567,11 +595,33 @@ public class Impl extends ANY
                     l.add(iv.pos());
                   }
               }
+            if (result == Types.resolved.t_void)
+              {
+                System.out.println("urgent: result is void: "+result+" for "+pos.show());
+                for (var ic : _initialCalls)
+                  System.out.println("call "+ic+" at "+ic.pos().show());
+              }
+            if (!urgent && result == Types.resolved.t_void)
+              {
+                result = null;
+              }
             AstErrors.incompatibleTypesOfActualArguments(formalArg, types, positions);
           }
       }
+    else
+      {
+            if (result == Types.resolved.t_void)
+              {
+                result = null;
+              }
+                System.out.println("not urgent, result is "+result+" for "+pos.show());
+      }
     if (POSTCONDITIONS) ensure
       (!urgent || result != null);
+    System.out.println("final: u:"+urgent+" result is "+result+" for "+pos.show());
+    if (result == Types.t_FORWARD_CYCLIC)
+      result = Types.resolved.t_void;
+    System.out.println("final: u:"+urgent+" result is "+result+" for "+pos.show());
 
     return result;
   }

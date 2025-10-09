@@ -1805,16 +1805,17 @@ public class AstErrors extends ANY
           "Faulty type parameter: " + s(t));
   }
 
-  static void forwardTypeInference(SourcePosition pos, AbstractFeature f, SourcePosition at)
+  static void forwardTypeInference(SourcePosition pos, AbstractFeature cf)
   {
     // NYI: It would be nice to output the whole cycle here as part of the detail message
-    if (!any() || !(f instanceof Feature ff && ff.impl() == Impl.ERROR))
+    if (!any() || !(cf instanceof Feature cff && cff.impl() == Impl.ERROR))
       {
         error(pos,
               "Illegal forward or cyclic type inference",
               "The definition of a field using " + ss(":=") + ", or of a feature or function\n" +
               "using " + ss("=>") + " must not create cyclic type dependencies.\n"+
-              "Referenced feature: " + s(f) + " at " + at.show());
+              (cf == Types.f_ERROR ? ""
+                                   : "Referenced feature: " + s(cf) + " at " + cf.pos().show()));
       }
   }
 
