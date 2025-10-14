@@ -28,16 +28,22 @@
 private:public meta_data(
           # the size of the file/dir
           public size i64,
-          # the time of last modification of the file/dir
+          # the time of last access to the path
+          # (or some other timestamp when filesystem mounted with noatime)
           public atime i64,
+          # the time of last modification of the file/dir
           public mtime i64,
+          # the time of creation of the path
           public ctime i64,
           # boolean to check if the pathname is a regular file
           public is_regular bool,
           # boolean to check if the pathname is a directory
           public is_dir bool,
+          # is the path a symlink
           public is_link bool,
+          # owner of the path
           public uid i64,
+          # group of the path
           public gid i64
           ) is
 
