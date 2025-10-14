@@ -49,7 +49,7 @@ int fzE_unsetenv(const char *name);
 int fzE_set_blocking(int sockfd, int blocking);
 
 // close a socket descriptor
-int fzE_close(int sockfd);
+int fzE_socket_close(int sockfd);
 
 // initialize a new socket for given
 // family, socket_type, protocol

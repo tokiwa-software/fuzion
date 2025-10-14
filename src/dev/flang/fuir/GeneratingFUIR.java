@@ -3136,56 +3136,6 @@ public class GeneratingFUIR extends FUIR
   }
 
 
-  /*-----------------  convenience methods for effects  -----------------*/
-
-
-  /**
-   * Is cl one of the intrinsics in effect that changes the effect in
-   * the current environment?
-   *
-   * @param cl the id of the intrinsic clazz
-   *
-   * @return true for effect.install and similar features.
-   */
-  @Override
-  public boolean isEffectIntrinsic(int cl)
-  {
-    if (PRECONDITIONS) require
-      (cl != NO_CLAZZ);
-
-    return
-      (clazzKind(cl) == FeatureKind.Intrinsic) &&
-      switch(clazzOriginalName(cl))
-      {
-      case "effect.type.abort0"  ,
-           "effect.type.default0",
-           FuzionConstants.EFFECT_INSTATE_NAME,
-           "effect.type.is_instated0",
-           "effect.type.replace0" -> true;
-      default -> false;
-      };
-  }
-
-
-  /**
-   * For an intrinsic in effect that changes the effect in the
-   * current environment, return the type of the environment.  This type is used
-   * to distinguish different environments.
-   *
-   * @param cl the id of the intrinsic clazz
-   *
-   * @return the type of the outer feature of cl
-   */
-  @Override
-  public int effectTypeFromIntrinsic(int cl)
-  {
-    if (PRECONDITIONS) require
-      (isEffectIntrinsic(cl));
-
-    return clazzActualGeneric(clazzOuterClazz(cl), 0);
-  }
-
-
   /*------------------------------  arrays  -----------------------------*/
 
   /*----------------------------  constants  ----------------------------*/

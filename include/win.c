@@ -52,10 +52,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <namedpipeapi.h>
 #include <direct.h>
 
-#ifdef FUZION_ENABLE_THREADS
 // NYI: UNDER DEVELOPMENT: remove POSIX imports
 #include <pthread.h>
-#endif
 
 #include "fz.h"
 
@@ -236,7 +234,7 @@ int fzE_get_protocol(int protocol)
 
 
 // close a socket descriptor
-int fzE_close(int sockfd)
+int fzE_socket_close(int sockfd)
 {
   closesocket(sockfd);
   return fzE_net_error();
@@ -270,31 +268,20 @@ int fzE_getaddrinfo(int family, int socktype, int protocol, int flags, char * ho
 
 
 // create a new socket and bind to given host:port
-// result[0] contains either an errorcode or a socket descriptor
 // -1 error, 0 success
-int fzE_bind(int family, int socktype, int protocol, char * host, char * port, int32_t * result){
-  result[0] = fzE_socket(family, socktype, protocol);
-  if (result[0] == -1)
-  {
-    last_error = fzE_net_error();
-    return -1;
-  }
+int fzE_bind(int sockfd, int family, int socktype, int protocol, char * host, char * port){
   struct addrinfo *addr_info = NULL;
   int addrRes = fzE_getaddrinfo(family, socktype, protocol, AI_PASSIVE, host, port, &addr_info);
   if (addrRes != 0)
   {
-    fzE_close(result[0]);
-    result[0] = addrRes;
-    return -1;
-  }
-  int bind_res = bind(result[0], addr_info->ai_addr, (int)addr_info->ai_addrlen);
-
-  if(bind_res == -1)
-  {
     last_error = fzE_net_error();
-    fzE_close(result[0]);
     return -1;
   }
+  int bind_res = bind(sockfd, addr_info->ai_addr, (int)addr_info->ai_addrlen);
+  if (bind_res != 0)
+    {
+      last_error = fzE_net_error();
+    }
   freeaddrinfo(addr_info);
   return bind_res;
 }
@@ -317,31 +304,20 @@ int fzE_accept(int sockfd){
 
 
 // create connection for given parameters
-// result[0] contains either an errorcode or a socket descriptor
 // -1 error, 0 success
-int fzE_connect(int family, int socktype, int protocol, char * host, char * port, int32_t * result){
-  // get socket
-  result[0] = fzE_socket(family, socktype, protocol);
-  if (result[0] == -1)
-  {
-    result[0] = fzE_net_error();
-    return -1;
-  }
+int fzE_connect(int family, int socktype, int protocol, char * host, char * port){
   struct addrinfo *addr_info = NULL;
   int addrRes = fzE_getaddrinfo(family, socktype, protocol, 0, host, port, &addr_info);
   if (addrRes != 0)
   {
-    fzE_close(result[0]);
-    result[0] = addrRes;
+    last_error = fzE_net_error();
     return -1;
   }
-  int con_res = connect(result[0], addr_info->ai_addr, addr_info->ai_addrlen);
-  if(con_res == -1)
-  {
-    // NYI: UNDER DEVELOPMENT: do we want to try another address in addr_info->ai_next?
-    fzE_close(result[0]);
-    result[0] = fzE_net_error();
-  }
+  int con_res = connect(sockfd, addr_info->ai_addr, addr_info->ai_addrlen);
+  if (con_res != 0)
+    {
+      last_error = fzE_net_error();
+    }
   freeaddrinfo(addr_info);
   return con_res;
 }
@@ -564,15 +540,27 @@ int fzE_stat(const char *pathname, int64_t * metadata)
     fileSize.HighPart = fileInfo.nFileSizeHigh;
     fileSize.LowPart = fileInfo.nFileSizeLow;
 
-    FILETIME ft = fileInfo.ftLastWriteTime;
-    ULARGE_INTEGER ull;
-    ull.LowPart = ft.dwLowDateTime;
-    ull.HighPart = ft.dwHighDateTime;
+    ULARGE_INTEGER lat;
+    lat.LowPart =  fileInfo.ftLastAccessTime.dwLowDateTime;
+    lat.HighPart = fileInfo.ftLastAccessTime.dwHighDateTime;
+
+    ULARGE_INTEGER lwt;
+    lwt.LowPart =  fileInfo.ftLastWriteTime.dwLowDateTime;
+    lwt.HighPart = fileInfo.ftLastWriteTime.dwHighDateTime;
+
+    ULARGE_INTEGER ct;
+    ct.LowPart =  fileInfo.ftCreationTime.dwLowDateTime;
+    ct.HighPart = fileInfo.ftCreationTime.dwHighDateTime;
 
     metadata[0] = fileSize.QuadPart;
-    metadata[1] = (ull.QuadPart / 10000000ULL) - 11644473600ULL;
-    metadata[2] = (fileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? 0 : 1;
-    metadata[3] = (fileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? 1 : 0;
+    metadata[1] = (lat.QuadPart / 10000000ULL) - 11644473600ULL; /* Time of last access */
+    metadata[2] = (lwt.QuadPart / 10000000ULL) - 11644473600ULL; /* Time of last modification */
+    metadata[3] = (ct.QuadPart  / 10000000ULL) - 11644473600ULL; /* Time of last status change */
+    metadata[4] = (fileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? 0 : 1;
+    metadata[5] = (fileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? 1 : 0;
+    metadata[6] = 0; /* NYI: UNDER DEVELOPMENT: is link  */
+    metadata[7] = 0; /* NYI: UNDER DEVELOPMENT: uid  */
+    metadata[8] = 0; /* NYI: UNDER DEVELOPMENT: gid  */
 
     result = 0;
   }
@@ -598,9 +586,7 @@ int fzE_lstat(const char *pathname, int64_t * metadata)
   return fzE_stat(pathname, metadata);
 }
 
-#ifdef FUZION_ENABLE_THREADS
 pthread_mutex_t fzE_global_mutex;
-#endif
 
 /**
  * Run plattform specific initialisation code
@@ -612,7 +598,6 @@ void fzE_init()
   SetConsoleOutputCP(CP_UTF8);
   // also set input code page
   SetConsoleCP(CP_UTF8);
-#ifdef FUZION_ENABLE_THREADS
   pthread_mutexattr_t attr;
   fzE_mem_zero_secure(&fzE_global_mutex, sizeof(fzE_global_mutex));
   bool res = pthread_mutexattr_init(&attr) == 0 &&
@@ -620,7 +605,6 @@ void fzE_init()
             // pthread_mutexattr_setprotocol(&attr, PTHREAD_PRIO_INHERIT) == 0 &&
             pthread_mutex_init(&fzE_global_mutex, &attr) == 0;
   assert(res);
-#endif
 
 #ifdef GC_THREADS
   GC_INIT();
@@ -634,7 +618,6 @@ void fzE_init()
 void * fzE_thread_create(void *(*code)(void *),
                           void *restrict args)
 {
-#ifdef FUZION_ENABLE_THREADS
   pthread_t * pt = fzE_malloc_safe(sizeof(pthread_t));
 #ifdef GC_THREADS
   int res = GC_pthread_create(pt,NULL,code,args);
@@ -647,11 +630,6 @@ void * fzE_thread_create(void *(*code)(void *),
     exit(EXIT_FAILURE);
   }
   return pt;
-#else
-  printf("You discovered a severe bug. (fzE_thread_join)");
-  exit(EXIT_FAILURE);
-  return NULL;
-#endif
 }
 
 
@@ -660,14 +638,12 @@ void * fzE_thread_create(void *(*code)(void *),
  */
 void fzE_thread_join(void * thrd)
 {
-#ifdef FUZION_ENABLE_THREADS
 #ifdef GC_THREADS
   GC_pthread_join(*(pthread_t *)thrd, NULL);
 #else
   pthread_join(*(pthread_t *)thrd, NULL);
 #endif
   fzE_free(thrd);
-#endif
 }
 
 
@@ -676,12 +652,8 @@ void fzE_thread_join(void * thrd)
  */
 void fzE_lock()
 {
-#ifdef FUZION_ENABLE_THREADS
   int res = pthread_mutex_lock(&fzE_global_mutex);
   assert( res == 0 );
-#else
-  printf("You discovered a severe bug. (fzE_lock)");
-#endif
 }
 
 
@@ -690,12 +662,8 @@ void fzE_lock()
  */
 void fzE_unlock()
 {
-#ifdef FUZION_ENABLE_THREADS
   int res = pthread_mutex_unlock(&fzE_global_mutex);
   assert( res == 0 );
-#else
-  printf("You discovered a severe bug. (fzE_unlock)");
-#endif
 }
 
 
@@ -929,6 +897,8 @@ void * fzE_file_open(char * file_name, int64_t * open_results, file_open_mode mo
       NULL
   );
 
+  free(file_name_w);
+
   open_results[0] = hFile == INVALID_HANDLE_VALUE
     ? (int64_t)GetLastError()
     : 0;
@@ -948,85 +918,47 @@ void * fzE_file_open(char * file_name, int64_t * open_results, file_open_mode mo
 
 
 void * fzE_mtx_init() {
-#ifdef FUZION_ENABLE_THREADS
   pthread_mutex_t *mtx = (pthread_mutex_t *)fzE_malloc_safe(sizeof(pthread_mutex_t));
   return pthread_mutex_init(mtx, NULL) == 0 ? (void *)mtx : NULL;
-#else
-  return NULL;
-#endif
 }
 
 int32_t fzE_mtx_lock(void * mtx) {
-#ifdef FUZION_ENABLE_THREADS
   return pthread_mutex_lock((pthread_mutex_t *)mtx) == 0 ? 0 : -1;
-#else
-  return 0;
-#endif
 }
 
 int32_t fzE_mtx_trylock(void * mtx) {
-#ifdef FUZION_ENABLE_THREADS
   return pthread_mutex_trylock((pthread_mutex_t *)mtx) == 0 ? 0 : -1;
-#else
-  return 0;
-#endif
 }
 
 int32_t fzE_mtx_unlock(void * mtx) {
-#ifdef FUZION_ENABLE_THREADS
   return pthread_mutex_unlock((pthread_mutex_t *)mtx) == 0 ? 0 : -1;
-#else
-  return 0;
-#endif
 }
 
 void fzE_mtx_destroy(void * mtx) {
-#ifdef FUZION_ENABLE_THREADS
   pthread_mutex_destroy((pthread_mutex_t *)mtx);
   // NYI: free(mtx);
-#else
-#endif
 }
 
 void * fzE_cnd_init() {
-#ifdef FUZION_ENABLE_THREADS
   pthread_cond_t *cnd = (pthread_cond_t *)fzE_malloc_safe(sizeof(pthread_cond_t));
   return pthread_cond_init(cnd, NULL) == 0 ? (void *)cnd : NULL;
-#else
- return NULL;
-#endif
 }
 
 int32_t fzE_cnd_signal(void * cnd) {
-#ifdef FUZION_ENABLE_THREADS
   return pthread_cond_signal((pthread_cond_t *)cnd) == 0 ? 0 : -1;
-#else
-  return 0;
-#endif
 }
 
 int32_t fzE_cnd_broadcast(void * cnd) {
-#ifdef FUZION_ENABLE_THREADS
   return pthread_cond_broadcast((pthread_cond_t *)cnd) == 0 ? 0 : -1;
-#else
-  return 0;
-#endif
 }
 
 int32_t fzE_cnd_wait(void * cnd, void * mtx) {
-#ifdef FUZION_ENABLE_THREADS
   return pthread_cond_wait((pthread_cond_t *)cnd, (pthread_mutex_t *)mtx) == 0 ? 0 : -1;
-#else
-  return 0;
-#endif
 }
 
 void fzE_cnd_destroy(void * cnd) {
-#ifdef FUZION_ENABLE_THREADS
   pthread_cond_destroy((pthread_cond_t *)cnd);
   // NYI: free(cnd);
-#else
-#endif
 }
 
 

@@ -1151,9 +1151,9 @@ public class AstErrors extends ANY
   {
     cannotRedefine(pos, f, existing, "Redefinition must be declared using modifier " + skw("redef") + "",
                    "To solve this, if you did not intend to redefine an inherited feature, " +
-                   "choose a different name for " + sbnf(f) + ".  Otherwise, if you do " +
-                   "want to redefine an inherited feature, add a " + skw("redef") + " modifier before the " +
-                   "declaration of " + s(f) + ".");
+                   "choose a different name for " + sbnf(f) + ".\n" +
+                   "Otherwise, if you want to redefine an inherited feature, add a " + skw("redef") +
+                   " modifier before the declaration of " + s(f) + ".");
   }
 
   public static void redefineModifierDoesNotRedefine(AbstractFeature af, List<FeatureAndOuter> hiddenFeaturesSameSignature)

@@ -809,11 +809,6 @@ public class C extends ANY
         command.addAll("-DFUZION_LINK_JVM");
       }
 
-    if (usesThreads())
-      {
-        command.addAll("-DFUZION_ENABLE_THREADS");
-      }
-
     // disable trigraphs:
     // "Trigraphs are not popular and many compilers implement them incorrectly. Portable code should not rely on trigraphs being either converted or ignored."
     // source: https://gcc.gnu.org/onlinedocs/cpp/Initial-processing.html

@@ -430,8 +430,9 @@ public String ref : property.equatable, property.hashable, property.orderable is
     pre
       debug: n > 0
   =>
-    codepoints.chunk n
-                 .map String.type.from_codepoints
+    codepoints
+      .chunk n
+      .map String.type.from_codepoints
 
 
   # check if this string starts with given prefix

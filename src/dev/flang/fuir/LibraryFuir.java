@@ -546,33 +546,6 @@ public class LibraryFuir extends FUIR {
       };
   }
 
-  @Override
-  public boolean isEffectIntrinsic(int cl)
-  {
-    if (PRECONDITIONS) require
-      (cl != NO_CLAZZ);
-
-    return
-      (clazzKind(cl) == FeatureKind.Intrinsic) &&
-      switch(clazzOriginalName(cl))
-      {
-      case "effect.type.abort0"  ,
-           "effect.type.default0",
-           "effect.type.instate0",
-           "effect.type.is_instated0",
-           "effect.type.replace0" -> true;
-      default -> false;
-      };
-  }
-
-  @Override
-  public int effectTypeFromIntrinsic(int cl)
-  {
-    if (PRECONDITIONS) require
-      (isEffectIntrinsic(cl));
-
-    return clazzActualGeneric(clazzOuterClazz(cl), 0);
-  }
 
   @Override
   public String clazzSrcFile(int cl)
