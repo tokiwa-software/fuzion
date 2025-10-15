@@ -577,7 +577,8 @@ public class Impl extends ANY
             result = Types.t_ERROR;
           }
         else if (result != Types.t_FORWARD_CYCLIC &&
-                 result.compareTo(Types.resolved.t_void) == 0)
+                 result.compareTo(Types.resolved.t_void) == 0 ||
+                 result == Types.t_ERROR)
           {
             var types = new List<AbstractType>();
             var positions = new TreeMap<AbstractType, List<SourcePosition>>();
