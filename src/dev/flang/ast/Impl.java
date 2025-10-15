@@ -615,7 +615,7 @@ public class Impl extends ANY
             else
               {
                 if (CHECKS) check
-                  (positions.size() == 0);  // would be strange if there is only one call that causes incompatibility
+                  (Errors.any() || positions.size() == 0);  // would be strange if there is only one call that causes incompatibility
               }
           }
       }
