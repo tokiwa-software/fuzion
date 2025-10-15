@@ -1783,7 +1783,7 @@ public class Call extends AbstractCall
     return
       Errors.any() &&
       (_actuals .stream().anyMatch(x -> x.typeForInferencing() == Types.t_ERROR) ||
-       _generics.stream().anyMatch(x -> (x == Types.t_ERROR     ||
+      false &&  _generics.stream().anyMatch(x -> (x == Types.t_ERROR     ||
                                          x == Types.t_UNDEFINED   )                  )    );
   }
 
