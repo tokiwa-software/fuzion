@@ -295,6 +295,7 @@ public class Function extends AbstractLambda
           {
             AstErrors.wrongNumberOfArgumentsInLambda(pos(), _names, t);
             t = Types.t_ERROR;
+            _type = t;
           }
         else
           {
