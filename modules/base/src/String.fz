@@ -523,6 +523,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   public split_at_byte(idx i32) (String, String)
     pre
       debug: 0 ≤ idx ≤ byte_length
+      debug: utf8.is_array_backed
   =>
     (substring 0 idx, substring idx byte_length)
 
