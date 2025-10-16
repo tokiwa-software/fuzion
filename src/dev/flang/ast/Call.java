@@ -543,7 +543,7 @@ public class Call extends AbstractCall
                   }
                 else
                   {
-                    AstErrors.forwardTypeInference(c.pos(), c._calledFeature, c._calledFeature.pos());
+                    AstErrors.forwardTypeInference(c.pos(), c._calledFeature);
                   }
                 setToErrorState();
               };
@@ -1175,20 +1175,21 @@ public class Call extends AbstractCall
     if (result == null)
       {
         // NYI: CLEANUP: Why can't we use `errorInActuals()` in the following condition?
-        if (hasPendingError || _actuals.stream().anyMatch(a -> a.type() == Types.t_ERROR))
+        if (hasPendingError || errorInActuals())
           {
             result = Types.t_ERROR;
+            setToErrorState0();
           }
-        else if (calledFeatureKnown() && calledFeature().state().atLeast(State.RESOLVED_TYPES))
+        else if (calledFeatureKnown() && calledFeature().state().atLeast(State.RESOLVED_TYPES) && !missingGenerics().isEmpty())
           {
             AstErrors.failedToInferActualGeneric(_pos, _calledFeature, missingGenerics());
             result = Types.t_ERROR;
+            setToErrorState0();
           }
         else
           {
             result = Types.t_FORWARD_CYCLIC;
           }
-        setToErrorState0();
       }
 
     if (POSTCONDITIONS)
@@ -1355,13 +1356,13 @@ public class Call extends AbstractCall
                                    : cf.resultTypeIfPresentUrgent(res, urgent);
         _recursiveResolveType = false;
 
-        if (result == Types.t_FORWARD_CYCLIC)
+        if (!isDefunct() && result == Types.t_FORWARD_CYCLIC)
           {
             // Handling of cyclic type inference. It might be
             // better if this was done in `Feature.resultType`, but
             // there we do not have access to Call.this.pos(), so
             // we do it here.
-            AstErrors.forwardTypeInference(pos(), _calledFeature, _calledFeature.pos());
+            AstErrors.forwardTypeInference(pos(), _calledFeature);
             result = Types.t_ERROR;
             setToErrorState();
           }

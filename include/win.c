@@ -305,7 +305,7 @@ int fzE_accept(int sockfd){
 
 // create connection for given parameters
 // -1 error, 0 success
-int fzE_connect(int family, int socktype, int protocol, char * host, char * port){
+int fzE_connect(int sockfd, int family, int socktype, int protocol, char * host, char * port){
   struct addrinfo *addr_info = NULL;
   int addrRes = fzE_getaddrinfo(family, socktype, protocol, 0, host, port, &addr_info);
   if (addrRes != 0)
