@@ -98,7 +98,16 @@ public class C extends ANY
     @Override
     public CStmnt expressionHeader(int s)
     {
-      return comment(String.format("%4d: %s", s, _fuir.codeAtAsString(s)));
+      var comment = comment(String.format("%4d: %s", s, _fuir.codeAtAsString(s)));
+      var pos = _fuir.sitePos(s);
+      return pos == null || pos.isBuiltIn()
+            ? comment
+            : CStmnt.seq(
+              comment,
+              CStmnt
+                // NYI: UNDER DEVELOPMENT: re-replace "{base.fum}/" etc. in sourceFile?
+                .directive("line " + pos.line() + " \"" + pos._sourceFile._fileName + "\"")
+              );
     }
 
 
@@ -733,6 +742,11 @@ public class C extends ANY
         command.add("--target=" + cTarget.get());
       }
 
+    if (_options._debugBuild)
+      {
+        command.add("-g");
+      }
+
     /*
      * "Generate code to catch integer overflow errors.
      *  Signed integer overflow is undefined in C. With this flag,
@@ -765,7 +779,10 @@ public class C extends ANY
           "-Wmissing-include-dirs"
           );
 
-        command.addAll("-O3");
+        if (!_options._debugBuild)
+          {
+            command.addAll("-O3");
+          }
       }
 
     command.addAll(

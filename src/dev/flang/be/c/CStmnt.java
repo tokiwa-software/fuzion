@@ -314,6 +314,25 @@ abstract class CStmnt extends ANY
 
 
   /**
+   * a directive for the preprocessor
+   */
+  static CStmnt directive(String s)
+  {
+    return new CStmnt()
+      {
+        boolean isEmpty()
+        {
+          return true;
+        }
+        void code(CString sb)
+        {
+          sb.append("#").append(s).append("\n");
+        }
+      };
+  }
+
+
+  /**
    * not really a statement, but a comment
    */
   static CStmnt lineComment(String s)
@@ -327,6 +346,25 @@ abstract class CStmnt extends ANY
         void code(CString sb)
         {
           sb.append("// ").append(s).append("\n");
+        }
+      };
+  }
+
+
+  /**
+   * not really a statement, but a comment
+   */
+  static CStmnt multiLineComment(String s)
+  {
+    return new CStmnt()
+      {
+        boolean isEmpty()
+        {
+          return true;
+        }
+        void code(CString sb)
+        {
+          sb.append("/* ").append(s).append(" */").append("\n");
         }
       };
   }
