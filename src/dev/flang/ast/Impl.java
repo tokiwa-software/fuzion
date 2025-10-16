@@ -552,8 +552,7 @@ public class Impl extends ANY
             AstErrors.noActualCallFound(formalArg);
             result = Types.t_ERROR;
           }
-        else if (result == Types.t_ERROR ||
-                 result.compareTo(Types.resolved.t_void) == 0)
+        else if (result == Types.t_ERROR)
           {
             var types = new List<AbstractType>();
             var positions = new TreeMap<AbstractType, List<SourcePosition>>();
