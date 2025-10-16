@@ -540,9 +540,14 @@ public class Impl extends ANY
         exprs.add(iv);
       }
     var result = Expr.union(exprs, Context.NONE, urgent);
+
     if (urgent)
       {
-        if (_initialCalls.size() == 0)
+        if (result == Types.t_FORWARD_CYCLIC)
+          {
+            result = Types.resolved.t_void;
+          }
+        else if (_initialCalls.size() == 0)
           {
             AstErrors.noActualCallFound(formalArg);
             result = Types.t_ERROR;
@@ -555,7 +560,7 @@ public class Impl extends ANY
               {
                 var iv = initialValueFromCall(i, null);
                 var t = iv.typeForInferencing();
-                if (t != null)
+                if (t != null && t.compareTo(Types.resolved.t_void) != 0)
                   {
                     var l = positions.get(t);
                     if (l == null)
@@ -567,9 +572,22 @@ public class Impl extends ANY
                     l.add(iv.pos());
                   }
               }
-            AstErrors.incompatibleTypesOfActualArguments(formalArg, types, positions);
+            if (positions.size() > 1)
+              {
+                AstErrors.incompatibleTypesOfActualArguments(formalArg, types, positions);
+              }
+            else
+              {
+                if (CHECKS) check
+                  (Errors.any() || positions.size() == 0);  // would be strange if there is only one call that causes incompatibility
+              }
           }
       }
+    else if (result == Types.resolved.t_void || result == Types.t_FORWARD_CYCLIC)
+      {
+        result = null;
+      }
+
     if (POSTCONDITIONS) ensure
       (!urgent || result != null);
 
@@ -641,8 +659,10 @@ public class Impl extends ANY
     if (CHECKS) check
       (!urgent || result != null);
 
-    return result != null &&
-           result.isCotypeType() &&
+    return result != null                   &&
+           result != Types.t_FORWARD_CYCLIC &&
+           result != Types.t_ERROR          &&
+           result.isCotypeType()            &&
            /**
             * this allows code like:
             * p := codepoint.type
