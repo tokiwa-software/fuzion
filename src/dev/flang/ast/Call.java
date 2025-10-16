@@ -1766,7 +1766,7 @@ public class Call extends AbstractCall
   {
     return
       Errors.any() &&
-      _actuals .stream().anyMatch(x -> x.typeForInferencing() == Types.t_ERROR);
+      _actuals.stream().anyMatch(x -> x.typeForInferencing() == Types.t_ERROR);
   }
 
 

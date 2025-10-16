@@ -540,15 +540,20 @@ public class Impl extends ANY
         exprs.add(iv);
       }
     var result = Expr.union(exprs, Context.NONE, urgent);
+
     if (urgent)
       {
-        if (_initialCalls.size() == 0)
+        if (result == Types.t_FORWARD_CYCLIC)
+          {
+            result = Types.resolved.t_void;
+          }
+        else if (_initialCalls.size() == 0)
           {
             AstErrors.noActualCallFound(formalArg);
             result = Types.t_ERROR;
           }
-        else if (result.compareTo(Types.resolved.t_void) == 0 ||
-                 result == Types.t_ERROR)
+        else if (result == Types.t_ERROR ||
+                 result.compareTo(Types.resolved.t_void) == 0)
           {
             var types = new List<AbstractType>();
             var positions = new TreeMap<AbstractType, List<SourcePosition>>();
@@ -579,14 +584,9 @@ public class Impl extends ANY
               }
           }
       }
-    else if (result == Types.resolved.t_void)
+    else if (result == Types.resolved.t_void || result == Types.t_FORWARD_CYCLIC)
       {
         result = null;
-      }
-
-    if (result == Types.t_FORWARD_CYCLIC)
-      {
-        result = Types.resolved.t_void;
       }
 
     if (POSTCONDITIONS) ensure

@@ -281,11 +281,13 @@ public class Function extends AbstractLambda
       }
     else if (!t.isLambdaTarget(res))
       {
-        // suppress error for t_UNDEFINED, but only if other error was already reported
-        if (t != Types.t_UNDEFINED || !Errors.any())
+        // suppress error for t_ERROR and t_UNDEFINED, but only if other error was already reported
+        if (t != Types.t_ERROR || t != Types.t_UNDEFINED || !Errors.any())
           {
             AstErrors.expectedFunctionTypeForLambda(pos(), t, from);
           }
+        t = Types.t_ERROR;
+        _type = t;
       }
     else
       {
