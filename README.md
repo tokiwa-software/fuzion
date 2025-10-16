@@ -240,6 +240,8 @@ Have fun!
 
 ### Running all tests
 
+> Since there are a lot of tests this will likely take 1h or more. See below on how to run a single test.
+
 In the source folder, to run all tests across all backends use the following command:
 
     make run_tests
@@ -270,13 +272,13 @@ where `_BACKEND_` may be one on the following:
  - effect
  - leave out to run test on all backends
 
-Unless you specified a custom build directory you need to substitute `$BUILD_DIR` by just `build`.
+Unless you specified a custom build directory you need to substitute `_BUILD_DIR_` by just `build`.
 
 Finally instead of `_TEST_` specify the name of the test.
 
 Full example:
 
-    make jvm -C ./build/tests/hello
+    make jvm -C build/tests/hello
 
 ### Record a test
 
@@ -294,7 +296,9 @@ Full example:
 
 This will record stdout and stderr and save those in files in the test directory. (HelloWorld.fz.expected_out, HelloWorld.fz.expected_err)
 
-
+> To copy the new or updated recordings from the build folder to the source folder you can use this command:
+>
+>     rsync -a --include='*/' --include='*.expected_*' --include='*.effect' --exclude='*' build/tests/ tests/
 
 
 ## Soft dependencies
