@@ -21,6 +21,8 @@
 #
 # -----------------------------------------------------------------------
 
+# NYI: BUG: test this with more than just ionos.de
+#
 public mail is
 
 
@@ -57,7 +59,8 @@ public mail is
 
     # the credentials separated by NUL, base64 encoded
     cred =>
-      encodings.base64.encode_to_string "{codepoint 0}{username}{codepoint 0}{password}".utf8.as_array
+      # NYI: UNDER DEVELOPMENT: replace {codepoint 0} by just \0
+      encodings.base64.encode_to_string "{username}{codepoint 0}{username}{codepoint 0}{password}".utf8.as_array
 
 
     # from: https://en.wikipedia.org/wiki/List_of_SMTP_server_return_codes
@@ -65,12 +68,19 @@ public mail is
     auth_succeded => 235
 
 
-    # the actual mail
-    #
-    mail_data => """
+    mail_from => """
       MAIL FROM:<$from>
+      """.replace "\n" "\r\n"
+
+    rcpt_to => """
       RCPT TO:<$to>
+      """.replace "\n" "\r\n"
+
+    data => """
       DATA
+      """.replace "\n" "\r\n"
+
+    mail_data => """
       From: <$from>
       To: $to
       Subject: =?UTF-8?B?{encodings.base64.encode_to_string subject.utf8.as_array}?=
@@ -83,8 +93,11 @@ public mail is
         String.join (text.lines.flat_map (.chunk 78)) "\n"
       }
       .
+      """.replace "\n" "\r\n"
+
+    quit => """
       QUIT
-    """.replace "\n" "\r\n"
+      """.replace "\n" "\r\n"
 
     # this lm is used for the raw netwok connection
     #
@@ -94,6 +107,9 @@ public mail is
     #
     ssl_lm : mutate is
 
+
+    # write and flush, cause an exception on any error
+    #
     write_or_cause(LM type : mutate, s String) =>
       (io.buffered LM).writer.env
         .write s.utf8
@@ -104,6 +120,15 @@ public mail is
         .or_cause unit (x -> error "while flushing for $s, got $x")
 
 
+    # read a line, check if it starts with `expected`
+    # otherwise cause an exception using $where in the error string
+    #
+    read_or_cause(expected, where String) unit =>
+      l := (io.buffered ssl_lm).read_line ? s String => s | io.end_of_file => ""
+      if !l.starts_with expected
+        (exception unit).env.cause <| error "expected $expected after sending $where, got $l"
+
+
     # do the get request
     #
     write_request ! ssl_lm =>
@@ -112,10 +137,28 @@ public mail is
 
       write_or_cause ssl_lm "AUTH PLAIN $cred\r\n"
 
+      # NYI: BUG: might end up blocking
       _ := (io.buffered ssl_lm).read_line_while (s -> !s.starts_with $auth_succeded)
 
-      # NYI: UNDER DEVELOPMENT: do not assume SMTP PIPELINING, send each command separately
+      write_or_cause ssl_lm mail_from
+
+      read_or_cause "250" "MAIL FROM"
+
+      write_or_cause ssl_lm rcpt_to
+
+      read_or_cause "250" "RCPT TO"
+
+      write_or_cause ssl_lm data
+
+      read_or_cause "354" "DATA"
+
       write_or_cause ssl_lm mail_data
+
+      read_or_cause "250" "the mails data"
+
+      write_or_cause ssl_lm quit
+
+      read_or_cause "221" "QUIT"
 
 
     # connect and setup ssl
