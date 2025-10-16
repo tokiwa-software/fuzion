@@ -609,7 +609,6 @@ class LibraryOut extends ANY
     // NYI: UNDER DEVELOPMENT: tk used as size of generics, therefor typekind written _twice_
     // clean this up and merge the two type kinds?
 
-    //     System.out.println("t is "+t);
     var off = _data.offset(t);
     if (off >= 0)
       {
