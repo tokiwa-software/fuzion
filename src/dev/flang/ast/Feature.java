@@ -2529,7 +2529,6 @@ A ((Choice)) declaration must not contain a result type.
        result != Types.t_UNDEFINED,
        Errors.any() || result != Types.t_ERROR,
        result == null || result instanceof ResolvedType);
-    //    System.out.println("resultTypeIfPresentUrgent for "+qualifiedName()+" is "+result);
 
     return result;
   }

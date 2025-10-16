@@ -433,8 +433,6 @@ public class Call extends AbstractCall
   protected AbstractType targetType(Context context)
   {
     var tt = _target.type();
-    //    System.out.println("target is "+_target+" "+_target.pos().show());
-    //    System.out.println("tt is "+tt+" this is "+this+" "+pos().show());
     var cf = calledFeature();
     return
       // first, check if have a situation like `x.this.T.from_u32 0` where `T type : integer`
@@ -706,8 +704,6 @@ public class Call extends AbstractCall
    */
   public void setDefunct()
   {
-    //    System.out.println("*********** SETTING DEFUNCT: "+this);
-    //    Thread.dumpStack();
     _calledFeature = Types.f_ERROR;
     _actuals = new List<>();
     _generics = new List<>();
@@ -1179,7 +1175,7 @@ public class Call extends AbstractCall
     if (result == null)
       {
         // NYI: CLEANUP: Why can't we use `errorInActuals()` in the following condition?
-        if (hasPendingError || errorInActuals()) // _actuals.stream().anyMatch(a -> a.typeForInferencing() == Types.t_ERROR))
+        if (hasPendingError || errorInActuals())
           {
             result = Types.t_ERROR;
             setToErrorState0();
@@ -1358,8 +1354,6 @@ public class Call extends AbstractCall
            */
           cf.isTypeParameter()     ? cf.constraint(res, context)
                                    : cf.resultTypeIfPresentUrgent(res, urgent);
-        //        if (!cf.isOpenTypeParameter() && !cf.isTypeParameter())
-        //          System.out.println("resultType of "+cf.qualifiedName()+" is "+result+" for "+this);
         _recursiveResolveType = false;
 
         if (!isDefunct() && result == Types.t_FORWARD_CYCLIC)
@@ -1371,15 +1365,11 @@ public class Call extends AbstractCall
             AstErrors.forwardTypeInference(pos(), _calledFeature);
             result = Types.t_ERROR;
             setToErrorState();
-            //            System.out.println("defunc or cyclic: "+result);
           }
 
-        //        System.out.println("unadjusted: "+result+" for "+this);
         result = result == null
           ? result
           : adjustResultType(res, context, result);
-        //        System.out.println("adjusted: "+result);
-        //        if (result == Types.t_ERROR) Thread.dumpStack();
       }
 
     // see test #5391 when this might happen
@@ -1418,12 +1408,6 @@ public class Call extends AbstractCall
     // NYI: UNDER DEVELOPMENT: can we move more to adjustTypeToCall
     var t5 = t4 == Types.t_ERROR ? t4 : resolveForCalledFeature(res, t4, tt, context);
     var t6 = t5 == Types.t_ERROR ? t5 : calledFeature().isCotype() ? t5 : t5.replace_type_parameters_of_cotype_origin(context.outerFeature());
-    //    System.out.println("rt: "+rt);
-    //    System.out.println("tt: "+tt);
-    //    System.out.println("t0: "+t0);
-    //    System.out.println("t4: "+t4);
-    //    System.out.println("t5: "+t5);
-    //    System.out.println("t6: "+t6);
     return t6 == Types.t_UNDEFINED
       ? null
       : t6;
@@ -1782,9 +1766,7 @@ public class Call extends AbstractCall
   {
     return
       Errors.any() &&
-      (_actuals .stream().anyMatch(x -> x.typeForInferencing() == Types.t_ERROR) ||
-      false &&  _generics.stream().anyMatch(x -> (x == Types.t_ERROR     ||
-                                         x == Types.t_UNDEFINED   )                  )    );
+      _actuals .stream().anyMatch(x -> x.typeForInferencing() == Types.t_ERROR);
   }
 
 
@@ -2720,12 +2702,9 @@ public class Call extends AbstractCall
 
     if (_type == null || isTailRecursive(context.outerFeature()))
       {
-        //        System.out.println("whenResolvedTypes on "+this);
         _calledFeature.whenResolvedTypes(() ->
           {
-            //            System.out.println("whenResolvedTypes on "+this);
             var t2 = getActualResultType(res, context, true);
-            //            if (t2 == Types.t_ERROR) System.out.println("t2 is "+t2+" for "+this+" "+pos().show());
             if (CHECKS) check
               (_type == null || t2.compareTo(_type) == 0,
               Errors.any() || t2 != Types.t_ERROR);
