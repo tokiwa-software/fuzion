@@ -173,3 +173,27 @@ public false bool => false_
 #
 #
 public true bool => true_
+
+
+# takes an arbitrary amount of bool arguments and returns true if and only if
+# all of them are true
+#
+public all_of (B type..., values B...) bool =>
+  values.typed_foldf true T,e,v->
+    if T : bool
+      # NYI: BUG: #6071: cannot use && here
+      v & e
+    else
+      compile_time_panic
+
+
+# takes an arbitrary amount of bool arguments and returns true if and only if
+# any of them is true
+#
+public any_of (B type..., values B...) bool =>
+  values.typed_foldf false T,e,v->
+    if T : bool
+      # NYI: BUG: #6071: cannot use || here
+      v | e
+    else
+      compile_time_panic
