@@ -144,7 +144,9 @@ String.execute(
   # feed .stdin file to executed process?
   feed_stdin bool
 ) =>
-  ((split_if (=" ")).map (.replace protected_space " ")).execute feed_stdin
+  split_if (=" ")
+    .map (.replace protected_space " ")
+    .execute feed_stdin
 
 # execute this string by splitting at all whitespaces
 #
@@ -161,7 +163,7 @@ write_to_file(dest String, data String) =>
 # write file from src to dest
 #
 copy(src, dest String) =>
-  contents := (io.file.use src io.file.mode.read (() -> String.from_bytes (io.buffered io.file.file_mutate).read_fully)).or_panic
+  contents := read_file_fully src .or_panic
   write_to_file dest contents
 
 # read file f fully
