@@ -702,7 +702,9 @@ public class Intrinsics extends ANY
           if (POSTCONDITIONS) ensure
             (executor.fuir().clazzIsUnitType(ecl) || result != Value.NO_VALUE);
 
-          return result;
+          return executor.fuir().clazzIsRef(ecl)
+            ? result
+            : result.cloneValue(ecl);
         });
 
     /* NYI: UNDER DEVELOPMENT: abusing javaObjectToPlainInstance in mtx_*, cnd_* intrinsics

@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.jvm;
 
+import static dev.flang.ir.IR.NO_CLAZZ;
+
 import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeMap;
@@ -1005,8 +1007,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
                                                        "(" + Names.JAVA_LANG_STRING.descriptor() + ")V"))
                            .andThen(Expr.THROW)))                                                                     // -
           .andThen(rt == PrimitiveType.type_void ? Expr.UNIT : Expr.checkcast(rt));                                   // RT
-        var code = Expr.UNIT;
-        return new Pair<>(val, code);
+        return new Pair<>(jvm.cloneValue(si, val, ecl, NO_CLAZZ), Expr.UNIT);
       });
 
     put("native_string_length",
