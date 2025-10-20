@@ -34,6 +34,7 @@ memcpy(dest Native_Ref, src array u8, sz i32) Native_Ref => native
 wolfSSL_free(ssl Native_Ref) unit => native
 wolfSSL_CTX_free(ssl Native_Ref) unit => native
 wolfSSL_Cleanup unit => native
+wolfSSL_get_error(ssl Native_Ref, ret i32) i32 => native
 
 
 # NYI: UNDER DEVELOPMENT: define effect
@@ -76,7 +77,7 @@ public wolfssl(T type, LM type : mutate, LM2 type: mutate, code ()->T) T ! LM, L
       arr := array u8 count i->0
       res := wolfSSL_read ssl arr count
       if res = -1
-        error "error reading from ssl."
+        error "error reading from ssl ($res) {wolfSSL_get_error ssl res}"
       else if res = 0
         io.end_of_file
       else
@@ -88,8 +89,9 @@ public wolfssl(T type, LM type : mutate, LM2 type: mutate, code ()->T) T ! LM, L
   wolf_ssl_writer_handler : io.Write_Handler is
 
     public redef write(b Sequence u8) outcome unit =>
-      if wolfSSL_write ssl b.as_array b.count <= 0
-        error "error writing to ssl connection."
+      res := wolfSSL_write ssl b.as_array b.count
+      if res <= 0
+        error "error writing to ssl connection ($res) {wolfSSL_get_error ssl res}"
 
 
   r := ((io.buffered LM2).reader wolf_ssl_read_handler) ! ()->
