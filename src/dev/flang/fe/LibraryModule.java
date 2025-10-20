@@ -193,9 +193,7 @@ public class LibraryModule extends Module implements MirModule
     if (CHECKS) check
       (_universe.isUniverse());
 
-    _dependsOn = loadDependsOn.apply(universe());
-    if (CHECKS)
-      check(_dependsOn != null);
+    var dependsOn = new List<>(loadDependsOn.apply(universe()));
 
     for (int i = 0; i < mrc; i++)
       {
@@ -211,7 +209,12 @@ public class LibraryModule extends Module implements MirModule
         _modules[i] = mr;
         moduleOffset = moduleOffset + mr.size();
         p = moduleRefNextPos(p);
+
+        dependsOn.add(m);
       }
+    _dependsOn = dependsOn.toArray(LibraryModule[]::new);
+    if (CHECKS)
+      check(_dependsOn != null);
 
     var dm = fe._options._dumpModules;
     if (DUMP ||
