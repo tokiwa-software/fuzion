@@ -23,6 +23,10 @@ Scorecard](https://api.securityscorecards.dev/projects/github.com/tokiwa-softwar
      * [Windows](#windows)
    * [Build](#build)
    * [Run](#run)
+   * [Tests](#tests)
+     * [Running all tests](#running-all-tests)
+     * [Run a single test](#run-a-single-test)
+     * [Record a test](#record-a-test)
    * [Soft dependencies](#soft-dependencies)
    * [Install prebuilt](#install-prebuilt)
    * [Language server](#language-server)
@@ -230,6 +234,71 @@ To compile the same example (requires clang C compiler):
     ./factors
 
 Have fun!
+
+
+## Tests
+
+### Running all tests
+
+> Since there are a lot of tests this will likely take 1h or more. See below on how to run a single test.
+
+In the source folder, to run all tests across all backends use the following command:
+
+    make run_tests
+
+When testing is finished you will be presented a summary of succeeded, failed and skipped tests.
+
+To run the tests for one specific backend only use:
+
+    # for jvm backend
+    make run_tests_jvm
+
+    # for c backend
+    make run_tests_c
+
+    # for interpreter backend
+    make run_tests_int
+
+### Run a single test
+
+In the source folder run:
+
+    make _BACKEND_ -C _BUILD_DIR_/tests/_TEST_/
+
+where `_BACKEND_` may be one on the following:
+ - jvm
+ - c
+ - int
+ - effect
+ - leave out to run test on all backends
+
+Unless you specified a custom build directory you need to substitute `_BUILD_DIR_` by just `build`.
+
+Finally instead of `_TEST_` specify the name of the test.
+
+Full example:
+
+    make jvm -C build/tests/hello
+
+### Record a test
+
+This works the same as running a test but specifing a different make target.
+
+- record
+- record_jvm
+- record_c
+- record_int
+- record_effect
+
+Full example:
+
+    make record_jvm -C ./build/tests/hello
+
+This will record stdout and stderr and save those in files in the test directory. (HelloWorld.fz.expected_out, HelloWorld.fz.expected_err)
+
+> To copy the new or updated recordings from the build folder to the source folder you can use this command:
+>
+>     rsync -a --include='*/' --include='*.expected_*' --include='*.effect' --exclude='*' build/tests/ tests/
 
 
 ## Soft dependencies
