@@ -48,6 +48,19 @@ public Message ref is
 
 
   # NYI: BUG: can only be called once
+  # get the body of the message as a String
+  #
+  public body_as_string String =>
+    lm : mutate is
+    lm ! ()->
+      io
+        .buffered lm
+        .reader body ! ()->
+          ref : String is
+            public redef utf8 Sequence u8 := (io.buffered lm).read_fully
+
+
+  # NYI: BUG: can only be called once
   # the whole message as a sequence of bytes
   #
   public bytes(

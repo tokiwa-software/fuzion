@@ -1,0 +1,98 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion feature fetch
+#
+# -----------------------------------------------------------------------
+
+
+# fetch url via ipv4 using standard ssl port
+#
+public fetch4(url String) outcome String =>
+  fetch net.family.ipv4 443 url
+
+
+# fetch url via ipv6 using standard ssl port
+#
+public fetch6(url String) outcome String =>
+  fetch net.family.ipv6 443 url
+
+
+# eagerly fetch an url via https, return response as a String
+#
+# NYI: support http
+#
+public fetch(family net.family.val, port u16, url String) outcome String
+  pre
+    debug: url.starts_with "https://"
+    debug: !url.contains_whitespace
+=>
+
+  # this lm is used for the raw netwok connection
+  #
+  net_lm : mutate is
+
+  # this lm is used for reader/writer of the ssl connection
+  #
+  ssl_lm : mutate is
+
+  # extract host and target from url
+  #
+  host, target :=
+    url
+      .find "/" "https://".byte_length
+      .bind (idx -> url.split_at_byte idx)
+      .bind (tpl -> (tpl.0.substring "https://".byte_length, tpl.1))
+      # NYI: error handling
+      .get
+
+
+  # read the response
+  #
+  read_reponse =>
+    http
+      .read_response ssl_lm
+      .bind (.body_as_string)
+
+
+  # do the get request
+  #
+  write_request ! ssl_lm =>
+    rm := http
+      .request_message
+      .new http.get target 1 1 [("Host", host)]
+
+    (io.buffered ssl_lm).writer.env
+      .write (rm.bytes 0)
+      .error
+      .bind _->
+        (io.buffered ssl_lm).writer.env.flush
+
+
+  # connect and setup ssl
+  #
+  net_lm ! ()->
+    net
+      .client family net.protocol.tcp host port
+      .bind c->
+        c.with _ net_lm ()->
+          ssl_lm ! ()->
+            wolfssl _ net_lm ssl_lm (write_request.bind _->read_reponse)
+
+

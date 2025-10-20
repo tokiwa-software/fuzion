@@ -17,23 +17,10 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature Read_Handler
+#  Source code of Fuzion feature web
 #
 # -----------------------------------------------------------------------
 
-public Read_Handler ref is
-
-  # read up to count bytes
-  #
-  # returns either an array of the bytes read, end_of_file or an error
-  #
-  public read(count i32) choice (array u8) io.end_of_file error
-    post debug: (result ? a array => a.count>0 && a.count<=count | * => true)
-  => abstract
-
-
-  # Read_Handler that only ever returns end_of_file
-  #
-  public type.empty io.Read_Handler =>
-    ref : io.Read_Handler is
-      public redef read(c i32) choice (array u8) io.end_of_file error => io.end_of_file
+# group handy utilities for web
+#
+public web is

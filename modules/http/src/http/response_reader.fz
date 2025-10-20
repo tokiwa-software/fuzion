@@ -26,7 +26,7 @@
 #
 public read_response(
   # mutate effect from which to read the bytes of the request
-  LM type : mutate) outcome (http.response_message)
+  LM type : mutate) outcome http.response_message
 =>
   read_response LM nil
 
