@@ -17,14 +17,10 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature universe
+#  Source code of Fuzion feature web
 #
 # -----------------------------------------------------------------------
 
-
-# universe is the mother and father of all features. As such it is the outermost feature.
+# group handy utilities for web
 #
-# Universe can not be called but you can use it in a call as part of a full qualifier, e.g.:
-#
-#     universe.say "hello"
-#
+public web is

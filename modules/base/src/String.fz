@@ -430,8 +430,9 @@ public String ref : property.equatable, property.hashable, property.orderable is
     pre
       debug: n > 0
   =>
-    codepoints.chunk n
-                 .map String.type.from_codepoints
+    codepoints
+      .chunk n
+      .map String.type.from_codepoints
 
 
   # check if this string starts with given prefix
@@ -506,6 +507,26 @@ public String ref : property.equatable, property.hashable, property.orderable is
   #
   public count (substring String) i32 =>
     utf8.count_matches substring.utf8
+
+
+  # split String at idx
+  #
+  # example:
+  #     (0..5).for_each (idx -> say <| "hallo".split_at_byte idx)
+  #
+  # (, hallo)
+  # (h, allo)
+  # (ha, llo)
+  # (hal, lo)
+  # (hall, o)
+  # (hallo, )
+  #
+  public split_at_byte(idx i32) (String, String)
+    pre
+      debug: 0 ≤ idx ≤ byte_length
+      debug: utf8.is_array_backed
+  =>
+    (substring 0 idx, substring idx byte_length)
 
 
   # Split string separated by (ASCII) white space

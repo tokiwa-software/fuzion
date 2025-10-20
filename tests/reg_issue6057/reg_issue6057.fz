@@ -17,14 +17,37 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature universe
+#  Source code of Fuzion test reg_issue6057
 #
 # -----------------------------------------------------------------------
 
+# a small example that should report a problem due to cyclic type inference,
+# but it produced a nonsense error of `Failed to infer actual type parameters`
+# for a feature that does not have any type parameters...
+#
+reg_issue6057 =>
 
-# universe is the mother and father of all features. As such it is the outermost feature.
-#
-# Universe can not be called but you can use it in a call as part of a full qualifier, e.g.:
-#
-#     universe.say "hello"
-#
+  # the code from issue #6057
+  #
+  a(x ()->i32) =>
+    b => a ()->b
+    b = b
+  a 42
+
+
+  # the originally problematic code from flang.dev's
+  # content/examples/examples/man_or_boy2.fz
+  #
+  man_or_boy2 is
+
+    a(k0 i32, x1, x2, x3, x4, x5 () -> i32) =>
+      k := mut k0
+      b => k <- k.get - 1; a k.get (() -> b) x1 x2 x3 x4
+      k.get <= 0 ? x4() + x5() : b
+
+    K(n i32) () -> i32 => () -> n
+
+    (0..10).for_each n->
+      say "manorboy a($n) = {a n (K 1) (K -1) (K -1) (K 1) (K 0)}"
+
+  man_or_boy2

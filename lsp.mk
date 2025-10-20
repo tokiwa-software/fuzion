@@ -62,8 +62,8 @@ $(BUILD_DIR)/jars/lsp.sha256: $(JARS_LSP_LSP4J) $(JARS_LSP_LSP4J_GENERATOR) $(JA
 	sha256sum --status -c $(BUILD_DIR)/jars/lsp.sha256
 
 
-$(BUILD_DIR)/bin/fuzion_language_server: bin/fuzion_language_server
-	cp bin/fuzion_language_server $@
+$(BUILD_DIR)/bin/fuzion_language_server: $(FZ_SRC)/bin/fuzion_language_server
+	cp $^ $@
 	chmod +x $@
 
 
@@ -95,5 +95,5 @@ lsp/debug/socket: $(CLASS_FILES_LSP)
 	mkdir -p runDir
 	java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=127.0.0.1:8000 -cp $(CLASSES_DIR):$(CLASSES_DIR_LSP):$(JARS_LSP_LSP4J):$(JARS_LSP_LSP4J_GENERATOR):$(JARS_LSP_LSP4J_JSONRPC):$(JARS_LSP_GSON) $(LSP_JAVA_ARGS) dev.flang.lsp.Main -socket --port=$(LANGUAGE_SERVER_PORT)
 
-$(BUILD_DIR)/lsp.jar: $(CLASS_FILES_LSP)
-	jar cfm $@ assets/Manifest.txt -C $(BUILD_DIR)/classes . -C $(CLASSES_DIR_LSP) .
+$(BUILD_DIR)/lsp.jar: $(CLASS_FILES_LSP) $(FZ_SRC)/assets/Manifest.txt
+	jar cfm $@ $(FZ_SRC)/assets/Manifest.txt -C $(BUILD_DIR)/classes . -C $(CLASSES_DIR_LSP) .

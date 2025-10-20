@@ -137,6 +137,7 @@ MOD_JSON_ENCODE       = $(BUILD_DIR)/modules/json_encode.fum
 MOD_DATABASE          = $(BUILD_DIR)/modules/database.fum
 MOD_SQLITE            = $(BUILD_DIR)/modules/sqlite.fum
 MOD_MAIL              = $(BUILD_DIR)/modules/mail.fum
+MOD_WEB               = $(BUILD_DIR)/modules/web.fum
 
 MOD_JAVA_BASE_DIR              = $(BUILD_DIR)/modules/java.base
 MOD_JAVA_XML_DIR               = $(BUILD_DIR)/modules/java.xml
@@ -468,7 +469,8 @@ FZ_MODULES = \
 			$(MOD_JSON_ENCODE) \
 			$(MOD_DATABASE) \
 			$(MOD_SQLITE) \
-			$(MOD_MAIL)
+			$(MOD_MAIL) \
+			$(MOD_WEB)
 
 C_FILES = $(shell find $(FZ_SRC) \( -path ./build -o -path ./.git \) -prune -o -name '*.c' -print)
 
@@ -749,6 +751,12 @@ $(MOD_JSON_ENCODE): $(MOD_BASE) $(FZ) $(shell find $(FZ_SRC)/modules/json_encode
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC)/modules/json_encode $(@D)
 	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/json_encode/src -saveModule=$@
+
+$(MOD_WEB): $(MOD_HTTP) $(MOD_WOLFSSL) $(FZ) $(shell find $(FZ_SRC)/modules/web/src -name "*.fz")
+	rm -rf $(@D)/web
+	mkdir -p $(@D)
+	cp -rf $(FZ_SRC)/modules/web $(@D)
+	$(FZ) -modules=http,wolfssl -sourceDirs=$(BUILD_DIR)/modules/web/src -saveModule=$@
 
 $(FZJAVA): $(FZ_SRC)/bin/fzjava $(CLASS_FILES_TOOLS_FZJAVA)
 	mkdir -p $(@D)
