@@ -199,7 +199,7 @@ public class TailCall extends ANY
    *
    * @param s site of the the call
    *
-   * @param mustAssignTo -1 iff the result should be the last expr in the code
+   * @param mustAssignTo NO_CLAZZ iff the result should be the last expr in the code
    * block, otherwise the clazz of a field in Current the result should be
    * assigned to.
    */
@@ -236,7 +236,7 @@ public class TailCall extends ANY
             sameField(cc, mustAssignTo) &&
             cls > _fuir.codeBlockStart(cls)+1 &&
             _fuir.codeAt(_fuir.codeIndex(cls, -1)) == IR.ExprKind.Current &&
-            isTailCall(cl, _fuir.codeIndex(cls, -2), s, -1);
+            isTailCall(cl, _fuir.codeIndex(cls, -2), s, NO_CLAZZ);
         }
 
       case Match ->

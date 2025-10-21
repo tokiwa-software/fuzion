@@ -190,7 +190,8 @@ public class Instance extends Value
   Val readFieldFromInstance(DFA dfa, int field, int site, Context why)
   {
     if (PRECONDITIONS) require
-      (_clazz == dfa._fuir.clazzAsValue(dfa._fuir.clazzOuterClazz(field)));
+      (_clazz == dfa._fuir.clazzAsValue(dfa._fuir.clazzOuterClazz(field)),
+       site != -1);
 
     dfa.readField(field);
     var v = _fields.get(field);
@@ -199,8 +200,7 @@ public class Instance extends Value
       {
         if (!Errors.any())
           {
-            DfaErrors.readingUninitializedField(site == -1 ? dev.flang.util.SourcePosition.notAvailable : // NYI: REMOVE
-                                                site == IR.NO_SITE ? null : dfa._fuir.sitePos(site),
+            DfaErrors.readingUninitializedField(site == IR.NO_SITE ? null : dfa._fuir.sitePos(site),
                                                 dfa._fuir.clazzAsString(field),
                                                 dfa._fuir.clazzAsString(_clazz) + (_isBoxed ? " Boxed!" : ""),
                                                 why);

@@ -84,11 +84,8 @@ public abstract class IR extends ANY
 
   /**
    * Special clazz index value for not-existing clazz.
-   *
-   * NYI: CLEANUP: This should better be {@code CLAZZ_BASE-1} and it should be used
-   * instead of {@code -1} in FUIR.java.
    */
-  public static final int NO_CLAZZ = -1;
+  public static final int NO_CLAZZ = CLAZZ_BASE-1;
 
 
   /**

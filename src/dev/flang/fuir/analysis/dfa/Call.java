@@ -35,6 +35,7 @@ import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 
 import static dev.flang.ir.IR.NO_CLAZZ;
+import static dev.flang.ir.IR.NO_SITE;
 import static dev.flang.util.FuzionConstants.EFFECT_INSTATE_NAME;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
@@ -334,7 +335,7 @@ public class Call extends ANY implements Comparable<Call>, Context
             if (CHECKS) check
               (!_dfa._fuir.clazzIsVoidType(_dfa._fuir.clazzResultClazz(calledClazz())));
 
-            result = _instance.readField(_dfa, rf, -1, this);
+            result = _instance.readField(_dfa, rf, NO_SITE, this);
           }
       }
     else if (from != null)
