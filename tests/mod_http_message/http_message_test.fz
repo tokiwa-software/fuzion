@@ -38,7 +38,7 @@ TODO:
 
     public redef read(count i32) choice (array u8) io.end_of_file error =>
       p := pos.get
-      if p > arr.count
+      if p >= arr.count
         io.end_of_file
       else
         pos <- p + count

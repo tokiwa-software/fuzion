@@ -22,58 +22,26 @@
 # -----------------------------------------------------------------------
 
 
-# post url via ipv4 using standard ssl port
+# POST url via ipv4 using standard ssl port
 #
 public post4(url String, data Sequence u8, headers container.Map String String) outcome String =>
-  post_r net.family.ipv4 443 url data headers
+  p u16 := if (parse_url url).0 then 443 else 80
+  post_r net.family.ipv4 p url data headers
 
 
-# post url via ipv6 using standard ssl port
+# POST url via ipv6 using standard ssl port
 #
 public post6(url String, data Sequence u8, headers container.Map String String) outcome String =>
-  post_r net.family.ipv6 443 url data headers
+  p u16 := if (parse_url url).0 then 443 else 80
+  post_r net.family.ipv6 p url data headers
 
 
-# post url via ipv4 using standard http port
-#
-public post4_plain(url String, data Sequence u8, headers container.Map String String) outcome String =>
-  post_r net.family.ipv4 80 url data headers
-
-
-# post url via ipv6 using standard http port
-#
-public post6_plain(url String, data Sequence u8, headers container.Map String String) outcome String =>
-  post_r net.family.ipv6 80 url data headers
-
-
-# eagerly post an url via http(s), return response as a String
+# eagerly POST an url via http(s), return response as a String
 #
 public post_r(family net.family.val, port u16, url String, data Sequence u8, headers container.Map String String) outcome String
-  pre
-    debug: !url.contains_whitespace
 =>
 
-  # this lm is used for the raw netwok connection
-  #
-  net_lm : mutate is
-
-  # this lm is used for reader/writer of the ssl connection
-  #
-  ssl_lm : mutate is
-
-  is_https      := url.starts_with "https"
-  schema_length := "http{is_https ? "s" : ""}://".byte_length
-
-  # extract host and target from url
-  #
-  host, target :=
-    url
-      .find "/" schema_length
-      .bind (idx -> url.split_at_byte idx)
-      .bind (tpl -> (tpl.0.substring schema_length, tpl.1))
-      # NYI: error handling
-      .get
-
+  lm : mutate is
 
   # NYI: CLEANUP:
   read_handler(LM type : mutate, arr array u8) : io.Read_Handler is
@@ -82,42 +50,17 @@ public post_r(family net.family.val, port u16, url String, data Sequence u8, hea
 
     public redef read(count i32) choice (array u8) io.end_of_file error =>
       p := pos.get
-      if p > arr.count
+      if p >= arr.count
         io.end_of_file
       else
         pos <- p + count
         arr.drop p .take count .as_array
 
+  use_https, host, target := parse_url url
 
-  # read the response
-  #
-  read_reponse(LM type : mutate) ! LM =>
-    http
-      .read_response LM
-      .bind (.body_as_string)
-
-
-  # do the get request
-  #
-  write_request(LM type : mutate) ! LM =>
+  lm ! ()->
     rm := http
       .request_message
-      .new http.post_r target 1 1 ([("Host", host)].concat headers.items) (read_handler LM data.as_array)
+      .new http.post_r target 1 1 ([("Host", host)].concat headers.items) (read_handler lm data.as_array)
 
-    (io.buffered LM).writer.env
-      .write (rm.bytes i32.max)
-      .error
-      .bind _->
-        (io.buffered LM).writer.env.flush
-
-
-  net_lm ! ()->
-    net
-      .client family net.protocol.tcp host port
-      .bind c->
-        c.with _ net_lm ()->
-          if is_https
-            ssl_lm ! ()->
-              wolfssl _ net_lm ssl_lm ((write_request ssl_lm).bind _->(read_reponse ssl_lm))
-          else
-            (write_request net_lm).bind _->(read_reponse net_lm)
+    do_request family port use_https host rm

@@ -1,0 +1,97 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+# -----------------------------------------------------------------------
+
+# this lm is used for the raw netwok connection
+#
+net_lm : mutate is
+
+
+# this lm is used for reader/writer of the ssl connection
+#
+ssl_lm : mutate is
+
+
+# read the response
+#
+module read_reponse(LM type : mutate) ! LM =>
+  http
+    .read_response LM
+    .bind (.body_as_string)
+
+
+# write the request
+#
+module write_request(LM type : mutate, rm http.request_message) ! LM =>
+  (io.buffered LM).writer.env
+    .write (rm.bytes i32.max)
+    .error
+    .bind _->
+      (io.buffered LM).writer.env.flush
+
+
+# parse an url and return (is_http, host, target)
+#
+# e.g. https://tokiwa.software/index
+#
+# will result in
+#
+# (true, "tokiwa.software", "index")
+#
+# NYI: UNDER DEVELOPMENT: lots of room for improvement...
+module parse_url(url String)
+  pre
+    debug: !url.contains_whitespace
+=>
+  is_https      := url.starts_with "https"
+  schema_length := "http{is_https ? "s" : ""}://".byte_length
+
+  # extract host and target from url
+  #
+  host, target :=
+    url
+      .find "/" schema_length
+      .bind (idx -> url.split_at_byte idx)
+      .bind (tpl -> (tpl.0.substring schema_length, tpl.1))
+      # NYI: error handling
+      .get
+
+  (is_https, host, target)
+
+
+# do the actual request and return response as a String
+#
+module do_request(family net.family.val,
+                  port u16,
+                  use_https bool,
+                  host String,
+                  rm http.request_message) outcome String
+=>
+  net_lm ! ()->
+    net
+      .client family net.protocol.tcp host port
+      .bind c->
+        c.with _ net_lm ()->
+          if use_https
+            ssl_lm ! ()->
+              wolfssl _ net_lm ssl_lm ((write_request ssl_lm rm).bind _->(read_reponse ssl_lm))
+          else
+            (write_request net_lm rm).bind _->(read_reponse net_lm)
+
