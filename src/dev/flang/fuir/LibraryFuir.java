@@ -515,7 +515,7 @@ public class LibraryFuir extends FUIR {
   @Override
   public SourcePosition sitePos(int s)
   {
-    return s==NO_SITE
+    return s==NO_SITE || _sites[s-SITE_BASE].path() == null
       ? SourcePosition.notAvailable
       : new SourcePosition(new SourceFile(Path.of(_sites[s-SITE_BASE].path()), new byte[0]), 0)
       {

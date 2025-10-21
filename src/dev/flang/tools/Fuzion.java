@@ -97,6 +97,7 @@ public class Fuzion extends Tool
   static String _cInclude_ = null;
   static String _cLink_ = null;
   static boolean _keepGeneratedCode_ = false;
+  static boolean _debugBuild_ = false;
   static String  _jvmOutName_ = null;
   static String  _jvmLib_ = null;
 
@@ -172,6 +173,11 @@ public class Fuzion extends Tool
             _keepGeneratedCode_ = parseOnOffArg(o);
             result = true;
           }
+        else if (o.equals("-g"))
+          {
+            _debugBuild_ = true;
+            result = true;
+          }
         return result;
       }
       @Override
@@ -181,7 +187,7 @@ public class Fuzion extends Tool
       }
       void process(FuzionOptions options, FUIR fuir)
       {
-        new C(new COptions(options, _binaryName_, _useBoehmGC_, _cCompiler_, _cFlags_, _cTarget_, _cInclude_, _cLink_, _keepGeneratedCode_), fuir).compile();
+        new C(new COptions(options, _binaryName_, _useBoehmGC_, _cCompiler_, _cFlags_, _cTarget_, _cInclude_, _cLink_, _keepGeneratedCode_, _debugBuild_), fuir).compile();
       }
       boolean serializeFuir()
       {
