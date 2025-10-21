@@ -62,7 +62,7 @@ public abstract_array
   #
   # Unlike for general Sequences, this performs in O(1).
   #
-  public redef is_valid_index(i i32) bool => 0 ≤ i ≤ length
+  public redef is_valid_index(i i32) bool => 0 ≤ i < length
 
 
   # create a list that consists of the elements of this Sequence except the first
