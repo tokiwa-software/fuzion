@@ -352,25 +352,6 @@ abstract class CStmnt extends ANY
 
 
   /**
-   * not really a statement, but a comment
-   */
-  static CStmnt multiLineComment(String s)
-  {
-    return new CStmnt()
-      {
-        boolean isEmpty()
-        {
-          return true;
-        }
-        void code(CString sb)
-        {
-          sb.append("/* ").append(s).append(" */").append("\n");
-        }
-      };
-  }
-
-
-  /**
    * A sequence of C statements, separated by semicolons.
    *
    * @param s the statements.
