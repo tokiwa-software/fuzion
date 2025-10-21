@@ -659,16 +659,6 @@ public abstract class FUIR extends IR
 
 
   /**
-   * For a clazz of error, lookup the inner clazz of the msg field.
-   *
-   * @param cl index of a clazz {@code error}
-   *
-   * @return the index of the requested {@code error.msg} field's clazz.
-   */
-  public abstract int lookup_error_msg(int cl);
-
-
-  /**
    * Get the id of clazz Any.
    *
    * @return clazz id of clazz Any

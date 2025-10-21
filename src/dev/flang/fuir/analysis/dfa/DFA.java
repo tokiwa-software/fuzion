@@ -2458,7 +2458,7 @@ public class DFA extends ANY
     var okay = dfa.newTaggedValue(rc, res, 0);
     var error_cl = dfa._fuir.clazzChoice(rc, 1);
     var error = dfa.newInstance(error_cl, NO_SITE, cl._context);
-    var msg = dfa._fuir.lookup_error_msg(error_cl);
+    var msg = dfa._fuir.clazzArg(error_cl, 0);
     error.setField(dfa, msg, dfa.newConstString(null, cl));
     var err = dfa.newTaggedValue(rc, error, 1);
     return okay.join(dfa, err, rc);

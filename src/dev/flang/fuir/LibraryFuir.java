@@ -335,13 +335,6 @@ public class LibraryFuir extends FUIR {
   }
 
   @Override
-  public int lookup_error_msg(int cl)
-  {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'lookup_error_msg'");
-  }
-
-  @Override
   public boolean clazzIsUnitType(int cl)
   {
     return _clazzes[clazzId2num(cl)].clazzIsUnitType();

@@ -1911,24 +1911,6 @@ public class GeneratingFUIR extends FUIR
   }
 
 
-  /**
-   * For a clazz of error, lookup the inner clazz of the msg field.
-   *
-   * @param cl index of a clazz {@code error}
-   *
-   * @return the index of the requested {@code error.msg} field's clazz.
-   */
-  @Override
-  public int lookup_error_msg(int cl)
-  {
-    if (PRECONDITIONS) require
-      (cl >= CLAZZ_BASE,
-       cl < CLAZZ_BASE + _clazzes.size());
-
-    return id2clazz(cl).lookupNeeded(Types.resolved.f_error_msg)._id;
-  }
-
-
   /*---------------------------  types  --------------------------*/
 
 
