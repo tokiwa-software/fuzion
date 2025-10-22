@@ -2196,21 +2196,15 @@ public class C extends ANY
       {
         var at = _fuir.clazzArgClazz(cl, i);
         var c = _fuir.lookupCall(at);
-        // NYI: CLEANUP: simplify ternary with &&/||
-        var isComplexValue = c != NO_CLAZZ
+        var isComplexValue =
           // 1. pass as function pointer
-          ? false
-          : _fuir.clazzIsRef(at)
+          c == NO_CLAZZ &&
           // 2. pass as ref
-          ? false
-          // 3. pass as value
-          : (_fuir.clazzIsArray(at)
-              // 3.1 array, we need to get field internal_array.data
-              ? false
-              // 3.2 plain value
-              : _fuir.getSpecialClazz(at) != SpecialClazzes.c_NOT_FOUND
-                ? false
-                : true);
+          !_fuir.clazzIsRef(at) &&
+          // 3. array, we need to get field internal_array.data
+          !_fuir.clazzIsArray(at) &&
+          // 4. plain value
+          _fuir.getSpecialClazz(at) == SpecialClazzes.c_NOT_FOUND;
         if (isComplexValue)
           {
             complexValues.add(at);
