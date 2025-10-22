@@ -53,27 +53,51 @@ module write_request(LM type : mutate, rm http.request_message) ! LM =>
 #
 # will result in
 #
-# (true, "tokiwa.software", "index")
+# (true, "tokiwa.software", nil, "index")
 #
-# NYI: UNDER DEVELOPMENT: lots of room for improvement...
-module parse_url(url String)
+#
+# e.g. http://tokiwa.software:8080
+#
+# will result in
+#
+# (false, "tokiwa.software", 8080, "index")
+#
+# NYI: BUG: parse [host]:port format correctly bracketed ipv6
+# NYI: BUG: no port bounds check <= 65535 before casting
+# NYI: BUG: ignores userinfo: user:pass@host
+#
+module parse_url(url String) outcome (tuple bool String (option u16) (option String))
   pre
     debug: !url.contains_whitespace
 =>
   is_https      := url.starts_with "https"
   schema_length := "http{is_https ? "s" : ""}://".byte_length
 
-  # extract host and target from url
+  # extract host, port (optional) and target (optional) from url
   #
-  host, target :=
-    url
-      .find "/" schema_length
-      .bind (idx -> url.split_at_byte idx)
-      .bind (tpl -> (tpl.0.substring schema_length, tpl.1))
-      # NYI: error handling
-      .get
+  match {
+          tpl := url
+            .find "/" schema_length
+            .bind (idx -> url.split_at_byte idx)
+            .bind (t -> (t.0, id (option String) t.1))
+            # no target specified
+            .or_else (url, id (option String) nil)
 
-  (is_https, host, target)
+          host_and_port := tpl.0.substring schema_length
+          host_and_port_seq := host_and_port.split ":" .as_array
+          if host_and_port_seq.length > 2
+            id (outcome (tuple String (option u16) (option String))) (error "invalid host+port {host_and_port}")
+          else
+            match host_and_port_seq.nth 1
+              p_str String =>
+                match p_str.parse_u32
+                  e error => e
+                  p u32 => (host_and_port_seq[0], id (option u16) p.as_u16, tpl.1)
+              # no port specified
+              nil => (host_and_port_seq[0], id (option u16) nil, tpl.1)
+        }
+    e error => e
+    t tuple => (is_https, t.0, t.1, t.2)
 
 
 # do the actual request and return response as a String
