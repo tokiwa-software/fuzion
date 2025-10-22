@@ -47,3 +47,5 @@ stringtest is
   mi : mutate is
   mi ! ()->
     say (String.from_mutable_array mi ((mutate.array Any).new mi 1 nil))
+
+  say "abcd".quoted

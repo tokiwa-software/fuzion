@@ -891,6 +891,14 @@ public String ref : property.equatable, property.hashable, property.orderable is
     (String.this + codepoint 0).utf8.as_array
 
 
+  # this String but put in double quotes
+  #
+  public quoted String
+    pre debug: !starts_with "\""
+        debug: !ends_with "\""
+  =>
+    "\"{String.this}\""
+
 
   # monoid of strings with infix + operation.
   #
