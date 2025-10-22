@@ -38,12 +38,11 @@ TODO:
 
     public redef read(count i32) choice (array u8) io.end_of_file error =>
       p := pos.get
-      if p > arr.count
+      if p >= arr.count
         io.end_of_file
       else
         pos <- p + count
-        end := p+count > arr.count ? arr.count : p+count
-        arr.slice p end .as_array
+        arr.drop p .take count .as_array
 
   lm : mutate is
   lm ! ()->
