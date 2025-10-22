@@ -1,0 +1,42 @@
+
+error 1: FATAL FAULT `precondition`: debug: to = 0 || is_valid_index to-1
+Call stack:
+fuzion.type.runtime.type.fault.type.install_default.λ.call#1: {base.fum}/fuzion/runtime/fault.fz:43:7:
+      fuzion.sys.fatal_fault kind msg
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+fuzion.runtime.fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
+  => h e
+-----^
+fuzion.type.runtime.type.contract_fault.type.install_default.λ.call#1: {base.fum}/fuzion/runtime/contract_fault.fz:39:7:
+      fuzion.runtime.fault.cause kind_and_msg).default
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+fuzion.runtime.contract_fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
+  => h e
+-----^
+fuzion.type.runtime.type.pre_fault.type.install_default.λ.call#1: {base.fum}/fuzion/runtime/pre_fault.fz:39:7:
+      fuzion.runtime.contract_fault.cause ("precondition", msg)).default
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+fuzion.runtime.pre_fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
+  => h e
+-----^
+fuzion.runtime.precondition_fault#1: {base.fum}/fuzion/runtime/pre_fault.fz:58:47:
+public precondition_fault(msg String) void => pre_fault.cause msg
+----------------------------------------------^^^^^^^^^^^^^^^^^^^
+(array i32).slice#2.array_slice.pre slice: {base.fum}/Sequence.fz:335:7:
+      debug: to = 0 || is_valid_index to-1
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(array i32).slice#2.array_slice.precall slice: {base.fum}/Sequence.fz:333:5:
+    pre
+----^^^
+      debug: from ≥ 0
+------^^^^^^^^^^^^^^^
+      debug: to = 0 || is_valid_index to-1
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      debug: from <= to
+------^^^^^^^^^^^^^^^^^
+reg_issue6074: --CURDIR--/reg_issue6074.fz:26:35:
+  say ((0..9).as_array.slice 1 3 .slice 1 3 .slice 1 3 .slice 1 3 .slice 1 3 .slice 1 3 .slice 1 3 .slice 1 3)
+----------------------------------^^^^^
+
+*** fatal errors encountered, stopping.
+one error.
