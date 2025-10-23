@@ -2367,7 +2367,7 @@ public class DFA extends ANY
         {
           var ia = fuir(cl).clazzArgClazz(cl.calledClazz(), 0);
           var data = fuir(cl).clazzArg(ia, 0);
-          var len  = fuir(cl).clazzArg(ia, 0);
+          var len  = fuir(cl).clazzArg(ia, 1);
           cl._dfa.readField(data);
           cl._dfa.readField(len);
           return Value.UNKNOWN_JAVA_REF;
