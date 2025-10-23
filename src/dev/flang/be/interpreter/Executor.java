@@ -458,7 +458,7 @@ public class Executor extends ProcessExpression<Value, Object>
             var elCount = bb.getInt();
 
             Instance result = new Instance(constCl);
-            var internalArray = _fuir.lookup_array_internal_array(constCl);
+            var internalArray = _fuir.clazzArg(constCl, 0);
             var saCl = _fuir.clazzResultClazz(internalArray);
 
             var arrayData = ArrayData.alloc(saCl, elCount, _fuir, elementType);
@@ -471,8 +471,8 @@ public class Executor extends ProcessExpression<Value, Object>
               }
 
             Instance sa = new Instance(saCl);
-            Interpreter.setField(_fuir.lookup_fuzion_sys_internal_array_length(saCl), saCl,                               sa,     new i32Value(elCount));
-            Interpreter.setField(_fuir.lookup_fuzion_sys_internal_array_data(saCl)  , saCl,                               sa,     arrayData);
+            Interpreter.setField(_fuir.clazzArg(saCl, 1), saCl,                               sa,     new i32Value(elCount));
+            Interpreter.setField(_fuir.clazzArg(saCl, 0)  , saCl,                               sa,     arrayData);
             Interpreter.setField(internalArray                                          , constCl,                            result, sa);
             yield result;
           }

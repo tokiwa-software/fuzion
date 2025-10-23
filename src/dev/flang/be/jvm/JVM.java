@@ -1615,7 +1615,7 @@ should be avoided as much as possible.
     var ref_cs = _fuir.clazz_ref_const_string();
     var cs_utf8_data = _fuir.clazz_const_string_utf8_data();
     var arr = _fuir.clazz_array_u8();
-    var internalArray = _fuir.lookup_array_internal_array(arr);
+    var internalArray = _fuir.clazzArg(arr,0);
     var data = _fuir.clazz_fuzionSysArray_u8_data();
     var length = _fuir.clazz_fuzionSysArray_u8_length();
     var fuzionSysArray = _fuir.clazzOuterClazz(data);
@@ -1810,10 +1810,10 @@ should be avoided as much as possible.
    */
   Pair<Expr, Expr> const_array(int arrayCl, Expr arr, int len)
   {
-    var internalArray  = _fuir.lookup_array_internal_array(arrayCl);
+    var internalArray  = _fuir.clazzArg(arrayCl, 0);
     var fuzionSysArray = _fuir.clazzResultClazz(internalArray);
-    var data           = _fuir.lookup_fuzion_sys_internal_array_data  (fuzionSysArray);
-    var length         = _fuir.lookup_fuzion_sys_internal_array_length(fuzionSysArray);
+    var data           = _fuir.clazzArg(fuzionSysArray, 0);
+    var length         = _fuir.clazzArg(fuzionSysArray, 1);
     var res = new0(arrayCl)                           // stack: cs
       .andThen(Expr.DUP)                              //        cs, cs
       .andThen(new0(fuzionSysArray))                  //        cs, cs, fsa

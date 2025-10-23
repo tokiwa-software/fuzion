@@ -754,8 +754,8 @@ public class Intrinsics extends ANY
       else
         {
           var internalArray = c._fuir.clazzArgClazz(cl, 0);
-          var data   = c._fuir.lookup_fuzion_sys_internal_array_data  (internalArray);
-          var length = c._fuir.lookup_fuzion_sys_internal_array_length(internalArray);
+          var data   = c._fuir.clazzArg(internalArray, 0);
+          var length = c._fuir.clazzArg(internalArray, 1);
           var elementType = c._fuir.clazzActualGeneric(internalArray, 0);
           var elements = c._names.newTemp();
           return CExpr
@@ -822,7 +822,7 @@ public class Intrinsics extends ANY
       else
         {
           var internalArray = c._fuir.clazzArgClazz(cl, 2);
-          var data          = c._fuir.lookup_fuzion_sys_internal_array_data(internalArray);
+          var data          = c._fuir.clazzArg(internalArray, 0);
           return CStmnt
             .seq(c.returnJavaObject(c._fuir.clazzResultClazz(cl),
               CExpr
@@ -851,7 +851,7 @@ public class Intrinsics extends ANY
       else
         {
           var internalArray = c._fuir.clazzArgClazz(cl, 3);
-          var data          = c._fuir.lookup_fuzion_sys_internal_array_data(internalArray);
+          var data          = c._fuir.clazzArg(internalArray, 0);
           return CStmnt
             .seq(
               // NYI: UNDER DEVELOPMENT: methods where result clazz is e.g. unit, f64 etc. that does
@@ -867,7 +867,7 @@ public class Intrinsics extends ANY
     });
     put("fuzion.jvm.call_v0", (c, cl, outer, in) -> {
       var internalArray = c._fuir.clazzArgClazz(cl, 4);
-      var data          = c._fuir.lookup_fuzion_sys_internal_array_data(internalArray);
+      var data          = c._fuir.clazzArg(internalArray, 0);
       if (C.JAVA_HOME == null)
         {
           return noJava;
@@ -927,8 +927,8 @@ public class Intrinsics extends ANY
       put("fuzion.jvm.string_to_java_object0", (c,cl,outer,in) -> {
           var rc = c._fuir.clazzResultClazz(cl);
           var internalArray = c._fuir.clazzArgClazz(cl, 0);
-          var data          = c._fuir.lookup_fuzion_sys_internal_array_data  (internalArray);
-          var length        = c._fuir.lookup_fuzion_sys_internal_array_length(internalArray);
+          var data          = c._fuir.clazzArg(internalArray, 0);
+          var length        = c._fuir.clazzArg(internalArray, 1);
           return C.JAVA_HOME == null
             ? noJava
             : CExpr

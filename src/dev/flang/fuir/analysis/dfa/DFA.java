@@ -2365,8 +2365,9 @@ public class DFA extends ANY
     );
     put("fuzion.jvm.array_to_java_object0" , cl ->
         {
-          var data = fuir(cl).lookup_fuzion_sys_internal_array_data  (fuir(cl).clazzArgClazz(cl.calledClazz(),0));
-          var len  = fuir(cl).lookup_fuzion_sys_internal_array_length(fuir(cl).clazzArgClazz(cl.calledClazz(),0));
+          var ia = fuir(cl).clazzArgClazz(cl.calledClazz(), 0);
+          var data = fuir(cl).clazzArg(ia, 0);
+          var len  = fuir(cl).clazzArg(ia, 0);
           cl._dfa.readField(data);
           cl._dfa.readField(len);
           return Value.UNKNOWN_JAVA_REF;
@@ -2470,7 +2471,7 @@ public class DFA extends ANY
       {
         var cc = cl.calledClazz();
         var fuir = fuir(cl);
-        var data = fuir.lookup_fuzion_sys_internal_array_data(fuir.clazzArgClazz(cc, 2));
+        var data = fuir.clazzArg(fuir.clazzArgClazz(cc, 2), 0);
         cl._dfa.readField(data);
         return outcomeJavaResult(cl);
       });
@@ -2478,7 +2479,7 @@ public class DFA extends ANY
       {
         var cc = cl.calledClazz();
         var fuir = fuir(cl);
-        var data = fuir.lookup_fuzion_sys_internal_array_data(fuir.clazzArgClazz(cc, 3));
+        var data = fuir.clazzArg(fuir.clazzArgClazz(cc, 3), 0);
         cl._dfa.readField(data);
         return outcomeJavaResult(cl);
       });
@@ -2486,7 +2487,7 @@ public class DFA extends ANY
       {
         var cc = cl.calledClazz();
         var fuir = fuir(cl);
-        var data = fuir.lookup_fuzion_sys_internal_array_data(fuir.clazzArgClazz(cc, 4));
+        var data = fuir.clazzArg(fuir.clazzArgClazz(cc, 4), 0);
         cl._dfa.readField(data);
         return outcomeJavaResult(cl);
       });
@@ -3113,7 +3114,7 @@ public class DFA extends ANY
     var cs            = _fuir.clazz_const_string();
     var utf_data      = _fuir.clazz_const_string_utf8_data();
     var ar            = _fuir.clazz_array_u8();
-    var internalArray = _fuir.lookup_array_internal_array(ar);
+    var internalArray = _fuir.clazzArg(ar, 0);
     var data          = _fuir.clazz_fuzionSysArray_u8_data();
     var length        = _fuir.clazz_fuzionSysArray_u8_length();
     var sysArray      = _fuir.clazzResultClazz(internalArray);

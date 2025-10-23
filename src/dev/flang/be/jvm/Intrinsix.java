@@ -270,7 +270,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
     put("fuzion.jvm.string_to_java_object0",
         (jvm, si, cc, tvalue, args) ->
         {
-          var data = jvm._fuir.lookup_fuzion_sys_internal_array_data(jvm._fuir.clazzArgClazz(cc,0));
+          var data = jvm._fuir.clazzArg(jvm._fuir.clazzArgClazz(cc,0), 0);
           var res = args.get(0)
             .andThen(jvm.getfield(data))
             .andThen(Expr.checkcast(PrimitiveType.type_byte.array()))
@@ -290,7 +290,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
         (jvm, si, cc, tvalue, args) ->
         {
           var et = jvm._types.javaType(jvm._fuir.clazzActualGeneric(cc, 0)); // possibly resultType
-          var data = jvm._fuir.lookup_fuzion_sys_internal_array_data(jvm._fuir.clazzArgClazz(cc,0));
+          var data = jvm._fuir.clazzArg(jvm._fuir.clazzArgClazz(cc,0), 0);
           var res = args.get(0)
             .andThen(jvm.getfield(data))
             .andThen(Expr.checkcast(et.array()));
@@ -606,7 +606,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
         (jvm, si, cc, tvalue, args) ->
         {
           var rc = jvm._fuir.clazzResultClazz(cc);
-          var data = jvm._fuir.lookup_fuzion_sys_internal_array_data(jvm._fuir.clazzArgClazz(cc, 2));
+          var data = jvm._fuir.clazzArg(jvm._fuir.clazzArgClazz(cc, 2), 0);
           var exec = args.get(0).andThen(Expr.checkcast(JAVA_LANG_STRING))
             .andThen(args.get(1)).andThen(Expr.checkcast(JAVA_LANG_STRING))
             .andThen(args.get(2))
@@ -706,7 +706,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
           var code = Expr.UNIT;
           if (CHECKS)
             {
-              var data = jvm._fuir.lookup_fuzion_sys_internal_array_data(at);
+              var data = jvm._fuir.clazzArg(at, 0);
               if (jvm.fieldExists(data))
                 {
                   code = tvalue

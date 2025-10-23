@@ -120,7 +120,7 @@ public class Interpreter extends FUIRContext
     setField(fuir().clazz_fuzionSysArray_u8_length(), saCl, sa, new i32Value(bytes.length));
     var arrayData = new ArrayData(bytes, saCl);
     setField(fuir().clazz_fuzionSysArray_u8_data(), saCl, sa, arrayData);
-    setField(fuir().lookup_array_internal_array(clArr), clArr, arr, sa);
+    setField(fuir().clazzArg(clArr,0), clArr, arr, sa);
     setField(fuir().clazz_const_string_utf8_data(), cl, result, arr);
 
     return new Boxed(fuir().clazz_ref_const_string(), cl, result);

@@ -358,9 +358,9 @@ public class Call extends ANY implements Comparable<Call>, Context
         var at = _dfa._fuir.clazzArgClazz(calledClazz(), i);
         if (_dfa._fuir.clazzIsArray(at))
           {
-            var ia = _dfa._fuir.lookup_array_internal_array(at);
+            var ia = _dfa._fuir.clazzArg(at, 0);
             _dfa.readField(ia);
-            _dfa.readField(_dfa._fuir.lookup_fuzion_sys_internal_array_data(_dfa._fuir.clazzResultClazz(ia)));
+            _dfa.readField(_dfa._fuir.clazzArg(_dfa._fuir.clazzResultClazz(ia), 0));
           }
       }
   }
