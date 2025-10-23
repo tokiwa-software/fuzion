@@ -43,24 +43,11 @@ public post_r(family net.family.val, port u16, url String, data Sequence u8, hea
 
   lm : mutate is
 
-  # NYI: CLEANUP:
-  read_handler(LM type : mutate, arr array u8) : io.Read_Handler is
-
-    pos := LM.env.new 0
-
-    public redef read(count i32) choice (array u8) io.end_of_file error =>
-      p := pos.get
-      if p >= arr.count
-        io.end_of_file
-      else
-        pos <- p + count
-        arr.drop p .take count .as_array
-
   use_https, host, target := parse_url url
 
   lm ! ()->
     rm := http
       .request_message
-      .new http.post_r target 1 1 ([("Host", host)].concat headers.items) (read_handler lm data.as_array)
+      .new http.post_r target 1 1 ([("Host", host)].concat headers.items) (io.Read_Handler.from_array_u8 lm data.as_array)
 
     do_request family port use_https host rm

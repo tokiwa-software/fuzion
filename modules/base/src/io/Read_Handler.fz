@@ -37,3 +37,21 @@ public Read_Handler ref is
   public type.empty io.Read_Handler =>
     ref : io.Read_Handler is
       public redef read(c i32) choice (array u8) io.end_of_file error => io.end_of_file
+
+
+  # create a Read_Handler from an array of bytes
+  #
+  public type.from_array_u8(LM type : mutate, arr array u8) io.Read_Handler =>
+    ref : io.Read_Handler is
+
+      # the current position in the array
+      #
+      pos := LM.env.new 0
+
+      public redef read(count i32) choice (array u8) io.end_of_file error =>
+        p := pos.get
+        if p >= arr.count
+          io.end_of_file
+        else
+          pos <- p + count
+          arr.drop p .take count .as_array

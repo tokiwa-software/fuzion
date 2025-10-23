@@ -353,7 +353,7 @@ public class Intrinsics extends ANY
 
               var argz = args.get(a); // of type fuzion.sys.internal_array<JavaObject>, we need to get field argz.data
               var sac = executor.fuir().clazzArgClazz(innerClazz, executor.fuir().clazzArgCount(innerClazz) - 1);
-              var argzData = Interpreter.getField(executor.fuir().lookup_fuzion_sys_internal_array_data(sac), sac, argz, false);
+              var argzData = Interpreter.getField(executor.fuir().clazzArg(sac, 0), sac, argz, false);
 
               String clName =                          (String) clNameI._javaRef;
               String name   = nameI   == null ? null : (String) nameI._javaRef;
@@ -385,7 +385,7 @@ public class Intrinsics extends ANY
           var argz = args.get(1);
           var sac = executor.fuir().clazzArgClazz(innerClazz, 0);
           var res = Interpreter
-            .getField(executor.fuir().lookup_fuzion_sys_internal_array_data(sac), sac, argz, false)
+            .getField(executor.fuir().clazzArg(sac, 0), sac, argz, false)
             .arrayData()
             ._data;
           return new JavaRef(res);
@@ -396,7 +396,7 @@ public class Intrinsics extends ANY
         {
           var argz = args.get(1);
           var sac = executor.fuir().clazzArgClazz(innerClazz, 0);
-          var argzData = Interpreter.getField(executor.fuir().lookup_fuzion_sys_internal_array_data(sac), sac, argz, false);
+          var argzData = Interpreter.getField(executor.fuir().clazzArg(sac, 0), sac, argz, false);
           return new JavaRef(utf8ByteArrayDataToString(argzData));
         });
     putUnsafe("fuzion.jvm.java_string_to_string", (executor, innerClazz) -> args ->
