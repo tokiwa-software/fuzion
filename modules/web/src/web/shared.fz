@@ -47,6 +47,9 @@ module write_request(LM type : mutate, rm http.request_message) ! LM =>
       (io.buffered LM).writer.env.flush
 
 
+module parsed_url(module use_https bool, module host String, module port option u16, module target option String) is
+
+
 # parse an url and return (is_http, host, target)
 #
 # e.g. https://tokiwa.software/index
@@ -66,7 +69,7 @@ module write_request(LM type : mutate, rm http.request_message) ! LM =>
 # NYI: BUG: no port bounds check <= 65535 before casting
 # NYI: BUG: ignores userinfo: user:pass@host
 #
-module parse_url(url String) outcome (tuple bool String (option u16) (option String))
+module parse_url(url String) outcome web.parsed_url
   pre
     debug: !url.contains_whitespace
 =>
@@ -97,7 +100,7 @@ module parse_url(url String) outcome (tuple bool String (option u16) (option Str
               nil => (host_and_port_seq[0], id (option u16) nil, tpl.1)
         }
     e error => e
-    t tuple => (is_https, t.0, t.1, t.2)
+    t tuple => web.parsed_url is_https t.0 t.1 t.2
 
 
 # do the actual request and return response as a String

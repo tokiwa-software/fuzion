@@ -43,12 +43,11 @@ public post_r(family net.family.val, url String, data Sequence u8, headers conta
 
   match parse_url url
     e error => e
-    t tuple =>
-      use_https, host, port, target := t
+    pu web.parsed_url =>
 
       lm ! ()->
         rm := http
           .request_message
-          .new http.post_r (target.or_else "/") 1 1 ([("Host", host)].concat headers.items) (io.Read_Handler.from_array_u8 lm data.as_array)
+          .new http.post_r (pu.target.or_else "/") 1 1 ([("Host", pu.host)].concat headers.items) (io.Read_Handler.from_array_u8 lm data.as_array)
 
-        do_request family (port.or_else (if use_https then 443 else 80)) use_https host rm
+        do_request family (pu.port.or_else (if pu.use_https then 443 else 80)) pu.use_https pu.host rm
