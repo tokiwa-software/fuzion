@@ -46,12 +46,43 @@ is
     nano_second / 1E6
 
 
+  year_as_string => year.as_string 4 10
+  month_as_string => date_time.this.month.as_string 2 10
+  day_as_string => day.as_string 2 10
+  hour_as_string => hour.as_string 2 10
+  minute_as_string => minute.as_string 2 10
+  second_as_string => second.as_string 2 10
+  milli_second_as_string => milli_second.as_string 3 10
+  nano_second_as_string => nano_second.as_string 9 10
+
+
   # ISO 8601 string for this datetime
   # example: 2018-09-14T23:59:59.079
   #
   public redef as_string String =>
-    "{year.as_string 2 10}-{month.as_string 2 10}-{day.as_string 2 10}" +
-      "T{hour.as_string 2 10}:{minute.as_string 2 10}:{second.as_string 2 10}.{milli_second.as_string 3 10}"
+    "$year_as_string-$month_as_string-$day_as_string" +
+      "T$hour_as_string:$minute_as_string:$second_as_string.$milli_second_as_string"
+
+
+
+  # ISO 8601 string for this datetime
+  # example: 2018-09-14T23:59:59.079
+  #
+  public as_string(p time.precision) String =>
+    match p
+      time.pyear         =>  "$year_as_string"
+      time.pmonth        =>  "$year_as_string-$month_as_string"
+      time.pday          =>  "$year_as_string-$month_as_string-$day_as_string"
+      time.phour         => ("$year_as_string-$month_as_string-$day_as_string" +
+                              "T$hour_as_string")
+      time.pminute       => ("$year_as_string-$month_as_string-$day_as_string" +
+                              "T$hour_as_string:$minute_as_string")
+      time.psecond       => ("$year_as_string-$month_as_string-$day_as_string" +
+                              "T$hour_as_string:$minute_as_string:$second_as_string")
+      time.pmilli_second => ("$year_as_string-$month_as_string-$day_as_string" +
+                              "T$hour_as_string:$minute_as_string:$second_as_string.$milli_second_as_string")
+      time.pnano_second  => ("$year_as_string-$month_as_string-$day_as_string" +
+                              "T$hour_as_string:$minute_as_string:$second_as_string.$nano_second_as_string")
 
 
   # # NYI
