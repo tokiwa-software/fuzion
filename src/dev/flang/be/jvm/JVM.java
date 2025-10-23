@@ -1185,7 +1185,7 @@ should be avoided as much as possible.
    */
   boolean isAddressLike(int c)
   {
-    return _fuir.clazzIsRef(c) || _fuir.clazzIsArray(c) || _fuir.lookupCall(c) != NO_CLAZZ;
+    return _fuir.clazzIsRef(c) || _fuir.clazzIsArray(c) || _fuir.clazzIsMutateArray(c) || _fuir.lookupCall(c) != NO_CLAZZ;
   }
 
 

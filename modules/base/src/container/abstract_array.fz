@@ -260,4 +260,4 @@ public abstract_array
     for x in data.indices do
       data[x] := abstract_array.this[x]
 
-    LM.env.array length.as_i64 data unit
+    LM.env.array data length.as_i64 unit

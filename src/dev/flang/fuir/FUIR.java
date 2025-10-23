@@ -1488,6 +1488,16 @@ public abstract class FUIR extends IR
 
 
   /**
+   * Is {@code cl} a mutate.array?
+   */
+  public boolean clazzIsMutateArray(int cl)
+  {
+    // NYI: UNDER DEVELOPMENT: get rid of string comparison
+    return clazzOriginalName(cl).compareTo("mutate.array") == 0 && isConstructor(cl);
+  }
+
+
+  /**
    * Is {@code cl} an Array?
    */
   public boolean clazzIsArrayRef(int cl)
