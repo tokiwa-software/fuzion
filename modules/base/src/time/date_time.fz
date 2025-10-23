@@ -50,8 +50,28 @@ is
   # example: 2018-09-14T23:59:59.079
   #
   public redef as_string String =>
-    "{year.as_string 2 10}-{month.as_string 2 10}-{day.as_string 2 10}" +
+    "{year.as_string 2 10}-{date_time.this.month.as_string 2 10}-{day.as_string 2 10}" +
       "T{hour.as_string 2 10}:{minute.as_string 2 10}:{second.as_string 2 10}.{milli_second.as_string 3 10}"
+
+
+  # ISO 8601 string for this datetime
+  # example: 2018-09-14T23:59:59.079
+  #
+  public as_string(p time.precision) String =>
+    match p
+      time.pyear           =>  "{year.as_string 2 10}"
+      time.pmonth          =>  "{year.as_string 2 10}-{date_time.this.month.as_string 2 10}"
+      time.pday            =>  "{year.as_string 2 10}-{date_time.this.month.as_string 2 10}-{day.as_string 2 10}"
+      time.phour           => ("{year.as_string 2 10}-{date_time.this.month.as_string 2 10}-{day.as_string 2 10}" +
+                                 "T{hour.as_string 2 10}")
+      time.pminute         => ("{year.as_string 2 10}-{date_time.this.month.as_string 2 10}-{day.as_string 2 10}" +
+                                 "T{hour.as_string 2 10}:{minute.as_string 2 10}")
+      time.psecond         => ("{year.as_string 2 10}-{date_time.this.month.as_string 2 10}-{day.as_string 2 10}" +
+                                 "T{hour.as_string 2 10}:{minute.as_string 2 10}:{second.as_string 2 10}")
+      time.pmilli_second   => ("{year.as_string 2 10}-{date_time.this.month.as_string 2 10}-{day.as_string 2 10}" +
+                                 "T{hour.as_string 2 10}:{minute.as_string 2 10}:{second.as_string 2 10}.{milli_second.as_string 3 10}")
+      time.pnano_second    => ("{year.as_string 2 10}-{date_time.this.month.as_string 2 10}-{day.as_string 2 10}" +
+                                 "T{hour.as_string 2 10}:{minute.as_string 2 10}:{second.as_string 2 10}.{nano_second.as_string 9 10}")
 
 
   # # NYI
