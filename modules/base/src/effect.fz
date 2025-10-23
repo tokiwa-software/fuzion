@@ -479,4 +479,4 @@ public linear_effect : effect is
 
 Depleted_Wrapper ref is
 
-  depleted := concur.atomic false
+  depleted := concur.atomic bool .new false

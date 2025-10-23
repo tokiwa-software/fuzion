@@ -29,7 +29,7 @@ module:public thread(thrd Thread) : property.equatable is
 
   id := unique_id
 
-  joined := concur.atomic trit.no
+  joined := concur.atomic trit .new trit.no
 
   # wait for this thread to finish execution
   #
