@@ -27,11 +27,12 @@ module:public array (
        # element type
        public T type,
 
+       # contents of the array
+       module data fuzion.sys.internal_array T,
+
        # length of the array to create
        public redef length i64,
 
-       # contents of the array
-       module data fuzion.sys.internal_array T,
        _ unit
 
       ) : container.Mutable_Array T mutate.this, mutable_element
@@ -103,13 +104,13 @@ is
     for x in data.indices do
       data[x] := init
 
-    LM.env.array length data unit
+    LM.env.array data length unit
 
 
   # initialize an empty mutable array of type T
   #
   public type.empty (LM type : mutate) LM.array T =>
-    LM.env.array 0 (fuzion.sys.internal_array_init T 0) unit
+    LM.env.array (fuzion.sys.internal_array_init T 0) 0 unit
 
 
 # convenience feature for creating a new array,
