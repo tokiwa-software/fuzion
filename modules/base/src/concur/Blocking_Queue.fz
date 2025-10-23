@@ -31,7 +31,7 @@ module Blocking_Queue(T type, cnd concur.sync.condition) ref is
   #
   # accessed only by one thread at a time
   #
-  is_closed := concur.atomic false
+  is_closed := concur.atomic bool .new false
 
 
   module close =>
@@ -45,7 +45,7 @@ module Blocking_Queue(T type, cnd concur.sync.condition) ref is
   #
   # accessed only by one thread at a time
   #
-  data := concur.atomic (array T) []
+  data := concur.atomic (array T) .new []
 
 
   # enqueue an element

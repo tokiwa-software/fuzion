@@ -46,7 +46,7 @@ Computable_Future(
 
   cnd := concur.sync.condition.new.val # NYI: error handling
 
-  compute_result := concur.atomic (option T) nil
+  compute_result := concur.atomic (option T) .new nil
 
   compute =>
     cr := task.call
