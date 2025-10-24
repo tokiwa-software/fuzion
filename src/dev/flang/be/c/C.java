@@ -2108,7 +2108,7 @@ public class C extends ANY
           // 2. pass as ref
           ? CIdent.arg(i).castTo("void *")
           // 3. pass as value
-          : (_fuir.clazzIsArray(at)
+          : (_fuir.clazzIsArray(at) || _fuir.clazzIsMutateArray(at)
               // 3.1 array, we need to get field internal_array.data
               ? getFieldInternalArrayData(i, at)
               // 3.2 plain value
@@ -2202,7 +2202,7 @@ public class C extends ANY
           // 2. pass as ref
           !_fuir.clazzIsRef(at) &&
           // 3. array, we need to get field internal_array.data
-          !_fuir.clazzIsArray(at) &&
+          !_fuir.clazzIsArray(at) && !_fuir.clazzIsMutateArray(at) &&
           // 4. plain value
           _fuir.getSpecialClazz(at) == SpecialClazzes.c_NOT_FOUND;
         if (isComplexValue)
