@@ -196,7 +196,7 @@ module split0(s Sequence T, limit option u32, split_after bool) list (Sequence T
             nil => true
             n u32 => n > 0
   =>
-    match (find s)
+    match find s
       nil     =>
         # NYI: With better type propagation, this could be `Sequence.this : nil` or `[Sequence.this].as_list`
         (id (Sequence T) Sequence.this) : nil
