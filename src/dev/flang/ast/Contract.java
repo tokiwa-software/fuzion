@@ -632,9 +632,7 @@ public class Contract extends ANY
     var code = new Block(l);
     var result_type     = new ParsedType(pos,
                                          preBool ? "bool"
-                                                 : FuzionConstants.UNIT_NAME,
-                                         UnresolvedType.NONE,
-                                         null);
+                                                 : FuzionConstants.UNIT_NAME);
     var pF = new Feature(pos,
                          f.visibility().eraseTypeVisibility(),
                          // we need to copy fixed modifier because

@@ -167,9 +167,7 @@ public class Function extends AbstractLambda
         List<AbstractType> argTypes = _namesAsExprs != null
           ? _namesAsExprs.map2(e -> e.asParsedType())
           : _names.map2(n -> new ParsedType(n.pos(),
-                                            n._name,
-                                            new List<>(),
-                                            null)
+                                            n._name)
                         );
         if (argTypes.stream().allMatch(t -> t != null))
           {
