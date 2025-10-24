@@ -69,9 +69,10 @@ public Message ref is
     max_body_bytes i32) Sequence u8
   =>
     # NYI: BUG: read fully
-    (start_line + header_as_canonical_string + crlf).utf8 ++ (match (body.read max_body_bytes)
-                                                a array => a
-                                                * => [])
+    (start_line + header_as_canonical_string + crlf).utf8 ++
+      (match body.read max_body_bytes
+        a array => a
+        * => [])
 
 
   # String representation of the message header
@@ -87,7 +88,7 @@ public Message ref is
     # does not account for the size of the header
     max_body_bytes i32) outcome String
   =>
-    match (body.read max_body_bytes)
+    match body.read max_body_bytes
       a array => Message.this.as_string + String.from_bytes a
       e error => e
       io.end_of_file => Message.this.as_string
