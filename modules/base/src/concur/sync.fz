@@ -74,7 +74,7 @@ public sync is
   #
   private:public condition(mtx Mutex, cnd Condition) is
 
-    public is_locked concur.atomic bool := concur.atomic false
+    public is_locked concur.atomic bool := concur.atomic bool .new false
 
     # run code synchronized across all threads
     # that also use this condition

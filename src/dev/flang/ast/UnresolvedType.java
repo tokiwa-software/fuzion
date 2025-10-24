@@ -356,8 +356,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
     return new ParsedType(pos,
                           arguments.size() == 1 ? Types.UNARY_NAME  :
                           arguments.size() == 2 ? Types.BINARY_NAME : Types.FUNCTION_NAME,
-                          new List<AbstractType>(returnType, arguments),
-                          null);
+                          new List<AbstractType>(returnType, arguments));
   }
 
 

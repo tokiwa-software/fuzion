@@ -853,7 +853,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     var tl = new List<AbstractType>();
     for (var ta0 : typeArguments())
       {
-        var ta = new ParsedType(pos(), ta0.featureName().baseName(), UnresolvedType.NONE, null);
+        var ta = new ParsedType(pos(), ta0.featureName().baseName());
         tl.add(ta);
       }
     t = t.applyTypePars(this, tl);

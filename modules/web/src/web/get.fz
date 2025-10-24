@@ -25,26 +25,26 @@
 # GET url via ipv4 using standard ssl port
 #
 public get4(url String) outcome String =>
-  p u16 := if (parse_url url).0 then 443 else 80
-  get net.family.ipv4 p url
+  get net.family.ipv4 url
 
 
 # GET url via ipv6 using standard ssl port
 #
 public get6(url String) outcome String =>
-  p u16 := if (parse_url url).0 then 443 else 80
-  get net.family.ipv6 p url
+  get net.family.ipv6 url
 
 
 # eagerly get an url via http(s), return response as a String
 #
-public get(family net.family.val, port u16, url String) outcome String =>
+public get(family net.family.val, url String) outcome String =>
 
-  use_https, host, target := parse_url url
+  match parse_url url
+    e error => e
+    pu web.parsed_url =>
 
-  request_message =>
-    http
-      .request_message
-      .new http.get target 1 1 [("Host", host)]
+      request_message =>
+        http
+          .request_message
+          .new http.get (pu.target.or_else "/") 1 1 [("Host", pu.host)]
 
-  do_request family port use_https host request_message
+      do_request family (pu.port.or_else (if pu.use_https then 443 else 80)) pu.use_https pu.host request_message

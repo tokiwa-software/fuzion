@@ -219,9 +219,7 @@ public abstract class AbstractCall extends Expr
   Call cotypeInheritanceCall(Resolution res, AbstractFeature that)
   {
     var selfType = new ParsedType(pos(),
-                                  FuzionConstants.COTYPE_THIS_TYPE,
-                                  new List<>(),
-                                  null);
+                                  FuzionConstants.COTYPE_THIS_TYPE);
     var typeParameters = new List<AbstractType>(selfType);
     if (this instanceof Call cpc && cpc.needsToInferTypeParametersFromArgs())
       {
