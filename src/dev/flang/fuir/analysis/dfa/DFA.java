@@ -2472,7 +2472,9 @@ public class DFA extends ANY
         var cc = cl.calledClazz();
         var fuir = fuir(cl);
         var data = fuir.clazzArg(fuir.clazzArgClazz(cc, 2), 0);
+        var length = fuir.clazzArg(fuir.clazzArgClazz(cc, 2), 1);
         cl._dfa.readField(data);
+        cl._dfa.readField(length);
         return outcomeJavaResult(cl);
       });
     put("fuzion.jvm.call_s0"               , cl ->
@@ -2480,7 +2482,9 @@ public class DFA extends ANY
         var cc = cl.calledClazz();
         var fuir = fuir(cl);
         var data = fuir.clazzArg(fuir.clazzArgClazz(cc, 3), 0);
+        var length = fuir.clazzArg(fuir.clazzArgClazz(cc, 3), 1);
         cl._dfa.readField(data);
+        cl._dfa.readField(length);
         return outcomeJavaResult(cl);
       });
     put("fuzion.jvm.call_v0"               , cl ->
@@ -2488,7 +2492,9 @@ public class DFA extends ANY
         var cc = cl.calledClazz();
         var fuir = fuir(cl);
         var data = fuir.clazzArg(fuir.clazzArgClazz(cc, 4), 0);
+        var length = fuir.clazzArg(fuir.clazzArgClazz(cc, 4), 1);
         cl._dfa.readField(data);
+        cl._dfa.readField(length);
         return outcomeJavaResult(cl);
       });
     put("fuzion.jvm.cast0", cl -> outcomeJavaResult(cl));
@@ -2742,6 +2748,7 @@ public class DFA extends ANY
       {
         _readFields.set(fnum);
         wasChanged(() -> "DFA: read field " + _fuir.clazzAsString(field));
+        _fuir.doesNeedCode(field);
       }
     var cl = _fuir.clazzAsValue(_fuir.clazzOuterClazz(field));
     var clnum = _fuir.clazzId2num(cl);
