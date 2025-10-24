@@ -627,38 +627,6 @@ public abstract class FUIR extends IR
 
 
   /**
-   * For a clazz of array, lookup the inner clazz of the internal_array field.
-   *
-   * @param cl index of a clazz {@code array T} for some type parameter {@code T}
-   *
-   * @return the index of the requested {@code array.internal_array} field's clazz.
-   */
-  public abstract int lookup_array_internal_array(int cl);
-
-
-  /**
-   * For a clazz of {@code fuzion.sys.internal_array}, lookup the inner clazz of the
-   * data field.
-   *
-   * @param cl index of a clazz {@code fuzion.sys.internal_array T} for some type parameter {@code T}
-   *
-   * @return the index of the requested {@code fuzion.sys.internal_array.data} field's clazz.
-   */
-  public abstract int lookup_fuzion_sys_internal_array_data(int cl);
-
-
-  /**
-   * For a clazz of {@code fuzion.sys.internal_array}, lookup the inner clazz of the
-   * length field.
-   *
-   * @param cl index of a clazz {@code fuzion.sys.internal_array T} for some type parameter {@code T}
-   *
-   * @return the index of the requested {@code fuzion.sys.internal_array.length} field's clazz.
-   */
-  public abstract int lookup_fuzion_sys_internal_array_length(int cl);
-
-
-  /**
    * Get the id of clazz Any.
    *
    * @return clazz id of clazz Any
@@ -730,7 +698,7 @@ public abstract class FUIR extends IR
   public int clazz_fuzionSysArray_u8()
   {
     var a8 = clazz_array_u8();
-    var ia = a8 == NO_CLAZZ ? NO_CLAZZ : lookup_array_internal_array(a8);
+    var ia = a8 == NO_CLAZZ ? NO_CLAZZ : clazzArg(a8, 0);
     return ia == NO_CLAZZ ? NO_CLAZZ : clazzResultClazz(ia);
   }
 
@@ -743,7 +711,7 @@ public abstract class FUIR extends IR
   public int clazz_fuzionSysArray_u8_data()
   {
     var sa8 = clazz_fuzionSysArray_u8();
-    return sa8 == NO_CLAZZ ? NO_CLAZZ : lookup_fuzion_sys_internal_array_data(sa8);
+    return sa8 == NO_CLAZZ ? NO_CLAZZ : clazzArg(sa8, 0);
   }
 
 
@@ -755,7 +723,7 @@ public abstract class FUIR extends IR
   public int clazz_fuzionSysArray_u8_length()
   {
     var sa8 = clazz_fuzionSysArray_u8();
-    return  sa8 == NO_CLAZZ ? NO_CLAZZ : lookup_fuzion_sys_internal_array_length(sa8);
+    return  sa8 == NO_CLAZZ ? NO_CLAZZ : clazzArg(sa8, 1);
   }
 
 

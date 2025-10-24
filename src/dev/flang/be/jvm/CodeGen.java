@@ -848,8 +848,8 @@ class CodeGen
    */
   private Expr getArrayDataField(int at)
   {
-    var ia = _fuir.lookup_array_internal_array(at);
-    var iad = _fuir.lookup_fuzion_sys_internal_array_data(_fuir.clazzResultClazz(ia));
+    var ia = _fuir.clazzArg(at,0);
+    var iad = _fuir.clazzArg(_fuir.clazzResultClazz(ia), 0);
     return _jvm
       .getfield(ia)
       .andThen(_jvm.getfield(iad));
