@@ -217,6 +217,44 @@ module split0(s Sequence T, limit option u32, split_after bool) list (Sequence T
         head : tail
 
 
+# split sequence at s, if there is no limit, otherwise if limit is an integer n,
+# for at most n occurrences of s
+#
+# if split_after is true, all but the last element of the resulting list include
+# the separator
+#
+# helper feature which unifies the code of the different split features in one
+#
+public split(s Sequence T, limit option u32, split_after bool) Sequence (Sequence T)
+  pre
+    T : property.equatable
+    debug: !s.is_empty
+    debug: match limit
+            nil => true
+            n u32 => n > 0
+
+  post
+    debug: match limit
+             nil => true
+             n u32 => result.count.as_u32 <= n+1
+  =>
+
+    abs := s.as_array_backed
+
+    for cnt  := u32 1,
+                cnt+1
+        res  := container.expanding_array (Sequence T) .empty,
+                res.add (rest.take (if split_after then idx.get + abs.count else idx.get))
+        rest := as_array_backed,
+                rest.drop (idx.get + abs.count)
+        idx  := rest.find abs
+    while idx.ok && (limit.is_empty || limit >=? cnt) do
+
+    else
+      res
+        .add rest
+
+
 # filter out consecutive duplicate elements.
 #
 # Keep the order of elements unchanged.
