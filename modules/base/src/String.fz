@@ -534,27 +534,48 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # Leading and trailing white space is ignored, repeated white space is treated
   # like a single white space
   #
+  # The result is a, possibly empty, Sequence of separate non-empty strings.
+  #
+  public split Sequence String
+    pre  debug : utf8.is_array_backed
+    post debug : result.is_array_backed
+  =>
+    e := container.expanding_array String .empty
+    for
+      rest := utf8.drop_while (.is_ascii_white_space), t.1
+      x := rest.split_at (.is_ascii_white_space)
+      t := (x.0, x.1.drop_while (.is_ascii_white_space))
+      res := e.add (String.from_bytes t.0), res.add (String.from_bytes t.0)
+    while !t.1.is_empty
+    else
+      res
+
+
+  # Split string separated by (ASCII) white space
+  #
+  # Leading and trailing white space is ignored, repeated white space is treated
+  # like a single white space
+  #
   # The result is a, possibly empty, list of separate non-empty strings.
   #
-  public split list String =>
+  public split_lazy list String =>
     l := utf8.drop_while is_ascii_white_space
     if l.is_empty
       nil
     else
       # NYI: UNDER DEVELOPMENT: type inference for lambda
-      cnd u8->bool := c -> !c.is_ascii_white_space
+      cnd u8->bool => c -> !c.is_ascii_white_space
       # NYI: PERFORMANCE: do take_while/drop_while at the same time
-      h :=  String.from_bytes (l.take_while cnd).as_array
-      t := (String.from_bytes <| l.drop_while cnd)
-                  .split
       ref : Cons String (list String) is
-        public redef head String => h
-        public redef tail list String => t
+        public redef head String => String.from_bytes (l.take_while cnd).as_array
+        public redef tail list String =>
+          (String.from_bytes <| l.drop_while cnd)
+                 .split_lazy
 
 
   # split string at s
   #
-  public split(s String) list String
+  public split(s String) Sequence String
     pre
       !s.is_empty
     =>
@@ -564,7 +585,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # split string after s, that is do the same thing as split but
   # include the separator s in the resulting strings
   #
-  public split_after(s String) list String
+  public split_after(s String) Sequence String
     pre
       !s.is_empty
     =>
@@ -576,7 +597,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # if s occurs in the string less than n times, the resulting list will have
   # less than n elements
   #
-  public split_n(s String, n u32) list String
+  public split_n(s String, n u32) Sequence String
     pre
       debug: !s.is_empty
       debug: n > 0
@@ -589,7 +610,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # if s occurs in the string less than n times, the resulting list will have
   # less than n elements
   #
-  public split_after_n(s String, n u32) list String
+  public split_after_n(s String, n u32) Sequence String
     pre
       !s.is_empty
       n > 0
@@ -605,21 +626,21 @@ public String ref : property.equatable, property.hashable, property.orderable is
   #
   # helper feature which unifies the code of the different split features in one
   #
-  split0(s String, limit option u32, split_after bool) list String
+  split0(s String, limit option u32, split_after bool) Sequence String
     pre
       debug: !s.is_empty
       debug: match limit
                nil => true
                n u32 => n > 0
     =>
-      utf8.split0 s.utf8 limit split_after
-          # NYI: BUG: could be just: .map_to_list String.from_bytes
-          .map_to_list String.type.from_bytes
+      utf8.split s.utf8 limit split_after
+          # NYI: BUG: could be just: .map String.from_bytes
+          .map String.type.from_bytes
 
 
   # split string at line feeds
   #
-  public lines list String =>
+  public lines Sequence String =>
     split encodings.ascii.lf_str
 
 
