@@ -30,6 +30,21 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # converting a string to a string is just returning string.this
   public redef as_string String => String.this
 
+  # this String but limited to max_codepoints
+  #
+  # if String is longer than max_codepoints '…' is appended
+  #
+  public as_string(max_codepoints i32) String =>
+    x := codepoints
+      .take max_codepoints+1
+      .as_array
+
+    String.from_codepoints
+      (if x.length > max_codepoints
+         (x.take max_codepoints)++["…"]
+       else
+         x)
+
   # any concrete string must implement utf8
   public utf8 Sequence u8 => abstract
 
