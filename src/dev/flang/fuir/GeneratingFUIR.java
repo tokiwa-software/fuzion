@@ -1403,6 +1403,7 @@ public class GeneratingFUIR extends FUIR
        Errors.any() ||
        !_lookupDone ||
        clazzNeedsCode(cl) ||
+       /* NYI: CLEANUP: DFA should mark these */
        cl == clazz_const_string() ||
        cl == clazz_const_string_utf8_data() ||
        cl == clazz_array_u8() ||
@@ -1552,7 +1553,7 @@ public class GeneratingFUIR extends FUIR
   }
 
 
-  void doesNeedCode(int cl)
+  public void doesNeedCode(int cl)
   {
     if (PRECONDITIONS) require
       (cl >= CLAZZ_BASE,
