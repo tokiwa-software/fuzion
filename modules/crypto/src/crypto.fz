@@ -1,0 +1,80 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion feature crypto
+#
+# -----------------------------------------------------------------------
+
+# crypto -- unit feature to group cryptography related features
+#
+public crypto is
+
+  # get a (salted) password hash for password
+  #
+  public password_hash(password String) outcome String =>
+
+    mutate ! ()->
+
+      out := mutate.array i8 .new mutate password_hash_length 0
+      passwd := mutate.array i8 .from_Sequence mutate (password.utf8.map (.cast_to_i8))
+
+      sodium_init
+
+      if {
+        0 = c.crypto_pwhash_str
+                out
+                passwd
+                passwd.length.as_u64
+                c.crypto_pwhash_opslimit_interactive.as_u64
+                c.crypto_pwhash_memlimit_interactive
+        }
+        String.from_bytes <| out.as_array.map (.cast_to_u8)
+      else
+        # NYI: UNDER DEVELOPMENT: type inference
+        id (outcome String) (error "out of memory (crypto_pwhash)")
+
+
+  # the length of the password hash that password_hash returns
+  #
+  public password_hash_length i64 => c.crypto_pwhash_strbytes
+
+
+  sodium_init =>
+    res := c.sodium_init
+    # 0=success, 1=already initialized
+    check res=0 | res=1
+
+
+  # verify that hash belongs to password
+  #
+  public password_hash_verify(password String, hash String) bool
+    pre hash.utf8.count.as_i64 = password_hash_length
+  =>
+
+    mutate ! ()->
+
+      passwd := mutate.array i8 .from_Sequence mutate (password.utf8.map (.cast_to_i8))
+      hsh := mutate.array i8 .from_Sequence mutate (hash.utf8.map (.cast_to_i8))
+
+      sodium_init
+
+      0 = c.crypto_pwhash_str_verify
+              hsh
+              passwd
+              passwd.length.as_u64
