@@ -176,16 +176,10 @@ module:public body_reader(
   # mutate effect from which to read
   LM type : mutate,
   # size that should be read if known, nil to read until connection closes
-  reader_size option i32) : io.Read_Handler
-
-  pre
-      debug:
-        match reader_size
-          nil => true
-          n i32 => n>0
+  reader_size option u64) : io.Read_Handler
 is
 
-  remaining := mut (reader_size.get -5555)
+  remaining := mut (reader_size.bind (.as_i32) .get -5555)
 
   public redef read(count i32) choice (array u8) io.end_of_file error =>
 
@@ -256,7 +250,7 @@ module body_helper(LM type : mutate, is_req bool, header_fields container.Map St
         cause "400 bad request, Transfer-Encoding header field is present in a request and the chunked transfer coding is not the final encoding"
 
     else if header_fields.has "content-length"
-      match header_fields["content-length"].val.parse_i32
+      match header_fields["content-length"].val.parse_u64
         error =>
 
           # NYI: UNDER DEVELOPMENT: implement recovery
@@ -264,7 +258,7 @@ module body_helper(LM type : mutate, is_req bool, header_fields container.Map St
 
           cause "invalid value for field content-length"
 
-        length i32 =>
+        length u64 =>
           # content Sequence u8 := (io.buffered LM).read_bytes length
           # (content.count = length) ? option content : (cause "input closed after {content.count} bytes, but specified content-length: $length")
           body_reader LM length
