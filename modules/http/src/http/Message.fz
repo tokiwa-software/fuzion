@@ -175,35 +175,52 @@ module parse_header_fields(LM type : mutate) outcome (container.mutable_tree_map
 module:public body_reader(
   # mutate effect from which to read
   LM type : mutate,
-  # size that should be read if known, -1 to read until connection closes
-  reader_size i32) : io.Read_Handler is
+  # size that should be read if known, nil to read until connection closes
+  reader_size option i32) : io.Read_Handler
 
-    remaining := mut reader_size
+  pre
+      debug:
+        match reader_size
+          nil => true
+          n i32 => n>0
+is
 
-    public redef read(count i32) choice (array u8) io.end_of_file error =>
+  remaining := mut (reader_size.get -5555)
 
-      to_read := min remaining.get count
+  public redef read(count i32) choice (array u8) io.end_of_file error =>
 
-      res choice (array u8) io.end_of_file error => match (io.buffered LM).reader.env.read
+    if reader_size.is_nil
+      # NYI: CLEANUP: ugly that this match is necessary
+      match (io.buffered LM).reader.env.read
         s Sequence =>
-          c := s.take to_read .as_array
-
-          (io.buffered LM).reader.env.discard c.count
-          # decrease remaining if reader has a size limit
-          if reader_size >= 0
-            new_remaining := remaining.get - c.count
-            remaining <- (new_remaining >= 0 ? new_remaining : 0)
-          c
+          (io.buffered LM).reader.env.discard
+          s.as_array
         o outcome =>
           match o
-            io.end_of_file =>
-              if remaining.get > 0
-                error "input closed after {reader_size - remaining.get} bytes, but specified content-length: {reader_size}"
-              else
-                io.end_of_file
             e error => e
-
-      to_read = 0 ? io.end_of_file : res
+            io.end_of_file => io.end_of_file
+    else
+      if remaining.get <= 0
+        io.end_of_file
+      else
+        match (io.buffered LM).reader.env.read
+          s Sequence =>
+            c := s.take (min remaining.get count) .as_array
+            remaining <- remaining.get - c.count
+            (io.buffered LM).reader.env.discard c.count
+            c
+          o outcome =>
+            match o
+              io.end_of_file =>
+                if remaining.get > 0
+                  error """
+                    Connection closed before complete content was read.
+                    content-length: {reader_size} bytes"
+                    remaining bytes to read: {remaining.get} bytes"
+                    """
+                else
+                  io.end_of_file
+              e error => e
 
 
 
@@ -232,7 +249,7 @@ module body_helper(LM type : mutate, is_req bool, header_fields container.Map St
       # If a Transfer-Encoding header field is present in a response and the chunked transfer coding is not the final encoding, the message body length is determined by reading the connection until it is closed by the server.
       else if !is_req
         # option (Sequence u8) (io.buffered LM).read_fully
-        body_reader LM -1
+        body_reader LM nil
 
       # If a Transfer-Encoding header field is present in a request and the chunked transfer coding is not the final encoding, the message body length cannot be determined reliably; the server MUST respond with the 400 (Bad Request) status code and then close the connection.
       else
@@ -257,7 +274,7 @@ module body_helper(LM type : mutate, is_req bool, header_fields container.Map St
     # https://datatracker.ietf.org/doc/html/rfc9112#section-6.3-2.7
     else
       # is_req ? nil : option (Sequence u8) (io.buffered LM).read_fully
-      body_reader LM (is_req ? 0 : -1)
+      body_reader LM (is_req ? 0 : nil)
 
 
 
