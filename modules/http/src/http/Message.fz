@@ -44,6 +44,10 @@ public Message ref is
   # NYI: BUG: can only be called once
   # body of the message, if it has one
   #
+  # NYI: CLEANUP: should probably be possible for body to be
+  # array u8, nil or a specify an LM to read from.
+  # The question is what do we need?
+  #
   public body io.Read_Handler => abstract
 
 
@@ -172,54 +176,66 @@ module parse_header_fields(LM type : mutate) outcome (container.mutable_tree_map
     fields
 
 
+# version of body reader that reads until connection closes
+#
+body_reader(LM type : mutate) : io.Read_Handler is
+  public redef read(count i32) choice (array u8) io.end_of_file error =>
+    # NYI: CLEANUP: ugly that this match is necessary
+    match (io.buffered LM).reader.env.read
+      s Sequence =>
+        (io.buffered LM).reader.env.discard
+        s.as_array
+      o outcome =>
+        match o
+          e error => e
+          io.end_of_file => io.end_of_file
 
-module:public body_reader(
+
+# version of body reader that reads up to reader_size
+#
+body_reader(LM type : mutate, reader_size i32, _ unit) : io.Read_Handler is
+
+  remaining := mut reader_size
+
+  public redef read(count i32) choice (array u8) io.end_of_file error =>
+    if remaining.get <= 0
+      io.end_of_file
+    else
+      match (io.buffered LM).reader.env.read
+        s Sequence =>
+          c := s.take (min remaining.get count) .as_array
+          remaining <- remaining.get - c.count
+          (io.buffered LM).reader.env.discard c.count
+          c
+        o outcome =>
+          match o
+            io.end_of_file =>
+              if remaining.get > 0
+                error """
+                  Connection closed before complete content was read.
+                  content-length: {reader_size} bytes"
+                  remaining bytes to read: {remaining.get} bytes"
+                  """
+              else
+                io.end_of_file
+            e error => e
+
+
+# create a body_reader for the specified options
+#
+module body_reader(
   # mutate effect from which to read
   LM type : mutate,
   # size that should be read if known, nil to read until connection closes
-  reader_size option u64) : io.Read_Handler
-is
-
-  remaining := mut (reader_size.bind (.as_i32) .get -5555)
-
-  public redef read(count i32) choice (array u8) io.end_of_file error =>
-
-    if reader_size.is_nil
-      # NYI: CLEANUP: ugly that this match is necessary
-      match (io.buffered LM).reader.env.read
-        s Sequence =>
-          (io.buffered LM).reader.env.discard
-          s.as_array
-        o outcome =>
-          match o
-            e error => e
-            io.end_of_file => io.end_of_file
-    else
-      if remaining.get <= 0
-        io.end_of_file
-      else
-        match (io.buffered LM).reader.env.read
-          s Sequence =>
-            c := s.take (min remaining.get count) .as_array
-            remaining <- remaining.get - c.count
-            (io.buffered LM).reader.env.discard c.count
-            c
-          o outcome =>
-            match o
-              io.end_of_file =>
-                if remaining.get > 0
-                  error """
-                    Connection closed before complete content was read.
-                    content-length: {reader_size} bytes"
-                    remaining bytes to read: {remaining.get} bytes"
-                    """
-                else
-                  io.end_of_file
-              e error => e
+  reader_size option u64) io.Read_Handler
+=>
+  reader_size
+    .bind (io.Read_Handler) rs->
+      body_reader LM rs.as_i32 unit
+    .or_else (body_reader LM)
 
 
 
-# module body_helper(LM type : mutate, is_req bool, header_fields container.Map String String) outcome (option (Sequence u8)) =>
 module body_helper(LM type : mutate, is_req bool, header_fields container.Map String String) outcome io.Read_Handler =>
   exception unit io.Read_Handler ()->
 
