@@ -22,7 +22,7 @@
 # -----------------------------------------------------------------------
 
 override NAME = mod_crypto
-override FUZION_OPTIONS = -modules=crypto
+override FUZION_OPTIONS = -modules=crypto,sodium
 override FUZION_JVM_BACKEND_OPTIONS = -JLibraries=sodium
 override FUZION_C_BACKEND_OPTIONS = -CLink=sodium|-CInclude=sodium.h
 include ../simple.mk

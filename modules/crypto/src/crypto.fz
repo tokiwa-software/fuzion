@@ -28,37 +28,13 @@ public crypto is
   # get a (salted) password hash for password
   #
   public password_hash(password String) outcome String =>
-
-    mutate ! ()->
-
-      out := mutate.array i8 .new mutate password_hash_length 0
-      passwd := mutate.array i8 .from_Sequence mutate (password.utf8.map (.cast_to_i8))
-
-      sodium_init
-
-      if {
-        0 = c.crypto_pwhash_str
-                out
-                passwd
-                passwd.length.as_u64
-                c.crypto_pwhash_opslimit_interactive.as_u64
-                c.crypto_pwhash_memlimit_interactive
-        }
-        String.from_bytes <| out.as_array.map (.cast_to_u8)
-      else
-        # NYI: UNDER DEVELOPMENT: type inference
-        id (outcome String) (error "out of memory (crypto_pwhash)")
+    sodium.password_hash password
 
 
   # the length of the password hash that password_hash returns
   #
-  public password_hash_length i64 => c.crypto_pwhash_strbytes
-
-
-  sodium_init =>
-    res := c.sodium_init
-    # 0=success, 1=already initialized
-    check res=0 | res=1
+  public password_hash_length i64 =>
+    sodium.password_hash_length
 
 
   # verify that hash belongs to password
@@ -66,15 +42,4 @@ public crypto is
   public password_hash_verify(password String, hash String) bool
     pre hash.utf8.count.as_i64 = password_hash_length
   =>
-
-    mutate ! ()->
-
-      passwd := mutate.array i8 .from_Sequence mutate (password.utf8.map (.cast_to_i8))
-      hsh := mutate.array i8 .from_Sequence mutate (hash.utf8.map (.cast_to_i8))
-
-      sodium_init
-
-      0 = c.crypto_pwhash_str_verify
-              hsh
-              passwd
-              passwd.length.as_u64
+    sodium.password_hash_verify password hash
