@@ -34,17 +34,14 @@ public String ref : property.equatable, property.hashable, property.orderable is
   #
   # if String is longer than max_codepoints '…' is appended
   #
-  public as_string(max_codepoints i32) String =>
-    x := codepoints
-      .take max_codepoints+1
-      .as_array
-
-    String.from_codepoints
-      (if x.length > max_codepoints
-         (x.take max_codepoints)++["…"]
-       else
-         x)
-
+  public truncate(max_codepoints i32) String 
+    pre
+      debug: max_codepoints > 0
+  =>
+    if codepoin_length <= max_codepointscodepoints then
+      String.this
+    else
+      substring_codepoint 0 max_codepoints-1 + "…"
   # any concrete string must implement utf8
   public utf8 Sequence u8 => abstract
 
