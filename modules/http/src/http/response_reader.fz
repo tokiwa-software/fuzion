@@ -80,7 +80,6 @@ public read_response(
           || code = 204     # No Content
           || code = 304     # Not Modified
           || req.ok && req.val.method = http.head) # responses to HEAD requests must not contain body data
-        # nil
         body_reader LM 0
       else if (200 <= code < 300 && req.ok && req.val.method = http.connect)
 
