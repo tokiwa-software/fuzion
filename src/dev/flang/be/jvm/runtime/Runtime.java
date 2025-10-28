@@ -1385,7 +1385,7 @@ public class Runtime extends ANY
    *
    * @param desc the FunctionDescriptor of the function
    *
-   * NYI: CLEANUP: remove param libraries. do init of library lookup once at program start.
+   * NYI: PERFORMANCE: remove param libraries. do init of library lookup once at program start.
    *
    * @return
    */
@@ -1418,7 +1418,12 @@ public class Runtime extends ANY
 
     var memSeg = llu
       .find(str)
-      .orElseThrow(() -> new UnsatisfiedLinkError("unresolved symbol: " + str));
+      .orElseThrow(() -> new UnsatisfiedLinkError(
+        "Unresolved symbol: " + str + ". " +
+        (libraries.length == 0
+          ? "You probably forgot to use the -JLibraries option."
+          : "Likely causes: Either your native method is misspelled or you forgot to include a library in the -JLibraries option.")
+        ));
 
     var result = Linker
       .nativeLinker()
