@@ -44,6 +44,10 @@ public Message ref is
   # NYI: BUG: can only be called once
   # body of the message, if it has one
   #
+  # NYI: CLEANUP: should probably be possible for body to be
+  # array u8, nil or a specify an LM to read from.
+  # The question is what do we need?
+  #
   public body io.Read_Handler => abstract
 
 
@@ -68,10 +72,11 @@ public Message ref is
     # does not account for the size of the header
     max_body_bytes i32) Sequence u8
   =>
-    # NYI: BUG: read fully
-    (start_line + header_as_canonical_string + crlf).utf8 ++ (match (body.read max_body_bytes)
-                                                a array => a
-                                                * => [])
+    b := match body.read max_body_bytes
+      a array => a
+      * => []
+    (start_line + header_as_canonical_string + "Content-Length: {b.length}" + crlf + crlf).utf8 ++ b
+      .as_array
 
 
   # String representation of the message header
@@ -87,7 +92,7 @@ public Message ref is
     # does not account for the size of the header
     max_body_bytes i32) outcome String
   =>
-    match (body.read max_body_bytes)
+    match body.read max_body_bytes
       a array => Message.this.as_string + String.from_bytes a
       e error => e
       io.end_of_file => Message.this.as_string
@@ -171,43 +176,66 @@ module parse_header_fields(LM type : mutate) outcome (container.mutable_tree_map
     fields
 
 
+# version of body reader that reads until connection closes
+#
+body_reader(LM type : mutate) : io.Read_Handler is
+  public redef read(count i32) choice (array u8) io.end_of_file error =>
+    # NYI: CLEANUP: ugly that this match is necessary
+    match (io.buffered LM).reader.env.read
+      s Sequence =>
+        (io.buffered LM).reader.env.discard
+        s.as_array
+      o outcome =>
+        match o
+          e error => e
+          io.end_of_file => io.end_of_file
 
-module:public body_reader(
-  # mutate effect from which to read
-  LM type : mutate,
-  # size that should be read if known, -1 to read until connection closes
-  reader_size i32) : io.Read_Handler is
 
-    remaining := mut reader_size
+# version of body reader that reads up to reader_size
+#
+body_reader(LM type : mutate, reader_size i32, _ unit) : io.Read_Handler is
 
-    public redef read(count i32) choice (array u8) io.end_of_file error =>
+  remaining := mut reader_size
 
-      to_read := min remaining.get count
-
-      res choice (array u8) io.end_of_file error => match (io.buffered LM).reader.env.read
+  public redef read(count i32) choice (array u8) io.end_of_file error =>
+    if remaining.get <= 0
+      io.end_of_file
+    else
+      match (io.buffered LM).reader.env.read
         s Sequence =>
-          c := s.take to_read .as_array
-
+          c := s.take (min remaining.get count) .as_array
+          remaining <- remaining.get - c.count
           (io.buffered LM).reader.env.discard c.count
-          # decrease remaining if reader has a size limit
-          if reader_size >= 0
-            new_remaining := remaining.get - c.count
-            remaining <- (new_remaining >= 0 ? new_remaining : 0)
           c
         o outcome =>
           match o
             io.end_of_file =>
               if remaining.get > 0
-                error "input closed after {reader_size - remaining.get} bytes, but specified content-length: {reader_size}"
+                error """
+                  Connection closed before complete content was read.
+                  content-length: {reader_size} bytes"
+                  remaining bytes to read: {remaining.get} bytes"
+                  """
               else
                 io.end_of_file
             e error => e
 
-      to_read = 0 ? io.end_of_file : res
+
+# create a body_reader for the specified options
+#
+module body_reader(
+  # mutate effect from which to read
+  LM type : mutate,
+  # size that should be read if known, nil to read until connection closes
+  reader_size option u64) io.Read_Handler
+=>
+  reader_size
+    .bind (io.Read_Handler) rs->
+      body_reader LM rs.as_i32 unit
+    .or_else (body_reader LM)
 
 
 
-# module body_helper(LM type : mutate, is_req bool, header_fields container.Map String String) outcome (option (Sequence u8)) =>
 module body_helper(LM type : mutate, is_req bool, header_fields container.Map String String) outcome io.Read_Handler =>
   exception unit io.Read_Handler ()->
 
@@ -232,14 +260,14 @@ module body_helper(LM type : mutate, is_req bool, header_fields container.Map St
       # If a Transfer-Encoding header field is present in a response and the chunked transfer coding is not the final encoding, the message body length is determined by reading the connection until it is closed by the server.
       else if !is_req
         # option (Sequence u8) (io.buffered LM).read_fully
-        body_reader LM -1
+        body_reader LM nil
 
       # If a Transfer-Encoding header field is present in a request and the chunked transfer coding is not the final encoding, the message body length cannot be determined reliably; the server MUST respond with the 400 (Bad Request) status code and then close the connection.
       else
         cause "400 bad request, Transfer-Encoding header field is present in a request and the chunked transfer coding is not the final encoding"
 
     else if header_fields.has "content-length"
-      match header_fields["content-length"].val.parse_i32
+      match header_fields["content-length"].val.parse_u64
         error =>
 
           # NYI: UNDER DEVELOPMENT: implement recovery
@@ -247,7 +275,7 @@ module body_helper(LM type : mutate, is_req bool, header_fields container.Map St
 
           cause "invalid value for field content-length"
 
-        length i32 =>
+        length u64 =>
           # content Sequence u8 := (io.buffered LM).read_bytes length
           # (content.count = length) ? option content : (cause "input closed after {content.count} bytes, but specified content-length: $length")
           body_reader LM length
@@ -257,7 +285,7 @@ module body_helper(LM type : mutate, is_req bool, header_fields container.Map St
     # https://datatracker.ietf.org/doc/html/rfc9112#section-6.3-2.7
     else
       # is_req ? nil : option (Sequence u8) (io.buffered LM).read_fully
-      body_reader LM (is_req ? 0 : -1)
+      body_reader LM (is_req ? 0 : nil)
 
 
 

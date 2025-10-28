@@ -293,48 +293,6 @@ public class LibraryFuir extends FUIR {
   }
 
   @Override
-  public int lookup_array_internal_array(int cl)
-  {
-    for (int index = 0; index < clazzFieldCount(cl); index++)
-      {
-        if (clazzBaseName(clazzField(cl, index)).compareTo("internal_array") == 0)
-          {
-            return clazzField(cl, index);
-          }
-      }
-    Errors.fatal("internal_array field not found!");
-    return NO_CLAZZ;
-  }
-
-  @Override
-  public int lookup_fuzion_sys_internal_array_data(int cl)
-  {
-    for (int index = 0; index < clazzFieldCount(cl); index++)
-      {
-        if (clazzBaseName(clazzField(cl, index)).compareTo("data") == 0)
-          {
-            return clazzField(cl, index);
-          }
-      }
-    Errors.fatal("data field not found!");
-    return NO_CLAZZ;
-  }
-
-  @Override
-  public int lookup_fuzion_sys_internal_array_length(int cl)
-  {
-    for (int index = 0; index < clazzFieldCount(cl); index++)
-      {
-        if (clazzBaseName(clazzField(cl, index)).compareTo("length") == 0)
-          {
-            return clazzField(cl, index);
-          }
-      }
-    Errors.fatal("length field not found!");
-    return NO_CLAZZ;
-  }
-
-  @Override
   public boolean clazzIsUnitType(int cl)
   {
     return _clazzes[clazzId2num(cl)].clazzIsUnitType();

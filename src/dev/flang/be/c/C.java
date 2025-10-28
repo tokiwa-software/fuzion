@@ -337,10 +337,10 @@ public class C extends ANY
     private CExpr constArray(int constCl, byte[] d)
     {
       var elementType      = _fuir.inlineArrayElementClazz(constCl);
-      var c_internal_array = _fuir.lookup_array_internal_array(constCl);
+      var c_internal_array = _fuir.clazzArg(constCl, 0);
       var c_sys_array      = _fuir.clazzResultClazz(c_internal_array);
-      var c_data           = _fuir.lookup_fuzion_sys_internal_array_data(c_sys_array);
-      var c_length         = _fuir.lookup_fuzion_sys_internal_array_length(c_sys_array);
+      var c_data           = _fuir.clazzArg(c_sys_array, 0);
+      var c_length         = _fuir.clazzArg(c_sys_array, 1);
       var internal_array   = _names.fieldName(c_internal_array);
       var data             = _names.fieldName(c_data);
       var length           = _names.fieldName(c_length);
@@ -1607,7 +1607,7 @@ public class C extends ANY
   {
     var data           = _names.fieldName(_fuir.clazz_fuzionSysArray_u8_data());
     var length         = _names.fieldName(_fuir.clazz_fuzionSysArray_u8_length());
-    var internal_array = _names.fieldName(_fuir.lookup_array_internal_array(_fuir.clazz_array_u8()));
+    var internal_array = _names.fieldName(_fuir.clazzArg(_fuir.clazz_array_u8(), 0));
     var utf8_data      = _names.fieldName(_fuir.clazz_const_string_utf8_data());
 
     var sysArray = CExpr.compoundLiteral(
@@ -2108,7 +2108,7 @@ public class C extends ANY
           // 2. pass as ref
           ? CIdent.arg(i).castTo("void *")
           // 3. pass as value
-          : (_fuir.clazzIsArray(at)
+          : (_fuir.clazzIsArray(at) || _fuir.clazzIsMutateArray(at)
               // 3.1 array, we need to get field internal_array.data
               ? getFieldInternalArrayData(i, at)
               // 3.2 plain value
@@ -2202,7 +2202,7 @@ public class C extends ANY
           // 2. pass as ref
           !_fuir.clazzIsRef(at) &&
           // 3. array, we need to get field internal_array.data
-          !_fuir.clazzIsArray(at) &&
+          !_fuir.clazzIsArray(at) && !_fuir.clazzIsMutateArray(at) &&
           // 4. plain value
           _fuir.getSpecialClazz(at) == SpecialClazzes.c_NOT_FOUND;
         if (isComplexValue)
@@ -2233,12 +2233,12 @@ public class C extends ANY
 
   private CExpr getFieldInternalArrayData(int i, int at)
   {
-    var ia = _fuir.lookup_array_internal_array(at);
+    var ia = _fuir.clazzArg(at, 0);
 
     return CIdent
       .arg(i)
       .field(_names.fieldName(ia))
-      .field(_names.fieldName(_fuir.lookup_fuzion_sys_internal_array_data(_fuir.clazzResultClazz(ia))))
+      .field(_names.fieldName(_fuir.clazzArg(_fuir.clazzResultClazz(ia), 0)))
       .castTo("void *");
   }
 

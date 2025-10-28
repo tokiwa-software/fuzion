@@ -769,11 +769,11 @@ class CodeGen
     for (int i = 0; i < args.size(); i++)
       {
         var at = _fuir.clazzArgClazz(cc, i);
-        if (_fuir.clazzIsArray(at) || _fuir.clazzIsRef(at))
+        if (_fuir.clazzIsArray(at) || _fuir.clazzIsMutateArray(at) || _fuir.clazzIsRef(at))
           {
             result = result
                 .andThen(args.get(i))
-                .andThen(_fuir.clazzIsArray(at) ? getArrayDataField(at) : Expr.NOP)
+                .andThen(_fuir.clazzIsArray(at) || _fuir.clazzIsMutateArray(at) ? getArrayDataField(at) : Expr.NOP)
                 .andThen(Expr.aload(slotsOfMemorySegments.get(slot), Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT))
                 .andThen(invokeMemorySegment2Obj());
             slot++;
@@ -821,13 +821,13 @@ class CodeGen
             result = result
               .andThen(args.get(i));
           }
-        else if (_fuir.clazzIsArray(at) || _fuir.clazzIsRef(at) /* this may mean: internal_array.data */)
+        else if (_fuir.clazzIsArray(at) || _fuir.clazzIsMutateArray(at) || _fuir.clazzIsRef(at) /* this may mean: internal_array.data */)
           {
             var slot = _jvm.allocLocal(si, 1);
             slots.addLast(slot);
             result = result
                 .andThen(args.get(i))
-                .andThen(_fuir.clazzIsArray(at) ? getArrayDataField(at) : Expr.NOP)
+                .andThen(_fuir.clazzIsArray(at) || _fuir.clazzIsMutateArray(at) ? getArrayDataField(at) : Expr.NOP)
                 .andThen(invokeObj2MemorySegment())
                 .andThen(Expr.astore(slot, Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.vti()))
                 .andThen(Expr.aload(slot, Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT));
@@ -848,8 +848,8 @@ class CodeGen
    */
   private Expr getArrayDataField(int at)
   {
-    var ia = _fuir.lookup_array_internal_array(at);
-    var iad = _fuir.lookup_fuzion_sys_internal_array_data(_fuir.clazzResultClazz(ia));
+    var ia = _fuir.clazzArg(at,0);
+    var iad = _fuir.clazzArg(_fuir.clazzResultClazz(ia), 0);
     return _jvm
       .getfield(ia)
       .andThen(_jvm.getfield(iad));

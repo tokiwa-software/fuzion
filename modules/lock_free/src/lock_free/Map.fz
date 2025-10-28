@@ -149,7 +149,7 @@ Main_Node(CTK type : property.hashable, CTV type, data choice (container_node CT
   id := unique_id
 
   # a previous node that gets set during a generational aware compare and set
-  prev := concur.atomic (prev_node CTK CTV) p
+  prev := concur.atomic (prev_node CTK CTV) .new p
 
   public fixed redef type.equality(a, b Main_Node.this) bool =>
     a.id = b.id
@@ -185,7 +185,7 @@ failed_node(CTK type : property.hashable, CTV type, prev Main_Node CTK CTV) is
 
 # shorthand for creating a new indirection node from Main_Node and gen
 indirection_node(CTK type : property.hashable, CTV type, data Main_Node CTK CTV, gen u64) =>
-  Indirection_Node (concur.atomic data) gen
+  Indirection_Node (concur.atomic (Main_Node CTK CTV) .new data) gen
 
 
 # an indirection node
@@ -250,7 +250,7 @@ is
 
   # this field does not have to be atomic
   # but it probably does not hurt either.
-  committed := concur.atomic false
+  committed := concur.atomic bool .new false
 
   public redef as_string String =>
     "Rdcss_Descriptor($ov, $exp, $nv)"
@@ -672,7 +672,7 @@ is
     descriptor := Rdcss_Descriptor r expmain (copy_to_gen r new_gen)
     if rdcss_root descriptor
       # new ctrie by changing generation of r
-      Map (concur.atomic (root_node CTK CTV) (copy_to_gen r new_gen)) snapshot.this.read_only
+      Map (concur.atomic (root_node CTK CTV) .new (copy_to_gen r new_gen)) snapshot.this.read_only
     else
       snapshot snapshot.this.read_only
 
@@ -710,7 +710,7 @@ is
     initial_root_node lock_free.root_node CTK CTV :=
       lock_free.indirection_node (lock_free.Main_Node (lock_free.container_node CTK CTV 0 [] initial_gen) nil) initial_gen
 
-    lock_free.Map (concur.atomic initial_root_node) false
+    lock_free.Map (concur.atomic (lock_free.root_node CTK CTV) .new initial_root_node) false
 
 
   # lock_free.Map.from_entries -- routine to initialize a ctrie from a sequence of key value tuples

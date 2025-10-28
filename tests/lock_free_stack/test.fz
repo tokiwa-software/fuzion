@@ -2,7 +2,7 @@ test =>
 
   s := lock_free.stack i32
 
-  cnt := concur.atomic 0
+  cnt := concur.atomic i32 .new 0
   count(n i32) =>
     c := cnt.read
     cnt.compare_and_set c c+n

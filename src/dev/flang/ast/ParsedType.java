@@ -54,6 +54,34 @@ public class ParsedType extends UnresolvedType
    * @param pos the source code position of the type
    *
    * @param name the name of the type
+   */
+  public ParsedType(HasSourcePosition pos, String name)
+  {
+    super(pos, name, UnresolvedType.NONE, null);
+  }
+
+
+  /**
+   * Constructor for a parsed type
+   *
+   * @param pos the source code position of the type
+   *
+   * @param name the name of the type
+   *
+   * @param generics list of type parameters
+   */
+  public ParsedType(HasSourcePosition pos, String name, List<AbstractType> generics)
+  {
+    super(pos, name, generics, null);
+  }
+
+
+  /**
+   * Constructor for a parsed type
+   *
+   * @param pos the source code position of the type
+   *
+   * @param name the name of the type
    *
    * @param generics list of type parameters
    *

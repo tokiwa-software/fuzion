@@ -17,38 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature concur.thread
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# type for a spawned thread
-#
-module:public thread(thrd Thread) : property.equatable is
-
-  id := unique_id
-
-  joined := concur.atomic trit .new trit.no
-
-  # wait for this thread to finish execution
-  #
-  public join unit =>
-    if joined.compare_and_set trit.no trit.unknown
-      fuzion.sys.thread.join0 thrd
-      joined.write trit.yes
-    else
-      # NYI: UNDER DEVELOPMENT:
-      # better busy loop
-      while joined.read.is_no_or_unknown
-
-    # NYI: UNDER DEVELOPMENT:
-    # should we send message to the thread that spawned this
-    # thread that it can remove its list of running threads?
-
-
-  # equality
-  #
-  public fixed redef type.equality(a, b thread.this) bool
-  =>
-    a.id = b.id
+override NAME = native_mutate_array
+include ../simple.mk

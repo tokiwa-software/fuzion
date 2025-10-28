@@ -1403,6 +1403,7 @@ public class GeneratingFUIR extends FUIR
        Errors.any() ||
        !_lookupDone ||
        clazzNeedsCode(cl) ||
+       /* NYI: CLEANUP: DFA should mark these */
        cl == clazz_const_string() ||
        cl == clazz_const_string_utf8_data() ||
        cl == clazz_array_u8() ||
@@ -1552,7 +1553,7 @@ public class GeneratingFUIR extends FUIR
   }
 
 
-  void doesNeedCode(int cl)
+  public void doesNeedCode(int cl)
   {
     if (PRECONDITIONS) require
       (cl >= CLAZZ_BASE,
@@ -1849,65 +1850,6 @@ public class GeneratingFUIR extends FUIR
        cl < CLAZZ_BASE + _clazzes.size());
 
     return id2clazz(cl).lookupNeeded(Types.resolved.f_concur_atomic_v)._id;
-  }
-
-
-  /**
-   * For a clazz of array, lookup the inner clazz of the internal_array field.
-   *
-   * @param cl index of a clazz {@code array T} for some type parameter {@code T}
-   *
-   * @return the index of the requested {@code array.internal_array} field's clazz.
-   */
-  @Override
-  public int lookup_array_internal_array(int cl)
-  {
-    if (PRECONDITIONS) require
-      (cl >= CLAZZ_BASE,
-       cl < CLAZZ_BASE + _clazzes.size(),
-       id2clazz(cl).feature() == Types.resolved.f_array);
-
-    return id2clazz(cl).lookupNeeded(Types.resolved.f_array_internal_array)._id;
-  }
-
-
-  /**
-   * For a clazz of {@code fuzion.sys.internal_array}, lookup the inner clazz of the
-   * data field.
-   *
-   * @param cl index of a clazz {@code fuzion.sys.internal_array T} for some type parameter {@code T}
-   *
-   * @return the index of the requested {@code fuzion.sys.internal_array.data} field's clazz.
-   */
-  @Override
-  public int lookup_fuzion_sys_internal_array_data(int cl)
-  {
-    if (PRECONDITIONS) require
-      (cl >= CLAZZ_BASE,
-       cl < CLAZZ_BASE + _clazzes.size(),
-       id2clazz(cl).feature() == Types.resolved.f_fuzion_sys_array);
-
-    return id2clazz(cl).lookupNeeded(Types.resolved.f_fuzion_sys_array_data)._id;
-  }
-
-
-  /**
-   * For a clazz of {@code fuzion.sys.internal_array}, lookup the inner clazz of the
-   * length field.
-   *
-   * @param cl index of a clazz {@code fuzion.sys.internal_array T} for some type parameter {@code T}
-   *
-   * @return the index of the requested {@code fuzion.sys.internal_array.length} field's clazz.
-   */
-  @Override
-  public int lookup_fuzion_sys_internal_array_length(int cl)
-  {
-    if (PRECONDITIONS) require
-      (cl >= CLAZZ_BASE,
-       cl < CLAZZ_BASE + _clazzes.size(),
-       id2clazz(cl).feature() == Types.resolved.f_fuzion_sys_array);
-
-    return id2clazz(cl).lookupNeeded(Types.resolved.f_fuzion_sys_array_length)._id;
   }
 
 

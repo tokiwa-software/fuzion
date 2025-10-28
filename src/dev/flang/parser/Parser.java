@@ -3461,7 +3461,7 @@ boundType   : onetype ( PIPE onetype ) *
           {
             l.add(onetype());
           }
-        result = new ParsedType(result.pos(), FuzionConstants.CHOICE_NAME, l, null);
+        result = new ParsedType(result.pos(), FuzionConstants.CHOICE_NAME, l);
       }
     return result;
   }
@@ -3574,7 +3574,7 @@ typeOpt     : type
           }
         else
           {
-            result = new ParsedType(pos, "tuple", a, null);
+            result = new ParsedType(pos, "tuple", a);
           }
       }
     else
@@ -3697,7 +3697,7 @@ typeTail    : dot simpletype
             if (qn == null)
               {
                 AstErrors.qualifierExpectedForDotThis(lhs);
-                result = new ParsedType(tokenSourcePos(), Errors.ERROR_STRING, new List<>(), null);
+                result = new ParsedType(tokenSourcePos(), Errors.ERROR_STRING);
               }
             else
               {
@@ -3789,7 +3789,7 @@ typeInParens: "(" typeInParens ")"
           }
         else
           {
-            result = new ParsedType(sourcePos(pos), "tuple", l, null);
+            result = new ParsedType(sourcePos(pos), "tuple", l);
           }
         endAtSpaceOrSemi(eas);
       }
