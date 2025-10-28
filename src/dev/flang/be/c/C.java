@@ -106,7 +106,7 @@ public class C extends ANY
               comment,
               CStmnt
                 // NYI: UNDER DEVELOPMENT: re-replace "{base.fum}/" etc. in sourceFile?
-                .directive("line " + pos.line() + " \"" + pos._sourceFile._fileName + "\"")
+                .directive("line " + pos.line() + " \"" + pos._sourceFile._fileName.toString().replace("\\", "/") + "\"")
               );
     }
 
