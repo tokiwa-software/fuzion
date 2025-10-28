@@ -21,6 +21,8 @@
 #
 # -----------------------------------------------------------------------
 
+export DYLD_FALLBACK_LIBRARY_PATH ?= /opt/homebrew/lib/:/Library/Developer/CommandLineTools/usr/lib/
+
 override NAME = mod_crypto
 override FUZION_OPTIONS = -modules=crypto,sodium
 override FUZION_JVM_BACKEND_OPTIONS = -JLibraries=sodium
