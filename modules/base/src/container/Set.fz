@@ -185,8 +185,8 @@ is
   #
   public fixed redef type.equality(a, b container.Set E) bool
   pre else
-    debug: a.finite.is_yes_or_unkown
-    debug: b.finite.is_yes_or_unkown
+    debug: a.finite.is_yes_or_unknown
+    debug: b.finite.is_yes_or_unknown
   =>
     # NYI: a bit expensive
     (a ∪ b).size_option.val = a.size_option.val
