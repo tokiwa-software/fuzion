@@ -25,7 +25,7 @@ mod_crypto =>
 
 
   h := crypto.password_hash "test_passw😀rd"
-  say <| h.get.truncate 31
+  say <| h.get.truncate 32
 
   say "correct password, expecting true:"
   say <| crypto.password_hash_verify "test_passw😀rd" h.get
