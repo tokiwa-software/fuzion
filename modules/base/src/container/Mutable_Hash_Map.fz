@@ -240,7 +240,7 @@ is
   public redef items Sequence (tuple HK V) =>
     contents.get.as_array
       .filter o->o??
-      .map (o -> o.get (panic "filter failed"))
+      .map (o -> o.or_else (panic "filter failed"))
 
 
   # create an immutable map from this
