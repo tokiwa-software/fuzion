@@ -88,7 +88,7 @@ public Message ref is
     # does not account for the size of the header
     max_body_bytes i32) outcome String
   =>
-    match (body.read max_body_bytes)
+    match body.read max_body_bytes
       a array => Message.this.as_string + String.from_bytes a
       e error => e
       io.end_of_file => Message.this.as_string
