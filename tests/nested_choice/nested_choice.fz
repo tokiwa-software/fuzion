@@ -145,14 +145,14 @@ nested_choice =>
 
     c := [a,b]
 
-    match (c.nth 0)
+    match c.nth 0
       s some_choice_including_nil =>
         match s
           nil    => say "n2"
           String => say "s"
       nil => say "n1"
 
-    match (c.nth 1)
+    match c.nth 1
       s some_choice_including_nil =>
         match s
           nil    => say "n2"
