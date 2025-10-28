@@ -38,7 +38,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
     pre
       debug: max_codepoints > 0
   =>
-    if codepoin_length <= max_codepointscodepoints then
+    if codepoint_length <= max_codepoints then
       String.this
     else
       substring_codepoint 0 max_codepoints-1 + "…"
