@@ -42,6 +42,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
       String.this
     else
       substring_codepoint 0 max_codepoints-1 + "…"
+
   # any concrete string must implement utf8
   public utf8 Sequence u8 => abstract
 
