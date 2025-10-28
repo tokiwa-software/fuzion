@@ -176,7 +176,7 @@ is
          else
            abort trit.no
 
-    ternary_compare.is_yes_or_unkown
+    ternary_compare.is_yes_or_unknown
 
 
 # is the given year a leap year?
