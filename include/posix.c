@@ -688,7 +688,7 @@ int64_t fzE_process_wait(int64_t p){
 
   int status;
   int ret = waitpid(p, &status, WNOHANG);
-  assert(ret >= 0);
+
   return ret > 0 && WIFEXITED(status)
     // man waitpid: "This macro should be employed only if WIFEXITED returned true."
     ? WEXITSTATUS(status)
