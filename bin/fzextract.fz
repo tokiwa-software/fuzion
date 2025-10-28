@@ -37,13 +37,46 @@ string_option : option String is
 
 # map a type from the C code to a fuzion type
 #
-to_fuzion_type(ct String) string_option =>
+to_fuzion_type(ct String, is_result_type bool) string_option =>
 
-  c_type := if ct.starts_with "const " then ct.substring "const ".byte_length else ct
+  # remove any type qualifiers
+  c_type := ct
+    .replace "const " ""
+    .replace "volatile " ""
+    .replace "restrict " ""
+    .replace "*const" "*"
+    .replace "*volatile" "*"
+    .replace "*restrict" "*"
+    # NYI: UNDER DEVELOPMENT: C11?
+    # .replace "_Thread_local"
+    # .replace "_Atomic"
+
   if c_type = "void"
     "unit"
   else if c_type.contains "*" || c_type.ends_with "]"
-    "Native_Ref"
+    if is_result_type
+      # NYI: UNDER DEVELOPMENT: support for more complex result types?
+      "Native_Ref /* from: {c_type} */"
+    else if c_type = "unsigned char *" || c_type = "uint8_t *" || c_type.starts_with "unsigned char["
+      "mutate.array u8"
+    else if c_type = "char *" || c_type.starts_with "char["
+      "mutate.array i8"
+    else if c_type = "unsigned long long *"
+      "mutate.array u64"
+    else if c_type = "double *" || c_type.starts_with "double["
+      "mutate.array f64"
+    else if c_type = "size_t *" || c_type = "long *"
+      "mutate.array i64"
+    else if c_type = "FILE *"
+      "Native_Ref"
+    else if c_type = "int *" || c_type = "int32_t *"
+      "mutate.array i32"
+    else if c_type = "unsigned int *"
+      "mutate.array u32"
+    else if c_type = "unsigned short *" || c_type.starts_with "unsigned short["
+      "mutate.array u16"
+    else
+      "Native_Ref /* from: {c_type} */"
   else if c_type = "float"
     "f32"
   else if c_type = "double"
@@ -100,13 +133,13 @@ lines := mut (container.expanding_array String).empty
 
 match {
   clang.parse_header envir.args[1] f_decl->
-    valid := (f_decl.args ∀ (arg -> !(to_fuzion_type arg.arg_type).is_nil)) && !(to_fuzion_type f_decl.return_type).is_nil
+    valid := (f_decl.args ∀ (arg -> !(to_fuzion_type arg.arg_type false).is_nil)) && !(to_fuzion_type f_decl.return_type true).is_nil
     args_str := f_decl
       .args
       .map arg->
-        "{to_fuzion_name arg.name} {to_fuzion_type arg.arg_type}"
+        "{to_fuzion_name arg.name} {to_fuzion_type arg.arg_type false}"
       .as_string ", "
-    lines <- lines.add "  {if valid then "" else "# "}module {f_decl.name}{if args_str.is_empty then "" else "($args_str)"} {to_fuzion_type f_decl.return_type} => native"
+    lines <- lines.add "  {if valid then "" else "# "}module {f_decl.name}{if args_str.is_empty then "" else "($args_str)"} {to_fuzion_type f_decl.return_type true} => native"
       }
   unit =>
     say <| (container.set_of_ordered lines.get).sort.as_string "\n"

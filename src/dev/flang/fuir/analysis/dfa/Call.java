@@ -356,7 +356,7 @@ public class Call extends ANY implements Comparable<Call>, Context
         _dfa.readField(_dfa._fuir.clazzArg(calledClazz(), i));
 
         var at = _dfa._fuir.clazzArgClazz(calledClazz(), i);
-        if (_dfa._fuir.clazzIsArray(at))
+        if (_dfa._fuir.clazzIsArray(at) || _dfa._fuir.clazzIsMutateArray(at))
           {
             var ia = _dfa._fuir.clazzArg(at, 0);
             _dfa.readField(ia);
