@@ -377,12 +377,26 @@ is
 
   # Lazily take the first elements of this Sequence for which predicate 'p' holds.
   #
-  public take_while (p T -> bool) Sequence T => as_list.take_while p
+  public take_while (p T -> bool) Sequence T
+    post
+      analysis: result ∀ p
+      analysis: {
+        n := nth result.count
+        !n || !(p n.get)
+      }
+  => as_list.take_while p
 
 
   # Lazily drop the first elements of this Sequence for which predicate 'p' holds.
   #
-  public drop_while (p T -> bool) Sequence T => as_list.drop_while p
+  public drop_while (p T -> bool) Sequence T
+    post
+      analysis: result ∀ (x -> !(p x))
+      analysis: {
+        n := nth result.count
+        !n || p n.get
+      }
+  => as_list.drop_while p
 
 
   # create a Sequence that consists of all the elements of this Sequence followed
@@ -1254,7 +1268,11 @@ is
 
   # create an empty Sequence
   #
-  public fixed type.empty Sequence T =>
+  public fixed type.empty Sequence T
+    post
+      result.finite.is_yes_or_unknown
+      result.count = 0
+  =>
     (list T).type.empty
 
 
