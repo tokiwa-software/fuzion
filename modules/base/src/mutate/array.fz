@@ -86,6 +86,11 @@ is
     as_array.as_list
 
 
+  /* NYI: CLEANUP: should not pass in LM type: mutate
+   instead mutate.this should be used
+   RT should be mutate.this.array T */
+
+
   # initialize one-dimensional mutable array
   #
   public type.new
@@ -107,6 +112,22 @@ is
     LM.env.array data length unit
 
 
+  # initialize one-dimensional mutable array from a Sequence
+  #
+  public type.from_Sequence(LM type : mutate, s Sequence T) LM.array T
+  =>
+    ab := s.as_array_backed
+
+    length := ab.count
+
+    data := fuzion.sys.internal_array_init T length
+
+    for x in data.indices do
+      data[x] := s[x]
+
+    LM.env.array data length.as_i64 unit
+
+
   # initialize an empty mutable array of type T
   #
   public type.empty (LM type : mutate) LM.array T =>
@@ -116,5 +137,7 @@ is
 # convenience feature for creating a new array,
 # in some cases even with type inference
 #
-public new_array (T type, length i64, init T) container.Mutable_Array T mutate.this =>
+public new_array (T type, length i64, init T) container.Mutable_Array T mutate.this
+/*RT should be mutate.this.array T */
+=>
   (mutate.array T).new mutate.this length init
