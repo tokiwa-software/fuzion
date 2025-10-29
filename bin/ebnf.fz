@@ -49,7 +49,7 @@ main =>
             match p.with_err String lm (()->String.from_bytes (io.buffered lm).read_fully)
               e error => panic "failed reading stderr from {Sequence.this}, error is: $e"
               s String => s.trim_end
-          ec := p.wait.get 1
+          ec := p.wait.val 1
           if ec != 0
             panic "error $ec when executing $seq, stderr: $err"
           res

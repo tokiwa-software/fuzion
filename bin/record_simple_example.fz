@@ -102,9 +102,9 @@ file     := envir.args[3]
 
 res :=
   if type_ = "jvm" || type_ = "any"
-    !!"$fz_run -XmaxErrors=-1 -jvm {(envir.vars.get "FUZION_JVM_BACKEND_OPTIONS").get ""} $file"
+    !!"$fz_run -XmaxErrors=-1 -jvm {(envir.vars.get "FUZION_JVM_BACKEND_OPTIONS").val ""} $file"
   else if type_ = "c"
-    c := !!"$fz_run -XmaxErrors=-1 -c {(envir.vars.get "FUZION_C_BACKEND_OPTIONS").get ""} -o=testbin $file"
+    c := !!"$fz_run -XmaxErrors=-1 -c {(envir.vars.get "FUZION_C_BACKEND_OPTIONS").val ""} -o=testbin $file"
     if (c.exit_code = 0)
       e := !!"./testbin"
       _ := io.file.delete "testbin"

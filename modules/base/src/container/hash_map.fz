@@ -203,7 +203,7 @@ is
   public redef items Sequence (tuple HK V) =>
     contents
       .filter o->o??
-      .map (o -> o.get (panic "filter failed"))
+      .map (o -> o.or_else (panic "filter failed"))
 
 
   # NYI: implement this when #4642 is done
