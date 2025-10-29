@@ -525,6 +525,17 @@ int fzE_rm(char * path)
 
 
 /**
+ * convert from windows file time to unix time stamp
+ * see also: https://learn.microsoft.com/en-us/windows/win32/sysinfo/file-times
+ */
+int64_t win_time_to_unix_time(LONGLONG qp)
+{
+  static const int64_t WINDOWS_TO_UNIX_EPOCH_DIFF = 11644473600ULL;
+  return (qp / 10000000ULL) - WINDOWS_TO_UNIX_EPOCH_DIFF;
+}
+
+
+/**
  * Get file status (resolves symbolic links)
  */
 int fzE_stat(const char *pathname, int64_t * metadata)
@@ -553,9 +564,9 @@ int fzE_stat(const char *pathname, int64_t * metadata)
     ct.HighPart = fileInfo.ftCreationTime.dwHighDateTime;
 
     metadata[0] = fileSize.QuadPart;
-    metadata[1] = (lat.QuadPart / 10000000ULL) - 11644473600ULL; /* Time of last access */
-    metadata[2] = (lwt.QuadPart / 10000000ULL) - 11644473600ULL; /* Time of last modification */
-    metadata[3] = (ct.QuadPart  / 10000000ULL) - 11644473600ULL; /* Time of last status change */
+    metadata[1] = win_time_to_unix_time(lat.QuadPart); /* Time of last access */
+    metadata[2] = win_time_to_unix_time(lwt.QuadPart); /* Time of last modification */
+    metadata[3] = win_time_to_unix_time(ct.QuadPart);  /* Time of last status change */
     metadata[4] = (fileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? 0 : 1;
     metadata[5] = (fileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? 1 : 0;
     metadata[6] = 0; /* NYI: UNDER DEVELOPMENT: is link  */
