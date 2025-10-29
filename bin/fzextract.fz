@@ -65,7 +65,7 @@ to_fuzion_type(ct String, is_result_type bool) string_option =>
       "mutate.array u64"
     else if c_type = "double *" || c_type.starts_with "double["
       "mutate.array f64"
-    else if c_type = "size_t *" || c_type = "long *"
+    else if c_type = "size_t *" || c_type = "long *" || c_type = "int64_t *"
       "mutate.array i64"
     else if c_type = "FILE *"
       "Native_Ref"
@@ -89,6 +89,10 @@ to_fuzion_type(ct String, is_result_type bool) string_option =>
     "u64"
   else if c_type = "int8_t"
     "i8"
+  else if c_type = "short"
+    "i16"
+  else if c_type = "unsigned short"
+    "u16"
   else if c_type = "uint8_t" || c_type = "unsigned char"
     "u8"
   else if c_type = "size_t" || c_type = "long"
@@ -99,6 +103,8 @@ to_fuzion_type(ct String, is_result_type bool) string_option =>
     "u32 /* from: {c_type} */"
   else if known_structs.has c_type
     "c.{c_type}"
+  else if known_enums.has c_type
+    "i32 /* from enum {c_type} */"
   else
     # NYI: UNDER DEVELOPMENT: we could support more complex types
     nil
@@ -106,7 +112,9 @@ to_fuzion_type(ct String, is_result_type bool) string_option =>
 
 # via `java --class-path=build/classes dev.flang.parser.Lexer -keywords`
 #
-keywords := container.set_of_ordered ["abstract", "check", "const", "do", "else", "env", "fixed", "for", "if", "in", "index", "infix", "infix_right", "intrinsic", "inv", "is", "leaf", "loop", "match", "module", "native", "post", "postfix", "pre", "prefix", "private", "public", "redef", "ref", "set", "ternary", "then", "this", "type", "universe", "until", "var", "variant", "while"]
+keywords := container.set_of_ordered ["abstract", "check", "const", "do", "else", "env", "fixed", "for", "if", "in", "index", "infix", "infix_right", "intrinsic", "inv", "is", "leaf", "loop", "match", "module", "native", "post", "postfix", "pre", "prefix", "private", "public", "redef", "ref", "set", "ternary", "then", "this", "type", "universe", "until", "var", "variant", "while",
+    # manually added:
+    "result"]
 
 # map an arg name from the C code to a fuzion name
 #
@@ -140,7 +148,11 @@ _ := mutate
 
 # store known structs
 #
-known_structs := (container.mutable_tree_map mutate String (choice clang.struct_decl clang.union_decl)) .empty
+known_structs := container.mutable_tree_map mutate String clang.struct_decl .empty
+
+# store known enums
+#
+known_enums := container.mutable_tree_map mutate String clang.enum_decl .empty
 
 match {
   clang.parse_header envir.args[1] c->
@@ -157,6 +169,8 @@ match {
         if (s_decl.fields ∀ (field -> !(to_fuzion_type field.arg_type false).is_nil))
           known_structs.put s_decl.name s_decl
       clang.union_decl =>
+      e_decl clang.enum_decl =>
+        known_enums.put e_decl.name e_decl
       }
 
   unit =>
@@ -172,12 +186,8 @@ match {
     #   CXType(kind i32 /*type_kind*/, padding i32, data1, data2 Native_Ref) is
 
 
-    known_structs.values.for_each c->
-      match c
-        s_decl clang.struct_decl =>
-          say <| "  module {s_decl.name}({s_decl.fields.map (f -> "module {to_fuzion_name f.name} {to_fuzion_type f.arg_type false}") .as_string ", "}) is"
-
-        clang.union_decl =>
+    known_structs.values.for_each s_decl->
+      say <| "  module {s_decl.name}({s_decl.fields.map (f -> "module {to_fuzion_name f.name} {to_fuzion_type f.arg_type false}") .as_string ", "}) is"
 
     say ""
 

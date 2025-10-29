@@ -66,7 +66,7 @@ clang_Cursor_isNull(crsr CXCursor) i32 => native
 CXChildVisit_Continue i32 => 1
 CXCursor_StructDecl => 2
 CXCursor_UnionDecl => 3
-# CXCursor_EnumDecl => 5
+CXCursor_EnumDecl => 5
 CXCursor_FieldDecl => 6
 CXCursor_FunctionDecl i32 => 8
 
@@ -125,6 +125,15 @@ public clang is
       """
 
 
+  # a parsed enum declaration
+  #
+  public enum_decl(public name String) is
+    public redef as_string String =>
+      """
+       enum $name \{\};
+      """
+
+
   # get the fields of a struct/union
   #
   get_fields(crsr CXCursor) =>
@@ -148,7 +157,7 @@ public clang is
   #
   # results are
   #
-  public parse_header(header_file String, cb (choice clang.function_decl clang.struct_decl clang.union_decl)->unit) outcome unit =>
+  public parse_header(header_file String, cb (choice clang.function_decl clang.struct_decl clang.union_decl clang.enum_decl)->unit) outcome unit =>
 
     visitor : Function i32 CXCursor Native_Ref Native_Ref is
       public redef call(crsr CXCursor, parent Native_Ref, client_data Native_Ref) i32 =>
@@ -194,7 +203,14 @@ public clang is
           name := clang_getCursorSpelling crsr
           n := "{cx_string_to_string name}"
           if !n.contains_whitespace
-            cb (clang.struct_decl n (get_fields crsr))
+            cb (clang.union_decl n (get_fields crsr))
+
+        else if ck = CXCursor_EnumDecl
+
+          name := clang_getCursorSpelling crsr
+          n := "{cx_string_to_string name}"
+          if !n.contains_whitespace
+            cb (clang.enum_decl n)
 
 
         CXChildVisit_Continue
