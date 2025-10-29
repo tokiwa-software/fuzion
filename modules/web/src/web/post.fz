@@ -36,12 +36,12 @@ public post6(url String, data Sequence u8, headers container.Map String String) 
 
 # eagerly POST an url via http(s), return response as a String
 #
-# NYI: PERFORMANCE: switch data to an array?
-#
 public post_r(family net.family.val, url String, data Sequence u8, headers container.Map String String) outcome String
 =>
 
   lm : mutate is
+
+  d := data.as_array_backed
 
   match parse_url url
     e error => e
@@ -50,6 +50,6 @@ public post_r(family net.family.val, url String, data Sequence u8, headers conta
       lm ! ()->
         rm := http
           .request_message
-          .new http.post_r (pu.target.or_else "/") 1 1 ([("Host", pu.host), ("Content-Length", data.count.as_string)].concat headers.items) (io.Read_Handler.from_array_u8 lm data.as_array)
+          .new http.post_r (pu.target.or_else "/") 1 1 ([("Host", pu.host), ("Content-Length", d.count.as_string)].concat headers.items) (io.Read_Handler.from_array_u8 lm d.as_array)
 
         do_request family (pu.port.or_else (if pu.use_https then 443 else 80)) pu.use_https pu.host rm
