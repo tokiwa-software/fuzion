@@ -72,10 +72,11 @@ public Message ref is
     # does not account for the size of the header
     max_body_bytes i32) Sequence u8
   =>
+    # NYI: BUG: read fully
     b := match body.read max_body_bytes
       a array => a
       * => []
-    (start_line + header_as_canonical_string + "Content-Length: {b.length}" + crlf + crlf).utf8 ++ b
+    (start_line + header_as_canonical_string + crlf).utf8 ++ b
       .as_array
 
 
