@@ -287,7 +287,12 @@ public class Executor extends ProcessExpression<Value, Object>
           .downcallHandle(
             SymbolLookup.libraryLookup(System.mapLibraryName("fuzion_rt" /* NYI: UNDER DEVELOPMENT: */), Arena.ofAuto())
               .find(_fuir.clazzNativeName(cc))
-              .orElseThrow(() -> new UnsatisfiedLinkError("unresolved symbol: " + _fuir.clazzBaseName(cc))),
+              .orElseThrow(() -> new UnsatisfiedLinkError(
+              "Unresolved symbol: " + _fuir.clazzBaseName(cc) + ". " +
+              (true
+                ? "NYI: interpreter does not yet support libraries. You probably forgot to use the -Libraries option."
+                : "Likely causes: Either your native method is misspelled or you forgot to include a library in the -Libraries option.")
+              )),
 
               _fuir.clazzIsUnitType(rt)
                 ? FunctionDescriptor.ofVoid(layoutArgs(cc0))
