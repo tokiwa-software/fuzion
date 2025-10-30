@@ -58,11 +58,10 @@ module:public open(fd File_Descriptor,
     pre safety: offset % os.mmap_offset_multiple = 0
   =>
 
-    res := fuzion.sys.internal_array_init i32 1
-    mapped_memory := fzE_mmap fd offset size res.data
+    mapped_memory := fzE_mmap fd offset size
 
-    if res[0] = -1
-      error "mmap failed"
+    if fzE_is_valid_mapped_memory mapped_memory
+      error "mmap failed, error code: {fzE_last_error}"
     else
       (mapped_buffer mapped_memory size) ! code
 
