@@ -157,7 +157,7 @@ String.execute =>
 #
 write_to_file(dest String, data String) =>
   _ := io.file.delete dest
-  check (io.file.use dest io.file.mode.write ()->
+  check (io.file.use dest ()->
     check (data.write_to io.file.file_mutate).ok).ok
 
 # write file from src to dest
@@ -169,7 +169,7 @@ copy(src, dest String) =>
 # read file f fully
 #
 read_file_fully(f String) outcome String =>
-  io.file.use f io.file.mode.read ()->
+  io.file.use f ()->
     String.from_bytes (io.buffered io.file.file_mutate).read_fully
 
 ############################################################################

@@ -17,25 +17,15 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test
+#  Source code of Fuzion test reg_issue6160
 #
 # -----------------------------------------------------------------------
 
-lib_io_dir =>
+reg_issue6160 =>
 
-  path := "test_path_😀"
-  file1 := "$path/file1_😀"
-  file2 := "$path/file2_😀"
+  check io.file.write "file" "test" .ok
+  check io.file.write "file" "f" .ok
 
-  _ := io.file.delete file1
-  _ := io.file.delete file2
-  _ := io.file.delete path
-  say (io.dir.make path)
-  say (io.dir.make path)
-  _ := io.file.use unit file1 ()->(io.file.writer.write []).error
-  _ := io.file.use unit file2 ()->(io.file.writer.write []).error
-
-  res := io.dir.use (Sequence String) path ()->
-    array 3 _->io.dir.open.read.as_string
-
-  res.val.sort.for_each say
+  io.file.use "file" ()->(io.buffered io.file.file_mutate).read_fully
+    .bind String.type.from_bytes
+    |> say

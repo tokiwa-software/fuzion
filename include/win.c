@@ -887,10 +887,8 @@ int fzE_pipe_close(int64_t desc){
 
 
 // open_results[0] the error number
-void * fzE_file_open(char * file_name, int64_t * open_results, file_open_mode mode)
+void * fzE_file_open(char * file_name, int64_t * open_results)
 {
-  assert(mode >= 0 && mode <= 2);
-
   SECURITY_ATTRIBUTES sa = {0};
   sa.nLength = sizeof(SECURITY_ATTRIBUTES);
   sa.bInheritHandle = FALSE;
@@ -900,7 +898,7 @@ void * fzE_file_open(char * file_name, int64_t * open_results, file_open_mode mo
 
   HANDLE hFile = CreateFileW(
       file_name_w,
-      GENERIC_READ | GENERIC_WRITE, // NYI: UNDER DEVELOPMENT: consider mode
+      GENERIC_READ | GENERIC_WRITE,
       FILE_SHARE_READ,
       &sa,
       OPEN_ALWAYS,
@@ -913,16 +911,6 @@ void * fzE_file_open(char * file_name, int64_t * open_results, file_open_mode mo
   open_results[0] = hFile == INVALID_HANDLE_VALUE
     ? (int64_t)GetLastError()
     : 0;
-
-  if (hFile != INVALID_HANDLE_VALUE && mode == FZ_FILE_MODE_APPEND)
-  {
-    LARGE_INTEGER zero = {0}, new_pos = {0};
-    if (!SetFilePointerEx(hFile, zero, &new_pos, FILE_END)) {
-      open_results[0] = (int64_t)GetLastError();
-      CloseHandle(hFile);
-      return NULL;
-    }
-  }
 
   return (void *)hFile;
 }

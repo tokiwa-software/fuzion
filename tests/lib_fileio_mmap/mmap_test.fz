@@ -28,7 +28,7 @@ mmap_test =>
   f =>
     io.file.open
 
-  say <| io.file.use testfile io.file.mode.append ()->
+  say <| io.file.use testfile ()->
 
     io.file.writer.write (array u8 os.mmap_offset_multiple.as_i32 i->0)
       .error.get
@@ -48,7 +48,7 @@ mmap_test =>
     say <| f.mmap offset (i64 7) ()->
 
 
-  say <| io.file.use testfile io.file.mode.read ()->
+  say <| io.file.use testfile ()->
     String.from_bytes ((io.buffered io.file.file_mutate).read_fully.drop os.mmap_offset_multiple.as_i32)
 
   say (io.file.delete testfile)

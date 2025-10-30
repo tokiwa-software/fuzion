@@ -64,7 +64,7 @@ TODO:
   req_path := "http_req.txt"
 
   parse_req :=
-    io.file.use _ req_path io.file.mode.read ()->
+    io.file.use _ req_path ()->
       req := http.read_request io.file.file_mutate
 
       say <| match req
@@ -79,7 +79,7 @@ TODO:
 
   resp_path := "http_resp.txt"
 
-  _ := io.file.use _ resp_path io.file.mode.read ()->
+  _ := io.file.use _ resp_path ()->
     resp := http.read_response io.file.file_mutate parse_req.val
 
     say <| match resp

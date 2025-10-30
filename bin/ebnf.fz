@@ -111,7 +111,7 @@ main =>
 
         # read src file
         src_lines :=
-          io.file.use _ src io.file.mode.read ()->
+          io.file.use _ src ()->
             (io.buffered io.file.file_mutate).read_lines
 
         # first, strip out asciidoc code that is enclosed as blocks of the form

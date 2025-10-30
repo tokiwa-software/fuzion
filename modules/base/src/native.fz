@@ -284,9 +284,7 @@ module fzE_file_open(
               # a Fuzion Pointer represention the path for the source to be opened
               path Array u8,
               # open_results[error number] as a Fuzion Pointer
-              open_results Array i64,
-              # opening flag (Read: 0, Write: 1, Append: 2)
-              flag i32) File_Descriptor => native
+              open_results Array i64) File_Descriptor => native
 
 
 # intrinsic that fills an array u8 with the file bytes that is represented by the file descriptor

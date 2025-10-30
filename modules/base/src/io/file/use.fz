@@ -21,17 +21,6 @@
 #
 # -----------------------------------------------------------------------
 
-
-# the mode to use when opening a file
-#
-public mode is
-
-  public read is
-  public write is
-  public append is
-
-  module:public val : choice mode.read mode.write append is
-
 # this opens a file with the given mode.
 # on success it instates effects:
 #
@@ -44,10 +33,10 @@ public mode is
 # usage example:
 #
 #     my_file : io.file is
-#     _ := my_file.use file_name mode.read ()->
+#     _ := my_file.use file_name ()->
 #       say (io.buffered my_file.file_mutate).read_lines
 #
-public use(R type, file_name String, m mode.val, code ()-> outcome R) outcome R =>
+public use(R type, file_name String, code ()-> outcome R) outcome R =>
 
   # definition of read handler for file
   #
@@ -63,14 +52,7 @@ public use(R type, file_name String, m mode.val, code ()-> outcome R) outcome R 
     public redef write (bytes Sequence u8) outcome unit =>
       fuzion.sys.fileio.write desc bytes.as_array
 
-
-  mode_num :=
-    match m
-      mode.read => 0
-      mode.write => 1
-      mode.append => 2
-
-  (fuzion.sys.fileio.open file_name mode_num).bind fd->
+  (fuzion.sys.fileio.open file_name).bind fd->
 
     # NYI: BUG: unclear why DFA does not accept this
     # file_mutate
