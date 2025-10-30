@@ -376,29 +376,25 @@ long fzE_get_file_size(void * file) {
  *          see also, https://devblogs.microsoft.com/oldnewthing/20031008-00/?p=42223
  *
  * returns:
- *   - error   :  result[0]=-1 and NULL
- *   - success :  result[0]=0  and an address where the file was mapped to
+ *   - error   :  NULL
+ *   - success :  address where the file was mapped to
  */
-void * fzE_mmap(void * file, uint64_t offset, size_t size, int * result) {
+void * fzE_mmap(void * file, uint64_t offset, size_t size) {
 
   if ((unsigned long)fzE_get_file_size((FILE *)file) < (offset + size)){
-    result[0] = -1;
+    // NYI: UNDER DEVELOPMENT: set_last_error();
     return NULL;
   }
 
   int file_descriptor = fileno((FILE *)file);
 
-  if (file_descriptor == -1) {
-    result[0] = -1;
-    return NULL;
-  }
+  assert (file_descriptor != -1);
 
   void * mapped_address = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, file_descriptor, offset);
   if (mapped_address == MAP_FAILED) {
-    result[0] = -1;
+    set_last_error(-1);
     return NULL;
   }
-  result[0] = 0;
   return mapped_address;
 }
 
