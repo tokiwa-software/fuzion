@@ -110,3 +110,30 @@ public product T
   pre
     T : numeric
 => fold T.product
+
+
+# return some statistics for the Sequence
+#
+public statistics String =>
+  if T : numeric
+    """
+      count           : {count}
+      arithmetic mean : {mean}
+      variance        : {variance}
+      median          : {median}
+      sum             : {sum}
+      product         : {product}
+    """
+  else if T : float
+    """
+      count              : {count}
+      arithmetic mean    : {mean}
+      variance           : {variance}
+      median             : {median}
+      sum                : {sum}
+      product            : {product}
+      standard deviation : {std_dev}
+      euclidean norm     : {euclidean_norm}
+    """
+  else
+    compile_time_panic
