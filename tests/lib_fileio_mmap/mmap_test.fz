@@ -46,7 +46,7 @@ mmap_test =>
 
     # mmap should fail, since offset+size exceeds file size.
     # truncating error code, may differ among OS
-    say <| (f.mmap offset (i64 7) ()->).err.as_string.truncate 30
+    say <| (f.mmap offset (i64 7) ()->).err.as_string.truncate 31
 
 
   say <| io.file.use testfile io.file.mode.read ()->
