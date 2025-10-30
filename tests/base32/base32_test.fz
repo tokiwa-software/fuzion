@@ -68,7 +68,7 @@ base32_test is
     do
       plain, code_expected := tup
       code_actual := match plain
-                        str String   => encodings.base32.encode_to_string str.utf8.as_array
+                        str String   => encodings.base32.encode_to_string str.utf8
                         arr array u8 => encodings.base32.encode_to_string arr
       out :=
         if code_actual = code_expected
