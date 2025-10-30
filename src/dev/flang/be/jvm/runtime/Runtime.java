@@ -1444,23 +1444,32 @@ public class Runtime extends ANY
    */
   public static void memorySegment2Obj(Object obj, MemorySegment memSeg)
   {
-    if      (obj instanceof byte   [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
-    else if (obj instanceof short  [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
-    else if (obj instanceof char   [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
-    else if (obj instanceof int    [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
-    else if (obj instanceof long   [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
-    else if (obj instanceof float  [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
-    else if (obj instanceof double [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
-    else if (obj instanceof MemorySegment) { /* NYI: UNDER DEVELOPMENT */ }
-    else if (obj instanceof Object [] arr && arr.length > 0 && arr[0] instanceof MemorySegment)
-      {
-        for (int i = 0; i < arr.length; i++)
-          {
-            arr[i] = memSeg.getAtIndex(ValueLayout.ADDRESS, i * ValueLayout.ADDRESS.byteSize());
-          }
-      }
-    else if (obj instanceof Object []    ) { /* NYI: UNDER DEVELOPMENT */ }
-    else { /* NYI: check if value type */ }
+    switch (obj)
+    {
+      case int    [] arr ->  MemorySegment.ofArray(arr).copyFrom(memSeg);
+      case byte   [] arr ->  MemorySegment.ofArray(arr).copyFrom(memSeg);
+      case long   [] arr ->  MemorySegment.ofArray(arr).copyFrom(memSeg);
+      case double [] arr ->  MemorySegment.ofArray(arr).copyFrom(memSeg);
+      case char   [] arr ->  MemorySegment.ofArray(arr).copyFrom(memSeg);
+      case short  [] arr ->  MemorySegment.ofArray(arr).copyFrom(memSeg);
+      case float  [] arr ->  MemorySegment.ofArray(arr).copyFrom(memSeg);
+      case MemorySegment m ->  { /* NYI: UNDER DEVELOPMENT */ }
+      case Object [] arr ->
+        {
+          if (arr.length > 0 && arr[0] instanceof MemorySegment)
+            {
+              for (int i = 0; i < arr.length; i++)
+                {
+                  arr[i] = memSeg.getAtIndex(ValueLayout.ADDRESS, i * ValueLayout.ADDRESS.byteSize());
+                }
+            }
+          else
+            {
+              /* NYI: UNDER DEVELOPMENT */
+            }
+        }
+      default -> { /* NYI: check if value type */ }
+    }
   }
 
 
@@ -1470,27 +1479,27 @@ public class Runtime extends ANY
    */
   public static MemorySegment obj2MemorySegment(Object obj)
   {
-    if      (obj instanceof byte   [] arr) { return arena.allocate(arr.length * 1).copyFrom(MemorySegment.ofArray(arr)); }
-    else if (obj instanceof short  [] arr) { return arena.allocate(arr.length * 2).copyFrom(MemorySegment.ofArray(arr)); }
-    else if (obj instanceof char   [] arr) { return arena.allocate(arr.length * 2).copyFrom(MemorySegment.ofArray(arr)); }
-    else if (obj instanceof int    [] arr) { return arena.allocate(arr.length * 4).copyFrom(MemorySegment.ofArray(arr)); }
-    else if (obj instanceof long   [] arr) { return arena.allocate(arr.length * 8).copyFrom(MemorySegment.ofArray(arr)); }
-    else if (obj instanceof float  [] arr) { return arena.allocate(arr.length * 4).copyFrom(MemorySegment.ofArray(arr)); }
-    else if (obj instanceof double [] arr) { return arena.allocate(arr.length * 8).copyFrom(MemorySegment.ofArray(arr)); }
-    else if (obj instanceof MemorySegment memSeg) { return memSeg; }
-    else if (obj instanceof Object [] arr)
-      {
-        var argsArray = arena.allocate(arr.length * 8);
-        for (int i = 0; i < arr.length; i++)
-          {
-            argsArray.set(ValueLayout.ADDRESS, i * 8, obj2MemorySegment(arr[i]));
-          }
-        return argsArray;
-      }
-    else
-      {
-        return value2MemorySegment(obj);
-      }
+    return
+      switch (obj) {
+        case int    [] arr -> arena.allocate(arr.length * 4).copyFrom(MemorySegment.ofArray(arr));
+        case byte   [] arr -> arena.allocate(arr.length * 1).copyFrom(MemorySegment.ofArray(arr));
+        case long   [] arr -> arena.allocate(arr.length * 8).copyFrom(MemorySegment.ofArray(arr));
+        case double [] arr -> arena.allocate(arr.length * 8).copyFrom(MemorySegment.ofArray(arr));
+        case char   [] arr -> arena.allocate(arr.length * 2).copyFrom(MemorySegment.ofArray(arr));
+        case short  [] arr -> arena.allocate(arr.length * 2).copyFrom(MemorySegment.ofArray(arr));
+        case float  [] arr -> arena.allocate(arr.length * 4).copyFrom(MemorySegment.ofArray(arr));
+        case MemorySegment memSeg -> memSeg;
+        case Object [] arr ->
+        {
+          var argsArray = arena.allocate(arr.length * 8);
+          for (int i = 0; i < arr.length; i++)
+            {
+              argsArray.set(ValueLayout.ADDRESS, i * 8, obj2MemorySegment(arr[i]));
+            }
+          yield argsArray;
+        }
+        default -> value2MemorySegment(obj);
+      };
   }
 
 
