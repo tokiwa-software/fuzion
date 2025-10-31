@@ -43,6 +43,16 @@ module:public open(fd File_Descriptor,
     file.this.seek hndlr ! code
 
 
+  # NYI: BUG: does probably not work when used twice
+  #
+  public seek_to_end outcome unit =>
+    seek unit ()->
+      # NYI: BUG: handle errors
+      file.this.seek.env
+        .seek (io.file.stat.stats file_name .val .size)
+        .val
+
+
   # install mmap effect an run code
   #
   # note: the offset must be a multiple of the `os.mmap_offset_multiple` which usually is 4096, windows 65536?
@@ -50,7 +60,7 @@ module:public open(fd File_Descriptor,
   #
   # example usage:
   #
-  #     _ := io.file.use unit "/some_file" io.file.mode.append ()->
+  #     _ := io.file.use unit "/some_file" ()->
   #       io.file.open.mmap (i64 0) (i64 100) ()->
   #         io.file.mapped_buffer.env[99] := 42
   #

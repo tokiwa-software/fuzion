@@ -109,13 +109,10 @@ module fileio is
   # returns outcome i64 representing the file descriptor in success
   # returns an error in failure
   #
-  module open(
-              # a Fuzion Object represention the path for the source to be opened
-              path String,
-              # a flag to specify the open method (Read: 0, Write: 1, Append: 2)
-              flag i32) outcome File_Descriptor =>
+  module open(# a Fuzion Object represention the path for the source to be opened
+              path String) outcome File_Descriptor =>
     open_results := fuzion.sys.internal_array_init i64 1  # [error number]
-    res := fzE_file_open (fuzion.sys.c_string path) open_results.data flag
+    res := fzE_file_open (fuzion.sys.c_string path) open_results.data
     if open_results[0] = 0
       res
     else

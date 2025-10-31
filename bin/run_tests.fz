@@ -125,14 +125,15 @@ String.prefix !! =>
 append_line(mtx concur.sync.mutex, dest String, str String) =>
 
   mtx.synchronized ()->
-    check (io.file.use $dest io.file.mode.append ()->
+    check (io.file.use $dest ()->
+            check io.file.open.seek_to_end.ok
             check ("$str\n".write_to io.file.file_mutate).ok).ok
 
 
 # read file f fully
 #
 read_file_fully(f String) outcome String =>
-  io.file.use f io.file.mode.read ()->
+  io.file.use f ()->
     String.from_bytes (io.buffered io.file.file_mutate).read_fully
 
 
