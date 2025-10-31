@@ -160,34 +160,6 @@ public class Runtime extends ANY
 
 
   /**
-   * Flag to disallow intrinsics that would permit to take over the world via
-   * file or network access, system function calls etc.
-   */
-  private static boolean _enable_unsafe_intrinsics_ = true;
-
-  /**
-   * Disable unsafe intrinsics.
-   */
-  public static void disableUnsafeIntrinsics()
-  {
-    _enable_unsafe_intrinsics_ = false;
-  }
-
-
-  /**
-   * Check if unsafe intrinsics are enabled.  If not, terminate with a fatal
-   * error.
-   */
-  public static void unsafeIntrinsic()
-  {
-    if (!_enable_unsafe_intrinsics_)
-      {
-        Errors.fatal("unsafe operation not permitted", stackTrace());
-      }
-  }
-
-
-  /**
    * This contains all open files/streams.
    */
   static OpenResources<AutoCloseable> _openStreams_ = new OpenResources<AutoCloseable>()
@@ -788,8 +760,6 @@ public class Runtime extends ANY
 
   public static byte[] fuzion_sys_fileio_read_dir(long fd)
   {
-    unsafeIntrinsic();
-
     var i = getIterator(fd);
     try
       {
@@ -826,8 +796,6 @@ public class Runtime extends ANY
    */
   public static String fuzion_java_string_to_java_object0(byte[] b)
   {
-    unsafeIntrinsic();
-
     return new String(b, StandardCharsets.UTF_8);
   }
 
@@ -841,8 +809,6 @@ public class Runtime extends ANY
    */
   public static byte[] fuzion_java_string_to_bytes_array(String str)
   {
-    unsafeIntrinsic();
-
     if (str == null)
       {
         str = "--null--";
@@ -864,8 +830,6 @@ public class Runtime extends ANY
    */
   public static Object fuzion_java_get_static_field0(String clazz, String field)
   {
-    unsafeIntrinsic();
-
     Object result;
 
     try
@@ -897,8 +861,6 @@ public class Runtime extends ANY
    */
   public static void fuzion_java_set_static_field0(String clazz, String field, Object value)
   {
-    unsafeIntrinsic();
-
     try
       {
         Class cl = Class.forName(clazz);
@@ -927,8 +889,6 @@ public class Runtime extends ANY
    */
   public static Object fuzion_java_get_field0(Object thiz, String field)
   {
-    unsafeIntrinsic();
-
     Object result;
     Class clazz = null;
 
@@ -965,8 +925,6 @@ public class Runtime extends ANY
    */
   public static void fuzion_java_set_field0(Object thiz, String field, Object value)
   {
-    unsafeIntrinsic();
-
     Class clazz = null;
 
     try
@@ -1053,8 +1011,6 @@ public class Runtime extends ANY
   {
     if (PRECONDITIONS) require
       (clName != null);
-
-    unsafeIntrinsic();
 
     Method m = null;
     var pcl = getParsAndClass("virtual", clName, name, sig);
@@ -1144,8 +1100,6 @@ public class Runtime extends ANY
     if (PRECONDITIONS) require
       (clName != null);
 
-    unsafeIntrinsic();
-
     Method m = null;
     var pcl = getParsAndClass("static", clName, name, sig);
     var p = pcl.v0();
@@ -1180,8 +1134,6 @@ public class Runtime extends ANY
   {
     if (PRECONDITIONS) require
       (clName != null);
-
-    unsafeIntrinsic();
 
     var pcl = getParsAndClass("constructor", clName, null, sig);
     var p = pcl.v0();

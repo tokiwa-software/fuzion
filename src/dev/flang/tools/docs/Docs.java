@@ -70,7 +70,6 @@ public class Docs extends ANY
     /* dumpModules             */ new List<>(),
     /* fuzionDebugLevel        */ 0,
     /* fuzionSafety            */ false,
-    /* enableUnsafeIntrinsics  */ false,
     /* sourceDirs              */ null,
     /* readStdin               */ false,
     /* executeCode             */ null,

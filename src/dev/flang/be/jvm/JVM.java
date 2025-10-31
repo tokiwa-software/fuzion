@@ -477,10 +477,6 @@ should be avoided as much as possible.
       {
         Errors.showAndExit();
         jvm._runner = new Runner(()->jvm._names.methodNameToFuzionClazzNames());
-        if (!jvm._options.enableUnsafeIntrinsics())
-          {
-            Runtime.disableUnsafeIntrinsics();
-          }
       }
       void compile(JVM jvm, int cl)
       {
