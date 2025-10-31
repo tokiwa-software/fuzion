@@ -237,9 +237,7 @@ is
     match list.this
       nil    => nil
       c Cons =>
-        ref : Cons B (list B) is
-          public redef head B => f c.head
-          public redef tail list B => c.tail.map_to_list f
+        f c.head : c.tail.map_to_list f
 
 
   # map the list to a new list applying function f to all elements
