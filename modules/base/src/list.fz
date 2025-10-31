@@ -728,7 +728,7 @@ is
   # fmap lifts a function from A to B to a function from list A to list B
   #
   public type.fmap(B type, f A -> B) list A -> list B =>
-    l -> l.map_to_list B f
+    (.map_to_list B f)
 
 
   # monoid of lists with infix concatenation operation.
