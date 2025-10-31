@@ -699,7 +699,6 @@ $(FUZION_RT): $(BUILD_DIR)/include $(FUZION_FILES_RT)
 # NYI: HACK: we just put them into /lib even though this src folder of base-lib currently
 # NYI: a bit hacky to have so/dylib regardless of which OS.
 # NYI: -DGC_THREADS -DGC_PTHREADS -DGC_WIN32_PTHREADS
-	@echo " + "$@
 	mkdir -p $(BUILD_DIR)/lib
 ifeq ($(OS),Windows_NT)
 	clang --target=x86_64-w64-windows-gnu -Wall -Werror -O3 -shared \
@@ -726,6 +725,7 @@ endif
 # 	-lgc
 # 	cp $(BUILD_DIR)/lib/libfuzion_rt.so $(BUILD_DIR)/lib/libfuzion_rt.dylib
 # endif
+	@echo " + "$@
 
 
 # rules relevant for language server protocol
