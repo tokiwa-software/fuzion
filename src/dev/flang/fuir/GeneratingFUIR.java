@@ -680,8 +680,7 @@ public class GeneratingFUIR extends FUIR
   }
 
 
-  private static List<AbstractCall> NO_INH = new List<>();
-  static { NO_INH.freeze(); }
+  private static List<AbstractCall> NO_INH = new List<AbstractCall>().freeze();
 
 
   /**

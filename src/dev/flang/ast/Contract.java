@@ -49,8 +49,7 @@ public class Contract extends ANY
   /**
    * Empty list of conditions.
    */
-  static final List<Cond> NO_COND = new List<>();
-  static { NO_COND.freeze(); }
+  static final List<Cond> NO_COND = new List<Cond>().freeze();
 
 
   /**
