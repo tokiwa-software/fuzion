@@ -181,6 +181,19 @@ is
     (filter f).count
 
 
+  # Find the indices of elements for which a given predicate holds.
+  #
+  # example:
+  #
+  #     [3, 6, 4, 7, 5].indices %%2
+  #
+  #   will result in the indices of all even values: [1, 2].
+  #
+  public where(f T->bool) Sequence i32
+  =>
+    indexed.filter (x -> f x.1) .map (.0)
+
+
   # get the first element of this Sequence
   #
   public first option T
