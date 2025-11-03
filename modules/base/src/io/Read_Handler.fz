@@ -41,7 +41,7 @@ public Read_Handler ref is
 
   # create a Read_Handler from an array of bytes
   #
-  public type.from_array_u8(LM type : mutate, arr array u8) io.Read_Handler =>
+  type.from_array_u8(LM type : mutate, arr array u8) io.Read_Handler =>
     ref : io.Read_Handler is
 
       # the current position in the array
