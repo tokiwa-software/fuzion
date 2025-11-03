@@ -73,9 +73,13 @@ public interface ClassFileConstants
   public static byte[] VERSION_JDK_19  = new byte[] { 0, 0, 0, 63 };
   public static byte[] VERSION_JDK_20  = new byte[] { 0, 0, 0, 64 };
   public static byte[] VERSION_JDK_21  = new byte[] { 0, 0, 0, 65 };   // LTS
+  public static byte[] VERSION_JDK_22  = new byte[] { 0, 0, 0, 66 };
+  public static byte[] VERSION_JDK_23  = new byte[] { 0, 0, 0, 67 };
+  public static byte[] VERSION_JDK_24  = new byte[] { 0, 0, 0, 68 };
+  public static byte[] VERSION_JDK_25  = new byte[] { 0, 0, 0, 69 };   // LTS
 
 
-  public static byte[] DEFAULT_VERSION = VERSION_JDK_21;
+  public static byte[] DEFAULT_VERSION = VERSION_JDK_25;
 
   public enum CPoolTag
   {
