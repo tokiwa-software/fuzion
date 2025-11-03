@@ -50,7 +50,7 @@ public json Parser String (Sequence codepoint) json_value =>
         || (u32 0x41 .. 0x46).contains c.val
 
     parser_hex_unicode =>
-      preceded (tag "\\") (take_while_m_n codepoint 4 4 (c -> is_hex_digit c))
+      preceded (tag "\\") (take_while_m_n codepoint 4 4 is_hex_digit)
         .map (Sequence codepoint) d->
           v, _ := d.reduce (u32 0, u32 4) (r, c -> _, exp := r; (c.parse_u32_hex.val * 10**exp, exp-1))
           [(codepoint v)]
@@ -166,7 +166,7 @@ public json Parser String (Sequence codepoint) json_value =>
       separated_pair (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) String (Sequence codepoint) json_value (delimited whitespace0 parser_string whitespace0) (tag ":") ()->parser_json_value_delimited
 
     parser_no_key_values =>
-      whitespace0.map (Sequence (tuple String json_value)) (x -> (list (tuple String json_value)).type.empty)
+      whitespace0.map (Sequence (tuple String json_value)) (_ -> (list (tuple String json_value)).type.empty)
 
     parser_key_values =>
       separated_list1 (tag ",") ()->parser_key_value

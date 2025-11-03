@@ -168,7 +168,6 @@ public class FrontEndOptions extends FuzionOptions
                          List<String> dumpModules,
                          int fuzionDebugLevel,
                          boolean fuzionSafety,
-                         boolean enableUnsafeIntrinsics,
                          List<String> sourceDirs,
                          boolean readStdin,
                          byte[] executeCode,
@@ -182,7 +181,6 @@ public class FrontEndOptions extends FuzionOptions
     super(verbose,
           fuzionDebugLevel,
           fuzionSafety,
-          enableUnsafeIntrinsics,
           fuzionHome,
           timer);
 

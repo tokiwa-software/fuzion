@@ -355,6 +355,6 @@ public type_applicator(E type) is
   #       =>
   #         e + $T
   #
-  public apply(T type, e E) E
+  public apply(T type, e E) E : fuzion.lambda_target
   =>
     abstract

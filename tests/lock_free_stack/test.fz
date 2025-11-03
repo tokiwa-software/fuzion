@@ -15,7 +15,7 @@ test =>
           p := s.pop
           while !(count p.get)
     .as_array
-    .for_each (t)->
+    .for_each t->
       t.join
 
   say cnt.read

@@ -357,7 +357,6 @@ elseBlockId
 elseBlockOpt
 elseif
 emi
-enableUnsafeIntrinsics
 endAtBar
 endAtColon
 endAtSpace
@@ -1219,7 +1218,6 @@ unicode
 UnicodeData
 unistd
 unitValue
-unsafeIntrinsics
 UnsupportedOperationException
 untagged
 Unterminated

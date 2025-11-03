@@ -621,13 +621,6 @@ public class Fuzion extends Tool
 
 
   /**
-   * Flag to enable intrinsic functions such as fuzion.jvm.env.call_virtual. These are
-   * not allowed if run in a web playground.
-   */
-  boolean _enableUnsafeIntrinsics = true;
-
-
-  /**
    * Default result of debugLevel:
    */
   int _debugLevel = Integer.getInteger(FuzionConstants.FUZION_DEBUG_LEVEL_PROPERTY, 1);
@@ -739,7 +732,7 @@ public class Fuzion extends Tool
   protected String USAGE(boolean xtra)
   {
     var std = STANDARD_OPTIONS(xtra);
-    var stdRun = "[-debug[=<n>]] [-safety=(on|off)] [-unsafeIntrinsics=(on|off)] ";
+    var stdRun = "[-debug[=<n>]] [-safety=(on|off)] ";
     var stdBe = "[-modules={<m>,..}] [-moduleDirs={<path>,..}] [-sourceDirs={<path>,..}] " +
       (xtra ? "[-XdumpModules={<name>,..}] " : "");
     if (_backend == Backend.undefined)
@@ -1060,7 +1053,6 @@ public class Fuzion extends Tool
             else if (a.startsWith("-moduleDirs="             )) {                             _moduleDirs.addAll(parseStringListArg(a)); }
             else if (_backend.runsCode() && a.matches("-debug(=\\d+|)"       )) { _debugLevel              = parseIntArg(a, 1); }
             else if (_backend.runsCode() && a.startsWith("-safety="          )) { _safety                  = parseOnOffArg(a);          }
-            else if (_backend.runsCode() && a.startsWith("-unsafeIntrinsics=")) { _enableUnsafeIntrinsics  = parseOnOffArg(a);          }
             else if (_backend.handleOption(this, a))
               {
               }
@@ -1130,7 +1122,6 @@ public class Fuzion extends Tool
                                           _dumpModules,
                                           _debugLevel,
                                           _safety,
-                                          _enableUnsafeIntrinsics,
                                           _sourceDirs,
                                           _readStdin,
                                           _executeCode,
