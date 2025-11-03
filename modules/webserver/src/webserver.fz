@@ -1,0 +1,109 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion webserver library feature Webserver
+#
+# -----------------------------------------------------------------------
+
+# defines a basic webserver
+#
+public Webserver(/*NYI: UNDER DEVELOPMENT: custom thread pool TP type : concur.thread_pool, */ port u16, family net.family.val, log String->unit, middlewares Sequence Middleware, hdlr Http_Handler) ref is
+
+  is_running := concur.atomic bool .new true
+
+  public shutdown unit =>
+    is_running.write false
+
+  _ := concur.threads.spawn ()->
+
+    # start a thread pool
+    # NYI: UNDER DEVELOPMENT: thread_pool size should be determined programmatically
+    tp_res := concur.thread_pool 200 ()->
+      h := middlewares.reduce hdlr ((r,t) -> t.call r)
+
+      res :=
+        net.server.start family net.protocol.tcp port ()->
+          log "listening on port: $port"
+
+          # the request loop
+          #
+          while is_running.read do
+            accept_res := net.server.env.accept.bind unit conn->
+
+              lm : mutate is
+
+              _ := conn.in_thread_pool unit concur.thread_pool lm lm ()->
+
+                # compute response
+                #
+                response := h.call (http.read_request lm).get
+
+                # send response
+                #
+                match (io.buffered lm)
+                    .writer.env
+                    .write (response.bytes i32.max)
+                    .error
+                  e error => log "writing response failed: {e}"
+                  unit =>
+                    flush_ok := (io.buffered lm).writer.env.flush
+                    if flush_ok!!
+                      log "flushing response failed: {flush_ok.err}"
+
+            accept_res.or_else ()->
+              log "failed accepting connection {accept_res}"
+
+
+      match res
+        e error => log "failure starting the webserver: $e"
+        unit =>
+
+    check tp_res.ok
+
+
+# create a new webserver
+#
+public webserver_create(port u16, family net.family.val, log String->unit, hdlr Http_Handler) outcome Webserver =>
+
+  # NYI: middleware: tracing, timing, json, auth, parse-query/form,
+  # session-cookie etc.
+
+  Webserver /*NYI: UNDER DEVELOPMENT: concur.thread_pool*/ port family log [except] hdlr
+
+
+
+# exception middleware, catching any error happening
+# while processing the request
+#
+except : Middleware is
+  public redef call(h Http_Handler) Http_Handler =>
+    ref : Http_Handler is
+      public redef call(r http.request_message) http.response_message =>
+        fuzion
+          .runtime
+          .contract_fault
+          .try ()->
+            h r
+          .catch  e->
+            http
+              .response_message
+              .new
+                500
+                [("server", "FuzionWebServer v0.0.0")]
+                io.Read_Handler.empty
