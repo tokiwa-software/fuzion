@@ -58,12 +58,12 @@ record_process(p os.process,
   (concur.thread_pool 2 ()->
       fout := concur.thread_pool.env.submit _ ()->
         lm ! ()->
-          match p.with_out String lm (()->String.from_bytes (io.buffered lm).read_fully)
+          match p.with_out String lm (()->String.from (io.buffered lm).read_fully)
             e error => panic "failed reading stdout from $cmd, error is: $e"
             out String => out
       ferr := concur.thread_pool.env.submit _ ()->
         lm ! ()->
-          match p.with_err String lm (()->String.from_bytes (io.buffered lm).read_fully)
+          match p.with_err String lm (()->String.from (io.buffered lm).read_fully)
             e error => panic "failed reading stderr from $cmd, error is: $e"
             err String => err
       match p.wait

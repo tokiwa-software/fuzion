@@ -157,6 +157,6 @@ base64url_test is
   for t in broken_enc do
     yak "$t: "
     say (match encodings.base64url.decode_str t
-        arr array u8 => String.type.from_bytes arr
+        arr array u8 => String.from arr
         e error => e.as_string)
   say ""
