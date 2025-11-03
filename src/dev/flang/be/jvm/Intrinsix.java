@@ -675,18 +675,8 @@ public class Intrinsix extends ANY implements ClassFileConstants
                 }
               else if (in.equals("fuzion.sys.type.setel"))
                 {
-                  var check_frozen = Expr.UNIT;
-                  if (CHECKS)
-                    {
-                      check_frozen = Expr.DUP
-                        .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
-                                                   "ensure_not_frozen",
-                                                   "(" + (JAVA_LANG_OBJECT.descriptor()) + ")V",
-                                                   ClassFileConstants.PrimitiveType.type_void));
-                    }
                   code = args.get(0)
                     .andThen(Expr.checkcast(jt.array()))
-                    .andThen(check_frozen)
                     .andThen(args.get(1))
                     .andThen(args.get(2))
                     .andThen(jt.xastore());
