@@ -112,8 +112,7 @@ public mail is
     #
     write_or_cause(LM type : mutate, s String) =>
       (io.buffered LM).writer.env
-        .write s.utf8
-        .error
+        .write s
         .or_cause unit (x -> error "while writing $s, got $x")
       (io.buffered LM).writer.env
         .flush

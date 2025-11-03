@@ -39,6 +39,6 @@ mod_wolfssl =>
         c.with _ net_lm ()->
           ssl_lm ! ()->
             wolfssl _ net_lm ssl_lm ()->
-              check ("GET / HTTP/1.1\r\nHost: fuzion-lang.dev\r\n\r\n".write_to ssl_lm).error.ok
+              check ("GET / HTTP/1.1\r\nHost: fuzion-lang.dev\r\n\r\n".write_to ssl_lm).ok
               check (io.buffered ssl_lm).writer.env.flush.ok
               say (io.buffered ssl_lm).read_line
