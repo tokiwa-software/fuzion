@@ -99,7 +99,7 @@ is
   #       fd i64 =>
   #         # read 42 bytes from example file
   #         match read fd 42
-  #           content array u8 => strings.from_bytes content
+  #           content array u8 => String.from content
   #           re error => re
   #       oe error => oe
   #
