@@ -46,7 +46,7 @@ nom_test =>
         || (u32 0x41 .. 0x46).contains c.val
 
     # example: `A1` => u8
-    parser_two_digit_hex := (p.take_while_m_n codepoint 2 2 (x -> is_valid x)).map u8 (o1 -> (String.type.from_codepoints o1).parse_u32(16).val.as_u8)
+    parser_two_digit_hex := (p.take_while_m_n codepoint 2 2 (x -> is_valid x)).map u8 (o1 -> (String.from o1).parse_u32(16).val.as_u8)
     # example: `#9F3A10` => tuple u8 u8 u8
     parser_hex_tuple := p.preceded (p.tag "#") (p.tuple3 parser_two_digit_hex parser_two_digit_hex parser_two_digit_hex)
     # example: `#9F3A10` => hex_color
@@ -76,6 +76,66 @@ nom_test =>
     say (json_parser.call "\{ \"name \":  \"sonoo\" }")
     say (json_parser.call "\{ \"name \":  [ 1, true, false, null, \"sonoo\", \{ \"name \":  \"sonoo\" } ] }")
     say (json_parser.call "\{  \"employee \":  \{  \"name \":  \"sonoo\",  \"salary \": 56000,  \"married \": true } }")
+    say (json_parser.call """
+        [
+        \{
+            "employee": \{
+                "id": "E00001",
+                "name": "Bryan Smith",
+                "position": "Chemical engineer",
+                "department": \{
+                    "id": "D080",
+                    "name": "Incentivize",
+                    "manager": \{
+                        "id": "M2858",
+                        "name": "Rebecca Andrews",
+                        "contact": \{
+                            "email": "amanda52@example.net",
+                            "phone": "815-823-1247x52270"
+                        }
+                    }
+                },
+                "projects": [
+                    \{
+                        "projectId": "P5216",
+                        "projectName": "Multi-tiered discrete Internet solution",
+                        "startDate": "2025-05-25",
+                        "tasks": [
+                            \{
+                                "taskId": "T522",
+                                "title": "Evolve Best-Of-Breed E-Tailers",
+                                "status": "In Progress",
+                                "details": \{
+                                    "hoursSpent": 41,
+                                    "technologiesUsed": [
+                                        "Python",
+                                        "SQL"
+                                    ],
+                                    "expectedCompletion": "2025-09-11"
+                                }
+                            },
+                            \{
+                                "taskId": "T405",
+                                "title": "Empower Cross-Media Users",
+                                "status": "In Progress",
+                                "details": \{
+                                    "hoursSpent": 41,
+                                    "technologiesUsed": [
+                                        "PyTorch",
+                                        "JavaScript",
+                                        "Python",
+                                        "Scikit-learn"
+                                    ],
+                                    "expectedCompletion": "2025-08-17"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+        ]
+      """)
 
   simple_parser_test
   hex_parser_test

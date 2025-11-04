@@ -808,7 +808,9 @@ public class C extends ANY
         // allow infinite recursion
         "-Wno-infinite-recursion",
         // NYI: UNDER DEVELOPMENT: (test mod_sqlite, `char **` and `fzT_fuzion__sys_RPointer *` are incompatible)
-        "-Wno-incompatible-function-pointer-types"
+        "-Wno-incompatible-function-pointer-types",
+        // NYI: UNDER DEVELOPMENT: happens currently in e.g. in reg_issue1188.fz
+        "-Wno-uninitialized"
         );
 
     if (_options._cCompiler == null && clangVersion >= 13)
@@ -1968,9 +1970,7 @@ public class C extends ANY
       {
       case Call      -> CStmnt.seq(
           CStmnt.lineComment("cur does not escape, alloc on stack"),
-          CStmnt.decl(_names.struct(cl), CNames.CURRENT),
-          // this fixes "variable 'fzCur' is uninitialized when used here" in e.g. reg_issue1188
-          CExpr.call("fzE_mem_zero_secure", new List<>(CNames.CURRENT.adrOf(), CNames.CURRENT.sizeOfExpr())));
+          CStmnt.decl(_names.struct(cl), CNames.CURRENT));
       case Unknown   -> CStmnt.seq(CStmnt.lineComment("cur may escape, so use malloc"      ), declareAllocAndInitClazzId(cl, CNames.CURRENT));
       case Undefined -> CExpr.dummy("undefined life time");
       };

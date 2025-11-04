@@ -22,5 +22,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = reg_issue5733
-FUZION_OPTIONS = -modules=lock_free
 include ../simple.mk

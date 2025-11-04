@@ -56,7 +56,6 @@ public class Interpreter extends FUIRContext
     FUIRContext.set_fuir(fuir);
     var processor = new Executor(_fuir, _options_);
     _ai = new AbstractInterpreter<Value, Object>(_fuir, processor);
-    Intrinsics.ENABLE_UNSAFE_INTRINSICS = options.enableUnsafeIntrinsics();  // NYI: Add to Fuzion IR or BE Config
   }
 
 

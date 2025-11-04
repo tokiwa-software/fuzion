@@ -47,7 +47,7 @@ is
   # Encodes a given byte sequence in base16
   # returns a sequence of ascii values
   #
-  public encode(data array u8) Sequence u8 =>
+  public encode(data Sequence u8) Sequence u8 =>
     data.flat_map b->
       [alphabet[(b>>4).as_i32], alphabet[(b&15).as_i32]]
 
@@ -55,28 +55,30 @@ is
   # Encodes a given byte sequence in base16
   # returns a string
   #
-  public encode_to_string(data array u8) String =>
-    String.type.from_bytes (encode data)
+  public encode_to_string(data Sequence u8) String =>
+    String.from (encode data)
 
 
   # decodes a base16 string, decoding is strict as required by RFC 4648
   # lowercase letters, non alphabet characters, line breaks, uneven length cause errors
   #
   public decode_str(data String) outcome (array u8) =>
-    decode data.utf8.as_array
+    decode data.utf8
 
 
   # decodes a sequence of ASCII characters, decoding is strict as required by RFC 4648
   # lowercase letters, non alphabet characters, line breaks, uneven length cause errors
   #
-  public decode(data array u8) outcome (array u8) =>
+  public decode(data Sequence u8) outcome (array u8) =>
+
+    d := data.as_array
 
     dec_char_at(i) =>
 
-      if i >= data.length
+      if i >= d.length
         error "unexpected end of input, i.e. not of even length"
       else
-        c := data[i]
+        c := d[i]
 
         # base16 alphabet character
         if (is_valid c)
@@ -90,7 +92,7 @@ is
 
         # other non alphabet character
         else
-          inv_char := String.type.from_bytes (data.slice i (i+4 > data.length ? data.length : i+4))
+          inv_char := String.from (d.slice i (i+4 > d.length ? d.length : i+4))
                             .substring_codepoint 0 1
 
           error "invalid $encoding_name input at byte position $i, decoding to unicode character '$inv_char'"
@@ -98,7 +100,7 @@ is
     for
       res := (Sequence u8).empty, res ++ byte  # contains the decoded data at the end
       nxt := 0, nxt + 2
-    while nxt < data.length
+    while nxt < d.length
     do
       bits_0_3 := dec_char_at nxt
       bits_4_7 := dec_char_at nxt+1

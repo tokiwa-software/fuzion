@@ -230,7 +230,6 @@ public class FZJava extends Tool
                                             /* dumpModules */ emptyList,
                                             /* fuzionDebugLevel */ 0,
                                             /* fuzionSafety */ true,
-                                            /* enableUnsafeIntrinsics */ true,
                                             /* sourceDirs */ emptyList,
                                             /* readStdin */ false,
                                             /* executeCode */ null,

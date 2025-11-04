@@ -472,9 +472,10 @@ public class List<T>
    * Forbid modifications to this list.  This should be called to ensure that a
    * list that is used as a key in a map or similar is no longer modified.
    */
-  public void freeze()
+  public List<T> freeze()
   {
     _isFrozen = true;
+    return this;
   }
 
 

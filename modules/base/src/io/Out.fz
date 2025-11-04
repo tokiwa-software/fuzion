@@ -31,6 +31,20 @@ public Out ref : print_effect is
     io.Out.default io.default_out
 
 
+  # implementation of io.Out that just
+  # discards everything, writing nothing, nowhere.
+  #
+  # usage example:
+  #
+  #     io.Out.instate _ io.Out.blackhole ()->
+  #        ... your code ...
+  #
+  public type.blackhole io.Out =>
+    ref : io.Out is
+      public redef write(b Sequence u8) outcome unit => unit
+      public redef flush outcome unit => unit
+
+
 # default implementation for io.Out
 #
 module default_out : io.Out is

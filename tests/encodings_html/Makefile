@@ -21,5 +21,5 @@
 #
 # -----------------------------------------------------------------------
 
-override NAME = uuid_test
+override NAME = encodings_html
 include ../simple.mk
