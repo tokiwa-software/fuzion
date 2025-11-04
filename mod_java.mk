@@ -266,14 +266,14 @@ $(MOD_JAVA_BASE_FZ_FILES): $(MOD_BASE) $(FZJAVA)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) java.base -to=$(@D) -verbose=0"
 	touch $@
 
-$(MOD_JAVA_XML_FZ_FILES): $(FZJAVA)
+$(MOD_JAVA_XML_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE) $(MOD_JAVA_BASE)
 	rm -rf $(@D)
 	mkdir -p $(@D)
 # wrapping in /bin/sh -c "..." is a workaround for building on windows (msys2)
 	$(FUZION_BIN_SH) -c "$(FZJAVA) java.xml -to=$(@D) -modules=java.base -verbose=0"
 	touch $@
 
-$(MOD_JAVA_DATATRANSFER_FZ_FILES): $(FZJAVA)
+$(MOD_JAVA_DATATRANSFER_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE) $(MOD_JAVA_XML)
 	rm -rf $(@D)
 	mkdir -p $(@D)
 # wrapping in /bin/sh -c "..." is a workaround for building on windows (msys2)
@@ -284,7 +284,7 @@ $(MOD_JAVA_DATATRANSFER_FZ_FILES): $(FZJAVA)
 	mv $(BUILD_DIR)/modules/java.datatransfer/Java/java/awt_pkg.fz  $(BUILD_DIR)/modules/java.datatransfer/
 	touch $@
 
-$(MOD_JAVA_DESKTOP_FZ_FILES): $(FZJAVA)
+$(MOD_JAVA_DESKTOP_FZ_FILES): $(FZJAVA) $(MOD_JAVA_BASE) $(MOD_JAVA_DATATRANSFER)
 	rm -rf $(@D)
 	mkdir -p $(@D)
 # wrapping in /bin/sh -c "..." is a workaround for building on windows (msys2)

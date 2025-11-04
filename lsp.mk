@@ -63,6 +63,7 @@ $(BUILD_DIR)/jars/lsp.sha256: $(JARS_LSP_LSP4J) $(JARS_LSP_LSP4J_GENERATOR) $(JA
 
 
 $(BUILD_DIR)/bin/fuzion_language_server: $(FZ_SRC)/bin/fuzion_language_server
+	mkdir -p $(@D)
 	cp $^ $@
 	chmod +x $@
 
