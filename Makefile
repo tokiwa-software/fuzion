@@ -334,22 +334,22 @@ $(CLASS_FILES_OPT): $(JAVA_FILES_OPT) $(CLASS_FILES_FE) $(CLASS_FILES_FUIR)
 	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_OPT)
 	touch $@
 
-$(CLASS_FILES_BE_INTERPRETER): $(JAVA_FILES_BE_INTERPRETER) $(CLASS_FILES_FUIR) $(CLASS_FILES_AST)  # NYI: remove dependency on $(CLASS_FILES_AST), replace by $(CLASS_FILES_FUIR)
+$(CLASS_FILES_BE_INTERPRETER): $(JAVA_FILES_BE_INTERPRETER) $(CLASS_FILES_FUIR_ANALYSIS_DFA)
 	mkdir -p $(CLASSES_DIR)
 	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_INTERPRETER)
 	touch $@
 
-$(CLASS_FILES_BE_C): $(JAVA_FILES_BE_C) $(CLASS_FILES_FUIR) $(CLASS_FILES_FUIR_ANALYSIS_DFA)
+$(CLASS_FILES_BE_C): $(JAVA_FILES_BE_C) $(CLASS_FILES_FUIR_ANALYSIS_DFA)
 	mkdir -p $(CLASSES_DIR)
 	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_C)
 	touch $@
 
-$(CLASS_FILES_BE_EFFECTS): $(JAVA_FILES_BE_EFFECTS) $(CLASS_FILES_FUIR_CFG)
+$(CLASS_FILES_BE_EFFECTS): $(JAVA_FILES_BE_EFFECTS) $(CLASS_FILES_FUIR_ANALYSIS_DFA)
 	mkdir -p $(CLASSES_DIR)
 	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_EFFECTS)
 	touch $@
 
-$(CLASS_FILES_BE_JVM): $(JAVA_FILES_BE_JVM) $(CLASS_FILES_FUIR) $(CLASS_FILES_FUIR_ANALYSIS_DFA) $(CLASS_FILES_BE_JVM_RUNTIME) $(CLASS_FILES_BE_JVM_CLASSFILE)
+$(CLASS_FILES_BE_JVM): $(JAVA_FILES_BE_JVM) $(CLASS_FILES_FUIR_ANALYSIS_DFA) $(CLASS_FILES_BE_JVM_RUNTIME) $(CLASS_FILES_BE_JVM_CLASSFILE)
 	mkdir -p $(CLASSES_DIR)
 	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_JVM)
 	touch $@
@@ -364,7 +364,7 @@ $(CLASS_FILES_BE_JVM_RUNTIME): $(JAVA_FILES_BE_JVM_RUNTIME) $(CLASS_FILES_UTIL)
 	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_JVM_RUNTIME)
 	touch $@
 
-$(CLASS_FILES_TOOLS): $(JAVA_FILES_TOOLS) $(CLASS_FILES_FE) $(CLASS_FILES_OPT) $(CLASS_FILES_BE_C) $(CLASS_FILES_FUIR_ANALYSIS_DFA) $(CLASS_FILES_BE_EFFECTS) $(CLASS_FILES_BE_JVM) $(CLASS_FILES_BE_JVM_RUNTIME) $(CLASS_FILES_BE_INTERPRETER)
+$(CLASS_FILES_TOOLS): $(JAVA_FILES_TOOLS) $(CLASS_FILES_FE) $(CLASS_FILES_OPT) $(CLASS_FILES_BE_C) $(CLASS_FILES_FUIR_ANALYSIS_DFA) $(CLASS_FILES_BE_EFFECTS) $(CLASS_FILES_BE_JVM) $(CLASS_FILES_BE_JVM_RUNTIME) $(CLASS_FILES_BE_INTERPRETER) $(CLASS_FILES_FUIR_CFG)
 	mkdir -p $(CLASSES_DIR)
 	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_TOOLS)
 	touch $@
@@ -516,14 +516,14 @@ $(FZJAVA): $(FZ_SRC)/bin/fzjava $(CLASS_FILES_TOOLS_FZJAVA)
 
 # this target may fail when executed standalone, see comment on $(BUILD_DIR)/tests
 #
-$(BUILD_DIR)/bin/check_simple_example: $(FZ_SRC)/bin/check_simple_example.fz
-	$(FZ) -modules=terminal -c -o=$@ $^
+$(BUILD_DIR)/bin/check_simple_example: $(FZ_SRC)/bin/check_simple_example.fz $(FUZION_BASE)
+	$(FZ) -modules=terminal -c -o=$@ $(FZ_SRC)/bin/check_simple_example.fz
 	@echo " + $@"
 
 # this target may fail when executed standalone, see comment on $(BUILD_DIR)/tests
 #
-$(BUILD_DIR)/bin/record_simple_example: $(FZ_SRC)/bin/record_simple_example.fz
-	$(FZ) -modules=terminal -c -o=$@ $^
+$(BUILD_DIR)/bin/record_simple_example: $(FZ_SRC)/bin/record_simple_example.fz $(FUZION_BASE)
+	$(FZ) -modules=terminal -c -o=$@ $(FZ_SRC)/bin/record_simple_example.fz
 	@echo " + $@"
 
 # tricky, we need MOD_TERMINAL to build (check|record)_simple_example
