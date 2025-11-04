@@ -197,12 +197,11 @@ public abstract_array
   # create a cons cell for a list of this array starting at the given
   # index `i` and up to `to`
   #
-  array_cons(a A : container.abstract_array T, i, to i32) : Cons T (list T)
+  array_cons(a A : container.abstract_array T, i, to i32)
     pre
       debug: 0 ≤ i < to ≤ a.length
-  is
-    public redef head T => a[i]
-    public redef tail list T => (a.slice i+1 to).as_list
+  =>
+    a[i] : (a.slice i+1 to).as_list
 
 
   # map the array to a new array applying function f to all elements
