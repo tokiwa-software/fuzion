@@ -324,9 +324,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
       c1 Cons =>
         # return list of c and rest
         ret(c outcome codepoint, rest list u8) list (outcome codepoint) =>
-          ref : Cons (outcome codepoint) (list (outcome codepoint)) is
-            public redef head outcome codepoint => c
-            public redef tail list (outcome codepoint) => codepoints_and_errors rest
+          c : codepoints_and_errors rest
 
         p := codepoint.type
         e(msg String) => error "Bad UTF8 encoding found: cannot decode $msg"
@@ -560,9 +558,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
       h :=  String.from_bytes (l.take_while cnd).as_array
       t := (String.from_bytes <| l.drop_while cnd)
                   .split
-      ref : Cons String (list String) is
-        public redef head String => h
-        public redef tail list String => t
+      h : t
 
 
   # split string at s
