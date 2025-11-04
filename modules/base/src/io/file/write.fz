@@ -25,5 +25,5 @@
 # write String `s` to file `f`
 #
 public write(f String, s String) outcome unit =>
-  use f mode.write ()->
+  use f ()->
     (writer.write s.utf8).error
