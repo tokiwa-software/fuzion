@@ -44,7 +44,7 @@ public sodium is
                 c.crypto_pwhash_opslimit_interactive.as_u64
                 c.crypto_pwhash_memlimit_interactive
         }
-        String.from_bytes <| out.as_array.map (.cast_to_u8)
+        String.from <| out.as_array.map (.cast_to_u8)
       else
         # NYI: UNDER DEVELOPMENT: type inference
         id (outcome String) (error "out of memory (crypto_pwhash)")

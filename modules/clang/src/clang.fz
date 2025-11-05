@@ -65,7 +65,7 @@ cx_string_to_string(cx_str CXString) =>
   utf8_bytes := (ffi.from_native_string (clang_getCString cx_str)).utf8
   # force copying the bytes to make sure String is valid
   # even after clang_disposeString
-  String.from_bytes ((array u8).new utf8_bytes.count (i -> utf8_bytes[i]))
+  String.from ((array u8).new utf8_bytes.count (i -> utf8_bytes[i]))
 
 
 public clang is

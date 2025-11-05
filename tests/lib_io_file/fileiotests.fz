@@ -58,7 +58,7 @@ fileiotests =>
 
   _ := f.use file f.mode.read ()->(io.buffered f.file_mutate).read_fully
     .bind bytes->
-      filecontent := String.from_bytes bytes
+      filecontent := String.from bytes
       say "file content bytes: $bytes"
       say "file content is $filecontent"
 
