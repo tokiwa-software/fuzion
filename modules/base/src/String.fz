@@ -547,37 +547,32 @@ public String ref : property.equatable, property.hashable, property.orderable is
   #
   # The result is a, possibly empty, list of separate non-empty strings.
   #
-  public split list String =>
-    l := utf8.drop_while is_ascii_white_space
-    if l.is_empty
-      nil
-    else
-      # NYI: UNDER DEVELOPMENT: type inference for lambda
-      cnd u8->bool := c -> !c.is_ascii_white_space
-      # NYI: PERFORMANCE: do take_while/drop_while at the same time
-      h :=  String.from_bytes (l.take_while cnd).as_array
-      t := (String.from_bytes <| l.drop_while cnd)
-                  .split
-      h : t
+  public split Sequence String =>
+    for res  := container.expanding_array String .empty, res_new
+        word := container.expanding_array codepoint .empty, wrd_new
+        c in codepoints
+        res_new := c.is_blank && !word.is_empty ? res.add (String.from word) : res
+        wrd_new := c.is_blank ? container.expanding_array codepoint .empty : word.add c
+    else word.is_empty ? res : res.add (String.from word)
 
 
   # split string at s
   #
-  public split(s String) list String
+  public split(s String) Sequence String
     pre
       !s.is_empty
     =>
-      split0 s nil false
+      split0 s nil false .as_array_backed
 
 
   # split string after s, that is do the same thing as split but
   # include the separator s in the resulting strings
   #
-  public split_after(s String) list String
+  public split_after(s String) Sequence String
     pre
       !s.is_empty
     =>
-      split0 s nil true
+      split0 s nil true .as_array_backed
 
 
   # split string at s, for at most n occurrences of s
@@ -585,12 +580,12 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # if s occurs in the string less than n times, the resulting list will have
   # less than n elements
   #
-  public split_n(s String, n u32) list String
+  public split_n(s String, n u32) Sequence String
     pre
       debug: !s.is_empty
       debug: n > 0
     =>
-      split0 s n false
+      split0 s n false .as_array_backed
 
 
   # split string after s, for at most n occurrences of s
@@ -598,12 +593,12 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # if s occurs in the string less than n times, the resulting list will have
   # less than n elements
   #
-  public split_after_n(s String, n u32) list String
+  public split_after_n(s String, n u32) Sequence String
     pre
       !s.is_empty
       n > 0
     =>
-      split0 s n true
+      split0 s n true .as_array_backed
 
 
   # split string at s, if there is no limit, otherwise if limit is an integer n,
@@ -623,12 +618,12 @@ public String ref : property.equatable, property.hashable, property.orderable is
     =>
       utf8.split0 s.utf8 limit split_after
           # NYI: BUG: could be just: .map_to_list String.from_bytes
-          .map_to_list String.type.from_bytes
+          .map_to_list String.type.from
 
 
   # split string at line feeds
   #
-  public lines list String =>
+  public lines Sequence String =>
     split encodings.ascii.lf_str
 
 
