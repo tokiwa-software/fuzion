@@ -218,14 +218,14 @@ C_FILES = $(shell find $(FZ_SRC) \( -path ./build -o -path ./.git \) -prune -o -
 .DELETE_ON_ERROR:
 
 
-# rules to build java modules
-#
-include $(FZ_SRC)/mod_java.mk
-
-
 # default make target
 .PHONY: all
 all: $(FUZION_BASE) $(FUZION_JAVA_MODULES) $(FUZION_FILES) $(MOD_FZ_CMD) $(FUZION_EBNF) $(BUILD_DIR)/lsp.jar
+
+
+# rules to build java modules
+#
+include $(FZ_SRC)/mod_java.mk
 
 
 # everything but rarely used java modules
