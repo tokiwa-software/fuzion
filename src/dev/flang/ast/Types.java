@@ -210,6 +210,7 @@ public class Types extends ANY
     public final AbstractFeature f_Nullary;
     public final AbstractFeature f_Lazy;
     public final AbstractFeature f_auto_unwrap;
+    public final AbstractFeature f_must_assign_to_field;
     public final Set<AbstractType> numericTypes;
     public Resolved(AbstractModule mod, AbstractFeature universe, boolean forFrontEnd)
     {
@@ -284,6 +285,7 @@ public class Types extends ANY
       f_Nullary                 = universe.get(mod, NULLARY_NAME, 1);
       f_Lazy                    = universe.get(mod, LAZY_NAME, 1);
       f_auto_unwrap             = universe.get(mod, "auto_unwrap", 2);
+      f_must_assign_to_field    = universe.get(mod, "must_assign_to_field", 0);
       numericTypes = new TreeSet<AbstractType>(new List<>(
         t_i8,
         t_i16,
