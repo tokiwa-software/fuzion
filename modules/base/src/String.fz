@@ -977,14 +977,14 @@ public String ref : property.equatable, property.hashable, property.orderable is
 
   # create string from the given utf8 bytes
   #
-  public type.from_bytes(utf8_bytes Sequence u8) String =>
+  module type.from_bytes(utf8_bytes Sequence u8) String =>
     ref : String is
       public redef utf8 Sequence u8 := utf8_bytes.as_array_backed
 
 
   # create string from the given codepoints
   #
-  public type.from_codepoints(codepoints Sequence codepoint) String =>
+  module type.from_codepoints(codepoints Sequence codepoint) String =>
     # NYI: PERFORMANCE: shows up in test: mod_nom_parser_xml
     String.from_bytes (codepoints.flat_map (.utf8))
 
@@ -993,7 +993,8 @@ public String ref : property.equatable, property.hashable, property.orderable is
   #
   # where data might either be utf8 bytes or codepoints
   #
-  public type.from(data choice (Sequence u8) (Sequence codepoint)) String =>
+  public type.from(data Sequence u8
+                      | Sequence codepoint) String =>
     match data
       bytes Sequence u8 => String.from_bytes bytes
       codepoints Sequence codepoint => String.from_codepoints codepoints

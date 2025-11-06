@@ -218,14 +218,14 @@ C_FILES = $(shell find $(FZ_SRC) \( -path ./build -o -path ./.git \) -prune -o -
 .DELETE_ON_ERROR:
 
 
-# rules to build java modules
-#
-include $(FZ_SRC)/mod_java.mk
-
-
 # default make target
 .PHONY: all
 all: $(FUZION_BASE) $(FUZION_JAVA_MODULES) $(FUZION_FILES) $(MOD_FZ_CMD) $(FUZION_EBNF) $(BUILD_DIR)/lsp.jar
+
+
+# rules to build java modules
+#
+include $(FZ_SRC)/mod_java.mk
 
 
 # everything but rarely used java modules
@@ -514,22 +514,15 @@ $(FZJAVA): $(FZ_SRC)/bin/fzjava $(CLASS_FILES_TOOLS_FZJAVA)
 	cp -rf $(FZ_SRC)/bin/fzjava $@
 	chmod +x $@
 
-# this target may fail when executed standalone, see comment on $(BUILD_DIR)/tests
-#
-$(BUILD_DIR)/bin/check_simple_example: $(FZ_SRC)/bin/check_simple_example.fz | $(FUZION_BASE)
+$(BUILD_DIR)/bin/check_simple_example: $(FZ_SRC)/bin/check_simple_example.fz | $(FUZION_BASE) $(MOD_TERMINAL)
 	$(FZ) -modules=terminal -c -o=$@ $(FZ_SRC)/bin/check_simple_example.fz
 	@echo " + $@"
 
-# this target may fail when executed standalone, see comment on $(BUILD_DIR)/tests
-#
-$(BUILD_DIR)/bin/record_simple_example: $(FZ_SRC)/bin/record_simple_example.fz | $(FUZION_BASE)
+$(BUILD_DIR)/bin/record_simple_example: $(FZ_SRC)/bin/record_simple_example.fz | $(FUZION_BASE) $(MOD_TERMINAL)
 	$(FZ) -modules=terminal -c -o=$@ $(FZ_SRC)/bin/record_simple_example.fz
 	@echo " + $@"
 
-# tricky, we need MOD_TERMINAL to build (check|record)_simple_example
-# but we are not adding this to those targets because we do not want
-# (check|record)_simple_example to rebuild any time sth is changed in base lib
-$(BUILD_DIR)/tests: $(FUZION_FILES_TESTS) $(MOD_TERMINAL) $(BUILD_DIR)/include $(BUILD_DIR)/bin/check_simple_example $(BUILD_DIR)/bin/record_simple_example
+$(BUILD_DIR)/tests: $(FUZION_FILES_TESTS) $(BUILD_DIR)/include $(BUILD_DIR)/bin/check_simple_example $(BUILD_DIR)/bin/record_simple_example
 	rm -rf $@
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC_TESTS) $@
