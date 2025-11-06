@@ -39,6 +39,11 @@ public json_value : choice String f64 bool nil (Sequence json_value) (container.
 
 # a json parser
 #
+# NYI: UNDER DEVELOPMENT: incomplete
+# NYI: PERFORMANCE: not yet optimized
+#
+# Specification: https://ecma-international.org/wp-content/uploads/ECMA-404_2nd_edition_december_2017.pdf
+#
 public json Parser String (Sequence codepoint) json_value =>
 
   # parser for a json string
