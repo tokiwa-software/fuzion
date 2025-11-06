@@ -233,7 +233,13 @@ public class Function extends AbstractLambda
         @Override
         public Expr action(Call c)
         {
-          return c.updateTarget(res, _feature.context());
+
+          if (CHECKS) check
+            (_feature != null || Errors.any());
+
+          return _feature == null
+            ? c
+            : c.updateTarget(res, _feature.context());
         }
       },
       _feature);
