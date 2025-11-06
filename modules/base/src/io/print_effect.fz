@@ -39,8 +39,10 @@ is
   # print the given string
   #
   public print (s Any) unit =>
-    # NYI: UNDER DEVELOPMENT error handling?
-    check write s.as_string.utf8.as_array .ok
+    # NYI: BUG: error handling, maybe we should raise
+    # some kind of IO runtime fault here?
+    write_res := write s.as_string.utf8.as_array
+    check debug: write_res.ok
     check flush.ok
 
 
