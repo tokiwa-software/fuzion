@@ -43,7 +43,8 @@ is
     # some kind of IO runtime fault here?
     write_res := write s.as_string.utf8.as_array
     check debug: write_res.ok
-    check flush.ok
+    flush_res := flush
+    check flush_res.ok
 
 
   # print new line
