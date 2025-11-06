@@ -40,8 +40,8 @@ is
   #
   public print (s Any) unit =>
     # NYI: UNDER DEVELOPMENT error handling?
-    _ := write s.as_string.utf8.as_array
-    _ := flush
+    check write s.as_string.utf8.as_array .ok
+    check flush.ok
 
 
   # print new line
