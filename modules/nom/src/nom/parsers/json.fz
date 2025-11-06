@@ -37,6 +37,29 @@ public json_value : choice String f64 bool nil (Sequence json_value) (container.
       m container.Map => "\{$m}"
 
 
+  # access feature to access deeply nested maps and sequences
+  #
+  # this is useful to avoid match hell
+  #
+  public access (keys Sequence (choice i32 String)) option json_value =>
+    match json_value.this
+      m container.Map =>
+        match keys.first
+          nil => json_value.this
+          c choice i32 String =>
+            match c
+              i32 => nil # have map got i32
+              s String => m[s].bind x->(x.access keys.as_list.tail)
+      seq Sequence =>
+        match keys.first
+          nil => json_value.this
+          c choice i32 String =>
+            match c
+              i i32 => seq.nth i .bind x->(x.access keys.as_list.tail)
+              String => nil
+      * => json_value.this
+
+
 # a json parser
 #
 # NYI: UNDER DEVELOPMENT: incomplete
