@@ -1910,7 +1910,7 @@ public class Runtime extends ANY
    */
   private static void checkNoImplicitPadding(MemoryLayout[] elements, StructLayout result)
   {
-    var elSz = 0;
+    long elSz = 0;
     for (int index = 0; index < elements.length; index++)
       {
         elSz += elements[index].byteSize();
