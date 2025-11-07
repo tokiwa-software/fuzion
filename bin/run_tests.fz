@@ -231,7 +231,7 @@ main =>
         check concur.thread_pool.env.submit (run_single_test t)
 
 
-  results_content := io.slurp <| path.of results
+  results_content := (io.slurp <| path.of results)
     .val
     .lines
     .filter (x -> !x.is_blank)
