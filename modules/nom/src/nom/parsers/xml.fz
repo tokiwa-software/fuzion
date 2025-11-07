@@ -24,7 +24,7 @@
 
 # an deserialized xml node
 #
-public xml_node(name String, attributes container.Map String String, data Sequence (choice nom.parsers.xml_node String))
+public xml_node(public name String, public attributes container.Map String String, public data Sequence (choice nom.parsers.xml_node String))
   pre
     debug: !name.contains_whitespace
     debug: attributes.items ∀ x -> !x.0.contains_whitespace
@@ -50,7 +50,7 @@ is
 
   # this xml node as String
   #
-  public as_string(indent i32) String =>
+  as_string(indent i32) String =>
 
     attr =>
       attributes
