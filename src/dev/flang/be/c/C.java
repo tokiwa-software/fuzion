@@ -810,7 +810,9 @@ public class C extends ANY
         // NYI: UNDER DEVELOPMENT: (test mod_sqlite, `char **` and `fzT_fuzion__sys_RPointer *` are incompatible)
         "-Wno-incompatible-function-pointer-types",
         // NYI: UNDER DEVELOPMENT: happens currently in e.g. in reg_issue1188.fz
-        "-Wno-uninitialized"
+        "-Wno-uninitialized",
+        // NYI: UNDER DEVELOPMENT: must chunk strings, fails in test mod_nom_parser_xml
+        "-Wno-overlength-strings"
         );
 
     if (_options._cCompiler == null && clangVersion >= 13)

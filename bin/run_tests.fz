@@ -128,14 +128,6 @@ append_line(mtx concur.sync.mutex, dest String, str String) =>
     check (io.file.use $dest io.file.mode.append ()->
             check ("$str\n".write_to io.file.file_mutate).ok).ok
 
-
-# read file f fully
-#
-read_file_fully(f String) outcome String =>
-  io.file.use f io.file.mode.read ()->
-    String.from (io.buffered io.file.file_mutate).read_fully
-
-
 is_windows =>
   ((envir.vars.get "OS").val "").lower_case.contains "windows"
 
@@ -239,7 +231,7 @@ main =>
         check concur.thread_pool.env.submit (run_single_test t)
 
 
-  results_content := read_file_fully results
+  results_content := (io.slurp <| path.of results)
     .val
     .lines
     .filter (x -> !x.is_blank)
@@ -276,7 +268,7 @@ main =>
     failed_tests.for_each say
 
     say_section "run_tests.failures START"
-    say (read_file_fully failures)
+    say (io.slurp <| path.of failures)
     say_section "run_tests.failures END"
 
     failed_test_names := failed_tests
