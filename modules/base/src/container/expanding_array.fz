@@ -63,9 +63,14 @@ is
 
   # get the contents of this array at the given index
   #
-  public redef index [](i i32) T
+  public redef index [ ] (i i32|i64|u32|u64) T
   =>
-    data[i].val
+    match i
+      n i32 => data[n].val
+      n i64 => data[n.as_i32].val
+      n u32 => data[n.as_i32].val
+      n u64 => data[n.as_i32].val
+
 
 
   # make sure this `expanding_array` has capacity of at least

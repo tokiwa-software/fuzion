@@ -118,9 +118,13 @@ is
 
   # get the contents of this array at the given index
   #
-  public redef index [ ] (i i32) T
-  =>
-    internal_array[i]
+  public redef index [ ] (i i32|i64|u32|u64) T =>
+    match i
+      n i32 => internal_array[n]
+      n i64 => internal_array[n.as_i32]
+      n u32 => internal_array[n.as_i32]
+      n u64 => internal_array[n.as_i32]
+
 
   # create a new array with element i set to v. Grow the array in case i == length.
   #
