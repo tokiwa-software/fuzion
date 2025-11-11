@@ -36,7 +36,10 @@ FZ = $(BUILD_DIR)/bin/fz
 FZJAVA = $(BUILD_DIR)/bin/fzjava
 CLASSES_DIR = $(BUILD_DIR)/classes
 CLASSES_DIR_LOGO = $(BUILD_DIR)/classes_logo
-FUZION_BIN_SH = /bin/sh
+
+ifeq ($(OS),Windows_NT)
+	SHELL := /bin/sh
+endif
 
 ifeq ($(FUZION_DEBUG_SYMBOLS),true)
 	JAVAC += -g
@@ -681,7 +684,7 @@ $(MOD_FZ_CMD_DIR).jmod: $(FUZION_BASE)
 
 $(MOD_FZ_CMD_FZ_FILES): $(MOD_FZ_CMD_DIR).jmod $(MOD_JAVA_BASE) $(MOD_JAVA_MANAGEMENT) $(MOD_JAVA_DESKTOP)
 	rm -rf $(MOD_FZ_CMD_DIR)
-	$(FUZION_BIN_SH) -c "$(FZJAVA) -to=$(MOD_FZ_CMD_DIR) -modules=java.base,java.management,java.desktop -verbose=0 $(MOD_FZ_CMD_DIR)"
+	$(FZJAVA) -to=$(MOD_FZ_CMD_DIR) -modules=java.base,java.management,java.desktop $(MOD_FZ_CMD_DIR)
 	touch $@
 
 $(MOD_FZ_CMD): $(MOD_FZ_CMD_FZ_FILES)
