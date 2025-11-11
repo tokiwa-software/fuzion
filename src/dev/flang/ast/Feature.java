@@ -2016,9 +2016,10 @@ A ((Choice)) declaration must not contain a result type.
         if (!isField() &&
             !isConstructor() &&
             !rt.isGenericArgument() &&
-            rt.feature().inheritsFrom(Types.resolved.f_must_assign_to_field)) {
-          AstErrors.mustAssignToField(rt.feature(), impl().expr().sourceRange());
-        }
+            rt.feature().inheritsFrom(Types.resolved.f_must_assign_to_field))
+          {
+            AstErrors.mustAssignToField(rt.feature(), impl().expr().sourceRange());
+          }
 
         /**
          * Perform type inference from outside to the inside, i.e., propagate the
