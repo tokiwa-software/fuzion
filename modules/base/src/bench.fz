@@ -30,25 +30,29 @@
 #
 # returns: iterations per second
 #
-public bench(f ()->unit, d time.duration, warm_up time.duration) f64 ! time.nano =>
+public bench(warm_up time.duration, d time.duration, f ()->unit) f64 ! time.nano =>
+
+  wa_start := time.nano.read
+
+  while time.nano.read - wa_start < d
+  do
+    f.call
+
   start := time.nano.read
-
-  is_warmup => time.nano.read - start < warm_up
-
-  for iter := (u64 0), if (is_warmup) iter else iter + 1
-  while time.nano.read - start < warm_up + d
+  for iter := (u64 0), iter + 1
+  while time.nano.read - start < d
   do
     f.call
   else
     iter.as_f64 / (d.nanos.as_f64 * 1E-9)
 
 
-# benchmark f for milli_seconds (1s warm up)
+# benchmark f for 10 seconds, warm_up 5 seconds
 #
 # only completed iterations are counted, any iterations started before
 # the one second warmup has elapsed are not counted either
 #
 # returns: iterations per second
 #
-public bench(f ()->unit, milli_seconds i32) f64 =>
-  bench f (time.duration.ms milli_seconds.as_u64) (time.duration.s 1)
+public bench(f ()->unit) f64 =>
+  bench (time.duration.s 5) (time.duration.s 10) f
