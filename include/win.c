@@ -1060,7 +1060,14 @@ int64_t fzE_file_position(void *file)
 
 int32_t fzE_file_flush(void *file)
 {
-  return FlushFileBuffers((HANDLE)file)
+  HANDLE h = (HANDLE)file;
+
+  // flushing stdout/stderr does not work
+  if (GetFileType(h) == FILE_TYPE_CHAR)
+  {
+    return 0;
+  }
+  return FlushFileBuffers(h)
     ? 0
     : -1;
 }
