@@ -63,6 +63,7 @@ jobs:
             patch
             libsqlite
             libsqlite-devel
+            mingw-w64-ucrt-x86_64-libsodium
 
 
       - name: install choco packages
@@ -76,6 +77,7 @@ jobs:
         run: |
           ln -s  /ucrt64/bin/libclang.dll /ucrt64/bin/clang.dll
           ln -s  /usr/bin/msys-sqlite3-0.dll /ucrt64/bin/sqlite3.dll
+          ln -s  /ucrt64/bin/libsodium-26.dll /ucrt64/bin/sodium.dll
 
       - name: echo versions
         run: |
@@ -87,6 +89,7 @@ jobs:
           whereis jvm.dll
           whereis sqlite3.dll
           whereis clang.dll
+          whereis sodium.dll
 
       - name: build libgc
         run: |
