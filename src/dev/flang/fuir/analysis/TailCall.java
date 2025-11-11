@@ -147,6 +147,7 @@ public class TailCall extends ANY
       outerRef == NO_CLAZZ ||
       nargs >= 1 &&
       (tc == _fuir.clazzUniverse() ||
+       ts != -1                                       &&
        _fuir.codeAt       (ts) == IR.ExprKind.Call    &&
        _fuir.accessedClazz(ts) == outerRef            &&
        _fuir.codeAt(_fuir.codeIndex(ts, -1)) == IR.ExprKind.Current);
