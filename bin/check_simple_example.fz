@@ -205,24 +205,6 @@ clean_err(f String) =>
   # line numbers
   check "sed -E -i s/\\.fz:[0-9]+:[0-9]+:/\\.fz:n:n:/g $f".execute.ok
   check "sed -E -i s/\\.fz:[0-9]+/\\.fz:n/g $f".execute.ok
-  # lambdas
-  check "sed -E -i s/#fun[0-9]+/fun/g $f".execute.ok
-  check "sed -E -i s/INTERN_fun[0-9]+/fun/g $f".execute.ok
-  # loops
-  check "sed -E -i s/#loop[0-9]+/loop/g $f".execute.ok
-  check "sed -E -i s/INTERN_loop[0-9]+/loop/g $f".execute.ok
-  # preconditions
-  check "sed -E -i s/#pre[0-9]+/pre/g $f".execute.ok
-  check "sed -E -i s/INTERN_pre[0-9]+/pre/g $f".execute.ok
-  # pre bools
-  check "sed -E -i s/#prebool[0-9]+/prebool/g $f".execute.ok
-  check "sed -E -i s/INTERN_prebool[0-9]+/prebool/g $f".execute.ok
-  # pre bools
-  check "sed -E -i s/#preandcall[0-9]+/preandcall/g $f".execute.ok
-  check "sed -E -i s/INTERN_preandcall[0-9]+/preandcall/g $f".execute.ok
-  # postconditions
-  check "sed -E -i s/#post[0-9]+/post/g $f".execute.ok
-  check "sed -E -i s/INTERN_post[0-9]+/post/g $f".execute.ok
 
 
 # delete temporary files
