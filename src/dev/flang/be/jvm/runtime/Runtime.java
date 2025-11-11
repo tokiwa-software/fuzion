@@ -38,6 +38,7 @@ import java.lang.foreign.Linker;
 import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.SegmentAllocator;
+import java.lang.foreign.StructLayout;
 import java.lang.foreign.SymbolLookup;
 import java.lang.foreign.ValueLayout;
 import java.lang.foreign.ValueLayout.OfBoolean;
@@ -1891,11 +1892,33 @@ public class Runtime extends ANY
       {
         return ValueLayout.ADDRESS;
       }
-    return MemoryLayout.structLayout(
-      Arrays
+    var elements = Arrays
         .stream(ct.getDeclaredFields())
         .map(f -> layout(f.getType()))
-        .toArray(MemoryLayout[]::new));
+        .toArray(MemoryLayout[]::new);
+    var result = MemoryLayout.structLayout(elements);
+    checkNoImplicitPadding(elements, result);
+    return result;
+  }
+
+
+  /**
+   * Check that no implicit padding between its member layouts
+   *
+   * NYI: UNDER DEVELOPMENT: this is work in progress. Not necessarily how
+   * we want things to be.
+   */
+  private static void checkNoImplicitPadding(MemoryLayout[] elements, StructLayout result)
+  {
+    long elSz = 0;
+    for (int index = 0; index < elements.length; index++)
+      {
+        elSz += elements[index].byteSize();
+      }
+    if (result.byteSize() != elSz)
+    {
+      Errors.fatal("Implementation restriction", "Implicit padding detected. We can't yet deal with this. You can only use values with native features that have no implicit padding currently.");
+    }
   }
 
 
