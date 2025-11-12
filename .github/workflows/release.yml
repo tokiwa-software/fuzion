@@ -18,7 +18,7 @@ jobs:
     - name: Setup jdk
       uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # main
       with:
-        java-version: 21
+        java-version: 25
         distribution: 'adopt'
 
     - name: install dependencies
