@@ -69,19 +69,19 @@ jobs:
         run: make shellcheck
 
       - name: build java code
-        run: make javac
+        run: make -j2 javac
 
       - name: build (no java modules)
-        run: make no-java
+        run: make -j2 no-java
 
       - name: build docs
-        run: make doc
+        run: make -j2 doc
 
       - name: compile language server
-        run: make lsp/compile
+        run: make -j2 lsp/compile
 
       - name: run tests
-        run: make run_tests_parallel
+        run: make -j2 run_tests_parallel
 
       - name: syntax check
         run: make syntaxcheck
