@@ -17,11 +17,11 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  GitHub Actions workflow to build and test Fuzion on Ubuntu.
+#  GitHub Actions workflow to build and test repo consistency.
 #
 # -----------------------------------------------------------------------
 
-name: run tests on linux
+name: run consistency tests
 
 # https://lobste.rs/s/ppjtie/simple_trick_save_environment_money_when
 concurrency:
@@ -58,18 +58,16 @@ jobs:
       - name: install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install sqlite3 libgc1 libgc-dev libclang1 libclang-dev libwolfssl-dev libsodium23 libsodium-dev
+          sudo apt-get install shellcheck asciidoc asciidoctor ruby-asciidoctor-pdf antlr4
 
-      - name: link libclang
-        run: |
-          export CLANG_MAJOR_VERSION=$(clang --version | head -n 1 | awk '{print $4}' | cut -d. -f1)
-          test -f /usr/lib/llvm-$CLANG_MAJOR_VERSION/lib/libclang.so && sudo ln -s /usr/lib/llvm-$CLANG_MAJOR_VERSION/lib/libclang.so /usr/lib/
+      - name: check shell scripts
+        run: make shellcheck
 
-      - name: build java code
-        run: make javac
+      - name: build docs
+        run: make doc
 
-      - name: build (no java modules)
-        run: make no-java
+      - name: compile language server
+        run: make lsp/compile
 
-      - name: run tests
-        run: make run_tests_parallel
+      - name: syntax check
+        run: make syntaxcheck
