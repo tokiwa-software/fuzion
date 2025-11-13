@@ -330,7 +330,7 @@ main =>
     nil => say "INFLUXDB_TOKEN not set, not sending to influxdb."
     token String =>
       data := test_durations.items
-        .map td->"tests_{target},test={td.0} value={td.1.millis}"
+        .map td->"test_runtime,backend={target},test={td.0} value={td.1.millis}"
       if token.is_blank
         say "INFLUXDB_TOKEN is blank, not sending to influxdb."
       else
