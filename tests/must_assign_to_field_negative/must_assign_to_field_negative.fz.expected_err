@@ -1,0 +1,7 @@
+
+--CURDIR--/must_assign_to_field_negative.fz:28:5: error 1: Must assign feature 'once' to field
+    once mutate key ()->key # 1. should flag an error:
+----^^^^^^^^^^^^^^^^^^^^^^^
+To solve this, assign the result of 'once' to a field.
+
+one error.

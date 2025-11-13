@@ -17,20 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature once
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# executes `f` only the first time when
-# calling `get` caching its result.
-#
-public once(LM type : mutate, T type, f Lazy T) : auto_unwrap T LM, must_assign_to_field is
-
-  cache := LM.env.new (option T) nil
-
-  # get the result of `f`
-  #
-  public redef unwrap T ! LM =>
-    if cache.get.is_nil
-      cache <- f()
-    cache.get.get
+override NAME = must_assign_to_field_negative
+include ../simple_and_negative.mk
