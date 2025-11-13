@@ -42,7 +42,7 @@
 # ```
 #    fuzion.runtime.contract_fault
 #      .try ()->(envir.args.nth 3).val.trim.parse_i32.val
-#      .or_try _->(envir.vars.get "DEBUG_LEVEL").val.trim.parse_i32.val
+#      .or_try _->envir.vars["DEBUG_LEVEL"].val.trim.parse_i32.val
 #      .catch  _->4
 # ```
 
@@ -57,7 +57,7 @@
 x :=
   fuzion.runtime.contract_fault
     .try ()->(envir.args.nth 3).val.trim.parse_i32.val
-    .or_try _->(say "failed envir args";(envir.vars.get "DEBUG_LEVEL").val.trim.parse_i32.val)
+    .or_try _->(say "failed envir args";(envir.vars["DEBUG_LEVEL"].val.trim.parse_i32.val)
     .catch  _->(say "failed envir vars";4)
 
 say x
