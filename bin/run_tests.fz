@@ -330,9 +330,11 @@ main =>
     nil => say "INFLUXDB_TOKEN not set, not sending to influxdb."
     token String =>
       data := test_durations.items
-        .map td->"tests,test={td.0} value={td.1.millis}"
-      say <| post_to_influx "tokiwa" "benchmarks" token (String.join data "\n")
-
+        .map td->"tests_{target},test={td.0} value={td.1.millis}"
+      if token.is_blank
+        say "INFLUXDB_TOKEN is blank, not sending to influxdb."
+      else
+        say <| post_to_influx "tokiwa" "benchmarks" token.trim (String.join data "\n")
 
   exit
 
