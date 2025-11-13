@@ -1660,32 +1660,50 @@ public class DFA extends ANY
    */
   void analyze(Call c)
   {
-    if (_fuir.clazzKind(c.calledClazz()) == FUIR.FeatureKind.Routine)
+    int cc = c.calledClazz();
+    if (_fuir.clazzKind(cc) == FUIR.FeatureKind.Routine)
       {
         var i = c._instance;
         check
-          (c._args.size() == _fuir.clazzArgCount(c.calledClazz()));
+          (c._args.size() == _fuir.clazzArgCount(cc));
         for (var a = 0; a < c._args.size(); a++)
           {
-            var af = _fuir.clazzArg(c.calledClazz(), a);
+            var af = _fuir.clazzArg(cc, a);
             var aa = c._args.get(a);
             i.setField(this, af, aa.value());
           }
 
         // copy outer ref argument to outer ref field:
-        var or = _fuir.clazzOuterRef(c.calledClazz());
+        var or = _fuir.clazzOuterRef(cc);
         if (or != NO_CLAZZ)
           {
             i.setField(this, or, c.target());
           }
 
         var ai = new AbstractInterpreter2<Val>(_fuir, new Analyze(c));
-        var r = ai.processClazz(c.calledClazz());
+        var r = ai.processClazz(cc);
         if (r != null)
           {
-            c.returns();
+            var rf = _fuir.clazzResultField(cc);
+            c.returns(hasNonUnitResultField(cc, rf)
+              ? c._instance.readField(this, rf, NO_SITE, c)
+              : r);
           }
       }
+  }
+
+
+  /**
+   * Does the called clazz cc have a non unit result field?
+   *
+   * @param cc
+   * @param rf
+   * @return
+   */
+  private boolean hasNonUnitResultField(int cc, int rf)
+  {
+    return !_fuir.isConstructor(cc) &&
+        SpecialClazzes.c_unit != _fuir.getSpecialClazz(_fuir.clazzResultClazz(rf));
   }
 
 
