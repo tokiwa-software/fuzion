@@ -42,17 +42,17 @@ is
 
   # get element at given index i
   #
-  public redef index [ ] (i i64) T
+  public redef index [ ] (i idx) T
   =>
-    data[i.as_i32]
+    data[i]
 
 
   # set element at given index i to given value o
   #
-  public redef set [ ] (i i64, o T) unit
+  public redef set [ ] (i idx, o T) unit
   =>
     check_and_replace
-    data[i.as_i32] := o
+    data[i] := o
 
 
   # add an element at the end of this array
@@ -64,9 +64,9 @@ is
          else
            new_data := fuzion.sys.internal_array_init T (max 8 data.length*2)
            for i in indices do
-             new_data[i.as_i32] := data[i.as_i32]
+             new_data[i] := data[i]
            new_data
-    d[length.as_i32] := o
+    d[length] := o
     set data := d
     set length := length+1
 

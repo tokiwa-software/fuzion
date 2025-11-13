@@ -134,17 +134,17 @@ test_local_mutate is
           arr := (mutate.array T).new m c.as_i64 data[0]
 
           swap(i,j i32) =>
-            t := arr[i.as_i64]
-            arr[i.as_i64] := arr[j.as_i64]
-            arr[j.as_i64] := t
+            t := arr[i]
+            arr[i] := arr[j]
+            arr[j] := t
 
           partition(l, r, pivot i32) =>
-            pv := arr[pivot.as_i64]
+            pv := arr[pivot]
             swap pivot r
             for
               a := l, a + (sw ? 0 : 1)
               b := r, b - (sw ? 1 : 0)
-              sw := arr[a.as_i64] > pv
+              sw := arr[a] > pv
             while a < b
               if sw
                 swap a b-1
@@ -159,7 +159,7 @@ test_local_mutate is
               qs pi+1 r
 
           for i in arr.indices do
-            arr[i] := data[i.as_i32]
+            arr[i] := data[i]
 
           qs 0 c-1
           arr.as_array

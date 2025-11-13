@@ -118,7 +118,7 @@ is
 
   # get the contents of this array at the given index
   #
-  public redef index [ ] (i i32) T
+  public redef index [ ] (i idx) T
   =>
     internal_array[i]
 

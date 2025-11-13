@@ -49,7 +49,7 @@ is
   #
   public encode(data Sequence u8) Sequence u8 =>
     data.flat_map b->
-      [alphabet[(b>>4).as_i32], alphabet[(b&15).as_i32]]
+      [alphabet[b>>4], alphabet[b&15]]
 
 
   # Encodes a given byte sequence in base16
