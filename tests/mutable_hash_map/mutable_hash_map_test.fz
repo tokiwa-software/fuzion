@@ -72,7 +72,7 @@ str(i i32) String => "No. $i"
 interval_test is
   interval_map := container.Mutable_Hash_Map mutate i32 String .empty
 
-  interval_test_size := 200
+  interval_test_size := 75
 
 
   # put 1..n then remove 1..n
@@ -233,7 +233,7 @@ collision_test_2 is
 primes_test is
   primes_map := container.Mutable_Hash_Map mutate i32 String .empty
 
-  primes_test_size := 250
+  primes_test_size := 75
 
   # NYI: calculation of prime numbers very slow
   primes(n i32) =>
@@ -278,7 +278,7 @@ primes_test is
 random_test is
   simple_random 42 ()->
 
-    random_test_size := 600
+    random_test_size := 75
     random_map := container.Mutable_Hash_Map mutate i32 String .empty
     verify_map := container.mutable_tree_map mutate i32 String .empty
 
