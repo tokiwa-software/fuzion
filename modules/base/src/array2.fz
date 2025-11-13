@@ -61,12 +61,12 @@ is
       indices1.map j->(i,j)
 
 
-  public index [ ] (i1, i2 i32) T
+  public index [ ] (i1, i2 idx) T
     pre
-      safety: 0 ≤ i1 < length0
-      safety: 0 ≤ i2 < length1
+      safety: 0 ≤ i1.as_i32 < length0
+      safety: 0 ≤ i2.as_i32 < length1
   =>
-    array2.this[i1 * length1 + i2]
+    array2.this[i1.as_i32 * length1 + i2.as_i32]
 
 
   # create a string representation of this array including all the string

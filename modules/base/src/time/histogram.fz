@@ -225,13 +225,13 @@ is
   indx(l time.duration)
   post
     debug: result.as_i32 ∈ table.indices
-    debug: l <= table[result.as_i32]
-    debug: result = 0 || table[result.as_i32-1] < l
+    debug: l <= table[result]
+    debug: result = 0 || table[result-1] < l
   =>
     # binary search in range s..e:
     for
       m := i64 0, (s+e)/2
-      v := l, table[m.as_i32]
+      v := l, table[m]
       s := i64 0      , l >  v ? m+1 : s
       e := num_buckets, l <= v ? m   : e
     while s < e
@@ -263,7 +263,7 @@ is
     debug: indx result = i
     debug: indx (result + time.duration.ns 1) = i+1
   =>
-    table[i.as_i32]
+    table[i]
 
 
   # record the given time instant, i.e., create the difference to the previous instant

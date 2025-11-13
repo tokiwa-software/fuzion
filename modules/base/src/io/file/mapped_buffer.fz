@@ -37,18 +37,18 @@ module:public mapped_buffer
 
   # get byte at given index i
   #
-  public redef index [ ] (i i64) u8
+  public redef index [ ] (i idx) u8
   =>
     replace
-    fzE_mapped_buffer_get memory i
+    fzE_mapped_buffer_get memory i.as_i64
 
 
   # set byte at given index i to given value o
   #
-  public redef set [ ] (i i64, o u8) unit
+  public redef set [ ] (i idx, o u8) unit
   =>
     replace
-    fzE_mapped_buffer_set memory i o
+    fzE_mapped_buffer_set memory i.as_i64 o
 
 
   # cleanup

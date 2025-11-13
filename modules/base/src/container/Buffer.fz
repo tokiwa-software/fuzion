@@ -63,18 +63,18 @@ is
 
   # get element at given index i
   #
-  public index [ ] (i i64) T ! E
+  public index [ ] (i idx) T ! E
     pre
-      safety: 0 ≤ i < length
+      safety: 0 ≤ i.as_i64 < length
   =>
     abstract
 
 
   # set element at given index i to given value o
   #
-  public set [ ] (i i64, o T) unit ! E
+  public set [ ] (i idx, o T) unit ! E
     pre
-      safety: 0 ≤ i < length
+      safety: 0 ≤ i.as_i64 < length
   =>
     abstract
 
@@ -82,7 +82,7 @@ is
   # create immutable array from this buffer
   #
   public as_array array T ! E =>
-    array length.as_i32 (i -> Buffer.this[i.as_i64])
+    array length.as_i32 (i -> Buffer.this[i])
 
 
   # create a list from this buffer
