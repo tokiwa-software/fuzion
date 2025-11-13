@@ -117,7 +117,9 @@ is
   # convert to unix time stamp
   # seconds elapsed since 1970-01-01T00:00:00Z
   #
-  public unix_time_stamp i32 =>
+  public unix_time_stamp u64
+    pre debug: year >= 1970
+  =>
     leap_days =>
       ((year-1) / 4) - ((year-1) / 100) + ((year-1) / 400) - ((1969 / 4) - (1969 / 100) + (1969 / 400))
 
@@ -131,7 +133,7 @@ is
 
     time_seconds => hour*3600 + minute*60 + second
 
-    days*86400 + time_seconds
+    days.as_u64*86400 + time_seconds.as_u64
 
 
   # create a date_time from given seconds since 1970-01-01T00:00:00
