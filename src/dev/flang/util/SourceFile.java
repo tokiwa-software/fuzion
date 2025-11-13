@@ -219,7 +219,7 @@ public class SourceFile extends ANY
     if (PRECONDITIONS) require
       (fileName != null);
 
-    _fileName = fileName;
+    _fileName = fileName.normalize();
     if (sf == null)
       {
         try
