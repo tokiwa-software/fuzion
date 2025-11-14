@@ -23,7 +23,7 @@
 
 envir_vars is
 
-  match envir.vars.get "PATH"
+  match envir.vars["PATH"]
     val String =>
       if !val.is_empty
         say "successful"

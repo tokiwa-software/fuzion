@@ -43,7 +43,7 @@ envir_var_kv := [
   "FUZION_CLANG_INSTALLED_DIR",
   "OS"
 ].map k->
-  (envir.vars.get k).bind v->
+  envir.vars[k].bind v->
     (k,v)
  .filter o->o.ok
  .map o->o.val
@@ -129,7 +129,7 @@ append_line(mtx concur.sync.mutex, dest String, str String) =>
             check ("$str\n".write_to io.file.file_mutate).ok).ok
 
 is_windows =>
-  ((envir.vars.get "OS").val "").lower_case.contains "windows"
+  (envir.vars["OS"].val "").lower_case.contains "windows"
 
 
 ########### run_tests ###############

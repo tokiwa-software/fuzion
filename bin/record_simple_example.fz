@@ -31,7 +31,7 @@ envir_var_kv := [
   "C_INCLUDE_PATH",
   "LANGUAGE"
 ].map k->
-  (envir.vars.get k).bind v->
+  envir.vars[k].bind v->
     (k,v)
  .filter o->o.ok
  .map o->o.val
@@ -102,9 +102,9 @@ file     := envir.args[3]
 
 res :=
   if type_ = "jvm" || type_ = "any"
-    !!"$fz_run -XmaxErrors=-1 -jvm {(envir.vars.get "FUZION_JVM_BACKEND_OPTIONS").val ""} $file"
+    !!"$fz_run -XmaxErrors=-1 -jvm {envir.vars["FUZION_JVM_BACKEND_OPTIONS"].val ""} $file"
   else if type_ = "c"
-    c := !!"$fz_run -XmaxErrors=-1 -c {(envir.vars.get "FUZION_C_BACKEND_OPTIONS").val ""} -o=testbin $file"
+    c := !!"$fz_run -XmaxErrors=-1 -c {envir.vars["FUZION_C_BACKEND_OPTIONS"].val ""} -o=testbin $file"
     if (c.exit_code = 0)
       e := !!"./testbin"
       _ := io.file.delete "testbin"

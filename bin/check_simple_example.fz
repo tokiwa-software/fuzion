@@ -36,7 +36,7 @@ process_result(out String, err String, exit_code u32) is
     process_result "" "" 0
 
 is_windows =>
-  ((envir.vars.get "OS").val "").lower_case.contains "windows"
+  (envir.vars["OS"].val "").lower_case.contains "windows"
 
 path_separator := is_windows ? ";" : ":"
 
@@ -72,11 +72,11 @@ envir_var_kv := [
   "SYSTEMROOT"
 ].map k->
   if k="DYLD_FALLBACK_LIBRARY_PATH"||k="PATH"||k="LD_LIBRARY_PATH"
-    (envir.vars.get k)
+    envir.vars[k]
       .bind v->(k,"$v$path_separator../../lib")
       .or_else (k,"../../lib")
   else
-    (envir.vars.get k).bind v->
+    envir.vars[k].bind v->
       (k,v)
  .filter (.ok)
  .map (.val)
@@ -218,7 +218,7 @@ delete_tmp_files =>
 
 be     := envir.args[1]
 # can not execute bash script fz on windows with CreateProcess
-fz_run := envir.args[2].replace "../../bin/fz" "java {is_windows ? "-Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8" : ""} --enable-preview --enable-native-access=ALL-UNNAMED --class-path ../../classes {(envir.vars.get "FUZION_JAVA_OPTIONS").or_else ""} -Xss5m -Dline.separator=\n -Dfile.encoding=UTF-8 -Dfuzion.home=../../ -Dfuzion.command=fz dev.flang.tools.Fuzion"
+fz_run := envir.args[2].replace "../../bin/fz" "java {is_windows ? "-Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8" : ""} --enable-preview --enable-native-access=ALL-UNNAMED --class-path ../../classes {envir.vars["FUZION_JAVA_OPTIONS"].or_else ""} -Xss5m -Dline.separator=\n -Dfile.encoding=UTF-8 -Dfuzion.home=../../ -Dfuzion.command=fz dev.flang.tools.Fuzion"
 file   := envir.args[3]
 exp_out := if be = "effect"
              "$file.effect"
