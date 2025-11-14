@@ -2323,7 +2323,11 @@ SourceFile
             var bb = sourceFileBytes(at);
             var ba = new byte[bb.limit()]; // NYI: Would be better if SourceFile could use bb directly.
             bb.get(0, ba);
-            sf = new SourceFile(Path.of("{" + name() + FuzionConstants.MODULE_FILE_SUFFIX + "}").resolve(Path.of(sourceFileName(at))), ba);
+            // "main" is the implicit module name for code compiled by the user
+            // therefore it should not be included in the source file path, which gets printed in error messages
+            var srcPath = Path.of(name().equals(FuzionConstants.MAIN_MODULE_NAME) ? "" : "{" + name() + FuzionConstants.MODULE_FILE_SUFFIX + "}")
+                              .resolve(Path.of(sourceFileName(at)));
+            sf = new SourceFile(srcPath, ba);
             _sourceFiles.set(i, sf);
           }
         return new SourceRange(sf, pos - sourceFileBytesPos(at), posEnd - sourceFileBytesPos(at));
