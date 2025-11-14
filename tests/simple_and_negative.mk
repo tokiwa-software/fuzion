@@ -56,6 +56,8 @@ jvm:
 c:
 	NAME=$(NAME) $(ENV) make -f ../negative.mk c
 	NAME=$(NAME) $(ENV) make -f ../simple.mk c
+fuir: # NYI: UNDER DEVELOPMENT: missing impl of fuir
+
 int:
 	NAME=$(NAME) $(ENV) make -f ../negative.mk int
 	NAME=$(NAME) $(ENV) make -f ../simple.mk int
