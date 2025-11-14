@@ -568,7 +568,7 @@ logo: $(BUILD_DIR)/assets/logo.svg $(BUILD_DIR)/assets/logo_bleed.svg $(BUILD_DI
 	cp $^ $(FZ_SRC)/assets/
 
 $(BUILD_DIR)/bin/run_tests: $(FZ) $(FZ_MODULES) $(FZ_SRC)/bin/run_tests.fz
-	$(FZ) -modules=lock_free -c $(FZ_SRC)/bin/run_tests.fz -o=$@
+	$(FZ) -modules=lock_free,web,http,wolfssl -c -CLink=wolfssl -CInclude="wolfssl/options.h wolfssl/ssl.h" $(FZ_SRC)/bin/run_tests.fz -o=$@
 
 # phony target to run Fuzion tests and report number of failures
 .PHONY: run_tests
@@ -659,8 +659,8 @@ release: clean all
 # currently only code in bin/ and examples/ are checked.
 .PHONY: syntaxcheck
 syntaxcheck: min-java
-	find ./examples/ -name '*.fz' -print0 | xargs -0L1 $(FZ) -modules=terminal,clang,lock_free,java.base,java.datatransfer,java.xml,java.desktop -noBackend
-	find ./bin/ -name '*.fz' -print0 | xargs -0L1 $(FZ) -modules=terminal,clang,lock_free,java.base,java.datatransfer,java.xml,java.desktop -noBackend
+	find ./examples/ -name '*.fz' -print0 | xargs -0L1 $(FZ) -modules=terminal,clang,lock_free,java.base,java.datatransfer,java.xml,java.desktop,web,http,wolfssl -noBackend
+	find ./bin/ -name '*.fz' -print0 | xargs -0L1 $(FZ) -modules=terminal,clang,lock_free,java.base,java.datatransfer,java.xml,java.desktop,web,http,wolfssl -noBackend
 
 .PHONY: add_simple_test
 add_simple_test: no-java
