@@ -35,6 +35,8 @@ EXPECTED_ERRORS = `cat *.fz | grep "should.flag.an.error"  | sed "s-^.*\# \(.*\)
 
 all: jvm c int
 
+fuir: # NYI: UNDER DEVELOPMENT: missing impl of fuir
+
 int:
 	$(FUZION) -interpreter $(FILE) 2>err.txt || true
 # check if for every unique comment containing "should flag an error" an error is reported for a line with that comment

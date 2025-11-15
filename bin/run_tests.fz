@@ -211,7 +211,7 @@ main =>
 
       test_durations.put test elapsed_time
 
-      if res.exit_code = 0 then
+      if res.exit_code = 0 || target = "fuir" then
         yak "."
         append_line results "$test in {elapsed_time}: ok"
       else

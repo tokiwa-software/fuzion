@@ -34,6 +34,8 @@ FILE = $(NAME).fz
 
 all: jvm c int
 
+fuir: # NYI: UNDER DEVELOPMENT: missing impl of fuir
+
 int:
 	printf 'COMPILE %s ' "$(NAME)" && $(FUZION) -noBackend $(NAME) 2>err.txt && echo "\033[32;1mPASSED\033[0m." || echo "\033[31;1m*** FAILED\033[0m." && (RC=$$? && cat err.txt && exit $$RC)
 

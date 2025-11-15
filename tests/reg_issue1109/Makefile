@@ -37,6 +37,8 @@ jvm: mod_jvm
 c: mod_c
 	echo "m is _ := a" | $(FUZION) -c -sourceDirs=src -
 
+fuir: # NYI: UNDER DEVELOPMENT: missing impl of fuir
+
 int: mod_int
 	echo "m is _ := a" | $(FUZION) -interpreter -sourceDirs=src -
 

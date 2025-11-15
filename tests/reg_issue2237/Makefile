@@ -26,6 +26,8 @@ FUZION = ../../bin/fz $(FUZION_OPTIONS)
 
 all: jvm c int
 
+fuir: # NYI: UNDER DEVELOPMENT: missing impl of fuir
+
 int: mod
 	$(FUZION) -modules=mod -moduleDirs=mod -interpreter $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
 
