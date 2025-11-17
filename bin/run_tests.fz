@@ -180,7 +180,7 @@ main =>
   # first, try third arg then try a few executables, if everything fails use default value
   tc :=
     fuzion.runtime.contract_fault
-      .try ()->(envir.args.nth 3).val.trim.parse_i32.val
+      .try ()->(envir.vars["FUZION_RUN_TESTS_PARALLELISM"]).val.trim.parse_i32.val
       .or_try _->(!!"nproc --all").out.trim.parse_i32.val
       .or_try _->(!!"getconf _NPROCESSORS_ONLN").out.trim.parse_i32.val
       .or_try _->(!!"sysctl -n hw.ncpu").out.trim.parse_i32.val
