@@ -161,8 +161,19 @@ public class TokenInfo extends ANY
     @Override
     public boolean equals(Object arg0)
     {
-      var other = (EntryEqualByKey<T1, T2>) arg0;
-      return (this.getKey() == null ? other.getKey() == null: this.getKey().equals(other.getKey()));
+      boolean result;
+
+      if (this == arg0) {
+          result = true;
+      } else if (!(arg0 instanceof EntryEqualByKey<?, ?> other)) {
+          result = false;
+      } else {
+          var key = this.getKey();
+          var otherKey = other.getKey();
+          result = (key == null ? otherKey == null : key.equals(otherKey));
+      }
+
+      return result;
     }
 
     @Override
