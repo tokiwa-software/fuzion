@@ -379,19 +379,6 @@ public class CTypes extends ANY
   }
 
 
-  boolean clazzNeedsCode(int cl)
-  {
-    return _fuir.clazzNeedsCode(cl) ||
-    /* NYI: CLEANUP: DFA should mark these */
-      cl == _fuir.clazz_const_string() ||
-      cl == _fuir.clazz_const_string_utf8_data() ||
-      cl == _fuir.clazz_array_u8() ||
-      cl == _fuir.clazz_fuzionSysArray_u8() ||
-      cl == _fuir.clazz_fuzionSysArray_u8_data() ||
-      cl == _fuir.clazz_fuzionSysArray_u8_length();
-  }
-
-
   /**
    * Does given field exist as a C field? This is the case for fields that
    *
@@ -410,7 +397,7 @@ public class CTypes extends ANY
     return
       !_fuir.clazzIsUnitType(rt) &&
       !_fuir.clazzIsVoidType(rt) &&
-      clazzNeedsCode(field);
+      _fuir.clazzNeedsCode(field);
   }
 
 }
