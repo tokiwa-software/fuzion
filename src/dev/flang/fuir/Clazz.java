@@ -950,6 +950,9 @@ class Clazz extends ANY implements Comparable<Clazz>
     // first look in the feature itself
     AbstractFeature result = _fuir._mainModule.lookupFeature(feature(), fn);
 
+    if (CHECKS) check
+      (result != null);
+
     if (!result.redefinesFull().contains(f) && result != f)
       {
         // feature with same name, but not a redefinition
