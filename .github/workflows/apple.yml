@@ -65,12 +65,14 @@ jobs:
           echo "$(/usr/libexec/java_home -v 25)/bin" >> $GITHUB_PATH
           echo "/opt/homebrew/opt/gnu-sed/libexec/gnubin:/opt/homebrew/opt/make/libexec/gnubin:/usr/local/opt/gnu-sed/libexec/gnubin:/usr/local/opt/gnu-make/libexec/gnubin:/usr/local/opt/coreutils/libexec/gnubin:$PATH" >> $GITHUB_PATH
 
-      - name: debug
-        run: |
-          /usr/libexec/java_home -V
-          /usr/libexec/java_home -v 25
-          echo $GITHUB_ENV
-          echo $GITHUB_PATH
+      - name: debug_1
+        run: /usr/libexec/java_home -V
+      - name: debug_2
+        run: /usr/libexec/java_home -v 25
+      - name: debug_3
+        run: echo $GITHUB_ENV
+      - name: debug_4
+        run: echo $GITHUB_PATH
 
       - name: xcode-select # to have libclang available
         run: sudo xcode-select -s /Library/Developer/CommandLineTools
