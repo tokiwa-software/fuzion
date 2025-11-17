@@ -51,15 +51,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-      - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
-        with:
-          distribution: 'temurin'
-          java-version: '25'
 
       - name: install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install sqlite3 libgc1 libgc-dev libclang1 libclang-dev libwolfssl-dev libsodium23 libsodium-dev
+          sudo apt-get install openjdk-25-jdk-headless sqlite3 libgc1 libgc-dev libclang1 libclang-dev libwolfssl-dev libsodium23 libsodium-dev
+          echo "JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64" >> $GITHUB_ENV
+          echo "/usr/lib/jvm/java-25-openjdk-amd64/bin" >> $GITHUB_PATH
 
       - name: link libclang
         run: |

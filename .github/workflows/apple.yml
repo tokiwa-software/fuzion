@@ -49,10 +49,6 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-      - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
-        with:
-          distribution: 'temurin'
-          java-version: '25'
 
       - name: Set environment variables
         run: |
@@ -61,7 +57,12 @@ jobs:
 
       - name: install dependencies
         run: |
-          brew install bdw-gc gnu-sed make coreutils sqlite llvm wolfssl libsodium
+          brew install openjdk@25 bdw-gc gnu-sed make coreutils sqlite llvm wolfssl libsodium
+
+          # Homebrew does not auto-link openjdk@25
+          sudo ln -sfn "$(brew --prefix openjdk@25)/libexec/openjdk.jdk" /Library/Java/JavaVirtualMachines/openjdk-25.jdk
+          echo "JAVA_HOME=$(/usr/libexec/java_home -v 25)" >> $GITHUB_ENV
+          echo "$(/usr/libexec/java_home -v 25)/bin" >> $GITHUB_PATH
           echo "/opt/homebrew/opt/gnu-sed/libexec/gnubin:/opt/homebrew/opt/make/libexec/gnubin:/usr/local/opt/gnu-sed/libexec/gnubin:/usr/local/opt/gnu-make/libexec/gnubin:/usr/local/opt/coreutils/libexec/gnubin:$PATH" >> $GITHUB_PATH
 
       - name: xcode-select # to have libclang available
