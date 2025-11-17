@@ -67,10 +67,10 @@ jobs:
           test -f /usr/lib/llvm-$CLANG_MAJOR_VERSION/lib/libclang.so && sudo ln -s /usr/lib/llvm-$CLANG_MAJOR_VERSION/lib/libclang.so /usr/lib/
 
       - name: build java code
-        run: make javac
+        run: make -j$(nproc) javac
 
       - name: build (no java modules)
-        run: make no-java
+        run: make -j$(nproc) no-java
 
       - name: run tests
         run: make run_tests_parallel

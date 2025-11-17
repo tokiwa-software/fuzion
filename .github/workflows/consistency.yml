@@ -61,13 +61,13 @@ jobs:
           sudo apt-get install libgc1 libgc-dev shellcheck asciidoc asciidoctor ruby-asciidoctor-pdf antlr4
 
       - name: check shell scripts
-        run: make shellcheck
+        run: make -j$(nproc) shellcheck
 
       - name: build docs
-        run: make doc
+        run: make -j$(nproc) doc
 
       - name: compile language server
-        run: make lsp/compile
+        run: make -j$(nproc) lsp/compile
 
       - name: syntax check
-        run: make syntaxcheck
+        run: make -j$(nproc) syntaxcheck

@@ -74,10 +74,10 @@ jobs:
         run: make --version
 
       - name: build java code
-        run: make javac
+        run: make -j$(sysctl -n hw.ncpu) javac
 
       - name: build (no java modules)
-        run: make no-java
+        run: make -j$(sysctl -n hw.ncpu) no-java
 
       - name: run tests
         run: make run_tests_parallel
