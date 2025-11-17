@@ -268,7 +268,7 @@ public class ParserTool extends ANY
 
       var result = visitor.lastPos.equals(SourcePosition.notAvailable) ? af.pos() : visitor.lastPos;
 
-      result = (SourcePosition) LexerTool
+      result = LexerTool
           .tokensFrom(result)
           .skip(1)
           // NYI: UNDER DEVELOPMENT: do we need to sometimes consider right brackets as well?
