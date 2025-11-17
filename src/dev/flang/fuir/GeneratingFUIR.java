@@ -1401,15 +1401,7 @@ public class GeneratingFUIR extends FUIR
        cl < CLAZZ_BASE + _clazzes.size(),
        Errors.any() ||
        !_lookupDone ||
-       clazzNeedsCode(cl) ||
-       /* NYI: CLEANUP: DFA should mark these */
-       cl == clazz_const_string() ||
-       cl == clazz_const_string_utf8_data() ||
-       cl == clazz_array_u8() ||
-       cl == clazz_fuzionSysArray_u8() ||
-       cl == clazz_fuzionSysArray_u8_data() ||
-       cl == clazz_fuzionSysArray_u8_length()
-       );
+       clazzNeedsCode(cl));
 
     var c = id2clazz(cl);
     var result = c._code;
