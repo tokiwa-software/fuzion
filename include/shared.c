@@ -245,7 +245,7 @@ int32_t fzE_create_jvm(void * options, int32_t len) {
     vm_options[i].optionString = ((char **)options)[i];
   }
 
-  vm_args.version = JNI_VERSION_21;
+  vm_args.version = JNI_VERSION_25;
   vm_args.options = vm_options;
   vm_args.nOptions = len;
 
@@ -903,4 +903,3 @@ extern inline int fzE_is_null(void * p)
     ? 0
     : -1;
 }
-

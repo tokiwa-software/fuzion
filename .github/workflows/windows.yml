@@ -69,7 +69,7 @@ jobs:
       - name: install choco packages
         shell: powershell
         run: |
-          choco install openjdk --version 21.0.2
+          choco install openjdk --version 25.0.0.1
 
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v2.6.0
 
@@ -81,7 +81,7 @@ jobs:
 
       - name: echo versions
         run: |
-          export JAVA_HOME="/c/Program Files/OpenJDK/jdk-21.0.2"
+          export JAVA_HOME="/c/Program Files/OpenJDK/jdk-25.0.0.1"
           export PATH="/ucrt64/bin/:$JAVA_HOME/bin:$JAVA_HOME/bin/server:$PATH"
           export FUZION_CLANG_INSTALLED_DIR="D:/a/_temp/msys64/ucrt64/bin"
           clang --version
@@ -93,14 +93,14 @@ jobs:
 
       - name: build libgc
         run: |
-          export JAVA_HOME="/c/Program Files/OpenJDK/jdk-21.0.2"
+          export JAVA_HOME="/c/Program Files/OpenJDK/jdk-25.0.0.1"
           export PATH="/ucrt64/bin/:$JAVA_HOME/bin:$JAVA_HOME/bin/server:$PATH"
           export FUZION_CLANG_INSTALLED_DIR="D:/a/_temp/msys64/ucrt64/bin"
           ./bin/windows_install_boehm_gc.sh
 
       - name: run tests
         run: |
-          export JAVA_HOME="/c/Program Files/OpenJDK/jdk-21.0.2"
+          export JAVA_HOME="/c/Program Files/OpenJDK/jdk-25.0.0.1"
           export PATH="/ucrt64/bin/:$JAVA_HOME/bin:$JAVA_HOME/bin/server:$PATH"
           export FUZION_CLANG_INSTALLED_DIR="D:/a/_temp/msys64/ucrt64/bin"
           make run_tests_parallel
