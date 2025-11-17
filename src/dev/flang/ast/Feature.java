@@ -2108,10 +2108,6 @@ A ((Choice)) declaration must not contain a result type.
         AstErrors.unusedField(this);
       }
 
-    visit(new ContextVisitor(context()) {
-      @Override public Expr action(Feature f, AbstractFeature outer) { return new Nop(_pos);}
-    });
-
     checkNative(res);
 
     if (explicitTypeRequired(_returnType))
