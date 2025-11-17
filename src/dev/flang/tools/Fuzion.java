@@ -334,7 +334,7 @@ public class Fuzion extends Tool
       {
         var o    = fe._options;
         var mir  = fe.createMIR();                             f.timer("createMIR");
-        var fuir = new GeneratingFUIR(fe, mir);                f.timer("ir");
+        var fuir = new GeneratingFUIR(fe.mainModule(), mir);   f.timer("ir");
         new Effects(o, new DFA(o, fuir)).find();
       }
     },
@@ -1188,7 +1188,7 @@ public class Fuzion extends Tool
   {
     var options = fe._options;
     var mir  = fe.createMIR();                            f.timer("createMIR");
-    var fuir = new GeneratingFUIR(fe, mir);               f.timer("ir");
+    var fuir = new GeneratingFUIR(fe.mainModule(), mir);  f.timer("ir");
     var dfuir = new DFA(options, fuir).new_fuir();
     var ofuir = new Optimizer(options, dfuir).fuir();     f.timer("opt");
     return ofuir;
