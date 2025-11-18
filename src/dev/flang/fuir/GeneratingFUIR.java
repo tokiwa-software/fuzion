@@ -682,9 +682,9 @@ public class GeneratingFUIR extends FUIR
   /**
    * Find feature with given name in outer.
    *
-   * @param outer the declaring or inheriting feature
+   * @param feature the declaring or inheriting feature
    *
-   * @param name the feature name that we are searching for
+   * @param fn the feature name that we are searching for
    */
   public AbstractFeature lookupFeature(AbstractFeature feature, FeatureName fn)
   {
