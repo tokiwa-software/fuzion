@@ -558,7 +558,7 @@ public class C extends ANY
   /*
    * If you want the c-backend to link the JVM,
    * set this environment variable to e.g.:
-   * JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+   * JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64
    */
   static final String JAVA_HOME = System.getenv("JAVA_HOME");
 
@@ -1959,7 +1959,14 @@ public class C extends ANY
 
     _names._tempVarId = 0;  // reset counter for unique temp variables for function results
     var l = new List<CStmnt>();
+
+    if (_fuir.hasData(cl))
+      {
+        l.add(declareCurrent(cl));
+      }
+
     l.add(_ai.processClazz(cl).v1());
+
     var res = _fuir.clazzResultClazz(cl);
     if (_fuir.hasData(res))
       {
@@ -1968,7 +1975,17 @@ public class C extends ANY
                 : current(_fuir.clazzCode(cl)).field(_names.fieldName(_fuir.clazzResultField(cl))).ret()  // a routine, return result field
               );
       }
-    var allocCurrent = switch (_fuir.lifeTime(cl))
+
+    return CStmnt.seq(l).label("start");
+  }
+
+
+  /**
+   * declare current, allocate on heap if current may escape
+   */
+  private CStmnt declareCurrent(int cl)
+  {
+    return switch (_fuir.lifeTime(cl))
       {
       case Call      -> CStmnt.seq(
           CStmnt.lineComment("cur does not escape, alloc on stack"),
@@ -1976,8 +1993,6 @@ public class C extends ANY
       case Unknown   -> CStmnt.seq(CStmnt.lineComment("cur may escape, so use malloc"      ), declareAllocAndInitClazzId(cl, CNames.CURRENT));
       case Undefined -> CExpr.dummy("undefined life time");
       };
-    return CStmnt.seq(allocCurrent,
-                      CStmnt.seq(l)).label("start");
   }
 
 

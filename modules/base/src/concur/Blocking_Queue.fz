@@ -37,6 +37,7 @@ module Blocking_Queue(T type, cnd concur.sync.condition) ref is
   module close =>
     cnd.synchronized ()->
       is_closed.write true
+      check cnd.broadcast
 
 
   # the data this queue currently holds

@@ -23,12 +23,11 @@
 #
 # -----------------------------------------------------------------------
 
-JAVA = java --enable-preview --enable-native-access=ALL-UNNAMED
-MIN_JAVA_VERSION = 21 # NYI: when updating to Java version 22 or higher: remove this hack (revert #4264) and remove option '--enable-preview'
-JAVA_VERSION = $(shell v=$$(java -version 2>&1 | grep 'version' | cut -d '"' -f2 | cut -d. -f1 | grep -o '[[:digit:]]*'); [ $$v -lt $(MIN_JAVA_VERSION) ] && echo $(MIN_JAVA_VERSION) || echo $$v)
+JAVA = java --enable-native-access=ALL-UNNAMED
+JAVA_VERSION = 25
 # NYI: CLEANUP: remove some/all of the exclusions
-LINT = -Xlint:all,-preview,-serial,-this-escape
-JAVAC = javac $(LINT) -encoding UTF8 --release $(JAVA_VERSION) --enable-preview
+LINT = -Xlint:all,-serial,-this-escape
+JAVAC = javac $(LINT) -encoding UTF8 --release $(JAVA_VERSION)
 FZ_SRC = $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 SRC = $(FZ_SRC)/src
 BUILD_DIR = ./build

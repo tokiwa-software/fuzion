@@ -36,5 +36,5 @@ public Config ref : effect is
 # get the current config from env
 #
 public type.config web.Config =>
-  web.Config.default
+  web.Config.default web.Config
   web.Config.env
