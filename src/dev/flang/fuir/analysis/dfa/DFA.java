@@ -1685,25 +1685,9 @@ public class DFA extends ANY
         if (r != null)
           {
             var rf = _fuir.clazzResultField(cc);
-            c.returns(hasNonUnitResultField(cc, rf)
-              ? c._instance.readField(this, rf, NO_SITE, c)
-              : r);
+            c.returns();
           }
       }
-  }
-
-
-  /**
-   * Does the called clazz cc have a non unit result field?
-   *
-   * @param cc
-   * @param rf
-   * @return
-   */
-  private boolean hasNonUnitResultField(int cc, int rf)
-  {
-    return !_fuir.isConstructor(cc) &&
-        SpecialClazzes.c_unit != _fuir.getSpecialClazz(_fuir.clazzResultClazz(rf));
   }
 
 
