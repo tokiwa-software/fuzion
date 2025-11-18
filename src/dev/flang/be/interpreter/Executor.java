@@ -232,6 +232,42 @@ public class Executor extends ProcessExpression<Value, Object>
     return null;
   }
 
+
+  private static final SymbolLookup libs = libs();
+
+
+  /**
+   * @return SymbolLookup for fuzion_rt and libmath
+   */
+  private static SymbolLookup libs()
+  {
+    SymbolLookup result = null;
+    try
+      {
+        result = SymbolLookup.libraryLookup(System.mapLibraryName("fuzion_rt"), arena);
+        try
+          {
+            result = result.or(SymbolLookup.libraryLookup(System.mapLibraryName("m"), arena));
+          }
+        catch (IllegalArgumentException e)
+          {
+            try { result = result.or(SymbolLookup.libraryLookup("libm.so.6", arena)); } catch(Exception e0) {
+              try { result = result.or(SymbolLookup.libraryLookup("libm.dylib", arena)); } catch(Exception e1) {
+                try { result = result.or(SymbolLookup.libraryLookup("msvcrt.dll", arena)); } catch(Exception e2) {
+                  Errors.error(e.getMessage()); Errors.error(e0.getMessage()); Errors.error(e1.getMessage()); Errors.fatal(e2.getMessage());
+                }
+              }
+            }
+          }
+      }
+    catch (IllegalArgumentException e)
+      {
+        Errors.fatal(e.getMessage());
+      }
+    return result;
+  }
+
+
   @Override
   public Pair<Value, Object> call(int s, Value tvalue, List<Value> args)
   {
@@ -283,9 +319,10 @@ public class Executor extends ProcessExpression<Value, Object>
       case Intrinsic :
         yield pair(Intrinsics.call(this, s, cc).call(new List<>(tvalue, args)));
       case Native:
+        var llu = libs;
         var mh = Linker.nativeLinker()
           .downcallHandle(
-            SymbolLookup.libraryLookup(System.mapLibraryName("fuzion_rt" /* NYI: UNDER DEVELOPMENT: */), Arena.ofAuto())
+            llu
               .find(_fuir.clazzNativeName(cc))
               .orElseThrow(() -> new UnsatisfiedLinkError(
               "Unresolved symbol: " + _fuir.clazzBaseName(cc) + ". " +
