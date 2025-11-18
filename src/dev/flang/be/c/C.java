@@ -558,7 +558,7 @@ public class C extends ANY
   /*
    * If you want the c-backend to link the JVM,
    * set this environment variable to e.g.:
-   * JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+   * JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64
    */
   static final String JAVA_HOME = System.getenv("JAVA_HOME");
 

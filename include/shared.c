@@ -903,4 +903,3 @@ extern inline int fzE_is_null(void * p)
     ? 0
     : -1;
 }
-
