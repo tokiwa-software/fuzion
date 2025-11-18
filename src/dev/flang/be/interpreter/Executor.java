@@ -244,16 +244,16 @@ public class Executor extends ProcessExpression<Value, Object>
     SymbolLookup result = null;
     try
       {
-        result = SymbolLookup.libraryLookup(System.mapLibraryName("fuzion_rt"), arena);
+        result = SymbolLookup.libraryLookup(System.mapLibraryName("fuzion_rt"), Arena.ofAuto());
         try
           {
-            result = result.or(SymbolLookup.libraryLookup(System.mapLibraryName("m"), arena));
+            result = result.or(SymbolLookup.libraryLookup(System.mapLibraryName("m"),  Arena.ofAuto()));
           }
         catch (IllegalArgumentException e)
           {
-            try { result = result.or(SymbolLookup.libraryLookup("libm.so.6", arena)); } catch(Exception e0) {
-              try { result = result.or(SymbolLookup.libraryLookup("libm.dylib", arena)); } catch(Exception e1) {
-                try { result = result.or(SymbolLookup.libraryLookup("msvcrt.dll", arena)); } catch(Exception e2) {
+            try { result = result.or(SymbolLookup.libraryLookup("libm.so.6",  Arena.ofAuto())); } catch(Exception e0) {
+              try { result = result.or(SymbolLookup.libraryLookup("libm.dylib",  Arena.ofAuto())); } catch(Exception e1) {
+                try { result = result.or(SymbolLookup.libraryLookup("msvcrt.dll",  Arena.ofAuto())); } catch(Exception e2) {
                   Errors.error(e.getMessage()); Errors.error(e0.getMessage()); Errors.error(e1.getMessage()); Errors.fatal(e2.getMessage());
                 }
               }
