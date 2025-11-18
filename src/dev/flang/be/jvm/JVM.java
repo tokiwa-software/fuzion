@@ -969,7 +969,7 @@ should be avoided as much as possible.
    */
   public void code(int cl)
   {
-    if (_types.clazzNeedsCode(cl))
+    if (_fuir.clazzNeedsCode(cl))
       {
         var ck = _fuir.clazzKind(cl);
         switch (ck)
@@ -1852,7 +1852,7 @@ should be avoided as much as possible.
 
         result = _fuir.hasData(rt)       &&
           !_fuir.isScalar(occ)        &&
-          _types.clazzNeedsCode(field) &&
+          _fuir.clazzNeedsCode(field) &&
           _types.resultType(rt) != PrimitiveType.type_void;
       }
     return result;
