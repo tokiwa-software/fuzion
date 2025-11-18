@@ -1684,7 +1684,6 @@ public class DFA extends ANY
         var r = ai.processClazz(cc);
         if (r != null)
           {
-            var rf = _fuir.clazzResultField(cc);
             c.returns();
           }
       }
