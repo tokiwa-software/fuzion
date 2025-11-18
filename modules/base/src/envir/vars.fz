@@ -34,6 +34,12 @@ public vars (p Vars_Handler) : effect is
     p.get v
 
 
+  # get the value v is mapped to, or nil if none.
+  #
+  public index [] (v String) option String =>
+    get v
+
+
   # install default instance of vars
   #
   type.install_default =>
