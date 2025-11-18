@@ -114,7 +114,7 @@ is
     if is_full
       error "circular buffer is full"
     else
-      data[end.get] := e
+      data[end.get.as_i32] := e
       end <- mod_length (end.get + 1)
 
 
@@ -149,7 +149,7 @@ is
     else
       for i in d.indices
       do
-        data[mod_length (end.get + i.as_i64)] := d[i]
+        data[(mod_length (end.get + i.as_i64)).as_i32] := d[i]
 
       end <- mod_length (end.get + d.length.as_i64)
 

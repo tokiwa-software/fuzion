@@ -62,14 +62,17 @@ module internal_array(T type, module data Array T, module length i32) is
   =>
     fuzion.sys.getel T data i.as_i32
 
-  module set [ ] (i idx, o T) unit
+  # NYI: UNDER DEVELOPMENT: change to, does not work yet in jvm backend Code size of bytecode created for... is 68325, the maximum allowed length is 65535.
+
+  # module set [ ] (i idx, o T) unit
+  module set [ ] (i i32, o T) unit
     pre
-      safety: 0 ≤ i.as_i32 < length
+      safety: 0 ≤ i < length
       debug : {ensure_not_frozen; true}
   # post   NYI
     # debug: array.this[i] == o
   =>
-    fuzion.sys.setel data i.as_i32 o
+    fuzion.sys.setel data i o
 
 
 # allocate memory for l elements of type X
