@@ -1188,7 +1188,8 @@ public class AstErrors extends ANY
   static void notRedefinedContractMustNotUseElseOrThen(SourcePosition pos, AbstractFeature f, PreOrPost preOrPost)
   {
     error(pos,
-          preOrPost + " must use " + code(preOrPost.elseOrThen()) + " only in a feature that redefines another feature.",
+          preOrPost + " must use " + code(preOrPost.elseOrThen()) + " only in a feature " +
+          "that redefines another feature with a precondition.",
           "Surrounding feature: " + s(f) + "\n" +
           "To solve this, check if you are properly redefining another feature or, if you do not intend " +
           "to do so, remove the " + code(preOrPost.elseOrThen()) + " keyword ");
@@ -1218,11 +1219,12 @@ public class AstErrors extends ANY
         redefs.append("Redefines: " + s(r) + " from " + rp.show() + "\n");
       }
     error(pos,
-          preOrPost + " must use " + code(preOrPost.elseOrThen()) + " in a feature that redefines another feature.",
+          preOrPost + " must use " + code(preOrPost.elseOrThen()) + " in a feature that redefines " +
+          "another feature with a precondition.",
           "Affected feature: " + s(f) + "\n" +
           (redefs.length() > 0 ? redefs : "No redefined features found\n") +
-          "To solve this, check if you are accidentally redefining another feature or, if you do not intend " +
-          "to do so, add the " + code(preOrPost.elseOrThen()) + " keyword ");
+          "To solve this, check if you are accidentally redefining another feature or, if you intend " +
+          "to redefine, add the " + code(preOrPost.elseOrThen()) + " keyword ");
   }
 
   public static void redefinePreconditionMustUseElse(SourcePosition pos, AbstractFeature f)
@@ -1232,6 +1234,24 @@ public class AstErrors extends ANY
   public static void redefinePostconditionMustUseThen(SourcePosition pos, AbstractFeature f)
   {
     redefineContractMustUseElseOrThen(pos, f, PreOrPost.Post);
+  }
+
+  public static void preWithImplicitTrueInherited(AbstractFeature f)
+  {
+    var redefinedPreTrue = f.redefines().stream().filter(af->af.contract()._hasPre == null)
+                            .map(af->s(af))
+                            .collect(Collectors.joining(" and "));
+
+    int count = (int)f.redefines().stream().filter(af->af.contract()._hasPre == null).count();
+
+    error(f.contract()._hasPre,
+          "Precodition added, although implicit " + code("pre true") + " was inherited",
+          s(f) + " redefines " + StringHelpers.plural(count, "feature") + " " + redefinedPreTrue
+          + " which " + (count>1 ? "do" : "does") + " not have an explicit precondition, leading to implicit "
+          + code("pre true") + " being inherited, which results in this precondition never being called."
+          + " Preconditions can only be weakened in the redefinition."
+          + "\nTo solve this remove the precondition or add one to all features being redefined."
+          );
   }
 
   static void ambiguousTargets(SourcePosition pos,
