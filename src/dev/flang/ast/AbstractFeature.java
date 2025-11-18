@@ -1368,21 +1368,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   }
 
 
-  public void visitCode(FeatureVisitor fv)
-  {
-    for (var c: inherits())
-      {
-        var nc = c.visit(fv, this);
-        if (CHECKS) check
-          (c == nc); // NYI: This will fail when doing funny stuff like inherit from bool.infix &&, need to check and handle explicitly
-      }
-    if (isRoutine())
-      {
-        code().visit(fv, this);
-      }
-  }
-
-
   /**
    * Is this feature marked with the {@code fixed} modifier. If so, this feature is
    * not inherited, i.e., we know that at runtime, the outer feature's type is
