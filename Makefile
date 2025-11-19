@@ -654,12 +654,13 @@ release: clean all
 	rm -f fuzion_$(VERSION).tar.gz
 	tar cfz fuzion_$(VERSION).tar.gz --transform s/^build/fuzion_$(VERSION)/ build
 
+SYNTAX_CHECK_MODULES = terminal,clang,lock_free,java.base,java.datatransfer,java.xml,java.desktop,web,http,wolfssl
 # target to do a syntax check of fz files.
 # currently only code in bin/ and examples/ are checked.
 .PHONY: syntaxcheck
 syntaxcheck: min-java
-	find ./examples/ -name '*.fz' -print0 | xargs -0L1 $(FZ) -modules=terminal,clang,lock_free,java.base,java.datatransfer,java.xml,java.desktop,web,http,wolfssl -noBackend
-	find ./bin/ -name '*.fz' -print0 | xargs -0L1 $(FZ) -modules=terminal,clang,lock_free,java.base,java.datatransfer,java.xml,java.desktop,web,http,wolfssl -noBackend
+	find ./examples/ -name '*.fz' -print0 | xargs -0L1 $(FZ) -modules=$(SYNTAX_CHECK_MODULES) -noBackend
+	find ./bin/ -name '*.fz' -print0 | xargs -0L1 $(FZ) -modules=$(SYNTAX_CHECK_MODULES) -noBackend
 
 .PHONY: add_simple_test
 add_simple_test: no-java
