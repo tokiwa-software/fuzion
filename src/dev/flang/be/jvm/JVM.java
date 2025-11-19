@@ -2339,12 +2339,13 @@ should be avoided as much as possible.
               .filter(Files::isRegularFile)
               .filter(path -> path.toString().endsWith(".class"))
               .collect(Collectors.toCollection(LinkedList::new));
-        Set<Path> processed = new HashSet<>();
+
+        Set<Path> found = new HashSet<>();
+        found.addAll(queue);
 
         while (!queue.isEmpty())
           {
             var path = queue.poll();
-            processed.add(path);
 
             try (FileInputStream fis = new FileInputStream(path.toFile()))
               {
@@ -2368,9 +2369,10 @@ should be avoided as much as possible.
                               if (!cPathStr.contains("$"))
                                 {
                                   var cpath = Paths.get(classLoader.getResource(cPathStr).getPath());
-                                  if (!processed.contains(cpath))
+                                  if (!found.contains(cpath))
                                     {
                                       queue.add(cpath);
+                                      found.add(cpath);
                                     }
                                 }
                             }
