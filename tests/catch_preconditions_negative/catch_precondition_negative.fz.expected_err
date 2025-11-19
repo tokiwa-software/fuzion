@@ -1,0 +1,337 @@
+
+--CURDIR--/catch_precondition_negative.fz:501:7: error 1: Precodition added, although implicit 'pre true' was inherited
+      pre else x > 0
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c112.f1' redefines feature 'catch_precondition_negative.p1.f1' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:507:7: error 2: Precodition added, although implicit 'pre true' was inherited
+      pre else x > 0
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c112.f3' redefines feature 'catch_precondition_negative.p1.f3' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:524:7: error 3: Precodition added, although implicit 'pre true' was inherited
+      pre else x > 0
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c122.f1' redefines feature 'catch_precondition_negative.p1.f1' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:527:7: error 4: Precodition added, although implicit 'pre true' was inherited
+      pre else x > 0
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c122.f2' redefines feature 'catch_precondition_negative.p2.f2' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:530:7: error 5: Precodition added, although implicit 'pre true' was inherited
+      pre else x > 0
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c122.f3' redefines feature 'catch_precondition_negative.p1.f3' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:542:7: error 6: Precodition added, although implicit 'pre true' was inherited
+      pre else x > 0
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c122.f7' redefines feature 'catch_precondition_negative.p2.f7' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:547:7: error 7: Precodition added, although implicit 'pre true' was inherited
+      pre else x > 0
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c132.f1' redefines features 'catch_precondition_negative.p1.f1' and 'catch_precondition_negative.p3.f1' which do not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:553:7: error 8: Precodition added, although implicit 'pre true' was inherited
+      pre else x > 0
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c132.f3' redefines feature 'catch_precondition_negative.p1.f3' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:562:7: error 9: Precodition added, although implicit 'pre true' was inherited
+      pre else x > 0
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c132.f6' redefines feature 'catch_precondition_negative.p3.f6' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:570:7: error 10: Precodition added, although implicit 'pre true' was inherited
+      pre else x > 0
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c142.f1' redefines feature 'catch_precondition_negative.p1.f1' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:576:7: error 11: Precodition added, although implicit 'pre true' was inherited
+      pre else x > 0
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c142.f3' redefines feature 'catch_precondition_negative.p1.f3' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:582:7: error 12: Precodition added, although implicit 'pre true' was inherited
+      pre else x > 0
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c142.f5' redefines feature 'catch_precondition_negative.p4.f5' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:588:7: error 13: Precodition added, although implicit 'pre true' was inherited
+      pre else x > 0
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c142.f7' redefines feature 'catch_precondition_negative.p4.f7' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:593:7: error 14: Precodition added, although implicit 'pre true' was inherited
+      pre else x > 0
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c152.f1' redefines feature 'catch_precondition_negative.p1.f1' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:599:7: error 15: Precodition added, although implicit 'pre true' was inherited
+      pre else x > 0
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c152.f3' redefines feature 'catch_precondition_negative.p1.f3' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:602:7: error 16: Precodition added, although implicit 'pre true' was inherited
+      pre else x > 0
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c152.f4' redefines feature 'catch_precondition_negative.p5.f4' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:608:7: error 17: Precodition added, although implicit 'pre true' was inherited
+      pre else x > 0
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c152.f6' redefines feature 'catch_precondition_negative.p5.f6' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:616:7: error 18: Precodition added, although implicit 'pre true' was inherited
+      pre else x > 0
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c162.f1' redefines feature 'catch_precondition_negative.p1.f1' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:622:7: error 19: Precodition added, although implicit 'pre true' was inherited
+      pre else x > 0
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c162.f3' redefines features 'catch_precondition_negative.p1.f3' and 'catch_precondition_negative.p6.f3' which do not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:628:7: error 20: Precodition added, although implicit 'pre true' was inherited
+      pre else x > 0
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c162.f5' redefines feature 'catch_precondition_negative.p6.f5' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:639:7: error 21: Precodition added, although implicit 'pre true' was inherited
+      pre else x > 0
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c172.f1' redefines feature 'catch_precondition_negative.p1.f1' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:642:7: error 22: Precodition added, although implicit 'pre true' was inherited
+      pre else x > 0
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c172.f2' redefines feature 'catch_precondition_negative.p7.f2' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:645:7: error 23: Precodition added, although implicit 'pre true' was inherited
+      pre else x > 0
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c172.f3' redefines feature 'catch_precondition_negative.p1.f3' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:648:7: error 24: Precodition added, although implicit 'pre true' was inherited
+      pre else x > 0
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c172.f4' redefines feature 'catch_precondition_negative.p7.f4' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:662:7: error 25: Precodition added, although implicit 'pre true' was inherited
+      pre else false
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c115.f1' redefines feature 'catch_precondition_negative.p1.f1' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:668:7: error 26: Precodition added, although implicit 'pre true' was inherited
+      pre else false
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c115.f3' redefines feature 'catch_precondition_negative.p1.f3' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:685:7: error 27: Precodition added, although implicit 'pre true' was inherited
+      pre else false
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c125.f1' redefines feature 'catch_precondition_negative.p1.f1' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:688:7: error 28: Precodition added, although implicit 'pre true' was inherited
+      pre else false
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c125.f2' redefines feature 'catch_precondition_negative.p2.f2' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:691:7: error 29: Precodition added, although implicit 'pre true' was inherited
+      pre else false
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c125.f3' redefines feature 'catch_precondition_negative.p1.f3' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:703:7: error 30: Precodition added, although implicit 'pre true' was inherited
+      pre else false
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c125.f7' redefines feature 'catch_precondition_negative.p2.f7' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:708:7: error 31: Precodition added, although implicit 'pre true' was inherited
+      pre else false
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c135.f1' redefines features 'catch_precondition_negative.p1.f1' and 'catch_precondition_negative.p3.f1' which do not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:714:7: error 32: Precodition added, although implicit 'pre true' was inherited
+      pre else false
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c135.f3' redefines feature 'catch_precondition_negative.p1.f3' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:723:7: error 33: Precodition added, although implicit 'pre true' was inherited
+      pre else false
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c135.f6' redefines feature 'catch_precondition_negative.p3.f6' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:731:7: error 34: Precodition added, although implicit 'pre true' was inherited
+      pre else false
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c145.f1' redefines feature 'catch_precondition_negative.p1.f1' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:737:7: error 35: Precodition added, although implicit 'pre true' was inherited
+      pre else false
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c145.f3' redefines feature 'catch_precondition_negative.p1.f3' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:743:7: error 36: Precodition added, although implicit 'pre true' was inherited
+      pre else false
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c145.f5' redefines feature 'catch_precondition_negative.p4.f5' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:749:7: error 37: Precodition added, although implicit 'pre true' was inherited
+      pre else false
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c145.f7' redefines feature 'catch_precondition_negative.p4.f7' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:754:7: error 38: Precodition added, although implicit 'pre true' was inherited
+      pre else false
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c155.f1' redefines feature 'catch_precondition_negative.p1.f1' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:760:7: error 39: Precodition added, although implicit 'pre true' was inherited
+      pre else false
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c155.f3' redefines feature 'catch_precondition_negative.p1.f3' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:763:7: error 40: Precodition added, although implicit 'pre true' was inherited
+      pre else false
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c155.f4' redefines feature 'catch_precondition_negative.p5.f4' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:769:7: error 41: Precodition added, although implicit 'pre true' was inherited
+      pre else false
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c155.f6' redefines feature 'catch_precondition_negative.p5.f6' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:777:7: error 42: Precodition added, although implicit 'pre true' was inherited
+      pre else false
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c165.f1' redefines feature 'catch_precondition_negative.p1.f1' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:783:7: error 43: Precodition added, although implicit 'pre true' was inherited
+      pre else false
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c165.f3' redefines features 'catch_precondition_negative.p1.f3' and 'catch_precondition_negative.p6.f3' which do not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:789:7: error 44: Precodition added, although implicit 'pre true' was inherited
+      pre else false
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c165.f5' redefines feature 'catch_precondition_negative.p6.f5' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:800:7: error 45: Precodition added, although implicit 'pre true' was inherited
+      pre else false
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c175.f1' redefines feature 'catch_precondition_negative.p1.f1' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:803:7: error 46: Precodition added, although implicit 'pre true' was inherited
+      pre else false
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c175.f2' redefines feature 'catch_precondition_negative.p7.f2' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:806:7: error 47: Precodition added, although implicit 'pre true' was inherited
+      pre else false
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c175.f3' redefines feature 'catch_precondition_negative.p1.f3' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+
+--CURDIR--/catch_precondition_negative.fz:809:7: error 48: Precodition added, although implicit 'pre true' was inherited
+      pre else false
+------^^^^^^^^^^^^^^
+'catch_precondition_negative.c175.f4' redefines feature 'catch_precondition_negative.p7.f4' which does not have an explicit precondition, leading to implicit 'pre true' being inherited, which results in this precondition never being called. Preconditions can only be weakened in the redefinition.
+To solve this remove the precondition or add one to all features being redefined.
+
+48 errors.

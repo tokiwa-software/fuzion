@@ -1,0 +1,819 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test catch_precondition_negative
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# test cases from catch_precondition that now produce because they add a precondition,
+# although implicit 'pre true' was inherited
+#
+catch_precondition_negative is
+
+
+  # test feature will cause precondition failure if called with values resulting in
+  # overflow
+  #
+  test(T type : integer) =>
+
+    # duplicate x
+    #
+    double(x T)
+      pre
+        x +! x
+    =>
+      x +^ x
+
+    yak "trying $T... "
+    for v := T.one, double v
+        i in 0..50
+    else
+      $v
+
+
+  # -------------------------------
+
+  say "install our own fault handler that prints message and tries again:"
+
+  val := (fuzion.runtime.pre_fault
+    .try ()->
+      (test i32)
+    .catch s->
+      (test i64))
+
+  say "done: $val"
+
+
+  # -------------------------------
+
+  # catching a simple precondition
+  test_precondition(x, y i32)
+  pre x > y
+  => x - y
+
+  fuzion.runtime.pre_fault
+    .try unit ()->
+
+      a := test_precondition 3 1
+      say "a is $a"
+
+      yak "*** This should fail: "
+      b := test_precondition 1 3
+      say "b is $b"
+      panic "**** did not fail as expected ****"
+
+    .catch s->
+      say "FAILED: $s"
+
+  c := test_precondition 5 4
+  say "c is $c"
+
+  if false
+    d := test_precondition 4 5
+    say "d is $d"
+
+
+  # -------------------------------
+
+  # precondition inheritance
+
+  p is
+    f(x i32)
+      pre x > 0
+    => x
+
+  q : p is
+    redef f(x i32)
+      pre else x = 0
+    => if x<0 0 else x
+
+  fuzion.runtime.pre_fault
+    .try unit ()->
+      say "p.f  3 {p.f  3}"
+      say "q.f  3 {q.f  3}"
+      say "q.f  0 {q.f  0}"
+
+      yak "*** This should fail: "
+      say "q.f -1 {q.f -1}"
+      panic "**** did not fail as expected ****"
+
+    .catch s->
+      say "FAILED: $s"
+
+  _ := q.f 3
+
+
+  # we consider seven different preconditions:
+  #
+  #   1. none
+  #   2. x > 0
+  #   3. empty `pre`
+  #   4. true
+  #   5. false
+  #   6. x > 0; true
+  #   7. x > 0; false
+  #
+  # and then we define 7 parents p1..p7 that each define f1..f7 with these preconditions,
+  # but in rotating order:
+  #
+  p1 is
+    f1(x i32)
+    => x
+
+    f2(x i32)
+    pre
+      x > 0
+    => x
+
+    f3(x i32)
+    pre
+    => x
+
+    f4(x i32)
+    pre
+      true
+    => x
+
+    f5(x i32)
+    pre
+      false
+    => x
+
+    f6(x i32)
+    pre
+      x > 0
+      true
+    => x
+
+    f7(x i32)
+    pre
+      x > 0
+      false
+    => x
+
+  p2 is
+    f1(x i32)
+    pre
+      x > 0
+    => x
+
+    f2(x i32)
+    pre
+    => x
+
+    f3(x i32)
+    pre
+      true
+    => x
+
+    f4(x i32)
+    pre
+      false
+    => x
+
+    f5(x i32)
+    pre
+      x > 0
+      true
+    => x
+
+    f6(x i32)
+    pre
+      x > 0
+      false
+    => x
+
+    f7(x i32)
+    => x
+
+  p3 is
+    f1(x i32)
+    pre
+    => x
+
+    f2(x i32)
+    pre
+      true
+    => x
+
+    f3(x i32)
+    pre
+      false
+    => x
+
+    f4(x i32)
+    pre
+      x > 0
+      true
+    => x
+
+    f5(x i32)
+    pre
+      x > 0
+      false
+    => x
+
+    f6(x i32)
+    => x
+
+    f7(x i32)
+    pre
+      x > 0
+    => x
+
+  p4 is
+    f1(x i32)
+    pre
+      true
+    => x
+
+    f2(x i32)
+    pre
+      false
+    => x
+
+    f3(x i32)
+    pre
+      x > 0
+      true
+    => x
+
+    f4(x i32)
+    pre
+      x > 0
+      false
+    => x
+
+    f5(x i32)
+    => x
+
+    f6(x i32)
+    pre
+      x > 0
+    => x
+
+    f7(x i32)
+    pre
+    => x
+
+  p5 is
+    f1(x i32)
+    pre
+      false
+    => x
+
+    f2(x i32)
+    pre
+      x > 0
+      true
+    => x
+
+    f3(x i32)
+    pre
+      x > 0
+      false
+    => x
+
+    f4(x i32)
+    => x
+
+    f5(x i32)
+    pre
+      x > 0
+    => x
+
+    f6(x i32)
+    pre
+    => x
+
+    f7(x i32)
+    pre
+      true
+    => x
+
+  p6 is
+    f1(x i32)
+    pre
+      x > 0
+      true
+    => x
+
+    f2(x i32)
+    pre
+      x > 0
+      false
+    => x
+
+    f3(x i32)
+    => x
+
+    f4(x i32)
+    pre
+      x > 0
+    => x
+
+    f5(x i32)
+    pre
+    => x
+
+    f6(x i32)
+    pre
+      true
+    => x
+
+    f7(x i32)
+    pre
+      false
+    => x
+
+  p7 is
+    f1(x i32)
+    pre
+      x > 0
+      false
+    => x
+
+    f2(x i32)
+    => x
+
+    f3(x i32)
+    pre
+      x > 0
+    => x
+
+    f4(x i32)
+    pre
+    => x
+
+    f5(x i32)
+    pre
+      true
+    => x
+
+    f6(x i32)
+    pre
+      false
+    => x
+
+    f7(x i32)
+    pre
+      x > 0
+      true
+    => x
+
+  # now we inherit from all combinations and add a new precondition as follows:
+  #
+  # feature `c<n><m><k>` inherits from `p<n>` and `p<m>` and redefines `f1`..`f7`
+  # using variang `<k>`
+  #
+  c111 : p1, p1 is
+    redef f1(x i32)
+    => x
+    redef f2(x i32)
+    => x
+    redef f3(x i32)
+    => x
+    redef f4(x i32)
+    => x
+    redef f5(x i32)
+    => x
+    redef f6(x i32)
+    => x
+    redef f7(x i32)
+    => x
+
+  c121 : p1, p2 is
+    redef f1(x i32)
+    => x
+    redef f2(x i32)
+    => x
+    redef f3(x i32)
+    => x
+    redef f4(x i32)
+    => x
+    redef f5(x i32)
+    => x
+    redef f6(x i32)
+    => x
+    redef f7(x i32)
+    => x
+
+  c131 : p1, p3 is
+    redef f1(x i32)
+    => x
+    redef f2(x i32)
+    => x
+    redef f3(x i32)
+    => x
+    redef f4(x i32)
+    => x
+    redef f5(x i32)
+    => x
+    redef f6(x i32)
+    => x
+    redef f7(x i32)
+    => x
+
+  c141 : p1, p4 is
+    redef f1(x i32)
+    => x
+    redef f2(x i32)
+    => x
+    redef f3(x i32)
+    => x
+    redef f4(x i32)
+    => x
+    redef f5(x i32)
+    => x
+    redef f6(x i32)
+    => x
+    redef f7(x i32)
+    => x
+
+  c151 : p1, p5 is
+    redef f1(x i32)
+    => x
+    redef f2(x i32)
+    => x
+    redef f3(x i32)
+    => x
+    redef f4(x i32)
+    => x
+    redef f5(x i32)
+    => x
+    redef f6(x i32)
+    => x
+    redef f7(x i32)
+    => x
+
+  c161 : p1, p6 is
+    redef f1(x i32)
+    => x
+    redef f2(x i32)
+    => x
+    redef f3(x i32)
+    => x
+    redef f4(x i32)
+    => x
+    redef f5(x i32)
+    => x
+    redef f6(x i32)
+    => x
+    redef f7(x i32)
+    => x
+
+  c171 : p1, p7 is
+    redef f1(x i32)
+    => x
+    redef f2(x i32)
+    => x
+    redef f3(x i32)
+    => x
+    redef f4(x i32)
+    => x
+    redef f5(x i32)
+    => x
+    redef f6(x i32)
+    => x
+    redef f7(x i32)
+    => x
+
+  c112 : p1, p1 is
+    redef f1(x i32)
+      pre else x > 0
+    => x
+    redef f2(x i32)
+      pre else x > 0
+    => x
+    redef f3(x i32)
+      pre else x > 0
+    => x
+    redef f4(x i32)
+      pre else x > 0
+    => x
+    redef f5(x i32)
+      pre else x > 0
+    => x
+    redef f6(x i32)
+      pre else x > 0
+    => x
+    redef f7(x i32)
+      pre else x > 0
+    => x
+
+  c122 : p1, p2 is
+    redef f1(x i32)
+      pre else x > 0
+    => x
+    redef f2(x i32)
+      pre else x > 0
+    => x
+    redef f3(x i32)
+      pre else x > 0
+    => x
+    redef f4(x i32)
+      pre else x > 0
+    => x
+    redef f5(x i32)
+      pre else x > 0
+    => x
+    redef f6(x i32)
+      pre else x > 0
+    => x
+    redef f7(x i32)
+      pre else x > 0
+    => x
+
+  c132 : p1, p3 is
+    redef f1(x i32)
+      pre else x > 0
+    => x
+    redef f2(x i32)
+      pre else x > 0
+    => x
+    redef f3(x i32)
+      pre else x > 0
+    => x
+    redef f4(x i32)
+      pre else x > 0
+    => x
+    redef f5(x i32)
+      pre else x > 0
+    => x
+    redef f6(x i32)
+      pre else x > 0
+    => x
+    redef f7(x i32)
+      pre else x > 0
+    => x
+
+  c142 : p1, p4 is
+    redef f1(x i32)
+      pre else x > 0
+    => x
+    redef f2(x i32)
+      pre else x > 0
+    => x
+    redef f3(x i32)
+      pre else x > 0
+    => x
+    redef f4(x i32)
+      pre else x > 0
+    => x
+    redef f5(x i32)
+      pre else x > 0
+    => x
+    redef f6(x i32)
+      pre else x > 0
+    => x
+    redef f7(x i32)
+      pre else x > 0
+    => x
+
+  c152 : p1, p5 is
+    redef f1(x i32)
+      pre else x > 0
+    => x
+    redef f2(x i32)
+      pre else x > 0
+    => x
+    redef f3(x i32)
+      pre else x > 0
+    => x
+    redef f4(x i32)
+      pre else x > 0
+    => x
+    redef f5(x i32)
+      pre else x > 0
+    => x
+    redef f6(x i32)
+      pre else x > 0
+    => x
+    redef f7(x i32)
+      pre else x > 0
+    => x
+
+  c162 : p1, p6 is
+    redef f1(x i32)
+      pre else x > 0
+    => x
+    redef f2(x i32)
+      pre else x > 0
+    => x
+    redef f3(x i32)
+      pre else x > 0
+    => x
+    redef f4(x i32)
+      pre else x > 0
+    => x
+    redef f5(x i32)
+      pre else x > 0
+    => x
+    redef f6(x i32)
+      pre else x > 0
+    => x
+    redef f7(x i32)
+      pre else x > 0
+    => x
+
+  c172 : p1, p7 is
+    redef f1(x i32)
+      pre else x > 0
+    => x
+    redef f2(x i32)
+      pre else x > 0
+    => x
+    redef f3(x i32)
+      pre else x > 0
+    => x
+    redef f4(x i32)
+      pre else x > 0
+    => x
+    redef f5(x i32)
+      pre else x > 0
+    => x
+    redef f6(x i32)
+      pre else x > 0
+    => x
+    redef f7(x i32)
+      pre else x > 0
+    => x
+
+  c115 : p1, p1 is
+    redef f1(x i32)
+      pre else false
+    => x
+    redef f2(x i32)
+      pre else false
+    => x
+    redef f3(x i32)
+      pre else false
+    => x
+    redef f4(x i32)
+      pre else false
+    => x
+    redef f5(x i32)
+      pre else false
+    => x
+    redef f6(x i32)
+      pre else false
+    => x
+    redef f7(x i32)
+      pre else false
+    => x
+
+  c125 : p1, p2 is
+    redef f1(x i32)
+      pre else false
+    => x
+    redef f2(x i32)
+      pre else false
+    => x
+    redef f3(x i32)
+      pre else false
+    => x
+    redef f4(x i32)
+      pre else false
+    => x
+    redef f5(x i32)
+      pre else false
+    => x
+    redef f6(x i32)
+      pre else false
+    => x
+    redef f7(x i32)
+      pre else false
+    => x
+
+  c135 : p1, p3 is
+    redef f1(x i32)
+      pre else false
+    => x
+    redef f2(x i32)
+      pre else false
+    => x
+    redef f3(x i32)
+      pre else false
+    => x
+    redef f4(x i32)
+      pre else false
+    => x
+    redef f5(x i32)
+      pre else false
+    => x
+    redef f6(x i32)
+      pre else false
+    => x
+    redef f7(x i32)
+      pre else false
+    => x
+
+  c145 : p1, p4 is
+    redef f1(x i32)
+      pre else false
+    => x
+    redef f2(x i32)
+      pre else false
+    => x
+    redef f3(x i32)
+      pre else false
+    => x
+    redef f4(x i32)
+      pre else false
+    => x
+    redef f5(x i32)
+      pre else false
+    => x
+    redef f6(x i32)
+      pre else false
+    => x
+    redef f7(x i32)
+      pre else false
+    => x
+
+  c155 : p1, p5 is
+    redef f1(x i32)
+      pre else false
+    => x
+    redef f2(x i32)
+      pre else false
+    => x
+    redef f3(x i32)
+      pre else false
+    => x
+    redef f4(x i32)
+      pre else false
+    => x
+    redef f5(x i32)
+      pre else false
+    => x
+    redef f6(x i32)
+      pre else false
+    => x
+    redef f7(x i32)
+      pre else false
+    => x
+
+  c165 : p1, p6 is
+    redef f1(x i32)
+      pre else false
+    => x
+    redef f2(x i32)
+      pre else false
+    => x
+    redef f3(x i32)
+      pre else false
+    => x
+    redef f4(x i32)
+      pre else false
+    => x
+    redef f5(x i32)
+      pre else false
+    => x
+    redef f6(x i32)
+      pre else false
+    => x
+    redef f7(x i32)
+      pre else false
+    => x
+
+  c175 : p1, p7 is
+    redef f1(x i32)
+      pre else false
+    => x
+    redef f2(x i32)
+      pre else false
+    => x
+    redef f3(x i32)
+      pre else false
+    => x
+    redef f4(x i32)
+      pre else false
+    => x
+    redef f5(x i32)
+      pre else false
+    => x
+    redef f6(x i32)
+      pre else false
+    => x
+    redef f7(x i32)
+      pre else false
+    => x
