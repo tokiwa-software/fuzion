@@ -2108,10 +2108,6 @@ A ((Choice)) declaration must not contain a result type.
         AstErrors.unusedField(this);
       }
 
-    visit(new ContextVisitor(context()) {
-      @Override public Expr action(Feature f, AbstractFeature outer) { return new Nop(_pos);}
-    });
-
     checkNative(res);
 
     if (explicitTypeRequired(_returnType))
@@ -2271,11 +2267,7 @@ A ((Choice)) declaration must not contain a result type.
         @Override public void action(Impl        i) {        i.resolveSyntacticSugar2(res, _context); }
         @Override public Expr action(Constant    c) { return c.resolveSyntacticSugar2(res, _context); }
         @Override public void action(AbstractMatch am){ if (am instanceof Match m) { m.addFieldsForSubject(res, _context); } }
-      });
-
-
-    visit(new ContextVisitor(context()) {
-        public void  action(AbstractCall c)
+        @Override public void  action(AbstractCall c)
           {
             if (!(c instanceof Call cc) || cc.calledFeatureKnown())
               {

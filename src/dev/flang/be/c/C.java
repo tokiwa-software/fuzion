@@ -558,7 +558,7 @@ public class C extends ANY
   /*
    * If you want the c-backend to link the JVM,
    * set this environment variable to e.g.:
-   * JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+   * JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64
    */
   static final String JAVA_HOME = System.getenv("JAVA_HOME");
 
@@ -840,10 +840,7 @@ public class C extends ANY
     // https://lobste.rs/s/avrfxz/ubuntu_24_04_lts_will_enable_frame
     command.addAll("-fno-omit-frame-pointer", "-mno-omit-leaf-frame-pointer");
 
-    if (linkLibMath())
-      {
-        command.add("-lm");
-      }
+    command.add("-lm");
 
       // NYI: UNDER DEVELOPMENT: on windows link nothing
     if (usesThreads())
@@ -931,67 +928,6 @@ public class C extends ANY
                      "concur.atomic.racy_accesses_supported",
                      "concur.atomic.read0",
                      "concur.atomic.write0")
-      .anyMatch(_intrinsics._usedIntrinsics::contains);
-  }
-
-
-  /*
-   * Do we have to link libmath?
-   */
-  private boolean linkLibMath()
-  {
-    return Stream.of("f32.prefix -",
-                     "f32.infix +",
-                     "f32.infix -",
-                     "f32.infix *",
-                     "f32.infix /",
-                     "f32.infix %",
-                     "f32.infix **",
-                     "f32.type.equal",
-                     "f32.type.lower_than_or_equal",
-                     "f64.type.equal",
-                     "f64.type.lower_than_or_equal",
-                     "f32.as_f64",
-                     "f64.as_f32",
-                     "f64.as_i64_lax",
-                     "f32.cast_to_u32",
-                     "f64.cast_to_u64",
-                     "f32.is_NaN",
-                     "f64.is_NaN",
-                     "f32.square_root",
-                     "f64.square_root",
-                     "f32.exp",
-                     "f64.exp",
-                     "f32.log",
-                     "f64.log",
-                     "f32.sin",
-                     "f64.sin",
-                     "f32.cos",
-                     "f64.cos",
-                     "f32.tan",
-                     "f64.tan",
-                     "f32.asin",
-                     "f64.asin",
-                     "f32.acos",
-                     "f64.acos",
-                     "f32.atan",
-                     "f64.atan",
-                     "f32.sinh",
-                     "f64.sinh",
-                     "f32.cosh",
-                     "f64.cosh",
-                     "f32.tanh",
-                     "f64.tanh",
-                     "f32.type.min_exp",
-                     "f32.type.max_exp",
-                     "f32.type.min_positive",
-                     "f32.type.max",
-                     "f32.type.epsilon",
-                     "f64.type.min_exp",
-                     "f64.type.max_exp",
-                     "f64.type.min_positive",
-                     "f64.type.max",
-                     "f64.type.epsilon")
       .anyMatch(_intrinsics._usedIntrinsics::contains);
   }
 
@@ -1959,7 +1895,14 @@ public class C extends ANY
 
     _names._tempVarId = 0;  // reset counter for unique temp variables for function results
     var l = new List<CStmnt>();
+
+    if (_fuir.hasData(cl))
+      {
+        l.add(declareCurrent(cl));
+      }
+
     l.add(_ai.processClazz(cl).v1());
+
     var res = _fuir.clazzResultClazz(cl);
     if (_fuir.hasData(res))
       {
@@ -1968,7 +1911,17 @@ public class C extends ANY
                 : current(_fuir.clazzCode(cl)).field(_names.fieldName(_fuir.clazzResultField(cl))).ret()  // a routine, return result field
               );
       }
-    var allocCurrent = switch (_fuir.lifeTime(cl))
+
+    return CStmnt.seq(l).label("start");
+  }
+
+
+  /**
+   * declare current, allocate on heap if current may escape
+   */
+  private CStmnt declareCurrent(int cl)
+  {
+    return switch (_fuir.lifeTime(cl))
       {
       case Call      -> CStmnt.seq(
           CStmnt.lineComment("cur does not escape, alloc on stack"),
@@ -1976,8 +1929,6 @@ public class C extends ANY
       case Unknown   -> CStmnt.seq(CStmnt.lineComment("cur may escape, so use malloc"      ), declareAllocAndInitClazzId(cl, CNames.CURRENT));
       case Undefined -> CExpr.dummy("undefined life time");
       };
-    return CStmnt.seq(allocCurrent,
-                      CStmnt.seq(l)).label("start");
   }
 
 

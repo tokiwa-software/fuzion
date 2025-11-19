@@ -265,7 +265,6 @@ public class ParserTool extends ANY
         {
           f.visit(visitor);
         }
-      af.visitCode(visitor);
 
       var result = visitor.lastPos.equals(SourcePosition.notAvailable) ? af.pos() : visitor.lastPos;
 

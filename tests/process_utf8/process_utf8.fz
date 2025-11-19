@@ -69,7 +69,7 @@ process_utf8 =>
 
   test "unicode in executable name" ()->
     # on windows PATH needs to be set, because exe needs to load some dll
-    (os.process.start "./😀" [] (container.ordered_map ["PATH"] [(envir.vars.get "PATH").val])).bind p->
+    (os.process.start "./😀" [] (container.ordered_map ["PATH"] [envir.vars["PATH"].val])).bind p->
       _ := lm ! ()->
         _ := p.with_out unit lm ()->
           say ((io.buffered lm).read_string 1E9).val

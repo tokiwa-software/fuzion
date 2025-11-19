@@ -38,7 +38,6 @@ import dev.flang.ast.AbstractType;
 import dev.flang.ast.Expr; // NYI: remove dependency
 import dev.flang.ast.InlineArray; // NYI: remove dependency
 import dev.flang.ast.NumLiteral; // NYI: remove dependency
-import dev.flang.ast.Nop; // NYI: remove dependency
 import dev.flang.ast.Universe; // NYI: remove dependency
 
 import dev.flang.util.ANY;
@@ -324,9 +323,6 @@ public abstract class IR extends ANY
           {
             l.add(t);
           }
-      }
-    else if (e instanceof Nop)
-      {
       }
     else if (e instanceof Universe)
       {

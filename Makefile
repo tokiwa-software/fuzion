@@ -23,12 +23,11 @@
 #
 # -----------------------------------------------------------------------
 
-JAVA = java --enable-preview --enable-native-access=ALL-UNNAMED
-MIN_JAVA_VERSION = 21 # NYI: when updating to Java version 22 or higher: remove this hack (revert #4264) and remove option '--enable-preview'
-JAVA_VERSION = $(shell v=$$(java -version 2>&1 | grep 'version' | cut -d '"' -f2 | cut -d. -f1 | grep -o '[[:digit:]]*'); [ $$v -lt $(MIN_JAVA_VERSION) ] && echo $(MIN_JAVA_VERSION) || echo $$v)
+JAVA = java --enable-native-access=ALL-UNNAMED
+JAVA_VERSION = 25
 # NYI: CLEANUP: remove some/all of the exclusions
-LINT = -Xlint:all,-preview,-serial,-this-escape
-JAVAC = javac $(LINT) -encoding UTF8 --release $(JAVA_VERSION) --enable-preview
+LINT = -Xlint:all,-serial,-this-escape
+JAVAC = javac $(LINT) -encoding UTF8 --release $(JAVA_VERSION)
 FZ_SRC = $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 SRC = $(FZ_SRC)/src
 BUILD_DIR = ./build
@@ -568,15 +567,15 @@ logo: $(BUILD_DIR)/assets/logo.svg $(BUILD_DIR)/assets/logo_bleed.svg $(BUILD_DI
 	cp $^ $(FZ_SRC)/assets/
 
 $(BUILD_DIR)/bin/run_tests: $(FZ) $(FZ_MODULES) $(FZ_SRC)/bin/run_tests.fz
-	$(FZ) -modules=lock_free -c $(FZ_SRC)/bin/run_tests.fz -o=$@
+	$(FZ) -modules=lock_free,web,http,wolfssl -c -CLink=wolfssl -CInclude="wolfssl/options.h wolfssl/ssl.h" $(FZ_SRC)/bin/run_tests.fz -o=$@
 
 # phony target to run Fuzion tests and report number of failures
 .PHONY: run_tests
-run_tests: run_tests_jvm run_tests_c run_tests_int run_tests_effect run_tests_jar
+run_tests: run_tests_fuir run_tests_jvm run_tests_c run_tests_int run_tests_effect run_tests_jar
 
 TEST_DEPENDENCIES = $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests $(BUILD_DIR)/bin/run_tests $(BUILD_DIR)/lsp.jar
 
-# phony target to run Fuzion tests using interpreter and report number of failures
+# phony target to run Fuzion tests using effects and report number of failures
 .PHONY .SILENT: run_tests_effect
 run_tests_effect: $(FZ) $(TEST_DEPENDENCIES)
 	printf "testing effects: "
@@ -594,15 +593,20 @@ run_tests_c: $(FZ_C) $(TEST_DEPENDENCIES)
 	printf "testing C backend: "; \
 	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) c 1
 
-# phony target to run Fuzion tests using c backend and report number of failures
+# phony target to run Fuzion tests using jvm backend and report number of failures
 .PHONY .SILENT: run_tests_jvm
 run_tests_jvm: $(FZ_JVM) $(TEST_DEPENDENCIES)
 	printf "testing JVM backend: "; \
 	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) jvm 1
 
+.PHONY .SILENT: run_tests_fuir
+run_tests_fuir: $(FZ_JVM) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests $(BUILD_DIR)/bin/run_tests
+	printf "testing FUIR backend: "; \
+	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) fuir 1
+
 # phony target to run Fuzion tests and report number of failures
 .PHONY: run_tests_parallel
-run_tests_parallel: run_tests_jvm_parallel run_tests_c_parallel run_tests_int_parallel run_tests_effect_parallel run_tests_jar
+run_tests_parallel: run_tests_fuir_parallel run_tests_jvm_parallel run_tests_c_parallel run_tests_int_parallel run_tests_effect_parallel run_tests_jar
 
 # phony target to run Fuzion test effects and report number of failures
 .PHONY .SILENT: run_tests_effect_parallel
@@ -627,6 +631,11 @@ run_tests_c_parallel: $(FZ_C) $(TEST_DEPENDENCIES)
 run_tests_jvm_parallel: $(FZ_JVM) $(TEST_DEPENDENCIES)
 	printf "testing JVM backend: "; \
 	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) jvm
+
+.PHONY .SILENT: run_tests_fuir_parallel
+run_tests_fuir_parallel: $(FZ_JVM) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests $(BUILD_DIR)/bin/run_tests
+	printf "testing FUIR backend: "; \
+	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) fuir
 
 .PHONY .SILENT: run_tests_jar_build
 run_tests_jar_build: $(FZ_JVM) $(BUILD_DIR)/tests
@@ -657,12 +666,13 @@ release: clean all
 	rm -f fuzion_$(VERSION).tar.gz
 	tar cfz fuzion_$(VERSION).tar.gz --transform s/^build/fuzion_$(VERSION)/ build
 
+SYNTAX_CHECK_MODULES = terminal,clang,lock_free,java.base,java.datatransfer,java.xml,java.desktop,web,http,wolfssl
 # target to do a syntax check of fz files.
 # currently only code in bin/ and examples/ are checked.
 .PHONY: syntaxcheck
 syntaxcheck: min-java
-	find ./examples/ -name '*.fz' -print0 | xargs -0L1 $(FZ) -modules=terminal,clang,lock_free,java.base,java.datatransfer,java.xml,java.desktop -noBackend
-	find ./bin/ -name '*.fz' -print0 | xargs -0L1 $(FZ) -modules=terminal,clang,lock_free,java.base,java.datatransfer,java.xml,java.desktop -noBackend
+	find ./examples/ -name '*.fz' -print0 | xargs -0L1 $(FZ) -modules=$(SYNTAX_CHECK_MODULES) -noBackend
+	find ./bin/ -name '*.fz' -print0 | xargs -0L1 $(FZ) -modules=$(SYNTAX_CHECK_MODULES) -noBackend
 
 .PHONY: add_simple_test
 add_simple_test: no-java
