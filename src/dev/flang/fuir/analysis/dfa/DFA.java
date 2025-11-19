@@ -840,16 +840,14 @@ public class DFA extends ANY
 
 
   /**
-   * Set this to get detailed effect environments.
+   * Set this to disable detailed effect environments.
    *
-   * NYI: UNDER DEVELOPMENT: This is currently needed for tests/tricky_dfa_cases.
+   * To disable, use fz with
    *
-   * To enable, use fz with
-   *
-   *   dev_flang_fuir_analysis_dfa_TRACE_ALL_EFFECT_ENVS=true
+   *   dev_flang_fuir_analysis_dfa_TRACE_ALL_EFFECT_ENVS=false
    */
   static final String  TRACE_ALL_EFFECT_ENVS_NAME = "dev.flang.fuir.analysis.dfa.TRACE_ALL_EFFECT_ENVS";
-  static final boolean TRACE_ALL_EFFECT_ENVS = FuzionOptions.boolPropertyOrEnv(TRACE_ALL_EFFECT_ENVS_NAME, false);
+  static final boolean TRACE_ALL_EFFECT_ENVS = FuzionOptions.boolPropertyOrEnv(TRACE_ALL_EFFECT_ENVS_NAME, true);
 
   static final String  DO_NOT_TRACE_ENVS_NAME = "dev.flang.fuir.analysis.dfa.DO_NOT_TRACE_ENVS";
   static boolean DO_NOT_TRACE_ENVS = FuzionOptions.boolPropertyOrEnv(DO_NOT_TRACE_ENVS_NAME, true);
