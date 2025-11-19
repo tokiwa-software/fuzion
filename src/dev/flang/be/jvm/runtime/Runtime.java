@@ -1331,6 +1331,41 @@ public class Runtime extends ANY
   }
 
 
+  private static final SymbolLookup libs = libs();
+
+
+  /**
+   * @return SymbolLookup for fuzion_rt and libmath
+   */
+  private static SymbolLookup libs()
+  {
+    SymbolLookup result = null;
+    try
+      {
+        result = SymbolLookup.libraryLookup(System.mapLibraryName("fuzion_rt"), arena);
+        try
+          {
+            result = result.or(SymbolLookup.libraryLookup(System.mapLibraryName("m"), arena));
+          }
+        catch (IllegalArgumentException e)
+          {
+            try { result = result.or(SymbolLookup.libraryLookup("libm.so.6", arena)); } catch(Exception e0) {
+              try { result = result.or(SymbolLookup.libraryLookup("libm.dylib", arena)); } catch(Exception e1) {
+                try { result = result.or(SymbolLookup.libraryLookup("msvcrt.dll", arena)); } catch(Exception e2) {
+                  Errors.error(e.getMessage()); Errors.error(e0.getMessage()); Errors.error(e1.getMessage()); Errors.fatal(e2.getMessage());
+                }
+              }
+            }
+          }
+      }
+    catch (IllegalArgumentException e)
+      {
+        Errors.fatal(e.getMessage());
+      }
+    return result;
+  }
+
+
   /**
    * Find the method handle of a native function
    *
@@ -1344,16 +1379,7 @@ public class Runtime extends ANY
    */
   public static MethodHandle get_method_handle(String str, FunctionDescriptor desc, String[] libraries)
   {
-    SymbolLookup llu = null;
-    try
-      {
-        llu = SymbolLookup.libraryLookup(System.mapLibraryName("fuzion_rt"), arena);
-      }
-    catch (IllegalArgumentException e)
-      {
-        Errors.error(e.getMessage());
-        System.exit(1);
-      }
+    SymbolLookup llu = libs;
     for (String library : libraries)
       {
         var ln = System.mapLibraryName(library);
