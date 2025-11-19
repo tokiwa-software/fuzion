@@ -58,7 +58,6 @@ import java.lang.classfile.*;
 import java.lang.classfile.constantpool.ClassEntry;
 import java.lang.classfile.instruction.*;
 import java.lang.constant.ClassDesc;
-import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -2351,15 +2350,18 @@ should be avoided as much as possible.
               {
                 ClassModel cm = java.lang.classfile.ClassFile.of().parse(fis.readAllBytes());
 
-                cm.elementStream()
-                  .flatMap(ce -> ce instanceof MethodModel mm ? mm.elementStream() : Stream.empty())
-                  .flatMap(me -> me instanceof CodeModel com ? com.elementStream() : Stream.empty())
-                  .forEach((e) ->
+                Stream.concat(
+                  Stream.of(cm), // include the ClassModel itself
+                  cm.elementStream()
+                    .flatMap(ce -> ce instanceof MethodModel mm ? mm.elementStream() : Stream.empty())
+                    .flatMap(me -> me instanceof CodeModel com ? com.elementStream() : Stream.empty())
+                ).forEach((e) ->
                     {
                       // helper to add a dependency and add its dependencies to the queue if not yet processed
                       Consumer<ClassEntry> processDependency = classEntry ->
                         {
                           var cdesc = classEntry.asSymbol();
+
                           if (cdesc.isClassOrInterface() && !cdesc.packageName().startsWith("java."))
                             {
                               dependencies.add(cdesc);
@@ -2379,6 +2381,7 @@ should be avoided as much as possible.
                         };
                       switch (e)
                         {
+                          case ClassModel c -> processDependency.accept(c.thisClass());
                           case InvokeInstruction i -> processDependency.accept(i.owner());
                           case FieldInstruction  i -> processDependency.accept(i.owner());
                           default -> { }
