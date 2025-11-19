@@ -576,7 +576,7 @@ class CodeGen
       case Native   :
         {
           if (CHECKS) check
-            (_types.clazzNeedsCode(cc),
+            (_fuir.clazzNeedsCode(cc),
              !(cc == _fuir.clazzAt(si) && // calling myself
              _jvm._tailCall.callIsTailCall(_fuir.clazzAt(si), si)));
 
@@ -589,7 +589,7 @@ class CodeGen
             {
               return Intrinsix.inlineCode(_jvm, si, cc, tvalue, args);
             }
-          if (_types.clazzNeedsCode(cc))
+          if (_fuir.clazzNeedsCode(cc))
             {
               var cl = si == NO_SITE ? FUIR.NO_CLAZZ
                                      : _fuir.clazzAt(si);

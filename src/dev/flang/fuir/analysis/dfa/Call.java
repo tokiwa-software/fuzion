@@ -115,12 +115,6 @@ public class Call extends ANY implements Comparable<Call>, Context
 
 
   /**
-   * Calls that depend on this calls result value
-   */
-  private LinkedList<Call> _dependOnResultVal = new LinkedList<>();
-
-
-  /**
    * The environment, i.e., the effects installed when this call is made.
    */
   final Env _env;
@@ -273,26 +267,46 @@ public class Call extends ANY implements Comparable<Call>, Context
 
 
   /**
+   * Helper to extract the result from a call.
+   */
+  private Val getResult()
+  {
+    Val result;
+    var rf = _dfa._fuir.clazzResultField(calledClazz());
+    if (_dfa._fuir.isConstructor(calledClazz()))
+      {
+        result = _instance;
+      }
+    else if (SpecialClazzes.c_unit == _dfa._fuir.getSpecialClazz(_dfa._fuir.clazzResultClazz(rf)))
+      {
+        result = Value.UNIT;
+      }
+    else
+      {
+        // should not be possible to return void (_result should be null):
+        if (CHECKS) check
+          (!_dfa._fuir.clazzIsVoidType(_dfa._fuir.clazzResultClazz(calledClazz())));
+
+        result = _instance.readField(_dfa, rf, NO_SITE, this);
+      }
+    return result;
+  }
+
+
+  /**
    * Record the fact that this call returns, i.e., it does not necessarily diverge.
    */
-  void returns(Val result)
+  void returns()
   {
-    if (_result == null)
+    var result = getResult();
+
+    if (_result != result)
       {
         _result = result;
         while (!_dependOnResult.isEmpty())
           {
-            // mark calls that depend on this calls result as hot (again)
+            // mark calls that depend on this call's result as hot (again)
             _dfa.hot(_dependOnResult.removeFirst());
-          }
-      }
-    else if (result != null && _result != result)
-      {
-        _result = result;
-        while (!_dependOnResultVal.isEmpty())
-          {
-            // mark calls that depend on this calls result value as hot (again)
-            _dfa.hot(_dependOnResultVal.removeFirst());
           }
       }
   }
@@ -301,9 +315,18 @@ public class Call extends ANY implements Comparable<Call>, Context
   /**
    * Return the result value returned by this call.  null in case this call
    * never returns.
+   *
+   * @param from who is asking for the result?
    */
   public Val result(Call from)
   {
+    if (from != null)
+      {
+        // record how depends on result to mark
+        // them as hot again when result changes.
+        _dependOnResult.add(from);
+      }
+
     Val result = null;
     if (_dfa._fuir.clazzKind(calledClazz()) == IR.FeatureKind.Intrinsic)
       {
@@ -333,33 +356,9 @@ public class Call extends ANY implements Comparable<Call>, Context
             Errors.warning("DFA: cannot handle native feature result type: " + _dfa._fuir.clazzOriginalName(rc));
           }
       }
-    else if (_result != null)
+    else
       {
-        var rf = _dfa._fuir.clazzResultField(calledClazz());
-        if (_dfa._fuir.isConstructor(calledClazz()))
-          {
-            result = _instance;
-          }
-        else if (SpecialClazzes.c_unit == _dfa._fuir.getSpecialClazz(_dfa._fuir.clazzResultClazz(rf)))
-          {
-            result = Value.UNIT;
-          }
-        else
-          {
-            // should not be possible to return void (_result should be null):
-            if (CHECKS) check
-              (!_dfa._fuir.clazzIsVoidType(_dfa._fuir.clazzResultClazz(calledClazz())));
-
-            result = _instance.readField(_dfa, rf, NO_SITE, this);
-          }
-        if (from != null)
-          {
-            _dependOnResultVal.add(from);
-          }
-      }
-    else if (from != null)
-      {
-        _dependOnResult.add(from);
+        result = _result;
       }
     return result;
   }
