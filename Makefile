@@ -597,8 +597,8 @@ run_tests_jvm: $(FZ_JVM) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DI
 	printf "testing JVM backend: "; \
 	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) jvm
 
-.PHONY .SILENT: run_tests_fuir_parallel
-run_tests_fuir_parallel: $(FZ_JVM) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests $(BUILD_DIR)/bin/run_tests
+.PHONY .SILENT: run_tests_fuir
+run_tests_fuir: $(FZ_JVM) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests $(BUILD_DIR)/bin/run_tests
 	printf "testing FUIR backend: "; \
 	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) fuir
 
