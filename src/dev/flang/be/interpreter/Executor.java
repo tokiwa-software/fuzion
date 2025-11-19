@@ -253,7 +253,7 @@ public class Executor extends ProcessExpression<Value, Object>
           {
             try { result = result.or(SymbolLookup.libraryLookup("libm.so.6",  Arena.ofAuto())); } catch(Exception e0) {
               try { result = result.or(SymbolLookup.libraryLookup("libm.dylib",  Arena.ofAuto())); } catch(Exception e1) {
-                try { result = result.or(SymbolLookup.libraryLookup("msvcrt.dll",  Arena.ofAuto())); } catch(Exception e2) {
+                try { result = result.or(SymbolLookup.libraryLookup("ucrtbase.dll",  Arena.ofAuto())); } catch(Exception e2) {
                   Errors.error(e.getMessage()); Errors.error(e0.getMessage()); Errors.error(e1.getMessage()); Errors.fatal(e2.getMessage());
                 }
               }

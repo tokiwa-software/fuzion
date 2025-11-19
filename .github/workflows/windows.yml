@@ -64,6 +64,7 @@ jobs:
             libsqlite
             libsqlite-devel
             mingw-w64-ucrt-x86_64-libsodium
+            mingw-w64-ucrt-x86_64-wolfssl
 
 
       - name: install choco packages
@@ -78,6 +79,7 @@ jobs:
           ln -s  /ucrt64/bin/libclang.dll /ucrt64/bin/clang.dll
           ln -s  /usr/bin/msys-sqlite3-0.dll /ucrt64/bin/sqlite3.dll
           ln -s  /ucrt64/bin/libsodium-26.dll /ucrt64/bin/sodium.dll
+          ln -s  /ucrt64/bin/libwolfssl-44.dll /ucrt64/bin/wolfssl.dll
 
       - name: echo versions
         run: |
@@ -90,6 +92,7 @@ jobs:
           whereis sqlite3.dll
           whereis clang.dll
           whereis sodium.dll
+          whereis wolfssl.dll
 
       - name: build libgc
         run: |

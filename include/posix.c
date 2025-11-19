@@ -38,6 +38,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <stdbool.h>
 #include <fcntl.h>      // fcntl
 #include <string.h>
+#include <math.h>
 
 #include <netdb.h>      // getaddrinfo
 #include <netinet/in.h> // AF_INET
@@ -897,4 +898,9 @@ int fzE_cwd(void * buf, size_t size)
   return getcwd(buf, size) == NULL
     ? -1
     : 0;
+}
+
+int fzE_isnan(double d)
+{
+  return isnan(d);
 }

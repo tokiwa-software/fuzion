@@ -43,6 +43,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <string.h>
 #include <assert.h>
 #include <time.h>
+#include <math.h>
 
 #include <winsock2.h>
 #include <windows.h>
@@ -1106,4 +1107,9 @@ int fzE_cwd(void * buf, size_t size)
   return _getcwd(buf, size) == NULL
     ? -1
     : 0;
+}
+
+int fzE_isnan(double d)
+{
+  return _isnan(d);
 }
