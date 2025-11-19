@@ -43,7 +43,6 @@ import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.Call;
 import dev.flang.ast.Expr;
 import dev.flang.ast.InlineArray;
-import dev.flang.ast.Nop;
 import dev.flang.ast.Universe;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.SourcePosition;
@@ -178,8 +177,7 @@ public class ASTWalker
       || expr instanceof AbstractCurrent
       || expr instanceof Constant
       || expr instanceof Universe
-      || expr instanceof AbstractLambda
-      || expr instanceof Nop)
+      || expr instanceof AbstractLambda)
       {
         return Stream.empty();
       }
