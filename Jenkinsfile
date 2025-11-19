@@ -53,8 +53,8 @@ pipeline {
         emailext(
             subject: "Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
             body: """
-                <p>Build failed. Check the console output:</p>
-                <p><a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
+                Build failed. Check the console output:
+                ${env.BUILD_URL}
             """,
             recipientProviders: [developers(), requestor()]
         )
