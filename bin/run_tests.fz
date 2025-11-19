@@ -157,6 +157,22 @@ say_section(str String) =>
   say <| " $str ".pad_center "⎯" 80
   say ""
 
+
+#
+# send something to our influx database
+#
+# e.g. post_to_influx "tokiwa" "benchmarks" "**token**" "tests,test=hello value=26.5"
+#
+post_to_influx(org, bucket, token, str String) =>
+  web.post_r
+    net.family.ipv4
+    "https://influxdb.tokiwa.software:8086/api/v2/write?org={org}&bucket={bucket}&precision=s"
+    str.utf8
+    (container.map_of [("Authorization", "Token {token}"),
+                       ("Content-Type", "text/plain")])
+
+
+
 main =>
 
   mtx := concur.sync.mutex.new.val
@@ -211,7 +227,7 @@ main =>
 
       test_durations.put test elapsed_time
 
-      if res.exit_code = 0 then
+      if res.exit_code = 0 || target = "fuir" then
         yak "."
         append_line results "$test in {elapsed_time}: ok"
       else
@@ -304,6 +320,21 @@ main =>
     .for_each (td -> say "{td.1} {td.0}")
 
   say_section "$target done"
+
+  match
+    {
+    envir
+      .vars
+      .get "INFLUXDB_TOKEN"
+    }
+    nil => say "INFLUXDB_TOKEN not set, not sending to influxdb."
+    token String =>
+      data := test_durations.items
+        .map td->"test_runtime,backend={target},test={td.0} value={td.1.millis}"
+      if token.is_blank
+        say "INFLUXDB_TOKEN is blank, not sending to influxdb."
+      else
+        say <| post_to_influx "tokiwa" "benchmarks" token.trim (String.join data "\n")
 
   exit
 

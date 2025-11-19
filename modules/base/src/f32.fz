@@ -38,8 +38,10 @@ public f32(public val f32) : float, java_primitive is
   public fixed redef infix - (other f32) f32 => intrinsic
   public fixed redef infix * (other f32) f32 => intrinsic
   public fixed redef infix / (other f32) f32 => intrinsic
-  public fixed redef infix % (other f32) f32 => intrinsic
-  public fixed redef infix ** (other f32) f32 => intrinsic
+  public fixed redef infix % (other f32) f32 => fmodf val other
+  public fixed redef infix ** (other f32) f32 => powf val other
+  fmodf(v,o f32) f32 => native
+  powf(v,o f32) f32 => native
 
 
   # comparison
@@ -162,24 +164,31 @@ public f32(public val f32) : float, java_primitive is
     abs<1E-3 || abs>=1E7
 
 
-  public fixed redef is_NaN bool => intrinsic
-
-  public fixed redef square_root f32 => intrinsic
-
-  public fixed redef exp f32 => intrinsic
-  public fixed redef log f32 => intrinsic
-
-
-  public fixed redef sin f32 => intrinsic
-  public fixed redef cos f32 => intrinsic
-  public fixed redef tan f32 => intrinsic
-  public fixed redef asin f32 => intrinsic
-  public fixed redef acos f32 => intrinsic
-  public fixed redef atan f32 => intrinsic
-
-  public fixed redef sinh f32 => intrinsic
-  public fixed redef cosh f32 => intrinsic
-  public fixed redef tanh f32 => intrinsic
+  expf (v f32) f32 => native
+  logf (v f32) f32 => native
+  sqrtf(v f32) f32 => native
+  sinf (v f32) f32 => native
+  cosf (v f32) f32 => native
+  tanf (v f32) f32 => native
+  asinf(v f32) f32 => native
+  acosf(v f32) f32 => native
+  atanf(v f32) f32 => native
+  sinhf(v f32) f32 => native
+  coshf(v f32) f32 => native
+  tanhf(v f32) f32 => native
+  public fixed redef is_NaN bool => val.as_f64.is_NaN
+  public fixed redef square_root f32 => sqrtf val
+  public fixed redef exp f32 => expf val
+  public fixed redef log f32 => logf val
+  public fixed redef sin f32  => sinf val
+  public fixed redef cos f32  => cosf val
+  public fixed redef tan f32  => tanf val
+  public fixed redef asin f32 => asinf val
+  public fixed redef acos f32 => acosf val
+  public fixed redef atan f32 => atanf val
+  public fixed redef sinh f32 => sinhf val
+  public fixed redef cosh f32 => coshf val
+  public fixed redef tanh f32 => tanhf val
 
 
   # convert this to a string.

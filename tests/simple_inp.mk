@@ -40,6 +40,8 @@ FUZION_RUN = $(FUZION) $(FUZION_OPTIONS)
 all: jvm c int
 
 
+fuir: # NYI: UNDER DEVELOPMENT: missing impl of fuir
+
 int:
 	cat $(STDIN) | ../../bin/check_simple_example int "$(FUZION_RUN)" $(FILE) || exit 1
 

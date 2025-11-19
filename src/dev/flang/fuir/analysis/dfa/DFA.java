@@ -840,16 +840,14 @@ public class DFA extends ANY
 
 
   /**
-   * Set this to get detailed effect environments.
+   * Set this to disable detailed effect environments.
    *
-   * NYI: UNDER DEVELOPMENT: This is currently needed for tests/tricky_dfa_cases.
+   * To disable, use fz with
    *
-   * To enable, use fz with
-   *
-   *   dev_flang_fuir_analysis_dfa_TRACE_ALL_EFFECT_ENVS=true
+   *   dev_flang_fuir_analysis_dfa_TRACE_ALL_EFFECT_ENVS=false
    */
   static final String  TRACE_ALL_EFFECT_ENVS_NAME = "dev.flang.fuir.analysis.dfa.TRACE_ALL_EFFECT_ENVS";
-  static final boolean TRACE_ALL_EFFECT_ENVS = FuzionOptions.boolPropertyOrEnv(TRACE_ALL_EFFECT_ENVS_NAME, false);
+  static final boolean TRACE_ALL_EFFECT_ENVS = FuzionOptions.boolPropertyOrEnv(TRACE_ALL_EFFECT_ENVS_NAME, true);
 
   static final String  DO_NOT_TRACE_ENVS_NAME = "dev.flang.fuir.analysis.dfa.DO_NOT_TRACE_ENVS";
   static boolean DO_NOT_TRACE_ENVS = FuzionOptions.boolPropertyOrEnv(DO_NOT_TRACE_ENVS_NAME, true);
@@ -1660,27 +1658,28 @@ public class DFA extends ANY
    */
   void analyze(Call c)
   {
-    if (_fuir.clazzKind(c.calledClazz()) == FUIR.FeatureKind.Routine)
+    int cc = c.calledClazz();
+    if (_fuir.clazzKind(cc) == FUIR.FeatureKind.Routine)
       {
         var i = c._instance;
         check
-          (c._args.size() == _fuir.clazzArgCount(c.calledClazz()));
+          (c._args.size() == _fuir.clazzArgCount(cc));
         for (var a = 0; a < c._args.size(); a++)
           {
-            var af = _fuir.clazzArg(c.calledClazz(), a);
+            var af = _fuir.clazzArg(cc, a);
             var aa = c._args.get(a);
             i.setField(this, af, aa.value());
           }
 
         // copy outer ref argument to outer ref field:
-        var or = _fuir.clazzOuterRef(c.calledClazz());
+        var or = _fuir.clazzOuterRef(cc);
         if (or != NO_CLAZZ)
           {
             i.setField(this, or, c.target());
           }
 
         var ai = new AbstractInterpreter2<Val>(_fuir, new Analyze(c));
-        var r = ai.processClazz(c.calledClazz());
+        var r = ai.processClazz(cc);
         if (r != null)
           {
             c.returns();
@@ -2089,10 +2088,6 @@ public class DFA extends ANY
     put("f64.infix *"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
     put("f32.infix /"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
     put("f64.infix /"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
-    put("f32.infix %"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
-    put("f64.infix %"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
-    put("f32.infix **"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
-    put("f64.infix **"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
     put("f32.type.equal"                 , cl -> cl._dfa.bool() );
     put("f64.type.equal"                 , cl -> cl._dfa.bool() );
     put("f32.type.lower_than_or_equal"   , cl -> cl._dfa.bool() );
@@ -2103,32 +2098,6 @@ public class DFA extends ANY
     put("f32.cast_to_u32"                , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
     put("f64.cast_to_u64"                , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
 
-    put("f32.is_NaN"                     , cl -> cl._dfa.bool() );
-    put("f64.is_NaN"                     , cl -> cl._dfa.bool() );
-    put("f32.square_root"                , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
-    put("f64.square_root"                , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
-    put("f32.exp"                        , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
-    put("f64.exp"                        , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
-    put("f32.log"                        , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
-    put("f64.log"                        , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
-    put("f32.sin"                        , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
-    put("f64.sin"                        , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
-    put("f32.cos"                        , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
-    put("f64.cos"                        , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
-    put("f32.tan"                        , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
-    put("f64.tan"                        , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
-    put("f32.asin"                       , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
-    put("f64.asin"                       , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
-    put("f32.acos"                       , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
-    put("f64.acos"                       , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
-    put("f32.atan"                       , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
-    put("f64.atan"                       , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
-    put("f32.sinh"                       , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
-    put("f64.sinh"                       , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
-    put("f32.cosh"                       , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
-    put("f64.cosh"                       , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
-    put("f32.tanh"                       , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
-    put("f64.tanh"                       , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
     put("f32.type.min_exp"               , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
     put("f32.type.max_exp"               , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
     put("f32.type.min_positive"          , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
