@@ -115,7 +115,7 @@ record_process(
     check p.close_in.ok
 
     # NYI: BUG: unclear why lsp does not shut down
-    match p.wait (time.duration.s 5)
+    match p.wait (time.duration.s 30)
       _ error =>
         check p.send_signal os.signals.kill .ok
         process_result fout.get ferr.get 1
