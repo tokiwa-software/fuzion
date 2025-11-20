@@ -239,6 +239,7 @@ public class Executor extends ProcessExpression<Value, Object>
   /**
    * @return SymbolLookup for fuzion_rt and libmath
    */
+  @SuppressWarnings("restricted")
   private static SymbolLookup libs()
   {
     SymbolLookup result = null;
@@ -269,6 +270,7 @@ public class Executor extends ProcessExpression<Value, Object>
 
 
   @Override
+  @SuppressWarnings("restricted")
   public Pair<Value, Object> call(int s, Value tvalue, List<Value> args)
   {
     var cc0 = _fuir.accessedClazz(s);

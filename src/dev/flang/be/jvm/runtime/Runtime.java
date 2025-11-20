@@ -1337,6 +1337,7 @@ public class Runtime extends ANY
   /**
    * @return SymbolLookup for fuzion_rt and libmath
    */
+  @SuppressWarnings("restricted")
   private static SymbolLookup libs()
   {
     SymbolLookup result = null;
@@ -1377,6 +1378,7 @@ public class Runtime extends ANY
    *
    * @return
    */
+  @SuppressWarnings("restricted")
   public static MethodHandle get_method_handle(String str, FunctionDescriptor desc, String[] libraries)
   {
     SymbolLookup llu = libs;
@@ -1547,7 +1549,7 @@ public class Runtime extends ANY
    * create a new fuzion value, an fill
    * it with the data in memSeg.
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({"restricted", "unchecked"})
   public static <T> T memorySegment2Value(Class<T> cl, MemorySegment memSeg)
     throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
   {
@@ -1620,6 +1622,7 @@ public class Runtime extends ANY
   }
 
 
+  @SuppressWarnings("restricted")
   public static Object native_array(MemoryLayout memLayout, Object obj, int length)
   {
     var memSeg = ((MemorySegment)obj).reinterpret(length * memLayout.byteSize());
@@ -1718,6 +1721,7 @@ public class Runtime extends ANY
    *
    * @return An upcall which can be passed to other foreign functions as a function pointer
    */
+  @SuppressWarnings("restricted")
   public static MemorySegment upcall(Any outerRef, Class call)
   {
     Method method = null;
@@ -1809,6 +1813,7 @@ public class Runtime extends ANY
    *
    * @return
    */
+  @SuppressWarnings("restricted")
   public static int native_string_length(MemorySegment segment)
   {
     int length = 0;
