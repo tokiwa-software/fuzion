@@ -412,7 +412,7 @@ $(BUILD_DIR)/assets/logo_bleed_cropmark.svg: $(CLASS_FILES_MISC_LOGO)
 	rm -f $@.tmp.pdf
 	touch $@
 
-$(FZ): $(FZ_SRC)/bin/fz $(CLASS_FILES_TOOLS)
+$(FZ): $(FZ_SRC)/bin/fz | $(CLASS_FILES_TOOLS)
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC)/bin/fz $@
 	chmod +x $@
@@ -511,7 +511,7 @@ $(MOD_CRYPTO): $(MOD_SODIUM) $(FZ) $(shell find $(FZ_SRC)/modules/crypto/src -na
 	cp -rf $(FZ_SRC)/modules/crypto $(@D)
 	$(FZ) -modules=sodium -sourceDirs=$(BUILD_DIR)/modules/crypto/src -saveModule=$@
 
-$(FZJAVA): $(FZ_SRC)/bin/fzjava $(CLASS_FILES_TOOLS_FZJAVA)
+$(FZJAVA): $(FZ_SRC)/bin/fzjava | $(CLASS_FILES_TOOLS_FZJAVA)
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC)/bin/fzjava $@
 	chmod +x $@
@@ -579,61 +579,28 @@ TEST_DEPENDENCIES = $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/te
 .PHONY .SILENT: run_tests_effect
 run_tests_effect: $(FZ) $(TEST_DEPENDENCIES)
 	printf "testing effects: "
-	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) effect 1
+	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) effect
 
 # phony target to run Fuzion tests using interpreter and report number of failures
 .PHONY .SILENT: run_tests_int
 run_tests_int: $(FZ_INT) $(TEST_DEPENDENCIES)
 	printf "testing interpreter: "
-	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) int 1
+	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) int
 
 # phony target to run Fuzion tests using c backend and report number of failures
 .PHONY .SILENT: run_tests_c
 run_tests_c: $(FZ_C) $(TEST_DEPENDENCIES)
 	printf "testing C backend: "; \
-	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) c 1
+	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) c
 
 # phony target to run Fuzion tests using jvm backend and report number of failures
 .PHONY .SILENT: run_tests_jvm
 run_tests_jvm: $(FZ_JVM) $(TEST_DEPENDENCIES)
 	printf "testing JVM backend: "; \
-	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) jvm 1
-
-.PHONY .SILENT: run_tests_fuir
-run_tests_fuir: $(FZ_JVM) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests $(BUILD_DIR)/bin/run_tests
-	printf "testing FUIR backend: "; \
-	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) fuir 1
-
-# phony target to run Fuzion tests and report number of failures
-.PHONY: run_tests_parallel
-run_tests_parallel: run_tests_fuir_parallel run_tests_jvm_parallel run_tests_c_parallel run_tests_int_parallel run_tests_effect_parallel run_tests_jar
-
-# phony target to run Fuzion test effects and report number of failures
-.PHONY .SILENT: run_tests_effect_parallel
-run_tests_effect_parallel: $(FZ) $(TEST_DEPENDENCIES)
-	printf "testing effects: "
-	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) effect
-
-# phony target to run Fuzion tests using interpreter and report number of failures
-.PHONY .SILENT: run_tests_int_parallel
-run_tests_int_parallel: $(FZ_INT) $(TEST_DEPENDENCIES)
-	printf "testing interpreter: "
-	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) int
-
-# phony target to run Fuzion tests using c backend and report number of failures
-.PHONY .SILENT: run_tests_c_parallel
-run_tests_c_parallel: $(FZ_C) $(TEST_DEPENDENCIES)
-	printf "testing C backend: "; \
-	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) c
-
-# phony target to run Fuzion tests using jvm backend and report number of failures
-.PHONY .SILENT: run_tests_jvm_parallel
-run_tests_jvm_parallel: $(FZ_JVM) $(TEST_DEPENDENCIES)
-	printf "testing JVM backend: "; \
 	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) jvm
 
-.PHONY .SILENT: run_tests_fuir_parallel
-run_tests_fuir_parallel: $(FZ_JVM) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests $(BUILD_DIR)/bin/run_tests
+.PHONY .SILENT: run_tests_fuir
+run_tests_fuir: $(TEST_DEPENDENCIES)
 	printf "testing FUIR backend: "; \
 	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) fuir
 
