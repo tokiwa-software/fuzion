@@ -2512,6 +2512,13 @@ public class AstErrors extends ANY
           "Type of loop variant must be " + type("i64") + ", but found variant of type " + s(variant.type()));
   }
 
+  public static void mustAssignToField(AbstractFeature f, SourcePosition pos)
+  {
+    error(pos,
+         "Must assign feature " + s(f) + " to field",
+         "To solve this, assign the result of " + s(f) + " to a field.");
+  }
+
 }
 
 /* end of file */
