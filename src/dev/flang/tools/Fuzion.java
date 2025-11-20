@@ -102,6 +102,12 @@ public class Fuzion extends Tool
   static String  _jvmLib_ = null;
 
 
+  /**
+   * Handle options used in more than one backend
+   *
+   * @param o
+   * @return
+   */
   private static boolean handleCommonOption(String o)
   {
     boolean result = false;
@@ -175,7 +181,10 @@ public class Fuzion extends Tool
             _binaryName_ = o.substring(3);
             result = true;
           }
-        else if (handleCommonOption(o)) {}
+        else if (handleCommonOption(o))
+          {
+            result = true;
+          }
         else if (o.startsWith("-XkeepGeneratedCode="))
           {
             _keepGeneratedCode_ = parseOnOffArg(o);
