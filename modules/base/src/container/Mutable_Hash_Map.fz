@@ -68,6 +68,11 @@ pre
 
 is
 
+  # element at this index was deleted, this index should be treated as occupied when looking up elements
+  # to not cause unexpected gaps that could lead to lost elements
+  # for insertions it is treated the same as an empty index
+  del is
+
   # number of entries currently in this map
   #
   load := mut 0
@@ -86,7 +91,7 @@ is
 
   # the contents
   #
-  contents := mut (LM.env.new_array (option (tuple HK V)) allocated_size.get.as_i64 nil)
+  contents := mut (LM.env.new_array (choice nil del (tuple HK V)) allocated_size.get.as_i64 nil)
 
 
   # calculate the index of k within contents array in case of no conflict
@@ -101,7 +106,7 @@ is
   # return the next alternative position to check
   #
   collision (at i64) =>
-    (at + 1) % allocated_size.get.as_i64  # NYI: dumb collision function, check literature and improve!
+    (at + 904644503766293287) % allocated_size.get.as_i64
 
 
   # increase internal allocation if upper_load_factor is reached
@@ -127,26 +132,40 @@ is
   =>
     allocated_size <- new_alloc_size
     old_contents := contents.get.as_array
-    contents <- LM.env.new_array (option (tuple HK V)) allocated_size.get.as_i64 nil
-    for tup in (old_contents.filter o->o??) do
-      ok, ov := tup.get
-      store (idx ok) ok ov false
+    contents <- LM.env.new_array (choice nil del (tuple HK V)) allocated_size.get.as_i64 nil
+    for elem in old_contents do
+      match elem
+        t tuple HK V =>
+          ok, ov := t
+          store (idx ok) ok ov false false
+        * => # noting to add
 
 
   # store key value pair at given index
   # updates value for existing key, does conflict resolution
   #
-  store (at i64, k HK, v V, update_size bool) =>
+  store (at i64, k HK, v V, update_size bool, is_update bool) =>
+
     match contents.get[at]
       nil     =>
-        contents.get[at] := (k, v) # insert new key value pair
-        if update_size then load <- load.get + 1
+        if is_update
+          store (idx k) k v update_size false
+        else
+          contents.get[at] := (k, v) # insert new key value pair
+          if update_size then load <- load.get + 1
+
       t tuple =>
         ek, _ := t
         if ek = k                 # no conflict, but remapping of k
           contents.get[at] := (k, v)
         else                      # conflict
-          store (collision at) k v update_size
+          store (collision at) k v update_size is_update
+      del =>
+        if is_update
+          store (collision at) k v update_size is_update
+        else
+          contents.get[at] := (k, v) # insert new key value pair
+          if update_size then load <- load.get + 1
 
 
   # number of entries in this map
@@ -160,7 +179,7 @@ is
   #
   public redef put(k HK, v V) unit =>
 
-    store (idx k) k v true
+    store (idx k) k v true true
 
     increase_if_necessary
 
@@ -169,7 +188,7 @@ is
   #
   public redef get(k HK) option V =>
 
-    retrieve (at i64) option V =>
+    retrieve (at i64, stop_at_start bool) option V =>
       match contents.get[at]
         nil     => nil
         t tuple =>
@@ -177,9 +196,12 @@ is
           if ek = k
             v
           else
-            retrieve (collision at)
+            retrieve (collision at) true
+        del =>
+          (at = start_idx && stop_at_start) ? nil : retrieve (collision at) true
 
-    retrieve (idx k)
+    start_idx := idx k
+    retrieve start_idx false
 
 
   # remove key from map, returns the removed value
@@ -187,7 +209,7 @@ is
   public redef remove(k HK) option V =>
 
 
-    del(del_idx i64) option V =>
+    delete(del_idx i64, stop_at_start bool) option V =>
       match contents.get[del_idx]
         nil => nil
         t tuple =>
@@ -195,40 +217,16 @@ is
           if ek = k
             contents.get[del_idx] := nil
             load <- load.get - 1
-            fill_hole del_idx (collision del_idx)
+            contents.get[del_idx] := del
             v
           else
-            del (collision del_idx)
+            delete (collision del_idx) true
+        del =>
+          (stop_at_start && del_idx = del_start_idx) ? nil : delete (collision del_idx) true
 
+    del_start_idx := idx k
 
-    # move elements if they should be in the position of the removed element
-    # recursively filles new holes
-    #
-    fill_hole(cur_idx, next_idx i64) =>
-      match contents.get[next_idx]
-        nil     => # done
-        t tuple =>
-          ek, _ := t
-
-          if (
-            # not having passed array end: move elements saved at a larger index
-            (next_idx >= cur_idx && idx ek <= cur_idx) ||
-
-            # element index is larger then array index (collision moved it beyond end):
-            #   - always move to left
-            #   - move to right (beyond beginning into the end) if it can normally be saved at that index
-            (idx ek > next_idx && (cur_idx < next_idx || idx ek <= cur_idx)) ||
-
-            # having passed array end: move elements saved at a larger index only if they get moved left (i.e. not beyond the beginning into the end)
-            (cur_idx < cur_idx && next_idx < cur_idx && idx ek <= cur_idx))
-          then
-            contents.get[cur_idx] := t
-            contents.get[next_idx] := nil
-            fill_hole next_idx (collision next_idx)
-          else
-            fill_hole cur_idx (collision next_idx)
-
-    return_val := del (idx k)
+    return_val := delete del_start_idx false
 
     decrease_if_necessary
 
@@ -239,8 +237,8 @@ is
   #
   public redef items Sequence (tuple HK V) =>
     contents.get.as_array
-      .filter o->o??
-      .map (o -> o.or_else (panic "filter failed"))
+      .filter (o -> o ? tuple => true | * => false)
+      .map (x -> x ? t tuple => t | * => panic "filter failed" )
 
 
   # create an immutable map from this
