@@ -92,7 +92,7 @@ public class Call extends ANY implements Comparable<Call>, Context
   /**
    * Arguments passed to the call.
    */
-  List<Val> _args;
+  final List<Val> _args;
 
 
   /**

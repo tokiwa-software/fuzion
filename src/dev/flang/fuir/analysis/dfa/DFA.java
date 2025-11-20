@@ -472,7 +472,7 @@ public class DFA extends ANY
     {
       var r = switch (_fuir.getSpecialClazz(constCl))
         {
-        case c_bool -> d[0] == 1 ? True() : False();
+        case c_bool -> boolAsVal(d[0] == 1);
         case c_i8   ,
              c_i16  ,
              c_i32  ,
@@ -1933,15 +1933,15 @@ public class DFA extends ANY
           return Value.UNIT;
         });
 
-    put("safety"                         , cl -> cl._dfa._options.fuzionSafety() ? cl._dfa.True() : cl._dfa.False() );
-    put("debug"                          , cl -> cl._dfa._options.fuzionDebug()  ? cl._dfa.True() : cl._dfa.False() );
+    put("safety"                         , cl -> cl._dfa.boolAsVal(cl._dfa._options.fuzionSafety()));
+    put("debug"                          , cl -> cl._dfa.boolAsVal(cl._dfa._options.fuzionDebug()));
     put("debug_level"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz()), cl._dfa._options.fuzionDebugLevel()) );
 
     put("fuzion.sys.args.count"          , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
     put("fuzion.sys.args.get"            , cl -> cl._dfa.newConstString(null, cl) );
     put("fuzion.std.exit"                , cl -> null );
 
-    put("fuzion.sys.fatal_fault0"        , cl-> null                                                              );
+    put("fuzion.sys.fatal_fault0"        , cl-> null );
 
     put("i8.prefix -°"                   , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
     put("i16.prefix -°"                  , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
@@ -2373,6 +2373,17 @@ public class DFA extends ANY
   private static Value genericResult(Call cl)
   {
     return cl._dfa.newInstance(fuir(cl).clazzResultClazz(cl.calledClazz()), NO_SITE, cl._context);
+  }
+
+
+  /**
+   * Convert boolean b to a DFA Value
+   */
+  private Value boolAsVal(boolean b)
+  {
+    return b
+      ? True()
+      : False();
   }
 
 

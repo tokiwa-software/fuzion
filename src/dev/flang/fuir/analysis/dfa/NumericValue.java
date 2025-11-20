@@ -134,13 +134,13 @@ public class NumericValue extends Value
   /**
    * The DFA instance we are working with.
    */
-  DFA _dfa;
+  final DFA _dfa;
 
 
   /**
    * The value cast to long, null if not known.
    */
-  Long _value;
+  final Long _value;
 
 
   /*---------------------------  constructors  ---------------------------*/
