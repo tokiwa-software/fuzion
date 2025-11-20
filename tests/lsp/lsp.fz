@@ -189,6 +189,6 @@ as_json_rpc(str String) =>
   b := str.replace "\n" "\r\n"
   "Content-Length: {b.byte_length}\r\n\r\n{b}"
 
-fuzion_home := envir.vars.get "FUZION_HOME" .get
+fuzion_home := os.cwd.val.resolve "../../" .as_string
 
 say <| "java -Dfuzion.home={fuzion_home} -Dfile.encoding=UTF-8 -jar {fuzion_home}/lsp.jar dev.flang.lsp.Main -stdio".execute (as_json_rpc init_req)+(as_json_rpc shutdown_req) .out
