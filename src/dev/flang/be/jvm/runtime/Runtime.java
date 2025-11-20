@@ -1351,7 +1351,7 @@ public class Runtime extends ANY
           {
             try { result = result.or(SymbolLookup.libraryLookup("libm.so.6", arena)); } catch(Exception e0) {
               try { result = result.or(SymbolLookup.libraryLookup("libm.dylib", arena)); } catch(Exception e1) {
-                try { result = result.or(SymbolLookup.libraryLookup("msvcrt.dll", arena)); } catch(Exception e2) {
+                try { result = result.or(SymbolLookup.libraryLookup("ucrtbase.dll", arena)); } catch(Exception e2) {
                   Errors.error(e.getMessage()); Errors.error(e0.getMessage()); Errors.error(e1.getMessage()); Errors.fatal(e2.getMessage());
                 }
               }
