@@ -200,8 +200,8 @@ clean_err(f String) =>
     # 8 slashes here intentional, unclear why so many are needed though...
     check "sed -i s|\\\\\\\\|#|g $f".execute.ok
     say "3"
-    check "sed -i s|{os.cwd.val.replace "\\" "#" .replace "/" "#"}|--CURDIR--| $f".execute.ok
-  check "sed -i s#{os.cwd.val}#--CURDIR--# $f".execute.ok
+    check "sed -i s|{os.cwd.val.as_string.replace "\\" "#" .replace "/" "#"}|--CURDIR--| $f".execute.ok
+  check "sed -i s#{os.cwd.val.as_string}#--CURDIR--# $f".execute.ok
   # line numbers
   check "sed -E -i s/\\.fz:[0-9]+:[0-9]+:/\\.fz:n:n:/g $f".execute.ok
   check "sed -E -i s/\\.fz:[0-9]+/\\.fz:n/g $f".execute.ok

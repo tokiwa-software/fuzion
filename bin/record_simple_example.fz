@@ -126,7 +126,7 @@ if type_ != "effect"
       "_$type_"
 
   write_to_file "$file.expected_out$sfx" res.out
-  cur_dir := os.cwd.val
+  cur_dir := os.cwd.val.as_string
   write_to_file "$file.expected_err$sfx" (res.err.replace cur_dir "--CURDIR--")
 else
   write_to_file "$file.effect" ((res.out.lines.filter (l -> !l.is_empty)).sort.as_string "\n")+"\n"

@@ -96,5 +96,5 @@ lsp/debug/socket: $(CLASS_FILES_LSP)
 	mkdir -p runDir
 	java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=127.0.0.1:8000 -cp $(CLASSES_DIR):$(CLASSES_DIR_LSP):$(JARS_LSP_LSP4J):$(JARS_LSP_LSP4J_GENERATOR):$(JARS_LSP_LSP4J_JSONRPC):$(JARS_LSP_GSON) $(LSP_JAVA_ARGS) dev.flang.lsp.Main -socket --port=$(LANGUAGE_SERVER_PORT)
 
-$(BUILD_DIR)/lsp.jar: $(CLASS_FILES_LSP) $(FZ_SRC)/assets/Manifest.txt
+$(BUILD_DIR)/lsp.jar: $(CLASS_FILES_LSP) $(FUZION_BASE) $(FZ_SRC)/assets/Manifest.txt
 	jar cfm $@ $(FZ_SRC)/assets/Manifest.txt -C $(BUILD_DIR)/classes . -C $(CLASSES_DIR_LSP) .

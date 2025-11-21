@@ -1,0 +1,194 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of test_lsp.fz
+#
+# -----------------------------------------------------------------------
+
+########### Extensions ###############
+
+# used for protecting spaces when splitting command string
+#
+protected_space := codepoint codepoint.utf8_encoded_in_four_bytes.as_list.last.val
+
+# stores the results of a process
+#
+process_result(out String, err String, exit_code u32) is
+  ok => exit_code = 0
+
+  type.empty_success =>
+    process_result "" "" 0
+
+  public redef as_string String =>
+    "{exit_code}: {out}{err}"
+
+# specified environment variables as key,value array
+#
+envir_var_kv := [
+  "PATH",
+  "LANG",
+  "JAVA_HOME",
+  "POSTCONDITIONS",
+  "PRECONDITIONS",
+  "dev_flang_tools_serializeFUIR",
+  "dev_flang_fuir_analysis_dfa_DFA_MAX_ITERATIONS",
+  "CPATH",
+  "LIBRARY_PATH",
+  "FUZION_CLANG_INSTALLED_DIR",
+  "OS",
+  "FUZION_HOME",
+  "FUZION_JAVA",
+  "FUZION_JAVA_STACK_SIZE",
+  "FUZION_JAVA_OPTIONS",
+  "FUZION_JVM_BACKEND_OPTIONS",
+  "FUZION_C_BACKEND_OPTIONS",
+  "FUZION_RANDOM_SEED",
+  # set in simple.mk
+  "LD_LIBRARY_PATH",
+  "DYLD_FALLBACK_LIBRARY_PATH",
+  "C_INCLUDE_PATH",
+  "LANGUAGE",
+  "dev_flang_fuir_analysis_dfa_TRACE_ALL_EFFECT_ENVS",
+  # without this test/socket fails on windows,
+  # winsock2 seems to need this to properly load the dlls
+  "SYSTEMROOT"
+].map k->
+    (envir.vars.get k).bind v->
+      (k,v)
+ .filter (.ok)
+ .map (.val)
+ .as_array
+
+# envir vars as map
+#
+envir_vars :=
+  (container.ordered_map
+    (envir_var_kv
+      .map x->x.0
+      .as_array)
+    (envir_var_kv
+      .map x->x.1
+      .as_array))
+  .add "FUZION_DISABLE_ANSI_ESCAPES" "true"
+
+# helper to get out, err, exit_code from started process
+#
+record_process(
+      p os.process,
+      # the command, for error messages
+      cmd String,
+      # feed .stdin file to executed process?
+      feed_stdin String
+) process_result =>
+  lm : mutate is
+  (concur.thread_pool 2 ()->
+    fout := concur.thread_pool.env.submit _ ()->
+      lm ! ()->
+        match p.with_out String lm (()->String.from (io.buffered lm).read_fully)
+          e error => panic "failed reading stdout from $cmd, error is: $e"
+          out String => out
+    ferr := concur.thread_pool.env.submit _ ()->
+      lm ! ()->
+        match p.with_err String lm (()->String.from (io.buffered lm).read_fully)
+          e error => panic "failed reading stderr from $cmd, error is: $e"
+          err String => err
+
+    lm ! ()->
+      _ := p.with_in unit lm ()->
+        _ := (io.buffered lm).writer.env.write feed_stdin.utf8
+    check p.close_in.ok
+
+    # NYI: BUG: unclear why lsp does not shut down
+    match p.wait (time.duration.s 30)
+      _ error =>
+        check p.send_signal os.signals.kill .ok
+        process_result fout.get ferr.get 1
+      ec u32 =>
+        process_result fout.get ferr.get ec)
+    .get
+
+# execute this Sequence of process+args
+#
+Sequence.execute(
+  # feed .stdin file to executed process?
+  feed_stdin String
+) =>
+  seq := map x->x.as_string
+  match os.process.start seq.first.val (seq.drop 1) envir_vars
+    e error => panic "failed executing {Sequence.this}, error is $e"
+    p os.process => record_process p Sequence.this.as_string feed_stdin
+
+# execute this string by splitting at all whitespaces
+#
+String.execute(
+  # feed .stdin file to executed process?
+  feed_stdin String
+) =>
+  split_if (=" ")
+    .map (.replace protected_space " ")
+    .execute feed_stdin
+
+# write data to file dest
+#
+write_to_file(dest String, data String) =>
+  _ := io.file.delete dest
+  check (io.file.use dest io.file.mode.write ()->
+    check (data.write_to io.file.file_mutate).ok).ok
+
+# write file from src to dest
+#
+copy(src, dest String) =>
+  contents := io.slurp (path.of src) .or_panic
+  write_to_file dest contents
+
+############################################################################
+
+
+init_req =>
+  """
+    \{
+      "jsonrpc": "2.0",
+      "id": 1,
+      "method": "initialize",
+      "params": \{
+        "processId": 12345,
+        "rootUri": "file:///path/to/your/project",
+        "capabilities": \{},
+        "trace": "off"
+      }
+    }
+  """
+
+shutdown_req =>
+  """
+    \{
+      "jsonrpc": "2.0",
+      "id": 2,
+      "method": "shutdown",
+      "params": null
+    }
+  """
+
+as_json_rpc(str String) =>
+  b := str.replace "\n" "\r\n"
+  "Content-Length: {b.byte_length}\r\n\r\n{b}"
+
+fuzion_home := os.cwd.val.resolve "../../" .as_string
+
+say <| "java -Dfuzion.home={fuzion_home} -Dfile.encoding=UTF-8 -jar {fuzion_home}/lsp.jar dev.flang.lsp.Main -stdio".execute (as_json_rpc init_req)+(as_json_rpc shutdown_req) .out

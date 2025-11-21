@@ -17,11 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test lib_os_cwd
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-lib_os_cwd =>
-
-  check os.cwd.val.as_string.codepoint_length > 0
-  check os.cwd.val.as_string.contains "tests"
+override NAME = lsp
+include ../simple.mk
