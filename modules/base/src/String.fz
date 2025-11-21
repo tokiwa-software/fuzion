@@ -548,12 +548,12 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # The result is a, possibly empty, list of separate non-empty strings.
   #
   public split Sequence String =>
-    for res  := container.expanding_array String .empty,
-                c.is_ascii_white_space && !word.is_empty ? res.add (String.from word) : res
-        word := container.expanding_array u8 .empty,
-                c.is_ascii_white_space ? container.expanding_array u8 .empty : word.add c
+    for i := -1, i+1 # c is set at end of iteration, so previous value is being used, therefore -1
+        res  := container.expanding_array String .empty,
+                c.is_ascii_white_space && i>word_start ? res.add (substring word_start i) : res
+        word_start := 0, c.is_ascii_white_space ? i+1 : word_start # next index might start a word
         c in utf8
-    else word.is_empty ? res : res.add (String.from word)
+    else i > word_start ? res.add (substring word_start i+1) : res
 
 
   # split string at s
