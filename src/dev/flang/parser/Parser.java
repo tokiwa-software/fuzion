@@ -68,7 +68,7 @@ public class Parser extends Lexer
     /**
      * Pre-allocated instance of `GiveUp`
      */
-    static GiveUp _INSTANCE_ = new GiveUp();
+    static final GiveUp _INSTANCE_ = new GiveUp();
 
   };
 
@@ -79,10 +79,10 @@ public class Parser extends Lexer
   /**
    * Different kinds of opening / closing brackets
    */
-  static Parens PARENS   = new Parens( Token.t_lparen  , Token.t_rparen   );
-  static Parens BRACES   = new Parens( Token.t_lbrace  , Token.t_rbrace   );
-  static Parens BRACKETS = new Parens( Token.t_lbracket, Token.t_rbracket );
-  static Parens ANGLES   = new Parens( "<"             , ">"              );
+  static final Parens PARENS   = new Parens( Token.t_lparen  , Token.t_rparen   );
+  static final Parens BRACES   = new Parens( Token.t_lbrace  , Token.t_rbrace   );
+  static final Parens BRACKETS = new Parens( Token.t_lbracket, Token.t_rbracket );
+  static final Parens ANGLES   = new Parens( "<"             , ">"              );
 
 
   /*----------------------------  variables  ----------------------------*/

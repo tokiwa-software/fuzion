@@ -59,14 +59,14 @@ public class Profiler extends ANY
   /**
    * Sampling frequency, in Hz.
    */
-  private static int DEFAULT_SAMPLING_FREQUENCY = 100;
+  private static final int DEFAULT_SAMPLING_FREQUENCY = 100;
 
 
 
   /**
    * Command to be executed to create flame graph
    */
-  private static String FLAMEGRAPH_PL = "flamegraph.pl";
+  private static final String FLAMEGRAPH_PL = "flamegraph.pl";
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -88,7 +88,7 @@ public class Profiler extends ANY
   /**
    * Sample count for method with given name
    */
-  private static Map<StackTraceElement, Integer> _results_ = new HashMap<>();
+  private static final Map<StackTraceElement, Integer> _results_ = new HashMap<>();
 
 
   /**
@@ -106,7 +106,7 @@ public class Profiler extends ANY
    * The lines consist of a ";"-separated string of "class.method" strings
    * created from the call stack.
    */
-  private static ArrayList<String> _resultsForFlameGraphKeys_ = new ArrayList<>();
+  private static final ArrayList<String> _resultsForFlameGraphKeys_ = new ArrayList<>();
 
 
   /**
@@ -116,7 +116,7 @@ public class Profiler extends ANY
    * The lines consist of a ";"-separated string of "class.method" strings
    * created from the call stack.
    */
-  private static Map<String, Integer> _resultsForFlameGraph_ = new HashMap<>();
+  private static final Map<String, Integer> _resultsForFlameGraph_ = new HashMap<>();
 
 
   /**

@@ -169,7 +169,7 @@ public class GeneratingFUIR extends FUIR
    * Set of intrinsics that get removed by the middle end, i.e., that do not
    * need to be handled by DFA or any later steps.
    */
-  static Map<String, RemoveIntrinsic> _removedIntrinsics_ = new TreeMap<>();
+  static final Map<String, RemoveIntrinsic> _removedIntrinsics_ = new TreeMap<>();
   static
   {
     _removedIntrinsics_.put
@@ -676,7 +676,7 @@ public class GeneratingFUIR extends FUIR
   }
 
 
-  private static List<AbstractCall> NO_INH = new List<AbstractCall>().freeze();
+  private static final List<AbstractCall> NO_INH = new List<AbstractCall>().freeze();
 
 
   /**

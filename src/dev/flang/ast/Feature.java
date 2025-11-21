@@ -676,7 +676,7 @@ public class Feature extends AbstractFeature
    * Quick-and-dirty way to generate unique names for anonymous inner features
    * declared for inline functions.
    */
-  static long uniqueFunctionId = 0;
+  static final long uniqueFunctionId = 0;
 
   /**
    * Constructor for function features
@@ -1355,7 +1355,7 @@ public class Feature extends AbstractFeature
    * buffer to collect cycle part of error message shown by
    * cyclicInheritanceError().
    */
-  private static ArrayList<String> cyclicInhData = new ArrayList<>();
+  private static final ArrayList<String> cyclicInhData = new ArrayList<>();
 
 
   /**

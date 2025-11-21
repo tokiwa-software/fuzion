@@ -386,9 +386,9 @@ public class TokenInfo extends ANY
     return token() == Token.t_ws;
   }
 
-  private final static Set<Token> leftBrackets =
+  private static final Set<Token> leftBrackets =
     List.of(Token.t_lbrace, Token.t_lbracket, Token.t_lparen).stream().collect(Collectors.toUnmodifiableSet());
-  private final static Set<Token> rightBrackets =
+  private static final Set<Token> rightBrackets =
     List.of(Token.t_rbrace, Token.t_rbracket, Token.t_rparen).stream().collect(Collectors.toUnmodifiableSet());
 
   public boolean isLeftBracket()
