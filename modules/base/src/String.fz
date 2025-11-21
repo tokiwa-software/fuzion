@@ -548,9 +548,11 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # The result is a, possibly empty, list of separate non-empty strings.
   #
   public split Sequence String =>
-    for res  := container.expanding_array String .empty, c.is_blank && !word.is_empty ? res.add (String.from word) : res
-        word := container.expanding_array codepoint .empty, c.is_blank ? container.expanding_array codepoint .empty : word.add c
-        c in codepoints
+    for res  := container.expanding_array String .empty,
+                c.is_ascii_white_space && !word.is_empty ? res.add (String.from word) : res
+        word := container.expanding_array u8 .empty,
+                c.is_ascii_white_space ? container.expanding_array u8 .empty : word.add c
+        c in utf8
     else word.is_empty ? res : res.add (String.from word)
 
 
