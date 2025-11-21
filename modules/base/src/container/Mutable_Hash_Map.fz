@@ -184,7 +184,7 @@ is
 
   # remove key from map, returns the removed value
   #
-  public redef remove(k HK) option V =>
+  public redef remove(k HK) option V ! LM =>
 
 
     del(del_idx i64) option V =>

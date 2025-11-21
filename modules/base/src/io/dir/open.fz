@@ -48,5 +48,7 @@ module:public open(dd Directory_Descriptor,
 # short hand to get the currently
 # installed open effect
 #
-public open open =>
+# NYI: CLEANUP: remove
+#
+public open open ! open =>
   open.env
