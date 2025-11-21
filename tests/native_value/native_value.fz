@@ -164,7 +164,7 @@ ex =>
   _ := cxt.data2
 
 
-  # fzE_to_native(arr array u8) Native_Ref => native
+  # fzE_to_native(arr mutate.array u8) Native_Ref => native
   # args := ["-I/usr/include"]
   #   .map (arg -> fzE_to_native arg.as_c_string)
   #   .as_array

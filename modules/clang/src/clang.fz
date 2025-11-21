@@ -33,8 +33,8 @@ clang_createIndex(excludeDeclarationsFromPCH, displayDiagnostics i32) Native_Ref
 clang_disposeIndex(idx Native_Ref) unit => native
 clang_parseTranslationUnit(
   idx Native_Ref,
-  source_filename array u8,
-  command_line_args array Native_Ref,
+  source_filename mutate.array u8,
+  command_line_args mutate.array Native_Ref,
   num_command_line_args i32,
   unsaved_files Native_Ref,
   num_unsaved_files u32,
@@ -140,7 +140,10 @@ public clang is
     _ := cxt.data1
     _ := cxt.data2
 
-    tu := clang_parseTranslationUnit idx header_file.as_c_string (array Native_Ref).empty 0 ffi.null 0 0
+    # NYI: CLEANUP: support local mutates
+    _ := mut
+
+    tu := clang_parseTranslationUnit idx (header_file.as_c_string mutate) ((mutate.array Native_Ref).empty mutate) 0 ffi.null 0 0
 
     if ffi.is_null tu
       error "failed to open header file: $header_file"

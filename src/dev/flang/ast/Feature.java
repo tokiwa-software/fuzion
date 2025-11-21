@@ -2163,7 +2163,6 @@ A ((Choice)) declaration must not contain a result type.
           || Types.resolved.legalNativeArgumentTypes.contains(at)
           || at.selfOrConstraint(Context.NONE).isLambdaTargetButNotLazy(res)
           // NYI: BUG: check if array element type is valid
-          || !at.isGenericArgument() && at.feature() == Types.resolved.f_array
           || !at.isGenericArgument() && at.feature() == Types.resolved.f_mutate_array
           || !at.isGenericArgument() && at.feature().mayBeNativeValue()
           || !at.isGenericArgument() && Types.resolved.f_fuzion_sys_array_data.resultType().feature() == at.feature()
