@@ -573,32 +573,34 @@ $(BUILD_DIR)/bin/run_tests: $(FZ) $(FZ_MODULES) $(FZ_SRC)/bin/run_tests.fz
 .PHONY: run_tests
 run_tests: run_tests_fuir run_tests_jvm run_tests_c run_tests_int run_tests_effect run_tests_jar
 
+TEST_DEPENDENCIES = $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests $(BUILD_DIR)/bin/run_tests $(BUILD_DIR)/lsp.jar
+
 # phony target to run Fuzion tests using effects and report number of failures
 .PHONY .SILENT: run_tests_effect
-run_tests_effect: $(FZ) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests $(BUILD_DIR)/bin/run_tests
+run_tests_effect: $(FZ) $(TEST_DEPENDENCIES)
 	printf "testing effects: "
 	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) effect
 
 # phony target to run Fuzion tests using interpreter and report number of failures
 .PHONY .SILENT: run_tests_int
-run_tests_int: $(FZ_INT) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests $(BUILD_DIR)/bin/run_tests
+run_tests_int: $(FZ_INT) $(TEST_DEPENDENCIES)
 	printf "testing interpreter: "
 	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) int
 
 # phony target to run Fuzion tests using c backend and report number of failures
 .PHONY .SILENT: run_tests_c
-run_tests_c: $(FZ_C) $(FZ_MODULES) $(MOD_JAVA_BASE) $(BUILD_DIR)/tests $(BUILD_DIR)/bin/run_tests
+run_tests_c: $(FZ_C) $(TEST_DEPENDENCIES)
 	printf "testing C backend: "; \
 	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) c
 
 # phony target to run Fuzion tests using jvm backend and report number of failures
 .PHONY .SILENT: run_tests_jvm
-run_tests_jvm: $(FZ_JVM) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests $(BUILD_DIR)/bin/run_tests
+run_tests_jvm: $(FZ_JVM) $(TEST_DEPENDENCIES)
 	printf "testing JVM backend: "; \
 	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) jvm
 
 .PHONY .SILENT: run_tests_fuir
-run_tests_fuir: $(FZ_JVM) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests $(BUILD_DIR)/bin/run_tests
+run_tests_fuir: $(TEST_DEPENDENCIES)
 	printf "testing FUIR backend: "; \
 	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) fuir
 
