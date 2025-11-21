@@ -63,7 +63,7 @@ public class CFG extends ANY
   /*----------------------------  constants  ----------------------------*/
 
 
-  static TreeMap<String, Intrinsic> _intrinsics_ = new TreeMap<>();
+  static final TreeMap<String, Intrinsic> _intrinsics_ = new TreeMap<>();
 
 
   /*-------------------------  static methods  --------------------------*/

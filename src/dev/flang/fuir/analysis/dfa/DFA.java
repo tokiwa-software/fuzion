@@ -781,13 +781,13 @@ public class DFA extends ANY
   /**
    * DFA's intrinsics.
    */
-  static TreeMap<String, IntrinsicDFA> _intrinsics_ = new TreeMap<>();
+  static final TreeMap<String, IntrinsicDFA> _intrinsics_ = new TreeMap<>();
 
 
   /**
    * Set of intrinsics that are found to be used by the DFA.
    */
-  static Set<String> _usedIntrinsics_ = new TreeSet<>();
+  static final Set<String> _usedIntrinsics_ = new TreeSet<>();
 
 
   /**
@@ -814,14 +814,14 @@ public class DFA extends ANY
    *
    * So it seems as if the results are good starting at 25.
    */
-  private static int MAX_NEW_CALL_RECURSION =
+  private static final int MAX_NEW_CALL_RECURSION =
     FuzionOptions.intPropertyOrEnv("dev.flang.fuir.analysis.dfa.DFA.MAX_NEW_CALL_RECURSION", 40);
 
 
   /**
    * To spot potential problems early where DFA takes a lot of iterations.
    */
-  private static int MAX_ITERATIONS =
+  private static final int MAX_ITERATIONS =
     FuzionOptions.intPropertyOrEnv("dev.flang.fuir.analysis.dfa.DFA.MAX_ITERATIONS", Integer.MAX_VALUE);
 
 
@@ -830,7 +830,7 @@ public class DFA extends ANY
    * performance?  This is used to avoid large number of instances of, e.g.,
    * `array u8` where tracking the individual instances gives no benefit.
    */
-  static boolean ONLY_ONE_INSTANCE  = true;
+  static final boolean ONLY_ONE_INSTANCE  = true;
 
 
   /**
@@ -850,7 +850,7 @@ public class DFA extends ANY
   static final boolean TRACE_ALL_EFFECT_ENVS = FuzionOptions.boolPropertyOrEnv(TRACE_ALL_EFFECT_ENVS_NAME, true);
 
   static final String  DO_NOT_TRACE_ENVS_NAME = "dev.flang.fuir.analysis.dfa.DO_NOT_TRACE_ENVS";
-  static boolean DO_NOT_TRACE_ENVS = FuzionOptions.boolPropertyOrEnv(DO_NOT_TRACE_ENVS_NAME, true);
+  static final boolean DO_NOT_TRACE_ENVS = FuzionOptions.boolPropertyOrEnv(DO_NOT_TRACE_ENVS_NAME, true);
   TreeMap<Integer, Value> _allValuesForEnv = new TreeMap<>();
 
 
@@ -3193,7 +3193,7 @@ public class DFA extends ANY
   }
 
 
-  static int _cntArrayCons = 0;
+  static final int _cntArrayCons = 0;
 
   /**
    * Create call to given clazz with given target and args.

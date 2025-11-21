@@ -88,7 +88,7 @@ public class Intrinsics extends ANY
   /*----------------------------  constants  ----------------------------*/
 
 
-  static TreeMap<String, IntrinsicCode> _intrinsics_ = new TreeMap<>();
+  static final TreeMap<String, IntrinsicCode> _intrinsics_ = new TreeMap<>();
 
   /*----------------------------  variables  ----------------------------*/
 

@@ -64,7 +64,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   // flag to disable applyTypePar caching, for debugging only
-  private static boolean typeParCachingEnabled = true;
+  private static final boolean typeParCachingEnabled = true;
   /**
    * Cached results for {@code applyTypePars(t)} and {@code applyTypePars(f, List<AbstractType>)};
    */

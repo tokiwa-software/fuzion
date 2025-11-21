@@ -60,7 +60,7 @@ public class LexerTool extends ANY
     return isIdentifier;
   }
 
-  private static Map<String, List<TokenInfo>> tokenCache =
+  private static final Map<String, List<TokenInfo>> tokenCache =
     Util.threadSafeLRUMap(1, (removed) -> {
     });
 
