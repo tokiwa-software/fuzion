@@ -121,20 +121,20 @@ public class Value extends Val
   /**
    * Comparator instance to compare two Values of arbitrary types.
    */
-  static Comparator<Value> COMPARATOR = new ValueComparator();
+  static final Comparator<Value> COMPARATOR = new ValueComparator();
 
 
   /**
    * Comparator instance to compare two Values of effect instances that are used in
    * Env[ironmnents].
    */
-  static Comparator<Value> ENV_COMPARATOR = new ValueEnvComparator();
+  static final Comparator<Value> ENV_COMPARATOR = new ValueEnvComparator();
 
 
   /**
    * The unit value 'unit', '{}'
    */
-  static Value UNIT = new Value(NO_CLAZZ)
+  static final Value UNIT = new Value(NO_CLAZZ)
     {
       /**
        * Add v to the set of values of given field within this instance.
@@ -182,7 +182,7 @@ public class Value extends Val
   /**
    * undefined value, used for not initialized fields.
    */
-  static Value UNDEFINED = new Value(NO_CLAZZ)
+  static final Value UNDEFINED = new Value(NO_CLAZZ)
     {
       public String toString()
       {
@@ -194,7 +194,7 @@ public class Value extends Val
   /**
    * used for jref field of Java_Objects
    */
-  static Value UNKNOWN_JAVA_REF = new Value(NO_CLAZZ)
+  static final Value UNKNOWN_JAVA_REF = new Value(NO_CLAZZ)
     {
 
       /**

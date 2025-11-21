@@ -50,7 +50,7 @@ public class IO
   private static PrintStream CLIENT_OUT = System.out;
   private static PrintStream CLIENT_ERR = System.err;
   // NYI: UNDER DEVELOPMENT: "fuzion-lsp-server" should depend on usage
-  private static File tempDir =
+  private static final File tempDir =
     ErrorHandling.resultOrDefault(() -> Files.createTempDirectory("fuzion-lsp-server").toFile(), null);
 
   static byte[] getBytes(String text)

@@ -445,7 +445,7 @@ public class Call extends ANY implements Comparable<Call>, Context
    * toString() might end up in a complex recursion if it is used for careless
    * debug output, so we try to catch recursion and stop it.
    */
-  static TreeSet<Call> _toStringRecursion_ = new TreeSet<>();
+  static final TreeSet<Call> _toStringRecursion_ = new TreeSet<>();
 
 
   /**

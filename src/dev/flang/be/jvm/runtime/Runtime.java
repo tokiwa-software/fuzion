@@ -86,7 +86,7 @@ public class Runtime extends ANY
 {
 
   /* NYI: UNDER DEVELOPMENT: memory leak */
-  private static Arena arena = Arena.global();
+  private static final Arena arena = Arena.global();
 
   /*-----------------------------  classes  -----------------------------*/
 
@@ -163,7 +163,7 @@ public class Runtime extends ANY
   /**
    * This contains all open files/streams.
    */
-  static OpenResources<AutoCloseable> _openStreams_ = new OpenResources<AutoCloseable>()
+  static final OpenResources<AutoCloseable> _openStreams_ = new OpenResources<AutoCloseable>()
   {
     @Override
     protected boolean close(AutoCloseable f) {
@@ -182,7 +182,7 @@ public class Runtime extends ANY
   /**
    * This contains all open processes.
    */
-  public static OpenResources<Process> _openProcesses_ = new OpenResources<Process>()
+  public static final OpenResources<Process> _openProcesses_ = new OpenResources<Process>()
   {
     @Override
     protected boolean close(Process p) {
@@ -200,7 +200,7 @@ public class Runtime extends ANY
   /**
    * The result of {@code envir.args[0]}
    */
-  public static String _cmd_ =
+  public static final String _cmd_ =
     System.getProperties().computeIfAbsent(FUZION_COMMAND_PROPERTY,
                                            k -> ProcessHandle.current()
                                                              .info()
@@ -639,7 +639,7 @@ public class Runtime extends ANY
   /**
    * cached results of {@code classNameToFeatureName}.
    */
-  static WeakHashMap<ClassLoader, Map<String, String>> _classNameToFeatureName = new WeakHashMap<>();
+  static final WeakHashMap<ClassLoader, Map<String, String>> _classNameToFeatureName = new WeakHashMap<>();
 
 
   /**
@@ -1288,7 +1288,7 @@ public class Runtime extends ANY
    * Weak map of frozen (immutable) arrays, used to debug accidental
    * modifications of frozen array.
    */
-  static Map<Object, String> _frozenPointers_ = CHECKS ? Collections.synchronizedMap(new WeakHashMap<Object, String>()) : null;
+  static final Map<Object, String> _frozenPointers_ = CHECKS ? Collections.synchronizedMap(new WeakHashMap<Object, String>()) : null;
 
 
   /**

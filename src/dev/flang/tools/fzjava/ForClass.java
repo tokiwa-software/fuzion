@@ -66,21 +66,21 @@ class ForClass extends ANY
   /**
    * Feature suffix used for declaration of instance methods and fields
    */
-  static String DYNAMIC_SUFFIX = "";
+  static final String DYNAMIC_SUFFIX = "";
 
 
   /**
    * Feature suffix used for declaration of unit type containing static methods
    * and fields
    */
-  static String STATIC_SUFFIX  = "_static";
+  static final String STATIC_SUFFIX  = "_static";
 
 
   /**
    * File name suffix used for declaration of routine that returns instance of
    * unit type containing static methods and fields.
    */
-  static String UNIT_SUFFIX    = "_unit";
+  static final String UNIT_SUFFIX    = "_unit";
 
 
   /*----------------------------  variables  ----------------------------*/

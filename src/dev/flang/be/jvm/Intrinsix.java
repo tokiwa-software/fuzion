@@ -75,7 +75,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
   /* Set of names of intrinsics defined in runtime.Intrinsics.  No inline code
    * is created for these, but they are called directly:
    */
-  static TreeSet<String> _availableIntrinsics = new TreeSet<>();
+  static final TreeSet<String> _availableIntrinsics = new TreeSet<>();
   static
   {
     for (var m : Intrinsics.class.getDeclaredMethods())

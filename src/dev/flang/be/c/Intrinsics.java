@@ -63,19 +63,19 @@ public class Intrinsics extends ANY
   /**
    * Predefined identifiers to access args:
    */
-  static CIdent A0 = new CIdent("arg0");
-  static CIdent A1 = new CIdent("arg1");
-  static CIdent A2 = new CIdent("arg2");
-  static CIdent A3 = new CIdent("arg3");
-  static CIdent A4 = new CIdent("arg4");
-  static CIdent A5 = new CIdent("arg5");
-  static CIdent A6 = new CIdent("arg6");
-  static CIdent A7 = new CIdent("arg7");
+  static final CIdent A0 = new CIdent("arg0");
+  static final CIdent A1 = new CIdent("arg1");
+  static final CIdent A2 = new CIdent("arg2");
+  static final CIdent A3 = new CIdent("arg3");
+  static final CIdent A4 = new CIdent("arg4");
+  static final CIdent A5 = new CIdent("arg5");
+  static final CIdent A6 = new CIdent("arg6");
+  static final CIdent A7 = new CIdent("arg7");
 
   /**
    * Predefined identifier to access errno macro.
    */
-  static CIdent errno = new CIdent("errno");
+  static final CIdent errno = new CIdent("errno");
 
   /**
    * Wrap code into a mutex_lock/unlock.  This
@@ -89,7 +89,7 @@ public class Intrinsics extends ANY
   }
 
 
-  static TreeMap<String, IntrinsicCode> _intrinsics_ = new TreeMap<>();
+  static final TreeMap<String, IntrinsicCode> _intrinsics_ = new TreeMap<>();
   static
   {
     put("Type.name" , (c,cl,outer,in) ->
