@@ -1628,16 +1628,16 @@ public class Feature extends AbstractFeature
 
         if (_effects != null)
         {
-          for (var e : _effects)
-            {
-              var t = e.resolve(res, context());
+          _effects = _effects.map(e -> {
+            var t = e.resolve(res, context());
 
-              if (t != Types.t_ERROR && (!(t.selfOrConstraint(res, context()))
-                                            .feature().inheritsFrom(Types.resolved.f_effect)))
-                {
-                  AstErrors.notAnEffect(t, ((UnresolvedType) e).pos());
-                }
-            }
+            if (t != Types.t_ERROR && (!(t.selfOrConstraint(res, context()))
+                                          .feature().inheritsFrom(Types.resolved.f_effect)))
+              {
+                AstErrors.notAnEffect(t, ((UnresolvedType) e).pos());
+              }
+            return t;
+          });
         }
 
         _state = State.RESOLVED_TYPES;
