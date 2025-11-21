@@ -132,7 +132,7 @@ is
 # random with no argument returns random.env, i.e., the currently installed
 # source of randomness.
 #
-public random random =>
+public random random ! random, envir.vars =>
   random.install_default
   random.env
 

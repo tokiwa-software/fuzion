@@ -105,17 +105,17 @@ exit0 =>
 # exit with a code argument calls exit.exit code, i.e., it uses the
 # current exit effect to exit with the given message.
 #
-public exit(code u8) void => exit0.exit code
+public exit(code u8) void ! exit => exit0.exit code
 
 
 # exit with the currently stored exit code
 #
-public exit void => exit0.exit
+public exit void ! exit => exit0.exit
 
 
 # change the currently stored exit code
 #
-public set_exit_code(code u8) outcome unit
+public set_exit_code(code u8) outcome unit ! exit
 pre debug: code ≤ 127
   => exit0.set_exit_code code
 

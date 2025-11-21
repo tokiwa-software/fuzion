@@ -60,12 +60,12 @@ public java is
     public redef index [ ] (i idx) T ! fuzion.jvm =>
       fuzion.jvm.env.array_get T java_ref i.as_i32 (sys.c_string signature)
 
-    public redef as_list list T => as_list 0
+    public redef as_list list T ! fuzion.jvm => as_list 0
 
 
     # create list starting at index from
     #
-    public as_list (from i32) list T =>
+    public as_list (from i32) list T ! fuzion.jvm =>
       if length ≤ from
         nil
       else
@@ -79,8 +79,8 @@ public java is
       pre
         debug: 0 ≤ i < length
     is
-      public redef head T => Array.this[i]
-      public redef tail list T => as_list i+1
+      public redef head T ! fuzion.jvm => Array.this[i]
+      public redef tail list T ! fuzion.jvm => as_list i+1
 
 
     # get the java signature for type T.

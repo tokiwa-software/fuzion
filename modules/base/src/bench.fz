@@ -54,5 +54,5 @@ public bench(warm_up time.duration, d time.duration, f ()->unit) f64 ! time.nano
 #
 # returns: iterations per second
 #
-public bench(f ()->unit) f64 =>
+public bench(f ()->unit) f64 ! time.nano =>
   bench (time.duration.s 5) (time.duration.s 10) f

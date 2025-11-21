@@ -33,7 +33,7 @@ module:public thread(thrd Thread) : property.equatable is
 
   # wait for this thread to finish execution
   #
-  public join unit =>
+  public join unit ! atomic_access =>
     if joined.compare_and_set trit.no trit.unknown
       fuzion.sys.thread.join0 thrd
       joined.write trit.yes
