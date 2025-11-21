@@ -163,15 +163,20 @@ public class TokenInfo extends ANY
     {
       boolean result;
 
-      if (this == arg0) {
+      if (this == arg0)
+        {
           result = true;
-      } else if (!(arg0 instanceof EntryEqualByKey<?, ?> other)) {
+        }
+      else if (!(arg0 instanceof EntryEqualByKey<?, ?> other))
+        {
           result = false;
-      } else {
+        }
+      else
+        {
           var key = this.getKey();
           var otherKey = other.getKey();
           result = (key == null ? otherKey == null : key.equals(otherKey));
-      }
+        }
 
       return result;
     }
