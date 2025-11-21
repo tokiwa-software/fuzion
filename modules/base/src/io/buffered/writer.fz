@@ -69,49 +69,51 @@ is
       wh.write (buffer.flush n)
 
 
-  # buffered writing of the given byte
+  # store the amount of written bytes
+  # in the last write request
   #
-  public write_byte (b u8) outcome unit =>
-    (write [b]).error
+  bw := LM.env.new i32 0
 
-
-  # helper type for write result
+  # get the amount of bytes that were written successfully
+  # in the last write request
   #
-  private:public write_result(public bytes_written i32, public error outcome unit) is
+  public bytes_written i32 => bw.get
 
-
-    # was writing successful?
-    #
-    public ok bool => error.ok
+  # update bytes_written and replace the effect
+  #
+  bytes_written(n i32) unit =>
+    bw <- n
+    replace
 
 
   # buffered writing of the given array
   #
-  public write (data Sequence u8) write_result =>
-    p := data.as_array
-    n := p.length
-    for n_written := 0, n_written + r
-        e outcome unit := unit, e0
-    while n_written < n
-      y := LM.env.new (outcome unit unit)
-      f =>
-        if buffer.buffered = 0 && (n - n_written) > buf_size
-          # can write directly
-          y <- wh.write (p.slice n_written (n_written + buf_size)).as_array
-          buf_size
-        else if buffer.buffered = 0
-          # start filling buffer, but incompletely
-          y <- buffer.enqueue (p.slice n_written n).as_array
-          n - n_written
-        else
-          # fill up the rest of the buffer
-          a := min (buf_size - buffer.buffered.as_i32) n
-          y <- buffer.enqueue (p.slice n_written (n_written + a)).as_array
-          y <- flush
-          a
-      r := f
-      e0 := y.get
-    until !e
-      write_result n_written e
+  write_array(a array u8) outcome unit =>
+    bytes_written 0
+    # still fits into buffer
+    if buffer.available.as_i32 >= a.count
+      buffer.enqueue a
     else
-      write_result n_written e
+      # flush the buffer first
+      flush.bind _->
+        full_chunks := a.count / buf_size
+        for c in 0..full_chunks
+            wr := wh.write (a.slice c*buf_size c*(buf_size+1))
+        until wr.is_error
+          bytes_written c*buf_size
+          wr
+        else
+          bytes_written full_chunks*buf_size
+          rest := a.slice full_chunks*buf_size a.count
+          buffer.enqueue rest
+
+
+
+  # buffered writing of the given data
+  # where data may be bytes or a String
+  #
+  public write (data choice String (Sequence u8)) outcome unit =>
+    replace
+    match data
+      str String => write_array str.utf8.as_array
+      s Sequence u8 => write_array s.as_array

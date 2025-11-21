@@ -55,7 +55,7 @@ public wolfssl(T type, LM type : mutate, LM2 type: mutate, code ()->T) T ! LM, L
   my_IOSend : Function i32 Native_Ref Native_Ref i32 Native_Ref is
     public redef call(ssl Native_Ref, buf Native_Ref, sz i32, ctx Native_Ref) i32 =>
       arr := ffi.from_native_array u8 buf sz
-      check ((io.buffered LM).writer.env.write arr).error.ok
+      check ((io.buffered LM).writer.env.write arr).ok
       check (io.buffered LM).writer.env.flush.ok
       sz
 

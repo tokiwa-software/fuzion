@@ -31,9 +31,9 @@ mmap_test =>
   say <| io.file.use testfile io.file.mode.append ()->
 
     io.file.writer.write (array u8 os.mmap_offset_multiple.as_i32 i->0)
-      .error.get
+      .get
     io.file.writer.write "hello!".utf8
-      .error.get
+      .get
     io.file.writer.flush
       .get
 
