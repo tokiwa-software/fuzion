@@ -117,6 +117,7 @@ public class Util
       });
   }
 
+  @SafeVarargs
   public static <T> Stream<T> concatStreams(Stream<T>... streams)
   {
     return Stream.of(streams)
