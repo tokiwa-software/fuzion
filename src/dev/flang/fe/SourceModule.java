@@ -906,15 +906,6 @@ A feature that redefines at least one inherited feature must use the `redef` mod
                     AstErrors.redefineModifierMissing(f.pos(), f, existing);
                   }
               }
-            else if (c._hasPre != null && c._hasPreElse == null)
-              {
-                /*
-    // tag::fuzion_rule_PARS_CONTR_PRE_ELSE[]
-A pre-condition of a feature that redefines one or several inherited features must start with `pre else`, independent of whether the redefined, inherited features are `abstract` or not.
-    // end::fuzion_rule_PARS_CONTR_PRE_ELSE[]
-                */
-                AstErrors.redefinePreconditionMustUseElse(c._hasPre, f);
-              }
             else if (c._hasPost != null && c._hasPostThen == null)
               {
                 /*
@@ -955,15 +946,6 @@ A feature that does not redefine an inherited feature must not use the `redef` m
             List<FeatureAndOuter> hiddenFeaturesSameSignature = lookup(outer, f.featureName().baseName(), null, true, true)
               .stream().filter(fo->fo._feature.featureName().equals(f.featureName())).collect(List.collector());
             AstErrors.redefineModifierDoesNotRedefine(f, hiddenFeaturesSameSignature);
-          }
-        else if (c._hasPreElse != null)
-          {
-            /*
-    // tag::fuzion_rule_PARS_CONTR_PRE_NO_ELSE[]
-A pre-condition of a feature that does not redefine an inherited feature must start with `pre`, not `pre else`.
-    // end::fuzion_rule_PARS_CONTR_PRE_NO_ELSE[]
-            */
-            AstErrors.notRedefinedPreconditionMustNotUseElse(c._hasPreElse, f);
           }
         else if (c._hasPostThen != null)
           {

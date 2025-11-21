@@ -497,13 +497,13 @@ catch_precondition is
 
   c112 : p1, p1 is
     redef f1(x i32)
-      pre else x > 0
+      # implicit pre true inherited, no precondition allowed
     => x
     redef f2(x i32)
       pre else x > 0
     => x
     redef f3(x i32)
-      pre else x > 0
+      # implicit pre true inherited, no precondition allowed
     => x
     redef f4(x i32)
       pre else x > 0
@@ -520,13 +520,13 @@ catch_precondition is
 
   c122 : p1, p2 is
     redef f1(x i32)
-      pre else x > 0
+      # implicit pre true inherited, no precondition allowed
     => x
     redef f2(x i32)
-      pre else x > 0
+      # implicit pre true inherited, no precondition allowed
     => x
     redef f3(x i32)
-      pre else x > 0
+      # implicit pre true inherited, no precondition allowed
     => x
     redef f4(x i32)
       pre else x > 0
@@ -538,18 +538,18 @@ catch_precondition is
       pre else x > 0
     => x
     redef f7(x i32)
-      pre else x > 0
+      # implicit pre true inherited, no precondition allowed
     => x
 
   c132 : p1, p3 is
     redef f1(x i32)
-      pre else x > 0
+      # implicit pre true inherited, no precondition allowed
     => x
     redef f2(x i32)
       pre else x > 0
     => x
     redef f3(x i32)
-      pre else x > 0
+      # implicit pre true inherited, no precondition allowed
     => x
     redef f4(x i32)
       pre else x > 0
@@ -558,7 +558,7 @@ catch_precondition is
       pre else x > 0
     => x
     redef f6(x i32)
-      pre else x > 0
+      # implicit pre true inherited, no precondition allowed
     => x
     redef f7(x i32)
       pre else x > 0
@@ -566,45 +566,45 @@ catch_precondition is
 
   c142 : p1, p4 is
     redef f1(x i32)
-      pre else x > 0
+      # implicit pre true inherited, no precondition allowed
     => x
     redef f2(x i32)
       pre else x > 0
     => x
     redef f3(x i32)
-      pre else x > 0
+      # implicit pre true inherited, no precondition allowed
     => x
     redef f4(x i32)
       pre else x > 0
     => x
     redef f5(x i32)
-      pre else x > 0
+      # implicit pre true inherited, no precondition allowed
     => x
     redef f6(x i32)
       pre else x > 0
     => x
     redef f7(x i32)
-      pre else x > 0
+      # implicit pre true inherited, no precondition allowed
     => x
 
   c152 : p1, p5 is
     redef f1(x i32)
-      pre else x > 0
+      # implicit pre true inherited, no precondition allowed
     => x
     redef f2(x i32)
       pre else x > 0
     => x
     redef f3(x i32)
-      pre else x > 0
+      # implicit pre true inherited, no precondition allowed
     => x
     redef f4(x i32)
-      pre else x > 0
+      # implicit pre true inherited, no precondition allowed
     => x
     redef f5(x i32)
       pre else x > 0
     => x
     redef f6(x i32)
-      pre else x > 0
+      # implicit pre true inherited, no precondition allowed
     => x
     redef f7(x i32)
       pre else x > 0
@@ -612,19 +612,19 @@ catch_precondition is
 
   c162 : p1, p6 is
     redef f1(x i32)
-      pre else x > 0
+      # implicit pre true inherited, no precondition allowed
     => x
     redef f2(x i32)
       pre else x > 0
     => x
     redef f3(x i32)
-      pre else x > 0
+      # implicit pre true inherited, no precondition allowed
     => x
     redef f4(x i32)
       pre else x > 0
     => x
     redef f5(x i32)
-      pre else x > 0
+      # implicit pre true inherited, no precondition allowed
     => x
     redef f6(x i32)
       pre else x > 0
@@ -635,16 +635,16 @@ catch_precondition is
 
   c172 : p1, p7 is
     redef f1(x i32)
-      pre else x > 0
+      # implicit pre true inherited, no precondition allowed
     => x
     redef f2(x i32)
-      pre else x > 0
+      # implicit pre true inherited, no precondition allowed
     => x
     redef f3(x i32)
-      pre else x > 0
+      # implicit pre true inherited, no precondition allowed
     => x
     redef f4(x i32)
-      pre else x > 0
+      # implicit pre true inherited, no precondition allowed
     => x
     redef f5(x i32)
       pre else x > 0
@@ -658,13 +658,13 @@ catch_precondition is
 
   c115 : p1, p1 is
     redef f1(x i32)
-      pre else false
+      # implicit pre true inherited, no precondition allowed
     => x
     redef f2(x i32)
       pre else false
     => x
     redef f3(x i32)
-      pre else false
+      # implicit pre true inherited, no precondition allowed
     => x
     redef f4(x i32)
       pre else false
@@ -681,13 +681,13 @@ catch_precondition is
 
   c125 : p1, p2 is
     redef f1(x i32)
-      pre else false
+      # implicit pre true inherited, no precondition allowed
     => x
     redef f2(x i32)
-      pre else false
+      # implicit pre true inherited, no precondition allowed
     => x
     redef f3(x i32)
-      pre else false
+      # implicit pre true inherited, no precondition allowed
     => x
     redef f4(x i32)
       pre else false
@@ -699,18 +699,18 @@ catch_precondition is
       pre else false
     => x
     redef f7(x i32)
-      pre else false
+      # implicit pre true inherited, no precondition allowed
     => x
 
   c135 : p1, p3 is
     redef f1(x i32)
-      pre else false
+      # implicit pre true inherited, no precondition allowed
     => x
     redef f2(x i32)
       pre else false
     => x
     redef f3(x i32)
-      pre else false
+      # implicit pre true inherited, no precondition allowed
     => x
     redef f4(x i32)
       pre else false
@@ -719,7 +719,7 @@ catch_precondition is
       pre else false
     => x
     redef f6(x i32)
-      pre else false
+      # implicit pre true inherited, no precondition allowed
     => x
     redef f7(x i32)
       pre else false
@@ -727,45 +727,45 @@ catch_precondition is
 
   c145 : p1, p4 is
     redef f1(x i32)
-      pre else false
+      # implicit pre true inherited, no precondition allowed
     => x
     redef f2(x i32)
       pre else false
     => x
     redef f3(x i32)
-      pre else false
+      # implicit pre true inherited, no precondition allowed
     => x
     redef f4(x i32)
       pre else false
     => x
     redef f5(x i32)
-      pre else false
+      # implicit pre true inherited, no precondition allowed
     => x
     redef f6(x i32)
       pre else false
     => x
     redef f7(x i32)
-      pre else false
+      # implicit pre true inherited, no precondition allowed
     => x
 
   c155 : p1, p5 is
     redef f1(x i32)
-      pre else false
+      # implicit pre true inherited, no precondition allowed
     => x
     redef f2(x i32)
       pre else false
     => x
     redef f3(x i32)
-      pre else false
+      # implicit pre true inherited, no precondition allowed
     => x
     redef f4(x i32)
-      pre else false
+      # implicit pre true inherited, no precondition allowed
     => x
     redef f5(x i32)
       pre else false
     => x
     redef f6(x i32)
-      pre else false
+      # implicit pre true inherited, no precondition allowed
     => x
     redef f7(x i32)
       pre else false
@@ -773,19 +773,19 @@ catch_precondition is
 
   c165 : p1, p6 is
     redef f1(x i32)
-      pre else false
+      # implicit pre true inherited, no precondition allowed
     => x
     redef f2(x i32)
       pre else false
     => x
     redef f3(x i32)
-      pre else false
+      # implicit pre true inherited, no precondition allowed
     => x
     redef f4(x i32)
       pre else false
     => x
     redef f5(x i32)
-      pre else false
+      # implicit pre true inherited, no precondition allowed
     => x
     redef f6(x i32)
       pre else false
@@ -796,16 +796,16 @@ catch_precondition is
 
   c175 : p1, p7 is
     redef f1(x i32)
-      pre else false
+      # implicit pre true inherited, no precondition allowed
     => x
     redef f2(x i32)
-      pre else false
+      # implicit pre true inherited, no precondition allowed
     => x
     redef f3(x i32)
-      pre else false
+      # implicit pre true inherited, no precondition allowed
     => x
     redef f4(x i32)
-      pre else false
+      # implicit pre true inherited, no precondition allowed
     => x
     redef f5(x i32)
       pre else false
