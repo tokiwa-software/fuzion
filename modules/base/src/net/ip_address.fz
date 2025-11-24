@@ -21,7 +21,7 @@
 #
 # -----------------------------------------------------------------------
 
-# ip_address - stores an IP address an an unsigned 128-bit integer,
+# ip_address - stores an IP address an unsigned 128-bit integer,
 # regardless of whether it is an IPv4 or IPv6 address.
 #
 # in the case of an IPv4 address, this is the canonical mapping of that
