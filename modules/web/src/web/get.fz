@@ -45,6 +45,6 @@ public get(family net.family.val, url String) outcome String =>
       request_message =>
         http
           .request_message
-          .new http.get (pu.target.or_else "/") 1 1 [("Host", pu.host)]
+          .new http.get (pu.target.or_else "/") 1 1 ([("Host", pu.host)] ++ web.config.default_headers)
 
       do_request family (pu.port.or_else (if pu.use_https then 443 else 80)) pu.use_https pu.host request_message

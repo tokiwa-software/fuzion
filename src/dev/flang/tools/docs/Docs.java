@@ -108,7 +108,7 @@ public class Docs extends ANY
 
   private final AbstractFeature universe = fe._feUniverse;
 
-  public final static Pattern nonAsciiPattern = Pattern
+  public static final Pattern nonAsciiPattern = Pattern
     .compile("[^\\x00-\\x7F]");
 
 

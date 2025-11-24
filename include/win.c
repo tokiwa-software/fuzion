@@ -43,6 +43,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <string.h>
 #include <assert.h>
 #include <time.h>
+#include <math.h>
 
 #include <winsock2.h>
 #include <windows.h>
@@ -1060,7 +1061,14 @@ int64_t fzE_file_position(void *file)
 
 int32_t fzE_file_flush(void *file)
 {
-  return FlushFileBuffers((HANDLE)file)
+  HANDLE h = (HANDLE)file;
+
+  // flushing stdout/stderr does not work
+  if (GetFileType(h) == FILE_TYPE_CHAR)
+  {
+    return 0;
+  }
+  return FlushFileBuffers(h)
     ? 0
     : -1;
 }
@@ -1099,4 +1107,9 @@ int fzE_cwd(void * buf, size_t size)
   return _getcwd(buf, size) == NULL
     ? -1
     : 0;
+}
+
+int fzE_isnan(double d)
+{
+  return _isnan(d);
 }

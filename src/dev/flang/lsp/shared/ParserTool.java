@@ -70,7 +70,7 @@ public class ParserTool extends ANY
    * maps temporary files which are fed to the parser to their original uri.
    */
   // NYI: UNDER DEVELOPMENT: fix memory leak
-  private static TreeMap<String, URI> tempFile2Uri = new TreeMap<>();
+  private static final TreeMap<String, URI> tempFile2Uri = new TreeMap<>();
 
   private static final int END_OF_FEATURE_CACHE_MAX_SIZE = 1;
 
@@ -81,7 +81,7 @@ public class ParserTool extends ANY
     _modules = modules;
   }
 
-  private static ParserCache parserCache = new ParserCache();
+  private static final ParserCache parserCache = new ParserCache();
 
   /**
    * LRU-Cache holding end of feature calculations
@@ -265,11 +265,10 @@ public class ParserTool extends ANY
         {
           f.visit(visitor);
         }
-      af.visitCode(visitor);
 
       var result = visitor.lastPos.equals(SourcePosition.notAvailable) ? af.pos() : visitor.lastPos;
 
-      result = (SourcePosition) LexerTool
+      result = LexerTool
           .tokensFrom(result)
           .skip(1)
           // NYI: UNDER DEVELOPMENT: do we need to sometimes consider right brackets as well?

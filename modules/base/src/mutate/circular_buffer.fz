@@ -127,7 +127,7 @@ is
     if is_empty
       nil
     else
-      v := data[start.get.as_i32]
+      v := data[start.get]
       start <- mod_length (start.get + 1)
       v
 
@@ -160,7 +160,7 @@ is
     check_and_replace
 
     x := array n.as_i32 i->
-      data[(mod_length (start.get + i.as_i64)).as_i32]
+      data[mod_length (start.get + i.as_i64)]
 
     start <- mod_length (start.get + n)
     x
@@ -170,7 +170,7 @@ is
   #
   public redef as_array universe.array T =>
     array buffered.as_i32 i->
-      data[(mod_length (start.get + i.as_i64)).as_i32]
+      data[mod_length (start.get + i.as_i64)]
 
 
   # create a list from this array

@@ -59,7 +59,10 @@ is
 
   # is this an ASCII letter i.e. A-Z or a-z
   #
-  public is_ascii_letter bool => codepoint.latin_alphabet.contains val
+  # NYI: PERFORMANCE: this is way slower, should investigate how/if to cache this Set union.
+  # public is_ascii_letter bool => codepoint.latin_alphabet.contains val
+  #
+  public is_ascii_letter bool => is_lowercase_ascii_letter || is_uppercase_ascii_letter
 
   # is this an uppercase ASCII letter i.e. A-Z
   #

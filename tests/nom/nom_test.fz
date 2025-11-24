@@ -46,7 +46,7 @@ nom_test =>
         || (u32 0x41 .. 0x46).contains c.val
 
     # example: `A1` => u8
-    parser_two_digit_hex := (p.take_while_m_n codepoint 2 2 (x -> is_valid x)).map u8 (o1 -> (String.type.from_codepoints o1).parse_u32(16).val.as_u8)
+    parser_two_digit_hex := (p.take_while_m_n codepoint 2 2 (x -> is_valid x)).map u8 (o1 -> (String.from o1).parse_u32(16).val.as_u8)
     # example: `#9F3A10` => tuple u8 u8 u8
     parser_hex_tuple := p.preceded (p.tag "#") (p.tuple3 parser_two_digit_hex parser_two_digit_hex parser_two_digit_hex)
     # example: `#9F3A10` => hex_color

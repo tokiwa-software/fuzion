@@ -76,7 +76,7 @@ public class FrontEndOptions extends FuzionOptions
   /**
    * List of modules added to fuzion.
    */
-  final List<String> _modules; // = new List<>("java.base");
+  final List<String> _modules;
 
 
   /**
@@ -142,6 +142,12 @@ public class FrontEndOptions extends FuzionOptions
    * Are we compiling to a module?
    */
   final boolean _compilingModule;
+
+
+  /**
+   * The default modules to be used if none are specified.
+   */
+  private final List<String> _defaultModules = new List<>("terminal", "lock_free", "http", "uuid", "database").freeze();
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -220,7 +226,8 @@ public class FrontEndOptions extends FuzionOptions
           }
       }
     _inputFile = inputFile;
-    _modules = modules;
+    _compilingModule = !_readStdin && _executeCode == null && _inputFile == null;
+    _modules = _compilingModule || !modules.isEmpty() ? modules : _defaultModules;
     _moduleDirs = moduleDirs;
     _dumpModules = dumpModules;
     _main = main;
@@ -233,7 +240,6 @@ public class FrontEndOptions extends FuzionOptions
       }
     _sourceDirs = sourceDirs;
     _serializeFuir = serializeFuir;
-    _compilingModule = !_readStdin && _executeCode == null && _inputFile == null;
   }
 
 

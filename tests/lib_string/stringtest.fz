@@ -42,7 +42,7 @@ stringtest is
   say 10
   say [0,1,2]
 
-  say (String.from_codepoints "hell😀".codepoints)
+  say (String.from "hell😀".codepoints)
 
   mi : mutate is
   mi ! ()->

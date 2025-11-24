@@ -45,7 +45,7 @@ reg_issue3362 is
       out :=
         match dummy_decode code.utf8.as_array
           arr array u8 =>
-            plain_actual := String.type.from_bytes arr
+            plain_actual := String.type.from arr
             if plain_actual != plain_expected     # 1. should flag an error: `choice String (array u8)` is not assignable to `property.equatable`
               error "decoding $code produced '$plain_actual' but should have been '$plain_expected'"
             else

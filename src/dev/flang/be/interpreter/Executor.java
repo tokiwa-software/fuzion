@@ -232,7 +232,45 @@ public class Executor extends ProcessExpression<Value, Object>
     return null;
   }
 
+
+  private static final SymbolLookup libs = libs();
+
+
+  /**
+   * @return SymbolLookup for fuzion_rt and libmath
+   */
+  @SuppressWarnings("restricted")
+  private static SymbolLookup libs()
+  {
+    SymbolLookup result = null;
+    try
+      {
+        result = SymbolLookup.libraryLookup(System.mapLibraryName("fuzion_rt"), Arena.ofAuto());
+        try
+          {
+            result = result.or(SymbolLookup.libraryLookup(System.mapLibraryName("m"),  Arena.ofAuto()));
+          }
+        catch (IllegalArgumentException e)
+          {
+            try { result = result.or(SymbolLookup.libraryLookup("libm.so.6",  Arena.ofAuto())); } catch(Exception e0) {
+              try { result = result.or(SymbolLookup.libraryLookup("libm.dylib",  Arena.ofAuto())); } catch(Exception e1) {
+                try { result = result.or(SymbolLookup.libraryLookup("ucrtbase.dll",  Arena.ofAuto())); } catch(Exception e2) {
+                  Errors.error(e.getMessage()); Errors.error(e0.getMessage()); Errors.error(e1.getMessage()); Errors.fatal(e2.getMessage());
+                }
+              }
+            }
+          }
+      }
+    catch (IllegalArgumentException e)
+      {
+        Errors.fatal(e.getMessage());
+      }
+    return result;
+  }
+
+
   @Override
+  @SuppressWarnings("restricted")
   public Pair<Value, Object> call(int s, Value tvalue, List<Value> args)
   {
     var cc0 = _fuir.accessedClazz(s);
@@ -283,9 +321,10 @@ public class Executor extends ProcessExpression<Value, Object>
       case Intrinsic :
         yield pair(Intrinsics.call(this, s, cc).call(new List<>(tvalue, args)));
       case Native:
+        var llu = libs;
         var mh = Linker.nativeLinker()
           .downcallHandle(
-            SymbolLookup.libraryLookup(System.mapLibraryName("fuzion_rt" /* NYI: UNDER DEVELOPMENT: */), Arena.ofAuto())
+            llu
               .find(_fuir.clazzNativeName(cc))
               .orElseThrow(() -> new UnsatisfiedLinkError(
               "Unresolved symbol: " + _fuir.clazzBaseName(cc) + ". " +

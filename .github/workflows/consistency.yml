@@ -1,0 +1,72 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  GitHub Actions workflow to build and test repo consistency.
+#
+# -----------------------------------------------------------------------
+
+name: run consistency tests
+
+# https://lobste.rs/s/ppjtie/simple_trick_save_environment_money_when
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'main'
+  pull_request: {}
+
+env:
+  PRECONDITIONS: true
+  POSTCONDITIONS: true
+  FUZION_REPRODUCIBLE_BUILD: true
+  dev_flang_tools_serializeFUIR: true
+  dev_flang_fuir_analysis_dfa_DFA_MAX_ITERATIONS: 50
+
+jobs:
+  run_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+      - name: install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install openjdk-25-jdk-headless libgc1 libgc-dev shellcheck asciidoc asciidoctor ruby-asciidoctor-pdf antlr4
+          echo "JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64" >> $GITHUB_ENV
+          echo "/usr/lib/jvm/java-25-openjdk-amd64/bin" >> $GITHUB_PATH
+
+
+      - name: check shell scripts
+        run: make -j$(nproc) shellcheck
+
+      - name: build docs
+        run: make -j$(nproc) doc
+
+      - name: compile language server
+        run: make -j$(nproc) lsp/compile
+
+      - name: syntax check
+        run: make -j$(nproc) syntaxcheck

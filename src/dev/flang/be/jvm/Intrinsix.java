@@ -75,7 +75,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
   /* Set of names of intrinsics defined in runtime.Intrinsics.  No inline code
    * is created for these, but they are called directly:
    */
-  static TreeSet<String> _availableIntrinsics = new TreeSet<>();
+  static final TreeSet<String> _availableIntrinsics = new TreeSet<>();
   static
   {
     for (var m : Intrinsics.class.getDeclaredMethods())
@@ -675,18 +675,8 @@ public class Intrinsix extends ANY implements ClassFileConstants
                 }
               else if (in.equals("fuzion.sys.type.setel"))
                 {
-                  var check_frozen = Expr.UNIT;
-                  if (CHECKS)
-                    {
-                      check_frozen = Expr.DUP
-                        .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
-                                                   "ensure_not_frozen",
-                                                   "(" + (JAVA_LANG_OBJECT.descriptor()) + ")V",
-                                                   ClassFileConstants.PrimitiveType.type_void));
-                    }
                   code = args.get(0)
                     .andThen(Expr.checkcast(jt.array()))
-                    .andThen(check_frozen)
                     .andThen(args.get(1))
                     .andThen(args.get(2))
                     .andThen(jt.xastore());

@@ -84,27 +84,13 @@ sqlite_database(db Native_Ref) : Database is
     unit
 
 
-  type.open(path String) outcome Database =>
+  public redef type.open(path String) outcome Database =>
     db := [ffi.null]
     if sqlite3_open path.as_c_string db = 0
       check !(ffi.is_null db[0])
       sqlite_database db[0]
     else
       error "could not open database"
-
-
-# definition of a database API
-#
-public Database ref is
-
-  # exeute a query
-  #
-  public query(q String, cb Function i32 (Sequence (String, String))) outcome unit => abstract
-
-  # close database
-  #
-  public close outcome unit => abstract
-
 
 
 _ := (sqlite_database.open "test.db").bind unit db->

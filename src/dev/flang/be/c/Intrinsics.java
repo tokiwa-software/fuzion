@@ -63,19 +63,19 @@ public class Intrinsics extends ANY
   /**
    * Predefined identifiers to access args:
    */
-  static CIdent A0 = new CIdent("arg0");
-  static CIdent A1 = new CIdent("arg1");
-  static CIdent A2 = new CIdent("arg2");
-  static CIdent A3 = new CIdent("arg3");
-  static CIdent A4 = new CIdent("arg4");
-  static CIdent A5 = new CIdent("arg5");
-  static CIdent A6 = new CIdent("arg6");
-  static CIdent A7 = new CIdent("arg7");
+  static final CIdent A0 = new CIdent("arg0");
+  static final CIdent A1 = new CIdent("arg1");
+  static final CIdent A2 = new CIdent("arg2");
+  static final CIdent A3 = new CIdent("arg3");
+  static final CIdent A4 = new CIdent("arg4");
+  static final CIdent A5 = new CIdent("arg5");
+  static final CIdent A6 = new CIdent("arg6");
+  static final CIdent A7 = new CIdent("arg7");
 
   /**
    * Predefined identifier to access errno macro.
    */
-  static CIdent errno = new CIdent("errno");
+  static final CIdent errno = new CIdent("errno");
 
   /**
    * Wrap code into a mutex_lock/unlock.  This
@@ -89,7 +89,7 @@ public class Intrinsics extends ANY
   }
 
 
-  static TreeMap<String, IntrinsicCode> _intrinsics_ = new TreeMap<>();
+  static final TreeMap<String, IntrinsicCode> _intrinsics_ = new TreeMap<>();
   static
   {
     put("Type.name" , (c,cl,outer,in) ->
@@ -461,10 +461,6 @@ public class Intrinsics extends ANY
         "f64.infix *"          , (c,cl,outer,in) -> outer.mul(A0).ret());
     put("f32.infix /"          ,
         "f64.infix /"          , (c,cl,outer,in) -> outer.div(A0).ret());
-    put("f32.infix %"          ,
-        "f64.infix %"          , (c,cl,outer,in) -> CExpr.call("fmod", new List<>(outer, A0)).ret());
-    put("f32.infix **"         ,
-        "f64.infix **"         , (c,cl,outer,in) -> CExpr.call("pow", new List<>(outer, A0)).ret());
     put("f32.type.equal"       ,
         "f64.type.equal"       , (c,cl,outer,in) -> A0.eq(A1).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
     put("f32.type.lower_than_or_equal",
@@ -501,36 +497,6 @@ public class Intrinsics extends ANY
     put("f64.type.min_positive", (c,cl,outer,in) -> CExpr.ident("DBL_MIN").ret());
     put("f64.type.max"         , (c,cl,outer,in) -> CExpr.ident("DBL_MAX").ret());
     put("f64.type.epsilon"     , (c,cl,outer,in) -> CExpr.ident("DBL_EPSILON").ret());
-    put("f32.is_NaN"           ,
-        "f64.is_NaN"           , (c,cl,outer,in) -> CStmnt.seq(CStmnt.iff(CExpr.call("isnan", new List<>(outer)).ne(new CIdent("0")),
-                                                                          c._names.FZ_TRUE.ret()
-                                                                          ),
-                                                               c._names.FZ_FALSE.ret()
-                                                               ));
-    put("f32.square_root"      , (c,cl,outer,in) -> CExpr.call("sqrtf", new List<>(outer)).ret());
-    put("f64.square_root"      , (c,cl,outer,in) -> CExpr.call("sqrt",  new List<>(outer)).ret());
-    put("f32.exp"              , (c,cl,outer,in) -> CExpr.call("expf",  new List<>(outer)).ret());
-    put("f64.exp"              , (c,cl,outer,in) -> CExpr.call("exp",   new List<>(outer)).ret());
-    put("f32.log"              , (c,cl,outer,in) -> CExpr.call("logf",  new List<>(outer)).ret());
-    put("f64.log"              , (c,cl,outer,in) -> CExpr.call("log",   new List<>(outer)).ret());
-    put("f32.sin"              , (c,cl,outer,in) -> CExpr.call("sinf",  new List<>(outer)).ret());
-    put("f64.sin"              , (c,cl,outer,in) -> CExpr.call("sin",   new List<>(outer)).ret());
-    put("f32.cos"              , (c,cl,outer,in) -> CExpr.call("cosf",  new List<>(outer)).ret());
-    put("f64.cos"              , (c,cl,outer,in) -> CExpr.call("cos",   new List<>(outer)).ret());
-    put("f32.tan"              , (c,cl,outer,in) -> CExpr.call("tanf",  new List<>(outer)).ret());
-    put("f64.tan"              , (c,cl,outer,in) -> CExpr.call("tan",   new List<>(outer)).ret());
-    put("f32.asin"             , (c,cl,outer,in) -> CExpr.call("asinf", new List<>(outer)).ret());
-    put("f64.asin"             , (c,cl,outer,in) -> CExpr.call("asin",  new List<>(outer)).ret());
-    put("f32.acos"             , (c,cl,outer,in) -> CExpr.call("acosf", new List<>(outer)).ret());
-    put("f64.acos"             , (c,cl,outer,in) -> CExpr.call("acos",  new List<>(outer)).ret());
-    put("f32.atan"             , (c,cl,outer,in) -> CExpr.call("atanf", new List<>(outer)).ret());
-    put("f64.atan"             , (c,cl,outer,in) -> CExpr.call("atan",  new List<>(outer)).ret());
-    put("f32.sinh"             , (c,cl,outer,in) -> CExpr.call("sinhf", new List<>(outer)).ret());
-    put("f64.sinh"             , (c,cl,outer,in) -> CExpr.call("sinh",  new List<>(outer)).ret());
-    put("f32.cosh"             , (c,cl,outer,in) -> CExpr.call("coshf", new List<>(outer)).ret());
-    put("f64.cosh"             , (c,cl,outer,in) -> CExpr.call("cosh",  new List<>(outer)).ret());
-    put("f32.tanh"             , (c,cl,outer,in) -> CExpr.call("tanhf", new List<>(outer)).ret());
-    put("f64.tanh"             , (c,cl,outer,in) -> CExpr.call("tanh",  new List<>(outer)).ret());
 
     put("fuzion.sys.type.alloc", (c,cl,outer,in) ->
         {

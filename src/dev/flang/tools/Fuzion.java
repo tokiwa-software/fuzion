@@ -103,6 +103,49 @@ public class Fuzion extends Tool
 
 
   /**
+   * Handle options used in more than one backend
+   *
+   * @param o
+   * @return
+   */
+  private static boolean handleCommonOption(String o)
+  {
+    boolean result = false;
+    if (o.startsWith("-Xgc="))
+      {
+        _useBoehmGC_ = parseOnOffArg(o);
+        result = true;
+      }
+    else if (o.startsWith("-CC="))
+      {
+        _cCompiler_ = o.substring(4);
+        result = true;
+      }
+    else if (o.startsWith("-CFlags="))
+      {
+        _cFlags_ = o.substring(8);
+        result = true;
+      }
+    else if (o.startsWith("-CTarget="))
+      {
+        _cTarget_ = o.substring(9);
+        result = true;
+      }
+    else if (o.startsWith("-CInclude="))
+      {
+        _cInclude_ = o.substring(10);
+        result = true;
+      }
+    else if (o.startsWith("-CLink="))
+      {
+        _cLink_ = o.substring(7);
+        result = true;
+      }
+    return result;
+  }
+
+
+  /**
    * Fuzion Backends:
    */
   static enum Backend
@@ -128,7 +171,7 @@ public class Fuzion extends Tool
     {
       String usage()
       {
-        return "[-o=<file>] [-Xgc=(on|off)] [-XkeepGeneratedCode=(on|off)] [-CC=<c compiler>] [-CFlags=\"list of c compiler flags\"] [-CTarget=\"e.g. x86_64-pc-linux-gnu\"] [-CInclude=\"list of header files to include\"] [-CLink=\"list libraries to link\"] ";
+        return "[-o=<file>] [-Xgc=(on|off)] [-XkeepGeneratedCode=(on|off)] [-CC=<c compiler>] [-CFlags=\"list of c compiler flags\"] [-CTarget=\"e.g. x86_64-pc-linux-gnu\"] [-CInclude=\"list of header files to include\"] [-CLink=\"list libraries to link\"] -g ";
       }
       boolean handleOption(Fuzion f, String o)
       {
@@ -138,34 +181,8 @@ public class Fuzion extends Tool
             _binaryName_ = o.substring(3);
             result = true;
           }
-        else if (o.startsWith("-Xgc="))
+        else if (handleCommonOption(o))
           {
-            _useBoehmGC_ = parseOnOffArg(o);
-            result = true;
-          }
-        else if (o.startsWith("-CC="))
-          {
-            _cCompiler_ = o.substring(4);
-            result = true;
-          }
-        else if (o.startsWith("-CFlags="))
-          {
-            _cFlags_ = o.substring(8);
-            result = true;
-          }
-        else if (o.startsWith("-CTarget="))
-          {
-            _cTarget_ = o.substring(9);
-            result = true;
-          }
-        else if (o.startsWith("-CInclude="))
-          {
-            _cInclude_ = o.substring(10);
-            result = true;
-          }
-        else if (o.startsWith("-CLink="))
-          {
-            _cLink_ = o.substring(7);
             result = true;
           }
         else if (o.startsWith("-XkeepGeneratedCode="))
@@ -196,13 +213,63 @@ public class Fuzion extends Tool
       }
     },
 
+    gdb ("-gdb")
+    {
+      String usage()
+      {
+        return "[-Xgc=(on|off)] [-CC=<c compiler>] [-CFlags=\"list of c compiler flags\"] [-CTarget=\"e.g. x86_64-pc-linux-gnu\"] [-CInclude=\"list of header files to include\"] [-CLink=\"list libraries to link\"] ";
+      }
+      boolean handleOption(Fuzion f, String o)
+      {
+        return handleCommonOption(o);
+      }
+      @Override
+      public boolean needsEscapeAnalysis()
+      {
+        return true;
+      }
+      void process(FuzionOptions options, FUIR fuir)
+      {
+        new C(new COptions(options, "out", _useBoehmGC_, _cCompiler_, _cFlags_, _cTarget_, _cInclude_, _cLink_, true, true), fuir).compile();
+        say(
+          """
+
+          ########## Starting gdb ##########
+
+          short usage examples:
+
+          run the program   : r
+          set breakpoint    : break floating_point_numbers.fz:47
+          resume execution  : c
+          backtrace         : bt
+          list current code : l
+          info              : info args|locals|registers|etc.
+          quit              : q
+
+          ##################################
+
+          """
+        );
+        try
+          {
+            new ProcessBuilder().inheritIO().command(new List<>("gdb", "out")).start().waitFor();
+          }
+        catch (Exception e)
+          {
+            e.printStackTrace();
+            System.exit(1);
+          }
+      }
+
+    },
+
     java       ("-java"),
 
     jvm        ("-jvm")
     {
       String usage()
       {
-        return "";
+        return "[-JLibraries=<e.g. openssl>] ";
       }
       boolean handleOption(Fuzion f, String o)
       {
@@ -239,7 +306,7 @@ public class Fuzion extends Tool
     {
       String usage()
       {
-        return "[-o=<outputName>] ";
+        return "[-o=<outputName>] [-JLibraries=<e.g. openssl>] ";
       }
       boolean handleOption(Fuzion f, String o)
       {
@@ -334,7 +401,7 @@ public class Fuzion extends Tool
       {
         var o    = fe._options;
         var mir  = fe.createMIR();                             f.timer("createMIR");
-        var fuir = new GeneratingFUIR(fe, mir);                f.timer("ir");
+        var fuir = new GeneratingFUIR(fe.mainModule(), mir);   f.timer("ir");
         new Effects(o, new DFA(o, fuir)).find();
       }
     },
@@ -581,7 +648,7 @@ public class Fuzion extends Tool
 
   }
 
-  static TreeMap<String, Backend> _allBackends_ = new TreeMap<>();
+  static final TreeMap<String, Backend> _allBackends_ = new TreeMap<>();
 
   static { var __ = Backend.undefined; } /* make sure _allBackendArgs_ is initialized */
 
@@ -1188,7 +1255,7 @@ public class Fuzion extends Tool
   {
     var options = fe._options;
     var mir  = fe.createMIR();                            f.timer("createMIR");
-    var fuir = new GeneratingFUIR(fe, mir);               f.timer("ir");
+    var fuir = new GeneratingFUIR(fe.mainModule(), mir);  f.timer("ir");
     var dfuir = new DFA(options, fuir).new_fuir();
     var ofuir = new Optimizer(options, dfuir).fuir();     f.timer("opt");
     return ofuir;

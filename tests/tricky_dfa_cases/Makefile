@@ -23,5 +23,4 @@
 
 override NAME = tricky_dfa_cases
 FUZION_OPTIONS = -modules=java.base
-export dev_flang_fuir_analysis_dfa_TRACE_ALL_EFFECT_ENVS=true
 include ../simple.mk

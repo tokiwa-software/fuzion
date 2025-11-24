@@ -38,6 +38,7 @@ import java.lang.foreign.Linker;
 import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.SegmentAllocator;
+import java.lang.foreign.StructLayout;
 import java.lang.foreign.SymbolLookup;
 import java.lang.foreign.ValueLayout;
 import java.lang.foreign.ValueLayout.OfBoolean;
@@ -85,7 +86,7 @@ public class Runtime extends ANY
 {
 
   /* NYI: UNDER DEVELOPMENT: memory leak */
-  private static Arena arena = Arena.global();
+  private static final Arena arena = Arena.global();
 
   /*-----------------------------  classes  -----------------------------*/
 
@@ -162,7 +163,7 @@ public class Runtime extends ANY
   /**
    * This contains all open files/streams.
    */
-  static OpenResources<AutoCloseable> _openStreams_ = new OpenResources<AutoCloseable>()
+  static final OpenResources<AutoCloseable> _openStreams_ = new OpenResources<AutoCloseable>()
   {
     @Override
     protected boolean close(AutoCloseable f) {
@@ -181,7 +182,7 @@ public class Runtime extends ANY
   /**
    * This contains all open processes.
    */
-  public static OpenResources<Process> _openProcesses_ = new OpenResources<Process>()
+  public static final OpenResources<Process> _openProcesses_ = new OpenResources<Process>()
   {
     @Override
     protected boolean close(Process p) {
@@ -199,7 +200,7 @@ public class Runtime extends ANY
   /**
    * The result of {@code envir.args[0]}
    */
-  public static String _cmd_ =
+  public static final String _cmd_ =
     System.getProperties().computeIfAbsent(FUZION_COMMAND_PROPERTY,
                                            k -> ProcessHandle.current()
                                                              .info()
@@ -638,7 +639,7 @@ public class Runtime extends ANY
   /**
    * cached results of {@code classNameToFeatureName}.
    */
-  static WeakHashMap<ClassLoader, Map<String, String>> _classNameToFeatureName = new WeakHashMap<>();
+  static final WeakHashMap<ClassLoader, Map<String, String>> _classNameToFeatureName = new WeakHashMap<>();
 
 
   /**
@@ -1287,7 +1288,7 @@ public class Runtime extends ANY
    * Weak map of frozen (immutable) arrays, used to debug accidental
    * modifications of frozen array.
    */
-  static Map<Object, String> _frozenPointers_ = CHECKS ? Collections.synchronizedMap(new WeakHashMap<Object, String>()) : null;
+  static final Map<Object, String> _frozenPointers_ = CHECKS ? Collections.synchronizedMap(new WeakHashMap<Object, String>()) : null;
 
 
   /**
@@ -1330,6 +1331,42 @@ public class Runtime extends ANY
   }
 
 
+  private static final SymbolLookup libs = libs();
+
+
+  /**
+   * @return SymbolLookup for fuzion_rt and libmath
+   */
+  @SuppressWarnings("restricted")
+  private static SymbolLookup libs()
+  {
+    SymbolLookup result = null;
+    try
+      {
+        result = SymbolLookup.libraryLookup(System.mapLibraryName("fuzion_rt"), arena);
+        try
+          {
+            result = result.or(SymbolLookup.libraryLookup(System.mapLibraryName("m"), arena));
+          }
+        catch (IllegalArgumentException e)
+          {
+            try { result = result.or(SymbolLookup.libraryLookup("libm.so.6", arena)); } catch(Exception e0) {
+              try { result = result.or(SymbolLookup.libraryLookup("libm.dylib", arena)); } catch(Exception e1) {
+                try { result = result.or(SymbolLookup.libraryLookup("ucrtbase.dll", arena)); } catch(Exception e2) {
+                  Errors.error(e.getMessage()); Errors.error(e0.getMessage()); Errors.error(e1.getMessage()); Errors.fatal(e2.getMessage());
+                }
+              }
+            }
+          }
+      }
+    catch (IllegalArgumentException e)
+      {
+        Errors.fatal(e.getMessage());
+      }
+    return result;
+  }
+
+
   /**
    * Find the method handle of a native function
    *
@@ -1341,18 +1378,10 @@ public class Runtime extends ANY
    *
    * @return
    */
+  @SuppressWarnings("restricted")
   public static MethodHandle get_method_handle(String str, FunctionDescriptor desc, String[] libraries)
   {
-    SymbolLookup llu = null;
-    try
-      {
-        llu = SymbolLookup.libraryLookup(System.mapLibraryName("fuzion_rt"), arena);
-      }
-    catch (IllegalArgumentException e)
-      {
-        Errors.error(e.getMessage());
-        System.exit(1);
-      }
+    SymbolLookup llu = libs;
     for (String library : libraries)
       {
         var ln = System.mapLibraryName(library);
@@ -1520,7 +1549,7 @@ public class Runtime extends ANY
    * create a new fuzion value, an fill
    * it with the data in memSeg.
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({"restricted", "unchecked"})
   public static <T> T memorySegment2Value(Class<T> cl, MemorySegment memSeg)
     throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
   {
@@ -1593,6 +1622,7 @@ public class Runtime extends ANY
   }
 
 
+  @SuppressWarnings("restricted")
   public static Object native_array(MemoryLayout memLayout, Object obj, int length)
   {
     var memSeg = ((MemorySegment)obj).reinterpret(length * memLayout.byteSize());
@@ -1691,6 +1721,7 @@ public class Runtime extends ANY
    *
    * @return An upcall which can be passed to other foreign functions as a function pointer
    */
+  @SuppressWarnings("restricted")
   public static MemorySegment upcall(Any outerRef, Class call)
   {
     Method method = null;
@@ -1782,6 +1813,7 @@ public class Runtime extends ANY
    *
    * @return
    */
+  @SuppressWarnings("restricted")
   public static int native_string_length(MemorySegment segment)
   {
     int length = 0;
@@ -1891,11 +1923,33 @@ public class Runtime extends ANY
       {
         return ValueLayout.ADDRESS;
       }
-    return MemoryLayout.structLayout(
-      Arrays
+    var elements = Arrays
         .stream(ct.getDeclaredFields())
         .map(f -> layout(f.getType()))
-        .toArray(MemoryLayout[]::new));
+        .toArray(MemoryLayout[]::new);
+    var result = MemoryLayout.structLayout(elements);
+    checkNoImplicitPadding(elements, result);
+    return result;
+  }
+
+
+  /**
+   * Check that no implicit padding between its member layouts
+   *
+   * NYI: UNDER DEVELOPMENT: this is work in progress. Not necessarily how
+   * we want things to be.
+   */
+  private static void checkNoImplicitPadding(MemoryLayout[] elements, StructLayout result)
+  {
+    long elSz = 0;
+    for (int index = 0; index < elements.length; index++)
+      {
+        elSz += elements[index].byteSize();
+      }
+    if (result.byteSize() != elSz)
+    {
+      Errors.fatal("Implementation restriction", "Implicit padding detected. We can't yet deal with this. You can only use values with native features that have no implicit padding currently.");
+    }
   }
 
 

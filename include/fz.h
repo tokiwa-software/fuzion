@@ -771,4 +771,6 @@ int64_t fzE_mmap_offset_multiple(void);
 
 int fzE_cwd(void * buf, size_t size);
 
+int fzE_isnan(double d);
+
 #endif /* fz.h  */

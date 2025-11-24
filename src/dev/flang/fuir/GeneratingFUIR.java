@@ -47,14 +47,14 @@ import dev.flang.ast.AbstractType;
 import dev.flang.ast.Constant;
 import dev.flang.ast.Current;
 import dev.flang.ast.Expr;
+import dev.flang.ast.FeatureName;
 import dev.flang.ast.InlineArray;
 import dev.flang.ast.NumLiteral;
 import dev.flang.ast.Types;
 import dev.flang.ast.Universe;
 
-import dev.flang.fe.FrontEnd;
+import dev.flang.fe.FeatureLookup;
 import dev.flang.fe.LibraryFeature;
-import dev.flang.fe.LibraryModule;
 
 import dev.flang.ir.Box;
 import dev.flang.ir.Tag;
@@ -169,7 +169,7 @@ public class GeneratingFUIR extends FUIR
    * Set of intrinsics that get removed by the middle end, i.e., that do not
    * need to be handled by DFA or any later steps.
    */
-  static Map<String, RemoveIntrinsic> _removedIntrinsics_ = new TreeMap<>();
+  static final Map<String, RemoveIntrinsic> _removedIntrinsics_ = new TreeMap<>();
   static
   {
     _removedIntrinsics_.put
@@ -346,8 +346,6 @@ public class GeneratingFUIR extends FUIR
   /*----------------------------  variables  ----------------------------*/
 
 
-  private final FrontEnd _fe;
-
   private final TreeMap<Clazz, Clazz> _clazzesTM;
 
 
@@ -376,7 +374,7 @@ public class GeneratingFUIR extends FUIR
   final IntMap<int[]> _accessedClazzes;
 
 
-  final LibraryModule _mainModule;
+  private final FeatureLookup _featureLookup;
 
 
   private final int _mainClazz;
@@ -428,16 +426,15 @@ public class GeneratingFUIR extends FUIR
   /**
    * Create FUIR from given Clazz instance.
    */
-  public GeneratingFUIR(FrontEnd fe, MIR mir)
+  public GeneratingFUIR(FeatureLookup fl, MIR mir)
   {
-    _fe = fe;
     _lookupDone = false;
     _clazzesTM = new TreeMap<Clazz, Clazz>();
     _siteClazzes = new IntArray();
     _siteClazzCache = new IntMap<>();
     _accessedClazzes = new IntMap<>();
     _accessedTarget = new IntMap<>();
-    _mainModule = fe.mainModule();
+    _featureLookup = fl;
     _clazzes = new List<>();
     if (CACHE_RESULT_CLAZZ)
       {
@@ -476,7 +473,6 @@ public class GeneratingFUIR extends FUIR
   protected GeneratingFUIR(GeneratingFUIR original)
   {
     super(original);
-    _fe = original._fe;
     original._lookupDone = true;
     _lookupDone = true;
     _clazzesTM = original._clazzesTM;
@@ -484,7 +480,7 @@ public class GeneratingFUIR extends FUIR
     _siteClazzCache = original._siteClazzCache;
     _accessedClazzes = original._accessedClazzes;
     _accessedTarget = original._accessedTarget;
-    _mainModule = original._mainModule;
+    _featureLookup = original._featureLookup;
     _mainClazz = original._mainClazz;
     _universe = original._universe;
     _clazzes = original._clazzes;
@@ -680,8 +676,20 @@ public class GeneratingFUIR extends FUIR
   }
 
 
-  private static List<AbstractCall> NO_INH = new List<>();
-  static { NO_INH.freeze(); }
+  private static final List<AbstractCall> NO_INH = new List<AbstractCall>().freeze();
+
+
+  /**
+   * Find feature with given name in outer.
+   *
+   * @param feature the declaring or inheriting feature
+   *
+   * @param fn the feature name that we are searching for
+   */
+  public AbstractFeature lookupFeature(AbstractFeature feature, FeatureName fn)
+  {
+    return _featureLookup.lookupFeature(feature, fn);
+  }
 
 
   /**
@@ -1402,15 +1410,7 @@ public class GeneratingFUIR extends FUIR
        cl < CLAZZ_BASE + _clazzes.size(),
        Errors.any() ||
        !_lookupDone ||
-       clazzNeedsCode(cl) ||
-       /* NYI: CLEANUP: DFA should mark these */
-       cl == clazz_const_string() ||
-       cl == clazz_const_string_utf8_data() ||
-       cl == clazz_array_u8() ||
-       cl == clazz_fuzionSysArray_u8() ||
-       cl == clazz_fuzionSysArray_u8_data() ||
-       cl == clazz_fuzionSysArray_u8_length()
-       );
+       clazzNeedsCode(cl));
 
     var c = id2clazz(cl);
     var result = c._code;

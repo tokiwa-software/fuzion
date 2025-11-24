@@ -23,12 +23,11 @@
 #
 # -----------------------------------------------------------------------
 
-JAVA = java --enable-preview --enable-native-access=ALL-UNNAMED
-MIN_JAVA_VERSION = 21 # NYI: when updating to Java version 22 or higher: remove this hack (revert #4264) and remove option '--enable-preview'
-JAVA_VERSION = $(shell v=$$(java -version 2>&1 | grep 'version' | cut -d '"' -f2 | cut -d. -f1 | grep -o '[[:digit:]]*'); [ $$v -lt $(MIN_JAVA_VERSION) ] && echo $(MIN_JAVA_VERSION) || echo $$v)
+JAVA = java --enable-native-access=ALL-UNNAMED
+JAVA_VERSION = 25
 # NYI: CLEANUP: remove some/all of the exclusions
-LINT = -Xlint:all,-preview,-serial,-this-escape
-JAVAC = javac $(LINT) -encoding UTF8 --release $(JAVA_VERSION) --enable-preview
+LINT = -Xlint:all,-serial,-this-escape
+JAVAC = javac $(LINT) -encoding UTF8 --release $(JAVA_VERSION)
 FZ_SRC = $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 SRC = $(FZ_SRC)/src
 BUILD_DIR = ./build
@@ -36,7 +35,10 @@ FZ = $(BUILD_DIR)/bin/fz
 FZJAVA = $(BUILD_DIR)/bin/fzjava
 CLASSES_DIR = $(BUILD_DIR)/classes
 CLASSES_DIR_LOGO = $(BUILD_DIR)/classes_logo
-FUZION_BIN_SH = /bin/sh
+
+ifeq ($(OS),Windows_NT)
+	SHELL := /bin/sh
+endif
 
 ifeq ($(FUZION_DEBUG_SYMBOLS),true)
 	JAVAC += -g
@@ -220,14 +222,14 @@ C_FILES = $(shell find $(FZ_SRC) \( -path ./build -o -path ./.git \) -prune -o -
 .DELETE_ON_ERROR:
 
 
-# rules to build java modules
-#
-include $(FZ_SRC)/mod_java.mk
-
-
 # default make target
 .PHONY: all
 all: $(FUZION_BASE) $(FUZION_JAVA_MODULES) $(FUZION_FILES) $(MOD_FZ_CMD) $(FUZION_EBNF) $(BUILD_DIR)/lsp.jar
+
+
+# rules to build java modules
+#
+include $(FZ_SRC)/mod_java.mk
 
 
 # everything but rarely used java modules
@@ -336,22 +338,22 @@ $(CLASS_FILES_OPT): $(JAVA_FILES_OPT) $(CLASS_FILES_FE) $(CLASS_FILES_FUIR)
 	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_OPT)
 	touch $@
 
-$(CLASS_FILES_BE_INTERPRETER): $(JAVA_FILES_BE_INTERPRETER) $(CLASS_FILES_FUIR) $(CLASS_FILES_AST)  # NYI: remove dependency on $(CLASS_FILES_AST), replace by $(CLASS_FILES_FUIR)
+$(CLASS_FILES_BE_INTERPRETER): $(JAVA_FILES_BE_INTERPRETER) $(CLASS_FILES_FUIR_ANALYSIS_DFA)
 	mkdir -p $(CLASSES_DIR)
 	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_INTERPRETER)
 	touch $@
 
-$(CLASS_FILES_BE_C): $(JAVA_FILES_BE_C) $(CLASS_FILES_FUIR) $(CLASS_FILES_FUIR_ANALYSIS_DFA)
+$(CLASS_FILES_BE_C): $(JAVA_FILES_BE_C) $(CLASS_FILES_FUIR_ANALYSIS_DFA)
 	mkdir -p $(CLASSES_DIR)
 	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_C)
 	touch $@
 
-$(CLASS_FILES_BE_EFFECTS): $(JAVA_FILES_BE_EFFECTS) $(CLASS_FILES_FUIR_CFG)
+$(CLASS_FILES_BE_EFFECTS): $(JAVA_FILES_BE_EFFECTS) $(CLASS_FILES_FUIR_ANALYSIS_DFA)
 	mkdir -p $(CLASSES_DIR)
 	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_EFFECTS)
 	touch $@
 
-$(CLASS_FILES_BE_JVM): $(JAVA_FILES_BE_JVM) $(CLASS_FILES_FUIR) $(CLASS_FILES_FUIR_ANALYSIS_DFA) $(CLASS_FILES_BE_JVM_RUNTIME) $(CLASS_FILES_BE_JVM_CLASSFILE)
+$(CLASS_FILES_BE_JVM): $(JAVA_FILES_BE_JVM) $(CLASS_FILES_FUIR_ANALYSIS_DFA) $(CLASS_FILES_BE_JVM_RUNTIME) $(CLASS_FILES_BE_JVM_CLASSFILE)
 	mkdir -p $(CLASSES_DIR)
 	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_JVM)
 	touch $@
@@ -366,7 +368,7 @@ $(CLASS_FILES_BE_JVM_RUNTIME): $(JAVA_FILES_BE_JVM_RUNTIME) $(CLASS_FILES_UTIL)
 	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_JVM_RUNTIME)
 	touch $@
 
-$(CLASS_FILES_TOOLS): $(JAVA_FILES_TOOLS) $(CLASS_FILES_FE) $(CLASS_FILES_OPT) $(CLASS_FILES_BE_C) $(CLASS_FILES_FUIR_ANALYSIS_DFA) $(CLASS_FILES_BE_EFFECTS) $(CLASS_FILES_BE_JVM) $(CLASS_FILES_BE_JVM_RUNTIME) $(CLASS_FILES_BE_INTERPRETER)
+$(CLASS_FILES_TOOLS): $(JAVA_FILES_TOOLS) $(CLASS_FILES_FE) $(CLASS_FILES_OPT) $(CLASS_FILES_BE_C) $(CLASS_FILES_FUIR_ANALYSIS_DFA) $(CLASS_FILES_BE_EFFECTS) $(CLASS_FILES_BE_JVM) $(CLASS_FILES_BE_JVM_RUNTIME) $(CLASS_FILES_BE_INTERPRETER) $(CLASS_FILES_FUIR_CFG)
 	mkdir -p $(CLASSES_DIR)
 	$(JAVAC) --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_TOOLS)
 	touch $@
@@ -412,7 +414,7 @@ $(BUILD_DIR)/assets/logo_bleed_cropmark.svg: $(CLASS_FILES_MISC_LOGO)
 	rm -f $@.tmp.pdf
 	touch $@
 
-$(FZ): $(FZ_SRC)/bin/fz $(CLASS_FILES_TOOLS)
+$(FZ): $(FZ_SRC)/bin/fz | $(CLASS_FILES_TOOLS)
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC)/bin/fz $@
 	chmod +x $@
@@ -517,27 +519,20 @@ $(MOD_WEBSERVER): $(MOD_HTTP) $(FZ) $(shell find $(FZ_SRC)/modules/webserver/src
 	cp -rf $(FZ_SRC)/modules/webserver $(@D)
 	$(FZ) -modules=http -sourceDirs=$(BUILD_DIR)/modules/webserver/src -saveModule=$@
 
-$(FZJAVA): $(FZ_SRC)/bin/fzjava $(CLASS_FILES_TOOLS_FZJAVA)
+$(FZJAVA): $(FZ_SRC)/bin/fzjava | $(CLASS_FILES_TOOLS_FZJAVA)
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC)/bin/fzjava $@
 	chmod +x $@
 
-# this target may fail when executed standalone, see comment on $(BUILD_DIR)/tests
-#
-$(BUILD_DIR)/bin/check_simple_example: $(FZ_SRC)/bin/check_simple_example.fz
-	$(FZ) -modules=terminal -c -o=$@ $^
+$(BUILD_DIR)/bin/check_simple_example: $(FZ_SRC)/bin/check_simple_example.fz | $(FUZION_BASE) $(MOD_TERMINAL)
+	$(FZ) -modules=terminal -c -o=$@ $(FZ_SRC)/bin/check_simple_example.fz
 	@echo " + $@"
 
-# this target may fail when executed standalone, see comment on $(BUILD_DIR)/tests
-#
-$(BUILD_DIR)/bin/record_simple_example: $(FZ_SRC)/bin/record_simple_example.fz
-	$(FZ) -modules=terminal -c -o=$@ $^
+$(BUILD_DIR)/bin/record_simple_example: $(FZ_SRC)/bin/record_simple_example.fz | $(FUZION_BASE) $(MOD_TERMINAL)
+	$(FZ) -modules=terminal -c -o=$@ $(FZ_SRC)/bin/record_simple_example.fz
 	@echo " + $@"
 
-# tricky, we need MOD_TERMINAL to build (check|record)_simple_example
-# but we are not adding this to those targets because we do not want
-# (check|record)_simple_example to rebuild any time sth is changed in base lib
-$(BUILD_DIR)/tests: $(FUZION_FILES_TESTS) $(MOD_TERMINAL) $(BUILD_DIR)/include $(BUILD_DIR)/bin/check_simple_example $(BUILD_DIR)/bin/record_simple_example
+$(BUILD_DIR)/tests: $(FUZION_FILES_TESTS) $(BUILD_DIR)/include $(BUILD_DIR)/bin/check_simple_example $(BUILD_DIR)/bin/record_simple_example
 	rm -rf $@
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC_TESTS) $@
@@ -580,63 +575,42 @@ logo: $(BUILD_DIR)/assets/logo.svg $(BUILD_DIR)/assets/logo_bleed.svg $(BUILD_DI
 	cp $^ $(FZ_SRC)/assets/
 
 $(BUILD_DIR)/bin/run_tests: $(FZ) $(FZ_MODULES) $(FZ_SRC)/bin/run_tests.fz
-	$(FZ) -modules=lock_free -c $(FZ_SRC)/bin/run_tests.fz -o=$@
+	$(FZ) -modules=lock_free,web,http,wolfssl -c -CLink=wolfssl -CInclude="wolfssl/options.h wolfssl/ssl.h" $(FZ_SRC)/bin/run_tests.fz -o=$@
 
 # phony target to run Fuzion tests and report number of failures
 .PHONY: run_tests
-run_tests: run_tests_jvm run_tests_c run_tests_int run_tests_effect run_tests_jar
+run_tests: run_tests_fuir run_tests_jvm run_tests_c run_tests_int run_tests_effect run_tests_jar
 
-# phony target to run Fuzion tests using interpreter and report number of failures
+TEST_DEPENDENCIES = $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests $(BUILD_DIR)/bin/run_tests $(BUILD_DIR)/lsp.jar
+
+# phony target to run Fuzion tests using effects and report number of failures
 .PHONY .SILENT: run_tests_effect
-run_tests_effect: $(FZ) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests $(BUILD_DIR)/bin/run_tests
-	printf "testing effects: "
-	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) effect 1
-
-# phony target to run Fuzion tests using interpreter and report number of failures
-.PHONY .SILENT: run_tests_int
-run_tests_int: $(FZ_INT) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests $(BUILD_DIR)/bin/run_tests
-	printf "testing interpreter: "
-	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) int 1
-
-# phony target to run Fuzion tests using c backend and report number of failures
-.PHONY .SILENT: run_tests_c
-run_tests_c: $(FZ_C) $(FZ_MODULES) $(MOD_JAVA_BASE) $(BUILD_DIR)/tests $(BUILD_DIR)/bin/run_tests
-	printf "testing C backend: "; \
-	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) c 1
-
-# phony target to run Fuzion tests using c backend and report number of failures
-.PHONY .SILENT: run_tests_jvm
-run_tests_jvm: $(FZ_JVM) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests $(BUILD_DIR)/bin/run_tests
-	printf "testing JVM backend: "; \
-	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) jvm 1
-
-# phony target to run Fuzion tests and report number of failures
-.PHONY: run_tests_parallel
-run_tests_parallel: run_tests_jvm_parallel run_tests_c_parallel run_tests_int_parallel run_tests_effect_parallel run_tests_jar
-
-# phony target to run Fuzion test effects and report number of failures
-.PHONY .SILENT: run_tests_effect_parallel
-run_tests_effect_parallel: $(FZ) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests $(BUILD_DIR)/bin/run_tests
+run_tests_effect: $(FZ) $(TEST_DEPENDENCIES)
 	printf "testing effects: "
 	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) effect
 
 # phony target to run Fuzion tests using interpreter and report number of failures
-.PHONY .SILENT: run_tests_int_parallel
-run_tests_int_parallel: $(FZ_INT) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests $(BUILD_DIR)/bin/run_tests
+.PHONY .SILENT: run_tests_int
+run_tests_int: $(FZ_INT) $(TEST_DEPENDENCIES)
 	printf "testing interpreter: "
 	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) int
 
 # phony target to run Fuzion tests using c backend and report number of failures
-.PHONY .SILENT: run_tests_c_parallel
-run_tests_c_parallel: $(FZ_C) $(FZ_MODULES) $(MOD_JAVA_BASE) $(BUILD_DIR)/tests $(BUILD_DIR)/bin/run_tests
+.PHONY .SILENT: run_tests_c
+run_tests_c: $(FZ_C) $(TEST_DEPENDENCIES)
 	printf "testing C backend: "; \
 	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) c
 
 # phony target to run Fuzion tests using jvm backend and report number of failures
-.PHONY .SILENT: run_tests_jvm_parallel
-run_tests_jvm_parallel: $(FZ_JVM) $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests $(BUILD_DIR)/bin/run_tests
+.PHONY .SILENT: run_tests_jvm
+run_tests_jvm: $(FZ_JVM) $(TEST_DEPENDENCIES)
 	printf "testing JVM backend: "; \
 	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) jvm
+
+.PHONY .SILENT: run_tests_fuir
+run_tests_fuir: $(TEST_DEPENDENCIES)
+	printf "testing FUIR backend: "; \
+	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) fuir
 
 .PHONY .SILENT: run_tests_jar_build
 run_tests_jar_build: $(FZ_JVM) $(BUILD_DIR)/tests
@@ -667,12 +641,13 @@ release: clean all
 	rm -f fuzion_$(VERSION).tar.gz
 	tar cfz fuzion_$(VERSION).tar.gz --transform s/^build/fuzion_$(VERSION)/ build
 
+SYNTAX_CHECK_MODULES = terminal,clang,lock_free,java.base,java.datatransfer,java.xml,java.desktop,web,http,wolfssl
 # target to do a syntax check of fz files.
 # currently only code in bin/ and examples/ are checked.
 .PHONY: syntaxcheck
 syntaxcheck: min-java
-	find ./examples/ -name '*.fz' -print0 | xargs -0L1 $(FZ) -modules=terminal,clang,lock_free,java.base,java.datatransfer,java.xml,java.desktop -noBackend
-	find ./bin/ -name '*.fz' -print0 | xargs -0L1 $(FZ) -modules=terminal,clang,lock_free,java.base,java.datatransfer,java.xml,java.desktop -noBackend
+	find ./examples/ -name '*.fz' -print0 | xargs -0L1 $(FZ) -modules=$(SYNTAX_CHECK_MODULES) -noBackend
+	find ./bin/ -name '*.fz' -print0 | xargs -0L1 $(FZ) -modules=$(SYNTAX_CHECK_MODULES) -noBackend
 
 .PHONY: add_simple_test
 add_simple_test: no-java
@@ -696,7 +671,7 @@ $(MOD_FZ_CMD_DIR).jmod: $(FUZION_BASE)
 
 $(MOD_FZ_CMD_FZ_FILES): $(MOD_FZ_CMD_DIR).jmod $(MOD_JAVA_BASE) $(MOD_JAVA_MANAGEMENT) $(MOD_JAVA_DESKTOP)
 	rm -rf $(MOD_FZ_CMD_DIR)
-	$(FUZION_BIN_SH) -c "$(FZJAVA) -to=$(MOD_FZ_CMD_DIR) -modules=java.base,java.management,java.desktop -verbose=0 $(MOD_FZ_CMD_DIR)"
+	$(FZJAVA) -to=$(MOD_FZ_CMD_DIR) -modules=java.base,java.management,java.desktop $(MOD_FZ_CMD_DIR)
 	touch $@
 
 $(MOD_FZ_CMD): $(MOD_FZ_CMD_FZ_FILES)

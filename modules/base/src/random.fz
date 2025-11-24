@@ -209,7 +209,7 @@ simple_random_handler(seed1 u64, seed2 u64) : Random_Handler is
   # create the default random handler depending on the environment settings
   #
   type.default =>
-    match envir.vars.get random_seed_env_var
+    match envir.vars[random_seed_env_var]
      s String =>
        match s.parse_u64
          seed u64 => simple_random_handler seed 98765432109876543

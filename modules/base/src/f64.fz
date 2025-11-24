@@ -37,8 +37,10 @@ public f64(public val f64) : float, java_primitive is
   public fixed redef infix - (other f64) f64 => intrinsic
   public fixed redef infix * (other f64) f64 => intrinsic
   public fixed redef infix / (other f64) f64 => intrinsic
-  public fixed redef infix % (other f64) f64 => intrinsic
-  public fixed redef infix ** (other f64) f64 => intrinsic
+  public fixed redef infix % (other f64) f64 => fmod val other
+  public fixed redef infix ** (other f64) f64 => pow val other
+  fmod(v,o f64) f64 => native
+  pow(v,o f64) f64 => native
 
 
   # comparison
@@ -166,24 +168,35 @@ public f64(public val f64) : float, java_primitive is
 
 
 
-  public fixed redef is_NaN bool => intrinsic
+  public fixed redef is_NaN bool => fzE_isnan val != 0
 
-  public fixed redef square_root f64 => intrinsic
+  public fixed redef square_root f64 => sqrt val
 
-  public fixed redef exp f64 => intrinsic
-  public fixed redef log f64 => intrinsic
+  public fixed redef exp f64 => exp val
+  public fixed redef log f64 => universe.log val
 
+  fzE_isnan(v f64) i32 => native
+  exp  (v f64) f64 => native
+  sqrt (v f64) f64 => native
+  sin  (v f64) f64 => native
+  cos  (v f64) f64 => native
+  tan  (v f64) f64 => native
+  asin (v f64) f64 => native
+  acos (v f64) f64 => native
+  atan (v f64) f64 => native
+  sinh (v f64) f64 => native
+  cosh (v f64) f64 => native
+  tanh (v f64) f64 => native
 
-  public fixed redef sin f64 => intrinsic
-  public fixed redef cos f64 => intrinsic
-  public fixed redef tan f64 => intrinsic
-  public fixed redef asin f64 => intrinsic
-  public fixed redef acos f64 => intrinsic
-  public fixed redef atan f64 => intrinsic
-
-  public fixed redef sinh f64 => intrinsic
-  public fixed redef cosh f64 => intrinsic
-  public fixed redef tanh f64 => intrinsic
+  public fixed redef sin f64  => sin val
+  public fixed redef cos f64  => cos val
+  public fixed redef tan f64  => tan val
+  public fixed redef asin f64 => asin val
+  public fixed redef acos f64 => acos val
+  public fixed redef atan f64 => atan val
+  public fixed redef sinh f64 => sinh val
+  public fixed redef cosh f64 => cosh val
+  public fixed redef tanh f64 => tanh val
 
 
   # convert this to a string.
@@ -293,3 +306,6 @@ public f64(public val f64) : float, java_primitive is
   #
   public fixed redef type.lteq(a, b f64) bool =>
     (f64.lower_than_or_equal a b) || a.is_NaN
+
+
+log(v f64) f64 => native

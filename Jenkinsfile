@@ -47,5 +47,18 @@ pipeline {
     always {
       cleanWs()
     }
+    failure {
+      script {
+        // Send the email using the extracted email
+        emailext(
+            subject: "Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+            body: """
+                Build failed. Check the console output:
+                ${env.BUILD_URL}
+            """,
+            recipientProviders: [developers(), requestor()]
+        )
+      }
+    }
   }
 }

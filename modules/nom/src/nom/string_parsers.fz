@@ -45,7 +45,7 @@ module string_parsers is
 
   # convert a parser returning a sequence of codepoints to a parser that returns a string
   public to_string_output(I, R type, p Parser I R (Sequence codepoint)) Parser I R String =>
-    p.map String (seq -> String.type.from_codepoints seq)
+    p.map String (seq -> String.from seq)
 
 
   # convert a parser taking and returning to codepoints to a parser taking and returning a string

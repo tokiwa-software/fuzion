@@ -63,12 +63,14 @@ jobs:
             patch
             libsqlite
             libsqlite-devel
+            mingw-w64-ucrt-x86_64-libsodium
+            mingw-w64-ucrt-x86_64-wolfssl
 
 
       - name: install choco packages
         shell: powershell
         run: |
-          choco install openjdk --version 21.0.2
+          choco install openjdk --version 25.0.0.1
 
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v2.6.0
 
@@ -76,10 +78,12 @@ jobs:
         run: |
           ln -s  /ucrt64/bin/libclang.dll /ucrt64/bin/clang.dll
           ln -s  /usr/bin/msys-sqlite3-0.dll /ucrt64/bin/sqlite3.dll
+          ln -s  /ucrt64/bin/libsodium-26.dll /ucrt64/bin/sodium.dll
+          ln -s  /ucrt64/bin/libwolfssl-44.dll /ucrt64/bin/wolfssl.dll
 
       - name: echo versions
         run: |
-          export JAVA_HOME="/c/Program Files/OpenJDK/jdk-21.0.2"
+          export JAVA_HOME="/c/Program Files/OpenJDK/jdk-25"
           export PATH="/ucrt64/bin/:$JAVA_HOME/bin:$JAVA_HOME/bin/server:$PATH"
           export FUZION_CLANG_INSTALLED_DIR="D:/a/_temp/msys64/ucrt64/bin"
           clang --version
@@ -87,17 +91,19 @@ jobs:
           whereis jvm.dll
           whereis sqlite3.dll
           whereis clang.dll
+          whereis sodium.dll
+          whereis wolfssl.dll
 
       - name: build libgc
         run: |
-          export JAVA_HOME="/c/Program Files/OpenJDK/jdk-21.0.2"
+          export JAVA_HOME="/c/Program Files/OpenJDK/jdk-25"
           export PATH="/ucrt64/bin/:$JAVA_HOME/bin:$JAVA_HOME/bin/server:$PATH"
           export FUZION_CLANG_INSTALLED_DIR="D:/a/_temp/msys64/ucrt64/bin"
           ./bin/windows_install_boehm_gc.sh
 
       - name: run tests
         run: |
-          export JAVA_HOME="/c/Program Files/OpenJDK/jdk-21.0.2"
+          export JAVA_HOME="/c/Program Files/OpenJDK/jdk-25"
           export PATH="/ucrt64/bin/:$JAVA_HOME/bin:$JAVA_HOME/bin/server:$PATH"
           export FUZION_CLANG_INSTALLED_DIR="D:/a/_temp/msys64/ucrt64/bin"
-          make run_tests_parallel
+          make run_tests

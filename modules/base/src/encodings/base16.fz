@@ -49,14 +49,14 @@ is
   #
   public encode(data Sequence u8) Sequence u8 =>
     data.flat_map b->
-      [alphabet[(b>>4).as_i32], alphabet[(b&15).as_i32]]
+      [alphabet[b>>4], alphabet[b&15]]
 
 
   # Encodes a given byte sequence in base16
   # returns a string
   #
   public encode_to_string(data Sequence u8) String =>
-    String.type.from_bytes (encode data)
+    String.from (encode data)
 
 
   # decodes a base16 string, decoding is strict as required by RFC 4648
@@ -92,7 +92,7 @@ is
 
         # other non alphabet character
         else
-          inv_char := String.type.from_bytes (d.slice i (i+4 > d.length ? d.length : i+4))
+          inv_char := String.from (d.slice i (i+4 > d.length ? d.length : i+4))
                             .substring_codepoint 0 1
 
           error "invalid $encoding_name input at byte position $i, decoding to unicode character '$inv_char'"
