@@ -72,7 +72,7 @@ is
   # buffered writing of the given byte
   #
   public write_byte (b u8) outcome unit =>
-    (write [b]).error
+    write [b]
 
 
   # helper type for write result
@@ -87,7 +87,14 @@ is
 
   # buffered writing of the given array
   #
-  public write (data Sequence u8) write_result =>
+  public write (data Sequence u8) outcome unit =>
+    write_detailed data
+      .error
+
+
+  # buffered writing of the given array, detailed result
+  #
+  public write_detailed (data Sequence u8) write_result =>
     p := data.as_array
     n := p.length
     for n_written := 0, n_written + r
