@@ -23,4 +23,10 @@
 
 override NAME = mod_webserver
 FUZION_OPTIONS = -modules=http,webserver,web,wolfssl
+
+export DYLD_FALLBACK_LIBRARY_PATH ?= /opt/homebrew/lib/:/Library/Developer/CommandLineTools/usr/lib/
+
+override FUZION_JVM_BACKEND_OPTIONS = -JLibraries=wolfssl
+override FUZION_C_BACKEND_OPTIONS = -CLink=wolfssl|-CInclude=wolfssl/options.h wolfssl/ssl.h|-CFlags=-DWC_NO_HARDEN
+
 include ../simple.mk
