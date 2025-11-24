@@ -22,4 +22,5 @@
 # -----------------------------------------------------------------------
 
 override NAME = mod_webserver
+FUZION_OPTIONS = -modules=http,webserver,web,wolfssl
 include ../simple.mk

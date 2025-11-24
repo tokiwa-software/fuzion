@@ -97,7 +97,7 @@ except : Middleware is
       public redef call(r http.request_message) http.response_message =>
         fuzion
           .runtime
-          .contract_fault
+          .fault
           .try ()->
             h r
           .catch  e->

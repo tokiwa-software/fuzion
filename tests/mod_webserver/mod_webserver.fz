@@ -49,9 +49,9 @@ mod_webserver =>
       while !started.read do
 
       for i in 1..10 do
-        say <| web.get "localhost:9999/"
+        say <| web.get4 "http://localhost:9999/"
 
       ws.shutdown
 
       # one more request after shutdown to unblock the accept
-      say <| web.get "localhost:9999/"
+      say <| web.get4 "http://localhost:9999/"
