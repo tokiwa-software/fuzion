@@ -80,7 +80,7 @@ public class LibraryModule extends Module implements MirModule
    * As long as source position is not part of the .fum/MIR file, use this
    * constant as a place holder.
    */
-  static SourcePosition DUMMY_POS = SourcePosition.builtIn;
+  static final SourcePosition DUMMY_POS = SourcePosition.builtIn;
 
 
   /**
@@ -93,7 +93,7 @@ public class LibraryModule extends Module implements MirModule
   /**
    * Pre-allocated empty array
    */
-  static byte[] NO_BYTES = new byte[0];
+  static final byte[] NO_BYTES = new byte[0];
 
 
   /*----------------------------  variables  ----------------------------*/

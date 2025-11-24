@@ -648,7 +648,7 @@ public class Fuzion extends Tool
 
   }
 
-  static TreeMap<String, Backend> _allBackends_ = new TreeMap<>();
+  static final TreeMap<String, Backend> _allBackends_ = new TreeMap<>();
 
   static { var __ = Backend.undefined; } /* make sure _allBackendArgs_ is initialized */
 

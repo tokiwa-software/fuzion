@@ -161,11 +161,11 @@ public class NumLiteral extends Constant
   /**
    * Convenience BitInteger values:
    */
-  static BigInteger B0 = BigInteger.valueOf(0);
-  static BigInteger B1 = BigInteger.valueOf(1);
-  static BigInteger B2 = BigInteger.valueOf(2);
-  static BigInteger B5 = BigInteger.valueOf(5);
-  static BigInteger B10 = BigInteger.valueOf(10);
+  static final BigInteger B0 = BigInteger.valueOf(0);
+  static final BigInteger B1 = BigInteger.valueOf(1);
+  static final BigInteger B2 = BigInteger.valueOf(2);
+  static final BigInteger B5 = BigInteger.valueOf(5);
+  static final BigInteger B10 = BigInteger.valueOf(10);
 
 
   /*----------------------------  variables  ----------------------------*/

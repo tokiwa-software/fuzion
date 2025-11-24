@@ -51,32 +51,32 @@ public interface ClassFileConstants
 
   public static final byte[] MAGIC = new byte[] { (byte) 0xCA, (byte) 0xFE, (byte) 0xBA, (byte) 0xBE };
 
-  public static byte[] VERSION_JDK_1_0 = new byte[] { 0, 0, 0, 45 };
-  public static byte[] VERSION_JDK_1_1 = new byte[] { 0, 3, 0, 45 };
-  public static byte[] VERSION_JDK_1_2 = new byte[] { 0, 0, 0, 46 };
-  public static byte[] VERSION_JDK_1_3 = new byte[] { 0, 0, 0, 47 };
-  public static byte[] VERSION_JDK_1_4 = new byte[] { 0, 0, 0, 48 };
-  public static byte[] VERSION_JDK_5   = new byte[] { 0, 0, 0, 49 };
-  public static byte[] VERSION_JDK_6   = new byte[] { 0, 0, 0, 50 };
-  public static byte[] VERSION_JDK_7   = new byte[] { 0, 0, 0, 51 };
-  public static byte[] VERSION_JDK_8   = new byte[] { 0, 0, 0, 52 };   // LTS
-  public static byte[] VERSION_JDK_9   = new byte[] { 0, 0, 0, 53 };
-  public static byte[] VERSION_JDK_10  = new byte[] { 0, 0, 0, 54 };
-  public static byte[] VERSION_JDK_11  = new byte[] { 0, 0, 0, 55 };   // LTS
-  public static byte[] VERSION_JDK_12  = new byte[] { 0, 0, 0, 56 };
-  public static byte[] VERSION_JDK_13  = new byte[] { 0, 0, 0, 57 };
-  public static byte[] VERSION_JDK_14  = new byte[] { 0, 0, 0, 58 };
-  public static byte[] VERSION_JDK_15  = new byte[] { 0, 0, 0, 59 };
-  public static byte[] VERSION_JDK_16  = new byte[] { 0, 0, 0, 60 };
-  public static byte[] VERSION_JDK_17  = new byte[] { 0, 0, 0, 61 };   // LTS
-  public static byte[] VERSION_JDK_18  = new byte[] { 0, 0, 0, 62 };
-  public static byte[] VERSION_JDK_19  = new byte[] { 0, 0, 0, 63 };
-  public static byte[] VERSION_JDK_20  = new byte[] { 0, 0, 0, 64 };
-  public static byte[] VERSION_JDK_21  = new byte[] { 0, 0, 0, 65 };   // LTS
+  public static final byte[] VERSION_JDK_1_0 = new byte[] { 0, 0, 0, 45 };
+  public static final byte[] VERSION_JDK_1_1 = new byte[] { 0, 3, 0, 45 };
+  public static final byte[] VERSION_JDK_1_2 = new byte[] { 0, 0, 0, 46 };
+  public static final byte[] VERSION_JDK_1_3 = new byte[] { 0, 0, 0, 47 };
+  public static final byte[] VERSION_JDK_1_4 = new byte[] { 0, 0, 0, 48 };
+  public static final byte[] VERSION_JDK_5   = new byte[] { 0, 0, 0, 49 };
+  public static final byte[] VERSION_JDK_6   = new byte[] { 0, 0, 0, 50 };
+  public static final byte[] VERSION_JDK_7   = new byte[] { 0, 0, 0, 51 };
+  public static final byte[] VERSION_JDK_8   = new byte[] { 0, 0, 0, 52 };   // LTS
+  public static final byte[] VERSION_JDK_9   = new byte[] { 0, 0, 0, 53 };
+  public static final byte[] VERSION_JDK_10  = new byte[] { 0, 0, 0, 54 };
+  public static final byte[] VERSION_JDK_11  = new byte[] { 0, 0, 0, 55 };   // LTS
+  public static final byte[] VERSION_JDK_12  = new byte[] { 0, 0, 0, 56 };
+  public static final byte[] VERSION_JDK_13  = new byte[] { 0, 0, 0, 57 };
+  public static final byte[] VERSION_JDK_14  = new byte[] { 0, 0, 0, 58 };
+  public static final byte[] VERSION_JDK_15  = new byte[] { 0, 0, 0, 59 };
+  public static final byte[] VERSION_JDK_16  = new byte[] { 0, 0, 0, 60 };
+  public static final byte[] VERSION_JDK_17  = new byte[] { 0, 0, 0, 61 };   // LTS
+  public static final byte[] VERSION_JDK_18  = new byte[] { 0, 0, 0, 62 };
+  public static final byte[] VERSION_JDK_19  = new byte[] { 0, 0, 0, 63 };
+  public static final byte[] VERSION_JDK_20  = new byte[] { 0, 0, 0, 64 };
+  public static final byte[] VERSION_JDK_21  = new byte[] { 0, 0, 0, 65 };   // LTS
 
   // NYI: update JDK version,
   //      check what has changed in the JVM spec for the class file and make sure that the class files we generate conform to that version
-  public static byte[] DEFAULT_VERSION = VERSION_JDK_21;
+  public static final byte[] DEFAULT_VERSION = VERSION_JDK_21;
 
   public enum CPoolTag
   {
@@ -675,13 +675,13 @@ public interface ClassFileConstants
   }
 
 
-  static ClassType JAVA_LANG_CLASS  = new ClassType("java/lang/Class");
-  static ClassType JAVA_LANG_OBJECT = new ClassType("java/lang/Object");
-  static ClassType JAVA_LANG_STRING = new ClassType("java/lang/String");
-  static ClassType JAVA_LANG_ERROR  = new ClassType("java/lang/Error");
+  static final ClassType JAVA_LANG_CLASS  = new ClassType("java/lang/Class");
+  static final ClassType JAVA_LANG_OBJECT = new ClassType("java/lang/Object");
+  static final ClassType JAVA_LANG_STRING = new ClassType("java/lang/String");
+  static final ClassType JAVA_LANG_ERROR  = new ClassType("java/lang/Error");
 
-  static ClassType NULL_TYPE = new ClassType("java/lang/Object");
-  static ClassType ERROR_TYPE = new ClassType("dev/flang/be/jvm/runtime/JavaError");
+  static final ClassType NULL_TYPE = new ClassType("java/lang/Object");
+  static final ClassType ERROR_TYPE = new ClassType("dev/flang/be/jvm/runtime/JavaError");
 
   static class ArrayType extends AType
   {
@@ -836,47 +836,47 @@ public interface ClassFileConstants
   }
 
 
-  public static int ACC_PUBLIC        = 0x0001;  // class,         field, method
-  public static int ACC_PRIVATE       = 0x0002;  //                field, method
-  public static int ACC_PROTECTED     = 0x0004;  //                field, method
-  public static int ACC_STATIC        = 0x0008;  //                field, method
-  public static int ACC_FINAL         = 0x0010;  // class,         field, method
-  public static int ACC_SUPER         = 0x0020;  // class
-  public static int ACC_SYNCHRONIZED  = 0x0020;  //                       method
-  public static int ACC_OPEN          = 0x0020;  //        module
-  public static int ACC_TRANSITIVE    = 0x0020;  //                              requires_flags
-  public static int ACC_VOLATILE      = 0x0040;  //                field
-  public static int ACC_BRIDGE        = 0x0040;  //                       method
-  public static int ACC_STATIC_PHASE  = 0x0040;  //                              requires_flags
-  public static int ACC_TRANSIENT     = 0x0080;  //                field
-  public static int ACC_VARARGS       = 0x0080;  //                       method
-  public static int ACC_NATIVE        = 0x0100;  //                       method
-  public static int ACC_INTERFACE     = 0x0200;  // class
-  public static int ACC_ABSTRACT      = 0x0400;  //                       method
-  public static int ACC_STRICT        = 0x0800;  //                       method
-  public static int ACC_SYNTHETIC     = 0x1000;  // class, module, field, method, requires_flags
-  public static int ACC_ANNOTATION    = 0x2000;  // class
-  public static int ACC_ENUM          = 0x4000;  // class,         field
-  public static int ACC_MODULE        = 0x8000;  // class
-  public static int ACC_MANDATED      = 0x8000;  //        module,                requires_flags
+  public static final int ACC_PUBLIC        = 0x0001;  // class,         field, method
+  public static final int ACC_PRIVATE       = 0x0002;  //                field, method
+  public static final int ACC_PROTECTED     = 0x0004;  //                field, method
+  public static final int ACC_STATIC        = 0x0008;  //                field, method
+  public static final int ACC_FINAL         = 0x0010;  // class,         field, method
+  public static final int ACC_SUPER         = 0x0020;  // class
+  public static final int ACC_SYNCHRONIZED  = 0x0020;  //                       method
+  public static final int ACC_OPEN          = 0x0020;  //        module
+  public static final int ACC_TRANSITIVE    = 0x0020;  //                              requires_flags
+  public static final int ACC_VOLATILE      = 0x0040;  //                field
+  public static final int ACC_BRIDGE        = 0x0040;  //                       method
+  public static final int ACC_STATIC_PHASE  = 0x0040;  //                              requires_flags
+  public static final int ACC_TRANSIENT     = 0x0080;  //                field
+  public static final int ACC_VARARGS       = 0x0080;  //                       method
+  public static final int ACC_NATIVE        = 0x0100;  //                       method
+  public static final int ACC_INTERFACE     = 0x0200;  // class
+  public static final int ACC_ABSTRACT      = 0x0400;  //                       method
+  public static final int ACC_STRICT        = 0x0800;  //                       method
+  public static final int ACC_SYNTHETIC     = 0x1000;  // class, module, field, method, requires_flags
+  public static final int ACC_ANNOTATION    = 0x2000;  // class
+  public static final int ACC_ENUM          = 0x4000;  // class,         field
+  public static final int ACC_MODULE        = 0x8000;  // class
+  public static final int ACC_MANDATED      = 0x8000;  //        module,                requires_flags
 
 
-  public static int CLASS_ACCESS_FLAGS    = ACC_PUBLIC | ACC_FINAL | ACC_SUPER | ACC_INTERFACE | ACC_SYNTHETIC | ACC_ANNOTATION | ACC_ENUM | ACC_MODULE;
-  public static int MODULE_ACCESS_FLAGS   = ACC_OPEN | ACC_SYNTHETIC | ACC_MANDATED;
-  public static int FIELD_ACCESS_FLAGS    = ACC_PUBLIC | ACC_PRIVATE | ACC_PROTECTED | ACC_STATIC | ACC_FINAL | ACC_VOLATILE | ACC_TRANSIENT | ACC_SYNTHETIC | ACC_ENUM;
-  public static int METHOD_ACCESS_FLAGS   = ACC_PUBLIC | ACC_PRIVATE | ACC_PROTECTED | ACC_STATIC | ACC_FINAL | ACC_SYNCHRONIZED | ACC_BRIDGE | ACC_VARARGS | ACC_NATIVE | ACC_ABSTRACT | ACC_STRICT | ACC_SYNTHETIC;
-  public static int REQUIRES_ACCESS_FLAGS = ACC_TRANSITIVE  | ACC_STATIC_PHASE | ACC_SYNTHETIC | ACC_MANDATED;
+  public static final int CLASS_ACCESS_FLAGS    = ACC_PUBLIC | ACC_FINAL | ACC_SUPER | ACC_INTERFACE | ACC_SYNTHETIC | ACC_ANNOTATION | ACC_ENUM | ACC_MODULE;
+  public static final int MODULE_ACCESS_FLAGS   = ACC_OPEN | ACC_SYNTHETIC | ACC_MANDATED;
+  public static final int FIELD_ACCESS_FLAGS    = ACC_PUBLIC | ACC_PRIVATE | ACC_PROTECTED | ACC_STATIC | ACC_FINAL | ACC_VOLATILE | ACC_TRANSIENT | ACC_SYNTHETIC | ACC_ENUM;
+  public static final int METHOD_ACCESS_FLAGS   = ACC_PUBLIC | ACC_PRIVATE | ACC_PROTECTED | ACC_STATIC | ACC_FINAL | ACC_SYNCHRONIZED | ACC_BRIDGE | ACC_VARARGS | ACC_NATIVE | ACC_ABSTRACT | ACC_STRICT | ACC_SYNTHETIC;
+  public static final int REQUIRES_ACCESS_FLAGS = ACC_TRANSITIVE  | ACC_STATIC_PHASE | ACC_SYNTHETIC | ACC_MANDATED;
 
 
   /* primitive types */
-  public static byte T_BOOLEAN = 4;
-  public static byte T_BYTE    = 8;
-  public static byte T_CHAR    = 5;
-  public static byte T_SHORT   = 9;
-  public static byte T_INTEGER = 10;
-  public static byte T_LONG    = 11;
-  public static byte T_FLOAT   = 6;
-  public static byte T_DOUBLE  = 7;
+  public static final byte T_BOOLEAN = 4;
+  public static final byte T_BYTE    = 8;
+  public static final byte T_CHAR    = 5;
+  public static final byte T_SHORT   = 9;
+  public static final byte T_INTEGER = 10;
+  public static final byte T_LONG    = 11;
+  public static final byte T_FLOAT   = 6;
+  public static final byte T_DOUBLE  = 7;
 
 
   /**
