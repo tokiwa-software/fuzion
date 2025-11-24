@@ -88,30 +88,29 @@ is
   # buffered writing of the given array
   #
   public write (data Sequence u8) write_result =>
-    p := data.as_array
-    n := p.length
-    for n_written := 0, n_written + r
-        e outcome unit := unit, e0
-    while n_written < n
-      y := LM.env.new (outcome unit unit)
-      f =>
-        if buffer.buffered = 0 && (n - n_written) > buf_size
-          # can write directly
-          y <- wh.write (p.slice n_written (n_written + buf_size)).as_array
-          buf_size
-        else if buffer.buffered = 0
-          # start filling buffer, but incompletely
-          y <- buffer.enqueue (p.slice n_written n).as_array
-          n - n_written
-        else
-          # fill up the rest of the buffer
-          a := min (buf_size - buffer.buffered.as_i32) n
-          y <- buffer.enqueue (p.slice n_written (n_written + a)).as_array
-          y <- flush
-          a
-      r := f
-      e0 := y.get
-    until !e
-      write_result n_written e
+
+    a := data.as_array
+
+    # still fits into buffer, no need to write yet
+    if buffer.available.as_i32 >= a.count
+      write_result 0 (buffer.enqueue a)
     else
-      write_result n_written e
+      buf_count := buffer.buffered
+      # flush first
+      flush
+        .bind _->
+          # then write the rest in chunks
+          full_chunks := a.count / buf_size
+          for c in 0..full_chunks
+              wr := wh.write (a.slice c*buf_size c*(buf_size+1))
+          until wr.is_error
+            write_result buf_count.as_i32+c*buf_size wr
+          else
+            rest := a.slice full_chunks*buf_size a.count
+            er := buffer.enqueue rest
+            check debug: er.ok
+            write_result buf_count.as_i32+full_chunks*buf_size unit
+        .fold id e->
+          # flushing failed
+          write_result 0 e
+
