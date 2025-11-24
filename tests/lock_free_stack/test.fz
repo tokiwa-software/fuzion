@@ -18,6 +18,8 @@ test =>
     .for_each t->
       t.join
 
+  # n*(n+1)/2  * 4
+  # 100*101 / 2 * 4 = 20200
   say cnt.read
 
 
