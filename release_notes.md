@@ -635,7 +635,7 @@
 
     - String add `write_to`, writing String to installed writer ([5123](https://github.com/tokiwa-software/fuzion/pull/5123))
 
-    - `write_result`, add `ok`, shorthand to check if writing was successful ([5155](https://github.com/tokiwa-software/fuzion/pull/5155))
+    - `write_result`, add `ok`, short-hand to check if writing was successful ([5155](https://github.com/tokiwa-software/fuzion/pull/5155))
 
     - time: add skeleton implementation for `calendar_duration` ([4905](https://github.com/tokiwa-software/fuzion/pull/4905))
 
@@ -5747,7 +5747,7 @@ Benchmarks:
 
 - stdlib: new features
 
-    'say' as shorthand for 'stdout.println'
+    'say' as short-hand for 'stdout.println'
 
     'integer.infix %%' to check if an integer is divisibly by another integer
 

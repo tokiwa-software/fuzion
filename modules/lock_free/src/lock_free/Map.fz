@@ -186,7 +186,7 @@ failed_node(CTK type : property.hashable, CTV type, prev Main_Node CTK CTV) is
     "failed_node($prev)"
 
 
-# shorthand for creating a new indirection node from Main_Node and gen
+# short-hand for creating a new indirection node from Main_Node and gen
 indirection_node(CTK type : property.hashable, CTV type, data Main_Node CTK CTV, gen u64) =>
   Indirection_Node (concur.atomic (Main_Node CTK CTV) .new data) gen
 
