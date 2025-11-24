@@ -64,11 +64,12 @@ sqlite3_close(db Native_Ref) i32 => native
 #
 public sqlite(db Native_Ref) : Database is
 
-  # NYI: CLEANUP: support local mutates
-  _ := mut
-
 
   public redef type.open(path String) outcome Database =>
+
+    # NYI: CLEANUP: support local mutates
+    _ := mut
+
     db := mutate.array Native_Ref .from_Sequence mutate [ffi.null]
     if sqlite3_open (path.as_c_string mutate) db = 0
       check !(ffi.is_null db[0])
