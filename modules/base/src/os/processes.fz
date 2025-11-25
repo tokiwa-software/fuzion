@@ -131,7 +131,7 @@ install_default =>
 
 
 
-# short-hand to processes effect
+# shorthand to processes effect
 #
 public processes processes =>
   install_default

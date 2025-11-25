@@ -390,6 +390,6 @@ is
 
 
 
-# short-hand to create an uint via an u64
+# shorthand to create an uint via an u64
 public uint (val u64) uint =>
   uint.from_u64 val

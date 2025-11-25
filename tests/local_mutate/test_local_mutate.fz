@@ -277,7 +277,7 @@ test_local_mutate is
       private p := LM.env.new (Mut_Ring LM T) Mut_Ring.this
 
 
-      # short-hand features to get the mutable references from `n` and `p`
+      # shorthand features to get the mutable references from `n` and `p`
       #
       redef next => n.get
       redef prev => p.get

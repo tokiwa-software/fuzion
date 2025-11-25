@@ -56,7 +56,7 @@ is
         net.connection desc
 
 
-  # short-hand to open new server bound to the any address
+  # shorthand to open new server bound to the any address
   # with a default backlog.
   #
   # NYI: UNDER DEVELOPMENT: blocking / none blocking
@@ -72,7 +72,7 @@ is
     net.server.start T f p any_addr port code
 
 
-  # short-hand to open new server with a default backlog
+  # shorthand to open new server with a default backlog
   #
   # NYI: UNDER DEVELOPMENT: blocking / none blocking
   #

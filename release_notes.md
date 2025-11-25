@@ -635,7 +635,7 @@
 
     - String add `write_to`, writing String to installed writer ([5123](https://github.com/tokiwa-software/fuzion/pull/5123))
 
-    - `write_result`, add `ok`, short-hand to check if writing was successful ([5155](https://github.com/tokiwa-software/fuzion/pull/5155))
+    - `write_result`, add `ok`, shorthand to check if writing was successful ([5155](https://github.com/tokiwa-software/fuzion/pull/5155))
 
     - time: add skeleton implementation for `calendar_duration` ([4905](https://github.com/tokiwa-software/fuzion/pull/4905))
 
@@ -1637,7 +1637,7 @@
 
   - be/jvm/runtime: handle `null` message in `getException` ([#3800](https://github.com//tokiwa-software/fuzion/pull/3800))
 
-  - fzjava: improve determinism of short-hands ([#3854](https://github.com//tokiwa-software/fuzion/pull/3854))
+  - fzjava: improve determinism of shorthands ([#3854](https://github.com//tokiwa-software/fuzion/pull/3854))
 
 - C back end
 
@@ -5177,7 +5177,7 @@ C back end
       a ? x X => x.foo
         | y Y => y.bar
     ```
-    as short-hand for
+    as shorthand for
     ```
      match a
        x X => x.foo
@@ -5747,7 +5747,7 @@ Benchmarks:
 
 - stdlib: new features
 
-    'say' as short-hand for 'stdout.println'
+    'say' as shorthand for 'stdout.println'
 
     'integer.infix %%' to check if an integer is divisibly by another integer
 

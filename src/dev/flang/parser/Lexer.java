@@ -1007,7 +1007,7 @@ public class Lexer extends SourceFile
 
 
   /**
-   * short-hand for bracketTermWithNLs with c==def.
+   * shorthand for bracketTermWithNLs with c==def.
    */
   <V> V optionalBrackets(Parens brackets, String rule, Supplier<V> c)
   {
@@ -1017,7 +1017,7 @@ public class Lexer extends SourceFile
   }
 
   /**
-   * short-hand for bracketTermWithNLs with c==def.
+   * shorthand for bracketTermWithNLs with c==def.
    */
   <V> V bracketTermWithNLs(Parens brackets, String rule, Supplier<V> c)
   {

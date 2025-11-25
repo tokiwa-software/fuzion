@@ -58,7 +58,7 @@ module:public connections(active container.Set i32) : effect is
           unit =>
 
 
-# short-hand to get connections effect
+# shorthand to get connections effect
 #
 public connections net.connections =>
   if !net.connections.is_instated

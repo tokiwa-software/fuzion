@@ -253,6 +253,6 @@ is
 
 
 
-# short-hand to create an int via an i64
+# shorthand to create an int via an i64
 public int (val i64) int =>
   int.from_i64 val

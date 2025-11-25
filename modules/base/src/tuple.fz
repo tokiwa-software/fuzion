@@ -88,7 +88,7 @@
 #     u tuple i32 i32 = p  # will cause compile time error
 #     q point = (7, 12)      # will cause compile time error
 #
-# The unit tuple '()' can be used as a short-hand to create the empty tuple
+# The unit tuple '()' can be used as a shorthand to create the empty tuple
 # 'tuple'.  The empty tuple can be destructured like any other tuple
 # using
 #

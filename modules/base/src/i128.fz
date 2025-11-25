@@ -297,6 +297,6 @@ public i128(public hi i64, public lo u64) : num.wrap_around, has_interval is
   public fixed redef type.one i128 => i128 0 1
 
 
-# short-hand to create an i128 via an i64
+# shorthand to create an i128 via an i64
 public i128 (val i64) i128 =>
   val.as_i128

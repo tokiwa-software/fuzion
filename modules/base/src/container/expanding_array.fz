@@ -340,7 +340,7 @@ is
     data[i].val
 
 
-  # short-hand index operator alias for `get`
+  # shorthand index operator alias for `get`
   #
   public index [](i idx) T
     pre
@@ -350,7 +350,7 @@ is
     get i.as_i32
 
 
-  # short-hand set-index operator alias for `put`
+  # shorthand set-index operator alias for `put`
   #
   public set [](i idx, v T) unit
     pre

@@ -47,17 +47,17 @@ is
   public ok bool => exists
 
 
-  # short-hand postfix operator for 'exists'
+  # shorthand postfix operator for 'exists'
   #
   public postfix ?? bool => exists
 
 
-  # short-hand postfix operator for '!exists'
+  # shorthand postfix operator for '!exists'
   #
   public postfix !! bool => !exists
 
 
-  # short-hand prefix operator for '!exists'
+  # shorthand prefix operator for '!exists'
   #
   public prefix ! bool => !exists
 

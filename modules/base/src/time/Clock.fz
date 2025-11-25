@@ -69,7 +69,7 @@ public Clock ref : effect is
   type.install_default =>
     time.Clock.default (time.nano nano.default_nano_time)
 
-  # short-hand for accessing time.Clock.env effect in current environment
+  # shorthand for accessing time.Clock.env effect in current environment
   #
   public type.clock Clock.this =>
     if !Clock.this.is_instated

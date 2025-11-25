@@ -43,7 +43,7 @@ private:public Mutable_Linked_List(# mutate effect to be used to create mutable 
   n := LM.env.new (option (Mutable_Linked_List LM T)) nil
 
 
-  # short-hand features to get the mutable references from `n`
+  # shorthand features to get the mutable references from `n`
   #
   public redef next option (Linked_List T) =>
     n.get.bind (Linked_List T) id
