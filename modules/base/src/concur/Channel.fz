@@ -28,8 +28,7 @@
 # NYI: UNDER DEVELOPMENT: max buf size
 public Channel(T type/*, buf_size i32*/) ref : Iterator T, Sending_Channel T, Receiving_Channel T is
 
-  cnd := concur.sync.condition.new.val # NYI: error handling
-  bq := Blocking_Queue T cnd
+  bq := Blocking_Queue T
 
 
   # send a value to this Channel
