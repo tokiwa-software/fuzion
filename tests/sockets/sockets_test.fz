@@ -62,11 +62,9 @@ sockets_test is
               res := "received: {rr.as_string}\n\n"
 
               w =>
-                x := ((io.buffered lm).writer.env.write res.utf8.as_array).error
-
-                match x
+                match (io.buffered lm).writer.env.write res.utf8.as_array
                   unit => (io.buffered lm).writer.env.flush
-                  error => x
+                  e error => e
 
               match w
                 e error => say_silent "$protocol/$family-server, write error $e"
