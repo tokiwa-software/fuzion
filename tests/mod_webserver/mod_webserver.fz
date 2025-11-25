@@ -25,6 +25,8 @@ mod_webserver =>
 
   started := concur.atomic bool .new false
 
+  cnt := concur.atomic i32 .new 0
+
   ows :=
     webserver_create
       9999
@@ -32,14 +34,21 @@ mod_webserver =>
       (x -> if x.starts_with "listening on port:" then started.write true else unit)
       req->
         _ := mutate
+        _ := cnt.incr
+
+        # inject fault in 4th request, causes 500 response
+        if cnt.read = 4
+          fuzion.runtime.contract_fault.cause ("some fault", "___")
+
+        resp := "Pong"
         http
           .response_message
           .new
             200
             [("Server", "FuzionWebServer v0.0.0"),
-             ("Content-Length", $"4"),
+             ("Content-Length", resp.byte_length.as_string),
              ("Host", "localhost")]
-            (io.Read_Handler.from mutate "Pong")
+            (io.Read_Handler.from mutate resp)
 
 
   match ows

@@ -105,5 +105,6 @@ except : Middleware is
               .response_message
               .new
                 500
-                [("server", "FuzionWebServer v0.0.0")]
+                [("server", "FuzionWebServer v0.0.0"),
+                 ("Content-Length", $"0")]
                 io.Read_Handler.empty
