@@ -538,10 +538,13 @@ void * fzE_thread_create(void *(*code)(void *),
  */
 void fzE_thread_join(void * thrd)
 {
+  // NYI: BUG: return error code on failure
 #ifdef GC_THREADS
-  GC_pthread_join(*(pthread_t *)thrd, NULL);
+  int ret = GC_pthread_join(*(pthread_t *)thrd, NULL);
+  assert (ret == 0);
 #else
-  pthread_join(*(pthread_t *)thrd, NULL);
+  int ret = pthread_join(*(pthread_t *)thrd, NULL);
+  assert (ret == 0);
 #endif
   fzE_free(thrd);
 }

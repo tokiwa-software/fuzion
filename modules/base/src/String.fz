@@ -883,7 +883,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # write the bytes of this String to
   # writer of type: (io.buffered LM).writer
   #
-  public write_to(LM type : mutate) (io.buffered LM).writer.write_result ! (io.buffered LM).writer
+  public write_to(LM type : mutate) outcome unit ! (io.buffered LM).writer
   =>
     (io.buffered LM).writer.env.write utf8
 
@@ -891,8 +891,8 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # returns a zero terminated array of
   # the bytes of this String
   #
-  public as_c_string array u8 =>
-    (String.this + codepoint 0).utf8.as_array
+  public as_c_string(LM type : mutate) LM.array u8 =>
+    mutate.array u8 .from_Sequence LM (String.this + codepoint 0).utf8
 
 
   # this String but put in double quotes
