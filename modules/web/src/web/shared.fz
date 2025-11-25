@@ -47,7 +47,6 @@ module read_reponse(LM type : mutate) ! LM =>
 module write_request(LM type : mutate, rm http.request_message) ! LM =>
   (io.buffered LM).writer.env
     .write (rm.bytes i32.max)
-    .error
     .bind _->
       (io.buffered LM).writer.env.flush
 

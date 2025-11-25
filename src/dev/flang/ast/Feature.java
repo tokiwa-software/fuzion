@@ -1628,16 +1628,16 @@ public class Feature extends AbstractFeature
 
         if (_effects != null)
         {
-          for (var e : _effects)
-            {
-              var t = e.resolve(res, context());
+          _effects = _effects.map(e -> {
+            var t = e.resolve(res, context());
 
-              if (t != Types.t_ERROR && (!(t.selfOrConstraint(res, context()))
-                                            .feature().inheritsFrom(Types.resolved.f_effect)))
-                {
-                  AstErrors.notAnEffect(t, ((UnresolvedType) e).pos());
-                }
-            }
+            if (t != Types.t_ERROR && (!(t.selfOrConstraint(res, context()))
+                                          .feature().inheritsFrom(Types.resolved.f_effect)))
+              {
+                AstErrors.notAnEffect(t, ((UnresolvedType) e).pos());
+              }
+            return t;
+          });
         }
 
         _state = State.RESOLVED_TYPES;
@@ -2163,7 +2163,6 @@ A ((Choice)) declaration must not contain a result type.
           || Types.resolved.legalNativeArgumentTypes.contains(at)
           || at.selfOrConstraint(Context.NONE).isLambdaTargetButNotLazy(res)
           // NYI: BUG: check if array element type is valid
-          || !at.isGenericArgument() && at.feature() == Types.resolved.f_array
           || !at.isGenericArgument() && at.feature() == Types.resolved.f_mutate_array
           || !at.isGenericArgument() && at.feature().mayBeNativeValue()
           || !at.isGenericArgument() && Types.resolved.f_fuzion_sys_array_data.resultType().feature() == at.feature()

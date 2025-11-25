@@ -29,8 +29,7 @@
 # submit a task to the thread_pool.
 #
 public thread_pool(R type, size i32, code ()->R) outcome R =>
-  concur.sync.condition.new.bind cnd->
-    (thread_pool cnd size) ! code
+  (thread_pool size) ! code
 
 
 # concrete implementation of concur.Future
@@ -70,19 +69,17 @@ Computable_Future(
 
 # simple, fixed size thread pool
 #
-private:public thread_pool(cnd concur.sync.condition, size i32) : effect
+private:public thread_pool(size i32) : effect
 pre debug: size > 0
 is
 
-  bq := Blocking_Queue ()->unit cnd
+  bq := Blocking_Queue ()->unit
 
-  thrds := (1..size)
-    .map _->
+  thrds := array size _->
       concur.threads.spawn ()->
         _ := for x := bq.dequeue
              while x.exists
                x.val.call
-    .as_array
 
 
   # submit a task to the thread pool
@@ -116,10 +113,6 @@ is
     # i.e. stop accepting jobs
     #
     bq.close
-
-    # wake up all threads
-    cnd.synchronized unit ()->
-      _ := cnd.broadcast
 
     # wait for all threads to finish
     thrds.for_each t->

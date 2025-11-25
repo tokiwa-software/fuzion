@@ -22,31 +22,33 @@
 # -----------------------------------------------------------------------
 
 
-# NYI: replace by better queue implementation, e.g. https://arxiv.org/pdf/2305.07229
-module Blocking_Queue(T type, cnd concur.sync.condition) ref is
+# state of the blocking queue
+#
+bqstate(T type, is_closed bool, data array T) is
 
-  # is closed for taking any new elements?
+
+# NYI: replace by better queue implementation, e.g. https://arxiv.org/pdf/2305.07229
+module Blocking_Queue(T type) ref is
+
+  # the state of this queue
   #
   # atomic just for convenience
   #
   # accessed only by one thread at a time
   #
-  is_closed := concur.atomic bool .new false
+  s := concur.atomic (bqstate T) .new (bqstate T false [])
+
+
+  # condition for synchronization
+  #
+  cnd := concur.sync.condition.new.val # NYI: error handling
 
 
   module close =>
     cnd.synchronized ()->
-      is_closed.write true
+      c := s.read
+      s.write (bqstate true c.data)
       check cnd.broadcast
-
-
-  # the data this queue currently holds
-  #
-  # atomic just for convenience
-  #
-  # accessed only by one thread at a time
-  #
-  data := concur.atomic (array T) .new []
 
 
   # enqueue an element
@@ -55,12 +57,11 @@ module Blocking_Queue(T type, cnd concur.sync.condition) ref is
   #
   module enqueue(el T) bool =>
     cnd.synchronized ()->
-      if is_closed.read
+      c := s.read
+      if c.is_closed
         false
       else
-        old := data.read
-        new := old.put old.length el
-        data.write new
+        s.write (bqstate false (c.data.put c.data.length el))
         # signal a waiting thread to pick up the work
         check cnd.signal
         true
@@ -75,20 +76,23 @@ module Blocking_Queue(T type, cnd concur.sync.condition) ref is
     depleted is
     retry is
 
-    res :=
-      cnd.synchronized (choice T depleted retry) ()->
-        d := data.read
-        if is_closed.read && d.is_empty
-          depleted
-        else if d.is_empty
-          check cnd.wait
-          retry
-        else
-          data.write (array d.count-1 i->d[i+1])
-          d[0]
-
-    match res
-      t T => t
-      depleted => nil
-      retry => dequeue
+    for res := {
+        cnd.synchronized (choice T depleted retry) ()->
+          c := s.read
+          if c.data.is_empty
+            if c.is_closed
+              depleted
+            else
+              check cnd.wait
+              retry
+          else
+            s.write (bqstate c.is_closed (c.data.drop 1 .as_array))
+            c.data[0]
+              }
+    while res ? retry => true | * => false
+    else
+      match res
+        depleted => nil
+        t T => t
+        retry => panic "Illegal state in Blocking_Queue, bug!"
 
