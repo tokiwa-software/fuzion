@@ -31,10 +31,10 @@ ssl_lm : mutate is
 
 # read the response
 #
-module read_reponse(LM type : mutate) outcome String ! LM =>
+module read_reponse(LM type : mutate) ! LM =>
   http
     .read_response LM
-    .bind resp->
+    .bind String resp->
       if resp.status_code >= 400
         error "{resp.status_code} {resp.reason_phrase}"
       else
