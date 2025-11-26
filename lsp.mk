@@ -77,8 +77,8 @@ $(BUILD_DIR)/bin/fuzion_language_server: $(FZ_SRC)/bin/fuzion_language_server
 # NYI: CLEANUP: use just frontend not, CLASS_FILES_BE_JVM
 $(CLASS_FILES_LSP): $(BUILD_DIR)/jars/lsp.sha256 $(BUILD_DIR)/bin/fuzion_language_server $(CLASS_FILES_BE_JVM) $(JAVA_FILES_LSP) $(JAVA_FILES_LSP_SHARED)
 	mkdir -p $(CLASSES_DIR_LSP)
-	$(JAVAC) --class-path $(LSP_CP) -d $(CLASSES_DIR_LSP) $(JAVA_FILES_LSP)
-	$(JAVAC) --class-path $(LSP_CP) -d $(CLASSES_DIR_LSP) $(JAVA_FILES_LSP_SHARED)
+	$(JAVAC) --class-path "$(LSP_CP)" -d $(CLASSES_DIR_LSP) $(JAVA_FILES_LSP)
+	$(JAVAC) --class-path "$(LSP_CP)" -d $(CLASSES_DIR_LSP) $(JAVA_FILES_LSP_SHARED)
 	touch $@
 
 .PHONY: lsp/compile
@@ -89,7 +89,7 @@ LSP_DEBUGGER_SUSPENDED = -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,a
 LSP_JAVA_ARGS = -Dfuzion.home=$(BUILD_DIR) -Dfile.encoding=UTF-8 -Xss$(LSP_JAVA_STACKSIZE)m
 .PHONY: lsp/debug/stdio
 lsp/debug/stdio: lsp/compile
-	$(JAVA) $(LSP_DEBUGGER_SUSPENDED) --class-path $(LSP_CP) $(LSP_JAVA_ARGS) dev.flang.lsp.Main -stdio
+	$(JAVA) $(LSP_DEBUGGER_SUSPENDED) --class-path "$(LSP_CP)" $(LSP_JAVA_ARGS) dev.flang.lsp.Main -stdio
 
 
 # this is normally set by vscode-fuzion in debug mode
@@ -100,7 +100,7 @@ LANGUAGE_SERVER_PORT ?= 3000
 lsp/debug/socket: NOOP = $(shell lsof -i:8000 | tail -n 1 | awk -F ' ' '{print $$2}' | xargs kill)
 lsp/debug/socket: $(CLASS_FILES_LSP)
 	mkdir -p runDir
-	java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=127.0.0.1:8000 --class-path $(LSP_CP) $(LSP_JAVA_ARGS) dev.flang.lsp.Main -socket --port=$(LANGUAGE_SERVER_PORT)
+	java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=127.0.0.1:8000 --class-path "$(LSP_CP)" $(LSP_JAVA_ARGS) dev.flang.lsp.Main -socket --port=$(LANGUAGE_SERVER_PORT)
 
 $(BUILD_DIR)/lsp.jar: $(CLASS_FILES_LSP) $(FUZION_BASE) $(FZ_SRC)/assets/Manifest.txt
 	jar cfm $@ $(FZ_SRC)/assets/Manifest.txt -C $(BUILD_DIR)/classes . -C $(CLASSES_DIR_LSP) .
