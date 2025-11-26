@@ -202,11 +202,11 @@ public mutate : linear_effect is
 
 # shorthand for accessing mut effect in current environment
 #
-public mut mutate =>
+public mut mutate ! mutate =>
   mutate.install_default
   mutate.env
 
 
 # create a new mutable value of type T with initial value v
 #
-public mut(T type, v T) mutate.new T => mut.new v
+public mut(T type, v T) mutate.new T ! mutate => mut.new v

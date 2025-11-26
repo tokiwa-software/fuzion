@@ -35,7 +35,7 @@ public Channel(T type/*, buf_size i32*/) ref : Iterator T, Sending_Channel T, Re
   # returns true if sending was successful,
   # false if not
   #
-  public redef infix <- (to T) bool
+  public redef infix <- (to T) bool ! atomic_access
   =>
     bq.enqueue to
 
@@ -45,7 +45,7 @@ public Channel(T type/*, buf_size i32*/) ref : Iterator T, Sending_Channel T, Re
   # infix <- will now always return false
   # next will return nil once Channel is empty
   #
-  public redef close unit =>
+  public redef close unit ! atomic_access =>
     bq.close
     # NYI: BUG: free/dispose cnd
 
@@ -53,6 +53,6 @@ public Channel(T type/*, buf_size i32*/) ref : Iterator T, Sending_Channel T, Re
   # returns nil when Channel is closed and empty
   # otherwise returns the next received value
   #
-  public redef next option T =>
+  public redef next option T ! atomic_access =>
     bq.dequeue
 

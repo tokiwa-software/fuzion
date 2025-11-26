@@ -73,7 +73,7 @@ public nano (p Nano_Time_Handler) : Clock is
 
 # shorthand for accessing time.nano effect in current environment
 #
-public nano time.nano =>
+public nano time.nano ! time.nano =>
   if !nano.is_instated
     nano.install_default
   time.nano.env

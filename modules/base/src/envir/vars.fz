@@ -55,7 +55,7 @@ public vars (p Vars_Handler) : effect is
 
 # shorthand for accessing envir.vars effect in current environment
 #
-public vars envir.vars =>
+public vars envir.vars ! envir.vars =>
   vars.install_default
   envir.vars.env
 

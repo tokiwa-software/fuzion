@@ -133,6 +133,6 @@ install_default =>
 
 # shorthand to processes effect
 #
-public processes processes =>
+public processes processes ! processes =>
   install_default
   processes.env
