@@ -76,6 +76,7 @@ public Webserver(/*NYI: UNDER DEVELOPMENT: custom thread pool TP type : concur.t
     check tp_res.ok
 
 
+
 # create a new webserver
 #
 public webserver_create(port u16, family net.family.val, log String->unit, hdlr Http_Handler) outcome Webserver =>
@@ -83,14 +84,14 @@ public webserver_create(port u16, family net.family.val, log String->unit, hdlr 
   # NYI: middleware: tracing, timing, json, auth, parse-query/form,
   # session-cookie etc.
 
-  Webserver /*NYI: UNDER DEVELOPMENT: concur.thread_pool*/ port family log [except] hdlr
+  Webserver /*NYI: UNDER DEVELOPMENT: concur.thread_pool*/ port family log [except log] hdlr
 
 
 
 # exception middleware, catching any error happening
 # while processing the request
 #
-except : Middleware is
+public except(log String->unit) : Middleware is
   public redef call(h Http_Handler) Http_Handler =>
     ref : Http_Handler is
       public redef call(r http.request_message) http.response_message =>
@@ -100,6 +101,7 @@ except : Middleware is
           .try ()->
             h r
           .catch  e->
+            log e.as_string
             http
               .response_message
               .new

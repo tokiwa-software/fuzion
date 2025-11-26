@@ -31,7 +31,7 @@ mod_webserver =>
     webserver_create
       9999
       net.family.ipv4
-      (x -> if x.starts_with "listening on port:" then started.write true else unit)
+      (x -> if x.starts_with "listening on port:" then started.write true else say x)
       req->
         _ := mutate
         _ := cnt.incr
