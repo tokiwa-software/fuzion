@@ -31,7 +31,7 @@ private:public jvm : effect is
   module is_null0(java_ref Java_Ref) bool => intrinsic
 
 
-  # short-hand to for jvm with no additional class path
+  # shorthand to for jvm with no additional class path
   #
   public type.use(T type, code ()->T) T =>
     fuzion.jvm.use _ [] code
@@ -299,7 +299,7 @@ private:public jvm : effect is
   public bool_to_java_object(b bool) fuzion.java.Java_Object => fuzion.java.Java_Object (primitive_to_java_object b)
 
 
-  # short-hands
+  # shorthands
   #
   public i8    .as_java_object fuzion.java.Java_Object ! fuzion.jvm => fuzion.jvm.env.i8_to_java_object  val
   public i16   .as_java_object fuzion.java.Java_Object ! fuzion.jvm => fuzion.jvm.env.i16_to_java_object val

@@ -57,7 +57,7 @@ public read(ro Dir_Read_Handler) : effect is
     (io.dir.read default_read_handler).default
 
 
-# short-hand for accessing read effect in current environment
+# shorthand for accessing read effect in current environment
 #
 public read io.dir.read =>
   read.type.install_default

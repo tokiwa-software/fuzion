@@ -58,7 +58,7 @@ public mutate : linear_effect is
   public redef abortable bool => false
 
 
-  # short-hand to access effect type
+  # shorthand to access effect type
   #
   M := mutate.this.type
 
@@ -200,7 +200,7 @@ public mutate : linear_effect is
     mutate.default
 
 
-# short-hand for accessing mut effect in current environment
+# shorthand for accessing mut effect in current environment
 #
 public mut mutate =>
   mutate.install_default

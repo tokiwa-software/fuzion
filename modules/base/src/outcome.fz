@@ -137,7 +137,7 @@ is
       compile_time_panic
 
 
-# outcome with 1 argument provides an short-hand to wrap a value into a
+# outcome with 1 argument provides an shorthand to wrap a value into a
 # outcome
 #
 # Using this enables to write

@@ -24,7 +24,7 @@
 # -----------------------------------------------------------------------
 
 
-# short-hand to return an io.reader with a read handler
+# shorthand to return an io.reader with a read handler
 # allowing to read from stdin.
 #
 # usage example using a local mutate instance:

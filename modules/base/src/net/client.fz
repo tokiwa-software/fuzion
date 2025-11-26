@@ -47,4 +47,4 @@ public type.client(f net.family.val, p net.protocol.val, host String, port u16) 
       net.connection desc
 
 
-# NYI: ENHANCEMENT: short-hands: client(host String) etc.
+# NYI: ENHANCEMENT: shorthands: client(host String) etc.
