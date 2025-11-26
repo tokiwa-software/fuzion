@@ -1273,7 +1273,7 @@ is
       result.finite.is_yes_or_unknown
       result.count = 0
   =>
-    (list T).type.empty
+    []
 
 
   # monoid of Sequences with infix concatenation operation.
@@ -1289,7 +1289,7 @@ is
       # identity element
       #
       public redef e Sequence T =>
-        (list T).empty
+        []
 
 
   # Maximum number of elements shown for on a call to `as_string` for a non-finite

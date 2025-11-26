@@ -51,7 +51,7 @@ is
   public redef items Sequence (tuple KEY VAL) =>
     match root.get
       e Entry => e.items
-      nil => (list (tuple KEY VAL)).empty
+      nil => []
 
 
   # freeze the map, such that it is no longer mutable afterwards
