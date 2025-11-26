@@ -39,10 +39,40 @@ public ip_address (val u128) : property.equatable is
       family.ipv6
 
 
+  # renders the IP address as a string
+  #
+  # NYI: ENHANCEMENT: should we add the well-known IPv4 format?
+  #
+  public redef as_string String =>
+    s := val.as_string 32 16
+            .chunk 4
+
+    String.join s ":"
+
+
   # are two given IP addresses equal?
   #
   public redef type.equality (a, b ip_address.this) bool =>
     a.val = b.val
+
+
+  # creates an ip_address from a Sequence of u8 like returned by the
+  # networking native features.
+  #
+  module type.from_sequence (s Sequence u8) net.ip_address =>
+    c := s.count
+
+    check c = 4 || c = 16
+
+    for
+      r := u128 0 0, r + (b.as_u128 << (x*8).as_u128)
+      b in s.reverse
+      x in 0..(c-1)
+    else
+      if c = 4
+        net.ip_address (r + (0xffff.as_u128 << 32.as_u128)) # 32 = 4 * 8
+      else
+        net.ip_address r
 
 
 # version of an IP address, either IPv4 or IPv6

@@ -40,8 +40,9 @@ is
 
 
   # get the peer's ip address (tcp)
-  public get_peer_address outcome (Sequence u8) =>
+  public get_peer_address outcome net.ip_address =>
     fuzion.sys.net.get_peer_address desc
+      .bind net.ip_address.type.from_sequence
 
 
   # get the peer's port (tcp)
