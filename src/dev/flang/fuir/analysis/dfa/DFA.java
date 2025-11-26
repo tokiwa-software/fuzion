@@ -1361,34 +1361,39 @@ public class DFA extends ANY
   public void dfa()
   {
     _newCallRecursiveAnalyzeClazzes = new int[MAX_NEW_CALL_RECURSION];
-    _real = false;
-    var preIter = findFixPoint();
-    _options.timer("dfa_pre");
+    var preIter = 0;
 
-    for (var k : _callGroupsQuick.keySet())
+    if (!DO_NOT_TRACE_ENVS)
       {
-        _callGroupsQuick.get(k).saveEffects();
+        _real = false;
+        preIter = findFixPoint();
+        _options.timer("dfa_pre");
+
+        for (var k : _callGroupsQuick.keySet())
+          {
+            _callGroupsQuick.get(k).saveEffects();
+          }
+        for (var g : _callGroups.values())
+          {
+            g.saveEffects();
+          }
+
+        _cachedValues = new TreeMap<>(Value.COMPARATOR);
+        // _numUniqueValues = 0;    -- NYI: Somewhere, the old unique ids are still in use, need to check why! See reg_issue2478 to check this.
+        _uniqueValues = new List<Value>();
+        _instancesForSite = new List<>();
+        _tagged = new LongMap<>();
+        _joined = new LongMap<>();
+        _uninitializedSysArray = new IntMap<>();
+
+        _callsQuick = new LongMap<>();
+        _calls = new TreeMap<>();
+        _callGroupsQuick = new LongMap<>();
+        _callGroups = new TreeMap<>();
+
+        _instancesForSite = new List<>();
+        _unitCalls = new IntMap<>();
       }
-    for (var g : _callGroups.values())
-      {
-        g.saveEffects();
-      }
-
-    _cachedValues = new TreeMap<>(Value.COMPARATOR);
-    // _numUniqueValues = 0;    -- NYI: Somewhere, the old unique ids are still in use, need to check why! See reg_issue2478 to check this.
-    _uniqueValues = new List<Value>();
-    _instancesForSite = new List<>();
-    _tagged = new LongMap<>();
-    _joined = new LongMap<>();
-    _uninitializedSysArray = new IntMap<>();
-
-    _callsQuick = new LongMap<>();
-    _calls = new TreeMap<>();
-    _callGroupsQuick = new LongMap<>();
-    _callGroups = new TreeMap<>();
-
-    _instancesForSite = new List<>();
-    _unitCalls = new IntMap<>();
 
     _real = true;
     var realIter = findFixPoint();
