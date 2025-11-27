@@ -55,6 +55,7 @@ import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import static dev.flang.util.FuzionConstants.EFFECT_INSTATE_NAME;
 import dev.flang.util.FuzionOptions;
+import dev.flang.util.Influx;
 import dev.flang.util.List;
 import dev.flang.util.IntMap;
 import dev.flang.util.LongMap;
@@ -1360,6 +1361,8 @@ public class DFA extends ANY
    */
   public void dfa()
   {
+    var startTime = System.currentTimeMillis();
+
     _newCallRecursiveAnalyzeClazzes = new int[MAX_NEW_CALL_RECURSION];
     _real = false;
     var preIter = findFixPoint();
@@ -1405,6 +1408,21 @@ public class DFA extends ANY
 
     _fuir.reportAbstractMissing();
     Errors.showAndExit();
+
+    if (_fuir.mainClazz() != FUIR.NO_CLAZZ && System.getenv("INFLUXDB_TOKEN") != null)
+        {
+          var elapsedMillis = System.currentTimeMillis() - startTime;
+          var data = String.format(
+            "dfa,main_name=%s time=%s,pre_iter=%s,real_iter=%s,calls=%s,unique_values=%s",
+            _fuir.clazzAsString(_fuir.mainClazz()),
+            elapsedMillis,
+            preIter,
+            realIter,
+            _calls.size(),
+            _numUniqueValues
+          );
+          Influx.postToInflux(data);
+        }
   }
 
 
