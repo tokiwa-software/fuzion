@@ -661,13 +661,13 @@ $(MOD_FZ_CMD_DIR).jmod: $(FUZION_BASE)
 	jmod create --class-path $(CLASSES_DIR) $(MOD_FZ_CMD_DIR).jmod
 	@echo " + build/modules/fz_cmd.jmod"
 
-$(MOD_FZ_CMD_FZ_FILES): $(MOD_FZ_CMD_DIR).jmod $(MOD_JAVA_BASE) $(MOD_JAVA_MANAGEMENT) $(MOD_JAVA_DESKTOP)
+$(MOD_FZ_CMD_FZ_FILES): $(MOD_FZ_CMD_DIR).jmod $(MOD_JAVA_BASE) $(MOD_JAVA_MANAGEMENT) $(MOD_JAVA_DESKTOP) $(MOD_JAVA_NET_HTTP)
 	rm -rf $(MOD_FZ_CMD_DIR)
-	$(FZJAVA) -to=$(MOD_FZ_CMD_DIR) -modules=java.base,java.management,java.desktop $(MOD_FZ_CMD_DIR)
+	$(FZJAVA) -to=$(MOD_FZ_CMD_DIR) -modules=java.base,java.management,java.desktop,java.net.http $(MOD_FZ_CMD_DIR)
 	touch $@
 
 $(MOD_FZ_CMD): $(MOD_FZ_CMD_FZ_FILES)
-	$(FZ) -sourceDirs=$(MOD_FZ_CMD_DIR) -modules=java.base,java.management,java.desktop -saveModule=$@
+	$(FZ) -sourceDirs=$(MOD_FZ_CMD_DIR) -modules=java.base,java.management,java.desktop,java.net.http -saveModule=$@
 
 
 $(FUZION_RT): $(BUILD_DIR)/include $(FUZION_FILES_RT)
