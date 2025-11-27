@@ -67,11 +67,10 @@ public class CNames extends ANY
 
 
   /**
-   * Maximum length of (external) function names in C.  Since name mangling
+   * Maximum length of (internal) function names in C.  Since name mangling
    * easily results in lengthy names, we have to be careful not to exceed this.
    */
   private static final int MAX_C99_INTERNAL_IDENTIFIER_LENGTH = 63;
-  private static final int MAX_C99_EXTERNAL_IDENTIFIER_LENGTH = 31;
 
 
   /**
