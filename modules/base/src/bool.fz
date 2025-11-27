@@ -59,10 +59,18 @@ public bool : choice false_ true_, property.equatable, java_primitive is
       false
 
   # or
-  public infix |   (other bool) bool => bool.this || other
+  public infix |   (other bool) bool =>
+    if bool.this
+      true
+    else
+      other
 
   # and
-  public infix &   (other bool) bool => bool.this && other
+  public infix &   (other bool) bool =>
+    if bool.this
+      other
+    else
+      false
 
   # equivalence
   #
@@ -181,7 +189,6 @@ public true bool => true_
 public all_of (B type..., values B...) bool =>
   values.typed_foldf true T,e,v->
     if T : bool
-      # NYI: BUG: #6071: cannot use && here
       v & e
     else
       compile_time_panic
@@ -193,7 +200,6 @@ public all_of (B type..., values B...) bool =>
 public any_of (B type..., values B...) bool =>
   values.typed_foldf false T,e,v->
     if T : bool
-      # NYI: BUG: #6071: cannot use || here
       v | e
     else
       compile_time_panic
