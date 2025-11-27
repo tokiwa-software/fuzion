@@ -2374,8 +2374,8 @@ public class DFA extends ANY
    */
   private static Value numericEquality(Call cl)
   {
-    var v0 = ((NumericValue)cl._args.get(0))._value;
-    var v1 = ((NumericValue)cl._args.get(1))._value;
+    var v0 = (cl._args.get(0).value() instanceof NumericValue nv) ? nv._value : null;
+    var v1 = (cl._args.get(1).value() instanceof NumericValue nv) ? nv._value : null;
     return v0 == null || v1 == null
       ? cl._dfa.bool()
       : cl._dfa.boolAsVal(v0 == v1);
