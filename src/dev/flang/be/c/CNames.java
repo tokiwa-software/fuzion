@@ -70,7 +70,8 @@ public class CNames extends ANY
    * Maximum length of (external) function names in C.  Since name mangling
    * easily results in lengthy names, we have to be careful not to exceed this.
    */
-  private static final int MAX_C99_IDENTIFIER_LENGTH = 31;
+  private static final int MAX_C99_INTERNAL_IDENTIFIER_LENGTH = 63;
+  private static final int MAX_C99_EXTERNAL_IDENTIFIER_LENGTH = 31;
 
 
   /**
@@ -339,14 +340,14 @@ public class CNames extends ANY
           }
           _usedNames.add(res);
 
-          if (res.length() > MAX_C99_IDENTIFIER_LENGTH)
+          if (res.length() > MAX_C99_INTERNAL_IDENTIFIER_LENGTH)
             {
               var s = p + "_L" + num;
               res = s +
                 res.substring(p.length(), p.length() + 10) + "__" +
-                res.substring(res.length() - MAX_C99_IDENTIFIER_LENGTH + s.length() + 12);
+                res.substring(res.length() - MAX_C99_INTERNAL_IDENTIFIER_LENGTH + s.length() + 12);
               if (CHECKS) check
-                (res.length() == MAX_C99_IDENTIFIER_LENGTH);
+                (res.length() == MAX_C99_INTERNAL_IDENTIFIER_LENGTH);
             }
           _cache.set(num, res);
         }
