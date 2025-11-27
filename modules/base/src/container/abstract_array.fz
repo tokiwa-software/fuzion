@@ -46,6 +46,26 @@ public abstract_array
   public redef count i32 => length
 
 
+  # is this Sequence empty?
+  #
+  public redef is_empty bool => length = 0
+
+
+  # get the first element of this Sequence
+  #
+  public redef first option T
+  => if is_empty then nil else index [ ] 0
+
+
+  # get the last element of this Sequence
+  #
+  # This may take time in O(count), in particular, it may not terminate
+  # for an infinite Sequence.
+  #
+  public redef last option T
+  => if is_empty then nil else index [ ] length-1
+
+
   # is this sequence known to be finite?  For infinite sequences, features like
   # count diverge.
   #
