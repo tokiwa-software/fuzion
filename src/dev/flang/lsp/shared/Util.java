@@ -118,6 +118,7 @@ public class Util
   }
 
   @SafeVarargs
+  @SuppressWarnings("varargs")
   public static <T> Stream<T> concatStreams(Stream<T>... streams)
   {
     return Stream.of(streams)
