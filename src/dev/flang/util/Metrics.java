@@ -20,7 +20,7 @@ Fuzion language implementaaion.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of Influx
+ * Source of Metrics
  *
  *---------------------------------------------------------------------*/
 
@@ -31,7 +31,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
-public class Influx extends ANY {
+public class Metrics extends ANY {
 
 
   /**
@@ -71,5 +71,25 @@ public class Influx extends ANY {
       {
         return "Error sending to InfluxDB: " + e.getMessage();
       }
+  }
+
+  public static void dfaMetrics(long startTime, int preIter, int realIter, int calls, int values, String mainClazz)
+  {
+    var elapsedMillis = System.currentTimeMillis() - startTime;
+    var data = String.format(
+      "dfa,main_name=%s time=%s,pre_iter=%s,real_iter=%s,calls=%s,unique_values=%s",
+      mainClazz,
+      elapsedMillis,
+      preIter,
+      realIter,
+      calls,
+      values);
+    postToInflux(data);
+  }
+
+  public static void fumFile(String moduleName, long frontEndMilliSeconds, long totalMilliSeconds)
+  {
+    var data = String.format("fum,module=%s frontend=%s,total=%s", moduleName, frontEndMilliSeconds, totalMilliSeconds);
+    postToInflux(data);
   }
 }
