@@ -34,7 +34,22 @@ ssl_lm : mutate is
 module read_reponse(LM type : mutate) ! LM =>
   http
     .read_response LM
-    .bind (.body_as_string)
+    .bind String resp->
+      body := resp.body_as_string
+      if resp.status_code >= 400
+        msg :=
+          if body.is_blank
+            "{resp.status_code} {resp.reason_phrase}"
+          else
+            """
+            {resp.status_code} {resp.reason_phrase}
+
+            {body}
+            """
+        error msg
+      else
+        body
+
 
 
 # write the request
