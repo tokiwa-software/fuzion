@@ -136,3 +136,11 @@ debug_api_docs: $(FUZION_BASE) $(CLASS_FILES_TOOLS_DOCS)
 	cp assets/docs/32.png $(BUILD_DIR)/debugdocs/
 	$(JAVA) --class-path $(CLASSES_DIR) -Xss64m -Dfuzion.home=$(BUILD_DIR) dev.flang.tools.docs.Docs $(BUILD_DIR)/debugdocs
 	jwebserver --port 15306 --directory $$(realpath $(BUILD_DIR)/debugdocs)
+
+.phony: serve_docs
+serve_docs: $(DOCUMENTATION)
+	jwebserver --port 15307 --directory $$(realpath $(BUILD_DIR)/doc)
+
+.phony: serve_java_docs
+serve_java_docs: $(DOC_JAVA)
+	jwebserver --port 15308 --directory $$(realpath $(BUILD_DIR)/doc/java)
