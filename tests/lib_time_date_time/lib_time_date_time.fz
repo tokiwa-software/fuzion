@@ -75,3 +75,8 @@ lib_time_date_time =>
   say <| a.as_string time.pmilli_second
   say <| a.as_string time.pnano_second
   check time.date_time.from_seconds 1762961342 .unix_time_stamp = 1762961342
+
+  # NYI: BUG: currently results in zero, since infix - is not exact enough yet
+  say a-b
+  say a-c
+  say b-c

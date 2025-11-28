@@ -46,6 +46,16 @@ is
     nano_second / 1E6
 
 
+  # subtract a smaller (or equal) date_time from a larger (or equal) date_time
+  #
+  public infix - (o time.date_time) time.duration
+    pre debug: (time.date_time year month day hour minute second nano_second) >= o
+        # NYI: UNDER DEVELOPMENT: cheap hack for now
+        debug: year >= 1970
+  =>
+    time.duration.s unix_time_stamp-o.unix_time_stamp
+
+
   year_as_string => year.as_string 4 10
   month_as_string => date_time.this.month.as_string 2 10
   day_as_string => day.as_string 2 10
