@@ -35,10 +35,20 @@ module read_reponse(LM type : mutate) ! LM =>
   http
     .read_response LM
     .bind String resp->
+      body := resp.body_as_string
       if resp.status_code >= 400
-        error "{resp.status_code} {resp.reason_phrase}"
+        msg :=
+          if body.is_blank
+            "{resp.status_code} {resp.reason_phrase}"
+          else
+            """
+            {resp.status_code} {resp.reason_phrase}
+
+            {body}
+            """
+        error msg
       else
-        resp.body_as_string
+        body
 
 
 
