@@ -30,6 +30,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.regex.Pattern;
 
 public class Metrics extends ANY {
 
@@ -78,7 +79,7 @@ public class Metrics extends ANY {
     var elapsedMillis = System.currentTimeMillis() - startTime;
     var data = String.format(
       "dfa,main_name=%s time=%s,pre_iter=%s,real_iter=%s,calls=%s,unique_values=%s",
-      mainClazz,
+      escape(mainClazz),
       elapsedMillis,
       preIter,
       realIter,
@@ -89,7 +90,28 @@ public class Metrics extends ANY {
 
   public static void fumFile(String moduleName, long frontEndMilliSeconds, long totalMilliSeconds)
   {
-    var data = String.format("fum,module=%s frontend=%s,total=%s", moduleName, frontEndMilliSeconds, totalMilliSeconds);
+    var data = String.format("fum,module=%s frontend=%s,total=%s", escape(moduleName), frontEndMilliSeconds, totalMilliSeconds);
     postToInflux(data);
+  }
+
+
+  private static final Pattern leadingUnderscore = Pattern.compile("^_+");
+
+
+  /**
+   * Escape string for influx db
+   *
+   * https://docs.influxdata.com/influxdb/cloud/reference/syntax/line-protocol/#naming-restrictions
+   *
+   * @param str
+   * @return
+   */
+  private static String escape(String str)
+  {
+    return leadingUnderscore
+        .matcher(str).replaceAll("")
+        .replace(",", "\\,")
+        .replace(" ", "\\ ")
+        .replace("=", "\\=");
   }
 }
