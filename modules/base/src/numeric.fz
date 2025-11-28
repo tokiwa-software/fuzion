@@ -204,7 +204,10 @@ public numeric : property.hashable, property.orderable is
   # the value corresponding to v in whatever integer implementation we have,
   # maximum in case of overflow
   #
-  public type.from_u32(v u32) numeric.this =>
+  public type.from_u32(v u32) numeric.this
+    # otherwise misuse probably
+    pre pedantic: v <= 64
+  =>
     if v = 0 zero else (from_u32 v-1) +^ one
 
 
