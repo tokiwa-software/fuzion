@@ -200,3 +200,18 @@ public integer : numeric is
   # the least significant byte of this integer
   #
   public low8bits u8 => abstract
+
+
+  # the value corresponding to v in whatever integer implementation we have,
+  # maximum in case of overflow
+  #
+  # runtime complexity: O(32)
+  #
+  public redef type.from_u32(v u32) integer.this =>
+    for
+      res := zero, if (remaining & 1) != 0 then res +^ current_bit else res
+      current_bit := one, current_bit << 1
+      remaining := v, remaining >> 1
+    while remaining != 0
+    else
+      res
