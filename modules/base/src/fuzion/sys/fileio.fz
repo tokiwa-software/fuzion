@@ -33,7 +33,7 @@ module fileio is
   # in case the outcome is an array, it may be shorter than n. this means the end of file
   # has been reached.
   #
-  module read(fd File_Descriptor, n u64) outcome (array u8) =>
+  module read(fd File_Descriptor, n u64) outcome (Sequence u8) =>
     len := n.as_i32
     arr := fuzion.sys.internal_array_init u8 len
     res := fzE_file_read fd arr.data len
@@ -41,10 +41,9 @@ module fileio is
     if res < -1
       error "failed reading, error: {res}"
     else if res < 0
-      []
+      (id (Sequence u8) [])
     else
-      buf := arr.as_array
-      (buf.slice 0 res).as_array
+      arr.as_array.take res
 
 
   # writes the content of an array of bytes to a file opened as fd
