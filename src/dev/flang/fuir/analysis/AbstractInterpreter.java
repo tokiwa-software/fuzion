@@ -361,11 +361,12 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
 
     if (!clazzHasUnitValue(cl))
       {
-        stack.push(val);
+        if (val != _processor.unitValue())
+          stack.push(val);
       }
 
     if (POSTCONDITIONS) ensure
-      (clazzHasUnitValue(cl) || stack.get(stack.size()-1) == val,
+      (clazzHasUnitValue(cl) || (val == _processor.unitValue()) || stack.get(stack.size()-1) == val,
        !_fuir.clazzIsVoidType(cl) || containsVoid(stack));
   }
 
@@ -382,6 +383,8 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
    */
   VALUE pop(Stack<VALUE> stack, int cl)
   {
+    if (!(clazzHasUnitValue(cl) || stack.size() > 0))
+      System.out.println("POP FROM EMPTY STACK "+_fuir.clazzAsString(cl));
     if (PRECONDITIONS) require
       (clazzHasUnitValue(cl) || stack.size() > 0,
        !containsVoid(stack));
@@ -523,6 +526,11 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
                                            _fuir.siteAsString(last_s)));
       }
 
+    if (!(containsVoid(stack) || stack.isEmpty()))
+      {
+        System.out.println("stack is "+stack);
+        System.out.println("after "+_fuir.sitePos(s0).show());
+      }
     // FUIR has the invariant that the stack must be empty at the end of a basic block.
     if (CHECKS) check
       (containsVoid(stack) || stack.isEmpty());
