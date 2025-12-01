@@ -105,7 +105,7 @@ public class Intrinsics extends ANY
           var new_value = A1;
           var tmp = new CIdent("tmp");
           var code = CStmnt.EMPTY;
-          if (!c._fuir.clazzIs(rc, SpecialClazzes.c_unit))
+          if (!c._fuir.clazzIsUnitType(rc))
             {
               var f = c.accessField(outer, ac, v);
               CExpr eq;
@@ -144,7 +144,7 @@ public class Intrinsics extends ANY
           var tmp = new CIdent("tmp");
           var res = new CIdent("set_successful");
           var code = CStmnt.EMPTY;
-          if (!c._fuir.clazzIs(rc, SpecialClazzes.c_unit))
+          if (!c._fuir.clazzIsUnitType(rc))
             {
               var f = c.accessField(outer, ac, v);
               CExpr eq;
@@ -192,7 +192,7 @@ public class Intrinsics extends ANY
           var r =
             c._fuir.clazzIsRef(rc) ||
             c._fuir.clazzIsBuiltInPrimitive(rc) ||
-            c._fuir.clazzIs(rc, SpecialClazzes.c_unit);
+            c._fuir.clazzIsUnitType(rc);
           return (r ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret();
         });
 
@@ -203,7 +203,7 @@ public class Intrinsics extends ANY
           var rc  = c._fuir.clazzResultClazz(v);
           var tmp = new CIdent("tmp");
           CStmnt code;
-          if (c._fuir.clazzIs(rc, SpecialClazzes.c_unit))
+          if (c._fuir.clazzIsUnitType(rc))
             {
               code = CExpr.call("atomic_thread_fence", new List<>(new CIdent("memory_order_seq_cst")));
             }
@@ -245,7 +245,7 @@ public class Intrinsics extends ANY
           var rc  = c._fuir.clazzResultClazz(v);
           var new_value = A0;
           var code = CStmnt.EMPTY;
-          if (c._fuir.clazzIs(rc, SpecialClazzes.c_unit))
+          if (c._fuir.clazzIsUnitType(rc))
             {
               code = CExpr.call("atomic_thread_fence", new List<>(new CIdent("memory_order_seq_cst")));
             }
