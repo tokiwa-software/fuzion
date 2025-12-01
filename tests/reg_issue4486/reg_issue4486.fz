@@ -37,11 +37,11 @@ reg_issue4486 =>
   #
   read_handler(arg String) : io.Read_Handler is
     already_returned := mut false
-    public redef read(count i32) choice (array u8) io.end_of_file error =>
+    public redef read(count i32) choice (Sequence u8) io.end_of_file error =>
       if !already_returned.get
         already_returned <- true
         # return eof for empty string to simulate: `printf "" | fz read_lines_test.fz`
-        arg = "" ? io.end_of_file : arg.utf8.as_array
+        arg = "" ? io.end_of_file : arg.utf8
       else
         io.end_of_file
 
