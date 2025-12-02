@@ -43,7 +43,8 @@ module fileio is
     else if res < 0
       (id (Sequence u8) [])
     else
-      arr.as_array.take res
+      # NYI: UNDER DEVELOPMENT: could realloc internal_array
+      arr.as_array.slice 0 res
 
 
   # writes the content of an array of bytes to a file opened as fd
