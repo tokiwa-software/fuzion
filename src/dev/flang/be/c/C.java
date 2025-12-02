@@ -2423,7 +2423,16 @@ public class C extends ANY
         case c_f64 -> successResult.field(new CIdent("d")).castTo(_types.scalar(cl));
         case c_bool -> successResult.field(new CIdent("z")).cond(_names.FZ_TRUE, _names.FZ_FALSE);
         case c_NOT_FOUND -> _fuir.clazzIsUnitType(cl) ? successResult : asJava_Object(cl, successResult);
-        default -> throw new Error("error in implementation.");
+        default -> {
+          if (_fuir.clazzIsUnitType(cl))
+            {
+              yield successResult;
+            }
+          else
+            {
+              throw new Error("error in implementation.");
+            }
+        }
       };
   }
 
