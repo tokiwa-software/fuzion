@@ -204,6 +204,9 @@ public numeric : property.hashable, property.orderable is
   # the value corresponding to v in whatever integer implementation we have,
   # maximum in case of overflow
   #
+  # we use a less *obvious* algorithm than induction via v-1 here to
+  # reduce complexity to O(log(v)).
+  #
   public type.from_u32(v u32) numeric.this =>
     if      v = 0 then zero
     else if v = 1 then one
