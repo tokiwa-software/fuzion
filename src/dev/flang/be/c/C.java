@@ -2390,14 +2390,15 @@ public class C extends ANY
           : val.ret();
 
         return CExpr.seq(sideEffect, result);
-      case c_unit :
-        return expr;
-      case c_String :
-      case c_u32 :
-      case c_u64 :
-      case c_u8 :
       default:
-        throw new Error("misuse of Java intrinsic?" + _fuir.clazzAsString(cl));
+        if (_fuir.clazzIsUnitType(cl))
+          {
+            return expr;
+          }
+        else
+          {
+            throw new Error("misuse of Java intrinsic?" + _fuir.clazzAsString(cl));
+          }
       }
   }
 
@@ -2421,9 +2422,17 @@ public class C extends ANY
         case c_f32 -> successResult.field(new CIdent("f")).castTo(_types.scalar(cl));
         case c_f64 -> successResult.field(new CIdent("d")).castTo(_types.scalar(cl));
         case c_bool -> successResult.field(new CIdent("z")).cond(_names.FZ_TRUE, _names.FZ_FALSE);
-        case c_unit -> successResult;
-        case c_NOT_FOUND -> asJava_Object(cl, successResult);
-        default -> throw new Error("error in implementation.");
+        case c_NOT_FOUND -> _fuir.clazzIsUnitType(cl) ? successResult : asJava_Object(cl, successResult);
+        default -> {
+          if (_fuir.clazzIsUnitType(cl))
+            {
+              yield successResult;
+            }
+          else
+            {
+              throw new Error("error in implementation.");
+            }
+        }
       };
   }
 
