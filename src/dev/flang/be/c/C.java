@@ -2393,8 +2393,6 @@ public class C extends ANY
       case c_unit :
         return expr;
       case c_String :
-      case c_false_ :
-      case c_true_ :
       case c_u32 :
       case c_u64 :
       case c_u8 :
