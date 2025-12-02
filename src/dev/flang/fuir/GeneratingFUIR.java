@@ -624,8 +624,6 @@ public class GeneratingFUIR extends FUIR
               case FuzionConstants.UNIT_NAME   -> SpecialClazzes.c_unit        ;
               case "void"                      -> SpecialClazzes.c_void        ;
               case "bool"                      -> SpecialClazzes.c_bool        ;
-              case "true_"                     -> SpecialClazzes.c_true_       ;
-              case "false_"                    -> SpecialClazzes.c_false_      ;
               case "const_string"              -> SpecialClazzes.c_const_string;
               case FuzionConstants.STRING_NAME -> SpecialClazzes.c_String      ;
               case "error"                     -> SpecialClazzes.c_error       ;
