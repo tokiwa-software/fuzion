@@ -205,7 +205,7 @@ public class JavaInterface extends FUIRContext
         case SpecialClazzes.c_Thread -> new JavaRef(o);
         default ->
           {
-            var result = Value.NO_VALUE;
+            var result = Value.EMPTY_VALUE;
             if (!fuir().clazzIsUnitType(rc))
               {
                 var inst = new Instance(rc);
