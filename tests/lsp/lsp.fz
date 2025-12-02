@@ -103,16 +103,18 @@ record_process(
 
   lm ! ()->
     for stdin in feed_stdin do
-      _ := p.with_in unit lm ()->
-        _ := (io.buffered lm).writer.env.write stdin.0.utf8
+      x := p.with_in unit lm ()->
+        check (io.buffered lm).writer.env.write stdin.0.utf8 .ok
+      check x.ok
 
       for i in 1..stdin.1 do
-        _ := p.with_out _ lm ()->
+        y := p.with_out _ lm ()->
           match (io.buffered lm).read_line
             io.end_of_file => panic "eof"
             out String =>
               len := out.substring "Content-Length:".byte_length .trim .parse_i32.val
               fout <- fout.add (String.from <| (io.buffered lm).read_bytes len+2/* +2 because \r\n */)
+        check y.ok
 
 
 
