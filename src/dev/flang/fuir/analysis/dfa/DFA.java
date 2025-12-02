@@ -2450,15 +2450,18 @@ public class DFA extends ANY
       {
         case c_i8, c_u16, c_i16, c_i32, c_i64, c_f32, c_f64, c_bool ->
           cl._dfa.newInstance(rc, NO_SITE, cl._context);
-        case c_unit -> Value.UNIT;
         default -> {
-          var jref = fuir(cl).lookupJavaRef(rc);
-          if (CHECKS) check
-            (jref != NO_CLAZZ);
-          var jobj = cl._dfa.newInstance(rc, NO_SITE, cl._context);
-          jobj.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF);
-          setOuterRefs(cl, rc, jobj);
-          yield jobj;
+          var res = Value.UNIT;
+          if (!cl._dfa._fuir.clazzIsUnitType(rc))
+            {
+              var jref = fuir(cl).lookupJavaRef(rc);
+              if (CHECKS) check
+                (jref != NO_CLAZZ);
+              res = cl._dfa.newInstance(rc, NO_SITE, cl._context);
+              res.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF);
+              setOuterRefs(cl, rc, res);
+            }
+          yield res;
         }
       };
   }
