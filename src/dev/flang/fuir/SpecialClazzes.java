@@ -57,8 +57,6 @@ public enum SpecialClazzes
   c_CS_utf8_data("utf8_data"                  , 0, c_const_string),
   c_String      (FuzionConstants.STRING_NAME  , 0, c_universe  ),
   c_error       ("error"                      , 1, c_universe  ),
-  c_fuzion      ("fuzion"                     , 0, c_universe  ),
-  c_java        ("java"                       , 0, c_fuzion    ),
   c_Mutex       ("Mutex"                      , 0, c_universe  ),
   c_Condition   ("Condition"                  , 0, c_universe  ),
   c_File_Descriptor("File_Descriptor"         , 0, c_universe  ),
