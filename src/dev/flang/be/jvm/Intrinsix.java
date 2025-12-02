@@ -141,7 +141,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
             jvm._fuir.clazzIs(rc, SpecialClazzes.c_u64 ) ||
             jvm._fuir.clazzIs(rc, SpecialClazzes.c_f32 ) ||
             jvm._fuir.clazzIs(rc, SpecialClazzes.c_bool) ||
-            jvm._fuir.clazzIs(rc, SpecialClazzes.c_unit);
+            jvm._fuir.clazzIsUnitType(rc);
           return new Pair<>(Expr.iconst(r ? 1 : 0), Expr.UNIT);
         });
 
@@ -400,7 +400,6 @@ public class Intrinsix extends ANY implements ClassFileConstants
   {
     return switch (jvm._fuir.getSpecialClazz(rc))
       {
-      case c_unit -> Expr.ACONST_NULL;
       case c_i8 -> {
         yield Expr.checkcast(new ClassType("java/lang/Byte"))
           .andThen(Expr.invokeVirtual("java/lang/Byte", "byteValue", "()B", PrimitiveType.type_byte));
@@ -434,17 +433,22 @@ public class Intrinsix extends ANY implements ClassFileConstants
           .andThen(Expr.invokeVirtual("java/lang/Boolean", "booleanValue", "()Z", PrimitiveType.type_boolean));
       }
       default -> {
-        var rt = jvm._types.javaType(rc);
-        var jref = jvm._fuir.lookupJavaRef(rc);
+        var result = Expr.ACONST_NULL;
+        if (!jvm._fuir.clazzIsUnitType(rc))
+          {
+            var rt = jvm._types.javaType(rc);
+            var jref = jvm._fuir.lookupJavaRef(rc);
 
-        if (CHECKS) check
-          (jref != FUIR.NO_CLAZZ);
+            if (CHECKS) check
+              (jref != FUIR.NO_CLAZZ);
 
-        yield jvm.new0(rc)                                            // result, rc0
-          .andThen(Expr.DUP_X1)                                       // rc0, result, rc0
-          .andThen(Expr.SWAP)                                         // rc0, rc0, result
-          .andThen(jvm.putfield(jref))                                // rc0
-          .is(rt);
+            result = jvm.new0(rc)                                            // result, rc0
+              .andThen(Expr.DUP_X1)                                       // rc0, result, rc0
+              .andThen(Expr.SWAP)                                         // rc0, rc0, result
+              .andThen(jvm.putfield(jref))                                // rc0
+              .is(rt);
+          }
+        yield result;
       }
       };
   }
@@ -470,7 +474,6 @@ public class Intrinsix extends ANY implements ClassFileConstants
 
     var pos = switch (jvm._fuir.getSpecialClazz(rc0))
       {
-      case c_unit -> Expr.ACONST_NULL;
       case c_i8 -> {
         yield Expr.aload(slot, JAVA_LANG_OBJECT)
           .andThen(
@@ -528,18 +531,23 @@ public class Intrinsix extends ANY implements ClassFileConstants
            c_Thread ->
         Expr.aload(slot, JAVA_LANG_OBJECT);
       default -> {
-        var rt = jvm._types.javaType(rc0);
-        var jref = jvm._fuir.lookupJavaRef(rc0);
+        var res = Expr.ACONST_NULL;
+        if (!jvm._fuir.clazzIsUnitType(rc0))
+          {
+            var rt = jvm._types.javaType(rc0);
+            var jref = jvm._fuir.lookupJavaRef(rc0);
 
-        if (CHECKS) check
-          (jref != FUIR.NO_CLAZZ);
+            if (CHECKS) check
+              (jref != FUIR.NO_CLAZZ);
 
-        yield Expr.aload(slot, JAVA_LANG_OBJECT)
-          .andThen(jvm.new0(rc0))                                            // result, rc0
-          .andThen(Expr.DUP_X1)                                              // rc0, result, rc0
-          .andThen(Expr.SWAP)                                                // rc0, rc0, result
-          .andThen(jvm.putfield(jref))                                       // rc0
-          .is(rt);
+            res = Expr.aload(slot, JAVA_LANG_OBJECT)
+              .andThen(jvm.new0(rc0))                                            // result, rc0
+              .andThen(Expr.DUP_X1)                                              // rc0, result, rc0
+              .andThen(Expr.SWAP)                                                // rc0, rc0, result
+              .andThen(jvm.putfield(jref))                                       // rc0
+              .is(rt);
+          }
+        yield res;
       }};
 
     var neg = jvm.new0(cl_err)                                                               // error

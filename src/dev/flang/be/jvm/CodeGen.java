@@ -320,7 +320,7 @@ class CodeGen
     var isCall = _fuir.codeAt(si) == FUIR.ExprKind.Call;  // call or assignment?
     var cc0 = _fuir.accessedClazz  (si);
     var ccs = _fuir.accessedClazzes(si);
-    var rt = isCall ? _fuir.clazzResultClazz(cc0) : _fuir.clazz(SpecialClazzes.c_unit);
+    var rt = isCall ? _fuir.clazzResultClazz(cc0) : NO_CLAZZ;
     if (ccs.length == 0)
       {
         s = s.andThen(tvalue.drop());
@@ -347,7 +347,7 @@ class CodeGen
         var dynCall = args(true, tvalue, args, cc0, isCall ? _fuir.clazzArgCount(cc0) : 1)
           .andThen(Expr.comment("Dynamic access of " + clazzInQuotes(cc0)))
           .andThen(addDynamicFunctionAndStubs(si, cc0, ccs, isCall));
-        if (AbstractInterpreter.clazzHasUnitValue(_fuir, rt))
+        if (!isCall || AbstractInterpreter.clazzHasUnitValue(_fuir, rt))
           {
             s = dynCall;  // make sure we do not throw away the code even if it is of unit type
           }
