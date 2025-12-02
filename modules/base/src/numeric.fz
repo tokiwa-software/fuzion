@@ -201,19 +201,26 @@ public numeric : property.hashable, property.orderable is
   public type.one  numeric.this => abstract
 
 
-  # the value corresponding to v in whatever integer implementation we have,
-  # maximum in case of overflow
+  # the value corresponding to v in whatever integer implementation we have
+  #
+  # we use a less *obvious* algorithm than induction via v-1 here to
+  # reduce complexity to O(log(v)).
   #
   public type.from_u32(v u32) numeric.this =>
-    if v = 0 zero else (from_u32 v-1) +^ one
+    if      v = 0 then zero
+    else if v = 1 then one
+    else
+      h := from_u32 v/2
+      l := from_u32 v%2
+      h+h+l
 
 
-  # the constant '2' in whatever integer implementation we have, maximum in case of overflow
+  # the constant '2' in whatever integer implementation we have
   #
   public type.two numeric.this => from_u32 2
 
 
-  # the constant '10' in whatever integer implementation we have, maximum in case of overflow
+  # the constant '10' in whatever integer implementation we have
   #
   public type.ten numeric.this => from_u32 10
 
