@@ -180,63 +180,70 @@
 >                                      _fuir.siteAsString(last_s));
 525a517
 > 
-530c522
+528c520,523
+<       (containsVoid(stack) || stack.isEmpty());
+---
+>       (true /* While FUIR has this invariant, GeneratingFUIR does not have it since
+>         it does not know yet that isUnitType is true for unit. And
+>         thus during DFA unit is put on the stack */
+>          || containsVoid(stack) || stack.isEmpty());
+530c525
 <     return new Pair<>(v, _processor.sequence(l));
 ---
 >     return v;
-540,542d531
+540,542d534
 <    *
 <    * @return the result of the abstract interpretation, e.g., the generated
 <    * code.
-544c533
+544c536
 <   public RESULT process(int s, Stack<VALUE> stack)
 ---
 >   public void process(int s, Stack<VALUE> stack)
-556d544
+556d547
 <     RESULT res;
-569c557
+569c560
 <               res = _processor.assign(s, tvalue, avalue);
 ---
 >               _processor.assign(s, tvalue, avalue);
-573,574c561,562
+573,574c564,565
 <               res = _processor.sequence(new List<>(_processor.drop(tvalue, tc),
 <                                                     _processor.drop(avalue, ft)));
 ---
 >               _processor.drop(tvalue, tc);
 >               _processor.drop(avalue, ft);
-585c573
+585c576
 <               res = _processor.comment("Box is a NOP, clazz is already a ref");
 ---
 >               _processor.comment("Box is a NOP, clazz is already a ref");
-591,592c579
+591,592c582
 <               push(stack, rc, r.v0());
 <               res = r.v1();
 ---
 >               push(stack, rc, r);
-603c590
+603c593
 <             ? new Pair<>(_processor.unitValue(), _processor.drop(tvalue, tc))
 ---
 >             ? _processor.unitValue()
-605c592
+605c595
 <           if (r.v0() == null)  // this may happen even if rt is not void (e.g., in case of tail recursion or error)
 ---
 >           if (r == null)  // this may happen even if rt is not void (e.g., in case of tail recursion or error)
-612c599
+612c602
 <               push(stack, rt, r.v0());
 ---
 >               push(stack, rt, r);
-614d600
+614d603
 <           res = r.v1();
-619c605
+619c608
 <           res = _processor.comment(_fuir.comment(s));
 ---
 >           _processor.comment(_fuir.comment(s));
-626,627c612
+626,627c615
 <           push(stack, cl, r.v0());
 <           res = r.v1();
 ---
 >           push(stack, cl, r);
-636,641c621
+636,641c624
 <           if (CHECKS) check
 <             // check that constant creation has no side effects.
 <             (r.v1() == _processor.nop());
@@ -245,29 +252,29 @@
 <           res = r.v1();
 ---
 >           push(stack, constCl, r);
-648,649c628,629
+648,649c631,632
 <           res = _processor.match(s, this, subv);
 <           if (_fuir.alwaysResultsInVoid(s))
 ---
 >           var r = _processor.match(s, this, subv);
 >           if (r == null)
-652a633,634
+652a636,637
 >           if (CHECKS) check
 >             (r == null || r == _processor.unitValue());
-664,665c646
+664,665c649
 <           push(stack, newcl, r.v0());
 <           res = r.v1();
 ---
 >           push(stack, newcl, r);
-679c660
+679c663
 <           res = _processor.drop(v, rt);
 ---
 >           _processor.drop(v, rt);
-685d665
+685d668
 <           res = null;
-694c674
+694c677
 <         say("process done: "+_fuir.siteAsString(s) + ":\t"+_fuir.codeAtAsString(s)+" stack is "+stack+" RES "+res);
 ---
 >         say("process done: "+_fuir.siteAsString(s) + ":\t"+_fuir.codeAtAsString(s)+" stack is "+stack);
-696d675
+696d678
 <     return res;
