@@ -1868,7 +1868,11 @@ public class GeneratingFUIR extends FUIR
       (ecl >= CLAZZ_BASE,
        ecl < CLAZZ_BASE + _clazzes.size());
 
-    return id2clazz(ecl).lookupNeeded(Types.resolved.f_eff_fallible_cause)._id;
+    return !id2clazz(ecl).feature().inheritsFrom(Types.resolved.f_eff_fallible)
+      ? NO_CLAZZ
+      : _lookupDone
+      ? id2clazz(ecl).lookup(Types.resolved.f_eff_fallible_cause)._id
+      : id2clazz(ecl).lookupNeeded(Types.resolved.f_eff_fallible_cause)._id;
   }
 
 
