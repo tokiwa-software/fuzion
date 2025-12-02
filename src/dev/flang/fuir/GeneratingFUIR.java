@@ -637,6 +637,7 @@ public class GeneratingFUIR extends FUIR
               case "Mapped_Memory"             -> SpecialClazzes.c_Mapped_Memory;
               case "Native_Ref"                -> SpecialClazzes.c_Native_Ref;
               case "Thread"                    -> SpecialClazzes.c_Thread;
+              case "fuzion.runtime.stackoverflow" -> SpecialClazzes.c_fuzion_runtime_stackoverflow;
               default                          -> SpecialClazzes.c_NOT_FOUND   ;
               };
             if (s != SpecialClazzes.c_NOT_FOUND)
@@ -1850,6 +1851,24 @@ public class GeneratingFUIR extends FUIR
        cl < CLAZZ_BASE + _clazzes.size());
 
     return id2clazz(cl).lookupNeeded(Types.resolved.f_concur_atomic_v)._id;
+  }
+
+
+  /**
+   * For a clazz of concur.atomic, lookup the inner clazz of the value field.
+   *
+   * @param cl index of a clazz representing cl's value field
+   *
+   * @return the index of the requested {@code concur.atomic.value} field's clazz.
+   */
+  @Override
+  public int lookup_cause(int ecl)
+  {
+    if (PRECONDITIONS) require
+      (ecl >= CLAZZ_BASE,
+       ecl < CLAZZ_BASE + _clazzes.size());
+
+    return id2clazz(ecl).lookupNeeded(Types.resolved.f_eff_fallible_cause)._id;
   }
 
 

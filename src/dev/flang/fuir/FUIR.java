@@ -626,6 +626,10 @@ public abstract class FUIR extends IR
   public abstract int lookupAtomicValue(int cl);
 
 
+
+  public abstract int lookup_cause(int ecl);
+
+
   /**
    * Get the id of clazz Any.
    *

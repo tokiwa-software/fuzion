@@ -28,6 +28,7 @@ package dev.flang.be.jvm;
 
 import static dev.flang.ir.IR.NO_CLAZZ;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeMap;
@@ -767,10 +768,40 @@ public class Intrinsix extends ANY implements ClassFileConstants
                                        ")V",
                                        ClassFileConstants.PrimitiveType.type_void)
                      )
-            .andThen(try_start)
-            .andThen(args.get(1))
-            .andThen(jvm._types.invokeStatic(call, jvm._fuir.sitePos(si).line()))
-            .andThen(try_end)
+            .andThen(try_start);
+
+          if (jvm._fuir.getSpecialClazz(ecl) == SpecialClazzes.c_fuzion_runtime_stackoverflow)
+            {
+              // NYI: BUG: how to pop all the effects this SO trashed?
+              var cause    = jvm._fuir.lookup_cause(ecl);
+              var try_end_so   = new Label();
+              var try_catch_so = new Label();
+              var try_after_so = new Label();
+              var try_start_so = Expr.tryCatch(try_end_so,
+                                            try_catch_so,
+                                            new ClassType("java/lang/StackOverflowError"));
+
+              result = result
+                .andThen(try_start_so)
+                .andThen(args.get(1))
+                .andThen(jvm._types.invokeStatic(call, jvm._fuir.sitePos(si).line()))
+                .andThen(try_end_so)
+                .andThen(Expr.gotoLabel(try_after_so))
+                .andThen(try_catch_so)
+                .andThen(Expr.POP)
+                .andThen(args.get(0))
+                .andThen(jvm.boxedConstString("NYI: stackoverflow".getBytes(StandardCharsets.UTF_8)).v0())
+                .andThen(jvm._types.invokeStatic(cause, jvm._fuir.sitePos(si).line()))
+                .andThen(try_after_so);
+
+            }
+          else
+            {
+              result = result
+                .andThen(args.get(1))
+                .andThen(jvm._types.invokeStatic(call, jvm._fuir.sitePos(si).line()));
+            }
+          result = result.andThen(try_end)
             .andThen(pop_and_finally)
             .andThen(Expr.gotoLabel(try_after))
             .andThen(try_catch)
