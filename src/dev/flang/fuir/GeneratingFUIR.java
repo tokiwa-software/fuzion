@@ -1855,11 +1855,11 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
-   * For a clazz of concur.atomic, lookup the inner clazz of the value field.
+   * For a clazz of eff.fallible, lookup cause.
    *
-   * @param cl index of a clazz representing cl's value field
+   * @param ecl index of a clazz representing fallible effect
    *
-   * @return the index of the requested {@code concur.atomic.value} field's clazz.
+   * @return the index of the requested cause feature.
    */
   @Override
   public int lookup_cause(int ecl)
