@@ -108,7 +108,6 @@ public class Intrinsics extends ANY
           if (!c._fuir.clazzIsUnitType(rc))
             {
               var f = c.accessField(outer, ac, v);
-              CExpr eq;
               if (mayUseAtomicOps(c, rc))
                 {
                   code = CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, expected),
@@ -147,7 +146,6 @@ public class Intrinsics extends ANY
           if (!c._fuir.clazzIsUnitType(rc))
             {
               var f = c.accessField(outer, ac, v);
-              CExpr eq;
               if (mayUseAtomicOps(c, rc))
                 {
                   code = CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, expected),
@@ -163,16 +161,6 @@ public class Intrinsics extends ANY
                 }
               else
                 {
-                  if (c._fuir.clazzIs(rc, SpecialClazzes.c_f32) ||
-                      c._fuir.clazzIs(rc, SpecialClazzes.c_f64))
-                    {
-                      eq = CExpr.eq(tmp, expected);
-                    }
-                  else
-                    {
-                      eq = CExpr.eq(CExpr.call("memcmp", new List<>(tmp.adrOf(), expected.adrOf(), CExpr.sizeOfType(c._types.clazz(rc)))), new CIdent("0"));
-                    }
-
                   code = CStmnt.seq(CStmnt.decl("bool", res),
                                     locked(CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, f),
                                                       compareValues(c, tmp, expected, rc, res),
@@ -270,7 +258,6 @@ public class Intrinsics extends ANY
     put("fuzion.sys.args.get"  , (c,cl,outer,in) ->
         {
           var str = CNames.GLOBAL_ARGV.index(A0);
-          var rc = c._fuir.clazzResultClazz(cl);
           return c
             .boxedConstString(str, CExpr.call("strlen",new List<>(str)))
             .ret();
@@ -517,7 +504,6 @@ public class Intrinsics extends ANY
     put("fuzion.sys.env_vars.get0", (c,cl,outer,in) ->
         {
           var str = new CIdent("str");
-          var rc = c._fuir.clazzResultClazz(cl);
           return CStmnt.seq(CStmnt.decl("char *", str),
                             str.assign(CExpr.call("getenv",new List<>(A0.castTo("char*")))),
                             c.boxedConstString(str, CExpr.call("strlen",new List<>(str))).ret());
@@ -864,7 +850,6 @@ public class Intrinsics extends ANY
           else
             {
               var tmp = new CIdent("tmp");
-              var rc = c._fuir.clazzResultClazz(cl);
               return CStmnt.seq(
                 CStmnt.decl("const char *", tmp),
                 tmp.assign(CExpr.call("fzE_java_string_to_utf8_bytes", new List<CExpr>(A0.castTo("jstring")))),
