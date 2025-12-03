@@ -108,7 +108,7 @@ public class Intrinsics extends ANY
           if (!c._fuir.clazzIsUnitType(rc))
             {
               var f = c.accessField(outer, ac, v);
-              if (isIntegerOrRef(c, rc))
+              if (mayUseAtomicOps(c, rc))
                 {
                   code = CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, expected),
                                     CExpr.call("atomic_compare_exchange_strong_explicit", new List<>(
@@ -146,7 +146,7 @@ public class Intrinsics extends ANY
           if (!c._fuir.clazzIsUnitType(rc))
             {
               var f = c.accessField(outer, ac, v);
-              if (isIntegerOrRef(c, rc))
+              if (mayUseAtomicOps(c, rc))
                 {
                   code = CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, expected),
                                     CStmnt.iff(CExpr.call("atomic_compare_exchange_strong_explicit",
@@ -195,16 +195,7 @@ public class Intrinsics extends ANY
             {
               code = CExpr.call("atomic_thread_fence", new List<>(new CIdent("memory_order_seq_cst")));
             }
-          else if (c._fuir.clazzIsRef(rc) ||
-                   c._fuir.clazzIs(rc, SpecialClazzes.c_i8  ) ||
-                   c._fuir.clazzIs(rc, SpecialClazzes.c_i16 ) ||
-                   c._fuir.clazzIs(rc, SpecialClazzes.c_i32 ) ||
-                   c._fuir.clazzIs(rc, SpecialClazzes.c_i64 ) ||
-                   c._fuir.clazzIs(rc, SpecialClazzes.c_u8  ) ||
-                   c._fuir.clazzIs(rc, SpecialClazzes.c_u16 ) ||
-                   c._fuir.clazzIs(rc, SpecialClazzes.c_u32 ) ||
-                   c._fuir.clazzIs(rc, SpecialClazzes.c_u64 ) ||
-                   c._fuir.clazzIs(rc, SpecialClazzes.c_bool))
+          else if (mayUseAtomicOps(c, rc))
             {
               var f = c.accessField(outer, ac, v);
               code = CStmnt.seq(
@@ -237,16 +228,7 @@ public class Intrinsics extends ANY
             {
               code = CExpr.call("atomic_thread_fence", new List<>(new CIdent("memory_order_seq_cst")));
             }
-          else if (c._fuir.clazzIsRef(rc) ||
-                   c._fuir.clazzIs(rc, SpecialClazzes.c_i8  ) ||
-                   c._fuir.clazzIs(rc, SpecialClazzes.c_i16 ) ||
-                   c._fuir.clazzIs(rc, SpecialClazzes.c_i32 ) ||
-                   c._fuir.clazzIs(rc, SpecialClazzes.c_i64 ) ||
-                   c._fuir.clazzIs(rc, SpecialClazzes.c_u8  ) ||
-                   c._fuir.clazzIs(rc, SpecialClazzes.c_u16 ) ||
-                   c._fuir.clazzIs(rc, SpecialClazzes.c_u32 ) ||
-                   c._fuir.clazzIs(rc, SpecialClazzes.c_u64 ) ||
-                   c._fuir.clazzIs(rc, SpecialClazzes.c_bool))
+          else if (mayUseAtomicOps(c, rc))
             {
               var f = c.accessField(outer, ac, v);
               code = CExpr.call("atomic_store_explicit", new List<>(f.adrOf().castTo(c._types.atomicType(rc)+"*"), new_value.adrOf().castTo(c._types.atomicType(rc)+"*").deref(), new CIdent("memory_order_seq_cst")));
@@ -942,6 +924,17 @@ public class Intrinsics extends ANY
     // essentially a NOP in c-backend
     put("native_array", (c,cl,outer,in) -> A0.castTo("void *" /* NYI: should be cast to array with element type cl._dfa._fuir.clazzActualGeneric(cl._cc, 0) */).ret());
   }
+
+
+  /**
+   * Can we use atomic ops for cl or do we need to use locking?
+   */
+  private static boolean mayUseAtomicOps(C c, int cl)
+  {
+    return isIntegerOrRef(c, cl);
+    // NYI: UNDER DEVELOPMENT: several other types may be suitable, e.g. isChoiceOfOnlyUnitTypes etc.
+  }
+
 
   /**
    * Is cl an integer i8..u64 or a reference?
