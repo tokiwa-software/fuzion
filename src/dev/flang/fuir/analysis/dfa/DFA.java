@@ -2429,11 +2429,9 @@ public class DFA extends ANY
           cl._dfa.newInstance(rc, NO_SITE, cl._context);
         default -> {
           var res = Value.UNIT;
-          if (!cl._dfa._fuir.clazzIsUnitType(rc))
+          var jref = fuir(cl).lookupJavaRef(rc);
+          if (jref != NO_CLAZZ)
             {
-              var jref = fuir(cl).lookupJavaRef(rc);
-              if (CHECKS) check
-                (jref != NO_CLAZZ);
               res = cl._dfa.newInstance(rc, NO_SITE, cl._context);
               res.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF);
             }
