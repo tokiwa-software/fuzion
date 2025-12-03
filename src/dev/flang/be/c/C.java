@@ -1154,7 +1154,7 @@ public class C extends ANY
     cf.println("#include \"" + fzH + "\"");
     cf.println("#include \"" + hf.fileName() + "\"");
 
-    if (_options._cLink != null)
+    if (_options._cInclude != null)
       {
         Arrays
           .stream(_options._cInclude.split(" "))
