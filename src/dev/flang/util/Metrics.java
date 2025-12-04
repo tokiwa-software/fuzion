@@ -78,7 +78,7 @@ public class Metrics extends ANY {
   {
     var elapsedMillis = System.currentTimeMillis() - startTime;
     var data = String.format(
-      "dfa,main_name=%s time=%s,pre_iter=%s,real_iter=%s,calls=%s,unique_values=%s",
+      "dfa,main_name=%s elapsed_time=%s,pre_iter=%s,real_iter=%s,calls=%s,unique_values=%s",
       escape(mainClazz),
       elapsedMillis,
       preIter,
