@@ -434,10 +434,9 @@ is
     else if c2 = 0
       Sequence.this
     else
-      for ea := container.expanding_array T .empty, ea.add e1
-          e1 in Sequence.this
-      else
-        ea.concat s
+      container.expanding_array T .empty c1+c2
+        .concat Sequence.this
+        .concat s
 
   # infix operand synonym for concat
   #
