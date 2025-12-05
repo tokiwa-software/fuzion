@@ -23,7 +23,7 @@
 
 reg_issue4486 =>
 
-  LM : mutate is
+  lm : mutate is
 
   test_strings array (String) :=
     ["",
@@ -50,8 +50,8 @@ reg_issue4486 =>
 
     say "input: '{input.replace "\n" "\\n"}'"
 
-    LM ! ()->
-      b := io.buffered LM
+    lm ! ()->
+      b := io.buffered lm
       b.reader (read_handler input) ! ()->
         for l := b.read_line
             i in 1..
@@ -60,8 +60,8 @@ reg_issue4486 =>
 
     say ""
 
-    LM ! ()->
-      b := io.buffered LM
+    lm ! ()->
+      b := io.buffered lm
       b.reader (read_handler input) ! ()->
         for l in b.read_lines
             i in 1..
