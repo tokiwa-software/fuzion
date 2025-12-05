@@ -1174,9 +1174,9 @@ is
     # function to reduce elements
     reduce_f (B,B)->B) container.Map K B
   =>
-    M : mutate is
-    M ! ()->
-      res := (container.mutable_tree_map M K B).empty
+    lm : mutate is
+    lm ! ()->
+      res := (container.mutable_tree_map lm K B).empty
 
       for_each x->
         key := key_f x
@@ -1212,9 +1212,9 @@ is
     # function applied to each element
     f T->B) container.Map K (Sequence B)
   =>
-    M : mutate is
-    M ! ()->
-      res := (container.mutable_tree_map M K (Sequence B)).empty
+    lm : mutate is
+    lm ! ()->
+      res := (container.mutable_tree_map lm K (Sequence B)).empty
 
       for_each x->
         key := key_f x

@@ -29,10 +29,10 @@
 #
 # usage example using a local mutate instance:
 #
-#     LM : mutate is
-#     LM ! ()->
-#       io.stdin.reader LM ! ()->
-#         for l := (io.buffered LM).read_line
+#     lm : mutate is
+#     lm ! ()->
+#       io.stdin.reader lm ! ()->
+#         for l := (io.buffered lm).read_line
 #             i in 1..
 #         while l??
 #           say "$i: $l"
@@ -59,17 +59,17 @@ public stdin is
   # io.buffered.read_fully.
   #
   public read_fully array u8 =>
-    M : mutate is
-    M ! ()->
-      reader M ! (buffered M).read_fully
+    lm : mutate is
+    lm ! ()->
+      reader lm ! (buffered lm).read_fully
 
   # read all of stdin in an array of String using
   # io.buffered.read_lines.
   #
   public read_lines array String =>
-    M : mutate is
-    M ! ()->
-      reader M ! (buffered M).read_lines
+    lm : mutate is
+    lm ! ()->
+      reader lm ! (buffered lm).read_lines
 
   # read all of stdin in a single String using
   # String.from_bytes on the result of read_fully.
