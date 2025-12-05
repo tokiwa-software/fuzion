@@ -73,9 +73,8 @@ public String ref : property.equatable, property.hashable, property.orderable is
     n ≥ 0
     # NYI: UNDER DEVELOPMENT: String.this.utf8.finite, Strings where utf8 is a list are currently always infinite.
   is
-    public redef utf8 Sequence u8 =>
-      bytes := String.this.utf8
-      bytes.cycle.take (bytes.count * n)
+    public redef utf8 Sequence u8 :=
+      String.this.utf8 * n
 
 
   # equality: compare two strings byte-by-byte
