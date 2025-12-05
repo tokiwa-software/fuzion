@@ -702,8 +702,9 @@ public class GeneratingFUIR extends FUIR
     if (e instanceof AbstractBlock b)
       {
         Expr resExpr = b.resultExpression();
-        result = resExpr != null ? clazz(resExpr, outerClazz, inh)
-                                 : id2clazz(clazz(SpecialClazzes.c_unit));
+        if (CHECKS) check
+          (resExpr != null);
+        result = clazz(resExpr, outerClazz, inh);
       }
 
     else if (e instanceof Box b)
