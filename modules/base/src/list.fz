@@ -110,6 +110,18 @@ is
   public redef as_list list A => list.this
 
 
+  # is this sequence known to be finite?  For infinite sequences, features like
+  # count diverge.
+  #
+  # trit.yes       = known finite
+  # trit.no        = known infinite
+  # trit.unknown   = unknown
+  #
+  public redef finite trit =>
+    list.this ? nil    => trit.yes
+              | c Cons => c.finite
+
+
   # is this list empty?
   #
   public redef is_empty bool =>
@@ -229,7 +241,7 @@ is
     match list.this
       nil    => nil
       c Cons =>
-        f c.head : c.tail.map_to_list f
+        alist (f c.head) (c.tail.map_to_list f) c.finite
 
 
   # map the list to a new list applying function f to all elements
@@ -740,6 +752,15 @@ public list(T type, h T, t Lazy (list T)) list T =>
     public redef tail list T => t
 
 
+# convenience routine to create a list from head h and lazy tail t.
+#
+public alist(T type, h T, t Lazy (list T), f trit) list T =>
+  ref : Cons T (list T) is
+    public redef head T => h
+    public redef tail list T => t
+    public redef finite trit => f
+
+
 # infix operator to create a list from head h and lazy tail t.
 #
 # This is convenient to append an element before a list as in
@@ -783,4 +804,4 @@ public infix_right : (A type, h A, t Lazy (list A)) list A =>
 # will produce the powers of two: 1,2,4,8,16,32,...
 #
 public infix :: (A type, h A, f A->A) list A =>
-  h : (f h :: f)
+  alist h (f h :: f) trit.no
