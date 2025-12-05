@@ -427,12 +427,12 @@ is
   public concat (s Sequence T) Sequence T =>
     c1 :=   finite.is_yes ? count   : -1
     c2 := s.finite.is_yes ? s.count : -1
-    if c1 < 0 || c2 < 0 || max 1 c1 < c2 then
-      as_list.concat_list s.as_list
-    else if c1 = 0
+    if c1 = 0
       s
     else if c2 = 0
       Sequence.this
+    else if c1 < 0 || c2 < 0 || max 1 c1 < c2 then
+      as_list.concat_list s.as_list
     else
       for ea := container.expanding_array T .empty, ea.add e1
           e1 in Sequence.this
