@@ -48,7 +48,6 @@ public enum SpecialClazzes
   c_u64         (FuzionConstants.U64_NAME     , 1, c_universe  ),
   c_f32         (FuzionConstants.F32_NAME     , 1, c_universe  ),
   c_f64         (FuzionConstants.F64_NAME     , 1, c_universe  ),
-  c_unit        (FuzionConstants.UNIT_NAME    , 0, c_universe  ),
   c_void        ("void"                       , 0, c_universe  ),
   c_bool        ("bool"                       , 0, c_universe  ),
   c_const_string("const_string"               , 0, c_universe  ),

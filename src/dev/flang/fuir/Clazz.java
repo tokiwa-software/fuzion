@@ -764,14 +764,9 @@ class Clazz extends ANY implements Comparable<Clazz>
       }
 
     var res = YesNo.no;
-    if (_specialClazzId == SpecialClazzes.c_unit)
-      {
-        res = YesNo.yes;
-      }
-    else if ( _fuir._lookupDone && (isValue()                       &&
-                                    !feature().isBuiltInPrimitive() &&
-                                    !isVoidType()                   &&
-                                    !isChoice()                       ))
+    if (_fuir._lookupDone &&
+        isValue() &&
+        !isChoice())
       {
         // Tricky: To avoid endless recursion, we set _isUnitType to No. In case we
         // have a recursive type, isUnitType() will return false, so recursion will
