@@ -17,7 +17,7 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  GitHub Actions workflow to build and test Fuzion on Ubuntu.
+#  GitHub Actions workflow to build a release build of Fuzion
 #
 # -----------------------------------------------------------------------
 
