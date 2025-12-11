@@ -556,5 +556,5 @@ For emacs there is two options eglot or lsp-mode.
 
 [^1]: suggested OpenJDK distributions:
 
-    - [Adoptium](https://github.com/adoptium/temurin25-binaries/releases/) + [jmods](https://api.adoptium.net/v3/binary/latest/25/ga/linux/x64/jmods/hotspot/normal/eclipse?project=jdk)
+    - [Adoptium](https://github.com/adoptium/temurin25-binaries/releases/) + [jmods](https://api.adoptium.net/v3/binary/latest/25/ga/linux/x64/jmods/hotspot/normal/eclipse?project=jdk), must be unpacked to a `jmods` sub-directory in the openjdk directory.
     - [Azul](https://www.azul.com/downloads/?version=java-25&package=jdk#zulu)
