@@ -1,4 +1,0 @@
-Java.java.lang.__jString    : ok: is Object, can pass to System.out.println: hi
-Java.java.lang.Object       : ok: is Object, can pass to System.out.println: java.lang.Object@1affbebc
-Java.java.lang.Throwable    : ok: is Object, can pass to System.out.println: java.lang.Throwable
-Java.java.lang.StringBuilder: ok: is Object, can pass to System.out.println: 

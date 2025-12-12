@@ -37,6 +37,6 @@ fuzion.jvm.use ()->
       say "***  not ok $T is not Object  ***"
 
   take_obj <| Java.java.lang.__jString.new "hi"
-  take_obj <| Java.java.lang.Object.new
+# take_obj <| Java.java.lang.Object.new   -- this works, but the output contains the object id which differs on different runs
   take_obj <| Java.java.lang.Throwable.new
   take_obj <| Java.java.lang.StringBuilder.new
