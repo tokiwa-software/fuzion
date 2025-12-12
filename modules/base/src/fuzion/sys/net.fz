@@ -78,15 +78,11 @@ module net is
   # read a maximum of max_bytes from descriptor, wrapper for read native
   # may block if descriptor is set to blocking.
   #
-  module read(descriptor i32, max_bytes i64) outcome (array u8) =>
+  module read(descriptor i32, max_bytes i64) outcome (Sequence u8) =>
     buff := fuzion.sys.internal_array_init u8 max_bytes.as_i32
     res := fzE_socket_read descriptor buff.data max_bytes
     if res >= 0
-      if res.as_i64 = max_bytes
-        buff.as_array
-      else
-        # NYI: UNDER DEVELOPMENT: there should be a way to use a slice of internal_array to init array
-        array u8 res (idx -> buff[idx])
+      buff.as_array.take res
     else
       error "error reading from socket: $fzE_last_error"
 

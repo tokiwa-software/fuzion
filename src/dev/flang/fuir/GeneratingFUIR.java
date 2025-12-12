@@ -624,8 +624,6 @@ public class GeneratingFUIR extends FUIR
               case FuzionConstants.UNIT_NAME   -> SpecialClazzes.c_unit        ;
               case "void"                      -> SpecialClazzes.c_void        ;
               case "bool"                      -> SpecialClazzes.c_bool        ;
-              case "true_"                     -> SpecialClazzes.c_true_       ;
-              case "false_"                    -> SpecialClazzes.c_false_      ;
               case "const_string"              -> SpecialClazzes.c_const_string;
               case FuzionConstants.STRING_NAME -> SpecialClazzes.c_String      ;
               case "error"                     -> SpecialClazzes.c_error       ;
@@ -704,8 +702,9 @@ public class GeneratingFUIR extends FUIR
     if (e instanceof AbstractBlock b)
       {
         Expr resExpr = b.resultExpression();
-        result = resExpr != null ? clazz(resExpr, outerClazz, inh)
-                                 : id2clazz(clazz(SpecialClazzes.c_unit));
+        if (CHECKS) check
+          (resExpr != null);
+        result = clazz(resExpr, outerClazz, inh);
       }
 
     else if (e instanceof Box b)
@@ -1011,7 +1010,7 @@ public class GeneratingFUIR extends FUIR
    *
    * @param cl a clazz id
    *
-   * @return clazz id of cl's outer clazz, -1 if cl is universe or a value-less
+   * @return clazz id of cl's outer clazz, NO_CLAZZ if cl is universe or a value-less
    * type.
    */
   @Override
@@ -1303,7 +1302,7 @@ public class GeneratingFUIR extends FUIR
    *
    * @param arg argument number 0, 1, .. clazzArgCount(cl)-1
    *
-   * @return clazz id of the argument or -1 if no such argument exists (the
+   * @return clazz id of the argument or NO_CLAZZ if no such argument exists (the
    * argument is unused).
    */
   @Override
@@ -1347,7 +1346,7 @@ public class GeneratingFUIR extends FUIR
    *
    * @param cl a clazz id
    *
-   * @return clazz id of cl's outer ref field or -1 if no such field exists.
+   * @return clazz id of cl's outer ref field or NO_CLAZZ if no such field exists.
    */
   @Override
   public int clazzOuterRef(int cl)
@@ -1734,7 +1733,7 @@ public class GeneratingFUIR extends FUIR
   /**
    * Get the id of clazz ref const_string
    *
-   * @return the id of ref const_string or -1 if that clazz was not created.
+   * @return the id of ref const_string or NO_CLAZZ if that clazz was not created.
    */
   @Override
   public int clazz_ref_const_string()
@@ -2336,7 +2335,7 @@ public class GeneratingFUIR extends FUIR
    *
    * @param s site of the access
    *
-   * @return the clazz that has to be accessed or -1 if the access is an
+   * @return the clazz that has to be accessed or NO_CLAZZ if the access is an
    * assignment to a field that is unused, so the assignment is not needed.
    */
   @Override
@@ -2486,7 +2485,7 @@ public class GeneratingFUIR extends FUIR
 
   /**
    * Get the type of an assigned value. This returns the type even if the
-   * assigned field has been removed and accessedClazz() returns -1.
+   * assigned field has been removed and accessedClazz() returns NO_CLAZZ.
    *
    * @param s site of the assignment
    *
@@ -2880,7 +2879,7 @@ public class GeneratingFUIR extends FUIR
    *
    * @param cix index of the case in the match
    *
-   * @return clazz id of field the value in this case is assigned to, -1 if this
+   * @return clazz id of field the value in this case is assigned to, NO_CLAZZ if this
    * case does not have a field or the field is unused.
    */
   @Override

@@ -17,34 +17,16 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature net.client
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
+override NAME = mod_webserver
+FUZION_OPTIONS = -modules=http,webserver,web,wolfssl
 
+export DYLD_FALLBACK_LIBRARY_PATH ?= /opt/homebrew/lib/:/Library/Developer/CommandLineTools/usr/lib/
 
-# This tries establishing a connection to `host`
-# on success returns an active connection.
-#
-# Minimal example:
-#
-#     mutate ! ()->
-#       _ := net.client net.family.ipv4 net.protocol.tcp "tokiwa.software" 80
-#         .bind c->
-#           c.with _ mutate ()->
-#             say net.channel.env.get_peer_address
-#             say <| (io.buffered mutate).writer.env.write [0,1,2]
-#
-# Blocks until connection is established.
-# NYI: UNDER DEVELOPMENT: blocking / none blocking
-#
-public type.client(f net.family.val, p net.protocol.val, host String, port u16) outcome net.connection
-=>
-  s := net.socket_type.by_protocol p
-  fuzion.sys.net.connect f.as_num s.as_num p.as_num host port
-    .bind desc->
-      net.connections.add desc
-      net.connection desc
+override FUZION_JVM_BACKEND_OPTIONS = -JLibraries=wolfssl
+override FUZION_C_BACKEND_OPTIONS = -CLink=wolfssl|-CInclude=wolfssl/options.h wolfssl/ssl.h|-CFlags=-DWC_NO_HARDEN
 
-
-# NYI: ENHANCEMENT: shorthands: client(host String) etc.
+include ../simple.mk
