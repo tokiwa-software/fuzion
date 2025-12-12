@@ -277,7 +277,7 @@ public class Call extends ANY implements Comparable<Call>, Context
       {
         result = _instance;
       }
-    else if (SpecialClazzes.c_unit == _dfa._fuir.getSpecialClazz(_dfa._fuir.clazzResultClazz(rf)))
+    else if (_dfa._fuir.clazzIsUnitType(_dfa._fuir.clazzResultClazz(rf)))
       {
         result = Value.UNIT;
       }

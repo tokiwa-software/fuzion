@@ -241,19 +241,19 @@ public class Intrinsics extends ANY
             {
               Interpreter.setField(f, a, thiz, args.get(1));
             }
-          return new Instance(executor.fuir().clazz(SpecialClazzes.c_unit));
+          return Value.EMPTY_VALUE;
         });
 
     put("concur.util.load_fence",   (executor, innerClazz) -> args ->
         {
           synchronized (LOCK_FOR_ATOMIC) { };
-          return new Instance(executor.fuir().clazz(SpecialClazzes.c_unit));
+          return Value.EMPTY_VALUE;
         });
 
     put("concur.util.store_fence",  (executor, innerClazz) -> args ->
         {
           synchronized (LOCK_FOR_ATOMIC) { };
-          return new Instance(executor.fuir().clazz(SpecialClazzes.c_unit));
+          return Value.EMPTY_VALUE;
         });
 
     put("fuzion.sys.args.count", (executor, innerClazz) -> args -> new i32Value(executor.options().getBackendArgs().size() + 1));

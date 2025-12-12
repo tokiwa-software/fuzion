@@ -71,6 +71,14 @@ is
     set length := length+1
 
 
+  # create immutable array of length len from this
+  #
+  public as_array(len i32) universe.array T
+    pre debug: len <= length.as_i32
+  =>
+    array len (i -> data[i])
+
+
   # create immutable array from this
   #
   public redef as_array universe.array T =>

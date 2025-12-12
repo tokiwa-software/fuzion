@@ -55,6 +55,7 @@ import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import static dev.flang.util.FuzionConstants.EFFECT_INSTATE_NAME;
 import dev.flang.util.FuzionOptions;
+import dev.flang.util.Metrics;
 import dev.flang.util.List;
 import dev.flang.util.IntMap;
 import dev.flang.util.LongMap;
@@ -1360,6 +1361,8 @@ public class DFA extends ANY
    */
   public void dfa()
   {
+    var startTime = System.currentTimeMillis();
+
     _newCallRecursiveAnalyzeClazzes = new int[MAX_NEW_CALL_RECURSION];
     _real = false;
     var preIter = findFixPoint();
@@ -1405,6 +1408,16 @@ public class DFA extends ANY
 
     _fuir.reportAbstractMissing();
     Errors.showAndExit();
+
+    if (_fuir.mainClazz() != FUIR.NO_CLAZZ)
+      {
+        Metrics.dfaMetrics(startTime,
+                           preIter,
+                           realIter,
+                           _calls.size(),
+                           _numUniqueValues,
+                           _fuir.clazzAsString(_fuir.mainClazz()));
+      }
   }
 
 
@@ -1848,8 +1861,31 @@ public class DFA extends ANY
   static Value wrappedJavaObject(Call cl)
   {
     var rc   = fuir(cl).clazzResultClazz(cl.calledClazz());
-    return cl._dfa.newInstance(rc, NO_SITE, cl._context);
+    var result = cl._dfa.newInstance(rc, NO_SITE, cl._context);
+    setOuterRefs(cl, rc, result);
+    return result;
   }
+
+
+  /**
+   * recursively create outerrefs for instance val of type rc
+   *
+   * @param cl
+   * @param rc
+   * @param val
+   */
+  private static void setOuterRefs(Call cl, int rc, Value val)
+  {
+    var or = fuir(cl).clazzOuterRef(rc);
+    if (or != NO_CLAZZ)
+      {
+        var orr = cl._dfa._fuir.clazzResultClazz(or);
+        var ori = cl._dfa.newInstance(orr, NO_SITE, cl._context);
+        setOuterRefs(cl, orr, ori);
+        val.setField(cl._dfa, or, ori);
+      }
+  }
+
 
   static
   {
@@ -2448,14 +2484,18 @@ public class DFA extends ANY
       {
         case c_i8, c_u16, c_i16, c_i32, c_i64, c_f32, c_f64, c_bool ->
           cl._dfa.newInstance(rc, NO_SITE, cl._context);
-        case c_unit -> Value.UNIT;
         default -> {
-          var jref = fuir(cl).lookupJavaRef(rc);
-          if (CHECKS) check
-            (jref != NO_CLAZZ);
-          var jobj = cl._dfa.newInstance(rc, NO_SITE, cl._context);
-          jobj.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF);
-          yield jobj;
+          var res = Value.UNIT;
+          if (!cl._dfa._fuir.clazzIsUnitType(rc))
+            {
+              var jref = fuir(cl).lookupJavaRef(rc);
+              if (CHECKS) check
+                (jref != NO_CLAZZ);
+              res = cl._dfa.newInstance(rc, NO_SITE, cl._context);
+              res.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF);
+              setOuterRefs(cl, rc, res);
+            }
+          yield res;
         }
       };
   }

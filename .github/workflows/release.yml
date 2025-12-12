@@ -1,3 +1,27 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  GitHub Actions workflow to build a release build of Fuzion
+#
+# -----------------------------------------------------------------------
+
+
 name: github release
 
 on:
@@ -6,6 +30,9 @@ on:
 permissions:
   contents: read
 
+env:
+  FUZION_REPRODUCIBLE_BUILD: true
+
 jobs:
   build:
 
@@ -13,18 +40,14 @@ jobs:
       contents: write  # for ncipollo/release-action to create a release
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v2.6.0
-
-    - name: Setup jdk
-      uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # main
-      with:
-        java-version: 25
-        distribution: 'adopt'
+    - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v2.6.0
 
     - name: install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install ruby-asciidoctor-pdf antlr4 asciidoc-base
+        sudo apt-get install openjdk-25-jdk-headless libgc1 libgc-dev ruby-asciidoctor-pdf antlr4 asciidoc-base
+        echo "JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64" >> $GITHUB_ENV
+        echo "/usr/lib/jvm/java-25-openjdk-amd64/bin" >> $GITHUB_PATH
 
     - name: build release
       run: make release
