@@ -21,7 +21,7 @@
 #
 # -----------------------------------------------------------------------
 
-sockets_test is
+sockets_thread_pool_test is
 
   lm : mutate is
 
@@ -99,7 +99,7 @@ sockets_test is
 
     match net.client family protocol host port
       error =>
-        say "$protocol/$family-client {sockets_test.client.this.num}, $host: error establishing connection"
+        say "$protocol/$family-client {sockets_thread_pool_test.client.this.num}, $host: error establishing connection"
       c net.connection =>
 
         res := c.in_thread_pool String concur.thread_pool lm lm ()->
@@ -108,20 +108,20 @@ sockets_test is
 
             req := ("GET / HTTP\n"
               + "Host: $host\n"
-              + "Client: {sockets_test.client.this.num}\n\n")
+              + "Client: {sockets_thread_pool_test.client.this.num}\n\n")
 
             w =>
               _ := (io.buffered lm).writer.env.write req.utf8.as_array
               _ := (io.buffered lm).writer.env.flush
 
-            str := "$protocol/$family-client {sockets_test.client.this.num}, write to $host => {w}"
+            str := "$protocol/$family-client {sockets_thread_pool_test.client.this.num}, write to $host => {w}"
 
             match protocol
               net.protocol.tcp =>
 
                 rr := (io.buffered lm).read_line_while (s -> !s.is_empty)
 
-                str + "\n" + "$protocol/$family-client {sockets_test.client.this.num}, read lines from  $host: >{rr}<"
+                str + "\n" + "$protocol/$family-client {sockets_thread_pool_test.client.this.num}, read lines from  $host: >{rr}<"
 
               # for UDP reading would block indefinitely
               net.protocol.udp =>
