@@ -42,6 +42,7 @@ import dev.flang.be.jvm.runtime.Intrinsics;
 import dev.flang.fuir.FUIR;
 
 import dev.flang.util.ANY;
+import dev.flang.util.Profiler;
 
 
 /**
@@ -410,6 +411,7 @@ public class Names extends ANY implements ClassFileConstants
               res = nres;
             }
           _cache.set(num, res);
+          Profiler.addMangledName(res, _fuir.clazzAsStringHuman(cl));
           if (_existing != null)
             {
               _existing.put(res, 1);
