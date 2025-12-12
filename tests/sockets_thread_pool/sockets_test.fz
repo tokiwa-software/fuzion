@@ -21,7 +21,7 @@
 #
 # -----------------------------------------------------------------------
 
-sockets_test is
+sockets_thread_pool_test is
 
   lm : mutate is
 
