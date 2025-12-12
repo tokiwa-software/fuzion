@@ -698,7 +698,7 @@ is
   # NYI: BUG: #3646 make public when snapshots work
   as_persistent_map container.Persistent_Map CTK CTV =>
     s := snapshot false
-    ref : container.Persistent_Map CTK CTV is
+    _ : container.Persistent_Map CTK CTV is
       public redef size i32 => s.size
       public redef index [] (k CTK) option CTV => s[k]
       public redef items Sequence (tuple CTK CTV) => s.items

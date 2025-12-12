@@ -49,7 +49,7 @@ public vars (p Vars_Handler) : effect is
   # default handler using fuzion.sys.env_vars
   #
   type.default_vars_handler =>
-    ref : envir.Vars_Handler is
+    _ : envir.Vars_Handler is
       public redef get(v String) option String => fuzion.sys.env_vars.get v
 
 

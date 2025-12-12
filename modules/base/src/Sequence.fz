@@ -1279,7 +1279,7 @@ is
   #
   public type.concat_monoid Monoid (Sequence T) =>
 
-    ref : Monoid (Sequence T) is
+    _ : Monoid (Sequence T) is
 
       # associative operation
       #

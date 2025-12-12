@@ -54,7 +54,7 @@ public nano (p Nano_Time_Handler) : Clock is
 
   module type.default_nano_time =>
 
-    ref : time.Nano_Time_Handler is
+    _ : time.Nano_Time_Handler is
 
       # no guarantee can be given for precision nor resolution
       #
