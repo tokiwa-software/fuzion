@@ -193,7 +193,7 @@ public class Lexer extends SourceFile
     t_pre("pre"),
     t_post("post"),
     t_inv("inv"),
-    t_var("var"),
+    t_var("var"),                     // unused
     t_match("match"),
     t_ref("ref"),
     t_redef("redef"),
