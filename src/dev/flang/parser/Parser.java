@@ -355,7 +355,7 @@ field       : returnType
     return
       isNonEmptyVisibilityPrefix() ||
       isModifiersPrefix() ||
-      (isNamePrefix() || current() == Token.t_type) && fork().skipFeaturePrefix();
+      (isNamePrefix() && !isAnonymousPrefix() || current() == Token.t_type) && fork().skipFeaturePrefix();
   }
 
 
@@ -3143,7 +3143,7 @@ universeCall      : universe dot call
   /**
    * Parse anonymous
    *
-anonymous   : "ref"
+anonymous   : "_"
               inherit
               "is"
               block
@@ -3154,9 +3154,8 @@ anonymous   : "ref"
     var oldIndent = setMinIndent(tokenPos());
     var sl = sameLine(line());
     SourcePosition pos = tokenSourceRange();
-    if (CHECKS) check
-      (current() == Token.t_ref);
-    ReturnType r = returnType();  // only `ref` return type allowed.
+    check(skipName());
+    ReturnType r = RefType.INSTANCE; // NYI: UNDER DEVELOPMENT: value type
     var        i = inherit();
     match(Token.t_is, "anonymous");
     Block      b = block();
@@ -3176,7 +3175,11 @@ anonymous   : "ref"
    */
   boolean isAnonymousPrefix()
   {
-    return current() == Token.t_ref;
+    var f = fork();
+    return f.current() == Token.t_ident
+      && f.identifier().equals("_")
+      && f.skipName()
+      && f.skipColon();
   }
 
 
