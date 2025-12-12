@@ -67,8 +67,8 @@ module internal_array(T type, module data Array T, module length i32) is
   # module set [ ] (i idx, o T) unit
   module set [ ] (i i32, o T) unit
     pre
-      safety: 0 ≤ i < length
-      debug : {ensure_not_frozen; true}
+      safety   : 0 ≤ i < length
+      (debug 2): {ensure_not_frozen; true}
   # post   NYI
     # debug: array.this[i] == o
   =>
