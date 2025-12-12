@@ -120,6 +120,12 @@ public class Profiler extends ANY
 
 
   /**
+   * Store known mangled names.
+   */
+  private static final Map<String, String> _mangledNames = new HashMap<>();
+
+
+  /**
    * Desktop instance to display flamegraph results.  Since the flame graph is
    * created in the shutdown hook and desktop itself can not be created during
    * shutdown, we create this early.
@@ -153,6 +159,22 @@ public class Profiler extends ANY
   static boolean showFlameGraph()
   {
     return _file == null;
+  }
+
+
+  /**
+   * Add a known mangled name to Profiler
+   *
+   * @param mangled the mangled class name
+   *
+   * @param original the original name
+   */
+  public static void addMangledName(String mangled, String original)
+  {
+    if (_running_)
+      {
+        _mangledNames.put(mangled, original);
+      }
   }
 
 
@@ -194,9 +216,7 @@ public class Profiler extends ANY
                       {
                         sb.append(";");
                       }
-                    sb.append(s.getClassName())
-                      .append(".")
-                      .append(s.getMethodName());
+                    sb.append(deMangleForFlameGraph(s));
                   }
                 var key = sb.toString();
                 var c = _resultsForFlameGraph_.getOrDefault(key, 0);
@@ -233,7 +253,14 @@ public class Profiler extends ANY
               {
                 if (_running_)
                   {
+                    var start = System.nanoTime();
                     takeSample(getThreadGroup());
+                    var elapsed = System.nanoTime() - start;
+
+                    if (elapsed / 1E9 > _samplingFrequency_)
+                      {
+                        say("Profiler, warning: taking sample took longer than sampling Frequency");
+                      }
                   }
               }
           }
@@ -281,7 +308,7 @@ public class Profiler extends ANY
                       var format = "%" + _results_.get(s[s.length-1]).toString().length() + "d";
                       for(var m : s)
                         {
-                          out.println("PROF: "+String.format(format, _results_.get(m)) + ": " + m);
+                          out.println("PROF: "+String.format(format, _results_.get(m)) + ": " + deMangle(m));
                         }
                     }
                   catch (IOException e)
@@ -356,6 +383,28 @@ public class Profiler extends ANY
             }
         }
       });
+  }
+
+
+  /**
+   * Try to demangle the class name of the StackTraceElement for *.prof
+   */
+  private static String deMangle(StackTraceElement ste)
+  {
+    return _mangledNames.containsKey(ste.getClassName())
+      ? _mangledNames.get(ste.getClassName()) + "(" +  ste.getFileName() + ":" + ste.getLineNumber() + ")"
+      : ste.toString();
+  }
+
+
+  /**
+   * Try to demangle the class name of the StackTraceElement for *.svg
+   */
+  private static String deMangleForFlameGraph(StackTraceElement ste)
+  {
+    return _mangledNames.containsKey(ste.getClassName())
+      ? _mangledNames.get(ste.getClassName()) + "(" +  ste.getFileName() + ":" + ste.getLineNumber() + ")"
+      : ste.getClassName() + "." + ste.getMethodName();
   }
 
 
