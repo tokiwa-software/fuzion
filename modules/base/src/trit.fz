@@ -56,3 +56,10 @@ public trit : choice true_ false_ nil, property.equatable is
         match b
           nil => true
           * => false
+
+
+  public redef as_string String =>
+    match trit.this
+      true_ => "yes"
+      false_ => "no"
+      nil => "unknown"
