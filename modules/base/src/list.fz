@@ -241,7 +241,7 @@ is
     match list.this
       nil    => nil
       c Cons =>
-        alist (f c.head) (c.tail.map_to_list f) c.finite
+        (list B).of (f c.head) (c.tail.map_to_list f) c.finite
 
 
   # map the list to a new list applying function f to all elements
@@ -743,22 +743,21 @@ is
         nil
 
 
+  # convenience routine to create a list from head h and lazy tail t.
+  #
+  public type.of(h T, t Lazy (list T), f trit) list T =>
+    ref : Cons T (list T) is
+      public redef head T => h
+      public redef tail list T => t
+      public redef finite trit => f
+
+
 
 # convenience routine to create a list from head h and lazy tail t.
 #
 public list(T type, h T, t Lazy (list T)) list T =>
-  ref : Cons T (list T) is
-    public redef head T => h
-    public redef tail list T => t
+  (list T).of h t trit.unknown
 
-
-# convenience routine to create a list from head h and lazy tail t.
-#
-public alist(T type, h T, t Lazy (list T), f trit) list T =>
-  ref : Cons T (list T) is
-    public redef head T => h
-    public redef tail list T => t
-    public redef finite trit => f
 
 
 # infix operator to create a list from head h and lazy tail t.
@@ -777,7 +776,7 @@ public alist(T type, h T, t Lazy (list T), f trit) list T =>
 #     ones => 1 : ones
 #
 public infix_right : (A type, h A, t Lazy (list A)) list A =>
-  list h t
+  (list A).of h t trit.unknown
 
 
 # infix operator to create a list from head h and a production
@@ -804,4 +803,4 @@ public infix_right : (A type, h A, t Lazy (list A)) list A =>
 # will produce the powers of two: 1,2,4,8,16,32,...
 #
 public infix :: (A type, h A, f A->A) list A =>
-  alist h (f h :: f) trit.no
+  list h (f h :: f)

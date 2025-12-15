@@ -76,7 +76,7 @@ is
     else
       tail => (from+?step ? next T => (interval next through step).as_list
                           | nil    => nil)
-      alist from tail (through ? nil => trit.no |  * => trit.yes)
+      (list T).of from tail (through ? nil => trit.no |  * => trit.yes)
 
 
   # get the number of elements in this interval
