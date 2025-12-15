@@ -17,16 +17,40 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature Stack
+#  Source code of Fuzion standard library feature stack
 #
 # -----------------------------------------------------------------------
 
 
-# interface definition for stacks
+# A stack implementation using local mutation
 #
-public Stack(T type) ref is
-  public push(e T) unit => abstract
-  public pop option T => abstract
-  public peek option T => abstract
+public stack(LM type : mutate, T type) : container.Stack T is
+
+  Element(data T, next option Element) ref is
 
 
+  top := LM.env.new (option Element) nil
+
+
+  # push an element to the stack
+  #
+  public redef push (e T) unit =>
+    match top.get
+      n Element =>
+        top <- (Element e n)
+      nil =>
+        top <- (Element e nil)
+
+
+  # pop an element from the stack
+  #
+  public redef pop option T =>
+    top.get.bind n->
+      top <- n.next
+      n.data
+
+
+  # peek at the top element from the stack
+  #
+  public redef peek option T =>
+    top.get.bind n->n.data
