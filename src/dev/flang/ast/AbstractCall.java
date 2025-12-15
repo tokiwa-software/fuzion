@@ -29,7 +29,6 @@ package dev.flang.ast;
 import static dev.flang.util.FuzionConstants.NO_SELECT;
 
 import java.io.ByteArrayOutputStream;
-import java.util.Arrays;
 import java.util.function.BiConsumer;
 
 import dev.flang.util.Errors;
