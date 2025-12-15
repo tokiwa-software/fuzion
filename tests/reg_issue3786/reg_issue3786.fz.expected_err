@@ -3,10 +3,10 @@
   type.y is
 -------^
 To solve this, move the type outside of the type feature.
-E.g., instead of: 
+E.g., instead of:
 'type.union : Monoid bitset is'
-do this: 
+do this:
 public type.union =>
-  ref : Monoid bitset
+  _ : Monoid bitset
 
 one error.
