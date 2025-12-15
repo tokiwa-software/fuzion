@@ -25,9 +25,22 @@
 # interface definition for stacks
 #
 public Stack(T type) ref is
+
+  # push an element onto the top of the stack.
+  #
   public push(e T) unit => abstract
+
+  # remove and return the top element of the stack.
+  #
   public pop option T => abstract
+
+  # return the top element of the stack without removing it.
+  #
   public peek option T => abstract
+
+  # this Stack as a Sequence, top element first
+  #
+  public as_sequence Sequence T => abstract
 
 
 
@@ -36,6 +49,8 @@ public Stack(T type) ref is
 public stack(LM type : mutate, T type) : Stack T is
 
   Element(data T, next option Element) ref is
+    public as_sequence Sequence T =>
+      data : (next.bind (.as_sequence.as_list) .or_else nil)
 
 
   top := LM.env.new (option Element) nil
@@ -62,6 +77,11 @@ public stack(LM type : mutate, T type) : Stack T is
   # peek at the top element from the stack
   #
   public redef peek option T =>
-    top.get.bind n->n.data
+    top.get.bind (.data)
 
+
+  public redef as_sequence Sequence T =>
+    top.get
+       .bind (.as_sequence)
+       .or_else (Sequence T).empty
 
