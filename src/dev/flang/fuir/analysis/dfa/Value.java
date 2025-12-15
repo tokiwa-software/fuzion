@@ -29,7 +29,6 @@ package dev.flang.fuir.analysis.dfa;
 import static dev.flang.ir.IR.NO_SITE;
 import static dev.flang.ir.IR.NO_CLAZZ;
 
-import dev.flang.fuir.SpecialClazzes;
 import dev.flang.util.Errors;
 import dev.flang.util.IntMap;
 

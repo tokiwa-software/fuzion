@@ -39,7 +39,6 @@ import java.util.function.Supplier;
 
 import java.util.stream.Stream;
 
-import dev.flang.fuir.OptimizedFUIR;
 import dev.flang.fuir.FUIR;
 import dev.flang.fuir.FUIR.LifeTime;
 import dev.flang.fuir.GeneratingFUIR;
