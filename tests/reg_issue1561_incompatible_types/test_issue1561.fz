@@ -21,7 +21,7 @@
 #
 # -----------------------------------------------------------------------
 
-ex =>
+test_issue1561 =>
   read_line option String =>
 
     (exception unit String ()->
