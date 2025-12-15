@@ -577,11 +577,10 @@ is
   # 'list.this' and the empty list 'nil'.
   #
   public redef tails list (list A) =>
-    ref : Cons (list A) (list (list A)) is
-      public redef head list A => list.this
-      public redef tail list (list A) =>
-        list.this ? nil    => nil
-                  | c Cons => c.tail.tails
+    list
+      (list A)
+      list.this
+      list.this ? nil => nil | c Cons => c.tail.tails
 
 
   # create a new list from the result of applying 'f' to the
