@@ -17,16 +17,14 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature Functional
+#  Source code of Fuzion standard library feature Effectful
 #
 # -----------------------------------------------------------------------
 
-# NYI: UNDER DEVELOPMENT: name Functional might be misleading?
-#
-# a Functional is a special type of unary that takes
+# a Effectful is a special type of unary that takes
 # a Function R and produces a value R.
 #
-public Functional(R type) ref : Unary R (Function R) is
+module:public Effectful(R type) ref : Unary R (Function R) is
 
 
   # infix variant of call
@@ -37,16 +35,16 @@ public Functional(R type) ref : Unary R (Function R) is
 
   # NYI: UNDER DEVELOPMENT: name compose might be misleading?
   #
-  # compose this Functional with another Functional
+  # compose this Effectful with another Effectful
   #
-  public compose(other Functional R) Functional R =>
-    ref : Functional R is
+  public compose(other Effectful R) Effectful R =>
+    ref : Effectful R is
       public redef call(code Function R) R =>
-        Functional.this.call ()->
+        Effectful.this.call ()->
           other.call code
 
 
   # fluent interface for using multiple effects together
   #
-  public and(E type: effect, e Lazy E) Functional R =>
-    compose (e.as_functional R)
+  public and(E type: effect, e Lazy E) Effectful R =>
+    compose (e.as_effectful R)
