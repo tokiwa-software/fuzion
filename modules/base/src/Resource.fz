@@ -1,0 +1,39 @@
+module Resource/* NYI? (OR type : resources)*/ ref : property.hashable, property.orderable is
+  id := unique_id
+  public fixed redef type.lteq(a, b Resource) bool => a.id <= b.id
+  public fixed redef type.hash_code(a Resource) u64 => a.id
+  module close outcome unit => abstract
+
+
+module resources0 =>
+  resources.default
+  resources.env
+
+
+public resources : effect is
+
+  # NYI:
+  _ := mut
+
+  s := container.stack mutate Resource
+
+  module register_usage(r Resource) unit =>
+    replace
+    if !s.as_sequence.contains r
+      fuzion.runtime.fault.cause ("resources.register_usage",
+                                  "resource already closed or was opened in another thread.")
+
+  # NYI: public close(r Resource) outcome unit =>
+
+  module open (r Resource) =>
+    replace
+    s.push r
+
+  public redef finally unit =>
+    _ :=
+      for r := s.pop
+      while r.ok
+        match r.val.close
+          e error => fuzion.runtime.fault.cause ("resources.finally",
+                                                 "closing resource failed: {e}")
+          unit =>
