@@ -434,7 +434,7 @@ is
     else if c1 < 0 || c2 < 0 then
       as_list.concat_list s.as_list
     else
-      container.expanding_array2 T .empty c1+c2
+      container.growable_array T .empty c1+c2
         .concat Sequence.this
         .concat s
 

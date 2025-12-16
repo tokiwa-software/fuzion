@@ -215,7 +215,7 @@ is
   #
   public redef as_array array A =>
     (
-      reduce (container.expanding_array2 A .empty) r,t->
+      reduce (container.growable_array A .empty) r,t->
         r.add t
     ).as_array
 
