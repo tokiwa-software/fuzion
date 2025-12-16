@@ -17,43 +17,21 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature io.file.mapped_buffer
+#  Source code of Fuzion test resources
 #
 # -----------------------------------------------------------------------
 
+resources_test =>
 
-# mapped buffer gives access to the memory region a file is mapped
-# to via `mmap`.
-#
-module:public mapped_buffer
-  (# internal pointer to the mapped memory
-    memory Mapped_Memory,
+  _ := io.file.write "file" "Content"
 
-    # the length of this buffer
-    public redef length i64
-  )
-  : container.Buffer u8 mapped_buffer.this, mutate, Resource is
-
-
-  # get byte at given index i
-  #
-  public redef index [ ] (i idx) u8
-  =>
-    resources0.register_usage mapped_buffer.this
-    fzE_mapped_buffer_get memory i.as_i64
-
-
-  # set byte at given index i to given value o
-  #
-  public redef set [ ] (i idx, o u8) unit
-  =>
-    replace
-    resources0.register_usage mapped_buffer.this
-    fzE_mapped_buffer_set memory i.as_i64 o
-
-
-  # cleanup
-  #
-  module redef close outcome unit =>
-    if fzE_munmap memory length != 0
-      error "unmapping memory failed"
+  f2 outcome io.file.file2 := (resources_observer say) ! ()->
+    # resources will be closed when this effect finishes
+    resources ! ()->
+      io.file
+        .open2 (path.of "file") io.file.mode.append
+        .bind f->
+          _ := f.mmap 0 7 .bind mb->
+            say <| String.from mb.as_array
+          f
+  say <| f2.bind (.read 1)
