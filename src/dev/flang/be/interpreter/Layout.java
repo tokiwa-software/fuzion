@@ -26,8 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
+import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeMap;
 
 import dev.flang.fuir.FUIR;
 
@@ -44,7 +44,7 @@ class Layout extends FUIRContext
   /*-----------------------------  statics  -----------------------------*/
 
 
-  private static final TreeMap<Integer, Layout> _layouts_ = new TreeMap<>();
+  private static final Map<Integer, Layout> _layouts_ = new HashMap<>();
 
 
   /**
@@ -81,7 +81,7 @@ class Layout extends FUIRContext
   /**
    * Offsets of the fields in instances of this clazz.
    */
-  public final Map<Integer, Integer> _offsets = new TreeMap<>();
+  public final Map<Integer, Integer> _offsets = new HashMap<>();
 
 
   /*----------------------------  variables  ----------------------------*/

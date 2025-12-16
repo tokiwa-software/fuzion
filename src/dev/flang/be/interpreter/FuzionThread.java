@@ -26,8 +26,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Stack;
-import java.util.TreeMap;
 
 import dev.flang.util.ANY;
 
@@ -76,7 +77,7 @@ public class FuzionThread extends ANY
   /**
    * Currently installed effects.
    */
-  TreeMap<Integer, Value> _effects = new TreeMap<>();
+  Map<Integer, Value> _effects = new HashMap<>();
 
 }
 

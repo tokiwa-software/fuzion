@@ -32,8 +32,9 @@ import java.net.InetSocketAddress;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -88,7 +89,7 @@ public class Intrinsics extends ANY
   /*----------------------------  constants  ----------------------------*/
 
 
-  static final TreeMap<String, IntrinsicCode> _intrinsics_ = new TreeMap<>();
+  static final Map<String, IntrinsicCode> _intrinsics_ = new HashMap<>();
 
   /*----------------------------  variables  ----------------------------*/
 
