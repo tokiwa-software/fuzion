@@ -2975,22 +2975,7 @@ public class DFA extends ANY
    */
   boolean onlyOneInstance(int clazz)
   {
-    return ONLY_ONE_INSTANCE &&
-      // NYI: UNDER DEVELOPMENT: This is currently a dumb list of features,
-      // this should be something generic instead, e.g.
-      //
-      //   b := !_fuir.clazzIsChoice(clazz) && !_fuir.clazzIsRef(clazz);
-      //
-      switch (_fuir.clazzAsString(clazz))
-      {
-      case
-        "list u8",
-        "codepoint",
-        "Sequence u8",
-        "array u8",
-        "fuzion.sys.internal_array u8" -> true;
-      default -> false;
-      };
+    return ONLY_ONE_INSTANCE;
   }
 
 
