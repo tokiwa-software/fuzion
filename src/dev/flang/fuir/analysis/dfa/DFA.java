@@ -1377,7 +1377,7 @@ public class DFA extends ANY
       }
 
     _cachedValues = new TreeMap<>(Value.COMPARATOR);
-    // _numUniqueValues = 0;    -- NYI: Somewhere, the old unique ids are still in use, need to check why! See reg_issue2478 to check this.
+    _numUniqueValues = 0;
     _uniqueValues = new List<Value>();
     _instancesForSite = new List<>();
     _tagged = new LongMap<>();
@@ -1389,7 +1389,7 @@ public class DFA extends ANY
     _callGroupsQuick = new LongMap<>();
     _callGroups = new TreeMap<>();
 
-    _instancesForSite = new List<>();
+    _oneInstanceOfClazz = new List<>();
     _unitCalls = new IntMap<>();
 
     _real = true;
@@ -2693,6 +2693,7 @@ public class DFA extends ANY
             if (onlyOneInstance(cl))
               {
                 var ni = new Instance(this, cl, site, context);
+                wasChanged(() -> "DFA: new instance " + _fuir.clazzAsString(cl));
                 makeUnique(ni);
                 ao = ni;
               }
