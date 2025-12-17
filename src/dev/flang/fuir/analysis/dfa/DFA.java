@@ -2447,8 +2447,9 @@ public class DFA extends ANY
   {
     return switch (fuir(cl).getSpecialClazz(rc))
       {
-        case c_i8, c_u16, c_i16, c_i32, c_i64, c_f32, c_f64, c_bool ->
+        case c_i8, c_u16, c_i16, c_i32, c_i64, c_f32, c_f64 ->
           cl._dfa.newInstance(rc, NO_SITE, cl._context);
+        case c_bool -> cl._dfa.bool();
         default -> {
           var res = Value.UNIT;
           if (!cl._dfa._fuir.clazzIsUnitType(rc))
