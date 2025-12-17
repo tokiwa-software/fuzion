@@ -2671,16 +2671,18 @@ public class DFA extends ANY
   Value newInstance(int cl, int site, Context context)
   {
     if (PRECONDITIONS) require
-      (!_fuir.clazzIsChoice(cl) || _fuir.clazzIs(cl, SpecialClazzes.c_bool));
+      (!_fuir.clazzIsChoice(cl));
 
     Value r;
     if (isBuiltInNumeric(cl))
       {
         r = NumericValue.create(DFA.this, cl);
       }
-    else if (_fuir.clazzIs(cl, SpecialClazzes.c_bool))
+    else if (_fuir.clazzIsRef(cl))
       {
-        r = bool();
+        var vc = _fuir.clazzAsValue(cl);
+        check(!_fuir.clazzIsRef(vc));
+        r = newInstance(vc, site, context).box(this, vc, cl, context);
       }
     else
       {
@@ -2703,12 +2705,6 @@ public class DFA extends ANY
         if (ao instanceof Instance a)
           {
             r = a;
-          }
-        else if (_fuir.clazzIsRef(cl))
-          {
-            var vc = _fuir.clazzAsValue(cl);
-            check(!_fuir.clazzIsRef(vc));
-            r = newInstance(vc, site, context).box(this, vc, cl, context);
           }
         else
           {
