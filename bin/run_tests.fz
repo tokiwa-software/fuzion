@@ -335,7 +335,7 @@ main =>
       if token.is_blank
         say "INFLUXDB_TOKEN is blank, not sending to influxdb."
       else
-        say <| post_to_influx "tokiwa" "benchmarks" token.trim (String.join data "\n")
+        say <| post_to_influx "tokiwa" "benchmarks" token.trim (String.join_lines data)
         say <| post_to_influx "tokiwa" "benchmarks" token.trim "run_tests,backend={target} total_time={elapsed_time_total.millis}"
 
   exit
