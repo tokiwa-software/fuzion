@@ -31,10 +31,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.TreeMap;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import dev.flang.util.ANY;
-import dev.flang.util.FuzionConstants;
 import dev.flang.util.SourcePosition;
 
 public class SourceText extends ANY
@@ -116,6 +116,14 @@ public class SourceText extends ANY
       : pos._sourceFile.line(pos.line());
   }
 
+
+  /**
+   * Pattern to replace e.g. {base.fum}
+   */
+  private static final Pattern CURLY_BRACES_PATTERN =
+            Pattern.compile("\\{([^.}]+)\\.fum\\}");
+
+
   /**
    * utility function to get the uri of a sourceposition
    *
@@ -124,9 +132,11 @@ public class SourceText extends ANY
    */
   public static URI uriOf(SourcePosition sourcePosition)
   {
-    return Path.of(
-      sourcePosition._sourceFile._fileName.toString()
-        .replace(FuzionConstants.SYMBOLIC_FUZION_MODULE.toString(), fuzionHome.toString() + "/lib/"))
+    return Path
+      .of(
+        CURLY_BRACES_PATTERN
+          .matcher(sourcePosition._sourceFile._fileName.toString())
+          .replaceAll(fuzionHome.toString() + "/modules/$1/src/"))
       .toUri();
   }
 
