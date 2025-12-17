@@ -1384,6 +1384,8 @@ public class DFA extends ANY
     _joined = new LongMap<>();
     _uninitializedSysArray = new IntMap<>();
 
+    _trueX = null; _falseX = null; _boolX = null;
+
     _callsQuick = new LongMap<>();
     _calls = new TreeMap<>();
     _callGroupsQuick = new LongMap<>();
