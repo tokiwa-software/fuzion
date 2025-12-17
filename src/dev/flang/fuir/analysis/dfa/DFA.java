@@ -1384,6 +1384,8 @@ public class DFA extends ANY
     _joined = new LongMap<>();
     _uninitializedSysArray = new IntMap<>();
 
+    _trueX = null; _falseX = null; _boolX = null;
+
     _callsQuick = new LongMap<>();
     _calls = new TreeMap<>();
     _callGroupsQuick = new LongMap<>();
@@ -1860,7 +1862,11 @@ public class DFA extends ANY
   static Value wrappedJavaObject(Call cl)
   {
     var rc   = fuir(cl).clazzResultClazz(cl.calledClazz());
-    var result = cl._dfa.newInstance(rc, NO_SITE, cl._context);
+    var result = switch (fuir(cl).getSpecialClazz(rc))
+      {
+        case c_bool -> cl._dfa.bool();
+        default -> cl._dfa.newInstance(rc, NO_SITE, cl._context);
+      };
     setOuterRefs(cl, rc, result);
     return result;
   }
@@ -2447,8 +2453,9 @@ public class DFA extends ANY
   {
     return switch (fuir(cl).getSpecialClazz(rc))
       {
-        case c_i8, c_u16, c_i16, c_i32, c_i64, c_f32, c_f64, c_bool ->
+        case c_i8, c_u16, c_i16, c_i32, c_i64, c_f32, c_f64 ->
           cl._dfa.newInstance(rc, NO_SITE, cl._context);
+        case c_bool -> cl._dfa.bool();
         default -> {
           var res = Value.UNIT;
           if (!cl._dfa._fuir.clazzIsUnitType(rc))
