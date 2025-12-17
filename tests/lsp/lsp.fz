@@ -124,9 +124,9 @@ record_process(
   match p.wait (time.duration.s 1)
     error =>
       check p.send_signal os.signals.kill .ok
-      process_result (String.join fout.get "\n") "" 1
+      process_result (String.join_lines fout.get) "" 1
     ec u32 =>
-      process_result (String.join fout.get "\n") "" ec
+      process_result (String.join_lines fout.get) "" ec
 
 # execute this Sequence of process+args
 #
