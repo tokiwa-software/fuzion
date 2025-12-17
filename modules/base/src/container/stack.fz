@@ -21,12 +21,13 @@
 #
 # -----------------------------------------------------------------------
 
-
 # A stack implementation using local mutation
 #
-public stack(LM type : mutate, T type) : container.Stack T is
+public stack(LM type : mutate, T type) : Stack T is
 
   Element(data T, next option Element) ref is
+    public as_sequence Sequence T =>
+      data : (next.bind (.as_sequence.as_list) .or_else nil)
 
 
   top := LM.env.new (option Element) nil
@@ -53,4 +54,12 @@ public stack(LM type : mutate, T type) : container.Stack T is
   # peek at the top element from the stack
   #
   public redef peek option T =>
-    top.get.bind n->n.data
+    top.get.bind (.data)
+
+
+  # this stack as a sequence
+  #
+  public redef as_sequence Sequence T =>
+    top.get
+       .bind (.as_sequence)
+       .or_else (Sequence T).empty

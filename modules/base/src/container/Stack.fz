@@ -25,8 +25,21 @@
 # interface definition for stacks
 #
 public Stack(T type) ref is
+
+  # push an element onto the top of the stack.
+  #
   public push(e T) unit => abstract
+
+  # remove and return the top element of the stack.
+  #
   public pop option T => abstract
+
+  # return the top element of the stack without removing it.
+  #
   public peek option T => abstract
+
+  # this Stack as a Sequence, top element first
+  #
+  public as_sequence Sequence T => abstract
 
 
