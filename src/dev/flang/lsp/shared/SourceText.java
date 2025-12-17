@@ -121,7 +121,7 @@ public class SourceText extends ANY
    * Pattern to replace e.g. {base.fum}
    */
   private static final Pattern CURLY_BRACES_PATTERN =
-            Pattern.compile("\\{([^.}]+).*?\\}");
+            Pattern.compile("\\{([^.}]+)\\.fum\\}");
 
 
   /**
