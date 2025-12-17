@@ -1,0 +1,69 @@
+module:public file2(desc File_Descriptor) : Resource is
+
+  public read(n u64) outcome (Sequence u8) =>
+    resources0.register_usage file2.this
+    fuzion.sys.fileio.read desc n
+
+  # definition of read handler for file
+  #
+  read_handler : io.Read_Handler is
+    public redef read(count i32) choice (Sequence u8) io.end_of_file error =>
+      resources0.register_usage file2.this
+      match fuzion.sys.fileio.read desc count.as_u64
+        s Sequence => if s.is_empty then io.end_of_file else s
+        e error => e
+
+  public reader(R type, code ()->R) outcome R =>
+    file_mutate ! ()->
+      (io.buffered file_mutate).reader read_handler ! code
+
+  public write (bytes Sequence u8) outcome unit =>
+    resources0.register_usage file2.this
+    fuzion.sys.fileio.write desc bytes.as_array
+
+  # definition of write handler for file
+  #
+  write_handler : io.Write_Handler is
+    public redef write (bytes Sequence u8) outcome unit =>
+      resources0.register_usage file2.this
+      fuzion.sys.fileio.write desc bytes.as_array
+
+  public writer(R type, code ()->R) outcome R =>
+    file_mutate ! ()->
+      (io.buffered file_mutate).writer write_handler ! code
+
+  public seek(offset i64) outcome unit =>
+    resources0.register_usage file2.this
+    fuzion.sys.fileio.seek desc offset
+
+  public file_position outcome i64 =>
+    resources0.register_usage file2.this
+    fuzion.sys.fileio.file_position desc
+
+  public mmap(offset i64, size i64) outcome io.file.mapped_buffer
+    pre safety: offset % os.mmap_offset_multiple = 0
+  =>
+    resources0.register_usage file2.this
+    mapped_memory := fzE_mmap desc offset size
+
+    if fzE_is_valid_mapped_memory mapped_memory
+      error "mmap failed, error code: {fzE_last_error}"
+    else
+      res := io.file.mapped_buffer mapped_memory size
+      resources0.open res
+      res
+
+
+  module redef close =>
+    fuzion.sys.fileio.close desc
+
+  resources0.open file2.this
+
+
+public open2(file_name path, m mode.val) outcome file2 ! resources =>
+  mode_num :=
+    match m
+      mode.read => 0
+      mode.write => 1
+      mode.append => 2
+  (fuzion.sys.fileio.open file_name.as_string mode_num).bind file2
