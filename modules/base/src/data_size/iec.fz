@@ -1,0 +1,344 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature data_size.iec
+#
+# -----------------------------------------------------------------------
+
+# data_size.iec -- value representing a iec
+#
+public iec(
+
+  public bytes u64
+  )
+  : property.orderable,
+    property.hashable
+
+is
+
+  # this data_size.iec in kibibytes, omitting fractional part
+  #
+  public kib u64 => bytes / byte_unit_iec.kib.in_bytes
+
+  # this data_size.iec in kibibytes, including fractional part
+  #
+  public kib_float f64 => bytes.as_f64 / byte_unit_iec.kib.in_bytes.as_f64
+
+  # this data_size.iec in mebibytes, omitting fractional part
+  #
+  public mib u64 => bytes / byte_unit_iec.mib.in_bytes
+
+  # this data_size.iec in mebibytes, including fractional part
+  #
+  public mib_float f64 => bytes.as_f64 / byte_unit_iec.mib.in_bytes.as_f64
+
+  # this data_size.iec in gibibytes, omitting fractional part
+  #
+  public gib u64 => bytes / byte_unit_iec.gib.in_bytes
+
+  # this data_size.iec in gibibytes, including fractional part
+  #
+  public gib_float f64 => bytes.as_f64 / byte_unit_iec.gib.in_bytes.as_f64
+
+  # this data_size.iec in tebibytes, omitting fractional part
+  #
+  public tib u64 => bytes / byte_unit_iec.tib.in_bytes
+
+  # this data_size.iec in tebibytes, including fractional part
+  #
+  public tib_float f64 => bytes.as_f64 / byte_unit_iec.tib.in_bytes.as_f64
+
+  # this data_size.iec in pebibytes, omitting fractional part
+  #
+  public pib u64 => bytes / byte_unit_iec.pib.in_bytes
+
+  # this data_size.iec in pebibytes, including fractional part
+  #
+  public pib_float f64 => bytes.as_f64 / byte_unit_iec.pib.in_bytes.as_f64
+
+  # this data_size.iec in exbibytes, omitting fractional part
+  #
+  public eib u64 => bytes / byte_unit_iec.eib.in_bytes
+
+  # this data_size.iec in exbibytes, including fractional part
+  #
+  public eib_float f64 => bytes.as_f64 / byte_unit_iec.eib.in_bytes.as_f64
+
+  # this data_size.iec in zebibytes, omitting fractional part
+  #
+  public zib u64 => bytes / byte_unit_iec.zib.in_bytes
+
+  # this data_size.iec in zebibytes, including fractional part
+  #
+  public zib_float f64 => bytes.as_f64 / byte_unit_iec.zib.in_bytes.as_f64
+
+  # this data_size.iec in yobibytes, omitting fractional part
+  #
+  public yib u64 => bytes / byte_unit_iec.yib.in_bytes
+
+  # this data_size.iec in yobibytes, including fractional part
+  #
+  public yib_float f64 => bytes.as_f64 / byte_unit_iec.yib.in_bytes.as_f64
+
+  # this data_size.iec in robibytes, omitting fractional part
+  #
+  public rib u64 => bytes / byte_unit_iec.rib.in_bytes
+
+  # this data_size.iec in robibytes, including fractional part
+  #
+  public rib_float f64 => bytes.as_f64 / byte_unit_iec.rib.in_bytes.as_f64
+
+  # this data_size.iec in quebibytes, omitting fractional part
+  #
+  public qib u64 => bytes / byte_unit_iec.qib.in_bytes
+
+  # this data_size.iec in quebibytes, including fractional part
+  #
+  public qib_float f64 => bytes.as_f64 / byte_unit_iec.qib.in_bytes.as_f64
+
+
+  # this data_size.iec and another one combined
+  #
+  public infix + (other iec) iec
+  pre
+    safety: bytes +! other.bytes
+  =>
+    iec (bytes + other.bytes)
+
+
+  # this data_size.iec minus another data_size.iec
+  #
+  public fixed infix - (other iec) iec
+  pre
+    safety: iec.this >= other
+  =>
+    iec (bytes - other.bytes)
+
+
+  # this data_size.iec multiplied by factor n
+  #
+  public infix * (n u64) iec
+  pre
+    safety: bytes *! n
+  =>
+    iec bytes*n
+
+
+  # this data_size.iec multiplied by factor f
+  #
+  public times(f f64) iec
+  =>
+    iec (bytes.as_f64 * f).as_i64.as_u64
+
+
+  # this data_size.iec divided by data_size.iec other, rounding down
+  #
+  public infix / (other iec.this) u64
+  =>
+    bytes / other.bytes
+
+  # create a string representation of this data_size.iec. The string representation
+  # is not accurate, it is either an integer in the range [10,1023]
+  # or a float in the range [1,10) with exactly one fractional digit
+  # both are followed by a byte_unit_iec string.
+  #
+  public redef as_string String =>
+    as_string unit_for_as_string
+
+
+  # create a string representation of this data_size.iec using the given unit.
+  #
+  public as_string(u data_size.byte_unit_iec) String =>
+    n String := if bytes / u.in_bytes >= 10 || !u.smaller.ok
+                  $(bytes / u.in_bytes)
+                else
+                  # add one decimal
+                  (bytes.as_f64 / u.in_bytes.as_f64).as_string.pad "0" 3 .substring 0 3
+
+    " "*(max 0 4-n.byte_length) + n + " " + u.short_name
+
+
+  # Determines the unit to use for as_string, such that the resulting value is in the range [1,1023]
+  #
+  public unit_for_as_string data_size.byte_unit_iec =>
+    for
+      x := data_size.byte_unit_iec.b, nx.get
+      nx := x.larger
+    while nx >>? (u -> bytes / u.in_bytes >= 1024)
+    else nx >>? (u -> bytes / u.in_bytes > 0) ? nx.val : x
+
+
+  # total order
+  #
+  public fixed redef type.lteq(a, b data_size.iec) bool =>
+    u64.type.lteq a.bytes b.bytes
+
+
+  # create hash code from a data_size.iec
+  #
+  public redef type.hash_code(d data_size.iec.this) u64 =>
+    d.bytes
+
+  # This data.size_iec (base 2, 1000 byte = 1 KiB) as data_size.si (base 10, 1000 byte = 1 kB)
+  #
+  public as_si() data_size.si => data_size.si bytes
+
+
+  # max value for a data_size.iec given in bytes
+  public type.max_bytes     u64  => u64.max
+
+  # max value for a data_size.iec given in kibibytes
+  public type.max_kibibytes u64  => u64.max / byte_unit_iec.b.in_bytes
+
+  # max value for a data_size.iec given in mebibytes
+  public type.max_mebibytes u64  => u64.max / byte_unit_iec.kib.in_bytes
+
+  # max value for a data_size.iec given in gibibytes
+  public type.max_gibibytes u64  => u64.max / byte_unit_iec.mib.in_bytes
+
+  # max value for a data_size.iec given in tebibytes
+  public type.max_tebibytes u64  => u64.max / byte_unit_iec.gib.in_bytes
+
+  # max value for a data_size.iec given in pebibytes
+  public type.max_pebibytes u64  => u64.max / byte_unit_iec.tib.in_bytes
+
+  # max value for a data_size.iec given in exbibytes
+  public type.max_exbibytes u64  => u64.max / byte_unit_iec.pib.in_bytes
+
+  # max value for a data_size.iec given in zebibytes
+  public type.max_zebibytes u64  => u64.max / byte_unit_iec.eib.in_bytes
+
+  # max value for a data_size.iec given in yobibytes
+  public type.max_yobibytes u64  => u64.max / byte_unit_iec.zib.in_bytes
+
+  # max value for a data_size.iec given in robibytes
+  public type.max_robibytes u64  => u64.max / byte_unit_iec.yib.in_bytes
+
+  # max value for a data_size.iec given in quebibytes
+  public type.max_quebibytes u64 => u64.max / byte_unit_iec.rib.in_bytes
+
+
+  # create data_size.iec of n bytes
+  #
+  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  #
+  public type.b (n u64) data_size.iec
+  pre
+    debug: n ≤ max_bytes
+  => data_size.iec n
+
+  # create data_size.iec of n kibibytes
+  #
+  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  #
+  public type.kib (n u64) data_size.iec
+  pre
+    debug: n ≤ max_kibibytes
+  => data_size.iec n*byte_unit_iec.kib.in_bytes
+
+  # create data_size.iec of n mebibytes
+  #
+  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  #
+  public type.mib (n u64) data_size.iec
+  pre
+    debug: n ≤ max_mebibytes
+  => data_size.iec n*byte_unit_iec.mib.in_bytes
+
+  # create data_size.iec of n gibibytes
+  #
+  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  #
+  public type.gib (n u64) data_size.iec
+  pre
+    debug: n ≤ max_gibibytes
+  => data_size.iec n*byte_unit_iec.gib.in_bytes
+
+  # create data_size.iec of n tebibytes
+  #
+  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  #
+  public type.tib (n u64) data_size.iec
+  pre
+    debug: n ≤ max_tebibytes
+  => data_size.iec n*byte_unit_iec.tib.in_bytes
+
+  # create data_size.iec of n pebibytes
+  #
+  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  #
+  public type.pib (n u64) data_size.iec
+  pre
+    debug: n ≤ max_pebibytes
+  => data_size.iec n*byte_unit_iec.pib.in_bytes
+
+  # create data_size.iec of n exbibytes
+  #
+  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  #
+  public type.eib (n u64) data_size.iec
+  pre
+    debug: n ≤ max_exbibytes
+  => data_size.iec n*byte_unit_iec.eib.in_bytes
+
+  # create data_size.iec of n zebibytes
+  #
+  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  #
+  public type.zib (n u64) data_size.iec
+  pre
+    debug: n ≤ max_zebibytes
+  => data_size.iec n*byte_unit_iec.zib.in_bytes
+
+  # create data_size.iec of n yobibytes
+  #
+  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  #
+  public type.yib (n u64) data_size.iec
+  pre
+    debug: n ≤ max_yobibytes
+  => data_size.iec n*byte_unit_iec.yib.in_bytes
+
+  # create data_size.iec of n robibytes
+  #
+  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  #
+  public type.rib (n u64) data_size.iec
+  pre
+    debug: n ≤ max_robibytes
+  => data_size.iec n*byte_unit_iec.rib.in_bytes
+
+  # create data_size.iec of n quebibytes
+  #
+  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  #
+  public type.qib (n u64) data_size.iec
+  pre
+    debug: n ≤ max_quebibytes
+  => data_size.iec n*byte_unit_iec.qib.in_bytes
+
+  
+  # the zero data_size.iec, representing a zero bytes
+  #
+  public type.zero data_size.iec => data_size.iec 0
+
+
+  # the maximum data_size.iec
+  #
+  public type.max data_size.iec => data_size.iec.b data_size.iec.max_bytes

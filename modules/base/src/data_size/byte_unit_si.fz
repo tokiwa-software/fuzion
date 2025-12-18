@@ -1,0 +1,84 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature data.byte_unit_si
+#
+# -----------------------------------------------------------------------
+
+# data_size.byte_unit_si -- unit type defining units used for size_si
+#
+public byte_unit_si(
+            # the next smaller unit, like kilobyte is smaller than megabyte, if it exists
+            public smaller Lazy (option byte_unit_si),
+
+            # the next larger unit, like gigabyte is larger than megabyte, if it exists
+            public larger  Lazy (option byte_unit_si),
+
+            # the number of bytes in one of this unit
+            public in_bytes u64,
+
+            # a short name of at most three codepoints
+            public short_name String,
+
+            # a longer, but still short name of this unit
+            public name String) is
+
+  # byte unit
+  #
+  public type.b  data_size.byte_unit_si => data_size.byte_unit_si nil kb  1             "B"  "byte"
+
+  # kilobyte unit
+  #
+  public type.kb data_size.byte_unit_si => data_size.byte_unit_si b   mb  (u64 1E3)**1  "kB" "kilobyte"
+
+  # megabyte unit
+  #
+  public type.mb data_size.byte_unit_si => data_size.byte_unit_si kb  gb  (u64 1E3)**2  "MB" "megabyte"
+
+  # gigabyte unit
+  #
+  public type.gb data_size.byte_unit_si => data_size.byte_unit_si mb  tb  (u64 1E3)**3  "GB" "gigabyte"
+
+  # terabyte unit
+  #
+  public type.tb data_size.byte_unit_si => data_size.byte_unit_si gb  pb  (u64 1E3)**4  "TB" "terabyte"
+
+  # petabyte unit
+  #
+  public type.pb data_size.byte_unit_si => data_size.byte_unit_si tb  eb  (u64 1E3)**5  "PB" "petabyte"
+
+  # exabyte unit
+  #
+  public type.eb data_size.byte_unit_si => data_size.byte_unit_si pb  zb  (u64 1E3)**6  "EB" "exabyte"
+
+  # zettabyte unit
+  #
+  public type.zb data_size.byte_unit_si => data_size.byte_unit_si eb  yb  (u64 1E3)**7  "ZB" "zettabyte"
+
+  # yottabyte unit
+  #
+  public type.yb data_size.byte_unit_si => data_size.byte_unit_si zb  rb  (u64 1E3)**8  "YB" "yottabyte"
+
+  # ronnabyte unit
+  #
+  public type.rb data_size.byte_unit_si => data_size.byte_unit_si yb  qb  (u64 1E3)**9  "RB" "ronnabyte"
+
+  # quettabyte unit
+  #
+  public type.qb data_size.byte_unit_si => data_size.byte_unit_si rb  nil (u64 1E3)**10 "QB" "quettabyte"
