@@ -175,7 +175,6 @@ public class ASTWalker
       }
     if ( expr == Call.ERROR
       || expr instanceof AbstractCurrent
-      || expr instanceof Constant
       || expr instanceof Universe
       || expr instanceof AbstractLambda)
       {
@@ -186,10 +185,12 @@ public class ASTWalker
 
   private static Stream<Entry<HasSourcePosition, AbstractFeature>> traverseCall(AbstractCall c, AbstractFeature outer)
   {
-    return Util.concatStreams(
-      asStream(c, outer),
-      c.actuals().stream().flatMap(a -> traverseExpression(a, outer)),
-      traverseExpression(c.target(), outer));
+    return c == Call.ERROR
+      ? Stream.empty()
+      : Util.concatStreams(
+          asStream(c, outer),
+          c.actuals().stream().flatMap(a -> traverseExpression(a, outer)),
+          traverseExpression(c.target(), outer));
   }
 
   /**
