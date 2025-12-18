@@ -802,7 +802,9 @@ public class Call extends AbstractCall
                                     FeatureAndOuter.findExactOrCandidate(fos,
                                                                         (FeatureName fn) -> false,
                                                                          (AbstractFeature f) -> names.stream().anyMatch(fn -> f.featureName().equalsBaseName(fn))),
-                                    hiddenCandidates(res, tf, calledName));
+                                    res._options.isLanguageServer() && tf == null
+                                      ? new List<FeatureAndOuter>()
+                                      : hiddenCandidates(res, tf, calledName));
   }
 
 

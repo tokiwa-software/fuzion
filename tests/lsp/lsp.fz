@@ -210,10 +210,9 @@ hover_req =>
 test_file2 := "file://{os.cwd}/compl.fz"
 
 comp_ex =>
-  # NYI: BUG: double dot currently needed
   """
     ex =>
-      encodings..
+      encodings.
   """
 
 open_file_req2 =>
@@ -245,7 +244,7 @@ completion_req =>
         },
         "position": \{
           "line": 1,
-          "character": 13
+          "character": 12
         },
         "context": \{
           "triggerKind": 2,
@@ -273,7 +272,7 @@ as_json_rpc(str String) =>
 
 fuzion_home := os.cwd.val.resolve "../../" .as_string
 
-test_def := [(init_req, 2), (open_file_req, 4), (hover_req, 3), (open_file_req2, 5), (completion_req, 4), (shutdown_req, 1)]
+test_def := [(init_req, 2), (open_file_req, 4), (hover_req, 3), (open_file_req2, 4), (completion_req, 3), (shutdown_req, 1)]
   .map_to_array t->
     (as_json_rpc t.0, t.1)
 

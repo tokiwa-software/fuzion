@@ -208,7 +208,7 @@ public class SourceModule extends Module implements SrcModule
       {
         _options.verbosePrintln(2, " - " + p);
       }
-    return new Parser(p, ec).unit();
+    return new Parser(p, ec, _options.isLanguageServer()).unit();
   }
 
 
