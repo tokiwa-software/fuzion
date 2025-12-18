@@ -1,6 +1,4 @@
-
-{"jsonrpc":"2.0","method":"window/logMessage","params":{"type":4,"message":"[client capabilities] ClientCapabilities [\n  workspace \u003d null\n  textDocument \u003d null\n  notebookDocument \u003d null\n  window \u003d null\n  general \u003d null\n  experimental \u003d null\n]"}}
-
 {"jsonrpc":"2.0","id":1,"result":{"capabilities":{"textDocumentSync":1,"hoverProvider":{"workDoneProgress":false},"completionProvider":{"resolveProvider":false,"triggerCharacters":["."," "]},"signatureHelpProvider":{"triggerCharacters":[","," ","("]},"definitionProvider":true,"referencesProvider":true,"documentHighlightProvider":true,"documentSymbolProvider":true,"codeActionProvider":true,"codeLensProvider":{"resolveProvider":false},"renameProvider":{"prepareProvider":true},"executeCommandProvider":{"commands":["showSyntaxTree","run","callGraph","codeActionFixIdentifier","codeActionGenerateMatchCases"]},"semanticTokensProvider":{"legend":{"tokenTypes":["namespace","type","class","enum","interface","struct","typeParameter","parameter","variable","property","enumMember","event","function","method","macro","keyword","modifier","comment","string","number","regexp","operator"],"tokenModifiers":["declaration","definition","readonly","static","deprecated","abstract","async","modification","documentation","defaultLibrary"]},"range":false,"full":{"delta":false}}}}}
-
-{"jsonrpc":"2.0","id":2,"result":true}
+{"jsonrpc":"2.0","method":"textDocument/publishDiagnostics","params":{"uri":"file:///home/sam/openvscode-server-fuzion/vscode-fuzion/fuzion/build/tests/lsp/hello.fz","diagnostics":[]}}
+{"jsonrpc":"2.0","id":3,"result":{"contents":{"kind":"markdown","value":"*say -- shortcut for io.out.println*\n**\n*A handy shortcut for io.out.println, output string representation of*\n*an object followed by a line break.*\n\nsay(s *Any*) *unit* : Any"},"range":{"start":{"line":0,"character":9},"end":{"line":0,"character":12}}}}
+{"jsonrpc":"2.0","id":4,"result":true}
