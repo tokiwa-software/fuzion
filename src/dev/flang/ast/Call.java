@@ -1291,7 +1291,7 @@ public class Call extends AbstractCall
   /**
    * pre-allocated empty list for _whenInferredTypeParameters.
    */
-  private static final List<Runnable> NO_RUNNABLE = new List<>();
+  private static final List<Runnable> NO_RUNNABLE = new List<Runnable>().freeze();
 
 
   /**

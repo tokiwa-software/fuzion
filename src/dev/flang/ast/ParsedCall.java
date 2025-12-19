@@ -49,7 +49,7 @@ public class ParsedCall extends Call
    * parenthesis ("a.b") from a call with parenthesis and an empty actual
    * arguments list ("a.b()").
    */
-  public static final List<Expr> NO_PARENTHESES = new List<>();
+  public static final List<Expr> NO_PARENTHESES = new List<Expr>().freeze();
 
 
   /*----------------------------  variables  ----------------------------*/
