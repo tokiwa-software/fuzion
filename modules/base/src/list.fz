@@ -577,7 +577,7 @@ is
   # 'list.this' and the empty list 'nil'.
   #
   public redef tails list (list A) =>
-    ref : Cons (list A) (list (list A)) is
+    _ : Cons (list A) (list (list A)) is
       public redef head list A => list.this
       public redef tail list (list A) =>
         list.this ? nil    => nil
@@ -719,7 +719,7 @@ is
   #
   public type.list_concat_monoid Monoid (list A) =>
 
-    ref : Monoid (list A) is
+    _ : Monoid (list A) is
 
       # associative operation
       #
@@ -735,7 +735,7 @@ is
 # convenience routine to create a list from head h and lazy tail t.
 #
 public list(T type, h T, t Lazy (list T)) list T =>
-  ref : Cons T (list T) is
+  _ : Cons T (list T) is
     public redef head T => h
     public redef tail list T => t
 

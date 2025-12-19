@@ -27,13 +27,13 @@ reg_issue4964 =>
 
   ex is
     bar1 := "bar"
-    addfoo1 := ref : String is
+    addfoo1 := _ : String is
                 public redef utf8 Sequence u8 => "foo".utf8 ++ bar1.utf8  # ok: indented further than `ref`
 
     say addfoo1
 
     bar2 := "bar"
-    addfoo2 := ref : String is
+    addfoo2 := _ : String is
       public redef utf8 Sequence u8 => "foo".utf8 ++ bar2.utf8  # should flag an error: inconsistent indentation
 
     # NYI: there are several succeeding errors caused by the broken indentation, if possible they should be avoided
