@@ -135,7 +135,7 @@ public class ParserTool extends ANY
         /* readStdin               */ false,
         /* executeCode             */ null,
         /* main                    */ isStdLib ? null : tempFile.getAbsolutePath(),
-        /* moduleName              */ "main",
+        /* moduleName              */ FuzionConstants.MAIN_MODULE_NAME,
         /* loadSources             */ true,
         /* needsEscapeAnalysis     */ false,
         /* serializeFuir           */ false,

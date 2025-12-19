@@ -59,7 +59,7 @@ is
   # return the next alternative position to check
   #
   collision (at u64, h u64) =>
-    # a simple collision avoidance woud just advance to the next cell. This, however, is problematic
+    # a simple collision avoidance would just advance to the next cell. This, however, is problematic
     # in case the hash function produces values that are close to one another: Assume
     #
     #  hash k1 = 7
@@ -72,7 +72,7 @@ is
     #
     # To avoid this, we instead advance by p that depends on `h`:
     #
-    # In case of a collision, we advance by a prime number p of cells wich p > allocated_size.  Then,
+    # In case of a collision, we advance by a prime number p of cells which p > allocated_size.  Then,
     # since p % allocated_size != 0, repeated addition of p will not return to the same cell before all
     # cells were visited.
     #
