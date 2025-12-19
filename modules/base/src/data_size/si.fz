@@ -34,83 +34,83 @@ is
 
   # this data_size.si in kilobytes, omitting fractional part
   #
-  public kb u64 => bytes / data_size.byte_unit_si.kb.in_bytes
+  public kb u64 => bytes / byte_unit_si.kb.in_bytes
 
   # this data_size.si in kilobytes, including fractional part
   #
-  public kb_float f64 => bytes.as_f64 / data_size.byte_unit_si.kb.in_bytes.as_f64
+  public kb_float f64 => bytes.as_f64 / byte_unit_si.kb.in_bytes.as_f64
 
   # this data_size.si in megabytes, omitting fractional part
   #
-  public mb u64 => bytes / data_size.byte_unit_si.mb.in_bytes
+  public mb u64 => bytes / byte_unit_si.mb.in_bytes
 
   # this data_size.si in megabytes, including fractional part
   #
-  public mb_float f64 => bytes.as_f64 / data_size.byte_unit_si.mb.in_bytes.as_f64
+  public mb_float f64 => bytes.as_f64 / byte_unit_si.mb.in_bytes.as_f64
 
   # this data_size.si in gigabytes, omitting fractional part
   #
-  public gb u64 => bytes / data_size.byte_unit_si.gb.in_bytes
+  public gb u64 => bytes / byte_unit_si.gb.in_bytes
 
   # this data_size.si in gigabytes, including fractional part
   #
-  public gb_float f64 => bytes.as_f64 / data_size.byte_unit_si.gb.in_bytes.as_f64
+  public gb_float f64 => bytes.as_f64 / byte_unit_si.gb.in_bytes.as_f64
 
   # this data_size.si in terabytes, omitting fractional part
   #
-  public tb u64 => bytes / data_size.byte_unit_si.tb.in_bytes
+  public tb u64 => bytes / byte_unit_si.tb.in_bytes
 
   # this data_size.si in terabytes, including fractional part
   #
-  public tb_float f64 => bytes.as_f64 / data_size.byte_unit_si.tb.in_bytes.as_f64
+  public tb_float f64 => bytes.as_f64 / byte_unit_si.tb.in_bytes.as_f64
 
   # this data_size.si in petabytes, omitting fractional part
   #
-  public pb u64 => bytes / data_size.byte_unit_si.pb.in_bytes
+  public pb u64 => bytes / byte_unit_si.pb.in_bytes
 
   # this data_size.si in petabytes, including fractional part
   #
-  public pb_float f64 => bytes.as_f64 / data_size.byte_unit_si.pb.in_bytes.as_f64
+  public pb_float f64 => bytes.as_f64 / byte_unit_si.pb.in_bytes.as_f64
 
   # this data_size.si in exabytes, omitting fractional part
   #
-  public eb u64 => bytes / data_size.byte_unit_si.eb.in_bytes
+  public eb u64 => bytes / byte_unit_si.eb.in_bytes
 
   # this data_size.si in exabytes, including fractional part
   #
-  public eb_float f64 => bytes.as_f64 / data_size.byte_unit_si.eb.in_bytes.as_f64
+  public eb_float f64 => bytes.as_f64 / byte_unit_si.eb.in_bytes.as_f64
 
   # this data_size.si in zettabytes, omitting fractional part
   #
-  public zb u64 => bytes / data_size.byte_unit_si.zb.in_bytes
+  public zb u64 => bytes / byte_unit_si.zb.in_bytes
 
   # this data_size.si in zettabytes, including fractional part
   #
-  public zb_float f64 => bytes.as_f64 / data_size.byte_unit_si.zb.in_bytes.as_f64
+  public zb_float f64 => bytes.as_f64 / byte_unit_si.zb.in_bytes.as_f64
 
   # this data_size.si in yottabytes, omitting fractional part
   #
-  public yb u64 => bytes / data_size.byte_unit_si.yb.in_bytes
+  public yb u64 => bytes / byte_unit_si.yb.in_bytes
 
   # this data_size.si in yottabytes, including fractional part
   #
-  public yb_float f64 => bytes.as_f64 / data_size.byte_unit_si.yb.in_bytes.as_f64
+  public yb_float f64 => bytes.as_f64 / byte_unit_si.yb.in_bytes.as_f64
 
   # this data_size.si in ronnabytes, omitting fractional part
   #
-  public rb u64 => bytes / data_size.byte_unit_si.rb.in_bytes
+  public rb u64 => bytes / byte_unit_si.rb.in_bytes
 
   # this data_size.si in ronnabytes, including fractional part
   #
-  public rb_float f64 => bytes.as_f64 / data_size.byte_unit_si.rb.in_bytes.as_f64
+  public rb_float f64 => bytes.as_f64 / byte_unit_si.rb.in_bytes.as_f64
 
   # this data_size.si in quettabytes, omitting fractional part
   #
-  public qb u64 => bytes / data_size.byte_unit_si.qb.in_bytes
+  public qb u64 => bytes / byte_unit_si.qb.in_bytes
 
   # this data_size.si in quettabytes, including fractional part
   #
-  public qb_float f64 => bytes.as_f64 / data_size.byte_unit_si.qb.in_bytes.as_f64
+  public qb_float f64 => bytes.as_f64 / byte_unit_si.qb.in_bytes.as_f64
 
 
   # this data_size.si and another one combined
@@ -178,7 +178,7 @@ is
   #
   public unit_for_as_string data_size.byte_unit_si =>
     for
-      x := byte_unit_si.b, nx.get
+      x := data_size.byte_unit_si.b, nx.get
       nx := x.larger
     while nx >>? (u -> bytes / u.in_bytes >= 1E3)
     else nx >>? (u -> bytes / u.in_bytes > 0) ? nx.val : x
@@ -196,7 +196,7 @@ is
 
   # create hash code from a data_size.si
   #
-  public redef type.hash_code(d si.this) u64 =>
+  public redef type.hash_code(d data_size.si.this) u64 =>
     d.bytes
 
 
@@ -204,34 +204,34 @@ is
   public type.max_bytes       u64 => u64.max
 
   # max value for a data_size.si given in kilobytes
-  public type.max_kilobytes   u64 => u64.max / data_size.byte_unit_si.b.in_bytes
+  public type.max_kilobytes   u64 => u64.max / byte_unit_si.b.in_bytes
 
   # max value for a data_size.si given in megabytes
-  public type.max_megabytes   u64 => u64.max / data_size.byte_unit_si.kb.in_bytes
+  public type.max_megabytes   u64 => u64.max / byte_unit_si.kb.in_bytes
 
   # max value for a data_size.si given in gigabytes
-  public type.max_gigabytes   u64 => u64.max / data_size.byte_unit_si.mb.in_bytes
+  public type.max_gigabytes   u64 => u64.max / byte_unit_si.mb.in_bytes
 
   # max value for a data_size.si given in terabytes
-  public type.max_terabytes   u64 => u64.max / data_size.byte_unit_si.gb.in_bytes
+  public type.max_terabytes   u64 => u64.max / byte_unit_si.gb.in_bytes
 
   # max value for a data_size.si given in petabytes
-  public type.max_petabytes   u64 => u64.max / data_size.byte_unit_si.tb.in_bytes
+  public type.max_petabytes   u64 => u64.max / byte_unit_si.tb.in_bytes
 
   # max value for a data_size.si given in exabytes
-  public type.max_exabytes    u64 => u64.max / data_size.byte_unit_si.pb.in_bytes
+  public type.max_exabytes    u64 => u64.max / byte_unit_si.pb.in_bytes
 
   # max value for a data_size.si given in zettabytes
-  public type.max_zettabytes  u64 => u64.max / data_size.byte_unit_si.eb.in_bytes
+  public type.max_zettabytes  u64 => u64.max / byte_unit_si.eb.in_bytes
 
   # max value for a data_size.si given in yottabytes
-  public type.max_yottabytes  u64 => u64.max / data_size.byte_unit_si.zb.in_bytes
+  public type.max_yottabytes  u64 => u64.max / byte_unit_si.zb.in_bytes
 
   # max value for a data_size.si given in ronnabytes
-  public type.max_ronnabytes  u64 => u64.max / data_size.byte_unit_si.yb.in_bytes
+  public type.max_ronnabytes  u64 => u64.max / byte_unit_si.yb.in_bytes
 
   # max value for a data_size.si given in quettabytes
-  public type.max_quettabytes u64 => u64.max / data_size.byte_unit_si.rb.in_bytes
+  public type.max_quettabytes u64 => u64.max / byte_unit_si.rb.in_bytes
 
 
   # create data_size.si of n bytes
