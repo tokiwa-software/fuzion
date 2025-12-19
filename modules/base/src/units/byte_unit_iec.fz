@@ -17,11 +17,11 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature data_size.byte_unit_iec
+#  Source code of Fuzion standard library feature units.byte_unit_iec
 #
 # -----------------------------------------------------------------------
 
-# data_size.byte_unit_iec -- unit type defining units used for data_size.iec
+# units.byte_unit_iec -- unit type defining units used for units.data_size
 #
 public byte_unit_iec(
             # the next smaller unit, like kibibyte is smaller than mebibyte, if it exists
@@ -41,44 +41,44 @@ public byte_unit_iec(
 
   # byte unit
   #
-  public type.b data_size.byte_unit_iec   => data_size.byte_unit_iec nil kib 1            "B"   "byte"
+  public type.b   units.byte_unit_iec => units.byte_unit_iec nil kib 1            "B"   "byte"
 
   # kibibyte unit
   #
-  public type.kib data_size.byte_unit_iec => data_size.byte_unit_iec b   mib (u64 2)**10  "KiB" "kibibyte"
+  public type.kib units.byte_unit_iec => units.byte_unit_iec b   mib (u64 2)**10  "KiB" "kibibyte"
 
   # mebibyte unit
   #
-  public type.mib data_size.byte_unit_iec => data_size.byte_unit_iec kib gib (u64 2)**20  "MiB" "mebibyte"
+  public type.mib units.byte_unit_iec => units.byte_unit_iec kib gib (u64 2)**20  "MiB" "mebibyte"
 
   # gibibyte unit
   #
-  public type.gib data_size.byte_unit_iec => data_size.byte_unit_iec mib tib (u64 2)**30  "GiB" "gibibyte"
+  public type.gib units.byte_unit_iec => units.byte_unit_iec mib tib (u64 2)**30  "GiB" "gibibyte"
 
   # tebibyte unit
   #
-  public type.tib data_size.byte_unit_iec => data_size.byte_unit_iec gib pib (u64 2)**40  "TiB" "tebibyte"
+  public type.tib units.byte_unit_iec => units.byte_unit_iec gib pib (u64 2)**40  "TiB" "tebibyte"
 
   # pebibyte unit
   #
-  public type.pib data_size.byte_unit_iec => data_size.byte_unit_iec tib eib (u64 2)**50  "PiB" "pebibyte"
+  public type.pib units.byte_unit_iec => units.byte_unit_iec tib eib (u64 2)**50  "PiB" "pebibyte"
 
   # exbibyte unit
   #
-  public type.eib data_size.byte_unit_iec => data_size.byte_unit_iec pib zib (u64 2)**60  "EiB" "exbibyte"
+  public type.eib units.byte_unit_iec => units.byte_unit_iec pib zib (u64 2)**60  "EiB" "exbibyte"
 
   # zebibyte unit
   #
-  public type.zib data_size.byte_unit_iec => data_size.byte_unit_iec eib yib (u64 2)**70  "ZiB" "zebibyte"
+  public type.zib units.byte_unit_iec => units.byte_unit_iec eib yib (u64 2)**70  "ZiB" "zebibyte"
 
   # yobibyte unit
   #
-  public type.yib data_size.byte_unit_iec => data_size.byte_unit_iec zib rib (u64 2)**80  "YiB" "yobibyte"
+  public type.yib units.byte_unit_iec => units.byte_unit_iec zib rib (u64 2)**80  "YiB" "yobibyte"
 
   # robibyte unit
   #
-  public type.rib data_size.byte_unit_iec => data_size.byte_unit_iec yib qib (u64 2)**90  "RiB" "robibyte"
+  public type.rib units.byte_unit_iec => units.byte_unit_iec yib qib (u64 2)**90  "RiB" "robibyte"
 
   # quebibyte unit
   #
-  public type.qib data_size.byte_unit_iec => data_size.byte_unit_iec rib nil (u64 2)**100 "QiB" "quebibyte"
+  public type.qib units.byte_unit_iec => units.byte_unit_iec rib nil (u64 2)**100 "QiB" "quebibyte"
