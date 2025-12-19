@@ -333,7 +333,7 @@ is
     debug: n ≤ max_quettabytes
   => data_size.si n*byte_unit_si.qb.in_bytes
 
-  
+
   # the zero data_size.si, representing a zero bytes
   #
   public type.zero data_size.si => data_size.si 0
