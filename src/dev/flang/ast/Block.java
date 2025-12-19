@@ -50,13 +50,6 @@ public class Block extends AbstractBlock
   public boolean _newScope;
 
 
-  /**
-   * true iff this block produces an implicit result that can be ignored if
-   * assigned to unit type.
-   */
-  private boolean _hasImplicitResult;
-
-
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -97,23 +90,6 @@ public class Block extends AbstractBlock
   public Block(List<Expr> s)
   {
     this(false, s);
-  }
-
-
-  /**
-   * Generate a block of expressions that do not define a new scope, i.e.,
-   * declarations remain visible after this block.
-   *
-   * @param s the list of expressions
-   *
-   * @param hasImplicitResult true iff this block produces an implicit result
-   * that can be ignored if assigned to unit type.
-   */
-  public Block(List<Expr> s,
-               boolean hasImplicitResult)
-  {
-    this(s);
-    this._hasImplicitResult = hasImplicitResult;
   }
 
 
@@ -273,21 +249,6 @@ public class Block extends AbstractBlock
 
 
   /**
-   * Does this block produce a result that does not explicitly appear in source
-   * code? This is the case, e.g., for loops that implicitly return the last
-   * value of the index variable for true/false to indicate success or failure.
-   *
-   * In this case, the implicit result can safely be replace by unit if it is
-   * used as a unit type.
-   */
-  private boolean hasImplicitResult()
-  {
-    return _hasImplicitResult ||
-      resultExpression() instanceof Block b && b.hasImplicitResult();
-  }
-
-
-  /**
    * Convert this Expression into an assignment to the given field.  In case
    * this is a expression with several branches such as an "if" or a "match"
    * expression, add corresponding assignments in each branch and convert this
@@ -345,8 +306,7 @@ public class Block extends AbstractBlock
   {
     Expr result = this;
     Expr resExpr = resultExpression();
-    if (type.compareTo(Types.resolved.t_unit) == 0 && hasImplicitResult() ||
-        resExpr == null && Types.resolved.t_unit.compareTo(type) != 0)
+    if (resExpr == null && Types.resolved.t_unit.compareTo(type) != 0)
       {
         _expressions.add(new Call(pos(), FuzionConstants.UNIT_NAME).resolveTypes(res, context));
       }
