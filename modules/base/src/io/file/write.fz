@@ -22,8 +22,9 @@
 # -----------------------------------------------------------------------
 
 
-# write String `s` to file `f`
+# write `a`.as_string to file `f`
 #
-public write(f String, s String) outcome unit =>
-  use f mode.write ()->
-    writer.write s.utf8
+public write(p path, a Any) outcome unit =>
+  # NYI: BUG: currently appends to file
+  use p.as_string mode.write ()->
+    writer.write a.as_string.utf8
