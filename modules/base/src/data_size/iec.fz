@@ -333,7 +333,7 @@ is
     debug: n ≤ max_quebibytes
   => data_size.iec n*byte_unit_iec.qib.in_bytes
 
-  
+
   # the zero data_size.iec, representing a zero bytes
   #
   public type.zero data_size.iec => data_size.iec 0
