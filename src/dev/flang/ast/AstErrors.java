@@ -2512,6 +2512,15 @@ public class AstErrors extends ANY
           "Type of loop variant must be " + type("i64") + ", but found variant of type " + s(variant.type()));
   }
 
+  public static void duplicateFile(String file1, String file2)
+  {
+    fatal("File names must be unique with respect to case sensitivity. Files differing only by case are not permitted.",
+    "The offending files: " + "\n" +
+     " - " + file1 + "\n" +
+     " - " + file2
+    );
+  }
+
 }
 
 /* end of file */
