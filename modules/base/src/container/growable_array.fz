@@ -1,0 +1,199 @@
+
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature growable_array
+#
+# -----------------------------------------------------------------------
+
+
+# the Store that holds the actual data.
+#
+# contains an atomic field that denotes
+# how much of `data` is in use currently.
+#
+Store (
+   T type,
+   # the array containing the actual data
+   data fuzion.sys.internal_array T
+) ref is
+
+  used := concur.atomic i32 .new 0
+
+
+# growable_array -- an array with a length and a (possible larger) capacity
+#
+# An expanding array is a persistent data structure that has cumulative O(1)
+# performance of adding single elements at its end.
+#
+# WARNING: Due to the high worst-case time for addition, this structure should
+# not be used in situations when adding a single element repeatedly to the same
+# instance of `growable_array`.  If the resulting
+# `growable_array`'s length is `l`, this will trigger the worst-case
+# addition time, resulting in cumulative time O(m*l) for adding an element m
+# times.
+#
+# This constructor is for internal use only, to create instance of
+# `growable_array`, use `(growable_array T).type.empty` to create an empty
+# expanding array instance.
+#
+private:public growable_array
+  (
+   # element type
+   public T type,
+
+   store container.Store T,
+
+   # the length of the array
+   public redef length i32
+  )
+  : abstract_array T
+
+is
+
+
+  # Get the capacity of this `growable_array`, i.e., the number of
+  # elements that can be added without re-allocating the array data.
+  #
+  public capacity i32 => store.data.length
+
+
+  # get the contents of this array at the given index
+  #
+  public redef index [](i idx) T
+  =>
+    check safety: is_valid_index i
+    store.data[i]
+
+
+  # create a new `growable_array` with element i set to v. Grow the array
+  # in case i == length.
+  #
+  # expand is not thread-safe.
+  #
+  # Complexity: O(1) if no allocation is required, O(length+1) otherwise.
+  #
+  # Cumulative complexity of adding an element to an empty `growable_array`
+  # and repeatedly growing the result `add` by a total of `n` elements is
+  # `O(n)`.
+  #
+  # `add` called repeatedly on the same `growable_array` creates copies
+  # of the underlying array data and hence has performance in `O(length)`.
+  #
+  public add(v T) growable_array T
+    pre
+      # prevent i32-overflow in capacity
+      safety: (length+1).highest_one_bit < i32.max.highest_one_bit
+  =>
+    concat0 [v]
+
+
+  # create a Sequence that consists of all the elements of this Sequence followed
+  # by all the elements of s
+  #
+  public fixed redef concat (s Sequence T) Sequence T =>
+
+    if s.is_empty
+
+      # nothing to be added
+      #
+      growable_array.this
+
+    else if s.finite.is_no_or_unknown
+
+      # use lazy version in case `s` might be infinite, since then code below would not
+      # terminate, if `s` is larger than `this`, which would avoid quadratic performance
+      # in code like the following:
+      #
+      #  for i in 0..n
+      #      r := (growable_array i32).empty, [i].concat r
+      #
+      as_list.concat_list s.as_list
+
+    else
+
+      concat0 s
+
+
+  # create an expanding_array that consists of all the elements of this Sequence followed
+  # by all the elements of s
+  #
+  concat0 (s Sequence T)
+    pre debug: s.finite.is_yes
+        debug: !s.is_empty
+  =>
+    new_length := length+s.count
+    new_capacity := capacity >= new_length ? capacity : new_length.highest_one_bit*2
+    st :=
+      # if the compare_and_set succeeds we successfully
+      # claimed the part of the store from length to new_length
+      if capacity >= new_capacity && store.used.compare_and_set length new_length
+        store
+      # either our current Store is too small or someone else already claimed it
+      # => we need to copy
+      else
+        internal := fuzion.sys.internal_array_init T new_capacity
+        for x in 0..length-1 do
+          internal[x] := store.data[x]
+        res := container.Store internal
+        res.used.write new_length
+        res
+
+    _ := s.reduce length (r,t)->
+      st.data[r] := t
+      r+1
+
+    growable_array st new_length
+
+
+  # collect the contents of this growable_array as an array.
+  #
+  public redef as_array array T =>
+    array (fuzion.sys.internal_array store.data.data length) unit unit unit
+
+
+  # create an empty `growable_array` of the type this is applied to, e.g.
+  #
+  #     floats := (container.growable_array f64).empty
+  #
+  # Complexity: O(1)
+  #
+  public type.empty container.growable_array T
+  =>
+    empty default_capacity
+
+
+  # create an empty `growable_array` of the type this is applied to, e.g.
+  #
+  #     floats := (container.growable_array f64).empty
+  #
+  # Complexity: O(1)
+  #
+  public type.empty(initial_capacity i32) container.growable_array T
+    pre
+      debug: initial_capacity >= 0
+  =>
+    internal := fuzion.sys.internal_array_init T initial_capacity
+    container.growable_array T (container.Store T internal) 0
+
+
+  # default capacity of an expanding array created by `type.empty`
+  #
+  type.default_capacity => 64
+
