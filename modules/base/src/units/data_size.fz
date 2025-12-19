@@ -249,32 +249,25 @@ is
   # or a float in the range [1,10) with exactly one fractional digit
   # both are followed by a byte_unit_si (base 10) string.
   #
-  public redef as_string_si String =>
+  public as_string_si String =>
     as_string unit_si_for_as_string
 
 
   # Create a string representation of this units.data_size using the given unit with si prefix (kilo = 10**3).
   #
-  public as_string(u units.byte_unit_iec) String =>
-    n String := if bytes / u.in_bytes >= 10 || !u.smaller.ok
-                  $(bytes / u.in_bytes)
+  public as_string(iec_or_si_unit choice units.byte_unit_iec units.byte_unit_si) String =>
+    u_in_bytes, u_short_name , is_smallest :=
+      match iec_or_si_unit
+        u units.byte_unit_iec => (u.in_bytes, u.short_name, !u.smaller.ok)
+        u units.byte_unit_si => (u.in_bytes, u.short_name, !u.smaller.ok)
+
+    n String := if bytes / u_in_bytes >= 10 || is_smallest
+                  $(bytes / u_in_bytes)
                 else
                   # add one decimal
-                  (bytes.as_f64 / u.in_bytes.as_f64).as_string.pad "0" 3 .substring 0 3
+                  (bytes.as_f64 / u_in_bytes.as_f64).as_string.pad "0" 3 .substring 0 3
 
-    " "*(max 0 4-n.byte_length) + n + " " + u.short_name
-
-
-  # Create a string representation of this units.data_size using the given iec unit (kibi = 2**10).
-  #
-  public as_string(u units.byte_unit_si) String =>
-    n String := if bytes / u.in_bytes >= 10 || !u.smaller.ok
-                  $(bytes / u.in_bytes)
-                else
-                  # add one decimal
-                  (bytes.as_f64 / u.in_bytes.as_f64).as_string.pad "0" 3 .substring 0 3
-
-    " "*(max 0 4-n.byte_length) + n + " " + u.short_name
+    " "*(max 0 4-n.byte_length) + n + " " + u_short_name
 
 
   # Determines the iec unit to use for as_string,
