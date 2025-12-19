@@ -2209,7 +2209,6 @@ A ((Choice)) declaration must not contain a result type.
         Types.resolved.legalNativeResultTypes.add(mm);
         Types.resolved.legalNativeResultTypes.add(nr);
         Types.resolved.legalNativeResultTypes.add(Types.resolved.t_unit);
-        Types.resolved.legalNativeResultTypes.add(Types.resolved.t_bool);
         Types.resolved.legalNativeArgumentTypes.addAll(Types.resolved.numericTypes);
         Types.resolved.legalNativeArgumentTypes.add(fd);
         Types.resolved.legalNativeArgumentTypes.add(dd);

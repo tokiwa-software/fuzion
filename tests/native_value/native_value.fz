@@ -55,7 +55,7 @@ clang_Cursor_getArgument(cursor CXCursor, idx i32) CXCursor => native
 clang_getCursorType(cursor CXCursor) CXType => native
 clang_disposeTranslationUnit(tu Native_Ref) unit => native
 clang_getCString(string CXString) Native_Ref => native
-clang_equalCursors(cx1, cx2 CXCursor) bool => native
+clang_equalCursors(cx1, cx2 CXCursor) u32 => native
 clang_getNullCursor CXCursor => native
 clang_Cursor_isNull(crsr CXCursor) i32 => native
 
@@ -100,7 +100,7 @@ ex =>
   visitor : Function i32 CXCursor Native_Ref Native_Ref is
     public redef call(crsr CXCursor, parent Native_Ref, client_data Native_Ref) i32 =>
 
-      check !(clang_equalCursors crsr clang_getNullCursor)
+      check clang_equalCursors crsr clang_getNullCursor = 0
 
       if clang_getCursorKind crsr = CXCursor_FunctionDecl
         func_name := clang_getCursorSpelling crsr
