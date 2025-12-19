@@ -150,7 +150,7 @@ is
   #
   public redef fixed type.hash_code(a path) u64 =>
     xxh_next
-      (if a.is_absolute then 0 else 1) # NYI: BUG: bad hash_codes!, bool should implement hashable
+      a.is_absolute.hash_code
       ((array String).type.hash_code a.names)
 
 
