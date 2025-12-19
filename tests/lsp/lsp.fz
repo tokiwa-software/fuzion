@@ -205,11 +205,62 @@ hover_req =>
     }
   """
 
-shutdown_req =>
+
+
+test_file2 := "file://{os.cwd}/compl.fz"
+
+comp_ex =>
+  """
+    ex =>
+      encodings.
+  """
+
+open_file_req2 =>
   """
     \{
       "jsonrpc": "2.0",
       "id": 4,
+      "method": "textDocument/didOpen",
+      "params": \{
+        "textDocument": \{
+          "uri": "{test_file2}",
+          "languageId": "fuzion",
+          "version": 1,
+          "text": "{comp_ex.replace "\n" "\\n"}"
+        }
+      }
+    }
+  """
+
+completion_req =>
+  """
+    \{
+      "jsonrpc": "2.0",
+      "id": 5,
+      "method": "textDocument/completion",
+      "params": \{
+        "textDocument": \{
+          "uri": "{test_file2}"
+        },
+        "position": \{
+          "line": 1,
+          "character": 12
+        },
+        "context": \{
+          "triggerKind": 2,
+          "triggerCharacter": "."
+        }
+      }
+    }
+  """
+
+
+
+shutdown_req =>
+  """
+    \{
+      "jsonrpc": "2.0",
+      "id": 6,
       "method": "shutdown",
       "params": null
     }
@@ -221,7 +272,7 @@ as_json_rpc(str String) =>
 
 fuzion_home := os.cwd.val.resolve "../../" .as_string
 
-test_def := [(init_req, 2), ((open_file_req), 4), (hover_req, 3), (shutdown_req, 1)]
+test_def := [(init_req, 2), (open_file_req, 4), (hover_req, 3), (open_file_req2, 4), (completion_req, 3), (shutdown_req, 1)]
   .map_to_array t->
     (as_json_rpc t.0, t.1)
 

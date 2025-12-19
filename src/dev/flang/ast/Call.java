@@ -802,7 +802,9 @@ public class Call extends AbstractCall
                                     FeatureAndOuter.findExactOrCandidate(fos,
                                                                         (FeatureName fn) -> false,
                                                                          (AbstractFeature f) -> names.stream().anyMatch(fn -> f.featureName().equalsBaseName(fn))),
-                                    hiddenCandidates(res, tf, calledName));
+                                    res._options.isLanguageServer() && tf == null
+                                      ? new List<FeatureAndOuter>()
+                                      : hiddenCandidates(res, tf, calledName));
   }
 
 
@@ -947,6 +949,9 @@ public class Call extends AbstractCall
    */
   private List<FeatureAndOuter> hiddenCandidates(Resolution res, AbstractFeature targetFeature, FeatureName calledName)
   {
+    if (PRECONDITIONS) require
+      (targetFeature  != null);
+
     var fos = res._module.lookup(targetFeature, _name, this, _target == null, true);
     for (var fo : fos)
       {

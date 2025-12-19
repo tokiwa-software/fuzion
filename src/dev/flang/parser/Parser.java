@@ -115,15 +115,22 @@ public class Parser extends Lexer
    */
   private SourcePosition _then = null;      // NYI: CLEANUP: state in parser should be avoided see #4991
 
+  /**
+   * Are we parsing for the language server and thus need to
+   * be more tolerant for incomplete source code?
+   */
+  private final boolean _isLanguageServer;
+
   /*--------------------------  constructors  ---------------------------*/
 
 
   /**
    * Create a parser for the given file or byte array
    */
-  public Parser(Path fname, byte[] sf)
+  public Parser(Path fname, byte[] sf, boolean isLanguageServer)
   {
     super(fname, sf);
+    this._isLanguageServer = isLanguageServer;
   }
 
 
@@ -133,6 +140,7 @@ public class Parser extends Lexer
   private Parser(Parser original)
   {
     super(original);
+    this._isLanguageServer = original._isLanguageServer;
   }
 
 
@@ -630,6 +638,10 @@ name        : IDENT                            // all parts of name must be in s
           default: throw new Error(current(mayBeAtMinIndent).toString());
           }
         sameLine(oldLine);
+      }
+    else if (_isLanguageServer)
+      {
+        result = new ParsedName(sourcePos(), "");
       }
     else if (!ignoreError)
       {
