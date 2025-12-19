@@ -150,7 +150,7 @@ is
   #
   public redef fixed type.hash_code(a path) u64 =>
     xxh_next
-      a.is_absolute.hash_code
+      (hash a.is_absolute)
       ((array String).type.hash_code a.names)
 
 
