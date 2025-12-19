@@ -190,6 +190,9 @@ public class Types extends ANY
     public final AbstractFeature f_fuzion_sys_array;
     public final AbstractFeature f_fuzion_sys_array_length;
     public final AbstractFeature f_fuzion_sys_array_data;
+    public final AbstractFeature f_eff;
+    public final AbstractFeature f_eff_fallible;
+    public final AbstractFeature f_eff_fallible_cause;
     public final AbstractFeature f_concur;
     public final AbstractFeature f_concur_atomic;
     public final AbstractFeature f_concur_atomic_v;
@@ -264,6 +267,9 @@ public class Types extends ANY
       f_fuzion_sys_array        = f_fuzion_sys.get(mod, "internal_array", 3);
       f_fuzion_sys_array_data   = f_fuzion_sys_array.get(mod, "data", 0);
       f_fuzion_sys_array_length = f_fuzion_sys_array.get(mod, "length", 0);
+      f_eff                     = universe.get(mod, "eff", 0);
+      f_eff_fallible            = f_eff.get(mod, "fallible", 2);
+      f_eff_fallible_cause      = f_eff_fallible.get(mod, "cause", 1);
       f_concur                  = universe.get(mod, "concur", 0);
       f_concur_atomic           = f_concur.get(mod, "atomic", 2);
       f_concur_atomic_v         = f_concur_atomic.get(mod, "v", 0);
