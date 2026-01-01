@@ -72,7 +72,7 @@ jobs:
         run: |
           choco install openjdk --version 25.0.0.1
 
-      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v2.6.0
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v2.6.0
 
       - name: create dll links
         run: |
