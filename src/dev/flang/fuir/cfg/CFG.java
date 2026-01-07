@@ -158,9 +158,9 @@ public class CFG extends ANY
         var ck = _fuir.clazzKind(cl);
         switch (ck)
           {
-          case Routine  -> createCallGraphForRoutine(cl);
+          case Routine   -> createCallGraphForRoutine(cl);
           case Intrinsic -> createCallGraphForIntrinsic(cl);
-          default -> {}
+          default        -> {}
           }
       }
   }
@@ -482,7 +482,7 @@ public class CFG extends ANY
     switch (e)
       {
       case Assign, Box, Comment, Current, Const, Tag, Pop -> {}
-      case Call -> access(cl, s);
+      case Call  -> access(cl, s);
       case Match -> {
         for (var mc = 0; mc < _fuir.matchCaseCount(s); mc++)
           {
