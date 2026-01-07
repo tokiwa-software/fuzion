@@ -261,13 +261,16 @@ is
         u units.byte_unit_iec => (u.in_bytes, u.short_name, !u.smaller.ok)
         u units.byte_unit_si => (u.in_bytes, u.short_name, !u.smaller.ok)
 
-    n String := if bytes / u_in_bytes >= 10 || is_smallest
+    n String := if bytes / u_in_bytes >= 100 || is_smallest
                   $(bytes / u_in_bytes)
-                else
+                else if bytes / u_in_bytes >= 10
                   # add one decimal
-                  (bytes.as_f64 / u_in_bytes.as_f64).as_string.pad "0" 3 .substring 0 3
+                  (bytes.as_f64 / u_in_bytes.as_f64).as_string.pad "0" 4 .substring 0 4
+                else
+                  # add two decimals
+                  (bytes.as_f64 / u_in_bytes.as_f64).as_string.pad "0" 4 .substring 0 4
 
-    " "*(max 0 4-n.byte_length) + n + " " + u_short_name
+    "{n.pad_left 4} {u_short_name.pad 3}"
 
 
   # Determines the iec unit to use for as_string,
