@@ -25,6 +25,9 @@
 #
 public data_size(
 
+  # NYI: UNDER DEVELOPMENT: maximum possible value is 18.4 EB / 16.0 EiB due to the limit of u64
+  #                         therefore e.g. `units.data_size.zib 1` currently fails
+  # the number of bytes in this data_size
   public bytes u64
   )
   : property.orderable,
