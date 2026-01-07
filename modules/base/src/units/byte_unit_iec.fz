@@ -31,7 +31,7 @@ public byte_unit_iec(
             public larger  Lazy (option byte_unit_iec),
 
             # the number of bytes in one of this unit
-            public in_bytes u64,
+            public in_bytes u128,
 
             # a short name of at most three codepoints
             public short_name String,
@@ -41,44 +41,44 @@ public byte_unit_iec(
 
   # byte unit
   #
-  public type.b   units.byte_unit_iec => units.byte_unit_iec nil kib 1            "B"   "byte"
+  public type.b   units.byte_unit_iec => units.byte_unit_iec nil kib 1.as_u128            "B"   "byte"
 
   # kibibyte unit
   #
-  public type.kib units.byte_unit_iec => units.byte_unit_iec b   mib (u64 2)**10  "KiB" "kibibyte"
+  public type.kib units.byte_unit_iec => units.byte_unit_iec b   mib 2.as_u128**10.as_u128  "KiB" "kibibyte"
 
   # mebibyte unit
   #
-  public type.mib units.byte_unit_iec => units.byte_unit_iec kib gib (u64 2)**20  "MiB" "mebibyte"
+  public type.mib units.byte_unit_iec => units.byte_unit_iec kib gib 2.as_u128**20.as_u128  "MiB" "mebibyte"
 
   # gibibyte unit
   #
-  public type.gib units.byte_unit_iec => units.byte_unit_iec mib tib (u64 2)**30  "GiB" "gibibyte"
+  public type.gib units.byte_unit_iec => units.byte_unit_iec mib tib 2.as_u128**30.as_u128  "GiB" "gibibyte"
 
   # tebibyte unit
   #
-  public type.tib units.byte_unit_iec => units.byte_unit_iec gib pib (u64 2)**40  "TiB" "tebibyte"
+  public type.tib units.byte_unit_iec => units.byte_unit_iec gib pib 2.as_u128**40.as_u128  "TiB" "tebibyte"
 
   # pebibyte unit
   #
-  public type.pib units.byte_unit_iec => units.byte_unit_iec tib eib (u64 2)**50  "PiB" "pebibyte"
+  public type.pib units.byte_unit_iec => units.byte_unit_iec tib eib 2.as_u128**50.as_u128  "PiB" "pebibyte"
 
   # exbibyte unit
   #
-  public type.eib units.byte_unit_iec => units.byte_unit_iec pib zib (u64 2)**60  "EiB" "exbibyte"
+  public type.eib units.byte_unit_iec => units.byte_unit_iec pib zib 2.as_u128**60.as_u128  "EiB" "exbibyte"
 
   # zebibyte unit
   #
-  public type.zib units.byte_unit_iec => units.byte_unit_iec eib yib (u64 2)**70  "ZiB" "zebibyte"
+  public type.zib units.byte_unit_iec => units.byte_unit_iec eib yib 2.as_u128**70.as_u128  "ZiB" "zebibyte"
 
   # yobibyte unit
   #
-  public type.yib units.byte_unit_iec => units.byte_unit_iec zib rib (u64 2)**80  "YiB" "yobibyte"
+  public type.yib units.byte_unit_iec => units.byte_unit_iec zib rib 2.as_u128**80.as_u128  "YiB" "yobibyte"
 
   # robibyte unit
   #
-  public type.rib units.byte_unit_iec => units.byte_unit_iec yib qib (u64 2)**90  "RiB" "robibyte"
+  public type.rib units.byte_unit_iec => units.byte_unit_iec yib qib 2.as_u128**90.as_u128  "RiB" "robibyte"
 
   # quebibyte unit
   #
-  public type.qib units.byte_unit_iec => units.byte_unit_iec rib nil (u64 2)**100 "QiB" "quebibyte"
+  public type.qib units.byte_unit_iec => units.byte_unit_iec rib nil 2.as_u128**100.as_u128 "QiB" "quebibyte"
