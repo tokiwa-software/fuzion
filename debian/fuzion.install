@@ -1,0 +1,8 @@
+usr/bin/fz
+usr/bin/fzjava
+usr/bin/fuzion_language_server
+usr/lib/fuzion/*
+usr/share/fuzion/modules
+usr/share/fuzion/include
+usr/share/fuzion/README.md
+usr/share/fuzion/release_notes.md
