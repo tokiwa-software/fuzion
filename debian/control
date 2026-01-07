@@ -1,0 +1,29 @@
+Source: fuzion
+Section: devel
+Priority: optional
+Maintainer: Tokiwa Software GmbH <siebert@tokiwa.software>
+Build-Depends: debhelper-compat (= 13),
+               make,
+               clang,
+               openjdk-25-jdk,
+               libgc-dev,
+               wget
+Standards-Version: 4.6.2
+Homepage: https://fuzion-lang.dev
+Vcs-Browser: https://github.com/tokiwa-software/fuzion
+Vcs-Git: https://github.com/tokiwa-software/fuzion.git
+
+Package: fuzion
+Architecture: any
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         openjdk-25-jre,
+         libgc1
+Description: A language with a focus on simplicity, safety and correctness
+ Fuzion is a modern programming language that emphasizes simplicity,
+ safety, and correctness. It features algebraic effects, design by
+ contract, and a unified feature system that eliminates the distinction
+ between classes, methods, and interfaces.
+ .
+ This package contains the Fuzion compiler, runtime library, and
+ language server.

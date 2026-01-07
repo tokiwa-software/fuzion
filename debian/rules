@@ -1,0 +1,19 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@
+
+override_dh_auto_build:
+	make
+
+override_dh_auto_install:
+	mkdir -p $(CURDIR)/debian/fuzion/usr/bin
+	mkdir -p $(CURDIR)/debian/fuzion/usr/lib/fuzion
+	mkdir -p $(CURDIR)/debian/fuzion/usr/share/fuzion
+	cp $(FZ) $(CURDIR)/debian/fuzion/usr/bin/
+	cp $(FZJAVA) $(CURDIR)/debian/fuzion/usr/bin/
+	cp $(BUILD_DIR)/bin/fuzion_language_server $(CURDIR)/debian/fuzion/usr/bin/
+	cp -r $(BUILD_DIR)/lib/* $(CURDIR)/debian/fuzion/usr/lib/fuzion/ || true
+	cp -r $(BUILD_DIR)/modules $(CURDIR)/debian/fuzion/usr/share/fuzion/
+	cp $(BUILD_DIR)/README.md $(CURDIR)/debian/fuzion/usr/share/fuzion/
+	cp $(BUILD_DIR)/release_notes.md $(CURDIR)/debian/fuzion/usr/share/fuzion/
