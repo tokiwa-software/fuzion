@@ -22,4 +22,4 @@ FUZION_HOME=$(realpath -s "$SCRIPTPATH/../")
 
 cd "$SCRIPTPATH"/../
 
-java -Xss${JAVA_STACKSIZE}m -Dfuzion.home="$FUZION_HOME" -Dfile.encoding=UTF-8 -jar lsp.jar dev.flang.lsp.Main "$@"
+java -Xss${JAVA_STACKSIZE}m -Dfuzion.home="$FUZION_HOME" -Dfile.encoding=UTF-8 -cp fuzion.jar dev.flang.lsp.Main "$@"

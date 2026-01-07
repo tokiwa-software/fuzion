@@ -46,18 +46,22 @@ endif
 $(JARS_LSP_LSP4J):
 	mkdir -p $(@D)
 	wget --output-document $@ $(LSP_LSP4J_URL)
+	jar xf $@ -C $(CLASSES_DIR_LSP) || rm $@
 
 $(JARS_LSP_LSP4J_GENERATOR):
 	mkdir -p $(@D)
 	wget --output-document $@ $(LSP_LSP4J_GENERATOR_URL)
+	jar xf $@ -C $(CLASSES_DIR_LSP) || rm $@
 
 $(JARS_LSP_LSP4J_JSONRPC):
 	mkdir -p $(@D)
 	wget --output-document $@ $(LSP_LSP4J_JSONRPC_URL)
+	jar xf $@ -C $(CLASSES_DIR_LSP) || rm $@
 
 $(JARS_LSP_GSON):
 	mkdir -p $(@D)
 	wget --output-document $@ $(LSP_GSON_URL)
+	jar xf $@ -C $(CLASSES_DIR_LSP) || rm $@
 
 
 $(BUILD_DIR)/jars/lsp.sha256: $(JARS_LSP_LSP4J) $(JARS_LSP_LSP4J_GENERATOR) $(JARS_LSP_LSP4J_JSONRPC) $(JARS_LSP_GSON)
@@ -101,6 +105,3 @@ lsp/debug/socket: NOOP = $(shell lsof -i:8000 | tail -n 1 | awk -F ' ' '{print $
 lsp/debug/socket: $(CLASS_FILES_LSP)
 	mkdir -p runDir
 	java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=127.0.0.1:8000 --class-path "$(LSP_CP)" $(LSP_JAVA_ARGS) dev.flang.lsp.Main -socket --port=$(LANGUAGE_SERVER_PORT)
-
-$(BUILD_DIR)/lsp.jar: $(CLASS_FILES_LSP) $(FUZION_BASE) $(FZ_SRC)/assets/Manifest.txt
-	jar cfm $@ $(FZ_SRC)/assets/Manifest.txt -C $(BUILD_DIR)/classes . -C $(CLASSES_DIR_LSP) .

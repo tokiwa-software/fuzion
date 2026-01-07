@@ -276,7 +276,7 @@ test_def := [(init_req, 2), (open_file_req, 4), (hover_req, 3), (open_file_req2,
   .map_to_array t->
     (as_json_rpc t.0, t.1)
 
-res := "java -Dfuzion.home={fuzion_home} -Dfile.encoding=UTF-8 -jar {fuzion_home}/lsp.jar dev.flang.lsp.Main -stdio".execute test_def .out
+res := "java -Dfuzion.home={fuzion_home} -Dfile.encoding=UTF-8 -cp {fuzion_home}/fuzion.jar dev.flang.lsp.Main -stdio".execute test_def .out
 
 # logMessages contain unstable data like dates and "finished in Xms"
 say <| String.join_lines (res.lines.filter (str -> !(str.contains "logMessage" || str.is_blank)))
