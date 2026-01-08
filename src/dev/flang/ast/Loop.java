@@ -293,7 +293,7 @@ public class Loop extends ANY
         AstErrors.loopElseBlockRequiresWhileOrIterator(pos, _elseBlock0);
       }
 
-    var hasImplicitResult = defaultSuccessAndElseBlocks(whileCond, untilCond);
+    addDefaultSuccessAndElseBlocks(whileCond, untilCond);
     // if there are no iterates then else block may access every loop var.
     // if there are iterates we move else block to feature and
     // insert it later, see `addIterators()`.
@@ -319,11 +319,11 @@ public class Loop extends ANY
     nextItSuccessBlock.add(tailRecursiveCall);
 
     Expr nextIteration = untilCond == null
-      ? new Block(nextItBlock, hasImplicitResult)
+      ? new Block(nextItBlock)
       : Match.createIf(untilCond.pos(),
                untilCond,
                Block.newIfNull(_successBlock),
-               new Block(nextItBlock, hasImplicitResult), false);
+               new Block(nextItBlock), false);
 
     block._expressions.add(nextIteration);
     if (whileCond != null)
@@ -488,7 +488,7 @@ public class Loop extends ANY
     var initialCall = new Call(pos, null, loopName, initialActuals);
     prologSuccessBlock.add(initialCall);
 
-    _impl           = new Block(new List<>(loop, prologBlock), hasImplicitResult);
+    _impl           = new Block(new List<>(loop, prologBlock));
     _impl._newScope = true;
   }
 
@@ -580,9 +580,8 @@ public class Loop extends ANY
    *
    * @return true if implicit success and else blocks have been added.
    */
-  private boolean defaultSuccessAndElseBlocks(Expr whileCond, Expr untilCond)
+  private void addDefaultSuccessAndElseBlocks(Expr whileCond, Expr untilCond)
   {
-    boolean result = false;
     if (lastIndexVarAsImplicitResult())
       { /* add last index var as implicit result */
         Feature lastIndexVar = _indexVars.getLast();
@@ -595,7 +594,6 @@ public class Loop extends ANY
         _elseBlock1   = Block.fromExpr(readLastIndexVar1);
         _elseBlock2   = Block.fromExpr(readLastIndexVar2);
         _successBlock = Block.fromExpr(readLastIndexVar3);
-        result = true;
       }
     else if (booleanAsImplicitResult(whileCond, untilCond))
       {
@@ -604,9 +602,7 @@ public class Loop extends ANY
         _elseBlock0 = new Block(true, _elseBlock0 == null ? new List<>(BoolConst.FALSE) : new List<>(_elseBlock0, BoolConst.FALSE));
         _elseBlock1 = new Block(true, _elseBlock1 == null ? new List<>(BoolConst.FALSE) : new List<>(_elseBlock1, BoolConst.FALSE));
         _elseBlock2 = new Block(true, _elseBlock2 == null ? new List<>(BoolConst.FALSE) : new List<>(_elseBlock2, BoolConst.FALSE));
-        result = true;
       }
-    return result;
   }
 
 
