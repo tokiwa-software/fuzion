@@ -146,7 +146,7 @@ is
 
     gfx_ =>
       match java.awt.Frame.new
-        e error => say "error: $e"
+        e error => say e
         f Java.java.awt.Frame =>
           f.setSize 800 800
           f.setTitle "Fuzion's first window!"
@@ -154,7 +154,7 @@ is
           b := java.lang.System.getenv "BUTTON"
           if !b.is_null && b = "TRUE"  # show a button
             match java.awt.Button.new "If you like Fuzion, click here!"
-              e error => say "error: $e"
+              e error => say e
               btn Java.java.awt.Button =>
                 btn.setBounds 50 50 50 50
                 _ := f.add_Ljava_7_awt_7_Component_s_ btn
