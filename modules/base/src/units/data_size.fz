@@ -241,8 +241,9 @@ is
 
 
   # Create a string representation of this units.data_size. The string representation
-  # is not accurate, it is either an integer in the range [10,1023]
-  # or a float in the range [1,10) with exactly one fractional digit
+  # is not accurate, it is either an integer in the range [100,1023],
+  # a float in the range [10,100) with exactly one fractional digit
+  # or a float in the range [1,10) with exactly two fractional digit
   # both are followed by a byte_unit_iec (base 2) string.
   #
   public redef as_string String =>
@@ -250,17 +251,55 @@ is
 
 
   # Create a string representation of this units.data_size. The string representation
-  # is not accurate, it is either an integer in the range [10,999]
-  # or a float in the range [1,10) with exactly one fractional digit
+  # is not accurate, it is either an integer in the range [10,999],
+  # a float in the range [10,100) with exactly one fractional digit
+  # or a float in the range [1,10) with exactly two fractional digit
   # both are followed by a byte_unit_si (base 10) string.
   #
   public as_string_si String =>
     as_string unit_si_for_as_string
 
 
-  # Create a string representation of this units.data_size using the given unit with si prefix (kilo = 10**3).
+  # Output fo as_string padded for nice alignment in a table, e.g.
+  # '   1 B  '
+  # '12.3 KiB'
+  # ' 500 MiB'
+  #
+  public as_string_pad String =>
+    val, unt := as_string_help unit_iec_for_as_string
+    "{val.pad_left 4} {unt.pad 3}"
+
+
+  # Output fo as_string_si padded for nice alignment in a table, e.g.
+  # '   1 B '
+  # '12.3 kB'
+  # ' 500 MB'
+  #
+  public as_string_si_pad String =>
+    val, unt := as_string_help unit_si_for_as_string
+    "{val.pad_left 4} {unt.pad 2}"
+
+
+  # Create a string representation of this units.data_size using the given unit
   #
   public as_string(iec_or_si_unit choice units.byte_unit_iec units.byte_unit_si) String =>
+    val, unt := as_string_help iec_or_si_unit
+    "$val $unt"
+
+
+  # Create a string representation of this units.data_size using the given unit
+  # The result is padded for alignment in a table, e.g.
+  # '   1 B  '
+  # '1023 GiB'
+  # '1.42 kB '
+  #
+  public as_string_pad(iec_or_si_unit choice units.byte_unit_iec units.byte_unit_si) String =>
+    val, unt := as_string_help iec_or_si_unit
+    "{val.pad_left 4} {unt.pad 3}"
+
+  # Helper feature for as_string, returns unpadded strings for value and unit
+  #
+  as_string_help(iec_or_si_unit choice units.byte_unit_iec units.byte_unit_si) tuple String String =>
     u_in_bytes, u_short_name , is_smallest :=
       match iec_or_si_unit
         u units.byte_unit_iec => (u.in_bytes, u.short_name, !u.smaller.ok)
@@ -270,16 +309,18 @@ is
                   $(bytes / u_in_bytes)
                 else if bytes / u_in_bytes >= 10.as_u128
                   # add one decimal
+                  # NYI: CLEANUP: use float formatting once available
                   (bytes.as_f64 / u_in_bytes.as_f64).as_string.pad "0" 4 .substring 0 4
                 else
                   # add two decimals
+                  # NYI: CLEANUP: use float formatting once available
                   (bytes.as_f64 / u_in_bytes.as_f64).as_string.pad "0" 4 .substring 0 4
 
-    "{n.pad_left 4} {u_short_name.pad 3}"
+    (n, u_short_name)
 
 
   # Determines the iec unit to use for as_string,
-  # such that the resulting value is in the range [1,1023]
+  # such that the resulting value is in the range [1,1024)
   #
   public unit_iec_for_as_string units.byte_unit_iec =>
     for
@@ -290,7 +331,7 @@ is
 
 
   # Determines the si prefixed unit to use for as_string,
-  # such that the resulting value is is in the range [1,999]
+  # such that the resulting value is is in the range [1,1000)
   #
   public unit_si_for_as_string units.byte_unit_si =>
     for
