@@ -727,17 +727,6 @@ public abstract class FUIR extends IR
   }
 
 
-  /**
-   * Get the id of clazz error
-   *
-   * @return the id of error or -1 if that clazz was not created.
-   */
-  public int clazz_error()
-  {
-    return clazz(SpecialClazzes.c_error);
-  }
-
-
   /*---------------------------  types  --------------------------*/
 
 

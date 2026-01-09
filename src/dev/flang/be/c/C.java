@@ -2380,6 +2380,7 @@ public class C extends ANY
                 returnOutcome(
                   _fuir.clazzChoice(cl, 1),
                     jStringToError(
+                      _fuir.clazzChoice(cl, 1),
                       tmp
                         .field(CNames.CHOICE_UNION_NAME)
                         .field(CIdent.choiceEntry(1))
@@ -2472,9 +2473,9 @@ public class C extends ANY
    *
    * @return a c expression that creates a fuzion const string.
    */
-  private CExpr jStringToError(CExpr field)
+  private CExpr jStringToError(int clErr, CExpr field)
   {
-    return error(boxedConstString(
+    return error(clErr, boxedConstString(
         CExpr.call("fzE_java_string_to_utf8_bytes", new List<>(field)),
         CExpr.call("strlen", new List<>(
             CExpr.call("fzE_java_string_to_utf8_bytes",
@@ -2490,11 +2491,11 @@ public class C extends ANY
    * @param str
    * @return
    */
-  public CExpr error(CExpr str)
+  public CExpr error(int clErr, CExpr str)
   {
     return CExpr.compoundLiteral(
-      _names.struct(_fuir.clazz_error()),
-      "." + _names.fieldName(_fuir.clazzArg(_fuir.clazz_error(), 0)).code() + " = " +
+      _names.struct(clErr),
+      "." + _names.fieldName(_fuir.clazzArg(clErr, 0)).code() + " = " +
         str.code()
       );
   }
