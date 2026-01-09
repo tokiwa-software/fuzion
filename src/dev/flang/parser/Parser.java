@@ -2958,9 +2958,12 @@ elseBlock   : "else" block
     SourcePosition oldOuterElse = _outerElse;
     _outerElse = tokenSourcePos();
 
+    var elseLine = tokenSourcePos().line();
     if (skip(true, Token.t_else))
       {
-        if (current() == Token.t_if)
+        // only use special handling for `else if` when they are in the same line
+        // otherwise it is an normal else block that might contain an `if`
+        if (current() == Token.t_if && elseLine == tokenSourcePos().line())
           {
             result = new Block(false, new List<Expr>(ifexpr(true)));
           }
