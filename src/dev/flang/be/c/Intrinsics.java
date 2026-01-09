@@ -893,8 +893,8 @@ public class Intrinsics extends ANY
         return CStmnt.seq(
           CStmnt.decl("void *", tmp, CExpr.call("fzE_mtx_init", new List<>())),
           CStmnt.iff(tmp.eq(CNames.NULL),
-            c.returnOutcome(c._fuir.clazz_error(), c.error(c.boxedConstString("An error occurred initializing the mutex.")), rc, 1),
-            c.returnOutcome(c._fuir.clazz(SpecialClazzes.c_Mutex), tmp, rc , 0)
+            c.returnOutcome(c._fuir.clazzChoice(rc, 1), c.error(c._fuir.clazzChoice(rc, 1), c.boxedConstString("An error occurred initializing the mutex.")), rc, 1),
+            c.returnOutcome(c._fuir.clazzChoice(rc, 0), tmp, rc , 0)
           )
         );
       }
@@ -910,8 +910,8 @@ public class Intrinsics extends ANY
         return CStmnt.seq(
           CStmnt.decl("void *", tmp, CExpr.call("fzE_cnd_init",      new List<>())),
           CStmnt.iff(tmp.eq(CNames.NULL),
-            c.returnOutcome(c._fuir.clazz_error(), c.error(c.boxedConstString("An error occurred initializing the condition variable.")), rc, 1),
-            c.returnOutcome(c._fuir.clazz(SpecialClazzes.c_Condition), tmp, rc , 0)
+            c.returnOutcome(c._fuir.clazzChoice(rc, 1), c.error(c._fuir.clazzChoice(rc, 1), c.boxedConstString("An error occurred initializing the condition variable.")), rc, 1),
+            c.returnOutcome(c._fuir.clazzChoice(rc, 0), tmp, rc , 0)
           )
         );
       }
