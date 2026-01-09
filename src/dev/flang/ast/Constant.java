@@ -133,7 +133,7 @@ public abstract class Constant extends Expr
 
   /**
    * Origin of this constant. This is either this constant itself for a
-   * BoolConst, NumLiteral or StrConst, or the instance of AbstractCall or
+   * NumLiteral or StrConst, or the instance of AbstractCall or
    * InlineArray this was created from.
    */
   public Expr origin()

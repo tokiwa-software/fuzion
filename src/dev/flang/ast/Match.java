@@ -427,55 +427,44 @@ public class Match extends AbstractMatch
   {
     if (PRECONDITIONS) require
       (c != null,
-       b != null,
-       !(c instanceof BoolConst && elseB == null));
+       b != null);
 
-    Expr result;
-    if (c instanceof BoolConst bc)
+    /**
+     * If there is no else / elseif, create a default else
+     * branch returning unit.
+     */
+    if (elseB == null)
       {
-        result = bc.getCompileTimeConstBool()
-          ? b
-          : elseB;
+        var unit = new Call(pos, FuzionConstants.UNIT_NAME);
+        elseB = new Block(new List<>(unit));
       }
-    else
+
+    // Types.resolved may still be null, so we have to
+    // create these cases in a lazy fashion.
+    var cases = new List<AbstractCase>(
+          new Case(b.pos(), null, b)
+          {
+            @Override public List<AbstractType> types() { return Types.resolved == null ? null : new List<>(Types.resolved.f_TRUE.selfType()); }
+            @Override boolean resolveType(Resolution res, List<AbstractType> cgs, Context context, SourcePosition[] matched)
+            {
+              matched[1] = SourcePosition.notAvailable;
+              return true;
+            }
+          },
+          new Case(elseB.pos(), null, elseB)
+          {
+            @Override public List<AbstractType> types() { return Types.resolved == null ? null : new List<>(Types.resolved.f_FALSE.selfType()); }
+            @Override boolean resolveType(Resolution res, List<AbstractType> cgs, Context context, SourcePosition[] matched)
+            {
+              matched[0] = SourcePosition.notAvailable;
+              return true;
+            }
+          });
+
+    var result = new Match(pos, c, cases)
       {
-        /**
-         * If there is no else / elseif, create a default else
-         * branch returning unit.
-         */
-        if (elseB == null)
-          {
-            var unit = new Call(pos, FuzionConstants.UNIT_NAME);
-            elseB = new Block(new List<>(unit));
-          }
-
-        // Types.resolved may still be null, so we have to
-        // create these cases in a lazy fashion.
-        var cases = new List<AbstractCase>(
-              new Case(b.pos(), null, b)
-              {
-                @Override public List<AbstractType> types() { return Types.resolved == null ? null : new List<>(Types.resolved.f_TRUE.selfType()); }
-                @Override boolean resolveType(Resolution res, List<AbstractType> cgs, Context context, SourcePosition[] matched)
-                {
-                  matched[1] = SourcePosition.notAvailable;
-                  return true;
-                }
-              },
-              new Case(elseB.pos(), null, elseB)
-              {
-                @Override public List<AbstractType> types() { return Types.resolved == null ? null : new List<>(Types.resolved.f_FALSE.selfType()); }
-                @Override boolean resolveType(Resolution res, List<AbstractType> cgs, Context context, SourcePosition[] matched)
-                {
-                  matched[0] = SourcePosition.notAvailable;
-                  return true;
-                }
-              });
-
-        result = new Match(pos, c, cases)
-          {
-            @Override Kind kind() { return fromContract ? Kind.Contract : Kind.If; }
-          };
-      }
+        @Override Kind kind() { return fromContract ? Kind.Contract : Kind.If; }
+      };
     return result;
   }
 
