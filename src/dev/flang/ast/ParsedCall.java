@@ -496,7 +496,7 @@ public class ParsedCall extends Call
 
 
   /**
-   * check that partial application would not lead to to ambiguity. See
+   * check that partial application would not lead to ambiguity. See
    * tests/partial_application_negative for examples: In case a call can be made
    * directly and partial application would find another possible target that
    * would also be valid, we flag an error.

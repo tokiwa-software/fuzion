@@ -1085,7 +1085,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
                                                           put(n2, gen);
                                                           put(n3, gen); }
 
-  // helper to add one element under many names to to _compiled_
+  // helper to add one element under many names to _compiled_
   private static void put(String[] names,       IntrinsicCode gen)
   {
     for (var n : names)
@@ -1223,7 +1223,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
 
 
   /**
-   * get the the method descriptor for a method in class c.
+   * get the method descriptor for a method in class c.
    * e.g. for args: Runtime.class, "fuzion_sys_net_listen"
    *      and {@code int fuzion_sys_net_listen(){}}
    *      it returns: ()I
