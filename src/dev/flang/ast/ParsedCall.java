@@ -624,7 +624,6 @@ public class ParsedCall extends Call
         var ti = 0;
         var vs = cf.valueArguments();  // NYI: must hand down to get the correct number!
         var vn = vs.size();
-        var vi = 0;
         var firstValueIndex = _actuals.size() - vn;
 
         if (cf.hasOpenValueArgList(res))
