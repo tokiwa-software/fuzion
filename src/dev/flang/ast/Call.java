@@ -55,6 +55,31 @@ public class Call extends AbstractCall
    */
   public static Call ERROR;
 
+  static final Expr TRUE  = new AbstractCall() {
+          @Override public SourcePosition pos() { return SourcePosition.notAvailable; }
+          @Override public List<AbstractType> actualTypeParameters() { return NO_GENERICS; }
+          @Override public AbstractFeature calledFeature() { return Types.resolved.f_true; }
+          @Override public Expr target() { return Universe.instance; }
+          @Override public AbstractType typeForInferencing() { return calledFeature().resultType(); }
+          @Override public List<Expr> actuals() { return NO_EXPRS; }
+          @Override public int select() { return FuzionConstants.NO_SELECT; }
+          @Override public boolean isInheritanceCall() { return false; }
+          @Override public Expr visit(FeatureVisitor v, AbstractFeature outer) { v.action(this); return this; }
+        };
+
+
+  static final Expr FALSE = new AbstractCall() {
+          @Override public SourcePosition pos() { return SourcePosition.notAvailable; }
+          @Override public List<AbstractType> actualTypeParameters() { return NO_GENERICS; }
+          @Override public AbstractFeature calledFeature() { return Types.resolved.f_false; }
+          @Override public Expr target() { return Universe.instance; }
+          @Override public AbstractType typeForInferencing() { return calledFeature().resultType(); }
+          @Override public List<Expr> actuals() { return NO_EXPRS; }
+          @Override public int select() { return FuzionConstants.NO_SELECT; }
+          @Override public boolean isInheritanceCall() { return false; }
+          @Override public Expr visit(FeatureVisitor v, AbstractFeature outer) { v.action(this); return this; }
+        };
+
 
   /*----------------------------  variables  ----------------------------*/
 
@@ -2883,8 +2908,8 @@ public class Call extends AbstractCall
                 var actl = _actuals.get(i);
                 var frmlT = resolvedFormalArgumentTypes[i];
                 if (CHECKS) check
-                  (Errors.any() || (actl != Call.ERROR && actl != Call.ERROR));
-                if (frmlT != Types.t_ERROR && actl != Call.ERROR && actl != Call.ERROR && frmlT.isAssignableFrom(actl.type(), context).no())
+                  (Errors.any() || actl != Call.ERROR);
+                if (frmlT != Types.t_ERROR && actl != Call.ERROR && frmlT.isAssignableFrom(actl.type(), context).no())
                   {
                     AstErrors.incompatibleArgumentTypeInCall(_calledFeature, i, frmlT, actl, context);
                   }
@@ -2958,19 +2983,19 @@ public class Call extends AbstractCall
         // example where this results in an issue: `_ := [false: true]`
         if      (cf == Types.resolved.f_bool_AND    )
           {
-            result = createIf(res, context, _actuals.get(0), BoolConst.FALSE, Types.resolved.t_bool);
+            result = createIf(res, context, _actuals.get(0), Call.FALSE, Types.resolved.t_bool);
           }
         else if (cf == Types.resolved.f_bool_OR     )
           {
-            result = createIf(res, context, BoolConst.TRUE , _actuals.get(0), Types.resolved.t_bool);
+            result = createIf(res, context, Call.TRUE , _actuals.get(0), Types.resolved.t_bool);
           }
         else if (cf == Types.resolved.f_bool_IMPLIES)
           {
-            result = createIf(res, context, _actuals.get(0), BoolConst.TRUE, Types.resolved.t_bool);
+            result = createIf(res, context, _actuals.get(0), Call.TRUE, Types.resolved.t_bool);
           }
         else if (cf == Types.resolved.f_bool_NOT    )
           {
-            result = createIf(res, context, BoolConst.FALSE, BoolConst.TRUE , Types.resolved.t_bool);
+            result = createIf(res, context, Call.FALSE, Call.TRUE , Types.resolved.t_bool);
           }
         else if (cf == Types.resolved.f_bool_TERNARY)
           {
