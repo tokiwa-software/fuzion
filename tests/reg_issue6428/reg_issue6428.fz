@@ -27,3 +27,11 @@ reg_issue6428 =>
   else
     if false then panic "should not happen"
     say "indentation is correct"
+
+  if false
+  else
+  if true then say "OK1" # should always be printed
+
+  if true
+  else
+  if true then say "OK2" # should always be printed
