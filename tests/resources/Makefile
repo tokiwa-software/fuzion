@@ -17,19 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature slurp
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-
-# read all contents from what argument describes,
-# return it as a String
-#
-# NYI: UNDER DEVELOPMENT: support more options than path
-#
-public slurp(p path) outcome String =>
-  io.file
-    .open2 p io.file.mode.read
-    .bind f->
-      f.reader ()->
-        String.from (io.buffered io.file.file_mutate).read_fully
+override NAME = resources
+include ../simple.mk
