@@ -434,7 +434,7 @@ is
       "not data"
 
 
-  # Create semicolon-separated CSV data for these measurments to import into Excel or
+  # Create semicolon-separated CSV data for these measurements to import into Excel or
   # OpenOffice. First lines will be descriptions.
   #
   public csv String

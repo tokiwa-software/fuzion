@@ -812,7 +812,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * For a feature 'a', the the type of 'a.this.type' when used within 'a.type',
+   * For a feature 'a', the type of 'a.this.type' when used within 'a.type',
    * i.e., within 'a's type feature.  The difference between selfType() and
    * selfTypeInCoType() is that the type parameters in the former are the
    * type parameters of 'a', while in the latter they are the type parameter of

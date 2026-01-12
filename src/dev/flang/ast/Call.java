@@ -712,8 +712,8 @@ public class Call extends AbstractCall
 
 
   /**
-   * is this Call defunct, i.e., an error occured or this is unreachable due to
-   * target resutling in `void`.
+   * is this Call defunct, i.e., an error occurred or this is unreachable due to
+   * target resulting in `void`.
    */
   protected boolean isDefunct()
   {

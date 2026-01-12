@@ -474,7 +474,7 @@ public abstract class AbstractCall extends Expr
       tt.outer() != null          ? openGenericsFor(res, context, ft, tt.outer())
                                   : new List<>()
                                     {
-                                      { /* earlier errors must have occured */
+                                      { /* earlier errors must have occurred */
                                         if (CHECKS) check
                                           (Errors.any());
                                       }

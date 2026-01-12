@@ -108,11 +108,11 @@ public f64(public val f64) : float, java_primitive is
   public redef type.exponent_bits i32 => 11
 
 
-  # mask for the the bits that encode the mantissa
+  # mask for the bits that encode the mantissa
   public type.mantissa_mask u64 => u64 1P52 - 1
 
 
-  # mask for the the bits that encode the exponent
+  # mask for the bits that encode the exponent
   # (the mask is not shifted to the correct position)
   public type.exponent_mask u64 => u64 1P11 - 1
 
