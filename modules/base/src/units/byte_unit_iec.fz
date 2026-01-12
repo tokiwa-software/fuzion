@@ -23,6 +23,9 @@
 
 # units.byte_unit_iec -- unit type defining units used for units.data_size
 #
+# Uses base 2 prefixes defined by the International Electrotechnical Commission (IEC),
+# e.g. 1024 Byte = 1 kibibyte.
+#
 public byte_unit_iec(
             # the next smaller unit, like kibibyte is smaller than mebibyte, if it exists
             public smaller Lazy (option byte_unit_iec),

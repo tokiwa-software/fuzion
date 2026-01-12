@@ -23,6 +23,8 @@
 
 # units.byte_unit_si -- unit type defining units used for units.data_size
 #
+# Uses SI prefixes (base 10), e.g. 1000 Byte = 1 kilobyte.
+#
 public byte_unit_si(
             # the next smaller unit, like kilobyte is smaller than megabyte, if it exists
             public smaller Lazy (option byte_unit_si),
