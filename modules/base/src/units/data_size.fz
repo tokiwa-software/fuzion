@@ -300,21 +300,19 @@ is
   # Helper feature for as_string, returns unpadded strings for value and unit
   #
   as_string_help(iec_or_si_unit choice units.byte_unit_iec units.byte_unit_si) tuple String String =>
-    u_in_bytes, u_short_name , is_smallest :=
+    u_bytes, u_short_name, is_smallest, smaller_bytes, factor :=
       match iec_or_si_unit
-        u units.byte_unit_iec => (u.in_bytes, u.short_name, !u.smaller.ok)
-        u units.byte_unit_si => (u.in_bytes, u.short_name, !u.smaller.ok)
+        u units.byte_unit_iec => (u.in_bytes, u.short_name, !u.smaller.ok, (u.smaller.bind s->s.in_bytes), 1024.as_f64)
+        u units.byte_unit_si  => (u.in_bytes, u.short_name, !u.smaller.ok, (u.smaller.bind s->s.in_bytes), 1000.as_f64)
 
-    n String := if bytes / u_in_bytes >= 100.as_u128 || is_smallest
-                  $(bytes / u_in_bytes)
-                else if bytes / u_in_bytes >= 10.as_u128
-                  # add one decimal
-                  # NYI: CLEANUP: use float formatting once available
-                  (bytes.as_f64 / u_in_bytes.as_f64).as_string.pad "0" 4 .substring 0 4
+    n String := if bytes / u_bytes >= 100.as_u128 || is_smallest
+                  $(bytes / u_bytes)
                 else
-                  # add two decimals
-                  # NYI: CLEANUP: use float formatting once available
-                  (bytes.as_f64 / u_in_bytes.as_f64).as_string.pad "0" 4 .substring 0 4
+                  # Avoid using large numbers in floating-point calculations
+                  # to prevent rounding that would display a value larger than the actual size.
+                  #
+                  # NYI: CLEANUP: use float formatting once available: <10 two decimals, >=10 one decimal
+                  ((bytes / smaller_bytes.val).as_f64 / factor).as_string.pad "0" 4 .substring 0 4
 
     (n, u_short_name)
 
