@@ -724,3 +724,8 @@ include $(FZ_SRC)/docs.mk
 include $(FZ_SRC)/tools.mk
 
 # NYI: CLEANUP: move included makefiles to subfolder
+
+.PHONY: debian_package
+debian_package:
+	debuild -us -uc
+
