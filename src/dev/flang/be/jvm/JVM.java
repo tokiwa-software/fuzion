@@ -58,6 +58,8 @@ import java.lang.classfile.*;
 import java.lang.classfile.constantpool.ClassEntry;
 import java.lang.classfile.instruction.*;
 import java.lang.constant.ClassDesc;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -2332,7 +2334,7 @@ should be avoided as much as possible.
 
     try
       {
-        Path packageDir = Paths.get(classLoader.getResource(packagePath).getPath());
+        Path packageDir = Paths.get(classLoader.getResource(packagePath).toURI());
 
         Queue<Path> queue = Files.walk(packageDir)
               .filter(Files::isRegularFile)
@@ -2370,11 +2372,21 @@ should be avoided as much as possible.
                               var cPathStr = (cdesc.packageName() + "." + cdesc.displayName()).replace(".", "/") + ".class";
                               if (!cPathStr.contains("$"))
                                 {
-                                  var cpath = Paths.get(classLoader.getResource(cPathStr).getPath());
-                                  if (!found.contains(cpath))
+                                  try
                                     {
-                                      queue.add(cpath);
-                                      found.add(cpath);
+                                      var cpath = Paths.get(classLoader.getResource(cPathStr).toURI());
+                                      if (!found.contains(cpath))
+                                        {
+                                          queue.add(cpath);
+                                          found.add(cpath);
+                                        }
+                                    }
+                                  catch (URISyntaxException ex)
+                                    {
+                                      Errors.error("JVM backend I/O error",
+                                                  "This is either a bug or the files in " + cPathStr
+                                                  + " changed while processing the directory.");
+                                      ex.printStackTrace();
                                     }
                                 }
                             }
@@ -2399,6 +2411,13 @@ should be avoided as much as possible.
           }
       }
     catch (IOException e)
+      {
+        Errors.error("JVM backend I/O error",
+                     "This is either a bug or the files in " + packagePath
+                     + " changed while processing the directory.");
+        e.printStackTrace();
+      }
+    catch (URISyntaxException e)
       {
         Errors.error("JVM backend I/O error",
                      "This is either a bug or the files in " + packagePath
