@@ -32,7 +32,7 @@ FUZION = ../../bin/fz $(FUZION_OPTIONS)
 
 all: jvm c int
 
-fuir: # NYI: UNDER DEVELOPMENT: missing impl of fuir
+fuir: # does nothing
 
 int:
 	printf 'SYNTAX %s ' "$(NAME)" && $(FUZION) -frontendOnly $(NAME) 2>err.txt && echo "\033[32;1mPASSED\033[0m." || echo "\033[31;1m*** FAILED\033[0m." && (RC=$$? && cat err.txt && exit $$RC)

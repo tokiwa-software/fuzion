@@ -50,13 +50,14 @@ ENV = \
 
 all: jvm int c
 
+fuir: # does nothing
+
 jvm:
 	NAME=$(NAME) $(ENV) make -f ../negative.mk jvm
 	NAME=$(NAME) $(ENV) make -f ../simple.mk jvm
 c:
 	NAME=$(NAME) $(ENV) make -f ../negative.mk c
 	NAME=$(NAME) $(ENV) make -f ../simple.mk c
-fuir: # NYI: UNDER DEVELOPMENT: missing impl of fuir
 
 int:
 	NAME=$(NAME) $(ENV) make -f ../negative.mk int
