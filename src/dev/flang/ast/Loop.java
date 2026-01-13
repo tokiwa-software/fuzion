@@ -598,10 +598,10 @@ public class Loop extends ANY
     else if (booleanAsImplicitResult(whileCond, untilCond))
       {
         /* add implicit TRUE / FALSE results to success and else blocks: */
-        _successBlock = new Block(true, _successBlock == null ? new List<>(BoolConst.TRUE) : new List<>(_successBlock, BoolConst.TRUE));
-        _elseBlock0 = new Block(true, _elseBlock0 == null ? new List<>(BoolConst.FALSE) : new List<>(_elseBlock0, BoolConst.FALSE));
-        _elseBlock1 = new Block(true, _elseBlock1 == null ? new List<>(BoolConst.FALSE) : new List<>(_elseBlock1, BoolConst.FALSE));
-        _elseBlock2 = new Block(true, _elseBlock2 == null ? new List<>(BoolConst.FALSE) : new List<>(_elseBlock2, BoolConst.FALSE));
+        _successBlock = new Block(true, _successBlock == null ? new List<>(Call.TRUE) : new List<>(_successBlock, Call.TRUE));
+        _elseBlock0 = new Block(true, _elseBlock0 == null ? new List<>(Call.FALSE) : new List<>(_elseBlock0, Call.FALSE));
+        _elseBlock1 = new Block(true, _elseBlock1 == null ? new List<>(Call.FALSE) : new List<>(_elseBlock1, Call.FALSE));
+        _elseBlock2 = new Block(true, _elseBlock2 == null ? new List<>(Call.FALSE) : new List<>(_elseBlock2, Call.FALSE));
       }
   }
 

@@ -626,7 +626,6 @@ public class GeneratingFUIR extends FUIR
               case "bool"                      -> SpecialClazzes.c_bool        ;
               case "const_string"              -> SpecialClazzes.c_const_string;
               case FuzionConstants.STRING_NAME -> SpecialClazzes.c_String      ;
-              case "error"                     -> SpecialClazzes.c_error       ;
               case "Mutex"                     -> SpecialClazzes.c_Mutex       ;
               case "Condition"                 -> SpecialClazzes.c_Condition   ;
               case "File_Descriptor"           -> SpecialClazzes.c_File_Descriptor;

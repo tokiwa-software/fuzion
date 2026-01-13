@@ -207,6 +207,9 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
 
   public cast_to_i128 i128 => i128 hi.cast_to_i64 lo
 
+  # conversion to float
+  public as_f64 f64 => hi.as_f64 * (2.as_f64**64.as_f64) + lo.as_f64
+
 
   # create hash code from this number
   public redef type.hash_code(a u128.this) u64 =>

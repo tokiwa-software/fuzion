@@ -331,11 +331,12 @@ is
   #
   public slice(from, to i32) Sequence T
     pre
-      debug: from ≥ 0
-      debug: to = 0 || is_valid_index to-1
-      debug: from <= to
+      debug : from ≥ 0
+      debug : to = 0 || (if is_array_backed || debug_level > 1 then is_valid_index to-1 else true)
+      debug : from <= to
   =>
-    drop(from).take to-from
+    drop from
+      .take to-from
 
 
   # create a tuple of two Sequences by splitting this at
