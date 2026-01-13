@@ -470,7 +470,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
     var rc0 = jvm._fuir.clazzChoice(rc, 0);
     // for storing the result of exec
     int slot  = jvm.allocLocal(si, JAVA_LANG_OBJECT.stackSlots());      // local var slot.
-    var cl_err = jvm._fuir.clazz_error();
+    var cl_err = jvm._fuir.clazzChoice(rc, 1);
 
     var pos = switch (jvm._fuir.getSpecialClazz(rc0))
       {
@@ -557,7 +557,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
           .andThen(Expr.getstatic("java/nio/charset/StandardCharsets", "UTF_8", new ClassType("java/nio/charset/Charset")))
           .andThen(Expr.invokeVirtual("java/lang/String", "getBytes", "(Ljava/nio/charset/Charset;)[B", ClassFileConstants.PrimitiveType.type_byte.array()))
       ))                                                                                     // error, error, string
-      .andThen(jvm.putfield(jvm._fuir.clazzArg(jvm._fuir.clazz_error(), 0)))                 // error
+      .andThen(jvm.putfield(jvm._fuir.clazzArg(cl_err, 0)))                                  // error
       .andThen(Expr.checkcast(jvm._types.javaType(cl_err)));
 
     var res = exec
@@ -1085,7 +1085,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
                                                           put(n2, gen);
                                                           put(n3, gen); }
 
-  // helper to add one element under many names to to _compiled_
+  // helper to add one element under many names to _compiled_
   private static void put(String[] names,       IntrinsicCode gen)
   {
     for (var n : names)
@@ -1223,7 +1223,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
 
 
   /**
-   * get the the method descriptor for a method in class c.
+   * get the method descriptor for a method in class c.
    * e.g. for args: Runtime.class, "fuzion_sys_net_listen"
    *      and {@code int fuzion_sys_net_listen(){}}
    *      it returns: ()I

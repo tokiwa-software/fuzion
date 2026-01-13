@@ -38,7 +38,7 @@ module:public Effectful(R type) ref : Unary R (Function R) is
   # compose this Effectful with another Effectful
   #
   public compose(other Effectful R) Effectful R =>
-    ref : Effectful R is
+    _ : Effectful R is
       public redef call(code Function R) R =>
         Effectful.this.call ()->
           other.call code

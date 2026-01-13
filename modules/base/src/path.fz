@@ -27,7 +27,7 @@
 
 # a feature denoting a path/file in the filesystem
 #
-# instatiate via path.of, e.g.
+# instantiate via path.of, e.g.
 #
 #     path.of "/some/path"
 # or
@@ -150,20 +150,20 @@ is
   #
   public redef fixed type.hash_code(a path) u64 =>
     xxh_next
-      (if a.is_absolute then 0 else 1) # NYI: BUG: bad hash_codes!, bool should implement hashable
+      (hash a.is_absolute)
       ((array String).type.hash_code a.names)
 
 
-  # instatiates a path via a given String
+  # instantiates a path via a given String
   # if paths starts with / it is considered to be
-  # absolute rather than realive.
+  # absolute rather than relative.
   #
   public type.of(str String) path =>
     t := str.trim
     path.of (t.split "/").as_array (t.starts_with "/")
 
 
-  # instatiates a path
+  # instantiates a path
   #
   # e.g.
   #

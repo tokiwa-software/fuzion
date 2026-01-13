@@ -556,13 +556,6 @@ public class FuzionConstants extends ANY
 
 
   /**
-   * Fuzion module directory as used in module files instead of absolute or
-   * relative path of module directory.
-   */
-  public static final Path SYMBOLIC_FUZION_MODULE = Path.of("$MODULE");
-
-
-  /**
    * Expression kind ids for use in FUM file are the ordinal numbers of these
    * constants.
    */

@@ -30,7 +30,7 @@
 public http is
 
 
-# create case insensitiv Map from array of key/values
+# create case insensitive Map from array of key/values
 #
 module as_header_map(kvs Sequence (String,String)) =>
   lm : mutate is
