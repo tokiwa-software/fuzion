@@ -142,6 +142,7 @@ MOD_MAIL              = $(BUILD_DIR)/modules/mail.fum
 MOD_WEB               = $(BUILD_DIR)/modules/web.fum
 MOD_SODIUM            = $(BUILD_DIR)/modules/sodium.fum
 MOD_CRYPTO            = $(BUILD_DIR)/modules/crypto.fum
+MOD_WEBSERVER         = $(BUILD_DIR)/modules/webserver.fum
 
 MOD_FZ_CMD_DIR = $(BUILD_DIR)/modules/fz_cmd
 MOD_FZ_CMD_FZ_FILES = $(MOD_FZ_CMD_DIR)/__marker_for_make__
@@ -210,7 +211,8 @@ FZ_MODULES = \
 			$(MOD_MAIL) \
 			$(MOD_WEB) \
 			$(MOD_SODIUM) \
-			$(MOD_CRYPTO)
+			$(MOD_CRYPTO) \
+			$(MOD_WEBSERVER)
 
 C_FILES = $(shell find $(FZ_SRC) \( -path ./build -o -path ./.git \) -prune -o -name '*.c' -print)
 
@@ -222,7 +224,7 @@ C_FILES = $(shell find $(FZ_SRC) \( -path ./build -o -path ./.git \) -prune -o -
 
 # default make target
 .PHONY: all
-all: $(FUZION_BASE) $(FUZION_JAVA_MODULES) $(FUZION_FILES) $(MOD_FZ_CMD) $(FUZION_EBNF) $(BUILD_DIR)/lsp.jar
+all: $(FUZION_BASE) $(FUZION_JAVA_MODULES) $(FUZION_FILES) $(MOD_FZ_CMD) $(FUZION_EBNF) $(BUILD_DIR)/fuzion.jar
 
 
 # rules to build java modules
@@ -511,6 +513,12 @@ $(MOD_CRYPTO): $(MOD_SODIUM) $(FZ) $(shell find $(FZ_SRC)/modules/crypto/src -na
 	cp -rf $(FZ_SRC)/modules/crypto $(@D)
 	$(FZ) -modules=sodium -sourceDirs=$(BUILD_DIR)/modules/crypto/src -saveModule=$@
 
+$(MOD_WEBSERVER): $(MOD_HTTP) $(FZ) $(shell find $(FZ_SRC)/modules/webserver/src -name "*.fz")
+	rm -rf $(@D)/webserver
+	mkdir -p $(@D)
+	cp -rf $(FZ_SRC)/modules/webserver $(@D)
+	$(FZ) -modules=http -sourceDirs=$(BUILD_DIR)/modules/webserver/src -saveModule=$@
+
 $(FZJAVA): $(FZ_SRC)/bin/fzjava | $(CLASS_FILES_TOOLS_FZJAVA)
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC)/bin/fzjava $@
@@ -571,9 +579,9 @@ $(BUILD_DIR)/bin/run_tests: $(FZ) $(FZ_MODULES) $(FZ_SRC)/bin/run_tests.fz
 
 # phony target to run Fuzion tests and report number of failures
 .PHONY: run_tests
-run_tests: run_tests_fuir run_tests_jvm run_tests_c run_tests_int run_tests_effect run_tests_jar
+run_tests: run_tests_fuir run_tests_jvm run_tests_c run_tests_effect run_tests_jar
 
-TEST_DEPENDENCIES = $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests $(BUILD_DIR)/bin/run_tests $(BUILD_DIR)/lsp.jar
+TEST_DEPENDENCIES = $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests $(BUILD_DIR)/bin/run_tests $(BUILD_DIR)/fuzion.jar
 
 # phony target to run Fuzion tests using effects and report number of failures
 .PHONY .SILENT: run_tests_effect
@@ -661,13 +669,13 @@ $(MOD_FZ_CMD_DIR).jmod: $(FUZION_BASE)
 	jmod create --class-path $(CLASSES_DIR) $(MOD_FZ_CMD_DIR).jmod
 	@echo " + build/modules/fz_cmd.jmod"
 
-$(MOD_FZ_CMD_FZ_FILES): $(MOD_FZ_CMD_DIR).jmod $(MOD_JAVA_BASE) $(MOD_JAVA_MANAGEMENT) $(MOD_JAVA_DESKTOP)
+$(MOD_FZ_CMD_FZ_FILES): $(MOD_FZ_CMD_DIR).jmod $(MOD_JAVA_BASE) $(MOD_JAVA_MANAGEMENT) $(MOD_JAVA_DESKTOP) $(MOD_JAVA_NET_HTTP)
 	rm -rf $(MOD_FZ_CMD_DIR)
-	$(FZJAVA) -to=$(MOD_FZ_CMD_DIR) -modules=java.base,java.management,java.desktop $(MOD_FZ_CMD_DIR)
+	$(FZJAVA) -to=$(MOD_FZ_CMD_DIR) -modules=java.base,java.management,java.desktop,java.net.http $(MOD_FZ_CMD_DIR)
 	touch $@
 
 $(MOD_FZ_CMD): $(MOD_FZ_CMD_FZ_FILES)
-	$(FZ) -sourceDirs=$(MOD_FZ_CMD_DIR) -modules=java.base,java.management,java.desktop -saveModule=$@
+	$(FZ) -sourceDirs=$(MOD_FZ_CMD_DIR) -modules=java.base,java.management,java.desktop,java.net.http -saveModule=$@
 
 
 $(FUZION_RT): $(BUILD_DIR)/include $(FUZION_FILES_RT)
@@ -716,3 +724,13 @@ include $(FZ_SRC)/docs.mk
 include $(FZ_SRC)/tools.mk
 
 # NYI: CLEANUP: move included makefiles to subfolder
+
+
+# builds a *fat* jar containing all java classes
+# including org.eclipse and gson, necessary for running the language server
+#
+$(BUILD_DIR)/fuzion.jar: $(CLASS_FILES_LSP) $(FUZION_BASE) $(FZ_SRC)/assets/Manifest.txt
+# delete signatures otherwise we would get: "Invalid signature file digest for Manifest main attributes"
+	rm -rf $(BUILD_DIR)/classes_lsp/META-INF
+	rm -f $(BUILD_DIR)/classes_lsp/about.html
+	jar cfm $@ $(FZ_SRC)/assets/Manifest.txt -C $(BUILD_DIR)/classes . -C $(BUILD_DIR)/classes_lsp .

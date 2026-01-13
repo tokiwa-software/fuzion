@@ -260,7 +260,6 @@ public class C extends ANY
     {
       return switch (_fuir.getSpecialClazz(constCl))
         {
-          case c_bool -> new Pair<>(primitiveExpression(SpecialClazzes.c_bool, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
           case c_i8   -> new Pair<>(primitiveExpression(SpecialClazzes.c_i8,   ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
           case c_i16  -> new Pair<>(primitiveExpression(SpecialClazzes.c_i16,  ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
           case c_i32  -> new Pair<>(primitiveExpression(SpecialClazzes.c_i32,  ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
@@ -1154,7 +1153,7 @@ public class C extends ANY
     cf.println("#include \"" + fzH + "\"");
     cf.println("#include \"" + hf.fileName() + "\"");
 
-    if (_options._cLink != null)
+    if (_options._cInclude != null)
       {
         Arrays
           .stream(_options._cInclude.split(" "))
@@ -1445,7 +1444,6 @@ public class C extends ANY
   {
     return switch (sc)
       {
-      case c_bool -> 1;
       case c_u8   -> 1;
       case c_u16  -> 2;
       case c_u32  -> 4;
@@ -2380,6 +2378,7 @@ public class C extends ANY
                 returnOutcome(
                   _fuir.clazzChoice(cl, 1),
                     jStringToError(
+                      _fuir.clazzChoice(cl, 1),
                       tmp
                         .field(CNames.CHOICE_UNION_NAME)
                         .field(CIdent.choiceEntry(1))
@@ -2390,16 +2389,15 @@ public class C extends ANY
           : val.ret();
 
         return CExpr.seq(sideEffect, result);
-      case c_unit :
-        return expr;
-      case c_String :
-      case c_false_ :
-      case c_true_ :
-      case c_u32 :
-      case c_u64 :
-      case c_u8 :
       default:
-        throw new Error("misuse of Java intrinsic?" + _fuir.clazzAsString(cl));
+        if (_fuir.clazzIsUnitType(cl))
+          {
+            return expr;
+          }
+        else
+          {
+            throw new Error("misuse of Java intrinsic?" + _fuir.clazzAsString(cl));
+          }
       }
   }
 
@@ -2423,9 +2421,17 @@ public class C extends ANY
         case c_f32 -> successResult.field(new CIdent("f")).castTo(_types.scalar(cl));
         case c_f64 -> successResult.field(new CIdent("d")).castTo(_types.scalar(cl));
         case c_bool -> successResult.field(new CIdent("z")).cond(_names.FZ_TRUE, _names.FZ_FALSE);
-        case c_unit -> successResult;
-        case c_NOT_FOUND -> asJava_Object(cl, successResult);
-        default -> throw new Error("error in implementation.");
+        case c_NOT_FOUND -> _fuir.clazzIsUnitType(cl) ? successResult : asJava_Object(cl, successResult);
+        default -> {
+          if (_fuir.clazzIsUnitType(cl))
+            {
+              yield successResult;
+            }
+          else
+            {
+              throw new Error("error in implementation.");
+            }
+        }
       };
   }
 
@@ -2465,9 +2471,9 @@ public class C extends ANY
    *
    * @return a c expression that creates a fuzion const string.
    */
-  private CExpr jStringToError(CExpr field)
+  private CExpr jStringToError(int clErr, CExpr field)
   {
-    return error(boxedConstString(
+    return error(clErr, boxedConstString(
         CExpr.call("fzE_java_string_to_utf8_bytes", new List<>(field)),
         CExpr.call("strlen", new List<>(
             CExpr.call("fzE_java_string_to_utf8_bytes",
@@ -2483,11 +2489,11 @@ public class C extends ANY
    * @param str
    * @return
    */
-  public CExpr error(CExpr str)
+  public CExpr error(int clErr, CExpr str)
   {
     return CExpr.compoundLiteral(
-      _names.struct(_fuir.clazz_error()),
-      "." + _names.fieldName(_fuir.clazzArg(_fuir.clazz_error(), 0)).code() + " = " +
+      _names.struct(clErr),
+      "." + _names.fieldName(_fuir.clazzArg(clErr, 0)).code() + " = " +
         str.code()
       );
   }

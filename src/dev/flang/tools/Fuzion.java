@@ -65,6 +65,7 @@ import dev.flang.opt.Optimizer;
 
 import dev.flang.util.ANY;
 import dev.flang.util.List;
+import dev.flang.util.Metrics;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.FuzionOptions;
@@ -1202,11 +1203,17 @@ public class Fuzion extends Tool
         timer("prep");
         if (!options.serializeFuir())
           {
+            var startTime = System.currentTimeMillis();
             var fe = new FrontEnd(options);
             timer("fe");
+            var feTime = System.currentTimeMillis() - startTime;
             Errors.showAndExit();
             _backend.processFrontEnd(this, fe);
             timer("be");
+            if (_saveMod != null)
+              {
+                Metrics.fumFile(moduleName(), feTime, System.currentTimeMillis() - startTime);
+              }
           }
         else
           {

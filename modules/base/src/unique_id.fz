@@ -35,7 +35,7 @@ is
   # fuzion.sys.misc.unique_id to get unique id
   #
   type.default_handler =>
-    ref : Unique_Id_Handler is
+    _ : Unique_Id_Handler is
       public redef get u64 => fzE_unique_id
 
 

@@ -160,40 +160,6 @@ public class Runtime extends ANY
   /*--------------------------  static fields  --------------------------*/
 
 
-  /**
-   * This contains all open files/streams.
-   */
-  static final OpenResources<AutoCloseable> _openStreams_ = new OpenResources<AutoCloseable>()
-  {
-    @Override
-    protected boolean close(AutoCloseable f) {
-      try
-      {
-        f.close();
-        return true;
-      }
-      catch(Exception e)
-      {
-        return false;
-      }
-    }
-  };
-
-  /**
-   * This contains all open processes.
-   */
-  public static final OpenResources<Process> _openProcesses_ = new OpenResources<Process>()
-  {
-    @Override
-    protected boolean close(Process p) {
-      if(PRECONDITIONS) require
-        (p != null);
-
-      return true;
-    }
-  };
-
-
   public static final Object LOCK_FOR_ATOMIC = new Object();
 
 
@@ -757,25 +723,6 @@ public class Runtime extends ANY
       }
 
     return stacktrace.toString();
-  }
-
-  public static byte[] fuzion_sys_fileio_read_dir(long fd)
-  {
-    var i = getIterator(fd);
-    try
-      {
-        return stringToUtf8ByteArray(i.next().getFileName().toString());
-      }
-    catch (NoSuchElementException e)
-      {
-        return stringToUtf8ByteArray("NoSuchElementException encountered!");
-      }
-  }
-
-  @SuppressWarnings("unchecked")
-  public static Iterator<Path> getIterator(long fd)
-  {
-    return (Iterator<Path>)_openStreams_.get(fd);
   }
 
 

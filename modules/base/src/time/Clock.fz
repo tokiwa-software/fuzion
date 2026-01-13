@@ -28,7 +28,7 @@
 # This is a `ref` feature such that code that requires an arbitrary `Clock`
 # effect could be written in a way that permits its execution using different
 # actual `Clock` implementations like `time.nano` that provides high
-# precision with low accuray or a different clock that provides higher accuracy.
+# precision with low accuracy or a different clock that provides higher accuracy.
 #
 public Clock ref : effect is
 

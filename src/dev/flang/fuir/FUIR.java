@@ -420,7 +420,7 @@ public abstract class FUIR extends IR
    *
    * @param arg argument number 0, 1, .. clazzArgCount(cl)-1
    *
-   * @return clazz id of the argument or -1 if no such feature exists (the
+   * @return clazz id of the argument or NO_CLAZZ if no such feature exists (the
    * argument is unused).
    */
   public int clazzArgClazz(int cl, int arg)
@@ -436,7 +436,7 @@ public abstract class FUIR extends IR
    *
    * @param arg argument number 0, 1, .. clazzArgCount(cl)-1
    *
-   * @return clazz id of the argument or -1 if no such argument exists (the
+   * @return clazz id of the argument or NO_CLAZZ if no such argument exists (the
    * argument is unused).
    */
   public abstract int clazzArg(int cl, int arg);
@@ -458,7 +458,7 @@ public abstract class FUIR extends IR
    *
    * @param cl a clazz id
    *
-   * @return clazz id of cl's outer ref field or -1 if no such field exists.
+   * @return clazz id of cl's outer ref field or NO_CLAZZ if no such field exists.
    */
   public abstract int clazzOuterRef(int cl);
 
@@ -662,7 +662,7 @@ public abstract class FUIR extends IR
   /**
    * Get the id of clazz ref const_string
    *
-   * @return the id of ref const_string or -1 if that clazz was not created.
+   * @return the id of ref const_string or NO_CLAZZ if that clazz was not created.
    */
   public abstract int clazz_ref_const_string();
 
@@ -724,17 +724,6 @@ public abstract class FUIR extends IR
   {
     var sa8 = clazz_fuzionSysArray_u8();
     return  sa8 == NO_CLAZZ ? NO_CLAZZ : clazzArg(sa8, 1);
-  }
-
-
-  /**
-   * Get the id of clazz error
-   *
-   * @return the id of error or -1 if that clazz was not created.
-   */
-  public int clazz_error()
-  {
-    return clazz(SpecialClazzes.c_error);
   }
 
 
@@ -1000,7 +989,7 @@ public abstract class FUIR extends IR
    *
    * @param s site of the access
    *
-   * @return the clazz that has to be accessed or -1 if the access is an
+   * @return the clazz that has to be accessed or NO_CLAZZ if the access is an
    * assignment to a field that is unused, so the assignment is not needed.
    */
   public abstract int accessedClazz(int s);
@@ -1008,7 +997,7 @@ public abstract class FUIR extends IR
 
   /**
    * Get the type of an assigned value. This returns the type even if the
-   * assigned field has been removed and accessedClazz() returns -1.
+   * assigned field has been removed and accessedClazz() returns NO_CLAZZ.
    *
    * @param s site of the assignment
    *
@@ -1096,7 +1085,7 @@ public abstract class FUIR extends IR
    *
    * @param cix index of the case in the match
    *
-   * @return clazz id of field the value in this case is assigned to, -1 if this
+   * @return clazz id of field the value in this case is assigned to, NO_CLAZZ if this
    * case does not have a field or the field is unused.
    */
   public abstract int matchCaseField(int s, int cix);
@@ -1526,8 +1515,6 @@ public abstract class FUIR extends IR
       case c_String :
         var len = bb.duplicate().order(ByteOrder.LITTLE_ENDIAN).getInt();
         yield bb.slice(bb.position(), 4+len);
-      case c_bool :
-        yield bb.slice(bb.position(), 1);
       case c_i8, c_i16, c_i32, c_i64, c_u8, c_u16, c_u32, c_u64, c_f32, c_f64 :
         var bytes = bb.duplicate().order(ByteOrder.LITTLE_ENDIAN).getInt();
         yield bb.slice(bb.position(), 4+bytes);

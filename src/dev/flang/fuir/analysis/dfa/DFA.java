@@ -40,7 +40,6 @@ import java.util.function.Supplier;
 
 import java.util.stream.Stream;
 
-import dev.flang.fuir.OptimizedFUIR;
 import dev.flang.fuir.FUIR;
 import dev.flang.fuir.FUIR.LifeTime;
 import dev.flang.fuir.GeneratingFUIR;
@@ -56,6 +55,7 @@ import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import static dev.flang.util.FuzionConstants.EFFECT_INSTATE_NAME;
 import dev.flang.util.FuzionOptions;
+import dev.flang.util.Metrics;
 import dev.flang.util.List;
 import dev.flang.util.IntMap;
 import dev.flang.util.LongMap;
@@ -473,7 +473,6 @@ public class DFA extends ANY
     {
       var r = switch (_fuir.getSpecialClazz(constCl))
         {
-        case c_bool -> boolAsVal(d[0] == 1);
         case c_i8   ,
              c_i16  ,
              c_i32  ,
@@ -1292,14 +1291,14 @@ public class DFA extends ANY
         @Override
         public boolean alwaysResultsInVoid(int s)
         {
-          if (s < 0)
+          if (s == NO_SITE)
             {
               return false;
             }
           else
             {
               var code = _fuir.codeAt(s);
-              return (code == ExprKind.Call && _fuir.clazzKind(_fuir.accessedClazz(s)) != FeatureKind.TypeParameter || code == ExprKind.Match) && site(s).alwaysResultsInVoid() || super.alwaysResultsInVoid(s);
+              return (code == ExprKind.Call && _fuir.accessedClazz(s) != NO_CLAZZ && _fuir.clazzKind(_fuir.accessedClazz(s)) != FeatureKind.TypeParameter || code == ExprKind.Match) && site(s).alwaysResultsInVoid() || super.alwaysResultsInVoid(s);
             }
         }
 
@@ -1361,6 +1360,8 @@ public class DFA extends ANY
    */
   public void dfa()
   {
+    var startTime = System.currentTimeMillis();
+
     _newCallRecursiveAnalyzeClazzes = new int[MAX_NEW_CALL_RECURSION];
     _real = false;
     var preIter = findFixPoint();
@@ -1406,6 +1407,16 @@ public class DFA extends ANY
 
     _fuir.reportAbstractMissing();
     Errors.showAndExit();
+
+    if (_fuir.mainClazz() != FUIR.NO_CLAZZ)
+      {
+        Metrics.dfaMetrics(startTime,
+                           preIter,
+                           realIter,
+                           _calls.size(),
+                           _numUniqueValues,
+                           _fuir.clazzAsString(_fuir.mainClazz()));
+      }
   }
 
 
@@ -1849,8 +1860,35 @@ public class DFA extends ANY
   static Value wrappedJavaObject(Call cl)
   {
     var rc   = fuir(cl).clazzResultClazz(cl.calledClazz());
-    return cl._dfa.newInstance(rc, NO_SITE, cl._context);
+    var result = switch (fuir(cl).getSpecialClazz(rc))
+      {
+        case c_bool -> cl._dfa.bool();
+        default -> cl._dfa.newInstance(rc, NO_SITE, cl._context);
+      };
+    setOuterRefs(cl, rc, result);
+    return result;
   }
+
+
+  /**
+   * recursively create outerrefs for instance val of type rc
+   *
+   * @param cl
+   * @param rc
+   * @param val
+   */
+  private static void setOuterRefs(Call cl, int rc, Value val)
+  {
+    var or = fuir(cl).clazzOuterRef(rc);
+    if (or != NO_CLAZZ)
+      {
+        var orr = cl._dfa._fuir.clazzResultClazz(or);
+        var ori = cl._dfa.newInstance(orr, NO_SITE, cl._context);
+        setOuterRefs(cl, orr, ori);
+        val.setField(cl._dfa, or, ori);
+      }
+  }
+
 
   static
   {
@@ -2463,16 +2501,21 @@ public class DFA extends ANY
   {
     return switch (fuir(cl).getSpecialClazz(rc))
       {
-        case c_i8, c_u16, c_i16, c_i32, c_i64, c_f32, c_f64, c_bool ->
+        case c_i8, c_u16, c_i16, c_i32, c_i64, c_f32, c_f64 ->
           cl._dfa.newInstance(rc, NO_SITE, cl._context);
-        case c_unit -> Value.UNIT;
+        case c_bool -> cl._dfa.bool();
         default -> {
-          var jref = fuir(cl).lookupJavaRef(rc);
-          if (CHECKS) check
-            (jref != NO_CLAZZ);
-          var jobj = cl._dfa.newInstance(rc, NO_SITE, cl._context);
-          jobj.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF);
-          yield jobj;
+          var res = Value.UNIT;
+          if (!cl._dfa._fuir.clazzIsUnitType(rc))
+            {
+              var jref = fuir(cl).lookupJavaRef(rc);
+              if (CHECKS) check
+                (jref != NO_CLAZZ);
+              res = cl._dfa.newInstance(rc, NO_SITE, cl._context);
+              res.setField(cl._dfa, jref, Value.UNKNOWN_JAVA_REF);
+              setOuterRefs(cl, rc, res);
+            }
+          yield res;
         }
       };
   }
@@ -2683,16 +2726,18 @@ public class DFA extends ANY
   Value newInstance(int cl, int site, Context context)
   {
     if (PRECONDITIONS) require
-      (!_fuir.clazzIsChoice(cl) || _fuir.clazzIs(cl, SpecialClazzes.c_bool));
+      (!_fuir.clazzIsChoice(cl));
 
     Value r;
     if (isBuiltInNumeric(cl))
       {
         r = NumericValue.create(DFA.this, cl);
       }
-    else if (_fuir.clazzIs(cl, SpecialClazzes.c_bool))
+    else if (_fuir.clazzIsRef(cl))
       {
-        r = bool();
+        var vc = _fuir.clazzAsValue(cl);
+        check(!_fuir.clazzIsRef(vc));
+        r = newInstance(vc, site, context).box(this, vc, cl, context);
       }
     else
       {
@@ -2715,12 +2760,6 @@ public class DFA extends ANY
         if (ao instanceof Instance a)
           {
             r = a;
-          }
-        else if (_fuir.clazzIsRef(cl))
-          {
-            var vc = _fuir.clazzAsValue(cl);
-            check(!_fuir.clazzIsRef(vc));
-            r = newInstance(vc, site, context).box(this, vc, cl, context);
           }
         else
           {

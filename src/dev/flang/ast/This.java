@@ -61,7 +61,7 @@ public class This extends ExprWithPos
   private AbstractFeature _cur = null;
 
   /**
-   * The feature the this expression refers to, i.e,. for a.b.this this is a.b.
+   * The feature this expression refers to, i.e., for a.b.this this is a.b.
    */
   private AbstractFeature _feature;
 
