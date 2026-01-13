@@ -191,7 +191,7 @@ public class GeneratingFUIR extends FUIR
              var openTypeInstance = new AbstractCall()             // e.g. tuple.#Values_Of_Open_Type<n>
                {
                  @Override public SourcePosition     pos()                  { return call.pos(); }
-                 @Override public Expr               target()               { return new Current(call.pos(), currentClazz._type.feature()); }
+                 @Override public Expr               target()               { return cur; }
                  @Override public AbstractFeature    calledFeature()        { return currentClazz.feature().outerRef(); }
                  @Override public AbstractType       type()                 { return currentClazz.feature().outerRef().resultType(); }
                };

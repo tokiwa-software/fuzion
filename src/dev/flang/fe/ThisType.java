@@ -34,7 +34,6 @@ import dev.flang.util.List;
 class ThisType extends LibraryType {
 
   private AbstractFeature _feature;
-  private AbstractType _asRef;
 
   public ThisType(LibraryModule mod, int at, AbstractFeature feature)
   {
