@@ -2095,7 +2095,7 @@ should be avoided as much as possible.
    * Helper for cloneValue to clone the value of a field in a choice or a
    * product type that may be null.
    *
-   * In a choice, a value may be null if that that field is unused, i.e., the
+   * In a choice, a value may be null if that field is unused, i.e., the
    * choice is tagged for a different value.
    *
    * In a product type, the value of a field may be null if that value was not

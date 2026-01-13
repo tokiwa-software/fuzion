@@ -94,7 +94,7 @@ record_process(
       # the command, for error messages
       cmd String,
       # feed .stdin file to executed process?
-      feed_stdin array (String, i32)
+      feed_stdin Sequence (String, i32)
 ) process_result =>
 
   lm : mutate is
@@ -124,15 +124,15 @@ record_process(
   match p.wait (time.duration.s 1)
     error =>
       check p.send_signal os.signals.kill .ok
-      process_result (String.join fout.get "\n") "" 1
+      process_result (String.join_lines fout.get) "" 1
     ec u32 =>
-      process_result (String.join fout.get "\n") "" ec
+      process_result (String.join_lines fout.get) "" ec
 
 # execute this Sequence of process+args
 #
 Sequence.execute(
   # feed .stdin file to executed process?
-  feed_stdin array (String, i32)
+  feed_stdin Sequence (String, i32)
 ) =>
   seq := map x->x.as_string
   match os.process.start seq.first.val (seq.drop 1) envir_vars
@@ -143,7 +143,7 @@ Sequence.execute(
 #
 String.execute(
   # feed .stdin file to executed process?
-  feed_stdin array (String, i32)
+  feed_stdin Sequence (String, i32)
 ) =>
   split_if (=" ")
     .map (.replace protected_space " ")
@@ -168,11 +168,99 @@ init_req =>
     }
   """
 
-shutdown_req =>
+test_file := "file://{os.cwd}/hello.fz"
+
+open_file_req =>
   """
     \{
       "jsonrpc": "2.0",
       "id": 2,
+      "method": "textDocument/didOpen",
+      "params": \{
+        "textDocument": \{
+          "uri": "{test_file}",
+          "languageId": "fuzion",
+          "version": 1,
+          "text": "hello => say Any"
+        }
+      }
+    }
+  """
+
+hover_req =>
+  """
+    \{
+      "jsonrpc": "2.0",
+      "id": 3,
+      "method": "textDocument/hover",
+      "params": \{
+        "textDocument": \{
+          "uri": "{test_file}"
+        },
+        "position": \{
+          "line": 0,
+          "character": 10
+        }
+      }
+    }
+  """
+
+
+
+test_file2 := "file://{os.cwd}/compl.fz"
+
+comp_ex =>
+  """
+    ex =>
+      encodings.
+  """
+
+open_file_req2 =>
+  """
+    \{
+      "jsonrpc": "2.0",
+      "id": 4,
+      "method": "textDocument/didOpen",
+      "params": \{
+        "textDocument": \{
+          "uri": "{test_file2}",
+          "languageId": "fuzion",
+          "version": 1,
+          "text": "{comp_ex.replace "\n" "\\n"}"
+        }
+      }
+    }
+  """
+
+completion_req =>
+  """
+    \{
+      "jsonrpc": "2.0",
+      "id": 5,
+      "method": "textDocument/completion",
+      "params": \{
+        "textDocument": \{
+          "uri": "{test_file2}"
+        },
+        "position": \{
+          "line": 1,
+          "character": 12
+        },
+        "context": \{
+          "triggerKind": 2,
+          "triggerCharacter": "."
+        }
+      }
+    }
+  """
+
+
+
+shutdown_req =>
+  """
+    \{
+      "jsonrpc": "2.0",
+      "id": 6,
       "method": "shutdown",
       "params": null
     }
@@ -184,4 +272,11 @@ as_json_rpc(str String) =>
 
 fuzion_home := os.cwd.val.resolve "../../" .as_string
 
-say <| "java -Dfuzion.home={fuzion_home} -Dfile.encoding=UTF-8 -jar {fuzion_home}/lsp.jar dev.flang.lsp.Main -stdio".execute [(as_json_rpc init_req, 2),(as_json_rpc shutdown_req, 1)] .out
+test_def := [(init_req, 2), (open_file_req, 4), (hover_req, 3), (open_file_req2, 4), (completion_req, 3), (shutdown_req, 1)]
+  .map_to_array t->
+    (as_json_rpc t.0, t.1)
+
+res := "java -Dfuzion.home={fuzion_home} -Dfile.encoding=UTF-8 -cp {fuzion_home}/fuzion.jar dev.flang.lsp.Main -stdio".execute test_def .out
+
+# logMessages contain unstable data like dates and "finished in Xms"
+say <| String.join_lines (res.lines.filter (str -> !(str.contains "logMessage" || str.is_blank)))

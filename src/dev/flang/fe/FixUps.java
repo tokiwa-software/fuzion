@@ -306,7 +306,7 @@ class FixUps extends DataOut
 
 
   /**
-   * Get sorted list of all the library modules that that are referenced by any
+   * Get sorted list of all the library modules that are referenced by any
    * features written for this module.
    */
   List<LibraryModule> referencedModules()

@@ -173,13 +173,13 @@ is
     d.nanos
 
 
-  # max value for a duration given in nanos
+  # max value for a duration given in nanoseconds
   public type.max_duration_nanos   u64 => u64.max
 
-  # max value for a duration given in micros
+  # max value for a duration given in microseconds
   public type.max_duration_micros  u64 => u64.max / time.time_unit.µs.in_ns
 
-  # max value for a duration given in millis
+  # max value for a duration given in milliseconds
   public type.max_duration_millis  u64 => u64.max / time.time_unit.ms.in_ns
 
   # max value for a duration given in seconds

@@ -208,7 +208,7 @@ public class SourceModule extends Module implements SrcModule
       {
         _options.verbosePrintln(2, " - " + p);
       }
-    return new Parser(p, ec).unit();
+    return new Parser(p, ec, _options.isLanguageServer()).unit();
   }
 
 
@@ -414,11 +414,19 @@ part of the (((inner features))) declarations of the corresponding
                     // end::fuzion_rule_SRCF_DIR[]
                     */
 
+                    var used = new TreeMap<String, String>();
+
                     Files.list(d._dir)
                       .filter(p -> isValidSourceFile(p))
                       .sorted(Comparator.comparing(p -> p.toString()))
                       .forEach(p ->
                                {
+                                 if (used.containsKey(p.toString().toLowerCase()))
+                                  {
+                                    AstErrors.duplicateFile(p.toString(), used.get(p.toString().toLowerCase()));
+                                  }
+
+                                 used.put(p.toString().toLowerCase(), p.toString());
                                  for (var inner : parseAndGetFeatures(p))
                                    {
                                      findDeclarations(inner, f);

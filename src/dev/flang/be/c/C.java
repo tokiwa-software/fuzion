@@ -260,7 +260,6 @@ public class C extends ANY
     {
       return switch (_fuir.getSpecialClazz(constCl))
         {
-          case c_bool -> new Pair<>(primitiveExpression(SpecialClazzes.c_bool, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
           case c_i8   -> new Pair<>(primitiveExpression(SpecialClazzes.c_i8,   ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
           case c_i16  -> new Pair<>(primitiveExpression(SpecialClazzes.c_i16,  ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
           case c_i32  -> new Pair<>(primitiveExpression(SpecialClazzes.c_i32,  ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
@@ -1445,7 +1444,6 @@ public class C extends ANY
   {
     return switch (sc)
       {
-      case c_bool -> 1;
       case c_u8   -> 1;
       case c_u16  -> 2;
       case c_u32  -> 4;
@@ -2380,6 +2378,7 @@ public class C extends ANY
                 returnOutcome(
                   _fuir.clazzChoice(cl, 1),
                     jStringToError(
+                      _fuir.clazzChoice(cl, 1),
                       tmp
                         .field(CNames.CHOICE_UNION_NAME)
                         .field(CIdent.choiceEntry(1))
@@ -2472,9 +2471,9 @@ public class C extends ANY
    *
    * @return a c expression that creates a fuzion const string.
    */
-  private CExpr jStringToError(CExpr field)
+  private CExpr jStringToError(int clErr, CExpr field)
   {
-    return error(boxedConstString(
+    return error(clErr, boxedConstString(
         CExpr.call("fzE_java_string_to_utf8_bytes", new List<>(field)),
         CExpr.call("strlen", new List<>(
             CExpr.call("fzE_java_string_to_utf8_bytes",
@@ -2490,11 +2489,11 @@ public class C extends ANY
    * @param str
    * @return
    */
-  public CExpr error(CExpr str)
+  public CExpr error(int clErr, CExpr str)
   {
     return CExpr.compoundLiteral(
-      _names.struct(_fuir.clazz_error()),
-      "." + _names.fieldName(_fuir.clazzArg(_fuir.clazz_error(), 0)).code() + " = " +
+      _names.struct(clErr),
+      "." + _names.fieldName(_fuir.clazzArg(clErr, 0)).code() + " = " +
         str.code()
       );
   }

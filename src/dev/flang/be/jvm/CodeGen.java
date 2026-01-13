@@ -27,7 +27,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.be.jvm;
 
 import dev.flang.fuir.FUIR;
-import dev.flang.fuir.SpecialClazzes;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 import dev.flang.ir.IR.FeatureKind;
 
@@ -1086,7 +1085,6 @@ class CodeGen
   {
     return switch (_fuir.getSpecialClazz(constCl))
       {
-      case c_bool         -> new Pair<>(Expr.iconst(d[0]                                                                             , _types.javaType(constCl)), Expr.UNIT);
       case c_i8           -> new Pair<>(Expr.iconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).get     ()         , _types.javaType(constCl)), Expr.UNIT);
       case c_i16          -> new Pair<>(Expr.iconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getShort()         , _types.javaType(constCl)), Expr.UNIT);
       case c_i32          -> new Pair<>(Expr.iconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getInt  ()         , _types.javaType(constCl)), Expr.UNIT);
