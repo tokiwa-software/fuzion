@@ -1376,19 +1376,21 @@ public class DFA extends ANY
       }
 
     _cachedValues = new TreeMap<>(Value.COMPARATOR);
-    // _numUniqueValues = 0;    -- NYI: Somewhere, the old unique ids are still in use, need to check why! See reg_issue2478 to check this.
+    _numUniqueValues = 0;
     _uniqueValues = new List<Value>();
     _instancesForSite = new List<>();
     _tagged = new LongMap<>();
     _joined = new LongMap<>();
     _uninitializedSysArray = new IntMap<>();
 
+    _trueX = null; _falseX = null; _boolX = null;
+
     _callsQuick = new LongMap<>();
     _calls = new TreeMap<>();
     _callGroupsQuick = new LongMap<>();
     _callGroups = new TreeMap<>();
 
-    _instancesForSite = new List<>();
+    _oneInstanceOfClazz = new List<>();
     _unitCalls = new IntMap<>();
 
     _real = true;
@@ -2731,6 +2733,7 @@ public class DFA extends ANY
             if (onlyOneInstance(cl))
               {
                 var ni = new Instance(this, cl, site, context);
+                wasChanged(() -> "DFA: new instance " + _fuir.clazzAsString(cl));
                 makeUnique(ni);
                 ao = ni;
               }
@@ -3012,22 +3015,7 @@ public class DFA extends ANY
    */
   boolean onlyOneInstance(int clazz)
   {
-    return ONLY_ONE_INSTANCE &&
-      // NYI: UNDER DEVELOPMENT: This is currently a dumb list of features,
-      // this should be something generic instead, e.g.
-      //
-      //   b := !_fuir.clazzIsChoice(clazz) && !_fuir.clazzIsRef(clazz);
-      //
-      switch (_fuir.clazzAsString(clazz))
-      {
-      case
-        "list u8",
-        "codepoint",
-        "Sequence u8",
-        "array u8",
-        "fuzion.sys.internal_array u8" -> true;
-      default -> false;
-      };
+    return ONLY_ONE_INSTANCE;
   }
 
 
