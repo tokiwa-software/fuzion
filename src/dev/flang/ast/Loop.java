@@ -293,7 +293,6 @@ public class Loop extends ANY
         AstErrors.loopElseBlockRequiresWhileOrIterator(pos, _elseBlock0);
       }
 
-    addDefaultSuccessAndElseBlocks(whileCond, untilCond);
     // if there are no iterates then else block may access every loop var.
     // if there are iterates we move else block to feature and
     // insert it later, see `addIterators()`.
@@ -534,75 +533,6 @@ public class Loop extends ANY
         result = result || f.impl()._kind == Impl.Kind.FieldIter;
       }
     return result;
-  }
-
-
-  /**
-   * Does this loop implicitly produce the value of the last index variable as a result.
-   *
-   * This is the case for non-iterating loops without an else or success block.
-   */
-  private boolean lastIndexVarAsImplicitResult()
-  {
-    return !iterates() && _elseBlock0 == null && _successBlock == null && !_indexVars.isEmpty();
-  }
-
-
-  /**
-   * Does this loop implicitly produce a boolean result that indicates successful
-   * (until condition holds) or failed (while condition is false or iteration
-   * ended) execution.
-   *
-   * This is the case for loops that have an until condition and that are iterating
-   * or have a while condition and that have neither a else nor a success block.
-   */
-  private boolean booleanAsImplicitResult(Expr whileCond, Expr untilCond)
-  {
-    return
-      /* loop can fail: */     (iterates() || whileCond != null) &&
-      /* loop can succeed: */  (untilCond != null) &&
-      /* success and else block do not end in expression: */
-      (_successBlock == null || _elseBlock0 == null);
-  }
-
-
-  /**
-   * Create default code for success and else blocks if not present.  Default code is used for
-   *
-   * 1. loops with index variables that are no iterators and no else block nor
-   *    success block: The last index variable is returned by both success and
-   *    else blocks.
-   *
-   * 2. loops that can fail and succeed but that syntactically cannot return a
-   *    value (a call can syntactically return a value, even though the called
-   *    function may return void, an assignment or empty block can not). In this
-   *    case, success block returns true and else block returns false.
-   *
-   * @return true if implicit success and else blocks have been added.
-   */
-  private void addDefaultSuccessAndElseBlocks(Expr whileCond, Expr untilCond)
-  {
-    if (lastIndexVarAsImplicitResult())
-      { /* add last index var as implicit result */
-        Feature lastIndexVar = _indexVars.getLast();
-        var p = lastIndexVar.pos();
-        var readLastIndexVar0 = new Call(p, lastIndexVar.featureName().baseName());
-        var readLastIndexVar1 = new Call(p, lastIndexVar.featureName().baseName());
-        var readLastIndexVar2 = new Call(p, lastIndexVar.featureName().baseName());
-        var readLastIndexVar3 = new Call(p, lastIndexVar.featureName().baseName());
-        _elseBlock0   = Block.fromExpr(readLastIndexVar0);
-        _elseBlock1   = Block.fromExpr(readLastIndexVar1);
-        _elseBlock2   = Block.fromExpr(readLastIndexVar2);
-        _successBlock = Block.fromExpr(readLastIndexVar3);
-      }
-    else if (booleanAsImplicitResult(whileCond, untilCond))
-      {
-        /* add implicit TRUE / FALSE results to success and else blocks: */
-        _successBlock = new Block(true, _successBlock == null ? new List<>(Call.TRUE) : new List<>(_successBlock, Call.TRUE));
-        _elseBlock0 = new Block(true, _elseBlock0 == null ? new List<>(Call.FALSE) : new List<>(_elseBlock0, Call.FALSE));
-        _elseBlock1 = new Block(true, _elseBlock1 == null ? new List<>(Call.FALSE) : new List<>(_elseBlock1, Call.FALSE));
-        _elseBlock2 = new Block(true, _elseBlock2 == null ? new List<>(Call.FALSE) : new List<>(_elseBlock2, Call.FALSE));
-      }
   }
 
 
