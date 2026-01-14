@@ -2284,6 +2284,18 @@ public class DFA extends ANY
           cll._group.mayHaveEffect(ecl);
 
           var result = cll.result(cl);
+
+          if(fuir.getSpecialClazz(ecl) == SpecialClazzes.c_fuzion_runtime_stackoverflow)
+            {
+              // we need to simulate call to stackoverflow.cause
+              var cause = fuir.lookup_cause(ecl);
+              var def = cl._dfa.newCall(cl, cause, NO_SITE, a0, new List<>(cl._dfa.newConstString(null, cl)), cl._env, cl);
+              var res = def.result(cl);
+              result = result != null && res != null
+                ? result.value().join(cl._dfa, res.value(), fuir(cl).clazzResultClazz(cl.calledClazz()))
+                : result;
+            }
+
           Value ev;
           if (cl._dfa._real)
             {
