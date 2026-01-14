@@ -168,15 +168,14 @@ is
   #
   as_string(u time.time_unit, pad bool) String =>
     n := $(nanos / u.in_ns)
-    "{pad ? n.as_string.pad_left 4 : n}{u.short_name}"
+    "{pad ? n.pad_left 4 : n}{u.short_name}"
 
 
   # create a string representation of this duration using the given unit
-  # use the long version of the unit (e.g. 'minutes' instead of 'min')
+  # use the long version of the unit (e.g. 'hours' instead of 'h')
   #
   public as_string_long(u time.time_unit) String =>
-    n := $(nanos / u.in_ns)
-    "$n {u.name}"
+    "{nanos / u.in_ns} {u.name}"
 
 
   # create a string representation of this duration. The string
