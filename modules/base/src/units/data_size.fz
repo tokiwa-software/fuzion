@@ -226,10 +226,19 @@ is
     data_size bytes*n
 
 
-  # this units.data_size multiplied by factor f
+  # Scales this data size by a floating-point factor.
   #
-  public times(f f64) data_size
+  # This operation is approximate:
+  # - The factor is a floating-point value and may be imprecise.
+  # - Fractional bytes are not representable and will be rounded.
+  # - Large values may not be exactly representable in a float and are
+  #   therefore approximated before conversion back to bytes.
+  #
+  # Use the `infix *` for exact, byte-precise scaling with integers.
+  #
+  public scale_approx(f f64) data_size
   =>
+    # NYI: HACK: `f64.as_u128` missing, result therefore limited to 7.99 EiB because of `.as_i64`
     data_size (bytes.as_f64 * f).as_i64.as_u128
 
 
