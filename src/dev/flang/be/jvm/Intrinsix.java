@@ -470,7 +470,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
     var rc0 = jvm._fuir.clazzChoice(rc, 0);
     // for storing the result of exec
     int slot  = jvm.allocLocal(si, JAVA_LANG_OBJECT.stackSlots());      // local var slot.
-    var cl_err = jvm._fuir.clazz_error();
+    var cl_err = jvm._fuir.clazzChoice(rc, 1);
 
     var pos = switch (jvm._fuir.getSpecialClazz(rc0))
       {
@@ -557,7 +557,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
           .andThen(Expr.getstatic("java/nio/charset/StandardCharsets", "UTF_8", new ClassType("java/nio/charset/Charset")))
           .andThen(Expr.invokeVirtual("java/lang/String", "getBytes", "(Ljava/nio/charset/Charset;)[B", ClassFileConstants.PrimitiveType.type_byte.array()))
       ))                                                                                     // error, error, string
-      .andThen(jvm.putfield(jvm._fuir.clazzArg(jvm._fuir.clazz_error(), 0)))                 // error
+      .andThen(jvm.putfield(jvm._fuir.clazzArg(cl_err, 0)))                                  // error
       .andThen(Expr.checkcast(jvm._types.javaType(cl_err)));
 
     var res = exec
@@ -746,7 +746,8 @@ public class Intrinsix extends ANY implements ClassFileConstants
           var try_after = new Label();
           var try_start = Expr.tryCatch(try_end,
                                         try_catch,
-                                        Names.ABORT_TYPE);
+                                        // we need to catch throwable
+                                        new ClassType(Throwable.class.getName().replace(".","/")));
 
           // code-snippet to call effect_pop and leave the effect instance on the Java stack
           var pop_effect = Expr.iconst(eid)
@@ -760,7 +761,9 @@ public class Intrinsix extends ANY implements ClassFileConstants
 
           var call_finally      = jvm._types.invokeStatic(finallie, jvm._fuir.sitePos(si).line());
           var pop_and_finally   = pop_effect.andThen(call_finally);     // pop effect and call finally
-          var pop_fin_and_throw = pop_and_finally.andThen(Expr.THROW);  // pop effect, call finally and throw abort exception from stack
+          var pop_fin_and_throw = pop_and_finally.andThen(Expr.THROW);  // pop effect, call finally and rethrow exception from stack
+
+          Expr handle_non_abort_exception = pop_fin_and_throw; // NYI: UNDER DEVELOPMENT: catch StackOverflow here
 
           var result = Expr.iconst(eid)
             .andThen(unit_effect ? args.get(0).drop()
@@ -782,23 +785,31 @@ public class Intrinsix extends ANY implements ClassFileConstants
             .andThen(pop_and_finally)
             .andThen(Expr.gotoLabel(try_after))
             .andThen(try_catch)
-            .andThen(!jvm._fuir.clazzNeedsCode(call_def)
-                     ? pop_fin_and_throw // in case call_def was detected by DFA to not be called, we can pass on the abort directly
-                     : Expr.DUP  // duplicate abort exception
+            .andThen(
+              !jvm._fuir.clazzNeedsCode(call_def)
+                ? pop_fin_and_throw // in case call_def was detected by DFA to not be called, we can pass on the abort directly
+                : Expr.DUP  // duplicate abort exception, we may need to rethrow
+                   .andThen(Expr.DUP) // duplicate exception for instanceof check
+                   .andThen(Expr.instanceOf(Names.ABORT_TYPE))
+                   .andThen(Expr.branch(
+                     O_ifeq,
+                     handle_non_abort_exception,
+                     Expr
+                       .checkcast(Names.ABORT_TYPE)
                        .andThen(Expr.getfield(Names.ABORT_CLASS, Names.ABORT_EFFECT, PrimitiveType.type_int))
                        .andThen(Expr.iconst(eid))
-                       .andThen(Expr.branch(O_if_icmpne,
-                                            // not for us, so pop effect and re-throw
-                                            pop_fin_and_throw,
-                                            // for us, so run `finally` and `call_def`
-                                            Expr.POP // drop abort exception
-                                            .andThen(args.get(2))
-                                            .andThen(pop_effect)
-                                            .andThen(unit_effect ? Expr.UNIT : Expr.DUP)
-                                            .andThen(call_finally)
-                                            .andThen(jvm._types.invokeStatic(call_def, jvm._fuir.sitePos(si).line())))
-                                )
-                     )
+                       .andThen(
+                         Expr.branch(
+                           O_if_icmpne,
+                           // not for us, so pop effect and re-throw
+                           pop_fin_and_throw,
+                           // for us, so run `finally` and `call_def`
+                           Expr.POP // drop abort exception
+                           .andThen(args.get(2))
+                           .andThen(pop_effect)
+                           .andThen(unit_effect ? Expr.UNIT : Expr.DUP)
+                           .andThen(call_finally)
+                           .andThen(jvm._types.invokeStatic(call_def, jvm._fuir.sitePos(si).line())))))))
             .andThen(try_after);
           return new Pair<>(Expr.UNIT, result);
         });
@@ -1085,7 +1096,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
                                                           put(n2, gen);
                                                           put(n3, gen); }
 
-  // helper to add one element under many names to to _compiled_
+  // helper to add one element under many names to _compiled_
   private static void put(String[] names,       IntrinsicCode gen)
   {
     for (var n : names)
@@ -1223,7 +1234,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
 
 
   /**
-   * get the the method descriptor for a method in class c.
+   * get the method descriptor for a method in class c.
    * e.g. for args: Runtime.class, "fuzion_sys_net_listen"
    *      and {@code int fuzion_sys_net_listen(){}}
    *      it returns: ()I

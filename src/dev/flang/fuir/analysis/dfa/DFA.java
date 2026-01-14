@@ -472,7 +472,6 @@ public class DFA extends ANY
     {
       var r = switch (_fuir.getSpecialClazz(constCl))
         {
-        case c_bool -> boolAsVal(d[0] == 1);
         case c_i8   ,
              c_i16  ,
              c_i32  ,
@@ -1291,14 +1290,14 @@ public class DFA extends ANY
         @Override
         public boolean alwaysResultsInVoid(int s)
         {
-          if (s < 0)
+          if (s == NO_SITE)
             {
               return false;
             }
           else
             {
               var code = _fuir.codeAt(s);
-              return (code == ExprKind.Call && _fuir.clazzKind(_fuir.accessedClazz(s)) != FeatureKind.TypeParameter || code == ExprKind.Match) && site(s).alwaysResultsInVoid() || super.alwaysResultsInVoid(s);
+              return (code == ExprKind.Call && _fuir.accessedClazz(s) != NO_CLAZZ && _fuir.clazzKind(_fuir.accessedClazz(s)) != FeatureKind.TypeParameter || code == ExprKind.Match) && site(s).alwaysResultsInVoid() || super.alwaysResultsInVoid(s);
             }
         }
 
@@ -1860,7 +1859,11 @@ public class DFA extends ANY
   static Value wrappedJavaObject(Call cl)
   {
     var rc   = fuir(cl).clazzResultClazz(cl.calledClazz());
-    var result = cl._dfa.newInstance(rc, NO_SITE, cl._context);
+    var result = switch (fuir(cl).getSpecialClazz(rc))
+      {
+        case c_bool -> cl._dfa.bool();
+        default -> cl._dfa.newInstance(rc, NO_SITE, cl._context);
+      };
     setOuterRefs(cl, rc, result);
     return result;
   }
@@ -2023,14 +2026,14 @@ public class DFA extends ANY
     put("i32.infix ^"                    , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
     put("i64.infix ^"                    , cl -> { return NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())); } );
 
-    put("i8.type.equality"               , cl -> cl._dfa.bool() );
-    put("i16.type.equality"              , cl -> cl._dfa.bool() );
-    put("i32.type.equality"              , cl -> cl._dfa.bool() );
-    put("i64.type.equality"              , cl -> cl._dfa.bool() );
-    put("i8.type.lteq"                   , cl -> cl._dfa.bool() );
-    put("i16.type.lteq"                  , cl -> cl._dfa.bool() );
-    put("i32.type.lteq"                  , cl -> cl._dfa.bool() );
-    put("i64.type.lteq"                  , cl -> cl._dfa.bool() );
+    put("i8.type.equality"               , cl -> numericEquality(cl) );
+    put("i16.type.equality"              , cl -> numericEquality(cl) );
+    put("i32.type.equality"              , cl -> numericEquality(cl) );
+    put("i64.type.equality"              , cl -> numericEquality(cl) );
+    put("i8.type.lteq"                   , cl -> numericLteq(cl) );
+    put("i16.type.lteq"                  , cl -> numericLteq(cl) );
+    put("i32.type.lteq"                  , cl -> numericLteq(cl) );
+    put("i64.type.lteq"                  , cl -> numericLteq(cl) );
 
     put("u8.prefix -°"                   , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
     put("u16.prefix -°"                  , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
@@ -2077,14 +2080,14 @@ public class DFA extends ANY
     put("u32.infix ^"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
     put("u64.infix ^"                    , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
 
-    put("u8.type.equality"               , cl -> cl._dfa.bool() );
-    put("u16.type.equality"              , cl -> cl._dfa.bool() );
-    put("u32.type.equality"              , cl -> cl._dfa.bool() );
-    put("u64.type.equality"              , cl -> cl._dfa.bool() );
-    put("u8.type.lteq"                   , cl -> cl._dfa.bool() );
-    put("u16.type.lteq"                  , cl -> cl._dfa.bool() );
-    put("u32.type.lteq"                  , cl -> cl._dfa.bool() );
-    put("u64.type.lteq"                  , cl -> cl._dfa.bool() );
+    put("u8.type.equality"               , cl -> numericEquality(cl) );
+    put("u16.type.equality"              , cl -> numericEquality(cl) );
+    put("u32.type.equality"              , cl -> numericEquality(cl) );
+    put("u64.type.equality"              , cl -> numericEquality(cl) );
+    put("u8.type.lteq"                   , cl -> numericLteq(cl) );
+    put("u16.type.lteq"                  , cl -> numericLteq(cl) );
+    put("u32.type.lteq"                  , cl -> numericLteq(cl) );
+    put("u64.type.lteq"                  , cl -> numericLteq(cl) );
 
     put("i8.as_i32"                      , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
     put("i16.as_i32"                     , cl -> NumericValue.create(cl._dfa, fuir(cl).clazzResultClazz(cl.calledClazz())) );
@@ -2401,6 +2404,40 @@ public class DFA extends ANY
 
 
   /**
+   * returns bool, if exact value of one of the args is not known,
+   * otherwise true or false.
+   *
+   * @param cl
+   * @return
+   */
+  private static Value numericEquality(Call cl)
+  {
+    var v0 = (cl._args.get(0).value() instanceof NumericValue nv) ? nv._value : null;
+    var v1 = (cl._args.get(1).value() instanceof NumericValue nv) ? nv._value : null;
+    return v0 == null || v1 == null
+      ? cl._dfa.bool()
+      : cl._dfa.boolAsVal(v0 == v1);
+  }
+
+
+  /**
+   * returns bool, if exact value of one of the args is not known,
+   * otherwise true or false.
+   *
+   * @param cl
+   * @return
+   */
+  private static Value numericLteq(Call cl)
+  {
+    var v0 = (cl._args.get(0).value() instanceof NumericValue nv) ? nv._value : null;
+    var v1 = (cl._args.get(1).value() instanceof NumericValue nv) ? nv._value : null;
+    return v0 == null || v1 == null
+      ? cl._dfa.bool()
+      : cl._dfa.boolAsVal(v0 <= v1);
+  }
+
+
+  /**
    * create generic result base on calls result clazz
    *
    * @param cl
@@ -2447,8 +2484,9 @@ public class DFA extends ANY
   {
     return switch (fuir(cl).getSpecialClazz(rc))
       {
-        case c_i8, c_u16, c_i16, c_i32, c_i64, c_f32, c_f64, c_bool ->
+        case c_i8, c_u16, c_i16, c_i32, c_i64, c_f32, c_f64 ->
           cl._dfa.newInstance(rc, NO_SITE, cl._context);
+        case c_bool -> cl._dfa.bool();
         default -> {
           var res = Value.UNIT;
           if (!cl._dfa._fuir.clazzIsUnitType(rc))
@@ -2671,16 +2709,18 @@ public class DFA extends ANY
   Value newInstance(int cl, int site, Context context)
   {
     if (PRECONDITIONS) require
-      (!_fuir.clazzIsChoice(cl) || _fuir.clazzIs(cl, SpecialClazzes.c_bool));
+      (!_fuir.clazzIsChoice(cl));
 
     Value r;
     if (isBuiltInNumeric(cl))
       {
         r = NumericValue.create(DFA.this, cl);
       }
-    else if (_fuir.clazzIs(cl, SpecialClazzes.c_bool))
+    else if (_fuir.clazzIsRef(cl))
       {
-        r = bool();
+        var vc = _fuir.clazzAsValue(cl);
+        check(!_fuir.clazzIsRef(vc));
+        r = newInstance(vc, site, context).box(this, vc, cl, context);
       }
     else
       {
@@ -2703,12 +2743,6 @@ public class DFA extends ANY
         if (ao instanceof Instance a)
           {
             r = a;
-          }
-        else if (_fuir.clazzIsRef(cl))
-          {
-            var vc = _fuir.clazzAsValue(cl);
-            check(!_fuir.clazzIsRef(vc));
-            r = newInstance(vc, site, context).box(this, vc, cl, context);
           }
         else
           {

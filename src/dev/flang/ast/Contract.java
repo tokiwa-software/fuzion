@@ -613,7 +613,7 @@ public class Contract extends ANY
                 // need to check the conditions defined locally at all.
                 // However, we want to check the condition code for errors etc.,
                 // so we wrap it into `(true || <cond>)`
-                cond = new ParsedCall(BoolConst.TRUE,
+                cond = new ParsedCall(Call.TRUE,
                                       new ParsedName(pos, "infix ||"), new List<>(cond));
               }
             l.add(Match.createIf(p,
@@ -704,7 +704,7 @@ public class Contract extends ANY
     if (preBool)
       {
         new_code = new List<>(cc != null ? cc
-                                         : BoolConst.TRUE);
+                                         : Call.TRUE);
       }
     else if (cc != null)
       {

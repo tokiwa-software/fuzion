@@ -1,0 +1,3 @@
+# NYI: UNDER DEVELOPMENT:
+on windows wolfssl does not use default certificate store automatically
+thus cert validation fails

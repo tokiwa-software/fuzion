@@ -414,7 +414,7 @@ public class Profiler extends ANY
   public static void start()
   {
     if (showFlameGraph())
-      { // We cannot create Desktop in in shutdown hook, so we have to do it early:
+      { // We cannot create Desktop in shutdown hook, so we have to do it early:
         _desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
       }
     if (Profiler._samplingFrequency_ != 0)

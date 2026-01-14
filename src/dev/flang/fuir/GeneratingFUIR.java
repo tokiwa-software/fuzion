@@ -191,7 +191,7 @@ public class GeneratingFUIR extends FUIR
              var openTypeInstance = new AbstractCall()             // e.g. tuple.#Values_Of_Open_Type<n>
                {
                  @Override public SourcePosition     pos()                  { return call.pos(); }
-                 @Override public Expr               target()               { return new Current(call.pos(), currentClazz._type.feature()); }
+                 @Override public Expr               target()               { return cur; }
                  @Override public AbstractFeature    calledFeature()        { return currentClazz.feature().outerRef(); }
                  @Override public AbstractType       type()                 { return currentClazz.feature().outerRef().resultType(); }
                };
@@ -626,7 +626,6 @@ public class GeneratingFUIR extends FUIR
               case "bool"                      -> SpecialClazzes.c_bool        ;
               case "const_string"              -> SpecialClazzes.c_const_string;
               case FuzionConstants.STRING_NAME -> SpecialClazzes.c_String      ;
-              case "error"                     -> SpecialClazzes.c_error       ;
               case "Mutex"                     -> SpecialClazzes.c_Mutex       ;
               case "Condition"                 -> SpecialClazzes.c_Condition   ;
               case "File_Descriptor"           -> SpecialClazzes.c_File_Descriptor;

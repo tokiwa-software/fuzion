@@ -36,7 +36,7 @@
 # value of type 'bool'.
 #
 #
-public bool : choice false_ true_, property.equatable, java_primitive is
+public bool : choice false_ true_, property.equatable, property.hashable, java_primitive is
 
   # not
   public prefix ! bool =>
@@ -86,6 +86,16 @@ public bool : choice false_ true_, property.equatable, java_primitive is
       b
     else
       !b
+
+
+  # create hash code for this instance
+  #
+  # This should satisfy the following condition:
+  #
+  #   (T.equality a b) : (T.hash_code a = T.hash_code b)
+  #
+  public fixed redef type.hash_code(a bool) u64 => if a then 0 else 1
+
 
   # xor
   public infix ^   (other bool) bool => if bool.this (!other) else  other
