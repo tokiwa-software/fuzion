@@ -62,4 +62,4 @@ is
 
 
 public error(msg String) error =>
-  error "msg" nil
+  error msg nil
