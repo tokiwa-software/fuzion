@@ -205,7 +205,7 @@ public class JavaInterface extends FUIRContext
         case SpecialClazzes.c_Thread -> new JavaRef(o);
         default ->
           {
-            var result = Value.EMPTY_VALUE;
+            var result = Value.UNIT;
             if (!fuir().clazzIsUnitType(rc))
               {
                 var inst = new Instance(rc);
@@ -216,12 +216,12 @@ public class JavaInterface extends FUIRContext
                     var v = switch (fuir().clazzBaseName(f))
                       {
                       case "java_ref"   -> new JavaRef(o);
-                      case "forbidden" -> Value.NO_VALUE;
+                      case "forbidden" -> Value.VOID;
                       default -> fuir().clazzIsOuterRef(f)
                         ? new Instance(fuir().clazzOuterClazz(rc))
                         : (Value) (Object) new Object() { { if (true) throw new Error("unexpected field in fuzion.java.Array: "+fuir().clazzAsString(f)); }};
                       };
-                    if (v != Value.NO_VALUE && /* NYI: HACK: */ inst.refs.length > off)
+                    if (v != Value.VOID && /* NYI: HACK: */ inst.refs.length > off)
                       {
                         inst.refs[off] = v;
                       }
@@ -246,9 +246,11 @@ public class JavaInterface extends FUIRContext
        resultClazz > 0);
 
     var result = new Instance(resultClazz);
-    if (CHECKS) check
-      (result.refs.length == 1);    // an 'error' has exactly one ref field of type string
-    result.refs[0] = Interpreter.boxedConstString(e.getMessage().toString());
+
+    var optionI64 = fuir().clazzResultClazz(fuir().clazzArg(resultClazz, 1));
+
+    Interpreter.setField(fuir().clazzArg(resultClazz, 0), resultClazz, result, Interpreter.boxedConstString(e.getMessage().toString()));
+    Interpreter.setField(fuir().clazzArg(resultClazz, 1), resultClazz, result, Interpreter.tag(optionI64, fuir().clazzChoice(optionI64, 1), Value.UNIT, 1));
 
     return result;
   }

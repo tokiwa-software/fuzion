@@ -2491,11 +2491,13 @@ public class C extends ANY
    */
   public CExpr error(int clErr, CExpr str)
   {
+    var nil = CExpr.compoundLiteral(
+                      _types.clazz(_fuir.clazzResultClazz(_fuir.clazzArg(clErr, 1))),
+                      "." + CNames.TAG_NAME.code() + " = " + CExpr.int32const(1).code()).code();
     return CExpr.compoundLiteral(
       _names.struct(clErr),
-      "." + _names.fieldName(_fuir.clazzArg(clErr, 0)).code() + " = " +
-        str.code()
-      );
+      "." + _names.fieldName(_fuir.clazzArg(clErr, 0)).code() + " = " + str.code() + ", " +
+      "." + _names.fieldName(_fuir.clazzArg(clErr, 1)).code() + " = " + nil);
   }
 
 

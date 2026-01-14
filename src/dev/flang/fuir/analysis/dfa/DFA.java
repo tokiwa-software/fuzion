@@ -2516,8 +2516,18 @@ public class DFA extends ANY
     var okay = dfa.newTaggedValue(rc, res, 0);
     var error_cl = dfa._fuir.clazzChoice(rc, 1);
     var error = dfa.newInstance(error_cl, NO_SITE, cl._context);
+
     var msg = dfa._fuir.clazzArg(error_cl, 0);
     error.setField(dfa, msg, dfa.newConstString(null, cl));
+
+    var error_code_arg = dfa._fuir.clazzArg(error_cl, 1);
+    var option_i64 = dfa._fuir.clazzResultClazz(dfa._fuir.clazzArg(error_cl, 1));
+    var nil = dfa._fuir.clazzChoice(option_i64, 1);
+    var taggedNumVal = dfa.newTaggedValue(option_i64, NumericValue.create(cl._dfa, dfa._fuir.clazzChoice(option_i64, 0)), 0);
+    var taggedNilVal = dfa.newTaggedValue(option_i64, dfa.newInstance(nil, NO_SITE, cl._context), 1);
+    var error_code = taggedNilVal.join(dfa, taggedNumVal , option_i64);
+    error.setField(dfa, error_code_arg, error_code);
+
     var err = dfa.newTaggedValue(rc, error, 1);
     return okay.join(dfa, err, rc);
   }

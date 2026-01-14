@@ -186,7 +186,7 @@ public class Executor extends ProcessExpression<Value, Object>
   @Override
   public Value unitValue()
   {
-    return Value.EMPTY_VALUE;
+    return Value.UNIT;
   }
 
   @Override
