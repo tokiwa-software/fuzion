@@ -23,6 +23,20 @@
 
 data_size_test =>
 
+  x := units.data_size.tb 1
+  say "A {x.as_string_si} HDD is only $x."
+
+  max_val := units.data_size u128.max
+  say "The highest possible units.data_size is $max_val (base 2) or {max_val.as_string_si} (base 10)."
+  check max_val = units.data_size.max
+
+  val := units.data_size.kib 200
+  mult := 8.as_u128
+  val_mult := val * mult
+  say "$val times $mult is $val_mult or {val_mult.as_string units.byte_unit_iec.kib}."
+  say ""
+
+
   one_b := units.data_size.b 1
   two_b := units.data_size.b 2
 
@@ -40,7 +54,8 @@ data_size_test =>
       show   (n+1.as_u128) (ds + one_b) iec
       show   (n+2.as_u128) (ds + two_b) iec
 
-  # test decimal (si) prefixes
+  # test decimal (si) prefixes where they change from one unit to the next
+  # as well as where they change the number of displayed decimals
   for i in 0..33 do
     n := 10.as_u128 ** i.as_u128
     ds := units.data_size n
