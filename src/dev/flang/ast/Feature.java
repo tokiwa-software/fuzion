@@ -2678,7 +2678,7 @@ A ((Choice)) declaration must not contain a result type.
           ? this._outer.selfType().asRef()
           : this._outer.selfType();
         _outerRef = new Feature(res,
-                                _pos,
+                                SourcePosition.notAvailable,
                                 Visi.PRIV,
                                 outerRefType,
                                 outerRefName(),
