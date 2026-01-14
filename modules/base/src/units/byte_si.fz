@@ -17,20 +17,20 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature units.byte_unit_si
+#  Source code of Fuzion standard library feature units.byte_si
 #
 # -----------------------------------------------------------------------
 
-# units.byte_unit_si -- unit type defining units used for units.data_size
+# units.byte_si -- unit type defining units used for units.data_size
 #
 # Uses SI prefixes (base 10), e.g. 1000 Byte = 1 kilobyte.
 #
-public byte_unit_si(
+public byte_si(
             # the next smaller unit, like kilobyte is smaller than megabyte, if it exists
-            public smaller Lazy (option byte_unit_si),
+            public smaller Lazy (option byte_si),
 
             # the next larger unit, like gigabyte is larger than megabyte, if it exists
-            public larger  Lazy (option byte_unit_si),
+            public larger  Lazy (option byte_si),
 
             # the number of bytes in one of this unit
             public in_bytes u128,
@@ -43,44 +43,44 @@ public byte_unit_si(
 
   # byte unit
   #
-  public type.b units.byte_unit_si  => units.byte_unit_si nil kb  1.as_u128               "B"  "byte"
+  public type.b units.byte_si  => units.byte_si nil kb  1.as_u128               "B"  "byte"
 
   # kilobyte unit
   #
-  public type.kb units.byte_unit_si => units.byte_unit_si b   mb  1E3.as_u128**1.as_u128  "kB" "kilobyte"
+  public type.kb units.byte_si => units.byte_si b   mb  1E3.as_u128**1.as_u128  "kB" "kilobyte"
 
   # megabyte unit
   #
-  public type.mb units.byte_unit_si => units.byte_unit_si kb  gb  1E3.as_u128**2.as_u128  "MB" "megabyte"
+  public type.mb units.byte_si => units.byte_si kb  gb  1E3.as_u128**2.as_u128  "MB" "megabyte"
 
   # gigabyte unit
   #
-  public type.gb units.byte_unit_si => units.byte_unit_si mb  tb  1E3.as_u128**3.as_u128  "GB" "gigabyte"
+  public type.gb units.byte_si => units.byte_si mb  tb  1E3.as_u128**3.as_u128  "GB" "gigabyte"
 
   # terabyte unit
   #
-  public type.tb units.byte_unit_si => units.byte_unit_si gb  pb  1E3.as_u128**4.as_u128  "TB" "terabyte"
+  public type.tb units.byte_si => units.byte_si gb  pb  1E3.as_u128**4.as_u128  "TB" "terabyte"
 
   # petabyte unit
   #
-  public type.pb units.byte_unit_si => units.byte_unit_si tb  eb  1E3.as_u128**5.as_u128  "PB" "petabyte"
+  public type.pb units.byte_si => units.byte_si tb  eb  1E3.as_u128**5.as_u128  "PB" "petabyte"
 
   # exabyte unit
   #
-  public type.eb units.byte_unit_si => units.byte_unit_si pb  zb  1E3.as_u128**6.as_u128  "EB" "exabyte"
+  public type.eb units.byte_si => units.byte_si pb  zb  1E3.as_u128**6.as_u128  "EB" "exabyte"
 
   # zettabyte unit
   #
-  public type.zb units.byte_unit_si => units.byte_unit_si eb  yb  1E3.as_u128**7.as_u128  "ZB" "zettabyte"
+  public type.zb units.byte_si => units.byte_si eb  yb  1E3.as_u128**7.as_u128  "ZB" "zettabyte"
 
   # yottabyte unit
   #
-  public type.yb units.byte_unit_si => units.byte_unit_si zb  rb  1E3.as_u128**8.as_u128  "YB" "yottabyte"
+  public type.yb units.byte_si => units.byte_si zb  rb  1E3.as_u128**8.as_u128  "YB" "yottabyte"
 
   # ronnabyte unit
   #
-  public type.rb units.byte_unit_si => units.byte_unit_si yb  qb  1E3.as_u128**9.as_u128  "RB" "ronnabyte"
+  public type.rb units.byte_si => units.byte_si yb  qb  1E3.as_u128**9.as_u128  "RB" "ronnabyte"
 
   # quettabyte unit
   #
-  public type.qb units.byte_unit_si => units.byte_unit_si rb  nil 1E3.as_u128**10.as_u128 "QB" "quettabyte"
+  public type.qb units.byte_si => units.byte_si rb  nil 1E3.as_u128**10.as_u128 "QB" "quettabyte"

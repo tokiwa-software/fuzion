@@ -33,7 +33,7 @@ data_size_test =>
   val := units.data_size.kib 200
   mult := 8.as_u128
   val_mult := val * mult
-  say "$val times $mult is $val_mult or {val_mult.as_string units.byte_unit_iec.kib}."
+  say "$val times $mult is $val_mult or {val_mult.as_string units.byte_iec.kib}."
   say ""
 
 
