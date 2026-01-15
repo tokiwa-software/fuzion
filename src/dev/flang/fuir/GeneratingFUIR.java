@@ -607,8 +607,8 @@ public class GeneratingFUIR extends FUIR
         var s = SpecialClazzes.c_NOT_FOUND;
         if (cl.isRef() == cl.feature().isRef())  // not an boxed or explicit value clazz
           {
-            // NYI: OPTIMIZATION: Avoid creating all feature qualified names!
-            s = switch (cl.feature().qualifiedName())
+            // NOTE: this only works for features in universe!
+            s = switch (cl.feature().featureName().baseName())
               {
               case FuzionConstants.ANY_NAME    -> SpecialClazzes.c_Any         ;
               case FuzionConstants.I8_NAME     -> SpecialClazzes.c_i8          ;
@@ -636,12 +636,13 @@ public class GeneratingFUIR extends FUIR
               case "fuzion.runtime.stackoverflow" -> SpecialClazzes.c_fuzion_runtime_stackoverflow;
               default                          -> SpecialClazzes.c_NOT_FOUND   ;
               };
-            if (s != SpecialClazzes.c_NOT_FOUND)
+            if (s != SpecialClazzes.c_NOT_FOUND && s._argCount == cl.feature().arguments().size())
               {
                 _specialClazzes[s.ordinal()] = result;
+                cl._specialClazzId = s;
               }
           }
-        cl._specialClazzId = s;
+
         if (SHOW_NEW_CLAZZES) System.out.println("NEW CLAZZ "+cl);
         cl.init(fuirId);
 
