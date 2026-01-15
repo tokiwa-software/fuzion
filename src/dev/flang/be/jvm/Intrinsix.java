@@ -550,6 +550,8 @@ public class Intrinsix extends ANY implements ClassFileConstants
         yield res;
       }};
 
+    var optionI64 = jvm._fuir.clazzResultClazz(jvm._fuir.clazzArg(cl_err, 1));
+
     var neg = jvm.new0(cl_err)                                                               // error
       .andThen(Expr.DUP)                                                                     // error, error
       .andThen(jvm.boxedConstString(
@@ -558,6 +560,9 @@ public class Intrinsix extends ANY implements ClassFileConstants
           .andThen(Expr.invokeVirtual("java/lang/String", "getBytes", "(Ljava/nio/charset/Charset;)[B", ClassFileConstants.PrimitiveType.type_byte.array()))
       ))                                                                                     // error, error, string
       .andThen(jvm.putfield(jvm._fuir.clazzArg(cl_err, 0)))                                  // error
+      .andThen(Expr.DUP)                                                                     // error, error
+      .andThen(jvm._types._choices.tag(jvm, si, Expr.UNIT /* nil */, optionI64, 1))          // error, error, option i64
+      .andThen(jvm.putfield(jvm._fuir.clazzArg(cl_err, 1)))                                  // error
       .andThen(Expr.checkcast(jvm._types.javaType(cl_err)));
 
     var res = exec
