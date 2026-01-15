@@ -154,14 +154,14 @@ i128_test =>
 
 
   # test .as_f64
-  i128_max_plus_42:= u64.max.as_i128 + 42.as_i128
+  u64_max_plus_42:= u64.max.as_i128 + 42.as_i128
   say """
     {i128 0 6174}
     {i128 0 6174 .as_f64}
 
      {u64.max} <- u64.max"
-     $i128_max_plus_42 <- u64.max + 42
-    {i128_max_plus_42.as_f64} <- as_f64 (loss of precision)
+     $u64_max_plus_42 <- u64.max + 42
+    {u64_max_plus_42.as_f64} <- as_f64 (loss of precision)
 
      {i128.min} <- i128.min
     {i128.min.as_f64}                    <- i128.min.as_f64 (loss of precision)"""
