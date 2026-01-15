@@ -1586,13 +1586,13 @@ should be avoided as much as possible.
    */
   Pair<Expr, Expr> boxedConstString(Expr bytes)
   {
-    var cs = _fuir.clazz_const_string();
-    var ref_cs = _fuir.clazz_ref_const_string();
-    var cs_utf8_data = _fuir.clazz_const_string_utf8_data();
-    var arr = _fuir.clazz_array_u8();
+    var cs = _fuir.clazzConstString();
+    var ref_cs = _fuir.clazzRefConstString();
+    var cs_utf8_data = _fuir.clazzConstStringUTF8Data();
+    var arr = _fuir.clazzArrayU8();
     var internalArray = _fuir.clazzArg(arr,0);
-    var data = _fuir.clazz_fuzionSysArray_u8_data();
-    var length = _fuir.clazz_fuzionSysArray_u8_length();
+    var data = _fuir.clazzFuzionSysArrayU8Data();
+    var length = _fuir.clazzFuzionSysArrayU8Length();
     var fuzionSysArray = _fuir.clazzOuterClazz(data);
     var res = new0(cs)                                // stack: cs
       .andThen(Expr.DUP)                              //        cs, cs

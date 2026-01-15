@@ -55,7 +55,7 @@ public record ClazzRecord(
   String clazzOriginalName,
   int[] clazzActualGenerics,
   int lookupCall,
-  int lookup_static_finally,
+  int lookupStaticFinally,
   LifeTime lifeTime,
   byte[] clazzTypeName,
   String clazzAsStringHuman,
