@@ -215,7 +215,7 @@ abstract class CExpr extends CStmnt
 
 
   /**
-   * Create a C expression from a uint642_t constant
+   * Create a C expression from a uint64_t constant
    *
    * @return the resulting expression
    */

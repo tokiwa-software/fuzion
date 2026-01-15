@@ -2088,7 +2088,9 @@ public class DFA extends ANY
     put("u8.type.lteq"                   , cl -> numericLteq(cl) );
     put("u16.type.lteq"                  , cl -> numericLteq(cl) );
     put("u32.type.lteq"                  , cl -> numericLteq(cl) );
-    put("u64.type.lteq"                  , cl -> numericLteq(cl) );
+    //NYI: UNDER DEVELOPMENT: e.g. u64.max is represented as -1
+    // numericLteq does not work for this case yet
+    put("u64.type.lteq"                  , cl -> cl._dfa.bool() );
 
     put("i8.as_i32"                      , cl -> genericNumResult(cl) );
     put("i16.as_i32"                     , cl -> genericNumResult(cl) );
