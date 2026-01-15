@@ -200,14 +200,14 @@ public class OptimizedFUIR extends GeneratingFUIR {
                 clazzOriginalName(cl),
                 clazzActualGenerics(cl),
                 lookupCall(cl),
-                lookup_static_finally(cl),
+                lookupStaticFinally(cl),
                 clazzKind(cl) == FeatureKind.Routine ? lifeTime(cl) : null,
                 clazzTypeName(cl),
                 clazzAsStringHuman(cl),
                 clazzSrcFile(cl),
                 clazzDeclarationPos(cl).bytePos(),
                 lookupJavaRef(cl),
-                lookup_cause(cl)
+                lookupCause(cl)
                 );
           }
         oos.writeObject(clazzes);

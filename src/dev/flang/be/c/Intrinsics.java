@@ -562,7 +562,7 @@ public class Intrinsics extends ANY
                 {
                   var call     = c._fuir.lookupCall(c._fuir.clazzActualGeneric(cl, 0));
                   var call_def = c._fuir.lookupCall(c._fuir.clazzActualGeneric(cl, 1));
-                  var finallie = c._fuir.lookup_static_finally(ecl);
+                  var finallie = c._fuir.lookupStaticFinally(ecl);
                   if (c._fuir.clazzNeedsCode(call))
                     {
                       var jmpbuf = new CIdent("jmpbuf");

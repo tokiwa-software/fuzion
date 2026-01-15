@@ -613,7 +613,7 @@ public abstract class FUIR extends IR
    *
    * @return the index of the requested {@code effect.finally} feature's clazz.
    */
-  public abstract int lookup_static_finally(int cl);
+  public abstract int lookupStaticFinally(int cl);
 
 
   /**
@@ -633,7 +633,7 @@ public abstract class FUIR extends IR
    *
    * @return the index of the requested cause feature.
    */
-  public abstract int lookup_cause(int ecl);
+  public abstract int lookupCause(int ecl);
 
 
   /**
@@ -663,7 +663,7 @@ public abstract class FUIR extends IR
    *
    * @return the id of const_string or -1 if that clazz was not created.
    */
-  public int clazz_const_string()
+  public int clazzConstString()
   {
     return clazz(SpecialClazzes.c_const_string);
   }
@@ -674,7 +674,7 @@ public abstract class FUIR extends IR
    *
    * @return the id of ref const_string or NO_CLAZZ if that clazz was not created.
    */
-  public abstract int clazz_ref_const_string();
+  public abstract int clazzRefConstString();
 
 
   /**
@@ -682,7 +682,7 @@ public abstract class FUIR extends IR
    *
    * @return the id of const_string.utf8_data or -1 if that clazz was not created.
    */
-  public int clazz_const_string_utf8_data()
+  public int clazzConstStringUTF8Data()
   {
     return clazz(SpecialClazzes.c_CS_utf8_data);
   }
@@ -693,9 +693,9 @@ public abstract class FUIR extends IR
    *
    * @return the id of const_string.array or -1 if that clazz was not created.
    */
-  public int clazz_array_u8()
+  public int clazzArrayU8()
   {
-    var utf8_data = clazz_const_string_utf8_data();
+    var utf8_data = clazzConstStringUTF8Data();
     return utf8_data == NO_CLAZZ ? NO_CLAZZ : clazzResultClazz(utf8_data);
   }
 
@@ -705,9 +705,9 @@ public abstract class FUIR extends IR
    *
    * @return the id of {@code fuzion.sys.array u8} or -1 if that clazz was not created.
    */
-  public int clazz_fuzionSysArray_u8()
+  public int clazzFuzionSysArrayU8()
   {
-    var a8 = clazz_array_u8();
+    var a8 = clazzArrayU8();
     var ia = a8 == NO_CLAZZ ? NO_CLAZZ : clazzArg(a8, 0);
     return ia == NO_CLAZZ ? NO_CLAZZ : clazzResultClazz(ia);
   }
@@ -718,9 +718,9 @@ public abstract class FUIR extends IR
    *
    * @return the id of {@code (fuzion.sys.array u8).data} or -1 if that clazz was not created.
    */
-  public int clazz_fuzionSysArray_u8_data()
+  public int clazzFuzionSysArrayU8Data()
   {
-    var sa8 = clazz_fuzionSysArray_u8();
+    var sa8 = clazzFuzionSysArrayU8();
     return sa8 == NO_CLAZZ ? NO_CLAZZ : clazzArg(sa8, 0);
   }
 
@@ -730,9 +730,9 @@ public abstract class FUIR extends IR
    *
    * @return the id of {@code (fuzion.sys.array u8).length} or -1 if that clazz was not created.
    */
-  public int clazz_fuzionSysArray_u8_length()
+  public int clazzFuzionSysArrayU8Length()
   {
-    var sa8 = clazz_fuzionSysArray_u8();
+    var sa8 = clazzFuzionSysArrayU8();
     return  sa8 == NO_CLAZZ ? NO_CLAZZ : clazzArg(sa8, 1);
   }
 

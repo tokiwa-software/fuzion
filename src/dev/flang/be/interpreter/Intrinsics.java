@@ -777,7 +777,7 @@ public class Intrinsics extends ANY
               // the callbacks to Fuzion for the code, fallback and finally:
               var call     = fuir.lookupCall(fuir.clazzActualGeneric(innerClazz, 0));
               var call_def = fuir.lookupCall(fuir.clazzActualGeneric(innerClazz, 1));
-              var finallie = fuir.lookup_static_finally(ecl);
+              var finallie = fuir.lookupStaticFinally(ecl);
 
               Abort aborted = null;
               try

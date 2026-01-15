@@ -744,7 +744,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
           var eid = jvm.effectId(ecl);
           var call     = jvm._fuir.lookupCall(jvm._fuir.clazzActualGeneric(cc, 0));
           var call_def = jvm._fuir.lookupCall(jvm._fuir.clazzActualGeneric(cc, 1));
-          var finallie = jvm._fuir.lookup_static_finally(ecl);
+          var finallie = jvm._fuir.lookupStaticFinally(ecl);
           var ejt = jvm._types.resultType(ecl);
           var unit_effect = ejt == ClassFileConstants.PrimitiveType.type_void;
           var try_end   = new Label();
@@ -771,7 +771,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
 
           Expr handle_non_abort_exception = jvm._fuir.getSpecialClazz(ecl) != SpecialClazzes.c_fuzion_runtime_stackoverflow
               ? pop_fin_and_throw
-              : handle_so_exception(jvm, si, args, jvm._fuir.lookup_cause(ecl), call_def, pop_effect, call_finally, pop_and_finally);
+              : handle_so_exception(jvm, si, args, jvm._fuir.lookupCause(ecl), call_def, pop_effect, call_finally, pop_and_finally);
 
           var result = Expr.iconst(eid)
             .andThen(unit_effect ? args.get(0).drop()

@@ -1736,9 +1736,9 @@ public class GeneratingFUIR extends FUIR
    * @return the id of ref const_string or NO_CLAZZ if that clazz was not created.
    */
   @Override
-  public int clazz_ref_const_string()
+  public int clazzRefConstString()
   {
-    var cc = id2clazz(clazz_const_string());
+    var cc = id2clazz(clazzConstString());
     return cc.asRef()._id;
   }
 
@@ -1820,7 +1820,7 @@ public class GeneratingFUIR extends FUIR
    * @return the index of the requested {@code effect.finally} feature's clazz.
    */
   @Override
-  public int lookup_static_finally(int cl)
+  public int lookupStaticFinally(int cl)
   {
     if (PRECONDITIONS) require
       (cl >= CLAZZ_BASE,
@@ -1860,7 +1860,7 @@ public class GeneratingFUIR extends FUIR
    * @return the index of the requested cause feature.
    */
   @Override
-  public int lookup_cause(int ecl)
+  public int lookupCause(int ecl)
   {
     if (PRECONDITIONS) require
       (ecl >= CLAZZ_BASE,
