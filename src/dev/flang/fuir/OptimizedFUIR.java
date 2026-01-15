@@ -206,7 +206,8 @@ public class OptimizedFUIR extends GeneratingFUIR {
                 clazzAsStringHuman(cl),
                 clazzSrcFile(cl),
                 clazzDeclarationPos(cl).bytePos(),
-                lookupJavaRef(cl)
+                lookupJavaRef(cl),
+                lookup_cause(cl)
                 );
           }
         oos.writeObject(clazzes);

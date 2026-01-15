@@ -28,6 +28,7 @@ package dev.flang.be.jvm;
 
 import static dev.flang.ir.IR.NO_CLAZZ;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeMap;
@@ -768,7 +769,9 @@ public class Intrinsix extends ANY implements ClassFileConstants
           var pop_and_finally   = pop_effect.andThen(call_finally);     // pop effect and call finally
           var pop_fin_and_throw = pop_and_finally.andThen(Expr.THROW);  // pop effect, call finally and rethrow exception from stack
 
-          Expr handle_non_abort_exception = pop_fin_and_throw; // NYI: UNDER DEVELOPMENT: catch StackOverflow here
+          Expr handle_non_abort_exception = jvm._fuir.getSpecialClazz(ecl) != SpecialClazzes.c_fuzion_runtime_stackoverflow
+              ? pop_fin_and_throw
+              : handle_so_exception(jvm, si, args, jvm._fuir.lookup_cause(ecl), call_def, pop_effect, call_finally, pop_and_finally);
 
           var result = Expr.iconst(eid)
             .andThen(unit_effect ? args.get(0).drop()
@@ -1079,6 +1082,40 @@ public class Intrinsix extends ANY implements ClassFileConstants
                             jvm.reportErrorInCode(msg));
         });
   }
+
+
+  /**
+   * Handle StackOverflow exception
+   */
+  private static Expr handle_so_exception(JVM jvm, int si, List<Expr> args, int cause, int call_def, Expr pop_effect, Expr call_finally, Expr pop_and_finally)
+  {
+    var try_end   = new Label();
+    var try_catch = new Label();
+    var try_after = new Label();
+    var try_start = Expr.tryCatch(try_end,
+                                  try_catch,
+                                  // we need to catch throwable
+                                  Names.ABORT_TYPE);
+
+    return Expr.POP
+          .andThen(Expr.POP) // NYI: UNDER DEVELOPMENT: convert Throwable to fuzion String
+          .andThen(args.get(0)) // load the effect to call `cause` on
+          .andThen(jvm.boxedConstString("StackOverflow".getBytes(StandardCharsets.UTF_8)).v0())
+          .andThen(try_start)
+          .andThen(jvm._types.invokeStatic(cause, jvm._fuir.sitePos(si).line()))
+          .andThen(try_end)
+          .andThen(pop_and_finally)
+          .andThen(Expr.gotoLabel(try_after))
+          .andThen(try_catch)
+          .andThen(Expr.POP) // pop abort exception that was caused by calling cause of stackoverflow effect
+          .andThen(args.get(2))
+          .andThen(pop_effect)
+          .andThen(Expr.DUP)
+          .andThen(call_finally)
+          .andThen(jvm._types.invokeStatic(call_def, jvm._fuir.sitePos(si).line()))
+          .andThen(try_after);
+  }
+
 
   // helper to add one element to _compiled_
   private static void put(String n1, IntrinsicCode gen)

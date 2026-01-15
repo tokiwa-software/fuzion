@@ -292,6 +292,13 @@ public class LibraryFuir extends FUIR {
     return NO_CLAZZ;
   }
 
+
+  @Override
+  public int lookup_cause(int ecl)
+  {
+    return _clazzes[clazzId2num(ecl)].lookupCause();
+  }
+
   @Override
   public boolean clazzIsUnitType(int cl)
   {
