@@ -208,7 +208,7 @@ public class Block extends AbstractBlock
       else
         {
           if (CHECKS) check
-            (firstNonBuiltIn._sourceFile == lastNonBuiltIn._sourceFile);
+            (firstNonBuiltIn._sourceFile._fileName == lastNonBuiltIn._sourceFile._fileName);
 
           // NYI: UNDER DEVELOPMENT: hack, positions used for loops are not always in ascending order.
           result = firstNonBuiltIn.bytePos() > lastNonBuiltIn.pos().byteEndPos()
