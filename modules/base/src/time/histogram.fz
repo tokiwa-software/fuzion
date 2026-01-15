@@ -416,7 +416,7 @@ is
                else
                  str1 + "\n"
       else
-        t2 := (i64 0 .. 64 : 8).map (i -> largest i .as_string.trim.pad_center 8)
+        t2 := (i64 0 .. 64 : 8).map (i -> largest i .as_string.pad_center 8)
                                .as_string ""
         bot :=    ("     " + (vert + empt*7)*9 + vert + "\n" +
                    "  "+t2+"   >\n")
