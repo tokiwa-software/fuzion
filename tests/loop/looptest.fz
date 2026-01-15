@@ -221,6 +221,7 @@ looptest is
   testLoop11(data array i32, isWhatWeWant (i32) -> bool) i32 =>
     for ix := 0, ix + 1
     while ix < data.length
+    else ix
   chck (testLoop11(a, (i -> i >    100)) =  100) "testLoop11 returns 100 in index branch"
   chck (testLoop11(a, (i -> i >  10000)) =  100) "testLoop11 returns 100 in index branch"
 
@@ -230,6 +231,7 @@ looptest is
       ix := 0, ix + 1
       found := false, found || isWhatWeWant data[ix-1]
     while ix < data.length
+    else found
   chck (testLoop12(a, (i -> i >    100)) <=>  true) "testLoop12 returns true  in index branch"
   chck (testLoop12(a, (i -> i >  10000)) <=> false) "testLoop12 returns false in index branch"
 
@@ -239,6 +241,7 @@ looptest is
       ix  := 0, ix + 1
       sum := 0, sum + data[ix - 1]
     while ix < data.length
+    else sum
   chck (testLoop13(a) =  312020) "testLoop13 returns 312020 in index branch"
 
   testWriteToDeclaredVar =>

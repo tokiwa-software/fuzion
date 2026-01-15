@@ -184,6 +184,8 @@ public numeric : property.hashable, property.orderable is
     for
       bs := numeric.this.one, bs * b
     while numeric.this / b ≥ bs
+    else
+      bs
 
 
   # -----------------------------------------------------------------------

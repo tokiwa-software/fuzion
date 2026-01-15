@@ -48,4 +48,6 @@ reg_issue2280 is
 
       s := t + first + last
     while l != "" do
-      say s)
+      say s
+    else
+      s)
