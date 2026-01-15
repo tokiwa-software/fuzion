@@ -135,7 +135,7 @@ public class ParserTool extends ANY
         /* readStdin               */ false,
         /* executeCode             */ null,
         /* main                    */ isStdLib ? null : tempFile.getAbsolutePath(),
-        /* moduleName              */ "main",
+        /* moduleName              */ FuzionConstants.MAIN_MODULE_NAME,
         /* loadSources             */ true,
         /* needsEscapeAnalysis     */ false,
         /* serializeFuir           */ false,
@@ -216,6 +216,13 @@ public class ParserTool extends ANY
    */
   public static SourcePosition endOfFeature(AbstractFeature feature)
   {
+
+    // NYI: UNDER DEVELOPMENT:
+    //
+    // return feature.isRoutine()
+    //   ? new SourcePosition(feature.pos()._sourceFile, feature.code().sourceRange().byteEndPos())
+    //   : feature.pos();
+
     if (PRECONDITIONS)
       require(!feature.pos().isBuiltIn());
 

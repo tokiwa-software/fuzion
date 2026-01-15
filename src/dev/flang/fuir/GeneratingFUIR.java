@@ -191,7 +191,7 @@ public class GeneratingFUIR extends FUIR
              var openTypeInstance = new AbstractCall()             // e.g. tuple.#Values_Of_Open_Type<n>
                {
                  @Override public SourcePosition     pos()                  { return call.pos(); }
-                 @Override public Expr               target()               { return new Current(call.pos(), currentClazz._type.feature()); }
+                 @Override public Expr               target()               { return cur; }
                  @Override public AbstractFeature    calledFeature()        { return currentClazz.feature().outerRef(); }
                  @Override public AbstractType       type()                 { return currentClazz.feature().outerRef().resultType(); }
                };
@@ -626,7 +626,6 @@ public class GeneratingFUIR extends FUIR
               case "bool"                      -> SpecialClazzes.c_bool        ;
               case "const_string"              -> SpecialClazzes.c_const_string;
               case FuzionConstants.STRING_NAME -> SpecialClazzes.c_String      ;
-              case "error"                     -> SpecialClazzes.c_error       ;
               case "Mutex"                     -> SpecialClazzes.c_Mutex       ;
               case "Condition"                 -> SpecialClazzes.c_Condition   ;
               case "File_Descriptor"           -> SpecialClazzes.c_File_Descriptor;
@@ -635,6 +634,7 @@ public class GeneratingFUIR extends FUIR
               case "Mapped_Memory"             -> SpecialClazzes.c_Mapped_Memory;
               case "Native_Ref"                -> SpecialClazzes.c_Native_Ref;
               case "Thread"                    -> SpecialClazzes.c_Thread;
+              case "fuzion.runtime.stackoverflow" -> SpecialClazzes.c_fuzion_runtime_stackoverflow;
               default                          -> SpecialClazzes.c_NOT_FOUND   ;
               };
             if (s != SpecialClazzes.c_NOT_FOUND)
@@ -1736,9 +1736,9 @@ public class GeneratingFUIR extends FUIR
    * @return the id of ref const_string or NO_CLAZZ if that clazz was not created.
    */
   @Override
-  public int clazz_ref_const_string()
+  public int clazzRefConstString()
   {
-    var cc = id2clazz(clazz_const_string());
+    var cc = id2clazz(clazzConstString());
     return cc.asRef()._id;
   }
 
@@ -1820,7 +1820,7 @@ public class GeneratingFUIR extends FUIR
    * @return the index of the requested {@code effect.finally} feature's clazz.
    */
   @Override
-  public int lookup_static_finally(int cl)
+  public int lookupStaticFinally(int cl)
   {
     if (PRECONDITIONS) require
       (cl >= CLAZZ_BASE,
@@ -1849,6 +1849,28 @@ public class GeneratingFUIR extends FUIR
        cl < CLAZZ_BASE + _clazzes.size());
 
     return id2clazz(cl).lookupNeeded(Types.resolved.f_concur_atomic_v)._id;
+  }
+
+
+  /**
+   * For a clazz of eff.fallible, lookup cause.
+   *
+   * @param ecl index of a clazz representing fallible effect
+   *
+   * @return the index of the requested cause feature.
+   */
+  @Override
+  public int lookupCause(int ecl)
+  {
+    if (PRECONDITIONS) require
+      (ecl >= CLAZZ_BASE,
+       ecl < CLAZZ_BASE + _clazzes.size());
+
+    return !id2clazz(ecl).feature().inheritsFrom(Types.resolved.f_eff_fallible)
+      ? NO_CLAZZ
+      : _lookupDone
+      ? id2clazz(ecl).lookup(Types.resolved.f_eff_fallible_cause)._id
+      : id2clazz(ecl).lookupNeeded(Types.resolved.f_eff_fallible_cause)._id;
   }
 
 

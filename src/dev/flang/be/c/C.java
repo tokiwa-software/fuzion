@@ -260,7 +260,6 @@ public class C extends ANY
     {
       return switch (_fuir.getSpecialClazz(constCl))
         {
-          case c_bool -> new Pair<>(primitiveExpression(SpecialClazzes.c_bool, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
           case c_i8   -> new Pair<>(primitiveExpression(SpecialClazzes.c_i8,   ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
           case c_i16  -> new Pair<>(primitiveExpression(SpecialClazzes.c_i16,  ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
           case c_i32  -> new Pair<>(primitiveExpression(SpecialClazzes.c_i32,  ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
@@ -1445,7 +1444,6 @@ public class C extends ANY
   {
     return switch (sc)
       {
-      case c_bool -> 1;
       case c_u8   -> 1;
       case c_u16  -> 2;
       case c_u32  -> 4;
@@ -1545,26 +1543,26 @@ public class C extends ANY
    */
   CExpr boxedConstString(CExpr str, CExpr len)
   {
-    var data           = _names.fieldName(_fuir.clazz_fuzionSysArray_u8_data());
-    var length         = _names.fieldName(_fuir.clazz_fuzionSysArray_u8_length());
-    var internal_array = _names.fieldName(_fuir.clazzArg(_fuir.clazz_array_u8(), 0));
-    var utf8_data      = _names.fieldName(_fuir.clazz_const_string_utf8_data());
+    var data           = _names.fieldName(_fuir.clazzFuzionSysArrayU8Data());
+    var length         = _names.fieldName(_fuir.clazzFuzionSysArrayU8Length());
+    var internal_array = _names.fieldName(_fuir.clazzArg(_fuir.clazzArrayU8(), 0));
+    var utf8_data      = _names.fieldName(_fuir.clazzConstStringUTF8Data());
 
     var sysArray = CExpr.compoundLiteral(
-        _types.clazz(_fuir.clazzResultClazz(_fuir.clazz_fuzionSysArray_u8())),
+        _types.clazz(_fuir.clazzResultClazz(_fuir.clazzFuzionSysArrayU8())),
         "." + data.code() + " = " + str.castTo("void *").code() +  "," +
           "." + length.code() + " = " + len.code());
 
     var array = CExpr.compoundLiteral(
-        _types.clazz(_fuir.clazz_array_u8()),
+        _types.clazz(_fuir.clazzArrayU8()),
         "." + internal_array.code() + " = " + sysArray.code());
 
     var constStr = CExpr
       .compoundLiteral(
-        _types.clazz(_fuir.clazz_const_string()),
+        _types.clazz(_fuir.clazzConstString()),
         "." + utf8_data.code() + " = " + array.code());
 
-    var refConstStr = _fuir.clazz_ref_const_string();
+    var refConstStr = _fuir.clazzRefConstString();
     var res = CExpr
       .compoundLiteral(
         _names.struct(refConstStr),
@@ -2380,6 +2378,7 @@ public class C extends ANY
                 returnOutcome(
                   _fuir.clazzChoice(cl, 1),
                     jStringToError(
+                      _fuir.clazzChoice(cl, 1),
                       tmp
                         .field(CNames.CHOICE_UNION_NAME)
                         .field(CIdent.choiceEntry(1))
@@ -2472,9 +2471,9 @@ public class C extends ANY
    *
    * @return a c expression that creates a fuzion const string.
    */
-  private CExpr jStringToError(CExpr field)
+  private CExpr jStringToError(int clErr, CExpr field)
   {
-    return error(boxedConstString(
+    return error(clErr, boxedConstString(
         CExpr.call("fzE_java_string_to_utf8_bytes", new List<>(field)),
         CExpr.call("strlen", new List<>(
             CExpr.call("fzE_java_string_to_utf8_bytes",
@@ -2490,13 +2489,15 @@ public class C extends ANY
    * @param str
    * @return
    */
-  public CExpr error(CExpr str)
+  public CExpr error(int clErr, CExpr str)
   {
+    var nil = CExpr.compoundLiteral(
+                      _types.clazz(_fuir.clazzResultClazz(_fuir.clazzArg(clErr, 1))),
+                      "." + CNames.TAG_NAME.code() + " = " + CExpr.int32const(1).code()).code();
     return CExpr.compoundLiteral(
-      _names.struct(_fuir.clazz_error()),
-      "." + _names.fieldName(_fuir.clazzArg(_fuir.clazz_error(), 0)).code() + " = " +
-        str.code()
-      );
+      _names.struct(clErr),
+      "." + _names.fieldName(_fuir.clazzArg(clErr, 0)).code() + " = " + str.code() + ", " +
+      "." + _names.fieldName(_fuir.clazzArg(clErr, 1)).code() + " = " + nil);
   }
 
 

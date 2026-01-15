@@ -115,15 +115,22 @@ public class Parser extends Lexer
    */
   private SourcePosition _then = null;      // NYI: CLEANUP: state in parser should be avoided see #4991
 
+  /**
+   * Are we parsing for the language server and thus need to
+   * be more tolerant for incomplete source code?
+   */
+  private final boolean _isLanguageServer;
+
   /*--------------------------  constructors  ---------------------------*/
 
 
   /**
    * Create a parser for the given file or byte array
    */
-  public Parser(Path fname, byte[] sf)
+  public Parser(Path fname, byte[] sf, boolean isLanguageServer)
   {
     super(fname, sf);
+    this._isLanguageServer = isLanguageServer;
   }
 
 
@@ -133,6 +140,7 @@ public class Parser extends Lexer
   private Parser(Parser original)
   {
     super(original);
+    this._isLanguageServer = original._isLanguageServer;
   }
 
 
@@ -355,7 +363,7 @@ field       : returnType
     return
       isNonEmptyVisibilityPrefix() ||
       isModifiersPrefix() ||
-      (isNamePrefix() || current() == Token.t_type) && fork().skipFeaturePrefix();
+      (isNamePrefix() && !isAnonymousPrefix() || current() == Token.t_type) && fork().skipFeaturePrefix();
   }
 
 
@@ -630,6 +638,10 @@ name        : IDENT                            // all parts of name must be in s
           default: throw new Error(current(mayBeAtMinIndent).toString());
           }
         sameLine(oldLine);
+      }
+    else if (_isLanguageServer)
+      {
+        result = new ParsedName(sourcePos(), "");
       }
     else if (!ignoreError)
       {
@@ -2946,9 +2958,12 @@ elseBlock   : "else" block
     SourcePosition oldOuterElse = _outerElse;
     _outerElse = tokenSourcePos();
 
+    var elseLine = tokenSourcePos().line();
     if (skip(true, Token.t_else))
       {
-        if (current() == Token.t_if)
+        // only use special handling for `else if` when they are in the same line
+        // otherwise it is a normal else block that might contain an `if`
+        if (current() == Token.t_if && elseLine == tokenSourcePos().line())
           {
             result = new Block(false, new List<Expr>(ifexpr(true)));
           }
@@ -3143,7 +3158,7 @@ universeCall      : universe dot call
   /**
    * Parse anonymous
    *
-anonymous   : "ref"
+anonymous   : "_"
               inherit
               "is"
               block
@@ -3154,9 +3169,8 @@ anonymous   : "ref"
     var oldIndent = setMinIndent(tokenPos());
     var sl = sameLine(line());
     SourcePosition pos = tokenSourceRange();
-    if (CHECKS) check
-      (current() == Token.t_ref);
-    ReturnType r = returnType();  // only `ref` return type allowed.
+    check(skipName());
+    ReturnType r = RefType.INSTANCE; // NYI: UNDER DEVELOPMENT: value type
     var        i = inherit();
     match(Token.t_is, "anonymous");
     Block      b = block();
@@ -3176,7 +3190,11 @@ anonymous   : "ref"
    */
   boolean isAnonymousPrefix()
   {
-    return current() == Token.t_ref;
+    var f = fork();
+    return f.current() == Token.t_ident
+      && f.identifier().equals("_")
+      && f.skipName()
+      && f.skipColon();
   }
 
 
