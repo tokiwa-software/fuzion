@@ -1247,7 +1247,7 @@ public class AstErrors extends ANY
     int count = (int)f.redefines().stream().filter(af->af.preFeature() == null).count();
 
     error(f.contract()._hasPre,
-          "Precodition added, although implicit " + code("pre true") + " was inherited",
+          "Precondition added, although implicit " + code("pre true") + " was inherited",
           s(f) + " redefines " + StringHelpers.plural(count, "feature") + " " + redefinedPreTrue
           + " which " + (count>1 ? "do" : "does") + " not have an explicit precondition, leading to implicit "
           + code("pre true") + " being inherited, which results in this precondition never being called."
