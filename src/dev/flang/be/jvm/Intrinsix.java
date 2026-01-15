@@ -28,6 +28,7 @@ package dev.flang.be.jvm;
 
 import static dev.flang.ir.IR.NO_CLAZZ;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeMap;
@@ -141,7 +142,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
             jvm._fuir.clazzIs(rc, SpecialClazzes.c_u64 ) ||
             jvm._fuir.clazzIs(rc, SpecialClazzes.c_f32 ) ||
             jvm._fuir.clazzIs(rc, SpecialClazzes.c_bool) ||
-            jvm._fuir.clazzIs(rc, SpecialClazzes.c_unit);
+            jvm._fuir.clazzIsUnitType(rc);
           return new Pair<>(Expr.iconst(r ? 1 : 0), Expr.UNIT);
         });
 
@@ -400,7 +401,6 @@ public class Intrinsix extends ANY implements ClassFileConstants
   {
     return switch (jvm._fuir.getSpecialClazz(rc))
       {
-      case c_unit -> Expr.ACONST_NULL;
       case c_i8 -> {
         yield Expr.checkcast(new ClassType("java/lang/Byte"))
           .andThen(Expr.invokeVirtual("java/lang/Byte", "byteValue", "()B", PrimitiveType.type_byte));
@@ -434,17 +434,22 @@ public class Intrinsix extends ANY implements ClassFileConstants
           .andThen(Expr.invokeVirtual("java/lang/Boolean", "booleanValue", "()Z", PrimitiveType.type_boolean));
       }
       default -> {
-        var rt = jvm._types.javaType(rc);
-        var jref = jvm._fuir.lookupJavaRef(rc);
+        var result = Expr.ACONST_NULL;
+        if (!jvm._fuir.clazzIsUnitType(rc))
+          {
+            var rt = jvm._types.javaType(rc);
+            var jref = jvm._fuir.lookupJavaRef(rc);
 
-        if (CHECKS) check
-          (jref != FUIR.NO_CLAZZ);
+            if (CHECKS) check
+              (jref != FUIR.NO_CLAZZ);
 
-        yield jvm.new0(rc)                                            // result, rc0
-          .andThen(Expr.DUP_X1)                                       // rc0, result, rc0
-          .andThen(Expr.SWAP)                                         // rc0, rc0, result
-          .andThen(jvm.putfield(jref))                                // rc0
-          .is(rt);
+            result = jvm.new0(rc)                                            // result, rc0
+              .andThen(Expr.DUP_X1)                                       // rc0, result, rc0
+              .andThen(Expr.SWAP)                                         // rc0, rc0, result
+              .andThen(jvm.putfield(jref))                                // rc0
+              .is(rt);
+          }
+        yield result;
       }
       };
   }
@@ -466,11 +471,10 @@ public class Intrinsix extends ANY implements ClassFileConstants
     var rc0 = jvm._fuir.clazzChoice(rc, 0);
     // for storing the result of exec
     int slot  = jvm.allocLocal(si, JAVA_LANG_OBJECT.stackSlots());      // local var slot.
-    var cl_err = jvm._fuir.clazz_error();
+    var cl_err = jvm._fuir.clazzChoice(rc, 1);
 
     var pos = switch (jvm._fuir.getSpecialClazz(rc0))
       {
-      case c_unit -> Expr.ACONST_NULL;
       case c_i8 -> {
         yield Expr.aload(slot, JAVA_LANG_OBJECT)
           .andThen(
@@ -528,19 +532,26 @@ public class Intrinsix extends ANY implements ClassFileConstants
            c_Thread ->
         Expr.aload(slot, JAVA_LANG_OBJECT);
       default -> {
-        var rt = jvm._types.javaType(rc0);
-        var jref = jvm._fuir.lookupJavaRef(rc0);
+        var res = Expr.ACONST_NULL;
+        if (!jvm._fuir.clazzIsUnitType(rc0))
+          {
+            var rt = jvm._types.javaType(rc0);
+            var jref = jvm._fuir.lookupJavaRef(rc0);
 
-        if (CHECKS) check
-          (jref != FUIR.NO_CLAZZ);
+            if (CHECKS) check
+              (jref != FUIR.NO_CLAZZ);
 
-        yield Expr.aload(slot, JAVA_LANG_OBJECT)
-          .andThen(jvm.new0(rc0))                                            // result, rc0
-          .andThen(Expr.DUP_X1)                                              // rc0, result, rc0
-          .andThen(Expr.SWAP)                                                // rc0, rc0, result
-          .andThen(jvm.putfield(jref))                                       // rc0
-          .is(rt);
+            res = Expr.aload(slot, JAVA_LANG_OBJECT)
+              .andThen(jvm.new0(rc0))                                            // result, rc0
+              .andThen(Expr.DUP_X1)                                              // rc0, result, rc0
+              .andThen(Expr.SWAP)                                                // rc0, rc0, result
+              .andThen(jvm.putfield(jref))                                       // rc0
+              .is(rt);
+          }
+        yield res;
       }};
+
+    var optionI64 = jvm._fuir.clazzResultClazz(jvm._fuir.clazzArg(cl_err, 1));
 
     var neg = jvm.new0(cl_err)                                                               // error
       .andThen(Expr.DUP)                                                                     // error, error
@@ -549,7 +560,10 @@ public class Intrinsix extends ANY implements ClassFileConstants
           .andThen(Expr.getstatic("java/nio/charset/StandardCharsets", "UTF_8", new ClassType("java/nio/charset/Charset")))
           .andThen(Expr.invokeVirtual("java/lang/String", "getBytes", "(Ljava/nio/charset/Charset;)[B", ClassFileConstants.PrimitiveType.type_byte.array()))
       ))                                                                                     // error, error, string
-      .andThen(jvm.putfield(jvm._fuir.clazzArg(jvm._fuir.clazz_error(), 0)))                 // error
+      .andThen(jvm.putfield(jvm._fuir.clazzArg(cl_err, 0)))                                  // error
+      .andThen(Expr.DUP)                                                                     // error, error
+      .andThen(jvm._types._choices.tag(jvm, si, Expr.UNIT /* nil */, optionI64, 1))          // error, error, option i64
+      .andThen(jvm.putfield(jvm._fuir.clazzArg(cl_err, 1)))                                  // error
       .andThen(Expr.checkcast(jvm._types.javaType(cl_err)));
 
     var res = exec
@@ -730,7 +744,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
           var eid = jvm.effectId(ecl);
           var call     = jvm._fuir.lookupCall(jvm._fuir.clazzActualGeneric(cc, 0));
           var call_def = jvm._fuir.lookupCall(jvm._fuir.clazzActualGeneric(cc, 1));
-          var finallie = jvm._fuir.lookup_static_finally(ecl);
+          var finallie = jvm._fuir.lookupStaticFinally(ecl);
           var ejt = jvm._types.resultType(ecl);
           var unit_effect = ejt == ClassFileConstants.PrimitiveType.type_void;
           var try_end   = new Label();
@@ -738,7 +752,8 @@ public class Intrinsix extends ANY implements ClassFileConstants
           var try_after = new Label();
           var try_start = Expr.tryCatch(try_end,
                                         try_catch,
-                                        Names.ABORT_TYPE);
+                                        // we need to catch throwable
+                                        new ClassType(Throwable.class.getName().replace(".","/")));
 
           // code-snippet to call effect_pop and leave the effect instance on the Java stack
           var pop_effect = Expr.iconst(eid)
@@ -752,7 +767,11 @@ public class Intrinsix extends ANY implements ClassFileConstants
 
           var call_finally      = jvm._types.invokeStatic(finallie, jvm._fuir.sitePos(si).line());
           var pop_and_finally   = pop_effect.andThen(call_finally);     // pop effect and call finally
-          var pop_fin_and_throw = pop_and_finally.andThen(Expr.THROW);  // pop effect, call finally and throw abort exception from stack
+          var pop_fin_and_throw = pop_and_finally.andThen(Expr.THROW);  // pop effect, call finally and rethrow exception from stack
+
+          Expr handle_non_abort_exception = jvm._fuir.getSpecialClazz(ecl) != SpecialClazzes.c_fuzion_runtime_stackoverflow
+              ? pop_fin_and_throw
+              : handle_so_exception(jvm, si, args, jvm._fuir.lookupCause(ecl), call_def, pop_effect, call_finally, pop_and_finally);
 
           var result = Expr.iconst(eid)
             .andThen(unit_effect ? args.get(0).drop()
@@ -774,23 +793,31 @@ public class Intrinsix extends ANY implements ClassFileConstants
             .andThen(pop_and_finally)
             .andThen(Expr.gotoLabel(try_after))
             .andThen(try_catch)
-            .andThen(!jvm._fuir.clazzNeedsCode(call_def)
-                     ? pop_fin_and_throw // in case call_def was detected by DFA to not be called, we can pass on the abort directly
-                     : Expr.DUP  // duplicate abort exception
+            .andThen(
+              !jvm._fuir.clazzNeedsCode(call_def)
+                ? pop_fin_and_throw // in case call_def was detected by DFA to not be called, we can pass on the abort directly
+                : Expr.DUP  // duplicate abort exception, we may need to rethrow
+                   .andThen(Expr.DUP) // duplicate exception for instanceof check
+                   .andThen(Expr.instanceOf(Names.ABORT_TYPE))
+                   .andThen(Expr.branch(
+                     O_ifeq,
+                     handle_non_abort_exception,
+                     Expr
+                       .checkcast(Names.ABORT_TYPE)
                        .andThen(Expr.getfield(Names.ABORT_CLASS, Names.ABORT_EFFECT, PrimitiveType.type_int))
                        .andThen(Expr.iconst(eid))
-                       .andThen(Expr.branch(O_if_icmpne,
-                                            // not for us, so pop effect and re-throw
-                                            pop_fin_and_throw,
-                                            // for us, so run `finally` and `call_def`
-                                            Expr.POP // drop abort exception
-                                            .andThen(args.get(2))
-                                            .andThen(pop_effect)
-                                            .andThen(unit_effect ? Expr.UNIT : Expr.DUP)
-                                            .andThen(call_finally)
-                                            .andThen(jvm._types.invokeStatic(call_def, jvm._fuir.sitePos(si).line())))
-                                )
-                     )
+                       .andThen(
+                         Expr.branch(
+                           O_if_icmpne,
+                           // not for us, so pop effect and re-throw
+                           pop_fin_and_throw,
+                           // for us, so run `finally` and `call_def`
+                           Expr.POP // drop abort exception
+                           .andThen(args.get(2))
+                           .andThen(pop_effect)
+                           .andThen(unit_effect ? Expr.UNIT : Expr.DUP)
+                           .andThen(call_finally)
+                           .andThen(jvm._types.invokeStatic(call_def, jvm._fuir.sitePos(si).line())))))))
             .andThen(try_after);
           return new Pair<>(Expr.UNIT, result);
         });
@@ -1056,6 +1083,40 @@ public class Intrinsix extends ANY implements ClassFileConstants
         });
   }
 
+
+  /**
+   * Handle StackOverflow exception
+   */
+  private static Expr handle_so_exception(JVM jvm, int si, List<Expr> args, int cause, int call_def, Expr pop_effect, Expr call_finally, Expr pop_and_finally)
+  {
+    var try_end   = new Label();
+    var try_catch = new Label();
+    var try_after = new Label();
+    var try_start = Expr.tryCatch(try_end,
+                                  try_catch,
+                                  // we need to catch throwable
+                                  Names.ABORT_TYPE);
+
+    return Expr.POP
+          .andThen(Expr.POP) // NYI: UNDER DEVELOPMENT: convert Throwable to fuzion String
+          .andThen(args.get(0)) // load the effect to call `cause` on
+          .andThen(jvm.boxedConstString("StackOverflow".getBytes(StandardCharsets.UTF_8)).v0())
+          .andThen(try_start)
+          .andThen(jvm._types.invokeStatic(cause, jvm._fuir.sitePos(si).line()))
+          .andThen(try_end)
+          .andThen(pop_and_finally)
+          .andThen(Expr.gotoLabel(try_after))
+          .andThen(try_catch)
+          .andThen(Expr.POP) // pop abort exception that was caused by calling cause of stackoverflow effect
+          .andThen(args.get(2))
+          .andThen(pop_effect)
+          .andThen(Expr.DUP)
+          .andThen(call_finally)
+          .andThen(jvm._types.invokeStatic(call_def, jvm._fuir.sitePos(si).line()))
+          .andThen(try_after);
+  }
+
+
   // helper to add one element to _compiled_
   private static void put(String n1, IntrinsicCode gen)
   {
@@ -1077,7 +1138,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
                                                           put(n2, gen);
                                                           put(n3, gen); }
 
-  // helper to add one element under many names to to _compiled_
+  // helper to add one element under many names to _compiled_
   private static void put(String[] names,       IntrinsicCode gen)
   {
     for (var n : names)
@@ -1215,7 +1276,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
 
 
   /**
-   * get the the method descriptor for a method in class c.
+   * get the method descriptor for a method in class c.
    * e.g. for args: Runtime.class, "fuzion_sys_net_listen"
    *      and {@code int fuzion_sys_net_listen(){}}
    *      it returns: ()I

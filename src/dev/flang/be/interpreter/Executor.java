@@ -186,7 +186,7 @@ public class Executor extends ProcessExpression<Value, Object>
   @Override
   public Value unitValue()
   {
-    return Value.EMPTY_VALUE;
+    return Value.UNIT;
   }
 
   @Override
@@ -482,7 +482,6 @@ public class Executor extends ProcessExpression<Value, Object>
       {
       case c_String -> Interpreter
         .boxedConstString(new String(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt() + 4), StandardCharsets.UTF_8));
-      case c_bool -> { check(d.length == 1, d[0] == 0 || d[0] == 1); yield new boolValue(d[0] == 1); }
       case c_f32 -> new f32Value(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getFloat());
       case c_f64 -> new f64Value(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getDouble());
       case c_i16 -> new i16Value(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getShort());

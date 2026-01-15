@@ -53,7 +53,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
   /**
    * Empty Expr list to be used for empty actual arguments lists.
    */
-  public static final List<Expr> NO_EXPRS = new List<Expr>();
+  public static final List<Expr> NO_EXPRS = new List<Expr>().freeze();
 
 
   /**

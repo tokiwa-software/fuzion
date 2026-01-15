@@ -152,7 +152,7 @@ public class Intrinsics extends ANY
         Errors.fatal(executor.fuir().sitePos(site),
                      "Intrinsic feature not supported",
                      "Missing intrinsic feature: " + in);
-        result = (args) -> Value.NO_VALUE;
+        result = (args) -> Value.VOID;
       }
     return result;
   }
@@ -241,19 +241,19 @@ public class Intrinsics extends ANY
             {
               Interpreter.setField(f, a, thiz, args.get(1));
             }
-          return new Instance(executor.fuir().clazz(SpecialClazzes.c_unit));
+          return Value.UNIT;
         });
 
     put("concur.util.load_fence",   (executor, innerClazz) -> args ->
         {
           synchronized (LOCK_FOR_ATOMIC) { };
-          return new Instance(executor.fuir().clazz(SpecialClazzes.c_unit));
+          return Value.UNIT;
         });
 
     put("concur.util.store_fence",  (executor, innerClazz) -> args ->
         {
           synchronized (LOCK_FOR_ATOMIC) { };
-          return new Instance(executor.fuir().clazz(SpecialClazzes.c_unit));
+          return Value.UNIT;
         });
 
     put("fuzion.sys.args.count", (executor, innerClazz) -> args -> new i32Value(executor.options().getBackendArgs().size() + 1));
@@ -276,14 +276,14 @@ public class Intrinsics extends ANY
           Errors.runTime(utf8ByteArrayDataToString(args.get(1)),
                          utf8ByteArrayDataToString(args.get(2)),
                          Executor.callStack(executor.fuir()));
-          return Value.EMPTY_VALUE;
+          return Value.UNIT;
         });
 
     put("fuzion.std.exit", (executor, innerClazz) -> args ->
         {
           int rc = args.get(1).i32Value();
           System.exit(rc);
-          return Value.EMPTY_VALUE;
+          return Value.UNIT;
         });
     put("fuzion.jvm.is_null0", (executor, innerClazz) -> args ->
         {
@@ -316,7 +316,7 @@ public class Intrinsics extends ANY
               String field = (String) ((JavaRef) args.get(2))._javaRef;
               Object val  = ((JavaRef) args.get(3))._javaRef;
               JavaInterface.setField(clazz, thiz, field, val);
-              return Value.EMPTY_VALUE;
+              return Value.UNIT;
             };
         });
     put("fuzion.jvm.call_v0",
@@ -375,7 +375,7 @@ public class Intrinsics extends ANY
           return new JavaRef(res);
         });
     put("fuzion.jvm.create_jvm", (executor, innerClazz) -> args -> new i32Value(0));
-    put("fuzion.jvm.destroy_jvm", (executor, innerClazz) -> args -> Value.EMPTY_VALUE);
+    put("fuzion.jvm.destroy_jvm", (executor, innerClazz) -> args -> Value.UNIT);
     put("fuzion.jvm.string_to_java_object0", (executor, innerClazz) -> args ->
         {
           var argz = args.get(1);
@@ -428,15 +428,15 @@ public class Intrinsics extends ANY
                               /* value */ args.get(3),
                               executor.fuir(),
                               /* type  */ et);
-          return Value.EMPTY_VALUE;
+          return Value.UNIT;
         });
     put("fuzion.sys.internal_array.freeze", (executor, innerClazz) -> args ->
         {
-          return Value.EMPTY_VALUE;
+          return Value.UNIT;
         });
     put("fuzion.sys.internal_array.ensure_not_frozen", (executor, innerClazz) -> args ->
         {
-          return Value.EMPTY_VALUE;
+          return Value.UNIT;
         });
     put("fuzion.sys.env_vars.has0", (executor, innerClazz) -> args -> new boolValue(System.getenv(utf8ByteArrayDataToString(args.get(1))) != null));
     put("fuzion.sys.env_vars.get0", (executor, innerClazz) -> args -> Interpreter.boxedConstString(System.getenv(utf8ByteArrayDataToString(args.get(1)))));
@@ -469,7 +469,7 @@ public class Intrinsics extends ANY
                 }
             }
           while (!result);
-          return Value.EMPTY_VALUE;
+          return Value.UNIT;
         });
 
     put("safety"                , (executor, innerClazz) -> args -> new boolValue(executor.options().fuzionSafety()));
@@ -654,7 +654,7 @@ public class Intrinsics extends ANY
             }
 
           if (POSTCONDITIONS) ensure
-            (executor.fuir().clazzIsUnitType(ecl) || result != Value.NO_VALUE);
+            (executor.fuir().clazzIsUnitType(ecl) || result != Value.VOID);
 
           return executor.fuir().clazzIsRef(ecl)
             ? result
@@ -767,7 +767,7 @@ public class Intrinsics extends ANY
         switch (in)
           {
           case "effect.type.abort0"    : throw new Abort(ecl);
-          case "effect.type.default0"  : if (effects.get(ecl) == null) { check(fuir.clazzIsUnitType(ecl) || ev != Value.EMPTY_VALUE); effects.put(ecl, ev); } break;
+          case "effect.type.default0"  : if (effects.get(ecl) == null) { check(fuir.clazzIsUnitType(ecl) || ev != Value.UNIT); effects.put(ecl, ev); } break;
           case FuzionConstants.EFFECT_INSTATE_NAME :
             {
               // save old and instate new effect value ev:
@@ -777,7 +777,7 @@ public class Intrinsics extends ANY
               // the callbacks to Fuzion for the code, fallback and finally:
               var call     = fuir.lookupCall(fuir.clazzActualGeneric(innerClazz, 0));
               var call_def = fuir.lookupCall(fuir.clazzActualGeneric(innerClazz, 1));
-              var finallie = fuir.lookup_static_finally(ecl);
+              var finallie = fuir.lookupStaticFinally(ecl);
 
               Abort aborted = null;
               try
@@ -806,10 +806,10 @@ public class Intrinsics extends ANY
             }
             break;
           case "effect.type.is_instated0": return new boolValue(effects.get(ecl) != null /* NOTE not containsKey since ecl may map to null! */ );
-          case "effect.type.replace0"    : check(effects.get(ecl) != null, fuir.clazzIsUnitType(ecl) || ev != Value.EMPTY_VALUE); effects.put(ecl, ev);   break;
+          case "effect.type.replace0"    : check(effects.get(ecl) != null, fuir.clazzIsUnitType(ecl) || ev != Value.UNIT); effects.put(ecl, ev);   break;
           default: throw new Error("unexpected effect intrinsic '"+in+"'");
           }
-        return Value.EMPTY_VALUE;
+        return Value.UNIT;
       };
   }
 

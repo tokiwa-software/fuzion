@@ -191,7 +191,7 @@ public class GeneratingFUIR extends FUIR
              var openTypeInstance = new AbstractCall()             // e.g. tuple.#Values_Of_Open_Type<n>
                {
                  @Override public SourcePosition     pos()                  { return call.pos(); }
-                 @Override public Expr               target()               { return new Current(call.pos(), currentClazz._type.feature()); }
+                 @Override public Expr               target()               { return cur; }
                  @Override public AbstractFeature    calledFeature()        { return currentClazz.feature().outerRef(); }
                  @Override public AbstractType       type()                 { return currentClazz.feature().outerRef().resultType(); }
                };
@@ -624,11 +624,8 @@ public class GeneratingFUIR extends FUIR
               case FuzionConstants.UNIT_NAME   -> SpecialClazzes.c_unit        ;
               case "void"                      -> SpecialClazzes.c_void        ;
               case "bool"                      -> SpecialClazzes.c_bool        ;
-              case "true_"                     -> SpecialClazzes.c_true_       ;
-              case "false_"                    -> SpecialClazzes.c_false_      ;
               case "const_string"              -> SpecialClazzes.c_const_string;
               case FuzionConstants.STRING_NAME -> SpecialClazzes.c_String      ;
-              case "error"                     -> SpecialClazzes.c_error       ;
               case "Mutex"                     -> SpecialClazzes.c_Mutex       ;
               case "Condition"                 -> SpecialClazzes.c_Condition   ;
               case "File_Descriptor"           -> SpecialClazzes.c_File_Descriptor;
@@ -637,6 +634,7 @@ public class GeneratingFUIR extends FUIR
               case "Mapped_Memory"             -> SpecialClazzes.c_Mapped_Memory;
               case "Native_Ref"                -> SpecialClazzes.c_Native_Ref;
               case "Thread"                    -> SpecialClazzes.c_Thread;
+              case "fuzion.runtime.stackoverflow" -> SpecialClazzes.c_fuzion_runtime_stackoverflow;
               default                          -> SpecialClazzes.c_NOT_FOUND   ;
               };
             if (s != SpecialClazzes.c_NOT_FOUND)
@@ -704,8 +702,9 @@ public class GeneratingFUIR extends FUIR
     if (e instanceof AbstractBlock b)
       {
         Expr resExpr = b.resultExpression();
-        result = resExpr != null ? clazz(resExpr, outerClazz, inh)
-                                 : id2clazz(clazz(SpecialClazzes.c_unit));
+        if (CHECKS) check
+          (resExpr != null);
+        result = clazz(resExpr, outerClazz, inh);
       }
 
     else if (e instanceof Box b)
@@ -1011,7 +1010,7 @@ public class GeneratingFUIR extends FUIR
    *
    * @param cl a clazz id
    *
-   * @return clazz id of cl's outer clazz, -1 if cl is universe or a value-less
+   * @return clazz id of cl's outer clazz, NO_CLAZZ if cl is universe or a value-less
    * type.
    */
   @Override
@@ -1303,7 +1302,7 @@ public class GeneratingFUIR extends FUIR
    *
    * @param arg argument number 0, 1, .. clazzArgCount(cl)-1
    *
-   * @return clazz id of the argument or -1 if no such argument exists (the
+   * @return clazz id of the argument or NO_CLAZZ if no such argument exists (the
    * argument is unused).
    */
   @Override
@@ -1347,7 +1346,7 @@ public class GeneratingFUIR extends FUIR
    *
    * @param cl a clazz id
    *
-   * @return clazz id of cl's outer ref field or -1 if no such field exists.
+   * @return clazz id of cl's outer ref field or NO_CLAZZ if no such field exists.
    */
   @Override
   public int clazzOuterRef(int cl)
@@ -1734,12 +1733,12 @@ public class GeneratingFUIR extends FUIR
   /**
    * Get the id of clazz ref const_string
    *
-   * @return the id of ref const_string or -1 if that clazz was not created.
+   * @return the id of ref const_string or NO_CLAZZ if that clazz was not created.
    */
   @Override
-  public int clazz_ref_const_string()
+  public int clazzRefConstString()
   {
-    var cc = id2clazz(clazz_const_string());
+    var cc = id2clazz(clazzConstString());
     return cc.asRef()._id;
   }
 
@@ -1821,7 +1820,7 @@ public class GeneratingFUIR extends FUIR
    * @return the index of the requested {@code effect.finally} feature's clazz.
    */
   @Override
-  public int lookup_static_finally(int cl)
+  public int lookupStaticFinally(int cl)
   {
     if (PRECONDITIONS) require
       (cl >= CLAZZ_BASE,
@@ -1850,6 +1849,28 @@ public class GeneratingFUIR extends FUIR
        cl < CLAZZ_BASE + _clazzes.size());
 
     return id2clazz(cl).lookupNeeded(Types.resolved.f_concur_atomic_v)._id;
+  }
+
+
+  /**
+   * For a clazz of eff.fallible, lookup cause.
+   *
+   * @param ecl index of a clazz representing fallible effect
+   *
+   * @return the index of the requested cause feature.
+   */
+  @Override
+  public int lookupCause(int ecl)
+  {
+    if (PRECONDITIONS) require
+      (ecl >= CLAZZ_BASE,
+       ecl < CLAZZ_BASE + _clazzes.size());
+
+    return !id2clazz(ecl).feature().inheritsFrom(Types.resolved.f_eff_fallible)
+      ? NO_CLAZZ
+      : _lookupDone
+      ? id2clazz(ecl).lookup(Types.resolved.f_eff_fallible_cause)._id
+      : id2clazz(ecl).lookupNeeded(Types.resolved.f_eff_fallible_cause)._id;
   }
 
 
@@ -2336,7 +2357,7 @@ public class GeneratingFUIR extends FUIR
    *
    * @param s site of the access
    *
-   * @return the clazz that has to be accessed or -1 if the access is an
+   * @return the clazz that has to be accessed or NO_CLAZZ if the access is an
    * assignment to a field that is unused, so the assignment is not needed.
    */
   @Override
@@ -2486,7 +2507,7 @@ public class GeneratingFUIR extends FUIR
 
   /**
    * Get the type of an assigned value. This returns the type even if the
-   * assigned field has been removed and accessedClazz() returns -1.
+   * assigned field has been removed and accessedClazz() returns NO_CLAZZ.
    *
    * @param s site of the assignment
    *
@@ -2880,7 +2901,7 @@ public class GeneratingFUIR extends FUIR
    *
    * @param cix index of the case in the match
    *
-   * @return clazz id of field the value in this case is assigned to, -1 if this
+   * @return clazz id of field the value in this case is assigned to, NO_CLAZZ if this
    * case does not have a field or the field is unused.
    */
   @Override

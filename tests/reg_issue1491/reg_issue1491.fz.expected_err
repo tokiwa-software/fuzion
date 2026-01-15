@@ -7,7 +7,7 @@ E.g., instead of:
 'type.union : Monoid bitset is'
 do this: 
 public type.union =>
-  ref : Monoid bitset
+  _ : Monoid bitset
 
 
 --CURDIR--/reg_issue1491.fz:26:5: error 2: Must not define type inside of type feature.
@@ -18,6 +18,6 @@ E.g., instead of:
 'type.union : Monoid bitset is'
 do this: 
 public type.union =>
-  ref : Monoid bitset
+  _ : Monoid bitset
 
 2 errors.

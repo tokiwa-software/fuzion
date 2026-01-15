@@ -589,7 +589,7 @@ is
   # 'list.this' and the empty list 'nil'.
   #
   public redef tails list (list A) =>
-    ref : Cons (list A) (list (list A)) is
+    _ : Cons (list A) (list (list A)) is
       public redef head list A => list.this
       public redef tail list (list A) =>
         list.this ? nil    => nil
@@ -731,7 +731,7 @@ is
   #
   public type.list_concat_monoid Monoid (list A) =>
 
-    ref : Monoid (list A) is
+    _ : Monoid (list A) is
 
       # associative operation
       #

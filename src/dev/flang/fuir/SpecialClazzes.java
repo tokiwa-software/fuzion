@@ -51,14 +51,9 @@ public enum SpecialClazzes
   c_unit        (FuzionConstants.UNIT_NAME    , 0, c_universe  ),
   c_void        ("void"                       , 0, c_universe  ),
   c_bool        ("bool"                       , 0, c_universe  ),
-  c_true_       ("true_"                      , 0, c_universe  ),
-  c_false_      ("false_"                     , 0, c_universe  ),
   c_const_string("const_string"               , 0, c_universe  ),
   c_CS_utf8_data("utf8_data"                  , 0, c_const_string),
   c_String      (FuzionConstants.STRING_NAME  , 0, c_universe  ),
-  c_error       ("error"                      , 1, c_universe  ),
-  c_fuzion      ("fuzion"                     , 0, c_universe  ),
-  c_java        ("java"                       , 0, c_fuzion    ),
   c_Mutex       ("Mutex"                      , 0, c_universe  ),
   c_Condition   ("Condition"                  , 0, c_universe  ),
   c_File_Descriptor("File_Descriptor"         , 0, c_universe  ),
@@ -67,6 +62,9 @@ public enum SpecialClazzes
   c_Mapped_Memory("Mapped_Memory"             , 0, c_universe  ),
   c_Native_Ref  ("Native_Ref"                 , 0, c_universe  ),
   c_Thread      ("Thread"                     , 0, c_universe  ),
+  c_fuzion      ("fuzion"                     , 0, c_universe  ),
+  c_fuzion_runtime("runtime"                  , 0, c_fuzion    ),
+  c_fuzion_runtime_stackoverflow("stackoverflow", 1, c_fuzion_runtime)
   ;
 
   final String _name;
