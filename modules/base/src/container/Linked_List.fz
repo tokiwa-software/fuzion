@@ -26,8 +26,7 @@
 public Linked_List(public T type) ref : Sequence T is
 
 
-  # next is the following element of the linked list, or nil if there are
-  # no more elements in the list after this element.
+  # the next element in the linked list, or nil if this is the last element
   #
   public next option (Linked_List T) => abstract
 

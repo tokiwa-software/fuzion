@@ -37,7 +37,7 @@ private:public jvm : effect is
     fuzion.jvm.use _ [] code
 
 
-  # - start jvm (or use an exisiting jvm)
+  # - start jvm (or use an existing jvm)
   # - instate effect `fuzion.jvm`
   # - run code on the jvm
   # - destroy jvm (if jvm had to be started)

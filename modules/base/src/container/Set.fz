@@ -47,8 +47,7 @@ is
   public redef contains (e E) bool => abstract
 
 
-  # return a new Set that contains
-  # all elements in this Set and `k`.
+  # return a new Set containing all elements of this Set plus element k
   #
   public add (k E) Set E =>
     compile_time_panic # "*** NYI: REMOVE Set.add, we need some support for mutable Sets ***"
