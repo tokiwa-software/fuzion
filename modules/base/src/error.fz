@@ -41,6 +41,11 @@ public error (
 
   ) : property.equatable
 
+pre
+  # enforce no linefeed at end of message
+  #
+  debug 2 : !msg.ends_with "\n"
+
 is
 
 
