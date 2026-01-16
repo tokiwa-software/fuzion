@@ -184,9 +184,10 @@ is
   # public redef type.equality(a, b Set.this)
   #
   public fixed redef type.equality(a, b container.Set E) bool
-  pre else
-    debug: a.finite.is_yes_or_unknown
-    debug: b.finite.is_yes_or_unknown
+  # NYI: CLEANUP: precondition useless because `pre true` is inherited from property.equatable.type.equality
+  # pre else
+  #   debug: a.finite.is_yes_or_unknown
+  #   debug: b.finite.is_yes_or_unknown
   =>
     # NYI: a bit expensive
     (a ∪ b).size_option.val = a.size_option.val
