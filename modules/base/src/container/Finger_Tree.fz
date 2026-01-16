@@ -21,9 +21,12 @@
 #
 # -----------------------------------------------------------------------
 
-# https://www.cs.ox.ac.uk/ralf.hinze/publications/FingerTrees.pdf
-# https://github.com/ledbutter/CSharpFingerTree
 
+#
+#
+# The paper introducing the datastructure: https://www.cs.ox.ac.uk/ralf.hinze/publications/FingerTrees.pdf
+# The implementation that was used as inspiration for this port: https://github.com/ledbutter/CSharpFingerTree
+#
 private:public Finger_Tree(T type) ref : Sequence T is
   public redef as_list list T => as_sequence.flat_map id .as_list
   public redef finite trit => trit.yes
@@ -42,8 +45,11 @@ private:public Finger_Tree(T type) ref : Sequence T is
 
   as_deep deep T => panic "bug!"
 
+  # NYI: UNDER DEVELOPMENT index/nth, split, reverse
 
 
+# an empty finger tree
+#
 empty(T type) : container.Finger_Tree T is
   public redef count i32 => 0
   redef as_sequence Sequence (Sequence T) => []
@@ -59,7 +65,8 @@ empty(T type) : container.Finger_Tree T is
       r
 
 
-
+# a finger tree with only one item
+#
 single(T type, a Sequence T) : container.Finger_Tree T is
   public redef count i32 => a.count
   redef as_sequence Sequence (Sequence T) => [a]
@@ -76,7 +83,8 @@ single(T type, a Sequence T) : container.Finger_Tree T is
       r.prepend a
 
 
-
+# a deep finger tree
+#
 deep(T type, a digit T, ft container.Finger_Tree T, c digit T) : container.Finger_Tree T is
   cnt := a.count + ft.count + c.count
   public redef count i32 => cnt
@@ -136,7 +144,7 @@ deep(T type, a digit T, ft container.Finger_Tree T, c digit T) : container.Finge
     deep a ft c
 
 
-
+# NYI: CLEANUP: add some helper methods to cleanup above code
 digit(T type, d Sequence (Sequence T)) : property.countable
   pre
     debug: 1 <= d.count <= 4
