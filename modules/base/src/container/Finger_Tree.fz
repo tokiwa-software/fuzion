@@ -93,12 +93,12 @@ deep(T type, lft hand T, ft container.Finger_Tree T, rght hand T) : container.Fi
     if lft.finger.count = 4
       deep (hand [seq, lft.finger[0]]) (ft.prepend ((lft.finger.drop 1).flat_map id)) rght
     else
-      deep (hand ([[seq], lft.finger].flat_map id)) ft rght
+      deep (lft.prepend seq) ft rght
   public redef append (seq Sequence T) container.Finger_Tree T =>
     if rght.finger.count = 4
       deep lft (ft.append ((rght.finger.take 3).flat_map id)) (hand [rght.finger[3], seq])
     else
-      deep lft ft (hand ([rght.finger, [seq]].flat_map id))
+      deep lft ft (rght.append seq)
   redef left  option (Sequence T, container.Finger_Tree T) =>
     if lft.finger.count = 1
       match ft.left
@@ -107,7 +107,7 @@ deep(T type, lft hand T, ft container.Finger_Tree T, rght hand T) : container.Fi
           x,y := l
           (lft.finger[0], id (container.Finger_Tree T) (deep (hand [x]) y rght))
     else
-      (lft.finger[0], id (container.Finger_Tree T) (deep (hand (lft.finger.drop 1)) ft rght))
+      (lft.finger[0], id (container.Finger_Tree T) (deep lft.drop_first ft rght))
   redef right option (container.Finger_Tree T, Sequence T) =>
     if rght.finger.count = 1
       match ft.right
@@ -142,7 +142,8 @@ deep(T type, lft hand T, ft container.Finger_Tree T, rght hand T) : container.Fi
     deep lft ft rght
 
 
-# NYI: CLEANUP: add some helper methods to cleanup above code
+# this is called digit in the paper
+#
 hand(T type, finger Sequence (Sequence T)) : property.countable
   pre
     debug 2 : 1 <= finger.count <= 4
@@ -151,8 +152,29 @@ is
   public redef count i32 => cnt
 
 
+  drop_first
+    pre
+      debug 2 : finger.count > 1
+  =>
+    hand (finger.drop 1)
+
+
   drop_last
     pre
       debug 2 : finger.count > 1
   =>
     hand (finger.take finger.count-1)
+
+
+  prepend(seq Sequence T)
+    pre
+      debug 2 : finger.count < 4
+  =>
+    hand ([[seq], finger].flat_map id)
+
+
+  append(seq Sequence T)
+    pre
+      debug 2 : finger.count < 4
+  =>
+    hand ([finger, [seq]].flat_map id)
