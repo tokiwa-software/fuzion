@@ -24,18 +24,18 @@
 container_Finger_Tree =>
 
   ft0 := container.Finger_Tree i32 .empty
-  ft1 := ft0.append [4,5]
-  ft2 := ft1.prepend [1,2,3]
-  ft3 := ft2.append [6,7,8]
+  ft1 := ft0 ++ [4,5]
+  ft2 := [1,2,3] ++ ft1
+  ft3 := ft2 ++ [6,7,8]
 
   ft4 :=
-    for r := ft3, r.append [x]
+    for r := ft3, r ++ [x]
         x in 9..20 do
     else
       r
 
   ft5 :=
-    for r := ft3, r.prepend [-x]
+    for r := ft3, [-x] ++ r
         x in 0..10 do
     else
       r
