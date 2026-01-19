@@ -41,12 +41,27 @@ container_Finger_Tree =>
       r
 
   say ft1
+  say ft1[0]
+  say ft1[ft1.count-1]
   say ft1.count
+
   say ft2
+  say ft2[0]
+  say ft2[ft2.count-1]
   say ft2.count
+
   say ft3
+  say ft3[0]
+  say ft3[ft3.count-1]
   say ft3.count
+
   say ft4
+  say ft4[0]
+  say ft4[ft4.count-1]
   say ft4.count
+
   say ft5
+  say ft5[0]
+  say ft5[ft5.count-1]
   say ft5.count
+
