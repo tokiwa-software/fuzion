@@ -40,28 +40,12 @@ container_Finger_Tree =>
     else
       r
 
-  say ft1
-  say ft1[0]
-  say ft1[ft1.count-1]
-  say ft1.count
-
-  say ft2
-  say ft2[0]
-  say ft2[ft2.count-1]
-  say ft2.count
-
-  say ft3
-  say ft3[0]
-  say ft3[ft3.count-1]
-  say ft3.count
-
-  say ft4
-  say ft4[0]
-  say ft4[ft4.count-1]
-  say ft4.count
-
-  say ft5
-  say ft5[0]
-  say ft5[ft5.count-1]
-  say ft5.count
+  for f in [ft0, ft1, ft2, ft3, ft4, ft5] do
+    say f
+    if f.is_valid_index 0
+      say f[0]
+    if f.is_valid_index f.count-1
+      say f[f.count-1]
+    say f.count
+    say f.dynamic_type.name
 
