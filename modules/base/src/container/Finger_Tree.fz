@@ -23,9 +23,10 @@
 
 
 #
-#
 # The paper introducing the datastructure: https://www.cs.ox.ac.uk/ralf.hinze/publications/FingerTrees.pdf
 # The implementation that was used as inspiration for this port: https://github.com/ledbutter/CSharpFingerTree
+#
+# NYI: UNDER DEVELOPMENT: split0, reverse
 #
 private:public Finger_Tree(T type) ref : Sequence T is
 
@@ -51,7 +52,8 @@ private:public Finger_Tree(T type) ref : Sequence T is
 
   as_deep deep T => panic "bug!"
 
-  public redef concat (s Sequence T) Sequence T => append s
+  public redef concat (s Sequence T) Sequence T =>
+    append s.as_array_backed
 
 
   # is this Sequence known to be array backed? If so, this means that operations
@@ -71,7 +73,10 @@ private:public Finger_Tree(T type) ref : Sequence T is
   #
   public redef nth(n i32) option T => abstract
 
-  # NYI: UNDER DEVELOPMENT index/nth, split, reverse
+
+  public redef take (n i32) Sequence T => abstract
+  public redef drop (n i32) Sequence T => abstract
+
 
 
 # an empty finger tree
@@ -91,6 +96,8 @@ empty(T type) : container.Finger_Tree T is
       r
   public redef nth(n i32) option T => nil
   module redef as_finger_tree option (container.Finger_Tree T) => container.empty T
+  public redef take (n i32) Sequence T => empty.this
+  public redef drop (n i32) Sequence T => empty.this
 
 
 # a finger tree with only one item
@@ -102,8 +109,7 @@ single(T type, data Sequence T) : container.Finger_Tree T is
   redef append (seq Sequence T) container.Finger_Tree T => deep (container.hand [data]) (empty T) (container.hand [seq])
   redef left  option (Sequence T, container.Finger_Tree T) => (data, (container.Finger_Tree T).empty)
   redef right option (container.Finger_Tree T, Sequence T) => ((container.Finger_Tree T).empty, data)
-  redef merge(ft container.Finger_Tree T) container.Finger_Tree T =>
-    ft.prepend data
+  redef merge(ft container.Finger_Tree T) container.Finger_Tree T => ft.prepend data
   redef app2(seq Sequence (Sequence T), ft container.Finger_Tree T) container.Finger_Tree T =>
     for r := ft, r.prepend i
         i in seq.reverse
@@ -111,6 +117,8 @@ single(T type, data Sequence T) : container.Finger_Tree T is
       r.prepend data
   public redef nth(n i32) option T => data.nth n
   module redef as_finger_tree option (container.Finger_Tree T) => container.single data
+  public redef take (n i32) Sequence T => single (data.take n)
+  public redef drop (n i32) Sequence T => single (data.drop n)
 
 
 # a deep finger tree
@@ -121,12 +129,12 @@ deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.ha
   redef as_sequence Sequence (Sequence T) => [lft.finger, ft.as_sequence, rght.finger].flat_map id
   module redef prepend(seq Sequence T) container.Finger_Tree T =>
     if lft.finger.count = 4
-      deep (container.hand [seq, lft.finger[0]]) (ft.prepend ((lft.finger.drop 1).flat_map id)) rght
+      deep (container.hand [seq, lft.finger[0]]) (ft.prepend ((lft.finger.drop 1).flat_map id).as_array_backed) rght
     else
       deep (lft.prepend seq) ft rght
   redef append (seq Sequence T) container.Finger_Tree T =>
     if rght.finger.count = 4
-      deep lft (ft.append ((rght.finger.take 3).flat_map id)) (container.hand [rght.finger[3], seq])
+      deep lft (ft.append ((rght.finger.take 3).flat_map id).as_array_backed) (container.hand [rght.finger[3], seq])
     else
       deep lft ft (rght.append seq)
   redef left  option (Sequence T, container.Finger_Tree T) =>
@@ -162,7 +170,7 @@ deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.ha
         r.append ft0.left.val.0
     else
       d := as_deep
-      deep lft (deep.this.app2 ([rght.finger, seq, d.lft.finger].flat_map id) d.ft) d.rght
+      deep lft (deep.this.app2 ([rght.finger, seq, d.lft.finger].flat_map id).as_array_backed d.ft) d.rght
   from_sequence(seq Sequence (Sequence T)) =>
     for r := container.Finger_Tree T .empty, r.append i
         i in seq
@@ -178,6 +186,22 @@ deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.ha
     else
       rght.nth (n-lft.count-ft.count)
   module redef as_finger_tree option (container.Finger_Tree T) => container.deep lft ft rght
+  public redef take (n i32) Sequence T =>
+    if n <= lft.count
+      lft.as_ft.take n
+    else if n <= lft.count+ft.count
+      lft.as_ft.append (ft.take n-lft.count)
+    else
+      deep lft ft (rght.take (n-lft.count-ft.count))
+  public redef drop (n i32) Sequence T =>
+    if n < lft.count
+      deep (lft.drop n) ft rght
+    else if n < lft.count+ft.count
+      ft
+        .drop n-lft.count
+        .concat rght.as_ft
+    else
+      rght.as_ft.drop (n-lft.count-ft.count)
 
 
 
@@ -209,14 +233,14 @@ is
     pre
       debug 2 : finger.count < 4
   =>
-    hand ([[seq], finger].flat_map id)
+    hand ([[seq], finger].flat_map id).as_array_backed
 
 
   append(seq Sequence T)
     pre
       debug 2 : finger.count < 4
   =>
-    hand ([finger, [seq]].flat_map id)
+    hand ([finger, [seq]].flat_map id).as_array_backed
 
 
   nth(n i32) option T =>
@@ -226,3 +250,38 @@ is
       f[idx]
     else
       nil
+
+
+  as_ft =>
+    for res := (container.Finger_Tree T).empty, res.append f
+        f in finger
+    else
+      res
+
+
+  take (n i32) container.hand T
+    pre
+      debug 2 : 0 < n < count
+  =>
+    if n <= finger[0].count
+      container.hand [finger[0].take n]
+    else if n <= finger[0].count+finger[1].count
+      container.hand [finger[0], finger[1].take n-(finger[0].count)]
+    else if n <= finger[0].count+finger[1].count+finger[2].count
+      container.hand [finger[0], finger[1], finger[2].take n-(finger[0].count+finger[1].count)]
+    else
+      container.hand [finger[0], finger[1], finger[2], finger[3].take n-(finger[0].count+finger[1].count+finger[2].count)]
+
+
+  drop (n i32) container.hand T
+    pre
+      debug 2 : 0 < n < count
+  =>
+    tmp :=
+      for res Sequence (Sequence T) := [[]], if to_drop <= 0 then res++[f] else if to_drop >= f.count then res else res++[f.drop to_drop]
+          to_drop := n, to_drop-f.count
+          f in finger
+      else
+        res
+    container.hand tmp.as_array
+
