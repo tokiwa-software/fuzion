@@ -607,8 +607,8 @@ public class GeneratingFUIR extends FUIR
         var s = SpecialClazzes.c_NOT_FOUND;
         if (cl.isRef() == cl.feature().isRef())  // not an boxed or explicit value clazz
           {
-            // NYI: OPTIMIZATION: Avoid creating all feature qualified names!
-            s = switch (cl.feature().qualifiedName())
+            // NOTE: this only works for features in universe!
+            s = switch (cl.feature().featureName().baseName())
               {
               case FuzionConstants.ANY_NAME    -> SpecialClazzes.c_Any         ;
               case FuzionConstants.I8_NAME     -> SpecialClazzes.c_i8          ;
@@ -621,7 +621,6 @@ public class GeneratingFUIR extends FUIR
               case FuzionConstants.U64_NAME    -> SpecialClazzes.c_u64         ;
               case FuzionConstants.F32_NAME    -> SpecialClazzes.c_f32         ;
               case FuzionConstants.F64_NAME    -> SpecialClazzes.c_f64         ;
-              case FuzionConstants.UNIT_NAME   -> SpecialClazzes.c_unit        ;
               case "void"                      -> SpecialClazzes.c_void        ;
               case "bool"                      -> SpecialClazzes.c_bool        ;
               case "const_string"              -> SpecialClazzes.c_const_string;
@@ -634,15 +633,18 @@ public class GeneratingFUIR extends FUIR
               case "Mapped_Memory"             -> SpecialClazzes.c_Mapped_Memory;
               case "Native_Ref"                -> SpecialClazzes.c_Native_Ref;
               case "Thread"                    -> SpecialClazzes.c_Thread;
-              case "fuzion.runtime.stackoverflow" -> SpecialClazzes.c_fuzion_runtime_stackoverflow;
+              case "stackoverflow"             -> SpecialClazzes.c_fuzion_runtime_stackoverflow;
               default                          -> SpecialClazzes.c_NOT_FOUND   ;
               };
-            if (s != SpecialClazzes.c_NOT_FOUND)
+            if (s != SpecialClazzes.c_NOT_FOUND && s._argCount == cl.feature().arguments().size())
               {
+                if (CHECKS) check
+                  (_specialClazzes[s.ordinal()] == null);
                 _specialClazzes[s.ordinal()] = result;
+                cl._specialClazzId = s;
               }
           }
-        cl._specialClazzId = s;
+
         if (SHOW_NEW_CLAZZES) System.out.println("NEW CLAZZ "+cl);
         cl.init(fuirId);
 

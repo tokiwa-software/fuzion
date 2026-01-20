@@ -245,11 +245,7 @@ int fzE_socket_close(int sockfd)
 // initialize a new socket for given
 // family, socket_type, protocol
 int fzE_socket(int family, int type, int protocol){
-  WSADATA wsaData;
-  // NYI: CLEANUP: call only once
-  return WSAStartup(MAKEWORD(2,2), &wsaData) != 0
-    ? -1
-    : socket(fzE_get_family(family), fzE_get_socket_type(type), fzE_get_protocol(protocol));
+  return socket(fzE_get_family(family), fzE_get_socket_type(type), fzE_get_protocol(protocol));
 }
 
 
@@ -606,6 +602,14 @@ void fzE_init()
   SetConsoleOutputCP(CP_UTF8);
   // also set input code page
   SetConsoleCP(CP_UTF8);
+
+  // Initialize Winsock
+  WSADATA wsaData;
+  if (WSAStartup(MAKEWORD(2,2), &wsaData) != 0) {
+    fprintf(stderr, "*** WSAStartup failed\n");
+    exit(EXIT_FAILURE);
+  }
+
   pthread_mutexattr_t attr;
   fzE_mem_zero_secure(&fzE_global_mutex, sizeof(fzE_global_mutex));
   bool res = pthread_mutexattr_init(&attr) == 0 &&
