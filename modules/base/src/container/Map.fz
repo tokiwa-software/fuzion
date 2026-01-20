@@ -78,7 +78,7 @@ public Map(public K type : property.equatable, public V type) ref is
       r + "}"
 
 
-  # create a mutable version of this map
+  # create a mutable map from this
   #
   # NYI: maybe add default implementation when there is a naive implementation only requiring property.equatable
   #

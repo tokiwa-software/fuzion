@@ -48,9 +48,11 @@ public sorted_array
   #
   # Must satisfy the properties of a total order:
   #
-  #   - Reflexivity:  for_all a,b: less_or_equal(a, b) <=> (a = b)
-  #   - Totality:     for_all a,b: less_or_equal(a, b) || less_or_equal(b, a)
-  #   - Transitivity: for_all a,b,c: (less_or_equal(a, b) && less_or_equal(b, c)): less_or_equal(a, c)
+  # - Transitivity:  If a ≤ b and b ≤ c, then a ≤ c
+  # - Antisymmetric:  If a ≤ b and b ≤ a, then a = b
+  # - Totality:  a ≤ b or b ≤ a
+  #
+  # see also: https://en.wikipedia.org/wiki/Total_order
   #
   less_or_equal (T, T) -> bool
 
