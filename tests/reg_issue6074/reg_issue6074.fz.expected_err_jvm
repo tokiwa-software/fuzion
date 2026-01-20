@@ -1,15 +1,15 @@
 
-error 1: FATAL FAULT `precondition`: debug: to = 0 || is_valid_index to-1
+error 1: FATAL FAULT `precondition`: debug : to = 0 || (if is_array_backed || debug_level > 1 then is_valid_index to-1 else true)
 Call stack:
 fuzion.sys.fatal_fault#2 at {base.fum}/fuzion/sys.fz:55
-fuzion.type.runtime.type.fault.type.install_default.λ.call#1 at {base.fum}/fuzion/runtime/fault.fz:43
+fuzion.type.runtime.type.fault.type.install_default.λ.call#1 at {base.fum}/fuzion/runtime/fault.fz:57
 fuzion.runtime.fault.cause#1 at {base.fum}/eff/fallible.fz:35
 fuzion.type.runtime.type.contract_fault.type.install_default.λ.call#1 at {base.fum}/fuzion/runtime/contract_fault.fz:39
 fuzion.runtime.contract_fault.cause#1 at {base.fum}/eff/fallible.fz:35
 fuzion.type.runtime.type.pre_fault.type.install_default.λ.call#1 at {base.fum}/fuzion/runtime/pre_fault.fz:39
 fuzion.runtime.pre_fault.cause#1 at {base.fum}/eff/fallible.fz:35
 fuzion.runtime.precondition_fault#1 at {base.fum}/fuzion/runtime/pre_fault.fz:58
-(array i32).slice#2.array_slice.pre slice at {base.fum}/Sequence.fz:335
+(array i32).slice#2.array_slice.pre slice at {base.fum}/Sequence.fz:336
 (array i32).slice#2.array_slice.precall slice at {base.fum}/Sequence.fz:333
 reg_issue6074 at --CURDIR--/reg_issue6074.fz:26
 

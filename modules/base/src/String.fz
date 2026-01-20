@@ -276,11 +276,6 @@ public String ref : property.equatable, property.hashable, property.orderable is
               | u T => u
 
 
-  # convert this string into an array of codepoints.
-  #
-  codepoint_array => codepoints.as_array
-
-
   # convert this string into a Sequence of codepoint and errors for encoding problems
   # found in the underlying utf8 bytes
   #
@@ -417,9 +412,10 @@ public String ref : property.equatable, property.hashable, property.orderable is
   #
   public substring_codepoint(from, to i32) String
     pre
-      debug: 0 ≤ from ≤ to ≤ String.this.codepoint_length
+      debug    : 0 ≤ from ≤ to
+      (debug 2): to ≤ codepoint_length
   =>
-    codepoint_array
+    codepoints
       .slice from to
       .map String c->c  # NYI: this should maybe not be needed since codepoint is a string
       .fold String.concat
@@ -429,7 +425,8 @@ public String ref : property.equatable, property.hashable, property.orderable is
   #
   public substring_codepoint(from i32) String
     pre
-      debug: 0 ≤ from ≤ codepoint_length
+      debug    : 0 ≤ from
+      (debug 2): from ≤ codepoint_length
   =>
     substring_codepoint from codepoint_length
 
@@ -554,7 +551,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
                 c.is_ascii_white_space && i>word_start ? res.add (substring word_start i) : res
         word_start := 0, c.is_ascii_white_space ? i+1 : word_start # next index might start a word
         c in utf8
-    else i > word_start ? res.add (substring word_start i+1) : res
+    else i >= word_start ? res.add (substring word_start i+1) : res
 
 
   # split string at s
