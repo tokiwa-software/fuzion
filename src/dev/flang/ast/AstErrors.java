@@ -1398,7 +1398,7 @@ public class AstErrors extends ANY
         var solution5 = solutionLambda(call);
         error(call.pos(), msg,
               "Feature not found: " + sbnf(calledName) + "\n" +
-              "Target feature: " + s(targetFeature) + "\n" +
+              (targetFeature != null ? "Target feature: " + s(targetFeature) + "\n" : "") +
               "In call: " + s(call) + "\n" +
               (solution0 != "" ? solution0 :
                solution1 != "" ? solution1 :
@@ -2401,7 +2401,7 @@ public class AstErrors extends ANY
       "Must not define type inside of type feature.",
       "To solve this, move the type outside of the type feature." + System.lineSeparator() +
       "E.g., instead of: " + System.lineSeparator() + code("type.union : Monoid bitset is") + System.lineSeparator() +
-      "do this: " + code("public type.union =>" + System.lineSeparator() + "  ref : Monoid bitset"));
+      "do this: " + code("public type.union =>" + System.lineSeparator() + "  _ : Monoid bitset"));
   }
 
   public static void typeFeaturesMustOnlyBeDeclaredInFeaturesThatDefineType(Feature f)
@@ -2510,6 +2510,15 @@ public class AstErrors extends ANY
     error(variant.sourceRange(),
           "Loop variant must be of type " + type("i64"),
           "Type of loop variant must be " + type("i64") + ", but found variant of type " + s(variant.type()));
+  }
+
+  public static void duplicateFile(String file1, String file2)
+  {
+    fatal("File names must be unique with respect to case sensitivity. Files differing only by case are not permitted.",
+    "The offending files: " + "\n" +
+     " - " + file1 + "\n" +
+     " - " + file2
+    );
   }
 
 }

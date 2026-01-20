@@ -110,19 +110,19 @@ public class Interpreter extends FUIRContext
    */
   public static Value boxedConstString(byte[] bytes)
   {
-    int cl = fuir().clazz_const_string();
+    int cl = fuir().clazzConstString();
     Instance result = new Instance(cl);
-    var clArr = fuir().clazz_array_u8();
+    var clArr = fuir().clazzArrayU8();
     Instance arr = new Instance(clArr);
-    var saCl = fuir().clazz_fuzionSysArray_u8();
+    var saCl = fuir().clazzFuzionSysArrayU8();
     Instance sa = new Instance(saCl);
-    setField(fuir().clazz_fuzionSysArray_u8_length(), saCl, sa, new i32Value(bytes.length));
+    setField(fuir().clazzFuzionSysArrayU8Length(), saCl, sa, new i32Value(bytes.length));
     var arrayData = new ArrayData(bytes, saCl);
-    setField(fuir().clazz_fuzionSysArray_u8_data(), saCl, sa, arrayData);
+    setField(fuir().clazzFuzionSysArrayU8Data(), saCl, sa, arrayData);
     setField(fuir().clazzArg(clArr,0), clArr, arr, sa);
-    setField(fuir().clazz_const_string_utf8_data(), cl, result, arr);
+    setField(fuir().clazzConstStringUTF8Data(), cl, result, arr);
 
-    return new Boxed(fuir().clazz_ref_const_string(), cl, result);
+    return new Boxed(fuir().clazzRefConstString(), cl, result);
   }
 
 

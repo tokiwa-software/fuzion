@@ -99,5 +99,5 @@ public sqlite(db Native_Ref) : Database is
     if ret = 0
       unit
     else
-      error "error executing query $query_string, sqlite3_exec returned {ret}."
+      error "error executing query $query_string, sqlite3_exec." ret.as_i64
 

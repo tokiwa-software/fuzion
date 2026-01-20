@@ -766,7 +766,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     var res = YesNo.no;
     // NYI: CLEANUP: currently needed in DFA-Phase to meet
     // FUIR invariant that stack must be empty at the end of a basic block
-    if (!_fuir._lookupDone && _specialClazzId == SpecialClazzes.c_unit)
+    if (!_fuir._lookupDone && _type.compareTo(Types.resolved.t_unit) == 0)
       {
         res = YesNo.yes;
       }

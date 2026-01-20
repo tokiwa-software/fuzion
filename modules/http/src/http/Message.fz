@@ -60,7 +60,7 @@ public Message ref is
       io
         .buffered lm
         .reader body ! ()->
-          ref : String is
+          _ : String is
             public redef utf8 Sequence u8 := (io.buffered lm).read_fully
 
 

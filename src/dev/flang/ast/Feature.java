@@ -661,7 +661,7 @@ public class Feature extends AbstractFeature
    *
    * @param c the contract
    */
-  public Feature(SourcePosition pos,
+  private Feature(SourcePosition pos,
                  Visi v,
                  int m,
                  AbstractType t,
@@ -677,43 +677,6 @@ public class Feature extends AbstractFeature
    * declared for inline functions.
    */
   static final long uniqueFunctionId = 0;
-
-  /**
-   * Constructor for function features
-   *
-   * @param pos the sourcecode position, used for error messages.
-   *
-   * @param r the result type
-   *
-   * @param qname the name of this feature
-   *
-   * @param a the arguments
-   *
-   * @param i the inherits calls
-   *
-   * @param c the contract
-   *
-   * @param p the implementation
-   */
-  Feature(SourcePosition pos,
-          ReturnType r,
-          List<String> qname,
-          List<AbstractFeature> a,
-          List<AbstractCall> i,
-          Contract c,
-          Impl     p)
-  {
-    this(pos,
-         Visi.PRIV,
-         0,
-         r,
-         qname,
-         a,
-         i,
-         c,
-         p,
-         null);
-  }
 
 
   /**
@@ -786,7 +749,7 @@ public class Feature extends AbstractFeature
    *
    * @param p the implementation (feature body etc).
    */
-  public Feature(SourcePosition pos,
+  Feature(SourcePosition pos,
                  Visi v,
                  int m,
                  ReturnType r,
@@ -821,7 +784,7 @@ public class Feature extends AbstractFeature
    *
    * @param p the implementation (feature body etc).
    */
-  public Feature(SourcePosition pos,
+  Feature(SourcePosition pos,
                  Visi v,
                  int m,
                  ReturnType r,
@@ -2678,7 +2641,7 @@ A ((Choice)) declaration must not contain a result type.
           ? this._outer.selfType().asRef()
           : this._outer.selfType();
         _outerRef = new Feature(res,
-                                _pos,
+                                SourcePosition.notAvailable,
                                 Visi.PRIV,
                                 outerRefType,
                                 outerRefName(),
