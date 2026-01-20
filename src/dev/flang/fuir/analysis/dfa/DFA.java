@@ -3066,6 +3066,11 @@ public class DFA extends ANY
         "codepoint",
         "Sequence u8",
         "array u8",
+        // the following two are necessary for
+        // combination of Finger_Tree and
+        // tests/effect_installed_negative
+        "array (Sequence u8)",
+        "array (Sequence (Sequence u8))",
         "fuzion.sys.internal_array u8" -> true;
       default -> false;
       };
