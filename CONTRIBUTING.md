@@ -185,7 +185,7 @@ if applicable, an issue number this commit is related to.
 
 Here is an example
 
-    lib: fix O(n³) performance of String.split follwed by Sequence.filter, fix #2323
+    lib: fix O(n³) performance of String.split followed by Sequence.filter, fix #2323
 
 Module identifiers to be used include
 

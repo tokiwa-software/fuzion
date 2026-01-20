@@ -718,7 +718,7 @@ is
   #
   public type.list_concat_monoid Monoid (list A) =>
 
-    ref : Monoid (list A) is
+    _ : Monoid (list A) is
 
       # associative operation
       #
@@ -734,7 +734,7 @@ is
 # convenience routine to create a list from head h and lazy tail t.
 #
 public list(T type, h T, t Lazy (list T)) list T =>
-  ref : Cons T (list T) is
+  _ : Cons T (list T) is
     public redef head T => h
     public redef tail list T => t
 

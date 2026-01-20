@@ -246,7 +246,7 @@ public class LibraryFuir extends FUIR {
   }
 
   @Override
-  public int clazz_ref_const_string()
+  public int clazzRefConstString()
   {
     var cs = clazz(SpecialClazzes.c_const_string);
     for (int i = 0; i < _clazzes.length; i++)
@@ -273,9 +273,9 @@ public class LibraryFuir extends FUIR {
   }
 
   @Override
-  public int lookup_static_finally(int cl)
+  public int lookupStaticFinally(int cl)
   {
-    return _clazzes[clazzId2num(cl)].lookup_static_finally();
+    return _clazzes[clazzId2num(cl)].lookupStaticFinally();
   }
 
   @Override
@@ -290,6 +290,13 @@ public class LibraryFuir extends FUIR {
       }
     Errors.fatal("v field not found!");
     return NO_CLAZZ;
+  }
+
+
+  @Override
+  public int lookupCause(int ecl)
+  {
+    return _clazzes[clazzId2num(ecl)].lookupCause();
   }
 
   @Override

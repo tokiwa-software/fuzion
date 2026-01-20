@@ -39,7 +39,7 @@ module fileio is
     res := fzE_file_read fd arr.data len
 
     if res < -1
-      error "failed reading, error: {res}"
+      error "failed reading" res.as_i64
     else if res < 0
       (id (Sequence u8) [])
     else
@@ -55,7 +55,7 @@ module fileio is
     res := fzE_file_write fd content.internal_array.data content.length
 
     if res < 0
-      error "failed writing, error: {res}"
+      error "failed writing" res.as_i64
 
 
   # wrapper for fzE_file_flush
@@ -119,7 +119,7 @@ module fileio is
     if open_results[0] = 0
       res
     else
-      error "failed opening file \"$path\", error number: {open_results[0]}"
+      error "failed opening file \"$path\"" open_results[0]
 
 
   # Closes an IO source using an i64 representing the source handler (file descriptor)
@@ -130,7 +130,7 @@ module fileio is
                fd File_Descriptor) outcome unit =>
     closing_result := fzE_file_close fd
     if closing_result != 0
-      error "failed closing file, error number: $closing_result"
+      error "failed closing file" closing_result.as_i64
 
 
   # seek offset in the stream represented by fd
@@ -144,7 +144,7 @@ module fileio is
               offset i64) outcome unit =>
     res := fzE_file_seek fd offset
     if res = -1
-      error "failed seeking file, error number: {res}"
+      error "failed seeking file" res.as_i64
 
 
   # returns the current file-pointer offset as an outcome i64,
@@ -156,7 +156,7 @@ module fileio is
                        fd File_Descriptor) outcome i64 =>
     res := fzE_file_position fd
     if res = -1
-      error "failed getting position in file, error number: {res}"
+      error "failed getting position in file" res
     else
       res
 
@@ -172,4 +172,4 @@ module fileio is
     if open_results[0] = 0
       res
     else
-      error "failed opening directory \"$path\", error number: {open_results[0]}"
+      error "failed opening directory \"$path\"" open_results[0]

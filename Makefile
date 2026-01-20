@@ -224,7 +224,7 @@ C_FILES = $(shell find $(FZ_SRC) \( -path ./build -o -path ./.git \) -prune -o -
 
 # default make target
 .PHONY: all
-all: $(FUZION_BASE) $(FUZION_JAVA_MODULES) $(FUZION_FILES) $(MOD_FZ_CMD) $(FUZION_EBNF) $(BUILD_DIR)/lsp.jar
+all: $(FUZION_BASE) $(FUZION_JAVA_MODULES) $(FUZION_FILES) $(MOD_FZ_CMD) $(FUZION_EBNF) $(BUILD_DIR)/fuzion.jar
 
 
 # rules to build java modules
@@ -579,9 +579,9 @@ $(BUILD_DIR)/bin/run_tests: $(FZ) $(FZ_MODULES) $(FZ_SRC)/bin/run_tests.fz
 
 # phony target to run Fuzion tests and report number of failures
 .PHONY: run_tests
-run_tests: run_tests_fuir run_tests_jvm run_tests_c run_tests_int run_tests_effect run_tests_jar
+run_tests: run_tests_fuir run_tests_jvm run_tests_c run_tests_effect run_tests_jar
 
-TEST_DEPENDENCIES = $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests $(BUILD_DIR)/bin/run_tests $(BUILD_DIR)/lsp.jar
+TEST_DEPENDENCIES = $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests $(BUILD_DIR)/bin/run_tests $(BUILD_DIR)/fuzion.jar
 
 # phony target to run Fuzion tests using effects and report number of failures
 .PHONY .SILENT: run_tests_effect
@@ -724,3 +724,13 @@ include $(FZ_SRC)/docs.mk
 include $(FZ_SRC)/tools.mk
 
 # NYI: CLEANUP: move included makefiles to subfolder
+
+
+# builds a *fat* jar containing all java classes
+# including org.eclipse and gson, necessary for running the language server
+#
+$(BUILD_DIR)/fuzion.jar: $(CLASS_FILES_LSP) $(FUZION_BASE) $(FZ_SRC)/assets/Manifest.txt
+# delete signatures otherwise we would get: "Invalid signature file digest for Manifest main attributes"
+	rm -rf $(BUILD_DIR)/classes_lsp/META-INF
+	rm -f $(BUILD_DIR)/classes_lsp/about.html
+	jar cfm $@ $(FZ_SRC)/assets/Manifest.txt -C $(BUILD_DIR)/classes . -C $(BUILD_DIR)/classes_lsp .
