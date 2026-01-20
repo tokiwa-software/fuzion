@@ -727,7 +727,7 @@ include $(FZ_SRC)/tools.mk
 
 .PHONY: debian_package
 debian_package:
-	debuild -us -uc
+	dpkg-buildpackage -us -uc
 
 
 # builds a *fat* jar containing all java classes
