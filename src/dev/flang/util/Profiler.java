@@ -308,7 +308,7 @@ public class Profiler extends ANY
                       var format = "%" + _results_.get(s[s.length-1]).toString().length() + "d";
                       for(var m : s)
                         {
-                          out.println("PROF: "+String.format(format, _results_.get(m)) + ": " + deMangle(m));
+                          out.println("PROF: "+String.format(format, _results_.get(m)) + ": " + deMangle(m).replace("dev.flang.", ""));
                         }
                     }
                   catch (IOException e)
@@ -322,7 +322,7 @@ public class Profiler extends ANY
               StringBuilder result = new StringBuilder();
               for (var key : _resultsForFlameGraphKeys_)
                 {
-                  result.append(key)
+                  result.append(key.replace("dev.flang.", ""))
                     .append(" ")
                     .append(_resultsForFlameGraph_.get(key))
                     .append("\n");
