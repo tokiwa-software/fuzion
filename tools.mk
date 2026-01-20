@@ -25,7 +25,7 @@
 # shellcheck (https://www.shellcheck.net) checks shell scripts for issues/bugs
 .PHONY: shellcheck
 shellcheck:
-	shellcheck $(SHELL_SCRIPTS) $(shell find . -iname '*.sh' -not -path "./build/*")
+	shellcheck $(SHELL_SCRIPTS) $(shell find . -iname '*.sh' -not -path "./build/*" -not -path "./debian/*")
 
 # show readme in browser, requires 'sudo apt install grip'
 .PHONY: show_readme
