@@ -447,7 +447,10 @@ public class Match extends AbstractMatch
             @Override public List<AbstractType> types() { return Types.resolved == null ? null : new List<>(Types.resolved.f_TRUE.selfType()); }
             @Override boolean resolveType(Resolution res, List<AbstractType> cgs, Context context, SourcePosition[] matched)
             {
-              matched[1] = SourcePosition.notAvailable;
+              for (int i = 0; i < matched.length; i++)
+                {
+                  matched[i] = SourcePosition.notAvailable;
+                }
               return true;
             }
           },
@@ -456,7 +459,10 @@ public class Match extends AbstractMatch
             @Override public List<AbstractType> types() { return Types.resolved == null ? null : new List<>(Types.resolved.f_FALSE.selfType()); }
             @Override boolean resolveType(Resolution res, List<AbstractType> cgs, Context context, SourcePosition[] matched)
             {
-              matched[0] = SourcePosition.notAvailable;
+              for (int i = 0; i < matched.length; i++)
+                {
+                  matched[i] = SourcePosition.notAvailable;
+                }
               return true;
             }
           });
