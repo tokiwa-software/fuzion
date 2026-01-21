@@ -87,9 +87,10 @@ public class IO
             tempFile.deleteOnExit();
           }
 
-        FileWriter writer = new FileWriter(tempFile);
-        writer.write(text);
-        writer.close();
+        try (FileWriter writer = new FileWriter(tempFile))
+          {
+            writer.write(text);
+          }
         return tempFile;
       }
     catch (IOException e)
