@@ -1124,12 +1124,6 @@ public class DFA extends ANY
 
 
   /**
-   * Set of effects that are missing, excluding default effects.
-   */
-  IntMap<Integer> _missingEffects = new IntMap<>(); // NYI: CLEANUP: Remove? This is only written?
-
-
-  /**
    * List of numeric values to avoid duplicates, values that are known
    */
   List<LongMap<NumericValue>> _numericValues = new List<>();
