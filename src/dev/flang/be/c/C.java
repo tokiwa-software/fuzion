@@ -821,7 +821,15 @@ public class C extends ANY
 
     if(_options._useBoehmGC)
       {
-        command.addAll("-DGC_THREADS", "-DGC_PTHREADS", "-DPTW32_STATIC_LIB", "-DGC_WIN32_PTHREADS");
+        command.add("-DGC_THREADS");
+        if (isWindows())
+          {
+            command.add( "-DGC_WIN32_THREADS");
+          }
+        else
+          {
+            command.add( "-DGC_PTHREADS");
+          }
       }
 
     if (linkJVM())
@@ -841,8 +849,7 @@ public class C extends ANY
 
     command.add("-lm");
 
-      // NYI: UNDER DEVELOPMENT: on windows link nothing
-    if (usesThreads())
+    if (usesThreads() && !isWindows())
       {
         command.add("-lpthread");
       }
