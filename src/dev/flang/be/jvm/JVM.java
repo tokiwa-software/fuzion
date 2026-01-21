@@ -865,21 +865,22 @@ should be avoided as much as possible.
       {
         _options.verbosePrintln(" + " + executableName);
         var f = executableName.toFile();
-        var out = new PrintWriter(new FileOutputStream(f));
-        out.println(String.format(// NYI: UNDER DEVELOPMENT: This probably needs to be changed for Windows:
-                                  """
-                                  #!/bin/sh
+        try (var out = new PrintWriter(new FileOutputStream(f)))
+          {
+            out.println(String.format(// NYI: UNDER DEVELOPMENT: This probably needs to be changed for Windows:
+                                      """
+                                      #!/bin/sh
 
-                                  SCRIPT_PATH="$(dirname "$(readlink -f "$0")")"
+                                      SCRIPT_PATH="$(dirname "$(readlink -f "$0")")"
 
-                                  LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$SCRIPT_PATH" \
-                                  PATH="$PATH:$SCRIPT_PATH" \
-                                  DYLD_FALLBACK_LIBRARY_PATH="$DYLD_FALLBACK_LIBRARY_PATH:$SCRIPT_PATH" \
-                                  java --enable-preview --enable-native-access=ALL-UNNAMED -D%s="$0" %s "$@"
-                                  """,
-                                  FUZION_COMMAND_PROPERTY,
-                                  args));
-        out.close();
+                                      LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$SCRIPT_PATH" \
+                                      PATH="$PATH:$SCRIPT_PATH" \
+                                      DYLD_FALLBACK_LIBRARY_PATH="$DYLD_FALLBACK_LIBRARY_PATH:$SCRIPT_PATH" \
+                                      java --enable-preview --enable-native-access=ALL-UNNAMED -D%s="$0" %s "$@"
+                                      """,
+                                      FUZION_COMMAND_PROPERTY,
+                                      args));
+          }
         f.setExecutable(true);
         for (String str : new List<>("libfuzion_rt.so", "libfuzion_rt.dylib", "fuzion_rt.dll"))
           {
