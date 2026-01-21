@@ -59,6 +59,7 @@ GOT: x Type of 'tuple'
 GOT: x Type of 'tuple'
 GOT: x Type of 'tuple'
 GOT: x Type of 'tuple'
+GOT: x Type of 'tuple'
 
 EXP: y Type of 'Function String (Sequence u64) a.b'
 GOT: y Type of 'Function String (Sequence u64) a.b'

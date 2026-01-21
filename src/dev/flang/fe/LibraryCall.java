@@ -33,7 +33,6 @@ import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Expr;
-import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.Universe;
 
 import dev.flang.util.FuzionConstants;
@@ -124,36 +123,6 @@ public abstract class LibraryCall extends AbstractCall
 
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * visit all the expressions within this feature.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outer the feature surrounding this expression.
-   *
-   * @return this.
-   */
-  @Override
-  public Expr visit(FeatureVisitor v, AbstractFeature outer)
-  {
-    var j = actuals().listIterator();
-    while (j.hasNext())
-      {
-        j.set(j.next().visit(v, outer));
-      };
-    if (target() != null)
-      {
-        var t = target().visit(v, outer);
-        if (CHECKS) check
-          (target() == t);
-      }
-    v.action(this);
-    return this;
-  }
-
 
 
   @Override public List<AbstractType> actualTypeParameters() { return _generics; }

@@ -1,0 +1,33 @@
+
+--CURDIR--/loop_variant_1.fz:30:13: error 1: Loop variant must be of type 'i64'
+    variant "bla"    # 1. should flag an error: wrong type of variant
+------------^^^^^
+Type of loop variant must be 'i64', but found variant of type 'String'
+
+
+--CURDIR--/loop_variant_1.fz:37:13: error 2: Could not find called feature
+    variant foo      # 2. should flag an error: feature not found
+------------^^^
+Feature not found: 'foo' (no arguments)
+Target feature: 'loop_variant_1.test_2.loop'
+In call: 'foo'
+
+
+--CURDIR--/loop_variant_1.fz:44:13: error 3: Loop variant must be of type 'i64'
+    variant 0.1      # 3. should flag an error: wrong type of variant
+------------^^^
+Type of loop variant must be 'i64', but found variant of type 'f64'
+
+
+--CURDIR--/loop_variant_1.fz:53:13: error 4: Loop variant must be of type 'i64'
+    variant (n-i)    # 4. should flag an error: wrong type of variant
+------------^^^^^
+Type of loop variant must be 'i64', but found variant of type 'i32'
+
+
+--CURDIR--/loop_variant_1.fz:60:13: error 5: Loop variant must be of type 'i64'
+    variant true     # 5. should flag an error: wrong type of variant
+------------^^^^
+Type of loop variant must be 'i64', but found variant of type 'bool'
+
+5 errors.

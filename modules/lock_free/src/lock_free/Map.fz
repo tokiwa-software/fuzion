@@ -102,8 +102,10 @@ is
 
   # remove a child node and return a new container_node
   remove(pos, flag u32, g u64)
-  pre debug: pos < array.length.as_u32
-  post array.length > result.array.length
+    pre
+      debug: array.indices.contains pos.as_i32
+    post
+      debug: array.length = result.array.length + 1
   =>
     # NYI: UNDER DEVELOPMENT: delete/remove should be in stdlib
     tmp := array.take pos.as_i32 ++ array.drop (pos + 1).as_i32
@@ -149,7 +151,7 @@ Main_Node(CTK type : property.hashable, CTV type, data choice (container_node CT
   id := unique_id
 
   # a previous node that gets set during a generational aware compare and set
-  prev := concur.atomic (prev_node CTK CTV) p
+  prev := concur.atomic (prev_node CTK CTV) .new p
 
   public fixed redef type.equality(a, b Main_Node.this) bool =>
     a.id = b.id
@@ -166,9 +168,10 @@ Main_Node(CTK type : property.hashable, CTV type, data choice (container_node CT
     "Main_Node[prev={prev.read}]($s)"
 
   as_list(f Indirection_Node CTK CTV -> Main_Node CTK CTV)
-  pre match prev.read
-    nil => true
-    * => false
+    pre
+      debug: match prev.read
+               nil => true
+               * => false
   =>
     match data
       c container_node => c.as_list f
@@ -185,7 +188,7 @@ failed_node(CTK type : property.hashable, CTV type, prev Main_Node CTK CTV) is
 
 # shorthand for creating a new indirection node from Main_Node and gen
 indirection_node(CTK type : property.hashable, CTV type, data Main_Node CTK CTV, gen u64) =>
-  Indirection_Node (concur.atomic data) gen
+  Indirection_Node (concur.atomic (Main_Node CTK CTV) .new data) gen
 
 
 # an indirection node
@@ -193,7 +196,7 @@ Indirection_Node(CTK type : property.hashable, CTV type, data concur.atomic (Mai
 
   id := unique_id
 
-  public fixed redef type.equality(a, b Indirection_Node.this) =>
+  public fixed redef type.equality(a, b Indirection_Node.this) bool =>
     a.id = b.id
 
   # compare and update
@@ -208,17 +211,20 @@ Indirection_Node(CTK type : property.hashable, CTV type, data concur.atomic (Mai
 
 # a linked list node
 # NYI: UNDER DEVELOPMENT: instead of Sequence we should use something like the original implementation ListMap(Scala).
-list_node(CTK type : property.hashable, CTV type, from Sequence (singleton_node CTK CTV)) : Sequence (tuple CTK CTV)
-pre from ∀ (sn -> (from.filter (snn -> (hash sn.k) = (hash snn.k))).count = 1)
+list_node(CTK type : property.hashable, CTV type, from array (singleton_node CTK CTV)) : Sequence (tuple CTK CTV)
+  pre
+    debug: from ∀ sn->
+        from.filter (snn -> hash sn.k = hash snn.k)
+            .count = 1
 is
-  public redef as_list => from
+  public redef as_list list (tuple CTK CTV) => from
     .map sn->(sn.k, sn.v)
     .as_list
 
   # is this sequence known to be finite?  For infinite sequences, features like
   # count diverge.
   #
-  public redef finite => trit.yes
+  public redef finite trit => trit.yes
 
   public redef as_string String => "list_node({from.as_string ", "})"
 
@@ -243,12 +249,12 @@ not_found is
 
 # descriptor for double-compare-single-swap operation
 Rdcss_Descriptor(CTK type : property.hashable, CTV type, ov Indirection_Node CTK CTV, exp Main_Node CTK CTV, nv Indirection_Node CTK CTV) ref
-pre exp.prev.read.is_nil
+  pre debug: exp.prev.read.is_nil
 is
 
   # this field does not have to be atomic
   # but it probably does not hurt either.
-  committed := concur.atomic false
+  committed := concur.atomic bool .new false
 
   public redef as_string String =>
     "Rdcss_Descriptor($ov, $exp, $nv)"
@@ -288,7 +294,8 @@ is
   # 2) copying a container node to a new generation
   #
   copy_to_gen(i Indirection_Node CTK CTV, new_gen u64)
-  post result.data.read.prev.read.is_nil
+    post
+      debug: result.data.read.prev.read.is_nil
   =>
     indirection_node (gcas_read i) new_gen
 
@@ -396,10 +403,11 @@ is
   # generation does not change while this compare and
   # set is taking place.
   gcas(i Indirection_Node CTK CTV, o Main_Node CTK CTV, n choice (container_node CTK CTV) (tomb_node CTK CTV) (list_node CTK CTV)) choice restart ctrie_ok
-  pre
-    match o.prev.read
-      nil => true
-      *   => false
+    pre
+      debug:
+        match o.prev.read
+          nil => true
+          *   => false
   =>
     nn := Main_Node n o
     if i.cas o nn
@@ -522,7 +530,7 @@ is
 
 
   # lookup key k
-  public redef index [] (k CTK) option CTV =>
+  public redef get (k CTK) option CTV =>
     r := read_root
     match lookup r k 0 nil r.gen
       restart =>
@@ -601,7 +609,8 @@ is
       tomb_node =>
         clean parent (lev - width)
       ln list_node =>
-        gcas i m (list_node ([singleton_node k v] ++ (ln.from.filter (sn -> sn.k != k))))
+        new_node := list_node <| ([singleton_node k v] ++ (ln.from.filter (sn -> sn.k != k))).as_array
+        gcas i m new_node
 
 
   # remove key from ctrie
@@ -649,27 +658,27 @@ is
       tomb_node =>
         clean parent (lev - width)
       ln list_node =>
-        fln := list_node ln.from.filter(sn -> sn.k != k)
+        fln := list_node <| ln.from.filter (sn -> sn.k != k) .as_array
         match gcas i m (if fln.from.count = 1 then tomb_node fln.from.first.get else fln)
           ctrie_ok => ln.find_key k
           restart => restart
 
 
   # the size of the ctrie
-  public redef size =>
+  public redef size i32 =>
     items.count
 
 
 
   # take a snapshot of the ctrie
-  public snapshot(read_only bool) =>
+  public snapshot(read_only bool) Map CTK CTV =>
     r := read_root
     expmain := gcas_read r
     new_gen => unique_id
     descriptor := Rdcss_Descriptor r expmain (copy_to_gen r new_gen)
     if rdcss_root descriptor
       # new ctrie by changing generation of r
-      Map (concur.atomic (root_node CTK CTV) (copy_to_gen r new_gen)) snapshot.this.read_only
+      Map (concur.atomic (root_node CTK CTV) .new (copy_to_gen r new_gen)) snapshot.this.read_only
     else
       snapshot snapshot.this.read_only
 
@@ -689,25 +698,25 @@ is
   # NYI: BUG: #3646 make public when snapshots work
   as_persistent_map container.Persistent_Map CTK CTV =>
     s := snapshot false
-    ref : container.Persistent_Map CTK CTV is
-      public redef size => s.size
-      public redef index [] (k CTK) => s[k]
-      public redef items => s.items
-      public redef put(k CTK, v CTV) =>
+    _ : container.Persistent_Map CTK CTV is
+      public redef size i32 => s.size
+      public redef index [] (k CTK) option CTV => s[k]
+      public redef items Sequence (tuple CTK CTV) => s.items
+      public redef put(k CTK, v CTV) container.Persistent_Map CTK CTV =>
         sp := s.snapshot false
         sp.put k v
         sp.as_persistent_map
 
 
   # initialize a new ctrie
-  public fixed redef type.empty =>
+  public fixed redef type.empty lock_free.Map CTK CTV =>
 
     initial_gen => unique_id
 
     initial_root_node lock_free.root_node CTK CTV :=
       lock_free.indirection_node (lock_free.Main_Node (lock_free.container_node CTK CTV 0 [] initial_gen) nil) initial_gen
 
-    lock_free.Map (concur.atomic initial_root_node) false
+    lock_free.Map (concur.atomic (lock_free.root_node CTK CTV) .new initial_root_node) false
 
 
   # lock_free.Map.from_entries -- routine to initialize a ctrie from a sequence of key value tuples

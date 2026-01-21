@@ -63,19 +63,19 @@ public class Intrinsics extends ANY
   /**
    * Predefined identifiers to access args:
    */
-  static CIdent A0 = new CIdent("arg0");
-  static CIdent A1 = new CIdent("arg1");
-  static CIdent A2 = new CIdent("arg2");
-  static CIdent A3 = new CIdent("arg3");
-  static CIdent A4 = new CIdent("arg4");
-  static CIdent A5 = new CIdent("arg5");
-  static CIdent A6 = new CIdent("arg6");
-  static CIdent A7 = new CIdent("arg7");
+  static final CIdent A0 = new CIdent("arg0");
+  static final CIdent A1 = new CIdent("arg1");
+  static final CIdent A2 = new CIdent("arg2");
+  static final CIdent A3 = new CIdent("arg3");
+  static final CIdent A4 = new CIdent("arg4");
+  static final CIdent A5 = new CIdent("arg5");
+  static final CIdent A6 = new CIdent("arg6");
+  static final CIdent A7 = new CIdent("arg7");
 
   /**
    * Predefined identifier to access errno macro.
    */
-  static CIdent errno = new CIdent("errno");
+  static final CIdent errno = new CIdent("errno");
 
   /**
    * Wrap code into a mutex_lock/unlock.  This
@@ -89,7 +89,7 @@ public class Intrinsics extends ANY
   }
 
 
-  static TreeMap<String, IntrinsicCode> _intrinsics_ = new TreeMap<>();
+  static final TreeMap<String, IntrinsicCode> _intrinsics_ = new TreeMap<>();
   static
   {
     put("Type.name" , (c,cl,outer,in) ->
@@ -105,11 +105,10 @@ public class Intrinsics extends ANY
           var new_value = A1;
           var tmp = new CIdent("tmp");
           var code = CStmnt.EMPTY;
-          if (!c._fuir.clazzIs(rc, SpecialClazzes.c_unit))
+          if (!c._fuir.clazzIsUnitType(rc))
             {
               var f = c.accessField(outer, ac, v);
-              CExpr eq;
-              if (isIntegerOrRef(c, rc))
+              if (mayUseAtomicOps(c, rc))
                 {
                   code = CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, expected),
                                     CExpr.call("atomic_compare_exchange_strong_explicit", new List<>(
@@ -144,11 +143,10 @@ public class Intrinsics extends ANY
           var tmp = new CIdent("tmp");
           var res = new CIdent("set_successful");
           var code = CStmnt.EMPTY;
-          if (!c._fuir.clazzIs(rc, SpecialClazzes.c_unit))
+          if (!c._fuir.clazzIsUnitType(rc))
             {
               var f = c.accessField(outer, ac, v);
-              CExpr eq;
-              if (isIntegerOrRef(c, rc))
+              if (mayUseAtomicOps(c, rc))
                 {
                   code = CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, expected),
                                     CStmnt.iff(CExpr.call("atomic_compare_exchange_strong_explicit",
@@ -163,16 +161,6 @@ public class Intrinsics extends ANY
                 }
               else
                 {
-                  if (c._fuir.clazzIs(rc, SpecialClazzes.c_f32) ||
-                      c._fuir.clazzIs(rc, SpecialClazzes.c_f64))
-                    {
-                      eq = CExpr.eq(tmp, expected);
-                    }
-                  else
-                    {
-                      eq = CExpr.eq(CExpr.call("memcmp", new List<>(tmp.adrOf(), expected.adrOf(), CExpr.sizeOfType(c._types.clazz(rc)))), new CIdent("0"));
-                    }
-
                   code = CStmnt.seq(CStmnt.decl("bool", res),
                                     locked(CStmnt.seq(CExpr.decl(c._types.clazz(rc), tmp, f),
                                                       compareValues(c, tmp, expected, rc, res),
@@ -192,7 +180,7 @@ public class Intrinsics extends ANY
           var r =
             c._fuir.clazzIsRef(rc) ||
             c._fuir.clazzIsBuiltInPrimitive(rc) ||
-            c._fuir.clazzIs(rc, SpecialClazzes.c_unit);
+            c._fuir.clazzIsUnitType(rc);
           return (r ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret();
         });
 
@@ -203,20 +191,11 @@ public class Intrinsics extends ANY
           var rc  = c._fuir.clazzResultClazz(v);
           var tmp = new CIdent("tmp");
           CStmnt code;
-          if (c._fuir.clazzIs(rc, SpecialClazzes.c_unit))
+          if (c._fuir.clazzIsUnitType(rc))
             {
               code = CExpr.call("atomic_thread_fence", new List<>(new CIdent("memory_order_seq_cst")));
             }
-          else if (c._fuir.clazzIsRef(rc) ||
-                   c._fuir.clazzIs(rc, SpecialClazzes.c_i8  ) ||
-                   c._fuir.clazzIs(rc, SpecialClazzes.c_i16 ) ||
-                   c._fuir.clazzIs(rc, SpecialClazzes.c_i32 ) ||
-                   c._fuir.clazzIs(rc, SpecialClazzes.c_i64 ) ||
-                   c._fuir.clazzIs(rc, SpecialClazzes.c_u8  ) ||
-                   c._fuir.clazzIs(rc, SpecialClazzes.c_u16 ) ||
-                   c._fuir.clazzIs(rc, SpecialClazzes.c_u32 ) ||
-                   c._fuir.clazzIs(rc, SpecialClazzes.c_u64 ) ||
-                   c._fuir.clazzIs(rc, SpecialClazzes.c_bool))
+          else if (mayUseAtomicOps(c, rc))
             {
               var f = c.accessField(outer, ac, v);
               code = CStmnt.seq(
@@ -245,20 +224,11 @@ public class Intrinsics extends ANY
           var rc  = c._fuir.clazzResultClazz(v);
           var new_value = A0;
           var code = CStmnt.EMPTY;
-          if (c._fuir.clazzIs(rc, SpecialClazzes.c_unit))
+          if (c._fuir.clazzIsUnitType(rc))
             {
               code = CExpr.call("atomic_thread_fence", new List<>(new CIdent("memory_order_seq_cst")));
             }
-          else if (c._fuir.clazzIsRef(rc) ||
-                   c._fuir.clazzIs(rc, SpecialClazzes.c_i8  ) ||
-                   c._fuir.clazzIs(rc, SpecialClazzes.c_i16 ) ||
-                   c._fuir.clazzIs(rc, SpecialClazzes.c_i32 ) ||
-                   c._fuir.clazzIs(rc, SpecialClazzes.c_i64 ) ||
-                   c._fuir.clazzIs(rc, SpecialClazzes.c_u8  ) ||
-                   c._fuir.clazzIs(rc, SpecialClazzes.c_u16 ) ||
-                   c._fuir.clazzIs(rc, SpecialClazzes.c_u32 ) ||
-                   c._fuir.clazzIs(rc, SpecialClazzes.c_u64 ) ||
-                   c._fuir.clazzIs(rc, SpecialClazzes.c_bool))
+          else if (mayUseAtomicOps(c, rc))
             {
               var f = c.accessField(outer, ac, v);
               code = CExpr.call("atomic_store_explicit", new List<>(f.adrOf().castTo(c._types.atomicType(rc)+"*"), new_value.adrOf().castTo(c._types.atomicType(rc)+"*").deref(), new CIdent("memory_order_seq_cst")));
@@ -288,7 +258,6 @@ public class Intrinsics extends ANY
     put("fuzion.sys.args.get"  , (c,cl,outer,in) ->
         {
           var str = CNames.GLOBAL_ARGV.index(A0);
-          var rc = c._fuir.clazzResultClazz(cl);
           return c
             .boxedConstString(str, CExpr.call("strlen",new List<>(str)))
             .ret();
@@ -461,10 +430,6 @@ public class Intrinsics extends ANY
         "f64.infix *"          , (c,cl,outer,in) -> outer.mul(A0).ret());
     put("f32.infix /"          ,
         "f64.infix /"          , (c,cl,outer,in) -> outer.div(A0).ret());
-    put("f32.infix %"          ,
-        "f64.infix %"          , (c,cl,outer,in) -> CExpr.call("fmod", new List<>(outer, A0)).ret());
-    put("f32.infix **"         ,
-        "f64.infix **"         , (c,cl,outer,in) -> CExpr.call("pow", new List<>(outer, A0)).ret());
     put("f32.type.equal"       ,
         "f64.type.equal"       , (c,cl,outer,in) -> A0.eq(A1).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret());
     put("f32.type.lower_than_or_equal",
@@ -501,36 +466,6 @@ public class Intrinsics extends ANY
     put("f64.type.min_positive", (c,cl,outer,in) -> CExpr.ident("DBL_MIN").ret());
     put("f64.type.max"         , (c,cl,outer,in) -> CExpr.ident("DBL_MAX").ret());
     put("f64.type.epsilon"     , (c,cl,outer,in) -> CExpr.ident("DBL_EPSILON").ret());
-    put("f32.is_NaN"           ,
-        "f64.is_NaN"           , (c,cl,outer,in) -> CStmnt.seq(CStmnt.iff(CExpr.call("isnan", new List<>(outer)).ne(new CIdent("0")),
-                                                                          c._names.FZ_TRUE.ret()
-                                                                          ),
-                                                               c._names.FZ_FALSE.ret()
-                                                               ));
-    put("f32.square_root"      , (c,cl,outer,in) -> CExpr.call("sqrtf", new List<>(outer)).ret());
-    put("f64.square_root"      , (c,cl,outer,in) -> CExpr.call("sqrt",  new List<>(outer)).ret());
-    put("f32.exp"              , (c,cl,outer,in) -> CExpr.call("expf",  new List<>(outer)).ret());
-    put("f64.exp"              , (c,cl,outer,in) -> CExpr.call("exp",   new List<>(outer)).ret());
-    put("f32.log"              , (c,cl,outer,in) -> CExpr.call("logf",  new List<>(outer)).ret());
-    put("f64.log"              , (c,cl,outer,in) -> CExpr.call("log",   new List<>(outer)).ret());
-    put("f32.sin"              , (c,cl,outer,in) -> CExpr.call("sinf",  new List<>(outer)).ret());
-    put("f64.sin"              , (c,cl,outer,in) -> CExpr.call("sin",   new List<>(outer)).ret());
-    put("f32.cos"              , (c,cl,outer,in) -> CExpr.call("cosf",  new List<>(outer)).ret());
-    put("f64.cos"              , (c,cl,outer,in) -> CExpr.call("cos",   new List<>(outer)).ret());
-    put("f32.tan"              , (c,cl,outer,in) -> CExpr.call("tanf",  new List<>(outer)).ret());
-    put("f64.tan"              , (c,cl,outer,in) -> CExpr.call("tan",   new List<>(outer)).ret());
-    put("f32.asin"             , (c,cl,outer,in) -> CExpr.call("asinf", new List<>(outer)).ret());
-    put("f64.asin"             , (c,cl,outer,in) -> CExpr.call("asin",  new List<>(outer)).ret());
-    put("f32.acos"             , (c,cl,outer,in) -> CExpr.call("acosf", new List<>(outer)).ret());
-    put("f64.acos"             , (c,cl,outer,in) -> CExpr.call("acos",  new List<>(outer)).ret());
-    put("f32.atan"             , (c,cl,outer,in) -> CExpr.call("atanf", new List<>(outer)).ret());
-    put("f64.atan"             , (c,cl,outer,in) -> CExpr.call("atan",  new List<>(outer)).ret());
-    put("f32.sinh"             , (c,cl,outer,in) -> CExpr.call("sinhf", new List<>(outer)).ret());
-    put("f64.sinh"             , (c,cl,outer,in) -> CExpr.call("sinh",  new List<>(outer)).ret());
-    put("f32.cosh"             , (c,cl,outer,in) -> CExpr.call("coshf", new List<>(outer)).ret());
-    put("f64.cosh"             , (c,cl,outer,in) -> CExpr.call("cosh",  new List<>(outer)).ret());
-    put("f32.tanh"             , (c,cl,outer,in) -> CExpr.call("tanhf", new List<>(outer)).ret());
-    put("f64.tanh"             , (c,cl,outer,in) -> CExpr.call("tanh",  new List<>(outer)).ret());
 
     put("fuzion.sys.type.alloc", (c,cl,outer,in) ->
         {
@@ -569,7 +504,6 @@ public class Intrinsics extends ANY
     put("fuzion.sys.env_vars.get0", (c,cl,outer,in) ->
         {
           var str = new CIdent("str");
-          var rc = c._fuir.clazzResultClazz(cl);
           return CStmnt.seq(CStmnt.decl("char *", str),
                             str.assign(CExpr.call("getenv",new List<>(A0.castTo("char*")))),
                             c.boxedConstString(str, CExpr.call("strlen",new List<>(str))).ret());
@@ -628,7 +562,7 @@ public class Intrinsics extends ANY
                 {
                   var call     = c._fuir.lookupCall(c._fuir.clazzActualGeneric(cl, 0));
                   var call_def = c._fuir.lookupCall(c._fuir.clazzActualGeneric(cl, 1));
-                  var finallie = c._fuir.lookup_static_finally(ecl);
+                  var finallie = c._fuir.lookupStaticFinally(ecl);
                   if (c._fuir.clazzNeedsCode(call))
                     {
                       var jmpbuf = new CIdent("jmpbuf");
@@ -754,8 +688,8 @@ public class Intrinsics extends ANY
       else
         {
           var internalArray = c._fuir.clazzArgClazz(cl, 0);
-          var data   = c._fuir.lookup_fuzion_sys_internal_array_data  (internalArray);
-          var length = c._fuir.lookup_fuzion_sys_internal_array_length(internalArray);
+          var data   = c._fuir.clazzArg(internalArray, 0);
+          var length = c._fuir.clazzArg(internalArray, 1);
           var elementType = c._fuir.clazzActualGeneric(internalArray, 0);
           var elements = c._names.newTemp();
           return CExpr
@@ -822,7 +756,7 @@ public class Intrinsics extends ANY
       else
         {
           var internalArray = c._fuir.clazzArgClazz(cl, 2);
-          var data          = c._fuir.lookup_fuzion_sys_internal_array_data(internalArray);
+          var data          = c._fuir.clazzArg(internalArray, 0);
           return CStmnt
             .seq(c.returnJavaObject(c._fuir.clazzResultClazz(cl),
               CExpr
@@ -851,7 +785,7 @@ public class Intrinsics extends ANY
       else
         {
           var internalArray = c._fuir.clazzArgClazz(cl, 3);
-          var data          = c._fuir.lookup_fuzion_sys_internal_array_data(internalArray);
+          var data          = c._fuir.clazzArg(internalArray, 0);
           return CStmnt
             .seq(
               // NYI: UNDER DEVELOPMENT: methods where result clazz is e.g. unit, f64 etc. that does
@@ -867,7 +801,7 @@ public class Intrinsics extends ANY
     });
     put("fuzion.jvm.call_v0", (c, cl, outer, in) -> {
       var internalArray = c._fuir.clazzArgClazz(cl, 4);
-      var data          = c._fuir.lookup_fuzion_sys_internal_array_data(internalArray);
+      var data          = c._fuir.clazzArg(internalArray, 0);
       if (C.JAVA_HOME == null)
         {
           return noJava;
@@ -916,7 +850,6 @@ public class Intrinsics extends ANY
           else
             {
               var tmp = new CIdent("tmp");
-              var rc = c._fuir.clazzResultClazz(cl);
               return CStmnt.seq(
                 CStmnt.decl("const char *", tmp),
                 tmp.assign(CExpr.call("fzE_java_string_to_utf8_bytes", new List<CExpr>(A0.castTo("jstring")))),
@@ -927,8 +860,8 @@ public class Intrinsics extends ANY
       put("fuzion.jvm.string_to_java_object0", (c,cl,outer,in) -> {
           var rc = c._fuir.clazzResultClazz(cl);
           var internalArray = c._fuir.clazzArgClazz(cl, 0);
-          var data          = c._fuir.lookup_fuzion_sys_internal_array_data  (internalArray);
-          var length        = c._fuir.lookup_fuzion_sys_internal_array_length(internalArray);
+          var data          = c._fuir.clazzArg(internalArray, 0);
+          var length        = c._fuir.clazzArg(internalArray, 1);
           return C.JAVA_HOME == null
             ? noJava
             : CExpr
@@ -945,7 +878,7 @@ public class Intrinsics extends ANY
     put("fuzion.jvm.create_jvm", (c,cl,outer,in) -> {
       return  C.JAVA_HOME == null
         ? noJava
-        : CExpr.call("fzE_create_jvm", new List<>(A0.castTo("char *"))).ret();
+        : CExpr.call("fzE_create_jvm", new List<>(A0.castTo("void *"), A1)).ret();
     });
     put("fuzion.jvm.destroy_jvm", (c,cl,outer,in) -> {
       return  C.JAVA_HOME == null
@@ -960,8 +893,8 @@ public class Intrinsics extends ANY
         return CStmnt.seq(
           CStmnt.decl("void *", tmp, CExpr.call("fzE_mtx_init", new List<>())),
           CStmnt.iff(tmp.eq(CNames.NULL),
-            c.returnOutcome(c._fuir.clazz_error(), c.error(c.boxedConstString("An error occurred initializing the mutex.")), rc, 1),
-            c.returnOutcome(c._fuir.clazz(SpecialClazzes.c_Mutex), tmp, rc , 0)
+            c.returnOutcome(c._fuir.clazzChoice(rc, 1), c.error(c._fuir.clazzChoice(rc, 1), c.boxedConstString("An error occurred initializing the mutex.")), rc, 1),
+            c.returnOutcome(c._fuir.clazzChoice(rc, 0), tmp, rc , 0)
           )
         );
       }
@@ -977,8 +910,8 @@ public class Intrinsics extends ANY
         return CStmnt.seq(
           CStmnt.decl("void *", tmp, CExpr.call("fzE_cnd_init",      new List<>())),
           CStmnt.iff(tmp.eq(CNames.NULL),
-            c.returnOutcome(c._fuir.clazz_error(), c.error(c.boxedConstString("An error occurred initializing the condition variable.")), rc, 1),
-            c.returnOutcome(c._fuir.clazz(SpecialClazzes.c_Condition), tmp, rc , 0)
+            c.returnOutcome(c._fuir.clazzChoice(rc, 1), c.error(c._fuir.clazzChoice(rc, 1), c.boxedConstString("An error occurred initializing the condition variable.")), rc, 1),
+            c.returnOutcome(c._fuir.clazzChoice(rc, 0), tmp, rc , 0)
           )
         );
       }
@@ -991,6 +924,17 @@ public class Intrinsics extends ANY
     // essentially a NOP in c-backend
     put("native_array", (c,cl,outer,in) -> A0.castTo("void *" /* NYI: should be cast to array with element type cl._dfa._fuir.clazzActualGeneric(cl._cc, 0) */).ret());
   }
+
+
+  /**
+   * Can we use atomic ops for cl or do we need to use locking?
+   */
+  private static boolean mayUseAtomicOps(C c, int cl)
+  {
+    return isIntegerOrRef(c, cl);
+    // NYI: UNDER DEVELOPMENT: several other types may be suitable, e.g. isChoiceOfOnlyUnitTypes etc.
+  }
+
 
   /**
    * Is cl an integer i8..u64 or a reference?
@@ -1160,7 +1104,7 @@ public class Intrinsics extends ANY
       }
     else if (c._fuir.clazzIsUnitType(rt))
       { // unit-type values are always equal:
-        result = tmp.assign(new CIdent("true"));
+        result = tmp.assign(CIdent.TRUE);
       }
     else if (isIntegerOrRef(c, rt))
       {
@@ -1192,7 +1136,7 @@ public class Intrinsics extends ANY
           {
             var tc = c._fuir.clazzChoice(rt, i);
             var fld = c._fuir.clazzIsRef(tc) ? CNames.CHOICE_REF_ENTRY_NAME
-                                             : new CIdent(CNames.CHOICE_ENTRY_NAME + i);
+                                             : CIdent.choiceEntry(i);
             var entry1  = union1.field(fld);
             var entry2  = union2.field(fld);
             var cmp = compareValues(c, entry1, entry2, tc, tmp);
@@ -1204,11 +1148,11 @@ public class Intrinsics extends ANY
                             CStmnt.suitch(value1.field(CNames.TAG_NAME),
                                           cazes,
                                           null),
-                            tmp.assign(new CIdent("false")));
+                            tmp.assign(CIdent.FALSE));
       }
     else // not a choice, so a 'normal' product type
       {
-        result = tmp.assign(new CIdent("true"));
+        result = tmp.assign(CIdent.TRUE);
         for (var i = 0; i < c._fuir.clazzFieldCount(rt); i++)
           {
             var fi = c._fuir.clazzField(rt, i);

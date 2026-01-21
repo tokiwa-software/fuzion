@@ -88,11 +88,11 @@ simple_test_for_this_type_value =>
   say ""; yak "q.x.b4.print: (expecting qq) "; q.x.b4.print
   say ""; yak "q.x.b5.print: (expecting qq) "; q.x.b5.print
 
-  # say ""; yak "r.x.b1.print: (expecting rr) "; r.x.b1.print   // NYI: test fails
-  # say ""; yak "r.x.b2.print: (expecting rr) "; r.x.b2.print   // NYI: test fails
+  say ""; yak "r.x.b1.print: (expecting rr) "; r.x.b1.print
+  say ""; yak "r.x.b2.print: (expecting rr) "; r.x.b2.print
   say ""; yak "r.x.b3.print: (expecting rr) "; r.x.b3.print
-  # say ""; yak "r.x.b4.print: (expecting rr) "; r.x.b4.print   // NYI: test fails
-  # say ""; yak "r.x.b5.print: (expecting rr) "; r.x.b5.print   // NYI: test fails
+  say ""; yak "r.x.b4.print: (expecting rr) "; r.x.b4.print
+  say ""; yak "r.x.b5.print: (expecting rr) "; r.x.b5.print
   say ""
 
 simple_test_for_this_type_value
@@ -107,7 +107,7 @@ test_redef_using_fixed =>
   #
   a is
 
-    public redef as_string => "instance of 'a'"
+    public redef as_string String => "instance of 'a'"
 
     # abstract feature that will be redefined as abstract
     #
@@ -127,7 +127,7 @@ test_redef_using_fixed =>
 
   b(val String) : a is
 
-    public redef as_string => "instance of {b.type.as_string} with $val"
+    public redef as_string String => "instance of {b.type.as_string} with $val"
 
     redef me2 b.this => b.this
 
@@ -147,7 +147,7 @@ test_redef_using_fixed =>
 
   c : b "from c" is
 
-    public redef as_string => "instance of {c.type.as_string}"
+    public redef as_string String => "instance of {c.type.as_string}"
 
     # redefine abstract feature with co-variant argument and result
     #

@@ -36,7 +36,7 @@ unboxOuterRef is
     f unit => abstract
 
   y (i i32) : ry is
-    public redef as_string => "y $i"
+    public redef as_string String => "y $i"
     g (v y) =>
       vs := v.as_string
       say "in g: $vs $i"

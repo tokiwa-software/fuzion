@@ -2,7 +2,7 @@
 --CURDIR--/reg_issue4480.fz:30:23: error 1: Incompatible type parameter
 _ := [3].map count |> sum
 ----------------------^^^
-formal type parameter 'T' with constraint 'numeric'
+formal type parameter 'T : numeric'
 actual type parameter 'void'
 
 one error.

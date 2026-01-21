@@ -22,5 +22,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = test_process
-FUZION_OPTIONS = -unsafeIntrinsics=on
 include ../simple.mk

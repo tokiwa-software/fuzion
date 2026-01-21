@@ -4,3 +4,4 @@ PASSED: typeinference from if 2
 PASSED: typeinference from if 2
 PASSED: typeInferencingFromMatch1 A
 PASSED: typeInferencingFromMatch1 D
+PASSED: typeInferencingFromMatch1 D

@@ -2,7 +2,7 @@
 --CURDIR--/reg_issue3649.fz:25:3: error 1: Incompatible type parameter
   fs b
 --^^
-formal type parameter 'F' with constraint 'scenario1.this.a scenario1.this.b'
+formal type parameter 'F : scenario1.this.a F' with constraint 'scenario1.this.a scenario1.this.b'
 actual type parameter 'scenario1.this.b'
 
 one error.

@@ -65,7 +65,7 @@ test_covariance is
     # create string representation consisting of type, to_u32
     # and valueString
     #
-    public redef as_string => "num0.this {to_u32} {to_u32_loop} '$valueString'"
+    public redef as_string String => "num0.this {to_u32} {to_u32_loop} '$valueString'"
 
     # string representation of this value, to be implemented by
     # children.
@@ -159,15 +159,15 @@ test_this_type =>
 
   a is
     type.s => "a"
-    public redef as_string => "{a.this.s}"
+    public redef as_string String => "{a.this.s}"
     b is
       type.s => "b"
-      public redef as_string => "{a.this.s}{b.this.s}"
+      public redef as_string String => "{a.this.s}{b.this.s}"
       c is
         type.s => "c"
         d is
           type.s => "d"
-          public redef as_string => "{a.this.s}{b.this.s}{c.this.s}{d.this.s}"
+          public redef as_string String => "{a.this.s}{b.this.s}{c.this.s}{d.this.s}"
 
   k : a is
     redef type.s => "k"
@@ -251,9 +251,9 @@ test_this_type_in_cotype =>
           type.choose4L(a, b     def.this) abc.def.this => a
           type.choose4R(a, b     def.this) abc.def.this => b
 
-          public redef as_string => "abc.def.ghi.jkl $val $msg"
+          public redef as_string String => "abc.def.ghi.jkl $val $msg"
 
-      public redef as_string => s
+      public redef as_string String => s
 
   v1 := (abc.def "ignore").ghi.jkl 1 "PASS"
   v2 := (abc.def "ignore").ghi.jkl 2 "*** FAIL ***"

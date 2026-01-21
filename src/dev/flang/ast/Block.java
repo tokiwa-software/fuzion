@@ -177,19 +177,50 @@ public class Block extends AbstractBlock
    */
   public SourcePosition pos()
   {
-    return _range != null
-      ? _range
-      : _expressions.isEmpty()
-      || _expressions.getFirst().pos().isBuiltIn()
-      || _expressions.getLast().pos().isBuiltIn()
-      ? SourcePosition.notAvailable
-      // NYI: UNDER DEVELOPMENT: hack, positions used for loops are not always in ascending order.
-      : _expressions.getFirst().pos().bytePos() > _expressions.getLast().pos().byteEndPos()
-      ? SourcePosition.notAvailable
-      : new SourceRange(
-          _expressions.getFirst().pos()._sourceFile,
-          _expressions.getFirst().pos().bytePos(),
-          _expressions.getLast().pos().byteEndPos());
+    SourcePosition result = null;
+
+    if (_range != null)
+      {
+        result = _range;
+      }
+    if (result == null)
+    {
+      SourcePosition firstNonBuiltIn = null;
+      SourcePosition lastNonBuiltIn = null;
+
+      for (Expr expr : _expressions)
+        {
+          var pos = expr.pos();
+          if (!pos.isBuiltIn())
+            {
+              if (firstNonBuiltIn == null)
+                {
+                  firstNonBuiltIn = pos;
+                }
+              lastNonBuiltIn = pos;
+            }
+        }
+
+      if (firstNonBuiltIn == null)
+        {
+          result = SourcePosition.notAvailable;
+        }
+      else
+        {
+          if (CHECKS) check
+            (firstNonBuiltIn._sourceFile._fileName == lastNonBuiltIn._sourceFile._fileName);
+
+          // NYI: UNDER DEVELOPMENT: hack, positions used for loops are not always in ascending order.
+          result = firstNonBuiltIn.bytePos() > lastNonBuiltIn.pos().byteEndPos()
+            ? SourcePosition.notAvailable
+            : new SourceRange(
+                firstNonBuiltIn.pos()._sourceFile,
+                firstNonBuiltIn.pos().bytePos(),
+                lastNonBuiltIn.pos().byteEndPos());
+        }
+    }
+
+    return result;
   }
 
 
@@ -343,15 +374,14 @@ public class Block extends AbstractBlock
    */
   Expr propagateExpectedType(Resolution res, Context context, AbstractType type, Supplier<String> from)
   {
-    if (type.compareTo(Types.resolved.t_unit) == 0 && hasImplicitResult())
-      { // return unit if this is expected even if we would implicitly return
-        // something else:
-        _expressions.add(new Block(new List<>()));
-      }
-
-    Expr resExpr = resultExpression();
     Expr result = this;
-    if (resExpr != null)
+    Expr resExpr = resultExpression();
+    if (type.compareTo(Types.resolved.t_unit) == 0 && hasImplicitResult() ||
+        resExpr == null && Types.resolved.t_unit.compareTo(type) != 0)
+      {
+        _expressions.add(new Call(pos(), FuzionConstants.UNIT_NAME).resolveTypes(res, context));
+      }
+    else if (resExpr != null)
       {
         // this may do partial application for the whole block
         result = super.propagateExpectedType(res, context, type, from);
@@ -364,10 +394,6 @@ public class Block extends AbstractBlock
             _expressions.remove(idx);
             _expressions.add(x);
           }
-      }
-    else if (Types.resolved.t_unit.compareTo(type) != 0)
-      {
-        _expressions.add(new Call(pos(), FuzionConstants.UNIT_NAME).resolveTypes(res, context));
       }
     return result;
   }

@@ -42,13 +42,13 @@ test1 is
 test2 is
   a ref is
     dt => a.this.type
-    public redef as_string => $"a"
+    public redef as_string String => $"a"
     b : c is
-      public redef as_string => $"b"
+      public redef as_string String => $"b"
       say a.this.type
 
   c : a is
-    public redef as_string => $"c"
+    public redef as_string String => $"c"
 
   ex_1236b =>
     _ := a.b

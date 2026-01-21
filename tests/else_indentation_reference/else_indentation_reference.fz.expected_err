@@ -95,12 +95,13 @@ block returns value of type 'unit' at --CURDIR--/else_indentation_reference.fz:1
 ----------------------------------------------^
 
 
---CURDIR--/else_indentation_reference.fz:140:16: error 10: Wrong number of actual arguments in call
+--CURDIR--/else_indentation_reference.fz:140:16: error 10: Wrong number of actual value arguments in call
        else if c2       "-false::false::true-"
 ---------------^^
-Number of actual arguments is 1, while call expects no arguments.
+Number of actual value arguments is 1, while call expects no value arguments.
+Actual value arguments: '"-false::false::true-"'
 Called feature: 'c2'
-Formal arguments: 
+Formal value arguments: --none--
 Declared at --CURDIR--/else_indentation_reference.fz:26:1:
 c2 := false
 ^^

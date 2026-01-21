@@ -90,7 +90,7 @@ class OpExpr extends ANY
    * Offset added to the precedence if operator and expression
    * have no white space in between.
    *
-   * NOTE: this must be higher than any other precendence
+   * NOTE: this must be higher than any other precedence
    */
   static final int NO_WHITESPACE_PRECENDENCE_OFFSET = 1000;
 

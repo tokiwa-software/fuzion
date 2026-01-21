@@ -38,6 +38,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <stdbool.h>
 #include <fcntl.h>      // fcntl
 #include <string.h>
+#include <math.h>
 
 #include <netdb.h>      // getaddrinfo
 #include <netinet/in.h> // AF_INET
@@ -51,12 +52,11 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <sys/wait.h>
 #include <signal.h>
 #include <unistd.h>     // close
+#include <limits.h>
 #include <time.h>
 #include <assert.h>
 #include <dirent.h>
-#ifdef FUZION_ENABLE_THREADS
 #include <pthread.h>
-#endif
 
 #include "fz.h"
 
@@ -136,7 +136,7 @@ int fzE_dir_read(intptr_t * dir, int8_t * result) {
     return errno == 0
       // end reached
       ? 0
-      // some error occured
+      // some error occurred
       : -1;
   }
   else {
@@ -207,7 +207,7 @@ int fzE_get_protocol(int protocol)
 
 
 // close a socket descriptor
-int fzE_close(int sockfd)
+int fzE_socket_close(int sockfd)
 {
   return set_last_error(close(sockfd));
 }
@@ -247,29 +247,18 @@ int fzE_getaddrinfo(int family, int socktype, int protocol, int flags, char * ho
 
 
 // create a new socket and bind to given host:port
-// result[0] contains either an errorcode or a socket descriptor
 // -1 error, 0 success
-int fzE_bind(int family, int socktype, int protocol, char * host, char * port, int32_t * result){
-  result[0] = fzE_socket(family, socktype, protocol);
-  if (result[0] == -1)
-  {
-    result[0] = errno;
-    return -1;
-  }
+int fzE_bind(int sockfd, int family, int socktype, int protocol, char * host, char * port){
   struct addrinfo *addr_info = NULL;
   int addrRes = fzE_getaddrinfo(family, socktype, protocol, AI_PASSIVE, host, port, &addr_info);
   if (addrRes != 0)
   {
-    fzE_close(result[0]);
-    result[0] = addrRes;
     return -1;
   }
-  int bind_res = bind(result[0], addr_info->ai_addr, (int)addr_info->ai_addrlen);
+  int bind_res = bind(sockfd, addr_info->ai_addr, (int)addr_info->ai_addrlen);
 
   if(bind_res == -1)
   {
-    fzE_close(result[0]);
-    result[0] = errno;
     return -1;
   }
   freeaddrinfo(addr_info);
@@ -292,31 +281,15 @@ int fzE_accept(int sockfd){
 
 
 // create connection for given parameters
-// result[0] contains either an errorcode or a socket descriptor
 // -1 error, 0 success
-int fzE_connect(int family, int socktype, int protocol, char * host, char * port, int32_t * result){
-  // get socket
-  result[0] = fzE_socket(family, socktype, protocol);
-  if (result[0] == -1)
-  {
-    result[0] = errno;
-    return -1;
-  }
+int fzE_connect(int sockfd, int family, int socktype, int protocol, char * host, char * port){
   struct addrinfo *addr_info = NULL;
   int addrRes = fzE_getaddrinfo(family, socktype, protocol, 0, host, port, &addr_info);
   if (addrRes != 0)
   {
-    fzE_close(result[0]);
-    result[0] = addrRes;
     return -1;
   }
-  int con_res = connect(result[0], addr_info->ai_addr, addr_info->ai_addrlen);
-  if(con_res == -1)
-  {
-    // NYI: UNDER DEVELOPMENT: do we want to try another address in addr_info->ai_next?
-    fzE_close(result[0]);
-    result[0] = errno;
-  }
+  int con_res = connect(sockfd, addr_info->ai_addr, addr_info->ai_addrlen);
   freeaddrinfo(addr_info);
   return con_res;
 }
@@ -404,29 +377,25 @@ long fzE_get_file_size(void * file) {
  *          see also, https://devblogs.microsoft.com/oldnewthing/20031008-00/?p=42223
  *
  * returns:
- *   - error   :  result[0]=-1 and NULL
- *   - success :  result[0]=0  and an address where the file was mapped to
+ *   - error   :  NULL
+ *   - success :  address where the file was mapped to
  */
-void * fzE_mmap(void * file, uint64_t offset, size_t size, int * result) {
+void * fzE_mmap(void * file, uint64_t offset, size_t size) {
 
   if ((unsigned long)fzE_get_file_size((FILE *)file) < (offset + size)){
-    result[0] = -1;
+    // NYI: UNDER DEVELOPMENT: set_last_error();
     return NULL;
   }
 
   int file_descriptor = fileno((FILE *)file);
 
-  if (file_descriptor == -1) {
-    result[0] = -1;
-    return NULL;
-  }
+  assert (file_descriptor != -1);
 
   void * mapped_address = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, file_descriptor, offset);
   if (mapped_address == MAP_FAILED) {
-    result[0] = -1;
+    set_last_error(-1);
     return NULL;
   }
-  result[0] = 0;
   return mapped_address;
 }
 
@@ -486,9 +455,14 @@ int fzE_stat(const char *pathname, int64_t * metadata)
   if (result == 0)
   {
     metadata[0] = statbuf.st_size;
-    metadata[1] = statbuf.st_mtime;
-    metadata[2] = S_ISREG(statbuf.st_mode);
-    metadata[3] = S_ISDIR(statbuf.st_mode);
+    metadata[1] = statbuf.st_atime;  /* Time of last access */
+    metadata[2] = statbuf.st_mtime;  /* Time of last modification */
+    metadata[3] = statbuf.st_ctime;  /* Time of last status change */
+    metadata[4] = S_ISREG(statbuf.st_mode);
+    metadata[5] = S_ISDIR(statbuf.st_mode);
+    metadata[6] = S_ISLNK(statbuf.st_mode);
+    metadata[7] = statbuf.st_uid;
+    metadata[8] = statbuf.st_gid;
   }
   return result;
 }
@@ -504,16 +478,19 @@ int fzE_lstat(const char *pathname, int64_t * metadata)
   if (result == 0)
   {
     metadata[0] = statbuf.st_size;
-    metadata[1] = statbuf.st_mtime;
-    metadata[2] = S_ISREG(statbuf.st_mode);
-    metadata[3] = S_ISDIR(statbuf.st_mode);
+    metadata[1] = statbuf.st_atime;  /* Time of last access */
+    metadata[2] = statbuf.st_mtime;  /* Time of last modification */
+    metadata[3] = statbuf.st_ctime;  /* Time of last status change */
+    metadata[4] = S_ISREG(statbuf.st_mode);
+    metadata[5] = S_ISDIR(statbuf.st_mode);
+    metadata[6] = S_ISLNK(statbuf.st_mode);
+    metadata[7] = statbuf.st_uid;
+    metadata[8] = statbuf.st_gid;
   }
   return result;
 }
 
-#ifdef FUZION_ENABLE_THREADS
 static pthread_mutex_t fzE_global_mutex;
-#endif
 
 /**
  * Run plattform specific initialisation code
@@ -522,14 +499,12 @@ void fzE_init()
 {
   fcntl(STDIN_FILENO, F_SETFL, O_NONBLOCK);
 
-#ifdef FUZION_ENABLE_THREADS
   pthread_mutexattr_t attr;
   fzE_mem_zero_secure(&fzE_global_mutex, sizeof(fzE_global_mutex));
   bool res = pthread_mutexattr_init(&attr) == 0 &&
             pthread_mutexattr_setprotocol(&attr, PTHREAD_PRIO_INHERIT) == 0 &&
             pthread_mutex_init(&fzE_global_mutex, &attr) == 0;
   assert(res);
-#endif
 
 #ifdef GC_THREADS
   GC_INIT();
@@ -543,7 +518,6 @@ void fzE_init()
 void * fzE_thread_create(void *(*code)(void *),
                           void *restrict args)
 {
-#ifdef FUZION_ENABLE_THREADS
   pthread_t * pt = fzE_malloc_safe(sizeof(pthread_t));
 #ifdef GC_THREADS
   int res = GC_pthread_create(pt,NULL,code,args);
@@ -556,11 +530,6 @@ void * fzE_thread_create(void *(*code)(void *),
     exit(EXIT_FAILURE);
   }
   return pt;
-#else
-  printf("You discovered a severe bug. (fzE_thread_join)");
-  exit(EXIT_FAILURE);
-  return NULL;
-#endif
 }
 
 
@@ -569,14 +538,15 @@ void * fzE_thread_create(void *(*code)(void *),
  */
 void fzE_thread_join(void * thrd)
 {
-#ifdef FUZION_ENABLE_THREADS
+  // NYI: BUG: return error code on failure
 #ifdef GC_THREADS
-  GC_pthread_join(*(pthread_t *)thrd, NULL);
+  int ret = GC_pthread_join(*(pthread_t *)thrd, NULL);
+  assert (ret == 0);
 #else
-  pthread_join(*(pthread_t *)thrd, NULL);
+  int ret = pthread_join(*(pthread_t *)thrd, NULL);
+  assert (ret == 0);
 #endif
   fzE_free(thrd);
-#endif
 }
 
 
@@ -585,12 +555,8 @@ void fzE_thread_join(void * thrd)
  */
 void fzE_lock()
 {
-#ifdef FUZION_ENABLE_THREADS
   int res = pthread_mutex_lock(&fzE_global_mutex);
   assert( res == 0 );
-#else
-  printf("You discovered a severe bug. (fzE_lock)");
-#endif
 }
 
 
@@ -599,12 +565,8 @@ void fzE_lock()
  */
 void fzE_unlock()
 {
-#ifdef FUZION_ENABLE_THREADS
   int res = pthread_mutex_unlock(&fzE_global_mutex);
   assert( res == 0 );
-#else
-  printf("You discovered a severe bug. (fzE_unlock)");
-#endif
 }
 
 
@@ -721,13 +683,16 @@ int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLe
 // wait for process to finish
 // returns exit code or -1 on wait-failure.
 int64_t fzE_process_wait(int64_t p){
+
+  assert(p>0);
+
   int status;
-  return set_last_error(waitpid(p, &status, WUNTRACED | WCONTINUED)) == -1
-    ? -1
-    : WIFEXITED(status)
+  int ret = waitpid(p, &status, WNOHANG);
+
+  return ret > 0 && WIFEXITED(status)
     // man waitpid: "This macro should be employed only if WIFEXITED returned true."
     ? WEXITSTATUS(status)
-    : 1;
+    : -1;
 }
 
 
@@ -783,85 +748,47 @@ void * fzE_file_open(char * file_name, int64_t * open_results, file_open_mode mo
 
 
 void * fzE_mtx_init() {
-#ifdef FUZION_ENABLE_THREADS
   pthread_mutex_t *mtx = (pthread_mutex_t *)fzE_malloc_safe(sizeof(pthread_mutex_t));
   return pthread_mutex_init(mtx, NULL) == 0 ? (void *)mtx : NULL;
-#else
-  return NULL;
-#endif
 }
 
 int32_t fzE_mtx_lock(void * mtx) {
-#ifdef FUZION_ENABLE_THREADS
   return pthread_mutex_lock((pthread_mutex_t *)mtx) == 0 ? 0 : -1;
-#else
-  return 0;
-#endif
 }
 
 int32_t fzE_mtx_trylock(void * mtx) {
-#ifdef FUZION_ENABLE_THREADS
   return pthread_mutex_trylock((pthread_mutex_t *)mtx) == 0 ? 0 : -1;
-#else
-  return 0;
-#endif
 }
 
 int32_t fzE_mtx_unlock(void * mtx) {
-#ifdef FUZION_ENABLE_THREADS
   return pthread_mutex_unlock((pthread_mutex_t *)mtx) == 0 ? 0 : -1;
-#else
-  return 0;
-#endif
 }
 
 void fzE_mtx_destroy(void * mtx) {
-#ifdef FUZION_ENABLE_THREADS
   pthread_mutex_destroy((pthread_mutex_t *)mtx);
-  // NYI: free(mtx);
-#else
-#endif
+  fzE_free(mtx);
 }
 
 void * fzE_cnd_init() {
-#ifdef FUZION_ENABLE_THREADS
   pthread_cond_t *cnd = (pthread_cond_t *)fzE_malloc_safe(sizeof(pthread_cond_t));
   return pthread_cond_init(cnd, NULL) == 0 ? (void *)cnd : NULL;
-#else
- return NULL;
-#endif
 }
 
 int32_t fzE_cnd_signal(void * cnd) {
-#ifdef FUZION_ENABLE_THREADS
   return pthread_cond_signal((pthread_cond_t *)cnd) == 0 ? 0 : -1;
-#else
-  return 0;
-#endif
 }
 
 int32_t fzE_cnd_broadcast(void * cnd) {
-#ifdef FUZION_ENABLE_THREADS
   return pthread_cond_broadcast((pthread_cond_t *)cnd) == 0 ? 0 : -1;
-#else
-  return 0;
-#endif
 }
 
 int32_t fzE_cnd_wait(void * cnd, void * mtx) {
-#ifdef FUZION_ENABLE_THREADS
   return pthread_cond_wait((pthread_cond_t *)cnd, (pthread_mutex_t *)mtx) == 0 ? 0 : -1;
-#else
-  return 0;
-#endif
 }
 
 void fzE_cnd_destroy(void * cnd) {
-#ifdef FUZION_ENABLE_THREADS
   pthread_cond_destroy((pthread_cond_t *)cnd);
-  // NYI: free(cnd);
-#else
-#endif
+  fzE_free(cnd);
 }
 
 
@@ -952,4 +879,31 @@ int32_t fzE_file_flush(void * file)
 int fzE_send_signal(int64_t pid, int sig)
 {
   return kill(pid, sig);
+}
+
+int32_t fzE_path_max(void)
+{
+  return PATH_MAX;
+}
+
+int64_t fzE_page_size(void)
+{
+  return sysconf(_SC_PAGESIZE);
+}
+
+int64_t fzE_mmap_offset_multiple(void)
+{
+  return sysconf(_SC_PAGESIZE);
+}
+
+int fzE_cwd(void * buf, size_t size)
+{
+  return getcwd(buf, size) == NULL
+    ? -1
+    : 0;
+}
+
+int fzE_isnan(double d)
+{
+  return isnan(d);
 }

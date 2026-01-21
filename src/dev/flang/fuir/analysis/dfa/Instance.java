@@ -56,7 +56,7 @@ public class Instance extends Value
   /**
    * The DFA instance we are working with.
    */
-  DFA _dfa;
+  final DFA _dfa;
 
 
   /**
@@ -68,14 +68,7 @@ public class Instance extends Value
   /**
    * For debugging: Reason that causes this instance to be part of the analysis.
    */
-  Context _context;
-
-
-  /**
-   * Is this instance the result of the IR command 'Box'.  If so, there is a
-   * terrible hack to find the field values.
-   */
-  final boolean _isBoxed;
+  final Context _context;
 
 
   /**
@@ -117,7 +110,6 @@ public class Instance extends Value
     _site = site;
     _context = context;
     _fields = new TreeMap<>();
-    _isBoxed = false;
   }
 
 
@@ -174,7 +166,10 @@ public class Instance extends Value
     if (oldv != v)
       {
         var fv = v;
-        _dfa.wasChanged(() -> "setField: new values " + fv + " (was " + oldv + ") for " + this);
+        if (dfa.isRead(field))
+          {
+            _dfa.wasChanged(() -> "setField: new values " + fv + " (was " + oldv + ") for " + this);
+          }
       }
     dfa._writtenFields.set(field);
     _fields.put(field, v);
@@ -187,7 +182,8 @@ public class Instance extends Value
   Val readFieldFromInstance(DFA dfa, int field, int site, Context why)
   {
     if (PRECONDITIONS) require
-      (_clazz == dfa._fuir.clazzAsValue(dfa._fuir.clazzOuterClazz(field)));
+      (_clazz == dfa._fuir.clazzAsValue(dfa._fuir.clazzOuterClazz(field)),
+       site != -1);
 
     dfa.readField(field);
     var v = _fields.get(field);
@@ -196,10 +192,9 @@ public class Instance extends Value
       {
         if (!Errors.any())
           {
-            DfaErrors.readingUninitializedField(site == -1 ? dev.flang.util.SourcePosition.notAvailable : // NYI: REMOVE
-                                                site == IR.NO_SITE ? null : dfa._fuir.sitePos(site),
+            DfaErrors.readingUninitializedField(site == IR.NO_SITE ? null : dfa._fuir.sitePos(site),
                                                 dfa._fuir.clazzAsString(field),
-                                                dfa._fuir.clazzAsString(_clazz) + (_isBoxed ? " Boxed!" : ""),
+                                                dfa._fuir.clazzAsString(_clazz),
                                                 why);
           }
       }

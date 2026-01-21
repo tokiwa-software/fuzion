@@ -104,7 +104,7 @@ reg_issue5569 =>
 
 */
 
-/* NYI: BUG: The following results in a crash of `fz` during momnorphization:
+/* NYI: BUG: The following results in a crash of `fz` during monomorphization:
 
   e3 : t.e is
 

@@ -42,10 +42,10 @@ public class Concurrency
 
   // NYI: UNDER DEVELOPMENT: for now we have to run most things more or less sequentially
   // this is mainly because there is statically held artifacts in Types.java
-  private static ExecutorService executor = Executors.newSingleThreadExecutor(Executors.defaultThreadFactory());
+  private static final ExecutorService executor = Executors.newSingleThreadExecutor(Executors.defaultThreadFactory());
 
 
-  public final static ExecutorService MainExecutor = Executors.newCachedThreadPool(Executors.defaultThreadFactory());
+  public static final ExecutorService MainExecutor = Executors.newCachedThreadPool(Executors.defaultThreadFactory());
 
 
   /**
@@ -55,13 +55,13 @@ public class Concurrency
    * @param <T>
    * @param callable
    * @param checkCancelled
-   * @param intervallCancelledCheckInMs
+   * @param intervalCancelledCheckInMs
    * @param maxExecutionTimeInMs
    * @return
    * @throws Throwable
    */
   public static <T> ComputationPerformance<T> runWithPeriodicCancelCheck(
-    Callable<T> callable, Runnable checkCancelled, int intervallCancelledCheckInMs, int maxExecutionTimeInMs)
+    Callable<T> callable, Runnable checkCancelled, int intervalCancelledCheckInMs, int maxExecutionTimeInMs)
     throws Throwable
   {
 
@@ -81,7 +81,7 @@ public class Concurrency
             checkCancelled.run();
             try
               {
-                future.get(intervallCancelledCheckInMs, TimeUnit.MILLISECONDS);
+                future.get(intervalCancelledCheckInMs, TimeUnit.MILLISECONDS);
                 completed = true;
               }
             // when timeout occurs we check
@@ -89,7 +89,7 @@ public class Concurrency
             // or if cancelToken wants to cancel execution
             catch (TimeoutException e)
               {
-                timeElapsedInMs += intervallCancelledCheckInMs;
+                timeElapsedInMs += intervalCancelledCheckInMs;
                 if (timeElapsedInMs >= maxExecutionTimeInMs)
                   {
                     throw new MaxExecutionTimeExceededException("max execution time exceeded.", e);

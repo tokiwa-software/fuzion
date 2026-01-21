@@ -105,13 +105,44 @@ public class StringHelpers extends ANY
 
   /**
    * Create a string representation for an argument count.
+   *
    * @param count the number of arguments
+   *
    * @return a string like "no arguments", "one argument", "2 arguments"
    */
   public static String argumentsString(int count)
   {
     return singularOrPlural(count, "argument");
   }
+
+
+  /**
+   * Create a string representation for a value argument count.
+   *
+   * @param count the number of value arguments
+   *
+   * @return a string like "no value arguments", "one value argument", "2 value
+   * arguments"
+   */
+  public static String valueArgumentsString(int count)
+  {
+    return singularOrPlural(count, "value argument");
+  }
+
+
+  /**
+   * Create a string representation for a type argument count.
+   *
+   * @param count the number of type arguments
+   *
+   * @return a string like "no type arguments", "one type argument", "2 type
+   * arguments"
+   */
+  public static String typeParametersString(int count)
+  {
+    return singularOrPlural(count, "type parameter");
+  }
+
 
   public static String singularOrPlural(int count, String what)
   {
@@ -199,6 +230,62 @@ public class StringHelpers extends ANY
       i % 10 == 2 && i % 100 != 12 ? "" + i + "nd" :
       i % 10 == 3 && i % 100 != 13 ? "" + i + "rd" :
       i + "th";
+  }
+
+
+  /**
+   * Turns a list [A,B,C] into a String "A, B or C"
+   *
+   * @param <T> type of the list elements
+   * @param ls the list from which to create a String
+   * @return list as a String, elements are comma separated, last one with "or"
+   */
+  public static <T> String listAlternatives(java.util.List<T> ls)
+  {
+    return list(ls, "or");
+  }
+
+
+  /**
+   * Turns a list [A,B,C] into a String "A, B and C"
+   *
+   * @param <T> type of the list elements
+   * @param ls the list from which to create a String
+   * @return list as a String, elements are comma separated, last one with "and"
+   */
+  public static <T> String listConjunction(java.util.List<T> ls)
+  {
+    return list(ls, "and");
+  }
+
+
+  /**
+   * Creates String from a list, elements are comma separated, last separator can be specified
+   *
+   * @param <T> type of the list elements
+   * @param ls the list from which to create a String
+   * @param conj separator for the last element
+   * @return list as a String, elements are comma separated, last one with " " + conj + " "
+   */
+  private static <T> String list(java.util.List<T> ls, String conj)
+  {
+    StringBuilder mt = new StringBuilder();
+    String comma = "", last = "";
+    for (var e : ls)
+      {
+        if (last != "")
+          {
+            mt.append(comma).append(last);
+            comma = ", ";
+          }
+        last = e.toString();
+      }
+    mt.append(switch (ls.size()) {
+      case 0, 1 -> "";
+      case 2    -> " " + conj + " ";
+      default   -> ", " + conj + " ";})
+      .append(last);
+    return mt.toString();
   }
 }
 

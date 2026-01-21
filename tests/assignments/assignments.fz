@@ -36,7 +36,7 @@ value_assignments =>
     y := mut 3.14
     z := mut "hi!"
 
-    public redef as_string => "value: $x $y $z"
+    public redef as_string String => "value: $x $y $z"
 
     set_x(x0) => x <- x0
     set_y(y0) => y <- y0
@@ -145,7 +145,7 @@ ref_assignments =>
     y := mut 3.14
     z := mut "hi!"
 
-    public redef as_string => "ref: $x $y $z"
+    public redef as_string String => "ref: $x $y $z"
 
     set_x(x0) => x <- x0
     set_y(y0) => y <- y0

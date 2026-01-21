@@ -26,7 +26,7 @@ fixed_alongside_abstract_negative =>
   a is
     me a.this => abstract
     fixed me => a
-    public redef as_string => $"a"
+    public redef as_string String => $"a"
 
   b : a is
 

@@ -3,7 +3,7 @@
   fs(F type : F) =>
 -----^
 Affected type parameter: 'reg_issue3705.fs.F'
-constraint: 'reg_issue3705.fs.F'
+constraint: 'F'
 To solve this, change the type provided, e.g. to the unconstrained 'type'.
 
 one error.

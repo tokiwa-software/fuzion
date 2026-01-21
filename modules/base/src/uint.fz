@@ -123,7 +123,7 @@ is
       # the shifted divisor is still positive.
       # This is done recursively and the results
       # are added up.
-      highest_bit_diff uint := highest_bit - divisor.highest_bit
+      highest_bit_diff := highest_bit - divisor.highest_bit
       shift := if uint.this -! (divisor << highest_bit_diff) then highest_bit_diff else highest_bit_diff-uint.one
       remainder := uint.this - (divisor << shift)
       q, rem := remainder.divide_with_remainder divisor
@@ -164,7 +164,7 @@ is
     two_pow_32 := ((u64 1)<<32)
     b1, b2 := equalize other
     s, _ := b1
-      .zip b2 tuple2
+      .zip b2 tuple
       .reverse
       .reduce ((Sequence u32).empty, u64 0) r,t->
         minuend, subtrahend := t
@@ -246,7 +246,7 @@ is
     if a.data.count = b.data.count
       a.data
         # zip the two equally long lists of digits
-        .zip b.data tuple2
+        .zip b.data tuple
         # skip to first unequal
         .drop_while (x -> c, d := x; c = d)
         # compare

@@ -49,8 +49,7 @@ public class Contract extends ANY
   /**
    * Empty list of conditions.
    */
-  static final List<Cond> NO_COND = new List<>();
-  static { NO_COND.freeze(); }
+  static final List<Cond> NO_COND = new List<Cond>().freeze();
 
 
   /**
@@ -614,7 +613,7 @@ public class Contract extends ANY
                 // need to check the conditions defined locally at all.
                 // However, we want to check the condition code for errors etc.,
                 // so we wrap it into `(true || <cond>)`
-                cond = new ParsedCall(BoolConst.TRUE,
+                cond = new ParsedCall(Call.TRUE,
                                       new ParsedName(pos, "infix ||"), new List<>(cond));
               }
             l.add(Match.createIf(p,
@@ -632,9 +631,7 @@ public class Contract extends ANY
     var code = new Block(l);
     var result_type     = new ParsedType(pos,
                                          preBool ? "bool"
-                                                 : FuzionConstants.UNIT_NAME,
-                                         UnresolvedType.NONE,
-                                         null);
+                                                 : FuzionConstants.UNIT_NAME);
     var pF = new Feature(pos,
                          f.visibility().eraseTypeVisibility(),
                          // we need to copy fixed modifier because
@@ -707,7 +704,7 @@ public class Contract extends ANY
     if (preBool)
       {
         new_code = new List<>(cc != null ? cc
-                                         : BoolConst.TRUE);
+                                         : Call.TRUE);
       }
     else if (cc != null)
       {

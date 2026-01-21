@@ -25,11 +25,11 @@ module:public a is
   hello =>
     say "hello from a"
 
-  module hello2 =>
+  module hello2 unit =>
     say "hello2 from a"
 
   private:public aa is
-    public aaa =>
+    public aaa unit =>
       say "aaa"
 
   public hello_a unit =>
@@ -40,7 +40,5 @@ module:public a is
 
   field := 0
 
-  public get_field =>
+  public get_field i32 =>
     field
-
-

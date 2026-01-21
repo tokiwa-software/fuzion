@@ -32,7 +32,7 @@ reg_issue5501 =>
   f : Function unit unit unit is
     public redef call(x unit,
                       y u8  # wrong type, should cause error
-                     )
+                     ) unit
     => unit
 
 
@@ -44,5 +44,5 @@ reg_issue5501 =>
                       x option u8,
                       y Sequence i64,
                       z f64   # wrong type, should cause error
-                      )
+                      ) i32
     => 42

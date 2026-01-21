@@ -3,10 +3,10 @@
         false  # SHOULD FLAG AN ERROR!
 --------^^^^^
 assignment to field : 'bugOptionFalse.x.b.result'
-expected formal type: 'option bugOptionFalse.x.V'
+expected formal type: 'option V'
 actual type found   : 'bool'
 assignable to       : 'bool'
 for value assigned  : 'false'
-To solve this, you could change the type of the target 'bugOptionFalse.x.b.result' to 'bool' or convert the type of the assigned value to 'option bugOptionFalse.x.V'.
+To solve this, you could change the type of the target 'bugOptionFalse.x.b.result' to 'bool' or convert the type of the assigned value to 'option V'.
 
 one error.

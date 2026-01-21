@@ -116,11 +116,11 @@ module:public Type ref is
 
   # actual feature called instead of `infix :` in case the result is `true`
   #
-  private infix_colon_true  (T type) bool => true
+  infix_colon_true  (T type) bool => true
 
   # actual feature called instead of `infix :` in case the result is `false`
   #
-  private infix_colon_false (T type) bool => false
+  infix_colon_false (T type) bool => false
 
 
 # Get the Type instance corresponding to a given type

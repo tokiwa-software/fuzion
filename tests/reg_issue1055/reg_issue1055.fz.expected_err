@@ -5,6 +5,6 @@
 Wrong number of actual type parameters in type:
 Type: float T
 expected no generic arguments
-found 1: 'reg_issue1055.c.T'.
+found 1: 'T'.
 
 one error.

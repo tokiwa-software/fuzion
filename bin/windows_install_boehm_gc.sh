@@ -34,6 +34,6 @@ wget "https://www.hboehm.info/gc/gc_source/gc-$VERSION.tar.gz"
 echo "$TAR_BALL_HASH gc-$VERSION.tar.gz" | sha256sum --check --status
 tar xf "gc-$VERSION.tar.gz"
 cd "gc-$VERSION"
-./configure --prefix=/ucrt64/ --enable-threads=pthreads
+./configure --prefix=/ucrt64/ --enable-threads=win32
 make
 make install

@@ -40,7 +40,7 @@ argumentcount_negative is
     redef call(x bool, y bool) i32 => 42       # 4. should flag an error, wrong number of arguments
 
   opengenerics17 ref : Function unit is
-    public redef call() => unit
+    public redef call() unit => unit
   opengenerics18 ref : Function unit is
     redef call(x i32) is                       # 5. should flag an error, wrong number of arguments
   opengenerics19 ref : Function unit is
@@ -49,11 +49,11 @@ argumentcount_negative is
   opengenerics20 ref : Function unit bool is
     redef call() is                            # 7. should flag an error, wrong number of arguments
   opengenerics21 ref : Function unit bool is
-    public redef call(x bool) => unit
+    public redef call(x bool) unit => unit
   opengenerics22 ref : Function unit i32 is
     redef call(x, y bool) is                   # 8. should flag an error, wrong number of arguments
 
-  _ Function unit          := opengenerics21  # 9. should flag an error: incompatible number of generic arguments
+  _ Function unit          := opengenerics21  #  9. should flag an error: incompatible number of generic arguments
   _ Function unit i32 bool := opengenerics21  # 10. should flag an error: incompatible number of generic arguments
 
   _ Function i32 i32   := opengenerics15      # 11. should flag an error: incompatible types due to incompatible generics

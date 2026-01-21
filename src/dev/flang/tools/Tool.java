@@ -265,7 +265,7 @@ public abstract class Tool extends ANY
       }
     else if (a.equals(Errors.MAX_WARNING_MESSAGES_OPTION) || a.startsWith(Errors.MAX_WARNING_MESSAGES_OPTION + "="))
       {
-        Errors.MAX_WARNING_MESSAGES = parseIntArg(a, -1);;
+        Errors.MAX_WARNING_MESSAGES = parseIntArg(a, -1);
       }
     else if (a.equals("-noANSI"))
       {

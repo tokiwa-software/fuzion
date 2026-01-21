@@ -21,6 +21,6 @@
 #
 # -----------------------------------------------------------------------
 
-f : Function i32 is public redef call => 123
+f : Function i32 is public redef call i32 => 123
 x(g Function i32) => say g()
 x f

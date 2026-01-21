@@ -61,7 +61,7 @@ public class Assign extends AbstractAssign
 
 
   /**
-   * Constructor used be the parser
+   * Constructor used by the parser
    *
    * @param pos the sourcecode position, used for error messages.
    *

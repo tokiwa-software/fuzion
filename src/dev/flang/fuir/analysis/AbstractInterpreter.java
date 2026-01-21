@@ -118,7 +118,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
      */
     public RESULT drop(VALUE v, int type)
     {
-      return nop(); // NYI, should be implemented by BEs.
+      return nop(); // NYI: UNDER DEVELOPMENT: should be implemented by BEs.
     }
 
     /**
@@ -506,7 +506,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
   {
     var stack = new Stack<VALUE>();
     var l = new List<RESULT>();
-    int last_s = -1;
+    int last_s = NO_SITE;
     for (var s = s0; !containsVoid(stack) && _fuir.withinCode(s) && !_fuir.alwaysResultsInVoid(last_s); s = s + _fuir.codeSizeAt(s))
       {
         l.add(_processor.expressionHeader(s));

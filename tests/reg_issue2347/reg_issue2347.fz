@@ -22,7 +22,7 @@
 # -----------------------------------------------------------------------
 
 # used to give error "Ambiguous targets found for call to 'd'"
-# due to to scoping not being implemented properly.
+# due to scoping not being implemented properly.
 
 for s := [1] : nil, s.filter x->d.bla
     d in [1]

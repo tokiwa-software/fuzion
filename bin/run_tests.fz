@@ -37,12 +37,14 @@ envir_var_kv := [
   "POSTCONDITIONS",
   "PRECONDITIONS",
   "dev_flang_tools_serializeFUIR",
+  "dev_flang_fuir_analysis_dfa_DFA_MAX_ITERATIONS",
   "CPATH",
   "LIBRARY_PATH",
   "FUZION_CLANG_INSTALLED_DIR",
-  "OS"
+  "OS",
+  "INFLUXDB_TOKEN"
 ].map k->
-  (envir.vars.get k).bind v->
+  envir.vars[k].bind v->
     (k,v)
  .filter o->o.ok
  .map o->o.val
@@ -59,22 +61,34 @@ envir_vars :=
       .map x->x.1
       .as_array))
 
+# max time a test may take
+#
+max_test_time := (time.duration.min 10)
+
 # helper to get out, err, exit_code from started process
 #
-record_process(p os.process,
+record_process(
+      p os.process,
       # the command, for error messages
-      cmd String) process_result =>
+      cmd String
+) process_result =>
   lm : mutate is
-  lm ! ()->
-    match p.with_out String lm (()->String.from_bytes (io.buffered lm).read_fully)
-      e error => panic "failed reading stdout from $cmd, error is: $e"
-      out String =>
-        match p.with_err String lm (()->String.from_bytes (io.buffered lm).read_fully)
-          e error => panic "failed reading stderr from $cmd, error is: $e"
-          err String =>
-            match p.wait
-              e error => panic "failed waiting for $cmd, error is: $e"
-              ec u32 => process_result out err ec
+  (concur.thread_pool 2 ()->
+      fout := concur.thread_pool.env.submit _ ()->
+        lm ! ()->
+          match p.with_out String lm (()->String.from (io.buffered lm).read_fully)
+            e error => panic "failed reading stdout from $cmd, error is: $e"
+            out String => out
+      ferr := concur.thread_pool.env.submit _ ()->
+        lm ! ()->
+          match p.with_err String lm (()->String.from (io.buffered lm).read_fully)
+            e error => panic "failed reading stderr from $cmd, error is: $e"
+            err String => err
+
+      match p.wait max_test_time
+        e error => process_result "" "failed waiting for $cmd, error is: $e" 1
+        ec u32 => process_result fout.get ferr.get ec)
+    .get
 
 # execute this Sequence of process+args
 #
@@ -115,16 +129,8 @@ append_line(mtx concur.sync.mutex, dest String, str String) =>
     check (io.file.use $dest io.file.mode.append ()->
             check ("$str\n".write_to io.file.file_mutate).ok).ok
 
-
-# read file f fully
-#
-read_file_fully(f String) outcome String =>
-  io.file.use f io.file.mode.read ()->
-    String.from_bytes (io.buffered io.file.file_mutate).read_fully
-
-
 is_windows =>
-  ((envir.vars.get "OS").val "").lower_case.contains "windows"
+  (envir.vars["OS"].val "").lower_case.contains "windows"
 
 
 ########### run_tests ###############
@@ -145,6 +151,27 @@ find_tests(dir String) array String =>
   tests
     .val
     .as_array
+
+
+say_section(str String) =>
+  say ""
+  say <| " $str ".pad_center "⎯" 80
+  say ""
+
+
+#
+# send something to our influx database
+#
+# e.g. post_to_influx "tokiwa" "benchmarks" "**token**" "tests,test=hello value=26.5"
+#
+post_to_influx(org, bucket, token, str String) =>
+  web.post_r
+    net.family.ipv4
+    "https://influxdb.tokiwa.software:8086/api/v2/write?org={org}&bucket={bucket}&precision=s"
+    str.utf8
+    (container.map_of [("Authorization", "Token {token}"),
+                       ("Content-Type", "text/plain")])
+
 
 
 main =>
@@ -168,16 +195,13 @@ main =>
 
   # source: https://stackoverflow.com/questions/45181115/portable-way-to-find-the-number-of-processors-cpus-in-a-shell-script
   # first, try third arg then try a few executables, if everything fails use default value
-  tc :=
-    (fuzion.runtime.contract_fault.try ()->(envir.args.nth 3).val.trim.parse_i32.val)
-      .catch _->
-        (fuzion.runtime.contract_fault.try ()->(!!"nproc --all").out.trim.parse_i32.val)
-          .catch _->
-            (fuzion.runtime.contract_fault.try ()->(!!"getconf _NPROCESSORS_ONLN").out.trim.parse_i32.val)
-              .catch _->
-                (fuzion.runtime.contract_fault.try ()->(!!"sysctl -n hw.ncpu").out.trim.parse_i32.val)
-                  .catch _->4
-  thread_count := tc > 6 ? 6 : tc
+  thread_count :=
+    fuzion.runtime.contract_fault
+      .try ()->(envir.vars["FUZION_RUN_TESTS_PARALLELISM"]).val.trim.parse_i32.val
+      .or_try _->(!!"nproc --all").out.trim.parse_i32.val
+      .or_try _->(!!"getconf _NPROCESSORS_ONLN").out.trim.parse_i32.val
+      .or_try _->(!!"sysctl -n hw.ncpu").out.trim.parse_i32.val
+      .catch  _->4
 
   tests := find_tests "$build_dir/tests"
 
@@ -189,36 +213,41 @@ main =>
   _ := io.file.delete results
   _ := io.file.delete failures
 
+  # for storing the elapsed time of each test
+  test_durations := (lock_free.Map String time.duration).empty
+
+  run_single_test(test String) =>
+    if io.file.exists "$test/skip" || io.file.exists "$test/skip_$target" || (is_windows && (io.file.exists "$test/skip_win"))
+      yak "_"
+      append_line results "$test: skipped"
+    else
+
+      res, elapsed_time := time.stopwatch process_result ()->
+        !!"make $target --environment-overrides --directory=$test"
+
+      test_durations.put test elapsed_time
+
+      if res.exit_code = 0 || target = "fuir" then
+        yak "."
+        append_line results "$test in {elapsed_time}: ok"
+      else
+        yak "#"
+        append_line results "$test in {elapsed_time}: failed"
+        append_line failures res.out
+        append_line failures res.err
+
+
   say "{tests.count} tests, running $thread_count tests in parallel."
 
-  start_time_total := time.nano.read
 
-  _ := concur.thread_pool thread_count ()->
-    for test in tests do
-      check concur.thread_pool.env.submit ()->
-        if io.file.exists "$test/skip" || io.file.exists "$test/skip_$target" || (is_windows && (io.file.exists "$test/skip_win"))
-          yak "_"
-          append_line results "$test: skipped"
-        else
 
-          start_time := time.nano.read
-          # NYI: UNDER DEVELOPMENT: use fuzion to do the timeout
-          with_to := if is_windows then "" else "timeout --kill-after=600s 600s "
-          res := !!"{with_to}make $target --environment-overrides --directory=$test"
-          end_time := time.nano.read
+  elapsed_time_total := time.stopwatch ()->
+    _ := concur.thread_pool thread_count ()->
+      for t in tests do
+        check concur.thread_pool.env.submit (run_single_test t)
 
-          if res.exit_code = 0 then
-            yak "."
-            append_line results "$test in {end_time-start_time}: ok"
-          else
-            yak "#"
-            append_line results "$test in {end_time-start_time}: failed"
-            append_line failures res.out
-            append_line failures res.err
 
-  end_time_total := time.nano.read
-
-  results_content := read_file_fully results
+  results_content := (io.slurp <| path.of results)
     .val
     .lines
     .filter (x -> !x.is_blank)
@@ -236,31 +265,78 @@ main =>
         r
 
   say ""
-  say "$ok/{tests.count} tests passed, $skipped skipped, $failed failed in {(end_time_total-start_time_total).as_string.trim}."
+  say "$ok/{tests.count} tests passed, $skipped skipped, $failed failed in {elapsed_time_total.as_string.trim}."
+
+  max_recorded := test_durations
+    .values
+    .max
+  h := time.histogram target nil max_recorded 0 0
+  test_durations
+    .values
+    .for_each h.add
+  say h
 
   if failed > 0
-    say "Failed tests:"
+    say_section "Failed tests"
 
     failed_tests := results_content.filter (.ends_with "failed")
 
     failed_tests.for_each say
 
-    say "============= run_tests.failures START ============="
-    say (read_file_fully failures)
-    say "============= run_tests.failures END ============="
+    say_section "run_tests.failures START"
+    say (io.slurp <| path.of failures)
+    say_section "run_tests.failures END"
 
-    say "To re-run all failed tests, use this command:"
-    say <| failed_tests
-      .map x->x.split[0]
-      .map x->"make $target -C $x"
-      .as_string " && "
+    failed_test_names := failed_tests
+                           .map x->x.split[0]
+                           .map x->(x.substring 14) # remove "./build/tests/"
+                           .as_string " "
 
-    say "To re-record all failed tests, use this command:"
-    say <| failed_tests
-      .map x->x.split[0]
-      .map x->"make record -C $x" # NYI: UNDER DEVELOPMENT: if _target file exists: "make record_$target -C $x"
-      .as_string " && "
+    say """
+        To re-run all failed tests, use this command:
+        for t in $failed_test_names; do
+          make $target -C ./build/tests/\$t
+        done
+        """
 
-    exit 1
+    # NYI: UNDER DEVELOPMENT: if _target file exists: "make record_$target -C $x"
+    say """
+        To re-record all failed tests, use this command:
+        for t in $failed_test_names; do
+          make record -C ./build/tests/\$t
+        done
+        """
+
+    check (set_exit_code 1).ok
+
+
+  num_slowest := 10
+  say_section "Slowest $num_slowest tests using $target backend"
+
+  test_durations
+    .items
+    .sort_by (td1,td2 -> td2.1<=td1.1)
+    .take num_slowest
+    .for_each (td -> say "{td.1.as_string_pad} {td.0}")
+
+  say_section "$target done"
+
+  match
+    {
+    envir
+      .vars
+      .get "INFLUXDB_TOKEN"
+    }
+    nil => say "INFLUXDB_TOKEN not set, not sending to influxdb."
+    token String =>
+      data := test_durations.items
+        .map td->"test_runtime,backend={target},test={td.0} value={td.1.millis}"
+      if token.is_blank
+        say "INFLUXDB_TOKEN is blank, not sending to influxdb."
+      else
+        say <| post_to_influx "tokiwa" "benchmarks" token.trim (String.join_lines data)
+        say <| post_to_influx "tokiwa" "benchmarks" token.trim "run_tests,backend={target} total_time={elapsed_time_total.millis}"
+
+  exit
 
 _ := main

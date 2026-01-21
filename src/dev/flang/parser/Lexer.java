@@ -193,7 +193,7 @@ public class Lexer extends SourceFile
     t_pre("pre"),
     t_post("post"),
     t_inv("inv"),
-    t_var("var"),
+    t_var("var"),                     // unused
     t_match("match"),
     t_ref("ref"),
     t_redef("redef"),
@@ -273,7 +273,7 @@ public class Lexer extends SourceFile
     /**
      * Sorted array of all the keyword tokens
      */
-    public static Token[] _keywords = Stream.of(Token.class.getEnumConstants())
+    public static final Token[] _keywords = Stream.of(Token.class.getEnumConstants())
       .filter((t) -> t.isKeyword())
       .sorted((t1, t2) -> t1.keyword().compareTo(t2.keyword()))
       .toArray(Token[]::new);
@@ -281,7 +281,7 @@ public class Lexer extends SourceFile
     /**
      * maximum length of the keywords.
      */
-    public static int _maxKeywordLength = Stream.of(_keywords)
+    public static final int _maxKeywordLength = Stream.of(_keywords)
       .mapToInt(k -> k.keyword().length())
       .max()
       .orElseThrow();
@@ -290,7 +290,7 @@ public class Lexer extends SourceFile
      * Array of sorted arrays of keywords of equal length.  Used to reduce
      * effort to find keyword by checking only those with a correct length.
      */
-    public static Token[][] _keywordsOfLength = IntStream.range(0, _maxKeywordLength+1)
+    public static final Token[][] _keywordsOfLength = IntStream.range(0, _maxKeywordLength+1)
     .mapToObj(i -> Stream.of(_keywords)
               .filter(k -> k.keyword().length() == i)
               .toArray(Token[]::new))
@@ -379,7 +379,7 @@ public class Lexer extends SourceFile
   /**
    * Code point classes for ASCII codepoints
    */
-  private static byte[] _asciiKind = new byte[]
+  private static final byte[] _asciiKind = new byte[]
   {
     // 0…
     K_UNKNOWN /* NUL */, K_UNKNOWN /* SOH */, K_UNKNOWN /* STX */, K_UNKNOWN /* ETX */,
@@ -427,7 +427,7 @@ public class Lexer extends SourceFile
   /**
    * ASCII control sequence names or null if normal ASCII char.
    */
-  private static String[] _asciiControlName = new String[]
+  private static final String[] _asciiControlName = new String[]
   {
     // 0…
     "NUL", "SOH", "STX", "ETX", "EOT", "ENQ", "ACK", "BEL", "BS ", "HT ", "LF ", "VT ", "FF ", "CR ", "SO ", "SI ",
@@ -1007,7 +1007,7 @@ public class Lexer extends SourceFile
 
 
   /**
-   * short-hand for bracketTermWithNLs with c==def.
+   * shorthand for bracketTermWithNLs with c==def.
    */
   <V> V optionalBrackets(Parens brackets, String rule, Supplier<V> c)
   {
@@ -1017,7 +1017,7 @@ public class Lexer extends SourceFile
   }
 
   /**
-   * short-hand for bracketTermWithNLs with c==def.
+   * shorthand for bracketTermWithNLs with c==def.
    */
   <V> V bracketTermWithNLs(Parens brackets, String rule, Supplier<V> c)
   {
@@ -1059,16 +1059,23 @@ public class Lexer extends SourceFile
     var nl = line();
     relaxLineAndSpaceLimit(() ->
                            {
-                            if (current(true) != end._token)
+                            var hasIndentProblem = current(true) != end._token;
+                            var tsp = tokenSourcePos();
+                            if (hasIndentProblem)
                               {
                                 // if indentation decreases before closing bracket, discard everything until closing bracket
-                                Errors.indentationProblemEncountered(tokenSourcePos(), sourcePos(indentRef), Parser.parserDetail(rule));
                                 while (current(true) != end._token && current(true) != Token.t_eof)
                                   {
                                       next();
                                   }
                               }
+                            var errCount = Errors.count();
                             match(true, end, rule);
+                            // emit indent problem only if no other problems are encountered
+                            if (hasIndentProblem && errCount == Errors.count())
+                              {
+                                Errors.indentationProblemEncountered(tsp, sourcePos(indentRef), Parser.parserDetail(rule));
+                              }
                             return Void.TYPE; // is there a better unit type in Java?
                            });
     var sl = sameLine(-1);
@@ -3008,7 +3015,7 @@ PIPE        : "|"
      * If this is changed, https://fuzion-lang.dev/tutorial/string_constants
      * must be changed as well.
      */
-    static int[][] escapeChars = new int[][] {
+    static final int[][] escapeChars = new int[][] {
         { 'b', '\b'  },  // BS 0x08
         { 't', '\t'  },  // HT 0x09
         { 'n', '\n'  },  // LF 0x0a
@@ -3022,6 +3029,7 @@ PIPE        : "|"
         { '}',  '}'  },  // }  0x7d
         { '\n', -1   },
         { '\r', -1   },
+        { '0', '\0'  },  // NUL 0x00
       };
 
 

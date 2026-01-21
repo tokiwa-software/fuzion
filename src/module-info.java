@@ -31,4 +31,7 @@ module fz_cmd {
 
   // used in util/Profiler.java : import java.awt.Desktop;
   requires java.desktop;
+
+  // used by util/Influx
+  requires java.net.http;
 }

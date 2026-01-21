@@ -80,7 +80,7 @@ public class LibraryModule extends Module implements MirModule
    * As long as source position is not part of the .fum/MIR file, use this
    * constant as a place holder.
    */
-  static SourcePosition DUMMY_POS = SourcePosition.builtIn;
+  static final SourcePosition DUMMY_POS = SourcePosition.builtIn;
 
 
   /**
@@ -93,7 +93,7 @@ public class LibraryModule extends Module implements MirModule
   /**
    * Pre-allocated empty array
    */
-  static byte[] NO_BYTES = new byte[0];
+  static final byte[] NO_BYTES = new byte[0];
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -870,7 +870,7 @@ Feature
 [options="header",cols="1,1,2,5"]
 |====
    |cond.     | repeat | type          | what
-.6+| true  .6+| 1      | short         | 0000REvvvFCYkkkk  k = kind, Y = has cotype (i.e., 'f.type'), C = is cotype, F = has 'fixed' modifier, v = visibility, R/E = has pre-/post-condition feature
+.6+| true  .6+| 1      | short         | 000OREvvvFCYkkkk  k = kind, Y = has cotype (i.e., 'f.type'), C = is cotype, F = has 'fixed' modifier, v = visibility, R/E = has pre-/post-condition feature, O = hasValuesAsOpenTypeFeature
                        | Name          | name
                        | int           | arg count
                        | int           | name id
@@ -879,7 +879,9 @@ Feature
    | Y=1      | 1      | Feature       | the cotype
    | C=1      | 1      | Feature       | the cotype origin
    | hasRT    | 1      | Type          | optional result type,
-                                       hasRT = !isConstructor && !isChoice
+                                         hasRT = !isConstructor && !isChoice && !isTypeParameter
+   | O=1      | 1      | int           | open type Feature index,
+   | isTypeParameter | 1 | Type        | constraint of (open) type parameters
 .2+| true NYI! !isField? !isIntrinsc
               | 1      | int           | inherits count i
               | i      | Code          | inherits calls
@@ -900,7 +902,7 @@ Feature
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | short         | 0000REvvvFCYkkkk                              |
+   *   | true   | 1      | short         | 000OREvvvFCYkkkk                              |
    *   |        |        |               |           k = kind                            |
    *   |        |        |               |           Y = has Type feature (i.e. 'f.type')|
    *   |        |        |               |           C = is cotype                       |
@@ -908,6 +910,7 @@ Feature
    *   |        |        |               |           v = visibility                      |
    *   |        |        |               |           R = has precondition feature        |
    *   |        |        |               |           E = has postcondition feature       |
+   *   |        |        |               |           O = hasValuesAsOpenTypeFeature      |
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | Name          | name                                          |
    *   |        |        +---------------+-----------------------------------------------+
@@ -919,12 +922,19 @@ Feature
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | int           | outer feature index, 0 for outer()==null      |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | Y=1    | 1      | int           | type feature index                            |
+   *   | Y=1    | 1      | int           | cotype index                                  |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | C=1    | 1      | int           | cotype index                                  |
+   *   | C=1    | 1      | int           | cotypeorigin index                            |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | hasRT  | 1      | Type          | optional result type,                         |
    *   |        |        |               | hasRT = !isConstructor && !isChoice           |
+   *   |        |        |               |         && !isTypeParameter                   |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | O=1    | 1      | int           | open type Feature index                       |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | isType | 1      | Type          | constraint of (open) type parameters          |
+   *   | Parame |        |               |                                               |
+   *   | ter    |        |               |                                               |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | int           | inherits count i                              |
    *   | NYI!   |        |               |                                               |
@@ -1004,6 +1014,15 @@ Feature
   boolean featureIsFixed(int at)
   {
     return ((featureKind(at) & FuzionConstants.MIR_FILE_KIND_IS_FIXED) != 0);
+  }
+  boolean featureHasOpenTypeFeature(int at)
+  {
+    var res = ((featureKind(at) & FuzionConstants.MIR_FILE_KIND_HAS_VALUES_OF_OPEN_TYPE_FEATURE) != 0);
+    if (CHECKS) check
+      (true ||  // checking this would cause endless recursion
+       res == (featureHasResultType(at) && libraryFeature(at).resultType().isOpenGeneric() ||
+               (featureKind(at) & FuzionConstants.MIR_FILE_KIND_MASK) == AbstractFeature.Kind.OpenTypeParameter.ordinal()));
+    return res;
   }
   int featureNamePos(int at)
   {
@@ -1108,14 +1127,42 @@ Feature
   {
     var k = featureKind(at) & FuzionConstants.MIR_FILE_KIND_MASK;
     return
-      (k != FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF   &&
-       k != FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_VALUE &&
-       k != AbstractFeature.Kind.Choice.ordinal());
+      (k != FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF    &&
+       k != FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_VALUE  &&
+       k != AbstractFeature.Kind.Choice           .ordinal() &&
+       k != AbstractFeature.Kind.TypeParameter    .ordinal() &&
+       k != AbstractFeature.Kind.OpenTypeParameter.ordinal()
+       );
+
   }
-  int featureInheritsCountPos(int at)
+  int featureValuesAsOpenTypeFeaturePos(int at)
   {
     var i = featureResultTypePos(at);
     if (featureHasResultType(at))
+      {
+        i = typeNextPos(i);
+      }
+    return i;
+  }
+  AbstractFeature featureValuesAsOpenTypeFeature(int at)
+  {
+    return feature(data().getInt(featureValuesAsOpenTypeFeaturePos(at)));
+  }
+  int featureConstraintPos(int at)
+  {
+    return featureValuesAsOpenTypeFeaturePos(at) + (featureHasOpenTypeFeature(at) ? 4 : 0);
+  }
+  boolean featureHasConstraint(int at)
+  {
+    var k = featureKind(at) & FuzionConstants.MIR_FILE_KIND_MASK;
+    return
+      (k == AbstractFeature.Kind.TypeParameter    .ordinal() ||
+       k == AbstractFeature.Kind.OpenTypeParameter.ordinal()    );
+  }
+  int featureInheritsCountPos(int at)
+  {
+    var i = featureConstraintPos(at);
+    if (featureHasConstraint(at))
       {
         i = typeNextPos(i);
       }
@@ -1335,13 +1382,6 @@ Type
   {
     return data().getInt(at);
   }
-  int typeAddressPos(int at)
-  {
-    if (PRECONDITIONS) require
-      (typeKind(at) == -4);
-
-    return at+4;
-  }
   int typeUniversePos(int at)
   {
     if (PRECONDITIONS) require
@@ -1429,11 +1469,7 @@ Type
   int typeNextPos(int at)
   {
     var k = typeKind(at);
-    if (k == -4)
-      {
-        return typeAddressPos(at) + 0;
-      }
-    else if (k == -3)
+    if (k == -3)
       {
         return typeUniversePos(at) + 0;
       }
@@ -2287,7 +2323,11 @@ SourceFile
             var bb = sourceFileBytes(at);
             var ba = new byte[bb.limit()]; // NYI: Would be better if SourceFile could use bb directly.
             bb.get(0, ba);
-            sf = new SourceFile(Path.of("{" + name() + FuzionConstants.MODULE_FILE_SUFFIX + "}").resolve(Path.of(sourceFileName(at))), ba);
+            // "main" is the implicit module name for code compiled by the user
+            // therefore it should not be included in the source file path, which gets printed in error messages
+            var srcPath = Path.of(name().equals(FuzionConstants.MAIN_MODULE_NAME) ? "" : "{" + name() + FuzionConstants.MODULE_FILE_SUFFIX + "}")
+                              .resolve(Path.of(sourceFileName(at)));
+            sf = new SourceFile(srcPath, ba);
             _sourceFiles.set(i, sf);
           }
         return new SourceRange(sf, pos - sourceFileBytesPos(at), posEnd - sourceFileBytesPos(at));

@@ -39,7 +39,7 @@ is
 
   # close server, stop listening on port
   #
-  public redef finally =>
+  public redef finally unit =>
     check (fuzion.sys.net.close sock).ok
 
 
@@ -56,7 +56,7 @@ is
         net.connection desc
 
 
-  # short-hand to open new server bound to the any address
+  # shorthand to open new server bound to the any address
   # with a default backlog.
   #
   # NYI: UNDER DEVELOPMENT: blocking / none blocking
@@ -72,11 +72,11 @@ is
     net.server.start T f p any_addr port code
 
 
-  # short-hand to open new server with a default backlog
+  # shorthand to open new server with a default backlog
   #
   # NYI: UNDER DEVELOPMENT: blocking / none blocking
   #
-  public type.start(T type, f net.family.val, p net.protocol.val, addr String, port u16, code ()->T) =>
+  public type.start(T type, f net.family.val, p net.protocol.val, addr String, port u16, code ()->T) outcome T =>
     backlog := 10
     net.server.start T f p addr port backlog code
 
@@ -111,7 +111,7 @@ is
             listen_res := fzE_listen sd backlog
             if listen_res != 0
               _ := fuzion.sys.net.close sd
-              error "listening on socket failed with error $listen_res."
+              error "listening on socket failed" listen_res.as_i64
             else
               sd
           * =>

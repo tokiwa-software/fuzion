@@ -230,7 +230,6 @@ public class FZJava extends Tool
                                             /* dumpModules */ emptyList,
                                             /* fuzionDebugLevel */ 0,
                                             /* fuzionSafety */ true,
-                                            /* enableUnsafeIntrinsics */ true,
                                             /* sourceDirs */ emptyList,
                                             /* readStdin */ false,
                                             /* executeCode */ null,
@@ -270,16 +269,16 @@ public class FZJava extends Tool
     fzp = fzp.resolve("ext.fz");
     try
       {
-        var str = new StringBuilder(
-                    "public Java.as_java_object(T type : Java.java.lang.Object, seq Sequence T) =>\n");
-        str.append("  res := (Java.java.lang.reflect.Array.newInstance_Ljava_7_lang_7_Class_s_I T.get_java_class seq.count).val\n");
-        str.append("  for idx := 0, idx+1\n");
-        str.append("      el in seq\n");
-        str.append("  do\n");
-        str.append("    _ := Java.java.lang.reflect.Array.__k__set res idx el\n");
-        str.append("  fuzion.java.Array T res.java_ref\n");
-        str.append("\n");
-        Files.write(fzp, str.toString().getBytes(StandardCharsets.UTF_8));
+        var str = """
+          public Java.as_java_object(T type : Java.java.lang.Object, seq Sequence T) fuzion.java.Array T =>
+            res := (Java.java.lang.reflect.Array.newInstance_Ljava_7_lang_7_Class_s_I T.get_java_class seq.count).val
+            for idx := 0, idx+1
+                el in seq
+            do
+              _ := Java.java.lang.reflect.Array.__k__set res idx el
+            fuzion.java.Array T res.java_ref
+        """;
+        Files.write(fzp, str.getBytes(StandardCharsets.UTF_8));
       }
     catch (IOException e)
       {
@@ -502,6 +501,11 @@ public class FZJava extends Tool
             if (sc != null)
               {
                 sfc = forClass(sc);
+                if (sfc == null)
+                  { // if `sc` is not public, `sfc` is null. Use `Object`
+                    // instead (see #6384 or tests/reg_issue6384):
+                    sfc = forClass(java.lang.Object.class);
+                  }
               }
             res = new ForClass(c, sfc);
             _classes.put(c.getName(), res);

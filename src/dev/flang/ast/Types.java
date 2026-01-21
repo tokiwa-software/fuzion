@@ -57,6 +57,7 @@ public class Types extends ANY
    */
   public static final String FUNCTION_NAME = "Function";
 
+
   /**
    * Name of abstract features for Nullary types:
    */
@@ -98,7 +99,7 @@ public class Types extends ANY
 
   /**
    * Dummy name used for type t_FORWARD_CYCLIC which is used to
-   * indicate a forward or cylic type inference.
+   * indicate a forward or cyclic type inference.
    */
   private static final String FORWARD_CYCLIC_NAME = "FORWARD_CYCLIC";
 
@@ -106,7 +107,7 @@ public class Types extends ANY
   /**
    * Names of internal types that are not backed by physical feature definitions.
    */
-  static Set<String> INTERNAL_NAMES = Collections.<String>unmodifiableSet
+  static final Set<String> INTERNAL_NAMES = Collections.<String>unmodifiableSet
     (new TreeSet<>(Arrays.asList(UNDEFINED_NAME,
                                  ERROR_NAME)));
 
@@ -143,7 +144,6 @@ public class Types extends ANY
     public final AbstractType t_f64 ;
     public final AbstractType t_bool;
     public final AbstractType t_Any;
-    private final AbstractType t_fuzion;
     public final AbstractType t_String;
     public final AbstractType t_unit;
 
@@ -169,29 +169,38 @@ public class Types extends ANY
     public final AbstractFeature f_bool_OR;
     public final AbstractFeature f_bool_IMPLIES;
     public final AbstractFeature f_bool_TERNARY;
-    public final AbstractFeature f_debug;
-    public final AbstractFeature f_debug_level;
     public final AbstractFeature f_Function;
     public final AbstractFeature f_Function_call;
-    public final AbstractFeature f_safety;
     public final AbstractFeature f_array;
     public final AbstractFeature f_array_internal_array;
+    public final AbstractFeature f_mutate_array;
     public final AbstractFeature f_effect;
     public final AbstractFeature f_effect_finally;
     public final AbstractFeature f_effect_static_finally;
-    public final AbstractFeature f_error;
-    public final AbstractFeature f_error_msg;
     public final AbstractFeature f_fuzion;
     public final AbstractFeature f_fuzion_java;
     public final AbstractFeature f_fuzion_Java_Object;
     public final AbstractFeature f_fuzion_Java_Object_Ref;
+    public final AbstractFeature f_fuzion_lambda_target;
     public final AbstractFeature f_fuzion_sys;
     public final AbstractFeature f_fuzion_sys_array;
     public final AbstractFeature f_fuzion_sys_array_length;
     public final AbstractFeature f_fuzion_sys_array_data;
+    public final AbstractFeature f_eff;
+    public final AbstractFeature f_eff_fallible;
+    public final AbstractFeature f_eff_fallible_cause;
     public final AbstractFeature f_concur;
     public final AbstractFeature f_concur_atomic;
     public final AbstractFeature f_concur_atomic_v;
+    public final AbstractFeature f_Open_Types;
+    public final AbstractFeature f_Values_Of_Open_Type;
+    public final AbstractFeature f_container;
+    public final AbstractFeature f_type_applicator;
+    public final AbstractFeature f_type_applicator_apply;
+    public final AbstractFeature f_typed_applicator;
+    public final AbstractFeature f_typed_applicator_apply;
+    public final AbstractFeature f_typed_zipper;
+    public final AbstractFeature f_typed_zipper_apply;
     public final AbstractFeature f_Type;
     public final AbstractFeature f_Type_infix_colon;
     public final AbstractFeature f_Type_infix_colon_true;
@@ -199,8 +208,6 @@ public class Types extends ANY
     public final AbstractFeature f_type_as_value;
     public final AbstractFeature f_Nullary;
     public final AbstractFeature f_Lazy;
-    public final AbstractFeature f_Unary;
-    public final AbstractFeature f_Binary;
     public final AbstractFeature f_auto_unwrap;
     public final Set<AbstractType> numericTypes;
     public Resolved(AbstractModule mod, AbstractFeature universe, boolean forFrontEnd)
@@ -217,7 +224,6 @@ public class Types extends ANY
       t_f32                     = universe.get(mod, FuzionConstants.F32_NAME, 1).selfType();
       t_f64                     = universe.get(mod, FuzionConstants.F64_NAME, 1).selfType();
       t_bool                    = universe.get(mod, "bool", 0).selfType();
-      t_fuzion                  = universe.get(mod, "fuzion", 0).selfType();
       t_String                  = universe.get(mod, FuzionConstants.STRING_NAME, 0).selfType();
       t_Any                     = universe.get(mod, FuzionConstants.ANY_NAME, 0).selfType();
       t_unit                    = universe.get(mod, FuzionConstants.UNIT_NAME, 0).selfType();
@@ -236,29 +242,38 @@ public class Types extends ANY
       f_bool_OR                 = forFrontEnd ? f_bool.get(mod, FuzionConstants.INFIX_OPERATOR_PREFIX + "||"   , 1) : null;
       f_bool_IMPLIES            = forFrontEnd ? f_bool.get(mod, FuzionConstants.INFIX_OPERATOR_PREFIX + ":"    , 1) : null;
       f_bool_TERNARY            = forFrontEnd ? f_bool.get(mod, FuzionConstants.TERNARY_OPERATOR_PREFIX + "? :", 3) : null;
-      f_debug                   = universe.get(mod, "debug", 0);
-      f_debug_level             = universe.get(mod, "debug_level", 0);
       f_Function                = universe.get(mod, FUNCTION_NAME, 2);
       f_Function_call           = f_Function.get(mod, FuzionConstants.OPERATION_CALL, 1);
-      f_safety                  = universe.get(mod, "safety", 0);
       f_array                   = universe.get(mod, FuzionConstants.ARRAY_NAME, 5);
       f_array_internal_array    = f_array.get(mod, "internal_array", 0);
+      f_mutate_array            = universe.get(mod, "mutate", 0).get(mod, FuzionConstants.ARRAY_NAME, 4);
       f_effect                  = universe.get(mod, "effect", 0);
       f_effect_finally          = f_effect.get(mod, "finally", 0);
       f_effect_static_finally   = f_effect.get(mod, "static_finally", 0);
-      f_error                   = universe.get(mod, "error", 1);
-      f_error_msg               = f_error.get(mod, "msg", 0);
       f_fuzion                  = universe.get(mod, "fuzion", 0);
       f_fuzion_java             = f_fuzion.get(mod, "java", 0);
       f_fuzion_Java_Object      = f_fuzion_java.get(mod, "Java_Object", 1);
       f_fuzion_Java_Object_Ref  = f_fuzion_Java_Object.get(mod, "java_ref", 0);
+      f_fuzion_lambda_target    = f_fuzion.get(mod, "lambda_target", 0);
       f_fuzion_sys              = f_fuzion.get(mod, "sys", 0);
       f_fuzion_sys_array        = f_fuzion_sys.get(mod, "internal_array", 3);
       f_fuzion_sys_array_data   = f_fuzion_sys_array.get(mod, "data", 0);
       f_fuzion_sys_array_length = f_fuzion_sys_array.get(mod, "length", 0);
+      f_eff                     = universe.get(mod, "eff", 0);
+      f_eff_fallible            = f_eff.get(mod, "fallible", 2);
+      f_eff_fallible_cause      = f_eff_fallible.get(mod, "cause", 1);
       f_concur                  = universe.get(mod, "concur", 0);
       f_concur_atomic           = f_concur.get(mod, "atomic", 2);
       f_concur_atomic_v         = f_concur_atomic.get(mod, "v", 0);
+      f_Open_Types              = universe.get(mod, FuzionConstants.OPEN_TYPES_FEAT, 0);
+      f_Values_Of_Open_Type     = universe.get(mod, FuzionConstants.VALUES_OF_OPEN_TYPE_FEAT, 0);
+      f_container               = universe.get(mod, "container", 0);
+      f_type_applicator         = f_container.get(mod, FuzionConstants.TYPE_APPLICATOR_FEAT, 1);
+      f_type_applicator_apply   = f_type_applicator.get(mod, FuzionConstants.TYPE_APPLICATOR_APPLY_FEAT, 2);
+      f_typed_applicator        = f_container.get(mod, FuzionConstants.TYPED_APPLICATOR_FEAT, 1);
+      f_typed_applicator_apply  = f_typed_applicator.get(mod, FuzionConstants.TYPED_APPLICATOR_APPLY_FEAT, 3);
+      f_typed_zipper            = f_container.get(mod, FuzionConstants.TYPED_ZIPPER_FEAT, 1);
+      f_typed_zipper_apply      = f_typed_zipper.get(mod, FuzionConstants.TYPED_ZIPPER_APPLY_FEAT, 4);
       f_Type                    = universe.get(mod, FuzionConstants.TYPE_FEAT, 0);
       f_Type_infix_colon        = f_Type.get(mod, "infix :", 1);
       f_Type_infix_colon_true   = f_Type.get(mod, "infix_colon_true", 1);
@@ -266,8 +281,6 @@ public class Types extends ANY
       f_type_as_value           = universe.get(mod, "type_as_value", 1);
       f_Nullary                 = universe.get(mod, NULLARY_NAME, 1);
       f_Lazy                    = universe.get(mod, LAZY_NAME, 1);
-      f_Unary                   = universe.get(mod, UNARY_NAME, 2);
-      f_Binary                  = universe.get(mod, BINARY_NAME, 3);
       f_auto_unwrap             = universe.get(mod, "auto_unwrap", 2);
       numericTypes = new TreeSet<AbstractType>(new List<>(
         t_i8,
@@ -317,7 +330,6 @@ public class Types extends ANY
         t_f32        ,
         t_f64        ,
         t_bool       ,
-        t_fuzion     ,
         t_String     ,
         t_Any        ,
         t_unit       ,

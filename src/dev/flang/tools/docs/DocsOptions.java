@@ -37,7 +37,7 @@ import java.nio.file.Path;
  * @param printCSSStyles
  * @param ignoreVisibility
  */
-public record DocsOptions(Path destination, String apiSrcDir, boolean bare, boolean printCSSStyles, boolean ignoreVisibility)
+public record DocsOptions(Path destination, String docsRoot, String apiSrcDir, boolean bare, boolean printCSSStyles, boolean ignoreVisibility)
 {
 
   public String apiSrcDir()
@@ -53,6 +53,6 @@ public record DocsOptions(Path destination, String apiSrcDir, boolean bare, bool
 
   public String docsRoot()
   {
-    return bare ? "/docs": "";
+    return bare ? (docsRoot == null ? "/docs" : docsRoot): "";
   }
 }

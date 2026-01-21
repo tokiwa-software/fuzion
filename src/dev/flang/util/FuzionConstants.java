@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.util;
 
-import java.nio.file.Path;
 
 
 /**
@@ -114,6 +113,54 @@ public class FuzionConstants extends ANY
    * Name of Type feature.
    */
   public static final String TYPE_FEAT   = "Type";
+
+
+  /**
+   * Name of Open_Types feature.
+   */
+  public static final String OPEN_TYPES_FEAT = "Open_Types";
+
+
+  /**
+   * Name of Values_Of_Open_Type feature.
+   */
+  public static final String VALUES_OF_OPEN_TYPE_FEAT = "Values_Of_Open_Type";
+
+
+  /**
+   * Name of type_applicator feature.
+   */
+  public static final String TYPE_APPLICATOR_FEAT = "type_applicator";
+
+
+  /**
+   * Name of type_applicator.apply feature.
+   */
+  public static final String TYPE_APPLICATOR_APPLY_FEAT = "apply";
+
+
+  /**
+   * Name of typed_applicator feature.
+   */
+  public static final String TYPED_APPLICATOR_FEAT = "typed_applicator";
+
+
+  /**
+   * Name of typed_applicator.apply feature.
+   */
+  public static final String TYPED_APPLICATOR_APPLY_FEAT = "apply";
+
+
+  /**
+   * Name of typed_zipper feature.
+   */
+  public static final String TYPED_ZIPPER_FEAT = "typed_zipper";
+
+
+  /**
+   * Name of typed_zipper.apply feature.
+   */
+  public static final String TYPED_ZIPPER_APPLY_FEAT = "apply";
 
 
   /**
@@ -290,6 +337,21 @@ public class FuzionConstants extends ANY
 
 
   /**
+   * Prefix of name of open type feature, i.e., the feature that is called when
+   * a field whose type is an open type parameter is called without selecting
+   * one specific variant.
+   */
+  public static final String VALUES_OF_OPEN_TYPE_SUFFIX = "." + INTERNAL_NAME_PREFIX; /* e.g., `values.#` which stands for `values.0`/`values.1`/etc. */
+
+
+  /**
+   * Prefix of name of open type parameter, i.e., the feature that is called when
+   * an open type parameter is called.
+   */
+  public static final String OPEN_TYPES_PREFIX = INTERNAL_NAME_PREFIX + "Open_Types";
+
+
+  /**
    * Field introduced in, e.g.,
    *
    * <pre>{@code
@@ -412,8 +474,8 @@ public class FuzionConstants extends ANY
    * The qualified names of features fuzion.runtime.precondition_fault and
    * fuzion.runtime.postcondition_fault.
    */
-  public static String[] FUZION_RUNTIME_PRECONDITION_FAULT  = "fuzion.runtime.precondition_fault" .split("\\.");
-  public static String[] FUZION_RUNTIME_POSTCONDITION_FAULT = "fuzion.runtime.postcondition_fault".split("\\.");
+  public static final String[] FUZION_RUNTIME_PRECONDITION_FAULT  = "fuzion.runtime.precondition_fault" .split("\\.");
+  public static final String[] FUZION_RUNTIME_POSTCONDITION_FAULT = "fuzion.runtime.postcondition_fault".split("\\.");
 
 
   /**
@@ -487,10 +549,9 @@ public class FuzionConstants extends ANY
 
 
   /**
-   * Fuzion module directory as used in module files instead of absolute or
-   * relative path of module directory.
+   * Flag OR'ed to kind for features with a values of open type feature
    */
-  public static final Path SYMBOLIC_FUZION_MODULE = Path.of("$MODULE");
+  public static final int MIR_FILE_KIND_HAS_VALUES_OF_OPEN_TYPE_FEATURE = 0x1000;
 
 
   /**
@@ -599,6 +660,39 @@ public class FuzionConstants extends ANY
         (byte) (i >>  8),
         (byte) (i      )
       };
+  }
+
+
+  /**
+   * Create name of open type feature, i.e., the feature that is called when
+   * a field whose type is an open type parameter is called without selecting
+   * one specific variant.
+   *
+   * @param argFieldBaseName the base name of the argument field
+   *
+   * @return the names, looks something like `#Values_Of_Open_Type#argFieldBaseName#uniqueId`.
+   */
+  public static String createFieldsOfOpenTypeName(String argFieldBaseName)
+  {
+    return argFieldBaseName + VALUES_OF_OPEN_TYPE_SUFFIX;
+  }
+
+
+  /**
+   * Extract the field base name from a name created by `createValuesOfOpenTypeName`.
+   *
+   * @param valuesAsOpenTypeName the name obtained form `createValuesOfOpenTypeName`.
+   *
+   * @return the original `argFieldBaseName` passed to `createValuesOfOpenTypeName`.
+   */
+  public static String extractBaseNameFromFieldsOfOpenTypeName(String valuesAsOpenTypeName)
+  {
+    var end = valuesAsOpenTypeName.lastIndexOf(VALUES_OF_OPEN_TYPE_SUFFIX);
+
+    if (CHECKS) check
+      (end >= 0);
+
+    return valuesAsOpenTypeName.substring(0, end);
   }
 
 }

@@ -1,0 +1,48 @@
+
+--CURDIR--/reg_issue5826.fz:28:8: error 1: Could not find called feature
+    if x ∈ squares
+-------^
+Feature not found: 'x' (no arguments)
+Target feature: 'example'
+In call: 'x'
+
+
+--CURDIR--/reg_issue5826.fz:29:13: error 2: Could not find called feature
+      say "$x in squares"
+------------^
+Feature not found: 'x' (no arguments)
+Target feature: 'example'
+In call: 'x'
+
+
+--CURDIR--/reg_issue5826.fz:31:13: error 3: Could not find called feature
+      say "$x not in squares"
+------------^
+Feature not found: 'x' (no arguments)
+Target feature: 'example'
+In call: 'x'
+
+
+--CURDIR--/reg_issue5826.fz:27:22: error 4: Could not find called feature
+  (1..10).for_each x ->
+---------------------^^
+Feature not found: 'infix/infix_right ->' (one argument)
+Target feature: 'unit'
+In call: 
+(1..10).for_each x ->
+    if x ∈ squares
+      say "$x in squares"
+    else
+      say "$x not in squares"
+
+
+
+--CURDIR--/reg_issue5826.fz:27:20: error 5: Could not find called feature
+  (1..10).for_each x ->
+-------------------^
+Feature not found: 'x' (one argument)
+Target feature: 'example.λ.call'
+In call: 'x'
+This call was created automatically by partial application. To solve this, you might want to use an explicit lambda expression of the form '( a0 -> ..code using a0..)'.
+
+5 errors.

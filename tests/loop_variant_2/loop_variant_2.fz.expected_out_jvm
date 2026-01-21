@@ -1,0 +1,27 @@
+
+test_1:
+i=0 var=5
+i=1 var=4
+i=2 var=3
+i=3 var=2
+i=4 var=1
+i=5 var=0
+
+test_2:
+i=0 var=4
+i=1 var=3
+i=2 var=2
+i=3 var=1
+i=4 var=0
+FATAL FAULT `variant`: (n-1-i).as_i64
+
+test_3:
+i=0
+FATAL FAULT `variant`: i64 10
+
+test_4:
+i=0
+FATAL FAULT `variant`: i64 0
+
+test_5:
+FATAL FAULT `variant`: i64 -1

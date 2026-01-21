@@ -131,7 +131,6 @@ blockId
 blub
 boehm
 bool
-BoolConst
 boolean
 booleans
 boolValue
@@ -357,7 +356,6 @@ elseBlockId
 elseBlockOpt
 elseif
 emi
-enableUnsafeIntrinsics
 endAtBar
 endAtColon
 endAtSpace
@@ -1219,7 +1217,6 @@ unicode
 UnicodeData
 unistd
 unitValue
-unsafeIntrinsics
 UnsupportedOperationException
 untagged
 Unterminated
@@ -1393,7 +1390,7 @@ FuzionInstance
 flamegraph
 fixOuterThisType
 Filepath
-excecuted
+executed
 equalsBitWise
 dev's
 defineClass

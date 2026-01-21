@@ -473,7 +473,7 @@ public class Resolution extends ANY
   {
     if (PRECONDITIONS) require
       (state(af).atLeast(State.LOADED),
-       af != Types.f_ERROR);
+       Errors.any() || af != Types.f_ERROR);
 
     if (af instanceof Feature f)
       {
@@ -537,7 +537,7 @@ public class Resolution extends ANY
   {
     if (PRECONDITIONS) require
       (af != null,
-       af != Types.f_ERROR);
+       Errors.any() || af != Types.f_ERROR);
 
     return af.state();
   }

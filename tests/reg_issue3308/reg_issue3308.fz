@@ -49,7 +49,7 @@ reg_issue3308 is
       _ := f (t unit)
 
       # fifth: access outer ref in partial application and call `as_string`
-      public redef as_string => "--a--"
+      public redef as_string String => "--a--"
       u(x Any) => say x
       say (g (u a.this))
 
@@ -74,7 +74,7 @@ reg_issue3308 is
       _ := f (t unit)
 
       # fifth: access outer ref in partial application and call `as_string`
-      public redef as_string => "--b--"
+      public redef as_string String => "--b--"
       u(x Any) => say x
       say (g (u b.this))
 

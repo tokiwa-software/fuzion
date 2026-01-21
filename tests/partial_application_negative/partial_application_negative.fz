@@ -45,10 +45,10 @@ partial_application_negative is
 
   _ := data.map *3
   _ := data.map 3*
-  # x3 := (data.map 3.infix*)   # NYI, should work!
+  # x3 := (data.map 3.infix*)   # NYI: BUG: should work!
   _ := data.map 3.prefix*    # 4. should flag an error, do not change named prefix call to infix call
   _ := data.map 3.postfix*   # 5. should flag an error, do not change named postfix call to infix call
-  #  x3 := data.map 4.infix*   # NYI, should work!
+  #  x3 := data.map 4.infix*   # NYI: BUG: should work!
 
   ambig        Unary String i32 => x->"#$x#"
   ambig(x i32) Unary String i32 => {say "V1"; y->"#$y x:$x#"}

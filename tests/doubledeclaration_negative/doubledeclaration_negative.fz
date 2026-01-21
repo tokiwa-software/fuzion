@@ -26,5 +26,5 @@
 public doubledeclaration_negative is
 
   public cyclic1 is
-    public a := 3
-    public b => 33
+    public a i32 := 3
+    public b i32 => 33
