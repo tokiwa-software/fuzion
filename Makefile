@@ -725,6 +725,10 @@ include $(FZ_SRC)/tools.mk
 
 # NYI: CLEANUP: move included makefiles to subfolder
 
+.PHONY: debian_package
+debian_package:
+	dpkg-buildpackage -us -uc
+
 
 # builds a *fat* jar containing all java classes
 # including org.eclipse and gson, necessary for running the language server
