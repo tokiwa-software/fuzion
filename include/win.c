@@ -132,9 +132,9 @@ void * fzE_opendir(const char *pathname, int64_t * result) {
   free(wideStr);
 
   if (dir->handle == INVALID_HANDLE_VALUE) {
-    // NYI: BUG: free(dir);
+    fzE_free(dir);
     result[0] = GetLastError();
-    return dir;
+    return NULL;
   } else {
     result[0] = 0;
     return dir;
@@ -167,7 +167,7 @@ int fzE_dir_read(intptr_t * dir, int8_t * result) {
 int fzE_dir_close(intptr_t * dir) {
   fzE_dir_struct *d = (fzE_dir_struct *)dir;
   BOOL res = FindClose(d->handle);
-  // NYI: BUG: free(dir);
+  fzE_free(dir);
 
   return res
     ? 0
@@ -951,7 +951,7 @@ int32_t fzE_mtx_unlock(void * mtx) {
 
 void fzE_mtx_destroy(void * mtx) {
   pthread_mutex_destroy((pthread_mutex_t *)mtx);
-  // NYI: free(mtx);
+  fzE_free(mtx);
 }
 
 void * fzE_cnd_init() {
@@ -973,7 +973,7 @@ int32_t fzE_cnd_wait(void * cnd, void * mtx) {
 
 void fzE_cnd_destroy(void * cnd) {
   pthread_cond_destroy((pthread_cond_t *)cnd);
-  // NYI: free(cnd);
+  fzE_free(cnd);
 }
 
 
