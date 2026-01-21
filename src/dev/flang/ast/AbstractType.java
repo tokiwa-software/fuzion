@@ -1774,11 +1774,12 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
     if (this != other)
       {
-        result =
-          isGenericArgument() &&  other.isGenericArgument() ?  0 :
-          isGenericArgument() && !other.isGenericArgument() ? -1 :
-          !isGenericArgument() && other.isGenericArgument() ? +1 : feature().compareTo(other.feature());
-        if (result == 0 && isNormalType() && other.isNormalType())
+        result = kind().compareTo(other.kind());
+        if (result == 0)
+          {
+            result = backingFeature().compareTo(other.backingFeature());
+          }
+        if (result == 0 && isNormalType() /* no need for this since kind=o.kind :  && other.isNormalType()  */)
           {
             if (generics().size() != other.generics().size())  // this may happen for open generics lists
               {
@@ -1806,18 +1807,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         if (result == 0)
           {
             result = artificialBuiltInID() - other.artificialBuiltInID();
-          }
-        if (result == 0 && isRef() ^ other.isRef())
-          {
-            result = isRef() ? -1 : 1;
-          }
-        if (result == 0 && isThisType() ^ other.isThisType())
-          {
-            result = isThisType() ? -1 : 1;
-          }
-        if (result == 0 && isGenericArgument())
-          {
-            result = genericArgument().compareTo(other.genericArgument());
           }
       }
 
