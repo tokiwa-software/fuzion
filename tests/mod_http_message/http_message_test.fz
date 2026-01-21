@@ -32,42 +32,29 @@ TODO:
   say "\nHTTP TEST"
 
 
-  read_handler(LM type : mutate, arr array u8) : io.Read_Handler is
-
-    pos := LM.env.new 0
-
-    public redef read(count i32) choice (array u8) io.end_of_file error =>
-      p := pos.get
-      if p > arr.count
-        io.end_of_file
-      else
-        pos <- p + count
-        end := p+count > arr.count ? arr.count : p+count
-        arr.slice p end .as_array
-
   lm : mutate is
   lm ! ()->
 
     say "\nCREATE REQUEST:\n"
 
-    my_req http.request_msg := (http.request_msg http.get "/docs/base" 2 0
-                                                 (http.canonical_header_map.map_of [
-                                                                    ("Host", "fuzion-lang.dev"),
-                                                                    ("User-Agent", "Fuzion HTTP Module"),
-                                                                    ("DNT", $"1")])
-                                                 (read_handler lm "".utf8.as_array))
+    my_req http.request_message :=
+      (http.request_message.new http.get "/docs/base" 2 0
+                                [("Host", "fuzion-lang.dev"),
+                                 ("User-Agent", "Fuzion HTTP Module"),
+                                 ("DNT", $"1")]
+                                (io.Read_Handler.from lm ""))
     say my_req
 
 
 
     say "\nCREATE RESPONSE:\n"
 
-    my_resp http.response_msg := http.response_msg my_req 2 0 200 "OK"
-                                                   (http.canonical_header_map.map_of [
-                                                                      ("content-type", "text/html"),
-                                                                      ("server", "FuzionWebServer v0.016"),
-                                                                      ("x-frame-options", "DENY")])
-                                                   (read_handler lm "  <body>\n    <p>Hello World!</p>\n  </body>".utf8.as_array)
+    my_resp http.response_message :=
+      http.response_message.new my_req 2 0 200 "OK"
+                                [("content-type", "text/html"),
+                                 ("server", "FuzionWebServer v0.016"),
+                                 ("x-frame-options", "DENY")]
+                                (io.Read_Handler.from lm "  <body>\n    <p>Hello World!</p>\n  </body>")
     say <| my_resp.as_string_with_body 1E4
 
 
@@ -81,7 +68,7 @@ TODO:
       req := http.read_request io.file.file_mutate
 
       say <| match req
-               r http.request_msg => r.as_string_with_body 1E4
+               r http.request_message => r.as_string_with_body 1E4
                e error => $e
       req.val
   _:=parse_req
@@ -96,5 +83,5 @@ TODO:
     resp := http.read_response io.file.file_mutate parse_req.val
 
     say <| match resp
-              r http.response_msg => r.as_string_with_body 1E4
+              r http.response_message => r.as_string_with_body 1E4
               e error => $e

@@ -23,19 +23,19 @@
 #
 # -----------------------------------------------------------------------
 
-# map_of -- routine to initialize a map from arrays of ordered elements
+# map_of -- routine to initialize a map from Sequences of ordered elements
 # and values
 #
 # This feature creates an instance of a map.
 #
-public map_of(K type : property.orderable, V type, ks array K, vs array V) container.Map K V => ordered_map ks vs
+public map_of(K type : property.orderable, V type, ks Sequence K, vs Sequence V) container.Map K V => ordered_map ks vs
 
 
-# map_of -- routine to initialize a map from an array of key value tuples
+# map_of -- routine to initialize a map from a Sequence of key value tuples
 #
 # This feature creates an instance of a map.
 #
 # example: map_of [(key1, value1), (key2, value2)]
 #
-public map_of(K type : property.orderable, V type, kvs array (tuple K V)) container.Map K V =>
-  ordered_map (kvs.map_to_array (kv -> kv.0)) (kvs.map_to_array (kv -> kv.1))
+public map_of(K type : property.orderable, V type, kvs Sequence (tuple K V)) container.Map K V =>
+  ordered_map (kvs.map (.0)) (kvs.map (.1))

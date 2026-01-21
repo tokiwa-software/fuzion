@@ -73,7 +73,7 @@ public percent is
   #
   public decode_as_str(enc_utf8 String) outcome String =>
     match decode enc_utf8 false
-      bytes Sequence u8 => String.from_bytes bytes
+      bytes Sequence => String.from_bytes bytes
       e error => e
 
 
@@ -88,7 +88,7 @@ public percent is
   #
   public decode_as_str_tolerant(enc_utf8 String) outcome String =>
     match decode enc_utf8 true
-      bytes Sequence u8 => String.from_bytes bytes
+      bytes Sequence => String.from_bytes bytes
       e error => e
 
 
@@ -113,7 +113,7 @@ public percent is
   # does the actual decoding
   #
   decode(enc_str String, tolerant bool) outcome (Sequence u8) =>
-    enc := enc_str.as_codepoints
+    enc := enc_str.codepoints
     len := enc.count
 
     dec(res Sequence u8, i i32) outcome (Sequence u8) =>
@@ -125,7 +125,7 @@ public percent is
           error "unexpected end of input, expected two hex characters after '%' at position $i"
         else
           match encodings.base16.decode_str (enc_str.substring_codepoint i+1 i+3).upper_case
-            byte array u8 => dec (res ++ byte) i+3
+            byte array => dec (res ++ byte) i+3
             error => error "broken string, failed to decode '{enc_str.substring_codepoint i i+3}' at position $i"
       # non encoded characters
       else

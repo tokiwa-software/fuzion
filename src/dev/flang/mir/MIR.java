@@ -255,7 +255,7 @@ hw25 is
 
 
   /**
-   * Get a string representation of a a given feature, for debugging only
+   * Get a string representation of a given feature, for debugging only
    *
    * @param f a feature index
    *

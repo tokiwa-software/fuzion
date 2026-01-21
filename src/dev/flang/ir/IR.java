@@ -38,7 +38,6 @@ import dev.flang.ast.AbstractType;
 import dev.flang.ast.Expr; // NYI: remove dependency
 import dev.flang.ast.InlineArray; // NYI: remove dependency
 import dev.flang.ast.NumLiteral; // NYI: remove dependency
-import dev.flang.ast.Nop; // NYI: remove dependency
 import dev.flang.ast.Universe; // NYI: remove dependency
 
 import dev.flang.util.ANY;
@@ -84,11 +83,8 @@ public abstract class IR extends ANY
 
   /**
    * Special clazz index value for not-existing clazz.
-   *
-   * NYI: CLEANUP: This should better be {@code CLAZZ_BASE-1} and it should be used
-   * instead of {@code -1} in FUIR.java.
    */
-  public static final int NO_CLAZZ = -1;
+  public static final int NO_CLAZZ = CLAZZ_BASE-1;
 
 
   /**
@@ -327,9 +323,6 @@ public abstract class IR extends ANY
           {
             l.add(t);
           }
-      }
-    else if (e instanceof Nop)
-      {
       }
     else if (e instanceof Universe)
       {

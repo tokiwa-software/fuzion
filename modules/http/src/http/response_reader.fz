@@ -26,7 +26,7 @@
 #
 public read_response(
   # mutate effect from which to read the bytes of the request
-  LM type : mutate) outcome (http.response_msg)
+  LM type : mutate) outcome http.response_message
 =>
   read_response LM nil
 
@@ -36,7 +36,7 @@ public read_response(
   # mutate effect from which to read the bytes of the request
   LM type : mutate,
   # the request for which this response is generated
-  req option (http.request_msg)) outcome (http.response_msg)
+  req option (http.request_message)) outcome (http.response_message)
 =>
   exception unit _ ()->
 
@@ -68,7 +68,7 @@ public read_response(
 
     reason := sl[2]
 
-    header_fields := parse_header_fields LM .or_cause unit id
+    header_fields := (parse_header_fields LM .or_cause unit id).as_map
 
     # NYI: UNDER DEVELOPMENT: make this lazy?
     #
@@ -80,7 +80,6 @@ public read_response(
           || code = 204     # No Content
           || code = 304     # Not Modified
           || req.ok && req.val.method = http.head) # responses to HEAD requests must not contain body data
-        # nil
         body_reader LM 0
       else if (200 <= code < 300 && req.ok && req.val.method = http.connect)
 
@@ -92,4 +91,4 @@ public read_response(
       else
         body_helper LM false header_fields .or_cause unit id
 
-    http.response_msg req major minor code reason header_fields body
+    http.response_message req major minor code reason header_fields body

@@ -29,17 +29,17 @@
 public equals(T type : property.equatable, a, b T) bool => T.equality a b
 
 
-# infix ≟ -- infix operation as short-hand for 'equals'
+# infix ≟ -- infix operation as shorthand for 'equals'
 #
 public infix ≟(T type : property.equatable, a, b T) bool => equals a b
 
 
-# infix = -- infix operation as short-hand for 'equals'
+# infix = -- infix operation as shorthand for 'equals'
 #
 public infix =(T type : property.equatable, a, b T) bool => equals a b
 
 
-# infix = -- infix operation as short-hand for 'equals'
+# infix = -- infix operation as shorthand for 'equals'
 #
 public infix !=(T type : property.equatable, a, b T) bool => !equals a b
 
@@ -80,7 +80,7 @@ public infix ∉ (T type : property.equatable,
 public lteq(T type : property.partially_orderable, a, b T) bool => T.lteq a b
 
 
-# infix ≤ -- infix operation as short-hand for 'lteq'
+# infix ≤ -- infix operation as shorthand for 'lteq'
 #
 public infix ≤(T type : property.partially_orderable, a, b T) bool => lteq a b
 
@@ -113,7 +113,7 @@ public infix ⋄(T type : property.orderable, a, b T) order =>
   a <> b
 
 
-# infix <= -- infix operation as short-hand for 'lteq'
+# infix <= -- infix operation as shorthand for 'lteq'
 #
 public infix <=(T type : property.partially_orderable, a, b T) bool => lteq a b
 

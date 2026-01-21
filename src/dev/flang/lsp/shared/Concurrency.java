@@ -42,10 +42,10 @@ public class Concurrency
 
   // NYI: UNDER DEVELOPMENT: for now we have to run most things more or less sequentially
   // this is mainly because there is statically held artifacts in Types.java
-  private static ExecutorService executor = Executors.newSingleThreadExecutor(Executors.defaultThreadFactory());
+  private static final ExecutorService executor = Executors.newSingleThreadExecutor(Executors.defaultThreadFactory());
 
 
-  public final static ExecutorService MainExecutor = Executors.newCachedThreadPool(Executors.defaultThreadFactory());
+  public static final ExecutorService MainExecutor = Executors.newCachedThreadPool(Executors.defaultThreadFactory());
 
 
   /**

@@ -223,30 +223,32 @@ public class AstErrors extends ANY
 
   private static String argCountStr(AbstractFeature f)
   {
-    int typeCount  = f.typeArguments().size();
-    int valueCount = f.valueArguments().size();
-    String typeArgStr = StringHelpers.singularOrPlural(typeCount, "type argument");
-    String valArgStr  = StringHelpers.singularOrPlural(valueCount, "value argument");
-
-    return
-      typeCount == 0
-        ? valueCount == 0
-            ? "(no arguments)"
-            : "(" + valArgStr + ")"
-        : valueCount == 0
-            ? "(" + typeArgStr + ")"
-            : " (" + typeArgStr + ", " + valArgStr + ")";
+    var msg = new List<String>();
+    var ta = f.typeArguments();
+    var va = f.valueArguments();
+    var typeCount  = ta.size();
+    var valueCount = va.size();
+    String open = null;
+    if (typeCount > 0 && f.typeArguments().getLast().isOpenTypeParameter())
+      {
+        typeCount--;
+        open = "one open type parameter";
+      }
+    if (typeCount > 0 ) { msg.add(StringHelpers.typeParametersString( typeCount ) + " " + ta.take(typeCount).map2(a->a.featureName().baseName()).toString("", " ", "")); }
+    if (open != null  ) { msg.add(open + " " + ta.getLast().featureName()); }
+    if (valueCount > 0) { msg.add(StringHelpers.valueArgumentsString(valueCount) + " " + va                .map2(a->a.featureName().baseName()).toString("", " ", "")); }
+    return msg.size() == 0 ? "(no arguments)" :  msg.toString("(", ", ", ")");
   }
 
   private static String callableArgCountMsg(AbstractFeature f)
   {
     return "To call " + sbn(f.featureName().baseName())
       + (f.arguments().isEmpty()
-          ? " you must not provide arguments."
-          : " you must provide "
+          ? ", you must not provide arguments."
+          : ", you must provide "
             + StringHelpers.singularOrPlural(f.arguments().size(), "argument") + "."
             + (f.typeArguments().size() > 0
-                ? " The type arguments may be omitted or `_` may be used in place of a type argument."
+                ? " The type arguments may be omitted or `_` may be used in place of a type argument if they can be inferred from the value arguments.."
                 : ""));
   }
 
@@ -586,29 +588,52 @@ public class AstErrors extends ANY
   static void wrongNumberOfActualArguments(Resolution res, Context context, Call call)
   {
     var resolvedFormalArgumentTypes = call.resolvedFormalArgumentTypes(res, context);
+    var actualValueArguments = call._actuals;
     int fsz = resolvedFormalArgumentTypes.length;
     boolean ferror = false;
-    StringBuilder fstr = new StringBuilder();
     var fargs = call.calledFeature().valueArguments().iterator();
     AbstractFeature farg = null;
-    for (var t : resolvedFormalArgumentTypes)
+    StringBuilder fstr = new StringBuilder();
+    if (resolvedFormalArgumentTypes.length == 0)
       {
-        if (CHECKS) check
-          (t != null);
-        ferror = t == Types.t_ERROR;
-        fstr.append(fstr.length
-                    () > 0 ? ", " : "");
-        farg = fargs.hasNext() ? fargs.next() : farg;
-        fstr.append(farg != null ? sbnf(farg) + " " : "");
-        fstr.append(s(t));
+        fstr.append("--none--");
+      }
+    else
+      {
+        for (var t : resolvedFormalArgumentTypes)
+          {
+            if (CHECKS) check
+                          (t != null);
+            ferror = t == Types.t_ERROR;
+            fstr.append(fstr.length
+                        () > 0 ? ", " : "");
+            farg = fargs.hasNext() ? fargs.next() : farg;
+            fstr.append(farg != null ? sbnf(farg) + " " : "");
+            fstr.append(s(t));
+          }
+      }
+    StringBuilder astr = new StringBuilder();
+    if (actualValueArguments.size() == 0)
+      {
+        astr.append("--none--");
+      }
+    else
+      {
+        for (var va : actualValueArguments)
+          {
+            astr.append(astr.length
+                        () > 0 ? ", " : "");
+            astr.append(s(va));
+          }
       }
     if (!ferror) // if something went wrong earlier, report no error here
       {
         error(call.pos(),
-              "Wrong number of actual arguments in call",
-              "Number of actual arguments is " + call._actuals.size() + ", while call expects " + StringHelpers.argumentsString(fsz) + ".\n" +
+              "Wrong number of actual value arguments in call",
+              "Number of actual value arguments is " + actualValueArguments.size() + ", while call expects " + StringHelpers.valueArgumentsString(fsz) + ".\n" +
+              "Actual value arguments: " + astr + "\n" +
               "Called feature: " + s(call.calledFeature())+ "\n"+
-              "Formal arguments: " + fstr + "\n" +
+              "Formal value arguments: " + fstr + "\n" +
               "Declared at " + call.calledFeature().pos().show());
       }
   }
@@ -645,6 +670,31 @@ public class AstErrors extends ANY
               "expected " + fg.sizeText() + (fg._feature.typeArguments().isEmpty() ? "" : " for " + s(fg) + "") + "\n" +
               "found " + (actualGenerics.size() == 0 ? "none" : "" + actualGenerics.size() + ": " + s(actualGenerics) + "" ) + ".\n");
       }
+  }
+
+  static void typeParametersWithOpenValueArg(ParsedCall c,
+                                             Expr openTypePar)
+  {
+    error(c.pos(),
+          "In call with value arguments of open type, open type parameters must be inferred",
+          """
+          A call to a feature of the form
+
+              f(T,U type, A type..., x T, y U, a A...) =>
+
+          must either provide only actual arguments and infer types
+
+              f "hi" 42 false 3.14   # T=String, U=i32, A=[false, f64]
+
+          or use '_' as placeholder for the open type
+
+              f String i32 _ "hi" 42 false 3.14       # A=[false, f64]
+
+          """ +
+          (openTypePar != null
+           ? "To solve this, replace argument "+s(openTypePar) + " by " + code("_") + " at " + openTypePar.pos().show()
+           : "")
+          );
   }
 
   /**
@@ -1101,9 +1151,9 @@ public class AstErrors extends ANY
   {
     cannotRedefine(pos, f, existing, "Redefinition must be declared using modifier " + skw("redef") + "",
                    "To solve this, if you did not intend to redefine an inherited feature, " +
-                   "choose a different name for " + sbnf(f) + ".  Otherwise, if you do " +
-                   "want to redefine an inherited feature, add a " + skw("redef") + " modifier before the " +
-                   "declaration of " + s(f) + ".");
+                   "choose a different name for " + sbnf(f) + ".\n" +
+                   "Otherwise, if you want to redefine an inherited feature, add a " + skw("redef") +
+                   " modifier before the declaration of " + s(f) + ".");
   }
 
   public static void redefineModifierDoesNotRedefine(AbstractFeature af, List<FeatureAndOuter> hiddenFeaturesSameSignature)
@@ -1348,7 +1398,7 @@ public class AstErrors extends ANY
         var solution5 = solutionLambda(call);
         error(call.pos(), msg,
               "Feature not found: " + sbnf(calledName) + "\n" +
-              "Target feature: " + s(targetFeature) + "\n" +
+              (targetFeature != null ? "Target feature: " + s(targetFeature) + "\n" : "") +
               "In call: " + s(call) + "\n" +
               (solution0 != "" ? solution0 :
                solution1 != "" ? solution1 :
@@ -1535,7 +1585,7 @@ public class AstErrors extends ANY
   {
     error(pos,
           "Illegal use of open formal type parameter type",
-          "Open formal type parameter type is permitted only as the type of the last argument in a formal arguments list of an abstract feature.\n" +
+          "Open formal type parameter type is permitted only as the type of an argument.  If the argument and the formal type parameter are part of the same argument list, the argument must be the last argument.\n" +
           "Open formal argument: " + sbnf(generic) + "");
   }
 
@@ -1625,11 +1675,11 @@ public class AstErrors extends ANY
     if (t != Types.t_ERROR)
       {
         error(pos,
-              "Target type of a lambda expression must be " + s(Types.resolved.f_Function) + ".",
-              "A lambda expression can only be used if assigned to a field or argument of type "+ s(Types.resolved.f_Function) + "\n" +
-              "with argument count of the lambda expression equal to the number of type parameters of the type.\n" +
+              "Target type of a lambda expression must be a plain type whose feature inherits " + sqn("fuzion.lambda_target") + ", e.g., " + sqn("Function") + ".",
+              "A lambda expression can only be used if assigned to a field or argument whose type contains an abstract lambda target feature \n" +
+              "with argument count of the lambda expression equal to the effective argument count of the lambda target.\n" +
               "Target type: " + s(t) + (from == null ? "" : " from " + from.get()) + "\n" +
-              "To solve this, assign the lambda expression to a field of function type, e.g., " + ss("f (i32, i32) -> bool := x, y -> x > y") + ".");
+              "To solve this, assign the lambda expression to a type that is a lambda target, e.g., " + ss("f (i32, i32) -> bool := x, y -> x > y") + ".");
       }
   }
 
@@ -1755,16 +1805,17 @@ public class AstErrors extends ANY
           "Faulty type parameter: " + s(t));
   }
 
-  static void forwardTypeInference(SourcePosition pos, AbstractFeature f, SourcePosition at)
+  static void forwardTypeInference(SourcePosition pos, AbstractFeature cf)
   {
     // NYI: It would be nice to output the whole cycle here as part of the detail message
-    if (!any() || !(f instanceof Feature ff && ff.impl() == Impl.ERROR))
+    if (!any() || !(cf instanceof Feature cff && cff.impl() == Impl.ERROR))
       {
         error(pos,
               "Illegal forward or cyclic type inference",
               "The definition of a field using " + ss(":=") + ", or of a feature or function\n" +
               "using " + ss("=>") + " must not create cyclic type dependencies.\n"+
-              "Referenced feature: " + s(f) + " at " + at.show());
+              (cf == Types.f_ERROR ? ""
+                                   : "Referenced feature: " + s(cf) + " at " + cf.pos().show()));
       }
   }
 
@@ -1828,7 +1879,7 @@ public class AstErrors extends ANY
     if (!any() || (cf != Types.f_ERROR && !missing.isEmpty()))
       {
         error(pos,
-              "Failed to infer actual type parameters",
+              "Failed to infer actual type parameters",  // NYI: give more detail here on type parameters and value arguments
               "In call to " + s(cf) + ", no actual type parameters are given and inference of the type parameters failed.\n" +
               "Expected type parameters: " + s(cf.generics()) + "\n"+
               "Type inference failed for " + StringHelpers.singularOrPlural(missing.size(), "type parameter") + " " + slg(missing) + "\n");
@@ -2350,7 +2401,7 @@ public class AstErrors extends ANY
       "Must not define type inside of type feature.",
       "To solve this, move the type outside of the type feature." + System.lineSeparator() +
       "E.g., instead of: " + System.lineSeparator() + code("type.union : Monoid bitset is") + System.lineSeparator() +
-      "do this: " + code("public type.union =>" + System.lineSeparator() + "  ref : Monoid bitset"));
+      "do this: " + code("public type.union =>" + System.lineSeparator() + "  _ : Monoid bitset"));
   }
 
   public static void typeFeaturesMustOnlyBeDeclaredInFeaturesThatDefineType(Feature f)
@@ -2459,6 +2510,15 @@ public class AstErrors extends ANY
     error(variant.sourceRange(),
           "Loop variant must be of type " + type("i64"),
           "Type of loop variant must be " + type("i64") + ", but found variant of type " + s(variant.type()));
+  }
+
+  public static void duplicateFile(String file1, String file2)
+  {
+    fatal("File names must be unique with respect to case sensitivity. Files differing only by case are not permitted.",
+    "The offending files: " + "\n" +
+     " - " + file1 + "\n" +
+     " - " + file2
+    );
   }
 
 }

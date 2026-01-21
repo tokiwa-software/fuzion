@@ -26,17 +26,20 @@
 # e.g.    option  (something/nil)
 #      or outcome (something/error)
 #
-public switch(A type, B type /* NYI: B should be open generic */) :
-  choice A B,
-  monad A switch.this
+public switch(A type, B type /* NYI: B should be open generic */)
+  : choice A B,
+    monad A switch.this,
+    Sequence A,
+    property.equatable
 is
 
   # NYI: CLEANUP: decide name: exists/ok, get/val?
 
   # Does this switch contain a value of type A?
   #
-  public exists bool => (switch.this ? A => true
-                                     | B => false)
+  public exists bool =>
+    switch.this ? A => true
+                | B => false
 
 
   # Does this switch contain a value of type A?
@@ -44,17 +47,17 @@ is
   public ok bool => exists
 
 
-  # short-hand postfix operator for 'exists'
+  # shorthand postfix operator for 'exists'
   #
   public postfix ?? bool => exists
 
 
-  # short-hand postfix operator for '!exists'
+  # shorthand postfix operator for '!exists'
   #
   public postfix !! bool => !exists
 
 
-  # short-hand prefix operator for '!exists'
+  # shorthand prefix operator for '!exists'
   #
   public prefix ! bool => !exists
 
@@ -70,13 +73,6 @@ is
   =>
     switch.this ? a A => a
                 | B   => fuzion.std.panic "switch.get called on B. Enable `safety` to obtain a precondition failure for debugging."
-
-
-  # unwrap value or get default
-  #
-  public get (default Lazy A) A =>
-    switch.this ? a A => a
-                | B => default
 
 
   # value of a switch that is known to contain a value
@@ -137,7 +133,7 @@ is
   # converts switch into a list of either a single element in case
   # switch.this.exists or `nil`otherwise
   #
-  public as_list list A
+  public redef as_list list A
   =>
     switch.this ? a A => a : nil
                 | B => nil
@@ -189,17 +185,6 @@ is
   # public redef type.return (a A) switch.this => a
 
 
-  # this switch as an equatable_switch
-  #
-  public as_equatable equatable_switch A B
-  pre
-    A : property.equatable
-  =>
-    match switch.this
-      a A => a
-      b B => b
-
-
   # get A or cause an `exception T`
   #
   public or_cause(T type, e B->error) A =>
@@ -216,6 +201,24 @@ is
       b B => panic b.as_string
 
 
+  # fold this choice to new type `C`.
+  #
+  # this is useful when you don't want to break
+  # fluent-style code.
+  #
+  # example:
+  #
+  #     "haystack"
+  #       .find "needle"
+  #       .fold (idx -> "found needle at {idx}") (_ -> "could not find needle")
+  #
+  #
+  public fold(C type, fa A->C, fb B->C) C =>
+    match switch.this
+      a A => fa a
+      b B => fb b
+
+
   # converts switch to a string
   #
   public redef as_string String =>
@@ -224,21 +227,17 @@ is
       b B => b.as_string
 
 
-# Wrapper type to make a `switch` of an equatable elements itself equatable.
-#
-public equatable_switch(A type : property.equatable,
-                        B type)
-  : switch A B,
-    property.equatable
-is
-
   # equality implementation
   #
   # result is only true if both x and y or
   # of choice type A and x.A = y.A
   #
-  public fixed redef type.equality(x, y equatable_switch A B) bool =>
-    x ? xa A =>
-        y ? ya A => xa = ya
-          | _  B => false
-      | _  B => false
+  public redef fixed type.equality(x, y switch A B) bool
+  =>
+    if A : property.equatable
+      x ? xa A =>
+          y ? ya A => xa = ya
+            | _  B => false
+        | _  B => false
+    else
+      compile_time_panic

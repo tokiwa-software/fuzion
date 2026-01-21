@@ -47,7 +47,9 @@ is
   # Encodes a given byte sequence in base32, output is padded to multiple of 8
   # returns a sequence of ascii values
   #
-  public encode(data array u8) Sequence u8 =>
+  public encode(data Sequence u8) Sequence u8 =>
+
+    d := data.as_array
 
     # extract 8 quintets from 40 bits (of an u64)
     enc40(n u64) =>
@@ -59,12 +61,12 @@ is
       res Sequence u8 := [], next        # the encoded data
       i := 0, i+1
       last_n u64 := 0, i %% 5 ?  0 : n
-      b in data
+      b in d
       n := (last_n << 8) + b.as_u64
       next := if i%5=4 then res ++ enc40 n
               else          res
     else
-      bit_len := data.length%5 * 8       # number of bits in last input block
+      bit_len := d.length%5 * 8       # number of bits in last input block
 
       if bit_len = 0
         res
@@ -76,8 +78,8 @@ is
   # Encodes a given byte sequence in base32, output is padded to multiple of 8
   # returns a string
   #
-  public encode_to_string(data array u8) String =>
-    String.type.from_bytes (encode data)
+  public encode_to_string(data Sequence u8) String =>
+    String.from (encode data)
 
 
   # decodes a base32 string, decoding is strict as required by RFC 4648
@@ -87,7 +89,7 @@ is
   #      See RFC4648 section 3.5: https://datatracker.ietf.org/doc/html/rfc4648#section-3.5
   #
   public decode_str(data String) outcome (array u8) =>
-    decode data.utf8.as_array
+    decode data.utf8
 
 
   # decodes a sequence of ASCII characters, decoding is strict as required by RFC 4648
@@ -96,15 +98,17 @@ is
   #      therefore in some cases multiple encodings can be decoded to the same data
   #      See RFC4648 section 3.5: https://datatracker.ietf.org/doc/html/rfc4648#section-3.5
   #
-  public decode(data array u8) outcome (array u8) =>
+  public decode(data Sequence u8) outcome (array u8) =>
+
+    d := data.as_array
 
     # determine size of padding, i.e. number of '=' (61 in ASCII) at the end
     pad_size :=
       for
-        pad_len := 0, pad_len + (data[i] = 61 ? 1 : 0)
-        i in (data.indices.reverse)
+        pad_len := 0, pad_len + (d[i] = 61 ? 1 : 0)
+        i in (d.indices.reverse)
         _ in 1..6                             # padding can not be longer than 6
-      while data[i] = 61
+      while d[i] = 61
       else
         pad_len = 2 ? 1                       # padding can not be 2
                     : (pad_len = 5 ? 4        # padding can not be 5
@@ -112,10 +116,10 @@ is
 
     dec_input(i) =>
 
-      if i >= data.length
+      if i >= d.length
         error "length of input data is not multiple of 8, as required by RFC4648"
       else
-        c := data[i]
+        c := d[i]
 
         # base32 alphabet character
         if (is_valid c)
@@ -123,9 +127,9 @@ is
 
         # padding character =
         else if c = 61
-          if i < data.length - pad_size
+          if i < d.length - pad_size
             # only complain about pad car if length is ok, otherwise wrong length is probably more helpful
-            if data.length%%8
+            if d.length%%8
               error """
                     padding character '=' not allowed within the input data, only at the very end, \
                     as required by RFC464 (padding length of 2 or 5 can never occur)"""
@@ -141,7 +145,7 @@ is
 
         # other non alphabet character
         else
-          inv_char := String.type.from_bytes (data.slice i (i+4 > data.length ? data.length : i+4))
+          inv_char := String.from (d.slice i (i+4 > d.length ? d.length : i+4))
                             .substring_codepoint 0 1
 
           error "invalid $encoding_name input at byte position $i, decoding to unicode character '$inv_char'"
@@ -150,9 +154,9 @@ is
       res := (Sequence u8).empty, res ++ bytes  # contains the decoded data at the end
       nxt := 0, nxt + 8
       last_err := false, is_err
-      qnt_last Sequence (outcome u64) := (Sequence (outcome u64)).empty, quintets
+      qnt_last := (Sequence (outcome u64)).empty, quintets
 
-    while nxt < data.length && !last_err
+    while nxt < d.length && !last_err
     do
       quintets :=
         (nxt :: +1)

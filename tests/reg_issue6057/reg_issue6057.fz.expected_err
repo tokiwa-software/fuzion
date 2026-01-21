@@ -1,0 +1,21 @@
+
+--CURDIR--/reg_issue6057.fz:34:5: error 1: Illegal forward or cyclic type inference
+    b = b
+----^
+The definition of a field using ':=', or of a feature or function
+using '=>' must not create cyclic type dependencies.
+Referenced feature: 'reg_issue6057.a.b' at --CURDIR--/reg_issue6057.fz:33:5:
+    b => a ()->b
+----^
+
+
+--CURDIR--/reg_issue6057.fz:46:34: error 2: Illegal forward or cyclic type inference
+      k.get <= 0 ? x4() + x5() : b
+---------------------------------^
+The definition of a field using ':=', or of a feature or function
+using '=>' must not create cyclic type dependencies.
+Referenced feature: 'reg_issue6057.man_or_boy2.a.b' at --CURDIR--/reg_issue6057.fz:45:7:
+      b => k <- k.get - 1; a k.get (() -> b) x1 x2 x3 x4
+------^
+
+2 errors.

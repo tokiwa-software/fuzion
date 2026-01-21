@@ -176,7 +176,7 @@ public ryū(public T type : float) is
     ***************/
 
     pow5_split_cache_key(val array (array i64)) is
-    pow5_split array (array i64) := (cache pow5_split_cache_key ()->
+    pow5_split := (cache pow5_split_cache_key ()->
       pow5_split_cache_key [
         [134217728,0,0,0],
         [167772160,0,0,0],
@@ -810,14 +810,14 @@ public ryū(public T type : float) is
     mul_pow5_div_pow2(m, i, j i64, table array (array i64)) =>
       m_high := m >> 31
       m_low := m & 0x7fffffff
-      bits13 := m_high * table[i.as_i32][0]
-      bits03 := m_low  * table[i.as_i32][0]
-      bits12 := m_high * table[i.as_i32][1]
-      bits02 := m_low  * table[i.as_i32][1]
-      bits11 := m_high * table[i.as_i32][2]
-      bits01 := m_low  * table[i.as_i32][2]
-      bits10 := m_high * table[i.as_i32][3]
-      bits00 := m_low  * table[i.as_i32][3]
+      bits13 := m_high * table[i][0]
+      bits03 := m_low  * table[i][0]
+      bits12 := m_high * table[i][1]
+      bits02 := m_low  * table[i][1]
+      bits11 := m_high * table[i][2]
+      bits01 := m_low  * table[i][2]
+      bits10 := m_high * table[i][3]
+      bits00 := m_low  * table[i][3]
 
       a := bits00 >> 31
       b := (a + bits01 + bits10) >> 31

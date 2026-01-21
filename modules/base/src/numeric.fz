@@ -201,19 +201,26 @@ public numeric : property.hashable, property.orderable is
   public type.one  numeric.this => abstract
 
 
-  # the value corresponding to v in whatever integer implementation we have,
-  # maximum in case of overflow
+  # the value corresponding to v in whatever integer implementation we have
+  #
+  # we use a less *obvious* algorithm than induction via v-1 here to
+  # reduce complexity to O(log(v)).
   #
   public type.from_u32(v u32) numeric.this =>
-    if v = 0 zero else (from_u32 v-1) +^ one
+    if      v = 0 then zero
+    else if v = 1 then one
+    else
+      h := from_u32 v/2
+      l := from_u32 v%2
+      h+h+l
 
 
-  # the constant '2' in whatever integer implementation we have, maximum in case of overflow
+  # the constant '2' in whatever integer implementation we have
   #
   public type.two numeric.this => from_u32 2
 
 
-  # the constant '10' in whatever integer implementation we have, maximum in case of overflow
+  # the constant '10' in whatever integer implementation we have
   #
   public type.ten numeric.this => from_u32 10
 
@@ -222,7 +229,7 @@ public numeric : property.hashable, property.orderable is
   # is applied to.
   #
   public type.sum Monoid numeric.this =>
-    ref : Monoid numeric.this is
+    _ : Monoid numeric.this is
       public redef infix ∙ (a, b numeric.this) numeric.this => a + b
       public redef e numeric.this => zero
 
@@ -231,7 +238,7 @@ public numeric : property.hashable, property.orderable is
   # it is applied to.
   #
   public type.product Monoid numeric.this =>
-    ref : Monoid numeric.this is
+    _ : Monoid numeric.this is
       public redef infix ∙ (a, b numeric.this) numeric.this => a * b
       public redef e numeric.this => one
 
@@ -240,7 +247,7 @@ public numeric : property.hashable, property.orderable is
   # is applied to, stopping at max/min value in case of overflow.
   #
   public type.sum_saturating Monoid (numeric.this) =>
-    ref : Monoid numeric.this is
+    _ : Monoid numeric.this is
       public redef infix ∙ (a, b numeric.this) numeric.this => a +^ b
       public redef e numeric.this => zero
 
@@ -249,6 +256,6 @@ public numeric : property.hashable, property.orderable is
   # it is applied to, stopping at max/min value in case of overflow.
   #
   public type.product_saturating Monoid (numeric.this) =>
-    ref : Monoid numeric.this is
+    _ : Monoid numeric.this is
       public redef infix ∙ (a, b numeric.this) numeric.this => a *^ b
       public redef e numeric.this => one

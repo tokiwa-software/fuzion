@@ -70,7 +70,6 @@ public class Docs extends ANY
     /* dumpModules             */ new List<>(),
     /* fuzionDebugLevel        */ 0,
     /* fuzionSafety            */ false,
-    /* enableUnsafeIntrinsics  */ false,
     /* sourceDirs              */ null,
     /* readStdin               */ false,
     /* executeCode             */ null,
@@ -109,7 +108,7 @@ public class Docs extends ANY
 
   private final AbstractFeature universe = fe._feUniverse;
 
-  public final static Pattern nonAsciiPattern = Pattern
+  public static final Pattern nonAsciiPattern = Pattern
     .compile("[^\\x00-\\x7F]");
 
 
@@ -400,12 +399,10 @@ public class Docs extends ANY
             path.toFile().mkdirs();
 
             var file = new File(path.toFile(), "index.html");
-            try
+            try (FileWriter writer = new FileWriter(file))
               {
-                FileWriter writer = new FileWriter(file);
                 var output = htmlTool.content(af);
                 writer.write(output);
-                writer.close();
               }
             catch (IOException e)
               {

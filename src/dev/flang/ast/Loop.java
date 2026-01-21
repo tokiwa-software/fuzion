@@ -403,7 +403,7 @@ public class Loop extends ANY
         var f = new Feature(SourcePosition.builtIn,
                   Visi.PRIV,
                   0,
-                  new ParsedType(SourcePosition.builtIn, "i64", new List<>(), null),
+                  new ParsedType(SourcePosition.builtIn, "i64"),
                   varFn._name,
                   Contract.EMPTY_CONTRACT,
                   Impl.FIELD);
@@ -432,7 +432,7 @@ public class Loop extends ANY
           new Feature(SourcePosition.builtIn,
                   Visi.PRIV,
                   0,
-                  new ParsedType(SourcePosition.builtIn, "i64", new List<>(), null),
+                  new ParsedType(SourcePosition.builtIn, "i64"),
                   varPrevValName,
                   Contract.EMPTY_CONTRACT,
                   Impl.FIELD)
@@ -600,10 +600,10 @@ public class Loop extends ANY
     else if (booleanAsImplicitResult(whileCond, untilCond))
       {
         /* add implicit TRUE / FALSE results to success and else blocks: */
-        _successBlock = new Block(true, _successBlock == null ? new List<>(BoolConst.TRUE) : new List<>(_successBlock, BoolConst.TRUE));
-        _elseBlock0 = new Block(true, _elseBlock0 == null ? new List<>(BoolConst.FALSE) : new List<>(_elseBlock0, BoolConst.FALSE));
-        _elseBlock1 = new Block(true, _elseBlock1 == null ? new List<>(BoolConst.FALSE) : new List<>(_elseBlock1, BoolConst.FALSE));
-        _elseBlock2 = new Block(true, _elseBlock2 == null ? new List<>(BoolConst.FALSE) : new List<>(_elseBlock2, BoolConst.FALSE));
+        _successBlock = new Block(true, _successBlock == null ? new List<>(Call.TRUE) : new List<>(_successBlock, Call.TRUE));
+        _elseBlock0 = new Block(true, _elseBlock0 == null ? new List<>(Call.FALSE) : new List<>(_elseBlock0, Call.FALSE));
+        _elseBlock1 = new Block(true, _elseBlock1 == null ? new List<>(Call.FALSE) : new List<>(_elseBlock1, Call.FALSE));
+        _elseBlock2 = new Block(true, _elseBlock2 == null ? new List<>(Call.FALSE) : new List<>(_elseBlock2, Call.FALSE));
         result = true;
       }
     return result;
@@ -784,8 +784,8 @@ public class Loop extends ANY
                                          /* impl */        new Impl(p, asList, Impl.Kind.FieldDef));
             list._isIndexVarUpdatedByLoop = true;  // hack to prevent error AstErrors.initialValueNotAllowed(this)
             prologBlock.add(list);
-            ParsedType nilType = new ParsedType(p, "nil", new List<>(), null);
-            ParsedType consType = new ParsedType(p, "Cons", new List<>(), null);
+            ParsedType nilType = new ParsedType(p, "nil");
+            ParsedType consType = new ParsedType(p, "Cons");
             Call next1    = new Call(p, new Call(p, listName + "cons"), "head");
             Call next2    = new Call(p, new Call(p, listName + "cons"), "head");
             List<Expr> prolog2 = new List<>();

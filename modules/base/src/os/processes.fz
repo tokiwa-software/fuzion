@@ -76,12 +76,19 @@ public processes (ph os.Process_Handler, public running_processes container.Set 
         # NYI: UNDER DEVELOPMENT: close these:
         # check fzE_pipe_close p.std_out = 0
         # check fzE_pipe_close p.std_err = 0
-        (id (outcome u32) r.as_u32)
+        r.as_u32
       else
         if elapsed_time > timeout
           error "Waiting for process with id {p.pid} timed out."
         else
-          error "Waiting for process with id {p.pid} was unsuccessful: $fzE_last_error."
+          error "Waiting for process with id {p.pid} was unsuccessful" fzE_last_error
+
+
+  # the processes that were registered
+  # in this effect as a string
+  #
+  public redef as_string String =>
+    running_processes.as_string
 
 
 
@@ -116,16 +123,16 @@ install_default =>
       res_data := sys.internal_array_init i64 4
 
       if (fzE_process_create arg_data.internal_array.data arg_data.count env_data.internal_array.data env_data.count res_data.data) = -1
-        error "*** error creating process $n, got error number: $fzE_last_error ***"
+        error "*** error creating process $n" fzE_last_error
       else
-        os.process res_data[0] res_data[1] res_data[2] res_data[3]
+        os.process res_data[0] res_data[1] res_data[2] res_data[3] n args
 
   (os.processes h (container.ps_set os.process).empty).default
 
 
 
-# short-hand to processes effect
+# shorthand to processes effect
 #
-public processes processes =>
+public processes processes ! processes =>
   install_default
   processes.env

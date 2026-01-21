@@ -33,7 +33,6 @@ import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Expr;
-import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.Universe;
 
 import dev.flang.util.FuzionConstants;

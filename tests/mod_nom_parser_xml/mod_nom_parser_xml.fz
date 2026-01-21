@@ -1,0 +1,36 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test mod_nom_parser_xml
+#
+# -----------------------------------------------------------------------
+
+mod_nom_parser_xml =>
+
+  mastodon_rss => io.slurp (path.of "mastodon.xml") .or_panic
+
+  bsky_rss => io.slurp (path.of "bsky.xml") .or_panic
+
+  xml_parser := nom.parsers.xml
+
+  say <| xml_parser.call mastodon_rss
+
+  say <| xml_parser.call bsky_rss
+
+

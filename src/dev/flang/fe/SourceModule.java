@@ -208,7 +208,7 @@ public class SourceModule extends Module implements SrcModule
       {
         _options.verbosePrintln(2, " - " + p);
       }
-    return new Parser(p, ec).unit();
+    return new Parser(p, ec, _options.isLanguageServer()).unit();
   }
 
 
@@ -414,11 +414,19 @@ part of the (((inner features))) declarations of the corresponding
                     // end::fuzion_rule_SRCF_DIR[]
                     */
 
+                    var used = new TreeMap<String, String>();
+
                     Files.list(d._dir)
                       .filter(p -> isValidSourceFile(p))
                       .sorted(Comparator.comparing(p -> p.toString()))
                       .forEach(p ->
                                {
+                                 if (used.containsKey(p.toString().toLowerCase()))
+                                  {
+                                    AstErrors.duplicateFile(p.toString(), used.get(p.toString().toLowerCase()));
+                                  }
+
+                                 used.put(p.toString().toLowerCase(), p.toString());
                                  for (var inner : parseAndGetFeatures(p))
                                    {
                                      findDeclarations(inner, f);
@@ -1235,6 +1243,25 @@ A post-condition of a feature that does not redefine an inherited feature must s
     return result;
   }
 
+  @Override
+  public AbstractFeature findLambdaTarget(AbstractFeature outer)
+  {
+    AbstractFeature res = null;
+    int cnt = 0;
+    for (var fs : declaredOrInheritedFeatures(outer).values())
+      {
+        for (var f : fs)
+          {
+            if (f.isAbstract() && f.inheritsFrom(Types.resolved.f_fuzion_lambda_target))
+              {
+                cnt++;
+                res = f;
+              }
+          }
+      }
+    // NYI: UNDER DEVELOPMENT: We might want to report an error if there are several (cnt>1) ambiguous lambda targets.
+    return cnt == 1 ? res : null;
+  }
 
   /**
    * true if {@code use} is happening in same or some
@@ -1610,6 +1637,33 @@ A post-condition of a feature that does not redefine an inherited feature must s
 
 
   /**
+   * Hand down a type from `original` to be compared to types in
+   * `redefinition`. This does two things: it hands down the type along the
+   * inheritance chain and then replaces the type parameters by the type
+   * parameters used in the redefinition.
+   */
+  List<AbstractType> handDownForRedef(AbstractType type,
+                                      AbstractFeature original,
+                                      AbstractFeature redefinition)
+  {
+    return original.outer()
+                   .handDown(_res, new List<>(type), redefinition.outer())
+                   .map(// if we redef
+                        //
+                        //    x(A type, v option A)
+                        //
+                        // by
+                        //
+                        //    x(B type, w option B)
+                        //
+                        // we must replace `option A` by `option B`, i.e.,
+                        // replace original's type parameters by redefinition's:
+                        //
+                        t -> t.applyTypePars(original, redefinition.generics().asActuals()));
+  }
+
+
+  /**
    * Check types of given Feature. This mainly checks that all redefinitions of
    * f are compatible with f.
    *
@@ -1623,21 +1677,22 @@ A post-condition of a feature that does not redefine an inherited feature must s
     var fixed = (f.modifiers() & FuzionConstants.MODIFIER_FIXED) != 0;
     for (var o : f.redefines())
       {
-        var ra = argTypesOrConstraints(f);
-        var ta = o.handDown(_res, argTypesOrConstraints(o), f.outer());
-        if (ta == AbstractFeature.HAND_DOWN_FAILED)
+        var ar = argTypesOrConstraints(f);
+        var ao = argTypesOrConstraints(o);
+        var ah = o.outer().handDown(_res, ao, f.outer());
+        if (ah == AbstractFeature.HAND_DOWN_FAILED)
           {
             if (CHECKS) check
               (Errors.any());
           }
-        else if (ta.length != ra.length)
+        else if (ah.size() != ar.size())
           {
             /*
     // tag::fuzion_rule_REDEF_ARG_COUNT[]
 A redefined feature must have the same total number of formal arguments (type parameters and value arguments) as the original feature.
     // end::fuzion_rule_REDEF_ARG_COUNT[]
             */
-            AstErrors.argumentLengthsMismatch(o, ta.length, f, ra.length);
+            AstErrors.argumentLengthsMismatch(o, ah.size(), f, ar.size());
           }
         else if (o.typeArguments().size() != f.typeArguments().size())
           {
@@ -1650,59 +1705,60 @@ A redefined feature must have the same total number of formal type parameters as
           }
         else
           {
-            for (int i = 0; i < ta.length; i++)
+            int io = 0;  // original index
+            var ir = 0;  // redefinition's index
+            for (var argo : o.arguments())  // for all original args
               {
-                // original arg list may be shorter if last arg is open generic:
-                if (CHECKS) check
-                  (Errors.any() ||
-                   i < args.size() ||
-                   args.get(args.size()-1).resultType().isOpenGeneric());
-
-                var oargs = o.arguments();
-                int oi    = Math.min(oargs.size() - 1, i);
-                var originalArg = oargs.get(oi);
-                var actualArg   =  args.get(i);
-                var t1 = ta[i].applyTypePars(o, f.generics().asActuals());  /* replace o's type pars by f's */
-                var t2 = ra[i];
-                if (
+                // for all handed down types (if original was open type, we might have 0..n types now):
+                for (var to : handDownForRedef(ao.get(io), o, f))
+                  {
+                    var argr = args.get(ir);  // arg in redefinition
+                    var tr = ar.get(ir);      // type in redefinition
+                    if (
             /*
     // tag::fuzion_rule_REDEF_TYPE_PAR[]
 A xref:fuzion_typeparameter[type parameter] argument to a feature that is redefined must be replaced by a corresponding xref:fuzion_typeparameter[type parameter] in the redefined feature.
     // end::fuzion_rule_REDEF_TYPE_PAR[]
             */
-                    (originalArg.isTypeParameter()     != actualArg.isTypeParameter()               ) ||
+                        (argo.isTypeParameter()     != argr.isTypeParameter()                    ) ||
             /*
     // tag::fuzion_rule_REDEF_OPEN_TYPE_PAR[]
 An xref:fuzion_opentypeparameter[open type parameter] argument to a feature that is redefined must be replaced by a corresponding xref:fuzion_opentypeparameter[open type parameter] in the redefined feature.
     // end::fuzion_rule_REDEF_OPEN_TYPE_PAR[]
             */
-                    (originalArg.isOpenTypeParameter() != actualArg.isOpenTypeParameter()           ) ||
+                        (argo.isOpenTypeParameter() != argr.isOpenTypeParameter()                ) ||
             /*
     // tag::fuzion_rule_REDEF_TYPE_CONSTRAINTS[]
 A xref:fuzion_type_constraint[type constraint] of a xref:fuzion_typeparameter[type parameter] must be redefined using a xref:fuzion_type_constraint[type constraint] that is xref:fuzion_constraint_assignable[constraint assignable] from the original  xref:fuzion_typeparameter[type parameter]'s  xref:fuzion_type_constraint[type constraint].
     // end::fuzion_rule_REDEF_TYPE_CONSTRAINTS[]
             */
-                    ( originalArg.isTypeParameter() && !t2.constraintAssignableFrom(t1)             ) ||
+                        ( argo.isTypeParameter() && !tr.constraintAssignableFrom(to)             ) ||
             /*
     // tag::fuzion_rule_REDEF_VALUE_ARGUMENT[]
 A xref:fuzion_value_argument[value argument] must be redefined using a type that is a xref:fuzion_legal_covariant_this_type[legal covariant this_type] of the type of the corresponding xref:fuzion_value_argument[value argument] argument of the redefined feature.
     // end::fuzion_rule_REDEF_VALUE_ARGUMENT[]
             */
-                    (!originalArg.isTypeParameter() && !isLegalCovariantThisType(o, f, t1, t2, fixed)    )
-                    )
-                  {
-                    AstErrors.argumentTypeMismatchInRedefinition(o, originalArg, t1,
-                                                                 f, actualArg,
-                                                                 !originalArg.isTypeParameter() &&
-                                                                 !actualArg  .isTypeParameter() &&
-                                                                 isLegalCovariantThisType(o, f, t1, t2, true));
+                        (!argo.isTypeParameter() && !isLegalCovariantThisType(o, f, to, tr, fixed)    )
+                        )
+                      {
+                        AstErrors.argumentTypeMismatchInRedefinition(o, argo, to,
+                                                                     f, argr,
+                                                                     !argo.isTypeParameter() &&
+                                                                     !argr  .isTypeParameter() &&
+                                                                     isLegalCovariantThisType(o, f, to, tr, true));
+                      }
+                    ir++;
                   }
+                io++;
               }
           }
 
-        var t1 = o.handDownNonOpen(_res, o.resultType(), f.outer())
-                  .applyTypePars(o, f.generics().asActuals());    /* replace o's type pars by f's */
-        var t2 = f.resultType();
+        var result_os = handDownForRedef(o.resultType(), o, f);
+        if (CHECKS) check
+          (Errors.any() || result_os.size() == 1);
+        var result_o = result_os.size() == 1 ? result_os.get(0)
+                                             : Types.t_ERROR;
+        var result_r = f.resultType();
         if (o.isConstructor() ||
                  switch (o.kind())
                  {
@@ -1731,11 +1787,11 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
             */
             AstErrors.cannotRedefine(f, o);
           }
-        else if (t1.isAssignableFromDirectly(t2).no() &&  // we (currently) do not tag the result in a redefined feature, see testRedefine
-                 !t2.isVoid() &&
-                 !isLegalCovariantThisType(o, f, t1, t2, fixed))
+        else if (result_o.isAssignableFromDirectly(result_r).no() &&  // we (currently) do not tag the result in a redefined feature, see testRedefine
+                 !result_r.isVoid() &&
+                 !isLegalCovariantThisType(o, f, result_o, result_r, fixed))
           {
-            AstErrors.resultTypeMismatchInRedefinition(o, t1, f, isLegalCovariantThisType(o, f, t1, t2, true));
+            AstErrors.resultTypeMismatchInRedefinition(o, result_o, f, isLegalCovariantThisType(o, f, result_o, result_r, true));
           }
       }
 
@@ -1794,27 +1850,11 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
    *
    * @return a new array containing this feature's formal argument types.
    */
-  private AbstractType[] argTypesOrConstraints(AbstractFeature af)
+  private List<AbstractType> argTypesOrConstraints(AbstractFeature af)
   {
-    int argnum = 0;
-    var args = af.arguments();
-    var result = new AbstractType[args.size()];
-    for (var frml : args)
-      {
-        if (CHECKS) check
-          (Errors.any() || _res.state(frml).atLeast(State.RESOLVED_DECLARATIONS));
-
-        var frmlT = frml.isTypeParameter() ? frml.constraint()
-                                           : frml.resultType();
-
-        result[argnum] = frmlT;
-        argnum++;
-      }
-
-    if (POSTCONDITIONS) ensure
-      (result != null);
-
-    return result;
+    return af.arguments()
+             .map2(frml -> frml.isTypeParameter() ? frml.constraint()
+                                                  : frml.resultType());
   }
 
 

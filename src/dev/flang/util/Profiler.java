@@ -59,14 +59,14 @@ public class Profiler extends ANY
   /**
    * Sampling frequency, in Hz.
    */
-  private static int DEFAULT_SAMPLING_FREQUENCY = 100;
+  private static final int DEFAULT_SAMPLING_FREQUENCY = 100;
 
 
 
   /**
    * Command to be executed to create flame graph
    */
-  private static String FLAMEGRAPH_PL = "flamegraph.pl";
+  private static final String FLAMEGRAPH_PL = "flamegraph.pl";
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -88,7 +88,7 @@ public class Profiler extends ANY
   /**
    * Sample count for method with given name
    */
-  private static Map<StackTraceElement, Integer> _results_ = new HashMap<>();
+  private static final Map<StackTraceElement, Integer> _results_ = new HashMap<>();
 
 
   /**
@@ -106,7 +106,7 @@ public class Profiler extends ANY
    * The lines consist of a ";"-separated string of "class.method" strings
    * created from the call stack.
    */
-  private static ArrayList<String> _resultsForFlameGraphKeys_ = new ArrayList<>();
+  private static final ArrayList<String> _resultsForFlameGraphKeys_ = new ArrayList<>();
 
 
   /**
@@ -116,7 +116,13 @@ public class Profiler extends ANY
    * The lines consist of a ";"-separated string of "class.method" strings
    * created from the call stack.
    */
-  private static Map<String, Integer> _resultsForFlameGraph_ = new HashMap<>();
+  private static final Map<String, Integer> _resultsForFlameGraph_ = new HashMap<>();
+
+
+  /**
+   * Store known mangled names.
+   */
+  private static final Map<String, String> _mangledNames = new HashMap<>();
 
 
   /**
@@ -153,6 +159,22 @@ public class Profiler extends ANY
   static boolean showFlameGraph()
   {
     return _file == null;
+  }
+
+
+  /**
+   * Add a known mangled name to Profiler
+   *
+   * @param mangled the mangled class name
+   *
+   * @param original the original name
+   */
+  public static void addMangledName(String mangled, String original)
+  {
+    if (_running_)
+      {
+        _mangledNames.put(mangled, original);
+      }
   }
 
 
@@ -194,9 +216,7 @@ public class Profiler extends ANY
                       {
                         sb.append(";");
                       }
-                    sb.append(s.getClassName())
-                      .append(".")
-                      .append(s.getMethodName());
+                    sb.append(deMangleForFlameGraph(s));
                   }
                 var key = sb.toString();
                 var c = _resultsForFlameGraph_.getOrDefault(key, 0);
@@ -233,7 +253,14 @@ public class Profiler extends ANY
               {
                 if (_running_)
                   {
+                    var start = System.nanoTime();
                     takeSample(getThreadGroup());
+                    var elapsed = System.nanoTime() - start;
+
+                    if (elapsed / 1E9 > _samplingFrequency_)
+                      {
+                        say("Profiler, warning: taking sample took longer than sampling Frequency");
+                      }
                   }
               }
           }
@@ -281,7 +308,7 @@ public class Profiler extends ANY
                       var format = "%" + _results_.get(s[s.length-1]).toString().length() + "d";
                       for(var m : s)
                         {
-                          out.println("PROF: "+String.format(format, _results_.get(m)) + ": " + m);
+                          out.println("PROF: "+String.format(format, _results_.get(m)) + ": " + deMangle(m).replace("dev.flang.", ""));
                         }
                     }
                   catch (IOException e)
@@ -295,7 +322,7 @@ public class Profiler extends ANY
               StringBuilder result = new StringBuilder();
               for (var key : _resultsForFlameGraphKeys_)
                 {
-                  result.append(key)
+                  result.append(key.replace("dev.flang.", ""))
                     .append(" ")
                     .append(_resultsForFlameGraph_.get(key))
                     .append("\n");
@@ -360,12 +387,34 @@ public class Profiler extends ANY
 
 
   /**
+   * Try to demangle the class name of the StackTraceElement for *.prof
+   */
+  private static String deMangle(StackTraceElement ste)
+  {
+    return _mangledNames.containsKey(ste.getClassName())
+      ? _mangledNames.get(ste.getClassName()) + "(" +  ste.getFileName() + ":" + ste.getLineNumber() + ")"
+      : ste.toString();
+  }
+
+
+  /**
+   * Try to demangle the class name of the StackTraceElement for *.svg
+   */
+  private static String deMangleForFlameGraph(StackTraceElement ste)
+  {
+    return _mangledNames.containsKey(ste.getClassName())
+      ? _mangledNames.get(ste.getClassName()) + "(" +  ste.getFileName() + ":" + ste.getLineNumber() + ")"
+      : ste.getClassName() + "." + ste.getMethodName();
+  }
+
+
+  /**
    * start profiling in a parallel thread and print results on VM shutdown.
    */
   public static void start()
   {
     if (showFlameGraph())
-      { // We cannot create Desktop in in shutdown hook, so we have to do it early:
+      { // We cannot create Desktop in shutdown hook, so we have to do it early:
         _desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
       }
     if (Profiler._samplingFrequency_ != 0)

@@ -30,6 +30,19 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # converting a string to a string is just returning string.this
   public redef as_string String => String.this
 
+  # this String but limited to max_codepoints
+  #
+  # if String is longer than max_codepoints '…' is appended
+  #
+  public truncate(max_codepoints i32) String
+    pre
+      debug: max_codepoints > 0
+  =>
+    if codepoint_length <= max_codepoints then
+      String.this
+    else
+      substring_codepoint 0 max_codepoints-1 + "…"
+
   # any concrete string must implement utf8
   public utf8 Sequence u8 => abstract
 
@@ -46,7 +59,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   public byte_length i32 => utf8.count
 
   # length of this string in codepoints
-  public codepoint_length i32 => as_codepoints.count
+  public codepoint_length i32 => codepoints.count
 
   # concatenate string with string representation of another object
   public infix + (other Any) String =>
@@ -60,9 +73,8 @@ public String ref : property.equatable, property.hashable, property.orderable is
     n ≥ 0
     # NYI: UNDER DEVELOPMENT: String.this.utf8.finite, Strings where utf8 is a list are currently always infinite.
   is
-    public redef utf8 Sequence u8 =>
-      bytes := String.this.utf8
-      bytes.cycle.take (bytes.count * n)
+    public redef utf8 Sequence u8 :=
+      String.this.utf8 * n
 
 
   # equality: compare two strings byte-by-byte
@@ -242,9 +254,9 @@ public String ref : property.equatable, property.hashable, property.orderable is
   =>
 
     d outcome u8 :=
-      if      (String.zero_char  ≤ c ≤ String.nine_char ) c - String.zero_char
-      else if (String.a_char     ≤ c ≤ String.z_char    ) c - String.a_char    + 10
-      else if (String.cap_a_char ≤ c ≤ String.cap_z_char) c - String.cap_a_char + 10
+      if      String.zero_char  ≤ c ≤ String.nine_char  then c - String.zero_char
+      else if String.a_char     ≤ c ≤ String.z_char     then c - String.a_char    + 10
+      else if String.cap_a_char ≤ c ≤ String.cap_z_char then c - String.cap_a_char + 10
       else parse_error "non-digit found"
 
     d.bind b->
@@ -264,15 +276,10 @@ public String ref : property.equatable, property.hashable, property.orderable is
               | u T => u
 
 
-  # convert this string into an array of codepoints.
-  #
-  codepoint_array => as_codepoints.as_array
-
-
   # convert this string into a Sequence of codepoint and errors for encoding problems
   # found in the underlying utf8 bytes
   #
-  public as_codepoints Sequence codepoint =>
+  public codepoints Sequence codepoint =>
     codepoints_and_errors
       .map x->
         match x
@@ -303,7 +310,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
     codepoints_and_errors utf8.as_list
 
 
-  # the list instance returned by as_codepoints
+  # the list instance returned by codepoints
   #
   codepoints_and_errors(l list u8) list (outcome codepoint) =>
     match l
@@ -311,9 +318,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
       c1 Cons =>
         # return list of c and rest
         ret(c outcome codepoint, rest list u8) list (outcome codepoint) =>
-          ref : Cons (outcome codepoint) (list (outcome codepoint)) is
-            public redef head outcome codepoint => c
-            public redef tail list (outcome codepoint) => codepoints_and_errors rest
+          c : codepoints_and_errors rest
 
         p := codepoint.type
         e(msg String) => error "Bad UTF8 encoding found: cannot decode $msg"
@@ -407,9 +412,10 @@ public String ref : property.equatable, property.hashable, property.orderable is
   #
   public substring_codepoint(from, to i32) String
     pre
-      debug: 0 ≤ from ≤ to ≤ String.this.codepoint_length
+      debug    : 0 ≤ from ≤ to
+      (debug 2): to ≤ codepoint_length
   =>
-    codepoint_array
+    codepoints
       .slice from to
       .map String c->c  # NYI: this should maybe not be needed since codepoint is a string
       .fold String.concat
@@ -419,7 +425,8 @@ public String ref : property.equatable, property.hashable, property.orderable is
   #
   public substring_codepoint(from i32) String
     pre
-      debug: 0 ≤ from ≤ codepoint_length
+      debug    : 0 ≤ from
+      (debug 2): from ≤ codepoint_length
   =>
     substring_codepoint from codepoint_length
 
@@ -430,8 +437,9 @@ public String ref : property.equatable, property.hashable, property.orderable is
     pre
       debug: n > 0
   =>
-    as_codepoints.chunk n
-                 .map String.type.from_codepoints
+    codepoints
+      .chunk n
+      .map String.type.from_codepoints
 
 
   # check if this string starts with given prefix
@@ -508,6 +516,28 @@ public String ref : property.equatable, property.hashable, property.orderable is
     utf8.count_matches substring.utf8
 
 
+  # split String at idx
+  #
+  # example:
+  #     (0..5).for_each (idx -> say <| "hallo".split_at_byte idx)
+  #
+  # (, hallo)
+  # (h, allo)
+  # (ha, llo)
+  # (hal, lo)
+  # (hall, o)
+  # (hallo, )
+  #
+  public split_at_byte(idx i32) (String, String)
+    pre
+      debug: 0 ≤ idx ≤ byte_length
+      # NYI: ENHANCEMENT: #6342, #6381: re-enable when Sequence.conat
+      # consistently can return an expanding_array for finite Strings
+      # debug: utf8.is_array_backed
+  =>
+    (substring 0 idx, substring idx byte_length)
+
+
   # Split string separated by (ASCII) white space
   #
   # Leading and trailing white space is ignored, repeated white space is treated
@@ -515,39 +545,32 @@ public String ref : property.equatable, property.hashable, property.orderable is
   #
   # The result is a, possibly empty, list of separate non-empty strings.
   #
-  public split list String =>
-    l := utf8.drop_while (.is_ascii_white_space)
-    if l.is_empty
-      nil
-    else
-      # NYI: UNDER DEVELOPMENT: type inference for lambda
-      cnd u8->bool := c -> !c.is_ascii_white_space
-      # NYI: PERFORMANCE: do take_while/drop_while at the same time
-      h :=  String.from_bytes (l.take_while cnd).as_array
-      t := (String.from_bytes <| l.drop_while cnd)
-                  .split
-      ref : Cons String (list String) is
-        public redef head String => h
-        public redef tail list String => t
+  public split Sequence String =>
+    for i := -1, i+1 # c is set at end of iteration, so previous value is being used, therefore -1
+        res  := container.expanding_array String .empty,
+                c.is_ascii_white_space && i>word_start ? res.add (substring word_start i) : res
+        word_start := 0, c.is_ascii_white_space ? i+1 : word_start # next index might start a word
+        c in utf8
+    else i >= word_start ? res.add (substring word_start i+1) : res
 
 
   # split string at s
   #
-  public split(s String) list String
+  public split(s String) Sequence String
     pre
       !s.is_empty
     =>
-      split0 s nil false
+      split0 s nil false .as_array_backed
 
 
   # split string after s, that is do the same thing as split but
   # include the separator s in the resulting strings
   #
-  public split_after(s String) list String
+  public split_after(s String) Sequence String
     pre
       !s.is_empty
     =>
-      split0 s nil true
+      split0 s nil true .as_array_backed
 
 
   # split string at s, for at most n occurrences of s
@@ -555,12 +578,12 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # if s occurs in the string less than n times, the resulting list will have
   # less than n elements
   #
-  public split_n(s String, n u32) list String
+  public split_n(s String, n u32) Sequence String
     pre
       debug: !s.is_empty
       debug: n > 0
     =>
-      split0 s n false
+      split0 s n false .as_array_backed
 
 
   # split string after s, for at most n occurrences of s
@@ -568,12 +591,12 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # if s occurs in the string less than n times, the resulting list will have
   # less than n elements
   #
-  public split_after_n(s String, n u32) list String
+  public split_after_n(s String, n u32) Sequence String
     pre
       !s.is_empty
       n > 0
     =>
-      split0 s n true
+      split0 s n true .as_array_backed
 
 
   # split string at s, if there is no limit, otherwise if limit is an integer n,
@@ -593,41 +616,96 @@ public String ref : property.equatable, property.hashable, property.orderable is
     =>
       utf8.split0 s.utf8 limit split_after
           # NYI: BUG: could be just: .map_to_list String.from_bytes
-          .map_to_list String.type.from_bytes
+          .map_to_list String.type.from
 
 
   # split string at line feeds
   #
-  public lines list String =>
+  public lines Sequence String =>
     split encodings.ascii.lf_str
+
+
+  # lambda testing if byte is is_ascii_white_space
+  #
+  is_ascii_white_space =>
+    (id (u8->bool) (.is_ascii_white_space))
 
 
   # remove leading and trailing white space from this string
   #
   public trim String =>
-    s := utf8
-      .drop_while c->c.is_ascii_white_space
-      .reverse
-      .drop_while c->c.is_ascii_white_space
-      .reverse
+    trim is_ascii_white_space
 
-    String.from_bytes s
+
+  # remove leading and trailing bytes where cond matches
+  #
+  # cond can be a predicate of either an u8 or a codepoint.
+  #
+  public trim(cond choice u8->bool codepoint->bool) String =>
+    match cond
+      b_cond u8->bool =>
+        s := utf8
+          .drop_while b_cond
+          .reverse
+          .drop_while b_cond
+          .reverse
+
+        String.from_bytes s
+
+      c_cond codepoint->bool =>
+        s := codepoints
+          .drop_while c_cond
+          .reverse
+          .drop_while c_cond
+          .reverse
+
+        String.from_codepoints s
 
 
   # remove leading white space from this string
   #
   public trim_start String =>
-    String.from_bytes <| utf8.drop_while c->c.is_ascii_white_space
+    trim_start is_ascii_white_space
+
+
+  # remove leading bytes where cond matches
+  #
+  # cond can be a predicate of either an u8 or a codepoint.
+  #
+  public trim_start(cond choice u8->bool codepoint->bool) String =>
+    match cond
+      b_cond u8->bool =>
+        String.from_bytes <| utf8.drop_while b_cond
+
+      c_cond codepoint->bool =>
+        String.from_codepoints <| codepoints.drop_while c_cond
 
 
   # remove trailing white space from this string
   #
   public trim_end String =>
-    s := utf8
-      .reverse
-      .drop_while c->c.is_ascii_white_space
-      .reverse
-    String.from_bytes s
+    trim_end is_ascii_white_space
+
+
+  # remove trailing bytes where cond matches
+  #
+  # cond can be a predicate of either an u8 or a codepoint.
+  #
+  public trim_end(cond choice u8->bool codepoint->bool) String =>
+    match cond
+      b_cond u8->bool =>
+        s := utf8
+         .reverse
+         .drop_while b_cond
+         .reverse
+        String.from_bytes s
+
+      c_cond codepoint->bool =>
+        s := codepoints
+         .reverse
+         .drop_while c_cond
+         .reverse
+        String.from_codepoints s
 
 
   # pad this string at the end with spaces such that its `codepoint_length` is at least `n`.
@@ -741,7 +819,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   #
   public split_if(p codepoint -> bool) Sequence String =>
     i := split_if_state (Sequence String).empty false 0 0
-    last_state := as_codepoints.reduce split_if_state i (r,c)->
+    last_state := codepoints.reduce split_if_state i (r,c)->
       if p c
         if r.in_run
           split_if_state r.l true r.current_pos (r.current_pos + 1)
@@ -786,24 +864,24 @@ public String ref : property.equatable, property.hashable, property.orderable is
 
   # convert this string to upper case
   public upper_case String =>
-    String.from_codepoints (as_codepoints.map (c -> encodings.unicode.mappings.upper_case[c.val].or_else c))
+    String.from_codepoints (codepoints.map (c -> encodings.unicode.mappings.upper_case[c.val].or_else c))
 
 
   # convert this string to lower case
   public lower_case String =>
-    String.from_codepoints (as_codepoints.map (c -> encodings.unicode.mappings.lower_case[c.val].or_else c))
+    String.from_codepoints (codepoints.map (c -> encodings.unicode.mappings.lower_case[c.val].or_else c))
 
 
   # Does this String consist of nothing but ascii codepoints?
   #
   public is_ascii bool =>
-    as_codepoints ∀ cp -> cp.is_ascii
+    codepoints ∀ cp -> cp.is_ascii
 
 
   # write the bytes of this String to
   # writer of type: (io.buffered LM).writer
   #
-  public write_to(LM type : mutate) (io.buffered LM).writer.write_result ! (io.buffered LM).writer
+  public write_to(LM type : mutate) outcome unit ! (io.buffered LM).writer
   =>
     (io.buffered LM).writer.env.write utf8
 
@@ -811,15 +889,23 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # returns a zero terminated array of
   # the bytes of this String
   #
-  public as_c_string array u8 =>
-    (String.this + codepoint 0).utf8.as_array
+  public as_c_string(LM type : mutate) LM.array u8 =>
+    mutate.array u8 .from_Sequence LM (String.this + codepoint 0).utf8
 
+
+  # this String but put in double quotes
+  #
+  public quoted String
+    pre debug: !starts_with "\""
+        debug: !ends_with "\""
+  =>
+    "\"{String.this}\""
 
 
   # monoid of strings with infix + operation.
   #
   public type.concat Monoid String =>
-    ref : Monoid String is
+    _ : Monoid String is
       public redef infix ∙ (a, b String) String => a + b
       public redef e String => ""
 
@@ -828,7 +914,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # given separator
   #
   public type.concat(sep String) Monoid String =>
-    ref : Monoid String is
+    _ : Monoid String is
       public redef infix ∙ (a, b String) String => if (a.is_empty || b.is_empty) a + b else a + sep + b
       public redef e String => ""
 
@@ -837,7 +923,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # concatenating their byte sequences.
   #
   public type.concat(a, b String) String =>
-    ref : String is
+    _ : String is
       public redef utf8 Sequence u8 => a.utf8 ++ b.utf8
 
 
@@ -853,6 +939,13 @@ public String ref : property.equatable, property.hashable, property.orderable is
   #
   public type.join(elems Sequence String) String =>
     elems.fold concat
+
+
+  # Takes a sequence of strings and concatenates its elements, while adding the separator
+  # \n in between its elements. In case an empty sequence is given, returns the empty string.
+  #
+  public type.join_lines(elems Sequence String) String =>
+    join elems "\n"
 
 
   # create string by concatenating the results of $a[a.indices].
@@ -871,7 +964,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   #
   public type.from_mutable_array(E type : mutate, a container.Mutable_Array Any E) String =>  # NYI: Remove?
 
-    ref : String is
+    _ : String is
 
       public redef utf8 Sequence u8 =>
         a.as_list.flat_map (.as_string.utf8)
@@ -884,19 +977,27 @@ public String ref : property.equatable, property.hashable, property.orderable is
 
   # create string from the given utf8 bytes
   #
-  public type.from_bytes(utf8_bytes Sequence u8) String =>
-    ref : String is
+  module type.from_bytes(utf8_bytes Sequence u8) String =>
+    _ : String is
       public redef utf8 Sequence u8 := utf8_bytes.as_array_backed
 
 
   # create string from the given codepoints
   #
-  public type.from_codepoints(codepoints Sequence codepoint) String =>
-    ref : String is
-      public redef utf8 Sequence u8 =>
-        codepoints
-          .flat_map (.utf8)
-          .as_array_backed
+  module type.from_codepoints(codepoints Sequence codepoint) String =>
+    # NYI: PERFORMANCE: shows up in test: mod_nom_parser_xml
+    String.from_bytes (codepoints.flat_map (.utf8))
+
+
+  # create string from the given data
+  #
+  # where data might either be utf8 bytes or codepoints
+  #
+  public type.from(data Sequence u8
+                      | Sequence codepoint) String =>
+    match data
+      bytes Sequence u8 => String.from_bytes bytes
+      codepoints Sequence codepoint => String.from_codepoints codepoints
 
 
   # NYI: remove the convenience functions when Fuzion supports char literals
@@ -917,4 +1018,4 @@ public String ref : property.equatable, property.hashable, property.orderable is
 # since it would then define a type whose outer type is `String.this` which is
 # a ref type that currently cannot be used a result type.
 #
-private split_if_state(l Sequence String, in_run bool, start_pos, current_pos i32) is
+split_if_state(l Sequence String, in_run bool, start_pos, current_pos i32) is

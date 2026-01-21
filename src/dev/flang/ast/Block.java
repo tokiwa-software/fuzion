@@ -177,19 +177,50 @@ public class Block extends AbstractBlock
    */
   public SourcePosition pos()
   {
-    return _range != null
-      ? _range
-      : _expressions.isEmpty()
-      || _expressions.getFirst().pos().isBuiltIn()
-      || _expressions.getLast().pos().isBuiltIn()
-      ? SourcePosition.notAvailable
-      // NYI: UNDER DEVELOPMENT: hack, positions used for loops are not always in ascending order.
-      : _expressions.getFirst().pos().bytePos() > _expressions.getLast().pos().byteEndPos()
-      ? SourcePosition.notAvailable
-      : new SourceRange(
-          _expressions.getFirst().pos()._sourceFile,
-          _expressions.getFirst().pos().bytePos(),
-          _expressions.getLast().pos().byteEndPos());
+    SourcePosition result = null;
+
+    if (_range != null)
+      {
+        result = _range;
+      }
+    if (result == null)
+    {
+      SourcePosition firstNonBuiltIn = null;
+      SourcePosition lastNonBuiltIn = null;
+
+      for (Expr expr : _expressions)
+        {
+          var pos = expr.pos();
+          if (!pos.isBuiltIn())
+            {
+              if (firstNonBuiltIn == null)
+                {
+                  firstNonBuiltIn = pos;
+                }
+              lastNonBuiltIn = pos;
+            }
+        }
+
+      if (firstNonBuiltIn == null)
+        {
+          result = SourcePosition.notAvailable;
+        }
+      else
+        {
+          if (CHECKS) check
+            (firstNonBuiltIn._sourceFile._fileName == lastNonBuiltIn._sourceFile._fileName);
+
+          // NYI: UNDER DEVELOPMENT: hack, positions used for loops are not always in ascending order.
+          result = firstNonBuiltIn.bytePos() > lastNonBuiltIn.pos().byteEndPos()
+            ? SourcePosition.notAvailable
+            : new SourceRange(
+                firstNonBuiltIn.pos()._sourceFile,
+                firstNonBuiltIn.pos().bytePos(),
+                lastNonBuiltIn.pos().byteEndPos());
+        }
+    }
+
+    return result;
   }
 
 

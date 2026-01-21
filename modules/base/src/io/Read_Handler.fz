@@ -27,4 +27,42 @@ public Read_Handler ref is
   #
   # returns either an array of the bytes read, end_of_file or an error
   #
-  public read(count i32) choice (array u8) io.end_of_file error => abstract
+  public read(count i32) choice (Sequence u8) io.end_of_file error
+    post debug: (result ? s Sequence => !s.is_empty && s.count<=count | * => true)
+         pedantic: (result ? s Sequence => s.is_array_backed | * => true)
+  => abstract
+
+
+  # Read_Handler that only ever returns end_of_file
+  #
+  public type.empty io.Read_Handler =>
+    _ : io.Read_Handler is
+      public redef read(c i32) choice (Sequence u8) io.end_of_file error => io.end_of_file
+
+
+  # create a Read_Handler from an array of bytes
+  #
+  type.from_array_u8(LM type : mutate, arr array u8) io.Read_Handler =>
+    _ : io.Read_Handler is
+
+      # the current position in the array
+      #
+      pos := LM.env.new 0
+
+      public redef read(count i32) choice (Sequence u8) io.end_of_file error =>
+        p := pos.get
+        if p >= arr.count
+          io.end_of_file
+        else
+          pos <- p + count
+          arr.drop p .take count
+
+
+  # create a Read_Handler from data
+  # where data may bytes or a String
+  #
+  public type.from(LM type : mutate, data choice (Sequence u8) String) io.Read_Handler =>
+
+    match data
+      bytes Sequence u8 => io.Read_Handler.from_array_u8 LM bytes.as_array
+      str String => io.Read_Handler.from_array_u8 LM str.utf8.as_array

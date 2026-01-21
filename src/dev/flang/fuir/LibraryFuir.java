@@ -246,7 +246,7 @@ public class LibraryFuir extends FUIR {
   }
 
   @Override
-  public int clazz_ref_const_string()
+  public int clazzRefConstString()
   {
     var cs = clazz(SpecialClazzes.c_const_string);
     for (int i = 0; i < _clazzes.length; i++)
@@ -273,9 +273,9 @@ public class LibraryFuir extends FUIR {
   }
 
   @Override
-  public int lookup_static_finally(int cl)
+  public int lookupStaticFinally(int cl)
   {
-    return _clazzes[clazzId2num(cl)].lookup_static_finally();
+    return _clazzes[clazzId2num(cl)].lookupStaticFinally();
   }
 
   @Override
@@ -292,53 +292,11 @@ public class LibraryFuir extends FUIR {
     return NO_CLAZZ;
   }
 
-  @Override
-  public int lookup_array_internal_array(int cl)
-  {
-    for (int index = 0; index < clazzFieldCount(cl); index++)
-      {
-        if (clazzBaseName(clazzField(cl, index)).compareTo("internal_array") == 0)
-          {
-            return clazzField(cl, index);
-          }
-      }
-    Errors.fatal("internal_array field not found!");
-    return NO_CLAZZ;
-  }
 
   @Override
-  public int lookup_fuzion_sys_internal_array_data(int cl)
+  public int lookupCause(int ecl)
   {
-    for (int index = 0; index < clazzFieldCount(cl); index++)
-      {
-        if (clazzBaseName(clazzField(cl, index)).compareTo("data") == 0)
-          {
-            return clazzField(cl, index);
-          }
-      }
-    Errors.fatal("data field not found!");
-    return NO_CLAZZ;
-  }
-
-  @Override
-  public int lookup_fuzion_sys_internal_array_length(int cl)
-  {
-    for (int index = 0; index < clazzFieldCount(cl); index++)
-      {
-        if (clazzBaseName(clazzField(cl, index)).compareTo("length") == 0)
-          {
-            return clazzField(cl, index);
-          }
-      }
-    Errors.fatal("length field not found!");
-    return NO_CLAZZ;
-  }
-
-  @Override
-  public int lookup_error_msg(int cl)
-  {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'lookup_error_msg'");
+    return _clazzes[clazzId2num(ecl)].lookupCause();
   }
 
   @Override
@@ -522,7 +480,7 @@ public class LibraryFuir extends FUIR {
   @Override
   public SourcePosition sitePos(int s)
   {
-    return s==NO_SITE
+    return s==NO_SITE || _sites[s-SITE_BASE].path() == null
       ? SourcePosition.notAvailable
       : new SourcePosition(new SourceFile(Path.of(_sites[s-SITE_BASE].path()), new byte[0]), 0)
       {
@@ -546,33 +504,6 @@ public class LibraryFuir extends FUIR {
       };
   }
 
-  @Override
-  public boolean isEffectIntrinsic(int cl)
-  {
-    if (PRECONDITIONS) require
-      (cl != NO_CLAZZ);
-
-    return
-      (clazzKind(cl) == FeatureKind.Intrinsic) &&
-      switch(clazzOriginalName(cl))
-      {
-      case "effect.type.abort0"  ,
-           "effect.type.default0",
-           "effect.type.instate0",
-           "effect.type.is_instated0",
-           "effect.type.replace0" -> true;
-      default -> false;
-      };
-  }
-
-  @Override
-  public int effectTypeFromIntrinsic(int cl)
-  {
-    if (PRECONDITIONS) require
-      (isEffectIntrinsic(cl));
-
-    return clazzActualGeneric(clazzOuterClazz(cl), 0);
-  }
 
   @Override
   public String clazzSrcFile(int cl)
