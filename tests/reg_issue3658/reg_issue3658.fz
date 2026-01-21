@@ -24,8 +24,8 @@
 # Test for partial application on the left hand side of a call to an `infix <|`
 # operator.
 #
-# The difficulty here is the the left hand side is first considered as the
-# target of the call to the operator, but the target cannote be found.
+# The difficulty here is the left hand side is first considered as the
+# target of the call to the operator, but the target cannot be found.
 #
 reg_issue3658 =>
 

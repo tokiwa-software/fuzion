@@ -139,7 +139,7 @@ int fzE_set_blocking(int sockfd, int blocking);
  *
  * @return 0 if successful, -1 if not
  */
-int fzE_close(int sockfd);
+int fzE_socket_close(int sockfd);
 
 /**
  * create a new socket
@@ -163,6 +163,9 @@ int fzE_socket(int family, int type, int protocol);
 /**
  * create a new socket and bind to given host:port
  *
+ * @param sockfd
+ *      socket file descriptor
+ *
  * @param family
  *      address family (e.g., ipv4 => 2)
  *
@@ -184,7 +187,7 @@ int fzE_socket(int family, int type, int protocol);
  *
  * @return 0 if successful, -1 if not
  */
-int fzE_bind(int family, int socktype, int protocol, char * host, char * port, int32_t * result);
+int fzE_bind(int sockfd, int family, int socktype, int protocol, char * host, char * port);
 
 /**
  * set the given socket to listening
@@ -212,6 +215,9 @@ int fzE_accept(int sockfd);
 /**
  * create connection for given parameters
  *
+ * @param sockfd
+ *      socket file descriptor
+ *
  * @param family
  *      address family (e.g., ipv4 => 2)
  *
@@ -227,13 +233,9 @@ int fzE_accept(int sockfd);
  * @param port
  *      port to connect to
  *
- * @param result
- *      result[0] contains either an error code or a socket descriptor
- *      -1 on error, 0 on success
- *
  * @return 0 if successful, -1 if not
  */
-int fzE_connect(int family, int socktype, int protocol, char * host, char * port, int32_t * result);
+int fzE_connect(int sockfd, int family, int socktype, int protocol, char * host, char * port);
 
 /**
  * get the peer's ip address
@@ -302,11 +304,11 @@ int fzE_socket_write(int sockfd, const void * buf, size_t count);
  *          see also, https://devblogs.microsoft.com/oldnewthing/20031008-00/?p=42223
  *
  * @return
- *   - error   :  result[0]=-1 and NULL
- *   - success :  result[0]=0  and an address where the file was mapped to
+ *   - error   :  NULL
+ *   - success :  an address where the file was mapped to
  * NOTE: needs to be unmapped via fzE_munmap
  */
-void * fzE_mmap(void * file, uint64_t offset, size_t size, int * result);
+void * fzE_mmap(void * file, uint64_t offset, size_t size);
 
 /**
  * unmap an address that was previously mapped by fzE_mmap
@@ -591,7 +593,7 @@ struct fzE_jvm_result
 
 // initialize the JVM
 // executed once at the start of the application
-int32_t fzE_create_jvm(char * option_string);
+int32_t fzE_create_jvm(void * options, int32_t len);
 
 // close the JVM.
 void fzE_destroy_jvm(void);
@@ -630,11 +632,11 @@ jvalue fzE_array_get(jarray array, jsize index, const char *sig);
 // get a non-static field on obj.
 jvalue fzE_get_field0(jobject obj, jstring name, const char *sig);
 // set a non-static field on obj.
-jvalue fzE_set_field0(jobject obj, jstring name, jobject value, const char *sig);
+void fzE_set_field0(jobject obj, jstring name, jvalue value, const char *sig);
 // get a static field in class.
 jvalue fzE_get_static_field0(jstring class_name, jstring name, const char *sig);
 // set a static field in class.
-jvalue fzE_set_static_field0(jstring class_name, jstring name, jobject value, const char *sig);
+void fzE_set_static_field0(jstring class_name, jstring name, jvalue value, const char *sig);
 
 #endif
 
@@ -761,5 +763,14 @@ int fzE_is_null(void * p);
 
 int fzE_send_signal(int64_t pid, int sig);
 
+int32_t fzE_path_max(void);
+
+int64_t fzE_page_size(void);
+
+int64_t fzE_mmap_offset_multiple(void);
+
+int fzE_cwd(void * buf, size_t size);
+
+int fzE_isnan(double d);
 
 #endif /* fz.h  */

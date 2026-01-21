@@ -42,8 +42,10 @@ stringtest is
   say 10
   say [0,1,2]
 
-  say (String.from_codepoints "hell😀".as_codepoints)
+  say (String.from "hell😀".codepoints)
 
   mi : mutate is
   mi ! ()->
     say (String.from_mutable_array mi ((mutate.array Any).new mi 1 nil))
+
+  say "abcd".quoted

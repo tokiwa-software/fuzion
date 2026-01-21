@@ -111,10 +111,13 @@ public class Completion
           .tokensAt(LexerTool.goLeft(pos))
           .left()
           .token();
-        // do not offer completion for number
-        if (tokenBeforeDot == Token.t_numliteral)
+        // NYI: UNDER DEVELOPMENT: do not offer completion for number
+        if (tokenBeforeDot == Token.t_StringDQ ||
+            tokenBeforeDot == Token.t_stringBQ ||
+            tokenBeforeDot == Token.t_stringQQ ||
+            tokenBeforeDot == Token.t_numliteral)
           {
-            return Stream.empty();
+            return completions(QueryAST.constantCompletions(pos));
           }
         // do not include `type` in completions
         if (tokenBeforeDot == Token.t_type)
@@ -294,7 +297,7 @@ public class Completion
       .range(0, arguments.size())
       .<String>mapToObj(index -> {
         var argument = arguments.get(index);
-        if (!argument.resultType().isFunctionType())
+        if (true || !argument.resultType().isLambdaTargetButNotLazy(null)) // NYI: Support for lambda target
           {
             return " ${" + (index + 1) + ":" + argument.featureName().baseName() + "}";
           }
@@ -329,7 +332,7 @@ public class Completion
    */
   private static String argPlaceholder(AbstractType arg, int x, int offset)
   {
-    if (arg.isFunctionType())
+    if (arg.isFunctionType(null))
       {
         return getFunArgument(offset * 100, arg.generics());
       }

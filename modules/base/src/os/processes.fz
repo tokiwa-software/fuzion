@@ -31,7 +31,8 @@ public processes (ph os.Process_Handler, public running_processes container.Set 
   #
   module start(name String, args Sequence String, env_vars container.Map String String) =>
     (ph.start name args env_vars).bind p->
-      (os.processes ph (running_processes ∪ (container.set_of_ordered [p]))).replace
+      os.processes ph (running_processes ∪ (container.set_of_ordered [p]))
+        .replace
       p
 
 
@@ -40,32 +41,54 @@ public processes (ph os.Process_Handler, public running_processes container.Set 
   #
   public redef finally unit =>
     running_processes.for_each p->
-      _ := wait p
+      # NYI: UNDER DEVELOPMENT: register failures
+      _ := p.wait
 
 
   # wait for process to finish
   #
   # returns the exit code of the process or an error
   #
-  module wait(p os.process) outcome u32
+  module wait(p os.process, timeout time.duration) outcome u32
   pre running_processes.contains p
   =>
-    (os.processes ph (running_processes ∖ (container.set_of_ordered [p]))).replace
-    wait0 p
+    start := time.nano.read
 
+    # the maximum poll time for process exit
+    #
+    upper_bound_poll_time := time.duration.s 1
 
-  # helper feature wait
-  #
-  wait0(p os.process) outcome u32 =>
+    os.processes ph (running_processes ∖ (container.set_of_ordered [p]))
+      .replace
+    # NYI: UNDER DEVELOPMENT: register errors in runtime_errors_effect
     _ := fzE_pipe_close p.std_in = 0
-    r := fzE_process_wait p.pid
-    if r<0
-      error "Waiting for process with id {p.pid} was unsuccessful."
+
+    for
+      r := fzE_process_wait p.pid
+      elapsed_time := time.nano.read-start
+      # NYI: UNDER DEVELOPMENT: replace polling by signaled waits (POSIX) / events (WIN) or similar.
+      # 1ms, 2ms, 4ms, 8ms, 16ms, 32ms, ..., 1s
+      polling_time := time.duration.ms 1, min upper_bound_poll_time polling_time*2
+    while r < 0 && elapsed_time <= timeout
+      time.nano.sleep (min timeout-elapsed_time polling_time)
     else
-      # NYI: UNDER DEVELOPMENT: close these:
-      # check fzE_pipe_close p.std_out = 0
-      # check fzE_pipe_close p.std_err = 0
-      r.as_u32
+      if r >= 0
+        # NYI: UNDER DEVELOPMENT: close these:
+        # check fzE_pipe_close p.std_out = 0
+        # check fzE_pipe_close p.std_err = 0
+        r.as_u32
+      else
+        if elapsed_time > timeout
+          error "Waiting for process with id {p.pid} timed out."
+        else
+          error "Waiting for process with id {p.pid} was unsuccessful" fzE_last_error
+
+
+  # the processes that were registered
+  # in this effect as a string
+  #
+  public redef as_string String =>
+    running_processes.as_string
 
 
 
@@ -80,8 +103,6 @@ install_default =>
     #
     public redef start(n String, args Sequence String, env_vars container.Map String String) outcome os.process
     =>
-      # NYI: UNDER DEVELOPMENT: what about quotes(") ?
-
       sys => fuzion.sys
       NULL := [u8 0].internal_array.data
 
@@ -102,16 +123,16 @@ install_default =>
       res_data := sys.internal_array_init i64 4
 
       if (fzE_process_create arg_data.internal_array.data arg_data.count env_data.internal_array.data env_data.count res_data.data) = -1
-        error "*** error creating process $n, got error number: $fzE_last_error ***"
+        error "*** error creating process $n" fzE_last_error
       else
-        os.process res_data[0] res_data[1] res_data[2] res_data[3]
+        os.process res_data[0] res_data[1] res_data[2] res_data[3] n args
 
   (os.processes h (container.ps_set os.process).empty).default
 
 
 
-# short-hand to processes effect
+# shorthand to processes effect
 #
-public processes processes =>
+public processes processes ! processes =>
   install_default
   processes.env

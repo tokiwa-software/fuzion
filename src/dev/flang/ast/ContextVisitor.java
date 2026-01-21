@@ -64,24 +64,27 @@ public abstract class ContextVisitor extends FeatureVisitor
 
   @Override public void actionBefore(AbstractCase c, AbstractMatch m)
   {
-    var s = m.subject();
-    if (s instanceof AbstractCall sc &&
-        sc.calledFeature() == Types.resolved.f_Type_infix_colon && c.types().stream().anyMatch(x->x.compareTo(Types.resolved.f_TRUE .selfType())==0))
+    if (addsConstraint(m.subject(), c))
       {
-        _context = _context.addTypeConstraint(sc);
+        _context = _context.addTypeConstraint((AbstractCall)m.subject());
         check(_context != null);
       }
   }
 
   @Override public void actionAfter(AbstractCase c, AbstractMatch m)
   {
-    var s = m.subject();
-    if (s instanceof AbstractCall sc &&
-        sc.calledFeature() == Types.resolved.f_Type_infix_colon && c.types().stream().anyMatch(x->x.compareTo(Types.resolved.f_TRUE .selfType())==0))
+    if (addsConstraint(m.subject(), c))
       {
         _context = _context.exterior();
         check(_context != null);
       }
+  }
+
+  private boolean addsConstraint(Expr subject, AbstractCase c)
+  {
+    return subject instanceof AbstractCall sc &&
+      sc.calledFeature() == Types.resolved.f_Type_infix_colon &&
+      c.types().stream().anyMatch(x->x.compareTo(Types.resolved.f_TRUE.selfType())==0);
   }
 
 

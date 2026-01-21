@@ -63,7 +63,7 @@ public class CFG extends ANY
   /*----------------------------  constants  ----------------------------*/
 
 
-  static TreeMap<String, Intrinsic> _intrinsics_ = new TreeMap<>();
+  static final TreeMap<String, Intrinsic> _intrinsics_ = new TreeMap<>();
 
 
   /*-------------------------  static methods  --------------------------*/
@@ -368,10 +368,6 @@ public class CFG extends ANY
     put("f64.infix *"                    , (cfg, cl) -> { } );
     put("f32.infix /"                    , (cfg, cl) -> { } );
     put("f64.infix /"                    , (cfg, cl) -> { } );
-    put("f32.infix %"                    , (cfg, cl) -> { } );
-    put("f64.infix %"                    , (cfg, cl) -> { } );
-    put("f32.infix **"                   , (cfg, cl) -> { } );
-    put("f64.infix **"                   , (cfg, cl) -> { } );
     put("f32.type.equal"                 , (cfg, cl) -> { } );
     put("f64.type.equal"                 , (cfg, cl) -> { } );
     put("f32.type.lower_than_or_equal"   , (cfg, cl) -> { } );
@@ -381,32 +377,6 @@ public class CFG extends ANY
     put("f64.as_i64_lax"                 , (cfg, cl) -> { } );
     put("f32.cast_to_u32"                , (cfg, cl) -> { } );
     put("f64.cast_to_u64"                , (cfg, cl) -> { } );
-    put("f32.is_NaN"                     , (cfg, cl) -> { } );
-    put("f64.is_NaN"                     , (cfg, cl) -> { } );
-    put("f32.square_root"                , (cfg, cl) -> { } );
-    put("f64.square_root"                , (cfg, cl) -> { } );
-    put("f32.exp"                        , (cfg, cl) -> { } );
-    put("f64.exp"                        , (cfg, cl) -> { } );
-    put("f32.log"                        , (cfg, cl) -> { } );
-    put("f64.log"                        , (cfg, cl) -> { } );
-    put("f32.sin"                        , (cfg, cl) -> { } );
-    put("f64.sin"                        , (cfg, cl) -> { } );
-    put("f32.cos"                        , (cfg, cl) -> { } );
-    put("f64.cos"                        , (cfg, cl) -> { } );
-    put("f32.tan"                        , (cfg, cl) -> { } );
-    put("f64.tan"                        , (cfg, cl) -> { } );
-    put("f32.asin"                       , (cfg, cl) -> { } );
-    put("f64.asin"                       , (cfg, cl) -> { } );
-    put("f32.acos"                       , (cfg, cl) -> { } );
-    put("f64.acos"                       , (cfg, cl) -> { } );
-    put("f32.atan"                       , (cfg, cl) -> { } );
-    put("f64.atan"                       , (cfg, cl) -> { } );
-    put("f32.sinh"                       , (cfg, cl) -> { } );
-    put("f64.sinh"                       , (cfg, cl) -> { } );
-    put("f32.cosh"                       , (cfg, cl) -> { } );
-    put("f64.cosh"                       , (cfg, cl) -> { } );
-    put("f32.tanh"                       , (cfg, cl) -> { } );
-    put("f64.tanh"                       , (cfg, cl) -> { } );
 
     put("f32.type.min_exp"               , (cfg, cl) -> { } );
     put("f32.type.max_exp"               , (cfg, cl) -> { } );

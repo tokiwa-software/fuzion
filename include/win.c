@@ -41,6 +41,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <string.h>
 #include <assert.h>
 #include <time.h>
+#include <math.h>
 
 #include <winsock2.h>
 #include <windows.h>
@@ -49,6 +50,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <process.h>
 #include <synchapi.h> // WaitForSingleObject
 #include <namedpipeapi.h>
+#include <direct.h>
 
 #include "fz.h"
 
@@ -229,7 +231,7 @@ int fzE_get_protocol(int protocol)
 
 
 // close a socket descriptor
-int fzE_close(int sockfd)
+int fzE_socket_close(int sockfd)
 {
   closesocket(sockfd);
   return fzE_net_error();
@@ -239,11 +241,7 @@ int fzE_close(int sockfd)
 // initialize a new socket for given
 // family, socket_type, protocol
 int fzE_socket(int family, int type, int protocol){
-  WSADATA wsaData;
-  // NYI: CLEANUP: call only once
-  return WSAStartup(MAKEWORD(2,2), &wsaData) != 0
-    ? -1
-    : socket(fzE_get_family(family), fzE_get_socket_type(type), fzE_get_protocol(protocol));
+  return socket(fzE_get_family(family), fzE_get_socket_type(type), fzE_get_protocol(protocol));
 }
 
 
@@ -263,31 +261,20 @@ int fzE_getaddrinfo(int family, int socktype, int protocol, int flags, char * ho
 
 
 // create a new socket and bind to given host:port
-// result[0] contains either an errorcode or a socket descriptor
 // -1 error, 0 success
-int fzE_bind(int family, int socktype, int protocol, char * host, char * port, int32_t * result){
-  result[0] = fzE_socket(family, socktype, protocol);
-  if (result[0] == -1)
-  {
-    last_error = fzE_net_error();
-    return -1;
-  }
+int fzE_bind(int sockfd, int family, int socktype, int protocol, char * host, char * port){
   struct addrinfo *addr_info = NULL;
   int addrRes = fzE_getaddrinfo(family, socktype, protocol, AI_PASSIVE, host, port, &addr_info);
   if (addrRes != 0)
   {
-    fzE_close(result[0]);
-    result[0] = addrRes;
-    return -1;
-  }
-  int bind_res = bind(result[0], addr_info->ai_addr, (int)addr_info->ai_addrlen);
-
-  if(bind_res == -1)
-  {
     last_error = fzE_net_error();
-    fzE_close(result[0]);
     return -1;
   }
+  int bind_res = bind(sockfd, addr_info->ai_addr, (int)addr_info->ai_addrlen);
+  if (bind_res != 0)
+    {
+      last_error = fzE_net_error();
+    }
   freeaddrinfo(addr_info);
   return bind_res;
 }
@@ -310,31 +297,20 @@ int fzE_accept(int sockfd){
 
 
 // create connection for given parameters
-// result[0] contains either an errorcode or a socket descriptor
 // -1 error, 0 success
-int fzE_connect(int family, int socktype, int protocol, char * host, char * port, int32_t * result){
-  // get socket
-  result[0] = fzE_socket(family, socktype, protocol);
-  if (result[0] == -1)
-  {
-    result[0] = fzE_net_error();
-    return -1;
-  }
+int fzE_connect(int sockfd, int family, int socktype, int protocol, char * host, char * port){
   struct addrinfo *addr_info = NULL;
   int addrRes = fzE_getaddrinfo(family, socktype, protocol, 0, host, port, &addr_info);
   if (addrRes != 0)
   {
-    fzE_close(result[0]);
-    result[0] = addrRes;
+    last_error = fzE_net_error();
     return -1;
   }
-  int con_res = connect(result[0], addr_info->ai_addr, addr_info->ai_addrlen);
-  if(con_res == -1)
-  {
-    // NYI: UNDER DEVELOPMENT: do we want to try another address in addr_info->ai_next?
-    fzE_close(result[0]);
-    result[0] = fzE_net_error();
-  }
+  int con_res = connect(sockfd, addr_info->ai_addr, addr_info->ai_addrlen);
+  if (con_res != 0)
+    {
+      last_error = fzE_net_error();
+    }
   freeaddrinfo(addr_info);
   return con_res;
 }
@@ -437,13 +413,12 @@ long fzE_get_file_size(void * file) {
  *          see also, https://devblogs.microsoft.com/oldnewthing/20031008-00/?p=42223
  *
  * returns:
- *   - error   :  result[0]=-1 and NULL
- *   - success :  result[0]=0  and an address where the file was mapped to
+ *   - error   :  NULL
+ *   - success :  an address where the file was mapped to
  */
-void * fzE_mmap(void * file, uint64_t offset, size_t size, int * result) {
+void * fzE_mmap(void * file, uint64_t offset, size_t size) {
 
   if ((unsigned long)fzE_get_file_size(file) < (offset + size)){
-    result[0] = -1;
     return NULL;
   }
 
@@ -454,15 +429,12 @@ void * fzE_mmap(void * file, uint64_t offset, size_t size, int * result) {
   */
   HANDLE file_mapping_handle = CreateFileMapping(file, NULL, PAGE_READWRITE, 0, 0, NULL);
   if (file_mapping_handle == NULL) {
-    result[0] = -1;
     return NULL;
   }
 
   void * mapped_address = MapViewOfFile(file_mapping_handle, FILE_MAP_ALL_ACCESS, high_word(offset), low_word(offset), size);
 
   CloseHandle(file_mapping_handle);
-
-  result[0] = mapped_address == NULL ? -1 : 0;
 
   return mapped_address;
 }
@@ -509,12 +481,12 @@ void fzE_nanosleep(uint64_t n)
   uint64_t end = start + n;
 
   while (fzE_nanotime() < end) {
-      uint64_t remaining_ns = end - fzE_nanotime();
-      if (remaining_ns > 1000000ULL) {
-          Sleep((DWORD)(remaining_ns / 1000000ULL));
-      } else {
-          YieldProcessor();
-      }
+    uint64_t remaining_ns = end - fzE_nanotime();
+    if (remaining_ns > 1000000ULL) {
+      Sleep((DWORD)(remaining_ns / 1000000ULL));
+    } else if (remaining_ns > 0) {
+      Sleep(1);
+    }
   }
 }
 
@@ -542,6 +514,17 @@ int fzE_rm(char * path)
 
 
 /**
+ * convert from windows file time to unix time stamp
+ * see also: https://learn.microsoft.com/en-us/windows/win32/sysinfo/file-times
+ */
+int64_t win_time_to_unix_time(LONGLONG qp)
+{
+  static const int64_t WINDOWS_TO_UNIX_EPOCH_DIFF = 11644473600ULL;
+  return (qp / 10000000ULL) - WINDOWS_TO_UNIX_EPOCH_DIFF;
+}
+
+
+/**
  * Get file status (resolves symbolic links)
  */
 int fzE_stat(const char *pathname, int64_t * metadata)
@@ -557,15 +540,27 @@ int fzE_stat(const char *pathname, int64_t * metadata)
     fileSize.HighPart = fileInfo.nFileSizeHigh;
     fileSize.LowPart = fileInfo.nFileSizeLow;
 
-    FILETIME ft = fileInfo.ftLastWriteTime;
-    ULARGE_INTEGER ull;
-    ull.LowPart = ft.dwLowDateTime;
-    ull.HighPart = ft.dwHighDateTime;
+    ULARGE_INTEGER lat;
+    lat.LowPart =  fileInfo.ftLastAccessTime.dwLowDateTime;
+    lat.HighPart = fileInfo.ftLastAccessTime.dwHighDateTime;
+
+    ULARGE_INTEGER lwt;
+    lwt.LowPart =  fileInfo.ftLastWriteTime.dwLowDateTime;
+    lwt.HighPart = fileInfo.ftLastWriteTime.dwHighDateTime;
+
+    ULARGE_INTEGER ct;
+    ct.LowPart =  fileInfo.ftCreationTime.dwLowDateTime;
+    ct.HighPart = fileInfo.ftCreationTime.dwHighDateTime;
 
     metadata[0] = fileSize.QuadPart;
-    metadata[1] = (ull.QuadPart / 10000000ULL) - 11644473600ULL;
-    metadata[2] = (fileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? 0 : 1;
-    metadata[3] = (fileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? 1 : 0;
+    metadata[1] = win_time_to_unix_time(lat.QuadPart); /* Time of last access */
+    metadata[2] = win_time_to_unix_time(lwt.QuadPart); /* Time of last modification */
+    metadata[3] = win_time_to_unix_time(ct.QuadPart);  /* Time of last status change */
+    metadata[4] = (fileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? 0 : 1;
+    metadata[5] = (fileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? 1 : 0;
+    metadata[6] = 0; /* NYI: UNDER DEVELOPMENT: is link  */
+    metadata[7] = 0; /* NYI: UNDER DEVELOPMENT: uid  */
+    metadata[8] = 0; /* NYI: UNDER DEVELOPMENT: gid  */
 
     result = 0;
   }
@@ -603,6 +598,13 @@ void fzE_init()
   SetConsoleOutputCP(CP_UTF8);
   // also set input code page
   SetConsoleCP(CP_UTF8);
+
+  // Initialize Winsock
+  WSADATA wsaData;
+  if (WSAStartup(MAKEWORD(2,2), &wsaData) != 0) {
+    fprintf(stderr, "*** WSAStartup failed\n");
+    exit(EXIT_FAILURE);
+  }
 
   InitializeCriticalSection(&fzE_global_mutex);
   // NYI: DeleteCriticalSection(&fzE_global_mutex);
@@ -676,6 +678,9 @@ void fzE_unlock()
 
 // combine NULL-terminated UTF-8 string array into wide string
 wchar_t *build_unicode_args(char *args[], size_t argsLen) {
+
+  // NYI: UNDER DEVELOPMENT: need to escape quotes (") ?
+
   size_t totalLen = 2;
   for (size_t i = 0; i < argsLen - 1; ++i) {
     totalLen += MultiByteToWideChar(CP_UTF8, 0, args[i], -1, NULL, 0) + 1 + sizeof(L"\"\" ");
@@ -834,12 +839,16 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
 // returns exit code or -1 on wait-failure.
 int64_t fzE_process_wait(int64_t p){
   DWORD status = 0;
-  WaitForSingleObject((HANDLE)p, INFINITE);
-  if (!GetExitCodeProcess((HANDLE)p, &status)){
-    return -1;
+  if (GetExitCodeProcess((HANDLE)p, &status)){
+    if (status == STILL_ACTIVE){
+      return -1;
+    }
+    else {
+      CloseHandle((HANDLE)p);
+      return (int64_t)status;
+    }
   }
-  CloseHandle((HANDLE)p);
-  return (int64_t)status;
+  return 255;
 }
 
 
@@ -896,6 +905,8 @@ void * fzE_file_open(char * file_name, int64_t * open_results, file_open_mode mo
       FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN,
       NULL
   );
+
+  free(file_name_w);
 
   open_results[0] = hFile == INVALID_HANDLE_VALUE
     ? (int64_t)GetLastError()
@@ -1062,7 +1073,14 @@ int64_t fzE_file_position(void *file)
 
 int32_t fzE_file_flush(void *file)
 {
-  return FlushFileBuffers((HANDLE)file)
+  HANDLE h = (HANDLE)file;
+
+  // flushing stdout/stderr does not work
+  if (GetFileType(h) == FILE_TYPE_CHAR)
+  {
+    return 0;
+  }
+  return FlushFileBuffers(h)
     ? 0
     : -1;
 }
@@ -1075,4 +1093,35 @@ int fzE_send_signal(int64_t pid, int sig)
 {
   // windows does not have signals
   return -1;
+}
+
+int32_t fzE_path_max(void)
+{
+  return MAX_PATH;
+}
+
+int64_t fzE_page_size(void)
+{
+  SYSTEM_INFO sys_info;
+  GetSystemInfo(&sys_info);
+  return (int64_t)(uint64_t)sys_info.dwPageSize;
+}
+
+int64_t fzE_mmap_offset_multiple(void)
+{
+  SYSTEM_INFO sys_info;
+  GetSystemInfo(&sys_info);
+  return (int64_t)(uint64_t)sys_info.dwAllocationGranularity;
+}
+
+int fzE_cwd(void * buf, size_t size)
+{
+  return _getcwd(buf, size) == NULL
+    ? -1
+    : 0;
+}
+
+int fzE_isnan(double d)
+{
+  return _isnan(d);
 }

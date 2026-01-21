@@ -34,6 +34,12 @@ public vars (p Vars_Handler) : effect is
     p.get v
 
 
+  # get the value v is mapped to, or nil if none.
+  #
+  public index [] (v String) option String =>
+    get v
+
+
   # install default instance of vars
   #
   type.install_default =>
@@ -43,13 +49,13 @@ public vars (p Vars_Handler) : effect is
   # default handler using fuzion.sys.env_vars
   #
   type.default_vars_handler =>
-    ref : envir.Vars_Handler is
+    _ : envir.Vars_Handler is
       public redef get(v String) option String => fuzion.sys.env_vars.get v
 
 
-# short-hand for accessing envir.vars effect in current environment
+# shorthand for accessing envir.vars effect in current environment
 #
-public vars envir.vars =>
+public vars envir.vars ! envir.vars =>
   vars.install_default
   envir.vars.env
 

@@ -161,11 +161,11 @@ public class NumLiteral extends Constant
   /**
    * Convenience BitInteger values:
    */
-  static BigInteger B0 = BigInteger.valueOf(0);
-  static BigInteger B1 = BigInteger.valueOf(1);
-  static BigInteger B2 = BigInteger.valueOf(2);
-  static BigInteger B5 = BigInteger.valueOf(5);
-  static BigInteger B10 = BigInteger.valueOf(10);
+  static final BigInteger B0 = BigInteger.valueOf(0);
+  static final BigInteger B1 = BigInteger.valueOf(1);
+  static final BigInteger B2 = BigInteger.valueOf(2);
+  static final BigInteger B5 = BigInteger.valueOf(5);
+  static final BigInteger B10 = BigInteger.valueOf(10);
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -793,7 +793,7 @@ public class NumLiteral extends Constant
   Expr propagateExpectedTypeForPartial(Resolution res, Context context, AbstractType t)
   {
     Expr result;
-    if (t.isFunctionTypeExcludingLazy() && t.arity() == 1 && explicitSign() != null)
+    if (t.isLambdaTarget(res) && t.arity(res) == 1 && explicitSign() != null)
       { // convert `map -1` into `map x->x-1`
         var pns = new List<Expr>();
         pns.add(Partial.argName(pos()));

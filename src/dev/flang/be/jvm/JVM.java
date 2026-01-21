@@ -34,7 +34,6 @@ import dev.flang.fuir.analysis.TailCall;
 import static dev.flang.ir.IR.NO_CLAZZ;
 import static dev.flang.ir.IR.NO_SITE;
 
-import dev.flang.be.jvm.classfile.ClassFile;
 import dev.flang.be.jvm.classfile.ClassFileConstants;
 import dev.flang.be.jvm.classfile.Expr;
 import dev.flang.be.jvm.classfile.Label;
@@ -51,19 +50,31 @@ import dev.flang.util.Pair;
 import dev.flang.util.QuietThreadTermination;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
-
+import java.lang.classfile.*;
+import java.lang.classfile.constantpool.ClassEntry;
+import java.lang.classfile.instruction.*;
+import java.lang.constant.ClassDesc;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.Set;
+import java.util.function.Consumer;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
@@ -477,10 +488,6 @@ should be avoided as much as possible.
       {
         Errors.showAndExit();
         jvm._runner = new Runner(()->jvm._names.methodNameToFuzionClazzNames());
-        if (!jvm._options.enableUnsafeIntrinsics())
-          {
-            Runtime.disableUnsafeIntrinsics();
-          }
       }
       void compile(JVM jvm, int cl)
       {
@@ -597,39 +604,7 @@ should be avoided as much as possible.
 
         try
           {
-            String[] dependencies = {
-              "dev/flang/be/jvm/runtime/Any.class",
-              "dev/flang/be/jvm/runtime/AnyI.class",
-              "dev/flang/be/jvm/runtime/FuzionThread.class",
-              "dev/flang/be/jvm/runtime/Intrinsics.class",
-              "dev/flang/be/jvm/runtime/JavaError.class",
-              "dev/flang/be/jvm/runtime/Main.class",
-              "dev/flang/be/jvm/runtime/OpenResources.class",
-              "dev/flang/be/jvm/runtime/Runtime.class",
-              "dev/flang/be/jvm/runtime/Runtime$1.class",
-              "dev/flang/be/jvm/runtime/Runtime$2.class",
-              "dev/flang/be/jvm/runtime/Runtime$3.class",
-              "dev/flang/be/jvm/runtime/Runtime$Abort.class",
-              "dev/flang/util/ANY.class",
-              "dev/flang/util/Errors.class",
-              "dev/flang/util/Errors$Error.class",
-              "dev/flang/util/Errors$Id.class",
-              "dev/flang/util/Errors$SRCF.class",
-              "dev/flang/util/Errors$SRCF$1.class",
-              "dev/flang/util/FatalError.class",
-              "dev/flang/util/FuzionOptions.class",
-              "dev/flang/util/HasSourcePosition.class",
-              "dev/flang/util/List.class",
-              "dev/flang/util/QuietThreadTermination.class",
-              "dev/flang/util/SourceFile.class",
-              "dev/flang/util/SourcePosition.class",
-              "dev/flang/util/SourcePosition$1.class",
-              "dev/flang/util/SourcePosition$2.class",
-              "dev/flang/util/SourceRange.class",
-              "dev/flang/util/Terminal.class",
-            };
-
-            for (var d : dependencies)
+            for (var d : getDependencies())
               {
                 jvm._jos.putNextEntry(new JarEntry(d));
                 jvm._jos.write(Files.readAllBytes(jvm._options.fuzionHome()
@@ -973,7 +948,7 @@ should be avoided as much as possible.
    */
   public void code(int cl)
   {
-    if (_types.clazzNeedsCode(cl))
+    if (_fuir.clazzNeedsCode(cl))
       {
         var ck = _fuir.clazzKind(cl);
         switch (ck)
@@ -1185,7 +1160,7 @@ should be avoided as much as possible.
    */
   boolean isAddressLike(int c)
   {
-    return _fuir.clazzIsRef(c) || _fuir.clazzIsArray(c) || _fuir.lookupCall(c) != NO_CLAZZ;
+    return _fuir.clazzIsRef(c) || _fuir.clazzIsArray(c) || _fuir.clazzIsMutateArray(c) || _fuir.lookupCall(c) != NO_CLAZZ;
   }
 
 
@@ -1513,7 +1488,7 @@ should be avoided as much as possible.
 
     var code_cl = cf.codeAttribute(_fuir.clazzAsString(cl),
                                     bc_cl,
-                                    new List<>(), ClassFile.StackMapTable.fromCode(cf, locals, bc_cl));
+                                    new List<>(), dev.flang.be.jvm.classfile.ClassFile.StackMapTable.fromCode(cf, locals, bc_cl));
 
     cf.method(ClassFileConstants.ACC_STATIC | ClassFileConstants.ACC_PUBLIC, name, _types.descriptor(cl), new List<>(code_cl));
   }
@@ -1611,13 +1586,13 @@ should be avoided as much as possible.
    */
   Pair<Expr, Expr> boxedConstString(Expr bytes)
   {
-    var cs = _fuir.clazz_const_string();
-    var ref_cs = _fuir.clazz_ref_const_string();
-    var cs_utf8_data = _fuir.clazz_const_string_utf8_data();
-    var arr = _fuir.clazz_array_u8();
-    var internalArray = _fuir.lookup_array_internal_array(arr);
-    var data = _fuir.clazz_fuzionSysArray_u8_data();
-    var length = _fuir.clazz_fuzionSysArray_u8_length();
+    var cs = _fuir.clazzConstString();
+    var ref_cs = _fuir.clazzRefConstString();
+    var cs_utf8_data = _fuir.clazzConstStringUTF8Data();
+    var arr = _fuir.clazzArrayU8();
+    var internalArray = _fuir.clazzArg(arr,0);
+    var data = _fuir.clazzFuzionSysArrayU8Data();
+    var length = _fuir.clazzFuzionSysArrayU8Length();
     var fuzionSysArray = _fuir.clazzOuterClazz(data);
     var res = new0(cs)                                // stack: cs
       .andThen(Expr.DUP)                              //        cs, cs
@@ -1810,10 +1785,10 @@ should be avoided as much as possible.
    */
   Pair<Expr, Expr> const_array(int arrayCl, Expr arr, int len)
   {
-    var internalArray  = _fuir.lookup_array_internal_array(arrayCl);
+    var internalArray  = _fuir.clazzArg(arrayCl, 0);
     var fuzionSysArray = _fuir.clazzResultClazz(internalArray);
-    var data           = _fuir.lookup_fuzion_sys_internal_array_data  (fuzionSysArray);
-    var length         = _fuir.lookup_fuzion_sys_internal_array_length(fuzionSysArray);
+    var data           = _fuir.clazzArg(fuzionSysArray, 0);
+    var length         = _fuir.clazzArg(fuzionSysArray, 1);
     var res = new0(arrayCl)                           // stack: cs
       .andThen(Expr.DUP)                              //        cs, cs
       .andThen(new0(fuzionSysArray))                  //        cs, cs, fsa
@@ -1856,7 +1831,7 @@ should be avoided as much as possible.
 
         result = _fuir.hasData(rt)       &&
           !_fuir.isScalar(occ)        &&
-          _types.clazzNeedsCode(field) &&
+          _fuir.clazzNeedsCode(field) &&
           _types.resultType(rt) != PrimitiveType.type_void;
       }
     return result;
@@ -2122,7 +2097,7 @@ should be avoided as much as possible.
    * Helper for cloneValue to clone the value of a field in a choice or a
    * product type that may be null.
    *
-   * In a choice, a value may be null if that that field is unused, i.e., the
+   * In a choice, a value may be null if that field is unused, i.e., the
    * choice is tagged for a different value.
    *
    * In a product type, the value of a field may be null if that value was not
@@ -2348,6 +2323,112 @@ should be avoided as much as possible.
       (ecl != FUIR.NO_CLAZZ);
 
     return _effectIds.add(ecl);
+  }
+
+  private static String[] getDependencies()
+  {
+    String packagePath = "dev/flang/be/jvm/runtime";
+
+    Set<ClassDesc> dependencies = new HashSet<>();
+    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+
+    try
+      {
+        Path packageDir = Paths.get(classLoader.getResource(packagePath).toURI());
+
+        Queue<Path> queue = Files.walk(packageDir)
+              .filter(Files::isRegularFile)
+              .filter(path -> path.toString().endsWith(".class"))
+              .collect(Collectors.toCollection(LinkedList::new));
+
+        Set<Path> found = new HashSet<>();
+        found.addAll(queue);
+
+        while (!queue.isEmpty())
+          {
+            var path = queue.poll();
+
+            try (FileInputStream fis = new FileInputStream(path.toFile()))
+              {
+                ClassModel cm = java.lang.classfile.ClassFile.of().parse(fis.readAllBytes());
+
+                Stream.concat(
+                  Stream.of(cm), // include the ClassModel itself
+                  cm.elementStream()
+                    .flatMap(ce -> ce instanceof MethodModel mm ? mm.elementStream() : Stream.empty())
+                    .flatMap(me -> me instanceof CodeModel com ? com.elementStream() : Stream.empty())
+                ).forEach((e) ->
+                    {
+                      // helper to add a dependency and add its dependencies to the queue if not yet processed
+                      Consumer<ClassEntry> processDependency = classEntry ->
+                        {
+                          var cdesc = classEntry.asSymbol();
+
+                          if (cdesc.isClassOrInterface() && !cdesc.packageName().startsWith("java."))
+                            {
+                              dependencies.add(cdesc);
+
+                              // add to class to queue if not yet processed
+                              var cPathStr = (cdesc.packageName() + "." + cdesc.displayName()).replace(".", "/") + ".class";
+                              if (!cPathStr.contains("$"))
+                                {
+                                  try
+                                    {
+                                      var cpath = Paths.get(classLoader.getResource(cPathStr).toURI());
+                                      if (!found.contains(cpath))
+                                        {
+                                          queue.add(cpath);
+                                          found.add(cpath);
+                                        }
+                                    }
+                                  catch (URISyntaxException ex)
+                                    {
+                                      Errors.error("JVM backend I/O error",
+                                                  "This is either a bug or the files in " + cPathStr
+                                                  + " changed while processing the directory.");
+                                      ex.printStackTrace();
+                                    }
+                                }
+                            }
+                        };
+                      switch (e)
+                        {
+                          case ClassModel c -> processDependency.accept(c.thisClass());
+                          case InvokeInstruction i -> processDependency.accept(i.owner());
+                          case FieldInstruction  i -> processDependency.accept(i.owner());
+                          default -> { }
+                        }
+                    }
+                  );
+              }
+            catch (IOException e)
+              {
+                Errors.error("JVM backend I/O error",
+                             "This is either a bug or the files in " + packagePath
+                             + " changed while processing the directory.");
+                e.printStackTrace();
+              }
+          }
+      }
+    catch (IOException e)
+      {
+        Errors.error("JVM backend I/O error",
+                     "This is either a bug or the files in " + packagePath
+                     + " changed while processing the directory.");
+        e.printStackTrace();
+      }
+    catch (URISyntaxException e)
+      {
+        Errors.error("JVM backend I/O error",
+                     "This is either a bug or the files in " + packagePath
+                     + " changed while processing the directory.");
+        e.printStackTrace();
+      }
+
+    return dependencies.stream()
+                .map(dep->dep.packageName() + "." +  dep.displayName())
+                .map(s->s.replace(".", "/") + ".class")
+                .toArray(String[]::new);
   }
 
 

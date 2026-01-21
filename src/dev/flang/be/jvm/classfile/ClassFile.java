@@ -310,8 +310,7 @@ public class ClassFile extends ANY implements ClassFileConstants
      */
     List<Expr.TryCatch> _exceptionTable = NO_EXC_TABLE;
 
-    static List<Expr.TryCatch> NO_EXC_TABLE = new List<Expr.TryCatch>();
-    static { NO_EXC_TABLE.freeze(); }
+    static final List<Expr.TryCatch> NO_EXC_TABLE = new List<Expr.TryCatch>().freeze();
 
 
     /**

@@ -130,10 +130,6 @@ public abstract class AbstractBlock extends Expr
   protected int resultExpressionIndex()
   {
     var i = _expressions.size() - 1;
-    while (i >= 0 && (_expressions.get(i) instanceof Nop))
-      {
-        i--;
-      }
     return i >= 0 && (_expressions.get(i).producesResult())
       ? i
       : -1;

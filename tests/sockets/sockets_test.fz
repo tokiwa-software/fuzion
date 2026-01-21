@@ -26,10 +26,10 @@ sockets_test is
   lm : mutate is
 
   servers :=
-    concur.atomic [(u16 0),
-                   (u16 0),
-                   (u16 0),
-                   (u16 0)]
+    concur.atomic (array u16) .new [(u16 0),
+                                    (u16 0),
+                                    (u16 0),
+                                    (u16 0)]
 
   set_server_port(idx i32, new u16) =>
     _ :=
@@ -62,11 +62,9 @@ sockets_test is
               res := "received: {rr.as_string}\n\n"
 
               w =>
-                x := ((io.buffered lm).writer.env.write res.utf8.as_array).error
-
-                match x
+                match (io.buffered lm).writer.env.write res.utf8.as_array
                   unit => (io.buffered lm).writer.env.flush
-                  error => x
+                  e error => e
 
               match w
                 e error => say_silent "$protocol/$family-server, write error $e"

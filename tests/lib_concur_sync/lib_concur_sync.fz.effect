@@ -3,10 +3,10 @@ concur.threads
 fuzion.runtime.check_fault
 fuzion.runtime.contract_fault
 fuzion.runtime.fault
+fuzion.runtime.post_fault
 fuzion.runtime.pre_fault
 io.Err
 io.Out
-unique_id
-time.nano
-fuzion.runtime.post_fault
 panic
+time.nano
+unique_id

@@ -64,7 +64,6 @@ reg_issue5252 =>
   say (f  +3)  # should print 103
   say (g +33)  # should print 1033
 
-#   h i32->i32 => -99   # NYI: BUG: #5259 does not work yet!
   i i32->i32 := -99
   j => i
   say (i.call 123)         # prints `24`

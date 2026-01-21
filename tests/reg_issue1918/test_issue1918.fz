@@ -3,9 +3,10 @@ test_issue1918 =>
   count(n) =>
     true
 
-  (1..4)
-    .map (_)->
-      concur.threads.spawn ()->
-        do
-          p option i32 := 1
-          while !(count p.get)
+  ignore =>
+    (1..4)
+      .map (_)->
+        concur.threads.spawn ()->
+          do
+            p option i32 := 1
+            while !(count p.get)

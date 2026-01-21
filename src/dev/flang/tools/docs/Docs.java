@@ -70,7 +70,6 @@ public class Docs extends ANY
     /* dumpModules             */ new List<>(),
     /* fuzionDebugLevel        */ 0,
     /* fuzionSafety            */ false,
-    /* enableUnsafeIntrinsics  */ false,
     /* sourceDirs              */ null,
     /* readStdin               */ false,
     /* executeCode             */ null,
@@ -109,7 +108,7 @@ public class Docs extends ANY
 
   private final AbstractFeature universe = fe._feUniverse;
 
-  public final static Pattern nonAsciiPattern = Pattern
+  public static final Pattern nonAsciiPattern = Pattern
     .compile("[^\\x00-\\x7F]");
 
 
@@ -188,7 +187,7 @@ public class Docs extends ANY
 
     if (Stream.of(args).anyMatch(arg -> arg.equals("-styles")))
       {
-        return new DocsOptions(null, null, false, true, false);
+        return new DocsOptions(null, null, null, false, true, false);
       }
 
     String apiSrcDir = null;
@@ -205,11 +204,25 @@ public class Docs extends ANY
           }
       }
 
+    String docsRoot = null;
+    var docsRootArg = Stream.of(args).filter(s->s.startsWith("-docs-root=")).collect(Collectors.toList());
+    if (docsRootArg.size() >= 1)
+      {
+        if (docsRootArg.size() == 1)
+          {
+            docsRoot = docsRootArg.getFirst().replace("-docs-root=", "");
+          }
+        else
+          {
+            Errors.fatal("option '-docs-root' specified multiple times");
+          }
+      }
+
     var destination = parseDestination(args);
 
     var bare = Stream.of(args).anyMatch(arg -> arg.equals("-bare"));
     var ignoreVisibility = Stream.of(args).anyMatch(arg -> arg.equals("-ignoreVisibility"));
-    return new DocsOptions(destination, apiSrcDir, bare, false, ignoreVisibility);
+    return new DocsOptions(destination, docsRoot, apiSrcDir, bare, false, ignoreVisibility);
   }
 
 

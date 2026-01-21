@@ -374,6 +374,17 @@ public class List<T>
 
 
   /**
+   * Get first element of the list, alternative if list is empty.
+   *
+   * @param alternative an alternative value to return in case the list is empty.
+   */
+  public T getFirstOrElse(T alternative)
+  {
+    return size() == 0 ? alternative : get(0);
+  }
+
+
+  /**
    * Get last element of the list.
    */
   public T getLast()
@@ -383,10 +394,25 @@ public class List<T>
 
 
   /**
+   * Remove all elements at indices >=from.
+   */
+  public void removeTail(int from)
+  {
+    if (ANY.PRECONDITIONS) ANY.require
+      (!isFrozen() || from == size());
+
+    removeRange(from, size());
+  }
+
+
+  /**
    * Remove the last element of the list.
    */
   public T removeLast()
   {
+    if (ANY.PRECONDITIONS) ANY.require
+      (!isFrozen());
+
     return remove(size()-1);
   }
 
@@ -446,9 +472,10 @@ public class List<T>
    * Forbid modifications to this list.  This should be called to ensure that a
    * list that is used as a key in a map or similar is no longer modified.
    */
-  public void freeze()
+  public List<T> freeze()
   {
     _isFrozen = true;
+    return this;
   }
 
 
@@ -606,6 +633,26 @@ public class List<T>
 
 
   /**
+   * Create a mapping of this list by applying f to all elements and
+   * concatenating the resulting lists.
+   *
+   * @return a new list that is the concatenation of the results of applying f
+   * to all elements.
+   */
+  public <V> List<V> flatMap2(Function<T,List<V>> f)
+  {
+    var result = new List<V>();
+    for (var i = 0; i < size(); i++)
+      {
+        var e = get(i);
+        var l = f.apply(e);
+        result.addAll(l);
+      }
+    return result;
+  }
+
+
+  /**
    * Filter elements that match a given predicate.
    *
    * @return this (if the predicate holds for all elements) or a new list with
@@ -641,7 +688,7 @@ public class List<T>
   public List<T> take(int n)
   {
     var result = new List<T>();
-    for (var i = 0; i < n; i++)
+    for (var i = 0; i < n && i < size(); i++)
       {
         result.add(get(i));
       }

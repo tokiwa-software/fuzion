@@ -1,0 +1,87 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test http_message_test
+#
+# -----------------------------------------------------------------------
+
+# test HTTP messages
+http_message_test =>
+
+/*
+TODO:
+- [ ] test errors in decoding/parsing
+*/
+
+  say "\nHTTP TEST"
+
+
+  lm : mutate is
+  lm ! ()->
+
+    say "\nCREATE REQUEST:\n"
+
+    my_req http.request_message :=
+      (http.request_message.new http.get "/docs/base" 2 0
+                                [("Host", "fuzion-lang.dev"),
+                                 ("User-Agent", "Fuzion HTTP Module"),
+                                 ("DNT", $"1")]
+                                (io.Read_Handler.from lm ""))
+    say my_req
+
+
+
+    say "\nCREATE RESPONSE:\n"
+
+    my_resp http.response_message :=
+      http.response_message.new my_req 2 0 200 "OK"
+                                [("content-type", "text/html"),
+                                 ("server", "FuzionWebServer v0.016"),
+                                 ("x-frame-options", "DENY")]
+                                (io.Read_Handler.from lm "  <body>\n    <p>Hello World!</p>\n  </body>")
+    say <| my_resp.as_string_with_body 1E4
+
+
+
+  say "\n\n\nPARSE REQUEST:\n"
+
+  req_path := "http_req.txt"
+
+  parse_req :=
+    io.file.use _ req_path io.file.mode.read ()->
+      req := http.read_request io.file.file_mutate
+
+      say <| match req
+               r http.request_message => r.as_string_with_body 1E4
+               e error => $e
+      req.val
+  _:=parse_req
+
+
+
+  say "\nPARSE RESPONSE:\n"
+
+  resp_path := "http_resp.txt"
+
+  _ := io.file.use _ resp_path io.file.mode.read ()->
+    resp := http.read_response io.file.file_mutate parse_req.val
+
+    say <| match resp
+              r http.response_message => r.as_string_with_body 1E4
+              e error => $e
