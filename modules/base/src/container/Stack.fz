@@ -38,7 +38,7 @@ public Stack(T type) ref is
   #
   public peek option T => abstract
 
-  # this Stack as a Sequence, top element first
+  # convert this Stack to a Sequence (top element first)
   #
   public as_sequence Sequence T => abstract
 
