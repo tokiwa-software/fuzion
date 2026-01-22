@@ -3427,9 +3427,9 @@ PIPE        : "|"
           _stringLexer = this;
           switch (end(t))
             {
-            case DOLLAR: _state = StringState.IDENT_EXPECTED; break;
-            case BRACE : _state = StringState.EXPR_EXPECTED; break;
-            default    : throw new Error("default:");
+            case DOLLAR -> _state = StringState.IDENT_EXPECTED;
+            case BRACE -> _state = StringState.EXPR_EXPECTED;
+            default -> throw new Error("default:");
             }
         }
       return t;

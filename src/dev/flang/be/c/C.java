@@ -1848,9 +1848,8 @@ public class C extends ANY
       {
         switch (_fuir.clazzKind(cl))
           {
-          case Routine  :
-          case Intrinsic:
-          case Native   : l.add(cFunctionDecl(cl, null));
+          case Routine, Intrinsic, Native ->
+            l.add(cFunctionDecl(cl, null));
           }
       }
     return CStmnt.seq(l);

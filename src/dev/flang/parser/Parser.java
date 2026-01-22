@@ -383,23 +383,24 @@ field       : returnType
           }
       }
     while (skipComma());
-    switch (skipFormArgsNotActualArgs())
+    return switch (skipFormArgsNotActualArgs())
       {
-      case formal: return true;
-      case actual: return false;
-      default    : break;
+      case formal -> true;
+      case actual -> false;
+      default -> {
+        if (isNonFuncReturnTypePrefix())
+          {
+            yield true;
+          }
+        var p = fork();
+        yield
+          (!p.isTypePrefix() || p.skipType(true, true)) &&
+          (!p.isOperator("!") || p.skipEffects()) &&
+          p.skipInherits() &&
+          (p.isContractPrefix() ||
+            p.isImplPrefix());
       }
-    if (isNonFuncReturnTypePrefix())
-      {
-        return true;
-      }
-    var p = fork();
-    return
-      (!p.isTypePrefix() || p.skipType(true, true)) &&
-      (!p.isOperator("!") || p.skipEffects()) &&
-      p.skipInherits() &&
-      (p.isContractPrefix  () ||
-       p.isImplPrefix      ());
+      };
   }
 
 
