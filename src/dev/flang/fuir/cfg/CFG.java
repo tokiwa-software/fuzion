@@ -158,8 +158,9 @@ public class CFG extends ANY
         var ck = _fuir.clazzKind(cl);
         switch (ck)
           {
-          case Routine  : createCallGraphForRoutine(cl); break;
-          case Intrinsic: createCallGraphForIntrinsic(cl); break;
+          case Routine  -> createCallGraphForRoutine(cl);
+          case Intrinsic -> createCallGraphForIntrinsic(cl);
+          default-> {}
           }
       }
   }
@@ -476,34 +477,21 @@ public class CFG extends ANY
    *
    * @param e the FUIR.ExprKind of the expression to analyze
    */
-  void createCallGraphForExpr(int cl, int s, FUIR.ExprKind e)
+   void createCallGraphForExpr(int cl, int s, FUIR.ExprKind e)
   {
     switch (e)
       {
-      case Assign: break;
-      case Box   : break;
-      case Call:
-        {
-          access(cl, s);
-          break;
-        }
-      case Comment: break;
-      case Current: break;
-      case Const  : break;
-      case Match  :
-        {
-          for (var mc = 0; mc < _fuir.matchCaseCount(s); mc++)
-            {
-              createCallGraphForBlock(cl, _fuir.matchCaseCode(s, mc));
-            }
-          break;
-        }
-      case Tag: break;
-      case Pop: break;
-      default:
-        {
-          Errors.fatal("Effects backend does not handle expressions of type " + s);
-        }
+      case Assign, Box, Comment, Current, Const, Tag, Pop -> {}
+      case Call -> access(cl, s);
+      case Match -> {
+        for (var mc = 0; mc < _fuir.matchCaseCount(s); mc++)
+          {
+            createCallGraphForBlock(cl, _fuir.matchCaseCode(s, mc));
+          }
+      }
+      default -> {
+        Errors.fatal("Effects backend does not handle expressions of type " + s);
+      }
       }
   }
 

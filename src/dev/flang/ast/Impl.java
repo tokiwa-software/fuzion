@@ -696,24 +696,27 @@ public class Impl extends ANY
   public String toString()
   {
     String result;
-    if (_expr != null) {
-      result = _expr.toString();
-    } else {
-      switch (_kind)
-        {
-        case FieldInit  : result = " = "  + _expr.getClass() + ": " +_expr; break;
-        case FieldDef   : result = " := " + _expr.getClass() + ": " +_expr; break;
-        case FieldActual: result = " type_inferred_from_actual";                            break;
-        case Field      : result = "";                                                      break;
-        case TypeParameter:     result = "type";                                            break;
-        case TypeParameterOpen: result = "type...";                                         break;
-        case RoutineDef : result = " => " + _expr.toString();                               break;
-        case Routine    : result = " is " + _expr.toString();                               break;
-        case Abstract   : result = "is abstract";                                           break;
-        case Intrinsic  : result = "is intrinsic";                                          break;
-        default: throw new Error("Unexpected Kind: "+_kind);
-        }
-    }
+    if (_expr != null)
+      {
+        result = _expr.toString();
+      }
+    else
+      {
+        switch (_kind)
+          {
+          case FieldInit  -> result = " = "  + _expr.getClass() + ": " +_expr;
+          case FieldDef   -> result = " := " + _expr.getClass() + ": " +_expr;
+          case FieldActual -> result = " type_inferred_from_actual";
+          case Field      -> result = "";
+          case TypeParameter -> result = "type";
+          case TypeParameterOpen -> result = "type...";
+          case RoutineDef -> result = " => " + _expr.toString();
+          case Routine    -> result = " is " + _expr.toString();
+          case Abstract   -> result = "is abstract";
+          case Intrinsic  -> result = "is intrinsic";
+          default -> throw new Error("Unexpected Kind: "+_kind);
+          }
+      }
     return result;
   }
 

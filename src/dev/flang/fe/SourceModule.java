@@ -318,17 +318,14 @@ public class SourceModule extends Module implements SrcModule
               }
             switch (main.kind())
               {
-              case Field    : FeErrors.mainFeatureMustNotBeField    (main); break;
-              case Abstract : FeErrors.mainFeatureMustNotBeAbstract (main); break;
-              case Intrinsic: FeErrors.mainFeatureMustNotBeIntrinsic(main); break;
-              case Choice   : FeErrors.mainFeatureMustNotBeChoice   (main); break;
-              case Routine  :
+              case Field, Abstract, Intrinsic, Choice -> FeErrors.mainFeatureMustNotBeField(main);
+              case Routine -> {
                 if (!main.typeArguments().isEmpty())
                   {
                     FeErrors.mainFeatureMustNotHaveTypeArguments(main);
                   }
-                break;
-              default       : FeErrors.mainFeatureMustNot(main, "be of kind " + main.kind() + ".");
+              }
+              default -> FeErrors.mainFeatureMustNot(main, "be of kind " + main.kind() + ".");
               }
           }
       }

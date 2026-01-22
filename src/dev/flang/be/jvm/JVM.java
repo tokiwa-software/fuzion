@@ -466,15 +466,13 @@ should be avoided as much as possible.
         var k = jvm._fuir.clazzKind(cl);
         switch (k)
           {
-          case Routine      : jvm.code(cl); break;
-          case Choice       : jvm._types._choices.createCode(cl); break;
-          case Native       : jvm.native0(cl); break;
-          case TypeParameter:
-          case Abstract     :
-          case Intrinsic    :
-          case Field        : break;
-          default           : throw new Error ("Unexpected feature kind: " + k);
-          };
+          case Routine -> jvm.code(cl);
+          case Choice  -> jvm._types._choices.createCode(cl);
+          case Native  -> jvm.native0(cl);
+          case TypeParameter, Abstract, Intrinsic, Field -> {}
+          default -> throw new Error("Unexpected feature kind: " + k);
+          }
+        ;
       }
     },
     RUN {

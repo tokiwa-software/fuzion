@@ -1065,10 +1065,8 @@ class ForClass extends ANY
       {
         switch (i)
           {
-          case '$':
-          case '{':
-          case '}': res.append('\\').append((char) i); break;
-          default: res.appendCodePoint(i); break;
+          case '$', '{', '}' -> res.append('\\').append((char) i);
+          default -> res.appendCodePoint(i);
           }
       });
     res.append('\"');
