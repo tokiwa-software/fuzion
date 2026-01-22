@@ -2380,7 +2380,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         var no = o != null ? f.apply(o) : null;
         if (ng != g || no != o)
           {
-            result = replaceGenericsAndOuter(ng, no);
+            result = ng.contains(Types.t_ERROR)
+              ? Types.t_ERROR
+              : replaceGenericsAndOuter(ng, no);
           }
       }
     return result;
