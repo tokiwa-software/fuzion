@@ -255,7 +255,7 @@ int fzE_bind(int sockfd, int family, int socktype, int protocol, char * host, ch
   {
     return -1;
   }
-  int bind_res = bind(sockfd, addr_info->ai_addr, (int)addr_info->ai_addrlen);
+  int bind_res = set_last_error(bind(sockfd, addr_info->ai_addr, (int)addr_info->ai_addrlen));
 
   if(bind_res == -1)
   {
