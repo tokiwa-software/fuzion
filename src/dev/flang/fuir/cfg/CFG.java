@@ -160,7 +160,7 @@ public class CFG extends ANY
           {
           case Routine  -> createCallGraphForRoutine(cl);
           case Intrinsic -> createCallGraphForIntrinsic(cl);
-          default-> {}
+          default -> {}
           }
       }
   }

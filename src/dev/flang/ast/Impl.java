@@ -702,20 +702,20 @@ public class Impl extends ANY
       }
     else
       {
-        switch (_kind)
+        result = switch (_kind)
           {
-          case FieldInit  -> result = " = "  + _expr.getClass() + ": " +_expr;
-          case FieldDef   -> result = " := " + _expr.getClass() + ": " +_expr;
-          case FieldActual -> result = " type_inferred_from_actual";
-          case Field      -> result = "";
-          case TypeParameter -> result = "type";
-          case TypeParameterOpen -> result = "type...";
-          case RoutineDef -> result = " => " + _expr.toString();
-          case Routine    -> result = " is " + _expr.toString();
-          case Abstract   -> result = "is abstract";
-          case Intrinsic  -> result = "is intrinsic";
+          case FieldInit  -> " = "  + _expr.getClass() + ": " +_expr;
+          case FieldDef   -> " := " + _expr.getClass() + ": " +_expr;
+          case FieldActual -> " type_inferred_from_actual";
+          case Field      -> "";
+          case TypeParameter -> "type";
+          case TypeParameterOpen -> "type...";
+          case RoutineDef -> " => " + _expr.toString();
+          case Routine    -> " is " + _expr.toString();
+          case Abstract   -> "is abstract";
+          case Intrinsic  -> "is intrinsic";
           default -> throw new Error("Unexpected Kind: "+_kind);
-          }
+          };
       }
     return result;
   }
