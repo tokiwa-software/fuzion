@@ -1658,7 +1658,7 @@ public class Feature extends AbstractFeature
         _state = State.RESOLVING_SUGAR1;
 
         Contract.addContractFeatures(res, this, context());
-        if (needsCotypeInFumFile())
+        if (needsCotypeInFumFile(res))
           {
             res.cotype(this);
           }
@@ -1687,10 +1687,17 @@ public class Feature extends AbstractFeature
    * @return true if this feature needs a cotype
    *         even if its cotype is not used in this module
    */
-  private boolean needsCotypeInFumFile()
+  private boolean needsCotypeInFumFile(Resolution res)
   {
-    return definesType()
-      && (outer().isUniverse() || outer().hasCotype());
+    // If we are compiling a module
+    // we can omit creating coptypes that are unused
+    // and can not be used from outside the module
+    return res._module.name() == FuzionConstants.MAIN_MODULE_NAME
+      ? !isUniverse()
+          && !isCotype()
+          && !isField() /* NYI: UNDER DEVELOPMENT: does not work yet for fields */
+          && !isTypeParameter()
+      : definesType() && (outer().isUniverse() || outer().hasCotype());
   }
 
 
