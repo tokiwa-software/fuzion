@@ -324,6 +324,13 @@ class Clazz extends ANY implements Comparable<Clazz>
     _select = select;
     _needsCode = false;
     _code = IR.NO_SITE;
+
+    // NYI: CLEANUP: currently needed in DFA-Phase to meet
+    // FUIR invariant that stack must be empty at the end of a basic block
+    _isUnitType =
+      type.feature() == Types.resolved.t_unit.feature()
+        ? YesNo.yes
+        : YesNo.dontKnow;
   }
 
 
@@ -764,14 +771,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       }
 
     var res = YesNo.no;
-    // NYI: CLEANUP: currently needed in DFA-Phase to meet
-    // FUIR invariant that stack must be empty at the end of a basic block
-    if (!_fuir._lookupDone && _type.compareTo(Types.resolved.t_unit) == 0)
-      {
-        res = YesNo.yes;
-      }
-    else if (
-        _fuir._lookupDone &&
+    if (_fuir._lookupDone &&
         isValue() &&
         !isChoice())
       {
