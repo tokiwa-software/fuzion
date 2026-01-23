@@ -678,16 +678,21 @@ Module File
   {
     return moduleNumDeclFeaturesPos() + 4;
   }
+  int _moduleSourceFilesPos = -1;
   int moduleSourceFilesPos()
   {
-    var n = moduleNumDeclFeatures();
-    var at = moduleDeclFeaturesPos();
-    while (n > 0)
+    if (_moduleSourceFilesPos < 0)
       {
-        n--;
-        at = declFeaturesNextPos(at);
+        var n = moduleNumDeclFeatures();
+        var at = moduleDeclFeaturesPos();
+        while (n > 0)
+          {
+            n--;
+            at = declFeaturesNextPos(at);
+          }
+        _moduleSourceFilesPos = at;
       }
-    return at;
+    return _moduleSourceFilesPos;
   }
 
 
