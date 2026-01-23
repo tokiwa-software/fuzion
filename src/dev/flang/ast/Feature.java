@@ -1697,7 +1697,7 @@ public class Feature extends AbstractFeature
           && !isCotype()
           && !isField() /* NYI: UNDER DEVELOPMENT: does not work yet for fields */
           && !isTypeParameter()
-      : definesType() && (outer().isUniverse() || outer().hasCotype());
+      : definesType();
   }
 
 
