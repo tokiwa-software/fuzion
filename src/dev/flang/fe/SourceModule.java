@@ -1889,13 +1889,13 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
       {
         f.code().visit(new FeatureVisitor()
         {
-          private Stack<Object> stack = new Stack<Object>();
-          @Override public void actionBefore(Block b) { if (b._newScope) { stack.push(b); } }
-          @Override public void actionBefore(AbstractCase c, AbstractMatch m) { stack.push(c); }
-          @Override public void actionAfter(Block b)  { if (b._newScope) { stack.pop(); } }
-          @Override public void actionAfter (AbstractCase c, AbstractMatch m) { stack.pop(); }
+          private int scopeDepth = 0;
+          @Override public void actionBefore(Block b) { if (b._newScope) { scopeDepth++; } }
+          @Override public void actionBefore(AbstractCase c, AbstractMatch m) { scopeDepth++; }
+          @Override public void actionAfter(Block b)  { if (b._newScope) { scopeDepth--; } }
+          @Override public void actionAfter (AbstractCase c, AbstractMatch m) { scopeDepth--; }
           @Override public Expr action(Feature fd, AbstractFeature outer) {
-            if (!stack.isEmpty() && !fd.visibility().equals(Visi.PRIV))
+            if (scopeDepth>0 && !fd.visibility().equals(Visi.PRIV))
               {
                 AstErrors.illegalVisibilityModifier(fd);
               }
