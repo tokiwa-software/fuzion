@@ -1485,7 +1485,6 @@ public class DFA extends ANY
     if (_real)
       {
         _reportResults = true;
-        iteration();
 
         _fuir.lookupDone();  // once we are done, FUIR.clazzIsUnitType() will work since it can be sure nothing will be added.
       }
