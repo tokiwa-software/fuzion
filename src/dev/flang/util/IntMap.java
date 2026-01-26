@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.util;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.TreeSet;
@@ -113,6 +114,12 @@ public class IntMap<T>
     var ts = new TreeSet<Integer>();
     ts.addAll(_m.keySet());
     return ts;
+  }
+
+
+  public Collection<T> values()
+  {
+    return _m.values();
   }
 
 

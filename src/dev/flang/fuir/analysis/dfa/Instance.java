@@ -165,10 +165,15 @@ public class Instance extends Value
       }
     if (oldv != v)
       {
-        var fv = v;
-        if (dfa.isRead(field))
+        var rb = dfa.readBy(field);
+        if (rb != null)
           {
-            _dfa.wasChanged(() -> "setField: new values " + fv + " (was " + oldv + ") for " + this);
+            rb.forEach(c -> {
+              if (c._instance._clazz!=dfa._fuir.clazzOuterClazz(field))
+              {
+                dfa.hot(c);
+              }
+            });
           }
       }
     dfa._writtenFields.set(field);
@@ -185,7 +190,7 @@ public class Instance extends Value
       (_clazz == dfa._fuir.clazzAsValue(dfa._fuir.clazzOuterClazz(field)),
        site != -1);
 
-    dfa.readField(field);
+    dfa.readField(field, why);
     var v = _fields.get(field);
     Val res = v;
     if (v == null)

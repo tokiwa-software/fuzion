@@ -31,6 +31,8 @@ import java.nio.ByteOrder;
 
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -1085,7 +1087,7 @@ public class DFA extends ANY
   /**
    * All fields that are ever read.
    */
-  BitSet _readFields = new BitSet();
+  IntMap<List<Call>> _readFields = new IntMap<List<Call>>();
 
 
   /**
@@ -1380,6 +1382,7 @@ public class DFA extends ANY
     _numericValues = new List<>();
     _numericValuesAny = new List<>();
     _preEffectValues = new TreeMap<>();
+    _readFields.values().forEach(v -> v.clear());
 
     _trueX = null; _falseX = null; _boolX = null;
 
@@ -1491,6 +1494,10 @@ public class DFA extends ANY
             _options.verbosePrintln(6, "  call: " + c);
           }
       }
+    // for (var c : _calls.values())
+    //   {
+    //     _options.verbosePrintln(3, "  call: " + c);
+    //   }
 
     if (_real)
       {
@@ -1910,7 +1917,7 @@ public class DFA extends ANY
           var new_value = cl._args.get(1).value();
           var res = atomic.callField(cl._dfa, v, cl.site(), cl);
 
-          cl._dfa.markReadRecursively(v);
+          cl._dfa.markReadRecursively(v, cl);
 
           // NYI: we could make compare_and_swap more accurate and call setField only if res contains expected, need bit-wise comparison
           atomic.setField(cl._dfa, v, new_value);
@@ -1929,7 +1936,7 @@ public class DFA extends ANY
           var new_value = cl._args.get(1).value();
           var ignore = atomic.callField(cl._dfa, v, cl.site(), cl);
 
-          cl._dfa.markReadRecursively(v);
+          cl._dfa.markReadRecursively(v, cl);
 
           // NYI: we could make compare_and_set more accurate and call setField only if res contains expected, need bit-wise comparison
           atomic.setField(cl._dfa, v, new_value);
@@ -2375,17 +2382,17 @@ public class DFA extends ANY
 
     put("fuzion.jvm.is_null0"  , cl ->
         {
-          cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
+          cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0), cl);
           return cl._dfa.bool();
         });
     put("fuzion.jvm.array_get"             , cl ->
         {
-          cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
+          cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0), cl);
           return wrappedJavaObject(cl);
         });
     put("fuzion.jvm.array_length"          , cl ->
       {
-        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
+        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0), cl);
         return genericNumResult(cl);
       }
     );
@@ -2394,8 +2401,8 @@ public class DFA extends ANY
           var ia = fuir(cl).clazzArgClazz(cl.calledClazz(), 0);
           var data = fuir(cl).clazzArg(ia, 0);
           var len  = fuir(cl).clazzArg(ia, 1);
-          cl._dfa.readField(data);
-          cl._dfa.readField(len);
+          cl._dfa.readField(data, cl);
+          cl._dfa.readField(len, cl);
           return Value.UNKNOWN_JAVA_REF;
         });
     put("fuzion.jvm.get_field0"            , cl ->
@@ -2575,8 +2582,8 @@ public class DFA extends ANY
         var fuir = fuir(cl);
         var data = fuir.clazzArg(fuir.clazzArgClazz(cc, 2), 0);
         var length = fuir.clazzArg(fuir.clazzArgClazz(cc, 2), 1);
-        cl._dfa.readField(data);
-        cl._dfa.readField(length);
+        cl._dfa.readField(data, cl);
+        cl._dfa.readField(length, cl);
         return outcomeJavaResult(cl);
       });
     put("fuzion.jvm.call_s0"               , cl ->
@@ -2585,8 +2592,8 @@ public class DFA extends ANY
         var fuir = fuir(cl);
         var data = fuir.clazzArg(fuir.clazzArgClazz(cc, 3), 0);
         var length = fuir.clazzArg(fuir.clazzArgClazz(cc, 3), 1);
-        cl._dfa.readField(data);
-        cl._dfa.readField(length);
+        cl._dfa.readField(data, cl);
+        cl._dfa.readField(length, cl);
         return outcomeJavaResult(cl);
       });
     put("fuzion.jvm.call_v0"               , cl ->
@@ -2595,8 +2602,8 @@ public class DFA extends ANY
         var fuir = fuir(cl);
         var data = fuir.clazzArg(fuir.clazzArgClazz(cc, 4), 0);
         var length = fuir.clazzArg(fuir.clazzArgClazz(cc, 4), 1);
-        cl._dfa.readField(data);
-        cl._dfa.readField(length);
+        cl._dfa.readField(data, cl);
+        cl._dfa.readField(length, cl);
         return outcomeJavaResult(cl);
       });
     put("fuzion.jvm.cast0", cl -> outcomeJavaResult(cl));
@@ -2629,27 +2636,27 @@ public class DFA extends ANY
       });
     put("concur.sync.mtx_lock"              , cl ->
       {
-        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
+        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0), cl);
         return cl._dfa.bool();
       });
     put("concur.sync.mtx_trylock"           , cl ->
       {
-        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
+        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0), cl);
         return cl._dfa.bool();
       });
     put("concur.sync.mtx_unlock"            , cl ->
       {
-        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
+        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0), cl);
         return cl._dfa.bool();
       });
     put("concur.sync.mtx_destroy"           , cl ->
       {
-        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
+        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0), cl);
         return Value.UNIT;
       });
     put("concur.sync.cnd_init"              , cl ->
       {
-        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
+        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0), cl);
         var rc = fuir(cl).clazzResultClazz(cl.calledClazz());
         var ag = fuir(cl).clazzActualGeneric(rc, 0);
         return outcome(cl._dfa,
@@ -2659,34 +2666,34 @@ public class DFA extends ANY
       });
     put("concur.sync.cnd_signal"            , cl ->
       {
-        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
+        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0), cl);
         return cl._dfa.bool();
       });
     put("concur.sync.cnd_broadcast"         , cl ->
       {
-        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
+        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0), cl);
         return cl._dfa.bool();
       });
     put("concur.sync.cnd_wait"              , cl ->
       {
-        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
-        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 1));
+        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0), cl);
+        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 1), cl);
         return cl._dfa.bool();
       });
     put("concur.sync.cnd_destroy"           , cl ->
       {
-        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
+        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0), cl);
         return Value.UNIT;
       });
     put("native_string_length"              , cl ->
       {
-        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
+        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0), cl);
         return genericNumResult(cl);
       });
     put("native_array"                      , cl ->
       {
-        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
-        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 1));
+        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0), cl);
+        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 1), cl);
         return cl._dfa.newSysArray(null, cl._dfa._fuir.clazzActualGeneric(cl.calledClazz(), 0));
       });
   }
@@ -2837,17 +2844,24 @@ public class DFA extends ANY
    * Remember that the given field is read.  Fields that are never read will be
    * removed from the code.
    */
-  void readField(int field)
+  void readField(int field, Context who)
   {
     if (PRECONDITIONS) require
-      (_fuir.clazzKind(field) == FUIR.FeatureKind.Field);
+      (_fuir.clazzKind(field) == FUIR.FeatureKind.Field,
+       who instanceof Context);
 
     var fnum = _fuir.clazzId2num(field);
-    if (!_readFields.get(fnum))
+    var v = _readFields.get(fnum);
+    if (v == null)
       {
-        _readFields.set(fnum);
-        wasChanged(() -> "DFA: read field " + _fuir.clazzAsString(field));
+        var hs = new List<Call>();
+        hs.add((Call)who);
+        _readFields.put(fnum, hs);
         _fuir.doesNeedCode(field);
+      }
+    else
+      {
+        v.add((Call)who);
       }
     var cl = _fuir.clazzAsValue(_fuir.clazzOuterClazz(field));
     var clnum = _fuir.clazzId2num(cl);
@@ -2861,12 +2875,12 @@ public class DFA extends ANY
    *
    * @param field
    */
-  void markReadRecursively(int field)
+  void markReadRecursively(int field, Call c)
   {
     if (PRECONDITIONS) require
       (_fuir.clazzKind(field) == FUIR.FeatureKind.Field);
 
-    readField(field);
+    readField(field, c);
 
     var rt = _fuir.clazzResultClazz(field);
 
@@ -2878,7 +2892,7 @@ public class DFA extends ANY
             // e.g. i32.val
             if (f != field)
               {
-                markReadRecursively(f);
+                markReadRecursively(f, c);
               }
           }
       }
@@ -2889,6 +2903,22 @@ public class DFA extends ANY
    * Is this field ever read?
    */
   boolean isRead(int field)
+  {
+    if (PRECONDITIONS) require
+      (_fuir.clazzKind(field) == FUIR.FeatureKind.Field);
+
+    var fnum = _fuir.clazzId2num(field);
+    return _readFields.get(fnum) != null;
+  }
+
+
+  /**
+   * Who read this field?
+   * null
+   * multiple
+   * Context
+   */
+  List<Call> readBy(int field)
   {
     if (PRECONDITIONS) require
       (_fuir.clazzKind(field) == FUIR.FeatureKind.Field);

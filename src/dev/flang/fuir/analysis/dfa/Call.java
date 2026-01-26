@@ -346,8 +346,8 @@ public class Call extends ANY implements Comparable<Call>, Context
     else if (_dfa._fuir.clazzKind(calledClazz()) == IR.FeatureKind.Native)
       {
         markSysArrayArgsAsInitialized();
-        markFunctionArgsAsCalled();
-        markArrayArgsAsRead();
+        markFunctionArgsAsCalled(from);
+        markArrayArgsAsRead(from);
 
         result = genericResult();
         if (result == null)
@@ -367,19 +367,19 @@ public class Call extends ANY implements Comparable<Call>, Context
   /**
    * call all args that are Function
    */
-  private void markArrayArgsAsRead()
+  private void markArrayArgsAsRead(Call who)
   {
     for (int i = 0; i < _dfa._fuir.clazzArgCount(calledClazz()); i++)
       {
-        _dfa.readField(_dfa._fuir.clazzArg(calledClazz(), i));
+        _dfa.readField(_dfa._fuir.clazzArg(calledClazz(), i), who);
 
         var at = _dfa._fuir.clazzArgClazz(calledClazz(), i);
         if (_dfa._fuir.clazzIsArray(at) || _dfa._fuir.clazzIsMutateArray(at))
           {
             var ia = _dfa._fuir.clazzArg(at, 0);
-            _dfa.readField(ia);
-            _dfa.readField(_dfa._fuir.clazzArg(_dfa._fuir.clazzResultClazz(ia), 0)); /* data */
-            _dfa.readField(_dfa._fuir.clazzArg(_dfa._fuir.clazzResultClazz(ia), 1)); /* length */
+            _dfa.readField(ia, who);
+            _dfa.readField(_dfa._fuir.clazzArg(_dfa._fuir.clazzResultClazz(ia), 0), who); /* data */
+            _dfa.readField(_dfa._fuir.clazzArg(_dfa._fuir.clazzResultClazz(ia), 1), who); /* length */
           }
       }
   }
@@ -388,11 +388,11 @@ public class Call extends ANY implements Comparable<Call>, Context
   /**
    * call all args that are Function
    */
-  private void markFunctionArgsAsCalled()
+  private void markFunctionArgsAsCalled(Call who)
   {
     for (int i = 0; i < _dfa._fuir.clazzArgCount(calledClazz()); i++)
       {
-        _dfa.readField(_dfa._fuir.clazzArg(calledClazz(), i));
+        _dfa.readField(_dfa._fuir.clazzArg(calledClazz(), i), who);
 
         var call = _dfa._fuir.lookupCall(_dfa._fuir.clazzArgClazz(calledClazz(), i));
         if (call != NO_CLAZZ)
