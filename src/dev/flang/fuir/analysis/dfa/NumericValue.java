@@ -233,6 +233,18 @@ public class NumericValue extends Value
 
 
   /**
+   * Does this Value cover the values in other?
+   */
+  @Override boolean contains(Value other)
+  {
+    if (PRECONDITIONS) require
+      (_clazz == other._clazz);
+
+    return _value == null;
+  }
+
+
+  /**
    * Add v to the set of values of given field within this instance.
    */
   public void setField(DFA dfa, int field, Value v)
