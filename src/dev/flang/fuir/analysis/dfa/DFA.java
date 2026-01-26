@@ -1427,24 +1427,25 @@ public class DFA extends ANY
   int findFixPoint()
   {
     var cnt = 0;
+    _changedSetBy = () -> "*** change not set ***";
     do
       {
         cnt++;
+        _changed = false;
 
         if (_options.verbose(2))
           {
             _options.verbosePrintln(2,
-                                    "DFA " + (_real ? "real " : "pre ") +
-                                    "iteration #" + cnt + ": --------------------------------------------------" +
-                                    (_options.verbose(3) ? ("calls:"   + _calls.size() +
-                                                            ",values:" + _numUniqueValues +
-                                                            ",envs:"   + (_envsQuick.size() + _envs.size()) +
-                                                            (_options.verbose(4) ? "; " + _changedSetBy.get()
-                                                                                    : ""                        ))
+                                    "DFA " + (_real ? "real " : "pre  ") +
+                                    "iteration #" + String.format("%02d", cnt) + ": ---------- " +
+                                    (_options.verbose(3) ? ("calls:"   + String.format("%5d", _calls.size()) +
+                                                            ",values:" + String.format("%5d",_numUniqueValues) +
+                                                            ",envs:"   + String.format("%3d",(_envsQuick.size() + _envs.size())) +
+                                                            (_options.verbose(4) && _changedSetBy != null
+                                                              ? " ---- " + _changedSetBy.get() : ""))
                                                          : ""                                                     ));
           }
 
-        _changed = false;
         if (cnt == 1)
           {
             newCall(null,
@@ -1455,10 +1456,9 @@ public class DFA extends ANY
                     null /* env */,
                     Context._MAIN_ENTRY_POINT_);
           }
-        _changedSetBy = () -> "*** change not set ***";
         iteration();
       }
-    while (_changed && (true || cnt < 100));
+    while (_changed);
 
     if (_options.verbose(4))
       {
