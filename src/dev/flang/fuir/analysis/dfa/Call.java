@@ -320,12 +320,12 @@ public class Call extends ANY implements Comparable<Call>, Context
    */
   public Val result(Call from)
   {
-    if (from != null)
-      {
-        // record how depends on result to mark
-        // them as hot again when result changes.
-        _dependOnResult.add(from);
-      }
+    if (PRECONDITIONS) require
+      (from != null);
+
+    // record how depends on result to mark
+    // them as hot again when result changes.
+    _dependOnResult.add(from);
 
     Val result = null;
     if (_dfa._fuir.clazzKind(calledClazz()) == IR.FeatureKind.Intrinsic)
