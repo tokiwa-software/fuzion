@@ -1427,6 +1427,7 @@ public class DFA extends ANY
   int findFixPoint()
   {
     var cnt = 0;
+    var start = System.currentTimeMillis();
     _changedSetBy = () -> "*** change not set ***";
     do
       {
@@ -1435,9 +1436,13 @@ public class DFA extends ANY
 
         if (_options.verbose(2))
           {
+            var now = System.currentTimeMillis();
+            var delta = now - start;
+            start = now;
             _options.verbosePrintln(2,
                                     "DFA " + (_real ? "real " : "pre  ") +
-                                    "iteration #" + String.format("%02d", cnt) + ": ---------- " +
+                                    "iteration #" + String.format("%02d", cnt)
+                                    + ", prev " + String.format("%4d", delta) + "ms: ---------- " +
                                     (_options.verbose(3) ? ("calls:"   + String.format("%5d", _calls.size()) +
                                                             ",values:" + String.format("%5d",_numUniqueValues) +
                                                             ",envs:"   + String.format("%3d",(_envsQuick.size() + _envs.size())) +
