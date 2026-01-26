@@ -30,6 +30,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.nio.file.Path;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import dev.flang.util.SourcePosition;
 import dev.flang.util.Errors;
@@ -42,31 +44,59 @@ import dev.flang.util.SourceFile;
  */
 public class LibraryFuir extends FUIR {
 
-  private int _mainClazz;
-  private ClazzRecord[] _clazzes;
-  private int[] _specialClazzes;
-  private SiteRecord[] _sites;
+
+  /*-----------------------------  final fields  -----------------------------*/
+
+
+  private final int _mainClazz;
+  private final ClazzRecord[] _clazzes;
+  private final int[] _specialClazzes;
+  private final SiteRecord[] _sites;
+
+
+  /*-----------------------------  cache  -----------------------------*/
+
+
+  private final Map<String,SourceFile> _srcFiles = new ConcurrentHashMap<String, SourceFile>();
+
+
+  /*-----------------------------  constructor  -----------------------------*/
+
 
   public LibraryFuir(byte[] data)
   {
-    try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data))) {
-      this._mainClazz = ois.readInt();
-      this._clazzes = (ClazzRecord[]) ois.readObject();
-      this._sites = (SiteRecord[]) ois.readObject();
-      this._specialClazzes = (int[]) ois.readObject();
-    }
-    catch(ClassNotFoundException e)
-    {
-      e.printStackTrace();
-    }
-    catch (IOException e) {
-      e.printStackTrace();
-    }
+    var mainClazz = NO_CLAZZ;
+    var clazzes = new ClazzRecord[0];
+    var sites = new SiteRecord[0];
+    var specialClazzes = new int[0];
+    try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data)))
+      {
+        mainClazz = ois.readInt();
+        clazzes = (ClazzRecord[]) ois.readObject();
+        sites = (SiteRecord[]) ois.readObject();
+        specialClazzes = (int[]) ois.readObject();
+      }
+    catch(ClassNotFoundException | IOException e)
+      {
+        Errors.fatal(e);
+      }
+    _mainClazz = mainClazz;
+    _clazzes = clazzes;
+    _sites = sites;
+    _specialClazzes = specialClazzes;
   }
 
-  private int siteCount()
+
+  /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * helper to get SourceFile from cache or compute it once
+   */
+  private SourceFile sourceFile(String path)
   {
-    return _sites.length;
+    return _srcFiles
+      .computeIfAbsent(path, p -> new SourceFile(Path.of(p)));
   }
 
   @Override
@@ -337,7 +367,7 @@ public class LibraryFuir extends FUIR {
       {
         res = "** NO_SITE **";
       }
-    else if (s >= SITE_BASE && s < SITE_BASE+siteCount())
+    else if (s >= SITE_BASE && s < SITE_BASE+_sites.length)
       {
         var cl = clazzAt(s);
         var p = sitePos(s);
@@ -516,7 +546,7 @@ public class LibraryFuir extends FUIR {
   public SourcePosition clazzDeclarationPos(int cl)
   {
     var r = _clazzes[clazzId2num(cl)];
-    return new SourcePosition(new dev.flang.util.SourceFile(java.nio.file.Path.of(r.clazzSrcFile())),
+    return new SourcePosition(sourceFile(r.clazzSrcFile()),
                               r.clazzSrcBytePos());
   }
 

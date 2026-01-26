@@ -86,11 +86,7 @@ public class Tag extends Expr
             .choiceGenerics()
             .stream()
             .filter(cg -> cg.isAssignableFromWithoutTagging(value.type()).yes())
-            .count() == 1
-        // NYI: UNDER DEVELOPMENT: why is value.type() sometimes unit
-        // even though none of the choice elements is unit
-        || value.type().compareTo(Types.resolved.t_unit) == 0
-       );
+            .count() == 1);
 
     this._value = value;
     this._taggedType = taggedType;

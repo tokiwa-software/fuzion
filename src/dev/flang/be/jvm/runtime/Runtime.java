@@ -623,8 +623,7 @@ public class Runtime extends ANY
             var mcl = l.getResourceAsStream(CLASS_NAME_TO_FUZION_CLAZZ_NAME);
             if (mcl != null)
               {
-                var reader = new BufferedReader(new InputStreamReader(mcl));
-                try
+                try (var reader = new BufferedReader(new InputStreamReader(mcl)))
                   {
                     var ln = reader.readLine();
                     while (ln != null)

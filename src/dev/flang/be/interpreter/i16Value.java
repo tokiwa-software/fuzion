@@ -80,6 +80,7 @@ public class i16Value extends Value
    *
    * @return the i16 value
    */
+  @Override
   public int i16Value()
   {
     return _val;
@@ -93,6 +94,7 @@ public class i16Value extends Value
    *
    * @param size the size of the data to be stored
    */
+  @Override
   void storeNonRef(LValue slot, int size)
   {
     if (PRECONDITIONS) require
@@ -110,6 +112,7 @@ public class i16Value extends Value
    *
    * @throws Error in case this does not match the expected clazz
    */
+  @Override
   void checkStaticClazz(int expected)
   {
     if (expected != fuir().clazz(SpecialClazzes.c_i16))

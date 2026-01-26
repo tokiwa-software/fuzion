@@ -72,7 +72,7 @@ public class Instance extends Value
 
 
   /**
-   * Site of the call that created this instance, -1 if the call site is not
+   * Site of the call that created this instance, NO_SITE if the call site is not
    * known, i.e., the call is coming from intrinsic call or the main entry
    * point.
    *

@@ -144,7 +144,6 @@ public class Types extends ANY
     public final AbstractType t_f64 ;
     public final AbstractType t_bool;
     public final AbstractType t_Any;
-    private final AbstractType t_fuzion;
     public final AbstractType t_String;
     public final AbstractType t_unit;
 
@@ -170,11 +169,8 @@ public class Types extends ANY
     public final AbstractFeature f_bool_OR;
     public final AbstractFeature f_bool_IMPLIES;
     public final AbstractFeature f_bool_TERNARY;
-    public final AbstractFeature f_debug;
-    public final AbstractFeature f_debug_level;
     public final AbstractFeature f_Function;
     public final AbstractFeature f_Function_call;
-    public final AbstractFeature f_safety;
     public final AbstractFeature f_array;
     public final AbstractFeature f_array_internal_array;
     public final AbstractFeature f_mutate_array;
@@ -228,7 +224,6 @@ public class Types extends ANY
       t_f32                     = universe.get(mod, FuzionConstants.F32_NAME, 1).selfType();
       t_f64                     = universe.get(mod, FuzionConstants.F64_NAME, 1).selfType();
       t_bool                    = universe.get(mod, "bool", 0).selfType();
-      t_fuzion                  = universe.get(mod, "fuzion", 0).selfType();
       t_String                  = universe.get(mod, FuzionConstants.STRING_NAME, 0).selfType();
       t_Any                     = universe.get(mod, FuzionConstants.ANY_NAME, 0).selfType();
       t_unit                    = universe.get(mod, FuzionConstants.UNIT_NAME, 0).selfType();
@@ -247,11 +242,8 @@ public class Types extends ANY
       f_bool_OR                 = forFrontEnd ? f_bool.get(mod, FuzionConstants.INFIX_OPERATOR_PREFIX + "||"   , 1) : null;
       f_bool_IMPLIES            = forFrontEnd ? f_bool.get(mod, FuzionConstants.INFIX_OPERATOR_PREFIX + ":"    , 1) : null;
       f_bool_TERNARY            = forFrontEnd ? f_bool.get(mod, FuzionConstants.TERNARY_OPERATOR_PREFIX + "? :", 3) : null;
-      f_debug                   = universe.get(mod, "debug", 0);
-      f_debug_level             = universe.get(mod, "debug_level", 0);
       f_Function                = universe.get(mod, FUNCTION_NAME, 2);
       f_Function_call           = f_Function.get(mod, FuzionConstants.OPERATION_CALL, 1);
-      f_safety                  = universe.get(mod, "safety", 0);
       f_array                   = universe.get(mod, FuzionConstants.ARRAY_NAME, 5);
       f_array_internal_array    = f_array.get(mod, "internal_array", 0);
       f_mutate_array            = universe.get(mod, "mutate", 0).get(mod, FuzionConstants.ARRAY_NAME, 4);
@@ -338,7 +330,6 @@ public class Types extends ANY
         t_f32        ,
         t_f64        ,
         t_bool       ,
-        t_fuzion     ,
         t_String     ,
         t_Any        ,
         t_unit       ,
