@@ -1377,6 +1377,9 @@ public class DFA extends ANY
     _tagged = new LongMap<>();
     _joined = new LongMap<>();
     _uninitializedSysArray = new IntMap<>();
+    _numericValues = new List<>();
+    _numericValuesAny = new List<>();
+    _preEffectValues = new TreeMap<>();
 
     _trueX = null; _falseX = null; _boolX = null;
 
