@@ -430,10 +430,10 @@ is
       s
     else if c2 = 0
       Sequence.this
-    else if c1 < 0 || c2 < 0 || max 1 c1 < c2 then
+    else if c1 < 0 || c2 < 0 then
       as_list.concat_list s.as_list
     else
-      container.expanding_array T .empty c1+c2
+      container.growable_array T .empty c1+c2
         .concat Sequence.this
         .concat s
 
