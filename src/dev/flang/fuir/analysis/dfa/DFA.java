@@ -3347,12 +3347,6 @@ public class DFA extends ANY
         g = g != null ? g : ng;
       }
 
-    var s = _fuir.clazzAsString(cl);
-    if (!s.startsWith("instate_helper ") && !s.startsWith("(instate_helper "))
-      {
-        env = env == null ? null : env.filterCallGroup(g);
-      }
-
     Call e, r;
     r = _unitCalls.get(cl);
     if (isUnitType(cl))
