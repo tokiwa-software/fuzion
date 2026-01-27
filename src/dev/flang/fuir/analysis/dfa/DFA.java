@@ -987,13 +987,6 @@ public class DFA extends ANY
 
 
   /**
-   * All calls will receive a unique identifier.  This is the next unique
-   * identifier to be used for the next new call.
-   */
-  int _callIds = 0;
-
-
-  /**
    * Sites created during DFA analysis.
    */
   List<Site> _sites = new List<>();
@@ -3405,11 +3398,6 @@ public class DFA extends ANY
       }
     if (e == null)
       {
-        r._uniqueCallId = _callIds++;
-        if (_callIds < 0)
-          {
-            DfaErrors.fatal("DFA: Exceeded maximum number of calls " + Integer.MAX_VALUE);
-          }
         _calls.put(r, r);
         r._instance = newInstance(cl, site, r);
         if (r._instance instanceof Instance riv)

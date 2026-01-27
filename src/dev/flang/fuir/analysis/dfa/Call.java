@@ -63,13 +63,6 @@ public class Call extends ANY implements Comparable<Call>, Context
 
 
   /**
-   * Unique id to identify this Call. This is used to avoid expensive comparison
-   * for calls.
-   */
-  int _uniqueCallId = -1;
-
-
-  /**
    * The DFA instance we are working with.
    */
   final DFA _dfa;
@@ -180,16 +173,6 @@ public class Call extends ANY implements Comparable<Call>, Context
 
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * Return a unique id for the call or main entry point context.
-   */
-  @Override
-  public int uniqueCallId()
-  {
-    return _uniqueCallId;
-  }
 
 
   /**
