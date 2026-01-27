@@ -2487,13 +2487,39 @@ public class AstErrors extends ANY
       ss("<effect>.finally") + " is called automatically.");
   }
 
-  public static void ambiguousElse(SourcePosition pos, SourcePosition if1, SourcePosition if2)
+  public static void ambiguousElse(SourcePosition pos, SourcePosition if1, SourcePosition loop1, SourcePosition if2)
+  {
+    if (PRECONDITIONS) require
+      ((if1 != null) != (loop1 != null)); // either if1 or loop1 must be non-null
+
+    if (if1 != null)
+      {
+        error(pos,
+              "Ambiguous " + skw("else") + " for multiple " + skw("if") + " statements",
+              "The " + skw("else") + " is ambiguous since it may be parsed as part of several different " + skw("if") + " statements.\n" +
+              "Outer " + skw("if") + " statement at " + if1.show() + "\n" +
+              "Inner " + skw("if") + " statement at " + if2.show() + "\n" +
+              "\n" +
+              "To solve this, add braces " + code("{ }") + " or use line breaks and indentation.");
+      }
+    else
+      {
+        error(pos,
+              "Ambiguous " + skw("else") + " for nested loop and " + skw("if") + " statements",
+              "The " + skw("else") + " is ambiguous since it may be parsed as part different loop and " + skw("if") + " statements.\n" +
+              "Outer loop statement at " + loop1.show() + "\n" +
+              "Inner " + skw("if") + " statement at " + if2.show() + "\n" +
+              "\n" +
+              "To solve this, add braces " + code("{ }") + " or use line breaks and indentation.");
+      }
+  }
+
+  public static void ambiguousLoops(SourcePosition pos, SourcePosition loop1)
   {
     error(pos,
-          "Ambiguous " + skw("else") + " for multiple " + skw("if") + " statements",
-          "The " + skw("else") + " is ambiguous since it may be parsed as part of several different " + skw("if") + " statements.\n" +
-          "Outer " + skw("if") + " statement at " + if1.show() + "\n" +
-          "Inner " + skw("if") + " statement at " + if2.show() + "\n" +
+          "Ambiguous nested loop statements",
+          "Several loop statements occur in a single line causing ambiguity for the parser.\n" +
+          "Outer loop statement at " + loop1.show() + "\n" +
           "\n" +
           "To solve this, add braces " + code("{ }") + " or use line breaks and indentation.");
   }

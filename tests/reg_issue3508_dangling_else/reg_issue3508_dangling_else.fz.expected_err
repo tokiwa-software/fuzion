@@ -1,43 +1,191 @@
 
---CURDIR--/reg_issue3508_dangling_else.fz:40:36: error 1: Ambiguous 'else' for multiple 'if' statements
+--CURDIR--/reg_issue3508_dangling_else.fz:51:36: error 1: Ambiguous 'else' for multiple 'if' statements
   if false then if false then unit else say "dangling"   # 1. should flag an error: dangling else
 -----------------------------------^
 The 'else' is ambiguous since it may be parsed as part of several different 'if' statements.
-Outer 'if' statement at --CURDIR--/reg_issue3508_dangling_else.fz:40:3:
+Outer 'if' statement at --CURDIR--/reg_issue3508_dangling_else.fz:51:3:
   if false then if false then unit else say "dangling"   # 1. should flag an error: dangling else
 --^
-Inner 'if' statement at --CURDIR--/reg_issue3508_dangling_else.fz:40:17:
+Inner 'if' statement at --CURDIR--/reg_issue3508_dangling_else.fz:51:17:
   if false then if false then unit else say "dangling"   # 1. should flag an error: dangling else
 ----------------^
 
 To solve this, add braces '{ }' or use line breaks and indentation.
 
 
---CURDIR--/reg_issue3508_dangling_else.fz:42:42: error 2: Ambiguous 'else' for multiple 'if' statements
+--CURDIR--/reg_issue3508_dangling_else.fz:53:42: error 2: Ambiguous 'else' for multiple 'if' statements
   if true then if true then if true then else            # 2. should flag an error: dangling else
 -----------------------------------------^
 The 'else' is ambiguous since it may be parsed as part of several different 'if' statements.
-Outer 'if' statement at --CURDIR--/reg_issue3508_dangling_else.fz:42:16:
+Outer 'if' statement at --CURDIR--/reg_issue3508_dangling_else.fz:53:16:
   if true then if true then if true then else            # 2. should flag an error: dangling else
 ---------------^
-Inner 'if' statement at --CURDIR--/reg_issue3508_dangling_else.fz:42:29:
+Inner 'if' statement at --CURDIR--/reg_issue3508_dangling_else.fz:53:29:
   if true then if true then if true then else            # 2. should flag an error: dangling else
 ----------------------------^
 
 To solve this, add braces '{ }' or use line breaks and indentation.
 
 
---CURDIR--/reg_issue3508_dangling_else.fz:44:45: error 3: Ambiguous 'else' for multiple 'if' statements
+--CURDIR--/reg_issue3508_dangling_else.fz:55:45: error 3: Ambiguous 'else' for multiple 'if' statements
   if true then {if false then if false then else} else   # 3. should flag an error: dangling else
 --------------------------------------------^
 The 'else' is ambiguous since it may be parsed as part of several different 'if' statements.
-Outer 'if' statement at --CURDIR--/reg_issue3508_dangling_else.fz:44:17:
+Outer 'if' statement at --CURDIR--/reg_issue3508_dangling_else.fz:55:17:
   if true then {if false then if false then else} else   # 3. should flag an error: dangling else
 ----------------^
-Inner 'if' statement at --CURDIR--/reg_issue3508_dangling_else.fz:44:31:
+Inner 'if' statement at --CURDIR--/reg_issue3508_dangling_else.fz:55:31:
   if true then {if false then if false then else} else   # 3. should flag an error: dangling else
 ------------------------------^
 
 To solve this, add braces '{ }' or use line breaks and indentation.
 
-3 errors.
+
+--CURDIR--/reg_issue3508_dangling_else.fz:57:48: error 4: Ambiguous 'else' for multiple 'if' statements
+  if true then say "hi"; if true then say "ho" else say "ha" else say "he"  # 4. should flag an error: dangling else
+-----------------------------------------------^
+The 'else' is ambiguous since it may be parsed as part of several different 'if' statements.
+Outer 'if' statement at --CURDIR--/reg_issue3508_dangling_else.fz:57:3:
+  if true then say "hi"; if true then say "ho" else say "ha" else say "he"  # 4. should flag an error: dangling else
+--^
+Inner 'if' statement at --CURDIR--/reg_issue3508_dangling_else.fz:57:26:
+  if true then say "hi"; if true then say "ho" else say "ha" else say "he"  # 4. should flag an error: dangling else
+-------------------------^
+
+To solve this, add braces '{ }' or use line breaks and indentation.
+
+
+--CURDIR--/reg_issue3508_dangling_else.fz:59:38: error 5: Ambiguous 'else' for multiple 'if' statements
+  if (false) then if false then unit else say "dangling"   # 5. should flag an error: dangling else
+-------------------------------------^
+The 'else' is ambiguous since it may be parsed as part of several different 'if' statements.
+Outer 'if' statement at --CURDIR--/reg_issue3508_dangling_else.fz:59:3:
+  if (false) then if false then unit else say "dangling"   # 5. should flag an error: dangling else
+--^
+Inner 'if' statement at --CURDIR--/reg_issue3508_dangling_else.fz:59:19:
+  if (false) then if false then unit else say "dangling"   # 5. should flag an error: dangling else
+------------------^
+
+To solve this, add braces '{ }' or use line breaks and indentation.
+
+
+--CURDIR--/reg_issue3508_dangling_else.fz:61:44: error 6: Ambiguous 'else' for multiple 'if' statements
+  if (true) then if true then if true then else            # 6. should flag an error: dangling else
+-------------------------------------------^
+The 'else' is ambiguous since it may be parsed as part of several different 'if' statements.
+Outer 'if' statement at --CURDIR--/reg_issue3508_dangling_else.fz:61:18:
+  if (true) then if true then if true then else            # 6. should flag an error: dangling else
+-----------------^
+Inner 'if' statement at --CURDIR--/reg_issue3508_dangling_else.fz:61:31:
+  if (true) then if true then if true then else            # 6. should flag an error: dangling else
+------------------------------^
+
+To solve this, add braces '{ }' or use line breaks and indentation.
+
+
+--CURDIR--/reg_issue3508_dangling_else.fz:63:47: error 7: Ambiguous 'else' for multiple 'if' statements
+  if (true) then {if false then if false then else} else   # 7. should flag an error: dangling else
+----------------------------------------------^
+The 'else' is ambiguous since it may be parsed as part of several different 'if' statements.
+Outer 'if' statement at --CURDIR--/reg_issue3508_dangling_else.fz:63:19:
+  if (true) then {if false then if false then else} else   # 7. should flag an error: dangling else
+------------------^
+Inner 'if' statement at --CURDIR--/reg_issue3508_dangling_else.fz:63:33:
+  if (true) then {if false then if false then else} else   # 7. should flag an error: dangling else
+--------------------------------^
+
+To solve this, add braces '{ }' or use line breaks and indentation.
+
+
+--CURDIR--/reg_issue3508_dangling_else.fz:65:50: error 8: Ambiguous 'else' for multiple 'if' statements
+  if (true) then say "hi"; if true then say "ho" else say "ha" else say "he"  # 8. should flag an error: dangling else
+-------------------------------------------------^
+The 'else' is ambiguous since it may be parsed as part of several different 'if' statements.
+Outer 'if' statement at --CURDIR--/reg_issue3508_dangling_else.fz:65:3:
+  if (true) then say "hi"; if true then say "ho" else say "ha" else say "he"  # 8. should flag an error: dangling else
+--^
+Inner 'if' statement at --CURDIR--/reg_issue3508_dangling_else.fz:65:28:
+  if (true) then say "hi"; if true then say "ho" else say "ha" else say "he"  # 8. should flag an error: dangling else
+---------------------------^
+
+To solve this, add braces '{ }' or use line breaks and indentation.
+
+
+--CURDIR--/reg_issue3508_dangling_else.fz:67:29: error 9: Ambiguous 'else' for nested loop and 'if' statements
+  while false if false then else        # 9. should flag an error: ambiguous else
+----------------------------^
+The 'else' is ambiguous since it may be parsed as part different loop and 'if' statements.
+Outer loop statement at --CURDIR--/reg_issue3508_dangling_else.fz:67:3:
+  while false if false then else        # 9. should flag an error: ambiguous else
+--^
+Inner 'if' statement at --CURDIR--/reg_issue3508_dangling_else.fz:67:15:
+  while false if false then else        # 9. should flag an error: ambiguous else
+--------------^
+
+To solve this, add braces '{ }' or use line breaks and indentation.
+
+
+--CURDIR--/reg_issue3508_dangling_else.fz:69:6: error 10: Ambiguous nested loop statements
+  do while false if true then else      # 10. should flag an error: 2x: nested loop and ambiguous else
+-----^
+Several loop statements occur in a single line causing ambiguity for the parser.
+Outer loop statement at --CURDIR--/reg_issue3508_dangling_else.fz:69:3:
+  do while false if true then else      # 10. should flag an error: 2x: nested loop and ambiguous else
+--^
+
+To solve this, add braces '{ }' or use line breaks and indentation.
+
+
+--CURDIR--/reg_issue3508_dangling_else.fz:69:31: error 11: Ambiguous 'else' for nested loop and 'if' statements
+  do while false if true then else      # 10. should flag an error: 2x: nested loop and ambiguous else
+------------------------------^
+The 'else' is ambiguous since it may be parsed as part different loop and 'if' statements.
+Outer loop statement at --CURDIR--/reg_issue3508_dangling_else.fz:69:6:
+  do while false if true then else      # 10. should flag an error: 2x: nested loop and ambiguous else
+-----^
+Inner 'if' statement at --CURDIR--/reg_issue3508_dangling_else.fz:69:18:
+  do while false if true then else      # 10. should flag an error: 2x: nested loop and ambiguous else
+-----------------^
+
+To solve this, add braces '{ }' or use line breaks and indentation.
+
+
+--CURDIR--/reg_issue3508_dangling_else.fz:71:31: error 12: Ambiguous 'else' for nested loop and 'if' statements
+  while (false) if false then else      # 11. should flag an error: ambiguous else
+------------------------------^
+The 'else' is ambiguous since it may be parsed as part different loop and 'if' statements.
+Outer loop statement at --CURDIR--/reg_issue3508_dangling_else.fz:71:3:
+  while (false) if false then else      # 11. should flag an error: ambiguous else
+--^
+Inner 'if' statement at --CURDIR--/reg_issue3508_dangling_else.fz:71:17:
+  while (false) if false then else      # 11. should flag an error: ambiguous else
+----------------^
+
+To solve this, add braces '{ }' or use line breaks and indentation.
+
+
+--CURDIR--/reg_issue3508_dangling_else.fz:73:6: error 13: Ambiguous nested loop statements
+  do while (false) if true then else    # 12. should flag an error: 2x: nested loop and ambiguous else
+-----^
+Several loop statements occur in a single line causing ambiguity for the parser.
+Outer loop statement at --CURDIR--/reg_issue3508_dangling_else.fz:73:3:
+  do while (false) if true then else    # 12. should flag an error: 2x: nested loop and ambiguous else
+--^
+
+To solve this, add braces '{ }' or use line breaks and indentation.
+
+
+--CURDIR--/reg_issue3508_dangling_else.fz:73:33: error 14: Ambiguous 'else' for nested loop and 'if' statements
+  do while (false) if true then else    # 12. should flag an error: 2x: nested loop and ambiguous else
+--------------------------------^
+The 'else' is ambiguous since it may be parsed as part different loop and 'if' statements.
+Outer loop statement at --CURDIR--/reg_issue3508_dangling_else.fz:73:6:
+  do while (false) if true then else    # 12. should flag an error: 2x: nested loop and ambiguous else
+-----^
+Inner 'if' statement at --CURDIR--/reg_issue3508_dangling_else.fz:73:20:
+  do while (false) if true then else    # 12. should flag an error: 2x: nested loop and ambiguous else
+-------------------^
+
+To solve this, add braces '{ }' or use line breaks and indentation.
+
+14 errors.

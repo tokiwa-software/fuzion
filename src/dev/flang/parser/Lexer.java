@@ -679,6 +679,13 @@ public class Lexer extends SourceFile
   private SourcePosition _surroundingIf = null;
 
 
+  /**
+   * In case there is a surrounding loop statement, this gives the start position. This is used
+   * to detect ambiguous `else` statements.
+   */
+  private SourcePosition _surroundingLoop = null;
+
+
 
   private SemiState _atSemicolon = SemiState.CONTINUE;
 
@@ -727,6 +734,7 @@ public class Lexer extends SourceFile
     _endAtColon = original._endAtColon;
     _endAtBar = original._endAtBar;
     _surroundingIf = original._surroundingIf;
+    _surroundingLoop = original._surroundingLoop;
     _atSemicolon = original._atSemicolon;
     _ignoredTokenBefore = original._ignoredTokenBefore;
     _stringLexer = original._stringLexer == null ? null : new StringLexer(original._stringLexer);
@@ -959,6 +967,22 @@ public class Lexer extends SourceFile
 
     return result;
   }
+  SourcePosition surroundingIf()
+  {
+    return _surroundingIf;
+  }
+
+  SourcePosition surroundingLoop(SourcePosition pos)
+  {
+    var result = _surroundingLoop;
+    _surroundingLoop = pos;
+
+    return result;
+  }
+  SourcePosition surroundingLoop()
+  {
+    return _surroundingLoop;
+  }
 
   /**
    * Increases the semicolon state, which is used to detect ambiguous semicolons
@@ -1013,6 +1037,7 @@ public class Lexer extends SourceFile
     var oldEAC = endAtColon(false);
     var oldEAB = endAtBar(false);
     var oldIf  = surroundingIf(null);
+    var oldLoop  = surroundingLoop(null);
     var oldSemiSt = semiState(SemiState.CONTINUE);
     V result = c.get();
     sameLine(oldLine);
@@ -1021,6 +1046,7 @@ public class Lexer extends SourceFile
     endAtColon(oldEAC);
     endAtBar(oldEAB);
     surroundingIf(oldIf);
+    surroundingLoop(oldLoop);
     semiState(oldSemiSt);
     return result;
   }

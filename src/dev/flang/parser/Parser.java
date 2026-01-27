@@ -2722,9 +2722,15 @@ loopEpilog  : "until" exprInLine thenPart loopElseBlock
    */
   Expr loop()
   {
+    var surroundingLoop = surroundingLoop();
     return relaxLineAndSpaceLimit(() -> {
+        var pos = tokenSourcePos();
+        if (surroundingLoop != null && surroundingLoop.line() == pos.line())
+          {
+            AstErrors.ambiguousLoops(pos, surroundingLoop);
+          }
+        surroundingLoop(pos);
         var old = setMinIndent(tokenPos());
-        SourcePosition pos = tokenSourcePos();
         List<Feature> indexVars  = new List<>();
         List<Feature> nextValues = new List<>();
         var hasFor   = current() == Token.t_for; if (hasFor) { indexVars(indexVars, nextValues); }
@@ -2872,10 +2878,10 @@ ifexpr      : "if" exprInLine thenPart elseBlock
    */
   Expr ifexpr(boolean elif)
   {
-    var oldSurroundingIf = surroundingIf(null);
+    var surroundingIf = surroundingIf();
+    var surroundingLoop = surroundingLoop();
     return relaxLineAndSpaceLimit(() -> {
-        SourcePosition pos = tokenSourcePos();
-        SourcePosition ifPos = pos;
+        var pos = tokenSourcePos();
         surroundingIf(pos);
 
         var oldMinIdent = elif ? null : setMinIndent(tokenPos());
@@ -2897,7 +2903,7 @@ ifexpr      : "if" exprInLine thenPart elseBlock
         var elPos = tokenSourcePos();
 
         // don't use 'if' as indentation reference if 'then' is indented less (e.g. when 'then' is aligned with 'else if')
-        ifPos = _then != null && ifPos.column() > _then.column() ? null : ifPos;
+        var ifPos = _then != null && pos.column() > _then.column() ? null : pos;
 
         // if not in the same line, 'else' must be aligned with either 'if', 'then' or 'else if'
         if (currentAtMinIndent() == Token.t_else && !(
@@ -2915,7 +2921,7 @@ ifexpr      : "if" exprInLine thenPart elseBlock
           }
 
         surroundingIf(null);
-        var els = elseBlock(oldSurroundingIf, pos);
+        var els = elseBlock(surroundingIf, surroundingLoop, pos);
 
         if (oldMinIdent != null) { setMinIndent(oldMinIdent); }
 
@@ -2957,7 +2963,9 @@ elseBlock   : "else" block
             |
             ;
    */
-  Block elseBlock(SourcePosition surroundingIf, SourcePosition thisIf)
+  Block elseBlock(SourcePosition surroundingIf,
+                  SourcePosition surroundingLoop,
+                  SourcePosition thisIf)
   {
     Block result = null;
     SourcePosition oldOuterElse = _outerElse;
@@ -2968,7 +2976,13 @@ elseBlock   : "else" block
         surroundingIf.line() == thisIf.line() &&
         pos.line() == thisIf.line())
       {
-        AstErrors.ambiguousElse(pos, surroundingIf, thisIf);
+        AstErrors.ambiguousElse(pos, surroundingIf, null, thisIf);
+      }
+    else if (surroundingLoop != null &&
+             surroundingLoop.line() == thisIf.line() &&
+             pos.line() == thisIf.line())
+      {
+        AstErrors.ambiguousElse(pos, null, surroundingLoop, thisIf);
       }
 
     var elseLine = pos.line();
