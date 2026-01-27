@@ -98,12 +98,6 @@ public class Parser extends Lexer
   public static boolean ENABLE_SET_KEYWORD = false;
 
   /**
-   * SourcePosition of the outer `else`, null if not in `else` block
-   * required for proper alignment of `if`, `then`, `else` and `else if`
-   */
-  private SourcePosition _outerElse = null; // NYI: CLEANUP: state in parser should be avoided see #4991
-
-  /**
    * Are we parsing for the language server and thus need to
    * be more tolerant for incomplete source code?
    */
@@ -2854,18 +2848,18 @@ nextValue   : COMMA exprInLine
    */
   Expr ifexpr()
   {
-    return ifexpr(false);
+    return ifexpr(null);
   }
 
   /**
    * Parse ifexpr
    *
-   * @param elif is this part of an `else if`
+   * @param outerElse is this part of an `else if`, the position of `else`, otherwise `null`.
    *
 ifexpr      : "if" exprInLine thenPart elseBlockOpt
             ;
    */
-  Expr ifexpr(boolean elif)
+  Expr ifexpr(SourcePosition outerElse)
   {
     var surroundingIf = surroundingIf();
     var surroundingLoop = surroundingLoop();
@@ -2873,7 +2867,7 @@ ifexpr      : "if" exprInLine thenPart elseBlockOpt
         var pos = tokenSourcePos();
         surroundingIf(pos);
 
-        var oldMinIdent = elif ? null : setMinIndent(tokenPos());
+        var oldMinIdent = outerElse!=null ? null : setMinIndent(tokenPos()); // NYI: why?
 
         var l = line();
         boolean nestedIf = surroundingIf != null && surroundingIf.line() == l;
@@ -2898,12 +2892,14 @@ ifexpr      : "if" exprInLine thenPart elseBlockOpt
 
         // if not in the same line, 'else' must be aligned with either 'if', 'then' or 'else if'
         if (currentAtMinIndent() == Token.t_else && !(
-            (thn != null        && (thn.line(  )      == elPos.line() || thn.column()        == elPos.column())) ||
-            (_outerElse != null && (_outerElse.line() == elPos.line() || _outerElse.column() == elPos.column())) ||
-            (ifPos != null      && (ifPos.line()      == elPos.line() || ifPos.column()      == elPos.column())))
+            (thn != null       && (thn.line(  )     == elPos.line() || thn.column()       == elPos.column())) ||
+            (outerElse != null && (outerElse.line() == elPos.line() || outerElse.column() == elPos.column())) ||
+            (ifPos != null     && (ifPos.line()     == elPos.line() || ifPos.column()     == elPos.column())))
            )
           {
-            var errPos = (ifPos != null) ? ifPos : (_outerElse != null) ? _outerElse : thn;
+            var errPos = ifPos     != null ? ifPos     :
+                         outerElse != null ? outerElse
+                                           : thn;
 
             Errors.indentationProblemEncountered(tokenSourcePos(), errPos,
               "When " + Errors.skw("else") + " is not in the same line as " + Errors.skw("if")
@@ -2995,10 +2991,7 @@ elseBlock   : "else" block    // must not follow several if/loops in single line
       ((thisIf != null) != (thisLoop != null));  // either thisIf or thisLoop is non-null
 
     Block result = null;
-    SourcePosition oldOuterElse = _outerElse;
     var pos = tokenSourcePos();
-    _outerElse = pos;
-
     var elseLine = pos.line();
     if (skip(true, Token.t_else))
       {
@@ -3011,20 +3004,13 @@ elseBlock   : "else" block    // must not follow several if/loops in single line
         // otherwise it is a normal else block that might contain an `if`
         if (thisIf != null && current() == Token.t_if && elseLine == tokenSourcePos().line())
           {
-            result = new Block(false, new List<Expr>(ifexpr(true)));
+            result = new Block(false, new List<Expr>(ifexpr(pos)));
           }
         else
           {
-            _outerElse = null;
             result = block();
           }
       }
-    else
-      {
-        _outerElse = null;
-      }
-
-    _outerElse = oldOuterElse;
 
     if (POSTCONDITIONS) ensure
       (result == null          ||
