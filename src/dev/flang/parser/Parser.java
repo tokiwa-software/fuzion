@@ -98,12 +98,6 @@ public class Parser extends Lexer
   public static boolean ENABLE_SET_KEYWORD = false;
 
   /**
-   * contains the last line number in which an `if` was found,
-   * required to set the semicolon state for the ambiguous semicolon error
-   */
-  private int _lastIfLine = -1;             // NYI: CLEANUP: state in parser should be avoided see #4991
-
-  /**
    * SourcePosition of the outer `else`, null if not in `else` block
    * required for proper alignment of `if`, `then`, `else` and `else if`
    */
@@ -2887,19 +2881,19 @@ ifexpr      : "if" exprInLine thenPart elseBlockOpt
 
         var oldMinIdent = elif ? null : setMinIndent(tokenPos());
 
-        boolean nestedIf = _lastIfLine == line();
-        _lastIfLine = line();
+        var l = line();
+        boolean nestedIf = surroundingIf != null && surroundingIf.line() == l;
 
         match(Token.t_if, "ifexpr");
 
         Expr e = exprInLine();
 
         // semi error if in same line
-        if (nestedIf && _lastIfLine == line()) {semiState(SemiState.ERROR);}
+        if (nestedIf && l == line()) {semiState(SemiState.ERROR);}
         Block b = thenPart(false);
 
         // reset if new line
-        if (nestedIf && _lastIfLine != line()) {semiState(SemiState.CONTINUE);}
+        if (nestedIf && l != line()) {semiState(SemiState.CONTINUE);}
 
         var elPos = tokenSourcePos();
 
