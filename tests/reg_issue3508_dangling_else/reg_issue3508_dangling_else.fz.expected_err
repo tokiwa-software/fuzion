@@ -114,7 +114,7 @@ To solve this, add braces '{ }' or use line breaks and indentation.
 --CURDIR--/reg_issue3508_dangling_else.fz:67:29: error 9: Ambiguous 'else' for nested loop and 'if' statements
   while false if false then else        # 9. should flag an error: ambiguous else
 ----------------------------^
-The 'else' is ambiguous since it may be parsed as part different loop and 'if' statements.
+The 'else' is ambiguous since it may be parsed as part of different loop and 'if' statements.
 Outer loop statement at --CURDIR--/reg_issue3508_dangling_else.fz:67:3:
   while false if false then else        # 9. should flag an error: ambiguous else
 --^
@@ -139,7 +139,7 @@ To solve this, add braces '{ }' or use line breaks and indentation.
 --CURDIR--/reg_issue3508_dangling_else.fz:69:31: error 11: Ambiguous 'else' for nested loop and 'if' statements
   do while false if true then else      # 10. should flag an error: 2x: nested loop and ambiguous else
 ------------------------------^
-The 'else' is ambiguous since it may be parsed as part different loop and 'if' statements.
+The 'else' is ambiguous since it may be parsed as part of different loop and 'if' statements.
 Outer loop statement at --CURDIR--/reg_issue3508_dangling_else.fz:69:6:
   do while false if true then else      # 10. should flag an error: 2x: nested loop and ambiguous else
 -----^
@@ -153,7 +153,7 @@ To solve this, add braces '{ }' or use line breaks and indentation.
 --CURDIR--/reg_issue3508_dangling_else.fz:71:31: error 12: Ambiguous 'else' for nested loop and 'if' statements
   while (false) if false then else      # 11. should flag an error: ambiguous else
 ------------------------------^
-The 'else' is ambiguous since it may be parsed as part different loop and 'if' statements.
+The 'else' is ambiguous since it may be parsed as part of different loop and 'if' statements.
 Outer loop statement at --CURDIR--/reg_issue3508_dangling_else.fz:71:3:
   while (false) if false then else      # 11. should flag an error: ambiguous else
 --^
@@ -178,7 +178,7 @@ To solve this, add braces '{ }' or use line breaks and indentation.
 --CURDIR--/reg_issue3508_dangling_else.fz:73:33: error 14: Ambiguous 'else' for nested loop and 'if' statements
   do while (false) if true then else    # 12. should flag an error: 2x: nested loop and ambiguous else
 --------------------------------^
-The 'else' is ambiguous since it may be parsed as part different loop and 'if' statements.
+The 'else' is ambiguous since it may be parsed as part of different loop and 'if' statements.
 Outer loop statement at --CURDIR--/reg_issue3508_dangling_else.fz:73:6:
   do while (false) if true then else    # 12. should flag an error: 2x: nested loop and ambiguous else
 -----^
@@ -188,4 +188,110 @@ Inner 'if' statement at --CURDIR--/reg_issue3508_dangling_else.fz:73:20:
 
 To solve this, add braces '{ }' or use line breaks and indentation.
 
-14 errors.
+
+--CURDIR--/reg_issue3508_dangling_else.fz:75:28: error 15: Ambiguous 'else' for nested 'if' and loop statements
+  if true then while false else                           # 13. should flag an error: ambiguous else
+---------------------------^
+The 'else' is ambiguous since it may be parsed as part of different 'if' and loop statements.
+Outer 'if' statement at --CURDIR--/reg_issue3508_dangling_else.fz:75:3:
+  if true then while false else                           # 13. should flag an error: ambiguous else
+--^
+Inner loop statement at --CURDIR--/reg_issue3508_dangling_else.fz:75:16:
+  if true then while false else                           # 13. should flag an error: ambiguous else
+---------------^
+
+To solve this, add braces '{ }' or use line breaks and indentation.
+
+
+--CURDIR--/reg_issue3508_dangling_else.fz:77:31: error 16: Ambiguous 'else' for nested 'if' and loop statements
+  if true then while false do else                        # 14. should flag an error: ambiguous else
+------------------------------^
+The 'else' is ambiguous since it may be parsed as part of different 'if' and loop statements.
+Outer 'if' statement at --CURDIR--/reg_issue3508_dangling_else.fz:77:3:
+  if true then while false do else                        # 14. should flag an error: ambiguous else
+--^
+Inner loop statement at --CURDIR--/reg_issue3508_dangling_else.fz:77:16:
+  if true then while false do else                        # 14. should flag an error: ambiguous else
+---------------^
+
+To solve this, add braces '{ }' or use line breaks and indentation.
+
+
+--CURDIR--/reg_issue3508_dangling_else.fz:79:43: error 17: Ambiguous 'else' for nested 'if' and loop statements
+  if true then while false do until false else            # 15. should flag an error: ambiguous else
+------------------------------------------^
+The 'else' is ambiguous since it may be parsed as part of different 'if' and loop statements.
+Outer 'if' statement at --CURDIR--/reg_issue3508_dangling_else.fz:79:3:
+  if true then while false do until false else            # 15. should flag an error: ambiguous else
+--^
+Inner loop statement at --CURDIR--/reg_issue3508_dangling_else.fz:79:16:
+  if true then while false do until false else            # 15. should flag an error: ambiguous else
+---------------^
+
+To solve this, add braces '{ }' or use line breaks and indentation.
+
+
+--CURDIR--/reg_issue3508_dangling_else.fz:81:40: error 18: Ambiguous 'else' for nested 'if' and loop statements
+  if true then while false until false else               # 16. should flag an error: ambiguous else
+---------------------------------------^
+The 'else' is ambiguous since it may be parsed as part of different 'if' and loop statements.
+Outer 'if' statement at --CURDIR--/reg_issue3508_dangling_else.fz:81:3:
+  if true then while false until false else               # 16. should flag an error: ambiguous else
+--^
+Inner loop statement at --CURDIR--/reg_issue3508_dangling_else.fz:81:16:
+  if true then while false until false else               # 16. should flag an error: ambiguous else
+---------------^
+
+To solve this, add braces '{ }' or use line breaks and indentation.
+
+
+--CURDIR--/reg_issue3508_dangling_else.fz:83:53: error 19: Ambiguous 'else' for nested 'if' and loop statements
+  if true then for _ in 1.. while false until false else  # 17. should flag an error: ambiguous else
+----------------------------------------------------^
+The 'else' is ambiguous since it may be parsed as part of different 'if' and loop statements.
+Outer 'if' statement at --CURDIR--/reg_issue3508_dangling_else.fz:83:3:
+  if true then for _ in 1.. while false until false else  # 17. should flag an error: ambiguous else
+--^
+Inner loop statement at --CURDIR--/reg_issue3508_dangling_else.fz:83:16:
+  if true then for _ in 1.. while false until false else  # 17. should flag an error: ambiguous else
+---------------^
+
+To solve this, add braces '{ }' or use line breaks and indentation.
+
+
+--CURDIR--/reg_issue3508_dangling_else.fz:83:3: error 20: Incompatible types in branches of if expression
+  if true then for _ in 1.. while false until false else  # 17. should flag an error: ambiguous else
+--^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Incompatible result types in different branches:
+block returns value of type 'bool' at --CURDIR--/reg_issue3508_dangling_else.fz:83:16:
+  if true then for _ in 1.. while false until false else  # 17. should flag an error: ambiguous else
+---------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+block returns value of type 'unit' at --CURDIR--/reg_issue3508_dangling_else.fz:83:3:
+  if true then for _ in 1.. while false until false else  # 17. should flag an error: ambiguous else
+--^
+
+
+--CURDIR--/reg_issue3508_dangling_else.fz:79:3: error 21: Incompatible types in branches of if expression
+  if true then while false do until false else            # 15. should flag an error: ambiguous else
+--^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Incompatible result types in different branches:
+block returns value of type 'bool' at --CURDIR--/reg_issue3508_dangling_else.fz:79:16:
+  if true then while false do until false else            # 15. should flag an error: ambiguous else
+---------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+block returns value of type 'unit' at --CURDIR--/reg_issue3508_dangling_else.fz:79:3:
+  if true then while false do until false else            # 15. should flag an error: ambiguous else
+--^
+
+
+--CURDIR--/reg_issue3508_dangling_else.fz:81:3: error 22: Incompatible types in branches of if expression
+  if true then while false until false else               # 16. should flag an error: ambiguous else
+--^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Incompatible result types in different branches:
+block returns value of type 'bool' at --CURDIR--/reg_issue3508_dangling_else.fz:81:16:
+  if true then while false until false else               # 16. should flag an error: ambiguous else
+---------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+block returns value of type 'unit' at --CURDIR--/reg_issue3508_dangling_else.fz:81:3:
+  if true then while false until false else               # 16. should flag an error: ambiguous else
+--^
+
+22 errors.

@@ -2722,6 +2722,7 @@ loopEpilog  : "until" exprInLine thenPart loopElseBlock
    */
   Expr loop()
   {
+    var surroundingIf = surroundingIf();
     var surroundingLoop = surroundingLoop();
     return relaxLineAndSpaceLimit(() -> {
         var pos = tokenSourcePos();
@@ -2741,9 +2742,9 @@ loopEpilog  : "until" exprInLine thenPart loopElseBlock
         var hasUntil = skip(true, Token.t_until  ); var u   = hasUntil            ? exprInLine()   : null;
                                                     var ub  = hasUntil            ? thenPart(true) : null;
                                                     var ePos = tokenSourcePos();
-                                                    var els1= fork().loopElseBlock();
-                                                    var els2= fork().loopElseBlock();
-                                                    var els =        loopElseBlock();
+                                                    var els1= fork().loopElseBlock(surroundingIf, pos);
+                                                    var els2= fork().loopElseBlock(surroundingIf, pos);
+                                                    var els =        loopElseBlock(surroundingIf, pos);
         setMinIndent(old);
         if (!hasWhile && !hasDo && !hasUntil && els == null)
           {
@@ -2972,22 +2973,22 @@ elseBlock   : "else" block
     var pos = tokenSourcePos();
     _outerElse = pos;
 
-    if (surroundingIf != null &&
-        surroundingIf.line() == thisIf.line() &&
-        pos.line() == thisIf.line())
-      {
-        AstErrors.ambiguousElse(pos, surroundingIf, null, thisIf);
-      }
-    else if (surroundingLoop != null &&
-             surroundingLoop.line() == thisIf.line() &&
-             pos.line() == thisIf.line())
-      {
-        AstErrors.ambiguousElse(pos, null, surroundingLoop, thisIf);
-      }
-
     var elseLine = pos.line();
     if (skip(true, Token.t_else))
       {
+        if (surroundingIf != null &&
+            surroundingIf.line() == thisIf.line() &&
+            pos.line() == thisIf.line())
+          {
+            AstErrors.ambiguousIfIfElse(pos, surroundingIf, thisIf);
+          }
+        else if (surroundingLoop != null &&
+                 surroundingLoop.line() == thisIf.line() &&
+                 pos.line() == thisIf.line())
+          {
+            AstErrors.ambiguousLoopIfElse(pos, surroundingLoop, thisIf);
+          }
+
         // only use special handling for `else if` when they are in the same line
         // otherwise it is a normal else block that might contain an `if`
         if (current() == Token.t_if && elseLine == tokenSourcePos().line())
@@ -3023,10 +3024,21 @@ loopElseBlock : "else" block
               |
               ;
    */
-  Block loopElseBlock()
+  Block loopElseBlock(SourcePosition surroundingIf,
+                      SourcePosition thisLoop)
   {
-    var result = skip(true, Token.t_else) ? block()
-                                          : null;
+    Block result = null;
+    var pos = tokenSourcePos();
+    if (skip(true, Token.t_else))
+      {
+        result = block();
+        if (surroundingIf != null &&
+            surroundingIf.line() == thisLoop.line() &&
+            pos.line() == thisLoop.line())
+          {
+            AstErrors.ambiguousIfLoopElse(pos, surroundingIf, thisLoop);
+          }
+      }
 
     if (POSTCONDITIONS) ensure
       (result == null          ||

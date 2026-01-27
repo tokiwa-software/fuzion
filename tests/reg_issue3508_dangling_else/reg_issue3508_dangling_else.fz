@@ -72,4 +72,12 @@ reg_issue3508_dangling_else =>
 
   do while (false) if true then else    # 12. should flag an error: 2x: nested loop and ambiguous else
 
-#  if true then do while false else  # 7. should NYI flag an error: ambiguous else
+  if true then while false else                           # 13. should flag an error: ambiguous else
+
+  if true then while false do else                        # 14. should flag an error: ambiguous else
+
+  if true then while false do until false else            # 15. should flag an error: ambiguous else
+
+  if true then while false until false else               # 16. should flag an error: ambiguous else
+
+  if true then for _ in 1.. while false until false else  # 17. should flag an error: ambiguous else
