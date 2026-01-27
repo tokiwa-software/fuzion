@@ -192,7 +192,7 @@ public class Lexer extends SourceFile
     t_variant("variant"),
     t_pre("pre"),
     t_post("post"),
-    t_inv("inv"),
+    t_invariant("invariant"),
     t_var("var"),                     // unused
     t_match("match"),
     t_ref("ref"),
@@ -3427,9 +3427,9 @@ PIPE        : "|"
           _stringLexer = this;
           switch (end(t))
             {
-            case DOLLAR: _state = StringState.IDENT_EXPECTED; break;
-            case BRACE : _state = StringState.EXPR_EXPECTED; break;
-            default    : throw new Error("default:");
+            case DOLLAR -> _state = StringState.IDENT_EXPECTED;
+            case BRACE -> _state = StringState.EXPR_EXPECTED;
+            default -> throw new Error("default:");
             }
         }
       return t;

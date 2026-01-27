@@ -399,12 +399,10 @@ public class Docs extends ANY
             path.toFile().mkdirs();
 
             var file = new File(path.toFile(), "index.html");
-            try
+            try (FileWriter writer = new FileWriter(file))
               {
-                FileWriter writer = new FileWriter(file);
                 var output = htmlTool.content(af);
                 writer.write(output);
-                writer.close();
               }
             catch (IOException e)
               {

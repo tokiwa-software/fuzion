@@ -178,11 +178,8 @@ public class Bridge extends ANY
     if (PRECONDITIONS)
       require(!uri.equals(SourceFile.STDIN.toUri()));
 
-    var filePath = Path.of(uri);
-    if (filePath.equals(SourcePosition.builtIn._sourceFile._fileName))
-      {
-        return SourcePosition.builtIn._sourceFile;
-      }
-    return new SourceFile(filePath, SourceText.getText(uri).getBytes());
+    return Path.of(uri).equals(SourcePosition.builtIn._sourceFile._fileName)
+      ? SourcePosition.builtIn._sourceFile
+      : SourceText.getSourceFile(uri);
   }
 }

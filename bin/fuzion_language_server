@@ -16,10 +16,43 @@ set -eu
 # You should have received a copy of the GNU General Public License along with The
 # Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
-SCRIPTPATH="$(dirname "$(readlink -f "$0")")"
-JAVA_STACKSIZE=16
-FUZION_HOME=$(realpath -s "$SCRIPTPATH/../")
 
-cd "$SCRIPTPATH"/../
+set -eu
 
-java -Xss${JAVA_STACKSIZE}m -Dfuzion.home="$FUZION_HOME" -Dfile.encoding=UTF-8 -cp fuzion.jar dev.flang.lsp.Main "$@"
+FUZION_CMD=$0
+FUZION_BIN="$(dirname "$(readlink -f "$0")")"
+
+: "${FUZION_HOME="$FUZION_BIN/.."}"
+: "${FUZION_JAVA=java}"
+: "${FUZION_JAVA_ADDITIONAL_CLASSPATH=""}"
+: "${FUZION_JAVA_CLASSPATH="$FUZION_HOME/fuzion.jar"}"
+# windows (msys2) does not seem to like trailing colons in the class path
+if [ -n "$FUZION_JAVA_ADDITIONAL_CLASSPATH" ]
+then
+  FUZION_JAVA_CLASSPATH="$FUZION_JAVA_CLASSPATH:$FUZION_JAVA_ADDITIONAL_CLASSPATH"
+fi
+: "${FUZION_JAVA_STACK_SIZE=5m}"
+: "${FUZION_JAVA_OPTIONS="-Xss$FUZION_JAVA_STACK_SIZE"}"
+: "${FUZION_JAVA_ADDITIONAL_OPTIONS=--enable-preview --enable-native-access=ALL-UNNAMED}"
+
+LD_LIBRARY_PATH=${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}:$FUZION_HOME/lib
+PATH=${PATH:+:$PATH}:$FUZION_HOME/lib
+DYLD_FALLBACK_LIBRARY_PATH=${DYLD_FALLBACK_LIBRARY_PATH:+:$DYLD_FALLBACK_LIBRARY_PATH}:$FUZION_HOME/lib
+
+LINE_SEPARATOR="
+"
+
+# shellcheck disable=SC2086
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH \
+  PATH=$PATH \
+  DYLD_FALLBACK_LIBRARY_PATH=$DYLD_FALLBACK_LIBRARY_PATH \
+  $FUZION_JAVA \
+  $FUZION_JAVA_OPTIONS \
+  $FUZION_JAVA_ADDITIONAL_OPTIONS \
+  --class-path "$FUZION_JAVA_CLASSPATH" \
+  -Dline.separator="$LINE_SEPARATOR" \
+  -Dfile.encoding=UTF-8 \
+  -Dfuzion.home="$FUZION_HOME" \
+  -Dfuzion.command="$FUZION_CMD" \
+  dev.flang.lsp.Main \
+  "$@"

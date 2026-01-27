@@ -686,9 +686,10 @@ $(FUZION_RT): $(BUILD_DIR)/include $(FUZION_FILES_RT)
 ifeq ($(OS),Windows_NT)
 	clang --target=x86_64-w64-windows-gnu -Wall -Werror -O3 -shared \
 	-DPTW32_STATIC_LIB \
+	-DGC_THREADS -DGC_WIN32_THREADS \
 	-fno-trigraphs -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -std=c11 \
 	$(BUILD_DIR)/include/win.c $(BUILD_DIR)/include/shared.c -o $@ \
-	-lMswsock -lAdvApi32 -lWs2_32
+	-lMswsock -lAdvApi32 -lWs2_32 -lgc
 else
 	clang -Wall -Werror -O3 -shared -fPIC \
 	-fno-trigraphs -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -std=c11 \
@@ -724,6 +725,10 @@ include $(FZ_SRC)/docs.mk
 include $(FZ_SRC)/tools.mk
 
 # NYI: CLEANUP: move included makefiles to subfolder
+
+.PHONY: debian_package
+debian_package:
+	dpkg-buildpackage -us -uc
 
 
 # builds a *fat* jar containing all java classes

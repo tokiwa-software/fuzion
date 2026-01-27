@@ -356,9 +356,7 @@ is
     match c
       at i32 => ((take at), (drop at))
       cond T->bool =>
-        a := as_array_backed
-        at := a.first_index_of (el -> cond el)
-        (a.take at, a.drop at)
+        split_at (first_index_of cond)
 
 
   # returns the index of the first element
