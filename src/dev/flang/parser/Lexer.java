@@ -960,6 +960,11 @@ public class Lexer extends SourceFile
     return result;
   }
 
+
+  /**
+   * Remember that we are parsing in `if` statement. This will be reset
+   * automatically on relaxLineAndSpaceLimit.
+   */
   SourcePosition surroundingIf(SourcePosition pos)
   {
     var result = _surroundingIf;
@@ -967,11 +972,20 @@ public class Lexer extends SourceFile
 
     return result;
   }
+
+
+  /**
+   * The `if` statement that we are currently parsing.
+   */
   SourcePosition surroundingIf()
   {
     return _surroundingIf;
   }
 
+  /**
+   * Remember that we are parsing a loop statement. This will be reset
+   * automatically on relaxLineAndSpaceLimit.
+   */
   SourcePosition surroundingLoop(SourcePosition pos)
   {
     var result = _surroundingLoop;
@@ -979,10 +993,16 @@ public class Lexer extends SourceFile
 
     return result;
   }
+
+
+  /**
+   * The loop statement that we are currently parsing.
+   */
   SourcePosition surroundingLoop()
   {
     return _surroundingLoop;
   }
+
 
   /**
    * Increases the semicolon state, which is used to detect ambiguous semicolons
