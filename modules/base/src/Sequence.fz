@@ -431,7 +431,18 @@ is
       s
     else if c2 = 0
       Sequence.this
-    else if c1 < 0 || c2 < 0 then
+    #
+    # c1 < c2 to avoid poor (quadratic) performance
+    # if a small sequence is added in front of a
+    # larger one repeatedly as in this code:
+    #
+    #     for
+    #       s := (Sequence i32).empty, [i].concat s
+    #       i in 1..n
+    #     else
+    #       say s
+    #
+    else if c1 < 0 || c2 < 0 || c1 < c2 then
       as_list.concat_list s.as_list
     else
       container.expanding_array T .empty c1+c2
