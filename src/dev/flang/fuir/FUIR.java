@@ -1222,8 +1222,8 @@ public abstract class FUIR extends IR
         label = "";
         switch (codeAt(s))
           {
-          case Match:
-            var l = label(c) + "_" + (s-c);
+          case Match -> {
+            var l = label(c) + "_" + (s - c);
             for (var cix = 0; cix < matchCaseCount(s); cix++)
               {
                 var mc = matchCaseCode(s, cix);
@@ -1232,8 +1232,8 @@ public abstract class FUIR extends IR
                 say("\tgoto " + l);
               }
             label = l + ":";
-            break;
-          default: break;
+          }
+          default -> {}
           }
       }
     if (label != "")
@@ -1265,11 +1265,13 @@ public abstract class FUIR extends IR
   {
     for (var cl = firstClazz(); cl <= lastClazz(); cl++)
       {
-        switch (clazzKind(cl))
-          {
-          case Routine: if (clazzNeedsCode(cl)) { dumpCode(cl); } break;
-          default: break;
-          }
+         switch (clazzKind(cl))
+           {
+           case Routine -> {
+               if (clazzNeedsCode(cl)) { dumpCode(cl); }
+             }
+           default -> {}
+           }
       };
   }
 

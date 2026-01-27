@@ -1124,12 +1124,6 @@ public class DFA extends ANY
 
 
   /**
-   * Set of effects that are missing, excluding default effects.
-   */
-  IntMap<Integer> _missingEffects = new IntMap<>(); // NYI: CLEANUP: Remove? This is only written?
-
-
-  /**
    * List of numeric values to avoid duplicates, values that are known
    */
   List<LongMap<NumericValue>> _numericValues = new List<>();
@@ -1383,6 +1377,11 @@ public class DFA extends ANY
     _tagged = new LongMap<>();
     _joined = new LongMap<>();
     _uninitializedSysArray = new IntMap<>();
+    _numericValues = new List<>();
+    _numericValuesAny = new List<>();
+    _preEffectValues = new TreeMap<>();
+
+    _trueX = null; _falseX = null; _boolX = null;
 
     _trueX = null; _falseX = null; _boolX = null;
 
@@ -1435,24 +1434,30 @@ public class DFA extends ANY
   int findFixPoint()
   {
     var cnt = 0;
+    var start = System.currentTimeMillis();
+    _changedSetBy = () -> "*** change not set ***";
     do
       {
         cnt++;
+        _changed = false;
 
         if (_options.verbose(2))
           {
+            var now = System.currentTimeMillis();
+            var delta = now - start;
+            start = now;
             _options.verbosePrintln(2,
-                                    "DFA " + (_real ? "real " : "pre ") +
-                                    "iteration #" + cnt + ": --------------------------------------------------" +
-                                    (_options.verbose(3) ? ("calls:"   + _calls.size() +
-                                                            ",values:" + _numUniqueValues +
-                                                            ",envs:"   + (_envsQuick.size() + _envs.size()) +
-                                                            (_options.verbose(4) ? "; " + _changedSetBy.get()
-                                                                                    : ""                        ))
+                                    "DFA " + (_real ? "real " : "pre  ") +
+                                    "iteration #" + String.format("%02d", cnt)
+                                    + ", prev " + String.format("%4d", delta) + "ms: ---------- " +
+                                    (_options.verbose(3) ? ("calls:"   + String.format("%5d", _calls.size()) +
+                                                            ",values:" + String.format("%5d",_numUniqueValues) +
+                                                            ",envs:"   + String.format("%3d",(_envsQuick.size() + _envs.size())) +
+                                                            (_options.verbose(4) && _changedSetBy != null
+                                                              ? " ---- " + _changedSetBy.get() : ""))
                                                          : ""                                                     ));
           }
 
-        _changed = false;
         if (cnt == 1)
           {
             newCall(null,
@@ -1463,10 +1468,9 @@ public class DFA extends ANY
                     null /* env */,
                     Context._MAIN_ENTRY_POINT_);
           }
-        _changedSetBy = () -> "*** change not set ***";
         iteration();
       }
-    while (_changed && (true || cnt < 100));
+    while (_changed);
 
     if (_options.verbose(4))
       {
