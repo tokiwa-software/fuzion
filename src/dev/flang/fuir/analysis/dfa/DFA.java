@@ -480,9 +480,9 @@ public class DFA extends ANY
              c_u8   ,
              c_u16  ,
              c_u32  ,
-             c_u64  ,
-             c_f32  ,
-             c_f64  -> NumericValue.create(DFA.this, constCl, ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN));
+             c_u64  -> NumericValue.create(DFA.this, constCl, ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN));
+        case c_f32  ,
+             c_f64  -> NumericValue.create(DFA.this, constCl);
         case c_String -> newConstString(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt()+4), _call);
         default ->
           {
