@@ -104,12 +104,6 @@ public class Parser extends Lexer
   private SourcePosition _outerElse = null; // NYI: CLEANUP: state in parser should be avoided see #4991
 
   /**
-   * SourcePosition of the outer `then`, null if not in `then` block or keyword `then` is not used
-   * required for proper alignment of `if`, `then`, `else` and `else if`
-   */
-  private SourcePosition _then = null;      // NYI: CLEANUP: state in parser should be avoided see #4991
-
-  /**
    * Are we parsing for the language server and thus need to
    * be more tolerant for incomplete source code?
    */
@@ -2890,7 +2884,9 @@ ifexpr      : "if" exprInLine thenPart elseBlockOpt
 
         // semi error if in same line
         if (nestedIf && l == line()) {semiState(SemiState.ERROR);}
-        Block b = thenPart(false);
+
+        var thn = current(true) == Token.t_then ? tokenSourcePos() : null;
+        var b = thenPart(false);
 
         // reset if new line
         if (nestedIf && l != line()) {semiState(SemiState.CONTINUE);}
@@ -2898,16 +2894,16 @@ ifexpr      : "if" exprInLine thenPart elseBlockOpt
         var elPos = tokenSourcePos();
 
         // don't use 'if' as indentation reference if 'then' is indented less (e.g. when 'then' is aligned with 'else if')
-        var ifPos = _then != null && pos.column() > _then.column() ? null : pos;
+        var ifPos = thn != null && pos.column() > thn.column() ? null : pos;
 
         // if not in the same line, 'else' must be aligned with either 'if', 'then' or 'else if'
         if (currentAtMinIndent() == Token.t_else && !(
-            (_then != null      && (_then.line()      == elPos.line() || _then.column()      == elPos.column())) ||
+            (thn != null        && (thn.line(  )      == elPos.line() || thn.column()        == elPos.column())) ||
             (_outerElse != null && (_outerElse.line() == elPos.line() || _outerElse.column() == elPos.column())) ||
             (ifPos != null      && (ifPos.line()      == elPos.line() || ifPos.column()      == elPos.column())))
            )
           {
-            var errPos = (ifPos != null) ? ifPos : (_outerElse != null) ? _outerElse : _then;
+            var errPos = (ifPos != null) ? ifPos : (_outerElse != null) ? _outerElse : thn;
 
             Errors.indentationProblemEncountered(tokenSourcePos(), errPos,
               "When " + Errors.skw("else") + " is not in the same line as " + Errors.skw("if")
@@ -2937,17 +2933,13 @@ thenPart    : "then" block
             |        block
             ;
    */
-  Block thenPart(boolean emptyBlockIfNoBlockPresent)
+  Block thenPart(/* NYI: ClEANUP: remove this argument, a `null` result is used only in Loop to create a default result which is being removed */
+                 boolean nullIfNothing)
   {
     var p = tokenPos();
-    _then = tokenSourcePos();
-    var hasThen = skip(true, Token.t_then);
-    if (!hasThen)
-      {
-        _then = null;
-      }
+    skip(true, Token.t_then);
     var result = block();
-    return emptyBlockIfNoBlockPresent && p == tokenPos() ? null : result;
+    return nullIfNothing && p == tokenPos() ? null : result;
   }
 
 
