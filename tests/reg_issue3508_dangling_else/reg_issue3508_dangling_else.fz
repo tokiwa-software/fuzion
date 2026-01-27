@@ -17,26 +17,28 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test semicolon_ambiguity
+#  Source code of Fuzion test reg_issue3508_dangling_else
 #
 # -----------------------------------------------------------------------
 
-# For changes to semicolon parsing see:
-# https://github.com/tokiwa-software/fuzion/issues/2702
-#
-semicolon_ambiguity =>
+reg_issue3508_dangling_else =>
 
-  # TESTING ERRORS FOR AMBIGUOUS SEMICOLON
-  _ ()->unit := ()->say "hi"; say "ho"
-  g2 => say "I'm g2"; say "this is ambiguous"
+  # CORRECT
 
-  if true then if true then say "inner"; say "ambiguous"
+  if false then else if false then unit else say "ok"
 
-  match_test_2(val choice i32 codepoint) ()->unit =>
-    match val
-      i i32       => ()->yak "'$i'"; say " is a number"
-      c codepoint => ()->yak "'$c'"; say " is a codepoint"
-  res_1 := match_test_2 42
-  res_1()
-  res_2 := match_test_2 "B"
-  res_2()
+  if true then if true then if true then
+
+  if true then unit else unit; if false then unit else unit; if true then unit else unit
+
+  if false then else if false then else if false then else
+
+  if true then {if false then} else {if false then else}
+
+
+
+  if false then if false then unit else say "dangling"   # 1. should flag an error: dangling else
+
+  if true then if true then if true then else            # 2. should flag an error: dangling else
+
+  if true then {if false then if false then else} else   # 3. should flag an error: dangling else

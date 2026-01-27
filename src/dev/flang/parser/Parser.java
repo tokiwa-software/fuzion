@@ -104,6 +104,14 @@ public class Parser extends Lexer
   private int _lastIfLine = -1;             // NYI: CLEANUP: state in parser should be avoided see #4991
 
   /**
+   * To detect and forbid dangling else when everything is in one line.
+   *
+   * 1 for first `if` in line, increased with every `if` in same line
+   * reset by newline or a block with braces
+   */
+  private int _danglingElseState;           // NYI: CLEANUP: state in parser should be avoided see #4991
+
+  /**
    * SourcePosition of the outer `else`, null if not in `else` block
    * required for proper alignment of `if`, `then`, `else` and `else if`
    */
@@ -141,6 +149,8 @@ public class Parser extends Lexer
   {
     super(original);
     this._isLanguageServer = original._isLanguageServer;
+
+    _danglingElseState = original._danglingElseState;
   }
 
 
@@ -2467,6 +2477,8 @@ brblock     : BRACEL exprs BRACER
   Block block() { return block(false); }
   Block block(boolean newScope)
   {
+    _danglingElseState = current() == Token.t_lbrace ? 0 : _danglingElseState;
+
     var p0 = lastTokenEndPos();
     var p1 = tokenPos();
     var b = optionalBrackets(BRACES, "block", () -> new Block(newScope, exprs()));
@@ -2878,10 +2890,12 @@ ifexpr      : "if" exprInLine thenPart elseBlock
 
         var oldMinIdent = elif ? null : setMinIndent(tokenPos());
 
+        boolean nestedIf = _lastIfLine == line();
+        _danglingElseState = nestedIf ? _danglingElseState + 1 : 1;
+        _lastIfLine = line();
+
         match(Token.t_if, "ifexpr");
 
-        boolean nestedIf = _lastIfLine == line();
-        _lastIfLine = line();
         Expr e = exprInLine();
 
         // semi error if in same line
@@ -2959,9 +2973,17 @@ elseBlock   : "else" block
     SourcePosition oldOuterElse = _outerElse;
     _outerElse = tokenSourcePos();
 
+    if (_danglingElseState > 1 && current() == Token.t_else)
+      {
+        AstErrors.danglingElse(tokenSourcePos());
+      }
+
     var elseLine = tokenSourcePos().line();
     if (skip(true, Token.t_else))
       {
+        // reached unambiguous `else`, therefore a new if-else-block would be unambiguous
+        _danglingElseState--;
+
         // only use special handling for `else if` when they are in the same line
         // otherwise it is a normal else block that might contain an `if`
         if (current() == Token.t_if && elseLine == tokenSourcePos().line())
@@ -2971,6 +2993,7 @@ elseBlock   : "else" block
         else
           {
             _outerElse = null;
+
             result = block();
           }
       }

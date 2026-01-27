@@ -17,26 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test semicolon_ambiguity
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# For changes to semicolon parsing see:
-# https://github.com/tokiwa-software/fuzion/issues/2702
-#
-semicolon_ambiguity =>
-
-  # TESTING ERRORS FOR AMBIGUOUS SEMICOLON
-  _ ()->unit := ()->say "hi"; say "ho"
-  g2 => say "I'm g2"; say "this is ambiguous"
-
-  if true then if true then say "inner"; say "ambiguous"
-
-  match_test_2(val choice i32 codepoint) ()->unit =>
-    match val
-      i i32       => ()->yak "'$i'"; say " is a number"
-      c codepoint => ()->yak "'$c'"; say " is a codepoint"
-  res_1 := match_test_2 42
-  res_1()
-  res_2 := match_test_2 "B"
-  res_2()
+override NAME = reg_issue3508_dangling_else
+include ../simple_and_negative.mk
