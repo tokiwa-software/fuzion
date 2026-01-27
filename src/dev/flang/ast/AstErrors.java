@@ -2486,13 +2486,16 @@ public class AstErrors extends ANY
     error(call.pos(), "Must not call " + ss("<effect>.finally") + ".",
       ss("<effect>.finally") + " is called automatically.");
   }
-  
-  public static void danglingElse(SourcePosition pos)
+
+  public static void ambiguousElse(SourcePosition pos, SourcePosition if1, SourcePosition if2)
   {
     error(pos,
-          "Ambiguous dangling else",
-          "It is unclear to which " + skw("if") + " the " + skw("else") + " block belongs."
-          + "\nTo solve this, add braces " + code("{ }") + " or use line breaks and indentation.");
+          "Ambiguous " + skw("else") + " for multiple " + skw("if") + " statements",
+          "The " + skw("else") + " is ambiguous since it may be parsed as part of several different " + skw("if") + " statements.\n" +
+          "Outer " + skw("if") + " statement at " + if1.show() + "\n" +
+          "Inner " + skw("if") + " statement at " + if2.show() + "\n" +
+          "\n" +
+          "To solve this, add braces " + code("{ }") + " or use line breaks and indentation.");
   }
 
   public static void explicitTypeRequired(AbstractFeature f, AbstractType inf)

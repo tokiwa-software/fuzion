@@ -1,22 +1,43 @@
 
---CURDIR--/reg_issue3508_dangling_else.fz:40:36: error 1: Ambiguous dangling else
+--CURDIR--/reg_issue3508_dangling_else.fz:40:36: error 1: Ambiguous 'else' for multiple 'if' statements
   if false then if false then unit else say "dangling"   # 1. should flag an error: dangling else
 -----------------------------------^
-It is unclear to which 'if' the 'else' block belongs.
+The 'else' is ambiguous since it may be parsed as part of several different 'if' statements.
+Outer 'if' statement at --CURDIR--/reg_issue3508_dangling_else.fz:40:3:
+  if false then if false then unit else say "dangling"   # 1. should flag an error: dangling else
+--^
+Inner 'if' statement at --CURDIR--/reg_issue3508_dangling_else.fz:40:17:
+  if false then if false then unit else say "dangling"   # 1. should flag an error: dangling else
+----------------^
+
 To solve this, add braces '{ }' or use line breaks and indentation.
 
 
---CURDIR--/reg_issue3508_dangling_else.fz:42:42: error 2: Ambiguous dangling else
+--CURDIR--/reg_issue3508_dangling_else.fz:42:42: error 2: Ambiguous 'else' for multiple 'if' statements
   if true then if true then if true then else            # 2. should flag an error: dangling else
 -----------------------------------------^
-It is unclear to which 'if' the 'else' block belongs.
+The 'else' is ambiguous since it may be parsed as part of several different 'if' statements.
+Outer 'if' statement at --CURDIR--/reg_issue3508_dangling_else.fz:42:16:
+  if true then if true then if true then else            # 2. should flag an error: dangling else
+---------------^
+Inner 'if' statement at --CURDIR--/reg_issue3508_dangling_else.fz:42:29:
+  if true then if true then if true then else            # 2. should flag an error: dangling else
+----------------------------^
+
 To solve this, add braces '{ }' or use line breaks and indentation.
 
 
---CURDIR--/reg_issue3508_dangling_else.fz:44:45: error 3: Ambiguous dangling else
+--CURDIR--/reg_issue3508_dangling_else.fz:44:45: error 3: Ambiguous 'else' for multiple 'if' statements
   if true then {if false then if false then else} else   # 3. should flag an error: dangling else
 --------------------------------------------^
-It is unclear to which 'if' the 'else' block belongs.
+The 'else' is ambiguous since it may be parsed as part of several different 'if' statements.
+Outer 'if' statement at --CURDIR--/reg_issue3508_dangling_else.fz:44:17:
+  if true then {if false then if false then else} else   # 3. should flag an error: dangling else
+----------------^
+Inner 'if' statement at --CURDIR--/reg_issue3508_dangling_else.fz:44:31:
+  if true then {if false then if false then else} else   # 3. should flag an error: dangling else
+------------------------------^
+
 To solve this, add braces '{ }' or use line breaks and indentation.
 
 3 errors.

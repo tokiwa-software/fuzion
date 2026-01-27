@@ -104,14 +104,6 @@ public class Parser extends Lexer
   private int _lastIfLine = -1;             // NYI: CLEANUP: state in parser should be avoided see #4991
 
   /**
-   * To detect and forbid dangling else when everything is in one line.
-   *
-   * 1 for first `if` in line, increased with every `if` in same line
-   * reset by newline or a block with braces
-   */
-  private int _danglingElseState;           // NYI: CLEANUP: state in parser should be avoided see #4991
-
-  /**
    * SourcePosition of the outer `else`, null if not in `else` block
    * required for proper alignment of `if`, `then`, `else` and `else if`
    */
@@ -149,8 +141,6 @@ public class Parser extends Lexer
   {
     super(original);
     this._isLanguageServer = original._isLanguageServer;
-
-    _danglingElseState = original._danglingElseState;
   }
 
 
@@ -2477,8 +2467,6 @@ brblock     : BRACEL exprs BRACER
   Block block() { return block(false); }
   Block block(boolean newScope)
   {
-    _danglingElseState = current() == Token.t_lbrace ? 0 : _danglingElseState;
-
     var p0 = lastTokenEndPos();
     var p1 = tokenPos();
     var b = optionalBrackets(BRACES, "block", () -> new Block(newScope, exprs()));
@@ -2740,12 +2728,12 @@ loopEpilog  : "until" exprInLine thenPart loopElseBlock
         List<Feature> indexVars  = new List<>();
         List<Feature> nextValues = new List<>();
         var hasFor   = current() == Token.t_for; if (hasFor) { indexVars(indexVars, nextValues); }
-        var hasVar   = skip(true, Token.t_variant); var v   = hasVar              ? exprInLine()    : null;
-                                                    var i   = hasFor || v != null ? invariant() : null;
-        var hasWhile = skip(true, Token.t_while  ); var w   = hasWhile            ? exprInLine()    : null;
-        var hasDo    = skip(true, Token.t_do     ); var b   = hasWhile || hasDo   ? block()         : null;
-        var hasUntil = skip(true, Token.t_until  ); var u   = hasUntil            ? exprInLine()    : null;
-                                                    var ub  = hasUntil            ? thenPart(true)  : null;
+        var hasVar   = skip(true, Token.t_variant); var v   = hasVar              ? exprInLine()   : null;
+                                                    var i   = hasFor || v != null ? invariant()    : null;
+        var hasWhile = skip(true, Token.t_while  ); var w   = hasWhile            ? exprInLine()   : null;
+        var hasDo    = skip(true, Token.t_do     ); var b   = hasWhile || hasDo   ? block()        : null;
+        var hasUntil = skip(true, Token.t_until  ); var u   = hasUntil            ? exprInLine()   : null;
+                                                    var ub  = hasUntil            ? thenPart(true) : null;
                                                     var ePos = tokenSourcePos();
                                                     var els1= fork().loopElseBlock();
                                                     var els2= fork().loopElseBlock();
@@ -2884,14 +2872,15 @@ ifexpr      : "if" exprInLine thenPart elseBlock
    */
   Expr ifexpr(boolean elif)
   {
+    var oldSurroundingIf = surroundingIf(null);
     return relaxLineAndSpaceLimit(() -> {
         SourcePosition pos = tokenSourcePos();
         SourcePosition ifPos = pos;
+        surroundingIf(pos);
 
         var oldMinIdent = elif ? null : setMinIndent(tokenPos());
 
         boolean nestedIf = _lastIfLine == line();
-        _danglingElseState = nestedIf ? _danglingElseState + 1 : 1;
         _lastIfLine = line();
 
         match(Token.t_if, "ifexpr");
@@ -2925,7 +2914,8 @@ ifexpr      : "if" exprInLine thenPart elseBlock
               + " or " + Errors.skw("else if") + ".") ;
           }
 
-        var els = elseBlock();
+        surroundingIf(null);
+        var els = elseBlock(oldSurroundingIf, pos);
 
         if (oldMinIdent != null) { setMinIndent(oldMinIdent); }
 
@@ -2967,23 +2957,23 @@ elseBlock   : "else" block
             |
             ;
    */
-  Block elseBlock()
+  Block elseBlock(SourcePosition surroundingIf, SourcePosition thisIf)
   {
     Block result = null;
     SourcePosition oldOuterElse = _outerElse;
-    _outerElse = tokenSourcePos();
+    var pos = tokenSourcePos();
+    _outerElse = pos;
 
-    if (_danglingElseState > 1 && current() == Token.t_else)
+    if (surroundingIf != null &&
+        surroundingIf.line() == thisIf.line() &&
+        pos.line() == thisIf.line())
       {
-        AstErrors.danglingElse(tokenSourcePos());
+        AstErrors.ambiguousElse(pos, surroundingIf, thisIf);
       }
 
-    var elseLine = tokenSourcePos().line();
+    var elseLine = pos.line();
     if (skip(true, Token.t_else))
       {
-        // reached unambiguous `else`, therefore a new if-else-block would be unambiguous
-        _danglingElseState--;
-
         // only use special handling for `else if` when they are in the same line
         // otherwise it is a normal else block that might contain an `if`
         if (current() == Token.t_if && elseLine == tokenSourcePos().line())
@@ -3012,7 +3002,7 @@ elseBlock   : "else" block
   }
 
 
-    /**
+  /**
    * Parse loopElseBlock
    *
 loopElseBlock : "else" block
