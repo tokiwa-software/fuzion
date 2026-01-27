@@ -3219,6 +3219,17 @@ public class DFA extends ANY
     var sysArray      = _fuir.clazzResultClazz(internalArray);
     var c_u8          = _fuir.clazz(SpecialClazzes.c_u8);
     var adata         = newSysArray(NumericValue.create(this, c_u8), c_u8);
+    if (utf8Bytes != null)
+      {
+        for (int i = 0; i < utf8Bytes.length; i++)
+          {
+            adata
+              .setel(
+                NumericValue.create(this, _fuir.clazz(SpecialClazzes.c_i32), (long)i),
+                NumericValue.create(this, _fuir.clazz(SpecialClazzes.c_u8), utf8Bytes[i])
+              );
+          }
+      }
     var r = newInstance(cs, NO_SITE, context);
     var arr = newInstance(ar, NO_SITE, context);
     var a = newInstance(sysArray, NO_SITE, context);
