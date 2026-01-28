@@ -77,9 +77,9 @@ is
 
   thrds := array size _->
       concur.threads.spawn ()->
-        _ := for x := bq.dequeue
-             while x.exists
-               x.val.call
+        for x := bq.dequeue
+        while x.exists
+          x.val.call
 
 
   # submit a task to the thread pool
