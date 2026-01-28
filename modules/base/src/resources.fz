@@ -32,7 +32,7 @@ public resources : effect is
   _ := mut
 
   # do not remove this type!
-  # it enforces boxing. Does not work with it.
+  # it enforces boxing. Does not work without it.
   #
   s container.Stack Resource := container.stack mutate Resource
 
