@@ -3476,10 +3476,7 @@ public class DFA extends ANY
         analyze(e);
         _newCallRecursiveAnalyzeCalls = cnt ;
       }
-    else
-      {
-        hot(e);
-      }
+    hot(e);
   }
 
 
