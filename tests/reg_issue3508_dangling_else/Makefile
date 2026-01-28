@@ -17,14 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test reg_issue3761
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-reg_issue3761 =>
-  # the if expression should end at the comma
-  for
-    i := if true then "string" else "strong", "strung"
-    j in 1..3
-  do
-    say "$j: $i"
+override NAME = reg_issue3508_dangling_else
+include ../simple_and_negative.mk

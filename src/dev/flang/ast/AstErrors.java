@@ -2487,6 +2487,49 @@ public class AstErrors extends ANY
       ss("<effect>.finally") + " is called automatically.");
   }
 
+  public static void ambiguousIfIfElse(SourcePosition pos, SourcePosition if1, SourcePosition if2)
+  {
+    error(pos,
+          "Ambiguous " + skw("else") + " for multiple " + skw("if") + " statements",
+          "The " + skw("else") + " is ambiguous since it may be parsed as part of several different " + skw("if") + " statements.\n" +
+          "Outer " + skw("if") + " statement at " + if1.show() + "\n" +
+          "Inner " + skw("if") + " statement at " + if2.show() + "\n" +
+          "\n" +
+          "To solve this, add braces " + code("{ }") + " or use line breaks and indentation.");
+  }
+
+  public static void ambiguousLoopIfElse(SourcePosition pos, SourcePosition loop1, SourcePosition if2)
+  {
+    error(pos,
+          "Ambiguous " + skw("else") + " for nested loop and " + skw("if") + " statements",
+          "The " + skw("else") + " is ambiguous since it may be parsed as part of different loop and " + skw("if") + " statements.\n" +
+          "Outer loop statement at " + loop1.show() + "\n" +
+          "Inner " + skw("if") + " statement at " + if2.show() + "\n" +
+          "\n" +
+          "To solve this, add braces " + code("{ }") + " or use line breaks and indentation.");
+  }
+
+  public static void ambiguousIfLoopElse(SourcePosition pos, SourcePosition if1, SourcePosition loop2)
+  {
+    error(pos,
+          "Ambiguous " + skw("else") + " for nested " + skw("if") + " and loop statements",
+          "The " + skw("else") + " is ambiguous since it may be parsed as part of different " + skw("if") + " and loop statements.\n" +
+          "Outer " + skw("if") + " statement at " + if1.show() + "\n" +
+          "Inner loop statement at " + loop2.show() + "\n" +
+          "\n" +
+          "To solve this, add braces " + code("{ }") + " or use line breaks and indentation.");
+  }
+
+  public static void ambiguousLoops(SourcePosition pos, SourcePosition loop1)
+  {
+    error(pos,
+          "Ambiguous nested loop statements",
+          "Several loop statements occur in a single line causing ambiguity for the parser.\n" +
+          "Outer loop statement at " + loop1.show() + "\n" +
+          "\n" +
+          "To solve this, add braces " + code("{ }") + " or use line breaks and indentation.");
+  }
+
   public static void explicitTypeRequired(AbstractFeature f, AbstractType inf)
   {
     String inferredMsg = (inf != null && inf != Types.t_ERROR && inf != Types.t_ERROR) ?
