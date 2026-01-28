@@ -80,6 +80,8 @@ test_this3 is
         x := num0.this, x.minus num0.this.one
         u := u32 0, u+1
       while num0.this.zero.lessThan x
+      else
+        u
 
     public redef as_string String => "num0.this {to_u32_loop} 'as_string'"
 

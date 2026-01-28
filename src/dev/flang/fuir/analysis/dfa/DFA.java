@@ -480,9 +480,9 @@ public class DFA extends ANY
              c_u8   ,
              c_u16  ,
              c_u32  ,
-             c_u64  ,
-             c_f32  ,
-             c_f64  -> NumericValue.create(DFA.this, constCl, ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN));
+             c_u64  -> NumericValue.create(DFA.this, constCl, ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN));
+        case c_f32  ,
+             c_f64  -> NumericValue.create(DFA.this, constCl);
         case c_String -> newConstString(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt()+4), _call);
         default ->
           {
@@ -829,8 +829,13 @@ public class DFA extends ANY
    * Should instance of certain clazzes be joined into a single Instance for
    * performance?  This is used to avoid large number of instances of, e.g.,
    * `array u8` where tracking the individual instances gives no benefit.
+   *
+   * To disable, use fz with
+   *
+   *   dev_flang_fuir_analysis_dfa_DFA_ONLY_ONE_INSTANCE=false
    */
-  static final boolean ONLY_ONE_INSTANCE  = true;
+  static final boolean ONLY_ONE_INSTANCE  =
+    FuzionOptions.boolPropertyOrEnv("dev.flang.fuir.analysis.dfa.DFA.ONLY_ONE_INSTANCE", true);
 
 
   /**
@@ -904,7 +909,7 @@ public class DFA extends ANY
   /**
    * Special value for universe.
    */
-  final Value _universe;
+  Value _universe;
 
 
   /**
@@ -1383,6 +1388,7 @@ public class DFA extends ANY
 
     _oneInstanceOfClazz = new List<>();
     _unitCalls = new IntMap<>();
+    _universe  = newInstance(_fuir.clazzUniverse(), NO_SITE, Context._MAIN_ENTRY_POINT_);
 
     _real = true;
     var realIter = findFixPoint();
@@ -3219,6 +3225,17 @@ public class DFA extends ANY
     var sysArray      = _fuir.clazzResultClazz(internalArray);
     var c_u8          = _fuir.clazz(SpecialClazzes.c_u8);
     var adata         = newSysArray(NumericValue.create(this, c_u8), c_u8);
+    if (utf8Bytes != null)
+      {
+        for (int i = 0; i < utf8Bytes.length; i++)
+          {
+            adata
+              .setel(
+                NumericValue.create(this, _fuir.clazz(SpecialClazzes.c_i32), (long)i),
+                NumericValue.create(this, _fuir.clazz(SpecialClazzes.c_u8), utf8Bytes[i])
+              );
+          }
+      }
     var r = newInstance(cs, NO_SITE, context);
     var arr = newInstance(ar, NO_SITE, context);
     var a = newInstance(sysArray, NO_SITE, context);
@@ -3347,12 +3364,6 @@ public class DFA extends ANY
         g = g != null ? g : ng;
       }
 
-    var s = _fuir.clazzAsString(cl);
-    if (!s.startsWith("instate_helper ") && !s.startsWith("(instate_helper "))
-      {
-        env = env == null ? null : env.filterCallGroup(g);
-      }
-
     Call e, r;
     r = _unitCalls.get(cl);
     if (isUnitType(cl))
@@ -3465,7 +3476,10 @@ public class DFA extends ANY
         analyze(e);
         _newCallRecursiveAnalyzeCalls = cnt ;
       }
-    hot(e);
+    else
+      {
+        hot(e);
+      }
   }
 
 
