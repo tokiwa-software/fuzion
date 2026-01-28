@@ -904,7 +904,7 @@ public class DFA extends ANY
   /**
    * Special value for universe.
    */
-  final Value _universe;
+  Value _universe;
 
 
   /**
@@ -1383,6 +1383,7 @@ public class DFA extends ANY
 
     _oneInstanceOfClazz = new List<>();
     _unitCalls = new IntMap<>();
+    _universe  = newInstance(_fuir.clazzUniverse(), NO_SITE, Context._MAIN_ENTRY_POINT_);
 
     _real = true;
     var realIter = findFixPoint();
