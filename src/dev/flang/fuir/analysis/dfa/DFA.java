@@ -3264,7 +3264,7 @@ public class DFA extends ANY
    */
   boolean siteSensitive(int cc)
   {
-    return SITE_SENSITIVE || _fuir.isConstructor(cc);
+    return SITE_SENSITIVE || _fuir.isConstructor(cc) && !onlyOneInstance(cc);
   }
 
 
