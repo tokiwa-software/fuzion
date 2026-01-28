@@ -829,8 +829,13 @@ public class DFA extends ANY
    * Should instance of certain clazzes be joined into a single Instance for
    * performance?  This is used to avoid large number of instances of, e.g.,
    * `array u8` where tracking the individual instances gives no benefit.
+   *
+   * To disable, use fz with
+   *
+   *   dev_flang_fuir_analysis_dfa_DFA_ONLY_ONE_INSTANCE=false
    */
-  static final boolean ONLY_ONE_INSTANCE  = true;
+  static final boolean ONLY_ONE_INSTANCE  =
+    FuzionOptions.boolPropertyOrEnv("dev.flang.fuir.analysis.dfa.DFA.ONLY_ONE_INSTANCE", true);
 
 
   /**
