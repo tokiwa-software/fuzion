@@ -258,40 +258,4 @@ Inner loop statement at --CURDIR--/reg_issue3508_dangling_else.fz:83:16:
 
 To solve this, add braces '{ }' or use line breaks and indentation.
 
-
---CURDIR--/reg_issue3508_dangling_else.fz:83:3: error 20: Incompatible types in branches of if expression
-  if true then for _ in 1.. while false until false else  # 17. should flag an error: ambiguous else
---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Incompatible result types in different branches:
-block returns value of type 'bool' at --CURDIR--/reg_issue3508_dangling_else.fz:83:16:
-  if true then for _ in 1.. while false until false else  # 17. should flag an error: ambiguous else
----------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-block returns value of type 'unit' at --CURDIR--/reg_issue3508_dangling_else.fz:83:3:
-  if true then for _ in 1.. while false until false else  # 17. should flag an error: ambiguous else
---^
-
-
---CURDIR--/reg_issue3508_dangling_else.fz:79:3: error 21: Incompatible types in branches of if expression
-  if true then while false do until false else            # 15. should flag an error: ambiguous else
---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Incompatible result types in different branches:
-block returns value of type 'bool' at --CURDIR--/reg_issue3508_dangling_else.fz:79:16:
-  if true then while false do until false else            # 15. should flag an error: ambiguous else
----------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-block returns value of type 'unit' at --CURDIR--/reg_issue3508_dangling_else.fz:79:3:
-  if true then while false do until false else            # 15. should flag an error: ambiguous else
---^
-
-
---CURDIR--/reg_issue3508_dangling_else.fz:81:3: error 22: Incompatible types in branches of if expression
-  if true then while false until false else               # 16. should flag an error: ambiguous else
---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Incompatible result types in different branches:
-block returns value of type 'bool' at --CURDIR--/reg_issue3508_dangling_else.fz:81:16:
-  if true then while false until false else               # 16. should flag an error: ambiguous else
----------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-block returns value of type 'unit' at --CURDIR--/reg_issue3508_dangling_else.fz:81:3:
-  if true then while false until false else               # 16. should flag an error: ambiguous else
---^
-
-22 errors.
+19 errors.
