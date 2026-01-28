@@ -2730,11 +2730,11 @@ loopEpilog  : "until" exprInLine thenPart elseBlockOpt
           {
             AstErrors.ambiguousLoops(pos, surroundingLoop);
           }
+        surroundingLoop(pos); /* disallow nesting */
         var old = setMinIndent(tokenPos());
         List<Feature> indexVars  = new List<>();
         List<Feature> nextValues = new List<>();
         var hasFor   = current() == Token.t_for; if (hasFor) { indexVars(indexVars, nextValues); }
-        surroundingLoop(pos); /* disallow nesting, but for now permit it for indexVars, see tests/reg_issue2365 and reg_issue3761 */
         var hasVar   = skip(true, Token.t_variant); var v   = hasVar              ? exprInLine()   : null;
                                                     var i   = hasFor || v != null ? invariant()    : null;
         var hasWhile = skip(true, Token.t_while  ); var w   = hasWhile            ? exprInLine()   : null;
