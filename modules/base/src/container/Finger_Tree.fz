@@ -278,7 +278,16 @@ is
       debug 2 : 0 < n < count
   =>
     tmp :=
-      for res Sequence (Sequence T) := [[]], if to_drop <= 0 then res++[f] else if to_drop >= f.count then res else res++[f.drop to_drop]
+      for res Sequence (Sequence T) := [[]],
+            {
+              if to_drop <= 0
+                res++[f]
+              else
+                if to_drop >= f.count
+                  res
+                else
+                  res++[f.drop to_drop]
+            }
           to_drop := n, to_drop-f.count
           f in finger
       else
