@@ -24,7 +24,7 @@
 # -----------------------------------------------------------------------
 
 # invariant_fault -- effect that terminates a computation due to a failed
-# condition in a inv statement
+# condition in an invariant statement
 #
 public invariant_fault (
   # the handler this effect uses to fail
@@ -52,7 +52,7 @@ public invariant_fault invariant_fault =>
   invariant_fault.env
 
 
-# cause a inv fault with given msg argument, i.e., call invariant_fault.cause
+# cause an invariant fault with given msg argument, i.e., call invariant_fault.cause
 # msg, i.e., use the current invariant_fault effect to fail with the given message.
 #
 public invariantcondition_fault(msg String) void => invariant_fault.cause msg
