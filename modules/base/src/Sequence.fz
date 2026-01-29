@@ -449,6 +449,9 @@ is
         .concat s
 
 
+  # return this Sequence as a Finger_Tree
+  # or nil if Sequence is not (yet) a Finger_Tree
+  #
   module as_finger_tree option (container.Finger_Tree T) => nil
 
 
