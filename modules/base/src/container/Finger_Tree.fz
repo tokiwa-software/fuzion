@@ -28,16 +28,8 @@
 #
 # NYI: UNDER DEVELOPMENT: split0, reverse
 #
-private:public Finger_Tree(T type) ref : Sequence T is
+private:public Finger_Tree(T type) ref : container.abstract_array T is
 
-  # the Finger_Tree as a list
-  #
-  public redef as_list list T => as_sequence.flat_map id .as_list
-
-  # is this sequence known to be finite?  For infinite sequences, features like
-  # count diverge.
-  #
-  public redef finite trit => trit.yes
   as_sequence Sequence (Sequence T) => abstract
 
   module prepend(seq Sequence T) container.Finger_Tree T => abstract
@@ -56,33 +48,22 @@ private:public Finger_Tree(T type) ref : Sequence T is
     append s.as_array_backed
 
 
-  # is this Sequence known to be array backed? If so, this means that operations
-  # like index[] are fast.
+  nth0(n i32) option T => abstract
+
+
+  # get the contents of this array at the given index
   #
-  public redef is_array_backed bool => false
+  public redef index [ ] (i idx) T
+  =>
+    nth0 i.as_i32 .val
 
-
-  # check if argument is a valid index in this array.
-  #
-  # Unlike for general Sequences, this performs in O(1).
-  #
-  public redef is_valid_index(i idx) bool => 0 ≤ i.as_i32 < count
-
-
-  # the nth element in the sequence, must exist
-  #
-  public redef nth(n i32) option T => abstract
-
-
-  public redef take (n i32) Sequence T => abstract
-  public redef drop (n i32) Sequence T => abstract
 
 
 
 # an empty finger tree
 #
 empty(T type) : container.Finger_Tree T is
-  public redef count i32 => 0
+  public redef length i32 => 0
   redef as_sequence Sequence (Sequence T) => []
   module redef prepend(seq Sequence T) container.Finger_Tree T => single T seq
   redef append (seq Sequence T) container.Finger_Tree T => single T seq
@@ -94,16 +75,14 @@ empty(T type) : container.Finger_Tree T is
         i in seq.reverse
     else
       r
-  public redef nth(n i32) option T => nil
+  redef nth0(n i32) option T => nil
   module redef as_finger_tree option (container.Finger_Tree T) => container.empty T
-  public redef take (n i32) Sequence T => empty.this
-  public redef drop (n i32) Sequence T => empty.this
 
 
 # a finger tree with only one item
 #
 single(T type, data Sequence T) : container.Finger_Tree T is
-  public redef count i32 => data.count
+  public redef length i32 => data.count
   redef as_sequence Sequence (Sequence T) => [data]
   module redef prepend(seq Sequence T) container.Finger_Tree T => deep (container.hand [seq]) (empty T) (container.hand [data])
   redef append (seq Sequence T) container.Finger_Tree T => deep (container.hand [data]) (empty T) (container.hand [seq])
@@ -115,17 +94,15 @@ single(T type, data Sequence T) : container.Finger_Tree T is
         i in seq.reverse
     else
       r.prepend data
-  public redef nth(n i32) option T => data.nth n
+  redef nth0(n i32) option T => data.nth n
   module redef as_finger_tree option (container.Finger_Tree T) => container.single data
-  public redef take (n i32) Sequence T => single (data.take n)
-  public redef drop (n i32) Sequence T => single (data.drop n)
 
 
 # a deep finger tree
 #
 deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.hand T) : container.Finger_Tree T is
   cnt := lft.count + ft.count + rght.count
-  public redef count i32 => cnt
+  public redef length i32 => cnt
   redef as_sequence Sequence (Sequence T) => [lft.finger, ft.as_sequence, rght.finger].flat_map id
   module redef prepend(seq Sequence T) container.Finger_Tree T =>
     if lft.finger.count = 4
@@ -178,7 +155,7 @@ deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.ha
       r
   redef as_deep deep T =>
     deep lft ft rght
-  public redef nth(n i32) option T =>
+  redef nth0(n i32) option T =>
     if n < lft.count
       lft.nth n
     else if n < lft.count+ft.count
@@ -186,22 +163,7 @@ deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.ha
     else
       rght.nth (n-lft.count-ft.count)
   module redef as_finger_tree option (container.Finger_Tree T) => container.deep lft ft rght
-  public redef take (n i32) Sequence T =>
-    if n <= lft.count
-      lft.as_ft.take n
-    else if n <= lft.count+ft.count
-      lft.as_ft.append (ft.take n-lft.count)
-    else
-      deep lft ft (rght.take (n-lft.count-ft.count))
-  public redef drop (n i32) Sequence T =>
-    if n < lft.count
-      deep (lft.drop n) ft rght
-    else if n < lft.count+ft.count
-      ft
-        .drop n-lft.count
-        .concat rght.as_ft
-    else
-      rght.as_ft.drop (n-lft.count-ft.count)
+
 
 
 
@@ -257,40 +219,4 @@ is
         f in finger
     else
       res
-
-
-  take (n i32) container.hand T
-    pre
-      debug 2 : 0 < n < count
-  =>
-    if n <= finger[0].count
-      container.hand [finger[0].take n]
-    else if n <= finger[0].count+finger[1].count
-      container.hand [finger[0], finger[1].take n-(finger[0].count)]
-    else if n <= finger[0].count+finger[1].count+finger[2].count
-      container.hand [finger[0], finger[1], finger[2].take n-(finger[0].count+finger[1].count)]
-    else
-      container.hand [finger[0], finger[1], finger[2], finger[3].take n-(finger[0].count+finger[1].count+finger[2].count)]
-
-
-  drop (n i32) container.hand T
-    pre
-      debug 2 : 0 < n < count
-  =>
-    tmp :=
-      for res Sequence (Sequence T) := [[]],
-            {
-              if to_drop <= 0
-                res++[f]
-              else
-                if to_drop >= f.count
-                  res
-                else
-                  res++[f.drop to_drop]
-            }
-          to_drop := n, to_drop-f.count
-          f in finger
-      else
-        res
-    container.hand tmp.as_array
 
