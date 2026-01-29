@@ -98,24 +98,6 @@ public class Parser extends Lexer
   public static boolean ENABLE_SET_KEYWORD = false;
 
   /**
-   * contains the last line number in which an `if` was found,
-   * required to set the semicolon state for the ambiguous semicolon error
-   */
-  private int _lastIfLine = -1;             // NYI: CLEANUP: state in parser should be avoided see #4991
-
-  /**
-   * SourcePosition of the outer `else`, null if not in `else` block
-   * required for proper alignment of `if`, `then`, `else` and `else if`
-   */
-  private SourcePosition _outerElse = null; // NYI: CLEANUP: state in parser should be avoided see #4991
-
-  /**
-   * SourcePosition of the outer `then`, null if not in `then` block or keyword `then` is not used
-   * required for proper alignment of `if`, `then`, `else` and `else if`
-   */
-  private SourcePosition _then = null;      // NYI: CLEANUP: state in parser should be avoided see #4991
-
-  /**
    * Are we parsing for the language server and thus need to
    * be more tolerant for incomplete source code?
    */
@@ -2866,18 +2848,18 @@ nextValue   : COMMA exprInLine
    */
   Expr ifexpr()
   {
-    return ifexpr(false);
+    return ifexpr(null);
   }
 
   /**
    * Parse ifexpr
    *
-   * @param elif is this part of an `else if`
+   * @param outerElse is this part of an `else if`, the position of `else`, otherwise `null`.
    *
 ifexpr      : "if" exprInLine thenPart elseBlockOpt
             ;
    */
-  Expr ifexpr(boolean elif)
+  Expr ifexpr(SourcePosition outerElse)
   {
     var surroundingIf = surroundingIf();
     var surroundingLoop = surroundingLoop();
@@ -2885,35 +2867,39 @@ ifexpr      : "if" exprInLine thenPart elseBlockOpt
         var pos = tokenSourcePos();
         surroundingIf(pos);
 
-        var oldMinIdent = elif ? null : setMinIndent(tokenPos());
+        var oldMinIdent = outerElse!=null ? null : setMinIndent(tokenPos()); // NYI: why?
 
-        boolean nestedIf = _lastIfLine == line();
-        _lastIfLine = line();
+        var l = line();
+        boolean nestedIf = surroundingIf != null && surroundingIf.line() == l;
 
         match(Token.t_if, "ifexpr");
 
         Expr e = exprInLine();
 
         // semi error if in same line
-        if (nestedIf && _lastIfLine == line()) {semiState(SemiState.ERROR);}
-        Block b = thenPart(false);
+        if (nestedIf && l == line()) {semiState(SemiState.ERROR);}
+
+        var thn = current(true) == Token.t_then ? tokenSourcePos() : null;
+        var b = thenPart(false);
 
         // reset if new line
-        if (nestedIf && _lastIfLine != line()) {semiState(SemiState.CONTINUE);}
+        if (nestedIf && l != line()) {semiState(SemiState.CONTINUE);}
 
         var elPos = tokenSourcePos();
 
         // don't use 'if' as indentation reference if 'then' is indented less (e.g. when 'then' is aligned with 'else if')
-        var ifPos = _then != null && pos.column() > _then.column() ? null : pos;
+        var ifPos = thn != null && pos.column() > thn.column() ? null : pos;
 
         // if not in the same line, 'else' must be aligned with either 'if', 'then' or 'else if'
         if (currentAtMinIndent() == Token.t_else && !(
-            (_then != null      && (_then.line()      == elPos.line() || _then.column()      == elPos.column())) ||
-            (_outerElse != null && (_outerElse.line() == elPos.line() || _outerElse.column() == elPos.column())) ||
-            (ifPos != null      && (ifPos.line()      == elPos.line() || ifPos.column()      == elPos.column())))
+            (thn != null       && (thn.line(  )     == elPos.line() || thn.column()       == elPos.column())) ||
+            (outerElse != null && (outerElse.line() == elPos.line() || outerElse.column() == elPos.column())) ||
+            (ifPos != null     && (ifPos.line()     == elPos.line() || ifPos.column()     == elPos.column())))
            )
           {
-            var errPos = (ifPos != null) ? ifPos : (_outerElse != null) ? _outerElse : _then;
+            var errPos = ifPos     != null ? ifPos     :
+                         outerElse != null ? outerElse
+                                           : thn;
 
             Errors.indentationProblemEncountered(tokenSourcePos(), errPos,
               "When " + Errors.skw("else") + " is not in the same line as " + Errors.skw("if")
@@ -2943,17 +2929,13 @@ thenPart    : "then" block
             |        block
             ;
    */
-  Block thenPart(boolean emptyBlockIfNoBlockPresent)
+  Block thenPart(/* NYI: ClEANUP: remove this argument, a `null` result is used only in Loop to create a default result which is being removed */
+                 boolean nullIfNothing)
   {
     var p = tokenPos();
-    _then = tokenSourcePos();
-    var hasThen = skip(true, Token.t_then);
-    if (!hasThen)
-      {
-        _then = null;
-      }
+    skip(true, Token.t_then);
     var result = block();
-    return emptyBlockIfNoBlockPresent && p == tokenPos() ? null : result;
+    return nullIfNothing && p == tokenPos() ? null : result;
   }
 
 
@@ -3009,10 +2991,7 @@ elseBlock   : "else" block    // must not follow several if/loops in single line
       ((thisIf != null) != (thisLoop != null));  // either thisIf or thisLoop is non-null
 
     Block result = null;
-    SourcePosition oldOuterElse = _outerElse;
     var pos = tokenSourcePos();
-    _outerElse = pos;
-
     var elseLine = pos.line();
     if (skip(true, Token.t_else))
       {
@@ -3025,20 +3004,13 @@ elseBlock   : "else" block    // must not follow several if/loops in single line
         // otherwise it is a normal else block that might contain an `if`
         if (thisIf != null && current() == Token.t_if && elseLine == tokenSourcePos().line())
           {
-            result = new Block(false, new List<Expr>(ifexpr(true)));
+            result = new Block(false, new List<Expr>(ifexpr(pos)));
           }
         else
           {
-            _outerElse = null;
             result = block();
           }
       }
-    else
-      {
-        _outerElse = null;
-      }
-
-    _outerElse = oldOuterElse;
 
     if (POSTCONDITIONS) ensure
       (result == null          ||
