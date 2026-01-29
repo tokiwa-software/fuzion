@@ -1723,7 +1723,7 @@ bracketTerm : brblock
     var c = current();
     switch (c)
       {
-      case t_lbrace  : return block(true);
+      case t_lbrace  : return new Block(true /* newScope */, block()._expressions);
       case t_lparen  : return klammer();
       case t_lbracket: return inlineArray();
       default: throw new Error("Unexpected case: "+c);
@@ -2447,11 +2447,19 @@ brblock     : BRACEL exprs BRACER
             ;
    */
   Block block() { return block(false); }
-  Block block(boolean newScope)
+
+  /**
+   * Parse block
+   *
+   * @param ignoreTrailingElse true if a dangling `else` `then` at the end of
+   * the `exprs` that make up this block should be ignored.  This is usually
+   * skipped to avoid the parser to get stuck.
+   */
+  Block block(boolean ignoreTrailingElse)
   {
     var p0 = lastTokenEndPos();
     var p1 = tokenPos();
-    var b = optionalBrackets(BRACES, "block", () -> new Block(newScope, exprs()));
+    var b = optionalBrackets(BRACES, "block", () -> new Block(exprs(ignoreTrailingElse)));
     var p2 = lastTokenEndPos();
     b.setSourceRange(sourceRange(p0, p1, p2));
     return b;
@@ -2503,8 +2511,12 @@ brblock     : BRACEL exprs BRACER
 exprs       : expr semiOrFlatLF exprs (semiOrFlatLF | )
             |
             ;
+   *
+   * @param ignoreTrailingElse true if a dangling `else` or `then` at the end of
+   * the `exprs` should be ignored.  This is usually skipped to avoid the parser
+   * to get stuck.
    */
-  List<Expr> exprs()
+  List<Expr> exprs(boolean ignoreTrailingElse)
   {
     List<Expr> l = new List<>();
     var in = new Indentation();
@@ -2524,6 +2536,15 @@ exprs       : expr semiOrFlatLF exprs (semiOrFlatLF | )
             semiOrFlatLF();
           }
         in.next();
+        if (!ignoreTrailingElse && endOfExprs())
+          {
+            switch (currentAtMinIndent())
+              {
+              case t_else: syntaxError(tokenPos(), "end of expressions", "exprs"); elseBlockOpt(null, null, null, null); break;
+              case t_then: syntaxError(tokenPos(), "end of expressions", "exprs"); next();                               break;
+              default    : break;
+              };
+          }
       }
     in.end();
     return l;
@@ -2848,7 +2869,18 @@ nextValue   : COMMA exprInLine
    */
   Expr ifexpr()
   {
-    return ifexpr(null);
+    var res = ifexpr(null);
+    var done = !false;
+    while (!done)
+      {
+        switch (currentAtMinIndent())
+          {
+          case t_else: syntaxError(tokenPos(), "end of expression", "ifexpr"); elseBlockOpt(null, null, null, null); break;
+          case t_then: syntaxError(tokenPos(), "end of expressions", "exprs"); next();                               break;
+          default: done = true; break;
+          }
+      }
+    return res;
   }
 
   /**
@@ -2867,7 +2899,26 @@ ifexpr      : "if" exprInLine thenPart elseBlockOpt
         var pos = tokenSourcePos();
         surroundingIf(pos);
 
-        var oldMinIdent = outerElse!=null ? null : setMinIndent(tokenPos()); // NYI: why?
+        // reference for indentation should be the position of `if` in cases like
+        //
+        //   if c
+        //   ^
+        //      bla
+        //
+        // or
+        //
+        //   else
+        //     if c
+        //     ^
+        //        bla
+        //
+        // but not for a single-line `else if` as in
+        //
+        //   else if c
+        //   ^
+        //     bla
+        //
+        var oldMinIndent = outerElse != null && outerElse.line() == line() ? -1 : setMinIndent(tokenPos());
 
         var l = line();
         boolean nestedIf = surroundingIf != null && surroundingIf.line() == l;
@@ -2910,7 +2961,10 @@ ifexpr      : "if" exprInLine thenPart elseBlockOpt
         surroundingIf(null);
         var els = elseBlockOpt(surroundingIf, surroundingLoop, pos, null);
 
-        if (oldMinIdent != null) { setMinIndent(oldMinIdent); }
+        if (outerElse == null)
+          {
+            setMinIndent(oldMinIndent);
+          }
 
         return Match.createIf(pos, e, b,
           // do no use empty blocks as else blocks since the source position
@@ -2934,7 +2988,7 @@ thenPart    : "then" block
   {
     var p = tokenPos();
     skip(true, Token.t_then);
-    var result = block();
+    var result = block(true /* ignoreTrailingElse */);
     return nullIfNothing && p == tokenPos() ? null : result;
   }
 
@@ -2988,7 +3042,7 @@ elseBlock   : "else" block    // must not follow several if/loops in single line
                      SourcePosition thisLoop)
   {
     if (PRECONDITIONS) require
-      ((thisIf != null) != (thisLoop != null));  // either thisIf or thisLoop is non-null
+      ((thisIf != null) != (thisLoop != null) || Errors.any());  // either thisIf or thisLoop is non-null
 
     Block result = null;
     var pos = tokenSourcePos();
@@ -3004,7 +3058,7 @@ elseBlock   : "else" block    // must not follow several if/loops in single line
         // otherwise it is a normal else block that might contain an `if`
         if (thisIf != null && current() == Token.t_if && elseLine == tokenSourcePos().line())
           {
-            result = new Block(false, new List<Expr>(ifexpr(pos)));
+            result = new Block(new List<Expr>(ifexpr(pos)));
           }
         else
           {
