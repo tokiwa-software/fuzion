@@ -2451,7 +2451,7 @@ brblock     : BRACEL exprs BRACER
   /**
    * Parse block
    *
-   * @param ignoreTrailingElse true if a dangling `else` `then` at the end of
+   * @param ignoreTrailingElse true if a dangling `else` or `then` at the end of
    * the `exprs` that make up this block should be ignored.  This is usually
    * skipped to avoid the parser to get stuck.
    */
@@ -2869,18 +2869,7 @@ nextValue   : COMMA exprInLine
    */
   Expr ifexpr()
   {
-    var res = ifexpr(null);
-    var done = !false;
-    while (!done)
-      {
-        switch (currentAtMinIndent())
-          {
-          case t_else: syntaxError(tokenPos(), "end of expression", "ifexpr"); elseBlockOpt(null, null, null, null); break;
-          case t_then: syntaxError(tokenPos(), "end of expressions", "exprs"); next();                               break;
-          default: done = true; break;
-          }
-      }
-    return res;
+    return ifexpr(null);
   }
 
   /**
