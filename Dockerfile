@@ -31,7 +31,7 @@ RUN apt-get update && apt-get -y --no-install-recommends install \
   inkscape \
   libgc-dev \
   libgc1 \
-  libsodium-dev
+  libsodium-dev \
   libsodium23 \
   libwolfssl-dev \
   libwolfssl42t64 \
