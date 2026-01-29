@@ -255,7 +255,7 @@ int fzE_bind(int sockfd, int family, int socktype, int protocol, char * host, ch
   {
     return -1;
   }
-  int bind_res = bind(sockfd, addr_info->ai_addr, (int)addr_info->ai_addrlen);
+  int bind_res = set_last_error(bind(sockfd, addr_info->ai_addr, (int)addr_info->ai_addrlen));
 
   if(bind_res == -1)
   {
@@ -766,7 +766,7 @@ int32_t fzE_mtx_unlock(void * mtx) {
 
 void fzE_mtx_destroy(void * mtx) {
   pthread_mutex_destroy((pthread_mutex_t *)mtx);
-  // NYI: BUG: free(mtx);
+  fzE_free(mtx);
 }
 
 void * fzE_cnd_init() {
@@ -788,7 +788,7 @@ int32_t fzE_cnd_wait(void * cnd, void * mtx) {
 
 void fzE_cnd_destroy(void * cnd) {
   pthread_cond_destroy((pthread_cond_t *)cnd);
-  // NYI: BUG: free(cnd);
+  fzE_free(cnd);
 }
 
 

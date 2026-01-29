@@ -192,7 +192,7 @@ public class Lexer extends SourceFile
     t_variant("variant"),
     t_pre("pre"),
     t_post("post"),
-    t_inv("inv"),
+    t_invariant("invariant"),
     t_var("var"),                     // unused
     t_match("match"),
     t_ref("ref"),
@@ -671,6 +671,22 @@ public class Lexer extends SourceFile
    */
   private boolean _endAtBar = false;
 
+
+  /**
+   * In case there is a surrounding `if` statement, this gives the start position. This is used
+   * to detect ambiguous `else` statements.
+   */
+  private SourcePosition _surroundingIf = null;
+
+
+  /**
+   * In case there is a surrounding loop statement, this gives the start position. This is used
+   * to detect ambiguous `else` statements.
+   */
+  private SourcePosition _surroundingLoop = null;
+
+
+
   private SemiState _atSemicolon = SemiState.CONTINUE;
 
 
@@ -717,6 +733,8 @@ public class Lexer extends SourceFile
     _endAtComma = original._endAtComma;
     _endAtColon = original._endAtColon;
     _endAtBar = original._endAtBar;
+    _surroundingIf = original._surroundingIf;
+    _surroundingLoop = original._surroundingLoop;
     _atSemicolon = original._atSemicolon;
     _ignoredTokenBefore = original._ignoredTokenBefore;
     _stringLexer = original._stringLexer == null ? null : new StringLexer(original._stringLexer);
@@ -942,6 +960,50 @@ public class Lexer extends SourceFile
     return result;
   }
 
+
+  /**
+   * Remember that we are parsing in `if` statement. This will be reset
+   * automatically on relaxLineAndSpaceLimit.
+   */
+  SourcePosition surroundingIf(SourcePosition pos)
+  {
+    var result = _surroundingIf;
+    _surroundingIf = pos;
+
+    return result;
+  }
+
+
+  /**
+   * The `if` statement that we are currently parsing.
+   */
+  SourcePosition surroundingIf()
+  {
+    return _surroundingIf;
+  }
+
+  /**
+   * Remember that we are parsing a loop statement. This will be reset
+   * automatically on relaxLineAndSpaceLimit.
+   */
+  SourcePosition surroundingLoop(SourcePosition pos)
+  {
+    var result = _surroundingLoop;
+    _surroundingLoop = pos;
+
+    return result;
+  }
+
+
+  /**
+   * The loop statement that we are currently parsing.
+   */
+  SourcePosition surroundingLoop()
+  {
+    return _surroundingLoop;
+  }
+
+
   /**
    * Increases the semicolon state, which is used to detect ambiguous semicolons
    * e.g. when blocks are nested in one line.
@@ -994,6 +1056,8 @@ public class Lexer extends SourceFile
     var oldEAc = endAtComma(false);
     var oldEAC = endAtColon(false);
     var oldEAB = endAtBar(false);
+    var oldIf  = surroundingIf(null);
+    var oldLoop  = surroundingLoop(null);
     var oldSemiSt = semiState(SemiState.CONTINUE);
     V result = c.get();
     sameLine(oldLine);
@@ -1001,6 +1065,8 @@ public class Lexer extends SourceFile
     endAtComma(oldEAc);
     endAtColon(oldEAC);
     endAtBar(oldEAB);
+    surroundingIf(oldIf);
+    surroundingLoop(oldLoop);
     semiState(oldSemiSt);
     return result;
   }
@@ -3427,9 +3493,9 @@ PIPE        : "|"
           _stringLexer = this;
           switch (end(t))
             {
-            case DOLLAR: _state = StringState.IDENT_EXPECTED; break;
-            case BRACE : _state = StringState.EXPR_EXPECTED; break;
-            default    : throw new Error("default:");
+            case DOLLAR -> _state = StringState.IDENT_EXPECTED;
+            case BRACE -> _state = StringState.EXPR_EXPECTED;
+            default -> throw new Error("default:");
             }
         }
       return t;

@@ -41,8 +41,8 @@ visibility_scoping is
 
 
   test3 =>
-    _ := for ar := outcome unit
-         while false
+    for ar := outcome unit
+    while false
 
     _ : Function unit is
       public redef call unit =>

@@ -383,23 +383,24 @@ field       : returnType
           }
       }
     while (skipComma());
-    switch (skipFormArgsNotActualArgs())
+    return switch (skipFormArgsNotActualArgs())
       {
-      case formal: return true;
-      case actual: return false;
-      default    : break;
+      case formal -> true;
+      case actual -> false;
+      default -> {
+        if (isNonFuncReturnTypePrefix())
+          {
+            yield true;
+          }
+        var p = fork();
+        yield
+          (!p.isTypePrefix() || p.skipType(true, true)) &&
+          (!p.isOperator("!") || p.skipEffects()) &&
+          p.skipInherits() &&
+          (p.isContractPrefix() ||
+            p.isImplPrefix());
       }
-    if (isNonFuncReturnTypePrefix())
-      {
-        return true;
-      }
-    var p = fork();
-    return
-      (!p.isTypePrefix() || p.skipType(true, true)) &&
-      (!p.isOperator("!") || p.skipEffects()) &&
-      p.skipInherits() &&
-      (p.isContractPrefix  () ||
-       p.isImplPrefix      ());
+      };
   }
 
 
@@ -1608,7 +1609,7 @@ actualArgs  : actualSpaces
            t_is              ,
            t_pre             ,
            t_post            ,
-           t_inv             ,
+           t_invariant       ,
            t_if              ,
            t_then            ,
            t_else            ,
@@ -2715,28 +2716,35 @@ loopBody    : "while" exprInLine      block
             | "while" exprInLine "do" block
             |                    "do" block
             ;
-loopEpilog  : "until" exprInLine thenPart loopElseBlock
-            |                             "else" block
+loopEpilog  : "until" exprInLine thenPart elseBlockOpt
+            |                             elseBlock
             ;
    */
   Expr loop()
   {
+    var surroundingIf = surroundingIf();
+    var surroundingLoop = surroundingLoop();
     return relaxLineAndSpaceLimit(() -> {
+        var pos = tokenSourcePos();
+        if (surroundingLoop != null && surroundingLoop.line() == pos.line())
+          {
+            AstErrors.ambiguousLoops(pos, surroundingLoop);
+          }
+        surroundingLoop(pos); /* disallow nesting */
         var old = setMinIndent(tokenPos());
-        SourcePosition pos = tokenSourcePos();
         List<Feature> indexVars  = new List<>();
         List<Feature> nextValues = new List<>();
         var hasFor   = current() == Token.t_for; if (hasFor) { indexVars(indexVars, nextValues); }
-        var hasVar   = skip(true, Token.t_variant); var v   = hasVar              ? exprInLine()    : null;
-                                                    var i   = hasFor || v != null ? invariant() : null;
-        var hasWhile = skip(true, Token.t_while  ); var w   = hasWhile            ? exprInLine()    : null;
-        var hasDo    = skip(true, Token.t_do     ); var b   = hasWhile || hasDo   ? block()         : null;
-        var hasUntil = skip(true, Token.t_until  ); var u   = hasUntil            ? exprInLine()    : null;
-                                                    var ub  = hasUntil            ? thenPart(true)  : null;
+        var hasVar   = skip(true, Token.t_variant); var v   = hasVar              ? exprInLine()   : null;
+                                                    var i   = hasFor || v != null ? invariant()    : null;
+        var hasWhile = skip(true, Token.t_while  ); var w   = hasWhile            ? exprInLine()   : null;
+        var hasDo    = skip(true, Token.t_do     ); var b   = hasWhile || hasDo   ? block()        : null;
+        var hasUntil = skip(true, Token.t_until  ); var u   = hasUntil            ? exprInLine()   : null;
+                                                    var ub  = hasUntil            ? thenPart(true) : null;
                                                     var ePos = tokenSourcePos();
-                                                    var els1= fork().loopElseBlock();
-                                                    var els2= fork().loopElseBlock();
-                                                    var els =        loopElseBlock();
+                                                    var els1= fork().elseBlockOpt(surroundingIf, null, null, pos);
+                                                    var els2= fork().elseBlockOpt(surroundingIf, null, null, pos);
+                                                    var els =        elseBlockOpt(surroundingIf, null, null, pos);
         setMinIndent(old);
         if (!hasWhile && !hasDo && !hasUntil && els == null)
           {
@@ -2866,21 +2874,24 @@ nextValue   : COMMA exprInLine
    *
    * @param elif is this part of an `else if`
    *
-ifexpr      : "if" exprInLine thenPart elseBlock
+ifexpr      : "if" exprInLine thenPart elseBlockOpt
             ;
    */
   Expr ifexpr(boolean elif)
   {
+    var surroundingIf = surroundingIf();
+    var surroundingLoop = surroundingLoop();
     return relaxLineAndSpaceLimit(() -> {
-        SourcePosition pos = tokenSourcePos();
-        SourcePosition ifPos = pos;
+        var pos = tokenSourcePos();
+        surroundingIf(pos);
 
         var oldMinIdent = elif ? null : setMinIndent(tokenPos());
 
-        match(Token.t_if, "ifexpr");
-
         boolean nestedIf = _lastIfLine == line();
         _lastIfLine = line();
+
+        match(Token.t_if, "ifexpr");
+
         Expr e = exprInLine();
 
         // semi error if in same line
@@ -2893,7 +2904,7 @@ ifexpr      : "if" exprInLine thenPart elseBlock
         var elPos = tokenSourcePos();
 
         // don't use 'if' as indentation reference if 'then' is indented less (e.g. when 'then' is aligned with 'else if')
-        ifPos = _then != null && ifPos.column() > _then.column() ? null : ifPos;
+        var ifPos = _then != null && pos.column() > _then.column() ? null : pos;
 
         // if not in the same line, 'else' must be aligned with either 'if', 'then' or 'else if'
         if (currentAtMinIndent() == Token.t_else && !(
@@ -2910,7 +2921,8 @@ ifexpr      : "if" exprInLine thenPart elseBlock
               + " or " + Errors.skw("else if") + ".") ;
           }
 
-        var els = elseBlock();
+        surroundingIf(null);
+        var els = elseBlockOpt(surroundingIf, surroundingLoop, pos, null);
 
         if (oldMinIdent != null) { setMinIndent(oldMinIdent); }
 
@@ -2946,24 +2958,72 @@ thenPart    : "then" block
 
 
   /**
-   * Parse elseBlock
+   * Helper for `elseBlockOpt`: Check if the three given positions are != null and
+   * refer to the same line.
    *
-elseBlock   : "else" block
+   * @param p1 a position or null.
+   *
+   * @param p2 a position or null.
+   *
+   * @param p3 a position or null.
+   *
+   * @return true if p1, p2, p3 are all non-null and refer to the same source
+   * code line().
+   */
+  private boolean allInSameLine(SourcePosition p1,
+                                SourcePosition p2,
+                                SourcePosition p3)
+  {
+    return
+      p1 != null &&
+      p2 != null &&
+      p3 != null &&
+      p1.line() == p2.line() &&
+      p2.line() == p3.line();
+  }
+
+
+  /**
+   * Parse elseBlockOpt
+   *
+   * @param surroundingIf position of surrounding `if` in case of nesting
+   *
+   * @param surroundingLoop position of surrounding loop in case of nesting
+   *
+   * @param thisIf if part of an `if`, the position
+   *
+   * @param thisLoop if part of a loop, the position
+   *
+elseBlockOpt: elseBlock
             |
             ;
+elseBlock   : "else" block    // must not follow several if/loops in single line unless bracketing is used to disambiguate
+            ;
    */
-  Block elseBlock()
+  Block elseBlockOpt(SourcePosition surroundingIf,
+                     SourcePosition surroundingLoop,
+                     SourcePosition thisIf,
+                     SourcePosition thisLoop)
   {
+    if (PRECONDITIONS) require
+      ((thisIf != null) != (thisLoop != null));  // either thisIf or thisLoop is non-null
+
     Block result = null;
     SourcePosition oldOuterElse = _outerElse;
-    _outerElse = tokenSourcePos();
+    var pos = tokenSourcePos();
+    _outerElse = pos;
 
-    var elseLine = tokenSourcePos().line();
+    var elseLine = pos.line();
     if (skip(true, Token.t_else))
       {
+        // produce error in case of ambiguity:
+        if      (allInSameLine(surroundingIf  , thisIf  , pos)) { AstErrors.ambiguousIfIfElse  (pos, surroundingIf  , thisIf  ); }
+        else if (allInSameLine(surroundingLoop, thisIf  , pos)) { AstErrors.ambiguousLoopIfElse(pos, surroundingLoop, thisIf  ); }
+        else if (allInSameLine(surroundingIf  , thisLoop, pos)) { AstErrors.ambiguousIfLoopElse(pos, surroundingIf  , thisLoop); }
+
         // only use special handling for `else if` when they are in the same line
         // otherwise it is a normal else block that might contain an `if`
-        if (current() == Token.t_if && elseLine == tokenSourcePos().line())
+        if (thisIf != null && current() == Token.t_if && elseLine == tokenSourcePos().line())
           {
             result = new Block(false, new List<Expr>(ifexpr(true)));
           }
@@ -2979,26 +3039,6 @@ elseBlock   : "else" block
       }
 
     _outerElse = oldOuterElse;
-
-    if (POSTCONDITIONS) ensure
-      (result == null          ||
-       result instanceof Block    );
-
-    return result;
-  }
-
-
-    /**
-   * Parse loopElseBlock
-   *
-loopElseBlock : "else" block
-              |
-              ;
-   */
-  Block loopElseBlock()
-  {
-    var result = skip(true, Token.t_else) ? block()
-                                          : null;
 
     if (POSTCONDITIONS) ensure
       (result == null          ||
@@ -3285,7 +3325,7 @@ invariant   : "inv" block
   List<Cond> invariant()
   {
     List<Cond> result = null;
-    if (skip(true, Token.t_inv))
+    if (skip(true, Token.t_invariant))
       {
         result = Cond.from(block());
       }

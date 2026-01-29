@@ -69,9 +69,7 @@ public class LexerTool extends ANY
     return IO.withTextInputStream(SourceText.getText(pos), () -> {
       var lexer = newLexerStdIn();
       return Stream.generate(() -> {
-        // lexer has path stdin, so we pass sourcefile with original path
-        // and the bytes of the current lexer.
-        var result = tokenInfo(lexer, new SourceFile(pos._sourceFile._fileName, lexer.bytes()));
+        var result = tokenInfo(lexer, pos._sourceFile);
         advance(lexer);
         return result;
       }).takeWhile(tokenInfo -> tokenInfo.token() != Token.t_eof);

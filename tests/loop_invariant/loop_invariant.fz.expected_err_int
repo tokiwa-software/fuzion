@@ -22,9 +22,9 @@ fuzion.runtime.invariant_fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
 fuzion.runtime.invariantcondition_fault#1: {base.fum}/fuzion/runtime/invariant_fault.fz:58:53:
 public invariantcondition_fault(msg String) void => invariant_fault.cause msg
 ----------------------------------------------------^^^^^^^^^^^^^^^^^^^^^^^^^
-loop_invariant.loop: --CURDIR--/loop_invariant.fz:32:7:
-  inv i < 1
-------^^^^^
+loop_invariant.loop: --CURDIR--/loop_invariant.fz:32:13:
+  invariant i < 1
+------------^^^^^
 loop_invariant: --CURDIR--/loop_invariant.fz:31:3:
   for i in 0..1
 --^

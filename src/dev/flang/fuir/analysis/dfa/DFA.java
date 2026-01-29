@@ -480,9 +480,9 @@ public class DFA extends ANY
              c_u8   ,
              c_u16  ,
              c_u32  ,
-             c_u64  ,
-             c_f32  ,
-             c_f64  -> NumericValue.create(DFA.this, constCl, ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN));
+             c_u64  -> NumericValue.create(DFA.this, constCl, ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN));
+        case c_f32  ,
+             c_f64  -> NumericValue.create(DFA.this, constCl);
         case c_String -> newConstString(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt()+4), _call);
         default ->
           {
@@ -829,8 +829,13 @@ public class DFA extends ANY
    * Should instance of certain clazzes be joined into a single Instance for
    * performance?  This is used to avoid large number of instances of, e.g.,
    * `array u8` where tracking the individual instances gives no benefit.
+   *
+   * To disable, use fz with
+   *
+   *   dev_flang_fuir_analysis_dfa_DFA_ONLY_ONE_INSTANCE=false
    */
-  static final boolean ONLY_ONE_INSTANCE  = true;
+  static final boolean ONLY_ONE_INSTANCE  =
+    FuzionOptions.boolPropertyOrEnv("dev.flang.fuir.analysis.dfa.DFA.ONLY_ONE_INSTANCE", true);
 
 
   /**
@@ -904,7 +909,7 @@ public class DFA extends ANY
   /**
    * Special value for universe.
    */
-  final Value _universe;
+  Value _universe;
 
 
   /**
@@ -984,13 +989,6 @@ public class DFA extends ANY
    * way to lookup that key.
    */
   LongMap<Call> _callsQuick = new LongMap<>();
-
-
-  /**
-   * All calls will receive a unique identifier.  This is the next unique
-   * identifier to be used for the next new call.
-   */
-  int _callIds = 0;
 
 
   /**
@@ -1121,12 +1119,6 @@ public class DFA extends ANY
    * For debugging: lazy creation of a message why _changed was set to true.
    */
   private Supplier<String> _changedSetBy;
-
-
-  /**
-   * Set of effects that are missing, excluding default effects.
-   */
-  IntMap<Integer> _missingEffects = new IntMap<>(); // NYI: CLEANUP: Remove? This is only written?
 
 
   /**
@@ -1377,20 +1369,26 @@ public class DFA extends ANY
       }
 
     _cachedValues = new TreeMap<>(Value.COMPARATOR);
-    // _numUniqueValues = 0;    -- NYI: Somewhere, the old unique ids are still in use, need to check why! See reg_issue2478 to check this.
+    _numUniqueValues = 0;
     _uniqueValues = new List<Value>();
     _instancesForSite = new List<>();
     _tagged = new LongMap<>();
     _joined = new LongMap<>();
     _uninitializedSysArray = new IntMap<>();
+    _numericValues = new List<>();
+    _numericValuesAny = new List<>();
+    _preEffectValues = new TreeMap<>();
+
+    _trueX = null; _falseX = null; _boolX = null;
 
     _callsQuick = new LongMap<>();
     _calls = new TreeMap<>();
     _callGroupsQuick = new LongMap<>();
     _callGroups = new TreeMap<>();
 
-    _instancesForSite = new List<>();
+    _oneInstanceOfClazz = new List<>();
     _unitCalls = new IntMap<>();
+    _universe  = newInstance(_fuir.clazzUniverse(), NO_SITE, Context._MAIN_ENTRY_POINT_);
 
     _real = true;
     var realIter = findFixPoint();
@@ -1433,24 +1431,30 @@ public class DFA extends ANY
   int findFixPoint()
   {
     var cnt = 0;
+    var start = System.currentTimeMillis();
+    _changedSetBy = () -> "*** change not set ***";
     do
       {
         cnt++;
+        _changed = false;
 
         if (_options.verbose(2))
           {
+            var now = System.currentTimeMillis();
+            var delta = now - start;
+            start = now;
             _options.verbosePrintln(2,
-                                    "DFA " + (_real ? "real " : "pre ") +
-                                    "iteration #" + cnt + ": --------------------------------------------------" +
-                                    (_options.verbose(3) ? ("calls:"   + _calls.size() +
-                                                            ",values:" + _numUniqueValues +
-                                                            ",envs:"   + (_envsQuick.size() + _envs.size()) +
-                                                            (_options.verbose(4) ? "; " + _changedSetBy.get()
-                                                                                    : ""                        ))
+                                    "DFA " + (_real ? "real " : "pre  ") +
+                                    "iteration #" + String.format("%02d", cnt)
+                                    + ", prev " + String.format("%4d", delta) + "ms: ---------- " +
+                                    (_options.verbose(3) ? ("calls:"   + String.format("%5d", _calls.size()) +
+                                                            ",values:" + String.format("%5d",_numUniqueValues) +
+                                                            ",envs:"   + String.format("%3d",(_envsQuick.size() + _envs.size())) +
+                                                            (_options.verbose(4) && _changedSetBy != null
+                                                              ? " ---- " + _changedSetBy.get() : ""))
                                                          : ""                                                     ));
           }
 
-        _changed = false;
         if (cnt == 1)
           {
             newCall(null,
@@ -1461,10 +1465,9 @@ public class DFA extends ANY
                     null /* env */,
                     Context._MAIN_ENTRY_POINT_);
           }
-        _changedSetBy = () -> "*** change not set ***";
         iteration();
       }
-    while (_changed && (true || cnt < 100));
+    while (_changed);
 
     if (_options.verbose(4))
       {
@@ -2772,6 +2775,7 @@ public class DFA extends ANY
             if (onlyOneInstance(cl))
               {
                 var ni = new Instance(this, cl, site, context);
+                wasChanged(() -> "DFA: new instance " + _fuir.clazzAsString(cl));
                 makeUnique(ni);
                 ao = ni;
               }
@@ -3226,6 +3230,17 @@ public class DFA extends ANY
     var sysArray      = _fuir.clazzResultClazz(internalArray);
     var c_u8          = _fuir.clazz(SpecialClazzes.c_u8);
     var adata         = newSysArray(NumericValue.create(this, c_u8), c_u8);
+    if (utf8Bytes != null)
+      {
+        for (int i = 0; i < utf8Bytes.length; i++)
+          {
+            adata
+              .setel(
+                NumericValue.create(this, _fuir.clazz(SpecialClazzes.c_i32), (long)i),
+                NumericValue.create(this, _fuir.clazz(SpecialClazzes.c_u8), utf8Bytes[i])
+              );
+          }
+      }
     var r = newInstance(cs, NO_SITE, context);
     var arr = newInstance(ar, NO_SITE, context);
     var a = newInstance(sysArray, NO_SITE, context);
@@ -3354,12 +3369,6 @@ public class DFA extends ANY
         g = g != null ? g : ng;
       }
 
-    var s = _fuir.clazzAsString(cl);
-    if (!s.startsWith("instate_helper ") && !s.startsWith("(instate_helper "))
-      {
-        env = env == null ? null : env.filterCallGroup(g);
-      }
-
     Call e, r;
     r = _unitCalls.get(cl);
     if (isUnitType(cl))
@@ -3405,11 +3414,6 @@ public class DFA extends ANY
       }
     if (e == null)
       {
-        r._uniqueCallId = _callIds++;
-        if (_callIds < 0)
-          {
-            DfaErrors.fatal("DFA: Exceeded maximum number of calls " + Integer.MAX_VALUE);
-          }
         _calls.put(r, r);
         r._instance = newInstance(cl, site, r);
         if (r._instance instanceof Instance riv)

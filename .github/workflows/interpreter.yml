@@ -1,0 +1,60 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  GitHub Actions workflow to build and test the interpreter.
+#
+# -----------------------------------------------------------------------
+
+name: test interpreter
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 1-5' # monday through friday
+
+env:
+  PRECONDITIONS: true
+  POSTCONDITIONS: true
+  FUZION_REPRODUCIBLE_BUILD: true
+  dev_flang_tools_serializeFUIR: true
+  dev_flang_fuir_analysis_dfa_DFA_MAX_ITERATIONS: 50
+
+jobs:
+  run_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+
+      - name: install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install openjdk-25-jdk-headless sqlite3 libgc1 libgc-dev libclang1 libclang-dev libwolfssl-dev libsodium23 libsodium-dev
+          echo "JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64" >> $GITHUB_ENV
+          echo "/usr/lib/jvm/java-25-openjdk-amd64/bin" >> $GITHUB_PATH
+
+      - name: link libclang
+        run: |
+          export CLANG_MAJOR_VERSION=$(clang --version | head -n 1 | awk '{print $4}' | cut -d. -f1)
+          test -f /usr/lib/llvm-$CLANG_MAJOR_VERSION/lib/libclang.so && sudo ln -s /usr/lib/llvm-$CLANG_MAJOR_VERSION/lib/libclang.so /usr/lib/
+
+      - name: run tests
+        run: make run_tests_int
