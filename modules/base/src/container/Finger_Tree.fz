@@ -30,8 +30,8 @@
 #
 private:public Finger_Tree(T type) ref : container.abstract_array T is
 
-  module prepend(seq Sequence T) container.Finger_Tree T => abstract
-  append (seq Sequence T) container.Finger_Tree T => abstract
+  public prepend(seq Sequence T) container.Finger_Tree T => abstract
+  public append (seq Sequence T) container.Finger_Tree T => abstract
 
   left  option (Sequence T, container.Finger_Tree T) => abstract
   right option (container.Finger_Tree T, Sequence T) => abstract
@@ -62,8 +62,8 @@ private:public Finger_Tree(T type) ref : container.abstract_array T is
 #
 empty(T type) : container.Finger_Tree T is
   public redef length i32 => 0
-  module redef prepend(seq Sequence T) container.Finger_Tree T => single T seq
-  redef append (seq Sequence T) container.Finger_Tree T => single T seq
+  public redef prepend(seq Sequence T) container.Finger_Tree T => single T seq
+  public redef append (seq Sequence T) container.Finger_Tree T => single T seq
   redef left  option (Sequence T, container.Finger_Tree T) => nil
   redef right option (container.Finger_Tree T, Sequence T) => nil
   redef merge(ft container.Finger_Tree T) container.Finger_Tree T => ft
@@ -80,9 +80,9 @@ empty(T type) : container.Finger_Tree T is
 #
 single(T type, data Sequence T) : container.Finger_Tree T is
   public redef length i32 => data.count
-  module redef prepend(seq Sequence T) container.Finger_Tree T =>
+  public redef prepend(seq Sequence T) container.Finger_Tree T =>
     deep (container.hand [seq]) (empty T) (container.hand [data])
-  redef append (seq Sequence T) container.Finger_Tree T =>
+  public redef append (seq Sequence T) container.Finger_Tree T =>
     deep (container.hand [data]) (empty T) (container.hand [seq])
   redef left  option (Sequence T, container.Finger_Tree T) =>
     (data, (container.Finger_Tree T).empty)
@@ -114,14 +114,14 @@ deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.ha
   public redef length i32 => cnt
 
 
-  module redef prepend(seq Sequence T) container.Finger_Tree T =>
+  public redef prepend(seq Sequence T) container.Finger_Tree T =>
     if lft.finger.count = 4
       deep (container.hand [seq, lft.finger[0]]) (ft.prepend ((lft.finger.drop 1).flat_map id).as_array_backed) rght
     else
       deep (lft.prepend seq) ft rght
 
 
-  redef append (seq Sequence T) container.Finger_Tree T =>
+  public redef append (seq Sequence T) container.Finger_Tree T =>
     if rght.finger.count = 4
       deep lft (ft.append ((rght.finger.take 3).flat_map id).as_array_backed) (container.hand [rght.finger[3], seq])
     else
