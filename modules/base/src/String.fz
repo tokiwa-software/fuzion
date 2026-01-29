@@ -923,14 +923,22 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # concatenating their byte sequences.
   #
   public type.concat(a, b String) String =>
-    _ : String is
-      public redef utf8 Sequence u8 :=
-        match a.utf8.as_finger_tree
-          ft container.Finger_Tree => ft.concat b.utf8
-          nil =>
-            container.Finger_Tree u8 .empty
-              .concat a.utf8
-              .concat b.utf8
+    if a.is_empty
+      b
+    else if b.is_empty
+      a
+    else
+      _ : String is
+        public redef utf8 Sequence u8 :=
+          match a.utf8.as_finger_tree
+            aft container.Finger_Tree => aft.concat b.utf8
+            nil =>
+              match b.utf8.as_finger_tree
+                bft container.Finger_Tree => bft.prepend a.utf8
+                nil =>
+                  container.Finger_Tree u8 .empty
+                    .concat a.utf8
+                    .concat b.utf8
 
 
   # Takes a sequence of strings and concatenates its elements, while adding the separator

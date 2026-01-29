@@ -424,32 +424,29 @@ is
   # in `O(n²)` performance for the concatenations.
   #
   public concat (s Sequence T) Sequence T =>
-    match s.as_finger_tree
-      ft container.Finger_Tree => ft.prepend Sequence.this
-      nil =>
-        c1 :=   finite.is_yes ? count   : -1
-        c2 := s.finite.is_yes ? s.count : -1
-        if c1 = 0
-          s
-        else if c2 = 0
-          Sequence.this
-        #
-        # c1 < c2 to avoid poor (quadratic) performance
-        # if a small sequence is added in front of a
-        # larger one repeatedly as in this code:
-        #
-        #     for
-        #       s := (Sequence i32).empty, [i].concat s
-        #       i in 1..n
-        #     else
-        #       say s
-        #
-        else if c1 < 0 || c2 < 0 || c1 < c2 then
-          as_list.concat_list s.as_list
-        else
-          container.expanding_array T .empty c1+c2
-            .concat Sequence.this
-            .concat s
+    c1 :=   finite.is_yes ? count   : -1
+    c2 := s.finite.is_yes ? s.count : -1
+    if c1 = 0
+      s
+    else if c2 = 0
+      Sequence.this
+    #
+    # c1 < c2 to avoid poor (quadratic) performance
+    # if a small sequence is added in front of a
+    # larger one repeatedly as in this code:
+    #
+    #     for
+    #       s := (Sequence i32).empty, [i].concat s
+    #       i in 1..n
+    #     else
+    #       say s
+    #
+    else if c1 < 0 || c2 < 0 || c1 < c2 then
+      as_list.concat_list s.as_list
+    else
+      container.expanding_array T .empty c1+c2
+        .concat Sequence.this
+        .concat s
 
 
   module as_finger_tree option (container.Finger_Tree T) => nil
