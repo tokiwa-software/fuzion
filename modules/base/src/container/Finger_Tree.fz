@@ -117,6 +117,7 @@ deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.ha
   public redef prepend(seq Sequence T) container.Finger_Tree T =>
     if lft.finger.count = 4
       deep (container.hand [seq, lft.finger[0]]) (ft.prepend ((lft.finger.drop 1).flat_map id).as_array_backed) rght
+      # NYI: PERFORMANCE: deep (container.hand [seq, lft.finger[0]]) (ft.prepend lft.finger[3] .prepend lft.finger[2] .prepend lft.finger[0]) rght
     else
       deep (lft.prepend seq) ft rght
 
@@ -124,6 +125,7 @@ deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.ha
   public redef append (seq Sequence T) container.Finger_Tree T =>
     if rght.finger.count = 4
       deep lft (ft.append ((rght.finger.take 3).flat_map id).as_array_backed) (container.hand [rght.finger[3], seq])
+      # NYI: PERFORMANCE: deep lft (ft.append rght.finger[0] .append rght.finger[1] .append rght.finger[2]) (container.hand [rght.finger[3], seq])
     else
       deep lft ft (rght.append seq)
 
