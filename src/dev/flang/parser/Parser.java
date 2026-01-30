@@ -2540,8 +2540,8 @@ exprs       : expr semiOrFlatLF exprs (semiOrFlatLF | )
           {
             switch (currentAtMinIndent())
               {
-              case t_else: syntaxError(tokenPos(), "end of expressions", "exprs"); elseBlockOpt(null, null, null, null); break;
-              case t_then: syntaxError(tokenPos(), "end of expressions", "exprs"); next();                               break;
+                // case t_else: syntaxError(tokenPos(), "end of expressions", "exprs"); elseBlockOpt(null, null, null, null); break;
+                //              case t_then: syntaxError(tokenPos(), "end of expressions", "exprs"); next();                               break;
               default    : break;
               };
           }
