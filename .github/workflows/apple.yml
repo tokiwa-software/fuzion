@@ -57,7 +57,7 @@ jobs:
 
       - name: install dependencies
         run: |
-          brew install openjdk@25.0.2 bdw-gc gnu-sed make coreutils sqlite llvm wolfssl libsodium
+          brew install openjdk@25 bdw-gc gnu-sed make coreutils sqlite llvm wolfssl libsodium
           echo "/opt/homebrew/opt/gnu-sed/libexec/gnubin:/opt/homebrew/opt/make/libexec/gnubin:/usr/local/opt/gnu-sed/libexec/gnubin:/usr/local/opt/gnu-make/libexec/gnubin:/usr/local/opt/coreutils/libexec/gnubin:$PATH" >> $GITHUB_PATH
 
 
