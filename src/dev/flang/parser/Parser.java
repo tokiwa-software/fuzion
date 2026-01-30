@@ -225,16 +225,14 @@ semiOrFlatLF: semi
             ;
 
    */
-  boolean semiOrFlatLF()
+  void semiOrFlatLF()
   {
     int last = lastTokenPos();
-    boolean result = last >= 0 && lineNum(last) != lineNum(tokenPos());
-    if (!result)
+    if (last < 0 || lineNum(last) == lineNum(tokenPos()))
       {
         match(Token.t_semicolon, "semicolon or flat line break");
       }
     semi();
-    return result;
   }
 
 
@@ -1555,6 +1553,24 @@ actualArgs  : actualSpaces
 
 
   /**
+   * Replace Tokens t_*Limit by t_eof.
+   */
+  Token limitToEOF(Token t)
+  {
+    return switch (t)
+      {
+      case t_indentationLimit,
+           t_lineLimit       ,
+           t_spaceOrSemiLimit,
+           t_commaLimit      ,
+           t_colonLimit      ,
+           t_barLimit        -> Token.t_eof;
+      default                -> t;
+      };
+  }
+
+
+  /**
    * Does the current symbol end a list of space separated actual arguments to a
    * call.
    *
@@ -1580,7 +1596,7 @@ actualArgs  : actualSpaces
       //   (f a b c).xyz
       //
 
-      switch (current(atMinIndent))
+      switch (limitToEOF(current(atMinIndent)))
       {
       case t_semicolon       ,
            t_comma           ,
@@ -1603,12 +1619,6 @@ actualArgs  : actualSpaces
            t_stringBQ        ,
            t_stringBB        ,
            t_question        ,
-           t_indentationLimit,
-           t_lineLimit       ,
-           t_spaceOrSemiLimit,
-           t_commaLimit      ,
-           t_colonLimit      ,
-           t_barLimit        ,
            t_eof             -> true;
 
       case t_op            ->
@@ -2475,16 +2485,11 @@ brblock     : BRACEL exprs BRACER
    */
   boolean endOfExprs()
   {
-    return switch (currentAtMinIndent())
+    var t = limitToEOF(currentAtMinIndent());
+    return switch (t)
       {
       case
         t_comma,
-        t_indentationLimit,
-        t_lineLimit,
-        t_spaceOrSemiLimit,
-        t_commaLimit,
-        t_colonLimit,
-        t_barLimit,
         t_rbrace,
         t_rparen,
         t_rbracket,
@@ -2492,7 +2497,7 @@ brblock     : BRACEL exprs BRACER
         t_then,
         t_else,
         t_eof -> true;
-      default -> isContinuedString(currentNoLimit());
+      default -> isContinuedString(t);
       };
   }
 
@@ -2500,7 +2505,7 @@ brblock     : BRACEL exprs BRACER
   /**
    * Parse exprs
    *
-exprs       : expr semiOrFlatLF exprs (semiOrFlatLF | )
+exprs       : expr semiOrFlatLF exprs
             |
             ;
    */
@@ -2690,9 +2695,9 @@ loop        : loopProlog loopBody loopEpilog
             |            loopBody
             | loopProlog          loopEpilog
             ;
-loopProlog  : indexVars "variant" exprInLine
-            | indexVars
-            |           "variant" exprInLine
+loopProlog  : "for" indexVars "variant" exprInLine
+            | "for" indexVars
+            |                 "variant" exprInLine
             ;
 loopBody    : "while" exprInLine      block
             | "while" exprInLine "do" block
@@ -2716,7 +2721,7 @@ loopEpilog  : "until" exprInLine thenPart elseBlockOpt
         var old = setMinIndent(tokenPos());
         List<Feature> indexVars  = new List<>();
         List<Feature> nextValues = new List<>();
-        var hasFor   = current() == Token.t_for; if (hasFor) { indexVars(indexVars, nextValues); }
+        var hasFor   = skip(true, Token.t_for    ); if (hasFor) { indexVars(indexVars, nextValues); }
         var hasVar   = skip(true, Token.t_variant); var v   = hasVar              ? exprInLine()   : null;
                                                     var i   = hasFor || v != null ? invariant()    : null;
         var hasWhile = skip(true, Token.t_while  ); var w   = hasWhile            ? exprInLine()   : null;
@@ -2747,19 +2752,46 @@ loopEpilog  : "until" exprInLine thenPart elseBlockOpt
 
 
   /**
-   * Parse IndexVars
+   * As long as this is false and we make progress, we try to parse more
+   * expressions within exprs.
+   */
+  boolean endOfIndexVars()
+  {
+    return switch (limitToEOF(current(true)))
+      {
+      case
+        t_comma,
+        t_rbrace,
+        t_rparen,
+        t_rbracket,
+        t_variant,
+        t_while,
+        t_do,
+        t_until,
+        t_else,
+        t_eof -> true;
+      default -> false;
+      };
+  }
+
+
+  /**
+   * Parse indexVars
    *
-indexVars   : "for" indexVar (semi indexVars)
+indexVars   : indexVar (semiOrFlatLF indexVars)
+            |
             ;
    */
   void indexVars(List<Feature> indexVars, List<Feature> nextValues)
   {
-    match(Token.t_for, "indexVars");
     var in = new Indentation();
-    while (isIndexVarPrefix() && in.ok())
+    while (!endOfIndexVars() && in.ok())
       {
         indexVar(indexVars, nextValues);
-        semi();
+        if (!endOfIndexVars())
+          {
+            semiOrFlatLF();
+          }
         in.next();
       }
     in.end();
