@@ -223,14 +223,28 @@ is
     pre
       debug 2 : finger.count < 4
   =>
-    hand ([[seq], finger].flat_map id).as_array_backed
+    # NYI: BUG: triggers ugly case in DFA: hand ([[seq], finger].flat_map id).as_array_backed
+    if finger.count = 1
+      hand [seq, finger[0]]
+    else if finger.count = 2
+      hand [seq, finger[0], finger[1]]
+    else
+      hand [seq, finger[0], finger[1], finger[2]]
+
+
 
 
   append(seq Sequence T)
     pre
       debug 2 : finger.count < 4
   =>
-    hand ([finger, [seq]].flat_map id).as_array_backed
+    # NYI: BUG: triggers ugly case in DFA: hand ([finger, [seq]].flat_map id).as_array_backed
+    if finger.count = 1
+      hand [finger[0], seq]
+    else if finger.count = 2
+      hand [finger[0], finger[1], seq]
+    else
+      hand [finger[0], finger[1], finger[2], seq]
 
 
   nth(n i32) option T =>
