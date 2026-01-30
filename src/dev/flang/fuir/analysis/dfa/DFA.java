@@ -1676,22 +1676,8 @@ public class DFA extends ANY
     int cc = c.calledClazz();
     if (_fuir.clazzKind(cc) == FUIR.FeatureKind.Routine)
       {
-        var i = c._instance;
         check
           (c._args.size() == _fuir.clazzArgCount(cc));
-        for (var a = 0; a < c._args.size(); a++)
-          {
-            var af = _fuir.clazzArg(cc, a);
-            var aa = c._args.get(a);
-            i.setField(this, af, aa.value());
-          }
-
-        // copy outer ref argument to outer ref field:
-        var or = _fuir.clazzOuterRef(cc);
-        if (or != NO_CLAZZ)
-          {
-            i.setField(this, or, c.target());
-          }
 
         var ai = new AbstractInterpreter2<Val>(_fuir, new Analyze(c));
         var r = ai.processClazz(cc);
