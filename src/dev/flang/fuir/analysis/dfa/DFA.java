@@ -3075,6 +3075,7 @@ public class DFA extends ANY
         // tests/effect_installed_negative
         "array (Sequence u8)",
         "array (Sequence (Sequence u8))",
+        "container.deep u8",
         "fuzion.sys.internal_array u8" -> true;
       default -> false;
       };
