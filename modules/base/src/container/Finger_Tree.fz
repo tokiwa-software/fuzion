@@ -200,8 +200,13 @@ deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.ha
 hand(T type, finger Sequence (Sequence T)) : property.countable
   pre
     debug 2 : 1 <= finger.count <= 4
+    debug 2 : finger.is_array_backed
 is
-  cnt := finger.map x->x.count .sum
+  f0cnt := finger[0].count
+  f1cnt := if finger.count < 2 then 0 else finger[1].count
+  f2cnt := if finger.count < 3 then 0 else finger[2].count
+  f3cnt := if finger.count < 4 then 0 else finger[3].count
+  cnt   := f0cnt + f1cnt + f2cnt + f3cnt
   public redef count i32 => cnt
 
 
@@ -248,9 +253,14 @@ is
 
 
   nth(n i32) option T =>
-    for idx := n, idx-f.count
-        f in finger
-    until f.is_valid_index idx
-      f[idx]
-    else
+    if n >= cnt
       nil
+    else if n < f0cnt
+      finger[0][n]
+    else if n < f0cnt+f1cnt
+      finger[1][n-f0cnt]
+    else if n < f0cnt+f1cnt+f2cnt
+      finger[2][n-f0cnt-f1cnt]
+    else
+      finger[3][n-f0cnt-f1cnt-f2cnt]
+
