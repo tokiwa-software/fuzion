@@ -473,14 +473,14 @@ public class DFA extends ANY
     {
       var r = switch (_fuir.getSpecialClazz(constCl))
         {
-        case c_i8   ,
-             c_i16  ,
-             c_i32  ,
-             c_i64  ,
-             c_u8   ,
-             c_u16  ,
-             c_u32  ,
-             c_u64  -> NumericValue.create(DFA.this, constCl, ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN));
+        case c_i8   -> NumericValue.create(DFA.this, constCl, ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).get());
+        case c_i16  -> NumericValue.create(DFA.this, constCl, ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getShort());
+        case c_i32  -> NumericValue.create(DFA.this, constCl, ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getInt());
+        case c_i64  -> NumericValue.create(DFA.this, constCl, ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getLong());
+        case c_u8   -> NumericValue.create(DFA.this, constCl, ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).get() & 0xff);
+        case c_u16  -> NumericValue.create(DFA.this, constCl, ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getShort() & 0xffff);
+        case c_u32  -> NumericValue.create(DFA.this, constCl, ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getInt() & 0xffffffff);
+        case c_u64  -> NumericValue.create(DFA.this, constCl, ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getLong());
         case c_f32  ,
              c_f64  -> NumericValue.create(DFA.this, constCl);
         case c_String -> newConstString(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt()+4), _call);
@@ -1975,13 +1975,13 @@ public class DFA extends ANY
     put("i16.prefix -°"                  , cl -> genericNumResult(cl) );
     put("i32.prefix -°"                  , cl -> genericNumResult(cl) );
     put("i64.prefix -°"                  , cl -> genericNumResult(cl) );
-    put("i8.infix -°"                    , cl -> calc(cl, (v0,v1) -> (long) v0.byteValue()-v1.byteValue()) );
-    put("i16.infix -°"                   , cl -> calc(cl, (v0,v1) -> (long) v0.shortValue()-v1.shortValue()) );
-    put("i32.infix -°"                   , cl -> calc(cl, (v0,v1) -> (long) v0.intValue()-v1.intValue()) );
+    put("i8.infix -°"                    , cl -> calc(cl, (v0,v1) -> (long)(byte) (v0-v1)));
+    put("i16.infix -°"                   , cl -> calc(cl, (v0,v1) -> (long)(short) (v0-v1)));
+    put("i32.infix -°"                   , cl -> calc(cl, (v0,v1) -> (long)(int) (v0-v1)));
     put("i64.infix -°"                   , cl -> calc(cl, (v0,v1) -> v0-v1) );
-    put("i8.infix +°"                    , cl -> calc(cl, (v0,v1) -> (long) v0.byteValue()+v1.byteValue()) );
-    put("i16.infix +°"                   , cl -> calc(cl, (v0,v1) -> (long) v0.shortValue()+v1.shortValue()) );
-    put("i32.infix +°"                   , cl -> calc(cl, (v0,v1) -> (long) v0.intValue()+v1.intValue()) );
+    put("i8.infix +°"                    , cl -> calc(cl, (v0,v1) -> (long)(byte) (v0+v1)));
+    put("i16.infix +°"                   , cl -> calc(cl, (v0,v1) -> (long)(short) (v0+v1)));
+    put("i32.infix +°"                   , cl -> calc(cl, (v0,v1) -> (long)(int) (v0+v1)));
     put("i64.infix +°"                   , cl -> calc(cl, (v0,v1) -> v0+v1) );
     put("i8.infix *°"                    , cl -> genericNumResult(cl) );
     put("i16.infix *°"                   , cl -> genericNumResult(cl) );
@@ -2029,13 +2029,13 @@ public class DFA extends ANY
     put("u16.prefix -°"                  , cl -> genericNumResult(cl) );
     put("u32.prefix -°"                  , cl -> genericNumResult(cl) );
     put("u64.prefix -°"                  , cl -> genericNumResult(cl) );
-    put("u8.infix -°"                    , cl -> calc(cl, (v0,v1) -> (long) v0.byteValue()-v1.byteValue()) );
-    put("u16.infix -°"                   , cl -> calc(cl, (v0,v1) -> (long) v0.shortValue()-v1.shortValue()) );
-    put("u32.infix -°"                   , cl -> calc(cl, (v0,v1) -> (long) v0.intValue()-v1.intValue()) );
+    put("u8.infix -°"                    , cl -> calc(cl, (v0,v1) -> (v0-v1) & 0xff));
+    put("u16.infix -°"                   , cl -> calc(cl, (v0,v1) -> (v0-v1) & 0xffff));
+    put("u32.infix -°"                   , cl -> calc(cl, (v0,v1) -> (v0-v1) & 0xffffffff));
     put("u64.infix -°"                   , cl -> calc(cl, (v0,v1) -> v0-v1) );
-    put("u8.infix +°"                    , cl -> calc(cl, (v0,v1) -> (long) v0.byteValue()+v1.byteValue()) );
-    put("u16.infix +°"                   , cl -> calc(cl, (v0,v1) -> (long) v0.shortValue()+v1.shortValue()) );
-    put("u32.infix +°"                   , cl -> calc(cl, (v0,v1) -> (long) v0.intValue()+v1.intValue()) );
+    put("u8.infix +°"                    , cl -> calc(cl, (v0,v1) -> (v0+v1) & 0xff));
+    put("u16.infix +°"                   , cl -> calc(cl, (v0,v1) -> (v0+v1) & 0xffff));
+    put("u32.infix +°"                   , cl -> calc(cl, (v0,v1) -> (v0+v1) & 0xffffffff));
     put("u64.infix +°"                   , cl -> calc(cl, (v0,v1) -> v0+v1) );
     put("u8.infix *°"                    , cl -> genericNumResult(cl) );
     put("u16.infix *°"                   , cl -> genericNumResult(cl) );
