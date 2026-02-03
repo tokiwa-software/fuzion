@@ -1,3 +1,4 @@
 build
 fuzion_generated_classes
 *.classes
+debian/*

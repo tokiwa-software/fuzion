@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.util;
 
-import java.nio.file.Path;
 
 
 /**
@@ -475,8 +474,8 @@ public class FuzionConstants extends ANY
    * The qualified names of features fuzion.runtime.precondition_fault and
    * fuzion.runtime.postcondition_fault.
    */
-  public static String[] FUZION_RUNTIME_PRECONDITION_FAULT  = "fuzion.runtime.precondition_fault" .split("\\.");
-  public static String[] FUZION_RUNTIME_POSTCONDITION_FAULT = "fuzion.runtime.postcondition_fault".split("\\.");
+  public static final String[] FUZION_RUNTIME_PRECONDITION_FAULT  = "fuzion.runtime.precondition_fault" .split("\\.");
+  public static final String[] FUZION_RUNTIME_POSTCONDITION_FAULT = "fuzion.runtime.postcondition_fault".split("\\.");
 
 
   /**
@@ -553,13 +552,6 @@ public class FuzionConstants extends ANY
    * Flag OR'ed to kind for features with a values of open type feature
    */
   public static final int MIR_FILE_KIND_HAS_VALUES_OF_OPEN_TYPE_FEATURE = 0x1000;
-
-
-  /**
-   * Fuzion module directory as used in module files instead of absolute or
-   * relative path of module directory.
-   */
-  public static final Path SYMBOLIC_FUZION_MODULE = Path.of("$MODULE");
 
 
   /**

@@ -115,14 +115,14 @@ default_stat_handler : Stat_Handler is
 
 
 
-# short-hand for accessing the stat effect in current environment
+# shorthand for accessing the stat effect in current environment
 #
-public stat stat =>
+public stat stat ! stat =>
   install_default
   stat.env
 
 
-# short-hand for accessing and using stats/lstats provided by the stat effect in current environment
+# shorthand for accessing and using stats/lstats provided by the stat effect in current environment
 # in success it will return a meta_data outcome storing stats regarding the file/dir
 # in case of failure an error will be returned
 # resolve flag is used to indicate whether to resolve sym links or not
@@ -132,7 +132,7 @@ public stat(
      # the (relative or absolute) file name, using platform specific path separators
      path String,
      # a boolean resolve flag to resolve symbolic links or not
-     resolve bool) outcome meta_data =>
+     resolve bool) outcome meta_data ! stat =>
   install_default
   if resolve
     stat.env.stats path

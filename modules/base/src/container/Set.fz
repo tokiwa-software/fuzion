@@ -47,8 +47,7 @@ is
   public redef contains (e E) bool => abstract
 
 
-  # return a new Set that contains
-  # all elements in this Set and `k`.
+  # return a new Set containing all elements of this Set plus element k
   #
   public add (k E) Set E =>
     compile_time_panic # "*** NYI: REMOVE Set.add, we need some support for mutable Sets ***"
@@ -185,8 +184,8 @@ is
   #
   public fixed redef type.equality(a, b container.Set E) bool
   pre else
-    debug: a.finite.is_yes_or_unkown
-    debug: b.finite.is_yes_or_unkown
+    debug: a.finite.is_yes_or_unknown
+    debug: b.finite.is_yes_or_unknown
   =>
     # NYI: a bit expensive
     (a ∪ b).size_option.val = a.size_option.val
@@ -195,6 +194,6 @@ is
   # monoid of Set with infix ∪ operation.
   #
   public type.union Monoid (container.Set E) =>
-    ref : Monoid (container.Set E) is
+    _ : Monoid (container.Set E) is
       public redef infix ∙ (a, b container.Set E) container.Set E => a ∪ b
       public redef e container.Set E => (container.Set E).new []

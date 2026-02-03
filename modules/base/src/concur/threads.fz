@@ -74,7 +74,7 @@ default_thread_handler : Thread_Handler is
 # thread with no argument returns thread.env, i.e., the currently installed
 # source of thread concurrency.
 #
-public threads threads =>
+public threads threads ! threads =>
   (threads default_thread_handler []).default
   threads.env
 

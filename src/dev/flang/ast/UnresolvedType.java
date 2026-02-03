@@ -54,8 +54,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    * {@code Call.NO_GENERICS} which is used to distinguish {@code a.b<>()} (using {@code UnresolvedType.NONE})
    * from {@code a.b()} (using {@code Call.NO_GENERICS}).
    */
-  public static final List<AbstractType> NONE = new List<AbstractType>();
-  static { NONE.freeze(); }
+  public static final List<AbstractType> NONE = new List<AbstractType>().freeze();
 
 
   /**
@@ -356,8 +355,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
     return new ParsedType(pos,
                           arguments.size() == 1 ? Types.UNARY_NAME  :
                           arguments.size() == 2 ? Types.BINARY_NAME : Types.FUNCTION_NAME,
-                          new List<AbstractType>(returnType, arguments),
-                          null);
+                          new List<AbstractType>(returnType, arguments));
   }
 
 

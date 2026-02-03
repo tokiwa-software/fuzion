@@ -131,17 +131,17 @@ is
 
   public return(B type, w B) handles2 T B => handles2 T B w last_opt oneway_monad_mode.plain
 
-# short-hand for creating and installing an empty set of handles2 of given type.
+# shorthand for creating and installing an empty set of handles2 of given type.
 #
 handles2(T type, rr ()->unit) =>
   (handles2 T unit unit nil oneway_monad_mode.inst) ! rr
 
-# short-hand for creating an empty set of handles2 of given type.
+# shorthand for creating an empty set of handles2 of given type.
 #
 handles2_(T type) => handles2 T unit unit nil oneway_monad_mode.plain
 
 
-# short-hand for accessing handles monad for given type in current environment
+# shorthand for accessing handles monad for given type in current environment
 #
 handles2(T type) =>
   (handles2_type T).install_default

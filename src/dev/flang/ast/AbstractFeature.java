@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
-import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -106,16 +105,14 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   /**
    * empty list of AbstractFeature
    */
-  public static final List<AbstractFeature> _NO_FEATURES_ = new List<>();
-  static { _NO_FEATURES_.freeze(); }
+  public static final List<AbstractFeature> _NO_FEATURES_ = new List<AbstractFeature>().freeze();
 
 
   /**
    * Result of `handDown(Resolution, AbstractType[], AbstractFeature) in case of
    * failure due to previous errors.
    */
-  public static final List<AbstractType> HAND_DOWN_FAILED = new List<>();
-  static { HAND_DOWN_FAILED.freeze(); }
+  public static final List<AbstractType> HAND_DOWN_FAILED = new List<AbstractType>().freeze();
 
 
 
@@ -815,7 +812,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * For a feature 'a', the the type of 'a.this.type' when used within 'a.type',
+   * For a feature 'a', the type of 'a.this.type' when used within 'a.type',
    * i.e., within 'a's type feature.  The difference between selfType() and
    * selfTypeInCoType() is that the type parameters in the former are the
    * type parameters of 'a', while in the latter they are the type parameter of
@@ -853,7 +850,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     var tl = new List<AbstractType>();
     for (var ta0 : typeArguments())
       {
-        var ta = new ParsedType(pos(), ta0.featureName().baseName(), UnresolvedType.NONE, null);
+        var ta = new ParsedType(pos(), ta0.featureName().baseName());
         tl.add(ta);
       }
     t = t.applyTypePars(this, tl);
@@ -1367,21 +1364,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public boolean isOpenGenericField()
   {
     return isField() && resultType().isOpenGeneric();
-  }
-
-
-  public void visitCode(FeatureVisitor fv)
-  {
-    for (var c: inherits())
-      {
-        var nc = c.visit(fv, this);
-        if (CHECKS) check
-          (c == nc); // NYI: This will fail when doing funny stuff like inherit from bool.infix &&, need to check and handle explicitly
-      }
-    if (isRoutine())
-      {
-        code().visit(fv, this);
-      }
   }
 
 

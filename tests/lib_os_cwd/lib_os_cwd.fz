@@ -23,5 +23,5 @@
 
 lib_os_cwd =>
 
-  check os.cwd.val.codepoint_length > 0
-  check os.cwd.val.contains "tests"
+  check os.cwd.val.as_string.codepoint_length > 0
+  check os.cwd.val.as_string.contains "tests"

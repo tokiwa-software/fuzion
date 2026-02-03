@@ -45,7 +45,6 @@ import dev.flang.ast.AbstractType;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
 import dev.flang.ast.InlineArray;
-import dev.flang.ast.Nop;
 import dev.flang.ast.ResolvedType;
 import dev.flang.ast.State;
 import dev.flang.ast.Types;
@@ -606,7 +605,7 @@ class LibraryOut extends ANY
     if (PRECONDITIONS) require
       (t != null, t != Types.t_ERROR, t != Types.t_UNDEFINED, t instanceof ResolvedType);
 
-    // NYI: UNDER DEVELOPMENT: tk used as size of generics, therefor typekind written _twice_
+    // NYI: UNDER DEVELOPMENT: tk used as size of generics, therefore typekind written _twice_
     // clean this up and merge the two type kinds?
 
     var off = _data.offset(t);
@@ -928,8 +927,9 @@ class LibraryOut extends ANY
             code(cc);
           }
       }
-    else if (e instanceof Nop)
+    else if (e instanceof Feature)
       {
+        // ignore Feature definition in expressions
       }
     else if (e instanceof Universe)
       {

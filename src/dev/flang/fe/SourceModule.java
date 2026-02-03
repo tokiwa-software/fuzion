@@ -208,7 +208,7 @@ public class SourceModule extends Module implements SrcModule
       {
         _options.verbosePrintln(2, " - " + p);
       }
-    return new Parser(p, ec).unit();
+    return new Parser(p, ec, _options.isLanguageServer()).unit();
   }
 
 
@@ -318,17 +318,14 @@ public class SourceModule extends Module implements SrcModule
               }
             switch (main.kind())
               {
-              case Field    : FeErrors.mainFeatureMustNotBeField    (main); break;
-              case Abstract : FeErrors.mainFeatureMustNotBeAbstract (main); break;
-              case Intrinsic: FeErrors.mainFeatureMustNotBeIntrinsic(main); break;
-              case Choice   : FeErrors.mainFeatureMustNotBeChoice   (main); break;
-              case Routine  :
+              case Field, Abstract, Intrinsic, Choice -> FeErrors.mainFeatureMustNotBeField(main);
+              case Routine -> {
                 if (!main.typeArguments().isEmpty())
                   {
                     FeErrors.mainFeatureMustNotHaveTypeArguments(main);
                   }
-                break;
-              default       : FeErrors.mainFeatureMustNot(main, "be of kind " + main.kind() + ".");
+              }
+              default -> FeErrors.mainFeatureMustNot(main, "be of kind " + main.kind() + ".");
               }
           }
       }
@@ -414,11 +411,19 @@ part of the (((inner features))) declarations of the corresponding
                     // end::fuzion_rule_SRCF_DIR[]
                     */
 
+                    var used = new TreeMap<String, String>();
+
                     Files.list(d._dir)
                       .filter(p -> isValidSourceFile(p))
                       .sorted(Comparator.comparing(p -> p.toString()))
                       .forEach(p ->
                                {
+                                 if (used.containsKey(p.toString().toLowerCase()))
+                                  {
+                                    AstErrors.duplicateFile(p.toString(), used.get(p.toString().toLowerCase()));
+                                  }
+
+                                 used.put(p.toString().toLowerCase(), p.toString());
                                  for (var inner : parseAndGetFeatures(p))
                                    {
                                      findDeclarations(inner, f);
@@ -1168,6 +1173,9 @@ A post-condition of a feature that does not redefine an inherited feature must s
    */
   public List<FeatureAndOuter> lookup(AbstractFeature outer, String name, Expr use, boolean traverseOuter, boolean hidden)
   {
+    if (PRECONDITIONS) require
+      (outer != null);
+
     List<FeatureAndOuter> result = new List<>();
     for (var n : ParsedOperatorCall.lookupNames(name))
       {
@@ -1202,7 +1210,8 @@ A post-condition of a feature that does not redefine an inherited feature must s
   private List<FeatureAndOuter> lookup0(AbstractFeature outer, String name, Expr use, boolean traverseOuter, boolean hidden)
   {
     if (PRECONDITIONS) require
-      (_res.state(outer).atLeast(State.RESOLVED_INHERITANCE) || outer.isUniverse());
+      (outer != null,
+       _res.state(outer).atLeast(State.RESOLVED_INHERITANCE) || outer.isUniverse());
 
     List<FeatureAndOuter> result = new List<>();
     var curOuter = outer;
@@ -1884,13 +1893,13 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
       {
         f.code().visit(new FeatureVisitor()
         {
-          private Stack<Object> stack = new Stack<Object>();
-          @Override public void actionBefore(Block b) { if (b._newScope) { stack.push(b); } }
-          @Override public void actionBefore(AbstractCase c, AbstractMatch m) { stack.push(c); }
-          @Override public void actionAfter(Block b)  { if (b._newScope) { stack.pop(); } }
-          @Override public void actionAfter (AbstractCase c, AbstractMatch m) { stack.pop(); }
+          private int scopeDepth = 0;
+          @Override public void actionBefore(Block b) { if (b._newScope) { scopeDepth++; } }
+          @Override public void actionBefore(AbstractCase c, AbstractMatch m) { scopeDepth++; }
+          @Override public void actionAfter(Block b)  { if (b._newScope) { scopeDepth--; } }
+          @Override public void actionAfter (AbstractCase c, AbstractMatch m) { scopeDepth--; }
           @Override public Expr action(Feature fd, AbstractFeature outer) {
-            if (!stack.isEmpty() && !fd.visibility().equals(Visi.PRIV))
+            if (scopeDepth>0 && !fd.visibility().equals(Visi.PRIV))
               {
                 AstErrors.illegalVisibilityModifier(fd);
               }

@@ -46,7 +46,7 @@ public class Function extends AbstractLambda
   /*----------------------------  constants  ----------------------------*/
 
 
-  static final List<AbstractCall> NO_CALLS = new List<>();
+  static final List<AbstractCall> NO_CALLS = new List<AbstractCall>().freeze();
 
 
   /*-------------------------  static variables -------------------------*/
@@ -167,9 +167,7 @@ public class Function extends AbstractLambda
         List<AbstractType> argTypes = _namesAsExprs != null
           ? _namesAsExprs.map2(e -> e.asParsedType())
           : _names.map2(n -> new ParsedType(n.pos(),
-                                            n._name,
-                                            new List<>(),
-                                            null)
+                                            n._name)
                         );
         if (argTypes.stream().allMatch(t -> t != null))
           {
@@ -235,7 +233,13 @@ public class Function extends AbstractLambda
         @Override
         public Expr action(Call c)
         {
-          return c.updateTarget(res, _feature.context());
+
+          if (CHECKS) check
+            (_feature != null || Errors.any());
+
+          return _feature == null
+            ? c
+            : c.updateTarget(res, _feature.context());
         }
       },
       _feature);

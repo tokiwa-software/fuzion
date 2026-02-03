@@ -38,6 +38,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <stdbool.h>
 #include <fcntl.h>      // fcntl
 #include <string.h>
+#include <math.h>
 
 #include <netdb.h>      // getaddrinfo
 #include <netinet/in.h> // AF_INET
@@ -223,6 +224,8 @@ int fzE_socket(int family, int type, int protocol){
   if (sockfd != -1)
   {
     fcntl(sockfd, F_SETFD, FD_CLOEXEC);
+    // NYI: UNDER DEVELOPMENT: we need fzE_setsocketopt eventually
+    setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int));
   }
 
   fzE_unlock();
@@ -254,7 +257,7 @@ int fzE_bind(int sockfd, int family, int socktype, int protocol, char * host, ch
   {
     return -1;
   }
-  int bind_res = bind(sockfd, addr_info->ai_addr, (int)addr_info->ai_addrlen);
+  int bind_res = set_last_error(bind(sockfd, addr_info->ai_addr, (int)addr_info->ai_addrlen));
 
   if(bind_res == -1)
   {
@@ -376,29 +379,25 @@ long fzE_get_file_size(void * file) {
  *          see also, https://devblogs.microsoft.com/oldnewthing/20031008-00/?p=42223
  *
  * returns:
- *   - error   :  result[0]=-1 and NULL
- *   - success :  result[0]=0  and an address where the file was mapped to
+ *   - error   :  NULL
+ *   - success :  address where the file was mapped to
  */
-void * fzE_mmap(void * file, uint64_t offset, size_t size, int * result) {
+void * fzE_mmap(void * file, uint64_t offset, size_t size) {
 
   if ((unsigned long)fzE_get_file_size((FILE *)file) < (offset + size)){
-    result[0] = -1;
+    // NYI: UNDER DEVELOPMENT: set_last_error();
     return NULL;
   }
 
   int file_descriptor = fileno((FILE *)file);
 
-  if (file_descriptor == -1) {
-    result[0] = -1;
-    return NULL;
-  }
+  assert (file_descriptor != -1);
 
   void * mapped_address = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, file_descriptor, offset);
   if (mapped_address == MAP_FAILED) {
-    result[0] = -1;
+    set_last_error(-1);
     return NULL;
   }
-  result[0] = 0;
   return mapped_address;
 }
 
@@ -541,10 +540,13 @@ void * fzE_thread_create(void *(*code)(void *),
  */
 void fzE_thread_join(void * thrd)
 {
+  // NYI: BUG: return error code on failure
 #ifdef GC_THREADS
-  GC_pthread_join(*(pthread_t *)thrd, NULL);
+  int ret = GC_pthread_join(*(pthread_t *)thrd, NULL);
+  assert (ret == 0);
 #else
-  pthread_join(*(pthread_t *)thrd, NULL);
+  int ret = pthread_join(*(pthread_t *)thrd, NULL);
+  assert (ret == 0);
 #endif
   fzE_free(thrd);
 }
@@ -688,7 +690,7 @@ int64_t fzE_process_wait(int64_t p){
 
   int status;
   int ret = waitpid(p, &status, WNOHANG);
-  assert(ret >= 0);
+
   return ret > 0 && WIFEXITED(status)
     // man waitpid: "This macro should be employed only if WIFEXITED returned true."
     ? WEXITSTATUS(status)
@@ -766,7 +768,7 @@ int32_t fzE_mtx_unlock(void * mtx) {
 
 void fzE_mtx_destroy(void * mtx) {
   pthread_mutex_destroy((pthread_mutex_t *)mtx);
-  // NYI: BUG: free(mtx);
+  fzE_free(mtx);
 }
 
 void * fzE_cnd_init() {
@@ -788,7 +790,7 @@ int32_t fzE_cnd_wait(void * cnd, void * mtx) {
 
 void fzE_cnd_destroy(void * cnd) {
   pthread_cond_destroy((pthread_cond_t *)cnd);
-  // NYI: BUG: free(cnd);
+  fzE_free(cnd);
 }
 
 
@@ -901,4 +903,9 @@ int fzE_cwd(void * buf, size_t size)
   return getcwd(buf, size) == NULL
     ? -1
     : 0;
+}
+
+int fzE_isnan(double d)
+{
+  return isnan(d);
 }

@@ -230,7 +230,6 @@ public class FZJava extends Tool
                                             /* dumpModules */ emptyList,
                                             /* fuzionDebugLevel */ 0,
                                             /* fuzionSafety */ true,
-                                            /* enableUnsafeIntrinsics */ true,
                                             /* sourceDirs */ emptyList,
                                             /* readStdin */ false,
                                             /* executeCode */ null,
@@ -502,6 +501,11 @@ public class FZJava extends Tool
             if (sc != null)
               {
                 sfc = forClass(sc);
+                if (sfc == null)
+                  { // if `sc` is not public, `sfc` is null. Use `Object`
+                    // instead (see #6384 or tests/reg_issue6384):
+                    sfc = forClass(java.lang.Object.class);
+                  }
               }
             res = new ForClass(c, sfc);
             _classes.put(c.getName(), res);

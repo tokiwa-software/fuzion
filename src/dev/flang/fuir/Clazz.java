@@ -324,6 +324,13 @@ class Clazz extends ANY implements Comparable<Clazz>
     _select = select;
     _needsCode = false;
     _code = IR.NO_SITE;
+
+    // NYI: CLEANUP: currently needed in DFA-Phase to meet
+    // FUIR invariant that stack must be empty at the end of a basic block
+    _isUnitType =
+      type.feature() == Types.resolved.t_unit.feature()
+        ? YesNo.yes
+        : YesNo.dontKnow;
   }
 
 
@@ -764,14 +771,9 @@ class Clazz extends ANY implements Comparable<Clazz>
       }
 
     var res = YesNo.no;
-    if (_specialClazzId == SpecialClazzes.c_unit)
-      {
-        res = YesNo.yes;
-      }
-    else if ( _fuir._lookupDone && (isValue()                       &&
-                                    !feature().isBuiltInPrimitive() &&
-                                    !isVoidType()                   &&
-                                    !isChoice()                       ))
+    if (_fuir._lookupDone &&
+        isValue() &&
+        !isChoice())
       {
         // Tricky: To avoid endless recursion, we set _isUnitType to No. In case we
         // have a recursive type, isUnitType() will return false, so recursion will
@@ -948,7 +950,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       }
 
     // first look in the feature itself
-    AbstractFeature result = _fuir._mainModule.lookupFeature(feature(), fn);
+    AbstractFeature result = _fuir.lookupFeature(feature(), fn);
 
     if (CHECKS) check
       (result != null);
@@ -965,7 +967,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       {
         for (var p: chain)
           {
-            result = _fuir._mainModule.lookupFeature(p.calledFeature(), fn);
+            result = _fuir.lookupFeature(p.calledFeature(), fn);
             if (!result.redefinesFull().contains(f) && result != f)
               {
                 // feature with same name, but not a redefinition
@@ -1032,9 +1034,6 @@ class Clazz extends ANY implements Comparable<Clazz>
   Clazz lookupCall(AbstractCall c, List<AbstractType> typePars)
   {
     return isVoidType()
-      ? this
-      // NYI: HACK for test compile_time_type_casts
-      : !feature().inheritsFrom(c.calledFeature().outer())
       ? this
       : lookup(new FeatureAndActuals(c.calledFeature(),
                                      typePars),

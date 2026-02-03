@@ -175,9 +175,9 @@ Check [fuzion-lang.dev](https://fuzion-lang.dev) for language and implementation
 
 > For Debian based systems this command should install all requirements:
 >
->     sudo apt-get install make clang libgc1 libgc-dev openjdk-21-jdk
+>     sudo apt-get install make clang libgc1 libgc-dev openjdk-25-jdk
 
-- OpenJDK 21, e.g. [Adoptium](https://github.com/adoptium/temurin21-binaries/releases/)
+- OpenJDK 25[^1], (needs to include jmods)
 - clang LLVM C compiler
 - GNU make
 - libgc
@@ -192,7 +192,7 @@ Check [fuzion-lang.dev](https://fuzion-lang.dev) for language and implementation
 >
 >     export PATH:"/usr/local/opt/gnu-sed/libexec/gnubin:/usr/local/opt/gnu-make/libexec/gnubin:$PATH"
 
-- OpenJDK 21, e.g. [Adoptium](https://github.com/adoptium/temurin21-binaries/releases/)
+- OpenJDK 25[^1], (needs to include jmods)
 - clang LLVM C compiler
 - GNU make
 - libgc
@@ -552,3 +552,9 @@ For emacs there is two options eglot or lsp-mode.
 |inlineValue|☐|
 |type hierarchy|☐|
 |notebook document support|☐| -->
+
+
+[^1]: suggested OpenJDK distributions:
+
+    - [Adoptium](https://github.com/adoptium/temurin25-binaries/releases/) + [jmods](https://api.adoptium.net/v3/binary/latest/25/ga/linux/x64/jmods/hotspot/normal/eclipse?project=jdk), must be unpacked to a `jmods` sub-directory in the openjdk directory.
+    - [Azul](https://www.azul.com/downloads/?version=java-25&package=jdk#zulu)

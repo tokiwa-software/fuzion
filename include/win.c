@@ -30,10 +30,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 // https://stackoverflow.com/questions/11040133/what-does-defining-win32-lean-and-mean-exclude-exactly#comment108482188_11040230
 #define WIN32_LEAN_AND_MEAN
 
-#ifdef GC_THREADS
 #define GC_DONT_INCLUDE_WINDOWS_H
 #include <gc.h>
-#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,17 +41,16 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <string.h>
 #include <assert.h>
 #include <time.h>
+#include <math.h>
 
 #include <winsock2.h>
 #include <windows.h>
 #include <ws2tcpip.h>
 #include <winbase.h>
+#include <process.h>
 #include <synchapi.h> // WaitForSingleObject
 #include <namedpipeapi.h>
 #include <direct.h>
-
-// NYI: UNDER DEVELOPMENT: remove POSIX imports
-#include <pthread.h>
 
 #include "fz.h"
 
@@ -131,9 +128,9 @@ void * fzE_opendir(const char *pathname, int64_t * result) {
   free(wideStr);
 
   if (dir->handle == INVALID_HANDLE_VALUE) {
-    // NYI: BUG: free(dir);
+    fzE_free(dir);
     result[0] = GetLastError();
-    return dir;
+    return NULL;
   } else {
     result[0] = 0;
     return dir;
@@ -166,7 +163,7 @@ int fzE_dir_read(intptr_t * dir, int8_t * result) {
 int fzE_dir_close(intptr_t * dir) {
   fzE_dir_struct *d = (fzE_dir_struct *)dir;
   BOOL res = FindClose(d->handle);
-  // NYI: BUG: free(dir);
+  fzE_free(dir);
 
   return res
     ? 0
@@ -244,11 +241,7 @@ int fzE_socket_close(int sockfd)
 // initialize a new socket for given
 // family, socket_type, protocol
 int fzE_socket(int family, int type, int protocol){
-  WSADATA wsaData;
-  // NYI: CLEANUP: call only once
-  return WSAStartup(MAKEWORD(2,2), &wsaData) != 0
-    ? -1
-    : socket(fzE_get_family(family), fzE_get_socket_type(type), fzE_get_protocol(protocol));
+  return socket(fzE_get_family(family), fzE_get_socket_type(type), fzE_get_protocol(protocol));
 }
 
 
@@ -420,13 +413,12 @@ long fzE_get_file_size(void * file) {
  *          see also, https://devblogs.microsoft.com/oldnewthing/20031008-00/?p=42223
  *
  * returns:
- *   - error   :  result[0]=-1 and NULL
- *   - success :  result[0]=0  and an address where the file was mapped to
+ *   - error   :  NULL
+ *   - success :  an address where the file was mapped to
  */
-void * fzE_mmap(void * file, uint64_t offset, size_t size, int * result) {
+void * fzE_mmap(void * file, uint64_t offset, size_t size) {
 
   if ((unsigned long)fzE_get_file_size(file) < (offset + size)){
-    result[0] = -1;
     return NULL;
   }
 
@@ -437,15 +429,12 @@ void * fzE_mmap(void * file, uint64_t offset, size_t size, int * result) {
   */
   HANDLE file_mapping_handle = CreateFileMapping(file, NULL, PAGE_READWRITE, 0, 0, NULL);
   if (file_mapping_handle == NULL) {
-    result[0] = -1;
     return NULL;
   }
 
   void * mapped_address = MapViewOfFile(file_mapping_handle, FILE_MAP_ALL_ACCESS, high_word(offset), low_word(offset), size);
 
   CloseHandle(file_mapping_handle);
-
-  result[0] = mapped_address == NULL ? -1 : 0;
 
   return mapped_address;
 }
@@ -525,6 +514,17 @@ int fzE_rm(char * path)
 
 
 /**
+ * convert from windows file time to unix time stamp
+ * see also: https://learn.microsoft.com/en-us/windows/win32/sysinfo/file-times
+ */
+int64_t win_time_to_unix_time(LONGLONG qp)
+{
+  static const int64_t WINDOWS_TO_UNIX_EPOCH_DIFF = 11644473600ULL;
+  return (qp / 10000000ULL) - WINDOWS_TO_UNIX_EPOCH_DIFF;
+}
+
+
+/**
  * Get file status (resolves symbolic links)
  */
 int fzE_stat(const char *pathname, int64_t * metadata)
@@ -553,9 +553,9 @@ int fzE_stat(const char *pathname, int64_t * metadata)
     ct.HighPart = fileInfo.ftCreationTime.dwHighDateTime;
 
     metadata[0] = fileSize.QuadPart;
-    metadata[1] = (lat.QuadPart / 10000000ULL) - 11644473600ULL; /* Time of last access */
-    metadata[2] = (lwt.QuadPart / 10000000ULL) - 11644473600ULL; /* Time of last modification */
-    metadata[3] = (ct.QuadPart  / 10000000ULL) - 11644473600ULL; /* Time of last status change */
+    metadata[1] = win_time_to_unix_time(lat.QuadPart); /* Time of last access */
+    metadata[2] = win_time_to_unix_time(lwt.QuadPart); /* Time of last modification */
+    metadata[3] = win_time_to_unix_time(ct.QuadPart);  /* Time of last status change */
     metadata[4] = (fileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? 0 : 1;
     metadata[5] = (fileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? 1 : 0;
     metadata[6] = 0; /* NYI: UNDER DEVELOPMENT: is link  */
@@ -586,7 +586,7 @@ int fzE_lstat(const char *pathname, int64_t * metadata)
   return fzE_stat(pathname, metadata);
 }
 
-pthread_mutex_t fzE_global_mutex;
+CRITICAL_SECTION fzE_global_mutex;
 
 /**
  * Run plattform specific initialisation code
@@ -598,19 +598,33 @@ void fzE_init()
   SetConsoleOutputCP(CP_UTF8);
   // also set input code page
   SetConsoleCP(CP_UTF8);
-  pthread_mutexattr_t attr;
-  fzE_mem_zero_secure(&fzE_global_mutex, sizeof(fzE_global_mutex));
-  bool res = pthread_mutexattr_init(&attr) == 0 &&
-            // NYI: UNDER DEVELOPMENT: #1646 setprotocol returns EINVAL on windows.
-            // pthread_mutexattr_setprotocol(&attr, PTHREAD_PRIO_INHERIT) == 0 &&
-            pthread_mutex_init(&fzE_global_mutex, &attr) == 0;
-  assert(res);
 
-#ifdef GC_THREADS
+  // Initialize Winsock
+  WSADATA wsaData;
+  if (WSAStartup(MAKEWORD(2,2), &wsaData) != 0) {
+    fprintf(stderr, "*** WSAStartup failed\n");
+    exit(EXIT_FAILURE);
+  }
+
+  InitializeCriticalSection(&fzE_global_mutex);
+  // NYI: DeleteCriticalSection(&fzE_global_mutex);
+
   GC_INIT();
-#endif
 }
 
+typedef void* (*posix_thread_func)(void*);
+typedef struct {
+  posix_thread_func func;
+  void* arg;
+} thread_trampoline_t;
+
+
+unsigned int __stdcall trampoline_wrapper(void* raw_arg) {
+  thread_trampoline_t* trampoline = (thread_trampoline_t*)raw_arg;
+  trampoline->func(trampoline->arg);
+  // NYI: free: trampoline
+  return 0;
+}
 
 /**
  * Start a new thread, returns a pointer to the thread.
@@ -618,32 +632,29 @@ void fzE_init()
 void * fzE_thread_create(void *(*code)(void *),
                           void *restrict args)
 {
-  pthread_t * pt = fzE_malloc_safe(sizeof(pthread_t));
-#ifdef GC_THREADS
-  int res = GC_pthread_create(pt,NULL,code,args);
-#else
-  int res = pthread_create(pt,NULL,code,args);
-#endif
-  if (res!=0)
-  {
-    fprintf(stderr,"*** pthread_create failed with return code %d\012",res);
-    exit(EXIT_FAILURE);
-  }
-  return pt;
+  thread_trampoline_t* trampoline = (thread_trampoline_t*)fzE_malloc_safe(sizeof(thread_trampoline_t));
+  trampoline->func = code;
+  trampoline->arg = args;
+  HANDLE handle = (HANDLE)GC_beginthreadex(
+    NULL,                // security attributes
+    0,                   // stack size
+    trampoline_wrapper,  // thread function
+    trampoline,          // argument to thread function
+    0,                   // creation flags
+    NULL                 // thread ID (optional, can be NULL)
+  );
+
+  assert(handle != NULL);
+
+  return handle;
 }
 
-
 /**
- * Join with a running thread.
- */
-void fzE_thread_join(void * thrd)
-{
-#ifdef GC_THREADS
-  GC_pthread_join(*(pthread_t *)thrd, NULL);
-#else
-  pthread_join(*(pthread_t *)thrd, NULL);
-#endif
-  fzE_free(thrd);
+* Join with a running thread.
+*/
+void fzE_thread_join(void * thrd) {
+  WaitForSingleObject((HANDLE)thrd, INFINITE);
+  CloseHandle((HANDLE)thrd);
 }
 
 
@@ -652,8 +663,7 @@ void fzE_thread_join(void * thrd)
  */
 void fzE_lock()
 {
-  int res = pthread_mutex_lock(&fzE_global_mutex);
-  assert( res == 0 );
+  EnterCriticalSection(&fzE_global_mutex);
 }
 
 
@@ -662,8 +672,7 @@ void fzE_lock()
  */
 void fzE_unlock()
 {
-  int res = pthread_mutex_unlock(&fzE_global_mutex);
-  assert( res == 0 );
+  LeaveCriticalSection(&fzE_global_mutex);
 }
 
 
@@ -918,47 +927,58 @@ void * fzE_file_open(char * file_name, int64_t * open_results, file_open_mode mo
 
 
 void * fzE_mtx_init() {
-  pthread_mutex_t *mtx = (pthread_mutex_t *)fzE_malloc_safe(sizeof(pthread_mutex_t));
-  return pthread_mutex_init(mtx, NULL) == 0 ? (void *)mtx : NULL;
+  CRITICAL_SECTION *mtx = (CRITICAL_SECTION *)fzE_malloc_safe(sizeof(CRITICAL_SECTION));
+  InitializeCriticalSection(mtx);
+  return (void *)mtx;
 }
 
-int32_t fzE_mtx_lock(void * mtx) {
-  return pthread_mutex_lock((pthread_mutex_t *)mtx) == 0 ? 0 : -1;
+int32_t fzE_mtx_lock(void *mtx) {
+  EnterCriticalSection((CRITICAL_SECTION *)mtx);
+  return 0;
 }
 
-int32_t fzE_mtx_trylock(void * mtx) {
-  return pthread_mutex_trylock((pthread_mutex_t *)mtx) == 0 ? 0 : -1;
+int32_t fzE_mtx_trylock(void *mtx) {
+  return TryEnterCriticalSection((CRITICAL_SECTION *)mtx) ? 0 : -1;
 }
 
-int32_t fzE_mtx_unlock(void * mtx) {
-  return pthread_mutex_unlock((pthread_mutex_t *)mtx) == 0 ? 0 : -1;
+int32_t fzE_mtx_unlock(void *mtx) {
+  LeaveCriticalSection((CRITICAL_SECTION *)mtx);
+  return 0;
 }
 
-void fzE_mtx_destroy(void * mtx) {
-  pthread_mutex_destroy((pthread_mutex_t *)mtx);
-  // NYI: free(mtx);
+void fzE_mtx_destroy(void *mtx) {
+  DeleteCriticalSection((CRITICAL_SECTION *)mtx);
+  fzE_free(mtx);
 }
 
 void * fzE_cnd_init() {
-  pthread_cond_t *cnd = (pthread_cond_t *)fzE_malloc_safe(sizeof(pthread_cond_t));
-  return pthread_cond_init(cnd, NULL) == 0 ? (void *)cnd : NULL;
+  CONDITION_VARIABLE *cnd = (CONDITION_VARIABLE *)fzE_malloc_safe(sizeof(CONDITION_VARIABLE));
+  InitializeConditionVariable(cnd);
+  return (void *)cnd;
 }
 
-int32_t fzE_cnd_signal(void * cnd) {
-  return pthread_cond_signal((pthread_cond_t *)cnd) == 0 ? 0 : -1;
+int32_t fzE_cnd_signal(void *cnd) {
+  WakeConditionVariable((CONDITION_VARIABLE *)cnd);
+  return 0;
 }
 
-int32_t fzE_cnd_broadcast(void * cnd) {
-  return pthread_cond_broadcast((pthread_cond_t *)cnd) == 0 ? 0 : -1;
+int32_t fzE_cnd_broadcast(void *cnd) {
+  WakeAllConditionVariable((CONDITION_VARIABLE *)cnd);
+  return 0;
 }
 
-int32_t fzE_cnd_wait(void * cnd, void * mtx) {
-  return pthread_cond_wait((pthread_cond_t *)cnd, (pthread_mutex_t *)mtx) == 0 ? 0 : -1;
+int32_t fzE_cnd_wait(void *cnd, void *mtx) {
+  return SleepConditionVariableCS(
+      (CONDITION_VARIABLE *)cnd,
+      (CRITICAL_SECTION *)mtx,
+      INFINITE)
+    ? 0
+    : -1;
 }
 
-void fzE_cnd_destroy(void * cnd) {
-  pthread_cond_destroy((pthread_cond_t *)cnd);
-  // NYI: free(cnd);
+void fzE_cnd_destroy(void *cnd) {
+  // Windows CONDITION_VARIABLEs do not need explicit destruction.
+  fzE_free(cnd);
 }
 
 
@@ -967,11 +987,11 @@ int32_t fzE_file_read(void * file, void * buf, int32_t size)
   DWORD bytesRead = 0;
   BOOL success = ReadFile(file, buf, (DWORD)size, &bytesRead, NULL);
 
-  return !success
-    ? -2 // ERROR
-    : bytesRead == 0
+  return success && bytesRead != 0
+    ? (int32_t)bytesRead
+    : GetLastError() == ERROR_BROKEN_PIPE
     ? -1 // EOF
-    : (int32_t)bytesRead;
+    : -2; // ERROR
 }
 
 
@@ -1053,7 +1073,14 @@ int64_t fzE_file_position(void *file)
 
 int32_t fzE_file_flush(void *file)
 {
-  return FlushFileBuffers((HANDLE)file)
+  HANDLE h = (HANDLE)file;
+
+  // flushing stdout/stderr does not work
+  if (GetFileType(h) == FILE_TYPE_CHAR)
+  {
+    return 0;
+  }
+  return FlushFileBuffers(h)
     ? 0
     : -1;
 }
@@ -1092,4 +1119,9 @@ int fzE_cwd(void * buf, size_t size)
   return _getcwd(buf, size) == NULL
     ? -1
     : 0;
+}
+
+int fzE_isnan(double d)
+{
+  return _isnan(d);
 }

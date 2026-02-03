@@ -32,19 +32,6 @@ TODO:
   say "\nHTTP TEST"
 
 
-  read_handler(LM type : mutate, arr array u8) : io.Read_Handler is
-
-    pos := LM.env.new 0
-
-    public redef read(count i32) choice (array u8) io.end_of_file error =>
-      p := pos.get
-      if p > arr.count
-        io.end_of_file
-      else
-        pos <- p + count
-        end := p+count > arr.count ? arr.count : p+count
-        arr.slice p end .as_array
-
   lm : mutate is
   lm ! ()->
 
@@ -55,7 +42,7 @@ TODO:
                                 [("Host", "fuzion-lang.dev"),
                                  ("User-Agent", "Fuzion HTTP Module"),
                                  ("DNT", $"1")]
-                                (read_handler lm "".utf8.as_array))
+                                (io.Read_Handler.from lm ""))
     say my_req
 
 
@@ -67,7 +54,7 @@ TODO:
                                 [("content-type", "text/html"),
                                  ("server", "FuzionWebServer v0.016"),
                                  ("x-frame-options", "DENY")]
-                                (read_handler lm "  <body>\n    <p>Hello World!</p>\n  </body>".utf8.as_array)
+                                (io.Read_Handler.from lm "  <body>\n    <p>Hello World!</p>\n  </body>")
     say <| my_resp.as_string_with_body 1E4
 
 

@@ -180,17 +180,17 @@ is
 
   public return( B type, w B) handles T B => handles w ar oneway_monad_mode.plain
 
-# short-hand for creating and installing an empty set of handles of given type.
+# shorthand for creating and installing an empty set of handles of given type.
 #
 public handles(T type, rr ()->unit) unit =>
   (handles unit (array T 0 x->do) oneway_monad_mode.inst) ! rr
 
-# short-hand for creating an empty set of handles of given type.
+# shorthand for creating an empty set of handles of given type.
 #
 public handles_(T type) handles T unit => handles unit (array T 0 x->do) oneway_monad_mode.plain
 
 
-# short-hand for accessing handles monad for given type in current environment
+# shorthand for accessing handles monad for given type in current environment
 #
 public handles(T type) handles T unit =>
   (handles_type T).install_default

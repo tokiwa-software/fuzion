@@ -102,16 +102,16 @@ public find(pattern Sequence T) option i32
         nil => false
         n Node => !n.top.is_empty && n.top[0] = x
 
-    fold_until(acc option (Node T), step (option (Node T), T)->option (Node T), data Sequence T) option i32 =>
+    fold_until(acc option (Node T), idx i32) option i32 =>
       if is_done acc
-        ab.count - data.count - p.count
-      else if data.is_empty
+        ab.count - (ab.count-idx) - p.count
+      else if idx >= ab.count
         nil
       else
-        acc_star := fold_until.this.step acc data[0]
-        fold_until acc_star fold_until.this.step (data.drop 1)
+        acc_star := step acc ab[idx]
+        fold_until acc_star idx+1
 
-    fold_until init step ab
+    fold_until init 0
 
 
 
@@ -196,7 +196,7 @@ module split0(s Sequence T, limit option u32, split_after bool) list (Sequence T
             nil => true
             n u32 => n > 0
   =>
-    match (find s)
+    match find s
       nil     =>
         # NYI: With better type propagation, this could be `Sequence.this : nil` or `[Sequence.this].as_list`
         (id (Sequence T) Sequence.this) : nil

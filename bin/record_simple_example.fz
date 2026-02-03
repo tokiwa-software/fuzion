@@ -31,7 +31,7 @@ envir_var_kv := [
   "C_INCLUDE_PATH",
   "LANGUAGE"
 ].map k->
-  (envir.vars.get k).bind v->
+  envir.vars[k].bind v->
     (k,v)
  .filter o->o.ok
  .map o->o.val
@@ -58,12 +58,12 @@ record_process(p os.process,
   (concur.thread_pool 2 ()->
       fout := concur.thread_pool.env.submit _ ()->
         lm ! ()->
-          match p.with_out String lm (()->String.from_bytes (io.buffered lm).read_fully)
+          match p.with_out String lm (()->String.from (io.buffered lm).read_fully)
             e error => panic "failed reading stdout from $cmd, error is: $e"
             out String => out
       ferr := concur.thread_pool.env.submit _ ()->
         lm ! ()->
-          match p.with_err String lm (()->String.from_bytes (io.buffered lm).read_fully)
+          match p.with_err String lm (()->String.from (io.buffered lm).read_fully)
             e error => panic "failed reading stderr from $cmd, error is: $e"
             err String => err
       match p.wait
@@ -102,9 +102,9 @@ file     := envir.args[3]
 
 res :=
   if type_ = "jvm" || type_ = "any"
-    !!"$fz_run -XmaxErrors=-1 -jvm {(envir.vars.get "FUZION_JVM_BACKEND_OPTIONS").get ""} $file"
+    !!"$fz_run -XmaxErrors=-1 -jvm {envir.vars["FUZION_JVM_BACKEND_OPTIONS"].val ""} $file"
   else if type_ = "c"
-    c := !!"$fz_run -XmaxErrors=-1 -c {(envir.vars.get "FUZION_C_BACKEND_OPTIONS").get ""} -o=testbin $file"
+    c := !!"$fz_run -XmaxErrors=-1 -c {envir.vars["FUZION_C_BACKEND_OPTIONS"].val ""} -o=testbin $file"
     if (c.exit_code = 0)
       e := !!"./testbin"
       _ := io.file.delete "testbin"
@@ -126,7 +126,7 @@ if type_ != "effect"
       "_$type_"
 
   write_to_file "$file.expected_out$sfx" res.out
-  cur_dir := os.cwd.val
+  cur_dir := os.cwd.val.as_string
   write_to_file "$file.expected_err$sfx" (res.err.replace cur_dir "--CURDIR--")
 else
   write_to_file "$file.effect" ((res.out.lines.filter (l -> !l.is_empty)).sort.as_string "\n")+"\n"

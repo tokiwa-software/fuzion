@@ -1398,7 +1398,7 @@ public class AstErrors extends ANY
         var solution5 = solutionLambda(call);
         error(call.pos(), msg,
               "Feature not found: " + sbnf(calledName) + "\n" +
-              "Target feature: " + s(targetFeature) + "\n" +
+              (targetFeature != null ? "Target feature: " + s(targetFeature) + "\n" : "") +
               "In call: " + s(call) + "\n" +
               (solution0 != "" ? solution0 :
                solution1 != "" ? solution1 :
@@ -2401,7 +2401,7 @@ public class AstErrors extends ANY
       "Must not define type inside of type feature.",
       "To solve this, move the type outside of the type feature." + System.lineSeparator() +
       "E.g., instead of: " + System.lineSeparator() + code("type.union : Monoid bitset is") + System.lineSeparator() +
-      "do this: " + code("public type.union =>" + System.lineSeparator() + "  ref : Monoid bitset"));
+      "do this: " + code("public type.union =>" + System.lineSeparator() + "  _ : Monoid bitset"));
   }
 
   public static void typeFeaturesMustOnlyBeDeclaredInFeaturesThatDefineType(Feature f)
@@ -2487,6 +2487,49 @@ public class AstErrors extends ANY
       ss("<effect>.finally") + " is called automatically.");
   }
 
+  public static void ambiguousIfIfElse(SourcePosition pos, SourcePosition if1, SourcePosition if2)
+  {
+    error(pos,
+          "Ambiguous " + skw("else") + " for multiple " + skw("if") + " statements",
+          "The " + skw("else") + " is ambiguous since it may be parsed as part of several different " + skw("if") + " statements.\n" +
+          "Outer " + skw("if") + " statement at " + if1.show() + "\n" +
+          "Inner " + skw("if") + " statement at " + if2.show() + "\n" +
+          "\n" +
+          "To solve this, add braces " + code("{ }") + " or use line breaks and indentation.");
+  }
+
+  public static void ambiguousLoopIfElse(SourcePosition pos, SourcePosition loop1, SourcePosition if2)
+  {
+    error(pos,
+          "Ambiguous " + skw("else") + " for nested loop and " + skw("if") + " statements",
+          "The " + skw("else") + " is ambiguous since it may be parsed as part of different loop and " + skw("if") + " statements.\n" +
+          "Outer loop statement at " + loop1.show() + "\n" +
+          "Inner " + skw("if") + " statement at " + if2.show() + "\n" +
+          "\n" +
+          "To solve this, add braces " + code("{ }") + " or use line breaks and indentation.");
+  }
+
+  public static void ambiguousIfLoopElse(SourcePosition pos, SourcePosition if1, SourcePosition loop2)
+  {
+    error(pos,
+          "Ambiguous " + skw("else") + " for nested " + skw("if") + " and loop statements",
+          "The " + skw("else") + " is ambiguous since it may be parsed as part of different " + skw("if") + " and loop statements.\n" +
+          "Outer " + skw("if") + " statement at " + if1.show() + "\n" +
+          "Inner loop statement at " + loop2.show() + "\n" +
+          "\n" +
+          "To solve this, add braces " + code("{ }") + " or use line breaks and indentation.");
+  }
+
+  public static void ambiguousLoops(SourcePosition pos, SourcePosition loop1)
+  {
+    error(pos,
+          "Ambiguous nested loop statements",
+          "Several loop statements occur in a single line causing ambiguity for the parser.\n" +
+          "Outer loop statement at " + loop1.show() + "\n" +
+          "\n" +
+          "To solve this, add braces " + code("{ }") + " or use line breaks and indentation.");
+  }
+
   public static void explicitTypeRequired(AbstractFeature f, AbstractType inf)
   {
     String inferredMsg = (inf != null && inf != Types.t_ERROR && inf != Types.t_ERROR) ?
@@ -2510,6 +2553,15 @@ public class AstErrors extends ANY
     error(variant.sourceRange(),
           "Loop variant must be of type " + type("i64"),
           "Type of loop variant must be " + type("i64") + ", but found variant of type " + s(variant.type()));
+  }
+
+  public static void duplicateFile(String file1, String file2)
+  {
+    fatal("File names must be unique with respect to case sensitivity. Files differing only by case are not permitted.",
+    "The offending files: " + "\n" +
+     " - " + file1 + "\n" +
+     " - " + file2
+    );
   }
 
 }

@@ -35,6 +35,7 @@ import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 
 import static dev.flang.ir.IR.NO_CLAZZ;
+import static dev.flang.ir.IR.NO_SITE;
 import static dev.flang.util.FuzionConstants.EFFECT_INSTATE_NAME;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
@@ -62,13 +63,6 @@ public class Call extends ANY implements Comparable<Call>, Context
 
 
   /**
-   * Unique id to identify this Call. This is used to avoid expensive comparison
-   * for calls.
-   */
-  int _uniqueCallId = -1;
-
-
-  /**
    * The DFA instance we are working with.
    */
   final DFA _dfa;
@@ -91,7 +85,7 @@ public class Call extends ANY implements Comparable<Call>, Context
   /**
    * Arguments passed to the call.
    */
-  List<Val> _args;
+  final List<Val> _args;
 
 
   /**
@@ -101,14 +95,14 @@ public class Call extends ANY implements Comparable<Call>, Context
 
 
   /**
-   * true means that the call may return, false means the call has not been
+   * some Val means that the call may return, null means the call has not been
    * found to return, i.e., the result is null (aka void).
    */
-  private boolean _returns = false;
+  private Val _result = null;
 
 
   /**
-   * Calls that depend on this calls result
+   * Calls that depend on this calls result, (if it returns or not)
    */
   private LinkedList<Call> _dependOnResult = new LinkedList<>();
 
@@ -179,16 +173,6 @@ public class Call extends ANY implements Comparable<Call>, Context
 
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * Return a unique id for the call or main entry point context.
-   */
-  @Override
-  public int uniqueCallId()
-  {
-    return _uniqueCallId;
-  }
 
 
   /**
@@ -266,16 +250,45 @@ public class Call extends ANY implements Comparable<Call>, Context
 
 
   /**
+   * Helper to extract the result from a call.
+   */
+  private Val getResult()
+  {
+    Val result;
+    var rf = _dfa._fuir.clazzResultField(calledClazz());
+    if (_dfa._fuir.isConstructor(calledClazz()))
+      {
+        result = _instance;
+      }
+    else if (_dfa._fuir.clazzIsUnitType(_dfa._fuir.clazzResultClazz(rf)))
+      {
+        result = Value.UNIT;
+      }
+    else
+      {
+        // should not be possible to return void (_result should be null):
+        if (CHECKS) check
+          (!_dfa._fuir.clazzIsVoidType(_dfa._fuir.clazzResultClazz(calledClazz())));
+
+        result = _instance.readField(_dfa, rf, NO_SITE, this);
+      }
+    return result;
+  }
+
+
+  /**
    * Record the fact that this call returns, i.e., it does not necessarily diverge.
    */
   void returns()
   {
-    if (!_returns)
+    var result = getResult();
+
+    if (_result != result)
       {
-        _returns = true;
+        _result = result;
         while (!_dependOnResult.isEmpty())
           {
-            // mark calls that depend on this calls result as hot (again)
+            // mark calls that depend on this call's result as hot (again)
             _dfa.hot(_dependOnResult.removeFirst());
           }
       }
@@ -285,9 +298,18 @@ public class Call extends ANY implements Comparable<Call>, Context
   /**
    * Return the result value returned by this call.  null in case this call
    * never returns.
+   *
+   * @param from who is asking for the result?
    */
   public Val result(Call from)
   {
+    if (PRECONDITIONS) require
+      (from != null);
+
+    // record how depends on result to mark
+    // them as hot again when result changes.
+    _dependOnResult.add(from);
+
     Val result = null;
     if (_dfa._fuir.clazzKind(calledClazz()) == IR.FeatureKind.Intrinsic)
       {
@@ -317,29 +339,9 @@ public class Call extends ANY implements Comparable<Call>, Context
             Errors.warning("DFA: cannot handle native feature result type: " + _dfa._fuir.clazzOriginalName(rc));
           }
       }
-    else if (_returns)
+    else
       {
-        var rf = _dfa._fuir.clazzResultField(calledClazz());
-        if (_dfa._fuir.isConstructor(calledClazz()))
-          {
-            result = _instance;
-          }
-        else if (SpecialClazzes.c_unit == _dfa._fuir.getSpecialClazz(_dfa._fuir.clazzResultClazz(rf)))
-          {
-            result = Value.UNIT;
-          }
-        else
-          {
-            // should not be possible to return void (_result should be null):
-            if (CHECKS) check
-              (!_dfa._fuir.clazzIsVoidType(_dfa._fuir.clazzResultClazz(calledClazz())));
-
-            result = _instance.readField(_dfa, rf, -1, this);
-          }
-      }
-    else if (from != null)
-      {
-        _dependOnResult.add(from);
+        result = _result;
       }
     return result;
   }
@@ -355,11 +357,12 @@ public class Call extends ANY implements Comparable<Call>, Context
         _dfa.readField(_dfa._fuir.clazzArg(calledClazz(), i));
 
         var at = _dfa._fuir.clazzArgClazz(calledClazz(), i);
-        if (_dfa._fuir.clazzIsArray(at))
+        if (_dfa._fuir.clazzIsArray(at) || _dfa._fuir.clazzIsMutateArray(at))
           {
-            var ia = _dfa._fuir.lookup_array_internal_array(at);
+            var ia = _dfa._fuir.clazzArg(at, 0);
             _dfa.readField(ia);
-            _dfa.readField(_dfa._fuir.lookup_fuzion_sys_internal_array_data(_dfa._fuir.clazzResultClazz(ia)));
+            _dfa.readField(_dfa._fuir.clazzArg(_dfa._fuir.clazzResultClazz(ia), 0)); /* data */
+            _dfa.readField(_dfa._fuir.clazzArg(_dfa._fuir.clazzResultClazz(ia), 1)); /* length */
           }
       }
   }
@@ -425,7 +428,7 @@ public class Call extends ANY implements Comparable<Call>, Context
    * toString() might end up in a complex recursion if it is used for careless
    * debug output, so we try to catch recursion and stop it.
    */
-  static TreeSet<Call> _toStringRecursion_ = new TreeSet<>();
+  static final TreeSet<Call> _toStringRecursion_ = new TreeSet<>();
 
 
   /**
@@ -456,7 +459,7 @@ public class Call extends ANY implements Comparable<Call>, Context
               .append(a);
           }
         sb.append(" => ")
-          .append(_returns ? "returns" : "*** VOID ***")
+          .append(_result != null ? "returns" : "*** VOID ***")
           .append(" ENV: ")
           .append(Errors.effe(Env.envAsString(env())));
         _toStringRecursion_.remove(this);
@@ -588,7 +591,6 @@ public class Call extends ANY implements Comparable<Call>, Context
             DfaErrors.usedEffectNotInstalled(_dfa._fuir.sitePos(s),
                                              _dfa._fuir.clazzAsString(ecl),
                                              this);
-            _dfa._missingEffects.put(ecl, ecl);
           }
       }
     else

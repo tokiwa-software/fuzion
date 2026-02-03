@@ -43,7 +43,6 @@ import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.Call;
 import dev.flang.ast.Expr;
 import dev.flang.ast.InlineArray;
-import dev.flang.ast.Nop;
 import dev.flang.ast.Universe;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.SourcePosition;
@@ -176,10 +175,8 @@ public class ASTWalker
       }
     if ( expr == Call.ERROR
       || expr instanceof AbstractCurrent
-      || expr instanceof Constant
       || expr instanceof Universe
-      || expr instanceof AbstractLambda
-      || expr instanceof Nop)
+      || expr instanceof AbstractLambda)
       {
         return Stream.empty();
       }
@@ -188,10 +185,12 @@ public class ASTWalker
 
   private static Stream<Entry<HasSourcePosition, AbstractFeature>> traverseCall(AbstractCall c, AbstractFeature outer)
   {
-    return Util.concatStreams(
-      asStream(c, outer),
-      c.actuals().stream().flatMap(a -> traverseExpression(a, outer)),
-      traverseExpression(c.target(), outer));
+    return c == Call.ERROR
+      ? Stream.empty()
+      : Util.concatStreams(
+          asStream(c, outer),
+          c.actuals().stream().flatMap(a -> traverseExpression(a, outer)),
+          traverseExpression(c.target(), outer));
   }
 
   /**

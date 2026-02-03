@@ -192,8 +192,8 @@ public class Lexer extends SourceFile
     t_variant("variant"),
     t_pre("pre"),
     t_post("post"),
-    t_inv("inv"),
-    t_var("var"),
+    t_invariant("invariant"),
+    t_var("var"),                     // unused
     t_match("match"),
     t_ref("ref"),
     t_redef("redef"),
@@ -273,7 +273,7 @@ public class Lexer extends SourceFile
     /**
      * Sorted array of all the keyword tokens
      */
-    public static Token[] _keywords = Stream.of(Token.class.getEnumConstants())
+    public static final Token[] _keywords = Stream.of(Token.class.getEnumConstants())
       .filter((t) -> t.isKeyword())
       .sorted((t1, t2) -> t1.keyword().compareTo(t2.keyword()))
       .toArray(Token[]::new);
@@ -281,7 +281,7 @@ public class Lexer extends SourceFile
     /**
      * maximum length of the keywords.
      */
-    public static int _maxKeywordLength = Stream.of(_keywords)
+    public static final int _maxKeywordLength = Stream.of(_keywords)
       .mapToInt(k -> k.keyword().length())
       .max()
       .orElseThrow();
@@ -290,7 +290,7 @@ public class Lexer extends SourceFile
      * Array of sorted arrays of keywords of equal length.  Used to reduce
      * effort to find keyword by checking only those with a correct length.
      */
-    public static Token[][] _keywordsOfLength = IntStream.range(0, _maxKeywordLength+1)
+    public static final Token[][] _keywordsOfLength = IntStream.range(0, _maxKeywordLength+1)
     .mapToObj(i -> Stream.of(_keywords)
               .filter(k -> k.keyword().length() == i)
               .toArray(Token[]::new))
@@ -379,7 +379,7 @@ public class Lexer extends SourceFile
   /**
    * Code point classes for ASCII codepoints
    */
-  private static byte[] _asciiKind = new byte[]
+  private static final byte[] _asciiKind = new byte[]
   {
     // 0…
     K_UNKNOWN /* NUL */, K_UNKNOWN /* SOH */, K_UNKNOWN /* STX */, K_UNKNOWN /* ETX */,
@@ -427,7 +427,7 @@ public class Lexer extends SourceFile
   /**
    * ASCII control sequence names or null if normal ASCII char.
    */
-  private static String[] _asciiControlName = new String[]
+  private static final String[] _asciiControlName = new String[]
   {
     // 0…
     "NUL", "SOH", "STX", "ETX", "EOT", "ENQ", "ACK", "BEL", "BS ", "HT ", "LF ", "VT ", "FF ", "CR ", "SO ", "SI ",
@@ -671,6 +671,22 @@ public class Lexer extends SourceFile
    */
   private boolean _endAtBar = false;
 
+
+  /**
+   * In case there is a surrounding `if` statement, this gives the start position. This is used
+   * to detect ambiguous `else` statements.
+   */
+  private SourcePosition _surroundingIf = null;
+
+
+  /**
+   * In case there is a surrounding loop statement, this gives the start position. This is used
+   * to detect ambiguous `else` statements.
+   */
+  private SourcePosition _surroundingLoop = null;
+
+
+
   private SemiState _atSemicolon = SemiState.CONTINUE;
 
 
@@ -717,6 +733,8 @@ public class Lexer extends SourceFile
     _endAtComma = original._endAtComma;
     _endAtColon = original._endAtColon;
     _endAtBar = original._endAtBar;
+    _surroundingIf = original._surroundingIf;
+    _surroundingLoop = original._surroundingLoop;
     _atSemicolon = original._atSemicolon;
     _ignoredTokenBefore = original._ignoredTokenBefore;
     _stringLexer = original._stringLexer == null ? null : new StringLexer(original._stringLexer);
@@ -942,6 +960,50 @@ public class Lexer extends SourceFile
     return result;
   }
 
+
+  /**
+   * Remember that we are parsing in `if` statement. This will be reset
+   * automatically on relaxLineAndSpaceLimit.
+   */
+  SourcePosition surroundingIf(SourcePosition pos)
+  {
+    var result = _surroundingIf;
+    _surroundingIf = pos;
+
+    return result;
+  }
+
+
+  /**
+   * The `if` statement that we are currently parsing.
+   */
+  SourcePosition surroundingIf()
+  {
+    return _surroundingIf;
+  }
+
+  /**
+   * Remember that we are parsing a loop statement. This will be reset
+   * automatically on relaxLineAndSpaceLimit.
+   */
+  SourcePosition surroundingLoop(SourcePosition pos)
+  {
+    var result = _surroundingLoop;
+    _surroundingLoop = pos;
+
+    return result;
+  }
+
+
+  /**
+   * The loop statement that we are currently parsing.
+   */
+  SourcePosition surroundingLoop()
+  {
+    return _surroundingLoop;
+  }
+
+
   /**
    * Increases the semicolon state, which is used to detect ambiguous semicolons
    * e.g. when blocks are nested in one line.
@@ -994,6 +1056,8 @@ public class Lexer extends SourceFile
     var oldEAc = endAtComma(false);
     var oldEAC = endAtColon(false);
     var oldEAB = endAtBar(false);
+    var oldIf  = surroundingIf(null);
+    var oldLoop  = surroundingLoop(null);
     var oldSemiSt = semiState(SemiState.CONTINUE);
     V result = c.get();
     sameLine(oldLine);
@@ -1001,13 +1065,15 @@ public class Lexer extends SourceFile
     endAtComma(oldEAc);
     endAtColon(oldEAC);
     endAtBar(oldEAB);
+    surroundingIf(oldIf);
+    surroundingLoop(oldLoop);
     semiState(oldSemiSt);
     return result;
   }
 
 
   /**
-   * short-hand for bracketTermWithNLs with c==def.
+   * shorthand for bracketTermWithNLs with c==def.
    */
   <V> V optionalBrackets(Parens brackets, String rule, Supplier<V> c)
   {
@@ -1017,7 +1083,7 @@ public class Lexer extends SourceFile
   }
 
   /**
-   * short-hand for bracketTermWithNLs with c==def.
+   * shorthand for bracketTermWithNLs with c==def.
    */
   <V> V bracketTermWithNLs(Parens brackets, String rule, Supplier<V> c)
   {
@@ -3015,7 +3081,7 @@ PIPE        : "|"
      * If this is changed, https://fuzion-lang.dev/tutorial/string_constants
      * must be changed as well.
      */
-    static int[][] escapeChars = new int[][] {
+    static final int[][] escapeChars = new int[][] {
         { 'b', '\b'  },  // BS 0x08
         { 't', '\t'  },  // HT 0x09
         { 'n', '\n'  },  // LF 0x0a
@@ -3427,9 +3493,9 @@ PIPE        : "|"
           _stringLexer = this;
           switch (end(t))
             {
-            case DOLLAR: _state = StringState.IDENT_EXPECTED; break;
-            case BRACE : _state = StringState.EXPR_EXPECTED; break;
-            default    : throw new Error("default:");
+            case DOLLAR -> _state = StringState.IDENT_EXPECTED;
+            case BRACE -> _state = StringState.EXPR_EXPECTED;
+            default -> throw new Error("default:");
             }
         }
       return t;

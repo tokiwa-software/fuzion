@@ -65,6 +65,7 @@ import dev.flang.opt.Optimizer;
 
 import dev.flang.util.ANY;
 import dev.flang.util.List;
+import dev.flang.util.Metrics;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.FuzionOptions;
@@ -97,8 +98,52 @@ public class Fuzion extends Tool
   static String _cInclude_ = null;
   static String _cLink_ = null;
   static boolean _keepGeneratedCode_ = false;
+  static boolean _debugBuild_ = false;
   static String  _jvmOutName_ = null;
   static String  _jvmLib_ = null;
+
+
+  /**
+   * Handle options used in more than one backend
+   *
+   * @param o
+   * @return
+   */
+  private static boolean handleCommonOption(String o)
+  {
+    boolean result = false;
+    if (o.startsWith("-Xgc="))
+      {
+        _useBoehmGC_ = parseOnOffArg(o);
+        result = true;
+      }
+    else if (o.startsWith("-CC="))
+      {
+        _cCompiler_ = o.substring(4);
+        result = true;
+      }
+    else if (o.startsWith("-CFlags="))
+      {
+        _cFlags_ = o.substring(8);
+        result = true;
+      }
+    else if (o.startsWith("-CTarget="))
+      {
+        _cTarget_ = o.substring(9);
+        result = true;
+      }
+    else if (o.startsWith("-CInclude="))
+      {
+        _cInclude_ = o.substring(10);
+        result = true;
+      }
+    else if (o.startsWith("-CLink="))
+      {
+        _cLink_ = o.substring(7);
+        result = true;
+      }
+    return result;
+  }
 
 
   /**
@@ -127,7 +172,7 @@ public class Fuzion extends Tool
     {
       String usage()
       {
-        return "[-o=<file>] [-Xgc=(on|off)] [-XkeepGeneratedCode=(on|off)] [-CC=<c compiler>] [-CFlags=\"list of c compiler flags\"] [-CTarget=\"e.g. x86_64-pc-linux-gnu\"] [-CInclude=\"list of header files to include\"] [-CLink=\"list libraries to link\"] ";
+        return "[-o=<file>] [-Xgc=(on|off)] [-XkeepGeneratedCode=(on|off)] [-CC=<c compiler>] [-CFlags=\"list of c compiler flags\"] [-CTarget=\"e.g. x86_64-pc-linux-gnu\"] [-CInclude=\"list of header files to include\"] [-CLink=\"list libraries to link\"] -g ";
       }
       boolean handleOption(Fuzion f, String o)
       {
@@ -137,39 +182,18 @@ public class Fuzion extends Tool
             _binaryName_ = o.substring(3);
             result = true;
           }
-        else if (o.startsWith("-Xgc="))
+        else if (handleCommonOption(o))
           {
-            _useBoehmGC_ = parseOnOffArg(o);
-            result = true;
-          }
-        else if (o.startsWith("-CC="))
-          {
-            _cCompiler_ = o.substring(4);
-            result = true;
-          }
-        else if (o.startsWith("-CFlags="))
-          {
-            _cFlags_ = o.substring(8);
-            result = true;
-          }
-        else if (o.startsWith("-CTarget="))
-          {
-            _cTarget_ = o.substring(9);
-            result = true;
-          }
-        else if (o.startsWith("-CInclude="))
-          {
-            _cInclude_ = o.substring(10);
-            result = true;
-          }
-        else if (o.startsWith("-CLink="))
-          {
-            _cLink_ = o.substring(7);
             result = true;
           }
         else if (o.startsWith("-XkeepGeneratedCode="))
           {
             _keepGeneratedCode_ = parseOnOffArg(o);
+            result = true;
+          }
+        else if (o.equals("-g"))
+          {
+            _debugBuild_ = true;
             result = true;
           }
         return result;
@@ -181,7 +205,7 @@ public class Fuzion extends Tool
       }
       void process(FuzionOptions options, FUIR fuir)
       {
-        new C(new COptions(options, _binaryName_, _useBoehmGC_, _cCompiler_, _cFlags_, _cTarget_, _cInclude_, _cLink_, _keepGeneratedCode_), fuir).compile();
+        new C(new COptions(options, _binaryName_, _useBoehmGC_, _cCompiler_, _cFlags_, _cTarget_, _cInclude_, _cLink_, _keepGeneratedCode_, _debugBuild_), fuir).compile();
       }
       boolean serializeFuir()
       {
@@ -190,13 +214,63 @@ public class Fuzion extends Tool
       }
     },
 
+    gdb ("-gdb")
+    {
+      String usage()
+      {
+        return "[-Xgc=(on|off)] [-CC=<c compiler>] [-CFlags=\"list of c compiler flags\"] [-CTarget=\"e.g. x86_64-pc-linux-gnu\"] [-CInclude=\"list of header files to include\"] [-CLink=\"list libraries to link\"] ";
+      }
+      boolean handleOption(Fuzion f, String o)
+      {
+        return handleCommonOption(o);
+      }
+      @Override
+      public boolean needsEscapeAnalysis()
+      {
+        return true;
+      }
+      void process(FuzionOptions options, FUIR fuir)
+      {
+        new C(new COptions(options, "out", _useBoehmGC_, _cCompiler_, _cFlags_, _cTarget_, _cInclude_, _cLink_, true, true), fuir).compile();
+        say(
+          """
+
+          ########## Starting gdb ##########
+
+          short usage examples:
+
+          run the program   : r
+          set breakpoint    : break floating_point_numbers.fz:47
+          resume execution  : c
+          backtrace         : bt
+          list current code : l
+          info              : info args|locals|registers|etc.
+          quit              : q
+
+          ##################################
+
+          """
+        );
+        try
+          {
+            new ProcessBuilder().inheritIO().command(new List<>("gdb", "out")).start().waitFor();
+          }
+        catch (Exception e)
+          {
+            e.printStackTrace();
+            System.exit(1);
+          }
+      }
+
+    },
+
     java       ("-java"),
 
     jvm        ("-jvm")
     {
       String usage()
       {
-        return "";
+        return "[-JLibraries=<e.g. openssl>] ";
       }
       boolean handleOption(Fuzion f, String o)
       {
@@ -233,7 +307,7 @@ public class Fuzion extends Tool
     {
       String usage()
       {
-        return "[-o=<outputName>] ";
+        return "[-o=<outputName>] [-JLibraries=<e.g. openssl>] ";
       }
       boolean handleOption(Fuzion f, String o)
       {
@@ -328,7 +402,7 @@ public class Fuzion extends Tool
       {
         var o    = fe._options;
         var mir  = fe.createMIR();                             f.timer("createMIR");
-        var fuir = new GeneratingFUIR(fe, mir);                f.timer("ir");
+        var fuir = new GeneratingFUIR(fe.mainModule(), mir);   f.timer("ir");
         new Effects(o, new DFA(o, fuir)).find();
       }
     },
@@ -575,7 +649,7 @@ public class Fuzion extends Tool
 
   }
 
-  static TreeMap<String, Backend> _allBackends_ = new TreeMap<>();
+  static final TreeMap<String, Backend> _allBackends_ = new TreeMap<>();
 
   static { var __ = Backend.undefined; } /* make sure _allBackendArgs_ is initialized */
 
@@ -612,13 +686,6 @@ public class Fuzion extends Tool
    * When saving a module, should we erase internal names?
    */
   boolean _eraseInternalNamesInMod = false;
-
-
-  /**
-   * Flag to enable intrinsic functions such as fuzion.jvm.env.call_virtual. These are
-   * not allowed if run in a web playground.
-   */
-  boolean _enableUnsafeIntrinsics = true;
 
 
   /**
@@ -733,7 +800,7 @@ public class Fuzion extends Tool
   protected String USAGE(boolean xtra)
   {
     var std = STANDARD_OPTIONS(xtra);
-    var stdRun = "[-debug[=<n>]] [-safety=(on|off)] [-unsafeIntrinsics=(on|off)] ";
+    var stdRun = "[-debug[=<n>]] [-safety=(on|off)] ";
     var stdBe = "[-modules={<m>,..}] [-moduleDirs={<path>,..}] [-sourceDirs={<path>,..}] " +
       (xtra ? "[-XdumpModules={<name>,..}] " : "");
     if (_backend == Backend.undefined)
@@ -1054,7 +1121,6 @@ public class Fuzion extends Tool
             else if (a.startsWith("-moduleDirs="             )) {                             _moduleDirs.addAll(parseStringListArg(a)); }
             else if (_backend.runsCode() && a.matches("-debug(=\\d+|)"       )) { _debugLevel              = parseIntArg(a, 1); }
             else if (_backend.runsCode() && a.startsWith("-safety="          )) { _safety                  = parseOnOffArg(a);          }
-            else if (_backend.runsCode() && a.startsWith("-unsafeIntrinsics=")) { _enableUnsafeIntrinsics  = parseOnOffArg(a);          }
             else if (_backend.handleOption(this, a))
               {
               }
@@ -1124,7 +1190,6 @@ public class Fuzion extends Tool
                                           _dumpModules,
                                           _debugLevel,
                                           _safety,
-                                          _enableUnsafeIntrinsics,
                                           _sourceDirs,
                                           _readStdin,
                                           _executeCode,
@@ -1138,11 +1203,17 @@ public class Fuzion extends Tool
         timer("prep");
         if (!options.serializeFuir())
           {
+            var startTime = System.currentTimeMillis();
             var fe = new FrontEnd(options);
             timer("fe");
+            var feTime = System.currentTimeMillis() - startTime;
             Errors.showAndExit();
             _backend.processFrontEnd(this, fe);
             timer("be");
+            if (_saveMod != null)
+              {
+                Metrics.fumFile(moduleName(), feTime, System.currentTimeMillis() - startTime);
+              }
           }
         else
           {
@@ -1191,7 +1262,7 @@ public class Fuzion extends Tool
   {
     var options = fe._options;
     var mir  = fe.createMIR();                            f.timer("createMIR");
-    var fuir = new GeneratingFUIR(fe, mir);               f.timer("ir");
+    var fuir = new GeneratingFUIR(fe.mainModule(), mir);  f.timer("ir");
     var dfuir = new DFA(options, fuir).new_fuir();
     var ofuir = new Optimizer(options, dfuir).fuir();     f.timer("opt");
     return ofuir;

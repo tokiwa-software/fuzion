@@ -59,7 +59,7 @@ is
   # return the next alternative position to check
   #
   collision (at u64, h u64) =>
-    # a simple collision avoidance woud just advance to the next cell. This, however, is problematic
+    # a simple collision avoidance would just advance to the next cell. This, however, is problematic
     # in case the hash function produces values that are close to one another: Assume
     #
     #  hash k1 = 7
@@ -72,7 +72,7 @@ is
     #
     # To avoid this, we instead advance by p that depends on `h`:
     #
-    # In case of a collision, we advance by a prime number p of cells wich p > allocated_size.  Then,
+    # In case of a collision, we advance by a prime number p of cells which p > allocated_size.  Then,
     # since p % allocated_size != 0, repeated addition of p will not return to the same cell before all
     # cells were visited.
     #
@@ -89,7 +89,7 @@ is
 
   # for a given hash code, return a prime number larger than `max_size`
   #
-  prime(h) => primes[(h % primes.count.as_u64).as_i32]
+  prime(h) => primes[h % primes.count.as_u64]
 
 
   # 31 primes that are all larger than `max_size`, for use in collision handling
@@ -158,14 +158,14 @@ is
       # store k,v for index at,
       store (at u64) unit =>
 
-        match mcontents[at.as_i64]
+        match mcontents[at]
           nil     =>     # slot is free, so use it:
-            mcontents[at.as_i64] := (k, v)
+            mcontents[at] := (k, v)
 
           t tuple =>     # we have a conflict
             ek, _ := t
             if ek = k    # no conflict, but remapping of k
-              mcontents[at.as_i64] := (k, v)
+              mcontents[at] := (k, v)
             else         # conflict
               store (collision at h)
 
@@ -186,7 +186,7 @@ is
     h := hash k
 
     retrieve (at u64) option V =>
-      match contents[at.as_i32]
+      match contents[at]
         nil     => nil
         t tuple =>
           ek, v := t
@@ -203,7 +203,7 @@ is
   public redef items Sequence (tuple HK V) =>
     contents
       .filter o->o??
-      .map (o -> o.get (panic "filter failed"))
+      .map (o -> o.or_else (panic "filter failed"))
 
 
   # NYI: implement this when #4642 is done

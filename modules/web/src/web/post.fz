@@ -1,0 +1,55 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion feature web.post_r
+#
+# -----------------------------------------------------------------------
+
+
+# POST url via ipv4 using standard ssl port
+#
+public post4(url String, data Sequence u8, headers container.Map String String) outcome String =>
+  post_r net.family.ipv4 url data headers
+
+
+# POST url via ipv6 using standard ssl port
+#
+public post6(url String, data Sequence u8, headers container.Map String String) outcome String =>
+  post_r net.family.ipv6 url data headers
+
+
+# eagerly POST an url via http(s), return response as a String
+#
+public post_r(family net.family.val, url String, data Sequence u8, headers container.Map String String) outcome String
+=>
+
+  lm : mutate is
+
+  d := data.as_array_backed
+
+  match parse_url url
+    e error => e
+    pu web.parsed_url =>
+
+      lm ! ()->
+        rm := http
+          .request_message
+          .new http.post_r (pu.target.or_else "/") 1 1 ([("Host", pu.host), ("Content-Length", d.count.as_string)] ++ headers.items ++ web.config.default_headers) (io.Read_Handler.from lm d)
+
+        do_request family (pu.port.or_else (if pu.use_https then 443 else 80)) pu.use_https pu.host rm

@@ -1,4 +1,5 @@
 concur.atomic_access
+fuzion.runtime.check_fault
 fuzion.runtime.contract_fault
 fuzion.runtime.fault
 fuzion.runtime.post_fault

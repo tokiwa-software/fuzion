@@ -90,7 +90,7 @@ public mail is
 
       {
         # 2.1.1.  Line Length Limits, see https://datatracker.ietf.org/doc/html/rfc5322#section-2.1.1
-        String.join (text.lines.flat_map (.chunk 78)) "\n"
+        String.join_lines (text.lines.flat_map (.chunk 78))
       }
       .
       """.replace "\n" "\r\n"
@@ -113,7 +113,6 @@ public mail is
     write_or_cause(LM type : mutate, s String) =>
       (io.buffered LM).writer.env
         .write s.utf8
-        .error
         .or_cause unit (x -> error "while writing $s, got $x")
       (io.buffered LM).writer.env
         .flush

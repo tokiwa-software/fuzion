@@ -134,13 +134,13 @@ public class NumericValue extends Value
   /**
    * The DFA instance we are working with.
    */
-  DFA _dfa;
+  final DFA _dfa;
 
 
   /**
    * The value cast to long, null if not known.
    */
-  Long _value;
+  final Long _value;
 
 
   /*---------------------------  constructors  ---------------------------*/
@@ -214,34 +214,12 @@ public class NumericValue extends Value
         if (CHECKS) check
           (_clazz == nv._clazz);
 
-        var r =
-          _value == null || nv._value == null ||
-          switch (_dfa._fuir.getSpecialClazz(_clazz))
-          {
-          case c_i8   -> i8 () == nv.i8 ();
-          case c_i16  -> i16() == nv.i16();
-          case c_i32  -> i32() == nv.i32();
-          case c_i64  -> i64() == nv.i64();
-          case c_u8   -> u8 () == nv.u8 ();
-          case c_u16  -> u16() == nv.u16();
-          case c_u32  -> u32() == nv.u32();
-          case c_u64  -> u64() == nv.u64();
-          case c_f32  -> f32() == nv.f32();  // NYI: check if this is correct for NaN etc.
-          case c_f64  -> f64() == nv.f64();  // NYI: check if this is correct for NaN etc.
-          default -> false;
-          };
-        if (r)
-          {
-            return this;
-          }
-        else if (_clazz == nv._clazz)
-          {
-            return create(_dfa, _clazz);
-          }
-        else
-          {
-            return super.joinInstances(dfa, v, clazz);
-          }
+        // this may mean that different NaNs are not put together, but IMHO okay
+        return _value == null || _value == nv._value
+          ? this
+          : nv._value == null
+          ? nv
+          : create(_dfa, _clazz);
       }
     else if (v instanceof ValueSet)
       {
@@ -251,6 +229,18 @@ public class NumericValue extends Value
       {
         return super.joinInstances(dfa, v, clazz);
       }
+  }
+
+
+  /**
+   * Does this Value cover the values in other?
+   */
+  @Override boolean contains(Value other)
+  {
+    if (PRECONDITIONS) require
+      (_clazz == other._clazz);
+
+    return _value == null;
   }
 
 

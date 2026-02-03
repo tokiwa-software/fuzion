@@ -111,7 +111,7 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
 
   # shift operations (unsigned)
   public fixed redef infix >> (other u128) u128 =>
-    n := other.as_u64  # NYI: other should be of type u32
+    n := other.as_u64
     if n ≥ u64 128
       u128 0 0
     else if n ≥ u64 64
@@ -122,7 +122,7 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
       u128.this
 
   public fixed redef infix << (other u128) u128 =>
-    n := other.as_u64  # NYI: other should be of type u32
+    n := other.as_u64
     if n ≥ u64 128
       u128 0 0
     else if n ≥ u64 64
@@ -206,6 +206,9 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
   public low64bits u64 => lo
 
   public cast_to_i128 i128 => i128 hi.cast_to_i64 lo
+
+  # conversion to float
+  public as_f64 f64 => hi.as_f64 * (2.as_f64**64.as_f64) + lo.as_f64
 
 
   # create hash code from this number

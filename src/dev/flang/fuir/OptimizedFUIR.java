@@ -200,13 +200,14 @@ public class OptimizedFUIR extends GeneratingFUIR {
                 clazzOriginalName(cl),
                 clazzActualGenerics(cl),
                 lookupCall(cl),
-                lookup_static_finally(cl),
+                lookupStaticFinally(cl),
                 clazzKind(cl) == FeatureKind.Routine ? lifeTime(cl) : null,
                 clazzTypeName(cl),
                 clazzAsStringHuman(cl),
                 clazzSrcFile(cl),
                 clazzDeclarationPos(cl).bytePos(),
-                lookupJavaRef(cl)
+                lookupJavaRef(cl),
+                lookupCause(cl)
                 );
           }
         oos.writeObject(clazzes);
@@ -214,13 +215,10 @@ public class OptimizedFUIR extends GeneratingFUIR {
         var sites = new SiteRecord[siteCount];
         for (int s = SITE_BASE; s < SITE_BASE+siteCount; s++)
           {
-              var s0 = s;
               var accessedClazz =
-                invalidSite(s) || !(codeAt(s) == ExprKind.Call || codeAt(s) == ExprKind.Assign)
+                invalidSite(s) || !(codeAt(s) == ExprKind.Call || codeAt(s) == ExprKind.Assign) || accessedClazz(s) > lastClazz
                   ? NO_CLAZZ
-                  : accessedClazz(s0) > lastClazz
-                  ? NO_CLAZZ
-                  : accessedClazz(s0);
+                  : accessedClazz(s);
 
               sites[s-SITE_BASE] = new SiteRecord(
                   clazzAt(s),
@@ -234,19 +232,19 @@ public class OptimizedFUIR extends GeneratingFUIR {
                   invalidSite(s) || !(codeAt(s) == ExprKind.Call || codeAt(s) == ExprKind.Assign) ? NO_CLAZZ : accessTargetClazz(s),
                   invalidSite(s) || codeAt(s) != ExprKind.Tag ? NO_CLAZZ : tagValueClazz(s),
                   invalidSite(s) || codeAt(s) != ExprKind.Assign ? NO_CLAZZ : assignedType(s),
-                  invalidSite(s) || codeAt(s) != ExprKind.Box ? NO_CLAZZ : boxValueClazz(s0),
-                  invalidSite(s) || codeAt(s) != ExprKind.Box ? NO_CLAZZ : boxResultClazz(s0),
-                  invalidSite(s) || codeAt(s) != ExprKind.Match ? NO_CLAZZ : matchStaticSubject(s0),
-                  invalidSite(s) ? NO_SITE : codeAt(s) == ExprKind.Match ? matchCaseCount(s) : NO_CLAZZ,
+                  invalidSite(s) || codeAt(s) != ExprKind.Box ? NO_CLAZZ : boxValueClazz(s),
+                  invalidSite(s) || codeAt(s) != ExprKind.Box ? NO_CLAZZ : boxResultClazz(s),
+                  invalidSite(s) || codeAt(s) != ExprKind.Match ? NO_CLAZZ : matchStaticSubject(s),
+                  invalidSite(s) ? NO_SITE : codeAt(s) == ExprKind.Match ? matchCaseCount(s) : -1,
                   invalidSite(s) ? null : codeAt(s) == ExprKind.Match ? matchCaseTags(s) : null,
                   invalidSite(s) ? null : codeAt(s) == ExprKind.Match ? matchCaseCode(s) : null,
                   invalidSite(s) || codeAt(s) != ExprKind.Tag ? NO_CLAZZ : tagNewClazz(s),
-                  invalidSite(s) || codeAt(s) != ExprKind.Tag ? NO_SITE : tagTagNum(s),
+                  invalidSite(s) || codeAt(s) != ExprKind.Tag ? -1 : tagTagNum(s),
                   invalidSite(s) || codeAt(s) != ExprKind.Match ? null : matchCaseFields(s),
                   invalidSite(s) || !(codeAt(s) == ExprKind.Assign || codeAt(s) == ExprKind.Call) ? false : accessIsDynamic(s),
                   invalidSite(s) || sitePos(s) == null ? null : sitePos(s)._sourceFile._fileName.toString(),
-                  invalidSite(s) || sitePos(s) == null ? NO_SITE : sitePos(s).line(),
-                  invalidSite(s) || sitePos(s) == null ? NO_SITE : sitePos(s).column(),
+                  invalidSite(s) || sitePos(s) == null ? -1 : sitePos(s).line(),
+                  invalidSite(s) || sitePos(s) == null ? -1 : sitePos(s).column(),
                   invalidSite(s) || sitePos(s) == null ? null : sitePos(s).show()
                 );
           }

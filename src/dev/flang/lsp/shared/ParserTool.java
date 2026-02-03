@@ -29,25 +29,10 @@ package dev.flang.lsp.shared;
 import java.io.File;
 import java.net.URI;
 import java.util.List;
-import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Stream;
 
-import dev.flang.ast.AbstractAssign;
-import dev.flang.ast.AbstractCall;
-import dev.flang.ast.AbstractCase;
 import dev.flang.ast.AbstractFeature;
-import dev.flang.ast.AbstractMatch;
-import dev.flang.ast.AbstractType;
-import dev.flang.ast.Block;
-import dev.flang.ast.Call;
-import dev.flang.ast.Expr;
-import dev.flang.ast.Feature;
-import dev.flang.ast.FeatureVisitor;
-import dev.flang.ast.Function;
-import dev.flang.ast.Impl;
-import dev.flang.ast.InlineArray;
-import dev.flang.ast.This;
 import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
 import dev.flang.fe.FrontEnd;
@@ -70,9 +55,7 @@ public class ParserTool extends ANY
    * maps temporary files which are fed to the parser to their original uri.
    */
   // NYI: UNDER DEVELOPMENT: fix memory leak
-  private static TreeMap<String, URI> tempFile2Uri = new TreeMap<>();
-
-  private static final int END_OF_FEATURE_CACHE_MAX_SIZE = 1;
+  private static final TreeMap<String, URI> tempFile2Uri = new TreeMap<>();
 
   private static List<String> _modules = List.<String>of();
 
@@ -81,13 +64,7 @@ public class ParserTool extends ANY
     _modules = modules;
   }
 
-  private static ParserCache parserCache = new ParserCache();
-
-  /**
-   * LRU-Cache holding end of feature calculations
-   */
-  private static final Map<AbstractFeature, SourcePosition> EndOfFeatureCache =
-    Util.threadSafeLRUMap(END_OF_FEATURE_CACHE_MAX_SIZE, null);
+  private static final ParserCache parserCache = new ParserCache();
 
   /**
    * NYI: UNDER DEVELOPMENT: in the case of uri to stdlib  we need context
@@ -131,12 +108,11 @@ public class ParserTool extends ANY
         /* dumpModules             */ new dev.flang.util.List<String>(),
         /* fuzionDebugLevel        */ 1,
         /* fuzionSafety            */ true,
-        /* enableUnsafeIntrinsics  */ true,
         /* sourceDirs              */ isStdLib ? new dev.flang.util.List<String>(uri.getRawPath().substring(0,uri.getRawPath().indexOf("/lib/")) + "/lib") : new dev.flang.util.List<String>(),
         /* readStdin               */ false,
         /* executeCode             */ null,
         /* main                    */ isStdLib ? null : tempFile.getAbsolutePath(),
-        /* moduleName              */ "main",
+        /* moduleName              */ FuzionConstants.MAIN_MODULE_NAME,
         /* loadSources             */ true,
         /* needsEscapeAnalysis     */ false,
         /* serializeFuir           */ false,
@@ -217,74 +193,17 @@ public class ParserTool extends ANY
    */
   public static SourcePosition endOfFeature(AbstractFeature feature)
   {
-    if (PRECONDITIONS)
-      require(!feature.pos().isBuiltIn());
+    var result = feature.isRoutine()
+      ? endPos(feature.code().sourceRange())
+      : endPos(feature.sourceRange());
 
-    if (feature.featureName().baseName().equals(FuzionConstants.RESULT_NAME))
-      {
-        return endOfFeature(feature.outer());
-      }
-    // NYI: UNDER DEVELOPMENT: replace by real end of feature once we have this information in the
-    // AST
-    // NOTE: since this is a very expensive calculation and frequently used we
-    // cache this
-    return EndOfFeatureCache.computeIfAbsent(feature, af -> {
-      if (FeatureTool.isArgument(af))
-        {
-          return LexerTool.endOfToken(af.pos());
-        }
-      if (!af.isUniverse() && FeatureTool.isOfLastFeature(af))
-        {
-          return new SourcePosition(af.pos()._sourceFile, af.pos()._sourceFile.byteLength());
-        }
 
-      var visitor = new FeatureVisitor() {
-        public SourcePosition lastPos = SourcePosition.notAvailable;
-        private void FoundPos(SourcePosition visitedPos)
-        {
-          if (visitedPos != null)
-            {
-              lastPos = SourcePositionTool.compare(lastPos, visitedPos) >=0 ? lastPos : visitedPos;
-            }
-        }
-        @Override public void         action      (AbstractAssign a) { FoundPos(a.pos()); }
-        @Override public void         actionBefore(Block          b) { FoundPos(b.pos()); }
-        @Override public void         actionAfter (Block          b) { FoundPos(b.pos()); }
-        @Override public void         action      (AbstractCall   c) { FoundPos(c.pos()); }
-        @Override public Expr         action      (Call           c) { FoundPos(c.pos()); return c; }
-        @Override public void         actionBefore(AbstractCase   c, AbstractMatch m) { FoundPos(c.pos()); }
-        @Override public void         actionAfter (AbstractCase   c, AbstractMatch m) { FoundPos(c.pos()); }
-        @Override public Expr         action      (Feature        f, AbstractFeature outer) { FoundPos(f.pos()); return f; }
-        @Override public Expr         action      (Function       f) { FoundPos(f.pos()); return f; }
-        @Override public void         action      (Impl           i) { FoundPos(i.pos); }
-        @Override public Expr         action      (InlineArray    i) { FoundPos(i.pos()); return i; }
-        @Override public void         action      (AbstractMatch  m) { FoundPos(m.pos()); }
-        @Override public Expr         action      (This           t) { FoundPos(t.pos()); return t; }
-        @Override public AbstractType action      (AbstractType   t) { FoundPos(t.declarationPos()); return t; }
-      };
-      if (af instanceof Feature f)
-        {
-          f.visit(visitor);
-        }
-      af.visitCode(visitor);
+    return result;
+  }
 
-      var result = visitor.lastPos.equals(SourcePosition.notAvailable) ? af.pos() : visitor.lastPos;
-
-      result = (SourcePosition) LexerTool
-          .tokensFrom(result)
-          .skip(1)
-          // NYI: UNDER DEVELOPMENT: do we need to sometimes consider right brackets as well?
-          .filter(t -> !(t.isWhitespace()))
-          // t is the first token not belonging to feature
-          .map(t -> LexerTool.goLeft(t.start()))
-          .findFirst()
-          .orElse(result);
-
-      if (POSTCONDITIONS)
-        ensure(af.pos().line() < result.line()
-          || (af.pos().line() == result.line() && af.pos().column() < result.column()));
-      return result;
-    });
+  private static SourcePosition endPos(SourcePosition pos)
+  {
+    return new SourcePosition(pos._sourceFile, pos.byteEndPos());
   }
 
   public static Stream<Errors.Error> warnings(URI uri)
