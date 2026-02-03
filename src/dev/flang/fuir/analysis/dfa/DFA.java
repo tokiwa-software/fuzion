@@ -328,8 +328,6 @@ public class DFA extends ANY
      */
     Val access0(int s, Val tvalue, List<Val> args, int cc, Val original_tvalue /* NYI: ugly */)
     {
-      var cs = DFA.this.site(s);
-      cs._accesses.add(cc);
       var isCall = _fuir.codeAt(s) == FUIR.ExprKind.Call;
       Val r;
       if (isCall)
