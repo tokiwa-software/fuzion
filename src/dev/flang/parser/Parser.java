@@ -98,24 +98,6 @@ public class Parser extends Lexer
   public static boolean ENABLE_SET_KEYWORD = false;
 
   /**
-   * contains the last line number in which an `if` was found,
-   * required to set the semicolon state for the ambiguous semicolon error
-   */
-  private int _lastIfLine = -1;             // NYI: CLEANUP: state in parser should be avoided see #4991
-
-  /**
-   * SourcePosition of the outer `else`, null if not in `else` block
-   * required for proper alignment of `if`, `then`, `else` and `else if`
-   */
-  private SourcePosition _outerElse = null; // NYI: CLEANUP: state in parser should be avoided see #4991
-
-  /**
-   * SourcePosition of the outer `then`, null if not in `then` block or keyword `then` is not used
-   * required for proper alignment of `if`, `then`, `else` and `else if`
-   */
-  private SourcePosition _then = null;      // NYI: CLEANUP: state in parser should be avoided see #4991
-
-  /**
    * Are we parsing for the language server and thus need to
    * be more tolerant for incomplete source code?
    */
@@ -243,16 +225,14 @@ semiOrFlatLF: semi
             ;
 
    */
-  boolean semiOrFlatLF()
+  void semiOrFlatLF()
   {
     int last = lastTokenPos();
-    boolean result = last >= 0 && lineNum(last) != lineNum(tokenPos());
-    if (!result)
+    if (last < 0 || lineNum(last) == lineNum(tokenPos()))
       {
         match(Token.t_semicolon, "semicolon or flat line break");
       }
     semi();
-    return result;
   }
 
 
@@ -1573,6 +1553,24 @@ actualArgs  : actualSpaces
 
 
   /**
+   * Replace Tokens t_*Limit by t_eof.
+   */
+  Token limitToEOF(Token t)
+  {
+    return switch (t)
+      {
+      case t_indentationLimit,
+           t_lineLimit       ,
+           t_spaceOrSemiLimit,
+           t_commaLimit      ,
+           t_colonLimit      ,
+           t_barLimit        -> Token.t_eof;
+      default                -> t;
+      };
+  }
+
+
+  /**
    * Does the current symbol end a list of space separated actual arguments to a
    * call.
    *
@@ -1598,7 +1596,7 @@ actualArgs  : actualSpaces
       //   (f a b c).xyz
       //
 
-      switch (current(atMinIndent))
+      switch (limitToEOF(current(atMinIndent)))
       {
       case t_semicolon       ,
            t_comma           ,
@@ -1621,12 +1619,6 @@ actualArgs  : actualSpaces
            t_stringBQ        ,
            t_stringBB        ,
            t_question        ,
-           t_indentationLimit,
-           t_lineLimit       ,
-           t_spaceOrSemiLimit,
-           t_commaLimit      ,
-           t_colonLimit      ,
-           t_barLimit        ,
            t_eof             -> true;
 
       case t_op            ->
@@ -2493,16 +2485,11 @@ brblock     : BRACEL exprs BRACER
    */
   boolean endOfExprs()
   {
-    return switch (currentAtMinIndent())
+    var t = limitToEOF(currentAtMinIndent());
+    return switch (t)
       {
       case
         t_comma,
-        t_indentationLimit,
-        t_lineLimit,
-        t_spaceOrSemiLimit,
-        t_commaLimit,
-        t_colonLimit,
-        t_barLimit,
         t_rbrace,
         t_rparen,
         t_rbracket,
@@ -2510,7 +2497,7 @@ brblock     : BRACEL exprs BRACER
         t_then,
         t_else,
         t_eof -> true;
-      default -> isContinuedString(currentNoLimit());
+      default -> isContinuedString(t);
       };
   }
 
@@ -2518,7 +2505,7 @@ brblock     : BRACEL exprs BRACER
   /**
    * Parse exprs
    *
-exprs       : expr semiOrFlatLF exprs (semiOrFlatLF | )
+exprs       : expr semiOrFlatLF exprs
             |
             ;
    */
@@ -2708,9 +2695,9 @@ loop        : loopProlog loopBody loopEpilog
             |            loopBody
             | loopProlog          loopEpilog
             ;
-loopProlog  : indexVars "variant" exprInLine
-            | indexVars
-            |           "variant" exprInLine
+loopProlog  : "for" indexVars "variant" exprInLine
+            | "for" indexVars
+            |                 "variant" exprInLine
             ;
 loopBody    : "while" exprInLine      block
             | "while" exprInLine "do" block
@@ -2734,7 +2721,7 @@ loopEpilog  : "until" exprInLine thenPart elseBlockOpt
         var old = setMinIndent(tokenPos());
         List<Feature> indexVars  = new List<>();
         List<Feature> nextValues = new List<>();
-        var hasFor   = current() == Token.t_for; if (hasFor) { indexVars(indexVars, nextValues); }
+        var hasFor   = skip(true, Token.t_for    ); if (hasFor) { indexVars(indexVars, nextValues); }
         var hasVar   = skip(true, Token.t_variant); var v   = hasVar              ? exprInLine()   : null;
                                                     var i   = hasFor || v != null ? invariant()    : null;
         var hasWhile = skip(true, Token.t_while  ); var w   = hasWhile            ? exprInLine()   : null;
@@ -2765,19 +2752,46 @@ loopEpilog  : "until" exprInLine thenPart elseBlockOpt
 
 
   /**
-   * Parse IndexVars
+   * As long as this is false and we make progress, we try to parse more
+   * expressions within exprs.
+   */
+  boolean endOfIndexVars()
+  {
+    return switch (limitToEOF(current(true)))
+      {
+      case
+        t_comma,
+        t_rbrace,
+        t_rparen,
+        t_rbracket,
+        t_variant,
+        t_while,
+        t_do,
+        t_until,
+        t_else,
+        t_eof -> true;
+      default -> false;
+      };
+  }
+
+
+  /**
+   * Parse indexVars
    *
-indexVars   : "for" indexVar (semi indexVars)
+indexVars   : indexVar (semiOrFlatLF indexVars)
+            |
             ;
    */
   void indexVars(List<Feature> indexVars, List<Feature> nextValues)
   {
-    match(Token.t_for, "indexVars");
     var in = new Indentation();
-    while (isIndexVarPrefix() && in.ok())
+    while (!endOfIndexVars() && in.ok())
       {
         indexVar(indexVars, nextValues);
-        semi();
+        if (!endOfIndexVars())
+          {
+            semiOrFlatLF();
+          }
         in.next();
       }
     in.end();
@@ -2866,18 +2880,18 @@ nextValue   : COMMA exprInLine
    */
   Expr ifexpr()
   {
-    return ifexpr(false);
+    return ifexpr(null);
   }
 
   /**
    * Parse ifexpr
    *
-   * @param elif is this part of an `else if`
+   * @param outerElse is this part of an `else if`, the position of `else`, otherwise `null`.
    *
 ifexpr      : "if" exprInLine thenPart elseBlockOpt
             ;
    */
-  Expr ifexpr(boolean elif)
+  Expr ifexpr(SourcePosition outerElse)
   {
     var surroundingIf = surroundingIf();
     var surroundingLoop = surroundingLoop();
@@ -2885,35 +2899,39 @@ ifexpr      : "if" exprInLine thenPart elseBlockOpt
         var pos = tokenSourcePos();
         surroundingIf(pos);
 
-        var oldMinIdent = elif ? null : setMinIndent(tokenPos());
+        var oldMinIdent = outerElse!=null ? null : setMinIndent(tokenPos()); // NYI: why?
 
-        boolean nestedIf = _lastIfLine == line();
-        _lastIfLine = line();
+        var l = line();
+        boolean nestedIf = surroundingIf != null && surroundingIf.line() == l;
 
         match(Token.t_if, "ifexpr");
 
         Expr e = exprInLine();
 
         // semi error if in same line
-        if (nestedIf && _lastIfLine == line()) {semiState(SemiState.ERROR);}
-        Block b = thenPart(false);
+        if (nestedIf && l == line()) {semiState(SemiState.ERROR);}
+
+        var thn = current(true) == Token.t_then ? tokenSourcePos() : null;
+        var b = thenPart(false);
 
         // reset if new line
-        if (nestedIf && _lastIfLine != line()) {semiState(SemiState.CONTINUE);}
+        if (nestedIf && l != line()) {semiState(SemiState.CONTINUE);}
 
         var elPos = tokenSourcePos();
 
         // don't use 'if' as indentation reference if 'then' is indented less (e.g. when 'then' is aligned with 'else if')
-        var ifPos = _then != null && pos.column() > _then.column() ? null : pos;
+        var ifPos = thn != null && pos.column() > thn.column() ? null : pos;
 
         // if not in the same line, 'else' must be aligned with either 'if', 'then' or 'else if'
         if (currentAtMinIndent() == Token.t_else && !(
-            (_then != null      && (_then.line()      == elPos.line() || _then.column()      == elPos.column())) ||
-            (_outerElse != null && (_outerElse.line() == elPos.line() || _outerElse.column() == elPos.column())) ||
-            (ifPos != null      && (ifPos.line()      == elPos.line() || ifPos.column()      == elPos.column())))
+            (thn != null       && (thn.line(  )     == elPos.line() || thn.column()       == elPos.column())) ||
+            (outerElse != null && (outerElse.line() == elPos.line() || outerElse.column() == elPos.column())) ||
+            (ifPos != null     && (ifPos.line()     == elPos.line() || ifPos.column()     == elPos.column())))
            )
           {
-            var errPos = (ifPos != null) ? ifPos : (_outerElse != null) ? _outerElse : _then;
+            var errPos = ifPos     != null ? ifPos     :
+                         outerElse != null ? outerElse
+                                           : thn;
 
             Errors.indentationProblemEncountered(tokenSourcePos(), errPos,
               "When " + Errors.skw("else") + " is not in the same line as " + Errors.skw("if")
@@ -2943,17 +2961,13 @@ thenPart    : "then" block
             |        block
             ;
    */
-  Block thenPart(boolean emptyBlockIfNoBlockPresent)
+  Block thenPart(/* NYI: ClEANUP: remove this argument, a `null` result is used only in Loop to create a default result which is being removed */
+                 boolean nullIfNothing)
   {
     var p = tokenPos();
-    _then = tokenSourcePos();
-    var hasThen = skip(true, Token.t_then);
-    if (!hasThen)
-      {
-        _then = null;
-      }
+    skip(true, Token.t_then);
     var result = block();
-    return emptyBlockIfNoBlockPresent && p == tokenPos() ? null : result;
+    return nullIfNothing && p == tokenPos() ? null : result;
   }
 
 
@@ -3009,10 +3023,7 @@ elseBlock   : "else" block    // must not follow several if/loops in single line
       ((thisIf != null) != (thisLoop != null));  // either thisIf or thisLoop is non-null
 
     Block result = null;
-    SourcePosition oldOuterElse = _outerElse;
     var pos = tokenSourcePos();
-    _outerElse = pos;
-
     var elseLine = pos.line();
     if (skip(true, Token.t_else))
       {
@@ -3025,20 +3036,13 @@ elseBlock   : "else" block    // must not follow several if/loops in single line
         // otherwise it is a normal else block that might contain an `if`
         if (thisIf != null && current() == Token.t_if && elseLine == tokenSourcePos().line())
           {
-            result = new Block(false, new List<Expr>(ifexpr(true)));
+            result = new Block(false, new List<Expr>(ifexpr(pos)));
           }
         else
           {
-            _outerElse = null;
             result = block();
           }
       }
-    else
-      {
-        _outerElse = null;
-      }
-
-    _outerElse = oldOuterElse;
 
     if (POSTCONDITIONS) ensure
       (result == null          ||

@@ -224,6 +224,8 @@ int fzE_socket(int family, int type, int protocol){
   if (sockfd != -1)
   {
     fcntl(sockfd, F_SETFD, FD_CLOEXEC);
+    // NYI: UNDER DEVELOPMENT: we need fzE_setsocketopt eventually
+    setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int));
   }
 
   fzE_unlock();
