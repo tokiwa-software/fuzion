@@ -954,8 +954,11 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     else
       {
         result = applyTypePars_(target);
-        _appliedTypeParsCachedFor1 = target;
-        _appliedTypeParsCache = result;
+        if (result != Types.t_UNDEFINED)
+          {
+            _appliedTypeParsCachedFor1 = target;
+            _appliedTypeParsCache = result;
+          }
       }
 
     if (POSTCONDITIONS) ensure
@@ -1035,10 +1038,13 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     else
       {
         result = applyTypePars_(f, actualGenerics);
-        _appliedTypePars2CachedFor1 = f;
-        _appliedTypePars2CachedFor2 = actualGenerics;
-        actualGenerics.freeze();
-        _appliedTypePars2Cache = result;
+        if (result != Types.t_UNDEFINED)
+          {
+            _appliedTypePars2CachedFor1 = f;
+            _appliedTypePars2CachedFor2 = actualGenerics;
+            actualGenerics.freeze();
+            _appliedTypePars2Cache = result;
+          }
       }
 
     if (POSTCONDITIONS) ensure
