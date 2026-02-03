@@ -448,16 +448,13 @@ public abstract class Module extends ANY implements FeatureLookup
           .toArray(Module[]::new);
 
         // first we search in additional modules
-        if (outer instanceof LibraryFeature)
+        for (Module libraryModule : modules)
           {
-            for (Module libraryModule : modules)
+            for (var e : libraryModule.declaredFeatures(outer).entrySet())
               {
-                for (var e : libraryModule.declaredFeatures(outer).entrySet())
-                  {
-                    addDeclaredOrInherited(s, outer, e.getKey(), e.getValue());
-                  }
-                libraryModule.findInheritedFeatures(s, outer, selfAndModules);
+                addDeclaredOrInherited(s, outer, e.getKey(), e.getValue());
               }
+            libraryModule.findInheritedFeatures(s, outer, selfAndModules);
           }
 
         // then we search in this module
