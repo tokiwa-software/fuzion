@@ -1041,7 +1041,7 @@ public class DFA extends ANY
    * id, Value._envId, and they are compared differently using
    * Value.ENV_COMPARATOR to avoid env value explosion.
    */
-  TreeMap<Value, Value> _envValues = new TreeMap<>(Value.ENV_COMPARATOR);  TreeSet<Integer> _calledClazzesDuringPrePhase = new TreeSet<>();
+  TreeMap<Value, Value> _envValues = new TreeMap<>(Value.ENV_COMPARATOR);
 
 
   /**
