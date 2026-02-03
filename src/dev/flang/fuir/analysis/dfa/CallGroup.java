@@ -174,13 +174,6 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
    */
   public CallGroup(DFA dfa, int cc, int site, Value target)
   {
-    if (dfa._real && !dfa._calledClazzesDuringPrePhase.contains(cc) && !true /* NYI! */)
-      {
-        System.out.println("PROBLE FOR "+dfa._fuir.clazzAsString(cc));
-      }
-    if (PRECONDITIONS) require
-      (!dfa._real || dfa._calledClazzesDuringPrePhase.contains(cc) || true /* NYI! */);
-
     _dfa = dfa;
     _cc = cc;
     _site = site;
@@ -243,7 +236,6 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
     if (PRECONDITIONS) require
       (!_dfa._real);
 
-    _dfa._calledClazzesDuringPrePhase.add(_cc);
     for (var e : _usedEffects)
       {
         if (_mayHaveEffects.contains(e))
