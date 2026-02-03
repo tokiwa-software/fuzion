@@ -1366,6 +1366,9 @@ public class Call extends AbstractCall
    */
   protected AbstractType getActualResultType(Resolution res, Context context, boolean urgent)
   {
+    if (PRECONDITIONS) require
+      (res != null);
+
     AbstractType result;
     if (isTailRecursive(context.outerFeature()) || _recursiveResolveType)
       {
@@ -1403,9 +1406,15 @@ public class Call extends AbstractCall
             setToErrorState();
           }
 
+        var tt = targetType(res, context);
+        if (urgent && !tt.isGenericArgument())
+          {
+            res.resolveTypes(tt.feature());
+          }
+
         result = result == null
           ? result
-          : adjustResultType(res, context, result);
+          : adjustResultType(res, context, result , tt);
       }
 
     // see test #5391 when this might happen
@@ -1426,14 +1435,18 @@ public class Call extends AbstractCall
    * 5) handle special cases: calling a type parameters, type_as_value, outer refs, constructors
    * 6) replace type parameters of cotype origin: e.g. equatable_sequence.T -> equatable_sequence.type.T
    *
+   * @param res the resolution instance.
+   *
+   * @param context the source code context where this Call is used
+   *
    * @param rt the raw result type
+   *
+   * @param tt the target type
    *
    * @return The actual result type of the call
    */
-  private AbstractType adjustResultType(Resolution res, Context context, AbstractType rt)
+  private AbstractType adjustResultType(Resolution res, Context context, AbstractType rt, AbstractType tt)
   {
-    var tt = targetType(res, context);
-
     // NYI: CLEANUP: There is some overlap between Call.adjustResultType,
     // Call.actualArgType and AbstractType.genericsAssignable, might be nice to
     // consolidate this (i.e., bring the calls to applyTypePars / adjustThisType
