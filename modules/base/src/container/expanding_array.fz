@@ -210,7 +210,7 @@ is
   #
   # Complexity: O(1)
   #
-  public type.empty container.expanding_array T
+  public fixed type.empty container.expanding_array T
   =>
     empty default_capacity
 
@@ -221,7 +221,7 @@ is
   #
   # Complexity: O(1)
   #
-  public type.empty(initial_capacity i32) container.expanding_array T
+  public fixed type.empty(initial_capacity i32) container.expanding_array T
     pre
       debug: initial_capacity >= 0
   =>
