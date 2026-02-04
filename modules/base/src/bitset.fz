@@ -107,7 +107,7 @@ is
 
   # an empty bitset
   #
-  public type.empty bitset => nil
+  public fixed type.empty bitset => nil
 
   # monoid of bitset with infix ∪ operation.
   #

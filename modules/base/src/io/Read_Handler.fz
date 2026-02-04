@@ -35,7 +35,7 @@ public Read_Handler ref is
 
   # Read_Handler that only ever returns end_of_file
   #
-  public type.empty io.Read_Handler =>
+  public fixed type.empty io.Read_Handler =>
     _ : io.Read_Handler is
       public redef read(c i32) choice (Sequence u8) io.end_of_file error => io.end_of_file
 
