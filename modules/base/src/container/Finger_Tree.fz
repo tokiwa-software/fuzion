@@ -30,29 +30,28 @@
 #
 private:public Finger_Tree(T type) ref : container.abstract_array T is
 
+  # prepend seq to this Finger_Tree
+  #
+  # NYI: ENHANCEMENT: merge if seq is also a Finger_Tree
+  #
   public prepend(seq Sequence T) container.Finger_Tree T => abstract
+
+  # append seq to this Finger_Tree
+  #
+  # NYI: ENHANCEMENT: merge if seq is also a Finger_Tree
+  #
   public append (seq Sequence T) container.Finger_Tree T => abstract
 
-  left  option (Sequence T, container.Finger_Tree T) => abstract
-  right option (container.Finger_Tree T, Sequence T) => abstract
-
-  public type.empty container.Finger_Tree T => container.empty T
-
-  as_deep deep T => panic "bug!"
-
-  public redef concat (s Sequence T) Sequence T =>
-    append s.as_array_backed
-
-
-  nth0(n i32) option T => abstract
-
-
-  # get the contents of this array at the given index
+  # an empty Finger_Tree
   #
-  public redef index [ ] (i idx) T
-  =>
-    nth0 i.as_i32 .val
+  public fixed type.empty container.Finger_Tree T => container.empty T
 
+  # concat s to the Finger_Tree
+  #
+  public redef concat (s Sequence T) Sequence T =>
+    # NYI: ENHANCEMENT: merge if s is also a Finger_Tree
+    #
+    append s.as_array_backed
 
 
 
@@ -62,9 +61,7 @@ empty(T type) : container.Finger_Tree T is
   public redef length i32 => 0
   public redef prepend(seq Sequence T) container.Finger_Tree T => single T seq
   public redef append (seq Sequence T) container.Finger_Tree T => single T seq
-  redef left  option (Sequence T, container.Finger_Tree T) => nil
-  redef right option (container.Finger_Tree T, Sequence T) => nil
-  redef nth0(n i32) option T => nil
+  public redef index [ ] (i idx) T => panic "illegal unless debug turned off"
   module redef as_finger_tree option (container.Finger_Tree T) => container.empty T
 
 
@@ -76,11 +73,7 @@ single(T type, data Sequence T) : container.Finger_Tree T is
     deep (container.hand [seq]) (empty T) (container.hand [data])
   public redef append (seq Sequence T) container.Finger_Tree T =>
     deep (container.hand [data]) (empty T) (container.hand [seq])
-  redef left  option (Sequence T, container.Finger_Tree T) =>
-    (data, (container.Finger_Tree T).empty)
-  redef right option (container.Finger_Tree T, Sequence T) =>
-    ((container.Finger_Tree T).empty, data)
-  redef nth0(n i32) option T => data.nth n
+  public redef index [ ] (i idx) T => data[i]
   module redef as_finger_tree option (container.Finger_Tree T) => container.single data
 
 
@@ -121,28 +114,6 @@ deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.ha
       deep lft ft (rght.append seq)
 
 
-  redef left  option (Sequence T, container.Finger_Tree T) =>
-    if lft.finger.count = 1
-      match ft.left
-        nil => (lft.finger[0], from_sequence rght.finger)
-        l (Sequence T, container.Finger_Tree T) =>
-          x,y := l
-          (lft.finger[0], id (container.Finger_Tree T) (deep (container.hand [x]) y rght))
-    else
-      (lft.finger[0], id (container.Finger_Tree T) (deep lft.drop_first ft rght))
-
-
-  redef right option (container.Finger_Tree T, Sequence T) =>
-    if rght.finger.count = 1
-      match ft.right
-        nil => (from_sequence rght.finger, rght.finger[count-1])
-        r (container.Finger_Tree T, Sequence T) =>
-          x,y := r
-          (id (container.Finger_Tree T) (deep lft x (container.hand [y])), rght.finger[count-1])
-    else
-      (id (container.Finger_Tree T) (deep lft ft rght.drop_last), rght.finger[count-1])
-
-
   from_sequence(seq Sequence (Sequence T)) =>
     for r := container.Finger_Tree T .empty, r.append i
         i in seq
@@ -150,15 +121,12 @@ deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.ha
       r
 
 
-  redef as_deep deep T =>
-    deep lft ft rght
-
-
-  redef nth0(n i32) option T =>
+  public redef index [ ] (i idx) T =>
+    n := i.as_i32
     if n < lft.count
       lft.nth n
     else if n < lft.count+ft.count
-      ft.nth (n-lft.count)
+      ft[n-lft.count]
     else
       rght.nth (n-lft.count-ft.count)
 
@@ -183,6 +151,8 @@ is
   public redef count i32 => cnt
 
 
+  # new hand without the first finger
+  #
   drop_first
     pre
       debug 2 : finger.count > 1
@@ -190,6 +160,8 @@ is
     hand (finger.drop 1)
 
 
+  # new hand without the last finger
+  #
   drop_last
     pre
       debug 2 : finger.count > 1
@@ -197,6 +169,8 @@ is
     hand (finger.take finger.count-1)
 
 
+  # new hand with seq prepended
+  #
   prepend(seq Sequence T)
     pre
       debug 2 : finger.count < 4
@@ -210,8 +184,8 @@ is
       hand [seq, finger[0], finger[1], finger[2]]
 
 
-
-
+  # new hand with seq appended
+  #
   append(seq Sequence T)
     pre
       debug 2 : finger.count < 4
@@ -225,9 +199,11 @@ is
       hand [finger[0], finger[1], finger[2], seq]
 
 
-  nth(n i32) option T =>
+  # get the nth element
+  #
+  nth(n i32) T =>
     if n >= cnt
-      nil
+      panic "illegal unless debug turned off"
     else if n < f0cnt
       finger[0][n]
     else if n < f0cnt+f1cnt
