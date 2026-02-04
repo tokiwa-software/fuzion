@@ -17,32 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test dfa_calc_lteq
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-num_testm(N type : num.wrap_around) =>
-  if N.min -° 1 <= 0 then compile_time_panic else unit
-num_testp(N type : num.wrap_around) =>
-  if N.max +° 1 <= 0 then unit else compile_time_panic
-
-
-num_testm i8
-num_testm i16
-num_testm i32
-num_testm i64
-num_testm u8
-num_testm u16
-num_testp u32
-
-# NYI: BUG: these tests do not work yet
-
-# num_testm u32
-# num_testm u64
-# num_testp i8
-# num_testp i16
-# num_testp i32
-# num_testp i64
-# num_testp u8
-# num_testp u16
-# num_testp u64
+override NAME = dfa_calc_lteq_plus
+include ../simple.mk
