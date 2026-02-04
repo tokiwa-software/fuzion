@@ -52,12 +52,6 @@ public class Site extends ANY implements Comparable<Site>
 
 
   /**
-   * set of features accessed at this site.
-   */
-  final TreeSet<Integer> _accesses = new TreeSet<>();
-
-
-  /**
    * Results of analyzing this Site
    */
   private boolean _mayReturn = false;
