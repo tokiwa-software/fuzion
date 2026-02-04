@@ -2075,9 +2075,7 @@ public class DFA extends ANY
     put("u8.type.lteq"                   , cl -> numericLteq(cl) );
     put("u16.type.lteq"                  , cl -> numericLteq(cl) );
     put("u32.type.lteq"                  , cl -> numericLteq(cl) );
-    //NYI: UNDER DEVELOPMENT: e.g. u64.max is represented as -1
-    // numericLteq does not work for this case yet
-    put("u64.type.lteq"                  , cl -> cl._dfa.bool() );
+    put("u64.type.lteq"                  , cl -> numericLteq(cl) );
 
     put("i8.as_i32"                      , cl -> genericNumResult(cl) );
     put("i16.as_i32"                     , cl -> genericNumResult(cl) );
@@ -2449,9 +2447,20 @@ public class DFA extends ANY
   {
     var v0 = (cl._args.get(0).value() instanceof NumericValue nv) ? nv._value : null;
     var v1 = (cl._args.get(1).value() instanceof NumericValue nv) ? nv._value : null;
-    return v0 == null || v1 == null
-      ? cl._dfa.bool()
-      : cl._dfa.boolAsVal(v0 <= v1);
+    var result = cl._dfa.bool();
+    if (v0 != null && v1 != null)
+      {
+        return switch (cl._dfa._fuir.getSpecialClazz(cl._dfa._fuir.clazzArgClazz(cl.calledClazz(), 0)))
+          {
+            case c_i8, c_i16, c_i32, c_i64 -> cl._dfa.boolAsVal(v0 <= v1);
+            case c_u8 -> cl._dfa.boolAsVal(Byte.compareUnsigned(v0.byteValue(), v1.byteValue()) <= 0);
+            case c_u16 -> cl._dfa.boolAsVal(Short.compareUnsigned(v0.shortValue(), v1.shortValue()) <= 0);
+            case c_u32 -> cl._dfa.boolAsVal(Integer.compareUnsigned(v0.intValue(), v1.intValue()) <= 0);
+            case c_u64 -> cl._dfa.boolAsVal(Long.compareUnsigned(v0, v1) <= 0);
+            default -> throw new RuntimeException("missing case impl in numericLteq?");
+          };
+      }
+    return result;
   }
 
 
