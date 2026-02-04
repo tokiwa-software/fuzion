@@ -170,7 +170,16 @@ deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.ha
             r.append t
           .append s.data
       d deep =>
-        deep lft (ft.app2 ([rght.finger, seq, d.lft.finger].flat_map id) d.ft) d.rght
+        # NYI: BUG: triggers ugly case in DFA: deep lft (ft.app2 ([rght.finger, seq, d.lft.finger].flat_map id) d.ft) d.rght
+        x := array rght.finger.count+seq.count+d.lft.finger.count i->
+          if i<rght.finger.count
+            rght.finger[i]
+          else if i<rght.finger.count+seq.count
+            seq[i-rght.finger.count]
+          else
+            d.lft.finger[i-rght.finger.count-seq.count]
+        deep lft (ft.app2 x d.ft) d.rght
+
 
 
   redef modus choice (container.empty T) (container.single T) (container.deep T) => container.deep lft ft rght
