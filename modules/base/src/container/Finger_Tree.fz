@@ -1,0 +1,215 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature Finger_Tree
+#
+# -----------------------------------------------------------------------
+
+
+#
+# The paper introducing the datastructure: https://www.cs.ox.ac.uk/ralf.hinze/publications/FingerTrees.pdf
+# The implementation that was used as inspiration for this port: https://github.com/ledbutter/CSharpFingerTree
+#
+# NYI: UNDER DEVELOPMENT: split0, slice, reverse
+#
+private:public Finger_Tree(T type) ref : container.abstract_array T is
+
+  # prepend seq to this Finger_Tree
+  #
+  # NYI: ENHANCEMENT: merge if seq is also a Finger_Tree
+  #
+  public prepend(seq Sequence T) container.Finger_Tree T => abstract
+
+  # append seq to this Finger_Tree
+  #
+  # NYI: ENHANCEMENT: merge if seq is also a Finger_Tree
+  #
+  public append (seq Sequence T) container.Finger_Tree T => abstract
+
+  # an empty Finger_Tree
+  #
+  public fixed type.empty container.Finger_Tree T => container.empty T
+
+  # concat s to the Finger_Tree
+  #
+  public redef concat (s Sequence T) Sequence T =>
+    # NYI: ENHANCEMENT: merge if s is also a Finger_Tree
+    #
+    append s.as_array_backed
+
+
+
+# an empty finger tree
+#
+empty(T type) : container.Finger_Tree T is
+  public redef length i32 => 0
+  public redef prepend(seq Sequence T) container.Finger_Tree T => single T seq
+  public redef append (seq Sequence T) container.Finger_Tree T => single T seq
+  public redef index [ ] (i idx) T => panic "illegal unless debug turned off"
+  module redef as_finger_tree option (container.Finger_Tree T) => container.empty T
+
+
+# a finger tree with only one item
+#
+single(T type, data Sequence T) : container.Finger_Tree T is
+  public redef length i32 => data.count
+  public redef prepend(seq Sequence T) container.Finger_Tree T =>
+    deep (container.hand [seq]) (empty T) (container.hand [data])
+  public redef append (seq Sequence T) container.Finger_Tree T =>
+    deep (container.hand [data]) (empty T) (container.hand [seq])
+  public redef index [ ] (i idx) T => data[i]
+  module redef as_finger_tree option (container.Finger_Tree T) => container.single data
+
+
+
+# a deep finger tree, the non trivial case of a finger tree
+#
+# consist of two hands, left and right, and another Finger_Tree in the middle
+#
+deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.hand T) : container.Finger_Tree T is
+
+  # cached count of this deep finger tree
+  #
+  cnt := lft.count + ft.count + rght.count
+
+
+  public redef length i32 => cnt
+
+
+  public redef prepend(seq Sequence T) container.Finger_Tree T =>
+    if lft.finger.count = 4
+      x := container.Finger_Tree T .empty
+        .append lft.finger[1]
+        .append lft.finger[2]
+        .append lft.finger[3]
+      deep (container.hand [seq, lft.finger[0]]) (ft.prepend x) rght
+    else
+      deep (lft.prepend seq) ft rght
+
+
+  public redef append (seq Sequence T) container.Finger_Tree T =>
+    if rght.finger.count = 4
+      x := container.Finger_Tree T .empty
+        .append rght.finger[0]
+        .append rght.finger[1]
+        .append rght.finger[2]
+      deep lft (ft.append x) (container.hand [rght.finger[3], seq])
+    else
+      deep lft ft (rght.append seq)
+
+
+  from_sequence(seq Sequence (Sequence T)) =>
+    for r := container.Finger_Tree T .empty, r.append i
+        i in seq
+    else
+      r
+
+
+  public redef index [ ] (i idx) T =>
+    n := i.as_i32
+    if n < lft.count
+      lft.nth n
+    else if n < lft.count+ft.count
+      ft[n-lft.count]
+    else
+      rght.nth (n-lft.count-ft.count)
+
+
+  module redef as_finger_tree option (container.Finger_Tree T) =>
+    container.deep lft ft rght
+
+
+
+# this is called digit in the paper
+#
+hand(T type, finger Sequence (Sequence T)) : property.countable
+  pre
+    debug 2 : 1 <= finger.count <= 4
+    debug 2 : finger.is_array_backed
+is
+  f0cnt := finger[0].count
+  f1cnt := if finger.count < 2 then 0 else finger[1].count
+  f2cnt := if finger.count < 3 then 0 else finger[2].count
+  f3cnt := if finger.count < 4 then 0 else finger[3].count
+  cnt   := f0cnt + f1cnt + f2cnt + f3cnt
+  public redef count i32 => cnt
+
+
+  # new hand without the first finger
+  #
+  drop_first
+    pre
+      debug 2 : finger.count > 1
+  =>
+    hand (finger.drop 1)
+
+
+  # new hand without the last finger
+  #
+  drop_last
+    pre
+      debug 2 : finger.count > 1
+  =>
+    hand (finger.take finger.count-1)
+
+
+  # new hand with seq prepended
+  #
+  prepend(seq Sequence T)
+    pre
+      debug 2 : finger.count < 4
+  =>
+    # NYI: BUG: triggers ugly case in DFA: hand ([[seq], finger].flat_map id).as_array_backed
+    if finger.count = 1
+      hand [seq, finger[0]]
+    else if finger.count = 2
+      hand [seq, finger[0], finger[1]]
+    else
+      hand [seq, finger[0], finger[1], finger[2]]
+
+
+  # new hand with seq appended
+  #
+  append(seq Sequence T)
+    pre
+      debug 2 : finger.count < 4
+  =>
+    # NYI: BUG: triggers ugly case in DFA: hand ([finger, [seq]].flat_map id).as_array_backed
+    if finger.count = 1
+      hand [finger[0], seq]
+    else if finger.count = 2
+      hand [finger[0], finger[1], seq]
+    else
+      hand [finger[0], finger[1], finger[2], seq]
+
+
+  # get the nth element
+  #
+  nth(n i32) T =>
+    if n >= cnt
+      panic "illegal unless debug turned off"
+    else if n < f0cnt
+      finger[0][n]
+    else if n < f0cnt+f1cnt
+      finger[1][n-f0cnt]
+    else if n < f0cnt+f1cnt+f2cnt
+      finger[2][n-f0cnt-f1cnt]
+    else
+      finger[3][n-f0cnt-f1cnt-f2cnt]
+

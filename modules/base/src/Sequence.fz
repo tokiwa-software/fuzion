@@ -448,6 +448,13 @@ is
         .concat Sequence.this
         .concat s
 
+
+  # return this Sequence as a Finger_Tree
+  # or nil if Sequence is not (yet) a Finger_Tree
+  #
+  module as_finger_tree option (container.Finger_Tree T) => nil
+
+
   # infix operand synonym for concat
   #
   public infix ++ (s Sequence T) Sequence T => concat s
