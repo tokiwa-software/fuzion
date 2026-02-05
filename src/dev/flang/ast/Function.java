@@ -340,7 +340,7 @@ public class Function extends AbstractLambda
                       // we must replace `option A` by `option B`, i.e.,
                       // replace original's type parameters by redefinition's:
                       //
-                      .applyTypePars(cl, tps_as_actuals);
+                      .OLDapplyTypePars(cl, tps_as_actuals);
                 if (at == Types.t_UNDEFINED)
                   {
                     t = Types.t_ERROR;
