@@ -202,7 +202,7 @@ public abstract_array
 
       # redefines abstract_array.length for array.
       #
-      public redef length i32 => to-from
+      public redef length i32 := to-from
 
 
       # a slice of a slice, need to adjust from and to args
