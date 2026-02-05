@@ -30,11 +30,13 @@
 #
 private:public Finger_Tree(T type) ref : container.abstract_array T is
 
+
   # prepend seq to this Finger_Tree
   #
   # NYI: ENHANCEMENT: merge if seq is also a Finger_Tree
   #
   public prepend(seq Sequence T) container.Finger_Tree T => abstract
+
 
   # append seq to this Finger_Tree
   #
@@ -42,9 +44,11 @@ private:public Finger_Tree(T type) ref : container.abstract_array T is
   #
   public append (seq Sequence T) container.Finger_Tree T => abstract
 
+
   # an empty Finger_Tree
   #
   public fixed type.empty container.Finger_Tree T => container.empty T
+
 
   # concat s to the Finger_Tree
   #
@@ -54,9 +58,21 @@ private:public Finger_Tree(T type) ref : container.abstract_array T is
       ft Finger_Tree => merge ft
 
 
+  # merge this Finger_Tree with ft
+  #
   merge(ft container.Finger_Tree T) container.Finger_Tree T => abstract
-  app2(seq Sequence (Sequence T), ft container.Finger_Tree T) container.Finger_Tree T => abstract
+
+
+  # merge this Finger_Tree with seq then ft
+  #
+  merge(seq Sequence (Sequence T), ft container.Finger_Tree T) container.Finger_Tree T => abstract
+
+
+  # to extract the actual instance of the Finger_Tree
+  # NYI: PERFORMANCE: might better be using dynamic binding
+  #
   modus choice (container.empty T) (container.single T) (container.deep T) => abstract
+
 
 
 # an empty finger tree
@@ -68,12 +84,13 @@ empty(T type) : container.Finger_Tree T is
   public redef index [ ] (i idx) T => panic "illegal unless debug turned off"
   module redef as_finger_tree option (container.Finger_Tree T) => container.empty T
   redef merge(ft container.Finger_Tree T) container.Finger_Tree T => ft
-  redef app2(seq Sequence (Sequence T), ft container.Finger_Tree T) container.Finger_Tree T =>
+  redef merge(seq Sequence (Sequence T), ft container.Finger_Tree T) container.Finger_Tree T =>
     for r := ft, r.prepend i
         i in seq.reverse
     else
       r
   redef modus choice (container.empty T) (container.single T) (container.deep T) => container.empty T
+
 
 
 # a finger tree with only one item
@@ -88,7 +105,7 @@ single(T type, data Sequence T) : container.Finger_Tree T is
   module redef as_finger_tree option (container.Finger_Tree T) => container.single data
   redef merge(ft container.Finger_Tree T) container.Finger_Tree T =>
     ft.prepend data
-  redef app2(seq Sequence (Sequence T), ft container.Finger_Tree T) container.Finger_Tree T =>
+  redef merge(seq Sequence (Sequence T), ft container.Finger_Tree T) container.Finger_Tree T =>
     for r := ft, r.prepend i
         i in seq.reverse
     else
@@ -155,10 +172,10 @@ deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.ha
 
 
   redef merge(ft0 container.Finger_Tree T) container.Finger_Tree T =>
-    app2 [] ft0
+    merge [] ft0
 
 
-  redef app2(seq Sequence (Sequence T), ft0 container.Finger_Tree T) container.Finger_Tree T =>
+  redef merge(seq Sequence (Sequence T), ft0 container.Finger_Tree T) container.Finger_Tree T =>
     match ft0.modus
       empty =>
         seq
@@ -170,7 +187,7 @@ deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.ha
             r.append t
           .append s.data
       d deep =>
-        # NYI: BUG: triggers ugly case in DFA: deep lft (ft.app2 ([rght.finger, seq, d.lft.finger].flat_map id) d.ft) d.rght
+        # NYI: BUG: triggers ugly case in DFA: deep lft (ft.merge ([rght.finger, seq, d.lft.finger].flat_map id) d.ft) d.rght
         x := array rght.finger.count+seq.count+d.lft.finger.count i->
           if i<rght.finger.count
             rght.finger[i]
@@ -178,11 +195,12 @@ deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.ha
             seq[i-rght.finger.count]
           else
             d.lft.finger[i-rght.finger.count-seq.count]
-        deep lft (ft.app2 x d.ft) d.rght
+        deep lft (ft.merge x d.ft) d.rght
 
 
 
   redef modus choice (container.empty T) (container.single T) (container.deep T) => container.deep lft ft rght
+
 
 
 # this is called digit in the paper
