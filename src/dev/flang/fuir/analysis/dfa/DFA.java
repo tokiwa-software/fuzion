@@ -852,8 +852,8 @@ public class DFA extends ANY
   static final String  TRACE_ALL_EFFECT_ENVS_NAME = "dev.flang.fuir.analysis.dfa.TRACE_ALL_EFFECT_ENVS";
   static final boolean TRACE_ALL_EFFECT_ENVS = FuzionOptions.boolPropertyOrEnv(TRACE_ALL_EFFECT_ENVS_NAME, true);
 
-  static final String  DO_NOT_TRACE_ENVS_NAME = "dev.flang.fuir.analysis.dfa.DO_NOT_TRACE_ENVS";
-  static final boolean DO_NOT_TRACE_ENVS = FuzionOptions.boolPropertyOrEnv(DO_NOT_TRACE_ENVS_NAME, true);
+  static final String  TRACE_ENVS_NAME = "dev.flang.fuir.analysis.dfa.TRACE_ENVS";
+  static final boolean TRACE_ENVS = FuzionOptions.boolPropertyOrEnv(TRACE_ENVS_NAME, false);
   TreeMap<Integer, Value> _allValuesForEnv = new TreeMap<>();
 
 
@@ -2075,9 +2075,7 @@ public class DFA extends ANY
     put("u8.type.lteq"                   , cl -> numericLteq(cl) );
     put("u16.type.lteq"                  , cl -> numericLteq(cl) );
     put("u32.type.lteq"                  , cl -> numericLteq(cl) );
-    //NYI: UNDER DEVELOPMENT: e.g. u64.max is represented as -1
-    // numericLteq does not work for this case yet
-    put("u64.type.lteq"                  , cl -> cl._dfa.bool() );
+    put("u64.type.lteq"                  , cl -> numericLteq(cl) );
 
     put("i8.as_i32"                      , cl -> genericNumResult(cl) );
     put("i16.as_i32"                     , cl -> genericNumResult(cl) );
@@ -2289,7 +2287,7 @@ public class DFA extends ANY
           Value ev;
           if (cl._dfa._real)
             {
-              if (DO_NOT_TRACE_ENVS)
+              if (!TRACE_ENVS)
                 {
                   ev = cl._dfa._allValuesForEnv.get(ecl);
                 }
@@ -2349,7 +2347,7 @@ public class DFA extends ANY
         });
     put("effect.type.is_instated0"          , cl ->
         cl.useAndGetEffect(cl.site(), fuir(cl).effectTypeFromIntrinsic(cl.calledClazz()), true) != null &&
-        !DO_NOT_TRACE_ENVS
+        TRACE_ENVS
         ? cl._dfa.True()
         : cl._dfa.bool()  /* NYI: currently, this is never FALSE since a default effect might get installed turning this into TRUE
                            * should reconsider if handling of default effects changes
@@ -2449,9 +2447,20 @@ public class DFA extends ANY
   {
     var v0 = (cl._args.get(0).value() instanceof NumericValue nv) ? nv._value : null;
     var v1 = (cl._args.get(1).value() instanceof NumericValue nv) ? nv._value : null;
-    return v0 == null || v1 == null
-      ? cl._dfa.bool()
-      : cl._dfa.boolAsVal(v0 <= v1);
+    var result = cl._dfa.bool();
+    if (v0 != null && v1 != null)
+      {
+        return switch (cl._dfa._fuir.getSpecialClazz(cl._dfa._fuir.clazzArgClazz(cl.calledClazz(), 0)))
+          {
+            case c_i8, c_i16, c_i32, c_i64 -> cl._dfa.boolAsVal(v0 <= v1);
+            case c_u8 -> cl._dfa.boolAsVal(Byte.compareUnsigned(v0.byteValue(), v1.byteValue()) <= 0);
+            case c_u16 -> cl._dfa.boolAsVal(Short.compareUnsigned(v0.shortValue(), v1.shortValue()) <= 0);
+            case c_u32 -> cl._dfa.boolAsVal(Integer.compareUnsigned(v0.intValue(), v1.intValue()) <= 0);
+            case c_u64 -> cl._dfa.boolAsVal(Long.compareUnsigned(v0, v1) <= 0);
+            default -> throw new RuntimeException("missing case impl in numericLteq?");
+          };
+      }
+    return result;
   }
 
 
@@ -3519,7 +3528,7 @@ public class DFA extends ANY
    */
   Env newEnv(Env env, int ecl, Value ev)
   {
-    if (DO_NOT_TRACE_ENVS)
+    if (!TRACE_ENVS)
       {
         var v0 = _allValuesForEnv.get(ecl);
         var v1 = v0 == null ? ev : v0.join(this, ev, ecl);

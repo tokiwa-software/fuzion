@@ -19,10 +19,7 @@
 #
 #  Source code of Fuzion test Makefile
 #
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
-#
 # -----------------------------------------------------------------------
 
-override NAME = test_effect_neg
-override FUZION_JAVA_OPTIONS=-Ddev.flang.fuir.analysis.dfa.TRACE_ENVS=true
-include ../simple_and_negative.mk
+override NAME = dfa_calc_lteq_plus
+include ../simple.mk
