@@ -327,8 +327,7 @@ class Clazz extends ANY implements Comparable<Clazz>
 
     // NYI: CLEANUP: currently needed in DFA-Phase to meet
     // FUIR invariant that stack must be empty at the end of a basic block
-    _isUnitType =
-      type.feature() == Types.resolved.t_unit.feature()
+    _isUnitType = type.feature().isUnitType()
         ? YesNo.yes
         : YesNo.dontKnow;
   }
