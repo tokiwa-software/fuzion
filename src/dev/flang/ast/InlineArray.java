@@ -216,7 +216,7 @@ public class InlineArray extends ExprWithPos
               }
             var arr = Types.resolved.f_array;
             _type = arr.resultType()
-                       .OLDapplyTypePars(arr, new List<>(elementType));
+                       .NEWapplyTypePars(arr, new List<>(elementType));
           }
       }
     return this;

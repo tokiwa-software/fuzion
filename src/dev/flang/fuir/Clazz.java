@@ -1122,7 +1122,7 @@ class Clazz extends ANY implements Comparable<Clazz>
               (Errors.any() || af != null);
             if (af != null)
               {
-                t = af.selfType().OLDapplyTypePars(af, fa._tp);
+                t = af.selfType().NEWapplyTypePars(af, fa._tp);
               }
           }
         if (t == null)
