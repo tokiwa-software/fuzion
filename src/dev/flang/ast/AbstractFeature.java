@@ -1873,7 +1873,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
   private Boolean _isUnitType = null;
   /**
-   * Can this feature only every be a unit type?
+   * Can this feature only ever be a unit type?
    */
   public boolean isUnitType()
   {
