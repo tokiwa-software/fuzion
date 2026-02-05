@@ -73,6 +73,11 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   private AbstractFeature _appliedTypePars2CachedFor1;
   private List<AbstractType> _appliedTypePars2CachedFor2;
   private AbstractType _appliedTypePars2Cache;
+  private AbstractType _NEWappliedTypeParsCachedFor1;
+  private AbstractType _NEWappliedTypeParsCache;
+  private AbstractFeature _NEWappliedTypePars2CachedFor1;
+  private List<AbstractType> _NEWappliedTypePars2CachedFor2;
+  private AbstractType _NEWappliedTypePars2Cache;
 
 
   /**
@@ -1045,6 +1050,142 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
             actualGenerics.freeze();
             _appliedTypePars2Cache = result;
           }
+        else if (this != Types.t_UNDEFINED)
+          {
+            System.out.println("IS UNDEFINED: "+result+" from "+this+" and "+f.qualifiedName()+" "+actualGenerics);
+            Thread.dumpStack();
+          }
+
+      }
+
+    if (POSTCONDITIONS) ensure
+      (result != null);
+
+    return result;
+  }
+
+
+  /**
+   * Replace generic types used by this type by the actual types given in
+   * target.
+   *
+   * @param target a target type this is used in
+   *
+   * @return this with all generic arguments from target.feature._generics
+   * replaced by target._generics.
+   */
+  public AbstractType NEWapplyTypePars(AbstractType target)
+  {
+    if (PRECONDITIONS) require
+      (target != null,
+       Errors.any() || !isOpenGeneric(),
+       Errors.any() || target.isGenericArgument() || target.isThisType() || target.feature().generics().sizeMatches(target.generics()));
+
+    AbstractType result;
+    if (typeParCachingEnabled && _NEWappliedTypeParsCachedFor1 == target)
+      {
+        result = _NEWappliedTypeParsCache;
+      }
+    else
+      {
+        result = NEWapplyTypePars_(target);
+        if (result != Types.t_UNDEFINED)
+          {
+            _NEWappliedTypeParsCachedFor1 = target;
+            _NEWappliedTypeParsCache = result;
+          }
+      }
+
+    if (POSTCONDITIONS) ensure
+      (result != null);
+    return result;
+  }
+
+
+  /**
+   * Replace generic types used by this type by the actual types given in
+   * target.
+   *
+   * Internal version of applyTypePars(target) that does not perform caching.
+   *
+   * @param target a target type this is used in
+   *
+   * @return this with all generic arguments from target.feature._generics
+   * replaced by target._generics.
+   */
+  private AbstractType NEWapplyTypePars_(AbstractType target)
+  {
+    /* NYI: Performance: This requires time in O(this.depth *
+     * feature.inheritanceDepth * t.depth), i.e. it is in O(n³)! Caching
+     * is used to alleviate this a bit, but this is probably not sufficient!
+     */
+    var result = this;
+    if (dependsOnGenerics())
+      {
+        target = target.selfOrConstraint(Context.NONE);
+        result = result.NEWapplyTypePars(target.feature(), target.actualGenerics());
+        if (target.isThisType())
+          {
+            // see #659 for when this is relevant
+            result = result.NEWapplyTypePars(target.feature().outer().thisType());
+          }
+        else
+          {
+            if (target.outer() != null)
+              {
+                result = result.NEWapplyTypePars(target.outer());
+              }
+          }
+      }
+    return result;
+  }
+
+
+  /**
+   * Check if type this depends on a formal generic parameter of f. If so,
+   * replace t by the corresponding actual generic parameter from the list
+   * provided.
+   *
+   * @param f the feature actualGenerics belong to.
+   *
+   * @param actualGenerics the actual generic parameters
+   *
+   * @return t iff t does not depend on a formal generic parameter of this,
+   * otherwise the type that results by replacing all formal generic parameters
+   * of this in t by the corresponding type from actualGenerics.
+   */
+  public AbstractType NEWapplyTypePars(AbstractFeature f, List<AbstractType> actualGenerics)
+  {
+    if (PRECONDITIONS) require
+      (Errors.any() || f.generics().sizeMatches(actualGenerics));
+
+    AbstractType result;
+    if (typeParCachingEnabled &&
+        _NEWappliedTypePars2CachedFor1 == f &&
+        _NEWappliedTypePars2CachedFor2 == actualGenerics)
+      {
+        result = _NEWappliedTypePars2Cache;
+      }
+    else if (actualGenerics.contains(Types.t_UNDEFINED))
+      {
+        result = NEWapplyTypePars_(f, actualGenerics);
+      }
+    else
+      {
+        result = NEWapplyTypePars_(f, actualGenerics);
+        if (result != Types.t_UNDEFINED)
+          {
+            _NEWappliedTypePars2CachedFor1 = f;
+            _NEWappliedTypePars2CachedFor2 = actualGenerics;
+            actualGenerics.freeze();
+            _NEWappliedTypePars2Cache = result;
+          }
+        else if (this != Types.t_UNDEFINED)
+          {
+            System.out.println("IS UNDEFINED: "+result+" from "+this+" and "+f.qualifiedName()+" "+actualGenerics);
+            Thread.dumpStack();
+          }
+
       }
 
     if (POSTCONDITIONS) ensure
@@ -1135,14 +1276,44 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
      * this a bit, but this is probably not sufficient!
      */
     var result = this;
-    for (var i : f.inherits())
+    if (!false) for (var i : f.inherits())
       {
+        var r0 = result;
         result = result
           .applyTypePars(i.calledFeature(),
                          i.actualTypeParameters());
+        if (false) if (result != r0 || result == Types.t_UNDEFINED && r0 != Types.t_UNDEFINED)
+          {
+            System.out.println("TURNING "+r0+" into "+result+" for "+i.calledFeature().qualifiedName()+" "+i.calledFeature().state()+" "+i.actualTypeParameters()+" call "+i+" actuals: "+i.actualTypeParameters());
+          }
       }
     return result
       .applyTypeParsLocally(f, actualGenerics, NO_SELECT);
+  }
+
+
+  /**
+   * Check if this type depends on a formal generic parameter of f. If so,
+   * replace t by the corresponding actual generic parameter from the list
+   * provided.
+   *
+   * Internal version of applyTypePars(f, actualGenerics) that does not perform
+   * caching.
+   *
+   * @param f the feature actualGenerics belong to.
+   *
+   * @param actualGenerics the actual generic parameters
+   *
+   * @return t iff t does not depend on a formal generic parameter of this,
+   * otherwise the type that results by replacing all formal generic parameters
+   * of this in t by the corresponding type from actualGenerics.
+   */
+  private AbstractType NEWapplyTypePars_(AbstractFeature f, List<AbstractType> actualGenerics)
+  {
+    if (PRECONDITIONS) require
+      (f != null);
+
+    return applyTypeParsLocally(f, actualGenerics, NO_SELECT);
   }
 
 
