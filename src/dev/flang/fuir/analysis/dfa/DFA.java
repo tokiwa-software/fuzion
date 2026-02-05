@@ -599,25 +599,32 @@ public class DFA extends ANY
       for (var mc = 0; mc < _fuir.matchCaseCount(s); mc++)
         {
           // array to permit modification in lambda
-          var taken = false;
+          var vals = new List<Value>();
           for (var t : _fuir.matchCaseTags(s, mc))
             {
-              var sv = subv.value();
-              if (sv instanceof ValueSet vs)
+              subv.value().forAll(v ->  {
+                var tv = (TaggedValue)v;
+                if (tv._tag == t)
+                  {
+                    vals.add(tv._original);
+                  }
+              });
+            }
+          var taken = !vals.isEmpty();
+          if (taken)
+            {
+              var f = _fuir.matchCaseField(s, mc);
+              if (f != NO_CLAZZ)
                 {
-                  for (var v : vs._componentsArray)
+                  var fc = _fuir.clazzResultClazz(f);
+                  Value joined = vals.get(0);
+                  for (int index = 1; index < vals.size(); index++)
                     {
-                      taken = matchSingleSubject(s, v, mc, t) || taken;
+                      joined = joined.join(DFA.this, vals.get(index), fc);
                     }
+                  _call._instance.setField(DFA.this, f, joined);
                 }
-              else
-                {
-                  taken = matchSingleSubject(s, sv, mc, t) || taken;
-                }
-              if (taken)
-                {
-                  DFA.this._takenMatchCases.add(((long)s<<32)|((long)mc));
-                }
+              DFA.this._takenMatchCases.add(((long)s<<32)|((long)mc));
             }
           if (_reportResults && _options.verbose(9))
             {
@@ -636,44 +643,6 @@ public class DFA extends ANY
         }
       DFA.this.site(s).recordResult(r == null);
       return r;
-    }
-
-
-    /**
-     * Helper for match that matches only a single subject value.
-     *
-     * @param s site of the match
-     *
-     * @param v subject value of this match that is being tested.
-     *
-     * @param mc the match case to process
-     *
-     * @param t the tag the case matches
-     *
-     * @return true if this match case was taken by v
-     */
-    boolean matchSingleSubject(int s, Value v, int mc, int t)
-    {
-      var res = false;
-      if (v instanceof TaggedValue tv)
-        {
-          if (tv._tag == t)
-            {
-              var field = _fuir.matchCaseField(s, mc);
-              if (field != NO_CLAZZ)
-                {
-                  var untagged = tv._original;
-                  _call._instance.setField(DFA.this, field, untagged);
-                }
-              res = true;
-            }
-        }
-      else
-        {
-          throw new Error("DFA encountered Unexpected value in match: " + v.getClass() + " '" + v + "' " +
-                          " for match of type " + _fuir.clazzAsString(_fuir.matchStaticSubject(s)));
-        }
-      return res;
     }
 
 
