@@ -852,8 +852,8 @@ public class DFA extends ANY
   static final String  TRACE_ALL_EFFECT_ENVS_NAME = "dev.flang.fuir.analysis.dfa.TRACE_ALL_EFFECT_ENVS";
   static final boolean TRACE_ALL_EFFECT_ENVS = FuzionOptions.boolPropertyOrEnv(TRACE_ALL_EFFECT_ENVS_NAME, true);
 
-  static final String  DO_NOT_TRACE_ENVS_NAME = "dev.flang.fuir.analysis.dfa.DO_NOT_TRACE_ENVS";
-  static final boolean DO_NOT_TRACE_ENVS = FuzionOptions.boolPropertyOrEnv(DO_NOT_TRACE_ENVS_NAME, true);
+  static final String  TRACE_ENVS_NAME = "dev.flang.fuir.analysis.dfa.TRACE_ENVS";
+  static final boolean TRACE_ENVS = FuzionOptions.boolPropertyOrEnv(TRACE_ENVS_NAME, false);
   TreeMap<Integer, Value> _allValuesForEnv = new TreeMap<>();
 
 
@@ -2287,7 +2287,7 @@ public class DFA extends ANY
           Value ev;
           if (cl._dfa._real)
             {
-              if (DO_NOT_TRACE_ENVS)
+              if (!TRACE_ENVS)
                 {
                   ev = cl._dfa._allValuesForEnv.get(ecl);
                 }
@@ -2347,7 +2347,7 @@ public class DFA extends ANY
         });
     put("effect.type.is_instated0"          , cl ->
         cl.useAndGetEffect(cl.site(), fuir(cl).effectTypeFromIntrinsic(cl.calledClazz()), true) != null &&
-        !DO_NOT_TRACE_ENVS
+        TRACE_ENVS
         ? cl._dfa.True()
         : cl._dfa.bool()  /* NYI: currently, this is never FALSE since a default effect might get installed turning this into TRUE
                            * should reconsider if handling of default effects changes
@@ -3528,7 +3528,7 @@ public class DFA extends ANY
    */
   Env newEnv(Env env, int ecl, Value ev)
   {
-    if (DO_NOT_TRACE_ENVS)
+    if (!TRACE_ENVS)
       {
         var v0 = _allValuesForEnv.get(ecl);
         var v1 = v0 == null ? ev : v0.join(this, ev, ecl);
