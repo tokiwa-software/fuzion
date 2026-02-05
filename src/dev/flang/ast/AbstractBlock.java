@@ -221,6 +221,13 @@ public abstract class AbstractBlock extends Expr
   }
 
 
+  @Override
+  public boolean isEmpty()
+  {
+    return _expressions.isEmpty();
+  }
+
+
   /**
    * toString
    *

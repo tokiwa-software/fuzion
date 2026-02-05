@@ -1871,6 +1871,37 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   }
 
 
+  private Boolean _isUnitType = null;
+  /**
+   * Can this feature only ever be a unit type?
+   */
+  public boolean isUnitType()
+  {
+    if (PRECONDITIONS) require
+      (state().atLeast(State.RESOLVED));
+
+    if (_isUnitType == null)
+      {
+        _isUnitType = isUnitType(false);
+      }
+
+    return _isUnitType;
+  }
+
+
+  private boolean isUnitType(boolean allowRef)
+  {
+    return
+      isConstructor() &&
+      contract() == dev.flang.ast.Contract.EMPTY_CONTRACT &&
+      arguments().isEmpty() &&
+      (allowRef || !isRef()) &&
+      code().isEmpty() &&
+      !hasOuterRef() &&
+      inherits().stream().allMatch(c -> c.calledFeature().isUnitType(true));
+  }
+
+
 
 
 }
