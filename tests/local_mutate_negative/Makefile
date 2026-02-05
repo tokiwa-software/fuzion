@@ -24,5 +24,5 @@
 # -----------------------------------------------------------------------
 
 override NAME = test_local_mutate_neg
-override FUZION_JAVA_OPTIONS=-Ddev.flang.fuir.analysis.dfa.DO_NOT_TRACE_ENVS=false
+override FUZION_JAVA_OPTIONS=-Ddev.flang.fuir.analysis.dfa.TRACE_ENVS=true
 include ../simple.mk
