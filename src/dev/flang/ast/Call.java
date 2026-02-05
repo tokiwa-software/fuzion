@@ -1572,7 +1572,7 @@ public class Call extends AbstractCall
             var tf = res.cotype(t.feature());
             var tg = new List<AbstractType>(t); // the constraint type itself
             tg.addAll(t.generics());            // followed by the generics
-            t = tf.selfType().OLDapplyTypePars(tf, tg);
+            t = tf.selfType().NEWapplyTypePars(tf, tg);
           }
       }
     else if (isTypeAsValueCall())
@@ -1596,7 +1596,7 @@ public class Call extends AbstractCall
       }
     else
       {
-        t = t.OLDapplyTypePars(calledFeature(), _generics);
+        t = t.NEWapplyTypePars(calledFeature(), _generics);
       }
     return t;
   }
@@ -1991,7 +1991,7 @@ public class Call extends AbstractCall
                                  *     _ := a %%2
                                  */
                                 actual = propagateForPartial(res, context, argnum, c);
-                                actual = actual.propagateExpectedType(res, context, c.OLDapplyTypePars(calledFeature(), actualTypeParameters()),
+                                actual = actual.propagateExpectedType(res, context, c.NEWapplyTypePars(calledFeature(), actualTypeParameters()),
                                                                       () -> "formal argument type in call to " + AstErrors.s(_calledFeature));
                                 _actuals = _actuals.setOrClone(argnum, actual);
                                 actualType = typeFromActual(res, context, actual);
