@@ -164,6 +164,12 @@ public class LibraryModule extends Module implements MirModule
   private final ModuleRef[] _modules;
 
 
+  /**
+   * cache for source file start positions
+   */
+  int[] _sourceFileStartPositions;
+
+
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -2311,17 +2317,8 @@ SourceFile
       }
     else
       {
-        var at = sourceFilesFirstSourceFilePos();
-        if (CHECKS) check
-          (pos > at);
-        var i = 0;
-        while (pos > sourceFileNextPos(at))
-          {
-            at = sourceFileNextPos(at);
-            i++;
-            if (CHECKS) check
-              (i < sourceFilesCount());
-          }
+        var i = sourceFileIndex(pos);
+        var at = sourceFileStartPositions()[i];
         var sf = _sourceFiles.get(i);
         if (sf == null)
           {
@@ -2337,6 +2334,41 @@ SourceFile
           }
         return new SourceRange(sf, pos - sourceFileBytesPos(at), posEnd - sourceFileBytesPos(at));
       }
+  }
+
+
+
+  /**
+   * For pos get the index in the sourcefiles
+   */
+  private int sourceFileIndex(int pos)
+  {
+    sourceFileStartPositions();
+    var x = Arrays.binarySearch(sourceFileStartPositions(), pos);
+    return x<0
+      ? -x-2 // when binarySearch returns negative: (-(insertion point) - 1).
+      : x;
+  }
+
+
+
+  /**
+   * get sourceFileStartPositionsArray
+   */
+  private int[] sourceFileStartPositions()
+  {
+    if (_sourceFileStartPositions == null)
+      {
+        var c = sourceFilesCount();
+        var at = sourceFilesFirstSourceFilePos();
+        _sourceFileStartPositions = new int[c];
+        for (var i = 0; i<c; i++)
+          {
+            _sourceFileStartPositions[i] = at;
+            at = sourceFileNextPos(at);
+          }
+      }
+    return _sourceFileStartPositions;
   }
 
 
