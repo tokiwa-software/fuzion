@@ -509,10 +509,9 @@ class Clazz extends ANY implements Comparable<Clazz>
    */
   private void registerAsHeir(Clazz parent)
   {
-    parent.heirs().add(this);
-    for (var p: parents())
+    if (parent.heirs().add(this))
       {
-        if (!p.heirs().contains(this))
+        for (var p: parents())
           {
             registerAsHeir(p);
           }
