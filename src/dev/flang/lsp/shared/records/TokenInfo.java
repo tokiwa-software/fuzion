@@ -333,7 +333,9 @@ public class TokenInfo extends ANY
             return Optional.of(TokenType.Enum);
           case Intrinsic :
           case Abstract :
-          case Routine :
+          case Constructor :
+          case RefConstructor :
+          case Function :
             if (af.isConstructor()
               && af.valueArguments().size() == 0
               && af.code().containsOnlyDeclarations()

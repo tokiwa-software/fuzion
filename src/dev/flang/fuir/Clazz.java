@@ -704,7 +704,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   {
     return switch (feature().kind())
       {
-      case Routine           -> IR.FeatureKind.Routine;
+      case Function,RefConstructor,Constructor -> IR.FeatureKind.Routine;
       case Field             -> IR.FeatureKind.Field;
       case TypeParameter     -> IR.FeatureKind.TypeParameter;
       case OpenTypeParameter -> IR.FeatureKind.TypeParameter;
