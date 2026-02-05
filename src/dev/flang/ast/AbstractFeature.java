@@ -853,7 +853,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
         var ta = new ParsedType(pos(), ta0.featureName().baseName());
         tl.add(ta);
       }
-    t = t.NEWapplyTypePars(this, tl);
+    t = t.OLDapplyTypePars(this, tl);
     t = t.clone(this);
     return t;
   }
