@@ -205,10 +205,12 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
     this._pos      = pos;
     this._name     = n;
-    this._generics = ((g == null) || g.isEmpty()) ? NONE : g;
-    this._generics.freeze();
+    this._generics = (((g == null) || g.isEmpty()) ? NONE : g).freeze();
     this._outer    = o;
     this._typeKind = typeKind;
+    // to make caching of _isGenericArgument work
+    // we call constructor after _typeKind is set
+    super();
   }
 
 
@@ -258,6 +260,9 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
     this._pos               = original._pos;
     this._typeKind          = Optional.of(typeKind);
+    // to make caching of _isGenericArgument work
+    // we call constructor after _typeKind is set
+    super();
     this._name              = original._name;
     this._generics          = original._generics;
     this._outer             = original._outer;
@@ -277,6 +282,9 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
   {
     this._pos               = original._pos;
     this._typeKind          = original._typeKind;
+    // to make caching of _isGenericArgument work
+    // we call constructor after _typeKind is set
+    super();
     this._name              = original._name;
     if (original._generics.isEmpty())
       {

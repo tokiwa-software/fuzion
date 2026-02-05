@@ -307,12 +307,14 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   }
 
 
+  // cache field
+  private final boolean _isGenericArgument = kind() == TypeKind.GenericArgument;
   /**
    * Is this type a generic argument (true) or false backed by a feature (false)?
    */
   public boolean isGenericArgument()
   {
-    return kind() == TypeKind.GenericArgument;
+    return _isGenericArgument;
   }
 
 
