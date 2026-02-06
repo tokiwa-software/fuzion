@@ -1193,6 +1193,14 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
     return result;
   }
+  public AbstractType NEW2applyTypePars(AbstractFeature f, List<AbstractType> actualGenerics)
+  {
+    for (var i : f.inherits())
+      {
+        i.actualTypeParameters().freeze();
+      }
+    return NEWapplyTypePars(f, actualGenerics);
+  }
 
 
   /**
