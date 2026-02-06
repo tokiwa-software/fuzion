@@ -129,6 +129,8 @@ public abstract class IR extends ANY
     Match,
     Tag,
     Pop;
+
+    public boolean isCallOrAssign() { return ExprKind.this == Call || ExprKind.this == Assign; }
   }
 
 

@@ -215,38 +215,48 @@ public class OptimizedFUIR extends GeneratingFUIR {
         var sites = new SiteRecord[siteCount];
         for (int s = SITE_BASE; s < SITE_BASE+siteCount; s++)
           {
-              var accessedClazz =
-                invalidSite(s) || !(codeAt(s) == ExprKind.Call || codeAt(s) == ExprKind.Assign) || accessedClazz(s) > lastClazz
-                  ? NO_CLAZZ
-                  : accessedClazz(s);
+            if (invalidSite(s))
+              {
+                sites[s-SITE_BASE] = new SiteRecord(
+                  clazzAt(s), false, false, null, NO_CLAZZ, null, NO_CLAZZ, null,
+                  NO_CLAZZ, NO_SITE, NO_SITE, NO_SITE, NO_CLAZZ, NO_SITE, siteCount,
+                  null, null, NO_CLAZZ, -1, null, false, null, -1, -1, null);
+              }
+            else
+              {
+                var accessedClazz =
+                  codeAt(s).isCallOrAssign() && accessedClazz(s) <= lastClazz
+                    ? accessedClazz(s)
+                    : NO_CLAZZ;
 
-              sites[s-SITE_BASE] = new SiteRecord(
-                  clazzAt(s),
-                  invalidSite(s) ? false : alwaysResultsInVoid(s),
-                  invalidSite(s) ? false : doesResultEscape(s),
-                  invalidSite(s) ? null : codeAt(s),
-                  invalidSite(s) || codeAt(s) != ExprKind.Const ? NO_CLAZZ : constClazz(s) ,
-                  invalidSite(s) ? null : codeAt(s) == ExprKind.Const ? constData(s) : null,
-                  accessedClazz,
-                  accessedClazz != NO_CLAZZ ? accessedClazzes(s) : null,
-                  invalidSite(s) || !(codeAt(s) == ExprKind.Call || codeAt(s) == ExprKind.Assign) ? NO_CLAZZ : accessTargetClazz(s),
-                  invalidSite(s) || codeAt(s) != ExprKind.Tag ? NO_CLAZZ : tagValueClazz(s),
-                  invalidSite(s) || codeAt(s) != ExprKind.Assign ? NO_CLAZZ : assignedType(s),
-                  invalidSite(s) || codeAt(s) != ExprKind.Box ? NO_CLAZZ : boxValueClazz(s),
-                  invalidSite(s) || codeAt(s) != ExprKind.Box ? NO_CLAZZ : boxResultClazz(s),
-                  invalidSite(s) || codeAt(s) != ExprKind.Match ? NO_CLAZZ : matchStaticSubject(s),
-                  invalidSite(s) ? NO_SITE : codeAt(s) == ExprKind.Match ? matchCaseCount(s) : -1,
-                  invalidSite(s) ? null : codeAt(s) == ExprKind.Match ? matchCaseTags(s) : null,
-                  invalidSite(s) ? null : codeAt(s) == ExprKind.Match ? matchCaseCode(s) : null,
-                  invalidSite(s) || codeAt(s) != ExprKind.Tag ? NO_CLAZZ : tagNewClazz(s),
-                  invalidSite(s) || codeAt(s) != ExprKind.Tag ? -1 : tagTagNum(s),
-                  invalidSite(s) || codeAt(s) != ExprKind.Match ? null : matchCaseFields(s),
-                  invalidSite(s) || !(codeAt(s) == ExprKind.Assign || codeAt(s) == ExprKind.Call) ? false : accessIsDynamic(s),
-                  invalidSite(s) || sitePos(s) == null ? null : sitePos(s)._sourceFile._fileName.toString(),
-                  invalidSite(s) || sitePos(s) == null ? -1 : sitePos(s).line(),
-                  invalidSite(s) || sitePos(s) == null ? -1 : sitePos(s).column(),
-                  invalidSite(s) || sitePos(s) == null ? null : sitePos(s).show()
-                );
+                sites[s-SITE_BASE] = new SiteRecord(
+                    clazzAt(s),
+                    alwaysResultsInVoid(s),
+                    doesResultEscape(s),
+                    codeAt(s),
+                    codeAt(s) != ExprKind.Const ? NO_CLAZZ : constClazz(s),
+                    codeAt(s) == ExprKind.Const ? constData(s) : null,
+                    accessedClazz,
+                    accessedClazz != NO_CLAZZ ? accessedClazzes(s) : null,
+                    codeAt(s).isCallOrAssign() ? accessTargetClazz(s) : NO_CLAZZ,
+                    codeAt(s) != ExprKind.Tag ? NO_CLAZZ : tagValueClazz(s),
+                    codeAt(s) != ExprKind.Assign ? NO_CLAZZ : assignedType(s),
+                    codeAt(s) != ExprKind.Box ? NO_CLAZZ : boxValueClazz(s),
+                    codeAt(s) != ExprKind.Box ? NO_CLAZZ : boxResultClazz(s),
+                    codeAt(s) != ExprKind.Match ? NO_CLAZZ : matchStaticSubject(s),
+                    codeAt(s) == ExprKind.Match ? matchCaseCount(s) : -1,
+                    codeAt(s) == ExprKind.Match ? matchCaseTags(s) : null,
+                    codeAt(s) == ExprKind.Match ? matchCaseCode(s) : null,
+                    codeAt(s) != ExprKind.Tag ? NO_CLAZZ : tagNewClazz(s),
+                    codeAt(s) != ExprKind.Tag ? -1 : tagTagNum(s),
+                    codeAt(s) != ExprKind.Match ? null : matchCaseFields(s),
+                    codeAt(s).isCallOrAssign() ? accessIsDynamic(s) : false,
+                    sitePos(s) == null ? null : sitePos(s)._sourceFile._fileName.toString(),
+                    sitePos(s) == null ? -1 : sitePos(s).line(),
+                    sitePos(s) == null ? -1 : sitePos(s).column(),
+                    sitePos(s) == null ? null : sitePos(s).show()
+                  );
+              }
           }
         oos.writeObject(sites);
 
