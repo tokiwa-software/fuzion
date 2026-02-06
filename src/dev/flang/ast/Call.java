@@ -2287,7 +2287,7 @@ public class Call extends AbstractCall
                 var pt = p.type();
                 if (pt != Types.t_ERROR)
                   {
-                    var apt = actualType.actualType(pt, context);
+                    var apt = actualType.NEWactualType(pt, context);
                     if (apt.feature().inheritsFrom(formalType.feature()))
                       {
                         inferGeneric(res, context, formalType, apt, pos, conflict, foundAt);
