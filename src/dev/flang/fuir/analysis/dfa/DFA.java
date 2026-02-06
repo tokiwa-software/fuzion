@@ -752,12 +752,6 @@ public class DFA extends ANY
 
 
   /**
-   * Set of intrinsics that are found to be used by the DFA.
-   */
-  static final Set<String> _usedIntrinsics_ = new TreeSet<>();
-
-
-  /**
    * Maximum recursive analysis of newly created Calls, see {@code analyzeNewCall} for
    * details.
    *
@@ -835,10 +829,7 @@ public class DFA extends ANY
    */
   private static void put(String n, IntrinsicDFA c)
   {
-    _intrinsics_.put(n, (call) -> {
-      _usedIntrinsics_.add(n);
-      return c.analyze(call);
-    });
+    _intrinsics_.put(n, (call) -> c.analyze(call));
   }
 
 
