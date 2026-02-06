@@ -939,13 +939,6 @@ public class DFA extends ANY
 
 
   /**
-   * For those CallGroups whose key can be mapped to a long value, this gives a quick
-   * way to lookup that key.
-   */
-  LongMap<CallGroup> _callGroupsQuick = new LongMap<>();
-
-
-  /**
    * Calls created during DFA analysis.
    */
   TreeMap<Call, Call> _calls = new TreeMap<>();
@@ -1326,10 +1319,6 @@ public class DFA extends ANY
     var preIter = findFixPoint();
     _options.timer("dfa_pre");
 
-    for (var k : _callGroupsQuick.keySet())
-      {
-        _callGroupsQuick.get(k).saveEffects();
-      }
     for (var g : _callGroups.values())
       {
         g.saveEffects();
@@ -1350,7 +1339,6 @@ public class DFA extends ANY
 
     _callsQuick = new LongMap<>();
     _calls = new TreeMap<>();
-    _callGroupsQuick = new LongMap<>();
     _callGroups = new TreeMap<>();
 
     _oneInstanceOfClazz = new List<>();
@@ -3314,23 +3302,8 @@ public class DFA extends ANY
    */
   Call newCall(Call from, int cl, int site, Value tvalue, List<Val> args, Env env, Context context)
   {
-    CallGroup g;
-    var kg = CallGroup.quickHash(this, cl, site, tvalue);
-    if (kg != -1)
-      {
-        g = _callGroupsQuick.get(kg);
-        if (g == null)
-          {
-            g = new CallGroup(this, cl, site, tvalue);
-            _callGroupsQuick.put(kg, g);
-          }
-      }
-    else
-      {
-        var ng = new CallGroup(this, cl, site, tvalue);
-        g = _callGroups.putIfAbsent(ng, ng);
-        g = g != null ? g : ng;
-      }
+    var ng = new CallGroup(this, cl, site, tvalue);
+    var g = _callGroups.computeIfAbsent(ng, k->ng);
 
     Call e, r;
     r = _unitCalls.get(cl);
