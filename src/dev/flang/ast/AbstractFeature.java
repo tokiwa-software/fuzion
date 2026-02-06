@@ -831,7 +831,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
           }
         first = false;
       }
-    return t0.applyTypePars(this, tl);
+    return t0.NEWapplyTypePars(this, tl);
   }
 
 
@@ -853,8 +853,18 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
         var ta = new ParsedType(pos(), ta0.featureName().baseName());
         tl.add(ta);
       }
-    t = t.applyTypePars(this, tl);
-    t = t.clone(this);
+    var t0 = t;
+    //tl.freeze();
+    //    var t2x = t0.OLDapplyTypePars(this, tl);
+    var t2 = t0.NEW2applyTypePars(this, tl);
+    /*
+    if (t.compareTo(t2) != 0)
+      {
+        System.out.println("OLD t0: "+t0+" apply "+qualifiedName()+" "+tl+" --> "+t);
+        System.out.println("NEW t0: "+t0+" apply "+qualifiedName()+" "+tl+" --> "+t2);
+      }
+    */
+    t = t2.clone(this);
     return t;
   }
 
@@ -1226,7 +1236,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       {
         // NYI: CLEANUP: This should be replacable by `c.resultType().replaceGenerics(a)` or similar
         var actualTypes = c.actualTypeParameters();
-        a = a.flatMap(ti -> !ti.isOpenGeneric()                               ? new List<>(ti.applyTypePars(c.calledFeature(), actualTypes)) :
+        a = a.flatMap(ti -> !ti.isOpenGeneric()                               ? new List<>(ti.NEWapplyTypePars(c.calledFeature(), actualTypes)) :
                             ti.genericArgument().outer() == c.calledFeature() ? ti.genericArgument().replaceOpen(actualTypes)
                                                                               : new List<>(ti));
       }

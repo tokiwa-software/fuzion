@@ -474,7 +474,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       }
     else
       {
-        var t = this._type.actualType(f.selfType()).asRef();
+        var t = this._type.OLDactualType(f.selfType()).asRef();
         return normalize2(t);
       }
   }
@@ -548,7 +548,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       {
         var pt = p.type();
         var t1 = isRef() && !pt.isVoid() ? pt.asRef() : pt.asValue();
-        var t2 = _type.actualType(t1);
+        var t2 = _type.OLDactualType(t1);
         var pc = _fuir.newClazz(t2);
         if (CHECKS) check
           (Errors.any() || pc.isVoidType() || isRef() == pc.isRef());
@@ -660,9 +660,9 @@ class Clazz extends ANY implements Comparable<Clazz>
       feature().isCotype() &&
       // NYI: UNDER DEVELOPMENT: can this logic be simplified?
          (t.isGenericArgument() && t.genericArgument().outer().isCotype() ||
-         !t.isGenericArgument() && t.feature() == _type.generics().get(0).actualType(t).feature()))
+         !t.isGenericArgument() && t.feature() == _type.generics().get(0).OLDactualType(t).feature()))
       {
-        t = _type.generics().get(0).actualType(t);
+        t = _type.generics().get(0).OLDactualType(t);
       }
     else if (_outer != null)
       {
@@ -1120,7 +1120,7 @@ class Clazz extends ANY implements Comparable<Clazz>
               (Errors.any() || af != null);
             if (af != null)
               {
-                t = af.selfType().applyTypePars(af, fa._tp);
+                t = af.selfType().NEWapplyTypePars(af, fa._tp);
               }
           }
         if (t == null)
@@ -1129,7 +1129,7 @@ class Clazz extends ANY implements Comparable<Clazz>
           }
         else
           {
-            t = _type.actualType(t);  // e.g., {@code (Types.get (array f64)).T} -> {@code array f64}
+            t = _type.OLDactualType(t);  // e.g., {@code (Types.get (array f64)).T} -> {@code array f64}
 
 /*
   We have the following possibilities when calling a feature {@code f} declared in do {@code on}
