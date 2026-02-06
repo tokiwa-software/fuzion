@@ -442,7 +442,9 @@ is
     #       say s
     #
     else if c1 < 0 || c2 < 0 || c1 < c2 then
-      as_list.concat_list s.as_list
+      container.Finger_Tree T .empty
+        .concat Sequence.this
+        .concat s
     else
       container.expanding_array T .empty c1+c2
         .concat Sequence.this
