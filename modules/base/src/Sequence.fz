@@ -1144,7 +1144,7 @@ is
   #
   # example: sum even and odd numbers individually
   #
-  #    (0..10).group_reduce String (x -> x%%2 ? "even" : "odd") (+)
+  #     (0..10).group_reduce String (x -> x%%2 ? "even" : "odd") (+)
   #
   # => {(even => 30), (odd => 25)}
   #
@@ -1207,11 +1207,11 @@ is
   #
   # example: group characters by category and add underscores around each character
   #
-  #    values array codepoint := ["A", "1", "b", "?", "X", "4"]
+  #     values array codepoint := ["A", "1", "b", "?", "X", "4"]
   #
-  #    classify (c codepoint) String => c.is_ascii_letter ? "letter" : c.is_ascii_digit ? "digit" : "other"
+  #     classify (c codepoint) String => c.is_ascii_letter ? "letter" : c.is_ascii_digit ? "digit" : "other"
   #
-  #    values.group_map String String classify (x->"_{x}_")
+  #     values.group_map String String classify (x->"_{x}_")
   #
   # => {(digit => [_1_, _4_]), (letter => [_A_, _b_, _X_]), (other => [_?_])}
   #

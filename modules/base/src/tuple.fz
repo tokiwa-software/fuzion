@@ -100,7 +100,7 @@
 # be created using syntactic sugar '(a)', this will produce the plain
 # value of 'a' instead. However, destructuring of a single tuple is possible:
 #
-#    (a0) := tuple a
+#     (a0) := tuple a
 #
 # which is equivalent to
 #
