@@ -94,8 +94,11 @@ public class Docs extends ANY
                             .map(Path::toString)
                             .filter(name -> name.endsWith(FuzionConstants.MODULE_FILE_SUFFIX))
                             // exclude Java Modules from API docs
-                            // (they also caused an endless recursion when using the docs generation on them)
+                            // NYI: BUG: java.base constains features whose docs filename would be
+                            // too long, leading to exceptions.
                             .filter(name -> !name.startsWith("java."))
+                            // NYI: BUG: this pulls in java.base
+                            .filter(name -> name.equals("fz_cmd"))
                             .map(name -> name.substring(0, name.lastIndexOf('.')))
                             .collect(Collectors.toList())));
     } catch (Exception e) {

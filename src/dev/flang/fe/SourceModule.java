@@ -797,9 +797,10 @@ part of the (((inner features))) declarations of the corresponding
         s = new TreeMap<>();
         d._declaredFeatures = s;
         for (var m : _dependsOn)
-          { // NYI: properly obtain set of declared features from m, do we need
+          {
+            // NYI: UNDER DEVELOPMENT: properly obtain set of declared features from m, do we need
             // to take care for the order and dependencies between modules?
-            var md = m.declaredFeatures(outer);
+            var md = m.declaredFeaturesShallow(outer);
             if (md != null)
               {
                 for (var e : md.entrySet())

@@ -316,6 +316,23 @@ public class LibraryModule extends Module implements MirModule
    */
   public SortedMap<FeatureName, AbstractFeature>declaredFeatures(AbstractFeature outer)
   {
+    var result = declaredFeaturesShallow(outer);
+    for (Module d : _dependsOn)
+      {
+        result.putAll(d.declaredFeatures(outer));  // NYI: handle equally named features from different modules
+      }
+    return result;
+  }
+
+
+  /**
+   * Get declared features for given outer Feature as seen from outside of this module.
+   * Result is null if outer has no declared features in this module.
+   *
+   * @param outer the declaring feature
+   */
+  public SortedMap<FeatureName, AbstractFeature>declaredFeaturesShallow(AbstractFeature outer)
+  {
     var result = new TreeMap<FeatureName, AbstractFeature>();
     if (outer instanceof LibraryFeature lf)
       {
@@ -327,10 +344,6 @@ public class LibraryModule extends Module implements MirModule
     for (var d : features(outer))
       {
         result.put(d.featureName(), d);  // NYI: handle equally named features from different modules
-      }
-    for (Module d : _dependsOn)
-      {
-        result.putAll(d.declaredFeatures(outer));  // NYI: handle equally named features from different modules
       }
     return result;
   }
