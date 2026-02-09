@@ -2395,6 +2395,7 @@ SourceFile
     if (_flattenedModules == null)
       {
         _flattenedModules = flatten(this)
+          .distinct()
           .collect(Collectors.toUnmodifiableMap(LibraryModule::name, x->x));
       }
     int bytePos = (int)(pos >> 32);
