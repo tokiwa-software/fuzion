@@ -314,7 +314,7 @@ public class LibraryModule extends Module implements MirModule
    *
    * @param outer the declaring feature
    */
-  public SortedMap<FeatureName, AbstractFeature>declaredFeatures(AbstractFeature outer)
+  public SortedMap<FeatureName, AbstractFeature> declaredFeatures(AbstractFeature outer)
   {
     var result = declaredFeaturesShallow(outer);
     for (Module d : _dependsOn)
@@ -331,7 +331,7 @@ public class LibraryModule extends Module implements MirModule
    *
    * @param outer the declaring feature
    */
-  public SortedMap<FeatureName, AbstractFeature>declaredFeaturesShallow(AbstractFeature outer)
+  public SortedMap<FeatureName, AbstractFeature> declaredFeaturesShallow(AbstractFeature outer)
   {
     var result = new TreeMap<FeatureName, AbstractFeature>();
     if (outer instanceof LibraryFeature lf)
