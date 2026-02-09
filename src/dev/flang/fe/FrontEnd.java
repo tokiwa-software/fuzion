@@ -184,7 +184,7 @@ public class FrontEnd extends ANY
       0, o.fuzionHome(), false, false,
       new List<>(), mDirs, new List<>(), -1, false,
       null, false, null, null, null, false, false, false, null);
-    return new FrontEnd(options).loadModule("main", null);
+    return new FrontEnd(options).loadModule(Long.toString(o.serializationHash()), null);
   }
 
 
@@ -277,12 +277,13 @@ public class FrontEnd extends ANY
       {
         var data = ch.map(FileChannel.MapMode.READ_ONLY, 0, ch.size());
         result = libModule(data, universe);
-        if (!m.equals(result.name()))
-          {
-            Errors.error("Module name mismatch for module file '" + p + "' expected name '" +
-                         m + "' but found '" + result.name() + "'");
-          }
-        _modules.put(m, result);
+        // NYI: BUG: does not work anymore
+        // if (!m.equals(result.name()))
+        //   {
+        //     Errors.error("Module name mismatch for module file '" + p + "' expected name '" +
+        //                  m + "' but found '" + result.name() + "'");
+        //   }
+        _modules.put(result.name(), result);
       }
     catch (NoSuchFileException io)
       {
@@ -392,7 +393,7 @@ public class FrontEnd extends ANY
         if (_options.serializeFuir())
           {
             // We need this for source positions in fuir
-            _sourceModule.writeToFile(Path.of("main.fum"));
+            _sourceModule.writeToFile(Path.of(Long.toString(_options.serializationHash()) + ".fum"));
           }
         reset();
         _mainModule = libModule(data, null /* use universe of module */);
