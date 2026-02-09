@@ -30,12 +30,18 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.ByteBuffer;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.Map.Entry;
 import java.util.function.Function;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
@@ -2359,22 +2365,42 @@ SourceFile
   }
 
 
+  /**
+   * recursive helper to create stream of all modules
+   */
+  Stream<LibraryModule> flatten(LibraryModule m)
+  {
+    return Stream.concat(
+      Stream.of(m),
+      Arrays
+        .stream(m._modules)
+        .flatMap(x -> flatten(x._module)));
+  }
+
+
+  // cache field for all modules
+  Map<String, LibraryModule> _flattenedModules;
+
+  /**
+   * get sourcePosition
+   *
+   * @param module the module name the SourcePosition is from
+   *
+   * @param pos 32-bits pos, 32-bits posEnd cramed into a long value
+   *
+   * @return
+   */
   public SourcePosition pos(String module, long pos)
   {
+    if (_flattenedModules == null)
+      {
+        _flattenedModules = flatten(this)
+          .collect(Collectors.toUnmodifiableMap(LibraryModule::name, x->x));
+      }
     int bytePos = (int)(pos >> 32);
     int byteEndPos = (int)(pos & 0xffffffff);
-    if (!name().equals(module))
-      {
-        for (int index = 0; index < _modules.length; index++)
-          {
-            if (_modules[index]._name.equals(module))
-              {
-                return _modules[index]._module.pos(bytePos, byteEndPos);
-              }
-          }
-        Errors.fatal("LibraryModule.pos: module " + module + " not found.");
-      }
-    return pos(bytePos, byteEndPos);
+    return _flattenedModules.get(module)
+      .pos(bytePos, byteEndPos);
   }
 
 
