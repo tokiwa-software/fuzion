@@ -45,7 +45,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import dev.flang.mir.MIR;
-import dev.flang.tools.FuzionHome;
+
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Call;
 import dev.flang.ast.Feature;
@@ -389,11 +389,11 @@ public class FrontEnd extends ANY
    *
    * @return Pair of a universe and a metamodule with all modules in modules loaded
    */
-  public static Pair<AbstractFeature, Module> feModule(List<String> modules)
+  public static Pair<AbstractFeature, Module> feModule(Path fuzionHome, List<String> modules)
   {
     var frontEndOptions = new FrontEndOptions(
       /* verbose                 */ 0,
-      /* fuzionHome              */ FuzionHome._fuzionHome,
+      /* fuzionHome              */ fuzionHome,
       /* loadBaseMod             */ true,
       /* eraseInternalNamesInMod */ false,
       /* modules                 */ modules,

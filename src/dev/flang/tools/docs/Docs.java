@@ -354,6 +354,7 @@ public class Docs extends ANY
       }
 
     var p = FrontEnd.feModule(
+        FuzionHome._fuzionHome,
         allModules() // generate API docs for all modules (except Java ones)
       );
     var universe = p.v0();
