@@ -154,9 +154,11 @@ public class FrontEnd extends ANY
         sourceDirs[i] = new SourceDir(sourcePaths[i]);
       }
 
+    var dependsOn = loadModules(_feUniverse);
+
     if (options._loadSources)
       {
-        _sourceModule = new SourceModule(options, sourceDirs, loadModules(_feUniverse), _feUniverse);
+        _sourceModule = new SourceModule(options, sourceDirs, dependsOn, _feUniverse);
         _sourceModule.createASTandResolve();
       }
     else
