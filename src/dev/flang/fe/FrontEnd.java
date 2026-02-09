@@ -261,7 +261,7 @@ public class FrontEnd extends ANY
     try (var ch = (FileChannel) Files.newByteChannel(p, EnumSet.of(StandardOpenOption.READ)))
       {
         var data = ch.map(FileChannel.MapMode.READ_ONLY, 0, ch.size());
-        result = libModule(data, x -> new LibraryModule[0], universe);
+        result = libModule(data, universe);
         if (!m.equals(result.name()))
           {
             Errors.error("Module name mismatch for module file '" + p + "' expected name '" +
@@ -286,7 +286,7 @@ public class FrontEnd extends ANY
   /**
    * create a new LibraryModule from {@code data}
    */
-  private LibraryModule libModule(ByteBuffer data, Function<AbstractFeature, LibraryModule[]> loadDependsOn, AbstractFeature universe)
+  private LibraryModule libModule(ByteBuffer data, AbstractFeature universe)
   {
     LibraryModule result;
     var base = _totalModuleData;
@@ -294,7 +294,6 @@ public class FrontEnd extends ANY
     result = new LibraryModule(GLOBAL_INDEX_OFFSET + base,
                                this,
                                data,
-                               loadDependsOn,
                                universe);
     return result;
   }
@@ -376,7 +375,7 @@ public class FrontEnd extends ANY
 
         var data = _sourceModule.data();
         reset();
-        _mainModule = libModule(data, af -> loadModules(af), null /* use universe of module */);
+        _mainModule = libModule(data, null /* use universe of module */);
         var ignore = new Types.Resolved(_mainModule, _mainModule.libraryUniverse(), false);
       }
     return _mainModule;

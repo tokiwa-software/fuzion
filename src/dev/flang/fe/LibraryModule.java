@@ -171,7 +171,7 @@ public class LibraryModule extends Module implements MirModule
   /**
    * Create LibraryModule for given options and sourceDirs.
    */
-  LibraryModule(int globalBase, FrontEnd fe, ByteBuffer data, Function<AbstractFeature, LibraryModule[]> loadDependsOn, AbstractFeature universe)
+  LibraryModule(int globalBase, FrontEnd fe, ByteBuffer data, AbstractFeature universe)
   {
     super(null /* set later, we need correct universe first */);
 
@@ -193,15 +193,13 @@ public class LibraryModule extends Module implements MirModule
     if (CHECKS) check
       (_universe.isUniverse());
 
-    _dependsOn = loadDependsOn.apply(universe());
-    if (CHECKS)
-      check(_dependsOn != null);
-
+    _dependsOn = new LibraryModule[mrc];
     for (int i = 0; i < mrc; i++)
       {
         var n = moduleRefName(p);
         var v = moduleRefHash(p);
         var m = fe.loadModule(n, universe());
+        _dependsOn[i] = m;
         var mv = m.hash();
         if (!Arrays.equals(v, mv))
           {
@@ -316,7 +314,24 @@ public class LibraryModule extends Module implements MirModule
    *
    * @param outer the declaring feature
    */
-  public SortedMap<FeatureName, AbstractFeature>declaredFeatures(AbstractFeature outer)
+  public SortedMap<FeatureName, AbstractFeature> declaredFeatures(AbstractFeature outer)
+  {
+    var result = declaredFeaturesShallow(outer);
+    for (Module d : _dependsOn)
+      {
+        result.putAll(d.declaredFeatures(outer));  // NYI: handle equally named features from different modules
+      }
+    return result;
+  }
+
+
+  /**
+   * Get declared features for given outer Feature as seen from outside of this module.
+   * Result is null if outer has no declared features in this module.
+   *
+   * @param outer the declaring feature
+   */
+  public SortedMap<FeatureName, AbstractFeature> declaredFeaturesShallow(AbstractFeature outer)
   {
     var result = new TreeMap<FeatureName, AbstractFeature>();
     if (outer instanceof LibraryFeature lf)
@@ -329,10 +344,6 @@ public class LibraryModule extends Module implements MirModule
     for (var d : features(outer))
       {
         result.put(d.featureName(), d);  // NYI: handle equally named features from different modules
-      }
-    for (Module d : _dependsOn)
-      {
-        result.putAll(d.declaredFeatures(outer));  // NYI: handle equally named features from different modules
       }
     return result;
   }
