@@ -311,7 +311,7 @@ public class FrontEndOptions extends FuzionOptions
                 ? Files.readAllBytes(inputFile())
                 : _executeCode;
 
-            _serializationHashCode = Arrays.hashCode(bytes) + Integer.MAX_VALUE;
+            _serializationHashCode = Math.abs(Arrays.hashCode(bytes) + Integer.MAX_VALUE);
 
             if (_readStdin)
               {
