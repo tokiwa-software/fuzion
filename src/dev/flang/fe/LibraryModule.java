@@ -2420,13 +2420,6 @@ SourceFile
   }
 
 
-  @Override
-  public ByteBuffer data(String name)
-  {
-    throw new UnsupportedOperationException("Unimplemented method 'data'");
-  }
-
-
   /**
    * Is this module the same as the provided one or does this module depend on the provided one?
    *
