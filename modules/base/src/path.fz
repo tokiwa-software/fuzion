@@ -40,6 +40,64 @@ private:public path(public names array String, public is_absolute bool) : proper
               || !(names.drop_while ="..").contains ".."
 is
 
+  # is this a relative path
+  #
+  public is_relative bool => !is_absolute
+
+  # is this an empty path
+  #
+  public fixed is_empty   bool => path.this = path.empty
+
+  # is this the root
+  #
+  public fixed is_root    bool => path.this = path.root
+
+  # is this a relative path representing "current directory"
+  #
+  public fixed is_current bool => path.this = path.current
+
+  # is this a relative path representing "parent directory"
+  #
+  public fixed is_parent  bool => path.this = parent
+
+  # is this a path with just one segment, i.e. not containing a path separator when normalized
+  #
+  public is_single_segment bool => is_relative && names.count = 1
+
+  # the number of segments in this path
+  #
+  public segments_count i32 => names.count
+
+  # does this path end with other
+  #
+  public fixed ends_with(other path) bool =>
+    (other.segments_count < segments_count && other.is_relative && names.reverse.starts_with other.names.reverse) ||
+      path.this = other
+
+  # does this path contain other
+  #
+  public contains(other path) bool =>
+    other.is_relative && (names.find other.names ? i32 => true | * => false) || starts_with other
+
+  # drop the first path segment
+  #
+  public drop_first path => drop_first 1
+
+  # drop the first n path segments
+  #
+  public drop_first(n i32) path => path (names.drop n .as_array) false
+
+  # drop the last path segment
+  #
+  public drop_last path => drop_last 1
+
+  # drop the last n path segments
+  #
+  public drop_last(n i32) path =>
+    len := names.length
+    n >= len ? path.empty : path (names.take (len - n) .as_array) is_absolute
+
+
   # resolve o in this path
   #
   # e.g.
@@ -71,22 +129,29 @@ is
     path.of sp (is_absolute && x=0)
 
 
-  # consider this to represent a file
-  # and return just name of the file
-  # without its path.
+  # Full file name or name of the last directory
   #
-  public file_name String
+  public base_name String
     pre debug: !names.is_empty
   =>
     names.last.get
 
+  # consider this to represent a file
+  # and return just name of the file
+  # without its extension and path.
+  #
+  public stem String =>
+    match base_name.find_last "."
+      i i32 => base_name.substring 0 i
+      nil   => base_name
 
-  # return the suffix of the file_name
+  # consider this to represent a file
+  # and return the suffix of the file_name
   #
   public suffix String
-    pre debug: !file_name.is_empty
+    pre debug: !base_name.is_empty
   =>
-    file_name.split "." .last.get
+    base_name.split "." .last.get
 
 
   # get the parent of this path
@@ -190,3 +255,15 @@ is
           # we need to include this element in the final path
           (r.0, [t]++r.1)
     path ([".."]*dotdot ++ names).as_array is_absolute
+
+
+  public type.root()    path => path.of "/"
+
+
+  public type.empty()   path => path.of ""
+
+
+  public type.current() path => path.of "."
+
+
+  public type.parent()  path => path.of ".."
