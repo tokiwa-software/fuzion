@@ -242,10 +242,10 @@ public class OptimizedFUIR extends GeneratingFUIR {
                   invalidSite(s) || codeAt(s) != ExprKind.Tag ? -1 : tagTagNum(s),
                   invalidSite(s) || codeAt(s) != ExprKind.Match ? null : matchCaseFields(s),
                   invalidSite(s) || !(codeAt(s) == ExprKind.Assign || codeAt(s) == ExprKind.Call) ? false : accessIsDynamic(s),
-                  invalidSite(s) || sitePos(s) == null ? null : sitePos(s)._sourceFile._fileName.toString(),
-                  invalidSite(s) || sitePos(s) == null ? -1 : sitePos(s).line(),
-                  invalidSite(s) || sitePos(s) == null ? -1 : sitePos(s).column(),
-                  invalidSite(s) || sitePos(s) == null ? null : sitePos(s).show()
+                  invalidSite(s) || sitePos(s) == null || sitePos(s).globalPos() == null
+                    ? null : sitePos(s).globalPos().v0(),
+                  invalidSite(s) || sitePos(s) == null || sitePos(s).globalPos() == null
+                    ? -1 : sitePos(s).globalPos().v1()
                 );
           }
         oos.writeObject(sites);

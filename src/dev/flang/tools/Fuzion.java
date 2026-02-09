@@ -460,20 +460,8 @@ public class Fuzion extends Tool
          */
         if (!Errors.any())
           {
-            var data = fe.sourceModule().data();
-            if (data != null)
-              {
-                try (var os = Files.newOutputStream(f._saveMod))
-                  {
-                    Channels.newChannel(os).write(data);
-                    say(" + " + f._saveMod + " in " + (System.currentTimeMillis() - _timerStart) + "ms");
-                  }
-                catch (IOException io)
-                  {
-                    Errors.error("-saveModule: I/O error when writing module file",
-                                 "While trying to write file '"+ f._saveMod + "' received '" + io + "'");
-                  }
-              }
+            fe.sourceModule().writeToFile(f._saveMod);
+            say(" + " + f._saveMod + " in " + (System.currentTimeMillis() - _timerStart) + "ms");
           }
       }
     },
@@ -1238,7 +1226,9 @@ public class Fuzion extends Tool
               }
             try
               {
-                var fuir = new LibraryFuir(Files.readAllBytes(fuirFile));
+                var fuir = new LibraryFuir(
+                  Files.readAllBytes(fuirFile),
+                  FrontEnd.loadMainModule(options));
                 timer("loadFUIR");
                 _backend.process(options, fuir);
                 timer("be");

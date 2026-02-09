@@ -41,7 +41,6 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -57,6 +56,7 @@ import dev.flang.ast.Types;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.List;
 import dev.flang.util.SourceDir;
 
 
@@ -170,6 +170,21 @@ public class FrontEnd extends ANY
       {
         _sourceModule = null;
       }
+  }
+
+
+  /**
+   * Helper method to (re)-load the main.fum for LibraryFuir.
+   */
+  public static LibraryModule loadMainModule(FrontEndOptions o)
+  {
+    var mDirs = new List<>(o._moduleDirs);
+    mDirs.add(".");
+    var options = new FrontEndOptions(
+      0, o.fuzionHome(), false, false,
+      new List<>(), mDirs, new List<>(), -1, false,
+      null, false, null, null, null, false, false, false, null);
+    return new FrontEnd(options).loadModule("main", null);
   }
 
 
@@ -374,6 +389,11 @@ public class FrontEnd extends ANY
         Errors.showAndExit();
 
         var data = _sourceModule.data();
+        if (_options.serializeFuir())
+          {
+            // We need this for source positions in fuir
+            _sourceModule.writeToFile(Path.of("main.fum"));
+          }
         reset();
         _mainModule = libModule(data, null /* use universe of module */);
         var ignore = new Types.Resolved(_mainModule, _mainModule.libraryUniverse(), false);

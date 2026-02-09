@@ -57,6 +57,7 @@ import dev.flang.util.FuzionOptions;
 import static dev.flang.util.FuzionConstants.MirExprKind;
 import dev.flang.util.HexDump;
 import dev.flang.util.List;
+import dev.flang.util.Pair;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 import dev.flang.util.SourceRange;
@@ -2346,8 +2347,34 @@ SourceFile
             sf = new SourceFile(srcPath, ba);
             _sourceFiles.set(i, sf);
           }
-        return new SourceRange(sf, pos - sourceFileBytesPos(at), posEnd - sourceFileBytesPos(at));
+        return new SourceRange(sf, pos - sourceFileBytesPos(at), posEnd - sourceFileBytesPos(at))
+          {
+            @Override
+            public Pair<String, Long> globalPos()
+            {
+              return new Pair<>(name(), ((long)pos)<<32 | ((long)posEnd));
+            }
+          };
       }
+  }
+
+
+  public SourcePosition pos(String module, long pos)
+  {
+    int bytePos = (int)(pos >> 32);
+    int byteEndPos = (int)(pos & 0xffffffff);
+    if (!name().equals(module))
+      {
+        for (int index = 0; index < _modules.length; index++)
+          {
+            if (_modules[index]._name.equals(module))
+              {
+                return _modules[index]._module.pos(bytePos, byteEndPos);
+              }
+          }
+        Errors.fatal("LibraryModule.pos: module " + module + " not found.");
+      }
+    return pos(bytePos, byteEndPos);
   }
 
 
