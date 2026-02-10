@@ -1897,7 +1897,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     return
       isConstructor() &&
       contract() == dev.flang.ast.Contract.EMPTY_CONTRACT &&
-      arguments().isEmpty() &&
+      valueArguments().isEmpty() &&
       (allowRef || !isRef()) &&
       code().isEmpty() &&
       !hasOuterRef() &&

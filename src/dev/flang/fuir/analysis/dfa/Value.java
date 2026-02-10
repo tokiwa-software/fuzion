@@ -425,7 +425,7 @@ public class Value extends Val
     Value result;
     if (this == UNIT)
       {
-        result = dfa.newInstance(rc, NO_SITE, context);
+        result = UNIT;
       }
     else
       {

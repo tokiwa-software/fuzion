@@ -2719,6 +2719,10 @@ public class DFA extends ANY
         check(!_fuir.clazzIsRef(vc));
         r = newInstance(vc, site, context).box(this, vc, cl, context);
       }
+    else if (_fuir.clazzIsUnitType(cl))
+      {
+        r = Value.UNIT;
+      }
     else
       {
         var cnum = _fuir.clazzId2num(cl);
@@ -3381,7 +3385,7 @@ public class DFA extends ANY
         else
           {
             if (CHECKS) check
-              (false);
+              (r._instance == Value.UNIT);
           }
         e = r;
         analyzeNewCall(r);
