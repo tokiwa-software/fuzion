@@ -1760,7 +1760,7 @@ A xref:fuzion_value_argument[value argument] must be redefined using a type that
         var result_o = result_os.size() == 1 ? result_os.get(0)
                                              : Types.t_ERROR;
         var result_r = f.resultType();
-        if (!legalRedef(o))
+        if (!isLegalRedef(o))
           {
             /*
     // tag::fuzion_rule_PARS_REDEF_KIND[]
@@ -1769,7 +1769,7 @@ A feature that is a constructor, choice or a type parameter may not be redefined
             */
             AstErrors.cannotRedefine(f, o);
           }
-        else if (!legalRedef(f))
+        else if (!isLegalRedef(f))
           {
             /*
     // tag::fuzion_rule_PARS_REDEF_AS_KIND[]
@@ -1826,7 +1826,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
   }
 
 
-  private boolean legalRedef(AbstractFeature f)
+  private boolean isLegalRedef(AbstractFeature f)
   {
     return switch (f.kind())
       {
