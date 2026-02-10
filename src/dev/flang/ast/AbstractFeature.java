@@ -847,25 +847,14 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   AbstractType rebaseTypeForCotype(AbstractType t)
   {
-    var tl = new List<AbstractType>();
-    for (var ta0 : typeArguments())
-      {
-        var ta = new ParsedType(pos(), ta0.featureName().baseName());
-        tl.add(ta);
+    for (var i : inherits())
+      { // NYI: CLEANUP: If we do not freeze the type parameters, we run into errors. Apparently,
+        // there is some code that re-uses these without proper freezing/cloning.
+        i.actualTypeParameters().freeze();
       }
-    var t0 = t;
-    //tl.freeze();
-    //    var t2x = t0.OLDapplyTypePars(this, tl);
-    var t2 = t0.NEW2applyTypePars(this, tl);
-    /*
-    if (t.compareTo(t2) != 0)
-      {
-        System.out.println("OLD t0: "+t0+" apply "+qualifiedName()+" "+tl+" --> "+t);
-        System.out.println("NEW t0: "+t0+" apply "+qualifiedName()+" "+tl+" --> "+t2);
-      }
-    */
-    t = t2.clone(this);
-    return t;
+    var tl = typeArguments().map2(ta -> (AbstractType) new ParsedType(pos(), ta.featureName().baseName()));
+    return t.NEWapplyTypePars(this, tl)
+            .clone(this);
   }
 
 

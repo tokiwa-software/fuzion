@@ -1193,14 +1193,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
     return result;
   }
-  public AbstractType NEW2applyTypePars(AbstractFeature f, List<AbstractType> actualGenerics)
-  {
-    for (var i : f.inherits())
-      {
-        i.actualTypeParameters().freeze();
-      }
-    return NEWapplyTypePars(f, actualGenerics);
-  }
 
 
   /**
@@ -1252,7 +1244,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         var this_type = g.get(0);
         g = g.map(x -> x == this_type                     ||        // leave first type parameter unchanged
                             this_type.isGenericArgument()    ? x    // no actuals to apply in a generic arg
-                                                             : this_type.OLDactualType(x, Context.NONE));
+                                                             : x.OLDapplyTypePars(this_type)
+                                                                .replace_this_type_by_actual_outer(this_type, Context.NONE));
       }
     return g;
   }
@@ -1658,16 +1651,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       .replace_this_type_by_actual_outer(this, context);
   }
 
-  AbstractType OLDactualType(AbstractType t, Context context)
-  {
-    if (PRECONDITIONS) require
-      (!isGenericArgument(),
-       !t.isOpenGeneric());
-
-    return t.OLDapplyTypePars(this)
-      .replace_this_type_by_actual_outer(this, context);
-  }
-
 
   /**
    * Use this type as a target type for a call using type {@code t} and determine the
@@ -1684,10 +1667,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public AbstractType NEWactualType(AbstractType t)
   {
     return NEWactualType(t, Context.NONE);
-  }
-  public AbstractType OLDactualType(AbstractType t)
-  {
-    return OLDactualType(t, Context.NONE);
   }
   public AbstractType handDownAndApplyTypePars(AbstractType t)
   {
