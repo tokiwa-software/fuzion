@@ -532,7 +532,7 @@ public class DFA extends ANY
 
       // register calls for constant creation even though
       // not every backend actually performs these calls.
-      newCall(null,
+      newCall(_call,
               constCl,
               NO_SITE,
               Value.UNIT /* universe, but we do not use _universe as target */,
@@ -599,25 +599,32 @@ public class DFA extends ANY
       for (var mc = 0; mc < _fuir.matchCaseCount(s); mc++)
         {
           // array to permit modification in lambda
-          var taken = false;
+          var vals = new List<Value>();
           for (var t : _fuir.matchCaseTags(s, mc))
             {
-              var sv = subv.value();
-              if (sv instanceof ValueSet vs)
+              subv.value().forAll(v ->  {
+                var tv = (TaggedValue)v;
+                if (tv._tag == t)
+                  {
+                    vals.add(tv._original);
+                  }
+              });
+            }
+          var taken = !vals.isEmpty();
+          if (taken)
+            {
+              var f = _fuir.matchCaseField(s, mc);
+              if (f != NO_CLAZZ)
                 {
-                  for (var v : vs._componentsArray)
+                  var fc = _fuir.clazzResultClazz(f);
+                  Value joined = vals.get(0);
+                  for (int index = 1; index < vals.size(); index++)
                     {
-                      taken = matchSingleSubject(s, v, mc, t) || taken;
+                      joined = joined.join(DFA.this, vals.get(index), fc);
                     }
+                  _call._instance.setField(DFA.this, f, joined);
                 }
-              else
-                {
-                  taken = matchSingleSubject(s, sv, mc, t) || taken;
-                }
-              if (taken)
-                {
-                  DFA.this._takenMatchCases.add(((long)s<<32)|((long)mc));
-                }
+              DFA.this._takenMatchCases.add(((long)s<<32)|((long)mc));
             }
           if (_reportResults && _options.verbose(9))
             {
@@ -636,44 +643,6 @@ public class DFA extends ANY
         }
       DFA.this.site(s).recordResult(r == null);
       return r;
-    }
-
-
-    /**
-     * Helper for match that matches only a single subject value.
-     *
-     * @param s site of the match
-     *
-     * @param v subject value of this match that is being tested.
-     *
-     * @param mc the match case to process
-     *
-     * @param t the tag the case matches
-     *
-     * @return true if this match case was taken by v
-     */
-    boolean matchSingleSubject(int s, Value v, int mc, int t)
-    {
-      var res = false;
-      if (v instanceof TaggedValue tv)
-        {
-          if (tv._tag == t)
-            {
-              var field = _fuir.matchCaseField(s, mc);
-              if (field != NO_CLAZZ)
-                {
-                  var untagged = tv._original;
-                  _call._instance.setField(DFA.this, field, untagged);
-                }
-              res = true;
-            }
-        }
-      else
-        {
-          throw new Error("DFA encountered Unexpected value in match: " + v.getClass() + " '" + v + "' " +
-                          " for match of type " + _fuir.clazzAsString(_fuir.matchStaticSubject(s)));
-        }
-      return res;
     }
 
 
@@ -783,12 +752,6 @@ public class DFA extends ANY
 
 
   /**
-   * Set of intrinsics that are found to be used by the DFA.
-   */
-  static final Set<String> _usedIntrinsics_ = new TreeSet<>();
-
-
-  /**
    * Maximum recursive analysis of newly created Calls, see {@code analyzeNewCall} for
    * details.
    *
@@ -852,8 +815,8 @@ public class DFA extends ANY
   static final String  TRACE_ALL_EFFECT_ENVS_NAME = "dev.flang.fuir.analysis.dfa.TRACE_ALL_EFFECT_ENVS";
   static final boolean TRACE_ALL_EFFECT_ENVS = FuzionOptions.boolPropertyOrEnv(TRACE_ALL_EFFECT_ENVS_NAME, true);
 
-  static final String  DO_NOT_TRACE_ENVS_NAME = "dev.flang.fuir.analysis.dfa.DO_NOT_TRACE_ENVS";
-  static final boolean DO_NOT_TRACE_ENVS = FuzionOptions.boolPropertyOrEnv(DO_NOT_TRACE_ENVS_NAME, true);
+  static final String  TRACE_ENVS_NAME = "dev.flang.fuir.analysis.dfa.TRACE_ENVS";
+  static final boolean TRACE_ENVS = FuzionOptions.boolPropertyOrEnv(TRACE_ENVS_NAME, false);
   TreeMap<Integer, Value> _allValuesForEnv = new TreeMap<>();
 
 
@@ -866,10 +829,7 @@ public class DFA extends ANY
    */
   private static void put(String n, IntrinsicDFA c)
   {
-    _intrinsics_.put(n, (call) -> {
-      _usedIntrinsics_.add(n);
-      return c.analyze(call);
-    });
+    _intrinsics_.put(n, (call) -> c.analyze(call));
   }
 
 
@@ -2285,7 +2245,7 @@ public class DFA extends ANY
           Value ev;
           if (cl._dfa._real)
             {
-              if (DO_NOT_TRACE_ENVS)
+              if (!TRACE_ENVS)
                 {
                   ev = cl._dfa._allValuesForEnv.get(ecl);
                 }
@@ -2345,7 +2305,7 @@ public class DFA extends ANY
         });
     put("effect.type.is_instated0"          , cl ->
         cl.useAndGetEffect(cl.site(), fuir(cl).effectTypeFromIntrinsic(cl.calledClazz()), true) != null &&
-        !DO_NOT_TRACE_ENVS
+        TRACE_ENVS
         ? cl._dfa.True()
         : cl._dfa.bool()  /* NYI: currently, this is never FALSE since a default effect might get installed turning this into TRUE
                            * should reconsider if handling of default effects changes
@@ -3526,7 +3486,7 @@ public class DFA extends ANY
    */
   Env newEnv(Env env, int ecl, Value ev)
   {
-    if (DO_NOT_TRACE_ENVS)
+    if (!TRACE_ENVS)
       {
         var v0 = _allValuesForEnv.get(ecl);
         var v1 = v0 == null ? ev : v0.join(this, ev, ecl);
