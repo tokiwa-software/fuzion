@@ -994,7 +994,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         target = target.selfOrConstraint(Context.NONE);
         result = result.OLDapplyTypePars(target.feature(), target.actualGenerics());
-         if (target.isThisType())
+        if (target.isThisType())
           {
             // see #659 for when this is relevant
             result = result.OLDapplyTypePars(target.feature().outer().thisType());

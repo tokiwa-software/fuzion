@@ -546,12 +546,15 @@ class Clazz extends ANY implements Comparable<Clazz>
   {
     var result = new TreeSet<Clazz>();
     result.add(this);
-    for (var p: feature().inherits())
+    var f = feature();
+    var o = f.outer();
+    for (var p: f.inherits())
       {
         var pt = p.type();
         var t1 = isRef() && !pt.isVoid() ? pt.asRef() : pt.asValue();
-        var t2 = _type.OLDactualType(t1);
-        var pc = _fuir.newClazz(t2);
+        var t2 = handDown(t1, NO_SELECT, (_,_)->{}, new List<>());
+        var t3 = _type.NEWactualType(t2);
+        var pc = _fuir.newClazz(t3);
         if (CHECKS) check
           (Errors.any() || pc.isVoidType() || isRef() == pc.isRef());
         result.add(pc);
