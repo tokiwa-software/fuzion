@@ -23,5 +23,5 @@
 
 mi : mutate is
 mi ! ()->
-  b := (String.type.from_mutable_array ((mi.array Any).type.new 1 false))
+  b := (String.type.from_mutable_array (mi.array Any .new 1 false))
   _ := type_of b

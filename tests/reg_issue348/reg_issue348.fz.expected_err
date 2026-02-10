@@ -8,8 +8,8 @@ effect environment '--empty--' for call to 'reg_issue348.type.m.type.from_env' a
     mutate.this.env.array data length unit
 ----^^^^^^^^^^^^^^^
 effect environment '--empty--' for call to '(reg_issue348.type.m.type.array.type reg_issue348.a).new#2' at --CURDIR--/reg_issue348.fz:33:10:
-  arr := (m.array a).type.new 10 a
----------^^^^^^^^^^^^^^^^^^^^^^^^^
+  arr := m.array a .new 10 a
+---------^^^^^^^^^^^^^^^^^^^
 effect environment '--empty--' for call to 'reg_issue348'
 effect environment '--empty--' at program entry
 

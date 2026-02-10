@@ -55,7 +55,7 @@ reg_issue2242 =>
   mi : mutate is
   mi ! ()->
 
-    a := (mi.array f64).type.new 10 0.0
+    a := mi.array f64 .new 10 0.0
     for i in a.indices do
       a[i] := random.next_f64
 
