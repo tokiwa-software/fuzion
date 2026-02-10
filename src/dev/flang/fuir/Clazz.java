@@ -1716,7 +1716,7 @@ class Clazz extends ANY implements Comparable<Clazz>
                  of == Types.resolved.f_type_as_value && f == of.resultField()   )
           {
             var ag = (f == Types.resolved.f_type_as_value ? this : o).actualTypeParameters();
-            result = ag[0].typeClazz();
+            result = ag[0].typeClazz().asRef();
           }
         // NYI: UNDER DEVELOPMENT: special handling for #2262
         else if (isBoxed())
