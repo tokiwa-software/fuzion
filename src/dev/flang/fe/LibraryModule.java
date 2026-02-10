@@ -38,6 +38,7 @@ import java.util.TreeMap;
 import java.util.function.Function;
 
 import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.AbstractFeature.Kind;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Expr;
 import dev.flang.ast.FeatureName;
@@ -997,9 +998,7 @@ Feature
   AbstractFeature.Kind featureKindEnum(int at)
   {
     var k = featureKind(at) & FuzionConstants.MIR_FILE_KIND_MASK;
-    return featureIsConstructor(at)
-      ? AbstractFeature.Kind.Routine
-      : AbstractFeature.Kind.from(k);
+    return AbstractFeature.Kind.from(k);
   }
   Visi featureVisibilityEnum(int at)
   {
@@ -1008,22 +1007,13 @@ Feature
   }
   boolean featureIsConstructor(int at)
   {
-    var k = featureKind(at) & FuzionConstants.MIR_FILE_KIND_MASK;
-    return switch (k)
-      {
-        case FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_VALUE,
-             FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF -> true;
-        default                                            -> false;
-      };
+    var fke = featureKindEnum(at);
+    return fke == AbstractFeature.Kind.Constructor ||
+           fke == AbstractFeature.Kind.RefConstructor;
   }
   boolean featureIsRoutine(int at)
   {
-    return featureKindEnum(at) == AbstractFeature.Kind.Routine;
-  }
-  boolean featureIsRef(int at)
-  {
-    var k = featureKind(at) & FuzionConstants.MIR_FILE_KIND_MASK;
-    return k == FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF;
+    return featureKindEnum(at).isRoutine();
   }
   boolean featureHasCotype(int at)
   {
@@ -1148,14 +1138,11 @@ Feature
   boolean featureHasResultType(int at)
   {
     var k = featureKind(at) & FuzionConstants.MIR_FILE_KIND_MASK;
-    return
-      (k != FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF    &&
-       k != FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_VALUE  &&
-       k != AbstractFeature.Kind.Choice           .ordinal() &&
-       k != AbstractFeature.Kind.TypeParameter    .ordinal() &&
-       k != AbstractFeature.Kind.OpenTypeParameter.ordinal()
-       );
-
+    return switch (AbstractFeature.Kind.from(k))
+      {
+        case Abstract, Field, Function, Intrinsic, Native -> true;
+        default -> false;
+      };
   }
   int featureValuesAsOpenTypeFeaturePos(int at)
   {

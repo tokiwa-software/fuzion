@@ -244,7 +244,10 @@ hw25 is
 
     return switch (ff.kind())
       {
-      case Routine   -> FeatureKind.Routine;
+      case Function,
+           Constructor,
+           RefConstructor
+                     -> FeatureKind.Routine;
       case Field     -> FeatureKind.Field;
       case Intrinsic -> FeatureKind.Intrinsic;
       case Abstract  -> FeatureKind.Abstract;

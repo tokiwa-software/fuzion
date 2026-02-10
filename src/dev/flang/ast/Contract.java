@@ -481,6 +481,7 @@ public class Contract extends ANY
     var oc = outer.contract();
     var p = oc._hasPost != null ? oc._hasPost : outer.pos();
     List<Expr> args = new List<>();
+    // NYI: CLEANUP: use outer.kind() and switch
     if (!outer.isConstructor())
       {
         for (var a : outer.valueArguments())
@@ -745,7 +746,7 @@ public class Contract extends ANY
     if (requiresPreConditionsFeature(f) && f._preBoolFeature == null)
       {
         // NYI: UNDER DEVELOPMENT:
-        if (f.kind() != Kind.Routine && f.kind() != Kind.Intrinsic && f.kind() != Kind.Abstract)
+        if (!f.isRoutine() && f.kind() != Kind.Intrinsic && f.kind() != Kind.Abstract)
           {
             Errors.error(fc._hasPre, "Implementation restriction: pre-condition for " + f.kind() + " not supported yet.", "");
           }
@@ -1013,7 +1014,7 @@ all of their redefinition to `true`. +
     if (requiresPostConditionsFeature(f) && f._postFeature == null)
       {
         // NYI: UNDER DEVELOPMENT:
-        if (f.kind() != Kind.Routine && f.kind() != Kind.Abstract)
+        if (!f.isRoutine() && f.kind() != Kind.Abstract)
           {
             Errors.error(fc._hasPost, "Implementation restriction: post-condition for " + f.kind() + " not supported yet.", "");
           }

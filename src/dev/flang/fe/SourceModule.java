@@ -319,7 +319,7 @@ public class SourceModule extends Module implements SrcModule
             switch (main.kind())
               {
               case Field, Abstract, Intrinsic, Choice -> FeErrors.mainFeatureMustNotBeField(main);
-              case Routine -> {
+              case Function, Constructor, RefConstructor -> {
                 if (!main.typeArguments().isEmpty())
                   {
                     FeErrors.mainFeatureMustNotHaveTypeArguments(main);
@@ -1761,12 +1761,7 @@ A xref:fuzion_value_argument[value argument] must be redefined using a type that
         var result_o = result_os.size() == 1 ? result_os.get(0)
                                              : Types.t_ERROR;
         var result_r = f.resultType();
-        if (o.isConstructor() ||
-                 switch (o.kind())
-                 {
-                   case Routine, Field, Intrinsic, Abstract, Native -> false; // ok
-                   case TypeParameter, OpenTypeParameter, Choice    -> true;  // not ok
-                 })
+        if (!isLegalRedef(o))
           {
             /*
     // tag::fuzion_rule_PARS_REDEF_KIND[]
@@ -1775,12 +1770,7 @@ A feature that is a constructor, choice or a type parameter may not be redefined
             */
             AstErrors.cannotRedefine(f, o);
           }
-        else if (f.isConstructor() ||
-                 switch (f.kind())
-                 {
-                   case Routine, Field, Intrinsic, Abstract, Native -> false; // ok
-                   case TypeParameter, OpenTypeParameter, Choice    -> true;  // not ok
-                 })
+        else if (!isLegalRedef(f))
           {
             /*
     // tag::fuzion_rule_PARS_REDEF_AS_KIND[]
@@ -1834,6 +1824,16 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
     checkLegalQualThisType(f);
     checkLegalDefinesType(f);
     checkIllegalIntrinsic(f);
+  }
+
+
+  private boolean isLegalRedef(AbstractFeature f)
+  {
+    return switch (f.kind())
+      {
+        case Function, Field, Intrinsic, Abstract, Native -> true;
+        case TypeParameter, OpenTypeParameter, Choice, Constructor, RefConstructor -> false;
+      };
   }
 
 
