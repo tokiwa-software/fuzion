@@ -29,6 +29,7 @@ package dev.flang.ast;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -41,6 +42,7 @@ import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.Pair;
 import dev.flang.util.SourcePosition;
+import dev.flang.util.SourceRange;
 import dev.flang.util.StringHelpers;
 import dev.flang.util.Terminal;
 
@@ -1741,6 +1743,24 @@ public class AstErrors extends ANY
           subject + " must not contain any fields",
           "Field " + s(f) + " is not permitted.\n" +
           "Field declared at "+ f.pos().show());
+  }
+
+  static void choiceMustNotContainFields(SourcePosition pos, SortedSet<AbstractFeature> fields)
+  {
+    SourceRange fieldRange = new SourceRange(
+      fields.getFirst().pos()._sourceFile,
+      fields.getFirst().pos().bytePos(),
+      fields.getLast().pos().byteEndPos());
+
+    error(pos,
+          "Choice must not contain any fields",
+          "%s %s %s not permitted.\n%s declared at %s"
+            .formatted(
+              StringHelpers.plural(fields.size(), "Field"),
+              sfn(new List<AbstractFeature>(fields.iterator())),
+              (fields.size() > 1 ? "are" : "is"),
+              StringHelpers.plural(fields.size(), "Field"),
+              fieldRange.show()));
   }
 
   static void choiceMustNotBeField(SourcePosition pos)
