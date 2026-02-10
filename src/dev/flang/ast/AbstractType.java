@@ -1003,7 +1003,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           {
             if (target.outer() != null)
               {
-                var r0 = result;
                 result = result.OLDapplyTypePars(target.outer());
               }
           }
@@ -1253,7 +1252,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         var this_type = g.get(0);
         g = g.map(x -> x == this_type                     ||        // leave first type parameter unchanged
                             this_type.isGenericArgument()    ? x    // no actuals to apply in a generic arg
-                                                             : this_type.NEWactualType(x, Context.NONE));
+                                                             : this_type.OLDactualType(x, Context.NONE));
       }
     return g;
   }
@@ -1334,14 +1333,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     while (o != null && !f.inheritsFrom(o))
       {
         o = o.outer();
-      }
-    if (o != null)
-      {
-        var l = o.handDown(null, new List<>(this),f);
-        result = l.get(0).applyTypeParsLocally(f, actualGenerics, NO_SELECT);
-        if (false) if (!equals(result))
-          System.out.println("SUCCESS: "+this+" HANDDOWN3 "+f.qualifiedName()+" "+actualGenerics+" ==> "+result);
-        return result;
       }
     if (!false) for (var i : f.inherits())
       {
@@ -1673,8 +1664,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       (!isGenericArgument(),
        !t.isOpenGeneric());
 
-    return handDown3(t)
-      .NEWapplyTypePars(this)
+    return t.OLDapplyTypePars(this)
       .replace_this_type_by_actual_outer(this, context);
   }
 
