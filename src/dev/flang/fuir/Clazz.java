@@ -475,7 +475,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       }
     else
       {
-        var t = this._type.OLDactualType(f.selfType()).asRef();
+        var t = this._type.handDownAndApplyTypePars(f.selfType()).asRef();
         return normalize2(t);
       }
   }
@@ -662,9 +662,9 @@ class Clazz extends ANY implements Comparable<Clazz>
       feature().isCotype() &&
       // NYI: UNDER DEVELOPMENT: can this logic be simplified?
          (t.isGenericArgument() && t.genericArgument().outer().isCotype() ||
-         !t.isGenericArgument() && t.feature() == _type.generics().get(0).OLDactualType(t).feature()))
+         !t.isGenericArgument() && t.feature() == _type.generics().get(0).handDownAndApplyTypePars(t).feature()))
       {
-        t = _type.generics().get(0).OLDactualType(t);
+        t = _type.generics().get(0).handDownAndApplyTypePars(t);
       }
     else if (_outer != null)
       {
@@ -1131,7 +1131,7 @@ class Clazz extends ANY implements Comparable<Clazz>
           }
         else
           {
-            t = _type.OLDactualType(t);  // e.g., {@code (Types.get (array f64)).T} -> {@code array f64}
+            t = _type.handDownAndApplyTypePars(t);  // e.g., {@code (Types.get (array f64)).T} -> {@code array f64}
 
 /*
   We have the following possibilities when calling a feature {@code f} declared in do {@code on}
