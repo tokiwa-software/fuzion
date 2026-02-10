@@ -1747,20 +1747,21 @@ public class AstErrors extends ANY
 
   static void choiceMustNotContainFields(SourcePosition pos, SortedSet<AbstractFeature> fields)
   {
-    SourceRange fieldRange = new SourceRange(
-      fields.getFirst().pos()._sourceFile,
-      fields.getFirst().pos().bytePos(),
-      fields.getLast().pos().byteEndPos());
+      String fieldsSources =
+        fields.size() > 1
+          ? fields.stream()
+              .map((f)->("\n* Field %s declared at %s".formatted(s(f), f.pos().show())))
+              .collect(Collectors.joining())
+          : "Field declared at " + fields.getFirst().pos().show();
 
     error(pos,
           "Choice must not contain any fields",
-          "%s %s %s not permitted.\n%s declared at %s"
+          "%s %s %s not permitted.\n%s"
             .formatted(
               StringHelpers.plural(fields.size(), "Field"),
               sfn(new List<AbstractFeature>(fields.iterator())),
               (fields.size() > 1 ? "are" : "is"),
-              StringHelpers.plural(fields.size(), "Field"),
-              fieldRange.show()));
+              fieldsSources));
   }
 
   static void choiceMustNotBeField(SourcePosition pos)
