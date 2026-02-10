@@ -23,8 +23,22 @@
 
 reg_issue6490 =>
 
-  foo (i i32, j u64, b bool) : choice i32 bool is  # 1. should flag an error: Choice must not contain any fields
+  foo (i i32, j u64, b bool) : choice i32 bool is            # 1. should flag an error: Choice must not contain any fields
 
   foo2 (a,b,c,d,e,f,g,h,i,j,k,l,m i32) : choice i32 bool is  # 2. should flag an error: Choice must not contain any fields
 
-  bar(name String) : choice String nil is # 3. should flag an error: Choice must not contain any fields
+  bar(name String) : choice String nil is                    # 3. should flag an error: Choice must not contain any fields
+
+  bar2(a i32) : choice String nil is                         # 4. should flag an error: Choice must not contain any fields
+
+    # Some comments
+    #
+    # or code
+    #
+    # spanning multiple lines.
+    #
+    # Should not be fully printed in error message
+    #
+    # ...
+
+    z := 42                                                  # 5. should flag an error: Choice must not contain any fields

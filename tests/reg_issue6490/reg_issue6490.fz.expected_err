@@ -1,28 +1,91 @@
 
 --CURDIR--/reg_issue6490.fz:26:3: error 1: Choice must not contain any fields
-  foo (i i32, j u64, b bool) : choice i32 bool is  # 1. should flag an error: Choice must not contain any fields
+  foo (i i32, j u64, b bool) : choice i32 bool is            # 1. should flag an error: Choice must not contain any fields
 --^^^
 Fields 'reg_issue6490.foo.i', 'reg_issue6490.foo.j' and 'reg_issue6490.foo.b' are not permitted.
-Fields declared at --CURDIR--/reg_issue6490.fz:26:8:
-  foo (i i32, j u64, b bool) : choice i32 bool is  # 1. should flag an error: Choice must not contain any fields
--------^^^^^^^^^^^^^^^
+
+* Field 'reg_issue6490.foo.i' declared at --CURDIR--/reg_issue6490.fz:26:8:
+  foo (i i32, j u64, b bool) : choice i32 bool is            # 1. should flag an error: Choice must not contain any fields
+-------^
+* Field 'reg_issue6490.foo.j' declared at --CURDIR--/reg_issue6490.fz:26:15:
+  foo (i i32, j u64, b bool) : choice i32 bool is            # 1. should flag an error: Choice must not contain any fields
+--------------^
+* Field 'reg_issue6490.foo.b' declared at --CURDIR--/reg_issue6490.fz:26:22:
+  foo (i i32, j u64, b bool) : choice i32 bool is            # 1. should flag an error: Choice must not contain any fields
+---------------------^
 
 
 --CURDIR--/reg_issue6490.fz:28:3: error 2: Choice must not contain any fields
   foo2 (a,b,c,d,e,f,g,h,i,j,k,l,m i32) : choice i32 bool is  # 2. should flag an error: Choice must not contain any fields
 --^^^^
 Fields 'reg_issue6490.foo2.a', 'reg_issue6490.foo2.b', 'reg_issue6490.foo2.c', 'reg_issue6490.foo2.d', 'reg_issue6490.foo2.e', 'reg_issue6490.foo2.f', 'reg_issue6490.foo2.g', 'reg_issue6490.foo2.h', 'reg_issue6490.foo2.i', 'reg_issue6490.foo2.j', 'reg_issue6490.foo2.k', 'reg_issue6490.foo2.l' and 'reg_issue6490.foo2.m' are not permitted.
-Fields declared at --CURDIR--/reg_issue6490.fz:28:9:
+
+* Field 'reg_issue6490.foo2.a' declared at --CURDIR--/reg_issue6490.fz:28:9:
   foo2 (a,b,c,d,e,f,g,h,i,j,k,l,m i32) : choice i32 bool is  # 2. should flag an error: Choice must not contain any fields
---------^^^^^^^^^^^^^^^^^^^^^^^^^
+--------^
+* Field 'reg_issue6490.foo2.b' declared at --CURDIR--/reg_issue6490.fz:28:11:
+  foo2 (a,b,c,d,e,f,g,h,i,j,k,l,m i32) : choice i32 bool is  # 2. should flag an error: Choice must not contain any fields
+----------^
+* Field 'reg_issue6490.foo2.c' declared at --CURDIR--/reg_issue6490.fz:28:13:
+  foo2 (a,b,c,d,e,f,g,h,i,j,k,l,m i32) : choice i32 bool is  # 2. should flag an error: Choice must not contain any fields
+------------^
+* Field 'reg_issue6490.foo2.d' declared at --CURDIR--/reg_issue6490.fz:28:15:
+  foo2 (a,b,c,d,e,f,g,h,i,j,k,l,m i32) : choice i32 bool is  # 2. should flag an error: Choice must not contain any fields
+--------------^
+* Field 'reg_issue6490.foo2.e' declared at --CURDIR--/reg_issue6490.fz:28:17:
+  foo2 (a,b,c,d,e,f,g,h,i,j,k,l,m i32) : choice i32 bool is  # 2. should flag an error: Choice must not contain any fields
+----------------^
+* Field 'reg_issue6490.foo2.f' declared at --CURDIR--/reg_issue6490.fz:28:19:
+  foo2 (a,b,c,d,e,f,g,h,i,j,k,l,m i32) : choice i32 bool is  # 2. should flag an error: Choice must not contain any fields
+------------------^
+* Field 'reg_issue6490.foo2.g' declared at --CURDIR--/reg_issue6490.fz:28:21:
+  foo2 (a,b,c,d,e,f,g,h,i,j,k,l,m i32) : choice i32 bool is  # 2. should flag an error: Choice must not contain any fields
+--------------------^
+* Field 'reg_issue6490.foo2.h' declared at --CURDIR--/reg_issue6490.fz:28:23:
+  foo2 (a,b,c,d,e,f,g,h,i,j,k,l,m i32) : choice i32 bool is  # 2. should flag an error: Choice must not contain any fields
+----------------------^
+* Field 'reg_issue6490.foo2.i' declared at --CURDIR--/reg_issue6490.fz:28:25:
+  foo2 (a,b,c,d,e,f,g,h,i,j,k,l,m i32) : choice i32 bool is  # 2. should flag an error: Choice must not contain any fields
+------------------------^
+* Field 'reg_issue6490.foo2.j' declared at --CURDIR--/reg_issue6490.fz:28:27:
+  foo2 (a,b,c,d,e,f,g,h,i,j,k,l,m i32) : choice i32 bool is  # 2. should flag an error: Choice must not contain any fields
+--------------------------^
+* Field 'reg_issue6490.foo2.k' declared at --CURDIR--/reg_issue6490.fz:28:29:
+  foo2 (a,b,c,d,e,f,g,h,i,j,k,l,m i32) : choice i32 bool is  # 2. should flag an error: Choice must not contain any fields
+----------------------------^
+* Field 'reg_issue6490.foo2.l' declared at --CURDIR--/reg_issue6490.fz:28:31:
+  foo2 (a,b,c,d,e,f,g,h,i,j,k,l,m i32) : choice i32 bool is  # 2. should flag an error: Choice must not contain any fields
+------------------------------^
+* Field 'reg_issue6490.foo2.m' declared at --CURDIR--/reg_issue6490.fz:28:33:
+  foo2 (a,b,c,d,e,f,g,h,i,j,k,l,m i32) : choice i32 bool is  # 2. should flag an error: Choice must not contain any fields
+--------------------------------^
 
 
 --CURDIR--/reg_issue6490.fz:30:3: error 3: Choice must not contain any fields
-  bar(name String) : choice String nil is # 3. should flag an error: Choice must not contain any fields
+  bar(name String) : choice String nil is                    # 3. should flag an error: Choice must not contain any fields
 --^^^
 Field 'reg_issue6490.bar.name' is not permitted.
 Field declared at --CURDIR--/reg_issue6490.fz:30:7:
-  bar(name String) : choice String nil is # 3. should flag an error: Choice must not contain any fields
+  bar(name String) : choice String nil is                    # 3. should flag an error: Choice must not contain any fields
 ------^^^^
 
-3 errors.
+
+--CURDIR--/reg_issue6490.fz:32:3: error 4: Choice feature must not contain any code
+  bar2(a i32) : choice String nil is                         # 4. should flag an error: Choice must not contain any fields
+--^^^^
+A choice feature must be a normal feature with empty code section
+
+
+--CURDIR--/reg_issue6490.fz:32:3: error 5: Choice must not contain any fields
+  bar2(a i32) : choice String nil is                         # 4. should flag an error: Choice must not contain any fields
+--^^^^
+Fields 'reg_issue6490.bar2.a' and 'reg_issue6490.bar2.z' are not permitted.
+
+* Field 'reg_issue6490.bar2.a' declared at --CURDIR--/reg_issue6490.fz:32:8:
+  bar2(a i32) : choice String nil is                         # 4. should flag an error: Choice must not contain any fields
+-------^
+* Field 'reg_issue6490.bar2.z' declared at --CURDIR--/reg_issue6490.fz:44:5:
+    z := 42                                                  # 5. should flag an error: Choice must not contain any fields
+----^
+
+5 errors.
