@@ -179,6 +179,7 @@ public class FrontEnd extends ANY
       0, o.fuzionHome(), false, false,
       new List<>(), mDirs, new List<>(), -1, false,
       null, false, null, null, null, false, false, false, null);
+    // NYI: CLEANUP: add option to load modules without FrontEnd
     return new FrontEnd(options).loadModule(Long.toString(o.serializationHash()), null);
   }
 
