@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import dev.flang.util.SourcePosition;
+import dev.flang.fe.LibraryModule;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.SourceFile;
@@ -52,6 +53,7 @@ public class LibraryFuir extends FUIR {
   private final ClazzRecord[] _clazzes;
   private final int[] _specialClazzes;
   private final SiteRecord[] _sites;
+  private final LibraryModule _mainModule;
 
 
   /*-----------------------------  cache  -----------------------------*/
@@ -63,7 +65,7 @@ public class LibraryFuir extends FUIR {
   /*-----------------------------  constructor  -----------------------------*/
 
 
-  public LibraryFuir(byte[] data)
+  public LibraryFuir(byte[] data, LibraryModule lm)
   {
     var mainClazz = NO_CLAZZ;
     var clazzes = new ClazzRecord[0];
@@ -84,6 +86,7 @@ public class LibraryFuir extends FUIR {
     _clazzes = clazzes;
     _sites = sites;
     _specialClazzes = specialClazzes;
+    _mainModule = lm;
   }
 
 
@@ -510,28 +513,9 @@ public class LibraryFuir extends FUIR {
   @Override
   public SourcePosition sitePos(int s)
   {
-    return s==NO_SITE || _sites[s-SITE_BASE].path() == null
+    return s==NO_SITE || _sites[s-SITE_BASE].module() == null
       ? SourcePosition.notAvailable
-      : new SourcePosition(new SourceFile(Path.of(_sites[s-SITE_BASE].path()), new byte[0]), 0)
-      {
-        @Override
-        public int column()
-        {
-          return _sites[s-SITE_BASE].column();
-        }
-
-        @Override
-        public int line()
-        {
-          return _sites[s-SITE_BASE].line();
-        }
-
-        @Override
-        public String show()
-        {
-          return _sites[s-SITE_BASE].show();
-        }
-      };
+      : _mainModule.pos(_sites[s-SITE_BASE].module(), _sites[s-SITE_BASE].bytePos());
   }
 
 

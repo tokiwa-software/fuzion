@@ -57,7 +57,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   public enum Kind
   {
-    Routine,
+    Function,
+    Constructor,
+    RefConstructor,
     Field,
     TypeParameter,
     OpenTypeParameter,
@@ -86,7 +88,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     {
       return switch (this)
         {
-          case Routine           -> "routine";
+          case Function          -> "function";
+          case Constructor       -> "constructor";
+          case RefConstructor    -> "ref-constructor";
           case Field             -> "field";
           case TypeParameter     -> "type parameter";
           case OpenTypeParameter -> "open type parameter";
@@ -94,6 +98,15 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
           case Abstract          -> "abstract";
           case Choice            -> "choice";
           case Native            -> "native";
+        };
+    }
+
+    public boolean isRoutine()
+    {
+      return switch(Kind.this)
+        {
+          case Function, RefConstructor, Constructor -> true;
+          default -> false;
         };
     }
   }
@@ -219,18 +232,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * @return Routine, Field, Intrinsic, Abstract or Choice.
    */
   public abstract Kind kind();
-
-
-  /**
-   * Is this a routine that returns the current instance as its result?
-   */
-  public abstract boolean isConstructor();
-
-
-  /**
-   * Is this a constructor returning a reference result?
-   */
-  public abstract boolean isRef();
 
 
   /**
@@ -380,7 +381,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /* pre-implemented convenience functions: */
-  public boolean isRoutine() { return kind() == Kind.Routine; }
+  public boolean isRoutine() { return kind().isRoutine(); }
   public boolean isField() { return kind() == Kind.Field; }
   public boolean isAbstract() { return kind() == Kind.Abstract; }
   public boolean isIntrinsic() { return kind() == Kind.Intrinsic; }
@@ -388,6 +389,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public boolean isChoice() { return kind() == Kind.Choice; }
   public boolean isTypeParameter() { return switch (kind()) { case TypeParameter, OpenTypeParameter -> true; default -> false; }; }
   public boolean isOpenTypeParameter() { return kind() == Kind.OpenTypeParameter; }
+  public boolean isConstructor() { return switch (kind()) { case RefConstructor, Constructor -> true; default -> false; }; }
+  public boolean isRef() { return kind() == Kind.RefConstructor; }
+
 
 
   /**
@@ -1118,7 +1122,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   public boolean hasResultField()
   {
-    return isRoutine() && !isConstructor();
+    return kind() == Kind.Function;
   }
 
 
@@ -1669,8 +1673,8 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       ((contract() == Contract.EMPTY_CONTRACT) ? "" : "<contract> ") +
       (switch (kind())
         {
-          case Abstract,Intrinsic,Native -> "=> " + kind();
-          case Choice, Routine -> "is";
+          case Abstract,Intrinsic,Native,Function -> "=> " + kind();
+          case Choice,Constructor,RefConstructor -> "is";
           case Field -> state().atLeast(State.FINDING_DECLARATIONS) && isArgument() ? "" : ":= ...";
           case OpenTypeParameter, TypeParameter -> "(type parameter)";
         })).trim();
@@ -1684,8 +1688,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   protected boolean mayBeNativeValue()
   {
-    return isConstructor()
-      && !isRef()
+    return kind() == Kind.Constructor
       && !hasOuterRef()
       && typeArguments().isEmpty()
       && inherits().size() == 1

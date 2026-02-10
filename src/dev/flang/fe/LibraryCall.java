@@ -134,15 +134,6 @@ public abstract class LibraryCall extends AbstractCall
   @Override public boolean isInheritanceCall() { return _isInheritanceCall; }
   @Override public AbstractType type() { return _type; }
 
-
-  /**
-   * Unique global index of this Call.
-   */
-  public int globalIndex()
-  {
-    return _libModule.globalIndex(_index);
-  }
-
 }
 
 /* end of file */

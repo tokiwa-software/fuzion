@@ -432,6 +432,9 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
     return list.getFirst().pos().rangeTo(list.getLast().pos().byteEndPos());
   }
 
+
+  public Pair<String,Long> globalPos() { return null; }
+
 }
 
 /* end of file */

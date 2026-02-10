@@ -317,7 +317,7 @@ public class Call extends ANY implements Comparable<Call>, Context
         var idfa = DFA._intrinsics_.get(name);
         if (idfa != null)
           {
-            result = DFA._intrinsics_.get(name).analyze(this);
+            result = idfa.analyze(this);
           }
         else
           {
