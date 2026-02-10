@@ -30,12 +30,18 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.ByteBuffer;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.Map.Entry;
 import java.util.function.Function;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractFeature.Kind;
@@ -58,6 +64,7 @@ import dev.flang.util.FuzionOptions;
 import static dev.flang.util.FuzionConstants.MirExprKind;
 import dev.flang.util.HexDump;
 import dev.flang.util.List;
+import dev.flang.util.Pair;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 import dev.flang.util.SourceRange;
@@ -2330,7 +2337,14 @@ SourceFile
             sf = new SourceFile(srcPath, ba);
             _sourceFiles.set(i, sf);
           }
-        return new SourceRange(sf, pos - sourceFileBytesPos(at), posEnd - sourceFileBytesPos(at));
+        return new SourceRange(sf, pos - sourceFileBytesPos(at), posEnd - sourceFileBytesPos(at))
+          {
+            @Override
+            public Pair<String, Long> globalPos()
+            {
+              return new Pair<>(name(), ((long)pos)<<32 | ((long)posEnd));
+            }
+          };
       }
   }
 
@@ -2367,6 +2381,46 @@ SourceFile
           }
       }
     return _sourceFileStartPositions;
+  }
+
+
+  /**
+   * recursive helper to create stream of all modules
+   */
+  Stream<LibraryModule> flatten(LibraryModule m)
+  {
+    return Stream.concat(
+      Stream.of(m),
+      Arrays
+        .stream(m._modules)
+        .flatMap(x -> flatten(x._module)));
+  }
+
+
+  // cache field for all modules
+  Map<String, LibraryModule> _flattenedModules;
+
+  /**
+   * get sourcePosition
+   *
+   * @param module the module name the SourcePosition is from
+   *
+   * @param pos 32-bits pos, 32-bits posEnd cramed into a long value
+   *
+   * @return
+   */
+  public SourcePosition pos(String module, long pos)
+  {
+    if (_flattenedModules == null)
+      {
+        _flattenedModules = flatten(this)
+          .distinct()
+          .collect(Collectors.toUnmodifiableMap(LibraryModule::name, x->x));
+      }
+    int bytePos = (int)(pos >> 32);
+    int byteEndPos = (int)(pos & 0xffffffff);
+    return _flattenedModules.get(module)
+      .pos(bytePos, byteEndPos);
   }
 
 

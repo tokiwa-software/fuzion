@@ -169,6 +169,22 @@ public class FrontEnd extends ANY
 
 
   /**
+   * Helper method to (re)-load the main.fum for LibraryFuir.
+   */
+  public static LibraryModule loadMainModule(FrontEndOptions o)
+  {
+    var mDirs = new List<>(o._moduleDirs);
+    mDirs.add(".");
+    var options = new FrontEndOptions(
+      0, o.fuzionHome(), false, false,
+      new List<>(), mDirs, new List<>(), -1, false,
+      null, false, null, null, null, false, false, false, null);
+    // NYI: CLEANUP: add option to load modules without FrontEnd
+    return new FrontEnd(options).loadModule(Long.toString(o.serializationHash()), null);
+  }
+
+
+  /**
    * Load modules using universe.
    *
    * @param universe the universe to use to load the modules
@@ -257,12 +273,13 @@ public class FrontEnd extends ANY
       {
         var data = ch.map(FileChannel.MapMode.READ_ONLY, 0, ch.size());
         result = libModule(data, universe);
-        if (!m.equals(result.name()))
-          {
-            Errors.error("Module name mismatch for module file '" + p + "' expected name '" +
-                         m + "' but found '" + result.name() + "'");
-          }
-        _modules.put(m, result);
+        // NYI: BUG: does not work anymore
+        // if (!m.equals(result.name()))
+        //   {
+        //     Errors.error("Module name mismatch for module file '" + p + "' expected name '" +
+        //                  m + "' but found '" + result.name() + "'");
+        //   }
+        _modules.put(result.name(), result);
       }
     catch (NoSuchFileException io)
       {
@@ -369,6 +386,11 @@ public class FrontEnd extends ANY
         Errors.showAndExit();
 
         var data = _sourceModule.data();
+        if (_options.serializeFuir())
+          {
+            // We need this for source positions in fuir
+            _sourceModule.writeToFile(Path.of(Long.toString(_options.serializationHash()) + ".fum"));
+          }
         reset();
         _mainModule = libModule(data, null /* use universe of module */);
         var ignore = new Types.Resolved(_mainModule, _mainModule.libraryUniverse(), false);

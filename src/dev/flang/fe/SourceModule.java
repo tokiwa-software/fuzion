@@ -32,7 +32,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 
 import java.nio.ByteBuffer;
-
+import java.nio.channels.Channels;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -2152,6 +2152,23 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
         comma = ", ";
       }
     return r.toString();
+  }
+
+
+  /**
+   * Write this SourceModule to a fum-file at Path p
+   */
+  public void writeToFile(Path p)
+  {
+    try (var os = Files.newOutputStream(p))
+      {
+        Channels.newChannel(os).write(data());
+      }
+    catch (IOException io)
+      {
+        Errors.fatal("-saveModule: I/O error when writing module file",
+                      "While trying to write file '"+ p + "' received '" + io + "'");
+      }
   }
 
 }

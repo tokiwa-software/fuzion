@@ -222,7 +222,7 @@ public class OptimizedFUIR extends GeneratingFUIR {
                 sites[s-SITE_BASE] = new SiteRecord(
                   clazzAt(s), false, false, null, NO_CLAZZ, null, NO_CLAZZ, null,
                   NO_CLAZZ, NO_SITE, NO_SITE, NO_SITE, NO_CLAZZ, NO_SITE, siteCount,
-                  null, null, NO_CLAZZ, -1, null, false, null, -1, -1, null);
+                  null, null, NO_CLAZZ, -1, null, false, null, -1);
               }
             else
               {
@@ -255,10 +255,10 @@ public class OptimizedFUIR extends GeneratingFUIR {
                     codeAt != ExprKind.Tag ? -1 : tagTagNum(s),
                     codeAt != ExprKind.Match ? null : matchCaseFields(s),
                     codeAt.isCallOrAssign() ? accessIsDynamic(s) : false,
-                    sitePos == null ? null : sitePos._sourceFile._fileName.toString(),
-                    sitePos == null ? -1   : sitePos.line(),
-                    sitePos == null ? -1   : sitePos.column(),
-                    sitePos == null ? null : sitePos.show()
+                    sitePos == null || sitePos.globalPos() == null
+                      ? null : sitePos.globalPos().v0(),
+                    sitePos == null || sitePos.globalPos() == null
+                      ? -1 : sitePos.globalPos().v1()
                   );
               }
           }
