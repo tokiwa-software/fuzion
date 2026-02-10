@@ -41,7 +41,6 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -57,6 +56,8 @@ import dev.flang.ast.Types;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.List;
+import dev.flang.util.Pair;
 import dev.flang.util.SourceDir;
 
 
@@ -134,12 +135,6 @@ public class FrontEnd extends ANY
   public final Universe _feUniverse;
 
 
-  /**
-   * The modules loaded by frontend.
-   */
-  private final LibraryModule[] _dependsOn;
-
-
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -159,11 +154,11 @@ public class FrontEnd extends ANY
         sourceDirs[i] = new SourceDir(sourcePaths[i]);
       }
 
-    _dependsOn = loadModules(_feUniverse);
+    var dependsOn = loadModules(_feUniverse);
 
     if (options._loadSources)
       {
-        _sourceModule = new SourceModule(options, sourceDirs, _dependsOn, _feUniverse);
+        _sourceModule = new SourceModule(options, sourceDirs, dependsOn, _feUniverse);
         _sourceModule.createASTandResolve();
       }
     else
@@ -392,18 +387,45 @@ public class FrontEnd extends ANY
 
 
   /**
-   * A module that consists of all modules that
-   * this front end depends on without the need for a
-   * source module.
+   * @param modules the modules to load
+   *
+   * @return Pair of a universe and a metamodule with all modules in modules loaded
    */
-  public Module feModule()
+  public static Pair<AbstractFeature, Module> feModule(Path fuzionHome, List<String> modules)
   {
+    var frontEndOptions = new FrontEndOptions(
+      /* verbose                 */ 0,
+      /* fuzionHome              */ fuzionHome,
+      /* loadBaseMod             */ true,
+      /* eraseInternalNamesInMod */ false,
+      /* modules                 */ modules,
+      /* moduleDirs              */ new List<>(),
+      /* dumpModules             */ new List<>(),
+      /* fuzionDebugLevel        */ 0,
+      /* fuzionSafety            */ false,
+      /* sourceDirs              */ null,
+      /* readStdin               */ false,
+      /* executeCode             */ null,
+      /* main                    */ null,
+      /* moduleName              */ null,
+      /* loadSources             */ false,
+      /* needsEscapeAnalysis     */ false,
+      /* serializeFuir           */ false,
+      /* timer                   */ s->{});
+    var fe = new FrontEnd(frontEndOptions);
+    return new Pair<>(fe._feUniverse, fe.feModule0());
+  }
+
+
+  private Module feModule0()
+  {
+    _options._modules.stream().forEach(mn -> loadModule(mn, _feUniverse));
     if (Types.resolved == null)
       {
         _feUniverse.setState(State.RESOLVED);
         new Types.Resolved(_modules.get(FuzionConstants.BASE_MODULE_NAME), _feUniverse, true);
       }
-    return new Module(_dependsOn) {
+    return new Module(_modules.values().toArray(LibraryModule[]::new)) {
       @Override
       public SortedMap<FeatureName, AbstractFeature> declaredFeatures(AbstractFeature outer)
       {
