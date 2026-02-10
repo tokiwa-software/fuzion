@@ -30,6 +30,6 @@ reg_issue348 =>
       false
 
   m:mutate is
-  arr := (mutate.array a).type.new m 10 a
+  arr := (m.array a).type.new 10 a
 
   arr[0].c
