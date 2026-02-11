@@ -146,8 +146,8 @@ is
   # the contents
   #
   contents := mi ! ()->
-    mcontents := mutate.array (option (tuple HK V))
-                       .new mi allocated_size.as_i64 nil
+    mcontents := mi.array (option (tuple HK V))
+                   .new allocated_size.as_i64 nil
     for
       k in ks
       v in vs

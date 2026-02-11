@@ -2717,66 +2717,94 @@ public class DFA extends ANY
         check(!_fuir.clazzIsRef(vc));
         r = newInstance(vc, site, context).box(this, vc, cl, context);
       }
+    else if (_fuir.clazzIsUnitType(cl))
+      {
+        r = Value.UNIT;
+      }
     else
       {
-        var cnum = _fuir.clazzId2num(cl);
-        var ao = _oneInstanceOfClazz.getIfExists(cnum);
-        if (ao == null)
+        r = newValueInstance(cl, site, context);
+      }
+    return r;
+  }
+
+
+  /**
+   * Create value instance of given clazz.
+   *
+   * @param cl the clazz
+   *
+   * @param site the site index where the new instances is creates, NO_SITE
+   * if not within code (intrinsics etc.)
+   *
+   * @param context for debugging: Reason that causes this instance to be part
+   * of the analysis.
+   */
+  Value newValueInstance(int cl, int site, Context context)
+  {
+    if (PRECONDITIONS) require
+      (!_fuir.clazzIsChoice(cl),
+       !isBuiltInNumeric(cl),
+       !_fuir.clazzIsRef(cl));
+
+    Value r;
+    var cnum = _fuir.clazzId2num(cl);
+    var ao = _oneInstanceOfClazz.getIfExists(cnum);
+    if (ao == null)
+      {
+        if (onlyOneInstance(cl))
           {
-            if (onlyOneInstance(cl))
-              {
-                var ni = new Instance(this, cl, site, context);
-                wasChanged(() -> "DFA: new instance " + _fuir.clazzAsString(cl));
-                makeUnique(ni);
-                ao = ni;
-              }
-            else
-              {
-                ao = SEVERAL_INSTANCES;
-              }
-            _oneInstanceOfClazz.force(cnum, ao);
-          }
-        if (ao instanceof Instance a)
-          {
-            r = a;
+            var ni = new Instance(this, cl, site, context);
+            wasChanged(() -> "DFA: new instance " + _fuir.clazzAsString(cl));
+            makeUnique(ni);
+            ao = ni;
           }
         else
           {
-            // Instances are cached using two maps with keys
-            //
-            //  - clazzAt(site)           and then
-            //  - cl << 32 || env.id
-            //
-            var sc = site == FUIR.NO_SITE ? FUIR.NO_CLAZZ : _fuir.clazzAt(site);
-            var sci = sc == FUIR.NO_CLAZZ ? 0 : 1 + _fuir.clazzId2num(sc);
+            ao = SEVERAL_INSTANCES;
+          }
+        _oneInstanceOfClazz.force(cnum, ao);
+      }
+    if (ao instanceof Instance a)
+      {
+        r = a;
+      }
+    else
+      {
+        // Instances are cached using two maps with keys
+        //
+        //  - clazzAt(site)           and then
+        //  - cl << 32 || env.id
+        //
+        var sc = site == FUIR.NO_SITE ? FUIR.NO_CLAZZ : _fuir.clazzAt(site);
+        var sci = sc == FUIR.NO_CLAZZ ? 0 : 1 + _fuir.clazzId2num(sc);
 
-            var clazzm = _instancesForSite.getIfExists(sci);
-            if (clazzm == null)
-              {
-                clazzm = new LongMap<>();
-                _instancesForSite.force(sci, clazzm);
-              }
-            var env = _real ? context.env() : null;
-            var k1 = _fuir.clazzId2num(cl);
-            var k2 = (env == null ? 0 : env._id + 1);
-            var k = (long) k1 << 32 | k2 & 0xffffFFFFL;
-            r = clazzm.get(k);
-            if (r == null && env != null)
-              { // check if instance is an effect that is already present in the
-                // current environment. If so, we do not create a new instance
-                // since this would end up creating an new environment with that
-                // new instance added, which will in turn end up here again to
-                // create another instance ... ad infinitum.
-                r = context.findEffect(cl, site);
-              }
-            if (r == null)
-              {
-                var ni = new Instance(this, cl, site, context);
-                wasChanged(() -> "DFA: new instance " + _fuir.clazzAsString(cl));
-                clazzm.put(k, ni);
-                makeUnique(ni);
-                r = ni;
-              }
+        var clazzm = _instancesForSite.getIfExists(sci);
+        if (clazzm == null)
+          {
+            clazzm = new LongMap<>();
+            _instancesForSite.force(sci, clazzm);
+          }
+        var env = _real ? context.env() : null;
+        var k1 = _fuir.clazzId2num(cl);
+        var k2 = (env == null ? 0 : env._id + 1);
+        var k = (long) k1 << 32 | k2 & 0xffffFFFFL;
+        r = clazzm.get(k);
+        if (r == null && env != null)
+          { // check if instance is an effect that is already present in the
+            // current environment. If so, we do not create a new instance
+            // since this would end up creating an new environment with that
+            // new instance added, which will in turn end up here again to
+            // create another instance ... ad infinitum.
+            r = context.findEffect(cl, site);
+          }
+        if (r == null)
+          {
+            var ni = new Instance(this, cl, site, context);
+            wasChanged(() -> "DFA: new instance " + _fuir.clazzAsString(cl));
+            clazzm.put(k, ni);
+            makeUnique(ni);
+            r = ni;
           }
       }
     return r;
@@ -3008,7 +3036,7 @@ public class DFA extends ANY
    */
   boolean onlyOneInstance(int clazz)
   {
-    return ONLY_ONE_INSTANCE &&
+    return isUnitType(clazz) || ONLY_ONE_INSTANCE &&
       // NYI: UNDER DEVELOPMENT: This is currently a dumb list of features,
       // this should be something generic instead, e.g.
       //
@@ -3221,7 +3249,7 @@ public class DFA extends ANY
    */
   boolean siteSensitive(int cc)
   {
-    return SITE_SENSITIVE || _fuir.isConstructor(cc);
+    return SITE_SENSITIVE || _fuir.isConstructor(cc) && !onlyOneInstance(cc);
   }
 
 
@@ -3379,7 +3407,7 @@ public class DFA extends ANY
         else
           {
             if (CHECKS) check
-              (false);
+              (r._instance == Value.UNIT);
           }
         e = r;
         analyzeNewCall(r);

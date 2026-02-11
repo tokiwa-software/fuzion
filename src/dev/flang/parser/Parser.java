@@ -3744,7 +3744,7 @@ simpletype  : name typePars typeTail
    * if none.
    *
 typeTail    : dot simpletype
-            | dot "this"
+            | dot "this" typeTail
             |
             ;
    */
@@ -3763,7 +3763,7 @@ typeTail    : dot simpletype
               }
             else
               {
-                result = new QualThisType(qn);
+                result = typeTail(new QualThisType(qn));
               }
           }
         else
