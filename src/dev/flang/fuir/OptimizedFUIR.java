@@ -77,16 +77,29 @@ public class OptimizedFUIR extends GeneratingFUIR {
   }
 
 
+  @Override
+  public boolean clazzNeedsCode(int cl)
+  {
+    return super.clazzNeedsCode(cl) && !isUnitLikeConstructorClazz(cl);
+  }
+
+
+  private boolean isUnitLikeConstructorClazz(int cl)
+  {
+    return clazzIsUnitType(cl) &&
+      isConstructor(cl) &&
+      clazzOuterRef(cl) == NO_CLAZZ &&
+      // no side effects
+      !withinCode(clazzCode0(cl));
+  }
+
+
   private boolean isUnitLikeConstructor(int s)
   {
     return
       _original.codeAt(s) == ExprKind.Call &&
       accessedClazz(s) != NO_CLAZZ &&
-      clazzIsUnitType(accessedClazz(s)) &&
-      isConstructor(accessedClazz(s)) &&
-      clazzOuterRef(accessedClazz(s)) == NO_CLAZZ &&
-      // no side effects
-      !withinCode(clazzCode(accessedClazz(s)))
+      isUnitLikeConstructorClazz(accessedClazz(s))
     ||
       _original.codeAt(s) == ExprKind.Pop &&
       isUnitLikeConstructor(s-1);
