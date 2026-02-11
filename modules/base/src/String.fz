@@ -607,7 +607,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   #
   # helper feature which unifies the code of the different split features in one
   #
-  split0(s String, limit option u32, split_after bool) list String
+  split0(s String, limit option u32, split_after bool) Sequence String
     pre
       debug: !s.is_empty
       debug: match limit
@@ -615,8 +615,8 @@ public String ref : property.equatable, property.hashable, property.orderable is
                n u32 => n > 0
     =>
       utf8.split0 s.utf8 limit split_after
-          # NYI: BUG: could be just: .map_to_list String.from_bytes
-          .map_to_list String.type.from
+          # NYI: BUG: could be just: .map String.from_bytes
+          .map String.type.from
 
 
   # split string at line feeds
