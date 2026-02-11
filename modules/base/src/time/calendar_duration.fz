@@ -151,11 +151,10 @@ is
 
 
     helper [
-      # NYI: UNDER DEVELOPMENT: can not omit parens
-      (x->x.years),
-      (x->x.months),
-      (x->x.days),
-      (x->x.hours),
-      (x->x.minutes),
-      (x->x.seconds),
-      (x->x.nanos)]
+      x->x.years,
+      x->x.months,
+      x->x.days,
+      x->x.hours,
+      x->x.minutes,
+      x->x.seconds,
+      x->x.nanos]

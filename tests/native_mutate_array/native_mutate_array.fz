@@ -1,0 +1,40 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test native_mutate_array
+#
+# -----------------------------------------------------------------------
+
+#
+# tests passing a mutate.array to a native feature
+#
+
+native_mutate_array =>
+
+  fzE_mem_zero_secure(ma mutate.array u8, len i64) unit => native
+
+  mutate ! ()->
+
+    x := mutate.array u8 .new 10 4
+
+    say x
+
+    fzE_mem_zero_secure x 10
+
+    say x

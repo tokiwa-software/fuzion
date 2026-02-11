@@ -1,0 +1,66 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature idx
+#
+# -----------------------------------------------------------------------
+
+# idx is a choice to be used by index [] features
+#
+# this allows convenient index access via any
+# integer type (i8,...,u64) without manual conversion
+#
+# The compiler is expected to specialize this in most cases
+# making this tagging unecessary.
+#
+public idx : choice i8 u8 i16 u16 i32 u32 i64 u64 is
+
+  public as_i32 i32 =>
+    match idx.this
+      n i8  => n.as_i32
+      n u8  => n.as_i32
+      n i16 => n.as_i32
+      n u16 => n.as_i32
+      n i32 => n
+      n u32 => n.as_i32
+      n i64 => n.as_i32
+      n u64 => n.as_i32
+
+  public as_i64 i64 =>
+    match idx.this
+      n i8  => n.as_i64
+      n u8  => n.as_i64
+      n i16 => n.as_i64
+      n u16 => n.as_i64
+      n i32 => n.as_i64
+      n u32 => n.as_i64
+      n i64 => n
+      n u64 => n.as_i64
+
+  public as_u64 u64 =>
+    match idx.this
+      n i8  => n.as_u64
+      n u8  => n.as_u64
+      n i16 => n.as_u64
+      n u16 => n.as_u64
+      n i32 => n.as_u64
+      n u32 => n.as_u64
+      n i64 => n.as_u64
+      n u64 => n
+

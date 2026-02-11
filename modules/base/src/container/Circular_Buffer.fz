@@ -45,8 +45,7 @@ is
 
   # amount of elements free for writing
   #
-  public available i64 =>
-    abstract
+  public available i64 => length - buffered
 
 
   # amount of elements available for reading
@@ -60,12 +59,14 @@ is
   # buffer
   #
   public put (e T) outcome unit =>
-    abstract
+    enqueue [e]
 
 
   # read a single element from the buffer
   #
-  public get option T =>
+  public get option T
+    post analysis: result.ok ^ (buffered=0)
+  =>
     abstract
 
 
@@ -74,7 +75,9 @@ is
   # returns an error if the given sequence is too long to fit into
   # the buffer entirely
   #
-  public enqueue (s Sequence T) outcome unit =>
+  public enqueue (s Sequence T) outcome unit
+    post analysis: result.ok ^ (s.count.as_i64 > available)
+  =>
     abstract
 
 
@@ -94,7 +97,7 @@ is
 
   # create a list from this buffer
   #
-  public as_list list T =>
+  public as_list list T ! E =>
     # since buffer is mutable,
     # we first copy the elements
     # to an immutable array.
@@ -104,4 +107,4 @@ is
   # the current state of the buffer
   # as a string.
   #
-  public redef as_string String => as_array.as_string
+  public redef as_string String ! E => as_array.as_string

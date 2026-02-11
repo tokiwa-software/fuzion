@@ -47,11 +47,10 @@ is
   public redef contains (e E) bool => abstract
 
 
-  # return a new Set that contains
-  # all elements in this Set and `k`.
+  # return a new Set containing all elements of this Set plus element k
   #
   public add (k E) Set E =>
-    panic "*** NYI: REMOVE Set.add, we need some support for mutable Sets ***"
+    compile_time_panic # "*** NYI: REMOVE Set.add, we need some support for mutable Sets ***"
 
 
   # list representation of values in this set
@@ -101,21 +100,72 @@ is
     Set.this.difference other
 
 
+  # all elements that are in either one of the sets, but not in both
+  #
+  public symmetric_difference(other container.Set E) container.Set E =>
+    (Set.this ∪ other) ∖ (Set.this ∩ other)
+
+
+  # infix variant for Set.symmetric_difference
+  #
+  public infix ∆ (other container.Set E) container.Set E =>
+    Set.this.symmetric_difference other
+
 
   # is this Set a subset of other?
-  # true, iff other contains all
-  # elements that this Set contains.
+  # true, iff other contains all elements
+  # that this Set contains (sets may be equal).
   #
   public is_subset_of(other container.Set E) bool =>
     Set.this ∀ other.contains
 
 
+  # infix variant for Set.is_subset_of
+  #
+  public infix ⊆ (other container.Set E) bool =>
+    is_subset_of other
+
+
+  # is this Set a proper subset of other?
+  # true, iff other contains all elements
+  # that this Set contains, but sets are different.
+  #
+  public infix ⊂ (other container.Set E) bool =>
+    is_subset_of other && Set.this.count < other.count
+
+
   # is this Set a superset of other?
-  # true, iff this Set contains all
-  # elements that other contains.
+  # true, iff this Set contains all elements
+  # that other contains (sets may be equal).
   #
   public is_superset_of(other container.Set E) bool =>
     other ∀ contains
+
+
+  # infix variant for Set.is_superset_of
+  #
+  public infix ⊇ (other container.Set E) bool =>
+    is_superset_of other
+
+
+  # does this Set strictly contain all elements of other?
+  # true, iff this Set contains all
+  # elements that other contains, but sets are different.
+  #
+  public infix ⊃ (other container.Set E) bool =>
+    is_superset_of other && Set.this.count > other.count
+
+
+  # infix variant for Set.contains
+  #
+  public infix ∋ (element E) bool =>
+    contains element
+
+
+  # negated infix variant for Set.contains
+  #
+  public infix ∌ (element E) bool =>
+    !contains element
 
 
   public redef as_string String =>
@@ -134,8 +184,8 @@ is
   #
   public fixed redef type.equality(a, b container.Set E) bool
   pre else
-    debug: a.finite != trit.no
-    debug: b.finite != trit.no
+    debug: a.finite.is_yes_or_unknown
+    debug: b.finite.is_yes_or_unknown
   =>
     # NYI: a bit expensive
     (a ∪ b).size_option.val = a.size_option.val
@@ -144,6 +194,6 @@ is
   # monoid of Set with infix ∪ operation.
   #
   public type.union Monoid (container.Set E) =>
-    ref : Monoid (container.Set E) is
+    _ : Monoid (container.Set E) is
       public redef infix ∙ (a, b container.Set E) container.Set E => a ∪ b
       public redef e container.Set E => (container.Set E).new []

@@ -145,7 +145,7 @@ public class SemanticToken extends ANY
       .text()
       .split("\\r?\\n");
 
-    return IntStream.range(0, (int) lines.length)
+    return IntStream.range(0, lines.length)
       .filter(idx -> !lines[idx].isBlank())
       .mapToObj(
         idx -> {

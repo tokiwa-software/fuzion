@@ -1,0 +1,59 @@
+----
+
+case1: expecing 'i32 unit f64' and `Type of '...#Open_Types<n>'`
+[Type of 'i32', Type of 'unit', Type of 'f64']
+Type of '(call_open_type_parameter.case1.x i32 unit f64).#Open_Types3'
+----
+
+case2: expecing 'i32 unit f64' and `Type of '...#Open_Types<n>'`
+[Type of 'i32', Type of 'unit', Type of 'f64']
+Type of '(call_open_type_parameter.case2.x i32 unit f64).#Open_Types6'
+----
+
+case3: expecing 'Type of 'u16'' and `Type of 'Type'`
+Type of 'u16'
+Type of 'Type'
+----
+
+case4: expecing 3 numerics and 3 strings
+4 numeric and 3 String types
+----
+
+case5: i32 [bool unit]
+A: Type of 'i32'
+Type of 'Type'
+[Type of 'bool', Type of 'unit']
+Type of '(call_open_type_parameter.case5.a i32 bool unit).#Open_Types24'
+a.q: Type of 'i32' [Type of 'bool', Type of 'unit']
+case5: u32 [f32]
+A: Type of 'u32'
+Type of 'Type'
+[Type of 'f32']
+Type of '(call_open_type_parameter.case5.a u32 f32).#Open_Types24'
+a.q: Type of 'u32' [Type of 'f32']
+case5: u8 []
+A: Type of 'u8'
+Type of 'Type'
+[]
+Type of '(call_open_type_parameter.case5.a u8).#Open_Types24'
+a.q: Type of 'u8' []
+----
+
+
+case6: a.r.s.t.u []
+[]
+
+case6: a.r.s.t.u [String codepoint bool unit (Sequence (i32,f64))]
+[Type of 'String', Type of 'codepoint', Type of 'bool', Type of 'unit', Type of 'Sequence (tuple i32 f64)']
+
+case6: a.f.g [u32 bool unit]
+[Type of 'u32', Type of 'bool', Type of 'unit']
+[Type of 'u32', Type of 'bool', Type of 'unit']
+[Type of 'u32', Type of 'bool', Type of 'unit'] Type of '(call_open_type_parameter.case6.a u32 bool unit).#Open_Types28'  ——internal value type of `B`
+[Type of 'u32', Type of 'bool', Type of 'unit'] Type of 'Open_Types'  ——boxed `Open_Types` value
+
+case6: b.f.g [i32 unit bool]
+[Type of 'i32', Type of 'unit', Type of 'bool']
+[Type of 'i32', Type of 'unit', Type of 'bool']
+[Type of 'i32', Type of 'unit', Type of 'bool'] Type of 'call_open_type_parameter.case6.b.#Open_Types28'  ——internal value type of `B`
+[Type of 'i32', Type of 'unit', Type of 'bool'] Type of 'Open_Types'  ——boxed `Open_Types` value

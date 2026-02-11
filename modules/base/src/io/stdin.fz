@@ -24,15 +24,15 @@
 # -----------------------------------------------------------------------
 
 
-# short-hand to return an io.reader with a read handler
+# shorthand to return an io.reader with a read handler
 # allowing to read from stdin.
 #
 # usage example using a local mutate instance:
 #
-#     LM : mutate is
-#     LM ! ()->
-#       io.stdin.reader LM ! ()->
-#         for l := (io.buffered LM).read_line
+#     lm : mutate is
+#     lm ! ()->
+#       io.stdin.reader lm ! ()->
+#         for l := (io.buffered lm).read_line
 #             i in 1..
 #         while l??
 #           say "$i: $l"
@@ -53,23 +53,23 @@ public stdin is
   # create a reader for stdin using the given local mutate instance
   #
   public reader (LM type : mutate) (buffered LM).reader =>
-    (buffered LM).reader stdin_read_handler 1024
+    (buffered LM).reader stdin_read_handler
 
   # read all of stdin in an array of u8 bytes using
   # io.buffered.read_fully.
   #
   public read_fully array u8 =>
-    M : mutate is
-    M ! ()->
-      reader M ! (buffered M).read_fully
+    lm : mutate is
+    lm ! ()->
+      reader lm ! (buffered lm).read_fully
 
   # read all of stdin in an array of String using
   # io.buffered.read_lines.
   #
   public read_lines array String =>
-    M : mutate is
-    M ! ()->
-      reader M ! (buffered M).read_lines
+    lm : mutate is
+    lm ! ()->
+      reader lm ! (buffered lm).read_lines
 
   # read all of stdin in a single String using
   # String.from_bytes on the result of read_fully.
@@ -83,14 +83,12 @@ stdin_read_handler : Read_Handler is
 
   # implementation of read for reading from stdin
   #
-  public redef read(count i32) choice (array u8) io.end_of_file error =>
+  public redef read(count i32) choice (Sequence u8) io.end_of_file error =>
     arr := fuzion.sys.internal_array_init u8 count
     v := fzE_file_read fzE_file_stdin arr.data count
     if v < -1
       error "an error occurred while reading stdin"
     else if v <= 0
       io.end_of_file
-    else if v < count
-      array u8 v i->arr[i]
     else
-      arr.as_array
+      arr.as_array.take v

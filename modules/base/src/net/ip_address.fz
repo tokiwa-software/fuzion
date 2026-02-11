@@ -21,7 +21,7 @@
 #
 # -----------------------------------------------------------------------
 
-# ip_address - stores an IP address an an unsigned 128-bit integer,
+# ip_address - stores an IP address in an unsigned 128-bit integer,
 # regardless of whether it is an IPv4 or IPv6 address.
 #
 # in the case of an IPv4 address, this is the canonical mapping of that
@@ -39,10 +39,103 @@ public ip_address (val u128) : property.equatable is
       family.ipv6
 
 
+  # renders the IP address as a string
+  #
+  # NYI: ENHANCEMENT: should we add the well-known IPv4 format?
+  #
+  public redef as_string String =>
+    s := val.as_string 32 16
+            .chunk 4
+
+    String.join s ":"
+
+
   # are two given IP addresses equal?
   #
   public redef type.equality (a, b ip_address.this) bool =>
     a.val = b.val
+
+
+  # creates an ip_address from a Sequence of u8 like returned by the
+  # networking native features.
+  #
+  module type.from_sequence (s Sequence u8) net.ip_address =>
+    c := s.count
+
+    check c = 4 || c = 16
+
+    for
+      r := u128 0 0, r + (b.as_u128 << (x*8).as_u128)
+      b in s.reverse
+      x in 0..(c-1)
+    else
+      if c = 4
+        net.ip_address (r + (0xffff.as_u128 << 32.as_u128)) # 32 = 4 * 8
+      else
+        net.ip_address r
+
+
+  # parse an IPv4 address from a String
+  #
+  type.from_string_v4 (s Sequence String) outcome net.ip_address =>
+    fuzion.runtime.fault
+      .try (outcome net.ip_address) ()->
+        x := s
+          .map (.parse_i32)
+          .map (.val.as_u8)
+
+        from_sequence x
+      .catch m->
+        error "Unable to parse provided string as an IP address: {m}"
+
+
+  # parse an IPv6 address from a String
+  # takes only IPv6 addresses for which expansions of the ellipsis has
+  # been done in a first step already
+  #
+  # NYI: ENHANCEMENT: parse zone identifiers
+  #
+  type.from_string_v6 (s Sequence String) outcome net.ip_address =>
+    fuzion.runtime.fault
+      .try (outcome net.ip_address) ()->
+        x := s
+          .map (.pad_left "0" 4)
+          .flat_map (.chunk 2)
+          .map (.parse_i32_hex)
+          .map (.val.as_u8)
+
+        from_sequence x
+      .catch m->
+        error "Unable to parse provided string as an IP address: {m}"
+
+
+  # parse an ip_address from a String
+  #
+  public type.from_string (s String) outcome net.ip_address =>
+    # NYI: PERFORMANCE: search for . and : in parallel
+    if s.contains "."
+      sv4 := s.split "."
+      check sv4.count = 4
+      from_string_v4 sv4
+    else if s.contains ":"
+      sv6 := s.split ":"
+      # NYI: BUG: this is a hack, write a proper parser
+      # NYI: CLEANUP: move this code into from_string_v6
+      match sv6.index_of ""
+        i i32 =>
+          f, b := sv6.split_at i
+          amount_of_padding_zeros := 8 - f.count - b.count
+          check amount_of_padding_zeros > 0
+
+          t := f.as_list ++ (array String amount_of_padding_zeros x->"").as_list ++ b.as_list
+
+          check t.count = 8
+          from_string_v6 t
+        nil =>
+          check sv6.count = 8
+          from_string_v6 sv6
+    else
+      error "Unable to parse provided string as an IP address"
 
 
 # version of an IP address, either IPv4 or IPv6

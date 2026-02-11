@@ -49,5 +49,5 @@ public socket_type is
     match p
       protocol.tcp => socket_type.stream
       protocol.udp => socket_type.datagram
-      nil => panic "not supported"
+      nil => compile_time_panic # "not supported"
 

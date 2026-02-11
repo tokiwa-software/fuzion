@@ -46,4 +46,5 @@ public class IncompleteType extends ResolvedType {
   @Override public List<AbstractType> generics() { return AbstractCall.NO_GENERICS; }
   @Override public AbstractType outer() { if (CHECKS) check(Errors.any()); return null; }
   @Override public TypeKind kind() { return _typeKind; }
+  @Override protected String outerToString(boolean humanReadable) { return ""; }
 }

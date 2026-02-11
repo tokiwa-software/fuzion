@@ -29,18 +29,18 @@ module:public thread(thrd Thread) : property.equatable is
 
   id := unique_id
 
-  joined := concur.atomic trit.no
+  joined := concur.atomic trit .new trit.no
 
   # wait for this thread to finish execution
   #
-  public join unit =>
+  public join unit ! atomic_access =>
     if joined.compare_and_set trit.no trit.unknown
       fuzion.sys.thread.join0 thrd
       joined.write trit.yes
     else
       # NYI: UNDER DEVELOPMENT:
       # better busy loop
-      while joined.read != trit.yes
+      while joined.read.is_no_or_unknown
 
     # NYI: UNDER DEVELOPMENT:
     # should we send message to the thread that spawned this

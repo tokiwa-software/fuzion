@@ -99,8 +99,7 @@ public class ResolvedNormalType extends ResolvedType
   public static ResolvedType create(AbstractType t, List<AbstractType> g, List<AbstractType> ug, AbstractType o)
   {
     if (PRECONDITIONS) require
-      ( (t.generics() instanceof FormalGenerics.AsActuals   ) || t.generics().size() == g.size(),
-       !(t.generics() instanceof FormalGenerics.AsActuals aa) || aa.sizeMatches(g),
+      ( t.feature().generics().sizeMatches(g),
         t == Types.t_ERROR || (t.outer() == null) == (o == null));
 
     return create(g, ug, o, t.feature(), t.kind());

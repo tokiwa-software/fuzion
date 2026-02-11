@@ -42,9 +42,64 @@
 #
 #
 #
-public list(public A type) : choice nil (Cons A (list A)), Sequence A is
+public list(public A type)
+  : choice nil (Cons A (list A)),
 # NYI: #530 (review comment): The following should work but causes an error:
 # list(A type) : nil | Cons A (list A), Sequence A is
+    Sequence A
+is
+
+  # equality of two list is true iff `a` and `b` are both empty or `a` and `b` are both
+  # non-empty and `T` and T.equality a.get b.get.
+  #
+  # This is defined only if T : property.equatable, it will result in a compile-time panic
+  # if this is not the case.
+  #
+  public redef fixed type.equality(a, b list A) bool
+  =>
+    (a.head = b.head                 &&
+     (a.is_empty || a.tail = b.tail)    )
+
+
+  # A total order for lists is defined as follows: An empty list `nil` is always
+  # less-than-or-equal any other value and iff `a` and `b` are both non-empty, and the
+  # `a.head` and `b.head` differ, then `T.lteq a.head b.head`, otherwise `T.lteq a.tail b.tail`.
+  #
+  # This is defined only if T : property.orderable, it will result in a compile-time panic
+  # if this is not the case.
+  #
+  public redef fixed type.lteq(a, b list A) bool
+  =>
+    a.head <= b.head && (a.head <  b.head   ||
+                         lteq a.tail b.tail  # a.tail <= b.tail currently does not result in tail recursion optimization
+                        )
+
+
+  # create hash code for this list.
+  #
+  # This should satisfy the following condition:
+  #
+  #   (T.equality a b) : (T.hash_code a = T.hash_code b)
+  #
+  # This will result in a compile-time `panic` in case T : property.hashable does not hold.
+  #
+  # The algorithm used here is a variation of (XXXHash)[https://xxhash.com] as used in
+  # (Python's tuple)[https://github.com/python/cpython/blob/849a80ec412c36bbca5d400a7db5645b8cf54f1f/Objects/tupleobject.c#L305]:
+  #
+  #   we start with a constant `hash_prime1`
+  #   for each value:
+  #     we take its hash code * `hash_prime2` and add it
+  #     then we rotate by `hash_rotate`
+  #     and multiply by `hash_prime3`
+  #
+  public redef fixed type.hash_code(a list A) u64
+  =>
+    if A : property.hashable then
+      h0 := xxh_next xxh_first 0xf9284f0baf063243  # created using https://cryptotools.dev/
+      a.map A.hash_code
+       .foldf h0 xxh_next
+    else
+      compile_time_panic  # list is not hashable since element type is not
 
 
   # Return this list as a list.
@@ -159,18 +214,10 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # collect the contents of this list into an array
   #
   public redef as_array array A =>
-
-    lm : mutate is
-
-      # redefine `mpanic` here to break endless recursion
-      module redef mpanic(msg String) => fuzion.std.panic msg
-
-    lm ! ()->
-      e := lm.env.new list.this
-      array A count _->
-        res := e.get.first.get
-        e <- e.get.force_tail
-        res
+    (
+      reduce (container.expanding_array A .empty) r,t->
+        r.add t
+    ).as_array
 
 
   # map the list to a new list applying function f to all elements
@@ -182,9 +229,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
     match list.this
       nil    => nil
       c Cons =>
-        ref : Cons B (list B) is
-          public redef head B => f c.head
-          public redef tail list B => c.tail.map_to_list f
+        f c.head : c.tail.map_to_list f
 
 
   # map the list to a new list applying function f to all elements
@@ -200,9 +245,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
         match (f c.head).as_list
           nil     => c.tail.flat_map_to_list f
           c2 Cons =>
-            ref : Cons B (list B) is
-              public redef head B => c2.head
-              public redef tail list B => (c2.tail ++ c.tail.flat_map_to_list f).as_list
+            c2.head : (c2.tail ++ c.tail.flat_map_to_list f).as_list
 
 
   # fold the elements of this list using the given monoid.
@@ -337,9 +380,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
       match list.this
         nil    => nil
         c Cons =>
-          ref : Cons A (list A) is   # NYI: indentation syntax for anonymous not supported
-            public redef head A => c.head
-            public redef tail list A => if n = 1 then nil else c.tail.take_list n-1
+          c.head : if n = 1 then nil else c.tail.take_list n-1
 
 
   # reverse the order of the elements in this list
@@ -465,9 +506,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
       nil    => nil
       c Cons =>
         if p c.head
-          ref : Cons A (list A) is   # NYI: indentation syntax for anonymous not supported
-            public redef head A => c.head
-            public redef tail list A => c.tail.take_while_list p
+          c.head : c.tail.take_while_list p
         else
           nil
 
@@ -508,9 +547,8 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   filter_list (p A -> bool) list A =>
     match drop_while_list (a -> !(p a))
       nil    => nil
-      c Cons => ref : Cons A (list A) is   # NYI: indentation syntax for anonymous not supported
-                  public redef head A => c.head
-                  public redef tail list A => c.tail.filter_list p
+      c Cons =>
+        c.head : c.tail.filter_list p
 
 
   # create a list that repeats the current list indefinitely.  In case 'list.this'
@@ -539,7 +577,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # 'list.this' and the empty list 'nil'.
   #
   public redef tails list (list A) =>
-    ref : Cons (list A) (list (list A)) is
+    _ : Cons (list A) (list (list A)) is
       public redef head list A => list.this
       public redef tail list (list A) =>
         list.this ? nil    => nil
@@ -560,10 +598,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
     match list.this
       c1 Cons =>
         b.as_list ? c2 Cons =>
-                      zip_cons : Cons V (list V) is
-                        public redef head V => f c1.head c2.head
-                        public redef tail list V => c1.tail.zip_list c2.tail f
-                      zip_cons
+                      f c1.head c2.head : c1.tail.zip_list c2.tail f
                   | nil    => nil
       nil => nil
 
@@ -673,7 +708,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   # fmap lifts a function from A to B to a function from list A to list B
   #
   public type.fmap(B type, f A -> B) list A -> list B =>
-    l -> l.map_to_list B f
+    (.map_to_list B f)
 
 
   # monoid of lists with infix concatenation operation.
@@ -684,7 +719,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
   #
   public type.list_concat_monoid Monoid (list A) =>
 
-    ref : Monoid (list A) is
+    _ : Monoid (list A) is
 
       # associative operation
       #
@@ -700,7 +735,7 @@ public list(public A type) : choice nil (Cons A (list A)), Sequence A is
 # convenience routine to create a list from head h and lazy tail t.
 #
 public list(T type, h T, t Lazy (list T)) list T =>
-  ref : Cons T (list T) is
+  _ : Cons T (list T) is
     public redef head T => h
     public redef tail list T => t
 

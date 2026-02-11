@@ -34,12 +34,12 @@
 # factor (logarithmic).
 #
 # The use of buckets permits the collection of large numbers of
-# sampe durations since only the counts per bucket are recorded
+# sample durations since only the counts per bucket are recorded
 #
 public histogram(# title to be printed for this histogram
                  public title String,
 
-                 # For measuring a periodic jitter, this gives the period.
+                 # To measure period jitter, this provides the period.
                  #
                  # If the period is given it becomes possible to detect drift,
                  # i.e, the actual times are measured relative to the expected
@@ -50,6 +50,11 @@ public histogram(# title to be printed for this histogram
                  # Note that periods like `1/60` cannot be traced accurately, the
                  # rounding error in 16666666ns (or 16666667ns) will add up over
                  # time!
+                 #
+                 # if period is `nil`, this will measure cycle jitter.
+                 #
+                 # See JEDEC Standard No. 65B for definition of period and cycle
+                 # jitter.
                  #
                  public period option time.duration,
 
@@ -79,7 +84,7 @@ is
 
   # a local mutate instance we are using to modify our state
   #
-  private local_mutate : mutate is
+  local_mutate : mutate is
 
 
   # get local mutate instance from env, install it if necessary
@@ -220,13 +225,13 @@ is
   indx(l time.duration)
   post
     debug: result.as_i32 ∈ table.indices
-    debug: l <= table[result.as_i32]
-    debug: result = 0 || table[result.as_i32-1] < l
+    debug: l <= table[result]
+    debug: result = 0 || table[result-1] < l
   =>
     # binary search in range s..e:
     for
       m := i64 0, (s+e)/2
-      v := l, table[m.as_i32]
+      v := l, table[m]
       s := i64 0      , l >  v ? m+1 : s
       e := num_buckets, l <= v ? m   : e
     while s < e
@@ -258,7 +263,7 @@ is
     debug: indx result = i
     debug: indx (result + time.duration.ns 1) = i+1
   =>
-    table[i.as_i32]
+    table[i]
 
 
   # record the given time instant, i.e., create the difference to the previous instant
@@ -299,7 +304,7 @@ is
   #
   # this is called by `add` after handing `ignore_first` and `ignore_last`
   #
-  private add0(d time.duration)
+  add0(d time.duration)
   =>
     i := indx d
     buckets[i] := buckets[i] + 1
@@ -384,6 +389,11 @@ is
   =>
     h := highest
     if h > 0
+      empt => " "  # unicode 0x0020 Space
+      hori => "_"  # unicode 0x005f Low Line
+      vert => "|"  # unicode 0x007c Vertical Line
+      bar => "▉"   # unicode 0x2589 LEFT SEVEN EIGHTHS BLOCK
+
       titl := """
               {"---  $title  ---".pad_center 78}
               count
@@ -392,21 +402,24 @@ is
         res := titl, res + str
         c := h.log2, c-1
       while c >= 0 do
-        units := " KMGTPEZY"; /* Kilo, Mega, Giga, Tera, etc. */
-        unit0 := min units.byte_length-1 c/10  # 2^10 is times 1024
+        units_str := " KMGTPEZY"; /* Kilo, Mega, Giga, Tera, etc. */
+        unit0 := min units_str.byte_length-1 c/10  # 2^10 is times 1024
         cnt := u64 1 << (c - unit0 * 10).as_u64
         str := for
-                 str1 := "{($cnt).pad_left 3}{units.substring unit0 unit0+1} ", str1 + str2 + str3
+                 hgap := c %% 4 ? hori : empt
+                 str1 := "{($cnt).pad_left 3}{units_str.substring unit0 unit0+1}$hgap", str1 + str2 + str3
                  i in buckets.indices
-                 str2 := i = num_buckets ? "       " : ""
-                 str3 := buckets[i].log2 < c ? " " : "*"
+                 last := i = num_buckets-1
+                 gap :=  i %% 8 || last ? vert : hgap
+                 str2 := last ? hgap + empt*6 : ""
+                 str3 := buckets[i].log2 < c ? gap : bar
                else
                  str1 + "\n"
       else
-        t2 := (i64 0 .. 64 : 8).map (i-> largest i .as_string.trim.pad_center 8)
+        t2 := (i64 0 .. 64 : 8).map (i -> largest i .as_string.pad_center 8)
                                .as_string ""
-        bot :=    ("     |       |       |       |       |       |       |       |       |       |\n" +
-                    "  "+t2+"   >\n")
+        bot :=    ("     " + (vert + empt*7)*9 + vert + "\n" +
+                   "  "+t2+"   >\n")
         res + bot + "\n" + (" average |" +
                             "   min   |" +
                             "   max   |" +
@@ -421,7 +434,7 @@ is
       "not data"
 
 
-  # Create semicolon-separated CSV data for these measurments to import into Excel or
+  # Create semicolon-separated CSV data for these measurements to import into Excel or
   # OpenOffice. First lines will be descriptions.
   #
   public csv String

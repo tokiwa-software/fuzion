@@ -53,7 +53,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
   /**
    * Empty Expr list to be used for empty actual arguments lists.
    */
-  public static final List<Expr> NO_EXPRS = new List<Expr>();
+  public static final List<Expr> NO_EXPRS = new List<Expr>().freeze();
 
 
   /**
@@ -487,7 +487,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
   Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
   {
     Expr result = this;
-    if (mayBePartial(t))
+    if (mayBePartial(res, t))
       {
         result = propagateExpectedTypeForPartial(res, context, t);
       }
@@ -502,12 +502,12 @@ public abstract class Expr extends ANY implements HasSourcePosition
   /**
    * Is this type applicable for partial application?
    */
-  private boolean mayBePartial(AbstractType t)
+  private boolean mayBePartial(Resolution res, AbstractType t)
   {
-    return t.isFunctionTypeExcludingLazy()         &&
+    return t.isLambdaTargetButNotLazy(res)                       &&
         !(this instanceof Call c && c._wasImplicitImmediateCall) &&
-        typeForInferencing() != Types.t_ERROR     &&
-        (typeForInferencing() == null || !typeForInferencing().isFunctionType());
+        typeForInferencing() != Types.t_ERROR                    &&
+        (typeForInferencing() == null || !typeForInferencing().isFunctionType(res));
   }
 
 
@@ -536,7 +536,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
    */
   Expr propagateExpectedTypeForPartial(Resolution res, Context context, AbstractType expectedType)
   {
-    return expectedType.isFunctionType() && expectedType.arity() == 0 && typeForInferencing() != null && !typeForInferencing().isFunctionType()
+    return expectedType.isLambdaTarget(res) && expectedType.arity(res) == 0 && typeForInferencing() != null && !typeForInferencing().isFunctionType(res)
       ? new Function(pos(), NO_EXPRS, reset())
       : this;
   }
@@ -876,6 +876,12 @@ public abstract class Expr extends ANY implements HasSourcePosition
   AbstractType asTypeParameterType()
   {
     return null;
+  }
+
+
+  public boolean isEmpty()
+  {
+    return false;
   }
 
 

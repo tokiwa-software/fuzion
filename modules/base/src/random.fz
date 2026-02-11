@@ -132,7 +132,7 @@ is
 # random with no argument returns random.env, i.e., the currently installed
 # source of randomness.
 #
-public random random =>
+public random random ! random, envir.vars =>
   random.install_default
   random.env
 
@@ -209,7 +209,7 @@ simple_random_handler(seed1 u64, seed2 u64) : Random_Handler is
   # create the default random handler depending on the environment settings
   #
   type.default =>
-    match envir.vars.get random_seed_env_var
+    match envir.vars[random_seed_env_var]
      s String =>
        match s.parse_u64
          seed u64 => simple_random_handler seed 98765432109876543
@@ -226,10 +226,3 @@ simple_random_handler(seed1 u64, seed2 u64) : Random_Handler is
     #
     simple_random_handler (u64 77777777777777 ^ fzE_nanotime) 98765432109876543
 
-
-  # create a time-seeded handler for pseudo random numbers that are not safe
-  # for security and that do not meet typical requirements for a good
-  # random number generator.
-  #
-  type.time_seeded(rr ()->unit) =>
-    random <- (random time_seeded) ! rr

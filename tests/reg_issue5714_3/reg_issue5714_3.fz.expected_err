@@ -1,0 +1,8 @@
+
+--CURDIR--/reg_issue5714_3.fz:37:3: error 1: Incompatible type parameter
+p.f o.i
+--^
+formal type parameter 'A : p.this.i' with constraint 'p.i'
+actual type parameter 'o.i'
+
+one error.

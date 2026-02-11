@@ -314,9 +314,7 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
    */
   String fileName()
   {
-    return _sourceFile._fileName.toString()
-      // special handling, windows
-      .replace("\\", "/");
+    return _sourceFile._fileName.toString();
   }
 
   /**
@@ -433,6 +431,9 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
 
     return list.getFirst().pos().rangeTo(list.getLast().pos().byteEndPos());
   }
+
+
+  public Pair<String,Long> globalPos() { return null; }
 
 }
 

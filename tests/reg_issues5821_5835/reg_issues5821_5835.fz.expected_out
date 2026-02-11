@@ -1,0 +1,20 @@
+original test:
+tests using 0, 1 and 2 actual types passed to open type:
+[]
+[Type of 'unit']
+[Type of 'unit', Type of 'i32']
+
+------
+
+tests using one plain type parameter and 0, 1 and 2 actual types passed to open type:
+[]
+Type of 'bool' [Type of 'unit']
+Type of 'void' [Type of 'unit', Type of 'i32']
+
+------
+
+tests using argument of open type and 0, 1 and 2 actual types passed to open type:
+
+------
+
+tests using one plain type parameter and value argument and 0, 1 and 2 actual types passed to open type and corresponding value argument:

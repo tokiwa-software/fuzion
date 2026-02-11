@@ -30,13 +30,13 @@
 #
 # WARNING: Due to the high worst-case time for addition, this structure should
 # not be used in situations when adding a single element repeatedly to the same
-# instance of `expanding_array` is performance critical.  If the resulting
+# instance of `expanding_array`.  If the resulting
 # `expanding_array`'s length is `l`, this will trigger the worst-case
 # addition time, resulting in cumulative time O(m*l) for adding an element m
 # times.
 #
 # This constructor is for internal use only, to create instance of
-# `expanding_array`, use `(expanding_array T).type.empty` to create an empty
+# `expanding_array`, use `(expanding_array T).empty` to create an empty
 # expanding array instance.
 #
 private:public expanding_array
@@ -63,7 +63,7 @@ is
 
   # get the contents of this array at the given index
   #
-  public redef index [](i i32) T
+  public redef index [](i idx) T
   =>
     data[i].val
 
@@ -96,7 +96,7 @@ is
   # Complexity: O(1) if no allocation is required, O(new_capacity)
   # otherwise.
   #
-  private realloc(new_capacity i32)
+  realloc(new_capacity i32)
   =>
     if capacity >= new_capacity && (length=capacity || !data[length])
       data
@@ -178,10 +178,10 @@ is
       #
       expanding_array.this
 
-    else if s.finite != trit.yes || count < s.count
+    else if s.finite.is_no_or_unknown || count < s.count
 
       # use lazy version in case `s` might be infinite, since then code below would not
-      # terminate, if if `s` is larger than `this`, which would avoids quadratic performance
+      # terminate, if `s` is larger than `this`, which would avoid quadratic performance
       # in code like the following:
       #
       #  for i in 0..n
@@ -210,7 +210,7 @@ is
   #
   # Complexity: O(1)
   #
-  public type.empty container.expanding_array T
+  public fixed type.empty container.expanding_array T
   =>
     empty default_capacity
 
@@ -221,7 +221,7 @@ is
   #
   # Complexity: O(1)
   #
-  public type.empty(initial_capacity i32) container.expanding_array T
+  public fixed type.empty(initial_capacity i32) container.expanding_array T
     pre
       debug: initial_capacity >= 0
   =>
@@ -238,19 +238,19 @@ is
 
 # unit type value for an unused slot
 #
-private unused is
+unused is
 
 
 # unit type value for a reserved slot, i.e., during `expand` a slot that was not
 # set by the `filler` yet.
 #
-private reserved is
+reserved is
 
 
 # internal arrays used by `expanding_array` will use values of type `slot` such that
 # we can distinguish slots that are used from those that are unused or reserved.
 #
-private slot(T type) : choice reserved unused T is
+slot(T type) : choice reserved unused T is
 
   # is this slot unused?
   #
@@ -340,20 +340,20 @@ is
     data[i].val
 
 
-  # short-hand index operator alias for `get`
+  # shorthand index operator alias for `get`
   #
-  public index [](i i32) T
+  public index [](i idx) T
     pre
-      safety: 0 <= i < length+n
-      debug: has i
+      safety: 0 <= i.as_i32 < length+n
+      debug: has i.as_i32
   =>
-    get i
+    get i.as_i32
 
 
-  # short-hand set-index operator alias for `put`
+  # shorthand set-index operator alias for `put`
   #
-  public set [](i i32, v T) unit
+  public set [](i idx, v T) unit
     pre
-      safety: length <= i < length+n
+      safety: length <= i.as_i32 < length+n
   =>
-    put i v
+    put i.as_i32 v

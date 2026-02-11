@@ -28,19 +28,16 @@ mmap_test =>
   f =>
     io.file.open
 
-  # NYI: UNDER DEVELOPMENT: get actual page size
-  page_size := 65536
-
   say <| io.file.use testfile io.file.mode.append ()->
 
-    io.file.writer.write (array u8 page_size i->0)
-      .error.get
+    io.file.writer.write (array u8 os.mmap_offset_multiple.as_i32 i->0)
+      .get
     io.file.writer.write "hello!".utf8
-      .error.get
+      .get
     io.file.writer.flush
       .get
 
-    offset := page_size.as_i64
+    offset := os.mmap_offset_multiple
 
     # map 6 bytes of file starting from the end of the '+'s.
     say <| f.mmap offset (i64 6) ()->
@@ -48,10 +45,11 @@ mmap_test =>
             io.file.mapped_buffer.env[1] := io.file.mapped_buffer.env[1] - 4
 
     # mmap should fail, since offset+size exceeds file size.
-    say <| f.mmap offset (i64 7) ()->
+    # truncating error code, may differ among OS
+    say <| (f.mmap offset (i64 7) ()->).err.as_string.truncate 31
 
 
   say <| io.file.use testfile io.file.mode.read ()->
-    String.from_bytes ((io.buffered io.file.file_mutate).read_fully.drop page_size)
+    String.from ((io.buffered io.file.file_mutate).read_fully.drop os.mmap_offset_multiple.as_i32)
 
   say (io.file.delete testfile)

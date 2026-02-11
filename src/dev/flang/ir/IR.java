@@ -38,7 +38,7 @@ import dev.flang.ast.AbstractType;
 import dev.flang.ast.Expr; // NYI: remove dependency
 import dev.flang.ast.InlineArray; // NYI: remove dependency
 import dev.flang.ast.NumLiteral; // NYI: remove dependency
-import dev.flang.ast.Nop; // NYI: remove dependency
+import dev.flang.ast.Types;
 import dev.flang.ast.Universe; // NYI: remove dependency
 
 import dev.flang.util.ANY;
@@ -84,11 +84,8 @@ public abstract class IR extends ANY
 
   /**
    * Special clazz index value for not-existing clazz.
-   *
-   * NYI: CLEANUP: This should better be {@code CLAZZ_BASE-1} and it should be used
-   * instead of {@code -1} in FUIR.java.
    */
-  public static final int NO_CLAZZ = -1;
+  public static final int NO_CLAZZ = CLAZZ_BASE-1;
 
 
   /**
@@ -133,6 +130,8 @@ public abstract class IR extends ANY
     Match,
     Tag,
     Pop;
+
+    public boolean isCallOrAssign() { return ExprKind.this == Call || ExprKind.this == Assign; }
   }
 
 
@@ -298,13 +297,16 @@ public abstract class IR extends ANY
       }
     else if (e instanceof AbstractCall c)
       {
-        toStack(l, c.target());
-        var fat = c.formalArgumentTypes();
-        for (int i = 0; i < c.actuals().size(); i++)
+        if (c.calledFeature() != Types.resolved.f_type_as_value)
           {
-            toStack(l, boxAndTag(c.actuals().get(i), fat[i]));
+            toStack(l, c.target());
+            var fat = c.formalArgumentTypes();
+            for (int i = 0; i < c.actuals().size(); i++)
+              {
+                toStack(l, boxAndTag(c.actuals().get(i), fat[i]));
+              }
+            l.add(c);
           }
-        l.add(c);
         if (dumpResult)
           {
             l.add(ExprKind.Pop);
@@ -327,9 +329,6 @@ public abstract class IR extends ANY
           {
             l.add(t);
           }
-      }
-    else if (e instanceof Nop)
-      {
       }
     else if (e instanceof Universe)
       {

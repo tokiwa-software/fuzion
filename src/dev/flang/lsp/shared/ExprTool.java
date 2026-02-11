@@ -98,7 +98,7 @@ public class ExprTool extends ANY
   /**
    * Compare expressions by evaluating their end positions and comparing those.
    */
-  public final static Comparator<? super Expr> compareByEndOfExpr =
+  public static final Comparator<? super Expr> compareByEndOfExpr =
     Comparator.comparing(expr -> endOfExpr(expr), (sourcePosition1, sourcePosition2) -> {
       return SourcePositionTool.compare(sourcePosition1, sourcePosition2);
     });

@@ -185,23 +185,6 @@ public class LibraryFeature extends AbstractFeature
     return _kind;
   }
 
-  /**
-   * Is this a routine that returns the current instance as its result?
-   */
-  public boolean isConstructor()
-  {
-    return _libModule.featureIsConstructor(_index);
-  }
-
-
-  /**
-   * Is this a constructor returning a reference result?
-   */
-  public boolean isRef()
-  {
-    return _libModule.featureIsRef(_index);
-  }
-
 
   /**
    * Visibility of this feature
@@ -394,6 +377,20 @@ public class LibraryFeature extends AbstractFeature
                                                         : null;
   }
 
+
+  @Override
+  public AbstractFeature openTypesFeature()
+  {
+    if (PRECONDITIONS) require
+      (isOpenTypeParameter());
+
+    if (CHECKS) check
+      (_libModule.featureHasOpenTypeFeature(_index));
+
+    return _libModule.featureValuesAsOpenTypeFeature(_index);
+  }
+
+
   /**
    * Get inner feature with given name, ignoring the argument count.
    *
@@ -429,6 +426,20 @@ public class LibraryFeature extends AbstractFeature
 
 
   /**
+   * For a type parameter, this gives the ResolvedParametricType instance
+   * corresponding to this type parameter.
+   */
+  @Override
+  public AbstractType asGenericType()
+  {
+    if (PRECONDITIONS) require
+      (isTypeParameter());
+
+    return new GenericType(_libModule, -1, this);
+  }
+
+
+  /**
    * createSelfType returns a new instance of the type of this feature's frame
    * object.
    *
@@ -437,14 +448,11 @@ public class LibraryFeature extends AbstractFeature
   @Override
   public AbstractType createSelfType()
   {
-    if (PRECONDITIONS) require
-      (isRoutine() || isAbstract() || isIntrinsic() || isNative() || isChoice() || isField() || isTypeParameter());
-
     var o = outer();
     var ot = o == null ? null : o.selfType();
     AbstractType result = new NormalType(_libModule, -1, this,
                                          defaultTypeKind(),
-                                         generics().asActuals(), ot);
+                                         genericsAsActuals(), ot);
 
     if (POSTCONDITIONS) ensure
       (result != null,
@@ -477,25 +485,14 @@ public class LibraryFeature extends AbstractFeature
    */
   public AbstractType resultType()
   {
-    if (isConstructor())
-      {
-        return selfType();
-      }
-    else if (isChoice())
-      {
-        return Types.resolved.t_void;
-      }
-    else if (isTypeParameter())
-      {
-        return
-          (isOpenTypeParameter()
-           ? Types.resolved.f_Values_Of_Open_Type
-           : Types.resolved.f_Type    ).resultType();
-      }
-    else
-      {
-        return _libModule.type(_libModule.featureResultTypePos(_index));
-      }
+    return switch (kind())
+    {
+      case Constructor, RefConstructor -> selfType();
+      case Choice -> Types.resolved.t_void;
+      case TypeParameter -> Types.resolved.f_Type.resultType();
+      case OpenTypeParameter -> Types.resolved.f_Open_Types.resultType();
+      default -> _libModule.type(_libModule.featureResultTypePos(_index));
+    };
   }
 
 
@@ -511,7 +508,7 @@ public class LibraryFeature extends AbstractFeature
     if (PRECONDITIONS) require
       (isTypeParameter());
 
-    var result = _libModule.type(_libModule.featureResultTypePos(_index));
+    var result = _libModule.type(_libModule.featureConstraintPos(_index));
 
     if (POSTCONDITIONS) ensure
       (result != null);

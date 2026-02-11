@@ -1,13 +1,9 @@
 
---CURDIR--/reg_issue4988_1.fz:25:14: error 1: Incompatible types found during type inference for type parameters
+--CURDIR--/reg_issue4988_1.fz:25:14: error 1: Failed to infer actual type parameters
 _ := a (true ? 3 : true)
 -------------^
-Types inferred for first type parameter 'T':
-'bool' found at --CURDIR--/reg_issue4988_1.fz:25:20:
-_ := a (true ? 3 : true)
--------------------^^^^
-'i32' found at --CURDIR--/reg_issue4988_1.fz:25:16:
-_ := a (true ? 3 : true)
----------------^
+In call to 'bool.ternary ? :', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: 'T'
+Type inference failed for one type parameter 'T'
 
 one error.

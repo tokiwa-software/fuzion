@@ -38,7 +38,7 @@ test_atomic is
     chck0 x y (a,b)->a=b
 
   test0(T type, a, b, c, d T, eq (T,T)->bool) =>
-    a1 := concur.atomic a
+    a1 := concur.atomic T .new a
     chck0 a1.read a eq
     a1.write b
     chck0 a1.read b eq
@@ -159,11 +159,11 @@ test_atomic is
 
   test =>
 
-    a1 := concur.atomic i64 0x0000000080000000
-    c1 := concur.atomic i64 0
-    s1 := concur.atomic i64 -1
-    c2 := concur.atomic i64 0
-    s2 := concur.atomic i64 -1
+    a1 := concur.atomic i64 .new 0x0000000080000000
+    c1 := concur.atomic i64 .new 0
+    s1 := concur.atomic i64 .new -1
+    c2 := concur.atomic i64 .new 0
+    s2 := concur.atomic i64 .new -1
 
     thrd1 := concur.threads.spawn (()->
       end := time.nano.read + (time.duration.seconds 5)

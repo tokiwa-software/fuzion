@@ -36,7 +36,7 @@
 # value of type 'bool'.
 #
 #
-public bool : choice false_ true_, property.equatable, java_primitive is
+public bool : choice false_ true_, property.equatable, property.hashable, java_primitive is
 
   # not
   public prefix ! bool =>
@@ -59,10 +59,18 @@ public bool : choice false_ true_, property.equatable, java_primitive is
       false
 
   # or
-  public infix |   (other bool) bool => bool.this || other
+  public infix |   (other bool) bool =>
+    if bool.this
+      true
+    else
+      other
 
   # and
-  public infix &   (other bool) bool => bool.this && other
+  public infix &   (other bool) bool =>
+    if bool.this
+      other
+    else
+      false
 
   # equivalence
   #
@@ -78,6 +86,16 @@ public bool : choice false_ true_, property.equatable, java_primitive is
       b
     else
       !b
+
+
+  # create hash code for this instance
+  #
+  # This should satisfy the following condition:
+  #
+  #   (T.equality a b) : (T.hash_code a = T.hash_code b)
+  #
+  public fixed redef type.hash_code(a bool) u64 => if a then 0 else 1
+
 
   # xor
   public infix ^   (other bool) bool => if bool.this (!other) else  other
@@ -112,7 +130,7 @@ public bool : choice false_ true_, property.equatable, java_primitive is
   # true.
   #
   public type.all Monoid bool =>
-    ref : Monoid bool is
+    _ : Monoid bool is
       public redef infix ∙ (a, b bool) bool => a & b
       public redef e bool => true
 
@@ -121,7 +139,7 @@ public bool : choice false_ true_, property.equatable, java_primitive is
   # false.
   #
   public type.any Monoid bool =>
-    ref : Monoid bool is
+    _ : Monoid bool is
       public redef infix ∙ (a, b bool) bool => a | b
       public redef e bool => false
 
@@ -130,7 +148,7 @@ public bool : choice false_ true_, property.equatable, java_primitive is
   # elements is true. This gives the even parity.
   #
   public type.parity Monoid bool =>
-    ref: Monoid bool is
+    _ : Monoid bool is
       public redef infix ∙ (a, b bool) bool => a ^ b
       public redef e bool => false
 
@@ -173,3 +191,25 @@ public false bool => false_
 #
 #
 public true bool => true_
+
+
+# takes an arbitrary amount of bool arguments and returns true if and only if
+# all of them are true
+#
+public all_of (B type..., values B...) bool =>
+  values.typed_foldf true T,e,v->
+    if T : bool
+      v & e
+    else
+      compile_time_panic
+
+
+# takes an arbitrary amount of bool arguments and returns true if and only if
+# any of them is true
+#
+public any_of (B type..., values B...) bool =>
+  values.typed_foldf false T,e,v->
+    if T : bool
+      v | e
+    else
+      compile_time_panic
