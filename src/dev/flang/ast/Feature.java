@@ -973,20 +973,33 @@ public class Feature extends AbstractFeature
                      || isChoiceBeforeTypesResolved()
           ? Kind.Choice
           : switch (implKind()) {
-              case FieldInit, FieldDef, FieldActual, FieldIter, Field -> Kind.Field;
-              case TypeParameter                                      -> Kind.TypeParameter;
-              case TypeParameterOpen                                  -> Kind.OpenTypeParameter;
-              case Routine, RoutineDef                                -> Kind.Routine;
-              case Abstract                                           -> Kind.Abstract;
-              case Intrinsic                                          -> Kind.Intrinsic;
-              case Native                                             -> Kind.Native;
+              case FieldInit, FieldDef,
+                   FieldActual, FieldIter,
+                   Field                     -> Kind.Field;
+              case TypeParameter             -> Kind.TypeParameter;
+              case TypeParameterOpen         -> Kind.OpenTypeParameter;
+              case Routine, RoutineDef       ->
+                _returnType == RefType.INSTANCE
+                ? Kind.RefConstructor
+                : _returnType.isConstructorType() ||
+                  // special handling if this is called before resolveDeclarations:
+                  !state().atLeast(State.RESOLVING_DECLARATIONS) && _impl._kind == Impl.Kind.Routine && _returnType == NoType.INSTANCE
+                ? Kind.Constructor
+                : Kind.Function;
+              case Abstract                  -> Kind.Abstract;
+              case Intrinsic                 -> Kind.Intrinsic;
+              case Native                    -> Kind.Native;
             };
         // cache only when we have resolved types.
         if (state().atLeast(State.RESOLVING_TYPES) && Types.resolved != null)
           {
+            if (kind == Kind.Choice && _returnType == RefType.INSTANCE)
+              {
+                AstErrors.choiceMustNotBeRef(_pos);
+              }
             _kind = Optional.of(kind);
           }
-         result = Optional.of(kind);
+        result = Optional.of(kind);
       }
     return result.get();
   }
@@ -1811,11 +1824,6 @@ public class Feature extends AbstractFeature
                                               inheritsChoice.get(0).pos());
       }
 
-    if (isRef())
-      {
-        AstErrors.choiceMustNotBeRef(_pos);
-      }
-
     // choice type must not contain any code, but may contain inner features
     switch (_impl._kind)
       {
@@ -2613,26 +2621,6 @@ A ((Choice)) declaration must not contain a result type.
       (_outer != null);
 
     return FuzionConstants.OUTER_REF_PREFIX + qualifiedName() + FuzionConstants.OUTER_REF_SUFFIX;
-  }
-
-
-  /**
-   * Is this a routine that returns the current instance as its result?
-   */
-  public boolean isConstructor()
-  {
-    return isRoutine() && _returnType.isConstructorType() ||
-      // special handling if this is called before resolveDeclarations:
-      !state().atLeast(State.RESOLVING_DECLARATIONS) && _impl._kind == Impl.Kind.Routine && _returnType == NoType.INSTANCE;
-  }
-
-
-  /**
-   * Is this a constructor returning a reference result?
-   */
-  public boolean isRef()
-  {
-    return _returnType == RefType.INSTANCE;
   }
 
 

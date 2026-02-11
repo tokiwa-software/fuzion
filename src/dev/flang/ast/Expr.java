@@ -879,6 +879,12 @@ public abstract class Expr extends ANY implements HasSourcePosition
   }
 
 
+  public boolean isEmpty()
+  {
+    return false;
+  }
+
+
 }
 
 /* end of file */

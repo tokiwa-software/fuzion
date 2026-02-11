@@ -134,7 +134,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public List<AbstractType> actualGenerics()
   {
     return isThisType()
-      ? feature().generics().asActuals()
+      ? feature().genericsAsActuals()
       : generics();
   }
 
@@ -182,7 +182,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       case GenericArgument -> throw new Error("asValue not legal for genericArgument");
       case ThisType -> allowForThisType
         ? ResolvedNormalType.create(
-            feature().generics().asActuals(),
+            feature().genericsAsActuals(),
             Call.NO_GENERICS,
             feature().outer().selfType().asThis(),
             feature(),
@@ -312,12 +312,14 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   }
 
 
+  // cache field
+  private final boolean _isGenericArgument = kind() == TypeKind.GenericArgument;
   /**
    * Is this type a generic argument (true) or false backed by a feature (false)?
    */
   public boolean isGenericArgument()
   {
-    return kind() == TypeKind.GenericArgument;
+    return _isGenericArgument;
   }
 
 
@@ -1939,7 +1941,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
     AbstractFeature result = null;
 
-    var g = replaceGenericsAndOuter(feature().generics().asActuals(), outer())
+    var g = replaceGenericsAndOuter(feature().genericsAsActuals(), outer())
       .lambdaTargetResultType(res);
 
     if (g.isGenericArgument() && g.genericArgument().outer() == feature())
