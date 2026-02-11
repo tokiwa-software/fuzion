@@ -129,7 +129,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public List<AbstractType> actualGenerics()
   {
     return isThisType()
-      ? feature().generics().asActuals()
+      ? feature().genericsAsActuals()
       : generics();
   }
 
@@ -177,7 +177,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       case GenericArgument -> throw new Error("asValue not legal for genericArgument");
       case ThisType -> allowForThisType
         ? ResolvedNormalType.create(
-            feature().generics().asActuals(),
+            feature().genericsAsActuals(),
             Call.NO_GENERICS,
             feature().outer().selfType().asThis(),
             feature(),
@@ -1655,7 +1655,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
     AbstractFeature result = null;
 
-    var g = replaceGenericsAndOuter(feature().generics().asActuals(), outer())
+    var g = replaceGenericsAndOuter(feature().genericsAsActuals(), outer())
       .lambdaTargetResultType(res);
 
     if (g.isGenericArgument() && g.genericArgument().outer() == feature())
@@ -2168,12 +2168,11 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   AbstractType cotypeType(Resolution res)
   {
     if (PRECONDITIONS) require
-      (!isGenericArgument(),
-       res != null || feature().state().atLeast(State.RESOLVED));
+      (res != null || feature().state().atLeast(State.RESOLVED));
 
     AbstractType result = null;
-    var fot = feature();
-    if (fot.isUniverse() || this == Types.t_ERROR || fot.isCotype())
+    var fot = backingFeature();
+    if (fot.isUniverse() || this == Types.t_ERROR || fot.isCotype() || isGenericArgument())
       {
         result = this;
       }

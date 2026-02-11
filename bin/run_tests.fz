@@ -140,7 +140,7 @@ find_tests(dir String) array String =>
   m : mutate is
   tests := m ! ()->
     io.dir.use _ dir ()->
-      res := (mutate.array String).type.new m 0 ""
+      res := m.array String .new 0 ""
       _ :=
         for x := io.dir.open.read
         while x.ok
