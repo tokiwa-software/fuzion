@@ -31,8 +31,8 @@ public sodium is
 
     mutate ! ()->
 
-      out := mutate.array i8 .new mutate password_hash_length 0
-      passwd := mutate.array i8 .from_Sequence mutate (password.utf8.map (.cast_to_i8))
+      out := mutate.array i8 .new password_hash_length 0
+      passwd := mutate.array i8 .from_Sequence (password.utf8.map (.cast_to_i8))
 
       sodium.sodium_init
 
@@ -69,8 +69,8 @@ public sodium is
 
     mutate ! ()->
 
-      passwd := mutate.array i8 .from_Sequence mutate (password.utf8.map (.cast_to_i8))
-      hsh := mutate.array i8 .from_Sequence mutate (hash.utf8.map (.cast_to_i8))
+      passwd := mutate.array i8 .from_Sequence (password.utf8.map (.cast_to_i8))
+      hsh := mutate.array i8 .from_Sequence (hash.utf8.map (.cast_to_i8))
 
       sodium.sodium_init
 

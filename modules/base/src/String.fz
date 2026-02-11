@@ -890,7 +890,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # the bytes of this String
   #
   public as_c_string(LM type : mutate) LM.array u8 =>
-    mutate.array u8 .from_Sequence LM (String.this + codepoint 0).utf8
+    LM.array u8 .from_Sequence (String.this + codepoint 0).utf8
 
 
   # this String but put in double quotes

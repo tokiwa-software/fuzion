@@ -91,7 +91,7 @@ public read_bytes(n i32) array u8 ! reader
   post debug: result.length <= n
 =>
 
-  res := (mutate.array u8).empty LM
+  res := LM.array u8 .empty
 
   _ :=
     while res.length.as_i32 < n
@@ -155,7 +155,7 @@ public read_delimiter (delim u8, strip_cr bool) switch String io.end_of_file ! r
   if reader.env.read ? outcome => true | * => false
     io.end_of_file
   else
-    res := (mutate.array u8).empty LM
+    res := LM.array u8 .empty
 
     while
       match reader.env.read

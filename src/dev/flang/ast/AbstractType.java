@@ -2463,12 +2463,11 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   AbstractType cotypeType(Resolution res)
   {
     if (PRECONDITIONS) require
-      (!isGenericArgument(),
-       res != null || feature().state().atLeast(State.RESOLVED));
+      (res != null || feature().state().atLeast(State.RESOLVED));
 
     AbstractType result = null;
-    var fot = feature();
-    if (fot.isUniverse() || this == Types.t_ERROR || fot.isCotype())
+    var fot = backingFeature();
+    if (fot.isUniverse() || this == Types.t_ERROR || fot.isCotype() || isGenericArgument())
       {
         result = this;
       }

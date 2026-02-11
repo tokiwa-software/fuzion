@@ -64,7 +64,7 @@ choicetest is
   say "creating array:"
   mi : mutate is
   a := mi ! ()->
-    ma := (mutate.array Coin).new mi 10 Penny
+    ma := mi.array Coin .new 10 Penny
     ma[0] := Penny
     ma[1] := Penny
     ma[2] := Penny
