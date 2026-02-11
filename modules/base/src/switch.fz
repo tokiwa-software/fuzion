@@ -62,10 +62,10 @@ is
   public prefix ! bool => !exists
 
 
-  # unwraps a switch that is known to contain a value
+  # unwraps a switch that is known to contain an A value
   #
   # this can only be called in cases where it is known for sure that this switch
-  # is not nil.  A runtime error will be created otherwise.
+  # is not a B.  A non-catchable runtime error will be created otherwise.
   #
   public get A
   pre
@@ -78,7 +78,7 @@ is
   # value of a switch that is known to contain a value
   #
   # This can only be called in cases where it is known for sure that this
-  # switch is not a B.  A runtime error will be created otherwise.
+  # switch is not a B.  A catchable panic will be created otherwise.
   #
   public val A
     pre
@@ -104,8 +104,8 @@ is
       b B => b
 
 
-  # returns o if outcome is ok, otherwise return the outcome's own
-  # error.
+  # returns o if switch is of type A, otherwise return the
+  # switches B.
   #
   public and (O type, o switch.this) switch.this =>
     match switch.this
@@ -113,7 +113,7 @@ is
       b B => b
 
 
-  # if this switch is nil return the result of f
+  # if this switch is a B return the result of f
   # otherwise just return this switch.
   #
   public or (f Lazy switch.this) switch.this =>
@@ -131,7 +131,7 @@ is
 
 
   # converts switch into a list of either a single element in case
-  # switch.this.exists or `nil`otherwise
+  # switch.this.exists or `nil` otherwise
   #
   public redef as_list list A
   =>
