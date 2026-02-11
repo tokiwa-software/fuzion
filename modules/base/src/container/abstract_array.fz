@@ -262,8 +262,8 @@ public abstract_array
   #
   public redef reverse Sequence T =>
     _ : container.abstract_array T is
-      public redef index [ ] (i idx) T => abstract_array.this[abstract_array.this.length-i]
-      public redef as_list list T => abstract_array.this.as_list.reverse
+      public redef index [ ] (i idx) T => abstract_array.this[abstract_array.this.length-i.as_i32]
+      public redef as_list list T => abstract_array.this.as_list.reverse_list
       public redef length i32 := abstract_array.this.length
       public redef reverse Sequence T => abstract_array.this
 
