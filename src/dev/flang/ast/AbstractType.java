@@ -382,7 +382,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     return
       isThisType()
       ? g
-      : replaceGenerics(g).map(t -> t.replace_this_type_by_actual_outer(this, context));
+      : NEWreplaceGenerics(g).map(t -> t.replace_this_type_by_actual_outer(this, context));
   }
 
 
@@ -865,7 +865,16 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @return a new list of types with all formal generic arguments from
    * feature() replaced by the corresponding generics entry of this type.
    */
-  public List<AbstractType> replaceGenerics(List<AbstractType> genericsToReplace)
+  public List<AbstractType> NEWreplaceGenerics(List<AbstractType> genericsToReplace)
+  {
+    if (PRECONDITIONS) require
+      (isNormalType(),
+       Errors.any() ||
+       feature().generics().sizeMatches(generics()));
+
+    return NEWapplyTypePars(feature(), genericsToReplace, generics());
+  }
+  public List<AbstractType> OLDreplaceGenerics(List<AbstractType> genericsToReplace)
   {
     if (PRECONDITIONS) require
       (isNormalType(),
