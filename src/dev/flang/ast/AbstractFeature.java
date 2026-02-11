@@ -540,7 +540,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
     if (isBaseChoice())
       {
-        result = generics().asActuals();
+        result = genericsAsActuals();
       }
     else
       {
@@ -803,7 +803,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     var oc = o == null || o.isUniverse()                            ? Universe.instance
       : target instanceof AbstractCall ac && !ac.isCallToOuterRef() ? ac.cotypeInheritanceCall(res, that)
       : o.cotypeInheritanceCall(p, new List<>(o.selfType(),
-                                              o.generics().asActuals().map(that::rebaseTypeForCotype)),
+                                              o.genericsAsActuals().map(that::rebaseTypeForCotype)),
                                 res, that, null);
 
     var tf = res.cotype(this);
@@ -962,7 +962,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       (state().atLeast(State.FINDING_DECLARATIONS));
 
     var o = isUniverse() || outer().isUniverse() ? null : outer().selfType();
-    var g = generics().asActuals();
+    var g = genericsAsActuals();
     var result = ResolvedNormalType.create(g, o, this);
 
     if (POSTCONDITIONS) ensure
@@ -1528,6 +1528,23 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
         _generics = new FormalGenerics(this);
       }
     return _generics;
+  }
+
+
+  /**
+   * Create the formal generics parameters for an outer reference for any inner
+   * feature declared within this formal generic's feature.
+   *
+   * @return actual generics that match these formal generics.
+   */
+  private List<AbstractType> _genericsAsActuals = null;
+  public List<AbstractType> genericsAsActuals()
+  {
+    if (_genericsAsActuals == null)
+      {
+        _genericsAsActuals = typeArguments().map2(x -> x.asGenericType()).freeze();
+      }
+    return _genericsAsActuals;
   }
 
 
