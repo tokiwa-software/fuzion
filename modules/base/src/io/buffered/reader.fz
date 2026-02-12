@@ -88,7 +88,11 @@ is
 # if the returned sequence is empty or count is less than n, end of file has been reached.
 #
 public read_bytes(n i32) outcome (Sequence u8) ! reader
-  post debug: result.count <= n
+  post debug: {
+    match result
+      error => true
+      s Sequence u8 => s.count <= n
+  }
 =>
 
   for res Sequence u8 := container.Finger_Tree u8 .empty,
