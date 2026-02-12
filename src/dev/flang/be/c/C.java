@@ -780,7 +780,7 @@ public class C extends ANY
 
         if (!_options._debugBuild)
           {
-            command.addAll("-O3");
+            command.addAll("-O2");
           }
       }
 
