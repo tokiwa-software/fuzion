@@ -163,19 +163,10 @@ class LibraryOut extends ANY
    */
   byte[] version()
   {
-    var alg = "DRBG"; // or "SHA1PRNG"? NYI: Choose best algorithm here!
-    try
-      {
-        var result = new byte[16];
-        var r = SecureRandom.getInstance(alg);
-        r.nextBytes(result);
-        return result;
-      }
-    catch (NoSuchAlgorithmException e)
-      {
-        Errors.error("failed to produce secure random using algorithm '" + alg + "': " + e);
-        return null;
-      }
+    var result = new byte[16];
+    var r = new SecureRandom();
+    r.nextBytes(result);
+    return result;
   }
 
 
