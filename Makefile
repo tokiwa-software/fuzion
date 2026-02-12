@@ -647,6 +647,7 @@ SYNTAX_CHECK_MODULES = terminal,clang,lock_free,java.base,java.datatransfer,java
 .PHONY: syntaxcheck
 syntaxcheck: min-java
 	find ./examples/ -name '*.fz' -print0 | xargs -0L1 $(FZ) -modules=$(SYNTAX_CHECK_MODULES) -noBackend
+	find ./benchmarks/ -name '*.fz' -print0 | xargs -0L1 $(FZ) -modules=$(SYNTAX_CHECK_MODULES) -noBackend
 	find ./bin/ -name '*.fz' -print0 | xargs -0L1 $(FZ) -modules=$(SYNTAX_CHECK_MODULES) -noBackend
 
 .PHONY: add_simple_test
