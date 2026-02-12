@@ -1022,7 +1022,7 @@ public class Html extends ANY
       {
         var f = iter.next();
 
-        var innerFeatures = lm.declaredFeatures(f).values().stream()
+        var innerFeatures = lm.declaredFeaturesShallow(f).values().stream()
                               .filter(ft -> ft.definesType()
                                             && ft.visibility().typeVisibility() == Visi.PUB)
                               .sorted(Comparator.comparing(ft -> ft.featureName().baseName(), String.CASE_INSENSITIVE_ORDER))
