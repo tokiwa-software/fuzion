@@ -371,8 +371,8 @@ public class AstErrors extends ANY
     var valAssigned = "";
     var assignableToSB = new StringBuilder();
     var errorOrUndefinedFound =
-      frmlT     == Types.t_ERROR || frmlT     == Types.t_UNDEFINED ||
-      typeValue == Types.t_ERROR || typeValue == Types.t_UNDEFINED;
+      frmlT.isArtificialType() ||
+      typeValue.isArtificialType();
     if (value == null)
       {
         actlFound   = "actual type found   : " + s(typeValue);
@@ -381,7 +381,7 @@ public class AstErrors extends ANY
     else
       {
         var actlT = value.type();
-        errorOrUndefinedFound |=  actlT == Types.t_ERROR || actlT == Types.t_UNDEFINED;
+        errorOrUndefinedFound |=  actlT.isArtificialType();
         if (actlT.isThisType())
           {
             assignableToSB

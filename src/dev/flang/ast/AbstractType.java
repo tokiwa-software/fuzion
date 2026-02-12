@@ -590,7 +590,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       }
     var target_type = this  .remove_type_parameter_used_for_this_type_in_cotype();
     var actual_type = actual.remove_type_parameter_used_for_this_type_in_cotype();
-    var result = AbstractType.isArtificialType(this) || AbstractType.isArtificialType(actual)
+    var result = isArtificialType() || actual.isArtificialType()
         ? YesNo.dontKnow
         : YesNo.fromBool(target_type.compareTo(actual_type) == 0 || actual_type.isVoid());
     if (result.no() && !target_type.isGenericArgument() && isRef() && actual_type.isRef())
@@ -640,9 +640,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @param t
    * @return
    */
-  private static boolean isArtificialType(AbstractType t)
+  public boolean isArtificialType()
   {
-    return t instanceof ArtificialBuiltInType;
+    return false;
   }
 
 
@@ -2631,7 +2631,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         if (a == null && f.isOpenTypeParameter())
           { // ok, no actuals given for open generic
           }
-        else if (a != null && a != Types.t_UNDEFINED && a != Types.t_ERROR)
+        else if (a != null && !a.isArtificialType())
           {
             a.checkLegalThisType(p, context);
             a.checkChoice(p, context);
