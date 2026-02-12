@@ -39,8 +39,8 @@ true
 '!"§$%&/{([)]=}ß?\´`@Üü*+~ÖöÄä'#><|;,:._-' [OK]
 '!"§$%&/{([)]=}ß?\´`@Üü*+~ÖöÄä'#><|;,:._-' [OK]
 true
---error: broken string, failed to decode '%gh' at position 3--
---error: unexpected end of input, expected two hex characters after '%' at position 3--
---error: unexpected end of input, expected two hex characters after '%' at position 0--
---error: codepoint '/' at position 0 is not allowed in encoded string--
---error: codepoint '/' at position 0 is not allowed in encoded string--
+--error: broken string, failed to decode '%gh' at byte position 3--
+--error: unexpected end of input, expected two hex characters after '%' at byte position 3--
+--error: unexpected end of input, expected two hex characters after '%' at byte position 0--
+--error: codepoint '/' at byte position 0 is not allowed in encoded string--
+--error: codepoint '/' at byte position 0 is not allowed in encoded string--

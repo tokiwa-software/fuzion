@@ -33,10 +33,41 @@ public percent is
   # NYI: UNDER DEVELOPMENT: add encoding to application/x-www-form-urlencoded MIME format ?
 
 
-  # is this the value of an ascii character that is considered safe (unreserved) according to RFC 3986 section 2.3
-  u32.safe_char =>
-    ("A".val <= val <= "Z".val || "a".val <= val <= "z".val || "0".val <= val <= "9".val
-     || val = "-".val || val = ".".val || val = "_".val || val = "~".val)
+
+  # hex_char[val] gets the hex char representation for a four bit value
+  #
+  hex_char := "0123456789ABCDEF".utf8.as_array
+
+  # is this an ascii character that is considered safe (unreserved) according to RFC 3986 section 2.3
+  #
+  u8.safe_char =>
+    #  A              Z       a              z       0              9
+    (0x41 <= val <= 0x5A || 0x61 <= val <= 0x7A || 0x30 <= val <= 0x39
+    #            -             .             _             ~
+      || val = 0x2D || val = 0x2E || val = 0x5F || val = 0x7E)
+
+  # convert a hex char into the four bit value it represents
+  #
+  u8.four_bits =>
+    if 48 <= val <= 57       # case 0-9
+      val - 48
+    else if 65 <= val <= 70  # case A-F
+      val - 55
+    else # 97 <= val <= 102  # case a-f
+      val - 87
+
+  # is this a valid hexadecimal character (A-Fa-f0-9)
+  #
+  u8.is_hex bool =>
+    # A       -      F       a      -       f       0      -       9
+    0x41 <= val <= 0x46 || 0x61 <= val <= 0x66 || 0x30 <= val <= 0x39
+
+  # convert lowercase a-z to uppercase
+  #
+  u8.upper u8 =>
+    #    a              f
+    if 0x61 <= val <= 0x7A then val-32 else val
+
 
 
   # Percent encode (url encode) a Sequence of bytes, as specified in RFC 3986 section 2.1
@@ -45,8 +76,10 @@ public percent is
   # * All other values are encoded as "%HH", where HH is the hexadecimal representation of the byte, using uppercase letters
   #
   public encode_bytes(data Sequence u8) String =>
-    data.map b->(b.as_u32.safe_char ? (codepoint b.as_u32) : ("%" + b.as_string 16 .upper_case))
-        .as_string ""
+    String.from (data.flat_map b->if b.safe_char
+                                    [b]
+                                  else #    %      four bits       four bits
+                                    ([u8 0x25, hex_char[b>>4], hex_char[b&0xF]]))
 
 
   # Percent encode (url encode) an utf8 string, as specified in RFC 3986 section 2.1
@@ -73,7 +106,7 @@ public percent is
   #
   public decode_as_str(enc_utf8 String) outcome String =>
     match decode enc_utf8 false
-      bytes Sequence => String.from_bytes bytes
+      bytes Sequence => String.from bytes
       e error => e
 
 
@@ -88,7 +121,7 @@ public percent is
   #
   public decode_as_str_tolerant(enc_utf8 String) outcome String =>
     match decode enc_utf8 true
-      bytes Sequence => String.from_bytes bytes
+      bytes Sequence => String.from bytes
       e error => e
 
 
@@ -113,26 +146,30 @@ public percent is
   # does the actual decoding
   #
   decode(enc_str String, tolerant bool) outcome (Sequence u8) =>
-    enc := enc_str.codepoints
+    enc := enc_str.utf8.as_array_backed
     len := enc.count
 
+    # decode recursively by looking at the next part
+    #
     dec(res Sequence u8, i i32) outcome (Sequence u8) =>
       if i >= len
         res
+
       # decode percent encoded byte "%HH"
-      else if enc[i] = "%"
+      else if enc[i] = 0x25 # %
         if i+3 > len
-          error "unexpected end of input, expected two hex characters after '%' at position $i"
+          error "unexpected end of input, expected two hex characters after '%' at byte position $i"
+        else if enc[i+1].is_hex && enc[i+2].is_hex
+          dec (res ++ [enc[i+1].four_bits<<4 | enc[i+2].four_bits]) i+3
         else
-          match encodings.base16.decode_str (enc_str.substring_codepoint i+1 i+3).upper_case
-            byte array => dec (res ++ byte) i+3
-            error => error "broken string, failed to decode '{enc_str.substring_codepoint i i+3}' at position $i"
+          error "broken string, failed to decode '{enc_str.substring i .substring_codepoint 0 3}' at byte position $i"
+
       # non encoded characters
       else
         c := enc[i]
-        if (tolerant || c.is_ascii_alpha_num || c = "-" || c = "." || c = "_" || c = "~" || c = "+")
-          dec (res ++ (c = "+" ? " ".utf8 : c.utf8)) i+1
+        if (tolerant || c.safe_char)
+          dec (res ++ (c = "+".val.as_u8 ? " ".utf8 : [c])) i+1
         else
-          error "codepoint '$c' at position $i is not allowed in encoded string"
+          error "codepoint '{enc_str.substring i .substring_codepoint 0 1}' at byte position $i is not allowed in encoded string"
 
     dec "".utf8 0
