@@ -58,7 +58,7 @@ public stdin is
   # read all of stdin in an array of u8 bytes using
   # io.buffered.read_fully.
   #
-  public read_fully array u8 =>
+  public read_fully Sequence u8 =>
     lm : mutate is
     lm ! ()->
       reader lm ! (buffered lm).read_fully
