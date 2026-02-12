@@ -636,9 +636,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
   /**
    * check if t is an artificial type like t_ERROR
-   *
-   * @param t
-   * @return
    */
   public boolean isArtificialType()
   {
