@@ -2229,8 +2229,6 @@ public class DFA extends ANY
                                     new List<>(),
                                     newEnv,
                                     cl);
-          cll._group.mayHaveEffect(ecl);
-
           var result = cll.result(cl);
 
           if(fuir.getSpecialClazz(ecl) == SpecialClazzes.c_fuzion_runtime_stackoverflow)
