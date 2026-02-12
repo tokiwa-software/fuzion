@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.fuir.analysis;
 
 import static dev.flang.ir.IR.NO_CLAZZ;
+import static dev.flang.ir.IR.NO_SITE;
 
 import dev.flang.fuir.FUIR;
 
@@ -147,6 +148,7 @@ public class TailCall extends ANY
       outerRef == NO_CLAZZ ||
       nargs >= 1 &&
       (tc == _fuir.clazzUniverse() ||
+       ts != NO_SITE                                  &&
        _fuir.codeAt       (ts) == IR.ExprKind.Call    &&
        _fuir.accessedClazz(ts) == outerRef            &&
        _fuir.codeAt(_fuir.codeIndex(ts, -1)) == IR.ExprKind.Current);
