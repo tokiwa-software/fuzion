@@ -2849,7 +2849,7 @@ public class Call extends AbstractCall
           {
             Expr actl = _actuals.get(i);
             var frmlT = resolvedFormalArgumentTypes[i];
-            if (actl != null && !frmlT.isArtificialType())
+            if (actl != null && frmlT != Types.t_ERROR)
               {
                 var a = f.apply(actl, frmlT);
                 if (!isDefunct())

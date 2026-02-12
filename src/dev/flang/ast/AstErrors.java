@@ -372,7 +372,7 @@ public class AstErrors extends ANY
     var assignableToSB = new StringBuilder();
     var errorOrUndefinedFound =
       frmlT.isArtificialType() ||
-      typeValue.isArtificialType();
+      typeValue != null && typeValue.isArtificialType();
     if (value == null)
       {
         actlFound   = "actual type found   : " + s(typeValue);

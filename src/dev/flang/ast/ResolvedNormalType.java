@@ -430,7 +430,7 @@ public class ResolvedNormalType extends ResolvedType
    */
   AbstractType clone(AbstractFeature originalOuterFeature)
   {
-    return (this.isArtificialType()) ? this :
+    return this.isArtificialType() ? this :
       new ResolvedNormalType(this, originalOuterFeature)
       {
         AbstractFeature originalOuterFeature(AbstractFeature currentOuter)
