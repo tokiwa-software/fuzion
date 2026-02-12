@@ -1250,7 +1250,7 @@ public class Feature extends AbstractFeature
     if (_openTypes == null)
       {
         var name = FuzionConstants.OPEN_TYPES_PREFIX + _id;
-        var otf = new Feature(pos(), visibility().typeVisibility(), 0, NoType.INSTANCE, new List<>(name), new List<>(),
+        var otf = new Feature(pos(), Visi.PRIV, 0, NoType.INSTANCE, new List<>(name), new List<>(),
                               new List<>(new Call(pos(), Universe.instance, Types.resolved.f_Open_Types)),
                               Contract.EMPTY_CONTRACT,
                               new Impl(pos(), new Block(), Impl.Kind.Routine));
