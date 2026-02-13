@@ -62,11 +62,8 @@ public read_request(
 
     if !rl[2].starts_with "HTTP/" then cause "unsupported protocol {rl[2]}"
 
-    ver := rl[2].substring 5 .split_n "." 1
-                .map (s->s.parse_i32.or_cause unit _->(error "broken format of HTTP version '{rl[2]}'"))
-
-    major := ver[0]
-    minor := ver.count = 1 ? 0 : ver[1]
+    major, minor := parse_http_version (rl[2].substring 5) _->
+      error "broken format of HTTP version '{rl[2]}'"
 
     tmp_parsed_fields := parse_header_fields LM .or_cause unit id
 
