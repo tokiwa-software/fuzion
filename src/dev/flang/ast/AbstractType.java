@@ -963,7 +963,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @return this with all generic arguments from target.feature._generics
    * replaced by target._generics.
    */
-  public AbstractType OLDapplyTypePars(AbstractType target)
+  private AbstractType OLDapplyTypePars(AbstractType target)
   {
     if (PRECONDITIONS) require
       (target != null,
@@ -1043,7 +1043,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * otherwise the type that results by replacing all formal generic parameters
    * of this in t by the corresponding type from actualGenerics.
    */
-  public AbstractType OLDapplyTypePars(AbstractFeature f, List<AbstractType> actualGenerics)
+  private AbstractType OLDapplyTypePars(AbstractFeature f, List<AbstractType> actualGenerics)
   {
     if (PRECONDITIONS) require
       (Errors.any() || f.generics().sizeMatches(actualGenerics));
@@ -1302,7 +1302,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         var this_type = g.get(0);
         g = g.map(x -> x == this_type                     ||        // leave first type parameter unchanged
                             this_type.isGenericArgument()    ? x    // no actuals to apply in a generic arg
-                                                             : x.OLDapplyTypePars(this_type)
+                                                             : x.NEWapplyTypePars(this_type)
                                                                 .replace_this_type_by_actual_outer(this_type, Context.NONE));
       }
     return g;
