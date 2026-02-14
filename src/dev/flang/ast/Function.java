@@ -340,7 +340,7 @@ public class Function extends AbstractLambda
                       // we must replace `option A` by `option B`, i.e.,
                       // replace original's type parameters by redefinition's:
                       //
-                      .applyTypePars(cl, tps_as_actuals);
+                      .NEWapplyTypePars(cl, tps_as_actuals);
                 if (at == Types.t_UNDEFINED)
                   {
                     t = Types.t_ERROR;
@@ -401,7 +401,7 @@ public class Function extends AbstractLambda
               {
                 result = refineResultType(res, context, rt0, _feature.resultType());
                 var g = t.lambdaTargetResultTypeParameter(res);
-                if (g != null)
+                if (g != null && !_inheritsCall.isDefunct())
                   {
                     int idx = g.typeParameterIndex();
                     _inheritsCall._generics = _inheritsCall._generics.setOrClone(idx, result);
