@@ -190,7 +190,7 @@ public abstract_array
         if to ≤ from
           nil
         else
-          array_slice.this.array_cons abstract_array.this from to
+          abstract_array.this.array_cons abstract_array.this from to
 
 
       # get the contents of this slice at the given index

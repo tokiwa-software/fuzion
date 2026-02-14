@@ -40,9 +40,14 @@ public Read_Handler ref is
       public redef read(c i32) choice (Sequence u8) io.end_of_file error => io.end_of_file
 
 
-  # create a Read_Handler from an array of bytes
+  # create a Read_Handler from a Sequence of bytes
   #
-  type.from_array_u8(LM type : mutate, arr array u8) io.Read_Handler =>
+  type.from_Sequence_u8(LM type : mutate, seq Sequence u8) io.Read_Handler =>
+
+    # we need fast slice operation
+    #
+    ab := seq.as_array_backed
+
     _ : io.Read_Handler is
 
       # the current position in the array
@@ -51,11 +56,11 @@ public Read_Handler ref is
 
       public redef read(count i32) choice (Sequence u8) io.end_of_file error =>
         p := pos.get
-        if p >= arr.count
+        if p >= ab.count
           io.end_of_file
         else
           pos <- p + count
-          arr.drop p .take count
+          ab.slice p count+p
 
 
   # create a Read_Handler from data
@@ -64,5 +69,5 @@ public Read_Handler ref is
   public type.from(LM type : mutate, data choice (Sequence u8) String) io.Read_Handler =>
 
     match data
-      bytes Sequence u8 => io.Read_Handler.from_array_u8 LM bytes.as_array
-      str String => io.Read_Handler.from_array_u8 LM str.utf8.as_array
+      bytes Sequence u8 => io.Read_Handler.from_Sequence_u8 LM bytes
+      str String => io.Read_Handler.from_Sequence_u8 LM str.utf8
