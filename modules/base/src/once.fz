@@ -24,9 +24,7 @@
 # executes `f` only the first time when
 # calling `get` caching its result.
 #
-public once(LM type : mutate, T type, f Lazy T) : auto_unwrap T LM is
-
-  cache := LM.env.new (option T) nil
+private:public once(LM type : mutate, T type, cache LM.new (option T), f Lazy T) : auto_unwrap T LM is
 
   # get the result of `f`
   #
@@ -34,3 +32,15 @@ public once(LM type : mutate, T type, f Lazy T) : auto_unwrap T LM is
     if cache.get.is_nil
       cache <- f()
     cache.get.get
+
+
+  # once using a custom local mutate
+  #
+  public type.new(f Lazy T) once LM T =>
+    once LM T (LM.env.new (option T) nil) f
+
+
+# once using the standard mutate
+#
+public once(T type, f Lazy T) once mutate T =>
+  once mutate T (mut (option T) nil) f

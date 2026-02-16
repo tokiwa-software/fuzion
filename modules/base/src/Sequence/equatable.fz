@@ -68,50 +68,48 @@ public find(pattern Sequence T) option i32
     T : property.equatable
 =>
 
-  find_lm ! ()->
+  p := pattern.as_array_backed
+  ab := as_array_backed
 
-    p := pattern.as_array_backed
-    ab := as_array_backed
-
-    make(t Sequence T, r option (Node T)) =>
-      n option (Node T) =>
-        if t.is_empty then nil else make (t.drop 1) (step r t[0])
-      r_star =>
-        if t.is_empty
-          r
-        else if is_match r t[0]
-          r.get.rest
-        else
-          r
-      Node t (once find_lm (option (Node T)) ()->n) r_star
-
-    init := make p nil
-
-    step(acc option (Node T), x T) =>
-      match acc
-        nil => init
-        n Node => if is_match acc x then n.next.get else step n.rest x
-
-    is_done (option (Node T))->bool => (acc)->
-      match acc
-        nil => false
-        n Node => n.top.is_empty
-
-    is_match(acc option (Node T), x T) =>
-      match acc
-        nil => false
-        n Node => !n.top.is_empty && n.top[0] = x
-
-    fold_until(acc option (Node T), idx i32) option i32 =>
-      if is_done acc
-        ab.count - (ab.count-idx) - p.count
-      else if idx >= ab.count
-        nil
+  make(t Sequence T, r option (Node T)) =>
+    n option (Node T) =>
+      if t.is_empty then nil else make (t.drop 1) (step r t[0])
+    r_star =>
+      if t.is_empty
+        r
+      else if is_match r t[0]
+        r.get.rest
       else
-        acc_star := step acc ab[idx]
-        fold_until acc_star idx+1
+        r
+    Node t (once (option (Node T)) ()->n) r_star
 
-    fold_until init 0
+  init := make p nil
+
+  step(acc option (Node T), x T) =>
+    match acc
+      nil => init
+      n Node => if is_match acc x then n.next.get else step n.rest x
+
+  is_done (option (Node T))->bool => (acc)->
+    match acc
+      nil => false
+      n Node => n.top.is_empty
+
+  is_match(acc option (Node T), x T) =>
+    match acc
+      nil => false
+      n Node => !n.top.is_empty && n.top[0] = x
+
+  fold_until(acc option (Node T), idx i32) option i32 =>
+    if is_done acc
+      ab.count - (ab.count-idx) - p.count
+    else if idx >= ab.count
+      nil
+    else
+      acc_star := step acc ab[idx]
+      fold_until acc_star idx+1
+
+  fold_until init 0
 
 
 
