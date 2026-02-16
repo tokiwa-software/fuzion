@@ -139,22 +139,9 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
 
 
   /**
-   * Set of CallGroups this may call.
-   */
-  TreeSet<CallGroup> _to   = new TreeSet<>();
-
-
-  /**
    * Set of clazz ids for effects this CallGroup uses.
    */
   TreeSet<Integer> _usedEffects = new TreeSet<>();
-
-
-  /**
-   * Set of clazz ids for effects that may be instated when this CallGroup is
-   * called.
-   */
-  TreeSet<Integer> _mayHaveEffects = new TreeSet<>();
 
 
   /**
@@ -216,24 +203,6 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
 
 
   /**
-   * Record that there is a call chain that leads to this CallGroup with effect
-   * `ecl` instated.
-   *
-   * @param ecl clazz id of an effect that is instated when this is called.
-   */
-  void mayHaveEffect(int ecl)
-  {
-    if (_mayHaveEffects.add(ecl))
-      {
-        for (var t : _to)
-          {
-            t.mayHaveEffect(ecl);
-          }
-      }
-  }
-
-
-  /**
    * For all effects `e` that this needs and that this may have, record that
    * `_cc` requires `e` in `_dfa._clazzesThatRequireEffect` and
    * `_dfa._effectsRequiredByClazz`.
@@ -245,11 +214,8 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
 
     for (var e : _usedEffects)
       {
-        if (_mayHaveEffects.contains(e))
-          {
-            _dfa._clazzesThatRequireEffect.computeIfAbsent(e  , k->new TreeSet<>()).add(_cc);
-            _dfa._effectsRequiredByClazz  .computeIfAbsent(_cc, k->new TreeSet<>()).add(e  );
-          }
+        _dfa._clazzesThatRequireEffect.computeIfAbsent(e  , k->new TreeSet<>()).add(_cc);
+        _dfa._effectsRequiredByClazz  .computeIfAbsent(_cc, k->new TreeSet<>()).add(e  );
       }
   }
 
@@ -311,12 +277,6 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
         for (var ecl : _usedEffects)
           {
             from.usesEffect(ecl);
-          }
-
-        from._to.add(this);
-        for (var ecl : from._mayHaveEffects)
-          {
-            mayHaveEffect(ecl);
           }
       }
   }

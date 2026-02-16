@@ -27,11 +27,13 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.ListIterator;
 import java.util.Optional;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
@@ -1248,7 +1250,7 @@ public class Feature extends AbstractFeature
     if (_openTypes == null)
       {
         var name = FuzionConstants.OPEN_TYPES_PREFIX + _id;
-        var otf = new Feature(pos(), visibility().typeVisibility(), 0, NoType.INSTANCE, new List<>(name), new List<>(),
+        var otf = new Feature(pos(), Visi.PRIV, 0, NoType.INSTANCE, new List<>(name), new List<>(),
                               new List<>(new Call(pos(), Universe.instance, Types.resolved.f_Open_Types)),
                               Contract.EMPTY_CONTRACT,
                               new Impl(pos(), new Block(), Impl.Kind.Routine));
@@ -1858,6 +1860,11 @@ public class Feature extends AbstractFeature
         }
       }
 
+
+    SortedSet<AbstractFeature> choiceFields = new TreeSet<>(
+      Comparator.comparing(AbstractFeature::pos)
+    );
+
     res._module.forEachDeclaredOrInheritedFeature(this,
                                                   p ->
       {
@@ -1881,10 +1888,16 @@ A ((Choice)) declaration must not contain a result type.
                                     )
                    )
                  )
-          { // choice type must not have any fields
-            AstErrors.mustNotContainFields(_pos, p, "Choice");
+          { // choice type must not have any fields, collect them to report in a single error
+            choiceFields.add(p);
           }
       });
+
+    // choice type must not have any fields
+    if (!choiceFields.isEmpty())
+      {
+        AstErrors.choiceMustNotContainFields(_pos, choiceFields);
+      }
 
     for (var t : choiceGenerics())
       {

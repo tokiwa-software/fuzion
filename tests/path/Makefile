@@ -17,9 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test reg_issue3429
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-reg_issue3429 =>
-  _ := array u8 .new 1_000_000 x->0
+override NAME = path_test
+include ../simple.mk
