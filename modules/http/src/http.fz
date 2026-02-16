@@ -51,9 +51,11 @@ module crlf => "\r\n"
 # to that protocol within elements that require a minor version identifier.
 # https://datatracker.ietf.org/doc/html/rfc9110#section-2.5-6
 #
-module parse_http_version(ver String, err error->error) =>
-  match ver.find "."
-    nil => (ver.parse_i32.or_cause unit err, 0)
+module parse_http_version(ver String) =>
+  err(_ error) => error "broken format of HTTP version '{ver}'"
+  v := ver.substring 5
+  match v.find "."
+    nil => (v.parse_i32.or_cause unit err, 0)
     idx i32 =>
-      (ver.substring 0 idx .parse_i32.or_cause unit err, ver.substring idx+1 .parse_i32.or_cause unit err)
+      (v.substring 0 idx .parse_i32.or_cause unit err, v.substring idx+1 .parse_i32.or_cause unit err)
 

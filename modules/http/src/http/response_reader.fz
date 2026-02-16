@@ -56,8 +56,7 @@ public read_response(
 
     if !sl[0].starts_with "HTTP/" then cause "not a HTTP response, protocol is '{sl[0]}'"
 
-    major, minor := parse_http_version (sl[0].substring 5) _->
-      error "broken format of HTTP version '{sl[0]}'"
+    major, minor := parse_http_version sl[0]
 
     code := sl[1].parse_i32.or_cause unit _->(error "invalid status code '{sl[1]}")
 
