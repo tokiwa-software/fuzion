@@ -125,8 +125,21 @@ single(T type, data Sequence T) : container.Finger_Tree T is
       r.prepend data
   redef modus choice (container.empty T) (container.single T) (container.deep T) => container.single data
   redef fill_internal_array(ia fuzion.sys.internal_array T, idx i32) unit =>
-    for i in 0..data.count-1 do
-      ia[idx+i] := data[i]
+    for i:=0, i+°1
+    while i<data.count
+    do
+      ia[idx+°i] := data[i]
+
+
+
+# NYI: UNDER DEVELOPMENT: implement this properly, not via
+# abusing Finger_Tree
+#
+node3(T type, a,b,c Sequence T) Sequence T =>
+  container.Finger_Tree T .empty
+    .append a
+    .append b
+    .append c
 
 
 
@@ -146,10 +159,7 @@ deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.ha
 
   public redef prepend(seq Sequence T) container.Finger_Tree T =>
     if lft.finger.count = 4
-      x := container.Finger_Tree T .empty
-        .append lft.finger[1]
-        .append lft.finger[2]
-        .append lft.finger[3]
+      x := node3 lft.finger[1] lft.finger[2] lft.finger[3]
       deep (container.hand [seq, lft.finger[0]]) (ft.prepend x) rght
     else
       deep (lft.prepend seq) ft rght
@@ -157,10 +167,7 @@ deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.ha
 
   public redef append (seq Sequence T) container.Finger_Tree T =>
     if rght.finger.count = 4
-      x := container.Finger_Tree T .empty
-        .append rght.finger[0]
-        .append rght.finger[1]
-        .append rght.finger[2]
+      x := node3 rght.finger[0] rght.finger[1] rght.finger[2]
       deep lft (ft.append x) (container.hand [rght.finger[3], seq])
     else
       deep lft ft (rght.append seq)
@@ -177,10 +184,10 @@ deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.ha
     n := i.as_i32
     if n < lft.count
       lft.nth n
-    else if n < lft.count+ft.count
-      ft[n-lft.count]
+    else if n < lft.count+°ft.count
+      ft[n-°lft.count]
     else
-      rght.nth (n-lft.count-ft.count)
+      rght.nth (n-°lft.count-°ft.count)
 
 
   module redef as_finger_tree option (container.Finger_Tree T) =>
@@ -220,8 +227,8 @@ deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.ha
 
   redef fill_internal_array(ia fuzion.sys.internal_array T, idx i32) unit =>
     lft.fill_internal_array ia idx
-    ft.fill_internal_array ia idx+lft.count
-    rght.fill_internal_array ia idx+lft.count+ft.count
+    ft.fill_internal_array ia idx+°lft.count
+    rght.fill_internal_array ia idx+°lft.count+°ft.count
 
 
 # this is called digit in the paper
@@ -308,15 +315,20 @@ is
   fill_internal_array(ia fuzion.sys.internal_array T, idx i32) unit =>
 
     fill(f Sequence T, s i32) =>
-      for i in 0..f.count-1 do
-        ia[s+i] := f[i]
+      match f.as_finger_tree
+        nil =>
+          for i := 0, i+°1
+          while i < f.count do
+            ia[s+°i] := f[i]
+        ft Finger_Tree =>
+          ft.fill_internal_array ia s
 
     fill finger[0] idx
     if finger.count > 1
-      fill finger[1] idx+f0cnt
+      fill finger[1] idx+°f0cnt
       if finger.count > 2
-        fill finger[2] idx+f0cnt+f1cnt
+        fill finger[2] idx+°f0cnt+°f1cnt
         if finger.count > 3
-          fill finger[3] idx+f0cnt+f1cnt+f2cnt
+          fill finger[3] idx+°f0cnt+°f1cnt+°f2cnt
 
 
