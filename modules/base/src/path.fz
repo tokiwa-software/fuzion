@@ -43,10 +43,6 @@ is
   #
   public is_relative bool => !is_absolute
 
-  # is this an empty path
-  #
-  public fixed is_empty   bool => path.this = path.empty
-
   # is this the root
   #
   public fixed is_root    bool => path.this = path.root
@@ -257,10 +253,6 @@ is
   # the root path "/"
   #
   public type.root path => path [] true
-
-  # the empty path ""
-  #
-  public type.empty path => path [] false
 
   # the current directory path "."
   #

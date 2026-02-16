@@ -29,7 +29,6 @@ path_test =>
 
   check abs.is_absolute
   check rel.is_relative
-  check (path.of "." .is_empty)
   check !abs.is_root
 
   say "$abs has {abs.segments_count} levels"
