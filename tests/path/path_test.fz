@@ -1,0 +1,193 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test path_test
+#
+# -----------------------------------------------------------------------
+
+path_test =>
+
+  abs := path.of "/first/second/third/fourth/"
+  rel := path.of "alpha/beta/gamma"
+
+
+  check abs.is_absolute
+  check rel.is_relative
+  check !abs.is_root
+
+  say "$abs has {abs.segments_count} levels"
+  say "$rel has {rel.segments_count} levels"
+
+  say <| abs.subpath 1
+
+  abs_rel := abs.resolve rel
+  say abs_rel
+  check abs_rel.ends_with rel
+  check abs_rel.contains rel
+  check abs_rel.contains abs
+
+  rel_abs := rel.resolve abs
+  check rel_abs = abs
+  tmp_abs := path.of "/tmp/foo" .resolve abs
+  check tmp_abs = abs
+
+  say "\nResolve:"
+  say <| path.of ".." .resolve (path.of "../ex.fz")
+  check (rel.resolve abs = abs)
+  say <| path.root.resolve (path.of "ex.fz")
+
+
+  say abs_rel.parent.val
+  check !abs_rel.parent.val.ends_with rel
+
+  abs_rel_foo := abs_rel.resolve "foo/./bar"
+  check abs_rel_foo.contains rel
+
+  split_file_name(p path) =>
+    say "\n$p"
+    say "  base: {p.base_name}"
+    say "  stem: {p.stem}"
+    say "suffix: {p.suffix}"
+
+  rel_file := rel.resolve "myfile.txt"
+  abs_file := abs.resolve "ex.fz"
+
+  split_file_name rel_file
+  split_file_name rel
+
+  hidden_file := path.of ".config"
+  split_file_name hidden_file
+
+  no_ext := path.of "/tmp/no_ext."
+  split_file_name no_ext
+
+  no_ext2 := path.of "../foo.."
+  split_file_name no_ext2
+
+  dots := path.of "./..."
+  split_file_name dots
+
+  dots_ext := path.of "...txt"
+  split_file_name dots_ext
+
+  subp := abs_rel_foo.subpath 4 7
+  say "\n'$abs_rel_foo'.subpath 4 7 -> {subp}"
+  check subp = rel
+
+
+  check !(path.of "/tmp"  .starts_with (path.of "./ex.fz"))
+  check !(path.of "./tmp" .starts_with (path.of "./ex.fz"))
+  check !(path.of "./tmp" .starts_with (path.of "ex.fz"))
+  check !(path.of "./tmp" .starts_with (path.of "/ex.fz"))
+  check !(path.of "/tmp"  .starts_with (path.of "/ex.fz"))
+  check !(path.of "/tmp"  .starts_with (path.of "/tmp/ex.fz"))
+  check !(rel.starts_with abs)
+
+  check (path.of "/./tmp/ex.fz" .starts_with (path.of "/tmp"))
+  check (rel_file.starts_with rel)
+  check (abs_file.starts_with abs)
+  check (path.of ".././ex.fz" .starts_with (path.of "../ex.fz"))
+
+
+  say "\nParents:"
+  say rel_file
+  p1 := rel_file.parent
+  say p1
+  p2 := p1.bind p->p.parent
+  say p2
+  p3 := p2.bind p->p.parent
+  say p3
+  p4 := p3.bind p->p.parent
+  say p4
+  p5 := p4.bind p->p.parent
+  say p5
+  p6 := p5.bind p->p.parent
+  say p6
+
+  say "\nRelativize:\n"
+  say <| abs.relativize abs_file
+  say <| abs.parent 1 .val.relativize abs_file
+  say <| abs.parent 2 .val.relativize abs_file
+  say <| abs.parent 3 .val.relativize abs_file
+  say <| abs.parent 4 .val.relativize abs_file
+  say ""
+  say <| rel.relativize rel_file
+  say <| rel.parent 1 .val.relativize rel_file
+  say <| rel.parent 2 .val.relativize rel_file
+  say <| rel.parent 3 .val.relativize rel_file
+  check (path.current_dir.relativize (path.of "ex.fz") = path.of "ex.fz")
+  check (path.parent_dir.relativize (path.of "../ex.fz") = path.of "ex.fz")
+
+
+  create(s String) =>
+    say "\nIN:  '$s'"
+    say "OUT: '{path.of s}'"
+
+  create(s Sequence String, is_abs bool) =>
+    say "\nIN:  '$s' {is_abs ? "absolute" : "relative"}"
+    say "OUT: '{path.of s is_abs}'"
+
+  check (path.of "/./././foo/./././../././bar/././././.." = path.root)
+  create "/./././foo/./././../././bar/././././.."
+
+  create "..."
+  create "/..."
+  create ["..."] true
+  create ["a","b","c.fz"] true
+  create ["a","b","c.fz"] false
+
+
+
+
+  # NEGATIVE
+  say "\nNEGATIVE:\n"
+
+  # expect failure to create a path
+  #
+  fail_create(s String) =>
+    fuzion.runtime.contract_fault.try ()->(say "FAILED: crated path '{path.of s}' from '$s'") .catch (x->say x)
+
+  # expect failure to create a path
+  #
+  fail_create(seg Sequence String, is_abs bool) =>
+    fuzion.runtime.contract_fault.try ()->(say "FAILED: crated {is_abs ? "absolute" : "relative"} path '{path.of seg is_abs}' from '$seg'") .catch (x->say x)
+
+  # uproot a path
+  fail_create "/.."                         # 1. should flag an error: path uprooted
+  fail_create "/../"                        # 2. should flag an error: path uprooted
+  fail_create "/../.."                      # 3. should flag an error: path uprooted
+  fail_create "/foo/bar/../../.."           # 4. should flag an error: path uprooted
+  fail_create "/foo/../bar/../../"          # 5. should flag an error: path uprooted
+  fail_create "/./././foo/./././.././../bar/./././././baz/" # 6. should flag an error: path uprooted
+  fail_create [".."] true                   # 7. should flag an error: path uprooted
+  fail_create ["..", ".."] true             # 8. should flag an error: path uprooted
+  fail_create ["foo", "..", ".."] true      # 9. should flag an error: path uprooted
+
+
+  # expect a contract fault
+  #
+  fail(f Function Any) =>
+    fuzion.runtime.contract_fault.try ()->(say "FAILED: got {f.call} but expected failure") .catch (x->say x)
+
+  fail ()->(path.of "/tmp" .resolve (path.of "../.."))
+
+  fail ()->(path.of "foo"  .relativize (path.of "/ex.fz"))
+  fail ()->(path.of ".."   .relativize (path.of "/ex.fz"))
+  fail ()->(path.of "."    .relativize (path.of "/ex.fz"))
+  fail ()->(path.of "/tmp" .relativize (path.of "ex.fz"))
