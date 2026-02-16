@@ -64,7 +64,7 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
    *
    * @return -1 or a values that is unique for the given cl/site/tvalue.
    */
-  static long quickHash(DFA dfa, int cl, int site, Value tvalue)
+  private long quickHash(DFA dfa, int cl, int site, Value tvalue)
   {
     long k = -1;
     var k1 = dfa._fuir.clazzId2num(cl);
@@ -143,6 +143,13 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
    */
   TreeSet<Integer> _usedEffects = new TreeSet<>();
 
+
+  /**
+   * The quick hash of this call group or -1 if none.
+   */
+  private final long _quickHash;
+
+
   /*---------------------------  constructors  ---------------------------*/
 
 
@@ -164,6 +171,7 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
     _cc = cc;
     _site = site;
     _target = target;
+    _quickHash = quickHash(dfa, cc, site, target);
   }
 
 
@@ -175,7 +183,7 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
    */
   public int compareTo(CallGroup other)
   {
-    return
+    return _quickHash != -1 ? Long.compare(_quickHash, other._quickHash) :
       _cc         != other._cc         ? Integer.compare(_cc        , other._cc        ) :
       _target._id != other._target._id ? Integer.compare(_target._id, other._target._id) :
       _dfa.siteSensitive(_cc)          ? Integer.compare(_site      , other._site      ) : 0;
