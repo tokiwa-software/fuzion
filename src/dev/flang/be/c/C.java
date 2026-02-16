@@ -847,9 +847,6 @@ public class C extends ANY
     // https://lobste.rs/s/avrfxz/ubuntu_24_04_lts_will_enable_frame
     command.addAll("-fno-omit-frame-pointer", "-mno-omit-leaf-frame-pointer");
 
-    // select due to: dpkg-buildflags --get CFLAGS
-    command.addAll("-fstack-protector-strong", "-fstack-clash-protection", "-fcf-protection");
-
     command.add("-lm");
 
     if (usesThreads() && !isWindows())
