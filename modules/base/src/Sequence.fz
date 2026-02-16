@@ -562,7 +562,8 @@ is
   # essentially combining all the sequences.
   #
   public flat_map(B type, f T -> Sequence B) Sequence B =>
-    as_list.flat_map_to_list f
+    reduce (id (Sequence B) (container.Finger_Tree B).empty) (r,t)->
+      r.concat (f t)
 
 
   # Map this Sequence to f applied to neighboring pairs of values
