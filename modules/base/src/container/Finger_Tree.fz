@@ -183,11 +183,11 @@ deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.ha
   public redef index [ ] (i idx) T =>
     n := i.as_i32
     if n < lft.count
-      lft.nth n
+      lft[n]
     else if n < lft.count+ft.count
       ft[n-lft.count]
     else
-      rght.nth (n-lft.count-ft.count)
+      rght[n-lft.count-ft.count]
 
 
   module redef as_finger_tree option (container.Finger_Tree T) =>
@@ -294,9 +294,9 @@ is
       hand [finger[0], finger[1], finger[2], seq]
 
 
-  # get the nth element
+  # index access to the element in this hand
   #
-  nth(n i32) T =>
+  public index [ ] (n i32) T =>
     if n >= cnt
       panic "illegal unless debug turned off"
     else if n < f0cnt
