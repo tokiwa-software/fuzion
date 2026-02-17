@@ -159,7 +159,7 @@ is
 
     init T
 
-   ) mutate.this.circular_buffer T
+   ) container.Circular_Buffer T mutate.this
   =>
     # length + 1 for sentinel element
     #
