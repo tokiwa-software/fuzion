@@ -26,9 +26,13 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fe;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import java.util.Arrays;
 import java.util.function.Consumer;
 
 import dev.flang.util.Errors;
@@ -76,7 +80,7 @@ public class FrontEndOptions extends FuzionOptions
   /**
    * List of modules added to fuzion.
    */
-  final List<String> _modules; // = new List<>("java.base");
+  final List<String> _modules;
 
 
   /**
@@ -144,6 +148,12 @@ public class FrontEndOptions extends FuzionOptions
   final boolean _compilingModule;
 
 
+  /**
+   * The default modules to be used if none are specified.
+   */
+  private final List<String> _defaultModules = new List<>("terminal", "lock_free", "http", "uuid", "database", "webserver").freeze();
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -162,7 +172,6 @@ public class FrontEndOptions extends FuzionOptions
                          List<String> dumpModules,
                          int fuzionDebugLevel,
                          boolean fuzionSafety,
-                         boolean enableUnsafeIntrinsics,
                          List<String> sourceDirs,
                          boolean readStdin,
                          byte[] executeCode,
@@ -176,7 +185,6 @@ public class FrontEndOptions extends FuzionOptions
     super(verbose,
           fuzionDebugLevel,
           fuzionSafety,
-          enableUnsafeIntrinsics,
           fuzionHome,
           timer);
 
@@ -222,7 +230,8 @@ public class FrontEndOptions extends FuzionOptions
           }
       }
     _inputFile = inputFile;
-    _modules = modules;
+    _compilingModule = !_readStdin && _executeCode == null && _inputFile == null;
+    _modules = _compilingModule || !modules.isEmpty() ? modules : _defaultModules;
     _moduleDirs = moduleDirs;
     _dumpModules = dumpModules;
     _main = main;
@@ -235,7 +244,6 @@ public class FrontEndOptions extends FuzionOptions
       }
     _sourceDirs = sourceDirs;
     _serializeFuir = serializeFuir;
-    _compilingModule = !_readStdin && _executeCode == null && _inputFile == null;
   }
 
 
@@ -287,6 +295,36 @@ public class FrontEndOptions extends FuzionOptions
   public Path inputFile()
   {
     return _inputFile;
+  }
+
+
+  long _serializationHashCode = -1;
+  public long serializationHash()
+  {
+    if (_serializationHashCode == -1)
+      {
+        try
+          {
+            var bytes = _readStdin
+              ? System.in.readAllBytes()
+              : inputFile() != null
+                ? Files.readAllBytes(inputFile())
+                : _executeCode;
+
+            _serializationHashCode = Math.abs(Arrays.hashCode(bytes) + Integer.MAX_VALUE);
+
+            if (_readStdin)
+              {
+                System.setIn(new ByteArrayInputStream(bytes));
+              }
+          }
+        catch (IOException e)
+          {
+            Errors.fatal("I/O Error: " + e.getMessage());
+          }
+      }
+    return _serializationHashCode;
+
   }
 
 }

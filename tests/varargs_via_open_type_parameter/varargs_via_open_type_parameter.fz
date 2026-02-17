@@ -63,7 +63,7 @@ varargs_via_open_type_parameter =>
       =>
         vs := if      T : numeric then "(number: $v)"
               else if T : String  then "\"$v\""
-              else                     "(*** unkowon type `{T.name}` ***)"
+              else                     "(*** unknown type `{T.name}` ***)"
         (e.0.replace "%"+e.1 vs, e.1+1)
 
     say (a.typed_foldf (s, 0) doit .0)
@@ -81,7 +81,7 @@ varargs_via_open_type_parameter =>
       =>
         vs := if      T : numeric then "(number: $v)"
               else if T : String  then "\"$v\""
-              else                     "(*** unkowon type `{T.name}` ***)"
+              else                     "(*** unknown type `{T.name}` ***)"
         (e.0.replace "%"+e.1 vs, e.1+1)
 
     say doit.res.0
@@ -97,15 +97,45 @@ varargs_via_open_type_parameter =>
     =>
       vs := if      T : numeric then "(number: $v)"
             else if T : String  then "\"$v\""
-            else                     "(*** unkowon type `{T.name}` ***)"
+            else                     "(*** unknown type `{T.name}` ***)"
       (e.0.replace "%"+e.1 vs, e.1+1)
 
     say res.0
 
 
+  # printf that replaces %0/%1/... by a.0/a.1/...
+  #
+  # this implementation uses a lambda expression with type inference for
+  # lambda type parameter
+  #
+  printf4(A type ..., s String, a A...) =>
+    say <| a.typed_foldf (String, i32) _ (s, 0) T,e,v->
+              vs := if      T : numeric then "(number: $v)"
+                    else if T : String  then "\"$v\""
+                    else                     "(*** unknown type `{T.name}` ***)"
+              (e.0.replace "%"+e.1 vs, e.1+1)
+            .0
+
+
+  # printf that replaces %0/%1/... by a.0/a.1/...
+  #
+  # this implementation uses a lambda expression with type inference for all
+  # type parameters
+  #
+  printf5(A type ..., s String, a A...) =>
+    say <| a.typed_foldf (s, 0) T,e,v->
+              vs := if      T : numeric then "(number: $v)"
+                    else if T : String  then "\"$v\""
+                    else                     "(*** unknown type `{T.name}` ***)"
+              (e.0.replace "%"+e.1 vs, e.1+1)
+            .0
+
+
   printf1 "first %0, second %1, third %2, fourth %3" 42 "Hello World!" unit (num.complex 3 4)
   printf2 "first %0, second %1, third %2, fourth %3" 42 "Hello World!" unit (num.complex 3 4)
   printf3 "first %0, second %1, third %2, fourth %3" 42 "Hello World!" unit (num.complex 3 4)
+  printf4 "first %0, second %1, third %2, fourth %3" 42 "Hello World!" unit (num.complex 3 4)
+  printf5 "first %0, second %1, third %2, fourth %3" 42 "Hello World!" unit (num.complex 3 4)
 
 
   # ------  more examples  ------
@@ -113,23 +143,42 @@ varargs_via_open_type_parameter =>
 
   # print all value arguments into numbered lines
   #
-  printn(A type ..., a A...) : container.typed_fold 1 a
+  printn1(A type ..., a A...) : container.typed_fold 1 a
   =>
     public redef apply(T type, n i32, v T) i32
     =>
       say "$n: $v"
       n + 1
 
-  printn 42 "Hello World!" unit (num.complex 3 4)
+  # print all value arguments into numbered lines
+  #
+  # this implementation uses a lambda
+  #
+  printn2(A type ..., a A...)
+  =>
+    ignore <| a.typed_foldf i32 _ 1 T,n,v->
+      say "$n: $v"
+      n + 1
+
+  printn1 42 "Hello World!" unit (num.complex 3 4)
+  printn2 42 "Hello World!" unit (num.complex 3 4)
 
 
   # concat all values into one string
   #
-  as_one_string(A type ..., a A...) : container.typed_fold "" a
+  as_one_string1(A type ..., a A...) : container.typed_fold "" a
   =>
     public redef apply(T type, s String, v T) String
     =>
       s+v
     res
 
-  say <| as_one_string 42 "Hello World!" unit (num.complex 3 4)
+  # concat all values into one string
+  #
+  as_one_string2(A type ..., a A...)
+  =>
+    a.typed_foldf "" _,s,v->
+      s+v
+
+  say <| as_one_string1 42 "Hello World!" unit (num.complex 3 4)
+  say <| as_one_string2 42 "Hello World!" unit (num.complex 3 4)

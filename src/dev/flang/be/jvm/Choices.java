@@ -481,11 +481,11 @@ public class Choices extends ANY implements ClassFileConstants
                   var t = intValueForTagNum(subjClazz, tagNum);
                   switch (t)
                     {
-                    case 0: neg = Expr.UNIT.andThen(ai.processCode(_fuir.matchCaseCode(s, mc))); break;
-                    case 1: pos = Expr.UNIT.andThen(ai.processCode(_fuir.matchCaseCode(s, mc))); break;
-                    case -1: break; //  void type
-                    default: throw new Error("JVM backend match found unexpected tag number " + t + " when compiling " + _fuir.siteAsString(s));
-                  }
+                    case 0 -> neg = Expr.UNIT.andThen(ai.processCode(_fuir.matchCaseCode(s, mc)));
+                    case 1 -> pos = Expr.UNIT.andThen(ai.processCode(_fuir.matchCaseCode(s, mc)));
+                    case -1 -> {} //  void type
+                    default -> throw new Error("JVM backend match found unexpected tag number " + t + " when compiling " + _fuir.siteAsString(s));
+                    }
                 }
             }
           pos = pos != null ? pos : jvm.reportUnreachable(s, "bool pos");

@@ -94,3 +94,14 @@ reg_issue5850_tuple_comparison =>
   say (map2.sorted_entries .map (.val))
   say "map2 sorted (expecting `false`): {map2.sorted_entries.map (.val) .is_sorted}"
   say "map2 values equals original tuples (expecting `true`): {map2.sorted_entries.map (.val) .zip tuples (=) .fold bool.all}"
+
+  say ""
+  say "hash table: from tuples to their indices"
+  hm := container.hash_map tuples (tuples.indices.map (.bin))
+  say hm
+  for t in tuples
+      i in 0..
+      vbin := hm[t].or_else "0"
+      v := vbin.parse_i32_binary.or_else -1
+  do
+    say "get $t from hm is $v expected $i {v=i ? "OK" : "***FAIL***"}"

@@ -27,66 +27,43 @@
 #
 # note: anything in the buffer when effect is uninstalled will be discarded.
 #
-public reader(rh Read_Handler, buf_size i32) : effect
-pre debug: buf_size > 0
+public reader(rh Read_Handler) : effect
 is
 
+  buf_size
+    # NYI: UNDER DEVELOPMENT: does not work yet, post condition for field
+    # post
+    #   debug: buf_size > 0
+    #   debug: buf_size % os.page_size.as_i32 = 0
+  := io.buffer_size.as_i32
 
-  # circular buffer backing this reader
+
+  # buffer backing this reader
   #
-  buffer := (mutate.circular_buffer u8).new LM buf_size.as_i64 0
+  buffer := LM.env.new (Sequence u8) []
 
 
   # read returns the current buffer or end of file.
   # in case the buffer is empty it fills the buffer
   # before returning it.
   #
-  public read switch (array u8) (outcome io.end_of_file) => read buf_size
-
-
-  # read returns the current buffer or end of file.
-  # in case the buffer is empty it fills the buffer
-  # with up to n bytes before returning it.
-  #
-  public read(n i32) switch (array u8) (outcome io.end_of_file)
+  public read switch (Sequence u8) (outcome io.end_of_file)
     post
-      debug: (result ? outcome => true | a array => !a.is_empty)
+      debug: (result ? outcome => true | s Sequence => !s.is_empty)
+      debug: (result ? outcome => true | s Sequence => s.is_array_backed)
   =>
-    if buffer.buffered = 0
-      match fill_buffer
-        unit =>
-          # NYI: remove double buffering implementation outside of the reader,
-          # just flush the buffer here.
-          # m := min n.as_i64 buffer.buffered
-          # buffer.flush m
-          m := min n buffer.buffered.as_i32
-          (buffer.as_array.slice 0 m).as_array
-        o outcome io.end_of_file => o
+    if buffer.is_empty
+      match rh.read buf_size
+        s Sequence =>
+          buffer <- s
+          replace
+          buffer
+        io.end_of_file =>
+          io.end_of_file
+        e error => e
     else
-      # NYI: remove double buffering implementation outside of the reader,
-      # just flush the buffer here.
-      # m := min n.as_i64 buffer.buffered
-      # buffer.flush m
-      m := min n buffer.buffered.as_i32
-      (buffer.as_array.slice 0 m).as_array
-
-
-
-  # fill the currently empty buffer with up to buf_size bytes
-  #
-  fill_buffer switch unit (outcome io.end_of_file)
-    pre
-      debug: buffer.buffered = 0
-  =>
-    match rh.read buffer.available.as_i32
-      a array u8 =>
-        match buffer.enqueue a
-          unit => unit
-          e error => e
-      io.end_of_file =>
-        replace
-        io.end_of_file
-      e error => e
+      replace
+      buffer
 
 
   # discard n items from buffer
@@ -95,38 +72,54 @@ is
     pre
       debug: n >= 0
   =>
-    m := min n.as_i64 buffer.buffered
-    _ := buffer.flush m
+    buffer <- buffer.drop (min n buffer.count)
+    replace
 
 
   # discard complete buffer
   #
   public discard unit
   =>
-    discard buf_size
+    buffer <- []
+    replace
 
 
 # read n bytes using the currently installed byte reader effect
 # if the returned sequence is empty or count is less than n, end of file has been reached.
 #
-public read_bytes(n i32) array u8 ! reader
-  post debug: result.length <= n
+public read_bytes(n i32) outcome (Sequence u8) ! reader
+  post debug: {
+    match result
+      error => true
+      s Sequence u8 => s.count <= n
+  }
 =>
 
-  res := (mutate.array u8).new LM
-
-  _ :=
-    while res.length.as_i32 < n
-    until
-      match reader.env.read n-res.length.as_i32
-        outcome => true
-        a (array u8) =>
-          reader.env.discard a.length
-          for b in a do
-            res.add b
-          false
-
-  res.as_array
+  for res Sequence u8 := container.Finger_Tree u8 .empty,
+            {
+              match r
+                o outcome => res
+                s Sequence =>
+                  a := s.take n-res.count
+                  check debug: a.is_array_backed
+                  reader.env.discard a.count
+                  res ++ a
+            }
+  while res.count < n
+    r := reader.env.read
+  until
+    match r
+      outcome => true
+      Sequence => false
+  then
+    match r
+      o outcome =>
+        match o
+          io.end_of_file => res
+          e error => e
+      Sequence => panic "unexpected"
+  else
+    res
 
 
 # read string, up to n codepoints or until end of file
@@ -139,15 +132,9 @@ pre debug: n >= 0
   take_valid_codepoints(a Sequence u8, max i32) =>
     v := String.from_bytes a
       .codepoints_and_errors
-      .take_while x->
-        match x
-          codepoint => true
-          error => false
+      .take_while (.ok)
       .take max
-      .map String x->
-        match x
-          c codepoint => c
-          error => exit 1
+      .map String (.val)
       .as_array
 
     bytes_used := (v.map c->c.as_string.byte_length).fold i32.sum
@@ -155,8 +142,8 @@ pre debug: n >= 0
     v
 
   for
-    is_eof                 := reader.env.read  ? outcome => true | array => false
-    next_bytes Sequence u8 := (reader.env.read ? outcome => []   | a array => a), rest ++ (reader.env.read ? outcome => [] | a array => a)
+    is_eof                 := reader.env.read  ? outcome => true | Sequence => false
+    next_bytes Sequence u8 := (reader.env.read ? outcome => []   | s Sequence => s), rest ++ (reader.env.read ? outcome => [] | s Sequence => s)
     next_codepoints        := take_valid_codepoints next_bytes n, take_valid_codepoints next_bytes n-codepoint_count
     # if we did not use any bytes and `next_bytes` contains not enough bytes for a codepoint potentially,
     # we trigger a `discard` and remember what we read so far via `rest`.
@@ -166,12 +153,10 @@ pre debug: n >= 0
     res Sequence String    := next_codepoints, res ++ next_codepoints
   while !is_eof && codepoint_count < n
   else
-    tmp outcome String :=
-      if is_eof && res.is_empty
-        error "-- end of file --"
-      else
-        String.join res
-    tmp
+    if is_eof && res.is_empty
+      error "-- end of file --"
+    else
+      String.join res
 
 
 # use the currently installed byte reader effect
@@ -184,36 +169,35 @@ public read_delimiter (delim u8, strip_cr bool) switch String io.end_of_file ! r
   if reader.env.read ? outcome => true | * => false
     io.end_of_file
   else
-    res := (mutate.array u8).new LM
+    res := LM.array u8 .empty
 
     while
       match reader.env.read
         outcome =>
           false
-        a array =>
+        s Sequence =>
 
           # trailing carriage returns are dropped
           add_to_res(a0 Sequence u8) unit =>
             if !a0.is_empty
-              a1 := if strip_cr && a0.last.as_equatable = encodings.ascii.cr
-                        (a0.slice 0 a0.count-1)
+              a1 := if strip_cr && a0.last = encodings.ascii.cr
+                      (a0.slice 0 a0.count-1)
                     else
-                       a0
+                      a0
               for b in a1 do
                 res.add b
 
-          match a.index_of delim
+          match s.index_of delim
             idx i32 =>
-              add_to_res (a.slice 0 idx)
+              add_to_res (s.slice 0 idx)
               reader.env.discard idx+1
               false
             nil =>
-              add_to_res a
+              add_to_res s
               reader.env.discard
               true
 
-    ref : String is
-      public redef utf8 Sequence u8 := res.as_array
+    String.from_bytes res.as_array
 
 
 # use the currently installed byte reader effect
@@ -230,8 +214,10 @@ public read_line switch String io.end_of_file ! reader =>
 # may need to call this several times or use another api
 # like memory-mapped access.
 #
-public read_fully array u8 ! reader =>
-  read_bytes (array u8).max_length
+public read_fully Sequence u8 ! reader =>
+  read_bytes i32.max
+    # NYI: UNDER DEVELOPMENT: error handling
+    .val
 
 
 # Read input fully and split it at the given delimiter. If specified, delete

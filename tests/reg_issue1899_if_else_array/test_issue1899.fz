@@ -1,4 +1,4 @@
-ex =>
+test_issue1899 =>
 
   a =>
     if true

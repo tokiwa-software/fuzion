@@ -102,68 +102,68 @@ public ascii is
   ##
 
   # Null
-  public nul_str String => String.from_bytes [nul]
+  public nul_str String => String.from [nul]
   # Start of Heading
-  public soh_str String => String.from_bytes [soh]
+  public soh_str String => String.from [soh]
   # Start of Text
-  public stx_str String => String.from_bytes [stx]
+  public stx_str String => String.from [stx]
   # End of Text
-  public etx_str String => String.from_bytes [etx]
+  public etx_str String => String.from [etx]
   # End of Transmission
-  public eot_str String => String.from_bytes [eot]
+  public eot_str String => String.from [eot]
   # Enquiry
-  public enq_str String => String.from_bytes [enq]
+  public enq_str String => String.from [enq]
   # Acknowledgement
-  public ack_str String => String.from_bytes [ack]
+  public ack_str String => String.from [ack]
   # Bell
-  public bel_str String => String.from_bytes [bel]
+  public bel_str String => String.from [bel]
   # Backspace
-  public bs_str  String => String.from_bytes [bs]
+  public bs_str  String => String.from [bs]
   # Horizontal Tab
-  public ht_str  String => String.from_bytes [ht]
+  public ht_str  String => String.from [ht]
   # Line Feed
-  public lf_str  String => String.from_bytes [lf]
+  public lf_str  String => String.from [lf]
   # Vertical Tab
-  public vt_str  String => String.from_bytes [vt]
+  public vt_str  String => String.from [vt]
   # Form Feed
-  public ff_str  String => String.from_bytes [ff]
+  public ff_str  String => String.from [ff]
   # Carriage Return
-  public cr_str  String => String.from_bytes [cr]
+  public cr_str  String => String.from [cr]
   # Shift Out
-  public so_str  String => String.from_bytes [so]
+  public so_str  String => String.from [so]
   # Shift In
-  public si_str  String => String.from_bytes [si]
+  public si_str  String => String.from [si]
   # Data Link Escape
-  public dle_str String => String.from_bytes [dle]
+  public dle_str String => String.from [dle]
   # Device Control 1 (often XON)
-  public dc1_str String => String.from_bytes [dc1]
+  public dc1_str String => String.from [dc1]
   # Device Control 2
-  public dc2_str String => String.from_bytes [dc2]
+  public dc2_str String => String.from [dc2]
   # Device Control 3 (often XOFF)
-  public dc3_str String => String.from_bytes [dc3]
+  public dc3_str String => String.from [dc3]
   # Device Control 4
-  public dc4_str String => String.from_bytes [dc4]
+  public dc4_str String => String.from [dc4]
   # Negative Acknowledgement
-  public nak_str String => String.from_bytes [nak]
+  public nak_str String => String.from [nak]
   # Synchronous Idle
-  public syn_str String => String.from_bytes [syn]
+  public syn_str String => String.from [syn]
   # End of Transmission Block
-  public etb_str String => String.from_bytes [etb]
+  public etb_str String => String.from [etb]
   # Cancel
-  public can_str String => String.from_bytes [can]
+  public can_str String => String.from [can]
   # End of Medium
-  public em_str  String => String.from_bytes [em]
+  public em_str  String => String.from [em]
   # SUB  Substitute
-  public ss_str  String => String.from_bytes [ss]
+  public ss_str  String => String.from [ss]
   # Escape
-  public esc_str String => String.from_bytes [esc]
+  public esc_str String => String.from [esc]
   # File Separator
-  public fs_str  String => String.from_bytes [fs]
+  public fs_str  String => String.from [fs]
   # Group Separator
-  public gs_str  String => String.from_bytes [gs]
+  public gs_str  String => String.from [gs]
   # Record Separator
-  public rs_str  String => String.from_bytes [rs]
+  public rs_str  String => String.from [rs]
   # Unit Separator
-  public us_str  String => String.from_bytes [us]
+  public us_str  String => String.from [us]
   # Delete
-  public del_str String => String.from_bytes [del]
+  public del_str String => String.from [del]

@@ -81,6 +81,8 @@ public class ModuleRef extends ANY
     _name = name;
     _version = version;
     _module = m;
+    if (CHECKS) check
+      (_name.equals(_module.name()));
   }
 
 

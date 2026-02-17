@@ -37,7 +37,9 @@ is
   # Encodes a given byte sequence in base64, output is padded to multiple of 4
   # returns a sequence of ascii values
   #
-  public encode(data array u8) Sequence u8 =>
+  public encode(data Sequence u8) Sequence u8 =>
+
+    d := data.as_array
 
     # extract four sextets from 24 bits (of an u32)
     enc24(n u32) =>
@@ -49,12 +51,12 @@ is
       res Sequence u8 := [], next # the encoded input data
       i := 0, i+1
       last_n u32 := 0, i %% 3 ?  0 : n
-      b in data
+      b in d
       n := (last_n << 8) + b.as_u32
       next := if i%3=2 then res ++ enc24 n
               else          res
     else
-      case := data.length%3 # last input block of 0, 1 or 2 characters
+      case := d.length%3 # last input block of 0, 1 or 2 characters
       if case = 0      then res
       else if case = 1 then res ++ (enc24 last_n<<4).slice 2 4 ++ [(u8 61), 61] # "=="
       else                  res ++ (enc24 last_n<<2).slice 1 4 ++ [(u8 61)]     # "="
@@ -63,8 +65,8 @@ is
   # Encodes a given byte sequence in base64, output is padded to multiple of 4
   # returns a string
   #
-  public encode_to_string(data array u8) String =>
-    String.type.from_bytes (encode data)
+  public encode_to_string(data Sequence u8) String =>
+    String.from (encode data)
 
 
   # decodes a base64 string, decoding is strict as required by RFC 4648
@@ -75,7 +77,7 @@ is
   #      See RFC4648 section 3.5: https://datatracker.ietf.org/doc/html/rfc4648#section-3.5
   #
   public decode_str(data String) outcome (array u8) =>
-    decode data.utf8.as_array
+    decode data.utf8
 
 
   # decodes a sequence of ASCII characters, decoding is strict as required by RFC 4648
@@ -85,28 +87,30 @@ is
   #      therefore in some cases multiple encodings can be decoded to the same data
   #      See RFC4648 section 3.5: https://datatracker.ietf.org/doc/html/rfc4648#section-3.5
   #
-  public decode(data array u8) outcome (array u8) =>
+  public decode(data Sequence u8) outcome (array u8) =>
+
+    d := data.as_array
 
     # determine size of padding, i.e. number of '=' (61 in ASCII) at the end
     pad_size :=
-      if data.length > 1 && data[data.length - 1] = 61
-        if data[data.length - 2] = 61 then 2
+      if d.length > 1 && d[d.length - 1] = 61
+        if d[d.length - 2] = 61 then 2
         else                               1
       else                                 0
 
     check_input(i) =>
 
-      if i >= data.length
+      if i >= d.length
         error "length of input data is not multiple of four, as required by RFC4648"
       else
-        c := data[i]
+        c := d[i]
         # base64 alphabet character
         if (is_valid c)
           outcome (dec_sextet c)
 
         # padding character =
         else if c = 61
-          if i < data.length - pad_size
+          if i < d.length - pad_size
             error """
                   padding character '=' not allowed within the input data, \
                   only at the very end, as required by RFC464"""
@@ -119,7 +123,7 @@ is
                 {if c=10 then "LF" else "CR"} at position $i"""
         # other non alphabet character
         else
-          inv_char := String.type.from_bytes (data.slice i (i+4 > data.length ? data.length : i+4))
+          inv_char := String.from (d.slice i (i+4 > d.length ? d.length : i+4))
                             .substring_codepoint 0 1
 
           error "invalid $encoding_name input at byte position $i, decoding to unicode character '$inv_char'"
@@ -148,7 +152,7 @@ is
       last_err := false, is_err
       sxt_last array (outcome u32) := [], sextets
 
-    while nxt < data.length && !last_err
+    while nxt < d.length && !last_err
     do
       sextets := [check_input nxt, check_input nxt+1, check_input nxt+2, check_input nxt+3]
       is_err := (sextets ∃ .is_error)

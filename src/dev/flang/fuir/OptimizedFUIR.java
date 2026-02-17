@@ -20,7 +20,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class DfaFUIR
+ * Source of class OptimizedFUIR
  *
  *---------------------------------------------------------------------*/
 
@@ -179,13 +179,15 @@ public class OptimizedFUIR extends GeneratingFUIR {
         var clazzes = new ClazzRecord[lastClazz-firstClazz+1];
         for (int cl = firstClazz; cl <= lastClazz; cl++)
           {
-            var needsCode = clazzKind(cl) == FeatureKind.Routine && clazzNeedsCode(cl) && _accessedCode.contains(cl);
+            var clazzKind = clazzKind(cl);
+            var isRoutine = clazzKind == FeatureKind.Routine;
+            var needsCode = isRoutine && clazzNeedsCode(cl);
             clazzes[clazzId2num(cl)] = new ClazzRecord(
                 clazzBaseName(cl),
                 clazzOuterClazz(cl),
                 clazzIsBoxed(cl),
                 clazzArgs(cl),
-                clazzKind(cl),
+                clazzKind,
                 clazzOuterRef(cl),
                 clazzResultClazz(cl),
                 clazzIsRef(cl),
@@ -200,13 +202,14 @@ public class OptimizedFUIR extends GeneratingFUIR {
                 clazzOriginalName(cl),
                 clazzActualGenerics(cl),
                 lookupCall(cl),
-                lookup_static_finally(cl),
-                clazzKind(cl) == FeatureKind.Routine ? lifeTime(cl) : null,
+                lookupStaticFinally(cl),
+                isRoutine ? lifeTime(cl) : null,
                 clazzTypeName(cl),
                 clazzAsStringHuman(cl),
                 clazzSrcFile(cl),
                 clazzDeclarationPos(cl).bytePos(),
-                lookupJavaRef(cl)
+                lookupJavaRef(cl),
+                lookupCause(cl)
                 );
           }
         oos.writeObject(clazzes);
@@ -214,41 +217,50 @@ public class OptimizedFUIR extends GeneratingFUIR {
         var sites = new SiteRecord[siteCount];
         for (int s = SITE_BASE; s < SITE_BASE+siteCount; s++)
           {
-              var s0 = s;
-              var accessedClazz =
-                invalidSite(s) || !(codeAt(s) == ExprKind.Call || codeAt(s) == ExprKind.Assign)
-                  ? NO_CLAZZ
-                  : accessedClazz(s0) > lastClazz
-                  ? NO_CLAZZ
-                  : accessedClazz(s0);
+            if (invalidSite(s))
+              {
+                sites[s-SITE_BASE] = new SiteRecord(
+                  clazzAt(s), false, false, null, NO_CLAZZ, null, NO_CLAZZ, null,
+                  NO_CLAZZ, NO_SITE, NO_SITE, NO_SITE, NO_CLAZZ, NO_SITE, siteCount,
+                  null, null, NO_CLAZZ, -1, null, false, null, -1);
+              }
+            else
+              {
+                var codeAt = codeAt(s);
+                var sitePos = sitePos(s);
+                var accessedClazz =
+                  codeAt.isCallOrAssign() && accessedClazz(s) <= lastClazz
+                    ? accessedClazz(s)
+                    : NO_CLAZZ;
 
-              sites[s-SITE_BASE] = new SiteRecord(
-                  clazzAt(s),
-                  invalidSite(s) ? false : alwaysResultsInVoid(s),
-                  invalidSite(s) ? false : doesResultEscape(s),
-                  invalidSite(s) ? null : codeAt(s),
-                  invalidSite(s) || codeAt(s) != ExprKind.Const ? NO_CLAZZ : constClazz(s) ,
-                  invalidSite(s) ? null : codeAt(s) == ExprKind.Const ? constData(s) : null,
-                  accessedClazz,
-                  accessedClazz != NO_CLAZZ ? accessedClazzes(s) : null,
-                  invalidSite(s) || !(codeAt(s) == ExprKind.Call || codeAt(s) == ExprKind.Assign) ? NO_CLAZZ : accessTargetClazz(s),
-                  invalidSite(s) || codeAt(s) != ExprKind.Tag ? NO_CLAZZ : tagValueClazz(s),
-                  invalidSite(s) || codeAt(s) != ExprKind.Assign ? NO_CLAZZ : assignedType(s),
-                  invalidSite(s) || codeAt(s) != ExprKind.Box ? NO_CLAZZ : boxValueClazz(s0),
-                  invalidSite(s) || codeAt(s) != ExprKind.Box ? NO_CLAZZ : boxResultClazz(s0),
-                  invalidSite(s) || codeAt(s) != ExprKind.Match ? NO_CLAZZ : matchStaticSubject(s0),
-                  invalidSite(s) ? NO_SITE : codeAt(s) == ExprKind.Match ? matchCaseCount(s) : NO_CLAZZ,
-                  invalidSite(s) ? null : codeAt(s) == ExprKind.Match ? matchCaseTags(s) : null,
-                  invalidSite(s) ? null : codeAt(s) == ExprKind.Match ? matchCaseCode(s) : null,
-                  invalidSite(s) || codeAt(s) != ExprKind.Tag ? NO_CLAZZ : tagNewClazz(s),
-                  invalidSite(s) || codeAt(s) != ExprKind.Tag ? NO_SITE : tagTagNum(s),
-                  invalidSite(s) || codeAt(s) != ExprKind.Match ? null : matchCaseFields(s),
-                  invalidSite(s) || !(codeAt(s) == ExprKind.Assign || codeAt(s) == ExprKind.Call) ? false : accessIsDynamic(s),
-                  invalidSite(s) || sitePos(s) == null ? null : sitePos(s)._sourceFile._fileName.toString(),
-                  invalidSite(s) || sitePos(s) == null ? NO_SITE : sitePos(s).line(),
-                  invalidSite(s) || sitePos(s) == null ? NO_SITE : sitePos(s).column(),
-                  invalidSite(s) || sitePos(s) == null ? null : sitePos(s).show()
-                );
+                sites[s-SITE_BASE] = new SiteRecord(
+                    clazzAt(s),
+                    alwaysResultsInVoid(s),
+                    doesResultEscape(s),
+                    codeAt,
+                    codeAt != ExprKind.Const ? NO_CLAZZ : constClazz(s),
+                    codeAt == ExprKind.Const ? constData(s) : null,
+                    accessedClazz,
+                    accessedClazz != NO_CLAZZ ? accessedClazzes(s) : null,
+                    codeAt.isCallOrAssign() ? accessTargetClazz(s) : NO_CLAZZ,
+                    codeAt != ExprKind.Tag ? NO_CLAZZ : tagValueClazz(s),
+                    codeAt != ExprKind.Assign ? NO_CLAZZ : assignedType(s),
+                    codeAt != ExprKind.Box ? NO_CLAZZ : boxValueClazz(s),
+                    codeAt != ExprKind.Box ? NO_CLAZZ : boxResultClazz(s),
+                    codeAt != ExprKind.Match ? NO_CLAZZ : matchStaticSubject(s),
+                    codeAt == ExprKind.Match ? matchCaseCount(s) : -1,
+                    codeAt == ExprKind.Match ? matchCaseTags(s) : null,
+                    codeAt == ExprKind.Match ? matchCaseCode(s) : null,
+                    codeAt != ExprKind.Tag ? NO_CLAZZ : tagNewClazz(s),
+                    codeAt != ExprKind.Tag ? -1 : tagTagNum(s),
+                    codeAt != ExprKind.Match ? null : matchCaseFields(s),
+                    codeAt.isCallOrAssign() ? accessIsDynamic(s) : false,
+                    sitePos == null || sitePos.globalPos() == null
+                      ? null : sitePos.globalPos().v0(),
+                    sitePos == null || sitePos.globalPos() == null
+                      ? -1 : sitePos.globalPos().v1()
+                  );
+              }
           }
         oos.writeObject(sites);
 
@@ -270,7 +282,7 @@ public class OptimizedFUIR extends GeneratingFUIR {
    */
   private boolean invalidSite(int s)
   {
-    return !withinCode(s) || !_accessedSites.contains(s);
+    return !withinCode(s) || !_accessedSites.get(s-SITE_BASE);
   }
 
 

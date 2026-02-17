@@ -105,13 +105,44 @@ public class StringHelpers extends ANY
 
   /**
    * Create a string representation for an argument count.
+   *
    * @param count the number of arguments
+   *
    * @return a string like "no arguments", "one argument", "2 arguments"
    */
   public static String argumentsString(int count)
   {
     return singularOrPlural(count, "argument");
   }
+
+
+  /**
+   * Create a string representation for a value argument count.
+   *
+   * @param count the number of value arguments
+   *
+   * @return a string like "no value arguments", "one value argument", "2 value
+   * arguments"
+   */
+  public static String valueArgumentsString(int count)
+  {
+    return singularOrPlural(count, "value argument");
+  }
+
+
+  /**
+   * Create a string representation for a type argument count.
+   *
+   * @param count the number of type arguments
+   *
+   * @return a string like "no type arguments", "one type argument", "2 type
+   * arguments"
+   */
+  public static String typeParametersString(int count)
+  {
+    return singularOrPlural(count, "type parameter");
+  }
+
 
   public static String singularOrPlural(int count, String what)
   {

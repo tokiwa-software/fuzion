@@ -169,6 +169,12 @@ of all methods sampled and how many samples have been taken.
 IMPORTANT: It is necessary that the argument ends in `.prof` for the output
 to be in this described format.
 
+[NOTE]
+====
+If you want to start the Profiler at some custom point in the compilers code.
+Instead of passing the -XjavaProf option add a call to `Profiler.start("out.svg")` at the code location where you want to start profiling.
+====
+
 === Profiling Allocations
 
 Similar to `-XjavaProf`, Fuzion has a simple profiler for allocations. This can

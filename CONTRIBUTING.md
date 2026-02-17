@@ -78,7 +78,7 @@ A good bug report shouldn't leave others needing to chase you up for more inform
 
 - Make sure that you are using the latest version.
 - Determine if your bug is really a bug and not an error on your side e.g. using incompatible environment components/versions (Make sure that you have read the [documentation](https://fuzion-lang.dev). If you are looking for support, you might want to check [this section](#i-have-a-question)).
-- To see if other users have experienced (and potentially already solved) the same issue you are having, check if there is not already a bug report existing for your bug or error in the [bug tracker](https://github.com/tokiwa-software/fuzionissues?q=label%3Abug).
+- To see if other users have experienced (and potentially already solved) the same issue you are having, check if there is not already a bug report existing for your bug or error in the [bug tracker](https://github.com/tokiwa-software/fuzion/issues?q=label%3Abug).
 - Also make sure to search the internet (including Stack Overflow) to see if users outside of the GitHub community have discussed the issue.
 - Collect information about the bug:
   - Stack trace (Traceback)
@@ -166,9 +166,9 @@ The available categories are
 
 - _HACK_ -- the code is incorrect but was made to work in common cases
 - _BUG_ -- the code is incorrect and needs to be fixed
-- _IMPROVEMENT_ -- the code can be improved (preferable use _OPTIMIZATION_ or _CLEANUP_ if applicable)
-- _OPTIMIZATION_ -- code code could be made more efficient
-- _CLEANUP_ -- code codes maintainability could be improved
+- _ENHANCEMENT_ -- the code can be improved (preferably use _OPTIMIZATION_ or _CLEANUP_ if applicable) or new functionality added
+- _OPTIMIZATION_ -- the code could be made more efficient
+- _CLEANUP_ -- the codes’s maintainability could be improved
 - _FUTURE PROBLEM_ -- the code works but might need to be changed in the future, e.g., to support an expected change in the OS, CPU architecture, external libraries, etc.
 - _UNDER DEVELOPMENT_ -- the code is being worked on
 - _COMMENT_ -- the code needs better documentation
@@ -185,7 +185,7 @@ if applicable, an issue number this commit is related to.
 
 Here is an example
 
-    lib: fix O(n³) performance of String.split follwed by Sequence.filter, fix #2323
+    lib: fix O(n³) performance of String.split followed by Sequence.filter, fix #2323
 
 Module identifiers to be used include
 

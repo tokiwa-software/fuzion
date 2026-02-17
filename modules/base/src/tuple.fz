@@ -88,7 +88,7 @@
 #     u tuple i32 i32 = p  # will cause compile time error
 #     q point = (7, 12)      # will cause compile time error
 #
-# The unit tuple '()' can be used as a short-hand to create the empty tuple
+# The unit tuple '()' can be used as a shorthand to create the empty tuple
 # 'tuple'.  The empty tuple can be destructured like any other tuple
 # using
 #
@@ -100,7 +100,7 @@
 # be created using syntactic sugar '(a)', this will produce the plain
 # value of 'a' instead. However, destructuring of a single tuple is possible:
 #
-#    (a0) := tuple a
+#     (a0) := tuple a
 #
 # which is equivalent to
 #
@@ -120,7 +120,9 @@
 #
 public tuple(public A type...,
              public values A...
-             ) : property.orderable is
+             ) : property.orderable,
+                 property.hashable
+is
 
 
   # equality of two tuple `a` and `b` is defined only if all elements of the tuple
@@ -141,13 +143,32 @@ public tuple(public A type...,
   # the `i+1`th element pair.
   #
   # This will result in a runtime `panic` in case any element type is not orderable.
-    #
+  #
   public redef type.lteq(a, b tuple.this) bool
   =>
     # NYI: BUG: omitting type parameters results in crash (Unimplemented method 'generics' in ThisType):
     # a.values.typed_zip_and_fold b.values true (tuple_zip_lteq tuple.this)
 
     a.values.typed_zip_and_fold i32 (tuple_zip_lteq tuple.this) b.values 0 (tuple_zip_lteq tuple.this) <= 0
+
+
+  # create hash code for this tuple
+  #
+  # This should satisfy the following condition:
+  #
+  #   (T.equality a b) : (T.hash_code a = T.hash_code b)
+  #
+  # This will result in a compile-time `panic` in case any element type is not hashable.
+  #
+  public redef fixed type.hash_code(a tuple.this) u64 : container.typed_fold xxh_first a.values
+  =>
+    public redef apply(T type, h u64, v T) u64
+    =>
+      if T : property.hashable then
+        xxh_next h (T.hash_code v)
+      else
+        compile_time_panic  # tuple is not hashable since one element type is not
+    res
 
 
   # create a String from this instance.
@@ -162,7 +183,7 @@ public tuple(public A type...,
 
 # helper feature for `tuple.type.equality` to compare elements in a tuple of type `TUPLE`
 #
-private tuple_zip_equals(TUPLE type) : container.typed_zipper bool is
+tuple_zip_equals(TUPLE type) : container.typed_zipper bool is
 
   public redef apply(T type,
                      e bool,
@@ -176,7 +197,7 @@ private tuple_zip_equals(TUPLE type) : container.typed_zipper bool is
 
 # helper feature for `tuple.type.lteq` to compare elements in a tuple of type `TUPLE`
 #
-private tuple_zip_lteq(TUPLE type) : container.typed_zipper i32 is
+tuple_zip_lteq(TUPLE type) : container.typed_zipper i32 is
 
   public redef apply(T type,
                      e i32,

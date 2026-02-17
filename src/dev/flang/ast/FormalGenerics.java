@@ -110,7 +110,7 @@ public class FormalGenerics extends ANY
   public boolean sizeMatches(int n)
   {
     return isOpen()
-      ? (_feature.typeArguments().size()-1) <= n
+      ? _feature.typeArguments().size()-1 <= n
       : _feature.typeArguments().size() == n;
   }
 
@@ -149,77 +149,6 @@ public class FormalGenerics extends ANY
                                                 detail2);
       }
     return result;
-  }
-
-
-
-  /**
-   * Wrapper class for result of asActuals(). This is used to quickly identify
-   * the generics list of formals used as actuals, e.g., in an outer reference,
-   * such that it can be replaced 1:1 by the actual generic arguments.
-   */
-  class AsActuals extends List<AbstractType>
-  {
-    /**
-     * create AsActuals from FormalGenerics.this.list and freeze it.
-     */
-    AsActuals()
-    {
-      // NYI: This is a bit ugly, can we avoid adding all these types
-      // here?  They should never be used since AsActuals is only a
-      // placeholder for the actual generics.
-      for (var g : _feature.typeArguments())
-        {
-          add(g.asGenericType());
-        }
-      freeze();
-    }
-
-    /**
-     * Create non-frozen clone of from.
-     */
-    AsActuals(AsActuals from)
-    {
-      super(from);
-    }
-
-    /**
-     * Create non-frozen clone of this.
-     */
-    public List<AbstractType> clone()
-    {
-      return new AsActuals(this);
-    }
-
-    /**
-     * Check if this are the formal generics of f used as actuals.
-     */
-    boolean actualsOf(AbstractFeature f)
-    {
-      return f.generics() == FormalGenerics.this;
-    }
-
-    public boolean sizeMatches(List<AbstractType> actualGenerics)
-    {
-      return FormalGenerics.this.sizeMatches(actualGenerics);
-    }
-  };
-
-
-  /**
-   * Create the formal generics parameters for an outer reference for any inner
-   * feature declared within this formal generic's feature.
-   *
-   * @return actual generics that match these formal generics.
-   */
-  private AsActuals _asActuals = null;
-  public List<AbstractType> asActuals()
-  {
-    if (_asActuals == null || !_feature.state().atLeast(State.RESOLVED_DECLARATIONS))
-      {
-        _asActuals = new AsActuals();
-      }
-    return _asActuals;
   }
 
 

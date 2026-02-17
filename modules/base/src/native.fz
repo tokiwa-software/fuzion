@@ -87,18 +87,23 @@ module fzE_set_blocking(sd i32, blocking i32) i32 => native
 #
 # returns zero on success, anything else is an error.
 #
-module fzE_close(sd i32) i32 => native
+module fzE_socket_close(sd i32) i32 => native
 
 
-# NYI: int fzE_socket(int family, int type, int protocol);
+# create a new socket
+#
+# -1 => error
+# anything else => success
+#
+module fzE_socket(family, socket_type, protocol i32) i32 => native
 
 
 # bind a name to a newly created socket
 #
-# 0  => arr_result[0] is the socket descriptor
-# -1 => arr_result[0] is an error number
+# 0  => success
+# -1 => error
 #
-module fzE_bind (family, socket_type, protocol i32, host Array u8, port Array u8, arr_result Array i32) i32 => native
+module fzE_bind (sockfd, family, socket_type, protocol i32, host Array u8, port Array u8) i32 => native
 
 
 # activates a server socket, setting a backlog
@@ -120,10 +125,10 @@ module fzE_accept(sd i32) i32 => native
 
 # open and connect a client socket
 #
-# 0  => arr_result[0] is the socket descriptor
-# -1 => arr_result[0] is an error number
+# 0  => success
+# -1 => error
 #
-module fzE_connect(family, socket_type, protocol i32, host Array u8, port Array u8, arr_result Array i32) i32 => native
+module fzE_connect(sockfd, family, socket_type, protocol i32, host Array u8, port Array u8) i32 => native
 
 
 # get a socket's peer's ip address
@@ -171,7 +176,12 @@ module fzE_socket_write(sd i32, arr_data Array u8, length i64) i32 => native
 # note: offset+size must not exceed file size.
 # note: returning allocated memory - instead of error code - simplifies handling in DFA.
 #
-module fzE_mmap(fd File_Descriptor, offset, size i64, res Array i32) Mapped_Memory => native
+module fzE_mmap(fd File_Descriptor, offset, size i64) Mapped_Memory => native
+
+module fzE_is_valid_mapped_memory(mm Mapped_Memory) bool =>
+  # defining again with arg type Mapped_Memory
+  fzE_is_null(p Mapped_Memory) i32 => native
+  fzE_is_valid_mapped_memory.this.fzE_is_null mm = 0
 
 
 # close a memory mapped file
@@ -202,7 +212,18 @@ module fzE_rm(path Array u8) i32 => native
 module fzE_stat(
       # the internal array data representing the file/dir path in bytes
       path Array u8,
-      # the internal array data representing the metadata fields [size in bytes, creation_time in seconds, regular file? 1 : 0, dir? 1 : 0]
+      # the internal array data representing the metadata fields
+      #
+      # [size in bytes,
+      #  Time of last access,
+      #  Time of last modification,
+      #  Time of last status change,
+      #  regular file? 1 : 0,
+      #  dir? 1 : 0,
+      #  is link ? 1 : 0,
+      #  uid,
+      #  gid]
+      #
       meta_data Array i64) i32 => native
 
 
@@ -412,6 +433,9 @@ module fzE_path_max i32 => native
 
 
 module fzE_page_size i64 => native
+
+
+module fzE_mmap_offset_multiple i64 => native
 
 
 module fzE_cwd(buf Array u8, size i64) i32 => native

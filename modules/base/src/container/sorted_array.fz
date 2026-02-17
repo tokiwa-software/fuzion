@@ -44,13 +44,15 @@ public sorted_array
   #
   from Sequence T,
 
-  # predicate defining total order on T.
+  # comparison predicate defining total order on T.
   #
-  # must satisfy:
+  # Must satisfy the properties of a total order:
   #
-  #     for_all a,b: less_or_equal(a, b) <=> (a = b)
-  #     for_all a,b: less_or_equal(a, b) || less_or_equal(b, a)
-  #     for_all a,b,c: (less_or_equal(a, b) && less_or_equal(b, c)): less_or_equal(a, c)
+  # - Transitivity:  If a ≤ b and b ≤ c, then a ≤ c
+  # - Antisymmetric:  If a ≤ b and b ≤ a, then a = b
+  # - Totality:  a ≤ b or b ≤ a
+  #
+  # see also: https://en.wikipedia.org/wiki/Total_order
   #
   less_or_equal (T, T) -> bool
 
@@ -60,9 +62,7 @@ public sorted_array
 
 is
 
-  # perform heap sort on the given array
-  #
-  # result is a new array that is sorted
+  # perform heap sort on the given array, returning a new sorted array
   #
   sort
     (
@@ -150,7 +150,7 @@ is
     binary_search 0 length-1
 
 
-  # find index of key for which cmp returns 0
+  # find index using a comparator function
   #
   # The guaranteed performance is in O(log n) comparisons.
   #

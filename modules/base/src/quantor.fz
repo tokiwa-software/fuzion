@@ -51,7 +51,7 @@ public quantor is
   for_all9 (A0, A1, A2, A3, A4, A5, A6, A7, A8     type, f (A0, A1, A2, A3, A4, A5, A6, A7, A8    ) -> bool) bool => fuzion.std.panic "quantors are for analysis only"
   for_all10(A0, A1, A2, A3, A4, A5, A6, A7, A8, A9 type, f (A0, A1, A2, A3, A4, A5, A6, A7, A8, A9) -> bool) bool => fuzion.std.panic "quantors are for analysis only"
 
-  # short-hand for_all using '∀' symbol
+  # shorthand for_all using '∀' symbol
   public prefix ∀ (A type, f A -> bool) bool => for_all f
 
   # exists quantors for use in analysis parts of contracts
@@ -74,7 +74,7 @@ public quantor is
   exists9 (A0, A1, A2, A3, A4, A5, A6, A7, A8     type, f (A0, A1, A2, A3, A4, A5, A6, A7, A8    ) -> bool) bool => fuzion.std.panic "quantors are for analysis only"
   exists10(A0, A1, A2, A3, A4, A5, A6, A7, A8, A9 type, f (A0, A1, A2, A3, A4, A5, A6, A7, A8, A9) -> bool) bool => fuzion.std.panic "quantors are for analysis only"
 
-  # short-hand exists using '∃' symbol
+  # shorthand exists using '∃' symbol
   public prefix ∃ (A type, f A -> bool) bool => exists f
 
   /*

@@ -1,10 +1,12 @@
 fileiotests.f.delete
 fileiotests.f.move
 fileiotests.f.stat
+fuzion.runtime.check_fault
 fuzion.runtime.contract_fault
 fuzion.runtime.fault
 fuzion.runtime.post_fault
 fuzion.runtime.pre_fault
+io.Buffer_Size
 io.Err
 io.Out
 io.dir.make

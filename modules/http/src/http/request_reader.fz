@@ -26,7 +26,7 @@
 #
 public read_request(
   # mutate effect from which to read the bytes of the request
-  LM type: mutate) outcome request_msg
+  LM type: mutate) outcome request_message
 =>
 
   exception unit _ ()->
@@ -46,7 +46,7 @@ public read_request(
 
     if rl.count != 3 then cause "broken request line"
 
-    method http.req_method :=
+    method http.request_method :=
       if      rl[0] = "GET"     then http.get
       else if rl[0] = "HEAD"    then http.head
       else if rl[0] = "POST"    then http.post_r
@@ -62,25 +62,22 @@ public read_request(
 
     if !rl[2].starts_with "HTTP/" then cause "unsupported protocol {rl[2]}"
 
-    ver := rl[2].substring 5 .split_n "." 1
-                .map (s->s.parse_i32.or_cause unit _->(error "broken format of HTTP version '{rl[2]}'"))
-
-    major := ver[0]
-    minor := ver.count = 1 ? 0 : ver[1]
+    major, minor := parse_http_version rl[2]
 
     tmp_parsed_fields := parse_header_fields LM .or_cause unit id
 
     header_fields :=
-      # request target in absolute-form
-      # https://datatracker.ietf.org/doc/html/rfc9112#name-absolute-form
-      if target.starts_with "http"
-        # MUST replace Host field if target is in absolute-form
-        t1 := target.split_n "//" 1
-        if t1.count != 2 then cause "broken target '$target in request"
-        host := (t1[1].split_n "/" 1)[0]
-        tmp_parsed_fields.add_canonical "Host" host
-      else
-        tmp_parsed_fields
+      {
+        # request target in absolute-form
+        # https://datatracker.ietf.org/doc/html/rfc9112#name-absolute-form
+        if target.starts_with "http"
+          # MUST replace Host field if target is in absolute-form
+          t1 := target.split_n "//" 1
+          if t1.count != 2 then cause "broken target '$target in request"
+          host := (t1[1].split_n "/" 1)[0]
+          tmp_parsed_fields.put "Host".lower_case host
+        tmp_parsed_fields.as_map
+      }
 
 
     # The presence of a message body in a request is signaled by a Content-Length or Transfer-Encoding header field. Request message framing is independent of method semantics.
@@ -89,4 +86,4 @@ public read_request(
     body :=
       body_helper LM true header_fields .or_cause unit id
 
-    request_msg method target major minor header_fields body
+    request_message method target major minor header_fields body

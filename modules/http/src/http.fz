@@ -28,3 +28,34 @@
 #
 #
 public http is
+
+
+# create case insensitive Map from array of key/values
+#
+module as_header_map(kvs Sequence (String,String)) =>
+  lm : mutate is
+  lm ! ()->
+    fields := (container.mutable_tree_map lm String String) .empty
+    for kv in kvs do
+      fields.put kv.0.lower_case kv.1
+    fields.as_map
+
+
+# line separator in the HTTP header
+#
+module crlf => "\r\n"
+
+
+# When a major version of HTTP does not define any minor versions,
+# the minor version "0" is implied. The "0" is used when referring
+# to that protocol within elements that require a minor version identifier.
+# https://datatracker.ietf.org/doc/html/rfc9110#section-2.5-6
+#
+module parse_http_version(ver String) =>
+  err(_ error) => error "broken format of HTTP version '{ver}'"
+  v := ver.substring 5
+  match v.find "."
+    nil => (v.parse_i32.or_cause unit err, 0)
+    idx i32 =>
+      (v.substring 0 idx .parse_i32.or_cause unit err, v.substring idx+1 .parse_i32.or_cause unit err)
+

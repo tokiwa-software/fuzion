@@ -38,8 +38,8 @@ public ordered_map(
            k0 Sequence OK,
            v0 Sequence V) : container.Map OK V
 pre
-  debug: k0.count = v0.count
-  debug: k0.unique.count = k0.count
+  debug   : k0.count        = v0.count
+  debug 2 : k0.unique.count = k0.count
 is
 
   ks := k0.as_array
@@ -116,12 +116,10 @@ is
   # create a mutable map from this
   #
   public redef as_mutable_map(LM type : mutate) container.Mutable_Map OK V =>
-    (container.mutable_tree_map LM OK V).from_sequence items
+    (container.mutable_tree_map LM OK V).from items
 
 
   # create an empty instance of ordered_map
   #
   public fixed redef type.empty container.ordered_map OK V =>
-    container.ordered_map
-      (list OK).empty.as_array
-      (list V).empty.as_array
+    container.ordered_map OK V [] []

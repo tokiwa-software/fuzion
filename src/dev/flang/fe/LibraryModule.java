@@ -30,14 +30,21 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.ByteBuffer;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.Map.Entry;
 import java.util.function.Function;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.AbstractFeature.Kind;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Expr;
 import dev.flang.ast.FeatureName;
@@ -57,6 +64,7 @@ import dev.flang.util.FuzionOptions;
 import static dev.flang.util.FuzionConstants.MirExprKind;
 import dev.flang.util.HexDump;
 import dev.flang.util.List;
+import dev.flang.util.Pair;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 import dev.flang.util.SourceRange;
@@ -80,7 +88,7 @@ public class LibraryModule extends Module implements MirModule
    * As long as source position is not part of the .fum/MIR file, use this
    * constant as a place holder.
    */
-  static SourcePosition DUMMY_POS = SourcePosition.builtIn;
+  static final SourcePosition DUMMY_POS = SourcePosition.builtIn;
 
 
   /**
@@ -93,7 +101,7 @@ public class LibraryModule extends Module implements MirModule
   /**
    * Pre-allocated empty array
    */
-  static byte[] NO_BYTES = new byte[0];
+  static final byte[] NO_BYTES = new byte[0];
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -164,6 +172,12 @@ public class LibraryModule extends Module implements MirModule
   private final ModuleRef[] _modules;
 
 
+  /**
+   * cache for source file start positions
+   */
+  int[] _sourceFileStartPositions;
+
+
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -171,7 +185,7 @@ public class LibraryModule extends Module implements MirModule
   /**
    * Create LibraryModule for given options and sourceDirs.
    */
-  LibraryModule(int globalBase, FrontEnd fe, ByteBuffer data, Function<AbstractFeature, LibraryModule[]> loadDependsOn, AbstractFeature universe)
+  LibraryModule(int globalBase, FrontEnd fe, ByteBuffer data, AbstractFeature universe)
   {
     super(null /* set later, we need correct universe first */);
 
@@ -193,15 +207,13 @@ public class LibraryModule extends Module implements MirModule
     if (CHECKS) check
       (_universe.isUniverse());
 
-    _dependsOn = loadDependsOn.apply(universe());
-    if (CHECKS)
-      check(_dependsOn != null);
-
+    _dependsOn = new LibraryModule[mrc];
     for (int i = 0; i < mrc; i++)
       {
         var n = moduleRefName(p);
         var v = moduleRefHash(p);
         var m = fe.loadModule(n, universe());
+        _dependsOn[i] = m;
         var mv = m.hash();
         if (!Arrays.equals(v, mv))
           {
@@ -316,7 +328,24 @@ public class LibraryModule extends Module implements MirModule
    *
    * @param outer the declaring feature
    */
-  public SortedMap<FeatureName, AbstractFeature>declaredFeatures(AbstractFeature outer)
+  public SortedMap<FeatureName, AbstractFeature> declaredFeatures(AbstractFeature outer)
+  {
+    var result = declaredFeaturesShallow(outer);
+    for (Module d : _dependsOn)
+      {
+        result.putAll(d.declaredFeatures(outer));  // NYI: handle equally named features from different modules
+      }
+    return result;
+  }
+
+
+  /**
+   * Get declared features for given outer Feature as seen from outside of this module.
+   * Result is null if outer has no declared features in this module.
+   *
+   * @param outer the declaring feature
+   */
+  public SortedMap<FeatureName, AbstractFeature> declaredFeaturesShallow(AbstractFeature outer)
   {
     var result = new TreeMap<FeatureName, AbstractFeature>();
     if (outer instanceof LibraryFeature lf)
@@ -329,10 +358,6 @@ public class LibraryModule extends Module implements MirModule
     for (var d : features(outer))
       {
         result.put(d.featureName(), d);  // NYI: handle equally named features from different modules
-      }
-    for (Module d : _dependsOn)
-      {
-        result.putAll(d.declaredFeatures(outer));  // NYI: handle equally named features from different modules
       }
     return result;
   }
@@ -678,16 +703,21 @@ Module File
   {
     return moduleNumDeclFeaturesPos() + 4;
   }
+  int _moduleSourceFilesPos = -1;
   int moduleSourceFilesPos()
   {
-    var n = moduleNumDeclFeatures();
-    var at = moduleDeclFeaturesPos();
-    while (n > 0)
+    if (_moduleSourceFilesPos < 0)
       {
-        n--;
-        at = declFeaturesNextPos(at);
+        var n = moduleNumDeclFeatures();
+        var at = moduleDeclFeaturesPos();
+        while (n > 0)
+          {
+            n--;
+            at = declFeaturesNextPos(at);
+          }
+        _moduleSourceFilesPos = at;
       }
-    return at;
+    return _moduleSourceFilesPos;
   }
 
 
@@ -975,9 +1005,7 @@ Feature
   AbstractFeature.Kind featureKindEnum(int at)
   {
     var k = featureKind(at) & FuzionConstants.MIR_FILE_KIND_MASK;
-    return featureIsConstructor(at)
-      ? AbstractFeature.Kind.Routine
-      : AbstractFeature.Kind.from(k);
+    return AbstractFeature.Kind.from(k);
   }
   Visi featureVisibilityEnum(int at)
   {
@@ -986,22 +1014,13 @@ Feature
   }
   boolean featureIsConstructor(int at)
   {
-    var k = featureKind(at) & FuzionConstants.MIR_FILE_KIND_MASK;
-    return switch (k)
-      {
-        case FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_VALUE,
-             FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF -> true;
-        default                                            -> false;
-      };
+    var fke = featureKindEnum(at);
+    return fke == AbstractFeature.Kind.Constructor ||
+           fke == AbstractFeature.Kind.RefConstructor;
   }
   boolean featureIsRoutine(int at)
   {
-    return featureKindEnum(at) == AbstractFeature.Kind.Routine;
-  }
-  boolean featureIsRef(int at)
-  {
-    var k = featureKind(at) & FuzionConstants.MIR_FILE_KIND_MASK;
-    return k == FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF;
+    return featureKindEnum(at).isRoutine();
   }
   boolean featureHasCotype(int at)
   {
@@ -1126,14 +1145,11 @@ Feature
   boolean featureHasResultType(int at)
   {
     var k = featureKind(at) & FuzionConstants.MIR_FILE_KIND_MASK;
-    return
-      (k != FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF    &&
-       k != FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_VALUE  &&
-       k != AbstractFeature.Kind.Choice           .ordinal() &&
-       k != AbstractFeature.Kind.TypeParameter    .ordinal() &&
-       k != AbstractFeature.Kind.OpenTypeParameter.ordinal()
-       );
-
+    return switch (AbstractFeature.Kind.from(k))
+      {
+        case Abstract, Field, Function, Intrinsic, Native -> true;
+        default -> false;
+      };
   }
   int featureValuesAsOpenTypeFeaturePos(int at)
   {
@@ -2306,28 +2322,105 @@ SourceFile
       }
     else
       {
-        var at = sourceFilesFirstSourceFilePos();
-        if (CHECKS) check
-          (pos > at);
-        var i = 0;
-        while (pos > sourceFileNextPos(at))
-          {
-            at = sourceFileNextPos(at);
-            i++;
-            if (CHECKS) check
-              (i < sourceFilesCount());
-          }
+        var i = sourceFileIndex(pos);
+        var at = sourceFileStartPositions()[i];
         var sf = _sourceFiles.get(i);
         if (sf == null)
           {
             var bb = sourceFileBytes(at);
             var ba = new byte[bb.limit()]; // NYI: Would be better if SourceFile could use bb directly.
             bb.get(0, ba);
-            sf = new SourceFile(Path.of("{" + name() + FuzionConstants.MODULE_FILE_SUFFIX + "}").resolve(Path.of(sourceFileName(at))), ba);
+            // "main" is the implicit module name for code compiled by the user
+            // therefore it should not be included in the source file path, which gets printed in error messages
+            var srcPath = Path.of(name().equals(FuzionConstants.MAIN_MODULE_NAME) ? "" : "{" + name() + FuzionConstants.MODULE_FILE_SUFFIX + "}")
+                              .resolve(Path.of(sourceFileName(at)));
+            sf = new SourceFile(srcPath, ba);
             _sourceFiles.set(i, sf);
           }
-        return new SourceRange(sf, pos - sourceFileBytesPos(at), posEnd - sourceFileBytesPos(at));
+        return new SourceRange(sf, pos - sourceFileBytesPos(at), posEnd - sourceFileBytesPos(at))
+          {
+            @Override
+            public Pair<String, Long> globalPos()
+            {
+              return new Pair<>(name(), ((long)pos)<<32 | ((long)posEnd));
+            }
+          };
       }
+  }
+
+
+
+  /**
+   * For pos get the index in the sourcefiles
+   */
+  private int sourceFileIndex(int pos)
+  {
+    sourceFileStartPositions();
+    var x = Arrays.binarySearch(sourceFileStartPositions(), pos);
+    return x<0
+      ? -x-2 // when binarySearch returns negative: (-(insertion point) - 1).
+      : x;
+  }
+
+
+
+  /**
+   * get sourceFileStartPositionsArray
+   */
+  private int[] sourceFileStartPositions()
+  {
+    if (_sourceFileStartPositions == null)
+      {
+        var c = sourceFilesCount();
+        var at = sourceFilesFirstSourceFilePos();
+        _sourceFileStartPositions = new int[c];
+        for (var i = 0; i<c; i++)
+          {
+            _sourceFileStartPositions[i] = at;
+            at = sourceFileNextPos(at);
+          }
+      }
+    return _sourceFileStartPositions;
+  }
+
+
+  /**
+   * recursive helper to create stream of all modules
+   */
+  Stream<LibraryModule> flatten(LibraryModule m)
+  {
+    return Stream.concat(
+      Stream.of(m),
+      Arrays
+        .stream(m._modules)
+        .flatMap(x -> flatten(x._module)));
+  }
+
+
+  // cache field for all modules
+  Map<String, LibraryModule> _flattenedModules;
+
+  /**
+   * get sourcePosition
+   *
+   * @param module the module name the SourcePosition is from
+   *
+   * @param pos 32-bits pos, 32-bits posEnd cramed into a long value
+   *
+   * @return
+   */
+  public SourcePosition pos(String module, long pos)
+  {
+    if (_flattenedModules == null)
+      {
+        _flattenedModules = flatten(this)
+          .distinct()
+          .collect(Collectors.toUnmodifiableMap(LibraryModule::name, x->x));
+      }
+    int bytePos = (int)(pos >> 32);
+    int byteEndPos = (int)(pos & 0xffffffff);
+    return _flattenedModules.get(module)
+      .pos(bytePos, byteEndPos);
   }
 
 
@@ -2408,13 +2501,6 @@ SourceFile
     return Path.of(Version.REPO_PATH)
       .resolve("modules").resolve(name()).resolve("src")
       .toString();
-  }
-
-
-  @Override
-  public ByteBuffer data(String name)
-  {
-    throw new UnsupportedOperationException("Unimplemented method 'data'");
   }
 
 

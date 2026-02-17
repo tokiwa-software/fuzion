@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir.analysis.dfa;
 
-import java.util.TreeSet;
 
 import dev.flang.util.ANY;
 
@@ -49,12 +48,6 @@ public class Site extends ANY implements Comparable<Site>
    * The site's site.
    */
   final int _s;
-
-
-  /**
-   * set of features accessed at this site.
-   */
-  final TreeSet<Integer> _accesses = new TreeSet<>();
 
 
   /**
