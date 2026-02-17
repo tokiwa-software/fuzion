@@ -217,7 +217,7 @@ is
         debug: str != "/.."
   =>
     t := str.trim
-    path.of (t.split "/").as_array (t.starts_with "/")
+    path.of (t.split "/") (t.starts_with "/")
 
 
   # instantiates a path
