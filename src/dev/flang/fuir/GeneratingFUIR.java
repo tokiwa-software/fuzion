@@ -497,13 +497,24 @@ public class GeneratingFUIR extends FUIR
 
 
 
-  Clazz newClazz(AbstractType t)
+  Clazz newClazz(AbstractType actualType)
   {
-    var o = t.outer();
-    return newClazz(o == null ? null : newClazz(o), t, FuzionConstants.NO_SELECT);
+    if (PRECONDITIONS) require
+      (!actualType.dependsOnGenericsNoOuter(),
+       !actualType.containsThisType(),
+       actualType != Types.t_ERROR);
+
+    var o = actualType.outer();
+    return newClazz(o == null ? null : newClazz(o), actualType, FuzionConstants.NO_SELECT);
   }
   Clazz newClazz(Clazz outerR, AbstractType actualType, int select)
   {
+    if (PRECONDITIONS) require
+      (!actualType.dependsOnGenericsNoOuter(),
+       !actualType.containsThisType(),
+       actualType.feature().resultType().isOpenGeneric() == (select >= 0),
+       actualType != Types.t_ERROR);
+
     Clazz result;
 
     var outer = outerR;
