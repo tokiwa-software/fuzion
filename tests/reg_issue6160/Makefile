@@ -17,13 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature io.file.append
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-
-# append `a`.as_string to file `f`
-#
-public append(p path, a Any) outcome unit =>
-  use p mode.append ()->
-    writer.write a.as_string.utf8
+override NAME = reg_issue6160
+include ../simple.mk

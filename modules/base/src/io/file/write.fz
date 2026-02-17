@@ -25,6 +25,5 @@
 # write `a`.as_string to file `f`
 #
 public write(p path, a Any) outcome unit =>
-  # NYI: BUG: currently appends to file
   use p mode.write ()->
     writer.write a.as_string.utf8
