@@ -47,7 +47,7 @@ public mode is
 #     _ := my_file.use file_name mode.read ()->
 #       say (io.buffered my_file.file_mutate).read_lines
 #
-public use(R type, file_name String, m mode.val, code ()-> outcome R) outcome R =>
+public use(R type, file_name path, m mode.val, code ()-> outcome R) outcome R =>
 
   # definition of read handler for file
   #
