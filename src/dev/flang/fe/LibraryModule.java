@@ -94,8 +94,12 @@ public class LibraryModule extends Module implements MirModule
   /**
    * NYI: Instead of using env var, create a new tool "fzdump" or similar to
    * dump intermediate files.
+   *
+   * To enable, use fz with:
+   *
+   *   dev_flang_fe_FUZION_DUMP_MODULE_FILE=true
    */
-  static final boolean DUMP = FuzionOptions.boolPropertyOrEnv("FUZION_DUMP_MODULE_FILE");
+  static final boolean DUMP = FuzionOptions.boolPropertyOrEnv("dev.flang.fe.FUZION_DUMP_MODULE_FILE");
 
 
   /**
