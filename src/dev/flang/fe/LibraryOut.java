@@ -601,7 +601,7 @@ class LibraryOut extends ANY
   void type(AbstractType t)
   {
     if (PRECONDITIONS) require
-      (t != null, t != Types.t_ERROR, t != Types.t_UNDEFINED, t instanceof ResolvedType);
+      (t != null, !t.isArtificialType(), t instanceof ResolvedType);
 
     // NYI: UNDER DEVELOPMENT: tk used as size of generics, therefore typekind written _twice_
     // clean this up and merge the two type kinds?
