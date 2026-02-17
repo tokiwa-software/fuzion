@@ -92,8 +92,14 @@ private:public Finger_Tree(T type) ref : container.abstract_array T is
 #
 empty(T type) : container.Finger_Tree T is
   public redef length i32 => 0
-  public redef prepend(seq Sequence T) container.Finger_Tree T => single T seq
-  public redef append (seq Sequence T) container.Finger_Tree T => single T seq
+  public redef prepend(seq Sequence T) container.Finger_Tree T =>
+    match seq.as_finger_tree
+      nil            => single T seq
+      ft Finger_Tree => ft
+  public redef append (seq Sequence T) container.Finger_Tree T =>
+    match seq.as_finger_tree
+      nil            => single T seq
+      ft Finger_Tree => ft
   public redef index [ ] (i idx) T => panic "illegal unless debug turned off"
   module redef as_finger_tree option (container.Finger_Tree T) => container.empty T
   redef merge(ft container.Finger_Tree T) container.Finger_Tree T => ft
@@ -108,7 +114,10 @@ empty(T type) : container.Finger_Tree T is
 
 # a finger tree with only one item
 #
-single(T type, data Sequence T) : container.Finger_Tree T is
+single(T type, data Sequence T) : container.Finger_Tree T
+  pre
+    debug 2 : data.as_finger_tree.is_nil
+is
   public redef length i32 => data.count
   public redef prepend(seq Sequence T) container.Finger_Tree T =>
     deep (container.hand [seq]) (empty T) (container.hand [data])
