@@ -154,14 +154,12 @@ is
   # initialize circular buffer
   #
   public type.new
-   (LM type : mutate,
-
-    # length of the buffer
+   (# length of the buffer
     length i64,
 
     init T
 
-   ) container.Circular_Buffer T LM
+   ) mutate.this.circular_buffer T
   =>
     # length + 1 for sentinel element
     #
@@ -172,4 +170,4 @@ is
     for x in data.indices do
       data[x] := init
 
-    LM.env.circular_buffer T length data
+    mutate.this.env.circular_buffer T length data
