@@ -325,10 +325,11 @@ class Clazz extends ANY implements Comparable<Clazz>
     _needsCode = false;
     _code = IR.NO_SITE;
 
-    // NYI: CLEANUP: currently needed in DFA-Phase to meet
-    // FUIR invariant that stack must be empty at the end of a basic block
-    _isUnitType =
-      type.feature() == Types.resolved.t_unit.feature()
+    // needed in DFA-Phase to meet FUIR invariant that
+    // stack must be empty at the end of a basic block
+    // In other words, it needs to be known that `unit`
+    // is a unit type.
+    _isUnitType = type.feature().isUnitType()
         ? YesNo.yes
         : YesNo.dontKnow;
   }
@@ -509,10 +510,9 @@ class Clazz extends ANY implements Comparable<Clazz>
    */
   private void registerAsHeir(Clazz parent)
   {
-    parent.heirs().add(this);
-    for (var p: parents())
+    if (parent.heirs().add(this))
       {
-        if (!p.heirs().contains(this))
+        for (var p: parents())
           {
             registerAsHeir(p);
           }
@@ -706,7 +706,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   {
     return switch (feature().kind())
       {
-      case Routine           -> IR.FeatureKind.Routine;
+      case Function,RefConstructor,Constructor -> IR.FeatureKind.Routine;
       case Field             -> IR.FeatureKind.Field;
       case TypeParameter     -> IR.FeatureKind.TypeParameter;
       case OpenTypeParameter -> IR.FeatureKind.TypeParameter;

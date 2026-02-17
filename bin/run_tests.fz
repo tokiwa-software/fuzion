@@ -94,9 +94,8 @@ record_process(
 #
 Sequence.prefix ! =>
   seq := map x->x.as_string
-  match os.process.start seq.first.val (seq.drop 1) envir_vars
-    e error => panic "failed executing {Sequence.this}, error is $e"
-    p os.process => record_process p Sequence.this.as_string
+  os.process.start seq.first.val (seq.drop 1) envir_vars
+            .bind (p -> record_process p Sequence.this.as_string)
 
 
 # feed this string to a new process
@@ -140,7 +139,7 @@ find_tests(dir String) array String =>
   m : mutate is
   tests := m ! ()->
     io.dir.use _ dir ()->
-      res := (mutate.array String).type.new m 0 ""
+      res := m.array String .new 0 ""
       _ :=
         for x := io.dir.open.read
         while x.ok
@@ -196,12 +195,11 @@ main =>
   # source: https://stackoverflow.com/questions/45181115/portable-way-to-find-the-number-of-processors-cpus-in-a-shell-script
   # first, try third arg then try a few executables, if everything fails use default value
   thread_count :=
-    fuzion.runtime.contract_fault
-      .try ()->(envir.vars["FUZION_RUN_TESTS_PARALLELISM"]).val.trim.parse_i32.val
-      .or_try _->(!!"nproc --all").out.trim.parse_i32.val
-      .or_try _->(!!"getconf _NPROCESSORS_ONLN").out.trim.parse_i32.val
-      .or_try _->(!!"sysctl -n hw.ncpu").out.trim.parse_i32.val
-      .catch  _->4
+      envir.vars["FUZION_RUN_TESTS_PARALLELISM"]      .flat_map (    .trim.parse_i32) .first
+        .or_else (     (!!"nproc --all"              ).flat_map (.out.trim.parse_i32) .first
+          .or_else (   (!!"getconf _NPROCESSORS_ONLN").flat_map (.out.trim.parse_i32) .first
+            .or_else ( (!!"sysctl -n hw.ncpu"        ).flat_map (.out.trim.parse_i32) .first
+              .or_else 4)))
 
   tests := find_tests "$build_dir/tests"
 
@@ -222,19 +220,25 @@ main =>
       append_line results "$test: skipped"
     else
 
-      res, elapsed_time := time.stopwatch process_result ()->
-        !!"make $target --environment-overrides --directory=$test"
+      opt_res, elapsed_time := time.stopwatch _ ()->
+            !!"make $target --environment-overrides --directory=$test"
 
       test_durations.put test elapsed_time
 
-      if res.exit_code = 0 || target = "fuir" then
-        yak "."
-        append_line results "$test in {elapsed_time}: ok"
-      else
-        yak "#"
-        append_line results "$test in {elapsed_time}: failed"
-        append_line failures res.out
-        append_line failures res.err
+      match opt_res
+        e error =>
+          yak "!"
+          append_line results "$test in {elapsed_time}: $e error"
+          append_line failures "$test: $e"
+        res process_result =>
+          if res.exit_code = 0 || target = "fuir" then
+            yak "."
+            append_line results "$test in {elapsed_time}: ok"
+          else
+            yak "#"
+            append_line results "$test in {elapsed_time}: failed"
+            append_line failures res.out
+            append_line failures res.err
 
 
   say "{tests.count} tests, running $thread_count tests in parallel."
@@ -253,19 +257,17 @@ main =>
     .filter (x -> !x.is_blank)
     .as_array
 
-  ok, skipped, failed := results_content
-    .reduce (0,0,0) (r, t)->
-      if t.ends_with "ok"
-        (r.0+1, r.1, r.2)
-      else if t.ends_with "skipped"
-        (r.0, r.1+1, r.2)
-      else if t.ends_with "failed"
-        (r.0, r.1, r.2+1)
-      else
-        r
+  ok             := results_content.count (.ends_with "ok"     )
+  skipped        := results_content.count (.ends_with "skipped")
+  failed         := results_content.count (.ends_with "failed" )
+  produced_error := results_content.count (.ends_with "error"  )
 
   say ""
-  say "$ok/{tests.count} tests passed, $skipped skipped, $failed failed in {elapsed_time_total.as_string.trim}."
+  say ("$ok/{tests.count} tests passed" +
+       ", $skipped skipped" +
+       ", $failed failed" +
+       (produced_error = 0 ? "" :", $produced_error produced error") +
+       " in {elapsed_time_total.as_string.trim}.")
 
   max_recorded := test_durations
     .values
@@ -276,7 +278,7 @@ main =>
     .for_each h.add
   say h
 
-  if failed > 0
+  if failed + produced_error > 0
     say_section "Failed tests"
 
     failed_tests := results_content.filter (.ends_with "failed")

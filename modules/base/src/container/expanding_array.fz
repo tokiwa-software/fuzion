@@ -36,7 +36,7 @@
 # times.
 #
 # This constructor is for internal use only, to create instance of
-# `expanding_array`, use `(expanding_array T).type.empty` to create an empty
+# `expanding_array`, use `(expanding_array T).empty` to create an empty
 # expanding array instance.
 #
 private:public expanding_array

@@ -460,9 +460,7 @@ class LibraryOut extends ANY
 
     _data.add(f);
     int k = f.visibility().ordinal() << 7;
-    k = k | (!f.isConstructor() ? f.kind().ordinal() :
-              f.isRef()         ? FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF
-                                : FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_VALUE);
+    k = k | f.kind().ordinal();
     if (CHECKS) check
       (k >= 0,
        Errors.any() || f.isRoutine() || f.isChoice() || f.isIntrinsic() || f.isAbstract() || f.isNative() || f.typeArguments().isEmpty());
@@ -603,7 +601,7 @@ class LibraryOut extends ANY
   void type(AbstractType t)
   {
     if (PRECONDITIONS) require
-      (t != null, t != Types.t_ERROR, t != Types.t_UNDEFINED, t instanceof ResolvedType);
+      (t != null, !t.isArtificialType(), t instanceof ResolvedType);
 
     // NYI: UNDER DEVELOPMENT: tk used as size of generics, therefore typekind written _twice_
     // clean this up and merge the two type kinds?

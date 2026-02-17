@@ -64,7 +64,7 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
    *
    * @return -1 or a values that is unique for the given cl/site/tvalue.
    */
-  static long quickHash(DFA dfa, int cl, int site, Value tvalue)
+  private long quickHash(DFA dfa, int cl, int site, Value tvalue)
   {
     long k = -1;
     var k1 = dfa._fuir.clazzId2num(cl);
@@ -139,22 +139,15 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
 
 
   /**
-   * Set of CallGroups this may call.
-   */
-  TreeSet<CallGroup> _to   = new TreeSet<>();
-
-
-  /**
    * Set of clazz ids for effects this CallGroup uses.
    */
   TreeSet<Integer> _usedEffects = new TreeSet<>();
 
 
   /**
-   * Set of clazz ids for effects that may be instated when this CallGroup is
-   * called.
+   * The quick hash of this call group or -1 if none.
    */
-  TreeSet<Integer> _mayHaveEffects = new TreeSet<>();
+  private final long _quickHash;
 
 
   /*---------------------------  constructors  ---------------------------*/
@@ -178,6 +171,7 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
     _cc = cc;
     _site = site;
     _target = target;
+    _quickHash = quickHash(dfa, cc, site, target);
   }
 
 
@@ -189,7 +183,7 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
    */
   public int compareTo(CallGroup other)
   {
-    return
+    return _quickHash != -1 ? Long.compare(_quickHash, other._quickHash) :
       _cc         != other._cc         ? Integer.compare(_cc        , other._cc        ) :
       _target._id != other._target._id ? Integer.compare(_target._id, other._target._id) :
       _dfa.siteSensitive(_cc)          ? Integer.compare(_site      , other._site      ) : 0;
@@ -209,24 +203,6 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
 
 
   /**
-   * Record that there is a call chain that leads to this CallGroup with effect
-   * `ecl` instated.
-   *
-   * @param ecl clazz id of an effect that is instated when this is called.
-   */
-  void mayHaveEffect(int ecl)
-  {
-    if (_mayHaveEffects.add(ecl))
-      {
-        for (var t : _to)
-          {
-            t.mayHaveEffect(ecl);
-          }
-      }
-  }
-
-
-  /**
    * For all effects `e` that this needs and that this may have, record that
    * `_cc` requires `e` in `_dfa._clazzesThatRequireEffect` and
    * `_dfa._effectsRequiredByClazz`.
@@ -238,11 +214,8 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
 
     for (var e : _usedEffects)
       {
-        if (_mayHaveEffects.contains(e))
-          {
-            _dfa._clazzesThatRequireEffect.computeIfAbsent(e  , k->new TreeSet<>()).add(_cc);
-            _dfa._effectsRequiredByClazz  .computeIfAbsent(_cc, k->new TreeSet<>()).add(e  );
-          }
+        _dfa._clazzesThatRequireEffect.computeIfAbsent(e  , k->new TreeSet<>()).add(_cc);
+        _dfa._effectsRequiredByClazz  .computeIfAbsent(_cc, k->new TreeSet<>()).add(e  );
       }
   }
 
@@ -304,12 +277,6 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
         for (var ecl : _usedEffects)
           {
             from.usesEffect(ecl);
-          }
-
-        from._to.add(this);
-        for (var ecl : from._mayHaveEffects)
-          {
-            mayHaveEffect(ecl);
           }
       }
   }

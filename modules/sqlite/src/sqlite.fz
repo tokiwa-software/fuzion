@@ -70,7 +70,7 @@ public sqlite(db Native_Ref) : Database is
     # NYI: CLEANUP: support local mutates
     _ := mut
 
-    db := mutate.array Native_Ref .from_Sequence mutate [ffi.null]
+    db := mutate.array Native_Ref .from_Sequence [ffi.null]
     if sqlite3_open (path.as_c_string mutate) db = 0
       check !(ffi.is_null db[0])
       sqlite db[0]
@@ -95,7 +95,7 @@ public sqlite(db Native_Ref) : Database is
 
         callback data
 
-    ret := sqlite3_exec db (query_string.as_c_string mutate) cb_wrapper ffi.null (mutate.array Native_Ref .from_Sequence mutate [ffi.null])
+    ret := sqlite3_exec db (query_string.as_c_string mutate) cb_wrapper ffi.null (mutate.array Native_Ref .from_Sequence [ffi.null])
     if ret = 0
       unit
     else
