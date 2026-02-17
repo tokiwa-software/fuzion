@@ -17,13 +17,17 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature io.file.write
+#  Source code of Fuzion test reg_issue6160
 #
 # -----------------------------------------------------------------------
 
+reg_issue6160 =>
 
-# write `a`.as_string to file `f`
-#
-public write(p path, a Any) outcome unit =>
-  use p.as_string mode.write ()->
-    writer.write a.as_string.utf8
+  io.file.write (path.of "testfile") "some text" .or_panic
+  io.file.write (path.of "testfile") "some text" .or_panic
+
+  check io.file.read (path.of "testfile") .val = "some text"
+
+  io.file.append (path.of "testfile") " and some more" .or_panic
+
+  check io.file.read (path.of "testfile") .val = "some text and some more"
