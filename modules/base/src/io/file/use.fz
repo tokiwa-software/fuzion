@@ -47,14 +47,14 @@ public mode is
 #     _ := my_file.use file_name mode.read ()->
 #       say (io.buffered my_file.file_mutate).read_lines
 #
-public use(R type, file_name String, m mode.val, code ()-> outcome R) outcome R =>
+public use(R type, file_name path, m mode.val, code ()-> outcome R) outcome R =>
 
   # definition of read handler for file
   #
   read_handler(desc File_Descriptor) : io.Read_Handler is
-    public redef read(count i32) choice (array u8) io.end_of_file error =>
+    public redef read(count i32) choice (Sequence u8) io.end_of_file error =>
       match fuzion.sys.fileio.read desc count.as_u64
-        a array u8 => if a.is_empty then io.end_of_file else a
+        s Sequence => if s.is_empty then io.end_of_file else s
         e error => e
 
   # definition of write handler for file

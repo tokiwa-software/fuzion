@@ -1,7 +1,7 @@
 Type of 'Unary i32 i32' 43
 Type of 'Unary i32 i32' -42
 Type of 'Unary i32 i32' 43
-Type of 'Unary i32 i32' 43
-Type of 'Unary i32 i32' -42
-Type of 'Unary i32 i32' 43
+Type of 'reg_issue5987.λ' 43
+Type of 'reg_issue5987.λ' -42
+Type of 'reg_issue5987.λ' 43
 Type of 'i32' Type of 'array i32' [32]

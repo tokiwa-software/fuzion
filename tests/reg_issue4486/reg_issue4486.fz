@@ -23,7 +23,7 @@
 
 reg_issue4486 =>
 
-  LM : mutate is
+  lm : mutate is
 
   test_strings array (String) :=
     ["",
@@ -37,11 +37,11 @@ reg_issue4486 =>
   #
   read_handler(arg String) : io.Read_Handler is
     already_returned := mut false
-    public redef read(count i32) choice (array u8) io.end_of_file error =>
+    public redef read(count i32) choice (Sequence u8) io.end_of_file error =>
       if !already_returned.get
         already_returned <- true
         # return eof for empty string to simulate: `printf "" | fz read_lines_test.fz`
-        arg = "" ? io.end_of_file : arg.utf8.as_array
+        arg = "" ? io.end_of_file : arg.utf8
       else
         io.end_of_file
 
@@ -50,8 +50,8 @@ reg_issue4486 =>
 
     say "input: '{input.replace "\n" "\\n"}'"
 
-    LM ! ()->
-      b := io.buffered LM
+    lm ! ()->
+      b := io.buffered lm
       b.reader (read_handler input) ! ()->
         for l := b.read_line
             i in 1..
@@ -60,8 +60,8 @@ reg_issue4486 =>
 
     say ""
 
-    LM ! ()->
-      b := io.buffered LM
+    lm ! ()->
+      b := io.buffered lm
       b.reader (read_handler input) ! ()->
         for l in b.read_lines
             i in 1..

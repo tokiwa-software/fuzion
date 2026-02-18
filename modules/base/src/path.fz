@@ -1,0 +1,272 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature path
+#
+# -----------------------------------------------------------------------
+
+
+# NYI: CLEANUP: where to move this os/io?
+
+
+# a feature denoting a path/file in the filesystem
+#
+# instantiate via path.of, e.g.
+#
+#     path.of "/some/path"
+# or
+#     path.of ["some", "path"] true
+#
+private:public path(public names array String, public is_absolute bool) : property.orderable, property.hashable
+  pre debug: !names.contains "."
+      # allow ".." only at start in relative paths
+      safety: is_absolute ? !names.contains ".." : !(names.drop_while ="..").contains ".."
+is
+
+  # is this a relative path
+  #
+  public is_relative bool => !is_absolute
+
+  # is this the root
+  #
+  public fixed is_root    bool => path.this = path.root
+
+  # is this a relative path representing "current directory"
+  #
+  public fixed is_current bool => path.this = path.current_dir
+
+  # is this a relative path representing "parent directory"
+  #
+  public fixed is_parent  bool => path.this = path.parent_dir
+
+  # is this a path with just one segment, i.e. not containing a path separator when normalized
+  #
+  public is_single_segment bool => is_relative && names.count = 1
+
+  # the number of segments in this path
+  #
+  public segments_count i32 => names.count
+
+  # does this path end with other
+  #
+  public fixed ends_with(other path) bool =>
+    (other.segments_count < segments_count && other.is_relative && names.reverse.starts_with other.names.reverse) ||
+      path.this = other
+
+  # does this path contain other
+  #
+  public contains(other path) bool =>
+    other.is_relative && (names.find other.names ? i32 => true | * => false) || starts_with other
+
+
+  # resolve o in this path
+  #
+  # e.g.
+  #
+  #     path.of "/tmp/folder" .resolve "file"
+  #
+  # effectively returns
+  #
+  #     path.of "/tmp/folder/file"
+  #
+  # resolving an absolute path returns that path unmodified
+  #
+  public resolve(o path|String) path =>
+    p := o ? p1 path => p1 | s String => path.of s
+
+    p.is_absolute ? p : path.of names++p.names is_absolute
+
+
+  # get subpath starting from (inclusive)
+  #
+  # e.g.
+  #     path.of "/tmp/folder/file" .subpath 1 = path.of "folder/file"
+  #
+  public subpath(from i32) path =>
+    subpath from segments_count
+
+
+  # get subpath from (inclusive) to (exclusive)
+  #
+  # e.g.
+  #     path.of "/tmp/folder/file" .subpath 0 2 = path.of "/tmp/folder"
+  #
+  public subpath(from, to i32) path =>
+    sp := names
+      .slice from to
+    path.of sp (is_absolute && from=0)
+
+
+  # Full file name or name of the last directory
+  #
+  public base_name String
+    pre debug: !names.is_empty
+  =>
+    names.last.get
+
+  # consider this to represent a file
+  # and return just name of the file
+  # without its extension and path.
+  #
+  public stem String =>
+    match base_name.find_last "."
+      i i32 => 0 < i < base_name.byte_length-1 ? base_name.substring 0 i : base_name
+      nil   => base_name
+
+  # consider this to represent a file
+  # and return the suffix of the file_name
+  #
+  public suffix String =>
+    match base_name.find_last "."
+      i i32 => 0 < i < base_name.byte_length-1 ? base_name.substring i+1 : ""
+      nil   => ""
+
+
+  # get the parent of this path
+  #
+  # if folder is root folder or .
+  # nil is returned
+  #
+  public parent option path => parent 1
+
+  # go up n levels, i.e. call parent n times
+  #
+  public parent(n i32) option path
+    pre debug: n >= 0
+  =>
+    if names.is_empty && is_absolute && n>0
+      nil
+    else
+      path.of names++[".."]*n is_absolute
+
+
+  # relativize path `p` based on this path.
+  #
+  # e.g. "/tmp/folder".relative "/tmp/folder/file" will return "file"
+  #
+  public relativize(p path) path
+    pre debug: p.starts_with (path.of names is_absolute)
+  =>
+    path.of (p.names.drop names.count) false
+
+
+  # checks if this path starts with path `p`
+  #
+  # both this and path p must either be absolute or relative
+  # for this to return true.
+  #
+  # e.g. (path.of "/tmp/file").starts_with (path.of "/tmp") = true
+  #
+  public starts_with(p path) bool =>
+    is_absolute = p.is_absolute &&
+      p.names.count <= names.count &&
+      (names.take p.names.count) = p.names
+
+
+  # String representation of this path
+  #
+  # e.g. "/folder/file" or "relative_folder/file"
+  #
+  public redef as_string String =>
+    "{if is_absolute then "{path.separator}" else ""}{if names.is_empty && !is_absolute then "." else String.join names "{path.separator}"}"
+
+
+  # define order for paths
+  #
+  public redef fixed type.lteq(a, b path) bool =>
+    if a.is_absolute != b.is_absolute
+      b.is_absolute
+    else
+      a.names <= b.names
+
+
+  # create hash code for this instance
+  #
+  # This should satisfy the following condition:
+  #
+  #   (T.equality a b) : (T.hash_code a = T.hash_code b)
+  #
+  public redef fixed type.hash_code(a path) u64 =>
+    xxh_next
+      (hash a.is_absolute)
+      ((array String).type.hash_code a.names)
+
+
+  # instantiates a path via a given String
+  # if paths starts with / it is considered to be
+  # absolute rather than relative.
+  #
+  public type.of(str String) path
+    pre debug: !str.starts_with "{separator}..{separator}"
+        debug: str != "{separator}.."
+  =>
+    t := str.trim
+    path.of (t.split "{separator}") (t.starts_with "{separator}")
+
+
+  # the path separator that is used
+  # on the current platform
+  #
+  public type.separator codepoint =>
+    match os.platform.get
+      os.posix => "/"
+      os.windows => "\\"
+
+
+  # instantiates a path
+  #
+  # e.g.
+  #
+  #     path.of ["tmp", "some_file"] true
+  #
+  public type.of(seq Sequence String, is_absolute bool) path
+    pre debug: seq ∀ s->
+          !(s.contains "{separator}" || s.contains "\0")
+        debug: !is_absolute || (seq.first "") != ".."
+  =>
+    dotdot, names := seq
+      .reverse
+      .filter !="."
+      .filter !=""
+      .reduce (0, Sequence String .empty) (r,t)->
+        if t = ".."
+          # we have double dots, ignore them and increase counter
+          (r.0+1, r.1)
+        else if r.0 > 0
+          # we previously encountered double dots.
+          # ignore this element too and decrease the counter.
+          (r.0-1, r.1)
+        else
+          # no double dots encountered previously,
+          # we need to include this element in the final path
+          (r.0, [t]++r.1)
+    path ([".."]*dotdot ++ names).as_array is_absolute
+
+
+  # the root path "/"
+  #
+  public type.root path => path [] true
+
+  # the current directory path "."
+  #
+  public type.current_dir path => path [] false
+
+  # the parent directory path ".."
+  #
+  public type.parent_dir path => path.of ".."

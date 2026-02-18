@@ -26,9 +26,11 @@
 # e.g.    option  (something/nil)
 #      or outcome (something/error)
 #
-public switch(A type, B type /* NYI: B should be open generic */) :
-  choice A B,
-  monad A switch.this
+public switch(A type, B type /* NYI: B should be open generic */)
+  : choice A B,
+    monad A switch.this,
+    Sequence A,
+    property.equatable
 is
 
   # NYI: CLEANUP: decide name: exists/ok, get/val?
@@ -45,25 +47,25 @@ is
   public ok bool => exists
 
 
-  # short-hand postfix operator for 'exists'
+  # shorthand postfix operator for 'exists'
   #
   public postfix ?? bool => exists
 
 
-  # short-hand postfix operator for '!exists'
+  # shorthand postfix operator for '!exists'
   #
   public postfix !! bool => !exists
 
 
-  # short-hand prefix operator for '!exists'
+  # shorthand prefix operator for '!exists'
   #
   public prefix ! bool => !exists
 
 
-  # unwraps a switch that is known to contain a value
+  # unwraps a switch that is known to contain an A value
   #
   # this can only be called in cases where it is known for sure that this switch
-  # is not nil.  A runtime error will be created otherwise.
+  # is not a B.  A non-catchable runtime error will be created otherwise.
   #
   public get A
   pre
@@ -73,17 +75,10 @@ is
                 | B   => fuzion.std.panic "switch.get called on B. Enable `safety` to obtain a precondition failure for debugging."
 
 
-  # unwrap value or get default
-  #
-  public get (default Lazy A) A =>
-    switch.this ? a A => a
-                | B => default
-
-
   # value of a switch that is known to contain a value
   #
   # This can only be called in cases where it is known for sure that this
-  # switch is not a B.  A runtime error will be created otherwise.
+  # switch is not a B.  A catchable panic will be created otherwise.
   #
   public val A
     pre
@@ -109,8 +104,8 @@ is
       b B => b
 
 
-  # returns o if outcome is ok, otherwise return the outcome's own
-  # error.
+  # returns o if switch is of type A, otherwise return the
+  # switches B.
   #
   public and (O type, o switch.this) switch.this =>
     match switch.this
@@ -118,7 +113,7 @@ is
       b B => b
 
 
-  # if this switch is nil return the result of f
+  # if this switch is a B return the result of f
   # otherwise just return this switch.
   #
   public or (f Lazy switch.this) switch.this =>
@@ -136,9 +131,9 @@ is
 
 
   # converts switch into a list of either a single element in case
-  # switch.this.exists or `nil`otherwise
+  # switch.this.exists or `nil` otherwise
   #
-  public as_list list A
+  public redef as_list list A
   =>
     switch.this ? a A => a : nil
                 | B => nil
@@ -190,17 +185,6 @@ is
   # public redef type.return (a A) switch.this => a
 
 
-  # this switch as an equatable_switch
-  #
-  public as_equatable equatable_switch A B
-  pre
-    A : property.equatable
-  =>
-    match switch.this
-      a A => a
-      b B => b
-
-
   # get A or cause an `exception T`
   #
   public or_cause(T type, e B->error) A =>
@@ -243,21 +227,17 @@ is
       b B => b.as_string
 
 
-# Wrapper type to make a `switch` of an equatable elements itself equatable.
-#
-public equatable_switch(A type : property.equatable,
-                        B type)
-  : switch A B,
-    property.equatable
-is
-
   # equality implementation
   #
   # result is only true if both x and y or
   # of choice type A and x.A = y.A
   #
-  public fixed redef type.equality(x, y equatable_switch A B) bool =>
-    x ? xa A =>
-        y ? ya A => xa = ya
-          | _  B => false
-      | _  B => false
+  public redef fixed type.equality(x, y switch A B) bool
+  =>
+    if A : property.equatable
+      x ? xa A =>
+          y ? ya A => xa = ya
+            | _  B => false
+        | _  B => false
+    else
+      compile_time_panic

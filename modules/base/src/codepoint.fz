@@ -59,7 +59,10 @@ is
 
   # is this an ASCII letter i.e. A-Z or a-z
   #
-  public is_ascii_letter bool => codepoint.latin_alphabet.contains val
+  # NYI: PERFORMANCE: this is way slower, should investigate how/if to cache this Set union.
+  # public is_ascii_letter bool => codepoint.latin_alphabet.contains val
+  #
+  public is_ascii_letter bool => is_lowercase_ascii_letter || is_uppercase_ascii_letter
 
   # is this an uppercase ASCII letter i.e. A-Z
   #
@@ -84,12 +87,12 @@ is
 
   # range of permitted value for a codepoint
   #
-  public type.range interval u32=> u32 0 .. 0x10ffff
+  public type.range interval u32 => u32 0 .. 0x10ffff
 
 
   # range of values encoded in one byte
   #
-  public type.ascii interval u32=> u32 0 .. 0x7f
+  public type.ascii interval u32 => u32 0 .. 0x7f
 
   # 0 to 9
   public type.ascii_digit interval u32 => u32 0x30 .. 0x39

@@ -29,8 +29,7 @@
 # submit a task to the thread_pool.
 #
 public thread_pool(R type, size i32, code ()->R) outcome R =>
-  concur.sync.condition.new.bind cnd->
-    (thread_pool cnd size) ! code
+  (thread_pool size) ! code
 
 
 # concrete implementation of concur.Future
@@ -46,7 +45,7 @@ Computable_Future(
 
   cnd := concur.sync.condition.new.val # NYI: error handling
 
-  compute_result := concur.atomic (option T) nil
+  compute_result := concur.atomic (option T) .new nil
 
   compute =>
     cr := task.call
@@ -54,42 +53,40 @@ Computable_Future(
       compute_result.write cr
       check cnd.broadcast
 
-  public redef is_done bool => compute_result.read.exists
+  public redef is_done bool  ! atomic_access => compute_result.read.exists
 
-  public redef get T =>
+  public redef get T ! atomic_access =>
     cnd.synchronized ()->
       if !is_done
         check cnd.wait
 
     compute_result.read.val
 
-  public redef and_then(T2 type, new_task T->T2) concur.Future T2 =>
+  public redef and_then(T2 type, new_task T->T2) concur.Future T2 ! atomic_access, TP =>
     TP.env.submit T2 ()->(new_task get)
 
 
 
 # simple, fixed size thread pool
 #
-private:public thread_pool(cnd concur.sync.condition, size i32) : effect
+private:public thread_pool(size i32) : effect
 pre debug: size > 0
 is
 
-  bq := Blocking_Queue ()->unit cnd
+  bq := Blocking_Queue ()->unit
 
-  thrds := (1..size)
-    .map _->
+  thrds := array size _->
       concur.threads.spawn ()->
-        _ := for x := bq.dequeue
-             while x.exists
-               x.val.call
-    .as_array
+        for x := bq.dequeue
+        while x.exists
+          x.val.call
 
 
   # submit a task to the thread pool
   #
   # returns false if the pool is already shutting down
   #
-  public submit(task ()->unit) bool =>
+  public submit(task ()->unit) bool ! atomic_access =>
     bq.enqueue task
 
 
@@ -98,7 +95,7 @@ is
   # returns a future if successful or panics in case
   # the thread pool has already shut down.
   #
-  public submit(T type, task ()->T) concur.Future T =>
+  public submit(T type, task ()->T) concur.Future T ! atomic_access =>
     res := Computable_Future _ thread_pool.this task
     if bq.enqueue ()->res.compute
       res
@@ -110,16 +107,12 @@ is
   # notify all threads to wake up,
   # wait for all threads to finish
   #
-  public redef finally unit =>
+  public redef finally unit ! atomic_access =>
 
     # initiate shutdown of thread pool
     # i.e. stop accepting jobs
     #
     bq.close
-
-    # wake up all threads
-    cnd.synchronized unit ()->
-      _ := cnd.broadcast
 
     # wait for all threads to finish
     thrds.for_each t->

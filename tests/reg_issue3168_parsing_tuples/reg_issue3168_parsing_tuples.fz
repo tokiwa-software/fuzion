@@ -35,8 +35,8 @@ reg_issue3168_parsing_tuples is
     _ := array (Sequence (i32, String)) 0 i->[]
     lm : mutate is
       lm.instate_self unit ()->
-      _ := (lm.array (Sequence (tuple i32 String i32))).type.new lm 0 []
-      _ := (lm.array (Sequence (i32, i32))).type.new lm 0 []
+      _ := lm.array (Sequence (tuple i32 String i32)) .new 0 []
+      _ := lm.array (Sequence (i32, i32)) .new 0 []
 
 
     # tuple type requires double parentheses option ((i32,i32))

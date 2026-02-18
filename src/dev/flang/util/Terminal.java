@@ -168,6 +168,7 @@ public class Terminal extends ANY
    * does not work, this remains set if stdout/stderr is piped into a file.
    * Hence this hackery
    */
+  @SuppressWarnings("restricted")
   private static boolean isTerminal()
   {
     try

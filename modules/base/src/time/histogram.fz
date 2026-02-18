@@ -34,7 +34,7 @@
 # factor (logarithmic).
 #
 # The use of buckets permits the collection of large numbers of
-# sampe durations since only the counts per bucket are recorded
+# sample durations since only the counts per bucket are recorded
 #
 public histogram(# title to be printed for this histogram
                  public title String,
@@ -225,13 +225,13 @@ is
   indx(l time.duration)
   post
     debug: result.as_i32 ∈ table.indices
-    debug: l <= table[result.as_i32]
-    debug: result = 0 || table[result.as_i32-1] < l
+    debug: l <= table[result]
+    debug: result = 0 || table[result-1] < l
   =>
     # binary search in range s..e:
     for
       m := i64 0, (s+e)/2
-      v := l, table[m.as_i32]
+      v := l, table[m]
       s := i64 0      , l >  v ? m+1 : s
       e := num_buckets, l <= v ? m   : e
     while s < e
@@ -263,7 +263,7 @@ is
     debug: indx result = i
     debug: indx (result + time.duration.ns 1) = i+1
   =>
-    table[i.as_i32]
+    table[i]
 
 
   # record the given time instant, i.e., create the difference to the previous instant
@@ -402,12 +402,12 @@ is
         res := titl, res + str
         c := h.log2, c-1
       while c >= 0 do
-        units := " KMGTPEZY"; /* Kilo, Mega, Giga, Tera, etc. */
-        unit0 := min units.byte_length-1 c/10  # 2^10 is times 1024
+        units_str := " KMGTPEZY"; /* Kilo, Mega, Giga, Tera, etc. */
+        unit0 := min units_str.byte_length-1 c/10  # 2^10 is times 1024
         cnt := u64 1 << (c - unit0 * 10).as_u64
         str := for
                  hgap := c %% 4 ? hori : empt
-                 str1 := "{($cnt).pad_left 3}{units.substring unit0 unit0+1}$hgap", str1 + str2 + str3
+                 str1 := "{($cnt).pad_left 3}{units_str.substring unit0 unit0+1}$hgap", str1 + str2 + str3
                  i in buckets.indices
                  last := i = num_buckets-1
                  gap :=  i %% 8 || last ? vert : hgap
@@ -416,7 +416,7 @@ is
                else
                  str1 + "\n"
       else
-        t2 := (i64 0 .. 64 : 8).map (i -> largest i .as_string.trim.pad_center 8)
+        t2 := (i64 0 .. 64 : 8).map (i -> largest i .as_string.pad_center 8)
                                .as_string ""
         bot :=    ("     " + (vert + empt*7)*9 + vert + "\n" +
                    "  "+t2+"   >\n")
@@ -434,7 +434,7 @@ is
       "not data"
 
 
-  # Create semicolon-separated CSV data for these measurments to import into Excel or
+  # Create semicolon-separated CSV data for these measurements to import into Excel or
   # OpenOffice. First lines will be descriptions.
   #
   public csv String

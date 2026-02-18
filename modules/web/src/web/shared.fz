@@ -1,0 +1,138 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+# -----------------------------------------------------------------------
+
+# this lm is used for the raw netwok connection
+#
+net_lm : mutate is
+
+
+# this lm is used for reader/writer of the ssl connection
+#
+ssl_lm : mutate is
+
+
+# read the response
+#
+module read_reponse(LM type : mutate) ! LM =>
+  http
+    .read_response LM
+    .bind String resp->
+      body := resp.body_as_string
+      if resp.status_code >= 400
+        msg :=
+          if body.is_blank
+            "{resp.status_code} {resp.reason_phrase}"
+          else
+            """
+            {resp.status_code} {resp.reason_phrase}
+
+            {body}
+            """
+        error msg
+      else
+        body
+
+
+
+# write the request
+#
+module write_request(LM type : mutate, rm http.request_message) ! LM =>
+  (io.buffered LM).writer.env
+    .write (rm.bytes i32.max)
+    .bind _->
+      (io.buffered LM).writer.env.flush
+
+
+module parsed_url(module use_https bool, module host String, module port option u16, module target option String) is
+
+
+# parse an url and return (is_http, host, target)
+#
+# e.g. https://tokiwa.software/index
+#
+# will result in
+#
+# (true, "tokiwa.software", nil, "index")
+#
+#
+# e.g. http://tokiwa.software:8080
+#
+# will result in
+#
+# (false, "tokiwa.software", 8080, "index")
+#
+# NYI: BUG: parse [host]:port format correctly bracketed ipv6
+# NYI: BUG: no port bounds check <= 65535 before casting
+# NYI: BUG: ignores userinfo: user:pass@host
+#
+module parse_url(url String) outcome web.parsed_url
+  pre
+    debug: !url.contains_whitespace
+=>
+  is_https      := url.starts_with "https"
+  schema_length := "http{is_https ? "s" : ""}://".byte_length
+
+  # extract host, port (optional) and target (optional) from url
+  #
+  match {
+          tpl := url
+            .find "/" schema_length
+            .bind (idx -> url.split_at_byte idx)
+            .bind (t -> (t.0, id (option String) t.1))
+            # no target specified
+            .or_else (url, id (option String) nil)
+
+          host_and_port := tpl.0.substring schema_length
+          host_and_port_seq := host_and_port.split ":" .as_array
+          if host_and_port_seq.length > 2
+            id (outcome (tuple String (option u16) (option String))) (error "invalid host+port {host_and_port}")
+          else
+            match host_and_port_seq.nth 1
+              p_str String =>
+                match p_str.parse_u32
+                  e error => e
+                  p u32 => (host_and_port_seq[0], id (option u16) p.as_u16, tpl.1)
+              # no port specified
+              nil => (host_and_port_seq[0], id (option u16) nil, tpl.1)
+        }
+    e error => e
+    t tuple => web.parsed_url is_https t.0 t.1 t.2
+
+
+# do the actual request and return response as a String
+#
+module do_request(family net.family.val,
+                  port u16,
+                  use_https bool,
+                  host String,
+                  rm http.request_message) outcome String
+=>
+  net_lm ! ()->
+    net
+      .client family net.protocol.tcp host port
+      .bind c->
+        c.with _ net_lm ()->
+          if use_https
+            ssl_lm ! ()->
+              wolfssl _ net_lm ssl_lm ((write_request ssl_lm rm).bind _->(read_reponse ssl_lm))
+          else
+            (write_request net_lm rm).bind _->(read_reponse net_lm)
+

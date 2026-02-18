@@ -60,3 +60,20 @@ is
     body io.Read_Handler) http.request_message
   =>
     http.request_message method target version_major version_minor (as_header_map header) body
+
+
+  # request with an empty body
+  #
+  public type.new(
+    # the HTTP request method
+    method http.request_method,
+    # the target of the request
+    target String,
+    # the major version
+    version_major i32,
+    # the minor version
+    version_minor i32,
+    # the header fields
+    header Sequence (String,String)) http.request_message
+  =>
+    http.request_message method target version_major version_minor (as_header_map header) io.Read_Handler.empty

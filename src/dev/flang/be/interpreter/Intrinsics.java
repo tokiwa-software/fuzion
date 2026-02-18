@@ -88,13 +88,7 @@ public class Intrinsics extends ANY
   /*----------------------------  constants  ----------------------------*/
 
 
-  /**
-   * NYI: This will eventually be part of a Fuzion IR / BE Config class.
-   */
-  public static Boolean ENABLE_UNSAFE_INTRINSICS = null;
-
-
-  static TreeMap<String, IntrinsicCode> _intrinsics_ = new TreeMap<>();
+  static final TreeMap<String, IntrinsicCode> _intrinsics_ = new TreeMap<>();
 
   /*----------------------------  variables  ----------------------------*/
 
@@ -106,19 +100,9 @@ public class Intrinsics extends ANY
 
 
   private static void put(String n, IntrinsicCode c) { _intrinsics_.put(n, c); }
-  private static void putUnsafe(String n, IntrinsicCode c) { _intrinsics_.put(n, (executor, innerClazz) -> args -> {
-    if (!ENABLE_UNSAFE_INTRINSICS)
-      {
-        Errors.fatal("*** error: unsafe feature "+innerClazz+" disabled");
-      }
-    return c.get(executor, innerClazz).call(args);
-  }); }
   private static void put(String n1, String n2, IntrinsicCode c) { put(n1, c); put(n2, c); }
-  private static void putUnsafe(String n1, String n2, IntrinsicCode c) { putUnsafe(n1, c); putUnsafe(n2, c); }
   private static void put(String n1, String n2, String n3, IntrinsicCode c) { put(n1, c); put(n2, c); put(n3, c); }
-  private static void putUnsafe(String n1, String n2, String n3, IntrinsicCode c) { putUnsafe(n1, c); putUnsafe(n2, c); putUnsafe(n3, c); }
   private static void put(String n1, String n2, String n3, String n4, IntrinsicCode c) { put(n1, c); put(n2, c); put(n3, c); put(n4, c); }
-  private static void putUnsafe(String n1, String n2, String n3, String n4, IntrinsicCode c) { putUnsafe(n1, c); putUnsafe(n2, c); putUnsafe(n3, c); putUnsafe(n4, c); }
   private static void put(String n1, String n2, String n3, String n4, String n5, IntrinsicCode c) { put(n1, c); put(n2, c); put(n3, c); put(n4, c); put(n5, c); }
 
 
@@ -168,7 +152,7 @@ public class Intrinsics extends ANY
         Errors.fatal(executor.fuir().sitePos(site),
                      "Intrinsic feature not supported",
                      "Missing intrinsic feature: " + in);
-        result = (args) -> Value.NO_VALUE;
+        result = (args) -> Value.VOID;
       }
     return result;
   }
@@ -257,19 +241,19 @@ public class Intrinsics extends ANY
             {
               Interpreter.setField(f, a, thiz, args.get(1));
             }
-          return new Instance(executor.fuir().clazz(SpecialClazzes.c_unit));
+          return Value.UNIT;
         });
 
     put("concur.util.load_fence",   (executor, innerClazz) -> args ->
         {
           synchronized (LOCK_FOR_ATOMIC) { };
-          return new Instance(executor.fuir().clazz(SpecialClazzes.c_unit));
+          return Value.UNIT;
         });
 
     put("concur.util.store_fence",  (executor, innerClazz) -> args ->
         {
           synchronized (LOCK_FOR_ATOMIC) { };
-          return new Instance(executor.fuir().clazz(SpecialClazzes.c_unit));
+          return Value.UNIT;
         });
 
     put("fuzion.sys.args.count", (executor, innerClazz) -> args -> new i32Value(executor.options().getBackendArgs().size() + 1));
@@ -292,21 +276,21 @@ public class Intrinsics extends ANY
           Errors.runTime(utf8ByteArrayDataToString(args.get(1)),
                          utf8ByteArrayDataToString(args.get(2)),
                          Executor.callStack(executor.fuir()));
-          return Value.EMPTY_VALUE;
+          return Value.UNIT;
         });
 
     put("fuzion.std.exit", (executor, innerClazz) -> args ->
         {
           int rc = args.get(1).i32Value();
           System.exit(rc);
-          return Value.EMPTY_VALUE;
+          return Value.UNIT;
         });
     put("fuzion.jvm.is_null0", (executor, innerClazz) -> args ->
         {
           Object thiz = ((JavaRef)args.get(1))._javaRef;
           return new boolValue(thiz == null);
         });
-    putUnsafe("fuzion.jvm.get_static_field0",
+    put("fuzion.jvm.get_static_field0",
         "fuzion.jvm.get_field0"      , (executor, innerClazz) ->
         {
           String in = executor.fuir().clazzOriginalName(innerClazz);
@@ -320,7 +304,7 @@ public class Intrinsics extends ANY
               return JavaInterface.getField(clazz, thiz, field, resultClazz);
             };
         });
-    putUnsafe("fuzion.jvm.set_static_field0",
+    put("fuzion.jvm.set_static_field0",
         "fuzion.jvm.set_field0"      , (executor, innerClazz) ->
         {
           String in = executor.fuir().clazzOriginalName(innerClazz);
@@ -332,10 +316,10 @@ public class Intrinsics extends ANY
               String field = (String) ((JavaRef) args.get(2))._javaRef;
               Object val  = ((JavaRef) args.get(3))._javaRef;
               JavaInterface.setField(clazz, thiz, field, val);
-              return Value.EMPTY_VALUE;
+              return Value.UNIT;
             };
         });
-    putUnsafe("fuzion.jvm.call_v0",
+    put("fuzion.jvm.call_v0",
         "fuzion.jvm.call_s0",
         "fuzion.jvm.call_c0", (executor, innerClazz) ->
         {
@@ -353,7 +337,7 @@ public class Intrinsics extends ANY
 
               var argz = args.get(a); // of type fuzion.sys.internal_array<JavaObject>, we need to get field argz.data
               var sac = executor.fuir().clazzArgClazz(innerClazz, executor.fuir().clazzArgCount(innerClazz) - 1);
-              var argzData = Interpreter.getField(executor.fuir().lookup_fuzion_sys_internal_array_data(sac), sac, argz, false);
+              var argzData = Interpreter.getField(executor.fuir().clazzArg(sac, 0), sac, argz, false);
 
               String clName =                          (String) clNameI._javaRef;
               String name   = nameI   == null ? null : (String) nameI._javaRef;
@@ -362,17 +346,17 @@ public class Intrinsics extends ANY
               return JavaInterface.call(clName, name, sig, thiz, argzData, resultClazz);
             };
         });
-    putUnsafe("fuzion.jvm.cast0", (executor, innerClazz) -> args ->
+    put("fuzion.jvm.cast0", (executor, innerClazz) -> args ->
         {
           var arg = ((JavaRef) args.get(1))._javaRef;
           var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
           return JavaInterface.javaObjectToInstance(arg, null, resultClazz);
         });
-    putUnsafe("fuzion.jvm.array_length",  (executor, innerClazz) -> args ->
+    put("fuzion.jvm.array_length",  (executor, innerClazz) -> args ->
         {
           return new i32Value(Array.getLength(((JavaRef) args.get(1))._javaRef));
         });
-    putUnsafe("fuzion.jvm.array_get", (executor, innerClazz) -> args ->
+    put("fuzion.jvm.array_get", (executor, innerClazz) -> args ->
         {
           var arr = ((JavaRef) args.get(1))._javaRef;
           var ix  = args.get(2).i32Value();
@@ -380,31 +364,31 @@ public class Intrinsics extends ANY
           var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
           return JavaInterface.javaObjectToInstance(res, resultClazz);
         });
-    putUnsafe("fuzion.jvm.array_to_java_object0", (executor, innerClazz) -> args ->
+    put("fuzion.jvm.array_to_java_object0", (executor, innerClazz) -> args ->
         {
           var argz = args.get(1);
           var sac = executor.fuir().clazzArgClazz(innerClazz, 0);
           var res = Interpreter
-            .getField(executor.fuir().lookup_fuzion_sys_internal_array_data(sac), sac, argz, false)
+            .getField(executor.fuir().clazzArg(sac, 0), sac, argz, false)
             .arrayData()
             ._data;
           return new JavaRef(res);
         });
-    putUnsafe("fuzion.jvm.create_jvm", (executor, innerClazz) -> args -> new i32Value(0));
-    putUnsafe("fuzion.jvm.destroy_jvm", (executor, innerClazz) -> args -> Value.EMPTY_VALUE);
-    putUnsafe("fuzion.jvm.string_to_java_object0", (executor, innerClazz) -> args ->
+    put("fuzion.jvm.create_jvm", (executor, innerClazz) -> args -> new i32Value(0));
+    put("fuzion.jvm.destroy_jvm", (executor, innerClazz) -> args -> Value.UNIT);
+    put("fuzion.jvm.string_to_java_object0", (executor, innerClazz) -> args ->
         {
           var argz = args.get(1);
           var sac = executor.fuir().clazzArgClazz(innerClazz, 0);
-          var argzData = Interpreter.getField(executor.fuir().lookup_fuzion_sys_internal_array_data(sac), sac, argz, false);
+          var argzData = Interpreter.getField(executor.fuir().clazzArg(sac, 0), sac, argz, false);
           return new JavaRef(utf8ByteArrayDataToString(argzData));
         });
-    putUnsafe("fuzion.jvm.java_string_to_string", (executor, innerClazz) -> args ->
+    put("fuzion.jvm.java_string_to_string", (executor, innerClazz) -> args ->
         {
           var javaString = (String) ((JavaRef)args.get(1))._javaRef;
           return Interpreter.boxedConstString(javaString == null ? "--null--" : javaString);
         });
-    putUnsafe("fuzion.jvm.primitive_to_java_object", (executor, innerClazz) -> args ->
+    put("fuzion.jvm.primitive_to_java_object", (executor, innerClazz) -> args ->
         {
           var res =  switch (executor.fuir().getSpecialClazz(executor.fuir().clazzActualGeneric(innerClazz, 0)))
           {
@@ -444,15 +428,15 @@ public class Intrinsics extends ANY
                               /* value */ args.get(3),
                               executor.fuir(),
                               /* type  */ et);
-          return Value.EMPTY_VALUE;
+          return Value.UNIT;
         });
     put("fuzion.sys.internal_array.freeze", (executor, innerClazz) -> args ->
         {
-          return Value.EMPTY_VALUE;
+          return Value.UNIT;
         });
     put("fuzion.sys.internal_array.ensure_not_frozen", (executor, innerClazz) -> args ->
         {
-          return Value.EMPTY_VALUE;
+          return Value.UNIT;
         });
     put("fuzion.sys.env_vars.has0", (executor, innerClazz) -> args -> new boolValue(System.getenv(utf8ByteArrayDataToString(args.get(1))) != null));
     put("fuzion.sys.env_vars.get0", (executor, innerClazz) -> args -> Interpreter.boxedConstString(System.getenv(utf8ByteArrayDataToString(args.get(1)))));
@@ -485,7 +469,7 @@ public class Intrinsics extends ANY
                 }
             }
           while (!result);
-          return Value.EMPTY_VALUE;
+          return Value.UNIT;
         });
 
     put("safety"                , (executor, innerClazz) -> args -> new boolValue(executor.options().fuzionSafety()));
@@ -626,8 +610,6 @@ public class Intrinsics extends ANY
     put("f32.infix -"           , (executor, innerClazz) -> args -> new f32Value (                (args.get(0).f32Value() -  args.get(1).f32Value())));
     put("f32.infix *"           , (executor, innerClazz) -> args -> new f32Value (                (args.get(0).f32Value() *  args.get(1).f32Value())));
     put("f32.infix /"           , (executor, innerClazz) -> args -> new f32Value (                (args.get(0).f32Value() /  args.get(1).f32Value())));
-    put("f32.infix %"           , (executor, innerClazz) -> args -> new f32Value (                (args.get(0).f32Value() %  args.get(1).f32Value())));
-    put("f32.infix **"          , (executor, innerClazz) -> args -> new f32Value ((float) Math.pow(args.get(0).f32Value(),   args.get(1).f32Value())));
     put("f32.type.equal"        , (executor, innerClazz) -> args -> new boolValue(                (args.get(1).f32Value() == args.get(2).f32Value())));
     put("f32.type.lower_than_or_equal"
                                 , (executor, innerClazz) -> args -> new boolValue(                (args.get(1).f32Value() <= args.get(2).f32Value())));
@@ -638,40 +620,12 @@ public class Intrinsics extends ANY
     put("f64.infix -"           , (executor, innerClazz) -> args -> new f64Value (                (args.get(0).f64Value() -  args.get(1).f64Value())));
     put("f64.infix *"           , (executor, innerClazz) -> args -> new f64Value (                (args.get(0).f64Value() *  args.get(1).f64Value())));
     put("f64.infix /"           , (executor, innerClazz) -> args -> new f64Value (                (args.get(0).f64Value() /  args.get(1).f64Value())));
-    put("f64.infix %"           , (executor, innerClazz) -> args -> new f64Value (                (args.get(0).f64Value() %  args.get(1).f64Value())));
-    put("f64.infix **"          , (executor, innerClazz) -> args -> new f64Value (        Math.pow(args.get(0).f64Value(),   args.get(1).f64Value())));
     put("f64.type.equal"        , (executor, innerClazz) -> args -> new boolValue(                (args.get(1).f64Value() == args.get(2).f64Value())));
     put("f64.type.lower_than_or_equal"
                                 , (executor, innerClazz) -> args -> new boolValue(                (args.get(1).f64Value() <= args.get(2).f64Value())));
     put("f64.as_i64_lax"        , (executor, innerClazz) -> args -> new i64Value((long)                                      args.get(0).f64Value() ));
     put("f64.as_f32"            , (executor, innerClazz) -> args -> new f32Value((float)                                     args.get(0).f64Value() ));
     put("f64.cast_to_u64"       , (executor, innerClazz) -> args -> new u64Value (    Double.doubleToLongBits(               args.get(0).f64Value())));
-    put("f32.is_NaN"            , (executor, innerClazz) -> args -> new boolValue(                               Float.isNaN(args.get(0).f32Value())));
-    put("f64.is_NaN"            , (executor, innerClazz) -> args -> new boolValue(                              Double.isNaN(args.get(0).f64Value())));
-    put("f32.acos"              , (executor, innerClazz) -> args -> new f32Value ((float)           Math.acos(               args.get(0).f32Value())));
-    put("f32.asin"              , (executor, innerClazz) -> args -> new f32Value ((float)           Math.asin(               args.get(0).f32Value())));
-    put("f32.atan"              , (executor, innerClazz) -> args -> new f32Value ((float)           Math.atan(               args.get(0).f32Value())));
-    put("f32.cos"               , (executor, innerClazz) -> args -> new f32Value ((float)           Math.cos(                args.get(0).f32Value())));
-    put("f32.cosh"              , (executor, innerClazz) -> args -> new f32Value ((float)           Math.cosh(               args.get(0).f32Value())));
-    put("f32.exp"               , (executor, innerClazz) -> args -> new f32Value ((float)           Math.exp(                args.get(0).f32Value())));
-    put("f32.log"               , (executor, innerClazz) -> args -> new f32Value ((float)           Math.log(                args.get(0).f32Value())));
-    put("f32.sin"               , (executor, innerClazz) -> args -> new f32Value ((float)          Math.sin(                 args.get(0).f32Value())));
-    put("f32.sinh"              , (executor, innerClazz) -> args -> new f32Value ((float)          Math.sinh(                args.get(0).f32Value())));
-    put("f32.square_root"       , (executor, innerClazz) -> args -> new f32Value ((float)          Math.sqrt(        (double)args.get(0).f32Value())));
-    put("f32.tan"               , (executor, innerClazz) -> args -> new f32Value ((float)          Math.tan(                 args.get(0).f32Value())));
-    put("f32.tanh"              , (executor, innerClazz) -> args -> new f32Value ((float)          Math.tanh(                args.get(0).f32Value())));
-    put("f64.acos"              , (executor, innerClazz) -> args -> new f64Value (                 Math.acos(                args.get(0).f64Value())));
-    put("f64.asin"              , (executor, innerClazz) -> args -> new f64Value (                 Math.asin(                args.get(0).f64Value())));
-    put("f64.atan"              , (executor, innerClazz) -> args -> new f64Value (                 Math.atan(                args.get(0).f64Value())));
-    put("f64.cos"               , (executor, innerClazz) -> args -> new f64Value (                 Math.cos(                 args.get(0).f64Value())));
-    put("f64.cosh"              , (executor, innerClazz) -> args -> new f64Value (                 Math.cosh(                args.get(0).f64Value())));
-    put("f64.exp"               , (executor, innerClazz) -> args -> new f64Value (                 Math.exp(                 args.get(0).f64Value())));
-    put("f64.log"               , (executor, innerClazz) -> args -> new f64Value (                 Math.log(                 args.get(0).f64Value())));
-    put("f64.sin"               , (executor, innerClazz) -> args -> new f64Value (                 Math.sin(                 args.get(0).f64Value())));
-    put("f64.sinh"              , (executor, innerClazz) -> args -> new f64Value (                 Math.sinh(                args.get(0).f64Value())));
-    put("f64.square_root"       , (executor, innerClazz) -> args -> new f64Value (                 Math.sqrt(                args.get(0).f64Value())));
-    put("f64.tan"               , (executor, innerClazz) -> args -> new f64Value (                 Math.tan(                 args.get(0).f64Value())));
-    put("f64.tanh"              , (executor, innerClazz) -> args -> new f64Value (                 Math.tanh(                args.get(0).f64Value())));
     put("f32.type.epsilon"      , (executor, innerClazz) -> args -> new f32Value (                  Math.ulp(                (float)1)));
     put("f32.type.max"          , (executor, innerClazz) -> args -> new f32Value (                                           Float.MAX_VALUE));
     put("f32.type.max_exp"      , (executor, innerClazz) -> args -> new i32Value (                                           Float.MAX_EXPONENT));
@@ -700,9 +654,11 @@ public class Intrinsics extends ANY
             }
 
           if (POSTCONDITIONS) ensure
-            (executor.fuir().clazzIsUnitType(ecl) || result != Value.NO_VALUE);
+            (executor.fuir().clazzIsUnitType(ecl) || result != Value.VOID);
 
-          return result;
+          return executor.fuir().clazzIsRef(ecl)
+            ? result
+            : result.cloneValue(ecl);
         });
 
     /* NYI: UNDER DEVELOPMENT: abusing javaObjectToPlainInstance in mtx_*, cnd_* intrinsics
@@ -811,7 +767,7 @@ public class Intrinsics extends ANY
         switch (in)
           {
           case "effect.type.abort0"    : throw new Abort(ecl);
-          case "effect.type.default0"  : if (effects.get(ecl) == null) { check(fuir.clazzIsUnitType(ecl) || ev != Value.EMPTY_VALUE); effects.put(ecl, ev); } break;
+          case "effect.type.default0"  : if (effects.get(ecl) == null) { check(fuir.clazzIsUnitType(ecl) || ev != Value.UNIT); effects.put(ecl, ev); } break;
           case FuzionConstants.EFFECT_INSTATE_NAME :
             {
               // save old and instate new effect value ev:
@@ -821,7 +777,7 @@ public class Intrinsics extends ANY
               // the callbacks to Fuzion for the code, fallback and finally:
               var call     = fuir.lookupCall(fuir.clazzActualGeneric(innerClazz, 0));
               var call_def = fuir.lookupCall(fuir.clazzActualGeneric(innerClazz, 1));
-              var finallie = fuir.lookup_static_finally(ecl);
+              var finallie = fuir.lookupStaticFinally(ecl);
 
               Abort aborted = null;
               try
@@ -850,10 +806,10 @@ public class Intrinsics extends ANY
             }
             break;
           case "effect.type.is_instated0": return new boolValue(effects.get(ecl) != null /* NOTE not containsKey since ecl may map to null! */ );
-          case "effect.type.replace0"    : check(effects.get(ecl) != null, fuir.clazzIsUnitType(ecl) || ev != Value.EMPTY_VALUE); effects.put(ecl, ev);   break;
+          case "effect.type.replace0"    : check(effects.get(ecl) != null, fuir.clazzIsUnitType(ecl) || ev != Value.UNIT); effects.put(ecl, ev);   break;
           default: throw new Error("unexpected effect intrinsic '"+in+"'");
           }
-        return Value.EMPTY_VALUE;
+        return Value.UNIT;
       };
   }
 

@@ -54,8 +54,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    * {@code Call.NO_GENERICS} which is used to distinguish {@code a.b<>()} (using {@code UnresolvedType.NONE})
    * from {@code a.b()} (using {@code Call.NO_GENERICS}).
    */
-  public static final List<AbstractType> NONE = new List<AbstractType>();
-  static { NONE.freeze(); }
+  public static final List<AbstractType> NONE = new List<AbstractType>().freeze();
 
 
   /**
@@ -206,10 +205,12 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
     this._pos      = pos;
     this._name     = n;
-    this._generics = ((g == null) || g.isEmpty()) ? NONE : g;
-    this._generics.freeze();
+    this._generics = (((g == null) || g.isEmpty()) ? NONE : g).freeze();
     this._outer    = o;
     this._typeKind = typeKind;
+    // to make caching of _isGenericArgument work
+    // we call constructor after _typeKind is set
+    super();
   }
 
 
@@ -259,6 +260,9 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
     this._pos               = original._pos;
     this._typeKind          = Optional.of(typeKind);
+    // to make caching of _isGenericArgument work
+    // we call constructor after _typeKind is set
+    super();
     this._name              = original._name;
     this._generics          = original._generics;
     this._outer             = original._outer;
@@ -278,6 +282,9 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
   {
     this._pos               = original._pos;
     this._typeKind          = original._typeKind;
+    // to make caching of _isGenericArgument work
+    // we call constructor after _typeKind is set
+    super();
     this._name              = original._name;
     if (original._generics.isEmpty())
       {
@@ -356,8 +363,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
     return new ParsedType(pos,
                           arguments.size() == 1 ? Types.UNARY_NAME  :
                           arguments.size() == 2 ? Types.BINARY_NAME : Types.FUNCTION_NAME,
-                          new List<AbstractType>(returnType, arguments),
-                          null);
+                          new List<AbstractType>(returnType, arguments));
   }
 
 
@@ -553,6 +559,10 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
             if (CHECKS) check
               (tolerant || Errors.any() || fo != FeatureAndOuter.ERROR);
           }
+        else if (!tolerant)
+          {
+            _resolved = Types.t_ERROR;
+          }
       }
 
     if (_resolved != null && _resolved != Types.t_ERROR && (_resolved.isOpenGeneric() != _followedByDots))
@@ -567,6 +577,9 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
           }
         _resolved = Types.t_ERROR;
       }
+
+    if (POSTCONDITIONS) ensure
+      (tolerant || _resolved != null);
 
     return _resolved;
   }
@@ -660,16 +673,13 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
       {
         if (typeKind == TypeKind.ThisType && generics.isEmpty())
           {
-            generics = f.generics().asActuals();
+            generics = f.genericsAsActuals();
           }
         else
           {
             if (tolerant)
               {
-                if (!(generics instanceof FormalGenerics.AsActuals))
-                  {
-                    generics = generics.map(t -> t instanceof UnresolvedType ut ? ut.resolve(res, context, true) : t);
-                  }
+                generics = generics.map(t -> t instanceof UnresolvedType ut ? ut.resolve(res, context, true) : t);
                 if (!f.generics().sizeMatches(generics) || generics.contains(null))
                   {
                     f = Types.f_ERROR;
@@ -870,7 +880,8 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
                          freeTypeConstraint().resolve(res, context),
                          _name,
                          Contract.EMPTY_CONTRACT,
-                         Impl.TYPE_PARAMETER)
+                         _followedByDots ? Impl.TYPE_PARAMETER_OPEN
+                                         : Impl.TYPE_PARAMETER)
       {
         /**
          * Is this type a free type?
@@ -901,6 +912,13 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
   public void setFollowedByDots()
   {
     _followedByDots = true;
+  }
+
+
+  @Override
+  public boolean isOpenGeneric()
+  {
+    return _followedByDots;
   }
 
 

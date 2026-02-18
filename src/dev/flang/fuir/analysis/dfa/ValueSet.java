@@ -189,7 +189,7 @@ public class ValueSet extends Value
   /**
    * The values as an array.
    */
-  Value[] _componentsArray;
+  final Value[] _componentsArray;
 
 
   /*---------------------------  constructors  ---------------------------*/

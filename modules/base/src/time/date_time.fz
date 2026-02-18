@@ -46,12 +46,43 @@ is
     nano_second / 1E6
 
 
+  year_as_string => year.as_string 4 10
+  month_as_string => date_time.this.month.as_string 2 10
+  day_as_string => day.as_string 2 10
+  hour_as_string => hour.as_string 2 10
+  minute_as_string => minute.as_string 2 10
+  second_as_string => second.as_string 2 10
+  milli_second_as_string => milli_second.as_string 3 10
+  nano_second_as_string => nano_second.as_string 9 10
+
+
   # ISO 8601 string for this datetime
   # example: 2018-09-14T23:59:59.079
   #
   public redef as_string String =>
-    "{year.as_string 2 10}-{month.as_string 2 10}-{day.as_string 2 10}" +
-      "T{hour.as_string 2 10}:{minute.as_string 2 10}:{second.as_string 2 10}.{milli_second.as_string 3 10}"
+    "$year_as_string-$month_as_string-$day_as_string" +
+      "T$hour_as_string:$minute_as_string:$second_as_string.$milli_second_as_string"
+
+
+
+  # ISO 8601 string for this datetime
+  # example: 2018-09-14T23:59:59.079
+  #
+  public as_string(p time.precision) String =>
+    match p
+      time.pyear         =>  "$year_as_string"
+      time.pmonth        =>  "$year_as_string-$month_as_string"
+      time.pday          =>  "$year_as_string-$month_as_string-$day_as_string"
+      time.phour         => ("$year_as_string-$month_as_string-$day_as_string" +
+                              "T$hour_as_string")
+      time.pminute       => ("$year_as_string-$month_as_string-$day_as_string" +
+                              "T$hour_as_string:$minute_as_string")
+      time.psecond       => ("$year_as_string-$month_as_string-$day_as_string" +
+                              "T$hour_as_string:$minute_as_string:$second_as_string")
+      time.pmilli_second => ("$year_as_string-$month_as_string-$day_as_string" +
+                              "T$hour_as_string:$minute_as_string:$second_as_string.$milli_second_as_string")
+      time.pnano_second  => ("$year_as_string-$month_as_string-$day_as_string" +
+                              "T$hour_as_string:$minute_as_string:$second_as_string.$nano_second_as_string")
 
 
   # # NYI
@@ -83,10 +114,60 @@ is
     (y + y/4 - y/100 + y/400 + t[month-1] + day) % 7
 
 
+  # convert to unix time stamp
+  # seconds elapsed since 1970-01-01T00:00:00Z
+  #
+  public unix_time_stamp u64
+    pre debug: year >= 1970
+  =>
+    leap_days =>
+      ((year-1) / 4) - ((year-1) / 100) + ((year-1) / 400) - ((1969 / 4) - (1969 / 100) + (1969 / 400))
 
-  public type.from_seconds(n u64) time.date_time =>
-    # NYI: UNDER DEVELOPMENT: seconds from 1970-01-01 00:00:00 +0000
-    panic "NYI: UNDER DEVELOPMENT: date_time.type.from_seconds"
+    day_of_year =>
+      for res := day-1, res + days_in_month year m
+          m in 1..(month-1)
+      else
+        res
+
+    days => 365*(year-1970)+leap_days+day_of_year
+
+    time_seconds => hour*3600 + minute*60 + second
+
+    days.as_u64*86400 + time_seconds.as_u64
+
+
+  # create a date_time from given seconds since 1970-01-01T00:00:00
+  #
+  # NOTE: this does not adjust for leap seconds
+  #
+  public type.from_seconds(n u64) time.date_time
+    pre debug    : n < 3E11 # this restriction is arbitrary (year 11476)
+    post analysis: result >= (time.date_time 1970 1 1 0 0 0 0)
+  =>
+    year, r0 :=
+      for rest := n, rest - seconds_in_year
+          y := 1970, y+1
+          seconds_in_year := (u64 60)*60*24*(time.is_leap_year y ? (u64 366) : (u64 365))
+      while rest >= seconds_in_year
+      else
+        (y, rest)
+
+    month, r1 :=
+      for rest := r0, rest - seconds_in_month
+          m := 1, m+1
+          seconds_in_month := (u64 60)*60*24*(time.days_in_month year m).as_u64
+      while rest >= seconds_in_month
+      else
+        (m, rest)
+
+    seconds_in_day := (u64 60)*60*24
+    day, r2 := (r1 / seconds_in_day + 1, r1 % seconds_in_day)
+    seconds_in_hour := (u64 60)*60
+    hour, r3 := (r2 / seconds_in_hour, r2 % seconds_in_hour)
+    seconds_in_minute := u64 60
+    minute, second := (r3 / seconds_in_minute, r3 % seconds_in_minute)
+
+    time.date_time year month day.as_i32 hour.as_i32 minute.as_i32 second.as_i32 0
 
 
 
@@ -116,8 +197,33 @@ is
          else
            abort trit.no
 
-    ternary_compare.is_yes_or_unkown
+    ternary_compare.is_yes_or_unknown
 
+
+# is the given year a leap year?
+#
+is_leap_year(year i32) =>
+  (year % 4 = 0 & year % 100 != 0) |
+    ((year % 100 = 0) & (year % 400 = 0))
+
+
+# how many days does february have in the given year?
+#
+days_in_february(year i32) =>
+  if is_leap_year year then 29 else 28
+
+
+# the days in the months of the year
+# starting at january, february, ..., december
+#
+days_in_months(year i32) =>
+  [31, days_in_february year, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+
+
+# how many days does a given month of a given year have
+#
+days_in_month(year, month i32) =>
+  (days_in_months year)[month - 1]
 
 
 # is the given date valid?
@@ -126,30 +232,4 @@ public is_valid_date(year, month, day i32) bool
   pre
     debug: 1 ≤ month ≤ 12
 =>
-  # is the given year a leap year?
-  #
-  is_leap_year =>
-    (year % 4 = 0 & year % 100 != 0) |
-      ((year % 100 = 0) & (year % 400 = 0))
-
-
-  # how many days does february have in the given year?
-  #
-  days_in_february =>
-    if is_leap_year then 29 else 28
-
-
-  # the days in the months of the year
-  # starting at january, february, ..., december
-  #
-  days_in_months =>
-    [31, days_in_february, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
-
-
-  # how many days does a given month of a given year have
-  #
-  days_in_month =>
-    days_in_months[month - 1]
-
-
-  1 ≤ day ≤ days_in_month
+  1 ≤ day ≤ days_in_month year month

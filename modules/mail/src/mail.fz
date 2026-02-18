@@ -1,0 +1,183 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature mail
+#
+# -----------------------------------------------------------------------
+
+# NYI: BUG: test this with more than just ionos.de
+#
+public mail is
+
+
+  # send a plain text mail via ipv4 on port 587, using STARTTLS
+  #
+  public send_starttls(host, username, password, from, to, subject, text String) outcome unit =>
+    send net.family.ipv4 587 host username password from to subject text
+
+
+  # send a plain text mail via ipv4 on port 465, using implicit TLS
+  #
+  public send(host, username, password, from, to, subject, text String) outcome unit =>
+    send net.family.ipv4 465 host username password from to subject text
+
+
+  # NYI: UNDER DEVELOPMENT: this will just hang if any read_line_while condition never matches
+
+
+  # send a plain text mail
+  #
+  public send(family net.family.val, port u16, host, username, password, from, to, subject, text String) outcome unit
+    pre
+      debug: !host.contains_whitespace
+      debug: !from.contains_whitespace
+      debug: !to.contains_whitespace
+  =>
+
+    # to init the connection to the SMTP server
+    #
+    init => """
+      EHLO fuzion
+    """.replace "\n" "\r\n"
+
+
+    # the credentials separated by NUL, base64 encoded
+    cred =>
+      encodings.base64.encode_to_string "{username}\0{username}\0{password}".utf8.as_array
+
+
+    # from: https://en.wikipedia.org/wiki/List_of_SMTP_server_return_codes
+    #
+    auth_succeded => 235
+
+
+    mail_from => """
+      MAIL FROM:<$from>
+      """.replace "\n" "\r\n"
+
+    rcpt_to => """
+      RCPT TO:<$to>
+      """.replace "\n" "\r\n"
+
+    data => """
+      DATA
+      """.replace "\n" "\r\n"
+
+    mail_data => """
+      From: <$from>
+      To: $to
+      Subject: =?UTF-8?B?{encodings.base64.encode_to_string subject.utf8.as_array}?=
+      MIME-Version: 1.0
+      Content-Type: text/plain; charset="UTF-8"
+      Content-Transfer-Encoding: base64
+
+      {
+        # https://www.rfc-editor.org/rfc/rfc2045.html#section-6.8
+        b64 := encodings.base64.encode_to_string text.utf8.as_array
+        String.join_lines (b64.chunk 76)
+      }
+      .
+      """.replace "\n" "\r\n"
+
+    quit => """
+      QUIT
+      """.replace "\n" "\r\n"
+
+    # this lm is used for the raw netwok connection
+    #
+    net_lm : mutate is
+
+    # this lm is used for reader/writer of the ssl connection
+    #
+    ssl_lm : mutate is
+
+
+    # write and flush, cause an exception on any error
+    #
+    write_or_cause(LM type : mutate, s String) =>
+      (io.buffered LM).writer.env
+        .write s.utf8
+        .or_cause unit (x -> error "while writing $s, got $x")
+      (io.buffered LM).writer.env
+        .flush
+        .or_cause unit (x -> error "while flushing for $s, got $x")
+
+
+    # read a line, check if it starts with `expected`
+    # otherwise cause an exception using $where in the error string
+    #
+    read_or_cause(expected, where String) unit =>
+      l := (io.buffered ssl_lm).read_line ? s String => s | io.end_of_file => ""
+      if !l.starts_with expected
+        (exception unit).env.cause <| error "expected $expected after sending $where, got $l"
+
+
+    # do the get request
+    #
+    write_request ! ssl_lm =>
+
+      write_or_cause ssl_lm init
+
+      write_or_cause ssl_lm "AUTH PLAIN $cred\r\n"
+
+      # NYI: BUG: might end up blocking
+      _ := (io.buffered ssl_lm).read_line_while (s -> !s.starts_with $auth_succeded)
+
+      write_or_cause ssl_lm mail_from
+
+      read_or_cause "250" "MAIL FROM"
+
+      write_or_cause ssl_lm rcpt_to
+
+      read_or_cause "250" "RCPT TO"
+
+      write_or_cause ssl_lm data
+
+      read_or_cause "354" "DATA"
+
+      write_or_cause ssl_lm mail_data
+
+      read_or_cause "250" "the mails data"
+
+      write_or_cause ssl_lm quit
+
+      read_or_cause "221" "QUIT"
+
+
+    # connect and setup ssl
+    #
+    net_lm ! ()->
+      net
+        .client family net.protocol.tcp host port
+        .bind c->
+          c.with _ net_lm ()->
+            ssl_lm ! ()->
+              exception unit _ ()->
+
+                # do we need to initiate STARTTLS
+                #
+                if port = 587
+                  write_or_cause net_lm init
+                  _ := (io.buffered net_lm).read_line_while (s -> s != "250 STARTTLS")
+                  write_or_cause net_lm "STARTTLS\r\n"
+                  ok := (io.buffered net_lm).read_line
+                  if ok != "220 OK"
+                    (exception unit).env.cause (error "Expected 220 OK, got {ok}")
+
+                wolfssl _ net_lm ssl_lm write_request

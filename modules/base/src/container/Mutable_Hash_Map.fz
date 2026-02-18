@@ -184,7 +184,7 @@ is
 
   # remove key from map, returns the removed value
   #
-  public redef remove(k HK) option V =>
+  public redef remove(k HK) option V ! LM =>
 
 
     del(del_idx i64) option V =>
@@ -240,7 +240,7 @@ is
   public redef items Sequence (tuple HK V) =>
     contents.get.as_array
       .filter o->o??
-      .map (o -> o.get (panic "filter failed"))
+      .map (o -> o.or_else (panic "filter failed"))
 
 
   # create an immutable map from this

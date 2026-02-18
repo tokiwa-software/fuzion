@@ -1,3 +1,5 @@
+envir.vars
+fuzion.runtime.check_fault
 fuzion.runtime.contract_fault
 fuzion.runtime.fault
 fuzion.runtime.post_fault
@@ -7,3 +9,4 @@ io.Err
 io.Out
 io.file.delete
 panic
+state unit (cache#2 encodings.unicode.mappings.lower_case.lower_case).cache_item

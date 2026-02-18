@@ -35,7 +35,7 @@ public abstract_array
   ) : Sequence T is
 
 
-  # the length of the array
+  # length of this array
   #
   public length i32 => abstract
 
@@ -44,6 +44,26 @@ public abstract_array
   # reducing complexity from O(n) to O(1).
   #
   public redef count i32 => length
+
+
+  # is this Sequence empty?
+  #
+  public redef is_empty bool => length = 0
+
+
+  # get the first element of this Sequence
+  #
+  public redef first option T
+  => if is_empty then nil else index [ ] 0
+
+
+  # get the last element of this Sequence
+  #
+  # This may take time in O(count), in particular, it may not terminate
+  # for an infinite Sequence.
+  #
+  public redef last option T
+  => if is_empty then nil else index [ ] length-1
 
 
   # is this sequence known to be finite?  For infinite sequences, features like
@@ -62,7 +82,7 @@ public abstract_array
   #
   # Unlike for general Sequences, this performs in O(1).
   #
-  public redef is_valid_index(i i32) bool => 0 ≤ i ≤ length
+  public redef is_valid_index(i idx) bool => 0 ≤ i.as_i32 < length
 
 
   # create a list that consists of the elements of this Sequence except the first
@@ -93,6 +113,28 @@ public abstract_array
       slice 0 n
 
 
+  # drop the first elements for which predicate 'p' holds.
+  #
+  public redef drop_while (p T -> bool) Sequence T
+  =>
+    for idx in indices
+    until !p (index[] idx)
+      drop idx
+    else
+      []
+
+
+  # take the first elements for which predicate 'p' holds.
+  #
+  public redef take_while (p T -> bool) Sequence T
+  =>
+    for idx in indices
+    until !p (index[] idx)
+      take idx
+    else
+      abstract_array.this
+
+
   # a sequence of all valid indices to access this array. Useful e.g., for
   # `for`-loops:
   #
@@ -104,7 +146,7 @@ public abstract_array
 
   # get the contents of this array at the given index
   #
-  public redef index [ ] (i i32) T
+  public redef index [ ] (i idx) T
   =>
     abstract
 
@@ -153,14 +195,14 @@ public abstract_array
 
       # get the contents of this slice at the given index
       #
-      public redef index [ ] (i i32) T
+      public redef index [ ] (i idx) T
       =>
-        abstract_array.this[from+i]
+        abstract_array.this[from+i.as_i32]
 
 
       # redefines abstract_array.length for array.
       #
-      public redef length i32 => to-from
+      public redef length i32 := to-from
 
 
       # a slice of a slice, need to adjust from and to args
@@ -175,12 +217,11 @@ public abstract_array
   # create a cons cell for a list of this array starting at the given
   # index `i` and up to `to`
   #
-  array_cons(a A : container.abstract_array T, i, to i32) : Cons T (list T)
+  array_cons(a A : container.abstract_array T, i, to i32)
     pre
       debug: 0 ≤ i < to ≤ a.length
-  is
-    public redef head T => a[i]
-    public redef tail list T => (a.slice i+1 to).as_list
+  =>
+    a[i] : (a.slice i+1 to).as_list
 
 
   # map the array to a new array applying function f to all elements
@@ -251,7 +292,7 @@ public abstract_array
       else                 nil
 
 
-  # returns a copy of this array as a mutable array
+  # create a mutable copy of this array
   #
   public as_mutable(LM type : mutate) LM.array T =>
     data := fuzion.sys.internal_array_init T length
@@ -260,4 +301,4 @@ public abstract_array
     for x in data.indices do
       data[x] := abstract_array.this[x]
 
-    LM.env.array length.as_i64 data unit
+    LM.env.array data length.as_i64 unit
