@@ -23,11 +23,11 @@
 
 i18n_test is
 
-    # formats given date and currency using Japanese-format
-    main ! internationalization.provide =>
-        say "{internationalization.provide.env.date 30 5 2024}"
-        say "{internationalization.provide.env.currency 300000}"
+  # formats given date and currency using Japanese-format
+  main ! i18n.provide =>
+    say "{i18n.provide.env.date 30 5 2024}"
+    say "{i18n.provide.env.currency 300000}"
 
-    internationalization.provide.instate internationalization.japanese ()->{main}
+  i18n.provide.instate i18n.japanese ()->{main}
 
 

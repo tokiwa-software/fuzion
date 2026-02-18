@@ -17,25 +17,24 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature internationalization.german
+#  Source code of Fuzion standard library feature i18n.ISO
 #
 # -----------------------------------------------------------------------
 
-# german-- provides data for german format
+# ISO -- provides data for ISO 8601 format
 #
-public german: provide is
+public ISO : provide is
 
-    # format date using the most common German formatting rules, see
-    # https://en.wikipedia.org/wiki/Date_and_time_notation_in_Europe#Germany
+    # format date using ISO formatting rules, see https://en.wikipedia.org/wiki/ISO_8601
     #
-    # ex.`date 2024 4 12` results in `12.4.2024`.
+    # ex.`date 2024 4 12` results in `2024-04-12`.
     #
     public redef date(d i32, m i32, y i32) String
     =>
-        "{d}.{m}.{y}"
+        "{y}-{($m).pad_left("0", 2)}-{($d).pad_left("0", 2)}"
 
-    # ex.`currency 300000` results in `300000€`.
+    # ex.`currency 300000` results in `300000?`.
     #
-    public redef currency (c i32) String
+    public redef currency(c i32) String
     =>
-        "{c}€"
+        "{c}?"

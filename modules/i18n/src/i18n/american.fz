@@ -17,25 +17,25 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature internationalization.japanese
+#  Source code of Fuzion standard library feature i18n.american
 #
 # -----------------------------------------------------------------------
 
-# japanese -- provides data for japanese format
+# american -- provides data for american format
 #
-public japanese : provide is
+public american : provide is
 
-    # format date using the most common Japanese formatting rules, see
-    # https://en.wikipedia.org/wiki/Date_and_time_notation_in_Japan
+    # format date using the most common American formatting rules, see
+    # https://en.wikipedia.org/wiki/Date_and_time_notation_in_the_United_States
     #
-    # ex.`date 2024 4 12` results in `2024年 12月 4日`.
+    # ex.`date 2024 4 12` results in `12/04/2024`.
     #
-    public redef date(d i32, m i32, y i32) String
+    public redef date(d i32, m i32,y i32) String
     =>
-        "{y}年 {m}月 {d}日"
+        "{($m).pad_left "0" 2}/{($d).pad_left "0" 2}/{y}"
 
-    # ex.`currency 300000` results in `300000¥`.
+    # ex.`currency 300000` results in `300000$`.
     #
     public redef currency(c i32) String
     =>
-        "{c}¥"
+        "\${c}"

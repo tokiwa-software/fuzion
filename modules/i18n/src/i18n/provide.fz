@@ -17,7 +17,7 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature internationalization.provide
+#  Source code of Fuzion standard library feature i18n.provide
 #
 # -----------------------------------------------------------------------
 
@@ -27,36 +27,36 @@
 #
 public provide ref : effect is
 
-    # date -- operation of the internationalization.provide effect and formats a date specific to the installed location
+    # date -- operation of the i18n.provide effect and formats a date specific to the installed location
     #
     public date(d i32, m i32, y i32) String => abstract
 
-    # currency -- operation of the internationalization.provide effect and
+    # currency -- operation of the i18n.provide effect and
     # formats the currency specific to the installed location
     #
     public currency(c i32) String => abstract
 
-    # current -- operation of the internationalization.provide effect to be able to install the default effect
-    public current internationalization.provide ! envir.vars, internationalization.provide =>
-        internationalization.provide.install_default
-        internationalization.provide.env
+    # current -- operation of the i18n.provide effect to be able to install the default effect
+    public current i18n.provide ! envir.vars, i18n.provide =>
+        i18n.provide.install_default
+        i18n.provide.env
 
 
     public type.install_default unit ! envir.vars =>
 
-        if !internationalization.provide.is_instated
+        if !i18n.provide.is_instated
             l := envir.vars["LANG"].val ""
 
-            p internationalization.provide :=
+            p i18n.provide :=
                 if l.starts_with "de"
-                    internationalization.german
+                    i18n.german
                 else if l.starts_with "jp"
-                    internationalization.japanese
+                    i18n.japanese
                 else if l.starts_with "en"
-                    internationalization.american
+                    i18n.american
                 else if l.starts_with "kr"
-                    internationalization.korean
+                    i18n.korean
                 else
-                    internationalization.ISO
+                    i18n.ISO
 
-            internationalization.provide.type.default p
+            i18n.provide.type.default p

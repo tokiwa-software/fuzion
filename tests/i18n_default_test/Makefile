@@ -22,5 +22,6 @@
 # -----------------------------------------------------------------------
 
 override NAME = i18n_default_test
+FUZION_OPTIONS = -modules=i18n
 include ../simple.mk
 

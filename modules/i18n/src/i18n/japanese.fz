@@ -17,12 +17,25 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature internationalization
+#  Source code of Fuzion standard library feature i18n.japanese
 #
 # -----------------------------------------------------------------------
 
-# internationalization -- unit feature to group features related to specific 
-# geographical, political, or cultural regions such as formatting of dates, 
-# numbers, currencies, etc.
+# japanese -- provides data for japanese format
 #
-public internationalization is
+public japanese : provide is
+
+    # format date using the most common Japanese formatting rules, see
+    # https://en.wikipedia.org/wiki/Date_and_time_notation_in_Japan
+    #
+    # ex.`date 2024 4 12` results in `2024年 12月 4日`.
+    #
+    public redef date(d i32, m i32, y i32) String
+    =>
+        "{y}年 {m}月 {d}日"
+
+    # ex.`currency 300000` results in `300000¥`.
+    #
+    public redef currency(c i32) String
+    =>
+        "{c}¥"
