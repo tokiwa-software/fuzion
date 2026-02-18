@@ -40,7 +40,7 @@ is
 
   # circular buffer backing this writer
   #
-  buffer := (LM.circular_buffer u8).new buf_size.as_i64 0
+  buffer := (LM.Circular_Buffer u8).new buf_size.as_i64 0
 
 
 
