@@ -221,7 +221,7 @@ public abstract_array
     pre
       debug: 0 ≤ i < to ≤ a.length
   =>
-    (list T).of a[i] (a.slice i+1 to).as_list trit.yes
+    (list T).of_finite a[i] (a.slice i+1 to).as_list
 
 
   # map the array to a new array applying function f to all elements

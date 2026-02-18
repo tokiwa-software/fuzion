@@ -746,10 +746,22 @@ is
   # convenience routine to create a list from head h and lazy tail t.
   #
   public type.of(h T, t Lazy (list T), f trit) list T =>
-    ref : Cons T (list T) is
+    _ : Cons T (list T) is
       public redef head T => h
       public redef tail list T => t
       public redef finite trit => f
+
+
+  # convenience routine to create a known finite list from head h and lazy tail t.
+  #
+  public type.of_finite(h T, t Lazy (list T)) list T =>
+    of h t trit.yes
+
+
+  # convenience routine to create a known infinite list from head h and lazy tail t.
+  #
+  public type.of_infinite(h T, t Lazy (list T)) list T =>
+    of h t trit.no
 
 
 
