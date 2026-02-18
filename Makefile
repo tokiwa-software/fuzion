@@ -521,7 +521,7 @@ $(MOD_WEBSERVER): $(MOD_HTTP) $(FZ) $(shell find $(FZ_SRC)/modules/webserver/src
 	cp -rf $(FZ_SRC)/modules/webserver $(@D)
 	$(FZ) -modules=http -sourceDirs=$(BUILD_DIR)/modules/webserver/src -saveModule=$@
 
-$(MOD_I18N): $(FZ) $(shell find $(FZ_SRC)/modules/i18n/src -name "*.fz")
+$(MOD_I18N): $(MOD_BASE) $(FZ) $(shell find $(FZ_SRC)/modules/i18n/src -name "*.fz")
 	rm -rf $(@D)/i18n
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC)/modules/i18n $(@D)
