@@ -17,13 +17,27 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature io.file.append
+#  Source code of Fuzion standard library feature os.platform
 #
 # -----------------------------------------------------------------------
 
-
-# append `a`.as_string to file `f`
+# unit type - denoting Windows
 #
-public append(p path, a Any) outcome unit =>
-  use p mode.append ()->
-    writer.write a.as_string.utf8
+public windows is
+
+# unit type - denoting POSIX
+#
+public posix is
+
+# get the platform we are running on
+#
+public platform : choice os.windows os.posix is
+
+  public type.get platform =>
+    # NYI: UNDER DEVELOPMENT: better make this an intrinsic
+    if (envir.vars["OS"].val "").lower_case.contains "windows"
+      os.windows
+    else
+      os.posix
+
+

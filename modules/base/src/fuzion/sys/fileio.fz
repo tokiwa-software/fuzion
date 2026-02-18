@@ -73,8 +73,8 @@ module fileio is
   #
   module delete(
                 # the (relative or absolute) file name, using platform specific path separators
-                path String) outcome unit =>
-    arr := fuzion.sys.c_string path
+                path path) outcome unit =>
+    arr := fuzion.sys.c_string $path
     if fzE_rm arr != 0
       error "an error occurred while performing the delete operation on the following file/dir: \"$path\""
 
@@ -85,13 +85,13 @@ module fileio is
   #
   module move(
               # the old (relative or absolute) file name, using platform specific path separators
-              old_path String,
+              old path,
               # the new (relative or absolute) file name, using platform specific path separators
-              new_path String) outcome unit =>
-    arr0 := fuzion.sys.c_string old_path
-    arr1 := fuzion.sys.c_string new_path
+              new path) outcome unit =>
+    arr0 := fuzion.sys.c_string $old
+    arr1 := fuzion.sys.c_string $new
     if fzE_file_move arr0 arr1 != 0
-      error "an error occurred while performing the following move operation: \"$old_path\" --> \"$new_path\""
+      error "an error occurred while performing the following move operation: \"$old\" --> \"$new\""
 
 
   # creates a directory using the specified path
@@ -99,8 +99,8 @@ module fileio is
   #
   module create_dir(
                     # the (relative or absolute) dir name, using platform specific path separators
-                    path String) outcome unit =>
-    arr := fuzion.sys.c_string path
+                    path path) outcome unit =>
+    arr := fuzion.sys.c_string $path
     if fzE_mkdir arr != 0
       error "an error occurred while creating the following directory: \"$path\""
 
@@ -110,12 +110,12 @@ module fileio is
   # returns an error in failure
   #
   module open(
-              # a Fuzion Object represention the path for the source to be opened
-              path String,
+              # a Fuzion Object representing the path for the source to be opened
+              path path,
               # a flag to specify the open method (Read: 0, Write: 1, Append: 2)
               flag i32) outcome File_Descriptor =>
     open_results := fuzion.sys.internal_array_init i64 1  # [error number]
-    res := fzE_file_open (fuzion.sys.c_string path) open_results.data flag
+    res := fzE_file_open (fuzion.sys.c_string $path) open_results.data flag
     if open_results[0] = 0
       res
     else
@@ -166,9 +166,9 @@ module fileio is
   # returns an integer that is intended to be used as an opaque reference
   # to the opened directory, or an error if one was encountered.
   #
-  module open_dir(path String) outcome Directory_Descriptor =>
+  module open_dir(path path) outcome Directory_Descriptor =>
     open_results := fuzion.sys.internal_array_init i64 1  # [error number]
-    res := fzE_opendir (fuzion.sys.c_string path) open_results.data
+    res := fzE_opendir (fuzion.sys.c_string $path) open_results.data
     if open_results[0] = 0
       res
     else

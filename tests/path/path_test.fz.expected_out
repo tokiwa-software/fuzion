@@ -87,9 +87,9 @@ OUT: 'a/b/c.fz'
 
 NEGATIVE:
 
-(precondition, debug: str != "/..")
-(precondition, debug: !str.starts_with "/../")
-(precondition, debug: !str.starts_with "/../")
+(precondition, debug: str != "{separator}..")
+(precondition, debug: !str.starts_with "{separator}..{separator}")
+(precondition, debug: !str.starts_with "{separator}..{separator}")
 (precondition, safety: is_absolute ? !names.contains ".." : !(names.drop_while ="..").contains "..")
 (precondition, safety: is_absolute ? !names.contains ".." : !(names.drop_while ="..").contains "..")
 (precondition, safety: is_absolute ? !names.contains ".." : !(names.drop_while ="..").contains "..")

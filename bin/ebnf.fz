@@ -104,6 +104,7 @@ main =>
     ebnf_header := "grammar Fuzion;$new_line$new_line"
 
     ebnf := envir.args.drop 1
+      .map (s->path.of s)
       .map src->
         if !io.file.exists src
           panic "file not found '$src'."
