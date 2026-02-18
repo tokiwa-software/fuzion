@@ -142,6 +142,7 @@ MOD_MAIL              = $(BUILD_DIR)/modules/mail.fum
 MOD_WEB               = $(BUILD_DIR)/modules/web.fum
 MOD_SODIUM            = $(BUILD_DIR)/modules/sodium.fum
 MOD_CRYPTO            = $(BUILD_DIR)/modules/crypto.fum
+MOD_TOKIWA            = $(BUILD_DIR)/modules/tokiwa.fum
 MOD_WEBSERVER         = $(BUILD_DIR)/modules/webserver.fum
 
 MOD_FZ_CMD_DIR = $(BUILD_DIR)/modules/fz_cmd
@@ -212,6 +213,7 @@ FZ_MODULES = \
 			$(MOD_WEB) \
 			$(MOD_SODIUM) \
 			$(MOD_CRYPTO) \
+			$(MOD_TOKIWA) \
 			$(MOD_WEBSERVER)
 
 C_FILES = $(shell find $(FZ_SRC) \( -path ./build -o -path ./.git \) -prune -o -name '*.c' -print)
@@ -513,6 +515,12 @@ $(MOD_CRYPTO): $(MOD_SODIUM) $(FZ) $(shell find $(FZ_SRC)/modules/crypto/src -na
 	cp -rf $(FZ_SRC)/modules/crypto $(@D)
 	$(FZ) -modules=sodium -sourceDirs=$(BUILD_DIR)/modules/crypto/src -saveModule=$@
 
+$(MOD_TOKIWA): $(MOD_WEB) $(FZ) $(shell find $(FZ_SRC)/modules/tokiwa/src -name "*.fz")
+	rm -rf $(@D)/tokiwa
+	mkdir -p $(@D)
+	cp -rf $(FZ_SRC)/modules/tokiwa $(@D)
+	$(FZ) -modules=web -sourceDirs=$(BUILD_DIR)/modules/tokiwa/src -saveModule=$@
+
 $(MOD_WEBSERVER): $(MOD_HTTP) $(FZ) $(shell find $(FZ_SRC)/modules/webserver/src -name "*.fz")
 	rm -rf $(@D)/webserver
 	mkdir -p $(@D)
@@ -575,7 +583,7 @@ logo: $(BUILD_DIR)/assets/logo.svg $(BUILD_DIR)/assets/logo_bleed.svg $(BUILD_DI
 	cp $^ $(FZ_SRC)/assets/
 
 $(BUILD_DIR)/bin/run_tests: $(FZ) $(FZ_MODULES) $(FZ_SRC)/bin/run_tests.fz
-	$(FZ) -modules=lock_free,web -c -CLink=wolfssl -CInclude="wolfssl/options.h wolfssl/ssl.h" $(FZ_SRC)/bin/run_tests.fz -o=$@
+	$(FZ) -modules=lock_free,tokiwa -c -CLink=wolfssl -CInclude="wolfssl/options.h wolfssl/ssl.h" $(FZ_SRC)/bin/run_tests.fz -o=$@
 
 # phony target to run Fuzion tests and report number of failures
 .PHONY: run_tests
