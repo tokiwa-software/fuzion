@@ -588,7 +588,7 @@ $(BUILD_DIR)/bin/run_tests: $(FZ) $(FZ_MODULES) $(FZ_SRC)/bin/run_tests.fz
 .PHONY: run_tests
 run_tests: run_tests_fuir run_tests_jvm run_tests_c run_tests_effect run_tests_jar
 
-TEST_DEPENDENCIES = $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests $(BUILD_DIR)/bin/run_tests $(BUILD_DIR)/fuzion.jar
+TEST_DEPENDENCIES = $(FZ_MODULES) $(MOD_COMPILER) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests $(BUILD_DIR)/bin/run_tests $(BUILD_DIR)/fuzion.jar
 
 # phony target to run Fuzion tests using effects and report number of failures
 .PHONY .SILENT: run_tests_effect

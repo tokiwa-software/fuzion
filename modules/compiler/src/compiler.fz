@@ -34,15 +34,14 @@ public compile(code String) unit =>
     options := fe.FrontEndOptions
       .new
         0 # verbose,
-        (Java.java.nio.file.Path.of (Java.java.net.URI.new "file://$fuzion_home").or_panic) # fuzionHome,
+        (Java.java.nio.file.Path.of (Java.java.lang.__jString.new fuzion_home) []) # fuzionHome,
         true # loadBaseMod,
         false # eraseInternalNamesInMod,
         (flang.util.List.new (Java.java.lang.__jString.new "base")) # modules,
         (flang.util.List.new) # moduleDirs,
         (fuzion.jvm.env.null Java.dev.flang.util.List).or_panic # dumpModules,
         0 # fuzionDebugLevel,
-        false # fuzionSafety,
-        true # enableUnsafeIntrinsics,
+        true # fuzionSafety,
         (fuzion.jvm.env.null Java.dev.flang.util.List).or_panic # sourceDirs,
         false # readStdin,
         (code.utf8.map (.cast_to_i8)) # executeCode,
@@ -56,7 +55,7 @@ public compile(code String) unit =>
     front_end := fe.FrontEnd.new options
 
     mir   := front_end.createMIR
-    fuir  := flang.fuir.GeneratingFUIR.new front_end mir
+    fuir  := flang.fuir.GeneratingFUIR.new (fuzion.jvm.env.cast Java.dev.flang.fe.FeatureLookup front_end.mainModule).val mir
     dfuir := flang.fuir.analysis.dfa.DFA
                 .new options fuir
                 .new__fuir
