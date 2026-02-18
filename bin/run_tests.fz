@@ -46,8 +46,8 @@ envir_var_kv := [
 ].map k->
   envir.vars[k].bind v->
     (k,v)
- .filter o->o.ok
- .map o->o.val
+ .filter (.ok)
+ .map (.val)
  .as_array
 
 # envir vars as map
@@ -55,10 +55,10 @@ envir_var_kv := [
 envir_vars :=
   (container.ordered_map
     (envir_var_kv
-      .map x->x.0
+      .map (.0)
       .as_array)
     (envir_var_kv
-      .map x->x.1
+      .map (.1)
       .as_array))
 
 # max time a test may take
@@ -291,8 +291,7 @@ main =>
     say_section "run_tests.failures END"
 
     failed_test_names := failed_tests
-                           .map x->x.split[0]
-                           .map x->(x.substring 14) # remove "./build/tests/"
+                           .map (.split[0].substring 14) # remove "./build/tests/"
                            .as_string " "
 
     say """
