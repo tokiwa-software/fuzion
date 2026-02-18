@@ -575,7 +575,7 @@ logo: $(BUILD_DIR)/assets/logo.svg $(BUILD_DIR)/assets/logo_bleed.svg $(BUILD_DI
 	cp $^ $(FZ_SRC)/assets/
 
 $(BUILD_DIR)/bin/run_tests: $(FZ) $(FZ_MODULES) $(FZ_SRC)/bin/run_tests.fz
-	$(FZ) -modules=lock_free,web,http,wolfssl -c -CLink=wolfssl -CInclude="wolfssl/options.h wolfssl/ssl.h" $(FZ_SRC)/bin/run_tests.fz -o=$@
+	$(FZ) -modules=lock_free,web -c -CLink=wolfssl -CInclude="wolfssl/options.h wolfssl/ssl.h" $(FZ_SRC)/bin/run_tests.fz -o=$@
 
 # phony target to run Fuzion tests and report number of failures
 .PHONY: run_tests
@@ -647,6 +647,7 @@ SYNTAX_CHECK_MODULES = terminal,clang,lock_free,java.base,java.datatransfer,java
 .PHONY: syntaxcheck
 syntaxcheck: min-java
 	find ./examples/ -name '*.fz' -print0 | xargs -0L1 $(FZ) -modules=$(SYNTAX_CHECK_MODULES) -noBackend
+	find ./benchmarks/ -name '*.fz' -print0 | xargs -0L1 $(FZ) -modules=$(SYNTAX_CHECK_MODULES) -noBackend
 	find ./bin/ -name '*.fz' -print0 | xargs -0L1 $(FZ) -modules=$(SYNTAX_CHECK_MODULES) -noBackend
 
 .PHONY: add_simple_test
@@ -686,9 +687,10 @@ $(FUZION_RT): $(BUILD_DIR)/include $(FUZION_FILES_RT)
 ifeq ($(OS),Windows_NT)
 	clang --target=x86_64-w64-windows-gnu -Wall -Werror -O3 -shared \
 	-DPTW32_STATIC_LIB \
+	-DGC_THREADS -DGC_WIN32_THREADS \
 	-fno-trigraphs -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -std=c11 \
 	$(BUILD_DIR)/include/win.c $(BUILD_DIR)/include/shared.c -o $@ \
-	-lMswsock -lAdvApi32 -lWs2_32
+	-lMswsock -lAdvApi32 -lWs2_32 -lgc
 else
 	clang -Wall -Werror -O3 -shared -fPIC \
 	-fno-trigraphs -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -std=c11 \
@@ -724,6 +726,10 @@ include $(FZ_SRC)/docs.mk
 include $(FZ_SRC)/tools.mk
 
 # NYI: CLEANUP: move included makefiles to subfolder
+
+.PHONY: debian_package
+debian_package:
+	dpkg-buildpackage -us -uc
 
 
 # builds a *fat* jar containing all java classes

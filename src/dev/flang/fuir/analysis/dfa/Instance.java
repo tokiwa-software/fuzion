@@ -72,7 +72,7 @@ public class Instance extends Value
 
 
   /**
-   * Site of the call that created this instance, -1 if the call site is not
+   * Site of the call that created this instance, NO_SITE if the call site is not
    * known, i.e., the call is coming from intrinsic call or the main entry
    * point.
    *
@@ -170,9 +170,9 @@ public class Instance extends Value
           {
             _dfa.wasChanged(() -> "setField: new values " + fv + " (was " + oldv + ") for " + this);
           }
+        _fields.put(field, v);
       }
     dfa._writtenFields.set(field);
-    _fields.put(field, v);
   }
 
 

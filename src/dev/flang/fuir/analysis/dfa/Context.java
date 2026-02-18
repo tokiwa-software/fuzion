@@ -48,15 +48,6 @@ public interface Context
   static class MainEntryPoint extends ANY implements Context
   {
     /**
-     * Return a unique id for the call or main entry point context.
-     */
-    @Override
-    public int uniqueCallId()
-    {
-      return -1;
-    }
-
-    /**
      * Effect-environment in this context, null if none.
      */
     @Override
@@ -98,13 +89,6 @@ public interface Context
 
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * Return a unique id for the call or main entry point context.
-   */
-  abstract int uniqueCallId();
-
 
   /**
    * Effect-environment in this context, null if none.

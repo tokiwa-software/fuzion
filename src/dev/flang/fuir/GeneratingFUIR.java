@@ -607,8 +607,8 @@ public class GeneratingFUIR extends FUIR
         var s = SpecialClazzes.c_NOT_FOUND;
         if (cl.isRef() == cl.feature().isRef())  // not an boxed or explicit value clazz
           {
-            // NYI: OPTIMIZATION: Avoid creating all feature qualified names!
-            s = switch (cl.feature().qualifiedName())
+            // NOTE: this only works for features in universe!
+            s = switch (cl.feature().featureName().baseName())
               {
               case FuzionConstants.ANY_NAME    -> SpecialClazzes.c_Any         ;
               case FuzionConstants.I8_NAME     -> SpecialClazzes.c_i8          ;
@@ -621,7 +621,6 @@ public class GeneratingFUIR extends FUIR
               case FuzionConstants.U64_NAME    -> SpecialClazzes.c_u64         ;
               case FuzionConstants.F32_NAME    -> SpecialClazzes.c_f32         ;
               case FuzionConstants.F64_NAME    -> SpecialClazzes.c_f64         ;
-              case FuzionConstants.UNIT_NAME   -> SpecialClazzes.c_unit        ;
               case "void"                      -> SpecialClazzes.c_void        ;
               case "bool"                      -> SpecialClazzes.c_bool        ;
               case "const_string"              -> SpecialClazzes.c_const_string;
@@ -634,15 +633,18 @@ public class GeneratingFUIR extends FUIR
               case "Mapped_Memory"             -> SpecialClazzes.c_Mapped_Memory;
               case "Native_Ref"                -> SpecialClazzes.c_Native_Ref;
               case "Thread"                    -> SpecialClazzes.c_Thread;
-              case "fuzion.runtime.stackoverflow" -> SpecialClazzes.c_fuzion_runtime_stackoverflow;
+              case "stackoverflow"             -> SpecialClazzes.c_fuzion_runtime_stackoverflow;
               default                          -> SpecialClazzes.c_NOT_FOUND   ;
               };
-            if (s != SpecialClazzes.c_NOT_FOUND)
+            if (s != SpecialClazzes.c_NOT_FOUND && s._argCount == cl.feature().arguments().size())
               {
+                if (CHECKS) check
+                  (_specialClazzes[s.ordinal()] == null);
                 _specialClazzes[s.ordinal()] = result;
+                cl._specialClazzId = s;
               }
           }
-        cl._specialClazzId = s;
+
         if (SHOW_NEW_CLAZZES) System.out.println("NEW CLAZZ "+cl);
         cl.init(fuirId);
 
@@ -2280,16 +2282,7 @@ public class GeneratingFUIR extends FUIR
         var outerClazz = id2clazz(cl);
         var b = (Box) getExpr(s);
         Clazz vc = clazz(b._value, outerClazz, _inh.get(s - SITE_BASE));
-        var rc = outerClazz.handDown(b.type(), _inh.get(s - SITE_BASE));
-        if (rc.isRef() &&
-            outerClazz.feature() != Types.resolved.f_type_as_value) // NYI: ugly special case
-          {
-            rc = vc.asRef();
-          }
-        else
-          {
-            rc = vc;
-          }
+        var rc = outerClazz.handDown(b.type(), _inh.get(s - SITE_BASE)).isRef() ? vc.asRef() : vc;
         res = new Pair<>(vc, rc);
         _siteClazzCache.put(s, res);
       }
@@ -2367,8 +2360,7 @@ public class GeneratingFUIR extends FUIR
       (s >= SITE_BASE,
        s < SITE_BASE + _allCode.size(),
        withinCode(s),
-       codeAt(s) == ExprKind.Call   ||
-       codeAt(s) == ExprKind.Assign    );
+       codeAt(s).isCallOrAssign());
 
     var res = _siteClazzCache.get(s);
     if (res == null && !_lookupDone)
@@ -2390,8 +2382,7 @@ public class GeneratingFUIR extends FUIR
       (s >= SITE_BASE,
        s < SITE_BASE + _allCode.size(),
        withinCode(s),
-       codeAt(s) == ExprKind.Call   ||
-       codeAt(s) == ExprKind.Assign    );
+       codeAt(s).isCallOrAssign());
 
     var cl = clazzAt(s);
     var outerClazz = id2clazz(cl);
@@ -2422,7 +2413,7 @@ public class GeneratingFUIR extends FUIR
   }
 
 
-  public Clazz calledInner(AbstractCall c, Clazz outerClazz, Clazz explicitTarget, List<AbstractCall> inh)
+  private Clazz calledInner(AbstractCall c, Clazz outerClazz, Clazz explicitTarget, List<AbstractCall> inh)
   {
     if (PRECONDITIONS) require
       (Errors.any() || c.calledFeature() != null && c.target() != null);
@@ -2441,14 +2432,6 @@ public class GeneratingFUIR extends FUIR
     var dynamic = c.isDynamic() && tclazz.isRef();
     var needsCode = !dynamic || explicitTarget != null;
     var typePars = outerClazz.actualGenerics(c.actualTypeParameters(), inh);
-    // NYI: HACK
-    // can happen e.g. in compile_time_type_casts
-    // since toStack currently puts illegal code in _allCode
-    // because it does not consider the context, yet
-    if (tclazz.isVoidType() || !tclazz.feature().inheritsFrom(cf.outer()))
-      {
-        return null;
-      }
     if (!tclazz.isVoidType())
       {
         innerClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars), c.select(), c.isInheritanceCall());
@@ -2590,8 +2573,7 @@ public class GeneratingFUIR extends FUIR
       (s >= SITE_BASE,
        s < SITE_BASE + _allCode.size(),
        withinCode(s),
-       codeAt(s) == ExprKind.Call   ||
-       codeAt(s) == ExprKind.Assign    ,
+       codeAt(s).isCallOrAssign(),
        accessIsDynamic(s));
 
     var result = _accessedClazzes.get(s);
@@ -2618,8 +2600,7 @@ public class GeneratingFUIR extends FUIR
       (s >= SITE_BASE,
        s < SITE_BASE + _allCode.size(),
        withinCode(s),
-       codeAt(s) == ExprKind.Call   ||
-       codeAt(s) == ExprKind.Assign    );
+       codeAt(s).isCallOrAssign());
 
     int[] result;
     if (accessIsDynamic(s))
@@ -2667,8 +2648,7 @@ public class GeneratingFUIR extends FUIR
           (s >= SITE_BASE,
            s < SITE_BASE + _allCode.size(),
            withinCode(s),
-           codeAt(s) == ExprKind.Call   ||
-           codeAt(s) == ExprKind.Assign    ,
+           codeAt(s).isCallOrAssign(),
            tclazz >= CLAZZ_BASE &&
            tclazz < CLAZZ_BASE  + _clazzes.size());
 
@@ -2748,8 +2728,7 @@ public class GeneratingFUIR extends FUIR
       (s >= SITE_BASE,
        s < SITE_BASE + _allCode.size(),
        withinCode(s),
-       codeAt(s) == ExprKind.Assign ||
-       codeAt(s) == ExprKind.Call  );
+       codeAt(s).isCallOrAssign());
 
     var cl = clazzAt(s);
     var outerClazz = id2clazz(cl);
@@ -2780,8 +2759,7 @@ public class GeneratingFUIR extends FUIR
       (s >= SITE_BASE,
        s < SITE_BASE + _allCode.size(),
        withinCode(s),
-       codeAt(s) == ExprKind.Assign ||
-       codeAt(s) == ExprKind.Call  );
+       codeAt(s).isCallOrAssign());
 
     var tclazz = _accessedTarget.get(s);
     if (tclazz == null)

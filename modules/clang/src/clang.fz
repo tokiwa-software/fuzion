@@ -143,7 +143,7 @@ public clang is
     # NYI: CLEANUP: support local mutates
     _ := mut
 
-    tu := clang_parseTranslationUnit idx (header_file.as_c_string mutate) ((mutate.array Native_Ref).empty mutate) 0 ffi.null 0 0
+    tu := clang_parseTranslationUnit idx (header_file.as_c_string mutate) ((mutate.array Native_Ref).empty) 0 ffi.null 0 0
 
     if ffi.is_null tu
       error "failed to open header file: $header_file"

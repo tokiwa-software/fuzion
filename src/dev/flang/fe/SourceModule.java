@@ -32,7 +32,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 
 import java.nio.ByteBuffer;
-
+import java.nio.channels.Channels;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -318,17 +318,14 @@ public class SourceModule extends Module implements SrcModule
               }
             switch (main.kind())
               {
-              case Field    : FeErrors.mainFeatureMustNotBeField    (main); break;
-              case Abstract : FeErrors.mainFeatureMustNotBeAbstract (main); break;
-              case Intrinsic: FeErrors.mainFeatureMustNotBeIntrinsic(main); break;
-              case Choice   : FeErrors.mainFeatureMustNotBeChoice   (main); break;
-              case Routine  :
+              case Field, Abstract, Intrinsic, Choice -> FeErrors.mainFeatureMustNotBeField(main);
+              case Function, Constructor, RefConstructor -> {
                 if (!main.typeArguments().isEmpty())
                   {
                     FeErrors.mainFeatureMustNotHaveTypeArguments(main);
                   }
-                break;
-              default       : FeErrors.mainFeatureMustNot(main, "be of kind " + main.kind() + ".");
+              }
+              default -> FeErrors.mainFeatureMustNot(main, "be of kind " + main.kind() + ".");
               }
           }
       }
@@ -800,9 +797,10 @@ part of the (((inner features))) declarations of the corresponding
         s = new TreeMap<>();
         d._declaredFeatures = s;
         for (var m : _dependsOn)
-          { // NYI: properly obtain set of declared features from m, do we need
+          {
+            // NYI: UNDER DEVELOPMENT: properly obtain set of declared features from m, do we need
             // to take care for the order and dependencies between modules?
-            var md = m.declaredFeatures(outer);
+            var md = m.declaredFeaturesShallow(outer);
             if (md != null)
               {
                 for (var e : md.entrySet())
@@ -1176,6 +1174,9 @@ A post-condition of a feature that does not redefine an inherited feature must s
    */
   public List<FeatureAndOuter> lookup(AbstractFeature outer, String name, Expr use, boolean traverseOuter, boolean hidden)
   {
+    if (PRECONDITIONS) require
+      (outer != null);
+
     List<FeatureAndOuter> result = new List<>();
     for (var n : ParsedOperatorCall.lookupNames(name))
       {
@@ -1210,7 +1211,8 @@ A post-condition of a feature that does not redefine an inherited feature must s
   private List<FeatureAndOuter> lookup0(AbstractFeature outer, String name, Expr use, boolean traverseOuter, boolean hidden)
   {
     if (PRECONDITIONS) require
-      (_res.state(outer).atLeast(State.RESOLVED_INHERITANCE) || outer.isUniverse());
+      (outer != null,
+       _res.state(outer).atLeast(State.RESOLVED_INHERITANCE) || outer.isUniverse());
 
     List<FeatureAndOuter> result = new List<>();
     var curOuter = outer;
@@ -1659,7 +1661,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
                         // we must replace `option A` by `option B`, i.e.,
                         // replace original's type parameters by redefinition's:
                         //
-                        t -> t.applyTypePars(original, redefinition.generics().asActuals()));
+                        t -> t.applyTypePars(original, redefinition.genericsAsActuals()));
   }
 
 
@@ -1759,12 +1761,7 @@ A xref:fuzion_value_argument[value argument] must be redefined using a type that
         var result_o = result_os.size() == 1 ? result_os.get(0)
                                              : Types.t_ERROR;
         var result_r = f.resultType();
-        if (o.isConstructor() ||
-                 switch (o.kind())
-                 {
-                   case Routine, Field, Intrinsic, Abstract, Native -> false; // ok
-                   case TypeParameter, OpenTypeParameter, Choice    -> true;  // not ok
-                 })
+        if (!isLegalRedef(o))
           {
             /*
     // tag::fuzion_rule_PARS_REDEF_KIND[]
@@ -1773,12 +1770,7 @@ A feature that is a constructor, choice or a type parameter may not be redefined
             */
             AstErrors.cannotRedefine(f, o);
           }
-        else if (f.isConstructor() ||
-                 switch (f.kind())
-                 {
-                   case Routine, Field, Intrinsic, Abstract, Native -> false; // ok
-                   case TypeParameter, OpenTypeParameter, Choice    -> true;  // not ok
-                 })
+        else if (!isLegalRedef(f))
           {
             /*
     // tag::fuzion_rule_PARS_REDEF_AS_KIND[]
@@ -1832,6 +1824,16 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
     checkLegalQualThisType(f);
     checkLegalDefinesType(f);
     checkIllegalIntrinsic(f);
+  }
+
+
+  private boolean isLegalRedef(AbstractFeature f)
+  {
+    return switch (f.kind())
+      {
+        case Function, Field, Intrinsic, Abstract, Native -> true;
+        case TypeParameter, OpenTypeParameter, Choice, Constructor, RefConstructor -> false;
+      };
   }
 
 
@@ -1892,13 +1894,13 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
       {
         f.code().visit(new FeatureVisitor()
         {
-          private Stack<Object> stack = new Stack<Object>();
-          @Override public void actionBefore(Block b) { if (b._newScope) { stack.push(b); } }
-          @Override public void actionBefore(AbstractCase c, AbstractMatch m) { stack.push(c); }
-          @Override public void actionAfter(Block b)  { if (b._newScope) { stack.pop(); } }
-          @Override public void actionAfter (AbstractCase c, AbstractMatch m) { stack.pop(); }
+          private int scopeDepth = 0;
+          @Override public void actionBefore(Block b) { if (b._newScope) { scopeDepth++; } }
+          @Override public void actionBefore(AbstractCase c, AbstractMatch m) { scopeDepth++; }
+          @Override public void actionAfter(Block b)  { if (b._newScope) { scopeDepth--; } }
+          @Override public void actionAfter (AbstractCase c, AbstractMatch m) { scopeDepth--; }
           @Override public Expr action(Feature fd, AbstractFeature outer) {
-            if (!stack.isEmpty() && !fd.visibility().equals(Visi.PRIV))
+            if (scopeDepth>0 && !fd.visibility().equals(Visi.PRIV))
               {
                 AstErrors.illegalVisibilityModifier(fd);
               }
@@ -2150,6 +2152,23 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
         comma = ", ";
       }
     return r.toString();
+  }
+
+
+  /**
+   * Write this SourceModule to a fum-file at Path p
+   */
+  public void writeToFile(Path p)
+  {
+    try (var os = Files.newOutputStream(p))
+      {
+        Channels.newChannel(os).write(data());
+      }
+    catch (IOException io)
+      {
+        Errors.fatal("-saveModule: I/O error when writing module file",
+                      "While trying to write file '"+ p + "' received '" + io + "'");
+      }
   }
 
 }

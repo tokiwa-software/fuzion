@@ -473,8 +473,8 @@ public class Html extends ANY
 
     // Constructors
     var allConstructors =  new TreeSet<AbstractFeature>();
-    allConstructors.addAll(map.getOrDefault(AbstractFeature.Kind.Routine, new TreeSet<AbstractFeature>()));
-    allConstructors.removeIf(f->!f.isConstructor());
+    allConstructors.addAll(map.getOrDefault(AbstractFeature.Kind.Constructor, new TreeSet<AbstractFeature>()));
+    allConstructors.addAll(map.getOrDefault(AbstractFeature.Kind.RefConstructor, new TreeSet<AbstractFeature>()));
 
     var normalConstructors = allConstructors.stream().filter(f->!f.isTypeFeature()).collect(Collectors.toCollection(TreeSet::new));
     var typeConstructors   = allConstructors.stream().filter(f->f.isTypeFeature()).collect(Collectors.toCollection(TreeSet::new));
@@ -484,8 +484,7 @@ public class Html extends ANY
     // it's not possible to get an instance of a function feature, so no features can be called on it
     if (!signatureWithArrow(outer))
       {
-        allFunctions.addAll(map.getOrDefault(AbstractFeature.Kind.Routine, new TreeSet<AbstractFeature>()));
-        allFunctions.removeIf(f->f.isConstructor());
+        allFunctions.addAll(map.getOrDefault(AbstractFeature.Kind.Function, new TreeSet<AbstractFeature>()));
         allFunctions.addAll(map.getOrDefault(AbstractFeature.Kind.Abstract, new TreeSet<AbstractFeature>()));
         allFunctions.addAll(map.getOrDefault(AbstractFeature.Kind.Intrinsic, new TreeSet<AbstractFeature>()));
         allFunctions.addAll(map.getOrDefault(AbstractFeature.Kind.Native, new TreeSet<AbstractFeature>()));
@@ -506,8 +505,7 @@ public class Html extends ANY
     if (!signatureWithArrow(outer) && !outer.isUniverse())
       {
         var allUniverseFeat = mapOfDeclaredFeatures.get(lm.universe());
-        universeFunctions.addAll(allUniverseFeat.getOrDefault(AbstractFeature.Kind.Routine, new TreeSet<AbstractFeature>()));
-        universeFunctions.removeIf(f->f.isConstructor());
+        universeFunctions.addAll(allUniverseFeat.getOrDefault(AbstractFeature.Kind.Function, new TreeSet<AbstractFeature>()));
         universeFunctions.addAll(allUniverseFeat.getOrDefault(AbstractFeature.Kind.Abstract, new TreeSet<AbstractFeature>()));
         universeFunctions.addAll(allUniverseFeat.getOrDefault(AbstractFeature.Kind.Intrinsic, new TreeSet<AbstractFeature>()));
         universeFunctions.addAll(allUniverseFeat.getOrDefault(AbstractFeature.Kind.Native, new TreeSet<AbstractFeature>()));
@@ -1024,7 +1022,7 @@ public class Html extends ANY
       {
         var f = iter.next();
 
-        var innerFeatures = lm.declaredFeatures(f).values().stream()
+        var innerFeatures = lm.declaredFeaturesShallow(f).values().stream()
                               .filter(ft -> ft.definesType()
                                             && ft.visibility().typeVisibility() == Visi.PUB)
                               .sorted(Comparator.comparing(ft -> ft.featureName().baseName(), String.CASE_INSENSITIVE_ORDER))

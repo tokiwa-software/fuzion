@@ -73,7 +73,7 @@ sqlite_database(db Native_Ref) : Database is
 
         cb data
 
-    if sqlite3_exec db (q.as_c_string mutate) cb2 ffi.null (mutate.array Native_Ref .from_Sequence mutate [ffi.null]) = 0
+    if sqlite3_exec db (q.as_c_string mutate) cb2 ffi.null (mutate.array Native_Ref .from_Sequence [ffi.null]) = 0
       unit
     else
       error "error executing query $q"
@@ -85,7 +85,7 @@ sqlite_database(db Native_Ref) : Database is
 
 
   public redef type.open(path String) outcome Database =>
-    db := mutate.array Native_Ref .from_Sequence mutate [ffi.null]
+    db := mutate.array Native_Ref .from_Sequence [ffi.null]
     if sqlite3_open (path.as_c_string mutate) db = 0
       check !(ffi.is_null db[0])
       sqlite_database db[0]

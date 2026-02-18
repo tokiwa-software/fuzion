@@ -305,7 +305,7 @@ public class TokenInfo extends ANY
           // NYI: UNDER DEVELOPMENT: check if all cases are considered
           .orElse(Optional.of(TokenType.Type));
       case t_const, t_leaf, t_infix, t_infix_right, t_prefix, t_postfix, t_private, t_module, t_public -> Optional.of(TokenType.Modifier);
-      case t_abstract,  t_check, t_do, t_else, t_env, t_fixed, t_for, t_if, t_in, t_index, t_intrinsic, t_inv, t_is, t_loop, t_match, t_native, t_period, t_post, t_pre, t_redef, t_ref, t_set, t_ternary, t_then, t_this, t_type, t_universe, t_until, t_var, t_variant, t_while -> Optional.of(TokenType.Keyword);
+      case t_abstract,  t_check, t_do, t_else, t_env, t_fixed, t_for, t_if, t_in, t_index, t_intrinsic, t_invariant, t_is, t_loop, t_match, t_native, t_period, t_post, t_pre, t_redef, t_ref, t_set, t_ternary, t_then, t_this, t_type, t_universe, t_until, t_var, t_variant, t_while -> Optional.of(TokenType.Keyword);
       default -> Optional.empty();
       };
   }
@@ -333,7 +333,9 @@ public class TokenInfo extends ANY
             return Optional.of(TokenType.Enum);
           case Intrinsic :
           case Abstract :
-          case Routine :
+          case Constructor :
+          case RefConstructor :
+          case Function :
             if (af.isConstructor()
               && af.valueArguments().size() == 0
               && af.code().containsOnlyDeclarations()
