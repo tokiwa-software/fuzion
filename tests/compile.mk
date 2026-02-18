@@ -36,16 +36,16 @@ all: jvm c int
 
 fuir:
 	rm -f *.fuir
-	printf 'FUIR %s ' "$(NAME)" && $(ENV) dev_flang_tools_serializeFUIR=true $(FUZION_RUN) -noBackend $(FILE) 2>err.txt && echo "\033[32;1mPASSED\033[0m." || echo "\033[31;1m*** FAILED\033[0m." && (RC=$$? && cat err.txt && exit $$RC)
+	@printf 'FUIR %s ' "$(FILE)" && $(ENV) dev_flang_tools_serializeFUIR=true $(FUZION_RUN) -noBackend $(FILE) 2>err.txt && printf "\033[32;1mPASSED\033[0m.\n" || printf "\033[31;1m*** FAILED\033[0m.\n" && (RC=$$? && cat err.txt && exit $$RC)
 
 int:
-	printf 'COMPILE %s ' "$(NAME)" && $(FUZION) -noBackend $(NAME) 2>err.txt && echo "\033[32;1mPASSED\033[0m." || echo "\033[31;1m*** FAILED\033[0m." && (RC=$$? && cat err.txt && exit $$RC)
+	@printf 'COMPILE %s using $@ backend ' "$(FILE)" && $(FUZION) -noBackend $(NAME) 2>err.txt && printf "\033[32;1mPASSED\033[0m.\n" || printf "\033[31;1m*** FAILED\033[0m.\n" && (RC=$$? && cat err.txt && exit $$RC)
 
 jvm:
-	printf 'COMPILE %s ' "$(NAME)" && $(FUZION) -classes $(NAME) 2>err.txt && echo "\033[32;1mPASSED\033[0m." || echo "\033[31;1m*** FAILED\033[0m." && (RC=$$? && cat err.txt && exit $$RC)
+	@printf 'COMPILE %s using $@ backend ' "$(FILE)" && $(FUZION) -classes $(NAME) 2>err.txt && printf "\033[32;1mPASSED\033[0m.\n" || printf "\033[31;1m*** FAILED\033[0m.\n" && (RC=$$? && cat err.txt && exit $$RC)
 
 c:
-	printf 'COMPILE %s ' "$(NAME)" && $(FUZION) -c $(NAME) 2>err.txt && echo "\033[32;1mPASSED\033[0m." || echo "\033[31;1m*** FAILED\033[0m." && (RC=$$? && cat err.txt && exit $$RC)
+	@printf 'COMPILE %s using  $@  backend ' "$(FILE)" && $(FUZION) -c $(NAME) 2>err.txt && printf "\033[32;1mPASSED\033[0m.\n" || printf "\033[31;1m*** FAILED\033[0m.\n" && (RC=$$? && cat err.txt && exit $$RC)
 
 effect:
 	$(ENV) ../../bin/check_simple_example effect "$(FUZION_RUN)" $(FILE) || exit 1
