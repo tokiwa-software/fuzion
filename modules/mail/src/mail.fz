@@ -59,8 +59,7 @@ public mail is
 
     # the credentials separated by NUL, base64 encoded
     cred =>
-      # NYI: UNDER DEVELOPMENT: replace {codepoint 0} by just \0
-      encodings.base64.encode_to_string "{username}{codepoint 0}{username}{codepoint 0}{password}".utf8.as_array
+      encodings.base64.encode_to_string "{username}\0{username}\0{password}".utf8.as_array
 
 
     # from: https://en.wikipedia.org/wiki/List_of_SMTP_server_return_codes
@@ -86,11 +85,12 @@ public mail is
       Subject: =?UTF-8?B?{encodings.base64.encode_to_string subject.utf8.as_array}?=
       MIME-Version: 1.0
       Content-Type: text/plain; charset="UTF-8"
-      Content-Transfer-Encoding: 8bit
+      Content-Transfer-Encoding: base64
 
       {
-        # 2.1.1.  Line Length Limits, see https://datatracker.ietf.org/doc/html/rfc5322#section-2.1.1
-        String.join_lines (text.lines.flat_map (.chunk 78))
+        # https://www.rfc-editor.org/rfc/rfc2045.html#section-6.8
+        b64 := encodings.base64.encode_to_string text.utf8.as_array
+        String.join_lines (b64.chunk 76)
       }
       .
       """.replace "\n" "\r\n"

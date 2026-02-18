@@ -38,6 +38,15 @@ public Function(public R type,
     abstract
 
 
+  # convenience feature to declare a lambda
+  #
+  # usage example:
+  #
+  #     Unary u64 i32 .of (.as_u64)
+  #
+  public type.of(f Function.this) Function.this => f
+
+
 # NYI: would be nice to have schönfinkeling defined here, could work like this:
 #
 #     curry(x A.0) Function(R, A.1...) is

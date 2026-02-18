@@ -76,16 +76,14 @@ is
   # initialize two-dimensional mutable array
   #
   public type.new
-   (LM type : mutate,
-
-    # length of the array to create
+   (# length of the array to create
     length0 i64,
     length1 i64,
 
     # initial value for elements
     init T
 
-   ) container.Mutable_Array2 T LM
+   ) mutate.this.array2 T
   =>
     data := fuzion.sys.internal_array_init T (length0.as_i32 * length1.as_i32)
 
@@ -93,11 +91,11 @@ is
       for i2 in (i64 0)..length1-1 do
         data[i1.as_i32 * length1.as_i32 + i2.as_i32] := init
 
-    LM.env.array2 length0 length1 data unit
+    mutate.this.env.array2 length0 length1 data unit
 
 
 # convenience feature for creating a new array2,
 # in some cases even with type inference
 #
 public new_array2 (T type, length0, length1 i64, init T) container.Mutable_Array2 T mutate.this =>
-  (mutate.array2 T).new mutate.this length0 length1 init
+  (mutate.this.array2 T).new length0 length1 init
