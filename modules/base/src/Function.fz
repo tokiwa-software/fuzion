@@ -38,7 +38,7 @@ public Function(public R type,
     abstract
 
 
-  # convenience feature to declare a lambda
+  # convenience feature for declaring a lambda
   #
   # usage example:
   #
