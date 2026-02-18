@@ -1,0 +1,8 @@
+
+--CURDIR--/reg_issue6540.fz:24:11: error 1: Block must end with a result expression
+x bool => do until true
+----------^^^^^^^^^^^^^
+This block must produce a value since its result is used by the enclosing expression.
+Expected type of value: 'bool'
+
+one error.

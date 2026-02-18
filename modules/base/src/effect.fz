@@ -240,7 +240,7 @@ public effect is
     # NYI: BUG: does not work: Wrong number of arguments in lambda expression
     # code -> instate_self code
 
-    ref : Functional R is
+    _ : Functional R is
       public redef call(code Function R) R =>
         instate_self code
 

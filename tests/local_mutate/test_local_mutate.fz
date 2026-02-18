@@ -131,7 +131,7 @@ test_local_mutate is
         # execute code with mutate effect `m`:
         m ! ()->
 
-          arr := (mutate.array T).new m c.as_i64 data[0]
+          arr := (m.array T).new c.as_i64 data[0]
 
           swap(i,j i32) =>
             t := arr[i]
@@ -213,10 +213,10 @@ test_local_mutate is
         do
           say "$i: {e.data}"
 
-        _ := for cur := r, cur.next
-             while cur.n.open do
-               cur.n.close
-               cur.p.close
+        for cur := r, cur.next
+        while cur.n.open do
+          cur.n.close
+          cur.p.close
         r
 
       r0 := m ! ()->(ring3 from0.as_list)

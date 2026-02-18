@@ -87,12 +87,12 @@ is
 
   # range of permitted value for a codepoint
   #
-  public type.range interval u32=> u32 0 .. 0x10ffff
+  public type.range interval u32 => u32 0 .. 0x10ffff
 
 
   # range of values encoded in one byte
   #
-  public type.ascii interval u32=> u32 0 .. 0x7f
+  public type.ascii interval u32 => u32 0 .. 0x7f
 
   # 0 to 9
   public type.ascii_digit interval u32 => u32 0x30 .. 0x39

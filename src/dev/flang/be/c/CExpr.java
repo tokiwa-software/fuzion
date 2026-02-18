@@ -215,7 +215,7 @@ abstract class CExpr extends CStmnt
 
 
   /**
-   * Create a C expression from a uint642_t constant
+   * Create a C expression from a uint64_t constant
    *
    * @return the resulting expression
    */
@@ -895,20 +895,7 @@ abstract class CExpr extends CStmnt
           inner.code(sb);
           sb.append("/* ").append(s).append(" */");
         }
-        boolean isLocalVar()
-        {
-          return inner.isLocalVar();
-        }
       };
-  }
-
-
-  /**
-   * Is this a local variable?
-   */
-  boolean isLocalVar()
-  {
-    return false;
   }
 
 

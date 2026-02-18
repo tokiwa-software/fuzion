@@ -58,7 +58,7 @@ class ForClass extends ANY
 
   /**
    * Some public members in a Java module may return a result type or expect an
-   * argument that that is not public.  This flag enables warnings in this case.
+   * argument that is not public.  This flag enables warnings in this case.
    */
   static final boolean SHOW_WARNINGS_FOR_NON_PUBLIC_TYPES = false;
 
@@ -1065,10 +1065,8 @@ class ForClass extends ANY
       {
         switch (i)
           {
-          case '$':
-          case '{':
-          case '}': res.append('\\').append((char) i); break;
-          default: res.appendCodePoint(i); break;
+          case '$', '{', '}' -> res.append('\\').append((char) i);
+          default -> res.appendCodePoint(i);
           }
       });
     res.append('\"');

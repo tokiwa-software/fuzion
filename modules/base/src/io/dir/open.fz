@@ -25,7 +25,7 @@
 # effect for manipulating open directories
 #
 module:public open(dd Directory_Descriptor,
-                   public path String) : effect is
+                   public path path) : effect is
 
   # reads the next entry of this directory
   #

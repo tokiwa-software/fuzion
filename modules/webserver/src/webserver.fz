@@ -93,7 +93,7 @@ public webserver_create(port u16, family net.family.val, log String->unit, hdlr 
 #
 public except(log String->unit) : Middleware is
   public redef call(h Http_Handler) Http_Handler =>
-    ref : Http_Handler is
+    _ : Http_Handler is
       public redef call(r http.request_message) http.response_message =>
         fuzion
           .runtime

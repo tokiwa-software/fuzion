@@ -40,7 +40,7 @@ public Err ref : print_effect is
   #        ... your code ...
   #
   public type.blackhole io.Err =>
-    ref : io.Err is
+    _ : io.Err is
       public redef write(b Sequence u8) outcome unit => unit
       public redef flush outcome unit => unit
 

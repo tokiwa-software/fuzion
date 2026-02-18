@@ -30,8 +30,11 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.nio.file.Path;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import dev.flang.util.SourcePosition;
+import dev.flang.fe.LibraryModule;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.SourceFile;
@@ -42,31 +45,61 @@ import dev.flang.util.SourceFile;
  */
 public class LibraryFuir extends FUIR {
 
-  private int _mainClazz;
-  private ClazzRecord[] _clazzes;
-  private int[] _specialClazzes;
-  private SiteRecord[] _sites;
 
-  public LibraryFuir(byte[] data)
+  /*-----------------------------  final fields  -----------------------------*/
+
+
+  private final int _mainClazz;
+  private final ClazzRecord[] _clazzes;
+  private final int[] _specialClazzes;
+  private final SiteRecord[] _sites;
+  private final LibraryModule _mainModule;
+
+
+  /*-----------------------------  cache  -----------------------------*/
+
+
+  private final Map<String,SourceFile> _srcFiles = new ConcurrentHashMap<String, SourceFile>();
+
+
+  /*-----------------------------  constructor  -----------------------------*/
+
+
+  public LibraryFuir(byte[] data, LibraryModule lm)
   {
-    try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data))) {
-      this._mainClazz = ois.readInt();
-      this._clazzes = (ClazzRecord[]) ois.readObject();
-      this._sites = (SiteRecord[]) ois.readObject();
-      this._specialClazzes = (int[]) ois.readObject();
-    }
-    catch(ClassNotFoundException e)
-    {
-      e.printStackTrace();
-    }
-    catch (IOException e) {
-      e.printStackTrace();
-    }
+    var mainClazz = NO_CLAZZ;
+    var clazzes = new ClazzRecord[0];
+    var sites = new SiteRecord[0];
+    var specialClazzes = new int[0];
+    try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data)))
+      {
+        mainClazz = ois.readInt();
+        clazzes = (ClazzRecord[]) ois.readObject();
+        sites = (SiteRecord[]) ois.readObject();
+        specialClazzes = (int[]) ois.readObject();
+      }
+    catch(ClassNotFoundException | IOException e)
+      {
+        Errors.fatal(e);
+      }
+    _mainClazz = mainClazz;
+    _clazzes = clazzes;
+    _sites = sites;
+    _specialClazzes = specialClazzes;
+    _mainModule = lm;
   }
 
-  private int siteCount()
+
+  /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * helper to get SourceFile from cache or compute it once
+   */
+  private SourceFile sourceFile(String path)
   {
-    return _sites.length;
+    return _srcFiles
+      .computeIfAbsent(path, p -> new SourceFile(Path.of(p)));
   }
 
   @Override
@@ -246,7 +279,7 @@ public class LibraryFuir extends FUIR {
   }
 
   @Override
-  public int clazz_ref_const_string()
+  public int clazzRefConstString()
   {
     var cs = clazz(SpecialClazzes.c_const_string);
     for (int i = 0; i < _clazzes.length; i++)
@@ -273,9 +306,9 @@ public class LibraryFuir extends FUIR {
   }
 
   @Override
-  public int lookup_static_finally(int cl)
+  public int lookupStaticFinally(int cl)
   {
-    return _clazzes[clazzId2num(cl)].lookup_static_finally();
+    return _clazzes[clazzId2num(cl)].lookupStaticFinally();
   }
 
   @Override
@@ -290,6 +323,13 @@ public class LibraryFuir extends FUIR {
       }
     Errors.fatal("v field not found!");
     return NO_CLAZZ;
+  }
+
+
+  @Override
+  public int lookupCause(int ecl)
+  {
+    return _clazzes[clazzId2num(ecl)].lookupCause();
   }
 
   @Override
@@ -330,7 +370,7 @@ public class LibraryFuir extends FUIR {
       {
         res = "** NO_SITE **";
       }
-    else if (s >= SITE_BASE && s < SITE_BASE+siteCount())
+    else if (s >= SITE_BASE && s < SITE_BASE+_sites.length)
       {
         var cl = clazzAt(s);
         var p = sitePos(s);
@@ -473,28 +513,9 @@ public class LibraryFuir extends FUIR {
   @Override
   public SourcePosition sitePos(int s)
   {
-    return s==NO_SITE || _sites[s-SITE_BASE].path() == null
+    return s==NO_SITE || _sites[s-SITE_BASE].module() == null
       ? SourcePosition.notAvailable
-      : new SourcePosition(new SourceFile(Path.of(_sites[s-SITE_BASE].path()), new byte[0]), 0)
-      {
-        @Override
-        public int column()
-        {
-          return _sites[s-SITE_BASE].column();
-        }
-
-        @Override
-        public int line()
-        {
-          return _sites[s-SITE_BASE].line();
-        }
-
-        @Override
-        public String show()
-        {
-          return _sites[s-SITE_BASE].show();
-        }
-      };
+      : _mainModule.pos(_sites[s-SITE_BASE].module(), _sites[s-SITE_BASE].bytePos());
   }
 
 
@@ -509,7 +530,7 @@ public class LibraryFuir extends FUIR {
   public SourcePosition clazzDeclarationPos(int cl)
   {
     var r = _clazzes[clazzId2num(cl)];
-    return new SourcePosition(new dev.flang.util.SourceFile(java.nio.file.Path.of(r.clazzSrcFile())),
+    return new SourcePosition(sourceFile(r.clazzSrcFile()),
                               r.clazzSrcBytePos());
   }
 

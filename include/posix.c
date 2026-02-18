@@ -224,6 +224,8 @@ int fzE_socket(int family, int type, int protocol){
   if (sockfd != -1)
   {
     fcntl(sockfd, F_SETFD, FD_CLOEXEC);
+    // NYI: UNDER DEVELOPMENT: we need fzE_setsocketopt eventually
+    setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int));
   }
 
   fzE_unlock();
@@ -255,7 +257,7 @@ int fzE_bind(int sockfd, int family, int socktype, int protocol, char * host, ch
   {
     return -1;
   }
-  int bind_res = bind(sockfd, addr_info->ai_addr, (int)addr_info->ai_addrlen);
+  int bind_res = set_last_error(bind(sockfd, addr_info->ai_addr, (int)addr_info->ai_addrlen));
 
   if(bind_res == -1)
   {
@@ -730,7 +732,17 @@ void * fzE_file_open(char * file_name, int64_t * open_results, file_open_mode mo
   // make sure no fork is done while we open file
   fzE_lock();
 
-  FILE * fp = fopen(file_name, mode==FZ_FILE_MODE_READ ? "rb" : "a+b");
+  const char * m = "rb";
+  if (mode == FZ_FILE_MODE_WRITE)
+    {
+      m = "w+b";
+    }
+  else if (mode == FZ_FILE_MODE_APPEND)
+    {
+      m = "a+b";
+    }
+
+  FILE * fp = fopen(file_name, m);
   if (fp!=NULL)
   {
     fcntl(fileno(fp), F_SETFD, FD_CLOEXEC);
@@ -766,7 +778,7 @@ int32_t fzE_mtx_unlock(void * mtx) {
 
 void fzE_mtx_destroy(void * mtx) {
   pthread_mutex_destroy((pthread_mutex_t *)mtx);
-  // NYI: BUG: free(mtx);
+  fzE_free(mtx);
 }
 
 void * fzE_cnd_init() {
@@ -788,7 +800,7 @@ int32_t fzE_cnd_wait(void * cnd, void * mtx) {
 
 void fzE_cnd_destroy(void * cnd) {
   pthread_cond_destroy((pthread_cond_t *)cnd);
-  // NYI: BUG: free(cnd);
+  fzE_free(cnd);
 }
 
 

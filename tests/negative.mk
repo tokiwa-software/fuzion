@@ -35,7 +35,7 @@ EXPECTED_ERRORS = `cat *.fz | grep "should.flag.an.error"  | sed "s-^.*\# \(.*\)
 
 all: jvm c int
 
-fuir: # NYI: UNDER DEVELOPMENT: missing impl of fuir
+fuir: # does nothing
 
 int:
 	$(FUZION) -interpreter $(FILE) 2>err.txt || true

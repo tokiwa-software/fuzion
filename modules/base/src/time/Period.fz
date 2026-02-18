@@ -25,7 +25,7 @@
 
 # time.Period -- template for periods
 #
-# This provices abstract features that define a period of time and that
+# This provides abstract features that define a period of time and that
 # permit multiplications with large integers avoiding drift.
 #
 # An example is a period of 1/60sec. Using `time.duration`, which is a child

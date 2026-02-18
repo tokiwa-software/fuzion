@@ -108,7 +108,7 @@ public json Parser String (Sequence codepoint) json_value =>
       many0 (alt [parser_regular_codepoint, parser_escapings])
 
     delimited (tag "\"") p (tag "\"")
-      .map String (x -> String.join (x.map String (y -> String.from y)) "")
+      .map String (x -> String.join (x.map String (y -> String.from y)))
 
 
   # parser for a json number
@@ -179,7 +179,7 @@ public json Parser String (Sequence codepoint) json_value =>
   # parser for json array
   parser_array =>
     parser_no_values :=
-      whitespace0.map (Sequence json_value) (x -> (list json_value).type.empty)
+      whitespace0.map (Sequence json_value) (x -> (list json_value).empty)
 
     parser_comma_sep_value :=
       separated_list1 (Sequence codepoint) json_value (Sequence codepoint) (tag ",") ()->parser_json_value_delimited
@@ -194,7 +194,7 @@ public json Parser String (Sequence codepoint) json_value =>
       separated_pair (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) String (Sequence codepoint) json_value (delimited whitespace0 parser_string whitespace0) (tag ":") ()->parser_json_value_delimited
 
     parser_no_key_values =>
-      whitespace0.map (Sequence (tuple String json_value)) (_ -> (list (tuple String json_value)).type.empty)
+      whitespace0.map (Sequence (tuple String json_value)) (_ -> (list (tuple String json_value)).empty)
 
     parser_key_values =>
       separated_list1 (tag ",") ()->parser_key_value

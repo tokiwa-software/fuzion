@@ -63,13 +63,6 @@ public class Call extends ANY implements Comparable<Call>, Context
 
 
   /**
-   * Unique id to identify this Call. This is used to avoid expensive comparison
-   * for calls.
-   */
-  int _uniqueCallId = -1;
-
-
-  /**
    * The DFA instance we are working with.
    */
   final DFA _dfa;
@@ -180,16 +173,6 @@ public class Call extends ANY implements Comparable<Call>, Context
 
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * Return a unique id for the call or main entry point context.
-   */
-  @Override
-  public int uniqueCallId()
-  {
-    return _uniqueCallId;
-  }
 
 
   /**
@@ -320,12 +303,12 @@ public class Call extends ANY implements Comparable<Call>, Context
    */
   public Val result(Call from)
   {
-    if (from != null)
-      {
-        // record how depends on result to mark
-        // them as hot again when result changes.
-        _dependOnResult.add(from);
-      }
+    if (PRECONDITIONS) require
+      (from != null);
+
+    // record how depends on result to mark
+    // them as hot again when result changes.
+    _dependOnResult.add(from);
 
     Val result = null;
     if (_dfa._fuir.clazzKind(calledClazz()) == IR.FeatureKind.Intrinsic)
@@ -334,7 +317,7 @@ public class Call extends ANY implements Comparable<Call>, Context
         var idfa = DFA._intrinsics_.get(name);
         if (idfa != null)
           {
-            result = DFA._intrinsics_.get(name).analyze(this);
+            result = idfa.analyze(this);
           }
         else
           {
@@ -599,7 +582,7 @@ public class Call extends ANY implements Comparable<Call>, Context
       {
         result = _env != null ? _env.getActualEffectValues(ecl)
                               : _dfa._defaultEffects.get(ecl);
-        if (result == null && DFA.DO_NOT_TRACE_ENVS)
+        if (result == null && !DFA.TRACE_ENVS)
           {
             result = _dfa._allValuesForEnv.get(ecl);
           }
@@ -608,7 +591,6 @@ public class Call extends ANY implements Comparable<Call>, Context
             DfaErrors.usedEffectNotInstalled(_dfa._fuir.sitePos(s),
                                              _dfa._fuir.clazzAsString(ecl),
                                              this);
-            _dfa._missingEffects.put(ecl, ecl);
           }
       }
     else
@@ -656,7 +638,7 @@ public class Call extends ANY implements Comparable<Call>, Context
 
     if ((_env == null || !_env.hasEffect(ecl)) && _dfa._defaultEffects.get(ecl) == null)
       {
-        if (_dfa._reportResults && !DFA.DO_NOT_TRACE_ENVS)
+        if (_dfa._reportResults && DFA.TRACE_ENVS)
           {
             // NYI: Make this a normal error similar to DfaErrors.usedEffectnotinstalled:
             Errors.fatal("Trying to replace effect " + Errors.code(_dfa._fuir.clazzAsString(ecl))

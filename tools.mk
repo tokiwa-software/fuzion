@@ -25,7 +25,7 @@
 # shellcheck (https://www.shellcheck.net) checks shell scripts for issues/bugs
 .PHONY: shellcheck
 shellcheck:
-	shellcheck $(SHELL_SCRIPTS) $(shell find . -iname '*.sh' -not -path "./build/*")
+	shellcheck $(SHELL_SCRIPTS) $(shell find . -iname '*.sh' -not -path "./build/*" -not -path "./debian/*")
 
 # show readme in browser, requires 'sudo apt install grip'
 .PHONY: show_readme
@@ -118,3 +118,9 @@ lint-pmd: $(BUILD_DIR)/pmd
 .PHONY: lint-c
 lint-c:
 	clang-tidy $(C_FILES) -- -std=c11
+
+# show env vars that can be used during development
+#
+.PHONY: show_development_env_vars
+show_development_env_vars:
+	grep -rhoE 'dev_flang_[A-Za-z0-9_]+=' . | sed 's/=//' | sort -u

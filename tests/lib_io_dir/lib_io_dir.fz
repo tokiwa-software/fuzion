@@ -23,9 +23,9 @@
 
 lib_io_dir =>
 
-  path := "test_path_😀"
-  file1 := "$path/file1_😀"
-  file2 := "$path/file2_😀"
+  path := path.of "test_path_😀"
+  file1 := path.resolve "file1_😀"
+  file2 := path.resolve "file2_😀"
 
   _ := io.file.delete file1
   _ := io.file.delete file2

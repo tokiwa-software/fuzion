@@ -25,7 +25,7 @@
 # effect for manipulating open files
 #
 module:public open(fd File_Descriptor,
-                   public file_name String) : effect is
+                   public file_name path) : effect is
 
 
   # install seek effect an run code
@@ -33,7 +33,7 @@ module:public open(fd File_Descriptor,
   public seek(R type, code ()->R) outcome R =>
 
     hndlr :=
-      ref : Seek_Handler is
+      _ : Seek_Handler is
         public redef seek(offset i64) outcome unit =>
           fuzion.sys.fileio.seek fd offset
 

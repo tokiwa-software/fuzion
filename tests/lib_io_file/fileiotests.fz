@@ -25,9 +25,9 @@
 
 fileiotests =>
 
-  dir := "testdir_😀"
-  newdir := "newdir_😀"
-  file := dir + "/" + "testfile_😀"
+  dir := path.of "testdir_😀"
+  newdir := path.of "newdir_😀"
+  file := dir.resolve "testfile_😀"
 
   content := "Hello world 🌍"
 

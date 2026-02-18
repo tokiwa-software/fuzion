@@ -58,6 +58,7 @@ import java.lang.classfile.*;
 import java.lang.classfile.constantpool.ClassEntry;
 import java.lang.classfile.instruction.*;
 import java.lang.constant.ClassDesc;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -466,15 +467,13 @@ should be avoided as much as possible.
         var k = jvm._fuir.clazzKind(cl);
         switch (k)
           {
-          case Routine      : jvm.code(cl); break;
-          case Choice       : jvm._types._choices.createCode(cl); break;
-          case Native       : jvm.native0(cl); break;
-          case TypeParameter:
-          case Abstract     :
-          case Intrinsic    :
-          case Field        : break;
-          default           : throw new Error ("Unexpected feature kind: " + k);
-          };
+          case Routine -> jvm.code(cl);
+          case Choice  -> jvm._types._choices.createCode(cl);
+          case Native  -> jvm.native0(cl);
+          case TypeParameter, Abstract, Intrinsic, Field -> {}
+          default -> throw new Error("Unexpected feature kind: " + k);
+          }
+        ;
       }
     },
     RUN {
@@ -863,21 +862,22 @@ should be avoided as much as possible.
       {
         _options.verbosePrintln(" + " + executableName);
         var f = executableName.toFile();
-        var out = new PrintWriter(new FileOutputStream(f));
-        out.println(String.format(// NYI: UNDER DEVELOPMENT: This probably needs to be changed for Windows:
-                                  """
-                                  #!/bin/sh
+        try (var out = new PrintWriter(new FileOutputStream(f)))
+          {
+            out.println(String.format(// NYI: UNDER DEVELOPMENT: This probably needs to be changed for Windows:
+                                      """
+                                      #!/bin/sh
 
-                                  SCRIPT_PATH="$(dirname "$(readlink -f "$0")")"
+                                      SCRIPT_PATH="$(dirname "$(readlink -f "$0")")"
 
-                                  LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$SCRIPT_PATH" \
-                                  PATH="$PATH:$SCRIPT_PATH" \
-                                  DYLD_FALLBACK_LIBRARY_PATH="$DYLD_FALLBACK_LIBRARY_PATH:$SCRIPT_PATH" \
-                                  java --enable-preview --enable-native-access=ALL-UNNAMED -D%s="$0" %s "$@"
-                                  """,
-                                  FUZION_COMMAND_PROPERTY,
-                                  args));
-        out.close();
+                                      LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$SCRIPT_PATH" \
+                                      PATH="$PATH:$SCRIPT_PATH" \
+                                      DYLD_FALLBACK_LIBRARY_PATH="$DYLD_FALLBACK_LIBRARY_PATH:$SCRIPT_PATH" \
+                                      java --enable-preview --enable-native-access=ALL-UNNAMED -D%s="$0" %s "$@"
+                                      """,
+                                      FUZION_COMMAND_PROPERTY,
+                                      args));
+          }
         f.setExecutable(true);
         for (String str : new List<>("libfuzion_rt.so", "libfuzion_rt.dylib", "fuzion_rt.dll"))
           {
@@ -1584,13 +1584,13 @@ should be avoided as much as possible.
    */
   Pair<Expr, Expr> boxedConstString(Expr bytes)
   {
-    var cs = _fuir.clazz_const_string();
-    var ref_cs = _fuir.clazz_ref_const_string();
-    var cs_utf8_data = _fuir.clazz_const_string_utf8_data();
-    var arr = _fuir.clazz_array_u8();
+    var cs = _fuir.clazzConstString();
+    var ref_cs = _fuir.clazzRefConstString();
+    var cs_utf8_data = _fuir.clazzConstStringUTF8Data();
+    var arr = _fuir.clazzArrayU8();
     var internalArray = _fuir.clazzArg(arr,0);
-    var data = _fuir.clazz_fuzionSysArray_u8_data();
-    var length = _fuir.clazz_fuzionSysArray_u8_length();
+    var data = _fuir.clazzFuzionSysArrayU8Data();
+    var length = _fuir.clazzFuzionSysArrayU8Length();
     var fuzionSysArray = _fuir.clazzOuterClazz(data);
     var res = new0(cs)                                // stack: cs
       .andThen(Expr.DUP)                              //        cs, cs
@@ -2095,7 +2095,7 @@ should be avoided as much as possible.
    * Helper for cloneValue to clone the value of a field in a choice or a
    * product type that may be null.
    *
-   * In a choice, a value may be null if that that field is unused, i.e., the
+   * In a choice, a value may be null if that field is unused, i.e., the
    * choice is tagged for a different value.
    *
    * In a product type, the value of a field may be null if that value was not
@@ -2332,7 +2332,7 @@ should be avoided as much as possible.
 
     try
       {
-        Path packageDir = Paths.get(classLoader.getResource(packagePath).getPath());
+        Path packageDir = Paths.get(classLoader.getResource(packagePath).toURI());
 
         Queue<Path> queue = Files.walk(packageDir)
               .filter(Files::isRegularFile)
@@ -2370,11 +2370,21 @@ should be avoided as much as possible.
                               var cPathStr = (cdesc.packageName() + "." + cdesc.displayName()).replace(".", "/") + ".class";
                               if (!cPathStr.contains("$"))
                                 {
-                                  var cpath = Paths.get(classLoader.getResource(cPathStr).getPath());
-                                  if (!found.contains(cpath))
+                                  try
                                     {
-                                      queue.add(cpath);
-                                      found.add(cpath);
+                                      var cpath = Paths.get(classLoader.getResource(cPathStr).toURI());
+                                      if (!found.contains(cpath))
+                                        {
+                                          queue.add(cpath);
+                                          found.add(cpath);
+                                        }
+                                    }
+                                  catch (URISyntaxException ex)
+                                    {
+                                      Errors.error("JVM backend I/O error",
+                                                  "This is either a bug or the files in " + cPathStr
+                                                  + " changed while processing the directory.");
+                                      ex.printStackTrace();
                                     }
                                 }
                             }
@@ -2399,6 +2409,13 @@ should be avoided as much as possible.
           }
       }
     catch (IOException e)
+      {
+        Errors.error("JVM backend I/O error",
+                     "This is either a bug or the files in " + packagePath
+                     + " changed while processing the directory.");
+        e.printStackTrace();
+      }
+    catch (URISyntaxException e)
       {
         Errors.error("JVM backend I/O error",
                      "This is either a bug or the files in " + packagePath

@@ -55,6 +55,31 @@ public class Call extends AbstractCall
    */
   public static Call ERROR;
 
+  static final Expr TRUE  = new AbstractCall() {
+          @Override public SourcePosition pos() { return SourcePosition.notAvailable; }
+          @Override public List<AbstractType> actualTypeParameters() { return NO_GENERICS; }
+          @Override public AbstractFeature calledFeature() { return Types.resolved.f_true; }
+          @Override public Expr target() { return Universe.instance; }
+          @Override public AbstractType typeForInferencing() { return calledFeature().resultType(); }
+          @Override public List<Expr> actuals() { return NO_EXPRS; }
+          @Override public int select() { return FuzionConstants.NO_SELECT; }
+          @Override public boolean isInheritanceCall() { return false; }
+          @Override public Expr visit(FeatureVisitor v, AbstractFeature outer) { v.action(this); return this; }
+        };
+
+
+  static final Expr FALSE = new AbstractCall() {
+          @Override public SourcePosition pos() { return SourcePosition.notAvailable; }
+          @Override public List<AbstractType> actualTypeParameters() { return NO_GENERICS; }
+          @Override public AbstractFeature calledFeature() { return Types.resolved.f_false; }
+          @Override public Expr target() { return Universe.instance; }
+          @Override public AbstractType typeForInferencing() { return calledFeature().resultType(); }
+          @Override public List<Expr> actuals() { return NO_EXPRS; }
+          @Override public int select() { return FuzionConstants.NO_SELECT; }
+          @Override public boolean isInheritanceCall() { return false; }
+          @Override public Expr visit(FeatureVisitor v, AbstractFeature outer) { v.action(this); return this; }
+        };
+
 
   /*----------------------------  variables  ----------------------------*/
 
@@ -502,8 +527,8 @@ public class Call extends AbstractCall
    * c in an inherits clause ("f : c { }"), context.outerFeature() is the outer
    * feature of f.
    *
-   * @return the feature of the target of this call or null if lookup for the
-   * target feature failed.
+   * @return the feature of the target of this call, null if lookup for the
+   * target feature failed, or f_ERROR on error.
    */
   protected AbstractFeature targetFeature(Resolution res, Context context)
   {
@@ -712,8 +737,8 @@ public class Call extends AbstractCall
 
 
   /**
-   * is this Call defunct, i.e., an error occured or this is unreachable due to
-   * target resutling in `void`.
+   * is this Call defunct, i.e., an error occurred or this is unreachable due to
+   * target resulting in `void`.
    */
   protected boolean isDefunct()
   {
@@ -784,7 +809,10 @@ public class Call extends AbstractCall
   private void triggerFeatureNotFoundError(Resolution res, Context context)
   {
     var tf = targetFeature(res, context);
-    triggerFeatureNotFoundError(res, findOnTarget(res, tf, true).v0(), tf);
+    if (tf != null)
+      {
+        triggerFeatureNotFoundError(res, findOnTarget(res, tf, true).v0(), tf);
+      }
   }
 
 
@@ -802,7 +830,9 @@ public class Call extends AbstractCall
                                     FeatureAndOuter.findExactOrCandidate(fos,
                                                                         (FeatureName fn) -> false,
                                                                          (AbstractFeature f) -> names.stream().anyMatch(fn -> f.featureName().equalsBaseName(fn))),
-                                    hiddenCandidates(res, tf, calledName));
+                                    res._options.isLanguageServer() && tf == null
+                                      ? new List<FeatureAndOuter>()
+                                      : hiddenCandidates(res, tf, calledName));
   }
 
 
@@ -819,6 +849,9 @@ public class Call extends AbstractCall
    */
   private Pair<List<FeatureAndOuter>, FeatureAndOuter> findOnTarget(Resolution res, AbstractFeature target, boolean mayBeSpecialWrtArgs)
   {
+    if (PRECONDITIONS) require
+      (target != null);
+
     var calledName = FeatureName.get(_name, _actuals.size());
     var fos = res._module.lookup(target, _name, this, _target == null, false);
     for (var fo : fos)
@@ -947,6 +980,9 @@ public class Call extends AbstractCall
    */
   private List<FeatureAndOuter> hiddenCandidates(Resolution res, AbstractFeature targetFeature, FeatureName calledName)
   {
+    if (PRECONDITIONS) require
+      (targetFeature  != null);
+
     var fos = res._module.lookup(targetFeature, _name, this, _target == null, true);
     for (var fo : fos)
       {
@@ -1291,7 +1327,7 @@ public class Call extends AbstractCall
   /**
    * pre-allocated empty list for _whenInferredTypeParameters.
    */
-  private static final List<Runnable> NO_RUNNABLE = new List<>();
+  private static final List<Runnable> NO_RUNNABLE = new List<Runnable>().freeze();
 
 
   /**
@@ -2878,8 +2914,8 @@ public class Call extends AbstractCall
                 var actl = _actuals.get(i);
                 var frmlT = resolvedFormalArgumentTypes[i];
                 if (CHECKS) check
-                  (Errors.any() || (actl != Call.ERROR && actl != Call.ERROR));
-                if (frmlT != Types.t_ERROR && actl != Call.ERROR && actl != Call.ERROR && frmlT.isAssignableFrom(actl.type(), context).no())
+                  (Errors.any() || actl != Call.ERROR);
+                if (frmlT != Types.t_ERROR && actl != Call.ERROR && frmlT.isAssignableFrom(actl.type(), context).no())
                   {
                     AstErrors.incompatibleArgumentTypeInCall(_calledFeature, i, frmlT, actl, context);
                   }
@@ -2953,19 +2989,19 @@ public class Call extends AbstractCall
         // example where this results in an issue: `_ := [false: true]`
         if      (cf == Types.resolved.f_bool_AND    )
           {
-            result = createIf(res, context, _actuals.get(0), BoolConst.FALSE, Types.resolved.t_bool);
+            result = createIf(res, context, _actuals.get(0), Call.FALSE, Types.resolved.t_bool);
           }
         else if (cf == Types.resolved.f_bool_OR     )
           {
-            result = createIf(res, context, BoolConst.TRUE , _actuals.get(0), Types.resolved.t_bool);
+            result = createIf(res, context, Call.TRUE , _actuals.get(0), Types.resolved.t_bool);
           }
         else if (cf == Types.resolved.f_bool_IMPLIES)
           {
-            result = createIf(res, context, _actuals.get(0), BoolConst.TRUE, Types.resolved.t_bool);
+            result = createIf(res, context, _actuals.get(0), Call.TRUE, Types.resolved.t_bool);
           }
         else if (cf == Types.resolved.f_bool_NOT    )
           {
-            result = createIf(res, context, BoolConst.FALSE, BoolConst.TRUE , Types.resolved.t_bool);
+            result = createIf(res, context, Call.FALSE, Call.TRUE , Types.resolved.t_bool);
           }
         else if (cf == Types.resolved.f_bool_TERNARY)
           {

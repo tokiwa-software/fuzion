@@ -74,4 +74,4 @@ is
   #
   public redef as_string String
   =>
-    "$f/{base.as_string.trim}"
+    "$f/{base.as_string}"

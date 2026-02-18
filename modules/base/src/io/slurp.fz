@@ -28,8 +28,4 @@
 # NYI: UNDER DEVELOPMENT: support more options than path
 #
 public slurp(p path) outcome String =>
-  io.file
-    .open2 p io.file.mode.read
-    .bind f->
-      f.reader ()->
-        String.from (io.buffered io.file.file_mutate).read_fully
+  io.file.read p

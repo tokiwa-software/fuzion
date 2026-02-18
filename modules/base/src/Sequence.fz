@@ -331,11 +331,12 @@ is
   #
   public slice(from, to i32) Sequence T
     pre
-      debug: from ≥ 0
-      debug: to = 0 || is_valid_index to-1
-      debug: from <= to
+      debug : from ≥ 0
+      debug : to = 0 || (if is_array_backed || debug_level > 1 then is_valid_index to-1 else true)
+      debug : from <= to
   =>
-    drop(from).take to-from
+    drop from
+      .take to-from
 
 
   # create a tuple of two Sequences by splitting this at
@@ -355,9 +356,7 @@ is
     match c
       at i32 => ((take at), (drop at))
       cond T->bool =>
-        a := as_array_backed
-        at := a.first_index_of (el -> cond el)
-        (a.take at, a.drop at)
+        split_at (first_index_of cond)
 
 
   # returns the index of the first element
@@ -431,12 +430,30 @@ is
       s
     else if c2 = 0
       Sequence.this
-    else if c1 < 0 || c2 < 0 || max 1 c1 < c2 then
+    #
+    # c1 < c2 to avoid poor (quadratic) performance
+    # if a small sequence is added in front of a
+    # larger one repeatedly as in this code:
+    #
+    #     for
+    #       s := (Sequence i32).empty, [i].concat s
+    #       i in 1..n
+    #     else
+    #       say s
+    #
+    else if c1 < 0 || c2 < 0 || c1 < c2 then
       as_list.concat_list s.as_list
     else
       container.expanding_array T .empty c1+c2
         .concat Sequence.this
         .concat s
+
+
+  # return this Sequence as a Finger_Tree
+  # or nil if Sequence is not (yet) a Finger_Tree
+  #
+  module as_finger_tree option (container.Finger_Tree T) => nil
+
 
   # infix operand synonym for concat
   #
@@ -1127,7 +1144,7 @@ is
   #
   # example: sum even and odd numbers individually
   #
-  #    (0..10).group_reduce String (x -> x%%2 ? "even" : "odd") (+)
+  #     (0..10).group_reduce String (x -> x%%2 ? "even" : "odd") (+)
   #
   # => {(even => 30), (odd => 25)}
   #
@@ -1190,11 +1207,11 @@ is
   #
   # example: group characters by category and add underscores around each character
   #
-  #    values array codepoint := ["A", "1", "b", "?", "X", "4"]
+  #     values array codepoint := ["A", "1", "b", "?", "X", "4"]
   #
-  #    classify (c codepoint) String => c.is_ascii_letter ? "letter" : c.is_ascii_digit ? "digit" : "other"
+  #     classify (c codepoint) String => c.is_ascii_letter ? "letter" : c.is_ascii_digit ? "digit" : "other"
   #
-  #    values.group_map String String classify (x->"_{x}_")
+  #     values.group_map String String classify (x->"_{x}_")
   #
   # => {(digit => [_1_, _4_]), (letter => [_A_, _b_, _X_]), (other => [_?_])}
   #
@@ -1279,7 +1296,7 @@ is
   #
   public type.concat_monoid Monoid (Sequence T) =>
 
-    ref : Monoid (Sequence T) is
+    _ : Monoid (Sequence T) is
 
       # associative operation
       #

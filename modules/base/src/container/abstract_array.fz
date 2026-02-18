@@ -35,7 +35,7 @@ public abstract_array
   ) : Sequence T is
 
 
-  # the length of the array
+  # length of this array
   #
   public length i32 => abstract
 
@@ -202,7 +202,7 @@ public abstract_array
 
       # redefines abstract_array.length for array.
       #
-      public redef length i32 => to-from
+      public redef length i32 := to-from
 
 
       # a slice of a slice, need to adjust from and to args
@@ -292,7 +292,7 @@ public abstract_array
       else                 nil
 
 
-  # returns a copy of this array as a mutable array
+  # create a mutable copy of this array
   #
   public as_mutable(LM type : mutate) LM.array T =>
     data := fuzion.sys.internal_array_init T length

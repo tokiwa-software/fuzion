@@ -70,11 +70,11 @@ public stat(ps Stat_Handler) : effect is
   #
   public stats(
         # the (relative or absolute) file name, using platform specific path separators
-        path String) outcome meta_data =>
+        path path) outcome meta_data =>
     replace
     # will contain: [size, time of last modification in seconds, regular file? 1 : 0, dir? 1 : 0]
     res := fuzion.sys.internal_array_init i64 9
-    if ps.stats (fuzion.sys.c_string path) res.data = 0
+    if ps.stats (fuzion.sys.c_string $path) res.data = 0
       meta_data res[0] res[1] res[2] res[3] (res[4] = 1) (res[5] = 1) (res[6] = 1) res[7] res[8]
     else
       error "stat error {res[0]} for {path}"
@@ -86,11 +86,11 @@ public stat(ps Stat_Handler) : effect is
   #
   public lstats(
          # the (relative or absolute) file name, using platform specific path separators
-         path String) outcome meta_data => # NYI: UNDER DEVELOPMENT: : not sure whether to use meta_data or introduce a new feature for lstats metadata
+         path path) outcome meta_data => # NYI: UNDER DEVELOPMENT: : not sure whether to use meta_data or introduce a new feature for lstats metadata
     replace
     # will contain: [size, time of last modification in seconds, regular file? 1 : 0, dir? 1 : 0]
     res := fuzion.sys.internal_array_init i64 9
-    if ps.stats (fuzion.sys.c_string path) res.data = 0
+    if ps.stats (fuzion.sys.c_string $path) res.data = 0
       meta_data res[0] res[1] res[2] res[3] (res[4] = 1) (res[5] = 1) (res[6] = 1) res[7] res[8]
     else
       error "lstat error {res[0]} for {path}"
@@ -130,7 +130,7 @@ public stat stat ! stat =>
 #
 public stat(
      # the (relative or absolute) file name, using platform specific path separators
-     path String,
+     path path,
      # a boolean resolve flag to resolve symbolic links or not
      resolve bool) outcome meta_data ! stat =>
   install_default
