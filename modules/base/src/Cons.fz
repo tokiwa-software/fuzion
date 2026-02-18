@@ -33,6 +33,11 @@ public Cons(public A, B type) ref is
 
   public tail B => abstract
 
+  # returns whether the data structure this Cons
+  # cell defines is finite, infinite or unknown
+  #
+  public finite trit => trit.unknown
+
 
 # cons -- feature used to define simple, non-lazy Cons cells
 #
