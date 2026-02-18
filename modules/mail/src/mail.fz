@@ -59,8 +59,7 @@ public mail is
 
     # the credentials separated by NUL, base64 encoded
     cred =>
-      # NYI: UNDER DEVELOPMENT: replace {codepoint 0} by just \0
-      encodings.base64.encode_to_string "{username}{codepoint 0}{username}{codepoint 0}{password}".utf8.as_array
+      encodings.base64.encode_to_string "{username}\0{username}\0{password}".utf8.as_array
 
 
     # from: https://en.wikipedia.org/wiki/List_of_SMTP_server_return_codes
