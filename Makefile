@@ -143,6 +143,7 @@ MOD_WEB               = $(BUILD_DIR)/modules/web.fum
 MOD_SODIUM            = $(BUILD_DIR)/modules/sodium.fum
 MOD_CRYPTO            = $(BUILD_DIR)/modules/crypto.fum
 MOD_WEBSERVER         = $(BUILD_DIR)/modules/webserver.fum
+MOD_I18N              = $(BUILD_DIR)/modules/i18n.fum
 
 MOD_FZ_CMD_DIR = $(BUILD_DIR)/modules/fz_cmd
 MOD_FZ_CMD_FZ_FILES = $(MOD_FZ_CMD_DIR)/__marker_for_make__
@@ -212,7 +213,8 @@ FZ_MODULES = \
 			$(MOD_WEB) \
 			$(MOD_SODIUM) \
 			$(MOD_CRYPTO) \
-			$(MOD_WEBSERVER)
+			$(MOD_WEBSERVER) \
+			$(MOD_I18N)
 
 C_FILES = $(shell find $(FZ_SRC) \( -path ./build -o -path ./.git \) -prune -o -name '*.c' -print)
 
@@ -518,6 +520,12 @@ $(MOD_WEBSERVER): $(MOD_HTTP) $(FZ) $(shell find $(FZ_SRC)/modules/webserver/src
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC)/modules/webserver $(@D)
 	$(FZ) -modules=http -sourceDirs=$(BUILD_DIR)/modules/webserver/src -saveModule=$@
+
+$(MOD_I18N): $(FZ) $(shell find $(FZ_SRC)/modules/i18n/src -name "*.fz")
+	rm -rf $(@D)/i18n
+	mkdir -p $(@D)
+	cp -rf $(FZ_SRC)/modules/i18n $(@D)
+	$(FZ) -modules=http -sourceDirs=$(BUILD_DIR)/modules/i18n/src -saveModule=$@
 
 $(FZJAVA): $(FZ_SRC)/bin/fzjava | $(CLASS_FILES_TOOLS_FZJAVA)
 	mkdir -p $(@D)
