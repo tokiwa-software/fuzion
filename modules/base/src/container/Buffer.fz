@@ -63,7 +63,7 @@ is
 
   # get element at index i
   #
-  public index [ ] (i idx) T ! E
+  public index [ ] (I type : idx, i I) T ! E
     pre
       safety: 0 ≤ i.as_i64 < length
   =>
@@ -72,7 +72,7 @@ is
 
   # set element at index i to value o
   #
-  public set [ ] (i idx, o T) unit ! E
+  public set [ ] (I type : idx, i I, o T) unit ! E
     pre
       safety: 0 ≤ i.as_i64 < length
   =>

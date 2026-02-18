@@ -489,8 +489,8 @@ public String ref : property.equatable, property.hashable, property.orderable is
   find_last(substring String, found option i32) option i32 =>
     match find substring
       nil => found >>= (pos -> pos - substring.byte_length)
-      idx i32 =>
-        skip := idx + substring.byte_length
+      i i32 =>
+        skip := i + substring.byte_length
         s := String.from_bytes (utf8.drop skip)
 
         s.find_last substring (skip + (found.or_else 0))
@@ -516,10 +516,10 @@ public String ref : property.equatable, property.hashable, property.orderable is
     utf8.count_matches substring.utf8
 
 
-  # split String at idx
+  # split String at i
   #
   # example:
-  #     (0..5).for_each (idx -> say <| "hallo".split_at_byte idx)
+  #     (0..5).for_each (i -> say <| "hallo".split_at_byte i)
   #
   # (, hallo)
   # (h, allo)
@@ -528,14 +528,14 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # (hall, o)
   # (hallo, )
   #
-  public split_at_byte(idx i32) (String, String)
+  public split_at_byte(i i32) (String, String)
     pre
-      debug: 0 ≤ idx ≤ byte_length
+      debug: 0 ≤ i ≤ byte_length
       # NYI: ENHANCEMENT: #6342, #6381: re-enable when Sequence.conat
       # consistently can return an expanding_array for finite Strings
       # debug: utf8.is_array_backed
   =>
-    (substring 0 idx, substring idx byte_length)
+    (substring 0 i, substring i byte_length)
 
 
   # Split string separated by (ASCII) white space

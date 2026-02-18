@@ -25,7 +25,7 @@
 
 # u64 -- 64-bit unsigned integer values
 #
-public u64(public val u64) : num.wrap_around, has_interval is
+public u64(public val u64) : num.wrap_around, has_interval, idx is
 
   # overflow checking
 
@@ -88,8 +88,8 @@ public u64(public val u64) : num.wrap_around, has_interval is
 
 
   # this u64 as an i32
-  public as_i32 i32
-    pre
+  public redef as_i32 i32
+    pre else
       debug: val ≤ i32.max.as_u64
     =>
       low32bits.as_i32
@@ -97,10 +97,10 @@ public u64(public val u64) : num.wrap_around, has_interval is
 
   # this u64 as an i64
   #
-  public as_i64 i64
-    pre
+  public redef as_i64 i64
+    pre else
       debug: val ≤ i64.max.as_u64
-    post
+    post then
       analysis: result.as_u64 = val
   =>
     cast_to_i64
@@ -143,6 +143,9 @@ public u64(public val u64) : num.wrap_around, has_interval is
     analysis: result.as_u64 = val
   =>
     low32bits
+
+
+  public redef as_u64 u64 => val
 
 
   # this u64 as an u128

@@ -63,7 +63,7 @@ is
 
   # get the contents of this array at the given index
   #
-  public redef index [](i idx) T
+  public redef index [](I type : idx, i I) T
   =>
     data[i].val
 
@@ -342,7 +342,7 @@ is
 
   # shorthand index operator alias for `get`
   #
-  public index [](i idx) T
+  public index [](I type : idx, i I) T
     pre
       safety: 0 <= i.as_i32 < length+n
       debug: has i.as_i32
@@ -352,7 +352,7 @@ is
 
   # shorthand set-index operator alias for `put`
   #
-  public set [](i idx, v T) unit
+  public set [](I type : idx, i I, v T) unit
     pre
       safety: length <= i.as_i32 < length+n
   =>
