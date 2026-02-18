@@ -184,7 +184,7 @@ is
   # e.g. "/folder/file" or "relative_folder/file"
   #
   public redef as_string String =>
-    "{if is_absolute then "/" else ""}{if names.is_empty && !is_absolute then "." else String.join names "/"}"
+    "{if is_absolute then "{path.separator}" else ""}{if names.is_empty && !is_absolute then "." else String.join names "{path.separator}"}"
 
 
   # define order for paths
@@ -213,11 +213,20 @@ is
   # absolute rather than relative.
   #
   public type.of(str String) path
-    pre debug: !str.starts_with "/../"
-        debug: str != "/.."
+    pre debug: !str.starts_with "{separator}..{separator}"
+        debug: str != "{separator}.."
   =>
     t := str.trim
-    path.of (t.split "/") (t.starts_with "/")
+    path.of (t.split "{separator}") (t.starts_with "{separator}")
+
+
+  # the path separator that is used
+  # on the current platform
+  #
+  public type.separator codepoint =>
+    match os.platform.get
+      os.posix => "/"
+      os.windows => "\\"
 
 
   # instantiates a path
@@ -228,7 +237,7 @@ is
   #
   public type.of(seq Sequence String, is_absolute bool) path
     pre debug: seq ∀ s->
-          !(s.contains "/" || s.contains "\0")
+          !(s.contains "{separator}" || s.contains "\0")
         debug: !is_absolute || (seq.first "") != ".."
   =>
     dotdot, names := seq
