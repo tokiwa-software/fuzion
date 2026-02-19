@@ -154,19 +154,6 @@ public numeric : property.hashable, property.orderable is
       "*** numeric.postfix |, requires corresponding prefix | for abs value ***"
 
 
-  # does this numeric value fit into an u8? This is redefined by children
-  # of numeric that support `as_u8`.
-  #
-  public fits_in_u8 bool => false
-
-
-  # this numeric value as an u8
-  public as_u8 u8
-    pre
-      debug: fits_in_u8
-  => abstract
-
-
   # find the highest power of b that is less or equal than numeric.this.
   #
   module highest(b numeric.this) numeric.this

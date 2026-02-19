@@ -146,59 +146,15 @@ public u128(public hi u64, public lo u64) : num.wrap_around, has_interval is
   #
   public fixed redef fits_in_u8 bool => u128.this ≤ u8.max.as_u128
 
-  public fixed as_i8 i8
-    pre
-      debug: u128.this ≤ i8.max.as_u128
-    =>
-      lo.as_i8
-  public fixed as_i16 i16
-    pre
-      debug: u128.this ≤ i16.max.as_u128
-    =>
-      lo.as_i16
-  public fixed as_i32 i32
-    pre
-      debug: u128.this ≤ i32.max.as_u128
-    =>
-      lo.as_i32
-  public fixed as_i64 i64
-    pre
-      debug: u128.this ≤ i64.max.as_u128
-    post
-      analysis: result.as_u128 = u128.this
-    =>
-      lo.as_i64
-  public fixed as_i128 i128
-  post
-    analysis: result.as_u128 = u128.this
-  =>
-    i128 hi.as_i64 lo
-  public fixed redef as_u8 u8
-    post then
-      analysis: result.as_u128 = u128.this
-    =>
-      lo.as_u8
-  public fixed as_u16 u16
-    pre
-      debug: u128.this ≤ u16.max.as_u128
-    post
-      analysis: result.as_u128 = u128.this
-    =>
-      lo.as_u16
-  public fixed as_u32 u32
-    pre
-      debug: u128.this ≤ u32.max.as_u128
-    post
-      analysis: result.as_u128 = u128.this
-    =>
-      lo.as_u32
-  public fixed as_u64 u64
-    pre
-      debug: u128.this ≤ u64.max.as_u128
-    post
-      analysis: result.as_u128 = u128.this
-    =>
-      lo
+  public fixed redef as_i8 i8 => lo.as_i8
+  public fixed redef as_i16 i16 => lo.as_i16
+  public fixed redef as_i32 i32 => lo.as_i32
+  public fixed redef as_i64 i64 => lo.as_i64
+  public fixed redef as_i128 i128 => i128 hi.as_i64 lo
+  public fixed redef as_u8 u8 => lo.as_u8
+  public fixed redef as_u16 u16 => lo.as_u16
+  public fixed redef as_u32 u32 => lo.as_u32
+  public fixed redef as_u64 u64 => lo
 
   public redef low8bits  u8  => lo.low8bits
   public low16bits u16 => lo.low16bits

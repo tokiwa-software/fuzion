@@ -73,36 +73,23 @@ public u32(public val u32) : num.wrap_around, has_interval is
 
 
   # this u32 as an i8
-  public as_i8 i8
-    pre
-      debug: val ≤ i8.max.as_u32
-    =>
-      cast_to_i32.as_i8
+  public redef as_i8 i8 => cast_to_i32.as_i8
 
 
   # this u32 as an i16
-  public as_i16 i16
-    pre
-      debug: val ≤ i16.max.as_u32
-    =>
-      cast_to_i32.as_i16
+  public redef as_i16 i16 => cast_to_i32.as_i16
 
 
   # this u32 as an i32
-  public as_i32 i32
-    pre
-      debug: val ≤ i32.max.as_u32
-    =>
-      cast_to_i32
+  public redef as_i32 i32 => cast_to_i32
 
 
   # this u32 as an i64
-  public as_i64 i64 => intrinsic
+  public redef as_i64 i64 => intrinsic
 
 
   # this u32 as an i128
-  public as_i128 i128 =>
-    as_u64.as_i128
+  public redef as_i128 i128 => as_u64.as_i128
 
 
   # this u32 as an u8
@@ -110,23 +97,15 @@ public u32(public val u32) : num.wrap_around, has_interval is
 
 
   # this u32 as an u16
-  public as_u16 u16
-    pre
-      debug: val ≤ u16.max.as_u32
-    =>
-      cast_to_i32.as_u16
+  public redef as_u16 u16 => cast_to_i32.as_u16
 
 
   # this u32 as an u64
-  public as_u64 u64
-    =>
-      val.as_i64.as_u64
+  public redef as_u64 u64 => val.as_i64.as_u64
 
 
   # this u32 as an u128
-  public as_u128 u128
-    =>
-      u128 0 as_u64
+  public redef as_u128 u128 => u128 0 as_u64
 
 
   # this u32 as an int

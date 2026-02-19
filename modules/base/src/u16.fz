@@ -71,23 +71,15 @@ public u16(public val u16) : num.wrap_around, has_interval, java_primitive is
   #
   public fixed redef fits_in_u8 bool => val ≤ u8.max.as_u16
 
-  public as_i8 i8
-    pre
-      debug: val ≤ i8.max.as_u16
-    =>
-      cast_to_i16.as_i8
-  public as_i16 i16
-    pre
-      debug: val ≤ i16.max.as_u16
-    =>
-      cast_to_i16
-  public as_i32  i32  => intrinsic
-  public as_i64  i64  => val.as_i32.as_i64
-  public as_i128 i128 => val.as_i32.as_i128
+  public redef as_i8 i8 => cast_to_i16.as_i8
+  public redef as_i16 i16 => cast_to_i16
+  public redef as_i32  i32  => intrinsic
+  public redef as_i64  i64  => val.as_i32.as_i64
+  public redef as_i128 i128 => val.as_i32.as_i128
   public redef as_u8 u8 => low8bits
-  public as_u32  u32  => val.as_i32.as_u32
-  public as_u64  u64  => val.as_i32.as_u64
-  public as_u128 u128 => val.as_i32.as_u128
+  public redef as_u32  u32  => val.as_i32.as_u32
+  public redef as_u64  u64  => val.as_i32.as_u64
+  public redef as_u128 u128 => val.as_i32.as_u128
   public as_int  int  => int as_i64
 
   public redef low8bits u8 => intrinsic
