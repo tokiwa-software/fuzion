@@ -12,3 +12,4 @@ io.dir.read
 io.file.delete
 panic
 state unit (cache#2 encodings.unicode.mappings.lower_case.lower_case).cache_item
+state unit (cache#2 separator_cache).cache_item
