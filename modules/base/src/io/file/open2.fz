@@ -66,4 +66,4 @@ public open2(file_name path, m mode.val) outcome file2 ! resources =>
       mode.read => 0
       mode.write => 1
       mode.append => 2
-  (fuzion.sys.fileio.open file_name.as_string mode_num).bind file2
+  (fuzion.sys.fileio.open file_name mode_num).bind file2
