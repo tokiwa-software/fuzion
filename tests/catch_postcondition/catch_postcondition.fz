@@ -148,7 +148,7 @@ catch_postcondition is
   c0 := mut 0
 
   z : handle_post (option String) is
-    redef try option String  => tries[c0].call
+    redef try option String  => tries[c0.get].call
     redef catch(s String) option String => {say "*** failed: $s ***"; c0 <- c0.get + 1; if c0.get < tries.count then z.res else nil}
 
   say z.res

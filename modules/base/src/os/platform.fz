@@ -17,16 +17,27 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test reg_issue4143
+#  Source code of Fuzion standard library feature os.platform
 #
 # -----------------------------------------------------------------------
 
-reg_issue4143 =>
+# unit type - denoting Windows
+#
+public windows is
 
-  a : mutate is
+# unit type - denoting POSIX
+#
+public posix is
 
-    _ := instate_self (() -> (a.this.Circular_Buffer u8).new 42 0)
+# get the platform we are running on
+#
+public platform : choice os.windows os.posix is
 
-  c : a is
+  public type.get platform =>
+    # NYI: UNDER DEVELOPMENT: better make this an intrinsic
+    if (envir.vars["OS"].val "").lower_case.contains "windows"
+      os.windows
+    else
+      os.posix
 
-  say c
+

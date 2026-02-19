@@ -778,7 +778,7 @@ public class C extends ANY
           "-Wmissing-include-dirs"
           );
 
-        if (!_options._debugBuild)
+        if (!_options._debugBuild && !_options.fuzionDebug())
           {
             command.addAll("-O3");
           }

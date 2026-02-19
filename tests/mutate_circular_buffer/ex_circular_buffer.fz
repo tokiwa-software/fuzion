@@ -25,7 +25,7 @@ ex_circular_buffer =>
   m : mutate is
 
   m ! ()->
-    b := (mutate.circular_buffer codepoint).new m 7 "0"
+    b := (m.Circular_Buffer codepoint).new 7 "0"
     say <| b.put "1"
     say <| b.enqueue ["2", "3"]
     say <| b.enqueue ["4", "5", "6", "7"]

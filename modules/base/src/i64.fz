@@ -25,7 +25,7 @@
 
 # i64 -- 64-bit signed integer values
 #
-public i64(public val i64) : num.wrap_around, has_interval, java_primitive is
+public i64(public val i64) : num.wrap_around, has_interval, java_primitive, idx is
 
   # overflow checking
 
@@ -86,13 +86,14 @@ public i64(public val i64) : num.wrap_around, has_interval, java_primitive is
 
 
   # this i64 as an i32
-  public as_i32 i32
-    pre
+  public redef as_i32 i32
+    pre else
       debug: val ≥ i32.min.as_i64
       debug: val ≤ i32.max.as_i64
     =>
       low32bits.cast_to_i32
 
+  public redef as_i64 i64 => val
 
   # this i64 as an i128
   public as_i128 i128 =>
@@ -138,10 +139,10 @@ public i64(public val i64) : num.wrap_around, has_interval, java_primitive is
 
   # this i64 as an u64
   #
-  public as_u64 u64
-    pre
+  public redef as_u64 u64
+    pre else
       debug: val ≥ 0
-    post
+    post then
       analysis: result.as_i64 = val
   =>
     cast_to_u64

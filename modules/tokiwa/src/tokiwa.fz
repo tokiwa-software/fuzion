@@ -17,16 +17,24 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test reg_issue4143
+#  Source code of Fuzion module tokiwa
 #
 # -----------------------------------------------------------------------
 
-reg_issue4143 =>
+#
+# unit feature grouping tokiwa related code
+#
+public tokiwa is
 
-  a : mutate is
-
-    _ := instate_self (() -> (a.this.Circular_Buffer u8).new 42 0)
-
-  c : a is
-
-  say c
+  #
+  # send something to our influx database
+  #
+  # e.g. post_to_influx "tokiwa" "benchmarks" "**token**" "tests,test=hello value=26.5"
+  #
+  public post_to_influx(org, bucket, token, str String) outcome String =>
+    web.post_r
+      net.family.ipv4
+      "https://influxdb.tokiwa.software:8086/api/v2/write?org={org}&bucket={bucket}&precision=s"
+      str.utf8
+      (container.map_of [("Authorization", "Token {token}"),
+                         ("Content-Type", "text/plain")])

@@ -37,7 +37,7 @@ module:public mapped_buffer
 
   # get byte at given index i
   #
-  public redef index [ ] (i idx) u8
+  public redef index [ ] (I type : idx, i I) u8
   =>
     resources0.register_usage mapped_buffer.this
     fzE_mapped_buffer_get memory i.as_i64
@@ -45,7 +45,7 @@ module:public mapped_buffer
 
   # set byte at given index i to given value o
   #
-  public redef set [ ] (i idx, o u8) unit
+  public redef set [ ] (I type : idx, i I, o u8) unit
   =>
     replace
     resources0.register_usage mapped_buffer.this
