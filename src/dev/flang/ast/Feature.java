@@ -2106,6 +2106,44 @@ A ((Choice)) declaration must not contain a result type.
         AstErrors.explicitTypeRequired(this, resultType());
       }
 
+    // check precondition
+    // make sure to not extend implicit `pre true` and to use `pre else` correctly
+    if (this.contract()._hasPre != null)
+      {
+       var hasElse = contract()._hasPreElse != null;
+       var implicitPreTrueInherited = _inheritedPre.stream().anyMatch(f -> f.preFeature() == null);
+       var redefines = !this.redefines().isEmpty();
+
+       if (redefines && implicitPreTrueInherited)
+         {
+           /*
+    // tag::fuzion_rule_PARS_CONTR_PRE_REDEF[]
+A feature that redefines a feature without explicit or inherited precondition, must not introduce a precondition.
+    // end::fuzion_rule_PARS_CONTR_PRE_REDEF[]
+           */
+           AstErrors.preWithImplicitTrueInherited(this);
+         }
+       else if (!hasElse && redefines)
+         {
+           /*
+    // tag::fuzion_rule_PARS_CONTR_PRE_ELSE[]
+A pre-condition of a feature that redefines one or several inherited features must start with `pre else`, independent of whether the redefined, inherited features are `abstract` or not.
+    // end::fuzion_rule_PARS_CONTR_PRE_ELSE[]
+           */
+           AstErrors.redefinePreconditionMustUseElse(this.contract()._hasPre, this);
+         }
+       else if (hasElse && !redefines)
+         {
+           /*
+    // tag::fuzion_rule_PARS_CONTR_PRE_NO_ELSE[]
+A pre-condition of a feature that does not redefine an inherited feature must start with `pre`, not `pre else`.
+    // end::fuzion_rule_PARS_CONTR_PRE_NO_ELSE[]
+           */
+           AstErrors.notRedefinedPreconditionMustNotUseElse(this.contract()._hasPre, this);
+         }
+      }
+
+
     _state = State.RESOLVED;
   }
 
