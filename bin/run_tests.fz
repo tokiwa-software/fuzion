@@ -168,10 +168,10 @@ main =>
 
   # NYI: UNDER DEVELOPMENT: react to Ctrl+c like in bash scripts (trap)
 
-  if (envir.args.count != 3 && envir.args.count != 4)
+  if (envir.args.count != 3)
     say "wrong argument count"
     say "usage:"
-    say "run_tests.fz <build_dir> <target> [<n_threads>]"
+    say "run_tests.fz <build_dir> <target>"
     exit 1
 
   build_dir := path.of envir.args[1]
