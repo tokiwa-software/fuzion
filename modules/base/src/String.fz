@@ -83,8 +83,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # bytes are equal.
   #
   public fixed redef type.equality(a, b String) bool =>
-    ((a.utf8.zip b.utf8 aa,bb->aa=bb) ∀ id)
-      & a.utf8.count = b.utf8.count
+    a.utf8 = b.utf8
 
 
   # is `a` less than or equal to `b` when comparing their utf8 bytes?
@@ -92,16 +91,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # This defines a total order over strings that is unrelated to alphabetic order.
   #
   public fixed redef type.lteq(a, b String) bool =>
-    a.utf8
-      .zip b.utf8 tuple
-      .filter (x ->
-        c, d := x
-        c != d)
-      .map (x ->
-        c, d := x
-        c ≤ d)
-      # if all bytes are equal lengths of strings might still differ
-      .first a.utf8.count≤b.utf8.count
+    a.utf8 <= b.utf8
 
 
   # create hash code from a string
