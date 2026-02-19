@@ -31,10 +31,10 @@ sockets_test is
                                     (u16 0),
                                     (u16 0)]
 
-  set_server_port(idx i32, new u16) =>
+  set_server_port(i i32, new u16) =>
     _ :=
       for r := servers.read
-      while !(servers.compare_and_set r (r.put idx new))
+      while !(servers.compare_and_set r (r.put i new))
 
 
   # server handles one connection at a time

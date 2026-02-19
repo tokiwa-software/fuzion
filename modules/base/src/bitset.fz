@@ -41,7 +41,7 @@ is
 
   # alternative for has using []
   #
-  public index[] (bit idx) bool => has bit.as_u64
+  public index[] (I type : idx, bit I) bool => has bit.as_u64
 
   # set the given bit
   public put (bit u64) bitset =>
