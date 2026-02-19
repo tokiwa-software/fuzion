@@ -634,22 +634,28 @@ public String ref : property.equatable, property.hashable, property.orderable is
   public trim(cond choice u8->bool codepoint->bool) String =>
     match cond
       b_cond u8->bool =>
-        s := utf8
-          .drop_while b_cond
-          .reverse
-          .drop_while b_cond
-          .reverse
+        if utf8.is_empty || !((b_cond utf8.first.val) || (b_cond utf8.last.val))
+          String.this
+        else
+          s := utf8
+            .drop_while b_cond
+            .reverse
+            .drop_while b_cond
+            .reverse
 
-        String.from_bytes s
+          String.from_bytes s
 
       c_cond codepoint->bool =>
-        s := codepoints
-          .drop_while c_cond
-          .reverse
-          .drop_while c_cond
-          .reverse
+        if codepoints.is_empty || !((c_cond codepoints.first.val) || (c_cond codepoints.last.val))
+          String.this
+        else
+          s := codepoints
+            .drop_while c_cond
+            .reverse
+            .drop_while c_cond
+            .reverse
 
-        String.from_codepoints s
+          String.from_codepoints s
 
 
   # remove leading white space from this string
@@ -684,18 +690,24 @@ public String ref : property.equatable, property.hashable, property.orderable is
   public trim_end(cond choice u8->bool codepoint->bool) String =>
     match cond
       b_cond u8->bool =>
-        s := utf8
-         .reverse
-         .drop_while b_cond
-         .reverse
-        String.from_bytes s
+        if utf8.is_empty || !(b_cond utf8.last.val)
+          String.this
+        else
+          s := utf8
+            .reverse
+            .drop_while b_cond
+            .reverse
+          String.from_bytes s
 
       c_cond codepoint->bool =>
-        s := codepoints
-         .reverse
-         .drop_while c_cond
-         .reverse
-        String.from_codepoints s
+        if codepoints.is_empty || !(c_cond codepoints.last.val)
+          String.this
+        else
+          s := codepoints
+            .reverse
+            .drop_while c_cond
+            .reverse
+          String.from_codepoints s
 
 
   # pad this string at the end with spaces such that its `codepoint_length` is at least `n`.
