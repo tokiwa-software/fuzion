@@ -235,7 +235,7 @@ exp_err_cleaned := path.of "$exp_err.cleaned"
 if io.file.exists (path.of "$file.skip") || (be = "effect" && !(io.file.exists (path.of "$file.effect")))
     say "SKIP $file"
 else
-    yak "RUN $file "
+    yak "RUN $file using {be.pad_center 3} backend "
 
     delete_tmp_files
 
