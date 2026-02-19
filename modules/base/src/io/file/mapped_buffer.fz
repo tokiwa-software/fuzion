@@ -32,14 +32,14 @@ module:public mapped_buffer
     # the length of this buffer
     public redef length i64
   )
-  : container.Buffer u8 mapped_buffer.this, mutate is
+  : container.Buffer u8 mapped_buffer.this, mutate, Resource is
 
 
   # get byte at given index i
   #
   public redef index [ ] (I type : idx, i I) u8
   =>
-    replace
+    resources0.register_usage mapped_buffer.this
     fzE_mapped_buffer_get memory i.as_i64
 
 
@@ -48,11 +48,12 @@ module:public mapped_buffer
   public redef set [ ] (I type : idx, i I, o u8) unit
   =>
     replace
+    resources0.register_usage mapped_buffer.this
     fzE_mapped_buffer_set memory i.as_i64 o
 
 
   # cleanup
   #
-  public redef finally unit =>
+  module redef close outcome unit =>
     if fzE_munmap memory length != 0
-      fuzion.runtime.fault.cause ("io.file.mapped_buffer.finally", "unmapping memory failed")
+      error "unmapping memory failed"
