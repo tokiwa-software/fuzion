@@ -21,13 +21,12 @@
 #
 # -----------------------------------------------------------------------
 
-# idx is a choice to be used by index [] features
+# idx is meant to be used as the parametrized
+# type in index features such as `index [] (I type : idx, i I)`
 #
 # this allows convenient index access via any
-# integer type (i8,...,u64) without manual conversion
-#
-# The compiler is expected to specialize this in most cases
-# making this tagging unecessary.
+# integer type (i8,...,u64) inheriting from idx
+# without manual conversion
 #
 public idx is
 
