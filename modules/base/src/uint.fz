@@ -292,7 +292,7 @@ is
   public redef fits_in_u8 bool =>
     data.count ≤ 1 && data[0].fits_in_u8
   public fixed redef fits_in_u16 bool => false # NYI
-  public fixed redef fits_in_u32 bool => false # NYI
+  public fixed redef fits_in_u32 bool => data.count ≤ 1
   public fixed redef fits_in_u64 bool => data.count ≤ 2
   public fixed redef fits_in_u128 bool => data.count ≤ 4
   public fixed redef fits_in_i8 bool => false # NYI
