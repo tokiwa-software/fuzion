@@ -31,7 +31,7 @@ native_mutate_array =>
 
   mutate ! ()->
 
-    x := (mutate.array u8).new mutate 10 4
+    x := mutate.array u8 .new 10 4
 
     say x
 

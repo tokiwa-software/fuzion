@@ -430,8 +430,8 @@ is
 
   # returns flag and the position in the container_node for given params
   flagpos(hash u32, lev u32, bmp u32) tuple u32 u32 =>
-    idx := (hash >> lev) & 0x1F
-    flag := u32 1 << idx
+    i := (hash >> lev) & 0x1F
+    flag := u32 1 << i
     mask := flag -° 1
     pos := (bmp & mask).ones_count.as_u32
     (flag, pos)

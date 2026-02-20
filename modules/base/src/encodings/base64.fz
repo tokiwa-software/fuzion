@@ -44,8 +44,8 @@ is
     # extract four sextets from 24 bits (of an u32)
     enc24(n u32) =>
       array u8 4 i->
-        idx := ((n >> (18-i*6).as_u32) & 63).as_i32
-        alphabet[idx]
+        j := ((n >> (18-i*6).as_u32) & 63).as_i32
+        alphabet[j]
 
     for
       res Sequence u8 := [], next # the encoded input data

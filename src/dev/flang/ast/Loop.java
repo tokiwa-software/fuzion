@@ -37,6 +37,7 @@ import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
 import dev.flang.util.Pair;
 import dev.flang.util.SourcePosition;
+import dev.flang.util.SourceRange;
 
 
 /**
@@ -167,8 +168,12 @@ public class Loop extends ANY
 
   /**
    * env var to enable debug output for code generated for loops:
+   *
+   * To enable, use fz with:
+   *
+   *   dev_flang_ast_FUZION_DEBUG_LOOPS=true
    */
-  static private final boolean FUZION_DEBUG_LOOPS = FuzionOptions.boolPropertyOrEnv("FUZION_DEBUG_LOOPS");
+  static private final boolean FUZION_DEBUG_LOOPS = FuzionOptions.boolPropertyOrEnv("dev.flang.ast.FUZION_DEBUG_LOOPS");
 
 
   /*----------------------------  constants  ----------------------------*/
@@ -321,7 +326,9 @@ public class Loop extends ANY
       ? new Block(nextItBlock)
       : Match.createIf(untilCond.pos(),
                untilCond,
-               Block.newIfNull(_successBlock),
+               _successBlock == null
+                 ? new Block() { public SourcePosition pos() { return new SourceRange(pos._sourceFile, pos.bytePos(), _elsePos.byteEndPos()); }; }
+                 : Block.fromExpr(_successBlock),
                new Block(nextItBlock), false);
 
     block._expressions.add(nextIteration);

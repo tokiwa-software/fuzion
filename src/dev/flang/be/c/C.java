@@ -778,7 +778,7 @@ public class C extends ANY
           "-Wmissing-include-dirs"
           );
 
-        if (!_options._debugBuild)
+        if (!_options._debugBuild && !_options.fuzionDebug())
           {
             command.addAll("-O3");
           }
@@ -846,6 +846,10 @@ public class C extends ANY
     // https://fedoraproject.org/wiki/Changes/fno-omit-frame-pointer
     // https://lobste.rs/s/avrfxz/ubuntu_24_04_lts_will_enable_frame
     command.addAll("-fno-omit-frame-pointer", "-mno-omit-leaf-frame-pointer");
+
+    // select due to: dpkg-buildflags --get CFLAGS
+    // NYI: UNDER DEVELOPMENT: does not work for macOS/windows/arm64 without adjustments
+    // command.addAll("-fstack-protector-strong", "-fstack-clash-protection", "-fcf-protection");
 
     command.add("-lm");
 

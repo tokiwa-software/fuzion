@@ -95,7 +95,7 @@ module parse_url(url String) outcome web.parsed_url
   match {
           tpl := url
             .find "/" schema_length
-            .bind (idx -> url.split_at_byte idx)
+            .bind (i -> url.split_at_byte i)
             .bind (t -> (t.0, id (option String) t.1))
             # no target specified
             .or_else (url, id (option String) nil)

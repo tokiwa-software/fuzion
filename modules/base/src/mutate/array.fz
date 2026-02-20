@@ -42,14 +42,14 @@ is
 
   # get element at given index i
   #
-  public redef index [ ] (i idx) T
+  public redef index [ ] (I type : idx, i I) T
   =>
     data[i]
 
 
   # set element at given index i to given value o
   #
-  public redef set [ ] (i idx, o T) unit
+  public redef set [ ] (I type : idx, i I, o T) unit
   =>
     check_and_replace
     data[i.as_i32] := o
@@ -94,35 +94,30 @@ is
     as_array.as_list
 
 
-  /* NYI: CLEANUP: should not pass in LM type: mutate
-   instead mutate.this should be used
-   RT should be mutate.this.array T */
-
 
   # initialize one-dimensional mutable array
   #
   public type.new
-   (LM type : mutate,
-
+   (
     # length of the array to create
     length i64,
 
     # initial value for elements
     init T
 
-   ) LM.array T
+   ) mutate.this.array T
   =>
     data := fuzion.sys.internal_array_init T length.as_i32
 
     for x in data.indices do
       data[x] := init
 
-    LM.env.array data length unit
+    mutate.this.env.array data length unit
 
 
   # initialize one-dimensional mutable array from a Sequence
   #
-  public type.from_Sequence(LM type : mutate, s Sequence T) LM.array T
+  public type.from_Sequence(s Sequence T) mutate.this.array T
   =>
     ab := s.as_array_backed
 
@@ -133,19 +128,18 @@ is
     for x in data.indices do
       data[x] := s[x]
 
-    LM.env.array data length.as_i64 unit
+    mutate.this.env.array data length.as_i64 unit
 
 
   # initialize an empty mutable array of type T
   #
-  public type.empty (LM type : mutate) LM.array T =>
-    LM.env.array (fuzion.sys.internal_array_init T 0) 0 unit
+  public type.empty mutate.this.array T =>
+    mutate.this.env.array (fuzion.sys.internal_array_init T 0) 0 unit
 
 
 # convenience feature for creating a new array,
 # in some cases even with type inference
 #
-public new_array (T type, length i64, init T) container.Mutable_Array T mutate.this
-/*RT should be mutate.this.array T */
+public new_array (T type, length i64, init T) mutate.this.array T
 =>
-  (mutate.array T).new mutate.this length init
+  (mutate.this.array T).new length init

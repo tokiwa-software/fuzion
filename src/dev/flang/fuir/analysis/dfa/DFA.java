@@ -328,8 +328,6 @@ public class DFA extends ANY
      */
     Val access0(int s, Val tvalue, List<Val> args, int cc, Val original_tvalue /* NYI: ugly */)
     {
-      var cs = DFA.this.site(s);
-      cs._accesses.add(cc);
       var isCall = _fuir.codeAt(s) == FUIR.ExprKind.Call;
       Val r;
       if (isCall)
@@ -473,14 +471,14 @@ public class DFA extends ANY
     {
       var r = switch (_fuir.getSpecialClazz(constCl))
         {
-        case c_i8   ,
-             c_i16  ,
-             c_i32  ,
-             c_i64  ,
-             c_u8   ,
-             c_u16  ,
-             c_u32  ,
-             c_u64  -> NumericValue.create(DFA.this, constCl, ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN));
+        case c_i8   -> NumericValue.create(DFA.this, constCl, ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).get());
+        case c_i16  -> NumericValue.create(DFA.this, constCl, ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getShort());
+        case c_i32  -> NumericValue.create(DFA.this, constCl, ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getInt());
+        case c_i64  -> NumericValue.create(DFA.this, constCl, ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getLong());
+        case c_u8   -> NumericValue.create(DFA.this, constCl, ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).get() & 0xff);
+        case c_u16  -> NumericValue.create(DFA.this, constCl, ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getShort() & 0xffff);
+        case c_u32  -> NumericValue.create(DFA.this, constCl, ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getInt() & 0xffffffff);
+        case c_u64  -> NumericValue.create(DFA.this, constCl, ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getLong());
         case c_f32  ,
              c_f64  -> NumericValue.create(DFA.this, constCl);
         case c_String -> newConstString(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt()+4), _call);
@@ -534,7 +532,7 @@ public class DFA extends ANY
 
       // register calls for constant creation even though
       // not every backend actually performs these calls.
-      newCall(null,
+      newCall(_call,
               constCl,
               NO_SITE,
               Value.UNIT /* universe, but we do not use _universe as target */,
@@ -601,25 +599,32 @@ public class DFA extends ANY
       for (var mc = 0; mc < _fuir.matchCaseCount(s); mc++)
         {
           // array to permit modification in lambda
-          var taken = false;
+          var vals = new List<Value>();
           for (var t : _fuir.matchCaseTags(s, mc))
             {
-              var sv = subv.value();
-              if (sv instanceof ValueSet vs)
+              subv.value().forAll(v ->  {
+                var tv = (TaggedValue)v;
+                if (tv._tag == t)
+                  {
+                    vals.add(tv._original);
+                  }
+              });
+            }
+          var taken = !vals.isEmpty();
+          if (taken)
+            {
+              var f = _fuir.matchCaseField(s, mc);
+              if (f != NO_CLAZZ)
                 {
-                  for (var v : vs._componentsArray)
+                  var fc = _fuir.clazzResultClazz(f);
+                  Value joined = vals.get(0);
+                  for (int index = 1; index < vals.size(); index++)
                     {
-                      taken = matchSingleSubject(s, v, mc, t) || taken;
+                      joined = joined.join(DFA.this, vals.get(index), fc);
                     }
+                  _call._instance.setField(DFA.this, f, joined);
                 }
-              else
-                {
-                  taken = matchSingleSubject(s, sv, mc, t) || taken;
-                }
-              if (taken)
-                {
-                  DFA.this._takenMatchCases.add(((long)s<<32)|((long)mc));
-                }
+              DFA.this._takenMatchCases.add(((long)s<<32)|((long)mc));
             }
           if (_reportResults && _options.verbose(9))
             {
@@ -638,44 +643,6 @@ public class DFA extends ANY
         }
       DFA.this.site(s).recordResult(r == null);
       return r;
-    }
-
-
-    /**
-     * Helper for match that matches only a single subject value.
-     *
-     * @param s site of the match
-     *
-     * @param v subject value of this match that is being tested.
-     *
-     * @param mc the match case to process
-     *
-     * @param t the tag the case matches
-     *
-     * @return true if this match case was taken by v
-     */
-    boolean matchSingleSubject(int s, Value v, int mc, int t)
-    {
-      var res = false;
-      if (v instanceof TaggedValue tv)
-        {
-          if (tv._tag == t)
-            {
-              var field = _fuir.matchCaseField(s, mc);
-              if (field != NO_CLAZZ)
-                {
-                  var untagged = tv._original;
-                  _call._instance.setField(DFA.this, field, untagged);
-                }
-              res = true;
-            }
-        }
-      else
-        {
-          throw new Error("DFA encountered Unexpected value in match: " + v.getClass() + " '" + v + "' " +
-                          " for match of type " + _fuir.clazzAsString(_fuir.matchStaticSubject(s)));
-        }
-      return res;
     }
 
 
@@ -785,12 +752,6 @@ public class DFA extends ANY
 
 
   /**
-   * Set of intrinsics that are found to be used by the DFA.
-   */
-  static final Set<String> _usedIntrinsics_ = new TreeSet<>();
-
-
-  /**
    * Maximum recursive analysis of newly created Calls, see {@code analyzeNewCall} for
    * details.
    *
@@ -854,8 +815,8 @@ public class DFA extends ANY
   static final String  TRACE_ALL_EFFECT_ENVS_NAME = "dev.flang.fuir.analysis.dfa.TRACE_ALL_EFFECT_ENVS";
   static final boolean TRACE_ALL_EFFECT_ENVS = FuzionOptions.boolPropertyOrEnv(TRACE_ALL_EFFECT_ENVS_NAME, true);
 
-  static final String  DO_NOT_TRACE_ENVS_NAME = "dev.flang.fuir.analysis.dfa.DO_NOT_TRACE_ENVS";
-  static final boolean DO_NOT_TRACE_ENVS = FuzionOptions.boolPropertyOrEnv(DO_NOT_TRACE_ENVS_NAME, true);
+  static final String  TRACE_ENVS_NAME = "dev.flang.fuir.analysis.dfa.TRACE_ENVS";
+  static final boolean TRACE_ENVS = FuzionOptions.boolPropertyOrEnv(TRACE_ENVS_NAME, false);
   TreeMap<Integer, Value> _allValuesForEnv = new TreeMap<>();
 
 
@@ -868,10 +829,7 @@ public class DFA extends ANY
    */
   private static void put(String n, IntrinsicDFA c)
   {
-    _intrinsics_.put(n, (call) -> {
-      _usedIntrinsics_.add(n);
-      return c.analyze(call);
-    });
+    _intrinsics_.put(n, (call) -> c.analyze(call));
   }
 
 
@@ -972,13 +930,6 @@ public class DFA extends ANY
 
 
   /**
-   * For those CallGroups whose key can be mapped to a long value, this gives a quick
-   * way to lookup that key.
-   */
-  LongMap<CallGroup> _callGroupsQuick = new LongMap<>();
-
-
-  /**
    * Calls created during DFA analysis.
    */
   TreeMap<Call, Call> _calls = new TreeMap<>();
@@ -1041,7 +992,7 @@ public class DFA extends ANY
    * id, Value._envId, and they are compared differently using
    * Value.ENV_COMPARATOR to avoid env value explosion.
    */
-  TreeMap<Value, Value> _envValues = new TreeMap<>(Value.ENV_COMPARATOR);  TreeSet<Integer> _calledClazzesDuringPrePhase = new TreeSet<>();
+  TreeMap<Value, Value> _envValues = new TreeMap<>(Value.ENV_COMPARATOR);
 
 
   /**
@@ -1359,10 +1310,6 @@ public class DFA extends ANY
     var preIter = findFixPoint();
     _options.timer("dfa_pre");
 
-    for (var k : _callGroupsQuick.keySet())
-      {
-        _callGroupsQuick.get(k).saveEffects();
-      }
     for (var g : _callGroups.values())
       {
         g.saveEffects();
@@ -1383,7 +1330,6 @@ public class DFA extends ANY
 
     _callsQuick = new LongMap<>();
     _calls = new TreeMap<>();
-    _callGroupsQuick = new LongMap<>();
     _callGroups = new TreeMap<>();
 
     _oneInstanceOfClazz = new List<>();
@@ -1676,22 +1622,8 @@ public class DFA extends ANY
     int cc = c.calledClazz();
     if (_fuir.clazzKind(cc) == FUIR.FeatureKind.Routine)
       {
-        var i = c._instance;
         check
           (c._args.size() == _fuir.clazzArgCount(cc));
-        for (var a = 0; a < c._args.size(); a++)
-          {
-            var af = _fuir.clazzArg(cc, a);
-            var aa = c._args.get(a);
-            i.setField(this, af, aa.value());
-          }
-
-        // copy outer ref argument to outer ref field:
-        var or = _fuir.clazzOuterRef(cc);
-        if (or != NO_CLAZZ)
-          {
-            i.setField(this, or, c.target());
-          }
 
         var ai = new AbstractInterpreter2<Val>(_fuir, new Analyze(c));
         var r = ai.processClazz(cc);
@@ -1989,13 +1921,13 @@ public class DFA extends ANY
     put("i16.prefix -°"                  , cl -> genericNumResult(cl) );
     put("i32.prefix -°"                  , cl -> genericNumResult(cl) );
     put("i64.prefix -°"                  , cl -> genericNumResult(cl) );
-    put("i8.infix -°"                    , cl -> calc(cl, (v0,v1) -> (long) v0.byteValue()-v1.byteValue()) );
-    put("i16.infix -°"                   , cl -> calc(cl, (v0,v1) -> (long) v0.shortValue()-v1.shortValue()) );
-    put("i32.infix -°"                   , cl -> calc(cl, (v0,v1) -> (long) v0.intValue()-v1.intValue()) );
+    put("i8.infix -°"                    , cl -> calc(cl, (v0,v1) -> (long)(byte) (v0-v1)));
+    put("i16.infix -°"                   , cl -> calc(cl, (v0,v1) -> (long)(short) (v0-v1)));
+    put("i32.infix -°"                   , cl -> calc(cl, (v0,v1) -> (long)(int) (v0-v1)));
     put("i64.infix -°"                   , cl -> calc(cl, (v0,v1) -> v0-v1) );
-    put("i8.infix +°"                    , cl -> calc(cl, (v0,v1) -> (long) v0.byteValue()+v1.byteValue()) );
-    put("i16.infix +°"                   , cl -> calc(cl, (v0,v1) -> (long) v0.shortValue()+v1.shortValue()) );
-    put("i32.infix +°"                   , cl -> calc(cl, (v0,v1) -> (long) v0.intValue()+v1.intValue()) );
+    put("i8.infix +°"                    , cl -> calc(cl, (v0,v1) -> (long)(byte) (v0+v1)));
+    put("i16.infix +°"                   , cl -> calc(cl, (v0,v1) -> (long)(short) (v0+v1)));
+    put("i32.infix +°"                   , cl -> calc(cl, (v0,v1) -> (long)(int) (v0+v1)));
     put("i64.infix +°"                   , cl -> calc(cl, (v0,v1) -> v0+v1) );
     put("i8.infix *°"                    , cl -> genericNumResult(cl) );
     put("i16.infix *°"                   , cl -> genericNumResult(cl) );
@@ -2043,13 +1975,13 @@ public class DFA extends ANY
     put("u16.prefix -°"                  , cl -> genericNumResult(cl) );
     put("u32.prefix -°"                  , cl -> genericNumResult(cl) );
     put("u64.prefix -°"                  , cl -> genericNumResult(cl) );
-    put("u8.infix -°"                    , cl -> calc(cl, (v0,v1) -> (long) v0.byteValue()-v1.byteValue()) );
-    put("u16.infix -°"                   , cl -> calc(cl, (v0,v1) -> (long) v0.shortValue()-v1.shortValue()) );
-    put("u32.infix -°"                   , cl -> calc(cl, (v0,v1) -> (long) v0.intValue()-v1.intValue()) );
+    put("u8.infix -°"                    , cl -> calc(cl, (v0,v1) -> (v0-v1) & 0xff));
+    put("u16.infix -°"                   , cl -> calc(cl, (v0,v1) -> (v0-v1) & 0xffff));
+    put("u32.infix -°"                   , cl -> calc(cl, (v0,v1) -> (v0-v1) & 0xffffffff));
     put("u64.infix -°"                   , cl -> calc(cl, (v0,v1) -> v0-v1) );
-    put("u8.infix +°"                    , cl -> calc(cl, (v0,v1) -> (long) v0.byteValue()+v1.byteValue()) );
-    put("u16.infix +°"                   , cl -> calc(cl, (v0,v1) -> (long) v0.shortValue()+v1.shortValue()) );
-    put("u32.infix +°"                   , cl -> calc(cl, (v0,v1) -> (long) v0.intValue()+v1.intValue()) );
+    put("u8.infix +°"                    , cl -> calc(cl, (v0,v1) -> (v0+v1) & 0xff));
+    put("u16.infix +°"                   , cl -> calc(cl, (v0,v1) -> (v0+v1) & 0xffff));
+    put("u32.infix +°"                   , cl -> calc(cl, (v0,v1) -> (v0+v1) & 0xffffffff));
     put("u64.infix +°"                   , cl -> calc(cl, (v0,v1) -> v0+v1) );
     put("u8.infix *°"                    , cl -> genericNumResult(cl) );
     put("u16.infix *°"                   , cl -> genericNumResult(cl) );
@@ -2091,9 +2023,7 @@ public class DFA extends ANY
     put("u8.type.lteq"                   , cl -> numericLteq(cl) );
     put("u16.type.lteq"                  , cl -> numericLteq(cl) );
     put("u32.type.lteq"                  , cl -> numericLteq(cl) );
-    //NYI: UNDER DEVELOPMENT: e.g. u64.max is represented as -1
-    // numericLteq does not work for this case yet
-    put("u64.type.lteq"                  , cl -> cl._dfa.bool() );
+    put("u64.type.lteq"                  , cl -> numericLteq(cl) );
 
     put("i8.as_i32"                      , cl -> genericNumResult(cl) );
     put("i16.as_i32"                     , cl -> genericNumResult(cl) );
@@ -2287,8 +2217,6 @@ public class DFA extends ANY
                                     new List<>(),
                                     newEnv,
                                     cl);
-          cll._group.mayHaveEffect(ecl);
-
           var result = cll.result(cl);
 
           if(fuir.getSpecialClazz(ecl) == SpecialClazzes.c_fuzion_runtime_stackoverflow)
@@ -2305,7 +2233,7 @@ public class DFA extends ANY
           Value ev;
           if (cl._dfa._real)
             {
-              if (DO_NOT_TRACE_ENVS)
+              if (!TRACE_ENVS)
                 {
                   ev = cl._dfa._allValuesForEnv.get(ecl);
                 }
@@ -2365,7 +2293,7 @@ public class DFA extends ANY
         });
     put("effect.type.is_instated0"          , cl ->
         cl.useAndGetEffect(cl.site(), fuir(cl).effectTypeFromIntrinsic(cl.calledClazz()), true) != null &&
-        !DO_NOT_TRACE_ENVS
+        TRACE_ENVS
         ? cl._dfa.True()
         : cl._dfa.bool()  /* NYI: currently, this is never FALSE since a default effect might get installed turning this into TRUE
                            * should reconsider if handling of default effects changes
@@ -2465,9 +2393,20 @@ public class DFA extends ANY
   {
     var v0 = (cl._args.get(0).value() instanceof NumericValue nv) ? nv._value : null;
     var v1 = (cl._args.get(1).value() instanceof NumericValue nv) ? nv._value : null;
-    return v0 == null || v1 == null
-      ? cl._dfa.bool()
-      : cl._dfa.boolAsVal(v0 <= v1);
+    var result = cl._dfa.bool();
+    if (v0 != null && v1 != null)
+      {
+        return switch (cl._dfa._fuir.getSpecialClazz(cl._dfa._fuir.clazzArgClazz(cl.calledClazz(), 0)))
+          {
+            case c_i8, c_i16, c_i32, c_i64 -> cl._dfa.boolAsVal(v0 <= v1);
+            case c_u8 -> cl._dfa.boolAsVal(Byte.compareUnsigned(v0.byteValue(), v1.byteValue()) <= 0);
+            case c_u16 -> cl._dfa.boolAsVal(Short.compareUnsigned(v0.shortValue(), v1.shortValue()) <= 0);
+            case c_u32 -> cl._dfa.boolAsVal(Integer.compareUnsigned(v0.intValue(), v1.intValue()) <= 0);
+            case c_u64 -> cl._dfa.boolAsVal(Long.compareUnsigned(v0, v1) <= 0);
+            default -> throw new RuntimeException("missing case impl in numericLteq?");
+          };
+      }
+    return result;
   }
 
 
@@ -2766,66 +2705,94 @@ public class DFA extends ANY
         check(!_fuir.clazzIsRef(vc));
         r = newInstance(vc, site, context).box(this, vc, cl, context);
       }
+    else if (_fuir.clazzIsUnitType(cl))
+      {
+        r = Value.UNIT;
+      }
     else
       {
-        var cnum = _fuir.clazzId2num(cl);
-        var ao = _oneInstanceOfClazz.getIfExists(cnum);
-        if (ao == null)
+        r = newValueInstance(cl, site, context);
+      }
+    return r;
+  }
+
+
+  /**
+   * Create value instance of given clazz.
+   *
+   * @param cl the clazz
+   *
+   * @param site the site index where the new instances is creates, NO_SITE
+   * if not within code (intrinsics etc.)
+   *
+   * @param context for debugging: Reason that causes this instance to be part
+   * of the analysis.
+   */
+  Value newValueInstance(int cl, int site, Context context)
+  {
+    if (PRECONDITIONS) require
+      (!_fuir.clazzIsChoice(cl),
+       !isBuiltInNumeric(cl),
+       !_fuir.clazzIsRef(cl));
+
+    Value r;
+    var cnum = _fuir.clazzId2num(cl);
+    var ao = _oneInstanceOfClazz.getIfExists(cnum);
+    if (ao == null)
+      {
+        if (onlyOneInstance(cl))
           {
-            if (onlyOneInstance(cl))
-              {
-                var ni = new Instance(this, cl, site, context);
-                wasChanged(() -> "DFA: new instance " + _fuir.clazzAsString(cl));
-                makeUnique(ni);
-                ao = ni;
-              }
-            else
-              {
-                ao = SEVERAL_INSTANCES;
-              }
-            _oneInstanceOfClazz.force(cnum, ao);
-          }
-        if (ao instanceof Instance a)
-          {
-            r = a;
+            var ni = new Instance(this, cl, site, context);
+            wasChanged(() -> "DFA: new instance " + _fuir.clazzAsString(cl));
+            makeUnique(ni);
+            ao = ni;
           }
         else
           {
-            // Instances are cached using two maps with keys
-            //
-            //  - clazzAt(site)           and then
-            //  - cl << 32 || env.id
-            //
-            var sc = site == FUIR.NO_SITE ? FUIR.NO_CLAZZ : _fuir.clazzAt(site);
-            var sci = sc == FUIR.NO_CLAZZ ? 0 : 1 + _fuir.clazzId2num(sc);
+            ao = SEVERAL_INSTANCES;
+          }
+        _oneInstanceOfClazz.force(cnum, ao);
+      }
+    if (ao instanceof Instance a)
+      {
+        r = a;
+      }
+    else
+      {
+        // Instances are cached using two maps with keys
+        //
+        //  - clazzAt(site)           and then
+        //  - cl << 32 || env.id
+        //
+        var sc = site == FUIR.NO_SITE ? FUIR.NO_CLAZZ : _fuir.clazzAt(site);
+        var sci = sc == FUIR.NO_CLAZZ ? 0 : 1 + _fuir.clazzId2num(sc);
 
-            var clazzm = _instancesForSite.getIfExists(sci);
-            if (clazzm == null)
-              {
-                clazzm = new LongMap<>();
-                _instancesForSite.force(sci, clazzm);
-              }
-            var env = _real ? context.env() : null;
-            var k1 = _fuir.clazzId2num(cl);
-            var k2 = (env == null ? 0 : env._id + 1);
-            var k = (long) k1 << 32 | k2 & 0xffffFFFFL;
-            r = clazzm.get(k);
-            if (r == null && env != null)
-              { // check if instance is an effect that is already present in the
-                // current environment. If so, we do not create a new instance
-                // since this would end up creating an new environment with that
-                // new instance added, which will in turn end up here again to
-                // create another instance ... ad infinitum.
-                r = context.findEffect(cl, site);
-              }
-            if (r == null)
-              {
-                var ni = new Instance(this, cl, site, context);
-                wasChanged(() -> "DFA: new instance " + _fuir.clazzAsString(cl));
-                clazzm.put(k, ni);
-                makeUnique(ni);
-                r = ni;
-              }
+        var clazzm = _instancesForSite.getIfExists(sci);
+        if (clazzm == null)
+          {
+            clazzm = new LongMap<>();
+            _instancesForSite.force(sci, clazzm);
+          }
+        var env = _real ? context.env() : null;
+        var k1 = _fuir.clazzId2num(cl);
+        var k2 = (env == null ? 0 : env._id + 1);
+        var k = (long) k1 << 32 | k2 & 0xffffFFFFL;
+        r = clazzm.get(k);
+        if (r == null && env != null)
+          { // check if instance is an effect that is already present in the
+            // current environment. If so, we do not create a new instance
+            // since this would end up creating an new environment with that
+            // new instance added, which will in turn end up here again to
+            // create another instance ... ad infinitum.
+            r = context.findEffect(cl, site);
+          }
+        if (r == null)
+          {
+            var ni = new Instance(this, cl, site, context);
+            wasChanged(() -> "DFA: new instance " + _fuir.clazzAsString(cl));
+            clazzm.put(k, ni);
+            makeUnique(ni);
+            r = ni;
           }
       }
     return r;
@@ -3057,7 +3024,7 @@ public class DFA extends ANY
    */
   boolean onlyOneInstance(int clazz)
   {
-    return ONLY_ONE_INSTANCE &&
+    return isUnitType(clazz) || ONLY_ONE_INSTANCE &&
       // NYI: UNDER DEVELOPMENT: This is currently a dumb list of features,
       // this should be something generic instead, e.g.
       //
@@ -3070,6 +3037,12 @@ public class DFA extends ANY
         "codepoint",
         "Sequence u8",
         "array u8",
+        // the following two are necessary for
+        // combination of Finger_Tree and
+        // tests/effect_installed_negative
+        "array (Sequence u8)",
+        "array (Sequence (Sequence u8))",
+        "container.deep u8",
         "fuzion.sys.internal_array u8" -> true;
       default -> false;
       };
@@ -3264,7 +3237,7 @@ public class DFA extends ANY
    */
   boolean siteSensitive(int cc)
   {
-    return SITE_SENSITIVE || _fuir.isConstructor(cc);
+    return SITE_SENSITIVE || _fuir.isConstructor(cc) && !onlyOneInstance(cc);
   }
 
 
@@ -3346,23 +3319,8 @@ public class DFA extends ANY
    */
   Call newCall(Call from, int cl, int site, Value tvalue, List<Val> args, Env env, Context context)
   {
-    CallGroup g;
-    var kg = CallGroup.quickHash(this, cl, site, tvalue);
-    if (kg != -1)
-      {
-        g = _callGroupsQuick.get(kg);
-        if (g == null)
-          {
-            g = new CallGroup(this, cl, site, tvalue);
-            _callGroupsQuick.put(kg, g);
-          }
-      }
-    else
-      {
-        var ng = new CallGroup(this, cl, site, tvalue);
-        g = _callGroups.putIfAbsent(ng, ng);
-        g = g != null ? g : ng;
-      }
+    var ng = new CallGroup(this, cl, site, tvalue);
+    var g = _callGroups.computeIfAbsent(ng, k->ng);
 
     Call e, r;
     r = _unitCalls.get(cl);
@@ -3422,7 +3380,7 @@ public class DFA extends ANY
         else
           {
             if (CHECKS) check
-              (false);
+              (r._instance == Value.UNIT);
           }
         e = r;
         analyzeNewCall(r);
@@ -3529,7 +3487,7 @@ public class DFA extends ANY
    */
   Env newEnv(Env env, int ecl, Value ev)
   {
-    if (DO_NOT_TRACE_ENVS)
+    if (!TRACE_ENVS)
       {
         var v0 = _allValuesForEnv.get(ecl);
         var v1 = v0 == null ? ev : v0.join(this, ev, ecl);

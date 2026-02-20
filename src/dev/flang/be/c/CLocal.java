@@ -51,14 +51,6 @@ class CLocal extends CIdent
   /*-----------------------------  methods  -----------------------------*/
 
 
-  /**
-   * Is this a local variable?
-   */
-  boolean isLocalVar()
-  {
-    return true;
-  }
-
 }
 
 /* end of file */

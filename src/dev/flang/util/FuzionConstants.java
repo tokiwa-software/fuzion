@@ -500,11 +500,6 @@ public class FuzionConstants extends ANY
 
   public static final int MIR_FILE_FIRST_FEATURE_OFFSET = 4;
 
-  /**
-   * feature kind value for constructor routines
-   */
-  public static final int MIR_FILE_KIND_CONSTRUCTOR_VALUE = 8;
-  public static final int MIR_FILE_KIND_CONSTRUCTOR_REF   = 9;
 
   /**
    * The bits of feature kind that encode the kind.

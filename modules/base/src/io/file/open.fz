@@ -25,7 +25,7 @@
 # effect for manipulating open files
 #
 module:public open(fd File_Descriptor,
-                   public file_name String) : effect is
+                   public file_name path) : effect is
 
 
   # install seek effect an run code

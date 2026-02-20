@@ -87,25 +87,39 @@ is
 # read n bytes using the currently installed byte reader effect
 # if the returned sequence is empty or count is less than n, end of file has been reached.
 #
-public read_bytes(n i32) array u8 ! reader
-  post debug: result.length <= n
+public read_bytes(n i32) outcome (Sequence u8) ! reader
+  post debug: {
+    match result
+      error => true
+      s Sequence u8 => s.count <= n
+  }
 =>
 
-  res := (mutate.array u8).empty LM
-
-  _ :=
-    while res.length.as_i32 < n
-    until
-      match reader.env.read
-        outcome => true
-        s Sequence =>
-          a := s.take n-res.length.as_i32 .as_array_backed
-          reader.env.discard a.count
-          for b in a do
-            res.add b
-          false
-
-  res.as_array
+  for res Sequence u8 := container.Finger_Tree u8 .empty,
+            {
+              match r
+                o outcome => res
+                s Sequence =>
+                  a := s.take n-res.count
+                  check debug: a.is_array_backed
+                  reader.env.discard a.count
+                  res ++ a
+            }
+  while res.count < n
+    r := reader.env.read
+  until
+    match r
+      outcome => true
+      Sequence => false
+  then
+    match r
+      o outcome =>
+        match o
+          io.end_of_file => res
+          e error => e
+      Sequence => panic "unexpected"
+  else
+    res
 
 
 # read string, up to n codepoints or until end of file
@@ -155,7 +169,7 @@ public read_delimiter (delim u8, strip_cr bool) switch String io.end_of_file ! r
   if reader.env.read ? outcome => true | * => false
     io.end_of_file
   else
-    res := (mutate.array u8).empty LM
+    res := LM.array u8 .empty
 
     while
       match reader.env.read
@@ -174,9 +188,9 @@ public read_delimiter (delim u8, strip_cr bool) switch String io.end_of_file ! r
                 res.add b
 
           match s.index_of delim
-            idx i32 =>
-              add_to_res (s.slice 0 idx)
-              reader.env.discard idx+1
+            i i32 =>
+              add_to_res (s.slice 0 i)
+              reader.env.discard i+1
               false
             nil =>
               add_to_res s
@@ -200,8 +214,10 @@ public read_line switch String io.end_of_file ! reader =>
 # may need to call this several times or use another api
 # like memory-mapped access.
 #
-public read_fully array u8 ! reader =>
-  read_bytes (array u8).max_length
+public read_fully Sequence u8 ! reader =>
+  read_bytes i32.max
+    # NYI: UNDER DEVELOPMENT: error handling
+    .val
 
 
 # Read input fully and split it at the given delimiter. If specified, delete

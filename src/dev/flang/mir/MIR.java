@@ -244,7 +244,10 @@ hw25 is
 
     return switch (ff.kind())
       {
-      case Routine   -> FeatureKind.Routine;
+      case Function,
+           Constructor,
+           RefConstructor
+                     -> FeatureKind.Routine;
       case Field     -> FeatureKind.Field;
       case Intrinsic -> FeatureKind.Intrinsic;
       case Abstract  -> FeatureKind.Abstract;
@@ -285,8 +288,7 @@ hw25 is
     if (PRECONDITIONS) require
       (s >= SITE_BASE,
        withinCode(s),
-       exprKind(getExpr(s)) == ExprKind.Call   ||
-       exprKind(getExpr(s)) == ExprKind.Assign    );
+       exprKind(getExpr(s)).isCallOrAssign());
 
     var e = getExpr(s);
     var af =
