@@ -291,15 +291,20 @@ is
   #
   public redef fits_in_u8 bool =>
     data.count ≤ 1 && data[0].fits_in_u8
+  public fixed redef fits_in_u16 bool => false # NYI
+  public fixed redef fits_in_u32 bool => false # NYI
+  public fixed redef fits_in_u64 bool => data.count ≤ 2
+  public fixed redef fits_in_u128 bool => data.count ≤ 4
+  public fixed redef fits_in_i8 bool => false # NYI
+  public fixed redef fits_in_i16 bool => false # NYI
+  public fixed redef fits_in_i32 bool => false # NYI
+  public fixed redef fits_in_i64 bool => false # NYI
+  public fixed redef fits_in_i128 bool =>
+    data.count < 4 | (data.count = 4 && ((data[0] & i32.min.cast_to_u32) = u32 0))
 
 
   # this uint as an u32
   public fixed redef as_u32 u32 => data.first 0
-
-
-  # does this uint fit in 64 bits?
-  #
-  public redef fits_in_u64 bool => data.count ≤ 2
 
 
   # this uint as an u64
@@ -310,10 +315,6 @@ is
       (data.first 0).as_u64
 
 
-  # does this uint fit into an u128?
-  public redef fits_in_u128 bool => data.count ≤ 4
-
-
   # this uint as an u128
   public redef as_u128 u128
   =>
@@ -321,11 +322,6 @@ is
     bits := [u32 0].cycle.take (4-n) ++ data
 
     u128 (bits[3].as_u64<<32 | bits[2].as_u64) (bits[1].as_u64<<32 | bits[0].as_u64)
-
-
-  # does this uint fit into an i128?
-  public redef fits_in_i128 bool =>
-    data.count < 4 | (data.count = 4 && ((data[0] & i32.min.cast_to_u32) = u32 0))
 
 
   # this uint as an i128

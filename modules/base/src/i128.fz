@@ -168,7 +168,16 @@ public i128(public hi i64, public lo u64) : num.wrap_around, has_interval is
 
   # does this i128 fit into an u8?
   #
-  public fixed redef fits_in_u8 bool => i128.zero ≤ i128.this ≤ u8.max.as_i128
+  public fixed redef fits_in_u8   bool => i128.zero ≤ i128.this ≤ u8.max.as_i128
+  public fixed redef fits_in_u16  bool => i128.zero ≤ i128.this ≤ u16.max.as_i128
+  public fixed redef fits_in_u32  bool => i128.zero ≤ i128.this ≤ u32.max.as_i128
+  public fixed redef fits_in_u64  bool => i128.zero ≤ i128.this ≤ u64.max.as_i128
+  public fixed redef fits_in_u128 bool => i128.zero ≤ i128.this
+  public fixed redef fits_in_i8   bool => i8.min.as_i128 ≤ i128.this ≤ i8.max.as_i128
+  public fixed redef fits_in_i16  bool => i16.min.as_i128 ≤ i128.this ≤ i16.max.as_i128
+  public fixed redef fits_in_i32  bool => i32.min.as_i128 ≤ i128.this ≤ i32.max.as_i128
+  public fixed redef fits_in_i64  bool => i64.min.as_i128 ≤ i128.this ≤ i64.max.as_i128
+  public fixed redef fits_in_i128 bool => true
 
   public fixed redef as_i8 i8 => hi < 0 ? (lo.cast_to_i64).as_i8 : lo.as_i8
 

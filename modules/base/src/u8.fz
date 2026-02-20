@@ -70,6 +70,15 @@ public u8(public val u8) : num.wrap_around, has_interval, idx is
   # does this u8 fit into an u8?
   #
   public fixed redef fits_in_u8 bool => true
+  public fixed redef fits_in_u16 bool => true
+  public fixed redef fits_in_u32 bool => true
+  public fixed redef fits_in_u64 bool => true
+  public fixed redef fits_in_u128 bool => true
+  public fixed redef fits_in_i8 bool => val <= i8.max.as_u8
+  public fixed redef fits_in_i16 bool => true
+  public fixed redef fits_in_i32 bool => true
+  public fixed redef fits_in_i64 bool => true
+  public fixed redef fits_in_i128 bool => true
 
   public redef as_i8 i8 => cast_to_i8
   public redef as_i16 i16   => as_i32.as_i16

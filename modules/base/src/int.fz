@@ -158,6 +158,16 @@ is
   #
   public fixed redef fits_in_u8 bool =>
     int.zero ≤ int.this ≤ u8.max.as_int
+  public fixed redef fits_in_u16 bool => false # NYI
+  public fixed redef fits_in_u32 bool => false # NYI
+  public fixed redef fits_in_u64 bool => false # NYI
+  public fixed redef fits_in_u128 bool => ns && data.count ≤ 4
+  public fixed redef fits_in_i8 bool => false # NYI
+  public fixed redef fits_in_i16 bool => false # NYI
+  public fixed redef fits_in_i32 bool => false # NYI
+  public fixed redef fits_in_i64 bool => false # NYI
+  public fixed redef fits_in_i128 bool =>
+    data.count < 4 | (data.count = 4 && ((data[0] & i32.min.cast_to_u32) = u32 0))
 
 
   # this int as an u8
@@ -174,18 +184,8 @@ is
   public fixed redef as_u64 u64 => n.as_u64
 
 
-  # does this int fit into an u128?
-  public redef fits_in_u128 bool =>
-    ns && data.count ≤ 4
-
-
   # this int as an u128
   public redef as_u128 u128 => n.as_u128
-
-
-  # does this int fit into an i128?
-  public redef fits_in_i128 bool =>
-    data.count < 4 | (data.count = 4 && ((data[0] & i32.min.cast_to_u32) = u32 0))
 
 
   # this int as an i128
