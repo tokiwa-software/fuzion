@@ -86,13 +86,6 @@ String.prefix !! =>
   !split
 
 
-write_to_file(dest String, data String) =>
-  _ := io.file.delete dest
-  check (io.file.use dest io.file.mode.write ()->
-    check (data.write_to io.file.file_mutate).ok).ok
-
-
-
 ####### record_simple_example ########
 
 
@@ -107,7 +100,7 @@ res :=
     c := !!"$fz_run -XmaxErrors=-1 -c {envir.vars["FUZION_C_BACKEND_OPTIONS"].val ""} -o=testbin $file"
     if (c.exit_code = 0)
       e := !!"./testbin"
-      _ := io.file.delete "testbin"
+      _ := io.file.delete (path.of "testbin")
       process_result c.out+e.out c.err+e.err e.exit_code
     else
       c
@@ -125,10 +118,10 @@ if type_ != "effect"
     else
       "_$type_"
 
-  write_to_file "$file.expected_out$sfx" res.out
+  io.write (path.of "$file.expected_out$sfx") res.out .or_panic
   cur_dir := os.cwd.val.as_string
-  write_to_file "$file.expected_err$sfx" (res.err.replace cur_dir "--CURDIR--")
+  io.write (path.of "$file.expected_err$sfx") (res.err.replace cur_dir "--CURDIR--") .or_panic
 else
-  write_to_file "$file.effect" ((res.out.lines.filter (l -> !l.is_empty)).sort.as_string "\n")+"\n"
+  io.write (path.of "$file.effect") ((res.out.lines.filter (l -> !l.is_empty)).sort.as_string "\n")+"\n" .or_panic
 
 say "RECORDED $file"

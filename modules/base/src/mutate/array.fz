@@ -42,14 +42,14 @@ is
 
   # get element at given index i
   #
-  public redef index [ ] (i idx) T
+  public redef index [ ] (I type : idx, i I) T
   =>
     data[i]
 
 
   # set element at given index i to given value o
   #
-  public redef set [ ] (i idx, o T) unit
+  public redef set [ ] (I type : idx, i I, o T) unit
   =>
     check_and_replace
     data[i.as_i32] := o

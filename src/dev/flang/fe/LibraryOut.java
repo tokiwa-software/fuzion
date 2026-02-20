@@ -111,7 +111,7 @@ class LibraryOut extends ANY
    *   +        +--------+---------------+-----------------------------------------------+
    *   |        | 1      | Name          | module name                                   |
    *   +        +--------+---------------+-----------------------------------------------+
-   *   |        | 1      | u128          | module version                                |
+   *   |        | 1      | u128          | module hash                                   |
    *   +        +--------+---------------+-----------------------------------------------+
    *   |        | 1      | int           | number of modules this module depends on n    |
    *   +        +--------+---------------+-----------------------------------------------+
@@ -131,7 +131,7 @@ class LibraryOut extends ANY
     _data = null;
 
     // now that we know the referenced modules, we start over:
-    var v = version();
+    var v = hash();
     if (v != null)
       {
         _data = new FixUps();
@@ -158,24 +158,15 @@ class LibraryOut extends ANY
 
 
   /**
-   * Create a version number of this module file.  Currently, the version is
-   * just a cryptographically strong random number.
+   * Create a cryptographic hash for this module file.
+   * Currently, the hash is just a cryptographically strong random number.
    */
-  byte[] version()
+  byte[] hash()
   {
-    var alg = "DRBG"; // or "SHA1PRNG"? NYI: Choose best algorithm here!
-    try
-      {
-        var result = new byte[16];
-        var r = SecureRandom.getInstance(alg);
-        r.nextBytes(result);
-        return result;
-      }
-    catch (NoSuchAlgorithmException e)
-      {
-        Errors.error("failed to produce secure random using algorithm '" + alg + "': " + e);
-        return null;
-      }
+    var result = new byte[16];
+    var r = new SecureRandom();
+    r.nextBytes(result);
+    return result;
   }
 
 

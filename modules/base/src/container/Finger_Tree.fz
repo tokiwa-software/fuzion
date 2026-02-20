@@ -68,7 +68,7 @@ private:public Finger_Tree(T type) ref : container.abstract_array T is
 
   # helper for as_array to copy contents to internal_array
   #
-  fill_internal_array(ia fuzion.sys.internal_array T, idx i32) unit => unit
+  fill_internal_array(ia fuzion.sys.internal_array T, i i32) unit => unit
 
 
   # merge this Finger_Tree with ft
@@ -92,9 +92,15 @@ private:public Finger_Tree(T type) ref : container.abstract_array T is
 #
 empty(T type) : container.Finger_Tree T is
   public redef length i32 => 0
-  public redef prepend(seq Sequence T) container.Finger_Tree T => single T seq
-  public redef append (seq Sequence T) container.Finger_Tree T => single T seq
-  public redef index [ ] (i idx) T => panic "illegal unless debug turned off"
+  public redef prepend(seq Sequence T) container.Finger_Tree T =>
+    match seq.as_finger_tree
+      nil            => single T seq
+      ft Finger_Tree => ft
+  public redef append (seq Sequence T) container.Finger_Tree T =>
+    match seq.as_finger_tree
+      nil            => single T seq
+      ft Finger_Tree => ft
+  public redef index [ ] (I type : idx, i I) T => panic "illegal unless debug turned off"
   module redef as_finger_tree option (container.Finger_Tree T) => container.empty T
   redef merge(ft container.Finger_Tree T) container.Finger_Tree T => ft
   redef merge(seq Sequence (Sequence T), ft container.Finger_Tree T) container.Finger_Tree T =>
@@ -108,13 +114,16 @@ empty(T type) : container.Finger_Tree T is
 
 # a finger tree with only one item
 #
-single(T type, data Sequence T) : container.Finger_Tree T is
+single(T type, data Sequence T) : container.Finger_Tree T
+  pre
+    debug 2 : data.as_finger_tree.is_nil
+is
   public redef length i32 => data.count
   public redef prepend(seq Sequence T) container.Finger_Tree T =>
     deep (container.hand [seq]) (empty T) (container.hand [data])
   public redef append (seq Sequence T) container.Finger_Tree T =>
     deep (container.hand [data]) (empty T) (container.hand [seq])
-  public redef index [ ] (i idx) T => data[i]
+  public redef index [ ] (I type : idx, i I) T => data[i]
   module redef as_finger_tree option (container.Finger_Tree T) => container.single data
   redef merge(ft container.Finger_Tree T) container.Finger_Tree T =>
     ft.prepend data
@@ -124,11 +133,11 @@ single(T type, data Sequence T) : container.Finger_Tree T is
     else
       r.prepend data
   redef modus choice (container.empty T) (container.single T) (container.deep T) => container.single data
-  redef fill_internal_array(ia fuzion.sys.internal_array T, idx i32) unit =>
-    for i:=0, i+1
-    while i<data.count
+  redef fill_internal_array(ia fuzion.sys.internal_array T, i i32) unit =>
+    for j:=0, j+1
+    while j<data.count
     do
-      ia[idx+i] := data[i]
+      ia[i+j] := data[j]
 
 
 
@@ -180,7 +189,7 @@ deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.ha
       r
 
 
-  public redef index [ ] (i idx) T =>
+  public redef index [ ] (I type : idx, i I) T =>
     n := i.as_i32
     if n < lft.count
       lft[n]
@@ -225,10 +234,10 @@ deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.ha
   redef modus choice (container.empty T) (container.single T) (container.deep T) => container.deep lft ft rght
 
 
-  redef fill_internal_array(ia fuzion.sys.internal_array T, idx i32) unit =>
-    lft.fill_internal_array ia idx
-    ft.fill_internal_array ia idx+lft.count
-    rght.fill_internal_array ia idx+lft.count+ft.count
+  redef fill_internal_array(ia fuzion.sys.internal_array T, i i32) unit =>
+    lft.fill_internal_array ia i
+    ft.fill_internal_array ia i+lft.count
+    rght.fill_internal_array ia i+lft.count+ft.count
 
 
 # this is called digit in the paper
@@ -310,25 +319,25 @@ is
 
 
   # fill ia with contens of the fingers
-  # starting at index idx
+  # starting at index i
   #
-  fill_internal_array(ia fuzion.sys.internal_array T, idx i32) unit =>
+  fill_internal_array(ia fuzion.sys.internal_array T, i i32) unit =>
 
     fill(f Sequence T, s i32) =>
       match f.as_finger_tree
         nil =>
-          for i := 0, i+1
+          for j := 0, j+1
           while i < f.count do
-            ia[s+i] := f[i]
+            ia[s+j] := f[j]
         ft Finger_Tree =>
           ft.fill_internal_array ia s
 
-    fill finger[0] idx
+    fill finger[0] i
     if finger.count > 1
-      fill finger[1] idx+f0cnt
+      fill finger[1] i+f0cnt
       if finger.count > 2
-        fill finger[2] idx+f0cnt+f1cnt
+        fill finger[2] i+f0cnt+f1cnt
         if finger.count > 3
-          fill finger[3] idx+f0cnt+f1cnt+f2cnt
+          fill finger[3] i+f0cnt+f1cnt+f2cnt
 
 

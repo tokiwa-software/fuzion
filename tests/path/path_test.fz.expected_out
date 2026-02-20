@@ -1,0 +1,103 @@
+/first/second/third/fourth has 4 levels
+alpha/beta/gamma has 3 levels
+second/third/fourth
+/first/second/third/fourth/alpha/beta/gamma
+
+Resolve:
+../../ex.fz
+/ex.fz
+/first/second/third/fourth/alpha/beta
+
+alpha/beta/gamma/myfile.txt
+  base: myfile.txt
+  stem: myfile
+suffix: txt
+
+alpha/beta/gamma
+  base: gamma
+  stem: gamma
+suffix: 
+
+.config
+  base: .config
+  stem: .config
+suffix: 
+
+/tmp/no_ext.
+  base: no_ext.
+  stem: no_ext.
+suffix: 
+
+../foo..
+  base: foo..
+  stem: foo..
+suffix: 
+
+...
+  base: ...
+  stem: ...
+suffix: 
+
+...txt
+  base: ...txt
+  stem: ..
+suffix: txt
+
+'/first/second/third/fourth/alpha/beta/gamma/foo/bar'.subpath 4 7 -> alpha/beta/gamma
+
+Parents:
+alpha/beta/gamma/myfile.txt
+alpha/beta/gamma
+alpha/beta
+alpha
+.
+..
+../..
+
+Relativize:
+
+ex.fz
+fourth/ex.fz
+third/fourth/ex.fz
+second/third/fourth/ex.fz
+first/second/third/fourth/ex.fz
+
+myfile.txt
+gamma/myfile.txt
+beta/gamma/myfile.txt
+alpha/beta/gamma/myfile.txt
+
+IN:  '/./././foo/./././../././bar/././././..'
+OUT: '/'
+
+IN:  '...'
+OUT: '...'
+
+IN:  '/...'
+OUT: '/...'
+
+IN:  '[...]' absolute
+OUT: '/...'
+
+IN:  '[a, b, c.fz]' absolute
+OUT: '/a/b/c.fz'
+
+IN:  '[a, b, c.fz]' relative
+OUT: 'a/b/c.fz'
+
+NEGATIVE:
+
+(precondition, debug: str != "{separator}..")
+(precondition, debug: !str.starts_with "{separator}..{separator}")
+(precondition, debug: !str.starts_with "{separator}..{separator}")
+(precondition, safety: is_absolute ? !names.contains ".." : !(names.drop_while ="..").contains "..")
+(precondition, safety: is_absolute ? !names.contains ".." : !(names.drop_while ="..").contains "..")
+(precondition, safety: is_absolute ? !names.contains ".." : !(names.drop_while ="..").contains "..")
+(precondition, debug: !is_absolute || (seq.first "") != "..")
+(precondition, debug: !is_absolute || (seq.first "") != "..")
+(precondition, safety: is_absolute ? !names.contains ".." : !(names.drop_while ="..").contains "..")
+(precondition, safety: is_absolute ? !names.contains ".." : !(names.drop_while ="..").contains "..")
+(precondition, debug: p.starts_with (path.of names is_absolute))
+(precondition, debug: p.starts_with (path.of names is_absolute))
+(precondition, debug: p.starts_with (path.of names is_absolute))
+(precondition, debug: p.starts_with (path.of names is_absolute))
