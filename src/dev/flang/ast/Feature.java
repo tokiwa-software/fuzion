@@ -1460,14 +1460,36 @@ public class Feature extends AbstractFeature
         this._returnType = _impl.checkReturnType(this);
         res._module.findDeclaredOrInheritedFeatures(this);
 
-
         if (CHECKS) check
           (_state == State.RESOLVING_DECLARATIONS);
         /**
          * Find all the types used in this that refer to formal generic arguments of
          * this or any of this' outer classes.
          */
+        var oldArgCount = arguments().size();
+
         resolveArgumentTypes(res);
+
+        var existing = _outer == null
+          ? null
+          : res
+            ._module
+            .declaredFeatures(_outer)
+            .get(featureName());
+        // argCount may change due to free types
+        if (oldArgCount != arguments().size() && existing != null)
+          {
+            existing.whenResolvedDeclarations(()-> {
+              if (existing.featureName().compareTo(featureName()) == 0)
+                {
+                  // NYI: CLEANUP: raise duplicate feature in only one place.
+                  AstErrors.duplicateFeatureDeclaration(this, existing);
+                  // just to suppress further errors
+                  res._module.declaredOrInheritedFeatures(_outer, featureName()).clear();
+                }
+            });
+          }
+
         visit(res.resolveTypesOnly(this));
 
         _state = State.RESOLVED_DECLARATIONS;
@@ -2368,7 +2390,8 @@ A ((Choice)) declaration must not contain a result type.
   AbstractFeature addTypeParameter(Resolution res, Feature ta)
   {
     if (PRECONDITIONS) require
-      (ta.isFreeType());
+      (ta.isFreeType(),
+       !state().atLeast(State.RESOLVED_DECLARATIONS));
 
     // A call to generics() has the side effects of setting _generics,
     // _arguments
@@ -2381,30 +2404,13 @@ A ((Choice)) declaration must not contain a result type.
     var tas = typeArguments();
     _arguments.add(tas.size(), ta);
 
-    checkDuplicateFeature(res);
+    _featureName = FeatureName.get(featureName().baseName(), arguments().size());
 
     res._module.findDeclarations(ta, this);
 
     res._module.addTypeParameter(this, ta);
 
     return ta;
-  }
-
-
-  /**
-   * check if outer already contains a feature with
-   * the feature name of this feature
-   *
-   * @param res the current Resolution instance
-   */
-  private void checkDuplicateFeature(Resolution res)
-  {
-    var newFeatureName = FeatureName.get(_featureName.baseName(), _arguments.size());
-    var existing = res._module.lookupFeature(_outer, newFeatureName);
-    if (existing != null && !isAbstractAndFixedPair(existing, this))
-      {
-        AstErrors.duplicateFeatureDeclaration(existing, this);
-      }
   }
 
 
@@ -2579,26 +2585,7 @@ A ((Choice)) declaration must not contain a result type.
 
   public FeatureName featureName()
   {
-    if (CHECKS) check
-      (// the feature name is currently not changed in addTypeParameter, so
-       // we add freeTypesCount() here.
-       arguments().size() == _featureName.argCount() + freeTypesCount());
-
     return _featureName;
-  }
-
-
-  /**
-   * Number of free types among the type parameters.
-   */
-  public int freeTypesCount()
-  {
-    var result = 0;
-    for (var tp : _arguments)
-      {
-        result += ((Feature) tp).isFreeType() ? 1 : 0;
-      }
-    return result;
   }
 
 
