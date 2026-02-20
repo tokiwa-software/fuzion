@@ -327,7 +327,7 @@ is
       match f.as_finger_tree
         nil =>
           for j := 0, j+1
-          while j < f.count-1 do
+          while j < f.count do
             ia[s+j] := f[j]
         ft Finger_Tree =>
           ft.fill_internal_array ia s
