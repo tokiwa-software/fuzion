@@ -1,0 +1,8 @@
+
+--CURDIR--/reg_issue3888.fz:31:27: error 1: Incompatible type parameter
+      a.as_list.first.val = b.as_list.first.val
+--------------------------^
+formal type parameter 'T' with constraint 'property.equatable'
+actual type parameter 'reg_issue3888.Sequence2.type.T'
+
+one error.
