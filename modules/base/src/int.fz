@@ -145,13 +145,12 @@ is
 
 
   # this int as an i32
-  public as_i32 i32 =>
+  public redef as_i32 i32 =>
     n.as_i32
 
 
   # this int as an i64
-  public as_i64 i64 =>
-    n.as_i64
+  public redef as_i64 i64 => n.as_i64
 
 
   # does this numeric value fit into an u8? This is redefined by children
@@ -159,6 +158,16 @@ is
   #
   public fixed redef fits_in_u8 bool =>
     int.zero ≤ int.this ≤ u8.max.as_int
+  public fixed redef fits_in_u16 bool => false # NYI
+  public fixed redef fits_in_u32 bool => false # NYI
+  public fixed redef fits_in_u64 bool => false # NYI
+  public fixed redef fits_in_u128 bool => ns && data.count ≤ 4
+  public fixed redef fits_in_i8 bool => false # NYI
+  public fixed redef fits_in_i16 bool => false # NYI
+  public fixed redef fits_in_i32 bool => false # NYI
+  public fixed redef fits_in_i64 bool => false # NYI
+  public fixed redef fits_in_i128 bool =>
+    data.count < 4 | (data.count = 4 && ((data[0] & i32.min.cast_to_u32) = u32 0))
 
 
   # this int as an u8
@@ -168,40 +177,19 @@ is
 
 
   # this int as an u32
-  public fixed as_u32 u32
-  pre debug: int.this >= int.zero
-  =>
-      n.as_u32
+  public fixed redef as_u32 u32 => n.as_u32
 
 
   # this int as an u64
-  public fixed as_u64 u64
-  pre debug: int.this >= int.zero
-  =>
-    n.as_u64
-
-
-  # does this int fit into an u128?
-  public fits_in_u128 bool =>
-    ns && data.count ≤ 4
+  public fixed redef as_u64 u64 => n.as_u64
 
 
   # this int as an u128
-  public as_u128 u128
-  pre debug: fits_in_u128
-  =>
-    n.as_u128
-
-
-  # does this int fit into an i128?
-  public fits_in_i128 bool =>
-    data.count < 4 | (data.count = 4 && ((data[0] & i32.min.cast_to_u32) = u32 0))
+  public redef as_u128 u128 => n.as_u128
 
 
   # this int as an i128
-  public as_i128 i128
-  pre debug: fits_in_i128
-  =>
+  public redef as_i128 i128 =>
     if ns
       n.as_i128
     else if data = [u32 0x8000_0000, 0, 0, 0]
