@@ -1,4 +1,3 @@
-envir.vars
 fileiotests.f.delete
 fileiotests.f.move
 fileiotests.f.stat
@@ -12,5 +11,3 @@ io.Err
 io.Out
 io.dir.make
 panic
-state unit (cache#2 encodings.unicode.mappings.lower_case.lower_case).cache_item
-state unit (cache#2 separator_cache).cache_item
