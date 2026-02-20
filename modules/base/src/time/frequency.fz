@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# time.frequncy -- a child of Period that is defined by a frequency per duration
+# time.frequency -- a child of Period that is defined by a frequency per duration
 #
 # This provices abstract features that define a period of time and that
 # permit multiplications with large integers avoiding drift.
