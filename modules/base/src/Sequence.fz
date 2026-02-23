@@ -352,9 +352,9 @@ is
   #
   #    at first result of condition function
   #
-  public split_at(I type : idx, c I | T->bool) tuple (Sequence T) (Sequence T) =>
+  public split_at(c i32 | T->bool) tuple (Sequence T) (Sequence T) =>
     match c
-      at I => ((take at), (drop at))
+      at i32 => ((take at), (drop at))
       cond T->bool =>
         split_at (first_index_of cond)
 
