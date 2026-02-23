@@ -85,7 +85,13 @@ public use(R type, file_name path, m mode.val, code ()-> outcome R) outcome R =>
     #   .call code
 
     file_mutate ! ()->
-      open fd file_name
-        .and (outcome R) _ ((io.buffered file_mutate).reader (read_handler fd))
-        .and ((io.buffered file_mutate).writer (write_handler fd))
-        .call code
+      match m
+        mode.read =>
+          open fd file_name
+            .and (outcome R) _ ((io.buffered file_mutate).reader (read_handler fd))
+            .call code
+        * =>
+          open fd file_name
+            .and (outcome R) _ ((io.buffered file_mutate).reader (read_handler fd))
+            .and ((io.buffered file_mutate).writer (write_handler fd))
+            .call code
