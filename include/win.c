@@ -55,7 +55,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include "fz.h"
 
 static_assert(sizeof(L'\0') == 2, "wide char, unexpected bytes");
-static_assert(_WIN32_WINNT >= 0x0A00); // Windows 10
+static_assert(_WIN32_WINNT >= 0x0600, "rt: win, expected Windows Vista or greater.");
 
 
 /**
