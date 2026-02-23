@@ -814,11 +814,9 @@ int32_t fzE_file_read(void * file, void * buf, int32_t size)
 
   size_t result = fread(buf, 1, size, (FILE*)file);
 
-  return result > 0
+  return result >= 0
     ? result
-    : result == 0
-    ? -1  // EOF
-    : -2; // ERROR
+    : -1; // ERROR
 }
 
 
