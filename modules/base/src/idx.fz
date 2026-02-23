@@ -28,12 +28,5 @@
 # integer type (i8,...,u64) inheriting from idx
 # without manual conversion
 #
-public idx is
-
-  public as_i32 i32 => abstract
-
-  public as_i64 i64 => abstract
-
-  public as_u64 u64 => abstract
-
+public idx : integer is
 
