@@ -992,11 +992,9 @@ int32_t fzE_file_read(void * file, void * buf, int32_t size)
   DWORD bytesRead = 0;
   BOOL success = ReadFile(file, buf, (DWORD)size, &bytesRead, NULL);
 
-  return success && bytesRead != 0
+  return success
     ? (int32_t)bytesRead
-    : GetLastError() == ERROR_BROKEN_PIPE
-    ? -1 // EOF
-    : -2; // ERROR
+    : (GetLastError() == ERROR_BROKEN_PIPE ? 0 : -1);
 }
 
 
