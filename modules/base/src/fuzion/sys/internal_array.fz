@@ -56,7 +56,7 @@ module internal_array(T type, module data Array T, module length i32) is
 
   module indices => 0..length-1
 
-  module index [ ] (i idx) T
+  module index [ ] (I type : idx, i I) T
     pre
       safety: 0 ≤ i.as_i32 < length
   =>

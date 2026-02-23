@@ -159,21 +159,6 @@ say_section(str String) =>
   say ""
 
 
-#
-# send something to our influx database
-#
-# e.g. post_to_influx "tokiwa" "benchmarks" "**token**" "tests,test=hello value=26.5"
-#
-post_to_influx(org, bucket, token, str String) =>
-  web.post_r
-    net.family.ipv4
-    "https://influxdb.tokiwa.software:8086/api/v2/write?org={org}&bucket={bucket}&precision=s"
-    str.utf8
-    (container.map_of [("Authorization", "Token {token}"),
-                       ("Content-Type", "text/plain")])
-
-
-
 main =>
 
   mtx := concur.sync.mutex.new.val
@@ -183,10 +168,10 @@ main =>
 
   # NYI: UNDER DEVELOPMENT: react to Ctrl+c like in bash scripts (trap)
 
-  if (envir.args.count != 3 && envir.args.count != 4)
+  if (envir.args.count != 3)
     say "wrong argument count"
     say "usage:"
-    say "run_tests.fz <build_dir> <target> [<n_threads>]"
+    say "run_tests.fz <build_dir> <target>"
     exit 1
 
   build_dir := path.of envir.args[1]
@@ -336,8 +321,8 @@ main =>
       if token.is_blank
         say "INFLUXDB_TOKEN is blank, not sending to influxdb."
       else
-        say <| post_to_influx "tokiwa" "benchmarks" token.trim (String.join_lines data)
-        say <| post_to_influx "tokiwa" "benchmarks" token.trim "run_tests,backend={target} total_time={elapsed_time_total.millis}"
+        say <| tokiwa.post_to_influx "tokiwa" "benchmarks" token.trim (String.join_lines data)
+        say <| tokiwa.post_to_influx "tokiwa" "benchmarks" token.trim "run_tests,backend={target} total_time={elapsed_time_total.millis}"
 
   exit
 

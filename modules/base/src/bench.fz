@@ -30,7 +30,7 @@
 #
 # returns: iterations per second
 #
-public bench(warm_up time.duration, d time.duration, f ()->unit) f64 ! time.nano =>
+public bench(warm_up time.duration, d time.duration, f ()->unit) time.frequency ! time.nano =>
 
   wa_start := time.nano.read
 
@@ -44,7 +44,7 @@ public bench(warm_up time.duration, d time.duration, f ()->unit) f64 ! time.nano
   do
     f.call
   else
-    iter.as_f64 / (d.nanos.as_f64 * 1E-9)
+    time.frequency iter d
 
 
 # benchmark f for 10 seconds, warm_up 5 seconds
@@ -54,5 +54,5 @@ public bench(warm_up time.duration, d time.duration, f ()->unit) f64 ! time.nano
 #
 # returns: iterations per second
 #
-public bench(f ()->unit) f64 ! time.nano =>
+public bench(f ()->unit) time.frequency ! time.nano =>
   bench (time.duration.s 5) (time.duration.s 10) f

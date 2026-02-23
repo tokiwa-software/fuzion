@@ -158,18 +158,6 @@ String.execute(
 String.execute =>
   String.this.execute false
 
-# write data to file dest
-#
-write_to_file(dest path, data String) =>
-  _ := io.file.delete dest
-  check (io.file.use dest io.file.mode.write ()->
-    check (data.write_to io.file.file_mutate).ok).ok
-
-# write file from src to dest
-#
-copy(src, dest path) =>
-  contents := io.slurp src .or_panic
-  write_to_file dest contents
 
 ############################################################################
 
@@ -235,7 +223,7 @@ exp_err_cleaned := path.of "$exp_err.cleaned"
 if io.file.exists (path.of "$file.skip") || (be = "effect" && !(io.file.exists (path.of "$file.effect")))
     say "SKIP $file"
 else
-    yak "RUN $file "
+    yak "RUN $file using {be.pad_center 3} backend "
 
     delete_tmp_files
 
@@ -264,31 +252,31 @@ else
 
         check_exit_code run
 
-        write_to_file (path.of "tmp_out.txt") run.out
-        write_to_file (path.of "tmp_err.txt") run.err
+        io.write (path.of "tmp_out.txt") run.out .or_panic
+        io.write (path.of "tmp_err.txt") run.err .or_panic
       else
-        write_to_file (path.of "tmp_out.txt") compile.out
-        write_to_file (path.of "tmp_err.txt") compile.err
+        io.write (path.of "tmp_out.txt") compile.out .or_panic
+        io.write (path.of "tmp_err.txt") compile.err .or_panic
     else if be = "jvm"
       run := "$fz_run -XmaxErrors=-1 -jvm {backend_options "FUZION_JVM_BACKEND_OPTIONS"} $file".execute true
 
       check_exit_code run
 
-      write_to_file (path.of "tmp_out.txt") run.out
-      write_to_file (path.of "tmp_err.txt") run.err
+      io.write (path.of "tmp_out.txt") run.out .or_panic
+      io.write (path.of "tmp_err.txt") run.err .or_panic
     else if be = "int"
       run := "$fz_run -XmaxErrors=-1 -interpreter $file".execute true
 
       check_exit_code run
 
-      write_to_file (path.of "tmp_out.txt") run.out
-      write_to_file (path.of "tmp_err.txt") run.err
+      io.write (path.of "tmp_out.txt") run.out .or_panic
+      io.write (path.of "tmp_err.txt") run.err .or_panic
     else if be = "effect"
       run := "$fz_run -XmaxErrors=-1 -effects $file".execute
 
       check_exit_code run
 
-      write_to_file (path.of "tmp_out.txt") ((run.out.lines.filter (l -> !l.is_empty)).sort.as_string "\n")+"\n"
+      io.write (path.of "tmp_out.txt") ((run.out.lines.filter (l -> !l.is_empty)).sort.as_string "\n")+"\n" .or_panic
     else
       panic "backend unknown: $be"
 
@@ -296,7 +284,7 @@ else
 
     err :=
       if be != "effect"
-        copy exp_err exp_err_cleaned
+        io.copy exp_err exp_err_cleaned .or_panic
         clean_err (path.of "tmp_err.txt")
         clean_err exp_err_cleaned
         "diff --strip-trailing-cr {exp_err_cleaned} tmp_err.txt".execute

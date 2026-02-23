@@ -142,6 +142,7 @@ MOD_MAIL              = $(BUILD_DIR)/modules/mail.fum
 MOD_WEB               = $(BUILD_DIR)/modules/web.fum
 MOD_SODIUM            = $(BUILD_DIR)/modules/sodium.fum
 MOD_CRYPTO            = $(BUILD_DIR)/modules/crypto.fum
+MOD_TOKIWA            = $(BUILD_DIR)/modules/tokiwa.fum
 MOD_WEBSERVER         = $(BUILD_DIR)/modules/webserver.fum
 MOD_I18N              = $(BUILD_DIR)/modules/i18n.fum
 
@@ -213,8 +214,9 @@ FZ_MODULES = \
 			$(MOD_WEB) \
 			$(MOD_SODIUM) \
 			$(MOD_CRYPTO) \
-			$(MOD_WEBSERVER) \
-			$(MOD_I18N)
+			$(MOD_I18N) \
+			$(MOD_TOKIWA) \
+			$(MOD_WEBSERVER)
 
 C_FILES = $(shell find $(FZ_SRC) \( -path ./build -o -path ./.git \) -prune -o -name '*.c' -print)
 
@@ -515,6 +517,12 @@ $(MOD_CRYPTO): $(MOD_SODIUM) $(FZ) $(shell find $(FZ_SRC)/modules/crypto/src -na
 	cp -rf $(FZ_SRC)/modules/crypto $(@D)
 	$(FZ) -modules=sodium -sourceDirs=$(BUILD_DIR)/modules/crypto/src -saveModule=$@
 
+$(MOD_TOKIWA): $(MOD_WEB) $(FZ) $(shell find $(FZ_SRC)/modules/tokiwa/src -name "*.fz")
+	rm -rf $(@D)/tokiwa
+	mkdir -p $(@D)
+	cp -rf $(FZ_SRC)/modules/tokiwa $(@D)
+	$(FZ) -modules=web -sourceDirs=$(BUILD_DIR)/modules/tokiwa/src -saveModule=$@
+
 $(MOD_WEBSERVER): $(MOD_HTTP) $(FZ) $(shell find $(FZ_SRC)/modules/webserver/src -name "*.fz")
 	rm -rf $(@D)/webserver
 	mkdir -p $(@D)
@@ -533,11 +541,11 @@ $(FZJAVA): $(FZ_SRC)/bin/fzjava | $(CLASS_FILES_TOOLS_FZJAVA)
 	chmod +x $@
 
 $(BUILD_DIR)/bin/check_simple_example: $(FZ_SRC)/bin/check_simple_example.fz | $(FUZION_BASE) $(MOD_TERMINAL)
-	$(FZ) -modules=terminal -c -o=$@ $(FZ_SRC)/bin/check_simple_example.fz
+	$(FZ) -debug=0 -modules=terminal -c -o=$@ $(FZ_SRC)/bin/check_simple_example.fz
 	@echo " + $@"
 
 $(BUILD_DIR)/bin/record_simple_example: $(FZ_SRC)/bin/record_simple_example.fz | $(FUZION_BASE) $(MOD_TERMINAL)
-	$(FZ) -modules=terminal -c -o=$@ $(FZ_SRC)/bin/record_simple_example.fz
+	$(FZ) -debug=0 -modules=terminal -c -o=$@ $(FZ_SRC)/bin/record_simple_example.fz
 	@echo " + $@"
 
 $(BUILD_DIR)/tests: $(FUZION_FILES_TESTS) $(BUILD_DIR)/include $(BUILD_DIR)/bin/check_simple_example $(BUILD_DIR)/bin/record_simple_example
@@ -583,7 +591,7 @@ logo: $(BUILD_DIR)/assets/logo.svg $(BUILD_DIR)/assets/logo_bleed.svg $(BUILD_DI
 	cp $^ $(FZ_SRC)/assets/
 
 $(BUILD_DIR)/bin/run_tests: $(FZ) $(FZ_MODULES) $(FZ_SRC)/bin/run_tests.fz
-	$(FZ) -modules=lock_free,web -c -CLink=wolfssl -CInclude="wolfssl/options.h wolfssl/ssl.h" $(FZ_SRC)/bin/run_tests.fz -o=$@
+	$(FZ) -debug=0 -modules=lock_free,tokiwa -c -CLink=wolfssl -CInclude="wolfssl/options.h wolfssl/ssl.h" $(FZ_SRC)/bin/run_tests.fz -o=$@
 
 # phony target to run Fuzion tests and report number of failures
 .PHONY: run_tests
@@ -649,7 +657,7 @@ release: clean all
 	rm -f fuzion_$(VERSION).tar.gz
 	tar cfz fuzion_$(VERSION).tar.gz --transform s/^build/fuzion_$(VERSION)/ build
 
-SYNTAX_CHECK_MODULES = terminal,clang,lock_free,java.base,java.datatransfer,java.xml,java.desktop,web,http,wolfssl
+SYNTAX_CHECK_MODULES = terminal,clang,lock_free,java.base,java.datatransfer,java.xml,java.desktop,web,http,wolfssl,tokiwa
 # target to do a syntax check of fz files.
 # currently only code in bin/ and examples/ are checked.
 .PHONY: syntaxcheck

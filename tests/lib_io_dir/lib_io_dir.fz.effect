@@ -1,4 +1,3 @@
-envir.vars
 fuzion.runtime.check_fault
 fuzion.runtime.contract_fault
 fuzion.runtime.fault
@@ -11,4 +10,3 @@ io.dir.make
 io.dir.read
 io.file.delete
 panic
-state unit (cache#2 encodings.unicode.mappings.lower_case.lower_case).cache_item
