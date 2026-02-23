@@ -28,14 +28,14 @@ public mail is
 
   # send a plain text mail via ipv4 on port 587, using STARTTLS
   #
-  public send_starttls(host, username, password, from, to, subject, text String) outcome unit =>
-    send net.family.ipv4 587 host username password from to subject text
+  public send_starttls(host, username, password, from, to, subject, text String, bcc option String) outcome unit =>
+    send net.family.ipv4 587 host username password from to subject text bcc
 
 
   # send a plain text mail via ipv4 on port 465, using implicit TLS
   #
-  public send(host, username, password, from, to, subject, text String) outcome unit =>
-    send net.family.ipv4 465 host username password from to subject text
+  public send(host, username, password, from, to, subject, text String, bcc option String) outcome unit =>
+    send net.family.ipv4 465 host username password from to subject text bcc
 
 
   # NYI: UNDER DEVELOPMENT: this will just hang if any read_line_while condition never matches
@@ -43,7 +43,7 @@ public mail is
 
   # send a plain text mail
   #
-  public send(family net.family.val, port u16, host, username, password, from, to, subject, text String) outcome unit
+  public send(family net.family.val, port u16, host, username, password, from, to, subject, text String, bcc option String) outcome unit
     pre
       debug: !host.contains_whitespace
       debug: !from.contains_whitespace
@@ -71,9 +71,15 @@ public mail is
       MAIL FROM:<$from>
       """.replace "\n" "\r\n"
 
-    rcpt_to => """
-      RCPT TO:<$to>
-      """.replace "\n" "\r\n"
+    rcpt_to =>
+      match bcc
+        nil => """
+          RCPT TO:<$to>
+          """.replace "\n" "\r\n"
+        m String => """
+          RCPT TO:<$to>
+          RCPT TO:<$m>
+          """.replace "\n" "\r\n"
 
     data => """
       DATA
