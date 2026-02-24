@@ -52,7 +52,7 @@ lib_io_utf8 =>
     say "$file exists: {f.exists file}"
 
     _ := f
-      .use file f.mode.write ()->(f.writer.write content.utf8)
+      .use file f.mode.write ()->(f.writer.write content)
       .bind (_ -> say "$file was created")
     say "$file exists: {f.exists file}"
 

@@ -104,7 +104,7 @@ record_process(
   lm ! ()->
     for stdin in feed_stdin do
       x := p.with_in unit lm ()->
-        check (io.buffered lm).writer.env.write stdin.0.utf8 .ok
+        check (io.buffered lm).writer.env.write stdin.0 .ok
       check x.ok
 
       for i in 1..stdin.1 do
