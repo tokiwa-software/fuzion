@@ -1412,8 +1412,8 @@ public class DFA extends ANY
                       null /* env */,
                       Context._MAIN_ENTRY_POINT_);
 
-            // stackoverflow may happen at any time,
-            // causing once at main start
+            // stackoverflow may happen at any time during execution.
+            // hence we simulate one once at the start of the program.
             var soc = _fuir.clazz(SpecialClazzes.c_stackoverflow_cause);
             var socRes =
               newCall(null,
