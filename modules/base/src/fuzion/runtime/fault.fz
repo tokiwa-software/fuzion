@@ -30,6 +30,8 @@
 #
 # runtime.fault
 # │
+# ├── stackoverflow
+# │
 # ├── panic
 # │
 # └── contract_fault

@@ -1701,7 +1701,7 @@ public abstract class Expr extends ByteCode
       (className != null);
     return new Expr()
       {
-        public String toString() { return "new0"; }
+        public String toString() { return "new"; }
         public JavaType type()
         {
           return type;
