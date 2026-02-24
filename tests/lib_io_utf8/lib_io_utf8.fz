@@ -96,8 +96,8 @@ lib_io_utf8 =>
     _ := io.file.delete (path.of "⚗️🧫")
     say (io.dir.make (path.of "⚗️🧫"))
     say (io.dir.make (path.of "⚗️🧫"))
-    _ := io.file.use (path.of "⚗️🧫/1️⃣📜") io.file.mode.write ()->(io.file.writer.write [])
-    _ := io.file.use (path.of "⚗️🧫/2️⃣🗒️") io.file.mode.write ()->(io.file.writer.write [])
+    _ := io.file.use (path.of "⚗️🧫/1️⃣📜") io.file.mode.write ()->(io.file.writer.write "")
+    _ := io.file.use (path.of "⚗️🧫/2️⃣🗒️") io.file.mode.write ()->(io.file.writer.write "")
 
     res := io.dir.use (Sequence String) (path.of "⚗️🧫") ()->
       array 3 _->io.dir.open.read.as_string
