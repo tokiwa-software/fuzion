@@ -54,8 +54,8 @@ is
     # extract 8 quintets from 40 bits (of an u64)
     enc40(n u64) =>
       array u8 8 i->
-        idx := ((n >> (35-i*5).as_u64) & 31).as_i32
-        alphabet[idx]
+        j := ((n >> (35-i*5).as_u64) & 31).as_i32
+        alphabet[j]
 
     for
       res Sequence u8 := [], next        # the encoded data

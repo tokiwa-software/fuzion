@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# time.frequncy -- a child of Period that is defined by a frequency per duration
+# time.frequency -- a child of Period that is defined by a frequency per duration
 #
 # This provices abstract features that define a period of time and that
 # permit multiplications with large integers avoiding drift.
@@ -37,7 +37,7 @@
 # of 17ms (a whole period) in 10 days. Such inaccuracy can result in catastrophic failure, see
 # (The Patriot Missile Failure)[https://www-users.cse.umn.edu/~arnold/disasters/patriot.html].
 #
-public frequency(# the frequence per base
+public frequency(# the frequency per base
                  f u64,
 
                  # the base duration
@@ -56,6 +56,15 @@ is
   public redef as_duration time.duration
   =>
     time.duration (base.nanos / f)
+
+
+  # this frequency in Hertz (1/s)
+  #
+  # Note that this might be inaccurate,
+  # due to floating point arithmethic.
+  #
+  public as_hz f64 =>
+    f.as_f64 * 1E9 / base.nanos.as_f64
 
 
   # this frequency multiplied by factor n

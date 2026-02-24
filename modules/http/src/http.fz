@@ -56,6 +56,6 @@ module parse_http_version(ver String) =>
   v := ver.substring 5
   match v.find "."
     nil => (v.parse_i32.or_cause unit err, 0)
-    idx i32 =>
-      (v.substring 0 idx .parse_i32.or_cause unit err, v.substring idx+1 .parse_i32.or_cause unit err)
+    i i32 =>
+      (v.substring 0 i .parse_i32.or_cause unit err, v.substring i+1 .parse_i32.or_cause unit err)
 

@@ -292,8 +292,8 @@ is
     total_number <- total_number + 1
     if total_number.get > ignore_first
       if ignore_last > 0
-        ld := ignore_last_buffer[ignore_last_buffer_index]
-        ignore_last_buffer[ignore_last_buffer_index] := d
+        ld := ignore_last_buffer[ignore_last_buffer_index.get]
+        ignore_last_buffer[ignore_last_buffer_index.get] := d
         ignore_last_buffer_index <- (ignore_last_buffer_index.get = 0 ? ignore_last_buffer.length
                                                                       : ignore_last_buffer_index.get)- 1
         ld.bind add0 |> ignore

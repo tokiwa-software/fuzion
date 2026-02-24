@@ -703,8 +703,8 @@ catch_postcondition.λ.call: --CURDIR--/catch_postcondition.fz:146:38:
   tries array ()->String := [ (() -> test i32), (() -> test i16), (() -> test i64) ]
 -------------------------------------^^^^^^^^
 catch_postcondition.z.try: --CURDIR--/catch_postcondition.fz:151:33:
-    redef try option String  => tries[c0].call
---------------------------------^^^^^^^^^^^^^^
+    redef try option String  => tries[c0.get].call
+--------------------------------^^^^^^^^^^^^^^^^^^
 catch_postcondition.z.λ.call.λ.call: --CURDIR--/catch_postcondition.fz:112:11:
           try
 ----------^^^

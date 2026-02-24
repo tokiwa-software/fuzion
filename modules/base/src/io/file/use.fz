@@ -72,7 +72,12 @@ public use(R type, file_name path, m mode.val, code ()-> outcome R) outcome R =>
 
   (fuzion.sys.fileio.open file_name mode_num).bind fd->
 
-    # NYI: BUG: unclear why DFA does not accept this
+    # NYI: BUG: "Failed to verify that effect 'io.file.file_mutate' is installed in current environment."
+    # e.g. in tests/lib_io_file
+    #
+    # DFA does not or even can not understand the control flow
+    # here yet. We need to first instantiate file_mutate explicitly.
+    #
     # file_mutate
     #   .and (outcome R) open (open fd file_name)
     #   .and ((io.buffered file_mutate).reader (read_handler fd))
@@ -80,7 +85,13 @@ public use(R type, file_name path, m mode.val, code ()-> outcome R) outcome R =>
     #   .call code
 
     file_mutate ! ()->
-      open fd file_name
-        .and (outcome R) _ ((io.buffered file_mutate).reader (read_handler fd))
-        .and ((io.buffered file_mutate).writer (write_handler fd))
-        .call code
+      match m
+        mode.read =>
+          open fd file_name
+            .and (outcome R) _ ((io.buffered file_mutate).reader (read_handler fd))
+            .call code
+        * =>
+          open fd file_name
+            .and (outcome R) _ ((io.buffered file_mutate).reader (read_handler fd))
+            .and ((io.buffered file_mutate).writer (write_handler fd))
+            .call code

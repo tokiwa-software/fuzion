@@ -789,14 +789,14 @@ is
   # Note that this may have a performance in O(i) unless this
   # Sequence is_array_backed.
   #
-  public is_valid_index(i idx) bool =>
+  public is_valid_index(I type : idx, i I) bool =>
     (0 ≤ i.as_i32 && (if is_array_backed then i.as_i32 ≤ count
                                          else !(drop i.as_i32).is_empty))
 
 
   # the nth element in the sequence, must exist
   #
-  public index [] (i idx) T
+  public index [] (I type : idx, i I) T
     pre
       debug: is_valid_index i
   =>

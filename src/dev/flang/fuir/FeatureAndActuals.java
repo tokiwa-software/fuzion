@@ -66,14 +66,6 @@ public class FeatureAndActuals extends ANY implements Comparable<FeatureAndActua
   public final List<AbstractType> _tp;
 
 
-  /**
-   * in case _tp is null, this selects if this instance should be less (false)
-   * or more (true) than all instances of the same feature.
-   * This is used to extract a subset - containing all FeatureAndActuals having
-   * the same feature - from a Set of FeatureAndActuals.
-   */
-  public final boolean _max;
-
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -93,8 +85,7 @@ public class FeatureAndActuals extends ANY implements Comparable<FeatureAndActua
        f.generics().sizeMatches(tp));
 
     _f = f;
-    _tp = tp;
-    _max = false; /* unused */
+    _tp = tp.freeze();
   }
 
 
@@ -106,22 +97,6 @@ public class FeatureAndActuals extends ANY implements Comparable<FeatureAndActua
   public FeatureAndActuals(AbstractFeature f)
   {
     this(f, AbstractCall.NO_GENERICS);
-  }
-
-
-  /**
-   * Create a dummy tuple for given feature that is less or larger than the given feature.
-   *
-   * @param f the underlying feature, must not be null
-   *
-   * @param max false iff this should be less than instances of the same
-   * feature, false for this to be larger.
-   */
-  public FeatureAndActuals(AbstractFeature f, boolean max)
-  {
-    _f = f;
-    _tp = null;
-    _max = max;
   }
 
 
@@ -139,13 +114,7 @@ public class FeatureAndActuals extends ANY implements Comparable<FeatureAndActua
   {
     var o = oo;
     var r = _f.compareTo(o._f);
-    if (r == 0 && (_tp == null || o._tp == null))
-      { // special handling for min / max:
-        r = _tp == null && o._tp == null && _max == o._max ? 0  :
-            _tp == null ? (  _max ? +1 : -1)
-                        : (o._max ? -1 : +1);
-      }
-    else if (r == 0)
+    if (r == 0)
       {
         var sz1 = _tp.size();
         var sz2 = o._tp.size();
@@ -174,10 +143,7 @@ public class FeatureAndActuals extends ANY implements Comparable<FeatureAndActua
    */
   public String toString()
   {
-    return
-      (_f == null ? "--" : _f.qualifiedName()) +
-      (_tp != null ? _tp.toString(t -> " " + t.toStringWrapped(true))
-                   : (_max ? " MAX" : " MIN"));
+    return _f.qualifiedName() + _tp.toString(t -> " " + t.toStringWrapped(true));
   }
 
 }

@@ -168,71 +168,34 @@ public i128(public hi i64, public lo u64) : num.wrap_around, has_interval is
 
   # does this i128 fit into an u8?
   #
-  public fixed redef fits_in_u8 bool => i128.zero ≤ i128.this ≤ u8.max.as_i128
+  public fixed redef fits_in_u8   bool => i128.zero ≤ i128.this ≤ u8.max.as_i128
+  public fixed redef fits_in_u16  bool => i128.zero ≤ i128.this ≤ u16.max.as_i128
+  public fixed redef fits_in_u32  bool => i128.zero ≤ i128.this ≤ u32.max.as_i128
+  public fixed redef fits_in_u64  bool => i128.zero ≤ i128.this ≤ u64.max.as_i128
+  public fixed redef fits_in_u128 bool => i128.zero ≤ i128.this
+  public fixed redef fits_in_i8   bool => i8.min.as_i128 ≤ i128.this ≤ i8.max.as_i128
+  public fixed redef fits_in_i16  bool => i16.min.as_i128 ≤ i128.this ≤ i16.max.as_i128
+  public fixed redef fits_in_i32  bool => i32.min.as_i128 ≤ i128.this ≤ i32.max.as_i128
+  public fixed redef fits_in_i64  bool => i64.min.as_i128 ≤ i128.this ≤ i64.max.as_i128
+  public fixed redef fits_in_i128 bool => true
 
-  public fixed as_i8 i8
-  pre
-    debug: i8.min.as_i128 ≤ i128.this ≤ i8.max.as_i128
-  =>
-    hi < 0 ? (lo.cast_to_i64).as_i8 : lo.as_i8
+  public fixed redef as_i8 i8 => hi < 0 ? (lo.cast_to_i64).as_i8 : lo.as_i8
 
-  public fixed as_i16 i16
-  pre
-    debug: i16.min.as_i128 ≤ i128.this ≤ i16.max.as_i128
-  =>
-    hi < 0 ? (lo.cast_to_i64).as_i16 : lo.as_i16
+  public fixed redef as_i16 i16 => hi < 0 ? (lo.cast_to_i64).as_i16 : lo.as_i16
 
-  public fixed as_i32 i32
-  pre
-    debug: i32.min.as_i128 ≤ i128.this ≤ i32.max.as_i128
-  =>
-    hi < 0 ? (lo.cast_to_i64).as_i32 : lo.as_i32
+  public fixed redef as_i32 i32 => hi < 0 ? (lo.cast_to_i64).as_i32 : lo.as_i32
 
-  public fixed as_i64 i64
-  pre
-    debug: i64.min.as_i128 ≤ i128.this ≤ i64.max.as_i128
-  post
-    analysis: result.as_i128 = i128.this
-  =>
-    hi < 0 ? (lo.cast_to_i64) : lo.as_i64
+  public fixed redef as_i64 i64 => hi < 0 ? (lo.cast_to_i64) : lo.as_i64
 
-  public fixed redef as_u8 u8
-  post then
-    analysis: result.as_i128 = i128.this
-  =>
-    lo.as_u8
+  public fixed redef as_u8 u8 => lo.as_u8
 
-  public fixed as_u16 u16
-  pre
-    debug: i128.zero ≤ i128.this ≤ u16.max.as_i128
-  post
-    analysis: result.as_i128 = i128.this
-  =>
-    lo.as_u16
+  public fixed redef as_u16 u16 => lo.as_u16
 
-  public fixed as_u32 u32
-    pre
-      debug: i128.zero ≤ i128.this ≤ u32.max.as_i128
-    post
-      analysis: result.as_i128 = i128.this
-    =>
-      lo.as_u32
+  public fixed redef as_u32 u32 => lo.as_u32
 
-  public fixed as_u64 u64
-  pre
-    debug: i128.zero ≤ i128.this ≤ u64.max.as_i128
-  post
-    analysis: result.as_i128 = i128.this
-  =>
-    lo
+  public fixed redef as_u64 u64 => lo
 
-  public fixed as_u128 u128
-  pre
-    debug: i128.this >= i128.zero
-  post
-    analysis: result.as_i128 = i128.this
-  =>
-    u128 hi.as_u64 lo
+  public fixed redef as_u128 u128 => u128 hi.as_u64 lo
 
   public redef low8bits  u8  => lo.low8bits
   public low16bits u16 => lo.low16bits

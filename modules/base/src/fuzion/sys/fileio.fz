@@ -38,9 +38,9 @@ module fileio is
     arr := fuzion.sys.internal_array_init u8 len
     res := fzE_file_read fd arr.data len
 
-    if res < -1
-      error "failed reading" res.as_i64
-    else if res < 0
+    if res = -1
+      error "failed reading" fzE_last_error
+    else if res = 0
       (id (Sequence u8) [])
     else
       # NYI: UNDER DEVELOPMENT: could realloc internal_array

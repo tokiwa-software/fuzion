@@ -17,42 +17,14 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature io.file.mapped_buffer
+#  Source code of Fuzion standard library feature copy
 #
 # -----------------------------------------------------------------------
 
-
-# mapped buffer gives access to the memory region a file is mapped
-# to via `mmap`.
+# copy src to dest
 #
-module:public mapped_buffer
-  (# internal pointer to the mapped memory
-    memory Mapped_Memory,
-
-    # the length of this buffer
-    public redef length i64
-  )
-  : container.Buffer u8 mapped_buffer.this, mutate is
-
-
-  # get byte at given index i
-  #
-  public redef index [ ] (I type : idx, i I) u8
-  =>
-    replace
-    fzE_mapped_buffer_get memory i.as_i64
-
-
-  # set byte at given index i to given value o
-  #
-  public redef set [ ] (I type : idx, i I, o u8) unit
-  =>
-    replace
-    fzE_mapped_buffer_set memory i.as_i64 o
-
-
-  # cleanup
-  #
-  public redef finally unit =>
-    if fzE_munmap memory length != 0
-      fuzion.runtime.fault.cause ("io.file.mapped_buffer.finally", "unmapping memory failed")
+# NYI: UNDER DEVELOPMENT: could accept more than just path(s)
+#
+public copy(src, dest path) outcome unit =>
+  io.slurp src .bind c->
+    io.write dest c

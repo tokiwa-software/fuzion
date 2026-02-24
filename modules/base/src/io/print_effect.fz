@@ -41,8 +41,14 @@ is
   public print (s Any) unit =>
     # NYI: BUG: error handling, maybe we should raise
     # some kind of IO runtime fault here?
-    write_res := write s.as_string.utf8.as_array
-    check debug: write_res.ok
+    if s.as_string.utf8.count > os.page_size.as_i32
+      for c in s.as_string.utf8.chunk os.page_size.as_i32
+      do
+        write_res := write c
+        check debug: write_res.ok
+    else
+      write_res := write s.as_string.utf8
+      check debug: write_res.ok
     flush_res := flush
     check flush_res.ok
 
@@ -56,7 +62,7 @@ is
   # write bytes (without explicit flushing)
   #
   public write(b Sequence u8) outcome unit
-    pre b.finite.is_yes
+    pre debug: b.count <= os.page_size.as_i32
   => abstract
 
 
