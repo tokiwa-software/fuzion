@@ -1,0 +1,57 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature io.dir.traverse
+#
+# -----------------------------------------------------------------------
+
+
+# traverse a directory with given reducing function
+#
+# usage example:
+#
+#     say <| io.dir.traverse (path.of ".") true "" (r,t)->"{r}\n{t}"
+#
+public traverse(
+  # the type of the result
+  R type,
+  # the directory to traverse
+  p path,
+  # descend into subdirectories?
+  descend bool,
+  # the initial result
+  init R,
+  # the reducing function allowing a premature abort
+  red_fn (R,path) -> R /* NYI: | abort (outcome R)*/) outcome R
+=>
+  io.dir.use _ p ()->
+    for res outcome R := init,
+          {
+            np.bind x->
+              t => red_fn res.val x
+              if descend
+                match io.file.stat x false
+                  e error => panic e.msg # NYI
+                  m io.file.meta_data => if m.is_dir then traverse x descend t red_fn else t
+              else
+                t
+          }
+    while res.ok
+      np := io.dir.open.read .bind p.resolve
+    until !np.ok then res else res
