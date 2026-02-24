@@ -1628,14 +1628,22 @@ class Clazz extends ANY implements Comparable<Clazz>
   }
 
 
+  // cache field for asRef()
+  private Clazz _asRef = null;
   /**
    * In case this is a Clazz of value type, create the corresponding reference clazz.
    */
   Clazz asRef()
   {
-    return isRef()
-      ? this
-      : _fuir.newClazz(_outer, _type.asRef(), _select);
+    var result = _asRef;
+    if (result == null)
+      {
+        result = isRef()
+          ? this
+          : _fuir.newClazz(_outer, _type.asRef(), _select);
+        _asRef = result;
+      }
+    return result;
   }
 
 
