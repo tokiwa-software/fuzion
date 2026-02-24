@@ -1403,13 +1403,27 @@ public class DFA extends ANY
 
         if (cnt == 1)
           {
-            newCall(null,
-                    _fuir.mainClazz(),
-                    NO_SITE,
-                    Value.UNIT,
-                    new List<>(),
-                    null /* env */,
-                    Context._MAIN_ENTRY_POINT_);
+            var m =
+              newCall(null,
+                      _fuir.mainClazz(),
+                      NO_SITE,
+                      Value.UNIT,
+                      new List<>(),
+                      null /* env */,
+                      Context._MAIN_ENTRY_POINT_);
+
+            // stackoverflow may happen at any time,
+            // causing once at main start
+            var soc = _fuir.clazz(SpecialClazzes.c_stackoverflow_cause);
+            var socRes =
+              newCall(null,
+                      soc,
+                      NO_SITE,
+                      Value.UNIT,
+                      new List<>(newConstString(null, Context._MAIN_ENTRY_POINT_)),
+                      null,
+                      Context._MAIN_ENTRY_POINT_).result(m);
+            check (socRes == null);
           }
         iteration();
       }
@@ -2218,17 +2232,6 @@ public class DFA extends ANY
                                     newEnv,
                                     cl);
           var result = cll.result(cl);
-
-          if(fuir.getSpecialClazz(ecl) == SpecialClazzes.c_fuzion_runtime_stackoverflow)
-            {
-              // we need to simulate call to stackoverflow.cause
-              var cause = fuir.lookupCause(ecl);
-              var def = cl._dfa.newCall(cl, cause, NO_SITE, a0, new List<>(cl._dfa.newConstString(null, cl)), cl._env, cl);
-              var res = def.result(cl);
-              result = result != null && res != null
-                ? result.value().join(cl._dfa, res.value(), fuir(cl).clazzResultClazz(cl.calledClazz()))
-                : result;
-            }
 
           Value ev;
           if (cl._dfa._real)

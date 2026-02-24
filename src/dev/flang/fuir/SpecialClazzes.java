@@ -61,9 +61,7 @@ public enum SpecialClazzes
   c_Mapped_Memory("Mapped_Memory"             , 0, c_universe  ),
   c_Native_Ref  ("Native_Ref"                 , 0, c_universe  ),
   c_Thread      ("Thread"                     , 0, c_universe  ),
-  c_fuzion      ("fuzion"                     , 0, c_universe  ),
-  c_fuzion_runtime("runtime"                  , 0, c_fuzion    ),
-  c_fuzion_runtime_stackoverflow("stackoverflow", 1, c_fuzion_runtime)
+  c_stackoverflow_cause("stackoverflow_cause", 1, c_universe)
   ;
 
   final String _name;
