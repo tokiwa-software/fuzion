@@ -26,4 +26,4 @@
 #
 public write(p path, a Any) outcome unit =>
   use p mode.write ()->
-    writer.write a.as_string.utf8
+    writer.write a.as_string

@@ -885,7 +885,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   #
   public write_to(LM type : mutate) outcome unit ! (io.buffered LM).writer
   =>
-    (io.buffered LM).writer.env.write utf8
+    (io.buffered LM).writer.env.write String.this
 
 
   # returns a zero terminated array of

@@ -125,7 +125,7 @@ record_process(
       if feed_stdin && io.file.exists stdin_file
         lm ! ()->
           _ := p.with_in unit lm ()->
-            _ := (io.buffered lm).writer.env.write (io.slurp stdin_file).or_panic.utf8
+            _ := (io.buffered lm).writer.env.write (io.slurp stdin_file).or_panic
 
       match p.wait
         e error => panic "failed waiting for $cmd, error is: $e"
