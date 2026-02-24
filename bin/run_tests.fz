@@ -42,7 +42,8 @@ envir_var_kv := [
   "LIBRARY_PATH",
   "FUZION_CLANG_INSTALLED_DIR",
   "OS",
-  "INFLUXDB_TOKEN"
+  "INFLUXDB_TOKEN",
+  "FUZION_HOME"
 ].map k->
   envir.vars[k].bind v->
     (k,v)
