@@ -524,7 +524,7 @@ is
 
   # call 'as_string' on the elements
   #
-  public as_strings Sequence String => map c->c.as_string
+  public as_strings Sequence String => map ($)
 
 
   # map the Sequence to a new Sequence applying function f to all elements

@@ -107,4 +107,4 @@ is
   # the current state of the buffer
   # as a string.
   #
-  public redef as_string String ! E => as_array.as_string
+  public redef as_string String ! E => $as_array

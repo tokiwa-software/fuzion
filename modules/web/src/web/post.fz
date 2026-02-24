@@ -50,6 +50,6 @@ public post_r(family net.family.val, url String, data Sequence u8, headers conta
       lm ! ()->
         rm := http
           .request_message
-          .new http.post_r (pu.target.or_else "/") 1 1 ([("Host", pu.host), ("Content-Length", d.count.as_string)] ++ headers.items ++ web.config.default_headers) (io.Read_Handler.from lm d)
+          .new http.post_r (pu.target.or_else "/") 1 1 ([("Host", pu.host), ("Content-Length", $d.count)] ++ headers.items ++ web.config.default_headers) (io.Read_Handler.from lm d)
 
         do_request family (pu.port.or_else (if pu.use_https then 443 else 80)) pu.use_https pu.host rm
