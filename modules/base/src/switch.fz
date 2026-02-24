@@ -198,7 +198,7 @@ is
   public or_panic A =>
     match switch.this
       a A => a
-      b B => panic b.as_string
+      b B => panic $b
 
 
   # fold this choice to new type `C`.
@@ -223,8 +223,8 @@ is
   #
   public redef as_string String =>
     match switch.this
-      a A => a.as_string
-      b B => b.as_string
+      a A => $a
+      b B => $b
 
 
   # equality implementation

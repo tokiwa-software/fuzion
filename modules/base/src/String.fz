@@ -63,7 +63,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
 
   # concatenate string with string representation of another object
   public infix + (other Any) String =>
-    String.concat String.this other.as_string
+    String.concat String.this $other
 
 
 
@@ -854,7 +854,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   #
   public cut(sep String) cut_result =>
     match find sep
-      nil => cut_result String.this.as_string "" false
+      nil => cut_result String.this "" false
       i i32 =>
         l := byte_length
         sepl := sep.byte_length

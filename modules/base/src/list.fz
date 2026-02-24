@@ -401,7 +401,7 @@ is
   # representations of its contents, separated by 'sep'.
   #
   public redef as_string (sep String) String =>
-    String.join (map (.as_string)) sep
+    String.join (map ($)) sep
 
 
   # add an element sep in front of every element of this list.

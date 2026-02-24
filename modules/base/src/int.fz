@@ -141,7 +141,7 @@ is
       b.ns || b.n ≤ a.n
 
   public redef as_string String =>
-    (if ns then "" else "-") + n.as_string
+    if ns then "$n" else "-$n"
 
 
   # this int as an i32

@@ -88,7 +88,7 @@ public processes (ph os.Process_Handler, public running_processes container.Set 
   # in this effect as a string
   #
   public redef as_string String =>
-    running_processes.as_string
+    $running_processes
 
 
 
