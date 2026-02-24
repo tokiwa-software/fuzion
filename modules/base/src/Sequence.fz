@@ -297,7 +297,7 @@ is
   #
   # NOTE: for negative n an empty Sequence is returned
   #
-  public take (n i32) Sequence T
+  public take (I type : idx, n I) Sequence T
     # NYI: BUG: breaks tail call optimization
     # post debug: n>0 || result.is_empty
   => as_list.take n
@@ -315,7 +315,7 @@ is
   #
   # NOTE: for negative n the Sequence is returned as is
   #
-  public drop (n i32) Sequence T
+  public drop (I type : idx, n I) Sequence T
     # NYI: BUG: breaks tail call optimization
     # post debug: n>0 || count=result.count
   => as_list.drop n
@@ -329,7 +329,7 @@ is
   # create a slice from this Sequence that consists of the elements starting at index
   # from (including) up to index to (excluding).
   #
-  public slice(from, to i32) Sequence T
+  public slice(I type : idx, from, to I) Sequence T
     pre
       debug : from ≥ 0
       debug : to = 0 || (if is_array_backed || debug_level > 1 then is_valid_index to-1 else true)
