@@ -428,8 +428,19 @@ is
     c2 := s.finite.is_yes ? s.count : -1
     if c1 = 0
       s
-    else if c2 = 0
+                      #
+                      # if this sequence is infinite,
+                      # no need to concat s
+                      #
+    else if c2 = 0 || finite.is_no
       Sequence.this
+
+    #
+    # if s is infinite we use list concat
+    # otherwise we would hang forever
+    #
+    else if s.finite.is_no
+      as_list.concat_list s.as_list
     else
       container.Finger_Tree T .empty
         .concat Sequence.this
