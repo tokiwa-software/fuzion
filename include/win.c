@@ -55,6 +55,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include "fz.h"
 
 static_assert(sizeof(L'\0') == 2, "wide char, unexpected bytes");
+static_assert(_WIN32_WINNT >= 0x0600, "rt: win, expected Windows Vista or greater.");
 
 
 /**
@@ -928,7 +929,11 @@ void * fzE_file_open(char * file_name, int64_t * open_results, file_open_mode mo
 
 void * fzE_mtx_init() {
   CRITICAL_SECTION *mtx = (CRITICAL_SECTION *)fzE_malloc_safe(sizeof(CRITICAL_SECTION));
-  InitializeCriticalSection(mtx);
+  if (!InitializeCriticalSectionEx(mtx, 0, 0))
+  {
+    fzE_free(mtx);
+    return NULL;
+  }
   return (void *)mtx;
 }
 
@@ -968,12 +973,12 @@ int32_t fzE_cnd_broadcast(void *cnd) {
 }
 
 int32_t fzE_cnd_wait(void *cnd, void *mtx) {
-  return SleepConditionVariableCS(
+  BOOL ok = SleepConditionVariableCS(
       (CONDITION_VARIABLE *)cnd,
       (CRITICAL_SECTION *)mtx,
-      INFINITE)
-    ? 0
-    : -1;
+      INFINITE);
+
+  return ok ? 0 : -1;
 }
 
 void fzE_cnd_destroy(void *cnd) {
