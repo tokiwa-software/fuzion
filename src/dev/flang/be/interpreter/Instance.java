@@ -127,6 +127,7 @@ public class Instance extends ValueWithClazz
    * Create a copy (clone) of this value.  Used for boxing values into
    * ref-types.
    */
+  @Override
   Instance cloneValue(int cl)
   {
     if (PRECONDITIONS) require
@@ -142,6 +143,7 @@ public class Instance extends ValueWithClazz
    *
    * @return the i8 value
    */
+  @Override
   public int i8Value()
   {
     if (PRECONDITIONS) require
@@ -157,6 +159,7 @@ public class Instance extends ValueWithClazz
    *
    * @return the i16 value
    */
+  @Override
   public int i16Value()
   {
     if (PRECONDITIONS) require
@@ -172,6 +175,7 @@ public class Instance extends ValueWithClazz
    *
    * @return the i32 value
    */
+  @Override
   public int i32Value()
   {
     if (PRECONDITIONS) require
@@ -187,6 +191,7 @@ public class Instance extends ValueWithClazz
    *
    * @return the i64 value
    */
+  @Override
   public long i64Value()
   {
     if (PRECONDITIONS) require
@@ -204,6 +209,7 @@ public class Instance extends ValueWithClazz
    *
    * @return the u8 value
    */
+  @Override
   public int u8Value()
   {
     if (PRECONDITIONS) require
@@ -220,6 +226,7 @@ public class Instance extends ValueWithClazz
    *
    * @return the u16 value
    */
+  @Override
   public int u16Value()
   {
     if (PRECONDITIONS) require
@@ -235,6 +242,7 @@ public class Instance extends ValueWithClazz
    *
    * @return the u32 value
    */
+  @Override
   public int u32Value()
   {
     if (PRECONDITIONS) require
@@ -250,6 +258,7 @@ public class Instance extends ValueWithClazz
    *
    * @return the u64 value
    */
+  @Override
   public long u64Value()
   {
     if (PRECONDITIONS) require
@@ -267,6 +276,7 @@ public class Instance extends ValueWithClazz
    *
    * @return the f32 value
    */
+  @Override
   public float f32Value()
   {
     if (PRECONDITIONS) require
@@ -282,6 +292,7 @@ public class Instance extends ValueWithClazz
    *
    * @return the f64 value
    */
+  @Override
   public double f64Value()
   {
     if (PRECONDITIONS) require
@@ -300,17 +311,13 @@ public class Instance extends ValueWithClazz
    *
    * @return the bool value
    */
+  @Override
   public boolean boolValue()
   {
     if (PRECONDITIONS) require
-      (_clazz == fuir().clazz(SpecialClazzes.c_true_) ||
-       _clazz == fuir().clazz(SpecialClazzes.c_false_) ||
-       _clazz == fuir().clazz(SpecialClazzes.c_bool));
+      (_clazz == fuir().clazz(SpecialClazzes.c_bool));
 
-    return
-      _clazz == fuir().clazz(SpecialClazzes.c_true_)  ? true  :
-      _clazz == fuir().clazz(SpecialClazzes.c_false_) ? false
-                                               : nonrefs[0] == 1;
+    return nonrefs[0] == 1;
   }
 
 
@@ -322,6 +329,7 @@ public class Instance extends ValueWithClazz
    *
    * @throws Error in case this does not match the expected clazz
    */
+  @Override
   public void checkStaticClazz(int expected)
   {
     if (fuir().clazzIsRef(expected))
@@ -351,6 +359,7 @@ public class Instance extends ValueWithClazz
    *
    * @return the LValue to rev
    */
+  @Override
   public LValue at(int c, int off)
   {
     return new LValue(c, this, off);
@@ -364,6 +373,7 @@ public class Instance extends ValueWithClazz
    *
    * @param size the size of the data to be stored
    */
+  @Override
   void storeNonRef(LValue slot, int size)
   {
     if (PRECONDITIONS) require
@@ -404,6 +414,7 @@ public class Instance extends ValueWithClazz
    *
    * @param size the size of the data to be compared.
    */
+  @Override
   boolean equalsBitWise(LValue slot, int size)
   {
     if (PRECONDITIONS) require
@@ -443,6 +454,7 @@ public class Instance extends ValueWithClazz
    * Return the instance this value contains.  If this is an Instance, return
    * this, if this is an LValue containing an instance, get that instance.
    */
+  @Override
   Instance instance()
   {
     return this;
@@ -452,6 +464,7 @@ public class Instance extends ValueWithClazz
   /**
    * Return the tag of this choice.
    */
+  @Override
   public int tag()
   {
     if (PRECONDITIONS) require

@@ -32,7 +32,7 @@ reg_issue2380 is
   part1 =>
     lm : mutate is
     lm ! ()->
-      visited := (lm.array i32).type.new lm area.length.as_i64 0
+      visited := lm.array i32 .new lm area.length.as_i64 0
       r => 1
       l => 2
       u => 4

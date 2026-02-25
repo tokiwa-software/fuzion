@@ -297,7 +297,7 @@ is
   #
   # NOTE: for negative n an empty Sequence is returned
   #
-  public take (n i32) Sequence T
+  public take (I type : idx, n I) Sequence T
     # NYI: BUG: breaks tail call optimization
     # post debug: n>0 || result.is_empty
   => as_list.take n
@@ -315,7 +315,7 @@ is
   #
   # NOTE: for negative n the Sequence is returned as is
   #
-  public drop (n i32) Sequence T
+  public drop (I type : idx, n I) Sequence T
     # NYI: BUG: breaks tail call optimization
     # post debug: n>0 || count=result.count
   => as_list.drop n
@@ -323,19 +323,20 @@ is
 
   # get a function that, given an index, returns the element at that index
   #
-  public index [] () i32 -> T => n -> Sequence.this[n]
+  public index [] () idx -> T => n -> Sequence.this[n]
 
 
   # create a slice from this Sequence that consists of the elements starting at index
   # from (including) up to index to (excluding).
   #
-  public slice(from, to i32) Sequence T
+  public slice(I type : idx, from, to I) Sequence T
     pre
-      debug: from ≥ 0
-      debug: to = 0 || is_valid_index to-1
-      debug: from <= to
+      debug : from ≥ 0
+      debug : to = 0 || (if is_array_backed || debug_level > 1 then is_valid_index to-1 else true)
+      debug : from <= to
   =>
-    drop(from).take to-from
+    drop from
+      .take to-from
 
 
   # create a tuple of two Sequences by splitting this at
@@ -355,9 +356,7 @@ is
     match c
       at i32 => ((take at), (drop at))
       cond T->bool =>
-        a := as_array_backed
-        at := a.first_index_of (el -> cond el)
-        (a.take at, a.drop at)
+        split_at (first_index_of cond)
 
 
   # returns the index of the first element
@@ -377,12 +376,26 @@ is
 
   # Lazily take the first elements of this Sequence for which predicate 'p' holds.
   #
-  public take_while (p T -> bool) Sequence T => as_list.take_while p
+  public take_while (p T -> bool) Sequence T
+    post
+      analysis: result ∀ p
+      analysis: {
+        n := nth result.count
+        !n || !(p n.get)
+      }
+  => as_list.take_while p
 
 
   # Lazily drop the first elements of this Sequence for which predicate 'p' holds.
   #
-  public drop_while (p T -> bool) Sequence T => as_list.drop_while p
+  public drop_while (p T -> bool) Sequence T
+    post
+      analysis: result ∀ (x -> !(p x))
+      analysis: {
+        n := nth result.count
+        !n || p n.get
+      }
+  => as_list.drop_while p
 
 
   # create a Sequence that consists of all the elements of this Sequence followed
@@ -413,17 +426,34 @@ is
   public concat (s Sequence T) Sequence T =>
     c1 :=   finite.is_yes ? count   : -1
     c2 := s.finite.is_yes ? s.count : -1
-    if c1 < 0 || c2 < 0 || max 1 c1 < c2 then
-      as_list.concat_list s.as_list
-    else if c1 = 0
+    if c1 = 0
       s
     else if c2 = 0
       Sequence.this
+    #
+    # c1 < c2 to avoid poor (quadratic) performance
+    # if a small sequence is added in front of a
+    # larger one repeatedly as in this code:
+    #
+    #     for
+    #       s := (Sequence i32).empty, [i].concat s
+    #       i in 1..n
+    #     else
+    #       say s
+    #
+    else if c1 < 0 || c2 < 0 || c1 < c2 then
+      as_list.concat_list s.as_list
     else
-      for ea := container.expanding_array T .empty, ea.add e1
-          e1 in Sequence.this
-      else
-        ea.concat s
+      container.expanding_array T .empty c1+c2
+        .concat Sequence.this
+        .concat s
+
+
+  # return this Sequence as a Finger_Tree
+  # or nil if Sequence is not (yet) a Finger_Tree
+  #
+  module as_finger_tree option (container.Finger_Tree T) => nil
+
 
   # infix operand synonym for concat
   #
@@ -494,7 +524,7 @@ is
 
   # call 'as_string' on the elements
   #
-  public as_strings Sequence String => map c->c.as_string
+  public as_strings Sequence String => map ($)
 
 
   # map the Sequence to a new Sequence applying function f to all elements
@@ -772,18 +802,18 @@ is
   # Note that this may have a performance in O(i) unless this
   # Sequence is_array_backed.
   #
-  public is_valid_index(i i32) bool =>
-    (0 ≤ i && (if is_array_backed then i ≤ count
-                                  else !(drop i).is_empty))
+  public is_valid_index(I type : idx, i I) bool =>
+    (0 ≤ i.as_i32 && (if is_array_backed then i.as_i32 ≤ count
+                                         else !(drop i.as_i32).is_empty))
 
 
   # the nth element in the sequence, must exist
   #
-  public index [] (i i32) T
+  public index [] (I type : idx, i I) T
     pre
       debug: is_valid_index i
   =>
-    (nth i).get
+    (nth i.as_i32).get
 
 
   # adds the corresponding index to
@@ -1114,7 +1144,7 @@ is
   #
   # example: sum even and odd numbers individually
   #
-  #    (0..10).group_reduce String (x -> x%%2 ? "even" : "odd") (+)
+  #     (0..10).group_reduce String (x -> x%%2 ? "even" : "odd") (+)
   #
   # => {(even => 30), (odd => 25)}
   #
@@ -1160,9 +1190,9 @@ is
     # function to reduce elements
     reduce_f (B,B)->B) container.Map K B
   =>
-    M : mutate is
-    M ! ()->
-      res := (container.mutable_tree_map M K B).empty
+    lm : mutate is
+    lm ! ()->
+      res := (container.mutable_tree_map lm K B).empty
 
       for_each x->
         key := key_f x
@@ -1177,11 +1207,11 @@ is
   #
   # example: group characters by category and add underscores around each character
   #
-  #    values array codepoint := ["A", "1", "b", "?", "X", "4"]
+  #     values array codepoint := ["A", "1", "b", "?", "X", "4"]
   #
-  #    classify (c codepoint) String => c.is_ascii_letter ? "letter" : c.is_ascii_digit ? "digit" : "other"
+  #     classify (c codepoint) String => c.is_ascii_letter ? "letter" : c.is_ascii_digit ? "digit" : "other"
   #
-  #    values.group_map String String classify (x->"_{x}_")
+  #     values.group_map String String classify (x->"_{x}_")
   #
   # => {(digit => [_1_, _4_]), (letter => [_A_, _b_, _X_]), (other => [_?_])}
   #
@@ -1198,9 +1228,9 @@ is
     # function applied to each element
     f T->B) container.Map K (Sequence B)
   =>
-    M : mutate is
-    M ! ()->
-      res := (container.mutable_tree_map M K (Sequence B)).empty
+    lm : mutate is
+    lm ! ()->
+      res := (container.mutable_tree_map lm K (Sequence B)).empty
 
       for_each x->
         key := key_f x
@@ -1254,15 +1284,19 @@ is
 
   # create an empty Sequence
   #
-  public fixed type.empty Sequence T =>
-    (list T).type.empty
+  public fixed type.empty Sequence T
+    post
+      result.finite.is_yes_or_unknown
+      result.count = 0
+  =>
+    []
 
 
   # monoid of Sequences with infix concatenation operation.
   #
   public type.concat_monoid Monoid (Sequence T) =>
 
-    ref : Monoid (Sequence T) is
+    _ : Monoid (Sequence T) is
 
       # associative operation
       #
@@ -1271,7 +1305,7 @@ is
       # identity element
       #
       public redef e Sequence T =>
-        (list T).empty
+        []
 
 
   # Maximum number of elements shown for on a call to `as_string` for a non-finite

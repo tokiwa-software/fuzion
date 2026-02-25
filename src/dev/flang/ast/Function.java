@@ -46,7 +46,7 @@ public class Function extends AbstractLambda
   /*----------------------------  constants  ----------------------------*/
 
 
-  static final List<AbstractCall> NO_CALLS = new List<>();
+  static final List<AbstractCall> NO_CALLS = new List<AbstractCall>().freeze();
 
 
   /*-------------------------  static variables -------------------------*/
@@ -233,7 +233,13 @@ public class Function extends AbstractLambda
         @Override
         public Expr action(Call c)
         {
-          return c.updateTarget(res, _feature.context());
+
+          if (CHECKS) check
+            (_feature != null || Errors.any());
+
+          return _feature == null
+            ? c
+            : c.updateTarget(res, _feature.context());
         }
       },
       _feature);
@@ -280,7 +286,7 @@ public class Function extends AbstractLambda
     else if (!t.isLambdaTarget(res))
       {
         // suppress error for t_ERROR and t_UNDEFINED, but only if other error was already reported
-        if (t != Types.t_ERROR || t != Types.t_UNDEFINED || !Errors.any())
+        if (!t.isArtificialType() || !Errors.any())
           {
             AstErrors.expectedFunctionTypeForLambda(pos(), t, from);
           }

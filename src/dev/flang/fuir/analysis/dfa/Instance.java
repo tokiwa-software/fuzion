@@ -56,7 +56,7 @@ public class Instance extends Value
   /**
    * The DFA instance we are working with.
    */
-  DFA _dfa;
+  final DFA _dfa;
 
 
   /**
@@ -68,18 +68,11 @@ public class Instance extends Value
   /**
    * For debugging: Reason that causes this instance to be part of the analysis.
    */
-  Context _context;
+  final Context _context;
 
 
   /**
-   * Is this instance the result of the IR command 'Box'.  If so, there is a
-   * terrible hack to find the field values.
-   */
-  final boolean _isBoxed;
-
-
-  /**
-   * Site of the call that created this instance, -1 if the call site is not
+   * Site of the call that created this instance, NO_SITE if the call site is not
    * known, i.e., the call is coming from intrinsic call or the main entry
    * point.
    *
@@ -117,7 +110,6 @@ public class Instance extends Value
     _site = site;
     _context = context;
     _fields = new TreeMap<>();
-    _isBoxed = false;
   }
 
 
@@ -178,9 +170,9 @@ public class Instance extends Value
           {
             _dfa.wasChanged(() -> "setField: new values " + fv + " (was " + oldv + ") for " + this);
           }
+        _fields.put(field, v);
       }
     dfa._writtenFields.set(field);
-    _fields.put(field, v);
   }
 
 
@@ -202,7 +194,7 @@ public class Instance extends Value
           {
             DfaErrors.readingUninitializedField(site == IR.NO_SITE ? null : dfa._fuir.sitePos(site),
                                                 dfa._fuir.clazzAsString(field),
-                                                dfa._fuir.clazzAsString(_clazz) + (_isBoxed ? " Boxed!" : ""),
+                                                dfa._fuir.clazzAsString(_clazz),
                                                 why);
           }
       }

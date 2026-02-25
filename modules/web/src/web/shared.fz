@@ -34,7 +34,22 @@ ssl_lm : mutate is
 module read_reponse(LM type : mutate) ! LM =>
   http
     .read_response LM
-    .bind (.body_as_string)
+    .bind String resp->
+      body := resp.body_as_string
+      if resp.status_code >= 400
+        msg :=
+          if body.is_blank
+            "{resp.status_code} {resp.reason_phrase}"
+          else
+            """
+            {resp.status_code} {resp.reason_phrase}
+
+            {body}
+            """
+        error msg
+      else
+        body
+
 
 
 # write the request
@@ -42,7 +57,6 @@ module read_reponse(LM type : mutate) ! LM =>
 module write_request(LM type : mutate, rm http.request_message) ! LM =>
   (io.buffered LM).writer.env
     .write (rm.bytes i32.max)
-    .error
     .bind _->
       (io.buffered LM).writer.env.flush
 
@@ -81,7 +95,7 @@ module parse_url(url String) outcome web.parsed_url
   match {
           tpl := url
             .find "/" schema_length
-            .bind (idx -> url.split_at_byte idx)
+            .bind (i -> url.split_at_byte i)
             .bind (t -> (t.0, id (option String) t.1))
             # no target specified
             .or_else (url, id (option String) nil)

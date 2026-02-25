@@ -41,13 +41,13 @@ is
   # basic operations: 'infix +' (addition)
   #
   public infix + (b matrix M) matrix M =>
-    matrix ((array2 M).new e.length0 e.length1 i,j->e[i,j]+b.e[i,j])
+    matrix ((array2 M).new e.length0 e.length1 i,j->e[_,i,j]+b.e[_,i,j])
 
 
   # basic operations: 'infix -' (subtraction)
   #
   public infix - (b matrix M) matrix M =>
-    matrix ((array2 M).new e.length0 e.length1 i,j->e[i,j]-b.e[i,j])
+    matrix ((array2 M).new e.length0 e.length1 i,j->e[_,i,j]-b.e[_,i,j])
 
 
   # basic operations: 'infix *' (multiplication)
@@ -57,7 +57,7 @@ is
                      for
                        v := M.zero, v+f
                        x in e.indices1
-                       f := e[i,x]*b.e[x,j]
+                       f := e[_,i,x]*b.e[_,x,j]
                      else
                        v
                      )
@@ -78,12 +78,12 @@ is
   # transpose
   #
   public transpose matrix M =>
-    matrix ((array2 M).new e.length1 e.length0 i,j->e[j,i])
+    matrix ((array2 M).new e.length1 e.length0 i,j->e[_,j,i])
 
 
   # prints this matrix as a string
   #
-  public redef as_string String => e.as_string
+  public redef as_string String => $e
 
 
   # identity element for 'infix +'

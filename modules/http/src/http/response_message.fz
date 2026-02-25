@@ -25,6 +25,7 @@
 # HTTP response message
 #
 module:public response_message(
+  # NYI: CLEANUP: remove this arg?
   # the request message for which this response was generated
   public req option http.request_message,
   # the major version
@@ -65,3 +66,23 @@ is
     body io.Read_Handler) http.response_message
   =>
     http.response_message req version_major version_minor status_code reason_phrase (as_header_map header) body
+
+
+  # create an http response using a default values
+  #
+  # request_message => nil
+  # major => 1
+  # minor => 1
+  # reason_phrase via status code from reason phrases map
+  #
+  public type.new(
+    # the status code of the response
+    status_code i32,
+    # the header fields
+    header Sequence (String,String),
+    # the body of the response
+    body io.Read_Handler) http.response_message
+    pre
+      debug: http.reason_phrases[status_code].ok
+  =>
+    http.response_message nil 1 1 status_code http.reason_phrases[status_code].val (as_header_map header) body

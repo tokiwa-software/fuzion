@@ -106,7 +106,7 @@ public class C extends ANY
               comment,
               CStmnt
                 // NYI: UNDER DEVELOPMENT: re-replace "{base.fum}/" etc. in sourceFile?
-                .directive("line " + pos.line() + " \"" + pos._sourceFile._fileName + "\"")
+                .directive("line " + pos.line() + " \"" + pos._sourceFile._fileName.toString().replace("\\", "/") + "\"")
               );
     }
 
@@ -260,7 +260,6 @@ public class C extends ANY
     {
       return switch (_fuir.getSpecialClazz(constCl))
         {
-          case c_bool -> new Pair<>(primitiveExpression(SpecialClazzes.c_bool, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
           case c_i8   -> new Pair<>(primitiveExpression(SpecialClazzes.c_i8,   ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
           case c_i16  -> new Pair<>(primitiveExpression(SpecialClazzes.c_i16,  ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
           case c_i32  -> new Pair<>(primitiveExpression(SpecialClazzes.c_i32,  ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN)),CStmnt.EMPTY);
@@ -558,7 +557,7 @@ public class C extends ANY
   /*
    * If you want the c-backend to link the JVM,
    * set this environment variable to e.g.:
-   * JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+   * JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64
    */
   static final String JAVA_HOME = System.getenv("JAVA_HOME");
 
@@ -779,7 +778,7 @@ public class C extends ANY
           "-Wmissing-include-dirs"
           );
 
-        if (!_options._debugBuild)
+        if (!_options._debugBuild && !_options.fuzionDebug())
           {
             command.addAll("-O3");
           }
@@ -808,7 +807,11 @@ public class C extends ANY
         // allow infinite recursion
         "-Wno-infinite-recursion",
         // NYI: UNDER DEVELOPMENT: (test mod_sqlite, `char **` and `fzT_fuzion__sys_RPointer *` are incompatible)
-        "-Wno-incompatible-function-pointer-types"
+        "-Wno-incompatible-function-pointer-types",
+        // NYI: UNDER DEVELOPMENT: happens currently in e.g. in reg_issue1188.fz
+        "-Wno-uninitialized",
+        // NYI: UNDER DEVELOPMENT: must chunk strings, fails in test mod_nom_parser_xml
+        "-Wno-overlength-strings"
         );
 
     if (_options._cCompiler == null && clangVersion >= 13)
@@ -818,7 +821,15 @@ public class C extends ANY
 
     if(_options._useBoehmGC)
       {
-        command.addAll("-DGC_THREADS", "-DGC_PTHREADS", "-DPTW32_STATIC_LIB", "-DGC_WIN32_PTHREADS");
+        command.add("-DGC_THREADS");
+        if (isWindows())
+          {
+            command.add( "-DGC_WIN32_THREADS");
+          }
+        else
+          {
+            command.add( "-DGC_PTHREADS");
+          }
       }
 
     if (linkJVM())
@@ -836,13 +847,13 @@ public class C extends ANY
     // https://lobste.rs/s/avrfxz/ubuntu_24_04_lts_will_enable_frame
     command.addAll("-fno-omit-frame-pointer", "-mno-omit-leaf-frame-pointer");
 
-    if (linkLibMath())
-      {
-        command.add("-lm");
-      }
+    // select due to: dpkg-buildflags --get CFLAGS
+    // NYI: UNDER DEVELOPMENT: does not work for macOS/windows/arm64 without adjustments
+    // command.addAll("-fstack-protector-strong", "-fstack-clash-protection", "-fcf-protection");
 
-      // NYI: UNDER DEVELOPMENT: on windows link nothing
-    if (usesThreads())
+    command.add("-lm");
+
+    if (usesThreads() && !isWindows())
       {
         command.add("-lpthread");
       }
@@ -927,67 +938,6 @@ public class C extends ANY
                      "concur.atomic.racy_accesses_supported",
                      "concur.atomic.read0",
                      "concur.atomic.write0")
-      .anyMatch(_intrinsics._usedIntrinsics::contains);
-  }
-
-
-  /*
-   * Do we have to link libmath?
-   */
-  private boolean linkLibMath()
-  {
-    return Stream.of("f32.prefix -",
-                     "f32.infix +",
-                     "f32.infix -",
-                     "f32.infix *",
-                     "f32.infix /",
-                     "f32.infix %",
-                     "f32.infix **",
-                     "f32.type.equal",
-                     "f32.type.lower_than_or_equal",
-                     "f64.type.equal",
-                     "f64.type.lower_than_or_equal",
-                     "f32.as_f64",
-                     "f64.as_f32",
-                     "f64.as_i64_lax",
-                     "f32.cast_to_u32",
-                     "f64.cast_to_u64",
-                     "f32.is_NaN",
-                     "f64.is_NaN",
-                     "f32.square_root",
-                     "f64.square_root",
-                     "f32.exp",
-                     "f64.exp",
-                     "f32.log",
-                     "f64.log",
-                     "f32.sin",
-                     "f64.sin",
-                     "f32.cos",
-                     "f64.cos",
-                     "f32.tan",
-                     "f64.tan",
-                     "f32.asin",
-                     "f64.asin",
-                     "f32.acos",
-                     "f64.acos",
-                     "f32.atan",
-                     "f64.atan",
-                     "f32.sinh",
-                     "f64.sinh",
-                     "f32.cosh",
-                     "f64.cosh",
-                     "f32.tanh",
-                     "f64.tanh",
-                     "f32.type.min_exp",
-                     "f32.type.max_exp",
-                     "f32.type.min_positive",
-                     "f32.type.max",
-                     "f32.type.epsilon",
-                     "f64.type.min_exp",
-                     "f64.type.max_exp",
-                     "f64.type.min_positive",
-                     "f64.type.max",
-                     "f64.type.epsilon")
       .anyMatch(_intrinsics._usedIntrinsics::contains);
   }
 
@@ -1214,7 +1164,7 @@ public class C extends ANY
     cf.println("#include \"" + fzH + "\"");
     cf.println("#include \"" + hf.fileName() + "\"");
 
-    if (_options._cLink != null)
+    if (_options._cInclude != null)
       {
         Arrays
           .stream(_options._cInclude.split(" "))
@@ -1505,7 +1455,6 @@ public class C extends ANY
   {
     return switch (sc)
       {
-      case c_bool -> 1;
       case c_u8   -> 1;
       case c_u16  -> 2;
       case c_u32  -> 4;
@@ -1605,26 +1554,26 @@ public class C extends ANY
    */
   CExpr boxedConstString(CExpr str, CExpr len)
   {
-    var data           = _names.fieldName(_fuir.clazz_fuzionSysArray_u8_data());
-    var length         = _names.fieldName(_fuir.clazz_fuzionSysArray_u8_length());
-    var internal_array = _names.fieldName(_fuir.clazzArg(_fuir.clazz_array_u8(), 0));
-    var utf8_data      = _names.fieldName(_fuir.clazz_const_string_utf8_data());
+    var data           = _names.fieldName(_fuir.clazzFuzionSysArrayU8Data());
+    var length         = _names.fieldName(_fuir.clazzFuzionSysArrayU8Length());
+    var internal_array = _names.fieldName(_fuir.clazzArg(_fuir.clazzArrayU8(), 0));
+    var utf8_data      = _names.fieldName(_fuir.clazzConstStringUTF8Data());
 
     var sysArray = CExpr.compoundLiteral(
-        _types.clazz(_fuir.clazzResultClazz(_fuir.clazz_fuzionSysArray_u8())),
+        _types.clazz(_fuir.clazzResultClazz(_fuir.clazzFuzionSysArrayU8())),
         "." + data.code() + " = " + str.castTo("void *").code() +  "," +
           "." + length.code() + " = " + len.code());
 
     var array = CExpr.compoundLiteral(
-        _types.clazz(_fuir.clazz_array_u8()),
+        _types.clazz(_fuir.clazzArrayU8()),
         "." + internal_array.code() + " = " + sysArray.code());
 
     var constStr = CExpr
       .compoundLiteral(
-        _types.clazz(_fuir.clazz_const_string()),
+        _types.clazz(_fuir.clazzConstString()),
         "." + utf8_data.code() + " = " + array.code());
 
-    var refConstStr = _fuir.clazz_ref_const_string();
+    var refConstStr = _fuir.clazzRefConstString();
     var res = CExpr
       .compoundLiteral(
         _names.struct(refConstStr),
@@ -1903,9 +1852,8 @@ public class C extends ANY
       {
         switch (_fuir.clazzKind(cl))
           {
-          case Routine  :
-          case Intrinsic:
-          case Native   : l.add(cFunctionDecl(cl, null));
+          case Routine, Intrinsic, Native ->
+            l.add(cFunctionDecl(cl, null));
           }
       }
     return CStmnt.seq(l);
@@ -1955,7 +1903,14 @@ public class C extends ANY
 
     _names._tempVarId = 0;  // reset counter for unique temp variables for function results
     var l = new List<CStmnt>();
+
+    if (_fuir.hasData(cl))
+      {
+        l.add(declareCurrent(cl));
+      }
+
     l.add(_ai.processClazz(cl).v1());
+
     var res = _fuir.clazzResultClazz(cl);
     if (_fuir.hasData(res))
       {
@@ -1964,18 +1919,24 @@ public class C extends ANY
                 : current(_fuir.clazzCode(cl)).field(_names.fieldName(_fuir.clazzResultField(cl))).ret()  // a routine, return result field
               );
       }
-    var allocCurrent = switch (_fuir.lifeTime(cl))
+
+    return CStmnt.seq(l).label("start");
+  }
+
+
+  /**
+   * declare current, allocate on heap if current may escape
+   */
+  private CStmnt declareCurrent(int cl)
+  {
+    return switch (_fuir.lifeTime(cl))
       {
       case Call      -> CStmnt.seq(
           CStmnt.lineComment("cur does not escape, alloc on stack"),
-          CStmnt.decl(_names.struct(cl), CNames.CURRENT),
-          // this fixes "variable 'fzCur' is uninitialized when used here" in e.g. reg_issue1188
-          CExpr.call("fzE_mem_zero_secure", new List<>(CNames.CURRENT.adrOf(), CNames.CURRENT.sizeOfExpr())));
+          CStmnt.decl(_names.struct(cl), CNames.CURRENT));
       case Unknown   -> CStmnt.seq(CStmnt.lineComment("cur may escape, so use malloc"      ), declareAllocAndInitClazzId(cl, CNames.CURRENT));
       case Undefined -> CExpr.dummy("undefined life time");
       };
-    return CStmnt.seq(allocCurrent,
-                      CStmnt.seq(l)).label("start");
   }
 
 
@@ -2427,6 +2388,7 @@ public class C extends ANY
                 returnOutcome(
                   _fuir.clazzChoice(cl, 1),
                     jStringToError(
+                      _fuir.clazzChoice(cl, 1),
                       tmp
                         .field(CNames.CHOICE_UNION_NAME)
                         .field(CIdent.choiceEntry(1))
@@ -2437,16 +2399,15 @@ public class C extends ANY
           : val.ret();
 
         return CExpr.seq(sideEffect, result);
-      case c_unit :
-        return expr;
-      case c_String :
-      case c_false_ :
-      case c_true_ :
-      case c_u32 :
-      case c_u64 :
-      case c_u8 :
       default:
-        throw new Error("misuse of Java intrinsic?" + _fuir.clazzAsString(cl));
+        if (_fuir.clazzIsUnitType(cl))
+          {
+            return expr;
+          }
+        else
+          {
+            throw new Error("misuse of Java intrinsic?" + _fuir.clazzAsString(cl));
+          }
       }
   }
 
@@ -2470,9 +2431,17 @@ public class C extends ANY
         case c_f32 -> successResult.field(new CIdent("f")).castTo(_types.scalar(cl));
         case c_f64 -> successResult.field(new CIdent("d")).castTo(_types.scalar(cl));
         case c_bool -> successResult.field(new CIdent("z")).cond(_names.FZ_TRUE, _names.FZ_FALSE);
-        case c_unit -> successResult;
-        case c_NOT_FOUND -> asJava_Object(cl, successResult);
-        default -> throw new Error("error in implementation.");
+        case c_NOT_FOUND -> _fuir.clazzIsUnitType(cl) ? successResult : asJava_Object(cl, successResult);
+        default -> {
+          if (_fuir.clazzIsUnitType(cl))
+            {
+              yield successResult;
+            }
+          else
+            {
+              throw new Error("error in implementation.");
+            }
+        }
       };
   }
 
@@ -2512,9 +2481,9 @@ public class C extends ANY
    *
    * @return a c expression that creates a fuzion const string.
    */
-  private CExpr jStringToError(CExpr field)
+  private CExpr jStringToError(int clErr, CExpr field)
   {
-    return error(boxedConstString(
+    return error(clErr, boxedConstString(
         CExpr.call("fzE_java_string_to_utf8_bytes", new List<>(field)),
         CExpr.call("strlen", new List<>(
             CExpr.call("fzE_java_string_to_utf8_bytes",
@@ -2530,13 +2499,15 @@ public class C extends ANY
    * @param str
    * @return
    */
-  public CExpr error(CExpr str)
+  public CExpr error(int clErr, CExpr str)
   {
+    var nil = CExpr.compoundLiteral(
+                      _types.clazz(_fuir.clazzResultClazz(_fuir.clazzArg(clErr, 1))),
+                      "." + CNames.TAG_NAME.code() + " = " + CExpr.int32const(1).code()).code();
     return CExpr.compoundLiteral(
-      _names.struct(_fuir.clazz_error()),
-      "." + _names.fieldName(_fuir.clazzArg(_fuir.clazz_error(), 0)).code() + " = " +
-        str.code()
-      );
+      _names.struct(clErr),
+      "." + _names.fieldName(_fuir.clazzArg(clErr, 0)).code() + " = " + str.code() + ", " +
+      "." + _names.fieldName(_fuir.clazzArg(clErr, 1)).code() + " = " + nil);
   }
 
 

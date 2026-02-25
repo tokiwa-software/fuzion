@@ -60,7 +60,7 @@ public Message ref is
       io
         .buffered lm
         .reader body ! ()->
-          ref : String is
+          _ : String is
             public redef utf8 Sequence u8 := (io.buffered lm).read_fully
 
 
@@ -72,11 +72,11 @@ public Message ref is
     # does not account for the size of the header
     max_body_bytes i32) Sequence u8
   =>
+    # NYI: BUG: read fully
     b := match body.read max_body_bytes
-      a array => a
+      s Sequence => s
       * => []
-    (start_line + header_as_canonical_string + "Content-Length: {b.length}" + crlf + crlf).utf8 ++ b
-      .as_array
+    (start_line + header_as_canonical_string + crlf).utf8 ++ b
 
 
   # String representation of the message header
@@ -93,9 +93,9 @@ public Message ref is
     max_body_bytes i32) outcome String
   =>
     match body.read max_body_bytes
-      a array => Message.this.as_string + String.from_bytes a
+      s Sequence => $Message.this + String.from s
       e error => e
-      io.end_of_file => Message.this.as_string
+      io.end_of_file => $Message.this
 
 
   # NYI: PERFORMANCE: see validHeaderFieldByte() in https://go.dev/src/net/textproto/reader.go
@@ -179,12 +179,12 @@ module parse_header_fields(LM type : mutate) outcome (container.mutable_tree_map
 # version of body reader that reads until connection closes
 #
 body_reader(LM type : mutate) : io.Read_Handler is
-  public redef read(count i32) choice (array u8) io.end_of_file error =>
+  public redef read(count i32) choice (Sequence u8) io.end_of_file error =>
     # NYI: CLEANUP: ugly that this match is necessary
     match (io.buffered LM).reader.env.read
       s Sequence =>
         (io.buffered LM).reader.env.discard
-        s.as_array
+        s
       o outcome =>
         match o
           e error => e
@@ -197,13 +197,13 @@ body_reader(LM type : mutate, reader_size i32, _ unit) : io.Read_Handler is
 
   remaining := mut reader_size
 
-  public redef read(count i32) choice (array u8) io.end_of_file error =>
+  public redef read(count i32) choice (Sequence u8) io.end_of_file error =>
     if remaining.get <= 0
       io.end_of_file
     else
       match (io.buffered LM).reader.env.read
         s Sequence =>
-          c := s.take (min remaining.get count) .as_array
+          c := s.take (min remaining.get count)
           remaining <- remaining.get - c.count
           (io.buffered LM).reader.env.discard c.count
           c

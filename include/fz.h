@@ -304,11 +304,11 @@ int fzE_socket_write(int sockfd, const void * buf, size_t count);
  *          see also, https://devblogs.microsoft.com/oldnewthing/20031008-00/?p=42223
  *
  * @return
- *   - error   :  result[0]=-1 and NULL
- *   - success :  result[0]=0  and an address where the file was mapped to
+ *   - error   :  NULL
+ *   - success :  an address where the file was mapped to
  * NOTE: needs to be unmapped via fzE_munmap
  */
-void * fzE_mmap(void * file, uint64_t offset, size_t size, int * result);
+void * fzE_mmap(void * file, uint64_t offset, size_t size);
 
 /**
  * unmap an address that was previously mapped by fzE_mmap
@@ -770,5 +770,7 @@ int64_t fzE_page_size(void);
 int64_t fzE_mmap_offset_multiple(void);
 
 int fzE_cwd(void * buf, size_t size);
+
+int fzE_isnan(double d);
 
 #endif /* fz.h  */

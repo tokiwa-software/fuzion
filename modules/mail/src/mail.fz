@@ -28,14 +28,14 @@ public mail is
 
   # send a plain text mail via ipv4 on port 587, using STARTTLS
   #
-  public send_starttls(host, username, password, from, to, subject, text String) outcome unit =>
-    send net.family.ipv4 587 host username password from to subject text
+  public send_starttls(host, username, password, from, to, subject, text String, bcc option String) outcome unit =>
+    send net.family.ipv4 587 host username password from to subject text bcc
 
 
   # send a plain text mail via ipv4 on port 465, using implicit TLS
   #
-  public send(host, username, password, from, to, subject, text String) outcome unit =>
-    send net.family.ipv4 465 host username password from to subject text
+  public send(host, username, password, from, to, subject, text String, bcc option String) outcome unit =>
+    send net.family.ipv4 465 host username password from to subject text bcc
 
 
   # NYI: UNDER DEVELOPMENT: this will just hang if any read_line_while condition never matches
@@ -43,7 +43,7 @@ public mail is
 
   # send a plain text mail
   #
-  public send(family net.family.val, port u16, host, username, password, from, to, subject, text String) outcome unit
+  public send(family net.family.val, port u16, host, username, password, from, to, subject, text String, bcc option String) outcome unit
     pre
       debug: !host.contains_whitespace
       debug: !from.contains_whitespace
@@ -59,8 +59,7 @@ public mail is
 
     # the credentials separated by NUL, base64 encoded
     cred =>
-      # NYI: UNDER DEVELOPMENT: replace {codepoint 0} by just \0
-      encodings.base64.encode_to_string "{username}{codepoint 0}{username}{codepoint 0}{password}".utf8.as_array
+      encodings.base64.encode_to_string "{username}\0{username}\0{password}".utf8.as_array
 
 
     # from: https://en.wikipedia.org/wiki/List_of_SMTP_server_return_codes
@@ -72,9 +71,15 @@ public mail is
       MAIL FROM:<$from>
       """.replace "\n" "\r\n"
 
-    rcpt_to => """
-      RCPT TO:<$to>
-      """.replace "\n" "\r\n"
+    rcpt_to =>
+      match bcc
+        nil => """
+          RCPT TO:<$to>
+          """.replace "\n" "\r\n"
+        m String => """
+          RCPT TO:<$to>
+          RCPT TO:<$m>
+          """.replace "\n" "\r\n"
 
     data => """
       DATA
@@ -86,11 +91,12 @@ public mail is
       Subject: =?UTF-8?B?{encodings.base64.encode_to_string subject.utf8.as_array}?=
       MIME-Version: 1.0
       Content-Type: text/plain; charset="UTF-8"
-      Content-Transfer-Encoding: 8bit
+      Content-Transfer-Encoding: base64
 
       {
-        # 2.1.1.  Line Length Limits, see https://datatracker.ietf.org/doc/html/rfc5322#section-2.1.1
-        String.join (text.lines.flat_map (.chunk 78)) "\n"
+        # https://www.rfc-editor.org/rfc/rfc2045.html#section-6.8
+        b64 := encodings.base64.encode_to_string text.utf8.as_array
+        String.join_lines (b64.chunk 76)
       }
       .
       """.replace "\n" "\r\n"
@@ -112,8 +118,7 @@ public mail is
     #
     write_or_cause(LM type : mutate, s String) =>
       (io.buffered LM).writer.env
-        .write s.utf8
-        .error
+        .write s
         .or_cause unit (x -> error "while writing $s, got $x")
       (io.buffered LM).writer.env
         .flush

@@ -42,7 +42,7 @@ TODO:
                                 [("Host", "fuzion-lang.dev"),
                                  ("User-Agent", "Fuzion HTTP Module"),
                                  ("DNT", $"1")]
-                                (io.Read_Handler.from_array_u8 lm "".utf8.as_array))
+                                (io.Read_Handler.from lm ""))
     say my_req
 
 
@@ -54,14 +54,14 @@ TODO:
                                 [("content-type", "text/html"),
                                  ("server", "FuzionWebServer v0.016"),
                                  ("x-frame-options", "DENY")]
-                                (io.Read_Handler.from_array_u8 lm "  <body>\n    <p>Hello World!</p>\n  </body>".utf8.as_array)
+                                (io.Read_Handler.from lm "  <body>\n    <p>Hello World!</p>\n  </body>")
     say <| my_resp.as_string_with_body 1E4
 
 
 
   say "\n\n\nPARSE REQUEST:\n"
 
-  req_path := "http_req.txt"
+  req_path := path.of "http_req.txt"
 
   parse_req :=
     io.file.use _ req_path io.file.mode.read ()->
@@ -77,7 +77,7 @@ TODO:
 
   say "\nPARSE RESPONSE:\n"
 
-  resp_path := "http_resp.txt"
+  resp_path := path.of "http_resp.txt"
 
   _ := io.file.use _ resp_path io.file.mode.read ()->
     resp := http.read_response io.file.file_mutate parse_req.val

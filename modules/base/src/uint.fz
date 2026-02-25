@@ -276,62 +276,47 @@ is
 
 
   # this uint as an i32
-  public as_i32 i32
-  pre debug: as_u32 ≤ i32.max.as_u32
-  =>
-    as_u32.as_i32
+  public redef as_i32 i32 => as_u32.as_i32
 
 
   # this uint as an i64
-  public as_i64 i64
-  =>
-    as_u64.as_i64
+  public redef as_i64 i64 => as_u64.as_i64
 
 
   # this uint as an u8
-  public redef as_u8 u8
-  =>
-    as_u32.as_u8
+  public redef as_u8 u8 => as_u32.as_u8
 
 
   # does this uint fit into an u8?
   #
   public redef fits_in_u8 bool =>
     data.count ≤ 1 && data[0].fits_in_u8
+  public fixed redef fits_in_u16 bool => false # NYI
+  public fixed redef fits_in_u32 bool => data.count ≤ 1
+  public fixed redef fits_in_u64 bool => data.count ≤ 2
+  public fixed redef fits_in_u128 bool => data.count ≤ 4
+  public fixed redef fits_in_i8 bool => false # NYI
+  public fixed redef fits_in_i16 bool => false # NYI
+  public fixed redef fits_in_i32 bool => false # NYI
+  public fixed redef fits_in_i64 bool => false # NYI
+  public fixed redef fits_in_i128 bool =>
+    data.count < 4 | (data.count = 4 && ((data[0] & i32.min.cast_to_u32) = u32 0))
 
 
   # this uint as an u32
-  public fixed as_u32 u32
-    pre
-      debug: (uint.this ≤ uint.type.from_u32 u32.max)
-  =>
-    data.first 0
-
-
-  # does this uint fit in 64 bits?
-  #
-  public fits_in_u64 bool =>
-    data.count ≤ 2
+  public fixed redef as_u32 u32 => data.first 0
 
 
   # this uint as an u64
-  public as_u64 u64
-  pre debug: fits_in_u64
-  =>
+  public redef as_u64 u64 =>
     if data.count = 2
       data[1].as_u64<<32 | data[0].as_u64
     else
       (data.first 0).as_u64
 
 
-  # does this uint fit into an u128?
-  public fits_in_u128 bool =>
-    data.count ≤ 4
-
-
   # this uint as an u128
-  public as_u128 u128
-  pre debug: fits_in_u128
+  public redef as_u128 u128
   =>
     n := data.count
     bits := [u32 0].cycle.take (4-n) ++ data
@@ -339,14 +324,8 @@ is
     u128 (bits[3].as_u64<<32 | bits[2].as_u64) (bits[1].as_u64<<32 | bits[0].as_u64)
 
 
-  # does this uint fit into an i128?
-  public fits_in_i128 bool =>
-    data.count < 4 | (data.count = 4 && ((data[0] & i32.min.cast_to_u32) = u32 0))
-
-
   # this uint as an i128
-  public as_i128 i128
-  pre debug: fits_in_i128
+  public redef as_i128 i128
   =>
     n := data.count
     bits := [u32 0].cycle.take (4-n) ++ data
@@ -365,11 +344,11 @@ is
   as_string0 String =>
     mrd := uint 1_000_000_000
     q, rem := uint.this.divide_with_remainder mrd
-
+    rd => $(rem.data.first 0)
     if q = uint.zero
-      (rem.data.first 0).as_string
+      rd
     else
-      q.as_string0 + (rem.data.first 0).as_string.pad_codepoint_start 9 "0"
+      q.as_string0 + rd.pad_codepoint_start 9 "0"
 
 
   public fixed redef as_string String =>

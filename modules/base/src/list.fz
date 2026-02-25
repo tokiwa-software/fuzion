@@ -214,18 +214,10 @@ is
   # collect the contents of this list into an array
   #
   public redef as_array array A =>
-
-    lm : mutate is
-
-      # redefine `mpanic` here to break endless recursion
-      module redef mpanic(msg String) => fuzion.std.panic msg
-
-    lm ! ()->
-      e := lm.env.new list.this
-      array A count _->
-        res := e.get.first.get
-        e <- e.get.force_tail
-        res
+    (
+      reduce (container.expanding_array A .empty) r,t->
+        r.add t
+    ).as_array
 
 
   # map the list to a new list applying function f to all elements
@@ -237,9 +229,7 @@ is
     match list.this
       nil    => nil
       c Cons =>
-        ref : Cons B (list B) is
-          public redef head B => f c.head
-          public redef tail list B => c.tail.map_to_list f
+        f c.head : c.tail.map_to_list f
 
 
   # map the list to a new list applying function f to all elements
@@ -255,9 +245,7 @@ is
         match (f c.head).as_list
           nil     => c.tail.flat_map_to_list f
           c2 Cons =>
-            ref : Cons B (list B) is
-              public redef head B => c2.head
-              public redef tail list B => (c2.tail ++ c.tail.flat_map_to_list f).as_list
+            c2.head : (c2.tail ++ c.tail.flat_map_to_list f).as_list
 
 
   # fold the elements of this list using the given monoid.
@@ -376,9 +364,9 @@ is
   # Lazily take the first n elements of a list, alternatively the whole list if it
   # is shorter than n, or the empty list if n <= 0
   #
-  public redef take (n i32) Sequence A
+  public redef take (I type : idx, n I) Sequence A
   =>
-    take_list n
+    take_list n.as_i32
 
 
   # Lazily take the first n elements of a list, alternatively the whole list if it
@@ -392,9 +380,7 @@ is
       match list.this
         nil    => nil
         c Cons =>
-          ref : Cons A (list A) is   # NYI: indentation syntax for anonymous not supported
-            public redef head A => c.head
-            public redef tail list A => if n = 1 then nil else c.tail.take_list n-1
+          c.head : if n = 1 then nil else c.tail.take_list n-1
 
 
   # reverse the order of the elements in this list
@@ -415,7 +401,7 @@ is
   # representations of its contents, separated by 'sep'.
   #
   public redef as_string (sep String) String =>
-    String.join (map (.as_string)) sep
+    String.join (map ($)) sep
 
 
   # add an element sep in front of every element of this list.
@@ -490,8 +476,8 @@ is
   # create a list from the tail of list.this dropping n elements (or fewer
   # if the list is shorter than n).
   #
-  public redef drop (n i32) Sequence A =>
-    drop_list n
+  public redef drop (I type : idx, n I) Sequence A =>
+    drop_list n.as_i32
 
 
   # create a list from the tail of list.this dropping n elements (or fewer
@@ -520,9 +506,7 @@ is
       nil    => nil
       c Cons =>
         if p c.head
-          ref : Cons A (list A) is   # NYI: indentation syntax for anonymous not supported
-            public redef head A => c.head
-            public redef tail list A => c.tail.take_while_list p
+          c.head : c.tail.take_while_list p
         else
           nil
 
@@ -563,9 +547,8 @@ is
   filter_list (p A -> bool) list A =>
     match drop_while_list (a -> !(p a))
       nil    => nil
-      c Cons => ref : Cons A (list A) is   # NYI: indentation syntax for anonymous not supported
-                  public redef head A => c.head
-                  public redef tail list A => c.tail.filter_list p
+      c Cons =>
+        c.head : c.tail.filter_list p
 
 
   # create a list that repeats the current list indefinitely.  In case 'list.this'
@@ -594,7 +577,7 @@ is
   # 'list.this' and the empty list 'nil'.
   #
   public redef tails list (list A) =>
-    ref : Cons (list A) (list (list A)) is
+    _ : Cons (list A) (list (list A)) is
       public redef head list A => list.this
       public redef tail list (list A) =>
         list.this ? nil    => nil
@@ -615,10 +598,7 @@ is
     match list.this
       c1 Cons =>
         b.as_list ? c2 Cons =>
-                      zip_cons : Cons V (list V) is
-                        public redef head V => f c1.head c2.head
-                        public redef tail list V => c1.tail.zip_list c2.tail f
-                      zip_cons
+                      f c1.head c2.head : c1.tail.zip_list c2.tail f
                   | nil    => nil
       nil => nil
 
@@ -728,7 +708,7 @@ is
   # fmap lifts a function from A to B to a function from list A to list B
   #
   public type.fmap(B type, f A -> B) list A -> list B =>
-    l -> l.map_to_list B f
+    (.map_to_list B f)
 
 
   # monoid of lists with infix concatenation operation.
@@ -739,7 +719,7 @@ is
   #
   public type.list_concat_monoid Monoid (list A) =>
 
-    ref : Monoid (list A) is
+    _ : Monoid (list A) is
 
       # associative operation
       #
@@ -755,7 +735,7 @@ is
 # convenience routine to create a list from head h and lazy tail t.
 #
 public list(T type, h T, t Lazy (list T)) list T =>
-  ref : Cons T (list T) is
+  _ : Cons T (list T) is
     public redef head T => h
     public redef tail list T => t
 

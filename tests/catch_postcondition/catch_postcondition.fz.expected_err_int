@@ -1,7 +1,7 @@
 
 error 1: Postcondition `equals result-x x` does not hold after call
 Call stack:
-fuzion.type.runtime.type.fault.type.install_default.λ.call#1: {base.fum}/fuzion/runtime/fault.fz:43:7:
+fuzion.type.runtime.type.fault.type.install_default.λ.call#1: {base.fum}/fuzion/runtime/fault.fz:57:7:
       fuzion.sys.fatal_fault kind msg
 ------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 fuzion.runtime.fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
@@ -703,8 +703,8 @@ catch_postcondition.λ.call: --CURDIR--/catch_postcondition.fz:146:38:
   tries array ()->String := [ (() -> test i32), (() -> test i16), (() -> test i64) ]
 -------------------------------------^^^^^^^^
 catch_postcondition.z.try: --CURDIR--/catch_postcondition.fz:151:33:
-    redef try option String  => tries[c0].call
---------------------------------^^^^^^^^^^^^^^
+    redef try option String  => tries[c0.get].call
+--------------------------------^^^^^^^^^^^^^^^^^^
 catch_postcondition.z.λ.call.λ.call: --CURDIR--/catch_postcondition.fz:112:11:
           try
 ----------^^^
@@ -830,8 +830,8 @@ catch_postcondition.anonymous: --CURDIR--/catch_postcondition.fz:105:12:
           (_ -> catch m.get.get))
 ----------^^^^^^^^^^^^^^^^^^^^^^^
 catch_postcondition.y.λ.call.λ.call: --CURDIR--/catch_postcondition.fz:132:8:
-  say (ref : handle_post String is
--------^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  say (_ : handle_post String is
+-------^^^^^^^^^^^^^^^^^^^^^^^^^
         redef try =>
 --------^^^^^^^^^^^^
           test i32

@@ -21,5 +21,19 @@
 #
 # -----------------------------------------------------------------------
 
+
+# count the elements of this list
+#
+list.count_i8 i8 => count_n_i8 0
+
+
+# count the elements of this list starting at n.
+# carries n around to make this tail-recursive
+#
+list.count_n_i8 (n i8) i8 =>
+  list.this ? nil    => n
+            | c Cons => c.tail.count_n_i8 n+1
+
+
 ones => list 1 ones
-say ones.count   # error: does not terminate
+say ones.count_i8   # error: does not terminate

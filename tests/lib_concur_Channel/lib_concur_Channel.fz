@@ -39,7 +39,7 @@ lib_concur_Channel =>
 
     check concur.thread_pool.env.submit ()->
       _ :=
-        for n := chan.has_next
+        for n := chan.next
         while n.ok
           say "received {n}"
 

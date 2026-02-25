@@ -1,0 +1,57 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+# NYI: UNDER DEVELOPMENT: define common benchmark interface, refator to use this
+read_10mb_file =>
+
+  read_file(file path) outcome (array u8) =>
+    io.file.use file io.file.mode.append ()->
+      sz := (io.file.stat file false).val.size
+      io.file.open.mmap 0 sz ()->
+        array u8 sz.as_i32 i->
+          io.file.mapped_buffer.env[i.as_i64]
+
+  read_file2(file path) outcome (Sequence u8) =>
+    io.file.use file io.file.mode.read ()->
+      (io.buffered io.file.file_mutate).read_fully
+
+  f := path.of "/tmp/file"
+
+  a := array u8 1E7 x->65
+  s := _ : String is
+         public redef utf8 Sequence u8 => a
+
+  io.file.write f s .or_panic
+
+  say <| io.file.stat.stats f
+
+  test(arg path) =>
+    say "mmap: $arg iterations/s"
+    say <| bench
+      (time.duration.s 1)
+      (time.duration.s 10)
+      (()->
+       check read_file (path.of "$arg") .val.count=1E7
+        )
+    say "stdlib: $arg iterations/s"
+    say <| bench
+      (time.duration.s 1)
+      (time.duration.s 10)
+      (()->
+       check read_file2 arg .val.count=1E7
+        )
+
+  test f
+
+  io.file.delete f .or_panic

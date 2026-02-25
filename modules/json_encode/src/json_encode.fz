@@ -56,17 +56,17 @@ public redef Sequence.json_encode String =>
 
 public redef numeric.json_encode String =>
   /* NYI: UNDER DEVELOPMENT: always valid? */
-  numeric.this.as_string
+  $numeric.this
 
 
 public redef String.json_encode String =>
   /* NYI: UNDER DEVELOPMENT: escaping missing */
   # json.org: A character wrapped in "double quote can be any of the Unicode code points except the 32 control codes and "double quote. The definition of character shows an example of a codepoint range and exclude.
-  "\"{String.this.as_string}\""
+  "\"{String.this}\""
 
 
 public redef bool.json_encode String =>
-  bool.this.as_string
+  $bool.this
 
 
 public redef option.json_encode String =>

@@ -27,7 +27,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.be.jvm;
 
 import dev.flang.fuir.FUIR;
-import dev.flang.fuir.SpecialClazzes;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 import dev.flang.ir.IR.FeatureKind;
 
@@ -320,7 +319,7 @@ class CodeGen
     var isCall = _fuir.codeAt(si) == FUIR.ExprKind.Call;  // call or assignment?
     var cc0 = _fuir.accessedClazz  (si);
     var ccs = _fuir.accessedClazzes(si);
-    var rt = isCall ? _fuir.clazzResultClazz(cc0) : _fuir.clazz(SpecialClazzes.c_unit);
+    var rt = isCall ? _fuir.clazzResultClazz(cc0) : NO_CLAZZ;
     if (ccs.length == 0)
       {
         s = s.andThen(tvalue.drop());
@@ -347,7 +346,7 @@ class CodeGen
         var dynCall = args(true, tvalue, args, cc0, isCall ? _fuir.clazzArgCount(cc0) : 1)
           .andThen(Expr.comment("Dynamic access of " + clazzInQuotes(cc0)))
           .andThen(addDynamicFunctionAndStubs(si, cc0, ccs, isCall));
-        if (AbstractInterpreter.clazzHasUnitValue(_fuir, rt))
+        if (!isCall || AbstractInterpreter.clazzHasUnitValue(_fuir, rt))
           {
             s = dynCall;  // make sure we do not throw away the code even if it is of unit type
           }
@@ -576,7 +575,7 @@ class CodeGen
       case Native   :
         {
           if (CHECKS) check
-            (_types.clazzNeedsCode(cc),
+            (_fuir.clazzNeedsCode(cc),
              !(cc == _fuir.clazzAt(si) && // calling myself
              _jvm._tailCall.callIsTailCall(_fuir.clazzAt(si), si)));
 
@@ -589,7 +588,7 @@ class CodeGen
             {
               return Intrinsix.inlineCode(_jvm, si, cc, tvalue, args);
             }
-          if (_types.clazzNeedsCode(cc))
+          if (_fuir.clazzNeedsCode(cc))
             {
               var cl = si == NO_SITE ? FUIR.NO_CLAZZ
                                      : _fuir.clazzAt(si);
@@ -1086,7 +1085,6 @@ class CodeGen
   {
     return switch (_fuir.getSpecialClazz(constCl))
       {
-      case c_bool         -> new Pair<>(Expr.iconst(d[0]                                                                             , _types.javaType(constCl)), Expr.UNIT);
       case c_i8           -> new Pair<>(Expr.iconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).get     ()         , _types.javaType(constCl)), Expr.UNIT);
       case c_i16          -> new Pair<>(Expr.iconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getShort()         , _types.javaType(constCl)), Expr.UNIT);
       case c_i32          -> new Pair<>(Expr.iconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getInt  ()         , _types.javaType(constCl)), Expr.UNIT);

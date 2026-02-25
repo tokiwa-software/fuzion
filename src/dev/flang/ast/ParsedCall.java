@@ -49,7 +49,7 @@ public class ParsedCall extends Call
    * parenthesis ("a.b") from a call with parenthesis and an empty actual
    * arguments list ("a.b()").
    */
-  public static final List<Expr> NO_PARENTHESES = new List<>();
+  public static final List<Expr> NO_PARENTHESES = new List<Expr>().freeze();
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -496,7 +496,7 @@ public class ParsedCall extends Call
 
 
   /**
-   * check that partial application would not lead to to ambiguity. See
+   * check that partial application would not lead to ambiguity. See
    * tests/partial_application_negative for examples: In case a call can be made
    * directly and partial application would find another possible target that
    * would also be valid, we flag an error.
@@ -624,7 +624,6 @@ public class ParsedCall extends Call
         var ti = 0;
         var vs = cf.valueArguments();  // NYI: must hand down to get the correct number!
         var vn = vs.size();
-        var vi = 0;
         var firstValueIndex = _actuals.size() - vn;
 
         if (cf.hasOpenValueArgList(res))

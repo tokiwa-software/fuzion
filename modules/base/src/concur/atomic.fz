@@ -147,7 +147,7 @@ is
 
   # atomic increment
   #
-  public incr T
+  public incr T ! atomic_access
     pre T : integer
   =>
     for current_value := read
@@ -159,7 +159,7 @@ is
 
   # atomic decrement
   #
-  public decr T
+  public decr T  ! atomic_access
     pre T : integer
   =>
     for current_value := read

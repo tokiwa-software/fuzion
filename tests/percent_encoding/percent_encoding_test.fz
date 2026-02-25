@@ -42,7 +42,7 @@ percent_encoding_test =>
     say "'$act_plain' {$act_plain = exp_plain ? "[OK]" : "[FAILED]"}"
     if !tolerant
       bytes := encodings.percent.decode_as_bytes enc
-      act_plain_from_bytes := bytes.ok ? String.from_bytes bytes.val : $bytes
+      act_plain_from_bytes := bytes.ok ? String.from bytes.val : $bytes
       say "'$act_plain_from_bytes' {$act_plain_from_bytes = exp_plain ? "[OK]" : "[FAILED]"}"
       say (encodings.percent.encode_str (act_plain.val) = enc.replace "+" "%20")
 
