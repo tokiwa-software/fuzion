@@ -348,9 +348,10 @@ is
       debug : from ≥ 0
       debug : to = 0 || (if is_array_backed || debug_level > 1 then is_valid_index to-1 else true)
       debug : from <= to
-    post
-      debug: result.finite.is_yes_or_unknown
-      debug: result.count = to-from
+    # NYI: BUG: postcondition on parametrized feature do not work yet?
+    # post
+    #   debug: result.finite.is_yes_or_unknown
+    #   debug: result.count = (to-from).as_i32
   =>
     drop from
       .take to-from

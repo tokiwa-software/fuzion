@@ -555,7 +555,7 @@ is
   # is 'nil', returns 'nil'
   #
   public redef cycle Sequence A =>
-    ref : Sequence A is
+    _ : Sequence A is
       public redef finite trit => trit.yes
       public redef as_list list A => cycle_list
 
