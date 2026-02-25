@@ -58,7 +58,7 @@ class ForClass extends ANY
 
   /**
    * Some public members in a Java module may return a result type or expect an
-   * argument that that is not public.  This flag enables warnings in this case.
+   * argument that is not public.  This flag enables warnings in this case.
    */
   static final boolean SHOW_WARNINGS_FOR_NON_PUBLIC_TYPES = false;
 
@@ -66,21 +66,21 @@ class ForClass extends ANY
   /**
    * Feature suffix used for declaration of instance methods and fields
    */
-  static String DYNAMIC_SUFFIX = "";
+  static final String DYNAMIC_SUFFIX = "";
 
 
   /**
    * Feature suffix used for declaration of unit type containing static methods
    * and fields
    */
-  static String STATIC_SUFFIX  = "_static";
+  static final String STATIC_SUFFIX  = "_static";
 
 
   /**
    * File name suffix used for declaration of routine that returns instance of
    * unit type containing static methods and fields.
    */
-  static String UNIT_SUFFIX    = "_unit";
+  static final String UNIT_SUFFIX    = "_unit";
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -582,7 +582,7 @@ class ForClass extends ANY
     var fn0= fuzionName(jn, null);
     var fn = fuzionName(jn, jp);
     data.append("\n" +
-                "  # short-hand to call Java method '" + me + "':\n" +
+                "  # shorthand to call Java method '" + me + "':\n" +
                 "  #\n" +
                 "  public " + fn0 + fp + " " + outcomeResultType(me,resultType(me)) + " =>\n" +
                 "    " + fn + parametersList(outer + "." + fn0, pa) + "\n");
@@ -608,7 +608,7 @@ class ForClass extends ANY
     var fn0= "new";
     var fn = fuzionName(fn0, jp);
     data_static.append("\n" +
-                       "  # short-hand to call Java constructor '" + co + "':\n" +
+                       "  # shorthand to call Java constructor '" + co + "':\n" +
                        "  #\n" +
                        "  public " + fn0 + fp + " " + outcomeResultType(co, plainResultType(co.getDeclaringClass())) + " =>\n" +
                        "    " + fn + parametersList(outer + "." + fn0, pa) + "\n");
@@ -617,7 +617,7 @@ class ForClass extends ANY
 
   /**
    * For two overloaded methods that only differ in the result type, choose
-   * which one should be preferred for a short-hand call: the first one (r1, true),
+   * which one should be preferred for a shorthand call: the first one (r1, true),
    * or the second one (r2, false).
    *
    * @param r1 the first result type
@@ -635,7 +635,7 @@ class ForClass extends ANY
 
   /**
    * For two overloaded parameter lists pa1 and pa2, choose which one should be
-   * preferred for a short-hand call: the first one (pa1, true), or the second
+   * preferred for a shorthand call: the first one (pa1, true), or the second
    * one (pa2, false) or none (null)
    *
    * @param pa1 parameters of first candidate
@@ -683,7 +683,7 @@ class ForClass extends ANY
 
   /**
    * For two overloaded methods m1 and m2, choose which one should be preferred
-   * for a short-hand call: the first one (pa1, true), or the second one (pa2,
+   * for a shorthand call: the first one (pa1, true), or the second one (pa2,
    * false).
    *
    * @param m1 first candidate
@@ -711,7 +711,7 @@ class ForClass extends ANY
 
   /**
    * For two overloaded constructors c1 and c2, choose which one should be
-   * preferred for a short-hand call: the first one (c1, true), or the second
+   * preferred for a shorthand call: the first one (c1, true), or the second
    * one (c2, false).
    *
    * @param c1 first candidate
@@ -893,7 +893,7 @@ class ForClass extends ANY
 
   /**
    * Get a string containing all the mangled, cleaned names of the parameters.
-   * This is used to pass parameters from short-hand features to those with
+   * This is used to pass parameters from shorthand features to those with
    * fully mangled signature in their name.
    *
    * @param outer
@@ -1065,10 +1065,8 @@ class ForClass extends ANY
       {
         switch (i)
           {
-          case '$':
-          case '{':
-          case '}': res.append('\\').append((char) i); break;
-          default: res.appendCodePoint(i); break;
+          case '$', '{', '}' -> res.append('\\').append((char) i);
+          default -> res.appendCodePoint(i);
           }
       });
     res.append('\"');

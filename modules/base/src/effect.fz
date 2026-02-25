@@ -240,7 +240,7 @@ public effect is
     # NYI: BUG: does not work: Wrong number of arguments in lambda expression
     # code -> instate_self code
 
-    ref : Functional R is
+    _ : Functional R is
       public redef call(code Function R) R =>
         instate_self code
 
@@ -479,4 +479,4 @@ public linear_effect : effect is
 
 Depleted_Wrapper ref is
 
-  depleted := concur.atomic false
+  depleted := concur.atomic bool .new false

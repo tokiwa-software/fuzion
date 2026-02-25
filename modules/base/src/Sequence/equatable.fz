@@ -102,16 +102,16 @@ public find(pattern Sequence T) option i32
         nil => false
         n Node => !n.top.is_empty && n.top[0] = x
 
-    fold_until(acc option (Node T), step (option (Node T), T)->option (Node T), data Sequence T) option i32 =>
+    fold_until(acc option (Node T), i i32) option i32 =>
       if is_done acc
-        ab.count - data.count - p.count
-      else if data.is_empty
+        ab.count - (ab.count-i) - p.count
+      else if i >= ab.count
         nil
       else
-        acc_star := fold_until.this.step acc data[0]
-        fold_until acc_star fold_until.this.step (data.drop 1)
+        acc_star := step acc ab[i]
+        fold_until acc_star i+1
 
-    fold_until init step ab
+    fold_until init 0
 
 
 
@@ -183,28 +183,30 @@ public count_matches(l Sequence T) i32
 # split sequence at s, if there is no limit, otherwise if limit is an integer n,
 # for at most n occurrences of s
 #
-# if split_after is true, all but the last element of the resulting list include
+# if split_after is true, all but the last element of the resulting Sequence include
 # the separator
 #
 # helper feature which unifies the code of the different split features in one
 #
-module split0(s Sequence T, limit option u32, split_after bool) list (Sequence T)
+module split0(s Sequence T, limit option u32, split_after bool) Sequence (Sequence T)
   pre
     T : property.equatable
     debug: !s.is_empty
     debug: match limit
             nil => true
             n u32 => n > 0
+    debug: is_array_backed
+    debug: s.is_array_backed
   =>
-    match (find s)
+    match find s
       nil     =>
-        # NYI: With better type propagation, this could be `Sequence.this : nil` or `[Sequence.this].as_list`
-        (id (Sequence T) Sequence.this) : nil
-      idx i32 =>
-        head Sequence T => take (if split_after then idx + s.count else idx)
+        [Sequence.this]
+      i i32 =>
+        head Sequence T => take (if split_after then i + s.count else i)
 
-        tail list (Sequence T) =>
-          rest := drop (idx + s.count)
+        tail Sequence (Sequence T) =>
+
+          rest => drop i+s.count
 
           match limit
             nil => rest.split0 s nil split_after
@@ -212,9 +214,9 @@ module split0(s Sequence T, limit option u32, split_after bool) list (Sequence T
               if n > 1
                 rest.split0 s (n - 1) split_after
               else
-                rest : nil
+                [rest]
 
-        head : tail
+        [head] ++ tail
 
 
 # filter out consecutive duplicate elements.
@@ -247,14 +249,3 @@ public dedup(by (T,T) -> bool) Sequence T
     T : property.equatable
   =>
     as_list.dedup_list by
-
-
-# wrap this sequence into an equatable type.
-#
-# This requires the underlying element type to be equatable.
-#
-public as_equatable equatable_sequence T
-  pre
-    T : property.equatable
-=>
-  equatable_sequence T Sequence.this

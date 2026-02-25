@@ -23,12 +23,12 @@ module multi is
     parse(input I) parse_result I (Sequence O) =>
       match p.call input
         s1 success =>
-          match (parse s1.rest)
+          match parse s1.rest
             s2 success => success s2.rest [s1.out]++s2.out
             error => panic "invalid state, many0 must always succeed."
         # NYI: UNDER DEVELOPMENT: type inference should infer correct type of empty array
-        error => success input (Sequence O).type.empty
-    parser I _ _ (input -> parse input)
+        error => success input (Sequence O).empty
+    parser I _ _ parse
 
 
   # apply parser at least once, return results as sequence
@@ -47,7 +47,7 @@ module multi is
   =>
     parser I I (Sequence O) input->
       rest, acc := (1..n)
-        .reduce (input, (Sequence O).type.empty) r,t->
+        .reduce (input, (Sequence O).empty) r,t->
           match p.call r.0
             s success =>
               (s.rest, r.1 ++ [s.out])
@@ -70,8 +70,8 @@ module multi is
             s2 success => success s2.rest [s1.out]++s2.out
             error      => panic "invalid state, many0 always succeeds"
         # NYI: UNDER DEVELOPMENT: type inference should infer correct type of empty array
-        error => success input (Sequence O).type.empty
-    parser I _ _ (input -> parse input)
+        error => success input (Sequence O).empty
+    parser I _ _ parse
 
 
   # parse a separated list of values, one or more values
@@ -82,4 +82,4 @@ module multi is
         match (many0 <| sequence.preceded p_sep p_value.call).call s1.rest
           s2 success => id (parse_result I (Sequence O)) (success s2.rest [s1.out]++s2.out)
           error => panic "invalid state, many0 always succeeds"
-    parser I _ _ (input -> parse input)
+    parser I _ _ parse

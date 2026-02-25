@@ -37,7 +37,7 @@ javaHello : Java is
 
 
   is_windows =>
-    ((envir.vars.get "OS").val "").lower_case.contains "windows"
+    (envir.vars["OS"].val "").lower_case.contains "windows"
 
 
   fuzion.jvm.use _ (is_windows ? ["-Dsun.stdout.encoding=UTF-8", "-Dsun.stderr.encoding=UTF-8"] : []) ()->

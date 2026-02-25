@@ -57,8 +57,8 @@ is
       compile_time_panic
 
 
-  # A total order between two options is defined as follows: `nil` is always less-than-or-equal
-  # any other value and iff `a` and `b` are both contains values of type `T`, then
+  # A total order for options is defined as follows: `nil` is always less-than-or-equal
+  # any other value and iff `a` and `b` both contain values of type `T`, then
   # `T.lteq a.get b.get`.
   #
   # This is defined only if T : property.orderable, it will result in a compile-time panic
@@ -269,7 +269,7 @@ is
 
 
 
-# option with 1 argument provides an short-hand to wrap a value into an option
+# option with 1 argument provides an shorthand to wrap a value into an option
 #
 # Using this enables to write
 #

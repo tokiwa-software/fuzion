@@ -709,11 +709,7 @@ public class Resolution extends ANY
    */
   public List<AbstractType> resolveTypes(List<AbstractType> types, Context context)
   {
-    if (!(types instanceof FormalGenerics.AsActuals))
-      {
-        types = types.map(t -> t.resolve(this, context));
-      }
-    return types;
+    return types.map(t -> t.resolve(this, context));
   }
 
 

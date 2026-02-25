@@ -1,0 +1,343 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature Finger_Tree
+#
+# -----------------------------------------------------------------------
+
+
+#
+# The paper introducing the datastructure: https://www.cs.ox.ac.uk/ralf.hinze/publications/FingerTrees.pdf
+# The implementation that was used as inspiration for this port: https://github.com/ledbutter/CSharpFingerTree
+#
+# NYI: UNDER DEVELOPMENT: split0, slice, reverse
+#
+private:public Finger_Tree(T type) ref : container.abstract_array T is
+
+
+  # prepend seq to this Finger_Tree
+  #
+  # NYI: ENHANCEMENT: merge if seq is also a Finger_Tree
+  #
+  public prepend(seq Sequence T) container.Finger_Tree T => abstract
+
+
+  # append seq to this Finger_Tree
+  #
+  # NYI: ENHANCEMENT: merge if seq is also a Finger_Tree
+  #
+  public append (seq Sequence T) container.Finger_Tree T => abstract
+
+
+  # an empty Finger_Tree
+  #
+  public fixed type.empty container.Finger_Tree T => container.empty T
+
+
+  # concat s to the Finger_Tree
+  #
+  public redef concat (s Sequence T) Sequence T =>
+    match s.as_finger_tree
+      nil => append s.as_array_backed
+      ft Finger_Tree => merge ft
+
+
+  # collect the contents of this Sequence into an array
+  #
+  public redef as_array array T =>
+    internal := fuzion.sys.internal_array_init T count
+    fill_internal_array internal 0
+    array internal unit unit unit
+
+
+  # helper for as_array to copy contents to internal_array
+  #
+  fill_internal_array(ia fuzion.sys.internal_array T, i i32) unit => unit
+
+
+  # merge this Finger_Tree with ft
+  #
+  merge(ft container.Finger_Tree T) container.Finger_Tree T => abstract
+
+
+  # merge this Finger_Tree with seq then ft
+  #
+  merge(seq Sequence (Sequence T), ft container.Finger_Tree T) container.Finger_Tree T => abstract
+
+
+  # to extract the actual instance of the Finger_Tree
+  # NYI: PERFORMANCE: might better be using dynamic binding
+  #
+  modus choice (container.empty T) (container.single T) (container.deep T) => abstract
+
+
+
+# an empty finger tree
+#
+empty(T type) : container.Finger_Tree T is
+  public redef length i32 => 0
+  public redef prepend(seq Sequence T) container.Finger_Tree T =>
+    match seq.as_finger_tree
+      nil            => single T seq
+      ft Finger_Tree => ft
+  public redef append (seq Sequence T) container.Finger_Tree T =>
+    match seq.as_finger_tree
+      nil            => single T seq
+      ft Finger_Tree => ft
+  public redef index [ ] (I type : idx, i I) T => panic "illegal unless debug turned off"
+  module redef as_finger_tree option (container.Finger_Tree T) => container.empty T
+  redef merge(ft container.Finger_Tree T) container.Finger_Tree T => ft
+  redef merge(seq Sequence (Sequence T), ft container.Finger_Tree T) container.Finger_Tree T =>
+    for r := ft, r.prepend i
+        i in seq.reverse
+    else
+      r
+  redef modus choice (container.empty T) (container.single T) (container.deep T) => container.empty T
+
+
+
+# a finger tree with only one item
+#
+single(T type, data Sequence T) : container.Finger_Tree T
+  pre
+    debug 2 : data.as_finger_tree.is_nil
+is
+  public redef length i32 => data.count
+  public redef prepend(seq Sequence T) container.Finger_Tree T =>
+    deep (container.hand [seq]) (empty T) (container.hand [data])
+  public redef append (seq Sequence T) container.Finger_Tree T =>
+    deep (container.hand [data]) (empty T) (container.hand [seq])
+  public redef index [ ] (I type : idx, i I) T => data[i]
+  module redef as_finger_tree option (container.Finger_Tree T) => container.single data
+  redef merge(ft container.Finger_Tree T) container.Finger_Tree T =>
+    ft.prepend data
+  redef merge(seq Sequence (Sequence T), ft container.Finger_Tree T) container.Finger_Tree T =>
+    for r := ft, r.prepend i
+        i in seq.reverse
+    else
+      r.prepend data
+  redef modus choice (container.empty T) (container.single T) (container.deep T) => container.single data
+  redef fill_internal_array(ia fuzion.sys.internal_array T, i i32) unit =>
+    for j:=0, j+1
+    while j<data.count
+    do
+      ia[i+j] := data[j]
+
+
+
+# NYI: UNDER DEVELOPMENT: implement this properly, not via
+# abusing Finger_Tree
+#
+node3(T type, a,b,c Sequence T) Sequence T =>
+  container.Finger_Tree T .empty
+    .append a
+    .append b
+    .append c
+
+
+
+# a deep finger tree, the non trivial case of a finger tree
+#
+# consist of two hands, left and right, and another Finger_Tree in the middle
+#
+deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.hand T) : container.Finger_Tree T is
+
+  # cached count of this deep finger tree
+  #
+  cnt := lft.count + ft.count + rght.count
+
+
+  public redef length i32 => cnt
+
+
+  public redef prepend(seq Sequence T) container.Finger_Tree T =>
+    if lft.finger.count = 4
+      x := node3 lft.finger[1] lft.finger[2] lft.finger[3]
+      deep (container.hand [seq, lft.finger[0]]) (ft.prepend x) rght
+    else
+      deep (lft.prepend seq) ft rght
+
+
+  public redef append (seq Sequence T) container.Finger_Tree T =>
+    if rght.finger.count = 4
+      x := node3 rght.finger[0] rght.finger[1] rght.finger[2]
+      deep lft (ft.append x) (container.hand [rght.finger[3], seq])
+    else
+      deep lft ft (rght.append seq)
+
+
+  from_sequence(seq Sequence (Sequence T)) =>
+    for r := container.Finger_Tree T .empty, r.append i
+        i in seq
+    else
+      r
+
+
+  public redef index [ ] (I type : idx, i I) T =>
+    n := i.as_i32
+    if n < lft.count
+      lft[n]
+    else if n < lft.count+ft.count
+      ft[n-lft.count]
+    else
+      rght[n-lft.count-ft.count]
+
+
+  module redef as_finger_tree option (container.Finger_Tree T) =>
+    container.deep lft ft rght
+
+
+  redef merge(ft0 container.Finger_Tree T) container.Finger_Tree T =>
+    merge [] ft0
+
+
+  redef merge(seq Sequence (Sequence T), ft0 container.Finger_Tree T) container.Finger_Tree T =>
+    match ft0.modus
+      empty =>
+        seq
+          .reduce (container.Finger_Tree T) deep.this (r,t)->
+            r.append t
+      s single =>
+        seq
+          .reduce (container.Finger_Tree T) deep.this (r,t)->
+            r.append t
+          .append s.data
+      d deep =>
+        # NYI: BUG: triggers ugly case in DFA: deep lft (ft.merge ([rght.finger, seq, d.lft.finger].flat_map id) d.ft) d.rght
+        x := array rght.finger.count+seq.count+d.lft.finger.count i->
+          if i<rght.finger.count
+            rght.finger[i]
+          else if i<rght.finger.count+seq.count
+            seq[i-rght.finger.count]
+          else
+            d.lft.finger[i-rght.finger.count-seq.count]
+        deep lft (ft.merge x d.ft) d.rght
+
+
+
+  redef modus choice (container.empty T) (container.single T) (container.deep T) => container.deep lft ft rght
+
+
+  redef fill_internal_array(ia fuzion.sys.internal_array T, i i32) unit =>
+    lft.fill_internal_array ia i
+    ft.fill_internal_array ia i+lft.count
+    rght.fill_internal_array ia i+lft.count+ft.count
+
+
+# this is called digit in the paper
+#
+hand(T type, finger Sequence (Sequence T)) : property.countable
+  pre
+    debug 2 : 1 <= finger.count <= 4
+    debug 2 : finger.is_array_backed
+is
+  f0cnt := finger[0].count
+  f1cnt := if finger.count < 2 then 0 else finger[1].count
+  f2cnt := if finger.count < 3 then 0 else finger[2].count
+  f3cnt := if finger.count < 4 then 0 else finger[3].count
+  cnt   := f0cnt + f1cnt + f2cnt + f3cnt
+  public redef count i32 => cnt
+
+
+  # new hand without the first finger
+  #
+  drop_first
+    pre
+      debug 2 : finger.count > 1
+  =>
+    hand (finger.drop 1)
+
+
+  # new hand without the last finger
+  #
+  drop_last
+    pre
+      debug 2 : finger.count > 1
+  =>
+    hand (finger.take finger.count-1)
+
+
+  # new hand with seq prepended
+  #
+  prepend(seq Sequence T)
+    pre
+      debug 2 : finger.count < 4
+  =>
+    # NYI: BUG: triggers ugly case in DFA: hand ([[seq], finger].flat_map id).as_array_backed
+    if finger.count = 1
+      hand [seq, finger[0]]
+    else if finger.count = 2
+      hand [seq, finger[0], finger[1]]
+    else
+      hand [seq, finger[0], finger[1], finger[2]]
+
+
+  # new hand with seq appended
+  #
+  append(seq Sequence T)
+    pre
+      debug 2 : finger.count < 4
+  =>
+    # NYI: BUG: triggers ugly case in DFA: hand ([finger, [seq]].flat_map id).as_array_backed
+    if finger.count = 1
+      hand [finger[0], seq]
+    else if finger.count = 2
+      hand [finger[0], finger[1], seq]
+    else
+      hand [finger[0], finger[1], finger[2], seq]
+
+
+  # index access to the element in this hand
+  #
+  public index [ ] (n i32) T =>
+    if n >= cnt
+      panic "illegal unless debug turned off"
+    else if n < f0cnt
+      finger[0][n]
+    else if n < f0cnt+f1cnt
+      finger[1][n-f0cnt]
+    else if n < f0cnt+f1cnt+f2cnt
+      finger[2][n-f0cnt-f1cnt]
+    else
+      finger[3][n-f0cnt-f1cnt-f2cnt]
+
+
+  # fill ia with contens of the fingers
+  # starting at index i
+  #
+  fill_internal_array(ia fuzion.sys.internal_array T, i i32) unit =>
+
+    fill(f Sequence T, s i32) =>
+      match f.as_finger_tree
+        nil =>
+          for j := 0, j+1
+          while j < f.count do
+            ia[s+j] := f[j]
+        ft Finger_Tree =>
+          ft.fill_internal_array ia s
+
+    fill finger[0] i
+    if finger.count > 1
+      fill finger[1] i+f0cnt
+      if finger.count > 2
+        fill finger[2] i+f0cnt+f1cnt
+        if finger.count > 3
+          fill finger[3] i+f0cnt+f1cnt+f2cnt
+
+

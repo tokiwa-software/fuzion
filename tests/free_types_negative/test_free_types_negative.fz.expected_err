@@ -119,7 +119,11 @@ expected formal type: 'Sequence U'
 actual type found   : 'Sequence T'
 assignable to       : 'Any',
                       'Sequence T',
-                      'property.ref countable'
+                      'property.ref countable',
+                      'property.ref equatable',
+                      'property.ref hashable',
+                      'property.ref orderable',
+                      'property.ref partially_orderable'
 for value assigned  : 's'
 To solve this, you could change the type of the target 's' to 'Sequence T' or convert the type of the assigned value to 'Sequence U'.
 

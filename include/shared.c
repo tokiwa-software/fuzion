@@ -475,8 +475,9 @@ fzE_jvm_result fzE_jvm_not_found(jstring jstr)
 
   char *result = fzE_malloc_safe(len1 + len2 + 1);
 
-  strcpy(result, s1);
-  strcat(result, s2);
+  memcpy(result, s1, len1);
+  memcpy(result + len1, s2, len2);
+  result[len1 + len2] = '\0';
 
   return fzE_jvm_error(result);
 }
@@ -903,4 +904,3 @@ extern inline int fzE_is_null(void * p)
     ? 0
     : -1;
 }
-

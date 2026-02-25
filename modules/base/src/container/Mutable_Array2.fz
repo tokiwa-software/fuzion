@@ -60,20 +60,20 @@ is
 
   # get element at given index i
   #
-  public index [ ] (i1, i2 i64) T ! E
+  public index [ ] (I type : idx, i1, i2 I) T ! E
     pre
-      safety: 0 ≤ i1 < length0
-      safety: 0 ≤ i2 < length1
+      safety: 0 ≤ i1.as_i64 < length0
+      safety: 0 ≤ i2.as_i64 < length1
   =>
     abstract
 
 
   # set element at given index i to given value o
   #
-  public set [ ] (i1, i2 i64, o T) unit ! E
+  public set [ ] (I type : idx, i1, i2 I, o T) unit ! E
     pre
-      safety: 0 ≤ i1 < length0
-      safety: 0 ≤ i2 < length1
+      safety: 0 ≤ i1.as_i64 < length0
+      safety: 0 ≤ i2.as_i64 < length1
   =>
     abstract
 
@@ -96,4 +96,4 @@ is
   # the current state of the buffer
   # as a string.
   #
-  public redef as_string String => as_array.as_string
+  public redef as_string String => $as_array

@@ -161,8 +161,24 @@ public class TokenInfo extends ANY
     @Override
     public boolean equals(Object arg0)
     {
-      var other = (EntryEqualByKey<T1, T2>) arg0;
-      return (this.getKey() == null ? other.getKey() == null: this.getKey().equals(other.getKey()));
+      boolean result;
+
+      if (this == arg0)
+        {
+          result = true;
+        }
+      else if (!(arg0 instanceof EntryEqualByKey<?, ?> other))
+        {
+          result = false;
+        }
+      else
+        {
+          var key = this.getKey();
+          var otherKey = other.getKey();
+          result = (key == null ? otherKey == null : key.equals(otherKey));
+        }
+
+      return result;
     }
 
     @Override
@@ -289,7 +305,7 @@ public class TokenInfo extends ANY
           // NYI: UNDER DEVELOPMENT: check if all cases are considered
           .orElse(Optional.of(TokenType.Type));
       case t_const, t_leaf, t_infix, t_infix_right, t_prefix, t_postfix, t_private, t_module, t_public -> Optional.of(TokenType.Modifier);
-      case t_abstract,  t_check, t_do, t_else, t_env, t_fixed, t_for, t_if, t_in, t_index, t_intrinsic, t_inv, t_is, t_loop, t_match, t_native, t_period, t_post, t_pre, t_redef, t_ref, t_set, t_ternary, t_then, t_this, t_type, t_universe, t_until, t_var, t_variant, t_while -> Optional.of(TokenType.Keyword);
+      case t_abstract,  t_check, t_do, t_else, t_env, t_fixed, t_for, t_if, t_in, t_index, t_intrinsic, t_invariant, t_is, t_loop, t_match, t_native, t_period, t_post, t_pre, t_redef, t_ref, t_set, t_ternary, t_then, t_this, t_type, t_universe, t_until, t_var, t_variant, t_while -> Optional.of(TokenType.Keyword);
       default -> Optional.empty();
       };
   }
@@ -317,7 +333,9 @@ public class TokenInfo extends ANY
             return Optional.of(TokenType.Enum);
           case Intrinsic :
           case Abstract :
-          case Routine :
+          case Constructor :
+          case RefConstructor :
+          case Function :
             if (af.isConstructor()
               && af.valueArguments().size() == 0
               && af.code().containsOnlyDeclarations()
@@ -386,9 +404,9 @@ public class TokenInfo extends ANY
     return token() == Token.t_ws;
   }
 
-  private final static Set<Token> leftBrackets =
+  private static final Set<Token> leftBrackets =
     List.of(Token.t_lbrace, Token.t_lbracket, Token.t_lparen).stream().collect(Collectors.toUnmodifiableSet());
-  private final static Set<Token> rightBrackets =
+  private static final Set<Token> rightBrackets =
     List.of(Token.t_rbrace, Token.t_rbracket, Token.t_rparen).stream().collect(Collectors.toUnmodifiableSet());
 
   public boolean isLeftBracket()

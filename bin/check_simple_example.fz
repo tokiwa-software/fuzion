@@ -36,7 +36,7 @@ process_result(out String, err String, exit_code u32) is
     process_result "" "" 0
 
 is_windows =>
-  ((envir.vars.get "OS").val "").lower_case.contains "windows"
+  (envir.vars["OS"].val "").lower_case.contains "windows"
 
 path_separator := is_windows ? ";" : ":"
 
@@ -49,6 +49,7 @@ envir_var_kv := [
   "POSTCONDITIONS",
   "PRECONDITIONS",
   "dev_flang_tools_serializeFUIR",
+  "dev_flang_fuir_analysis_dfa_DFA_MAX_ITERATIONS",
   "CPATH",
   "LIBRARY_PATH",
   "FUZION_CLANG_INSTALLED_DIR",
@@ -68,14 +69,19 @@ envir_var_kv := [
   "dev_flang_fuir_analysis_dfa_TRACE_ALL_EFFECT_ENVS",
   # without this test/socket fails on windows,
   # winsock2 seems to need this to properly load the dlls
-  "SYSTEMROOT"
+  "SYSTEMROOT",
+  # next two are sometimes needed on windows
+  "TEMP",
+  "TMP",
+  "SYSTEMROOT",
+  "INFLUXDB_TOKEN"
 ].map k->
   if k="DYLD_FALLBACK_LIBRARY_PATH"||k="PATH"||k="LD_LIBRARY_PATH"
-    (envir.vars.get k)
+    envir.vars[k]
       .bind v->(k,"$v$path_separator../../lib")
       .or_else (k,"../../lib")
   else
-    (envir.vars.get k).bind v->
+    envir.vars[k].bind v->
       (k,v)
  .filter (.ok)
  .map (.val)
@@ -106,20 +112,20 @@ record_process(
   (concur.thread_pool 2 ()->
       fout := concur.thread_pool.env.submit _ ()->
         lm ! ()->
-          match p.with_out String lm (()->String.from_bytes (io.buffered lm).read_fully)
+          match p.with_out String lm (()->String.from (io.buffered lm).read_fully)
             e error => panic "failed reading stdout from $cmd, error is: $e"
             out String => out
       ferr := concur.thread_pool.env.submit _ ()->
         lm ! ()->
-          match p.with_err String lm (()->String.from_bytes (io.buffered lm).read_fully)
+          match p.with_err String lm (()->String.from (io.buffered lm).read_fully)
             e error => panic "failed reading stderr from $cmd, error is: $e"
             err String => err
 
-      stdin_file := "$file.stdin"
+      stdin_file := path.of "$file.stdin"
       if feed_stdin && io.file.exists stdin_file
         lm ! ()->
           _ := p.with_in unit lm ()->
-            _ := (io.buffered lm).writer.env.write (read_file_fully stdin_file).or_panic.utf8
+            _ := (io.buffered lm).writer.env.write (io.slurp stdin_file).or_panic
 
       match p.wait
         e error => panic "failed waiting for $cmd, error is: $e"
@@ -143,31 +149,15 @@ String.execute(
   # feed .stdin file to executed process?
   feed_stdin bool
 ) =>
-  ((split_if (=" ")).map (.replace protected_space " ")).execute feed_stdin
+  split_if (=" ")
+    .map (.replace protected_space " ")
+    .execute feed_stdin
 
 # execute this string by splitting at all whitespaces
 #
 String.execute =>
   String.this.execute false
 
-# write data to file dest
-#
-write_to_file(dest String, data String) =>
-  _ := io.file.delete dest
-  check (io.file.use dest io.file.mode.write ()->
-    check (data.write_to io.file.file_mutate).ok).ok
-
-# write file from src to dest
-#
-copy(src, dest String) =>
-  contents := (io.file.use src io.file.mode.read (() -> String.from_bytes (io.buffered io.file.file_mutate).read_fully)).or_panic
-  write_to_file dest contents
-
-# read file f fully
-#
-read_file_fully(f String) outcome String =>
-  io.file.use f io.file.mode.read ()->
-    String.from_bytes (io.buffered io.file.file_mutate).read_fully
 
 ############################################################################
 
@@ -197,56 +187,43 @@ check_exit_code(run process_result) =>
 # clean error output from random names
 # like loop4, preandcall19 etc.
 #
-clean_err(f String) =>
-  # dot after os.cwd intentional, matches either slash or backslash
-  check "sed -i s#{os.cwd.val.replace "\\" "\\"*4}.#--CURDIR--/# $f".execute.ok
+clean_err(f path) =>
+  if is_windows
+    check "sed -i s|/|#|g $f".execute.ok
+    # 8 slashes here intentional, unclear why so many are needed though...
+    check "sed -i s|\\\\\\\\|#|g $f".execute.ok
+    say "3"
+    check "sed -i s|{os.cwd.val.as_string.replace "\\" "#" .replace "/" "#"}|--CURDIR--| $f".execute.ok
+  check "sed -i s#{os.cwd.val.as_string}#--CURDIR--# $f".execute.ok
   # line numbers
   check "sed -E -i s/\\.fz:[0-9]+:[0-9]+:/\\.fz:n:n:/g $f".execute.ok
   check "sed -E -i s/\\.fz:[0-9]+/\\.fz:n/g $f".execute.ok
-  # lambdas
-  check "sed -E -i s/#fun[0-9]+/fun/g $f".execute.ok
-  check "sed -E -i s/INTERN_fun[0-9]+/fun/g $f".execute.ok
-  # loops
-  check "sed -E -i s/#loop[0-9]+/loop/g $f".execute.ok
-  check "sed -E -i s/INTERN_loop[0-9]+/loop/g $f".execute.ok
-  # preconditions
-  check "sed -E -i s/#pre[0-9]+/pre/g $f".execute.ok
-  check "sed -E -i s/INTERN_pre[0-9]+/pre/g $f".execute.ok
-  # pre bools
-  check "sed -E -i s/#prebool[0-9]+/prebool/g $f".execute.ok
-  check "sed -E -i s/INTERN_prebool[0-9]+/prebool/g $f".execute.ok
-  # pre bools
-  check "sed -E -i s/#preandcall[0-9]+/preandcall/g $f".execute.ok
-  check "sed -E -i s/INTERN_preandcall[0-9]+/preandcall/g $f".execute.ok
-  # postconditions
-  check "sed -E -i s/#post[0-9]+/post/g $f".execute.ok
-  check "sed -E -i s/INTERN_post[0-9]+/post/g $f".execute.ok
 
 
 # delete temporary files
 #
 delete_tmp_files =>
-  _ := io.file.delete "tmp_out.txt"
-  _ := io.file.delete "tmp_err.txt"
-  _ := io.file.delete "testbin"
+  _ := io.file.delete (path.of "tmp_out.txt")
+  _ := io.file.delete (path.of "tmp_err.txt")
+  _ := io.file.delete (path.of "testbin")
   _ := io.file.delete exp_err_cleaned
 
 
 be     := envir.args[1]
 # can not execute bash script fz on windows with CreateProcess
-fz_run := envir.args[2].replace "../../bin/fz" "java {is_windows ? "-Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8" : ""} --enable-preview --enable-native-access=ALL-UNNAMED --class-path ../../classes {(envir.vars.get "FUZION_JAVA_OPTIONS").or_else ""} -Xss5m -Dline.separator=\n -Dfile.encoding=UTF-8 -Dfuzion.home=../../ -Dfuzion.command=fz dev.flang.tools.Fuzion"
+fz_run := envir.args[2].replace "../../bin/fz" "java {is_windows ? "-Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8" : ""} --enable-preview --enable-native-access=ALL-UNNAMED --class-path ../../classes {envir.vars["FUZION_JAVA_OPTIONS"].or_else ""} -Xss5m -Dline.separator=\n -Dfile.encoding=UTF-8 -Dfuzion.home=../../ -Dfuzion.command=fz dev.flang.tools.Fuzion"
 file   := envir.args[3]
 exp_out := if be = "effect"
-             "$file.effect"
+             path.of "$file.effect"
            else
-             if io.file.exists "$file.expected_out_$be" then "$file.expected_out_$be" else "$file.expected_out"
-exp_err := if io.file.exists "$file.expected_err_$be" then "$file.expected_err_$be" else "$file.expected_err"
-exp_err_cleaned := "$exp_err.cleaned"
+             if io.file.exists (path.of "$file.expected_out_$be") then (path.of "$file.expected_out_$be") else (path.of "$file.expected_out")
+exp_err := if io.file.exists (path.of "$file.expected_err_$be") then (path.of "$file.expected_err_$be") else (path.of "$file.expected_err")
+exp_err_cleaned := path.of "$exp_err.cleaned"
 
-if io.file.exists "$file.skip" || (be = "effect" && !(io.file.exists "$file.effect"))
+if io.file.exists (path.of "$file.skip") || (be = "effect" && !(io.file.exists (path.of "$file.effect")))
     say "SKIP $file"
 else
-    yak "RUN $file "
+    yak "RUN $file using {be.pad_center 3} backend "
 
     delete_tmp_files
 
@@ -275,31 +252,31 @@ else
 
         check_exit_code run
 
-        write_to_file "tmp_out.txt" run.out
-        write_to_file "tmp_err.txt" run.err
+        io.write (path.of "tmp_out.txt") run.out .or_panic
+        io.write (path.of "tmp_err.txt") run.err .or_panic
       else
-        write_to_file "tmp_out.txt" compile.out
-        write_to_file "tmp_err.txt" compile.err
+        io.write (path.of "tmp_out.txt") compile.out .or_panic
+        io.write (path.of "tmp_err.txt") compile.err .or_panic
     else if be = "jvm"
       run := "$fz_run -XmaxErrors=-1 -jvm {backend_options "FUZION_JVM_BACKEND_OPTIONS"} $file".execute true
 
       check_exit_code run
 
-      write_to_file "tmp_out.txt" run.out
-      write_to_file "tmp_err.txt" run.err
+      io.write (path.of "tmp_out.txt") run.out .or_panic
+      io.write (path.of "tmp_err.txt") run.err .or_panic
     else if be = "int"
       run := "$fz_run -XmaxErrors=-1 -interpreter $file".execute true
 
       check_exit_code run
 
-      write_to_file "tmp_out.txt" run.out
-      write_to_file "tmp_err.txt" run.err
+      io.write (path.of "tmp_out.txt") run.out .or_panic
+      io.write (path.of "tmp_err.txt") run.err .or_panic
     else if be = "effect"
       run := "$fz_run -XmaxErrors=-1 -effects $file".execute
 
       check_exit_code run
 
-      write_to_file "tmp_out.txt" ((run.out.lines.filter (l -> !l.is_empty)).sort.as_string "\n")+"\n"
+      io.write (path.of "tmp_out.txt") ((run.out.lines.filter (l -> !l.is_empty)).sort.as_string "\n")+"\n" .or_panic
     else
       panic "backend unknown: $be"
 
@@ -307,8 +284,8 @@ else
 
     err :=
       if be != "effect"
-        copy exp_err exp_err_cleaned
-        clean_err "tmp_err.txt"
+        io.copy exp_err exp_err_cleaned .or_panic
+        clean_err (path.of "tmp_err.txt")
         clean_err exp_err_cleaned
         "diff --strip-trailing-cr {exp_err_cleaned} tmp_err.txt".execute
       else
@@ -327,4 +304,3 @@ else
       say "{"PASSED".bold.green}."
     else
       exit 1
-

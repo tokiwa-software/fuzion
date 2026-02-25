@@ -1,0 +1,42 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion example assign_to_object
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# the example from #6384: Check that Java refs wrapped into
+# fuzion features are assignable to Java.java.lang.Object
+#
+fuzion.jvm.use ()->
+
+  take_obj(obj T) =>
+    yak "{T.name.pad 28}: "
+    if T : Java.java.lang.Object then
+      yak "ok: is Object, can pass to System.out.println: "
+      Java.java.lang.System.out.println_Ljava_7_lang_7_Object_s_ obj
+    else
+      say "***  not ok $T is not Object  ***"
+
+  take_obj <| Java.java.lang.__jString.new "hi"
+# take_obj <| Java.java.lang.Object.new   -- this works, but the output contains the object id which differs on different runs
+  take_obj <| Java.java.lang.Throwable.new
+  take_obj <| Java.java.lang.StringBuilder.new

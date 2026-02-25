@@ -1,0 +1,646 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature units.data_size
+#
+# -----------------------------------------------------------------------
+
+# units.data_size -- value representing a data_size in bytes
+#
+# Note - The maximum representable value is 340,282,366 QB or 268,435,455 QiB,
+#        due to using u128 internally.
+#
+public data_size(
+
+  # The number of bytes in this data_size
+  #
+  public bytes u128
+  )
+  : property.orderable,
+    property.hashable
+
+is
+
+  # this units.data_size in kibibytes (1024**1 bytes), omitting fractional part
+  #
+  public kib u128 => bytes / byte_iec.kib.in_bytes
+
+  # this units.data_size in kibibytes (1024**1 bytes), including fractional part
+  #
+  public kib_float f64 => bytes.as_f64 / byte_iec.kib.in_bytes.as_f64
+
+  # this units.data_size in mebibytes (1024**2 bytes), omitting fractional part
+  #
+  public mib u128 => bytes / byte_iec.mib.in_bytes
+
+  # this units.data_size in mebibytes (1024**2 bytes), including fractional part
+  #
+  public mib_float f64 => bytes.as_f64 / byte_iec.mib.in_bytes.as_f64
+
+  # this units.data_size in gibibytes (1024**3 bytes), omitting fractional part
+  #
+  public gib u128 => bytes / byte_iec.gib.in_bytes
+
+  # this units.data_size in gibibytes (1024**3 bytes), including fractional part
+  #
+  public gib_float f64 => bytes.as_f64 / byte_iec.gib.in_bytes.as_f64
+
+  # this units.data_size in tebibytes (1024**4 bytes), omitting fractional part
+  #
+  public tib u128 => bytes / byte_iec.tib.in_bytes
+
+  # this units.data_size in tebibytes (1024**4 bytes), including fractional part
+  #
+  public tib_float f64 => bytes.as_f64 / byte_iec.tib.in_bytes.as_f64
+
+  # this units.data_size in pebibytes (1024**5 bytes), omitting fractional part
+  #
+  public pib u128 => bytes / byte_iec.pib.in_bytes
+
+  # this units.data_size in pebibytes (1024**5 bytes), including fractional part
+  #
+  public pib_float f64 => bytes.as_f64 / byte_iec.pib.in_bytes.as_f64
+
+  # this units.data_size in exbibytes (1024**6 bytes), omitting fractional part
+  #
+  public eib u128 => bytes / byte_iec.eib.in_bytes
+
+  # this units.data_size in exbibytes (1024**6 bytes), including fractional part
+  #
+  public eib_float f64 => bytes.as_f64 / byte_iec.eib.in_bytes.as_f64
+
+  # this units.data_size in zebibytes (1024**7 bytes), omitting fractional part
+  #
+  public zib u128 => bytes / byte_iec.zib.in_bytes
+
+  # this units.data_size in zebibytes (1024**7 bytes), including fractional part
+  #
+  public zib_float f64 => bytes.as_f64 / byte_iec.zib.in_bytes.as_f64
+
+  # this units.data_size in yobibytes (1024**8 bytes), omitting fractional part
+  #
+  public yib u128 => bytes / byte_iec.yib.in_bytes
+
+  # this units.data_size in yobibytes (1024**8 bytes), including fractional part
+  #
+  public yib_float f64 => bytes.as_f64 / byte_iec.yib.in_bytes.as_f64
+
+  # this units.data_size in robibytes (1024**9 bytes), omitting fractional part
+  #
+  public rib u128 => bytes / byte_iec.rib.in_bytes
+
+  # this units.data_size in robibytes (1024**9 bytes), including fractional part
+  #
+  public rib_float f64 => bytes.as_f64 / byte_iec.rib.in_bytes.as_f64
+
+  # this units.data_size in quebibytes (1024**10 bytes), omitting fractional part
+  #
+  public qib u128 => bytes / byte_iec.qib.in_bytes
+
+  # this units.data_size in quebibytes (1024**10 bytes), including fractional part
+  #
+  public qib_float f64 => bytes.as_f64 / byte_iec.qib.in_bytes.as_f64
+
+
+  # this units.data_size in kilobytes (10**3 bytes), omitting fractional part
+  #
+  public kb u128 => bytes / byte_si.kb.in_bytes
+
+  # this units.data_size in kilobytes (10**3 bytes), including fractional part
+  #
+  public kb_float f64 => bytes.as_f64 / byte_si.kb.in_bytes.as_f64
+
+  # this units.data_size in megabytes (10**6 bytes), omitting fractional part
+  #
+  public mb u128 => bytes / byte_si.mb.in_bytes
+
+  # this units.data_size in megabytes (10**6 bytes), including fractional part
+  #
+  public mb_float f64 => bytes.as_f64 / byte_si.mb.in_bytes.as_f64
+
+  # this units.data_size in gigabytes (10**9 bytes), omitting fractional part
+  #
+  public gb u128 => bytes / byte_si.gb.in_bytes
+
+  # this units.data_size in gigabytes (10**9 bytes), including fractional part
+  #
+  public gb_float f64 => bytes.as_f64 / byte_si.gb.in_bytes.as_f64
+
+  # this units.data_size in terabytes (10**12 bytes), omitting fractional part
+  #
+  public tb u128 => bytes / byte_si.tb.in_bytes
+
+  # this units.data_size in terabytes (10**12 bytes), including fractional part
+  #
+  public tb_float f64 => bytes.as_f64 / byte_si.tb.in_bytes.as_f64
+
+  # this units.data_size in petabytes (10**15 bytes), omitting fractional part
+  #
+  public pb u128 => bytes / byte_si.pb.in_bytes
+
+  # this units.data_size in petabytes (10**15 bytes), including fractional part
+  #
+  public pb_float f64 => bytes.as_f64 / byte_si.pb.in_bytes.as_f64
+
+  # this units.data_size in exabytes (10**18 bytes), omitting fractional part
+  #
+  public eb u128 => bytes / byte_si.eb.in_bytes
+
+  # this units.data_size in exabytes (10**18 bytes), including fractional part
+  #
+  public eb_float f64 => bytes.as_f64 / byte_si.eb.in_bytes.as_f64
+
+  # this units.data_size in zettabytes (10**21 bytes), omitting fractional part
+  #
+  public zb u128 => bytes / byte_si.zb.in_bytes
+
+  # this units.data_size in zettabytes (10**21 bytes), including fractional part
+  #
+  public zb_float f64 => bytes.as_f64 / byte_si.zb.in_bytes.as_f64
+
+  # this units.data_size in yottabytes (10**24 bytes), omitting fractional part
+  #
+  public yb u128 => bytes / byte_si.yb.in_bytes
+
+  # this units.data_size in yottabytes (10**24 bytes), including fractional part
+  #
+  public yb_float f64 => bytes.as_f64 / byte_si.yb.in_bytes.as_f64
+
+  # this units.data_size in ronnabytes (10**27 bytes), omitting fractional part
+  #
+  public rb u128 => bytes / byte_si.rb.in_bytes
+
+  # this units.data_size in ronnabytes (10**37 bytes), including fractional part
+  #
+  public rb_float f64 => bytes.as_f64 / byte_si.rb.in_bytes.as_f64
+
+  # this units.data_size in quettabytes (10**30 bytes), omitting fractional part
+  #
+  public qb u128 => bytes / byte_si.qb.in_bytes
+
+  # this units.data_size in quettabytes (10**30 bytes), including fractional part
+  #
+  public qb_float f64 => bytes.as_f64 / byte_si.qb.in_bytes.as_f64
+
+
+  # this units.data_size and another one combined
+  #
+  public infix + (other data_size) data_size
+  pre
+    safety: bytes +! other.bytes
+  =>
+    data_size (bytes + other.bytes)
+
+
+  # this units.data_size minus another units.data_size
+  #
+  public fixed infix - (other data_size) data_size
+  pre
+    safety: data_size.this >= other
+  =>
+    data_size (bytes - other.bytes)
+
+
+  # this units.data_size multiplied by factor n
+  #
+  public infix * (n u128) data_size
+  pre
+    safety: bytes *! n
+  =>
+    data_size bytes*n
+
+
+  # Scales this data size by a floating-point factor.
+  #
+  # This operation is approximate:
+  # - The factor is a floating-point value and may be imprecise.
+  # - Fractional bytes are not representable and will be rounded.
+  # - Large values may not be exactly representable in a float and are
+  #   therefore approximated before conversion back to bytes.
+  #
+  # Use the `infix *` for exact, byte-precise scaling with integers.
+  #
+  public scale_approx(f f64) data_size
+  =>
+    # NYI: HACK: `f64.as_u128` missing, result therefore limited to 7.99 EiB because of `.as_i64`
+    data_size (bytes.as_f64 * f).as_i64.as_u128
+
+
+  # this units.data_size divided by units.data_size other, rounding down
+  #
+  public infix / (other data_size.this) u128
+  =>
+    bytes / other.bytes
+
+
+  # Create a string representation of this units.data_size. The string representation
+  # is not accurate, it is either an integer in the range [100,1023],
+  # a float in the range [10,100) with exactly one fractional digit
+  # or a float in the range [1,10) with exactly two fractional digit
+  # both are followed by a byte_iec (base 2) string.
+  #
+  public redef as_string String =>
+    as_string unit_iec_for_as_string
+
+
+  # Create a string representation of this units.data_size. The string representation
+  # is not accurate, it is either an integer in the range [10,999],
+  # a float in the range [10,100) with exactly one fractional digit
+  # or a float in the range [1,10) with exactly two fractional digit
+  # both are followed by a byte_si (base 10) string.
+  #
+  public as_string_si String =>
+    as_string unit_si_for_as_string
+
+
+  # Output fo as_string padded for nice alignment in a table, e.g.
+  # '   1 B  '
+  # '12.3 KiB'
+  # ' 500 MiB'
+  #
+  public as_string_pad String =>
+    val, unt := as_string_help unit_iec_for_as_string
+    "{val.pad_left 4} {unt.pad 3}"
+
+
+  # Output fo as_string_si padded for nice alignment in a table, e.g.
+  # '   1 B '
+  # '12.3 kB'
+  # ' 500 MB'
+  #
+  public as_string_si_pad String =>
+    val, unt := as_string_help unit_si_for_as_string
+    "{val.pad_left 4} {unt.pad 2}"
+
+
+  # Create a string representation of this units.data_size using the given unit
+  #
+  public as_string(iec_or_si_unit choice units.byte_iec units.byte_si) String =>
+    val, unt := as_string_help iec_or_si_unit
+    "$val $unt"
+
+
+  # Create a string representation of this units.data_size using the given unit
+  # The result is padded for alignment in a table, e.g.
+  # '   1 B  '
+  # '1023 GiB'
+  # '1.42 kB '
+  #
+  public as_string_pad(iec_or_si_unit choice units.byte_iec units.byte_si) String =>
+    val, unt := as_string_help iec_or_si_unit
+    "{val.pad_left 4} {unt.pad 3}"
+
+  # Helper feature for as_string, returns unpadded strings for value and unit
+  #
+  as_string_help(iec_or_si_unit choice units.byte_iec units.byte_si) tuple String String =>
+    u_bytes, u_short_name, is_smallest, smaller_bytes, factor :=
+      match iec_or_si_unit
+        u units.byte_iec => (u.in_bytes, u.short_name, !u.smaller.ok, (u.smaller.bind s->s.in_bytes), 1024.as_f64)
+        u units.byte_si  => (u.in_bytes, u.short_name, !u.smaller.ok, (u.smaller.bind s->s.in_bytes), 1000.as_f64)
+
+    n String := if bytes / u_bytes >= 100.as_u128 || is_smallest
+                  $(bytes / u_bytes)
+                else
+                  # Avoid using large numbers in floating-point calculations
+                  # to prevent rounding that would display a value larger than the actual size.
+                  #
+                  # NYI: CLEANUP: use float formatting once available: <10 two decimals, >=10 one decimal
+                  ((bytes / smaller_bytes.val).as_f64 / factor).as_string.pad "0" 4 .substring 0 4
+
+    (n, u_short_name)
+
+
+  # Determines the iec unit to use for as_string,
+  # such that the resulting value is in the range [1,1024)
+  #
+  public unit_iec_for_as_string units.byte_iec =>
+    for
+      x := units.byte_iec.b, nx.get
+      nx := x.larger
+    while nx >>? (u -> bytes / u.in_bytes >= 1024.as_u128)
+    else nx >>? (u -> bytes / u.in_bytes > 0.as_u128) ? nx.val : x
+
+
+  # Determines the si prefixed unit to use for as_string,
+  # such that the resulting value is is in the range [1,1000)
+  #
+  public unit_si_for_as_string units.byte_si =>
+    for
+      x := units.byte_si.b, nx.get
+      nx := x.larger
+    while nx >>? (u -> bytes / u.in_bytes >= 1E3.as_u128)
+    else nx >>? (u -> bytes / u.in_bytes > 0.as_u128) ? nx.val : x
+
+  # total order
+  #
+  public fixed redef type.lteq(a, b units.data_size) bool =>
+    u128.type.lteq a.bytes b.bytes
+
+
+  # create hash code from a units.data_size
+  #
+  public redef type.hash_code(d units.data_size.this) u64 =>
+    u128.hash_code d.bytes
+
+
+  # max value for a units.data_size given in bytes
+  #
+  public type.max_bytes     u128  => u128.max
+
+  # max value for a units.data_size given in kibibytes (1024**1 bytes)
+  #
+  public type.max_kibibytes u128  => u128.max / byte_iec.b.in_bytes
+
+  # max value for a units.data_size given in mebibytes (1024**2 bytes)
+  #
+  public type.max_mebibytes u128  => u128.max / byte_iec.kib.in_bytes
+
+  # max value for a units.data_size given in gibibytes (1024**3 bytes)
+  #
+  public type.max_gibibytes u128  => u128.max / byte_iec.mib.in_bytes
+
+  # max value for a units.data_size given in tebibytes (1024**4 bytes)
+  #
+  public type.max_tebibytes u128  => u128.max / byte_iec.gib.in_bytes
+
+  # max value for a units.data_size given in pebibytes (1024**5 bytes)
+  #
+  public type.max_pebibytes u128  => u128.max / byte_iec.tib.in_bytes
+
+  # max value for a units.data_size given in exbibytes (1024**6 bytes)
+  #
+  public type.max_exbibytes u128  => u128.max / byte_iec.pib.in_bytes
+
+  # max value for a units.data_size given in zebibytes (1024**7 bytes)
+  #
+  public type.max_zebibytes u128  => u128.max / byte_iec.eib.in_bytes
+
+  # max value for a units.data_size given in yobibytes (1024**8 bytes)
+  #
+  public type.max_yobibytes u128  => u128.max / byte_iec.zib.in_bytes
+
+  # max value for a units.data_size given in robibytes (1024**9 bytes)
+  #
+  public type.max_robibytes u128  => u128.max / byte_iec.yib.in_bytes
+
+  # max value for a units.data_size given in quebibytes (1024**10 bytes)
+  #
+  public type.max_quebibytes u128 => u128.max / byte_iec.rib.in_bytes
+
+
+  # max value for a units.data_size given in kilobytes (10**3 bytes)
+  #
+  public type.max_kilobytes u128 => u128.max / byte_si.b.in_bytes
+
+  # max value for a units.data_size given in megabytes (10**6 bytes)
+  #
+  public type.max_megabytes u128 => u128.max / byte_si.kb.in_bytes
+
+  # max value for a units.data_size given in gigabytes (10**9 bytes)
+  #
+  public type.max_gigabytes u128 => u128.max / byte_si.mb.in_bytes
+
+  # max value for a units.data_size given in terabytes (10**12 bytes)
+  #
+  public type.max_terabytes u128 => u128.max / byte_si.gb.in_bytes
+
+  # max value for a units.data_size given in petabytes (10**15 bytes)
+  #
+  public type.max_petabytes u128 => u128.max / byte_si.tb.in_bytes
+
+  # max value for a units.data_size given in exabytes (10**18 bytes)
+  #
+  public type.max_exabytes u128 => u128.max / byte_si.pb.in_bytes
+
+  # max value for a units.data_size given in zettabytes (10**21 bytes)
+  #
+  public type.max_zettabytes u128 => u128.max / byte_si.eb.in_bytes
+
+  # max value for a units.data_size given in yottabytes (10**24 bytes)
+  #
+  public type.max_yottabytes u128 => u128.max / byte_si.zb.in_bytes
+
+  # max value for a units.data_size given in ronnabytes (10**27 bytes)
+  #
+  public type.max_ronnabytes u128 => u128.max / byte_si.yb.in_bytes
+
+  # max value for a units.data_size given in quettabytes (10**30 bytes)
+  #
+  public type.max_quettabytes u128 => u128.max / byte_si.rb.in_bytes
+
+
+  # create units.data_size of n bytes
+  #
+  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  #
+  public type.b (n u64) units.data_size
+  pre
+    debug: n.as_u128 ≤ max_bytes
+  => units.data_size n.as_u128
+
+  # create units.data_size of n kibibytes (1024**1 bytes)
+  #
+  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  #
+  public type.kib (n u64) units.data_size
+  pre
+    debug: n.as_u128 ≤ max_kibibytes
+  => units.data_size n.as_u128*byte_iec.kib.in_bytes
+
+  # create units.data_size of n mebibytes (1024**2 bytes)
+  #
+  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  #
+  public type.mib (n u64) units.data_size
+  pre
+    debug: n.as_u128 ≤ max_mebibytes
+  => units.data_size n.as_u128*byte_iec.mib.in_bytes
+
+  # create units.data_size of n gibibytes (1024**3 bytes)
+  #
+  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  #
+  public type.gib (n u64) units.data_size
+  pre
+    debug: n.as_u128 ≤ max_gibibytes
+  => units.data_size n.as_u128*byte_iec.gib.in_bytes
+
+  # create units.data_size of n tebibytes (1024**4 bytes)
+  #
+  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  #
+  public type.tib (n u64) units.data_size
+  pre
+    debug: n.as_u128 ≤ max_tebibytes
+  => units.data_size n.as_u128*byte_iec.tib.in_bytes
+
+  # create units.data_size of n pebibytes (1024**5 bytes)
+  #
+  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  #
+  public type.pib (n u64) units.data_size
+  pre
+    debug: n.as_u128 ≤ max_pebibytes
+  => units.data_size n.as_u128*byte_iec.pib.in_bytes
+
+  # create units.data_size of n exbibytes (1024**6 bytes)
+  #
+  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  #
+  public type.eib (n u64) units.data_size
+  pre
+    debug: n.as_u128 ≤ max_exbibytes
+  => units.data_size n.as_u128*byte_iec.eib.in_bytes
+
+  # create units.data_size of n zebibytes (1024**7 bytes)
+  #
+  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  #
+  public type.zib (n u64) units.data_size
+  pre
+    debug: n.as_u128 ≤ max_zebibytes
+  => units.data_size n.as_u128*byte_iec.zib.in_bytes
+
+  # create units.data_size of n yobibytes (1024**8 bytes)
+  #
+  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  #
+  public type.yib (n u64) units.data_size
+  pre
+    debug: n.as_u128 ≤ max_yobibytes
+  => units.data_size n.as_u128*byte_iec.yib.in_bytes
+
+  # create units.data_size of n robibytes (1024**9 bytes)
+  #
+  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  #
+  public type.rib (n u64) units.data_size
+  pre
+    debug: n.as_u128 ≤ max_robibytes
+  => units.data_size n.as_u128*byte_iec.rib.in_bytes
+
+  # create units.data_size of n quebibytes (1024**10 bytes)
+  #
+  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  #
+  public type.qib (n u64) units.data_size
+  pre
+    debug: n.as_u128 ≤ max_quebibytes
+  => units.data_size n.as_u128*byte_iec.qib.in_bytes
+
+
+  # create units.data_size of n kilobytes (10**3 bytes)
+  #
+  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  #
+  public type.kb (n u64) units.data_size
+  pre
+    debug: n.as_u128 ≤ max_kilobytes
+  => units.data_size n.as_u128*byte_si.kb.in_bytes
+
+  # create units.data_size of n megabytes (10**6 bytes)
+  #
+  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  #
+  public type.mb (n u64) units.data_size
+  pre
+    debug: n.as_u128 ≤ max_megabytes
+  => units.data_size n.as_u128*byte_si.mb.in_bytes
+
+  # create units.data_size of n gigabytes (10**9 bytes)
+  #
+  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  #
+  public type.gb (n u64) units.data_size
+  pre
+    debug: n.as_u128 ≤ max_gigabytes
+  => units.data_size n.as_u128*byte_si.gb.in_bytes
+
+  # create units.data_size of n terabytes (10**12 bytes)
+  #
+  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  #
+  public type.tb (n u64) units.data_size
+  pre
+    debug: n.as_u128 ≤ max_terabytes
+  => units.data_size n.as_u128*byte_si.tb.in_bytes
+
+  # create units.data_size of n petabytes (10**15 bytes)
+  #
+  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  #
+  public type.pb (n u64) units.data_size
+  pre
+    debug: n.as_u128 ≤ max_petabytes
+  => units.data_size n.as_u128*byte_si.pb.in_bytes
+
+  # create units.data_size of n exabytes (10**18 bytes)
+  #
+  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  #
+  public type.eb (n u64) units.data_size
+  pre
+    debug: n.as_u128 ≤ max_exabytes
+  => units.data_size n.as_u128*byte_si.eb.in_bytes
+
+  # create units.data_size of n zettabytes (10**21 bytes)
+  #
+  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  #
+  public type.zb (n u64) units.data_size
+  pre
+    debug: n.as_u128 ≤ max_zettabytes
+  => units.data_size n.as_u128*byte_si.zb.in_bytes
+
+  # create units.data_size of n yottabytes (10**24 bytes)
+  #
+  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  #
+  public type.yb (n u64) units.data_size
+  pre
+    debug: n.as_u128 ≤ max_yottabytes
+  => units.data_size n.as_u128*byte_si.yb.in_bytes
+
+  # create units.data_size of n ronnabytes (10**27 bytes)
+  #
+  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  #
+  public type.rb (n u64) units.data_size
+  pre
+    debug: n.as_u128 ≤ max_ronnabytes
+  => units.data_size n.as_u128*byte_si.rb.in_bytes
+
+  # create units.data_size of n quettabytes (10**30 bytes)
+  #
+  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  #
+  public type.qb (n u64) units.data_size
+  pre
+    debug: n.as_u128 ≤ max_quettabytes
+  => units.data_size n.as_u128*byte_si.qb.in_bytes
+
+
+  # the zero units.data_size, representing a zero bytes
+  #
+  public type.zero units.data_size => units.data_size 0.as_u128
+
+
+  # the maximum units.data_size
+  #
+  public type.max units.data_size => units.data_size units.data_size.max_bytes

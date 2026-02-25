@@ -37,11 +37,11 @@ is
     match bitset.this
       nil     => false
       x u64   => bit = x
-      a array => a.length.as_u64 > bit && a[bit.as_i32]
+      a array => a.length.as_u64 > bit && a[bit]
 
   # alternative for has using []
   #
-  public index[] (bit u64) bool => has bit
+  public index[] (I type : idx, bit I) bool => has bit.as_u64
 
   # set the given bit
   public put (bit u64) bitset =>
@@ -107,11 +107,11 @@ is
 
   # an empty bitset
   #
-  public type.empty bitset => nil
+  public fixed type.empty bitset => nil
 
   # monoid of bitset with infix ∪ operation.
   #
   public type.union Monoid bitset =>
-    ref : Monoid bitset is
+    _ : Monoid bitset is
       public redef infix ∙ (a, b bitset) bitset => a ∪ b
       public redef e bitset => bitset.empty

@@ -21,20 +21,20 @@
 #
 # -----------------------------------------------------------------------
 
-sockets_test is
+sockets_thread_pool_test is
 
   lm : mutate is
 
   servers :=
-    concur.atomic [(u16 0),
-                   (u16 0),
-                   (u16 0),
-                   (u16 0)]
+    concur.atomic (array u16) .new [(u16 0),
+                                    (u16 0),
+                                    (u16 0),
+                                    (u16 0)]
 
-  set_server_port(idx i32, new u16) =>
+  set_server_port(i i32, new u16) =>
     _ :=
       for r := servers.read
-      while !(servers.compare_and_set r (r.put idx new))
+      while !(servers.compare_and_set r (r.put i new))
 
 
   # server handles one connection at a time
@@ -62,11 +62,9 @@ sockets_test is
               res := "received: {rr.as_string}\n\n"
 
               w =>
-                x := ((io.buffered lm).writer.env.write res.utf8.as_array).error
-
-                match x
+                match (io.buffered lm).writer.env.write res
                   unit => (io.buffered lm).writer.env.flush
-                  error => x
+                  e error => e
 
               match w
                 e error => say_silent "$protocol/$family-server, write error $e"
@@ -101,7 +99,7 @@ sockets_test is
 
     match net.client family protocol host port
       error =>
-        say "$protocol/$family-client {sockets_test.client.this.num}, $host: error establishing connection"
+        say "$protocol/$family-client {sockets_thread_pool_test.client.this.num}, $host: error establishing connection"
       c net.connection =>
 
         res := c.in_thread_pool String concur.thread_pool lm lm ()->
@@ -110,20 +108,20 @@ sockets_test is
 
             req := ("GET / HTTP\n"
               + "Host: $host\n"
-              + "Client: {sockets_test.client.this.num}\n\n")
+              + "Client: {sockets_thread_pool_test.client.this.num}\n\n")
 
             w =>
-              _ := (io.buffered lm).writer.env.write req.utf8.as_array
+              _ := (io.buffered lm).writer.env.write req
               _ := (io.buffered lm).writer.env.flush
 
-            str := "$protocol/$family-client {sockets_test.client.this.num}, write to $host => {w}"
+            str := "$protocol/$family-client {sockets_thread_pool_test.client.this.num}, write to $host => {w}"
 
             match protocol
               net.protocol.tcp =>
 
                 rr := (io.buffered lm).read_line_while (s -> !s.is_empty)
 
-                str + "\n" + "$protocol/$family-client {sockets_test.client.this.num}, read lines from  $host: >{rr}<"
+                str + "\n" + "$protocol/$family-client {sockets_thread_pool_test.client.this.num}, read lines from  $host: >{rr}<"
 
               # for UDP reading would block indefinitely
               net.protocol.udp =>

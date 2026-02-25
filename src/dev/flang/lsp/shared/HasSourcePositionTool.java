@@ -128,7 +128,7 @@ public class HasSourcePositionTool
     };
   }
 
-  public final static Comparator<? super HasSourcePosition> compareBySourcePosition =
+  public static final Comparator<? super HasSourcePosition> compareBySourcePosition =
     Comparator.comparing(obj -> obj.pos(), (sourcePosition1, sourcePosition2) -> {
       return SourcePositionTool.compare(sourcePosition1, sourcePosition2);
     });

@@ -1,0 +1,105 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature encodings.html
+#
+# -----------------------------------------------------------------------
+
+public html is
+
+
+  escapings_cache_key(val container.Map u8 String) is
+  # get map of html escapings (exclusive space)
+  #
+  map_of_escapings container.Map u8 String =>
+    (
+      cache escapings_cache_key ()->
+        escapings_cache_key
+          (container.map_of [
+            ("&" .val.as_u8, "&amp;" ),
+            ("<" .val.as_u8, "&lt;"  ),
+            (">" .val.as_u8, "&gt;"  ),
+            ("\"".val.as_u8, "&quot;"),
+            ("'" .val.as_u8, "&#39;" ),
+            ("/" .val.as_u8, "&#x2F;")
+                          ]
+          )
+    )
+      .val
+
+
+  escapings_full_cache_key(val container.Map u8 String) is
+  # get map of html escapings (inclusive space)
+  #
+  map_of_escapings_full container.Map u8 String =>
+    (
+      cache escapings_full_cache_key ()->
+        escapings_full_cache_key
+          (container.map_of [
+            (" " .val.as_u8, "&nbsp;"),
+            ("&" .val.as_u8, "&amp;" ),
+            ("<" .val.as_u8, "&lt;"  ),
+            (">" .val.as_u8, "&gt;"  ),
+            ("\"".val.as_u8, "&quot;"),
+            ("'" .val.as_u8, "&#39;" ),
+            ("/" .val.as_u8, "&#x2F;")
+                          ]
+          )
+    )
+      .val
+
+
+  # html encode str
+  #
+  # mapping:
+  #
+  # " " => "&nbsp;" (if replace_spaces is true)
+  # "&" => "&amp;"
+  # "<" => "&lt;"
+  # ">" => "&gt;"
+  # "\" => "&quot;"
+  # "'" => "&#39;"
+  # "/" => "&#x2F;"
+  #
+  public encode(str String, replace_spaces bool) String
+  =>
+    if replace_spaces
+      str
+        .utf8
+        .flat_map b->
+          map_of_escapings_full[b]
+            .bind (.utf8)
+            .or_else [b]
+        |> String.type.from
+    else
+      str
+        .utf8
+        .flat_map b->
+          map_of_escapings[b]
+            .bind (.utf8)
+            .or_else [b]
+        |> String.type.from
+
+
+
+
+  public decode(str String) String =>
+    # NYI: UNDER DEVELOPMENT:
+    compile_time_panic
+

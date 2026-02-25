@@ -2,4 +2,4 @@ issue_2213 =>
   mi : mutate is
   mi ! ()->
     ball is
-    _ := (mutate.array ball).new mi 1 ball
+    _ := (mi.array ball).new 1 ball

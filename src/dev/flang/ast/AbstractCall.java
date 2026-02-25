@@ -29,7 +29,6 @@ package dev.flang.ast;
 import static dev.flang.util.FuzionConstants.NO_SELECT;
 
 import java.io.ByteArrayOutputStream;
-import java.util.Arrays;
 import java.util.function.BiConsumer;
 
 import dev.flang.util.Errors;
@@ -56,8 +55,7 @@ public abstract class AbstractCall extends Expr
    * generics ({@code a.b(x,y)}) from a call with an empty actual generics list
    * ({@code a.b<>(x,y)}).
    */
-  public static final List<AbstractType> NO_GENERICS = new List<>();
-  { NO_GENERICS.freeze(); }
+  public static final List<AbstractType> NO_GENERICS = new List<AbstractType>().freeze();
 
 
   /*-----------------------------  methods  -----------------------------*/
@@ -219,9 +217,7 @@ public abstract class AbstractCall extends Expr
   Call cotypeInheritanceCall(Resolution res, AbstractFeature that)
   {
     var selfType = new ParsedType(pos(),
-                                  FuzionConstants.COTYPE_THIS_TYPE,
-                                  new List<>(),
-                                  null);
+                                  FuzionConstants.COTYPE_THIS_TYPE);
     var typeParameters = new List<AbstractType>(selfType);
     if (this instanceof Call cpc && cpc.needsToInferTypeParametersFromArgs())
       {
@@ -478,7 +474,7 @@ public abstract class AbstractCall extends Expr
       tt.outer() != null          ? openGenericsFor(res, context, ft, tt.outer())
                                   : new List<>()
                                     {
-                                      { /* earlier errors must have occured */
+                                      { /* earlier errors must have occurred */
                                         if (CHECKS) check
                                           (Errors.any());
                                       }

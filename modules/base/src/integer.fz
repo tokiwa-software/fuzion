@@ -200,3 +200,48 @@ public integer : numeric is
   # the least significant byte of this integer
   #
   public low8bits u8 => abstract
+
+
+  public fits_in_i8 bool => false
+  public fits_in_i16 bool => false
+  public fits_in_i32 bool => false
+  public fits_in_i64 bool => false
+  public fits_in_i128 bool => false
+  public fits_in_u8 bool => false
+  public fits_in_u16 bool => false
+  public fits_in_u32 bool => false
+  public fits_in_u64 bool => false
+  public fits_in_u128 bool => false
+
+
+  public as_i8 i8
+    pre debug: fits_in_i8
+  => abstract
+  public as_i16 i16
+    pre debug: fits_in_i16
+  => abstract
+  public as_i32 i32
+    pre debug: fits_in_i32
+  => abstract
+  public as_i64 i64
+    pre debug: fits_in_i64
+  => abstract
+  public as_i128 i128
+    pre debug: fits_in_i128
+  => abstract
+  # this numeric value as an u8
+  public as_u8 u8
+    pre debug: fits_in_u8
+  => abstract
+  public as_u16 u16
+    pre debug: fits_in_u16
+  => abstract
+  public as_u32 u32
+    pre debug: fits_in_u32
+  => abstract
+  public as_u64 u64
+    pre debug: fits_in_u64
+  => abstract
+  public as_u128 u128
+    pre debug: fits_in_u128
+  => abstract

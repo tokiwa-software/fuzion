@@ -25,9 +25,9 @@
 
 fileiotests =>
 
-  dir := "testdir_😀"
-  newdir := "newdir_😀"
-  file := dir + "/" + "testfile_😀"
+  dir := path.of "testdir_😀"
+  newdir := path.of "newdir_😀"
+  file := dir.resolve "testfile_😀"
 
   content := "Hello world 🌍"
 
@@ -41,7 +41,7 @@ fileiotests =>
   say "$file exists: {f.exists file}"
 
   _ := f
-    .use file f.mode.write ()->(f.writer.write content.utf8).error
+    .use file f.mode.write (() -> f.writer.write content)
     .bind (_ -> say "$file was created")
   say "$file exists: {f.exists file}"
 
@@ -58,7 +58,7 @@ fileiotests =>
 
   _ := f.use file f.mode.read ()->(io.buffered f.file_mutate).read_fully
     .bind bytes->
-      filecontent := String.from_bytes bytes
+      filecontent := String.from bytes
       say "file content bytes: $bytes"
       say "file content is $filecontent"
 

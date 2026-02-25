@@ -29,7 +29,15 @@ public true bool => true_
 To solve this, remove the return type (or replace it by 'ref') of this feature.
 
 
---CURDIR--/test_asParsedType_negative.fz:140:3: error 4: Failed to infer actual type parameters
+--CURDIR--/test_asParsedType_negative.fz:139:3: error 4: Failed to infer actual type parameters
+  x true?1:2                    # 4. should flag an error: ? :  is not a type
+--^
+In call to 'test_asParsedType_negative.x', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: 'T'
+Type inference failed for one type parameter 'T'
+
+
+--CURDIR--/test_asParsedType_negative.fz:140:3: error 5: Failed to infer actual type parameters
   x (3=4 ? true_  => "a"        # 5. should flag an error: ?-match is not a type
 --^
 In call to 'test_asParsedType_negative.x', no actual type parameters are given and inference of the type parameters failed.
@@ -37,7 +45,7 @@ Expected type parameters: 'T'
 Type inference failed for one type parameter 'T'
 
 
---CURDIR--/test_asParsedType_negative.fz:142:3: error 5: Failed to infer actual type parameters
+--CURDIR--/test_asParsedType_negative.fz:142:3: error 6: Failed to infer actual type parameters
   x (match 3=4                  # 6. should flag an error: match is not a type
 --^
 In call to 'test_asParsedType_negative.x', no actual type parameters are given and inference of the type parameters failed.
@@ -45,7 +53,7 @@ Expected type parameters: 'T'
 Type inference failed for one type parameter 'T'
 
 
---CURDIR--/test_asParsedType_negative.fz:145:3: error 6: Failed to infer actual type parameters
+--CURDIR--/test_asParsedType_negative.fz:145:3: error 7: Failed to infer actual type parameters
   x (if 3=4 then "a" else "b")  # 7. should flag an error: if is not a type
 --^
 In call to 'test_asParsedType_negative.x', no actual type parameters are given and inference of the type parameters failed.
@@ -53,7 +61,23 @@ Expected type parameters: 'T'
 Type inference failed for one type parameter 'T'
 
 
---CURDIR--/test_asParsedType_negative.fz:149:3: error 7: Failed to infer actual type parameters
+--CURDIR--/test_asParsedType_negative.fz:146:3: error 8: Failed to infer actual type parameters
+  x (io.Out.env)                # 8. should flag an error: env is not a type
+--^
+In call to 'test_asParsedType_negative.x', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: 'T'
+Type inference failed for one type parameter 'T'
+
+
+--CURDIR--/test_asParsedType_negative.fz:147:3: error 9: Failed to infer actual type parameters
+  x (io.Out.type)               # 9. should flag an error: type instance is not a type
+--^
+In call to 'test_asParsedType_negative.x', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: 'T'
+Type inference failed for one type parameter 'T'
+
+
+--CURDIR--/test_asParsedType_negative.fz:149:3: error 10: Failed to infer actual type parameters
   x t.values.0                  # 10. should flag an error: select is not a type
 --^
 In call to 'test_asParsedType_negative.x', no actual type parameters are given and inference of the type parameters failed.
@@ -61,47 +85,11 @@ Expected type parameters: 'T'
 Type inference failed for one type parameter 'T'
 
 
---CURDIR--/test_asParsedType_negative.fz:150:3: error 8: Failed to infer actual type parameters
+--CURDIR--/test_asParsedType_negative.fz:150:3: error 11: Failed to infer actual type parameters
   x t.values.2                  # 11. should flag an error: select is not a type
 --^
 In call to 'test_asParsedType_negative.x', no actual type parameters are given and inference of the type parameters failed.
 Expected type parameters: 'T'
 Type inference failed for one type parameter 'T'
-
-
---CURDIR--/test_asParsedType_negative.fz:139:3: error 9: Wrong number of actual value arguments in call
-  x true?1:2                    # 4. should flag an error: ? :  is not a type
---^
-Number of actual value arguments is 1, while call expects no value arguments.
-Actual value arguments: ''
-Called feature: 'test_asParsedType_negative.x'
-Formal value arguments: --none--
-Declared at --CURDIR--/test_asParsedType_negative.fz:37:3:
-  x(T type) => say "GOT: x $T"
---^
-
-
---CURDIR--/test_asParsedType_negative.fz:146:3: error 10: Wrong number of actual value arguments in call
-  x (io.Out.env)                # 8. should flag an error: env is not a type
---^
-Number of actual value arguments is 1, while call expects no value arguments.
-Actual value arguments: ''
-Called feature: 'test_asParsedType_negative.x'
-Formal value arguments: --none--
-Declared at --CURDIR--/test_asParsedType_negative.fz:37:3:
-  x(T type) => say "GOT: x $T"
---^
-
-
---CURDIR--/test_asParsedType_negative.fz:147:3: error 11: Wrong number of actual value arguments in call
-  x (io.Out.type)               # 9. should flag an error: type instance is not a type
---^
-Number of actual value arguments is 1, while call expects no value arguments.
-Actual value arguments: ''
-Called feature: 'test_asParsedType_negative.x'
-Formal value arguments: --none--
-Declared at --CURDIR--/test_asParsedType_negative.fz:37:3:
-  x(T type) => say "GOT: x $T"
---^
 
 11 errors.

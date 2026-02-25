@@ -61,28 +61,28 @@ is
   public indices interval i64 => (i64 0)..length-1
 
 
-  # get element at given index i
+  # get element at index i
   #
-  public index [ ] (i i64) T ! E
+  public index [ ] (I type : idx, i I) T ! E
     pre
-      safety: 0 ≤ i < length
+      safety: 0 ≤ i.as_i64 < length
   =>
     abstract
 
 
-  # set element at given index i to given value o
+  # set element at index i to value o
   #
-  public set [ ] (i i64, o T) unit ! E
+  public set [ ] (I type : idx, i I, o T) unit ! E
     pre
-      safety: 0 ≤ i < length
+      safety: 0 ≤ i.as_i64 < length
   =>
     abstract
 
 
-  # create immutable array from this buffer
+  # convert this buffer to an immutable array
   #
   public as_array array T ! E =>
-    array length.as_i32 (i -> Buffer.this[i.as_i64])
+    array length.as_i32 (i -> Buffer.this[i])
 
 
   # create a list from this buffer
@@ -94,7 +94,6 @@ is
     as_array.as_list
 
 
-  # the current state of the buffer
-  # as a string.
+  # string representation of this buffer's contents
   #
-  public redef as_string String => as_array.as_string
+  public redef as_string String => $as_array

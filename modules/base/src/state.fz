@@ -138,21 +138,21 @@ public state(S, R type, initial_value S, r ()->R) R =>
   res.get
 
 
-# short-hand for accessing state monad for given type in current environment
+# shorthand for accessing state monad for given type in current environment
 #
 public state_of(S type) state unit S => (state unit S).env
 
 
-# short-hand for getting state monad for given type in current environment
+# shorthand for getting state monad for given type in current environment
 #
 public state_get(S type) S => (state_of S).get
 
 
-# short-hand for modifying state monad for given type in current environment
+# shorthand for modifying state monad for given type in current environment
 #
 public state_modify(S type, f S->S) state unit S => (state_of S).modify f
 
 
-# short-hand for setting state monad for given type in current environment
+# shorthand for setting state monad for given type in current environment
 #
 public state_put(S type, new S) state unit S => (state_of S).put new

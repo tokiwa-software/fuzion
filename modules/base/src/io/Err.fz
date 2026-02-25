@@ -31,6 +31,20 @@ public Err ref : print_effect is
     io.Err.default io.default_err
 
 
+  # implementation of io.Err that just
+  # discards everything, writing nothing, nowhere.
+  #
+  # usage example:
+  #
+  #     io.Err.instate _ io.Err.blackhole ()->
+  #        ... your code ...
+  #
+  public type.blackhole io.Err =>
+    _ : io.Err is
+      public redef write(b Sequence u8) outcome unit => unit
+      public redef flush outcome unit => unit
+
+
 # default implementation for io.Err
 #
 module default_err : io.Err is
@@ -44,7 +58,7 @@ module default_err : io.Err is
     fuzion.sys.fileio.flush fzE_file_stderr
 
 
-# short-hand for accessing out effect in current environment
+# shorthand for accessing out effect in current environment
 #
 public err io.Err =>
   Err.install_default

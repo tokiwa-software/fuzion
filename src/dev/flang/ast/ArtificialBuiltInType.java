@@ -57,7 +57,7 @@ class ArtificialBuiltInType extends ResolvedNormalType
   /**
    * The unique id of this artificial built in type.
    */
-  private int _id;
+  private final int _id;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -65,7 +65,7 @@ class ArtificialBuiltInType extends ResolvedNormalType
 
   public ArtificialBuiltInType(String name)
   {
-    super();
+    super(UnresolvedType.NONE, UnresolvedType.NONE, null, null, TypeKind.ValueType);
     _name = name;
     _id = ids++;
   }
@@ -92,6 +92,7 @@ class ArtificialBuiltInType extends ResolvedNormalType
   /**
    * outer feature, null.
    */
+  @Override
   public AbstractType outer()
   {
     return null;
@@ -105,6 +106,13 @@ class ArtificialBuiltInType extends ResolvedNormalType
   public int artificialBuiltInID()
   {
     return _id;
+  }
+
+
+  @Override
+  public boolean isArtificialType()
+  {
+    return true;
   }
 
 

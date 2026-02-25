@@ -29,6 +29,7 @@ package dev.flang.ast;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -41,6 +42,7 @@ import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.Pair;
 import dev.flang.util.SourcePosition;
+import dev.flang.util.SourceRange;
 import dev.flang.util.StringHelpers;
 import dev.flang.util.Terminal;
 
@@ -369,8 +371,8 @@ public class AstErrors extends ANY
     var valAssigned = "";
     var assignableToSB = new StringBuilder();
     var errorOrUndefinedFound =
-      frmlT     == Types.t_ERROR || frmlT     == Types.t_UNDEFINED ||
-      typeValue == Types.t_ERROR || typeValue == Types.t_UNDEFINED;
+      frmlT.isArtificialType() ||
+      typeValue != null && typeValue.isArtificialType();
     if (value == null)
       {
         actlFound   = "actual type found   : " + s(typeValue);
@@ -379,7 +381,7 @@ public class AstErrors extends ANY
     else
       {
         var actlT = value.type();
-        errorOrUndefinedFound |=  actlT == Types.t_ERROR || actlT == Types.t_UNDEFINED;
+        errorOrUndefinedFound |=  actlT.isArtificialType();
         if (actlT.isThisType())
           {
             assignableToSB
@@ -1151,9 +1153,9 @@ public class AstErrors extends ANY
   {
     cannotRedefine(pos, f, existing, "Redefinition must be declared using modifier " + skw("redef") + "",
                    "To solve this, if you did not intend to redefine an inherited feature, " +
-                   "choose a different name for " + sbnf(f) + ".  Otherwise, if you do " +
-                   "want to redefine an inherited feature, add a " + skw("redef") + " modifier before the " +
-                   "declaration of " + s(f) + ".");
+                   "choose a different name for " + sbnf(f) + ".\n" +
+                   "Otherwise, if you want to redefine an inherited feature, add a " + skw("redef") +
+                   " modifier before the declaration of " + s(f) + ".");
   }
 
   public static void redefineModifierDoesNotRedefine(AbstractFeature af, List<FeatureAndOuter> hiddenFeaturesSameSignature)
@@ -1398,7 +1400,7 @@ public class AstErrors extends ANY
         var solution5 = solutionLambda(call);
         error(call.pos(), msg,
               "Feature not found: " + sbnf(calledName) + "\n" +
-              "Target feature: " + s(targetFeature) + "\n" +
+              (targetFeature != null ? "Target feature: " + s(targetFeature) + "\n" : "") +
               "In call: " + s(call) + "\n" +
               (solution0 != "" ? solution0 :
                solution1 != "" ? solution1 :
@@ -1743,6 +1745,25 @@ public class AstErrors extends ANY
           "Field declared at "+ f.pos().show());
   }
 
+  static void choiceMustNotContainFields(SourcePosition pos, SortedSet<AbstractFeature> fields)
+  {
+      String fieldsSources =
+        fields.size() > 1
+          ? fields.stream()
+              .map((f)->("\n* Field %s declared at %s".formatted(s(f), f.pos().show())))
+              .collect(Collectors.joining())
+          : "Field declared at " + fields.getFirst().pos().show();
+
+    error(pos,
+          "Choice must not contain any fields",
+          "%s %s %s not permitted.\n%s"
+            .formatted(
+              StringHelpers.plural(fields.size(), "Field"),
+              sfn(new List<AbstractFeature>(fields.iterator())),
+              (fields.size() > 1 ? "are" : "is"),
+              fieldsSources));
+  }
+
   static void choiceMustNotBeField(SourcePosition pos)
   {
     error(pos,
@@ -1805,16 +1826,17 @@ public class AstErrors extends ANY
           "Faulty type parameter: " + s(t));
   }
 
-  static void forwardTypeInference(SourcePosition pos, AbstractFeature f, SourcePosition at)
+  static void forwardTypeInference(SourcePosition pos, AbstractFeature cf)
   {
     // NYI: It would be nice to output the whole cycle here as part of the detail message
-    if (!any() || !(f instanceof Feature ff && ff.impl() == Impl.ERROR))
+    if (!any() || !(cf instanceof Feature cff && cff.impl() == Impl.ERROR))
       {
         error(pos,
               "Illegal forward or cyclic type inference",
               "The definition of a field using " + ss(":=") + ", or of a feature or function\n" +
               "using " + ss("=>") + " must not create cyclic type dependencies.\n"+
-              "Referenced feature: " + s(f) + " at " + at.show());
+              (cf == Types.f_ERROR ? ""
+                                   : "Referenced feature: " + s(cf) + " at " + cf.pos().show()));
       }
   }
 
@@ -2400,7 +2422,7 @@ public class AstErrors extends ANY
       "Must not define type inside of type feature.",
       "To solve this, move the type outside of the type feature." + System.lineSeparator() +
       "E.g., instead of: " + System.lineSeparator() + code("type.union : Monoid bitset is") + System.lineSeparator() +
-      "do this: " + code("public type.union =>" + System.lineSeparator() + "  ref : Monoid bitset"));
+      "do this: " + code("public type.union =>" + System.lineSeparator() + "  _ : Monoid bitset"));
   }
 
   public static void typeFeaturesMustOnlyBeDeclaredInFeaturesThatDefineType(Feature f)
@@ -2486,6 +2508,49 @@ public class AstErrors extends ANY
       ss("<effect>.finally") + " is called automatically.");
   }
 
+  public static void ambiguousIfIfElse(SourcePosition pos, SourcePosition if1, SourcePosition if2)
+  {
+    error(pos,
+          "Ambiguous " + skw("else") + " for multiple " + skw("if") + " statements",
+          "The " + skw("else") + " is ambiguous since it may be parsed as part of several different " + skw("if") + " statements.\n" +
+          "Outer " + skw("if") + " statement at " + if1.show() + "\n" +
+          "Inner " + skw("if") + " statement at " + if2.show() + "\n" +
+          "\n" +
+          "To solve this, add braces " + code("{ }") + " or use line breaks and indentation.");
+  }
+
+  public static void ambiguousLoopIfElse(SourcePosition pos, SourcePosition loop1, SourcePosition if2)
+  {
+    error(pos,
+          "Ambiguous " + skw("else") + " for nested loop and " + skw("if") + " statements",
+          "The " + skw("else") + " is ambiguous since it may be parsed as part of different loop and " + skw("if") + " statements.\n" +
+          "Outer loop statement at " + loop1.show() + "\n" +
+          "Inner " + skw("if") + " statement at " + if2.show() + "\n" +
+          "\n" +
+          "To solve this, add braces " + code("{ }") + " or use line breaks and indentation.");
+  }
+
+  public static void ambiguousIfLoopElse(SourcePosition pos, SourcePosition if1, SourcePosition loop2)
+  {
+    error(pos,
+          "Ambiguous " + skw("else") + " for nested " + skw("if") + " and loop statements",
+          "The " + skw("else") + " is ambiguous since it may be parsed as part of different " + skw("if") + " and loop statements.\n" +
+          "Outer " + skw("if") + " statement at " + if1.show() + "\n" +
+          "Inner loop statement at " + loop2.show() + "\n" +
+          "\n" +
+          "To solve this, add braces " + code("{ }") + " or use line breaks and indentation.");
+  }
+
+  public static void ambiguousLoops(SourcePosition pos, SourcePosition loop1)
+  {
+    error(pos,
+          "Ambiguous nested loop statements",
+          "Several loop statements occur in a single line causing ambiguity for the parser.\n" +
+          "Outer loop statement at " + loop1.show() + "\n" +
+          "\n" +
+          "To solve this, add braces " + code("{ }") + " or use line breaks and indentation.");
+  }
+
   public static void explicitTypeRequired(AbstractFeature f, AbstractType inf)
   {
     String inferredMsg = (inf != null && inf != Types.t_ERROR && inf != Types.t_ERROR) ?
@@ -2509,6 +2574,15 @@ public class AstErrors extends ANY
     error(variant.sourceRange(),
           "Loop variant must be of type " + type("i64"),
           "Type of loop variant must be " + type("i64") + ", but found variant of type " + s(variant.type()));
+  }
+
+  public static void duplicateFile(String file1, String file2)
+  {
+    fatal("File names must be unique with respect to case sensitivity. Files differing only by case are not permitted.",
+    "The offending files: " + "\n" +
+     " - " + file1 + "\n" +
+     " - " + file2
+    );
   }
 
 }

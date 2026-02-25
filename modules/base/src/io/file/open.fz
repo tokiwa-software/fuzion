@@ -25,7 +25,7 @@
 # effect for manipulating open files
 #
 module:public open(fd File_Descriptor,
-                   public file_name String) : effect is
+                   public file_name path) : effect is
 
 
   # install seek effect an run code
@@ -33,7 +33,7 @@ module:public open(fd File_Descriptor,
   public seek(R type, code ()->R) outcome R =>
 
     hndlr :=
-      ref : Seek_Handler is
+      _ : Seek_Handler is
         public redef seek(offset i64) outcome unit =>
           fuzion.sys.fileio.seek fd offset
 
@@ -52,17 +52,16 @@ module:public open(fd File_Descriptor,
   #
   #     _ := io.file.use unit "/some_file" io.file.mode.append ()->
   #       io.file.open.mmap (i64 0) (i64 100) ()->
-  #         io.file.open.mmap[99] := 42
+  #         io.file.mapped_buffer.env[99] := 42
   #
   public mmap(R type, offset i64, size i64, code ()->R) outcome R
     pre safety: offset % os.mmap_offset_multiple = 0
   =>
 
-    res := fuzion.sys.internal_array_init i32 1
-    mapped_memory := fzE_mmap fd offset size res.data
+    mapped_memory := fzE_mmap fd offset size
 
-    if res[0] = -1
-      error "mmap failed"
+    if fzE_is_valid_mapped_memory mapped_memory
+      error "mmap failed, error code: {fzE_last_error}"
     else
       (mapped_buffer mapped_memory size) ! code
 
@@ -79,5 +78,5 @@ module:public open(fd File_Descriptor,
 # short hand to get the currently
 # installed open effect
 #
-public open open =>
+public open open ! open =>
   open.env
