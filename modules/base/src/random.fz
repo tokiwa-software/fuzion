@@ -136,11 +136,17 @@ public random random ! random, envir.vars =>
   random.install_default
   random.env
 
-public simple_random(seed u64, rr ()->unit) unit =>
-  random <- (random (simple_random_handler seed seed)) ! rr
 
-public time_seeded_random(rr ()->unit) unit =>
-  random <- (random simple_random_handler.time_seeded) ! rr
+# instate a random that is seed seeded and run rr in its context
+#
+public simple_random(T type, seed u64, rr ()->T) T =>
+  (random (simple_random_handler seed seed)) ! rr
+
+
+# instate a random that is time seeded and run rr in its context
+#
+public time_seeded_random(T type, rr ()->T) T =>
+  (random simple_random_handler.time_seeded) ! rr
 
 
 # Random_Handler -- abstract source of random numbers
