@@ -21,6 +21,8 @@
 #
 # -----------------------------------------------------------------------
 
+# an effect that allows calling java code from fuzion
+#
 private:public jvm : effect is
 
   # NYI: UNDER DEVELOPMENT: support starting multiple jvms?
