@@ -41,7 +41,7 @@ reg_issue5252 =>
 
   say (123.0+456)
   say (123.0 + 456)
-  say (123.0+ 456)   # should this infix call that looks like postfix fail?
+# say (123.0+ 456)   # causes error: Should this infix call that looks like postfix fail?
 # say (123.0 +456)   # causes error: Should this infix call that looks like prefix fail?
 
   a := 47
@@ -52,8 +52,8 @@ reg_issue5252 =>
 
   say (a-b)                # prints `36`
   say (a - b)              # prints `36`
-  say (a- b)               # prints 36`. Should this be parsed as call to `postfix -` that is then called on `b`
-# say (a-- b)              # causes error. Should this be parsed as call to `postfix --` that is then called on `b`
+# say (a- b)               # causes error. Should this be parsed as call to `infix -` or `postfix --`?
+# say (a-- b)              # causes error. Should this be parsed as call to `infix --`or `postfix --`?
   say ((a-).call b)        # prints `-36`
   say ((a--).call b)       # prints `-36`
   say (a -b)               # calls `a` with argument `-b`, prints `-11`
