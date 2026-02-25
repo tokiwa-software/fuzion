@@ -1414,6 +1414,15 @@ public class DFA extends ANY
 
             // stackoverflow may happen at any time during execution.
             // hence we simulate one once at the start of the program.
+            // NYI: UNDER DEVELOPMENT: comment from
+            // @fridi:
+            // this may fail since the control flow to
+            // StackOverflow.cause may happen, depending
+            // on how it is implemented in the backend,
+            // at any call or even at the first memory
+            // access to a stack allocated value.
+            // So, a more sophisticated DFA might produce a
+            // wrong result caused by the assumption that this only happens here.
             var soc = _fuir.clazz(SpecialClazzes.c_stackoverflow_cause);
             var socRes =
               newCall(null,
