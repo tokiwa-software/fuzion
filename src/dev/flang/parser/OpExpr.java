@@ -204,8 +204,8 @@ class OpExpr extends ANY
           { // infix op:
             Expr e1 = expr(max-1);
             Expr e2 = expr(max+1);
-            if (!op._whiteSpaceBefore &&  op._whiteSpaceAfter && false ||  // we still allow code like `pre debug: i >= 3`.
-                 op._whiteSpaceBefore && !op._whiteSpaceAfter)             // but not `x := 3 +z`
+            if (!op._whiteSpaceBefore &&  op._whiteSpaceAfter && !op._text.equals(":") ||  // we still allow code like `pre debug: i >= 3`.
+                 op._whiteSpaceBefore && !op._whiteSpaceAfter)                             // but not `x := 3 :z`
               {
                 var p = op._pos;
                 Errors.error(p,
@@ -214,7 +214,7 @@ class OpExpr extends ANY
                              "it was not intended as an infix operator. \n"+
                              "To fix this, you may try to insert white space "+(op._whiteSpaceBefore?"after":"before")+" the operator at "+
                              (op._whiteSpaceAfter ? p
-                                                  : p.endPos()).show() +
+                                                  : p.endPos()).show() + "\n" +
                              "Parse stack: " + Parser.parseStack());
               }
             Expr e = new ParsedOperatorCall(e1, new ParsedName(op._pos, FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + op._text), pmax, e2);
