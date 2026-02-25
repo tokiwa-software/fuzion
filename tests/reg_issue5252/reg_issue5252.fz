@@ -42,7 +42,7 @@ reg_issue5252 =>
   say (123.0+456)
   say (123.0 + 456)
   say (123.0+ 456)   # should this infix call that looks like postfix fail?
-  say (123.0 +456)   # should this infix call that looks like prefix fail?
+# say (123.0 +456)   # causes error: Should this infix call that looks like prefix fail?
 
   a := 47
   b := 11

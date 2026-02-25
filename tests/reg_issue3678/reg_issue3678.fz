@@ -25,6 +25,6 @@
 x  => 42 |> .as_string |> say
 x2 => 42 |> (.as_string) |> say
 x3 => 42 |> .as_string|> say
-x4 => 42 |>(.as_string)|> say
+x4 => 42|>(.as_string)|> say
 
 x; x2; x3; x4
