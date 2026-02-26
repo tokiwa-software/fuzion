@@ -144,6 +144,7 @@ MOD_SODIUM            = $(BUILD_DIR)/modules/sodium.fum
 MOD_CRYPTO            = $(BUILD_DIR)/modules/crypto.fum
 MOD_TOKIWA            = $(BUILD_DIR)/modules/tokiwa.fum
 MOD_WEBSERVER         = $(BUILD_DIR)/modules/webserver.fum
+MOD_COMPILER          = $(BUILD_DIR)/modules/compiler.fum
 
 MOD_FZ_CMD_DIR = $(BUILD_DIR)/modules/fz_cmd
 MOD_FZ_CMD_FZ_FILES = $(MOD_FZ_CMD_DIR)/__marker_for_make__
@@ -226,7 +227,7 @@ C_FILES = $(shell find $(FZ_SRC) \( -path ./build -o -path ./.git \) -prune -o -
 
 # default make target
 .PHONY: all
-all: $(FUZION_BASE) $(FUZION_JAVA_MODULES) $(FUZION_FILES) $(MOD_FZ_CMD) $(FUZION_EBNF) $(BUILD_DIR)/fuzion.jar
+all: $(FUZION_BASE) $(FUZION_JAVA_MODULES) $(FUZION_FILES) $(MOD_FZ_CMD) $(MOD_COMPILER) $(FUZION_EBNF) $(BUILD_DIR)/fuzion.jar
 
 
 # rules to build java modules
@@ -527,6 +528,12 @@ $(MOD_WEBSERVER): $(MOD_HTTP) $(FZ) $(shell find $(FZ_SRC)/modules/webserver/src
 	cp -rf $(FZ_SRC)/modules/webserver $(@D)
 	$(FZ) -modules=http -sourceDirs=$(BUILD_DIR)/modules/webserver/src -saveModule=$@
 
+$(MOD_COMPILER): $(MOD_FZ_CMD) $(shell find $(FZ_SRC)/modules/compiler/src -name "*.fz")
+	rm -rf $(@D)/compiler
+	mkdir -p $(@D)
+	cp -rf $(FZ_SRC)/modules/compiler $(@D)
+	$(FZ) -modules=java.base,fz_cmd -sourceDirs=$(BUILD_DIR)/modules/compiler/src -saveModule=$@
+
 $(FZJAVA): $(FZ_SRC)/bin/fzjava | $(CLASS_FILES_TOOLS_FZJAVA)
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC)/bin/fzjava $@
@@ -589,7 +596,7 @@ $(BUILD_DIR)/bin/run_tests: $(FZ) $(FZ_MODULES) $(FZ_SRC)/bin/run_tests.fz
 .PHONY: run_tests
 run_tests: run_tests_fuir run_tests_jvm run_tests_c run_tests_effect run_tests_jar
 
-TEST_DEPENDENCIES = $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests $(BUILD_DIR)/bin/run_tests $(BUILD_DIR)/fuzion.jar
+TEST_DEPENDENCIES = $(FZ_MODULES) $(MOD_COMPILER) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/tests $(BUILD_DIR)/bin/run_tests $(BUILD_DIR)/fuzion.jar
 
 # phony target to run Fuzion tests using effects and report number of failures
 .PHONY .SILENT: run_tests_effect
