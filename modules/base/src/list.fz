@@ -198,7 +198,7 @@ is
     list.this ? nil => fuzion.std.panic "list.init called on empty list"
               | c Cons =>
                 c.tail ? nil => res
-                       | Cons => c.tail.init (res ++ [c.head]).as_list
+                       | Cons => c.tail.init (res.concat_list [c.head].as_list)
 
 
   # get the last element of this list
@@ -245,7 +245,7 @@ is
         match (f c.head).as_list
           nil     => c.tail.flat_map_to_list f
           c2 Cons =>
-            c2.head : (c2.tail ++ c.tail.flat_map_to_list f).as_list
+            c2.head : c2.tail.concat_list (c.tail.flat_map_to_list f)
 
 
   # fold the elements of this list using the given monoid.
@@ -420,7 +420,7 @@ is
   prepend_to_all(sep A, res list A) list A =>
     match head
       nil => res
-      x A => tail.prepend_to_all sep (res ++ [sep, x]).as_list
+      x A => tail.prepend_to_all sep (res.concat_list [sep, x].as_list)
 
 
   # add an element sep between every element of this list.
@@ -428,7 +428,7 @@ is
   public intersperse(sep A) list A =>
     match head
       nil => nil
-      x A => ([x] ++ tail.prepend_to_all sep).as_list
+      x A => x : (tail.prepend_to_all sep)
 
 
   # List concatenation, O(count)
