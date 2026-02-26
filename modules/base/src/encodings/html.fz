@@ -65,6 +65,12 @@ public html is
       .val
 
 
+  # html encode str, but not its spaces
+  #
+  public encode(str String) =>
+    encode str false
+
+
   # html encode str
   #
   # mapping:
