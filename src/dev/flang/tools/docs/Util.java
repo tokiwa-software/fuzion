@@ -33,6 +33,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Types;
@@ -90,7 +91,15 @@ public class Util extends ANY
       {
         if (!af.redefines().isEmpty())
           {
-            return af.redefines().stream().map(r -> commentOf(r)).collect(Collectors.joining("<br />"));
+            return af.redefines().stream().flatMap(r ->
+              {
+                var c = commentOf(r);
+                return c.isBlank()
+                  ? Stream.empty()
+                  : Stream.of("from '" + r.qualifiedName() + "': " +  c);
+              }
+            )
+            .collect(Collectors.joining("<br />"));
           }
         say_err("Warning: No comment found for " + af.qualifiedName());
       }
