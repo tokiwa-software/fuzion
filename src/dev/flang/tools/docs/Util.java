@@ -88,7 +88,7 @@ public class Util extends ANY
 
     if (commentLines.stream().allMatch(l -> l.isBlank()))
       {
-        if(!af.redefines().isEmpty())
+        if (!af.redefines().isEmpty())
           {
             return af.redefines().stream().map(r -> commentOf(r)).collect(Collectors.joining("<br />"));
           }
