@@ -835,7 +835,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
           }
         first = false;
       }
-    return t0.applyTypePars(this, tl);
+    return t0.NEWapplyTypePars(this, tl);
   }
 
 
@@ -851,15 +851,14 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   AbstractType rebaseTypeForCotype(AbstractType t)
   {
-    var tl = new List<AbstractType>();
-    for (var ta0 : typeArguments())
-      {
-        var ta = new ParsedType(pos(), ta0.featureName().baseName());
-        tl.add(ta);
+    for (var i : inherits())
+      { // NYI: CLEANUP: If we do not freeze the type parameters, we run into errors. Apparently,
+        // there is some code that re-uses these without proper freezing/cloning.
+        i.actualTypeParameters().freeze();
       }
-    t = t.applyTypePars(this, tl);
-    t = t.clone(this);
-    return t;
+    var tl = typeArguments().map2(ta -> (AbstractType) new ParsedType(pos(), ta.featureName().baseName()));
+    return t.NEWapplyTypePars(this, tl)
+            .clone(this);
   }
 
 
@@ -1230,7 +1229,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       {
         // NYI: CLEANUP: This should be replacable by `c.resultType().replaceGenerics(a)` or similar
         var actualTypes = c.actualTypeParameters();
-        a = a.flatMap(ti -> !ti.isOpenGeneric()                               ? new List<>(ti.applyTypePars(c.calledFeature(), actualTypes)) :
+        a = a.flatMap(ti -> !ti.isOpenGeneric()                               ? new List<>(ti.NEWapplyTypePars(c.calledFeature(), actualTypes)) :
                             ti.genericArgument().outer() == c.calledFeature() ? ti.genericArgument().replaceOpen(actualTypes)
                                                                               : new List<>(ti));
       }

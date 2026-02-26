@@ -1610,7 +1610,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
        * redefinition {@code h.maybe}.
        */
       fixed &&
-      redefinition.outer().thisType(true).actualType(to).compareTo(tr) == 0       ||
+      redefinition.outer().thisType(true).NEWactualType(to).compareTo(tr) == 0       ||
 
       /* original and redefinition are inner features of type features, {@code to} is
        * {@code this.type} and {@code tr} is the underlying non-type feature's selfType.
@@ -1661,7 +1661,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
                         // we must replace `option A` by `option B`, i.e.,
                         // replace original's type parameters by redefinition's:
                         //
-                        t -> t.applyTypePars(original, redefinition.genericsAsActuals()));
+                        t -> t.NEWapplyTypePars(original, redefinition.genericsAsActuals()));
   }
 
 
