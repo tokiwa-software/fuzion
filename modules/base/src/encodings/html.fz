@@ -67,7 +67,7 @@ public html is
 
   # html encode str, but not its spaces
   #
-  public encode(str String) =>
+  public encode(str String) String =>
     encode str false
 
 
