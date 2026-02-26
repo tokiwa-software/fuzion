@@ -256,7 +256,11 @@ is
   #       .peek say
   #       .drop_while <10
   #
-  public peek (f T -> unit) Sequence T =>
+  public peek (f T -> unit) Sequence T
+    post
+      debug: finite = result.finite
+      debug: finite.is_no_or_unknown || count = result.count
+  =>
     map x->
       f x
       x
@@ -279,7 +283,11 @@ is
   # filter elements using predicate f
   # values for which f is false are dropped
   #
-  public filter   (f T -> bool) Sequence T => as_list.filter f
+  public filter   (f T -> bool) Sequence T
+    post
+      debug: finite = result.finite
+      debug: finite.is_no_or_unknown || count >= result.count
+  => as_list.filter f
 
 
   # check if predicate f holds for all elements
@@ -305,7 +313,13 @@ is
 
   # reverse the order of the elements in this Sequence
   #
-  public reverse Sequence T => as_list.reverse_list
+  public reverse Sequence T
+    pre
+      debug: finite.is_yes_or_unknown
+    post
+      debug: finite = result.finite
+      debug: count = result.count
+  => as_list.reverse_list
 
 
   # create a Sequence that consists of the elements of this Sequence except the first
@@ -334,6 +348,10 @@ is
       debug : from ≥ 0
       debug : to = 0 || (if is_array_backed || debug_level > 1 then is_valid_index to-1 else true)
       debug : from <= to
+    # NYI: BUG: postcondition on parametrized feature do not work yet?
+    # post
+    #   debug: result.finite.is_yes_or_unknown
+    #   debug: result.count = (to-from).as_i32
   =>
     drop from
       .take to-from
@@ -461,7 +479,9 @@ is
   # create a Sequence that repeats the current Sequence indefinitely.  In case 'Sequence.this'
   # is empty, returns 'nil'
   #
-  public cycle Sequence T => as_list.cycle
+  public cycle Sequence T
+   post debug: result.finite.is_no
+  => as_list.cycle
 
 
   # create a Sequence that repeats the current Sequence `n` times.
@@ -530,7 +550,11 @@ is
   # This performs a lazy mapping, f is called only when the elements
   # in the resulting list are accessed.
   #
-  public map(B type, f T->B) Sequence B =>
+  public map(B type, f T->B) Sequence B
+    post
+      debug: finite = result.finite
+      debug: finite.is_no_or_unknown || count = result.count
+  =>
     as_list.map_to_list f
 
 
