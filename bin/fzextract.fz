@@ -44,57 +44,70 @@ to_fuzion_type(ct String, is_result_type bool) string_option =>
     .replace "const " ""
     .replace "volatile " ""
     .replace "restrict " ""
+    .replace "_Nonnull " ""
+    .replace "_Nullable " ""
+    .replace "_Null_unspecified " ""
+    .replace "__restrict " ""
+    .replace "__const " ""
     .replace "*const" "*"
     .replace "*volatile" "*"
     .replace "*restrict" "*"
+    .replace "* __restrict" "*"
     # NYI: UNDER DEVELOPMENT: C11?
     # .replace "_Thread_local"
     # .replace "_Atomic"
 
-  if c_type = "void"
-    "unit"
-  else if c_type.contains "*" || c_type.ends_with "]"
-    if is_result_type
+  m := container.map_of [
+    ("void", "unit"),
+    ("float", "f32"),
+    ("_Float32", "f32"),
+    ("double", "f64"),
+    ("_Float64", "f64"),
+    ("long", "i64"),
+    ("signed long", "i64"),
+    ("time_t", "i64"),
+    ("size_t", "i64"),
+    ("clock_t", "i64"),
+    ("long long", "i64"),
+    ("signed long long", "i64"),
+    ("int64_t", "i64"),
+    ("char", "i8"),
+    ("signed char", "i8"),
+    ("int","i32"),
+    ("signed int","i32"),
+    ("int32_t","i32"),
+    ("unsigned long long","u64"),
+    ("uint64_t","u64"),
+    ("unsigned long","u64"),
+    ("short","i16"),
+    ("signed short","i16"),
+    ("unsigned short","u16"),
+    ("uint16_t","u16"),
+    ("unsigned char","u8"),
+    ("uint8_t","u8"),
+    ("unsigned","u32"),
+    ("unsigned int","u32"),
+    ("uint32_t","u32")
+  ]
+
+  if m[c_type].ok
+    "{m[c_type].get} /* from: {c_type} */"
+  else if c_type.contains "*" || c_type.contains "["
+    if is_result_type || c_type.contains "**"
       # NYI: UNDER DEVELOPMENT: support for more complex result types?
       "Native_Ref /* from: {c_type} */"
-    else if c_type = "unsigned char *" || c_type = "uint8_t *" || c_type.starts_with "unsigned char["
-      "mutate.array u8"
-    else if c_type = "char *" || c_type.starts_with "char["
-      "mutate.array i8"
-    else if c_type = "unsigned long long *"
-      "mutate.array u64"
-    else if c_type = "double *" || c_type.starts_with "double["
-      "mutate.array f64"
-    else if c_type = "size_t *" || c_type = "long *"
-      "mutate.array i64"
-    else if c_type = "FILE *"
-      "Native_Ref"
-    else if c_type = "int *" || c_type = "int32_t *"
-      "mutate.array i32"
-    else if c_type = "unsigned int *"
-      "mutate.array u32"
-    else if c_type = "unsigned short *" || c_type.starts_with "unsigned short["
-      "mutate.array u16"
+    else if m[(c_type.split " ")[0]].ok
+      "mutate.array {m[(c_type.split " ")[0]].val} /* from: {c_type} */"
+    else if m[(c_type.split "[")[0]].ok
+      "mutate.array {m[(c_type.split "[")[0]].val} /* from: {c_type} */"
     else
       "Native_Ref /* from: {c_type} */"
-  else if c_type = "float"
-    "f32"
-  else if c_type = "double"
-    "f64"
-  else if c_type = "int64_t"
-    "i64"
-  else if c_type = "int32_t" || c_type = "int"
-    "i32"
-  else if c_type = "uint64_t" || c_type = "unsigned long long"
-    "u64"
-  else if c_type = "int8_t"
-    "i8"
-  else if c_type = "uint8_t" || c_type = "unsigned char"
-    "u8"
-  else if c_type = "size_t" || c_type = "long"
-    "i64"
-  else if c_type = "uint32_t"
-    "u32"
+  else if c_type.starts_with "enum "
+    "u32 /* from: {c_type} */"
+  else if !is_result_type && known_structs.has c_type
+    "c.{c_type}"
+  else if known_enums.has c_type
+    "i32 /* from enum {c_type} */"
   else
     # NYI: UNDER DEVELOPMENT: we could support more complex types
     nil
@@ -102,7 +115,9 @@ to_fuzion_type(ct String, is_result_type bool) string_option =>
 
 # via `java --class-path=build/classes dev.flang.parser.Lexer -keywords`
 #
-keywords := container.set_of_ordered ["abstract", "check", "const", "do", "else", "env", "fixed", "for", "if", "in", "index", "infix", "infix_right", "intrinsic", "inv", "is", "leaf", "loop", "match", "module", "native", "post", "postfix", "pre", "prefix", "private", "public", "redef", "ref", "set", "ternary", "then", "this", "type", "universe", "until", "var", "variant", "while"]
+keywords := container.set_of_ordered ["abstract", "check", "const", "do", "else", "env", "fixed", "for", "if", "in", "index", "infix", "infix_right", "intrinsic", "inv", "is", "leaf", "loop", "match", "module", "native", "post", "postfix", "pre", "prefix", "private", "public", "redef", "ref", "set", "ternary", "then", "this", "type", "universe", "until", "var", "variant", "while",
+    # manually added:
+    "result"]
 
 # map an arg name from the C code to a fuzion name
 #
@@ -129,20 +144,62 @@ say """
   module c is
   """
 
-lines := mut (container.expanding_array String).empty
+function_declarations := mut (container.expanding_array String).empty
+
+# NYI: CLEANUP: use local mutate
+_ := mutate
+
+# store known structs
+#
+known_structs := container.mutable_tree_map mutate String clang.struct_decl .empty
+
+# store known enums
+#
+known_enums := container.mutable_tree_map mutate String clang.enum_decl .empty
 
 match {
-  clang.parse_header envir.args[1] f_decl->
-    valid := (f_decl.args ∀ (arg -> !(to_fuzion_type arg.arg_type false).is_nil)) && !(to_fuzion_type f_decl.return_type true).is_nil
-    args_str := f_decl
-      .args
-      .map arg->
-        "{to_fuzion_name arg.name} {to_fuzion_type arg.arg_type false}"
-      .as_string ", "
-    lines <- lines.add "  {if valid then "" else "# "}module {f_decl.name}{if args_str.is_empty then "" else "($args_str)"} {to_fuzion_type f_decl.return_type true} => native"
+  clang.parse_header envir.args[1] c->
+    match c
+      f_decl clang.function_decl =>
+        valid := (f_decl.args ∀ (arg -> !(to_fuzion_type arg.arg_type false).is_nil)) && !(to_fuzion_type f_decl.return_type true).is_nil
+        args_str := f_decl
+          .args
+          .map arg->
+            "{to_fuzion_name arg.name} {to_fuzion_type arg.arg_type false}"
+          .as_string ", "
+        function_declarations <- function_declarations.add "  {if valid then "" else "# "}module {to_fuzion_name f_decl.name}{if args_str.is_empty then "" else "($args_str)"} {to_fuzion_type f_decl.return_type true} => native"
+      s_decl clang.struct_decl =>
+        if (s_decl.fields ∀ (field -> !(to_fuzion_type field.arg_type false).is_nil))
+          known_structs.put s_decl.name s_decl
+      clang.union_decl =>
+      e_decl clang.enum_decl =>
+        known_enums.put e_decl.name e_decl
       }
+
   unit =>
-    say <| (container.set_of_ordered lines.get).sort.as_string "\n"
+
+    say """
+      {" structs ".pad_center "#" 80}
+      """
+
+    # NYI: BUG: we need to add padding
+    # NYI: BUG: we need to evaluate arrays properly
+    #   module CXType(module kind u32 /* from: enum CXTypeKind */, module data Native_Ref /* from: void *[2] */) is
+    # should be sth. like:
+    #   CXType(kind i32 /*type_kind*/, padding i32, data1, data2 Native_Ref) is
+
+
+    known_structs.values.for_each s_decl->
+      say <| "  module {s_decl.name}{s_decl.fields.is_empty ? "" : "("}{s_decl.fields.map (f -> "module {to_fuzion_name f.name} {to_fuzion_type f.arg_type false}") .as_string ", "}{s_decl.fields.is_empty ? "" : ")"} is"
+
+    say ""
+
+    say """
+      {" function declarations ".pad_center "#" 80}
+      """
+
+    say <| (container.set_of_ordered function_declarations.get).sort.as_string "\n"
+
   e error =>
     say e
     exit 1
