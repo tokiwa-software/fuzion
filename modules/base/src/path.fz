@@ -181,10 +181,11 @@ is
 
   # String representation of this path
   #
-  # e.g. "/folder/file" or "relative_folder/file"
+  # e.g. "/folder/file" or "./relative_folder/file"
   #
   public redef as_string String =>
-    "{if is_absolute then "/" else ""}{if names.is_empty && !is_absolute then "./" else String.join names "/"}"
+    # relative paths should always start with `./` to avoid problems on Windows
+    "{if is_absolute then "/" else "./"}{String.join names "/"}"
 
 
   # define order for paths
