@@ -43,6 +43,6 @@ public protocol is
 
     public redef as_string String =>
       match val.this
-        t tcp   => t.as_string
-        u udp   => u.as_string
+        t tcp   => $t
+        u udp   => $u
         nil     => "none"

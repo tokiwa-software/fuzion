@@ -78,7 +78,7 @@ is
   # "--$e--" for e error.
   #
   public redef as_string String =>
-    outcome.this ? v T     => v.as_string
+    outcome.this ? v T     => $v
                  | e error => "--$e--"
 
 

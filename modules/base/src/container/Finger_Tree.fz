@@ -134,8 +134,21 @@ is
       r.prepend data
   redef modus choice (container.empty T) (container.single T) (container.deep T) => container.single data
   redef fill_internal_array(ia fuzion.sys.internal_array T, i i32) unit =>
-    for j in 0..data.count-1 do
+    for j:=0, j+1
+    while j<data.count
+    do
       ia[i+j] := data[j]
+
+
+
+# NYI: UNDER DEVELOPMENT: implement this properly, not via
+# abusing Finger_Tree
+#
+node3(T type, a,b,c Sequence T) Sequence T =>
+  container.Finger_Tree T .empty
+    .append a
+    .append b
+    .append c
 
 
 
@@ -155,10 +168,7 @@ deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.ha
 
   public redef prepend(seq Sequence T) container.Finger_Tree T =>
     if lft.finger.count = 4
-      x := container.Finger_Tree T .empty
-        .append lft.finger[1]
-        .append lft.finger[2]
-        .append lft.finger[3]
+      x := node3 lft.finger[1] lft.finger[2] lft.finger[3]
       deep (container.hand [seq, lft.finger[0]]) (ft.prepend x) rght
     else
       deep (lft.prepend seq) ft rght
@@ -166,10 +176,7 @@ deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.ha
 
   public redef append (seq Sequence T) container.Finger_Tree T =>
     if rght.finger.count = 4
-      x := container.Finger_Tree T .empty
-        .append rght.finger[0]
-        .append rght.finger[1]
-        .append rght.finger[2]
+      x := node3 rght.finger[0] rght.finger[1] rght.finger[2]
       deep lft (ft.append x) (container.hand [rght.finger[3], seq])
     else
       deep lft ft (rght.append seq)
@@ -185,11 +192,11 @@ deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.ha
   public redef index [ ] (I type : idx, i I) T =>
     n := i.as_i32
     if n < lft.count
-      lft.nth n
+      lft[n]
     else if n < lft.count+ft.count
       ft[n-lft.count]
     else
-      rght.nth (n-lft.count-ft.count)
+      rght[n-lft.count-ft.count]
 
 
   module redef as_finger_tree option (container.Finger_Tree T) =>
@@ -296,9 +303,9 @@ is
       hand [finger[0], finger[1], finger[2], seq]
 
 
-  # get the nth element
+  # index access to the element in this hand
   #
-  nth(n i32) T =>
+  public index [ ] (n i32) T =>
     if n >= cnt
       panic "illegal unless debug turned off"
     else if n < f0cnt
@@ -317,8 +324,13 @@ is
   fill_internal_array(ia fuzion.sys.internal_array T, i i32) unit =>
 
     fill(f Sequence T, s i32) =>
-      for j in 0..f.count-1 do
-        ia[s+j] := f[j]
+      match f.as_finger_tree
+        nil =>
+          for j := 0, j+1
+          while j < f.count do
+            ia[s+j] := f[j]
+        ft Finger_Tree =>
+          ft.fill_internal_array ia s
 
     fill finger[0] i
     if finger.count > 1

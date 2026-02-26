@@ -101,7 +101,7 @@ public except(log String->unit) : Middleware is
           .try ()->
             h r
           .catch  e->
-            log e.as_string
+            log $e
             http
               .response_message
               .new

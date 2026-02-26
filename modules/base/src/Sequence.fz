@@ -428,23 +428,21 @@ is
     c2 := s.finite.is_yes ? s.count : -1
     if c1 = 0
       s
-    else if c2 = 0
+                      #
+                      # if this sequence is infinite,
+                      # no need to concat s
+                      #
+    else if c2 = 0 || finite.is_no
       Sequence.this
+
     #
-    # c1 < c2 to avoid poor (quadratic) performance
-    # if a small sequence is added in front of a
-    # larger one repeatedly as in this code:
+    # if s is infinite we use list concat
+    # otherwise we would hang forever
     #
-    #     for
-    #       s := (Sequence i32).empty, [i].concat s
-    #       i in 1..n
-    #     else
-    #       say s
-    #
-    else if c1 < 0 || c2 < 0 || c1 < c2 then
+    else if s.finite.is_no
       as_list.concat_list s.as_list
     else
-      container.expanding_array T .empty c1+c2
+      container.Finger_Tree T .empty
         .concat Sequence.this
         .concat s
 
@@ -524,7 +522,7 @@ is
 
   # call 'as_string' on the elements
   #
-  public as_strings Sequence String => map c->c.as_string
+  public as_strings Sequence String => map ($)
 
 
   # map the Sequence to a new Sequence applying function f to all elements

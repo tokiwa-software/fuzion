@@ -28,7 +28,7 @@ fuzion_runtime_stackoverflow =>
   fuzion.runtime.stackoverflow
     .try ()->
       say (
-        for res := [0].as_list, res.concat res .as_list
+        for res := [0].as_list, res.concat_list res
             i in 0..30000 do
         else
           res
@@ -40,7 +40,7 @@ fuzion_runtime_stackoverflow =>
   fuzion.runtime.fault
     .try ()->
       say (
-        for res := [0].as_list, res.concat res .as_list
+        for res := [0].as_list, res.concat_list res
             i in 0..30000 do
         else
           res
@@ -59,7 +59,7 @@ fuzion_runtime_stackoverflow =>
     .try ()->
       some_effect ! ()->
         say (
-          for res := [0].as_list, res.concat res .as_list
+          for res := [0].as_list, res.concat_list res
               i in 0..30000 do
           else
             res
@@ -73,7 +73,7 @@ fuzion_runtime_stackoverflow =>
     .try ()->
       some_effect ! ()->
         say (
-          for res := [0].as_list, res.concat res .as_list
+          for res := [0].as_list, res.concat_list res
               i in 0..30000 do
           else
             res

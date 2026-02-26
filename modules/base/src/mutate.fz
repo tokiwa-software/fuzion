@@ -190,7 +190,7 @@ public mutate : linear_effect is
 
     # returns `as_string` of the current value
     #
-    public redef as_string String => get.as_string
+    public redef as_string String => $get
 
 
 

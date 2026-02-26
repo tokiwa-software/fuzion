@@ -26,4 +26,4 @@
 #
 public append(p path, a Any) outcome unit =>
   use p mode.append ()->
-    writer.write a.as_string
+    writer.write $a

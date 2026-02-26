@@ -344,11 +344,11 @@ is
   as_string0 String =>
     mrd := uint 1_000_000_000
     q, rem := uint.this.divide_with_remainder mrd
-
+    rd => $(rem.data.first 0)
     if q = uint.zero
-      (rem.data.first 0).as_string
+      rd
     else
-      q.as_string0 + (rem.data.first 0).as_string.pad_codepoint_start 9 "0"
+      q.as_string0 + rd.pad_codepoint_start 9 "0"
 
 
   public fixed redef as_string String =>

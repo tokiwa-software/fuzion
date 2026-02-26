@@ -52,7 +52,7 @@ module:public instant (val u64) : property.orderable is
   #
   public redef as_string String
   =>
-    time.duration val .as_string
+    $time.duration val
 
 
   # create a string representation of this instant using the given unit.
