@@ -86,6 +86,17 @@ public class SourceRange extends SourcePosition
 
 
   /**
+   * Start position of this SourceRange within _sourceFile.  This is the position
+   * of the first byte just after of this range.
+   */
+  public SourcePosition startPos()
+  {
+    return new SourcePosition(_sourceFile,
+                              bytePos());
+  }
+
+
+  /**
    * End position of this SourceRange within _sourceFile.  This is the position
    * of the first byte just after this range.
    */
