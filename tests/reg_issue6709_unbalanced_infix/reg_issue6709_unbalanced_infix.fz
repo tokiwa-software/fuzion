@@ -1,0 +1,105 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_6709_unbalanced_infix
+#
+# -----------------------------------------------------------------------
+
+# This negative test checks that infix operators with unbalanced whitespace
+# before and after the operator cause errors
+#
+reg_6709_unbalanced_infix =>
+
+  # some helper features
+  a => 42
+  b => 67
+  a(_) => 0815
+  i32.postfix + => 4711
+
+  # the cases from #6709
+  #
+  test001 := (a) +b   # 1. should flag an error: unbalanced infix `+`
+  test002 := a+ b     # 2. should flag an error: unbalanced infix `+`
+
+  # positive variants of these tests
+  test003 := a+b      # normal add
+  test004 := a + b    # normal add
+  test005 := a +b     # will call `a(+b)`
+  test006 := a+       # will call `a.postfix +`
+
+  # more cases
+  test007 := (a)+b                 # normal add
+  test008 := (a)+ b                # 3. should flag an error: unbalanced infix `+`
+  test009 := (a) +b                # 4. should flag an error: unbalanced infix `+`
+  test010 := a+(b)                 # normal add
+  test011 := a+ (b)                # 5. should flag an error: unbalanced infix `+`
+  test012 := a +(b)                # normal call to `a(+(b))`
+
+  # some more original code snippets that had to be changed due to syntax errors
+  # for unbalanced infix operators:
+
+  # from tests/interval:
+  from_tests_interval =>
+    for
+      s := "", s + $i
+      i in -4.. +4                # 6. should flag an error: unbalanced infix `..`
+    else
+      s
+
+  # from tests/reg_issue2242/reg_issue2242.fz‎
+  from_tests_reg_issue2242 =>
+    low => 42
+    high => 67
+    for j in low..(high- 1) do    # 7. should flag an error: unbalanced infix `-`
+      say j
+
+  # from ‎tests/reg_issue3678/reg_issue3678.fz‎
+  from_tests_reg_issue3678 =>
+    x3 => 42 |> .as_string|> say  # 8. should flag an error: unbalanced infix `|>`
+    x4 => 42 |>(.as_string)|> say # 9.+10. 2x should flag an error: unbalanced infix `|>`
+
+  # from ‎tests/reg_issue5252/reg_issue5252.fz‎
+  from_test_reg_issue5252 =>
+    i32.infix --(_) => -val
+    say (123.0+ 456)              # 11. should flag an error: unbalanced infix `+`
+    say (123.0 +456)              # 12. should flag an error: unbalanced infix `+`
+    say (a- b)                    # 13. should flag an error: unbalanced infix `-`
+    say (a-- b)                   # 14. should flag an error: unbalanced infix `--`
+
+  # from ‎tests/visibility/visibility.fz‎
+  from_tests_visibility =>
+    x1 := 1.0
+    x2 := 3.0;
+    chck(_) =>
+    chck ($x2="6"|| $x1="6")      # 15. should flag an error: unbalanced infix `||`
+
+
+  # from ‎modules/base/src/time/histogram.fz‎
+  from_base_time_histogram =>
+    ignore_last_buffer => [1,2,3]
+    ignore_last_buffer_index := mut.new 42
+    ignore_last_buffer_index <- (ignore_last_buffer_index.get = 0 ? ignore_last_buffer.length
+                                                                  : ignore_last_buffer_index.get)- 1     # 16. should flag an error: unbalanced infix `-`
+
+    (" average |" +
+     "   min   |" +
+     "   max   |" +
+     "  sigma  |" +
+     "  count  |\n"+              # 17. should flag an error: unbalanced infix `+`
+     "  count  |\n")

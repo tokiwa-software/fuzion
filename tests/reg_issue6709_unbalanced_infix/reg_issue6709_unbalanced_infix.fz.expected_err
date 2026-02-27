@@ -1,0 +1,188 @@
+
+--CURDIR--/reg_issue6709_unbalanced_infix.fz:37:18: error 1: Syntax error: infix operator '+' appears to be prefix operator.
+  test001 := (a) +b   # 1. should flag an error: unbalanced infix `+`
+-----------------^
+Whitespace before this operator suggests that 
+it was not intended as an infix operator. 
+To fix this, you may try to insert white space after the operator at --CURDIR--/reg_issue6709_unbalanced_infix.fz:37:19:
+  test001 := (a) +b   # 1. should flag an error: unbalanced infix `+`
+------------------^
+Parse stack: opsTail, opExpr, operatorExpr, implFldInit, implFldOrRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
+
+
+--CURDIR--/reg_issue6709_unbalanced_infix.fz:38:15: error 2: Syntax error: infix operator '+' appears to be postfix operator.
+  test002 := a+ b     # 2. should flag an error: unbalanced infix `+`
+--------------^
+Whitespace after this operator suggests that 
+it was not intended as an infix operator. 
+To fix this, you may try to insert white space before the operator at --CURDIR--/reg_issue6709_unbalanced_infix.fz:38:15:
+  test002 := a+ b     # 2. should flag an error: unbalanced infix `+`
+--------------^
+Parse stack: opsTail, opExpr, operatorExpr, implFldInit, implFldOrRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
+
+
+--CURDIR--/reg_issue6709_unbalanced_infix.fz:48:17: error 3: Syntax error: infix operator '+' appears to be postfix operator.
+  test008 := (a)+ b                # 3. should flag an error: unbalanced infix `+`
+----------------^
+Whitespace after this operator suggests that 
+it was not intended as an infix operator. 
+To fix this, you may try to insert white space before the operator at --CURDIR--/reg_issue6709_unbalanced_infix.fz:48:17:
+  test008 := (a)+ b                # 3. should flag an error: unbalanced infix `+`
+----------------^
+Parse stack: opsTail, opExpr, operatorExpr, implFldInit, implFldOrRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
+
+
+--CURDIR--/reg_issue6709_unbalanced_infix.fz:49:18: error 4: Syntax error: infix operator '+' appears to be prefix operator.
+  test009 := (a) +b                # 4. should flag an error: unbalanced infix `+`
+-----------------^
+Whitespace before this operator suggests that 
+it was not intended as an infix operator. 
+To fix this, you may try to insert white space after the operator at --CURDIR--/reg_issue6709_unbalanced_infix.fz:49:19:
+  test009 := (a) +b                # 4. should flag an error: unbalanced infix `+`
+------------------^
+Parse stack: opsTail, opExpr, operatorExpr, implFldInit, implFldOrRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
+
+
+--CURDIR--/reg_issue6709_unbalanced_infix.fz:51:15: error 5: Syntax error: infix operator '+' appears to be postfix operator.
+  test011 := a+ (b)                # 5. should flag an error: unbalanced infix `+`
+--------------^
+Whitespace after this operator suggests that 
+it was not intended as an infix operator. 
+To fix this, you may try to insert white space before the operator at --CURDIR--/reg_issue6709_unbalanced_infix.fz:51:15:
+  test011 := a+ (b)                # 5. should flag an error: unbalanced infix `+`
+--------------^
+Parse stack: opsTail, opExpr, operatorExpr, implFldInit, implFldOrRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
+
+
+--CURDIR--/reg_issue6709_unbalanced_infix.fz:61:14: error 6: Syntax error: infix operator '..' appears to be postfix operator.
+      i in -4.. +4                # 6. should flag an error: unbalanced infix `..`
+-------------^^
+Whitespace after this operator suggests that 
+it was not intended as an infix operator. 
+To fix this, you may try to insert white space before the operator at --CURDIR--/reg_issue6709_unbalanced_infix.fz:61:14:
+      i in -4.. +4                # 6. should flag an error: unbalanced infix `..`
+-------------^
+Parse stack: opsTail, opExpr, operatorExpr, exprInLine, indexVar, indexVars, loop, term, opExpr, operatorExpr, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
+
+
+--CURDIR--/reg_issue6709_unbalanced_infix.fz:69:24: error 7: Syntax error: infix operator '-' appears to be postfix operator.
+    for j in low..(high- 1) do    # 7. should flag an error: unbalanced infix `-`
+-----------------------^
+Whitespace after this operator suggests that 
+it was not intended as an infix operator. 
+To fix this, you may try to insert white space before the operator at --CURDIR--/reg_issue6709_unbalanced_infix.fz:69:24:
+    for j in low..(high- 1) do    # 7. should flag an error: unbalanced infix `-`
+-----------------------^
+Parse stack: opsTail, opExpr, operatorExpr, actualCommas, tuple, klammer, bracketTerm, term, opsTail, opExpr, operatorExpr, exprInLine, indexVar, indexVars, loop, term, opExpr, operatorExpr, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
+
+
+--CURDIR--/reg_issue6709_unbalanced_infix.fz:74:27: error 8: Syntax error: infix operator '|>' appears to be postfix operator.
+    x3 => 42 |> .as_string|> say  # 8. should flag an error: unbalanced infix `|>`
+--------------------------^^
+Whitespace after this operator suggests that 
+it was not intended as an infix operator. 
+To fix this, you may try to insert white space before the operator at --CURDIR--/reg_issue6709_unbalanced_infix.fz:74:27:
+    x3 => 42 |> .as_string|> say  # 8. should flag an error: unbalanced infix `|>`
+--------------------------^
+Parse stack: opsTail, opExpr, operatorExpr, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
+
+
+--CURDIR--/reg_issue6709_unbalanced_infix.fz:75:28: error 9: Syntax error: infix operator '|>' appears to be postfix operator.
+    x4 => 42 |>(.as_string)|> say # 9.+10. 2x should flag an error: unbalanced infix `|>`
+---------------------------^^
+Whitespace after this operator suggests that 
+it was not intended as an infix operator. 
+To fix this, you may try to insert white space before the operator at --CURDIR--/reg_issue6709_unbalanced_infix.fz:75:28:
+    x4 => 42 |>(.as_string)|> say # 9.+10. 2x should flag an error: unbalanced infix `|>`
+---------------------------^
+Parse stack: opsTail, opExpr, operatorExpr, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
+
+
+--CURDIR--/reg_issue6709_unbalanced_infix.fz:75:14: error 10: Syntax error: infix operator '|>' appears to be prefix operator.
+    x4 => 42 |>(.as_string)|> say # 9.+10. 2x should flag an error: unbalanced infix `|>`
+-------------^^
+Whitespace before this operator suggests that 
+it was not intended as an infix operator. 
+To fix this, you may try to insert white space after the operator at --CURDIR--/reg_issue6709_unbalanced_infix.fz:75:16:
+    x4 => 42 |>(.as_string)|> say # 9.+10. 2x should flag an error: unbalanced infix `|>`
+---------------^
+Parse stack: opsTail, opExpr, operatorExpr, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
+
+
+--CURDIR--/reg_issue6709_unbalanced_infix.fz:80:15: error 11: Syntax error: infix operator '+' appears to be postfix operator.
+    say (123.0+ 456)              # 11. should flag an error: unbalanced infix `+`
+--------------^
+Whitespace after this operator suggests that 
+it was not intended as an infix operator. 
+To fix this, you may try to insert white space before the operator at --CURDIR--/reg_issue6709_unbalanced_infix.fz:80:15:
+    say (123.0+ 456)              # 11. should flag an error: unbalanced infix `+`
+--------------^
+Parse stack: opsTail, opExpr, operatorExpr, actualCommas, tuple, klammer, bracketTerm, term, opExpr, operatorExpr, actualSpace, actualSpaces, actualArgs, call, call0, callOrFeatOrThis, term, opExpr, operatorExpr, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
+
+
+--CURDIR--/reg_issue6709_unbalanced_infix.fz:81:16: error 12: Syntax error: infix operator '+' appears to be prefix operator.
+    say (123.0 +456)              # 12. should flag an error: unbalanced infix `+`
+---------------^
+Whitespace before this operator suggests that 
+it was not intended as an infix operator. 
+To fix this, you may try to insert white space after the operator at --CURDIR--/reg_issue6709_unbalanced_infix.fz:81:17:
+    say (123.0 +456)              # 12. should flag an error: unbalanced infix `+`
+----------------^
+Parse stack: opsTail, opExpr, operatorExpr, actualCommas, tuple, klammer, bracketTerm, term, opExpr, operatorExpr, actualSpace, actualSpaces, actualArgs, call, call0, callOrFeatOrThis, term, opExpr, operatorExpr, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
+
+
+--CURDIR--/reg_issue6709_unbalanced_infix.fz:82:11: error 13: Syntax error: infix operator '-' appears to be postfix operator.
+    say (a- b)                    # 13. should flag an error: unbalanced infix `-`
+----------^
+Whitespace after this operator suggests that 
+it was not intended as an infix operator. 
+To fix this, you may try to insert white space before the operator at --CURDIR--/reg_issue6709_unbalanced_infix.fz:82:11:
+    say (a- b)                    # 13. should flag an error: unbalanced infix `-`
+----------^
+Parse stack: opsTail, opExpr, operatorExpr, actualCommas, tuple, klammer, bracketTerm, term, opExpr, operatorExpr, actualSpace, actualSpaces, actualArgs, call, call0, callOrFeatOrThis, term, opExpr, operatorExpr, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
+
+
+--CURDIR--/reg_issue6709_unbalanced_infix.fz:83:11: error 14: Syntax error: infix operator '--' appears to be postfix operator.
+    say (a-- b)                   # 14. should flag an error: unbalanced infix `--`
+----------^^
+Whitespace after this operator suggests that 
+it was not intended as an infix operator. 
+To fix this, you may try to insert white space before the operator at --CURDIR--/reg_issue6709_unbalanced_infix.fz:83:11:
+    say (a-- b)                   # 14. should flag an error: unbalanced infix `--`
+----------^
+Parse stack: opsTail, opExpr, operatorExpr, actualCommas, tuple, klammer, bracketTerm, term, opExpr, operatorExpr, actualSpace, actualSpaces, actualArgs, call, call0, callOrFeatOrThis, term, opExpr, operatorExpr, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
+
+
+--CURDIR--/reg_issue6709_unbalanced_infix.fz:90:18: error 15: Syntax error: infix operator '||' appears to be postfix operator.
+    chck ($x2="6"|| $x1="6")      # 15. should flag an error: unbalanced infix `||`
+-----------------^^
+Whitespace after this operator suggests that 
+it was not intended as an infix operator. 
+To fix this, you may try to insert white space before the operator at --CURDIR--/reg_issue6709_unbalanced_infix.fz:90:18:
+    chck ($x2="6"|| $x1="6")      # 15. should flag an error: unbalanced infix `||`
+-----------------^
+Parse stack: opsTail, opExpr, operatorExpr, actualCommas, tuple, klammer, bracketTerm, term, opExpr, operatorExpr, actualSpace, actualSpaces, actualArgs, call, call0, callOrFeatOrThis, term, opExpr, operatorExpr, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
+
+
+--CURDIR--/reg_issue6709_unbalanced_infix.fz:98:98: error 16: Syntax error: infix operator '-' appears to be postfix operator.
+                                                                  : ignore_last_buffer_index.get)- 1     # 16. should flag an error: unbalanced infix `-`
+-------------------------------------------------------------------------------------------------^
+Whitespace after this operator suggests that 
+it was not intended as an infix operator. 
+To fix this, you may try to insert white space before the operator at --CURDIR--/reg_issue6709_unbalanced_infix.fz:98:98:
+                                                                  : ignore_last_buffer_index.get)- 1     # 16. should flag an error: unbalanced infix `-`
+-------------------------------------------------------------------------------------------------^
+Parse stack: opsTail, opExpr, operatorExpr, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
+
+
+--CURDIR--/reg_issue6709_unbalanced_infix.fz:104:20: error 17: Syntax error: infix operator '+' appears to be postfix operator.
+     "  count  |\n"+              # 17. should flag an error: unbalanced infix `+`
+-------------------^
+Whitespace after this operator suggests that 
+it was not intended as an infix operator. 
+To fix this, you may try to insert white space before the operator at --CURDIR--/reg_issue6709_unbalanced_infix.fz:104:20:
+     "  count  |\n"+              # 17. should flag an error: unbalanced infix `+`
+-------------------^
+Parse stack: opsTail, opExpr, operatorExpr, actualCommas, tuple, klammer, bracketTerm, term, opExpr, operatorExpr, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
+
+17 errors.
