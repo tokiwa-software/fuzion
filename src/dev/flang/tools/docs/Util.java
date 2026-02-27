@@ -33,15 +33,17 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
 import dev.flang.tools.FuzionHome;
+import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 
-public class Util
+public class Util extends ANY
 {
 
   /**
@@ -71,7 +73,7 @@ public class Util
         return Html.processComment(FuzionConstants.UNIVERSE_NAME, universeComment());
       }
     // arguments that are defined on same line as feature have no comments.
-    if (af.isArgument() && af.pos().line() == af.outer().pos().line())
+    if (af.isArgument() && af.pos().line() == af.outer().pos().line() || af.isTypeParameter())
       {
         return "";
       }
@@ -83,6 +85,23 @@ public class Util
       {
         commentLines.add(af.pos()._sourceFile.line(line));
         line = line - 1;
+      }
+
+    if (commentLines.stream().allMatch(l -> l.isBlank()))
+      {
+        if (!af.redefines().isEmpty())
+          {
+            return af.redefines().stream().flatMap(r ->
+              {
+                var c = commentOf(r);
+                return c.isBlank()
+                  ? Stream.empty()
+                  : Stream.of("from '" + r.qualifiedName() + "': " +  c);
+              }
+            )
+            .collect(Collectors.joining("<br />"));
+          }
+        say_err("Warning: No comment found for " + af.qualifiedName());
       }
 
     Collections.reverse(commentLines);
