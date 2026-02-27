@@ -178,7 +178,7 @@ is
       #
       expanding_array.this
 
-    else if s.finite.is_no_or_unknown || count < s.count
+    else if s.finite.is_no
 
       # use lazy version in case `s` might be infinite, since then code below would not
       # terminate, if `s` is larger than `this`, which would avoid quadratic performance
@@ -188,6 +188,26 @@ is
       #      r := (expanding_array i32).empty, [i].concat r
       #
       as_list.concat_list s.as_list
+
+    # NYI: UNDER DEVELOPMENT: maybe:
+    # else if count*10 < s.count
+    else if count < s.count
+
+      #
+      # count < s.count to avoid poor (quadratic) performance
+      # if a small sequence is added in front of a
+      # larger one repeatedly as in this code:
+      #
+      #     for
+      #       s := (Sequence i32).empty, [i].concat s
+      #       i in 1..n
+      #     else
+      #       say s
+      #
+
+      container.Finger_Tree T .empty
+        .concat expanding_array.this
+        .concat s
 
     else
 

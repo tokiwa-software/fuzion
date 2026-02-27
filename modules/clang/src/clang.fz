@@ -59,43 +59,121 @@ clang_equalCursors(cx1, cx2 CXCursor) u32 => native
 clang_getNullCursor CXCursor => native
 clang_Cursor_isNull(crsr CXCursor) i32 => native
 
+
+# clang constants definitions
+
+# CXChildVisit_Recurse i32 => 2
+CXChildVisit_Continue i32 => 1
+CXCursor_StructDecl => 2
+CXCursor_UnionDecl => 3
+CXCursor_EnumDecl => 5
+CXCursor_FieldDecl => 6
+CXCursor_FunctionDecl i32 => 8
+
+
 # helpers
 
+# copy a CXString into a fuzion String
+# then dispose the CXString
+#
 cx_string_to_string(cx_str CXString) =>
   utf8_bytes := (ffi.from_native_string (clang_getCString cx_str)).utf8
   # force copying the bytes to make sure String is valid
   # even after clang_disposeString
-  String.from ((array u8).new utf8_bytes.count (i -> utf8_bytes[i]))
+  res := String.from ((array u8).new utf8_bytes.count (i -> utf8_bytes[i]))
+  clang_disposeString cx_str
+  res
 
 
+# clang -- unit feature to group clang related features
+#
 public clang is
 
-  # clang constants definitions
 
-  # CXChildVisit_Recurse i32 := 2
-  CXChildVisit_Continue i32 := 1
-  CXCursor_FunctionDecl i32 := 8
-
+  # a parsed name,type pair
+  # e.g. the argument of a function or a field in a struct
+  #
+  # NYI: CLEANUP: rename name_type_pair(name, type_)
   public arg(public name, arg_type String) is
-  public function_decl(public name String, public args array arg, public return_type String) is
+    public redef as_string String => "$arg_type $name"
 
-  public parse_header(header_file String, cb (function_decl)->unit) outcome unit =>
+
+  # a parsed function declaration
+  #
+  public function_decl(public name String, public args array clang.arg, public return_type String) is
+
+
+  # a parsed struct declaration
+  #
+  public struct_decl(public name String, public fields array clang.arg) is
+    public redef as_string String =>
+      """
+       struct $name \{
+       {fields.map (f -> "  $f;") .as_string "\n"}
+       \};
+      """
+
+
+  # a parsed union declaration
+  #
+  public union_decl(public name String, public fields array clang.arg) is
+    public redef as_string String =>
+      """
+       union $name \{
+       {fields.map (f -> "  $f;") .as_string "\n"}
+       \};
+      """
+
+
+  # a parsed enum declaration
+  #
+  public enum_decl(public name String) is
+    public redef as_string String =>
+      """
+       enum $name \{\};
+      """
+
+
+  # get the fields of a struct/union
+  #
+  get_fields(crsr CXCursor) =>
+    childs := mut (container.expanding_array clang.arg .empty)
+
+    visitor : Function i32 CXCursor Native_Ref Native_Ref is
+      public redef call(c CXCursor, parent Native_Ref, client_data Native_Ref) i32 =>
+        if CXCursor_FieldDecl = clang_getCursorKind c
+          arg_name := clang_getCursorSpelling c
+          arg_type := clang_getCursorType c
+          arg_type_spelling := clang_getTypeSpelling arg_type
+          childs <- childs.add (clang.arg (cx_string_to_string arg_name) (cx_string_to_string arg_type_spelling))
+        CXChildVisit_Continue
+
+    _ := clang_visitChildren crsr visitor ffi.null
+
+    childs.as_array
+
+
+  # parsed a header file
+  #
+  # results are
+  #
+  public parse_header(header_file String, cb (choice clang.function_decl clang.struct_decl clang.union_decl clang.enum_decl)->unit) outcome unit =>
 
     visitor : Function i32 CXCursor Native_Ref Native_Ref is
       public redef call(crsr CXCursor, parent Native_Ref, client_data Native_Ref) i32 =>
 
         check clang_equalCursors crsr clang_getNullCursor = 0
 
-        if clang_getCursorKind crsr = CXCursor_FunctionDecl
+        ck := clang_getCursorKind crsr
+
+        if ck = CXCursor_FunctionDecl
 
           func_name := clang_getCursorSpelling crsr
           fn := "{cx_string_to_string func_name}"
-          clang_disposeString func_name
 
           return_type := clang_getCursorResultType crsr
           return_type_spelling := clang_getTypeSpelling return_type
           rt := "{cx_string_to_string return_type_spelling}"
-          clang_disposeString return_type_spelling
 
           num_args := clang_Cursor_getNumArguments crsr
 
@@ -106,14 +184,33 @@ public clang is
               arg_type := clang_getCursorType arg
               arg_type_spelling := clang_getTypeSpelling arg_type
 
-              res := arg (cx_string_to_string arg_name) (cx_string_to_string arg_type_spelling)
+              res := clang.arg (cx_string_to_string arg_name) (cx_string_to_string arg_type_spelling)
 
-              clang_disposeString arg_name
-              clang_disposeString arg_type_spelling
 
               res
 
-          cb (function_decl fn args.as_array rt)
+          cb (clang.function_decl fn args.as_array rt)
+
+        else if ck = CXCursor_StructDecl
+
+          name := clang_getCursorSpelling crsr
+          n := "{cx_string_to_string name}"
+          if !n.contains_whitespace
+            cb (clang.struct_decl n (get_fields crsr))
+
+        else if ck = CXCursor_UnionDecl
+
+          name := clang_getCursorSpelling crsr
+          n := "{cx_string_to_string name}"
+          if !n.contains_whitespace
+            cb (clang.union_decl n (get_fields crsr))
+
+        else if ck = CXCursor_EnumDecl
+
+          name := clang_getCursorSpelling crsr
+          n := "{cx_string_to_string name}"
+          if !n.contains_whitespace
+            cb (clang.enum_decl n)
 
 
         CXChildVisit_Continue
