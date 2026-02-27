@@ -53,6 +53,7 @@ clang_disposeString(str CXString) unit => native
 clang_Cursor_getNumArguments(cursor CXCursor) i32 => native
 clang_Cursor_getArgument(cursor CXCursor, idx i32) CXCursor => native
 clang_getCursorType(cursor CXCursor) CXType => native
+clang_getCanonicalType(t CXType) CXType => native
 clang_disposeTranslationUnit(tu Native_Ref) unit => native
 clang_getCString(string CXString) Native_Ref => native
 clang_equalCursors(cx1, cx2 CXCursor) u32 => native
@@ -181,7 +182,7 @@ public clang is
             .map i->
               arg := clang_Cursor_getArgument crsr i
               arg_name := clang_getCursorSpelling arg
-              arg_type := clang_getCursorType arg
+              arg_type := clang_getCanonicalType (clang_getCursorType arg)
               arg_type_spelling := clang_getTypeSpelling arg_type
 
               res := clang.arg (cx_string_to_string arg_name) (cx_string_to_string arg_type_spelling)

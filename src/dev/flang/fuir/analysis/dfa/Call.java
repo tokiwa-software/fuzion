@@ -418,9 +418,38 @@ public class Call extends ANY implements Comparable<Call>, Context
   private Val genericResult()
   {
     var rc = _dfa._fuir.clazzResultClazz(calledClazz());
-    return _dfa._fuir.clazzIsVoidType(rc)
+    return genericResult(rc);
+  }
+
+
+  /**
+   * create an initialized instance for rc
+   * with all fields marked set/written.
+   *
+   * @param rc
+   * @return
+   */
+  private Value genericResult(int rc)
+  {
+    var result = _dfa._fuir.clazzIsVoidType(rc)
       ? null
       : _dfa.newInstance(rc, site(), _context);
+    if (result != null)
+      {
+        for (int i = 0; i < _dfa._fuir.clazzArgCount(rc); i++)
+          {
+            var at = _dfa._fuir.clazzArgClazz(rc, i);
+            // no infinite recursion for e.g.: u64(val u64)
+            if (rc != at)
+              {
+                result.setField(
+                  _dfa, _dfa._fuir.clazzArg(rc, i),
+                  genericResult(_dfa._fuir.clazzArgClazz(rc, i))
+                );
+              }
+          }
+      }
+    return result;
   }
 
 
