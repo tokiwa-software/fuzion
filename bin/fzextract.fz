@@ -37,7 +37,7 @@ string_option : option String is
 
 # map a type from the C code to a fuzion type
 #
-to_fuzion_type(ct String, is_result_type bool) string_option =>
+to_fuzion_type(ct String, is_result_type_or_value_type_arg bool) string_option =>
 
   # remove any type qualifiers
   c_type := ct
@@ -58,7 +58,7 @@ to_fuzion_type(ct String, is_result_type bool) string_option =>
     # .replace "_Atomic"
 
   m := container.map_of [
-    ("void", "unit"),
+    ("void", "u8"),
     ("float", "f32"),
     ("_Float32", "f32"),
     ("double", "f64"),
@@ -90,10 +90,12 @@ to_fuzion_type(ct String, is_result_type bool) string_option =>
     ("uint32_t","u32")
   ]
 
-  if m[c_type].ok
+  if is_result_type_or_value_type_arg && c_type = "void"
+    "unit"
+  else if m[c_type].ok
     "{m[c_type].get} /* from: {c_type} */"
   else if c_type.contains "*" || c_type.contains "["
-    if is_result_type || c_type.contains "**"
+    if is_result_type_or_value_type_arg || c_type.contains "**"
       # NYI: UNDER DEVELOPMENT: support for more complex result types?
       "Native_Ref /* from: {c_type} */"
     else if m[(c_type.split " ")[0]].ok
@@ -104,7 +106,7 @@ to_fuzion_type(ct String, is_result_type bool) string_option =>
       "Native_Ref /* from: {c_type} */"
   else if c_type.starts_with "enum "
     "u32 /* from: {c_type} */"
-  else if !is_result_type && known_structs.has c_type
+  else if !is_result_type_or_value_type_arg && known_structs.has c_type
     "c.{c_type}"
   else if known_enums.has c_type
     "i32 /* from enum {c_type} */"
@@ -169,7 +171,7 @@ match {
           .as_string ", "
         function_declarations <- function_declarations.add "  {if valid then "" else "# "}module {to_fuzion_name f_decl.name}{if args_str.is_empty then "" else "($args_str)"} {to_fuzion_type f_decl.return_type true} => native"
       s_decl clang.struct_decl =>
-        if (s_decl.fields ∀ (field -> !(to_fuzion_type field.arg_type false).is_nil))
+        if (s_decl.fields ∀ (field -> !(to_fuzion_type field.arg_type true).is_nil))
           known_structs.put s_decl.name s_decl
       clang.union_decl =>
       e_decl clang.enum_decl =>
@@ -190,7 +192,7 @@ match {
 
 
     known_structs.values.for_each s_decl->
-      say <| "  module {s_decl.name}{s_decl.fields.is_empty ? "" : "("}{s_decl.fields.map (f -> "module {to_fuzion_name f.name} {to_fuzion_type f.arg_type false}") .as_string ", "}{s_decl.fields.is_empty ? "" : ")"} is"
+      say <| "  module {s_decl.name}{s_decl.fields.is_empty ? "" : "("}{s_decl.fields.map (f -> "module {to_fuzion_name f.name} {to_fuzion_type f.arg_type true}") .as_string ", "}{s_decl.fields.is_empty ? "" : ")"} is"
 
     say ""
 

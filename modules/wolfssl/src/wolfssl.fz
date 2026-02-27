@@ -23,11 +23,9 @@
 
 # NYI: UNDER DEVELOPMENT: these are unsupported by fzextract
 #
-wolfSSL_write(ssl Native_Ref, data mutate.array u8, sz i32) i32 => native
-wolfSSL_read(ssl Native_Ref, data mutate.array u8, sz i32) i32 => native
 wolfSSL_CTX_SetIORecv(F type : Function i32 Native_Ref Native_Ref i32 Native_Ref, ctx Native_Ref, cb F) unit => native
 wolfSSL_CTX_SetIOSend(F type : Function i32 Native_Ref Native_Ref i32 Native_Ref, ctx Native_Ref, cb F) unit => native
-memcpy(dest Native_Ref, src mutate.array u8, sz i32) Native_Ref => native
+memcpy(dest Native_Ref, src mutate.array u8, sz i64) Native_Ref => native
 
 
 # NYI: UNDER DEVELOPMENT: define effect
@@ -43,7 +41,7 @@ public wolfssl(T type, LM type : mutate, LM2 type: mutate, code ()->T) T ! LM, L
         s Sequence =>
           (io.buffered LM).reader.env.discard sz
           x := (min sz s.count)
-          _ := memcpy buf (mutate.array u8 .from_Sequence s) x
+          _ := memcpy buf (mutate.array u8 .from_Sequence s) x.as_i64
           x
         outcome => exit 1
 
@@ -71,7 +69,7 @@ public wolfssl(T type, LM type : mutate, LM2 type: mutate, code ()->T) T ! LM, L
 
     public redef read(count i32) choice (Sequence u8) io.end_of_file error =>
       arr := mutate.array u8 .new count.as_i64 0
-      res := wolfSSL_read ssl arr count
+      res := c.wolfSSL_read ssl arr count
       if res = -1
         error "error reading from ssl ($res) {c.wolfSSL_get_error ssl res}"
       else if res = 0
@@ -83,7 +81,7 @@ public wolfssl(T type, LM type : mutate, LM2 type: mutate, code ()->T) T ! LM, L
   wolf_ssl_writer_handler : io.Write_Handler is
 
     public redef write(b Sequence u8) outcome unit =>
-      res := wolfSSL_write ssl (mutate.array u8 .from_Sequence b) b.count
+      res := c.wolfSSL_write ssl (mutate.array u8 .from_Sequence b) b.count
       if res <= 0
         error "error writing to ssl connection ($res) {c.wolfSSL_get_error ssl res}"
 

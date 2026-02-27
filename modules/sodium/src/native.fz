@@ -6,33 +6,30 @@ module c is
 
 ################################### structs ####################################
 
-  module crypto_aead_aes256gcm_state_(module opaque mutate.array u32 /* from: unsigned char[512] */) is
+  module crypto_aead_aes256gcm_state_(module opaque Native_Ref /* from: unsigned char[512] */) is
   module __pthread_internal_list(module __prev Native_Ref /* from: struct __pthread_internal_list * */, module __next Native_Ref /* from: struct __pthread_internal_list * */) is
   module _IO_marker is
   module _IO_codecvt is
   module _IO_FILE is
   module _IO_cookie_io_functions_t(module read Native_Ref /* from: cookie_read_function_t * */, module write Native_Ref /* from: cookie_write_function_t * */, module seek Native_Ref /* from: cookie_seek_function_t * */, module close Native_Ref /* from: cookie_close_function_t * */) is
-  module __fsid_t(module __val mutate.array i32 /* from: int[2] */) is
+  module __fsid_t(module __val Native_Ref /* from: int[2] */) is
   module _IO_wide_data is
   module __once_flag(module __data i32 /* from: int */) is
-  module __pthread_rwlock_arch_t(module __readers u32 /* from: unsigned int */, module __writers u32 /* from: unsigned int */, module __wrphase_futex u32 /* from: unsigned int */, module __writers_futex u32 /* from: unsigned int */, module __pad3 u32 /* from: unsigned int */, module __pad4 u32 /* from: unsigned int */, module __cur_writer i32 /* from: int */, module __shared i32 /* from: int */, module __rwelision i8 /* from: signed char */, module __pad1 mutate.array u32 /* from: unsigned char[7] */, module __pad2 u64 /* from: unsigned long */, module __flags u32 /* from: unsigned int */) is
+  module __pthread_rwlock_arch_t(module __readers u32 /* from: unsigned int */, module __writers u32 /* from: unsigned int */, module __wrphase_futex u32 /* from: unsigned int */, module __writers_futex u32 /* from: unsigned int */, module __pad3 u32 /* from: unsigned int */, module __pad4 u32 /* from: unsigned int */, module __cur_writer i32 /* from: int */, module __shared i32 /* from: int */, module __rwelision i8 /* from: signed char */, module __pad1 Native_Ref /* from: unsigned char[7] */, module __pad2 u64 /* from: unsigned long */, module __flags u32 /* from: unsigned int */) is
   module __pthread_internal_slist(module __next Native_Ref /* from: struct __pthread_internal_slist * */) is
-  module __sigset_t(module __val mutate.array u32 /* from: unsigned long[16] */) is
-  module crypto_hash_sha512_state(module state mutate.array u64 /* from: uint64_t[8] */, module count mutate.array u64 /* from: uint64_t[2] */, module buf mutate.array u8 /* from: uint8_t[128] */) is
-  module crypto_auth_hmacsha512_state(module ictx c.crypto_hash_sha512_state, module octx c.crypto_hash_sha512_state) is
-  module crypto_auth_hmacsha256_state(module ictx c.crypto_hash_sha256_state, module octx c.crypto_hash_sha256_state) is
-  module crypto_hash_sha256_state(module state mutate.array u32 /* from: uint32_t[8] */, module count u64 /* from: uint64_t */, module buf mutate.array u8 /* from: uint8_t[64] */) is
-  module crypto_generichash_blake2b_state(module opaque mutate.array u32 /* from: unsigned char[384] */) is
-  module ldiv_t(module quot i64 /* from: long */, module rem i64 /* from: long */) is
+  module __sigset_t(module __val Native_Ref /* from: unsigned long[16] */) is
+  module drand48_data(module __x Native_Ref /* from: unsigned short[3] */, module __old_x Native_Ref /* from: unsigned short[3] */, module __c u16 /* from: unsigned short */, module __init u16 /* from: unsigned short */, module __a u64 /* from: unsigned long long */) is
+  module crypto_hash_sha512_state(module state Native_Ref /* from: uint64_t[8] */, module count Native_Ref /* from: uint64_t[2] */, module buf Native_Ref /* from: uint8_t[128] */) is
+  module crypto_hash_sha256_state(module state Native_Ref /* from: uint32_t[8] */, module count u64 /* from: uint64_t */, module buf Native_Ref /* from: uint8_t[64] */) is
+  module crypto_generichash_blake2b_state(module opaque Native_Ref /* from: unsigned char[384] */) is
+  module crypto_secretstream_xchacha20poly1305_state(module k Native_Ref /* from: unsigned char[32] */, module nonce Native_Ref /* from: unsigned char[12] */, module _pad Native_Ref /* from: unsigned char[8] */) is
+  module crypto_onetimeauth_poly1305_state(module opaque Native_Ref /* from: unsigned char[256] */) is
   module div_t(module quot i32 /* from: int */, module rem i32 /* from: int */) is
-  module crypto_secretstream_xchacha20poly1305_state(module k mutate.array u32 /* from: unsigned char[32] */, module nonce mutate.array u32 /* from: unsigned char[12] */, module _pad mutate.array u32 /* from: unsigned char[8] */) is
-  module crypto_onetimeauth_poly1305_state(module opaque mutate.array u32 /* from: unsigned char[256] */) is
-  module crypto_sign_ed25519ph_state(module hs c.crypto_hash_sha512_state) is
-  module drand48_data(module __x mutate.array u32 /* from: unsigned short[3] */, module __old_x mutate.array u32 /* from: unsigned short[3] */, module __c u16 /* from: unsigned short */, module __init u16 /* from: unsigned short */, module __a u64 /* from: unsigned long long */) is
+  module ldiv_t(module quot i64 /* from: long */, module rem i64 /* from: long */) is
   module fd_set(module __fds_bits Native_Ref /* from: __fd_mask[16] */) is
-  module random_data(module fptr mutate.array i32 /* from: int32_t * */, module rptr mutate.array i32 /* from: int32_t * */, module state mutate.array i32 /* from: int32_t * */, module rand_type i32 /* from: int */, module rand_deg i32 /* from: int */, module rand_sep i32 /* from: int */, module end_ptr mutate.array i32 /* from: int32_t * */) is
+  module random_data(module fptr Native_Ref /* from: int32_t * */, module rptr Native_Ref /* from: int32_t * */, module state Native_Ref /* from: int32_t * */, module rand_type i32 /* from: int */, module rand_deg i32 /* from: int */, module rand_sep i32 /* from: int */, module end_ptr Native_Ref /* from: int32_t * */) is
   module lldiv_t(module quot i64 /* from: long long */, module rem i64 /* from: long long */) is
-  module randombytes_implementation(module implementation_name mutate.array i8 /* from: char *(*)(void) */, module random mutate.array u32 /* from: uint32_t (*)(void) */, module stir mutate.array unit /* from: void (*)(void) */, module uniform mutate.array u32 /* from: uint32_t (*)(uint32_t) */, module buf mutate.array unit /* from: void (*)(void *, size_t) */, module close mutate.array i32 /* from: int (*)(void) */) is
+  module randombytes_implementation(module implementation_name Native_Ref /* from: char *(*)(void) */, module random Native_Ref /* from: uint32_t (*)(void) */, module stir Native_Ref /* from: void (*)(void) */, module uniform Native_Ref /* from: uint32_t (*)(uint32_t) */, module buf Native_Ref /* from: void (*)(void *, size_t) */, module close Native_Ref /* from: int (*)(void) */) is
 
 ############################ function declarations #############################
 
@@ -45,9 +42,9 @@ module c is
   # module __uint64_identity(__x *** unknown type ***) *** unknown type *** => native
   # module arc4random *** unknown type *** => native
   # module arc4random_uniform(__upper_bound *** unknown type ***) *** unknown type *** => native
-  # module bsearch(__key mutate.array unit /* from: void * */, __base mutate.array unit /* from: void * */, __nmemb i64 /* from: size_t */, __size i64 /* from: size_t */, __compar *** unknown type ***) Native_Ref /* from: void * */ => native
+  # module bsearch(__key mutate.array u8 /* from: void * */, __base mutate.array u8 /* from: void * */, __nmemb i64 /* from: size_t */, __size i64 /* from: size_t */, __compar *** unknown type ***) Native_Ref /* from: void * */ => native
   # module div(__numer i32 /* from: int */, __denom i32 /* from: int */) *** unknown type *** => native
-  # module fopencookie(__magic_cookie mutate.array unit /* from: void * */, __modes mutate.array i8 /* from: char * */, __io_funcs *** unknown type ***) Native_Ref /* from: FILE * */ => native
+  # module fopencookie(__magic_cookie mutate.array u8 /* from: void * */, __modes mutate.array i8 /* from: char * */, __io_funcs *** unknown type ***) Native_Ref /* from: FILE * */ => native
   # module fseeko(__stream Native_Ref /* from: FILE * */, __off *** unknown type ***, __whence i32 /* from: int */) i32 /* from: int */ => native
   # module ftello(__stream Native_Ref /* from: FILE * */) *** unknown type *** => native
   # module getdelim(__lineptr Native_Ref /* from: char ** */, __n mutate.array i64 /* from: size_t * */, __delimiter i32 /* from: int */, __stream Native_Ref /* from: FILE * */) *** unknown type *** => native
@@ -59,7 +56,7 @@ module c is
   # module qfcvt(__value *** unknown type ***, __ndigit i32 /* from: int */, __decpt mutate.array i32 /* from: int * */, __sign mutate.array i32 /* from: int * */) Native_Ref /* from: char * */ => native
   # module qfcvt_r(__value *** unknown type ***, __ndigit i32 /* from: int */, __decpt mutate.array i32 /* from: int * */, __sign mutate.array i32 /* from: int * */, __buf mutate.array i8 /* from: char * */, __len i64 /* from: size_t */) i32 /* from: int */ => native
   # module qgcvt(__value *** unknown type ***, __ndigit i32 /* from: int */, __buf mutate.array i8 /* from: char * */) Native_Ref /* from: char * */ => native
-  # module qsort(__base mutate.array unit /* from: void * */, __nmemb i64 /* from: size_t */, __size i64 /* from: size_t */, __compar *** unknown type ***) unit /* from: void */ => native
+  # module qsort(__base mutate.array u8 /* from: void * */, __nmemb i64 /* from: size_t */, __size i64 /* from: size_t */, __compar *** unknown type ***) unit => native
   # module strtold(__nptr mutate.array i8 /* from: char * */, __endptr Native_Ref /* from: char ** */) *** unknown type *** => native
   # module vasprintf(__ptr Native_Ref /* from: char ** */, __f mutate.array i8 /* from: char * */, __arg *** unknown type ***) i32 /* from: int */ => native
   # module vdprintf(__fd i32 /* from: int */, __fmt mutate.array i8 /* from: char * */, __arg *** unknown type ***) i32 /* from: int */ => native
@@ -71,7 +68,7 @@ module c is
   # module vsprintf(__s mutate.array i8 /* from: char * */, __format mutate.array i8 /* from: char * */, __arg *** unknown type ***) i32 /* from: int */ => native
   # module vsscanf(__s mutate.array i8 /* from: char * */, __format mutate.array i8 /* from: char * */, __arg *** unknown type ***) i32 /* from: int */ => native
   # module wctomb(__s mutate.array i8 /* from: char * */, __wchar *** unknown type ***) i32 /* from: int */ => native
-  module _Exit(__status i32 /* from: int */) unit /* from: void */ => native
+  module _Exit(__status i32 /* from: int */) unit => native
   module __asprintf(__ptr Native_Ref /* from: char ** */, __fmt mutate.array i8 /* from: char * */) i32 /* from: int */ => native
   module __ctype_get_mb_cur_max i64 /* from: size_t */ => native
   module __overflow(_ Native_Ref /* from: FILE * */, _ i32 /* from: int */) i32 /* from: int */ => native
@@ -79,22 +76,22 @@ module c is
   module _sodium_alloc_init i32 /* from: int */ => native
   module _sodium_runtime_get_cpu_features i32 /* from: int */ => native
   module a64l(__s mutate.array i8 /* from: char * */) i64 /* from: long */ => native
-  module abort unit /* from: void */ => native
+  module abort unit => native
   module abs(__x i32 /* from: int */) i32 /* from: int */ => native
   module aligned_alloc(__alignment i64 /* from: size_t */, __size i64 /* from: size_t */) Native_Ref /* from: void * */ => native
   module alloca(__size i64 /* from: size_t */) Native_Ref /* from: void * */ => native
-  module arc4random_buf(__buf mutate.array unit /* from: void * */, __size i64 /* from: size_t */) unit /* from: void */ => native
+  module arc4random_buf(__buf mutate.array u8 /* from: void * */, __size i64 /* from: size_t */) unit => native
   module asprintf(__ptr Native_Ref /* from: char ** */, __fmt mutate.array i8 /* from: char * */) i32 /* from: int */ => native
-  module at_quick_exit(__func mutate.array unit /* from: void (*)(void) */) i32 /* from: int */ => native
-  module atexit(__func mutate.array unit /* from: void (*)(void) */) i32 /* from: int */ => native
+  module at_quick_exit(__func mutate.array u8 /* from: void (*)(void) */) i32 /* from: int */ => native
+  module atexit(__func mutate.array u8 /* from: void (*)(void) */) i32 /* from: int */ => native
   module atof(__nptr mutate.array i8 /* from: char * */) f64 /* from: double */ => native
   module atoi(__nptr mutate.array i8 /* from: char * */) i32 /* from: int */ => native
   module atol(__nptr mutate.array i8 /* from: char * */) i64 /* from: long */ => native
   module atoll(__nptr mutate.array i8 /* from: char * */) i64 /* from: long long */ => native
   module calloc(__nmemb i64 /* from: size_t */, __size i64 /* from: size_t */) Native_Ref /* from: void * */ => native
   module clearenv i32 /* from: int */ => native
-  module clearerr(__stream Native_Ref /* from: FILE * */) unit /* from: void */ => native
-  module clearerr_unlocked(__stream Native_Ref /* from: FILE * */) unit /* from: void */ => native
+  module clearerr(__stream Native_Ref /* from: FILE * */) unit => native
+  module clearerr_unlocked(__stream Native_Ref /* from: FILE * */) unit => native
   module crypto_aead_aes256gcm_abytes i64 /* from: size_t */ => native
   module crypto_aead_aes256gcm_beforenm(ctx_ Native_Ref /* from: crypto_aead_aes256gcm_state * */, k mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
   module crypto_aead_aes256gcm_decrypt(m mutate.array u32 /* from: unsigned char * */, mlen_p mutate.array u32 /* from: unsigned long long * */, nsec mutate.array u32 /* from: unsigned char * */, c mutate.array u32 /* from: unsigned char * */, clen u64 /* from: unsigned long long */, ad mutate.array u32 /* from: unsigned char * */, adlen u64 /* from: unsigned long long */, npub mutate.array u32 /* from: unsigned char * */, k mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
@@ -107,7 +104,7 @@ module c is
   module crypto_aead_aes256gcm_encrypt_detached_afternm(c mutate.array u32 /* from: unsigned char * */, mac mutate.array u32 /* from: unsigned char * */, maclen_p mutate.array u32 /* from: unsigned long long * */, m mutate.array u32 /* from: unsigned char * */, mlen u64 /* from: unsigned long long */, ad mutate.array u32 /* from: unsigned char * */, adlen u64 /* from: unsigned long long */, nsec mutate.array u32 /* from: unsigned char * */, npub mutate.array u32 /* from: unsigned char * */, ctx_ Native_Ref /* from: crypto_aead_aes256gcm_state * */) i32 /* from: int */ => native
   module crypto_aead_aes256gcm_is_available i32 /* from: int */ => native
   module crypto_aead_aes256gcm_keybytes i64 /* from: size_t */ => native
-  module crypto_aead_aes256gcm_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit /* from: void */ => native
+  module crypto_aead_aes256gcm_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit => native
   module crypto_aead_aes256gcm_messagebytes_max i64 /* from: size_t */ => native
   module crypto_aead_aes256gcm_npubbytes i64 /* from: size_t */ => native
   module crypto_aead_aes256gcm_nsecbytes i64 /* from: size_t */ => native
@@ -123,12 +120,12 @@ module c is
   module crypto_aead_chacha20poly1305_ietf_encrypt(c mutate.array u32 /* from: unsigned char * */, clen_p mutate.array u32 /* from: unsigned long long * */, m mutate.array u32 /* from: unsigned char * */, mlen u64 /* from: unsigned long long */, ad mutate.array u32 /* from: unsigned char * */, adlen u64 /* from: unsigned long long */, nsec mutate.array u32 /* from: unsigned char * */, npub mutate.array u32 /* from: unsigned char * */, k mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
   module crypto_aead_chacha20poly1305_ietf_encrypt_detached(c mutate.array u32 /* from: unsigned char * */, mac mutate.array u32 /* from: unsigned char * */, maclen_p mutate.array u32 /* from: unsigned long long * */, m mutate.array u32 /* from: unsigned char * */, mlen u64 /* from: unsigned long long */, ad mutate.array u32 /* from: unsigned char * */, adlen u64 /* from: unsigned long long */, nsec mutate.array u32 /* from: unsigned char * */, npub mutate.array u32 /* from: unsigned char * */, k mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
   module crypto_aead_chacha20poly1305_ietf_keybytes i64 /* from: size_t */ => native
-  module crypto_aead_chacha20poly1305_ietf_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit /* from: void */ => native
+  module crypto_aead_chacha20poly1305_ietf_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit => native
   module crypto_aead_chacha20poly1305_ietf_messagebytes_max i64 /* from: size_t */ => native
   module crypto_aead_chacha20poly1305_ietf_npubbytes i64 /* from: size_t */ => native
   module crypto_aead_chacha20poly1305_ietf_nsecbytes i64 /* from: size_t */ => native
   module crypto_aead_chacha20poly1305_keybytes i64 /* from: size_t */ => native
-  module crypto_aead_chacha20poly1305_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit /* from: void */ => native
+  module crypto_aead_chacha20poly1305_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit => native
   module crypto_aead_chacha20poly1305_messagebytes_max i64 /* from: size_t */ => native
   module crypto_aead_chacha20poly1305_npubbytes i64 /* from: size_t */ => native
   module crypto_aead_chacha20poly1305_nsecbytes i64 /* from: size_t */ => native
@@ -138,7 +135,7 @@ module c is
   module crypto_aead_xchacha20poly1305_ietf_encrypt(c mutate.array u32 /* from: unsigned char * */, clen_p mutate.array u32 /* from: unsigned long long * */, m mutate.array u32 /* from: unsigned char * */, mlen u64 /* from: unsigned long long */, ad mutate.array u32 /* from: unsigned char * */, adlen u64 /* from: unsigned long long */, nsec mutate.array u32 /* from: unsigned char * */, npub mutate.array u32 /* from: unsigned char * */, k mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
   module crypto_aead_xchacha20poly1305_ietf_encrypt_detached(c mutate.array u32 /* from: unsigned char * */, mac mutate.array u32 /* from: unsigned char * */, maclen_p mutate.array u32 /* from: unsigned long long * */, m mutate.array u32 /* from: unsigned char * */, mlen u64 /* from: unsigned long long */, ad mutate.array u32 /* from: unsigned char * */, adlen u64 /* from: unsigned long long */, nsec mutate.array u32 /* from: unsigned char * */, npub mutate.array u32 /* from: unsigned char * */, k mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
   module crypto_aead_xchacha20poly1305_ietf_keybytes i64 /* from: size_t */ => native
-  module crypto_aead_xchacha20poly1305_ietf_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit /* from: void */ => native
+  module crypto_aead_xchacha20poly1305_ietf_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit => native
   module crypto_aead_xchacha20poly1305_ietf_messagebytes_max i64 /* from: size_t */ => native
   module crypto_aead_xchacha20poly1305_ietf_npubbytes i64 /* from: size_t */ => native
   module crypto_aead_xchacha20poly1305_ietf_nsecbytes i64 /* from: size_t */ => native
@@ -149,7 +146,7 @@ module c is
   module crypto_auth_hmacsha256_final(state Native_Ref /* from: crypto_auth_hmacsha256_state * */, out mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
   module crypto_auth_hmacsha256_init(state Native_Ref /* from: crypto_auth_hmacsha256_state * */, key mutate.array u32 /* from: unsigned char * */, keylen i64 /* from: size_t */) i32 /* from: int */ => native
   module crypto_auth_hmacsha256_keybytes i64 /* from: size_t */ => native
-  module crypto_auth_hmacsha256_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit /* from: void */ => native
+  module crypto_auth_hmacsha256_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit => native
   module crypto_auth_hmacsha256_statebytes i64 /* from: size_t */ => native
   module crypto_auth_hmacsha256_update(state Native_Ref /* from: crypto_auth_hmacsha256_state * */, in_ mutate.array u32 /* from: unsigned char * */, inlen u64 /* from: unsigned long long */) i32 /* from: int */ => native
   module crypto_auth_hmacsha256_verify(h mutate.array u32 /* from: unsigned char * */, in_ mutate.array u32 /* from: unsigned char * */, inlen u64 /* from: unsigned long long */, k mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
@@ -159,7 +156,7 @@ module c is
   module crypto_auth_hmacsha512256_final(state Native_Ref /* from: crypto_auth_hmacsha512256_state * */, out mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
   module crypto_auth_hmacsha512256_init(state Native_Ref /* from: crypto_auth_hmacsha512256_state * */, key mutate.array u32 /* from: unsigned char * */, keylen i64 /* from: size_t */) i32 /* from: int */ => native
   module crypto_auth_hmacsha512256_keybytes i64 /* from: size_t */ => native
-  module crypto_auth_hmacsha512256_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit /* from: void */ => native
+  module crypto_auth_hmacsha512256_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit => native
   module crypto_auth_hmacsha512256_statebytes i64 /* from: size_t */ => native
   module crypto_auth_hmacsha512256_update(state Native_Ref /* from: crypto_auth_hmacsha512256_state * */, in_ mutate.array u32 /* from: unsigned char * */, inlen u64 /* from: unsigned long long */) i32 /* from: int */ => native
   module crypto_auth_hmacsha512256_verify(h mutate.array u32 /* from: unsigned char * */, in_ mutate.array u32 /* from: unsigned char * */, inlen u64 /* from: unsigned long long */, k mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
@@ -167,12 +164,12 @@ module c is
   module crypto_auth_hmacsha512_final(state Native_Ref /* from: crypto_auth_hmacsha512_state * */, out mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
   module crypto_auth_hmacsha512_init(state Native_Ref /* from: crypto_auth_hmacsha512_state * */, key mutate.array u32 /* from: unsigned char * */, keylen i64 /* from: size_t */) i32 /* from: int */ => native
   module crypto_auth_hmacsha512_keybytes i64 /* from: size_t */ => native
-  module crypto_auth_hmacsha512_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit /* from: void */ => native
+  module crypto_auth_hmacsha512_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit => native
   module crypto_auth_hmacsha512_statebytes i64 /* from: size_t */ => native
   module crypto_auth_hmacsha512_update(state Native_Ref /* from: crypto_auth_hmacsha512_state * */, in_ mutate.array u32 /* from: unsigned char * */, inlen u64 /* from: unsigned long long */) i32 /* from: int */ => native
   module crypto_auth_hmacsha512_verify(h mutate.array u32 /* from: unsigned char * */, in_ mutate.array u32 /* from: unsigned char * */, inlen u64 /* from: unsigned long long */, k mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
   module crypto_auth_keybytes i64 /* from: size_t */ => native
-  module crypto_auth_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit /* from: void */ => native
+  module crypto_auth_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit => native
   module crypto_auth_primitive Native_Ref /* from: char * */ => native
   module crypto_auth_verify(h mutate.array u32 /* from: unsigned char * */, in_ mutate.array u32 /* from: unsigned char * */, inlen u64 /* from: unsigned long long */, k mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
   module crypto_box(c mutate.array u32 /* from: unsigned char * */, m mutate.array u32 /* from: unsigned char * */, mlen u64 /* from: unsigned long long */, n mutate.array u32 /* from: unsigned char * */, pk mutate.array u32 /* from: unsigned char * */, sk mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
@@ -247,15 +244,15 @@ module c is
   module crypto_core_ed25519_hashbytes i64 /* from: size_t */ => native
   module crypto_core_ed25519_is_valid_point(p mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
   module crypto_core_ed25519_nonreducedscalarbytes i64 /* from: size_t */ => native
-  module crypto_core_ed25519_random(p mutate.array u32 /* from: unsigned char * */) unit /* from: void */ => native
-  module crypto_core_ed25519_scalar_add(z mutate.array u32 /* from: unsigned char * */, x mutate.array u32 /* from: unsigned char * */, y mutate.array u32 /* from: unsigned char * */) unit /* from: void */ => native
-  module crypto_core_ed25519_scalar_complement(comp mutate.array u32 /* from: unsigned char * */, s mutate.array u32 /* from: unsigned char * */) unit /* from: void */ => native
+  module crypto_core_ed25519_random(p mutate.array u32 /* from: unsigned char * */) unit => native
+  module crypto_core_ed25519_scalar_add(z mutate.array u32 /* from: unsigned char * */, x mutate.array u32 /* from: unsigned char * */, y mutate.array u32 /* from: unsigned char * */) unit => native
+  module crypto_core_ed25519_scalar_complement(comp mutate.array u32 /* from: unsigned char * */, s mutate.array u32 /* from: unsigned char * */) unit => native
   module crypto_core_ed25519_scalar_invert(recip mutate.array u32 /* from: unsigned char * */, s mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
-  module crypto_core_ed25519_scalar_mul(z mutate.array u32 /* from: unsigned char * */, x mutate.array u32 /* from: unsigned char * */, y mutate.array u32 /* from: unsigned char * */) unit /* from: void */ => native
-  module crypto_core_ed25519_scalar_negate(neg mutate.array u32 /* from: unsigned char * */, s mutate.array u32 /* from: unsigned char * */) unit /* from: void */ => native
-  module crypto_core_ed25519_scalar_random(r mutate.array u32 /* from: unsigned char * */) unit /* from: void */ => native
-  module crypto_core_ed25519_scalar_reduce(r mutate.array u32 /* from: unsigned char * */, s mutate.array u32 /* from: unsigned char * */) unit /* from: void */ => native
-  module crypto_core_ed25519_scalar_sub(z mutate.array u32 /* from: unsigned char * */, x mutate.array u32 /* from: unsigned char * */, y mutate.array u32 /* from: unsigned char * */) unit /* from: void */ => native
+  module crypto_core_ed25519_scalar_mul(z mutate.array u32 /* from: unsigned char * */, x mutate.array u32 /* from: unsigned char * */, y mutate.array u32 /* from: unsigned char * */) unit => native
+  module crypto_core_ed25519_scalar_negate(neg mutate.array u32 /* from: unsigned char * */, s mutate.array u32 /* from: unsigned char * */) unit => native
+  module crypto_core_ed25519_scalar_random(r mutate.array u32 /* from: unsigned char * */) unit => native
+  module crypto_core_ed25519_scalar_reduce(r mutate.array u32 /* from: unsigned char * */, s mutate.array u32 /* from: unsigned char * */) unit => native
+  module crypto_core_ed25519_scalar_sub(z mutate.array u32 /* from: unsigned char * */, x mutate.array u32 /* from: unsigned char * */, y mutate.array u32 /* from: unsigned char * */) unit => native
   module crypto_core_ed25519_scalarbytes i64 /* from: size_t */ => native
   module crypto_core_ed25519_sub(r mutate.array u32 /* from: unsigned char * */, p mutate.array u32 /* from: unsigned char * */, q mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
   module crypto_core_ed25519_uniformbytes i64 /* from: size_t */ => native
@@ -275,15 +272,15 @@ module c is
   module crypto_core_ristretto255_hashbytes i64 /* from: size_t */ => native
   module crypto_core_ristretto255_is_valid_point(p mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
   module crypto_core_ristretto255_nonreducedscalarbytes i64 /* from: size_t */ => native
-  module crypto_core_ristretto255_random(p mutate.array u32 /* from: unsigned char * */) unit /* from: void */ => native
-  module crypto_core_ristretto255_scalar_add(z mutate.array u32 /* from: unsigned char * */, x mutate.array u32 /* from: unsigned char * */, y mutate.array u32 /* from: unsigned char * */) unit /* from: void */ => native
-  module crypto_core_ristretto255_scalar_complement(comp mutate.array u32 /* from: unsigned char * */, s mutate.array u32 /* from: unsigned char * */) unit /* from: void */ => native
+  module crypto_core_ristretto255_random(p mutate.array u32 /* from: unsigned char * */) unit => native
+  module crypto_core_ristretto255_scalar_add(z mutate.array u32 /* from: unsigned char * */, x mutate.array u32 /* from: unsigned char * */, y mutate.array u32 /* from: unsigned char * */) unit => native
+  module crypto_core_ristretto255_scalar_complement(comp mutate.array u32 /* from: unsigned char * */, s mutate.array u32 /* from: unsigned char * */) unit => native
   module crypto_core_ristretto255_scalar_invert(recip mutate.array u32 /* from: unsigned char * */, s mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
-  module crypto_core_ristretto255_scalar_mul(z mutate.array u32 /* from: unsigned char * */, x mutate.array u32 /* from: unsigned char * */, y mutate.array u32 /* from: unsigned char * */) unit /* from: void */ => native
-  module crypto_core_ristretto255_scalar_negate(neg mutate.array u32 /* from: unsigned char * */, s mutate.array u32 /* from: unsigned char * */) unit /* from: void */ => native
-  module crypto_core_ristretto255_scalar_random(r mutate.array u32 /* from: unsigned char * */) unit /* from: void */ => native
-  module crypto_core_ristretto255_scalar_reduce(r mutate.array u32 /* from: unsigned char * */, s mutate.array u32 /* from: unsigned char * */) unit /* from: void */ => native
-  module crypto_core_ristretto255_scalar_sub(z mutate.array u32 /* from: unsigned char * */, x mutate.array u32 /* from: unsigned char * */, y mutate.array u32 /* from: unsigned char * */) unit /* from: void */ => native
+  module crypto_core_ristretto255_scalar_mul(z mutate.array u32 /* from: unsigned char * */, x mutate.array u32 /* from: unsigned char * */, y mutate.array u32 /* from: unsigned char * */) unit => native
+  module crypto_core_ristretto255_scalar_negate(neg mutate.array u32 /* from: unsigned char * */, s mutate.array u32 /* from: unsigned char * */) unit => native
+  module crypto_core_ristretto255_scalar_random(r mutate.array u32 /* from: unsigned char * */) unit => native
+  module crypto_core_ristretto255_scalar_reduce(r mutate.array u32 /* from: unsigned char * */, s mutate.array u32 /* from: unsigned char * */) unit => native
+  module crypto_core_ristretto255_scalar_sub(z mutate.array u32 /* from: unsigned char * */, x mutate.array u32 /* from: unsigned char * */, y mutate.array u32 /* from: unsigned char * */) unit => native
   module crypto_core_ristretto255_scalarbytes i64 /* from: size_t */ => native
   module crypto_core_ristretto255_sub(r mutate.array u32 /* from: unsigned char * */, p mutate.array u32 /* from: unsigned char * */, q mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
   module crypto_core_salsa20(out mutate.array u32 /* from: unsigned char * */, in_ mutate.array u32 /* from: unsigned char * */, k mutate.array u32 /* from: unsigned char * */, c mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
@@ -312,7 +309,7 @@ module c is
   module crypto_generichash_blake2b_keybytes i64 /* from: size_t */ => native
   module crypto_generichash_blake2b_keybytes_max i64 /* from: size_t */ => native
   module crypto_generichash_blake2b_keybytes_min i64 /* from: size_t */ => native
-  module crypto_generichash_blake2b_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit /* from: void */ => native
+  module crypto_generichash_blake2b_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit => native
   module crypto_generichash_blake2b_personalbytes i64 /* from: size_t */ => native
   module crypto_generichash_blake2b_salt_personal(out mutate.array u32 /* from: unsigned char * */, outlen i64 /* from: size_t */, in_ mutate.array u32 /* from: unsigned char * */, inlen u64 /* from: unsigned long long */, key mutate.array u32 /* from: unsigned char * */, keylen i64 /* from: size_t */, salt mutate.array u32 /* from: unsigned char * */, personal mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
   module crypto_generichash_blake2b_saltbytes i64 /* from: size_t */ => native
@@ -326,7 +323,7 @@ module c is
   module crypto_generichash_keybytes i64 /* from: size_t */ => native
   module crypto_generichash_keybytes_max i64 /* from: size_t */ => native
   module crypto_generichash_keybytes_min i64 /* from: size_t */ => native
-  module crypto_generichash_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit /* from: void */ => native
+  module crypto_generichash_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit => native
   module crypto_generichash_primitive Native_Ref /* from: char * */ => native
   module crypto_generichash_statebytes i64 /* from: size_t */ => native
   module crypto_generichash_update(state Native_Ref /* from: crypto_generichash_state * */, in_ mutate.array u32 /* from: unsigned char * */, inlen u64 /* from: unsigned long long */) i32 /* from: int */ => native
@@ -355,7 +352,7 @@ module c is
   module crypto_kdf_contextbytes i64 /* from: size_t */ => native
   module crypto_kdf_derive_from_key(subkey mutate.array u32 /* from: unsigned char * */, subkey_len i64 /* from: size_t */, subkey_id u64 /* from: uint64_t */, ctx mutate.array i8 /* from: char[8] */, key mutate.array u32 /* from: unsigned char[32] */) i32 /* from: int */ => native
   module crypto_kdf_keybytes i64 /* from: size_t */ => native
-  module crypto_kdf_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit /* from: void */ => native
+  module crypto_kdf_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit => native
   module crypto_kdf_primitive Native_Ref /* from: char * */ => native
   module crypto_kx_client_session_keys(rx mutate.array u32 /* from: unsigned char[32] */, tx mutate.array u32 /* from: unsigned char[32] */, client_pk mutate.array u32 /* from: unsigned char[32] */, client_sk mutate.array u32 /* from: unsigned char[32] */, server_pk mutate.array u32 /* from: unsigned char[32] */) i32 /* from: int */ => native
   module crypto_kx_keypair(pk mutate.array u32 /* from: unsigned char[32] */, sk mutate.array u32 /* from: unsigned char[32] */) i32 /* from: int */ => native
@@ -371,13 +368,13 @@ module c is
   module crypto_onetimeauth_final(state Native_Ref /* from: crypto_onetimeauth_state * */, out mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
   module crypto_onetimeauth_init(state Native_Ref /* from: crypto_onetimeauth_state * */, key mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
   module crypto_onetimeauth_keybytes i64 /* from: size_t */ => native
-  module crypto_onetimeauth_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit /* from: void */ => native
+  module crypto_onetimeauth_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit => native
   module crypto_onetimeauth_poly1305(out mutate.array u32 /* from: unsigned char * */, in_ mutate.array u32 /* from: unsigned char * */, inlen u64 /* from: unsigned long long */, k mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
   module crypto_onetimeauth_poly1305_bytes i64 /* from: size_t */ => native
   module crypto_onetimeauth_poly1305_final(state Native_Ref /* from: crypto_onetimeauth_poly1305_state * */, out mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
   module crypto_onetimeauth_poly1305_init(state Native_Ref /* from: crypto_onetimeauth_poly1305_state * */, key mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
   module crypto_onetimeauth_poly1305_keybytes i64 /* from: size_t */ => native
-  module crypto_onetimeauth_poly1305_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit /* from: void */ => native
+  module crypto_onetimeauth_poly1305_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit => native
   module crypto_onetimeauth_poly1305_statebytes i64 /* from: size_t */ => native
   module crypto_onetimeauth_poly1305_update(state Native_Ref /* from: crypto_onetimeauth_poly1305_state * */, in_ mutate.array u32 /* from: unsigned char * */, inlen u64 /* from: unsigned long long */) i32 /* from: int */ => native
   module crypto_onetimeauth_poly1305_verify(h mutate.array u32 /* from: unsigned char * */, in_ mutate.array u32 /* from: unsigned char * */, inlen u64 /* from: unsigned long long */, k mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
@@ -499,7 +496,7 @@ module c is
   module crypto_secretbox_detached(c mutate.array u32 /* from: unsigned char * */, mac mutate.array u32 /* from: unsigned char * */, m mutate.array u32 /* from: unsigned char * */, mlen u64 /* from: unsigned long long */, n mutate.array u32 /* from: unsigned char * */, k mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
   module crypto_secretbox_easy(c mutate.array u32 /* from: unsigned char * */, m mutate.array u32 /* from: unsigned char * */, mlen u64 /* from: unsigned long long */, n mutate.array u32 /* from: unsigned char * */, k mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
   module crypto_secretbox_keybytes i64 /* from: size_t */ => native
-  module crypto_secretbox_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit /* from: void */ => native
+  module crypto_secretbox_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit => native
   module crypto_secretbox_macbytes i64 /* from: size_t */ => native
   module crypto_secretbox_messagebytes_max i64 /* from: size_t */ => native
   module crypto_secretbox_noncebytes i64 /* from: size_t */ => native
@@ -518,7 +515,7 @@ module c is
   module crypto_secretbox_xsalsa20poly1305(c mutate.array u32 /* from: unsigned char * */, m mutate.array u32 /* from: unsigned char * */, mlen u64 /* from: unsigned long long */, n mutate.array u32 /* from: unsigned char * */, k mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
   module crypto_secretbox_xsalsa20poly1305_boxzerobytes i64 /* from: size_t */ => native
   module crypto_secretbox_xsalsa20poly1305_keybytes i64 /* from: size_t */ => native
-  module crypto_secretbox_xsalsa20poly1305_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit /* from: void */ => native
+  module crypto_secretbox_xsalsa20poly1305_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit => native
   module crypto_secretbox_xsalsa20poly1305_macbytes i64 /* from: size_t */ => native
   module crypto_secretbox_xsalsa20poly1305_messagebytes_max i64 /* from: size_t */ => native
   module crypto_secretbox_xsalsa20poly1305_noncebytes i64 /* from: size_t */ => native
@@ -530,11 +527,11 @@ module c is
   module crypto_secretstream_xchacha20poly1305_init_pull(state Native_Ref /* from: crypto_secretstream_xchacha20poly1305_state * */, header mutate.array u32 /* from: unsigned char[24] */, k mutate.array u32 /* from: unsigned char[32] */) i32 /* from: int */ => native
   module crypto_secretstream_xchacha20poly1305_init_push(state Native_Ref /* from: crypto_secretstream_xchacha20poly1305_state * */, header mutate.array u32 /* from: unsigned char[24] */, k mutate.array u32 /* from: unsigned char[32] */) i32 /* from: int */ => native
   module crypto_secretstream_xchacha20poly1305_keybytes i64 /* from: size_t */ => native
-  module crypto_secretstream_xchacha20poly1305_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit /* from: void */ => native
+  module crypto_secretstream_xchacha20poly1305_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit => native
   module crypto_secretstream_xchacha20poly1305_messagebytes_max i64 /* from: size_t */ => native
   module crypto_secretstream_xchacha20poly1305_pull(state Native_Ref /* from: crypto_secretstream_xchacha20poly1305_state * */, m mutate.array u32 /* from: unsigned char * */, mlen_p mutate.array u32 /* from: unsigned long long * */, tag_p mutate.array u32 /* from: unsigned char * */, c mutate.array u32 /* from: unsigned char * */, clen u64 /* from: unsigned long long */, ad mutate.array u32 /* from: unsigned char * */, adlen u64 /* from: unsigned long long */) i32 /* from: int */ => native
   module crypto_secretstream_xchacha20poly1305_push(state Native_Ref /* from: crypto_secretstream_xchacha20poly1305_state * */, c mutate.array u32 /* from: unsigned char * */, clen_p mutate.array u32 /* from: unsigned long long * */, m mutate.array u32 /* from: unsigned char * */, mlen u64 /* from: unsigned long long */, ad mutate.array u32 /* from: unsigned char * */, adlen u64 /* from: unsigned long long */, tag u8 /* from: unsigned char */) i32 /* from: int */ => native
-  module crypto_secretstream_xchacha20poly1305_rekey(state Native_Ref /* from: crypto_secretstream_xchacha20poly1305_state * */) unit /* from: void */ => native
+  module crypto_secretstream_xchacha20poly1305_rekey(state Native_Ref /* from: crypto_secretstream_xchacha20poly1305_state * */) unit => native
   module crypto_secretstream_xchacha20poly1305_statebytes i64 /* from: size_t */ => native
   module crypto_secretstream_xchacha20poly1305_tag_final u8 /* from: unsigned char */ => native
   module crypto_secretstream_xchacha20poly1305_tag_message u8 /* from: unsigned char */ => native
@@ -543,7 +540,7 @@ module c is
   module crypto_shorthash(out mutate.array u32 /* from: unsigned char * */, in_ mutate.array u32 /* from: unsigned char * */, inlen u64 /* from: unsigned long long */, k mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
   module crypto_shorthash_bytes i64 /* from: size_t */ => native
   module crypto_shorthash_keybytes i64 /* from: size_t */ => native
-  module crypto_shorthash_keygen(k mutate.array u32 /* from: unsigned char[16] */) unit /* from: void */ => native
+  module crypto_shorthash_keygen(k mutate.array u32 /* from: unsigned char[16] */) unit => native
   module crypto_shorthash_primitive Native_Ref /* from: char * */ => native
   module crypto_shorthash_siphash24(out mutate.array u32 /* from: unsigned char * */, in_ mutate.array u32 /* from: unsigned char * */, inlen u64 /* from: unsigned long long */, k mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
   module crypto_shorthash_siphash24_bytes i64 /* from: size_t */ => native
@@ -592,44 +589,44 @@ module c is
   module crypto_stream_chacha20(c mutate.array u32 /* from: unsigned char * */, clen u64 /* from: unsigned long long */, n mutate.array u32 /* from: unsigned char * */, k mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
   module crypto_stream_chacha20_ietf(c mutate.array u32 /* from: unsigned char * */, clen u64 /* from: unsigned long long */, n mutate.array u32 /* from: unsigned char * */, k mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
   module crypto_stream_chacha20_ietf_keybytes i64 /* from: size_t */ => native
-  module crypto_stream_chacha20_ietf_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit /* from: void */ => native
+  module crypto_stream_chacha20_ietf_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit => native
   module crypto_stream_chacha20_ietf_messagebytes_max i64 /* from: size_t */ => native
   module crypto_stream_chacha20_ietf_noncebytes i64 /* from: size_t */ => native
   module crypto_stream_chacha20_ietf_xor(c mutate.array u32 /* from: unsigned char * */, m mutate.array u32 /* from: unsigned char * */, mlen u64 /* from: unsigned long long */, n mutate.array u32 /* from: unsigned char * */, k mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
   module crypto_stream_chacha20_ietf_xor_ic(c mutate.array u32 /* from: unsigned char * */, m mutate.array u32 /* from: unsigned char * */, mlen u64 /* from: unsigned long long */, n mutate.array u32 /* from: unsigned char * */, ic u32 /* from: uint32_t */, k mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
   module crypto_stream_chacha20_keybytes i64 /* from: size_t */ => native
-  module crypto_stream_chacha20_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit /* from: void */ => native
+  module crypto_stream_chacha20_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit => native
   module crypto_stream_chacha20_messagebytes_max i64 /* from: size_t */ => native
   module crypto_stream_chacha20_noncebytes i64 /* from: size_t */ => native
   module crypto_stream_chacha20_xor(c mutate.array u32 /* from: unsigned char * */, m mutate.array u32 /* from: unsigned char * */, mlen u64 /* from: unsigned long long */, n mutate.array u32 /* from: unsigned char * */, k mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
   module crypto_stream_chacha20_xor_ic(c mutate.array u32 /* from: unsigned char * */, m mutate.array u32 /* from: unsigned char * */, mlen u64 /* from: unsigned long long */, n mutate.array u32 /* from: unsigned char * */, ic u64 /* from: uint64_t */, k mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
   module crypto_stream_keybytes i64 /* from: size_t */ => native
-  module crypto_stream_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit /* from: void */ => native
+  module crypto_stream_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit => native
   module crypto_stream_messagebytes_max i64 /* from: size_t */ => native
   module crypto_stream_noncebytes i64 /* from: size_t */ => native
   module crypto_stream_primitive Native_Ref /* from: char * */ => native
   module crypto_stream_salsa20(c mutate.array u32 /* from: unsigned char * */, clen u64 /* from: unsigned long long */, n mutate.array u32 /* from: unsigned char * */, k mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
   module crypto_stream_salsa2012(c mutate.array u32 /* from: unsigned char * */, clen u64 /* from: unsigned long long */, n mutate.array u32 /* from: unsigned char * */, k mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
   module crypto_stream_salsa2012_keybytes i64 /* from: size_t */ => native
-  module crypto_stream_salsa2012_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit /* from: void */ => native
+  module crypto_stream_salsa2012_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit => native
   module crypto_stream_salsa2012_messagebytes_max i64 /* from: size_t */ => native
   module crypto_stream_salsa2012_noncebytes i64 /* from: size_t */ => native
   module crypto_stream_salsa2012_xor(c mutate.array u32 /* from: unsigned char * */, m mutate.array u32 /* from: unsigned char * */, mlen u64 /* from: unsigned long long */, n mutate.array u32 /* from: unsigned char * */, k mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
   module crypto_stream_salsa208(c mutate.array u32 /* from: unsigned char * */, clen u64 /* from: unsigned long long */, n mutate.array u32 /* from: unsigned char * */, k mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
   module crypto_stream_salsa208_keybytes i64 /* from: size_t */ => native
-  module crypto_stream_salsa208_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit /* from: void */ => native
+  module crypto_stream_salsa208_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit => native
   module crypto_stream_salsa208_messagebytes_max i64 /* from: size_t */ => native
   module crypto_stream_salsa208_noncebytes i64 /* from: size_t */ => native
   module crypto_stream_salsa208_xor(c mutate.array u32 /* from: unsigned char * */, m mutate.array u32 /* from: unsigned char * */, mlen u64 /* from: unsigned long long */, n mutate.array u32 /* from: unsigned char * */, k mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
   module crypto_stream_salsa20_keybytes i64 /* from: size_t */ => native
-  module crypto_stream_salsa20_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit /* from: void */ => native
+  module crypto_stream_salsa20_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit => native
   module crypto_stream_salsa20_messagebytes_max i64 /* from: size_t */ => native
   module crypto_stream_salsa20_noncebytes i64 /* from: size_t */ => native
   module crypto_stream_salsa20_xor(c mutate.array u32 /* from: unsigned char * */, m mutate.array u32 /* from: unsigned char * */, mlen u64 /* from: unsigned long long */, n mutate.array u32 /* from: unsigned char * */, k mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
   module crypto_stream_salsa20_xor_ic(c mutate.array u32 /* from: unsigned char * */, m mutate.array u32 /* from: unsigned char * */, mlen u64 /* from: unsigned long long */, n mutate.array u32 /* from: unsigned char * */, ic u64 /* from: uint64_t */, k mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
   module crypto_stream_xchacha20(c mutate.array u32 /* from: unsigned char * */, clen u64 /* from: unsigned long long */, n mutate.array u32 /* from: unsigned char * */, k mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
   module crypto_stream_xchacha20_keybytes i64 /* from: size_t */ => native
-  module crypto_stream_xchacha20_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit /* from: void */ => native
+  module crypto_stream_xchacha20_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit => native
   module crypto_stream_xchacha20_messagebytes_max i64 /* from: size_t */ => native
   module crypto_stream_xchacha20_noncebytes i64 /* from: size_t */ => native
   module crypto_stream_xchacha20_xor(c mutate.array u32 /* from: unsigned char * */, m mutate.array u32 /* from: unsigned char * */, mlen u64 /* from: unsigned long long */, n mutate.array u32 /* from: unsigned char * */, k mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
@@ -637,7 +634,7 @@ module c is
   module crypto_stream_xor(c mutate.array u32 /* from: unsigned char * */, m mutate.array u32 /* from: unsigned char * */, mlen u64 /* from: unsigned long long */, n mutate.array u32 /* from: unsigned char * */, k mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
   module crypto_stream_xsalsa20(c mutate.array u32 /* from: unsigned char * */, clen u64 /* from: unsigned long long */, n mutate.array u32 /* from: unsigned char * */, k mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
   module crypto_stream_xsalsa20_keybytes i64 /* from: size_t */ => native
-  module crypto_stream_xsalsa20_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit /* from: void */ => native
+  module crypto_stream_xsalsa20_keygen(k mutate.array u32 /* from: unsigned char[32] */) unit => native
   module crypto_stream_xsalsa20_messagebytes_max i64 /* from: size_t */ => native
   module crypto_stream_xsalsa20_noncebytes i64 /* from: size_t */ => native
   module crypto_stream_xsalsa20_xor(c mutate.array u32 /* from: unsigned char * */, m mutate.array u32 /* from: unsigned char * */, mlen u64 /* from: unsigned long long */, n mutate.array u32 /* from: unsigned char * */, k mutate.array u32 /* from: unsigned char * */) i32 /* from: int */ => native
@@ -656,7 +653,7 @@ module c is
   module ecvt_r(__value f64 /* from: double */, __ndigit i32 /* from: int */, __decpt mutate.array i32 /* from: int * */, __sign mutate.array i32 /* from: int * */, __buf mutate.array i8 /* from: char * */, __len i64 /* from: size_t */) i32 /* from: int */ => native
   module erand48(__xsubi mutate.array u32 /* from: unsigned short[3] */) f64 /* from: double */ => native
   module erand48_r(__xsubi mutate.array u32 /* from: unsigned short[3] */, __buffer Native_Ref /* from: struct drand48_data * */, __result mutate.array f64 /* from: double * */) i32 /* from: int */ => native
-  module exit(__status i32 /* from: int */) unit /* from: void */ => native
+  module exit(__status i32 /* from: int */) unit => native
   module fclose(__stream Native_Ref /* from: FILE * */) i32 /* from: int */ => native
   module fcvt(__value f64 /* from: double */, __ndigit i32 /* from: int */, __decpt mutate.array i32 /* from: int * */, __sign mutate.array i32 /* from: int * */) Native_Ref /* from: char * */ => native
   module fcvt_r(__value f64 /* from: double */, __ndigit i32 /* from: int */, __decpt mutate.array i32 /* from: int * */, __sign mutate.array i32 /* from: int * */, __buf mutate.array i8 /* from: char * */, __len i64 /* from: size_t */) i32 /* from: int */ => native
@@ -673,25 +670,25 @@ module c is
   module fgets(__s mutate.array i8 /* from: char * */, __n i32 /* from: int */, __stream Native_Ref /* from: FILE * */) Native_Ref /* from: char * */ => native
   module fileno(__stream Native_Ref /* from: FILE * */) i32 /* from: int */ => native
   module fileno_unlocked(__stream Native_Ref /* from: FILE * */) i32 /* from: int */ => native
-  module flockfile(__stream Native_Ref /* from: FILE * */) unit /* from: void */ => native
-  module fmemopen(__s mutate.array unit /* from: void * */, __len i64 /* from: size_t */, __modes mutate.array i8 /* from: char * */) Native_Ref /* from: FILE * */ => native
+  module flockfile(__stream Native_Ref /* from: FILE * */) unit => native
+  module fmemopen(__s mutate.array u8 /* from: void * */, __len i64 /* from: size_t */, __modes mutate.array i8 /* from: char * */) Native_Ref /* from: FILE * */ => native
   module fopen(__filename mutate.array i8 /* from: char * */, __modes mutate.array i8 /* from: char * */) Native_Ref /* from: FILE * */ => native
   module fprintf(__stream Native_Ref /* from: FILE * */, __format mutate.array i8 /* from: char * */) i32 /* from: int */ => native
   module fputc(__c i32 /* from: int */, __stream Native_Ref /* from: FILE * */) i32 /* from: int */ => native
   module fputc_unlocked(__c i32 /* from: int */, __stream Native_Ref /* from: FILE * */) i32 /* from: int */ => native
   module fputs(__s mutate.array i8 /* from: char * */, __stream Native_Ref /* from: FILE * */) i32 /* from: int */ => native
-  module fread(__ptr mutate.array unit /* from: void * */, __size i64 /* from: size_t */, __n i64 /* from: size_t */, __stream Native_Ref /* from: FILE * */) u64 /* from: unsigned long */ => native
-  module fread_unlocked(__ptr mutate.array unit /* from: void * */, __size i64 /* from: size_t */, __n i64 /* from: size_t */, __stream Native_Ref /* from: FILE * */) i64 /* from: size_t */ => native
-  module free(__ptr mutate.array unit /* from: void * */) unit /* from: void */ => native
+  module fread(__ptr mutate.array u8 /* from: void * */, __size i64 /* from: size_t */, __n i64 /* from: size_t */, __stream Native_Ref /* from: FILE * */) u64 /* from: unsigned long */ => native
+  module fread_unlocked(__ptr mutate.array u8 /* from: void * */, __size i64 /* from: size_t */, __n i64 /* from: size_t */, __stream Native_Ref /* from: FILE * */) i64 /* from: size_t */ => native
+  module free(__ptr mutate.array u8 /* from: void * */) unit => native
   module freopen(__filename mutate.array i8 /* from: char * */, __modes mutate.array i8 /* from: char * */, __stream Native_Ref /* from: FILE * */) Native_Ref /* from: FILE * */ => native
   module fscanf(__stream Native_Ref /* from: FILE * */, __format mutate.array i8 /* from: char * */) i32 /* from: int */ => native
   module fseek(__stream Native_Ref /* from: FILE * */, __off i64 /* from: long */, __whence i32 /* from: int */) i32 /* from: int */ => native
   module fsetpos(__stream Native_Ref /* from: FILE * */, __pos Native_Ref /* from: fpos_t * */) i32 /* from: int */ => native
   module ftell(__stream Native_Ref /* from: FILE * */) i64 /* from: long */ => native
   module ftrylockfile(__stream Native_Ref /* from: FILE * */) i32 /* from: int */ => native
-  module funlockfile(__stream Native_Ref /* from: FILE * */) unit /* from: void */ => native
-  module fwrite(__ptr mutate.array unit /* from: void * */, __size i64 /* from: size_t */, __n i64 /* from: size_t */, __s Native_Ref /* from: FILE * */) u64 /* from: unsigned long */ => native
-  module fwrite_unlocked(__ptr mutate.array unit /* from: void * */, __size i64 /* from: size_t */, __n i64 /* from: size_t */, __stream Native_Ref /* from: FILE * */) i64 /* from: size_t */ => native
+  module funlockfile(__stream Native_Ref /* from: FILE * */) unit => native
+  module fwrite(__ptr mutate.array u8 /* from: void * */, __size i64 /* from: size_t */, __n i64 /* from: size_t */, __s Native_Ref /* from: FILE * */) u64 /* from: unsigned long */ => native
+  module fwrite_unlocked(__ptr mutate.array u8 /* from: void * */, __size i64 /* from: size_t */, __n i64 /* from: size_t */, __stream Native_Ref /* from: FILE * */) i64 /* from: size_t */ => native
   module gcvt(__value f64 /* from: double */, __ndigit i32 /* from: int */, __buf mutate.array i8 /* from: char * */) Native_Ref /* from: char * */ => native
   module getc(__stream Native_Ref /* from: FILE * */) i32 /* from: int */ => native
   module getc_unlocked(__stream Native_Ref /* from: FILE * */) i32 /* from: int */ => native
@@ -707,7 +704,7 @@ module c is
   module jrand48_r(__xsubi mutate.array u32 /* from: unsigned short[3] */, __buffer Native_Ref /* from: struct drand48_data * */, __result mutate.array i64 /* from: long * */) i32 /* from: int */ => native
   module l64a(__n i64 /* from: long */) Native_Ref /* from: char * */ => native
   module labs(__x i64 /* from: long */) i64 /* from: long */ => native
-  module lcong48(__param mutate.array u32 /* from: unsigned short[7] */) unit /* from: void */ => native
+  module lcong48(__param mutate.array u32 /* from: unsigned short[7] */) unit => native
   module lcong48_r(__param mutate.array u32 /* from: unsigned short[7] */, __buffer Native_Ref /* from: struct drand48_data * */) i32 /* from: int */ => native
   module llabs(__x i64 /* from: long long */) i64 /* from: long long */ => native
   module lrand48 i64 /* from: long */ => native
@@ -724,10 +721,10 @@ module c is
   module mrand48_r(__buffer Native_Ref /* from: struct drand48_data * */, __result mutate.array i64 /* from: long * */) i32 /* from: int */ => native
   module nrand48(__xsubi mutate.array u32 /* from: unsigned short[3] */) i64 /* from: long */ => native
   module nrand48_r(__xsubi mutate.array u32 /* from: unsigned short[3] */, __buffer Native_Ref /* from: struct drand48_data * */, __result mutate.array i64 /* from: long * */) i32 /* from: int */ => native
-  module on_exit(__func mutate.array unit /* from: void (*)(int, void *) */, __arg mutate.array unit /* from: void * */) i32 /* from: int */ => native
+  module on_exit(__func mutate.array u8 /* from: void (*)(int, void *) */, __arg mutate.array u8 /* from: void * */) i32 /* from: int */ => native
   module open_memstream(__bufloc Native_Ref /* from: char ** */, __sizeloc mutate.array i64 /* from: size_t * */) Native_Ref /* from: FILE * */ => native
   module pclose(__stream Native_Ref /* from: FILE * */) i32 /* from: int */ => native
-  module perror(__s mutate.array i8 /* from: char * */) unit /* from: void */ => native
+  module perror(__s mutate.array i8 /* from: char * */) unit => native
   module popen(__command mutate.array i8 /* from: char * */, __modes mutate.array i8 /* from: char * */) Native_Ref /* from: FILE * */ => native
   module posix_memalign(__memptr Native_Ref /* from: void ** */, __alignment i64 /* from: size_t */, __size i64 /* from: size_t */) i32 /* from: int */ => native
   module printf(__format mutate.array i8 /* from: char * */) i32 /* from: int */ => native
@@ -739,65 +736,65 @@ module c is
   module putenv(__string mutate.array i8 /* from: char * */) i32 /* from: int */ => native
   module puts(__s mutate.array i8 /* from: char * */) i32 /* from: int */ => native
   module putw(__w i32 /* from: int */, __stream Native_Ref /* from: FILE * */) i32 /* from: int */ => native
-  module quick_exit(__status i32 /* from: int */) unit /* from: void */ => native
+  module quick_exit(__status i32 /* from: int */) unit => native
   module rand i32 /* from: int */ => native
   module rand_r(__seed mutate.array u32 /* from: unsigned int * */) i32 /* from: int */ => native
   module random i64 /* from: long */ => native
   module random_r(__buf Native_Ref /* from: struct random_data * */, __result mutate.array i32 /* from: int32_t * */) i32 /* from: int */ => native
-  module randombytes(buf mutate.array u32 /* from: unsigned char * */, buf_len u64 /* from: unsigned long long */) unit /* from: void */ => native
-  module randombytes_buf(buf mutate.array unit /* from: void * */, size i64 /* from: size_t */) unit /* from: void */ => native
-  module randombytes_buf_deterministic(buf mutate.array unit /* from: void * */, size i64 /* from: size_t */, seed mutate.array u32 /* from: unsigned char[32] */) unit /* from: void */ => native
+  module randombytes(buf mutate.array u32 /* from: unsigned char * */, buf_len u64 /* from: unsigned long long */) unit => native
+  module randombytes_buf(buf mutate.array u8 /* from: void * */, size i64 /* from: size_t */) unit => native
+  module randombytes_buf_deterministic(buf mutate.array u8 /* from: void * */, size i64 /* from: size_t */, seed mutate.array u32 /* from: unsigned char[32] */) unit => native
   module randombytes_close i32 /* from: int */ => native
   module randombytes_implementation_name Native_Ref /* from: char * */ => native
   module randombytes_random u32 /* from: uint32_t */ => native
   module randombytes_seedbytes i64 /* from: size_t */ => native
   module randombytes_set_implementation(impl Native_Ref /* from: randombytes_implementation * */) i32 /* from: int */ => native
-  module randombytes_stir unit /* from: void */ => native
+  module randombytes_stir unit => native
   module randombytes_uniform(upper_bound u32 /* from: uint32_t */) u32 /* from: uint32_t */ => native
-  module realloc(__ptr mutate.array unit /* from: void * */, __size i64 /* from: size_t */) Native_Ref /* from: void * */ => native
-  module reallocarray(__ptr mutate.array unit /* from: void * */, __nmemb i64 /* from: size_t */, __size i64 /* from: size_t */) Native_Ref /* from: void * */ => native
+  module realloc(__ptr mutate.array u8 /* from: void * */, __size i64 /* from: size_t */) Native_Ref /* from: void * */ => native
+  module reallocarray(__ptr mutate.array u8 /* from: void * */, __nmemb i64 /* from: size_t */, __size i64 /* from: size_t */) Native_Ref /* from: void * */ => native
   module realpath(__name mutate.array i8 /* from: char * */, __resolved mutate.array i8 /* from: char * */) Native_Ref /* from: char * */ => native
   module remove(__filename mutate.array i8 /* from: char * */) i32 /* from: int */ => native
   module rename(__old mutate.array i8 /* from: char * */, __new mutate.array i8 /* from: char * */) i32 /* from: int */ => native
   module renameat(__oldfd i32 /* from: int */, __old mutate.array i8 /* from: char * */, __newfd i32 /* from: int */, __new mutate.array i8 /* from: char * */) i32 /* from: int */ => native
-  module rewind(__stream Native_Ref /* from: FILE * */) unit /* from: void */ => native
+  module rewind(__stream Native_Ref /* from: FILE * */) unit => native
   module rpmatch(__response mutate.array i8 /* from: char * */) i32 /* from: int */ => native
   module scanf(__format mutate.array i8 /* from: char * */) i32 /* from: int */ => native
   module seed48(__seed16v mutate.array u32 /* from: unsigned short[3] */) Native_Ref /* from: unsigned short * */ => native
   module seed48_r(__seed16v mutate.array u32 /* from: unsigned short[3] */, __buffer Native_Ref /* from: struct drand48_data * */) i32 /* from: int */ => native
   module select(__nfds i32 /* from: int */, __readfds Native_Ref /* from: fd_set * */, __writefds Native_Ref /* from: fd_set * */, __exceptfds Native_Ref /* from: fd_set * */, __timeout Native_Ref /* from: struct timeval * */) i32 /* from: int */ => native
-  module setbuf(__stream Native_Ref /* from: FILE * */, __buf mutate.array i8 /* from: char * */) unit /* from: void */ => native
-  module setbuffer(__stream Native_Ref /* from: FILE * */, __buf mutate.array i8 /* from: char * */, __size i64 /* from: size_t */) unit /* from: void */ => native
+  module setbuf(__stream Native_Ref /* from: FILE * */, __buf mutate.array i8 /* from: char * */) unit => native
+  module setbuffer(__stream Native_Ref /* from: FILE * */, __buf mutate.array i8 /* from: char * */, __size i64 /* from: size_t */) unit => native
   module setenv(__name mutate.array i8 /* from: char * */, __value mutate.array i8 /* from: char * */, __replace i32 /* from: int */) i32 /* from: int */ => native
-  module setlinebuf(__stream Native_Ref /* from: FILE * */) unit /* from: void */ => native
+  module setlinebuf(__stream Native_Ref /* from: FILE * */) unit => native
   module setstate(__statebuf mutate.array i8 /* from: char * */) Native_Ref /* from: char * */ => native
   module setstate_r(__statebuf mutate.array i8 /* from: char * */, __buf Native_Ref /* from: struct random_data * */) i32 /* from: int */ => native
   module setvbuf(__stream Native_Ref /* from: FILE * */, __buf mutate.array i8 /* from: char * */, __modes i32 /* from: int */, __n i64 /* from: size_t */) i32 /* from: int */ => native
   module snprintf(__s mutate.array i8 /* from: char * */, __maxlen i64 /* from: size_t */, __format mutate.array i8 /* from: char * */) i32 /* from: int */ => native
-  module sodium_add(a mutate.array u32 /* from: unsigned char * */, b mutate.array u32 /* from: unsigned char * */, len i64 /* from: size_t */) unit /* from: void */ => native
+  module sodium_add(a mutate.array u32 /* from: unsigned char * */, b mutate.array u32 /* from: unsigned char * */, len i64 /* from: size_t */) unit => native
   module sodium_allocarray(count i64 /* from: size_t */, size i64 /* from: size_t */) Native_Ref /* from: void * */ => native
   module sodium_base642bin(bin mutate.array u32 /* from: unsigned char * */, bin_maxlen i64 /* from: size_t */, b64 mutate.array i8 /* from: char * */, b64_len i64 /* from: size_t */, ignore mutate.array i8 /* from: char * */, bin_len mutate.array i64 /* from: size_t * */, b64_end Native_Ref /* from: char ** */, variant_ i32 /* from: int */) i32 /* from: int */ => native
   module sodium_base64_encoded_len(bin_len i64 /* from: size_t */, variant_ i32 /* from: int */) i64 /* from: size_t */ => native
   module sodium_bin2base64(b64 mutate.array i8 /* from: char * */, b64_maxlen i64 /* from: size_t */, bin mutate.array u32 /* from: unsigned char * */, bin_len i64 /* from: size_t */, variant_ i32 /* from: int */) Native_Ref /* from: char * */ => native
   module sodium_bin2hex(hex mutate.array i8 /* from: char * */, hex_maxlen i64 /* from: size_t */, bin mutate.array u32 /* from: unsigned char * */, bin_len i64 /* from: size_t */) Native_Ref /* from: char * */ => native
   module sodium_compare(b1_ mutate.array u32 /* from: unsigned char * */, b2_ mutate.array u32 /* from: unsigned char * */, len i64 /* from: size_t */) i32 /* from: int */ => native
-  module sodium_free(ptr mutate.array unit /* from: void * */) unit /* from: void */ => native
+  module sodium_free(ptr mutate.array u8 /* from: void * */) unit => native
   module sodium_hex2bin(bin mutate.array u32 /* from: unsigned char * */, bin_maxlen i64 /* from: size_t */, hex mutate.array i8 /* from: char * */, hex_len i64 /* from: size_t */, ignore mutate.array i8 /* from: char * */, bin_len mutate.array i64 /* from: size_t * */, hex_end Native_Ref /* from: char ** */) i32 /* from: int */ => native
-  module sodium_increment(n mutate.array u32 /* from: unsigned char * */, nlen i64 /* from: size_t */) unit /* from: void */ => native
+  module sodium_increment(n mutate.array u32 /* from: unsigned char * */, nlen i64 /* from: size_t */) unit => native
   module sodium_init i32 /* from: int */ => native
   module sodium_is_zero(n mutate.array u32 /* from: unsigned char * */, nlen i64 /* from: size_t */) i32 /* from: int */ => native
   module sodium_library_minimal i32 /* from: int */ => native
   module sodium_library_version_major i32 /* from: int */ => native
   module sodium_library_version_minor i32 /* from: int */ => native
   module sodium_malloc(size i64 /* from: size_t */) Native_Ref /* from: void * */ => native
-  module sodium_memcmp(b1_ mutate.array unit /* from: void * */, b2_ mutate.array unit /* from: void * */, len i64 /* from: size_t */) i32 /* from: int */ => native
-  module sodium_memzero(pnt mutate.array unit /* from: void * */, len i64 /* from: size_t */) unit /* from: void */ => native
-  module sodium_misuse unit /* from: void */ => native
-  module sodium_mlock(addr mutate.array unit /* from: void * */, len i64 /* from: size_t */) i32 /* from: int */ => native
-  module sodium_mprotect_noaccess(ptr mutate.array unit /* from: void * */) i32 /* from: int */ => native
-  module sodium_mprotect_readonly(ptr mutate.array unit /* from: void * */) i32 /* from: int */ => native
-  module sodium_mprotect_readwrite(ptr mutate.array unit /* from: void * */) i32 /* from: int */ => native
-  module sodium_munlock(addr mutate.array unit /* from: void * */, len i64 /* from: size_t */) i32 /* from: int */ => native
+  module sodium_memcmp(b1_ mutate.array u8 /* from: void * */, b2_ mutate.array u8 /* from: void * */, len i64 /* from: size_t */) i32 /* from: int */ => native
+  module sodium_memzero(pnt mutate.array u8 /* from: void * */, len i64 /* from: size_t */) unit => native
+  module sodium_misuse unit => native
+  module sodium_mlock(addr mutate.array u8 /* from: void * */, len i64 /* from: size_t */) i32 /* from: int */ => native
+  module sodium_mprotect_noaccess(ptr mutate.array u8 /* from: void * */) i32 /* from: int */ => native
+  module sodium_mprotect_readonly(ptr mutate.array u8 /* from: void * */) i32 /* from: int */ => native
+  module sodium_mprotect_readwrite(ptr mutate.array u8 /* from: void * */) i32 /* from: int */ => native
+  module sodium_munlock(addr mutate.array u8 /* from: void * */, len i64 /* from: size_t */) i32 /* from: int */ => native
   module sodium_pad(padded_buflen_p mutate.array i64 /* from: size_t * */, buf mutate.array u32 /* from: unsigned char * */, unpadded_buflen i64 /* from: size_t */, blocksize i64 /* from: size_t */, max_buflen i64 /* from: size_t */) i32 /* from: int */ => native
   module sodium_runtime_has_aesni i32 /* from: int */ => native
   module sodium_runtime_has_avx i32 /* from: int */ => native
@@ -810,16 +807,16 @@ module c is
   module sodium_runtime_has_sse3 i32 /* from: int */ => native
   module sodium_runtime_has_sse41 i32 /* from: int */ => native
   module sodium_runtime_has_ssse3 i32 /* from: int */ => native
-  module sodium_set_misuse_handler(handler mutate.array unit /* from: void (*)(void) */) i32 /* from: int */ => native
-  module sodium_stackzero(len i64 /* from: size_t */) unit /* from: void */ => native
-  module sodium_sub(a mutate.array u32 /* from: unsigned char * */, b mutate.array u32 /* from: unsigned char * */, len i64 /* from: size_t */) unit /* from: void */ => native
+  module sodium_set_misuse_handler(handler mutate.array u8 /* from: void (*)(void) */) i32 /* from: int */ => native
+  module sodium_stackzero(len i64 /* from: size_t */) unit => native
+  module sodium_sub(a mutate.array u32 /* from: unsigned char * */, b mutate.array u32 /* from: unsigned char * */, len i64 /* from: size_t */) unit => native
   module sodium_unpad(unpadded_buflen_p mutate.array i64 /* from: size_t * */, buf mutate.array u32 /* from: unsigned char * */, padded_buflen i64 /* from: size_t */, blocksize i64 /* from: size_t */) i32 /* from: int */ => native
   module sodium_version_string Native_Ref /* from: char * */ => native
   module sprintf(__s mutate.array i8 /* from: char * */, __format mutate.array i8 /* from: char * */) i32 /* from: int */ => native
-  module srand(__seed u32 /* from: unsigned int */) unit /* from: void */ => native
-  module srand48(__seedval i64 /* from: long */) unit /* from: void */ => native
+  module srand(__seed u32 /* from: unsigned int */) unit => native
+  module srand48(__seedval i64 /* from: long */) unit => native
   module srand48_r(__seedval i64 /* from: long */, __buffer Native_Ref /* from: struct drand48_data * */) i32 /* from: int */ => native
-  module srandom(__seed u32 /* from: unsigned int */) unit /* from: void */ => native
+  module srandom(__seed u32 /* from: unsigned int */) unit => native
   module srandom_r(__seed u32 /* from: unsigned int */, __buf Native_Ref /* from: struct random_data * */) i32 /* from: int */ => native
   module sscanf(__s mutate.array i8 /* from: char * */, __format mutate.array i8 /* from: char * */) i32 /* from: int */ => native
   module strtod(__nptr mutate.array i8 /* from: char * */, __endptr Native_Ref /* from: char ** */) f64 /* from: double */ => native
