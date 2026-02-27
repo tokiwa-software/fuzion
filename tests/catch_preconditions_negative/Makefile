@@ -24,4 +24,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = catch_precondition_negative
-include ../simple.mk
+include ../simple_and_negative.mk
