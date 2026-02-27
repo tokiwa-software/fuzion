@@ -42,7 +42,7 @@ public sodium is
                 passwd
                 passwd.length.as_u64
                 c.crypto_pwhash_opslimit_interactive.as_u64
-                c.crypto_pwhash_memlimit_interactive
+                c.crypto_pwhash_memlimit_interactive.as_u64
         }
         String.from <| out.as_array.map (.cast_to_u8)
       else

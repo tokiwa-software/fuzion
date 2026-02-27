@@ -29,15 +29,11 @@
 # fz -modules=clang fzextract.fz some_header_file.h
 #
 
-string_option : option String is
-  public redef as_string String =>
-    match string_option.this
-      nil => "*** unknown type ***"
-      s String => s
-
 # map a type from the C code to a fuzion type
 #
-to_fuzion_type(ct String, is_result_type bool) string_option =>
+to_fuzion_type(ct String, is_result_type bool) outcome String =>
+  to_fuzion_type ct is_result_type 0
+to_fuzion_type(ct String, is_result_type bool, n i32) outcome String =>
 
   # remove any type qualifiers
   c_type := ct
@@ -92,6 +88,19 @@ to_fuzion_type(ct String, is_result_type bool) string_option =>
 
   if m[c_type].ok
     "{m[c_type].get} /* from: {c_type} */"
+  else if c_type.contains "(*)"
+    # e.g.: "int (*)(struct WOLFSSL *, char *, int, void *)"
+    x := c_type.split "(*)"
+    rt := to_fuzion_type x[0].trim true
+    args := x[1]
+      .substring 1 x[1].byte_length-1
+      .split (", ")
+      .map (at -> (to_fuzion_type at true))
+    if rt.ok && (args ∀ .ok)
+      "F$n : Function {rt} {String.join (args.map (.val)) " "}"
+    else
+      error c_type
+
   else if c_type.contains "*" || c_type.contains "["
     if is_result_type || c_type.contains "**"
       # NYI: UNDER DEVELOPMENT: support for more complex result types?
@@ -110,7 +119,7 @@ to_fuzion_type(ct String, is_result_type bool) string_option =>
     "i32 /* from enum {c_type} */"
   else
     # NYI: UNDER DEVELOPMENT: we could support more complex types
-    nil
+    error c_type
 
 
 # via `java --class-path=build/classes dev.flang.parser.Lexer -keywords`
@@ -161,15 +170,16 @@ match {
   clang.parse_header envir.args[1] c->
     match c
       f_decl clang.function_decl =>
-        valid := (f_decl.args ∀ (arg -> !(to_fuzion_type arg.arg_type false).is_nil)) && !(to_fuzion_type f_decl.return_type true).is_nil
+        valid := (f_decl.args ∀ (arg -> !(to_fuzion_type arg.arg_type false).is_error)) && !(to_fuzion_type f_decl.return_type true).is_error
         args_str := f_decl
           .args
+          .indexed
           .map arg->
-            "{to_fuzion_name arg.name} {to_fuzion_type arg.arg_type false}"
+            "{to_fuzion_name arg.1.name} {to_fuzion_type arg.1.arg_type false arg.0}"
           .as_string ", "
         function_declarations <- function_declarations.add "  {if valid then "" else "# "}module {to_fuzion_name f_decl.name}{if args_str.is_empty then "" else "($args_str)"} {to_fuzion_type f_decl.return_type true} => native"
       s_decl clang.struct_decl =>
-        if (s_decl.fields ∀ (field -> !(to_fuzion_type field.arg_type false).is_nil))
+        if (s_decl.fields ∀ (field -> !(to_fuzion_type field.arg_type false).is_error))
           known_structs.put s_decl.name s_decl
       clang.union_decl =>
       e_decl clang.enum_decl =>
@@ -190,7 +200,7 @@ match {
 
 
     known_structs.values.for_each s_decl->
-      say <| "  module {s_decl.name}{s_decl.fields.is_empty ? "" : "("}{s_decl.fields.map (f -> "module {to_fuzion_name f.name} {to_fuzion_type f.arg_type false}") .as_string ", "}{s_decl.fields.is_empty ? "" : ")"} is"
+      say <| "  module {s_decl.name}{s_decl.fields.is_empty ? "" : "("}{s_decl.fields.indexed.map (f -> "module {to_fuzion_name f.1.name} {to_fuzion_type f.1.arg_type false f.0}") .as_string ", "}{s_decl.fields.is_empty ? "" : ")"} is"
 
     say ""
 
