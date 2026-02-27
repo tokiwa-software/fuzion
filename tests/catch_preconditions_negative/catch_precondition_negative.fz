@@ -23,8 +23,8 @@
 #
 # -----------------------------------------------------------------------
 
-# test cases from catch_precondition that now produce because they add a precondition,
-# although implicit 'pre true' was inherited
+# test cases from tests/catch_precondition that produce compile-time error
+# because they add a precondition while implicit 'pre true' was inherited
 #
 catch_precondition_negative is
 
@@ -498,13 +498,13 @@ catch_precondition_negative is
 
   c112 : p1, p1 is
     redef f1(x i32)
-      pre else x > 0
+      pre else x > 0   #  1. should flag an error: implicit pre true inherited, no precondition allowed
     => x
     redef f2(x i32)
       pre else x > 0
     => x
     redef f3(x i32)
-      pre else x > 0
+      pre else x > 0   #  2. should flag an error: implicit pre true inherited, no precondition allowed
     => x
     redef f4(x i32)
       pre else x > 0
@@ -521,13 +521,13 @@ catch_precondition_negative is
 
   c122 : p1, p2 is
     redef f1(x i32)
-      pre else x > 0
+      pre else x > 0   #  3. should flag an error: implicit pre true inherited, no precondition allowed
     => x
     redef f2(x i32)
-      pre else x > 0
+      pre else x > 0   #  4. should flag an error: implicit pre true inherited, no precondition allowed
     => x
     redef f3(x i32)
-      pre else x > 0
+      pre else x > 0   #  5. should flag an error: implicit pre true inherited, no precondition allowed
     => x
     redef f4(x i32)
       pre else x > 0
@@ -539,18 +539,18 @@ catch_precondition_negative is
       pre else x > 0
     => x
     redef f7(x i32)
-      pre else x > 0
+      pre else x > 0   #  6. should flag an error: implicit pre true inherited, no precondition allowed
     => x
 
   c132 : p1, p3 is
     redef f1(x i32)
-      pre else x > 0
+      pre else x > 0   #  7. should flag an error: implicit pre true inherited, no precondition allowed
     => x
     redef f2(x i32)
       pre else x > 0
     => x
     redef f3(x i32)
-      pre else x > 0
+      pre else x > 0   #  8. should flag an error: implicit pre true inherited, no precondition allowed
     => x
     redef f4(x i32)
       pre else x > 0
@@ -559,7 +559,7 @@ catch_precondition_negative is
       pre else x > 0
     => x
     redef f6(x i32)
-      pre else x > 0
+      pre else x > 0   #  9. should flag an error: implicit pre true inherited, no precondition allowed
     => x
     redef f7(x i32)
       pre else x > 0
@@ -567,45 +567,45 @@ catch_precondition_negative is
 
   c142 : p1, p4 is
     redef f1(x i32)
-      pre else x > 0
+      pre else x > 0   # 10. should flag an error: implicit pre true inherited, no precondition allowed
     => x
     redef f2(x i32)
       pre else x > 0
     => x
     redef f3(x i32)
-      pre else x > 0
+      pre else x > 0   # 11. should flag an error: implicit pre true inherited, no precondition allowed
     => x
     redef f4(x i32)
       pre else x > 0
     => x
     redef f5(x i32)
-      pre else x > 0
+      pre else x > 0   # 12. should flag an error: implicit pre true inherited, no precondition allowed
     => x
     redef f6(x i32)
       pre else x > 0
     => x
     redef f7(x i32)
-      pre else x > 0
+      pre else x > 0   # 13. should flag an error: implicit pre true inherited, no precondition allowed
     => x
 
   c152 : p1, p5 is
     redef f1(x i32)
-      pre else x > 0
+      pre else x > 0   # 14. should flag an error: implicit pre true inherited, no precondition allowed
     => x
     redef f2(x i32)
       pre else x > 0
     => x
     redef f3(x i32)
-      pre else x > 0
+      pre else x > 0   # 15. should flag an error: implicit pre true inherited, no precondition allowed
     => x
     redef f4(x i32)
-      pre else x > 0
+      pre else x > 0   # 16. should flag an error: implicit pre true inherited, no precondition allowed
     => x
     redef f5(x i32)
       pre else x > 0
     => x
     redef f6(x i32)
-      pre else x > 0
+      pre else x > 0   # 17. should flag an error: implicit pre true inherited, no precondition allowed
     => x
     redef f7(x i32)
       pre else x > 0
@@ -613,19 +613,19 @@ catch_precondition_negative is
 
   c162 : p1, p6 is
     redef f1(x i32)
-      pre else x > 0
+      pre else x > 0   # 18. should flag an error: implicit pre true inherited, no precondition allowed
     => x
     redef f2(x i32)
       pre else x > 0
     => x
     redef f3(x i32)
-      pre else x > 0
+      pre else x > 0   # 19. should flag an error: implicit pre true inherited, no precondition allowed
     => x
     redef f4(x i32)
       pre else x > 0
     => x
     redef f5(x i32)
-      pre else x > 0
+      pre else x > 0   # 20. should flag an error: implicit pre true inherited, no precondition allowed
     => x
     redef f6(x i32)
       pre else x > 0
@@ -636,16 +636,16 @@ catch_precondition_negative is
 
   c172 : p1, p7 is
     redef f1(x i32)
-      pre else x > 0
+      pre else x > 0   # 21. should flag an error: implicit pre true inherited, no precondition allowed
     => x
     redef f2(x i32)
-      pre else x > 0
+      pre else x > 0   # 22. should flag an error: implicit pre true inherited, no precondition allowed
     => x
     redef f3(x i32)
-      pre else x > 0
+      pre else x > 0   # 23. should flag an error: implicit pre true inherited, no precondition allowed
     => x
     redef f4(x i32)
-      pre else x > 0
+      pre else x > 0   # 24. should flag an error: implicit pre true inherited, no precondition allowed
     => x
     redef f5(x i32)
       pre else x > 0
@@ -659,13 +659,13 @@ catch_precondition_negative is
 
   c115 : p1, p1 is
     redef f1(x i32)
-      pre else false
+      pre else false   # 25. should flag an error: implicit pre true inherited, no precondition allowed
     => x
     redef f2(x i32)
       pre else false
     => x
     redef f3(x i32)
-      pre else false
+      pre else false   # 26. should flag an error: implicit pre true inherited, no precondition allowed
     => x
     redef f4(x i32)
       pre else false
@@ -682,13 +682,13 @@ catch_precondition_negative is
 
   c125 : p1, p2 is
     redef f1(x i32)
-      pre else false
+      pre else false   # 27. should flag an error: implicit pre true inherited, no precondition allowed
     => x
     redef f2(x i32)
-      pre else false
+      pre else false   # 28. should flag an error: implicit pre true inherited, no precondition allowed
     => x
     redef f3(x i32)
-      pre else false
+      pre else false   # 29. should flag an error: implicit pre true inherited, no precondition allowed
     => x
     redef f4(x i32)
       pre else false
@@ -700,18 +700,18 @@ catch_precondition_negative is
       pre else false
     => x
     redef f7(x i32)
-      pre else false
+      pre else false   # 30. should flag an error: implicit pre true inherited, no precondition allowed
     => x
 
   c135 : p1, p3 is
     redef f1(x i32)
-      pre else false
+      pre else false   # 31. should flag an error: implicit pre true inherited, no precondition allowed
     => x
     redef f2(x i32)
       pre else false
     => x
     redef f3(x i32)
-      pre else false
+      pre else false   # 32. should flag an error: implicit pre true inherited, no precondition allowed
     => x
     redef f4(x i32)
       pre else false
@@ -720,7 +720,7 @@ catch_precondition_negative is
       pre else false
     => x
     redef f6(x i32)
-      pre else false
+      pre else false   # 33. should flag an error: implicit pre true inherited, no precondition allowed
     => x
     redef f7(x i32)
       pre else false
@@ -728,45 +728,45 @@ catch_precondition_negative is
 
   c145 : p1, p4 is
     redef f1(x i32)
-      pre else false
+      pre else false   # 34. should flag an error: implicit pre true inherited, no precondition allowed
     => x
     redef f2(x i32)
       pre else false
     => x
     redef f3(x i32)
-      pre else false
+      pre else false   # 35. should flag an error: implicit pre true inherited, no precondition allowed
     => x
     redef f4(x i32)
       pre else false
     => x
     redef f5(x i32)
-      pre else false
+      pre else false   # 36. should flag an error: implicit pre true inherited, no precondition allowed
     => x
     redef f6(x i32)
       pre else false
     => x
     redef f7(x i32)
-      pre else false
+      pre else false   # 37. should flag an error: implicit pre true inherited, no precondition allowed
     => x
 
   c155 : p1, p5 is
     redef f1(x i32)
-      pre else false
+      pre else false   # 38. should flag an error: implicit pre true inherited, no precondition allowed
     => x
     redef f2(x i32)
       pre else false
     => x
     redef f3(x i32)
-      pre else false
+      pre else false   # 39. should flag an error: implicit pre true inherited, no precondition allowed
     => x
     redef f4(x i32)
-      pre else false
+      pre else false   # 40. should flag an error: implicit pre true inherited, no precondition allowed
     => x
     redef f5(x i32)
       pre else false
     => x
     redef f6(x i32)
-      pre else false
+      pre else false   # 41. should flag an error: implicit pre true inherited, no precondition allowed
     => x
     redef f7(x i32)
       pre else false
@@ -774,19 +774,19 @@ catch_precondition_negative is
 
   c165 : p1, p6 is
     redef f1(x i32)
-      pre else false
+      pre else false   # 42. should flag an error: implicit pre true inherited, no precondition allowed
     => x
     redef f2(x i32)
       pre else false
     => x
     redef f3(x i32)
-      pre else false
+      pre else false   # 43. should flag an error: implicit pre true inherited, no precondition allowed
     => x
     redef f4(x i32)
       pre else false
     => x
     redef f5(x i32)
-      pre else false
+      pre else false   # 44. should flag an error: implicit pre true inherited, no precondition allowed
     => x
     redef f6(x i32)
       pre else false
@@ -797,16 +797,16 @@ catch_precondition_negative is
 
   c175 : p1, p7 is
     redef f1(x i32)
-      pre else false
+      pre else false   # 45. should flag an error: implicit pre true inherited, no precondition allowed
     => x
     redef f2(x i32)
-      pre else false
+      pre else false   # 46. should flag an error: implicit pre true inherited, no precondition allowed
     => x
     redef f3(x i32)
-      pre else false
+      pre else false   # 47. should flag an error: implicit pre true inherited, no precondition allowed
     => x
     redef f4(x i32)
-      pre else false
+      pre else false   # 48. should flag an error: implicit pre true inherited, no precondition allowed
     => x
     redef f5(x i32)
       pre else false
