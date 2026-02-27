@@ -1147,6 +1147,18 @@ The conditions of a post-condition are checked at run-time in sequential source-
 
 
   /**
+   * Is this a contract without any conditions?
+   */
+  public boolean isEmpty()
+  {
+    return _hasPre == null &&
+      _hasPost == null &&
+      _hasPreElse == null &&
+      _hasPostThen == null;
+  }
+
+
+  /**
    * toString
    *
    * @return
