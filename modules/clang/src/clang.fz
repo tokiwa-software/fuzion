@@ -25,7 +25,7 @@
 
 CXCursor(kind i32 /*cursor_kind*/, xdata i32, data1, data2, data3 Native_Ref) is
 CXString(data Native_Ref, private_flags u32, padding i32 /* NYI: padding set manually */) is
-CXType(kind i32 /*type_kind*/, padding i32 /* NYI: padding set manually */, data1, data2 Native_Ref) is
+CXType(kind u32 /*type_kind*/, padding i32 /* NYI: padding set manually */, data1, data2 Native_Ref) is
 
 # clang native api definitions
 
@@ -140,10 +140,10 @@ public clang is
     childs := mut (container.expanding_array clang.arg .empty)
 
     visitor : Function i32 CXCursor Native_Ref Native_Ref is
-      public redef call(c CXCursor, parent Native_Ref, client_data Native_Ref) i32 =>
-        if CXCursor_FieldDecl = clang_getCursorKind c
-          arg_name := clang_getCursorSpelling c
-          arg_type := clang_getCursorType c
+      public redef call(cxc CXCursor, parent Native_Ref, client_data Native_Ref) i32 =>
+        if CXCursor_FieldDecl = clang_getCursorKind cxc
+          arg_name := clang_getCursorSpelling cxc
+          arg_type := clang_getCursorType cxc
           arg_type_spelling := clang_getTypeSpelling arg_type
           childs <- childs.add (clang.arg (cx_string_to_string arg_name) (cx_string_to_string arg_type_spelling))
         CXChildVisit_Continue
