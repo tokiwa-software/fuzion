@@ -74,7 +74,7 @@ module fileio is
   module delete(
                 # the (relative or absolute) file name, using platform specific path separators
                 path path) outcome unit =>
-    arr := fuzion.sys.c_string $path
+    arr := fuzion.sys.c_string path.as_platform_string
     if fzE_rm arr != 0
       error "an error occurred while performing the delete operation on the following file/dir: \"$path\""
 
@@ -88,8 +88,8 @@ module fileio is
               old path,
               # the new (relative or absolute) file name, using platform specific path separators
               new path) outcome unit =>
-    arr0 := fuzion.sys.c_string $old
-    arr1 := fuzion.sys.c_string $new
+    arr0 := fuzion.sys.c_string old.as_platform_string
+    arr1 := fuzion.sys.c_string new.as_platform_string
     if fzE_file_move arr0 arr1 != 0
       error "an error occurred while performing the following move operation: \"$old\" --> \"$new\""
 
@@ -100,7 +100,7 @@ module fileio is
   module create_dir(
                     # the (relative or absolute) dir name, using platform specific path separators
                     path path) outcome unit =>
-    arr := fuzion.sys.c_string $path
+    arr := fuzion.sys.c_string path.as_platform_string
     if fzE_mkdir arr != 0
       error "an error occurred while creating the following directory: \"$path\""
 
@@ -168,7 +168,7 @@ module fileio is
   #
   module open_dir(path path) outcome Directory_Descriptor =>
     open_results := fuzion.sys.internal_array_init i64 1  # [error number]
-    res := fzE_opendir (fuzion.sys.c_string $path) open_results.data
+    res := fzE_opendir (fuzion.sys.c_string path.as_platform_string) open_results.data
     if open_results[0] = 0
       res
     else
