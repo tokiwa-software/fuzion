@@ -1706,7 +1706,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   protected boolean mayBeNativeValue()
   {
     return kind() == Kind.Constructor
-      && !hasOuterRef()
+      && (!hasOuterRef() || outerRef().resultType().feature().isUnitType())
       && typeArguments().isEmpty()
       && inherits().size() == 1
       && !Contract.hasPreConditionsFeature(this)
@@ -1913,7 +1913,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   {
     return
       isConstructor() &&
-      contract() == dev.flang.ast.Contract.EMPTY_CONTRACT &&
+      contract().isEmpty() &&
       valueArguments().isEmpty() &&
       (isInheritedFeature || !isRef()) &&
       code().isEmpty() &&
