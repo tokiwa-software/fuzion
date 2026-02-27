@@ -290,17 +290,49 @@ is
   # does this uint fit into an u8?
   #
   public redef fits_in_u8 bool =>
-    data.count ≤ 1 && data[0].fits_in_u8
-  public fixed redef fits_in_u16 bool => false # NYI
-  public fixed redef fits_in_u32 bool => data.count ≤ 1
-  public fixed redef fits_in_u64 bool => data.count ≤ 2
+    data.is_empty  || data.count = 1 && data[0].fits_in_u8
+
+  # does this uint fit into an u16?
+  #
+  public fixed redef fits_in_u16  bool =>
+    data.is_empty  || (data.count = 1 && data[0].fits_in_u16)
+
+  # does this uint fit into an u32?
+  #
+  public fixed redef fits_in_u32  bool => data.count ≤ 1
+
+  # does this uint fit into an u64?
+  #
+  public fixed redef fits_in_u64  bool => data.count ≤ 2
+
+  # does this uint fit into an u128?
+  #
   public fixed redef fits_in_u128 bool => data.count ≤ 4
-  public fixed redef fits_in_i8 bool => false # NYI
-  public fixed redef fits_in_i16 bool => false # NYI
-  public fixed redef fits_in_i32 bool => false # NYI
-  public fixed redef fits_in_i64 bool => false # NYI
+
+  # does this uint fit into an i8?
+  #
+  public fixed redef fits_in_i8   bool =>
+    data.is_empty  || (data.count = 1 && ((data[0] & u32.max << 7) = u32 0))
+
+  # does this uint fit into an i16?
+  #
+  public fixed redef fits_in_i16  bool =>
+    data.is_empty  || (data.count = 1 && ((data[0] & u32.max << 15) = u32 0))
+
+  # does this uint fit into an i32?
+  #
+  public fixed redef fits_in_i32  bool =>
+    data.is_empty  || (data.count = 1 && ((data[0] & i32.min.cast_to_u32) = u32 0))
+
+  # does this uint fit into an i64?
+  #
+  public fixed redef fits_in_i64  bool =>
+    data.count < 2 || (data.count = 2 && ((data[0] & i32.min.cast_to_u32) = u32 0))
+
+  # does this uint fit into an i128?
+  #
   public fixed redef fits_in_i128 bool =>
-    data.count < 4 | (data.count = 4 && ((data[0] & i32.min.cast_to_u32) = u32 0))
+    data.count < 4 || (data.count = 4 && ((data[0] & i32.min.cast_to_u32) = u32 0))
 
 
   # this uint as an u32
