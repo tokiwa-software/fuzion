@@ -1,5 +1,5 @@
 unit
---error: an error occurred while creating the following directory: "./test_path_😀"--
+--error: an error occurred while creating the following directory: "test_path_😀"--
 --error: no more directory entries--
-./file1_😀
-./file2_😀
+file1_😀
+file2_😀

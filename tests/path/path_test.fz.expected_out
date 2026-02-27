@@ -1,24 +1,24 @@
 /first/second/third/fourth has 4 levels
-./alpha/beta/gamma has 3 levels
-./second/third/fourth
+alpha/beta/gamma has 3 levels
+second/third/fourth
 /first/second/third/fourth/alpha/beta/gamma
 
 Resolve:
-./../../ex.fz
+../../ex.fz
 /ex.fz
 /first/second/third/fourth/alpha/beta
 
-./alpha/beta/gamma/myfile.txt
+alpha/beta/gamma/myfile.txt
   base: myfile.txt
   stem: myfile
 suffix: txt
 
-./alpha/beta/gamma
+alpha/beta/gamma
   base: gamma
   stem: gamma
 suffix: 
 
-./.config
+.config
   base: .config
   stem: .config
 suffix: 
@@ -28,50 +28,50 @@ suffix:
   stem: no_ext.
 suffix: 
 
-./../foo..
+../foo..
   base: foo..
   stem: foo..
 suffix: 
 
-./...
+...
   base: ...
   stem: ...
 suffix: 
 
-./...txt
+...txt
   base: ...txt
   stem: ..
 suffix: txt
 
-'/first/second/third/fourth/alpha/beta/gamma/foo/bar'.subpath 4 7 -> ./alpha/beta/gamma
+'/first/second/third/fourth/alpha/beta/gamma/foo/bar'.subpath 4 7 -> alpha/beta/gamma
 
 Parents:
-./alpha/beta/gamma/myfile.txt
-./alpha/beta/gamma
-./alpha/beta
-./alpha
-./
-./..
-./../..
+alpha/beta/gamma/myfile.txt
+alpha/beta/gamma
+alpha/beta
+alpha
+.
+..
+../..
 
 Relativize:
 
-./ex.fz
-./fourth/ex.fz
-./third/fourth/ex.fz
-./second/third/fourth/ex.fz
-./first/second/third/fourth/ex.fz
+ex.fz
+fourth/ex.fz
+third/fourth/ex.fz
+second/third/fourth/ex.fz
+first/second/third/fourth/ex.fz
 
-./myfile.txt
-./gamma/myfile.txt
-./beta/gamma/myfile.txt
-./alpha/beta/gamma/myfile.txt
+myfile.txt
+gamma/myfile.txt
+beta/gamma/myfile.txt
+alpha/beta/gamma/myfile.txt
 
 IN:  '/./././foo/./././../././bar/././././..'
 OUT: '/'
 
 IN:  '...'
-OUT: './...'
+OUT: '...'
 
 IN:  '/...'
 OUT: '/...'
@@ -83,7 +83,7 @@ IN:  '[a, b, c.fz]' absolute
 OUT: '/a/b/c.fz'
 
 IN:  '[a, b, c.fz]' relative
-OUT: './a/b/c.fz'
+OUT: 'a/b/c.fz'
 
 NEGATIVE:
 

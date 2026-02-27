@@ -181,9 +181,19 @@ is
 
   # String representation of this path
   #
-  # e.g. "/folder/file" or "./relative_folder/file"
+  # e.g. "/folder/file" or "relative_folder/file"
   #
   public redef as_string String =>
+    "{is_absolute ? "/" : names.is_empty ? "." : ""}{String.join names "/"}"
+
+
+  # Platform dependent String representation of this path
+  #
+  # Relative paths start with "./" to avoid problems on Windows
+  #
+  # e.g. "/folder/file" or "./relative_folder/file"
+  #
+  public as_platform_string String =>
     # relative paths should always start with `./` to avoid problems on Windows
     "{if is_absolute then "/" else "./"}{String.join names "/"}"
 
