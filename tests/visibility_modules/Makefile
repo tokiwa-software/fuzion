@@ -32,7 +32,6 @@ FILE = $(NAME).fz
 ENV = \
   $(if $(FUZION_HOME)           , FUZION_HOME=$(FUZION_HOME)                      ,) \
   $(if $(FUZION_JAVA)           , FUZION_JAVA=$(FUZION_JAVA)                      ,) \
-  $(if $(FUZION_JAVA_STACK_SIZE), FUZION_JAVA_STACK_SIZE=$(FUZION_JAVA_STACK_SIZE),) \
   $(if $(FUZION_JAVA_OPTIONS)   , FUZION_JAVA_OPTIONS=$(FUZION_JAVA_OPTIONS)      ,) \
 
 CHECK = && echo $(OK) || (echo $(FAIL); exit 1)

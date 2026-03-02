@@ -33,7 +33,6 @@
 #
 #   FUZION_HOME            the fuzion installation directory
 #   FUZION_JAVA            the java command used to run Fuzion
-#   FUZION_JAVA_STACK_SIZE the stack size parameter passed to the JAVA command
 #   FUZION_JAVA_OPTIONS    options to be passed to the JAVA command (if set, will
 #                          override stack size)
 
@@ -51,8 +50,7 @@ if [ -n "$FUZION_JAVA_ADDITIONAL_CLASSPATH" ]
 then
   FUZION_JAVA_CLASSPATH="$FUZION_JAVA_CLASSPATH:$FUZION_JAVA_ADDITIONAL_CLASSPATH"
 fi
-: "${FUZION_JAVA_STACK_SIZE=5m}"
-: "${FUZION_JAVA_OPTIONS="-Xss$FUZION_JAVA_STACK_SIZE"}"
+: "${FUZION_JAVA_OPTIONS=}"
 : "${FUZION_JAVA_ADDITIONAL_OPTIONS=--enable-preview --enable-native-access=ALL-UNNAMED}"
 
 LINE_SEPARATOR="
