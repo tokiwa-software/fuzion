@@ -1,0 +1,67 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature resources
+#
+# -----------------------------------------------------------------------
+
+# resources is an effect to store open resources
+#
+# when deinstated it closes the resources in reverse order
+# that they were opened.
+#
+public resources : effect is
+
+  # NYI:
+  _ := mut
+
+  # do not remove this type!
+  # it enforces boxing. Does not work without it.
+  #
+  s container.Stack Resource := container.stack mutate Resource
+
+  module register_usage(r Resource) unit =>
+    replace
+    if !s.as_sequence.contains r
+      fuzion.runtime.fault.cause ("resources.register_usage",
+                                  "Resource already closed or Resource owned by another thread.")
+
+  # NYI: public close(r Resource) outcome unit =>
+
+  module open (r Resource) =>
+    replace
+    s.push r
+
+  public redef finally unit =>
+    _ :=
+      for r := s.pop
+      while r.ok
+        res := r.val.close
+
+        # NYI: UNDER DEVELOPMENT: what to do on error?
+
+        if resources_observer.is_instated
+          resources_observer.env.send res
+
+
+module resources0 =>
+  if !resources.is_instated
+    resources.default resources
+  resources.env
+
