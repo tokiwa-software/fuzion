@@ -43,6 +43,8 @@ public processes (ph os.Process_Handler, public running_processes container.Set 
     running_processes.for_each p->
       # NYI: UNDER DEVELOPMENT: register failures
       _ := p.wait
+      _ := fzE_pipe_close p.std_out
+      _ := fzE_pipe_close p.std_err
 
 
   # wait for process to finish
@@ -73,9 +75,6 @@ public processes (ph os.Process_Handler, public running_processes container.Set 
       time.nano.sleep (min timeout-elapsed_time polling_time)
     else
       if r >= 0
-        # NYI: UNDER DEVELOPMENT: close these:
-        # check fzE_pipe_close p.std_out = 0
-        # check fzE_pipe_close p.std_err = 0
         r.as_u32
       else
         if elapsed_time > timeout
