@@ -31,8 +31,8 @@ public sodium is
 
     mutate ! ()->
 
-      out := mutate.array i8 .new password_hash_length 0
-      passwd := mutate.array i8 .from_Sequence (password.utf8.map (.cast_to_i8))
+      out := mutate.array u8 .new password_hash_length 0
+      passwd := mutate.array u8 .from_Sequence password.utf8
 
       sodium.sodium_init
 
@@ -41,10 +41,10 @@ public sodium is
                 out
                 passwd
                 passwd.length.as_u64
-                c.crypto_pwhash_opslimit_interactive.as_u64
-                c.crypto_pwhash_memlimit_interactive.as_u64
+                c.crypto_pwhash_opslimit_interactive
+                c.crypto_pwhash_memlimit_interactive
         }
-        String.from <| out.as_array.map (.cast_to_u8)
+        String.from out.as_array
       else
         # NYI: UNDER DEVELOPMENT: type inference
         id (outcome String) (error "out of memory (crypto_pwhash)")
@@ -52,7 +52,7 @@ public sodium is
 
   # the length of the password hash that password_hash returns
   #
-  public type.password_hash_length i64 => c.crypto_pwhash_strbytes
+  public type.password_hash_length i64 => c.crypto_pwhash_strbytes.as_i64
 
 
   type.sodium_init =>
@@ -69,8 +69,8 @@ public sodium is
 
     mutate ! ()->
 
-      passwd := mutate.array i8 .from_Sequence (password.utf8.map (.cast_to_i8))
-      hsh := mutate.array i8 .from_Sequence (hash.utf8.map (.cast_to_i8))
+      passwd := mutate.array u8 .from_Sequence password.utf8
+      hsh := mutate.array u8 .from_Sequence hash.utf8
 
       sodium.sodium_init
 
