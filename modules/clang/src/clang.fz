@@ -172,7 +172,7 @@ public clang is
           func_name := clang_getCursorSpelling crsr
           fn := "{cx_string_to_string func_name}"
 
-          return_type := clang_getCursorResultType crsr
+          return_type := clang_getCanonicalType (clang_getCursorResultType crsr)
           return_type_spelling := clang_getTypeSpelling return_type
           rt := "{cx_string_to_string return_type_spelling}"
 
