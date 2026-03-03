@@ -7,84 +7,38 @@ module c is
 ################################### structs ####################################
 
   module CXIndexOptions(module Size u32 /* from: unsigned int */, module ThreadBackgroundPriorityForIndexing u8 /* from: unsigned char */, module ThreadBackgroundPriorityForEditing u8 /* from: unsigned char */, module ExcludeDeclarationsFromPCH u32 /* from: unsigned int */, module DisplayDiagnostics u32 /* from: unsigned int */, module StorePreamblesInMemory u32 /* from: unsigned int */, module _ u32 /* from: unsigned int */, module PreambleStoragePath Native_Ref /* from: char * */, module InvocationEmissionPath Native_Ref /* from: char * */) is
-  module CXCursorSetImpl is
-  module CXCursor(module kind u32 /* from: enum CXCursorKind */, module xdata i32 /* from: int */, module data Native_Ref /* from: void *[3] */) is
-  module CXCodeCompleteResults(module Results Native_Ref /* from: CXCompletionResult * */, module NumResults u32 /* from: unsigned int */) is
-  module CXCursorAndRangeVisitor(module context Native_Ref /* from: void * */, module visit Native_Ref /* from: enum CXVisitorResult (*)(void *, CXCursor, int) */) is
-  module CXIdxObjCContainerDeclInfo(module declInfo Native_Ref /* from: CXIdxDeclInfo * */, module kind i32 /* from enum CXIdxObjCContainerKind */) is
   module CXIdxLoc(module ptr_data Native_Ref /* from: void *[2] */, module int_data u32 /* from: unsigned int */) is
+  module CXCursor(module kind u32 /* from: enum CXCursorKind */, module xdata i32 /* from: int */, module data Native_Ref /* from: void *[3] */) is
+  module CXCompletionResult(module CursorKind u32 /* from: enum CXCursorKind */, module CompletionString Native_Ref /* from: void * */) is
+  module CXCodeCompleteResults(module Results Native_Ref /* from: CXCompletionResult * */, module NumResults u32 /* from: unsigned int */) is
+  module CXCursorSetImpl is
   module CXIdxCXXClassDeclInfo(module declInfo Native_Ref /* from: CXIdxDeclInfo * */, module bases Native_Ref /* from: CXIdxBaseClassInfo ** */, module numBases u32 /* from: unsigned int */) is
-  module CXIdxObjCPropertyDeclInfo(module declInfo Native_Ref /* from: CXIdxDeclInfo * */, module getter Native_Ref /* from: CXIdxEntityInfo * */, module setter Native_Ref /* from: CXIdxEntityInfo * */) is
   module CXIdxObjCInterfaceDeclInfo(module containerInfo Native_Ref /* from: CXIdxObjCContainerDeclInfo * */, module superInfo Native_Ref /* from: CXIdxBaseClassInfo * */, module protocols Native_Ref /* from: CXIdxObjCProtocolRefListInfo * */) is
+  module CXIdxObjCContainerDeclInfo(module declInfo Native_Ref /* from: CXIdxDeclInfo * */, module kind i32 /* from enum CXIdxObjCContainerKind */) is
   module CXIdxObjCProtocolRefListInfo(module protocols Native_Ref /* from: CXIdxObjCProtocolRefInfo ** */, module numProtocols u32 /* from: unsigned int */) is
+  module CXIdxObjCPropertyDeclInfo(module declInfo Native_Ref /* from: CXIdxDeclInfo * */, module getter Native_Ref /* from: CXIdxEntityInfo * */, module setter Native_Ref /* from: CXIdxEntityInfo * */) is
   module CXTranslationUnitImpl is
   module CXTUResourceUsageEntry(module kind u32 /* from: enum CXTUResourceUsageKind */, module amount u64 /* from: unsigned long */) is
-  module CXTUResourceUsage(module data Native_Ref /* from: void * */, module numEntries u32 /* from: unsigned int */, module entries Native_Ref /* from: CXTUResourceUsageEntry * */) is
+  module CXTUResourceUsage(module data Native_Ref /* from: void * */, module numEntries u32 /* from: unsigned int */, module entries Native_Ref /* from: struct CXTUResourceUsageEntry * */) is
   module CXTargetInfoImpl is
   module CXToken(module int_data Native_Ref /* from: unsigned int[4] */, module ptr_data Native_Ref /* from: void * */) is
   module CXVersion(module Major i32 /* from: int */, module Minor i32 /* from: int */, module Subminor i32 /* from: int */) is
   module CXUnsavedFile(module Filename Native_Ref /* from: char * */, module Contents Native_Ref /* from: char * */, module Length u64 /* from: unsigned long */) is
   module CXType(module kind u32 /* from: enum CXTypeKind */, module data Native_Ref /* from: void *[2] */) is
   module _CXChildVisitResult is
-  module IndexerCallbacks(module abortQuery Native_Ref /* from: int (*)(CXClientData, void *) */, module diagnostic Native_Ref /* from: void (*)(CXClientData, int, void *) */, module enteredMainFile Native_Ref /* from: CXIdxClientFile (*)(CXClientData, int, void *) */, module ppIncludedFile Native_Ref /* from: CXIdxClientFile (*)(CXClientData, CXIdxIncludedFileInfo *) */, module importedASTFile Native_Ref /* from: CXIdxClientASTFile (*)(CXClientData, CXIdxImportedASTFileInfo *) */, module startedTranslationUnit Native_Ref /* from: CXIdxClientContainer (*)(CXClientData, void *) */, module indexDeclaration Native_Ref /* from: void (*)(CXClientData, CXIdxDeclInfo *) */, module indexEntityReference Native_Ref /* from: void (*)(CXClientData, CXIdxEntityRefInfo *) */) is
+  module IndexerCallbacks(module abortQuery F0 : Function i32 /* from: int */ Native_Ref /* from: void * */ Native_Ref /* from: void * */, module diagnostic F1 : Function unit Native_Ref /* from: void * */ i32 /* from: int */ Native_Ref /* from: void * */, module enteredMainFile F2 : Function Native_Ref /* from: void * */ Native_Ref /* from: void * */ i32 /* from: int */ Native_Ref /* from: void * */, module ppIncludedFile F3 : Function Native_Ref /* from: void * */ Native_Ref /* from: void * */ Native_Ref /* from: struct (unnamed at /usr/lib/llvm-19/include/clang-c/Index.h:6016:9) * */, module importedASTFile F4 : Function Native_Ref /* from: void * */ Native_Ref /* from: void * */ Native_Ref /* from: struct (unnamed at /usr/lib/llvm-19/include/clang-c/Index.h:6041:9) * */, module startedTranslationUnit F5 : Function Native_Ref /* from: void * */ Native_Ref /* from: void * */ Native_Ref /* from: void * */, module indexDeclaration F6 : Function unit Native_Ref /* from: void * */ Native_Ref /* from: CXIdxDeclInfo * */, module indexEntityReference F7 : Function unit Native_Ref /* from: void * */ Native_Ref /* from: CXIdxEntityRefInfo * */) is
   module _CXCursorAndRangeVisitorBlock is
 
 ############################ function declarations #############################
 
-  # module clang_CXCursorSet_contains(cset *** unknown type ***, cursor c.CXCursor) i32 /* from: int */ => native
-  # module clang_CXCursorSet_insert(cset *** unknown type ***, cursor c.CXCursor) i32 /* from: int */ => native
-  # module clang_CXIndex_getGlobalOptions(_ *** unknown type ***) i32 /* from: int */ => native
-  # module clang_CXIndex_setGlobalOptions(_ *** unknown type ***, options u32 /* from: unsigned int */) i32 /* from: int */ => native
-  # module clang_CXIndex_setInvocationEmissionPathOption(_ *** unknown type ***, Path mutate.array i8 /* from: char * */) i32 /* from: int */ => native
-  # module clang_EvalResult_dispose(E *** unknown type ***) i32 /* from: int */ => native
-  # module clang_EvalResult_getAsDouble(E *** unknown type ***) i32 /* from: int */ => native
-  # module clang_EvalResult_getAsInt(E *** unknown type ***) i32 /* from: int */ => native
-  # module clang_EvalResult_getAsLongLong(E *** unknown type ***) i32 /* from: int */ => native
-  # module clang_EvalResult_getAsStr(E *** unknown type ***) Native_Ref /* from: int * */ => native
-  # module clang_EvalResult_getAsUnsigned(E *** unknown type ***) i32 /* from: int */ => native
-  # module clang_EvalResult_isUnsignedInt(E *** unknown type ***) i32 /* from: int */ => native
-  # module clang_IndexAction_dispose(_ *** unknown type ***) i32 /* from: int */ => native
-  # module clang_Module_getNumTopLevelHeaders(_ *** unknown type ***, Module *** unknown type ***) i32 /* from: int */ => native
-  # module clang_Module_isSystem(Module *** unknown type ***) i32 /* from: int */ => native
-  # module clang_PrintingPolicy_dispose(Policy *** unknown type ***) i32 /* from: int */ => native
-  # module clang_PrintingPolicy_getProperty(Policy *** unknown type ***, Property u32 /* from: enum CXPrintingPolicyProperty */) i32 /* from: int */ => native
-  # module clang_PrintingPolicy_setProperty(Policy *** unknown type ***, Property u32 /* from: enum CXPrintingPolicyProperty */, Value u32 /* from: unsigned int */) i32 /* from: int */ => native
-  # module clang_TargetInfo_dispose(Info *** unknown type ***) i32 /* from: int */ => native
-  # module clang_TargetInfo_getPointerWidth(Info *** unknown type ***) i32 /* from: int */ => native
-  # module clang_Type_visitFields(T c.CXType, visitor *** unknown type ***, client_data *** unknown type ***) i32 /* from: int */ => native
-  # module clang_annotateTokens(TU *** unknown type ***, Tokens Native_Ref /* from: CXToken * */, NumTokens u32 /* from: unsigned int */, Cursors Native_Ref /* from: CXCursor * */) i32 /* from: int */ => native
-  # module clang_createTranslationUnit2(CIdx *** unknown type ***, ast_filename mutate.array i8 /* from: char * */, out_TU Native_Ref /* from: CXTranslationUnit * */) i32 /* from: int */ => native
-  # module clang_defaultReparseOptions(TU *** unknown type ***) i32 /* from: int */ => native
-  # module clang_defaultSaveOptions(TU *** unknown type ***) i32 /* from: int */ => native
-  # module clang_disposeCXCursorSet(cset *** unknown type ***) i32 /* from: int */ => native
-  # module clang_disposeIndex(index_ *** unknown type ***) i32 /* from: int */ => native
-  # module clang_disposeTokens(TU *** unknown type ***, Tokens Native_Ref /* from: CXToken * */, NumTokens u32 /* from: unsigned int */) i32 /* from: int */ => native
-  # module clang_disposeTranslationUnit(_ *** unknown type ***) i32 /* from: int */ => native
-  # module clang_getCompletionAvailability(completion_string *** unknown type ***) i32 /* from: int */ => native
-  # module clang_getCompletionChunkKind(completion_string *** unknown type ***, chunk_number u32 /* from: unsigned int */) i32 /* from: int */ => native
-  # module clang_getCompletionNumAnnotations(completion_string *** unknown type ***) i32 /* from: int */ => native
-  # module clang_getCompletionPriority(completion_string *** unknown type ***) i32 /* from: int */ => native
-  # module clang_getFileContents(tu *** unknown type ***, file i32 /* from: int */, size mutate.array i32 /* from: int * */) Native_Ref /* from: int * */ => native
-  # module clang_getInclusions(tu *** unknown type ***, visitor *** unknown type ***, client_data *** unknown type ***) i32 /* from: int */ => native
-  # module clang_getNumCompletionChunks(completion_string *** unknown type ***) i32 /* from: int */ => native
-  # module clang_getNumDiagnostics(Unit *** unknown type ***) i32 /* from: int */ => native
-  # module clang_indexSourceFile(_ *** unknown type ***, client_data *** unknown type ***, index_callbacks Native_Ref /* from: IndexerCallbacks * */, index_callbacks_size u32 /* from: unsigned int */, index_options u32 /* from: unsigned int */, source_filename mutate.array i8 /* from: char * */, command_line_args Native_Ref /* from: char ** */, num_command_line_args i32 /* from: int */, unsaved_files Native_Ref /* from: struct CXUnsavedFile * */, num_unsaved_files u32 /* from: unsigned int */, out_TU Native_Ref /* from: CXTranslationUnit * */, TU_options u32 /* from: unsigned int */) i32 /* from: int */ => native
-  # module clang_indexSourceFileFullArgv(_ *** unknown type ***, client_data *** unknown type ***, index_callbacks Native_Ref /* from: IndexerCallbacks * */, index_callbacks_size u32 /* from: unsigned int */, index_options u32 /* from: unsigned int */, source_filename mutate.array i8 /* from: char * */, command_line_args Native_Ref /* from: char ** */, num_command_line_args i32 /* from: int */, unsaved_files Native_Ref /* from: struct CXUnsavedFile * */, num_unsaved_files u32 /* from: unsigned int */, out_TU Native_Ref /* from: CXTranslationUnit * */, TU_options u32 /* from: unsigned int */) i32 /* from: int */ => native
-  # module clang_indexTranslationUnit(_ *** unknown type ***, client_data *** unknown type ***, index_callbacks Native_Ref /* from: IndexerCallbacks * */, index_callbacks_size u32 /* from: unsigned int */, index_options u32 /* from: unsigned int */, _ *** unknown type ***) i32 /* from: int */ => native
-  # module clang_index_setClientContainer(_ Native_Ref /* from: CXIdxContainerInfo * */, _ *** unknown type ***) i32 /* from: int */ => native
-  # module clang_index_setClientEntity(_ Native_Ref /* from: CXIdxEntityInfo * */, _ *** unknown type ***) i32 /* from: int */ => native
-  # module clang_isFileMultipleIncludeGuarded(tu *** unknown type ***, file i32 /* from: int */) i32 /* from: int */ => native
-  # module clang_parseTranslationUnit2(CIdx *** unknown type ***, source_filename mutate.array i8 /* from: char * */, command_line_args Native_Ref /* from: char ** */, num_command_line_args i32 /* from: int */, unsaved_files Native_Ref /* from: struct CXUnsavedFile * */, num_unsaved_files u32 /* from: unsigned int */, options u32 /* from: unsigned int */, out_TU Native_Ref /* from: CXTranslationUnit * */) i32 /* from: int */ => native
-  # module clang_parseTranslationUnit2FullArgv(CIdx *** unknown type ***, source_filename mutate.array i8 /* from: char * */, command_line_args Native_Ref /* from: char ** */, num_command_line_args i32 /* from: int */, unsaved_files Native_Ref /* from: struct CXUnsavedFile * */, num_unsaved_files u32 /* from: unsigned int */, options u32 /* from: unsigned int */, out_TU Native_Ref /* from: CXTranslationUnit * */) i32 /* from: int */ => native
-  # module clang_remap_dispose(_ *** unknown type ***) i32 /* from: int */ => native
-  # module clang_remap_getFilenames(_ *** unknown type ***, index_ u32 /* from: unsigned int */, original mutate.array i32 /* from: int * */, transformed mutate.array i32 /* from: int * */) i32 /* from: int */ => native
-  # module clang_remap_getNumFiles(_ *** unknown type ***) i32 /* from: int */ => native
-  # module clang_reparseTranslationUnit(TU *** unknown type ***, num_unsaved_files u32 /* from: unsigned int */, unsaved_files Native_Ref /* from: struct CXUnsavedFile * */, options u32 /* from: unsigned int */) i32 /* from: int */ => native
-  # module clang_saveTranslationUnit(TU *** unknown type ***, FileName mutate.array i8 /* from: char * */, options u32 /* from: unsigned int */) i32 /* from: int */ => native
-  # module clang_suspendTranslationUnit(_ *** unknown type ***) i32 /* from: int */ => native
-  # module clang_tokenize(TU *** unknown type ***, Range i32 /* from: int */, Tokens Native_Ref /* from: CXToken ** */, NumTokens mutate.array u32 /* from: unsigned int * */) i32 /* from: int */ => native
-  # module clang_visitChildren(parent c.CXCursor, visitor *** unknown type ***, client_data *** unknown type ***) i32 /* from: int */ => native
-  # module clang_visitChildrenWithBlock(parent c.CXCursor, block *** unknown type ***) i32 /* from: int */ => native
+  # module clang_Type_visitFields(T c.CXType, visitor --error: enum CXVisitorResult (*)(CXCursor, void *)--, client_data mutate.array u8 /* from: void * */) i32 /* from: int */ => native
+  # module clang_disposeCXTUResourceUsage(usage --error: struct CXTUResourceUsage--) i32 /* from: int */ => native
+  # module clang_visitChildren(parent c.CXCursor, visitor --error: enum CXChildVisitResult (*)(CXCursor, CXCursor, void *)--, client_data mutate.array u8 /* from: void * */) i32 /* from: int */ => native
+  module clang_CXCursorSet_contains(cset Native_Ref /* from: struct CXCursorSetImpl * */, cursor c.CXCursor) i32 /* from: int */ => native
+  module clang_CXCursorSet_insert(cset Native_Ref /* from: struct CXCursorSetImpl * */, cursor c.CXCursor) i32 /* from: int */ => native
+  module clang_CXIndex_getGlobalOptions(_ mutate.array i32 /* from: int * */) i32 /* from: int */ => native
+  module clang_CXIndex_setGlobalOptions(_ mutate.array i32 /* from: int * */, options u32 /* from: unsigned int */) i32 /* from: int */ => native
+  module clang_CXIndex_setInvocationEmissionPathOption(_ mutate.array i32 /* from: int * */, Path mutate.array i8 /* from: char * */) i32 /* from: int */ => native
   module clang_CXXConstructor_isConvertingConstructor(C c.CXCursor) i32 /* from: int */ => native
   module clang_CXXConstructor_isCopyConstructor(C c.CXCursor) i32 /* from: int */ => native
   module clang_CXXConstructor_isDefaultConstructor(C c.CXCursor) i32 /* from: int */ => native
@@ -127,6 +81,21 @@ module c is
   module clang_Cursor_isObjCOptional(C c.CXCursor) i32 /* from: int */ => native
   module clang_Cursor_isVariadic(C c.CXCursor) i32 /* from: int */ => native
   module clang_EnumDecl_isScoped(C c.CXCursor) i32 /* from: int */ => native
+  module clang_EvalResult_dispose(E mutate.array u8 /* from: void * */) i32 /* from: int */ => native
+  module clang_EvalResult_getAsDouble(E mutate.array u8 /* from: void * */) i32 /* from: int */ => native
+  module clang_EvalResult_getAsInt(E mutate.array u8 /* from: void * */) i32 /* from: int */ => native
+  module clang_EvalResult_getAsLongLong(E mutate.array u8 /* from: void * */) i32 /* from: int */ => native
+  module clang_EvalResult_getAsStr(E mutate.array u8 /* from: void * */) Native_Ref /* from: int * */ => native
+  module clang_EvalResult_getAsUnsigned(E mutate.array u8 /* from: void * */) i32 /* from: int */ => native
+  module clang_EvalResult_isUnsignedInt(E mutate.array u8 /* from: void * */) i32 /* from: int */ => native
+  module clang_IndexAction_dispose(_ mutate.array u8 /* from: void * */) i32 /* from: int */ => native
+  module clang_Module_getNumTopLevelHeaders(_ Native_Ref /* from: struct CXTranslationUnitImpl * */, Module mutate.array u8 /* from: void * */) i32 /* from: int */ => native
+  module clang_Module_isSystem(Module mutate.array u8 /* from: void * */) i32 /* from: int */ => native
+  module clang_PrintingPolicy_dispose(Policy mutate.array u8 /* from: void * */) i32 /* from: int */ => native
+  module clang_PrintingPolicy_getProperty(Policy mutate.array u8 /* from: void * */, Property u32 /* from: enum CXPrintingPolicyProperty */) i32 /* from: int */ => native
+  module clang_PrintingPolicy_setProperty(Policy mutate.array u8 /* from: void * */, Property u32 /* from: enum CXPrintingPolicyProperty */, Value u32 /* from: unsigned int */) i32 /* from: int */ => native
+  module clang_TargetInfo_dispose(Info Native_Ref /* from: struct CXTargetInfoImpl * */) i32 /* from: int */ => native
+  module clang_TargetInfo_getPointerWidth(Info Native_Ref /* from: struct CXTargetInfoImpl * */) i32 /* from: int */ => native
   module clang_Type_getAlignOf(T c.CXType) i32 /* from: int */ => native
   module clang_Type_getCXXRefQualifier(T c.CXType) i32 /* from: int */ => native
   module clang_Type_getNullability(T c.CXType) i32 /* from: int */ => native
@@ -136,30 +105,41 @@ module c is
   module clang_Type_getOffsetOf(T c.CXType, S mutate.array i8 /* from: char * */) i32 /* from: int */ => native
   module clang_Type_getSizeOf(T c.CXType) i32 /* from: int */ => native
   module clang_Type_isTransparentTagTypedef(T c.CXType) i32 /* from: int */ => native
+  module clang_annotateTokens(TU Native_Ref /* from: struct CXTranslationUnitImpl * */, Tokens Native_Ref /* from: CXToken * */, NumTokens u32 /* from: unsigned int */, Cursors Native_Ref /* from: CXCursor * */) i32 /* from: int */ => native
   module clang_codeCompleteGetContainerKind(Results Native_Ref /* from: CXCodeCompleteResults * */, IsIncomplete mutate.array u32 /* from: unsigned int * */) i32 /* from: int */ => native
   module clang_codeCompleteGetContexts(Results Native_Ref /* from: CXCodeCompleteResults * */) i32 /* from: int */ => native
   module clang_codeCompleteGetNumDiagnostics(Results Native_Ref /* from: CXCodeCompleteResults * */) i32 /* from: int */ => native
+  module clang_createTranslationUnit2(CIdx mutate.array i32 /* from: int * */, ast_filename mutate.array i8 /* from: char * */, out_TU Native_Ref /* from: struct CXTranslationUnitImpl ** */) i32 /* from: int */ => native
   module clang_defaultCodeCompleteOptions i32 /* from: int */ => native
   module clang_defaultEditingTranslationUnitOptions i32 /* from: int */ => native
-  module clang_disposeCXPlatformAvailability(availability Native_Ref /* from: CXPlatformAvailability * */) i32 /* from: int */ => native
-  module clang_disposeCXTUResourceUsage(usage c.CXTUResourceUsage) i32 /* from: int */ => native
+  module clang_defaultReparseOptions(TU Native_Ref /* from: struct CXTranslationUnitImpl * */) i32 /* from: int */ => native
+  module clang_defaultSaveOptions(TU Native_Ref /* from: struct CXTranslationUnitImpl * */) i32 /* from: int */ => native
+  module clang_disposeCXCursorSet(cset Native_Ref /* from: struct CXCursorSetImpl * */) i32 /* from: int */ => native
+  module clang_disposeCXPlatformAvailability(availability Native_Ref /* from: struct CXPlatformAvailability * */) i32 /* from: int */ => native
   module clang_disposeCodeCompleteResults(Results Native_Ref /* from: CXCodeCompleteResults * */) i32 /* from: int */ => native
+  module clang_disposeIndex(index_ mutate.array i32 /* from: int * */) i32 /* from: int */ => native
   module clang_disposeOverriddenCursors(overridden Native_Ref /* from: CXCursor * */) i32 /* from: int */ => native
+  module clang_disposeTokens(TU Native_Ref /* from: struct CXTranslationUnitImpl * */, Tokens Native_Ref /* from: CXToken * */, NumTokens u32 /* from: unsigned int */) i32 /* from: int */ => native
+  module clang_disposeTranslationUnit(_ Native_Ref /* from: struct CXTranslationUnitImpl * */) i32 /* from: int */ => native
   module clang_enableStackTraces i32 /* from: int */ => native
   module clang_equalCursors(_ c.CXCursor, _ c.CXCursor) i32 /* from: int */ => native
   module clang_equalTypes(A c.CXType, B c.CXType) i32 /* from: int */ => native
-  module clang_executeOnThread(fn mutate.array u8 /* from: void (*)(void *) */, user_data mutate.array u8 /* from: void * */, stack_size u32 /* from: unsigned int */) i32 /* from: int */ => native
+  module clang_executeOnThread(fn F0 : Function unit Native_Ref /* from: void * */, user_data mutate.array u8 /* from: void * */, stack_size u32 /* from: unsigned int */) i32 /* from: int */ => native
   module clang_getAddressSpace(T c.CXType) i32 /* from: int */ => native
   module clang_getArraySize(T c.CXType) i32 /* from: int */ => native
   module clang_getCXXAccessSpecifier(_ c.CXCursor) i32 /* from: int */ => native
+  module clang_getCompletionAvailability(completion_string mutate.array u8 /* from: void * */) i32 /* from: int */ => native
+  module clang_getCompletionChunkKind(completion_string mutate.array u8 /* from: void * */, chunk_number u32 /* from: unsigned int */) i32 /* from: int */ => native
+  module clang_getCompletionNumAnnotations(completion_string mutate.array u8 /* from: void * */) i32 /* from: int */ => native
   module clang_getCompletionNumFixIts(results Native_Ref /* from: CXCodeCompleteResults * */, completion_index u32 /* from: unsigned int */) i32 /* from: int */ => native
+  module clang_getCompletionPriority(completion_string mutate.array u8 /* from: void * */) i32 /* from: int */ => native
   module clang_getCursorAvailability(cursor c.CXCursor) i32 /* from: int */ => native
   module clang_getCursorBinaryOperatorKind(cursor c.CXCursor) i32 /* from: int */ => native
   module clang_getCursorExceptionSpecificationType(C c.CXCursor) i32 /* from: int */ => native
   module clang_getCursorKind(_ c.CXCursor) i32 /* from: int */ => native
   module clang_getCursorLanguage(cursor c.CXCursor) i32 /* from: int */ => native
   module clang_getCursorLinkage(cursor c.CXCursor) i32 /* from: int */ => native
-  module clang_getCursorPlatformAvailability(cursor c.CXCursor, always_deprecated mutate.array i32 /* from: int * */, deprecated_message mutate.array i32 /* from: int * */, always_unavailable mutate.array i32 /* from: int * */, unavailable_message mutate.array i32 /* from: int * */, availability Native_Ref /* from: CXPlatformAvailability * */, availability_size i32 /* from: int */) i32 /* from: int */ => native
+  module clang_getCursorPlatformAvailability(cursor c.CXCursor, always_deprecated mutate.array i32 /* from: int * */, deprecated_message mutate.array i32 /* from: int * */, always_unavailable mutate.array i32 /* from: int * */, unavailable_message mutate.array i32 /* from: int * */, availability Native_Ref /* from: struct CXPlatformAvailability * */, availability_size i32 /* from: int */) i32 /* from: int */ => native
   module clang_getCursorTLSKind(cursor c.CXCursor) i32 /* from: int */ => native
   module clang_getCursorUnaryOperatorKind(cursor c.CXCursor) i32 /* from: int */ => native
   module clang_getCursorVisibility(cursor c.CXCursor) i32 /* from: int */ => native
@@ -168,21 +148,31 @@ module c is
   module clang_getEnumConstantDeclValue(C c.CXCursor) i32 /* from: int */ => native
   module clang_getExceptionSpecificationType(T c.CXType) i32 /* from: int */ => native
   module clang_getFieldDeclBitWidth(C c.CXCursor) i32 /* from: int */ => native
+  module clang_getFileContents(tu Native_Ref /* from: struct CXTranslationUnitImpl * */, file i32 /* from: int */, size mutate.array i32 /* from: int * */) Native_Ref /* from: int * */ => native
   module clang_getFunctionTypeCallingConv(T c.CXType) i32 /* from: int */ => native
+  module clang_getInclusions(tu Native_Ref /* from: struct CXTranslationUnitImpl * */, visitor F1 : Function unit i32 /* from: int */ Native_Ref /* from: int * */ u32 /* from: unsigned int */ Native_Ref /* from: void * */, client_data mutate.array u8 /* from: void * */) i32 /* from: int */ => native
   module clang_getNumArgTypes(T c.CXType) i32 /* from: int */ => native
+  module clang_getNumCompletionChunks(completion_string mutate.array u8 /* from: void * */) i32 /* from: int */ => native
+  module clang_getNumDiagnostics(Unit Native_Ref /* from: struct CXTranslationUnitImpl * */) i32 /* from: int */ => native
   module clang_getNumElements(T c.CXType) i32 /* from: int */ => native
   module clang_getNumOverloadedDecls(cursor c.CXCursor) i32 /* from: int */ => native
   module clang_getOverriddenCursors(cursor c.CXCursor, overridden Native_Ref /* from: CXCursor ** */, num_overridden mutate.array u32 /* from: unsigned int * */) i32 /* from: int */ => native
   module clang_getTUResourceUsageName(kind u32 /* from: enum CXTUResourceUsageKind */) Native_Ref /* from: int * */ => native
   module clang_getTemplateCursorKind(C c.CXCursor) i32 /* from: int */ => native
   module clang_hashCursor(_ c.CXCursor) i32 /* from: int */ => native
-  module clang_indexLoc_getFileLocation(loc c.CXIdxLoc, indexFile Native_Ref /* from: CXIdxClientFile * */, file mutate.array i32 /* from: int * */, line mutate.array u32 /* from: unsigned int * */, column mutate.array u32 /* from: unsigned int * */, offset mutate.array u32 /* from: unsigned int * */) i32 /* from: int */ => native
+  module clang_indexLoc_getFileLocation(loc c.CXIdxLoc, indexFile Native_Ref /* from: void ** */, file mutate.array i32 /* from: int * */, line mutate.array u32 /* from: unsigned int * */, column mutate.array u32 /* from: unsigned int * */, offset mutate.array u32 /* from: unsigned int * */) i32 /* from: int */ => native
+  module clang_indexSourceFile(_ mutate.array u8 /* from: void * */, client_data mutate.array u8 /* from: void * */, index_callbacks Native_Ref /* from: IndexerCallbacks * */, index_callbacks_size u32 /* from: unsigned int */, index_options u32 /* from: unsigned int */, source_filename mutate.array i8 /* from: char * */, command_line_args Native_Ref /* from: char ** */, num_command_line_args i32 /* from: int */, unsaved_files Native_Ref /* from: struct CXUnsavedFile * */, num_unsaved_files u32 /* from: unsigned int */, out_TU Native_Ref /* from: struct CXTranslationUnitImpl ** */, TU_options u32 /* from: unsigned int */) i32 /* from: int */ => native
+  module clang_indexSourceFileFullArgv(_ mutate.array u8 /* from: void * */, client_data mutate.array u8 /* from: void * */, index_callbacks Native_Ref /* from: IndexerCallbacks * */, index_callbacks_size u32 /* from: unsigned int */, index_options u32 /* from: unsigned int */, source_filename mutate.array i8 /* from: char * */, command_line_args Native_Ref /* from: char ** */, num_command_line_args i32 /* from: int */, unsaved_files Native_Ref /* from: struct CXUnsavedFile * */, num_unsaved_files u32 /* from: unsigned int */, out_TU Native_Ref /* from: struct CXTranslationUnitImpl ** */, TU_options u32 /* from: unsigned int */) i32 /* from: int */ => native
+  module clang_indexTranslationUnit(_ mutate.array u8 /* from: void * */, client_data mutate.array u8 /* from: void * */, index_callbacks Native_Ref /* from: IndexerCallbacks * */, index_callbacks_size u32 /* from: unsigned int */, index_options u32 /* from: unsigned int */, _ Native_Ref /* from: struct CXTranslationUnitImpl * */) i32 /* from: int */ => native
   module clang_index_isEntityObjCContainerKind(_ i32 /* from enum CXIdxEntityKind */) i32 /* from: int */ => native
+  module clang_index_setClientContainer(_ Native_Ref /* from: CXIdxContainerInfo * */, _ mutate.array u8 /* from: void * */) i32 /* from: int */ => native
+  module clang_index_setClientEntity(_ Native_Ref /* from: CXIdxEntityInfo * */, _ mutate.array u8 /* from: void * */) i32 /* from: int */ => native
   module clang_isAttribute(_ u32 /* from: enum CXCursorKind */) i32 /* from: int */ => native
   module clang_isConstQualifiedType(T c.CXType) i32 /* from: int */ => native
   module clang_isCursorDefinition(_ c.CXCursor) i32 /* from: int */ => native
   module clang_isDeclaration(_ u32 /* from: enum CXCursorKind */) i32 /* from: int */ => native
   module clang_isExpression(_ u32 /* from: enum CXCursorKind */) i32 /* from: int */ => native
+  module clang_isFileMultipleIncludeGuarded(tu Native_Ref /* from: struct CXTranslationUnitImpl * */, file i32 /* from: int */) i32 /* from: int */ => native
   module clang_isFunctionTypeVariadic(T c.CXType) i32 /* from: int */ => native
   module clang_isInvalid(_ u32 /* from: enum CXCursorKind */) i32 /* from: int */ => native
   module clang_isInvalidDeclaration(_ c.CXCursor) i32 /* from: int */ => native
@@ -195,5 +185,15 @@ module c is
   module clang_isUnexposed(_ u32 /* from: enum CXCursorKind */) i32 /* from: int */ => native
   module clang_isVirtualBase(_ c.CXCursor) i32 /* from: int */ => native
   module clang_isVolatileQualifiedType(T c.CXType) i32 /* from: int */ => native
+  module clang_parseTranslationUnit2(CIdx mutate.array i32 /* from: int * */, source_filename mutate.array i8 /* from: char * */, command_line_args Native_Ref /* from: char ** */, num_command_line_args i32 /* from: int */, unsaved_files Native_Ref /* from: struct CXUnsavedFile * */, num_unsaved_files u32 /* from: unsigned int */, options u32 /* from: unsigned int */, out_TU Native_Ref /* from: struct CXTranslationUnitImpl ** */) i32 /* from: int */ => native
+  module clang_parseTranslationUnit2FullArgv(CIdx mutate.array i32 /* from: int * */, source_filename mutate.array i8 /* from: char * */, command_line_args Native_Ref /* from: char ** */, num_command_line_args i32 /* from: int */, unsaved_files Native_Ref /* from: struct CXUnsavedFile * */, num_unsaved_files u32 /* from: unsigned int */, options u32 /* from: unsigned int */, out_TU Native_Ref /* from: struct CXTranslationUnitImpl ** */) i32 /* from: int */ => native
+  module clang_remap_dispose(_ mutate.array u8 /* from: void * */) i32 /* from: int */ => native
+  module clang_remap_getFilenames(_ mutate.array u8 /* from: void * */, index_ u32 /* from: unsigned int */, original mutate.array i32 /* from: int * */, transformed mutate.array i32 /* from: int * */) i32 /* from: int */ => native
+  module clang_remap_getNumFiles(_ mutate.array u8 /* from: void * */) i32 /* from: int */ => native
+  module clang_reparseTranslationUnit(TU Native_Ref /* from: struct CXTranslationUnitImpl * */, num_unsaved_files u32 /* from: unsigned int */, unsaved_files Native_Ref /* from: struct CXUnsavedFile * */, options u32 /* from: unsigned int */) i32 /* from: int */ => native
+  module clang_saveTranslationUnit(TU Native_Ref /* from: struct CXTranslationUnitImpl * */, FileName mutate.array i8 /* from: char * */, options u32 /* from: unsigned int */) i32 /* from: int */ => native
   module clang_sortCodeCompletionResults(Results Native_Ref /* from: CXCompletionResult * */, NumResults u32 /* from: unsigned int */) i32 /* from: int */ => native
+  module clang_suspendTranslationUnit(_ Native_Ref /* from: struct CXTranslationUnitImpl * */) i32 /* from: int */ => native
   module clang_toggleCrashRecovery(isEnabled u32 /* from: unsigned int */) i32 /* from: int */ => native
+  module clang_tokenize(TU Native_Ref /* from: struct CXTranslationUnitImpl * */, Range i32 /* from: int */, Tokens Native_Ref /* from: CXToken ** */, NumTokens mutate.array u32 /* from: unsigned int * */) i32 /* from: int */ => native
+  module clang_visitChildrenWithBlock(parent c.CXCursor, block Native_Ref /* from: struct _CXChildVisitResult * */) i32 /* from: int */ => native
