@@ -17,14 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test reg_issue3678
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-
-x  => 42 |> .as_string |> say
-x2 => 42 |> (.as_string) |> say
-x3 => 42|>($)|>say
-x4 => 42|>(.as_string)|>say
-
-x; x2; x3; x4
+override NAME = reg_issue6709_unbalanced_infix
+include ../simple_and_negative.mk
