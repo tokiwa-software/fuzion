@@ -913,14 +913,31 @@ void * fzE_file_open(char * file_name, int64_t * open_results, file_open_mode mo
     ? (int64_t)GetLastError()
     : 0;
 
-  if (hFile != INVALID_HANDLE_VALUE && mode == FZ_FILE_MODE_APPEND)
+  // align to posix api
+  // mode=write, truncate file
+  // mode=append, set file pointer to end of file
+  if (hFile != INVALID_HANDLE_VALUE)
   {
     LARGE_INTEGER zero = {0}, new_pos = {0};
-    if (!SetFilePointerEx(hFile, zero, &new_pos, FILE_END)) {
+    if(mode == FZ_FILE_MODE_WRITE) {
+      if (!SetFilePointerEx(hFile, zero, NULL, FILE_BEGIN)) {
+        open_results[0] = (int64_t)GetLastError();
+        CloseHandle(hFile);
+        return NULL;
+      }
+
+      if (!SetEndOfFile(hFile)) {
+        open_results[0] = (int64_t)GetLastError();
+        CloseHandle(hFile);
+        return NULL;
+      }
+    }
+    else if (mode == FZ_FILE_MODE_APPEND && !SetFilePointerEx(hFile, zero, &new_pos, FILE_END)) {
       open_results[0] = (int64_t)GetLastError();
       CloseHandle(hFile);
       return NULL;
     }
+
   }
 
   return (void *)hFile;
