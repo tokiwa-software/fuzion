@@ -1088,7 +1088,8 @@ public class C extends ANY
 
     cf.print(threadStartRoutine(true));
 
-    cf.println("int main(int argc, char **argv) { ");
+    cf.println("\nint main(int argc, char **argv)\n{ ");
+    cf.indent();
 
     cf.print(initializeEffectsEnvironment());
 
@@ -1098,7 +1099,7 @@ public class C extends ANY
                         CNames.GLOBAL_ARGV.assign(new CIdent("argv")),
                         CExpr.call(_names.function(cl), new List<>())
                         ));
-
+    cf.unindent();
     cf.println("}");
   }
 
