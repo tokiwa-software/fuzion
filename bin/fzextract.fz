@@ -58,7 +58,7 @@ to_fuzion_type(ct String, is_result_type_or_value_type_arg bool, n i32) outcome 
     ("float", "f32"),
     ("_Float32", "f32"),
     ("double", "f64"),
-    ("long double", "f64"),
+    # NYI: UNDER DEVELOPMENT: ("long double", "f64"),
     ("_Float64", "f64"),
     ("long", "i64"),
     ("signed long", "i64"),
@@ -116,11 +116,11 @@ to_fuzion_type(ct String, is_result_type_or_value_type_arg bool, n i32) outcome 
     else
       "Native_Ref /* from: {c_type} */"
   else if c_type.starts_with "enum "
-    "u32 /* from: {c_type} */"
+    "u32 /* from: {c_type} */" # NYI: UNDER DEVELOPMENT: u32 or i32?
   else if !is_result_type_or_value_type_arg && known_structs.has c_type
     "c.{c_type}"
   else if known_enums.has c_type
-    "i32 /* from enum {c_type} */"
+    "i32 /* from enum {c_type} */" # NYI: UNDER DEVELOPMENT: u32 or i32?
   else
     # NYI: UNDER DEVELOPMENT: we could support more complex types
     error c_type
