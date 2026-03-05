@@ -56,16 +56,14 @@ to_fuzion_type(ct String, is_result_type_or_value_type_arg bool, n i32) outcome 
   m := container.map_of [
     ("void", "u8"),
     ("float", "f32"),
-    ("_Float32", "f32"),
     ("double", "f64"),
     # NYI: UNDER DEVELOPMENT: ("long double", "f64"),
-    ("_Float64", "f64"),
-    ("long", "i64"),
-    ("signed long", "i64"),
+    # NYI: UNDER DEVELOPMENT: 4bytes on win: ("long", "i64"),
+    # NYI: UNDER DEVELOPMENT: 4bytes on win: ("signed long", "i64"),
     ("time_t", "i64"), # NYI: UNDER DEVELOPMENT: better u64?
     ("size_t", "u64"),
     ("ssize_t", "i64"),
-    ("clock_t", "i64"), # NYI: UNDER DEVELOPMENT: better u64?
+    # NYI: UNDER DEVELOPMENT: 4bytes on win: ("clock_t", "i64"), # NYI: UNDER DEVELOPMENT: better u64?
     ("long long", "i64"),
     ("signed long long", "i64"),
     ("int64_t", "i64"),
@@ -76,7 +74,7 @@ to_fuzion_type(ct String, is_result_type_or_value_type_arg bool, n i32) outcome 
     ("int32_t","i32"),
     ("unsigned long long","u64"),
     ("uint64_t","u64"),
-    ("unsigned long","u64"),
+    # NYI: UNDER DEVELOPMENT: 4bytes on win: ("unsigned long","u64"),
     ("short","i16"),
     ("signed short","i16"),
     ("unsigned short","u16"),
