@@ -26,22 +26,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.tools.docs;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
-import dev.flang.tools.FuzionHome;
 import dev.flang.util.ANY;
-import dev.flang.util.Errors;
-import dev.flang.util.FuzionConstants;
 
 public class Util extends ANY
 {
@@ -61,83 +49,6 @@ public class Util extends ANY
       .anyMatch(f -> f.equals(feature));
   }
 
-  /**
-   * the comment belonging to this feature in HTML
-   * @param af
-   * @return
-   */
-  static String commentOf(AbstractFeature af)
-  {
-    if (af.isUniverse())
-      {
-        return Html.processComment(FuzionConstants.UNIVERSE_NAME, universeComment());
-      }
-    // arguments that are defined on same line as feature have no comments.
-    if (af.isArgument() && af.pos().line() == af.outer().pos().line() || af.isTypeParameter())
-      {
-        return "";
-      }
-    var line = af.pos().line() - 1;
-    var commentLines = new ArrayList<String>();
-
-    // NYI: OPTIMIZATION: use lexer to retrieve comments
-    while (line > 0 && af.pos()._sourceFile.line(line).matches("(?s)^\\s*#.*"))
-      {
-        commentLines.add(af.pos()._sourceFile.line(line));
-        line = line - 1;
-      }
-
-    if (commentLines.stream().allMatch(l -> l.isBlank()))
-      {
-        if (!af.redefines().isEmpty())
-          {
-            return af.redefines().stream().flatMap(r ->
-              {
-                var c = commentOf(r);
-                return c.isBlank()
-                  ? Stream.empty()
-                  : Stream.of("from '" + r.qualifiedName() + "': " +  c);
-              }
-            )
-            .collect(Collectors.joining("<br />"));
-          }
-        say_err("Warning: No comment found for " + af.qualifiedName());
-      }
-
-    Collections.reverse(commentLines);
-
-    var result = Html.processComment(af.qualifiedName() + af.featureName().argCount() + "_", commentLines
-      .stream()
-      .map(l -> l.trim())
-      .map(l -> l
-        .replaceAll("^#", "")
-        .replaceAll("^ ", ""))
-      .collect(Collectors.joining(System.lineSeparator())));
-    return result;
-  }
-
-
-  private static String universeComment()
-  {
-    var uri = FuzionHome._fuzionHome.normalize().toAbsolutePath().resolve("modules/base/src/universe.fz").toUri();
-    try
-      {
-        return Files.readAllLines(Path.of(uri), StandardCharsets.UTF_8)
-          .stream()
-          .dropWhile(l -> !l.startsWith("# universe is the mother"))
-          .map(l -> l.trim())
-          .map(l -> l
-            .replaceAll("^#", "")
-            .replaceAll("^ ", ""))
-          .collect(Collectors.joining(System.lineSeparator()))
-          .trim();
-      }
-    catch (IOException e)
-      {
-        Errors.fatal("File universe.fz not found");
-        return "";
-      }
-  }
 
 
   /**
