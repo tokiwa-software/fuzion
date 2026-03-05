@@ -21,6 +21,14 @@
 #
 # -----------------------------------------------------------------------
 
+
+# NYI: UNDER DEVELOPMENT: not supported by fzextract
+module crypto_pwhash_strbytes i64 /* from: unsigned long */ => native
+module crypto_pwhash_str(out mutate.array u8 /* from: char[128] */, passwd mutate.array u8 /* from: char * */, passwdlen u64 /* from: unsigned long long */, opslimit u64 /* from: unsigned long long */, memlimit u64 /* from: unsigned long */) i32 /* from: int */ => native
+module crypto_pwhash_opslimit_interactive u64 /* from: unsigned long */ => native
+module crypto_pwhash_memlimit_interactive u64 /* from: unsigned long */ => native
+
+
 # sodium -- unit feature to group libsodium related features
 #
 public sodium is
@@ -37,12 +45,12 @@ public sodium is
       sodium.sodium_init
 
       if {
-        0 = c.crypto_pwhash_str
+        0 = crypto_pwhash_str
                 out
                 passwd
                 passwd.length.as_u64
-                c.crypto_pwhash_opslimit_interactive
-                c.crypto_pwhash_memlimit_interactive
+                crypto_pwhash_opslimit_interactive
+                crypto_pwhash_memlimit_interactive
         }
         String.from out.as_array
       else
@@ -52,7 +60,7 @@ public sodium is
 
   # the length of the password hash that password_hash returns
   #
-  public type.password_hash_length i64 => c.crypto_pwhash_strbytes.as_i64
+  public type.password_hash_length i64 => crypto_pwhash_strbytes
 
 
   type.sodium_init =>

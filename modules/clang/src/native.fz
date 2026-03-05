@@ -6,25 +6,23 @@ module c is
 
 ################################### structs ####################################
 
-  module CXIndexOptions(module Size u32 /* from: unsigned int */, module ThreadBackgroundPriorityForIndexing u8 /* from: unsigned char */, module ThreadBackgroundPriorityForEditing u8 /* from: unsigned char */, module ExcludeDeclarationsFromPCH u32 /* from: unsigned int */, module DisplayDiagnostics u32 /* from: unsigned int */, module StorePreamblesInMemory u32 /* from: unsigned int */, module _ u32 /* from: unsigned int */, module PreambleStoragePath Native_Ref /* from: char * */, module InvocationEmissionPath Native_Ref /* from: char * */) is
-  module CXCursorSetImpl is
+  module CXTUResourceUsage(module data Native_Ref /* from: void * */, module numEntries u32 /* from: unsigned int */, module entries Native_Ref /* from: struct CXTUResourceUsageEntry * */) is
+  module CXIdxObjCContainerDeclInfo(module declInfo Native_Ref /* from: CXIdxDeclInfo * */, module kind i32 /* from enum CXIdxObjCContainerKind */) is
   module CXCursor(module kind u32 /* from: enum CXCursorKind */, module xdata i32 /* from: int */, module data Native_Ref /* from: void *[3] */) is
   module CXCompletionResult(module CursorKind u32 /* from: enum CXCursorKind */, module CompletionString Native_Ref /* from: void * */) is
   module CXCodeCompleteResults(module Results Native_Ref /* from: CXCompletionResult * */, module NumResults u32 /* from: unsigned int */) is
+  module CXCursorSetImpl is
   module CXCursorAndRangeVisitor(module context Native_Ref /* from: void * */, module visit Native_Ref /* from: enum CXVisitorResult (*)(void *, CXCursor, int) */) is
-  module CXIdxObjCContainerDeclInfo(module declInfo Native_Ref /* from: CXIdxDeclInfo * */, module kind i32 /* from enum CXIdxObjCContainerKind */) is
   module CXIdxLoc(module ptr_data Native_Ref /* from: void *[2] */, module int_data u32 /* from: unsigned int */) is
   module CXIdxCXXClassDeclInfo(module declInfo Native_Ref /* from: CXIdxDeclInfo * */, module bases Native_Ref /* from: CXIdxBaseClassInfo ** */, module numBases u32 /* from: unsigned int */) is
-  module CXIdxObjCPropertyDeclInfo(module declInfo Native_Ref /* from: CXIdxDeclInfo * */, module getter Native_Ref /* from: CXIdxEntityInfo * */, module setter Native_Ref /* from: CXIdxEntityInfo * */) is
-  module CXIdxObjCInterfaceDeclInfo(module containerInfo Native_Ref /* from: CXIdxObjCContainerDeclInfo * */, module superInfo Native_Ref /* from: CXIdxBaseClassInfo * */, module protocols Native_Ref /* from: CXIdxObjCProtocolRefListInfo * */) is
   module CXIdxObjCProtocolRefListInfo(module protocols Native_Ref /* from: CXIdxObjCProtocolRefInfo ** */, module numProtocols u32 /* from: unsigned int */) is
+  module CXIdxObjCInterfaceDeclInfo(module containerInfo Native_Ref /* from: CXIdxObjCContainerDeclInfo * */, module superInfo Native_Ref /* from: CXIdxBaseClassInfo * */, module protocols Native_Ref /* from: CXIdxObjCProtocolRefListInfo * */) is
+  module CXIdxObjCPropertyDeclInfo(module declInfo Native_Ref /* from: CXIdxDeclInfo * */, module getter Native_Ref /* from: CXIdxEntityInfo * */, module setter Native_Ref /* from: CXIdxEntityInfo * */) is
+  module CXIndexOptions(module Size u32 /* from: unsigned int */, module ThreadBackgroundPriorityForIndexing u8 /* from: unsigned char */, module ThreadBackgroundPriorityForEditing u8 /* from: unsigned char */, module ExcludeDeclarationsFromPCH u32 /* from: unsigned int */, module DisplayDiagnostics u32 /* from: unsigned int */, module StorePreamblesInMemory u32 /* from: unsigned int */, module _ u32 /* from: unsigned int */, module PreambleStoragePath Native_Ref /* from: char * */, module InvocationEmissionPath Native_Ref /* from: char * */) is
   module CXTranslationUnitImpl is
-  module CXTUResourceUsageEntry(module kind u32 /* from: enum CXTUResourceUsageKind */, module amount u64 /* from: unsigned long */) is
-  module CXTUResourceUsage(module data Native_Ref /* from: void * */, module numEntries u32 /* from: unsigned int */, module entries Native_Ref /* from: struct CXTUResourceUsageEntry * */) is
   module CXTargetInfoImpl is
   module CXToken(module int_data Native_Ref /* from: unsigned int[4] */, module ptr_data Native_Ref /* from: void * */) is
   module CXVersion(module Major i32 /* from: int */, module Minor i32 /* from: int */, module Subminor i32 /* from: int */) is
-  module CXUnsavedFile(module Filename Native_Ref /* from: char * */, module Contents Native_Ref /* from: char * */, module Length u64 /* from: unsigned long */) is
   module CXType(module kind u32 /* from: enum CXTypeKind */, module data Native_Ref /* from: void *[2] */) is
   module _CXChildVisitResult is
   module IndexerCallbacks(module abortQuery Native_Ref /* from: int (*)(void *, void *) */, module diagnostic Native_Ref /* from: void (*)(void *, int, void *) */, module enteredMainFile Native_Ref /* from: void *(*)(void *, int, void *) */, module ppIncludedFile Native_Ref /* from: void *(*)(void *, struct (unnamed at /usr/lib/llvm-19/include/clang-c/Index.h:6016:9) *) */, module importedASTFile Native_Ref /* from: void *(*)(void *, struct (unnamed at /usr/lib/llvm-19/include/clang-c/Index.h:6041:9) *) */, module startedTranslationUnit Native_Ref /* from: void *(*)(void *, void *) */, module indexDeclaration Native_Ref /* from: void (*)(void *, CXIdxDeclInfo *) */, module indexEntityReference Native_Ref /* from: void (*)(void *, CXIdxEntityRefInfo *) */) is
