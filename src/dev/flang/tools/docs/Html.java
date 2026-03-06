@@ -26,11 +26,15 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.tools.docs;
 
+import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.Map;
@@ -45,8 +49,11 @@ import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
 import dev.flang.fe.LibraryFeature;
 import dev.flang.fe.LibraryModule;
+import dev.flang.tools.FuzionHome;
 import dev.flang.tools.Tool;
 import dev.flang.util.ANY;
+import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 
 
@@ -307,10 +314,17 @@ public class Html extends ANY
             ? ""
             : "<div class='fd-parent ml-10'>[Redefinition of&nbsp; <span class=fz-code>$0</span>]</div>"
               .replace("$0", (redefs.stream()
-                                    .map(f->"<a class='' href='" + featureRelativeURL(f, relativeTo) + "'>" +
-                                              htmlEncodedQualifiedName(f) + "</a>")
+                                    .map(f->relativeAnchor(f, relativeTo))
                                     .collect(Collectors.joining(",&nbsp;")) ));
   }
+
+
+  private String relativeAnchor(AbstractFeature f, AbstractFeature relativeTo)
+  {
+    return "<a class='' href='" + featureRelativeURL(f, relativeTo) + "'>" +
+              htmlEncodedQualifiedName(f) + "</a>";
+  }
+
 
   /**
    * Is this feature or any one of the features it inherits from not public
@@ -530,6 +544,7 @@ public class Html extends ANY
 
   /**
    * The summaries and the comments of the features
+   *
    * @param heading the title for this section
    * @param description text block shown under the headline, can be null
    * @param set the features to be included in the summary
@@ -561,7 +576,7 @@ public class Html extends ANY
         // NYI: UNDER DEVELOPMENT: rename fd-private?
         .replace("$0", (config.ignoreVisibility() && !Util.isVisible(af)) ? "class='fd-private cursor-pointer' hidden" : "class='cursor-pointer'")
         .replace("$1", summary(af, outer))
-        .replace("$2", Util.commentOf(af))
+        .replace("$2", commentOf(af))
         .replace("$3", redefines(af, (outer != null ? outer : af)))
     )
     .collect(Collectors.joining(System.lineSeparator()));
@@ -581,9 +596,95 @@ public class Html extends ANY
       .replace("$0", f.isUniverse() ? lm.name() : htmlEncodedBasename(f)) // short version of title for navtitle
       .replace("$1", f.isUniverse() ? "API-Documentation: module <code style=\"font-size: 1.4em; vertical-align: bottom;\">" + lm.name() + "</code>" : anchorTags(f))
       .replace("$2", f.isUniverse() ? "": summary(f))
-      .replace("$3", Util.commentOf(f))
+      .replace("$3", commentOf(f))
       .replace("$4", redefines(f, f));
   }
+
+
+  /**
+   * the comment belonging to this feature in HTML
+   * @param af
+   * @return
+   */
+  String commentOf(AbstractFeature af)
+  {
+    if (af.isUniverse())
+      {
+        return Html.processComment(FuzionConstants.UNIVERSE_NAME, universeComment());
+      }
+    // arguments that are defined on same line as feature have no comments.
+    if ((af.isArgument() || af.isTypeParameter()) && af.pos().line() == af.outer().pos().line())
+      {
+        return "";
+      }
+    var line = af.pos().line() - 1;
+    var commentLines = new ArrayList<String>();
+
+    // NYI: OPTIMIZATION: use lexer to retrieve comments
+    while (line > 0 && af.pos()._sourceFile.line(line).matches("(?s)^\\s*#.*"))
+      {
+        commentLines.add(af.pos()._sourceFile.line(line));
+        line = line - 1;
+      }
+
+    if (commentLines.stream().allMatch(l -> l.isBlank()))
+      {
+        if (!af.redefines().isEmpty())
+          {
+            return af.redefines().stream().flatMap(r ->
+              {
+                var c = commentOf(r);
+                return c.isBlank()
+                  ? Stream.empty()
+                  : Stream.of(
+                    "<details open><summary>comment of " +
+                    relativeAnchor(r, af.outer())
+                    + "</summary>" + c + "</details>"
+                  );
+              }
+            )
+            .collect(Collectors.joining());
+          }
+        say_err("Warning: No comment found for " + af.qualifiedName());
+      }
+
+    Collections.reverse(commentLines);
+
+    var result = Html.processComment(af.qualifiedName() + af.featureName().argCount() + "_", commentLines
+      .stream()
+      .map(l -> l.trim())
+      .map(l -> l
+        .replaceAll("^#", "")
+        .replaceAll("^ ", ""))
+      .collect(Collectors.joining(System.lineSeparator())));
+    return result;
+  }
+
+
+
+  private static String universeComment()
+  {
+    var uri = FuzionHome._fuzionHome.normalize().toAbsolutePath().resolve("modules/base/src/universe.fz").toUri();
+    try
+      {
+        return Files.readAllLines(Path.of(uri), StandardCharsets.UTF_8)
+          .stream()
+          .dropWhile(l -> !l.startsWith("# universe is the mother"))
+          .map(l -> l.trim())
+          .map(l -> l
+            .replaceAll("^#", "")
+            .replaceAll("^ ", ""))
+          .collect(Collectors.joining(System.lineSeparator()))
+          .trim();
+      }
+    catch (IOException e)
+      {
+        Errors.fatal("File universe.fz not found");
+        return "";
+      }
+  }
+
+
 
   /**
    * the html encoded basename of the feature af
