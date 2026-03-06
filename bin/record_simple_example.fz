@@ -4,50 +4,33 @@
 #
 process_result(out String, err String, exit_code u32) is
 
-# specified environment variables as key,value array
-#
-envir_var_kv := [
-  "PATH",
-  "LANG",
-  "JAVA_HOME",
-  "POSTCONDITIONS",
-  "PRECONDITIONS",
-  "dev_flang_tools_serializeFUIR",
-  "dev_flang_fuir_analysis_dfa_DFA_MAX_ITERATIONS",
-  "CPATH",
-  "LIBRARY_PATH",
-  "FUZION_CLANG_INSTALLED_DIR",
-  "OS",
-  "FUZION_HOME",
-  "FUZION_JAVA",
-  "FUZION_JAVA_STACK_SIZE",
-  "FUZION_JAVA_OPTIONS",
-  "FUZION_JVM_BACKEND_OPTIONS",
-  "FUZION_C_BACKEND_OPTIONS",
-  "FUZION_RANDOM_SEED",
-  # set in simple.mk
-  "LD_LIBRARY_PATH",
-  "DYLD_FALLBACK_LIBRARY_PATH",
-  "C_INCLUDE_PATH",
-  "LANGUAGE"
-].map k->
-  envir.vars[k].bind v->
-    (k,v)
- .filter o->o.ok
- .map o->o.val
- .as_array
-
 # envir vars as map
 #
-envir_vars :=
-  (container.ordered_map
-    (envir_var_kv
-      .map x->x.0
-      .as_array)
-    (envir_var_kv
-      .map x->x.1
-      .as_array))
-  .add "FUZION_DISABLE_ANSI_ESCAPES" "true"
+envir_vars := container.map_of ((envir.vars.map_of [
+    "PATH",
+    "LANG",
+    "JAVA_HOME",
+    "POSTCONDITIONS",
+    "PRECONDITIONS",
+    "dev_flang_tools_serializeFUIR",
+    "dev_flang_fuir_analysis_dfa_DFA_MAX_ITERATIONS",
+    "CPATH",
+    "LIBRARY_PATH",
+    "FUZION_CLANG_INSTALLED_DIR",
+    "OS",
+    "FUZION_HOME",
+    "FUZION_JAVA",
+    "FUZION_JAVA_STACK_SIZE",
+    "FUZION_JAVA_OPTIONS",
+    "FUZION_JVM_BACKEND_OPTIONS",
+    "FUZION_C_BACKEND_OPTIONS",
+    "FUZION_RANDOM_SEED",
+    # set in simple.mk
+    "LD_LIBRARY_PATH",
+    "DYLD_FALLBACK_LIBRARY_PATH",
+    "C_INCLUDE_PATH",
+    "LANGUAGE"
+  ]).items ++ [("FUZION_DISABLE_ANSI_ESCAPES", "true")])
 
 # helper to get out, err, exit_code from started process
 #
