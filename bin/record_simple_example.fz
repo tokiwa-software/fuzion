@@ -72,6 +72,13 @@ String.prefix !! =>
 ####### record_simple_example ########
 
 
+if envir.args.count != 4
+  say """
+      Usage: record_simple_example [any|jvm|c|int|effect] <fz_run> <test.fz>
+      """
+  exit 1
+
+
 type_ := envir.args[1]
 fz_run   := envir.args[2] # NYI: UNDER DEVELOPMENT: code should be same as check_simple_example.fz
 file     := envir.args[3]
