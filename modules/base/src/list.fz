@@ -582,6 +582,7 @@ is
           public redef tail list A =>
             cycle_cons (h.tail ? nil    => c
                                | d Cons => d)
+          public redef finite trit => trit.no
         cycle_cons c
 
 
