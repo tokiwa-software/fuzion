@@ -602,9 +602,8 @@ public class Html extends ANY
 
 
   /**
-   * the comment belonging to this feature in HTML
-   * @param af
-   * @return
+   * the comment belonging to this feature in HTML.
+   * If the comment does not exist, the comment of a redefined feature.
    */
   String commentOf(AbstractFeature af)
   {
