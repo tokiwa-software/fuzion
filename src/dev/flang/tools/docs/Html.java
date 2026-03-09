@@ -636,6 +636,8 @@ public class Html extends ANY
                 var c = commentOf(r);
                 return c.isBlank()
                   ? Stream.empty()
+                  : c.startsWith("<details open>")
+                  ? Stream.of(c)
                   : Stream.of(
                     "<details open><summary>comment of " +
                     relativeAnchor(r, af.outer())
