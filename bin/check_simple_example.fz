@@ -211,8 +211,8 @@ delete_tmp_files =>
 
 if envir.args.count != 4
   say """
-      Usage: check_simple_example [jvm|c|int|effect] <fz+args> <test.fz>
-      e.g  : check_simple_example jvm fz "-XmaxErrors -1" /tests/hello.fz
+      Usage: check_simple_example <jvm|c|int|effect> <fz+args> <test.fz>
+      e.g  : check_simple_example jvm "build/bin/fz -modules=nom" tests/hello/HelloWorld.fz
       """
   exit 1
 
