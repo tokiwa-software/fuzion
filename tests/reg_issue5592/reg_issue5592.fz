@@ -26,7 +26,7 @@ reg_issue5592 =>
     g(U type : f.this) =>
       say U
 
-    # NYI: BUG: parser bug: No line break may occur at this position
+    # NYI: BUG: #6762 parser bug: No line break may occur at this position
     # h(U type)
     #   pre U : f.this
     # =>
@@ -36,6 +36,8 @@ reg_issue5592 =>
     =>
       if U : f.this
         say U
+      else
+        say "constraint not satisfied"
 
     # constraint must not be choice
     # j(U type : option f.this) =>
@@ -50,6 +52,8 @@ reg_issue5592 =>
     =>
       if U : (f.this, array f.this)
         say U
+      else
+        say "constraint not satisfied"
 
   f.g f
   # f.h f
@@ -59,3 +63,17 @@ reg_issue5592 =>
   f.l (f, array f)
 
 
+  ff : f is
+
+  ff.g ff
+  # f.h f
+  # does not satisfy the constraint
+  ff.i f
+  # while this does
+  ff.i ff
+  # f.j f
+  ff.k (Sequence ff)->ff
+  # does not satisfy the constraint
+  ff.l (f, array f)
+  # while this does
+  ff.l (ff, array ff)
