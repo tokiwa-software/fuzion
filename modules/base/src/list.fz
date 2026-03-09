@@ -746,6 +746,12 @@ is
 
   # convenience routine to create a list from head h and lazy tail t.
   #
+  # where f denotes if the list is finite:
+  #
+  # trit.yes       = known finite
+  # trit.no        = known infinite
+  # trit.unknown   = unknown
+  #
   public type.of(h T, t Lazy (list T), f trit) list T =>
     _ : Cons T (list T) is
       public redef head T => h
