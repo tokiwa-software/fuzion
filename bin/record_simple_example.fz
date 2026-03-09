@@ -74,8 +74,8 @@ String.prefix !! =>
 
 if envir.args.count != 4
   say """
-      Usage: record_simple_example [any|jvm|c|int|effect] <fz+args> <test.fz>
-      e.g  : record_simple_example jvm fz "-XmaxErrors -1" /tests/hello.fz
+      Usage: record_simple_example <any|jvm|c|int|effect> <fz+args> <test.fz>
+      e.g  : record_simple_example jvm "build/bin/fz -modules=nom" /tests/hello/HelloWorld.fz
       """
   exit 1
 
