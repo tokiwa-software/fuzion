@@ -102,14 +102,14 @@ public find(pattern Sequence T) option i32
         nil => false
         n Node => !n.top.is_empty && n.top[0] = x
 
-    fold_until(acc option (Node T), idx i32) option i32 =>
+    fold_until(acc option (Node T), i i32) option i32 =>
       if is_done acc
-        ab.count - (ab.count-idx) - p.count
-      else if idx >= ab.count
+        ab.count - (ab.count-i) - p.count
+      else if i >= ab.count
         nil
       else
-        acc_star := step acc ab[idx]
-        fold_until acc_star idx+1
+        acc_star := step acc ab[i]
+        fold_until acc_star i+1
 
     fold_until init 0
 
@@ -201,12 +201,12 @@ module split0(s Sequence T, limit option u32, split_after bool) Sequence (Sequen
     match find s
       nil     =>
         [Sequence.this]
-      idx i32 =>
-        head Sequence T => take (if split_after then idx + s.count else idx)
+      i i32 =>
+        head Sequence T => take (if split_after then i + s.count else i)
 
         tail Sequence (Sequence T) =>
 
-          rest => drop (idx + s.count)
+          rest => drop i+s.count
 
           match limit
             nil => rest.split0 s nil split_after

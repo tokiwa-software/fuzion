@@ -47,7 +47,7 @@ module net is
     sockfd := fzE_socket family socket_type protocol
     if sockfd = -1
       error "net.connect failed creating socket" fzE_last_error
-    else if fzE_bind sockfd family socket_type protocol (fuzion.sys.c_string host) (fuzion.sys.c_string port.as_string) = 0
+    else if fzE_bind sockfd family socket_type protocol (fuzion.sys.c_string host) (fuzion.sys.c_string $port) = 0
       sockfd
     else
       _ := fzE_socket_close sockfd # NYI: register potential failure somewhere...
@@ -68,7 +68,7 @@ module net is
     sockfd := fzE_socket family socket_type protocol
     if sockfd = -1
       error "net.connect failed creating socket" fzE_last_error
-    else if fzE_connect sockfd family socket_type protocol (fuzion.sys.c_string host) (fuzion.sys.c_string port.as_string) = 0
+    else if fzE_connect sockfd family socket_type protocol (fuzion.sys.c_string host) (fuzion.sys.c_string $port) = 0
       sockfd
     else
       _ := fzE_socket_close sockfd # NYI: register potential failure somewhere...

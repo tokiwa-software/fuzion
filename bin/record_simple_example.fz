@@ -4,50 +4,33 @@
 #
 process_result(out String, err String, exit_code u32) is
 
-# specified environment variables as key,value array
-#
-envir_var_kv := [
-  "PATH",
-  "LANG",
-  "JAVA_HOME",
-  "POSTCONDITIONS",
-  "PRECONDITIONS",
-  "dev_flang_tools_serializeFUIR",
-  "dev_flang_fuir_analysis_dfa_DFA_MAX_ITERATIONS",
-  "CPATH",
-  "LIBRARY_PATH",
-  "FUZION_CLANG_INSTALLED_DIR",
-  "OS",
-  "FUZION_HOME",
-  "FUZION_JAVA",
-  "FUZION_JAVA_STACK_SIZE",
-  "FUZION_JAVA_OPTIONS",
-  "FUZION_JVM_BACKEND_OPTIONS",
-  "FUZION_C_BACKEND_OPTIONS",
-  "FUZION_RANDOM_SEED",
-  # set in simple.mk
-  "LD_LIBRARY_PATH",
-  "DYLD_FALLBACK_LIBRARY_PATH",
-  "C_INCLUDE_PATH",
-  "LANGUAGE"
-].map k->
-  envir.vars[k].bind v->
-    (k,v)
- .filter o->o.ok
- .map o->o.val
- .as_array
-
 # envir vars as map
 #
-envir_vars :=
-  (container.ordered_map
-    (envir_var_kv
-      .map x->x.0
-      .as_array)
-    (envir_var_kv
-      .map x->x.1
-      .as_array))
-  .add "FUZION_DISABLE_ANSI_ESCAPES" "true"
+envir_vars := container.map_of ((envir.vars.map_of [
+    "PATH",
+    "LANG",
+    "JAVA_HOME",
+    "POSTCONDITIONS",
+    "PRECONDITIONS",
+    "dev_flang_tools_serializeFUIR",
+    "dev_flang_fuir_analysis_dfa_DFA_MAX_ITERATIONS",
+    "CPATH",
+    "LIBRARY_PATH",
+    "FUZION_CLANG_INSTALLED_DIR",
+    "OS",
+    "FUZION_HOME",
+    "FUZION_JAVA",
+    "FUZION_JAVA_STACK_SIZE",
+    "FUZION_JAVA_OPTIONS",
+    "FUZION_JVM_BACKEND_OPTIONS",
+    "FUZION_C_BACKEND_OPTIONS",
+    "FUZION_RANDOM_SEED",
+    # set in simple.mk
+    "LD_LIBRARY_PATH",
+    "DYLD_FALLBACK_LIBRARY_PATH",
+    "C_INCLUDE_PATH",
+    "LANGUAGE"
+  ]).items ++ [("FUZION_DISABLE_ANSI_ESCAPES", "true")])
 
 # helper to get out, err, exit_code from started process
 #
@@ -86,14 +69,15 @@ String.prefix !! =>
   !split
 
 
-write_to_file(dest path, data String) =>
-  _ := io.file.delete dest
-  check (io.file.use dest io.file.mode.write ()->
-    check (data.write_to io.file.file_mutate).ok).ok
-
-
-
 ####### record_simple_example ########
+
+
+if envir.args.count != 4
+  say """
+      Usage: record_simple_example <any|jvm|c|int|effect> <fz+args> <test.fz>
+      e.g  : record_simple_example jvm "build/bin/fz -modules=nom" /tests/hello/HelloWorld.fz
+      """
+  exit 1
 
 
 type_ := envir.args[1]
@@ -125,10 +109,10 @@ if type_ != "effect"
     else
       "_$type_"
 
-  write_to_file (path.of "$file.expected_out$sfx") res.out
+  io.write (path.of "$file.expected_out$sfx") res.out .or_panic
   cur_dir := os.cwd.val.as_string
-  write_to_file (path.of "$file.expected_err$sfx") (res.err.replace cur_dir "--CURDIR--")
+  io.write (path.of "$file.expected_err$sfx") (res.err.replace cur_dir "--CURDIR--") .or_panic
 else
-  write_to_file (path.of "$file.effect") ((res.out.lines.filter (l -> !l.is_empty)).sort.as_string "\n")+"\n"
+  io.write (path.of "$file.effect") ((res.out.lines.filter (l -> !l.is_empty)).sort.as_string "\n")+"\n" .or_panic
 
 say "RECORDED $file"

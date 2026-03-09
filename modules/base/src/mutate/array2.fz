@@ -47,13 +47,13 @@ is
 
   # get element at given index i
   #
-  public redef index [ ] (i1, i2 idx) T =>
+  public redef index [ ] (I type : idx, i1, i2 I) T =>
     data[i1.as_i32 * length1.as_i32 + i2.as_i32]
 
 
   # set element at given index i to given value o
   #
-  public redef set [ ] (i1, i2 idx, o T) unit =>
+  public redef set [ ] (I type : idx, i1, i2 I, o T) unit =>
     check_and_replace
     data[i1.as_i32 * length1.as_i32 + i2.as_i32] := o
 

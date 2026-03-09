@@ -222,7 +222,7 @@ public class CFile extends ANY
    */
   public void indent()
   {
-    _c_indentation ++;
+    _c_indentation = _c_indentation + 2;
   }
 
 
@@ -234,7 +234,7 @@ public class CFile extends ANY
     if (PRECONDITIONS) require
       (_c_indentation > 0);
 
-    _c_indentation --;
+    _c_indentation = _c_indentation - 2;
   }
 
 

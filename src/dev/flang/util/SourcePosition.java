@@ -347,7 +347,7 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
 
   /**
    * End position within _sourceFile.  This is equal to bytePos() for a plain
-   * SourcePosition and may be larger than bytePos for a SourceRange.
+   * SourcePosition while it may be larger than bytePos for a SourceRange.
    */
   public int byteEndPos()
   {

@@ -57,7 +57,7 @@ public java is
 
     public redef finite trit => trit.yes
 
-    public redef index [ ] (i idx) T ! fuzion.jvm =>
+    public redef index [ ] (I type : idx, i I) T ! fuzion.jvm =>
       fuzion.jvm.env.array_get T java_ref i.as_i32 (fuzion.sys.c_string signature)
 
     public redef as_list list T ! fuzion.jvm => as_list 0

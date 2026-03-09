@@ -25,7 +25,7 @@
 
 # u8 -- 8-bit unsigned integer values
 #
-public u8(public val u8) : num.wrap_around, has_interval is
+public u8(public val u8) : num.wrap_around, has_interval, idx is
 
   # overflow checking
 
@@ -70,21 +70,26 @@ public u8(public val u8) : num.wrap_around, has_interval is
   # does this u8 fit into an u8?
   #
   public fixed redef fits_in_u8 bool => true
+  public fixed redef fits_in_u16 bool => true
+  public fixed redef fits_in_u32 bool => true
+  public fixed redef fits_in_u64 bool => true
+  public fixed redef fits_in_u128 bool => true
+  public fixed redef fits_in_i8 bool => val <= i8.max.as_u8
+  public fixed redef fits_in_i16 bool => true
+  public fixed redef fits_in_i32 bool => true
+  public fixed redef fits_in_i64 bool => true
+  public fixed redef fits_in_i128 bool => true
 
-  public as_i8 i8
-    pre
-      debug: val ≤ i8.max.as_u8
-    =>
-      cast_to_i8
-  public as_i16 i16   => as_i32.as_i16
-  public as_i32 i32   => intrinsic
-  public as_i64 i64   => as_i32.as_i64
-  public as_i128 i128 => as_i32.as_i128
+  public redef as_i8 i8 => cast_to_i8
+  public redef as_i16 i16   => as_i32.as_i16
+  public redef as_i32 i32   => intrinsic
+  public redef as_i64 i64   => as_i32.as_i64
+  public redef as_i128 i128 => as_i32.as_i128
   public redef as_u8 u8 => val
-  public as_u16 u16   => as_i32.as_u16
-  public as_u32 u32   => as_i32.as_u32
-  public as_u64 u64   => as_i32.as_u64
-  public as_u128 u128 => as_i32.as_u128
+  public redef as_u16 u16   => as_i32.as_u16
+  public redef as_u32 u32   => as_i32.as_u32
+  public redef as_u64 u64   => as_i32.as_u64
+  public redef as_u128 u128 => as_i32.as_u128
   public as_int int   => int as_i64
 
   public cast_to_i8 i8 => intrinsic

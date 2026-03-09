@@ -17,7 +17,7 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature mutate.circular_buffer
+#  Source code of Fuzion standard library feature mutate.Circular_Buffer
 #
 # -----------------------------------------------------------------------
 
@@ -28,7 +28,7 @@
 #
 # backed by a fixed length array.
 #
-module:public circular_buffer (
+module:public Circular_Buffer (
        # element type
        public T type,
 
@@ -38,7 +38,7 @@ module:public circular_buffer (
        # contents of the buffer
        module data fuzion.sys.internal_array T
 
-      ) : container.Circular_Buffer T mutate.this, mutable_element
+      ) ref : container.Circular_Buffer T mutate.this, mutable_element
 pre
   safety: length > 0
   safety: length ≤ data.length.as_i64
@@ -159,7 +159,7 @@ is
 
     init T
 
-   ) container.Circular_Buffer T mutate.this
+   ) mutate.this.Circular_Buffer T
   =>
     # length + 1 for sentinel element
     #
@@ -170,4 +170,4 @@ is
     for x in data.indices do
       data[x] := init
 
-    mutate.this.env.circular_buffer T length data
+    mutate.this.env.Circular_Buffer T length data

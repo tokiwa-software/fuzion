@@ -23,7 +23,7 @@
 
 reg_issue6160 =>
 
-  io.file.write (path.of "testfile") "some text" .or_panic
+  io.file.write (path.of "testfile") "some text that will be truncated" .or_panic
   io.file.write (path.of "testfile") "some text" .or_panic
 
   check io.file.read (path.of "testfile") .val = "some text"

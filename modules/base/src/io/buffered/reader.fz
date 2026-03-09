@@ -188,9 +188,9 @@ public read_delimiter (delim u8, strip_cr bool) switch String io.end_of_file ! r
                 res.add b
 
           match s.index_of delim
-            idx i32 =>
-              add_to_res (s.slice 0 idx)
-              reader.env.discard idx+1
+            i i32 =>
+              add_to_res (s.slice 0 i)
+              reader.env.discard i+1
               false
             nil =>
               add_to_res s

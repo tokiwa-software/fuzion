@@ -34,7 +34,7 @@ module:public open(dd Directory_Descriptor,
   #
   # NOTES: current directory `.` and parent directory `..` are omitted.
   #
-  public read outcome String ! io.dir.read =>
+  public read outcome path ! io.dir.read =>
     io.dir.read.read dd
 
 
