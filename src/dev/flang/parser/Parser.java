@@ -1239,7 +1239,17 @@ inheritanceCallList    : inheritanceCall ( COMMA inheritanceCallList
    */
   boolean skipInheritanceCallList()
   {
-    var result = skipInheritanceCall();
+    /**
+      * !isRestrictedToLine is necessary in e.g. example:
+      *
+      * f is
+      *   h(U type)
+      *   pre U : f.this
+      *   =>
+      *     say U
+      *
+      */
+    var result = !isRestrictedToLine() && skipInheritanceCall();
     while (result && skipComma())
       {
         result = skipInheritanceCall();

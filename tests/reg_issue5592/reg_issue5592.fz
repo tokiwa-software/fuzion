@@ -26,11 +26,10 @@ reg_issue5592 =>
     g(U type : f.this) =>
       say U
 
-    # NYI: BUG: #6762 parser bug: No line break may occur at this position
-    # h(U type)
-    #   pre U : f.this
-    # =>
-    #   say U
+    h(U type)
+      pre U : f.this
+    =>
+      say U
 
     i(U type)
     =>
@@ -56,7 +55,7 @@ reg_issue5592 =>
         say "constraint not satisfied"
 
   f.g f
-  # f.h f
+  f.h f
   f.i f
   # f.j f
   f.k (Sequence f)->f
@@ -66,12 +65,12 @@ reg_issue5592 =>
   ff : f is
 
   ff.g ff
-  # f.h f
+  ff.h ff
   # does not satisfy the constraint
   ff.i f
   # while this does
   ff.i ff
-  # f.j f
+  # ff.j f
   ff.k (Sequence ff)->ff
   # does not satisfy the constraint
   ff.l (f, array f)
