@@ -158,7 +158,7 @@ is
 
   # relativize path `p` based on this path.
   #
-  # e.g. "/tmp/folder".relative "/tmp/folder/file" will return "file"
+  # e.g. "/tmp/folder".relativize "/tmp/folder/file" will return "file"
   #
   public relativize(p path) path
     pre debug: p.starts_with (path.of names is_absolute)
