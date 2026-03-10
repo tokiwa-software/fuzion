@@ -36,7 +36,7 @@ process_result(out String, err String, exit_code u32) is
     process_result "" "" 0
 
 is_windows =>
-  (envir.vars["OS"].val "").lower_case.contains "windows"
+  os.platform.get ? os.windows => true | os.posix => false
 
 path_separator := is_windows ? ";" : ":"
 
