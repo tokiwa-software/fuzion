@@ -299,7 +299,7 @@ public abstract class AbstractCall extends Expr
   {
     var t1 = rt == Types.t_ERROR ? rt : adjustThisTypeForTarget(context, rt, foundRef);
     var t2 = t1 == Types.t_ERROR ? t1 :
-      (calledFeature().isArgument() && target() instanceof Current
+      (calledFeature().isArgument() && target() instanceof AbstractCurrent
         ? t1.applyTypeParsLocally(tt, NO_SELECT)
         : t1.applyTypePars(tt));
     var t3 = t2 == Types.t_ERROR ? t2 : t2.applyTypePars(calledFeature(), actualTypeParameters());
