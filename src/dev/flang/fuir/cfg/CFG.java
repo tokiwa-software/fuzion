@@ -379,17 +379,6 @@ public class CFG extends ANY
     put("f32.cast_to_u32"                , (cfg, cl) -> { } );
     put("f64.cast_to_u64"                , (cfg, cl) -> { } );
 
-    put("f32.type.min_exp"               , (cfg, cl) -> { } );
-    put("f32.type.max_exp"               , (cfg, cl) -> { } );
-    put("f32.type.min_positive"          , (cfg, cl) -> { } );
-    put("f32.type.max"                   , (cfg, cl) -> { } );
-    put("f32.type.epsilon"               , (cfg, cl) -> { } );
-    put("f64.type.min_exp"               , (cfg, cl) -> { } );
-    put("f64.type.max_exp"               , (cfg, cl) -> { } );
-    put("f64.type.min_positive"          , (cfg, cl) -> { } );
-    put("f64.type.max"                   , (cfg, cl) -> { } );
-    put("f64.type.epsilon"               , (cfg, cl) -> { } );
-
     put("fuzion.sys.type.alloc"          , (cfg, cl) -> { } );
     put("fuzion.sys.type.setel"          , (cfg, cl) -> { } );
     put("fuzion.sys.type.getel"          , (cfg, cl) -> { } );
