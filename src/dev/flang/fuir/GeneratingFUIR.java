@@ -633,7 +633,7 @@ public class GeneratingFUIR extends FUIR
               case "Mapped_Memory"             -> SpecialClazzes.c_Mapped_Memory;
               case "Native_Ref"                -> SpecialClazzes.c_Native_Ref;
               case "Thread"                    -> SpecialClazzes.c_Thread;
-              case "stackoverflow"             -> SpecialClazzes.c_fuzion_runtime_stackoverflow;
+              case "stackoverflow_cause"       -> SpecialClazzes.c_stackoverflow_cause;
               default                          -> SpecialClazzes.c_NOT_FOUND   ;
               };
             if (s != SpecialClazzes.c_NOT_FOUND && s._argCount == cl.feature().arguments().size())

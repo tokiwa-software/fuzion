@@ -952,29 +952,9 @@ class Clazz extends ANY implements Comparable<Clazz>
     // first look in the feature itself
     AbstractFeature result = _fuir.lookupFeature(feature(), fn);
 
-    if (!result.redefinesFull().contains(f) && result != f)
+    if (!result.redefinesFull().contains(f))
       {
-        // feature with same name, but not a redefinition
-        result = null;
-      }
-
-    // the inherited feature might not be
-    // visible to the inheriting feature
-    if (result == null && chain != null)
-      {
-        for (var p: chain)
-          {
-            result = _fuir.lookupFeature(p.calledFeature(), fn);
-            if (!result.redefinesFull().contains(f) && result != f)
-              {
-                // feature with same name, but not a redefinition
-                result = null;
-              }
-            if (result != null)
-              {
-                break;
-              }
-          }
+        result = f;
       }
 
     if (POSTCONDITIONS) ensure
@@ -1628,14 +1608,22 @@ class Clazz extends ANY implements Comparable<Clazz>
   }
 
 
+  // cache field for asRef()
+  private Clazz _asRef = null;
   /**
    * In case this is a Clazz of value type, create the corresponding reference clazz.
    */
   Clazz asRef()
   {
-    return isRef()
-      ? this
-      : _fuir.newClazz(_outer, _type.asRef(), _select);
+    var result = _asRef;
+    if (result == null)
+      {
+        result = isRef()
+          ? this
+          : _fuir.newClazz(_outer, _type.asRef(), _select);
+        _asRef = result;
+      }
+    return result;
   }
 
 

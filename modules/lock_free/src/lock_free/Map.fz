@@ -133,9 +133,9 @@ prev_node(CTK type : property.hashable, CTV type) : choice (failed_node CTK CTV)
 
   public redef as_string String =>
     match prev_node.this
-      f lock_free.failed_node => f.as_string
-      m lock_free.Main_Node => m.as_string
-      nil => nil.as_string
+      f lock_free.failed_node => $f
+      m lock_free.Main_Node => $m
+      nil => $nil
 
   is_nil =>
     match prev_node.this
@@ -266,8 +266,8 @@ root_node(CTK type : property.hashable, CTV type) : choice (Indirection_Node CTK
 
   public redef as_string String =>
     s => match root_node.this
-      i lock_free.Indirection_Node => i.as_string
-      r lock_free.Rdcss_Descriptor => r.as_string
+      i lock_free.Indirection_Node => $i
+      r lock_free.Rdcss_Descriptor => $r
     "root_node($s)"
 
 

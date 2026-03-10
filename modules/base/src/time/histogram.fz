@@ -295,7 +295,7 @@ is
         ld := ignore_last_buffer[ignore_last_buffer_index.get]
         ignore_last_buffer[ignore_last_buffer_index.get] := d
         ignore_last_buffer_index <- (ignore_last_buffer_index.get = 0 ? ignore_last_buffer.length
-                                                                      : ignore_last_buffer_index.get)- 1
+                                                                      : ignore_last_buffer_index.get) - 1
         ld.bind add0 |> ignore
       else
         add0 d
@@ -424,7 +424,7 @@ is
                             "   min   |" +
                             "   max   |" +
                             "  sigma  |" +
-                            "  count  |\n"+
+                            "  count  |\n" +
                             ($average()).pad_center 9 + "|" +
                             ($min_     ).pad_center 9 + "|" +
                             ($max_     ).pad_center 9 + "|" +

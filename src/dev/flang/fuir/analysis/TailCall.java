@@ -34,6 +34,7 @@ import dev.flang.ir.IR;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 
 
 /**
@@ -205,7 +206,7 @@ public class TailCall extends ANY
    */
   private boolean isTailCall(int cl, int cls, int s, int mustAssignTo)
   {
-    return _fuir.alwaysResultsInVoid(cls) || switch (_fuir.codeAt(cls))
+    var isTC = _fuir.alwaysResultsInVoid(cls) || switch (_fuir.codeAt(cls))
       {
       case Call ->
         {
@@ -264,6 +265,12 @@ public class TailCall extends ANY
       // any other code results in failure to detect a tail call:
       default -> false;
       };
+
+    if (POSTCONDITIONS)
+      // NYI: BUG: does not work yet.
+      ensure(true || isTC  || !_fuir.clazzBaseName(cl).startsWith(FuzionConstants.REC_LOOP_PREFIX)); 
+
+    return isTC;
   }
 
 

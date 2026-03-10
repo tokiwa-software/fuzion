@@ -62,7 +62,7 @@ sockets_thread_pool_test is
               res := "received: {rr.as_string}\n\n"
 
               w =>
-                match (io.buffered lm).writer.env.write res.utf8.as_array
+                match (io.buffered lm).writer.env.write res
                   unit => (io.buffered lm).writer.env.flush
                   e error => e
 
@@ -111,7 +111,7 @@ sockets_thread_pool_test is
               + "Client: {sockets_thread_pool_test.client.this.num}\n\n")
 
             w =>
-              _ := (io.buffered lm).writer.env.write req.utf8.as_array
+              _ := (io.buffered lm).writer.env.write req
               _ := (io.buffered lm).writer.env.flush
 
             str := "$protocol/$family-client {sockets_thread_pool_test.client.this.num}, write to $host => {w}"

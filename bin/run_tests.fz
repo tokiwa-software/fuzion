@@ -28,38 +28,22 @@
 #
 process_result(out String, err String, exit_code u32) is
 
-# specified environment variables as key,value array
-#
-envir_var_kv := [
-  "PATH",
-  "LANG",
-  "JAVA_HOME",
-  "POSTCONDITIONS",
-  "PRECONDITIONS",
-  "dev_flang_tools_serializeFUIR",
-  "dev_flang_fuir_analysis_dfa_DFA_MAX_ITERATIONS",
-  "CPATH",
-  "LIBRARY_PATH",
-  "FUZION_CLANG_INSTALLED_DIR",
-  "OS",
-  "INFLUXDB_TOKEN"
-].map k->
-  envir.vars[k].bind v->
-    (k,v)
- .filter (.ok)
- .map (.val)
- .as_array
-
 # envir vars as map
 #
-envir_vars :=
-  (container.ordered_map
-    (envir_var_kv
-      .map (.0)
-      .as_array)
-    (envir_var_kv
-      .map (.1)
-      .as_array))
+envir_vars := envir.vars.map_of [
+    "PATH",
+    "LANG",
+    "JAVA_HOME",
+    "POSTCONDITIONS",
+    "PRECONDITIONS",
+    "dev_flang_tools_serializeFUIR",
+    "dev_flang_fuir_analysis_dfa_DFA_MAX_ITERATIONS",
+    "CPATH",
+    "LIBRARY_PATH",
+    "FUZION_CLANG_INSTALLED_DIR",
+    "OS",
+    "INFLUXDB_TOKEN"
+  ]
 
 # max time a test may take
 #
@@ -110,7 +94,7 @@ String.infix | (seq Sequence String) =>
         _ := p.with_in unit lm ()->
           # NYI: ambiguous result type:
           # _ := write_to lm
-          _ := (io.buffered lm).writer.env.write String.this.utf8
+          _ := (io.buffered lm).writer.env.write String.this
           _ := (io.buffered lm).writer.env.flush
           _ := p.close_in
         record_process p seq.as_string

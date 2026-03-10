@@ -1403,13 +1403,36 @@ public class DFA extends ANY
 
         if (cnt == 1)
           {
-            newCall(null,
-                    _fuir.mainClazz(),
-                    NO_SITE,
-                    Value.UNIT,
-                    new List<>(),
-                    null /* env */,
-                    Context._MAIN_ENTRY_POINT_);
+            var m =
+              newCall(null,
+                      _fuir.mainClazz(),
+                      NO_SITE,
+                      Value.UNIT,
+                      new List<>(),
+                      null /* env */,
+                      Context._MAIN_ENTRY_POINT_);
+
+            // stackoverflow may happen at any time during execution.
+            // hence we simulate one once at the start of the program.
+            // NYI: UNDER DEVELOPMENT: comment from
+            // @fridi:
+            // this may fail since the control flow to
+            // StackOverflow.cause may happen, depending
+            // on how it is implemented in the backend,
+            // at any call or even at the first memory
+            // access to a stack allocated value.
+            // So, a more sophisticated DFA might produce a
+            // wrong result caused by the assumption that this only happens here.
+            var soc = _fuir.clazz(SpecialClazzes.c_stackoverflow_cause);
+            var socRes =
+              newCall(null,
+                      soc,
+                      NO_SITE,
+                      Value.UNIT,
+                      new List<>(newConstString(null, Context._MAIN_ENTRY_POINT_)),
+                      null,
+                      Context._MAIN_ENTRY_POINT_).result(m);
+            check (socRes == null);
           }
         iteration();
       }
@@ -2218,17 +2241,6 @@ public class DFA extends ANY
                                     newEnv,
                                     cl);
           var result = cll.result(cl);
-
-          if(fuir.getSpecialClazz(ecl) == SpecialClazzes.c_fuzion_runtime_stackoverflow)
-            {
-              // we need to simulate call to stackoverflow.cause
-              var cause = fuir.lookupCause(ecl);
-              var def = cl._dfa.newCall(cl, cause, NO_SITE, a0, new List<>(cl._dfa.newConstString(null, cl)), cl._env, cl);
-              var res = def.result(cl);
-              result = result != null && res != null
-                ? result.value().join(cl._dfa, res.value(), fuir(cl).clazzResultClazz(cl.calledClazz()))
-                : result;
-            }
 
           Value ev;
           if (cl._dfa._real)

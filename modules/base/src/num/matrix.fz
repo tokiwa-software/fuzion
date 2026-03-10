@@ -83,7 +83,7 @@ is
 
   # prints this matrix as a string
   #
-  public redef as_string String => e.as_string
+  public redef as_string String => $e
 
 
   # identity element for 'infix +'

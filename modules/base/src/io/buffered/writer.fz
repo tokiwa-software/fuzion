@@ -87,15 +87,17 @@ is
 
   # buffered writing of the given array
   #
-  public write (data Sequence u8) outcome unit =>
+  public write (data Sequence u8 | String) outcome unit =>
     write_detailed data
       .error
 
 
   # buffered writing of the given array, detailed result
   #
-  public write_detailed (data Sequence u8) write_result =>
-    write_detailed data.as_array 0
+  public write_detailed (data Sequence u8 | String) write_result =>
+    write_detailed
+      (data ? s Sequence u8 => s.as_array | s String   => s.utf8.as_array)
+      0
 
 
   # recursive helper for write_detailed

@@ -65,7 +65,7 @@ class ArtificialBuiltInType extends ResolvedNormalType
 
   public ArtificialBuiltInType(String name)
   {
-    super();
+    super(UnresolvedType.NONE, UnresolvedType.NONE, null, null, TypeKind.ValueType);
     _name = name;
     _id = ids++;
   }

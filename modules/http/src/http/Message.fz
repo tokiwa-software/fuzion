@@ -93,9 +93,9 @@ public Message ref is
     max_body_bytes i32) outcome String
   =>
     match body.read max_body_bytes
-      s Sequence => Message.this.as_string + String.from s
+      s Sequence => $Message.this + String.from s
       e error => e
-      io.end_of_file => Message.this.as_string
+      io.end_of_file => $Message.this
 
 
   # NYI: PERFORMANCE: see validHeaderFieldByte() in https://go.dev/src/net/textproto/reader.go

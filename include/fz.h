@@ -36,6 +36,38 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 static_assert(sizeof(int)    == 4, "implementation restriction, int must be 4 bytes");
 static_assert(sizeof(size_t) == 8, "implementation restriction, size_t must be 8 bytes");
+static_assert(sizeof(void *) == 8, "implementation restriction, pointer must be 8 bytes");
+
+
+static_assert(sizeof(float) == 4, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(double) == 8, "implementation restriction, fzextract assumption failure");
+// NYI: UNDER DEVELOPMENT: static_assert(sizeof(long double) == 8, "implementation restriction, fzextract assumption failure");
+// NYI: UNDER DEVELOPMENT: static_assert(sizeof(long) == 8, "implementation restriction, fzextract assumption failure");
+// NYI: UNDER DEVELOPMENT: static_assert(sizeof(signed long) == 8, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(time_t) == 8, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(size_t) == 8, "implementation restriction, fzextract assumption failure");
+// NYI: UNDER DEVELOPMENT: static_assert(sizeof(ssize_t) == 8, "implementation restriction, fzextract assumption failure");
+// NYI: UNDER DEVELOPMENT: static_assert(sizeof(clock_t) == 8, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(long long) == 8, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(signed long long) == 8, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(int64_t) == 8, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(char) == 1, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(signed char) == 1, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(int) == 4, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(signed int) == 4, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(int32_t) == 4, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(unsigned long long) == 8, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(uint64_t) == 8, "implementation restriction, fzextract assumption failure");
+// NYI: UNDER DEVELOPMENT: static_assert(sizeof(unsigned long) == 8, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(short) == 2, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(signed short) == 2, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(unsigned short) == 2, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(uint16_t) == 2, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(unsigned char) == 1, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(uint8_t) == 1, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(unsigned) == 4, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(unsigned int) == 4, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(uint32_t) == 4, "implementation restriction, fzextract assumption failure");
 
 
 /**
