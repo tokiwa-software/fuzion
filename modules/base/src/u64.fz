@@ -25,7 +25,7 @@
 
 # u64 -- 64-bit unsigned integer values
 #
-public u64(public val u64) : num.wrap_around, has_interval, idx is
+public u64(public val u64) : num.wrap_around, has_interval is
 
   # overflow checking
 

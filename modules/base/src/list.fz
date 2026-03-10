@@ -364,7 +364,7 @@ is
   # Lazily take the first n elements of a list, alternatively the whole list if it
   # is shorter than n, or the empty list if n <= 0
   #
-  public redef take (I type : idx, n I) Sequence A
+  public redef take (I type : integer, n I) Sequence A
   =>
     take_list n.as_i32
 
@@ -476,7 +476,7 @@ is
   # create a list from the tail of list.this dropping n elements (or fewer
   # if the list is shorter than n).
   #
-  public redef drop (I type : idx, n I) Sequence A =>
+  public redef drop (I type : integer, n I) Sequence A =>
     drop_list n.as_i32
 
 
