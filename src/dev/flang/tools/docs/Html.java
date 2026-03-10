@@ -237,6 +237,7 @@ public class Html extends ANY
                : af.isConstructor()   ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" is") + "</div>"
                : af.isField()         ? "&nbsp;" + anchorType(af, outer, relativeTo) //+ "_af:" + af.featureName().baseName() + "_out:" + (outer != null ? outer.featureName().baseName() : "_out=null")
                                       : "")
+            + annotateUnitType(af)
             + annotateInherited(af, outer)
             + annotateRedef(af, outer)
             + annotateAbstract(af)
@@ -250,6 +251,24 @@ public class Html extends ANY
         + "</div>"
         + source(af)
       + "</div>";
+  }
+
+  /**
+   * Returns an HTML-formatted annotation for features the frontend knows
+   * to be unit types
+   *
+   * This only works for features directly in universe, as all inner features have an outer reference
+   *
+   * @param af the feature to for which to create the annotation for
+   * @return html to annotate a unit type feature
+   */
+  private String annotateUnitType(AbstractFeature af)
+  {
+    return af.isUnitType()
+      ? "<div class='fd-parent ml-10' title='This feature is guaranteed to be a unit type, "
+        + "it does not have any internal state and might serve as a namespace.\n\n"
+        + "Note that features without this annotation might still be unit types.'>[Unit Type]</div>" // NYI: replace title attribute with proper tooltip
+      : "";
   }
 
   /**
