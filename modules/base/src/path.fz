@@ -179,6 +179,16 @@ is
       (names.take p.names.count) = p.names
 
 
+  # this relative path resolved against
+  # the current working directory (`os.cwd`)
+  #
+  public as_absolute outcome path
+    pre debug: !is_absolute
+  =>
+    os.cwd.bind c->
+      c.resolve (path names is_absolute)
+
+
   # String representation of this path
   #
   # e.g. "/folder/file" or "relative_folder/file"
