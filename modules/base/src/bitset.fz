@@ -85,7 +85,7 @@ is
        nil   => a.highest!! && b.highest!!
        m u64 =>
          for
-           r := true, r && (a.has i <=> b.has i)
+           r := true, r && (a.has i = b.has i)
            i in u64 0 .. m
          else
            r
