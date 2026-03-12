@@ -630,8 +630,8 @@ public class Html extends ANY
    */
   private String contractOf(AbstractFeature af)
   {
-    return contractFeatureSrc("Precondition",  af, f->f.preFeature()) +
-           contractFeatureSrc("Postcondition", af, f->f.postFeature());
+    return contractFeatureSrc("Precondition" , "pre" , af, f->f.preFeature()) +
+           contractFeatureSrc("Postcondition", "post", af, f->f.postFeature());
   }
 
 
@@ -643,20 +643,44 @@ public class Html extends ANY
    * @param contractFeature the function to obtain the contract feature from feature af
    * @return HTML sowing the specified contract of the feature
    */
-  private String contractFeatureSrc(String contractType, AbstractFeature af, Function<AbstractFeature, AbstractFeature> contractFeature)
+  private String contractFeatureSrc(String contractType, String keyword, AbstractFeature af, Function<AbstractFeature, AbstractFeature> contractFeature)
   {
     record Tuple(AbstractFeature fst, AbstractFeature snd) {}
 
     // first tuple element is the feature from which the contract was inherited, second is the contract itself
     var res = Stream.concat(Stream.of(new Tuple(null, contractFeature.apply(af))),
                             af.redefinesFull().stream().map(f->new Tuple(f, contractFeature.apply(f))))
-      .filter(t->t.snd != null)
+      .filter(t->t.snd != null && startsWithKeyword(keyword, t.snd.sourceText()))
       .map(t->(t.fst != null ? "<br>Inherited from <span class=fd-fname>" + relativeAnchor(t.fst, af) + "</span><br>" : "")
                 + "<div class=fz-code><pre>" + contractSrc(t.snd)
                 + "</pre></div>")
       .collect(Collectors.joining());
 
     return res.isBlank() ? "" : "<details close><summary><span class=fd-contract-title>" + contractType + "</span></summary>" + res + "</details>";
+  }
+
+  /**
+   * Does text start with keyword, ignoring whitespaces at the beginning
+   *
+   * NYI: OPTIMIZATION: This is a poor way to determine if a feature with a pre-/postcondition defines one itself or only
+   *                    inherits one. If a precondition is inherited but not defined `.preFeature().sourceText()`
+   *                    returns the source code of the feature itself, and not an empty string.
+   *                    So there seems to be no simple and good way to do this at the moment.
+   *
+   * @param keyword the keyword to look for
+   * @param text the text in which to look for the keyword
+   * @return true iff the first word in the text is the keyword
+   */
+  private boolean startsWithKeyword(String keyword, String text)
+  {
+    int i = 0;
+    int len = text.length();
+
+    while (i < len && Character.isWhitespace(text.charAt(i))) {
+        i++;
+    }
+
+    return text.startsWith(keyword + " ", i) || text.startsWith(keyword + "\n", i);
   }
 
   /**
