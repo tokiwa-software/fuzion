@@ -17,30 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature Cons
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# Cons -- feature used to define abstract Cons cells
-#
-# A Cons is a ref to a cell that contains a head and a tail
-#
-public Cons(public A, B type) ref is
-
-  public head A => abstract
-
-  public tail B => abstract
-
-  # returns whether the data structure this Cons
-  # cell defines is finite, infinite or unknown
-  #
-  public finite trit => trit.unknown
-
-
-# cons -- feature used to define simple, non-lazy Cons cells
-#
-# A cons is a cell that contains a head and a tail
-#
-public cons(A, B type, public redef head A, public redef tail B) : Cons A B is
+override NAME = reg_issue6740
+include ../simple.mk
