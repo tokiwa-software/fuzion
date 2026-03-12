@@ -71,7 +71,7 @@ record_process(
 
       match p.wait max_test_time
         e error => process_result "" "failed waiting for $cmd, error is: $e" 1
-        ec u32 => process_result fout.or_panic ferr.or_panic ec)
+        ec u32 => process_result fout.get ferr.get ec)
     .or_panic
 
 # execute this Sequence of process+args
@@ -296,7 +296,7 @@ main =>
     {
     envir
       .vars
-      .or_panic "INFLUXDB_TOKEN"
+      .get "INFLUXDB_TOKEN"
     }
     nil => say "INFLUXDB_TOKEN not set, not sending to influxdb."
     token String =>
