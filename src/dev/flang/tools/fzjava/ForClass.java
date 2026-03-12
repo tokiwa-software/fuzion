@@ -348,7 +348,7 @@ class ForClass extends ANY
 
     data_dynamic.append("\n");
     data_dynamic.append("\n");
-    data_dynamic.append("  public " + (sc==null ? "" : "redef ") +  "type.get_java_class Java.java.lang.Class => (Java.java.lang.Class.forName " + fuzionString(cn) + ").val");
+    data_dynamic.append("  public " + (sc==null ? "" : "redef ") +  "type.get_java_class Java.java.lang.Class => (Java.java.lang.Class.forName " + fuzionString(cn) + ").or_panic");
     data_dynamic.append("\n");
     data_dynamic.append("\n");
 
