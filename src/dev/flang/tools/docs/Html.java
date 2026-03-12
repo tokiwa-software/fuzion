@@ -711,9 +711,9 @@ public class Html extends ANY
                   : c.startsWith("<details open>")
                   ? Stream.of(c)
                   : Stream.of(
-                    "<details open><summary>comment of " +
+                    "<details open><summary>Comment of <span class=fd-fname>" +
                     relativeAnchor(r, af.outer())
-                    + "</summary>" + c + "</details>"
+                    + "</span></summary>" + c + "</details>"
                   );
               }
             )

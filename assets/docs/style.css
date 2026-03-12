@@ -221,10 +221,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   justify-content: center;
   align-items: center;
 }
-.fd-contract a, .fd-parent a{
+.fd-contract a, .fd-comment a, .fd-parent a{
   color: unset;
 }
-.fd-contract a:hover, .fd-parent a:hover{
+.fd-contract a:hover, .fd-comment a:hover, .fd-parent a:hover{
   color: #795e26;
 }
 
