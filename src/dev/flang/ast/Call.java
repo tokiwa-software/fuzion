@@ -1552,15 +1552,21 @@ public class Call extends AbstractCall
       }
     else if (_calledFeature.isTypeParameter())
       {
-        if (!t.isGenericArgument())  // See AstErrors.constraintMustNotBeGenericArgument
-          {
-            // a type parameter's result type is the constraint's type as a type
-            // feature with actual type parameters as given to the constraint.
-            var tf = res.cotype(t.feature());
-            var tg = new List<AbstractType>(t); // the constraint type itself
-            tg.addAll(t.generics());            // followed by the generics
-            t = tf.selfType().applyTypePars(tf, tg);
-          }
+        t = switch(t.kind())
+        {
+          case ValueType, RefType ->
+            {
+              // a type parameter's result type is the constraint's type as a type
+              // feature with actual type parameters as given to the constraint.
+              var tf = res.cotype(t.feature());
+              var tg = new List<AbstractType>(t); // the constraint type itself
+              tg.addAll(t.generics());            // followed by the generics
+              yield tf.selfType().applyTypePars(tf, tg);
+            }
+          case ThisType -> t;
+          // See AstErrors.constraintMustNotBeGenericArgument
+          case GenericArgument -> t;
+        };
       }
     else if (isTypeAsValueCall())
       {
