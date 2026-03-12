@@ -125,6 +125,28 @@ public tuple(public A type...,
 is
 
 
+  # given a tuple of several effect instances
+  # instate the in order of declaration and
+  # run code in their context
+  #
+  #
+  public infix !(# result type
+                 R type,
+
+                 # the code to execute with `e` instated.
+                 code () -> R
+  ) R
+    # NYI: BUG: cannot constraint open type parameter yet: pre A : effect
+  =>
+    (values.typed_foldf (option (Functional R) nil) T,e,v->
+      if T : effect
+        match e
+          nil => v.as_functional R
+          f (Functional R) => f.and v
+      else
+        compile_time_panic).or_panic.call code
+
+
   # equality of two tuple `a` and `b` is defined only if all elements of the tuple
   # are equatable and all elements are equal.
   #
