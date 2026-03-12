@@ -85,4 +85,4 @@ is
     pre
       debug: http.reason_phrases[status_code].ok
   =>
-    http.response_message nil 1 1 status_code http.reason_phrases[status_code].val (as_header_map header) body
+    http.response_message nil 1 1 status_code http.reason_phrases[status_code].or_panic (as_header_map header) body

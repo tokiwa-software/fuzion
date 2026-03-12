@@ -44,7 +44,7 @@ public traverse(
     for res outcome R := init,
           {
             np.bind x->
-              t => red_fn res.val x
+              t => red_fn res.or_panic x
               if descend
                 match io.file.stat x false
                   error => res # NYI

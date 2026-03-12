@@ -80,7 +80,7 @@ public find(pattern Sequence T) option i32
         if t.is_empty
           r
         else if is_match r t[0]
-          r.get.rest
+          r.or_panic.rest
         else
           r
       Node t (once find_lm (option (Node T)) ()->n) r_star
@@ -90,7 +90,7 @@ public find(pattern Sequence T) option i32
     step(acc option (Node T), x T) =>
       match acc
         nil => init
-        n Node => if is_match acc x then n.next.get else step n.rest x
+        n Node => if is_match acc x then n.next.or_panic else step n.rest x
 
     is_done (option (Node T))->bool => (acc)->
       match acc

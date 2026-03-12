@@ -164,7 +164,7 @@ public effect is
   =>
     e.check_depletion
     x := instate_helper R effect.this e code def
-    x.res.get
+    x.res.or_panic
 
 
   # execute 'code' in a context where the effect instance `e` has been

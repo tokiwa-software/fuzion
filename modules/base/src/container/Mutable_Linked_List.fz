@@ -91,6 +91,6 @@ private:public Mutable_Linked_List(# mutate effect to be used to create mutable 
       !from.is_empty
   =>
     from_list := from.as_list
-    c := container.Mutable_Linked_List LM T from_list.head.get
+    c := container.Mutable_Linked_List LM T from_list.head.or_panic
     from_list.tail.for_each (x -> c.append x)
     c

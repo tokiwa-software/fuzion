@@ -129,7 +129,7 @@ is
     old_contents := contents.get.as_array
     contents <- LM.env.new_array (option (tuple HK V)) allocated_size.get.as_i64 nil
     for tup in (old_contents.filter o->o??) do
-      ok, ov := tup.get
+      ok, ov := tup.or_panic
       store (idx ok) ok ov false
 
 

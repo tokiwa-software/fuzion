@@ -9,4 +9,4 @@ test_issue1918 =>
         concur.threads.spawn ()->
           do
             p option i32 := 1
-            while !(count p.get)
+            while !(count p.or_panic)

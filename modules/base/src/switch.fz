@@ -62,35 +62,9 @@ is
   public prefix ! bool => !exists
 
 
-  # unwraps a switch that is known to contain an A value
-  #
-  # this can only be called in cases where it is known for sure that this switch
-  # is not a B.  A non-catchable runtime error will be created otherwise.
-  #
-  public get A
-  pre
-    safety: switch.this??
-  =>
-    switch.this ? a A => a
-                | B   => fuzion.std.panic "switch.get called on B. Enable `safety` to obtain a precondition failure for debugging."
-
-
-  # value of a switch that is known to contain a value
-  #
-  # This can only be called in cases where it is known for sure that this
-  # switch is not a B.  A catchable panic will be created otherwise.
-  #
-  public val A
-    pre
-      safety: switch.this??
-  =>
-    switch.this ? a A => a
-                | B   => panic "switch.val called on B. Enable `safety` to obtain a precondition failure for debugging."
-
-
   # value of a switch or default if switch contains B
   #
-  public val(default A) A
+  public or_default(default A) A
   =>
     switch.this ? a A => a
                 | B   => default

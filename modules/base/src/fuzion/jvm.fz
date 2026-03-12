@@ -193,7 +193,7 @@ private:public jvm : effect is
   public null(T type : fuzion.java.Java_Object) outcome T
   =>
     # NYI: UNDER DEVELOPMENT: HACK!
-    cast T (call_static (fuzion.java.Java_Object) "java.lang.System" "getProperty" "(Ljava/lang/String;)Ljava/lang/String;" [(string_to_java_object "I_ABSOLUTELY_DEFINITELY_DO_NOT_EXIST")]).get
+    cast T (call_static (fuzion.java.Java_Object) "java.lang.System" "getProperty" "(Ljava/lang/String;)Ljava/lang/String;" [(string_to_java_object "I_ABSOLUTELY_DEFINITELY_DO_NOT_EXIST")]).or_panic
 
 
   # cast this to some other class

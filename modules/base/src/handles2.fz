@@ -71,7 +71,7 @@ is
     pre
       debug: has_last
   =>
-    last_opt.get
+    last_opt.or_panic
 
 
   # a one-way feature to create a new handle and update the monad

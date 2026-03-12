@@ -80,7 +80,7 @@ public json Parser String (Sequence codepoint) json_value =>
     parser_hex_unicode =>
       preceded (tag "\\") (take_while_m_n codepoint 4 4 is_hex_digit)
         .map (Sequence codepoint) d->
-          v, _ := d.reduce (u32 0, u32 4) (r, c -> _, exp := r; (c.parse_u32_hex.val * 10**exp, exp-1))
+          v, _ := d.reduce (u32 0, u32 4) (r, c -> _, exp := r; (c.parse_u32_hex.or_panic * 10**exp, exp-1))
           [(codepoint v)]
 
     parse_and_map(t, r String) =>
@@ -127,7 +127,7 @@ public json Parser String (Sequence codepoint) json_value =>
     parser_whole := alt [tag "0", parser_digits]
       .map f64 (x -> (String.from x)
                         .parse_u64
-                        .val 1
+                        .or_default 1
                         .as_f64)
 
     parser_fraction := many_m_n 0 1 (preceded (tag ".") parser_digits)
@@ -137,7 +137,7 @@ public json Parser String (Sequence codepoint) json_value =>
           v Sequence =>
             (String.from v)
               .parse_u64
-              .val 0
+              .or_default 0
               .as_f64 / (10.0*x.count.as_f64)
 
     parser_sign := many_m_n 0 1 (alt [tag "+", tag "-"])
