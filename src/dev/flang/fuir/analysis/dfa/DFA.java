@@ -2095,16 +2095,6 @@ public class DFA extends ANY
     put("f32.cast_to_u32"                , cl -> genericNumResult(cl) );
     put("f64.cast_to_u64"                , cl -> genericNumResult(cl) );
 
-    put("f32.type.min_exp"               , cl -> genericNumResult(cl) );
-    put("f32.type.max_exp"               , cl -> genericNumResult(cl) );
-    put("f32.type.min_positive"          , cl -> genericNumResult(cl) );
-    put("f32.type.max"                   , cl -> genericNumResult(cl) );
-    put("f32.type.epsilon"               , cl -> genericNumResult(cl) );
-    put("f64.type.min_exp"               , cl -> genericNumResult(cl) );
-    put("f64.type.max_exp"               , cl -> genericNumResult(cl) );
-    put("f64.type.min_positive"          , cl -> genericNumResult(cl) );
-    put("f64.type.max"                   , cl -> genericNumResult(cl) );
-    put("f64.type.epsilon"               , cl -> genericNumResult(cl) );
     put("effect.type.from_env"           , cl ->
     {
       var ecl = fuir(cl).clazzResultClazz(cl.calledClazz());

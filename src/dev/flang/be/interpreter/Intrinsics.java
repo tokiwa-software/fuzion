@@ -626,16 +626,6 @@ public class Intrinsics extends ANY
     put("f64.as_i64_lax"        , (executor, innerClazz) -> args -> new i64Value((long)                                      args.get(0).f64Value() ));
     put("f64.as_f32"            , (executor, innerClazz) -> args -> new f32Value((float)                                     args.get(0).f64Value() ));
     put("f64.cast_to_u64"       , (executor, innerClazz) -> args -> new u64Value (    Double.doubleToLongBits(               args.get(0).f64Value())));
-    put("f32.type.epsilon"      , (executor, innerClazz) -> args -> new f32Value (                  Math.ulp(                (float)1)));
-    put("f32.type.max"          , (executor, innerClazz) -> args -> new f32Value (                                           Float.MAX_VALUE));
-    put("f32.type.max_exp"      , (executor, innerClazz) -> args -> new i32Value (                                           Float.MAX_EXPONENT));
-    put("f32.type.min_positive" , (executor, innerClazz) -> args -> new f32Value (                                           Float.MIN_NORMAL));
-    put("f32.type.min_exp"      , (executor, innerClazz) -> args -> new i32Value (                                           Float.MIN_EXPONENT));
-    put("f64.type.epsilon"      , (executor, innerClazz) -> args -> new f64Value (                 Math.ulp(                 (double)1)));
-    put("f64.type.max"          , (executor, innerClazz) -> args -> new f64Value (                                               Double.MAX_VALUE));
-    put("f64.type.max_exp"      , (executor, innerClazz) -> args -> new i32Value (                                               Double.MAX_EXPONENT));
-    put("f64.type.min_positive" , (executor, innerClazz) -> args -> new f64Value (                                               Double.MIN_NORMAL));
-    put("f64.type.min_exp"      , (executor, innerClazz) -> args -> new i32Value (                                               Double.MIN_EXPONENT));
     put("effect.type.abort0"      ,
         "effect.type.default0"    ,
         FuzionConstants.EFFECT_INSTATE_NAME,

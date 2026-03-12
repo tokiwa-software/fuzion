@@ -447,13 +447,6 @@ public class Resolution extends ANY
         if (DEBUG) sayDebug("resolve check types: " + f);
         f.checkTypes(this);
       }
-    else if (false && Errors.any())  // NYI: We could give up here in case of errors, we do not to make the next phases more robust and to find more errors at once
-      {
-        // The following phases should not reveal any new errors and will assume
-        // correct input.  So if there were any errors, let's give up at this
-        // point:
-        result = false;
-      }
     else
       {
         result = false;

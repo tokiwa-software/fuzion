@@ -112,10 +112,6 @@ append_line(mtx concur.sync.mutex, dest path, str String) =>
     check (io.file.use dest io.file.mode.append ()->
             check ("$str\n".write_to io.file.file_mutate).ok).ok
 
-is_windows =>
-  (envir.vars["OS"].val "").lower_case.contains "windows"
-
-
 ########### run_tests ###############
 
 
@@ -185,7 +181,11 @@ main =>
   test_durations := (lock_free.Map path time.duration).empty
 
   run_single_test(test path) =>
-    if io.file.exists (test.resolve "skip") || io.file.exists (test.resolve "skip_$target") || (is_windows && (io.file.exists (test.resolve "skip_win")))
+    if (
+       io.file.exists (test.resolve "skip") ||
+       io.file.exists (test.resolve "skip_$target") ||
+       (os.platform.get ? os.windows => io.file.exists (test.resolve "skip_win") | os.posix => false)
+       )
       yak "_"
       append_line results "$test: skipped"
     else

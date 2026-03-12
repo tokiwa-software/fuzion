@@ -36,7 +36,7 @@ process_result(out String, err String, exit_code u32) is
     process_result "" "" 0
 
 is_windows =>
-  (envir.vars["OS"].val "").lower_case.contains "windows"
+  os.platform.get ? os.windows => true | os.posix => false
 
 path_separator := is_windows ? ";" : ":"
 
@@ -207,6 +207,14 @@ delete_tmp_files =>
   _ := io.file.delete (path.of "tmp_err.txt")
   _ := io.file.delete (path.of "testbin")
   _ := io.file.delete exp_err_cleaned
+
+
+if envir.args.count != 4
+  say """
+      Usage  : check_simple_example <jvm|c|int|effect> <fz+args> <test.fz>
+      Example: check_simple_example jvm "build/bin/fz -modules=nom" tests/hello/HelloWorld.fz
+      """
+  exit 1
 
 
 be     := envir.args[1]
