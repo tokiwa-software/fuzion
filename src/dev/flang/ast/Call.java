@@ -2202,14 +2202,14 @@ public class Call extends AbstractCall
         var aft = actualType.isGenericArgument() ? null : actualType.feature();
         if (fft == aft)
           {
-            for (int i=0; i < formalType.generics().size(); i++)
+            for (int i=0; i < formalType.actualGenerics().size(); i++)
               {
                 var g = actualType.actualGenerics();
                 if (i < g.size())
                   {
                     inferGeneric(res,
                                  context,
-                                 formalType.generics().get(i),
+                                 formalType.actualGenerics().get(i),
                                  g.get(i),
                                  pos, conflict, foundAt);
                   }
