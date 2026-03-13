@@ -676,9 +676,10 @@ public class Html extends ANY
     int i = 0;
     int len = text.length();
 
-    while (i < len && Character.isWhitespace(text.charAt(i))) {
+    while (i < len && Character.isWhitespace(text.charAt(i)))
+      {
         i++;
-    }
+      }
 
     return text.startsWith(keyword + " ", i) || text.startsWith(keyword + "\n", i);
   }
