@@ -188,7 +188,7 @@ is
     debug: b.finite.is_yes_or_unknown
   =>
     # NYI: a bit expensive
-    (a ∪ b).size_option.val = a.size_option.val
+    (a ∪ b).size_option.or_panic = a.size_option.or_panic
 
 
   # monoid of Set with infix ∪ operation.

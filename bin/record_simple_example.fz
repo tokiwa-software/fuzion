@@ -52,13 +52,13 @@ record_process(p os.process,
       match p.wait
         e error => panic "failed waiting for $cmd, error is: $e"
         ec u32 => process_result fout.get ferr.get ec)
-    .get
+    .or_panic
 
 # execute this Sequence of process+args
 #
 Sequence.prefix ! =>
   seq := map x->x.as_string
-  match os.process.start seq.first.val (seq.drop 1) envir_vars
+  match os.process.start seq.first.or_panic (seq.drop 1) envir_vars
     e error => panic "failed executing {Sequence.this}, error is $e"
     p os.process => record_process p Sequence.this.as_string
 
@@ -86,9 +86,9 @@ file     := envir.args[3]
 
 res :=
   if type_ = "jvm" || type_ = "any"
-    !!"$fz_run -XmaxErrors=-1 -jvm {envir.vars["FUZION_JVM_BACKEND_OPTIONS"].val ""} $file"
+    !!"$fz_run -XmaxErrors=-1 -jvm {envir.vars["FUZION_JVM_BACKEND_OPTIONS"].or_default ""} $file"
   else if type_ = "c"
-    c := !!"$fz_run -XmaxErrors=-1 -c {envir.vars["FUZION_C_BACKEND_OPTIONS"].val ""} -o=testbin $file"
+    c := !!"$fz_run -XmaxErrors=-1 -c {envir.vars["FUZION_C_BACKEND_OPTIONS"].or_default ""} -o=testbin $file"
     if (c.exit_code = 0)
       e := !!"./testbin"
       _ := io.file.delete (path.of "testbin")
@@ -110,7 +110,7 @@ if type_ != "effect"
       "_$type_"
 
   io.write (path.of "$file.expected_out$sfx") res.out .or_panic
-  cur_dir := os.cwd.val.as_string
+  cur_dir := os.cwd.or_panic.as_string
   io.write (path.of "$file.expected_err$sfx") (res.err.replace cur_dir "--CURDIR--") .or_panic
 else
   io.write (path.of "$file.effect") ((res.out.lines.filter (l -> !l.is_empty)).sort.as_string "\n")+"\n" .or_panic

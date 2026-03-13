@@ -134,7 +134,7 @@ pre debug: n >= 0
       .codepoints_and_errors
       .take_while (.ok)
       .take max
-      .map String (.val)
+      .map String (.or_panic)
       .as_array
 
     bytes_used := (v.map c->c.as_string.byte_length).fold i32.sum
@@ -217,7 +217,7 @@ public read_line switch String io.end_of_file ! reader =>
 public read_fully Sequence u8 ! reader =>
   read_bytes i32.max
     # NYI: UNDER DEVELOPMENT: error handling
-    .val
+    .or_panic
 
 
 # Read input fully and split it at the given delimiter. If specified, delete

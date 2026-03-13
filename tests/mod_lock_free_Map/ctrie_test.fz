@@ -53,9 +53,9 @@ ctrie_test is
 
   say (no  ∀ (k -> ctrie[k].is_nil))
 
-  say (yes ∀ (k -> ctrie[k].get = "v$k"))
+  say (yes ∀ (k -> ctrie[k].or_panic = "v$k"))
 
-  say (ctrie.size = yes.size_option.val)
+  say (ctrie.size = yes.size_option.or_panic)
 
   say no_items.items.count # 0
 

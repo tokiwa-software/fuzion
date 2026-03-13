@@ -118,7 +118,7 @@ is
   public base_name String
     pre debug: !names.is_empty
   =>
-    names.last.get
+    names.last.or_panic
 
   # consider this to represent a file
   # and return just name of the file
@@ -247,7 +247,7 @@ is
   public type.separator codepoint =>
     # NYI: UNDER DEVELOPMENT: cache this globally
     (cache separator_cache ()->
-      separator_cache (os.platform.get ? os.posix => "/" | os.windows => "\\")).val
+      separator_cache (os.platform.or_panic ? os.posix => "/" | os.windows => "\\")).val
 
 
   # instantiates a path

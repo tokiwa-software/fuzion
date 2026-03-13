@@ -195,10 +195,10 @@ is
                   Entry =>
                     m := minimum e.right.get
 
-                    new_node := Entry m.get.key m.get.val
+                    new_node := Entry m.or_panic.key m.or_panic.val
                     new_node.left <- l
 
-                    nr, old_val0 := remove_recursively m.get.key e.right.get
+                    nr, old_val0 := remove_recursively m.or_panic.key e.right.get
                     new_node.right <- nr
                     (option new_node, option old_val0)
 
@@ -255,10 +255,10 @@ is
       # because this feature is only called when the tree is out of balance,
       # i.e. the left subtree has more nodes than the right one, we can safely
       # assume here that node and node.left are not nil.
-      l := n.get.left.get
+      l := n.or_panic.left.get
 
-      n.get.left <- l.get.right.get
-      l.get.right <- n
+      n.or_panic.left <- l.or_panic.right.get
+      l.or_panic.right <- n
 
       fix_height n
       fix_height l
@@ -272,10 +272,10 @@ is
       # because this feature is only called when the tree is out of balance,
       # i.e. the right subtree has more nodes than the left one, we can safely
       # assume here that node and node.right are not nil.
-      r := n.get.right.get
+      r := n.or_panic.right.get
 
-      n.get.right <- r.get.left.get
-      r.get.left <- n
+      n.or_panic.right <- r.or_panic.left.get
+      r.or_panic.left <- n
 
       fix_height n
       fix_height r
@@ -291,20 +291,20 @@ is
     bf := balance_factor node
 
     if bf < -1
-      # we can safely do node.get here because if node was empty,
+      # we can safely do node.or_panic here because if node was empty,
       # its balance factor would be 0.
-      if balance_factor node.get.left.get <= 0
+      if balance_factor node.or_panic.left.get <= 0
         rotate_right node
       else
-        node.get.left <- rotate_left node.get.left.get
+        node.or_panic.left <- rotate_left node.or_panic.left.get
         rotate_right node
     else if bf > 1
-      # we can safely do node.get here because if node was empty,
+      # we can safely do node.or_panic here because if node was empty,
       # its balance factor would be 0.
-      if balance_factor node.get.right.get >= 0
+      if balance_factor node.or_panic.right.get >= 0
         rotate_left node
       else
-        node.get.right <- rotate_right node.get.right.get
+        node.or_panic.right <- rotate_right node.or_panic.right.get
         rotate_left node
     else
       # do nothing

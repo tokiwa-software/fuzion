@@ -52,7 +52,7 @@ public Webserver(/*NYI: UNDER DEVELOPMENT: custom thread pool TP type : concur.t
 
                 # compute response
                 #
-                response := h.call (http.read_request lm).get
+                response := h.call (http.read_request lm).or_panic
 
                 # send response
                 #

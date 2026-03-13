@@ -25,7 +25,7 @@
 
 # used for protecting spaces when splitting command string
 #
-protected_space := codepoint codepoint.utf8_encoded_in_four_bytes.as_list.last.val
+protected_space := codepoint codepoint.utf8_encoded_in_four_bytes.as_list.last.or_panic
 
 # stores the results of a process
 #
@@ -36,7 +36,7 @@ process_result(out String, err String, exit_code u32) is
     process_result "" "" 0
 
 is_windows =>
-  os.platform.get ? os.windows => true | os.posix => false
+  os.platform.or_panic ? os.windows => true | os.posix => false
 
 path_separator := is_windows ? ";" : ":"
 
@@ -84,7 +84,7 @@ envir_var_kv := [
     envir.vars[k].bind v->
       (k,v)
  .filter (.ok)
- .map (.val)
+ .map (.or_panic)
  .as_array
 
 # envir vars as map
@@ -130,7 +130,7 @@ record_process(
       match p.wait
         e error => panic "failed waiting for $cmd, error is: $e"
         ec u32 => process_result fout.get ferr.get ec)
-    .get
+    .or_panic
 
 # execute this Sequence of process+args
 #
@@ -139,7 +139,7 @@ Sequence.execute(
   feed_stdin bool
 ) =>
   seq := map x->x.as_string
-  match os.process.start seq.first.val (seq.drop 1) envir_vars
+  match os.process.start seq.first.or_panic (seq.drop 1) envir_vars
     e error => panic "failed executing {Sequence.this}, error is $e"
     p os.process => record_process p Sequence.this.as_string feed_stdin
 
@@ -193,8 +193,8 @@ clean_err(f path) =>
     # 8 slashes here intentional, unclear why so many are needed though...
     check "sed -i s|\\\\\\\\|#|g $f".execute.ok
     say "3"
-    check "sed -i s|{os.cwd.val.as_string.replace "\\" "#" .replace "/" "#"}|--CURDIR--| $f".execute.ok
-  check "sed -i s#{os.cwd.val.as_string}#--CURDIR--# $f".execute.ok
+    check "sed -i s|{os.cwd.or_panic.as_string.replace "\\" "#" .replace "/" "#"}|--CURDIR--| $f".execute.ok
+  check "sed -i s#{os.cwd.or_panic.as_string}#--CURDIR--# $f".execute.ok
   # line numbers
   check "sed -E -i s/\\.fz:[0-9]+:[0-9]+:/\\.fz:n:n:/g $f".execute.ok
   check "sed -E -i s/\\.fz:[0-9]+/\\.fz:n/g $f".execute.ok
@@ -248,7 +248,7 @@ else
     backend_options(x) =>
       s := envir.vars
                 .get x
-                .val ""
+                .or_default ""
                 .replace " " protected_space
                 .split "|"
       String.join s " "

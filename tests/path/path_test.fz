@@ -53,8 +53,8 @@ path_test =>
   say <| path.root.resolve (path.of "ex.fz")
 
 
-  say abs_rel.parent.val
-  check !abs_rel.parent.val.ends_with rel
+  say abs_rel.parent.or_panic
+  check !abs_rel.parent.or_panic.ends_with rel
 
   abs_rel_foo := abs_rel.resolve "foo/./bar"
   check abs_rel_foo.contains rel
@@ -122,15 +122,15 @@ path_test =>
 
   say "\nRelativize:\n"
   say <| abs.relativize abs_file
-  say <| abs.parent 1 .val.relativize abs_file
-  say <| abs.parent 2 .val.relativize abs_file
-  say <| abs.parent 3 .val.relativize abs_file
-  say <| abs.parent 4 .val.relativize abs_file
+  say <| abs.parent 1 .or_panic.relativize abs_file
+  say <| abs.parent 2 .or_panic.relativize abs_file
+  say <| abs.parent 3 .or_panic.relativize abs_file
+  say <| abs.parent 4 .or_panic.relativize abs_file
   say ""
   say <| rel.relativize rel_file
-  say <| rel.parent 1 .val.relativize rel_file
-  say <| rel.parent 2 .val.relativize rel_file
-  say <| rel.parent 3 .val.relativize rel_file
+  say <| rel.parent 1 .or_panic.relativize rel_file
+  say <| rel.parent 2 .or_panic.relativize rel_file
+  say <| rel.parent 3 .or_panic.relativize rel_file
   check (path.current_dir.relativize (path.of "ex.fz") = path.of "ex.fz")
   check (path.parent_dir.relativize (path.of "../ex.fz") = path.of "ex.fz")
 

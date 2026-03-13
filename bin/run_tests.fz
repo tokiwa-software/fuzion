@@ -72,13 +72,13 @@ record_process(
       match p.wait max_test_time
         e error => process_result "" "failed waiting for $cmd, error is: $e" 1
         ec u32 => process_result fout.get ferr.get ec)
-    .get
+    .or_panic
 
 # execute this Sequence of process+args
 #
 Sequence.prefix ! =>
   seq := map x->x.as_string
-  os.process.start seq.first.val (seq.drop 1) envir_vars
+  os.process.start seq.first.or_panic (seq.drop 1) envir_vars
             .bind (p -> record_process p Sequence.this.as_string)
 
 
@@ -88,7 +88,7 @@ String.infix | (seq Sequence String) =>
 
   lm : mutate is
   lm ! ()->
-    match os.process.start seq.first.val (seq.drop 1) envir_vars
+    match os.process.start seq.first.or_panic (seq.drop 1) envir_vars
       e error => panic "failed executing $seq, error is $e"
       p os.process =>
         _ := p.with_in unit lm ()->
@@ -123,13 +123,13 @@ find_tests(dir path) array path =>
       _ :=
         for x := io.dir.open.read
         while x.ok
-          dir_x := dir.resolve x.val
+          dir_x := dir.resolve x.or_panic
           if io.file.exists (dir_x.resolve "Makefile")
             res.add dir_x
       res.as_array
 
   tests
-    .val
+    .or_panic
     .as_array
 
 
@@ -141,7 +141,7 @@ say_section(str String) =>
 
 main =>
 
-  mtx := concur.sync.mutex.new.val
+  mtx := concur.sync.mutex.new.or_panic
 
   append_line(dest path, str String) =>
     append_line mtx dest str
@@ -184,7 +184,7 @@ main =>
     if (
        io.file.exists (test.resolve "skip") ||
        io.file.exists (test.resolve "skip_$target") ||
-       (os.platform.get ? os.windows => io.file.exists (test.resolve "skip_win") | os.posix => false)
+       (os.platform.or_panic ? os.windows => io.file.exists (test.resolve "skip_win") | os.posix => false)
        )
       yak "_"
       append_line results "$test: skipped"
@@ -222,7 +222,7 @@ main =>
 
 
   results_content := (io.slurp results)
-    .val
+    .or_panic
     .lines
     .filter (x -> !x.is_blank)
     .as_array

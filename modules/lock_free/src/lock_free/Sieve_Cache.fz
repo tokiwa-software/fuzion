@@ -75,14 +75,14 @@ public Sieve_Cache(K type : property.hashable, V type, public capacity i32) ref 
     init_obj => match hand.read
                   h lock_free.Node => h
                   nil => tail.read
-    for obj := init_obj, match obj.val.prev.read
+    for obj := init_obj, match obj.or_panic.prev.read
                            p lock_free.Node => p
                            nil => tail.read
     while match obj
             nil => false
             o lock_free.Node => o.visited.read
     do
-      obj.val.visited.write false
+      obj.or_panic.visited.write false
     else
       match obj
         o lock_free.Node =>
@@ -127,8 +127,8 @@ public Sieve_Cache(K type : property.hashable, V type, public capacity i32) ref 
 
 
   public redef as_string String =>
-    for res := "", res + "{n.val} (Visited: {n.val.visited.read})" + (if n.val.next.read?? then " -> " else "")
-        n := head.read, n.val.next
+    for res := "", res + "{n.or_panic} (Visited: {n.or_panic.visited.read})" + (if n.or_panic.next.read?? then " -> " else "")
+        n := head.read, n.or_panic.next
     while n??
     else
       res

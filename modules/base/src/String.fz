@@ -634,7 +634,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   public trim(cond choice u8->bool codepoint->bool) String =>
     match cond
       b_cond u8->bool =>
-        if utf8.is_empty || !((b_cond utf8.first.val) || (b_cond utf8.last.val))
+        if utf8.is_empty || !((b_cond utf8.first.or_panic) || (b_cond utf8.last.or_panic))
           String.this
         else
           s := utf8
@@ -646,7 +646,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
           String.from_bytes s
 
       c_cond codepoint->bool =>
-        if codepoints.is_empty || !((c_cond codepoints.first.val) || (c_cond codepoints.last.val))
+        if codepoints.is_empty || !((c_cond codepoints.first.or_panic) || (c_cond codepoints.last.or_panic))
           String.this
         else
           s := codepoints
@@ -690,7 +690,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   public trim_end(cond choice u8->bool codepoint->bool) String =>
     match cond
       b_cond u8->bool =>
-        if utf8.is_empty || !(b_cond utf8.last.val)
+        if utf8.is_empty || !(b_cond utf8.last.or_panic)
           String.this
         else
           s := utf8
@@ -700,7 +700,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
           String.from_bytes s
 
       c_cond codepoint->bool =>
-        if codepoints.is_empty || !(c_cond codepoints.last.val)
+        if codepoints.is_empty || !(c_cond codepoints.last.or_panic)
           String.this
         else
           s := codepoints
@@ -1021,14 +1021,14 @@ public String ref : property.equatable, property.hashable, property.orderable is
 
   # NYI: remove the convenience functions when Fuzion supports char literals
   #
-  public type.minus_char  u8 => "-".utf8.first.get
-  public type.plus_char   u8 => "+".utf8.first.get
-  public type.zero_char   u8 => "0".utf8.first.get
-  public type.nine_char   u8 => "9".utf8.first.get
-  public type.a_char      u8 => "a".utf8.first.get
-  public type.z_char      u8 => "z".utf8.first.get
-  public type.cap_a_char  u8 => "A".utf8.first.get
-  public type.cap_z_char  u8 => "Z".utf8.first.get
+  public type.minus_char  u8 => "-".utf8.first.or_panic
+  public type.plus_char   u8 => "+".utf8.first.or_panic
+  public type.zero_char   u8 => "0".utf8.first.or_panic
+  public type.nine_char   u8 => "9".utf8.first.or_panic
+  public type.a_char      u8 => "a".utf8.first.or_panic
+  public type.z_char      u8 => "z".utf8.first.or_panic
+  public type.cap_a_char  u8 => "A".utf8.first.or_panic
+  public type.cap_z_char  u8 => "Z".utf8.first.or_panic
 
 
 # state used by `String.split_if`.

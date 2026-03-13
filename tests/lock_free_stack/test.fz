@@ -13,7 +13,7 @@ test =>
         for i in 1..100 do
           s.push i
           p := s.pop
-          while !(count p.get)
+          while !(count p.or_panic)
     .as_array
     .for_each t->
       t.join

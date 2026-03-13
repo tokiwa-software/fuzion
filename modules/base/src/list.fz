@@ -50,7 +50,7 @@ public list(public A type)
 is
 
   # equality of two list is true iff `a` and `b` are both empty or `a` and `b` are both
-  # non-empty and `T` and T.equality a.get b.get.
+  # non-empty and `T` and T.equality a.or_panic b.or_panic.
   #
   # This is defined only if T : property.equatable, it will result in a compile-time panic
   # if this is not the case.

@@ -55,7 +55,7 @@ public memoize(MM type : container.Mutable_Map T R, T type : property.equatable,
       # compute if not yet computed
       if store[a].is_nil
         store.put a (f a)
-      store[a].get
+      store[a].or_panic
 
 
 # memoize the results of a function.

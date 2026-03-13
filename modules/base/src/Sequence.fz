@@ -191,7 +191,7 @@ is
   #
   public first(default T) T
   =>
-    first.val default
+    first.or_default default
 
 
   # get the last element of this Sequence
@@ -207,7 +207,7 @@ is
   #
   public last(default T) T
   =>
-    last.val default
+    last.or_default default
 
 
   # collect the contents of this Sequence into an array
@@ -381,7 +381,7 @@ is
       analysis: result ∀ p
       analysis: {
         n := nth result.count
-        !n || !(p n.get)
+        !n || !(p n.or_panic)
       }
   => as_list.take_while p
 
@@ -393,7 +393,7 @@ is
       analysis: result ∀ (x -> !(p x))
       analysis: {
         n := nth result.count
-        !n || p n.get
+        !n || p n.or_panic
       }
   => as_list.drop_while p
 
@@ -811,7 +811,7 @@ is
     pre
       debug: is_valid_index i
   =>
-    (nth i.as_i32).get
+    (nth i.as_i32).or_panic
 
 
   # adds the corresponding index to
@@ -974,7 +974,7 @@ is
                                     nil => nil
                                 nil => nil
                             nil => nil
-    r.val
+    r.or_panic
 
 
   # convert a Sequence's head into a 4-tuple.
@@ -1004,7 +1004,7 @@ is
                                        nil => nil
                                    nil => nil
                                nil => nil
-    r.val
+    r.or_panic
 
 
   # convert a Sequence's head into a 5-tuple.
@@ -1037,7 +1037,7 @@ is
                                           nil => nil
                                       nil => nil
                                   nil => nil
-    r.val
+    r.or_panic
 
 
   # convert a Sequence's head into a 6-tuple.
@@ -1073,7 +1073,7 @@ is
                                              nil => nil
                                          nil => nil
                                      nil => nil
-    r.val
+    r.or_panic
 
 
   # convert this Sequence to an ordered map

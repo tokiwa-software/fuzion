@@ -39,4 +39,4 @@ process_buffered_writer =>
           _ := (io.buffered lm).writer.env.write "Hello, World!\n"
         say p.wait
         _ := p.with_out unit lm ()->
-          say ((io.buffered lm).read_string 1E9).val
+          say ((io.buffered lm).read_string 1E9).or_panic

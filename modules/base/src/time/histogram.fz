@@ -442,8 +442,8 @@ is
     h := highest
     if h > 0
       non_zero_buckets := buckets.indices.filter i->buckets[i]!=0
-      first := non_zero_buckets.first.get
-      last  := non_zero_buckets.last .get
+      first := non_zero_buckets.first.or_panic
+      last  := non_zero_buckets.last .or_panic
       ("from/ns;to/ns;count\n" +
         (first..last).map i->"{smallest i .nanos};{largest i .nanos};{buckets[i]}"
                      .as_string "\n"
