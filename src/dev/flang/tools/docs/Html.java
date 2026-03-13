@@ -39,6 +39,7 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.TreeSet;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -611,12 +612,90 @@ public class Html extends ANY
    */
   private String headingSection(AbstractFeature f)
   {
-    return "<h1 hidden>$0</h1><h1>$1</h1><div class='heading-summary'>$2</div><div class='fd-comment'>$3</div>$4"
+    return "<h1 hidden>$0</h1><h1>$1</h1><div class='heading-summary'>$2</div><div class='fd-comment'>$3</div><div class='fd-contract'>$4</div>$5"
       .replace("$0", f.isUniverse() ? lm.name() : htmlEncodedBasename(f)) // short version of title for navtitle
       .replace("$1", f.isUniverse() ? "API-Documentation: module <code style=\"font-size: 1.4em; vertical-align: bottom;\">" + lm.name() + "</code>" : anchorTags(f))
       .replace("$2", f.isUniverse() ? "": summary(f))
       .replace("$3", commentOf(f))
-      .replace("$4", redefines(f, f));
+      .replace("$4", contractOf(f))
+      .replace("$5", redefines(f, f));
+  }
+
+
+  /**
+   * The features pre- and postconditions in HTML
+   *
+   * @param af the feature for which to generate the HTML
+   * @return HTML showing the feature pre- and postconditions
+   */
+  private String contractOf(AbstractFeature af)
+  {
+    return contractFeatureSrc("Precondition" , "pre" , af, f->f.preFeature()) +
+           contractFeatureSrc("Postcondition", "post", af, f->f.postFeature());
+  }
+
+
+  /**
+   * Generate HTML for one type of a features contract, e.g. precondition
+   *
+   * @param contractType what the contract is called, e.g. "Precondition"
+   * @param af the feature for which to generate the HTML for
+   * @param contractFeature the function to obtain the contract feature from feature af
+   * @return HTML sowing the specified contract of the feature
+   */
+  private String contractFeatureSrc(String contractType, String keyword, AbstractFeature af, Function<AbstractFeature, AbstractFeature> contractFeature)
+  {
+    record Tuple(AbstractFeature fst, AbstractFeature snd) {}
+
+    // first tuple element is the feature from which the contract was inherited, second is the contract itself
+    var res = Stream.concat(Stream.of(new Tuple(null, contractFeature.apply(af))),
+                            af.redefinesFull().stream().map(f->new Tuple(f, contractFeature.apply(f))))
+      .filter(t->t.snd != null && startsWithKeyword(keyword, t.snd.sourceText()))
+      .map(t->(t.fst != null ? "<br>Inherited from <span class=fd-fname>" + relativeAnchor(t.fst, af) + "</span><br>" : "")
+                + "<div class=fz-code><pre>" + contractSrc(t.snd)
+                + "</pre></div>")
+      .collect(Collectors.joining());
+
+    return res.isBlank() ? "" : "<details close><summary><span class=fd-contract-title>" + contractType + "</span></summary>" + res + "</details>";
+  }
+
+  /**
+   * Does text start with keyword, ignoring whitespaces at the beginning
+   *
+   * NYI: OPTIMIZATION: This is a poor way to determine if a feature with a pre-/postcondition defines one itself or only
+   *                    inherits one. If a precondition is inherited but not defined `.preFeature().sourceText()`
+   *                    returns the source code of the feature itself, and not an empty string.
+   *                    So there seems to be no simple and good way to do this at the moment.
+   *
+   * @param keyword the keyword to look for
+   * @param text the text in which to look for the keyword
+   * @return true iff the first word in the text is the keyword
+   */
+  private boolean startsWithKeyword(String keyword, String text)
+  {
+    int i = 0;
+    int len = text.length();
+
+    while (i < len && Character.isWhitespace(text.charAt(i)))
+      {
+        i++;
+      }
+
+    return text.startsWith(keyword + " ", i) || text.startsWith(keyword + "\n", i);
+  }
+
+  /**
+   * Get the source of a contract feature from the beginning of the line instead of its byte start position
+   * and strip indentation (i.e. unindent block without changing relative indentation)
+   *
+   * @param cf the contract feature for which to return the source code
+   * @return source of the contract feature with relative indentation intact
+   */
+  private String contractSrc(AbstractFeature cf)
+  {
+    var sr = cf.sourceRange();
+    var sf = sr._sourceFile;
+    return sf.sourceRange(sf.lineStartPos(sr.line()), sr.byteEndPos()).sourceText().stripIndent();
   }
 
 
@@ -657,9 +736,9 @@ public class Html extends ANY
                   : c.startsWith("<details open>")
                   ? Stream.of(c)
                   : Stream.of(
-                    "<details open><summary>comment of " +
+                    "<details open><summary>Comment of <span class=fd-fname>" +
                     relativeAnchor(r, af.outer())
-                    + "</summary>" + c + "</details>"
+                    + "</span></summary>" + c + "</details>"
                   );
               }
             )
