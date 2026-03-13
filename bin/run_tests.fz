@@ -24,10 +24,6 @@
 
 ########### Extensions ###############
 
-# stores the results of a process
-#
-process_result(out String, err String, exit_code u32) is
-
 # envir vars as map
 #
 envir_vars := envir.vars.map_of [
@@ -49,37 +45,12 @@ envir_vars := envir.vars.map_of [
 #
 max_test_time := (time.duration.min 10)
 
-# helper to get out, err, exit_code from started process
-#
-record_process(
-      p os.process,
-      # the command, for error messages
-      cmd String
-) process_result =>
-  lm : mutate is
-  (concur.thread_pool 2 ()->
-      fout := concur.thread_pool.env.submit _ ()->
-        lm ! ()->
-          match p.with_out String lm (()->String.from (io.buffered lm).read_fully)
-            e error => panic "failed reading stdout from $cmd, error is: $e"
-            out String => out
-      ferr := concur.thread_pool.env.submit _ ()->
-        lm ! ()->
-          match p.with_err String lm (()->String.from (io.buffered lm).read_fully)
-            e error => panic "failed reading stderr from $cmd, error is: $e"
-            err String => err
-
-      match p.wait max_test_time
-        e error => process_result "" "failed waiting for $cmd, error is: $e" 1
-        ec u32 => process_result fout.get ferr.get ec)
-    .or_panic
-
 # execute this Sequence of process+args
 #
 Sequence.prefix ! =>
   seq := map x->x.as_string
   os.process.start seq.first.or_panic (seq.drop 1) envir_vars
-            .bind (p -> record_process p Sequence.this.as_string)
+            .bind (p -> tokiwa.record_process p Sequence.this.as_string max_test_time nil)
 
 
 # feed this string to a new process
@@ -97,7 +68,7 @@ String.infix | (seq Sequence String) =>
           _ := (io.buffered lm).writer.env.write String.this
           _ := (io.buffered lm).writer.env.flush
           _ := p.close_in
-        record_process p seq.as_string
+        tokiwa.record_process p seq.as_string max_test_time nil
 
 
 # execute this string by splitting at all whitespaces
@@ -200,7 +171,7 @@ main =>
           yak "!"
           append_line results "$test in {elapsed_time}: $e error"
           append_line failures "$test: $e"
-        res process_result =>
+        res tokiwa.process_result =>
           if res.exit_code = 0 || target = "fuir" then
             yak "."
             append_line results "$test in {elapsed_time}: ok"

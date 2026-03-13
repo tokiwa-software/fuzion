@@ -1,9 +1,5 @@
 ########### Extensions ###############
 
-# stores the results of a process
-#
-process_result(out String, err String, exit_code u32) is
-
 # envir vars as map
 #
 envir_vars := container.map_of ((envir.vars.map_of [
@@ -32,35 +28,13 @@ envir_vars := container.map_of ((envir.vars.map_of [
     "LANGUAGE"
   ]).items ++ [("FUZION_DISABLE_ANSI_ESCAPES", "true")])
 
-# helper to get out, err, exit_code from started process
-#
-record_process(p os.process,
-      # the command, for error messages
-      cmd String) process_result =>
-  lm : mutate is
-  (concur.thread_pool 2 ()->
-      fout := concur.thread_pool.env.submit _ ()->
-        lm ! ()->
-          match p.with_out String lm (()->String.from (io.buffered lm).read_fully)
-            e error => panic "failed reading stdout from $cmd, error is: $e"
-            out String => out
-      ferr := concur.thread_pool.env.submit _ ()->
-        lm ! ()->
-          match p.with_err String lm (()->String.from (io.buffered lm).read_fully)
-            e error => panic "failed reading stderr from $cmd, error is: $e"
-            err String => err
-      match p.wait
-        e error => panic "failed waiting for $cmd, error is: $e"
-        ec u32 => process_result fout.get ferr.get ec)
-    .or_panic
-
 # execute this Sequence of process+args
 #
 Sequence.prefix ! =>
   seq := map x->x.as_string
   match os.process.start seq.first.or_panic (seq.drop 1) envir_vars
     e error => panic "failed executing {Sequence.this}, error is $e"
-    p os.process => record_process p Sequence.this.as_string
+    p os.process => tokiwa.record_process p Sequence.this.as_string nil nil
 
 
 # execute this string by splitting at all whitespaces
@@ -92,7 +66,7 @@ res :=
     if (c.exit_code = 0)
       e := !!"./testbin"
       _ := io.file.delete (path.of "testbin")
-      process_result c.out+e.out c.err+e.err e.exit_code
+      tokiwa.process_result c.out+e.out c.err+e.err e.exit_code
     else
       c
   else if type_ = "int"

@@ -533,11 +533,11 @@ $(FZJAVA): $(FZ_SRC)/bin/fzjava | $(CLASS_FILES_TOOLS_FZJAVA)
 	chmod +x $@
 
 $(BUILD_DIR)/bin/check_simple_example: $(FZ_SRC)/bin/check_simple_example.fz | $(FUZION_BASE) $(MOD_TERMINAL)
-	$(FZ) -debug=0 -modules=terminal -c -o=$@ $(FZ_SRC)/bin/check_simple_example.fz
+	$(FZ) -debug=0 -modules=terminal,tokiwa -c -o=$@ $(FZ_SRC)/bin/check_simple_example.fz
 	@echo " + $@"
 
 $(BUILD_DIR)/bin/record_simple_example: $(FZ_SRC)/bin/record_simple_example.fz | $(FUZION_BASE) $(MOD_TERMINAL)
-	$(FZ) -debug=0 -modules=terminal -c -o=$@ $(FZ_SRC)/bin/record_simple_example.fz
+	$(FZ) -debug=0 -modules=terminal,tokiwa -c -o=$@ $(FZ_SRC)/bin/record_simple_example.fz
 	@echo " + $@"
 
 $(BUILD_DIR)/tests: $(FUZION_FILES_TESTS) $(BUILD_DIR)/include $(BUILD_DIR)/bin/check_simple_example $(BUILD_DIR)/bin/record_simple_example

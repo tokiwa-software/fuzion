@@ -27,17 +27,6 @@
 #
 protected_space := codepoint codepoint.utf8_encoded_in_four_bytes.as_list.last.or_panic
 
-# stores the results of a process
-#
-process_result(out String, err String, exit_code u32) is
-  ok => exit_code = 0
-
-  type.empty_success =>
-    process_result "" "" 0
-
-  public redef as_string String =>
-    "{exit_code}: {out}{err}"
-
 # envir vars as map
 #
 envir_vars := container.map_of ((envir.vars.map_of [
@@ -78,7 +67,7 @@ record_process(
       cmd String,
       # feed .stdin file to executed process?
       feed_stdin Sequence (String, i32)
-) process_result =>
+) tokiwa.process_result =>
 
   lm : mutate is
 
@@ -107,9 +96,9 @@ record_process(
   match p.wait (time.duration.s 1)
     error =>
       check p.send_signal os.signals.kill .ok
-      process_result (String.join_lines fout.or_panic) "" 1
+      tokiwa.process_result (String.join_lines fout.or_panic) "" 1
     ec u32 =>
-      process_result (String.join_lines fout.or_panic) "" ec
+      tokiwa.process_result (String.join_lines fout.or_panic) "" ec
 
 # execute this Sequence of process+args
 #
