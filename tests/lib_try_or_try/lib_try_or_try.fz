@@ -40,7 +40,7 @@
 # ```
 # and some example code
 # ```
-#    fuzion.runtime.contract_fault
+#    panic
 #      .try ()->(envir.args.nth 3).or_panic.trim.parse_i32.or_panic
 #      .or_try _->envir.vars["DEBUG_LEVEL"].or_panic.trim.parse_i32.or_panic
 #      .catch  _->4
@@ -55,7 +55,7 @@
 # To work around this I introduced a `catch0` that uses the already instated `lm` and used this in `or_try`
 
 x :=
-  fuzion.runtime.contract_fault
+  panic
     .try ()->(envir.args.nth 3).or_panic.trim.parse_i32.or_panic
     .or_try _->(say "failed envir args"; envir.vars["DEBUG_LEVEL"].or_panic.trim.parse_i32.or_panic)
     .catch  _->(say "failed envir vars";4)
