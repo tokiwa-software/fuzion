@@ -220,7 +220,7 @@ public typed_zipper(# the result type of two values that were zipped
 
 # Typed_Value -- a ref type to hold a value of an arbitrary type
 #
-# The value can be extracted by a call to `Typed_Value.applyTo`
+# The value can be extracted by a call to `Typed_Value.apply_to`
 #
 public Typed_Value ref is
 
@@ -228,7 +228,7 @@ public Typed_Value ref is
   # Feed this value and its type into `a.apply`.  Add the
   # cumulative value `e` and return the resulting cumulative value.
   #
-  public applyTo(E type, a typed_applicator E, e E) E
+  public apply_to(E type, a typed_applicator E, e E) E
   =>
     abstract
 
@@ -248,7 +248,7 @@ public typed_value(# the type
 
   # apply `a` to `A` `e` `v`
   #
-  public redef applyTo(E type, a typed_applicator E, e E) E
+  public redef apply_to(E type, a typed_applicator E, e E) E
   =>
     a.apply A e v
 
