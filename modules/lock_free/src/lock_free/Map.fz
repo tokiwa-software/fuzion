@@ -696,16 +696,16 @@ is
   # the map is modified.
   #
   # NYI: BUG: #3646 make public when snapshots work
-  as_persistent_map container.Persistent_Map CTK CTV =>
-    s := snapshot false
-    _ : container.Persistent_Map CTK CTV is
-      public redef size i32 => s.size
-      public redef index [] (k CTK) option CTV => s[k]
-      public redef items Sequence (tuple CTK CTV) => s.items
-      public redef put(k CTK, v CTV) container.Persistent_Map CTK CTV =>
-        sp := s.snapshot false
-        sp.put k v
-        sp.as_persistent_map
+  # # as_persistent_map container.Persistent_Map CTK CTV =>
+  # #   s := snapshot false
+  # #   _ : container.Persistent_Map CTK CTV is
+  # #     public redef size i32 => s.size
+  # #     public redef index [] (k CTK) option CTV => s[k]
+  # #     public redef items Sequence (tuple CTK CTV) => s.items
+  # #     public redef put(k CTK, v CTV) container.Persistent_Map CTK CTV =>
+  # #       sp := s.snapshot false
+  # #       sp.put k v
+  # #       sp.as_persistent_map
 
 
   # initialize a new ctrie

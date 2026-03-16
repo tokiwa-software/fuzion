@@ -49,7 +49,7 @@ is
 
   # return a new Set containing all elements of this Set plus element k
   #
-  public add (k E) Set E =>
+  public add (k E) container.Set E =>
     compile_time_panic # "*** NYI: REMOVE Set.add, we need some support for mutable Sets ***"
 
 

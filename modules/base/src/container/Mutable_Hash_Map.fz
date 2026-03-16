@@ -59,7 +59,7 @@ module:public Mutable_Hash_Map(
 
         # factor by which the allocated_size is increased if load reaches upper_load_factor
         #
-        resize_factor f32 ) ref : Mutable_Map HK V
+        resize_factor f32 ) ref : container.Mutable_Map HK V
 pre
   debug: min_size > 0
   debug: 0.0 < lower_load_factor < upper_load_factor
