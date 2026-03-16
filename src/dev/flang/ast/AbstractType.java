@@ -99,7 +99,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /**
    * For a normal type, this is the list of actual type parameters given to the type.
    *
-   * Requires that this is resolved and !isGenericArgument().
+   * Requires that this is resolved and isNormalType().
    */
   public abstract List<AbstractType> generics();
 
@@ -113,7 +113,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * The mode of the type: ThisType, RefType or ValueType.
+   * The mode of the type: GenericArgument, ThisType, RefType or ValueType.
    */
   public abstract TypeKind kind();
 
