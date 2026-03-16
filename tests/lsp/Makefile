@@ -22,4 +22,5 @@
 # -----------------------------------------------------------------------
 
 override NAME = lsp
+FUZION_OPTIONS = -modules=tokiwa
 include ../simple.mk
