@@ -82,7 +82,7 @@ public abstract_array
   #
   # Unlike for general Sequences, this performs in O(1).
   #
-  public redef is_valid_index(I type : idx, i I) bool => 0 ≤ i.as_i32 < length
+  public redef is_valid_index(I type : integer, i I) bool => 0 ≤ i.as_i32 < length
 
 
   # create a list that consists of the elements of this Sequence except the first
@@ -90,7 +90,7 @@ public abstract_array
   #
   # For arrays, this has performance in O(1).
   #
-  public redef drop (I type : idx, n I) Sequence T =>
+  public redef drop (I type : integer, n I) Sequence T =>
     if n.as_i32 >= count
       []
     else if n < 0
@@ -104,7 +104,7 @@ public abstract_array
   #
   # For arrays, this has performance in O(1).
   #
-  public redef take (I type : idx, n I) Sequence T =>
+  public redef take (I type : integer, n I) Sequence T =>
     if n.as_i32 >= count
       abstract_array.this
     else if n < 0
@@ -146,7 +146,7 @@ public abstract_array
 
   # get the contents of this array at the given index
   #
-  public redef index [ ] (I type : idx, i I) T
+  public redef index [ ] (I type : integer, i I) T
   =>
     abstract
 
@@ -180,7 +180,7 @@ public abstract_array
   # index access : O(1)
   # count        : O(1)
   #
-  public redef slice(I type : idx, from, to I) Sequence T
+  public redef slice(I type : integer, from, to I) Sequence T
   =>
     array_slice : container.abstract_array T is
 
@@ -195,7 +195,7 @@ public abstract_array
 
       # get the contents of this slice at the given index
       #
-      public redef index [ ] (J type : idx, i J) T
+      public redef index [ ] (J type : integer, i J) T
       =>
         abstract_array.this[from.as_i32+i.as_i32]
 
@@ -207,7 +207,7 @@ public abstract_array
 
       # a slice of a slice, need to adjust from and to args
       #
-      public redef slice(J type : idx, from_, to_ J) Sequence T
+      public redef slice(J type : integer, from_, to_ J) Sequence T
       =>
         abstract_array.this.slice from.as_i32+from_.as_i32 from.as_i32+to_.as_i32
 
@@ -217,7 +217,7 @@ public abstract_array
   # create a cons cell for a list of this array starting at the given
   # index `i` and up to `to`
   #
-  array_cons(I type: idx, a A : container.abstract_array T, i, to I)
+  array_cons(I type : integer, a A : container.abstract_array T, i, to I)
     pre
       debug: 0 ≤ i.as_i32 < to.as_i32 ≤ a.length
   =>
