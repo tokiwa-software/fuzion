@@ -1239,17 +1239,7 @@ inheritanceCallList    : inheritanceCall ( COMMA inheritanceCallList
    */
   boolean skipInheritanceCallList()
   {
-    /**
-      * !isRestrictedToLine is necessary in e.g. example:
-      *
-      * f is
-      *   h(U type)
-      *   pre U : f.this
-      *   =>
-      *     say U
-      *
-      */
-    var result = !isRestrictedToLine() && skipInheritanceCall();
+    var result = skipInheritanceCall();
     while (result && skipComma())
       {
         result = skipInheritanceCall();
@@ -1263,8 +1253,7 @@ inheritanceCallList    : inheritanceCall ( COMMA inheritanceCallList
    */
   private boolean skipInheritanceCall()
   {
-    return call0() instanceof AbstractCall ||
-           expr()  instanceof AbstractCall;
+    return call0() instanceof AbstractCall;
   }
 
 
