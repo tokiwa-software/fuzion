@@ -159,7 +159,7 @@ public memoize is
         v
 
     update(k,v) =>
-      set store := store.add k v
+      set store := store.put k v
       memoized.this.replace memoized.this
 
 

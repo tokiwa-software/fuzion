@@ -26,7 +26,7 @@
 #
 private:public mutable_tree_map(public LM  type : mutate,
                                 public KEY type : property.orderable,
-                                public VAL type                      ) : Mutable_Map KEY VAL
+                                public VAL type                      ) : container.Mutable_Map KEY VAL
 is
 
 
