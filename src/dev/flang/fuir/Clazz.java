@@ -551,7 +551,8 @@ class Clazz extends ANY implements Comparable<Clazz>
         var pt = p.type();
         var t1 = isRef() && !pt.isVoid() ? pt.asRef() : pt.asValue();
         var t2 = _type.actualType(t1);
-        var pc = _fuir.newClazz(t2);
+        var t3 = replaceThisType(t2, new List<>() /* NYI: correct? */);
+        var pc = _fuir.newClazz(t3);
         if (CHECKS) check
           (Errors.any() || pc.isVoidType() || isRef() == pc.isRef());
         result.add(pc);
