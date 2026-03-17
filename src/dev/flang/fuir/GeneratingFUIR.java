@@ -2011,15 +2011,18 @@ public class GeneratingFUIR extends FUIR
   {
     var result =
       !ac.isInheritanceCall() &&
+      // these are handled via other means anyway
+      !ac.calledFeature().isUnitType() &&
       ac.calledFeature().isConstructor() &&
       // contains no fields
       ac.calledFeature().code().containsOnlyDeclarations() &&
       // we are calling a value type feature
       ac.calledFeature().selfType().isValue() &&
       // only features without args and no fields may be inherited
+      // NYI: UNDER DEVELOPMENT: we could relax this more
       ac.calledFeature().inherits().stream().allMatch(c -> c.calledFeature().arguments().isEmpty() && c.calledFeature().code().containsOnlyDeclarations()) &&
-      // no unit   // NYI: UNDER DEVELOPMENT: we could allow units that does not contain declarations
-      ac.actuals().size() > 0 &&
+      // NYI: UNDER DEVELOPMENT: support consts with contracts
+      ac.calledFeature().contract().isEmpty() &&
       ac.actuals().stream().allMatch(x -> isConst(x));
 
     if (result)
