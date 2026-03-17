@@ -3124,7 +3124,7 @@ public class GeneratingFUIR extends FUIR
         r.called.put(cf.feature(), sitePos(callSite).show());
         if (CHECKS) check
           (cf.feature().isAbstract() ||
-           (cf.feature().modifiers() & FuzionConstants.MODIFIER_FIXED) != 0);
+           cf.feature().isFixed());
       }
   }
 

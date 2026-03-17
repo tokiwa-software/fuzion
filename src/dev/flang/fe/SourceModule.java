@@ -1676,7 +1676,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
   {
     f.impl().checkTypes(f);
     var args = f.arguments();
-    var fixed = (f.modifiers() & FuzionConstants.MODIFIER_FIXED) != 0;
+    var fixed = f.isFixed();
     for (var o : f.redefines())
       {
         var ar = argTypesOrConstraints(f);
