@@ -2585,6 +2585,14 @@ public class AstErrors extends ANY
     );
   }
 
+  public static void useConcreteTypeInFixed(AbstractFeature f, AbstractType t)
+  {
+    error(
+      f.pos(),
+      "Use the concrete type not the this-type in a fixed feature.",
+      "For increased consistency and easier comprehensibility, use " + s(t.feature().selfType()) + " instead of " + s(t));
+  }
+
 }
 
 /* end of file */
