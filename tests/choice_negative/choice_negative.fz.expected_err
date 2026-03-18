@@ -5,37 +5,47 @@
 While parsing: implRout, parse stack: implRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
 
 
---CURDIR--/choice_negative.fz:140:25: error 2: Syntax error: expected 'is', or '=>' in routine declaration, found operator ':='
-    x : choice i64 bool := true  # 28. should flag an error, choice feature must not be field
-------------------------^
-While parsing: implRout, parse stack: implRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
-
-
---CURDIR--/choice_negative.fz:142:30: error 3: Syntax error: expected 'is', or '=>' in routine declaration, found operator ':='
+--CURDIR--/choice_negative.fz:142:30: error 2: Syntax error: expected 'is', or '=>' in routine declaration, found operator ':='
     x bool : choice i64 bool := any  # 29. should flag an error, choice feature must not be field
 -----------------------------^
 While parsing: implRout, parse stack: implRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
 
 
---CURDIR--/choice_negative.fz:35:5: error 4: Choice feature must not be ref
+--CURDIR--/choice_negative.fz:140:9: error 3: Could not find called feature
+    x : choice i64 bool := true  # 28. should flag an error, choice feature must not be field
+--------^^^^^^
+Feature not found: 'choice' (2 arguments)
+Target feature: 'choice_negative.impl2'
+In call: 'choice i64 bool'
+
+
+--CURDIR--/choice_negative.fz:140:5: error 4: Could not find called feature
+    x : choice i64 bool := true  # 28. should flag an error, choice feature must not be field
+----^
+Feature not found: 'x' (no arguments)
+Target feature: 'choice_negative.impl2'
+In call: 'x'
+
+
+--CURDIR--/choice_negative.fz:35:5: error 5: Choice feature must not be ref
     A ref : choice A i32 String is  # 1a. should flag an error: choice feature must not be re
 ----^
 A choice feature must be a value type since it is not constructed 
 
 
---CURDIR--/choice_negative.fz:41:5: error 5: Choice feature must not be ref
+--CURDIR--/choice_negative.fz:41:5: error 6: Choice feature must not be ref
     A ref : choice i32 A String is  # 2a. should flag an error: choice feature must not be re
 ----^
 A choice feature must be a value type since it is not constructed 
 
 
---CURDIR--/choice_negative.fz:47:5: error 6: Choice feature must not be ref
+--CURDIR--/choice_negative.fz:47:5: error 7: Choice feature must not be ref
     A ref : choice i32 String A is  # 3a. should flag an error: choice feature must not be re
 ----^
 A choice feature must be a value type since it is not constructed 
 
 
---CURDIR--/choice_negative.fz:54:10: error 7: Could not find called feature
+--CURDIR--/choice_negative.fz:54:10: error 8: Could not find called feature
     _ := choice i32 String  # 7. should flag an error: cannot instantiate choice
 ---------^^^^^^
 Feature not found: 'choice' (2 arguments)
@@ -43,7 +53,7 @@ Target feature: 'choice_negative.instantiate1'
 In call: 'choice i32 String'
 
 
---CURDIR--/choice_negative.fz:58:10: error 8: Could not find called feature
+--CURDIR--/choice_negative.fz:58:10: error 9: Could not find called feature
     _ := MyChoice  # 8. should flag an error: cannot instantiate choice
 ---------^^^^^^^^
 Feature not found: 'MyChoice' (no arguments)
@@ -51,17 +61,9 @@ Target feature: 'choice_negative.instantiate2'
 In call: 'MyChoice'
 
 
---CURDIR--/choice_negative.fz:137:30: error 9: Could not find called feature
+--CURDIR--/choice_negative.fz:137:30: error 10: Could not find called feature
     x bool : choice i64 bool := true  # 27. should flag an error, choice feature must not be field
 -----------------------------^^
-Feature not found: 'prefix :=' (no arguments)
-Target feature: 'bool'
-In call: ':= true'
-
-
---CURDIR--/choice_negative.fz:140:25: error 10: Could not find called feature
-    x : choice i64 bool := true  # 28. should flag an error, choice feature must not be field
-------------------------^^
 Feature not found: 'prefix :=' (no arguments)
 Target feature: 'bool'
 In call: ':= true'
@@ -279,19 +281,13 @@ Result type 'bool' at --CURDIR--/choice_negative.fz:137:7:
 ------^^^^
 
 
---CURDIR--/choice_negative.fz:140:5: error 38: Choice feature must not be intrinsic
-    x : choice i64 bool := true  # 28. should flag an error, choice feature must not be field
-----^
-A choice feature must be a normal feature with empty code section
-
-
---CURDIR--/choice_negative.fz:142:5: error 39: Choice feature must not be intrinsic
+--CURDIR--/choice_negative.fz:142:5: error 38: Choice feature must not be intrinsic
     x bool : choice i64 bool := any  # 29. should flag an error, choice feature must not be field
 ----^
 A choice feature must be a normal feature with empty code section
 
 
---CURDIR--/choice_negative.fz:142:5: error 40: Choice feature must not have a result type
+--CURDIR--/choice_negative.fz:142:5: error 39: Choice feature must not have a result type
     x bool : choice i64 bool := any  # 29. should flag an error, choice feature must not be field
 ----^
 A choice feature cannot be called, so it does not make sense to define a result type of a choice.
@@ -300,25 +296,25 @@ Result type 'bool' at --CURDIR--/choice_negative.fz:142:7:
 ------^^^^
 
 
---CURDIR--/choice_negative.fz:144:5: error 41: Choice feature must not be defined as a routine
+--CURDIR--/choice_negative.fz:144:5: error 40: Choice feature must not be defined as a routine
     x : choice i64 bool => 3  # 30. should flag an error, choice feature must not contain code
 ----^
 To solve this, replace '=>' by 'is'
 
 
---CURDIR--/choice_negative.fz:146:5: error 42: Choice feature must not contain any code
+--CURDIR--/choice_negative.fz:146:5: error 41: Choice feature must not contain any code
     x : choice i64 bool is say "Hello" # 31. should flag an error, choice feature must not contain code
 ----^
 A choice feature must be a normal feature with empty code section
 
 
---CURDIR--/choice_negative.fz:148:5: error 43: Choice feature must not be abstract
+--CURDIR--/choice_negative.fz:148:5: error 42: Choice feature must not be abstract
     x unit : choice i64 bool => abstract  # 32. should flag an error, choice feature must not be abstract
 ----^
 A choice feature must be a normal feature with empty code section
 
 
---CURDIR--/choice_negative.fz:148:5: error 44: Choice feature must not have a result type
+--CURDIR--/choice_negative.fz:148:5: error 43: Choice feature must not have a result type
     x unit : choice i64 bool => abstract  # 32. should flag an error, choice feature must not be abstract
 ----^
 A choice feature cannot be called, so it does not make sense to define a result type of a choice.
@@ -327,13 +323,13 @@ Result type 'unit' at --CURDIR--/choice_negative.fz:148:7:
 ------^^^^
 
 
---CURDIR--/choice_negative.fz:150:6: error 45: Choice feature must not be intrinsic
+--CURDIR--/choice_negative.fz:150:6: error 44: Choice feature must not be intrinsic
      x unit : choice i64 bool => intrinsic  # 33. should flag an error, choice feature must not be intrinsic
 -----^
 A choice feature must be a normal feature with empty code section
 
 
---CURDIR--/choice_negative.fz:150:6: error 46: Choice feature must not have a result type
+--CURDIR--/choice_negative.fz:150:6: error 45: Choice feature must not have a result type
      x unit : choice i64 bool => intrinsic  # 33. should flag an error, choice feature must not be intrinsic
 -----^
 A choice feature cannot be called, so it does not make sense to define a result type of a choice.
@@ -342,9 +338,9 @@ Result type 'unit' at --CURDIR--/choice_negative.fz:150:8:
 -------^^^^
 
 
---CURDIR--/choice_negative.fz:171:21: error 47: Ambiguous assignment to 'choice choice_negative.ambiguous_assignment_to_choice_via_subtype.this.A choice_negative.ambiguous_assignment_to_choice_via_subtype.this.B' from 'choice_negative.ambiguous_assignment_to_choice_via_subtype.this.C'
+--CURDIR--/choice_negative.fz:171:21: error 46: Ambiguous assignment to 'choice choice_negative.ambiguous_assignment_to_choice_via_subtype.this.A choice_negative.ambiguous_assignment_to_choice_via_subtype.this.B' from 'choice_negative.ambiguous_assignment_to_choice_via_subtype.this.C'
     t choice A B => C  # 37. should flag an error, Ambiguous assignment to ...
 --------------------^
 'choice_negative.ambiguous_assignment_to_choice_via_subtype.this.C' is assignable to 'choice_negative.ambiguous_assignment_to_choice_via_subtype.this.A', 'choice_negative.ambiguous_assignment_to_choice_via_subtype.this.B'
 
-47 errors.
+46 errors.
