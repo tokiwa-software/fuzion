@@ -2845,6 +2845,20 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     });
   }
 
+
+  /**
+   * replace type parameters coming from postFeature.origin()
+   * by type parameters of postFeature.
+   */
+  AbstractType replaceTypeParameters(Feature postFeature)
+  {
+    return isGenericArgument()
+      ? genericArgument().outer() == postFeature.origin()
+          ? postFeature.typeArguments().get(genericArgument().typeParameterIndex()).asGenericType()
+          : this
+      : applyToGenericsAndOuter(x -> x.replaceTypeParameters(postFeature));
+  }
+
 }
 
 /* end of file */

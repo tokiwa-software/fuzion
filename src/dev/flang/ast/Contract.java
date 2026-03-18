@@ -1028,8 +1028,10 @@ all of their redefinition to `true`. +
         var resultField = new Feature(pos,
                                       Visi.PRIV,
                                       f.isConstructor()
-                                      ? f.thisType()
-                                      : f.resultType(), // NYI: replace type parameter of f by type parameters of _postFeature!
+                                        ? f.thisType()
+                                        // we will later replace type parameters of f
+                                        // by type parameters of f post
+                                        : f.resultType(),
                                       FuzionConstants.RESULT_NAME)
           {
             public boolean isResultField() { return true; }
@@ -1067,6 +1069,10 @@ all of their redefinition to `true`. +
           };
         res._module.findDeclarations(pF, f.isConstructor() ? f :  f.outer());
         res.resolveDeclarations(pF);
+        if (!f.isConstructor())
+          {
+            resultField.setRefinedResultType(res, context, f.resultType().replaceTypeParameters(pF));
+          }
         res.resolveTypes(pF);
         f._postFeature = pF;
 
