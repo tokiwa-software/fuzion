@@ -44,13 +44,10 @@ is
     if s.as_string.utf8.count > os.page_size.as_i32
       for c in s.as_string.utf8.chunk os.page_size.as_i32
       do
-        write_res := write c
-        check debug: write_res.ok
+        write c .or_panic
     else
-      write_res := write s.as_string.utf8
-      check debug: write_res.ok
-    flush_res := flush
-    check flush_res.ok
+      write s.as_string.utf8 .or_panic
+    flush.or_panic
 
 
   # print new line

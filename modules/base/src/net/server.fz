@@ -40,6 +40,7 @@ is
   # close server, stop listening on port
   #
   public redef finally unit =>
+    # register runtime fault or similar on failure
     check (fuzion.sys.net.close sock).ok
 
 

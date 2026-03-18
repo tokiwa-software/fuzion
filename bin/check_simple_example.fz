@@ -153,16 +153,21 @@ check_exit_code(run tokiwa.process_result) =>
 # like loop4, preandcall19 etc.
 #
 clean_err(f path) =>
+
+  tokiwa.process_result.or_panic =>
+    if !ok
+      panic "one of the sed executions failed"
+
   if is_windows
-    check "sed -i s|/|#|g $f".execute.ok
+    "sed -i s|/|#|g $f".execute .or_panic
     # 8 slashes here intentional, unclear why so many are needed though...
-    check "sed -i s|\\\\\\\\|#|g $f".execute.ok
+    "sed -i s|\\\\\\\\|#|g $f".execute .or_panic
     say "3"
-    check "sed -i s|{os.cwd.or_panic.as_string.replace "\\" "#" .replace "/" "#"}|--CURDIR--| $f".execute.ok
-  check "sed -i s#{os.cwd.or_panic.as_string}#--CURDIR--# $f".execute.ok
+    "sed -i s|{os.cwd.or_panic.as_string.replace "\\" "#" .replace "/" "#"}|--CURDIR--| $f".execute .or_panic
+  "sed -i s#{os.cwd.or_panic.as_string}#--CURDIR--# $f".execute .or_panic
   # line numbers
-  check "sed -E -i s/\\.fz:[0-9]+:[0-9]+:/\\.fz:n:n:/g $f".execute.ok
-  check "sed -E -i s/\\.fz:[0-9]+/\\.fz:n/g $f".execute.ok
+  "sed -E -i s/\\.fz:[0-9]+:[0-9]+:/\\.fz:n:n:/g $f".execute .or_panic
+  "sed -E -i s/\\.fz:[0-9]+/\\.fz:n/g $f".execute .or_panic
 
 
 # delete temporary files
