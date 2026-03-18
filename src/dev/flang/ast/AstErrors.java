@@ -2593,6 +2593,12 @@ public class AstErrors extends ANY
       "For increased consistency and easier comprehensibility, use " + s(t.feature().selfType()) + " instead of " + s(t));
   }
 
+  public static void illegalUseOfFixedModifier(Feature f)
+  {
+    error(f.pos(), "Illegal use of " + skw("fixed") + " modifier.",
+     skw("fixed")+ " fixed is only allowed on function features not in universe.");
+  }
+
 }
 
 /* end of file */
