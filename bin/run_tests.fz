@@ -78,10 +78,9 @@ String.prefix !! =>
 
 
 append_line(mtx concur.sync.mutex, dest path, str String) =>
-
   mtx.synchronized ()->
-    check (io.file.use dest io.file.mode.append ()->
-            check ("$str\n".write_to io.file.file_mutate).ok).ok
+    (io.file.use dest io.file.mode.append ()->
+      "$str\n".write_to io.file.file_mutate .or_panic).or_panic
 
 ########### run_tests ###############
 
@@ -249,7 +248,7 @@ main =>
         done
         """
 
-    check (set_exit_code 1).ok
+    set_exit_code 1 .or_panic
 
 
   num_slowest := 10
