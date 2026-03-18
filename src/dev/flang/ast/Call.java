@@ -413,12 +413,12 @@ public class Call extends AbstractCall
 
 
   /**
-   * Helper to check if the target of this call is undefined, i.e., it might
+   * Helper to check if the target of this call is erroneous, i.e., it might
    * have a pending error.
    */
-  private boolean targetTypeUndefined()
+  private boolean targetErroneous()
   {
-    return _target != null && _target.typeForInferencing() == null;
+    return _target != null && _target.type() == Types.t_ERROR;
   }
 
 
@@ -717,7 +717,7 @@ public class Call extends AbstractCall
     if (POSTCONDITIONS) ensure
       (Errors.any() || !calledFeatureKnown() || _calledFeature != Types.f_ERROR || targetVoid,
        Errors.any() || _target        != Call.ERROR,
-       Errors.any() || _calledFeature != null || _pendingError != null || targetTypeUndefined(),
+       Errors.any() || _calledFeature != null || _pendingError != null || targetErroneous(),
        Errors.any() || _target        != null || _pendingError != null);
 
     return !targetVoid;
@@ -2593,7 +2593,7 @@ public class Call extends AbstractCall
     // Check that we either know _calledFeature, or there is an error pending
     // either for this Call, or we have a problem with the target:
     if (PRECONDITIONS) require
-      (Errors.any() || res._options.isLanguageServer() || _calledFeature != null || _pendingError != null || targetTypeUndefined());
+      (Errors.any() || res._options.isLanguageServer() || _calledFeature != null || _pendingError != null || targetErroneous());
 
     if (_calledFeature == Types.f_ERROR)
       {
@@ -2688,7 +2688,7 @@ public class Call extends AbstractCall
       }
 
     if (POSTCONDITIONS) ensure
-      (targetTypeUndefined() || _pendingError != null || Errors.any() || result.typeForInferencing() != Types.t_ERROR || result == Call.ERROR);
+      (targetErroneous() || _pendingError != null || Errors.any() || result.typeForInferencing() != Types.t_ERROR || result == Call.ERROR);
 
     return  result;
   }
@@ -2700,7 +2700,7 @@ public class Call extends AbstractCall
   private boolean isErroneous(Resolution res)
   {
     return !res._options.isLanguageServer() &&
-      (targetTypeUndefined() || _pendingError == null && typeForInferencing() == Types.t_ERROR);
+      (targetErroneous() || _pendingError == null && typeForInferencing() == Types.t_ERROR);
   }
 
 
