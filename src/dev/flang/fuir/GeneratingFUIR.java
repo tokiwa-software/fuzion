@@ -562,11 +562,9 @@ public class GeneratingFUIR extends FUIR
         o = o._outer;
       }
 
-    var t = actualType;
-
     // normalize outer to be value in case t describes a field
-    outerR = t.feature().isField() ? outerR.asValue() : outerR;
-    var cl = new Clazz(this, outerR, t, select);
+    outerR = actualType.feature().isField() ? outerR.asValue() : outerR;
+    var cl = new Clazz(this, outerR, actualType, select);
     var existing = _clazzesTM.get(cl);
     if (existing != null)
       {
