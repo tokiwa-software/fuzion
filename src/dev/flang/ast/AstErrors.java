@@ -2598,6 +2598,12 @@ public class AstErrors extends ANY
     error(f.pos(), "Illegal use of " + skw("fixed") + " modifier.",
      skw("fixed")+ " fixed is only allowed on function features not in universe.");
   }
+  
+  public static void multipleOperatorsFound(SourcePosition p)
+  {
+    error(p,
+      "Multiple successive operators are not allowed.", "");
+  }
 
 }
 

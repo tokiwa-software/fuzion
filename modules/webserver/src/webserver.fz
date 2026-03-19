@@ -73,7 +73,7 @@ public Webserver(/*NYI: UNDER DEVELOPMENT: custom thread pool TP type : concur.t
         e error => log "failure starting the webserver: $e"
         unit =>
 
-    check tp_res.ok
+    tp_res.or_panic
 
 
 
