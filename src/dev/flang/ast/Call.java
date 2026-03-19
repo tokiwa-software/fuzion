@@ -209,8 +209,8 @@ public class Call extends AbstractCall
    * Will be set to true for a call to a direct parent feature in an inheritance
    * call.
    */
-  boolean _isInheritanceCall = false;
-  public boolean isInheritanceCall() { return _isInheritanceCall; }
+  Feature inheritanceCallOf;
+  public boolean isInheritanceCall() { return inheritanceCallOf != null; }
 
 
   /**

@@ -659,7 +659,7 @@ types passed to `T`.  The actual types of `T` will always be inferred from the a
               {
                 vn = resolvedFormalArgumentTypes(res, context).length;
               }
-            if (cf.hasOpenTypeArgList())
+            if (cf.hasOpenType())
               {
                 /*
     // tag::fuzion_rule_CALL_OPEN_TYPE_ARGS[]
@@ -714,6 +714,24 @@ A `_` may be used as placeholder for a xref:fuzion_actual_typeparameter[actual t
             var t = ti < tn &&
                     i < firstValueIndex ? _actuals.get(i).asType()
                                         : null;
+
+            // NYI: UNDER DEVELOPMENT allow passing open from outers
+            // not just directly in inheritance call?
+
+            /**
+             * a(A type, B type...) : choice A B is
+             *
+             * this does setFollowedByDots for B to suppress errors in UnresolvedType.resolve
+             */
+            if (!ai.hasNext() &&
+                _calledFeature.hasOpenType() &&
+                inheritanceCallOf != null &&
+                t instanceof UnresolvedType ut &&
+                inheritanceCallOf.typeArguments().filter(x -> x.isOpenTypeParameter()).map2(x -> x.featureName().baseName()).contains(ut.name()))
+              {
+                ut.setFollowedByDots();
+              }
+
             if (t != null && (i <= ti || t != Types.t_UNDEFINED /* open type parameters except first must not be `_` */))
               {
                 ai.set(Expr.NO_VALUE);  // make sure visit() no longer visits this
