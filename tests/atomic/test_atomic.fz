@@ -154,7 +154,7 @@ test_atomic is
 
   # test general choice
   test0 (option 23) (option 42) nil (option 4711) (a,b)->
-    a?? = b?? && (a!! || a.get = b.get)
+    a?? = b?? && (a!! || a.or_panic = b.or_panic)
 
 
   test =>

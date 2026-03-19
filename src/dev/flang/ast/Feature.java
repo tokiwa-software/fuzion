@@ -2108,6 +2108,12 @@ A ((Choice)) declaration must not contain a result type.
         AstErrors.explicitTypeRequired(this, resultType());
       }
 
+    if (isFixed())
+      {
+        resultType().checkForNoneConcreteTypeInFixed(this, this);
+        arguments().forEach(a -> a.resultType().checkForNoneConcreteTypeInFixed(this, a));
+      }
+
     _state = State.RESOLVED;
   }
 

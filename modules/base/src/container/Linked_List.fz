@@ -28,7 +28,7 @@ public Linked_List(public T type) ref : Sequence T is
 
   # the next element in the linked list, or nil if this is the last element
   #
-  public next option (Linked_List T) => abstract
+  public next option (container.Linked_List T) => abstract
 
 
   # the data stored in this element of the list.

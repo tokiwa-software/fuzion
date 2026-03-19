@@ -47,7 +47,7 @@ public mode is
 #     _ := my_file.use file_name mode.read ()->
 #       say (io.buffered my_file.file_mutate).read_lines
 #
-public use(R type, file_name String, m mode.val, code ()-> outcome R) outcome R =>
+public use(R type, file_name path, m mode.val, code ()-> outcome R) outcome R =>
 
   # definition of read handler for file
   #
@@ -72,15 +72,18 @@ public use(R type, file_name String, m mode.val, code ()-> outcome R) outcome R 
 
   (fuzion.sys.fileio.open file_name mode_num).bind fd->
 
-    # NYI: BUG: unclear why DFA does not accept this
-    # file_mutate
-    #   .and (outcome R) open (open fd file_name)
-    #   .and ((io.buffered file_mutate).reader (read_handler fd))
-    #   .and ((io.buffered file_mutate).writer (write_handler fd))
-    #   .call code
+    #
+    # file_mutate needs to be instated when
+    # initializing reader/writer
+    #
 
     file_mutate ! ()->
-      open fd file_name
-        .and (outcome R) _ ((io.buffered file_mutate).reader (read_handler fd))
-        .and ((io.buffered file_mutate).writer (write_handler fd))
-        .call code
+
+      match m
+        mode.read =>
+          (open fd file_name,
+           io.buffered file_mutate .reader (read_handler fd)) ! code
+        * =>
+          (open fd file_name,
+           io.buffered file_mutate .reader (read_handler fd),
+           io.buffered file_mutate .writer (write_handler fd)) ! code

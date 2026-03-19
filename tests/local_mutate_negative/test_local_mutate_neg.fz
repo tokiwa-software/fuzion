@@ -94,7 +94,7 @@ test_local_mutate_neg is
       neg_test4 =>
         s := m ! ()->count2
         m ! ()->
-          s.get <- -12    # *** will cause an error, m has changed!
+          s.or_panic <- -12    # *** will cause an error, m has changed!
           say s
         "** failed, did not panic **"
 
@@ -105,7 +105,7 @@ test_local_mutate_neg is
         q =>
           s1 := m ! ()->count2
           m ! ()->
-            s1.get <- -12    # *** will cause an error, m has changed!
+            s1.or_panic <- -12    # *** will cause an error, m has changed!
             say s1
           "** failed, did not panic **"
         q

@@ -1705,7 +1705,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   protected boolean mayBeNativeValue()
   {
     return kind() == Kind.Constructor
-      && !hasOuterRef()
+      && (!hasOuterRef() || outerRef().resultType().feature().isUnitType())
       && typeArguments().isEmpty()
       && inherits().size() == 1
       && !Contract.hasPreConditionsFeature(this)
@@ -1908,15 +1908,16 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   }
 
 
-  private boolean isUnitType(boolean allowRef)
+  private boolean isUnitType(boolean isInheritedFeature)
   {
     return
       isConstructor() &&
-      contract() == dev.flang.ast.Contract.EMPTY_CONTRACT &&
+      contract().isEmpty() &&
       valueArguments().isEmpty() &&
-      (allowRef || !isRef()) &&
+      (isInheritedFeature || !isRef()) &&
       code().isEmpty() &&
-      !hasOuterRef() &&
+      // unit inheriting e.g. property.orderable is fine
+      (!hasOuterRef() || isInheritedFeature && outerRef().resultType().feature().isUnitType()) &&
       inherits().stream().allMatch(c -> c.calledFeature().isUnitType(true));
   }
 

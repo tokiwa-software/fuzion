@@ -192,8 +192,8 @@ public wrap_around : integer is
   # this integer as an array of bytes (little endian)
   public as_bytes array u8 =>
     bs := wrap_around.this.byte_size
-    array bs idx->
-      shift wrap_around.this := wrap_around.this.from_u32 (bs.as_u32-idx.as_u32-1)*8
+    array bs i->
+      shift wrap_around.this := wrap_around.this.from_u32 (bs.as_u32-i.as_u32-1)*8
       (wrap_around.this>>shift).low8bits
 
 

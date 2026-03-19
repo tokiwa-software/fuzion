@@ -573,11 +573,9 @@ public class GeneratingFUIR extends FUIR
         o = o._outer;
       }
 
-    var t = actualType;
-
     // normalize outer to be value in case t describes a field
-    outerR = t.feature().isField() ? outerR.asValue() : outerR;
-    var cl = new Clazz(this, outerR, t, select);
+    outerR = actualType.feature().isField() ? outerR.asValue() : outerR;
+    var cl = new Clazz(this, outerR, actualType, select);
     var existing = _clazzesTM.get(cl);
     if (existing != null)
       {
@@ -644,7 +642,7 @@ public class GeneratingFUIR extends FUIR
               case "Mapped_Memory"             -> SpecialClazzes.c_Mapped_Memory;
               case "Native_Ref"                -> SpecialClazzes.c_Native_Ref;
               case "Thread"                    -> SpecialClazzes.c_Thread;
-              case "stackoverflow"             -> SpecialClazzes.c_fuzion_runtime_stackoverflow;
+              case "stackoverflow_cause"       -> SpecialClazzes.c_stackoverflow_cause;
               default                          -> SpecialClazzes.c_NOT_FOUND   ;
               };
             if (s != SpecialClazzes.c_NOT_FOUND && s._argCount == cl.feature().arguments().size())
@@ -3135,7 +3133,7 @@ public class GeneratingFUIR extends FUIR
         r.called.put(cf.feature(), sitePos(callSite).show());
         if (CHECKS) check
           (cf.feature().isAbstract() ||
-           (cf.feature().modifiers() & FuzionConstants.MODIFIER_FIXED) != 0);
+           cf.feature().isFixed());
       }
   }
 

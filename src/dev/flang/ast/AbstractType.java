@@ -31,6 +31,7 @@ import static dev.flang.util.FuzionConstants.NO_SELECT;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -104,7 +105,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /**
    * For a normal type, this is the list of actual type parameters given to the type.
    *
-   * Requires that this is resolved and !isGenericArgument().
+   * Requires that this is resolved and isNormalType().
    */
   public abstract List<AbstractType> generics();
 
@@ -118,7 +119,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * The mode of the type: ThisType, RefType or ValueType.
+   * The mode of the type: GenericArgument, ThisType, RefType or ValueType.
    */
   public abstract TypeKind kind();
 
@@ -3152,6 +3153,61 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public boolean isIncompleteType()
   {
     return this instanceof IncompleteType;
+  }
+
+
+  /**
+   * call Consumer c for self, outers and generics.
+   *
+   * @param c
+   */
+  public void selfOuterAndGenerics(Consumer<AbstractType> c)
+  {
+    c.accept(this);
+    if (isNormalType())
+      {
+        generics().forEach(c);
+        if (outer() != null)
+          {
+            outer().selfOuterAndGenerics(c);
+          }
+      }
+  }
+
+
+  /**
+   * Check that concrete types are used in fixed features
+   * not the this-type variants.
+   *
+   * @param ff the fixed feature
+   *
+   * @param a the feature whose result type we are checking
+   */
+  void checkForNoneConcreteTypeInFixed(Feature ff, AbstractFeature a)
+  {
+    if (PRECONDITIONS) require
+      (ff.isFixed());
+
+    selfOuterAndGenerics(t -> {
+      if (t.isThisType()&& t.feature().compareTo(ff.outer()) == 0)
+        {
+          AstErrors.useConcreteTypeInFixed(a, t);
+        }
+    });
+  }
+
+
+  /**
+   * replace type parameters coming from postFeature.origin()
+   * by type parameters of postFeature.
+   */
+  AbstractType replaceTypeParameters(Feature postFeature)
+  {
+    return isGenericArgument()
+      ? genericArgument().outer() == postFeature.origin()
+          ? postFeature.typeArguments().get(genericArgument().typeParameterIndex()).asGenericType()
+          : this
+      : applyToGenericsAndOuter(x -> x.replaceTypeParameters(postFeature));
   }
 
 }

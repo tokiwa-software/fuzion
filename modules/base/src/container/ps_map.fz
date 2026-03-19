@@ -62,7 +62,7 @@ private:public ps_map
    # the first index in data that is unused
    fill i32)
 
-   : Map PK V
+   : container.Persistent_Map PK V
 
 is
 
@@ -131,11 +131,11 @@ O(n log n).
 
   # add mapping from k to v
   #
-  public fixed add (k PK, v V) ps_map PK V =>
+  public fixed redef put (k PK, v V) ps_map PK V =>
     if has k
       panic "NYI: ps_map currently does not handle updates for existing key"
     else
-      add (k,v)
+      put (k,v)
 
 
   # add mapping from kv.values.0 to kv.values.1
@@ -143,7 +143,7 @@ O(n log n).
   # Adding has a cumulative average runtime in O(log size) and a worst-case
   # runtime of O(size)
   #
-  public add (kv (tuple PK V)) ps_map PK V =>
+  fixed put (kv (tuple PK V)) ps_map PK V =>
     nsize := size + 1
     ndata, nfill := if (nsize & size) = 0
                     then ((container.expanding_array (PK,V)).empty (data.capacity * 2 + (nsize+1) / 2), 0)
@@ -241,7 +241,7 @@ O(n log n).
   # get an array of all key/value pairs in this map
   #
   public redef items Sequence (tuple PK V) =>
-    as_key_array.map (k -> (k, ps_map.this[k].get))
+    as_key_array.map (k -> (k, ps_map.this[k].or_panic))
 
 
   # get the lowest key in this map
@@ -320,7 +320,7 @@ O(n log n).
         a
       else
         kv := data[l]
-        a0 := if (a.has kv.0) a else a.add kv
+        a0 := if (a.has kv.0) a else a.put kv
         add_all a0 l+1 r
 
     # helper to add 'sz' elements from 'ps_map.this.data[at..at+sz]' to 'a', with
@@ -378,7 +378,7 @@ O(n log n).
       vs Sequence V) container.ps_map PK V
   =>
     for
-      r := (container.ps_map PK V).empty, r.add k v
+      r := (container.ps_map PK V).empty, r.put k v
       k in ks
       v in vs
     else

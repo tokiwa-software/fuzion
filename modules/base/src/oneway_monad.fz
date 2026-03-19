@@ -64,13 +64,13 @@ public oneway_monad_mode is
   public repl  is   # an effect that will replace an instated one
 
   # enum type plain | inst | repl
-  public fixed val : choice plain inst repl is
+  public val : choice plain inst repl is
 
     # for a given mode, return the mode of a new instance of a oneway_monad.
     # This returns either `plain` for a plain monad, or `repl` for a an
     # instated effect.
     #
-    public next val
+    public next oneway_monad_mode.val
     =>
       match val.this
         plain      => oneway_monad_mode.plain

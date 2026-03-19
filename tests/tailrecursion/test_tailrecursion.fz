@@ -57,7 +57,7 @@ test_tailrecursion =>
 
     f 3
     say "tailrec1"
-    r := m.get.get.get_a
+    r := m.get.or_panic.get_a
     exp := 9999993
     say (if r=exp then "PASS: $r"
                   else "FAIL: $r != exp")
@@ -90,7 +90,7 @@ test_tailrecursion =>
 
     f 3
     say "tailrec_positive"
-    r := m.get.get.get_a
+    r := m.get.or_panic.get_a
     exp := 9000003
     say (if r=exp then "PASS: $r"
                   else "FAIL: $r != exp")

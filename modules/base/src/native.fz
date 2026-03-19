@@ -297,9 +297,9 @@ module fzE_file_open(
 # intrinsic that fills an array u8 with the file bytes that is represented by the file descriptor
 #
 # returns:
-# 0 or greater on success
-# -1 at end of file
-# -2 for any other error
+# 1 or greater on success
+# 0 at end of file
+# -1 for any other error
 #
 module fzE_file_read(
               # the file descriptor

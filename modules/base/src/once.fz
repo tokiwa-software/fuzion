@@ -33,4 +33,4 @@ public once(LM type : mutate, T type, f Lazy T) : auto_unwrap T LM is
   public redef unwrap T ! LM =>
     if cache.get.is_nil
       cache <- f()
-    cache.get.get
+    cache.get.or_panic

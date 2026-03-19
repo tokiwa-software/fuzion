@@ -2585,6 +2585,26 @@ public class AstErrors extends ANY
     );
   }
 
+  public static void useConcreteTypeInFixed(AbstractFeature f, AbstractType t)
+  {
+    error(
+      f.pos(),
+      "Use the concrete type not the this-type in a fixed feature.",
+      "For increased consistency and easier comprehensibility, use " + s(t.feature().selfType()) + " instead of " + s(t));
+  }
+
+  public static void illegalUseOfFixedModifier(Feature f)
+  {
+    error(f.pos(), "Illegal use of " + skw("fixed") + " modifier.",
+     skw("fixed")+ " fixed is only allowed on function features not in universe.");
+  }
+  
+  public static void multipleOperatorsFound(SourcePosition p)
+  {
+    error(p,
+      "Multiple successive operators are not allowed.", "");
+  }
+
 }
 
 /* end of file */

@@ -31,7 +31,7 @@ public read(ro Dir_Read_Handler) : effect is
   # returns the name of the next entry, or an error if the operation fails
   # for some reason (including that there are no more entries).
   #
-  module read(dd Directory_Descriptor) outcome String =>
+  module read(dd Directory_Descriptor) outcome path =>
     r := ro.read dd
     replace
     r
@@ -41,7 +41,7 @@ public read(ro Dir_Read_Handler) : effect is
   #
   type.default_read_handler =>
     _ : io.dir.Dir_Read_Handler is
-      redef read(dd Directory_Descriptor) outcome String =>
+      redef read(dd Directory_Descriptor) outcome path =>
         internal_array := fuzion.sys.internal_array_init u8 os.max_path_length
         len := fzE_dir_read dd internal_array.data
         if len = 0
@@ -49,7 +49,7 @@ public read(ro Dir_Read_Handler) : effect is
         else if len < 0
           error "error reading dir"
         else
-          String.from_bytes (internal_array.as_array.take len)
+          path.of (String.from_bytes (internal_array.as_array.take len))
 
 
   # install default effect io.dir.read
@@ -67,4 +67,4 @@ public read io.dir.read ! io.dir.read =>
 # reference to the reading operations that could take place
 #
 private:public Dir_Read_Handler ref is
-  read(dd Directory_Descriptor) outcome String => abstract
+  read(dd Directory_Descriptor) outcome path => abstract

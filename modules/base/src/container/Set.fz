@@ -49,7 +49,7 @@ is
 
   # return a new Set containing all elements of this Set plus element k
   #
-  public add (k E) Set E =>
+  public add (k E) container.Set E =>
     compile_time_panic # "*** NYI: REMOVE Set.add, we need some support for mutable Sets ***"
 
 
@@ -188,7 +188,7 @@ is
     debug: b.finite.is_yes_or_unknown
   =>
     # NYI: a bit expensive
-    (a ∪ b).size_option.val = a.size_option.val
+    (a ∪ b).size_option.or_panic = a.size_option.or_panic
 
 
   # monoid of Set with infix ∪ operation.

@@ -27,10 +27,10 @@ uuid_test =>
 
 
   test_str := "f81d4fae-7dec-11d0-a765-00a0c91e6bf6"
-  test_val := test_str.replace "-" "" .parse_u128_hex.val
+  test_val := test_str.replace "-" "" .parse_u128_hex.or_panic
 
   my_uuid_1 := uuid.from_u128 test_val
-  my_uuid_2 := uuid.from_string test_str .val
+  my_uuid_2 := uuid.from_string test_str .or_panic
 
   say test_str+" <-- expected"
   say my_uuid_1

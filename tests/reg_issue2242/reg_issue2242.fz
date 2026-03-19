@@ -38,7 +38,7 @@ reg_issue2242 =>
 
     pivot := arr[high]
     i := mut (low - 1)
-    for j in low..(high- 1) do
+    for j in low..(high-1) do
       if (arr[j] < pivot)
         i <- (i.get + 1)
         if i.get != j
