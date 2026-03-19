@@ -1411,7 +1411,7 @@ public class Feature extends AbstractFeature
             var p = i.next();
             if (p instanceof Call cp)
               {
-                cp._isInheritanceCall = true;
+                cp.inheritanceCallOf = this;
               }
             p.loadCalledFeature(res, context());
             var parent = p.calledFeature();

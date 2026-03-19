@@ -303,6 +303,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
         this._generics.freeze();
       }
     this._outer             = (original._outer instanceof UnresolvedType ot) ? ot.clone(originalOuterFeature) : original._outer;
+    this._followedByDots    = original._followedByDots;
   }
 
 
@@ -612,7 +613,13 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
       off.outer() != null &&
       off.outer().arguments().contains(outer) &&
       (off.outer().arguments().getLast() == off ||
-       otp.outer() != off.outer());
+       otp.outer() != off.outer())
+
+       ||
+
+      !outer.typeArguments().isEmpty() &&
+      outer.typeArguments().getLast().isOpenTypeParameter() &&
+      outer.typeArguments().getLast().featureName().baseName().equals(_name);
   }
 
 
