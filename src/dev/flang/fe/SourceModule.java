@@ -68,7 +68,7 @@ import dev.flang.ast.State;
 import dev.flang.ast.Types;
 import dev.flang.ast.Universe;
 import dev.flang.ast.Visi;
-
+import dev.flang.ast.AbstractFeature.Kind;
 import dev.flang.parser.Parser;
 
 import dev.flang.util.Errors;
@@ -1824,6 +1824,13 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
     checkLegalQualThisType(f);
     checkLegalDefinesType(f);
     checkIllegalIntrinsic(f);
+
+    if (f.isFixed() &&
+        !f.isTypeParameter() &&
+        (f.kind() != Kind.Function && f.kind() != Kind.Intrinsic && f.kind() != Kind.Abstract || f.outer().isUniverse()))
+      {
+        AstErrors.illegalUseOfFixedModifier(f);
+      }
   }
 
 
