@@ -2593,6 +2593,12 @@ public class AstErrors extends ANY
       "For increased consistency and easier comprehensibility, use " + s(t.feature().selfType()) + " instead of " + s(t));
   }
 
+  public static void multipleOperatorsFound(SourcePosition p)
+  {
+    error(p,
+      "Multiple successive operators are not allowed.", "");
+  }
+
 }
 
 /* end of file */

@@ -1,0 +1,6 @@
+
+--CURDIR--/reg_issue6792.fz:24:1: error 1: Multiple successive operators are not allowed.
+: := e
+^^^^^^
+
+one error.

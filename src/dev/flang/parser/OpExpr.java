@@ -28,6 +28,7 @@ package dev.flang.parser;
 
 import java.util.ArrayList;
 
+import dev.flang.ast.AstErrors;
 import dev.flang.ast.Call;
 import dev.flang.ast.Expr;
 import dev.flang.ast.NumLiteral;
@@ -37,6 +38,7 @@ import dev.flang.ast.ParsedName;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.SourcePosition;
 
 /**
  * Helper class to collect parsed operators and expressions
@@ -232,16 +234,34 @@ class OpExpr extends ANY
             _els.remove(max+1);
             _els.set(max, e);
           }
-        else
+        else if (isExpr(max-1))
           { // postfix op:
             Expr e1 = expr(max-1);
             Expr e = new ParsedOperatorCall( e1, new ParsedName(op._pos, FuzionConstants.POSTFIX_OPERATOR_PREFIX + op._text), pmax);
             _els.remove(max);
             _els.set(max-1, e);
           }
+        else
+          {
+            AstErrors.multipleOperatorsFound(
+              posOf(_els.getFirst())
+                .rangeTo(posOf(_els.getLast()).byteEndPos()));
+            return Call.ERROR;
+          }
       }
     //    show();
     return expr(0);
+  }
+
+
+  /**
+   * get SourcePosition of Operator or Expr
+   */
+  private SourcePosition posOf(Object obj)
+  {
+    return obj instanceof Operator o
+      ? o._pos
+      : ((Expr)obj).pos();
   }
 
 
