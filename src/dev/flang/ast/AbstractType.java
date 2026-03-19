@@ -69,8 +69,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /**
    * Cached results for {@code applyTypePars(t)} and {@code applyTypePars(f, List<AbstractType>)};
    */
-  private AbstractType _appliedTypeParsCachedFor1;
-  private AbstractType _appliedTypeParsCache;
   private AbstractFeature _appliedTypePars2CachedFor1;
   private List<AbstractType> _appliedTypePars2CachedFor2;
   private AbstractType _appliedTypePars2Cache;
@@ -952,82 +950,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         _dependsOnGenerics = result;
       }
     return result == YesNo.yes;
-  }
-
-
-  /**
-   * Replace generic types used by this type by the actual types given in
-   * target.
-   *
-   * @param target a target type this is used in
-   *
-   * @return this with all generic arguments from target.feature._generics
-   * replaced by target._generics.
-   */
-  private AbstractType OLDapplyTypePars(AbstractType target)
-  {
-    if (PRECONDITIONS) require
-      (target != null,
-       Errors.any() || !isOpenGeneric(),
-       Errors.any() || target.isGenericArgument() || target.isThisType() || target.feature().generics().sizeMatches(target.generics()));
-
-    AbstractType result;
-    if (typeParCachingEnabled && _appliedTypeParsCachedFor1 == target)
-      {
-        result = _appliedTypeParsCache;
-      }
-    else
-      {
-        result = OLDapplyTypePars_(target);
-        if (result != Types.t_UNDEFINED)
-          {
-            _appliedTypeParsCachedFor1 = target;
-            _appliedTypeParsCache = result;
-          }
-      }
-
-    if (POSTCONDITIONS) ensure
-      (result != null);
-    return result;
-  }
-
-
-  /**
-   * Replace generic types used by this type by the actual types given in
-   * target.
-   *
-   * Internal version of applyTypePars(target) that does not perform caching.
-   *
-   * @param target a target type this is used in
-   *
-   * @return this with all generic arguments from target.feature._generics
-   * replaced by target._generics.
-   */
-  private AbstractType OLDapplyTypePars_(AbstractType target)
-  {
-    /* NYI: Performance: This requires time in O(this.depth *
-     * feature.inheritanceDepth * t.depth), i.e. it is in O(n³)! Caching
-     * is used to alleviate this a bit, but this is probably not sufficient!
-     */
-    var result = this;
-    if (dependsOnGenerics())
-      {
-        target = target.selfOrConstraint(Context.NONE);
-        result = result.OLDapplyTypePars(target.feature(), target.actualGenerics());
-        if (target.isThisType())
-          {
-            // see #659 for when this is relevant
-            result = result.OLDapplyTypePars(target.feature().outer().thisType());
-          }
-        else
-          {
-            if (target.outer() != null)
-              {
-                result = result.OLDapplyTypePars(target.outer());
-              }
-          }
-      }
-    return result;
   }
 
 
