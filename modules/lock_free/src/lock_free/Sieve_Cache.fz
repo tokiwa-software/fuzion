@@ -51,6 +51,9 @@ public Sieve_Cache(K type : property.hashable, V type, public capacity i32) ref 
   tail  := concur.atomic (option (lock_free.Node K V)) .new nil
   hand  := concur.atomic (option (lock_free.Node K V)) .new nil
 
+
+  # add Node n to head
+  #
   add_to_head(n lock_free.Node K V) =>
     n.next.write head.read
     n.prev.write nil
@@ -62,6 +65,9 @@ public Sieve_Cache(K type : property.hashable, V type, public capacity i32) ref 
       nil => tail.write n
       * =>
 
+
+  # remove Node n
+  #
   remove_node(n lock_free.Node K V) =>
     match n.prev.read
       prev lock_free.Node => prev.next.write n.next
@@ -71,6 +77,12 @@ public Sieve_Cache(K type : property.hashable, V type, public capacity i32) ref 
       nxt lock_free.Node => nxt.prev.write n.prev
       nil => tail.write n.prev
 
+    n.prev.write nil
+    n.next.write nil
+
+
+  # evict first unvisited node
+  #
   evict =>
     init_obj => match hand.read
                   h lock_free.Node => h
