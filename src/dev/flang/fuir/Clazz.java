@@ -690,7 +690,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    */
   List<AbstractType> actualGenerics(List<AbstractType> generics, List<AbstractCall> inh)
   {
-    var new_generics = generics.map(g->g.isOpenGeneric() ? g : handDownThroughInheritsCalls(g, -1, inh)); // NYI: what about open type parameters?
+    var new_generics = handDownThroughInheritsCalls(generics, inh);
     var result = this._type.NEWreplaceGenerics(new_generics);
 
     // Replace any {@code a.this.type} actual generics by the actual outer clazz:
@@ -1906,6 +1906,19 @@ class Clazz extends ANY implements Comparable<Clazz>
                                    c.actualTypeParameters(), select);
       }
     return t;
+  }
+  private static List<AbstractType> handDownThroughInheritsCalls(List<AbstractType> l, List<AbstractCall> inh)
+  {
+    if (PRECONDITIONS) require
+      (l != null,
+       inh != null);
+
+    for (AbstractCall c : inh)
+      {
+        l = l.flatMap(t -> t.applyTypeParsMaybeOpen(c.calledFeature(),
+                                                    c.actualTypeParameters()));
+      }
+    return l;
   }
 
 
