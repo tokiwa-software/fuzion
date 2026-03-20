@@ -319,8 +319,8 @@ public abstract class AbstractCall extends Expr
           }
       }
     t1a = t1a == Types.t_ERROR ? t1a : t1a.HANDDOWNapplyTypePars(tt);
-    var t2 = t1a == Types.t_ERROR ? t1a : t1a.NEWapplyTypePars(tt);
-    var t3 = t2 == Types.t_ERROR ? t2 : t2.NEWapplyTypePars(calledFeature(), actualTypeParameters());
+    var t2 = t1a == Types.t_ERROR ? t1a : t1a.applyTypePars(tt);
+    var t3 = t2 == Types.t_ERROR ? t2 : t2.applyTypePars(calledFeature(), actualTypeParameters());
     var t4 = t3 == Types.t_ERROR ? t3 : tt.isGenericArgument() ? t3 : t3.resolve(res, tt.feature().context());
     var t5 = t4 == Types.t_ERROR || forArg ? t4 : adjustThisTypeForTarget(context, t4, foundRef);
 

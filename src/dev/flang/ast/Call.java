@@ -1574,7 +1574,7 @@ public class Call extends AbstractCall
               var tf = res.cotype(t.feature());
               var tg = new List<AbstractType>(t); // the constraint type itself
               tg.addAll(t.generics());            // followed by the generics
-              yield tf.selfType().NEWapplyTypePars(tf, tg);
+              yield tf.selfType().applyTypePars(tf, tg);
             }
           case ThisType -> t;
           // See AstErrors.constraintMustNotBeGenericArgument
@@ -1602,7 +1602,7 @@ public class Call extends AbstractCall
       }
     else
       {
-        t = t.NEWapplyTypePars(calledFeature(), _generics);
+        t = t.applyTypePars(calledFeature(), _generics);
       }
     return t;
   }
@@ -1997,7 +1997,7 @@ public class Call extends AbstractCall
                                  *     _ := a %%2
                                  */
                                 actual = propagateForPartial(res, context, argnum, c);
-                                actual = actual.propagateExpectedType(res, context, c.NEWapplyTypePars(calledFeature(), actualTypeParameters()),
+                                actual = actual.propagateExpectedType(res, context, c.applyTypePars(calledFeature(), actualTypeParameters()),
                                                                       () -> "formal argument type in call to " + AstErrors.s(_calledFeature));
                                 _actuals = _actuals.setOrClone(argnum, actual);
                                 actualType = typeFromActual(res, context, actual);
@@ -2293,7 +2293,7 @@ public class Call extends AbstractCall
                 var pt = p.type();
                 if (pt != Types.t_ERROR)
                   {
-                    var apt = actualType.NEWactualType(pt, context);
+                    var apt = actualType.actualType(pt, context);
                     if (apt.feature().inheritsFrom(formalType.feature()))
                       {
                         inferGeneric(res, context, formalType, apt, pos, conflict, foundAt);

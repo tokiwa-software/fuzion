@@ -553,7 +553,7 @@ class Clazz extends ANY implements Comparable<Clazz>
         var pt = p.type();
         var t1 = isRef() && !pt.isVoid() ? pt.asRef() : pt.asValue();
         var t2 = handDown(t1, NO_SELECT, (_,_)->{}, new List<>());
-        var t3 = _type.NEWactualType(t2);
+        var t3 = _type.actualType(t2);
         var t4 = replaceThisType(t3, new List<>() /* NYI: correct? */);
         var pc = _fuir.newClazz(t4);
         if (CHECKS) check
@@ -691,7 +691,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   List<AbstractType> actualGenerics(List<AbstractType> generics, List<AbstractCall> inh)
   {
     var new_generics = handDownThroughInheritsCalls(generics, inh);
-    var result = this._type.NEWreplaceGenerics(new_generics);
+    var result = this._type.replaceGenerics(new_generics);
 
     // Replace any {@code a.this.type} actual generics by the actual outer clazz:
     result = result.map(t->replaceThisType(t, inh));
@@ -1109,7 +1109,7 @@ class Clazz extends ANY implements Comparable<Clazz>
               (Errors.any() || af != null);
             if (af != null)
               {
-                t = af.selfType().NEWapplyTypePars(af, fa._tp);
+                t = af.selfType().applyTypePars(af, fa._tp);
               }
           }
         if (t == null)
