@@ -181,7 +181,6 @@ ex =>
   clang_disposeIndex ci
 
 
-# NYI: CLEANUP: support local mutates
 _ := mut
 
 ex
