@@ -2054,7 +2054,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     if (inh != null &&
         inh.stream().anyMatch(c -> c.calledFeature() == declaredIn))
       {
-        types = fouter.outer().handDown(null, new List<>(ft), _outer.feature());
+        types = fouter.outer().handDown(new List<>(ft), _outer.feature());
       }
     else if (feature() == declaredIn)
       {

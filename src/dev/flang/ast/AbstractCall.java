@@ -301,7 +301,7 @@ public abstract class AbstractCall extends Expr
     var ttf = tt.selfOrConstraint(context).feature();
     var t1 = rt == Types.t_ERROR           ? rt : adjustThisTypeForTarget(context, rt, foundRef);
     var t2 = t1 == Types.t_ERROR ||
-             !ttf.inheritsFrom(co)         ? t1 : co.handDown(res, new List<>(t1), ttf).getFirstOrElse(Types.t_ERROR);
+             !ttf.inheritsFrom(co)         ? t1 : co.handDown(new List<>(t1), ttf).getFirstOrElse(Types.t_ERROR);
     var t3 = t2 == Types.t_ERROR           ? t2 : t2.HANDDOWNapplyTypePars(tt); // NYI: seems redundant with prev and next line!
     var t4 = t3 == Types.t_ERROR           ? t3 : t3.applyTypePars(tt);
     var t5 = t4 == Types.t_ERROR           ? t4 : t4.applyTypePars(calledFeature(), actualTypeParameters());
@@ -415,7 +415,7 @@ public abstract class AbstractCall extends Expr
     var l = new List<>(frmlT);
     if (tt != null && !tt.isGenericArgument() && declF != tt.feature() && calledFeature() != Types.f_ERROR)
       {
-        l = calledFeature().outer().handDown(res, l, tt.feature());
+        l = calledFeature().outer().handDown(l, tt.feature());
       }
 
     // next, replace generics given in the target type and in this call
@@ -474,7 +474,7 @@ public abstract class AbstractCall extends Expr
 
     return
       !x.isPlainType()            ? new List<>() :
-      x.feature().inheritsFrom(f) ? f.handDown(res, new List<>(ft), x.feature())
+      x.feature().inheritsFrom(f) ? f.handDown(new List<>(ft), x.feature())
                                      .flatMap(t -> t.applyTypeParsMaybeOpen(x.feature(), x.generics())) :
       tt.outer() != null          ? openGenericsFor(res, context, ft, tt.outer())
                                   : new List<>()

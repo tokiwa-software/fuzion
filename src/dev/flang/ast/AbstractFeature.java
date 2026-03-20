@@ -553,7 +553,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
             var pf = p.calledFeature();
             if (pf.isChoice())
               { // we need to do a hand down to get the actual choice generics
-                result = pf.handDown(null, pf.choiceGenerics(), this);
+                result = pf.handDown(pf.choiceGenerics(), this);
               }
           }
       }
@@ -1173,9 +1173,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * Due to open generics, even the number of types may change through
    * inheritance.
    *
-   * @param res resolution instance, required only when run in front end phase,
-   * null otherwise.
-   *
    * @param l a list of types to be handed down
    *
    * @param heir a feature that inherits from outer()
@@ -1184,8 +1181,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * heir. Their number might have changed due to open generics.  Result may be
    * HAND_DOWN_FAILED in case of previous errors.
    */
-  public List<AbstractType> handDown(Resolution res,
-                                     List<AbstractType> l,
+  public List<AbstractType> handDown(List<AbstractType> l,
                                      AbstractFeature heir)  // NYI: This does not distinguish different inheritance chains yet
   {
     if (PRECONDITIONS) require
@@ -1202,7 +1198,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
         if (inh != null)
           {
-            result = AbstractFeature.handDownInheritance(res, inh, l, heir);
+            result = AbstractFeature.handDownInheritance(inh, l, heir);
           }
       }
     return result;
@@ -1211,8 +1207,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
   /**
    * Helper for handDown() to hand down an array of types along a given inheritance chain.
-   *
-   * @param res the resolution instance
    *
    * @param inh the inheritance chain from the parent down to the child
    *
@@ -1223,7 +1217,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * @return a List of types as they are visible in heir. The length might be
    * different due to open type parameters being replaced by a list of types.
    */
-  private static List<AbstractType> handDownInheritance(Resolution res, List<AbstractCall> inh, List<AbstractType> a, AbstractFeature heir)
+  private static List<AbstractType> handDownInheritance(List<AbstractCall> inh, List<AbstractType> a, AbstractFeature heir)
   {
     for (AbstractCall c : inh)
       {

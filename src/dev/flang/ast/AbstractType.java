@@ -1009,7 +1009,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     if (dependsOnGenerics())
       {
         target = target.selfOrConstraint(Context.NONE);
-        result = result.HANDDOWNapplyTypePars(target.feature());
+        result = result.HANDDOWNapplyTypeParsXXX(target.feature());
         if (target.isThisType())
           {
           }
@@ -1023,11 +1023,12 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       }
     return result;
   }
-  public AbstractType HANDDOWNapplyTypePars(AbstractFeature f)
+  public AbstractType HANDDOWNapplyTypeParsXXX(AbstractFeature f)
   {
     if (PRECONDITIONS) require
       (f != null);
 
+    // NYI: Replace by AbstractFeature.handDown(new List(this), f)!
     var result = this;
     for (var i : f.inherits())
       {
@@ -1180,7 +1181,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       }
     if (o != null)
       {
-        result = o.handDown(null, new List<>(this),f)
+        result = o.handDown(new List<>(this),f)
           .getFirstOrElse(Types.t_ERROR);
       }
     return result.applyTypeParsLocally(f, actualGenerics, NO_SELECT);
@@ -1680,7 +1681,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     var cl = res._module.findLambdaTarget(feature());
     return cl
       .outer()
-      .handDown(res, new List<>(t), feature())
+      .handDown(new List<>(t), feature())
       .flatMap(at -> at.applyTypeParsMaybeOpen(feature(), generics()));
   }
 
