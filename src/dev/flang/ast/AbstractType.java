@@ -1192,44 +1192,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       }
     return result.applyTypeParsLocally(f, actualGenerics, NO_SELECT);
   }
-  private AbstractType HANDDOWN3applyTypePars_(AbstractFeature f, List<AbstractType> actualGenerics)
-  {
-    if (PRECONDITIONS) require
-      (f != null);
-
-    /* NYI: Performance: This requires time in O(this.depth *
-     * f.inheritanceDepth), i.e. it is in O(n²)!  Caching is used to alleviate
-     * this a bit, but this is probably not sufficient!
-     */
-    var result = this;
-    var o = feature();
-    while (o != null && !f.inheritsFrom(o))
-      {
-        o = o.outer();
-      }
-    if (!false) for (var i : f.inherits())
-      {
-        var r0 = result;
-        result = result
-          .HANDDOWN3applyTypePars_(i.calledFeature(),
-                            i.actualTypeParameters());
-        if (false) if (r0.toString().compareTo(result.toString())!=0)
-          {
-            var oo = feature();
-            while (oo != null)
-              {
-                System.out.println("oo is "+oo.qualifiedName()+" f is "+f.qualifiedName()+" inheritsFrom oo is "+f.inheritsFrom(oo));
-                oo = oo.outer();
-              }
-            System.out.println("FAILURE FOR "+this+" HANDDOWN3 "+f.qualifiedName()+" "+actualGenerics+" r0: "+r0+" --> "+result+
-                               " at "+i.pos().show());
-            Thread.dumpStack();
-          }
-      }
-    var r0 = result;
-    var r1 = result.applyTypeParsLocally(f, actualGenerics, NO_SELECT);
-    return r1;
-  }
 
 
   /**
@@ -1503,17 +1465,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     do
       {
         t = t.isGenericArgument() ? t : t.HANDDOWN2applyTypePars_(t3.feature(), t3.actualGenerics());
-        t3 = t3.outer();
-      }
-    while (t3 != null);
-    return t;
-  }
-  AbstractType handDown3(AbstractType t)
-  {
-    var t3 = this;
-    do
-      {
-        t = t.isGenericArgument() ? t : t.HANDDOWN3applyTypePars_(t3.feature(), t3.actualGenerics());
         t3 = t3.outer();
       }
     while (t3 != null);
