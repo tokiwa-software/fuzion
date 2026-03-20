@@ -298,7 +298,10 @@ public abstract class AbstractCall extends Expr
   protected AbstractType adjustResultType(Resolution res, Context context, AbstractType tt, AbstractType rt, BiConsumer<AbstractType, AbstractType> foundRef, boolean forArg /* NYI: UNDER DEVELOPMENT: try to remove this parameter */)
   {
     var t1 = rt == Types.t_ERROR ? rt : adjustThisTypeForTarget(context, rt, foundRef);
-    var t2 = t1 == Types.t_ERROR ? t1 : t1.applyTypePars(tt);
+    var t2 = t1 == Types.t_ERROR ? t1 :
+      (calledFeature().isArgument() && target() instanceof AbstractCurrent
+        ? t1.applyTypeParsLocally(tt, NO_SELECT)
+        : t1.applyTypePars(tt));
     var t3 = t2 == Types.t_ERROR ? t2 : t2.applyTypePars(calledFeature(), actualTypeParameters());
     var t4 = t3 == Types.t_ERROR ? t3 : tt.isGenericArgument() ? t3 : t3.resolve(res, tt.feature().context());
     var t5 = t4 == Types.t_ERROR || forArg ? t4 : adjustThisTypeForTarget(context, t4, foundRef);

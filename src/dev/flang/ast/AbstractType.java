@@ -1167,7 +1167,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     var result = this;
     if (dependsOnGenerics())
       {
-        result = result.applyTypeParsLocally(target.feature(), target.generics(), select);
+        result = result.applyTypeParsLocally(target.feature(), target.actualGenerics(), select);
       }
     return result;
   }
