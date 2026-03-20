@@ -499,7 +499,7 @@ static pthread_mutex_t fzE_global_mutex;
 extern void *(*fzE_stackoverflow_cause)(void);
 void fzE_stackoverflow_handler(int sig, siginfo_t *si, void *unused)
 {
-  fprintf(stderr, "*** NYI: stackoverflow detected ***");
+  fprintf(stderr, "*** NYI: stackoverflow detected %d ***", si->si_code);
   exit(EXIT_FAILURE);
 }
 
