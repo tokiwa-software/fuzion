@@ -539,7 +539,7 @@ void * fzE_thread_create(void *(*code)(void *),
 
   pthread_attr_t attr;
   pthread_attr_init(&attr);
-  pthread_attr_setstacksize(&attr, 1048576 /* NYI: configurable? */);
+  pthread_attr_setstacksize(&attr, 2097152 /* NYI: configurable? */);
   pthread_attr_setguardsize(&attr, 4096 /* NYI: should be fuir/DFA should give us max stack usage of routine */);
 
 #ifdef GC_THREADS
