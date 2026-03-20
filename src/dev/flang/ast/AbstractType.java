@@ -1161,7 +1161,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           {
             result = result
               .applyTypePars(i.calledFeature(),
-                                i.actualTypeParameters());
+                             i.actualTypeParameters());
           }
         target = target.outer();
       }
@@ -1172,10 +1172,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     if (PRECONDITIONS) require
       (f != null);
 
-    /* NYI: Performance: This requires time in O(this.depth *
-     * f.inheritanceDepth), i.e. it is in O(n²)!  Caching is used to alleviate
-     * this a bit, but this is probably not sufficient!
-     */
     var result = this;
     var o = feature();
     while (o != null && !f.inheritsFrom(o))
@@ -1184,11 +1180,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       }
     if (o != null)
       {
-        var l = o.handDown(null, new List<>(this),f);
-        result = l.get(0).applyTypeParsLocally(f, actualGenerics, NO_SELECT);
-        if (false) if (!equals(result))
-          System.out.println("SUCCESS: "+this+" HANDDOWN2 "+f.qualifiedName()+" "+actualGenerics+" ==> "+result);
-        return result;
+        result = o.handDown(null, new List<>(this),f)
+          .getFirstOrElse(Types.t_ERROR);
       }
     return result.applyTypeParsLocally(f, actualGenerics, NO_SELECT);
   }
