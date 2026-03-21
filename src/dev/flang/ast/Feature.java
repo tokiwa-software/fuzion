@@ -1429,6 +1429,8 @@ public class Feature extends AbstractFeature
               {
                 AstErrors.parentMustBeConstructor(p.pos(), this, parent);
               }
+            //p = (AbstractCall) p.visit(new ResolveTypes(res, context()), this);
+            //i.set(p);
           }
         _state = State.RESOLVED_INHERITANCE;
         res.scheduleForDeclarations(this);

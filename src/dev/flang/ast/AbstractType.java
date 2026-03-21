@@ -792,16 +792,12 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @param actualGenerics the actual generics that should replace the
    * formal generics found in genericsToReplace.
    *
-   * @param locally true iff this should not be applied to outer types and
-   * inheritance calls.
-   *
    * @return a new list of types with all formal generic arguments from this
    * replaced by the corresponding actualGenerics entry.
    */
   private static List<AbstractType> applyTypePars(AbstractFeature f,
-                                                  List<AbstractType> genericsToReplace,
-                                                  List<AbstractType> actualGenerics,
-                                                  boolean locally)
+                                                     List<AbstractType> genericsToReplace,
+                                                     List<AbstractType> actualGenerics)
   {
     if (PRECONDITIONS) require
       (Errors.any() ||
@@ -812,8 +808,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         var tp = t.matchingTypeParameter(f);
         return (tp != null && tp.isOpenTypeParameter())
           ? tp.replaceOpen(actualGenerics)
-          : new List<>(locally ? t.applyTypeParsLocally(f, actualGenerics, NO_SELECT)
-                               : t.applyTypePars       (f, actualGenerics           ));
+          : new List<>(t.applyTypeParsLocally(f, actualGenerics, NO_SELECT));
       });
   }
 
@@ -854,7 +849,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
        Errors.any() ||
        feature().generics().sizeMatches(generics()));
 
-    return applyTypePars(feature(), genericsToReplace, generics(), false /* NYI: UNDER DEVELOPMENT locally */);
+    return applyTypePars(feature(), genericsToReplace, generics());
   }
 
 
@@ -954,6 +949,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     else
       {
         result = applyTypePars_(target);
+        if (CHECKS) check
+          (this == Types.t_UNDEFINED || result != Types.t_UNDEFINED);
+
         _appliedTypeParsCachedFor1 = target;
         _appliedTypeParsCache = result;
       }
@@ -1001,6 +999,34 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       }
     return result;
   }
+  public AbstractType HANDDOWNapplyTypePars(AbstractType target)
+  {
+    /* NYI: Performance: This requires time in O(this.depth *
+     * feature.inheritanceDepth * t.depth), i.e. it is in O(n³)! Caching
+     * is used to alleviate this a bit, but this is probably not sufficient!
+     */
+    var result = this;
+    if (dependsOnGenerics())
+      {
+        while (target != null)
+          {
+            target = target.selfOrConstraint(Context.NONE);
+            var tf = target.feature();
+
+            // NYI: Replace by AbstractFeature.handDown(new List(this), f)!
+            for (var i : tf.inherits())
+              {
+                var r0 = result;
+                result = result
+                  .applyTypePars(i.calledFeature(),
+                                 i.actualTypeParameters());
+              }
+
+            target = target.isThisType() ? null : target.outer();
+          }
+      }
+    return result;
+  }
 
 
   /**
@@ -1035,6 +1061,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     else
       {
         result = applyTypePars_(f, actualGenerics);
+
+        if (CHECKS) check
+          (this == Types.t_UNDEFINED || result != Types.t_UNDEFINED);
+
         _appliedTypePars2CachedFor1 = f;
         _appliedTypePars2CachedFor2 = actualGenerics;
         actualGenerics.freeze();
@@ -1097,9 +1127,47 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         var this_type = g.get(0);
         g = g.map(x -> x == this_type                     ||        // leave first type parameter unchanged
                             this_type.isGenericArgument()    ? x    // no actuals to apply in a generic arg
-                                                             : this_type.actualType(x, Context.NONE));
+                                                             : x.OHDapplyTypePars(this_type)
+                                                                .applyTypePars(this_type)
+                                                                .replace_this_type_by_actual_outer(this_type, Context.NONE));
       }
     return g;
+  }
+
+
+  private AbstractType OHDapplyTypePars(AbstractType target)
+  {
+    var result = this;
+    while (result.dependsOnGenerics() && target != null)
+      {
+        target = target.selfOrConstraint(Context.NONE);
+        for (var i : target.feature().inherits())
+          {
+            result = result
+              .applyTypePars(i.calledFeature(),
+                             i.actualTypeParameters());
+          }
+        target = target.outer();
+      }
+    return result;
+  }
+  private AbstractType HANDDOWN2applyTypePars_(AbstractFeature f, List<AbstractType> actualGenerics)
+  {
+    if (PRECONDITIONS) require
+      (f != null);
+
+    var result = this;
+    var o = feature();
+    while (o != null && !f.inheritsFrom(o))
+      {
+        o = o.outer();
+      }
+    if (o != null)
+      {
+        result = o.handDown(new List<>(this),f)
+          .getFirstOrElse(Types.t_ERROR);
+      }
+    return result.applyTypeParsLocally(f, actualGenerics, NO_SELECT);
   }
 
 
@@ -1124,19 +1192,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     if (PRECONDITIONS) require
       (f != null);
 
-    /* NYI: Performance: This requires time in O(this.depth *
-     * f.inheritanceDepth), i.e. it is in O(n²)!  Caching is used to alleviate
-     * this a bit, but this is probably not sufficient!
-     */
-    var result = this;
-    for (var i : f.inherits())
-      {
-        result = result
-          .applyTypePars(i.calledFeature(),
-                         i.actualTypeParameters());
-      }
-    return result
-      .applyTypeParsLocally(f, actualGenerics, NO_SELECT);
+    return applyTypeParsLocally(f, actualGenerics, NO_SELECT);
   }
 
 
@@ -1310,7 +1366,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
             var result = this;
 
             var g1 = generics();
-            var g2 = applyTypePars(f, g1, actualGenerics, true /* NYI: UNDER DEVELOPMENT locally */);
+            var g2 = applyTypePars(f, g1, actualGenerics);
             var g3 = cotypeActualGenerics(g2);
 
             var o1 = outer();
@@ -1380,6 +1436,29 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       .replace_this_type_by_actual_outer(this, context);
   }
 
+  AbstractType handDown(AbstractType t)
+  {
+    var t3 = this;
+    do
+      {
+        t = t.isGenericArgument() ? t : t.HANDDOWN2applyTypePars_(t3.feature(), t3.actualGenerics());
+        t3 = t3.outer();
+      }
+    while (t3 != null);
+    return t;
+  }
+
+  AbstractType handDownAndApplyTypePars(AbstractType t, Context context)
+  {
+    if (PRECONDITIONS) require
+      (!isGenericArgument(),
+       !t.isOpenGeneric());
+
+    return handDown(t)
+      .applyTypePars(this)
+      .replace_this_type_by_actual_outer(this, context);
+  }
+
 
   /**
    * Use this type as a target type for a call using type {@code t} and determine the
@@ -1396,6 +1475,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public AbstractType actualType(AbstractType t)
   {
     return actualType(t, Context.NONE);
+  }
+  public AbstractType handDownAndApplyTypePars(AbstractType t)
+  {
+    return handDownAndApplyTypePars(t, Context.NONE);
   }
 
 
@@ -1581,7 +1664,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     var cl = res._module.findLambdaTarget(feature());
     return cl
       .outer()
-      .handDown(res, new List<>(t), feature())
+      .handDown(new List<>(t), feature())
       .flatMap(at -> at.applyTypeParsMaybeOpen(feature(), generics()));
   }
 
