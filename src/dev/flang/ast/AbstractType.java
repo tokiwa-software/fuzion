@@ -949,11 +949,11 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     else
       {
         result = applyTypePars_(target);
-        if (result != Types.t_UNDEFINED)
-          {
-            _appliedTypeParsCachedFor1 = target;
-            _appliedTypeParsCache = result;
-          }
+        if (CHECKS) check
+          (this == Types.t_UNDEFINED || result != Types.t_UNDEFINED);
+
+        _appliedTypeParsCachedFor1 = target;
+        _appliedTypeParsCache = result;
       }
 
     if (POSTCONDITIONS) ensure
@@ -1008,34 +1008,22 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     var result = this;
     if (dependsOnGenerics())
       {
-        target = target.selfOrConstraint(Context.NONE);
-        result = result.HANDDOWNapplyTypeParsXXX(target.feature());
-        if (target.isThisType())
+        while (target != null)
           {
-          }
-        else
-          {
-            if (target.outer() != null)
-              {
-                result = result.HANDDOWNapplyTypePars(target.outer());
-              }
-          }
-      }
-    return result;
-  }
-  public AbstractType HANDDOWNapplyTypeParsXXX(AbstractFeature f)
-  {
-    if (PRECONDITIONS) require
-      (f != null);
+            target = target.selfOrConstraint(Context.NONE);
+            var tf = target.feature();
 
-    // NYI: Replace by AbstractFeature.handDown(new List(this), f)!
-    var result = this;
-    for (var i : f.inherits())
-      {
-        var r0 = result;
-        result = result
-          .applyTypePars(i.calledFeature(),
-                            i.actualTypeParameters());
+            // NYI: Replace by AbstractFeature.handDown(new List(this), f)!
+            for (var i : tf.inherits())
+              {
+                var r0 = result;
+                result = result
+                  .applyTypePars(i.calledFeature(),
+                                 i.actualTypeParameters());
+              }
+
+            target = target.isThisType() ? null : target.outer();
+          }
       }
     return result;
   }
@@ -1073,19 +1061,14 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     else
       {
         result = applyTypePars_(f, actualGenerics);
-        if (result != Types.t_UNDEFINED)
-          {
-            _appliedTypePars2CachedFor1 = f;
-            _appliedTypePars2CachedFor2 = actualGenerics;
-            actualGenerics.freeze();
-            _appliedTypePars2Cache = result;
-          }
-        else if (this != Types.t_UNDEFINED)
-          {
-            System.out.println("IS UNDEFINED: "+result+" from "+this+" and "+f.qualifiedName()+" "+actualGenerics);
-            Thread.dumpStack();
-          }
 
+        if (CHECKS) check
+          (this == Types.t_UNDEFINED || result != Types.t_UNDEFINED);
+
+        _appliedTypePars2CachedFor1 = f;
+        _appliedTypePars2CachedFor2 = actualGenerics;
+        actualGenerics.freeze();
+        _appliedTypePars2Cache = result;
       }
 
     if (POSTCONDITIONS) ensure
