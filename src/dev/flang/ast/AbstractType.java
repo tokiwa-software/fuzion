@@ -1077,24 +1077,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       }
     return result;
   }
-  private AbstractType HANDDOWN2applyTypePars_(AbstractFeature f, List<AbstractType> actualGenerics)
-  {
-    if (PRECONDITIONS) require
-      (f != null);
-
-    var result = this;
-    var o = feature();
-    while (o != null && !f.inheritsFrom(o))
-      {
-        o = o.outer();
-      }
-    if (o != null)
-      {
-        result = o.handDown(new List<>(this),f)
-          .getFirstOrElse(Types.t_ERROR);
-      }
-    return result.applyTypeParsLocally(f, actualGenerics, NO_SELECT);
-  }
 
 
   /**
@@ -1352,27 +1334,29 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       .replace_this_type_by_actual_outer(this, context);
   }
 
-  AbstractType handDown(AbstractType t)
+
+  private AbstractType handDownXXX(AbstractType t)
   {
-    var t3 = this;
-    do
+    if (!t.isGenericArgument())
       {
-        t = t.isGenericArgument() ? t : t.HANDDOWN2applyTypePars_(t3.feature(), t3.actualGenerics());
-        t3 = t3.outer();
+        var f = feature();
+        var o = t.feature();
+        while (o != null && !f.inheritsFrom(o))
+          {
+            o = o.outer();
+          }
+        if (o != null)
+          {
+            t = o.handDown(new List<>(t),f)
+              .getFirstOrElse(Types.t_ERROR);
+          }
+        t = t.applyTypeParsLocally(f, actualGenerics(), NO_SELECT);
+        if (outer() != null)
+          {
+            t = outer().handDownXXX(t);
+          }
       }
-    while (t3 != null);
     return t;
-  }
-
-  AbstractType handDownAndApplyTypePars(AbstractType t, Context context)
-  {
-    if (PRECONDITIONS) require
-      (!isGenericArgument(),
-       !t.isOpenGeneric());
-
-    return handDown(t)
-      .applyTypePars(this)
-      .replace_this_type_by_actual_outer(this, context);
   }
 
 
@@ -1394,7 +1378,13 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   }
   public AbstractType handDownAndApplyTypePars(AbstractType t)
   {
-    return handDownAndApplyTypePars(t, Context.NONE);
+    if (PRECONDITIONS) require
+      (!isGenericArgument(),
+       !t.isOpenGeneric());
+
+    return handDownXXX(t)
+      .applyTypePars(this)
+      .replace_this_type_by_actual_outer(this, Context.NONE);
   }
 
 
