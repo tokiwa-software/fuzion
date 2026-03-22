@@ -999,34 +999,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       }
     return result;
   }
-  public AbstractType HANDDOWNapplyTypePars(AbstractType target)
-  {
-    /* NYI: Performance: This requires time in O(this.depth *
-     * feature.inheritanceDepth * t.depth), i.e. it is in O(n³)! Caching
-     * is used to alleviate this a bit, but this is probably not sufficient!
-     */
-    var result = this;
-    if (dependsOnGenerics())
-      {
-        while (target != null)
-          {
-            target = target.selfOrConstraint(Context.NONE);
-            var tf = target.feature();
-
-            // NYI: Replace by AbstractFeature.handDown(new List(this), f)!
-            for (var i : tf.inherits())
-              {
-                var r0 = result;
-                result = result
-                  .applyTypePars(i.calledFeature(),
-                                 i.actualTypeParameters());
-              }
-
-            target = target.isThisType() ? null : target.outer();
-          }
-      }
-    return result;
-  }
 
 
   /**

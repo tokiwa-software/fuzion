@@ -298,20 +298,16 @@ public abstract class AbstractCall extends Expr
   protected AbstractType adjustResultType(Resolution res, Context context, AbstractType tt, AbstractType rt, BiConsumer<AbstractType, AbstractType> foundRef, boolean forArg /* NYI: UNDER DEVELOPMENT: try to remove this parameter */)
   {
     var co = calledFeature().outer();
-    var ttf = tt.selfOrConstraint(context).feature();
     var t1 = rt == Types.t_ERROR           ? rt : adjustThisTypeForTarget(context, rt, foundRef);
-    var t2 = t1 == Types.t_ERROR ||
-             !ttf.inheritsFrom(co)         ? t1 : co.handDown(new List<>(t1), ttf).getFirstOrElse(Types.t_ERROR);
-    var t3 = t2 == Types.t_ERROR           ? t2 : t2.HANDDOWNapplyTypePars(tt); // NYI: seems redundant with prev and next line!
-    var t4 = t3 == Types.t_ERROR           ? t3 : t3.applyTypePars(tt);
-    var t5 = t4 == Types.t_ERROR           ? t4 : t4.applyTypePars(calledFeature(), actualTypeParameters());
-    var t6 = t5 == Types.t_ERROR           ? t5 : tt.isGenericArgument() ? t5 : t5.resolve(res, tt.feature().context());
-    var t7 = t6 == Types.t_ERROR || forArg ? t6 : adjustThisTypeForTarget(context, t6, foundRef);
-
+    var t2 = t1 == Types.t_ERROR           ? t1 : co.handDown(new List<>(t1), tt).getFirstOrElse(Types.t_ERROR);
+    var t3 = t2 == Types.t_ERROR           ? t2 : t2.applyTypePars(tt);
+    var t4 = t3 == Types.t_ERROR           ? t3 : t3.applyTypePars(calledFeature(), actualTypeParameters());
+    var t5 = t4 == Types.t_ERROR           ? t4 : tt.isGenericArgument() ? t4 : t4.resolve(res, tt.feature().context());
+    var t6 = t5 == Types.t_ERROR || forArg ? t5 : adjustThisTypeForTarget(context, t5, foundRef);
     if (POSTCONDITIONS) ensure
-      (t7 != null);
+      (t6 != null);
 
-    return t7;
+    return t6;
   }
 
 

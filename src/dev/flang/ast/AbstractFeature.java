@@ -1177,9 +1177,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    *
    * @param heir a feature that inherits from outer()
    *
-   * @return the types from the argument array a has seen this within
-   * heir. Their number might have changed due to open generics.  Result may be
-   * HAND_DOWN_FAILED in case of previous errors.
+   * @return the types from the l as seen this within heir.  Their number might
+   * have changed due to open generics.  Result may be HAND_DOWN_FAILED in case
+   * of previous errors.
    */
   public List<AbstractType> handDown(List<AbstractType> l,
                                      AbstractFeature heir)  // NYI: This does not distinguish different inheritance chains yet
@@ -1203,6 +1203,44 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       }
     return result;
   }
+
+  /**
+   * Determine the actual types of an array of types in this feature after it
+   * was inherited by heirType.  The types may change on the way due to formal generics being
+   * replaced by actual generic arguments on the way.
+   *
+   * Unlike @link{handDown(List,AbstractFeature)}, this also takes into account
+   * the outer types.
+   *
+   * Due to open generics, even the number of types may change through
+   * inheritance.
+   *
+   * @param l a list of types to be handed down
+   *
+   * @param heirType the type we are inherting to.
+   *
+   * @return the types from the argument l as seen this by heirType.  Their
+   * number might have changed due to open generics.  Result may be
+   * HAND_DOWN_FAILED in case of previous errors.
+   */
+  public List<AbstractType> handDown(List<AbstractType> l,
+                                     AbstractType heirType)
+  {
+    var result = l;
+    heirType = heirType.selfOrConstraint(Context.NONE);
+    var heir = heirType.feature();
+    if (heir.inheritsFrom(this))
+      {
+        result = handDown(result, heir);
+      }
+    heirType = heirType.isThisType() ? null : heirType.outer();
+    if (heirType != null && outer() != null)
+      {
+        result = outer().handDown(result, heirType);
+      }
+    return result;
+  }
+
 
 
   /**
