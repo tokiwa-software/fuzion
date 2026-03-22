@@ -667,7 +667,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    *
    * @return true iff arg list has an open type parameter.
    */
-  boolean hasOpenTypeArgList()
+  boolean hasOpenType()
   {
     return typeArguments().stream()
                           .anyMatch(g -> g.isOpenTypeParameter());
@@ -855,6 +855,10 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     for (var ta0 : typeArguments())
       {
         var ta = new ParsedType(pos(), ta0.featureName().baseName());
+        if (ta0.isOpenTypeParameter())
+          {
+            ta.setFollowedByDots();
+          }
         tl.add(ta);
       }
     t = t.applyTypePars(this, tl);
