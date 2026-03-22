@@ -1028,11 +1028,11 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       }
     else if (actualGenerics.contains(Types.t_UNDEFINED))
       {
-        result = applyTypePars_(f, actualGenerics);
+        result = applyTypeParsLocally(f, actualGenerics, NO_SELECT);
       }
     else
       {
-        result = applyTypePars_(f, actualGenerics);
+        result = applyTypeParsLocally(f, actualGenerics, NO_SELECT);
 
         if (CHECKS) check
           (this == Types.t_UNDEFINED || result != Types.t_UNDEFINED);
@@ -1078,31 +1078,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           .getFirstOrElse(Types.t_ERROR);
       }
     return result.applyTypeParsLocally(f, actualGenerics, NO_SELECT);
-  }
-
-
-  /**
-   * Check if this type depends on a formal generic parameter of f. If so,
-   * replace t by the corresponding actual generic parameter from the list
-   * provided.
-   *
-   * Internal version of applyTypePars(f, actualGenerics) that does not perform
-   * caching.
-   *
-   * @param f the feature actualGenerics belong to.
-   *
-   * @param actualGenerics the actual generic parameters
-   *
-   * @return t iff t does not depend on a formal generic parameter of this,
-   * otherwise the type that results by replacing all formal generic parameters
-   * of this in t by the corresponding type from actualGenerics.
-   */
-  private AbstractType applyTypePars_(AbstractFeature f, List<AbstractType> actualGenerics)
-  {
-    if (PRECONDITIONS) require
-      (f != null);
-
-    return applyTypeParsLocally(f, actualGenerics, NO_SELECT);
   }
 
 
