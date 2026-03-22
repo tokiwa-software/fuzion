@@ -1061,68 +1061,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   }
 
 
-  /**
-   * A cotype has the actual underlying type as its first type parameter
-   * {@code THIS_TYPE} in addition to the type parameters of the original type.
-   *
-   * In case this is a cotype, determine the actual types for generics
-   * by apply the actual type parameters passed to {@code THIS_TYPE}.
-   *
-   * @return the actual generics after {@code THIS_TYPE.actualType} was applied.
-   */
-  public List<AbstractType> cotypeActualGenerics()
-  {
-    return cotypeActualGenerics(generics());
-  }
-
-
-  /**
-   * A cotype has the actual underlying type as its first type parameter
-   * {@code THIS_TYPE} in addition to the type parameters of the original type.
-   *
-   * In case this is a cotype, determine the actual types for the types in {@code g}
-   * by apply the actual type parameters passed to {@code THIS_TYPE}.
-   *
-   * @param g list of generics, must be derived from {@code generics()}
-   *
-   * @return the actual generics after {@code THIS_TYPE.actualType} was applied.
-   */
-  private List<AbstractType> cotypeActualGenerics(List<AbstractType> g)
-  {
-    /* types of type features require special handling since the type
-     * feature has one additional first type parameter --the underlying
-     * type: this_type--, and all other type parameters need to be converted
-     * to the actual type relative to that.
-     */
-    if (isCotypeType())
-      {
-        var this_type = g.get(0);
-        g = g.map(x -> x == this_type                     ||        // leave first type parameter unchanged
-                            this_type.isGenericArgument()    ? x    // no actuals to apply in a generic arg
-                                                             : x.OHDapplyTypePars(this_type)
-                                                                .applyTypePars(this_type)
-                                                                .replace_this_type_by_actual_outer(this_type, Context.NONE));
-      }
-    return g;
-  }
-
-
-  private AbstractType OHDapplyTypePars(AbstractType target)
-  {
-    var result = this;
-    while (result.dependsOnGenerics() && target != null)
-      {
-        target = target.selfOrConstraint(Context.NONE);
-        for (var i : target.feature().inherits())
-          {
-            result = result
-              .applyTypePars(i.calledFeature(),
-                             i.actualTypeParameters());
-          }
-        target = target.outer();
-      }
-    return result;
-  }
   private AbstractType HANDDOWN2applyTypePars_(AbstractFeature f, List<AbstractType> actualGenerics)
   {
     if (PRECONDITIONS) require
@@ -1339,7 +1277,21 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
             var g1 = generics();
             var g2 = applyTypePars(f, g1, actualGenerics);
-            var g3 = cotypeActualGenerics(g2);
+            var g3 = g2;
+            if (isCotypeType())
+              {
+                /* A cotype has the actual underlying type as its first type parameter
+                 * {@code THIS_TYPE} in addition to the type parameters of the original type.
+                 *
+                 * In case this is a cotype, determine the actual types for the types in {@code g2}
+                 * by applying the actual type parameters passed to {@code THIS_TYPE}.
+                 */
+                var this_type = g2.get(0);
+                g3 = g2.map(x -> x == this_type                     ||        // leave first type parameter unchanged
+                                      this_type.isGenericArgument()    ? x    // no actuals to apply in a generic arg
+                                                                       : x.applyTypePars(this_type)
+                                                                          .replace_this_type_by_actual_outer(this_type, Context.NONE));
+              }
 
             var o1 = outer();
             var o2 = o1 != null ? o1.applyTypeParsLocally(f, actualGenerics, select, feature().outer())
