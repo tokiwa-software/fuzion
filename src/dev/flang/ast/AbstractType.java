@@ -796,20 +796,24 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * replaced by the corresponding actualGenerics entry.
    */
   private static List<AbstractType> applyTypePars(AbstractFeature f,
-                                                     List<AbstractType> genericsToReplace,
-                                                     List<AbstractType> actualGenerics)
+                                                  List<AbstractType> genericsToReplace,
+                                                  List<AbstractType> actualGenerics)
   {
     if (PRECONDITIONS) require
       (Errors.any() ||
        f.generics().sizeMatches(actualGenerics));
 
     return genericsToReplace.flatMap
-      (t -> { // NYI: CLEANUP: use applyTypeParsMaybeOpen?
-        var tp = t.matchingTypeParameter(f);
-        return (tp != null && tp.isOpenTypeParameter())
-          ? tp.replaceOpen(actualGenerics)
-          : new List<>(t.applyTypeParsLocally(f, actualGenerics, NO_SELECT));
-      });
+      (t ->
+       { // This is eventually called from `applyTypeParsMaybeOpen`, so we
+         // cannot replace the following code by a call to
+         // `applyTypeParsMaybeOpen.
+         var tp = t.matchingTypeParameter(f);
+         return
+           (tp != null && tp.isOpenTypeParameter())
+           ? tp.replaceOpen(actualGenerics)
+           : new List<>(t.applyTypeParsLocally(f, actualGenerics, NO_SELECT));
+       });
   }
 
 
