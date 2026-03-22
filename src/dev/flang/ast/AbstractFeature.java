@@ -1295,8 +1295,18 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
     for (AbstractCall c : inh)
       {
-        l = l.flatMap(t -> t.applyTypeParsMaybeOpen(c.calledFeature(),
-                                                    c.actualTypeParameters()));
+        var cf = c.calledFeature();
+        var actualTypes = c.actualTypeParameters();
+        if (true)
+          {
+            l = l.flatMap(t -> t.isOpenGeneric() && t.genericArgument().outer() == cf
+                               ? t.genericArgument().replaceOpen(actualTypes)
+                               : new List<>(t.applyTypePars(cf, actualTypes)));
+          }
+        else
+          { // NYI: CLEANUP: This simpler code does not work for reg_issue5895, need to check why:
+            l = l.flatMap(t -> t.applyTypeParsMaybeOpen(cf, actualTypes));
+          }
       }
     return l;
   }
