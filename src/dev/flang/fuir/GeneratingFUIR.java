@@ -728,7 +728,7 @@ public class GeneratingFUIR extends FUIR
         var tclazz = clazz(c.target(), outerClazz, inh);
         if (!tclazz.isVoidType())
           {
-            var at = handDownThroughInheritsCalls(c.actualTypeParameters(), inh);
+            var at = AbstractFeature.handDownThroughInheritsCalls(c.actualTypeParameters(), inh);
             var typePars = outerClazz.actualGenerics(at, inh);
             result = tclazz.lookupCall(c, typePars).resultClazz();
           }
@@ -782,29 +782,6 @@ public class GeneratingFUIR extends FUIR
       (result != null);
 
     return result;
-  }
-
-
-  /**
-   * Hand down a list of types along a given inheritance chain.
-   *
-   * @param tl the original list of types to be handed down
-   *
-   * @param inh the inheritance chain from the parent down to the child
-   *
-   * @return a new list of types as they are appear after inheritance. The
-   * length might be different due to open type parameters being replaced by a
-   * list of types.
-   */
-  private static List<AbstractType> handDownThroughInheritsCalls(List<AbstractType> tl, List<AbstractCall> inh)
-  {
-    for (AbstractCall c : inh)
-      {
-        var f = c.calledFeature();
-        var actualTypes = c.actualTypeParameters();
-        tl = tl.flatMap(t -> t.applyTypeParsMaybeOpen(f, actualTypes));
-      }
-    return tl;
   }
 
 
