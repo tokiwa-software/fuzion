@@ -1061,6 +1061,22 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   }
 
 
+  private AbstractType OHDapplyTypePars(AbstractType target)
+  {
+    var result = this;
+    while (result.dependsOnGenerics() && target != null)
+      {
+        target = target.selfOrConstraint(Context.NONE);
+        for (var i : target.feature().inherits())
+          {
+            result = result
+              .applyTypePars(i.calledFeature(),
+                             i.actualTypeParameters());
+          }
+        target = target.outer();
+      }
+    return result;
+  }
   private AbstractType HANDDOWN2applyTypePars_(AbstractFeature f, List<AbstractType> actualGenerics)
   {
     if (PRECONDITIONS) require
@@ -1264,7 +1280,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                 var this_type = g2.get(0);
                 g3 = g2.map(x -> x == this_type                     ||        // leave first type parameter unchanged
                                       this_type.isGenericArgument()    ? x    // no actuals to apply in a generic arg
-                                                                       : x.applyTypePars(this_type)
+                                                                       : x.OHDapplyTypePars(this_type)  // NYI: needed for reg_issue1236!
+                                                                          .applyTypePars(this_type)
                                                                           .replace_this_type_by_actual_outer(this_type, Context.NONE));
               }
 
