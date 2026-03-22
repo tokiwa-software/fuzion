@@ -1206,7 +1206,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         case GenericArgument ->
           {
             var result = this;
-            AbstractFeature g = result.matchingTypeParameter(f);
+            var g = matchingTypeParameter(f);
             if (g != null)  // if this is a formal generic defined by f, then replace it by the actual generic:
               {
                 if (g.isOpenTypeParameter())
@@ -1231,7 +1231,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                   {
                     result = g.replace(actualGenerics);
                   }
-                while (forOuter != null && !result.isGenericArgument() && !result.feature().inheritsFrom(forOuter))
+                while (result != Types.t_ERROR && forOuter != null && !result.isGenericArgument() && !result.feature().inheritsFrom(forOuter))
                   {
                     result = result.outer();
                     if (CHECKS) check
