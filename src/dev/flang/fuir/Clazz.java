@@ -690,7 +690,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    */
   List<AbstractType> actualGenerics(List<AbstractType> generics, List<AbstractCall> inh)
   {
-    var new_generics = handDownThroughInheritsCalls(generics, inh);
+    var new_generics = AbstractFeature.handDownThroughInheritsCalls(generics, inh);
     var result = this._type.replaceGenerics(new_generics);
 
     // Replace any {@code a.this.type} actual generics by the actual outer clazz:
@@ -1863,66 +1863,6 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * Helper for {@code handDown}: Change type {@code t}'s type parameters along the
-   * inheritance chain {@code inh}.
-   *
-   * <pre>{@code
-   *  ex: in this code
-   *
-   *    a(T type) is
-   *      x T => ...
-   *    b(U type) : a Sequence U  is
-   *    c(V type) : b option V is
-   * }</pre>
-   *
-   * the result type {@code T} of {@code x} if used within {@code c} must be handed down via the inheritance chain
-   *
-   * <pre>{@code
-   *    a Sequence U
-   *    b option B
-   * }</pre>
-   *
-   * so it will be replaced by {@code Sequence (option V)}.
-   *
-   * @param t the type to hand down
-   *
-   * @param select if t is an open generic parameter, this specifies the actual
-   * argument to select.
-   *
-   * @param inh the inheritance call chain
-   *
-   * @return the type {@code t} as seen after inheritance
-   */
-  private static AbstractType handDownThroughInheritsCalls(AbstractType t, int select, List<AbstractCall> inh)
-  {
-    if (PRECONDITIONS) require
-      (t != null,
-       Errors.any() || !t.isOpenGeneric() || (select >= 0),
-       inh != null);
-
-    for (AbstractCall c : inh)
-      {
-        t = t.applyTypeParsLocally(c.calledFeature(),
-                                   c.actualTypeParameters(), select);
-      }
-    return t;
-  }
-  private static List<AbstractType> handDownThroughInheritsCalls(List<AbstractType> l, List<AbstractCall> inh)
-  {
-    if (PRECONDITIONS) require
-      (l != null,
-       inh != null);
-
-    for (AbstractCall c : inh)
-      {
-        l = l.flatMap(t -> t.applyTypeParsMaybeOpen(c.calledFeature(),
-                                                    c.actualTypeParameters()));
-      }
-    return l;
-  }
-
-
-  /**
    * Hand down the given type along the given inheritance chain and along all
    * inheritance chains of outer clazzes such that it has the actual type
    * parameters in this clazz.
@@ -2004,7 +1944,7 @@ class Clazz extends ANY implements Comparable<Clazz>
           (Errors.any() || inh != null);
         if (inh != null)
           {
-            t = handDownThroughInheritsCalls(t, select, inh);
+            t = AbstractFeature.handDownThroughInheritsCalls(t, select, inh);
           }
         t = t.applyTypeParsLocally(child._type, select);
         t = t.replace_this_type_by_actual_outer_locally(child._type, foundRef);
@@ -2029,7 +1969,7 @@ class Clazz extends ANY implements Comparable<Clazz>
        !t.isOpenGeneric(),
        inh != null);
 
-    var t1 = handDownThroughInheritsCalls(t, FuzionConstants.NO_SELECT, inh);
+    var t1 = AbstractFeature.handDownThroughInheritsCalls(t, FuzionConstants.NO_SELECT, inh);
     return handDown(t1, FuzionConstants.NO_SELECT, inh);
   }
 

@@ -1198,7 +1198,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
         if (inh != null)
           {
-            result = AbstractFeature.handDownInheritance(inh, l, heir);
+            result = AbstractFeature.handDownThroughInheritsCalls(l, inh);
           }
       }
     return result;
@@ -1242,30 +1242,63 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   }
 
 
-
   /**
-   * Helper for handDown() to hand down an array of types along a given inheritance chain.
+   * Helper for {@code handDown}: Change type {@code t}'s type parameters along the
+   * inheritance chain {@code inh}.
    *
-   * @param inh the inheritance chain from the parent down to the child
+   * <pre>{@code
+   *  ex: in this code
    *
-   * @param a the original array of types that is to be handed down
+   *    a(T type) is
+   *      x T => ...
+   *    b(U type) : a Sequence U  is
+   *    c(V type) : b option V is
+   * }</pre>
    *
-   * @param heir the feature that inherits the types
+   * the result type {@code T} of {@code x} if used within {@code c} must be handed down via the inheritance chain
    *
-   * @return a List of types as they are visible in heir. The length might be
-   * different due to open type parameters being replaced by a list of types.
+   * <pre>{@code
+   *    a Sequence U
+   *    b option B
+   * }</pre>
+   *
+   * so it will be replaced by {@code Sequence (option V)}.
+   *
+   * @param t the type to hand down
+   *
+   * @param select if t is an open generic parameter, this specifies the actual
+   * argument to select.
+   *
+   * @param inh the inheritance call chain
+   *
+   * @return the type {@code t} as seen after inheritance
    */
-  private static List<AbstractType> handDownInheritance(List<AbstractCall> inh, List<AbstractType> a, AbstractFeature heir)
+  public static AbstractType handDownThroughInheritsCalls(AbstractType t, int select, List<AbstractCall> inh)
   {
+    if (PRECONDITIONS) require
+      (t != null,
+       Errors.any() || !t.isOpenGeneric() || (select >= 0),
+       inh != null);
+
     for (AbstractCall c : inh)
       {
-        // NYI: CLEANUP: This should be replacable by `c.resultType().replaceGenerics(a)` or similar
-        var actualTypes = c.actualTypeParameters();
-        a = a.flatMap(ti -> !ti.isOpenGeneric()                               ? new List<>(ti.applyTypePars(c.calledFeature(), actualTypes)) :
-                            ti.genericArgument().outer() == c.calledFeature() ? ti.genericArgument().replaceOpen(actualTypes)
-                                                                              : new List<>(ti));
+        t = t.applyTypeParsLocally(c.calledFeature(),
+                                   c.actualTypeParameters(), select);
       }
-    return a;
+    return t;
+  }
+  public static List<AbstractType> handDownThroughInheritsCalls(List<AbstractType> l, List<AbstractCall> inh)
+  {
+    if (PRECONDITIONS) require
+      (l != null,
+       inh != null);
+
+    for (AbstractCall c : inh)
+      {
+        l = l.flatMap(t -> t.applyTypeParsMaybeOpen(c.calledFeature(),
+                                                    c.actualTypeParameters()));
+      }
+    return l;
   }
 
 
