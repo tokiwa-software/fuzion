@@ -154,7 +154,7 @@ is
   #
   public redef type.equality(a, b tuple.this) bool
   =>
-    a.values.typed_zip_and_fold b.values true (tuple_zip_equals tuple.this)
+    a.values.typed_zip_and_fold b.values true tuple_zip_equals
 
 
   # A total order between two tuples `a` and `b` is defined by the total order of
@@ -165,7 +165,7 @@ is
   #
   public redef type.lteq(a, b tuple.this) bool
   =>
-    a.values.typed_zip_and_fold b.values 0 (tuple_zip_lteq tuple.this) <= 0
+    a.values.typed_zip_and_fold b.values 0 tuple_zip_lteq <= 0
 
 
   # create hash code for this tuple
@@ -197,9 +197,9 @@ is
     "({values.typed_foldf "" concat})"
 
 
-# helper feature for `tuple.type.equality` to compare elements in a tuple of type `TUPLE`
+# helper feature for `tuple.type.equality` to compare elements in a tuple
 #
-tuple_zip_equals(TUPLE type) : container.typed_zipper bool is
+tuple_zip_equals : container.typed_zipper bool is
 
   public redef apply(T type,
                      e bool,
@@ -211,9 +211,9 @@ tuple_zip_equals(TUPLE type) : container.typed_zipper bool is
       compile_time_panic
 
 
-# helper feature for `tuple.type.lteq` to compare elements in a tuple of type `TUPLE`
+# helper feature for `tuple.type.lteq` to compare elements in a tuple
 #
-tuple_zip_lteq(TUPLE type) : container.typed_zipper i32 is
+tuple_zip_lteq : container.typed_zipper i32 is
 
   public redef apply(T type,
                      e i32,
