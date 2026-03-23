@@ -1702,13 +1702,7 @@ class Clazz extends ANY implements Comparable<Clazz>
           {
             result = o.inheritedOuterRefClazz(o._outer, null, f, o.feature(), null);
           }
-        else if (f.isOpenTypeParameter())
-          {
-            f = f.openTypesFeature();
-            var ft = replaceThisTypeForCotype(f.resultType());
-            result = handDown(ft, _select, new List<>());
-          }
-        else if (f.isTypeParameter())
+        else if (f.isTypeParameter() && !f.isOpenTypeParameter())
           {
             result = typeParameterActualType().typeClazz();
           }
@@ -1725,6 +1719,10 @@ class Clazz extends ANY implements Comparable<Clazz>
           }
         else
           {
+            if (f.isOpenTypeParameter())
+              {
+                f = f.openTypesFeature();
+              }
             var ft = replaceThisTypeForCotype(f.resultType());
             result = handDown(ft, _select, new List<>() /* NYI: UNDER DEVELOPMENT: correct? */);
           }
