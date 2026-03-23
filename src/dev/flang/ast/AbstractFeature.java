@@ -1244,6 +1244,30 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
+   * Convenience wrapper around {@code handDown(List, AbstractType} for a single
+   * type that is not open generic.
+   *
+   * @param t a type that must not be open generic (unless {@code Errors.any()})
+   *
+   * @param heirType the type we are inherting to.
+   *
+   * @return the type t as seen this by heirType.  Result may be Types.t_ERROR
+   * in case of previous errors.
+   */
+  public AbstractType handDown(AbstractType t,
+                               AbstractType heirType)
+  {
+    if (PRECONDITIONS) require
+      (!Errors.any() || !t.isOpenGeneric());
+
+    return handDown(new List<>(t), heirType)
+      .getFirstOrElse(Types.t_ERROR); // Tricky: Since HAND_DOWN_FAILED is
+                                      // empty, this will result in
+                                      // Types.t_ERROR!
+  }
+
+
+  /**
    * Helper for {@code handDown}: Change type {@code t}'s type parameters along the
    * inheritance chain {@code inh}.
    *
