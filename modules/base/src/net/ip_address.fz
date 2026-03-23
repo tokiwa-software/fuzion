@@ -82,7 +82,7 @@ public ip_address (val u128) : property.equatable is
       .try (outcome net.ip_address) ()->
         x := s
           .map (.parse_i32)
-          .map (.val.as_u8)
+          .map (.or_panic.as_u8)
 
         from_sequence x
       .catch m->
@@ -102,7 +102,7 @@ public ip_address (val u128) : property.equatable is
           .map (.pad_left "0" 4)
           .flat_map (.chunk 2)
           .map (.parse_i32_hex)
-          .map (.val.as_u8)
+          .map (.or_panic.as_u8)
 
         from_sequence x
       .catch m->

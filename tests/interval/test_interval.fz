@@ -30,7 +30,7 @@ test_interval is
     say "$x{" "*(10 - ($x).codepoint_length)}{
         for
           s := "", s+" "+(if x.contains i then "$i" else " "*($i).byte_length)
-          i in -4.. +4
+          i in -4 .. +4
         else
           s
       } contained in size {

@@ -26,6 +26,7 @@
 # meta_data will be a feature storing the metadata of file/dir
 #
 private:public meta_data(
+          public path path,
           # the size of the file/dir
           public size i64,
           # the time of last access to the path
@@ -45,10 +46,13 @@ private:public meta_data(
           public uid i64,
           # group of the path
           public gid i64
-          ) is
+          )
+    pre debug: path.is_absolute
+  is
 
   public redef as_string String =>
     """
+      path              : $path
       size in bytes     : $size
       access time       : {universe.time.date_time.from_seconds meta_data.this.atime.as_u64}
       modification time : {universe.time.date_time.from_seconds meta_data.this.mtime.as_u64}
@@ -70,12 +74,13 @@ public stat(ps Stat_Handler) : effect is
   #
   public stats(
         # the (relative or absolute) file name, using platform specific path separators
-        path String) outcome meta_data =>
+        path path) outcome meta_data =>
     replace
     # will contain: [size, time of last modification in seconds, regular file? 1 : 0, dir? 1 : 0]
     res := fuzion.sys.internal_array_init i64 9
-    if ps.stats (fuzion.sys.c_string path) res.data = 0
-      meta_data res[0] res[1] res[2] res[3] (res[4] = 1) (res[5] = 1) (res[6] = 1) res[7] res[8]
+    if ps.stats (fuzion.sys.c_string path.as_platform_string) res.data = 0
+      path.as_absolute.bind p->
+        meta_data p res[0] res[1] res[2] res[3] (res[4] = 1) (res[5] = 1) (res[6] = 1) res[7] res[8]
     else
       error "stat error {res[0]} for {path}"
 
@@ -86,12 +91,13 @@ public stat(ps Stat_Handler) : effect is
   #
   public lstats(
          # the (relative or absolute) file name, using platform specific path separators
-         path String) outcome meta_data => # NYI: UNDER DEVELOPMENT: : not sure whether to use meta_data or introduce a new feature for lstats metadata
+         path path) outcome meta_data => # NYI: UNDER DEVELOPMENT: : not sure whether to use meta_data or introduce a new feature for lstats metadata
     replace
     # will contain: [size, time of last modification in seconds, regular file? 1 : 0, dir? 1 : 0]
     res := fuzion.sys.internal_array_init i64 9
-    if ps.stats (fuzion.sys.c_string path) res.data = 0
-      meta_data res[0] res[1] res[2] res[3] (res[4] = 1) (res[5] = 1) (res[6] = 1) res[7] res[8]
+    if ps.lstats (fuzion.sys.c_string path.as_platform_string) res.data = 0
+      path.as_absolute.bind p->
+        meta_data p res[0] res[1] res[2] res[3] (res[4] = 1) (res[5] = 1) (res[6] = 1) res[7] res[8]
     else
       error "lstat error {res[0]} for {path}"
 
@@ -130,7 +136,7 @@ public stat stat ! stat =>
 #
 public stat(
      # the (relative or absolute) file name, using platform specific path separators
-     path String,
+     path path,
      # a boolean resolve flag to resolve symbolic links or not
      resolve bool) outcome meta_data ! stat =>
   install_default

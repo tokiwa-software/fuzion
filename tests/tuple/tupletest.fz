@@ -99,12 +99,12 @@ tupletest is
   t10 tuple i32 bool => (3, false)
   p "tuple t10 is {t10.values.0}, {t10.values.1}"
   chck t10.values.0=3       "t10.values.0"
-  chck t10.values.1<=>false "t10.values.1"
+  chck t10.values.1=false "t10.values.1"
 
   t10a := t10
   p "tuple t10a is {t10a.values.0}, {t10a.values.1}"
   chck t10a.values.0=3       "t10a.values.0"
-  chck t10a.values.1<=>false "t10a.values.1"
+  chck t10a.values.1=false "t10a.values.1"
 
   t10aa => (42, "the answer")
   p "tuple t10aa is {t10aa.values.0}, {t10aa.values.1}"

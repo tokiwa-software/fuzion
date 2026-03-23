@@ -69,6 +69,6 @@ modules/mod.fum:
 	$(FUZION) -sourceDirs=./mod -saveModule=$@  $(CHECK)
 
 clean:
-	rm -rf modules *~ */*~ */*/*~
+	rm -rf modules *~ */*~ */*/*~ *.fum *.fuir
 
 effect:

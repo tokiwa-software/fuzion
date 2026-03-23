@@ -562,11 +562,9 @@ public class GeneratingFUIR extends FUIR
         o = o._outer;
       }
 
-    var t = actualType;
-
     // normalize outer to be value in case t describes a field
-    outerR = t.feature().isField() ? outerR.asValue() : outerR;
-    var cl = new Clazz(this, outerR, t, select);
+    outerR = actualType.feature().isField() ? outerR.asValue() : outerR;
+    var cl = new Clazz(this, outerR, actualType, select);
     var existing = _clazzesTM.get(cl);
     if (existing != null)
       {
@@ -633,7 +631,7 @@ public class GeneratingFUIR extends FUIR
               case "Mapped_Memory"             -> SpecialClazzes.c_Mapped_Memory;
               case "Native_Ref"                -> SpecialClazzes.c_Native_Ref;
               case "Thread"                    -> SpecialClazzes.c_Thread;
-              case "stackoverflow"             -> SpecialClazzes.c_fuzion_runtime_stackoverflow;
+              case "stackoverflow_cause"       -> SpecialClazzes.c_stackoverflow_cause;
               default                          -> SpecialClazzes.c_NOT_FOUND   ;
               };
             if (s != SpecialClazzes.c_NOT_FOUND && s._argCount == cl.feature().arguments().size())
@@ -2282,16 +2280,7 @@ public class GeneratingFUIR extends FUIR
         var outerClazz = id2clazz(cl);
         var b = (Box) getExpr(s);
         Clazz vc = clazz(b._value, outerClazz, _inh.get(s - SITE_BASE));
-        var rc = outerClazz.handDown(b.type(), _inh.get(s - SITE_BASE));
-        if (rc.isRef() &&
-            outerClazz.feature() != Types.resolved.f_type_as_value) // NYI: ugly special case
-          {
-            rc = vc.asRef();
-          }
-        else
-          {
-            rc = vc;
-          }
+        var rc = outerClazz.handDown(b.type(), _inh.get(s - SITE_BASE)).isRef() ? vc.asRef() : vc;
         res = new Pair<>(vc, rc);
         _siteClazzCache.put(s, res);
       }
@@ -2369,8 +2358,7 @@ public class GeneratingFUIR extends FUIR
       (s >= SITE_BASE,
        s < SITE_BASE + _allCode.size(),
        withinCode(s),
-       codeAt(s) == ExprKind.Call   ||
-       codeAt(s) == ExprKind.Assign    );
+       codeAt(s).isCallOrAssign());
 
     var res = _siteClazzCache.get(s);
     if (res == null && !_lookupDone)
@@ -2392,8 +2380,7 @@ public class GeneratingFUIR extends FUIR
       (s >= SITE_BASE,
        s < SITE_BASE + _allCode.size(),
        withinCode(s),
-       codeAt(s) == ExprKind.Call   ||
-       codeAt(s) == ExprKind.Assign    );
+       codeAt(s).isCallOrAssign());
 
     var cl = clazzAt(s);
     var outerClazz = id2clazz(cl);
@@ -2424,7 +2411,7 @@ public class GeneratingFUIR extends FUIR
   }
 
 
-  public Clazz calledInner(AbstractCall c, Clazz outerClazz, Clazz explicitTarget, List<AbstractCall> inh)
+  private Clazz calledInner(AbstractCall c, Clazz outerClazz, Clazz explicitTarget, List<AbstractCall> inh)
   {
     if (PRECONDITIONS) require
       (Errors.any() || c.calledFeature() != null && c.target() != null);
@@ -2584,8 +2571,7 @@ public class GeneratingFUIR extends FUIR
       (s >= SITE_BASE,
        s < SITE_BASE + _allCode.size(),
        withinCode(s),
-       codeAt(s) == ExprKind.Call   ||
-       codeAt(s) == ExprKind.Assign    ,
+       codeAt(s).isCallOrAssign(),
        accessIsDynamic(s));
 
     var result = _accessedClazzes.get(s);
@@ -2612,8 +2598,7 @@ public class GeneratingFUIR extends FUIR
       (s >= SITE_BASE,
        s < SITE_BASE + _allCode.size(),
        withinCode(s),
-       codeAt(s) == ExprKind.Call   ||
-       codeAt(s) == ExprKind.Assign    );
+       codeAt(s).isCallOrAssign());
 
     int[] result;
     if (accessIsDynamic(s))
@@ -2661,8 +2646,7 @@ public class GeneratingFUIR extends FUIR
           (s >= SITE_BASE,
            s < SITE_BASE + _allCode.size(),
            withinCode(s),
-           codeAt(s) == ExprKind.Call   ||
-           codeAt(s) == ExprKind.Assign    ,
+           codeAt(s).isCallOrAssign(),
            tclazz >= CLAZZ_BASE &&
            tclazz < CLAZZ_BASE  + _clazzes.size());
 
@@ -2742,8 +2726,7 @@ public class GeneratingFUIR extends FUIR
       (s >= SITE_BASE,
        s < SITE_BASE + _allCode.size(),
        withinCode(s),
-       codeAt(s) == ExprKind.Assign ||
-       codeAt(s) == ExprKind.Call  );
+       codeAt(s).isCallOrAssign());
 
     var cl = clazzAt(s);
     var outerClazz = id2clazz(cl);
@@ -2774,8 +2757,7 @@ public class GeneratingFUIR extends FUIR
       (s >= SITE_BASE,
        s < SITE_BASE + _allCode.size(),
        withinCode(s),
-       codeAt(s) == ExprKind.Assign ||
-       codeAt(s) == ExprKind.Call  );
+       codeAt(s).isCallOrAssign());
 
     var tclazz = _accessedTarget.get(s);
     if (tclazz == null)
@@ -3140,7 +3122,7 @@ public class GeneratingFUIR extends FUIR
         r.called.put(cf.feature(), sitePos(callSite).show());
         if (CHECKS) check
           (cf.feature().isAbstract() ||
-           (cf.feature().modifiers() & FuzionConstants.MODIFIER_FIXED) != 0);
+           cf.feature().isFixed());
       }
   }
 

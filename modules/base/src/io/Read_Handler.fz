@@ -35,14 +35,14 @@ public Read_Handler ref is
 
   # Read_Handler that only ever returns end_of_file
   #
-  public type.empty io.Read_Handler =>
+  public fixed type.empty io.Read_Handler =>
     _ : io.Read_Handler is
       public redef read(c i32) choice (Sequence u8) io.end_of_file error => io.end_of_file
 
 
-  # create a Read_Handler from an array of bytes
+  # create a Read_Handler from a Sequence of bytes
   #
-  type.from_array_u8(LM type : mutate, arr array u8) io.Read_Handler =>
+  type.from_array_backed_u8(LM type : mutate, arr Sequence u8) io.Read_Handler =>
     _ : io.Read_Handler is
 
       # the current position in the array
@@ -64,5 +64,5 @@ public Read_Handler ref is
   public type.from(LM type : mutate, data choice (Sequence u8) String) io.Read_Handler =>
 
     match data
-      bytes Sequence u8 => io.Read_Handler.from_array_u8 LM bytes.as_array
-      str String => io.Read_Handler.from_array_u8 LM str.utf8.as_array
+      bytes Sequence u8 => io.Read_Handler.from_array_backed_u8 LM bytes.as_array_backed
+      str String => io.Read_Handler.from_array_backed_u8 LM str.utf8.as_array_backed

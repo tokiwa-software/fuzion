@@ -26,9 +26,13 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fe;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import java.util.Arrays;
 import java.util.function.Consumer;
 
 import dev.flang.util.Errors;
@@ -291,6 +295,36 @@ public class FrontEndOptions extends FuzionOptions
   public Path inputFile()
   {
     return _inputFile;
+  }
+
+
+  long _serializationHashCode = -1;
+  public long serializationHash()
+  {
+    if (_serializationHashCode == -1)
+      {
+        try
+          {
+            var bytes = _readStdin
+              ? System.in.readAllBytes()
+              : inputFile() != null
+                ? Files.readAllBytes(inputFile())
+                : _executeCode;
+
+            _serializationHashCode = Math.abs(Arrays.hashCode(bytes) + Integer.MAX_VALUE);
+
+            if (_readStdin)
+              {
+                System.setIn(new ByteArrayInputStream(bytes));
+              }
+          }
+        catch (IOException e)
+          {
+            Errors.fatal("I/O Error: " + e.getMessage());
+          }
+      }
+    return _serializationHashCode;
+
   }
 
 }

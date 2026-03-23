@@ -171,6 +171,13 @@ public class Value extends Val
       }
 
 
+      @Override
+      Value box(DFA dfa, int vc, int rc, Context context)
+      {
+        return dfa.newValueInstance(vc, NO_SITE, context).box(dfa, vc, rc, context);
+      }
+
+
       public String toString()
       {
         return "UNIT";
@@ -422,20 +429,12 @@ public class Value extends Val
    */
   Value box(DFA dfa, int vc, int rc, Context context)
   {
-    Value result;
-    if (this == UNIT)
+    Value result = _boxed;
+    if (result == null)
       {
-        result = dfa.newInstance(rc, NO_SITE, context);
-      }
-    else
-      {
-        result = _boxed;
-        if (result == null)
-          {
-            result = new RefValue(dfa, this, vc, rc);
-            dfa.makeUnique(result);
-            _boxed = result;
-          }
+        result = new RefValue(dfa, this, vc, rc);
+        dfa.makeUnique(result);
+        _boxed = result;
       }
     return result;
   }

@@ -30,7 +30,6 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Expr;
 import dev.flang.ast.FeatureVisitor;
-import dev.flang.ast.Types;
 import dev.flang.util.Errors;
 import dev.flang.util.SourcePosition;
 

@@ -43,7 +43,7 @@ Computable_Future(
   # the code of the future
   task ()->T) ref : concur.Future T is
 
-  cnd := concur.sync.condition.new.val # NYI: error handling
+  cnd := concur.sync.condition.new.or_panic # NYI: error handling
 
   compute_result := concur.atomic (option T) .new nil
 
@@ -60,7 +60,7 @@ Computable_Future(
       if !is_done
         check cnd.wait
 
-    compute_result.read.val
+    compute_result.read.or_panic
 
   public redef and_then(T2 type, new_task T->T2) concur.Future T2 ! atomic_access, TP =>
     TP.env.submit T2 ()->(new_task get)
@@ -77,9 +77,9 @@ is
 
   thrds := array size _->
       concur.threads.spawn ()->
-        _ := for x := bq.dequeue
-             while x.exists
-               x.val.call
+        for x := bq.dequeue
+        while x.exists
+          x.or_panic.call
 
 
   # submit a task to the thread pool

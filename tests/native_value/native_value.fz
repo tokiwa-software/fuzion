@@ -139,9 +139,9 @@ ex =>
 
       CXChildVisit_Continue
 
-  idx := clang_createIndex 0 0
+  ci := clang_createIndex 0 0
 
-  check !(ffi.is_null idx)
+  check !(ffi.is_null ci)
 
   header_file := "./fz.h"
 
@@ -169,7 +169,7 @@ ex =>
   #   .map (arg -> fzE_to_native (arg.as_c_string mutate))
   #   .as_array
 
-  tu := clang_parseTranslationUnit idx (header_file.as_c_string mutate) ((mutate.array Native_Ref).empty mutate) 0 ffi.null 0 0
+  tu := clang_parseTranslationUnit ci (header_file.as_c_string mutate) (mutate.array Native_Ref).empty 0 ffi.null 0 0
 
   check !(ffi.is_null tu)
 
@@ -178,7 +178,7 @@ ex =>
   _ := clang_visitChildren cursor visitor ffi.null
 
   clang_disposeTranslationUnit tu
-  clang_disposeIndex idx
+  clang_disposeIndex ci
 
 
 # NYI: CLEANUP: support local mutates

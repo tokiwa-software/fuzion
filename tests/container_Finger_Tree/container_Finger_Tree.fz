@@ -1,0 +1,51 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test container_Finger_Tree
+#
+# -----------------------------------------------------------------------
+
+container_Finger_Tree =>
+
+  ft0 := container.Finger_Tree i32 .empty
+  ft1 := ft0.append [4,5]
+  ft2 := ft1.prepend [1,2,3]
+  ft3 := ft2.append [6,7,8]
+
+  ft4 :=
+    for r := ft3, r.append [x]
+        x in 9..20 do
+    else
+      r
+
+  ft5 :=
+    for r := ft3, r.prepend [-x]
+        x in 0..10 do
+    else
+      r
+
+  for f in [ft0, ft1, ft2, ft3, ft4, ft5] do
+    say f
+    if f.is_valid_index 0
+      say f[0]
+    if f.is_valid_index f.count-1
+      say f[f.count-1]
+    say f.count
+    say f.dynamic_type.name
+

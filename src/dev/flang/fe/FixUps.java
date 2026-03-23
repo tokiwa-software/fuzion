@@ -311,9 +311,7 @@ class FixUps extends DataOut
    */
   List<LibraryModule> referencedModules()
   {
-    var l = new List<LibraryModule>();
-    l.addAll(_referencedModules.keySet());
-    return l;
+    return new List<LibraryModule>(_referencedModules.keySet().iterator());
   }
 
 }

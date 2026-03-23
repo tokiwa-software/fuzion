@@ -221,6 +221,16 @@ public abstract class AbstractBlock extends Expr
   }
 
 
+  @Override
+  public boolean isEmpty()
+  {
+    return _expressions
+      .stream()
+      // declarations are NOPs, hence allowed
+      .allMatch(x -> x instanceof AbstractFeature);
+  }
+
+
   /**
    * toString
    *

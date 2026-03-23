@@ -36,7 +36,7 @@
 # times.
 #
 # This constructor is for internal use only, to create instance of
-# `expanding_array`, use `(expanding_array T).type.empty` to create an empty
+# `expanding_array`, use `(expanding_array T).empty` to create an empty
 # expanding array instance.
 #
 private:public expanding_array
@@ -63,7 +63,7 @@ is
 
   # get the contents of this array at the given index
   #
-  public redef index [](i idx) T
+  public redef index [](I type : integer, i I) T
   =>
     data[i].val
 
@@ -178,7 +178,7 @@ is
       #
       expanding_array.this
 
-    else if s.finite.is_no_or_unknown || count < s.count
+    else if s.finite.is_no
 
       # use lazy version in case `s` might be infinite, since then code below would not
       # terminate, if `s` is larger than `this`, which would avoid quadratic performance
@@ -188,6 +188,26 @@ is
       #      r := (expanding_array i32).empty, [i].concat r
       #
       as_list.concat_list s.as_list
+
+    # NYI: UNDER DEVELOPMENT: maybe:
+    # else if count*10 < s.count
+    else if count < s.count
+
+      #
+      # count < s.count to avoid poor (quadratic) performance
+      # if a small sequence is added in front of a
+      # larger one repeatedly as in this code:
+      #
+      #     for
+      #       s := (Sequence i32).empty, [i].concat s
+      #       i in 1..n
+      #     else
+      #       say s
+      #
+
+      container.Finger_Tree T .empty
+        .concat expanding_array.this
+        .concat s
 
     else
 
@@ -210,7 +230,7 @@ is
   #
   # Complexity: O(1)
   #
-  public type.empty container.expanding_array T
+  public fixed type.empty container.expanding_array T
   =>
     empty default_capacity
 
@@ -221,7 +241,7 @@ is
   #
   # Complexity: O(1)
   #
-  public type.empty(initial_capacity i32) container.expanding_array T
+  public fixed type.empty(initial_capacity i32) container.expanding_array T
     pre
       debug: initial_capacity >= 0
   =>
@@ -342,7 +362,7 @@ is
 
   # shorthand index operator alias for `get`
   #
-  public index [](i idx) T
+  public index [](I type : integer, i I) T
     pre
       safety: 0 <= i.as_i32 < length+n
       debug: has i.as_i32
@@ -352,7 +372,7 @@ is
 
   # shorthand set-index operator alias for `put`
   #
-  public set [](i idx, v T) unit
+  public set [](I type : integer, i I, v T) unit
     pre
       safety: length <= i.as_i32 < length+n
   =>

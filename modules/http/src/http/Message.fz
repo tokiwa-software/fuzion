@@ -93,9 +93,9 @@ public Message ref is
     max_body_bytes i32) outcome String
   =>
     match body.read max_body_bytes
-      s Sequence => Message.this.as_string + String.from s
+      s Sequence => $Message.this + String.from s
       e error => e
-      io.end_of_file => Message.this.as_string
+      io.end_of_file => $Message.this
 
 
   # NYI: PERFORMANCE: see validHeaderFieldByte() in https://go.dev/src/net/textproto/reader.go
@@ -251,10 +251,10 @@ module body_helper(LM type : mutate, is_req bool, header_fields container.Map St
 
     else if header_fields.has "transfer-encoding"
 
-      transfer_encodings := header_fields["transfer-encoding"].val.split "," .map (.trim)
+      transfer_encodings := header_fields["transfer-encoding"].or_panic.split "," .map (.trim)
 
       # If a Transfer-Encoding header field is present and the chunked transfer coding (Section 7.1) is the final encoding, the message body length is determined by reading and decoding the chunked data until the transfer coding indicates the data is complete.
-      if transfer_encodings.last.val = "chunked"
+      if transfer_encodings.last.or_panic = "chunked"
         panic "NYI: UNDER DEVELOPMENT: chunked transfer encoding not yet supported"
 
       # If a Transfer-Encoding header field is present in a response and the chunked transfer coding is not the final encoding, the message body length is determined by reading the connection until it is closed by the server.
@@ -267,7 +267,7 @@ module body_helper(LM type : mutate, is_req bool, header_fields container.Map St
         cause "400 bad request, Transfer-Encoding header field is present in a request and the chunked transfer coding is not the final encoding"
 
     else if header_fields.has "content-length"
-      match header_fields["content-length"].val.parse_u64
+      match header_fields["content-length"].or_panic.parse_u64
         error =>
 
           # NYI: UNDER DEVELOPMENT: implement recovery

@@ -25,7 +25,7 @@
 # effect for manipulating open files
 #
 module:public open(fd File_Descriptor,
-                   public file_name String) : effect is
+                   public file_name path) : effect is
 
 
   # install seek effect an run code
@@ -55,7 +55,9 @@ module:public open(fd File_Descriptor,
   #         io.file.mapped_buffer.env[99] := 42
   #
   public mmap(R type, offset i64, size i64, code ()->R) outcome R
-    pre safety: offset % os.mmap_offset_multiple = 0
+    pre
+      safety: offset % os.mmap_offset_multiple = 0
+      safety: size > 0
   =>
 
     mapped_memory := fzE_mmap fd offset size

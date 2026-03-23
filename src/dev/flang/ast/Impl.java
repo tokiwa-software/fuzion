@@ -439,7 +439,7 @@ public class Impl extends ANY
           case Field             -> {} // Errors.fatal("NYI: UNDER DEVELOPMENT #3092 postcondition for field not supported yet");
           case TypeParameter     ,
                OpenTypeParameter -> { if (!Errors.any()) { Errors.fatal("postcondition for type parameter should not exist for " + outer.pos().show()); } }
-          case Routine           ->
+          case Function, Constructor, RefConstructor ->
             {
               var callPostCondition = Contract.callPostCondition(res, context);
               this._expr = new Block(new List<>(this._expr, callPostCondition));
@@ -704,17 +704,17 @@ public class Impl extends ANY
       {
         result = switch (_kind)
           {
-          case FieldInit  -> " = "  + _expr.getClass() + ": " +_expr;
-          case FieldDef   -> " := " + _expr.getClass() + ": " +_expr;
-          case FieldActual -> " type_inferred_from_actual";
-          case Field      -> "";
-          case TypeParameter -> "type";
+          case FieldInit         -> " = "  + _expr.getClass() + ": " +_expr;
+          case FieldDef          -> " := " + _expr.getClass() + ": " +_expr;
+          case FieldActual       -> " type_inferred_from_actual";
+          case Field             -> "";
+          case TypeParameter     -> "type";
           case TypeParameterOpen -> "type...";
-          case RoutineDef -> " => " + _expr.toString();
-          case Routine    -> " is " + _expr.toString();
-          case Abstract   -> "is abstract";
-          case Intrinsic  -> "is intrinsic";
-          default -> throw new Error("Unexpected Kind: "+_kind);
+          case RoutineDef        -> " => " + _expr.toString();
+          case Routine           -> " is " + _expr.toString();
+          case Abstract          -> "is abstract";
+          case Intrinsic         -> "is intrinsic";
+          default                -> throw new Error("Unexpected Kind: "+_kind);
           };
       }
     return result;

@@ -55,6 +55,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include "fz.h"
 
 static_assert(sizeof(L'\0') == 2, "wide char, unexpected bytes");
+static_assert(_WIN32_WINNT >= 0x0600, "rt: win, expected Windows Vista or greater.");
 
 
 /**
@@ -912,14 +913,31 @@ void * fzE_file_open(char * file_name, int64_t * open_results, file_open_mode mo
     ? (int64_t)GetLastError()
     : 0;
 
-  if (hFile != INVALID_HANDLE_VALUE && mode == FZ_FILE_MODE_APPEND)
+  // align to posix api
+  // mode=write, truncate file
+  // mode=append, set file pointer to end of file
+  if (hFile != INVALID_HANDLE_VALUE)
   {
     LARGE_INTEGER zero = {0}, new_pos = {0};
-    if (!SetFilePointerEx(hFile, zero, &new_pos, FILE_END)) {
+    if(mode == FZ_FILE_MODE_WRITE) {
+      if (!SetFilePointerEx(hFile, zero, NULL, FILE_BEGIN)) {
+        open_results[0] = (int64_t)GetLastError();
+        CloseHandle(hFile);
+        return NULL;
+      }
+
+      if (!SetEndOfFile(hFile)) {
+        open_results[0] = (int64_t)GetLastError();
+        CloseHandle(hFile);
+        return NULL;
+      }
+    }
+    else if (mode == FZ_FILE_MODE_APPEND && !SetFilePointerEx(hFile, zero, &new_pos, FILE_END)) {
       open_results[0] = (int64_t)GetLastError();
       CloseHandle(hFile);
       return NULL;
     }
+
   }
 
   return (void *)hFile;
@@ -928,7 +946,11 @@ void * fzE_file_open(char * file_name, int64_t * open_results, file_open_mode mo
 
 void * fzE_mtx_init() {
   CRITICAL_SECTION *mtx = (CRITICAL_SECTION *)fzE_malloc_safe(sizeof(CRITICAL_SECTION));
-  InitializeCriticalSection(mtx);
+  if (!InitializeCriticalSectionEx(mtx, 0, 0))
+  {
+    fzE_free(mtx);
+    return NULL;
+  }
   return (void *)mtx;
 }
 
@@ -968,12 +990,12 @@ int32_t fzE_cnd_broadcast(void *cnd) {
 }
 
 int32_t fzE_cnd_wait(void *cnd, void *mtx) {
-  return SleepConditionVariableCS(
+  BOOL ok = SleepConditionVariableCS(
       (CONDITION_VARIABLE *)cnd,
       (CRITICAL_SECTION *)mtx,
-      INFINITE)
-    ? 0
-    : -1;
+      INFINITE);
+
+  return ok ? 0 : -1;
 }
 
 void fzE_cnd_destroy(void *cnd) {
@@ -987,11 +1009,9 @@ int32_t fzE_file_read(void * file, void * buf, int32_t size)
   DWORD bytesRead = 0;
   BOOL success = ReadFile(file, buf, (DWORD)size, &bytesRead, NULL);
 
-  return !success
-    ? -2 // ERROR
-    : bytesRead == 0
-    ? -1 // EOF
-    : (int32_t)bytesRead;
+  return success
+    ? (int32_t)bytesRead
+    : (GetLastError() == ERROR_BROKEN_PIPE ? 0 : -1);
 }
 
 

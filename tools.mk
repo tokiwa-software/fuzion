@@ -118,3 +118,17 @@ lint-pmd: $(BUILD_DIR)/pmd
 .PHONY: lint-c
 lint-c:
 	clang-tidy $(C_FILES) -- -std=c11
+
+# show env vars that can be used during development
+#
+.PHONY: show_development_env_vars
+show_development_env_vars:
+	grep -rhoE 'dev_flang_[A-Za-z0-9_]+=' . | sed 's/=//' | sort -u
+
+.PHONY: regenerated_header_files
+regenerated_header_files:
+	$(FZ) -jvm -modules=clang -JLibraries=clang ./bin/fzextract.fz /usr/include/sodium.h > modules/sodium/src/native.fz
+	$(FZ) -jvm -modules=clang -JLibraries=clang ./bin/fzextract.fz /usr/include/wolfssl/ssl.h > modules/wolfssl/src/native.fz
+	$(FZ) -jvm -modules=clang -JLibraries=clang ./bin/fzextract.fz /usr/include/sqlite3.h > modules/sqlite/src/native.fz
+# NYI: ENHANCEMENT: do not assume clang 19 and debian location
+	$(FZ) -jvm -modules=clang -JLibraries=clang ./bin/fzextract.fz /usr/lib/llvm-19/include/clang-c/Index.h > modules/clang/src/native.fz

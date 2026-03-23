@@ -29,6 +29,7 @@ package dev.flang.ast;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -41,6 +42,7 @@ import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.Pair;
 import dev.flang.util.SourcePosition;
+import dev.flang.util.SourceRange;
 import dev.flang.util.StringHelpers;
 import dev.flang.util.Terminal;
 
@@ -369,8 +371,8 @@ public class AstErrors extends ANY
     var valAssigned = "";
     var assignableToSB = new StringBuilder();
     var errorOrUndefinedFound =
-      frmlT     == Types.t_ERROR || frmlT     == Types.t_UNDEFINED ||
-      typeValue == Types.t_ERROR || typeValue == Types.t_UNDEFINED;
+      frmlT.isArtificialType() ||
+      typeValue != null && typeValue.isArtificialType();
     if (value == null)
       {
         actlFound   = "actual type found   : " + s(typeValue);
@@ -379,7 +381,7 @@ public class AstErrors extends ANY
     else
       {
         var actlT = value.type();
-        errorOrUndefinedFound |=  actlT == Types.t_ERROR || actlT == Types.t_UNDEFINED;
+        errorOrUndefinedFound |=  actlT.isArtificialType();
         if (actlT.isThisType())
           {
             assignableToSB
@@ -1743,6 +1745,25 @@ public class AstErrors extends ANY
           "Field declared at "+ f.pos().show());
   }
 
+  static void choiceMustNotContainFields(SourcePosition pos, SortedSet<AbstractFeature> fields)
+  {
+      String fieldsSources =
+        fields.size() > 1
+          ? fields.stream()
+              .map((f)->("\n* Field %s declared at %s".formatted(s(f), f.pos().show())))
+              .collect(Collectors.joining())
+          : "Field declared at " + fields.getFirst().pos().show();
+
+    error(pos,
+          "Choice must not contain any fields",
+          "%s %s %s not permitted.\n%s"
+            .formatted(
+              StringHelpers.plural(fields.size(), "Field"),
+              sfn(new List<AbstractFeature>(fields.iterator())),
+              (fields.size() > 1 ? "are" : "is"),
+              fieldsSources));
+  }
+
   static void choiceMustNotBeField(SourcePosition pos)
   {
     error(pos,
@@ -2487,6 +2508,49 @@ public class AstErrors extends ANY
       ss("<effect>.finally") + " is called automatically.");
   }
 
+  public static void ambiguousIfIfElse(SourcePosition pos, SourcePosition if1, SourcePosition if2)
+  {
+    error(pos,
+          "Ambiguous " + skw("else") + " for multiple " + skw("if") + " statements",
+          "The " + skw("else") + " is ambiguous since it may be parsed as part of several different " + skw("if") + " statements.\n" +
+          "Outer " + skw("if") + " statement at " + if1.show() + "\n" +
+          "Inner " + skw("if") + " statement at " + if2.show() + "\n" +
+          "\n" +
+          "To solve this, add braces " + code("{ }") + " or use line breaks and indentation.");
+  }
+
+  public static void ambiguousLoopIfElse(SourcePosition pos, SourcePosition loop1, SourcePosition if2)
+  {
+    error(pos,
+          "Ambiguous " + skw("else") + " for nested loop and " + skw("if") + " statements",
+          "The " + skw("else") + " is ambiguous since it may be parsed as part of different loop and " + skw("if") + " statements.\n" +
+          "Outer loop statement at " + loop1.show() + "\n" +
+          "Inner " + skw("if") + " statement at " + if2.show() + "\n" +
+          "\n" +
+          "To solve this, add braces " + code("{ }") + " or use line breaks and indentation.");
+  }
+
+  public static void ambiguousIfLoopElse(SourcePosition pos, SourcePosition if1, SourcePosition loop2)
+  {
+    error(pos,
+          "Ambiguous " + skw("else") + " for nested " + skw("if") + " and loop statements",
+          "The " + skw("else") + " is ambiguous since it may be parsed as part of different " + skw("if") + " and loop statements.\n" +
+          "Outer " + skw("if") + " statement at " + if1.show() + "\n" +
+          "Inner loop statement at " + loop2.show() + "\n" +
+          "\n" +
+          "To solve this, add braces " + code("{ }") + " or use line breaks and indentation.");
+  }
+
+  public static void ambiguousLoops(SourcePosition pos, SourcePosition loop1)
+  {
+    error(pos,
+          "Ambiguous nested loop statements",
+          "Several loop statements occur in a single line causing ambiguity for the parser.\n" +
+          "Outer loop statement at " + loop1.show() + "\n" +
+          "\n" +
+          "To solve this, add braces " + code("{ }") + " or use line breaks and indentation.");
+  }
+
   public static void explicitTypeRequired(AbstractFeature f, AbstractType inf)
   {
     String inferredMsg = (inf != null && inf != Types.t_ERROR && inf != Types.t_ERROR) ?
@@ -2519,6 +2583,26 @@ public class AstErrors extends ANY
      " - " + file1 + "\n" +
      " - " + file2
     );
+  }
+
+  public static void useConcreteTypeInFixed(AbstractFeature f, AbstractType t)
+  {
+    error(
+      f.pos(),
+      "Use the concrete type not the this-type in a fixed feature.",
+      "For increased consistency and easier comprehensibility, use " + s(t.feature().selfType()) + " instead of " + s(t));
+  }
+
+  public static void illegalUseOfFixedModifier(Feature f)
+  {
+    error(f.pos(), "Illegal use of " + skw("fixed") + " modifier.",
+     skw("fixed")+ " fixed is only allowed on function features not in universe.");
+  }
+  
+  public static void multipleOperatorsFound(SourcePosition p)
+  {
+    error(p,
+      "Multiple successive operators are not allowed.", "");
   }
 
 }

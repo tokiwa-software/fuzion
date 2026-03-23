@@ -348,7 +348,7 @@ class ForClass extends ANY
 
     data_dynamic.append("\n");
     data_dynamic.append("\n");
-    data_dynamic.append("  public " + (sc==null ? "" : "redef ") +  "type.get_java_class Java.java.lang.Class => (Java.java.lang.Class.forName " + fuzionString(cn) + ").val");
+    data_dynamic.append("  public " + (sc==null ? "" : "redef ") +  "type.get_java_class Java.java.lang.Class => (Java.java.lang.Class.forName " + fuzionString(cn) + ").or_panic");
     data_dynamic.append("\n");
     data_dynamic.append("\n");
 
@@ -883,7 +883,7 @@ class ForClass extends ANY
         else if (t == Double   .TYPE) { res.append("fuzion.jvm.env.f64_to_java_object "   ); }
         else if (t == Boolean  .TYPE) { res.append("fuzion.jvm.env.bool_to_java_object "  ); }
         res.append( outer + ".this." + mp );
-        if (t == String.class) { res.append(".fold fuzion.jvm.env.string_to_java_object (_ -> (fuzion.jvm.env.null Java.java.lang.__jString).val)"); }
+        if (t == String.class) { res.append(".fold fuzion.jvm.env.string_to_java_object (_ -> (fuzion.jvm.env.null Java.java.lang.__jString).or_panic)"); }
         res.append(")");
       }
     res.append("]");

@@ -170,9 +170,9 @@ public class Instance extends Value
           {
             _dfa.wasChanged(() -> "setField: new values " + fv + " (was " + oldv + ") for " + this);
           }
+        _fields.put(field, v);
       }
     dfa._writtenFields.set(field);
-    _fields.put(field, v);
   }
 
 

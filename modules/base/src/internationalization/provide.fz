@@ -45,7 +45,7 @@ public provide ref : effect is
     public type.install_default unit ! envir.vars =>
 
         if !internationalization.provide.is_instated
-            l := envir.vars["LANG"].val ""
+            l := envir.vars["LANG"].or_default ""
 
             p internationalization.provide :=
                 if l.starts_with "de"

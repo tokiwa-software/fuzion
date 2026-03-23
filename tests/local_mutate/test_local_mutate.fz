@@ -96,7 +96,7 @@ test_local_mutate is
       neg_test4 =>
         s := m ! ()->count2
         m ! ()->
-          s.get <- -12    # *** will cause an error, m has changed!
+          s.or_panic <- -12    # *** will cause an error, m has changed!
           say s
         "** failed, did not panic **"
 
@@ -107,7 +107,7 @@ test_local_mutate is
         q =>
           s1 := m ! ()->count2
           m ! ()->
-            s1.get <- -12    # *** will cause an error, m has changed!
+            s1.or_panic <- -12    # *** will cause an error, m has changed!
             say s1
           "** failed, did not panic **"
         q
@@ -131,7 +131,7 @@ test_local_mutate is
         # execute code with mutate effect `m`:
         m ! ()->
 
-          arr := (mutate.array T).new m c.as_i64 data[0]
+          arr := (m.array T).new c.as_i64 data[0]
 
           swap(i,j i32) =>
             t := arr[i]
@@ -194,7 +194,7 @@ test_local_mutate is
       m : mutate is
 
       ring2(from list T) Cell T m =>   # NYI: UNDER DEVELOPMENT: '=>' causes error cyclic type inference
-        c := Cell T m from.head.get
+        c := Cell T m from.head.or_panic
         match from.tail
           nil    => _ := c
           t Cons => f := ring2 t
@@ -213,10 +213,10 @@ test_local_mutate is
         do
           say "$i: {e.data}"
 
-        _ := for cur := r, cur.next
-             while cur.n.open do
-               cur.n.close
-               cur.p.close
+        for cur := r, cur.next
+        while cur.n.open do
+          cur.n.close
+          cur.p.close
         r
 
       r0 := m ! ()->(ring3 from0.as_list)
@@ -353,7 +353,7 @@ test_local_mutate is
       # create ring, called with the env set to an instance of `m`.
       #
       create_ring2(from list T) Ring T =>
-        c := Mut_Ring m T from.head.get
+        c := Mut_Ring m T from.head.or_panic
         from.as_list.tail.for_each (x->c.merge (Mut_Ring m T x))
         c.freeze
         c

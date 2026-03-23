@@ -28,14 +28,14 @@ CLASSES_DIR_LSP              = ./build/classes_lsp
 CLASS_FILES_LSP              = $(CLASSES_DIR_LSP)/dev/flang/lsp/__marker_for_make__
 
 # Must update assets/Manifest.txt as well
-LSP_LSP4J_URL            = https://repo1.maven.org/maven2/org/eclipse/lsp4j/org.eclipse.lsp4j/0.23.1/org.eclipse.lsp4j-0.23.1.jar
-LSP_LSP4J_GENERATOR_URL  = https://repo1.maven.org/maven2/org/eclipse/lsp4j/org.eclipse.lsp4j.generator/0.23.1/org.eclipse.lsp4j.generator-0.23.1.jar
-LSP_LSP4J_JSONRPC_URL    = https://repo1.maven.org/maven2/org/eclipse/lsp4j/org.eclipse.lsp4j.jsonrpc/0.23.1/org.eclipse.lsp4j.jsonrpc-0.23.1.jar
-LSP_GSON_URL             = https://repo1.maven.org/maven2/com/google/code/gson/gson/2.11.0/gson-2.11.0.jar
-JARS_LSP_LSP4J           = $(BUILD_DIR)/jars/org.eclipse.lsp4j-0.23.1.jar
-JARS_LSP_LSP4J_GENERATOR = $(BUILD_DIR)/jars/org.eclipse.lsp4j.generator-0.23.1.jar
-JARS_LSP_LSP4J_JSONRPC   = $(BUILD_DIR)/jars/org.eclipse.lsp4j.jsonrpc-0.23.1.jar
-JARS_LSP_GSON            = $(BUILD_DIR)/jars/gson-2.11.0.jar
+LSP_LSP4J_URL            = https://repo1.maven.org/maven2/org/eclipse/lsp4j/org.eclipse.lsp4j/1.0.0/org.eclipse.lsp4j-1.0.0.jar
+LSP_LSP4J_GENERATOR_URL  = https://repo1.maven.org/maven2/org/eclipse/lsp4j/org.eclipse.lsp4j.generator/1.0.0/org.eclipse.lsp4j.generator-1.0.0.jar
+LSP_LSP4J_JSONRPC_URL    = https://repo1.maven.org/maven2/org/eclipse/lsp4j/org.eclipse.lsp4j.jsonrpc/1.0.0/org.eclipse.lsp4j.jsonrpc-1.0.0.jar
+LSP_GSON_URL             = https://repo1.maven.org/maven2/com/google/code/gson/gson/2.13.2/gson-2.13.2.jar
+JARS_LSP_LSP4J           = $(BUILD_DIR)/jars/org.eclipse.lsp4j-1.0.0.jar
+JARS_LSP_LSP4J_GENERATOR = $(BUILD_DIR)/jars/org.eclipse.lsp4j.generator-1.0.0.jar
+JARS_LSP_LSP4J_JSONRPC   = $(BUILD_DIR)/jars/org.eclipse.lsp4j.jsonrpc-1.0.0.jar
+JARS_LSP_GSON            = $(BUILD_DIR)/jars/gson-2.13.2.jar
 
 LSP_CP = $(CLASSES_DIR):$(CLASSES_DIR_LSP):$(JARS_LSP_LSP4J):$(JARS_LSP_LSP4J_GENERATOR):$(JARS_LSP_LSP4J_JSONRPC):$(JARS_LSP_GSON)
 
@@ -65,10 +65,10 @@ $(JARS_LSP_GSON):
 
 
 $(BUILD_DIR)/jars/lsp.sha256: $(JARS_LSP_LSP4J) $(JARS_LSP_LSP4J_GENERATOR) $(JARS_LSP_LSP4J_JSONRPC) $(JARS_LSP_GSON)
-	echo "b16bbc6232a3946e03d537bb9be74e18489dbc6a8b8c5ab6cb7980854df8440f $(BUILD_DIR)/jars/org.eclipse.lsp4j-0.23.1.jar" > $(BUILD_DIR)/jars/lsp.sha256
-	echo "1adaeb34550ebec21636a45afe76ff8b60188a056966feb3c7e562450ba911be $(BUILD_DIR)/jars/org.eclipse.lsp4j.generator-0.23.1.jar" >> $(BUILD_DIR)/jars/lsp.sha256
-	echo "4e1aa77474de1791d96dc55932fb46efdf53233548f38f62ba7376f8b0bc6650 $(BUILD_DIR)/jars/org.eclipse.lsp4j.jsonrpc-0.23.1.jar" >> $(BUILD_DIR)/jars/lsp.sha256
-	echo "57928d6e5a6edeb2abd3770a8f95ba44dce45f3b23b7a9dc2b309c581552a78b $(BUILD_DIR)/jars/gson-2.11.0.jar" >> $(BUILD_DIR)/jars/lsp.sha256
+	echo "ccd78893facc6bfcc359d56cba05d3d5b85eb41e4c40d4b4215ca45db5f416d9 $(BUILD_DIR)/jars/org.eclipse.lsp4j-1.0.0.jar" > $(BUILD_DIR)/jars/lsp.sha256
+	echo "30cc6849e75eb92ec779593e6f80fb28650de2af135c879501472c2f50724a9c $(BUILD_DIR)/jars/org.eclipse.lsp4j.generator-1.0.0.jar" >> $(BUILD_DIR)/jars/lsp.sha256
+	echo "9647feb0524bf763c878e12ab878a684102b81cccb3f77feecbec709d54f9bbb $(BUILD_DIR)/jars/org.eclipse.lsp4j.jsonrpc-1.0.0.jar" >> $(BUILD_DIR)/jars/lsp.sha256
+	echo "dd0ce1b55a3ed2080cb70f9c655850cda86c206862310009dcb5e5c95265a5e0 $(BUILD_DIR)/jars/gson-2.13.2.jar" >> $(BUILD_DIR)/jars/lsp.sha256
 	sha256sum --status -c $(BUILD_DIR)/jars/lsp.sha256
 
 

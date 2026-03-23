@@ -59,7 +59,6 @@ import java.lang.classfile.constantpool.ClassEntry;
 import java.lang.classfile.instruction.*;
 import java.lang.constant.ClassDesc;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -472,7 +471,7 @@ should be avoided as much as possible.
           case Choice  -> jvm._types._choices.createCode(cl);
           case Native  -> jvm.native0(cl);
           case TypeParameter, Abstract, Intrinsic, Field -> {}
-          default -> throw new Error("Unexpected feature kind: " + k);
+          default      -> throw new Error("Unexpected feature kind: " + k);
           }
         ;
       }

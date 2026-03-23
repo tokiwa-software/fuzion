@@ -25,5 +25,6 @@
 # due to scoping not being implemented properly.
 reg_issue2365 is
 
-  for _ := for j in 0.. else _ := j
+  for
+    _ := for j in 0.. else _ := j
   do

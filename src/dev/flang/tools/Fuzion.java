@@ -26,19 +26,14 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.tools;
 
-import java.io.ByteArrayInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
 import java.nio.charset.StandardCharsets;
-
-import java.nio.channels.Channels;
-
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.TreeMap;
 
@@ -460,20 +455,8 @@ public class Fuzion extends Tool
          */
         if (!Errors.any())
           {
-            var data = fe.sourceModule().data();
-            if (data != null)
-              {
-                try (var os = Files.newOutputStream(f._saveMod))
-                  {
-                    Channels.newChannel(os).write(data);
-                    say(" + " + f._saveMod + " in " + (System.currentTimeMillis() - _timerStart) + "ms");
-                  }
-                catch (IOException io)
-                  {
-                    Errors.error("-saveModule: I/O error when writing module file",
-                                 "While trying to write file '"+ f._saveMod + "' received '" + io + "'");
-                  }
-              }
+            fe.sourceModule().writeToFile(f._saveMod);
+            say(" + " + f._saveMod + " in " + (System.currentTimeMillis() - _timerStart) + "ms");
           }
       }
     },
@@ -1238,7 +1221,9 @@ public class Fuzion extends Tool
               }
             try
               {
-                var fuir = new LibraryFuir(Files.readAllBytes(fuirFile));
+                var fuir = new LibraryFuir(
+                  Files.readAllBytes(fuirFile),
+                  FrontEnd.loadMainModule(options));
                 timer("loadFUIR");
                 _backend.process(options, fuir);
                 timer("be");
@@ -1278,28 +1263,7 @@ public class Fuzion extends Tool
    */
   private Path fuirFile(FrontEndOptions options)
   {
-    long hashCode = -1;
-    try
-      {
-        var bytes = _readStdin
-          ? System.in.readAllBytes()
-          : options.inputFile() != null
-            ? Files.readAllBytes(options.inputFile())
-            : _executeCode;
-
-        hashCode = Arrays.hashCode(bytes) + Integer.MAX_VALUE;
-
-        if (_readStdin)
-          {
-            System.setIn(new ByteArrayInputStream(bytes));
-          }
-      }
-    catch (IOException e)
-      {
-        Errors.fatal("I/O Error: " + e.getMessage());
-      }
-
-    return Path.of(hashCode + ".fuir");
+    return Path.of(options.serializationHash() + ".fuir");
   }
 
 

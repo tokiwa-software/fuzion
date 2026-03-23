@@ -9,8 +9,8 @@ fuzion.runtime.contract_fault.cause#1 at {base.fum}/eff/fallible.fz:35
 fuzion.type.runtime.type.pre_fault.type.install_default.λ.call#1 at {base.fum}/fuzion/runtime/pre_fault.fz:39
 fuzion.runtime.pre_fault.cause#1 at {base.fum}/eff/fallible.fz:35
 fuzion.runtime.precondition_fault#1 at {base.fum}/fuzion/runtime/pre_fault.fz:58
-(array i32).slice#2.array_slice.pre slice at {base.fum}/Sequence.fz:336
-(array i32).slice#2.array_slice.precall slice at {base.fum}/Sequence.fz:333
+((array i32).slice#3 i32).array_slice.pre slice i32 at {base.fum}/Sequence.fz:335
+((array i32).slice#3 i32).array_slice.precall slice i32 at {base.fum}/Sequence.fz:333
 reg_issue6074 at --CURDIR--/reg_issue6074.fz:26
 
 *** fatal errors encountered, stopping.

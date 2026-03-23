@@ -38,8 +38,11 @@ c: mod
 	($(FUZION) -modules=mod -moduleDirs=mod -c -o=testbin $(NAME) && ./testbin) 2>err.txt || (export RC=$$? && cat err.txt && exit $$RC)
 
 .PHONY: mod
-mod:
+mod: clean
 	mkdir -p mod
 	$(FUZION) -sourceDirs=mod -saveModule=mod/mod.fum
+
+clean:
+	rm -rf mod/mod.fum *~ */*~ */*/*~ *.fum *.fuir
 
 effect:

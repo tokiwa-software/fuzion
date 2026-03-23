@@ -44,8 +44,8 @@ is
     # extract four sextets from 24 bits (of an u32)
     enc24(n u32) =>
       array u8 4 i->
-        idx := ((n >> (18-i*6).as_u32) & 63).as_i32
-        alphabet[idx]
+        j := ((n >> (18-i*6).as_u32) & 63).as_i32
+        alphabet[j]
 
     for
       res Sequence u8 := [], next # the encoded input data
@@ -158,14 +158,14 @@ is
       is_err := (sextets ∃ .is_error)
 
       # convert sextets in 24 bit number, break up in three bytes
-      block := if is_err then 0 else sextets[0].val << 18 | sextets[1].val << 12 | sextets[2].val << 6 | sextets[3].val
+      block := if is_err then 0 else sextets[0].or_panic << 18 | sextets[1].or_panic << 12 | sextets[2].or_panic << 6 | sextets[3].or_panic
       b0 := (block >> 16).low8bits
       b1 := (block >> 8).low8bits
       b2 := block.low8bits
 
     else
       if last_err
-        (sxt_last.filter (e -> e.is_error)).first.get.err
+        (sxt_last.filter (e -> e.is_error)).first.or_panic.err
       else
         # remove zero bytes caused by padding
         outcome (res.take res.count-pad_size).as_array

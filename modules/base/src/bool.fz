@@ -40,7 +40,11 @@ public bool : choice false_ true_, property.equatable, property.hashable, java_p
 
   # not
   public prefix ! bool =>
-    if bool.this then false else true
+    if bool.this
+      false
+    else
+      true
+
 
   # or with lazy evaluation
   #
@@ -50,6 +54,7 @@ public bool : choice false_ true_, property.equatable, property.hashable, java_p
     else
       other
 
+
   # and with lazy evaluation
   #
   public infix && (other Lazy bool) bool =>
@@ -58,26 +63,24 @@ public bool : choice false_ true_, property.equatable, property.hashable, java_p
     else
       false
 
-  # or
+
+  # or with eager evaluation
+  #
   public infix |   (other bool) bool =>
     if bool.this
       true
     else
       other
 
-  # and
+
+  # and with eager evaluation
+  #
   public infix &   (other bool) bool =>
     if bool.this
       other
     else
       false
 
-  # equivalence
-  #
-  # note that we do not use '==' for this to avoid confusion since
-  # a == b == c for booleans might not behave as expected
-  # ('true <=> false <=> false' evaluates to 'true')
-  public infix <=> (other bool) bool => if bool.this other else !other
 
   # equality check implementation for inherited property.equatable
   #
@@ -94,11 +97,24 @@ public bool : choice false_ true_, property.equatable, property.hashable, java_p
   #
   #   (T.equality a b) : (T.hash_code a = T.hash_code b)
   #
-  public fixed redef type.hash_code(a bool) u64 => if a then 0 else 1
+  public fixed redef type.hash_code(a bool) u64 =>
+    if a
+      0
+    else
+      1
 
 
-  # xor
-  public infix ^   (other bool) bool => if bool.this (!other) else  other
+  # xor, either or
+  #
+  # true if exatly one of the two
+  # bools is true
+  #
+  public infix ^   (other bool) bool =>
+    if bool.this
+      !other
+    else
+      other
+
 
   # implies
   #
@@ -108,9 +124,14 @@ public bool : choice false_ true_, property.equatable, property.hashable, java_p
     else
       true
 
+
   # ternary ? : -- NYI: This will be replaced by a more powerful match syntax
   #
-  public ternary ? : (T type, a, b Lazy T) T => if bool.this a else b
+  public ternary ? : (T type, a, b Lazy T) T =>
+    if bool.this
+      a
+    else
+      b
 
 
   # create an option from a lazily evaluated value depending on this bool
@@ -119,11 +140,19 @@ public bool : choice false_ true_, property.equatable, property.hashable, java_p
                    # iff bool.this holds.
                    v Lazy T) option T
   =>
-    if bool.this then v else nil
+    if bool.this
+      v
+    else
+      nil
 
 
-  # human readable string
-  public redef as_string String => if bool.this "true" else "false"
+  # as human readable string
+  #
+  public redef as_string String =>
+    if bool.this
+      "true"
+    else
+      "false"
 
 
   # monoid of bool with infix & operation.  Will be true iff all elements are

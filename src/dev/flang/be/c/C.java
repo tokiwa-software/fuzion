@@ -778,7 +778,7 @@ public class C extends ANY
           "-Wmissing-include-dirs"
           );
 
-        if (!_options._debugBuild)
+        if (!_options._debugBuild && !_options.fuzionDebug())
           {
             command.addAll("-O3");
           }
@@ -846,6 +846,10 @@ public class C extends ANY
     // https://fedoraproject.org/wiki/Changes/fno-omit-frame-pointer
     // https://lobste.rs/s/avrfxz/ubuntu_24_04_lts_will_enable_frame
     command.addAll("-fno-omit-frame-pointer", "-mno-omit-leaf-frame-pointer");
+
+    // select due to: dpkg-buildflags --get CFLAGS
+    // NYI: UNDER DEVELOPMENT: does not work for macOS/windows/arm64 without adjustments
+    // command.addAll("-fstack-protector-strong", "-fstack-clash-protection", "-fcf-protection");
 
     command.add("-lm");
 
@@ -1084,17 +1088,22 @@ public class C extends ANY
 
     cf.print(threadStartRoutine(true));
 
-    cf.println("int main(int argc, char **argv) { ");
+    cf.println("\nvoid __main__()\n{ ");
+    cf.indent();
+    cf.print(CStmnt.seq(
+      initializeEffectsEnvironment(),
+      CExpr.call(_names.function(_fuir.mainClazz()), new List<>())));
+    cf.unindent();
+    cf.println("}");
 
-    cf.print(initializeEffectsEnvironment());
 
-    var cl = _fuir.mainClazz();
+    cf.println("\nint main(int argc, char **argv)\n{ ");
+    cf.indent();
 
     cf.print(CStmnt.seq(CNames.GLOBAL_ARGC.assign(new CIdent("argc")),
                         CNames.GLOBAL_ARGV.assign(new CIdent("argv")),
-                        CExpr.call(_names.function(cl), new List<>())
-                        ));
-
+                        CExpr.call("fzE_thread_join", new List<>(CExpr.call("fzE_thread_create", new List<>(new CIdent("__main__"), CNames.NULL))))));
+    cf.unindent();
     cf.println("}");
   }
 

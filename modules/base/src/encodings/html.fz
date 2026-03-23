@@ -65,6 +65,12 @@ public html is
       .val
 
 
+  # html encode str, but not its spaces
+  #
+  public encode(str String) String =>
+    encode str false
+
+
   # html encode str
   #
   # mapping:
@@ -79,24 +85,19 @@ public html is
   #
   public encode(str String, replace_spaces bool) String
   =>
+    repl(m container.Map u8 String) =>
+      str
+        .utf8
+        .flat_map b->
+          m[b]
+            .bind (.utf8)
+            .or_else [b]
+        |> String.type.from
+
     if replace_spaces
-      str
-        .utf8
-        .flat_map b->
-          map_of_escapings_full[b]
-            .bind (.utf8)
-            .or_else [b]
-        |> String.type.from
+      repl map_of_escapings_full
     else
-      str
-        .utf8
-        .flat_map b->
-          map_of_escapings[b]
-            .bind (.utf8)
-            .or_else [b]
-        |> String.type.from
-
-
+      repl map_of_escapings
 
 
   public decode(str String) String =>

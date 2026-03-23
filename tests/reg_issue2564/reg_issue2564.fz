@@ -23,7 +23,7 @@
 
 reg_issue2564 =>
 
-  o := (mutate.array Any).type.empty mutate
+  o := mutate.array Any .empty
 
   do_it1(n i32) =>
     public redef as_string String => "do_it1 $n"

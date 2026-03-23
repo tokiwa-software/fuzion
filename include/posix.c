@@ -224,6 +224,8 @@ int fzE_socket(int family, int type, int protocol){
   if (sockfd != -1)
   {
     fcntl(sockfd, F_SETFD, FD_CLOEXEC);
+    // NYI: UNDER DEVELOPMENT: we need fzE_setsocketopt eventually
+    setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int));
   }
 
   fzE_unlock();
@@ -730,7 +732,17 @@ void * fzE_file_open(char * file_name, int64_t * open_results, file_open_mode mo
   // make sure no fork is done while we open file
   fzE_lock();
 
-  FILE * fp = fopen(file_name, mode==FZ_FILE_MODE_READ ? "rb" : "a+b");
+  const char * m = "rb";
+  if (mode == FZ_FILE_MODE_WRITE)
+    {
+      m = "w+b";
+    }
+  else if (mode == FZ_FILE_MODE_APPEND)
+    {
+      m = "a+b";
+    }
+
+  FILE * fp = fopen(file_name, m);
   if (fp!=NULL)
   {
     fcntl(fileno(fp), F_SETFD, FD_CLOEXEC);
@@ -802,11 +814,9 @@ int32_t fzE_file_read(void * file, void * buf, int32_t size)
 
   size_t result = fread(buf, 1, size, (FILE*)file);
 
-  return result > 0
+  return result >= 0
     ? result
-    : result == 0
-    ? -1  // EOF
-    : -2; // ERROR
+    : -1; // ERROR
 }
 
 
