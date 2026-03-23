@@ -1246,10 +1246,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                  * by applying the actual type parameters passed to {@code THIS_TYPE}.
                  */
                 var this_type = g2.get(0);
-                g3 = g2.map(x -> x == this_type                     ||        // leave first type parameter unchanged
-                                      this_type.isGenericArgument()    ? x    // no actuals to apply in a generic arg
-                                                                       : x.applyTypePars(this_type)
-                                                                          .replace_this_type_by_actual_outer(this_type, Context.NONE));
+                g3 = g2.map(x -> x == this_type                ||        // leave first type parameter unchanged
+                                 this_type.isGenericArgument()    ? x    // no actuals to apply in a generic arg
+                                                                  : x.applyTypePars(this_type)
+                                                                     .replace_this_type_by_actual_outer(this_type, Context.NONE));
               }
 
             var o1 = outer();
@@ -1320,31 +1320,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   }
 
 
-  private AbstractType handDownXXX(AbstractType t)
-  {
-    if (!t.isGenericArgument())
-      {
-        var f = feature();
-        var o = t.feature();
-        while (o != null && !f.inheritsFrom(o))
-          {
-            o = o.outer();
-          }
-        if (o != null)
-          {
-            t = o.handDown(new List<>(t),f)
-              .getFirstOrElse(Types.t_ERROR);
-          }
-        t = t.applyTypeParsLocally(f, actualGenerics(), NO_SELECT);
-        if (outer() != null)
-          {
-            t = outer().handDownXXX(t);
-          }
-      }
-    return t;
-  }
-
-
   /**
    * Use this type as a target type for a call using type {@code t} and determine the
    * actual type corresponding to {@code t}. For this, type parameters used in {@code t} are
@@ -1360,16 +1335,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public AbstractType actualType(AbstractType t)
   {
     return actualType(t, Context.NONE);
-  }
-  public AbstractType handDownAndApplyTypePars(AbstractType t)
-  {
-    if (PRECONDITIONS) require
-      (!isGenericArgument(),
-       !t.isOpenGeneric());
-
-    return handDownXXX(t)
-      .applyTypePars(this)
-      .replace_this_type_by_actual_outer(this, Context.NONE);
   }
 
 
