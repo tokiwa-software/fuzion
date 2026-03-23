@@ -477,8 +477,8 @@ class Clazz extends ANY implements Comparable<Clazz>
     else
       {
         var st1 = f.selfType();
-        var st2 = f.handDown(st1, _type);
-        var st3 = this._type.actualType(st2).asRef();
+        var st2 = f.handDownAndApply(st1, _type);
+        var st3 = st2.asRef();
         return normalize2(st3);
       }
   }
@@ -554,11 +554,10 @@ class Clazz extends ANY implements Comparable<Clazz>
       {
         var pt = p.type();
         var t1 = isRef() && !pt.isVoid() ? pt.asRef() : pt.asValue();
-        var t2 = feature().handDown(t1, _type);
+        var t2 = feature().handDownAndApply(t1, _type);
         var t3 = handDown(t2, NO_SELECT, (_,_)->{}, new List<>());
-        var t4 = _type.actualType(t3);
-        var t5 = replaceThisType(t4, new List<>() /* NYI: correct? */);
-        var pc = _fuir.newClazz(t5);
+        var t4 = replaceThisType(t3, new List<>() /* NYI: correct? */);
+        var pc = _fuir.newClazz(t4);
         if (CHECKS) check
           (Errors.any() || pc.isVoidType() || isRef() == pc.isRef());
         result.add(pc);

@@ -1224,8 +1224,8 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * number might have changed due to open generics.  Result may be
    * HAND_DOWN_FAILED in case of previous errors.
    */
-  public List<AbstractType> handDown(List<AbstractType> l,
-                                     AbstractType heirType)
+  public List<AbstractType> handDown1(List<AbstractType> l,
+                                      AbstractType heirType)
   {
     var result = l;
     heirType = heirType.selfOrConstraint(Context.NONE);
@@ -1237,9 +1237,18 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     heirType = heirType.isThisType() ? null : heirType.outer();
     if (heirType != null && outer() != null)
       {
-        result = outer().handDown(result, heirType);
+        result = outer().handDown1(result, heirType);
       }
     return result;
+  }
+  public List<AbstractType> handDownAndApply(List<AbstractType> l,
+                                             AbstractType heirType)
+  {
+    var l1 = handDown1(l, heirType);
+    var l2 = !heirType.isGenericArgument() && !heirType.isThisType()
+      ? l1.flatMap(t -> t.applyTypeParsMaybeOpen(heirType.feature(), heirType.generics()))
+      : l1;
+    return l2;
   }
 
 
@@ -1254,13 +1263,24 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * @return the type t as seen this by heirType.  Result may be Types.t_ERROR
    * in case of previous errors.
    */
-  public AbstractType handDown(AbstractType t,
-                               AbstractType heirType)
+  public AbstractType handDown1(AbstractType t,
+                                AbstractType heirType)
   {
     if (PRECONDITIONS) require
       (Errors.any() || !t.isOpenGeneric());
 
-    return handDown(new List<>(t), heirType)
+    return handDown1(new List<>(t), heirType)
+      .getFirstOrElse(Types.t_ERROR); // Tricky: Since HAND_DOWN_FAILED is
+                                      // empty, this will result in
+                                      // Types.t_ERROR!
+  }
+  public AbstractType handDownAndApply(AbstractType t,
+                                       AbstractType heirType)
+  {
+    if (PRECONDITIONS) require
+      (Errors.any() || !t.isOpenGeneric());
+
+    return handDownAndApply(new List<>(t), heirType)
       .getFirstOrElse(Types.t_ERROR); // Tricky: Since HAND_DOWN_FAILED is
                                       // empty, this will result in
                                       // Types.t_ERROR!

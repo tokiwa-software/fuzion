@@ -1517,11 +1517,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     if (PRECONDITIONS) require
       (isLambdaTarget(res));
 
-    var cl = res._module.findLambdaTarget(feature());
-    return cl
+    return res._module
+      .findLambdaTarget(feature())
       .outer()
-      .handDown(new List<>(t), feature())
-      .flatMap(at -> at.applyTypeParsMaybeOpen(feature(), generics()));
+      .handDownAndApply(new List<>(t), this);
   }
 
 
@@ -1538,8 +1537,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     if (PRECONDITIONS) require
       (isLambdaTarget(res));
 
-    var cl = res._module.findLambdaTarget(feature());
-    return cl.valueArguments()
+    return res._module
+      .findLambdaTarget(feature())
+      .valueArguments()
       .flatMap2(a -> lambdaTargetHandDownType(res, a.resultTypeIfPresentUrgent(res, true)));
   }
 
