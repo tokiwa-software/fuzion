@@ -1258,7 +1258,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
                                AbstractType heirType)
   {
     if (PRECONDITIONS) require
-      (!Errors.any() || !t.isOpenGeneric());
+      (Errors.any() || !t.isOpenGeneric());
 
     return handDown(new List<>(t), heirType)
       .getFirstOrElse(Types.t_ERROR); // Tricky: Since HAND_DOWN_FAILED is
