@@ -812,7 +812,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
          return
            (tp != null && tp.isOpenTypeParameter())
            ? tp.replaceOpen(actualGenerics)
-           : new List<>(t.applyTypeParsLocally(f, actualGenerics, NO_SELECT));
+           : new List<>(t.applyTypePars(f, actualGenerics, NO_SELECT));
        });
   }
 
@@ -1032,7 +1032,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       }
     else
       {
-        result = applyTypeParsLocally(f, actualGenerics, NO_SELECT);
+        result = applyTypePars(f, actualGenerics, NO_SELECT);
 
         if (!actualGenerics.contains(Types.t_UNDEFINED))
           {
@@ -1069,9 +1069,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * replace t by the corresponding actual generic parameter from the list
    * provided.
    *
-   * Unlike applyTypePars(), this does not traverse outer types or inheritance
-   * calls.
-   *
    * @param target the target whose actuals type parameters should be applied to
    * this.
    *
@@ -1082,18 +1079,13 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * otherwise the type that results by replacing all formal generic parameters
    * of this in t by the corresponding type from actualGenerics.
    */
-  public AbstractType applyTypeParsLocally(AbstractType target, int select)
+  public AbstractType applyTypePars(AbstractType target, int select)
   {
     if (PRECONDITIONS) require
       (target != null,
-       Errors.any() || !isOpenGeneric() || (select >= 0));
+       Errors.any() || !isOpenGeneric() || select >= 0);
 
-    var result = this;
-    if (dependsOnGenerics())
-      {
-        result = result.applyTypeParsLocally(target.feature(), target.generics(), select);
-      }
-    return result;
+    return applyTypePars(target.feature(), target.generics(), select);
   }
 
 
@@ -1101,9 +1093,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * Check if type t depends on a formal generic parameter of this. If so,
    * replace t by the corresponding actual generic parameter from the list
    * provided.
-   *
-   * Unlike applyTypePars(), this does not traverse outer types or inheritance
-   * calls.
    *
    * @param f the feature actualGenerics belong to.
    *
@@ -1116,11 +1105,11 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * otherwise the type that results by replacing all formal generic parameters
    * of this in t by the corresponding type from actualGenerics.
    */
-  public AbstractType applyTypeParsLocally(AbstractFeature f,
-                                           List<AbstractType> actualGenerics,
-                                           int select)
+  public AbstractType applyTypePars(AbstractFeature f,
+                                    List<AbstractType> actualGenerics,
+                                    int select)
   {
-    return applyTypeParsLocally(f, actualGenerics, select, null);
+    return applyTypePars(f, actualGenerics, select, null);
   }
 
 
@@ -1159,9 +1148,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * replace t by the corresponding actual generic parameter from the list
    * provided.
    *
-   * Unlike applyTypePars(), this does not traverse outer types or inheritance
-   * calls.
-   *
    * @param f the feature actualGenerics belong to.
    *
    * @param actualGenerics the actual generic parameters
@@ -1178,16 +1164,16 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * otherwise the type that results by replacing all formal generic parameters
    * of this in t by the corresponding type from actualGenerics.
    */
-  private AbstractType applyTypeParsLocally(AbstractFeature f,
-                                            List<AbstractType> actualGenerics,
-                                            int select,
-                                            AbstractFeature forOuter)
+  private AbstractType applyTypePars(AbstractFeature f,
+                                     List<AbstractType> actualGenerics,
+                                     int select,
+                                     AbstractFeature forOuter)
   {
     if (PRECONDITIONS) require
       (f != null,
        actualGenerics != null);
 
-    return switch(kind())
+    return switch (kind())
       {
         case GenericArgument ->
           {
@@ -1253,7 +1239,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
               }
 
             var o1 = outer();
-            var o2 = o1 != null ? o1.applyTypeParsLocally(f, actualGenerics, select, feature().outer())
+            var o2 = o1 != null ? o1.applyTypePars(f, actualGenerics, select, feature().outer())
                                 : null;
 
             if (g3 != g1 || o2 != o1)

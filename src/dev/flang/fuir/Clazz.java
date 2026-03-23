@@ -1946,7 +1946,7 @@ class Clazz extends ANY implements Comparable<Clazz>
           {
             t = AbstractFeature.handDownThroughInheritsCalls(t, select, inh);
           }
-        t = t.applyTypeParsLocally(child._type, select);
+        t = t.applyTypePars(child._type, select);
         t = t.replace_this_type_by_actual_outer_locally(child._type, foundRef);
         child = child._outer;
         parent = childf.outer();

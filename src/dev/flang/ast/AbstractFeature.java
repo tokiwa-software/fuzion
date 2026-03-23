@@ -1327,8 +1327,8 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
     for (AbstractCall c : inh)
       {
-        t = t.applyTypeParsLocally(c.calledFeature(),
-                                   c.actualTypeParameters(), select);
+        t = t.applyTypePars(c.calledFeature(),
+                            c.actualTypeParameters(), select);
       }
     return t;
   }
