@@ -835,6 +835,11 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     return isOpenGeneric() ? genericArgument().replaceOpen(actualTypes)
                            : new List<>(applyTypePars(f, actualTypes));
   }
+  public List<AbstractType> applyTypeParsMaybeOpen(AbstractType t)
+  {
+    return t.isPlainType() ? applyTypeParsMaybeOpen(t.feature(), t.generics())
+                           : new List<>(t);
+  }
 
 
   /**

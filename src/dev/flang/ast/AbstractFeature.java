@@ -1244,11 +1244,8 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public List<AbstractType> handDownAndApply(List<AbstractType> l,
                                              AbstractType heirType)
   {
-    var l1 = handDown1(l, heirType);
-    var l2 = !heirType.isGenericArgument() && !heirType.isThisType()
-      ? l1.flatMap(t -> t.applyTypeParsMaybeOpen(heirType.feature(), heirType.generics()))
-      : l1;
-    return l2;
+    return handDown1(l, heirType)
+      .flatMap(x -> x.applyTypeParsMaybeOpen(heirType));
   }
 
 
