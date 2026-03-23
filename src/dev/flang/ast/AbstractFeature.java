@@ -1204,6 +1204,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     return result;
   }
 
+
   /**
    * Determine the actual types of an array of types in this feature after it
    * was inherited by heirType.  The types may change on the way due to formal generics being
@@ -1920,8 +1921,8 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * If this is a Generic in a type feature, return the original generic for the
-   * type feature origin.
+   * If this is a type parameter in a cotype, return the original type parameter
+   * for the cotype's origin.
    *
    * e.g., for
    *
@@ -1943,6 +1944,28 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     if (!isThisTypeInCotype() && o.isCotype())
       {
         result = o.cotypeOrigin().typeArguments().get(typeParameterIndex()-1);
+      }
+    return result;
+  }
+
+
+  /**
+   * If this is a type parameter in a feature that has a cotype, return the
+   * correspnding type parameter in the cotype.
+   *
+   * @return the cotype version of {@code this} if a cotype of {@code outer()}
+   * exists, {@code this} otherwise.
+   */
+  AbstractFeature cotypeGeneric()
+  {
+    if (PRECONDITIONS) require
+      (isTypeParameter());
+
+    var result = this;
+    var o = outer();
+    if (!o.isCotype() && o.hasCotype())
+      {
+        result = o.cotype().typeArguments().get(typeParameterIndex()+1);
       }
     return result;
   }

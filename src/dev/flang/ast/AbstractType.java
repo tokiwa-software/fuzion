@@ -1030,21 +1030,20 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         result = _appliedTypePars2Cache;
       }
-    else if (actualGenerics.contains(Types.t_UNDEFINED))
-      {
-        result = applyTypeParsLocally(f, actualGenerics, NO_SELECT);
-      }
     else
       {
         result = applyTypeParsLocally(f, actualGenerics, NO_SELECT);
 
-        if (CHECKS) check
-          (this == Types.t_UNDEFINED || result != Types.t_UNDEFINED);
+        if (!actualGenerics.contains(Types.t_UNDEFINED))
+          {
+            if (CHECKS) check
+              (this == Types.t_UNDEFINED || result != Types.t_UNDEFINED);
 
-        _appliedTypePars2CachedFor1 = f;
-        _appliedTypePars2CachedFor2 = actualGenerics;
-        actualGenerics.freeze();
-        _appliedTypePars2Cache = result;
+            _appliedTypePars2CachedFor1 = f;
+            _appliedTypePars2CachedFor2 = actualGenerics;
+            actualGenerics.freeze();
+            _appliedTypePars2Cache = result;
+          }
       }
 
     if (POSTCONDITIONS) ensure
@@ -1062,24 +1061,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   boolean isCotypeType()
   {
     return !isGenericArgument() && feature().isCotype();
-  }
-
-
-  private AbstractType OHDapplyTypePars(AbstractType target)
-  {
-    var result = this;
-    while (result.dependsOnGenerics() && target != null)
-      {
-        target = target.selfOrConstraint(Context.NONE);
-        for (var i : target.feature().inherits())
-          {
-            result = result
-              .applyTypePars(i.calledFeature(),
-                             i.actualTypeParameters());
-          }
-        target = target.outer();
-      }
-    return result;
   }
 
 
@@ -1161,7 +1142,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         res = genericArgument();
         if (res.outer().generics() != f.generics())  // if g is not formal generic of f, and g is a type feature generic, try g's origin:
           {
-            res = res.cotypeOriginGeneric();
+             res = f.isCotype() ? res.cotypeGeneric()
+                                : res.cotypeOriginGeneric();
           }
         if (res.outer().generics() != f.generics()) // if g is a formal generic defined by f, then replace it by the actual generic:
           {
@@ -1266,8 +1248,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                 var this_type = g2.get(0);
                 g3 = g2.map(x -> x == this_type                     ||        // leave first type parameter unchanged
                                       this_type.isGenericArgument()    ? x    // no actuals to apply in a generic arg
-                                                                       : x.OHDapplyTypePars(this_type)  // NYI: needed for reg_issue1236!
-                                                                          .applyTypePars(this_type)
+                                                                       : x.applyTypePars(this_type)
                                                                           .replace_this_type_by_actual_outer(this_type, Context.NONE));
               }
 
