@@ -25,7 +25,6 @@
 
 # fuzion.sys.fileio -- fileio presents basic features to handle File I/O operations
 #
-
 module fileio is
 
   # reads n bytes of a file opened as fd

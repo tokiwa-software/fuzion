@@ -21,14 +21,17 @@
 #
 # -----------------------------------------------------------------------
 
+# a concrete implementation of a Read_Handler
+# implements how to do a blocking read from an I/O device.
+#
 public Read_Handler ref is
 
   # read up to count bytes
   #
   # returns either an array of the bytes read, end_of_file or an error
   #
-  public read(count i32) choice (Sequence u8) io.end_of_file error
-    post debug: (result ? s Sequence => !s.is_empty && s.count<=count | * => true)
+  public read(max_count i32) choice (Sequence u8) io.end_of_file error
+    post debug: (result ? s Sequence => !s.is_empty && s.count<=max_count | * => true)
          pedantic: (result ? s Sequence => s.is_array_backed | * => true)
   => abstract
 
@@ -49,13 +52,13 @@ public Read_Handler ref is
       #
       pos := LM.env.new 0
 
-      public redef read(count i32) choice (Sequence u8) io.end_of_file error =>
+      public redef read(max_count i32) choice (Sequence u8) io.end_of_file error =>
         p := pos.get
         if p >= arr.count
           io.end_of_file
         else
-          pos <- p + count
-          arr.drop p .take count
+          pos <- p + max_count
+          arr.drop p .take max_count
 
 
   # create a Read_Handler from data
