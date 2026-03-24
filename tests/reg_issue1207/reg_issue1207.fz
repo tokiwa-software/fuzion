@@ -21,6 +21,32 @@
 #
 # -----------------------------------------------------------------------
 
+# front end mixed up inherited and outer type parameters and causes Incompatible types error
+
+inherit_outer is
+
+  eimer(T type) is
+
+    v T => abstract
+
+    map(B type, f T -> B) : eimer B is
+      val B => f eimer.this.v
+
+  bucket(U type, redef v U) : eimer U is
+
+  hellos => bucket "hello"
+  fives => hellos.map s->s.byte_length
+
+  say hellos.v
+  # say fives.v  (v not implemented by map)
+
+
+inherit_outer_small is
+  eimer(T type) is
+    v T => abstract
+    map(B type, f T->B) B : eimer B =>
+      f eimer.this.v
+
 reg_issue1207 =>
   eimer(T type) is
     v T => abstract
@@ -32,3 +58,8 @@ reg_issue1207 =>
 
   say mein_eimer.v
   say (mein_eimer.map (id))
+
+
+_ := inherit_outer
+_ := inherit_outer_small
+reg_issue1207
