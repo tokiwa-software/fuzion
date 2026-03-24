@@ -807,7 +807,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       (t ->
        { // This is eventually called from `applyTypeParsMaybeOpen`, so we
          // cannot replace the following code by a call to
-         // `applyTypeParsMaybeOpen.
+         // `applyTypeParsMaybeOpen`.
          var tp = t.matchingTypeParameter(f);
          return
            (tp != null && tp.isOpenTypeParameter())

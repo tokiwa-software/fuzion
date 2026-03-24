@@ -1179,9 +1179,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    *
    * @param heir a feature that inherits from outer()
    *
-   * @return the types from the l as seen this within heir.  Their number might
-   * have changed due to open generics.  Result may be HAND_DOWN_FAILED in case
-   * of previous errors.
+   * @return the types from the list l that come from this as seen within heir.
+   * Their number might have changed due to open generics.  Result may be
+   * HAND_DOWN_FAILED in case of previous errors.
    */
   public List<AbstractType> handDown(List<AbstractType> l,
                                      AbstractFeature heir)  // NYI: This does not distinguish different inheritance chains yet
@@ -2023,7 +2023,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
   /**
    * If this is a type parameter in a feature that has a cotype, return the
-   * correspnding type parameter in the cotype.
+   * corresponding type parameter in the cotype.
    *
    * @return the cotype version of {@code this} if a cotype of {@code outer()}
    * exists, {@code this} otherwise.
