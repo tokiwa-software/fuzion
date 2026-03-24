@@ -28,7 +28,7 @@
 # It allows amortized constant time access to its elements.
 # Furthermore concatting (append/prepend) as well as splitting in logarithmic time.
 #
-# In Fuzion finger trees are used for String concatenation and when concatting finite lists.
+# In Fuzion finger trees are used for String concatenation and when concatenating finite lists.
 #
 # The paper introducing the datastructure:
 # https://www.cs.ox.ac.uk/ralf.hinze/publications/FingerTrees.pdf
