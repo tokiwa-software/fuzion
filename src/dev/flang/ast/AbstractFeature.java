@@ -852,8 +852,10 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   AbstractType rebaseTypeForCotype(AbstractType t)
   {
     for (var i : inherits())
-      { // NYI: CLEANUP: If we do not freeze the type parameters, we run into errors. Apparently,
-        // there is some code that re-uses these without proper freezing/cloning.
+      { // NYI: CLEANUP: If we do not freeze the type parameters, we run into
+        // errors (building base.fum). Apparently, there is some code that
+        // re-uses these without proper freezing/cloning.  A solution would be
+        // to change `List.map` to always clone the original List.
         i.actualTypeParameters().freeze();
       }
     var tl = typeArguments().map2(ta -> (AbstractType) new ParsedType(pos(), ta.featureName().baseName()));
@@ -1224,8 +1226,8 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * number might have changed due to open generics.  Result may be
    * HAND_DOWN_FAILED in case of previous errors.
    */
-  public List<AbstractType> handDown1(List<AbstractType> l,
-                                      AbstractType heirType)
+  List<AbstractType> handDownListToType(List<AbstractType> l,
+                                        AbstractType heirType)
   {
     var result = l;
     heirType = heirType.selfOrConstraint(Context.NONE);
@@ -1237,14 +1239,14 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     heirType = heirType.isThisType() ? null : heirType.outer();
     if (heirType != null && outer() != null)
       {
-        result = outer().handDown1(result, heirType);
+        result = outer().handDownListToType(result, heirType);
       }
     return result;
   }
   public List<AbstractType> handDownAndApply(List<AbstractType> l,
                                              AbstractType heirType)
   {
-    return handDown1(l, heirType)
+    return handDownListToType(l, heirType)
       .flatMap(x -> x.applyTypeParsMaybeOpen(heirType));
   }
 
@@ -1260,13 +1262,13 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * @return the type t as seen this by heirType.  Result may be Types.t_ERROR
    * in case of previous errors.
    */
-  public AbstractType handDown1(AbstractType t,
-                                AbstractType heirType)
+  public AbstractType handDownToType(AbstractType t,
+                                     AbstractType heirType)
   {
     if (PRECONDITIONS) require
       (Errors.any() || !t.isOpenGeneric());
 
-    return handDown1(new List<>(t), heirType)
+    return handDownListToType(new List<>(t), heirType)
       .getFirstOrElse(Types.t_ERROR); // Tricky: Since HAND_DOWN_FAILED is
                                       // empty, this will result in
                                       // Types.t_ERROR!
