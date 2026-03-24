@@ -605,7 +605,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
             for (var p: actual_type.feature().inherits())
               {
                 var pt = actual_type.actualType(p.type(), context).asRef(true);
-                result = isAssignableFrom(pt, context, allowBoxing, allowTagging, assignableTo);
+                result = pt == actual ? YesNo.no : isAssignableFrom(pt, context, allowBoxing, allowTagging, assignableTo);
                 // until result != no
                 if (!result.no()) { break; }
               }
@@ -713,8 +713,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                                           (outer() == null || actual.outer() != null && outer().constraintAssignableFrom(actual.outer()))));
                 for (var p: actual.feature().inherits())
                   {
-                    result |= !p.calledFeature().isChoice() &&
-                      constraintAssignableFrom(context, p.type().applyTypePars(actual));
+                    result |= p.type().applyTypePars(actual)==actual
+                      ? false
+                      : !p.calledFeature().isChoice() && constraintAssignableFrom(context, p.type().applyTypePars(actual));
                   }
               }
           }
