@@ -21,8 +21,9 @@
 #
 # -----------------------------------------------------------------------
 
-# a concrete implementation of a Read_Handler
-# implements how to do a blocking read from an I/O device.
+# An implementation of a Read_Handler
+# needs to implement how to do a blocking
+# read from an I/O device.
 #
 public Read_Handler ref is
 
