@@ -673,6 +673,14 @@ rerecord_effects:
 	for file in tests/*/ ; do if [ "$$(find "$$file" -maxdepth 1 -type f -name "*.effect" -print -quit)" ]; then make record_effect -C build/"$$file"/; fi done
 	rsync -a --include='*/' --include='*.effect' --exclude='*' build/tests/ tests/
 
+.PHONY: rerecord_expected_err
+rerecord_expected_err:
+	for file in tests/*/ ; do if [ "$$(find "$$file" -maxdepth 1 -type f -name "*.expected_err" -size +0 -print -quit)" ]; then make record -C build/"$$file"/; fi done
+	for file in tests/*/ ; do if [ "$$(find "$$file" -maxdepth 1 -type f -name "*.expected_err_jvm" -size +0 -print -quit)" ]; then make record_jvm -C build/"$$file"/; fi done
+	for file in tests/*/ ; do if [ "$$(find "$$file" -maxdepth 1 -type f -name "*.expected_err_c" -size +0 -print -quit)" ]; then make record_c -C build/"$$file"/; fi done
+	for file in tests/*/ ; do if [ "$$(find "$$file" -maxdepth 1 -type f -name "*.expected_err_int" -size +0 -print -quit)" ]; then make record_int -C build/"$$file"/; fi done
+	rsync -a --include='*/' --include='*.effect' --exclude='*' build/tests/ tests/
+
 $(MOD_FZ_CMD_DIR).jmod: $(FUZION_BASE)
 	rm -f $(MOD_FZ_CMD_DIR).jmod
 	jmod create --class-path $(CLASSES_DIR) $(MOD_FZ_CMD_DIR).jmod

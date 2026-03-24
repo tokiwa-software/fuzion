@@ -1366,6 +1366,9 @@ public class Call extends AbstractCall
    */
   protected AbstractType getActualResultType(Resolution res, Context context, boolean urgent)
   {
+    if (PRECONDITIONS) require
+      (res != null);
+
     AbstractType result;
     if (isTailRecursive(context.outerFeature()) || _recursiveResolveType)
       {
@@ -1403,9 +1406,15 @@ public class Call extends AbstractCall
             setToErrorState();
           }
 
+        var tt = targetType(res, context);
+        if (urgent && !tt.isGenericArgument())
+          {
+            res.resolveTypes(tt.feature());
+          }
+
         result = result == null
           ? result
-          : adjustResultType(res, context, result);
+          : adjustResultType0(res, context, result , tt);
       }
 
     // see test #5391 when this might happen
@@ -1426,22 +1435,26 @@ public class Call extends AbstractCall
    * 5) handle special cases: calling a type parameters, type_as_value, outer refs, constructors
    * 6) replace type parameters of cotype origin: e.g. equatable_sequence.T -> equatable_sequence.type.T
    *
+   * @param res the resolution instance.
+   *
+   * @param context the source code context where this Call is used
+   *
    * @param rt the raw result type
+   *
+   * @param tt the target type
    *
    * @return The actual result type of the call
    */
-  private AbstractType adjustResultType(Resolution res, Context context, AbstractType rt)
+  private AbstractType adjustResultType0(Resolution res, Context context, AbstractType rt, AbstractType tt)
   {
-    var tt = targetType(res, context);
-
-    // NYI: CLEANUP: There is some overlap between Call.adjustResultType,
-    // Call.actualArgType and AbstractType.genericsAssignable, might be nice to
+    // NYI: CLEANUP: There is some overlap between Call.adjustResultType0,
+    // Call.adjustResultType and AbstractType.genericsAssignable, might be nice to
     // consolidate this (i.e., bring the calls to applyTypePars / adjustThisType
     // / etc. in the same order and move them to a dedicated function).
     var t0 = tt == Types.t_ERROR ? tt : resolveSelect(res, rt, tt);
     var t4 = adjustResultType(res, context, tt, t0,
                               (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, false, calledFeature(), t0, from, to), false);
-    // NYI: UNDER DEVELOPMENT: can we move more to adjustTypeToCall
+    // NYI: UNDER DEVELOPMENT: can we move more to previous call to adjustResultType()?
     var t5 = t4 == Types.t_ERROR ? t4 : resolveForCalledFeature(res, t4, tt, context);
     var t6 = t5 == Types.t_ERROR ? t5 : calledFeature().isCotype() ? t5 : t5.replace_type_parameters_of_cotype_origin(context.outerFeature());
     return t6 == Types.t_UNDEFINED
