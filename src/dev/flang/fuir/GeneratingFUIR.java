@@ -497,13 +497,24 @@ public class GeneratingFUIR extends FUIR
 
 
 
-  Clazz newClazz(AbstractType t)
+  Clazz newClazz(AbstractType actualType)
   {
-    var o = t.outer();
-    return newClazz(o == null ? null : newClazz(o), t, FuzionConstants.NO_SELECT);
+    if (PRECONDITIONS) require
+      (!actualType.dependsOnGenericsNoOuter(),
+       !actualType.containsThisType(),
+       actualType != Types.t_ERROR);
+
+    var o = actualType.outer();
+    return newClazz(o == null ? null : newClazz(o), actualType, FuzionConstants.NO_SELECT);
   }
   Clazz newClazz(Clazz outerR, AbstractType actualType, int select)
   {
+    if (PRECONDITIONS) require
+      (!actualType.dependsOnGenericsNoOuter(),
+       !actualType.containsThisType(),
+       actualType.feature().resultType().isOpenGeneric() == (select >= 0),
+       actualType != Types.t_ERROR);
+
     Clazz result;
 
     var outer = outerR;
@@ -717,7 +728,7 @@ public class GeneratingFUIR extends FUIR
         var tclazz = clazz(c.target(), outerClazz, inh);
         if (!tclazz.isVoidType())
           {
-            var at = handDownThroughInheritsCalls(c.actualTypeParameters(), inh);
+            var at = AbstractFeature.handDownListThroughInheritsCalls(c.actualTypeParameters(), inh);
             var typePars = outerClazz.actualGenerics(at, inh);
             result = tclazz.lookupCall(c, typePars).resultClazz();
           }
@@ -771,29 +782,6 @@ public class GeneratingFUIR extends FUIR
       (result != null);
 
     return result;
-  }
-
-
-  /**
-   * Hand down a list of types along a given inheritance chain.
-   *
-   * @param tl the original list of types to be handed down
-   *
-   * @param inh the inheritance chain from the parent down to the child
-   *
-   * @return a new list of types as they are appear after inheritance. The
-   * length might be different due to open type parameters being replaced by a
-   * list of types.
-   */
-  private static List<AbstractType> handDownThroughInheritsCalls(List<AbstractType> tl, List<AbstractCall> inh)
-  {
-    for (AbstractCall c : inh)
-      {
-        var f = c.calledFeature();
-        var actualTypes = c.actualTypeParameters();
-        tl = tl.flatMap(t -> t.applyTypeParsMaybeOpen(f, actualTypes));
-      }
-    return tl;
   }
 
 

@@ -792,29 +792,28 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @param actualGenerics the actual generics that should replace the
    * formal generics found in genericsToReplace.
    *
-   * @param locally true iff this should not be applied to outer types and
-   * inheritance calls.
-   *
    * @return a new list of types with all formal generic arguments from this
    * replaced by the corresponding actualGenerics entry.
    */
   private static List<AbstractType> applyTypePars(AbstractFeature f,
                                                   List<AbstractType> genericsToReplace,
-                                                  List<AbstractType> actualGenerics,
-                                                  boolean locally)
+                                                  List<AbstractType> actualGenerics)
   {
     if (PRECONDITIONS) require
       (Errors.any() ||
        f.generics().sizeMatches(actualGenerics));
 
     return genericsToReplace.flatMap
-      (t -> { // NYI: CLEANUP: use applyTypeParsMaybeOpen?
-        var tp = t.matchingTypeParameter(f);
-        return (tp != null && tp.isOpenTypeParameter())
-          ? tp.replaceOpen(actualGenerics)
-          : new List<>(locally ? t.applyTypeParsLocally(f, actualGenerics, NO_SELECT)
-                               : t.applyTypePars       (f, actualGenerics           ));
-      });
+      (t ->
+       { // This is eventually called from `applyTypeParsMaybeOpen`, so we
+         // cannot replace the following code by a call to
+         // `applyTypeParsMaybeOpen`.
+         var tp = t.matchingTypeParameter(f);
+         return
+           (tp != null && tp.isOpenTypeParameter())
+           ? tp.replaceOpen(actualGenerics)
+           : new List<>(t.applyTypePars(f, actualGenerics, NO_SELECT));
+       });
   }
 
 
@@ -826,15 +825,34 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param actualTypes the actual type parameters
    *
-   * @return this iff this does not depend on a formal type parameter of f,
-   * otherwise the type that results by replacing all formal type parameters
-   * of f by the corresponding type from actualTypes.
+   * @return the list of resulting types after applying actualTypes for f's type
+   * parameters to this.  In case this is an open type parameter, this list
+   * might be of any length, including empty, otherwise the list will have
+   * exactly one element.
    */
   public List<AbstractType> applyTypeParsMaybeOpen(AbstractFeature f,
                                                    List<AbstractType> actualTypes)
   {
     return isOpenGeneric() ? genericArgument().replaceOpen(actualTypes)
                            : new List<>(applyTypePars(f, actualTypes));
+  }
+
+
+  /**
+   * Convenience wrapper for applyTypeParsmaybeOpen for a given target type
+   * t. If t is a plain type, apply t's feature and type parameters to this.
+   *
+   * @param t the type describing the feature and actual type parameters to applay.
+   *
+   * @return the list of resulting types after applying t's actual type
+   * parameters to this. In case this is an open type parameter, this list might
+   * be of any length, including empty, otherwise the list will have exactly one
+   * element.
+   */
+  public List<AbstractType> applyTypeParsMaybeOpen(AbstractType t)
+  {
+    return t.isPlainType() ? applyTypeParsMaybeOpen(t.feature(), t.generics())
+                           : new List<>(t);
   }
 
 
@@ -854,7 +872,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
        Errors.any() ||
        feature().generics().sizeMatches(generics()));
 
-    return applyTypePars(feature(), genericsToReplace, generics(), false /* NYI: UNDER DEVELOPMENT locally */);
+    return applyTypePars(feature(), genericsToReplace, generics());
   }
 
 
@@ -954,6 +972,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     else
       {
         result = applyTypePars_(target);
+        if (CHECKS) check
+          (this == Types.t_UNDEFINED || result != Types.t_UNDEFINED);
+
         _appliedTypeParsCachedFor1 = target;
         _appliedTypeParsCache = result;
       }
@@ -1028,17 +1049,20 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         result = _appliedTypePars2Cache;
       }
-    else if (actualGenerics.contains(Types.t_UNDEFINED))
-      {
-        result = applyTypePars_(f, actualGenerics);
-      }
     else
       {
-        result = applyTypePars_(f, actualGenerics);
-        _appliedTypePars2CachedFor1 = f;
-        _appliedTypePars2CachedFor2 = actualGenerics;
-        actualGenerics.freeze();
-        _appliedTypePars2Cache = result;
+        result = applyTypePars(f, actualGenerics, NO_SELECT);
+
+        if (!actualGenerics.contains(Types.t_UNDEFINED))
+          {
+            if (CHECKS) check
+              (this == Types.t_UNDEFINED || result != Types.t_UNDEFINED);
+
+            _appliedTypePars2CachedFor1 = f;
+            _appliedTypePars2CachedFor2 = actualGenerics;
+            actualGenerics.freeze();
+            _appliedTypePars2Cache = result;
+          }
       }
 
     if (POSTCONDITIONS) ensure
@@ -1060,93 +1084,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * A cotype has the actual underlying type as its first type parameter
-   * {@code THIS_TYPE} in addition to the type parameters of the original type.
-   *
-   * In case this is a cotype, determine the actual types for generics
-   * by apply the actual type parameters passed to {@code THIS_TYPE}.
-   *
-   * @return the actual generics after {@code THIS_TYPE.actualType} was applied.
-   */
-  public List<AbstractType> cotypeActualGenerics()
-  {
-    return cotypeActualGenerics(generics());
-  }
-
-
-  /**
-   * A cotype has the actual underlying type as its first type parameter
-   * {@code THIS_TYPE} in addition to the type parameters of the original type.
-   *
-   * In case this is a cotype, determine the actual types for the types in {@code g}
-   * by apply the actual type parameters passed to {@code THIS_TYPE}.
-   *
-   * @param g list of generics, must be derived from {@code generics()}
-   *
-   * @return the actual generics after {@code THIS_TYPE.actualType} was applied.
-   */
-  private List<AbstractType> cotypeActualGenerics(List<AbstractType> g)
-  {
-    /* types of type features require special handling since the type
-     * feature has one additional first type parameter --the underlying
-     * type: this_type--, and all other type parameters need to be converted
-     * to the actual type relative to that.
-     */
-    if (isCotypeType())
-      {
-        var this_type = g.get(0);
-        g = g.map(x -> x == this_type                     ||        // leave first type parameter unchanged
-                            this_type.isGenericArgument()    ? x    // no actuals to apply in a generic arg
-                                                             : this_type.actualType(x, Context.NONE));
-      }
-    return g;
-  }
-
-
-  /**
-   * Check if this type depends on a formal generic parameter of f. If so,
-   * replace t by the corresponding actual generic parameter from the list
-   * provided.
-   *
-   * Internal version of applyTypePars(f, actualGenerics) that does not perform
-   * caching.
-   *
-   * @param f the feature actualGenerics belong to.
-   *
-   * @param actualGenerics the actual generic parameters
-   *
-   * @return t iff t does not depend on a formal generic parameter of this,
-   * otherwise the type that results by replacing all formal generic parameters
-   * of this in t by the corresponding type from actualGenerics.
-   */
-  private AbstractType applyTypePars_(AbstractFeature f, List<AbstractType> actualGenerics)
-  {
-    if (PRECONDITIONS) require
-      (f != null);
-
-    /* NYI: Performance: This requires time in O(this.depth *
-     * f.inheritanceDepth), i.e. it is in O(n²)!  Caching is used to alleviate
-     * this a bit, but this is probably not sufficient!
-     */
-    var result = this;
-    for (var i : f.inherits())
-      {
-        result = result
-          .applyTypePars(i.calledFeature(),
-                         i.actualTypeParameters());
-      }
-    return result
-      .applyTypeParsLocally(f, actualGenerics, NO_SELECT);
-  }
-
-
-  /**
    * Check if type t depends on a formal generic parameter of this. If so,
    * replace t by the corresponding actual generic parameter from the list
    * provided.
-   *
-   * Unlike applyTypePars(), this does not traverse outer types or inheritance
-   * calls.
    *
    * @param target the target whose actuals type parameters should be applied to
    * this.
@@ -1158,18 +1098,13 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * otherwise the type that results by replacing all formal generic parameters
    * of this in t by the corresponding type from actualGenerics.
    */
-  public AbstractType applyTypeParsLocally(AbstractType target, int select)
+  public AbstractType applyTypePars(AbstractType target, int select)
   {
     if (PRECONDITIONS) require
       (target != null,
-       Errors.any() || !isOpenGeneric() || (select >= 0));
+       Errors.any() || !isOpenGeneric() || select >= 0);
 
-    var result = this;
-    if (dependsOnGenerics())
-      {
-        result = result.applyTypeParsLocally(target.feature(), target.generics(), select);
-      }
-    return result;
+    return applyTypePars(target.feature(), target.generics(), select);
   }
 
 
@@ -1177,9 +1112,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * Check if type t depends on a formal generic parameter of this. If so,
    * replace t by the corresponding actual generic parameter from the list
    * provided.
-   *
-   * Unlike applyTypePars(), this does not traverse outer types or inheritance
-   * calls.
    *
    * @param f the feature actualGenerics belong to.
    *
@@ -1192,11 +1124,11 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * otherwise the type that results by replacing all formal generic parameters
    * of this in t by the corresponding type from actualGenerics.
    */
-  public AbstractType applyTypeParsLocally(AbstractFeature f,
-                                           List<AbstractType> actualGenerics,
-                                           int select)
+  public AbstractType applyTypePars(AbstractFeature f,
+                                    List<AbstractType> actualGenerics,
+                                    int select)
   {
-    return applyTypeParsLocally(f, actualGenerics, select, null);
+    return applyTypePars(f, actualGenerics, select, null);
   }
 
 
@@ -1218,7 +1150,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         res = genericArgument();
         if (res.outer().generics() != f.generics())  // if g is not formal generic of f, and g is a type feature generic, try g's origin:
           {
-            res = res.cotypeOriginGeneric();
+             res = f.isCotype() ? res.cotypeGeneric()
+                                : res.cotypeOriginGeneric();
           }
         if (res.outer().generics() != f.generics()) // if g is a formal generic defined by f, then replace it by the actual generic:
           {
@@ -1233,9 +1166,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * Check if type t depends on a formal generic parameter of this. If so,
    * replace t by the corresponding actual generic parameter from the list
    * provided.
-   *
-   * Unlike applyTypePars(), this does not traverse outer types or inheritance
-   * calls.
    *
    * @param f the feature actualGenerics belong to.
    *
@@ -1253,21 +1183,21 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * otherwise the type that results by replacing all formal generic parameters
    * of this in t by the corresponding type from actualGenerics.
    */
-  private AbstractType applyTypeParsLocally(AbstractFeature f,
-                                            List<AbstractType> actualGenerics,
-                                            int select,
-                                            AbstractFeature forOuter)
+  private AbstractType applyTypePars(AbstractFeature f,
+                                     List<AbstractType> actualGenerics,
+                                     int select,
+                                     AbstractFeature forOuter)
   {
     if (PRECONDITIONS) require
       (f != null,
        actualGenerics != null);
 
-    return switch(kind())
+    return switch (kind())
       {
         case GenericArgument ->
           {
             var result = this;
-            AbstractFeature g = result.matchingTypeParameter(f);
+            var g = matchingTypeParameter(f);
             if (g != null)  // if this is a formal generic defined by f, then replace it by the actual generic:
               {
                 if (g.isOpenTypeParameter())
@@ -1292,7 +1222,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                   {
                     result = g.replace(actualGenerics);
                   }
-                while (forOuter != null && !result.isGenericArgument() && !result.feature().inheritsFrom(forOuter))
+                while (result != Types.t_ERROR && forOuter != null && !result.isGenericArgument() && !result.feature().inheritsFrom(forOuter))
                   {
                     result = result.outer();
                     if (CHECKS) check
@@ -1310,11 +1240,25 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
             var result = this;
 
             var g1 = generics();
-            var g2 = applyTypePars(f, g1, actualGenerics, true /* NYI: UNDER DEVELOPMENT locally */);
-            var g3 = cotypeActualGenerics(g2);
+            var g2 = applyTypePars(f, g1, actualGenerics);
+            var g3 = g2;
+            if (isCotypeType())
+              {
+                /* A cotype has the actual underlying type as its first type parameter
+                 * {@code THIS_TYPE} in addition to the type parameters of the original type.
+                 *
+                 * In case this is a cotype, determine the actual types for the types in {@code g2}
+                 * by applying the actual type parameters passed to {@code THIS_TYPE}.
+                 */
+                var this_type = g2.get(0);
+                g3 = g2.map(x -> x == this_type                ||        // leave first type parameter unchanged
+                                 this_type.isGenericArgument()    ? x    // no actuals to apply in a generic arg
+                                                                  : x.applyTypePars(this_type)
+                                                                     .replace_this_type_by_actual_outer(this_type, Context.NONE));
+              }
 
             var o1 = outer();
-            var o2 = o1 != null ? o1.applyTypeParsLocally(f, actualGenerics, select, feature().outer())
+            var o2 = o1 != null ? o1.applyTypePars(f, actualGenerics, select, feature().outer())
                                 : null;
 
             if (g3 != g1 || o2 != o1)
@@ -1578,11 +1522,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     if (PRECONDITIONS) require
       (isLambdaTarget(res));
 
-    var cl = res._module.findLambdaTarget(feature());
-    return cl
+    return res._module
+      .findLambdaTarget(feature())
       .outer()
-      .handDown(res, new List<>(t), feature())
-      .flatMap(at -> at.applyTypeParsMaybeOpen(feature(), generics()));
+      .handDownAndApply(new List<>(t), this);
   }
 
 
@@ -1599,8 +1542,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     if (PRECONDITIONS) require
       (isLambdaTarget(res));
 
-    var cl = res._module.findLambdaTarget(feature());
-    return cl.valueArguments()
+    return res._module
+      .findLambdaTarget(feature())
+      .valueArguments()
       .flatMap2(a -> lambdaTargetHandDownType(res, a.resultTypeIfPresentUrgent(res, true)));
   }
 
