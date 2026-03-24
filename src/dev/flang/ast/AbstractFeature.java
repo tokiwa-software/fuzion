@@ -1200,7 +1200,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
         if (inh != null)
           {
-            result = AbstractFeature.handDownThroughInheritsCalls(l, inh);
+            result = AbstractFeature.handDownListThroughInheritsCalls(l, inh);
           }
       }
     return result;
@@ -1243,6 +1243,11 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       }
     return result;
   }
+
+
+  /**
+   * Convenience combination of HandDownListToType and applyTypeParsMaybeOpen.
+   */
   public List<AbstractType> handDownAndApply(List<AbstractType> l,
                                              AbstractType heirType)
   {
@@ -1252,7 +1257,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * Convenience wrapper around {@code handDown(List, AbstractType} for a single
+   * Convenience wrapper around {@code handDownListToType(List, AbstractType} for a single
    * type that is not open generic.
    *
    * @param t a type that must not be open generic (unless {@code Errors.any()})
@@ -1273,6 +1278,19 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
                                       // empty, this will result in
                                       // Types.t_ERROR!
   }
+
+
+  /**
+   * Convenience wrapper around {@code handDownAndApply(List, AbstractType} for a single
+   * type that is not open generic.
+   *
+   * @param t a type that must not be open generic (unless {@code Errors.any()})
+   *
+   * @param heirType the type we are inherting to.
+   *
+   * @return the type t as seen this by heirType.  Result may be Types.t_ERROR
+   * in case of previous errors.
+   */
   public AbstractType handDownAndApply(AbstractType t,
                                        AbstractType heirType)
   {
@@ -1324,6 +1342,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
        Errors.any() || !t.isOpenGeneric() || (select >= 0),
        inh != null);
 
+    // NYI: CLEANUP: wold be good to base this on handDownListThroughInheritsCalls.
     for (AbstractCall c : inh)
       {
         t = t.applyTypePars(c.calledFeature(),
@@ -1331,7 +1350,17 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       }
     return t;
   }
-  public static List<AbstractType> handDownThroughInheritsCalls(List<AbstractType> l, List<AbstractCall> inh)
+
+
+  /**
+   * Variant of handDownThroughInheritsCalls that operates on a list of types
+   * and support open type parameters.
+   *
+   * @param l the lsit of types to be handed down.
+   *
+   * @param inh the inheritance chain along which types should be handed down.
+   */
+  public static List<AbstractType> handDownListThroughInheritsCalls(List<AbstractType> l, List<AbstractCall> inh)
   {
     if (PRECONDITIONS) require
       (l != null,

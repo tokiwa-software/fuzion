@@ -825,9 +825,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param actualTypes the actual type parameters
    *
-   * @return this iff this does not depend on a formal type parameter of f,
-   * otherwise the type that results by replacing all formal type parameters
-   * of f by the corresponding type from actualTypes.
+   * @return the list of resulting types after applying actualTypes for f's type
+   * parameters to this.  In case this is an open type parameter, this list
+   * might be of any length, including empty, otherwise the list will have
+   * exactly one element.
    */
   public List<AbstractType> applyTypeParsMaybeOpen(AbstractFeature f,
                                                    List<AbstractType> actualTypes)
@@ -835,6 +836,19 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     return isOpenGeneric() ? genericArgument().replaceOpen(actualTypes)
                            : new List<>(applyTypePars(f, actualTypes));
   }
+
+
+  /**
+   * Convenience wrapper for applyTypeParsmaybeOpen for a given target type
+   * t. If t is a plain type, apply t's feature and type parameters to this.
+   *
+   * @param t the type describing the feature and actual type parameters to applay.
+   *
+   * @return the list of resulting types after applying t's actual type
+   * parameters to this. In case this is an open type parameter, this list might
+   * be of any length, including empty, otherwise the list will have exactly one
+   * element.
+   */
   public List<AbstractType> applyTypeParsMaybeOpen(AbstractType t)
   {
     return t.isPlainType() ? applyTypeParsMaybeOpen(t.feature(), t.generics())

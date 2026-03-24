@@ -728,7 +728,7 @@ public class GeneratingFUIR extends FUIR
         var tclazz = clazz(c.target(), outerClazz, inh);
         if (!tclazz.isVoidType())
           {
-            var at = AbstractFeature.handDownThroughInheritsCalls(c.actualTypeParameters(), inh);
+            var at = AbstractFeature.handDownListThroughInheritsCalls(c.actualTypeParameters(), inh);
             var typePars = outerClazz.actualGenerics(at, inh);
             result = tclazz.lookupCall(c, typePars).resultClazz();
           }

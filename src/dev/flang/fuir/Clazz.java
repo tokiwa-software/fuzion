@@ -692,7 +692,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    */
   List<AbstractType> actualGenerics(List<AbstractType> generics, List<AbstractCall> inh)
   {
-    var new_generics = AbstractFeature.handDownThroughInheritsCalls(generics, inh);
+    var new_generics = AbstractFeature.handDownListThroughInheritsCalls(generics, inh);
     var result = this._type.replaceGenerics(new_generics);
 
     // Replace any {@code a.this.type} actual generics by the actual outer clazz:
