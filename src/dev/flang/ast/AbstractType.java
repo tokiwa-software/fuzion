@@ -605,7 +605,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
             for (var p: actual_type.feature().inherits())
               {
                 var pt = actual_type.actualType(p.type(), context).asRef(true);
-                result = isAssignableFrom(pt, context, allowBoxing, allowTagging, assignableTo);
+                result = pt == actual ? YesNo.no : isAssignableFrom(pt, context, allowBoxing, allowTagging, assignableTo);
                 // until result != no
                 if (!result.no()) { break; }
               }
@@ -713,8 +713,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                                           (outer() == null || actual.outer() != null && outer().constraintAssignableFrom(actual.outer()))));
                 for (var p: actual.feature().inherits())
                   {
-                    result |= !p.calledFeature().isChoice() &&
-                      constraintAssignableFrom(context, p.type().applyTypePars(actual));
+                    result |= p.type().applyTypePars(actual)==actual
+                      ? false
+                      : !p.calledFeature().isChoice() && constraintAssignableFrom(context, p.type().applyTypePars(actual));
                   }
               }
           }
@@ -1459,9 +1460,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   public boolean isLambdaTarget(Resolution res)
   {
-    return
-      isPlainType() &&
-      res._module.findLambdaTarget(feature()) != null;
+    return res._module
+      .findLambdaTarget(selfOrConstraint(res, Context.NONE).feature()) != null;
   }
 
 
@@ -1523,7 +1523,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       (isLambdaTarget(res));
 
     return res._module
-      .findLambdaTarget(feature())
+      .findLambdaTarget(selfOrConstraint(res, Context.NONE).feature())
       .outer()
       .handDownAndApply(new List<>(t), this);
   }
@@ -1543,7 +1543,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       (isLambdaTarget(res));
 
     return res._module
-      .findLambdaTarget(feature())
+      .findLambdaTarget(selfOrConstraint(res, Context.NONE).feature())
       .valueArguments()
       .flatMap2(a -> lambdaTargetHandDownType(res, a.resultTypeIfPresentUrgent(res, true)));
   }
@@ -1562,7 +1562,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     if (PRECONDITIONS) require
       (isLambdaTarget(res));
 
-    var cl = res._module.findLambdaTarget(feature());
+    var cl = res._module.findLambdaTarget(selfOrConstraint(res, Context.NONE).feature());
     return lambdaTargetHandDownType(res, cl.resultTypeIfPresentUrgent(res, true))
       .getFirstOrElse(Types.t_ERROR);
   }
@@ -1597,10 +1597,13 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
     AbstractFeature result = null;
 
-    var g = replaceGenericsAndOuter(feature().genericsAsActuals(), outer())
+    var soc = selfOrConstraint(res, Context.NONE);
+    var f = soc.feature();
+
+    var g = soc.replaceGenericsAndOuter(f.genericsAsActuals(), soc.outer())
       .lambdaTargetResultType(res);
 
-    if (g.isGenericArgument() && g.genericArgument().outer() == feature())
+    if (g.isGenericArgument() && g.genericArgument().outer() == f)
       {
         result = g.genericArgument();
       }

@@ -38,7 +38,9 @@
 #
 public try(ERROR type, F type : fallible ERROR, T type, code_try ()->T) is
 
-  # a local mutate
+  # a local mutate used for storing an error
+  # when throwing an exception
+  #
   lm : mutate is
 
   # define code to execute in case of fault and run code

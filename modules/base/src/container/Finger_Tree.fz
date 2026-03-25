@@ -22,9 +22,19 @@
 # -----------------------------------------------------------------------
 
 
+# A finger tree is a purely functional data structure designed
+# to efficiently represent persistent sequences.
 #
-# The paper introducing the datastructure: https://www.cs.ox.ac.uk/ralf.hinze/publications/FingerTrees.pdf
-# The implementation that was used as inspiration for this port: https://github.com/ledbutter/CSharpFingerTree
+# It allows amortized constant time access to its elements.
+# Furthermore concatting (append/prepend) as well as splitting in logarithmic time.
+#
+# In Fuzion finger trees are used for concatenation of strings and finite Sequences.
+#
+# The paper introducing the datastructure:
+# https://www.cs.ox.ac.uk/ralf.hinze/publications/FingerTrees.pdf
+#
+# The implementation that was used as an inspiration for this port:
+# https://github.com/ledbutter/CSharpFingerTree
 #
 # NYI: UNDER DEVELOPMENT: split0, slice, reverse
 #

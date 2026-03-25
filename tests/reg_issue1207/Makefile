@@ -17,10 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature encodings.unicode
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# unicode -- unit feature to group unicode related features
-#
-module unicode is
+override NAME = reg_issue1207
+include ../simple.mk
