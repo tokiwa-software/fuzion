@@ -148,6 +148,7 @@ public class Match extends AbstractMatch
    */
   void resolveTypes(Resolution res, Context context)
   {
+    patchSubjectType(context);
     var st = _subject.typeForInferencing();
     if (st != null && st != Types.t_ERROR && !st.isGenericArgument())
       {
@@ -185,6 +186,37 @@ public class Match extends AbstractMatch
             AstErrors.missingMatches(pos(), cgs, missingMatches);
             _type = Types.t_ERROR;
           }
+      }
+  }
+
+
+  /**
+   * If subject type is a generic argument which is
+   * constrainted to be a choice we patch the calls
+   * type to result in the constraint.
+   *
+   * example where this is relevant:
+   *
+   *     f (T type, v T) =>
+   *       if T : bool
+   *         if v
+   *           unit
+   *         else
+   *           unit
+   *       else
+   *         compile_time_panic
+   *
+   *     f true
+   */
+  private void patchSubjectType(Context context)
+  {
+    if (_subject.typeForInferencing() != null &&
+        _subject instanceof Call c &&
+        _subject.typeForInferencing().isGenericArgument() &&
+        context.constraintFor(_subject.typeForInferencing().genericArgument()) != null &&
+        context.constraintFor(_subject.typeForInferencing().genericArgument()).isChoice())
+      {
+        c._type = context.constraintFor(_subject.typeForInferencing().genericArgument());
       }
   }
 
