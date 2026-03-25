@@ -31,3 +31,18 @@ reg_issue1642 =>
     hi => say "hi!"
 
   heir.hi
+
+
+  # actually calling some inherited feature
+
+  outer2(v i32) is
+    parent is
+      inner is
+        feat => say "ho"
+
+  t2 := outer2 123
+  heir2 : t2.parent.inner is
+    hi => say "hi!"
+
+  heir2.feat
+
