@@ -565,13 +565,9 @@ class Clazz extends ANY implements Comparable<Clazz>
               {
                 for (var pp : pc.parents())
                   {
-                    if (isRef() && !pp.isVoidType())
-                      {
-                        pp = pp.asRef();
-                      }
-                    if (CHECKS) check
-                      (Errors.any() || pp.isVoidType() || !isRef() || pp.isRef());
-                    result.add(pp);
+                    result.add(isRef() && !pp.isVoidType()
+                               ? pp.asRef()
+                               : pp.asValue());
                   }
               }
           }
