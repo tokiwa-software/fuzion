@@ -547,10 +547,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   private Set<Clazz> directParents()
   {
     var result = new TreeSet<Clazz>();
-    result.add(this);
-    var f = feature();
-    var o = f.outer();
-    for (var p: f.inherits())
+    for (var p: feature().inherits())
       {
         var pt = p.type();
         var t1 = isRef() && !pt.isVoid() ? pt.asRef() : pt.asValue();
