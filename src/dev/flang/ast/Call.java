@@ -583,7 +583,9 @@ public class Call extends AbstractCall
         result = context.outerFeature();
       }
 
-    return result;
+    return result != null && result.isField()
+      ? result.resultTypeIfPresentUrgent(res, true).backingFeature()
+      : result;
   }
 
 
