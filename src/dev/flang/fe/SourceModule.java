@@ -68,7 +68,7 @@ import dev.flang.ast.State;
 import dev.flang.ast.Types;
 import dev.flang.ast.Universe;
 import dev.flang.ast.Visi;
-
+import dev.flang.ast.AbstractFeature.Kind;
 import dev.flang.parser.Parser;
 
 import dev.flang.util.Errors;
@@ -1649,7 +1649,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
                                       AbstractFeature redefinition)
   {
     return original.outer()
-                   .handDown(_res, new List<>(type), redefinition.outer())
+                   .handDown(new List<>(type), redefinition.outer())
                    .map(// if we redef
                         //
                         //    x(A type, v option A)
@@ -1676,12 +1676,12 @@ A post-condition of a feature that does not redefine an inherited feature must s
   {
     f.impl().checkTypes(f);
     var args = f.arguments();
-    var fixed = (f.modifiers() & FuzionConstants.MODIFIER_FIXED) != 0;
+    var fixed = f.isFixed();
     for (var o : f.redefines())
       {
         var ar = argTypesOrConstraints(f);
         var ao = argTypesOrConstraints(o);
-        var ah = o.outer().handDown(_res, ao, f.outer());
+        var ah = o.outer().handDown(ao, f.outer());
         if (ah == AbstractFeature.HAND_DOWN_FAILED)
           {
             if (CHECKS) check
@@ -1824,6 +1824,13 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
     checkLegalQualThisType(f);
     checkLegalDefinesType(f);
     checkIllegalIntrinsic(f);
+
+    if (f.isFixed() &&
+        !f.isTypeParameter() &&
+        (f.kind() != Kind.Function && f.kind() != Kind.Intrinsic && f.kind() != Kind.Abstract || f.outer().isUniverse()))
+      {
+        AstErrors.illegalUseOfFixedModifier(f);
+      }
   }
 
 

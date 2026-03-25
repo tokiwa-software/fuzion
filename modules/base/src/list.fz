@@ -44,13 +44,11 @@
 #
 public list(public A type)
   : choice nil (Cons A (list A)),
-# NYI: #530 (review comment): The following should work but causes an error:
-# list(A type) : nil | Cons A (list A), Sequence A is
     Sequence A
 is
 
   # equality of two list is true iff `a` and `b` are both empty or `a` and `b` are both
-  # non-empty and `T` and T.equality a.get b.get.
+  # non-empty and `T` and T.equality a.or_panic b.or_panic.
   #
   # This is defined only if T : property.equatable, it will result in a compile-time panic
   # if this is not the case.
@@ -108,6 +106,18 @@ is
   # of Sequence.
   #
   public redef as_list list A => list.this
+
+
+  # is this sequence known to be finite?  For infinite sequences, features like
+  # count diverge.
+  #
+  # trit.yes       = known finite
+  # trit.no        = known infinite
+  # trit.unknown   = unknown
+  #
+  public redef finite trit =>
+    list.this ? nil    => trit.yes
+              | c Cons => c.finite
 
 
   # is this list empty?
@@ -198,7 +208,7 @@ is
     list.this ? nil => fuzion.std.panic "list.init called on empty list"
               | c Cons =>
                 c.tail ? nil => res
-                       | Cons => c.tail.init (res ++ [c.head]).as_list
+                       | Cons => c.tail.init (res.concat_list [c.head].as_list)
 
 
   # get the last element of this list
@@ -229,7 +239,7 @@ is
     match list.this
       nil    => nil
       c Cons =>
-        f c.head : c.tail.map_to_list f
+        (list B).of (f c.head) (c.tail.map_to_list f) c.finite
 
 
   # map the list to a new list applying function f to all elements
@@ -245,7 +255,7 @@ is
         match (f c.head).as_list
           nil     => c.tail.flat_map_to_list f
           c2 Cons =>
-            c2.head : (c2.tail ++ c.tail.flat_map_to_list f).as_list
+            c2.head : c2.tail.concat_list (c.tail.flat_map_to_list f)
 
 
   # fold the elements of this list using the given monoid.
@@ -364,7 +374,7 @@ is
   # Lazily take the first n elements of a list, alternatively the whole list if it
   # is shorter than n, or the empty list if n <= 0
   #
-  public redef take (I type : idx, n I) Sequence A
+  public redef take (I type : integer, n I) Sequence A
   =>
     take_list n.as_i32
 
@@ -420,7 +430,7 @@ is
   prepend_to_all(sep A, res list A) list A =>
     match head
       nil => res
-      x A => tail.prepend_to_all sep (res ++ [sep, x]).as_list
+      x A => tail.prepend_to_all sep (res.concat_list [sep, x].as_list)
 
 
   # add an element sep between every element of this list.
@@ -428,7 +438,7 @@ is
   public intersperse(sep A) list A =>
     match head
       nil => nil
-      x A => ([x] ++ tail.prepend_to_all sep).as_list
+      x A => x : (tail.prepend_to_all sep)
 
 
   # List concatenation, O(count)
@@ -476,7 +486,7 @@ is
   # create a list from the tail of list.this dropping n elements (or fewer
   # if the list is shorter than n).
   #
-  public redef drop (I type : idx, n I) Sequence A =>
+  public redef drop (I type : integer, n I) Sequence A =>
     drop_list n.as_i32
 
 
@@ -572,6 +582,7 @@ is
           public redef tail list A =>
             cycle_cons (h.tail ? nil    => c
                                | d Cons => d)
+          public redef finite trit => trit.no
         cycle_cons c
 
 
@@ -733,13 +744,39 @@ is
         nil
 
 
+  # convenience routine to create a list from head h and lazy tail t.
+  #
+  # where f denotes if the list is finite:
+  #
+  # trit.yes       = known finite
+  # trit.no        = known infinite
+  # trit.unknown   = unknown
+  #
+  public type.of(h T, t Lazy (list T), f trit) list T =>
+    _ : Cons T (list T) is
+      public redef head T => h
+      public redef tail list T => t
+      public redef finite trit => f
+
+
+  # convenience routine to create a known finite list from head h and lazy tail t.
+  #
+  public type.of_finite(h T, t Lazy (list T)) list T =>
+    of h t trit.yes
+
+
+  # convenience routine to create a known infinite list from head h and lazy tail t.
+  #
+  public type.of_infinite(h T, t Lazy (list T)) list T =>
+    of h t trit.no
+
+
 
 # convenience routine to create a list from head h and lazy tail t.
 #
 public list(T type, h T, t Lazy (list T)) list T =>
-  _ : Cons T (list T) is
-    public redef head T => h
-    public redef tail list T => t
+  (list T).of h t trit.unknown
+
 
 
 # infix operator to create a list from head h and lazy tail t.
@@ -758,7 +795,7 @@ public list(T type, h T, t Lazy (list T)) list T =>
 #     ones => 1 : ones
 #
 public infix_right : (A type, h A, t Lazy (list A)) list A =>
-  list h t
+  (list A).of h t trit.unknown
 
 
 # infix operator to create a list from head h and a production
@@ -785,4 +822,4 @@ public infix_right : (A type, h A, t Lazy (list A)) list A =>
 # will produce the powers of two: 1,2,4,8,16,32,...
 #
 public infix :: (A type, h A, f A->A) list A =>
-  h : (f h :: f)
+  list h (f h :: f)

@@ -22,9 +22,19 @@
 # -----------------------------------------------------------------------
 
 
+# A finger tree is a purely functional data structure designed
+# to efficiently represent persistent sequences.
 #
-# The paper introducing the datastructure: https://www.cs.ox.ac.uk/ralf.hinze/publications/FingerTrees.pdf
-# The implementation that was used as inspiration for this port: https://github.com/ledbutter/CSharpFingerTree
+# It allows amortized constant time access to its elements.
+# Furthermore concatting (append/prepend) as well as splitting in logarithmic time.
+#
+# In Fuzion finger trees are used for concatenation of strings and finite Sequences.
+#
+# The paper introducing the datastructure:
+# https://www.cs.ox.ac.uk/ralf.hinze/publications/FingerTrees.pdf
+#
+# The implementation that was used as an inspiration for this port:
+# https://github.com/ledbutter/CSharpFingerTree
 #
 # NYI: UNDER DEVELOPMENT: split0, slice, reverse
 #
@@ -100,7 +110,7 @@ empty(T type) : container.Finger_Tree T is
     match seq.as_finger_tree
       nil            => single T seq
       ft Finger_Tree => ft
-  public redef index [ ] (I type : idx, i I) T => panic "illegal unless debug turned off"
+  public redef index [ ] (I type : integer, i I) T => panic "illegal unless debug turned off"
   module redef as_finger_tree option (container.Finger_Tree T) => container.empty T
   redef merge(ft container.Finger_Tree T) container.Finger_Tree T => ft
   redef merge(seq Sequence (Sequence T), ft container.Finger_Tree T) container.Finger_Tree T =>
@@ -123,7 +133,7 @@ is
     deep (container.hand [seq]) (empty T) (container.hand [data])
   public redef append (seq Sequence T) container.Finger_Tree T =>
     deep (container.hand [data]) (empty T) (container.hand [seq])
-  public redef index [ ] (I type : idx, i I) T => data[i]
+  public redef index [ ] (I type : integer, i I) T => data[i]
   module redef as_finger_tree option (container.Finger_Tree T) => container.single data
   redef merge(ft container.Finger_Tree T) container.Finger_Tree T =>
     ft.prepend data
@@ -189,7 +199,7 @@ deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.ha
       r
 
 
-  public redef index [ ] (I type : idx, i I) T =>
+  public redef index [ ] (I type : integer, i I) T =>
     n := i.as_i32
     if n < lft.count
       lft[n]
@@ -339,5 +349,3 @@ is
         fill finger[2] i+f0cnt+f1cnt
         if finger.count > 3
           fill finger[3] i+f0cnt+f1cnt+f2cnt
-
-

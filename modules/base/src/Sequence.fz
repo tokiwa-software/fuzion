@@ -191,7 +191,7 @@ is
   #
   public first(default T) T
   =>
-    first.val default
+    first.or_default default
 
 
   # get the last element of this Sequence
@@ -207,7 +207,7 @@ is
   #
   public last(default T) T
   =>
-    last.val default
+    last.or_default default
 
 
   # collect the contents of this Sequence into an array
@@ -305,7 +305,7 @@ is
   #
   # NOTE: for negative n an empty Sequence is returned
   #
-  public take (I type : idx, n I) Sequence T
+  public take (I type : integer, n I) Sequence T
     # NYI: BUG: breaks tail call optimization
     # post debug: n>0 || result.is_empty
   => as_list.take n
@@ -329,7 +329,7 @@ is
   #
   # NOTE: for negative n the Sequence is returned as is
   #
-  public drop (I type : idx, n I) Sequence T
+  public drop (I type : integer, n I) Sequence T
     # NYI: BUG: breaks tail call optimization
     # post debug: n>0 || count=result.count
   => as_list.drop n
@@ -337,13 +337,13 @@ is
 
   # get a function that, given an index, returns the element at that index
   #
-  public index [] () idx -> T => n -> Sequence.this[n]
+  public index [] () integer -> T => n -> Sequence.this[n]
 
 
   # create a slice from this Sequence that consists of the elements starting at index
   # from (including) up to index to (excluding).
   #
-  public slice(I type : idx, from, to I) Sequence T
+  public slice(I type : integer, from, to I) Sequence T
     pre
       debug : from ≥ 0
       debug : to = 0 || (if is_array_backed || debug_level > 1 then is_valid_index to-1 else true)
@@ -399,7 +399,7 @@ is
       analysis: result ∀ p
       analysis: {
         n := nth result.count
-        !n || !(p n.get)
+        !n || !(p n.or_panic)
       }
   => as_list.take_while p
 
@@ -411,7 +411,7 @@ is
       analysis: result ∀ (x -> !(p x))
       analysis: {
         n := nth result.count
-        !n || p n.get
+        !n || p n.or_panic
       }
   => as_list.drop_while p
 
@@ -446,23 +446,21 @@ is
     c2 := s.finite.is_yes ? s.count : -1
     if c1 = 0
       s
-    else if c2 = 0
+                      #
+                      # if this sequence is infinite,
+                      # no need to concat s
+                      #
+    else if c2 = 0 || finite.is_no
       Sequence.this
+
     #
-    # c1 < c2 to avoid poor (quadratic) performance
-    # if a small sequence is added in front of a
-    # larger one repeatedly as in this code:
+    # if s is infinite we use list concat
+    # otherwise we would hang forever
     #
-    #     for
-    #       s := (Sequence i32).empty, [i].concat s
-    #       i in 1..n
-    #     else
-    #       say s
-    #
-    else if c1 < 0 || c2 < 0 || c1 < c2 then
+    else if s.finite.is_no
       as_list.concat_list s.as_list
     else
-      container.expanding_array T .empty c1+c2
+      container.Finger_Tree T .empty
         .concat Sequence.this
         .concat s
 
@@ -826,18 +824,18 @@ is
   # Note that this may have a performance in O(i) unless this
   # Sequence is_array_backed.
   #
-  public is_valid_index(I type : idx, i I) bool =>
+  public is_valid_index(I type : integer, i I) bool =>
     (0 ≤ i.as_i32 && (if is_array_backed then i.as_i32 ≤ count
                                          else !(drop i.as_i32).is_empty))
 
 
   # the nth element in the sequence, must exist
   #
-  public index [] (I type : idx, i I) T
+  public index [] (I type : integer, i I) T
     pre
       debug: is_valid_index i
   =>
-    (nth i.as_i32).get
+    (nth i.as_i32).or_panic
 
 
   # adds the corresponding index to
@@ -1000,7 +998,7 @@ is
                                     nil => nil
                                 nil => nil
                             nil => nil
-    r.val
+    r.or_panic
 
 
   # convert a Sequence's head into a 4-tuple.
@@ -1030,7 +1028,7 @@ is
                                        nil => nil
                                    nil => nil
                                nil => nil
-    r.val
+    r.or_panic
 
 
   # convert a Sequence's head into a 5-tuple.
@@ -1063,7 +1061,7 @@ is
                                           nil => nil
                                       nil => nil
                                   nil => nil
-    r.val
+    r.or_panic
 
 
   # convert a Sequence's head into a 6-tuple.
@@ -1099,7 +1097,7 @@ is
                                              nil => nil
                                          nil => nil
                                      nil => nil
-    r.val
+    r.or_panic
 
 
   # convert this Sequence to an ordered map

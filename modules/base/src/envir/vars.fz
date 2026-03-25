@@ -40,6 +40,24 @@ public vars (p Vars_Handler) : effect is
     get v
 
 
+  # get a map of the given env vars, vars that are not set
+  # are not included in the map
+  #
+  #     envir.vars.map_of ["PATH", "DISPLAY", "NOT_SET_VAR"]
+  #
+  # results in e.g.:
+  #
+  # (PATH => /usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games:build/bin/), (DISPLAY => :0)
+  #
+  public map_of(s Sequence String) container.Map String String =>
+    kvs =>
+      s.flat_map k->
+        match envir.vars[k].bind v->(k, v)
+          t tuple => [t]
+          nil => []
+    container.map_of kvs
+
+
   # install default instance of vars
   #
   type.install_default =>

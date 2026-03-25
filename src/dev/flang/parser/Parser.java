@@ -1253,8 +1253,7 @@ inheritanceCallList    : inheritanceCall ( COMMA inheritanceCallList
    */
   private boolean skipInheritanceCall()
   {
-    return call0() instanceof AbstractCall ||
-           expr()  instanceof AbstractCall;
+    return operatorExpr() instanceof AbstractCall;
   }
 
 
@@ -1831,7 +1830,7 @@ opsOpt      : ops
     Expr result;
     int pos = tokenPos();
     var oe = new OpExpr();
-    if (current() == Token.t_op)
+    if (current() == Token.t_op && !isOperator("=>"))
       {
         ops(oe);
       }
@@ -1869,7 +1868,7 @@ ops         : OPERATOR
         oe.add(new Operator(tokenSourceRange(), operator(), ignoredTokenBefore(), ignoredTokenAfter()));
         match(Token.t_op, "op");
       }
-    while (current() == Token.t_op);
+    while (current() == Token.t_op && !isOperator("=>"));
     return result;
   }
 
@@ -1888,7 +1887,7 @@ opsTerms    : ops
    */
   Expr opsTail(OpExpr oe)
   {
-    while (current() == Token.t_op)
+    while (current() == Token.t_op && !isOperator("=>"))
       {
         var spaceBeforeLastOperator = ops(oe);
         if (isTermPrefix(spaceBeforeLastOperator))

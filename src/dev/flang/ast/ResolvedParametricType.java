@@ -121,7 +121,7 @@ class ResolvedParametricType extends ResolvedType
 
 
   /**
-   * The mode of the type: ThisType, RefType or ValueType.
+   * The mode of the type: GenericArgument, ThisType, RefType or ValueType.
    */
   @Override
   public TypeKind kind()

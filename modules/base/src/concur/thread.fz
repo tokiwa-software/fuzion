@@ -27,6 +27,7 @@
 #
 module:public thread(thrd Thread) : property.equatable is
 
+  # NYI: CLEANUP: use thread id
   id := unique_id
 
   joined := concur.atomic trit .new trit.no

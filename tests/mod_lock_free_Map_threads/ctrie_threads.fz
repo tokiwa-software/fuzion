@@ -62,7 +62,7 @@ ctrie_threads is
       say "==="
       say (ctrie.items.map x->"{x.values.0} was inserted by thread {x.values.1}")
       say "==="
-      # NYI: BUG: Used abstract feature 'container.Mutable_Map.get' is not implemented by 'lock_free.Map'
+      # NYI: BUG: Used abstract feature 'container.Mutable_Map.or_panic' is not implemented by 'lock_free.Map'
       # say ((ctrie.items.map x->x.values.1).group_by id)
 
 
@@ -117,8 +117,8 @@ ctrie_threads is
         if ctrie[kt].is_nil
           panic "added key $kt not present"
 
-        if ctrie[kt].get != kt
-          panic "added key/value does not match $kt != {ctrie[kt].get}"
+        if ctrie[kt].or_panic != kt
+          panic "added key/value does not match $kt != {ctrie[kt].or_panic}"
 
         if k%100 = 0
           _ := ctrie.snapshot true

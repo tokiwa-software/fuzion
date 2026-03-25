@@ -145,9 +145,7 @@ public class ResolvedNormalType extends ResolvedType
   {
     if (PRECONDITIONS) require
       (Errors.any() || f == null || f.generics().sizeMatches(g == null ? UnresolvedType.NONE : g),
-       typeKind == TypeKind.ValueType || typeKind == TypeKind.RefType
-       /* NYI: Types.resolved == null
-         || f.compareTo(Types.resolved.f_void) != 0*/);
+       typeKind == TypeKind.ValueType || typeKind == TypeKind.RefType);
 
     this._generics = g == null || g.isEmpty() ? UnresolvedType.NONE : g.freeze();
     this._unresolvedGenerics = ((ug == null) || ug.isEmpty()) ? UnresolvedType.NONE : ug;
@@ -256,7 +254,7 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * The mode of the type: ThisType, RefType or ValueType.
+   * The mode of the type: GenericArgument, ThisType, RefType or ValueType.
    */
   @Override
   public TypeKind kind()

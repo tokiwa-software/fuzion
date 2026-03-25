@@ -56,8 +56,8 @@ lib_io_utf8 =>
       .bind (_ -> say "$file was created")
     say "$file exists: {f.exists file}"
 
-    say "stat resolve=true : $file size is {(f.stat file true).val.size}"
-    say "stat resolve=false: $file size is {(f.stat file false).val.size}"
+    say "stat resolve=true : $file size is {(f.stat file true).or_panic.size}"
+    say "stat resolve=false: $file size is {(f.stat file false).or_panic.size}"
 
     _ := f.use file f.mode.read ()->
       f.open.seek ()->
@@ -102,4 +102,4 @@ lib_io_utf8 =>
     res := io.dir.use (Sequence String) (path.of "⚗️🧫") ()->
       array 3 _->io.dir.open.read.as_string
 
-    res.val.sort.for_each say
+    res.or_panic.sort.for_each say

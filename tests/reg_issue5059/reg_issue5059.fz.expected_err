@@ -1,0 +1,23 @@
+
+--CURDIR--/reg_issue5059.fz:24:10: error 1: Must not inherit from non-constructor feature
+a => _ : a is
+---------^
+The parents of feature 'a.anonymous' include 'a', which is not a constructor but a 'function'.
+Parent declared at --CURDIR--/reg_issue5059.fz:24:1:
+a => _ : a is
+^To solve this, you might remove the inheritance call to 'a' or you could change 'a' into a constructor, i.e., a feature without explicit result type declared using 'is'.
+
+
+--CURDIR--/reg_issue5059.fz:24:6: error 2: Incompatible types in assignment
+a => _ : a is
+-----^^^^^^^^
+assignment to field : 'a.result'
+expected formal type: 'a.this.anonymous'
+actual type found   : 'a.anonymous'
+assignable to       : 'a.anonymous'
+for value assigned  : 
+_ : a is
+
+To solve this, you could change the type of the target 'a.result' to 'a.anonymous' or convert the type of the assigned value to 'a.this.anonymous'.
+
+2 errors.

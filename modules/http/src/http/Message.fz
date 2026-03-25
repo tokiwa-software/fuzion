@@ -179,7 +179,7 @@ module parse_header_fields(LM type : mutate) outcome (container.mutable_tree_map
 # version of body reader that reads until connection closes
 #
 body_reader(LM type : mutate) : io.Read_Handler is
-  public redef read(count i32) choice (Sequence u8) io.end_of_file error =>
+  public redef read(max_count i32) choice (Sequence u8) io.end_of_file error =>
     # NYI: CLEANUP: ugly that this match is necessary
     match (io.buffered LM).reader.env.read
       s Sequence =>
@@ -197,13 +197,13 @@ body_reader(LM type : mutate, reader_size i32, _ unit) : io.Read_Handler is
 
   remaining := mut reader_size
 
-  public redef read(count i32) choice (Sequence u8) io.end_of_file error =>
+  public redef read(max_count i32) choice (Sequence u8) io.end_of_file error =>
     if remaining.get <= 0
       io.end_of_file
     else
       match (io.buffered LM).reader.env.read
         s Sequence =>
-          c := s.take (min remaining.get count)
+          c := s.take (min remaining.get max_count)
           remaining <- remaining.get - c.count
           (io.buffered LM).reader.env.discard c.count
           c
@@ -251,10 +251,10 @@ module body_helper(LM type : mutate, is_req bool, header_fields container.Map St
 
     else if header_fields.has "transfer-encoding"
 
-      transfer_encodings := header_fields["transfer-encoding"].val.split "," .map (.trim)
+      transfer_encodings := header_fields["transfer-encoding"].or_panic.split "," .map (.trim)
 
       # If a Transfer-Encoding header field is present and the chunked transfer coding (Section 7.1) is the final encoding, the message body length is determined by reading and decoding the chunked data until the transfer coding indicates the data is complete.
-      if transfer_encodings.last.val = "chunked"
+      if transfer_encodings.last.or_panic = "chunked"
         panic "NYI: UNDER DEVELOPMENT: chunked transfer encoding not yet supported"
 
       # If a Transfer-Encoding header field is present in a response and the chunked transfer coding is not the final encoding, the message body length is determined by reading the connection until it is closed by the server.
@@ -267,7 +267,7 @@ module body_helper(LM type : mutate, is_req bool, header_fields container.Map St
         cause "400 bad request, Transfer-Encoding header field is present in a request and the chunked transfer coding is not the final encoding"
 
     else if header_fields.has "content-length"
-      match header_fields["content-length"].val.parse_u64
+      match header_fields["content-length"].or_panic.parse_u64
         error =>
 
           # NYI: UNDER DEVELOPMENT: implement recovery

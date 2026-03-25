@@ -31,7 +31,7 @@ varargs_via_open_type_parameter =>
   test(A type ..., a A...) =>
 
     # to print, this uses just `$a`, i.e., `a.as_string` that will use the inherited
-    # `(Sequence containter.Typed_Value).as_string`.
+    # `(Sequence container.Typed_Value).as_string`.
     #
     # Efficiency-wise, this is not very satisfactory since all values will be boxed
     # as heap allocated ref instances.

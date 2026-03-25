@@ -104,7 +104,7 @@ webserver_java is
                       s := input.readLine
                       ready := input.ready
                     while s?? && (ready??)
-                    until s.val = "" || !ready.val
+                    until s.or_panic = "" || !ready.or_panic
                       r
                     else
                       say "#### {if (s.ok) s.err else ready.err}"

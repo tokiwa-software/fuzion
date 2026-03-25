@@ -52,7 +52,7 @@ public Webserver(/*NYI: UNDER DEVELOPMENT: custom thread pool TP type : concur.t
 
                 # compute response
                 #
-                response := h.call (http.read_request lm).get
+                response := h.call (http.read_request lm).or_panic
 
                 # send response
                 #
@@ -73,7 +73,7 @@ public Webserver(/*NYI: UNDER DEVELOPMENT: custom thread pool TP type : concur.t
         e error => log "failure starting the webserver: $e"
         unit =>
 
-    check tp_res.ok
+    tp_res.or_panic
 
 
 
