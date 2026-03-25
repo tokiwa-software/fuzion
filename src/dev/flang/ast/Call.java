@@ -2803,10 +2803,13 @@ public class Call extends AbstractCall
   {
     applyToActualsAndFormalTypes
       (resolvedFormalArgumentTypes(res, context),
-       (actual, formalType) -> actual.propagateExpectedType(res,
-                                                            context,
-                                                            formalType,
-                                                            () -> "formal argument type in call to " + AstErrors.s(_calledFeature)));
+       (actual, formalType) ->
+        formalType == Types.t_UNDEFINED
+          ? actual
+          : actual.propagateExpectedType(res,
+                                         context,
+                                         formalType,
+                                         () -> "formal argument type in call to " + AstErrors.s(_calledFeature)));
 
     if (_target != null)
       {
