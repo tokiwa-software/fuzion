@@ -715,7 +715,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                   {
                     result |= p.type().applyTypePars(actual)==actual
                       ? false
-                      : !p.calledFeature().isChoice() && constraintAssignableFrom(context, p.type().applyTypePars(actual));
+                      : constraintAssignableFrom(context, p.type().applyTypePars(actual));
                   }
               }
           }
