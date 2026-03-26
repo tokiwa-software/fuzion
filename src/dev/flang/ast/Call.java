@@ -1193,6 +1193,19 @@ public class Call extends AbstractCall
   }
 
 
+  @Override
+  AbstractType typeForInferencing(Context context)
+  {
+    var result = typeForInferencing();
+    if (result != null && result.isGenericArgument())
+      {
+        result = result.genericArgument().constraint(context);
+        _type = result;
+      }
+    return result;
+  }
+
+
   /**
    * type returns the type of this expression or Types.t_ERROR if the type is
    * still unknown, i.e., before or during type resolution.
