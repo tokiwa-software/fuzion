@@ -148,7 +148,7 @@ public class Match extends AbstractMatch
    */
   void resolveTypes(Resolution res, Context context)
   {
-    var st = _subject.typeForInferencing();
+    var st = _subject.typeForInferencing(context);
     if (st != null && st != Types.t_ERROR && !st.isGenericArgument())
       {
         res.resolveTypes(st.feature());

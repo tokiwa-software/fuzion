@@ -102,6 +102,16 @@ public abstract class AbstractBlock extends Expr
   }
 
 
+  @Override
+  AbstractType typeForInferencing(Context context)
+  {
+    Expr resExpr = resultExpression();
+    return resExpr == null
+      ? Types.resolved.t_unit
+      : resExpr.typeForInferencing(context);
+  }
+
+
   /**
    * type returns the type of this expression or Types.t_ERROR if the type is
    * still unknown, i.e., before or during type resolution.
