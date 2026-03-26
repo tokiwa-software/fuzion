@@ -1200,7 +1200,10 @@ public class Call extends AbstractCall
     if (result != null && result.isGenericArgument())
       {
         result = result.genericArgument().constraint(context);
-        _type = result;
+        if (result.compareTo(Types.resolved.t_Any) != 0)
+          {
+            _type = result;
+          }
       }
     return result;
   }
