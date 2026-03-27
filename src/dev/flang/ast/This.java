@@ -251,14 +251,25 @@ public class This extends ExprWithPos
         getOuter = new Current(pos(), cur);
         while (f != Types.f_ERROR && cur != f && !cur.isUniverse())
           {
-            var or = cur.outerRef();
-            if (CHECKS) check
-              (Errors.any() || (or != null));
-            if (or != null)
+            // we did not find `f` yet and cur.isCotype
+            // so we set getOuter to `f.this.type`
+            // see #5563 for an example where this is needed.
+            if (cur.isCotype())
               {
-                getOuter = new Call(pos(), getOuter, or).resolveTypes(res, context);
+                getOuter = Call.typeAsValue(pos(), f.cotypeOrigin().thisType());
+                cur = f;
               }
-            cur = cur.outer();
+            else
+              {
+                var or = cur.outerRef();
+                if (CHECKS) check
+                  (Errors.any() || (or != null));
+                if (or != null)
+                  {
+                    getOuter = new Call(pos(), getOuter, or).resolveTypes(res, context);
+                  }
+                cur = cur.outer();
+              }
           }
       }
 
