@@ -1942,7 +1942,7 @@ A ((Choice)) declaration must not contain a result type.
   {
     if (f.preFeature() != null || f.postFeature() != null)
       {
-        AstErrors.choiceMustInheritContract(c, f);
+        AstErrors.choiceMustNotInheritContract(c, f);
       }
     f.inherits().forEach(inh -> checkNoContract(c, inh.calledFeature()));
   }

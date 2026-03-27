@@ -2612,7 +2612,7 @@ public class AstErrors extends ANY
       "Expected " + exp + " variable names but found " + found);
   }
 
-  public static void choiceMustInheritContract(Feature c, AbstractFeature f)
+  public static void choiceMustNotInheritContract(Feature c, AbstractFeature f)
   {
     error(c.pos(), "Choice must not inherit from feature with contract.",
       "The feature that "+ s(c) + " inherits that has a contract:\n" + s_feat_with_pos(f));
