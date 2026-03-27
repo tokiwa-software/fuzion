@@ -42,7 +42,6 @@ import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.Pair;
 import dev.flang.util.SourcePosition;
-import dev.flang.util.SourceRange;
 import dev.flang.util.StringHelpers;
 import dev.flang.util.Terminal;
 
@@ -2611,6 +2610,12 @@ public class AstErrors extends ANY
       pos,
       "Non-exhaustive destructuring is forbidden.",
       "Expected " + exp + " variable names but found " + found);
+  }
+
+  public static void choiceMustNotInheritContract(Feature c, AbstractFeature f)
+  {
+    error(c.pos(), "Choice must not inherit from feature with contract.",
+      "The feature that "+ s(c) + " inherits that has a contract:\n" + s_feat_with_pos(f));
   }
 
 }

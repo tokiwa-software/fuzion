@@ -1861,9 +1861,7 @@ public class Feature extends AbstractFeature
       }
 
 
-    SortedSet<AbstractFeature> choiceFields = new TreeSet<>(
-      Comparator.comparing(AbstractFeature::pos)
-    );
+    var choiceFields = new TreeSet<>(Comparator.comparing(AbstractFeature::pos));
 
     res._module.forEachDeclaredOrInheritedFeature(this,
                                                   p ->
@@ -1928,6 +1926,25 @@ A ((Choice)) declaration must not contain a result type.
       {
         p.calledFeature().checkNoClosureAccesses(res, p.pos());
       }
+
+    checkNoContract(this, this);
+  }
+
+
+  /**
+   * Check that choice does not inherit contract
+   *
+   * @param c the choice
+   *
+   * @param f the inherited feature that is currently checked
+   */
+  private static void checkNoContract(Feature c, AbstractFeature f)
+  {
+    if (f.preFeature() != null || f.postFeature() != null)
+      {
+        AstErrors.choiceMustNotInheritContract(c, f);
+      }
+    f.inherits().forEach(inh -> checkNoContract(c, inh.calledFeature()));
   }
 
 
