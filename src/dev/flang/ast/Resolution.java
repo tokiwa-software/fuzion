@@ -26,7 +26,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import java.util.Comparator;
 import java.util.LinkedList;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -216,7 +219,37 @@ public class Resolution extends ANY
   /**
    * List of features scheduled for second pass of type checking
    */
-  final LinkedList<Feature> forCheckTypes = new LinkedList<>();
+  final SortedSet<Feature> forCheckTypes = new TreeSet<>(
+                                                Comparator.comparing(x->x,
+                                                  (x,y) ->
+                                                    {
+                                                      /**
+                                                       * The idea here is to check types in sourcecode order
+                                                       * and to check features like universe with built-in pos last.
+                                                       */
+                                                      var fc = x.compareTo(y);
+                                                      if (fc == 0 || x.pos().isBuiltIn() && y.pos().isBuiltIn())
+                                                        {
+                                                          return fc;
+                                                        }
+                                                      else if (x.pos().isBuiltIn())
+                                                        {
+                                                          return +1;
+                                                        }
+                                                      else if (y.pos().isBuiltIn())
+                                                        {
+                                                          return -1;
+                                                        }
+                                                      else
+                                                        {
+                                                          var c = x.pos().compareTo(y.pos());
+                                                          return c == 0
+                                                            ? fc
+                                                            : c;
+                                                        }
+                                                    }
+                                                )
+                                               );
 
 
   /*--------------------------  constructors  ---------------------------*/
