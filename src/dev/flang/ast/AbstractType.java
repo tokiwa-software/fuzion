@@ -767,13 +767,19 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         var gt = g.selfOrConstraint(context);
 
         if (
-          // NYI: BUG: #5002: check recursive type, e.g.:
-          // this  = monad monad.A monad.MA
-          // other = monad option.T (option option.T)
-          // for now just prevent infinite recursion
-            gt.compareTo(this) != 0 &&
-
-            !gt.constraintAssignableFrom(context, og))
+          switch (g.kind())
+            {
+              case GenericArgument -> 
+                                      // NYI: BUG: #5002: check recursive type, e.g.:
+                                      // this  = monad monad.A monad.MA
+                                      // other = monad option.T (option option.T)
+                                      // for now just prevent infinite recursion
+                                      gt.compareTo(this) != 0
+                                      &&
+                                      !gt.constraintAssignableFrom(context, og);
+              case ValueType, RefType, ThisType -> g.compareTo(og) != 0;
+            }
+          )
           {
             return false;
           }
