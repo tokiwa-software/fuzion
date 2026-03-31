@@ -769,11 +769,14 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         if (
           switch (g.kind())
             {
+              case GenericArgument -> 
                                       // NYI: BUG: #5002: check recursive type, e.g.:
                                       // this  = monad monad.A monad.MA
                                       // other = monad option.T (option option.T)
                                       // for now just prevent infinite recursion
-              case GenericArgument -> gt.compareTo(this) != 0 && !gt.constraintAssignableFrom(context, og);
+                                      gt.compareTo(this) != 0
+                                      &&
+                                      !gt.constraintAssignableFrom(context, og);
               case ValueType, RefType, ThisType -> g.compareTo(og) != 0;
             }
           )
