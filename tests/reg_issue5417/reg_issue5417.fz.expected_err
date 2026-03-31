@@ -1,0 +1,52 @@
+
+--CURDIR--/reg_issue5417.fz:32:15: error 1: Ambiguous type
+            f ex.this,               # 1. should flag an error: Ambiguous type
+--------------^^
+For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
+Type that is ambiguous: 'ex'
+Possible features that match this type: 
+'ex.ex.ex' defined at --CURDIR--/reg_issue5417.fz:28:5:
+    ex is
+----^^
+and 'ex.ex' defined at --CURDIR--/reg_issue5417.fz:26:3:
+  ex is
+--^^
+and 'ex' defined at --CURDIR--/reg_issue5417.fz:24:1:
+ex is
+^^
+
+To solve this, rename these features such that each one has a unique name.
+
+
+--CURDIR--/reg_issue5417.fz:33:15: error 2: Ambiguous type
+            g ex.ex.this) is         # 2. should flag an error: Ambiguous type
+--------------^^^^^
+For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
+Type that is ambiguous: 'ex'
+Possible features that match this type: 
+'ex.ex.ex' defined at --CURDIR--/reg_issue5417.fz:28:5:
+    ex is
+----^^
+and 'ex.ex' defined at --CURDIR--/reg_issue5417.fz:26:3:
+  ex is
+--^^
+
+To solve this, rename these features such that each one has a unique name.
+
+
+--CURDIR--/reg_issue5417.fz:35:16: error 3: Could not find called feature
+        _ := d.c                      # 3. should flag an error: Could not find called feature
+---------------^
+Feature not found: 'c' (no arguments)
+Target feature: 'ex.ex'
+In call: 'd.c'
+
+
+--CURDIR--/reg_issue5417.fz:36:16: error 4: Could not find called feature
+        _ := e.b                      # 4. should flag an error: Could not find called feature
+---------------^
+Feature not found: 'b' (no arguments)
+Target feature: 'ex.ex.ex'
+In call: 'e.b'
+
+4 errors.
