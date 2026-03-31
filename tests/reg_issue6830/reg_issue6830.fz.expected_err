@@ -1,12 +1,5 @@
 
---CURDIR--/reg_issue6830.fz:66:9: error 1: Incompatible type parameter
-      p.w x
---------^
-formal type parameter '_ : reg_issue6830.part2.this.storage String' with constraint '#_2.storage String'
-actual type parameter 'reg_issue6830.part2.this.storage String'
-
-
---CURDIR--/reg_issue6830.fz:38:17: error 2: Wrong type parameter constraint in redefined feature
+--CURDIR--/reg_issue6830.fz:38:17: error 1: Wrong type parameter constraint in redefined feature
       redef w(s _ : storage Any) =>
 ----------------^
 In 'reg_issue6830.part1.g.w' that redefines 'reg_issue6830.part1.Fref.w'
@@ -21,7 +14,7 @@ To solve this, change constraint of type parameter to 'reg_issue6830.part1.this.
 ----------------^
 
 
---CURDIR--/reg_issue6830.fz:61:17: error 3: Wrong type parameter constraint in redefined feature
+--CURDIR--/reg_issue6830.fz:61:17: error 2: Wrong type parameter constraint in redefined feature
       redef w(s _ : storage Any) =>
 ----------------^
 In 'reg_issue6830.part2.g.w' that redefines 'reg_issue6830.part2.f.w'
@@ -34,5 +27,12 @@ Original argument declared at --CURDIR--/reg_issue6830.fz:57:11:
 To solve this, change constraint of type parameter to 'reg_issue6830.part2.this.storage String' at --CURDIR--/reg_issue6830.fz:61:17:
       redef w(s _ : storage Any) =>
 ----------------^
+
+
+--CURDIR--/reg_issue6830.fz:66:9: error 3: Incompatible type parameter
+      p.w x
+--------^
+formal type parameter '_ : reg_issue6830.part2.this.storage String' with constraint '#_2.storage String'
+actual type parameter 'reg_issue6830.part2.this.storage String'
 
 3 errors.
