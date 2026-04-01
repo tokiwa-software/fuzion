@@ -23,6 +23,8 @@
 #
 # -----------------------------------------------------------------------
 
+# ascii -- unit feature to group ascii encoding related features
+#
 public ascii is
 
   ##

@@ -61,7 +61,7 @@ is
       indices1.map j->(i,j)
 
 
-  public index [ ] (I type : idx, i1, i2 I) T
+  public index [ ] (I type : integer, i1, i2 I) T
     pre
       safety: 0 ≤ i1.as_i32 < length0
       safety: 0 ≤ i2.as_i32 < length1

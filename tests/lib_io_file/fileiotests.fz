@@ -45,8 +45,8 @@ fileiotests =>
     .bind (_ -> say "$file was created")
   say "$file exists: {f.exists file}"
 
-  say "stat resolve=true : $file size is {(f.stat file true).val.size}"
-  say "stat resolve=false: $file size is {(f.stat file false).val.size}"
+  say "stat resolve=true : $file size is {(f.stat file true).or_panic.size}"
+  say "stat resolve=false: $file size is {(f.stat file false).or_panic.size}"
 
   _ := f.use file f.mode.read ()->
     f.open.seek ()->

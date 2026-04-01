@@ -118,7 +118,7 @@ is
   public base_name String
     pre debug: !names.is_empty
   =>
-    names.last.get
+    names.last.or_panic
 
   # consider this to represent a file
   # and return just name of the file
@@ -158,7 +158,7 @@ is
 
   # relativize path `p` based on this path.
   #
-  # e.g. "/tmp/folder".relative "/tmp/folder/file" will return "file"
+  # e.g. "/tmp/folder".relativize "/tmp/folder/file" will return "file"
   #
   public relativize(p path) path
     pre debug: p.starts_with (path.of names is_absolute)
@@ -177,6 +177,16 @@ is
     is_absolute = p.is_absolute &&
       p.names.count <= names.count &&
       (names.take p.names.count) = p.names
+
+
+  # this relative path resolved against
+  # the current working directory (`os.cwd`)
+  #
+  public as_absolute outcome path
+    pre debug: !is_absolute
+  =>
+    os.cwd.bind c->
+      c.resolve (path names is_absolute)
 
 
   # String representation of this path
@@ -237,7 +247,7 @@ is
   public type.separator codepoint =>
     # NYI: UNDER DEVELOPMENT: cache this globally
     (cache separator_cache ()->
-      separator_cache (os.platform.get ? os.posix => "/" | os.windows => "\\")).val
+      separator_cache (os.platform.or_panic ? os.posix => "/" | os.windows => "\\")).val
 
 
   # instantiates a path

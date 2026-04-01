@@ -26,7 +26,7 @@
 #
 # This feature creates an instance of a Set.
 #
-public container.set_of_hashable(K type : property.hashable, vs (lock_free.Map K unit) | (Sequence K)) : Set K is
+public container.set_of_hashable(K type : property.hashable, vs (lock_free.Map K unit) | (Sequence K)) : container.Set K is
 
   map lock_free.Map K unit :=
     match vs
@@ -50,7 +50,7 @@ public container.set_of_hashable(K type : property.hashable, vs (lock_free.Map K
   #
   # NYI: UNDER DEVELOPMENT: this should be integrated in the mutate effect!
   #
-  public fixed redef add (k K) Set K =>
+  public fixed redef add (k K) container.Set K =>
     ss := map.snapshot false
     ss.put k unit
     set_of_hashable ss
@@ -59,7 +59,7 @@ public container.set_of_hashable(K type : property.hashable, vs (lock_free.Map K
   # remove an element k from the set if it exists.
   # return the same set if it does not exist.
   #
-  public remove (k K) Set K =>
+  public remove (k K) container.Set K =>
     ss := map.snapshot false
     _ := ss.remove k
     set_of_hashable ss

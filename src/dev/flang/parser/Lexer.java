@@ -3494,8 +3494,8 @@ PIPE        : "|"
           switch (end(t))
             {
             case DOLLAR -> _state = StringState.IDENT_EXPECTED;
-            case BRACE -> _state = StringState.EXPR_EXPECTED;
-            default -> throw new Error("default:");
+            case BRACE  -> _state = StringState.EXPR_EXPECTED;
+            default     -> throw new Error("default:");
             }
         }
       return t;

@@ -110,7 +110,7 @@ catch_postcondition is
             m <- msg
             fuzion.runtime.post_fault.abort)
           try
-          (_ -> catch m.get.get))
+          (_ -> catch m.get.or_panic))
 
 
   # -------------------------------

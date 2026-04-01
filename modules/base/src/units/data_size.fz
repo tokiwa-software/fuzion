@@ -321,7 +321,7 @@ is
                   # to prevent rounding that would display a value larger than the actual size.
                   #
                   # NYI: CLEANUP: use float formatting once available: <10 two decimals, >=10 one decimal
-                  ((bytes / smaller_bytes.val).as_f64 / factor).as_string.pad "0" 4 .substring 0 4
+                  ((bytes / smaller_bytes.or_panic).as_f64 / factor).as_string.pad "0" 4 .substring 0 4
 
     (n, u_short_name)
 
@@ -331,10 +331,10 @@ is
   #
   public unit_iec_for_as_string units.byte_iec =>
     for
-      x := units.byte_iec.b, nx.get
+      x := units.byte_iec.b, nx.or_panic
       nx := x.larger
     while nx >>? (u -> bytes / u.in_bytes >= 1024.as_u128)
-    else nx >>? (u -> bytes / u.in_bytes > 0.as_u128) ? nx.val : x
+    else nx >>? (u -> bytes / u.in_bytes > 0.as_u128) ? nx.or_panic : x
 
 
   # Determines the si prefixed unit to use for as_string,
@@ -342,10 +342,10 @@ is
   #
   public unit_si_for_as_string units.byte_si =>
     for
-      x := units.byte_si.b, nx.get
+      x := units.byte_si.b, nx.or_panic
       nx := x.larger
     while nx >>? (u -> bytes / u.in_bytes >= 1E3.as_u128)
-    else nx >>? (u -> bytes / u.in_bytes > 0.as_u128) ? nx.val : x
+    else nx >>? (u -> bytes / u.in_bytes > 0.as_u128) ? nx.or_panic : x
 
   # total order
   #

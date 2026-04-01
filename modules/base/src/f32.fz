@@ -225,11 +225,11 @@ public f32(public val f32) : float, java_primitive is
     val.as_f32
 
 
-  public fixed redef type.min_exp i32 => intrinsic
-  public fixed redef type.max_exp i32 => intrinsic
-  public fixed redef type.min_positive f32 => intrinsic
-  public fixed redef type.max f32 => intrinsic
-  public fixed redef type.epsilon f32 => intrinsic
+  public fixed redef type.min_exp i32 => -126
+  public fixed redef type.max_exp i32 => +127
+  public fixed redef type.min_positive f32 => 1.0P-126
+  public fixed redef type.max f32 => 3.4028234664E38
+  public fixed redef type.epsilon f32 => 1.0P-23
 
 
   # atan(y/x) with a few special cases

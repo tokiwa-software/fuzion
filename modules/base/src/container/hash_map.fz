@@ -98,7 +98,7 @@ is
     post
       # NYI: OPTIMIZATION: this post-conditions causes sever performance degradation in the example from #5885, need to check why.
       #
-      # debug: result.min.get > (hash_map HK V).max_size
+      # debug: result.min.or_panic > (hash_map HK V).max_size
   =>
     cached_primes(p array u64) is
     (cache cached_primes ()->
@@ -136,7 +136,7 @@ is
              234844915899376649,
              859627742854685113]
       check
-        debug: ps.min.get > (hash_map HK V).max_size
+        debug: ps.min.or_panic > (hash_map HK V).max_size
       cached_primes ps
     ).p
 

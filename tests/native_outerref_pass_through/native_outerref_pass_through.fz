@@ -92,7 +92,6 @@ sqlite_database(db Native_Ref) : Database is
     else
       error "could not open database"
 
-# NYI: CLEANUP: support local mutates
 _ := mut
 
 _ := (sqlite_database.open "test.db").bind unit db->

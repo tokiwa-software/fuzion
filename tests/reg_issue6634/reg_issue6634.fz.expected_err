@@ -1,0 +1,9 @@
+
+--CURDIR--/reg_issue6634.fz:34:42: error 1: Could not find called feature
+      (()-> for i:=1E5,i-°1 while i>0 do)*1E5
+-----------------------------------------^
+Feature not found: 'infix/infix_right *' (one argument)
+Target feature: 'ex.λ'
+In call: '(()-> for i:=1E5,i-°1 while i>0 do)*1E5'
+
+one error.

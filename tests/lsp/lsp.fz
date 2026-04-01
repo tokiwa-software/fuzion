@@ -25,18 +25,7 @@
 
 # used for protecting spaces when splitting command string
 #
-protected_space := codepoint codepoint.utf8_encoded_in_four_bytes.as_list.last.val
-
-# stores the results of a process
-#
-process_result(out String, err String, exit_code u32) is
-  ok => exit_code = 0
-
-  type.empty_success =>
-    process_result "" "" 0
-
-  public redef as_string String =>
-    "{exit_code}: {out}{err}"
+protected_space := codepoint codepoint.utf8_encoded_in_four_bytes.as_list.last.or_panic
 
 # envir vars as map
 #
@@ -78,7 +67,7 @@ record_process(
       cmd String,
       # feed .stdin file to executed process?
       feed_stdin Sequence (String, i32)
-) process_result =>
+) tokiwa.process_result =>
 
   lm : mutate is
 
@@ -95,8 +84,8 @@ record_process(
           match (io.buffered lm).read_line
             io.end_of_file => panic "eof"
             out String =>
-              len := out.substring "Content-Length:".byte_length .trim .parse_i32.val
-              fout <- fout.add (String.from <| (io.buffered lm).read_bytes len+2 /* +2 because \r\n */ .val)
+              len := out.substring "Content-Length:".byte_length .trim .parse_i32.or_panic
+              fout <- fout.add (String.from <| (io.buffered lm).read_bytes len+2 /* +2 because \r\n */ .or_panic)
         check y.ok
 
 
@@ -107,9 +96,9 @@ record_process(
   match p.wait (time.duration.s 1)
     error =>
       check p.send_signal os.signals.kill .ok
-      process_result (String.join_lines fout.get) "" 1
+      tokiwa.process_result (String.join_lines fout.get) "" 1
     ec u32 =>
-      process_result (String.join_lines fout.get) "" ec
+      tokiwa.process_result (String.join_lines fout.get) "" ec
 
 # execute this Sequence of process+args
 #
@@ -118,7 +107,7 @@ Sequence.execute(
   feed_stdin Sequence (String, i32)
 ) =>
   seq := map x->x.as_string
-  match os.process.start seq.first.val (seq.drop 1) envir_vars
+  match os.process.start seq.first.or_panic (seq.drop 1) envir_vars
     e error => panic "failed executing {Sequence.this}, error is $e"
     p os.process => record_process p Sequence.this.as_string feed_stdin
 
@@ -253,7 +242,7 @@ as_json_rpc(str String) =>
   b := str.replace "\n" "\r\n"
   "Content-Length: {b.byte_length}\r\n\r\n{b}"
 
-fuzion_home := os.cwd.val.resolve "../../" .as_string
+fuzion_home := os.cwd.or_panic.resolve "../../" .as_string
 
 test_def := [(init_req, 2), (open_file_req, 4), (hover_req, 3), (open_file_req2, 4), (completion_req, 3), (shutdown_req, 1)]
   .map_to_array t->

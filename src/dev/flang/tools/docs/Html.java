@@ -26,15 +26,20 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.tools.docs;
 
+import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.TreeSet;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -45,8 +50,11 @@ import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
 import dev.flang.fe.LibraryFeature;
 import dev.flang.fe.LibraryModule;
+import dev.flang.tools.FuzionHome;
 import dev.flang.tools.Tool;
 import dev.flang.util.ANY;
+import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 
 
@@ -230,6 +238,7 @@ public class Html extends ANY
                : af.isConstructor()   ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" is") + "</div>"
                : af.isField()         ? "&nbsp;" + anchorType(af, outer, relativeTo) //+ "_af:" + af.featureName().baseName() + "_out:" + (outer != null ? outer.featureName().baseName() : "_out=null")
                                       : "")
+            + annotateUnitType(af)
             + annotateInherited(af, outer)
             + annotateRedef(af, outer)
             + annotateAbstract(af)
@@ -243,6 +252,24 @@ public class Html extends ANY
         + "</div>"
         + source(af)
       + "</div>";
+  }
+
+  /**
+   * Returns an HTML-formatted annotation for features the frontend knows
+   * to be unit types
+   *
+   * This only works for features directly in universe, as all inner features have an outer reference
+   *
+   * @param af the feature to for which to create the annotation for
+   * @return html to annotate a unit type feature
+   */
+  private String annotateUnitType(AbstractFeature af)
+  {
+    return af.isUnitType()
+      ? "<div class='fd-parent ml-10' title='This feature is guaranteed to be a unit type, "
+        + "it does not have any internal state and might serve as a namespace.\n\n"
+        + "Note that features without this annotation might still be unit types.'>[Unit Type]</div>" // NYI: replace title attribute with proper tooltip
+      : "";
   }
 
   /**
@@ -307,10 +334,17 @@ public class Html extends ANY
             ? ""
             : "<div class='fd-parent ml-10'>[Redefinition of&nbsp; <span class=fz-code>$0</span>]</div>"
               .replace("$0", (redefs.stream()
-                                    .map(f->"<a class='' href='" + featureRelativeURL(f, relativeTo) + "'>" +
-                                              htmlEncodedQualifiedName(f) + "</a>")
+                                    .map(f->relativeAnchor(f, relativeTo))
                                     .collect(Collectors.joining(",&nbsp;")) ));
   }
+
+
+  private String relativeAnchor(AbstractFeature f, AbstractFeature relativeTo)
+  {
+    return "<a class='' href='" + featureRelativeURL(f, relativeTo) + "'>" +
+              htmlEncodedQualifiedName(f) + "</a>";
+  }
+
 
   /**
    * Is this feature or any one of the features it inherits from not public
@@ -530,6 +564,7 @@ public class Html extends ANY
 
   /**
    * The summaries and the comments of the features
+   *
    * @param heading the title for this section
    * @param description text block shown under the headline, can be null
    * @param set the features to be included in the summary
@@ -561,7 +596,7 @@ public class Html extends ANY
         // NYI: UNDER DEVELOPMENT: rename fd-private?
         .replace("$0", (config.ignoreVisibility() && !Util.isVisible(af)) ? "class='fd-private cursor-pointer' hidden" : "class='cursor-pointer'")
         .replace("$1", summary(af, outer))
-        .replace("$2", Util.commentOf(af))
+        .replace("$2", commentOf(af))
         .replace("$3", redefines(af, (outer != null ? outer : af)))
     )
     .collect(Collectors.joining(System.lineSeparator()));
@@ -577,13 +612,178 @@ public class Html extends ANY
    */
   private String headingSection(AbstractFeature f)
   {
-    return "<h1 hidden>$0</h1><h1>$1</h1><div class='heading-summary'>$2</div><div class='fd-comment'>$3</div>$4"
+    return "<h1 hidden>$0</h1><h1>$1</h1><div class='heading-summary'>$2</div><div class='fd-comment'>$3</div><div class='fd-contract'>$4</div>$5"
       .replace("$0", f.isUniverse() ? lm.name() : htmlEncodedBasename(f)) // short version of title for navtitle
       .replace("$1", f.isUniverse() ? "API-Documentation: module <code style=\"font-size: 1.4em; vertical-align: bottom;\">" + lm.name() + "</code>" : anchorTags(f))
       .replace("$2", f.isUniverse() ? "": summary(f))
-      .replace("$3", Util.commentOf(f))
-      .replace("$4", redefines(f, f));
+      .replace("$3", commentOf(f))
+      .replace("$4", contractOf(f))
+      .replace("$5", redefines(f, f));
   }
+
+
+  /**
+   * The features pre- and postconditions in HTML
+   *
+   * @param af the feature for which to generate the HTML
+   * @return HTML showing the feature pre- and postconditions
+   */
+  private String contractOf(AbstractFeature af)
+  {
+    return contractFeatureSrc("Precondition" , "pre" , af, f->f.preFeature()) +
+           contractFeatureSrc("Postcondition", "post", af, f->f.postFeature());
+  }
+
+
+  /**
+   * Generate HTML for one type of a features contract, e.g. precondition
+   *
+   * @param contractType what the contract is called, e.g. "Precondition"
+   * @param af the feature for which to generate the HTML for
+   * @param contractFeature the function to obtain the contract feature from feature af
+   * @return HTML sowing the specified contract of the feature
+   */
+  private String contractFeatureSrc(String contractType, String keyword, AbstractFeature af, Function<AbstractFeature, AbstractFeature> contractFeature)
+  {
+    record Tuple(AbstractFeature fst, AbstractFeature snd) {}
+
+    // first tuple element is the feature from which the contract was inherited, second is the contract itself
+    var res = Stream.concat(Stream.of(new Tuple(null, contractFeature.apply(af))),
+                            af.redefinesFull().stream().map(f->new Tuple(f, contractFeature.apply(f))))
+      .filter(t->t.snd != null && startsWithKeyword(keyword, t.snd.sourceText()))
+      .map(t->(t.fst != null ? "<br>Inherited from <span class=fd-fname>" + relativeAnchor(t.fst, af) + "</span><br>" : "")
+                + "<div class=fz-code><pre>" + contractSrc(t.snd)
+                + "</pre></div>")
+      .collect(Collectors.joining());
+
+    return res.isBlank() ? "" : "<details close><summary><span class=fd-contract-title>" + contractType + "</span></summary>" + res + "</details>";
+  }
+
+  /**
+   * Does text start with keyword, ignoring whitespaces at the beginning
+   *
+   * NYI: OPTIMIZATION: This is a poor way to determine if a feature with a pre-/postcondition defines one itself or only
+   *                    inherits one. If a precondition is inherited but not defined `.preFeature().sourceText()`
+   *                    returns the source code of the feature itself, and not an empty string.
+   *                    So there seems to be no simple and good way to do this at the moment.
+   *
+   * @param keyword the keyword to look for
+   * @param text the text in which to look for the keyword
+   * @return true iff the first word in the text is the keyword
+   */
+  private boolean startsWithKeyword(String keyword, String text)
+  {
+    int i = 0;
+    int len = text.length();
+
+    while (i < len && Character.isWhitespace(text.charAt(i)))
+      {
+        i++;
+      }
+
+    return text.startsWith(keyword + " ", i) || text.startsWith(keyword + "\n", i);
+  }
+
+  /**
+   * Get the source of a contract feature from the beginning of the line instead of its byte start position
+   * and strip indentation (i.e. unindent block without changing relative indentation)
+   *
+   * @param cf the contract feature for which to return the source code
+   * @return source of the contract feature with relative indentation intact
+   */
+  private String contractSrc(AbstractFeature cf)
+  {
+    var sr = cf.sourceRange();
+    var sf = sr._sourceFile;
+    return sf.sourceRange(sf.lineStartPos(sr.line()), sr.byteEndPos()).sourceText().stripIndent();
+  }
+
+
+  /**
+   * the comment belonging to this feature in HTML.
+   * If the comment does not exist, the comment of a redefined feature.
+   */
+  String commentOf(AbstractFeature af)
+  {
+    if (af.isUniverse())
+      {
+        return Html.processComment(FuzionConstants.UNIVERSE_NAME, universeComment());
+      }
+    // arguments that are defined on same line as feature have no comments.
+    if ((af.isArgument() || af.isTypeParameter()) && af.pos().line() == af.outer().pos().line())
+      {
+        return "";
+      }
+    var line = af.pos().line() - 1;
+    var commentLines = new ArrayList<String>();
+
+    // NYI: OPTIMIZATION: use lexer to retrieve comments
+    while (line > 0 && af.pos()._sourceFile.line(line).matches("(?s)^\\s*#.*"))
+      {
+        commentLines.add(af.pos()._sourceFile.line(line));
+        line = line - 1;
+      }
+
+    if (commentLines.stream().allMatch(l -> l.isBlank()))
+      {
+        if (!af.redefines().isEmpty())
+          {
+            return af.redefines().stream().flatMap(r ->
+              {
+                var c = commentOf(r);
+                return c.isBlank()
+                  ? Stream.empty()
+                  : c.startsWith("<details open>")
+                  ? Stream.of(c)
+                  : Stream.of(
+                    "<details open><summary>Comment of <span class=fd-fname>" +
+                    relativeAnchor(r, af.outer())
+                    + "</span></summary>" + c + "</details>"
+                  );
+              }
+            )
+            .collect(Collectors.joining());
+          }
+        say_err("Warning: No comment found for " + af.qualifiedName());
+      }
+
+    Collections.reverse(commentLines);
+
+    var result = Html.processComment(af.qualifiedName() + af.featureName().argCount() + "_", commentLines
+      .stream()
+      .map(l -> l.trim())
+      .map(l -> l
+        .replaceAll("^#", "")
+        .replaceAll("^ ", ""))
+      .collect(Collectors.joining(System.lineSeparator())));
+    return result;
+  }
+
+
+
+  private static String universeComment()
+  {
+    var uri = FuzionHome._fuzionHome.normalize().toAbsolutePath().resolve("modules/base/src/universe.fz").toUri();
+    try
+      {
+        return Files.readAllLines(Path.of(uri), StandardCharsets.UTF_8)
+          .stream()
+          .dropWhile(l -> !l.startsWith("# universe is the mother"))
+          .map(l -> l.trim())
+          .map(l -> l
+            .replaceAll("^#", "")
+            .replaceAll("^ ", ""))
+          .collect(Collectors.joining(System.lineSeparator()))
+          .trim();
+      }
+    catch (IOException e)
+      {
+        Errors.fatal("File universe.fz not found");
+        return "";
+      }
+  }
+
+
 
   /**
    * the html encoded basename of the feature af

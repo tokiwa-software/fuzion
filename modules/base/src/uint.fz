@@ -25,6 +25,7 @@
 
 # unsigned integer of arbitrary size, including zero
 # represented by its bit sequence
+#
 module:public uint (module b Sequence u32, _ unit) : has_interval
 is
 
@@ -139,7 +140,7 @@ is
     if uint.this = uint.zero
       uint.zero
     else
-      uint ((data.count.as_u32 - 1) * 32 + data.first.get.highest_bit).as_u64
+      uint ((data.count.as_u32 - 1) * 32 + data.first.or_panic.highest_bit).as_u64
 
 
   # add two unsigned ints
@@ -151,7 +152,7 @@ is
 
         bits, rest, carry_over := r
 
-        s := t.as_u64 + rest.first.get.as_u64 + carry_over
+        s := t.as_u64 + rest.first.or_panic.as_u64 + carry_over
 
         ([s.low32bits] ++ bits, (rest.drop 1), (s>>32))
 

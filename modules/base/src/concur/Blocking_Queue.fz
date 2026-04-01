@@ -41,7 +41,7 @@ module Blocking_Queue(T type) ref is
 
   # condition for synchronization
   #
-  cnd := concur.sync.condition.new.val # NYI: error handling
+  cnd := concur.sync.condition.new.or_panic # NYI: error handling
 
 
   module close =>

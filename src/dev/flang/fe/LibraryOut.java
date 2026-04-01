@@ -463,7 +463,7 @@ class LibraryOut extends ANY
       {
         k = k | FuzionConstants.MIR_FILE_KIND_IS_COTYPE;
       }
-    if ((f.modifiers() & FuzionConstants.MODIFIER_FIXED) != 0)
+    if (f.isFixed())
       {
         k = k | FuzionConstants.MIR_FILE_KIND_IS_FIXED;
       }

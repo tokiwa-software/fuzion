@@ -17,16 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature idx
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# idx is meant to be used as the parametrized
-# type in index features such as `index [] (I type : idx, i I)`
-#
-# this allows convenient index access via any
-# integer type (i8,...,u64) inheriting from idx
-# without manual conversion
-#
-public idx : integer is
-
+override NAME = reg_issue5967
+include ../compile.mk

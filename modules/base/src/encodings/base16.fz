@@ -106,7 +106,7 @@ is
       bits_4_7 := dec_char_at nxt+1
 
       byte := if bits_0_3.ok && bits_4_7.ok
-                [(bits_0_3.val << 4) | bits_4_7.val]
+                [(bits_0_3.or_panic << 4) | bits_4_7.or_panic]
               else [u8 0]              # decoding result not used in error case
 
     until bits_0_3.is_error || bits_4_7.is_error

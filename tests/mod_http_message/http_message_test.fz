@@ -70,7 +70,7 @@ TODO:
       say <| match req
                r http.request_message => r.as_string_with_body 1E4
                e error => $e
-      req.val
+      req.or_panic
   _:=parse_req
 
 
@@ -80,7 +80,7 @@ TODO:
   resp_path := path.of "http_resp.txt"
 
   _ := io.file.use _ resp_path io.file.mode.read ()->
-    resp := http.read_response io.file.file_mutate parse_req.val
+    resp := http.read_response io.file.file_mutate parse_req.or_panic
 
     say <| match resp
               r http.response_message => r.as_string_with_body 1E4

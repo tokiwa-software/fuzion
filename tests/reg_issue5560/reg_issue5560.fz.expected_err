@@ -1,0 +1,13 @@
+
+--CURDIR--/reg_issue5560.fz:24:3: error 1: Type inference from actual arguments failed due to incompatible types of actual arguments
+f(v) => say v
+--^
+For the formal argument 'f.v' the following incompatible actual arguments where found for type inference:
+actual is value of type 'codepoint' at --CURDIR--/reg_issue5560.fz:25:3:
+f "a"
+--^^^
+actual is value of type 'i32' at --CURDIR--/reg_issue5560.fz:26:3:
+f 1
+--^
+
+one error.

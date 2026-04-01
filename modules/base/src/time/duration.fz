@@ -184,7 +184,7 @@ is
   #
   public unit_for_as_string time.time_unit =>
     for
-      x := time.time_unit.ns, nx.get
+      x := time.time_unit.ns, nx.or_panic
       nx := x.larger
     while nx >>? (u -> nanos / u.in_ns >= 10) else
       x

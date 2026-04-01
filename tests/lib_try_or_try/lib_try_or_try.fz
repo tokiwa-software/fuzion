@@ -36,28 +36,28 @@
 #           v := F.new e->
 #               m <- e
 #               F.abort
-#           F.instate T v code_try (_ -> code_catch m.get.get)
+#           F.instate T v code_try (_ -> code_catch m.get.or_panic)
 # ```
 # and some example code
 # ```
-#    fuzion.runtime.contract_fault
-#      .try ()->(envir.args.nth 3).val.trim.parse_i32.val
-#      .or_try _->envir.vars["DEBUG_LEVEL"].val.trim.parse_i32.val
+#    panic
+#      .try ()->(envir.args.nth 3).or_panic.trim.parse_i32.or_panic
+#      .or_try _->envir.vars["DEBUG_LEVEL"].or_panic.trim.parse_i32.or_panic
 #      .catch  _->4
 # ```
 
 #  1) the catch of the try returned from `or_try` would first instatiate an lm. lets called it lm_1.
 #  2) the code of the catch calls the catch of the original try, this instantiates another lm, lets call it lm_2.
 #  3) code of the original try fails, writing to `m <- e`, m was created from lm_2, so all is good
-#  4) code_catch m.get.get is now executed, this code also fails, also writing to m via `m <- e` but this m was created from lm_1 while lm_2 is still instated => we get an invalid mutate error.
+#  4) code_catch m.get.or_panic is now executed, this code also fails, also writing to m via `m <- e` but this m was created from lm_1 while lm_2 is still instated => we get an invalid mutate error.
 
 
 # To work around this I introduced a `catch0` that uses the already instated `lm` and used this in `or_try`
 
 x :=
-  fuzion.runtime.contract_fault
-    .try ()->(envir.args.nth 3).val.trim.parse_i32.val
-    .or_try _->(say "failed envir args"; envir.vars["DEBUG_LEVEL"].val.trim.parse_i32.val)
+  panic
+    .try ()->(envir.args.nth 3).or_panic.trim.parse_i32.or_panic
+    .or_try _->(say "failed envir args"; envir.vars["DEBUG_LEVEL"].or_panic.trim.parse_i32.or_panic)
     .catch  _->(say "failed envir vars";4)
 
 say x

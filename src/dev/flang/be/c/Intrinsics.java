@@ -451,22 +451,6 @@ public class Intrinsics extends ANY
     put("f32.cast_to_u32"      , (c,cl,outer,in) -> outer.adrOf().castTo("fzT_1u32*").deref().ret());
     put("f64.cast_to_u64"      , (c,cl,outer,in) -> outer.adrOf().castTo("fzT_1u64*").deref().ret());
 
-    /* The C standard library follows the convention that floating-point numbers x × 2exp have 0.5 ≤ x < 1,
-     * while the IEEE 754 standard text uses the convention 1 ≤ x < 2.
-     * This convention in C is not just used for DBL_MAX_EXP, but also for functions such as frexp.
-     * source: https://github.com/rust-lang/rust/issues/88734
-     */
-    put("f32.type.min_exp"     , (c,cl,outer,in) -> CExpr.ident("FLT_MIN_EXP").sub(new CIdent("1")).ret());
-    put("f32.type.max_exp"     , (c,cl,outer,in) -> CExpr.ident("FLT_MAX_EXP").sub(new CIdent("1")).ret());
-    put("f32.type.min_positive", (c,cl,outer,in) -> CExpr.ident("FLT_MIN").ret());
-    put("f32.type.max"         , (c,cl,outer,in) -> CExpr.ident("FLT_MAX").ret());
-    put("f32.type.epsilon"     , (c,cl,outer,in) -> CExpr.ident("FLT_EPSILON").ret());
-    put("f64.type.min_exp"     , (c,cl,outer,in) -> CExpr.ident("DBL_MIN_EXP").sub(new CIdent("1")).ret());
-    put("f64.type.max_exp"     , (c,cl,outer,in) -> CExpr.ident("DBL_MAX_EXP").sub(new CIdent("1")).ret());
-    put("f64.type.min_positive", (c,cl,outer,in) -> CExpr.ident("DBL_MIN").ret());
-    put("f64.type.max"         , (c,cl,outer,in) -> CExpr.ident("DBL_MAX").ret());
-    put("f64.type.epsilon"     , (c,cl,outer,in) -> CExpr.ident("DBL_EPSILON").ret());
-
     put("fuzion.sys.type.alloc", (c,cl,outer,in) ->
         {
           var gc = c._fuir.clazzActualGeneric(cl, 0);
