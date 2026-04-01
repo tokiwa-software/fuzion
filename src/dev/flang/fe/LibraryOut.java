@@ -42,15 +42,11 @@ import dev.flang.ast.AbstractCurrent;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
-import dev.flang.ast.Box;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
-import dev.flang.ast.FormalGenerics;
 import dev.flang.ast.InlineArray;
-import dev.flang.ast.Nop;
 import dev.flang.ast.ResolvedType;
 import dev.flang.ast.State;
-import dev.flang.ast.Tag;
 import dev.flang.ast.Types;
 import dev.flang.ast.Universe;
 
@@ -115,7 +111,7 @@ class LibraryOut extends ANY
    *   +        +--------+---------------+-----------------------------------------------+
    *   |        | 1      | Name          | module name                                   |
    *   +        +--------+---------------+-----------------------------------------------+
-   *   |        | 1      | u128          | module version                                |
+   *   |        | 1      | u128          | module hash                                   |
    *   +        +--------+---------------+-----------------------------------------------+
    *   |        | 1      | int           | number of modules this module depends on n    |
    *   +        +--------+---------------+-----------------------------------------------+
@@ -135,7 +131,7 @@ class LibraryOut extends ANY
     _data = null;
 
     // now that we know the referenced modules, we start over:
-    var v = version();
+    var v = hash();
     if (v != null)
       {
         _data = new FixUps();
@@ -162,24 +158,15 @@ class LibraryOut extends ANY
 
 
   /**
-   * Create a version number of this module file.  Currently, the version is
-   * just a cryptographically strong random number.
+   * Create a cryptographic hash for this module file.
+   * Currently, the hash is just a cryptographically strong random number.
    */
-  byte[] version()
+  byte[] hash()
   {
-    var alg = "DRBG"; // or "SHA1PRNG"? NYI: Choose best algorithm here!
-    try
-      {
-        var result = new byte[16];
-        var r = SecureRandom.getInstance(alg);
-        r.nextBytes(result);
-        return result;
-      }
-    catch (NoSuchAlgorithmException e)
-      {
-        Errors.error("failed to produce secure random using algorithm '" + alg + "': " + e);
-        return null;
-      }
+    var result = new byte[16];
+    var r = new SecureRandom();
+    r.nextBytes(result);
+    return result;
   }
 
 
@@ -395,7 +382,7 @@ class LibraryOut extends ANY
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | short         | 0000REvvvFCYkkkk                              |
+   *   | true   | 1      | short         | 000OREvvvFCYkkkk                              |
    *   |        |        |               |           k = kind                            |
    *   |        |        |               |           Y = has Type feature (i.e. 'f.type')|
    *   |        |        |               |           C = is cotype                       |
@@ -403,6 +390,8 @@ class LibraryOut extends ANY
    *   |        |        |               |           v = visibility                      |
    *   |        |        |               |           R = has precondition feature        |
    *   |        |        |               |           E = has postcondition feature       |
+   *   |        |        |               |           O = hasValuesAsOpenTypeFeature      |
+   *   |        |        |               |               || isOpenTypeParameter          |
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | Name          | name                                          |
    *   |        |        +---------------+-----------------------------------------------+
@@ -420,6 +409,13 @@ class LibraryOut extends ANY
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | hasRT  | 1      | Type          | optional result type,                         |
    *   |        |        |               | hasRT = !isConstructor && !isChoice           |
+   *   |        |        |               |         && !isTypeParameter                   |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | O=1    | 1      | int           | open type Feature index                       |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | isType | 1      | Type          | constraint of (open) type parameters          |
+   *   | Parame |        |               |                                               |
+   *   | ter    |        |               |                                               |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | int           | inherits count i                              |
    *   | NYI!   |        |               |                                               |
@@ -457,12 +453,10 @@ class LibraryOut extends ANY
 
     _data.add(f);
     int k = f.visibility().ordinal() << 7;
-    k = k | (!f.isConstructor() ? f.kind().ordinal() :
-              f.isRef()         ? FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF
-                                : FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_VALUE);
+    k = k | f.kind().ordinal();
     if (CHECKS) check
       (k >= 0,
-       Errors.any() || f.isRoutine() || f.isChoice() || f.isIntrinsic() || f.isAbstract() || f.isNative() || f.generics() == FormalGenerics.NONE);
+       Errors.any() || f.isRoutine() || f.isChoice() || f.isIntrinsic() || f.isAbstract() || f.isNative() || f.typeArguments().isEmpty());
     if (f.hasCotype())
       {
         k = k | FuzionConstants.MIR_FILE_KIND_HAS_COTYPE;
@@ -471,7 +465,7 @@ class LibraryOut extends ANY
       {
         k = k | FuzionConstants.MIR_FILE_KIND_IS_COTYPE;
       }
-    if ((f.modifiers() & FuzionConstants.MODIFIER_FIXED) != 0)
+    if (f.isFixed())
       {
         k = k | FuzionConstants.MIR_FILE_KIND_IS_FIXED;
       }
@@ -490,6 +484,12 @@ class LibraryOut extends ANY
     if (postF != null)
       {
         k = k | FuzionConstants.MIR_FILE_KIND_HAS_POST_CONDITION_FEATURE;
+      }
+    if (f.hasValuesAsOpenTypeFeature() || f.isOpenTypeParameter())
+      {
+        if (CHECKS) check
+          (f.hasValuesAsOpenTypeFeature() != f.isOpenTypeParameter()); //  only one of these two holds
+        k = k | FuzionConstants.MIR_FILE_KIND_HAS_VALUES_OF_OPEN_TYPE_FEATURE;
       }
     var n = f.featureName();
     _data.writeShort(k);
@@ -516,9 +516,25 @@ class LibraryOut extends ANY
       }
     if (CHECKS) check
       (f.arguments().size() == argCount);
-    if (!f.isConstructor() && !f.isChoice())
+    if (!f.isConstructor() && !f.isChoice() && !f.isTypeParameter())
       {
         type(f.resultType());
+      }
+    if (f.hasValuesAsOpenTypeFeature())
+      {
+        _data.writeOffset(f.valuesAsOpenTypeFeature());
+      }
+    else if (f.isOpenTypeParameter())
+      {
+        if (CHECKS) check
+          (!f.hasValuesAsOpenTypeFeature(),
+           f.openTypesFeature() != null,
+           (k & FuzionConstants.MIR_FILE_KIND_HAS_VALUES_OF_OPEN_TYPE_FEATURE) != 0);
+        _data.writeOffset(f.openTypesFeature());
+      }
+    if (f.isTypeParameter())
+      {
+        type(f.constraint());
       }
     // NYI: Suppress output of inherits for fields, intrinsics, etc.?
     var i = f.inherits();
@@ -578,9 +594,9 @@ class LibraryOut extends ANY
   void type(AbstractType t)
   {
     if (PRECONDITIONS) require
-      (t != null, t != Types.t_ERROR, t != Types.t_UNDEFINED, t instanceof ResolvedType);
+      (t != null, !t.isArtificialType(), t instanceof ResolvedType);
 
-    // NYI: UNDER DEVELOPMENT: tk used as size of generics, therefor typekind written _twice_
+    // NYI: UNDER DEVELOPMENT: tk used as size of generics, therefore typekind written _twice_
     // clean this up and merge the two type kinds?
 
     var off = _data.offset(t);
@@ -726,21 +742,6 @@ class LibraryOut extends ANY
    */
         _data.writeOffset(a._assignedField);
       }
-    else if (e instanceof Box b)
-      {
-  /*
-   *   +---------------------------------------------------------------------------------+
-   *   | Box                                                                             |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | cond.  | repeat | type          | what                                          |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | Type          | box result type                               |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   */
-        lastPos = expressions(b._value, lastPos);
-        lastPos = exprKindAndPos(MirExprKind.Box, lastPos, e.sourceRange());
-        type(e.type());
-      }
     else if (e instanceof AbstractBlock b)
       {
         int i = 0;
@@ -843,7 +844,7 @@ class LibraryOut extends ANY
           }
         else
           {
-            n = cf.generics().list.size();
+            n = cf.typeArguments().size();
             if (CHECKS) check
               (c.actualTypeParameters().size() == n);
           }
@@ -917,23 +918,9 @@ class LibraryOut extends ANY
             code(cc);
           }
       }
-    else if (e instanceof Tag t)
+    else if (e instanceof Feature)
       {
-        lastPos = expressions(t._value, lastPos);
-        lastPos = exprKindAndPos(MirExprKind.Tag, lastPos, e.sourceRange());
-  /*
-   *   +---------------------------------------------------------------------------------+
-   *   | Tag                                                                             |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | cond.  | repeat | type          | what                                          |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | Type          | resulting tagged union type                   |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   */
-        type(t.type());
-      }
-    else if (e instanceof Nop)
-      {
+        // ignore Feature definition in expressions
       }
     else if (e instanceof Universe)
       {

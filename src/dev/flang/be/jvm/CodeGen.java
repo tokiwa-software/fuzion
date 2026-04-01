@@ -27,8 +27,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.be.jvm;
 
 import dev.flang.fuir.FUIR;
-import dev.flang.fuir.SpecialClazzes;
 import dev.flang.fuir.analysis.AbstractInterpreter;
+import dev.flang.ir.IR.FeatureKind;
 
 import static dev.flang.ir.IR.NO_CLAZZ;
 import static dev.flang.ir.IR.NO_SITE;
@@ -319,7 +319,7 @@ class CodeGen
     var isCall = _fuir.codeAt(si) == FUIR.ExprKind.Call;  // call or assignment?
     var cc0 = _fuir.accessedClazz  (si);
     var ccs = _fuir.accessedClazzes(si);
-    var rt = isCall ? _fuir.clazzResultClazz(cc0) : _fuir.clazz(SpecialClazzes.c_unit);
+    var rt = isCall ? _fuir.clazzResultClazz(cc0) : NO_CLAZZ;
     if (ccs.length == 0)
       {
         s = s.andThen(tvalue.drop());
@@ -346,7 +346,7 @@ class CodeGen
         var dynCall = args(true, tvalue, args, cc0, isCall ? _fuir.clazzArgCount(cc0) : 1)
           .andThen(Expr.comment("Dynamic access of " + clazzInQuotes(cc0)))
           .andThen(addDynamicFunctionAndStubs(si, cc0, ccs, isCall));
-        if (AbstractInterpreter.clazzHasUnitValue(_fuir, rt))
+        if (!isCall || AbstractInterpreter.clazzHasUnitValue(_fuir, rt))
           {
             s = dynCall;  // make sure we do not throw away the code even if it is of unit type
           }
@@ -575,28 +575,20 @@ class CodeGen
       case Native   :
         {
           if (CHECKS) check
-            (_types.clazzNeedsCode(cc),
+            (_fuir.clazzNeedsCode(cc),
              !(cc == _fuir.clazzAt(si) && // calling myself
              _jvm._tailCall.callIsTailCall(_fuir.clazzAt(si), si)));
 
           res = makePair(callNative(si, args, cc, rt), rt);
           break;
         }
-      case Intrinsic:
+      case Routine, Intrinsic  :
         {
-          if (_fuir.clazzTypeParameterActualType(cc) != -1)  /* type parameter is also of Kind Intrinsic, NYI: CLEANUP: should better have its own kind?  */
-            {
-              return new Pair<>(Expr.UNIT, tvalue.drop());
-            }
-          else if (!Intrinsix.inRuntime(_jvm, cc))
+          if (_fuir.clazzKind(cc) == FeatureKind.Intrinsic && !Intrinsix.inRuntime(_jvm, cc))
             {
               return Intrinsix.inlineCode(_jvm, si, cc, tvalue, args);
             }
-          // fall through!
-        }
-      case Routine  :
-        {
-          if (_types.clazzNeedsCode(cc))
+          if (_fuir.clazzNeedsCode(cc))
             {
               var cl = si == NO_SITE ? FUIR.NO_CLAZZ
                                      : _fuir.clazzAt(si);
@@ -776,11 +768,11 @@ class CodeGen
     for (int i = 0; i < args.size(); i++)
       {
         var at = _fuir.clazzArgClazz(cc, i);
-        if (_fuir.clazzIsArray(at) || _fuir.clazzIsRef(at))
+        if (_fuir.clazzIsArray(at) || _fuir.clazzIsMutateArray(at) || _fuir.clazzIsRef(at))
           {
             result = result
                 .andThen(args.get(i))
-                .andThen(_fuir.clazzIsArray(at) ? getArrayDataField(at) : Expr.NOP)
+                .andThen(_fuir.clazzIsArray(at) || _fuir.clazzIsMutateArray(at) ? getArrayDataField(at) : Expr.NOP)
                 .andThen(Expr.aload(slotsOfMemorySegments.get(slot), Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT))
                 .andThen(invokeMemorySegment2Obj());
             slot++;
@@ -828,13 +820,13 @@ class CodeGen
             result = result
               .andThen(args.get(i));
           }
-        else if (_fuir.clazzIsArray(at) || _fuir.clazzIsRef(at) /* this may mean: internal_array.data */)
+        else if (_fuir.clazzIsArray(at) || _fuir.clazzIsMutateArray(at) || _fuir.clazzIsRef(at) /* this may mean: internal_array.data */)
           {
             var slot = _jvm.allocLocal(si, 1);
             slots.addLast(slot);
             result = result
                 .andThen(args.get(i))
-                .andThen(_fuir.clazzIsArray(at) ? getArrayDataField(at) : Expr.NOP)
+                .andThen(_fuir.clazzIsArray(at) || _fuir.clazzIsMutateArray(at) ? getArrayDataField(at) : Expr.NOP)
                 .andThen(invokeObj2MemorySegment())
                 .andThen(Expr.astore(slot, Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT.vti()))
                 .andThen(Expr.aload(slot, Names.CT_JAVA_LANG_FOREIGN_MEMORYSEGMENT));
@@ -855,8 +847,8 @@ class CodeGen
    */
   private Expr getArrayDataField(int at)
   {
-    var ia = _fuir.lookup_array_internal_array(at);
-    var iad = _fuir.lookup_fuzion_sys_internal_array_data(_fuir.clazzResultClazz(ia));
+    var ia = _fuir.clazzArg(at,0);
+    var iad = _fuir.clazzArg(_fuir.clazzResultClazz(ia), 0);
     return _jvm
       .getfield(ia)
       .andThen(_jvm.getfield(iad));
@@ -919,9 +911,9 @@ class CodeGen
                                : args(needTarget, tvalue, args, cc, argCount-1);
 
     // then add tvalue/arg #argCount:
-    var add = argCount > 0                                 ? args.get(argCount-1) :
-              !needTarget && _fuir.clazzOuterRef(cc) == -1 ? tvalue.drop()
-                                                           : tvalue;
+    var add = argCount > 0                                       ? args.get(argCount-1) :
+              !needTarget && _fuir.clazzOuterRef(cc) == NO_CLAZZ ? tvalue.drop()
+                                                                 : tvalue;
     return result.andThen(add);
   }
 
@@ -1093,7 +1085,6 @@ class CodeGen
   {
     return switch (_fuir.getSpecialClazz(constCl))
       {
-      case c_bool         -> new Pair<>(Expr.iconst(d[0]                                                                             , _types.javaType(constCl)), Expr.UNIT);
       case c_i8           -> new Pair<>(Expr.iconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).get     ()         , _types.javaType(constCl)), Expr.UNIT);
       case c_i16          -> new Pair<>(Expr.iconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getShort()         , _types.javaType(constCl)), Expr.UNIT);
       case c_i32          -> new Pair<>(Expr.iconst(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getInt  ()         , _types.javaType(constCl)), Expr.UNIT);

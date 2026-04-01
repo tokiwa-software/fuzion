@@ -60,3 +60,9 @@ private:module Array(ET type) ref is
 # a type denoting a (started) thread
 #
 private:module Thread ref is
+
+
+# called by backends
+#
+stackoverflow_cause(msg String) =>
+  fuzion.runtime.stackoverflow.cause msg

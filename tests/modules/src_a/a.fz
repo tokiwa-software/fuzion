@@ -22,7 +22,7 @@
 # -----------------------------------------------------------------------
 
 public a is
-  public x => "a.x defined in module A"
+  public x String => "a.x defined in module A"
 
   # make sure a.fum references type features derived from types from base.fum
   #

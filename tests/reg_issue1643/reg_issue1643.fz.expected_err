@@ -1,0 +1,30 @@
+
+--CURDIR--/reg_issue1643.fz:30:12: error 1: Combination of 'is' and return type is not allowed.
+  g String is
+-----------^
+Keyword 'is' denotes a constructor which must not have a return type.
+To solve this, either replace 'is' by '=>' or remove the return type if you want to define a constructor.
+
+
+--CURDIR--/reg_issue1643.fz:28:9: error 2: Incompatible types in assignment
+    res <- 4711
+--------^^
+assignment to field : 'reg_issue1643.f.result'
+expected formal type: 'String'
+actual type found   : 'unit'
+assignable to       : 'unit'
+for value assigned  : 'res <- 4711'
+To solve this, you could change the type of the target 'reg_issue1643.f.result' to 'unit' or convert the type of the assigned value to 'String'.
+
+
+--CURDIR--/reg_issue1643.fz:32:9: error 3: Incompatible types in assignment
+    res <- 4711
+--------^^
+assignment to field : 'reg_issue1643.g.result'
+expected formal type: 'String'
+actual type found   : 'unit'
+assignable to       : 'unit'
+for value assigned  : 'res <- 4711'
+To solve this, you could change the type of the target 'reg_issue1643.g.result' to 'unit' or convert the type of the assigned value to 'String'.
+
+3 errors.

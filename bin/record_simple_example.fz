@@ -1,0 +1,92 @@
+########### Extensions ###############
+
+# envir vars as map
+#
+envir_vars := container.map_of ((envir.vars.map_of [
+    "PATH",
+    "LANG",
+    "JAVA_HOME",
+    "POSTCONDITIONS",
+    "PRECONDITIONS",
+    "dev_flang_tools_serializeFUIR",
+    "dev_flang_fuir_analysis_dfa_DFA_MAX_ITERATIONS",
+    "CPATH",
+    "LIBRARY_PATH",
+    "FUZION_CLANG_INSTALLED_DIR",
+    "OS",
+    "FUZION_HOME",
+    "FUZION_JAVA",
+    "FUZION_JAVA_STACK_SIZE",
+    "FUZION_JAVA_OPTIONS",
+    "FUZION_JVM_BACKEND_OPTIONS",
+    "FUZION_C_BACKEND_OPTIONS",
+    "FUZION_RANDOM_SEED",
+    # set in simple.mk
+    "LD_LIBRARY_PATH",
+    "DYLD_FALLBACK_LIBRARY_PATH",
+    "C_INCLUDE_PATH",
+    "LANGUAGE"
+  ]).items ++ [("FUZION_DISABLE_ANSI_ESCAPES", "true")])
+
+# execute this Sequence of process+args
+#
+Sequence.prefix ! =>
+  seq := map x->x.as_string
+  match os.process.start seq.first.or_panic (seq.drop 1) envir_vars
+    e error => panic "failed executing {Sequence.this}, error is $e"
+    p os.process => tokiwa.record_process p Sequence.this.as_string nil nil
+
+
+# execute this string by splitting at all whitespaces
+#
+String.prefix !! =>
+  !split
+
+
+####### record_simple_example ########
+
+
+if envir.args.count != 4
+  say """
+      Usage  : record_simple_example <any|jvm|c|int|effect> <fz+args> <test.fz>
+      Example: record_simple_example jvm "build/bin/fz -modules=nom" /tests/hello/HelloWorld.fz
+      """
+  exit 1
+
+
+type_ := envir.args[1]
+fz_run   := envir.args[2] # NYI: UNDER DEVELOPMENT: code should be same as check_simple_example.fz
+file     := envir.args[3]
+
+res :=
+  if type_ = "jvm" || type_ = "any"
+    !!"$fz_run -XmaxErrors=-1 -jvm {envir.vars["FUZION_JVM_BACKEND_OPTIONS"].or_default ""} $file"
+  else if type_ = "c"
+    c := !!"$fz_run -XmaxErrors=-1 -c {envir.vars["FUZION_C_BACKEND_OPTIONS"].or_default ""} -o=testbin $file"
+    if (c.exit_code = 0)
+      e := !!"./testbin"
+      _ := io.file.delete (path.of "testbin")
+      tokiwa.process_result c.out+e.out c.err+e.err e.exit_code
+    else
+      c
+  else if type_ = "int"
+    !!"$fz_run -XmaxErrors=-1 -interpreter $file"
+  else if type_ = "effect"
+    !!"$fz_run -XmaxErrors=-1 -effects $file"
+  else
+    panic "not supported"
+
+if type_ != "effect"
+  sfx :=
+    if type_ = "any"
+      ""
+    else
+      "_$type_"
+
+  io.write (path.of "$file.expected_out$sfx") res.out .or_panic
+  cur_dir := os.cwd.or_panic.as_string
+  io.write (path.of "$file.expected_err$sfx") (res.err.replace cur_dir "--CURDIR--") .or_panic
+else
+  io.write (path.of "$file.effect") ((res.out.lines.filter (l -> !l.is_empty)).sort.as_string "\n")+"\n" .or_panic
+
+say "RECORDED $file"

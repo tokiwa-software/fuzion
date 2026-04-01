@@ -54,6 +54,12 @@
 # given to other features, only values can. handles essentially provide an
 # abstraction of pointers, implemented natively in Fuzion.
 #
+# NYI: CLEANUP: This is currently used as an example for the equivalence of an
+# effect and a monad in the [Fuzion design]("https://fuzion-lang.dev/design/monadic_lifting).
+# We might remove `oneway_monad` from the base lib if this is needed only for the
+# design pages and add code for a `handles` monad to the example code where this
+# is currently used as a monad.
+#
 private:public handles(
   T, X type,
 
@@ -174,17 +180,17 @@ is
 
   public return( B type, w B) handles T B => handles w ar oneway_monad_mode.plain
 
-# short-hand for creating and installing an empty set of handles of given type.
+# shorthand for creating and installing an empty set of handles of given type.
 #
 public handles(T type, rr ()->unit) unit =>
   (handles unit (array T 0 x->do) oneway_monad_mode.inst) ! rr
 
-# short-hand for creating an empty set of handles of given type.
+# shorthand for creating an empty set of handles of given type.
 #
 public handles_(T type) handles T unit => handles unit (array T 0 x->do) oneway_monad_mode.plain
 
 
-# short-hand for accessing handles monad for given type in current environment
+# shorthand for accessing handles monad for given type in current environment
 #
 public handles(T type) handles T unit =>
   (handles_type T).install_default

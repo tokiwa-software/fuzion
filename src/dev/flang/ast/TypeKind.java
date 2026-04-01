@@ -28,8 +28,8 @@ package dev.flang.ast;
 
 
 /**
- * for specifying the kind of a type.
- * May be one of "ThisType", "RefType" or "ValueType".
+ * For specifying the kind of a type.
+ * May be one of "GenericArgument", "ValueType", "RefType" or "ThisType".
  */
 public enum TypeKind {
 

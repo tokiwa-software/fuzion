@@ -50,7 +50,16 @@ public panic panic =>
   panic.env
 
 
-# panic with a msg argument calls panic.cause msg, i.e., it uses the
+# panic calls panic.cause msg, i.e., it uses the
 # current panic effect to panic with the given message.
 #
-public panic(msg String) void => panic.cause msg
+public panic(c String|error) void =>
+  match c
+    msg String => panic.cause msg
+    e error => panic.cause $e
+
+
+# a variant of panic for code paths that are guaranteed to
+# never be taken. compilation fails if assumption does not hold
+#
+public compile_time_panic void => abstract

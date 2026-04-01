@@ -24,7 +24,7 @@
 test_unwrap =>
 
   a := mut.new 3
-  b := concur.atomic 5
+  b := concur.atomic i32 .new 5
 
   say2(v i32) => say v
 

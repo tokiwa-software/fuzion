@@ -26,15 +26,12 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir.analysis.dfa;
 
-import dev.flang.fuir.FUIR;
 
 import dev.flang.util.ANY;
 import dev.flang.util.SourcePosition;
 
 import java.util.Arrays;
-import java.util.BitSet;
 import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * Env represents the set of effects installed in a given environment
@@ -191,18 +188,18 @@ public class Env extends ANY implements Comparable<Env>
 
 
   /**
-   * Compare two environoments by looking only at those effect values of effects
+   * Compare two environments by looking only at those effect values of effects
    * in the given set of effect types
    *
    * NOTE: iterating the elements of `which` must be deterministic!
    *
    * @param which set of clazz ids of effect types to compare
    *
-   * @param a first environemnt
+   * @param a first environment
    *
    * @param b second environment
    *
-   * @return -1/0/+1 defining a total order while ingoring effects not in
+   * @return -1/0/+1 defining a total order while ignoring effects not in
    * `which`.
    */
   static int compare(Set<Integer> which, Env a, Env b)
@@ -413,6 +410,10 @@ public class Env extends ANY implements Comparable<Env>
    */
   Value getActualEffectValues(int ecl)
   {
+    if (!DFA.TRACE_ENVS)
+      {
+        return _dfa._allValuesForEnv.get(ecl);
+      }
     if (_dfa._real)
       return
         _effectType == ecl  ? _actualEffectValues :

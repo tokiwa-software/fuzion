@@ -49,7 +49,9 @@
 # compatible to  'outcome data IO_Error Permission_Error', so everything
 # is fine.
 #
-public outcome(public T type) : switch T error
+public outcome(public T type)
+  : switch T error,
+    property.equatable
 is
 
   # Does this outcome contain an error
@@ -76,7 +78,7 @@ is
   # "--$e--" for e error.
   #
   public redef as_string String =>
-    outcome.this ? v T     => v.as_string
+    outcome.this ? v T     => $v
                  | e error => "--$e--"
 
 
@@ -97,7 +99,7 @@ is
   #       fd i64 =>
   #         # read 42 bytes from example file
   #         match read fd 42
-  #           content array u8 => strings.from_bytes content
+  #           content array u8 => String.from content
   #           re error => re
   #       oe error => oe
   #
@@ -119,8 +121,23 @@ is
     outcome.this
 
 
+  # equality implementation
+  #
+  # result is only true if both x and y are
+  # of choice type T and the inner values are equal.
+  #
+  public redef fixed type.equality(x, y outcome T) bool
+  =>
+    if T : property.equatable
+      x ? xa T =>
+          y ? ya T => xa = ya
+            | _  error => false
+        | _  error => false
+    else
+      compile_time_panic
 
-# outcome with 1 argument provides an short-hand to wrap a value into a
+
+# outcome with 1 argument provides an shorthand to wrap a value into a
 # outcome
 #
 # Using this enables to write

@@ -29,7 +29,6 @@ package dev.flang.fuir.analysis.dfa;
 import static dev.flang.ir.IR.NO_SITE;
 import static dev.flang.ir.IR.NO_CLAZZ;
 
-import dev.flang.fuir.SpecialClazzes;
 import dev.flang.util.Errors;
 import dev.flang.util.IntMap;
 
@@ -121,20 +120,20 @@ public class Value extends Val
   /**
    * Comparator instance to compare two Values of arbitrary types.
    */
-  static Comparator<Value> COMPARATOR = new ValueComparator();
+  static final Comparator<Value> COMPARATOR = new ValueComparator();
 
 
   /**
    * Comparator instance to compare two Values of effect instances that are used in
    * Env[ironmnents].
    */
-  static Comparator<Value> ENV_COMPARATOR = new ValueEnvComparator();
+  static final Comparator<Value> ENV_COMPARATOR = new ValueEnvComparator();
 
 
   /**
    * The unit value 'unit', '{}'
    */
-  static Value UNIT = new Value(NO_CLAZZ)
+  static final Value UNIT = new Value(NO_CLAZZ)
     {
       /**
        * Add v to the set of values of given field within this instance.
@@ -172,6 +171,13 @@ public class Value extends Val
       }
 
 
+      @Override
+      Value box(DFA dfa, int vc, int rc, Context context)
+      {
+        return dfa.newValueInstance(vc, NO_SITE, context).box(dfa, vc, rc, context);
+      }
+
+
       public String toString()
       {
         return "UNIT";
@@ -182,7 +188,7 @@ public class Value extends Val
   /**
    * undefined value, used for not initialized fields.
    */
-  static Value UNDEFINED = new Value(NO_CLAZZ)
+  static final Value UNDEFINED = new Value(NO_CLAZZ)
     {
       public String toString()
       {
@@ -194,7 +200,7 @@ public class Value extends Val
   /**
    * used for jref field of Java_Objects
    */
-  static Value UNKNOWN_JAVA_REF = new Value(NO_CLAZZ)
+  static final Value UNKNOWN_JAVA_REF = new Value(NO_CLAZZ)
     {
 
       /**
@@ -324,17 +330,9 @@ public class Value extends Val
   public Val readField(DFA dfa, int field, int site, Context why)
   {
     var rt = dfa._fuir.clazzResultClazz(field);
-    var res =
-      dfa._fuir.clazzIsUnitType(rt)                                                                 ||
-      // NYI: UNDER DEVELOPMENT: intrinsics create instances like
-      // `fuzion.java.Array`. These intrinsics currently do not set the outer
-      // refs correctly, so we handle them here for now by just assuming they
-      // are unit type values:
-      dfa._fuir.clazzIsOuterRef(field) && (rt == dfa._fuir.clazz(SpecialClazzes.c_java  ) ||
-                                           rt == dfa._fuir.clazz(SpecialClazzes.c_fuzion)    )
+    return dfa._fuir.clazzIsUnitType(rt)
       ? Value.UNIT
       : readFieldFromInstance(dfa, field, site, why);
-    return res;
   }
 
 
@@ -431,20 +429,12 @@ public class Value extends Val
    */
   Value box(DFA dfa, int vc, int rc, Context context)
   {
-    Value result;
-    if (this == UNIT)
+    Value result = _boxed;
+    if (result == null)
       {
-        result = dfa.newInstance(rc, NO_SITE, context);
-      }
-    else
-      {
-        result = _boxed;
-        if (result == null)
-          {
-            result = new RefValue(dfa, this, vc, rc);
-            dfa.makeUnique(result);
-            _boxed = result;
-          }
+        result = new RefValue(dfa, this, vc, rc);
+        dfa.makeUnique(result);
+        _boxed = result;
       }
     return result;
   }

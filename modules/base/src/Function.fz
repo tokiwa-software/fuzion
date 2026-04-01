@@ -32,7 +32,19 @@ public Function(public R type,
 
   # call this function on given arguments a...
   #
-  public call(a A...) R => abstract
+  public call(a A...) R
+    : fuzion.lambda_target
+  =>
+    abstract
+
+
+  # convenience feature for declaring a lambda
+  #
+  # usage example:
+  #
+  #     Unary u64 i32 .of (.as_u64)
+  #
+  public type.of(f Function.this) Function.this => f
 
 
 # NYI: would be nice to have schönfinkeling defined here, could work like this:

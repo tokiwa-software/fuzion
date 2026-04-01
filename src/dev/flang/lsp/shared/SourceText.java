@@ -31,10 +31,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.TreeMap;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import dev.flang.util.ANY;
-import dev.flang.util.FuzionConstants;
+import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 
 public class SourceText extends ANY
@@ -42,7 +43,7 @@ public class SourceText extends ANY
   /**
    * currently open text documents and their contents
    */
-  private static final TreeMap<URI, String> textDocuments = new TreeMap<URI, String>();
+  private static final TreeMap<URI, SourceFile> textDocuments = new TreeMap<URI, SourceFile>();
 
   public static final Path fuzionHome = Path.of(System.getProperty("fuzion.home"));
 
@@ -51,12 +52,21 @@ public class SourceText extends ANY
     if (PRECONDITIONS)
       require(text != null);
 
-    textDocuments.put(uri, text);
+    textDocuments.put(uri, new SourceFile(Path.of(uri), text.getBytes(StandardCharsets.UTF_8)));
   }
 
   public static String getText(URI uri)
   {
-    return textDocuments.computeIfAbsent(uri, u -> readFromDisk(u));
+    return new String(getSourceFile(uri).bytes(), StandardCharsets.UTF_8);
+  }
+
+  public static SourceFile getSourceFile(URI uri)
+  {
+    if (!textDocuments.containsKey(uri))
+      {
+        setText(uri, readFromDisk(uri));
+      }
+    return textDocuments.get(uri);
   }
 
   public static void removeText(URI uri)
@@ -116,6 +126,14 @@ public class SourceText extends ANY
       : pos._sourceFile.line(pos.line());
   }
 
+
+  /**
+   * Pattern to replace e.g. {base.fum}
+   */
+  private static final Pattern CURLY_BRACES_PATTERN =
+            Pattern.compile("\\{([^.}]+)\\.fum\\}");
+
+
   /**
    * utility function to get the uri of a sourceposition
    *
@@ -124,9 +142,11 @@ public class SourceText extends ANY
    */
   public static URI uriOf(SourcePosition sourcePosition)
   {
-    return Path.of(
-      sourcePosition._sourceFile._fileName.toString()
-        .replace(FuzionConstants.SYMBOLIC_FUZION_MODULE.toString(), fuzionHome.toString() + "/lib/"))
+    return Path
+      .of(
+        CURLY_BRACES_PATTERN
+          .matcher(sourcePosition._sourceFile._fileName.toString())
+          .replaceAll(fuzionHome.toString() + "/modules/$1/src/"))
       .toUri();
   }
 

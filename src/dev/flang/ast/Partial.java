@@ -207,7 +207,7 @@ public class Partial extends AbstractLambda
   Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
   {
     Expr result = this;
-    t = t.functionTypeFromChoice(context);
+    t = t.functionTypeFromChoice(res, context);
     var type = propagateTypeAndInferResult(res, context, t, false, from);
     if (_function != null)
       {
@@ -242,13 +242,13 @@ public class Partial extends AbstractLambda
   AbstractType propagateTypeAndInferResult(Resolution res, Context context, AbstractType t, boolean inferResultType, Supplier<String> from)
   {
     AbstractType result = inferResultType ? Types.t_UNDEFINED : t;
-    if (_function == null && t.isFunctionType() && (t.arity() == 1 || t.arity() == 2))
+    if (_function == null && t.isFunctionType(res) && (t.arity(res) == 1 || t.arity(res) == 2))
       {
         var a = argName(pos());
         List<Expr> args = new List<>(a);
         List<Expr> actuals = new List<>();
         String op = FuzionConstants.UNARY_OPERATOR_PREFIX + _op;
-        if (t.arity() == 2)
+        if (t.arity(res) == 2)
           {
             var b = argName(pos());
             args.add(b);

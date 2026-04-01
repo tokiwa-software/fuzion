@@ -31,15 +31,7 @@ Target feature: 'visibility_scoping.test9'
 In call: 'x'
 
 
---CURDIR--/visibility_scoping.fz:81:10: error 5: Could not find called feature
-    _ := ttt  #  8. should flag an error: feature not found
----------^^^
-Feature not found: 'ttt' (no arguments)
-Target feature: 'visibility_scoping.test6'
-In call: 'ttt'
-
-
---CURDIR--/visibility_scoping.fz:82:10: error 6: Could not find called feature
+--CURDIR--/visibility_scoping.fz:82:10: error 5: Could not find called feature
     _ := tt   #  9. should flag an error: feature not found
 ---------^^
 Feature not found: 'tt' (no arguments)
@@ -47,7 +39,7 @@ Target feature: 'visibility_scoping.test6'
 In call: 'tt'
 
 
---CURDIR--/visibility_scoping.fz:83:10: error 7: Could not find called feature
+--CURDIR--/visibility_scoping.fz:83:10: error 6: Could not find called feature
     _ := t    # 10. should flag an error: feature not found
 ---------^
 Feature not found: 't' (no arguments)
@@ -55,7 +47,7 @@ Target feature: 'visibility_scoping.test6'
 In call: 't'
 
 
---CURDIR--/visibility_scoping.fz:79:10: error 8: Could not find called feature
+--CURDIR--/visibility_scoping.fz:79:10: error 7: Could not find called feature
     b => tt   #  6. should flag an error: feature not found
 ---------^^
 Feature not found: 'tt' (no arguments)
@@ -63,7 +55,7 @@ Target feature: 'visibility_scoping.test6.b'
 In call: 'tt'
 
 
---CURDIR--/visibility_scoping.fz:80:10: error 9: Could not find called feature
+--CURDIR--/visibility_scoping.fz:80:10: error 8: Could not find called feature
     c => t    #  7. should flag an error: feature not found
 ---------^
 Feature not found: 't' (no arguments)
@@ -71,11 +63,19 @@ Target feature: 'visibility_scoping.test6.c'
 In call: 't'
 
 
---CURDIR--/visibility_scoping.fz:78:10: error 10: Could not find called feature
+--CURDIR--/visibility_scoping.fz:78:10: error 9: Could not find called feature
     a => ttt  #  5. should flag an error: feature not found
 ---------^^^
 Feature not found: 'ttt' (no arguments)
 Target feature: 'visibility_scoping.test6.a'
+In call: 'ttt'
+
+
+--CURDIR--/visibility_scoping.fz:81:10: error 10: Could not find called feature
+    _ := ttt  #  8. should flag an error: feature not found
+---------^^^
+Feature not found: 'ttt' (no arguments)
+Target feature: 'visibility_scoping.test6'
 In call: 'ttt'
 
 

@@ -52,4 +52,10 @@ To solve this, remove the visibility modifier 'public' from feature 'a'.
 ------------^
 To solve this, remove the visibility modifier 'public' from feature 'a'.
 
-9 errors.
+
+--CURDIR--/function_argument_visibility.fz:49:3: error 10: Intrinsics may only be defined in the base library
+  f6(public a i32) Any => intrinsic # 8. should flag an error: Argument features of non-constructors must not have visibility modifier.
+--^^
+Did you mean to create a native feature?
+
+10 errors.

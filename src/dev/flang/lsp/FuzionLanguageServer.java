@@ -74,7 +74,7 @@ public class FuzionLanguageServer implements LanguageServer
   {
     Config.setClientCapabilities(params.getCapabilities());
 
-    Context.logger.log("[client capabilites] " + Config.getClientCapabilities().toString());
+    Context.logger.log("[client capabilities] " + Config.getClientCapabilities().toString());
 
     final InitializeResult res = new InitializeResult(getServerCapabilities());
 

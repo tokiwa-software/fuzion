@@ -93,7 +93,15 @@ Referenced feature: 'typeinference_negative.result5.y' at --CURDIR--/typeinferen
 ----^
 
 
---CURDIR--/typeinference_negative.fz:211:5: error 11: Incompatible types in branches of if expression
+--CURDIR--/typeinference_negative.fz:29:11: error 11: Could not find called feature
+     x := x  # 1. c0.a should flag an error, cyclic type inference from oneself
+----------^
+Feature not found: 'x' (no arguments)
+Target feature: 'typeinference_negative.cyclic0'
+In call: 'x'
+
+
+--CURDIR--/typeinference_negative.fz:211:5: error 12: Incompatible types in branches of if expression
     if       b     { 3 }         # 46. should flag an error: incompatible types in branches of if expression
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     else if !b     { "String" }
@@ -122,14 +130,6 @@ block returns value of type 'bool' at --CURDIR--/typeinference_negative.fz:215:2
 ---------------------^^^^^
 
 
---CURDIR--/typeinference_negative.fz:29:11: error 12: Could not find called feature
-     x := x  # 1. c0.a should flag an error, cyclic type inference from oneself
-----------^
-Feature not found: 'x' (no arguments)
-Target feature: 'typeinference_negative.cyclic0'
-In call: 'x'
-
-
 --CURDIR--/typeinference_negative.fz:37:11: error 13: Could not find called feature
      y := z  # 5. c1a.b should flag an error, field invisible
 ----------^
@@ -138,7 +138,15 @@ Target feature: 'typeinference_negative.cyclic1a'
 In call: 'z'
 
 
---CURDIR--/typeinference_negative.fz:77:11: error 14: Could not find called feature
+--CURDIR--/typeinference_negative.fz:63:11: error 14: Could not find called feature
+     h := i  # 16. c4.h should flag an error, field invisible
+----------^
+Feature not found: 'i' (no arguments)
+Target feature: 'typeinference_negative.cyclic4'
+In call: 'i'
+
+
+--CURDIR--/typeinference_negative.fz:77:11: error 15: Could not find called feature
      v := w  # 30. c4.v should flag an error, field invisible
 ----------^
 Feature not found: 'w' (no arguments)
@@ -146,7 +154,7 @@ Target feature: 'typeinference_negative.cyclic4'
 In call: 'w'
 
 
---CURDIR--/typeinference_negative.fz:79:11: error 15: Could not find called feature
+--CURDIR--/typeinference_negative.fz:79:11: error 16: Could not find called feature
      x := y  # 32. c4.x should flag an error, field invisible
 ----------^
 Feature not found: 'y' (no arguments)
@@ -154,7 +162,7 @@ Target feature: 'typeinference_negative.cyclic4'
 In call: 'y'
 
 
---CURDIR--/typeinference_negative.fz:80:11: error 16: Could not find called feature
+--CURDIR--/typeinference_negative.fz:80:11: error 17: Could not find called feature
      y := z  # 33. c4.y should flag an error, field invisible
 ----------^
 Feature not found: 'z' (no arguments)
@@ -162,7 +170,7 @@ Target feature: 'typeinference_negative.cyclic4'
 In call: 'z'
 
 
---CURDIR--/typeinference_negative.fz:57:11: error 17: Could not find called feature
+--CURDIR--/typeinference_negative.fz:57:11: error 18: Could not find called feature
      b := c  # 10. c4.b should flag an error, field invisible
 ----------^
 Feature not found: 'c' (no arguments)
@@ -170,7 +178,7 @@ Target feature: 'typeinference_negative.cyclic4'
 In call: 'c'
 
 
---CURDIR--/typeinference_negative.fz:58:11: error 18: Could not find called feature
+--CURDIR--/typeinference_negative.fz:58:11: error 19: Could not find called feature
      c := d  # 11. c4.c should flag an error, field invisible
 ----------^
 Feature not found: 'd' (no arguments)
@@ -178,7 +186,7 @@ Target feature: 'typeinference_negative.cyclic4'
 In call: 'd'
 
 
---CURDIR--/typeinference_negative.fz:59:11: error 19: Could not find called feature
+--CURDIR--/typeinference_negative.fz:59:11: error 20: Could not find called feature
      d := e  # 12. c4.d should flag an error, field invisible
 ----------^
 Feature not found: 'e' (no arguments)
@@ -186,7 +194,7 @@ Target feature: 'typeinference_negative.cyclic4'
 In call: 'e'
 
 
---CURDIR--/typeinference_negative.fz:60:11: error 20: Could not find called feature
+--CURDIR--/typeinference_negative.fz:60:11: error 21: Could not find called feature
      e := f  # 13. c4.e should flag an error, field invisible
 ----------^
 Feature not found: 'f' (no arguments)
@@ -194,7 +202,7 @@ Target feature: 'typeinference_negative.cyclic4'
 In call: 'f'
 
 
---CURDIR--/typeinference_negative.fz:61:11: error 21: Could not find called feature
+--CURDIR--/typeinference_negative.fz:61:11: error 22: Could not find called feature
      f := g  # 14. c4.f should flag an error, field invisible
 ----------^
 Feature not found: 'g' (no arguments)
@@ -202,20 +210,12 @@ Target feature: 'typeinference_negative.cyclic4'
 In call: 'g'
 
 
---CURDIR--/typeinference_negative.fz:62:11: error 22: Could not find called feature
+--CURDIR--/typeinference_negative.fz:62:11: error 23: Could not find called feature
      g := h  # 15. c4.g should flag an error, field invisible
 ----------^
 Feature not found: 'h' (no arguments)
 Target feature: 'typeinference_negative.cyclic4'
 In call: 'h'
-
-
---CURDIR--/typeinference_negative.fz:63:11: error 23: Could not find called feature
-     h := i  # 16. c4.h should flag an error, field invisible
-----------^
-Feature not found: 'i' (no arguments)
-Target feature: 'typeinference_negative.cyclic4'
-In call: 'i'
 
 
 --CURDIR--/typeinference_negative.fz:64:11: error 24: Could not find called feature

@@ -217,7 +217,7 @@ test_issue1610 =>
         v => e
 
     f
-    say "case 1mut: {if $m.get.get.v = "1234567890" "PASS" else "FAIL"}"
+    say "case 1mut: {if $m.get.or_panic.v = "1234567890" "PASS" else "FAIL"}"
 
   case1mut_tmp
 
@@ -240,7 +240,7 @@ test_issue1610 =>
         v => e
 
     f
-    say "case 2mut: {if $m.get.get.v = "1234567890" "PASS" else "FAIL"}"
+    say "case 2mut: {if $m.get.or_panic.v = "1234567890" "PASS" else "FAIL"}"
 
   case2mut_field
 
@@ -265,7 +265,7 @@ test_issue1610 =>
         v => e
 
     f
-    say "case 3mut: {if $m.get.get.v = "1234567890" "PASS" else "FAIL"}"
+    say "case 3mut: {if $m.get.or_panic.v = "1234567890" "PASS" else "FAIL"}"
 
   case3mut_field_tmp
 
@@ -291,7 +291,7 @@ test_issue1610 =>
         v => e
 
     f
-    say "case 4mut: {if $m.get.get.v = "1234567890" "PASS" else "FAIL"}"
+    say "case 4mut: {if $m.get.or_panic.v = "1234567890" "PASS" else "FAIL"}"
 
   case4mut_field_field
 
@@ -316,7 +316,7 @@ test_issue1610 =>
         redef v => e
 
     f
-    say "case 1mut_ref: {if $m.get.get.v = "1234567890" "PASS" else "FAIL"}"
+    say "case 1mut_ref: {if $m.get.or_panic.v = "1234567890" "PASS" else "FAIL"}"
 
   case1mut_ref_tmp
 
@@ -342,7 +342,7 @@ test_issue1610 =>
         redef v => e
 
     f
-    say "case 2mut_ref: {if $m.get.get.v = "1234567890" "PASS" else "FAIL"}"
+    say "case 2mut_ref: {if $m.get.or_panic.v = "1234567890" "PASS" else "FAIL"}"
 
   case2mut_ref_field
 
@@ -370,7 +370,7 @@ test_issue1610 =>
         redef v => e
 
     f
-    say "case 3mut_ref: {if $m.get.get.v = "1234567890" "PASS" else "FAIL"}"
+    say "case 3mut_ref: {if $m.get.or_panic.v = "1234567890" "PASS" else "FAIL"}"
 
   case3mut_ref_field_tmp
 
@@ -399,7 +399,7 @@ test_issue1610 =>
         redef v => e
 
     f
-    say "case 4mut_ref: {if $m.get.get.v = "1234567890" "PASS" else "FAIL"}"
+    say "case 4mut_ref: {if $m.get.or_panic.v = "1234567890" "PASS" else "FAIL"}"
 
   case4mut_ref_field_field
 
@@ -422,7 +422,6 @@ test_issue1610 =>
 
   case_inh1
 
-/* NYI: #1642 this case commented out since target in inheritance call currently cannot be a field:
 
   case_inh2_field =>
 
@@ -442,4 +441,4 @@ test_issue1610 =>
 
   case_inh2_field
 
-*/
+

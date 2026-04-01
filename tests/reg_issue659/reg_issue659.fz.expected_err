@@ -1,0 +1,12 @@
+
+--CURDIR--/reg_issue659.fz:32:19: error 1: Incompatible types in assignment
+          i3 I => i3
+------------------^^
+assignment to field : 'reg_issue659.parser.map.parse.result'
+expected formal type: 'choice I2 u32'
+actual type found   : 'I'
+assignable to       : 'I'
+for value assigned  : 'i3'
+To solve this, you could change the type of the target 'reg_issue659.parser.map.parse.result' to 'I' or convert the type of the assigned value to 'choice I2 u32'.
+
+one error.

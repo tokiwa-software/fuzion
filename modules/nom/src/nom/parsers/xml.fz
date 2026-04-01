@@ -1,0 +1,245 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of simple (incomplete) xml parser built with nom
+#
+# -----------------------------------------------------------------------
+
+
+# an deserialized xml node
+#
+public xml_node(public name String, public attributes container.Map String String, public data Sequence (choice nom.parsers.xml_node String))
+  pre
+    debug: !name.contains_whitespace
+    debug: attributes.items ∀ x -> !x.0.contains_whitespace
+    debug: data ∀ c->
+      match c
+        str String => str=str.trim && !str.is_blank
+        * => true
+is
+
+
+  # NYI: UNDER DEVELOPMENT:
+  # public access(seq Sequence (choice String i32)) option (Sequence xml_node)
+  #   pre
+  #     debug: !seq.is_empty
+  # =>
+
+
+  # this xml node as String
+  #
+  public redef as_string String =>
+    as_string 0
+
+
+  # this xml node as String
+  #
+  as_string(indent i32) String =>
+
+    attr =>
+      attributes
+        .items
+        .map t->
+          "{t.0}=\"{t.1}\""
+        .as_string " "
+
+    dat_str =>
+      data
+        .map c->
+          match c
+            str String =>
+              check debug: !(str.contains "<")
+              check debug: !(str.contains ">")
+              "{"  "*(indent+1)}{str}"
+            n nom.parsers.xml_node => n.as_string indent+1
+        .as_string "\n"
+
+    if attributes.is_empty
+      "{"  "*indent}<{name}>\n{dat_str}\n{"  "*(indent)}</{name}>"
+    else
+      "{"  "*indent}<{name} {attr}>\n{dat_str}\n{"  "*(indent)}</{name}>"
+
+
+
+# xml parser
+#
+# NYI: UNDER DEVELOPMENT: incomplete! can only parse small subset of xml
+#
+# usage : NYI: UNDER DEVELOPMENT:
+#
+# Specification: https://www.w3.org/TR/REC-xml/
+#
+public xml Parser String (Sequence codepoint) (Sequence nom.parsers.xml_node) =>
+
+  # <? ... ?>
+  #
+  parser_question_mark =>
+    preceded (tag "<?") anything_but_question_end
+
+  # NYI
+  # # <! ...  >
+  # #
+  # parser_exclamation_mark =>
+  #   delimited (tag "<!")
+
+  # <!-- ...  -->
+  #
+  parser_comment =>
+    preceded (tag "<!--") anything_but_comment_end
+
+
+  # parser matching anything until -->
+  #
+  anything_but_comment_end =>
+    # NYI: technically incorrect, consider e.g. strings
+    parser (Sequence codepoint) (Sequence codepoint) unit input->
+      match input.find "-->".codepoints
+        nil => (error "--> not found")
+        n i32 => success (input.drop n+3) unit
+
+
+  # parser matching anything until ?>
+  #
+  anything_but_question_end =>
+    # NYI: technically incorrect, consider e.g. strings
+    parser (Sequence codepoint) (Sequence codepoint) unit input->
+      match input.find "?>".codepoints
+        nil => (error "?> not found")
+        n i32 => success (input.drop n+2) unit
+
+
+  # parser for a name+attributes of a tag
+  #
+  parser_name_and_attributes =>
+    tuple2 parser_name parser_attributes
+
+
+  # parse and discard ignored stuff like comments
+  #
+  ignored =>
+    many0 <| alt [
+                  delimited whitespace0 parser_comment whitespace0,
+                  delimited whitespace0 parser_question_mark whitespace0
+                  # delimited whitespace0 parser_exclamation_mark whitespace0
+                 ]
+
+
+  # parser for an opening tag
+  #
+  # example: <some_name attri1="hello" attri2="world">
+  #
+  parser_opening_tag =>
+    delimited (tag "<") parser_name_and_attributes (tag ">")
+
+
+  # parser for a closing tag
+  #
+  # example: </some_name >
+  #
+  parser_closing_tag =>
+    delimited (tag "</") (tuple2 parser_name whitespace0) (tag ">")
+
+
+  # parser for a self-closing tag (tag that has no children)
+  #
+  # example: <some_name attri1="hello" attri2="world"/>
+  #
+  parser_self_closing_tag =>
+    delimited (tag "<") parser_name_and_attributes (tag "/>")
+      .map o->
+        nom.parsers.xml_node o.0 o.1 []
+
+
+  # parser for a tag including its children
+  #
+  parser_full_tag Parser (Sequence codepoint) (Sequence codepoint) nom.parsers.xml_node =>
+    parse(input Sequence codepoint) parse_result (Sequence codepoint) nom.parsers.xml_node =>
+      parser_opening_tag.call input .bind s1->
+        xml_or_text_seq.call s1.rest .bind s2->
+          (preceded whitespace0 parser_closing_tag).call s2.rest .bind s3->
+            id (parse_result (Sequence codepoint) nom.parsers.xml_node) (success s3.rest (nom.parsers.xml_node s1.out.0 s1.out.1 s2.out))
+    parser (Sequence codepoint) _ _ parse
+
+
+  # parser for a name (attribute name or tag name)
+  #
+  parser_name =>
+    parser (Sequence codepoint) (Sequence codepoint) String  input->
+      name := input.take_while (x -> x.is_ascii_alpha_num || x = ":")
+      if name.is_empty
+        error "empty name"
+      else
+        success (input.drop name.count) (String.from name)
+
+
+  # parser for attributes of a tag
+  #
+  parser_attributes =>
+    many0 (delimited whitespace0 parser_attribute whitespace0)
+      .map (o -> container.map_of o.as_array)
+
+
+  # parser for one attribute of a tag
+  #
+  # example: attr="hello"
+  #
+  parser_attribute =>
+    tuple3 parser_name (tag "=") parser_xml_string
+      .map t->
+        (t.0,t.2)
+
+
+  # parser for a string enclosed in double quotes
+  #
+  parser_xml_string =>
+    delimited (tag "\"") (take_while0 codepoint (c -> c != "\"")) (tag "\"")
+      .map (s -> String.from s)
+
+
+  # parser for text, ends at first <
+  #
+  parser_text =>
+    take_while1 codepoint (c -> c != "<")
+      .map o->
+        String.from o .trim
+
+
+  # parser for sequence of texts/xml_nodes
+  #
+  xml_or_text_seq =>
+    (many0 (preceded whitespace0 (alt [
+      parser_text.map (Sequence (choice nom.parsers.xml_node String)) o->[id (choice nom.parsers.xml_node String) o],
+      parser_self_closing_tag.map (Sequence (choice nom.parsers.xml_node String)) o->[id (choice nom.parsers.xml_node String) o],
+      parser_full_tag.map (Sequence (choice nom.parsers.xml_node String)) o->[id (choice nom.parsers.xml_node String) o]
+    ]))).map o->
+      o.flat_map id
+
+
+  # parse xml tags
+  #
+  xml_seq =>
+    many0 (alt [
+        parser_self_closing_tag,
+        parser_full_tag
+      ])
+
+
+  # map parser to take string input instead of Sequence of codepoints
+  #
+  to_string_input (preceded ignored xml_seq)

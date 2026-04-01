@@ -47,7 +47,7 @@ public class FuzionThread extends ANY
   /**
    * ThreadLocal to hold current FuzionThread instance.
    */
-  static ThreadLocal<FuzionThread> _current_ =
+  static final ThreadLocal<FuzionThread> _current_ =
     new ThreadLocal<>()
     {
       protected FuzionThread initialValue() { return new FuzionThread(); }
@@ -69,7 +69,7 @@ public class FuzionThread extends ANY
   /**
    * Current call stack, for debugging output
    */
-  Stack<Integer> _callStack = new Stack<>();
+  Stack<Integer> _callSiteStack = new Stack<>();
   Stack<Integer> _callStackFrames = new Stack<>();
 
 

@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.be.jvm.runtime;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
@@ -37,6 +38,7 @@ import java.lang.foreign.Linker;
 import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.SegmentAllocator;
+import java.lang.foreign.StructLayout;
 import java.lang.foreign.SymbolLookup;
 import java.lang.foreign.ValueLayout;
 import java.lang.foreign.ValueLayout.OfBoolean;
@@ -55,13 +57,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.TreeMap;
 import java.util.WeakHashMap;
 import java.util.concurrent.locks.Condition;
@@ -84,7 +83,7 @@ public class Runtime extends ANY
 {
 
   /* NYI: UNDER DEVELOPMENT: memory leak */
-  private static Arena arena = Arena.global();
+  private static final Arena arena = Arena.global();
 
   /*-----------------------------  classes  -----------------------------*/
 
@@ -158,75 +157,13 @@ public class Runtime extends ANY
   /*--------------------------  static fields  --------------------------*/
 
 
-  /**
-   * Flag to disallow intrinsics that would permit to take over the world via
-   * file or network access, system function calls etc.
-   */
-  private static boolean _enable_unsafe_intrinsics_ = true;
-
-  /**
-   * Disable unsafe intrinsics.
-   */
-  public static void disableUnsafeIntrinsics()
-  {
-    _enable_unsafe_intrinsics_ = false;
-  }
-
-
-  /**
-   * Check if unsafe intrinsics are enabled.  If not, terminate with a fatal
-   * error.
-   */
-  public static void unsafeIntrinsic()
-  {
-    if (!_enable_unsafe_intrinsics_)
-      {
-        Errors.fatal("unsafe operation not permitted", stackTrace());
-      }
-  }
-
-
-  /**
-   * This contains all open files/streams.
-   */
-  static OpenResources<AutoCloseable> _openStreams_ = new OpenResources<AutoCloseable>()
-  {
-    @Override
-    protected boolean close(AutoCloseable f) {
-      try
-      {
-        f.close();
-        return true;
-      }
-      catch(Exception e)
-      {
-        return false;
-      }
-    }
-  };
-
-  /**
-   * This contains all open processes.
-   */
-  public static OpenResources<Process> _openProcesses_ = new OpenResources<Process>()
-  {
-    @Override
-    protected boolean close(Process p) {
-      if(PRECONDITIONS) require
-        (p != null);
-
-      return true;
-    }
-  };
-
-
   public static final Object LOCK_FOR_ATOMIC = new Object();
 
 
   /**
    * The result of {@code envir.args[0]}
    */
-  public static String _cmd_ =
+  public static final String _cmd_ =
     System.getProperties().computeIfAbsent(FUZION_COMMAND_PROPERTY,
                                            k -> ProcessHandle.current()
                                                              .info()
@@ -665,7 +602,7 @@ public class Runtime extends ANY
   /**
    * cached results of {@code classNameToFeatureName}.
    */
-  static WeakHashMap<ClassLoader, Map<String, String>> _classNameToFeatureName = new WeakHashMap<>();
+  static final WeakHashMap<ClassLoader, Map<String, String>> _classNameToFeatureName = new WeakHashMap<>();
 
 
   /**
@@ -686,8 +623,7 @@ public class Runtime extends ANY
             var mcl = l.getResourceAsStream(CLASS_NAME_TO_FUZION_CLAZZ_NAME);
             if (mcl != null)
               {
-                var reader = new BufferedReader(new InputStreamReader(mcl));
-                try
+                try (var reader = new BufferedReader(new InputStreamReader(mcl)))
                   {
                     var ln = reader.readLine();
                     while (ln != null)
@@ -771,7 +707,7 @@ public class Runtime extends ANY
                   {
                     stacktrace.write("\n");
                   }
-                stacktrace.write(str);
+                stacktrace.write(str + " at " + s.getFileName().replace(File.separator, "/") + ":" + s.getLineNumber());
                 last = str;
                 count = 1;
               }
@@ -783,27 +719,6 @@ public class Runtime extends ANY
       }
 
     return stacktrace.toString();
-  }
-
-  public static byte[] fuzion_sys_fileio_read_dir(long fd)
-  {
-    unsafeIntrinsic();
-
-    var i = getIterator(fd);
-    try
-      {
-        return stringToUtf8ByteArray(i.next().getFileName().toString());
-      }
-    catch (NoSuchElementException e)
-      {
-        return stringToUtf8ByteArray("NoSuchElementException encountered!");
-      }
-  }
-
-  @SuppressWarnings("unchecked")
-  public static Iterator<Path> getIterator(long fd)
-  {
-    return (Iterator<Path>)_openStreams_.get(fd);
   }
 
 
@@ -825,8 +740,6 @@ public class Runtime extends ANY
    */
   public static String fuzion_java_string_to_java_object0(byte[] b)
   {
-    unsafeIntrinsic();
-
     return new String(b, StandardCharsets.UTF_8);
   }
 
@@ -840,8 +753,6 @@ public class Runtime extends ANY
    */
   public static byte[] fuzion_java_string_to_bytes_array(String str)
   {
-    unsafeIntrinsic();
-
     if (str == null)
       {
         str = "--null--";
@@ -863,8 +774,6 @@ public class Runtime extends ANY
    */
   public static Object fuzion_java_get_static_field0(String clazz, String field)
   {
-    unsafeIntrinsic();
-
     Object result;
 
     try
@@ -896,8 +805,6 @@ public class Runtime extends ANY
    */
   public static void fuzion_java_set_static_field0(String clazz, String field, Object value)
   {
-    unsafeIntrinsic();
-
     try
       {
         Class cl = Class.forName(clazz);
@@ -926,8 +833,6 @@ public class Runtime extends ANY
    */
   public static Object fuzion_java_get_field0(Object thiz, String field)
   {
-    unsafeIntrinsic();
-
     Object result;
     Class clazz = null;
 
@@ -964,8 +869,6 @@ public class Runtime extends ANY
    */
   public static void fuzion_java_set_field0(Object thiz, String field, Object value)
   {
-    unsafeIntrinsic();
-
     Class clazz = null;
 
     try
@@ -1021,7 +924,7 @@ public class Runtime extends ANY
       }
     catch (ClassNotFoundException e)
       {
-        Errors.fatal("ClassNotFoundException when calling fuzion.jvm.env.call_"+what+" for class" +
+        Errors.fatal("ClassNotFoundException when calling fuzion.jvm.env.call_"+what+" for class " +
                            clName + " calling " + ((name != null) ? name : ("new " + clName)) + sig);
         cl = Object.class; // not reached.
       }
@@ -1052,8 +955,6 @@ public class Runtime extends ANY
   {
     if (PRECONDITIONS) require
       (clName != null);
-
-    unsafeIntrinsic();
 
     Method m = null;
     var pcl = getParsAndClass("virtual", clName, name, sig);
@@ -1143,8 +1044,6 @@ public class Runtime extends ANY
     if (PRECONDITIONS) require
       (clName != null);
 
-    unsafeIntrinsic();
-
     Method m = null;
     var pcl = getParsAndClass("static", clName, name, sig);
     var p = pcl.v0();
@@ -1179,8 +1078,6 @@ public class Runtime extends ANY
   {
     if (PRECONDITIONS) require
       (clName != null);
-
-    unsafeIntrinsic();
 
     var pcl = getParsAndClass("constructor", clName, null, sig);
     var p = pcl.v0();
@@ -1334,7 +1231,7 @@ public class Runtime extends ANY
    * Weak map of frozen (immutable) arrays, used to debug accidental
    * modifications of frozen array.
    */
-  static Map<Object, String> _frozenPointers_ = CHECKS ? Collections.synchronizedMap(new WeakHashMap<Object, String>()) : null;
+  static final Map<Object, String> _frozenPointers_ = CHECKS ? Collections.synchronizedMap(new WeakHashMap<Object, String>()) : null;
 
 
   /**
@@ -1377,6 +1274,42 @@ public class Runtime extends ANY
   }
 
 
+  private static final SymbolLookup libs = libs();
+
+
+  /**
+   * @return SymbolLookup for fuzion_rt and libmath
+   */
+  @SuppressWarnings("restricted")
+  private static SymbolLookup libs()
+  {
+    SymbolLookup result = null;
+    try
+      {
+        result = SymbolLookup.libraryLookup(System.mapLibraryName("fuzion_rt"), arena);
+        try
+          {
+            result = result.or(SymbolLookup.libraryLookup(System.mapLibraryName("m"), arena));
+          }
+        catch (IllegalArgumentException e)
+          {
+            try { result = result.or(SymbolLookup.libraryLookup("libm.so.6", arena)); } catch(Exception e0) {
+              try { result = result.or(SymbolLookup.libraryLookup("libm.dylib", arena)); } catch(Exception e1) {
+                try { result = result.or(SymbolLookup.libraryLookup("ucrtbase.dll", arena)); } catch(Exception e2) {
+                  Errors.error(e.getMessage()); Errors.error(e0.getMessage()); Errors.error(e1.getMessage()); Errors.fatal(e2.getMessage());
+                }
+              }
+            }
+          }
+      }
+    catch (IllegalArgumentException e)
+      {
+        Errors.fatal(e.getMessage());
+      }
+    return result;
+  }
+
+
   /**
    * Find the method handle of a native function
    *
@@ -1384,22 +1317,14 @@ public class Runtime extends ANY
    *
    * @param desc the FunctionDescriptor of the function
    *
-   * NYI: CLEANUP: remove param libraries. do init of library lookup once at program start.
+   * NYI: PERFORMANCE: remove param libraries. do init of library lookup once at program start.
    *
    * @return
    */
+  @SuppressWarnings("restricted")
   public static MethodHandle get_method_handle(String str, FunctionDescriptor desc, String[] libraries)
   {
-    SymbolLookup llu = null;
-    try
-      {
-        llu = SymbolLookup.libraryLookup(System.mapLibraryName("fuzion_rt"), arena);
-      }
-    catch (IllegalArgumentException e)
-      {
-        Errors.error(e.getMessage());
-        System.exit(1);
-      }
+    SymbolLookup llu = libs;
     for (String library : libraries)
       {
         var ln = System.mapLibraryName(library);
@@ -1417,7 +1342,12 @@ public class Runtime extends ANY
 
     var memSeg = llu
       .find(str)
-      .orElseThrow(() -> new UnsatisfiedLinkError("unresolved symbol: " + str));
+      .orElseThrow(() -> new UnsatisfiedLinkError(
+        "Unresolved symbol: " + str + ". " +
+        (libraries.length == 0
+          ? "You probably forgot to use the -JLibraries option."
+          : "Likely causes: Either your native method is misspelled or you forgot to include a library in the -JLibraries option.")
+        ));
 
     var result = Linker
       .nativeLinker()
@@ -1438,23 +1368,32 @@ public class Runtime extends ANY
    */
   public static void memorySegment2Obj(Object obj, MemorySegment memSeg)
   {
-    if      (obj instanceof byte   [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
-    else if (obj instanceof short  [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
-    else if (obj instanceof char   [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
-    else if (obj instanceof int    [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
-    else if (obj instanceof long   [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
-    else if (obj instanceof float  [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
-    else if (obj instanceof double [] arr) { MemorySegment.ofArray(arr).copyFrom(memSeg); }
-    else if (obj instanceof MemorySegment) { /* NYI: UNDER DEVELOPMENT */ }
-    else if (obj instanceof Object [] arr && arr.length > 0 && arr[0] instanceof MemorySegment)
-      {
-        for (int i = 0; i < arr.length; i++)
-          {
-            arr[i] = memSeg.getAtIndex(ValueLayout.ADDRESS, i * ValueLayout.ADDRESS.byteSize());
-          }
-      }
-    else if (obj instanceof Object []    ) { /* NYI: UNDER DEVELOPMENT */ }
-    else { /* NYI: check if value type */ }
+    switch (obj)
+    {
+      case int    [] arr ->  MemorySegment.ofArray(arr).copyFrom(memSeg);
+      case byte   [] arr ->  MemorySegment.ofArray(arr).copyFrom(memSeg);
+      case long   [] arr ->  MemorySegment.ofArray(arr).copyFrom(memSeg);
+      case double [] arr ->  MemorySegment.ofArray(arr).copyFrom(memSeg);
+      case char   [] arr ->  MemorySegment.ofArray(arr).copyFrom(memSeg);
+      case short  [] arr ->  MemorySegment.ofArray(arr).copyFrom(memSeg);
+      case float  [] arr ->  MemorySegment.ofArray(arr).copyFrom(memSeg);
+      case MemorySegment m ->  { /* NYI: UNDER DEVELOPMENT */ }
+      case Object [] arr ->
+        {
+          if (arr.length > 0 && arr[0] instanceof MemorySegment)
+            {
+              for (int i = 0; i < arr.length; i++)
+                {
+                  arr[i] = memSeg.getAtIndex(ValueLayout.ADDRESS, i * ValueLayout.ADDRESS.byteSize());
+                }
+            }
+          else
+            {
+              /* NYI: UNDER DEVELOPMENT */
+            }
+        }
+      default -> { /* NYI: check if value type */ }
+    }
   }
 
 
@@ -1464,27 +1403,27 @@ public class Runtime extends ANY
    */
   public static MemorySegment obj2MemorySegment(Object obj)
   {
-    if      (obj instanceof byte   [] arr) { return arena.allocate(arr.length * 1).copyFrom(MemorySegment.ofArray(arr)); }
-    else if (obj instanceof short  [] arr) { return arena.allocate(arr.length * 2).copyFrom(MemorySegment.ofArray(arr)); }
-    else if (obj instanceof char   [] arr) { return arena.allocate(arr.length * 2).copyFrom(MemorySegment.ofArray(arr)); }
-    else if (obj instanceof int    [] arr) { return arena.allocate(arr.length * 4).copyFrom(MemorySegment.ofArray(arr)); }
-    else if (obj instanceof long   [] arr) { return arena.allocate(arr.length * 8).copyFrom(MemorySegment.ofArray(arr)); }
-    else if (obj instanceof float  [] arr) { return arena.allocate(arr.length * 4).copyFrom(MemorySegment.ofArray(arr)); }
-    else if (obj instanceof double [] arr) { return arena.allocate(arr.length * 8).copyFrom(MemorySegment.ofArray(arr)); }
-    else if (obj instanceof MemorySegment memSeg) { return memSeg; }
-    else if (obj instanceof Object [] arr)
-      {
-        var argsArray = arena.allocate(arr.length * 8);
-        for (int i = 0; i < arr.length; i++)
-          {
-            argsArray.set(ValueLayout.ADDRESS, i * 8, obj2MemorySegment(arr[i]));
-          }
-        return argsArray;
-      }
-    else
-      {
-        return value2MemorySegment(obj);
-      }
+    return
+      switch (obj) {
+        case int    [] arr -> arena.allocate(arr.length * 4).copyFrom(MemorySegment.ofArray(arr));
+        case byte   [] arr -> arena.allocate(arr.length * 1).copyFrom(MemorySegment.ofArray(arr));
+        case long   [] arr -> arena.allocate(arr.length * 8).copyFrom(MemorySegment.ofArray(arr));
+        case double [] arr -> arena.allocate(arr.length * 8).copyFrom(MemorySegment.ofArray(arr));
+        case char   [] arr -> arena.allocate(arr.length * 2).copyFrom(MemorySegment.ofArray(arr));
+        case short  [] arr -> arena.allocate(arr.length * 2).copyFrom(MemorySegment.ofArray(arr));
+        case float  [] arr -> arena.allocate(arr.length * 4).copyFrom(MemorySegment.ofArray(arr));
+        case MemorySegment memSeg -> memSeg;
+        case Object [] arr ->
+        {
+          var argsArray = arena.allocate(arr.length * 8);
+          for (int i = 0; i < arr.length; i++)
+            {
+              argsArray.set(ValueLayout.ADDRESS, i * 8, obj2MemorySegment(arr[i]));
+            }
+          yield argsArray;
+        }
+        default -> value2MemorySegment(obj);
+      };
   }
 
 
@@ -1553,7 +1492,7 @@ public class Runtime extends ANY
    * create a new fuzion value, an fill
    * it with the data in memSeg.
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({"restricted", "unchecked"})
   public static <T> T memorySegment2Value(Class<T> cl, MemorySegment memSeg)
     throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
   {
@@ -1626,6 +1565,7 @@ public class Runtime extends ANY
   }
 
 
+  @SuppressWarnings("restricted")
   public static Object native_array(MemoryLayout memLayout, Object obj, int length)
   {
     var memSeg = ((MemorySegment)obj).reinterpret(length * memLayout.byteSize());
@@ -1724,6 +1664,7 @@ public class Runtime extends ANY
    *
    * @return An upcall which can be passed to other foreign functions as a function pointer
    */
+  @SuppressWarnings("restricted")
   public static MemorySegment upcall(Any outerRef, Class call)
   {
     Method method = null;
@@ -1815,6 +1756,7 @@ public class Runtime extends ANY
    *
    * @return
    */
+  @SuppressWarnings("restricted")
   public static int native_string_length(MemorySegment segment)
   {
     int length = 0;
@@ -1924,11 +1866,33 @@ public class Runtime extends ANY
       {
         return ValueLayout.ADDRESS;
       }
-    return MemoryLayout.structLayout(
-      Arrays
+    var elements = Arrays
         .stream(ct.getDeclaredFields())
         .map(f -> layout(f.getType()))
-        .toArray(MemoryLayout[]::new));
+        .toArray(MemoryLayout[]::new);
+    var result = MemoryLayout.structLayout(elements);
+    checkNoImplicitPadding(elements, result);
+    return result;
+  }
+
+
+  /**
+   * Check that no implicit padding between its member layouts
+   *
+   * NYI: UNDER DEVELOPMENT: this is work in progress. Not necessarily how
+   * we want things to be.
+   */
+  private static void checkNoImplicitPadding(MemoryLayout[] elements, StructLayout result)
+  {
+    long elSz = 0;
+    for (int index = 0; index < elements.length; index++)
+      {
+        elSz += elements[index].byteSize();
+      }
+    if (result.byteSize() != elSz)
+    {
+      Errors.fatal("Implementation restriction", "Implicit padding detected. We can't yet deal with this. You can only use values with native features that have no implicit padding currently.");
+    }
   }
 
 

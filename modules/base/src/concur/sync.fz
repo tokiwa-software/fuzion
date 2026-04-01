@@ -48,16 +48,19 @@ public sync is
   # a mutex is a synchronization primitive
   # that allows threads to wait for one another.
   #
-  private:public mutex(module mtx Mutex) is
+  private:public mutex(mtx Mutex) is
 
     # run code synchronized across all threads
     # that also use this mutex
     #
     public synchronized(T type, code ()->T) T =>
+
+      lock_effect : effect is
+        public redef finally unit =>
+          check mtx_unlock mtx
+
       check mtx_lock mtx
-      res := code.call
-      check mtx_unlock mtx
-      res
+      lock_effect ! code
 
 
     # initialize a new mutex
@@ -72,20 +75,19 @@ public sync is
   # a condition is synchronization primitive
   # that allows threads to signal and wait for one another.
   #
-  private:public condition(mtx Mutex, cnd Condition) is
+  private:public condition(mtx concur.sync.mutex, cnd Condition) is
 
-    public is_locked concur.atomic bool := concur.atomic false
+    public is_locked concur.atomic bool := concur.atomic bool .new false
 
     # run code synchronized across all threads
     # that also use this condition
     #
-    public synchronized(T type, code ()->T) T =>
-      check mtx_lock mtx
-      is_locked.write true
-      res := code.call
-      is_locked.write false
-      check mtx_unlock mtx
-      res
+    public synchronized(T type, code ()->T) T ! atomic_access =>
+      mtx.synchronized ()->
+        is_locked.write true
+        res := code.call
+        is_locked.write false
+        res
 
 
     # signal one waiting thread to wake up
@@ -95,7 +97,7 @@ public sync is
     => cnd_signal cnd
 
 
-    # signal all waiting thread to wake up
+    # signal all waiting threads to wake up
     #
     public broadcast bool
       pre is_locked.read
@@ -106,7 +108,7 @@ public sync is
     #
     public wait bool
       pre is_locked.read
-    => cnd_wait cnd mtx
+    => cnd_wait cnd mtx.mtx
 
 
     # initialize a new condition
@@ -114,6 +116,6 @@ public sync is
     public type.new outcome concur.sync.condition =>
       concur.sync.mtx_init.bind mtx->
         (concur.sync.cnd_init mtx).bind cnd->
-          concur.sync.condition mtx cnd
+          concur.sync.condition (concur.sync.mutex mtx) cnd
 
     # NYI: UNDER DEVELOPMENT: destroy

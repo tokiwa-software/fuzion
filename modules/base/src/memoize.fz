@@ -44,7 +44,7 @@
 #
 #
 public memoize(MM type : container.Mutable_Map T R, T type : property.equatable, R type, f T->R) T->R =>
-  ref : Unary R T is
+  _ : Unary R T is
 
     # the memory
     store := MM.empty
@@ -55,7 +55,7 @@ public memoize(MM type : container.Mutable_Map T R, T type : property.equatable,
       # compute if not yet computed
       if store[a].is_nil
         store.put a (f a)
-      store[a].get
+      store[a].or_panic
 
 
 # memoize the results of a function.
@@ -136,10 +136,10 @@ public memoize is
 
     # the store used for memoization
     #
-    # NYI: IMPROVEMENT: would be nice to also support property.hashable keys
+    # NYI: ENHANCEMENT: would be nice to also support property.hashable keys
     # using a tree map here
     #
-    private store := (container.ps_map K V).empty # (lock_free.Map K V).empty
+    store := (container.ps_map K V).empty # (lock_free.Map K V).empty
 
 
     # use this memoized effect to retrieve the value for a given key or,
@@ -158,8 +158,8 @@ public memoize is
         memoized.this.env.update k v
         v
 
-    private update(k,v) =>
-      set store := store.add k v
+    update(k,v) =>
+      set store := store.put k v
       memoized.this.replace memoized.this
 
 

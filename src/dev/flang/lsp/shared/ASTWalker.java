@@ -40,12 +40,9 @@ import dev.flang.ast.AbstractCurrent;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractLambda;
 import dev.flang.ast.AbstractMatch;
-import dev.flang.ast.Box;
 import dev.flang.ast.Call;
 import dev.flang.ast.Expr;
 import dev.flang.ast.InlineArray;
-import dev.flang.ast.Nop;
-import dev.flang.ast.Tag;
 import dev.flang.ast.Universe;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.SourcePosition;
@@ -159,14 +156,6 @@ public class ASTWalker
       {
         return traverseCall(c, outer);
       }
-    if (expr instanceof Tag t)
-      {
-        return traverseExpression(t._value, outer);
-      }
-    if (expr instanceof Box b)
-      {
-        return traverseExpression(b._value, outer);
-      }
     // for offering completions on constants
     if (expr instanceof Constant ac)
       {
@@ -186,10 +175,8 @@ public class ASTWalker
       }
     if ( expr == Call.ERROR
       || expr instanceof AbstractCurrent
-      || expr instanceof Constant
       || expr instanceof Universe
-      || expr instanceof AbstractLambda
-      || expr instanceof Nop)
+      || expr instanceof AbstractLambda)
       {
         return Stream.empty();
       }
@@ -198,10 +185,12 @@ public class ASTWalker
 
   private static Stream<Entry<HasSourcePosition, AbstractFeature>> traverseCall(AbstractCall c, AbstractFeature outer)
   {
-    return Util.concatStreams(
-      asStream(c, outer),
-      c.actuals().stream().flatMap(a -> traverseExpression(a, outer)),
-      traverseExpression(c.target(), outer));
+    return c == Call.ERROR
+      ? Stream.empty()
+      : Util.concatStreams(
+          asStream(c, outer),
+          c.actuals().stream().flatMap(a -> traverseExpression(a, outer)),
+          traverseExpression(c.target(), outer));
   }
 
   /**

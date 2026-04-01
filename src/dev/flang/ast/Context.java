@@ -139,8 +139,7 @@ abstract class Context extends ANY
                         .applyToGenericsAndOuter(x ->
                           x instanceof ResolvedParametricType rpt
                             ? f
-                              .generics()
-                              .list
+                              .typeArguments()
                               .stream()
                               .filter(y ->
                                   y.outer().origin() == rpt.genericArgument().outer().origin() &&
@@ -242,7 +241,7 @@ abstract class Context extends ANY
 
   /**
    * Test if f1 and f2 are equal or clones of each other,
-   * that where create via Contract.argsSupplier
+   * that were create via Contract.argsSupplier
    */
   protected boolean isClone(AbstractFeature f1, AbstractFeature f2)
   {
@@ -250,8 +249,12 @@ abstract class Context extends ANY
       f2.featureName().baseName().compareTo(f1.featureName().baseName()) == 0 &&
       (f2.outer().preFeature() == f1.outer() ||
         f2.outer().preBoolFeature() == f1.outer() ||
+        f2.outer().preAndCallFeature() == f1.outer() ||
+        f2.outer().postFeature() == f1.outer() ||
         f2.outer() == f1.outer().preFeature() ||
-        f2.outer() == f1.outer().preBoolFeature());
+        f2.outer() == f1.outer().preBoolFeature() ||
+        f2.outer() == f1.outer().preAndCallFeature() ||
+        f2.outer() == f1.outer().postFeature());
   }
 
 

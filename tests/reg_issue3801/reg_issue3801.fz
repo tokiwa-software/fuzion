@@ -38,7 +38,7 @@ reg_issue3801 is
     #
     e is
      i(def e.this -> unit) =>
-        (option unit).get
+        (option unit).or_panic
      i  _->
     _ := e
 

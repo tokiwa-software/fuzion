@@ -32,6 +32,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
@@ -40,7 +41,6 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -56,6 +56,8 @@ import dev.flang.ast.Types;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.List;
+import dev.flang.util.Pair;
 import dev.flang.util.SourceDir;
 
 
@@ -133,12 +135,6 @@ public class FrontEnd extends ANY
   public final Universe _feUniverse;
 
 
-  /**
-   * The modules loaded by frontend.
-   */
-  private final LibraryModule[] _dependsOn;
-
-
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -158,17 +154,33 @@ public class FrontEnd extends ANY
         sourceDirs[i] = new SourceDir(sourcePaths[i]);
       }
 
-    _dependsOn = loadModules(_feUniverse);
+    var dependsOn = loadModules(_feUniverse);
 
     if (options._loadSources)
       {
-        _sourceModule = new SourceModule(options, sourceDirs, _dependsOn, _feUniverse);
+        _sourceModule = new SourceModule(options, sourceDirs, dependsOn, _feUniverse);
         _sourceModule.createASTandResolve();
       }
     else
       {
         _sourceModule = null;
       }
+  }
+
+
+  /**
+   * Helper method to (re)-load the main.fum for LibraryFuir.
+   */
+  public static LibraryModule loadMainModule(FrontEndOptions o)
+  {
+    var mDirs = new List<>(o._moduleDirs);
+    mDirs.add(".");
+    var options = new FrontEndOptions(
+      0, o.fuzionHome(), false, false,
+      new List<>(), mDirs, new List<>(), -1, false,
+      null, false, null, null, null, false, false, false, null);
+    // NYI: CLEANUP: add option to load modules without FrontEnd
+    return new FrontEnd(options).loadModule(Long.toString(o.serializationHash()), null);
   }
 
 
@@ -260,18 +272,24 @@ public class FrontEnd extends ANY
     try (var ch = (FileChannel) Files.newByteChannel(p, EnumSet.of(StandardOpenOption.READ)))
       {
         var data = ch.map(FileChannel.MapMode.READ_ONLY, 0, ch.size());
-        result = libModule(data, x -> new LibraryModule[0], universe);
-        if (!m.equals(result.name()))
-          {
-            Errors.error("Module name mismatch for module file '" + p + "' expected name '" +
-                         m + "' but found '" + result.name() + "'");
-          }
-        _modules.put(m, result);
+        result = libModule(data, universe);
+        // NYI: BUG: does not work anymore
+        // if (!m.equals(result.name()))
+        //   {
+        //     Errors.error("Module name mismatch for module file '" + p + "' expected name '" +
+        //                  m + "' but found '" + result.name() + "'");
+        //   }
+        _modules.put(result.name(), result);
+      }
+    catch (NoSuchFileException io)
+      {
+        Errors.error("Module file " + p.getFileName().toString() + " does not exist.",
+                     "Full path where file was expected: " + p.normalize());
       }
     catch (IOException io)
       {
-        Errors.error("FrontEnd I/O error when reading module file",
-                     "While trying to read file '"+ p + "' received '" + io + "'");
+        Errors.fatal("FrontEnd I/O error when reading module file",
+                     "While trying to read file '"+ p.normalize() + "' received '" + io + "'");
       }
     return result;
   }
@@ -280,7 +298,7 @@ public class FrontEnd extends ANY
   /**
    * create a new LibraryModule from {@code data}
    */
-  private LibraryModule libModule(ByteBuffer data, Function<AbstractFeature, LibraryModule[]> loadDependsOn, AbstractFeature universe)
+  private LibraryModule libModule(ByteBuffer data, AbstractFeature universe)
   {
     LibraryModule result;
     var base = _totalModuleData;
@@ -288,7 +306,6 @@ public class FrontEnd extends ANY
     result = new LibraryModule(GLOBAL_INDEX_OFFSET + base,
                                this,
                                data,
-                               loadDependsOn,
                                universe);
     return result;
   }
@@ -369,8 +386,13 @@ public class FrontEnd extends ANY
         Errors.showAndExit();
 
         var data = _sourceModule.data();
+        if (_options.serializeFuir())
+          {
+            // We need this for source positions in fuir
+            _sourceModule.writeToFile(Path.of(Long.toString(_options.serializationHash()) + ".fum"));
+          }
         reset();
-        _mainModule = libModule(data, af -> loadModules(af), null /* use universe of module */);
+        _mainModule = libModule(data, null /* use universe of module */);
         var ignore = new Types.Resolved(_mainModule, _mainModule.libraryUniverse(), false);
       }
     return _mainModule;
@@ -387,18 +409,45 @@ public class FrontEnd extends ANY
 
 
   /**
-   * A module that consists of all modules that
-   * this front end depends on without the need for a
-   * source module.
+   * @param modules the modules to load
+   *
+   * @return Pair of a universe and a metamodule with all modules in modules loaded
    */
-  public Module feModule()
+  public static Pair<AbstractFeature, Module> feModule(Path fuzionHome, List<String> modules)
   {
+    var frontEndOptions = new FrontEndOptions(
+      /* verbose                 */ 0,
+      /* fuzionHome              */ fuzionHome,
+      /* loadBaseMod             */ true,
+      /* eraseInternalNamesInMod */ false,
+      /* modules                 */ modules,
+      /* moduleDirs              */ new List<>(),
+      /* dumpModules             */ new List<>(),
+      /* fuzionDebugLevel        */ 0,
+      /* fuzionSafety            */ false,
+      /* sourceDirs              */ null,
+      /* readStdin               */ false,
+      /* executeCode             */ null,
+      /* main                    */ null,
+      /* moduleName              */ null,
+      /* loadSources             */ false,
+      /* needsEscapeAnalysis     */ false,
+      /* serializeFuir           */ false,
+      /* timer                   */ s->{});
+    var fe = new FrontEnd(frontEndOptions);
+    return new Pair<>(fe._feUniverse, fe.feModule0());
+  }
+
+
+  private Module feModule0()
+  {
+    _options._modules.stream().forEach(mn -> loadModule(mn, _feUniverse));
     if (Types.resolved == null)
       {
         _feUniverse.setState(State.RESOLVED);
         new Types.Resolved(_modules.get(FuzionConstants.BASE_MODULE_NAME), _feUniverse, true);
       }
-    return new Module(_dependsOn) {
+    return new Module(_modules.values().toArray(LibraryModule[]::new)) {
       @Override
       public SortedMap<FeatureName, AbstractFeature> declaredFeatures(AbstractFeature outer)
       {

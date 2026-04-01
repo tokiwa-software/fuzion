@@ -46,7 +46,7 @@ public class BuiltInType extends ParsedType
 
   public BuiltInType(String name)
   {
-    super(SourcePosition.builtIn, name, NONE, null);
+    super(SourcePosition.builtIn, name);
   }
 
 

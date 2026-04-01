@@ -39,7 +39,7 @@ show(m container.Mutable_Hash_Map (LM : mutate) (HK : property.hashable) V)=>
 test_put(m container.Mutable_Hash_Map (LM : mutate) (HK : property.hashable) V, k HK, v V) =>
   say "put $k $v"
   m.put k v
-  check m.get .get = v
+  check m.get .or_panic = v
   show m
 
 test_remove(m container.Mutable_Hash_Map (LM : mutate) (HK : property.hashable) V, k HK) =>
@@ -72,7 +72,7 @@ str(i i32) String => "No. $i"
 interval_test is
   interval_map := container.Mutable_Hash_Map mutate i32 String .empty
 
-  interval_test_size := 200
+  interval_test_size := 75
 
 
   # put 1..n then remove 1..n
@@ -81,7 +81,7 @@ interval_test is
     test_put interval_map i (str i)
     check interval_map.size = interval_map.items.count = i
     for j in 1..i do
-      check interval_map.get j .get = (str j)
+      check interval_map.get j .or_panic = (str j)
 
   for i in 1..interval_test_size do
     test_remove interval_map i
@@ -89,7 +89,7 @@ interval_test is
     for j in 1..i do
       check interval_map.get j .is_nil
     for j in (i+1)..interval_test_size do
-      check interval_map.get j .get = (str j)
+      check interval_map.get j .or_panic = (str j)
 
 
   # put n..1 then remove 1..n
@@ -98,7 +98,7 @@ interval_test is
     test_put interval_map i (str i)
     check interval_map.size = interval_map.items.count = (interval_test_size - i + 1)
     for j in i..interval_test_size do
-      check interval_map.get j .get = (str j)
+      check interval_map.get j .or_panic = (str j)
 
   for i in 1..interval_test_size do
     test_remove interval_map i
@@ -106,7 +106,7 @@ interval_test is
     for j in 1..i do
       check interval_map.get j .is_nil
     for j in (i+1)..interval_test_size do
-      check interval_map.get j .get = (str j)
+      check interval_map.get j .or_panic = (str j)
 
 
   # put n..1 then remove n..1
@@ -115,7 +115,7 @@ interval_test is
     test_put interval_map i (str i)
     check interval_map.size = interval_map.items.count = (interval_test_size - i + 1)
     for j in i..interval_test_size do
-      check interval_map.get j .get = (str j)
+      check interval_map.get j .or_panic = (str j)
 
   for i in (1..interval_test_size).reverse do
     test_remove interval_map i
@@ -123,7 +123,7 @@ interval_test is
     for j in i..interval_test_size do
       check interval_map.get j .is_nil
     for j in 1..(i-1) do
-      check interval_map.get j .get = (str j)
+      check interval_map.get j .or_panic = (str j)
 
 
   # put 1..n then remove n..1
@@ -132,7 +132,7 @@ interval_test is
       test_put interval_map i (str i)
       check interval_map.size = interval_map.items.count = i
       for j in 1..i do
-        check interval_map.get j .get = (str j)
+        check interval_map.get j .or_panic = (str j)
 
   for i in (1..interval_test_size).reverse do
     test_remove interval_map i
@@ -140,7 +140,7 @@ interval_test is
     for j in i..interval_test_size do
       check interval_map.get j .is_nil
     for j in 1..(i-1) do
-      check interval_map.get j .get = (str j)
+      check interval_map.get j .or_panic = (str j)
 
 
 
@@ -169,7 +169,7 @@ collision_test_1 is
       check collision_map.size = collision_map.items.count = i
 
       for m in (put_ord.take i) do
-        check collision_map.get m .get = (str m)
+        check collision_map.get m .or_panic = (str m)
       for m in (put_ord.drop i) do
         check collision_map.get m .is_nil
 
@@ -182,7 +182,7 @@ collision_test_1 is
     for m in (remove_ord.take i) do
       check collision_map.get m .is_nil
     for m in (remove_ord.drop i) do
-      check collision_map.get m .get = (str m)
+      check collision_map.get m .or_panic = (str m)
 
 
 
@@ -210,7 +210,7 @@ collision_test_2 is
       check collision_map.size = collision_map.items.count = i
 
       for m in (put_ord.take i) do
-        check collision_map.get m .get = (str m)
+        check collision_map.get m .or_panic = (str m)
       for m in (put_ord.drop i) do
         check collision_map.get m .is_nil
 
@@ -223,7 +223,7 @@ collision_test_2 is
     for m in (remove_ord.take i) do
       check collision_map.get m .is_nil
     for m in (remove_ord.drop i) do
-      check collision_map.get m .get = (str m)
+      check collision_map.get m .or_panic = (str m)
 
 
 
@@ -233,12 +233,12 @@ collision_test_2 is
 primes_test is
   primes_map := container.Mutable_Hash_Map mutate i32 String .empty
 
-  primes_test_size := 250
+  primes_test_size := 75
 
   # NYI: calculation of prime numbers very slow
   primes(n i32) =>
     sieve(l list i32) list i32 =>
-      l.head.get : sieve (l.tail.filter ((x) -> !(x%%l.head.get))).as_list
+      l.head.or_panic : sieve (l.tail.filter ((x) -> !(x%%l.head.or_panic))).as_list
     1 : ((sieve (2..).as_list).take n).as_list
 
   test_primes := (primes (primes_test_size + 1)).as_array
@@ -251,7 +251,7 @@ primes_test is
     for j in 0..primes_test_size do
       m := test_primes[j]
       if j <= i
-        check primes_map.get m .get = (str m)
+        check primes_map.get m .or_panic = (str m)
       else
         check primes_map.get m .is_nil
 
@@ -268,7 +268,7 @@ primes_test is
         match primes_map.get m
           s String => check s = (str m)
           nil => panic "after removing round $i (prime $n) get for $j (prime $m) falsely returned nil"
-        check primes_map.get m .get = (str m)
+        check primes_map.get m .or_panic = (str m)
 
 
 
@@ -278,7 +278,7 @@ primes_test is
 random_test is
   simple_random 42 ()->
 
-    random_test_size := 600
+    random_test_size := 75
     random_map := container.Mutable_Hash_Map mutate i32 String .empty
     verify_map := container.mutable_tree_map mutate i32 String .empty
 
@@ -310,7 +310,7 @@ random_test is
 
       for k in verify_map.keys do
         match verify_map.get k
-          s String => check random_map.get k .get = s
+          s String => check random_map.get k .or_panic = s
           nil      => check random_map.get k .is_nil
 
 

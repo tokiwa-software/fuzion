@@ -194,13 +194,6 @@ public class FuzionOptions extends ANY
 
 
   /**
-   * Flag to enable intrinsic functions such as fuzion.jvm.env.call_virtual. These are
-   * not allowed if run in a web playground.
-   */
-  final boolean _enableUnsafeIntrinsics;
-
-
-  /**
    * Path to the Fuzion home directory, never null.
    */
   final Path _fuzionHome;
@@ -232,7 +225,7 @@ public class FuzionOptions extends ANY
    * @param timer can be called with a phase name to measure the time spent in
    * this phase, printed if {@code -verbose} level is sufficiently high.
    */
-  public FuzionOptions(int verbose, int fuzionDebugLevel, boolean fuzionSafety, boolean enableUnsafeIntrinsics, Path fuzionHome, Consumer<String> timer)
+  public FuzionOptions(int verbose, int fuzionDebugLevel, boolean fuzionSafety, Path fuzionHome, Consumer<String> timer)
   {
     if (PRECONDITIONS) require
       (verbose >= 0,
@@ -241,7 +234,6 @@ public class FuzionOptions extends ANY
     _verbose = verbose;
     _fuzionDebugLevel = fuzionDebugLevel;
     _fuzionSafety = fuzionSafety;
-    _enableUnsafeIntrinsics = enableUnsafeIntrinsics;
     _fuzionHome = fuzionHome;
     _timer = timer;
   }
@@ -255,7 +247,6 @@ public class FuzionOptions extends ANY
     this(fo.verbose(),
          fo.fuzionDebugLevel(),
          fo.fuzionSafety(),
-         fo.enableUnsafeIntrinsics(),
          fo.fuzionHome(),
          fo._timer);
   }
@@ -322,11 +313,6 @@ public class FuzionOptions extends ANY
   public boolean fuzionDebug()
   {
     return fuzionDebugLevel() > 0;
-  }
-
-  public boolean enableUnsafeIntrinsics()
-  {
-    return _enableUnsafeIntrinsics;
   }
 
   public Path fuzionHome()

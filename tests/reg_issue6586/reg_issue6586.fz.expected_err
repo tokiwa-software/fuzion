@@ -1,0 +1,8 @@
+
+--CURDIR--/reg_issue6586.fz:24:1: error 1: Main feature must not be choice
+x : choice is
+^
+Main feature must be a non-abstract non-intrinsic routine
+To solve this, use a non-abstract, non-intrinsic, non-generic routine as the main feature of your application.
+
+one error.

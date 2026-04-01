@@ -38,6 +38,8 @@ import dev.flang.util.ANY;
 import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
 
+import static dev.flang.ir.IR.NO_CLAZZ;
+
 import java.util.TreeMap;
 
 
@@ -258,17 +260,6 @@ public class Types extends ANY implements ClassFileConstants
   }
 
 
-  boolean clazzNeedsCode(int cl)
-  {
-    return _fuir.clazzNeedsCode(cl) ||
-      cl == _fuir.clazz_const_string_utf8_data() ||
-      cl == _fuir.clazz_array_u8() ||
-      cl == _fuir.clazz_fuzionSysArray_u8() ||
-      cl == _fuir.clazz_fuzionSysArray_u8_data() ||
-      cl == _fuir.clazz_fuzionSysArray_u8_length();
-  }
-
-
   /**
    * Create class interface declaration for given class.
    *
@@ -435,7 +426,7 @@ public class Types extends ANY implements ClassFileConstants
   boolean hasOuterRef(int cl)
   {
     var or = _fuir.clazzOuterRef(cl);
-    return or != -1 && !_fuir.clazzIsUnitType(_fuir.clazzResultClazz(or));
+    return or != NO_CLAZZ && !_fuir.clazzIsUnitType(_fuir.clazzResultClazz(or));
   }
 
 

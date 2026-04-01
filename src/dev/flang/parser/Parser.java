@@ -59,16 +59,30 @@ public class Parser extends Lexer
   }
 
 
+  /**
+   * Exception used for control flow to exit a call.
+   */
+  static class GiveUp extends RuntimeException
+  {
+
+    /**
+     * Pre-allocated instance of `GiveUp`
+     */
+    static final GiveUp _INSTANCE_ = new GiveUp();
+
+  };
+
+
   /*----------------------------  constants  ----------------------------*/
 
 
   /**
    * Different kinds of opening / closing brackets
    */
-  static Parens PARENS   = new Parens( Token.t_lparen  , Token.t_rparen   );
-  static Parens BRACES   = new Parens( Token.t_lbrace  , Token.t_rbrace   );
-  static Parens BRACKETS = new Parens( Token.t_lbracket, Token.t_rbracket );
-  static Parens ANGLES   = new Parens( "<"             , ">"              );
+  static final Parens PARENS   = new Parens( Token.t_lparen  , Token.t_rparen   );
+  static final Parens BRACES   = new Parens( Token.t_lbrace  , Token.t_rbrace   );
+  static final Parens BRACKETS = new Parens( Token.t_lbracket, Token.t_rbracket );
+  static final Parens ANGLES   = new Parens( "<"             , ">"              );
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -84,22 +98,11 @@ public class Parser extends Lexer
   public static boolean ENABLE_SET_KEYWORD = false;
 
   /**
-   * contains the last line number in which an `if` was found,
-   * required to set the semicolon state for the ambiguous semicolon error
+   * Are we parsing for the language server and thus need to
+   * be more tolerant for incomplete source code?
    */
-  private int _lastIfLine = -1;             // NYI: CLEANUP: state in parser should be avoided see #4991
+  private final boolean _isLanguageServer;
 
-  /**
-   * SourcePosition of the outer `else`, null if not in `else` block
-   * required for proper alignment of `if`, `then`, `else` and `else if`
-   */
-  private SourcePosition _outerElse = null; // NYI: CLEANUP: state in parser should be avoided see #4991
-
-  /**
-   * SourcePosition of the outer `then`, null if not in `then` block or keyword `then` is not used
-   * required for proper alignment of `if`, `then`, `else` and `else if`
-   */
-  private SourcePosition _then = null;      // NYI: CLEANUP: state in parser should be avoided see #4991
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -107,9 +110,10 @@ public class Parser extends Lexer
   /**
    * Create a parser for the given file or byte array
    */
-  public Parser(Path fname, byte[] sf)
+  public Parser(Path fname, byte[] sf, boolean isLanguageServer)
   {
     super(fname, sf);
+    this._isLanguageServer = isLanguageServer;
   }
 
 
@@ -119,6 +123,7 @@ public class Parser extends Lexer
   private Parser(Parser original)
   {
     super(original);
+    this._isLanguageServer = original._isLanguageServer;
   }
 
 
@@ -221,16 +226,14 @@ semiOrFlatLF: semi
             ;
 
    */
-  boolean semiOrFlatLF()
+  void semiOrFlatLF()
   {
     int last = lastTokenPos();
-    boolean result = last >= 0 && lineNum(last) != lineNum(tokenPos());
-    if (!result)
+    if (last < 0 || lineNum(last) == lineNum(tokenPos()))
       {
         match(Token.t_semicolon, "semicolon or flat line break");
       }
     semi();
-    return result;
   }
 
 
@@ -341,7 +344,7 @@ field       : returnType
     return
       isNonEmptyVisibilityPrefix() ||
       isModifiersPrefix() ||
-      (isNamePrefix() || current() == Token.t_type) && fork().skipFeaturePrefix();
+      (isNamePrefix() && !isAnonymousPrefix() || current() == Token.t_type) && fork().skipFeaturePrefix();
   }
 
 
@@ -353,31 +356,32 @@ field       : returnType
    */
   boolean skipFeaturePrefix()
   {
-    if (!skipQual())
+    do
       {
-        return false;
+        if (!skipQual())
+          {
+            return false;
+          }
       }
-    if (skipComma())
+    while (skipComma());
+    return switch (skipFormArgsNotActualArgs())
       {
-        return true;
+      case formal -> true;
+      case actual -> false;
+      default -> {
+        if (isNonFuncReturnTypePrefix())
+          {
+            yield true;
+          }
+        var p = fork();
+        yield
+          (!p.isTypePrefix() || p.skipType(true, true)) &&
+          (!p.isOperator("!") || p.skipEffects()) &&
+          p.skipInherits() &&
+          (p.isContractPrefix() ||
+            p.isImplPrefix());
       }
-    switch (skipFormArgsNotActualArgs())
-      {
-      case formal: return true;
-      case actual: return false;
-      default    : break;
-      }
-    if (isNonFuncReturnTypePrefix())
-      {
-        return true;
-      }
-    var p = fork();
-    return
-      (!p.isTypePrefix() || p.skipType(true, true)) &&
-      (!p.isOperator("!") || p.skipEffects()) &&
-      p.skipInherits() &&
-      (p.isContractPrefix  () ||
-       p.isImplPrefix      ());
+      };
   }
 
 
@@ -616,6 +620,10 @@ name        : IDENT                            // all parts of name must be in s
           default: throw new Error(current(mayBeAtMinIndent).toString());
           }
         sameLine(oldLine);
+      }
+    else if (_isLanguageServer)
+      {
+        result = new ParsedName(sourcePos(), "");
       }
     else if (!ignoreError)
       {
@@ -857,7 +865,12 @@ argType     : type
                                     else if (isTypePrefix())
                                       {
                                         i = Impl.FIELD;
-                                        t = type();
+                                        var ut = type();
+                                        if (skip("..."))
+                                          {
+                                            ut.setFollowedByDots();
+                                          }
+                                        t = ut;
                                       }
                                     else
                                       {
@@ -1063,28 +1076,16 @@ argNames    : name ( COMMA argNames
    * Parse returnType
    *
 returnType  : boundType
-            | "value"
             | "ref"
             |
             ;
    */
   ReturnType returnType()
   {
-    ReturnType result;
-    if (isType())
-      {
-        result = new FunctionReturnType(boundType());
-      }
-    else
-      {
-        switch (current())
-          {
-          case t_value : next(); result = ValueType .INSTANCE; break;
-          case t_ref   : next(); result = RefType   .INSTANCE; break;
-          default      :         result = NoType    .INSTANCE; break;
-          }
-      }
-    return result;
+    return
+      isType()          ? new FunctionReturnType(boundType()) :
+      skip(Token.t_ref) ? RefType.INSTANCE
+                        : NoType .INSTANCE;
   }
 
 
@@ -1129,12 +1130,7 @@ EXCLAMATION : "!"
    */
   boolean isNonFuncReturnTypePrefix()
   {
-    switch (current())
-      {
-      case t_value :
-      case t_ref   : return true;
-      default      : return false;
-      }
+    return current() == Token.t_ref;
   }
 
 
@@ -1148,9 +1144,7 @@ EXCLAMATION : "!"
    */
   boolean skipNonFuncReturnType()
   {
-    return
-      skip(Token.t_value ) ||
-      skip(Token.t_ref   );
+    return skip(Token.t_ref);
   }
 
 
@@ -1260,9 +1254,7 @@ inheritanceCallList    : inheritanceCall ( COMMA inheritanceCallList
    */
   private boolean skipInheritanceCall()
   {
-    return call0() instanceof AbstractCall
-      ? true
-      : expr() instanceof AbstractCall;
+    return operatorExpr() instanceof AbstractCall;
   }
 
 
@@ -1343,7 +1335,7 @@ indexTail   : ":=" exprInLine
     do
       {
         SourcePosition pos = tokenSourcePos();
-        var l = bracketTermWithNLs(BRACKETS, "indexCall", () -> actualCommas());
+        var l = bracketTermWithNLs(BRACKETS, "indexCall", () -> actualCommas(true));
         String n = FuzionConstants.FEATURE_NAME_INDEX;
         if (skip(":="))
           {
@@ -1416,7 +1408,7 @@ dotCall     : dot call   callTail
           }
         else
           {
-            result = callTail(false, new ParsedCall(new DotType(sourceRange(target.pos()), target), new ParsedName(sourceRange(target.pos()), "from_env")));
+            result = callTail(false, new ParsedCall(Call.typeAsValue(sourceRange(target.pos()), t), new ParsedName(sourceRange(target.pos()), "from_env")));
           }
       }
     else if (skip(Token.t_type))
@@ -1430,7 +1422,7 @@ dotCall     : dot call   callTail
           }
         else
           {
-            result = callTail(false, new DotType(sourceRange(target.pos()), target));
+            result = callTail(false, Call.typeAsValue(sourceRange(target.pos()), t));
           }
       }
     else if (skip(Token.t_this))
@@ -1556,7 +1548,25 @@ actualArgs  : actualSpaces
   {
     return (ignoredTokenBefore() || current() != Token.t_lparen)
       ? actualSpaces()
-      : bracketTermWithNLs(PARENS, "actualArgs", () -> actualCommas());
+      : bracketTermWithNLs(PARENS, "actualArgs", () -> actualCommas(true));
+  }
+
+
+  /**
+   * Replace Tokens t_*Limit by t_eof.
+   */
+  Token limitToEOF(Token t)
+  {
+    return switch (t)
+      {
+      case t_indentationLimit,
+           t_lineLimit       ,
+           t_spaceOrSemiLimit,
+           t_commaLimit      ,
+           t_colonLimit      ,
+           t_barLimit        -> Token.t_eof;
+      default                -> t;
+      };
   }
 
 
@@ -1586,7 +1596,7 @@ actualArgs  : actualSpaces
       //   (f a b c).xyz
       //
 
-      switch (current(atMinIndent))
+      switch (limitToEOF(current(atMinIndent)))
       {
       case t_semicolon       ,
            t_comma           ,
@@ -1597,7 +1607,7 @@ actualArgs  : actualSpaces
            t_is              ,
            t_pre             ,
            t_post            ,
-           t_inv             ,
+           t_invariant       ,
            t_if              ,
            t_then            ,
            t_else            ,
@@ -1609,12 +1619,6 @@ actualArgs  : actualSpaces
            t_stringBQ        ,
            t_stringBB        ,
            t_question        ,
-           t_indentationLimit,
-           t_lineLimit       ,
-           t_spaceOrSemiLimit,
-           t_commaLimit      ,
-           t_colonLimit      ,
-           t_barLimit        ,
            t_eof             -> true;
 
       case t_op            ->
@@ -1652,6 +1656,12 @@ actualArgs  : actualSpaces
   /**
    * Parse actualCommas
    *
+   * @param endAtComma true to treat `x, v->2*v` as two actuals `x` and `v->2*v`
+   * instead of one `(x,v)->2*v`.
+   *
+   * NYI: CLEANUP: It might be better to omit the case endAtComma==true and to always
+   * parse the case `x, v->2*v` as one actual.
+   *
 actualCommas: actualSome
             |
             ;
@@ -1662,7 +1672,7 @@ actualMore  : COMMA actualSome
             |
             ;
    */
-  List<Expr> actualCommas()
+  List<Expr> actualCommas(boolean endAtComma)
   {
     var result = new List<Expr>();
     if (current() != Token.t_rparen   &&
@@ -1670,7 +1680,7 @@ actualMore  : COMMA actualSome
       {
         do
           {
-            var oldEAc = endAtComma(true);   /* see #3798 for an example where this is necessary: a call `f(x, v->2*v)` */
+            var oldEAc = endAtComma(endAtComma);   /* see #3798 for an example where this is necessary: a call `f(x, v->2*v)` */
             result.add(operatorExpr());
             endAtComma(oldEAc);
           }
@@ -1692,7 +1702,7 @@ actualSpaces: actualSpace actualSpaces
     List<Expr> result = ParsedCall.NO_PARENTHESES;
     if (ignoredTokenBefore() && !endsActuals(false))
       {
-        var in = new Indentation();
+        var in = new Indentation("actualSpaces");
         result = new List<>();
         while (!endsActuals(!result.isEmpty()) && in.ok())
           {
@@ -1781,7 +1791,7 @@ exprNoColon : operatorExpr          // may not contain `:` unless enclosed in { 
     if (current() == Token.t_question)
       {
         SourcePosition pos = tokenSourcePos();
-        var i = new Indentation();
+        var i = new Indentation("operatorExpr");
         skip(Token.t_question);
         var f0 = fork();
         if (f0.isCasesAndNotExpr())
@@ -1821,7 +1831,7 @@ opsOpt      : ops
     Expr result;
     int pos = tokenPos();
     var oe = new OpExpr();
-    if (current() == Token.t_op)
+    if (current() == Token.t_op && !isOperator("=>"))
       {
         ops(oe);
       }
@@ -1859,7 +1869,7 @@ ops         : OPERATOR
         oe.add(new Operator(tokenSourceRange(), operator(), ignoredTokenBefore(), ignoredTokenAfter()));
         match(Token.t_op, "op");
       }
-    while (current() == Token.t_op);
+    while (current() == Token.t_op && !isOperator("=>"));
     return result;
   }
 
@@ -1878,7 +1888,7 @@ opsTerms    : ops
    */
   Expr opsTail(OpExpr oe)
   {
-    while (current() == Token.t_op)
+    while (current() == Token.t_op && !isOperator("=>"))
       {
         var spaceBeforeLastOperator = ops(oe);
         if (isTermPrefix(spaceBeforeLastOperator))
@@ -1893,51 +1903,83 @@ opsTerms    : ops
   /**
    * Parse klammer is either a single parenthesized expression or a tuple
    *
-klammer     : klammerExpr
+klammer     : LPAREN block RPAREN
             | tuple
-            | klammerLambd
-            ;
-klammerExpr : LPAREN expr RPAREN
-            ;
-tuple       : LPAREN RPAREN
-            | LPAREN operatorExpr (COMMA operatorExpr)+ RPAREN
-            ;
-klammerLambd: tuple lambda
+            | tuple lambda
             ;
    */
   Expr klammer()
   {
-    SourcePosition pos = tokenSourcePos();
-    var tupleElements = new List<Expr>();
-    bracketTermWithNLs(PARENS, "klammer",
-                       () -> {
-                         do
-                           {
-                             tupleElements.add(operatorExpr());
-                           }
-                         while (skipComma());
-                         return Void.TYPE;
-                       },
-                       () -> Void.TYPE);
-
-
-    if (isLambdaPrefix())                  // a lambda expression
+    Expr res;
+    var f = fork();
+    try
       {
-        return lambda(tupleElements);
-      }
-    else if (tupleElements.size() == 1)    // an expr wrapped in parentheses, not a tuple
-      {
-        var e = tupleElements.get(0);
-        if (e instanceof ParsedOperatorCall oc)
-          { // disable chained boolean optimization:
-            oc.putInParentheses();
+        var forked_t = f.tuple();
+        if (f.isLambdaPrefix())                  // a lambda expression
+          {
+            // a little overkill: we first permit an arbitrary tuple, just to later
+            // extract either the argument names or types.
+            res = lambda(tuple());
           }
-        return e;
+        else if (forked_t.size() != 1)
+          {
+            res = new ParsedCall(null, new ParsedName(tokenSourcePos(), "tuple"), tuple());
+          }
+        else
+          {
+            // NYI: UNDER DEVELOPMENT: This case of a single operatorExpr in parentheses is parsed slightly different than
+            // a block.  Would be good to avoid the special handling here and always use the `else` case below.
+            //
+            // in particular:
+            //
+            //   _ := ("bla"
+            //          + "blub")           # NYI: BUG: #5543: as block, causes indentation error
+            //   _ := (a).this              # as block, causes qualifier expected for '.this' expression.
+            //
+            // I suggest the cases `(a,b -> unit)` and `(a).this` should be
+            // supported when parsing a block in parentheses, while the indentation
+            // problem is maybe acceptable to cause an error.
+            //
+            res = tuple().get(0);
+            if (res instanceof ParsedOperatorCall oc)
+              { // disable chained boolean optimization:
+                oc.putInParentheses();
+              }
+          }
       }
-    else                                   // a tuple
+    catch (GiveUp _)
       {
-        return new ParsedCall(null, new ParsedName(pos, "tuple"), tupleElements);
+        res = bracketTermWithNLs(PARENS, "klammer",
+                                 () -> block(),
+                                 () -> emptyBlock());
       }
+    return res;
+  }
+
+
+  /**
+   * Parse tuple, return null in case this is not a tuple, but a block (leaving
+   * the Parser instance in an undefined state).
+   *
+   * @throws GiveUp in case this is not a tuple but has to be parsed as a block
+   * in parentheses.
+   *
+tuple       : LPAREN actualCommas RPAREN
+            ;
+   */
+  List<Expr> tuple()
+  {
+    return bracketTermWithNLs(PARENS, "klammer",
+                              () -> {
+                                var l = actualCommas(false);
+                                if (currentAtMinIndent() != Token.t_rparen ) // there is more, so this might be a block
+                                  {
+                                    throw GiveUp._INSTANCE_;
+                                  }
+                                return l;
+                              },
+                              () -> new List<Expr>() // default for `()` is an empty tuple
+                              );
   }
 
 
@@ -2241,7 +2283,7 @@ casesNoBars : caze semiOrFlatLF casesNoBars
    */
   List<AbstractCase> cases()
   {
-    var in = new Indentation();
+    var in = new Indentation("cases");
     List<AbstractCase> result;
     if (skip('|'))
       {
@@ -2443,16 +2485,11 @@ brblock     : BRACEL exprs BRACER
    */
   boolean endOfExprs()
   {
-    return switch (currentAtMinIndent())
+    var t = limitToEOF(currentAtMinIndent());
+    return switch (t)
       {
       case
         t_comma,
-        t_indentationLimit,
-        t_lineLimit,
-        t_spaceOrSemiLimit,
-        t_commaLimit,
-        t_colonLimit,
-        t_barLimit,
         t_rbrace,
         t_rparen,
         t_rbracket,
@@ -2460,7 +2497,7 @@ brblock     : BRACEL exprs BRACER
         t_then,
         t_else,
         t_eof -> true;
-      default -> isContinuedString(currentNoLimit());
+      default -> isContinuedString(t);
       };
   }
 
@@ -2468,14 +2505,14 @@ brblock     : BRACEL exprs BRACER
   /**
    * Parse exprs
    *
-exprs       : expr semiOrFlatLF exprs (semiOrFlatLF | )
+exprs       : expr semiOrFlatLF exprs
             |
             ;
    */
   List<Expr> exprs()
   {
     List<Expr> l = new List<>();
-    var in = new Indentation();
+    var in = new Indentation("exprs");
     while (!endOfExprs() && in.ok())
       {
         Expr e = expr();
@@ -2502,7 +2539,7 @@ exprs       : expr semiOrFlatLF exprs (semiOrFlatLF | )
    * Class to handle a block of indented code.  The code should follow this pattern:
    *
    * <pre>{@code
-   *    var in = new Indentation();
+   *    var in = new Indentation("ebnf rule");
    *    while (!curTokenWouldTerminateListInSingleLine() && in.ok())
    *      {
    *        ... parse element ...
@@ -2512,6 +2549,7 @@ exprs       : expr semiOrFlatLF exprs (semiOrFlatLF | )
    */
   class Indentation
   {
+    final String _rule;     // the EBNF rule this indentation is for
     boolean mayIndent;
     int oldSameLine;
     int firstPos;           // source position of the first element
@@ -2522,8 +2560,14 @@ exprs       : expr semiOrFlatLF exprs (semiOrFlatLF | )
     int okPos        = -1;  // position    of last call to ok(), -1 at beginning
     SemiState oldSemiSt = SemiState.CONTINUE; // the semicolon state, it is used to detect ambiguous semicolons
 
-    Indentation()
+    /**
+     * Create new Indentation
+     *
+     * @param rule the EBNF rule that required indentation,
+     */
+    Indentation(String rule)
     {
+      _rule = rule;
       mayIndent      = !isRestrictedToLine();
       firstPos       = tokenPos();
       if (lastTokenPos() >= 0 && lineNum(lastTokenPos()) == line())  // code starts without LF, so set line limit to find end of line in next()
@@ -2590,7 +2634,7 @@ exprs       : expr semiOrFlatLF exprs (semiOrFlatLF | )
               var curIndent = indent(okPos);
               if (firstIndent != curIndent)
                 {
-                  Errors.indentationProblemEncountered(tokenSourcePos(), sourcePos(firstPos), parserDetail("exprs"));
+                  Errors.indentationProblemEncountered(tokenSourcePos(), sourcePos(firstPos), parserDetail(_rule));
                 }
               setMinIndent(okPos);
               okLineNum = lineNum(okPos);
@@ -2658,36 +2702,43 @@ loop        : loopProlog loopBody loopEpilog
             |            loopBody
             | loopProlog          loopEpilog
             ;
-loopProlog  : indexVars "variant" exprInLine
-            | indexVars
-            |           "variant" exprInLine
+loopProlog  : "for" indexVars "variant" exprInLine
+            | "for" indexVars
+            |                 "variant" exprInLine
             ;
 loopBody    : "while" exprInLine      block
             | "while" exprInLine "do" block
             |                    "do" block
             ;
-loopEpilog  : "until" exprInLine thenPart loopElseBlock
-            |                             "else" block
+loopEpilog  : "until" exprInLine thenPart elseBlockOpt
+            |                             elseBlock
             ;
    */
   Expr loop()
   {
+    var surroundingIf = surroundingIf();
+    var surroundingLoop = surroundingLoop();
     return relaxLineAndSpaceLimit(() -> {
+        var pos = tokenSourcePos();
+        if (surroundingLoop != null && surroundingLoop.line() == pos.line())
+          {
+            AstErrors.ambiguousLoops(pos, surroundingLoop);
+          }
+        surroundingLoop(pos); /* disallow nesting */
         var old = setMinIndent(tokenPos());
-        SourcePosition pos = tokenSourcePos();
         List<Feature> indexVars  = new List<>();
         List<Feature> nextValues = new List<>();
-        var hasFor   = current() == Token.t_for; if (hasFor) { indexVars(indexVars, nextValues); }
-        var hasVar   = skip(true, Token.t_variant); var v   = hasVar              ? exprInLine()    : null;
-                                                    var i   = hasFor || v != null ? invariant(true) : null;
-        var hasWhile = skip(true, Token.t_while  ); var w   = hasWhile            ? exprInLine()    : null;
-        var hasDo    = skip(true, Token.t_do     ); var b   = hasWhile || hasDo   ? block()         : null;
-        var hasUntil = skip(true, Token.t_until  ); var u   = hasUntil            ? exprInLine()    : null;
-                                                    var ub  = hasUntil            ? thenPart(true)  : null;
+        var hasFor   = skip(true, Token.t_for    ); if (hasFor) { indexVars(indexVars, nextValues); }
+        var hasVar   = skip(true, Token.t_variant); var v   = hasVar              ? exprInLine()   : null;
+                                                    var i   = hasFor || v != null ? invariant()    : null;
+        var hasWhile = skip(true, Token.t_while  ); var w   = hasWhile            ? exprInLine()   : null;
+        var hasDo    = skip(true, Token.t_do     ); var b   = hasWhile || hasDo   ? block()        : null;
+        var hasUntil = skip(true, Token.t_until  ); var u   = hasUntil            ? exprInLine()   : null;
+                                                    var ub  = hasUntil            ? thenPart(true) : null;
                                                     var ePos = tokenSourcePos();
-                                                    var els1= fork().loopElseBlock();
-                                                    var els2= fork().loopElseBlock();
-                                                    var els =        loopElseBlock();
+                                                    var els1= fork().elseBlockOpt(surroundingIf, null, null, pos);
+                                                    var els2= fork().elseBlockOpt(surroundingIf, null, null, pos);
+                                                    var els =        elseBlockOpt(surroundingIf, null, null, pos);
         setMinIndent(old);
         if (!hasWhile && !hasDo && !hasUntil && els == null)
           {
@@ -2708,19 +2759,46 @@ loopEpilog  : "until" exprInLine thenPart loopElseBlock
 
 
   /**
-   * Parse IndexVars
+   * As long as this is false and we make progress, we try to parse more
+   * expressions within exprs.
+   */
+  boolean endOfIndexVars()
+  {
+    return switch (limitToEOF(current(true)))
+      {
+      case
+        t_comma,
+        t_rbrace,
+        t_rparen,
+        t_rbracket,
+        t_variant,
+        t_while,
+        t_do,
+        t_until,
+        t_else,
+        t_eof -> true;
+      default -> false;
+      };
+  }
+
+
+  /**
+   * Parse indexVars
    *
-indexVars   : "for" indexVar (semi indexVars)
+indexVars   : indexVar (semiOrFlatLF indexVars)
+            |
             ;
    */
   void indexVars(List<Feature> indexVars, List<Feature> nextValues)
   {
-    match(Token.t_for, "indexVars");
-    var in = new Indentation();
-    while (isIndexVarPrefix() && in.ok())
+    var in = new Indentation("indexVars");
+    while (!endOfIndexVars() && in.ok())
       {
         indexVar(indexVars, nextValues);
-        semi();
+        if (!endOfIndexVars())
+          {
+            semiOrFlatLF();
+          }
         in.next();
       }
     in.end();
@@ -2807,53 +2885,60 @@ nextValue   : COMMA exprInLine
   /**
    * Parse ifexpr
    */
-  Match ifexpr()
+  Expr ifexpr()
   {
-    return ifexpr(false);
+    return ifexpr(null);
   }
 
   /**
    * Parse ifexpr
    *
-   * @param elif is this part of an `else if`
+   * @param outerElse is this part of an `else if`, the position of `else`, otherwise `null`.
    *
-ifexpr      : "if" exprInLine thenPart elseBlock
+ifexpr      : "if" exprInLine thenPart elseBlockOpt
             ;
    */
-  Match ifexpr(boolean elif)
+  Expr ifexpr(SourcePosition outerElse)
   {
+    var surroundingIf = surroundingIf();
+    var surroundingLoop = surroundingLoop();
     return relaxLineAndSpaceLimit(() -> {
-        SourcePosition pos = tokenSourcePos();
-        SourcePosition ifPos = pos;
+        var pos = tokenSourcePos();
+        surroundingIf(pos);
 
-        var oldMinIdent = elif ? null : setMinIndent(tokenPos());
+        var oldMinIdent = outerElse!=null ? null : setMinIndent(tokenPos()); // NYI: why?
+
+        var l = line();
+        boolean nestedIf = surroundingIf != null && surroundingIf.line() == l;
 
         match(Token.t_if, "ifexpr");
 
-        boolean nestedIf = _lastIfLine == line();
-        _lastIfLine = line();
         Expr e = exprInLine();
 
         // semi error if in same line
-        if (nestedIf && _lastIfLine == line()) {semiState(SemiState.ERROR);}
-        Block b = thenPart(false);
+        if (nestedIf && l == line()) {semiState(SemiState.ERROR);}
+
+        var thn = current(true) == Token.t_then ? tokenSourcePos() : null;
+        var b = thenPart(false);
 
         // reset if new line
-        if (nestedIf && _lastIfLine != line()) {semiState(SemiState.CONTINUE);}
+        if (nestedIf && l != line()) {semiState(SemiState.CONTINUE);}
 
         var elPos = tokenSourcePos();
 
         // don't use 'if' as indentation reference if 'then' is indented less (e.g. when 'then' is aligned with 'else if')
-        ifPos = _then != null && ifPos.column() > _then.column() ? null : ifPos;
+        var ifPos = thn != null && pos.column() > thn.column() ? null : pos;
 
         // if not in the same line, 'else' must be aligned with either 'if', 'then' or 'else if'
         if (currentAtMinIndent() == Token.t_else && !(
-            (_then != null      && (_then.line()      == elPos.line() || _then.column()      == elPos.column())) ||
-            (_outerElse != null && (_outerElse.line() == elPos.line() || _outerElse.column() == elPos.column())) ||
-            (ifPos != null      && (ifPos.line()      == elPos.line() || ifPos.column()      == elPos.column())))
+            (thn != null       && (thn.line(  )     == elPos.line() || thn.column()       == elPos.column())) ||
+            (outerElse != null && (outerElse.line() == elPos.line() || outerElse.column() == elPos.column())) ||
+            (ifPos != null     && (ifPos.line()     == elPos.line() || ifPos.column()     == elPos.column())))
            )
           {
-            var errPos = (ifPos != null) ? ifPos : (_outerElse != null) ? _outerElse : _then;
+            var errPos = ifPos     != null ? ifPos     :
+                         outerElse != null ? outerElse
+                                           : thn;
 
             Errors.indentationProblemEncountered(tokenSourcePos(), errPos,
               "When " + Errors.skw("else") + " is not in the same line as " + Errors.skw("if")
@@ -2861,7 +2946,8 @@ ifexpr      : "if" exprInLine thenPart elseBlock
               + " or " + Errors.skw("else if") + ".") ;
           }
 
-        var els = elseBlock();
+        surroundingIf(null);
+        var els = elseBlockOpt(surroundingIf, surroundingLoop, pos, null);
 
         if (oldMinIdent != null) { setMinIndent(oldMinIdent); }
 
@@ -2882,71 +2968,88 @@ thenPart    : "then" block
             |        block
             ;
    */
-  Block thenPart(boolean emptyBlockIfNoBlockPresent)
+  Block thenPart(/* NYI: ClEANUP: remove this argument, a `null` result is used only in Loop to create a default result which is being removed */
+                 boolean nullIfNothing)
   {
     var p = tokenPos();
-    _then = tokenSourcePos();
-    var hasThen = skip(true, Token.t_then);
-    if (!hasThen)
-      {
-        _then = null;
-      }
+    skip(true, Token.t_then);
     var result = block();
-    return emptyBlockIfNoBlockPresent && p == tokenPos() ? null : result;
+    return nullIfNothing && p == tokenPos() ? null : result;
   }
 
 
   /**
-   * Parse elseBlock
+   * Helper for `elseBlockOpt`: Check if the three given positions are != null and
+   * refer to the same line.
    *
-elseBlock   : "else" block
-            |
-            ;
+   * @param p1 a position or null.
+   *
+   * @param p2 a position or null.
+   *
+   * @param p3 a position or null.
+   *
+   * @return true if p1, p2, p3 are all non-null and refer to the same source
+   * code line().
    */
-  Block elseBlock()
+  private boolean allInSameLine(SourcePosition p1,
+                                SourcePosition p2,
+                                SourcePosition p3)
   {
-    Block result = null;
-    SourcePosition oldOuterElse = _outerElse;
-    _outerElse = tokenSourcePos();
-
-    if (skip(true, Token.t_else))
-      {
-        if (current() == Token.t_if)
-          {
-            result = new Block(false, new List<Expr>(ifexpr(true)));
-          }
-        else
-          {
-            _outerElse = null;
-            result = block();
-          }
-      }
-    else
-      {
-        _outerElse = null;
-      }
-
-    _outerElse = oldOuterElse;
-
-    if (POSTCONDITIONS) ensure
-      (result == null          ||
-       result instanceof Block    );
-
-    return result;
+    return
+      p1 != null &&
+      p2 != null &&
+      p3 != null &&
+      p1.line() == p2.line() &&
+      p2.line() == p3.line();
   }
 
 
-    /**
-   * Parse loopElseBlock
+  /**
+   * Parse elseBlockOpt
    *
-loopElseBlock : "else" block
-              |
-              ;
+   * @param surroundingIf position of surrounding `if` in case of nesting
+   *
+   * @param surroundingLoop position of surrounding loop in case of nesting
+   *
+   * @param thisIf if part of an `if`, the position
+   *
+   * @param thisLoop if part of a loop, the position
+   *
+elseBlockOpt: elseBlock
+            |
+            ;
+elseBlock   : "else" block    // must not follow several if/loops in single line unless bracketing is used to disambiguate
+            ;
    */
-  Block loopElseBlock()
+  Block elseBlockOpt(SourcePosition surroundingIf,
+                     SourcePosition surroundingLoop,
+                     SourcePosition thisIf,
+                     SourcePosition thisLoop)
   {
-    var result = skip(true, Token.t_else) ? block()
-                                          : null;
+    if (PRECONDITIONS) require
+      ((thisIf != null) != (thisLoop != null));  // either thisIf or thisLoop is non-null
+
+    Block result = null;
+    var pos = tokenSourcePos();
+    var elseLine = pos.line();
+    if (skip(true, Token.t_else))
+      {
+        // produce error in case of ambiguity:
+        if      (allInSameLine(surroundingIf  , thisIf  , pos)) { AstErrors.ambiguousIfIfElse  (pos, surroundingIf  , thisIf  ); }
+        else if (allInSameLine(surroundingLoop, thisIf  , pos)) { AstErrors.ambiguousLoopIfElse(pos, surroundingLoop, thisIf  ); }
+        else if (allInSameLine(surroundingIf  , thisLoop, pos)) { AstErrors.ambiguousIfLoopElse(pos, surroundingIf  , thisLoop); }
+
+        // only use special handling for `else if` when they are in the same line
+        // otherwise it is a normal else block that might contain an `if`
+        if (thisIf != null && current() == Token.t_if && elseLine == tokenSourcePos().line())
+          {
+            result = new Block(false, new List<Expr>(ifexpr(pos)));
+          }
+        else
+          {
+            result = block();
+          }
+      }
 
     if (POSTCONDITIONS) ensure
       (result == null          ||
@@ -3106,7 +3209,7 @@ universeCall      : universe dot call
   /**
    * Parse anonymous
    *
-anonymous   : "ref"
+anonymous   : "_"
               inherit
               "is"
               block
@@ -3117,9 +3220,8 @@ anonymous   : "ref"
     var oldIndent = setMinIndent(tokenPos());
     var sl = sameLine(line());
     SourcePosition pos = tokenSourceRange();
-    if (CHECKS) check
-      (current() == Token.t_ref);
-    ReturnType r = returnType();  // only `ref` return type allowed.
+    check(skipName());
+    ReturnType r = RefType.INSTANCE; // NYI: UNDER DEVELOPMENT: value type
     var        i = inherit();
     match(Token.t_is, "anonymous");
     Block      b = block();
@@ -3139,7 +3241,11 @@ anonymous   : "ref"
    */
   boolean isAnonymousPrefix()
   {
-    return current() == Token.t_ref;
+    var f = fork();
+    return f.current() == Token.t_ident
+      && f.identifier().equals("_")
+      && f.skipName()
+      && f.skipColon();
   }
 
 
@@ -3227,10 +3333,10 @@ invariant   : "inv" block
             |
             ;
    */
-  List<Cond> invariant(boolean atMinIndent)
+  List<Cond> invariant()
   {
     List<Cond> result = null;
-    if (skip(atMinIndent, Token.t_inv))
+    if (skip(true, Token.t_invariant))
       {
         result = Cond.from(block());
       }
@@ -3404,10 +3510,6 @@ freeType    : name ":" type
       {
         result = new FreeType(result.pos(), result.freeTypeName(), type());
       }
-    if (skip("..."))
-      {
-        result.setFollowedByDots();
-      }
     return result;
   }
 
@@ -3428,7 +3530,7 @@ boundType   : onetype ( PIPE onetype ) *
           {
             l.add(onetype());
           }
-        result = new ParsedType(result.pos(), FuzionConstants.CHOICE_NAME, l, null);
+        result = new ParsedType(result.pos(), FuzionConstants.CHOICE_NAME, l);
       }
     return result;
   }
@@ -3541,7 +3643,7 @@ typeOpt     : type
           }
         else
           {
-            result = new ParsedType(pos, "tuple", a, null);
+            result = new ParsedType(pos, "tuple", a);
           }
       }
     else
@@ -3649,7 +3751,7 @@ simpletype  : name typePars typeTail
    * if none.
    *
 typeTail    : dot simpletype
-            | dot "this"
+            | dot "this" typeTail
             |
             ;
    */
@@ -3664,11 +3766,11 @@ typeTail    : dot simpletype
             if (qn == null)
               {
                 AstErrors.qualifierExpectedForDotThis(lhs);
-                result = new ParsedType(tokenSourcePos(), Errors.ERROR_STRING, new List<>(), null);
+                result = new ParsedType(tokenSourcePos(), Errors.ERROR_STRING);
               }
             else
               {
-                result = new QualThisType(qn);
+                result = typeTail(new QualThisType(qn));
               }
           }
         else
@@ -3756,7 +3858,7 @@ typeInParens: "(" typeInParens ")"
           }
         else
           {
-            result = new ParsedType(sourcePos(pos), "tuple", l, null);
+            result = new ParsedType(sourcePos(pos), "tuple", l);
           }
         endAtSpaceOrSemi(eas);
       }

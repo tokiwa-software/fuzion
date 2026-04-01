@@ -5,6 +5,7 @@ Scorecard](https://api.securityscorecards.dev/projects/github.com/tokiwa-softwar
 [![run tests on linux](https://github.com/tokiwa-software/fuzion/actions/workflows/linux.yml/badge.svg)](https://github.com/tokiwa-software/fuzion/actions/workflows/linux.yml)
 [![run tests on macOS](https://github.com/tokiwa-software/fuzion/actions/workflows/apple.yml/badge.svg)](https://github.com/tokiwa-software/fuzion/actions/workflows/apple.yml)
 [![run tests on windows](https://github.com/tokiwa-software/fuzion/actions/workflows/windows.yml/badge.svg)](https://github.com/tokiwa-software/fuzion/actions/workflows/windows.yml)
+[![interpreter](https://github.com/tokiwa-software/fuzion/actions/workflows/interpreter.yml/badge.svg)](https://github.com/tokiwa-software/fuzion/actions/workflows/interpreter.yml)
 
 
 ## A language with a focus on simplicity, safety and correctness.
@@ -23,7 +24,22 @@ Scorecard](https://api.securityscorecards.dev/projects/github.com/tokiwa-softwar
      * [Windows](#windows)
    * [Build](#build)
    * [Run](#run)
+   * [Tests](#tests)
+     * [Running all tests](#running-all-tests)
+     * [Run a single test](#run-a-single-test)
+     * [Record a test](#record-a-test)
+   * [Soft dependencies](#soft-dependencies)
    * [Install prebuilt](#install-prebuilt)
+   * [Language server](#language-server)
+     * [Install](#install)
+       * [Vim](#vim)
+       * [Emacs](#emacs)
+         * [Eglot](#eglot)
+         * [LSP-Mode](#lsp-mode)
+     * [Run standalone](#run-standalone)
+       * [socket](#transport-socket)
+       * [stdio](#transport-stdio)
+     <!-- NYI: UNDER DEVELOPMENT: * [Implementation state](#implementation-state) -->
 <!--te-->
 
 ---
@@ -150,7 +166,7 @@ Check [fuzion-lang.dev](https://fuzion-lang.dev) for language and implementation
 
 ## Clone
 
-> Note that the current directory must not contain any spaces.
+> Note that the current directory must not contain any spaces. Make sure you have `git` installed.
 
     git clone https://github.com/tokiwa-software/fuzion
 
@@ -160,9 +176,9 @@ Check [fuzion-lang.dev](https://fuzion-lang.dev) for language and implementation
 
 > For Debian based systems this command should install all requirements:
 >
->     sudo apt-get install make clang libgc1 libgc-dev openjdk-21-jdk
+>     sudo apt-get install make clang libgc1 libgc-dev openjdk-25-jdk
 
-- OpenJDK 21, e.g. [Adoptium](https://github.com/adoptium/temurin21-binaries/releases/)
+- OpenJDK 25[^1], (needs to include jmods)
 - clang LLVM C compiler
 - GNU make
 - libgc
@@ -177,7 +193,7 @@ Check [fuzion-lang.dev](https://fuzion-lang.dev) for language and implementation
 >
 >     export PATH:"/usr/local/opt/gnu-sed/libexec/gnubin:/usr/local/opt/gnu-make/libexec/gnubin:$PATH"
 
-- OpenJDK 21, e.g. [Adoptium](https://github.com/adoptium/temurin21-binaries/releases/)
+- OpenJDK 25[^1], (needs to include jmods)
 - clang LLVM C compiler
 - GNU make
 - libgc
@@ -220,6 +236,326 @@ To compile the same example (requires clang C compiler):
 
 Have fun!
 
+
+## Tests
+
+### Running all tests
+
+> Since there are a lot of tests this will likely take 1h or more. See below on how to run a single test.
+
+In the source folder, to run all tests across all backends use the following command:
+
+    make run_tests
+
+When testing is finished you will be presented a summary of succeeded, failed and skipped tests.
+
+To run the tests for one specific backend only use:
+
+    # for jvm backend
+    make run_tests_jvm
+
+    # for c backend
+    make run_tests_c
+
+    # for interpreter backend
+    make run_tests_int
+
+### Run a single test
+
+In the source folder run:
+
+    make _BACKEND_ -C _BUILD_DIR_/tests/_TEST_/
+
+where `_BACKEND_` may be one on the following:
+ - jvm
+ - c
+ - int
+ - effect
+ - leave out to run test on all backends
+
+Unless you specified a custom build directory you need to substitute `_BUILD_DIR_` by just `build`.
+
+Finally instead of `_TEST_` specify the name of the test.
+
+Full example:
+
+    make jvm -C build/tests/hello
+
+### Record a test
+
+This works the same as running a test but specifing a different make target.
+
+- record
+- record_jvm
+- record_c
+- record_int
+- record_effect
+
+Full example:
+
+    make record_jvm -C ./build/tests/hello
+
+This will record stdout and stderr and save those in files in the test directory. (HelloWorld.fz.expected_out, HelloWorld.fz.expected_err)
+
+> To copy the new or updated recordings from the build folder to the source folder you can use this command:
+>
+>     rsync -a --include='*/' --include='*.expected_*' --include='*.effect' --exclude='*' build/tests/ tests/
+
+
+## Soft dependencies
+
+The compiler can be built and used without these dependencies.
+
+But the following tools/dependencies are used e.g. for generating the documentation or for running the test suite:
+
+- antlr, for the ebnf grammar
+- asciidoctor, asciidoctor-pdf
+- sed, for normalizing test output
+- wget, for downloading jar dependencies
+- org.eclipse.lsp4j and others, for the language server
+
+
 ## Install prebuilt
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/fuzion.svg)](https://repology.org/project/fuzion/versions)
+
+
+## Language Server
+
+### Install
+|Client|Repository|
+|---|---|
+|vscode|https://github.com/tokiwa-software/vscode-fuzion|
+|vim|see instructions below|
+|emacs|see instructions below|
+|eclipse (theia)|https://github.com/tokiwa-software/vscode-fuzion|
+
+#### Vim
+
+0) Note: fuzion_language_server (from ./bin/) needs to be in $PATH
+
+1) Example .vimrc:
+    ```vim
+    :filetype on
+
+    call plug#begin('~/.vim/plugged')
+    Plug 'neoclide/coc.nvim', {'branch': 'release'}
+    call plug#end()
+    ```
+2) in vim
+
+    1) `:PlugInstall`
+
+    2) `:CocConfig`
+
+          ```json
+          {
+            "languageserver": {
+              "fuzion": {
+                "command": "fuzion_language_server",
+                "args" : ["-stdio"],
+                "filetypes": [
+                  "fz",
+                  "fuzion"
+                ]
+              }
+            }
+          }
+          ```
+
+3) add filetype-detection file ~/.vim/ftdetect/fz.vim
+    ```vim
+    au BufRead,BufNewFile *.fz            set filetype=fz
+    ```
+
+#### Emacs
+
+> fuzion_language_server (from ./bin/) needs to be in $PATH
+
+For emacs there is two options eglot or lsp-mode.
+
+##### Eglot
+
+
+- M-x package-install RET eglot RET (only needed for emacs version <29)
+- add the following code to ~/.emacs.d/fuzion-lsp.el to enable [eglot](https://github.com/joaotavora/eglot)
+
+
+```elisp
+(require 'package)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+(add-to-list 'package-archives '("elpa" . "https://elpa.gnu.org/packages/"))
+;; Comment/uncomment this line to enable MELPA Stable if desired.  See `package-archive-priorities`
+;; and `package-pinned-packages`. Most users will not need or want to do this.
+;;(add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
+(package-initialize)
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(inhibit-startup-screen t)
+ '(package-selected-packages '(eglot ##)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
+
+(define-derived-mode fuzion-mode
+  fundamental-mode "Fuzion"
+  "Major mode for Fuzion.")
+
+(add-to-list 'auto-mode-alist '("\\.fz\\'" . fuzion-mode))
+
+(require 'eglot)
+
+(add-to-list 'eglot-server-programs
+             '(fuzion-mode . ("fuzion_language_server" "-stdio")))
+
+(add-hook 'after-init-hook 'global-company-mode)
+(add-hook 'fuzion-mode-hook 'eglot-ensure)
+
+(provide 'init)
+;;; init.el ends here
+```
+
+- add following line to ~/.emacs.d/init.el or to ~/.emacs
+
+  (load "~/.emacs.d/fuzion-lsp.el")
+
+##### LSP-Mode
+
+- install lsp-mode, flycheck and company for emacs using
+    - M-x package-install RET lsp-mode
+    - M-x package-install RET flycheck
+    - M-x package-install RET company RET
+- add the following code to ~/.emacs.d/fuzion-lsp.el to enable [lsp-mode](https://github.com/emacs-lsp/lsp-mode)
+
+```elisp
+(require 'package)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+(add-to-list 'package-archives '("elpa" . "https://elpa.gnu.org/packages/"))
+(package-initialize)
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(inhibit-startup-screen t)
+ '(package-selected-packages '(lsp-ui company flycheck lsp-mode ##)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
+
+(define-derived-mode fuzion-mode
+  fundamental-mode "Fuzion"
+  "Major mode for Fuzion.")
+
+(add-to-list 'auto-mode-alist '("\\.fz\\'" . fuzion-mode))
+
+(require 'lsp-mode)
+(global-flycheck-mode)
+(add-to-list 'lsp-language-id-configuration '(fuzion-mode . "fuzion"))
+
+(defgroup lsp-fuzionlsp nil
+  "LSP support for Fuzion, using fuzionlsp."
+  :group 'lsp-mode
+  :link '(url-link ""))
+
+(lsp-register-client
+ (make-lsp-client :new-connection (lsp-stdio-connection  (lambda ()
+                                                          `(,"fuzion_language_server"
+                                                            "-stdio")))
+                  :major-modes '(fuzion-mode)
+                  :priority -1
+                  :server-id 'fuzionls))
+
+
+(lsp-consistency-check lsp-fuzion)
+
+(add-hook 'fuzion-mode-hook #'lsp)
+(add-hook 'after-init-hook 'global-company-mode)
+
+(setq lsp-enable-symbol-highlighting t)
+
+;; (setq  lsp-enable-semantic-highlighting t
+;;        lsp-semantic-tokens-enable t
+;;        lsp-semantic-tokens-warn-on-missing-face t
+;;        lsp-semantic-tokens-apply-modifiers nil
+;;        lsp-semantic-tokens-allow-delta-requests nil
+;;        lsp-semantic-tokens-allow-ranged-requests nil)
+
+;; (setq lsp-modeline-code-actions-mode t)
+
+;; (setq lsp-modeline-code-actions-segments '(name icon))
+
+;; (setq lsp-log-io t)
+
+(provide 'lsp-fuzion)
+
+(provide 'init)
+;;; init.el ends here
+```
+
+- add following line to ~/.emacs.d/init.el or to ~/.emacs
+
+  (load "~/.emacs.d/fuzion-lsp.el")
+
+### Run standalone
+
+#### Transport socket
+- run `./bin/fuzion_language_server -socket --port=3000`
+- connect the client to the (random) port the server prints to stdout.
+
+#### Transport stdio
+- run `./bin/fuzion_language_server -stdio`
+
+<!--
+### Implementation state
+
+|Feature|Status|
+|---|---|
+|diagnostics|☑|
+|completion|☑|
+|hover|☑|
+|signatureHelp|☑|
+|declaration|☐|
+|definition|☑|
+|typeDefinition|☐|
+|implementation|☐|
+|references|☑|
+|documentHighlight|☐|
+|documentSymbol|☑|
+|codeAction|☐|
+|codeLens|☐|
+|documentLink|☐|
+|documentColor|☐|
+|colorPresentation|☐|
+|formatting|☐|
+|rangeFormatting|☐|
+|onTypeFormatting|☐|
+|rename|☑|
+|prepareRename|☑|
+|foldingRange|☐|
+|selectionRange|☐|
+|prepareCallHierarchy|☐|
+|callHierarchy incoming|☐|
+|callHierarchy outgoing|☐|
+|semantic tokens|☑|
+|linkedEditingRange|☐|
+|moniker|☐|
+|inlayHints|☐|
+|inlineValue|☐|
+|type hierarchy|☐|
+|notebook document support|☐| -->
+
+
+[^1]: suggested OpenJDK distributions:
+
+    - [Adoptium](https://github.com/adoptium/temurin25-binaries/releases/) + [jmods](https://api.adoptium.net/v3/binary/latest/25/ga/linux/x64/jmods/hotspot/normal/eclipse?project=jdk), must be unpacked to a `jmods` sub-directory in the openjdk directory.
+    - [Azul](https://www.azul.com/downloads/?version=java-25&package=jdk#zulu)

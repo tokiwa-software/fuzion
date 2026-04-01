@@ -25,6 +25,22 @@
 
 # fault -- effect that terminates a computation due to a runtime fault
 #
+#
+# Hierarchy of faults:
+#
+# runtime.fault
+# │
+# ├── stackoverflow
+# │
+# ├── panic
+# │
+# └── contract_fault
+#     ├── pre_fault
+#     ├── post_fault
+#     ├── variant_fault
+#     └── check_fault
+#
+#
 public fault (
   # the handler this effect uses to fail
   p (

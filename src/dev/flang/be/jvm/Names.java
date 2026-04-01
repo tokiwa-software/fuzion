@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.jvm;
 
+import static dev.flang.ir.IR.NO_CLAZZ;
+
 import java.util.ArrayList;
 import java.util.TreeMap;
 
@@ -40,6 +42,7 @@ import dev.flang.be.jvm.runtime.Intrinsics;
 import dev.flang.fuir.FUIR;
 
 import dev.flang.util.ANY;
+import dev.flang.util.Profiler;
 
 
 /**
@@ -343,8 +346,8 @@ public class Names extends ANY implements ClassFileConstants
     {
       var o = _fuir.clazzOuterClazz(cl);
       String sep = "";
-      if (o != -1 &&
-          _fuir.clazzOuterClazz(o) != -1)
+      if (o != NO_CLAZZ &&
+          _fuir.clazzOuterClazz(o) != NO_CLAZZ)
         { // add a prefix unless cl or o are universe
           clazzMangledName(o, sb);
           sep = "__";
@@ -408,6 +411,7 @@ public class Names extends ANY implements ClassFileConstants
               res = nres;
             }
           _cache.set(num, res);
+          Profiler.addMangledName(res, _fuir.clazzAsStringHuman(cl));
           if (_existing != null)
             {
               _existing.put(res, 1);
@@ -546,11 +550,10 @@ public class Names extends ANY implements ClassFileConstants
         else if ('°' == cp) { sb.append("DEGREE"); }
         else if ('[' == cp) { }  // convert "index []" just into "index "
         else if (']' == cp) { }
-        else if ('#' == cp &&
-                 off < length &&
-                 s.codePointAt(off + Character.charCount(cp)) == '^')
-                            { sb.append("OUTER_"); off++; }  // join #^ used for outer refs
-        else if ('#' == cp) { sb.append("INTERN_"); }
+        else if ('#' == cp)
+          if      (off + Character.charCount(cp) >= length)             { sb.append("_INTERN"); }
+          else if (s.codePointAt(off + Character.charCount(cp)) == '^') { sb.append("OUTER_"); off += Character.charCount('^' ); }  // join #^ used for outer refs
+          else                                                          { sb.append("INTERN_"); }
         else
           {
             sb.append("_U").append(Integer.toHexString(cp)).append("_");

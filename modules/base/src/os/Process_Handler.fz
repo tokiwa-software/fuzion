@@ -27,5 +27,5 @@ public Process_Handler ref is
 
   public start(name String, args Sequence String, env_vars container.Map String String) outcome os.process
     pre
-      safety: env_vars.keys    ∀ (x -> x.as_codepoints ∀ .is_ascii)
+      safety: env_vars.keys    ∀ (x -> x.codepoints ∀ .is_ascii)
   => abstract

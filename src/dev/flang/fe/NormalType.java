@@ -99,6 +99,24 @@ class NormalType extends LibraryType
 
 
   /**
+   * `this` as a value.
+   *
+   * Requires that at isNormalType().
+   */
+  @Override
+  public AbstractType asValue()
+  {
+    return switch (kind())
+      {
+      case ValueType -> this;
+      case RefType   -> new NormalType(_libModule, _at, _feature, TypeKind.ValueType, generics(), outer());
+      default        -> throw new Error("unexpected kind "+kind()+" for NormalType");
+      };
+  }
+
+
+
+  /**
    * For a type that is not a type parameter, create a new variant using given
    * actual generics and outer type.
    *
@@ -110,9 +128,8 @@ class NormalType extends LibraryType
    * @return a new type with same feature(), but using g2/o2 as generics
    * and outer type.
    */
-  // NYI: CLEANUP: remove, why does this behave differently from super.applyTypePars?
   @Override
-  public AbstractType applyTypePars(List<AbstractType> g2, AbstractType o2)
+  public AbstractType replaceGenericsAndOuter(List<AbstractType> g2, AbstractType o2)
   {
     return new NormalType(_libModule, _at, _feature, _typeKind, g2, o2);
   }
@@ -143,7 +160,7 @@ class NormalType extends LibraryType
 
 
   /**
-   * The mode of the type: ThisType, RefType or ValueType.
+   * The mode of the type: GenericArgument, ThisType, RefType or ValueType.
    */
   @Override
   public TypeKind kind()

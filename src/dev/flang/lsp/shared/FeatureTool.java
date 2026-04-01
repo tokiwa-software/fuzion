@@ -317,7 +317,7 @@ public class FeatureTool extends ANY
     return " : " + feature.inherits()
       .stream()
       .map(c -> c.calledFeature())
-      .map(f -> f.featureName().baseName() + TypeTool.label(f.generics(), true))
+      .map(f -> f.featureName().baseName())
       .collect(Collectors.joining(", "));
   }
 

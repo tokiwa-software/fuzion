@@ -61,7 +61,6 @@ public abstract class FeatureVisitor extends ANY
   // this is used for resolving dot-type-calls that omit the .type
   public void         actionBefore(Call             c                       ) { }
   public Expr         action      (Call             c                       ) { return c; }
-  public Expr         action      (DotType          d                       ) { return d; }
   public void         actionBefore(AbstractCase     c, AbstractMatch m      ) { }
   public void         actionAfter (AbstractCase     c, AbstractMatch m      ) { }
   public Expr         action      (AbstractCurrent  c                       ) { return c; }
@@ -70,7 +69,6 @@ public abstract class FeatureVisitor extends ANY
   public void         action      (Impl             i                       ) { }
   public Expr         action      (InlineArray      i                       ) { return i; }
   public void         action      (AbstractMatch    m                       ) { }
-  public void         action      (Tag              b                       ) { }
   public Expr         action      (This             t                       ) { return t; }
   public AbstractType action      (AbstractType     t                       ) { return t; }
 

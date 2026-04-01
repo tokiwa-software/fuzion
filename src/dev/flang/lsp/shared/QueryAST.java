@@ -202,8 +202,8 @@ public class QueryAST extends ANY
   /**
    * @param params
    * @return
-   * NYI: UNDER DEVELOPMENT: currently ununsed.
-   * Can we use this without beeing annoying?
+   * NYI: UNDER DEVELOPMENT: currently unused.
+   * Can we use this without being annoying?
    */
   public static Stream<AbstractFeature> completionsAt(SourcePosition params)
   {
@@ -415,6 +415,15 @@ public class QueryAST extends ANY
           })
           .distinct();
       })
+      .orElse(Stream.empty());
+  }
+
+  public static Stream<AbstractFeature> constantCompletions(SourcePosition pos)
+  {
+    return constant(pos)
+      .map(tf -> candidates(tf)
+        // filter infix, prefix, postfix features
+        .filter(x -> !x.featureName().baseName().contains(" ")))
       .orElse(Stream.empty());
   }
 

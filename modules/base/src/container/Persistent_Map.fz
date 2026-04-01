@@ -23,11 +23,11 @@
 
 # Persistent_Map -- an abstract persistent map from keys K to values V
 #
-public Persistent_Map(public K type : property.hashable, public V type) ref : Map K V is
+public Persistent_Map(public K type : property.equatable, public V type) ref : container.Map K V is
 
   # returns a new Persistent_Map
   # which contains all entries of the
   # current Map and k,v.
   # An already existing k will be replaced.
   #
-  public put(k K, v V) container.Persistent_Map K V => abstract
+  public put(k K, v V) Persistent_Map.this => abstract

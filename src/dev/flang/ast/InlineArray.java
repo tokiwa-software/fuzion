@@ -282,45 +282,6 @@ public class InlineArray extends ExprWithPos
 
 
   /**
-   * visit all the expressions within this InlineArray.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited expressions
-   */
-  public void visitExpressions(ExpressionVisitor v)
-  {
-    super.visitExpressions(v);
-    for (var e : _elements)
-      {
-        e.visitExpressions(v);
-      }
-    if (_code != null)
-      {
-        _code.visitExpressions(v);
-      }
-  }
-
-
-  /**
-   * Boxing for actual arguments: Find actual arguments of value type that are
-   * assigned to formal argument types that are references and box them.
-   *
-   * @param context the source code context where this Expr is used
-   */
-  void boxElements(Context context)
-  {
-    var li = _elements.listIterator();
-    while (li.hasNext())
-      {
-        var e = li.next();
-        var eb = e.boxAndTag(elementType(), context);
-        if (CHECKS) check
-          (e == eb);
-      }
-  }
-
-
-  /**
    * check the types in this InlineArray
    *
    * @param context the source code context where this InlineArray is used
@@ -337,13 +298,10 @@ public class InlineArray extends ExprWithPos
 
     for (var e : _elements)
       {
-        if (elementType.isAssignableFromWithoutBoxing(e.type(), context).no())
+        if (elementType.isAssignableFrom(e.type(), context).no())
           {
             AstErrors.incompatibleTypeInArrayInitialization(e.pos(), _type, elementType, e, context);
           }
-
-        if (CHECKS) check
-          (Errors.any() || e.type().isVoid() || e.needsBoxing(elementType, context) == null || e.isBoxed());
       }
   }
 
@@ -453,7 +411,6 @@ public class InlineArray extends ExprWithPos
     var sysArrayVar  = new Feature(SourcePosition.builtIn, Visi.PRIV, sysArrayT, sysArrayName, Impl.FIELD);
     res._module.findDeclarations(sysArrayVar, context.outerFeature());
     res.resolveDeclarations(sysArrayVar);
-    res.resolveTypes();
     var sysArrayAssign = new Assign(res, SourcePosition.builtIn, sysArrayVar, sysArrayCall, context);
     var exprs = new List<Expr>(sysArrayAssign);
     var readSysArrayVar = new Call(SourcePosition.builtIn,

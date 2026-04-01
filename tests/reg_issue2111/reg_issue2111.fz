@@ -22,7 +22,7 @@
 # -----------------------------------------------------------------------
 
 test(T type : property.equatable, a T) =>
-  a1 := concur.atomic a
+  a1 := concur.atomic T .new a
   _ := a1.read = a
 
   on is

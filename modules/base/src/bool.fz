@@ -36,11 +36,15 @@
 # value of type 'bool'.
 #
 #
-public bool : choice false_ true_, property.equatable, java_primitive is
+public bool : choice false_ true_, property.equatable, property.hashable, java_primitive is
 
   # not
   public prefix ! bool =>
-    if bool.this then false else true
+    if bool.this
+      false
+    else
+      true
+
 
   # or with lazy evaluation
   #
@@ -50,6 +54,7 @@ public bool : choice false_ true_, property.equatable, java_primitive is
     else
       other
 
+
   # and with lazy evaluation
   #
   public infix && (other Lazy bool) bool =>
@@ -58,18 +63,24 @@ public bool : choice false_ true_, property.equatable, java_primitive is
     else
       false
 
-  # or
-  public infix |   (other bool) bool => bool.this || other
 
-  # and
-  public infix &   (other bool) bool => bool.this && other
-
-  # equivalence
+  # or with eager evaluation
   #
-  # note that we do not use '==' for this to avoid confusion since
-  # a == b == c for booleans might not behave as expected
-  # ('true <=> false <=> false' evaluates to 'true')
-  public infix <=> (other bool) bool => if bool.this other else !other
+  public infix |   (other bool) bool =>
+    if bool.this
+      true
+    else
+      other
+
+
+  # and with eager evaluation
+  #
+  public infix &   (other bool) bool =>
+    if bool.this
+      other
+    else
+      false
+
 
   # equality check implementation for inherited property.equatable
   #
@@ -79,8 +90,31 @@ public bool : choice false_ true_, property.equatable, java_primitive is
     else
       !b
 
-  # xor
-  public infix ^   (other bool) bool => if bool.this (!other) else  other
+
+  # create hash code for this instance
+  #
+  # This should satisfy the following condition:
+  #
+  #   (T.equality a b) : (T.hash_code a = T.hash_code b)
+  #
+  public fixed redef type.hash_code(a bool) u64 =>
+    if a
+      0
+    else
+      1
+
+
+  # xor, either or
+  #
+  # true if exatly one of the two
+  # bools is true
+  #
+  public infix ^   (other bool) bool =>
+    if bool.this
+      !other
+    else
+      other
+
 
   # implies
   #
@@ -90,9 +124,14 @@ public bool : choice false_ true_, property.equatable, java_primitive is
     else
       true
 
+
   # ternary ? : -- NYI: This will be replaced by a more powerful match syntax
   #
-  public ternary ? : (T type, a, b Lazy T) T => if bool.this a else b
+  public ternary ? : (T type, a, b Lazy T) T =>
+    if bool.this
+      a
+    else
+      b
 
 
   # create an option from a lazily evaluated value depending on this bool
@@ -101,18 +140,26 @@ public bool : choice false_ true_, property.equatable, java_primitive is
                    # iff bool.this holds.
                    v Lazy T) option T
   =>
-    if bool.this then v else nil
+    if bool.this
+      v
+    else
+      nil
 
 
-  # human readable string
-  public redef as_string String => if bool.this "true" else "false"
+  # as human readable string
+  #
+  public redef as_string String =>
+    if bool.this
+      "true"
+    else
+      "false"
 
 
   # monoid of bool with infix & operation.  Will be true iff all elements are
   # true.
   #
   public type.all Monoid bool =>
-    ref : Monoid bool is
+    _ : Monoid bool is
       public redef infix ∙ (a, b bool) bool => a & b
       public redef e bool => true
 
@@ -121,7 +168,7 @@ public bool : choice false_ true_, property.equatable, java_primitive is
   # false.
   #
   public type.any Monoid bool =>
-    ref : Monoid bool is
+    _ : Monoid bool is
       public redef infix ∙ (a, b bool) bool => a | b
       public redef e bool => false
 
@@ -130,7 +177,7 @@ public bool : choice false_ true_, property.equatable, java_primitive is
   # elements is true. This gives the even parity.
   #
   public type.parity Monoid bool =>
-    ref: Monoid bool is
+    _ : Monoid bool is
       public redef infix ∙ (a, b bool) bool => a ^ b
       public redef e bool => false
 
@@ -173,3 +220,25 @@ public false bool => false_
 #
 #
 public true bool => true_
+
+
+# takes an arbitrary amount of bool arguments and returns true if and only if
+# all of them are true
+#
+public all_of (B type..., values B...) bool =>
+  values.typed_foldf true T,e,v->
+    if T : bool
+      v & e
+    else
+      compile_time_panic
+
+
+# takes an arbitrary amount of bool arguments and returns true if and only if
+# any of them is true
+#
+public any_of (B type..., values B...) bool =>
+  values.typed_foldf false T,e,v->
+    if T : bool
+      v | e
+    else
+      compile_time_panic

@@ -35,10 +35,12 @@ import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 
 import static dev.flang.ir.IR.NO_CLAZZ;
+import static dev.flang.ir.IR.NO_SITE;
 import static dev.flang.util.FuzionConstants.EFFECT_INSTATE_NAME;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 
+import java.util.LinkedList;
 import java.util.TreeSet;
 
 
@@ -61,13 +63,6 @@ public class Call extends ANY implements Comparable<Call>, Context
 
 
   /**
-   * Unique id to identify this Call. This is used to avoid expensive comparison
-   * for calls.
-   */
-  int _uniqueCallId = -1;
-
-
-  /**
    * The DFA instance we are working with.
    */
   final DFA _dfa;
@@ -75,7 +70,7 @@ public class Call extends ANY implements Comparable<Call>, Context
 
   /**
    * CallGroup this call is part of, i.e., the set of calls with the same effect
-   * environment abstraction durign DFA analysis.
+   * environment abstraction during DFA analysis.
    */
   final CallGroup _group;
 
@@ -90,7 +85,7 @@ public class Call extends ANY implements Comparable<Call>, Context
   /**
    * Arguments passed to the call.
    */
-  List<Val> _args;
+  final List<Val> _args;
 
 
   /**
@@ -100,10 +95,16 @@ public class Call extends ANY implements Comparable<Call>, Context
 
 
   /**
-   * true means that the call may return, false means the call has not been
+   * some Val means that the call may return, null means the call has not been
    * found to return, i.e., the result is null (aka void).
    */
-  boolean _returns = false;
+  private Val _result = null;
+
+
+  /**
+   * Calls that depend on this calls result, (if it returns or not)
+   */
+  private LinkedList<Call> _dependOnResult = new LinkedList<>();
 
 
   /**
@@ -172,16 +173,6 @@ public class Call extends ANY implements Comparable<Call>, Context
 
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * Return a unique id for the call or main entry point context.
-   */
-  @Override
-  public int uniqueCallId()
-  {
-    return _uniqueCallId;
-  }
 
 
   /**
@@ -259,14 +250,47 @@ public class Call extends ANY implements Comparable<Call>, Context
 
 
   /**
+   * Helper to extract the result from a call.
+   */
+  private Val getResult()
+  {
+    Val result;
+    var rf = _dfa._fuir.clazzResultField(calledClazz());
+    if (_dfa._fuir.isConstructor(calledClazz()))
+      {
+        result = _instance;
+      }
+    else if (_dfa._fuir.clazzIsUnitType(_dfa._fuir.clazzResultClazz(rf)))
+      {
+        result = Value.UNIT;
+      }
+    else
+      {
+        // should not be possible to return void (_result should be null):
+        if (CHECKS) check
+          (!_dfa._fuir.clazzIsVoidType(_dfa._fuir.clazzResultClazz(calledClazz())));
+
+        result = _instance.readField(_dfa, rf, NO_SITE, this);
+      }
+    return result;
+  }
+
+
+  /**
    * Record the fact that this call returns, i.e., it does not necessarily diverge.
    */
   void returns()
   {
-    if (!_returns)
+    var result = getResult();
+
+    if (_result != result)
       {
-        _returns = true;
-        _dfa.wasChanged(() -> "Call.returns for " + this);
+        _result = result;
+        while (!_dependOnResult.isEmpty())
+          {
+            // mark calls that depend on this call's result as hot (again)
+            _dfa.hot(_dependOnResult.removeFirst());
+          }
       }
   }
 
@@ -274,9 +298,18 @@ public class Call extends ANY implements Comparable<Call>, Context
   /**
    * Return the result value returned by this call.  null in case this call
    * never returns.
+   *
+   * @param from who is asking for the result?
    */
-  public Val result()
+  public Val result(Call from)
   {
+    if (PRECONDITIONS) require
+      (from != null);
+
+    // record how depends on result to mark
+    // them as hot again when result changes.
+    _dependOnResult.add(from);
+
     Val result = null;
     if (_dfa._fuir.clazzKind(calledClazz()) == IR.FeatureKind.Intrinsic)
       {
@@ -284,24 +317,13 @@ public class Call extends ANY implements Comparable<Call>, Context
         var idfa = DFA._intrinsics_.get(name);
         if (idfa != null)
           {
-            result = DFA._intrinsics_.get(name).analyze(this);
+            result = idfa.analyze(this);
           }
         else
           {
-            var at = _dfa._fuir.clazzTypeParameterActualType(calledClazz());
-            if (at >= 0)
-              {
-                var rc = _dfa._fuir.clazzResultClazz(calledClazz());
-                var t = _dfa.newInstance(rc, site(), this);
-                // NYI: DFA missing support for Type instance, need to set field t.name to tname.
-                result = t;
-              }
-            else
-              {
-                var msg = "DFA: code to handle intrinsic '" + name + "' is missing";
-                Errors.warning(msg);
-                result = genericResult();
-              }
+            var msg = "DFA: code to handle intrinsic '" + name + "' is missing";
+            Errors.warning(msg);
+            result = genericResult();
           }
       }
     else if (_dfa._fuir.clazzKind(calledClazz()) == IR.FeatureKind.Native)
@@ -317,25 +339,9 @@ public class Call extends ANY implements Comparable<Call>, Context
             Errors.warning("DFA: cannot handle native feature result type: " + _dfa._fuir.clazzOriginalName(rc));
           }
       }
-    else if (_returns)
+    else
       {
-        var rf = _dfa._fuir.clazzResultField(calledClazz());
-        if (_dfa._fuir.isConstructor(calledClazz()))
-          {
-            result = _instance;
-          }
-        else if (SpecialClazzes.c_unit == _dfa._fuir.getSpecialClazz(_dfa._fuir.clazzResultClazz(rf)))
-          {
-            result = Value.UNIT;
-          }
-        else
-          {
-            // should not be possible to return void (_result should be null):
-            if (CHECKS) check
-              (!_dfa._fuir.clazzIsVoidType(_dfa._fuir.clazzResultClazz(calledClazz())));
-
-            result = _instance.readField(_dfa, rf, -1, this);
-          }
+        result = _result;
       }
     return result;
   }
@@ -351,11 +357,12 @@ public class Call extends ANY implements Comparable<Call>, Context
         _dfa.readField(_dfa._fuir.clazzArg(calledClazz(), i));
 
         var at = _dfa._fuir.clazzArgClazz(calledClazz(), i);
-        if (_dfa._fuir.clazzIsArray(at))
+        if (_dfa._fuir.clazzIsArray(at) || _dfa._fuir.clazzIsMutateArray(at))
           {
-            var ia = _dfa._fuir.lookup_array_internal_array(at);
+            var ia = _dfa._fuir.clazzArg(at, 0);
             _dfa.readField(ia);
-            _dfa.readField(_dfa._fuir.lookup_fuzion_sys_internal_array_data(_dfa._fuir.clazzResultClazz(ia)));
+            _dfa.readField(_dfa._fuir.clazzArg(_dfa._fuir.clazzResultClazz(ia), 0)); /* data */
+            _dfa.readField(_dfa._fuir.clazzArg(_dfa._fuir.clazzResultClazz(ia), 1)); /* length */
           }
       }
   }
@@ -380,7 +387,7 @@ public class Call extends ANY implements Comparable<Call>, Context
               }
             var ignore = _dfa
               .newCall(this, call, FUIR.NO_SITE, this._args.get(i).value(), args, _env /* NYI: UNDER DEVELOPMENT: assumption  here is that callback is not used after this call completes */, _context)
-              .result();
+              .result(this);
           }
       }
   }
@@ -411,9 +418,38 @@ public class Call extends ANY implements Comparable<Call>, Context
   private Val genericResult()
   {
     var rc = _dfa._fuir.clazzResultClazz(calledClazz());
-    return _dfa._fuir.clazzIsVoidType(rc)
+    return genericResult(rc);
+  }
+
+
+  /**
+   * create an initialized instance for rc
+   * with all fields marked set/written.
+   *
+   * @param rc
+   * @return
+   */
+  private Value genericResult(int rc)
+  {
+    var result = _dfa._fuir.clazzIsVoidType(rc)
       ? null
       : _dfa.newInstance(rc, site(), _context);
+    if (result != null)
+      {
+        for (int i = 0; i < _dfa._fuir.clazzArgCount(rc); i++)
+          {
+            var at = _dfa._fuir.clazzArgClazz(rc, i);
+            // no infinite recursion for e.g.: u64(val u64)
+            if (rc != at)
+              {
+                result.setField(
+                  _dfa, _dfa._fuir.clazzArg(rc, i),
+                  genericResult(_dfa._fuir.clazzArgClazz(rc, i))
+                );
+              }
+          }
+      }
+    return result;
   }
 
 
@@ -421,7 +457,7 @@ public class Call extends ANY implements Comparable<Call>, Context
    * toString() might end up in a complex recursion if it is used for careless
    * debug output, so we try to catch recursion and stop it.
    */
-  static TreeSet<Call> _toStringRecursion_ = new TreeSet<>();
+  static final TreeSet<Call> _toStringRecursion_ = new TreeSet<>();
 
 
   /**
@@ -452,7 +488,7 @@ public class Call extends ANY implements Comparable<Call>, Context
               .append(a);
           }
         sb.append(" => ")
-          .append(_returns ? "returns" : "*** VOID ***")
+          .append(_result != null ? "returns" : "*** VOID ***")
           .append(" ENV: ")
           .append(Errors.effe(Env.envAsString(env())));
         _toStringRecursion_.remove(this);
@@ -575,12 +611,15 @@ public class Call extends ANY implements Comparable<Call>, Context
       {
         result = _env != null ? _env.getActualEffectValues(ecl)
                               : _dfa._defaultEffects.get(ecl);
+        if (result == null && !DFA.TRACE_ENVS)
+          {
+            result = _dfa._allValuesForEnv.get(ecl);
+          }
         if (result == null && _dfa._reportResults && !ignoreError)
           {
             DfaErrors.usedEffectNotInstalled(_dfa._fuir.sitePos(s),
                                              _dfa._fuir.clazzAsString(ecl),
                                              this);
-            _dfa._missingEffects.put(ecl, ecl);
           }
       }
     else
@@ -628,7 +667,7 @@ public class Call extends ANY implements Comparable<Call>, Context
 
     if ((_env == null || !_env.hasEffect(ecl)) && _dfa._defaultEffects.get(ecl) == null)
       {
-        if (_dfa._reportResults)
+        if (_dfa._reportResults && DFA.TRACE_ENVS)
           {
             // NYI: Make this a normal error similar to DfaErrors.usedEffectnotinstalled:
             Errors.fatal("Trying to replace effect " + Errors.code(_dfa._fuir.clazzAsString(ecl))

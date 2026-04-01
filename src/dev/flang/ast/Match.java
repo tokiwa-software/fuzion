@@ -126,6 +126,8 @@ public class Match extends AbstractMatch
     var os = _subject;
     var ns = _subject.visit(v, outer);
     if (CHECKS) check
+      // subject must not change while visiting
+      // while okay for it to change after a visit
       (os == _subject);
     _subject = ns;
     v.action(this);
@@ -146,7 +148,7 @@ public class Match extends AbstractMatch
    */
   void resolveTypes(Resolution res, Context context)
   {
-    var st = _subject.typeForInferencing();
+    var st = _subject.typeForInferencing(context);
     if (st != null && st != Types.t_ERROR && !st.isGenericArgument())
       {
         res.resolveTypes(st.feature());
@@ -269,8 +271,7 @@ public class Match extends AbstractMatch
                                 t,
                                 FuzionConstants.EXPRESSION_RESULT_PREFIX + (_id_++),
                                 context.outerFeature());
-        r.scheduleForResolution(res);
-        res.resolveTypes();
+        res.resolveTypes(r);
         result = new Block(new List<>(assignToField(res, context, r),
                                       new Call(pos, new Current(pos, context.outerFeature()), r).resolveTypes(res, context)));
       }
@@ -422,7 +423,7 @@ public class Match extends AbstractMatch
    *
    * @param fromContract is this an if generated from a contract? (for error messages)
    */
-  public static Match createIf(SourcePosition pos, Expr c, Expr b, Expr elseB, boolean fromContract)
+  public static Expr createIf(SourcePosition pos, Expr c, Expr b, Expr elseB, boolean fromContract)
   {
     if (PRECONDITIONS) require
       (c != null,
@@ -446,7 +447,10 @@ public class Match extends AbstractMatch
             @Override public List<AbstractType> types() { return Types.resolved == null ? null : new List<>(Types.resolved.f_TRUE.selfType()); }
             @Override boolean resolveType(Resolution res, List<AbstractType> cgs, Context context, SourcePosition[] matched)
             {
-              matched[1] = SourcePosition.notAvailable;
+              for (int i = 0; i < matched.length; i++)
+                {
+                  matched[i] = SourcePosition.notAvailable;
+                }
               return true;
             }
           },
@@ -455,15 +459,19 @@ public class Match extends AbstractMatch
             @Override public List<AbstractType> types() { return Types.resolved == null ? null : new List<>(Types.resolved.f_FALSE.selfType()); }
             @Override boolean resolveType(Resolution res, List<AbstractType> cgs, Context context, SourcePosition[] matched)
             {
-              matched[0] = SourcePosition.notAvailable;
+              for (int i = 0; i < matched.length; i++)
+                {
+                  matched[i] = SourcePosition.notAvailable;
+                }
               return true;
             }
           });
 
-    return new Match(pos, c, cases)
+    var result = new Match(pos, c, cases)
       {
         @Override Kind kind() { return fromContract ? Kind.Contract : Kind.If; }
       };
+    return result;
   }
 
 

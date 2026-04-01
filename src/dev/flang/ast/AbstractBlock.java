@@ -86,23 +86,6 @@ public abstract class AbstractBlock extends Expr
 
 
   /**
-   * visit all the expressions within this Block.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited expressions
-   */
-  public void visitExpressions(ExpressionVisitor v)
-  {
-    var e = _expressions;
-    for (int i = 0; i < e.size(); i++)
-      {
-        e.get(i).visitExpressions(v);
-      }
-    super.visitExpressions(v);
-  }
-
-
-  /**
    * typeForInferencing returns the type of this expression or null if the type is
    * still unknown, i.e., before or during type resolution.  This is redefined
    * by sub-classes of Expr to provide type information.
@@ -116,6 +99,16 @@ public abstract class AbstractBlock extends Expr
     return resExpr == null
       ? Types.resolved.t_unit
       : resExpr.typeForInferencing();
+  }
+
+
+  @Override
+  AbstractType typeForInferencing(Context context)
+  {
+    Expr resExpr = resultExpression();
+    return resExpr == null
+      ? Types.resolved.t_unit
+      : resExpr.typeForInferencing(context);
   }
 
 
@@ -147,66 +140,9 @@ public abstract class AbstractBlock extends Expr
   protected int resultExpressionIndex()
   {
     var i = _expressions.size() - 1;
-    while (i >= 0 && (_expressions.get(i) instanceof Nop))
-      {
-        i--;
-      }
     return i >= 0 && (_expressions.get(i).producesResult())
       ? i
       : -1;
-  }
-
-
-  /**
-   * Try to perform partial application such that this expression matches
-   * {@code expectedType}.  Note that this may happen twice:
-   *
-   * 1. during RESOLVING_DECLARATIONS phase of outer when resolving arguments to
-   *    a call such as {@code l.map +1}. In this case, expectedType may be a function
-   *    type {@code Function R A} with generic arguments not yet replaced by actual
-   *    arguments, in particular the result type {@code R} is unknown since it is the
-   *    result type of this expression.
-   *
-   * 2. during TYPES_INFERENCING phase when the target variable's type is fully
-   *    resolved and this gets propagated to this expression.
-   *
-   * Note that this does not perform resolveTypes on the results since that
-   * would be too early during 1. but it is required in 2.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
-   * @param context the source code context where this Expr is used
-   *
-   * @param expectedType the expected type.
-   */
-  @Override
-  Expr propagateExpectedTypeForPartial(Resolution res, Context context, AbstractType expectedType)
-  {
-    var a = resultExpression();
-    return a == null
-      ? super.propagateExpectedTypeForPartial(res, context, expectedType)
-      : replacedResultExpression(a.propagateExpectedTypeForPartial(res, context, expectedType));
-  }
-
-
-  /**
-   * create a new block just like this but with a
-   * replaced result expression.
-   *
-   * @param newResultExpression
-   * @return
-   */
-  private Expr replacedResultExpression(Expr newResultExpression)
-  {
-    if (PRECONDITIONS) require
-      (this.resultExpressionIndex() >= 0);
-
-    var l = _expressions
-      .take(resultExpressionIndex());
-    l.add(newResultExpression);
-    return new Block(l);
-
   }
 
 
@@ -244,7 +180,8 @@ public abstract class AbstractBlock extends Expr
   /**
    * Is this Expr a call to an outer ref?
    */
-  public boolean isCallToOuterRef()
+  @Override
+  boolean isCallToOuterRef()
   {
     return resultExpression() != null && resultExpression().isCallToOuterRef();
   }
@@ -294,14 +231,13 @@ public abstract class AbstractBlock extends Expr
   }
 
 
-  /**
-   * Is the result of this expression boxed?
-   */
   @Override
-  public boolean isBoxed()
+  public boolean isEmpty()
   {
-    var resExpr = resultExpression();
-    return resExpr != null && resExpr.isBoxed();
+    return _expressions
+      .stream()
+      // declarations are NOPs, hence allowed
+      .allMatch(x -> x instanceof AbstractFeature);
   }
 
 

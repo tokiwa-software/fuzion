@@ -1637,7 +1637,7 @@
 
   - be/jvm/runtime: handle `null` message in `getException` ([#3800](https://github.com//tokiwa-software/fuzion/pull/3800))
 
-  - fzjava: improve determinism of short-hands ([#3854](https://github.com//tokiwa-software/fuzion/pull/3854))
+  - fzjava: improve determinism of shorthands ([#3854](https://github.com//tokiwa-software/fuzion/pull/3854))
 
 - C back end
 
@@ -5177,7 +5177,7 @@ C back end
       a ? x X => x.foo
         | y Y => y.bar
     ```
-    as short-hand for
+    as shorthand for
     ```
      match a
        x X => x.foo

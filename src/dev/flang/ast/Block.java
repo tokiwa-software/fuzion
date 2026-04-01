@@ -50,13 +50,6 @@ public class Block extends AbstractBlock
   public boolean _newScope;
 
 
-  /**
-   * true iff this block produces an implicit result that can be ignored if
-   * assigned to unit type.
-   */
-  private boolean _hasImplicitResult;
-
-
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -97,23 +90,6 @@ public class Block extends AbstractBlock
   public Block(List<Expr> s)
   {
     this(false, s);
-  }
-
-
-  /**
-   * Generate a block of expressions that do not define a new scope, i.e.,
-   * declarations remain visible after this block.
-   *
-   * @param s the list of expressions
-   *
-   * @param hasImplicitResult true iff this block produces an implicit result
-   * that can be ignored if assigned to unit type.
-   */
-  public Block(List<Expr> s,
-               boolean hasImplicitResult)
-  {
-    this(s);
-    this._hasImplicitResult = hasImplicitResult;
   }
 
 
@@ -177,19 +153,50 @@ public class Block extends AbstractBlock
    */
   public SourcePosition pos()
   {
-    return _range != null
-      ? _range
-      : _expressions.isEmpty()
-      || _expressions.getFirst().pos().isBuiltIn()
-      || _expressions.getLast().pos().isBuiltIn()
-      ? SourcePosition.notAvailable
-      // NYI: UNDER DEVELOPMENT: hack, positions used for loops are not always in ascending order.
-      : _expressions.getFirst().pos().bytePos() > _expressions.getLast().pos().byteEndPos()
-      ? SourcePosition.notAvailable
-      : new SourceRange(
-          _expressions.getFirst().pos()._sourceFile,
-          _expressions.getFirst().pos().bytePos(),
-          _expressions.getLast().pos().byteEndPos());
+    SourcePosition result = null;
+
+    if (_range != null)
+      {
+        result = _range;
+      }
+    if (result == null)
+    {
+      SourcePosition firstNonBuiltIn = null;
+      SourcePosition lastNonBuiltIn = null;
+
+      for (Expr expr : _expressions)
+        {
+          var pos = expr.pos();
+          if (!pos.isBuiltIn())
+            {
+              if (firstNonBuiltIn == null)
+                {
+                  firstNonBuiltIn = pos;
+                }
+              lastNonBuiltIn = pos;
+            }
+        }
+
+      if (firstNonBuiltIn == null)
+        {
+          result = SourcePosition.notAvailable;
+        }
+      else
+        {
+          if (CHECKS) check
+            (firstNonBuiltIn._sourceFile._fileName == lastNonBuiltIn._sourceFile._fileName);
+
+          // NYI: UNDER DEVELOPMENT: hack, positions used for loops are not always in ascending order.
+          result = firstNonBuiltIn.bytePos() > lastNonBuiltIn.pos().byteEndPos()
+            ? SourcePosition.notAvailable
+            : new SourceRange(
+                firstNonBuiltIn.pos()._sourceFile,
+                firstNonBuiltIn.pos().bytePos(),
+                lastNonBuiltIn.pos().byteEndPos());
+        }
+    }
+
+    return result;
   }
 
 
@@ -273,46 +280,6 @@ public class Block extends AbstractBlock
 
 
   /**
-   * Check if this value might need boxing or tagging and wrap this
-   * into Box()/Tag()/Tag(Box()) if this is the case.
-   *
-   * @param frmlT the formal type this is assigned to.
-   *
-   * @param context the source code context where this Expr is used
-   *
-   * @return this or an instance of Box/Tag wrapping this.
-   */
-  @Override
-  Expr boxAndTag(AbstractType frmlT, Context context)
-  {
-    var r = removeResultExpression();
-    if (CHECKS) check
-      (r != null || Types.resolved.t_unit.compareTo(frmlT) == 0);
-    if (r != null)
-      {
-        _expressions.add(r.boxAndTag(frmlT, context));
-      }
-    return this;
-  }
-
-
-
-  /**
-   * Does this block produce a result that does not explicitly appear in source
-   * code? This is the case, e.g., for loops that implicitly return the last
-   * value of the index variable for true/false to indicate success or failure.
-   *
-   * In this case, the implicit result can safely be replace by unit if it is
-   * used as a unit type.
-   */
-  private boolean hasImplicitResult()
-  {
-    return _hasImplicitResult ||
-      resultExpression() instanceof Block b && b.hasImplicitResult();
-  }
-
-
-  /**
    * Convert this Expression into an assignment to the given field.  In case
    * this is a expression with several branches such as an "if" or a "match"
    * expression, add corresponding assignments in each branch and convert this
@@ -368,28 +335,27 @@ public class Block extends AbstractBlock
    */
   Expr propagateExpectedType(Resolution res, Context context, AbstractType type, Supplier<String> from)
   {
-    if (type.compareTo(Types.resolved.t_unit) == 0 && hasImplicitResult())
-      { // return unit if this is expected even if we would implicitly return
-        // something else:
-        _expressions.add(new Block(new List<>()));
-      }
-
-    // we must not remove result expression just yet.
-    // we rely on it being present in SourceModule.inScope()
-    var idx = resultExpressionIndex();
+    Expr result = this;
     Expr resExpr = resultExpression();
-
-    if (resExpr != null)
-      {
-        var x = resExpr.propagateExpectedType(res, context, type, from);
-        _expressions.remove(idx);
-        _expressions.add(x);
-      }
-    else if (Types.resolved.t_unit.compareTo(type) != 0)
+    if (resExpr == null && Types.resolved.t_unit.compareTo(type) != 0)
       {
         _expressions.add(new Call(pos(), FuzionConstants.UNIT_NAME).resolveTypes(res, context));
       }
-    return this;
+    else if (resExpr != null)
+      {
+        // this may do partial application for the whole block
+        result = super.propagateExpectedType(res, context, type, from);
+        if (result == this)
+          {
+            // we must not remove result expression just yet.
+            // we rely on it being present in SourceModule.inScope()
+            var idx = resultExpressionIndex();
+            var x = resExpr.propagateExpectedType(res, context, type, from);
+            _expressions.remove(idx);
+            _expressions.add(x);
+          }
+      }
+    return result;
   }
 
 

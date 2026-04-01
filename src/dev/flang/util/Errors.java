@@ -107,8 +107,8 @@ public class Errors extends ANY
    * Maximum number of error messages that are displayed. If this limit is
    * reached, we terminate with return code 1.
    */
-  public static String MAX_ERROR_MESSAGES_PROPERTY = "fuzion.maxErrorCount";
-  public static String MAX_ERROR_MESSAGES_OPTION = "-XmaxErrors";
+  public static final String MAX_ERROR_MESSAGES_PROPERTY = "fuzion.maxErrorCount";
+  public static final String MAX_ERROR_MESSAGES_OPTION = "-XmaxErrors";
 
 
   /**
@@ -126,8 +126,8 @@ public class Errors extends ANY
    * Maximum number of warning messages that are displayed. If this limit is
    * reached, we stop printing further warnings.
    */
-  public static String MAX_WARNING_MESSAGES_PROPERTY = "fuzion.maxWarningCount";
-  public static String MAX_WARNING_MESSAGES_OPTION = "-XmaxWarnings";
+  public static final String MAX_WARNING_MESSAGES_PROPERTY = "fuzion.maxWarningCount";
+  public static final String MAX_WARNING_MESSAGES_OPTION = "-XmaxWarnings";
 
 
   /**

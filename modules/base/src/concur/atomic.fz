@@ -28,7 +28,7 @@
 # Atomic values can be used for communication between threads in a safe
 # way.
 #
-public atomic (
+private:public atomic (
   T type,
   v T
   ) : auto_unwrap T atomic_access
@@ -143,3 +143,35 @@ is
   # unwrap this atomic value
   #
   public redef unwrap T ! atomic_access => read
+
+
+  # atomic increment
+  #
+  public incr T ! atomic_access
+    pre T : integer
+  =>
+    for current_value := read
+        new_value := current_value+1
+    while !(compare_and_set current_value new_value)
+    else new_value
+
+
+
+  # atomic decrement
+  #
+  public decr T  ! atomic_access
+    pre T : integer
+  =>
+    for current_value := read
+        new_value := current_value-1
+    while !(compare_and_set current_value new_value)
+    else new_value
+
+
+  # create a new atomic of type T
+  #
+  public type.new(v T) concur.atomic T =>
+    concur.atomic v
+
+
+

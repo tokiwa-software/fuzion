@@ -61,7 +61,7 @@ public class This extends ExprWithPos
   private AbstractFeature _cur = null;
 
   /**
-   * The feature the this expression refers to, i.e,. for a.b.this this is a.b.
+   * The feature this expression refers to, i.e., for a.b.this this is a.b.
    */
   private AbstractFeature _feature;
 
@@ -220,12 +220,9 @@ public class This extends ExprWithPos
       {
         this._feature = getThisFeature(pos(), this, _qual, outer);
       }
-    else
+    else if (this._feature == null)  /* convenience for This(pos) constructor that does not provide outer */
       {
-        if (this._feature == null)  /* convenience for This(pos) constructor that does not provide outer */
-          {
-            this._feature = outer;
-          }
+        this._feature = outer;
       }
 
     Expr getOuter;
@@ -254,14 +251,25 @@ public class This extends ExprWithPos
         getOuter = new Current(pos(), cur);
         while (f != Types.f_ERROR && cur != f && !cur.isUniverse())
           {
-            var or = cur.outerRef();
-            if (CHECKS) check
-              (Errors.any() || (or != null));
-            if (or != null)
+            // we did not find `f` yet and cur.isCotype
+            // so we set getOuter to `f.this.type`
+            // see #5563 for an example where this is needed.
+            if (cur.isCotype())
               {
-                getOuter = new Call(pos(), getOuter, or).resolveTypes(res, context);
+                getOuter = Call.typeAsValue(pos(), f.cotypeOrigin().thisType());
+                cur = f;
               }
-            cur = cur.outer();
+            else
+              {
+                var or = cur.outerRef();
+                if (CHECKS) check
+                  (Errors.any() || (or != null));
+                if (or != null)
+                  {
+                    getOuter = new Call(pos(), getOuter, or).resolveTypes(res, context);
+                  }
+                cur = cur.outer();
+              }
           }
       }
 

@@ -79,7 +79,7 @@ public class ResolvedNormalType extends ResolvedType
   /**
    * The underlying feature this type was derived from.  _feature is a routine or a choice.
    */
-  AbstractFeature _feature;
+  protected AbstractFeature _feature;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -99,8 +99,7 @@ public class ResolvedNormalType extends ResolvedType
   public static ResolvedType create(AbstractType t, List<AbstractType> g, List<AbstractType> ug, AbstractType o)
   {
     if (PRECONDITIONS) require
-      ( (t.generics() instanceof FormalGenerics.AsActuals   ) || t.generics().size() == g.size(),
-       !(t.generics() instanceof FormalGenerics.AsActuals aa) || aa.sizeMatches(g),
+      ( t.feature().generics().sizeMatches(g),
         t == Types.t_ERROR || (t.outer() == null) == (o == null));
 
     return create(g, ug, o, t.feature(), t.kind());
@@ -138,21 +137,17 @@ public class ResolvedNormalType extends ResolvedType
    * @param typeKind true iff this type should be a ref type, otherwise it will be a
    * value type.
    */
-  private ResolvedNormalType(List<AbstractType> g,
-                            List<AbstractType> ug,
-                            AbstractType o,
-                            AbstractFeature f,
-                            TypeKind typeKind)
+  protected ResolvedNormalType(List<AbstractType> g,
+                               List<AbstractType> ug,
+                               AbstractType o,
+                               AbstractFeature f,
+                               TypeKind typeKind)
   {
     if (PRECONDITIONS) require
-      (true // disabled for now since generics may be empty when resolving a type in a match case, actual generics will be inferred later.
-       || Errors.any() || f == null || f.generics().sizeMatches(g == null ? UnresolvedType.NONE : g),
-       typeKind == TypeKind.ValueType || typeKind == TypeKind.RefType
-       /* NYI: Types.resolved == null
-         || f.compareTo(Types.resolved.f_void) != 0*/);
+      (Errors.any() || f == null || f.generics().sizeMatches(g == null ? UnresolvedType.NONE : g),
+       typeKind == TypeKind.ValueType || typeKind == TypeKind.RefType);
 
-    this._generics = g == null || g.isEmpty() ? UnresolvedType.NONE : g;
-    this._generics.freeze();
+    this._generics = g == null || g.isEmpty() ? UnresolvedType.NONE : g.freeze();
     this._unresolvedGenerics = ((ug == null) || ug.isEmpty()) ? UnresolvedType.NONE : ug;
 
     if (o == null && f != null)
@@ -190,86 +185,15 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * Create a ref or value type from a given value / ref type.
-   *
-   * @param original the original value type
-   *
-   * @param typeKind must be TypeKind.RefType or TypeKind.ValueType
-   */
-  private ResolvedNormalType(ResolvedNormalType original, TypeKind typeKind)
-  {
-    if (PRECONDITIONS) require
-      (kind() != original.kind(),
-       Types.resolved == null
-         || !original.isVoid(),
-       typeKind == TypeKind.ValueType || typeKind == TypeKind.RefType
-      );
-
-    this._typeKind           = typeKind;
-    this._generics           = original._generics;
-    this._unresolvedGenerics = original._unresolvedGenerics;
-    this._outer              = original._outer;
-    this._feature            = original._feature;
-
-    if (POSTCONDITIONS) ensure
-      (feature().generics().sizeMatches(generics()));
-  }
-
-
-  /**
    * Instantiate a new ResolvedNormalType.
    */
   public static ResolvedNormalType create(ResolvedNormalType original, TypeKind typeKind)
   {
-    return new ResolvedNormalType(original, typeKind);
-  }
-
-
-  /**
-   * Create a clone of original that uses originalOuterFeature as context to
-   * look up features the type is built from.
-   *
-   * @param original the original value type
-   *
-   * @param originalOuterFeature the original feature, which is not a type
-   * feature.
-   */
-  private ResolvedNormalType(ResolvedNormalType original, AbstractFeature originalOuterFeature)
-  {
-    this._typeKind          = original._typeKind;
-    if (original._generics.isEmpty())
-      {
-        this._generics          = original._generics;
-      }
-    else
-      {
-        this._generics = new List<>();
-        for (var g : original._generics)
-          {
-            var gc = (g instanceof ResolvedNormalType gt)
-              ? gt.clone(originalOuterFeature)
-              : g;
-            this._generics.add(gc);
-          }
-        this._generics.freeze();
-      }
-    this._unresolvedGenerics = original._unresolvedGenerics;
-    this._outer              = (original._outer instanceof ResolvedNormalType ot)
-      ? ot.clone(originalOuterFeature)
-      : original._outer;
-    this._feature            = original._feature;
-
-    if (POSTCONDITIONS) ensure
-      (feature().generics().sizeMatches(generics()));
-  }
-
-
-  /**
-   * Instantiate a new ResolvedNormalType.
-   */
-  public static ResolvedNormalType create(ResolvedNormalType original, AbstractFeature originalOuterFeature)
-  {
-    return new ResolvedNormalType(original, originalOuterFeature);
+    if (PRECONDITIONS) require
+      (Types.resolved == null
+         || !original.isVoid(),
+       typeKind == TypeKind.ValueType || typeKind == TypeKind.RefType);
+    return new ResolvedNormalType(original._generics, original._unresolvedGenerics, original._outer, original._feature, original._typeKind);
   }
 
 
@@ -287,15 +211,6 @@ public class ResolvedNormalType extends ResolvedType
       (feature.outer().isUniverse());
 
     return create(generics, null, feature);
-  }
-
-
-  /**
-   * Constructor for artificial built-in types.
-   */
-  protected ResolvedNormalType()
-  {
-    this(UnresolvedType.NONE, UnresolvedType.NONE, null, null, TypeKind.ValueType);
   }
 
 
@@ -339,23 +254,12 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * The mode of the type: ThisType, RefType or ValueType.
+   * The mode of the type: GenericArgument, ThisType, RefType or ValueType.
    */
   @Override
   public TypeKind kind()
   {
     return _typeKind;
-  }
-
-
-  /**
-   * This method usually just returns currentOuter. Only for clone()d types that
-   * are used in a different outer context, this permits to look up features the
-   * type is based on in the original context.
-   */
-  AbstractFeature originalOuterFeature(AbstractFeature currentOuter)
-  {
-    return currentOuter;
   }
 
 
@@ -390,6 +294,26 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
+   * `this` as a value.
+   *
+   * Requires that at isNormalType().
+   */
+  @Override
+  public AbstractType asValue()
+  {
+    if (PRECONDITIONS) require
+      (isNormalType());
+
+    return switch (kind())
+      {
+      case ValueType -> this;
+      case RefType   -> create(generics(), Call.NO_GENERICS, outer(), feature(), TypeKind.ValueType);
+      default        -> throw new Error("unexpected kind "+kind()+" for ResolvedNormalType");
+    };
+  }
+
+
+  /**
    * For a type that is not a type parameter, create a new variant using given
    * actual generics and outer type.
    *
@@ -401,9 +325,8 @@ public class ResolvedNormalType extends ResolvedType
    * @return a new type with same feature(), but using g2/o2 as generics
    * and outer type.
    */
-  // NYI: CLEANUP: remove, why does this behave differently from super.applyTypePars?
   @Override
-  public AbstractType applyTypePars(List<AbstractType> g2, AbstractType o2)
+  public AbstractType replaceGenericsAndOuter(List<AbstractType> g2, AbstractType o2)
   {
     return ResolvedNormalType.create(this, g2, unresolvedGenerics(), o2);
   }
@@ -422,28 +345,47 @@ public class ResolvedNormalType extends ResolvedType
    */
   AbstractType clone(AbstractFeature originalOuterFeature)
   {
-    return (this == Types.t_UNDEFINED || this == Types.t_ERROR) ? this :
-      new ResolvedNormalType(this, originalOuterFeature)
+    var result = this;
+    if (!isArtificialType())
       {
-        AbstractFeature originalOuterFeature(AbstractFeature currentOuter)
-        {
-          return originalOuterFeature;
-        }
-        ResolvedType _resolved = null;
+        var g = _generics;
+        if (!_generics.isEmpty())
+          {
+            g = new List<>();
+            for (var og : _generics)
+              {
+                var gc = (og instanceof ResolvedNormalType gt)
+                  ? gt.clone(originalOuterFeature)
+                  : og;
+                g.add(gc);
+              }
+            g.freeze();
+          }
+        var o = _outer instanceof ResolvedNormalType ot
+          ? ot.clone(originalOuterFeature)
+          : _outer;
 
-        /**
-         * This is a bit ugly, even though this type is a ResolvedType, the generics are not.
-         */
-        @Override
-        AbstractType resolve(Resolution res, Context context)
-        {
-          if (_resolved == null)
+        result = new ResolvedNormalType(g, _unresolvedGenerics, o, _feature, _typeKind)
+          {
+            AbstractType _resolved = null;
+
+            /**
+             * NYI: CLEANUP:
+             * This is a bit ugly, even though this type is a ResolvedType, the generics are not.
+             */
+            @Override
+            AbstractType resolve(Resolution res, Context context)
             {
-              _resolved = UnresolvedType.finishResolve(res, context, this, declarationPos(), feature(), _generics, unresolvedGenerics(), outer(), kind(), false, false);
+              if (_resolved == null)
+                {
+                  _resolved = UnresolvedType.finishResolve(res, context, this, declarationPos(), feature(), _generics, unresolvedGenerics(), outer(), kind(), false, false);
+                }
+              return _resolved;
             }
-          return _resolved;
-        }
-      };
+          };
+      }
+    return result;
+
   }
 
 

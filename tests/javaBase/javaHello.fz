@@ -36,7 +36,7 @@ javaHello : Java is
     panic.instate unit (panic (msg -> say msg; panic.abort) unit) fun _->unit
 
 
-  fuzion.jvm.use ()->
+  fuzion.jvm.use _ (os.platform.or_panic ? os.windows => ["-Dsun.stdout.encoding=UTF-8", "-Dsun.stderr.encoding=UTF-8"] | os.posix => []) ()->
 
     # we can call code in Java package directly using fully
     # qualified class names
@@ -134,7 +134,7 @@ javaHello : Java is
 
       tm2 := Java.java.util.TreeMap.new
       _ := exception (outcome Java.java.util.Map) unit ()->
-        tm2.putAll util_map.get
+        tm2.putAll util_map.or_panic
         say tm2.toString
 
     test_casting
@@ -149,7 +149,7 @@ javaHello : Java is
 
       tm2 := Java.java.util.TreeMap.new
       _ := exception (outcome Java.java.util.Map) unit ()->
-        tm2.putAll util_map.get
+        tm2.putAll util_map.or_panic
         say tm2.toString
 
     catch_panics ()->

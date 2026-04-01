@@ -151,23 +151,23 @@ choice_mix is
   yak "d: "; show0 d
   yak "e: "; show0 e
 
-  _ := for
-         i := 0, i + 1
-       while i < 6
-         if i > 0 say "-------------"
-         yak "show_a : "; show_a
-         yak "show_v : "; show_v
-         yak "show_i : "; show_i
-         yak "show a: "; show a
-         yak "show b: "; show b
-         yak "show c: "; show c
-         yak "show d: "; show d
-         x Mix := a
-         set a := b
-         set b := c
-         set c := d
-         set d := e
-         set e := x
+  for
+    i := 0, i + 1
+  while i < 6
+    if i > 0 say "-------------"
+    yak "show_a : "; show_a
+    yak "show_v : "; show_v
+    yak "show_i : "; show_i
+    yak "show a: "; show a
+    yak "show b: "; show b
+    yak "show c: "; show c
+    yak "show d: "; show d
+    x Mix := a
+    set a := b
+    set b := c
+    set c := d
+    set d := e
+    set e := x
 
   colors1 unit =>  # using choice over features inheriting from abstract feature
     color is rgb u32 => abstract
@@ -345,15 +345,15 @@ choice_mix is
       if i < 10 { i }
       else if i < 20 { i > 15 }
       else { "Large" }
-    _ := for
-           i := 0, i + 1
-         while i < 25
-           yak "$i ==> "
-           match f i
-             x i32    => yak x
-             b1 bool  => { if b1 { yak  "true" } else { yak "false" } }
-             s String => yak s
-           say ""
+    for
+      i := 0, i + 1
+    while i < 25
+      yak "$i ==> "
+      match f i
+        x i32    => yak x
+        b1 bool  => { if b1 { yak  "true" } else { yak "false" } }
+        s String => yak s
+      say ""
 
     # check that pipe also works as operator:
     (1..10).for_each yak

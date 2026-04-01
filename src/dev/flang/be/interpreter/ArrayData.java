@@ -50,9 +50,12 @@ public class ArrayData extends Value
 
 
   /**
-   *
+   * The actual data
    */
-  public final Object _array;
+  public final Object _data;
+
+
+  public final int _clazz;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -61,15 +64,16 @@ public class ArrayData extends Value
   /**
    * Constructor
    */
-  public ArrayData(Object array)
+  public ArrayData(Object d, int cl)
   {
     if (PRECONDITIONS) require
-      (array != null,
-       array.getClass().isArray(),
-       array.getClass().componentType().isPrimitive() ||
-       array.getClass().componentType() == Value.class );
+      (d != null,
+       d.getClass().isArray(),
+       d.getClass().componentType().isPrimitive() ||
+       d.getClass().componentType() == Value.class );
 
-    this._array = array;
+    this._data = d;
+    this._clazz = cl;
   }
 
 
@@ -96,18 +100,18 @@ public class ArrayData extends Value
    */
   int length()
   {
-    if      (_array instanceof byte   [] a) { return a.length; }
-    else if (_array instanceof short  [] a) { return a.length; }
-    else if (_array instanceof char   [] a) { return a.length; }
-    else if (_array instanceof int    [] a) { return a.length; }
-    else if (_array instanceof long   [] a) { return a.length; }
-    else if (_array instanceof float  [] a) { return a.length; }
-    else if (_array instanceof double [] a) { return a.length; }
-    else if (_array instanceof boolean[] a) { return a.length; }
-    else if (_array instanceof Object [] a) { return a.length; }
+    if      (_data instanceof byte   [] a) { return a.length; }
+    else if (_data instanceof short  [] a) { return a.length; }
+    else if (_data instanceof char   [] a) { return a.length; }
+    else if (_data instanceof int    [] a) { return a.length; }
+    else if (_data instanceof long   [] a) { return a.length; }
+    else if (_data instanceof float  [] a) { return a.length; }
+    else if (_data instanceof double [] a) { return a.length; }
+    else if (_data instanceof boolean[] a) { return a.length; }
+    else if (_data instanceof Object [] a) { return a.length; }
     else
       {
-        throw new Error("Unexpected array type " + _array);
+        throw new Error("Unexpected array type " + _data);
       }
   }
 
@@ -138,18 +142,18 @@ public class ArrayData extends Value
     checkIndex(x);
     switch (fuir.getSpecialClazz(elementType))
     {
-      case c_i8 ->          ((byte   [])_array)[x] = (byte   ) v.i8Value();
-      case c_i16 ->         ((short  [])_array)[x] = (short  ) v.i16Value();
-      case c_i32 ->         ((int    [])_array)[x] =           v.i32Value();
-      case c_i64 ->         ((long   [])_array)[x] =           v.i64Value();
-      case c_u8 ->          ((byte   [])_array)[x] = (byte   ) v.u8Value();
-      case c_u16 ->         ((char   [])_array)[x] = (char   ) v.u16Value();
-      case c_u32 ->         ((int    [])_array)[x] =           v.u32Value();
-      case c_u64 ->         ((long   [])_array)[x] =           v.u64Value();
-      case c_f32 ->         ((float  [])_array)[x] =           v.f32Value();
-      case c_f64 ->         ((double [])_array)[x] =           v.f64Value();
-      case c_bool ->        ((boolean[])_array)[x] =           v.boolValue();
-      default ->            ((Value  [])_array)[x] =           v;
+      case c_i8 ->          ((byte   [])_data)[x] = (byte   ) v.i8Value();
+      case c_i16 ->         ((short  [])_data)[x] = (short  ) v.i16Value();
+      case c_i32 ->         ((int    [])_data)[x] =           v.i32Value();
+      case c_i64 ->         ((long   [])_data)[x] =           v.i64Value();
+      case c_u8 ->          ((byte   [])_data)[x] = (byte   ) v.u8Value();
+      case c_u16 ->         ((char   [])_data)[x] = (char   ) v.u16Value();
+      case c_u32 ->         ((int    [])_data)[x] =           v.u32Value();
+      case c_u64 ->         ((long   [])_data)[x] =           v.u64Value();
+      case c_f32 ->         ((float  [])_data)[x] =           v.f32Value();
+      case c_f64 ->         ((double [])_data)[x] =           v.f64Value();
+      case c_bool ->        ((boolean[])_data)[x] =           v.boolValue();
+      default ->            ((Value  [])_data)[x] =           v;
     }
   }
 
@@ -169,18 +173,18 @@ public class ArrayData extends Value
     checkIndex(x);
     return switch (fuir.getSpecialClazz(elementType))
     {
-      case c_i8 ->          new i8Value  (((byte   [])_array)[x]       );
-      case c_i16 ->         new i16Value (((short  [])_array)[x]       );
-      case c_i32 ->         new i32Value (((int    [])_array)[x]       );
-      case c_i64 ->         new i64Value (((long   [])_array)[x]       );
-      case c_u8 ->          new u8Value  (((byte   [])_array)[x] & 0xff);
-      case c_u16 ->         new u16Value (((char   [])_array)[x]       );
-      case c_u32 ->         new u32Value (((int    [])_array)[x]       );
-      case c_u64 ->         new u64Value (((long   [])_array)[x]       );
-      case c_f32 ->         new f32Value (((float  [])_array)[x]       );
-      case c_f64 ->         new f64Value (((double [])_array)[x]       );
-      case c_bool ->        new boolValue(((boolean[])_array)[x]       );
-      default ->            (((Value[])_array)[x])        ;
+      case c_i8 ->          new i8Value  (((byte   [])_data)[x]       );
+      case c_i16 ->         new i16Value (((short  [])_data)[x]       );
+      case c_i32 ->         new i32Value (((int    [])_data)[x]       );
+      case c_i64 ->         new i64Value (((long   [])_data)[x]       );
+      case c_u8 ->          new u8Value  (((byte   [])_data)[x] & 0xff);
+      case c_u16 ->         new u16Value (((char   [])_data)[x]       );
+      case c_u32 ->         new u32Value (((int    [])_data)[x]       );
+      case c_u64 ->         new u64Value (((long   [])_data)[x]       );
+      case c_f32 ->         new f32Value (((float  [])_data)[x]       );
+      case c_f64 ->         new f64Value (((double [])_data)[x]       );
+      case c_bool ->        new boolValue(((boolean[])_data)[x]       );
+      default ->            (((Value[])_data)[x])        ;
     };
   }
 
@@ -192,22 +196,22 @@ public class ArrayData extends Value
    * @param elementType the elements type
    * @return
    */
-  public static ArrayData alloc(int sz, FUIR fuir, int elementType)
+  public static ArrayData alloc(int cl, int sz, FUIR fuir, int elementType)
   {
     return switch (fuir.getSpecialClazz(elementType))
     {
-      case c_i8 ->          new ArrayData(new byte   [sz]);
-      case c_i16 ->         new ArrayData(new short  [sz]);
-      case c_i32 ->         new ArrayData(new int    [sz]);
-      case c_i64 ->         new ArrayData(new long   [sz]);
-      case c_u8 ->          new ArrayData(new byte   [sz]);
-      case c_u16 ->         new ArrayData(new char   [sz]);
-      case c_u32 ->         new ArrayData(new int    [sz]);
-      case c_u64 ->         new ArrayData(new long   [sz]);
-      case c_f32 ->         new ArrayData(new float  [sz]);
-      case c_f64 ->         new ArrayData(new double [sz]);
-      case c_bool ->        new ArrayData(new boolean[sz]);
-      default ->            new ArrayData(new Value  [sz]);
+      case c_i8 ->          new ArrayData(new byte   [sz], cl);
+      case c_i16 ->         new ArrayData(new short  [sz], cl);
+      case c_i32 ->         new ArrayData(new int    [sz], cl);
+      case c_i64 ->         new ArrayData(new long   [sz], cl);
+      case c_u8 ->          new ArrayData(new byte   [sz], cl);
+      case c_u16 ->         new ArrayData(new char   [sz], cl);
+      case c_u32 ->         new ArrayData(new int    [sz], cl);
+      case c_u64 ->         new ArrayData(new long   [sz], cl);
+      case c_f32 ->         new ArrayData(new float  [sz], cl);
+      case c_f64 ->         new ArrayData(new double [sz], cl);
+      case c_bool ->        new ArrayData(new boolean[sz], cl);
+      default ->            new ArrayData(new Value  [sz], cl);
     };
   }
 
@@ -219,7 +223,7 @@ public class ArrayData extends Value
    */
   public String toString()
   {
-    return "data[" + length() + ", " + _array.getClass().componentType() + "]";
+    return "data[" + length() + ", " + _data.getClass().componentType() + "]";
   }
 
 
@@ -238,36 +242,36 @@ public class ArrayData extends Value
   {
     for (int i = 0; i < length(); i++)
       {
-        if      (_array instanceof byte   [] arr) { memSegment.setAtIndex(ValueLayout.JAVA_BYTE,   i, arr[i]);}
-        else if (_array instanceof short  [] arr) { memSegment.setAtIndex(ValueLayout.JAVA_SHORT,  i, arr[i]);}
-        else if (_array instanceof char   [] arr) { memSegment.setAtIndex(ValueLayout.JAVA_CHAR,   i, arr[i]);}
-        else if (_array instanceof int    [] arr) { memSegment.setAtIndex(ValueLayout.JAVA_INT,    i, arr[i]);}
-        else if (_array instanceof long   [] arr) { memSegment.setAtIndex(ValueLayout.JAVA_LONG,   i, arr[i]);}
-        else if (_array instanceof float  [] arr) { memSegment.setAtIndex(ValueLayout.JAVA_FLOAT,  i, arr[i]);}
-        else if (_array instanceof double [] arr) { memSegment.setAtIndex(ValueLayout.JAVA_DOUBLE, i, arr[i]);}
-        else if (_array instanceof boolean[] arr) { memSegment.setAtIndex(ValueLayout.JAVA_BOOLEAN,i, arr[i]);}
-        else if (_array instanceof Value  [] arr)
+        if      (_data instanceof byte   [] arr) { memSegment.setAtIndex(ValueLayout.JAVA_BYTE,   i, arr[i]);}
+        else if (_data instanceof short  [] arr) { memSegment.setAtIndex(ValueLayout.JAVA_SHORT,  i, arr[i]);}
+        else if (_data instanceof char   [] arr) { memSegment.setAtIndex(ValueLayout.JAVA_CHAR,   i, arr[i]);}
+        else if (_data instanceof int    [] arr) { memSegment.setAtIndex(ValueLayout.JAVA_INT,    i, arr[i]);}
+        else if (_data instanceof long   [] arr) { memSegment.setAtIndex(ValueLayout.JAVA_LONG,   i, arr[i]);}
+        else if (_data instanceof float  [] arr) { memSegment.setAtIndex(ValueLayout.JAVA_FLOAT,  i, arr[i]);}
+        else if (_data instanceof double [] arr) { memSegment.setAtIndex(ValueLayout.JAVA_DOUBLE, i, arr[i]);}
+        else if (_data instanceof boolean[] arr) { memSegment.setAtIndex(ValueLayout.JAVA_BOOLEAN,i, arr[i]);}
+        else if (_data instanceof Value  [] arr)
         {
           for (int j = 0; j < arr.length; j++)
             {
               memSegment.set(ValueLayout.ADDRESS, j * 8, (MemorySegment)arr[j].toNative());
             }
         }
-        else throw new Error("NYI: UNDER DEVELOPMENT: copyToMemSegment: " + _array.getClass());
+        else throw new Error("NYI: UNDER DEVELOPMENT: copyToMemSegment: " + _data.getClass());
       }
   }
 
   private int elementByteSize()
   {
-    if      (_array instanceof byte   []) { return 1; }
-    else if (_array instanceof short  []) { return 2; }
-    else if (_array instanceof char   []) { return 2; }
-    else if (_array instanceof int    []) { return 4; }
-    else if (_array instanceof long   []) { return 8; }
-    else if (_array instanceof float  []) { return 4; }
-    else if (_array instanceof double []) { return 8; }
-    else if (_array instanceof boolean[]) { return 4; }
-    else if (_array instanceof Value  []) { return 8; }
+    if      (_data instanceof byte   []) { return 1; }
+    else if (_data instanceof short  []) { return 2; }
+    else if (_data instanceof char   []) { return 2; }
+    else if (_data instanceof int    []) { return 4; }
+    else if (_data instanceof long   []) { return 8; }
+    else if (_data instanceof float  []) { return 4; }
+    else if (_data instanceof double []) { return 8; }
+    else if (_data instanceof boolean[]) { return 4; }
+    else if (_data instanceof Value  []) { return 8; }
     throw new Error("NYI: ArrayData.elementByteSize");
   }
 
@@ -276,16 +280,16 @@ public class ArrayData extends Value
   {
     for (int i = 0; i < length(); i++)
       {
-        if      (_array instanceof byte   [] arr) { arr[i] = memSegment.getAtIndex(ValueLayout.JAVA_BYTE, i); }
-        else if (_array instanceof short  [] arr) { arr[i] = memSegment.getAtIndex(ValueLayout.JAVA_SHORT, i); }
-        else if (_array instanceof char   [] arr) { arr[i] = memSegment.getAtIndex(ValueLayout.JAVA_CHAR, i); }
-        else if (_array instanceof int    [] arr) { arr[i] = memSegment.getAtIndex(ValueLayout.JAVA_INT, i); }
-        else if (_array instanceof long   [] arr) { arr[i] = memSegment.getAtIndex(ValueLayout.JAVA_LONG, i); }
-        else if (_array instanceof float  [] arr) { arr[i] = memSegment.getAtIndex(ValueLayout.JAVA_FLOAT, i); }
-        else if (_array instanceof double [] arr) { arr[i] = memSegment.getAtIndex(ValueLayout.JAVA_DOUBLE, i); }
-        else if (_array instanceof boolean[] arr) { arr[i] = memSegment.getAtIndex(ValueLayout.JAVA_BOOLEAN, i); }
-        else if (_array instanceof Value  [] arr) { /* NYI: UNDER DEVELOPMENT */ }
-        else throw new Error("NYI: UNDER DEVELOPMENT: set: " + _array.getClass());
+        if      (_data instanceof byte   [] arr) { arr[i] = memSegment.getAtIndex(ValueLayout.JAVA_BYTE, i); }
+        else if (_data instanceof short  [] arr) { arr[i] = memSegment.getAtIndex(ValueLayout.JAVA_SHORT, i); }
+        else if (_data instanceof char   [] arr) { arr[i] = memSegment.getAtIndex(ValueLayout.JAVA_CHAR, i); }
+        else if (_data instanceof int    [] arr) { arr[i] = memSegment.getAtIndex(ValueLayout.JAVA_INT, i); }
+        else if (_data instanceof long   [] arr) { arr[i] = memSegment.getAtIndex(ValueLayout.JAVA_LONG, i); }
+        else if (_data instanceof float  [] arr) { arr[i] = memSegment.getAtIndex(ValueLayout.JAVA_FLOAT, i); }
+        else if (_data instanceof double [] arr) { arr[i] = memSegment.getAtIndex(ValueLayout.JAVA_DOUBLE, i); }
+        else if (_data instanceof boolean[] arr) { arr[i] = memSegment.getAtIndex(ValueLayout.JAVA_BOOLEAN, i); }
+        else if (_data instanceof Value  [] arr) { /* NYI: UNDER DEVELOPMENT */ }
+        else throw new Error("NYI: UNDER DEVELOPMENT: set: " + _data.getClass());
       }
   }
 }
