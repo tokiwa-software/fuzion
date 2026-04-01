@@ -1,0 +1,23 @@
+
+--CURDIR--/reg_issue5729.fz:27:7: error 1: Call has an ambiguous result type since target of the call is a 'ref' type.
+  say (c.and_then x->Y.this)
+------^^^^^^^^^^^^^^^^^^^^^^
+The result type of this call depends on the target type.  Since the target type is a 'ref' type that may represent a number of different actual dynamic types, the result type is not clearly defined.
+Called feature: 'switch.and_then'
+Original result type: 'option Y.this'
+Type depending on target: 'Y.this'
+Target type: 'Y'
+To solve this, you could try to use a value type as the target type of the call, e,g., 'switch A B', or change the result type of 'switch.and_then' to no longer depend on 'Y.this'.
+
+
+{base.fum}/switch.fz:77:14: error 2: Call has an ambiguous result type since target of the call is a 'ref' type.
+      a A => f a
+-------------^
+The result type of this call depends on the target type.  Since the target type is a 'ref' type that may represent a number of different actual dynamic types, the result type is not clearly defined.
+Called feature: 'Function.call'
+Original result type: 'option Y.this'
+Type depending on target: 'Y.this'
+Target type: 'Y'
+To solve this, you could try to use a value type as the target type of the call or change the result type of 'Function.call' to no longer depend on 'Y.this'.
+
+2 errors.
