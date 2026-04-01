@@ -553,12 +553,13 @@ class Clazz extends ANY implements Comparable<Clazz>
       {
         result = new TreeSet<Clazz>();
         result.add(this);
-        for (var inh: feature().inherits())
+        var inh = feature().inherits();
+        for (var parent : inh)
           {
-            var pt = inh.type();
+            var pt = parent.type();
             var t1 = feature().handDownAndApply(pt, _type);
-            var t2 = handDown(t1, NO_SELECT, (_,_)->{}, new List<>());
-            var t3 = replaceThisType(t2, new List<>() /* NYI: correct? */);
+            var t2 = handDown(t1, NO_SELECT, (_,_)->{}, inh);
+            var t3 = replaceThisType(t2, inh);
             var pc  = _fuir.newClazz(t3);
 
             if (!result.contains(pc))
