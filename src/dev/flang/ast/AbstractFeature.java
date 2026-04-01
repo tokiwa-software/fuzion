@@ -2080,24 +2080,43 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
      if (_foundEffects == null)
       {
         _foundEffects = new TreeSet<>();
-        // NYI: fields?, abstract?
-        if (isRoutine())
+        // NYI: fields?, abstract?, contract?
+        if (this instanceof Feature && isRoutine())
           {
-            code().visitExpressions(new ExpressionVisitor() {
-              @Override
-              public void action(Expr e)
-              {
-                if (e instanceof AbstractCall c)
-                  {
-                    if (c.calledFeature() == Types.resolved.f_effect_from_env ||
-                        c.calledFeature() == Types.resolved.f_effect_unsafe_from_env)
-                      {
-                        _foundEffects.add(c.type());
-                      }
-                    _foundEffects.addAll(c.calledFeature().effects());
-                  }
-              }
-            });
+            code()
+              .visit(new FeatureVisitor() {
+                @Override
+                public Expr action(Feature f, AbstractFeature outer)
+                {
+                  if (f.isField())
+                    {
+                      f.visit(this);
+                    }
+                  return super.action(f, outer);
+                }
+                @Override
+                public void action(AbstractCall c)
+                {
+                  if (c.calledFeature() == Types.resolved.f_effect_from_env ||
+                      c.calledFeature() == Types.resolved.f_effect_unsafe_from_env)
+                    {
+                      _foundEffects.add(c.type());
+                    }
+                  else if (c.calledFeature().featureName().baseName().startsWith(FuzionConstants.LAMBDA_PREFIX))
+                    {
+                      // NYI: CLEANUP: lookup call feature
+                      _foundEffects.addAll(((Feature)((Block)c.calledFeature().code())._expressions.get(0)).effects());
+                    }
+                  _foundEffects.addAll(
+                    c.calledFeature()
+                     .effects()
+                     .stream()
+                     .map(x -> x.replace_this_type_by_actual_outer(c.target().type(), context()) /* NYI: handdown? */)
+                     .collect(Collectors.toSet())
+                  );
+                  super.action(c);
+                }
+              }, this);
           }
       }
     return _foundEffects;
