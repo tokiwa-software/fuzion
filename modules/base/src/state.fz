@@ -46,7 +46,7 @@
 #        # we can now modify the value, e.g, doubling it via
 #        #
 #        new_demo := state_modify demo (x -> demo x.contents*2)
-#        say "state value is {new_demo.get.contents}"
+#        say "state value is {new_demo.or_panic.contents}"
 #        say "state value is {state_get demo .contents}"
 #
 # NYI: BUG: #5634: use `infix !` in this example once #5634 is fixed
@@ -135,24 +135,24 @@ public state(S type, initial_value S) state unit S => state unit initial_value o
 public state(S, R type, initial_value S, r ()->R) R =>
   res option R := nil
   (state unit S) <- (state unit S unit initial_value oneway_monad_mode.inst) ! (()->set res := r.call)
-  res.get
+  res.or_panic
 
 
-# short-hand for accessing state monad for given type in current environment
+# shorthand for accessing state monad for given type in current environment
 #
 public state_of(S type) state unit S => (state unit S).env
 
 
-# short-hand for getting state monad for given type in current environment
+# shorthand for getting state monad for given type in current environment
 #
 public state_get(S type) S => (state_of S).get
 
 
-# short-hand for modifying state monad for given type in current environment
+# shorthand for modifying state monad for given type in current environment
 #
 public state_modify(S type, f S->S) state unit S => (state_of S).modify f
 
 
-# short-hand for setting state monad for given type in current environment
+# shorthand for setting state monad for given type in current environment
 #
 public state_put(S type, new S) state unit S => (state_of S).put new

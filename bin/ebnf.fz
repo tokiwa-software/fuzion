@@ -38,18 +38,18 @@ main =>
 
     lm ! ()->
       seq := map x->x.as_string
-      match os.process.start seq.first.val (seq.drop 1)
+      match os.process.start seq.first.or_panic (seq.drop 1)
         e error => panic "failed executing {Sequence.this}, error is $e"
         p os.process =>
           res :=
-            match p.with_out String lm (()->String.from_bytes (io.buffered lm).read_fully)
+            match p.with_out String lm (()->String.from (io.buffered lm).read_fully)
               e error => panic "failed reading stdout from {Sequence.this}, error is: $e"
               s String => s.trim_end
           err :=
-            match p.with_err String lm (()->String.from_bytes (io.buffered lm).read_fully)
+            match p.with_err String lm (()->String.from (io.buffered lm).read_fully)
               e error => panic "failed reading stderr from {Sequence.this}, error is: $e"
               s String => s.trim_end
-          ec := p.wait.get 1
+          ec := p.wait.or_default 1
           if ec != 0
             panic "error $ec when executing $seq, stderr: $err"
           res
@@ -63,14 +63,14 @@ main =>
     lm : mutate is
 
     lm ! ()->
-      match os.process.start seq.first.val (seq.drop 1)
+      match os.process.start seq.first.or_panic (seq.drop 1)
         e error => panic "failed executing $seq, error is $e"
         p os.process =>
           _ := p.with_in unit lm ()->
-            _ := (io.buffered lm).writer.env.write String.this.utf8
+            _ := (io.buffered lm).writer.env.write String.this
             _ := (io.buffered lm).writer.env.flush
             _ := p.wait # close stdin
-          match p.with_out String lm (()->String.from_bytes (io.buffered lm).read_fully)
+          match p.with_out String lm (()->String.from (io.buffered lm).read_fully)
             e error => panic "failed reading stdout from $seq, error is: $e"
             s String => s
 
@@ -104,6 +104,7 @@ main =>
     ebnf_header := "grammar Fuzion;$new_line$new_line"
 
     ebnf := envir.args.drop 1
+      .map (s->path.of s)
       .map src->
         if !io.file.exists src
           panic "file not found '$src'."
@@ -124,7 +125,7 @@ main =>
           for
               res Sequence String := [], new_res # source without asciidoc comments
               in_asciidoc bool := false, new_in_asciidoc
-              l in src_lines.ok ? src_lines.val : []
+              l in src_lines.ok ? src_lines.or_panic : []
           do
             new_res, new_in_asciidoc :=
               if in_asciidoc || l.trim.starts_with "// tag::"
@@ -180,7 +181,7 @@ main =>
     # test grammar with antlr4
     tmp := !!"mktemp --directory"
     _ := !!"mkdir $tmp/fuzion_grammar"
-    _ := io.file.write "$tmp/fuzion_grammar/Fuzion.g4" ebnf
+    _ := io.write (path.of "$tmp/fuzion_grammar/Fuzion.g4") ebnf
     antlr := if (os.process.start "antlr4").bind u32 p->p.wait = 0 then "antlr4" else "antlr"
     # NYI: UNDER DEVELOPMENT: add option -Werror
     _ := !!"$antlr -long-messages -o $tmp/fuzion_grammar $tmp/fuzion_grammar/Fuzion.g4"

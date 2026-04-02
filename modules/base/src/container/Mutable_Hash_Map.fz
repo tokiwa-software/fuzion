@@ -59,7 +59,7 @@ module:public Mutable_Hash_Map(
 
         # factor by which the allocated_size is increased if load reaches upper_load_factor
         #
-        resize_factor f32 ) ref : Mutable_Map HK V
+        resize_factor f32 ) ref : container.Mutable_Map HK V
 pre
   debug: min_size > 0
   debug: 0.0 < lower_load_factor < upper_load_factor
@@ -129,7 +129,7 @@ is
     old_contents := contents.get.as_array
     contents <- LM.env.new_array (option (tuple HK V)) allocated_size.get.as_i64 nil
     for tup in (old_contents.filter o->o??) do
-      ok, ov := tup.get
+      ok, ov := tup.or_panic
       store (idx ok) ok ov false
 
 
@@ -184,7 +184,7 @@ is
 
   # remove key from map, returns the removed value
   #
-  public redef remove(k HK) option V =>
+  public redef remove(k HK) option V ! LM =>
 
 
     del(del_idx i64) option V =>
@@ -240,7 +240,7 @@ is
   public redef items Sequence (tuple HK V) =>
     contents.get.as_array
       .filter o->o??
-      .map (o -> o.get (panic "filter failed"))
+      .map (o -> o.or_else (panic "filter failed"))
 
 
   # create an immutable map from this

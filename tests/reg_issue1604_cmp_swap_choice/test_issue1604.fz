@@ -9,7 +9,7 @@ test_issue1604 is
 
     s := small 0x11
     l := large 0xCCCC_CCCC_CCCC_CCCC 0xCCCC_CCCC_CCCC_CCCC 0xCCCC_CCCC_CCCC_CCCC 0xCCCC_CCCC_CCCC_CCCC
-    a := concur.atomic c s
+    a := concur.atomic c .new s
 
     match a.compare_and_swap s l
       small => #  ok
@@ -35,7 +35,7 @@ test_issue1604 is
 
     s := small 0x11
     _ := large 0xCCCC_CCCC_CCCC_CCCC 0xCCCC_CCCC_CCCC_CCCC 0xCCCC_CCCC_CCCC_CCCC 0xCCCC_CCCC_CCCC_CCCC
-    a0 := concur.atomic c s
+    a0 := concur.atomic c .new s
 
     test(n i32) unit =>
       if n > 0

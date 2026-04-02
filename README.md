@@ -5,6 +5,7 @@ Scorecard](https://api.securityscorecards.dev/projects/github.com/tokiwa-softwar
 [![run tests on linux](https://github.com/tokiwa-software/fuzion/actions/workflows/linux.yml/badge.svg)](https://github.com/tokiwa-software/fuzion/actions/workflows/linux.yml)
 [![run tests on macOS](https://github.com/tokiwa-software/fuzion/actions/workflows/apple.yml/badge.svg)](https://github.com/tokiwa-software/fuzion/actions/workflows/apple.yml)
 [![run tests on windows](https://github.com/tokiwa-software/fuzion/actions/workflows/windows.yml/badge.svg)](https://github.com/tokiwa-software/fuzion/actions/workflows/windows.yml)
+[![interpreter](https://github.com/tokiwa-software/fuzion/actions/workflows/interpreter.yml/badge.svg)](https://github.com/tokiwa-software/fuzion/actions/workflows/interpreter.yml)
 
 
 ## A language with a focus on simplicity, safety and correctness.
@@ -23,6 +24,10 @@ Scorecard](https://api.securityscorecards.dev/projects/github.com/tokiwa-softwar
      * [Windows](#windows)
    * [Build](#build)
    * [Run](#run)
+   * [Tests](#tests)
+     * [Running all tests](#running-all-tests)
+     * [Run a single test](#run-a-single-test)
+     * [Record a test](#record-a-test)
    * [Soft dependencies](#soft-dependencies)
    * [Install prebuilt](#install-prebuilt)
    * [Language server](#language-server)
@@ -171,9 +176,9 @@ Check [fuzion-lang.dev](https://fuzion-lang.dev) for language and implementation
 
 > For Debian based systems this command should install all requirements:
 >
->     sudo apt-get install make clang libgc1 libgc-dev openjdk-21-jdk
+>     sudo apt-get install make clang libgc1 libgc-dev openjdk-25-jdk
 
-- OpenJDK 21, e.g. [Adoptium](https://github.com/adoptium/temurin21-binaries/releases/)
+- OpenJDK 25[^1], (needs to include jmods)
 - clang LLVM C compiler
 - GNU make
 - libgc
@@ -188,7 +193,7 @@ Check [fuzion-lang.dev](https://fuzion-lang.dev) for language and implementation
 >
 >     export PATH:"/usr/local/opt/gnu-sed/libexec/gnubin:/usr/local/opt/gnu-make/libexec/gnubin:$PATH"
 
-- OpenJDK 21, e.g. [Adoptium](https://github.com/adoptium/temurin21-binaries/releases/)
+- OpenJDK 25[^1], (needs to include jmods)
 - clang LLVM C compiler
 - GNU make
 - libgc
@@ -230,6 +235,71 @@ To compile the same example (requires clang C compiler):
     ./factors
 
 Have fun!
+
+
+## Tests
+
+### Running all tests
+
+> Since there are a lot of tests this will likely take 1h or more. See below on how to run a single test.
+
+In the source folder, to run all tests across all backends use the following command:
+
+    make run_tests
+
+When testing is finished you will be presented a summary of succeeded, failed and skipped tests.
+
+To run the tests for one specific backend only use:
+
+    # for jvm backend
+    make run_tests_jvm
+
+    # for c backend
+    make run_tests_c
+
+    # for interpreter backend
+    make run_tests_int
+
+### Run a single test
+
+In the source folder run:
+
+    make _BACKEND_ -C _BUILD_DIR_/tests/_TEST_/
+
+where `_BACKEND_` may be one on the following:
+ - jvm
+ - c
+ - int
+ - effect
+ - leave out to run test on all backends
+
+Unless you specified a custom build directory you need to substitute `_BUILD_DIR_` by just `build`.
+
+Finally instead of `_TEST_` specify the name of the test.
+
+Full example:
+
+    make jvm -C build/tests/hello
+
+### Record a test
+
+This works the same as running a test but specifing a different make target.
+
+- record
+- record_jvm
+- record_c
+- record_int
+- record_effect
+
+Full example:
+
+    make record_jvm -C ./build/tests/hello
+
+This will record stdout and stderr and save those in files in the test directory. (HelloWorld.fz.expected_out, HelloWorld.fz.expected_err)
+
+> To copy the new or updated recordings from the build folder to the source folder you can use this command:
+>
+>     rsync -a --include='*/' --include='*.expected_*' --include='*.effect' --exclude='*' build/tests/ tests/
 
 
 ## Soft dependencies
@@ -483,3 +553,9 @@ For emacs there is two options eglot or lsp-mode.
 |inlineValue|☐|
 |type hierarchy|☐|
 |notebook document support|☐| -->
+
+
+[^1]: suggested OpenJDK distributions:
+
+    - [Adoptium](https://github.com/adoptium/temurin25-binaries/releases/) + [jmods](https://api.adoptium.net/v3/binary/latest/25/ga/linux/x64/jmods/hotspot/normal/eclipse?project=jdk), must be unpacked to a `jmods` sub-directory in the openjdk directory.
+    - [Azul](https://www.azul.com/downloads/?version=java-25&package=jdk#zulu)

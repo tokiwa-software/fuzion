@@ -64,7 +64,7 @@ is
   #  javaBytes  := javaString.getBytes java.nio.charset.StandardCharsets.UTF__8   # get its UTF8 bytes, type is fuzion.java.Array i8
     javaBytes  := javaString.getBytes "UTF8"                                     # get its UTF8 bytes, type is fuzion.java.Array i8
     match javaBytes
-      err error => say "got an error: $err"
+      err error => say err
       bytes fuzion.java.Array =>
         say "string has {bytes.count} bytes: $bytes"
         javaString2 := java.lang.__jString.new bytes 6 bytes.count-6                # create Java string from bytes subset,

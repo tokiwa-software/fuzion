@@ -48,23 +48,23 @@ public class FuzionLogo extends ANY
 {
 
   // file to generate
-  static String FILE_NAME = "fuzionlogo.svg";
+  static final String FILE_NAME = "fuzionlogo.svg";
 
   // background and wedge colors:
-  static Color BACKGROUND = Color.BLACK;
-  static Color C1 = Color.WHITE;
-  static Color C2 = new Color(81,36,128);
-  static Color C3 = new Color(130,106,175);
+  static final Color BACKGROUND = Color.BLACK;
+  static final Color C1 = Color.WHITE;
+  static final Color C2 = new Color(81,36,128);
+  static final Color C3 = new Color(130,106,175);
 
   /* the following two values are geometry values that may be modified to alter
    * the appearance:
    */
 
   // Width of black lines as percentage of main radius
-  static double BLACK_LINE_WIDTH = 1.0D/15;
+  static final double BLACK_LINE_WIDTH = 1.0D/15;
 
   // size of three small circles relative to their surrounding circles
-  static double SMALL_CIRCLE_PERCENTAGE = 0.25D;
+  static final double SMALL_CIRCLE_PERCENTAGE = 0.25D;
 
 
   /* the following values are geometry values that are fixed and should not be

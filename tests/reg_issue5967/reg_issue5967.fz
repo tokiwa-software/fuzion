@@ -1,0 +1,64 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue5967
+#
+# -----------------------------------------------------------------------
+
+reg_issue5967 =>
+
+  codepoint.is_symbol => !is_ascii_digit && (codepoint val) != "."
+
+  lines =>
+    LM : mutate is
+    o := LM ! ()->(io.stdin.reader LM) ! ()->
+      for
+        li Sequence String := [], li ++ [l]
+        l := io.buffered LM .read_line ? str String => str | * => ""
+      while l != ""  else
+        li
+    o.as_array
+
+  scheme(ls) is
+    cp := ls.map x->x.codepoints
+    a := array2 cp.count cp[0].count i,j->cp[i][j]
+    w => a.length1
+    h => a.length0
+    at(l,c i32) =>
+      if 0 <= l < h && 0 <= c < w then a[_,l,c] else "."
+
+    number(l, c i32) is
+      len := (0.. .filter (x -> !(at l c+x).is_ascii_digit)).first.or_panic
+      ok bool := (-1..1) ∃ y -> (-1..len) ∃ x -> (at l+y c+x) .is_symbol
+      val i32 := ls[l].substring c c+len
+                      .parse_i32.or_panic
+
+    numbers =>
+      a.index_pairs.flat_map number ij->
+        i,j := ij
+        (!(at i j-1).is_ascii_digit &&
+          (at i j  ).is_ascii_digit   ).as_option number (number i j)
+
+    parts =>
+      numbers.map (x -> if x.ok then x.val else 0)
+             .fold i32.type.sum
+
+  s := scheme lines
+  p := s.parts
+  say "$p"

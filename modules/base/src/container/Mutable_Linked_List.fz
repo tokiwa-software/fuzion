@@ -34,7 +34,7 @@ private:public Mutable_Linked_List(# mutate effect to be used to create mutable 
                     T type,
 
                     # the data stored in this element.
-                    public redef data T) ref : Linked_List T is
+                    public redef data T) ref : container.Linked_List T is
 
 
   # mutable references to next. Initializes to refer to nil to form
@@ -43,10 +43,10 @@ private:public Mutable_Linked_List(# mutate effect to be used to create mutable 
   n := LM.env.new (option (Mutable_Linked_List LM T)) nil
 
 
-  # short-hand features to get the mutable references from `n`
+  # shorthand features to get the mutable references from `n`
   #
-  public redef next option (Linked_List T) =>
-    n.get.bind (Linked_List T) id
+  public redef next option (container.Linked_List T) =>
+    n.get.bind (container.Linked_List T) id
 
 
   # append an element to the linked list
@@ -91,6 +91,6 @@ private:public Mutable_Linked_List(# mutate effect to be used to create mutable 
       !from.is_empty
   =>
     from_list := from.as_list
-    c := container.Mutable_Linked_List LM T from_list.head.get
+    c := container.Mutable_Linked_List LM T from_list.head.or_panic
     from_list.tail.for_each (x -> c.append x)
     c

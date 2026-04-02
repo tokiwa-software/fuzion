@@ -86,7 +86,7 @@ public class SourceFile extends ANY
   /**
    * Quick byte -> hex conversion table:
    */
-  static String[] HEX = new String[]
+  static final String[] HEX = new String[]
   {
     "00", "01", "03", "04", "05", "06", "07", "08", "09", "0a", "0b", "0c", "0d", "0e", "0f",
     "10", "11", "13", "14", "15", "16", "17", "18", "19", "1a", "1b", "1c", "1d", "1e", "1f",
@@ -110,7 +110,7 @@ public class SourceFile extends ANY
   /**
    * Special value for fileName argument of constructor to use stdin as input.
    */
-  public static Path STDIN = Path.of("-");
+  public static final Path STDIN = Path.of("-");
 
 
   /**
@@ -118,7 +118,7 @@ public class SourceFile extends ANY
    * no data can be read from this, it must not be passed to the constructor of
    * SourceFile without providing a {@code byte[]} or file data!
    */
-  public static Path COMMAND_LINE_DUMMY = Path.of("command line");
+  public static final Path COMMAND_LINE_DUMMY = Path.of("command line");
 
 
   /*-----------------------------  statics  -----------------------------*/

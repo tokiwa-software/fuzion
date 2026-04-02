@@ -21,23 +21,23 @@
 #
 # -----------------------------------------------------------------------
 
+# an effect that allows calling java code from fuzion
+#
 private:public jvm : effect is
 
-  # NYI: UNDER DEVELOPMENT: support starting multiple jvms?
-  #
   create_jvm(option_strings universe.Array (universe.Array u8), length i32) i32 => intrinsic
   destroy_jvm unit => intrinsic
 
   module is_null0(java_ref Java_Ref) bool => intrinsic
 
 
-  # short-hand to for jvm with no additional class path
+  # shorthand to for jvm with no additional class path
   #
   public type.use(T type, code ()->T) T =>
     fuzion.jvm.use _ [] code
 
 
-  # - start jvm (or use an exisiting jvm)
+  # - start jvm (or use an existing jvm)
   # - instate effect `fuzion.jvm`
   # - run code on the jvm
   # - destroy jvm (if jvm had to be started)
@@ -191,7 +191,7 @@ private:public jvm : effect is
   public null(T type : fuzion.java.Java_Object) outcome T
   =>
     # NYI: UNDER DEVELOPMENT: HACK!
-    cast T (call_static (fuzion.java.Java_Object) "java.lang.System" "getProperty" "(Ljava/lang/String;)Ljava/lang/String;" [(string_to_java_object "I_ABSOLUTELY_DEFINITELY_DO_NOT_EXIST")]).get
+    cast T (call_static (fuzion.java.Java_Object) "java.lang.System" "getProperty" "(Ljava/lang/String;)Ljava/lang/String;" [(string_to_java_object "I_ABSOLUTELY_DEFINITELY_DO_NOT_EXIST")]).or_panic
 
 
   # cast this to some other class
@@ -299,7 +299,7 @@ private:public jvm : effect is
   public bool_to_java_object(b bool) fuzion.java.Java_Object => fuzion.java.Java_Object (primitive_to_java_object b)
 
 
-  # short-hands
+  # shorthands
   #
   public i8    .as_java_object fuzion.java.Java_Object ! fuzion.jvm => fuzion.jvm.env.i8_to_java_object  val
   public i16   .as_java_object fuzion.java.Java_Object ! fuzion.jvm => fuzion.jvm.env.i16_to_java_object val

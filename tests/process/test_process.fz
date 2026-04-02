@@ -29,7 +29,7 @@ test_process =>
 
   # create string of given byte size
   get_str(byte_size i32) =>
-    ref : String is
+    _ : String is
       public redef utf8 Sequence u8 =>
         (1..byte_size)
           .map u8 (x -> codepoint.type.zero_char)
@@ -50,7 +50,7 @@ test_process =>
       say p.wait
       _ := lm ! ()->
         _ := p.with_out unit lm ()->
-          say ((io.buffered lm).read_string 1E9).val
+          say ((io.buffered lm).read_string 1E9).or_panic
 
 
 
@@ -58,7 +58,7 @@ test_process =>
     (os.process.start "echo" ["eecchhoo"]).bind p->
       _ := lm ! ()->
         _ := p.with_out unit lm ()->
-          say ((io.buffered lm).read_string 1E9).val
+          say ((io.buffered lm).read_string 1E9).or_panic
 
 
 
@@ -67,7 +67,7 @@ test_process =>
       _ := lm ! ()->
         _ := p.with_out unit lm ()->
           out := ((io.buffered lm).read_string 1E9)
-            .val
+            .or_panic
             .split "\n"
             # for some reason on windows/msys these are included, even though we want empty env...
             .filter (l -> !(l.starts_with "HOME=" || l.starts_with "TERM="))
@@ -80,7 +80,7 @@ test_process =>
       (p | ["cat"]).bind p2->
         _ := lm ! ()->
           _ := p2.with_out unit lm ()->
-            say ((io.buffered lm).read_string 1E9).val
+            say ((io.buffered lm).read_string 1E9).or_panic
 
 
 
@@ -89,7 +89,7 @@ test_process =>
       (p | ["cat"]).bind p2->
         _ := lm ! ()->
           _ := p2.with_out unit lm ()->
-            say ((io.buffered lm).read_string 1E9).val.byte_length
+            say ((io.buffered lm).read_string 1E9).or_panic.byte_length
           say p2.wait
 
 
@@ -98,7 +98,7 @@ test_process =>
   test "100kb argument, piped to another process" ()->
     (os.process.start "echo" ["-n", (get_str 1E5)]).bind p->
       (p | ["cat"]).bind p2->
-        say p2.read_string.val.byte_length
+        say p2.read_string.or_panic.byte_length
         say "exit code: {p2.wait}"
         # execute wait twice:
         say "exit code: {p2.wait}"

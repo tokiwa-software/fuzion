@@ -1,0 +1,45 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion feature crypto
+#
+# -----------------------------------------------------------------------
+
+# crypto -- unit feature to group cryptography related features
+#
+public crypto is
+
+  # get a (salted) password hash for password
+  #
+  public password_hash(password String) outcome String =>
+    sodium.password_hash password
+
+
+  # the length of the password hash that password_hash returns
+  #
+  public password_hash_length i64 =>
+    sodium.password_hash_length
+
+
+  # verify that hash belongs to password
+  #
+  public password_hash_verify(password String, hash String) bool
+    pre hash.utf8.count.as_i64 = password_hash_length
+  =>
+    sodium.password_hash_verify password hash

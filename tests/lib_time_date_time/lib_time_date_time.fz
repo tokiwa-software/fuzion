@@ -64,3 +64,14 @@ lib_time_date_time =>
     say <| time
       .date_time
       .from_seconds i
+
+
+  say <| a.as_string time.pyear
+  say <| a.as_string time.pmonth
+  say <| a.as_string time.pday
+  say <| a.as_string time.phour
+  say <| a.as_string time.pminute
+  say <| a.as_string time.psecond
+  say <| a.as_string time.pmilli_second
+  say <| a.as_string time.pnano_second
+  check time.date_time.from_seconds 1762961342 .unix_time_stamp = 1762961342

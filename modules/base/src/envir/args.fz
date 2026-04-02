@@ -38,8 +38,8 @@ public args (all array String) : Sequence String, effect is
     (envir.args fuzion.sys.args).default
 
 
-# short-hand for accessing envir.args effect in current environment
+# shorthand for accessing envir.args effect in current environment
 #
-public args envir.args =>
+public args envir.args ! envir.args =>
   args.install_default
   envir.args.env

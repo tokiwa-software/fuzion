@@ -39,6 +39,8 @@ CHECK = && echo $(OK) || (echo $(FAIL); exit 1)
 
 all: jvm c int
 
+fuir: # NYI: UNDER DEVELOPMENT: missing impl of fuir
+
 int: clean modules/mod.fum
 	$(ENV) ../../bin/check_simple_example int "$(FUZION_RUN)" $(FILE) || exit 1
 
@@ -67,6 +69,6 @@ modules/mod.fum:
 	$(FUZION) -sourceDirs=./mod -saveModule=$@  $(CHECK)
 
 clean:
-	rm -rf modules *~ */*~ */*/*~
+	rm -rf modules *~ */*~ */*/*~ *.fum *.fuir
 
 effect:

@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
-import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -58,7 +57,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   public enum Kind
   {
-    Routine,
+    Function,
+    Constructor,
+    RefConstructor,
     Field,
     TypeParameter,
     OpenTypeParameter,
@@ -87,7 +88,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     {
       return switch (this)
         {
-          case Routine           -> "routine";
+          case Function          -> "function";
+          case Constructor       -> "constructor";
+          case RefConstructor    -> "ref-constructor";
           case Field             -> "field";
           case TypeParameter     -> "type parameter";
           case OpenTypeParameter -> "open type parameter";
@@ -95,6 +98,15 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
           case Abstract          -> "abstract";
           case Choice            -> "choice";
           case Native            -> "native";
+        };
+    }
+
+    public boolean isRoutine()
+    {
+      return switch(Kind.this)
+        {
+          case Function, RefConstructor, Constructor -> true;
+          default -> false;
         };
     }
   }
@@ -106,16 +118,14 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   /**
    * empty list of AbstractFeature
    */
-  public static final List<AbstractFeature> _NO_FEATURES_ = new List<>();
-  static { _NO_FEATURES_.freeze(); }
+  public static final List<AbstractFeature> _NO_FEATURES_ = new List<AbstractFeature>().freeze();
 
 
   /**
    * Result of `handDown(Resolution, AbstractType[], AbstractFeature) in case of
    * failure due to previous errors.
    */
-  public static final List<AbstractType> HAND_DOWN_FAILED = new List<>();
-  static { HAND_DOWN_FAILED.freeze(); }
+  public static final List<AbstractType> HAND_DOWN_FAILED = new List<AbstractType>().freeze();
 
 
 
@@ -222,18 +232,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * @return Routine, Field, Intrinsic, Abstract or Choice.
    */
   public abstract Kind kind();
-
-
-  /**
-   * Is this a routine that returns the current instance as its result?
-   */
-  public abstract boolean isConstructor();
-
-
-  /**
-   * Is this a constructor returning a reference result?
-   */
-  public abstract boolean isRef();
 
 
   /**
@@ -383,7 +381,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /* pre-implemented convenience functions: */
-  public boolean isRoutine() { return kind() == Kind.Routine; }
+  public boolean isRoutine() { return kind().isRoutine(); }
   public boolean isField() { return kind() == Kind.Field; }
   public boolean isAbstract() { return kind() == Kind.Abstract; }
   public boolean isIntrinsic() { return kind() == Kind.Intrinsic; }
@@ -391,6 +389,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public boolean isChoice() { return kind() == Kind.Choice; }
   public boolean isTypeParameter() { return switch (kind()) { case TypeParameter, OpenTypeParameter -> true; default -> false; }; }
   public boolean isOpenTypeParameter() { return kind() == Kind.OpenTypeParameter; }
+  public boolean isConstructor() { return switch (kind()) { case RefConstructor, Constructor -> true; default -> false; }; }
+  public boolean isRef() { return kind() == Kind.RefConstructor; }
+
 
 
   /**
@@ -539,7 +540,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
     if (isBaseChoice())
       {
-        result = generics().asActuals();
+        result = genericsAsActuals();
       }
     else
       {
@@ -552,7 +553,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
             var pf = p.calledFeature();
             if (pf.isChoice())
               { // we need to do a hand down to get the actual choice generics
-                result = pf.handDown(null, pf.choiceGenerics(), this);
+                result = pf.handDown(pf.choiceGenerics(), this);
               }
           }
       }
@@ -800,9 +801,10 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   {
     var o = outer();
     var oc = o == null || o.isUniverse()                            ? Universe.instance
-      : target instanceof AbstractCall ac && !ac.isCallToOuterRef() ? ac.cotypeInheritanceCall(res, that)
+      : target instanceof AbstractCall ac && !ac.isCallToOuterRef() && ! ac.calledFeature().isField()
+      ? ac.cotypeInheritanceCall(res, that)
       : o.cotypeInheritanceCall(p, new List<>(o.selfType(),
-                                              o.generics().asActuals().map(that::rebaseTypeForCotype)),
+                                              o.genericsAsActuals().map(that::rebaseTypeForCotype)),
                                 res, that, null);
 
     var tf = res.cotype(this);
@@ -815,7 +817,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * For a feature 'a', the the type of 'a.this.type' when used within 'a.type',
+   * For a feature 'a', the type of 'a.this.type' when used within 'a.type',
    * i.e., within 'a's type feature.  The difference between selfType() and
    * selfTypeInCoType() is that the type parameters in the former are the
    * type parameters of 'a', while in the latter they are the type parameter of
@@ -850,15 +852,16 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   AbstractType rebaseTypeForCotype(AbstractType t)
   {
-    var tl = new List<AbstractType>();
-    for (var ta0 : typeArguments())
-      {
-        var ta = new ParsedType(pos(), ta0.featureName().baseName(), UnresolvedType.NONE, null);
-        tl.add(ta);
+    for (var i : inherits())
+      { // NYI: CLEANUP: If we do not freeze the type parameters, we run into
+        // errors (building base.fum). Apparently, there is some code that
+        // re-uses these without proper freezing/cloning.  A solution would be
+        // to change `List.map` to always clone the original List.
+        i.actualTypeParameters().freeze();
       }
-    t = t.applyTypePars(this, tl);
-    t = t.clone(this);
-    return t;
+    var tl = typeArguments().map2(ta -> (AbstractType) new ParsedType(pos(), ta.featureName().baseName()));
+    return t.applyTypePars(this, tl)
+            .clone(this);
   }
 
 
@@ -961,7 +964,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       (state().atLeast(State.FINDING_DECLARATIONS));
 
     var o = isUniverse() || outer().isUniverse() ? null : outer().selfType();
-    var g = generics().asActuals();
+    var g = genericsAsActuals();
     var result = ResolvedNormalType.create(g, o, this);
 
     if (POSTCONDITIONS) ensure
@@ -1121,7 +1124,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   public boolean hasResultField()
   {
-    return isRoutine() && !isConstructor();
+    return kind() == Kind.Function;
   }
 
 
@@ -1173,19 +1176,15 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * Due to open generics, even the number of types may change through
    * inheritance.
    *
-   * @param res resolution instance, required only when run in front end phase,
-   * null otherwise.
-   *
    * @param l a list of types to be handed down
    *
    * @param heir a feature that inherits from outer()
    *
-   * @return the types from the argument array a has seen this within
-   * heir. Their number might have changed due to open generics.  Result may be
+   * @return the types from the list l that come from this as seen within heir.
+   * Their number might have changed due to open generics.  Result may be
    * HAND_DOWN_FAILED in case of previous errors.
    */
-  public List<AbstractType> handDown(Resolution res,
-                                     List<AbstractType> l,
+  public List<AbstractType> handDown(List<AbstractType> l,
                                      AbstractFeature heir)  // NYI: This does not distinguish different inheritance chains yet
   {
     if (PRECONDITIONS) require
@@ -1202,7 +1201,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
         if (inh != null)
           {
-            result = AbstractFeature.handDownInheritance(res, inh, l, heir);
+            result = AbstractFeature.handDownListThroughInheritsCalls(l, inh);
           }
       }
     return result;
@@ -1210,30 +1209,180 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * Helper for handDown() to hand down an array of types along a given inheritance chain.
+   * Determine the actual types of an array of types in this feature after it
+   * was inherited by heirType.  The types may change on the way due to formal generics being
+   * replaced by actual generic arguments on the way.
    *
-   * @param res the resolution instance
+   * Unlike @link{handDown(List,AbstractFeature)}, this also takes into account
+   * the outer types.
    *
-   * @param inh the inheritance chain from the parent down to the child
+   * Due to open generics, even the number of types may change through
+   * inheritance.
    *
-   * @param a the original array of types that is to be handed down
+   * @param l a list of types to be handed down
    *
-   * @param heir the feature that inherits the types
+   * @param heirType the type we are inherting to.
    *
-   * @return a List of types as they are visible in heir. The length might be
-   * different due to open type parameters being replaced by a list of types.
+   * @return the types from the argument l as seen this by heirType.  Their
+   * number might have changed due to open generics.  Result may be
+   * HAND_DOWN_FAILED in case of previous errors.
    */
-  private static List<AbstractType> handDownInheritance(Resolution res, List<AbstractCall> inh, List<AbstractType> a, AbstractFeature heir)
+  List<AbstractType> handDownListToType(List<AbstractType> l,
+                                        AbstractType heirType)
   {
+    var result = l;
+    heirType = heirType.selfOrConstraint(Context.NONE);
+    var heir = heirType.feature();
+    if (heir.inheritsFrom(this))
+      {
+        result = handDown(result, heir);
+      }
+    heirType = heirType.isThisType() ? null : heirType.outer();
+    if (heirType != null && outer() != null)
+      {
+        result = outer().handDownListToType(result, heirType);
+      }
+    return result;
+  }
+
+
+  /**
+   * Convenience combination of HandDownListToType and applyTypeParsMaybeOpen.
+   */
+  public List<AbstractType> handDownAndApply(List<AbstractType> l,
+                                             AbstractType heirType)
+  {
+    return handDownListToType(l, heirType)
+      .flatMap(x -> x.applyTypeParsMaybeOpen(heirType));
+  }
+
+
+  /**
+   * Convenience wrapper around {@code handDownListToType(List, AbstractType} for a single
+   * type that is not open generic.
+   *
+   * @param t a type that must not be open generic (unless {@code Errors.any()})
+   *
+   * @param heirType the type we are inherting to.
+   *
+   * @return the type t as seen this by heirType.  Result may be Types.t_ERROR
+   * in case of previous errors.
+   */
+  public AbstractType handDownToType(AbstractType t,
+                                     AbstractType heirType)
+  {
+    if (PRECONDITIONS) require
+      (Errors.any() || !t.isOpenGeneric());
+
+    return handDownListToType(new List<>(t), heirType)
+      .getFirstOrElse(Types.t_ERROR); // Tricky: Since HAND_DOWN_FAILED is
+                                      // empty, this will result in
+                                      // Types.t_ERROR!
+  }
+
+
+  /**
+   * Convenience wrapper around {@code handDownAndApply(List, AbstractType} for a single
+   * type that is not open generic.
+   *
+   * @param t a type that must not be open generic (unless {@code Errors.any()})
+   *
+   * @param heirType the type we are inherting to.
+   *
+   * @return the type t as seen this by heirType.  Result may be Types.t_ERROR
+   * in case of previous errors.
+   */
+  public AbstractType handDownAndApply(AbstractType t,
+                                       AbstractType heirType)
+  {
+    if (PRECONDITIONS) require
+      (Errors.any() || !t.isOpenGeneric());
+
+    return handDownAndApply(new List<>(t), heirType)
+      .getFirstOrElse(Types.t_ERROR); // Tricky: Since HAND_DOWN_FAILED is
+                                      // empty, this will result in
+                                      // Types.t_ERROR!
+  }
+
+
+  /**
+   * Helper for {@code handDown}: Change type {@code t}'s type parameters along the
+   * inheritance chain {@code inh}.
+   *
+   * <pre>{@code
+   *  ex: in this code
+   *
+   *    a(T type) is
+   *      x T => ...
+   *    b(U type) : a Sequence U  is
+   *    c(V type) : b option V is
+   * }</pre>
+   *
+   * the result type {@code T} of {@code x} if used within {@code c} must be handed down via the inheritance chain
+   *
+   * <pre>{@code
+   *    a Sequence U
+   *    b option B
+   * }</pre>
+   *
+   * so it will be replaced by {@code Sequence (option V)}.
+   *
+   * @param t the type to hand down
+   *
+   * @param select if t is an open generic parameter, this specifies the actual
+   * argument to select.
+   *
+   * @param inh the inheritance call chain
+   *
+   * @return the type {@code t} as seen after inheritance
+   */
+  public static AbstractType handDownThroughInheritsCalls(AbstractType t, int select, List<AbstractCall> inh)
+  {
+    if (PRECONDITIONS) require
+      (t != null,
+       Errors.any() || !t.isOpenGeneric() || (select >= 0),
+       inh != null);
+
+    // NYI: CLEANUP: wold be good to base this on handDownListThroughInheritsCalls.
     for (AbstractCall c : inh)
       {
-        // NYI: CLEANUP: This should be replacable by `c.resultType().replaceGenerics(a)` or similar
-        var actualTypes = c.actualTypeParameters();
-        a = a.flatMap(ti -> !ti.isOpenGeneric()                               ? new List<>(ti.applyTypePars(c.calledFeature(), actualTypes)) :
-                            ti.genericArgument().outer() == c.calledFeature() ? ti.genericArgument().replaceOpen(actualTypes)
-                                                                              : new List<>(ti));
+        t = t.applyTypePars(c.calledFeature(),
+                            c.actualTypeParameters(), select);
       }
-    return a;
+    return t;
+  }
+
+
+  /**
+   * Variant of handDownThroughInheritsCalls that operates on a list of types
+   * and support open type parameters.
+   *
+   * @param l the lsit of types to be handed down.
+   *
+   * @param inh the inheritance chain along which types should be handed down.
+   */
+  public static List<AbstractType> handDownListThroughInheritsCalls(List<AbstractType> l, List<AbstractCall> inh)
+  {
+    if (PRECONDITIONS) require
+      (l != null,
+       inh != null);
+
+    for (AbstractCall c : inh)
+      {
+        var cf = c.calledFeature();
+        var actualTypes = c.actualTypeParameters();
+        if (true)
+          {
+            l = l.flatMap(t -> t.isOpenGeneric() && t.genericArgument().outer() == cf
+                               ? t.genericArgument().replaceOpen(actualTypes)
+                               : new List<>(t.applyTypePars(cf, actualTypes)));
+          }
+        else
+          { // NYI: CLEANUP: This simpler code does not work for reg_issue5895, need to check why:
+            l = l.flatMap(t -> t.applyTypeParsMaybeOpen(cf, actualTypes));
+          }
+      }
+    return l;
   }
 
 
@@ -1367,21 +1516,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public boolean isOpenGenericField()
   {
     return isField() && resultType().isOpenGeneric();
-  }
-
-
-  public void visitCode(FeatureVisitor fv)
-  {
-    for (var c: inherits())
-      {
-        var nc = c.visit(fv, this);
-        if (CHECKS) check
-          (c == nc); // NYI: This will fail when doing funny stuff like inherit from bool.infix &&, need to check and handle explicitly
-      }
-    if (isRoutine())
-      {
-        code().visit(fv, this);
-      }
   }
 
 
@@ -1546,6 +1680,23 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
+   * Create the formal generics parameters for an outer reference for any inner
+   * feature declared within this formal generic's feature.
+   *
+   * @return actual generics that match these formal generics.
+   */
+  private List<AbstractType> _genericsAsActuals = null;
+  public List<AbstractType> genericsAsActuals()
+  {
+    if (_genericsAsActuals == null)
+      {
+        _genericsAsActuals = typeArguments().map2(x -> x.asGenericType()).freeze();
+      }
+    return _genericsAsActuals;
+  }
+
+
+  /**
    * Return the index of this type parameter within the type arguments of its
    * outer feature.
    *
@@ -1687,8 +1838,8 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       ((contract() == Contract.EMPTY_CONTRACT) ? "" : "<contract> ") +
       (switch (kind())
         {
-          case Abstract,Intrinsic,Native -> "=> " + kind();
-          case Choice, Routine -> "is";
+          case Abstract,Intrinsic,Native,Function -> "=> " + kind();
+          case Choice,Constructor,RefConstructor -> "is";
           case Field -> state().atLeast(State.FINDING_DECLARATIONS) && isArgument() ? "" : ":= ...";
           case OpenTypeParameter, TypeParameter -> "(type parameter)";
         })).trim();
@@ -1702,9 +1853,8 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   protected boolean mayBeNativeValue()
   {
-    return isConstructor()
-      && !isRef()
-      && !hasOuterRef()
+    return kind() == Kind.Constructor
+      && (!hasOuterRef() || outerRef().resultType().feature().isUnitType())
       && typeArguments().isEmpty()
       && inherits().size() == 1
       && !Contract.hasPreConditionsFeature(this)
@@ -1844,8 +1994,8 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * If this is a Generic in a type feature, return the original generic for the
-   * type feature origin.
+   * If this is a type parameter in a cotype, return the original type parameter
+   * for the cotype's origin.
    *
    * e.g., for
    *
@@ -1873,6 +2023,28 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
+   * If this is a type parameter in a feature that has a cotype, return the
+   * corresponding type parameter in the cotype.
+   *
+   * @return the cotype version of {@code this} if a cotype of {@code outer()}
+   * exists, {@code this} otherwise.
+   */
+  AbstractFeature cotypeGeneric()
+  {
+    if (PRECONDITIONS) require
+      (isTypeParameter());
+
+    var result = this;
+    var o = outer();
+    if (!o.isCotype() && o.hasCotype())
+      {
+        result = o.cotype().typeArguments().get(typeParameterIndex()+1);
+      }
+    return result;
+  }
+
+
+  /**
    * For a feature {@code f(A, B type)} the corresponding type feature has an implicit
    * THIS#TYPE type parameter: {@code f.type(THIS#TYPE, A, B type)}.
    *
@@ -1886,6 +2058,38 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     return state().atLeast(State.FINDING_DECLARATIONS)
       && outer().isCotype()
       && typeParameterIndex() == 0;
+  }
+
+
+  private Boolean _isUnitType = null;
+  /**
+   * Can this feature only ever be a unit type?
+   */
+  public boolean isUnitType()
+  {
+    if (PRECONDITIONS) require
+      (state().atLeast(State.RESOLVED));
+
+    if (_isUnitType == null)
+      {
+        _isUnitType = isUnitType(false);
+      }
+
+    return _isUnitType;
+  }
+
+
+  private boolean isUnitType(boolean isInheritedFeature)
+  {
+    return
+      isConstructor() &&
+      contract().isEmpty() &&
+      valueArguments().isEmpty() &&
+      (isInheritedFeature || !isRef()) &&
+      code().isEmpty() &&
+      // unit inheriting e.g. property.orderable is fine
+      (!hasOuterRef() || isInheritedFeature && outerRef().resultType().feature().isUnitType()) &&
+      inherits().stream().allMatch(c -> c.calledFeature().isUnitType(true));
   }
 
 

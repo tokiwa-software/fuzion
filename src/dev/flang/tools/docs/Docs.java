@@ -47,9 +47,10 @@ import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.fe.FrontEnd;
-import dev.flang.fe.FrontEndOptions;
 import dev.flang.fe.LibraryFeature;
 import dev.flang.fe.LibraryModule;
+import dev.flang.fe.Module;
+
 import dev.flang.tools.FuzionHome;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -60,57 +61,14 @@ public class Docs extends ANY
 {
 
 
-  private final FrontEndOptions frontEndOptions = new FrontEndOptions(
-    /* verbose                 */ 0,
-    /* fuzionHome              */ FuzionHome._fuzionHome,
-    /* loadBaseMod             */ true,
-    /* eraseInternalNamesInMod */ false,
-    /* modules                 */ allModules(), // generate API docs for all modules (except Java ones)
-    /* moduleDirs              */ new List<>(),
-    /* dumpModules             */ new List<>(),
-    /* fuzionDebugLevel        */ 0,
-    /* fuzionSafety            */ false,
-    /* enableUnsafeIntrinsics  */ false,
-    /* sourceDirs              */ null,
-    /* readStdin               */ false,
-    /* executeCode             */ null,
-    /* main                    */ null,
-    /* moduleName              */ null,
-    /* loadSources             */ false,
-    /* needsEscapeAnalysis     */ false,
-    /* serializeFuir           */ false,
-    /* timer                   */ s->{});
-
-  /**
-   * Generate a list of all fuzion modules available in build/modules
-   */
-  private List<String> allModules()
-  {
-    List<String> modules = new List<>();
-
-    try {
-      modules.addAll((Files.list(FuzionHome._fuzionHome.resolve("modules"))
-                            .filter(Files::isRegularFile)
-                            .map(Path::getFileName)
-                            .map(Path::toString)
-                            .filter(name -> name.endsWith(FuzionConstants.MODULE_FILE_SUFFIX))
-                            // exclude Java Modules from API docs
-                            // (they also caused an endless recursion when using the docs generation on them)
-                            .filter(name -> !name.startsWith("java."))
-                            .map(name -> name.substring(0, name.lastIndexOf('.')))
-                            .collect(Collectors.toList())));
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-    return modules;
-  }
-
-  private final FrontEnd fe = new FrontEnd(frontEndOptions);
-
-  private final AbstractFeature universe = fe._feUniverse;
-
-  public final static Pattern nonAsciiPattern = Pattern
+  public static final Pattern nonAsciiPattern = Pattern
     .compile("[^\\x00-\\x7F]");
+
+
+  /*--------------------------  constructors  ---------------------------*/
+
+
+  /*--------------------------  methods  ---------------------------*/
 
 
   /**
@@ -118,7 +76,7 @@ public class Docs extends ANY
    * @param c
    * @param queue
    */
-  private void breadthFirstTraverse0(Consumer<AbstractFeature> c, Queue<AbstractFeature> queue)
+  private static void breadthFirstTraverse0(Module feModule, Consumer<AbstractFeature> c, Queue<AbstractFeature> queue)
   {
     if (queue.isEmpty())
       {
@@ -126,8 +84,8 @@ public class Docs extends ANY
       }
     var head = queue.remove();
     c.accept(head);
-    queue.addAll(declaredFeatures(head));
-    breadthFirstTraverse0(c, queue);
+    queue.addAll(declaredFeatures(feModule, head));
+    breadthFirstTraverse0(feModule, c, queue);
   }
 
 
@@ -136,9 +94,9 @@ public class Docs extends ANY
    * @param f the feature for which the declared features are to be returned
    * @return a collection of the declared features of f
    */
-  private Collection<AbstractFeature> declaredFeatures(AbstractFeature f)
+  private static Collection<AbstractFeature> declaredFeatures(Module feModule, AbstractFeature f)
   {
-    return fe.feModule()
+    return feModule
       .declaredFeatures(f)
       .values();
   }
@@ -149,10 +107,10 @@ public class Docs extends ANY
    * @param f the feature for which the callable features are to be returned
    * @return a stream of the callable (declared and inherited) features of f
    */
-  private Stream<AbstractFeature> allInnerAndInheritedFeatures(AbstractFeature f)
+  private static Stream<AbstractFeature> allInnerAndInheritedFeatures(Module feModule, AbstractFeature f)
   {
     var result = new List<AbstractFeature>();
-    fe.feModule().forEachDeclaredOrInheritedFeature(f, af -> result.add(af));
+    feModule.forEachDeclaredOrInheritedFeature(f, af -> result.add(af));
     return result
       .stream();
   }
@@ -164,11 +122,11 @@ public class Docs extends ANY
    * @param c
    * @param start
    */
-  private void breadthFirstTraverse(Consumer<AbstractFeature> c, AbstractFeature start)
+  private static void breadthFirstTraverse(Module feModule, Consumer<AbstractFeature> c, AbstractFeature start)
   {
     var queue = new LinkedList<AbstractFeature>();
     queue.add(start);
-    breadthFirstTraverse0(c, queue);
+    breadthFirstTraverse0(feModule, c, queue);
   }
 
 
@@ -335,6 +293,7 @@ public class Docs extends ANY
       .replace(" ", "+");
   }
 
+
   /**
    * Cast an AbstractFeature to LibraryFeature, requires that this is possible
    * @param af an AbstractFeature that can be casted to LibraryFeature
@@ -346,90 +305,39 @@ public class Docs extends ANY
   }
 
 
-  private void run(DocsOptions config)
+  /**
+   * Generate a list of all fuzion modules available in build/modules
+   */
+  private static List<String> allModules()
   {
-    // get all modules
-    var all_modules = allInnerAndInheritedFeatures(universe)
-              .map(af->lf(af)._libModule)
-              .distinct()
-              .filter(m->!m.name().equals(FuzionConstants.MAIN_MODULE_NAME)) // NYI: CLEANUP: Don't generate page for main module. Is there a better way to do this?
-              .collect(Collectors.toCollection(List::new));
+    List<String> modules = null;
+    try
+      {
+        modules = Files
+          .list(FuzionHome._fuzionHome.resolve("modules"))
+          .filter(Files::isRegularFile)
+          .map(Path::getFileName)
+          .map(Path::toString)
+          .filter(name -> name.endsWith(FuzionConstants.MODULE_FILE_SUFFIX))
+          // exclude Java Modules from API docs
+          // NYI: BUG: java.base constains features whose docs filename would be
+          // too long, leading to exceptions.
+          .filter(name -> !name.startsWith("java."))
+          .map(name -> name.substring(0, name.lastIndexOf('.')))
+          // NYI: BUG: this pulls in java.base
+          .filter(name -> !name.equals("fz_cmd"))
+          .collect(List.collector());
+      }
+    catch (Exception e)
+      {
+        e.printStackTrace();
+      }
 
-    // collect all features for all modules
-    var mapOfDeclaredFeatures = new HashMap<AbstractFeature, Map<AbstractFeature.Kind, TreeSet<AbstractFeature>>>();
+    if (POSTCONDITIONS) ensure
+      (!modules.isEmpty());
 
-    breadthFirstTraverse(feature -> {
-      if (ignoreFeature(feature, config.ignoreVisibility()))
-        {
-          return;
-        }
-      var s = allInnerAndInheritedFeatures(feature)
-        .filter(af -> !ignoreFeature(af, config.ignoreVisibility()));
-
-      Stream<AbstractFeature> st = Stream.empty();
-      if (feature.hasCotype())
-        {
-          var tf = feature.cotype();
-          st = allInnerAndInheritedFeatures(tf)
-            .filter(af -> !ignoreFeature(af, config.ignoreVisibility()));
-        }
-
-      mapOfDeclaredFeatures.put(
-        feature,
-        Stream
-          .concat(s, st)
-          .collect(Collectors.groupingBy(x -> x.kind(), Collectors.toCollection(TreeSet::new)))
-      );
-
-    }, universe);
-
-
-    // generate documentation per module
-    for (var module : all_modules)
-    {
-        var htmlTool = new Html(config, mapOfDeclaredFeatures, universe, module, all_modules);
-
-        mapOfDeclaredFeatures
-          .keySet()
-          .stream()
-          .filter(af -> af.isUniverse() || lf(af).showInMod(module))
-          .forEach(af -> {
-            var path = af.isUniverse()
-                                        ? config.destination().resolve(module.name())
-                                        : config.destination().resolve(featurePath(af, module));
-            path.toFile().mkdirs();
-
-            var file = new File(path.toFile(), "index.html");
-            try
-              {
-                FileWriter writer = new FileWriter(file);
-                var output = htmlTool.content(af);
-                writer.write(output);
-                writer.close();
-              }
-            catch (IOException e)
-              {
-                throw new Error("file not writable: " + file.getPath());
-              }
-          });
-        }
-
-      // generate overview page of modules
-      var path = config.destination();
-      path.toFile().mkdirs();
-      var htmlTool = new Html(config, mapOfDeclaredFeatures, universe, all_modules.getFirst(), all_modules);
-
-      var file = new File(path.toFile(), "index.html");
-      try (FileWriter writer = new FileWriter(file))
-        {
-          writer.write(htmlTool.modulePage());
-        }
-      catch (IOException e)
-        {
-          throw new Error("file not writable: " + file.getPath());
-        }
-    }
-
+    return modules;
+  }
 
 
   /**
@@ -445,7 +353,92 @@ public class Docs extends ANY
         return;
       }
 
-    new Docs().run(config);
+    var p = FrontEnd.feModule(
+        FuzionHome._fuzionHome,
+        allModules() // generate API docs for all modules (except Java ones)
+      );
+    var universe = p.v0();
+    var feModule = p.v1();
+
+    // get all modules
+    var all_modules = allInnerAndInheritedFeatures(feModule, universe)
+              .map(af->lf(af)._libModule)
+              .distinct()
+              .filter(m->!m.name().equals(FuzionConstants.MAIN_MODULE_NAME)) // NYI: CLEANUP: Don't generate page for main module. Is there a better way to do this?
+              .collect(Collectors.toCollection(List::new));
+
+    // collect all features for all modules
+    var mapOfDeclaredFeatures = new HashMap<AbstractFeature, Map<AbstractFeature.Kind, TreeSet<AbstractFeature>>>();
+
+    breadthFirstTraverse(feModule, feature -> {
+      if (ignoreFeature(feature, config.ignoreVisibility()))
+        {
+          return;
+        }
+      var s = allInnerAndInheritedFeatures(feModule, feature)
+        .filter(af -> !ignoreFeature(af, config.ignoreVisibility()));
+
+      Stream<AbstractFeature> st = Stream.empty();
+      if (feature.hasCotype())
+        {
+          var tf = feature.cotype();
+          st = allInnerAndInheritedFeatures(feModule, tf)
+            .filter(af -> !ignoreFeature(af, config.ignoreVisibility()));
+        }
+
+      mapOfDeclaredFeatures.put(
+        feature,
+        Stream
+          .concat(s, st)
+          .collect(Collectors.groupingBy(x -> x.kind(), Collectors.toCollection(TreeSet::new)))
+      );
+
+    }, universe);
+
+
+    // generate documentation per module
+    for (var module : all_modules)
+      {
+        var htmlTool = new Html(config, mapOfDeclaredFeatures, universe, module, all_modules);
+
+        mapOfDeclaredFeatures
+          .keySet()
+          .stream()
+          .filter(af -> af.isUniverse() || lf(af).showInMod(module))
+          .forEach(af -> {
+            var path = af.isUniverse()
+                                        ? config.destination().resolve(module.name())
+                                        : config.destination().resolve(featurePath(af, module));
+            path.toFile().mkdirs();
+
+            var file = new File(path.toFile(), "index.html");
+            try (FileWriter writer = new FileWriter(file))
+              {
+                var output = htmlTool.content(af);
+                writer.write(output);
+              }
+            catch (IOException e)
+              {
+                throw new Error("file not writable: " + file.getPath());
+              }
+          });
+      }
+
+    // generate overview page of modules
+    var path = config.destination();
+    path.toFile().mkdirs();
+    var htmlTool = new Html(config, mapOfDeclaredFeatures, universe, all_modules.getFirst(), all_modules);
+
+    var file = new File(path.toFile(), "index.html");
+    try (FileWriter writer = new FileWriter(file))
+      {
+        writer.write(htmlTool.modulePage());
+      }
+    catch (IOException e)
+      {
+        throw new Error("file not writable: " + file.getPath());
+      }
+
   }
 
 

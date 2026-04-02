@@ -418,4 +418,13 @@ public class QueryAST extends ANY
       .orElse(Stream.empty());
   }
 
+  public static Stream<AbstractFeature> constantCompletions(SourcePosition pos)
+  {
+    return constant(pos)
+      .map(tf -> candidates(tf)
+        // filter infix, prefix, postfix features
+        .filter(x -> !x.featureName().baseName().contains(" ")))
+      .orElse(Stream.empty());
+  }
+
 }

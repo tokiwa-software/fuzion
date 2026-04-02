@@ -44,7 +44,7 @@ public abstract class Value extends FUIRContext
    * Dummy value to be returned by Expr.execute for the case that the
    * expression does not produce a value
    */
-  public static Value NO_VALUE = new Value() {
+  public static final Value VOID = new Value() {
     @Override
     public String toString()
     {
@@ -56,7 +56,7 @@ public abstract class Value extends FUIRContext
   /**
    * Dummy value to be returned by intrinsic features that return an empty self.
    */
-  public static Value EMPTY_VALUE = new Value()
+  public static final Value UNIT = new Value()
     {
       void storeNonRef(LValue slot, int size)
       {
@@ -66,7 +66,7 @@ public abstract class Value extends FUIRContext
       @Override
       public String toString()
       {
-        return "EMPTY_VALUE";
+        return "unit";
       }
     };
 

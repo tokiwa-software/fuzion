@@ -77,7 +77,7 @@ class ThisType extends ResolvedType {
   /**
    * For a normal type, this is the list of actual type parameters given to the type.
    *
-   * Requires that this is resolved and !isGenericArgument().
+   * Requires that this is resolved and isNormalType().
    */
   @Override
   public List<AbstractType> generics()
@@ -103,7 +103,7 @@ class ThisType extends ResolvedType {
 
 
   /**
-   * The mode of the type: ThisType, RefType or ValueType.
+   * The mode of the type: GenericArgument, ThisType, RefType or ValueType.
    */
   @Override
   public TypeKind kind()

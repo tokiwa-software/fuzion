@@ -26,7 +26,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import java.util.Comparator;
 import java.util.LinkedList;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -216,7 +219,37 @@ public class Resolution extends ANY
   /**
    * List of features scheduled for second pass of type checking
    */
-  final LinkedList<Feature> forCheckTypes = new LinkedList<>();
+  final SortedSet<Feature> forCheckTypes = new TreeSet<>(
+                                                Comparator.comparing(x->x,
+                                                  (x,y) ->
+                                                    {
+                                                      /**
+                                                       * The idea here is to check types in sourcecode order
+                                                       * and to check features like universe with built-in pos last.
+                                                       */
+                                                      var fc = x.compareTo(y);
+                                                      if (fc == 0 || x.pos().isBuiltIn() && y.pos().isBuiltIn())
+                                                        {
+                                                          return fc;
+                                                        }
+                                                      else if (x.pos().isBuiltIn())
+                                                        {
+                                                          return +1;
+                                                        }
+                                                      else if (y.pos().isBuiltIn())
+                                                        {
+                                                          return -1;
+                                                        }
+                                                      else
+                                                        {
+                                                          var c = x.pos().compareTo(y.pos());
+                                                          return c == 0
+                                                            ? fc
+                                                            : c;
+                                                        }
+                                                    }
+                                                )
+                                               );
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -446,13 +479,6 @@ public class Resolution extends ANY
         Feature f = forCheckTypes.removeFirst();
         if (DEBUG) sayDebug("resolve check types: " + f);
         f.checkTypes(this);
-      }
-    else if (false && Errors.any())  // NYI: We could give up here in case of errors, we do not to make the next phases more robust and to find more errors at once
-      {
-        // The following phases should not reveal any new errors and will assume
-        // correct input.  So if there were any errors, let's give up at this
-        // point:
-        result = false;
       }
     else
       {
@@ -709,11 +735,7 @@ public class Resolution extends ANY
    */
   public List<AbstractType> resolveTypes(List<AbstractType> types, Context context)
   {
-    if (!(types instanceof FormalGenerics.AsActuals))
-      {
-        types = types.map(t -> t.resolve(this, context));
-      }
-    return types;
+    return types.map(t -> t.resolve(this, context));
   }
 
 

@@ -24,13 +24,13 @@
 m := container.ordered_map [ "Hund", "Katze", "Maus" ] [ "dog", "cat", "mouse" ]
 
 c := "cat"
-if (for x in m.values until c = x)
+if (for x in m.values until c = x then true else false)
   say "$c was found"
 else
   say "$c not found"
 
 b := "budgie"
-if (for x in m.values until b = x)
+if (for x in m.values until b = x then true else false)
   say "$b was found"
 else
   say "$b not found"

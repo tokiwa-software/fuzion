@@ -1,0 +1,50 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion feature get
+#
+# -----------------------------------------------------------------------
+
+
+# GET url via ipv4 using standard ssl port
+#
+public get4(url String) outcome String =>
+  get net.family.ipv4 url
+
+
+# GET url via ipv6 using standard ssl port
+#
+public get6(url String) outcome String =>
+  get net.family.ipv6 url
+
+
+# eagerly get an url via http(s), return response as a String
+#
+public get(family net.family.val, url String) outcome String =>
+
+  match parse_url url
+    e error => e
+    pu web.parsed_url =>
+
+      request_message =>
+        http
+          .request_message
+          .new http.get (pu.target.or_else "/") 1 1 ([("Host", pu.host)] ++ web.config.default_headers)
+
+      do_request family (pu.port.or_else (if pu.use_https then 443 else 80)) pu.use_https pu.host request_message

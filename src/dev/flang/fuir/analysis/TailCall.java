@@ -34,6 +34,7 @@ import dev.flang.ir.IR;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 
 
 /**
@@ -197,15 +198,15 @@ public class TailCall extends ANY
    *
    * @param cls the site of the last Expr of a code block that is to be checked if it results in the tail call at s
    *
-   * @param s site of the the call
+   * @param s site of the call
    *
-   * @param mustAssignTo -1 iff the result should be the last expr in the code
+   * @param mustAssignTo NO_CLAZZ iff the result should be the last expr in the code
    * block, otherwise the clazz of a field in Current the result should be
    * assigned to.
    */
   private boolean isTailCall(int cl, int cls, int s, int mustAssignTo)
   {
-    return _fuir.alwaysResultsInVoid(cls) || switch (_fuir.codeAt(cls))
+    var isTC = _fuir.alwaysResultsInVoid(cls) || switch (_fuir.codeAt(cls))
       {
       case Call ->
         {
@@ -236,7 +237,7 @@ public class TailCall extends ANY
             sameField(cc, mustAssignTo) &&
             cls > _fuir.codeBlockStart(cls)+1 &&
             _fuir.codeAt(_fuir.codeIndex(cls, -1)) == IR.ExprKind.Current &&
-            isTailCall(cl, _fuir.codeIndex(cls, -2), s, -1);
+            isTailCall(cl, _fuir.codeIndex(cls, -2), s, NO_CLAZZ);
         }
 
       case Match ->
@@ -264,6 +265,12 @@ public class TailCall extends ANY
       // any other code results in failure to detect a tail call:
       default -> false;
       };
+
+    if (POSTCONDITIONS)
+      // NYI: BUG: does not work yet.
+      ensure(true || isTC  || !_fuir.clazzBaseName(cl).startsWith(FuzionConstants.REC_LOOP_PREFIX)); 
+
+    return isTC;
   }
 
 

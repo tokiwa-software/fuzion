@@ -55,7 +55,7 @@ abstract class CExpr extends CStmnt
    * Dummy value to be used for unit type values.  This cannot be used to create
    * code since C does not have a unit type.
    */
-  static CExpr UNIT = new CExpr()
+  static final CExpr UNIT = new CExpr()
     {
       void code(CString sb) { sb.append("/* UNIT VALUE */");  }
       int precedence() { return 0; }
@@ -215,7 +215,7 @@ abstract class CExpr extends CStmnt
 
 
   /**
-   * Create a C expression from a uint642_t constant
+   * Create a C expression from a uint64_t constant
    *
    * @return the resulting expression
    */
@@ -895,20 +895,7 @@ abstract class CExpr extends CStmnt
           inner.code(sb);
           sb.append("/* ").append(s).append(" */");
         }
-        boolean isLocalVar()
-        {
-          return inner.isLocalVar();
-        }
       };
-  }
-
-
-  /**
-   * Is this a local variable?
-   */
-  boolean isLocalVar()
-  {
-    return false;
   }
 
 

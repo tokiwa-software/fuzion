@@ -176,7 +176,12 @@ module fzE_socket_write(sd i32, arr_data Array u8, length i64) i32 => native
 # note: offset+size must not exceed file size.
 # note: returning allocated memory - instead of error code - simplifies handling in DFA.
 #
-module fzE_mmap(fd File_Descriptor, offset, size i64, res Array i32) Mapped_Memory => native
+module fzE_mmap(fd File_Descriptor, offset, size i64) Mapped_Memory => native
+
+module fzE_is_valid_mapped_memory(mm Mapped_Memory) bool =>
+  # defining again with arg type Mapped_Memory
+  fzE_is_null(p Mapped_Memory) i32 => native
+  fzE_is_valid_mapped_memory.this.fzE_is_null mm = 0
 
 
 # close a memory mapped file
@@ -292,9 +297,9 @@ module fzE_file_open(
 # intrinsic that fills an array u8 with the file bytes that is represented by the file descriptor
 #
 # returns:
-# 0 or greater on success
-# -1 at end of file
-# -2 for any other error
+# 1 or greater on success
+# 0 at end of file
+# -1 for any other error
 #
 module fzE_file_read(
               # the file descriptor

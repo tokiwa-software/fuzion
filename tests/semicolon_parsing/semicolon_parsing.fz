@@ -59,15 +59,15 @@ semicolon_parsing =>
                             say " is fine";
 
   # "this is fine"
-  if true then if false then else yak "this";
-                                  say " is fine";
+  if false then else yak "this";
+                     say " is fine";
 
   # "this is fine"
   if true then yak "this"; if false then say "dead code";
                say " is fine";
 
   # "this is fine"
-  if true then yak "this"; yak " is"; if true then say " fine" else say "dead code"
+  if false then else yak "this"; yak " is"; if true then say " fine" else say "dead code"
 
   # print "declared field a
   #        declared field b"

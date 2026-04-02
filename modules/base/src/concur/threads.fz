@@ -26,8 +26,8 @@
 
 # threads -- effect that provides concurrent thread
 #
-# lifecycle: while effect is installed threads can be spawned
-# when effect is uninstalled all threads are joined
+# lifecycle: While effect is installed, threads can be spawned.
+# When the threads effect is uninstated all threads are joined.
 #
 public threads (
   # the handler this effect uses to spawn threads
@@ -50,6 +50,7 @@ is
   public detach(thrd concur.thread) unit
   pre debug: running.contains thrd
   =>
+    # NYI: UNDER DEVELOPMENT: pthread_detach
     (threads p (running.filter (t->t!=thrd)).as_array).replace
 
 
@@ -74,7 +75,7 @@ default_thread_handler : Thread_Handler is
 # thread with no argument returns thread.env, i.e., the currently installed
 # source of thread concurrency.
 #
-public threads threads =>
+public threads threads ! threads =>
   (threads default_thread_handler []).default
   threads.env
 

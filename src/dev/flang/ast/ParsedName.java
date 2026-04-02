@@ -48,14 +48,14 @@ public class ParsedName extends ANY implements HasSourcePosition
    * Name to be used in case we need a name, but there was an error parsing the
    * name.
    */
-  public final static ParsedName ERROR_NAME = new ParsedName(SourcePosition.builtIn,
+  public static final ParsedName ERROR_NAME = new ParsedName(SourcePosition.builtIn,
                                                              Errors.ERROR_STRING);
 
 
   /**
    * Name to be used in case the actual name is to be ignored.
    */
-  public final static ParsedName DUMMY = new ParsedName(SourcePosition.builtIn,
+  public static final ParsedName DUMMY = new ParsedName(SourcePosition.builtIn,
                                                         FuzionConstants.DUMMY_NAME_STRING);
 
 

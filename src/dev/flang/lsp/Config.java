@@ -151,7 +151,6 @@ public class Config
           ErrorHandling.resultOrDefault(() -> options.get("verbosity").getAsInt(), 0),
           ErrorHandling.resultOrDefault(() -> options.get("debugLevel").getAsInt(), 0),
           ErrorHandling.resultOrDefault(() -> options.get("safety").getAsBoolean(), true),
-          ErrorHandling.resultOrDefault(() -> options.get("enableUnsafeIntrinsics").getAsBoolean(), true),
           SourceText.fuzionHome, null)
           {
             @Override

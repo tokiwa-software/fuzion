@@ -38,7 +38,9 @@
 #
 public try(ERROR type, F type : fallible ERROR, T type, code_try ()->T) is
 
-  # a local mutate
+  # a local mutate used for storing an error
+  # when throwing an exception
+  #
   lm : mutate is
 
   # define code to execute in case of fault and run code
@@ -58,7 +60,7 @@ public try(ERROR type, F type : fallible ERROR, T type, code_try ()->T) is
     v := F.new e->
               m <- e
               F.abort
-    F.instate T v code_try (_ -> code_catch m.get.get)
+    F.instate T v code_try (_ -> code_catch m.get.or_panic)
 
 
   # on failure try if code `alt` succeeds
@@ -66,8 +68,8 @@ public try(ERROR type, F type : fallible ERROR, T type, code_try ()->T) is
   # usage example:
   #
   #     fuzion.runtime.contract_fault
-  #       .try ()->(envir.args.nth 3).val.trim.parse_i32.val
-  #       .or_try _->(envir.vars.get "DEBUG_LEVEL").val.trim.parse_i32.val
+  #       .try ()->(envir.args.nth 3).or_panic.trim.parse_i32.or_panic
+  #       .or_try _->envir.vars["DEBUG_LEVEL"].or_panic.trim.parse_i32.or_panic
   #       .catch  _->4
   #
   public or_try(alt ERROR->T) try ERROR F T =>

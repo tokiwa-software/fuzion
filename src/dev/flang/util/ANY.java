@@ -34,7 +34,6 @@ import java.nio.file.Path;
 import java.util.Arrays;
 
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * ANY implements static methods for pre- and post-conditions as in Eiffel.

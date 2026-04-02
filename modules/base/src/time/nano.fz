@@ -54,7 +54,7 @@ public nano (p Nano_Time_Handler) : Clock is
 
   module type.default_nano_time =>
 
-    ref : time.Nano_Time_Handler is
+    _ : time.Nano_Time_Handler is
 
       # no guarantee can be given for precision nor resolution
       #
@@ -71,9 +71,9 @@ public nano (p Nano_Time_Handler) : Clock is
     (time.nano default_nano_time).default
 
 
-# short-hand for accessing time.nano effect in current environment
+# shorthand for accessing time.nano effect in current environment
 #
-public nano time.nano =>
+public nano time.nano ! time.nano =>
   if !nano.is_instated
     nano.install_default
   time.nano.env

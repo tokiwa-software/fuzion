@@ -68,7 +68,7 @@ base32_test is
     do
       plain, code_expected := tup
       code_actual := match plain
-                        str String   => encodings.base32.encode_to_string str.utf8.as_array
+                        str String   => encodings.base32.encode_to_string str.utf8
                         arr array u8 => encodings.base32.encode_to_string arr
       out :=
         if code_actual = code_expected
@@ -108,10 +108,10 @@ base32_test is
           actual array u8 =>
             match plain_exp
               str String   =>
-                if str = String.from_bytes actual
+                if str = String.from actual
                   outcome "ok"
                 else
-                  error "decoding $code produced '{String.from_bytes actual}' but should have been '$str'"
+                  error "decoding $code produced '{String.from actual}' but should have been '$str'"
               arr array u8 =>
                 if arr.length=actual.length && ((arr.zip actual a,b->a=b) ∀ id)
                   outcome "ok"
@@ -156,6 +156,6 @@ base32_test is
   for t in broken_enc do
     yak "$t: "
     say (match encodings.base32.decode_str t
-        arr array u8 => String.type.from_bytes arr
+        arr array u8 => String.from arr
         e error => e.as_string)
   say ""

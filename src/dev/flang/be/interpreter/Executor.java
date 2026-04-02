@@ -186,7 +186,7 @@ public class Executor extends ProcessExpression<Value, Object>
   @Override
   public Value unitValue()
   {
-    return Value.EMPTY_VALUE;
+    return Value.UNIT;
   }
 
   @Override
@@ -232,7 +232,45 @@ public class Executor extends ProcessExpression<Value, Object>
     return null;
   }
 
+
+  private static final SymbolLookup libs = libs();
+
+
+  /**
+   * @return SymbolLookup for fuzion_rt and libmath
+   */
+  @SuppressWarnings("restricted")
+  private static SymbolLookup libs()
+  {
+    SymbolLookup result = null;
+    try
+      {
+        result = SymbolLookup.libraryLookup(System.mapLibraryName("fuzion_rt"), Arena.ofAuto());
+        try
+          {
+            result = result.or(SymbolLookup.libraryLookup(System.mapLibraryName("m"),  Arena.ofAuto()));
+          }
+        catch (IllegalArgumentException e)
+          {
+            try { result = result.or(SymbolLookup.libraryLookup("libm.so.6",  Arena.ofAuto())); } catch(Exception e0) {
+              try { result = result.or(SymbolLookup.libraryLookup("libm.dylib",  Arena.ofAuto())); } catch(Exception e1) {
+                try { result = result.or(SymbolLookup.libraryLookup("ucrtbase.dll",  Arena.ofAuto())); } catch(Exception e2) {
+                  Errors.error(e.getMessage()); Errors.error(e0.getMessage()); Errors.error(e1.getMessage()); Errors.fatal(e2.getMessage());
+                }
+              }
+            }
+          }
+      }
+    catch (IllegalArgumentException e)
+      {
+        Errors.fatal(e.getMessage());
+      }
+    return result;
+  }
+
+
   @Override
+  @SuppressWarnings("restricted")
   public Pair<Value, Object> call(int s, Value tvalue, List<Value> args)
   {
     var cc0 = _fuir.accessedClazz(s);
@@ -283,11 +321,17 @@ public class Executor extends ProcessExpression<Value, Object>
       case Intrinsic :
         yield pair(Intrinsics.call(this, s, cc).call(new List<>(tvalue, args)));
       case Native:
+        var llu = libs;
         var mh = Linker.nativeLinker()
           .downcallHandle(
-            SymbolLookup.libraryLookup(System.mapLibraryName("fuzion_rt" /* NYI: UNDER DEVELOPMENT: */), Arena.ofAuto())
+            llu
               .find(_fuir.clazzNativeName(cc))
-              .orElseThrow(() -> new UnsatisfiedLinkError("unresolved symbol: " + _fuir.clazzBaseName(cc))),
+              .orElseThrow(() -> new UnsatisfiedLinkError(
+              "Unresolved symbol: " + _fuir.clazzBaseName(cc) + ". " +
+              (true
+                ? "NYI: interpreter does not yet support libraries. You probably forgot to use the -Libraries option."
+                : "Likely causes: Either your native method is misspelled or you forgot to include a library in the -Libraries option.")
+              )),
 
               _fuir.clazzIsUnitType(rt)
                 ? FunctionDescriptor.ofVoid(layoutArgs(cc0))
@@ -438,7 +482,6 @@ public class Executor extends ProcessExpression<Value, Object>
       {
       case c_String -> Interpreter
         .boxedConstString(new String(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt() + 4), StandardCharsets.UTF_8));
-      case c_bool -> { check(d.length == 1, d[0] == 0 || d[0] == 1); yield new boolValue(d[0] == 1); }
       case c_f32 -> new f32Value(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getFloat());
       case c_f64 -> new f64Value(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getDouble());
       case c_i16 -> new i16Value(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getShort());
@@ -458,7 +501,7 @@ public class Executor extends ProcessExpression<Value, Object>
             var elCount = bb.getInt();
 
             Instance result = new Instance(constCl);
-            var internalArray = _fuir.lookup_array_internal_array(constCl);
+            var internalArray = _fuir.clazzArg(constCl, 0);
             var saCl = _fuir.clazzResultClazz(internalArray);
 
             var arrayData = ArrayData.alloc(saCl, elCount, _fuir, elementType);
@@ -471,8 +514,8 @@ public class Executor extends ProcessExpression<Value, Object>
               }
 
             Instance sa = new Instance(saCl);
-            Interpreter.setField(_fuir.lookup_fuzion_sys_internal_array_length(saCl), saCl,                               sa,     new i32Value(elCount));
-            Interpreter.setField(_fuir.lookup_fuzion_sys_internal_array_data(saCl)  , saCl,                               sa,     arrayData);
+            Interpreter.setField(_fuir.clazzArg(saCl, 1), saCl,                               sa,     new i32Value(elCount));
+            Interpreter.setField(_fuir.clazzArg(saCl, 0)  , saCl,                               sa,     arrayData);
             Interpreter.setField(internalArray                                          , constCl,                            result, sa);
             yield result;
           }

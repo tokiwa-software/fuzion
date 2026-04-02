@@ -48,7 +48,7 @@ public class ChoiceIdAsRef extends Value
   /**
    *
    */
-  public static ArrayList<ChoiceIdAsRef> _preallocated = new ArrayList<>();
+  public static final ArrayList<ChoiceIdAsRef> _preallocated = new ArrayList<>();
 
 
   /*----------------------------  variables  ----------------------------*/

@@ -28,7 +28,7 @@ lib_concur_thread_pool =>
   # that add `i` to sum. print result of sum.
   #
   test_1 =>
-    sum := concur.atomic 0
+    sum := concur.atomic i32 .new 0
 
     _ := concur.thread_pool 3 ()->
 

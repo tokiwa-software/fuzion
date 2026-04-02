@@ -23,8 +23,8 @@
 
 lib_container_ps_map is
   a := (container.ps_map i32 String).empty
-  a1 := a.add 3 "3"
-  a2 := a1.add 5 "5"
+  a1 := a.put 3 "3"
+  a2 := a1.put 5 "5"
 
   say a1
   say a2

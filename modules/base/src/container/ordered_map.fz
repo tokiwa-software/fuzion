@@ -116,12 +116,10 @@ is
   # create a mutable map from this
   #
   public redef as_mutable_map(LM type : mutate) container.Mutable_Map OK V =>
-    (container.mutable_tree_map LM OK V).from_sequence items
+    (container.mutable_tree_map LM OK V).from items
 
 
   # create an empty instance of ordered_map
   #
   public fixed redef type.empty container.ordered_map OK V =>
-    container.ordered_map
-      (list OK).empty.as_array
-      (list V).empty.as_array
+    container.ordered_map OK V [] []

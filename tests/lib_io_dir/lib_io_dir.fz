@@ -23,19 +23,19 @@
 
 lib_io_dir =>
 
-  path := "test_path_😀"
-  file1 := "$path/file1_😀"
-  file2 := "$path/file2_😀"
+  path := path.of "test_path_😀"
+  file1 := path.resolve "file1_😀"
+  file2 := path.resolve "file2_😀"
 
   _ := io.file.delete file1
   _ := io.file.delete file2
   _ := io.file.delete path
   say (io.dir.make path)
   say (io.dir.make path)
-  _ := io.file.use unit file1 io.file.mode.write ()->(io.file.writer.write []).error
-  _ := io.file.use unit file2 io.file.mode.write ()->(io.file.writer.write []).error
+  _ := io.file.use unit file1 io.file.mode.write (()-> io.file.writer.write "")
+  _ := io.file.use unit file2 io.file.mode.write (()-> io.file.writer.write "")
 
   res := io.dir.use (Sequence String) path ()->
     array 3 _->io.dir.open.read.as_string
 
-  res.val.sort.for_each say
+  res.or_panic.sort.for_each say

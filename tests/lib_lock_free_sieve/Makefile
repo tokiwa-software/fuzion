@@ -22,5 +22,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = lib_lock_free_sieve
-FUZION_OPTIONS = -modules=lock_free
 include ../simple.mk

@@ -88,7 +88,7 @@ public enum Commands
       }
   }
 
-  private final static CompletableFuture<Object> completedFuture = CompletableFuture.completedFuture(null);
+  private static final CompletableFuture<Object> completedFuture = CompletableFuture.completedFuture(null);
 
   public static CompletableFuture<Object> execute(ExecuteCommandParams params)
   {

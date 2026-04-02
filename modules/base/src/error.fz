@@ -33,21 +33,33 @@ public error (
   # the message describing the error. Should usually be a single line not
   # followed by a linefeed.
   #
-  public msg String
+  public msg String,
+
+  # optional error code
+  #
+  public error_code option i64
 
   ) : property.equatable
 
 is
 
+
   # converts error to a string
   #
-  # returns "error: $msg"
+  # returns "error: $msg" or "error(code=$error_code): $msg"
   #
   public redef as_string String =>
-    "error: $msg"
+    error_code
+      .bind x->
+        "error(code=$x): $msg"
+      .or_else "error: $msg"
 
 
   # equality
   #
   public fixed redef type.equality(x, y error) bool =>
-    x.msg = y.msg
+    x.msg = y.msg && x.error_code = y.error_code
+
+
+public error(msg String) error =>
+  error msg nil

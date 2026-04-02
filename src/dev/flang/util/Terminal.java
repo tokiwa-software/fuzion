@@ -58,7 +58,8 @@ public class Terminal extends ANY
    */
   public static final boolean ENABLED =
     !FuzionOptions.boolPropertyOrEnv("FUZION_DISABLE_ANSI_ESCAPES") &&
-    isTerminal();
+    isTerminal() ||
+    FuzionOptions.boolPropertyOrEnv("dev.flang.util.Terminal.force_ansi_escapes");
 
   public static final String RESET                     = ENABLED ? "\033[0m" : "";
   public static final String BOLD                      = ENABLED ? "\033[1m" : "";
@@ -168,6 +169,7 @@ public class Terminal extends ANY
    * does not work, this remains set if stdout/stderr is piped into a file.
    * Hence this hackery
    */
+  @SuppressWarnings("restricted")
   private static boolean isTerminal()
   {
     try

@@ -1,0 +1,51 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue6824
+#
+# -----------------------------------------------------------------------
+
+reg_issue6824 =>
+
+  my_choice : choice unit nil is
+  my_choice2 : my_choice is
+
+  test1(x T) =>
+    if T : my_choice
+      say "$T is my_choice {type_of x} $x"
+    else
+      say "$T is not my_choice"
+
+  test1 (id my_choice unit)
+  test1 (id my_choice nil)
+  test1 (id my_choice2 unit)
+  test1 (id my_choice2 nil)
+
+
+  my_type : Any is
+  my_type2 : my_type is
+
+  test2(x T) =>
+    if T : my_type
+      say "$T is my_type {type_of x} $x"
+    else
+      say "$T is not not my_type"
+
+  test2 my_type
+  test2 my_type2

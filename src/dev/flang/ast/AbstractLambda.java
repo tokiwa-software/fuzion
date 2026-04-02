@@ -32,7 +32,7 @@ import dev.flang.util.SourcePosition;
 
 
 /**
- * AbstractLambda is the super class of lambda expressions and partially applied functions.q
+ * AbstractLambda is the super class of lambda expressions and partially applied functions
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */

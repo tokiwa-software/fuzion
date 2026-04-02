@@ -102,6 +102,16 @@ public abstract class AbstractBlock extends Expr
   }
 
 
+  @Override
+  AbstractType typeForInferencing(Context context)
+  {
+    Expr resExpr = resultExpression();
+    return resExpr == null
+      ? Types.resolved.t_unit
+      : resExpr.typeForInferencing(context);
+  }
+
+
   /**
    * type returns the type of this expression or Types.t_ERROR if the type is
    * still unknown, i.e., before or during type resolution.
@@ -130,10 +140,6 @@ public abstract class AbstractBlock extends Expr
   protected int resultExpressionIndex()
   {
     var i = _expressions.size() - 1;
-    while (i >= 0 && (_expressions.get(i) instanceof Nop))
-      {
-        i--;
-      }
     return i >= 0 && (_expressions.get(i).producesResult())
       ? i
       : -1;
@@ -222,6 +228,16 @@ public abstract class AbstractBlock extends Expr
     return resExpr == null
       ? Types.resolved.t_unit
       : resExpr.typeForUnion();
+  }
+
+
+  @Override
+  public boolean isEmpty()
+  {
+    return _expressions
+      .stream()
+      // declarations are NOPs, hence allowed
+      .allMatch(x -> x instanceof AbstractFeature);
   }
 
 

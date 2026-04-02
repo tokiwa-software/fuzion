@@ -197,7 +197,7 @@ public abstract class Expr extends ByteCode
       s.push(new VerificationType(_type.descriptor(), (cf)->cf.cpClass(_type).index()));
       smt.stacks.put(_handler._posFinal, s);
 
-      // in principle, we need to unify all locals from all possibly throwing bytecodes in in the try-area,
+      // in principle, we need to unify all locals from all possibly throwing bytecodes in the try-area,
       // just using the initial locals for now since our bytecode currently would not change any locals
       // here anyway:
       smt.locals.add(new Pair<>(_handler._posFinal , locals.clone()));
@@ -1701,7 +1701,7 @@ public abstract class Expr extends ByteCode
       (className != null);
     return new Expr()
       {
-        public String toString() { return "new0"; }
+        public String toString() { return "new"; }
         public JavaType type()
         {
           return type;

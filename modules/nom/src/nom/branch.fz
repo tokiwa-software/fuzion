@@ -22,6 +22,6 @@ module branch is
   public alt(I, R, O type, parser Sequence (Parser I R O)) Parser I R O =>
     parser I R O input->
       parser
-        .map (p -> p.call input)
-        .filter (r -> r.ok)
+        .map (.call input)
+        .filter (.ok)
         .first (error "alt: no parser successful")
