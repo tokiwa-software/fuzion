@@ -579,7 +579,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *  - no       if not assignable
    *  - dontKnow if contains error
    */
-  YesNo isAssignableFrom(AbstractType actual, Context context, boolean allowBoxing, boolean allowTagging, Set<String> assignableTo)
+  YesNo isAssignableFrom(AbstractType actual, Context context, boolean allowBoxing, boolean allowTagging, Set<AbstractType> assignableTo)
   {
     if (PRECONDITIONS) require
       (this  .isGenericArgument() || this  .feature() != null || Errors.any(),
@@ -587,7 +587,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
     if (assignableTo != null)
       {
-        assignableTo.add(actual.toString(true));
+        assignableTo.add(actual);
       }
     var target_type = this  .remove_type_parameter_used_for_this_type_in_cotype();
     var actual_type = actual.remove_type_parameter_used_for_this_type_in_cotype();
@@ -769,7 +769,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         if (
           switch (g.kind())
             {
-              case GenericArgument -> 
+              case GenericArgument ->
                                       // NYI: BUG: #5002: check recursive type, e.g.:
                                       // this  = monad monad.A monad.MA
                                       // other = monad option.T (option option.T)
