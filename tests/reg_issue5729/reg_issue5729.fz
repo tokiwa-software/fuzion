@@ -1,0 +1,44 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue5729
+#
+# -----------------------------------------------------------------------
+
+# resulted in a crash because in Clazz.handDown
+# outers of fields (Y in this case) were not considered to be ref.
+
+# error 1: java.lang.Error: check-condition failed: GeneratingFUIR.java:2442 "(Errors.any() || tclazz == clazzOuterClazz(innerClazz) || clazzAsValue(tclazz) == clazzOuterClazz(innerClazz));"
+#         at dev.flang.util.ANY.check(ANY.java:440)
+#         at dev.flang.fuir.GeneratingFUIR.lookup(GeneratingFUIR.java:2442)
+#         at dev.flang.fuir.analysis.dfa.DFA$Analyze.accessSingleTarget(DFA.java:311)
+#         at dev.flang.fuir.analysis.dfa.DFA$Analyze.access(DFA.java:262)
+#         at dev.flang.fuir.analysis.dfa.DFA$Analyze.call(DFA.java:231)
+#         at dev.flang.fuir.analysis.dfa.DFA$Analyze.call(DFA.java:98)
+#         at dev.flang.fuir.analysis.AbstractInterpreter2.process(AbstractInterpreter2.java:590)
+#         at dev.flang.fuir.analysis.AbstractInterpreter2.processCode(AbstractInterpreter2.java:505)
+#         at dev.flang.fuir.analysis.AbstractInterpreter2.processClazz(AbstractInterpreter2.java:483)
+#         at dev.flang.fuir.analysis.dfa.DFA.analyze(DFA.java:1538)
+
+Y ref is
+
+  c option Y.this := Y.this
+  say (c.and_then x->Y.this)
+
+_ := Y

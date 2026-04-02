@@ -553,12 +553,13 @@ class Clazz extends ANY implements Comparable<Clazz>
       {
         result = new TreeSet<Clazz>();
         result.add(this);
-        for (var inh: feature().inherits())
+        for (var inh_call : feature().inherits())
           {
-            var pt = inh.type();
+            var pt = inh_call.type();
             var t1 = feature().handDownAndApply(pt, _type);
+            // NYI: CLEANUP: @fridi "I am not sure if or why handDown and replaceThisType are needed here at all."
             var t2 = handDown(t1, NO_SELECT, (_,_)->{}, new List<>());
-            var t3 = replaceThisType(t2, new List<>() /* NYI: correct? */);
+            var t3 = replaceThisType(t2, new List<>());
             var pc  = _fuir.newClazz(t3);
 
             if (!result.contains(pc))
@@ -1926,7 +1927,14 @@ class Clazz extends ANY implements Comparable<Clazz>
             t = AbstractFeature.handDownThroughInheritsCalls(t, select, inh);
           }
         t = t.applyTypePars(child._type, select);
-        t = t.replace_this_type_by_actual_outer_locally(child._type, foundRef);
+        // NYI: CLEANUP: ugly special handling.
+        // outers of fields are currently normalized to be values
+        // see: GeneratingFuir.newClazz
+        // need to undo this here.
+        var x = child._type.isValue() && child._type.feature().isRef() && feature().isField()
+          ? child._type.asRef()
+          : child._type;
+        t = t.replace_this_type_by_actual_outer_locally(x, foundRef);
         child = child._outer;
         parent = childf.outer();
       }

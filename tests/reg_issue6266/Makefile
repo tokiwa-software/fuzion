@@ -17,16 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature universe
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-
-# universe is implicit outer space of all features. In the hierarchy of nested
-# features, it is the outermost feature.
-#
-# The universe can not be called but you can use it in a call as part of a full
-# qualifier, e.g.:
-#
-#     universe.say "hello"
-#
+override NAME = reg_issue6266
+include ../simple.mk
