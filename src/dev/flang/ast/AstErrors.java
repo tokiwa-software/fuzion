@@ -29,6 +29,7 @@ package dev.flang.ast;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -369,8 +370,8 @@ public class AstErrors extends ANY
     var valAssigned = "";
     var assignableToSB = new StringBuilder();
     var errorOrUndefinedFound =
-      frmlT     == Types.t_ERROR || frmlT     == Types.t_UNDEFINED ||
-      typeValue == Types.t_ERROR || typeValue == Types.t_UNDEFINED;
+      frmlT.isArtificialType() ||
+      typeValue != null && typeValue.isArtificialType();
     if (value == null)
       {
         actlFound   = "actual type found   : " + s(typeValue);
@@ -379,7 +380,7 @@ public class AstErrors extends ANY
     else
       {
         var actlT = value.type();
-        errorOrUndefinedFound |=  actlT == Types.t_ERROR || actlT == Types.t_UNDEFINED;
+        errorOrUndefinedFound |=  actlT.isArtificialType();
         if (actlT.isThisType())
           {
             assignableToSB
@@ -1743,6 +1744,25 @@ public class AstErrors extends ANY
           "Field declared at "+ f.pos().show());
   }
 
+  static void choiceMustNotContainFields(SourcePosition pos, SortedSet<AbstractFeature> fields)
+  {
+      String fieldsSources =
+        fields.size() > 1
+          ? fields.stream()
+              .map((f)->("\n* Field %s declared at %s".formatted(s(f), f.pos().show())))
+              .collect(Collectors.joining())
+          : "Field declared at " + fields.getFirst().pos().show();
+
+    error(pos,
+          "Choice must not contain any fields",
+          "%s %s %s not permitted.\n%s"
+            .formatted(
+              StringHelpers.plural(fields.size(), "Field"),
+              sfn(new List<AbstractFeature>(fields.iterator())),
+              (fields.size() > 1 ? "are" : "is"),
+              fieldsSources));
+  }
+
   static void choiceMustNotBeField(SourcePosition pos)
   {
     error(pos,
@@ -2562,6 +2582,40 @@ public class AstErrors extends ANY
      " - " + file1 + "\n" +
      " - " + file2
     );
+  }
+
+  public static void useConcreteTypeInFixed(AbstractFeature f, AbstractType t)
+  {
+    error(
+      f.pos(),
+      "Use the concrete type not the this-type in a fixed feature.",
+      "For increased consistency and easier comprehensibility, use " + s(t.feature().selfType()) + " instead of " + s(t));
+  }
+
+  public static void illegalUseOfFixedModifier(Feature f)
+  {
+    error(f.pos(), "Illegal use of " + skw("fixed") + " modifier.",
+     skw("fixed")+ " fixed is only allowed on function features not in universe.");
+  }
+
+  public static void multipleOperatorsFound(SourcePosition p)
+  {
+    error(p,
+      "Multiple successive operators are not allowed.", "");
+  }
+
+  public static void nonExhaustiveDestructuring(SourcePosition pos, int exp, int found)
+  {
+    error(
+      pos,
+      "Non-exhaustive destructuring is forbidden.",
+      "Expected " + exp + " variable names but found " + found);
+  }
+
+  public static void choiceMustNotInheritContract(Feature c, AbstractFeature f)
+  {
+    error(c.pos(), "Choice must not inherit from feature with contract.",
+      "The feature that "+ s(c) + " inherits that has a contract:\n" + s_feat_with_pos(f));
   }
 
 }

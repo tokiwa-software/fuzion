@@ -171,6 +171,16 @@ public abstract class Expr extends ANY implements HasSourcePosition
 
 
   /**
+   * typeForInferencing variant that may return the constraint
+   * of the type based on the provided context
+   */
+  AbstractType typeForInferencing(Context context)
+  {
+    return typeForInferencing();
+  }
+
+
+  /**
    * typeForUnion returns the type of this expression or null if the type is
    * still unknown, i.e., before or during type resolution.  This is redefined
    * by sub-classes of Expr to provide type information.

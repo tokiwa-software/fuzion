@@ -48,7 +48,7 @@ public class Select extends Call {
   private boolean _allowValueArgumentAccess;
 
 
-  private int _totalNames;
+  private final int _totalNames;
 
 
   /**
@@ -222,7 +222,18 @@ public class Select extends Call {
         else
           {
             var selectTarget = new Call(pos(), _target, _name, FuzionConstants.NO_SELECT, Call.NO_GENERICS, NO_EXPRS, null);
-            result = new Call(pos(), selectTarget, f.featureName().baseName(), select(), Call.NO_GENERICS, NO_EXPRS, null);
+            result = new Call(pos(), selectTarget, f.featureName().baseName(), select(), Call.NO_GENERICS, NO_EXPRS, null)
+            {
+              @Override
+              void checkTypes(Resolution res, Context context)
+              {
+                super.checkTypes(res, context);
+                if (_totalNames >= 0 && _totalNames < target().type().generics().size())
+                  {
+                    AstErrors.nonExhaustiveDestructuring(Select.this.pos(), target().type().generics().size(), _totalNames);
+                  }
+              }
+            };
           }
       }
     else if (_allowValueArgumentAccess && _calledFeature != null)

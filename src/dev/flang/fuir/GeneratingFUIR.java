@@ -497,13 +497,24 @@ public class GeneratingFUIR extends FUIR
 
 
 
-  Clazz newClazz(AbstractType t)
+  Clazz newClazz(AbstractType actualType)
   {
-    var o = t.outer();
-    return newClazz(o == null ? null : newClazz(o), t, FuzionConstants.NO_SELECT);
+    if (PRECONDITIONS) require
+      (!actualType.dependsOnGenericsNoOuter(),
+       !actualType.containsThisType(),
+       actualType != Types.t_ERROR);
+
+    var o = actualType.outer();
+    return newClazz(o == null ? null : newClazz(o), actualType, FuzionConstants.NO_SELECT);
   }
   Clazz newClazz(Clazz outerR, AbstractType actualType, int select)
   {
+    if (PRECONDITIONS) require
+      (!actualType.dependsOnGenericsNoOuter(),
+       !actualType.containsThisType(),
+       actualType.feature().resultType().isOpenGeneric() == (select >= 0),
+       actualType != Types.t_ERROR);
+
     Clazz result;
 
     var outer = outerR;
@@ -562,11 +573,12 @@ public class GeneratingFUIR extends FUIR
         o = o._outer;
       }
 
-    var t = actualType;
-
     // normalize outer to be value in case t describes a field
-    outerR = t.feature().isField() ? outerR.asValue() : outerR;
-    var cl = new Clazz(this, outerR, t, select);
+    // NYI: CLEANUP: ugly special handling.
+    // outers of fields are currently normalized to be values
+    // see also: Clazz.handDown
+    outerR = actualType.feature().isField() ? outerR.asValue() : outerR;
+    var cl = new Clazz(this, outerR, actualType, select);
     var existing = _clazzesTM.get(cl);
     if (existing != null)
       {
@@ -633,7 +645,7 @@ public class GeneratingFUIR extends FUIR
               case "Mapped_Memory"             -> SpecialClazzes.c_Mapped_Memory;
               case "Native_Ref"                -> SpecialClazzes.c_Native_Ref;
               case "Thread"                    -> SpecialClazzes.c_Thread;
-              case "stackoverflow"             -> SpecialClazzes.c_fuzion_runtime_stackoverflow;
+              case "stackoverflow_cause"       -> SpecialClazzes.c_stackoverflow_cause;
               default                          -> SpecialClazzes.c_NOT_FOUND   ;
               };
             if (s != SpecialClazzes.c_NOT_FOUND && s._argCount == cl.feature().arguments().size())
@@ -719,7 +731,7 @@ public class GeneratingFUIR extends FUIR
         var tclazz = clazz(c.target(), outerClazz, inh);
         if (!tclazz.isVoidType())
           {
-            var at = handDownThroughInheritsCalls(c.actualTypeParameters(), inh);
+            var at = AbstractFeature.handDownListThroughInheritsCalls(c.actualTypeParameters(), inh);
             var typePars = outerClazz.actualGenerics(at, inh);
             result = tclazz.lookupCall(c, typePars).resultClazz();
           }
@@ -773,29 +785,6 @@ public class GeneratingFUIR extends FUIR
       (result != null);
 
     return result;
-  }
-
-
-  /**
-   * Hand down a list of types along a given inheritance chain.
-   *
-   * @param tl the original list of types to be handed down
-   *
-   * @param inh the inheritance chain from the parent down to the child
-   *
-   * @return a new list of types as they are appear after inheritance. The
-   * length might be different due to open type parameters being replaced by a
-   * list of types.
-   */
-  private static List<AbstractType> handDownThroughInheritsCalls(List<AbstractType> tl, List<AbstractCall> inh)
-  {
-    for (AbstractCall c : inh)
-      {
-        var f = c.calledFeature();
-        var actualTypes = c.actualTypeParameters();
-        tl = tl.flatMap(t -> t.applyTypeParsMaybeOpen(f, actualTypes));
-      }
-    return tl;
   }
 
 
@@ -2282,16 +2271,7 @@ public class GeneratingFUIR extends FUIR
         var outerClazz = id2clazz(cl);
         var b = (Box) getExpr(s);
         Clazz vc = clazz(b._value, outerClazz, _inh.get(s - SITE_BASE));
-        var rc = outerClazz.handDown(b.type(), _inh.get(s - SITE_BASE));
-        if (rc.isRef() &&
-            outerClazz.feature() != Types.resolved.f_type_as_value) // NYI: ugly special case
-          {
-            rc = vc.asRef();
-          }
-        else
-          {
-            rc = vc;
-          }
+        var rc = outerClazz.handDown(b.type(), _inh.get(s - SITE_BASE)).isRef() ? vc.asRef() : vc;
         res = new Pair<>(vc, rc);
         _siteClazzCache.put(s, res);
       }
@@ -3133,7 +3113,7 @@ public class GeneratingFUIR extends FUIR
         r.called.put(cf.feature(), sitePos(callSite).show());
         if (CHECKS) check
           (cf.feature().isAbstract() ||
-           (cf.feature().modifiers() & FuzionConstants.MODIFIER_FIXED) != 0);
+           cf.feature().isFixed());
       }
   }
 

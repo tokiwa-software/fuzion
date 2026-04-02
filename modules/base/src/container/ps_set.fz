@@ -39,7 +39,7 @@ private:public ps_set
    psm container.ps_map K unit,
    dummy unit    # just to distinguish this from routine ps_set(vs Sequence K)
   )
-  : Set K
+  : container.Set K
 is
 
 
@@ -59,14 +59,14 @@ is
     if has k
       ps_set.this
     else
-      ps_set (psm.add k unit) unit
+      ps_set (psm.put k unit) unit
 
 
   # add new element k to this set.
   #
   # NYI: UNDER DEVELOPMENT: this should be integrated in the mutate effect!
   #
-  public fixed redef add (k K) Set K =>
+  public fixed redef add (k K) container.Set K =>
     add0 k
 
 

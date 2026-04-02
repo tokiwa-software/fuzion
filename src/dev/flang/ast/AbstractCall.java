@@ -295,18 +295,24 @@ public abstract class AbstractCall extends Expr
    * be used to check for AstErrors.illegalOuterRefTypeInCall.
    *
    */
-  protected AbstractType adjustResultType(Resolution res, Context context, AbstractType tt, AbstractType rt, BiConsumer<AbstractType, AbstractType> foundRef, boolean forArg /* NYI: UNDER DEVELOPMENT: try to remove this parameter */)
+  protected AbstractType adjustResultType(Resolution res,
+                                          Context context,
+                                          AbstractType tt,
+                                          AbstractType rt,
+                                          BiConsumer<AbstractType, AbstractType> foundRef,
+                                          boolean forArg /* NYI: UNDER DEVELOPMENT: try to remove this parameter */)
   {
-    var t1 = rt == Types.t_ERROR ? rt : adjustThisTypeForTarget(context, rt, foundRef);
-    var t2 = t1 == Types.t_ERROR ? t1 : t1.applyTypePars(tt);
-    var t3 = t2 == Types.t_ERROR ? t2 : t2.applyTypePars(calledFeature(), actualTypeParameters());
-    var t4 = t3 == Types.t_ERROR ? t3 : tt.isGenericArgument() ? t3 : t3.resolve(res, tt.feature().context());
-    var t5 = t4 == Types.t_ERROR || forArg ? t4 : adjustThisTypeForTarget(context, t4, foundRef);
-
+    var t0 = calledFeature() == Types.f_ERROR ? Types.t_ERROR : rt;
+    var t1 = t0 == Types.t_ERROR                           ? t0 : adjustThisTypeForTarget(context, t0, foundRef);
+    var t2 = t1 == Types.t_ERROR                           ? t1 : calledFeature().outer().handDownToType(t1, tt);  // NYI: CLEANUP: try to use handDownAndApply
+    var t3 = t2 == Types.t_ERROR                           ? t2 : t2.applyTypePars(tt);
+    var t4 = t3 == Types.t_ERROR                           ? t3 : t3.applyTypePars(calledFeature(), actualTypeParameters());
+    var t5 = t4 == Types.t_ERROR || tt.isGenericArgument() ? t4 : t4.resolve(res, tt.feature().context());
+    var t6 = t5 == Types.t_ERROR || forArg                 ? t5 : adjustThisTypeForTarget(context, t5, foundRef);
     if (POSTCONDITIONS) ensure
-      (t5 != null);
+      (t6 != null);
 
-    return t5;
+    return t6;
   }
 
 
@@ -400,25 +406,14 @@ public abstract class AbstractCall extends Expr
       {
         res.resolveTypes(frml);
       }
-    var frmlT = frml.resultType();
-    if (frmlT == null)
-      {
-        frmlT = Types.t_UNDEFINED;
-      }
-    var declF = calledFeature().outer();
-    var tt = target().type();
-    var l = new List<>(frmlT);
-    if (tt != null && !tt.isGenericArgument() && declF != tt.feature() && calledFeature() != Types.f_ERROR)
-      {
-        l = calledFeature().outer().handDown(res, l, tt.feature());
-      }
-
-    // next, replace generics given in the target type and in this call
-    return
-      l.flatMap(ft -> ft.isOpenGeneric()
-                      // formal arg is open generic, i.e., this expands to 0 or more actual args depending on actual generics for target
-                      ? openGenericsFor(res, context, ft)
-                      : new List<>(actualArgType(res, context, ft, frml)));
+    return calledFeature()
+      .outer()
+      .handDownListToType(new List<>(frml.resultType()), target().type())
+      // next, replace generics given in the target type and in this call
+      .flatMap(ft -> ft.isOpenGeneric()
+                     // formal arg is open generic, i.e., this expands to 0 or more actual args depending on actual generics for target
+                     ? openGenericsFor(res, context, ft)
+                     : new List<>(actualArgType(res, context, ft, frml)));
   }
 
 
@@ -469,8 +464,7 @@ public abstract class AbstractCall extends Expr
 
     return
       !x.isPlainType()            ? new List<>() :
-      x.feature().inheritsFrom(f) ? f.handDown(res, new List<>(ft), x.feature())
-                                     .flatMap(t -> t.applyTypeParsMaybeOpen(x.feature(), x.generics())) :
+      x.feature().inheritsFrom(f) ? f.handDownAndApply(new List<>(ft), x) :
       tt.outer() != null          ? openGenericsFor(res, context, ft, tt.outer())
                                   : new List<>()
                                     {

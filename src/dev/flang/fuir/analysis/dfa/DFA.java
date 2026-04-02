@@ -930,13 +930,6 @@ public class DFA extends ANY
 
 
   /**
-   * For those CallGroups whose key can be mapped to a long value, this gives a quick
-   * way to lookup that key.
-   */
-  LongMap<CallGroup> _callGroupsQuick = new LongMap<>();
-
-
-  /**
    * Calls created during DFA analysis.
    */
   TreeMap<Call, Call> _calls = new TreeMap<>();
@@ -1317,10 +1310,6 @@ public class DFA extends ANY
     var preIter = findFixPoint();
     _options.timer("dfa_pre");
 
-    for (var k : _callGroupsQuick.keySet())
-      {
-        _callGroupsQuick.get(k).saveEffects();
-      }
     for (var g : _callGroups.values())
       {
         g.saveEffects();
@@ -1341,7 +1330,6 @@ public class DFA extends ANY
 
     _callsQuick = new LongMap<>();
     _calls = new TreeMap<>();
-    _callGroupsQuick = new LongMap<>();
     _callGroups = new TreeMap<>();
 
     _oneInstanceOfClazz = new List<>();
@@ -1415,13 +1403,36 @@ public class DFA extends ANY
 
         if (cnt == 1)
           {
-            newCall(null,
-                    _fuir.mainClazz(),
-                    NO_SITE,
-                    Value.UNIT,
-                    new List<>(),
-                    null /* env */,
-                    Context._MAIN_ENTRY_POINT_);
+            var m =
+              newCall(null,
+                      _fuir.mainClazz(),
+                      NO_SITE,
+                      Value.UNIT,
+                      new List<>(),
+                      null /* env */,
+                      Context._MAIN_ENTRY_POINT_);
+
+            // stackoverflow may happen at any time during execution.
+            // hence we simulate one once at the start of the program.
+            // NYI: UNDER DEVELOPMENT: comment from
+            // @fridi:
+            // this may fail since the control flow to
+            // StackOverflow.cause may happen, depending
+            // on how it is implemented in the backend,
+            // at any call or even at the first memory
+            // access to a stack allocated value.
+            // So, a more sophisticated DFA might produce a
+            // wrong result caused by the assumption that this only happens here.
+            var soc = _fuir.clazz(SpecialClazzes.c_stackoverflow_cause);
+            var socRes =
+              newCall(null,
+                      soc,
+                      NO_SITE,
+                      Value.UNIT,
+                      new List<>(newConstString(null, Context._MAIN_ENTRY_POINT_)),
+                      null,
+                      Context._MAIN_ENTRY_POINT_).result(m);
+            check (socRes == null);
           }
         iteration();
       }
@@ -2084,16 +2095,6 @@ public class DFA extends ANY
     put("f32.cast_to_u32"                , cl -> genericNumResult(cl) );
     put("f64.cast_to_u64"                , cl -> genericNumResult(cl) );
 
-    put("f32.type.min_exp"               , cl -> genericNumResult(cl) );
-    put("f32.type.max_exp"               , cl -> genericNumResult(cl) );
-    put("f32.type.min_positive"          , cl -> genericNumResult(cl) );
-    put("f32.type.max"                   , cl -> genericNumResult(cl) );
-    put("f32.type.epsilon"               , cl -> genericNumResult(cl) );
-    put("f64.type.min_exp"               , cl -> genericNumResult(cl) );
-    put("f64.type.max_exp"               , cl -> genericNumResult(cl) );
-    put("f64.type.min_positive"          , cl -> genericNumResult(cl) );
-    put("f64.type.max"                   , cl -> genericNumResult(cl) );
-    put("f64.type.epsilon"               , cl -> genericNumResult(cl) );
     put("effect.type.from_env"           , cl ->
     {
       var ecl = fuir(cl).clazzResultClazz(cl.calledClazz());
@@ -2229,20 +2230,7 @@ public class DFA extends ANY
                                     new List<>(),
                                     newEnv,
                                     cl);
-          cll._group.mayHaveEffect(ecl);
-
           var result = cll.result(cl);
-
-          if(fuir.getSpecialClazz(ecl) == SpecialClazzes.c_fuzion_runtime_stackoverflow)
-            {
-              // we need to simulate call to stackoverflow.cause
-              var cause = fuir.lookupCause(ecl);
-              var def = cl._dfa.newCall(cl, cause, NO_SITE, a0, new List<>(cl._dfa.newConstString(null, cl)), cl._env, cl);
-              var res = def.result(cl);
-              result = result != null && res != null
-                ? result.value().join(cl._dfa, res.value(), fuir(cl).clazzResultClazz(cl.calledClazz()))
-                : result;
-            }
 
           Value ev;
           if (cl._dfa._real)
@@ -3251,7 +3239,7 @@ public class DFA extends ANY
    */
   boolean siteSensitive(int cc)
   {
-    return SITE_SENSITIVE || _fuir.isConstructor(cc);
+    return SITE_SENSITIVE || _fuir.isConstructor(cc) && !onlyOneInstance(cc);
   }
 
 
@@ -3333,23 +3321,8 @@ public class DFA extends ANY
    */
   Call newCall(Call from, int cl, int site, Value tvalue, List<Val> args, Env env, Context context)
   {
-    CallGroup g;
-    var kg = CallGroup.quickHash(this, cl, site, tvalue);
-    if (kg != -1)
-      {
-        g = _callGroupsQuick.get(kg);
-        if (g == null)
-          {
-            g = new CallGroup(this, cl, site, tvalue);
-            _callGroupsQuick.put(kg, g);
-          }
-      }
-    else
-      {
-        var ng = new CallGroup(this, cl, site, tvalue);
-        g = _callGroups.putIfAbsent(ng, ng);
-        g = g != null ? g : ng;
-      }
+    var ng = new CallGroup(this, cl, site, tvalue);
+    var g = _callGroups.computeIfAbsent(ng, k->ng);
 
     Call e, r;
     r = _unitCalls.get(cl);

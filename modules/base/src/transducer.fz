@@ -43,32 +43,40 @@
 # TA   result     type
 # B    input      type
 # C    transduced type
+#
 public transducer(public TA, B, C type,
                   td ((TA,B) -> TA) ->  (TA,C) -> TA) is
 
   # use the transducer with reducing function `rf`.
+  #
   public call(rf (TA,B) -> TA) Binary TA TA C =>
     td rf
 
 
   # left-to-right composition of transducers
+  #
   public compose (A type, o transducer(TA,A,B)) transducer TA A C =>
     transducer TA A C (re -> transducer.this.call (o.call re))
 
 
   # left-to-right composition of transducers
+  #
   public infix ∘ (A type, o transducer(TA,A,B)) transducer TA A C =>
     transducer.this.compose o
 
 
   # a transducer filtering values based on evaluation of predicate
+  #
   public type.filter(predicate B -> bool) transducer TA B B =>
-    transducer TA B B (red -> (res, val) -> if predicate val then red.call res val else res)
+    transducer TA B B red->
+      (res, val) -> if predicate val then red.call res val else res
 
 
   # a transducer mapping values from C to B
+  #
   public type.map(mapper C -> B) transducer TA B C =>
-    transducer TA B C (red -> (res, val) -> red.call res (mapper val))
+    transducer TA B C red->
+      (res, val) -> red.call res (mapper val)
 
 
 

@@ -58,7 +58,7 @@ public stdin is
   # read all of stdin in an array of u8 bytes using
   # io.buffered.read_fully.
   #
-  public read_fully array u8 =>
+  public read_fully Sequence u8 =>
     lm : mutate is
     lm ! ()->
       reader lm ! (buffered lm).read_fully
@@ -83,12 +83,12 @@ stdin_read_handler : Read_Handler is
 
   # implementation of read for reading from stdin
   #
-  public redef read(count i32) choice (Sequence u8) io.end_of_file error =>
-    arr := fuzion.sys.internal_array_init u8 count
-    v := fzE_file_read fzE_file_stdin arr.data count
-    if v < -1
+  public redef read(max_count i32) choice (Sequence u8) io.end_of_file error =>
+    arr := fuzion.sys.internal_array_init u8 max_count
+    v := fzE_file_read fzE_file_stdin arr.data max_count
+    if v = -1
       error "an error occurred while reading stdin"
-    else if v <= 0
+    else if v = 0
       io.end_of_file
     else
       arr.as_array.take v

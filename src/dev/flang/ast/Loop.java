@@ -168,8 +168,12 @@ public class Loop extends ANY
 
   /**
    * env var to enable debug output for code generated for loops:
+   *
+   * To enable, use fz with:
+   *
+   *   dev_flang_ast_FUZION_DEBUG_LOOPS=true
    */
-  static private final boolean FUZION_DEBUG_LOOPS = FuzionOptions.boolPropertyOrEnv("FUZION_DEBUG_LOOPS");
+  static private final boolean FUZION_DEBUG_LOOPS = FuzionOptions.boolPropertyOrEnv("dev.flang.ast.FUZION_DEBUG_LOOPS");
 
 
   /*----------------------------  constants  ----------------------------*/

@@ -471,7 +471,7 @@ should be avoided as much as possible.
           case Choice  -> jvm._types._choices.createCode(cl);
           case Native  -> jvm.native0(cl);
           case TypeParameter, Abstract, Intrinsic, Field -> {}
-          default -> throw new Error("Unexpected feature kind: " + k);
+          default      -> throw new Error("Unexpected feature kind: " + k);
           }
         ;
       }

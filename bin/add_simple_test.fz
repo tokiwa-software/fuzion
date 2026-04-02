@@ -78,11 +78,11 @@ add_simple_test =>
           if test.contains "/" || test.contains "\\"
             say "name contains slash"
             exit 1
-          if io.file.exists "tests/$test"
+          if io.file.exists (path.of "tests/$test")
             say "$test already exists."
             exit 1
 
-          _ := io.dir.make "tests/$test"
+          _ := io.dir.make (path.of "tests/$test")
           _ := io.write (path.of "tests/$test/$test.fz") (header test)+(test_body test)
           _ := io.write (path.of "tests/$test/Makefile") (header "Makefile")+(makefile_body test)
 

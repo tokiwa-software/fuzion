@@ -6,6 +6,7 @@ fuzion.runtime.contract_fault
 fuzion.runtime.fault
 fuzion.runtime.post_fault
 fuzion.runtime.pre_fault
+fuzion.runtime.stackoverflow
 io.Buffer_Size
 io.Err
 io.Out

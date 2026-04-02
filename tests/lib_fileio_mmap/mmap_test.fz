@@ -23,7 +23,7 @@
 
 mmap_test =>
 
-  testfile := "testfile"
+  testfile := path.of "testfile"
 
   f =>
     io.file.open
@@ -31,11 +31,11 @@ mmap_test =>
   say <| io.file.use testfile io.file.mode.append ()->
 
     io.file.writer.write (array u8 os.mmap_offset_multiple.as_i32 i->0)
-      .get
-    io.file.writer.write "hello!".utf8
-      .get
+      .or_panic
+    io.file.writer.write "hello!"
+      .or_panic
     io.file.writer.flush
-      .get
+      .or_panic
 
     offset := os.mmap_offset_multiple
 

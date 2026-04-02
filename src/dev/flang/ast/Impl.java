@@ -575,6 +575,7 @@ public class Impl extends ANY
             if (positions.size() > 1)
               {
                 AstErrors.incompatibleTypesOfActualArguments(formalArg, types, positions);
+                _initialCalls.forEach(ic -> ic.setDefunct());
               }
             else
               {
@@ -704,17 +705,17 @@ public class Impl extends ANY
       {
         result = switch (_kind)
           {
-          case FieldInit  -> " = "  + _expr.getClass() + ": " +_expr;
-          case FieldDef   -> " := " + _expr.getClass() + ": " +_expr;
-          case FieldActual -> " type_inferred_from_actual";
-          case Field      -> "";
-          case TypeParameter -> "type";
+          case FieldInit         -> " = "  + _expr.getClass() + ": " +_expr;
+          case FieldDef          -> " := " + _expr.getClass() + ": " +_expr;
+          case FieldActual       -> " type_inferred_from_actual";
+          case Field             -> "";
+          case TypeParameter     -> "type";
           case TypeParameterOpen -> "type...";
-          case RoutineDef -> " => " + _expr.toString();
-          case Routine    -> " is " + _expr.toString();
-          case Abstract   -> "is abstract";
-          case Intrinsic  -> "is intrinsic";
-          default -> throw new Error("Unexpected Kind: "+_kind);
+          case RoutineDef        -> " => " + _expr.toString();
+          case Routine           -> " is " + _expr.toString();
+          case Abstract          -> "is abstract";
+          case Intrinsic         -> "is intrinsic";
+          default                -> throw new Error("Unexpected Kind: "+_kind);
           };
       }
     return result;

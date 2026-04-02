@@ -769,10 +769,6 @@ public class Intrinsix extends ANY implements ClassFileConstants
           var pop_and_finally   = pop_effect.andThen(call_finally);     // pop effect and call finally
           var pop_fin_and_throw = pop_and_finally.andThen(Expr.THROW);  // pop effect, call finally and rethrow exception from stack
 
-          Expr handle_non_abort_exception = jvm._fuir.getSpecialClazz(ecl) != SpecialClazzes.c_fuzion_runtime_stackoverflow
-              ? pop_fin_and_throw
-              : handle_so_exception(jvm, si, args, jvm._fuir.lookupCause(ecl), call_def, pop_effect, call_finally, pop_and_finally);
-
           var result = Expr.iconst(eid)
             .andThen(unit_effect ? args.get(0).drop()
                                     .andThen(Expr.getstatic(Names.RUNTIME_CLASS,
@@ -799,9 +795,12 @@ public class Intrinsix extends ANY implements ClassFileConstants
                 : Expr.DUP  // duplicate abort exception, we may need to rethrow
                    .andThen(Expr.DUP) // duplicate exception for instanceof check
                    .andThen(Expr.instanceOf(Names.ABORT_TYPE))
+                   // if this is not an Abort
+                   // we need to call stackoverflow_cause first
                    .andThen(Expr.branch(
                      O_ifeq,
-                     handle_non_abort_exception,
+                     handleAbortException(jvm, si))
+                  .andThen(
                      Expr
                        .checkcast(Names.ABORT_TYPE)
                        .andThen(Expr.getfield(Names.ABORT_CLASS, Names.ABORT_EFFECT, PrimitiveType.type_int))
@@ -1087,7 +1086,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
   /**
    * Handle StackOverflow exception
    */
-  private static Expr handle_so_exception(JVM jvm, int si, List<Expr> args, int cause, int call_def, Expr pop_effect, Expr call_finally, Expr pop_and_finally)
+  private static Expr handleAbortException(JVM jvm, int si)
   {
     var try_end   = new Label();
     var try_catch = new Label();
@@ -1097,22 +1096,21 @@ public class Intrinsix extends ANY implements ClassFileConstants
                                   // we need to catch throwable
                                   Names.ABORT_TYPE);
 
-    return Expr.POP
-          .andThen(Expr.POP) // NYI: UNDER DEVELOPMENT: convert Throwable to fuzion String
-          .andThen(args.get(0)) // load the effect to call `cause` on
+    return Expr.POP // NYI: UNDER DEVELOPMENT: convert Throwable to fuzion String
+          .andThen(Expr.POP)
           .andThen(jvm.boxedConstString("StackOverflow".getBytes(StandardCharsets.UTF_8)).v0())
           .andThen(try_start)
-          .andThen(jvm._types.invokeStatic(cause, jvm._fuir.sitePos(si).line()))
+          .andThen(jvm._types.invokeStatic
+            (
+              jvm._fuir.clazz(SpecialClazzes.c_stackoverflow_cause),
+              jvm._fuir.sitePos(si).line()
+            )
+          )
           .andThen(try_end)
-          .andThen(pop_and_finally)
+          .andThen(jvm.reportErrorInCode("handleAbortException: should not be reached since cause is expected to throw"))
           .andThen(Expr.gotoLabel(try_after))
           .andThen(try_catch)
-          .andThen(Expr.POP) // pop abort exception that was caused by calling cause of stackoverflow effect
-          .andThen(args.get(2))
-          .andThen(pop_effect)
           .andThen(Expr.DUP)
-          .andThen(call_finally)
-          .andThen(jvm._types.invokeStatic(call_def, jvm._fuir.sitePos(si).line()))
           .andThen(try_after);
   }
 

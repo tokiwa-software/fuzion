@@ -22,9 +22,19 @@
 # -----------------------------------------------------------------------
 
 
+# A finger tree is a purely functional data structure designed
+# to efficiently represent persistent sequences.
 #
-# The paper introducing the datastructure: https://www.cs.ox.ac.uk/ralf.hinze/publications/FingerTrees.pdf
-# The implementation that was used as inspiration for this port: https://github.com/ledbutter/CSharpFingerTree
+# It allows amortized constant time access to its elements.
+# Furthermore concatting (append/prepend) as well as splitting in logarithmic time.
+#
+# In Fuzion finger trees are used for concatenation of strings and finite Sequences.
+#
+# The paper introducing the datastructure:
+# https://www.cs.ox.ac.uk/ralf.hinze/publications/FingerTrees.pdf
+#
+# The implementation that was used as an inspiration for this port:
+# https://github.com/ledbutter/CSharpFingerTree
 #
 # NYI: UNDER DEVELOPMENT: split0, slice, reverse
 #
@@ -58,6 +68,19 @@ private:public Finger_Tree(T type) ref : container.abstract_array T is
       ft Finger_Tree => merge ft
 
 
+  # collect the contents of this Sequence into an array
+  #
+  public redef as_array array T =>
+    internal := fuzion.sys.internal_array_init T count
+    fill_internal_array internal 0
+    array internal unit unit unit
+
+
+  # helper for as_array to copy contents to internal_array
+  #
+  fill_internal_array(ia fuzion.sys.internal_array T, i i32) unit => unit
+
+
   # merge this Finger_Tree with ft
   #
   merge(ft container.Finger_Tree T) container.Finger_Tree T => abstract
@@ -79,9 +102,15 @@ private:public Finger_Tree(T type) ref : container.abstract_array T is
 #
 empty(T type) : container.Finger_Tree T is
   public redef length i32 => 0
-  public redef prepend(seq Sequence T) container.Finger_Tree T => single T seq
-  public redef append (seq Sequence T) container.Finger_Tree T => single T seq
-  public redef index [ ] (i idx) T => panic "illegal unless debug turned off"
+  public redef prepend(seq Sequence T) container.Finger_Tree T =>
+    match seq.as_finger_tree
+      nil            => single T seq
+      ft Finger_Tree => ft
+  public redef append (seq Sequence T) container.Finger_Tree T =>
+    match seq.as_finger_tree
+      nil            => single T seq
+      ft Finger_Tree => ft
+  public redef index [ ] (I type : integer, i I) T => panic "illegal unless debug turned off"
   module redef as_finger_tree option (container.Finger_Tree T) => container.empty T
   redef merge(ft container.Finger_Tree T) container.Finger_Tree T => ft
   redef merge(seq Sequence (Sequence T), ft container.Finger_Tree T) container.Finger_Tree T =>
@@ -95,13 +124,16 @@ empty(T type) : container.Finger_Tree T is
 
 # a finger tree with only one item
 #
-single(T type, data Sequence T) : container.Finger_Tree T is
+single(T type, data Sequence T) : container.Finger_Tree T
+  pre
+    debug 2 : data.as_finger_tree.is_nil
+is
   public redef length i32 => data.count
   public redef prepend(seq Sequence T) container.Finger_Tree T =>
     deep (container.hand [seq]) (empty T) (container.hand [data])
   public redef append (seq Sequence T) container.Finger_Tree T =>
     deep (container.hand [data]) (empty T) (container.hand [seq])
-  public redef index [ ] (i idx) T => data[i]
+  public redef index [ ] (I type : integer, i I) T => data[i]
   module redef as_finger_tree option (container.Finger_Tree T) => container.single data
   redef merge(ft container.Finger_Tree T) container.Finger_Tree T =>
     ft.prepend data
@@ -111,6 +143,22 @@ single(T type, data Sequence T) : container.Finger_Tree T is
     else
       r.prepend data
   redef modus choice (container.empty T) (container.single T) (container.deep T) => container.single data
+  redef fill_internal_array(ia fuzion.sys.internal_array T, i i32) unit =>
+    for j:=0, j+1
+    while j<data.count
+    do
+      ia[i+j] := data[j]
+
+
+
+# NYI: UNDER DEVELOPMENT: implement this properly, not via
+# abusing Finger_Tree
+#
+node3(T type, a,b,c Sequence T) Sequence T =>
+  container.Finger_Tree T .empty
+    .append a
+    .append b
+    .append c
 
 
 
@@ -130,10 +178,7 @@ deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.ha
 
   public redef prepend(seq Sequence T) container.Finger_Tree T =>
     if lft.finger.count = 4
-      x := container.Finger_Tree T .empty
-        .append lft.finger[1]
-        .append lft.finger[2]
-        .append lft.finger[3]
+      x := node3 lft.finger[1] lft.finger[2] lft.finger[3]
       deep (container.hand [seq, lft.finger[0]]) (ft.prepend x) rght
     else
       deep (lft.prepend seq) ft rght
@@ -141,10 +186,7 @@ deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.ha
 
   public redef append (seq Sequence T) container.Finger_Tree T =>
     if rght.finger.count = 4
-      x := container.Finger_Tree T .empty
-        .append rght.finger[0]
-        .append rght.finger[1]
-        .append rght.finger[2]
+      x := node3 rght.finger[0] rght.finger[1] rght.finger[2]
       deep lft (ft.append x) (container.hand [rght.finger[3], seq])
     else
       deep lft ft (rght.append seq)
@@ -157,14 +199,14 @@ deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.ha
       r
 
 
-  public redef index [ ] (i idx) T =>
+  public redef index [ ] (I type : integer, i I) T =>
     n := i.as_i32
     if n < lft.count
-      lft.nth n
+      lft[n]
     else if n < lft.count+ft.count
       ft[n-lft.count]
     else
-      rght.nth (n-lft.count-ft.count)
+      rght[n-lft.count-ft.count]
 
 
   module redef as_finger_tree option (container.Finger_Tree T) =>
@@ -201,6 +243,11 @@ deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.ha
 
   redef modus choice (container.empty T) (container.single T) (container.deep T) => container.deep lft ft rght
 
+
+  redef fill_internal_array(ia fuzion.sys.internal_array T, i i32) unit =>
+    lft.fill_internal_array ia i
+    ft.fill_internal_array ia i+lft.count
+    rght.fill_internal_array ia i+lft.count+ft.count
 
 
 # this is called digit in the paper
@@ -266,9 +313,9 @@ is
       hand [finger[0], finger[1], finger[2], seq]
 
 
-  # get the nth element
+  # index access to the element in this hand
   #
-  nth(n i32) T =>
+  public index [ ] (n i32) T =>
     if n >= cnt
       panic "illegal unless debug turned off"
     else if n < f0cnt
@@ -280,3 +327,25 @@ is
     else
       finger[3][n-f0cnt-f1cnt-f2cnt]
 
+
+  # fill ia with contens of the fingers
+  # starting at index i
+  #
+  fill_internal_array(ia fuzion.sys.internal_array T, i i32) unit =>
+
+    fill(f Sequence T, s i32) =>
+      match f.as_finger_tree
+        nil =>
+          for j := 0, j+1
+          while j < f.count do
+            ia[s+j] := f[j]
+        ft Finger_Tree =>
+          ft.fill_internal_array ia s
+
+    fill finger[0] i
+    if finger.count > 1
+      fill finger[1] i+f0cnt
+      if finger.count > 2
+        fill finger[2] i+f0cnt+f1cnt
+        if finger.count > 3
+          fill finger[3] i+f0cnt+f1cnt+f2cnt

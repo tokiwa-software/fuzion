@@ -286,7 +286,7 @@ public class Function extends AbstractLambda
     else if (!t.isLambdaTarget(res))
       {
         // suppress error for t_ERROR and t_UNDEFINED, but only if other error was already reported
-        if (t != Types.t_ERROR || t != Types.t_UNDEFINED || !Errors.any())
+        if (!t.isArtificialType() || !Errors.any())
           {
             AstErrors.expectedFunctionTypeForLambda(pos(), t, from);
           }
@@ -401,7 +401,7 @@ public class Function extends AbstractLambda
               {
                 result = refineResultType(res, context, rt0, _feature.resultType());
                 var g = t.lambdaTargetResultTypeParameter(res);
-                if (g != null)
+                if (g != null && !_inheritsCall.isDefunct())
                   {
                     int idx = g.typeParameterIndex();
                     _inheritsCall._generics = _inheritsCall._generics.setOrClone(idx, result);

@@ -1028,8 +1028,10 @@ all of their redefinition to `true`. +
         var resultField = new Feature(pos,
                                       Visi.PRIV,
                                       f.isConstructor()
-                                      ? f.thisType()
-                                      : f.resultType(), // NYI: replace type parameter of f by type parameters of _postFeature!
+                                        ? f.thisType()
+                                        // we will later replace type parameters of f
+                                        // by type parameters of f post
+                                        : f.resultType(),
                                       FuzionConstants.RESULT_NAME)
           {
             public boolean isResultField() { return true; }
@@ -1067,6 +1069,10 @@ all of their redefinition to `true`. +
           };
         res._module.findDeclarations(pF, f.isConstructor() ? f :  f.outer());
         res.resolveDeclarations(pF);
+        if (!f.isConstructor())
+          {
+            resultField.setRefinedResultType(res, context, f.resultType().replaceTypeParameters(pF));
+          }
         res.resolveTypes(pF);
         f._postFeature = pF;
 
@@ -1143,6 +1149,18 @@ The conditions of a post-condition are checked at run-time in sequential source-
         l.add(Match.createIf(p, c.cond(), new Block(), e, false));
       }
     return new Block(l);
+  }
+
+
+  /**
+   * Is this a contract without any conditions?
+   */
+  public boolean isEmpty()
+  {
+    return _hasPre == null &&
+      _hasPost == null &&
+      _hasPreElse == null &&
+      _hasPostThen == null;
   }
 
 
