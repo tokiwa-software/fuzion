@@ -379,7 +379,7 @@ include::rule.adoc[]
 include::rule.adoc[]
 
 :RULE_SRC: src/dev/flang/ast/AbstractType.java
-:RULE_ID: TYPE_SYSTEM_UNION
+:RULE_ID: TYPE_SYSTEM_COMMON_SUPERTYPE
 include::rule.adoc[]
 
 

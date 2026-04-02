@@ -211,7 +211,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
         if (et != null)
           {
             foundType = true;
-            t = t.union(et, context);
+            t = t.commonSupertype(et, context);
           }
       }
 
@@ -234,7 +234,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
         if (et != null)
           {
             foundType = true;
-            result = result.union(et, context);
+            result = result.commonSupertype(et, context);
           }
       }
 

@@ -144,7 +144,7 @@ public abstract class AbstractMatch extends ExprWithPos
         _type = cases()
           .map2(x -> x.code().type())
           .stream()
-          .reduce(Types.resolved.t_void, (a,b) -> a.union(b, Context.NONE));
+          .reduce(Types.resolved.t_void, (a,b) -> a.commonSupertype(b, Context.NONE));
         if (CHECKS) require
           (_type.isVoid() || _type.compareTo(Types.resolved.t_unit) == 0);
       }
