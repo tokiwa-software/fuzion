@@ -34,7 +34,7 @@ private:module atomic_access : effect is
     concur.atomic_access.default  /* NYI: `concur.` could be added automatically by front end */
 
 
-# short-hand for accessing mut effect in current environment
+# shorthand for accessing mut effect in current environment
 #
 module atomic_access_env =>
   atomic_access.install_default

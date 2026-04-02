@@ -23,5 +23,5 @@
 
 # hash of a value
 #
-public hash(T type : property.hashable, a T) =>
+public hash(T type : property.hashable, a T) u64 =>
   T.hash_code a

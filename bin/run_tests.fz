@@ -24,133 +24,260 @@
 
 ########### Extensions ###############
 
-# helper to get out, err, exit_code from started process
+# envir vars as map
 #
-p_res(p os.process,
-      # the command, for error messages
-      cmd String) (String, String, u32) =>
-  lm : mutate is
-  lm ! ()->
-    match p.with_out String lm (()->String.from_bytes (io.buffered lm).read_fully)
-      e error => panic "failed reading stdout from $cmd, error is: $e"
-      out String =>
-        match p.with_err String lm (()->String.from_bytes (io.buffered lm).read_fully)
-          e error => panic "failed reading stderr from $cmd, error is: $e"
-          err String =>
-            match p.wait
-              e error => panic "failed waiting for $cmd, error is: $e"
-              ec u32 => (out, err, ec)
+envir_vars := envir.vars.map_of [
+    "PATH",
+    "LANG",
+    "JAVA_HOME",
+    "POSTCONDITIONS",
+    "PRECONDITIONS",
+    "dev_flang_tools_serializeFUIR",
+    "dev_flang_fuir_analysis_dfa_DFA_MAX_ITERATIONS",
+    "CPATH",
+    "LIBRARY_PATH",
+    "FUZION_CLANG_INSTALLED_DIR",
+    "OS",
+    "INFLUXDB_TOKEN"
+  ]
+
+# max time a test may take
+#
+max_test_time := (time.duration.min 10)
 
 # execute this Sequence of process+args
-# return what we read from stdout as the result
 #
 Sequence.prefix ! =>
   seq := map x->x.as_string
-  match os.process.start seq.first.val (seq.drop 1) (container.ordered_map ["PATH"] [(envir.vars.get "PATH").val])
-    e error => panic "failed executing {Sequence.this}, error is $e"
-    p os.process => p_res p Sequence.this.as_string
+  os.process.start seq.first.or_panic (seq.drop 1) envir_vars
+            .bind (p -> tokiwa.record_process p Sequence.this.as_string max_test_time nil)
 
 
 # feed this string to a new process
-# return what we read from stdout as the result
 #
 String.infix | (seq Sequence String) =>
 
   lm : mutate is
   lm ! ()->
-    match os.process.start seq.first.val (seq.drop 1) (container.ordered_map ["PATH"] [(envir.vars.get "PATH").val])
+    match os.process.start seq.first.or_panic (seq.drop 1) envir_vars
       e error => panic "failed executing $seq, error is $e"
       p os.process =>
         _ := p.with_in unit lm ()->
-          _ := (io.buffered lm).writer.env.write String.this.utf8
+          # NYI: ambiguous result type:
+          # _ := write_to lm
+          _ := (io.buffered lm).writer.env.write String.this
           _ := (io.buffered lm).writer.env.flush
           _ := p.close_in
-        p_res p seq.as_string
+        tokiwa.record_process p seq.as_string max_test_time nil
 
 
 # execute this string by splitting at all whitespaces
-# return what we read from stdout as the result
 #
 String.prefix !! =>
   !split
 
-# NYI: UNDER DEVELOPMENT: move to base library?
-io.buffered.writer.write_string(str String) =>
-  write str.utf8
 
+append_line(mtx concur.sync.mutex, dest path, str String) =>
+  mtx.synchronized ()->
+    (io.file.use dest io.file.mode.append ()->
+      "$str\n".write_to io.file.file_mutate .or_panic).or_panic
 
 ########### run_tests ###############
 
 
+find_tests(dir path) array path =>
+  m : mutate is
+  tests := m ! ()->
+    io.dir.use _ dir ()->
+      res := (m.array path).type.new 0 (path.of "")
+      _ :=
+        for x := io.dir.open.read
+        while x.ok
+          dir_x := dir.resolve x.or_panic
+          if io.file.exists (dir_x.resolve "Makefile")
+            res.add dir_x
+      res.as_array
+
+  tests
+    .or_panic
+    .as_array
+
+
+say_section(str String) =>
+  say ""
+  say <| " $str ".pad_center "⎯" 80
+  say ""
+
+
 main =>
 
+  mtx := concur.sync.mutex.new.or_panic
+
+  append_line(dest path, str String) =>
+    append_line mtx dest str
+
+  # NYI: UNDER DEVELOPMENT: react to Ctrl+c like in bash scripts (trap)
+
   if (envir.args.count != 3)
-    say "wrong argument count {envir.args.count}"
-  else
-    build_dir := envir.args[1]
-    target := envir.args[2]
-    # NYI: port to fuzion
-    tests := (((!!"find $build_dir/tests -name Makefile -print0").0 | ["xargs", "--null", "--max-args=1", "dirname"]).0 | ["sort"])
-      .0
-      .split
+    say "wrong argument count"
+    say "usage:"
+    say "run_tests.fz <build_dir> <target>"
+    exit 1
 
-    _ := io.file.delete "$build_dir/run_tests.results"
-    _ := io.file.delete "$build_dir/run_tests.failures"
+  build_dir := path.of envir.args[1]
+  target := envir.args[2]
 
-    say "{tests.count} tests."
 
-    start_time_total := time.nano.read
+  # source: https://stackoverflow.com/questions/45181115/portable-way-to-find-the-number-of-processors-cpus-in-a-shell-script
+  # first, try third arg then try a few executables, if everything fails use default value
+  thread_count :=
+      envir.vars["FUZION_RUN_TESTS_PARALLELISM"]      .flat_map (    .trim.parse_i32) .first
+        .or_else (     (!!"nproc --all"              ).flat_map (.out.trim.parse_i32) .first
+          .or_else (   (!!"getconf _NPROCESSORS_ONLN").flat_map (.out.trim.parse_i32) .first
+            .or_else ( (!!"sysctl -n hw.ncpu"        ).flat_map (.out.trim.parse_i32) .first
+              .or_else 4)))
 
-    lm : mutate is
-    lm2 : mutate is
-    lm ! ()->
-      lm2 ! ()->
-        _ := io.file.use unit lm "$build_dir/run_tests.results" io.file.mode.write ()->
-          _ := io.file.use unit lm2 "$build_dir/run_tests.failures" io.file.mode.write ()->
+  tests := find_tests (build_dir.resolve "tests")
 
-            append_line(T type: mutate, str String) =>
-              check !((io.buffered T).writer.env.write_string "$str\n").error.is_error
+  check tests.count>500
 
-            for test in tests do
-              if io.file.exists "$test/skip" || io.file.exists "$test/skip_$target"
-                yak "_"
-                append_line lm "$test: skipped"
-              else
+  results  := build_dir.resolve "run_tests.results"
+  failures := build_dir.resolve "run_tests.failures"
 
-                start_time := time.nano.read
-                res := !!"timeout --kill-after=600s 600s make $target --environment-overrides --directory=$test"
-                end_time := time.nano.read
+  _ := io.file.delete results
+  _ := io.file.delete failures
 
-                if res.2 = 0 then
-                  yak "."
-                  append_line lm "$test in {end_time-start_time}: ok"
-                else
-                  yak "#"
-                  say res.0
-                  say res.1
-                  append_line lm "$test in {end_time-start_time}: failed"
-                  append_line lm2 res.0
-                  append_line lm2 res.1
+  # for storing the elapsed time of each test
+  test_durations := (lock_free.Map path time.duration).empty
 
-    end_time_total := time.nano.read
+  run_single_test(test path) =>
+    if (
+       io.file.exists (test.resolve "skip") ||
+       io.file.exists (test.resolve "skip_$target") ||
+       (os.platform.or_panic ? os.windows => io.file.exists (test.resolve "skip_win") | os.posix => false)
+       )
+      yak "_"
+      append_line results "$test: skipped"
+    else
 
-    lm ! ()->
-      _ := io.file.use unit lm "$build_dir/run_tests.results" io.file.mode.read ()->
+      opt_res, elapsed_time := time.stopwatch _ ()->
+            !!"make $target --environment-overrides --directory=$test"
 
-        results := (String.from_bytes (io.buffered lm).read_fully).split.as_array
-        ok := results
-          .filter (str -> str.ends_with "ok")
-          .count
-        skipped := results
-          .filter (str -> str.ends_with "skipped")
-          .count
-        failed := results
-          .filter (str -> str.ends_with "failed")
-          .count
+      test_durations.put test elapsed_time
 
-        say " $ok/{tests.count} tests passed, $skipped skipped, $failed failed in {end_time_total-start_time_total}."
+      match opt_res
+        e error =>
+          yak "!"
+          append_line results "$test in {elapsed_time}: $e error"
+          append_line failures "$test: $e"
+        res tokiwa.process_result =>
+          if res.exit_code = 0 || target = "fuir" then
+            yak "."
+            append_line results "$test in {elapsed_time}: ok"
+          else
+            yak "#"
+            append_line results "$test in {elapsed_time}: failed"
+            append_line failures res.out
+            append_line failures res.err
 
-        if failed > 0
-        exit 1
+
+  say "{tests.count} tests, running $thread_count tests in parallel."
+
+
+
+  elapsed_time_total := time.stopwatch ()->
+    _ := concur.thread_pool thread_count ()->
+      for t in tests do
+        check concur.thread_pool.env.submit (run_single_test t)
+
+
+  results_content := (io.slurp results)
+    .or_panic
+    .lines
+    .filter (x -> !x.is_blank)
+    .as_array
+
+  ok             := results_content.count (.ends_with "ok"     )
+  skipped        := results_content.count (.ends_with "skipped")
+  failed         := results_content.count (.ends_with "failed" )
+  produced_error := results_content.count (.ends_with "error"  )
+
+  say ""
+  say ("$ok/{tests.count} tests passed" +
+       ", $skipped skipped" +
+       ", $failed failed" +
+       (produced_error = 0 ? "" :", $produced_error produced error") +
+       " in {elapsed_time_total.as_string.trim}.")
+
+  max_recorded := test_durations
+    .values
+    .max
+  h := time.histogram target nil max_recorded 0 0
+  test_durations
+    .values
+    .for_each h.add
+  say h
+
+  if failed + produced_error > 0
+    say_section "Failed tests"
+
+    failed_tests := results_content.filter (.ends_with "failed")
+
+    failed_tests.for_each say
+
+    say_section "run_tests.failures START"
+    say (io.slurp failures)
+    say_section "run_tests.failures END"
+
+    failed_test_names := failed_tests
+                           .map (.split[0].substring 12) # remove "build/tests/"
+                           .as_string " "
+
+    say """
+        To re-run all failed tests, use this command:
+        for t in $failed_test_names; do
+          make $target -C ./build/tests/\$t
+        done
+        """
+
+    # NYI: UNDER DEVELOPMENT: if _target file exists: "make record_$target -C $x"
+    say """
+        To re-record all failed tests, use this command:
+        for t in $failed_test_names; do
+          make record -C ./build/tests/\$t
+        done
+        """
+
+    set_exit_code 1 .or_panic
+
+
+  num_slowest := 10
+  say_section "Slowest $num_slowest tests using $target backend"
+
+  test_durations
+    .items
+    .sort_by (td1,td2 -> td2.1<=td1.1)
+    .take num_slowest
+    .for_each (td -> say "{td.1.as_string_pad} {td.0}")
+
+  say_section "$target done"
+
+  match
+    {
+    envir
+      .vars
+      .get "INFLUXDB_TOKEN"
+    }
+    nil => say "INFLUXDB_TOKEN not set, not sending to influxdb."
+    token String =>
+      data := test_durations.items
+        .map td->"test_runtime,backend={target},test={td.0} value={td.1.millis}"
+      if token.is_blank
+        say "INFLUXDB_TOKEN is blank, not sending to influxdb."
+      else
+        say <| tokiwa.post_to_influx "tokiwa" "benchmarks" token.trim (String.join_lines data)
+        say <| tokiwa.post_to_influx "tokiwa" "benchmarks" token.trim "run_tests,backend={target} total_time={elapsed_time_total.millis}"
+
+  exit
 
 _ := main

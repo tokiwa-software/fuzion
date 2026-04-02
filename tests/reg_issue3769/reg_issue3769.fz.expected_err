@@ -10,4 +10,6 @@ _ := io.Out.env
 effect environment '--empty--' for call to 'universe'
 effect environment '--empty--' at program entry
 
+To fix this, you should make sure that an effect for type 'io.Out' is instated along all call paths to this effect use.
+
 one error.

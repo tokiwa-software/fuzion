@@ -21,30 +21,23 @@
 #
 # -----------------------------------------------------------------------
 
-lm : mutate is
-
-_ := lm ! ()->mmap_test
-
 mmap_test =>
 
-  testfile := "testfile"
+  testfile := path.of "testfile"
 
   f =>
     io.file.open
 
-  # NYI get actual page size
-  page_size := 65536
+  say <| io.file.use testfile io.file.mode.append ()->
 
-  say <| io.file.use unit lm testfile io.file.mode.append ()->
+    io.file.writer.write (array u8 os.mmap_offset_multiple.as_i32 i->0)
+      .or_panic
+    io.file.writer.write "hello!"
+      .or_panic
+    io.file.writer.flush
+      .or_panic
 
-    (io.buffered lm).writer.env.write (array u8 page_size i->0)
-      .error.get
-    (io.buffered lm).writer.env.write "hello!".utf8
-      .error.get
-    (io.buffered lm).writer.env.flush
-      .get
-
-    offset := page_size.as_i64
+    offset := os.mmap_offset_multiple
 
     # map 6 bytes of file starting from the end of the '+'s.
     say <| f.mmap offset (i64 6) ()->
@@ -52,10 +45,11 @@ mmap_test =>
             io.file.mapped_buffer.env[1] := io.file.mapped_buffer.env[1] - 4
 
     # mmap should fail, since offset+size exceeds file size.
-    say <| f.mmap offset (i64 7) ()->
+    # truncating error code, may differ among OS
+    say <| (f.mmap offset (i64 7) ()->).err.as_string.truncate 31
 
 
-  say <| io.file.use String lm testfile io.file.mode.read ()->
-    String.from_bytes ((io.buffered lm).read_fully.drop page_size)
+  say <| io.file.use testfile io.file.mode.read ()->
+    String.from ((io.buffered io.file.file_mutate).read_fully.drop os.mmap_offset_multiple.as_i32)
 
   say (io.file.delete testfile)

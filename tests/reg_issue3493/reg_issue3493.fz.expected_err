@@ -10,7 +10,7 @@ s pre x =>
 Field declared: 's'
 
 
---CURDIR--/reg_issue3493.fz:24:3: error 3: Implementation restriction: pre-condition for Field not supported yet.
+--CURDIR--/reg_issue3493.fz:24:3: error 3: Implementation restriction: pre-condition for field not supported yet.
 s pre x =>
 --^^^^^^^^
 

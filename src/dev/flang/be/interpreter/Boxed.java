@@ -235,9 +235,7 @@ public class Boxed extends ValueWithClazz
   public boolean boolValue()
   {
     if (PRECONDITIONS) require
-      (_valueClazz == fuir().clazz(SpecialClazzes.c_true_) ||
-       _valueClazz == fuir().clazz(SpecialClazzes.c_false_) ||
-       _valueClazz == fuir().clazz(SpecialClazzes.c_bool));
+      (_valueClazz == fuir().clazz(SpecialClazzes.c_bool));
 
     return _contents.boolValue();
   }

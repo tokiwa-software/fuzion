@@ -33,7 +33,7 @@ public seek(ps Seek_Handler) : effect is
   #
   public seek(
        # the offset to seek from the beginning of the stream pointer
-       offset i64) =>
+       offset i64) outcome unit =>
     replace
     ps.seek offset
 
@@ -42,7 +42,7 @@ public seek(ps Seek_Handler) : effect is
   # the offset is measured from the beginning of the file indicated by the file descriptor
   # returns the current offset in success and error in failure
   #
-  public file_position =>
+  public file_position outcome i64 =>
     replace
     ps.file_position
 

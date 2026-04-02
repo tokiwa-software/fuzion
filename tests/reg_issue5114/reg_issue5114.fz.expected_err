@@ -1,0 +1,9 @@
+
+--CURDIR--/reg_issue5114.fz:33:15: error 1: Could not find outer feature in '.this'-expression
+    type.x => A.this        # results in expected error
+--------------^^^^^^
+Within feature: 'reg_issue5114.A.type.x'
+Outer feature that was not found: 'A'
+Outer features available: 'x.this', 'A.#type.x.this', 'A.#type.this', 'reg_issue5114._0_main#type.A.#type.x.this', 'reg_issue5114._0_main#type.A.#type.this', 'reg_issue5114._0_main#type.this'
+
+one error.

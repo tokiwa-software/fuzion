@@ -26,6 +26,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
+import static dev.flang.ir.IR.NO_CLAZZ;
+import static dev.flang.ir.IR.NO_SITE;
+
 import java.lang.foreign.Arena;
 import java.lang.foreign.FunctionDescriptor;
 import java.lang.foreign.Linker;
@@ -183,7 +186,7 @@ public class Executor extends ProcessExpression<Value, Object>
   @Override
   public Value unitValue()
   {
-    return Value.EMPTY_VALUE;
+    return Value.UNIT;
   }
 
   @Override
@@ -205,9 +208,9 @@ public class Executor extends ProcessExpression<Value, Object>
   }
 
   @Override
-  public Object assignStatic(int s, int tc, int f, Value tvalue, Value val)
+  public Object assignStatic(int s, int f, Value tvalue, Value val)
   {
-    Interpreter.setField(f, tc, tvalue, val);
+    Interpreter.setField(f, _fuir.clazzAt(s), tvalue, val);
     return null;
   }
 
@@ -229,7 +232,45 @@ public class Executor extends ProcessExpression<Value, Object>
     return null;
   }
 
+
+  private static final SymbolLookup libs = libs();
+
+
+  /**
+   * @return SymbolLookup for fuzion_rt and libmath
+   */
+  @SuppressWarnings("restricted")
+  private static SymbolLookup libs()
+  {
+    SymbolLookup result = null;
+    try
+      {
+        result = SymbolLookup.libraryLookup(System.mapLibraryName("fuzion_rt"), Arena.ofAuto());
+        try
+          {
+            result = result.or(SymbolLookup.libraryLookup(System.mapLibraryName("m"),  Arena.ofAuto()));
+          }
+        catch (IllegalArgumentException e)
+          {
+            try { result = result.or(SymbolLookup.libraryLookup("libm.so.6",  Arena.ofAuto())); } catch(Exception e0) {
+              try { result = result.or(SymbolLookup.libraryLookup("libm.dylib",  Arena.ofAuto())); } catch(Exception e1) {
+                try { result = result.or(SymbolLookup.libraryLookup("ucrtbase.dll",  Arena.ofAuto())); } catch(Exception e2) {
+                  Errors.error(e.getMessage()); Errors.error(e0.getMessage()); Errors.error(e1.getMessage()); Errors.fatal(e2.getMessage());
+                }
+              }
+            }
+          }
+      }
+    catch (IllegalArgumentException e)
+      {
+        Errors.fatal(e.getMessage());
+      }
+    return result;
+  }
+
+
   @Override
+  @SuppressWarnings("restricted")
   public Pair<Value, Object> call(int s, Value tvalue, List<Value> args)
   {
     var cc0 = _fuir.accessedClazz(s);
@@ -254,7 +295,7 @@ public class Executor extends ProcessExpression<Value, Object>
     var result = switch (_fuir.clazzKind(cc))
       {
       case Routine :
-        // NYI change call to pass in ai as in match expression?
+        // NYI: UNDER DEVELOPMENT: change call to pass in ai as in match expression?
         var cur = callOnNewInstance(s, cc, tvalue, args);
 
         Value rres = cur;
@@ -278,19 +319,19 @@ public class Executor extends ProcessExpression<Value, Object>
 
         yield fres;
       case Intrinsic :
-        yield _fuir.clazzTypeParameterActualType(cc) != -1  /* type parameter is also of Kind Intrinsic, NYI: CLEANUP: should better have its own kind?  */
-          ? pair(unitValue())
-          : pair(Intrinsics.call(this, s, cc).call(new List<>(tvalue, args)));
-      case Abstract:
-        throw new Error("Calling abstract not possible: " + _fuir.codeAtAsString(s));
-      case Choice :
-        throw new Error("Calling choice not possible: " + _fuir.codeAtAsString(s));
+        yield pair(Intrinsics.call(this, s, cc).call(new List<>(tvalue, args)));
       case Native:
+        var llu = libs;
         var mh = Linker.nativeLinker()
           .downcallHandle(
-            SymbolLookup.libraryLookup(System.mapLibraryName("fuzion_rt" /* NYI */), Arena.ofAuto())
+            llu
               .find(_fuir.clazzNativeName(cc))
-              .orElseThrow(() -> new UnsatisfiedLinkError("unresolved symbol: " + _fuir.clazzBaseName(cc))),
+              .orElseThrow(() -> new UnsatisfiedLinkError(
+              "Unresolved symbol: " + _fuir.clazzBaseName(cc) + ". " +
+              (true
+                ? "NYI: interpreter does not yet support libraries. You probably forgot to use the -Libraries option."
+                : "Likely causes: Either your native method is misspelled or you forgot to include a library in the -Libraries option.")
+              )),
 
               _fuir.clazzIsUnitType(rt)
                 ? FunctionDescriptor.ofVoid(layoutArgs(cc0))
@@ -315,6 +356,8 @@ public class Executor extends ProcessExpression<Value, Object>
               }
           }
         yield pair(JavaInterface.javaObjectToPlainInstance(tmp, rt));
+      default:
+        throw new Error("Calling " + _fuir.clazzKind(cc) + " not possible: " + _fuir.codeAtAsString(s));
       };
 
     return result;
@@ -368,10 +411,10 @@ public class Executor extends ProcessExpression<Value, Object>
     int cc, tt;
     if (_fuir.accessIsDynamic(s))
       {
-        cc = -1;
+        cc = NO_CLAZZ;
         tt = ((ValueWithClazz)tvalue)._clazz;
         var ccs = _fuir.accessedClazzes(s);
-        for (var cci = 0; cci < ccs.length && cc==-1; cci += 2)
+        for (var cci = 0; cci < ccs.length && cc==NO_CLAZZ; cci += 2)
           {
             if (ccs[cci] == tt)
               {
@@ -386,7 +429,7 @@ public class Executor extends ProcessExpression<Value, Object>
       }
 
     if (POSTCONDITIONS) ensure
-      (cc != -1);
+      (cc != NO_CLAZZ);
 
     return new Pair<>(tt, cc);
   }
@@ -439,7 +482,6 @@ public class Executor extends ProcessExpression<Value, Object>
       {
       case c_String -> Interpreter
         .boxedConstString(new String(Arrays.copyOfRange(d, 4, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt() + 4), StandardCharsets.UTF_8));
-      case c_bool -> { check(d.length == 1, d[0] == 0 || d[0] == 1); yield new boolValue(d[0] == 1); }
       case c_f32 -> new f32Value(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getFloat());
       case c_f64 -> new f64Value(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getDouble());
       case c_i16 -> new i16Value(ByteBuffer.wrap(d).position(4).order(ByteOrder.LITTLE_ENDIAN).getShort());
@@ -458,7 +500,11 @@ public class Executor extends ProcessExpression<Value, Object>
             var bb = ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN);
             var elCount = bb.getInt();
 
-            var arrayData = ArrayData.alloc(elCount, _fuir, elementType);
+            Instance result = new Instance(constCl);
+            var internalArray = _fuir.clazzArg(constCl, 0);
+            var saCl = _fuir.clazzResultClazz(internalArray);
+
+            var arrayData = ArrayData.alloc(saCl, elCount, _fuir, elementType);
 
             for (int idx = 0; idx < elCount; idx++)
               {
@@ -467,13 +513,9 @@ public class Executor extends ProcessExpression<Value, Object>
                 arrayData.set(idx, c, fuir(), elementType);
               }
 
-            Instance result = new Instance(constCl);
-            var internalArray = _fuir.lookup_array_internal_array(constCl);
-            var sysArray = _fuir.clazzResultClazz(internalArray);
-            var saCl = sysArray;
             Instance sa = new Instance(saCl);
-            Interpreter.setField(_fuir.lookup_fuzion_sys_internal_array_length(sysArray), saCl,                               sa,     new i32Value(elCount));
-            Interpreter.setField(_fuir.lookup_fuzion_sys_internal_array_data(sysArray)  , saCl,                               sa,     arrayData);
+            Interpreter.setField(_fuir.clazzArg(saCl, 1), saCl,                               sa,     new i32Value(elCount));
+            Interpreter.setField(_fuir.clazzArg(saCl, 0)  , saCl,                               sa,     arrayData);
             Interpreter.setField(internalArray                                          , constCl,                            result, sa);
             yield result;
           }
@@ -518,7 +560,7 @@ public class Executor extends ProcessExpression<Value, Object>
     var cix = _fuir.matchCaseIndex(s, tagAndChoiceElement.v0());
 
     var field = _fuir.matchCaseField(s, cix);
-    if (field != -1 && !_fuir.clazzIsUnitType(_fuir.clazzResultClazz(field)))
+    if (field != NO_CLAZZ && !_fuir.clazzIsUnitType(_fuir.clazzResultClazz(field)))
       {
         Interpreter.setField(
             field,
@@ -611,7 +653,7 @@ public class Executor extends ProcessExpression<Value, Object>
   Instance callOnNewInstance(int s, int cc, Value outer, List<Value> args)
   {
     FuzionThread.current()._callStackFrames.push(cc);
-    FuzionThread.current()._callStack.push(s);
+    FuzionThread.current()._callSiteStack.push(s);
 
     var o = outer;
     var a = args;
@@ -632,7 +674,7 @@ public class Executor extends ProcessExpression<Value, Object>
           }
       }
 
-    FuzionThread.current()._callStack.pop();
+    FuzionThread.current()._callSiteStack.pop();
     FuzionThread.current()._callStackFrames.pop();
 
     return cur;
@@ -652,7 +694,7 @@ public class Executor extends ProcessExpression<Value, Object>
    */
   private static void showFrame(FUIR fuir, StringBuilder sb, int frame, int callSite)
   {
-    if (frame != -1)
+    if (frame != NO_CLAZZ)
       {
         sb.append(_fuir.clazzAsStringHuman(frame)).append(": ");
       }
@@ -694,29 +736,29 @@ public class Executor extends ProcessExpression<Value, Object>
   public static String callStack(FUIR fuir)
   {
     StringBuilder sb = new StringBuilder("Call stack:\n");
-    int lastFrame = -1;
-    int lastCall = -1;
+    int lastFrame = NO_CLAZZ;
+    int lastCallSite = NO_SITE;
     int repeat = 0;
-    var s = FuzionThread.current()._callStack;
+    var s = FuzionThread.current()._callSiteStack;
     var sf = FuzionThread.current()._callStackFrames;
     for (var i = s.size()-1; i >= 0; i--)
       {
         int frame = i<sf.size() ? sf.get(i) : null;
         var call = s.get(i);
-        if (frame == lastFrame && call == lastCall)
+        if (frame == lastFrame && call == lastCallSite)
           {
             repeat++;
           }
         else
           {
-            showRepeat(fuir, sb, repeat, lastFrame, lastCall);
+            showRepeat(fuir, sb, repeat, lastFrame, lastCallSite);
             repeat = 0;
             showFrame(fuir, sb, frame, call);
             lastFrame = frame;
-            lastCall = call;
+            lastCallSite = call;
           }
       }
-    showRepeat(fuir, sb, repeat, lastFrame, lastCall);
+    showRepeat(fuir, sb, repeat, lastFrame, lastCallSite);
     return sb.toString();
   }
 

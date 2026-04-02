@@ -39,26 +39,33 @@ FUZION_RUN = $(FUZION) $(FUZION_OPTIONS)
 
 all: jvm c int
 
+fuir:
+	rm -f *.fuir
+	@printf 'FUIR %s ' "$(FILE)" && $(ENV) dev_flang_tools_serializeFUIR=true $(FUZION_RUN) -noBackend $(FILE) 2>err.txt && printf "\033[32;1mPASSED\033[0m.\n" || printf "\033[31;1m*** FAILED\033[0m.\n" && (RC=$$? && cat err.txt && exit $$RC)
+
 int:
-	cat $(STDIN) | ../check_simple_example_int.sh "$(FUZION_RUN)" $(FILE) || exit 1
+	cat $(STDIN) | ../../bin/check_simple_example int "$(FUZION_RUN)" $(FILE) || exit 1
 
 c:
-	cat $(STDIN) | ../check_simple_example_c.sh "$(FUZION_RUN)" $(FILE) || exit 1
+	cat $(STDIN) | ../../bin/check_simple_example c "$(FUZION_RUN)" $(FILE) || exit 1
 
 jvm:
-	cat $(STDIN) | ../check_simple_example_jvm.sh "$(FUZION_RUN)" $(FILE) || exit 1
+	cat $(STDIN) | ../../bin/check_simple_example jvm "$(FUZION_RUN)" $(FILE) || exit 1
 
 record:
-	cat $(STDIN) | ../record_simple_example_int.sh "$(FUZION_RUN)" $(FILE)
+	cat $(STDIN) | ../../bin/record_simple_example any "$(FUZION_RUN)" $(FILE)
+
+record_int:
+	cat $(STDIN) | ../../bin/record_simple_example int "$(FUZION_RUN)" $(FILE)
 
 record_c:
-	cat $(STDIN) | ../record_simple_example_c.sh "$(FUZION_RUN)" $(FILE)
+	cat $(STDIN) | ../../bin/record_simple_example c "$(FUZION_RUN)" $(FILE)
 
 record_jvm:
-	cat $(STDIN) | ../record_simple_example_jvm.sh "$(FUZION_RUN)" $(FILE)
+	cat $(STDIN) | ../../bin/record_simple_example jvm "$(FUZION_RUN)" $(FILE)
 
 effect:
-	$(ENV) ../check_simple_example_effect.sh "$(FUZION_RUN)" $(FILE) || exit 1
+	$(ENV) ../../bin/check_simple_example effect "$(FUZION_RUN)" $(FILE) || exit 1
 
 record_effect: $(FUZION_DEPENDENCIES)
-	$(ENV) ../record_simple_example_effect.sh "$(FUZION_RUN)" $(FILE)
+	$(ENV) ../../bin/record_simple_example effect "$(FUZION_RUN)" $(FILE)

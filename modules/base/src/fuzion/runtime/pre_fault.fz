@@ -36,18 +36,18 @@ is
   # install default pre_fault handler
   type.install_default =>
     (fuzion.runtime.pre_fault msg->
-      fuzion.runtime.fault.cause ("precondition", msg)).default
+      fuzion.runtime.contract_fault.cause ("precondition", msg)).default
 
 
   # create an instance of `pre_fault` with the given error handler.
   #
-  public fixed redef type.new(h String -> void) => fuzion.runtime.pre_fault h
+  public fixed redef type.new(h String -> void) fuzion.runtime.pre_fault => fuzion.runtime.pre_fault h
 
 
 # pre_fault with no argument returns pre_fault.env, the currently installed
 # runtime pre_fault handler.
 #
-public pre_fault =>
+public pre_fault pre_fault =>
   pre_fault.install_default
   pre_fault.env
 
@@ -55,4 +55,4 @@ public pre_fault =>
 # cause a precondition fault with given msg argument, i.e., call pre_fault.cause
 # msg, i.e., use the current pre_fault effect to fail with the given message.
 #
-public precondition_fault(msg String) => pre_fault.cause msg
+public precondition_fault(msg String) void => pre_fault.cause msg

@@ -19,4 +19,6 @@ effect environment '--empty--' for call to 'test_local_mutate_neg.test_sum' at -
 effect environment '--empty--' for call to 'test_local_mutate_neg'
 effect environment '--empty--' at program entry
 
+To fix this, you should make sure that an effect for type 'test_local_mutate_neg.test_sum.sum#1.m' is instated along all call paths to this effect use.
+
 one error.

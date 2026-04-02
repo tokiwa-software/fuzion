@@ -7,6 +7,6 @@ E.g., instead of:
 'type.union : Monoid bitset is'
 do this: 
 public type.union =>
-  ref : Monoid bitset
+  _ : Monoid bitset
 
 one error.

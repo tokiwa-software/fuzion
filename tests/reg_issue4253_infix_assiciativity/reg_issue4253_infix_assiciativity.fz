@@ -1,0 +1,72 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue4253_infix_assiciativity
+#
+# -----------------------------------------------------------------------
+
+# Some tests for left- and right-assiciative operators using examples
+# from #4253.
+#
+reg_issue4253_infix_assiciativity =>
+
+  # examples from #4253
+  say "expecting `[4, 16, 36, 64, 100]`, four times:"
+  say <|  (.map **2) <| (2..10:2)
+  say <| ((.map **2) <| (2..10:2))
+  say <|   .map **2  <| (2..10:2)   # not form #4253, using fewer parentheses
+  say    ((.map **2) <| (2..10:2))
+
+
+  # ------------------------------------
+
+
+  # we define our own pipes with the same precendence:
+  #
+  infix_right <<< (f A->R, a A) => f <| a
+  infix       >>> (a A, f A->R) => a |> f
+
+
+  # ------------------------------------
+
+
+  # using right and left associativity will result in right-to-left
+  # execution:
+
+  say "expecting `hi!unit`"
+  say <<< "hi!" >>> yak
+
+  say "expecting `hi! right unit left`"
+  say <<< +" left" <<< ($) <<< "hi!" >>> ($) >>> +" right " >>> yak
+
+
+  # ------------------------------------
+
+
+  # using left and right associativity will result in left-to-right
+  # execution:
+
+  # feature returning lambe that subtracts x from an i23.
+  sub(x i32) i32->i32 => -x
+
+  say "expecting `-36`"
+  say (47 >>> sub <<< 11)
+
+  say "expecting `7`"
+  say (08 >>> (x -> id i32->i32 -x) <<< 15)

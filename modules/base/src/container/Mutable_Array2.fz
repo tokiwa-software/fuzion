@@ -43,50 +43,50 @@ is
 
   # indices range in the first dimension
   #
-  public indices0 => (i64 0)..length0-1
+  public indices0 interval i64 => (i64 0)..length0-1
 
 
   # indices range in the second dimension
   #
-  public indices1 => (i64 0)..length1-1
+  public indices1 interval i64 => (i64 0)..length1-1
 
 
   # all pairs of indices: (0, 0), (0, 1), (0, 2), ..., (length0-1, length1-1)
   #
-  public index_pairs =>
+  public index_pairs Sequence (tuple i64 i64) =>
     indices0.flat_map i->
       indices1.map j->(i,j)
 
 
   # get element at given index i
   #
-  public index [ ] (i1, i2 i64) T ! E
+  public index [ ] (I type : integer, i1, i2 I) T ! E
     pre
-      safety: 0 ≤ i1 < length0
-      safety: 0 ≤ i2 < length1
+      safety: 0 ≤ i1.as_i64 < length0
+      safety: 0 ≤ i2.as_i64 < length1
   =>
     abstract
 
 
   # set element at given index i to given value o
   #
-  public set [ ] (i1, i2 i64, o T) unit ! E
+  public set [ ] (I type : integer, i1, i2 I, o T) unit ! E
     pre
-      safety: 0 ≤ i1 < length0
-      safety: 0 ≤ i2 < length1
+      safety: 0 ≤ i1.as_i64 < length0
+      safety: 0 ≤ i2.as_i64 < length1
   =>
     abstract
 
 
   # create immutable array from this buffer
   #
-  public as_array ! E =>
+  public as_array array T ! E =>
     array (length0.as_i32 * length1.as_i32) (i -> Mutable_Array2.this[(i.as_i64 / length1), (i.as_i64 % length1)])
 
 
   # create a list from this buffer
   #
-  public as_list =>
+  public as_list list T =>
     # since buffer is mutable,
     # we first copy the elements
     # to an immutable array.
@@ -96,4 +96,4 @@ is
   # the current state of the buffer
   # as a string.
   #
-  public redef as_string => as_array.as_string
+  public redef as_string String => $as_array

@@ -43,7 +43,6 @@ import dev.flang.ast.AbstractCurrent;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
-import dev.flang.ast.Box;
 import dev.flang.ast.Constant;
 import dev.flang.ast.Contract;
 import dev.flang.ast.Expr;
@@ -51,7 +50,6 @@ import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.InlineArray;
-import dev.flang.ast.Tag;
 import dev.flang.ast.Types;
 import dev.flang.ast.Universe;
 import dev.flang.ast.Visi;
@@ -185,23 +183,6 @@ public class LibraryFeature extends AbstractFeature
   public Kind kind()
   {
     return _kind;
-  }
-
-  /**
-   * Is this a routine that returns the current instance as its result?
-   */
-  public boolean isConstructor()
-  {
-    return _libModule.featureIsConstructor(_index);
-  }
-
-
-  /**
-   * Is this a constructor returning a reference result?
-   */
-  public boolean isRef()
-  {
-    return _libModule.featureIsRef(_index);
   }
 
 
@@ -373,6 +354,43 @@ public class LibraryFeature extends AbstractFeature
   }
 
 
+  @Override
+  public boolean hasValuesAsOpenTypeFeature()
+  {
+    /* this should produce the same as super.hasValuesAsOpenTypeFeature(), just for
+     * efficiency and to avoid complex recursion we use the O-flag in the
+     * feature data in the library module directly:
+     */
+    var result = _libModule.featureHasOpenTypeFeature(_index);
+
+    if (CHECKS) check
+      (result == super.hasValuesAsOpenTypeFeature());
+
+    return result;
+  }
+
+
+  @Override
+  public AbstractFeature valuesAsOpenTypeFeature()
+  {
+    return _libModule.featureHasOpenTypeFeature(_index) ? _libModule.featureValuesAsOpenTypeFeature(_index)
+                                                        : null;
+  }
+
+
+  @Override
+  public AbstractFeature openTypesFeature()
+  {
+    if (PRECONDITIONS) require
+      (isOpenTypeParameter());
+
+    if (CHECKS) check
+      (_libModule.featureHasOpenTypeFeature(_index));
+
+    return _libModule.featureValuesAsOpenTypeFeature(_index);
+  }
+
+
   /**
    * Get inner feature with given name, ignoring the argument count.
    *
@@ -408,6 +426,20 @@ public class LibraryFeature extends AbstractFeature
 
 
   /**
+   * For a type parameter, this gives the ResolvedParametricType instance
+   * corresponding to this type parameter.
+   */
+  @Override
+  public AbstractType asGenericType()
+  {
+    if (PRECONDITIONS) require
+      (isTypeParameter());
+
+    return new GenericType(_libModule, -1, this);
+  }
+
+
+  /**
    * createSelfType returns a new instance of the type of this feature's frame
    * object.
    *
@@ -416,19 +448,15 @@ public class LibraryFeature extends AbstractFeature
   @Override
   public AbstractType createSelfType()
   {
-    if (PRECONDITIONS) require
-      (isRoutine() || isAbstract() || isIntrinsic() || isNative() || isChoice() || isField() || isTypeParameter());
-
     var o = outer();
     var ot = o == null ? null : o.selfType();
     AbstractType result = new NormalType(_libModule, -1, this,
-                                         isRef() ? FuzionConstants.MIR_FILE_TYPE_IS_REF
-                                                 : FuzionConstants.MIR_FILE_TYPE_IS_VALUE,
-                                         generics().asActuals(), ot);
+                                         defaultTypeKind(),
+                                         genericsAsActuals(), ot);
 
     if (POSTCONDITIONS) ensure
       (result != null,
-       Errors.any() || result.isRef().yes() == isRef(),
+       Errors.any() || result.isRef() == isRef(),
        // does not hold if feature is declared repeatedly
        Errors.any() || result.feature() == this);
 
@@ -437,7 +465,7 @@ public class LibraryFeature extends AbstractFeature
 
 
   /**
-   * type of this Expr. Since LibraryFature is no longer an expression, this
+   * type of this Expr. Since LibraryFeature is no longer an expression, this
    * will cause an error.
    *
    * NYI: CLEANUP: AbstractFeature should best not inherit from Expr. Instead,
@@ -457,18 +485,35 @@ public class LibraryFeature extends AbstractFeature
    */
   public AbstractType resultType()
   {
-    if (isConstructor())
-      {
-        return selfType();
-      }
-    else if (isChoice())
-      {
-        return Types.resolved.t_void;
-      }
-    else
-      {
-        return _libModule.type(_libModule.featureResultTypePos(_index));
-      }
+    return switch (kind())
+    {
+      case Constructor, RefConstructor -> selfType();
+      case Choice -> Types.resolved.t_void;
+      case TypeParameter -> Types.resolved.f_Type.resultType();
+      case OpenTypeParameter -> Types.resolved.f_Open_Types.resultType();
+      default -> _libModule.type(_libModule.featureResultTypePos(_index));
+    };
+  }
+
+
+  /**
+   * constraint returns the constraint type of this type parameter, Any if no
+   * constraint was set.  This ignores any context constraints like `pre T : numeric`
+   *
+   * @return the constraint.
+   */
+  @Override
+  public AbstractType constraint()
+  {
+    if (PRECONDITIONS) require
+      (isTypeParameter());
+
+    var result = _libModule.type(_libModule.featureConstraintPos(_index));
+
+    if (POSTCONDITIONS) ensure
+      (result != null);
+
+    return result;
   }
 
 
@@ -634,15 +679,6 @@ public class LibraryFeature extends AbstractFeature
                 { public SourcePosition pos() { return LibraryFeature.this.pos(fpos, fposEnd); } };
               break;
             }
-          case Box:
-            {
-              var t = _libModule.boxType(iat);
-              x = new Box(s.pop(), t)
-                {
-                  public SourcePosition pos() { return LibraryFeature.this.pos(fpos, fposEnd); }
-                };
-              break;
-            }
           case Const:
             {
               var t = _libModule.constType(iat);
@@ -715,13 +751,6 @@ public class LibraryFeature extends AbstractFeature
           case Pop:
             {
               c = s.pop();
-              break;
-            }
-          case Tag:
-            {
-              var val = s.pop();
-              var taggedType = _libModule.tagType(iat);
-              x = new Tag(val, taggedType);
               break;
             }
           case Unit:

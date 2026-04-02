@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.util;
 
-import java.nio.file.Path;
 
 
 /**
@@ -114,6 +113,54 @@ public class FuzionConstants extends ANY
    * Name of Type feature.
    */
   public static final String TYPE_FEAT   = "Type";
+
+
+  /**
+   * Name of Open_Types feature.
+   */
+  public static final String OPEN_TYPES_FEAT = "Open_Types";
+
+
+  /**
+   * Name of Values_Of_Open_Type feature.
+   */
+  public static final String VALUES_OF_OPEN_TYPE_FEAT = "Values_Of_Open_Type";
+
+
+  /**
+   * Name of type_applicator feature.
+   */
+  public static final String TYPE_APPLICATOR_FEAT = "type_applicator";
+
+
+  /**
+   * Name of type_applicator.apply feature.
+   */
+  public static final String TYPE_APPLICATOR_APPLY_FEAT = "apply";
+
+
+  /**
+   * Name of typed_applicator feature.
+   */
+  public static final String TYPED_APPLICATOR_FEAT = "typed_applicator";
+
+
+  /**
+   * Name of typed_applicator.apply feature.
+   */
+  public static final String TYPED_APPLICATOR_APPLY_FEAT = "apply";
+
+
+  /**
+   * Name of typed_zipper feature.
+   */
+  public static final String TYPED_ZIPPER_FEAT = "typed_zipper";
+
+
+  /**
+   * Name of typed_zipper.apply feature.
+   */
+  public static final String TYPED_ZIPPER_APPLY_FEAT = "apply";
 
 
   /**
@@ -225,7 +272,24 @@ public class FuzionConstants extends ANY
    */
   public static final String PREFIX_OPERATOR_PREFIX = "prefix ";
   public static final String INFIX_OPERATOR_PREFIX = "infix ";
+  public static final String INFIX_RIGHT_OPERATOR_PREFIX = "infix_right ";
+  public static final String INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX = "infix/infix_right ";
   public static final String POSTFIX_OPERATOR_PREFIX = "postfix ";
+
+  /**
+   * Infix operator parsed for choice type syntax sugar `i32 | unit | bool`
+   */
+  public static final String INFIX_PIPE = INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "|";
+
+  /**
+   * Name of the feature that defines choice types.
+   */
+  public static final String CHOICE_NAME = "choice";
+
+  /**
+   * Infix operator parsed for function type `a.b->c`
+   */
+  public static final String INFIX_ARROW = INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "->";
 
 
   /**
@@ -270,6 +334,21 @@ public class FuzionConstants extends ANY
    * this not being found in redefinitions.
    */
   public static final String COTYPE_THIS_TYPE = "THIS" + INTERNAL_NAME_PREFIX + "TYPE";
+
+
+  /**
+   * Prefix of name of open type feature, i.e., the feature that is called when
+   * a field whose type is an open type parameter is called without selecting
+   * one specific variant.
+   */
+  public static final String VALUES_OF_OPEN_TYPE_SUFFIX = "." + INTERNAL_NAME_PREFIX; /* e.g., `values.#` which stands for `values.0`/`values.1`/etc. */
+
+
+  /**
+   * Prefix of name of open type parameter, i.e., the feature that is called when
+   * an open type parameter is called.
+   */
+  public static final String OPEN_TYPES_PREFIX = INTERNAL_NAME_PREFIX + "Open_Types";
 
 
   /**
@@ -390,24 +469,25 @@ public class FuzionConstants extends ANY
   public static final String PREANDCALLCONDITION_FEATURE_PREFIX = INTERNAL_NAME_PREFIX + "preandcall";
   public static final String POSTCONDITION_FEATURE_PREFIX       = INTERNAL_NAME_PREFIX + "post";
 
-  /**
-   * Internal name used for an outer type.
-   */
-  public static final String OUTER_TYPE_NAME = INTERNAL_NAME_PREFIX + "outer";
-
 
   /**
    * The qualified names of features fuzion.runtime.precondition_fault and
    * fuzion.runtime.postcondition_fault.
    */
-  public static String[] FUZION_RUNTIME_PRECONDITION_FAULT  = "fuzion.runtime.precondition_fault" .split("\\.");
-  public static String[] FUZION_RUNTIME_POSTCONDITION_FAULT = "fuzion.runtime.postcondition_fault".split("\\.");
+  public static final String[] FUZION_RUNTIME_PRECONDITION_FAULT  = "fuzion.runtime.precondition_fault" .split("\\.");
+  public static final String[] FUZION_RUNTIME_POSTCONDITION_FAULT = "fuzion.runtime.postcondition_fault".split("\\.");
 
 
   /**
    * Suffix added to module files.
    */
   public static final String MODULE_FILE_SUFFIX = ".fum";
+
+
+  /**
+   * Name of feature to call for unwrapping.
+   */
+  public static final String UNWRAP = "unwrap";
 
 
   /*-----------------  special values used in MIR file  -----------------*/
@@ -420,11 +500,6 @@ public class FuzionConstants extends ANY
 
   public static final int MIR_FILE_FIRST_FEATURE_OFFSET = 4;
 
-  /**
-   * feature kind value for constructor routines
-   */
-  public static final int MIR_FILE_KIND_CONSTRUCTOR_VALUE = 8;
-  public static final int MIR_FILE_KIND_CONSTRUCTOR_REF   = 9;
 
   /**
    * The bits of feature kind that encode the kind.
@@ -469,18 +544,9 @@ public class FuzionConstants extends ANY
 
 
   /**
-   * For a type, the value of the valRefOrThis byte:
+   * Flag OR'ed to kind for features with a values of open type feature
    */
-  public static final int MIR_FILE_TYPE_IS_VALUE = 0x00;
-  public static final int MIR_FILE_TYPE_IS_REF   = 0x01;
-  public static final int MIR_FILE_TYPE_IS_THIS  = 0x02;
-
-
-  /**
-   * Fuzion module directory as used in module files instead of absolute or
-   * relative path of module directory.
-   */
-  public static final Path SYMBOLIC_FUZION_MODULE = Path.of("$MODULE");
+  public static final int MIR_FILE_KIND_HAS_VALUES_OF_OPEN_TYPE_FEATURE = 0x1000;
 
 
   /**
@@ -549,6 +615,8 @@ public class FuzionConstants extends ANY
    * heirs.
    */
   public static final int MODIFIER_FIXED        = 0x02;
+
+
   static { if (CHECKS) check(modifierToString(MODIFIER_FIXED).trim().equals("fixed")); }
 
 
@@ -587,6 +655,39 @@ public class FuzionConstants extends ANY
         (byte) (i >>  8),
         (byte) (i      )
       };
+  }
+
+
+  /**
+   * Create name of open type feature, i.e., the feature that is called when
+   * a field whose type is an open type parameter is called without selecting
+   * one specific variant.
+   *
+   * @param argFieldBaseName the base name of the argument field
+   *
+   * @return the names, looks something like `#Values_Of_Open_Type#argFieldBaseName#uniqueId`.
+   */
+  public static String createFieldsOfOpenTypeName(String argFieldBaseName)
+  {
+    return argFieldBaseName + VALUES_OF_OPEN_TYPE_SUFFIX;
+  }
+
+
+  /**
+   * Extract the field base name from a name created by `createValuesOfOpenTypeName`.
+   *
+   * @param valuesAsOpenTypeName the name obtained form `createValuesOfOpenTypeName`.
+   *
+   * @return the original `argFieldBaseName` passed to `createValuesOfOpenTypeName`.
+   */
+  public static String extractBaseNameFromFieldsOfOpenTypeName(String valuesAsOpenTypeName)
+  {
+    var end = valuesAsOpenTypeName.lastIndexOf(VALUES_OF_OPEN_TYPE_SUFFIX);
+
+    if (CHECKS) check
+      (end >= 0);
+
+    return valuesAsOpenTypeName.substring(0, end);
   }
 
 }

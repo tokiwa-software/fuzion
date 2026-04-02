@@ -36,7 +36,7 @@ public debug bool => intrinsic  # 0 < debug_level   , intrinsic only to allow co
 # debug(i32) is a condition qualifier that enables conditions if debugging is
 # enabled at the given debug-level.
 #
-public debug(n i32) => n ≤ debug_level
+public debug(n i32) bool => n ≤ debug_level
 
 
 # Current debug level, used by condition qualified debug(i32)

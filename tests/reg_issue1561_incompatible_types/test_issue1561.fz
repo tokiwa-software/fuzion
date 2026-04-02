@@ -21,11 +21,11 @@
 #
 # -----------------------------------------------------------------------
 
-ex =>
+test_issue1561 =>
   read_line option String =>
 
     (exception unit String ()->
-      ref : String is
+      _ : String is
         public redef utf8 Sequence u8 =>
           (list u8).empty
     ).as_option

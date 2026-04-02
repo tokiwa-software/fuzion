@@ -150,6 +150,7 @@ PASSED: x := 2
 PASSED: x := x.as_f64
 PASSED: x := x * 3.14
 PASSED: x := x.as_i32
+PASSED: x is 16
 PASSED: x is 2
 PASSED: x is 16
 PASSED: x is 16

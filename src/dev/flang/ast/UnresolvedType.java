@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import java.util.Optional;
 import java.util.Set;
 
 import dev.flang.util.Errors;
@@ -33,7 +34,6 @@ import dev.flang.util.FuzionConstants;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
-import dev.flang.util.YesNo;
 
 
 /**
@@ -54,8 +54,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    * {@code Call.NO_GENERICS} which is used to distinguish {@code a.b<>()} (using {@code UnresolvedType.NONE})
    * from {@code a.b()} (using {@code Call.NO_GENERICS}).
    */
-  public static final List<AbstractType> NONE = new List<AbstractType>();
-  static { NONE.freeze(); }
+  public static final List<AbstractType> NONE = new List<AbstractType>().freeze();
 
 
   /**
@@ -85,6 +84,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    * The sourcecode position of the declaration point of this type, or, for
    * unresolved types, the source code position of its use.
    */
+  @Override
   public SourcePosition declarationPos() { return _pos.pos(); }
 
 
@@ -94,7 +94,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    * defining a ref type or not, false to keep the underlying feature's
    * ref/value status.
    */
-  RefOrVal _refOrVal;
+  final Optional<TypeKind> _typeKind;
 
 
   /**
@@ -181,28 +181,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    */
   public UnresolvedType(HasSourcePosition pos, String n, List<AbstractType> g, AbstractType o)
   {
-    this(pos, n, g, o, RefOrVal.LikeUnderlyingFeature);
-  }
-
-
-  /**
-   * Constructor to create a type from an existing type after formal generics
-   * have been replaced in the generics arguments and in the outer type.
-   *
-   * @param t the original type
-   *
-   * @param g the actual generic arguments that replace t.generics
-   *
-   * @param o the actual outer type, or null, that replaces t.outer
-   */
-  public UnresolvedType(UnresolvedType t, List<AbstractType> g, AbstractType o)
-  {
-    this(t.pos(), t._name, g, o, t._refOrVal);
-
-    if (PRECONDITIONS) require
-      (Errors.any() ||  (t.generics() instanceof FormalGenerics.AsActuals   ) || t.generics().size() == g.size(),
-       Errors.any() || !(t.generics() instanceof FormalGenerics.AsActuals aa) || aa.sizeMatches(g),
-       (t.outer() == null) == (o == null));
+    this(pos, n, g, o, Optional.empty());
   }
 
 
@@ -215,10 +194,10 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    *
    * @param o
    *
-   * @param refOrVal true iff this type should be a ref type, otherwise it will be a
+   * @param typeKind true iff this type should be a ref type, otherwise it will be a
    * value type.
    */
-  public UnresolvedType(HasSourcePosition pos, String n, List<AbstractType> g, AbstractType o, RefOrVal refOrVal)
+  public UnresolvedType(HasSourcePosition pos, String n, List<AbstractType> g, AbstractType o, Optional<TypeKind> typeKind)
   {
     if (PRECONDITIONS) require
       (pos != null,
@@ -226,10 +205,12 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
     this._pos      = pos;
     this._name     = n;
-    this._generics = ((g == null) || g.isEmpty()) ? NONE : g;
-    this._generics.freeze();
+    this._generics = (((g == null) || g.isEmpty()) ? NONE : g).freeze();
     this._outer    = o;
-    this._refOrVal = refOrVal;
+    this._typeKind = typeKind;
+    // to make caching of _isGenericArgument work
+    // we call constructor after _typeKind is set
+    super();
   }
 
 
@@ -270,15 +251,18 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    *
    * @param original the original value type
    *
-   * @param refOrVal must be RefOrVal.Boxed or RefOrVal.Val
+   * @param typeKind must be TypeKind.RefType or TypeKind.ValueType
    */
-  public UnresolvedType(UnresolvedType original, RefOrVal refOrVal)
+  public UnresolvedType(UnresolvedType original, TypeKind typeKind)
   {
     if (PRECONDITIONS) require
-      (refOrVal != original._refOrVal);
+      (original._typeKind.isEmpty() || typeKind != original._typeKind.get());
 
     this._pos               = original._pos;
-    this._refOrVal          = refOrVal;
+    this._typeKind          = Optional.of(typeKind);
+    // to make caching of _isGenericArgument work
+    // we call constructor after _typeKind is set
+    super();
     this._name              = original._name;
     this._generics          = original._generics;
     this._outer             = original._outer;
@@ -297,7 +281,10 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
   UnresolvedType(UnresolvedType original, AbstractFeature originalOuterFeature)
   {
     this._pos               = original._pos;
-    this._refOrVal          = original._refOrVal;
+    this._typeKind          = original._typeKind;
+    // to make caching of _isGenericArgument work
+    // we call constructor after _typeKind is set
+    super();
     this._name              = original._name;
     if (original._generics.isEmpty())
       {
@@ -333,7 +320,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
     if (res == null ||
         !_generics.isEmpty() ||
-        _refOrVal != RefOrVal.LikeUnderlyingFeature)
+        !_typeKind.isEmpty())
       {
         res = null;
       }
@@ -358,67 +345,6 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
 
   /**
-   * Create a reference variant of this type.  Return this
-   * in case it is a reference already.
-   */
-  public AbstractType asRef()
-  {
-    // throw new Error("asRef not available for unresolved type");
-    return this;
-    /*
-    AbstractType result = this;
-    if (!isRef() && this != Types.t_ERROR)
-      {
-        result = ResolvedNormalType.create(this, RefOrVal.Boxed);
-      }
-      return result;*/
-  }
-
-
-  /**
-   * Create a this.type variant of this type.  Return this
-   * in case it is a this.type or a choice variant already.
-   */
-  public AbstractType asThis()
-  {
-    //throw new Error("asThis not available for unresolved type");
-    return this;
-    /*
-    AbstractType result = this;
-    if (!isThisType() && !isChoice() && this != Types.t_ERROR && this != Types.t_ADDRESS)
-      {
-        result = ResolvedNormalType.create(this, RefOrVal.ThisType);
-      }
-
-    if (POSTCONDITIONS) ensure
-      (result == Types.t_ERROR || result == Types.t_ADDRESS || result.isThisType() || result.isChoice(),
-       !(isThisType() || isChoice()) || result == this);
-
-    return result;
-    */
-  }
-
-
-  /**
-   * Create a value variant of this type.  Return this
-   * in case it is a value already.
-   */
-  public AbstractType asValue()
-  {
-    //throw new Error("asValue not available for unresolved type");
-    return this;
-    /*
-    AbstractType result = this;
-    if (isRef() && this != Types.t_ERROR)
-      {
-        result = ResolvedNormalType.create(this, RefOrVal.Value);
-      }
-    return result;
-    */
-  }
-
-
-  /**
    * Call Constructor for a function type that returns a result
    *
    * @param returnType the result type.
@@ -437,49 +363,21 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
     return new ParsedType(pos,
                           arguments.size() == 1 ? Types.UNARY_NAME  :
                           arguments.size() == 2 ? Types.BINARY_NAME : Types.FUNCTION_NAME,
-                          new List<AbstractType>(returnType, arguments),
-                          null);
+                          new List<AbstractType>(returnType, arguments));
   }
 
 
-  /**
-   * isRef
-   */
-  public YesNo isRef()
+  @Override
+  public String toString(boolean humanReadable, AbstractFeature context)
   {
-    throw new Error("isRef not known in unresolved type");
+    return toString();
   }
 
 
   /**
-   * isThisType
+   * Get a String representation of this Type.
    */
-  public boolean isThisType()
-  {
-    return this._refOrVal == RefOrVal.ThisType;
-  }
-
-
-  /**
-   * Get a String representation of this UnresolvedType.
-   *
-   * Note that this does not work for instances of UnresolvedType before they were
-   * resolved.  Use toString() for creating strings early in the front end
-   * phase.
-   */
-  public String asString()
-  {
-    return Types.INTERNAL_NAMES.contains(_name)
-      ? toString()         // internal types like Types.t_UNDEFINED, t_ERROR, t_ADDRESS
-      : super.asString();
-  }
-
-
-  /**
-   * toString
-   *
-   * @return
-   */
+  @Override
   public String toString()
   {
     String result;
@@ -495,16 +393,17 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
           + (outer == "" ||
              outer.equals(FuzionConstants.UNIVERSE_NAME) ? ""
                                                          : outer + ".")
-          + (_refOrVal == RefOrVal.Boxed ? "ref "  :
-             _refOrVal == RefOrVal.Value ? "value "
-                                         : ""       )
+          + (_typeKind.map(tm ->
+              tm == TypeKind.RefType   ? "ref "  :
+              tm == TypeKind.ValueType ? "value "
+                                       : "").orElse(""))
           + _name;
       }
     else
       {
         result =
-          (_refOrVal == RefOrVal.Boxed ? "ref "
-                                       : ""       )
+          (_typeKind.orElse(TypeKind.ValueType) == TypeKind.RefType ? "ref "
+                                                                    : "")
           + _name;
       }
     if (_generics != NONE)
@@ -515,19 +414,6 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
     return result;
   }
 
-
-  /**
-   * visit all the expressions within this feature.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outerfeat the feature surrounding this expression.
-   */
-  public AbstractType visit(FeatureVisitor v, AbstractFeature outerfeat)
-  {
-    return v.action(this);
-  }
 
   /**
    * resolve this type, i.e., find or create the corresponding instance of
@@ -569,160 +455,164 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
     if (!tolerant && _resolved == null)
       {
-        _resolved = resolveThisType(res, outer);
+        _resolved = resolveThisTypeInCotype(res, outer);
       }
     if (_resolved == null)
       {
-        var of = outer;
-        var o = _outer;
-        var inCotype = false;
-        if (!tolerant && (o != null && !o.isThisType()))
+        AbstractFeature of;
+        var ot = outer();
+        if (ot instanceof UnresolvedType ut && ut.name().equals(FuzionConstants.UNIVERSE_NAME))
           {
-            // workaround for not yet resolved universe: #4141
-            if (!(o instanceof UnresolvedType ut && ut.name().equals(FuzionConstants.UNIVERSE_NAME)))
-              {
-                o = o.resolve(res, context);
-                var ot2 = o.selfOrConstraint(res, context); // see tests/reg_issue1943 for examples
-                of = ot2.feature();
-              }
-            else
-              {
-                o = null;
-                of = res.universe;
-              }
-          }
-        else if (tolerant && (o instanceof UnresolvedType ut))
-          {
-            o = ut.resolve(res, context, true);
-            if (o == null || o == Types.t_ERROR)
-              {
-                return null;
-              }
-            var ot2 = o.selfOrConstraint(res, context); // see tests/reg_issue1943 for examples
-            of = ot2.feature();
+            ot = null;
+            of = res.universe;
           }
         else
           {
-            inCotype = of != originalOuterFeature(of);
+            ot = ot == null                      ? ot
+               : ot instanceof UnresolvedType ut ? ut.resolve(res, context, tolerant)
+                                                 : ot.resolve(res, context);
+            of = ot != null ? ot.selfOrConstraint(res, context).feature() // see tests/reg_issue1943 for examples
+                            : outer;
           }
-
-        var ot = outer();
-        if (ot != null && ot.isGenericArgument())
+        if (ot != Types.t_ERROR && of != Types.f_ERROR)
           {
-            if (tolerant) { return null; }
-            else { AstErrors.formalGenericAsOuterType(pos(), this); }
-          }
-
-        var mayBeFreeType = mayBeFreeType() && outer.isValueArgument();
-
-        var traverseOuter = ot == null && _name != FuzionConstants.COTYPE_THIS_TYPE;
-        var fo = tolerant ? res._module.lookupType(pos(), of, _name, traverseOuter,
-                                                   true /* ignore ambiguous */ ,
-                                                   true /* ignore not found */)
-                          : res._module.lookupType(pos(), of, _name, traverseOuter,
-                                                   false                           /* ignore ambiguous */,
-                                                   mayBeFreeType || inCotype       /* ignore not found */);
-        if (fo == null || !fo._feature.isTypeParameter() && inCotype)
-          { // if we are in a type feature, type lookup happens in the
-            // original feature, except for type parameters that we just
-            // checked in the type feature (of).
-            of = originalOuterFeature(of);
-            fo = tolerant ? res._module.lookupType(pos(), of, _name, traverseOuter,
-                                                   true /* ignore ambiguous */ ,
-                                                   true /* ignore not found */)
-                          : res._module.lookupType(pos(), of, _name, traverseOuter,
-                                                   false          /* ignore ambiguous */,
-                                                   mayBeFreeType  /* ignore not found */);
-          }
-        if (!tolerant && _resolved == null)
-          {
-            if (fo == FeatureAndOuter.ERROR)
-              {
-                _resolved = Types.t_ERROR;
+            var inCotype = of != originalOuterFeature(of);
+            var mayBeFreeType = mayBeFreeType() && outer.isValueArgument();
+            var traverseOuter = outer() == null && _name != FuzionConstants.COTYPE_THIS_TYPE;
+            var fo = res._module.lookupType(pos(), of, _name, traverseOuter,
+                                            tolerant                                /* ignore ambiguous */,
+                                            tolerant || mayBeFreeType || inCotype   /* ignore not found */);
+            if (fo == null || !fo._feature.isTypeParameter() && inCotype)
+              { // if we are in a type feature, type lookup happens in the
+                // original feature, except for type parameters that we just
+                // checked in the type feature (of).
+                of = originalOuterFeature(of);
+                fo = res._module.lookupType(pos(), of, _name, traverseOuter,
+                                            tolerant                   /* ignore ambiguous */,
+                                            tolerant || mayBeFreeType  /* ignore not found */);
               }
-            else if (fo == null)
+            if (_resolved == null)
               {
-                _resolved = addAsFreeType(res, context);
-              }
-            else if (isFreeType())
-              {
-                AstErrors.freeTypeMustNotMaskExistingType(this, fo._feature);
-                _resolved = Types.t_ERROR;
-              }
-            else
-              {
-                var f = fo._feature;
-                var generics = generics();
-                if (o == null && f.isTypeParameter())
+                if (fo == FeatureAndOuter.ERROR ||
+                    fo == null                  ||
+                    isFreeType()                  )
                   {
-                    if (!generics.isEmpty())
+                    if (!tolerant)
                       {
-                        AstErrors.formalGenericWithGenericArgs(pos(), this, f.asGeneric());
-                      }
-                    var gt = f.asGenericType();
-                    if (gt.isOpenGeneric() && !(outer instanceof Feature off && off.isLastArgType(this)))
-                      {
-                        AstErrors.illegalUseOfOpenFormalGeneric(pos(), gt.genericArgument());
-                        _resolved = Types.t_ERROR;
-                      }
-                    else
-                      {
-                        _resolved = gt;
+                        if (fo == FeatureAndOuter.ERROR)
+                          {
+                            _resolved = Types.t_ERROR;
+                          }
+                        else if (fo == null)
+                          {
+                            _resolved = addAsFreeType(res, context);
+                          }
+                        else // if (isFreeType())
+                          {
+                            AstErrors.freeTypeMustNotMaskExistingType(this, fo._feature);
+                            _resolved = Types.t_ERROR;
+                          }
                       }
                   }
                 else
                   {
-                    if (o == null && !fo._outer.isUniverse())
+                    var f = fo._feature;
+                    var generics = generics();
+                    if (ot == null && f.isTypeParameter())
                       {
-                        o = fo._outer.thisType(fo.isNextInnerFixed());
+                        if (!generics.isEmpty())
+                          {
+                            if (!tolerant)
+                              {
+                                AstErrors.formalGenericWithGenericArgs(pos(), this, f);
+                                _resolved = Types.t_ERROR;
+                              }
+                          }
+                        else
+                          {
+                            var gt = f.asGenericType();
+                            if (gt.isOpenGeneric() && !isValidUseOfOpenType(context, f))
+                              {
+                                if (!tolerant)
+                                  {
+                                    AstErrors.illegalUseOfOpenFormalGeneric(pos(), gt.genericArgument());
+                                    _resolved = Types.t_ERROR;
+                                  }
+                              }
+                            else
+                              {
+                                _resolved = gt;
+                              }
+                          }
                       }
-                    _resolved = finishResolve(res, context, this, this, f, generics, generics(), o, _refOrVal, _ignoreActualTypePars, tolerant);
+                    else
+                      {
+                        if (ot == null && !fo._outer.isUniverse())
+                          {
+                            ot = fo._outer.thisType(fo.isNextInnerFixed());
+                          }
+                        _resolved = finishResolve(res, context, this, this, f, generics, generics(), ot, _typeKind.orElse(f.defaultTypeKind()), _ignoreActualTypePars, tolerant);
+                      }
                   }
               }
+
+            if (CHECKS) check
+              (tolerant || Errors.any() || fo != FeatureAndOuter.ERROR);
           }
-
-        var outerfeat = context.outerFeature();
-
-        if (tolerant && CHECKS) check
-          (fo != FeatureAndOuter.ERROR);
-
-        if (tolerant && fo != null)
+        else if (!tolerant)
           {
-            var f = fo._feature;
-            var generics = generics();
-            if (o == null && f.isTypeParameter())
-              {
-                if (generics.isEmpty())
-                  {
-                    var gt = f.asGenericType();
-                    if (!gt.isOpenGeneric() || (outerfeat instanceof Feature off && off.isLastArgType(this)))
-                      {
-                        _resolved = gt;
-                      }
-                  }
-              }
-            else
-              {
-                if (o == null && !fo._outer.isUniverse())
-                  {
-                    o = fo._outer.thisType(fo.isNextInnerFixed());
-                  }
-                _resolved = finishResolve(res, context, this, this, f, generics, null, o, _refOrVal, _ignoreActualTypePars, tolerant);
-              }
+            _resolved = Types.t_ERROR;
           }
       }
 
-    if (_resolved != null && _resolved.isOpenGeneric() && !_followedByDots)
+    if (_resolved != null && _resolved != Types.t_ERROR && (_resolved.isOpenGeneric() != _followedByDots))
       {
-        AstErrors.openGenericMissingDots(pos(), _resolved);
+        if (_resolved.isOpenGeneric())
+          {
+            AstErrors.openGenericMissingDots(pos(), _resolved);
+          }
+        else
+          {
+            AstErrors.dotsButNotOpenGeneric(pos(), _resolved);
+          }
+        _resolved = Types.t_ERROR;
       }
 
-    if (_resolved != null && !_resolved.isOpenGeneric() && _followedByDots)
-      {
-        AstErrors.dotsButNotOpenGeneric(pos(), _resolved);
-      }
+    if (POSTCONDITIONS) ensure
+      (tolerant || _resolved != null);
 
     return _resolved;
+  }
+
+  /**
+   * After it was found that `this` resolves as the open type parameter `otp` in
+   * the `context`, check if this is a legal use of an open type parameter.
+   *
+   * Check if this is the last argument of a feature and t is its return type.
+   * This is needed during type resolution since this is the only place where an
+   * open formal generic may be used.
+   *
+   * @param context the source code context where this type is used
+   *
+   * @param otp the open type parameter that was found then looking up this
+   *
+   * @return true iff this is the last argument of a feature and t is its return
+   * type.
+   */
+  boolean isValidUseOfOpenType(Context context, AbstractFeature otp)
+  {
+    if (PRECONDITIONS) require
+      (otp.isOpenTypeParameter(),
+       context != null);
+
+    var outer = context.outerFeature();
+
+    return
+      outer instanceof Feature off &&
+      off.outer() != null &&
+      off.outer().arguments().contains(outer) &&
+      (off.outer().arguments().getLast() == off ||
+       otp.outer() != off.outer());
   }
 
 
@@ -730,7 +620,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    * Perform the last steps of resolve() for a normal type (not a type
    * parameter).
    *
-   *  - if refOrVal is ThisType, set generics to the formal generics used as
+   *  - if typeKind is ThisType, set generics to the formal generics used as
    *    actual.
    *
    *  - otherwise, resolve the formal generics and check that their number
@@ -756,7 +646,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    *
    * @param o the resolved outer type
    *
-   * @param refOrVal Select the type variant: value, boxed, thisType
+   * @param typeKind Select the type variant: value, boxed, thisType
    *
    * @param ignoreActualTypePars if true no errors will be reported in case the
    * number of actual type parameters does not match the formal type parameters.
@@ -765,7 +655,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    *
    * @return an instance of ResolvedNormalType representing the given type.
    */
-  static ResolvedType finishResolve(Resolution res,
+  static AbstractType finishResolve(Resolution res,
                                     Context context,
                                     AbstractType thiz,
                                     HasSourcePosition pos,
@@ -773,7 +663,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
                                     List<AbstractType> generics,
                                     List<AbstractType> unresolvedGenerics,
                                     AbstractType o,
-                                    RefOrVal refOrVal,
+                                    TypeKind typeKind,
                                     boolean ignoreActualTypePars,
                                     boolean tolerant)
   {
@@ -781,18 +671,15 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
     if (!ignoreActualTypePars)
       {
-        if (refOrVal == RefOrVal.ThisType && generics.isEmpty())
+        if (typeKind == TypeKind.ThisType && generics.isEmpty())
           {
-            generics = f.generics().asActuals();
+            generics = f.genericsAsActuals();
           }
         else
           {
             if (tolerant)
               {
-                if (!(generics instanceof FormalGenerics.AsActuals))
-                  {
-                    generics = generics.map(t -> t instanceof UnresolvedType ut ? ut.resolve(res, context, true) : t);
-                  }
+                generics = generics.map(t -> t instanceof UnresolvedType ut ? ut.resolve(res, context, true) : t);
                 if (!f.generics().sizeMatches(generics) || generics.contains(null))
                   {
                     f = Types.f_ERROR;
@@ -800,11 +687,11 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
               }
             else
               {
-                generics = FormalGenerics.resolve(res, generics, context.outerFeature());
+                generics = res.resolveTypes(generics, context);
                 if (!f.generics().errorIfSizeDoesNotMatch(generics,
                                                           pos.pos(),
                                                           "type",
-                                                          "Type: " + thiz.toString() + "\n"))
+                                                          "Type: " + thiz.toString(true) + "\n"))
                   {
                     f = Types.f_ERROR;
                   }
@@ -813,14 +700,17 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
         generics.freeze();
       }
 
-    return
-      f == Types.f_ERROR ? Types.t_ERROR
-                         : ResolvedNormalType.create(generics,
-                                                     unresolvedGenerics,
-                                                     o,
-                                                     f,
-                                                     refOrVal,
-                                                     false);
+    return typeKind == TypeKind.ThisType
+      ? new ThisType(f)
+      : !f.generics().sizeMatches(generics) && ignoreActualTypePars
+      ? new IncompleteType(f, typeKind)
+      : !f.generics().sizeMatches(generics)
+      ? (tolerant ? null : Types.t_ERROR)
+      : ResolvedNormalType.create(generics,
+                                  unresolvedGenerics,
+                                  o,
+                                  f,
+                                  typeKind);
   }
 
 
@@ -835,15 +725,15 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
 
   /**
-   * resolve 'abc.this.type' within a type feature. If this designates a
-   * 'this.type' withing a type feature, then return the type parameter of the
+   * resolve 'abc.this.type' within a cotype. If this designates a
+   * 'this.type' withing a cotype, then return the type parameter of the
    * corresponding outer type.
    *
    * Example: if this is
    *
    *   b.this.type
    *
-   * within a type feature
+   * within a cotype
    *
    *   a.type.b.type.c.d
    *
@@ -856,7 +746,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    * @return null if no matching this type was found, the resolved type
    * otherwise.
    */
-  private AbstractType resolveThisType(Resolution res, AbstractFeature outerfeat)
+  private AbstractType resolveThisTypeInCotype(Resolution res, AbstractFeature outerfeat)
   {
     if (PRECONDITIONS) require
       (outerfeat != null,
@@ -897,31 +787,10 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
   }
 
 
-  /**
-   * isGenericArgument
-   *
-   * @return
-   */
-  public boolean isGenericArgument()
+  @Override
+  protected AbstractFeature backingFeature()
   {
-    if (false)  // NYI: if findGenerics and resolve would be done in the same phase we could throw this error here:
-      {
-        throw new Error("isGenericArgument not known for unresolved type");
-      }
-    return false;
-  }
-
-
-  /**
-   * For a resolved normal type, return the underlying feature.
-   *
-   * @return the underlying feature.
-   *
-   * @throws Error if this is not resolved or isGenericArgument().
-   */
-  public AbstractFeature feature()
-  {
-    throw new Error("feature not available for unresolved type");
+    throw new Error("backingFeature not available for unresolved type");
   }
 
 
@@ -932,24 +801,10 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    * This is redefined here since {@code feature} might still be null while this type
    * was not resolved yet.
    */
-  boolean isTypeType()
+  @Override
+  boolean isCotypeType()
   {
     return false;
-  }
-
-
-  /**
-   * genericArgument gives the Generic instance of a type defined by a generic
-   * argument.
-   *
-   * @return the Generic instance, never null.
-   */
-  public Generic genericArgument()
-  {
-    if (PRECONDITIONS) require
-      (false);
-
-    throw new Error();
   }
 
 
@@ -1025,7 +880,8 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
                          freeTypeConstraint().resolve(res, context),
                          _name,
                          Contract.EMPTY_CONTRACT,
-                         Impl.TYPE_PARAMETER)
+                         _followedByDots ? Impl.TYPE_PARAMETER_OPEN
+                                         : Impl.TYPE_PARAMETER)
       {
         /**
          * Is this type a free type?
@@ -1033,7 +889,8 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
         public boolean isFreeType() { return true; }
       };
     var g = outer.outer().addTypeParameter(res, tp);
-    return g.type();
+    tp.scheduleForResolution(res);
+    return g.asGenericType();
   }
 
 
@@ -1043,7 +900,8 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    *
    * @param s the features that have already been found
    */
-  protected void usedFeatures(Set<AbstractFeature> s)
+  @Override
+  void usedFeatures(Set<AbstractFeature> s)
   {
     throw new Error("must not be called on unresolved types.");
   }
@@ -1056,6 +914,23 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
     _followedByDots = true;
   }
 
+
+  @Override
+  public boolean isOpenGeneric()
+  {
+    return _followedByDots;
+  }
+
+
+  /**
+   * The mode of the type: GenericArgument, ThisType, RefType or ValueType.
+   */
+  @Override
+  public TypeKind kind()
+  {
+    return _typeKind
+      .orElse(TypeKind.ValueType);
+  }
 
 }
 

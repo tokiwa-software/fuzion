@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
-import dev.flang.util.SourcePosition;
 
 
 /**
@@ -36,7 +35,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class ArtificialBuiltInType extends ResolvedNormalType
+class ArtificialBuiltInType extends ResolvedNormalType
 {
 
 
@@ -58,7 +57,7 @@ public class ArtificialBuiltInType extends ResolvedNormalType
   /**
    * The unique id of this artificial built in type.
    */
-  private int _id;
+  private final int _id;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -66,21 +65,13 @@ public class ArtificialBuiltInType extends ResolvedNormalType
 
   public ArtificialBuiltInType(String name)
   {
-    super();
+    super(UnresolvedType.NONE, UnresolvedType.NONE, null, null, TypeKind.ValueType);
     _name = name;
     _id = ids++;
   }
 
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * The sourcecode position of the declaration point of this type, or, for
-   * unresolved types, the source code position of its use.
-   */
-  @Override
-  public SourcePosition declarationPos() { return SourcePosition.builtIn; }
 
 
   /**
@@ -99,12 +90,12 @@ public class ArtificialBuiltInType extends ResolvedNormalType
 
 
   /**
-   * outer feature, null unless this is Types.t_ADDRESS; where this is
-   * universe.selfType().
+   * outer feature, null.
    */
+  @Override
   public AbstractType outer()
   {
-    return this == Types.t_ADDRESS ? Types.resolved.universe.selfType() : null;
+    return null;
   }
 
 
@@ -117,17 +108,18 @@ public class ArtificialBuiltInType extends ResolvedNormalType
     return _id;
   }
 
-  /**
-   * asString is redefined here to avoid accessing _feature to create name.
-   */
-  public String asString()
+
+  @Override
+  public boolean isArtificialType()
   {
-    return _name;
+    return true;
   }
+
 
   /**
    * toString is redefined here to avoid accessing _feature to create name.
    */
+  @Override
   public String toString()
   {
     return _name;

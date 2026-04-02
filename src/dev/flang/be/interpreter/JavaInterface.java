@@ -65,17 +65,17 @@ public class JavaInterface extends FUIRContext
       }
     catch (IllegalAccessException e)
       {
-        Errors.fatal("IllegalAccessException when calling fuzion.java.get_static_field for field "+clazz+"."+field);
+        Errors.fatal("IllegalAccessException when calling fuzion.jvm.get_static_field for field "+clazz+"."+field);
         result = null;
       }
     catch (ClassNotFoundException e)
       {
-        Errors.fatal("ClassNotFoundException when calling fuzion.java.get_static_field for field "+clazz+"."+field);
+        Errors.fatal("ClassNotFoundException when calling fuzion.jvm.get_static_field for field "+clazz+"."+field);
         result = null;
       }
     catch (NoSuchFieldException e)
       {
-        Errors.fatal("NoSuchFieldException when calling fuzion.java.get_static_field for field "+clazz+"."+field);
+        Errors.fatal("NoSuchFieldException when calling fuzion.jvm.get_static_field for field "+clazz+"."+field);
         result = null;
       }
     return result;
@@ -95,15 +95,15 @@ public class JavaInterface extends FUIRContext
       }
     catch (IllegalAccessException e)
       {
-        Errors.fatal("IllegalAccessException when calling fuzion.java.get_static_field for field "+clazz+"."+field);
+        Errors.fatal("IllegalAccessException when calling fuzion.jvm.get_static_field for field "+clazz+"."+field);
       }
     catch (ClassNotFoundException e)
       {
-        Errors.fatal("ClassNotFoundException when calling fuzion.java.get_static_field for field "+clazz+"."+field);
+        Errors.fatal("ClassNotFoundException when calling fuzion.jvm.get_static_field for field "+clazz+"."+field);
       }
     catch (NoSuchFieldException e)
       {
-        Errors.fatal("NoSuchFieldException when calling fuzion.java.get_static_field for field "+clazz+"."+field);
+        Errors.fatal("NoSuchFieldException when calling fuzion.jvm.get_static_field for field "+clazz+"."+field);
       }
   }
 
@@ -196,33 +196,37 @@ public class JavaInterface extends FUIRContext
         case SpecialClazzes.c_f32 -> o instanceof Float f ? new f32Value(f.floatValue()): new f32Value(((Value) o).f32Value());
         case SpecialClazzes.c_f64 -> o instanceof Double d ? new f64Value(d.doubleValue()): new f64Value(((Value) o).f64Value());
         case SpecialClazzes.c_bool -> o instanceof Boolean z ? new boolValue(z): new boolValue(((Value) o).boolValue());
-        case SpecialClazzes.c_unit -> new Instance(rc);
         // NYI: UNDER DEVELOPMENT: remove this, abusing javaObjectToPlainInstance in mtx_*, cnd_* intrinsics
-        case SpecialClazzes.c_Array -> new JavaRef(o);
         case SpecialClazzes.c_Mutex -> new JavaRef(o);
         case SpecialClazzes.c_Condition -> new JavaRef(o);
         case SpecialClazzes.c_File_Descriptor -> new JavaRef(o);
         case SpecialClazzes.c_Directory_Descriptor -> new JavaRef(o);
         case SpecialClazzes.c_Mapped_Memory -> new JavaRef(o);
+        case SpecialClazzes.c_Thread -> new JavaRef(o);
         default ->
           {
-            var result = new Instance(rc);
-            for (var e : Layout.get(rc)._offsets.entrySet())
+            var result = Value.UNIT;
+            if (!fuir().clazzIsUnitType(rc))
               {
-                var f = e.getKey();
-                var off = (Integer) e.getValue();
-                var v = switch (fuir().clazzBaseName(f))
+                var inst = new Instance(rc);
+                for (var e : Layout.get(rc)._offsets.entrySet())
                   {
-                  case "java_ref"   -> new JavaRef(o);
-                  case "forbidden" -> Value.NO_VALUE;
-                  default -> fuir().clazzIsOuterRef(f)
-                    ? new Instance(fuir().clazzOuterClazz(rc))
-                    : (Value) (Object) new Object() { { if (true) throw new Error("unexpected field in fuzion.java.Array: "+fuir().clazzAsString(f)); }};
-                  };
-                if (v != Value.NO_VALUE && /* NYI: HACK: */ result.refs.length > off)
-                  {
-                    result.refs[off] = v;
+                    var f = e.getKey();
+                    var off = e.getValue();
+                    var v = switch (fuir().clazzBaseName(f))
+                      {
+                      case "java_ref"   -> new JavaRef(o);
+                      case "forbidden" -> Value.VOID;
+                      default -> fuir().clazzIsOuterRef(f)
+                        ? new Instance(fuir().clazzOuterClazz(rc))
+                        : (Value) (Object) new Object() { { if (true) throw new Error("unexpected field in fuzion.java.Array: "+fuir().clazzAsString(f)); }};
+                      };
+                    if (v != Value.VOID && /* NYI: HACK: */ inst.refs.length > off)
+                      {
+                        inst.refs[off] = v;
+                      }
                   }
+                result = inst;
               }
             yield result;
           }
@@ -242,9 +246,11 @@ public class JavaInterface extends FUIRContext
        resultClazz > 0);
 
     var result = new Instance(resultClazz);
-    if (CHECKS) check
-      (result.refs.length == 1);    // an 'error' has exactly one ref field of type string
-    result.refs[0] = Interpreter.boxedConstString(e.getMessage().toString());
+
+    var optionI64 = fuir().clazzResultClazz(fuir().clazzArg(resultClazz, 1));
+
+    Interpreter.setField(fuir().clazzArg(resultClazz, 0), resultClazz, result, Interpreter.boxedConstString(e.getMessage().toString()));
+    Interpreter.setField(fuir().clazzArg(resultClazz, 1), resultClazz, result, Interpreter.tag(optionI64, fuir().clazzChoice(optionI64, 1), Value.UNIT, 1));
 
     return result;
   }
@@ -265,7 +271,7 @@ public class JavaInterface extends FUIRContext
     var result = new Object[sz];
     for (var ix = 0; ix < sz; ix++)
       {
-        result[ix] = ((JavaRef)(((Object[])a._array)[ix]))._javaRef;
+        result[ix] = ((JavaRef)(((Object[])a._data)[ix]))._javaRef;
       }
     return result;
   }
@@ -309,7 +315,7 @@ public class JavaInterface extends FUIRContext
       }
     catch (ClassNotFoundException e)
       {
-        Errors.fatal("ClassNotFoundException when calling fuzion.java.call_static/call_constructor for class " +
+        Errors.fatal("ClassNotFoundException when calling fuzion.jvm.env.call_static/call_constructor for class " +
                            clName + " calling " + (name == null ? "new " + clName : name ) + sig);
         cl = Object.class; // not reached.
       }
@@ -326,7 +332,7 @@ public class JavaInterface extends FUIRContext
       }
     catch (NoSuchMethodException e)
       {
-        Errors.fatal("NoSuchMethodException when calling fuzion.java.call_static/call_virtual/call_constructor calling " +
+        Errors.fatal("NoSuchMethodException when calling fuzion.jvm.env.call_static/call_virtual/call_constructor calling " +
                            (name == null ? "new " + clName : (cl.getName() + "." + name)) + sig);
       }
     Object[] argz = javaRefToJavaObjects(args);

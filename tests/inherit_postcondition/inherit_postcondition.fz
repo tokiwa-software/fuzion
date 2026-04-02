@@ -205,7 +205,7 @@ test_postcondition is
     =>
       42
 
-    public g
+    public g i32
     => 420
 
   post_accessing_result_child : post_accessing_result is
@@ -217,7 +217,7 @@ test_postcondition is
     =>
       4711
 
-    public redef g
+    public redef g i32
       post then
         ok "redef g $result"
         { io.Out.env.println "ho"; true }
@@ -225,7 +225,7 @@ test_postcondition is
     => 69
 
   post_accessing_result_child2 : post_accessing_result_child is
-    redef f
+    redef f i32
       post then
         ok "redef2 $result"
         { io.Out.env.println "hi"; true }
@@ -233,7 +233,7 @@ test_postcondition is
     =>
       4716
 
-    public redef g
+    public redef g i32
       post then
         ok "redef g $result"
         { io.Out.env.println "he"; true }
@@ -241,13 +241,13 @@ test_postcondition is
     => 42069
 
   post_accessing_result_child3 : post_accessing_result is
-    redef f
+    redef f i32
       post then
     =>
       32168
 
   post_accessing_result_child4 : post_accessing_result is
-    redef f
+    redef f i32
     =>
       112
 
@@ -273,7 +273,7 @@ test_postcondition is
   _ := mod.post_accessing_result_child4.f
 
   inh_module1 : mod.post_accessing_result is
-    public redef f
+    public redef f i32
       post then
         ok "redef $result"
     =>
@@ -283,9 +283,9 @@ test_postcondition is
     # redefining non-argument field is not allowed
     # redef n := 64
     # redefining a routine as a field is allowed
-    public redef m := 64
-    public redef r => 128
-    public redef f
+    public redef m i32 := 64
+    public redef r i32 => 128
+    public redef f i32
       post then
         ok "redef $result"
     =>

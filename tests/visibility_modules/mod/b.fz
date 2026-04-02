@@ -24,11 +24,11 @@
 public b : a is
 
   # reuse hello without redef, hello is private in a
-  public hello =>
+  public hello unit =>
     say "hello from b"
 
-  public hello3 =>
-    hello2 # calling hello2 visibile only in module
+  public hello3 unit =>
+    hello2 # calling hello2 visible only in module
 
   public ret_a a =>
     a
@@ -40,9 +40,9 @@ public b : a is
     say "hello_a from b"
 
   priv is
-    public redef as_string => "priv"
+    public redef as_string String => "priv"
 
   public get_any Any =>
     priv
 
-  public field := 1
+  public field i32 := 1

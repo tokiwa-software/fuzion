@@ -107,8 +107,8 @@ public class Errors extends ANY
    * Maximum number of error messages that are displayed. If this limit is
    * reached, we terminate with return code 1.
    */
-  public static String MAX_ERROR_MESSAGES_PROPERTY = "fuzion.maxErrorCount";
-  public static String MAX_ERROR_MESSAGES_OPTION = "-XmaxErrors";
+  public static final String MAX_ERROR_MESSAGES_PROPERTY = "fuzion.maxErrorCount";
+  public static final String MAX_ERROR_MESSAGES_OPTION = "-XmaxErrors";
 
 
   /**
@@ -126,8 +126,8 @@ public class Errors extends ANY
    * Maximum number of warning messages that are displayed. If this limit is
    * reached, we stop printing further warnings.
    */
-  public static String MAX_WARNING_MESSAGES_PROPERTY = "fuzion.maxWarningCount";
-  public static String MAX_WARNING_MESSAGES_OPTION = "-XmaxWarnings";
+  public static final String MAX_WARNING_MESSAGES_PROPERTY = "fuzion.maxWarningCount";
+  public static final String MAX_WARNING_MESSAGES_OPTION = "-XmaxWarnings";
 
 
   /**
@@ -799,6 +799,15 @@ public class Errors extends ANY
     syntaxError(pos,
                 "No white space may occur before this position",
                 "This code is part of an actual argument that must not contain white space.\n" +
+                detail + "\n" +
+                "To solve this, enclose the expression in parentheses '(' and ')'.");
+  }
+
+  public static void commaNotAllowedHere(SourcePosition pos, String detail)
+  {
+    syntaxError(pos,
+                "No comma ',' may occur at this position",
+                "This code is part of a comma separated actual argument list that must not itself contain commas.\n" +
                 detail + "\n" +
                 "To solve this, enclose the expression in parentheses '(' and ')'.");
   }

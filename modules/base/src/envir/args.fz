@@ -29,7 +29,7 @@ public args (all array String) : Sequence String, effect is
 
   # implement as_list
   #
-  public redef as_list => all.as_list
+  public redef as_list list String => all.as_list
 
 
   # install default effect args using fuzion.sys.args
@@ -38,8 +38,8 @@ public args (all array String) : Sequence String, effect is
     (envir.args fuzion.sys.args).default
 
 
-# short-hand for accessing envir.args effect in current environment
+# shorthand for accessing envir.args effect in current environment
 #
-public args =>
+public args envir.args ! envir.args =>
   args.install_default
   envir.args.env

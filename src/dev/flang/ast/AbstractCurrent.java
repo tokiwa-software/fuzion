@@ -56,7 +56,8 @@ public abstract class AbstractCurrent extends Expr
   public AbstractCurrent(AbstractType t)
   {
     if (PRECONDITIONS) require
-      (t != null && (Types.resolved == null || !t.isVoid()));
+      (t != null,
+       Types.resolved == null || !t.isVoid());
 
     this._type = t;
   }
@@ -89,9 +90,12 @@ public abstract class AbstractCurrent extends Expr
    *
    * @return this.
    */
+  @Override
   public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     _type = _type.visit(v, outer);
+    if (CHECKS) check
+      (_type != null);
     return v.action(this);
   }
 
@@ -115,7 +119,7 @@ public abstract class AbstractCurrent extends Expr
     var of = _type.feature();
     return of == Types.f_ERROR || of == context.outerFeature()
       ? this
-      : new This(pos(), context.outerFeature(), of).resolveTypes(res, context);
+      : This.thiz(res, pos(), context, of);
   }
 
 

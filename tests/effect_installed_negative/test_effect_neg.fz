@@ -34,16 +34,22 @@ test_effect_neg is
   b : mutate is
   c : mutate is
   d : mutate is
+  e : mutate is
+  f : mutate is
+  g : mutate is
   use_a => _ := a.env
   use_b => _ := b.env
   use_c => _ := c.env
+  use_e => _ := e.env
+  use_f => _ := f.env
+  use_g => _ := g.env
   use_a_err1 => _ := a.env       # 1. should flag an error: effect not installed
   use_b_err2 => _ := b.env       # 2. should flag an error: effect not installed
   use_c_err3 => _ := c.env       # 3. should flag an error: effect not installed
   use_d_err4 => _ := d.env       # 4. should flag an error: effect not installed
-  FA : Function unit is public redef call => use_a
-  FB : Function unit is public redef call => use_b
-  FC : Function unit is public redef call => use_c
+  FA : Function unit is public redef call unit => use_a
+  FB : Function unit is public redef call unit => use_b
+  FC : Function unit is public redef call unit => use_c
   fa Function unit := FA
   fb Function unit := FB
   fc Function unit := FC
@@ -53,6 +59,9 @@ test_effect_neg is
   a ! ()->use_a
   b ! ()->use_b
   c ! ()->use_c
+  e ! ()->use_e
+  f ! ()->use_f
+  g ! ()->use_g
   a ! ()->
     b ! ()->
       c ! ()->
@@ -70,18 +79,18 @@ test_effect_neg is
         use_c
         use_d_err4
 
-  # the following ones are a little tricky since use_a/b/c are also used in
+  # the following ones are a little tricky since use_e/f/g are also used in
   # positive cases above, so the call traces might get mixed up.
   #
   if maybe
-    a ! ()->
-      b ! ()->
-        use_c      # 5. should flag an error: effect not installed
+    e ! ()->
+      f ! ()->
+        use_g      # 5. should flag an error: effect not installed
   if maybe
-    a ! ()->
-      c ! ()->
-        use_b      # 6. should flag an error: effect not installed
+    e ! ()->
+      g ! ()->
+        use_f      # 6. should flag an error: effect not installed
   if maybe
-    b ! ()->
-      c ! ()->
-        use_a      # 7. should flag an error: effect not installed
+    f ! ()->
+      g ! ()->
+        use_e      # 7. should flag an error: effect not installed

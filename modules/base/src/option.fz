@@ -28,13 +28,74 @@
 # option represents an optional value of type T
 #
 public option(public T type)
-  : switch T nil
+  : switch T nil,
+    property.orderable,
+    property.hashable
+
 is
+
+
+  # equality of two options is true iff `a` and `b` are both nil or `a` and `b` are both
+  # `T` and T.equality a.or_panic b.or_panic.
+  #
+  # This is defined only if T : property.equatable, it will result in a compile-time panic
+  # if this is not the case.
+  #
+  public redef fixed type.equality(a, b option T) bool
+  =>
+    if T : property.equatable
+      match a
+        av T =>
+          match b
+            bv T => T.equality av bv
+            nil  => false
+        nil =>
+          match b
+            _ T => false
+            nil  => true
+    else
+      compile_time_panic
+
+
+  # A total order for options is defined as follows: `nil` is always less-than-or-equal
+  # any other value and iff `a` and `b` both contain values of type `T`, then
+  # `T.lteq a.or_panic b.or_panic`.
+  #
+  # This is defined only if T : property.orderable, it will result in a compile-time panic
+  # if this is not the case.
+  #
+  public redef fixed type.lteq(a, b option T) bool
+  =>
+    if T : property.orderable
+      match a
+        av T =>
+          match b
+            bv T => T.lteq av bv
+            nil  => false
+        nil =>
+          true
+    else
+      compile_time_panic
+
+
+  # create hash code for this option
+  #
+  # This is defined only if T : property.hashable, it will result in a compile-time panic
+  # if this is not the case.
+  #
+  public redef fixed type.hash_code(a option T) u64
+  =>
+    if T : property.hashable
+      match a
+        v T => T.hash_code v
+        nil => 0xfe6f6476106a56b6  # generated using secure random generator at https://cryptotools.dev/
+    else
+      compile_time_panic
 
 
   # Does this option contain no value of type T?
   #
-  public is_nil => !exists
+  public is_nil bool => !exists
 
 
   # monadic operator
@@ -58,9 +119,7 @@ is
 
   # monadic operator for bool result, false for nil
   #
-  public infix >>? (f T -> bool)
-  pre
-    T : numeric
+  public infix >>? (f T -> bool) bool
   =>
     option.this ? v T => f v
                 | nil => false
@@ -184,7 +243,7 @@ is
 
   # is zero
   #
-  public is_zero
+  public is_zero bool
   pre
     T : numeric
   => sign ==? 0
@@ -210,14 +269,14 @@ is
 
 
 
-# option with 1 argument provides an short-hand to wrap a value into an option
+# option with 1 argument provides an shorthand to wrap a value into an option
 #
 # Using this enables to write
 #
-#   o := option x
+#     o := option x
 #
 # instead of
 #
-#   o option TypeOfX := x
+#     o option TypeOfX := x
 #
-public option(T type, o option T) => o
+public option(T type, o option T) option T => o

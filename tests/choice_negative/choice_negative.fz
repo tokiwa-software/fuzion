@@ -46,7 +46,7 @@ choice_negative is
   cyclic6 is
     A ref : choice i32 String A is  # 3a. should flag an error: choice feature must not be re
 
-/* NYI: cycle7..cycle12 moved to choice_negative2 since these currently are
+/* cycle7..cycle12 moved to choice_negative2 since these currently are
   detected during clazz creation only, which is not performed when earlier
   phases caused errors: */
 
@@ -90,12 +90,12 @@ choice_negative is
 
   nofields5 is
     A (x i32) is
-    B : A(3) is
+    B : A 3 is
     C : B, choice i32 String bool is # 17. should flag an error: choice type must not have any fields
 
   nofields6 is
     A (x i32) is
-    B : A(3) is
+    B : A 3 is
     C : choice i32 String bool, B is # 18. should flag an error: choice type must not have any fields
 
   args1 is
@@ -159,8 +159,8 @@ choice_negative is
       true_  => say "T"
       false_ => say "F"
 
-    _ := (42 ? true_ => true   # 35. should flag an error, match subject must be choice
-             | false_ => false) # NYI: parentheses are currently required for this to work, see #3776
+    _ := 42 ? true_ => true   # 35. should flag an error, match subject must be choice
+            | false_ => false
 
 
   ambiguous_assignment_to_choice_via_subtype is

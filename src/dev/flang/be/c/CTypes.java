@@ -298,14 +298,14 @@ public class CTypes extends ANY
         if (_fuir.clazzIsRef(cl))
           {
             var vcl = _fuir.clazzAsValue(cl);
-            els.add(CStmnt.decl(typeClazzID, _names.CLAZZ_ID));
-            els.add(CStmnt.decl(clazz(vcl), _names.FIELDS_IN_REF_CLAZZ));
+            els.add(CStmnt.decl(typeClazzID, CNames.CLAZZ_ID));
+            els.add(CStmnt.decl(clazz(vcl), CNames.FIELDS_IN_REF_CLAZZ));
           }
         else if (_fuir.clazzIsChoice(cl))
           {
             if (!_fuir.clazzIsChoiceOfOnlyRefs(cl))
               {
-                els.add(CStmnt.decl(typeTagName, _names.TAG_NAME));
+                els.add(CStmnt.decl(typeTagName, CNames.TAG_NAME));
               }
             var uls = new List<CStmnt>();
             for (int i = 0; i < _fuir.clazzChoiceCount(cl); i++)
@@ -313,14 +313,14 @@ public class CTypes extends ANY
                 var cc = _fuir.clazzChoice(cl, i);
                 if (!_fuir.clazzIsVoidType(cc) && !_fuir.clazzIsRef(cc))
                   {
-                    uls.add(CStmnt.decl(clazz(cc), new CIdent(_names.CHOICE_ENTRY_NAME + i)));
+                    uls.add(CStmnt.decl(clazz(cc), CIdent.choiceEntry(i)));
                   }
               }
             if (_fuir.clazzIsChoiceWithRefs(cl))
               {
-                uls.add(CStmnt.decl(clazz(_fuir.clazzAny()), _names.CHOICE_REF_ENTRY_NAME));
+                uls.add(CStmnt.decl(clazz(_fuir.clazzAny()), CNames.CHOICE_REF_ENTRY_NAME));
               }
-            els.add(CStmnt.unyon(uls, _names.CHOICE_UNION_NAME));
+            els.add(CStmnt.unyon(uls, CNames.CHOICE_UNION_NAME));
           }
         else
           {
@@ -339,7 +339,7 @@ public class CTypes extends ANY
         l.add(CStmnt.struct(_names.struct(cl), els));
         if (cl == _fuir.clazzUniverse())
           {
-            l.add(CStmnt.decl("static", _names.struct(cl), _names.UNIVERSE));
+            l.add(CStmnt.decl("static", _names.struct(cl), CNames.UNIVERSE));
           }
         result = CStmnt.seq(l);
       }
@@ -379,18 +379,6 @@ public class CTypes extends ANY
   }
 
 
-  boolean clazzNeedsCode(int cl)
-  {
-    return _fuir.clazzNeedsCode(cl) ||
-      cl == _fuir.clazz_const_string() ||
-      cl == _fuir.clazz_const_string_utf8_data() ||
-      cl == _fuir.clazz_array_u8() ||
-      cl == _fuir.clazz_fuzionSysArray_u8() ||
-      cl == _fuir.clazz_fuzionSysArray_u8_data() ||
-      cl == _fuir.clazz_fuzionSysArray_u8_length();
-  }
-
-
   /**
    * Does given field exist as a C field? This is the case for fields that
    *
@@ -409,7 +397,7 @@ public class CTypes extends ANY
     return
       !_fuir.clazzIsUnitType(rt) &&
       !_fuir.clazzIsVoidType(rt) &&
-      clazzNeedsCode(field);
+      _fuir.clazzNeedsCode(field);
   }
 
 }

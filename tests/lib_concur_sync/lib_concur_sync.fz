@@ -25,51 +25,45 @@ lib_concur_sync =>
 
   test_signal =>
 
-    mtx_res := concur.sync.mutex.new.bind mtx->
-      cnd_res := mtx.condition.bind cnd->
+    cnd_res := concur.sync.condition.new.bind cnd->
+      a := concur.threads.spawn ()->
+        cnd.synchronized ()->
+          check cnd.wait
+          say "Thread proceeding after signal"
 
-        a := concur.threads.spawn ()->
-          cnd.synchronized ()->
-            check cnd.wait
-            say "Thread proceeding after signal"
+      b := concur.threads.spawn ()->
+        say "Thread sleeping"
+        time.nano.sleep (time.duration.ms 100)
+        cnd.synchronized ()->
+          say "Thread sending signal"
+          check cnd.signal
 
-        b := concur.threads.spawn ()->
-          say "Thread sleeping"
-          time.nano.sleep (time.duration.ms 100)
-          cnd.synchronized ()->
-            say "Thread sending signal"
-            check cnd.signal
+      a.join
+      b.join
 
-        a.join
-        b.join
-
-      check cnd_res.ok
-    check mtx_res.ok
+    check cnd_res.ok
 
 
 
   test_broadcast =>
 
-    mtx_res := concur.sync.mutex.new.bind mtx->
-      cnd_res := mtx.condition.bind cnd->
+    cnd_res := concur.sync.condition.new.bind cnd->
+      a := concur.threads.spawn ()->
+        cnd.synchronized ()->
+          check cnd.wait
+          say "Thread proceeding after broadcast"
 
-        a := concur.threads.spawn ()->
-          cnd.synchronized ()->
-            check cnd.wait
-            say "Thread proceeding after broadcast"
+      b := concur.threads.spawn ()->
+        say "Thread sleeping"
+        time.nano.sleep (time.duration.ms 100)
+        cnd.synchronized ()->
+          say "Thread sending broadcast"
+          check cnd.broadcast
 
-        b := concur.threads.spawn ()->
-          say "Thread sleeping"
-          time.nano.sleep (time.duration.ms 100)
-          cnd.synchronized ()->
-            say "Thread sending broadcast"
-            check cnd.broadcast
+      a.join
+      b.join
 
-        a.join
-        b.join
-
-      check cnd_res.ok
-    check mtx_res.ok
+    check cnd_res.ok
 
 
 

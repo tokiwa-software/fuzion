@@ -21,4 +21,14 @@
 #
 # -----------------------------------------------------------------------
 
+# original example from #5018
 f => effect ! id ()->""
+
+# same example with explicit type parameter
+f1 => effect ! id (Function String) ()->""
+
+# original example #2 from #5018
+g unit => effect ! id ()->
+
+# same example with explicit type parameter
+g1 unit => effect ! id (Function unit) ()->

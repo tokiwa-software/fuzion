@@ -144,9 +144,13 @@ class FeatureWriter extends ANY
                   * __jString.fz: error: Redefinition must be declared using modifier 'redef'
                   * public split(arg0 String) ... =>
                   * ```
-                  * could be removed if we instead added a {@code redef} modifier for split
+                  * NYI: UNDER DEVELOPMENT: could be removed if we instead added a {@code redef} modifier for split
                   */
-                 s.equals("split"   )
+                 s.equals("split"   ) ||
+                 /*
+                  * NYI: UNDER DEVELOPMENT: could be removed if we instead added a {@code redef} modifier for lines
+                  */
+                 s.equals("lines")
                 )
           {
             // NYI: this is just a precaution to avoid confusion with Fuzion

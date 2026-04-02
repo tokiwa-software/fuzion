@@ -24,4 +24,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = test_free_types_negative
-include ../simple.mk
+include ../simple_and_negative.mk

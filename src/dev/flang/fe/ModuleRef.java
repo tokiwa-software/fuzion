@@ -66,7 +66,7 @@ public class ModuleRef extends ANY
   /**
    * this module as loaded.
    */
-  final LibraryModule _module;
+  public final LibraryModule _module;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -81,6 +81,8 @@ public class ModuleRef extends ANY
     _name = name;
     _version = version;
     _module = m;
+    if (CHECKS) check
+      (_name.equals(_module.name()));
   }
 
 

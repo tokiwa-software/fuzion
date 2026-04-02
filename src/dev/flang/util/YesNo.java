@@ -20,7 +20,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of emi, YesNo
+ * Source of enum, YesNo
  *
  *---------------------------------------------------------------------*/
 
@@ -58,6 +58,11 @@ public enum YesNo
   public boolean noOrDontKnow()
   {
     return this != YesNo.yes;
+  }
+
+  public static YesNo fromBool(boolean b)
+  {
+    return b ? YesNo.yes : YesNo.no;
   }
 
 }

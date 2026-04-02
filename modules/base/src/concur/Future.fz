@@ -30,7 +30,7 @@ public Future(T type) ref is
   public is_done bool => abstract
 
   # block until the computation is done
-  # the return the result
+  # and return its result
   #
   public get T => abstract
 

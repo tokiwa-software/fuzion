@@ -28,15 +28,3 @@ pre
   map x->x.values.0
 
 say ([tuple 42].unzip2 i32)
-
-
-
-Sequence.unzip3(A type)
-pre
-  T : tuple A
-=>
-  map x->x.values.0
-# NYI: UNDER DEVELOPMENT: this fails at runtime but could/should already fail at compile time
-say ([tuple 42].unzip3 String)
-
-

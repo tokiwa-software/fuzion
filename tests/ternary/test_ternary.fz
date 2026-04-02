@@ -41,10 +41,9 @@ test_ternary is
   # multi-line ternary ? :
   _ := (a ? 3
           : 4)
-  # NYI: UNDER DEVELOPMENT:
-  #   _ :=
-  #     a ? 3
-  #       : 4
+  _ :=
+      a ? 3
+        : 4
 
   # ternary with mid-term containing ':'
   _ :=  a ? (3 : ()->[4,5].as_list) : nil

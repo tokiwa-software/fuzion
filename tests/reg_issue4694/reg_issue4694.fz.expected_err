@@ -7,13 +7,4 @@ Arguments of lambda expression: 'x', 'y'
 Expected function type: Unary --UNDEFINED-- i32
 To solve this, remove one argument from the list 'x', 'y' before the '->' of the lambda expression.
 
-
---CURDIR--/reg_issue4694.fz:26:23: error 2: Wrong number of type parameters
-  0 |> x,y->container.expanding.env.put
-----------------------^^^^^^^^^
-Wrong number of actual type parameters in type:
-Type: container.expanding
-expected one generic argument for 'T'
-found none.
-
-2 errors.
+one error.

@@ -1,0 +1,10 @@
+
+--CURDIR--/reg_issue5690.fz:24:8: error 1: Type not found
+x.type.y =>
+-------^
+Type 'x' was not found, no corresponding feature nor formal type parameter exists
+Type that was not found: 'x'
+in feature: 'universe'
+To solve this, check the spelling of the type you have used.
+
+one error.

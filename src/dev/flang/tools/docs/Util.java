@@ -26,23 +26,12 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.tools.docs;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.stream.Collectors;
-
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
-import dev.flang.fe.LibraryFeature;
-import dev.flang.tools.FuzionHome;
-import dev.flang.util.FuzionConstants;
-import dev.flang.util.SourcePosition;
+import dev.flang.util.ANY;
 
-public class Util
+public class Util extends ANY
 {
 
   /**
@@ -60,83 +49,6 @@ public class Util
       .anyMatch(f -> f.equals(feature));
   }
 
-  /**
-   * the comment belonging to this feature in HTML
-   * @param af
-   * @return
-   */
-  static String commentOf(AbstractFeature af)
-  {
-    if (af.isUniverse())
-      {
-        return Html.processComment(FuzionConstants.UNIVERSE_NAME, universeComment());
-      }
-    // arguments that are defined on same line as feature have no comments.
-    if (af.isArgument() && af.pos().line() == af.outer().pos().line())
-      {
-        return "";
-      }
-    var line = af.pos().line() - 1;
-    var commentLines = new ArrayList<String>();
-    while (true)
-      {
-        var pos = new SourcePosition(af.pos()._sourceFile, af.pos()._sourceFile.lineStartPos(line));
-        var strline = Util.lineAt((LibraryFeature) af, pos);
-        if (line < 1 || !strline.matches("^\\s*#.*"))
-          {
-            break;
-          }
-        commentLines.add(strline);
-        line = line - 1;
-      }
-    Collections.reverse(commentLines);
-
-    var result = Html.processComment(af.qualifiedName(), commentLines
-      .stream()
-      .map(l -> l.trim())
-      .map(l -> l
-        .replaceAll("^#", "")
-        .replaceAll("^ ", ""))
-      .collect(Collectors.joining(System.lineSeparator())));
-    return result;
-  }
-
-
-  private static String universeComment()
-  {
-    var uri = (new FuzionHome())._fuzionHome.normalize().toAbsolutePath().resolve("lib").resolve("universe.fz").toUri();
-    try
-      {
-        return Files.readAllLines(Path.of(uri), StandardCharsets.UTF_8)
-          .stream()
-          .dropWhile(l -> !l.startsWith("# universe is the mother"))
-          .map(l -> l.replaceAll("^#", "").trim())
-          .collect(Collectors.joining(System.lineSeparator()))
-          .trim();
-      }
-    catch (IOException e)
-      {
-        return "";
-      }
-  }
-
-
-  /**
-   * get line as string of source position pos
-   */
-  private static String lineAt(LibraryFeature lf, SourcePosition pos)
-  {
-    var uri = Path.of(pos._sourceFile._fileName.toString()
-      .replaceFirst("\\{(.*?)\\.fum\\}", lf._libModule.srcPath())).toUri();
-    try
-      {
-        return Files.readAllLines(Path.of(uri), StandardCharsets.UTF_8).get(pos.line() - 1);
-      }
-    catch (IOException e)
-      {
-        return "";
-      }
-  }
 
 
   /**

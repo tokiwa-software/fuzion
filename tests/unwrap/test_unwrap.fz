@@ -24,7 +24,7 @@
 test_unwrap =>
 
   a := mut.new 3
-  b := concur.atomic 5
+  b := concur.atomic i32 .new 5
 
   say2(v i32) => say v
 
@@ -36,7 +36,5 @@ test_unwrap =>
       say2 a
       say2 b
 
-      e := 0+a+b
-      # NYI: UNDER DEVELOPMENT: Feature not found: 'infix +' (one argument), Target feature: 'mutate.new'
-      # e := a+b+c+d
+      e := a+b
       say2 e

@@ -40,8 +40,8 @@ valWithLongLife is
 
   v (f String, id i32) is
     e (eid u8) is
-      public redef as_string => "{v.this.as_string}-$eid"
-    public redef as_string => f+id
+      public redef as_string String => "{v.this.as_string}-$eid"
+    public redef as_string String => f+id
 
   g(f String, id i32, eid u8) => (v f id).e eid
 

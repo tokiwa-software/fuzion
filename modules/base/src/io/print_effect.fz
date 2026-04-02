@@ -32,32 +32,37 @@ is
 
   # print the given string followed be new line
   #
-  public println (s Any) =>
+  public println (s Any) unit =>
     print (s.as_string + (codepoint 10))
 
 
   # print the given string
   #
-  public print (s Any) =>
-    # NYI: UNDER DEVELOPMENT error handling?
-    _ := write s.as_string.utf8.as_array
-    _ := flush
+  public print (s Any) unit =>
+    # NYI: BUG: error handling, maybe we should raise
+    # some kind of IO runtime fault here?
+    if s.as_string.utf8.count > os.page_size.as_i32
+      for c in s.as_string.utf8.chunk os.page_size.as_i32
+      do
+        write c .or_panic
+    else
+      write s.as_string.utf8 .or_panic
+    flush.or_panic
 
 
   # print new line
   #
-  public println =>
+  public println unit =>
     print (codepoint 10)
 
 
   # write bytes (without explicit flushing)
   #
   public write(b Sequence u8) outcome unit
-    pre b.finite = trit.yes
+    pre debug: b.count <= os.page_size.as_i32
   => abstract
 
 
   # explicitly flush everything that has been written
   #
   public flush outcome unit => abstract
-

@@ -61,7 +61,7 @@ public class Assign extends AbstractAssign
 
 
   /**
-   * Constructor used be the parser
+   * Constructor used by the parser
    *
    * @param pos the sourcecode position, used for error messages.
    *
@@ -71,21 +71,6 @@ public class Assign extends AbstractAssign
    */
   public Assign(SourcePosition pos, ParsedName n, Expr v)
   {
-    this(pos, n._name, v);
-  }
-
-
-  /**
-   * Constructor used be the parser
-   *
-   * @param pos the sourcecode position, used for error messages.
-   *
-   * @param n the name of the assigned field
-   *
-   * @param v the value assigned to field with name n
-   */
-  Assign(SourcePosition pos, String n, Expr v)
-  {
     super(v);
 
     if (CHECKS) check
@@ -93,8 +78,8 @@ public class Assign extends AbstractAssign
        n != null,
        v != null);
 
-    this._name = n;
     this._pos = pos;
+    this._name = n._name;
   }
 
 
@@ -154,19 +139,16 @@ public class Assign extends AbstractAssign
    * @param res the resolution instance.
    *
    * @param context the source code context where this Call is used
-   *
-   * @param destructure if this is called for an assignment that is created to
-   * replace a Destructure, this refers to the Destructure expression.
    */
   @Override
-  void resolveTypes(Resolution res, Context context, Destructure destructure)
+  void resolveTypes(Resolution res, Context context)
   {
     var f = _assignedField;
     if (f == null)
       {
         var fo = FeatureAndOuter.filter(res._module.lookup(context.outerFeature(),
                                                            _name,
-                                                           destructure == null ? this : destructure,
+                                                           this,
                                                            true,
                                                            false),
                                         pos(), FuzionConstants.OPERATION_ASSIGNMENT, FeatureName.get(_name, 0), __ -> false);

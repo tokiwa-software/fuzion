@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import java.util.function.Supplier;
+
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
@@ -44,7 +46,7 @@ public class Function extends AbstractLambda
   /*----------------------------  constants  ----------------------------*/
 
 
-  static final List<AbstractCall> NO_CALLS = new List<>();
+  static final List<AbstractCall> NO_CALLS = new List<AbstractCall>().freeze();
 
 
   /*-------------------------  static variables -------------------------*/
@@ -79,6 +81,14 @@ public class Function extends AbstractLambda
 
 
   /**
+   * In case `type()` is called and we have not received a type via
+   * `propagateExpectedType`, this will be called. This is currently set by
+   * `resolveTypes` to handle cases like `()->true`.
+   */
+  Runnable _resultTypeLastResort = ()->{};
+
+
+  /**
    * For a function that declares a new anonymous feature, these are the generic
    * arguments to Function/Routine the anonymous feature inherits from. This
    * will be used put the correct return type in case of a fun declaration using
@@ -104,9 +114,16 @@ public class Function extends AbstractLambda
 
 
   /**
-   * the right hand side of the '->'
+   * the right hand side of the '->', as produced by the parser
    */
-  public final Expr _expr;
+  final Expr _originalExpr;
+
+
+  /**
+   * the right hand side of the '->', replaced by Expr.NO_VALUE in case of error.
+   */
+  private Expr _expr;
+  public Expr expr() { return _expr; }
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -132,8 +149,10 @@ public class Function extends AbstractLambda
     super(pos);
 
     _namesAsExprs = names;
-    _names = names.map2(n->n.asParsedName());
-    _names.removeIf(n -> n==null);
+    _names = names
+      .map2(n -> n.asParsedName())
+      .filter(n -> n != null);
+    _originalExpr = e;
     _expr = e;
   }
 
@@ -148,9 +167,7 @@ public class Function extends AbstractLambda
         List<AbstractType> argTypes = _namesAsExprs != null
           ? _namesAsExprs.map2(e -> e.asParsedType())
           : _names.map2(n -> new ParsedType(n.pos(),
-                                            n._name,
-                                            new List<>(),
-                                            null)
+                                            n._name)
                         );
         if (argTypes.stream().allMatch(t -> t != null))
           {
@@ -179,13 +196,16 @@ public class Function extends AbstractLambda
    *
    * @param t the expected type.
    *
+   * @param from for error output: if non-null, produces a String describing
+   * where the expected type came from.
+   *
    * @return either this or a new Expr that replaces thiz and produces the
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the expression that reads the field.
    */
-  Expr propagateExpectedType(Resolution res, Context context, AbstractType t)
+  Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
   {
-    _type = propagateTypeAndInferResult(res, context, t.functionTypeFromChoice(context), false);
+    _type = propagateTypeAndInferResult(res, context, t.functionTypeFromChoice(res, context), false, from);
     return this;
   }
 
@@ -213,7 +233,13 @@ public class Function extends AbstractLambda
         @Override
         public Expr action(Call c)
         {
-          return c.updateTarget(res, _feature.context());
+
+          if (CHECKS) check
+            (_feature != null || Errors.any());
+
+          return _feature == null
+            ? c
+            : c.updateTarget(res, _feature.context());
         }
       },
       _feature);
@@ -238,80 +264,114 @@ public class Function extends AbstractLambda
    * @param inferResultType true if the result type of this lambda should be
    * inferred.
    *
+   * @param from for error output: if non-null, produces a String describing
+   * where the expected type came from.
+   *
    * @return if inferResultType, the result type inferred from this lambda or
    * Types.t_UNDEFINED if no result type available.  if !inferResultType, t. In
    * case of error, return Types.t_ERROR.
    */
   @Override
-  AbstractType propagateTypeAndInferResult(Resolution res, Context context, AbstractType t, boolean inferResultType)
+  AbstractType propagateTypeAndInferResult(Resolution res, Context context, AbstractType t, boolean inferResultType, Supplier<String> from)
   {
+    List<AbstractFeature> args = null;
     AbstractType result = inferResultType ? Types.t_UNDEFINED : t;
-    if (_call == null)
-      {
-        if (!t.isFunctionType())
-          {
-            // suppress error for t_UNDEFINED, but only if other error was already reported
-            if (t != Types.t_UNDEFINED || !Errors.any())
-              {
-                AstErrors.expectedFunctionTypeForLambda(pos(), t);
-              }
-            t = Types.t_ERROR;
-            result = Types.t_ERROR;
-          }
+    // fixes #5854
+    _resultTypeLastResort = ()->{};
 
-        /* We have an expression of the form
-         *
-         *   (o, i) -> o.hash_code + i
-         *
-         * so we replace it by
-         *
-         * --Fun<id>-- : Function<R,A1,A2,...>
-         * {
-         *   public redef R call(A1 a1, A2 a2, ...)
-         *   {
-         *     result = o.hash_code + i;
-         *   }
-         * }
-         * [..]
-         *         --Fun<id>--()
-         * [..]
-         */
-        var a = new List<AbstractFeature>();
-        var gs = t.generics();
-        int i = 1;
-        for (var n : _names)
+    t = t.selfOrConstraint(res, context);
+    if (_call != null)
+      { // we are all set, nothing to be done.
+      }
+    else if (!t.isLambdaTarget(res))
+      {
+        // suppress error for t_ERROR and t_UNDEFINED, but only if other error was already reported
+        if (!t.isArtificialType() || !Errors.any())
           {
-            if (i < gs.size() && gs.get(i) == Types.t_UNDEFINED)
-              {
-                result = Types.t_ERROR;
-                t = Types.t_ERROR;
-              }
-            else
-              {
-                var arg = new Feature(n._pos,
-                                      Visi.PRIV,
-                                      0,
-                                      i < gs.size() ? gs.get(i) : Types.t_ERROR,
-                                      n._name,
-                                      Contract.EMPTY_CONTRACT);
-                a.add(arg);
-                i++;
-              }
+            AstErrors.expectedFunctionTypeForLambda(pos(), t, from);
           }
-        if (t != Types.t_ERROR && i != gs.size())
+        t = Types.t_ERROR;
+        _type = t;
+      }
+    else
+      {
+        var cl = res._module.findLambdaTarget(t.feature());
+        var argTypes = t.lambdaTargetArgumentTypes(res);
+        if (_names.size() != cl.typeArguments().size() + argTypes.size())
           {
             AstErrors.wrongNumberOfArgumentsInLambda(pos(), _names, t);
-            result = Types.t_ERROR;
+            t = Types.t_ERROR;
+            _type = t;
+          }
+        else
+          {
+            /* We have an expression of the form
+             *
+             *   (o, i) -> o.hash_code + i
+             *
+             * so we replace it by
+             *
+             * --Fun<id>-- : Function<R,A1,A2,...>
+             * {
+             *   public redef R call(A1 a1, A2 a2, ...)
+             *   {
+             *     result = o.hash_code + i;
+             *   }
+             * }
+             * [..]
+             *         --Fun<id>--()
+             * [..]
+             */
+            args = new List<AbstractFeature>();
+            var tps_as_actuals = new List<AbstractType>();
+            for (var i = 0; t != Types.t_ERROR && i < _names.size(); i++)
+              {
+                var at = i < cl.typeArguments().size()
+                  ? new BuiltInType(FuzionConstants.ANY_NAME) /* constraint */
+                  : argTypes.get(i - cl.typeArguments().size())
+                      // if we redef
+                      //
+                      //    x(A type, v option A)
+                      //
+                      // by
+                      //
+                      //    x(B type, w option B)
+                      //
+                      // we must replace `option A` by `option B`, i.e.,
+                      // replace original's type parameters by redefinition's:
+                      //
+                      .applyTypePars(cl, tps_as_actuals);
+                if (at == Types.t_UNDEFINED)
+                  {
+                    t = Types.t_ERROR;
+                  }
+                else
+                  {
+                    var n = _names.get(i);
+                    var arg = new Feature(n._pos,
+                                          Visi.PRIV,
+                                          0,
+                                          at,
+                                          n._name,
+                                          Contract.EMPTY_CONTRACT,
+                                          i < cl.typeArguments().size() ? Impl.TYPE_PARAMETER : Impl.FIELD);
+                    if (i < cl.typeArguments().size())
+                      {
+                        tps_as_actuals.add(arg.asGenericType());
+                      }
+                    args.add(arg);
+                  }
+              }
           }
         if (t != Types.t_ERROR)
           {
-            var rt0 = gs.get(0);
+            var rt0 = t.lambdaTargetResultType(res);
             var rt = inferResultType ? NoType.INSTANCE      : new FunctionReturnType(rt0);
             var im = inferResultType ? Impl.Kind.RoutineDef : Impl.Kind.Routine;
-            var feature = new Feature(pos(), Visi.PRIV, FuzionConstants.MODIFIER_REDEFINE, rt, new List<String>(FuzionConstants.OPERATION_CALL), a, NO_CALLS, Contract.EMPTY_CONTRACT, new Impl(_expr.pos(), _expr, im))
+            var feature = new Feature(pos(), Visi.PRIV, FuzionConstants.MODIFIER_REDEFINE, rt, new List<String>(cl.featureName().baseName()), args, NO_CALLS, Contract.EMPTY_CONTRACT, new Impl(_expr.pos(), _expr, im))
               {
                 @Override
-                public boolean isLambdaCall()
+                public boolean isLambdaCall()  // NYI: what is this for?
                 {
                   return true;
                 }
@@ -319,16 +379,10 @@ public class Function extends AbstractLambda
             _feature = feature;
             feature._sourceCodeContext = context;
 
-            var inheritsName =
-              (t.feature() == Types.resolved.f_Unary   && gs.size() == 2) ? Types.UNARY_NAME   :
-              (t.feature() == Types.resolved.f_Binary  && gs.size() == 3) ? Types.BINARY_NAME  :
-              (t.feature() == Types.resolved.f_Nullary && gs.size() == 1) ? Types.NULLARY_NAME :
-              (t.feature() == Types.resolved.f_Lazy    && gs.size() == 1) ? Types.LAZY_NAME
-                                                                          : Types.FUNCTION_NAME;
-
             // inherits clause for wrapper feature: Function<R,A,B,C,...>
-            _inheritsCall = new Call(pos(), null, inheritsName);
-            _inheritsCall._generics = gs;
+            _inheritsCall = targetCalls(res, context, t.feature());
+            _inheritsCall._generics = t.generics();
+            _inheritsCall._generics.freeze();
             List<Expr> expressions = new List<Expr>(feature);
             String wrapperName = FuzionConstants.LAMBDA_PREFIX + id++;
             _wrapper = new Feature(pos(),
@@ -346,14 +400,57 @@ public class Function extends AbstractLambda
             if (inferResultType)
               {
                 result = refineResultType(res, context, rt0, _feature.resultType());
-                _inheritsCall._generics = gs.setOrClone(0, result);
-                _inheritsCall.notifyInferred();
+                var g = t.lambdaTargetResultTypeParameter(res);
+                if (g != null && !_inheritsCall.isDefunct())
+                  {
+                    int idx = g.typeParameterIndex();
+                    _inheritsCall._generics = _inheritsCall._generics.setOrClone(idx, result);
+                    _inheritsCall.notifyInferred();
+                  }
               }
 
-            _call = new Call(pos(), new Current(pos(), context.outerFeature()), _wrapper).resolveTypes(res, context);
+            _call = new Call(pos(), new Current(pos(), context.outerFeature()), _wrapper);
+            if (_inheritsCall._generics.stream().allMatch(at -> at != Types.t_UNDEFINED))
+              {
+                _call = _call.resolveTypes(res, context);
+              }
+          }
+        else
+          {
+            _expr = Expr.NO_VALUE;
+            result = Types.t_ERROR;
           }
       }
     return result;
+  }
+
+
+  /**
+   * Create the calls for the target instance(s) of a feature created for a
+   * lambda.
+   *
+   * @param res the resolution instance.
+   *
+   * @param context the source code context where this Call is used
+   *
+   * @param f the (inner) feature for which we want an outer instance.
+   *
+   * @return the code to create the outer instances of {@code null} if outer is
+   * the unverse.
+   */
+  private Call targetCalls(Resolution res, Context context, AbstractFeature f)
+  {
+    if (f == null || f.isUniverse())
+      {
+        return null;
+      }
+    else
+      { // NYI: UNDER DEVELOPMENT: Report error if arg list is not empty. Also
+        // handle the case that one of the outer features in context is the same
+        // as f.outer() and use the correct chain of current and outer refs
+        // instead.
+        return new Call(pos(), targetCalls(res, context, f.outer()), f.featureName().baseName());
+      }
   }
 
 
@@ -382,9 +479,9 @@ public class Function extends AbstractLambda
             if (frmlRt.feature() != lmbdRt.selfOrConstraint(res, context).feature())
               {
                 result = frmlRt.applyToGenericsAndOuter(x -> x == Types.t_UNDEFINED ? lmbdRt: x);
-                if (result.choiceGenerics().stream().filter(x -> x == Types.t_UNDEFINED).count() == 0)
+                if (result.isChoice() && result.choiceGenerics().stream().filter(x -> x == Types.t_UNDEFINED).count() == 0)
                   {
-                    _feature.setRefinedResultType(res, result);
+                    _feature.setRefinedResultType(res, context, result);
                   }
               }
           }
@@ -392,8 +489,8 @@ public class Function extends AbstractLambda
                  && lmbdRt.feature() != frmlRt.feature()
                  && lmbdRt.feature().inheritsFrom(frmlRt.feature()))
           {
-            result = ResolvedNormalType.create(lmbdRt.generics(), Call.NO_GENERICS, frmlRt.outer(), frmlRt.feature());
-            _feature.setRefinedResultType(res, result);
+            result = ResolvedNormalType.create(lmbdRt.generics(), frmlRt.outer(), frmlRt.feature());
+            _feature.setRefinedResultType(res, context, result);
           }
       }
     return result;
@@ -436,39 +533,53 @@ public class Function extends AbstractLambda
     if (CHECKS) check
       (this._call == null || this._feature != null);
 
+    if (_namesAsExprs != null)
+      {
+        _namesAsExprs.stream()
+          .filter(n -> n.asParsedName() == null)
+          .forEach(AstErrors::argNameExpectedInLambda);
+      }
+
     if (this._call == null)
       {
         // do not do anything yet, we are waiting for propagateExpectedType to
         // tell us what we are.
+        if (_names.isEmpty())
+          {
+            // However, if we do not need the propagated argument types because
+            // there are no arguments, we can resolve the type.
+            //
+            // But we cannot do this immediately, since we might still gain
+            // information from propagateExpectedType such as the numeric result
+            // type in `()->42` or the actual type for tagging the result of
+            // `()->nil` if this is supposed to result in, e.g., option.
+            //
+            // So we create a Runnable to do this that is to be called when the
+            // going get's tough during a call to `type()` if we still have
+            // nothing to offer.
+            _resultTypeLastResort = ()->
+              {
+                var f = Types.resolved.f_Nullary;
+                var t_undef = ResolvedNormalType.create(f, new List<>(Types.t_UNDEFINED));
+                var t_res = propagateTypeAndInferResult(res,
+                                                        context,
+                                                        t_undef,
+                                                        true,
+                                                        ()->"type from nullary lambda `()->expr`");
+                _type = ResolvedNormalType.create(f, new List<>(t_res));
+              };
+          }
       }
     else
       {
-        List<AbstractType> generics = new List<>();
-
-        var f = this._feature;
-        if (CHECKS) check
-          (Errors.any() || f != null);
-
-        if (f != null)
-          {
-            generics.add(f instanceof Feature ff && ff.hasResult()  // NYI: Cast!
-                         ? ff.resultTypeIfPresent(res)
-                         : new BuiltInType(FuzionConstants.UNIT_NAME));
-            for (var a : f.arguments())
-              {
-                res.resolveTypes(a);
-                generics.add(a.resultType());
-              }
-          }
-
-        _inheritsCall._generics = generics;
         Call inheritsCall2 = _inheritsCall.resolveTypes(res, context);
+        _type = _call.type();
+
         // Call.resolveType returns something different than this only for an
         // immediate function call, which is never the case in an inherits
         // clause.
         if (CHECKS) check
-          (Errors.any() || _inheritsCall == inheritsCall2,
-           _type == null || _type.isAssignableFrom(_call.type()));
+          (Errors.any() || _inheritsCall == inheritsCall2);
       }
   }
 
@@ -484,6 +595,10 @@ public class Function extends AbstractLambda
     if (CHECKS) check
       (_type != Types.t_UNDEFINED);
 
+    if (_type == null)
+      {
+        _resultTypeLastResort.run();
+      }
     if (_type == null)
       {
         if (_expr.type() != Types.t_ERROR || !Errors.any())
@@ -509,16 +624,16 @@ public class Function extends AbstractLambda
   @Override
   AbstractType typeForInferencing()
   {
+    var t2 = _call != null ? _call.typeForInferencing() : null;
     // unlike type(), we do not produce an error but just return null here since
     // everything might eventually turn out fine in this case.
     // NYI: UNDER DEVELOPMENT: ugly in case result type is error
     // we should probably have replaced Function already...
     return _feature != null && _feature.resultTypeIfPresent(null) == Types.t_ERROR
       ? Types.t_ERROR
-      // we have a lambda with no args and the expr type is inferrable
-      : _type == null && _names.isEmpty() && _expr.typeForInferencing() != null
-      ? ResolvedNormalType.create(Types.resolved.f_Lazy, new List<>(_expr.typeForInferencing()))
-      : _type;
+      : t2 == null
+      ? _type
+      : t2;
   }
 
 
@@ -544,7 +659,7 @@ public class Function extends AbstractLambda
    */
   public String toString()
   {
-    return _names + " -> " + _expr;
+    return _names + " -> " + _originalExpr;
   }
 
 

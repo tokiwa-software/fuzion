@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.c;
 
+import static dev.flang.ir.IR.NO_CLAZZ;
+
 import java.util.ArrayList;
 import java.util.TreeSet;
 
@@ -65,10 +67,10 @@ public class CNames extends ANY
 
 
   /**
-   * Maximum length of (external) function names in C.  Since name mangling
+   * Maximum length of (internal) function names in C.  Since name mangling
    * easily results in lengthy names, we have to be careful not to exceed this.
    */
-  private static final int MAX_C99_IDENTIFIER_LENGTH = 31;
+  private static final int MAX_C99_INTERNAL_IDENTIFIER_LENGTH = 63;
 
 
   /**
@@ -288,7 +290,7 @@ public class CNames extends ANY
     {
       var o = _fuir.clazzOuterClazz(cl);
       String sep = "";
-      if (o != -1 &&
+      if (o != NO_CLAZZ &&
           _fuir.clazzOuterClazz(o) != FUIR.NO_CLAZZ)
         { // add o a prefix unless cl or o are universe
           clazzMangledName(o, sb);
@@ -337,14 +339,14 @@ public class CNames extends ANY
           }
           _usedNames.add(res);
 
-          if (res.length() > MAX_C99_IDENTIFIER_LENGTH)
+          if (res.length() > MAX_C99_INTERNAL_IDENTIFIER_LENGTH)
             {
               var s = p + "_L" + num;
               res = s +
                 res.substring(p.length(), p.length() + 10) + "__" +
-                res.substring(res.length() - MAX_C99_IDENTIFIER_LENGTH + s.length() + 12);
+                res.substring(res.length() - MAX_C99_INTERNAL_IDENTIFIER_LENGTH + s.length() + 12);
               if (CHECKS) check
-                (res.length() == MAX_C99_IDENTIFIER_LENGTH);
+                (res.length() == MAX_C99_INTERNAL_IDENTIFIER_LENGTH);
             }
           _cache.set(num, res);
         }

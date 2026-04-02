@@ -48,15 +48,6 @@ public interface Context
   static class MainEntryPoint extends ANY implements Context
   {
     /**
-     * Return a unique id for the call or main entry point context.
-     */
-    @Override
-    public int uniqueCallId()
-    {
-      return -1;
-    }
-
-    /**
      * Effect-environment in this context, null if none.
      */
     @Override
@@ -98,13 +89,6 @@ public interface Context
 
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * Return a unique id for the call or main entry point context.
-   */
-  abstract int uniqueCallId();
-
 
   /**
    * Effect-environment in this context, null if none.
@@ -164,6 +148,35 @@ public interface Context
    * Convenience function for {@code contextString(false)}
    */
   default String contextString()       { return contextString(false); }
+
+
+
+  /**
+   * Check the context if it contains an effect of clazz `cl` instantiated at
+   * `site`.
+   *
+   * @param cl a clazz
+   *
+   * @param site a site that contains a constructor call to `cl`
+   *
+   * @return in case the context contains an environment with an instance of
+   * `cl` created at `site` instated, then return that existing instance.
+   * Return null otherwise.
+   */
+  default Instance findEffect(int cl, int site)
+  {
+    Instance result = null;
+    var e = env();
+    if (e != null)
+      {
+        result = e.find(cl, site);
+      }
+    if (result == null && this instanceof Call cc)
+      {
+        result = cc._context.findEffect(cl, site);
+      }
+    return result;
+  }
 
 
 }

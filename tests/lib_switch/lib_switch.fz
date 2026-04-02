@@ -31,13 +31,13 @@ lib_switch =>
   say (a.or ()->5)
   say (b.or ()->5)
 
+  /* NYI: BUG: check-condition: #5729
 
-  # NYI: BUG: #4169
-  # require-condition3 failed: Tag.java:83 "(value != null, taggedType.isChoice(), Errors.any() || taggedType .choiceGenerics(context) .stream() .filter(cg -> cg.isDirectlyAssignableFrom(value.type(), context))"
+  Y ref is
 
-  # y is
+    c option Y.this := Y.this
+    say (c.and_then x->Y.this)
 
-  #   c option y.this := y.this
-  #   say (c.and_then x->y.this)
+  _ := Y
 
-  # _ := y
+  */

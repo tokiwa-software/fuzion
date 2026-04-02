@@ -1,0 +1,92 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion module tokiwa
+#
+# -----------------------------------------------------------------------
+
+#
+# unit feature grouping tokiwa related code
+#
+public tokiwa is
+
+  #
+  # send something to our influx database
+  #
+  # e.g. post_to_influx "tokiwa" "benchmarks" "**token**" "tests,test=hello value=26.5"
+  #
+  public post_to_influx(org, bucket, token, str String) outcome String =>
+    web.post_r
+      net.family.ipv4
+      "https://influxdb.tokiwa.software:8086/api/v2/write?org={org}&bucket={bucket}&precision=s"
+      str.utf8
+      (container.map_of [("Authorization", "Token {token}"),
+                         ("Content-Type", "text/plain")])
+
+
+  # stores the results of a process
+  #
+  public process_result(public out, err String, public exit_code u32) is
+
+    public ok bool => exit_code = 0
+
+
+    public type.empty_success tokiwa.process_result =>
+      tokiwa.process_result "" "" 0
+
+
+    public redef as_string String =>
+      "{exit_code}: {out}{err}"
+
+
+  # helper to get out, err, exit_code from started process
+  #
+  public record_process(
+        p os.process,
+        # the command, for error messages
+        cmd String,
+        timeout option time.duration,
+        # feed file to stdin of executed process?
+        feed_stdin option path
+  ) process_result =>
+    lm : mutate is
+    (concur.thread_pool 2 ()->
+        fout := concur.thread_pool.env.submit _ ()->
+          lm ! ()->
+            match p.with_out String lm (()->String.from (io.buffered lm).read_fully)
+              e error => panic "failed reading stdout from $cmd, error is: $e"
+              out String => out
+        ferr := concur.thread_pool.env.submit _ ()->
+          lm ! ()->
+            match p.with_err String lm (()->String.from (io.buffered lm).read_fully)
+              e error => panic "failed reading stderr from $cmd, error is: $e"
+              err String => err
+
+        match feed_stdin
+          nil =>
+          stdin_file path =>
+            if io.file.exists stdin_file
+              lm ! ()->
+                _ := p.with_in unit lm ()->
+                  _ := (io.buffered lm).writer.env.write (io.slurp stdin_file).or_panic
+
+        match p.wait (timeout.or_default time.duration.max)
+          e error => process_result "" "failed waiting for $cmd, error is: $e" 1
+          ec u32 => process_result fout.get ferr.get ec)
+      .or_panic

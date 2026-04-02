@@ -53,7 +53,7 @@ calls is
       cnt := mut 0
       f is
         cnt <- cnt.get + 1
-        _ := "f#$cnt in $where type {on.this.type.name}"
+        s := "f#$cnt in $where type {on.this.type.name}"
       where => "on"
 
     roa ref : on is

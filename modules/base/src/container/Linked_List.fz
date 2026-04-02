@@ -26,10 +26,9 @@
 public Linked_List(public T type) ref : Sequence T is
 
 
-  # next is the following element of the linked list, or nil if there are
-  # no more elements in the list after this element.
+  # the next element in the linked list, or nil if this is the last element
   #
-  public next option (Linked_List T) => abstract
+  public next option (container.Linked_List T) => abstract
 
 
   # the data stored in this element of the list.
@@ -41,19 +40,19 @@ public Linked_List(public T type) ref : Sequence T is
   #
   as_string0(pfx String) =>
     match next
-      ll Linked_List T => ll.as_string0 "{pfx} -> {ll.data}"
+      ll Linked_List => ll.as_string0 "{pfx} -> {ll.data}"
       nil => "{pfx} ]"
 
 
   # a representation of this linked list as a string.
   #
-  public redef as_string =>
+  public redef as_string String =>
     Linked_List.this.as_string0 "[ {data}"
 
 
   # return this linked list as a list
   #
-  public redef as_list =>
+  public redef as_list list T =>
     match next
-      ll Linked_List T => (data : ()->ll.as_list)
+      ll Linked_List => (data : ()->ll.as_list)
       nil => (data : ()->nil)

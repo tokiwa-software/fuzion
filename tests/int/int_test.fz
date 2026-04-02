@@ -38,8 +38,8 @@ int_test is
   for m in (i64 -2)..2 do
     for n in (i64 -2)..2 do
 
-      chck (m=n   <=> (int m  = int n)) "int: m $m  = n $n"
-      chck ((m≤n) <=> (int m ≤ int n)) "int: m $m <= n $n"
+      chck ((m=n) = (int m = int n)) "int: m $m  = n $n"
+      chck ((m≤n) = (int m ≤ int n)) "int: m $m <= n $n"
       chck (int m+n = (int m + int n)) "int: m $m + n $n"
       chck (int m-n = (int m - int n)) "int: m $m - n $n"
       chck (int m*n = (int m * int n)) "int: m $m * n $n"
@@ -57,8 +57,8 @@ int_test is
 
       chck (uint m>>n  = (uint m  >> uint n)) "uint: $m  >> n $n"
       chck (uint m<<n  = (uint m  << uint n)) "uint: $m  << n $n"
-      chck (m=n   <=> (uint m  = uint n)) "uint: $m  = n $n"
-      chck ((m≤n) <=> (uint m ≤ uint n)) "uint: $m <= n $n"
+      chck ((m=n) = (uint m = uint n)) "uint: $m  = n $n"
+      chck ((m≤n) = (uint m ≤ uint n)) "uint: $m <= n $n"
       chck (uint m+n = (uint m + uint n)) "uint: $m + n $n"
       if m ≥ n
         chck (uint m-n = (uint m - uint n)) "uint: m $m - n $n"
@@ -84,8 +84,8 @@ int_test is
   for m in u32_max..(u32_max+2) do
     for n in u32_max..(u32_max+2) do
 
-      chck (m=n    <=> (uint m = uint n)) "uint: $m  = n $n"
-      chck ((m≤n)  <=> (uint m ≤ uint n)) "uint: $m <= n $n"
+      chck ((m=n)  = (uint m = uint n)) "uint: $m  = n $n"
+      chck ((m≤n)  = (uint m ≤ uint n)) "uint: $m <= n $n"
       chck (uint m+n = (uint m + uint n)) "uint: $m + n $n"
       if m ≥ n
         chck (uint m-n = (uint m - uint n)) "uint: m $m - n $n"

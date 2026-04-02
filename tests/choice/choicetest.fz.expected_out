@@ -1,4 +1,4 @@
-l1 is Red, l2 is Green
+l1 is instance[choicetest.Red], l2 is instance[choicetest.Green]
 creating array:
 summing array using loop: 104
 summing array using iterator: 104

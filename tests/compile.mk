@@ -29,22 +29,27 @@
 #  FUZION -- the fz command
 
 FUZION_OPTIONS ?=
-FUZION = ../../bin/fz $(FUZION_OPTIONS)
+FUZION ?= ../../bin/fz
+FUZION_RUN = $(FUZION) $(FUZION_OPTIONS)
 FILE = $(NAME).fz
 
 all: jvm c int
 
+fuir:
+	rm -f *.fuir
+	@printf 'FUIR %s ' "$(FILE)" && $(ENV) dev_flang_tools_serializeFUIR=true $(FUZION_RUN) -noBackend $(FILE) 2>err.txt && printf "\033[32;1mPASSED\033[0m.\n" || printf "\033[31;1m*** FAILED\033[0m.\n" && (RC=$$? && cat err.txt && exit $$RC)
+
 int:
-	$(FUZION) -no-backend $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
+	@printf 'COMPILE %s using $@ backend ' "$(FILE)" && $(FUZION_RUN) -noBackend $(NAME) 2>err.txt && printf "\033[32;1mPASSED\033[0m.\n" || printf "\033[31;1m*** FAILED\033[0m.\n" && (RC=$$? && cat err.txt && exit $$RC)
 
 jvm:
-	$(FUZION) -classes $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
+	@printf 'COMPILE %s using $@ backend ' "$(FILE)" && $(FUZION_RUN) -classes $(NAME) 2>err.txt && printf "\033[32;1mPASSED\033[0m.\n" || printf "\033[31;1m*** FAILED\033[0m.\n" && (RC=$$? && cat err.txt && exit $$RC)
 
 c:
-	$(FUZION) -c $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
+	@printf 'COMPILE %s using  $@  backend ' "$(FILE)" && $(FUZION_RUN) -c $(NAME) 2>err.txt && printf "\033[32;1mPASSED\033[0m.\n" || printf "\033[31;1m*** FAILED\033[0m.\n" && (RC=$$? && cat err.txt && exit $$RC)
 
 effect:
-	$(ENV) ../check_simple_example_effect.sh "$(FUZION_RUN)" $(FILE) || exit 1
+	$(ENV) ../../bin/check_simple_example effect "$(FUZION_RUN)" $(FILE) || exit 1
 
 record_effect:
-	$(ENV) ../record_simple_example_effect.sh "$(FUZION_RUN)" $(FILE)
+	$(ENV) ../../bin/record_simple_example effect "$(FUZION_RUN)" $(FILE)

@@ -9,6 +9,6 @@ Lambda operator is part of infix operator here:
 --CURDIR--/reg_issue2878.fz:28:6:
   a s->!s.is_empty # does not work: ->! is parsed as operator
 -----^^^
-To solve this, add a space after '->'.
+To solve this, put the lambda in parentheses and add a space after '->'.
 
 one error.

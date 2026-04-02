@@ -29,6 +29,7 @@ stack is
     s.push 2
     say s.pop
     s.push 3
+    say s.as_sequence
     say s.pop
     say s.peek
     say s.pop

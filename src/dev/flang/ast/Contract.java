@@ -49,8 +49,7 @@ public class Contract extends ANY
   /**
    * Empty list of conditions.
    */
-  static final List<Cond> NO_COND = new List<>();
-  static { NO_COND.freeze(); }
+  static final List<Cond> NO_COND = new List<Cond>().freeze();
 
 
   /**
@@ -374,15 +373,15 @@ public class Contract extends ANY
           ? outer.contract()._hasPre    // use `pre` position if `outer` is of the form `f pre cc is ...`
           : outer.pos();                // `outer` does not have `pre` clause, only inherits preconditions. So use the feature position instead
 
-    var t = (outer.outerRef() != null) ? new This(p, outer, outer.outer()).resolveTypes(res, context)
-                                       : Universe.instance;
+    var t = outer.outerRef() != null ? This.thiz(res, p, context, outer.outer())
+                                     : Universe.instance;
     if (f instanceof Feature ff)  // if f is currently being compiled, make sure its contract features are created first
       {
         addContractFeatures(res, ff, context);
       }
     return new Call(p,
                     t,
-                    outer.generics().asActuals(),
+                    outer.genericsAsActuals(),
                     args,
                     f.preFeature())
       .resolveTypes(res, context);
@@ -415,15 +414,15 @@ public class Contract extends ANY
         args.add(ca);
       }
 
-    var t = (outer.outerRef() != null) ? new This(p, outer, outer.outer()).resolveTypes(res, context)
-                                       : Universe.instance;
+    var t = outer.outerRef() != null ? This.thiz(res, p, context, outer.outer())
+                                     : Universe.instance;
     if (f instanceof Feature ff)  // if f is currently being compiled, make sure its post feature is added first
       {
         addContractFeatures(res, ff, context);
       }
     return new Call(p,
                     t,
-                    outer.generics().asActuals(),
+                    outer.genericsAsActuals(),
                     args,
                     f.preBoolFeature())
       .resolveTypes(res, context);
@@ -453,11 +452,10 @@ public class Contract extends ANY
         ca = ca.resolveTypes(res, preAndCallOuter.context());
         args.add(ca);
       }
-    var t = new This(p, preAndCallOuter, preAndCallOuter.outer())
-      .resolveTypes(res, preAndCallOuter.context());
+    var t = This.thiz(res, p, preAndCallOuter.context(), preAndCallOuter.outer());
     return new Call(p,
                     t,
-                    preAndCallOuter.generics().asActuals(),
+                    preAndCallOuter.genericsAsActuals(),
                     args,
                     f)
       {
@@ -483,6 +481,7 @@ public class Contract extends ANY
     var oc = outer.contract();
     var p = oc._hasPost != null ? oc._hasPost : outer.pos();
     List<Expr> args = new List<>();
+    // NYI: CLEANUP: use outer.kind() and switch
     if (!outer.isConstructor())
       {
         for (var a : outer.valueArguments())
@@ -528,9 +527,9 @@ public class Contract extends ANY
           ? in.contract()._hasPost   // use `post` position if `in` is of the form `f post cc is ...`
           : in.pos();                // `in` does not have `post` clause, only inherits postconditions. So use the feature position instead
 
-    var t = in.isConstructor() ? new This(p, in, in).resolveTypes(res, in.context())
+    var t = in.isConstructor() ? This.thiz(res, p, in.context(), in)
                                : (in.outerRef() != null)
-                                  ? new This(p, in, in.outer()).resolveTypes(res, in.context())
+                                  ? This.thiz(res, p, in.context(), in.outer())
                                   : Universe.instance;
     if (origouter instanceof Feature of)  // if origouter is currently being compiled, make sure its post feature is added first
       {
@@ -538,21 +537,13 @@ public class Contract extends ANY
       }
     var callPostCondition = new Call(p,
                                      t,
-                                     origouter.isConstructor() ? new List<>() : in.generics().asActuals(),
+                                     origouter.isConstructor() ? new List<>() : in.genericsAsActuals(),
                                      args,
                                      origouter.postFeature());
     callPostCondition = callPostCondition.resolveTypes(res, in.context());
     return callPostCondition;
   }
 
-
-  /**
-   * Helper to create {@code ParsedCall} to {@code n} at position {@code p}
-   */
-  private static ParsedCall pc(SourcePosition p, String n)
-  {
-    return new ParsedCall(new ParsedName(p, n));
-  }
 
   /**
    * Helper to create {@code ParsedCall} to {@code t}.{@code n} at position {@code p}
@@ -623,7 +614,7 @@ public class Contract extends ANY
                 // need to check the conditions defined locally at all.
                 // However, we want to check the condition code for errors etc.,
                 // so we wrap it into `(true || <cond>)`
-                cond = new ParsedCall(pc(pos, "true"),
+                cond = new ParsedCall(Call.TRUE,
                                       new ParsedName(pos, "infix ||"), new List<>(cond));
               }
             l.add(Match.createIf(p,
@@ -641,9 +632,7 @@ public class Contract extends ANY
     var code = new Block(l);
     var result_type     = new ParsedType(pos,
                                          preBool ? "bool"
-                                                 : FuzionConstants.UNIT_NAME,
-                                         UnresolvedType.NONE,
-                                         null);
+                                                 : FuzionConstants.UNIT_NAME);
     var pF = new Feature(pos,
                          f.visibility().eraseTypeVisibility(),
                          // we need to copy fixed modifier because
@@ -716,7 +705,7 @@ public class Contract extends ANY
     if (preBool)
       {
         new_code = new List<>(cc != null ? cc
-                                         : pc(pos, "true"));
+                                         : Call.TRUE);
       }
     else if (cc != null)
       {
@@ -757,7 +746,7 @@ public class Contract extends ANY
     if (requiresPreConditionsFeature(f) && f._preBoolFeature == null)
       {
         // NYI: UNDER DEVELOPMENT:
-        if (f.kind() != Kind.Routine && f.kind() != Kind.Intrinsic && f.kind() != Kind.Abstract)
+        if (!f.isRoutine() && f.kind() != Kind.Intrinsic && f.kind() != Kind.Abstract)
           {
             Errors.error(fc._hasPre, "Implementation restriction: pre-condition for " + f.kind() + " not supported yet.", "");
           }
@@ -1025,7 +1014,7 @@ all of their redefinition to `true`. +
     if (requiresPostConditionsFeature(f) && f._postFeature == null)
       {
         // NYI: UNDER DEVELOPMENT:
-        if (f.kind() != Kind.Routine && f.kind() != Kind.Abstract)
+        if (!f.isRoutine() && f.kind() != Kind.Abstract)
           {
             Errors.error(fc._hasPost, "Implementation restriction: post-condition for " + f.kind() + " not supported yet.", "");
           }
@@ -1039,8 +1028,10 @@ all of their redefinition to `true`. +
         var resultField = new Feature(pos,
                                       Visi.PRIV,
                                       f.isConstructor()
-                                      ? f.thisType()
-                                      : f.resultType(), // NYI: replace type parameter of f by type parameters of _postFeature!
+                                        ? f.thisType()
+                                        // we will later replace type parameters of f
+                                        // by type parameters of f post
+                                        : f.resultType(),
                                       FuzionConstants.RESULT_NAME)
           {
             public boolean isResultField() { return true; }
@@ -1078,6 +1069,10 @@ all of their redefinition to `true`. +
           };
         res._module.findDeclarations(pF, f.isConstructor() ? f :  f.outer());
         res.resolveDeclarations(pF);
+        if (!f.isConstructor())
+          {
+            resultField.setRefinedResultType(res, context, f.resultType().replaceTypeParameters(pF));
+          }
         res.resolveTypes(pF);
         f._postFeature = pF;
 
@@ -1118,6 +1113,54 @@ The conditions of a post-condition are checked at run-time in sequential source-
             code._expressions = l2;
           }
       }
+  }
+
+
+  /**
+   * creates code for the given list of conditions, i.e. if-expressions
+   *
+   * fuzion code of the form
+   *
+   *   check
+   *     debug: e1
+   *     safety: e2
+   *
+   * will be turned into
+   *
+   *   if (debug: e1)
+   *     fuzion.runtime.fault "debug: e1"
+   *   if (safety: e2)
+   *     fuzion.runtime.fault "safety: e2"
+   *
+   *
+   * @param conditions the list of conditions to create code for
+   *
+   * @param fault the name of the fault, e.g. "checkcondition_fault"
+   */
+  public static Expr asFault(List<Cond> conditions, String fault)
+  {
+    var l = new List<Expr>();
+    for (var c : conditions)
+      {
+        var p = c.cond().sourceRange();
+        var f = new Call(p, "fuzion");
+        var r = new Call(p, f, "runtime");
+        var e = new Call(p, r, fault, new List<>(new StrConst(p, p.sourceText())));
+        l.add(Match.createIf(p, c.cond(), new Block(), e, false));
+      }
+    return new Block(l);
+  }
+
+
+  /**
+   * Is this a contract without any conditions?
+   */
+  public boolean isEmpty()
+  {
+    return _hasPre == null &&
+      _hasPost == null &&
+      _hasPreElse == null &&
+      _hasPostThen == null;
   }
 
 

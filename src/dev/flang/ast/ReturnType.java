@@ -81,6 +81,20 @@ public abstract class ReturnType extends ANY
    */
   public AbstractType functionReturnType()
   {
+    return functionReturnType(false);
+  }
+
+
+  /**
+   * For a function, the result type.
+   *
+   * @param allowIncomplete allow returning types where generics are missing,
+   * i.e. an incomplete type from a case field
+   *
+   * @return the function result type.
+   */
+  public AbstractType functionReturnType(boolean allowIncomplete)
+  {
     if (PRECONDITIONS) require
       (!isConstructorType());
 

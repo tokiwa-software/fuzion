@@ -1,0 +1,6 @@
+
+--CURDIR--/reg_issue4353_1.fz:26:3: error 1: Actual type parameter 'tuple i32' does not satisfy constraint 'tuple String'
+  T : tuple A
+--^^^^^^^^^^^
+
+one error.

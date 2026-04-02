@@ -32,13 +32,15 @@ FUZION = ../../bin/fz $(FUZION_OPTIONS)
 
 all: jvm c int
 
+fuir: # does nothing
+
 int:
-	$(FUZION) -frontend-only $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
+	@printf 'SYNTAX %s using $@ backend ' "$(FILE)"   && $(FUZION) -frontendOnly $(NAME) 2>err.txt && printf "\033[32;1mPASSED\033[0m.\n" || printf "\033[31;1m*** FAILED\033[0m.\n" && (RC=$$? && cat err.txt && exit $$RC)
 
 jvm:
-	$(FUZION) -frontend-only $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
+	@printf 'SYNTAX %s using $@ backend ' "$(FILE)"   && $(FUZION) -frontendOnly $(NAME) 2>err.txt && printf "\033[32;1mPASSED\033[0m.\n" || printf "\033[31;1m*** FAILED\033[0m.\n" && (RC=$$? && cat err.txt && exit $$RC)
 
 c:
-	$(FUZION) -frontend-only $(NAME) 2>err.txt || (RC=$$? && cat err.txt && exit $$RC)
+	@printf 'SYNTAX %s using  $@  backend ' "$(FILE)" && $(FUZION) -frontendOnly $(NAME) 2>err.txt && printf "\033[32;1mPASSED\033[0m.\n" || printf "\033[31;1m*** FAILED\033[0m.\n" && (RC=$$? && cat err.txt && exit $$RC)
 
 effect:

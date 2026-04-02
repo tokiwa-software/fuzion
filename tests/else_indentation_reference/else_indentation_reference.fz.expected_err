@@ -68,7 +68,7 @@ When 'else' is not in the same line as 'if', it must be aligned with 'if', 'then
 Indentation reference point is --CURDIR--/else_indentation_reference.fz:177:3:
   if
 --^
-While parsing: term, parse stack: term, opTail, opExpr, operatorExpr (twice), exprInLine, ifexpr (twice), term, opTail, opExpr, operatorExpr (twice), expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
+While parsing: term, parse stack: term, opExpr, operatorExpr, exprInLine, ifexpr (twice), term, opExpr, operatorExpr, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
 
 
 --CURDIR--/else_indentation_reference.fz:138:3: error 9: Incompatible types in branches of if expression
@@ -95,12 +95,13 @@ block returns value of type 'unit' at --CURDIR--/else_indentation_reference.fz:1
 ----------------------------------------------^
 
 
---CURDIR--/else_indentation_reference.fz:140:16: error 10: Wrong number of actual arguments in call
+--CURDIR--/else_indentation_reference.fz:140:16: error 10: Wrong number of actual value arguments in call
        else if c2       "-false::false::true-"
 ---------------^^
-Number of actual arguments is 1, while call expects no arguments.
+Number of actual value arguments is 1, while call expects no value arguments.
+Actual value arguments: '"-false::false::true-"'
 Called feature: 'c2'
-Formal arguments: 
+Formal value arguments: --none--
 Declared at --CURDIR--/else_indentation_reference.fz:26:1:
 c2 := false
 ^^

@@ -36,6 +36,38 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 static_assert(sizeof(int)    == 4, "implementation restriction, int must be 4 bytes");
 static_assert(sizeof(size_t) == 8, "implementation restriction, size_t must be 8 bytes");
+static_assert(sizeof(void *) == 8, "implementation restriction, pointer must be 8 bytes");
+
+
+static_assert(sizeof(float) == 4, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(double) == 8, "implementation restriction, fzextract assumption failure");
+// NYI: UNDER DEVELOPMENT: static_assert(sizeof(long double) == 8, "implementation restriction, fzextract assumption failure");
+// NYI: UNDER DEVELOPMENT: static_assert(sizeof(long) == 8, "implementation restriction, fzextract assumption failure");
+// NYI: UNDER DEVELOPMENT: static_assert(sizeof(signed long) == 8, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(time_t) == 8, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(size_t) == 8, "implementation restriction, fzextract assumption failure");
+// NYI: UNDER DEVELOPMENT: static_assert(sizeof(ssize_t) == 8, "implementation restriction, fzextract assumption failure");
+// NYI: UNDER DEVELOPMENT: static_assert(sizeof(clock_t) == 8, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(long long) == 8, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(signed long long) == 8, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(int64_t) == 8, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(char) == 1, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(signed char) == 1, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(int) == 4, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(signed int) == 4, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(int32_t) == 4, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(unsigned long long) == 8, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(uint64_t) == 8, "implementation restriction, fzextract assumption failure");
+// NYI: UNDER DEVELOPMENT: static_assert(sizeof(unsigned long) == 8, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(short) == 2, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(signed short) == 2, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(unsigned short) == 2, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(uint16_t) == 2, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(unsigned char) == 1, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(uint8_t) == 1, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(unsigned) == 4, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(unsigned int) == 4, "implementation restriction, fzextract assumption failure");
+static_assert(sizeof(uint32_t) == 4, "implementation restriction, fzextract assumption failure");
 
 
 /**
@@ -47,6 +79,14 @@ static_assert(sizeof(size_t) == 8, "implementation restriction, size_t must be 8
  * @return pointer to allocated memory of `size`-bytes.
  */
 void * fzE_malloc_safe(size_t size);
+
+
+/**
+ * explicitly free allocated memory.
+ *
+ * NOTE: must only be called once per ptr!
+ */
+void fzE_free(void * ptr);
 
 
 /**
@@ -80,26 +120,6 @@ int64_t fzE_last_error(void);
 int fzE_mkdir(const char *pathname);
 
 /**
- * set environment variable
- *
- * @param name a pointer to zero terminated utf8 bytes.
- *
- * @param value a pointer to zero terminated utf8 bytes.
- *
- * @return 0 on success, -1 on error.
- */
-int fzE_setenv(const char *name, const char *value);
-
-/**
- * unset environment variable
- *
- * @param name a pointer to zero terminated utf8 bytes.
- *
- * @return 0 on success, -1 on error.
- */
-int fzE_unsetenv(const char *name);
-
-/**
  * open a directory for traversal.
  *
  * @param pathname a pointer to zero terminated utf8 bytes.
@@ -109,6 +129,7 @@ int fzE_unsetenv(const char *name);
  *    on error result[0]=-1
  *
  * @return pointer to directory
+ *         NOTE: needs to be closed via fzE_dir_close
  */
 void * fzE_opendir(const char *pathname, int64_t * result);
 
@@ -122,7 +143,7 @@ void * fzE_opendir(const char *pathname, int64_t * result);
  *
  * @return -1 on error, 0 on end reached, length of result on success
  */
-int fzE_dir_read(intptr_t * dir, void * result);
+int fzE_dir_read(intptr_t * dir, int8_t * result);
 
 /**
  * close directory
@@ -150,7 +171,7 @@ int fzE_set_blocking(int sockfd, int blocking);
  *
  * @return 0 if successful, -1 if not
  */
-int fzE_close(int sockfd);
+int fzE_socket_close(int sockfd);
 
 /**
  * create a new socket
@@ -174,6 +195,9 @@ int fzE_socket(int family, int type, int protocol);
 /**
  * create a new socket and bind to given host:port
  *
+ * @param sockfd
+ *      socket file descriptor
+ *
  * @param family
  *      address family (e.g., ipv4 => 2)
  *
@@ -195,7 +219,7 @@ int fzE_socket(int family, int type, int protocol);
  *
  * @return 0 if successful, -1 if not
  */
-int fzE_bind(int family, int socktype, int protocol, char * host, char * port, int32_t * result);
+int fzE_bind(int sockfd, int family, int socktype, int protocol, char * host, char * port);
 
 /**
  * set the given socket to listening
@@ -223,6 +247,9 @@ int fzE_accept(int sockfd);
 /**
  * create connection for given parameters
  *
+ * @param sockfd
+ *      socket file descriptor
+ *
  * @param family
  *      address family (e.g., ipv4 => 2)
  *
@@ -238,13 +265,9 @@ int fzE_accept(int sockfd);
  * @param port
  *      port to connect to
  *
- * @param result
- *      result[0] contains either an error code or a socket descriptor
- *      -1 on error, 0 on success
- *
  * @return 0 if successful, -1 if not
  */
-int fzE_connect(int family, int socktype, int protocol, char * host, char * port, int32_t * result);
+int fzE_connect(int sockfd, int family, int socktype, int protocol, char * host, char * port);
 
 /**
  * get the peer's ip address
@@ -306,17 +329,18 @@ int fzE_socket_read(int sockfd, void * buf, size_t count);
 int fzE_socket_write(int sockfd, const void * buf, size_t count);
 
 
-/*
+/**
  * create a memory map of a file at an offset.
  * unix:    the offset must be a multiple of the page size, usually 4096 bytes.
  * windows: the offset must be a multiple of the memory allocation granularity, usually 65536 bytes
  *          see also, https://devblogs.microsoft.com/oldnewthing/20031008-00/?p=42223
  *
- * returns:
- *   - error   :  result[0]=-1 and NULL
- *   - success :  result[0]=0  and an address where the file was mapped to
+ * @return
+ *   - error   :  NULL
+ *   - success :  an address where the file was mapped to
+ * NOTE: needs to be unmapped via fzE_munmap
  */
-void * fzE_mmap(void * file, uint64_t offset, size_t size, int * result);
+void * fzE_mmap(void * file, uint64_t offset, size_t size);
 
 /**
  * unmap an address that was previously mapped by fzE_mmap
@@ -390,16 +414,14 @@ void fzE_init(void);
 /**
  * Start a new thread, returns a pointer to the thread.
  */
-// NYI: UNDER DEVELOPMENT: result type should be pointer
-int64_t fzE_thread_create(void *(*code)(void *),
+void * fzE_thread_create(void *(*code)(void *),
                           void *restrict);
 
 /**
  * Join with a running thread.
  */
 // NYI: UNDER DEVELOPMENT:  add return value
-// NYI: UNDER DEVELOPMENT: arg type should be pointer
-void fzE_thread_join(int64_t thrd);
+void fzE_thread_join(void * thrd);
 
 /**
  * Global lock
@@ -425,10 +447,6 @@ void fzE_unlock(void);
  * @param envLen the length of env
  *
  * @param result array to be filled with descriptors [process_id, std_in, std_out, std_err]
- *
- * @param args_str the process+arguments as a string
- *
- * @param env_str the environment variables, 0-terminated string of 0-terminated strings, e.g.: "PATH=/usr/bin\0VAR1=some_value\0\0"
  *
  * @return -1 error, 0 success
  */
@@ -463,6 +481,19 @@ int fzE_pipe_write(int64_t desc, char * buf, size_t nbytes);
 int fzE_pipe_close(int64_t desc);
 
 /**
+ * the mode in which to open file
+ * NYI: UNDER DEVELOPMENT: maybe flag is the better term?,
+ *                         missing support for O_CREAT, O_SYNC etc.
+ *                         Might be better to keep fzE_file_open simple and
+ *                         provide some kind of fzE_fctln?
+ */
+typedef enum file_open_mode {
+  FZ_FILE_MODE_READ = 0,
+  FZ_FILE_MODE_WRITE = 1,
+  FZ_FILE_MODE_APPEND = 2
+}file_open_mode;
+
+/**
  * open a file
  *
  * @param file_name the files name
@@ -472,11 +503,9 @@ int fzE_pipe_close(int64_t desc);
  * @param mode 0 read, 1 write, 2 append
  *
  * @return pointer to the open file or undefined on error.
- *
- * NOTE: the file needs to closed again via fzE_file_close.
- *
+ *         NOTE: the file needs to closed again via fzE_file_close.
  */
-void * fzE_file_open(char * file_name, int64_t * open_results, int8_t mode);
+void * fzE_file_open(char * file_name, int64_t * open_results, file_open_mode mode);
 
 /**
  * @param file the pointer to the file
@@ -590,13 +619,13 @@ struct fzE_jvm_result
   union
   {
     jvalue v0;
-    jstring v1; // NYI should probably better be jthrowable
+    jstring v1; // NYI: UNDER DEVELOPMENT: should probably better be jthrowable
   }fzChoice;
 };
 
 // initialize the JVM
 // executed once at the start of the application
-void fzE_create_jvm(char * option_string);
+int32_t fzE_create_jvm(void * options, int32_t len);
 
 // close the JVM.
 void fzE_destroy_jvm(void);
@@ -635,11 +664,11 @@ jvalue fzE_array_get(jarray array, jsize index, const char *sig);
 // get a non-static field on obj.
 jvalue fzE_get_field0(jobject obj, jstring name, const char *sig);
 // set a non-static field on obj.
-jvalue fzE_set_field0(jobject obj, jstring name, jobject value, const char *sig);
+void fzE_set_field0(jobject obj, jstring name, jvalue value, const char *sig);
 // get a static field in class.
 jvalue fzE_get_static_field0(jstring class_name, jstring name, const char *sig);
 // set a static field in class.
-jvalue fzE_set_static_field0(jstring class_name, jstring name, jobject value, const char *sig);
+void fzE_set_static_field0(jstring class_name, jstring name, jvalue value, const char *sig);
 
 #endif
 
@@ -648,8 +677,7 @@ jvalue fzE_set_static_field0(jstring class_name, jstring name, jobject value, co
  * initialize a mutex
  *
  * @return NULL on error or pointer to mutex
- *
- * NOTE: needs to be destroyed via fzE_mtx_destroy.
+ *         NOTE: eventually needs to be destroyed via fzE_mtx_destroy.
  */
 void *  fzE_mtx_init     (void);
 
@@ -691,6 +719,7 @@ void    fzE_mtx_destroy  (void * mtx);
  * initialize a condition
  *
  * @return NULL on error or pointer to condition
+ *         NOTE: eventually needs to be destroyed via fzE_cnd_destroy.
  */
 void *  fzE_cnd_init     (void);
 
@@ -749,7 +778,7 @@ uint64_t fzE_unique_id(void);
  * result[5] = sec
  * result[6] = nanosec;
  */
-void fzE_date_time(void * result);
+void fzE_date_time(int32_t * result);
 
 
 /**
@@ -764,5 +793,16 @@ void * fzE_null(void);
  */
 int fzE_is_null(void * p);
 
+int fzE_send_signal(int64_t pid, int sig);
+
+int32_t fzE_path_max(void);
+
+int64_t fzE_page_size(void);
+
+int64_t fzE_mmap_offset_multiple(void);
+
+int fzE_cwd(void * buf, size_t size);
+
+int fzE_isnan(double d);
 
 #endif /* fz.h  */

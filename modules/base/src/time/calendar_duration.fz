@@ -61,9 +61,9 @@ is
 
   # this duration and another one combined
   #
-  # NYI overflow handling
+  # NYI: UNDER DEVELOPMENT: overflow handling
   #
-  public infix + (other calendar_duration) =>
+  public infix + (other calendar_duration) calendar_duration =>
     calendar_duration
       (years + other.years)
       (months + other.months)
@@ -76,9 +76,9 @@ is
 
   # this duration multiplied by n
   #
-  # NYI overflow handling
+  # NYI: UNDER DEVELOPMENT: overflow handling
   #
-  public infix * (n u64) =>
+  public infix * (n u64) calendar_duration =>
     calendar_duration
       (years * n)
       (months * n)
@@ -151,11 +151,10 @@ is
 
 
     helper [
-      # NYI: UNDER DEVELOPMENT: can not omit parens
-      (x->x.years),
-      (x->x.months),
-      (x->x.days),
-      (x->x.hours),
-      (x->x.minutes),
-      (x->x.seconds),
-      (x->x.nanos)]
+      x->x.years,
+      x->x.months,
+      x->x.days,
+      x->x.hours,
+      x->x.minutes,
+      x->x.seconds,
+      x->x.nanos]

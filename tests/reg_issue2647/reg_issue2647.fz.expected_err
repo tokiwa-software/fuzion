@@ -1,6 +1,13 @@
 
---CURDIR--/reg_issue2647.fz:27:33: error 1: Open type parameters must not be called.
-      public redef as_string => ELEMENT_TYPE.as_string
---------------------------------^^^^^^^^^^^^
+--CURDIR--/reg_issue2647.fz:34:8: error 1: Wrong number of actual value arguments in call
+  say (a 3)
+-------^
+Number of actual value arguments is 1, while call expects no value arguments.
+Actual value arguments: '3'
+Called feature: 'reg_issue2647.a'
+Formal value arguments: --none--
+Declared at --CURDIR--/reg_issue2647.fz:31:3:
+  a(ELEMENT_TYPE type...) is
+--^
 
 one error.

@@ -23,10 +23,8 @@
 
 reg_issue929 =>
 
-  listX(A type, h A, t ()->list A) list A => nil
+  # NYI: UNDER DEVELOPMENT: #5311, needs support for nullary-lambda inference incl. cylces
+  fibs => 0 : fibs.zip 1:()->fibs (+) .as_list
+  fib(n i32) => (fibs().drop n).first
 
-  infix :: (A type, val A, l ()->list A) => listX val l
-
-  # NYI: UNDER DEVELOPMENT, needs support for nullary-lambda inference incl. cylces
-  fibs => ()->(0 :: ()->fibs.zip 1:()->fibs a,b->a+b)
-  fib(n i32) => (fibs().drop n).head
+  fib 12 |> say

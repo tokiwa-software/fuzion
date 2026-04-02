@@ -37,6 +37,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <stdatomic.h>
 #include <time.h>
 
+#include "fz.h"
+
 
 /**
  * Perform bitwise comparison of two float values. This is used by
@@ -98,6 +100,15 @@ void * fzE_malloc_safe(size_t size) {
 }
 
 
+void fzE_free(void * ptr) {
+#ifdef GC_THREADS
+  GC_FREE(ptr);
+#else
+  free(ptr);
+#endif
+}
+
+
 void fzE_memcpy(void *restrict dest, const void *restrict src, size_t sz){
   // NYI: UNDER DEVELOPMENT: use bounds checked version, e.g. memcpy_s
   memcpy(dest, src, sz);
@@ -142,21 +153,6 @@ jmethodID fzE_character_value   = NULL;
 jmethodID fzE_integer_value     = NULL;
 jmethodID fzE_long_value        = NULL;
 jmethodID fzE_boolean_value     = NULL;
-
-// definition of a struct for a jvm result
-// in case of success v0 is used
-// in case of exception v1 is used
-typedef struct fzE_jvm_result fzE_jvm_result;
-struct fzE_jvm_result
-{
-  int32_t fzTag;
-  union
-  {
-    jvalue v0;
-    jstring v1; // NYI should probably better be jthrowable
-  }fzChoice;
-};
-
 
 // convert 0-terminated utf-8 to modified utf-8 as
 // used by the JVM.
@@ -209,30 +205,54 @@ JNIEnv * getJNIEnv()
 {
   if (!jvm_running)
     {
-      printf("JVM has not been started via: `fuzion.java.create_jvm0 ...`\n");
+      printf("JVM has not been started via: `fuzion.jvm.use ...`\n");
       exit(EXIT_FAILURE);
     }
-  if (fzE_jni_env == NULL) {
-    // NYI: DetachCurrentThread
-    (*fzE_jvm)->AttachCurrentThread(fzE_jvm, (void **)&fzE_jni_env, NULL);
+
+  assert(fzE_jvm != NULL);
+
+  jint getEnvStat = (*fzE_jvm)->GetEnv(fzE_jvm, (void **)&fzE_jni_env, JNI_VERSION_10);
+  if (getEnvStat == JNI_EDETACHED) {
+    // NYI: UNDER DEVELOPMENT: DetachCurrentThread
+
+    jint res = (*fzE_jvm)->AttachCurrentThread(fzE_jvm, (void **)&fzE_jni_env, NULL);
+
+    assert(res == JNI_OK);
   }
+
+  assert(fzE_jni_env != NULL);
+
   return fzE_jni_env;
 }
 
+
+
+static_assert(JNI_OK == 0, "assume JNI_OK to be zero.");
 // initialize the JVM
 // executed once at the start of the application
-void fzE_create_jvm(char * option_string) {
+int32_t fzE_create_jvm(void * options, int32_t len) {
+  fzE_lock();
+  if (fzE_jvm != NULL){
+    fzE_unlock();
+    return 0;
+  }
+
   JavaVMInitArgs vm_args;
 
-  JavaVMOption options[1];
-  options[0].optionString = option_string;
+  JavaVMOption vm_options[len];
+  for (int i = 0; i < len; i++)
+  {
+    vm_options[i].optionString = ((char **)options)[i];
+  }
 
-  vm_args.version = JNI_VERSION_10;
-  vm_args.options = options;
-  vm_args.nOptions = 1;
-  if (JNI_CreateJavaVM(&fzE_jvm, (void **)&fzE_jni_env, &vm_args) != JNI_OK) {
-    printf("Failed to start Java VM");
-    exit(EXIT_FAILURE);
+  vm_args.version = JNI_VERSION_21;
+  vm_args.options = vm_options;
+  vm_args.nOptions = len;
+
+  int result = JNI_CreateJavaVM(&fzE_jvm, (void **)&fzE_jni_env, &vm_args);
+  if (result != JNI_OK) {
+    fzE_unlock();
+    return result;
   }
 
   jvm_running = true;
@@ -263,12 +283,17 @@ void fzE_create_jvm(char * option_string) {
   fzE_integer_value   = (*getJNIEnv())->GetMethodID(getJNIEnv(), fzE_class_integer, "intValue", "()I");
   fzE_long_value      = (*getJNIEnv())->GetMethodID(getJNIEnv(), fzE_class_long, "longValue", "()J");
   fzE_boolean_value   = (*getJNIEnv())->GetMethodID(getJNIEnv(), fzE_class_boolean, "booleanValue", "()Z");
+
+  fzE_unlock();
+  return 0;
 }
 
 // close the JVM.
-void fzE_destroy_jvm()
+void fzE_destroy_jvm(void)
 {
-  (*fzE_jvm)->DestroyJavaVM(fzE_jvm);
+  // NYI: BUG: does not work
+  // JVM is not re-entrant, The JVM is not designed to be cleanly restarted within the same process.
+  // (*fzE_jvm)->DestroyJavaVM(fzE_jvm);
 }
 
 // helper function to replace char `find`
@@ -409,7 +434,7 @@ jvalue *fzE_convert_args(const char *sig, jvalue *args) {
       }
       break;
     default:
-      // NYI array
+      // NYI: UNDER DEVELOPMENT: array
       printf("unhandled %c", *sig);
       exit(EXIT_FAILURE);
       break;
@@ -420,18 +445,10 @@ jvalue *fzE_convert_args(const char *sig, jvalue *args) {
 }
 
 
-// convert jstring to error result
-fzE_jvm_result fzE_jvm_not_found(jstring jstr)
-{
-  assert ( jstr != NULL );
-  return (fzE_jvm_result){ .fzTag = 1, .fzChoice = { .v1 = jstr /* NYI: should be: "Not found" + jv */ } };
-}
-
-
 // convert a 0-terminated utf8-bytes array to a jstring.
 jvalue fzE_string_to_java_object(const void * utf8_bytes, int byte_length)
 {
-  // NYI we don't really need 4*byte_length, see modifiedUtf8LengthOfUtf8:
+  // NYI: UNDER DEVELOPMENT: we don't really need 4*byte_length, see modifiedUtf8LengthOfUtf8:
   // https://github.com/openjdk/jdk/blob/eb9e754b3a439cc3ce36c2c9393bc8b250343844/src/java.instrument/share/native/libinstrument/EncodingSupport.c#L98
   char outstr[4*byte_length];
   utf8_to_mod_utf8(utf8_bytes, outstr);
@@ -444,6 +461,25 @@ fzE_jvm_result fzE_jvm_error(const char * str)
 {
   jvalue jstr = fzE_string_to_java_object(str, strlen(str));
   return (fzE_jvm_result){ .fzTag = 1, .fzChoice = { .v1 = jstr.l } };
+}
+
+
+// convert jstring to error result
+fzE_jvm_result fzE_jvm_not_found(jstring jstr)
+{
+  assert ( jstr != NULL );
+  const char * s1 = "class not found: ";
+  const char * s2 = fzE_java_string_to_utf8_bytes(jstr);
+  size_t len1 = strlen(s1);
+  size_t len2 = strlen(s2);
+
+  char *result = fzE_malloc_safe(len1 + len2 + 1);
+
+  memcpy(result, s1, len1);
+  memcpy(result + len1, s2, len2);
+  result[len1 + len2] = '\0';
+
+  return fzE_jvm_error(result);
 }
 
 
@@ -847,25 +883,24 @@ uint64_t fzE_unique_id()
 }
 
 
-uint8_t fzE_mapped_buffer_get(void * addr, int64_t idx)
+extern inline uint8_t fzE_mapped_buffer_get(void * addr, int64_t idx)
 {
   return ((uint8_t *)addr)[idx];
 }
 
-void fzE_mapped_buffer_set(void * addr, int64_t idx, uint8_t x)
+extern inline void fzE_mapped_buffer_set(void * addr, int64_t idx, uint8_t x)
 {
   ((uint8_t *)addr)[idx] = x;
 }
 
-void * fzE_null(void)
+extern inline void * fzE_null(void)
 {
   return NULL;
 }
 
-int fzE_is_null(void * p)
+extern inline int fzE_is_null(void * p)
 {
   return p == NULL
     ? 0
     : -1;
 }
-

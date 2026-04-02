@@ -34,7 +34,7 @@ private:module racy_access : effect is
     concur.racy_access.default  /* NYI: `concur.` could be added automatically by front end */
 
 
-# short-hand for accessing mut effect in current environment
+# shorthand for accessing mut effect in current environment
 #
 module racy_access_env =>
   racy_access.install_default

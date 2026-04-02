@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import java.util.Optional;
+
 import dev.flang.util.SourcePosition;
 
 
@@ -57,7 +59,7 @@ public class FreeType extends UnresolvedType
   {
     super(pos,
           name,
-          Call.NO_GENERICS, null, RefOrVal.LikeUnderlyingFeature);
+          Call.NO_GENERICS, null, Optional.empty());
 
     this._constraint = constraint;
   }

@@ -21,7 +21,7 @@
 #
 # -----------------------------------------------------------------------
 
-public Sequence.sort2
+public Sequence.sort2 container.sorted_array T
 pre
   T : property.orderable
 post

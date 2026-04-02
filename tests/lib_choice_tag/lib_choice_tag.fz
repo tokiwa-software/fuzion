@@ -22,5 +22,5 @@
 # -----------------------------------------------------------------------
 
 lib_choice_tag =>
-  say (type_of ((choice String nil).tag "hello"))
-  say (type_of ((option String).tag "kg"))
+  say (type_of (id (choice String nil) "hello"))
+  say (type_of (id (option String) "kg"))

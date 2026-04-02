@@ -35,8 +35,6 @@ static_assert(sizeof(int)    == 4, "implementation restriction, int must be 4 by
 // the current thread
 int fzE_last_error(void);
 
-// NYI: UNDER DEVELOPMENT: fzE_last_error_as_string, returning the error as a human readable string
-
 // make directory, return zero on success
 int fzE_mkdir(const char *pathname);
 
@@ -51,7 +49,7 @@ int fzE_unsetenv(const char *name);
 int fzE_set_blocking(int sockfd, int blocking);
 
 // close a socket descriptor
-int fzE_close(int sockfd);
+int fzE_socket_close(int sockfd);
 
 // initialize a new socket for given
 // family, socket_type, protocol

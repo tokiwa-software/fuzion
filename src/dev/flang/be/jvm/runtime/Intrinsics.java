@@ -112,7 +112,7 @@ public class Intrinsics extends ANY
   public static boolean i64_type_equality           (long   a, long   b) { return                 (a ==  b); }
   public static boolean i64_type_lteq               (long   a, long   b) { return                 (a <=  b); }
   public static int     u8_as_i32                   (byte a            ) { return                  0xff & (      a) ; }
-  public static byte    u8_cast_to_i8               (byte   a          ) { return (byte) ((int) (byte)    (      a)); }
+  public static byte    u8_cast_to_i8               (byte   a          ) { return                 (      a); }
   public static byte    u8_prefix_minusDEGREE       (byte   a          ) { return (byte)          (  -   (0xff & a)); }
   public static byte    u8_infix_plusDEGREE         (byte   a, byte   b) { return (byte)          ((0xff & a) +   (0xff & b)); }
   public static byte    u8_infix_minusDEGREE        (byte   a, byte   b) { return (byte)          ((0xff & a) -   (0xff & b)); }
@@ -186,8 +186,6 @@ public class Intrinsics extends ANY
   public static float   f32_infix_minus             (float  a, float  b) { return                 (a -   b); }
   public static float   f32_infix_times             (float  a, float  b) { return                 (a *   b); }
   public static float   f32_infix_divide            (float  a, float  b) { return                 (a /   b); }
-  public static float   f32_infix_PERCENT           (float  a, float  b) { return                 (a %   b); }
-  public static float   f32_infix_timestimes        (float  a, float  b) { return (float) Math.pow(a,    b); }
   public static boolean f32_type_equal              (float  a, float  b) { return                 (a ==  b); }
   public static boolean f32_type_lower_than_or_equal(float  a, float  b) { return                 (a <=  b); }
   public static double  f32_as_f64                  (float  a          ) { return (double)        (      a); }
@@ -197,49 +195,11 @@ public class Intrinsics extends ANY
   public static double  f64_infix_minus             (double a, double b) { return                 (a -   b); }
   public static double  f64_infix_times             (double a, double b) { return                 (a *   b); }
   public static double  f64_infix_divide            (double a, double b) { return                 (a /   b); }
-  public static double  f64_infix_PERCENT           (double a, double b) { return                 (a %   b); }
-  public static double  f64_infix_timestimes        (double a, double b) { return         Math.pow(a,    b); }
   public static boolean f64_type_equal              (double a, double b) { return                 (a ==  b); }
   public static boolean f64_type_lower_than_or_equal(double a, double b) { return                 (a <=  b); }
   public static long    f64_as_i64_lax              (double a          ) { return (long)          (      a); }
   public static float   f64_as_f32                  (double a          ) { return (float)         (      a); }
   public static long    f64_cast_to_u64             (double a          ) { return Double.doubleToLongBits(a); }
-  public static boolean f32_is_NaN                  (float  a          ) { return Float.isNaN       (         a); }
-  public static boolean f64_is_NaN                  (double a          ) { return Double.isNaN      (         a); }
-  public static float   f32_square_root             (float  a          ) { return (float) Math.sqrt ((double) a); }
-  public static float   f32_log                     (float  a          ) { return (float) Math.log  (         a); }
-  public static float   f32_exp                     (float  a          ) { return (float) Math.exp  (         a); }
-  public static float   f32_acos                    (float  a          ) { return (float) Math.acos (         a); }
-  public static float   f32_asin                    (float  a          ) { return (float) Math.asin (         a); }
-  public static float   f32_atan                    (float  a          ) { return (float) Math.atan (         a); }
-  public static float   f32_cos                     (float  a          ) { return (float) Math.cos  (         a); }
-  public static float   f32_cosh                    (float  a          ) { return (float) Math.cosh (         a); }
-  public static float   f32_sin                     (float  a          ) { return (float) Math.sin  (         a); }
-  public static float   f32_sinh                    (float  a          ) { return (float) Math.sinh (         a); }
-  public static float   f32_tan                     (float  a          ) { return (float) Math.tan  (         a); }
-  public static float   f32_tanh                    (float  a          ) { return (float) Math.tanh (         a); }
-  public static double  f64_square_root             (double a          ) { return         Math.sqrt (         a); }
-  public static double  f64_log                     (double a          ) { return         Math.log  (         a); }
-  public static double  f64_exp                     (double a          ) { return         Math.exp  (         a); }
-  public static double  f64_acos                    (double a          ) { return         Math.acos (         a); }
-  public static double  f64_asin                    (double a          ) { return         Math.asin (         a); }
-  public static double  f64_atan                    (double a          ) { return         Math.atan (         a); }
-  public static double  f64_cos                     (double a          ) { return         Math.cos  (         a); }
-  public static double  f64_cosh                    (double a          ) { return         Math.cosh (         a); }
-  public static double  f64_sin                     (double a          ) { return         Math.sin  (         a); }
-  public static double  f64_sinh                    (double a          ) { return         Math.sinh (         a); }
-  public static double  f64_tan                     (double a          ) { return         Math.tan  (         a); }
-  public static double  f64_tanh                    (double a          ) { return         Math.tanh (         a); }
-  public static float   f32_type_epsilon            (                  ) { return (float) Math.ulp  ((float)  1); }
-  public static float   f32_type_max                (                  ) { return Float.MAX_VALUE;                }
-  public static int     f32_type_max_exp            (                  ) { return Float.MAX_EXPONENT;             }
-  public static float   f32_type_min_positive       (                  ) { return Float.MIN_NORMAL;               }
-  public static int     f32_type_min_exp            (                  ) { return Float.MIN_EXPONENT;             }
-  public static double  f64_type_epsilon            (                  ) { return         Math.ulp  ((double) 1); }
-  public static double  f64_type_max                (                  ) { return Double.MAX_VALUE;               }
-  public static int     f64_type_max_exp            (                  ) { return Double.MAX_EXPONENT;            }
-  public static double  f64_type_min_positive       (                  ) { return Double.MIN_NORMAL;              }
-  public static int     f64_type_min_exp            (                  ) { return Double.MIN_EXPONENT;            }
 
   public static void fuzion_std_exit (int code)
   {
@@ -251,15 +211,14 @@ public class Intrinsics extends ANY
     return System.getenv(Runtime.utf8ByteArrayDataToString((byte[]) s)) != null;
   }
 
-  public static void fuzion_sys_thread_join0(long threadId)
+  public static void fuzion_sys_thread_join0(Object thread)
   {
-    var thread = Runtime._startedThreads_.get(threadId);
     var result = false;
     do
       {
         try
           {
-            thread.join();
+            ((Thread)thread).join();
             result = true;
           }
         catch (InterruptedException e)
@@ -268,12 +227,6 @@ public class Intrinsics extends ANY
           }
       }
     while (!result);
-
-    // NYI: UNDER DEVELOPMENT: remove should probably not be called by join, but
-    // either by the Thread itself or by some cleanup mechanism that removes
-    // terminated threads, either when new threads are started or by a system
-    // thread that joins and removes threads that are about to terminate.
-    Runtime._startedThreads_.remove(threadId);
   }
 
 }

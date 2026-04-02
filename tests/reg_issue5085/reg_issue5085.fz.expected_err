@@ -1,0 +1,30 @@
+
+--CURDIR--/reg_issue5085.fz:24:27: error 1: reading uninitialized field 'x' from instance of 'universe'
+x i32 := [1,2].fold1 a,b->x
+--------------------------^
+Callchain that lead to this point:
+
+call 'λ.call#2' at {base.fum}/list.fz:239:41:
+              | c Cons => c.tail.foldf (f e c.head) f
+----------------------------------------^
+call '(list i32).foldf#3 i32' at {base.fum}/list.fz:230:27:
+              | c Cons => c.tail.foldf c.head f
+--------------------------^^^^^^^^^^^^^^^^^^^^^
+call '(list i32).fold1#1' at {base.fum}/list.fz:228:16:
+  public redef fold1 (f (A,A)->A) A =>
+---------------^^^^^
+call '(list i32).precall fold1' at {base.fum}/Sequence.fz:433:5:
+    as_list.fold1 f
+----^^^^^^^^^^^^^^^
+call '(array i32).fold1#1' at {base.fum}/Sequence.fz:430:3:
+  pre
+--^^^
+    debug: !is_empty
+----^^^^^^^^^^^^^^^^
+call '(array i32).precall fold1' at --CURDIR--/reg_issue5085.fz:24:10:
+x i32 := [1,2].fold1 a,b->x
+---------^^^^^^^^^^^^^^^^^^
+call 'universe'
+program entry point
+
+one error.

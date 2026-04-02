@@ -30,11 +30,11 @@ import java.math.BigInteger;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.TreeSet;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import dev.flang.util.Callable;
 import dev.flang.util.Errors;
 import dev.flang.util.Pair;
 import dev.flang.util.SourceFile;
@@ -133,7 +133,7 @@ public class Lexer extends SourceFile
     t_error,       // erroneous input
     t_ws,          // whitespace
     t_comment,     // comment
-    t_op,          // operators +, -, *, /, ., |, etc.
+    t_op,          // operators +, -, *, /, .., |, etc.
     t_comma,       // ,
     t_lparen,      // (
     t_rparen,      // )
@@ -141,6 +141,7 @@ public class Lexer extends SourceFile
     t_rbrace,      // }
     t_lbracket,    // [
     t_rbracket,    // ]
+    t_period,      // .
     t_semicolon,   // ;
     t_question,    // ?
     t_numliteral,  // 123
@@ -185,21 +186,21 @@ public class Lexer extends SourceFile
     t_in("in"),
     t_do("do"),
     t_fixed("fixed"),
-    t_loop("loop"),
+    t_loop("loop"),                   // unused
     t_while("while"),
     t_until("until"),
     t_variant("variant"),
     t_pre("pre"),
     t_post("post"),
-    t_inv("inv"),
-    t_var("var"),
+    t_invariant("invariant"),
+    t_var("var"),                     // unused
     t_match("match"),
-    t_value("value"),
     t_ref("ref"),
     t_redef("redef"),
     t_const("const"),                 // unused
     t_leaf("leaf"),                   // unused
     t_infix("infix"),
+    t_infix_right("infix_right"),
     t_prefix("prefix"),
     t_postfix("postfix"),
     t_ternary("ternary"),
@@ -214,6 +215,7 @@ public class Lexer extends SourceFile
     t_indentationLimit,  // token's indentation is not sufficient
     t_lineLimit,         // token is in next line while sameLine() parsing is enabled
     t_spaceOrSemiLimit,  // token follows white space or semicolon while endAtSpace is enabled
+    t_commaLimit,        // token is operator "," while endAtComma is enabled
     t_colonLimit,        // token is operator ":" while endAtColon is enabled
     t_barLimit,          // token is operator "|" while endAtBar is enabled
     t_ambiguousSemi,     // it is unclear whether the semicolon ends the inner or the outer block, will always cause a syntax error
@@ -271,7 +273,7 @@ public class Lexer extends SourceFile
     /**
      * Sorted array of all the keyword tokens
      */
-    public static Token[] _keywords = Stream.of(Token.class.getEnumConstants())
+    public static final Token[] _keywords = Stream.of(Token.class.getEnumConstants())
       .filter((t) -> t.isKeyword())
       .sorted((t1, t2) -> t1.keyword().compareTo(t2.keyword()))
       .toArray(Token[]::new);
@@ -279,7 +281,7 @@ public class Lexer extends SourceFile
     /**
      * maximum length of the keywords.
      */
-    public static int _maxKeywordLength = Stream.of(_keywords)
+    public static final int _maxKeywordLength = Stream.of(_keywords)
       .mapToInt(k -> k.keyword().length())
       .max()
       .orElseThrow();
@@ -288,7 +290,7 @@ public class Lexer extends SourceFile
      * Array of sorted arrays of keywords of equal length.  Used to reduce
      * effort to find keyword by checking only those with a correct length.
      */
-    public static Token[][] _keywordsOfLength = IntStream.range(0, _maxKeywordLength+1)
+    public static final Token[][] _keywordsOfLength = IntStream.range(0, _maxKeywordLength+1)
     .mapToObj(i -> Stream.of(_keywords)
               .filter(k -> k.keyword().length() == i)
               .toArray(Token[]::new))
@@ -310,6 +312,7 @@ public class Lexer extends SourceFile
             {
             case t_op                : result = "operator"                                   ; break;
             case t_comma             : result = "comma ','"                                  ; break;
+            case t_period            : result = "period '.'"                                 ; break;
             case t_lparen            : result = "left parenthesis '('"                       ; break;
             case t_rparen            : result = "right parenthesis ')'"                      ; break;
             case t_lbrace            : result = "left curly brace '{'"                       ; break;
@@ -348,33 +351,35 @@ public class Lexer extends SourceFile
    * Private code point classes
    */
   private static final byte K_UNKNOWN =  0;
-  private static final byte K_OP      =  1;  // '+'|'-'|'*'|'%'|'|'|'~'|'#'|'!'|'$'|'&'|'@'|':'|'<'|'>'|'='|'^'|'.')+;
+  private static final byte K_OP      =  1;  // '+'|'-'|'*'|'%'|'|'|'~'|'#'|'!'|'$'|'&'|'@'|':'|'<'|'>'|'='|'^';
   private static final byte K_WS      =  2;  // spaces, tabs, lf, cr, ...
   private static final byte K_SLASH   =  3;  // '/', introducing a comment or an operator.
   private static final byte K_SHARP   =  4;  // '#', introducing a comment or an operator.
   private static final byte K_COMMA   =  5;  // ','
-  private static final byte K_LPAREN  =  6;  // '('  round brackets or parentheses
-  private static final byte K_RPAREN  =  7;  // ')'
-  private static final byte K_LBRACE  =  8;  // '{'  curly brackets or braces
-  private static final byte K_RBRACE  =  9;  // '}'
-  private static final byte K_LBRACK  = 10;  // '['  square brackets
-  private static final byte K_RBRACK  = 11;  // ']'
-  private static final byte K_SEMI    = 12;  // ';'
-  private static final byte K_DIGIT   = 13;  // '0'..'9'
-  private static final byte K_LETTER  = 14;  // 'A'..'Z', 'a'..'z', mathematical letter
-  private static final byte K_GRAVE   = 15;  // '`'  backtick
-  private static final byte K_DQUOTE  = 16;  // '"'
-  private static final byte K_SQUOTE  = 17;  // '''
-  private static final byte K_BACKSL  = 18;  // '\\'
-  private static final byte K_NUMERIC = 19;  // mathematical digit
-  private static final byte K_EOF     = 20;  // end-of-file
-  private static final byte K_ERROR   = 21;  // an error occurred
+  private static final byte K_PERIOD  =  6;  // ','
+  private static final byte K_LPAREN  =  7;  // '('  round brackets or parentheses
+  private static final byte K_RPAREN  =  8;  // ')'
+  private static final byte K_LBRACE  =  9;  // '{'  curly brackets or braces
+  private static final byte K_RBRACE  = 10;  // '}'
+  private static final byte K_LBRACK  = 11;  // '['  square brackets
+  private static final byte K_RBRACK  = 12;  // ']'
+  private static final byte K_SEMI    = 13;  // ';'
+  private static final byte K_DIGIT   = 14;  // '0'..'9'
+  private static final byte K_QUESTN  = 15;  // '?'
+  private static final byte K_LETTER  = 16;  // 'A'..'Z', 'a'..'z', mathematical letter
+  private static final byte K_GRAVE   = 17;  // '`'  backtick
+  private static final byte K_DQUOTE  = 18;  // '"'
+  private static final byte K_SQUOTE  = 19;  // '''
+  private static final byte K_BACKSL  = 20;  // '\\'
+  private static final byte K_NUMERIC = 21;  // mathematical digit
+  private static final byte K_EOF     = 22;  // end-of-file
+  private static final byte K_ERROR   = 23;  // an error occurred
 
 
   /**
    * Code point classes for ASCII codepoints
    */
-  private static byte[] _asciiKind = new byte[]
+  private static final byte[] _asciiKind = new byte[]
   {
     // 0…
     K_UNKNOWN /* NUL */, K_UNKNOWN /* SOH */, K_UNKNOWN /* STX */, K_UNKNOWN /* ETX */,
@@ -390,12 +395,12 @@ public class Lexer extends SourceFile
     K_WS      /* SP  */, K_OP      /* !   */, K_DQUOTE  /* "   */, K_SHARP   /* #   */,
     K_OP      /* $   */, K_OP      /* %   */, K_OP      /* &   */, K_SQUOTE  /* '   */,
     K_LPAREN  /* (   */, K_RPAREN  /* )   */, K_OP      /* *   */, K_OP      /* +   */,
-    K_COMMA   /* ,   */, K_OP      /* -   */, K_OP      /* .   */, K_SLASH   /* /   */,
+    K_COMMA   /* ,   */, K_OP      /* -   */, K_PERIOD  /* .   */, K_SLASH   /* /   */,
     // 3…
     K_DIGIT   /* 0   */, K_DIGIT   /* 1   */, K_DIGIT   /* 2   */, K_DIGIT   /* 3   */,
     K_DIGIT   /* 4   */, K_DIGIT   /* 5   */, K_DIGIT   /* 6   */, K_DIGIT   /* 7   */,
     K_DIGIT   /* 8   */, K_DIGIT   /* 9   */, K_OP      /* :   */, K_SEMI    /* ;   */,
-    K_OP      /* <   */, K_OP      /* =   */, K_OP      /* >   */, K_OP      /* ?   */,
+    K_OP      /* <   */, K_OP      /* =   */, K_OP      /* >   */, K_QUESTN  /* ?   */,
     // 4…
     K_OP      /* @   */, K_LETTER  /* A   */, K_LETTER  /* B   */, K_LETTER  /* C   */,
     K_LETTER  /* D   */, K_LETTER  /* E   */, K_LETTER  /* F   */, K_LETTER  /* G   */,
@@ -422,7 +427,7 @@ public class Lexer extends SourceFile
   /**
    * ASCII control sequence names or null if normal ASCII char.
    */
-  private static String[] _asciiControlName = new String[]
+  private static final String[] _asciiControlName = new String[]
   {
     // 0…
     "NUL", "SOH", "STX", "ETX", "EOT", "ENQ", "ACK", "BEL", "BS ", "HT ", "LF ", "VT ", "FF ", "CR ", "SO ", "SI ",
@@ -552,10 +557,10 @@ public class Lexer extends SourceFile
          else if (x.equals("-stringLiteralEscapes"))
            {
              say("""
-[options=\"header\",cols=\"1,1\"]
-|====
-   | escape sequence | resulting code point
-                                """);
+                 [options=\"header\",cols=\"1,1\"]
+                 |====
+                    | escape sequence | resulting code point
+                 """);
              for (int i = 0; i < StringLexer.escapeChars.length; i++)
                {
                  var c      = StringLexer.escapeChars[i][0];
@@ -648,6 +653,13 @@ public class Lexer extends SourceFile
 
   /**
    * {@code :} operator restriction for {@code current()}/{@code currentAtMinIndent()}: if set,
+   * "," will be replaced by {@code t_commaLimit}.
+   */
+  private boolean _endAtComma = false;
+
+
+  /**
+   * {@code :} operator restriction for {@code current()}/{@code currentAtMinIndent()}: if set,
    * operator ":" will be replaced by {@code t_colonLimit}.
    */
   private boolean _endAtColon = false;
@@ -658,6 +670,22 @@ public class Lexer extends SourceFile
    * operator "|" will be replaced by t_barLimit.
    */
   private boolean _endAtBar = false;
+
+
+  /**
+   * In case there is a surrounding `if` statement, this gives the start position. This is used
+   * to detect ambiguous `else` statements.
+   */
+  private SourcePosition _surroundingIf = null;
+
+
+  /**
+   * In case there is a surrounding loop statement, this gives the start position. This is used
+   * to detect ambiguous `else` statements.
+   */
+  private SourcePosition _surroundingLoop = null;
+
+
 
   private SemiState _atSemicolon = SemiState.CONTINUE;
 
@@ -702,8 +730,11 @@ public class Lexer extends SourceFile
     _minIndentStartPos = original._minIndentStartPos;
     _sameLine = original._sameLine;
     _endAtSpace = original._endAtSpace;
+    _endAtComma = original._endAtComma;
     _endAtColon = original._endAtColon;
     _endAtBar = original._endAtBar;
+    _surroundingIf = original._surroundingIf;
+    _surroundingLoop = original._surroundingLoop;
     _atSemicolon = original._atSemicolon;
     _ignoredTokenBefore = original._ignoredTokenBefore;
     _stringLexer = original._stringLexer == null ? null : new StringLexer(original._stringLexer);
@@ -766,6 +797,8 @@ public class Lexer extends SourceFile
           {
           case K_OP      :
           case K_COMMA   :
+          case K_PERIOD  :
+          case K_QUESTN  :
           case K_LPAREN  :
           case K_RPAREN  :
           case K_LBRACE  :
@@ -878,6 +911,23 @@ public class Lexer extends SourceFile
 
 
   /**
+   * Restrict parsing until the next occurrence of ",". "," will be replaced by
+   * t_commaLimit.
+   *
+   * @param endAtComma true to enable, false to disable
+   *
+   * @return the previous endAtComma-restriction.
+   */
+  boolean endAtComma(boolean endAtComma)
+  {
+    var result = _endAtComma;
+    _endAtComma = endAtComma;
+
+    return result;
+  }
+
+
+  /**
    * Restrict parsing until the next occurrence of operator ":".  Operator ":"
    * will be replaced by t_colonLimit.
    *
@@ -909,6 +959,50 @@ public class Lexer extends SourceFile
 
     return result;
   }
+
+
+  /**
+   * Remember that we are parsing in `if` statement. This will be reset
+   * automatically on relaxLineAndSpaceLimit.
+   */
+  SourcePosition surroundingIf(SourcePosition pos)
+  {
+    var result = _surroundingIf;
+    _surroundingIf = pos;
+
+    return result;
+  }
+
+
+  /**
+   * The `if` statement that we are currently parsing.
+   */
+  SourcePosition surroundingIf()
+  {
+    return _surroundingIf;
+  }
+
+  /**
+   * Remember that we are parsing a loop statement. This will be reset
+   * automatically on relaxLineAndSpaceLimit.
+   */
+  SourcePosition surroundingLoop(SourcePosition pos)
+  {
+    var result = _surroundingLoop;
+    _surroundingLoop = pos;
+
+    return result;
+  }
+
+
+  /**
+   * The loop statement that we are currently parsing.
+   */
+  SourcePosition surroundingLoop()
+  {
+    return _surroundingLoop;
+  }
+
 
   /**
    * Increases the semicolon state, which is used to detect ambiguous semicolons
@@ -955,37 +1049,43 @@ public class Lexer extends SourceFile
    *
    * @return c.call()'s result.
    */
-  <V> V relaxLineAndSpaceLimit(Callable<V> c)
+  <V> V relaxLineAndSpaceLimit(Supplier<V> c)
   {
     int oldLine = sameLine(-1);
     int oldEAS = endAtSpaceOrSemi(Integer.MAX_VALUE);
+    var oldEAc = endAtComma(false);
     var oldEAC = endAtColon(false);
     var oldEAB = endAtBar(false);
+    var oldIf  = surroundingIf(null);
+    var oldLoop  = surroundingLoop(null);
     var oldSemiSt = semiState(SemiState.CONTINUE);
-    V result = c.call();
+    V result = c.get();
     sameLine(oldLine);
     endAtSpaceOrSemi(oldEAS);
+    endAtComma(oldEAc);
     endAtColon(oldEAC);
     endAtBar(oldEAB);
+    surroundingIf(oldIf);
+    surroundingLoop(oldLoop);
     semiState(oldSemiSt);
     return result;
   }
 
 
   /**
-   * short-hand for bracketTermWithNLs with c==def.
+   * shorthand for bracketTermWithNLs with c==def.
    */
-  <V> V optionalBrackets(Parens brackets, String rule, Callable<V> c)
+  <V> V optionalBrackets(Parens brackets, String rule, Supplier<V> c)
   {
     return currentMatches(true, brackets._left)
       ? bracketTermWithNLs(brackets, rule, c, c)
-      : c.call();
+      : c.get();
   }
 
   /**
-   * short-hand for bracketTermWithNLs with c==def.
+   * shorthand for bracketTermWithNLs with c==def.
    */
-  <V> V bracketTermWithNLs(Parens brackets, String rule, Callable<V> c)
+  <V> V bracketTermWithNLs(Parens brackets, String rule, Supplier<V> c)
   {
     return bracketTermWithNLs(brackets, rule, c, c);
   }
@@ -1013,7 +1113,7 @@ public class Lexer extends SourceFile
    *
    * @return value returned by c or def, resp.
    */
-  <V> V bracketTermWithNLs(Parens brackets, String rule, Callable<V> c, Callable<V> def)
+  <V> V bracketTermWithNLs(Parens brackets, String rule, Supplier<V> c, Supplier<V> def)
   {
     var oldSemiSt = semiState(SemiState.CONTINUE);
     var start = brackets._left;
@@ -1025,16 +1125,23 @@ public class Lexer extends SourceFile
     var nl = line();
     relaxLineAndSpaceLimit(() ->
                            {
-                            if (current(true) != end._token)
+                            var hasIndentProblem = current(true) != end._token;
+                            var tsp = tokenSourcePos();
+                            if (hasIndentProblem)
                               {
                                 // if indentation decreases before closing bracket, discard everything until closing bracket
-                                Errors.indentationProblemEncountered(tokenSourcePos(), sourcePos(indentRef), Parser.parserDetail(rule));
                                 while (current(true) != end._token && current(true) != Token.t_eof)
                                   {
                                       next();
                                   }
                               }
+                            var errCount = Errors.count();
                             match(true, end, rule);
+                            // emit indent problem only if no other problems are encountered
+                            if (hasIndentProblem && errCount == Errors.count())
+                              {
+                                Errors.indentationProblemEncountered(tsp, sourcePos(indentRef), Parser.parserDetail(rule));
+                              }
                             return Void.TYPE; // is there a better unit type in Java?
                            });
     var sl = sameLine(-1);
@@ -1059,7 +1166,7 @@ public class Lexer extends SourceFile
    * bracket term could be parsed and the parser/lexer is at an undefined
    * position.
    */
-  boolean skipBracketTermWithNLs(Parens brackets, Callable<Boolean> c)
+  boolean skipBracketTermWithNLs(Parens brackets, Supplier<Boolean> c)
   {
     var start = brackets._left;
     var end   = brackets._right;
@@ -1116,7 +1223,7 @@ public class Lexer extends SourceFile
    *
    * @param endAtBar true to replace operator "|" by t_barLimit.
    */
-  Token current(int minIndent, int sameLine, int endAtSpaceOrSemi, boolean endAtColon, boolean endAtBar)
+  Token current(int minIndent, int sameLine, int endAtSpaceOrSemi, boolean endAtComma, boolean endAtColon, boolean endAtBar)
   {
     var t = _curToken;
     int l = line();
@@ -1128,6 +1235,8 @@ public class Lexer extends SourceFile
       p > endAtSpaceOrSemi && _curToken == Token.t_semicolon ? Token.t_spaceOrSemiLimit       :
       p == _minIndentStartPos                                ? t                              :
       minIndent >= 0 && codePointIndentation(p) <= minIndent ? Token.t_indentationLimit       :
+      endAtComma                  &&
+      _curToken == Token.t_comma                             ? Token.t_commaLimit             :
       endAtColon                  &&
       _curToken == Token.t_op     &&
       tokenAsString().equals(":")                            ? Token.t_colonLimit             :
@@ -1160,7 +1269,7 @@ public class Lexer extends SourceFile
    */
   public Token current()
   {
-    return current(_minIndent, _sameLine, _endAtSpace, _endAtColon, _endAtBar);
+    return current(_minIndent, _sameLine, _endAtSpace, _endAtComma, _endAtColon, _endAtBar);
   }
 
 
@@ -1170,7 +1279,7 @@ public class Lexer extends SourceFile
    */
   Token currentAtMinIndent()
   {
-    return current(_minIndent - 1, _sameLine, _endAtSpace, _endAtColon, _endAtBar);
+    return current(_minIndent - 1, _sameLine, _endAtSpace, _endAtComma, _endAtColon, _endAtBar);
   }
 
 
@@ -1438,17 +1547,14 @@ OPERATOR  : ( '!'
             )+
           ;
           */
-          case K_OP      :   // '+'|'-'|'*'|'%'|'|'|'~'|'!'|'$'|'&'|'@'|':'|'<'|'>'|'='|'^'|'.')+;
+          case K_OP      :   // '+'|'-'|'*'|'%'|'|'|'~'|'!'|'$'|'&'|'@'|':'|'<'|'>'|'='|'^';
             {
     /*
     // tag::fuzion_rule_LEXR_OPER1[]
 A Fuzion operator code point starts with a xref:fuzion_op[Fuzion operator code point].
     // end::fuzion_rule_LEXR_OPER1[]
-    // tag::fuzion_rule_LEXR_OPER2[]
-A single code point 0x003F '?' is not an operator.
-    // end::fuzion_rule_LEXR_OPER2[]
     */
-              token = skipOp(p == '?' ? Token.t_question : Token.t_op);
+              token = skipOp(Token.t_op);
               break;
             }
           /**
@@ -1504,6 +1610,29 @@ COMMA       : ','
           case K_COMMA   :   // ','
             {
               token = Token.t_comma;
+              break;
+            }
+    /*
+    // tag::fuzion_rule_LEXR_OPER2[]
+A single code point 0x002E '.' or 0x003F '?' is not an operator.
+    // end::fuzion_rule_LEXR_OPER2[]
+    */
+          /**
+PERIOD      : '.'
+            ;
+          */
+          case K_PERIOD  :   // '.'
+            {
+              token = skipOp(Token.t_period);
+              break;
+            }
+          /**
+QUESTION  : '?'
+          ;
+          */
+          case K_QUESTN  :   // '?'
+            {
+              token = skipOp(Token.t_question);
               break;
             }
           /**
@@ -1865,9 +1994,20 @@ PLUSMINUS   : "+"
       {
         if (kind(p) == K_LETTER)
         {
+          var c = curCodePoint();
+          var possiblePrefixError = (c == 'b' || c == 'o' || c == 'd' || c == 'x')
+                                    && codePointAt(bytePos()-1) == '0'
+                                    && codePointAt(bytePos()-2) == '.';
           Errors.error(sourcePos(),
                        "Broken numeric literal, expected anything but a letter following a numeric literal.",
-                       null);
+                       possiblePrefixError
+                       ? "Fractional part must not have base prefix '0" + (char) c + "' if integer part has none."
+                       : null);
+          // skip parts of broken num literal to avoid subsequent errors
+          while (kind(curCodePoint()) == K_LETTER || kind(curCodePoint()) == K_DIGIT)
+            {
+              nextCodePoint();
+            }
         }
         yield new Literal(m);
       }};
@@ -2111,7 +2251,7 @@ fragment
 BIN_DIGITS  : BIN_DIGIT BIN_DIGITS
             |
             ;
-BIN_TAIL    : "." BIN_DIGITS
+BIN_TAIL    : ".0b" BIN_DIGITS
             ;
 OCT_DIGIT   : "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7"
             ;
@@ -2125,7 +2265,7 @@ fragment
 OCT_DIGITS  : OCT_DIGIT OCT_DIGITS
             |
             ;
-OCT_TAIL    : "." OCT_DIGITS
+OCT_TAIL    : ".0o" OCT_DIGITS
             ;
 DEC_DIGIT   : "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
             ;
@@ -2139,7 +2279,8 @@ fragment
 DEC_DIGITS  : DEC_DIGIT DEC_DIGITS
             |
             ;
-DEC_TAIL    : "." DEC_DIGITS
+DEC_TAIL    : "."   DEC_DIGITS
+            | ".0d" DEC_DIGITS
             ;
 HEX_DIGIT   : "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
             | "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l" | "m" | "n" | "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x" | "y" | "z"
@@ -2155,7 +2296,7 @@ fragment
 HEX_DIGITS  : HEX_DIGIT HEX_DIGITS
             |
             ;
-HEX_TAIL    : "." HEX_DIGITS
+HEX_TAIL    : ".0x" HEX_DIGITS
             ;
      */
     Digits(int firstDigit, boolean allowDot, boolean negative)
@@ -2251,8 +2392,26 @@ HEX_TAIL    : "." HEX_DIGITS
           var f = new Lexer(Lexer.this);
           f.nextCodePoint();
           var fd = f.curCodePoint();
-          if (isDigit(fd))
+          if (kind(fd) == K_DIGIT)
             {
+              // match base prefix (base prefix must be repeated after dot in floating point literal)
+              if (b != null)
+                {
+                  nextCodePoint();
+                  var ok = matchBasePrefix('0', b);
+                  nextCodePoint();
+                  if (ok)
+                    {
+                      switch (b)
+                        {
+                          case Base.bin -> matchBasePrefix('b', b);
+                          case Base.oct -> matchBasePrefix('o', b);
+                          case Base.dec -> matchBasePrefix('d', b);
+                          case Base.hex -> matchBasePrefix('x', b);
+                        };
+                    }
+                }
+
               nextCodePoint();
               d = curCodePoint();
               while (isDigit(d))
@@ -2273,6 +2432,28 @@ HEX_TAIL    : "." HEX_DIGITS
           _hasError = true;
         }
       _digits = digits.toString();
+    }
+
+    /**
+     * Match the current code point against the expected base prefix character
+     * and create an error if the don't match
+     *
+     * @param c the expected base prefix character
+     * @param b the expected base of the num literal
+     * @return true iff c matched current code point and no error was created
+     */
+    boolean matchBasePrefix(Character c, Base b)
+    {
+      var result = true;
+      if (curCodePoint() != c)
+        {
+          result = false;
+          Errors.error(null, sourcePos(bytePos()), "Base prefix must be repeated after dot in floating point literal",
+                       "Expected '" + c + "' but found '"
+                       + new String(Character.toChars(curCodePoint()))
+                       + "' in " + b._name + " floating point number. Base prefixes in integer and fractional part must be the same.");
+        }
+      return result;
     }
 
     void checkAndAppendDigit(StringBuilder digits, int d)
@@ -2411,7 +2592,11 @@ A Fuzion operator may contain one or several codepoints that are xref:fuzion_op[
     // end::fuzion_rule_LEXR_OPER3[]
     */
     int p = curCodePoint();
-    while (kind(p) == K_OP || kind(p) == K_SHARP || kind(p) == K_SLASH)
+    while ((((1 << K_OP     |
+              1 << K_SHARP  |
+              1 << K_SLASH  |
+              1 << K_PERIOD |
+              1 << K_QUESTN   ) >> kind(p)) & 1) != 0)
       {
         res = Token.t_op;
         nextCodePoint();
@@ -2446,6 +2631,7 @@ Fuzion xref:input_source[input sources] must match the Fuzion grammar defined in
                                                                       detail);
       case t_lineLimit        -> Errors.lineBreakNotAllowedHere (sourcePos(lineEndPos(_sameLine)), detail);
       case t_spaceOrSemiLimit -> Errors.whiteSpaceNotAllowedHere(sourcePos(tokenPos()), detail);
+      case t_commaLimit       -> Errors.commaNotAllowedHere     (sourcePos(tokenPos()), detail);
       case t_colonLimit       -> Errors.colonPartOfTernary      (sourcePos(tokenPos()), detail);
       case t_barLimit         -> Errors.barPartOfCase           (sourcePos(tokenPos()), detail);
       case t_ambiguousSemi    -> Errors.ambiguousSemicolon(sourcePos(pos));
@@ -2895,7 +3081,7 @@ PIPE        : "|"
      * If this is changed, https://fuzion-lang.dev/tutorial/string_constants
      * must be changed as well.
      */
-    static int[][] escapeChars = new int[][] {
+    static final int[][] escapeChars = new int[][] {
         { 'b', '\b'  },  // BS 0x08
         { 't', '\t'  },  // HT 0x09
         { 'n', '\n'  },  // LF 0x0a
@@ -2909,6 +3095,7 @@ PIPE        : "|"
         { '}',  '}'  },  // }  0x7d
         { '\n', -1   },
         { '\r', -1   },
+        { '0', '\0'  },  // NUL 0x00
       };
 
 
@@ -2916,7 +3103,7 @@ PIPE        : "|"
      * Store the indentation of multiline strings.
      * Empty if single line string.
      */
-    private Optional<Integer> _multiLineIndentation; // NYI mark as final?
+    private Optional<Integer> _multiLineIndentation; // NYI: CLEANUP: mark as final?
 
 
     /**
@@ -3017,13 +3204,13 @@ PIPE        : "|"
               if (escaped)
                 {
                   var i = 0;
-                  while (i < escapeChars.length && p != (int) escapeChars[i][0])
+                  while (i < escapeChars.length && p != escapeChars[i][0])
                     {
                       i++;
                     }
                   if (i < escapeChars.length)
                     {
-                      c = (int) escapeChars[i][1];
+                      c = escapeChars[i][1];
                     }
                   else
                     {
@@ -3129,7 +3316,7 @@ PIPE        : "|"
      * in multi line string the first character belonging
      * to the multiline string.
      *
-     * NYI cleanup: don't set multiLineIndentation here... but in constructor
+     * NYI: CLEANUP: don't set multiLineIndentation here... but in constructor
      * @return
      */
     private Optional<Integer> startOfStringContent()
@@ -3306,9 +3493,9 @@ PIPE        : "|"
           _stringLexer = this;
           switch (end(t))
             {
-            case DOLLAR: _state = StringState.IDENT_EXPECTED; break;
-            case BRACE : _state = StringState.EXPR_EXPECTED; break;
-            default    : throw new Error("default:");
+            case DOLLAR -> _state = StringState.IDENT_EXPECTED;
+            case BRACE  -> _state = StringState.EXPR_EXPECTED;
+            default     -> throw new Error("default:");
             }
         }
       return t;
@@ -3532,8 +3719,6 @@ PIPE        : "|"
    * Parse singe-char t_op.
    *
 STAR        : "*"
-            ;
-QUESTION    : "?"
             ;
    *
    * @param op the single-char operator

@@ -25,20 +25,23 @@
 
 # type for a spawned thread
 #
-module:public thread(id i64) : property.equatable is
+module:public thread(thrd Thread) : property.equatable is
 
-  joined := concur.atomic trit.no
+  # NYI: CLEANUP: use thread id
+  id := unique_id
+
+  joined := concur.atomic trit .new trit.no
 
   # wait for this thread to finish execution
   #
-  public join =>
+  public join unit ! atomic_access =>
     if joined.compare_and_set trit.no trit.unknown
-      fuzion.sys.thread.join0 id
+      fuzion.sys.thread.join0 thrd
       joined.write trit.yes
     else
       # NYI: UNDER DEVELOPMENT:
       # better busy loop
-      while joined.read != trit.yes
+      while joined.read.is_no_or_unknown
 
     # NYI: UNDER DEVELOPMENT:
     # should we send message to the thread that spawned this

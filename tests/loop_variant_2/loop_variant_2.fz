@@ -1,0 +1,85 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test loop_variant_2
+#
+# -----------------------------------------------------------------------
+
+# test violation of loop variants
+# NYI: turn this into a simple_and_negative test once stacktraces look nicer and can be printed in try catch
+#
+loop_variant_2 =>
+
+  # helper feature to run a test
+  test(t ()->unit, test_number i32) unit =>
+    say "\ntest_$test_number:"
+    fuzion.runtime.variant_fault
+      .try ()->
+        t.call
+      .catch s->
+        say "FATAL FAULT `variant`: $s"
+
+
+  n := 5
+
+
+  test_1 =>
+    for i in (0..n)
+    variant (n-i).as_i64 # ok
+    do
+      say "i=$i var={n-i}"
+  test test_1 1
+
+
+  test_2 =>
+    for i in (0..n)
+    variant (n-1-i).as_i64 # 1. should flag an error: variant violated in last iteration
+    do
+      say "i=$i var={n-1-i}"
+  test test_2 2
+
+
+  test_3 =>
+    for i in (0..n)
+    variant i64 10         # 2. should flag an error: variant violated in second iteration
+    do
+      say "i=$i"
+  test test_3 3
+
+
+  test_4 =>
+    for i in (0..3)
+    variant i64 0          # 3. should flag an error: variant violated in second iteration
+    do
+      say "i=$i"
+  test test_4 4
+
+  test_5 =>
+    for i in (0..3)
+    variant i64 -1         # 4. should flag an error: variant violated in first iteration
+    do
+      say "i=$i"
+  test test_5 5
+
+  test_6 =>
+    for i in (0..3)
+    variant i64.min        # 5. should flag an error: variant violated in first iteration
+    do
+      say "i=$i"
+  test_6 # no try catch, so the stacktrace gets printed

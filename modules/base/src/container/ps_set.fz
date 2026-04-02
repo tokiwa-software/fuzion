@@ -39,18 +39,19 @@ private:public ps_set
    psm container.ps_map K unit,
    dummy unit    # just to distinguish this from routine ps_set(vs Sequence K)
   )
-  : Set K
+  : container.Set K
 is
 
 
   # list representation of values in this set
   #
-  public redef as_list => psm.keys.as_list
+  public redef as_list list K => psm.keys.as_list
 
 
   # add new element k to this set.
   #
-  # NYI: Resolve duality of `add0` (that results in `ps_set`) and `add` (that
+  # NYI: UNDER DEVELOPMENT:
+  #      Resolve duality of `add0` (that results in `ps_set`) and `add` (that
   #      results in `Set`). Maybe `Set.add` should result in `Set.this.type`,
   #      so we do not need `add0`?
   #
@@ -58,35 +59,35 @@ is
     if has k
       ps_set.this
     else
-      ps_set (psm.add k unit) unit
+      ps_set (psm.put k unit) unit
 
 
   # add new element k to this set.
   #
-  # NYI: this should be integrated in the mutate effect!
+  # NYI: UNDER DEVELOPMENT: this should be integrated in the mutate effect!
   #
-  public redef add (k K) Set K =>
+  public fixed redef add (k K) container.Set K =>
     add0 k
 
 
   # create a sorted array from the elements of this set
   #
-  public redef as_array => psm.as_key_array
+  public redef as_array array K => psm.as_key_array
 
 
   # check if an element equal to given element k is part of this set
   #
-  public has (k K) => psm.has k
+  public has (k K) bool => psm.has k
 
 
   # get the lowest element in this set
   #
-  public redef min => psm.min
+  public redef min option K => psm.min
 
 
   # get the highest element in this set
   #
-  public redef max => psm.max
+  public redef max option K => psm.max
 
 
   # add all elements of the given Sequence to this set

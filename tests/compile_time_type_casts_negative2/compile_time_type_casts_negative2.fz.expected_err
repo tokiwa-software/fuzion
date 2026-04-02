@@ -1,0 +1,6 @@
+
+--CURDIR--/compile_time_type_casts_negative2.fz:44:11: error 1: Actual type parameter 'compile_time_type_casts_negative2.a' does not satisfy constraint 'compile_time_type_casts_negative2.b'
+      pre V : b
+----------^^^^^
+
+one error.

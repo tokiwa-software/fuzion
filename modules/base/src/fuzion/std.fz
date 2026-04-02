@@ -25,7 +25,7 @@
 
 # fuzion.std -- unit type to group low-level std APIs
 #
-module fuzion.std is
+module std is
 
   # exit -- exit immediately with the given return code
   #

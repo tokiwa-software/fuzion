@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir.analysis.dfa;
 
+import java.util.Comparator;
+
 import dev.flang.fuir.FUIR;
 
 /**
@@ -153,6 +155,24 @@ public class SysArray extends Value
       {
         throw new Error("DFA: trying to join SysArray with " + v.getClass());
       }
+  }
+
+
+  /**
+   * Compare this SysArray another SysArray.
+   *
+   * @param other the other SysArray
+   *
+   * @return -1, 0, or +1 depending on whether this &lt; other, this == other or
+   * this &gt; other by some order.
+   */
+  public int compareTo(Comparator<Value> comp, SysArray other)
+  {
+    return _elementClazz < other._elementClazz
+      ? -1
+      : _elementClazz > other._elementClazz
+      ? 1
+      : comp.compare(_elements, other._elements);
   }
 
 

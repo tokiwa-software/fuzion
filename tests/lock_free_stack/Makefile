@@ -24,5 +24,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = test
-FUZION_OPTIONS = -modules=lock_free
 include ../simple.mk

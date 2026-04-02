@@ -62,6 +62,9 @@ public class FunctionReturnType extends ReturnType
    */
   public FunctionReturnType(AbstractType t)
   {
+    if (PRECONDITIONS) require
+      (t != null);
+
     _type = t;
     _pos = t instanceof UnresolvedType ut ? ut.pos() : SourcePosition.builtIn;
   }
@@ -87,9 +90,10 @@ public class FunctionReturnType extends ReturnType
    *
    * @return the function return type.
    */
-  public AbstractType functionReturnType()
+  @Override
+  public AbstractType functionReturnType(boolean allowIncomplete)
   {
-    return _type == Types.t_UNDEFINED
+    return _type == Types.t_UNDEFINED || _type.isIncompleteType() && !allowIncomplete
       ? null
       : _type;
   }
@@ -132,6 +136,8 @@ public class FunctionReturnType extends ReturnType
   public void visit(FeatureVisitor v, AbstractFeature outer)
   {
     _type = _type.visit(v, outer);
+    if (CHECKS) check
+      (_type != null);
   }
 
 
@@ -153,6 +159,8 @@ public class FunctionReturnType extends ReturnType
 
     res.resolveDeclarations(outer);
     _type = _type.resolve(res, outer.context());
+    if (CHECKS) check
+      (_type != null);
   }
 
 
@@ -163,7 +171,7 @@ public class FunctionReturnType extends ReturnType
    */
   public String toString()
   {
-    return _type.toString();
+    return _type.toString(true);
   }
 
 

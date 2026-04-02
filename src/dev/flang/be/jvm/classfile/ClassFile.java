@@ -310,8 +310,7 @@ public class ClassFile extends ANY implements ClassFileConstants
      */
     List<Expr.TryCatch> _exceptionTable = NO_EXC_TABLE;
 
-    static List<Expr.TryCatch> NO_EXC_TABLE = new List<Expr.TryCatch>();
-    static { NO_EXC_TABLE.freeze(); }
+    static final List<Expr.TryCatch> NO_EXC_TABLE = new List<Expr.TryCatch>().freeze();
 
 
     /**
@@ -1209,8 +1208,8 @@ public class ClassFile extends ANY implements ClassFileConstants
       // is only valid if there actually is bytecode after endless_loop.
       var byteCodeSize = byteCodeSize();
       var smfs = stackMapFrames.stream().filter(x -> x.byteCodePos < byteCodeSize).toList();
-      o.writeU2((int)smfs.size());
-      // NYI optimization potential
+      o.writeU2(smfs.size());
+      // NYI: PERFORMANCE: optimization potential
       // currently we write full frames only
       // we could use the other frame types as well:
       // - same_frame
@@ -1791,7 +1790,7 @@ public class ClassFile extends ANY implements ClassFileConstants
     // Doing this for the sake of side effects.
     // This will sometimes add things to constant pool
     // for description of stackmapframe.
-    // NYI we could only evaluate for stackmapframes...
+    // NYI: UNDER DEVELOPMENT: we could only evaluate for stackmapframes...
     // instead of simulating writing of whole bytecode
     for (var m : _methods)
       {
