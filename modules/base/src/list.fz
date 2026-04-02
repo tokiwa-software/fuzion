@@ -403,8 +403,14 @@ is
   # and append the already reversed reversed_head
   #
   reverse (reversed_head list A) list A =>
-    list.this ? nil    => reversed_head
-              | c Cons => c.tail.reverse (cons c.head reversed_head)
+    match list.this
+      nil => reversed_head
+      c Cons =>
+        c.tail.reverse (
+          _ : Cons A (list A) is
+            public redef head A => c.head
+            public redef tail list A => reversed_head
+            public redef finite trit => list.this.finite)
 
 
   # create a string representation of this list including all the string
@@ -565,7 +571,9 @@ is
   # is 'nil', returns 'nil'
   #
   public redef cycle Sequence A =>
-    cycle_list
+    _ : Sequence A is
+      public redef finite trit => trit.no
+      public redef as_list list A => cycle_list
 
 
   # create a list that repeats the current list indefinitely.  In case 'list.this'
