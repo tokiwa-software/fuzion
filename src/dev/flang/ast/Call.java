@@ -2015,8 +2015,24 @@ public class Call extends AbstractCall
                                  *     _ := a %%2
                                  */
                                 actual = propagateForPartial(res, context, argnum, c);
-                                actual = actual.propagateExpectedType(res, context, c.applyTypePars(calledFeature(), actualTypeParameters()),
-                                                                      () -> "formal argument type in call to " + AstErrors.s(_calledFeature));
+                                var ac = c.applyTypePars(calledFeature(), actualTypeParameters());
+                                if (ac.containsUndefined(-1))
+                                  { /* this happens for code from #6849 as follows
+
+                                         x(F type : ()->unit, G type : F, f G) => {}
+                                         x ()->
+
+                                       where for the call to `x ()->` the type
+                                       `G`'s constraint `c` is `F` and the type
+                                       parameter `F` cannot be inferred such
+                                       that `ac` is `UNDEFINED`, which should not be propagated.
+                                    */
+                                  }
+                                else
+                                  {
+                                    actual = actual.propagateExpectedType(res, context, ac,
+                                                                          () -> "formal argument type in call to " + AstErrors.s(_calledFeature));
+                                  }
                                 _actuals = _actuals.setOrClone(argnum, actual);
                                 actualType = typeFromActual(res, context, actual);
                               }
@@ -2028,6 +2044,17 @@ public class Call extends AbstractCall
                           }
                         if (resultExpression(actual) instanceof AbstractLambda al)
                           {
+                            var tc = t.selfOrConstraint();
+                            if (t != tc)
+                              { /* we might need to infer two type parameters in code like
+                                 *
+                                 *   f(R type, F type : ()->R, f F) => ...
+                                 *   f ()->"bla"
+                                 *
+                                 * here, we first must infer `R` t be String, then `F` to be `Nullary String`
+                                 */
+                                checked[vai] = inferGenericLambdaResult(res, context, tc, frml, al, actual.pos(), conflict, foundAt);
+                              }
                             checked[vai] = inferGenericLambdaResult(res, context, t, frml, al, actual.pos(), conflict, foundAt);
                           }
                       }
@@ -2214,8 +2241,9 @@ public class Call extends AbstractCall
             if (!conflict[i])
               {
                 var gt = _generics.get(i);
-                var nt = gt == Types.t_UNDEFINED ? actualType
-                                                 : gt.union(actualType, context);
+                var nt = gt         == Types.t_UNDEFINED ? actualType :
+                         actualType == Types.t_UNDEFINED ? gt
+                                                         : gt.union(actualType, context);
                 if (nt == Types.t_ERROR)
                   {
                     conflict[i] = true;
@@ -2414,8 +2442,8 @@ public class Call extends AbstractCall
                 var rt = al.inferLambdaResultType(res, context, argumentType);
                 if (rt != null)
                   {
-                      inferGeneric(res, context, lambdaResultType, rt, pos, conflict, foundAt);
-                      result = true;
+                    inferGeneric(res, context, lambdaResultType, rt, pos, conflict, foundAt);
+                    result = true;
                   }
               }
           }

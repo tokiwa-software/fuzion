@@ -393,15 +393,16 @@ public class AstErrors extends ANY
           }
         else
           {
-            var assignableTo = new TreeSet<String>();
+            var assignableTo = new TreeSet<AbstractType>();
             frmlT.isAssignableFrom(actlT, context, false, true, assignableTo);
             for (var ts : assignableTo)
               {
+                errorOrUndefinedFound |= (ts == Types.t_ERROR);
                 assignableToSB
                   .append(assignableToSB.length() == 0
                           ?    "assignable to       : "
                           : ",\n                      ")
-                  .append(st(ts));
+                  .append(st(ts.toString(true)));
               }
           }
         if (remedy == null && !frmlT.isGenericArgument() && frmlT.asRef(true).isAssignableFromWithoutBoxing(actlT, context).yes())
