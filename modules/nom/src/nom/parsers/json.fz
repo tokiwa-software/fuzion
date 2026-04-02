@@ -39,7 +39,7 @@ public json_value : choice String f64 bool nil (Sequence json_value) (container.
 
   # access feature to access deeply nested maps and sequences
   #
-  # this is useful to avoid match hell
+  # this is useful to avoid deep match nesting
   #
   public access (keys Sequence (choice i32 String)) option json_value =>
     match json_value.this

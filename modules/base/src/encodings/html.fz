@@ -21,8 +21,10 @@
 #
 # -----------------------------------------------------------------------
 
-public html is
 
+# html -- unit feature to group html encoding related features
+#
+public html is
 
   escapings_cache_key(val container.Map u8 String) is
   # get map of html escapings (exclusive space)

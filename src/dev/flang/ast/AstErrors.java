@@ -42,7 +42,6 @@ import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.Pair;
 import dev.flang.util.SourcePosition;
-import dev.flang.util.SourceRange;
 import dev.flang.util.StringHelpers;
 import dev.flang.util.Terminal;
 
@@ -2598,11 +2597,25 @@ public class AstErrors extends ANY
     error(f.pos(), "Illegal use of " + skw("fixed") + " modifier.",
      skw("fixed")+ " fixed is only allowed on function features not in universe.");
   }
-  
+
   public static void multipleOperatorsFound(SourcePosition p)
   {
     error(p,
       "Multiple successive operators are not allowed.", "");
+  }
+
+  public static void nonExhaustiveDestructuring(SourcePosition pos, int exp, int found)
+  {
+    error(
+      pos,
+      "Non-exhaustive destructuring is forbidden.",
+      "Expected " + exp + " variable names but found " + found);
+  }
+
+  public static void choiceMustNotInheritContract(Feature c, AbstractFeature f)
+  {
+    error(c.pos(), "Choice must not inherit from feature with contract.",
+      "The feature that "+ s(c) + " inherits that has a contract:\n" + s_feat_with_pos(f));
   }
 
 }

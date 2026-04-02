@@ -318,7 +318,10 @@ public class SourceModule extends Module implements SrcModule
               }
             switch (main.kind())
               {
-              case Field, Abstract, Intrinsic, Choice -> FeErrors.mainFeatureMustNotBeField(main);
+              case Abstract -> FeErrors.mainFeatureMustNotBeAbstract(main);
+              case Choice -> FeErrors.mainFeatureMustNotBeChoice(main);
+              case Field->FeErrors.mainFeatureMustNotBeField(main);
+              case Intrinsic -> FeErrors.mainFeatureMustNotBeIntrinsic(main);
               case Function, Constructor, RefConstructor -> {
                 if (!main.typeArguments().isEmpty())
                   {
@@ -1649,7 +1652,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
                                       AbstractFeature redefinition)
   {
     return original.outer()
-                   .handDown(_res, new List<>(type), redefinition.outer())
+                   .handDown(new List<>(type), redefinition.outer())
                    .map(// if we redef
                         //
                         //    x(A type, v option A)
@@ -1681,7 +1684,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
       {
         var ar = argTypesOrConstraints(f);
         var ao = argTypesOrConstraints(o);
-        var ah = o.outer().handDown(_res, ao, f.outer());
+        var ah = o.outer().handDown(ao, f.outer());
         if (ah == AbstractFeature.HAND_DOWN_FAILED)
           {
             if (CHECKS) check

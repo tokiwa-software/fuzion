@@ -103,6 +103,7 @@ public class Parser extends Lexer
    */
   private final boolean _isLanguageServer;
 
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -1701,7 +1702,7 @@ actualSpaces: actualSpace actualSpaces
     List<Expr> result = ParsedCall.NO_PARENTHESES;
     if (ignoredTokenBefore() && !endsActuals(false))
       {
-        var in = new Indentation();
+        var in = new Indentation("actualSpaces");
         result = new List<>();
         while (!endsActuals(!result.isEmpty()) && in.ok())
           {
@@ -1790,7 +1791,7 @@ exprNoColon : operatorExpr          // may not contain `:` unless enclosed in { 
     if (current() == Token.t_question)
       {
         SourcePosition pos = tokenSourcePos();
-        var i = new Indentation();
+        var i = new Indentation("operatorExpr");
         skip(Token.t_question);
         var f0 = fork();
         if (f0.isCasesAndNotExpr())
@@ -2282,7 +2283,7 @@ casesNoBars : caze semiOrFlatLF casesNoBars
    */
   List<AbstractCase> cases()
   {
-    var in = new Indentation();
+    var in = new Indentation("cases");
     List<AbstractCase> result;
     if (skip('|'))
       {
@@ -2511,7 +2512,7 @@ exprs       : expr semiOrFlatLF exprs
   List<Expr> exprs()
   {
     List<Expr> l = new List<>();
-    var in = new Indentation();
+    var in = new Indentation("exprs");
     while (!endOfExprs() && in.ok())
       {
         Expr e = expr();
@@ -2538,7 +2539,7 @@ exprs       : expr semiOrFlatLF exprs
    * Class to handle a block of indented code.  The code should follow this pattern:
    *
    * <pre>{@code
-   *    var in = new Indentation();
+   *    var in = new Indentation("ebnf rule");
    *    while (!curTokenWouldTerminateListInSingleLine() && in.ok())
    *      {
    *        ... parse element ...
@@ -2548,6 +2549,7 @@ exprs       : expr semiOrFlatLF exprs
    */
   class Indentation
   {
+    final String _rule;     // the EBNF rule this indentation is for
     boolean mayIndent;
     int oldSameLine;
     int firstPos;           // source position of the first element
@@ -2558,8 +2560,14 @@ exprs       : expr semiOrFlatLF exprs
     int okPos        = -1;  // position    of last call to ok(), -1 at beginning
     SemiState oldSemiSt = SemiState.CONTINUE; // the semicolon state, it is used to detect ambiguous semicolons
 
-    Indentation()
+    /**
+     * Create new Indentation
+     *
+     * @param rule the EBNF rule that required indentation,
+     */
+    Indentation(String rule)
     {
+      _rule = rule;
       mayIndent      = !isRestrictedToLine();
       firstPos       = tokenPos();
       if (lastTokenPos() >= 0 && lineNum(lastTokenPos()) == line())  // code starts without LF, so set line limit to find end of line in next()
@@ -2626,7 +2634,7 @@ exprs       : expr semiOrFlatLF exprs
               var curIndent = indent(okPos);
               if (firstIndent != curIndent)
                 {
-                  Errors.indentationProblemEncountered(tokenSourcePos(), sourcePos(firstPos), parserDetail("exprs"));
+                  Errors.indentationProblemEncountered(tokenSourcePos(), sourcePos(firstPos), parserDetail(_rule));
                 }
               setMinIndent(okPos);
               okLineNum = lineNum(okPos);
@@ -2783,7 +2791,7 @@ indexVars   : indexVar (semiOrFlatLF indexVars)
    */
   void indexVars(List<Feature> indexVars, List<Feature> nextValues)
   {
-    var in = new Indentation();
+    var in = new Indentation("indexVars");
     while (!endOfIndexVars() && in.ok())
       {
         indexVar(indexVars, nextValues);

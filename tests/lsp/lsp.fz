@@ -96,9 +96,9 @@ record_process(
   match p.wait (time.duration.s 1)
     error =>
       check p.send_signal os.signals.kill .ok
-      tokiwa.process_result (String.join_lines fout.or_panic) "" 1
+      tokiwa.process_result (String.join_lines fout.get) "" 1
     ec u32 =>
-      tokiwa.process_result (String.join_lines fout.or_panic) "" ec
+      tokiwa.process_result (String.join_lines fout.get) "" ec
 
 # execute this Sequence of process+args
 #

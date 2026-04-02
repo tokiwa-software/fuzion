@@ -17,15 +17,7 @@ To solve this, do either of the following
   - explicitly ignore the result by using '_' instead of 'y'
 
 
---CURDIR--/unused_fields_error.fz:57:5: error 3: Unused, non public field 'e'
-    e := 42
-----^
-To solve this, do either of the following
-  - use the field
-  - explicitly ignore the result by using '_' instead of 'e'
-
-
---CURDIR--/unused_fields_error.fz:49:5: error 4: Unused, non public field 'inner2'
+--CURDIR--/unused_fields_error.fz:49:5: error 3: Unused, non public field 'inner2'
     inner2 := 3
 ----^^^^^^
 To solve this, do either of the following
@@ -34,11 +26,19 @@ To solve this, do either of the following
   - explicitly ignore the result by using '_' instead of 'inner2'
 
 
---CURDIR--/unused_fields_error.fz:54:7: error 5: Unused, non public field 'i'
+--CURDIR--/unused_fields_error.fz:54:7: error 4: Unused, non public field 'i'
       i i32    => "'i' is a i32"
 ------^
 To solve this, do either of the following
   - use the field
   - explicitly ignore the result by using '_' instead of 'i'
+
+
+--CURDIR--/unused_fields_error.fz:57:5: error 5: Unused, non public field 'e'
+    e := 42
+----^
+To solve this, do either of the following
+  - use the field
+  - explicitly ignore the result by using '_' instead of 'e'
 
 5 errors.
