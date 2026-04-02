@@ -1927,7 +1927,14 @@ class Clazz extends ANY implements Comparable<Clazz>
             t = AbstractFeature.handDownThroughInheritsCalls(t, select, inh);
           }
         t = t.applyTypePars(child._type, select);
-        t = t.replace_this_type_by_actual_outer_locally(child._type, foundRef);
+        // NYI: CLEANUP: ugly special handling.
+        // outers of fields are currently normalized to be values
+        // see: GeneratingFuir.newClazz
+        // need to undo this here.
+        var x = child._type.isValue() && child._type.feature().isRef() && feature().isField()
+          ? child._type.asRef()
+          : child._type;
+        t = t.replace_this_type_by_actual_outer_locally(x, foundRef);
         child = child._outer;
         parent = childf.outer();
       }

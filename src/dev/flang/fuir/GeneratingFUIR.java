@@ -574,6 +574,9 @@ public class GeneratingFUIR extends FUIR
       }
 
     // normalize outer to be value in case t describes a field
+    // NYI: CLEANUP: ugly special handling.
+    // outers of fields are currently normalized to be values
+    // see also: Clazz.handDown
     outerR = actualType.feature().isField() ? outerR.asValue() : outerR;
     var cl = new Clazz(this, outerR, actualType, select);
     var existing = _clazzesTM.get(cl);
