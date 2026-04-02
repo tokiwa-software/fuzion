@@ -70,6 +70,7 @@ import dev.flang.util.List;
 import dev.flang.util.LongMap;
 import dev.flang.util.Pair;
 import dev.flang.util.SourcePosition;
+import dev.flang.util.YesNo;
 
 
 /**
@@ -1998,28 +1999,35 @@ public class GeneratingFUIR extends FUIR
    */
   private boolean isConst(AbstractCall ac)
   {
-    var result =
-      !ac.isInheritanceCall() &&
-      ac.calledFeature().isConstructor() &&
-      // contains no fields
-      ac.calledFeature().code().containsOnlyDeclarations() &&
-      // we are calling a value type feature
-      ac.calledFeature().selfType().isValue() &&
-      // only features without args and no fields may be inherited
-      ac.calledFeature().inherits().stream().allMatch(c -> c.calledFeature().arguments().isEmpty() && c.calledFeature().code().containsOnlyDeclarations()) &&
-      // no unit   // NYI: UNDER DEVELOPMENT: we could allow units that does not contain declarations
-      ac.actuals().size() > 0 &&
-      ac.actuals().stream().allMatch(x -> isConst(x));
-
-    if (result)
+    if (ac._isConst == YesNo.dontKnow)
       {
-        var s = new List<>();
-        super.toStack(s, ac, false);
-        result = s
-          .stream()
-          .allMatch(x -> x == ac || isConst(x));
+        var result =
+          !ac.isInheritanceCall() &&
+          // these are handled via other means anyway
+          !ac.calledFeature().isUnitType() &&
+          ac.calledFeature().isConstructor() &&
+          // contains no fields
+          ac.calledFeature().code().containsOnlyDeclarations() &&
+          // we are calling a value type feature
+          ac.calledFeature().selfType().isValue() &&
+          // only features without args and no fields may be inherited
+          // NYI: UNDER DEVELOPMENT: we could relax this more
+          ac.calledFeature().inherits().stream().allMatch(c -> c.calledFeature().arguments().isEmpty() && c.calledFeature().code().containsOnlyDeclarations()) &&
+          // NYI: UNDER DEVELOPMENT: support consts with contracts
+          ac.calledFeature().contract().isEmpty() &&
+          ac.actuals().stream().allMatch(x -> isConst(x));
+
+        if (result)
+          {
+            var s = new List<>();
+            super.toStack(s, ac, false);
+            result = s
+              .stream()
+              .allMatch(x -> x == ac || isConst(x));
+          }
+        ac._isConst = result ? YesNo.yes : YesNo.no;
       }
-    return result;
+    return ac._isConst.yes();
   }
 
 
