@@ -1,4 +1,4 @@
-FROM ubuntu:24.04@sha256:d1e2e92c075e5ca139d51a140fff46f84315c0fdce203eab2807c7e495eff4f9 AS builder
+FROM ubuntu:24.04@sha256:186072bba1b2f436cbb91ef2567abca677337cfc786c86e107d25b7072feef0c AS builder
 WORKDIR /fuzion
 COPY . .
 RUN apt-get update && apt-get -y --no-install-recommends install \
@@ -19,7 +19,7 @@ RUN ln -s /usr/bin/clang-18 /usr/bin/clang
 ENV FUZION_REPRODUCIBLE_BUILD="true" PRECONDITIONS="true" POSTCONDITIONS="true"
 RUN make all build/apidocs_git/index.html
 
-FROM ubuntu:24.04@sha256:d1e2e92c075e5ca139d51a140fff46f84315c0fdce203eab2807c7e495eff4f9 AS runner
+FROM ubuntu:24.04@sha256:186072bba1b2f436cbb91ef2567abca677337cfc786c86e107d25b7072feef0c AS runner
 # NYI: HACK: chmod is a workaround for Jenkins permission issue
 COPY --from=builder --chmod=o=g /fuzion/build /fuzion
 RUN apt-get update && apt-get -y --no-install-recommends install \
