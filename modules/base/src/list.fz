@@ -591,7 +591,7 @@ is
     list
       (list A)
       list.this
-      list.this ? nil => nil | c Cons => c.tail.tails
+      (list.this ? nil => nil | c Cons => c.tail.tails)
 
 
   # create a new list from the result of applying 'f' to the
