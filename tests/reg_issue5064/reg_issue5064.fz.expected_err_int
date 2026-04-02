@@ -19,10 +19,10 @@ panic#1: {base.fum}/panic.fz:58:19:
 (option Stack.Node).or_panic: {base.fum}/switch.fz:175:14:
       b B => panic $b
 -------------^^^^^^^^
-Stack.push#2 i32: --CURDIR--/reg_issue5064.fz:31:10:
+Stack.push#2 i32: --CURDIR--/reg_issue5064.fz:46:10:
     _ := top.or_panic
 ---------^^^^^^^^^^^^
-universe: --CURDIR--/reg_issue5064.fz:33:1:
+universe: --CURDIR--/reg_issue5064.fz:48:1:
 Stack.push 1
 ^^^^^^^^^^^^
 

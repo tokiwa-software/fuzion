@@ -8,8 +8,8 @@ panic.type.install_default.λ.call#1 at {base.fum}/panic.fz:36
 panic.cause#1 at {base.fum}/eff/fallible.fz:35
 panic#1 at {base.fum}/panic.fz:58
 (option Stack.Node).or_panic at {base.fum}/switch.fz:175
-Stack.push#2 i32 at --CURDIR--/reg_issue5064.fz:31
-universe at --builtin--:33
+Stack.push#2 i32 at --CURDIR--/reg_issue5064.fz:46
+universe at --builtin--:48
 
 *** fatal errors encountered, stopping.
 one error.
