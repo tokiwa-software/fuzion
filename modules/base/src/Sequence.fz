@@ -284,9 +284,10 @@ is
   # values for which f is false are dropped
   #
   public filter   (f T -> bool) Sequence T
-    post
-      debug: finite = result.finite
-      debug: finite.is_no_or_unknown || count >= result.count
+    # NYI: BUG: count >= result.count sometimes recursive
+    # post
+      # NYI: BUG: debug: finite = result.finite
+      # NYI: BUG: debug: finite.is_no_or_unknown || count >= result.count
   => as_list.filter f
 
 
@@ -551,9 +552,10 @@ is
   # in the resulting list are accessed.
   #
   public map(B type, f T->B) Sequence B
-    post
-      debug: finite = result.finite
-      debug: finite.is_no_or_unknown || count = result.count
+    # NYI: BUG: count = result.count sometimes recursive
+    # post
+      # NYI: BUG: debug: finite = result.finite
+      # NYI: BUG: debug: finite.is_no_or_unknown || count = result.count
   =>
     as_list.map_to_list f
 
