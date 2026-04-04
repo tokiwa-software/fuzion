@@ -118,37 +118,44 @@ abstract class Context extends ANY
         @Override
         AbstractType constraintFor(AbstractFeature typeParameter)
         {
-          if (f instanceof Feature ff)
+          // NYI: BUG: this just returns the first found type constraint
+          // should probably error if there are multiple.
+          var rf = f.redefinesFull();
+          rf.add(f);
+          for (AbstractFeature r : rf)
             {
-              for (var c : ff.originalContract()._declared_preconditions)
+              if (r instanceof Feature ff)
                 {
-                  if (c.cond() instanceof Call cc &&
-                      cc.calledFeatureKnown() &&
-                      cc.calledFeature() == Types.resolved.f_Type_infix_colon &&
-                      cc.target() instanceof Call tc &&
-                      isClone(typeParameter, tc.calledFeature()))
+                  for (var c : ff.originalContract()._declared_preconditions)
                     {
-                      return cc
-                        .actualTypeParameters()
-                        .get(0)
-                        /**
-                         * replace type parameters that come from pre feature
-                         * with their original type parameter.
-                         * {@code Sequence.pre unzip2.A} by {@code Sequence.unzip2.A}
-                         */
-                        .applyToGenericsAndOuter(x ->
-                          x instanceof ResolvedParametricType rpt
-                            ? f
-                              .typeArguments()
-                              .stream()
-                              .filter(y ->
-                                  y.outer().origin() == rpt.genericArgument().outer().origin() &&
-                                  y.featureName().baseName().toString().equals(rpt.genericArgument().featureName().baseName())
-                                )
-                              .findFirst()
-                              .get()
-                              .asGenericType()
-                            : x);
+                      if (c.cond() instanceof Call cc &&
+                          cc.calledFeatureKnown() &&
+                          cc.calledFeature() == Types.resolved.f_Type_infix_colon &&
+                          cc.target() instanceof Call tc &&
+                          typeParameter.typeParameterIndex() == tc.calledFeature().typeParameterIndex())
+                        {
+                          return cc
+                            .actualTypeParameters()
+                            .get(0)
+                            /**
+                             * replace type parameters that come from pre feature
+                             * with their original type parameter.
+                             * {@code Sequence.pre unzip2.A} by {@code Sequence.unzip2.A}
+                             */
+                            .applyToGenericsAndOuter(x ->
+                              x instanceof ResolvedParametricType rpt
+                                ? r
+                                  .typeArguments()
+                                  .stream()
+                                  .filter(y ->
+                                      y.outer().origin() == rpt.genericArgument().outer().origin() &&
+                                      y.featureName().baseName().toString().equals(rpt.genericArgument().featureName().baseName())
+                                    )
+                                  .findFirst()
+                                  .get()
+                                  .asGenericType()
+                                : x);
+                        }
                     }
                 }
             }
