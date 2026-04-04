@@ -82,7 +82,7 @@ public sync is
     # run code synchronized across all threads
     # that also use this condition
     #
-    public synchronized(T type, code ()->T) T ! atomic_access =>
+    public synchronized(T type, code ()->T) T ! concur.atomic_access =>
       mtx.synchronized ()->
         is_locked.write true
         res := code.call
