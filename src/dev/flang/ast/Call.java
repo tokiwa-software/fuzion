@@ -2242,7 +2242,8 @@ public class Call extends AbstractCall
                 var nt = actualType.containsUndefined() ? gt :
                          gt == Types.t_UNDEFINED        ? actualType
                                                         : gt.union(actualType, context);
-                conflict[i] = gt != Types.t_ERROR && nt == Types.t_ERROR;
+                conflict[i] = nt == Types.t_ERROR;
+                nt          = nt == Types.t_ERROR ? Types.t_UNDEFINED : nt;
                 _generics = _generics.setOrClone(i, nt);
                 addPair(foundAt, i, pos, actualType);
               }
