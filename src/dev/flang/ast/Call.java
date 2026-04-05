@@ -2016,19 +2016,17 @@ public class Call extends AbstractCall
                                  */
                                 actual = propagateForPartial(res, context, argnum, c);
                                 var ac = c.applyTypePars(calledFeature(), actualTypeParameters());
-                                if (ac.containsUndefined(-1))
-                                  { /* this happens for code from #6849 as follows
+                                /* ac may contain undefined for code from #6849 as follows
 
-                                         x(F type : ()->unit, G type : F, f G) => {}
-                                         x ()->
+                                     x(F type : ()->unit, G type : F, f G) => {}
+                                     x ()->
 
-                                       where for the call to `x ()->` the type
-                                       `G`'s constraint `c` is `F` and the type
-                                       parameter `F` cannot be inferred such
-                                       that `ac` is `UNDEFINED`, which should not be propagated.
-                                    */
-                                  }
-                                else
+                                   where for the call to `x ()->` the type `G`'s
+                                   constraint `c` is `F` and the type parameter
+                                   `F` cannot be inferred such that `ac` is
+                                   `UNDEFINED`, which should not be propagated.
+                                 */
+                                if (!ac.containsUndefined(-1))
                                   {
                                     actual = actual.propagateExpectedType(res, context, ac,
                                                                           () -> "formal argument type in call to " + AstErrors.s(_calledFeature));
@@ -2051,7 +2049,7 @@ public class Call extends AbstractCall
                                  *   f(R type, F type : ()->R, f F) => ...
                                  *   f ()->"bla"
                                  *
-                                 * here, we first must infer `R` t be String, then `F` to be `Nullary String`
+                                 * here, we first must infer `R` to be `String`, then `F` to be `Nullary String`
                                  */
                                 checked[vai] = inferGenericLambdaResult(res, context, tc, frml, al, actual.pos(), conflict, foundAt);
                               }
@@ -2241,14 +2239,10 @@ public class Call extends AbstractCall
             if (!conflict[i])
               {
                 var gt = _generics.get(i);
-                var nt = gt         == Types.t_UNDEFINED ? actualType :
-                         actualType == Types.t_UNDEFINED ? gt
-                                                         : gt.union(actualType, context);
-                if (nt == Types.t_ERROR)
-                  {
-                    conflict[i] = true;
-                    nt = Types.t_UNDEFINED;
-                  }
+                var nt = actualType.containsUndefined() ? gt :
+                         gt == Types.t_UNDEFINED        ? actualType
+                                                        : gt.union(actualType, context);
+                conflict[i] = gt != Types.t_ERROR && nt == Types.t_ERROR;
                 _generics = _generics.setOrClone(i, nt);
                 addPair(foundAt, i, pos, actualType);
               }

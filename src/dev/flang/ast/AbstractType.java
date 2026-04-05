@@ -460,7 +460,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           {
             if (CHECKS) check
               (Errors.any() || t != null);
-            result = result || ix != except && t != null && t.containsUndefined(-1);
+            result = result || ix != except && t != null && t.containsUndefined();
             ix++;
           }
       }

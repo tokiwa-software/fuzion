@@ -380,7 +380,7 @@ public class AstErrors extends ANY
     else
       {
         var actlT = value.type();
-        errorOrUndefinedFound |=  actlT.isArtificialType();
+        errorOrUndefinedFound |=  actlT.isArtificialType() || actl.containsUndefined();
         if (actlT.isThisType())
           {
             assignableToSB
@@ -397,7 +397,7 @@ public class AstErrors extends ANY
             frmlT.isAssignableFrom(actlT, context, false, true, assignableTo);
             for (var ts : assignableTo)
               {
-                errorOrUndefinedFound |= (ts == Types.t_ERROR);
+                errorOrUndefinedFound |= ts.isArtificialType() || ts.containsUndefined();
                 assignableToSB
                   .append(assignableToSB.length() == 0
                           ?    "assignable to       : "
