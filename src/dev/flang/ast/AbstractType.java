@@ -574,7 +574,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @param context the source code context where this Type is used
    *
    * @param assignableTo in case we want to show all types actual is assignable
-   * to in an error message, this collects the types converted to strings.
+   * to in an error message, this collects those types.
    *
    * @return
    *  - yes      if assignable
