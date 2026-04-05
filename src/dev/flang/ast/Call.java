@@ -1436,9 +1436,9 @@ public class Call extends AbstractCall
       }
 
     // see test #5391 when this might happen
-    return result != null && result.containsUndefined()
-      ? null
-      : result;
+    return result == null || result == Types.t_ERROR || !result.containsUndefined()
+      ? result
+      : null;
   }
 
 
