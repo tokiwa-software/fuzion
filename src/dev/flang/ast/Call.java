@@ -2026,7 +2026,7 @@ public class Call extends AbstractCall
                                    `F` cannot be inferred such that `ac` is
                                    `UNDEFINED`, which should not be propagated.
                                  */
-                                if (!ac.containsUndefined(-1))
+                                if (!ac.containsUndefined())
                                   {
                                     actual = actual.propagateExpectedType(res, context, ac,
                                                                           () -> "formal argument type in call to " + AstErrors.s(_calledFeature));

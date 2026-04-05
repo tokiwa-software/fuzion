@@ -380,7 +380,7 @@ public class AstErrors extends ANY
     else
       {
         var actlT = value.type();
-        errorOrUndefinedFound |=  actlT.isArtificialType() || actl.containsUndefined();
+        errorOrUndefinedFound |=  actlT.isArtificialType() || actlT.containsUndefined();
         if (actlT.isThisType())
           {
             assignableToSB
