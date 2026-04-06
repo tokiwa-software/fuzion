@@ -2236,9 +2236,9 @@ public class Call extends AbstractCall
         if (g.outer() == _calledFeature)
           { // we found a use of a generic type, so record it:
             var i = g.typeParameterIndex();
-            if (!conflict[i])
+            var gt = _generics.get(i);
+            if (!conflict[i] && gt != Types.t_ERROR)
               {
-                var gt = _generics.get(i);
                 var nt = actualType.containsUndefined() ? gt :
                          gt == Types.t_UNDEFINED        ? actualType
                                                         : gt.union(actualType, context);
