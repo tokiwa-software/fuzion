@@ -585,6 +585,12 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       (this  .isGenericArgument() || this  .feature() != null || Errors.any(),
        actual.isGenericArgument() || actual.feature() != null || Errors.any());
 
+        /*
+    // tag::fuzion_rule_TYPE_SYSTEM_ASSIGNABLE_FROM[]
+    NYI: UNDER DEVELOPMENT:
+    // end::fuzion_rule_TYPE_SYSTEM_ASSIGNABLE_FROM[]
+        */
+
     if (assignableTo != null)
       {
         assignableTo.add(actual);
@@ -1657,8 +1663,29 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @return a type that is assignable both from this and that, or Types.t_ERROR if none
    * exists.
    */
-  AbstractType union(AbstractType that, Context context)
+  AbstractType commonSupertype(AbstractType that, Context context)
   {
+        /*
+    // tag::fuzion_rule_TYPE_SYSTEM_COMMON_SUPERTYPE[]
+Here is how to find the common super type of two types.
+
+1. One of the types is void
++
+result is the other type.
+
+2. first type is assignable from second type (boxing and/or tagging is allowed)
++
+result is the first type
+
+3. second type is assignable from first type (boxing and/or tagging is allowed)
++
+result is the second type
+
+4. none if the above applies
++
+there is no common super type of the two types (Types.t_ERROR)
+    // end::fuzion_rule_TYPE_SYSTEM_COMMON_SUPERTYPE[]
+        */
     AbstractType result =
       this == Types.t_ERROR                        ? Types.t_ERROR     :
       that == Types.t_ERROR                        ? Types.t_ERROR     :
