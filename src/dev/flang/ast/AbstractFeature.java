@@ -433,7 +433,25 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     var result = featureName().baseNameHuman();
     if (result == FuzionConstants.HUMAN_READABLE_LAMBDA_NAME)
       {
-        result = pos().sourceText();
+        var code = result + pos().sourceText().trim();
+        var dotdotdot = "";
+        code = code.replaceAll("\n", " ");
+        while (code.indexOf("  ") >= 0)
+          {
+            code = code.replaceAll("  "," ");
+          }
+        var nl = code.indexOf("\n");
+        if (nl >= 0)
+          {
+            code = code.substring(0, nl);
+            dotdotdot = "...";
+          }
+        if (code.length() > 40)
+          {
+            code = code.substring(0, 39);
+            dotdotdot = "...";
+          }
+        result = "(" + code + dotdotdot + ")";
       }
     return result;
   }
