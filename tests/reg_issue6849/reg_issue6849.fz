@@ -24,7 +24,7 @@
 reg_issue6849 =>
 
 
-  # first example from #6849 with tpye inference for `RESULT` and `FUN`, used to
+  # first example from #6849 with type inference for `RESULT` and `FUN`, used to
   # cause errors
 
   x1(RESULT type, FUN type : ()->RESULT, code FUN)
