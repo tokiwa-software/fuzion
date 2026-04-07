@@ -431,7 +431,7 @@ is
                             ($sigma()  ).pad_center 9 + "|" +
                             ($size     ).pad_center 9 + "|\n")
     else
-      "not data"
+      "no data"
 
 
   # Create semicolon-separated CSV data for these measurements to import into Excel or
