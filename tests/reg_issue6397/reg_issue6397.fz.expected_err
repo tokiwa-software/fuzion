@@ -1,0 +1,7 @@
+
+--CURDIR--/reg_issue6397.fz:33:24: error 1: Failed to infer type of expression.
+    values.typed_foldf [] U,e,v->
+-----------------------^^
+Expression with unknown type: '[]'
+
+one error.
