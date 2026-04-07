@@ -1,19 +1,19 @@
 
 error 1: FATAL FAULT `precondition`: debug: !(overflow_on_add other)
 Call stack:
-fuzion.type.runtime.type.fault.type.install_default.λ.call#1: {base.fum}/fuzion/runtime/fault.fz:43:7:
+fuzion.type.runtime.type.fault.type.install_default.(λkind_and_msg-> kind, msg := kind_and_m...).call#1: {base.fum}/fuzion/runtime/fault.fz:59:7:
       fuzion.sys.fatal_fault kind msg
 ------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 fuzion.runtime.fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
   => h e
 -----^
-fuzion.type.runtime.type.contract_fault.type.install_default.λ.call#1: {base.fum}/fuzion/runtime/contract_fault.fz:39:7:
+fuzion.type.runtime.type.contract_fault.type.install_default.(λkind_and_msg-> fuzion.runtime.fault.ca...).call#1: {base.fum}/fuzion/runtime/contract_fault.fz:39:7:
       fuzion.runtime.fault.cause kind_and_msg).default
 ------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 fuzion.runtime.contract_fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
   => h e
 -----^
-fuzion.type.runtime.type.pre_fault.type.install_default.λ.call#1: {base.fum}/fuzion/runtime/pre_fault.fz:39:7:
+fuzion.type.runtime.type.pre_fault.type.install_default.(λmsg-> fuzion.runtime.contract_fault.ca...).call#1: {base.fum}/fuzion/runtime/pre_fault.fz:39:7:
       fuzion.runtime.contract_fault.cause ("precondition", msg)).default
 ------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 fuzion.runtime.pre_fault.cause#1: {base.fum}/eff/fallible.fz:35:6:

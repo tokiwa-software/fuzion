@@ -9,12 +9,12 @@ To solve this, replace the expression with an argument name like 'x' and use tha
 --CURDIR--/reg_issue3576.fz:24:22: error 2: Incompatible types in assignment
 _ ()->i32 :=  (a b)->
 ---------------------^
-assignment to field : 'λ.call.result'
+assignment to field : '(λ(a b)->).call.result'
 expected formal type: 'i32'
 actual type found   : 'unit'
 assignable to       : 'unit'
 for value assigned  : 
 
-To solve this, you could change the type of the target 'λ.call.result' to 'unit' or convert the type of the assigned value to 'i32'.
+To solve this, you could change the type of the target ''(λ(a b)->).call.result'' to 'unit' or convert the type of the assigned value to 'i32'.
 
 2 errors.
