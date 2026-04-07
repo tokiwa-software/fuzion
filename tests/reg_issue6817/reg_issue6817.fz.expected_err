@@ -7,6 +7,6 @@ expected formal type: 'T'
 actual type found   : 'bool'
 assignable to       : 'bool'
 for value assigned  : 'false'
-To solve this, you could change the type of the target ''reg_issue6817.h.(λfalse).call.result'' to 'bool' or convert the type of the assigned value to 'T'.
+To solve this, you could change the type of the target 'reg_issue6817.h.(λfalse).call.result' to 'bool' or convert the type of the assigned value to 'T'.
 
 one error.

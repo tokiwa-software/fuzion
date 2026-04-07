@@ -7,7 +7,7 @@ expected formal type: 'Lazy i32'
 actual type found   : 'i32'
 assignable to       : 'i32'
 for value assigned  : '42'
-To solve this, you could change the type of the target ''ex_nested_lazy.(λ()->42).call.result'' to 'i32' or convert the type of the assigned value to 'Lazy i32'.
+To solve this, you could change the type of the target 'ex_nested_lazy.(λ()->42).call.result' to 'i32' or convert the type of the assigned value to 'Lazy i32'.
 
 
 --CURDIR--/ex_nested_lazy.fz:49:14: error 2: Incompatible types in assignment
@@ -18,6 +18,6 @@ expected formal type: 'Lazy i32'
 actual type found   : 'i32'
 assignable to       : 'i32'
 for value assigned  : 'x1'
-To solve this, you could change the type of the target ''ex_nested_lazy.(λx1).call.result'' to 'i32' or convert the type of the assigned value to 'Lazy i32'.
+To solve this, you could change the type of the target 'ex_nested_lazy.(λx1).call.result' to 'i32' or convert the type of the assigned value to 'Lazy i32'.
 
 2 errors.

@@ -15,6 +15,6 @@ actual type found   : 'unit'
 assignable to       : 'unit'
 for value assigned  : 
 
-To solve this, you could change the type of the target ''(λ(a b)->).call.result'' to 'unit' or convert the type of the assigned value to 'i32'.
+To solve this, you could change the type of the target '(λ(a b)->).call.result' to 'unit' or convert the type of the assigned value to 'i32'.
 
 2 errors.
