@@ -263,7 +263,8 @@ public class FeatureName extends ANY implements Comparable<FeatureName>
    * internal names by names that are more human-friendly at the expense of
    * possibly becoming ambiguous.
    *
-   * Whenever possible, use {@link AbstractFeature.baseNameHuman()} instead
+   * Whenever possible, use {@link dev.flang.ast.AbstractFeature#baseNameHuman()} instead since
+   * that may use the underlying feature to create a better name.
    */
   public String baseNameHuman()
   {
