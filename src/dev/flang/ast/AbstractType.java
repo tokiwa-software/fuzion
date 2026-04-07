@@ -433,15 +433,17 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * Check if this or any of its generic arguments is {@code Types.t_UNDEFINED}.
+   * Check if this or any of its generic arguments is {@code Types.t_UNDEFINED},
+   * {@code Types.t_ERROR}, or {@code Types.t_FORWARD_CYCLIC}.
    *
    * @param except index of a generic argument should be ignored, it may be
    * {@code Types.t_UNDEFINED}.  This is used in a lambda {@code x -> f x} of
    * type {@code Function<R,X>} when {@code R} is unknown and to be inferred. -1
    * to not ignore any argument.
    *
-   * @return true if this depends on {@code Types.t_UNDEFINED} except for only
-   * type parameter #`except` being {@code Types.t_UNDEFINED}.
+   * @return true if this depends on {@code Types.t_UNDEFINED}, {@code
+   * Types.t_ERROR}, or {@code Types.t_FORWARD_CYCLIC} except for type parameter
+   * #`except` being {@code Types.t_UNDEFINED}.
    */
   public boolean containsUndefined(int except)
   {
@@ -449,7 +451,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       (except == -1 || except >= 0 && except <= generics().size());
 
     boolean result = false;
-    if (this == Types.t_UNDEFINED)
+    if (isArtificialType())
       {
         result = true;
       }
@@ -460,7 +462,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           {
             if (CHECKS) check
               (Errors.any() || t != null);
-            result = result || ix != except && t != null && t.containsUndefined(-1);
+            result = result || t != null && t.isArtificialType() && (ix != except || t != Types.t_UNDEFINED);
             ix++;
           }
       }
@@ -572,7 +574,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @param context the source code context where this Type is used
    *
    * @param assignableTo in case we want to show all types actual is assignable
-   * to in an error message, this collects the types converted to strings.
+   * to in an error message, this collects those types.
    *
    * @return
    *  - yes      if assignable

@@ -1,0 +1,149 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue6849
+#
+# -----------------------------------------------------------------------
+
+reg_issue6849 =>
+
+
+  # first example from #6849 with type inference for `RESULT` and `FUN`, used to
+  # cause errors
+
+  x1(RESULT type, FUN type : ()->RESULT, code FUN)
+  =>
+    code()
+
+  x1 ()->
+
+
+  # second example from #6849 providing actual type parameter for `FUN`, used to
+  # cause errors
+
+  x2(RESULT type, FUN type : ()->RESULT, code FUN)
+  =>
+    code()
+
+  x2 _ ()->unit ()->
+
+
+  # third example from #6849, providing actual type parameter for `RESULT`,
+  # always worked
+
+  x3(RESULT type, FUN type : ()->RESULT, code FUN)
+  =>
+    code()
+
+  x3 unit _ ()->
+
+
+  # fourth example from #6849, providing a type for the lambda using `id`,
+  # always worked
+
+  x4(RESULT type, FUN type : ()->RESULT, code FUN)
+  =>
+    code()
+
+  x4 (id ()->unit ()->)
+
+
+  # here now an attempt to cover all case of declared type parameters
+  xaa(                                    code       ()->_     ) =>  code()
+  xab(                                    code       ()->RESULT) =>  code()
+  xac(RESULT type,                        code       ()->RESULT) =>  code()
+  xba(                                    code _   : ()->_     ) =>  code()
+  xbb(                                    code _   : ()->RESULT) =>  code()
+  xbc(RESULT type,                        code _   : ()->RESULT) =>  code()
+  xca(                                    code FUN : ()->_     ) =>  code()
+  xcb(                                    code FUN : ()->RESULT) =>  code()
+  xcc(RESULT type,                        code FUN : ()->RESULT) =>  code()
+# xda(             FUN type : ()->RESULT, code FUN             ) =>  code()  # NYI: BUG: #6859 free types in type constraints not working
+# xdb(             FUN type : ()->RESULT, code FUN             ) =>  code()  # NYI: BUG: #6859 free types in type constraints not working
+  xdc(RESULT type, FUN type : ()->RESULT, code FUN             ) =>  code()
+
+  # calling all cases using full type inference
+  xaa ()->
+  xab ()->
+  xac ()->
+  xba ()->
+  xbb ()->
+  xbc ()->
+  xca ()->
+  xcb ()->
+  xcc ()->
+# xda ()->  # NYI: BUG: #6859 free types in type constraints not working
+# xdb ()->  # NYI: BUG: #6859 free types in type constraints not working
+  xdc ()->
+
+  # calling all cases using full type inference with place holders `_`
+  xaa _   ()->
+  xab     ()->
+  xac _   ()->
+  xba _ _ ()->
+  xbb _ _ ()->
+  xbc _ _ ()->
+  xca _ _ ()->
+  xcb _ _ ()->
+  xcc _ _ ()->
+# xda _ _ ()->  # NYI: BUG: #6859 free types in type constraints not working
+# xdb _ _ ()->  # NYI: BUG: #6859 free types in type constraints not working
+  xdc _ _ ()->
+
+  # calling all cases using type inference for FUN type parameter using place holders `_`
+  xaa unit   ()->
+  xab        ()->
+  xac unit   ()->
+  xba unit _ ()->
+  xbb unit _ ()->
+  xbc unit _ ()->
+  xca unit _ ()->
+  xcb unit _ ()->
+  xcc unit _ ()->
+# xda unit _ ()->  # NYI: BUG: #6859 free types in type constraints not working
+# xdb unit _ ()->  # NYI: BUG: #6859 free types in type constraints not working
+  xdc unit _ ()->
+
+  # calling all cases using type inference for RESULT type parameter with place holders `_`
+  xaa _          ()->
+  xab            ()->
+  xac _          ()->
+  xba _ ()->unit ()->
+  xbb _ ()->unit ()->
+  xbc _ ()->unit ()->
+  xca _ ()->unit ()->
+  xcb _ ()->unit ()->
+  xcc _ ()->unit ()->
+# xda _ ()->unit ()->  # NYI: BUG: #6859 free types in type constraints not working
+# xdb _ ()->unit ()->  # NYI: BUG: #6859 free types in type constraints not working
+  xdc _ ()->unit ()->
+
+  # calling all cases using explicit type parameter
+  xaa unit          ()->
+  xab               ()->
+  xac unit          ()->
+  xba unit ()->unit ()->
+  xbb unit ()->unit ()->
+  xbc unit ()->unit ()->
+  xca unit ()->unit ()->
+  xcb unit ()->unit ()->
+  xcc unit ()->unit ()->
+# xda unit ()->unit ()->  # NYI: BUG: #6859 free types in type constraints not working
+# xdb unit ()->unit ()->  # NYI: BUG: #6859 free types in type constraints not working
+  xdc unit ()->unit ()->
