@@ -2823,8 +2823,29 @@ there is no common super type of the two types (Types.t_ERROR)
       if (t.isThisType()&& t.feature().compareTo(ff.outer()) == 0)
         {
           AstErrors.useConcreteTypeInFixed(a, t);
+          setContractFeaturesImplEmpty(ff);
         }
     });
+  }
+
+
+  /**
+   * set implementations of contract features to empty
+   * to avoid checking those.
+   */
+  private void setContractFeaturesImplEmpty(Feature ff)
+  {
+    if (PRECONDITIONS) require
+      (Errors.any());
+
+    var emptyImpl = new Impl(
+      SourcePosition.builtIn,
+      new Block(new List<Expr>()),
+      Impl.Kind.Routine);
+    if (ff._preFeature != null) { ff._preFeature.setImpl(emptyImpl); }
+    if (ff._preBoolFeature != null) { ff._preBoolFeature.setImpl(emptyImpl); }
+    if (ff._preAndCallFeature != null) { ff._preAndCallFeature.setImpl(emptyImpl); }
+    if (ff._postFeature != null) { ff._postFeature.setImpl(emptyImpl); }
   }
 
 

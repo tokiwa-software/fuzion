@@ -1,0 +1,13 @@
+
+--CURDIR--/reg_issue5799.fz:29:15: error 1: Use the concrete type not the this-type in a fixed feature.
+  redef fixed f(o d.this) d.this =>
+--------------^
+For increased consistency and easier comprehensibility, use 'd' instead of 'd.this'
+
+
+--CURDIR--/reg_issue5799.fz:29:17: error 2: Use the concrete type not the this-type in a fixed feature.
+  redef fixed f(o d.this) d.this =>
+----------------^
+For increased consistency and easier comprehensibility, use 'd' instead of 'd.this'
+
+2 errors.
