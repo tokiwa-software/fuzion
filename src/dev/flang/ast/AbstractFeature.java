@@ -466,7 +466,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * @param human true to replace internal names by human readable text. This
    * should never be true for internal symbols or generated code.
    *
-   * @return the qualified name, e.g. "fuzion.std.out.println" or "abc.#type.def.#type.THIS#TYPE"
+   * @return the qualified name, e.g. "some_feature.#FUN124.call.result",
+   * "xyz.#preandcall_xyz_pqr#bla", etc. iff human==false, or
+   * "some_feature.(λx->x+1)call.result", "xyz.precall bla", etc. otherwise)
    */
   private String qualifiedName0(AbstractFeature context, boolean human)
   {
@@ -487,7 +489,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * @param human true to replace internal names by human readable text. This
    * should never be true for internal symbols or generated code.
    *
-   * @return the qualified name, e.g. "fuzion.std.out.println",  or "abc.def.this.type" or "abc.def.type".
+   * @return the qualified name, e.g. "some_feature.#FUN124.call.result",
+   * "xyz.#preandcall_xyz_pqr#bla", etc. iff human==false, or
+   * "some_feature.(λx->x+1)call.result", "xyz.precall bla", etc. otherwise)
    */
   public String qualifiedName(boolean human)
   {
@@ -500,7 +504,8 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * internal auto-generated names untouched.  This is not ideal for user
    * output, but required for any internal use of these names in generated code.
    *
-   * @return the qualified name, e.g. "fuzion.std.out.println" or "abc.def.this.type" or "abc.def.type".
+   * @return the qualified name, e.g. "some_feature.#FUN124.call.result" or
+   * "xyz.#preandcall_xyz_pqr#bla", etc.
    */
   public String qualifiedNameInternal()
   {
@@ -514,7 +519,8 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    *
    * This should never be used for internal symbols or generated code.
    *
-   * @return the qualified name, e.g. "fuzion.std.out.println" or "abc.def.this.type" or "abc.def.type".
+   * @return the qualified name, e.g. "some_feature.(λx->x+1)call.result" or
+   * "xyz.precall bla", etc.
    */
   public String qualifiedNameHuman()
   {
@@ -530,7 +536,8 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * @param human true to replace internal names by human readable text. This
    * should never be true for internal symbols or generated code.
    *
-   * @return the qualified name, e.g. "fuzion.std.out.println" or "abc.def.this.type" or "abc.def.type".
+   * @return the qualified name, e.g. "some_feature.#FUN124.call.result" or
+   * "xyz.#preandcall_xyz_pqr#bla", etc.
    */
   String qualifiedName(AbstractFeature context, boolean human)
   {
