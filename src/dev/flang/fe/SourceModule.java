@@ -550,11 +550,13 @@ part of the (((inner features))) declarations of the corresponding
           {
             AstErrors.typeFeaturesMustOnlyBeDeclaredInFeaturesThatDefineType(inner);
           }
-        var o =
-          n != FuzionConstants.TYPE_NAME ? lookupType(inner.pos(), outer, n, at == 0,
+        var o = n.equals(FuzionConstants.UNIVERSE_NAME)
+            ? _universe
+            : n != FuzionConstants.TYPE_NAME
+            ? lookupType(inner.pos(), outer, n, at == 0,
                                                       false /* ignore ambiguous */,
                                                       false /* ignore not found */)._feature
-                                        : _res.cotype(outer);
+            : _res.cotype(outer);
         if (at < q.size()-2)
           {
             setOuterAndAddInnerForQualifiedRec(inner, at+1, o);
@@ -672,7 +674,7 @@ part of the (((inner features))) declarations of the corresponding
         }
         @Override public Feature   action(Feature   f, AbstractFeature outer)
         {
-          f._declaredInScope = (!_scope.isEmpty() || f.isExtensionFeature()) ? outer : null;
+          f._declaredInScope = !_scope.isEmpty() ? outer : null;
           findDeclarations(f, outer);
           return f;
         }
