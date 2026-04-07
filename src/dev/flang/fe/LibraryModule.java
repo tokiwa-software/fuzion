@@ -2477,7 +2477,7 @@ SourceFile
         var lf = (LibraryFeature) f;
         var li = lf._index;
         hd.mark(li, featureKindEnum(li).toString());
-        hd.mark(featureNamePos(li), f.qualifiedName());
+        hd.mark(featureNamePos(li), f.qualifiedNameHuman());
         if (featureIsRoutine(li))
           {
             hd.mark(featureCodePos(li), "code");

@@ -958,7 +958,7 @@ public class GeneratingFUIR extends FUIR
        cl < CLAZZ_BASE + _clazzes.size());
 
     var cc = id2clazz(cl);
-    return cc.feature().qualifiedName();
+    return cc.feature().qualifiedNameInternal();
   }
 
 
@@ -1909,9 +1909,10 @@ public class GeneratingFUIR extends FUIR
         if (e instanceof AbstractCall call)
           {
             var cf = call.calledFeature();
-            if (cf.isIntrinsic() && _removedIntrinsics_.containsKey(cf.qualifiedName()))
+            var qn = cf.qualifiedNameInternal();
+            if (cf.isIntrinsic() && _removedIntrinsics_.containsKey(qn))
               {
-                e = _removedIntrinsics_.get(cf.qualifiedName()).code(call, _currentClazz);
+                e = _removedIntrinsics_.get(qn).code(call, _currentClazz);
               }
             else if (cf.isOpenTypeParameter())
               {

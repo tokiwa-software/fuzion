@@ -475,7 +475,7 @@ public class Html extends ANY
       .stream()
       .map(f -> """
         <li><a href="$1">$2</a></li>$3
-      """.replace("$1", featureRelativeURL(f, relativeTo)).replace("$2", htmlEncodeNbsp(f.qualifiedName())).replace("$3", redefines0(f, relativeTo)))
+      """.replace("$1", featureRelativeURL(f, relativeTo)).replace("$2", htmlEncodeNbsp(f.qualifiedNameHuman())).replace("$3", redefines0(f, relativeTo)))
       .collect(Collectors.joining(System.lineSeparator()));
   }
 
@@ -744,12 +744,12 @@ public class Html extends ANY
             )
             .collect(Collectors.joining());
           }
-        say_err("Warning: No comment found for " + af.qualifiedName());
+        say_err("Warning: No comment found for " + af.qualifiedNameHuman());
       }
 
     Collections.reverse(commentLines);
 
-    var result = Html.processComment(af.qualifiedName() + af.featureName().argCount() + "_", commentLines
+    var result = Html.processComment(af.qualifiedNameHuman() + af.featureName().argCount() + "_", commentLines
       .stream()
       .map(l -> l.trim())
       .map(l -> l
@@ -805,7 +805,7 @@ public class Html extends ANY
    */
   private String htmlEncodedQualifiedName(AbstractFeature af)
   {
-    return htmlEncodeNbsp(af.qualifiedName());
+    return htmlEncodeNbsp(af.qualifiedNameHuman());
   }
 
 
@@ -958,20 +958,20 @@ public class Html extends ANY
 
   /**
    * get full html with doctype, head and body
-   * @param qualifiedName
+   * @param qualifiedNameHuman()
    * @param bareHtml
    * @return
    */
-  private static String fullHtml(String qualifiedName, String bareHtml)
+  private static String fullHtml(String qualifiedNameHuman(), String bareHtml)
   {
-    int upDirCorrection = qualifiedName.equals("Modules") || qualifiedName.endsWith(".universe") ? 0 : 1;
+    int upDirCorrection = qualifiedNameHuman().equals("Modules") || qualifiedNameHuman().endsWith(".universe") ? 0 : 1;
 
     return ("""
       <!DOCTYPE html>
       <html lang="en">
       <head>
         <meta charset="utf-8" />
-        <title>$qualifiedName | Fuzion Docs</title>
+        <title>$qualifiedNameHuman() | Fuzion Docs</title>
         <link rel="icon" sizes="32x32" href="$root32.png">
         <link rel="stylesheet" type="text/css" href="$rootstyle.css" />
       </head>
@@ -981,8 +981,8 @@ public class Html extends ANY
         </body>
         </html>
         """)
-        .replace("$qualifiedName", String.join(" • ", java.util.List.of(qualifiedName.split("\\.")).reversed()))
-        .replace("$root", upDirs((int) qualifiedName.chars().filter(c -> c == '.').count() + upDirCorrection));
+        .replace("$qualifiedNameHuman()", String.join(" • ", java.util.List.of(qualifiedNameHuman().split("\\.")).reversed()))
+        .replace("$root", upDirs((int) qualifiedNameHuman().chars().filter(c -> c == '.').count() + upDirCorrection));
   }
 
 
@@ -993,7 +993,7 @@ public class Html extends ANY
    */
   private static String htmlID(AbstractFeature f)
   {
-    return urlEncode(f.qualifiedName() + "_" + f.arguments().size());
+    return urlEncode(f.qualifiedNameHuman() + "_" + f.arguments().size());
   }
 
 
@@ -1368,7 +1368,7 @@ public class Html extends ANY
 
     return config.bare()
       ? bareHtml
-      : fullHtml(lm.name() + "." + af.qualifiedName(), bareHtml);
+      : fullHtml(lm.name() + "." + af.qualifiedNameHuman(), bareHtml);
   }
 
   /**

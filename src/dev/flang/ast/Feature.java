@@ -1356,7 +1356,7 @@ public class Feature extends AbstractFeature
        i != null);
 
     var parent = p.calledFeature();
-    String inh = "    inherits " + parent.qualifiedName() + " at " + p.pos().show() + "\n";
+    String inh = "    inherits " + parent.qualifiedNameHuman() + " at " + p.pos().show() + "\n";
     if (_detectedCyclicInheritance)
       { // the cycle closes while returning from recursion in resolveInheritance, so show the error:
         StringBuilder cycle = new StringBuilder(inh);
@@ -1369,7 +1369,7 @@ public class Feature extends AbstractFeature
       }
     else
       { // mark all member of the cycle
-        cyclicInhData.add(": feature " + qualifiedName()+" at " + _pos.show() + "\n" + inh);
+        cyclicInhData.add(": feature " + qualifiedNameHuman()+" at " + _pos.show() + "\n" + inh);
         _detectedCyclicInheritance = true;
       }
 
@@ -2654,7 +2654,7 @@ A ((Choice)) declaration must not contain a result type.
     if (PRECONDITIONS) require
       (_outer != null);
 
-    return FuzionConstants.OUTER_REF_PREFIX + qualifiedName() + FuzionConstants.OUTER_REF_SUFFIX;
+    return FuzionConstants.OUTER_REF_PREFIX + qualifiedNameInternal() + FuzionConstants.OUTER_REF_SUFFIX;
   }
 
 

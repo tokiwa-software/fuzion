@@ -383,7 +383,7 @@ public class This extends ExprWithPos
       }
     else if (_feature != null)
       {
-        return _feature.qualifiedName() + ".this";
+        return _feature.qualifiedNameHuman() + ".this";
       }
     else
       {

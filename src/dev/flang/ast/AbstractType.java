@@ -2437,7 +2437,7 @@ there is no common super type of the two types (Types.t_ERROR)
     if (isGenericArgument())
       {
         var ga = genericArgument();
-        result = (ga.isCoTypesThisType() ? ga.qualifiedName(context) : ga.baseName()) + (isRef() ? " (boxed)" : "");
+        result = (ga.isCoTypesThisType() ? ga.qualifiedName(context, humanReadable) : ga.baseName()) + (isRef() ? " (boxed)" : "");
       }
     else
       {
@@ -2501,7 +2501,7 @@ there is no common super type of the two types (Types.t_ERROR)
   {
     var o = outer();
     return isThisType()
-        ? (feature().outer().isUniverse() ? "" : feature().outer().qualifiedName() + ".")
+        ? (feature().outer().isUniverse() ? "" : feature().outer().qualifiedName(humanReadable) + ".")
         : o != null && (o.isGenericArgument() || !o.feature().isUniverse())
         ? o.toStringWrapped(humanReadable) + "."
         : "";

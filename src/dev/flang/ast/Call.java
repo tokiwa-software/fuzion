@@ -1493,7 +1493,7 @@ public class Call extends AbstractCall
       .errorIfSizeDoesNotMatch(_generics,
                                pos(),
                                FuzionConstants.OPERATION_CALL,
-                               "Called feature: "+_calledFeature.qualifiedName()+"\n");
+                               "Called feature: "+_calledFeature.qualifiedNameHuman()+"\n");
   }
 
 

@@ -106,7 +106,7 @@ public class AstErrors extends ANY
   public static String s(AbstractFeature f)
   {
     return f == Types.f_ERROR ? err()
-                              : sqn(f.qualifiedName());
+                              : sqn(f.qualifiedNameHuman());
   }
   public static String s_feat_with_pos(AbstractFeature f)
   {
@@ -348,7 +348,7 @@ public class AstErrors extends ANY
    *
    * @param detail detail on the use of incompatible types, e.g., "assignment to field abc.fgh\n".
    *
-   * @param target string representing the target of the assignment, e.g., "field abc.fgh".
+   * @param target string representing the target of the assignment, e.g., ss("field abc.fgh").
    *
    * @param frmlT the expected formal type
    *
@@ -356,14 +356,14 @@ public class AstErrors extends ANY
    *
    * @param typeValue the type that was assigned, must be non-null iff value==null.
    */
-  static void incompatibleType(SourcePosition pos,
-                               String where,
-                               String detail,
-                               String target,
-                               AbstractType frmlT,
-                               Expr value,
-                               AbstractType typeValue,
-                               Context context)
+  private static void incompatibleType(SourcePosition pos,
+                                       String where,
+                                       String detail,
+                                       String target,
+                                       AbstractType frmlT,
+                                       Expr value,
+                                       AbstractType typeValue,
+                                       Context context)
   {
     String remedy = null;
     String actlFound;
@@ -407,7 +407,7 @@ public class AstErrors extends ANY
           }
         if (remedy == null && !frmlT.isGenericArgument() && frmlT.asRef(true).isAssignableFromWithoutBoxing(actlT, context).yes())
           {
-            remedy = "To solve this, you could change the type of " + ss(target) + " to a " + st("ref")+ " type like " + s(frmlT.asRef(true)) + ".\n";
+            remedy = "To solve this, you could change the type of " + target + " to a " + st("ref")+ " type like " + s(frmlT.asRef(true)) + ".\n";
           }
         else if (integerType(frmlT) && integerType(actlT))
           {
@@ -474,7 +474,7 @@ public class AstErrors extends ANY
     incompatibleType(pos,
                      "in assignment",
                      "assignment to field : " + s(field) + "\n",
-                     field.qualifiedName(),
+                     s(field),
                      frmlT,
                      value,
                      null,
@@ -513,7 +513,7 @@ public class AstErrors extends ANY
                      "when passing argument in a call",
                      "Actual type for argument #" + (count+1) + (f == null ? "" : " " + sbnf(f)) + " does not match expected type.\n" +
                      "In call to          : " + s(calledFeature) + "\n",
-                     (f == null ? "argument #" + (count+1) : f.baseNameHuman()),
+                     f == null ? ss("argument #" + (count+1)) : sbnf(f),
                      frmlT,
                      value,
                      null,
@@ -542,7 +542,7 @@ public class AstErrors extends ANY
     incompatibleType(pos,
                      "in array initialization",
                      "array type          : " + s(arrayType) + "\n",
-                     "array element",
+                     ss("array element"),
                      frmlT,
                      value,
                      null,
@@ -1252,7 +1252,7 @@ public class AstErrors extends ANY
         outerLevels.add(o);
         qualifiedCalls
           .append(qualifiedCalls.length() > 0 ? " or " : "")
-          .append(code(o.qualifiedName() + (o.isUniverse() ? "." : ".this.") + fn.baseNameHuman()));
+          .append(code(o.qualifiedNameHuman() + (o.isUniverse() ? "." : ".this.") + fn.baseNameHuman()));
       }
     error(pos,
           "Ambiguous targets found for " + operation + " to " + sbn(fn.baseNameHuman()),

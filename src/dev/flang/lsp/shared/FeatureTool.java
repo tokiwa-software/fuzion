@@ -105,7 +105,7 @@ public class FeatureTool extends ANY
     var commentsOfRedefinedFeatures = feature
       .redefines()
       .stream()
-      .map(f -> System.lineSeparator() + "redefines " + f.qualifiedName() + ":" + System.lineSeparator() + commentOf(f))
+      .map(f -> System.lineSeparator() + "redefines " + f.qualifiedNameHuman() + ":" + System.lineSeparator() + commentOf(f))
       .collect(Collectors.joining(System.lineSeparator()));
 
     return commentLines
@@ -364,12 +364,12 @@ public class FeatureTool extends ANY
     for(AbstractFeature caller : callers(f))
       {
         sb.append(
-          "  " + quote(caller.qualifiedName()) + " -> " + quote(f.qualifiedName()) + ";" + System.lineSeparator());
+          "  " + quote(caller.qualifiedNameHuman()) + " -> " + quote(f.qualifiedNameHuman()) + ";" + System.lineSeparator());
       }
     for(AbstractFeature callee : callees(f))
       {
         sb.append(
-          "  " + quote(f.qualifiedName()) + " -> " + quote(callee.qualifiedName()) + ";" + System.lineSeparator());
+          "  " + quote(f.qualifiedNameHuman()) + " -> " + quote(callee.qualifiedNameHuman()) + ";" + System.lineSeparator());
       }
     sb.append("}");
     return sb.toString();
@@ -382,7 +382,7 @@ public class FeatureTool extends ANY
 
   public static String uniqueIdentifier(AbstractFeature f)
   {
-    return f.qualifiedName() + f.arguments().size();
+    return f.qualifiedNameHuman() + f.arguments().size();
   }
 
   /**

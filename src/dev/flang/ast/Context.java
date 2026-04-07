@@ -112,7 +112,7 @@ abstract class Context extends ANY
 
         @Override String localToString()
         {
-          return f.qualifiedName() + " at " + f.pos().show();
+          return f.qualifiedNameHuman() + " at " + f.pos().show();
         }
 
         @Override

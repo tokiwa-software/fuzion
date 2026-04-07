@@ -444,29 +444,63 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * If context is null the full qualified name to universe is returned.
    *
    * @param context the feature to which the name should be relative to, universe if null
+   *
+   * @param human true to replace internal names by human readable text. This
+   * should never be true for internal symbols or generated code.
+   *
    * @return the qualified name, e.g. "fuzion.std.out.println" or "abc.#type.def.#type.THIS#TYPE"
    */
-  private String qualifiedName0(AbstractFeature context)
+  private String qualifiedName0(AbstractFeature context, boolean human)
   {
-    var n = baseNameHuman();
+    var n = human ? baseNameHuman(): baseName();
     return
       !state().atLeast(State.FINDING_DECLARATIONS) ||
       isUniverse()                                 ||
       outer() == null                              ||
       outer().isUniverse()                         ||
       (context != null && outer().equals(context))     ? n
-                                                       : outer().qualifiedName() + "." + n;
+                                                       : outer().qualifiedName(human) + "." + n;
   }
 
 
   /**
    * qualifiedName returns the qualified name of this feature
    *
+   * @param human true to replace internal names by human readable text. This
+   * should never be true for internal symbols or generated code.
+   *
+   * @return the qualified name, e.g. "fuzion.std.out.println",  or "abc.def.this.type" or "abc.def.type".
+   */
+  public String qualifiedName(boolean human)
+  {
+    return qualifiedName(null, human);
+  }
+
+
+  /**
+   * qualifiedNameInternal returns the qualified name of this feature, leaving
+   * internal auto-generated names untouched.  This is not ideal for user
+   * output, but required for any internal use of these names in generated code.
+   *
    * @return the qualified name, e.g. "fuzion.std.out.println" or "abc.def.this.type" or "abc.def.type".
    */
-  public String qualifiedName()
+  public String qualifiedNameInternal()
   {
-    return qualifiedName(null);
+    return qualifiedName(false);
+  }
+
+
+  /**
+   * qualifiedNameHuman returns the qualified name of this feature with internal
+   * names replaced by human readable text.
+   *
+   * This should never be used for internal symbols or generated code.
+   *
+   * @return the qualified name, e.g. "fuzion.std.out.println" or "abc.def.this.type" or "abc.def.type".
+   */
+  public String qualifiedNameHuman()
+  {
+    return qualifiedName(true);
   }
 
 
@@ -474,21 +508,25 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * qualifiedName returns the qualified name of this feature, relative to feature context (if context is not null)
    *
    * @param context the feature to which the name should be relative to, universe if null
+   *
+   * @param human true to replace internal names by human readable text. This
+   * should never be true for internal symbols or generated code.
+   *
    * @return the qualified name, e.g. "fuzion.std.out.println" or "abc.def.this.type" or "abc.def.type".
    */
-  String qualifiedName(AbstractFeature context)
+  String qualifiedName(AbstractFeature context, boolean human)
   {
     var tfo = state().atLeast(State.FINDING_DECLARATIONS) && outer() != null && outer().isCotype() ? outer().cotypeOrigin() : null;
     return
       isCoTypesThisType()
         /* special type parameter used for this.type in type features */
-        ? (tfo != null ? tfo.qualifiedName(context) : "null")
+        ? (tfo != null ? tfo.qualifiedName(context, human) : "null")
           + ".this.type"
         : isCotype() && cotypeOrigin() != null
           /* cotype: use original name and add ".type": */
-          ? cotypeOrigin().qualifiedName(context) + ".type"
+          ? cotypeOrigin().qualifiedName(context, human) + ".type"
           /* a normal feature name */
-          : qualifiedName0(context);
+          : qualifiedName0(context, human);
   }
 
 

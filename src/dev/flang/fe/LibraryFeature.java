@@ -419,7 +419,7 @@ public class LibraryFeature extends AbstractFeature
       }
     if (result == null)
       {
-        Errors.fatal("Could not find feature '"+name+"' in '" + qualifiedName() + "'.");
+        Errors.fatal("Could not find feature '"+name+"' in '" + qualifiedNameHuman() + "'.");
       }
     return result;
   }
