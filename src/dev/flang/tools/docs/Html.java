@@ -236,7 +236,7 @@ public class Html extends ANY
             + inherited(af, relativeTo)
             + (signatureWithArrow(af) ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" => ") + "</div>" + anchorType(af, af, relativeTo)
                : af.isConstructor()   ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" is") + "</div>"
-               : af.isField()         ? "&nbsp;" + anchorType(af, outer, relativeTo) //+ "_af:" + af.featureName().baseName() + "_out:" + (outer != null ? outer.featureName().baseName() : "_out=null")
+               : af.isField()         ? "&nbsp;" + anchorType(af, outer, relativeTo) //+ "_af:" + af.baseName() + "_out:" + (outer != null ? outer.baseName() : "_out=null")
                                       : "")
             + annotateUnitType(af)
             + annotateInherited(af, outer)
@@ -307,7 +307,7 @@ public class Html extends ANY
   {
     return (af == null || outer == null || af.outer() == outer
                // type features have their own chain of parents internally, avoid annotation in this case
-            || af.outer().featureName().baseNameHuman().equals(outer.featureName().baseNameHuman()));
+            || af.outer().baseNameHuman().equals(outer.baseNameHuman()));
   }
 
 
@@ -586,7 +586,7 @@ public class Html extends ANY
         features = features
                     // filter out features of other modules which do not need to be shown for this module
                     .filter(af -> (af instanceof LibraryFeature lf ? lf.showInMod(lm) : false))
-                    .sorted((af1, af2) -> af1.featureName().baseName().compareToIgnoreCase(af2.featureName().baseName()));
+                    .sorted((af1, af2) -> af1.baseName().compareToIgnoreCase(af2.baseName()));
       }
 
     var content = features.map(af ->
@@ -793,7 +793,7 @@ public class Html extends ANY
    */
   private String htmlEncodedBasename(AbstractFeature af)
   {
-    return htmlEncodeNbsp(af.featureName().baseNameHuman());
+    return htmlEncodeNbsp(af.baseNameHuman());
   }
 
 
@@ -1225,7 +1225,7 @@ public class Html extends ANY
         var innerFeatures = lm.declaredFeaturesShallow(f).values().stream()
                               .filter(ft -> ft.definesType()
                                             && ft.visibility().typeVisibility() == Visi.PUB)
-                              .sorted(Comparator.comparing(ft -> ft.featureName().baseName(), String.CASE_INSENSITIVE_ORDER))
+                              .sorted(Comparator.comparing(ft -> ft.baseName(), String.CASE_INSENSITIVE_ORDER))
                               .collect(Collectors.toList());
 
         // addition to the tree structure prefix for current feature: universe / normal element / last element

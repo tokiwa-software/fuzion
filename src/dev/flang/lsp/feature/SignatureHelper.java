@@ -125,11 +125,11 @@ public class SignatureHelper extends ANY
   {
     if (!TypeTool.containsError(ac.type()))
       {
-        return f.featureName().baseName().equals(ac.calledFeature().featureName().baseName());
+        return f.baseName().equals(ac.calledFeature().baseName());
       }
     if (ac instanceof Call c)
       {
-        return f.featureName().baseName().equals(c.name());
+        return f.baseName().equals(c.name());
       }
     throw new RuntimeException("not implemented");
   }
@@ -139,7 +139,7 @@ public class SignatureHelper extends ANY
     return calledFeature.arguments()
       .stream()
       .map(
-        arg -> new ParameterInformation("NYI" + arg.featureName().baseName() + " " + arg.selfType().toString()))
+        arg -> new ParameterInformation("NYI" + arg.baseName() + " " + arg.selfType().toString()))
       .collect(Collectors.toList());
   }
 

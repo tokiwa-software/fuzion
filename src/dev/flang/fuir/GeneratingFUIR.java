@@ -148,7 +148,7 @@ public class GeneratingFUIR extends FUIR
   private static java.util.List<Clazz> openTypeFields(Clazz currentClazz)
   {
     // we mangled the field's base name into the name of the `ValuesAsOpenType` feature, such that we can now filter for that field
-    var baseName = FuzionConstants.extractBaseNameFromFieldsOfOpenTypeName(currentClazz._outer.feature().featureName().baseName());
+    var baseName = FuzionConstants.extractBaseNameFromFieldsOfOpenTypeName(currentClazz._outer.feature().baseName());
     // we use argumentFields() here since there is no way to have an open
     // generic field that is not an argument field and, more importantly,
     // argumentFields() is stable, while fields() cannot be called while
@@ -156,7 +156,7 @@ public class GeneratingFUIR extends FUIR
     // will result in caching too small a set of fields).
     var args = currentClazz._outer._outer.argumentFields();
     var fields = Stream.of(args).filter(c -> c.feature().isOpenGenericField() &&
-                                             c.feature().featureName().baseName().equals(baseName))
+                                             c.feature().baseName().equals(baseName))
                                 .toList();
     if (CHECKS) check
       (// we expect that `fields` come in the order of their `_select`
@@ -621,7 +621,7 @@ public class GeneratingFUIR extends FUIR
         if (cl.isRef() == cl.feature().isRef())  // not an boxed or explicit value clazz
           {
             // NOTE: this only works for features in universe!
-            s = switch (cl.feature().featureName().baseName())
+            s = switch (cl.feature().baseName())
               {
               case FuzionConstants.ANY_NAME    -> SpecialClazzes.c_Any         ;
               case FuzionConstants.I8_NAME     -> SpecialClazzes.c_i8          ;
@@ -901,7 +901,7 @@ public class GeneratingFUIR extends FUIR
        cl < CLAZZ_BASE + _clazzes.size());
 
     var c = id2clazz(cl);
-    var res = c.feature().featureName().baseName();
+    var res = c.feature().baseName();
     res = res + c._type.generics()
       .toString(" ", " ", "", t -> t.toStringWrapped(false));
     return res;

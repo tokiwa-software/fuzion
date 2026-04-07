@@ -3464,7 +3464,7 @@ implFldInit : ":=" operatorExpr      // may start at min indent
             l.add(Feature.destructure(pos, operatorExpr()));
           }
 
-        var tmpName = l.getFirst().featureName().baseName();
+        var tmpName = l.getFirst().baseName();
         var s = new Select(pos, null, tmpName, select, true, totalNames);
         result = new Impl(pos,
                           s,

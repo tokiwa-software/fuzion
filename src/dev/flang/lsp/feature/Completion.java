@@ -176,7 +176,7 @@ public class Completion
                 var types = QueryAST
                   .featuresInScope(pos)
                   .filter(af -> af.isConstructor() || af.isChoice())
-                  .filter(af -> !af.featureName().baseName().contains(" "))
+                  .filter(af -> !af.baseName().contains(" "))
                   // NYI: UNDER DEVELOPMENT: consider generics
                   .map(af -> TypeTool.baseName(af.selfType()))
                   .distinct()
@@ -299,7 +299,7 @@ public class Completion
         var argument = arguments.get(index);
         if (true || !argument.resultType().isLambdaTargetButNotLazy(null)) // NYI: Support for lambda target
           {
-            return " ${" + (index + 1) + ":" + argument.featureName().baseName() + "}";
+            return " ${" + (index + 1) + ":" + argument.baseName() + "}";
           }
         return getFunArgument((index + 1) * 100, argument.resultType().generics());
       })

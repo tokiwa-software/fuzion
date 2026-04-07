@@ -115,7 +115,7 @@ public class AstErrors extends ANY
   static String sbnf(AbstractFeature f) // feature base name
   {
     return f == Types.f_ERROR ? err()
-                              : sbn(f.featureName().baseNameHuman());
+                              : sbn(f.baseNameHuman());
   }
   static String sbnf(FeatureName fn) // feature base name plus arg count and id string
   {
@@ -126,7 +126,7 @@ public class AstErrors extends ANY
     if (PRECONDITIONS) require
       (f.isTypeParameter());
 
-    return sbn(f.featureName().baseNameHuman() + " : " + f.constraint());
+    return sbn(f.baseNameHuman() + " : " + f.constraint());
   }
   static String slbn(List<FeatureName> l)
   {
@@ -215,7 +215,7 @@ public class AstErrors extends ANY
    */
   static String sc(List<FeatureAndOuter> candidates, boolean addArgCallHint)
   {
-    return candidates.stream().map(c -> (candidates.size() > 1 ? "• " : "") + sbn(c._feature.featureName().baseName()) + " " + argCountStr(c._feature)
+    return candidates.stream().map(c -> (candidates.size() > 1 ? "• " : "") + sbn(c._feature.baseName()) + " " + argCountStr(c._feature)
                                         + " at " + c._feature.pos().show() + (Terminal.ENABLED ? "" : "\n")
                                         + (addArgCallHint ? callableArgCountMsg(c._feature) + "\n\n" : ""))
       .collect(List.collector())
@@ -235,15 +235,15 @@ public class AstErrors extends ANY
         typeCount--;
         open = "one open type parameter";
       }
-    if (typeCount > 0 ) { msg.add(StringHelpers.typeParametersString( typeCount ) + " " + ta.take(typeCount).map2(a->a.featureName().baseName()).toString("", " ", "")); }
+    if (typeCount > 0 ) { msg.add(StringHelpers.typeParametersString( typeCount ) + " " + ta.take(typeCount).map2(a->a.baseName()).toString("", " ", "")); }
     if (open != null  ) { msg.add(open + " " + ta.getLast().featureName()); }
-    if (valueCount > 0) { msg.add(StringHelpers.valueArgumentsString(valueCount) + " " + va                .map2(a->a.featureName().baseName()).toString("", " ", "")); }
+    if (valueCount > 0) { msg.add(StringHelpers.valueArgumentsString(valueCount) + " " + va                .map2(a->a.baseName()).toString("", " ", "")); }
     return msg.size() == 0 ? "(no arguments)" :  msg.toString("(", ", ", ")");
   }
 
   private static String callableArgCountMsg(AbstractFeature f)
   {
-    return "To call " + sbn(f.featureName().baseName())
+    return "To call " + sbn(f.baseName())
       + (f.arguments().isEmpty()
           ? ", you must not provide arguments."
           : ", you must provide "
@@ -513,7 +513,7 @@ public class AstErrors extends ANY
                      "when passing argument in a call",
                      "Actual type for argument #" + (count+1) + (f == null ? "" : " " + sbnf(f)) + " does not match expected type.\n" +
                      "In call to          : " + s(calledFeature) + "\n",
-                     (f == null ? "argument #" + (count+1) : f.featureName().baseNameHuman()),
+                     (f == null ? "argument #" + (count+1) : f.baseNameHuman()),
                      frmlT,
                      value,
                      null,
@@ -1061,7 +1061,7 @@ public class AstErrors extends ANY
               "Duplicate feature declaration",
               "Feature that was declared repeatedly: " + s(of) + "\n" +
               "originally declared at " + aa.pos().show() + "\n" +
-              "To solve this, consider renaming one of these two features, e.g., as " + sbn(of.featureName().baseNameHuman() + "ʼ") +
+              "To solve this, consider renaming one of these two features, e.g., as " + sbn(of.baseNameHuman() + "ʼ") +
               " (using a unicode modifier letter apostrophe " + sbn("ʼ")+ " U+02BC) "+
               (aa.isCotype()
                ? ("or changing it into a routine by returning a " +
@@ -1486,9 +1486,9 @@ public class AstErrors extends ANY
       (f.isField());
 
     if (CHECKS) check
-      (any() || !f.featureName().baseNameHuman().equals(ERROR_STRING));
+      (any() || !f.baseNameHuman().equals(ERROR_STRING));
 
-    if (!f.featureName().baseNameHuman().equals(ERROR_STRING))
+    if (!f.baseNameHuman().equals(ERROR_STRING))
       {
         error(f.pos(),
               "Missing result type in field declaration with initialization",
@@ -2087,8 +2087,8 @@ public class AstErrors extends ANY
           + f.arguments()
             .stream()
             .map(a -> "Argument #" + (cnt[0]++) + ": " + sbnf(a) +
-                 (duplicateNames.contains(a.featureName().baseNameHuman()) ? " is duplicate "
-                                                                      : " is ok"        ) + "\n")
+                 (duplicateNames.contains(a.baseNameHuman()) ? " is duplicate "
+                                                             : " is ok"        ) + "\n")
             .collect(Collectors.joining(""))
           + "To solve this, rename the arguments to have unique names."
         );
@@ -2117,7 +2117,7 @@ public class AstErrors extends ANY
    */
   public static void routineMustNotReturnItself(AbstractFeature f)
   {
-    String n = f.featureName().baseNameHuman();
+    String n = f.baseNameHuman();
     String args = f.arguments().size() > 0 ? "(..args..)" : "";
     String old_code =
       "\n" +

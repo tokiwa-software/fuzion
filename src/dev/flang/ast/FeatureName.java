@@ -260,7 +260,20 @@ public class FeatureName extends ANY implements Comparable<FeatureName>
 
   public String baseNameHuman()
   {
+    return baseNameHuman(null);
+  }
+  public String baseNameHuman(AbstractFeature f)
+  {
     var n = baseName();
+    if (n.startsWith(FuzionConstants.LAMBDA_PREFIX) && f != null)
+      {
+        //        System.out.println("SOURCE POS is "+f.pos().show());
+        return f.pos().sourceText();
+      }
+    else if (n.startsWith(FuzionConstants.LAMBDA_PREFIX) && f == null)
+      {
+        //        System.out.println("SOURCE POS of lambda is unknown ");
+      }
     return
       n.startsWith(FuzionConstants.UNDERSCORE_PREFIX)                  ? "_"          :
       n.startsWith(FuzionConstants.LAMBDA_PREFIX)                      ? "λ"        :

@@ -610,7 +610,7 @@ public class Resolution extends ANY
           }
         else
           {
-            var name = af.featureName().baseName() + ".";
+            var name = af.baseName() + ".";
             if (!af.isConstructor() && !af.isChoice())
               {
                 name = name + "_" + (_cotypeId_++) + "_" + _module.name();
@@ -641,7 +641,7 @@ public class Resolution extends ANY
                 var constraint0 = (t instanceof Feature tf ? tf.returnType().functionReturnType() : t.resultType())
                   .resolve(this, af.context());
                 var constraint = af.rebaseTypeForCotype(constraint0);
-                var ta = new Feature(p, t.visibility(), t.modifiers() & FuzionConstants.MODIFIER_REDEFINE, constraint, t.featureName().baseName(),
+                var ta = new Feature(p, t.visibility(), t.modifiers() & FuzionConstants.MODIFIER_REDEFINE, constraint, t.baseName(),
                                      Contract.EMPTY_CONTRACT,
                                      i);
                 typeArgs.add(ta);
@@ -650,7 +650,7 @@ public class Resolution extends ANY
             if (inh.isEmpty() && !Errors.any())
               { // let `Any.type` inherit from `Type`
                 if (CHECKS) check
-                  (af instanceof Feature && af.featureName().baseName().equals(FuzionConstants.ANY_NAME));
+                  (af instanceof Feature && af.baseName().equals(FuzionConstants.ANY_NAME));
                 inh.add(new Call(af.pos(), FuzionConstants.TYPE_FEAT));
               }
             existingOrNewCotype(af, name, typeArgs, inh);

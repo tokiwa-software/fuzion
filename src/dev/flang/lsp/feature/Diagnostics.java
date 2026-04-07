@@ -101,7 +101,7 @@ public enum Diagnostics
       .filter(f -> !f.isTypeParameter())
       .filter(f -> (f.isOuterRef() || f.isRef()) && !f.isField())
       .filter(f -> {
-        var basename = f.featureName().baseName();
+        var basename = f.baseName();
         var splittedBaseName = basename.split("_");
         return
         // any lowercase after _
@@ -124,7 +124,7 @@ public enum Diagnostics
       .filter(f -> !f.isTypeParameter())
       .filter(f -> !(f.isOuterRef() || f.isRef()) || f.isField())
       .filter(f -> {
-        var basename = f.featureName().baseName();
+        var basename = f.baseName();
         return
         // any uppercase
         basename.codePoints().anyMatch(c -> Character.isUpperCase(c));
@@ -142,7 +142,7 @@ public enum Diagnostics
     var uppercase = QueryAST.selfAndDescendants(uri)
       .filter(f -> f.isTypeParameter())
       .filter(f -> {
-        var basename = f.featureName().baseName();
+        var basename = f.baseName();
         return basename.codePoints().anyMatch(c -> Character.isLowerCase(c));
       })
       .map(f -> {

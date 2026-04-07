@@ -303,7 +303,7 @@ public class This extends ExprWithPos
     var d = 0;                                    // d           is 9
     while (o.outer() != null)
       {
-        var b = o.featureName().baseName();
+        var b = o.baseName();
         if (all.containsKey(b))
           {
             ambig.add(b);
@@ -327,7 +327,7 @@ public class This extends ExprWithPos
             var d2 = 0;
             while (p >= 0 && o2.outer() != null)
               {
-                var b = o2.featureName().baseName();
+                var b = o2.baseName();
                 if (d2 == q)
                   {
                     result = o2;
@@ -349,7 +349,7 @@ public class This extends ExprWithPos
         var o2 = outer;                  // go backwards from outer to fill ol and list.
         while (o2.outer() != null)
           {
-            var b = o2.featureName().baseName();
+            var b = o2.baseName();
             ol.add("this");
             ol = ol.map(n -> b + "." + n);   // prefix all entries with o2's base name
             if (!ambig.contains(b))

@@ -1489,7 +1489,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     return
       isPlainType() &&
       // NYI: UNDER DEVELOPMENT: Replace String comparison by a flag or similar
-      feature().featureName().baseName().startsWith(FuzionConstants.LAMBDA_PREFIX);
+      feature().baseName().startsWith(FuzionConstants.LAMBDA_PREFIX);
   }
 
 
@@ -2437,7 +2437,7 @@ there is no common super type of the two types (Types.t_ERROR)
     if (isGenericArgument())
       {
         var ga = genericArgument();
-        result = (ga.isCoTypesThisType() ? ga.qualifiedName(context) : ga.featureName().baseName()) + (isRef() ? " (boxed)" : "");
+        result = (ga.isCoTypesThisType() ? ga.qualifiedName(context) : ga.baseName()) + (isRef() ? " (boxed)" : "");
       }
     else
       {
@@ -2451,7 +2451,7 @@ there is no common super type of the two types (Types.t_ERROR)
         // for a feature that does not define a type itself, the name is not
         // unique due to overloading with different argument counts. So we add
         // the argument count to get a unique name.
-        var fname = (humanReadable ? fn.baseNameHuman() : fn.baseName())
+        var fname = (humanReadable ? f.baseNameHuman() : f.baseName())
           +  (f.definesType() || fn.argCount() == 0 || fn.isInternal() || humanReadable
                 ? ""
                 : FuzionConstants.INTERNAL_NAME_PREFIX + fn.argCount());

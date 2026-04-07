@@ -413,6 +413,28 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
+   * returns internal base name of this feature. @see FeatureName.baseName().
+   *
+   * @return base name of this feature.
+   */
+  public String baseName()
+  {
+    return featureName().baseName();
+  }
+
+
+  /**
+   * returns human-readable base name of this feature. @see FeatureName.baseNameHuman(AbstractFeature).
+   *
+   * @return the human readable base name of this feature.
+   */
+  public String baseNameHuman()
+  {
+    return featureName().baseNameHuman(this);
+  }
+
+
+  /**
    * returns the qualified name of this feature, relative to feature context, without any special handling for type features.
    * If context is null the full qualified name to universe is returned.
    *
@@ -421,7 +443,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   private String qualifiedName0(AbstractFeature context)
   {
-    var n = featureName().baseNameHuman();
+    var n = baseNameHuman();
     return
       !state().atLeast(State.FINDING_DECLARATIONS) ||
       isUniverse()                                 ||
@@ -859,7 +881,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
         // to change `List.map` to always clone the original List.
         i.actualTypeParameters().freeze();
       }
-    var tl = typeArguments().map2(ta -> (AbstractType) new ParsedType(pos(), ta.featureName().baseName()));
+    var tl = typeArguments().map2(ta -> (AbstractType) new ParsedType(pos(), ta.baseName()));
     return t.applyTypePars(this, tl)
             .clone(this);
   }
@@ -1048,17 +1070,17 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     return !isUniverse()
       && outer() != null
       && outer().isUniverse()
-      && (   FuzionConstants.I8_NAME  .equals(featureName().baseName())
-          || FuzionConstants.I16_NAME .equals(featureName().baseName())
-          || FuzionConstants.I32_NAME .equals(featureName().baseName())
-          || FuzionConstants.I64_NAME .equals(featureName().baseName())
-          || FuzionConstants.U8_NAME  .equals(featureName().baseName())
-          || FuzionConstants.U16_NAME .equals(featureName().baseName())
-          || FuzionConstants.U32_NAME .equals(featureName().baseName())
-          || FuzionConstants.U64_NAME .equals(featureName().baseName())
-          || FuzionConstants.F32_NAME .equals(featureName().baseName())
-          || FuzionConstants.F64_NAME .equals(featureName().baseName())
-          || "bool".equals(featureName().baseName()));
+      && (   FuzionConstants.I8_NAME  .equals(baseName())
+          || FuzionConstants.I16_NAME .equals(baseName())
+          || FuzionConstants.I32_NAME .equals(baseName())
+          || FuzionConstants.I64_NAME .equals(baseName())
+          || FuzionConstants.U8_NAME  .equals(baseName())
+          || FuzionConstants.U16_NAME .equals(baseName())
+          || FuzionConstants.U32_NAME .equals(baseName())
+          || FuzionConstants.U64_NAME .equals(baseName())
+          || FuzionConstants.F32_NAME .equals(baseName())
+          || FuzionConstants.F64_NAME .equals(baseName())
+          || "bool".equals(baseName()));
   }
 
 
@@ -1831,7 +1853,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     return (visibility() + " " +
       FuzionConstants.modifierToString(modifiers()) +
       (isCotype() ? "type." : "") +
-      featureName().baseNameHuman() +
+      baseNameHuman() +
       (arguments().isEmpty() ? "" : "("+arguments()+")") + " " +
       (state().atLeast(State.TYPES_INFERENCED) ? resultType() : "#unknown") + " " +
       (inherits().isEmpty() ? "" : ": " + inherits() + " ") +
