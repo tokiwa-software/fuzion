@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import dev.flang.util.ANY;
 import dev.flang.util.FuzionConstants;
@@ -666,7 +667,14 @@ public class Loop extends ANY
       @Override
       public Expr action(Function f)
       {
-        f.expr().visit(this, null);
+        var lambdaArgNames = f._names.stream().map(x -> x._name).collect(Collectors.toSet());
+        lambdaArgNames.retainAll(names);
+        // if lambdaArgNames is not empty this will
+        // probably trigger an "Ambiguous targets found call to" error later
+        if (lambdaArgNames.isEmpty())
+          {
+            f.expr().visit(this, null);
+          }
         return super.action(f);
       }
     };
