@@ -35,6 +35,7 @@ import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.StringHelpers;
+import dev.flang.util.YesNo;
 
 
 /**
@@ -45,6 +46,14 @@ import dev.flang.util.StringHelpers;
  */
 public abstract class AbstractCall extends Expr
 {
+
+
+  /*-----------------------------  fields  -----------------------------*/
+
+  /**
+   * to cache result of GeneratingFuir.isConst
+   */
+  public YesNo _isConst = YesNo.dontKnow;
 
 
   /*----------------------------  constants  ----------------------------*/
