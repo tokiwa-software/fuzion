@@ -258,25 +258,19 @@ public class FeatureName extends ANY implements Comparable<FeatureName>
   }
 
 
+  /**
+   * human readable version of the base name. This tries to replace cryptic
+   * internal names by names that are more human-friendly at the expense of
+   * possibly becoming ambiguous.
+   *
+   * Whenever possible, use {@link AbstractFeature.baseNameHuman()} instead
+   */
   public String baseNameHuman()
   {
-    return baseNameHuman(null);
-  }
-  public String baseNameHuman(AbstractFeature f)
-  {
     var n = baseName();
-    if (n.startsWith(FuzionConstants.LAMBDA_PREFIX) && f != null)
-      {
-        //        System.out.println("SOURCE POS is "+f.pos().show());
-        return f.pos().sourceText();
-      }
-    else if (n.startsWith(FuzionConstants.LAMBDA_PREFIX) && f == null)
-      {
-        //        System.out.println("SOURCE POS of lambda is unknown ");
-      }
     return
       n.startsWith(FuzionConstants.UNDERSCORE_PREFIX)                  ? "_"          :
-      n.startsWith(FuzionConstants.LAMBDA_PREFIX)                      ? "λ"        :
+      n.startsWith(FuzionConstants.LAMBDA_PREFIX)                      ? FuzionConstants.HUMAN_READABLE_LAMBDA_NAME :
       n.startsWith(FuzionConstants.ANONYMOUS_FEATURE_PREFIX)           ? "anonymous"  :
       n.startsWith(FuzionConstants.REC_LOOP_PREFIX)                    ? (n.contains("else") ? "else" : "loop") :
       n.startsWith(FuzionConstants.EXPRESSION_RESULT_PREFIX) ||

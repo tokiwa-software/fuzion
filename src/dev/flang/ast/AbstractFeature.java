@@ -430,7 +430,12 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   public String baseNameHuman()
   {
-    return featureName().baseNameHuman(this);
+    var result = featureName().baseNameHuman();
+    if (result == FuzionConstants.HUMAN_READABLE_LAMBDA_NAME)
+      {
+        result = pos().sourceText();
+      }
+    return result;
   }
 
 
