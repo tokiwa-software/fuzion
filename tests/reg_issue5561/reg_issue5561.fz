@@ -65,6 +65,17 @@ reg_issue5561 =>
     if      x = 1 then "aa"
     else               option "bb"
 
+  # an example the requires boxing
+
+  a : C is
+  b : C is
+  C ref is
+  b1(x i32) =>                  # *** fails ***
+    if      x = 1 then a
+    else if x = 2 then b
+    else               C
+
+
   say (f1 envir.args.count)
   say (f2 envir.args.count)
   say (f3 envir.args.count)
@@ -73,3 +84,4 @@ reg_issue5561 =>
   say (g2 envir.args.count)
   say (g3 envir.args.count)
   say (h envir.args.count)
+  say (b1 envir.args.count)
