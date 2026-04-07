@@ -1,0 +1,9 @@
+
+--CURDIR--/reg_issue5609.fz:31:19: error 1: Could not find called feature
+  b(X type) : a X 4 is
+------------------^
+Feature not found: 'from_u32' (one argument)
+Target expression: 'b.this.X'
+In call: '4'
+
+one error.
