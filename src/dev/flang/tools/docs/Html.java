@@ -962,16 +962,16 @@ public class Html extends ANY
    * @param bareHtml
    * @return
    */
-  private static String fullHtml(String qualifiedNameHuman(), String bareHtml)
+  private static String fullHtml(String qualifiedName, String bareHtml)
   {
-    int upDirCorrection = qualifiedNameHuman().equals("Modules") || qualifiedNameHuman().endsWith(".universe") ? 0 : 1;
+    int upDirCorrection = qualifiedName.equals("Modules") || qualifiedName.endsWith(".universe") ? 0 : 1;
 
     return ("""
       <!DOCTYPE html>
       <html lang="en">
       <head>
         <meta charset="utf-8" />
-        <title>$qualifiedNameHuman() | Fuzion Docs</title>
+        <title>$qualifiedName | Fuzion Docs</title>
         <link rel="icon" sizes="32x32" href="$root32.png">
         <link rel="stylesheet" type="text/css" href="$rootstyle.css" />
       </head>
@@ -981,8 +981,8 @@ public class Html extends ANY
         </body>
         </html>
         """)
-        .replace("$qualifiedNameHuman()", String.join(" • ", java.util.List.of(qualifiedNameHuman().split("\\.")).reversed()))
-        .replace("$root", upDirs((int) qualifiedNameHuman().chars().filter(c -> c == '.').count() + upDirCorrection));
+        .replace("$qualifiedName", String.join(" • ", java.util.List.of(qualifiedName.split("\\.")).reversed()))
+        .replace("$root", upDirs((int) qualifiedName.chars().filter(c -> c == '.').count() + upDirCorrection));
   }
 
 
