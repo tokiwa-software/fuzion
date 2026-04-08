@@ -3,12 +3,12 @@
     [(0,1),(2,3)].map (||> n,e->n*e)
 ----------------------------------^
 Found several possible call targets within the current feature at different levels of outer features:
-in 'loop.else.λ.call.λ.call' found 'loop.else.λ.call.λ.call.e' defined at --CURDIR--/reg_issue5976.fz:27:30:
+in 'loop.else.(λ||>).call.(λn,e->n*e).call' found 'loop.else.(λ||>).call.(λn,e->n*e).call.e' defined at --CURDIR--/reg_issue5976.fz:27:30:
     [(0,1),(2,3)].map (||> n,e->n*e)
 -----------------------------^
 and in 'loop' found 'loop.e' defined at --CURDIR--/reg_issue5976.fz:25:7:
   for e in ["aa", "bb"]
 ------^
-To solve this, you may qualify the feature using 'loop.else.λ.call.λ.call.this.e' or 'loop.this.e'.
+To solve this, you may qualify the feature using 'loop.else.(λ||>).call.(λn,e->n*e).call.this.e' or 'loop.this.e'.
 
 one error.
