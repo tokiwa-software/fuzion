@@ -237,7 +237,7 @@ public class FeatureTool extends ANY
       || af.baseName().equals("result")
       || af.featureName()
         .baseName()
-        .contains(FuzionConstants.INTERNAL_NAME_PREFIX) // Confusingly # is not
+        .contains(FuzionConstants.INTERNAL_NAME_SYMBOL) // Confusingly # is not
                                                         // just used as prefix
       || (af.baseName().equals("call") && isInternal(af.outer())) // lambda
       // NYI: UNDER DEVELOPMENT: hack

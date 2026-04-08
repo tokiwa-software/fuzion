@@ -2454,7 +2454,7 @@ there is no common super type of the two types (Types.t_ERROR)
         var fname = (humanReadable ? f.baseNameHuman() : f.baseName())
           +  (f.definesType() || fn.argCount() == 0 || fn.isInternal() || humanReadable
                 ? ""
-                : FuzionConstants.INTERNAL_NAME_PREFIX + fn.argCount());
+                : FuzionConstants.INTERNAL_NAME_SYMBOL + fn.argCount());
 
         // NYI: would be good if postFeatures could be identified not be string comparison, but with something like
         // `f.isPostFeature()`. Note that this would need to be saved in .fum file as well!
