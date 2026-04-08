@@ -338,7 +338,7 @@ public class FeatureName extends ANY implements Comparable<FeatureName>
    */
   public boolean isInternal()
   {
-    return baseName().startsWith(FuzionConstants.INTERNAL_NAME_PREFIX);
+    return baseName().contains(FuzionConstants.INTERNAL_NAME_SYMBOL);
   }
 
 

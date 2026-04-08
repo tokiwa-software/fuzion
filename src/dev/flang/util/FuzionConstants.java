@@ -76,9 +76,9 @@ public class FuzionConstants extends ANY
 
 
   /**
-   * Prefix used for all internal names
+   * symbol used for in internal names
    */
-  public static final String INTERNAL_NAME_PREFIX = "#";
+  public static final String INTERNAL_NAME_SYMBOL = "#";
 
   /**
    * Artificial name of universe feature.
@@ -88,7 +88,7 @@ public class FuzionConstants extends ANY
   /**
    * Prefix of artificially generated name of outer refs.
    */
-  public static final String OUTER_REF_PREFIX = INTERNAL_NAME_PREFIX + "^<";
+  public static final String OUTER_REF_PREFIX = INTERNAL_NAME_SYMBOL + "^<";
 
   /**
    * Suffix of artificially generated name of outer refs.
@@ -309,19 +309,19 @@ public class FuzionConstants extends ANY
    * Artificial name of implicitly declared result field in case the assignment
    * to result is implicitly from the last expression's value.
    */
-  public static final String INTERNAL_RESULT_NAME = INTERNAL_NAME_PREFIX + "result";
+  public static final String INTERNAL_RESULT_NAME = INTERNAL_NAME_SYMBOL + "result";
 
 
   /**
    * Prefix for names of anonymous inner features.
    */
-  public static final String ANONYMOUS_FEATURE_PREFIX = INTERNAL_NAME_PREFIX + "anonymous";
+  public static final String ANONYMOUS_FEATURE_PREFIX = INTERNAL_NAME_SYMBOL + "anonymous";
 
 
   /**
    * Name of type features.
    */
-  public static final String TYPE_NAME = INTERNAL_NAME_PREFIX + "type";
+  public static final String TYPE_NAME = INTERNAL_NAME_SYMBOL + "type";
 
 
   /**
@@ -333,7 +333,7 @@ public class FuzionConstants extends ANY
    * names with this prefix will be removed from .fum files which results in
    * this not being found in redefinitions.
    */
-  public static final String COTYPE_THIS_TYPE = "THIS" + INTERNAL_NAME_PREFIX + "TYPE";
+  public static final String COTYPE_THIS_TYPE = "THIS" + INTERNAL_NAME_SYMBOL + "TYPE";
 
 
   /**
@@ -341,14 +341,14 @@ public class FuzionConstants extends ANY
    * a field whose type is an open type parameter is called without selecting
    * one specific variant.
    */
-  public static final String VALUES_OF_OPEN_TYPE_SUFFIX = "." + INTERNAL_NAME_PREFIX; /* e.g., `values.#` which stands for `values.0`/`values.1`/etc. */
+  public static final String VALUES_OF_OPEN_TYPE_SUFFIX = "." + INTERNAL_NAME_SYMBOL; /* e.g., `values.#` which stands for `values.0`/`values.1`/etc. */
 
 
   /**
    * Prefix of name of open type parameter, i.e., the feature that is called when
    * an open type parameter is called.
    */
-  public static final String OPEN_TYPES_PREFIX = INTERNAL_NAME_PREFIX + "Open_Types";
+  public static final String OPEN_TYPES_PREFIX = INTERNAL_NAME_SYMBOL + "Open_Types";
 
 
   /**
@@ -368,7 +368,7 @@ public class FuzionConstants extends ANY
    *   x := #exprResult123
    * }</pre>
    */
-  public static final String EXPRESSION_RESULT_PREFIX = INTERNAL_NAME_PREFIX + "exprResult";
+  public static final String EXPRESSION_RESULT_PREFIX = INTERNAL_NAME_SYMBOL + "exprResult";
 
 
   /**
@@ -385,7 +385,7 @@ public class FuzionConstants extends ANY
    *   x := a < #chainedBoolTemp123 && #chainedBoolTemp123 < c
    * }</pre>
    */
-  public static final String CHAINED_BOOL_TMP_PREFIX = INTERNAL_NAME_PREFIX + "chainedBoolTemp";
+  public static final String CHAINED_BOOL_TMP_PREFIX = INTERNAL_NAME_SYMBOL + "chainedBoolTemp";
 
 
   /**
@@ -395,7 +395,7 @@ public class FuzionConstants extends ANY
    *    x := a,b -> a*b
    * }</pre>
    */
-  public static final String LAMBDA_PREFIX = INTERNAL_NAME_PREFIX + "fun";
+  public static final String LAMBDA_PREFIX = INTERNAL_NAME_SYMBOL + "fun";
 
 
   /**
@@ -414,7 +414,7 @@ public class FuzionConstants extends ANY
    *    x := [a, b, c]
    * }</pre>
    */
-  public static final String INLINE_SYS_ARRAY_PREFIX = INTERNAL_NAME_PREFIX + "inlineSysArray";
+  public static final String INLINE_SYS_ARRAY_PREFIX = INTERNAL_NAME_SYMBOL + "inlineSysArray";
 
   /**
    * Field introduced in, e.g.,
@@ -424,14 +424,14 @@ public class FuzionConstants extends ANY
    *     say x
    * }</pre>
    */
-  public static final String REC_LOOP_PREFIX = INTERNAL_NAME_PREFIX + "loop";
+  public static final String REC_LOOP_PREFIX = INTERNAL_NAME_SYMBOL + "loop";
 
 
   /**
    * Fields introduced by Loop.java
    */
-  public static final String ITER_ARG_PREFIX_INIT = INTERNAL_NAME_PREFIX + "iter_arg_init_";
-  public static final String ITER_ARG_PREFIX_NEXT = INTERNAL_NAME_PREFIX + "iter_arg_next_";
+  public static final String ITER_ARG_PREFIX_INIT = INTERNAL_NAME_SYMBOL + "iter_arg_init_";
+  public static final String ITER_ARG_PREFIX_NEXT = INTERNAL_NAME_SYMBOL + "iter_arg_next_";
 
 
   /**
@@ -441,7 +441,7 @@ public class FuzionConstants extends ANY
    *    _ = f a
    * }</pre>
    */
-  public static final String UNDERSCORE_PREFIX = INTERNAL_NAME_PREFIX + "_";
+  public static final String UNDERSCORE_PREFIX = INTERNAL_NAME_SYMBOL + "_";
 
 
   /**
@@ -451,7 +451,7 @@ public class FuzionConstants extends ANY
    *    (a,b) = f c
    * }</pre>
    */
-  public static final String DESTRUCTURE_PREFIX = INTERNAL_NAME_PREFIX + "destructure";
+  public static final String DESTRUCTURE_PREFIX = INTERNAL_NAME_SYMBOL + "destructure";
 
 
   /**
@@ -467,16 +467,16 @@ public class FuzionConstants extends ANY
    *    m := s.map (#partialFunctionArg123 -> f 42 #partialFunctionArg123)
    * }</pre>
    */
-  public static final String PARTIAL_FUNCTION_ARGUMENT_PREFIX = INTERNAL_NAME_PREFIX + "partialFunctionArg";
+  public static final String PARTIAL_FUNCTION_ARGUMENT_PREFIX = INTERNAL_NAME_SYMBOL + "partialFunctionArg";
 
 
   /**
    * Prefixes of pre, pre bool, pre and call and post features.
    */
-  public static final String PRECONDITION_FEATURE_PREFIX        = INTERNAL_NAME_PREFIX + "pre";
-  public static final String PREBOOLCONDITION_FEATURE_PREFIX    = INTERNAL_NAME_PREFIX + "prebool";
-  public static final String PREANDCALLCONDITION_FEATURE_PREFIX = INTERNAL_NAME_PREFIX + "preandcall";
-  public static final String POSTCONDITION_FEATURE_PREFIX       = INTERNAL_NAME_PREFIX + "post";
+  public static final String PRECONDITION_FEATURE_PREFIX        = INTERNAL_NAME_SYMBOL + "pre";
+  public static final String PREBOOLCONDITION_FEATURE_PREFIX    = INTERNAL_NAME_SYMBOL + "prebool";
+  public static final String PREANDCALLCONDITION_FEATURE_PREFIX = INTERNAL_NAME_SYMBOL + "preandcall";
+  public static final String POSTCONDITION_FEATURE_PREFIX       = INTERNAL_NAME_SYMBOL + "post";
 
 
   /**
