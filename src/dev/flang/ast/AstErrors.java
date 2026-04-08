@@ -1400,7 +1400,9 @@ public class AstErrors extends ANY
         var solution5 = solutionLambda(call);
         error(call.pos(), msg,
               "Feature not found: " + sbnf(calledName) + "\n" +
-              (targetFeature != null ? "Target feature: " + s(targetFeature) + "\n" : "") +
+              (targetFeature != null
+                ? (targetFeature.isCotype() ? "Target expression: " + expr(target.toString()) + "\n" : "Target feature: " + s(targetFeature) + "\n")
+                : "") +
               "In call: " + s(call) + "\n" +
               (solution0 != "" ? solution0 :
                solution1 != "" ? solution1 :
@@ -2617,6 +2619,14 @@ public class AstErrors extends ANY
   {
     error(c.pos(), "Choice must not inherit from feature with contract.",
       "The feature that "+ s(c) + " inherits that has a contract:\n" + s_feat_with_pos(f));
+  }
+
+  public static void illegalNumLiteral(ParsedCall c)
+  {
+    error(c.pos(),
+      "Illegal use of numeric literal.",
+      s(((Call)c.target()).calledFeature()) + " or its constraint does not implement " + sbn("from_u32") + "."
+    );
   }
 
 }
