@@ -2621,6 +2621,14 @@ public class AstErrors extends ANY
       "The feature that "+ s(c) + " inherits that has a contract:\n" + s_feat_with_pos(f));
   }
 
+  public static void illegalNumLiteral(ParsedCall c)
+  {
+    error(c.pos(),
+      "Illegal use of numeric literal.",
+      s(((Call)c.target()).calledFeature()) + " or its constraint does not implement " + sbn("from_u32") + "."
+    );
+  }
+
 }
 
 /* end of file */

@@ -936,6 +936,21 @@ public class NumLiteral extends Constant
                       new ParsedCall(new ParsedName(pos(), _propagatedType.genericArgument().featureName().baseName())),
                       new ParsedName(pos(), "from_u32"),
                       new List<>(this))
+              {
+                @Override
+                Call resolveTypes(Resolution res, Context context)
+                {
+                  var result = super.resolveTypes(res, context);
+                  if (_calledFeature == null)
+                    {
+                      _pendingError = ()->
+                        {
+                          AstErrors.illegalNumLiteral(this);
+                        };
+                    }
+                  return result;
+                }
+              }
                   .resolveTypes(res, _context);
           }
 
