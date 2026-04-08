@@ -779,7 +779,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
   private boolean isMatchingCotype(AbstractFeature outerfeat)
   {
     return outerfeat.isCotype() &&
-      (_name + "." + FuzionConstants.TYPE_NAME).equals(outerfeat.featureName().baseName()) &&
+      (_name + "." + FuzionConstants.TYPE_NAME).equals(outerfeat.baseName()) &&
       (_outer == null                                   ||
        (_outer instanceof UnresolvedType ot                   &&
         !ot.isThisType()                            &&

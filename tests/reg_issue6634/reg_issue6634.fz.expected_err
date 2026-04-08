@@ -3,7 +3,7 @@
       (()-> for i:=1E5,i-°1 while i>0 do)*1E5
 -----------------------------------------^
 Feature not found: 'infix/infix_right *' (one argument)
-Target feature: 'ex.λ'
+Target feature: 'ex.(λ(()-> for i:=1E5,i-°1 while i>0 do))'
 In call: '(()-> for i:=1E5,i-°1 while i>0 do)*1E5'
 
 one error.

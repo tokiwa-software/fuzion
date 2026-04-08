@@ -47,10 +47,10 @@ public class CallTool extends ANY
     return !c.calledFeature().isUniverse()
       && !c.calledFeature().isBuiltInPrimitive()
       && !c.calledFeature().isTypeParameter()
-      && !c.calledFeature().qualifiedName().equals("fuzion.sys")
-      && !c.calledFeature().qualifiedName().equals("fuzion.sys.internal_array_init")
-      && !c.calledFeature().qualifiedName().equals("fuzion.sys.internal_array." + FuzionConstants.FEATURE_NAME_INDEX_ASSIGN)
-      && !c.calledFeature().qualifiedName().equals("unit")
+      && !c.calledFeature().qualifiedNameInternal().equals("fuzion.sys")
+      && !c.calledFeature().qualifiedNameInternal().equals("fuzion.sys.internal_array_init")
+      && !c.calledFeature().qualifiedNameInternal().equals("fuzion.sys.internal_array." + FuzionConstants.FEATURE_NAME_INDEX_ASSIGN)
+      && !c.calledFeature().qualifiedNameInternal().equals("unit")
       && !FeatureTool.isInternal(c.calledFeature());
   };
 
@@ -61,7 +61,7 @@ public class CallTool extends ANY
    */
   public static boolean isFixLikeCall(AbstractCall c)
   {
-    return c.calledFeature().featureName().baseName().contains(" ");
+    return c.calledFeature().baseName().contains(" ");
   }
 
   /**

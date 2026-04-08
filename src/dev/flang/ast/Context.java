@@ -112,7 +112,7 @@ abstract class Context extends ANY
 
         @Override String localToString()
         {
-          return f.qualifiedName() + " at " + f.pos().show();
+          return f.qualifiedNameHuman() + " at " + f.pos().show();
         }
 
         @Override
@@ -143,7 +143,7 @@ abstract class Context extends ANY
                               .stream()
                               .filter(y ->
                                   y.outer().origin() == rpt.genericArgument().outer().origin() &&
-                                  y.featureName().baseName().toString().equals(rpt.genericArgument().featureName().baseName())
+                                  y.baseName().toString().equals(rpt.genericArgument().baseName())
                                 )
                               .findFirst()
                               .get()
@@ -246,7 +246,7 @@ abstract class Context extends ANY
   protected boolean isClone(AbstractFeature f1, AbstractFeature f2)
   {
     return f1 == f2 ||
-      f2.featureName().baseName().compareTo(f1.featureName().baseName()) == 0 &&
+      f2.baseName().compareTo(f1.baseName()) == 0 &&
       (f2.outer().preFeature() == f1.outer() ||
         f2.outer().preBoolFeature() == f1.outer() ||
         f2.outer().preAndCallFeature() == f1.outer() ||

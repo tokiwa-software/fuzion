@@ -81,8 +81,9 @@ class CheckIntrinsics extends ANY
         getAll(all, fe, f);
         if (f.isIntrinsic())
           {
-            all.add(f.qualifiedName());
-            fe._options.verbosePrintln(2, "base module intrinsic: " + f.qualifiedName());
+            var qn = f.qualifiedNameInternal();
+            all.add(qn);
+            fe._options.verbosePrintln(2, "base module intrinsic: " + qn);
           }
       }
   }

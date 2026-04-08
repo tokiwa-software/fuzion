@@ -1246,7 +1246,7 @@ class Clazz extends ANY implements Comparable<Clazz>
         // for a feature that does not define a type itself, the name is not
         // unique due to overloading with different argument counts. So we add
         // the argument count to get a unique name.
-        var fname = (humanReadable ? fn.baseNameHuman() : fn.baseName())
+        var fname = (humanReadable ? f.baseNameHuman() : f.baseName())
           +  (f.definesType() || fn.argCount() == 0 || fn.isInternal()
               ? ""
               : FuzionConstants.INTERNAL_NAME_PREFIX + fn.argCount());

@@ -281,7 +281,7 @@ public abstract class AbstractAssign extends Expr
    */
   public String toString()
   {
-    return toString(_assignedField.featureName().baseNameHuman());
+    return toString(_assignedField.baseNameHuman());
   }
 
 

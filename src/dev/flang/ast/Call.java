@@ -307,7 +307,7 @@ public class Call extends AbstractCall
    */
   public Call(SourcePosition pos, Expr t, AbstractFeature calledFeature)
   {
-    this(pos, t, calledFeature.featureName().baseName(), FuzionConstants.NO_SELECT, NO_GENERICS, Expr.NO_EXPRS, calledFeature);
+    this(pos, t, calledFeature.baseName(), FuzionConstants.NO_SELECT, NO_GENERICS, Expr.NO_EXPRS, calledFeature);
   }
 
 
@@ -346,7 +346,7 @@ public class Call extends AbstractCall
        List<Expr> actuals,
        AbstractFeature calledFeature)
   {
-    this(pos, target, calledFeature.featureName().baseName(), FuzionConstants.NO_SELECT, generics, actuals, calledFeature);
+    this(pos, target, calledFeature.baseName(), FuzionConstants.NO_SELECT, generics, actuals, calledFeature);
     if (PRECONDITIONS) check
       (calledFeature.generics().sizeMatches(generics) || generics.contains(Types.t_ERROR));
   }
@@ -1493,7 +1493,7 @@ public class Call extends AbstractCall
       .errorIfSizeDoesNotMatch(_generics,
                                pos(),
                                FuzionConstants.OPERATION_CALL,
-                               "Called feature: "+_calledFeature.qualifiedName()+"\n");
+                               "Called feature: "+_calledFeature.qualifiedNameHuman()+"\n");
   }
 
 
@@ -3233,7 +3233,7 @@ public class Call extends AbstractCall
             (target() instanceof This t && t.toString().equals(FuzionConstants.UNIVERSE_NAME + ".this"))
             ? ""
             : StringHelpers.wrapInParentheses(target().toString()) + ".")
-      + (this instanceof Call c && !c.calledFeatureKnown() ? c._name : calledFeature().featureName().baseNameHuman())
+      + (this instanceof Call c && !c.calledFeatureKnown() ? c._name : calledFeature().baseNameHuman())
       + actualTypeParameters().toString(" ", " ", "", t -> (t == null ? "--null--" : t.toStringWrapped(true)))
       + actuals()             .toString(" ", " ", "", e -> (e == null ? "--null--" : e.toStringWrapped()))
       + (select() < 0        ? "" : " ." + select());

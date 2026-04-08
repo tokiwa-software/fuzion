@@ -93,7 +93,7 @@ public class QueryAST extends ANY
       // NYI:
       // .map(at -> at.selfOrConstraint())
       .map(at -> at.feature())
-      .filter(f -> !FeatureTool.isInternal(f) || f.featureName().baseName().endsWith("#type"))
+      .filter(f -> !FeatureTool.isInternal(f) || f.baseName().endsWith("#type"))
       .findFirst();
   }
 
@@ -127,7 +127,7 @@ public class QueryAST extends ANY
       .map(tf -> tokenBeforeDot == Token.t_type && !tf.isCotype() ? tf.cotype() : tf)
       .map(tf -> candidates(tf)
         // filter infix, prefix, postfix features
-        .filter(x -> !x.featureName().baseName().contains(" ")))
+        .filter(x -> !x.baseName().contains(" ")))
       .orElse(Stream.empty());
   }
 
@@ -179,8 +179,8 @@ public class QueryAST extends ANY
         // subtract redefined features from result
         return declaredFeatures
           .stream()
-          .filter(x -> x.featureName().baseName().startsWith("infix")
-            || x.featureName().baseName().startsWith("postfix"))
+          .filter(x -> x.baseName().startsWith("infix")
+            || x.baseName().startsWith("postfix"))
           .filter(x -> !redefinedFeatures.contains(x));
       })
       .orElse(Stream.empty());
@@ -216,7 +216,7 @@ public class QueryAST extends ANY
       {
         return QueryAST.featuresInScope(params)
           .filter(f -> {
-            return f.featureName().baseName().startsWith(tokens.left().text());
+            return f.baseName().startsWith(tokens.left().text());
           });
       }
     return Stream.empty();
@@ -286,7 +286,7 @@ public class QueryAST extends ANY
     return astItemsBeforeOrAtCursor(params)
       .map(astItem -> {
         if (astItem instanceof AbstractFeature f
-          && token.<Boolean>map(x -> x.text().equals(f.featureName().baseName())).orElse(false))
+          && token.<Boolean>map(x -> x.text().equals(f.baseName())).orElse(false))
           {
             return f;
           }
@@ -331,7 +331,7 @@ public class QueryAST extends ANY
         var start = x.pos().column();
         // NYI: UNDER DEVELOPMENT: should work most of the time but there might be additional
         // whitespace?
-        var end = start + Util.codepointCount(x.featureName().baseName());
+        var end = start + Util.codepointCount(x.baseName());
         return start <= params.column() && params.column() <= end;
       })
       .findAny();
@@ -346,7 +346,7 @@ public class QueryAST extends ANY
   {
     return LexerTool.identOrOperatorTokenAt(params)
       .flatMap(token -> QueryAST.featuresInScope(params)
-        .filter(f -> f.featureName().baseName().equals(token.text()))
+        .filter(f -> f.baseName().equals(token.text()))
         // NYI: UNDER DEVELOPMENT: we could be better here if we considered approximate
         // argcount
         .findFirst());
@@ -423,7 +423,7 @@ public class QueryAST extends ANY
     return constant(pos)
       .map(tf -> candidates(tf)
         // filter infix, prefix, postfix features
-        .filter(x -> !x.featureName().baseName().contains(" ")))
+        .filter(x -> !x.baseName().contains(" ")))
       .orElse(Stream.empty());
   }
 

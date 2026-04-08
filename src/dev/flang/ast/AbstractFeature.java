@@ -413,33 +413,118 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
+   * returns internal base name of this feature. @see FeatureName.baseName().
+   *
+   * @return base name of this feature.
+   */
+  public String baseName()
+  {
+    return featureName().baseName();
+  }
+
+
+  /**
+   * returns human-readable base name of this feature. @see FeatureName.baseNameHuman(AbstractFeature).
+   *
+   * @return the human readable base name of this feature.
+   */
+  public String baseNameHuman()
+  {
+    var result = featureName().baseNameHuman();
+    if (result == FuzionConstants.HUMAN_READABLE_LAMBDA_NAME)
+      {
+        var code = result + pos().sourceText().trim();
+        var dotdotdot = "";
+        code = code.replaceAll("\n", " ");
+        while (code.indexOf("  ") >= 0)
+          {
+            code = code.replaceAll("  "," ");
+          }
+        var nl = code.indexOf("\n");
+        if (nl >= 0)
+          {
+            code = code.substring(0, nl);
+            dotdotdot = "...";
+          }
+        if (code.length() > 40)
+          {
+            code = code.substring(0, 39);
+            dotdotdot = "...";
+          }
+        result = "(" + code + dotdotdot + ")";
+      }
+    return result;
+  }
+
+
+  /**
    * returns the qualified name of this feature, relative to feature context, without any special handling for type features.
    * If context is null the full qualified name to universe is returned.
    *
    * @param context the feature to which the name should be relative to, universe if null
-   * @return the qualified name, e.g. "fuzion.std.out.println" or "abc.#type.def.#type.THIS#TYPE"
+   *
+   * @param human true to replace internal names by human readable text. This
+   * should never be true for internal symbols or generated code.
+   *
+   * @return the qualified name, e.g. "some_feature.#FUN124.call.result",
+   * "xyz.#preandcall_xyz_pqr#bla", etc. iff human==false, or
+   * "some_feature.(λx->x+1)call.result", "xyz.precall bla", etc. otherwise)
    */
-  private String qualifiedName0(AbstractFeature context)
+  private String qualifiedName0(AbstractFeature context, boolean human)
   {
-    var n = featureName().baseNameHuman();
+    var n = human ? baseNameHuman(): baseName();
     return
       !state().atLeast(State.FINDING_DECLARATIONS) ||
       isUniverse()                                 ||
       outer() == null                              ||
       outer().isUniverse()                         ||
       (context != null && outer().equals(context))     ? n
-                                                       : outer().qualifiedName() + "." + n;
+                                                       : outer().qualifiedName(human) + "." + n;
   }
 
 
   /**
    * qualifiedName returns the qualified name of this feature
    *
-   * @return the qualified name, e.g. "fuzion.std.out.println" or "abc.def.this.type" or "abc.def.type".
+   * @param human true to replace internal names by human readable text. This
+   * should never be true for internal symbols or generated code.
+   *
+   * @return the qualified name, e.g. "some_feature.#FUN124.call.result",
+   * "xyz.#preandcall_xyz_pqr#bla", etc. iff human==false, or
+   * "some_feature.(λx->x+1)call.result", "xyz.precall bla", etc. otherwise)
    */
-  public String qualifiedName()
+  public String qualifiedName(boolean human)
   {
-    return qualifiedName(null);
+    return qualifiedName(null, human);
+  }
+
+
+  /**
+   * qualifiedNameInternal returns the qualified name of this feature, leaving
+   * internal auto-generated names untouched.  This is not ideal for user
+   * output, but required for any internal use of these names in generated code.
+   *
+   * @return the qualified name, e.g. "some_feature.#FUN124.call.result" or
+   * "xyz.#preandcall_xyz_pqr#bla", etc.
+   */
+  public String qualifiedNameInternal()
+  {
+    return qualifiedName(false);
+  }
+
+
+  /**
+   * qualifiedNameHuman returns the qualified name of this feature with internal
+   * names replaced by human readable text.
+   *
+   * This should never be used for internal symbols or generated code.
+   *
+   * @return the qualified name, e.g. "some_feature.(λx->x+1)call.result" or
+   * "xyz.precall bla", etc.
+   */
+  public String qualifiedNameHuman()
+  {
+    return qualifiedName(true);
   }
 
 
@@ -447,21 +532,26 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * qualifiedName returns the qualified name of this feature, relative to feature context (if context is not null)
    *
    * @param context the feature to which the name should be relative to, universe if null
-   * @return the qualified name, e.g. "fuzion.std.out.println" or "abc.def.this.type" or "abc.def.type".
+   *
+   * @param human true to replace internal names by human readable text. This
+   * should never be true for internal symbols or generated code.
+   *
+   * @return the qualified name, e.g. "some_feature.#FUN124.call.result" or
+   * "xyz.#preandcall_xyz_pqr#bla", etc.
    */
-  String qualifiedName(AbstractFeature context)
+  String qualifiedName(AbstractFeature context, boolean human)
   {
     var tfo = state().atLeast(State.FINDING_DECLARATIONS) && outer() != null && outer().isCotype() ? outer().cotypeOrigin() : null;
     return
       isCoTypesThisType()
         /* special type parameter used for this.type in type features */
-        ? (tfo != null ? tfo.qualifiedName(context) : "null")
+        ? (tfo != null ? tfo.qualifiedName(context, human) : "null")
           + ".this.type"
         : isCotype() && cotypeOrigin() != null
           /* cotype: use original name and add ".type": */
-          ? cotypeOrigin().qualifiedName(context) + ".type"
+          ? cotypeOrigin().qualifiedName(context, human) + ".type"
           /* a normal feature name */
-          : qualifiedName0(context);
+          : qualifiedName0(context, human);
   }
 
 
@@ -859,7 +949,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
         // to change `List.map` to always clone the original List.
         i.actualTypeParameters().freeze();
       }
-    var tl = typeArguments().map2(ta -> (AbstractType) new ParsedType(pos(), ta.featureName().baseName()));
+    var tl = typeArguments().map2(ta -> (AbstractType) new ParsedType(pos(), ta.baseName()));
     return t.applyTypePars(this, tl)
             .clone(this);
   }
@@ -1048,17 +1138,17 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     return !isUniverse()
       && outer() != null
       && outer().isUniverse()
-      && (   FuzionConstants.I8_NAME  .equals(featureName().baseName())
-          || FuzionConstants.I16_NAME .equals(featureName().baseName())
-          || FuzionConstants.I32_NAME .equals(featureName().baseName())
-          || FuzionConstants.I64_NAME .equals(featureName().baseName())
-          || FuzionConstants.U8_NAME  .equals(featureName().baseName())
-          || FuzionConstants.U16_NAME .equals(featureName().baseName())
-          || FuzionConstants.U32_NAME .equals(featureName().baseName())
-          || FuzionConstants.U64_NAME .equals(featureName().baseName())
-          || FuzionConstants.F32_NAME .equals(featureName().baseName())
-          || FuzionConstants.F64_NAME .equals(featureName().baseName())
-          || "bool".equals(featureName().baseName()));
+      && (   FuzionConstants.I8_NAME  .equals(baseName())
+          || FuzionConstants.I16_NAME .equals(baseName())
+          || FuzionConstants.I32_NAME .equals(baseName())
+          || FuzionConstants.I64_NAME .equals(baseName())
+          || FuzionConstants.U8_NAME  .equals(baseName())
+          || FuzionConstants.U16_NAME .equals(baseName())
+          || FuzionConstants.U32_NAME .equals(baseName())
+          || FuzionConstants.U64_NAME .equals(baseName())
+          || FuzionConstants.F32_NAME .equals(baseName())
+          || FuzionConstants.F64_NAME .equals(baseName())
+          || "bool".equals(baseName()));
   }
 
 
@@ -1831,7 +1921,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     return (visibility() + " " +
       FuzionConstants.modifierToString(modifiers()) +
       (isCotype() ? "type." : "") +
-      featureName().baseNameHuman() +
+      baseNameHuman() +
       (arguments().isEmpty() ? "" : "("+arguments()+")") + " " +
       (state().atLeast(State.TYPES_INFERENCED) ? resultType() : "#unknown") + " " +
       (inherits().isEmpty() ? "" : ": " + inherits() + " ") +

@@ -172,7 +172,7 @@ public class Contract extends ANY
     var c = f.contract();
     if (c._preConditionFeatureName == null)
       {
-        c._preConditionFeatureName = FuzionConstants.PRECONDITION_FEATURE_PREFIX + "_" + f.outer().qualifiedName().replace('.', '_') + "#" + f.featureName().baseName();
+        c._preConditionFeatureName = FuzionConstants.PRECONDITION_FEATURE_PREFIX + "_" + f.outer().qualifiedNameInternal().replace('.', '_') + "#" + f.baseName();
       }
     return c._preConditionFeatureName;
   }
@@ -189,7 +189,7 @@ public class Contract extends ANY
     var c = f.contract();
     if (c._preBoolConditionFeatureName == null)
       {
-        c._preBoolConditionFeatureName = FuzionConstants.PREBOOLCONDITION_FEATURE_PREFIX + "_" + f.outer().qualifiedName().replace('.', '_') + "#" + f.featureName().baseName();
+        c._preBoolConditionFeatureName = FuzionConstants.PREBOOLCONDITION_FEATURE_PREFIX + "_" + f.outer().qualifiedNameInternal().replace('.', '_') + "#" + f.baseName();
       }
     return c._preBoolConditionFeatureName;
   }
@@ -206,7 +206,7 @@ public class Contract extends ANY
     var c = f.contract();
     if (c._preConditionAndCallFeatureName == null)
       {
-        c._preConditionAndCallFeatureName = FuzionConstants.PREANDCALLCONDITION_FEATURE_PREFIX + "_" + f.outer().qualifiedName().replace('.', '_') + "#" + f.featureName().baseName();
+        c._preConditionAndCallFeatureName = FuzionConstants.PREANDCALLCONDITION_FEATURE_PREFIX + "_" + f.outer().qualifiedNameInternal().replace('.', '_') + "#" + f.baseName();
       }
     return c._preConditionAndCallFeatureName;
   }
@@ -223,7 +223,7 @@ public class Contract extends ANY
     var c = f.contract();
     if (c._postConditionFeatureName == null)
       {
-        c._postConditionFeatureName = FuzionConstants.POSTCONDITION_FEATURE_PREFIX + "_" + f.outer().qualifiedName().replace('.', '_') + "#" + f.featureName().baseName();
+        c._postConditionFeatureName = FuzionConstants.POSTCONDITION_FEATURE_PREFIX + "_" + f.outer().qualifiedNameInternal().replace('.', '_') + "#" + f.baseName();
       }
     return c._postConditionFeatureName;
   }
