@@ -674,7 +674,7 @@ part of the (((inner features))) declarations of the corresponding
         }
         @Override public Feature   action(Feature   f, AbstractFeature outer)
         {
-          f._declaredInScope = !_scope.isEmpty() ? outer : null;
+          f._declaredInScope = (!_scope.isEmpty() || f.isExtensionFeature()) ? outer : null;
           findDeclarations(f, outer);
           return f;
         }
