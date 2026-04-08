@@ -1233,7 +1233,7 @@ class CodeGen
    */
   private String clazzInQuotes(int c)
   {
-    return "`" + _fuir.clazzAsString(c) + "`";
+    return "`" + _fuir.clazzName(c) + "`";
   }
 
 

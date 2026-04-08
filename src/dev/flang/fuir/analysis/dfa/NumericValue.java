@@ -255,7 +255,7 @@ public class NumericValue extends Value
       }
     else
       {
-        throw new Error("Value.setField called on class " + this + " (" + getClass() + ") to set "+_dfa._fuir.clazzAsString(field)+" expected " + Instance.class);
+        throw new Error("Value.setField called on class " + this + " (" + getClass() + ") to set "+_dfa._fuir.clazzName(field)+" expected " + Instance.class);
       }
   }
 
@@ -265,7 +265,7 @@ public class NumericValue extends Value
    */
   public String toString()
   {
-    return _dfa._fuir.clazzAsString(_clazz) + ":" +
+    return _dfa._fuir.clazzName(_clazz) + ":" +
       (_value == null
        ? "--any value--"
        : switch (_dfa._fuir.getSpecialClazz(_clazz))

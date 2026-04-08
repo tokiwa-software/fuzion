@@ -193,8 +193,8 @@ public class Instance extends Value
         if (!Errors.any())
           {
             DfaErrors.readingUninitializedField(site == IR.NO_SITE ? null : dfa._fuir.sitePos(site),
-                                                dfa._fuir.clazzAsString(field),
-                                                dfa._fuir.clazzAsString(_clazz),
+                                                dfa._fuir.clazzName(field),
+                                                dfa._fuir.clazzName(_clazz),
                                                 why);
           }
       }
@@ -212,7 +212,7 @@ public class Instance extends Value
    */
   public String toString()
   {
-    return _dfa._fuir.clazzAsString(_clazz) + "@" + _dfa._fuir.sitePos(_site);
+    return _dfa._fuir.clazzName(_clazz) + "@" + _dfa._fuir.sitePos(_site);
   }
 
 }

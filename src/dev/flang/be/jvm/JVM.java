@@ -1258,7 +1258,7 @@ should be avoided as much as possible.
   {
     if (TRACE_RETURN)
       {
-        var msg = "return from " + _fuir.clazzAsString(cl);
+        var msg = "return from " + _fuir.clazzName(cl);
         return callRuntimeTrace(msg);
       }
     else
@@ -1306,7 +1306,7 @@ should be avoided as much as possible.
                *
                */
             tr
-             .andThen(reportErrorInCode("Can not return result field that does not exist: " + _fuir.clazzAsString(cl)))
+             .andThen(reportErrorInCode("Can not return result field that does not exist: " + _fuir.clazzName(cl)))
           // field does not exist and signature is void and real type is also fuzions void
           : _fuir.clazzIsVoidType(t)
           ?
@@ -1325,7 +1325,7 @@ should be avoided as much as possible.
 
               */
             tr
-              .andThen(reportErrorInCode("Can not return result field that does not exist: " + _fuir.clazzAsString(cl)))
+              .andThen(reportErrorInCode("Can not return result field that does not exist: " + _fuir.clazzName(cl)))
           // field does not exist and signature is void and real type is not fuzions void
           :
               /**
@@ -1484,7 +1484,7 @@ should be avoided as much as possible.
 
     var locals = initialLocals(cl);
 
-    var code_cl = cf.codeAttribute(_fuir.clazzAsString(cl),
+    var code_cl = cf.codeAttribute(_fuir.clazzName(cl),
                                     bc_cl,
                                     new List<>(), dev.flang.be.jvm.classfile.ClassFile.StackMapTable.fromCode(cf, locals, bc_cl));
 
@@ -1854,7 +1854,7 @@ should be avoided as much as possible.
     if (fieldExists(field))
       {
         return
-          Expr.comment("Getting field `" + _fuir.clazzAsString(field) + "` in `" + _fuir.clazzAsString(cl) + "`")
+          Expr.comment("Getting field `" + _fuir.clazzName(field) + "` in `" + _fuir.clazzName(cl) + "`")
           .andThen(Expr.getfield(_names.javaClass(cl),
                                  _names.field(field),
                                  _types.resultType(rt)));
@@ -1862,7 +1862,7 @@ should be avoided as much as possible.
     else
       {
         return
-          Expr.comment("Eliminated getfield since field does not exist: `" + _fuir.clazzAsString(field) + "` in `" + _fuir.clazzAsString(cl) + "`")
+          Expr.comment("Eliminated getfield since field does not exist: `" + _fuir.clazzName(field) + "` in `" + _fuir.clazzName(cl) + "`")
           .andThen(Expr.POP); // objectref
       }
   }
@@ -1881,7 +1881,7 @@ should be avoided as much as possible.
     if (fieldExists(field))
       {
         return
-          Expr.comment("Setting field `" + _fuir.clazzAsString(field) + "` in `" + _fuir.clazzAsString(cl) + "`")
+          Expr.comment("Setting field `" + _fuir.clazzName(field) + "` in `" + _fuir.clazzName(cl) + "`")
           .andThen(Expr.putfield(_names.javaClass(cl),
                                  _names.field(field),
                                  _types.resultType(rt)));
@@ -1890,7 +1890,7 @@ should be avoided as much as possible.
       {
         var popv = _types.javaType(rt).pop();
         return
-          Expr.comment("Eliminated putfield since field does not exist: `" + _fuir.clazzAsString(field) + "` in `" + _fuir.clazzAsString(cl) + "`")
+          Expr.comment("Eliminated putfield since field does not exist: `" + _fuir.clazzName(field) + "` in `" + _fuir.clazzName(cl) + "`")
           .andThen(popv)
           .andThen(Expr.POP);
 
@@ -1971,9 +1971,9 @@ should be avoided as much as possible.
       }
     else
       {
-        res = Expr.comment("Not setting field `" + _fuir.clazzAsString(f) + "`: "+
-                           (!_fuir.hasData(rt)       ? "type `" + _fuir.clazzAsString(rt) + "` is a unit type" :
-                            _fuir.isScalar(occ) ? "target type is a scalar `" + _fuir.clazzAsString(occ) + "`"
+        res = Expr.comment("Not setting field `" + _fuir.clazzName(f) + "`: "+
+                           (!_fuir.hasData(rt)       ? "type `" + _fuir.clazzName(rt) + "` is a unit type" :
+                            _fuir.isScalar(occ) ? "target type is a scalar `" + _fuir.clazzName(occ) + "`"
                                                  : "FUIR.clazzNeedsCode() is false for this field"))
           // make sure we evaluate tvalue and value:
           .andThen(tvalue.drop())

@@ -263,7 +263,7 @@ public class Intrinsics extends ANY
           var fuir = executor.fuir();
           if (i == 0)
             {
-              return  Interpreter.boxedConstString(fuir.clazzAsString(fuir.mainClazz()));
+              return  Interpreter.boxedConstString(fuir.clazzName(fuir.mainClazz()));
             }
           else
             {
@@ -400,7 +400,7 @@ public class Intrinsics extends ANY
             case c_i64  -> Long     .valueOf(args.get(1).i64Value());
             case c_i8   -> Byte     .valueOf((byte)args.get(1).i8Value());
             case c_u16  -> Character.valueOf((char)args.get(1).u16Value());
-            default -> throw new Error("NYI: BUG: primitive_to_java_object not implemented for " + executor.fuir().clazzAsString(executor.fuir().clazzActualGeneric(innerClazz, 0)));
+            default -> throw new Error("NYI: BUG: primitive_to_java_object not implemented for " + executor.fuir().clazzName(executor.fuir().clazzActualGeneric(innerClazz, 0)));
           };
           return new JavaRef(res);
         });
@@ -640,7 +640,7 @@ public class Intrinsics extends ANY
           var result = FuzionThread.current()._effects.get(ecl);
           if (result == null)
             {
-              Errors.fatal("No effect installed: " + executor.fuir().clazzAsStringHuman(ecl));
+              Errors.fatal("No effect installed: " + executor.fuir().clazzNameHuman(ecl));
             }
 
           if (POSTCONDITIONS) ensure
