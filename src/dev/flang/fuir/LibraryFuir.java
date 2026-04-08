@@ -147,13 +147,13 @@ public class LibraryFuir extends FUIR {
   @Override
   public String clazzAsString(int cl)
   {
-    return cl == NO_CLAZZ ? "-- no clazz --" : clazzOriginalName(cl);
+    return cl == NO_CLAZZ ? FuzionConstants.NO_CLAZZ : _clazzes[clazzId2num(cl)].clazzAsString();
   }
 
   @Override
   public String clazzAsStringHuman(int cl)
   {
-    return  cl == NO_CLAZZ ? "-- no clazz --" : _clazzes[clazzId2num(cl)].clazzAsStringHuman();
+    return  cl == NO_CLAZZ ? FuzionConstants.NO_CLAZZ : _clazzes[clazzId2num(cl)].clazzAsStringHuman();
   }
 
   @Override

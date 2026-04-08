@@ -59,6 +59,7 @@ public record ClazzRecord(
   LifeTime lifeTime,
   byte[] clazzTypeName,
   String clazzAsStringHuman,
+  String clazzAsString,
   String clazzSrcFile,
   int clazzSrcBytePos,
   int lookupJavaRef,
