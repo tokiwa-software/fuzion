@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import dev.flang.util.ANY;
 import dev.flang.util.FuzionConstants;
@@ -476,7 +477,7 @@ public class Loop extends ANY
         {
           var setExplicitResultType =
              ((Block)outer.code()).resultExpression() == _impl ||
-             outer.featureName().baseName().startsWith(FuzionConstants.REC_LOOP_PREFIX);
+             outer.baseName().startsWith(FuzionConstants.REC_LOOP_PREFIX);
           if (((Feature)outer).returnType() instanceof FunctionReturnType frt && setExplicitResultType)
             {
               this.setFunctionReturnType(frt.functionReturnType());
@@ -581,7 +582,7 @@ public class Loop extends ANY
                          (_loopElse != null);
 
     return new Call(_elsePos,
-                    _loopElse[elseNum].featureName().baseName());
+                    _loopElse[elseNum].baseName());
   }
 
 
@@ -611,15 +612,15 @@ public class Loop extends ANY
           (f.impl()._kind != Impl.Kind.FieldIter);
 
         var p = f.pos();
-        var ia = new Call(p, FuzionConstants.ITER_ARG_PREFIX_INIT + f.featureName().baseName());
-        var na = new Call(p, FuzionConstants.ITER_ARG_PREFIX_NEXT + f.featureName().baseName());
+        var ia = new Call(p, FuzionConstants.ITER_ARG_PREFIX_INIT + f.baseName());
+        var na = new Call(p, FuzionConstants.ITER_ARG_PREFIX_NEXT + f.baseName());
         var type = (f.impl()._kind == Impl.Kind.FieldDef)
           ? null        // index var with type inference from initial actual
           : _indexVars.get(i).returnType().functionReturnType();
         var arg = new Feature(p,
                               Visi.PRIV,
                               type,
-                              f.featureName().baseName(),
+                              f.baseName(),
                               type != null ? Impl.FIELD
                                            : new Impl(Impl.Kind.FieldActual));
         arg._isIndexVarUpdatedByLoop = true;
@@ -666,7 +667,14 @@ public class Loop extends ANY
       @Override
       public Expr action(Function f)
       {
-        f.expr().visit(this, null);
+        var lambdaArgNames = f._names.stream().map(x -> x._name).collect(Collectors.toSet());
+        lambdaArgNames.retainAll(names);
+        // if lambdaArgNames is not empty this will
+        // probably trigger an "Ambiguous targets found call to" error later
+        if (lambdaArgNames.isEmpty())
+          {
+            f.expr().visit(this, null);
+          }
         return super.action(f);
       }
     };
@@ -744,7 +752,7 @@ public class Loop extends ANY
         f._isIndexVarUpdatedByLoop = true;
         n._isIndexVarUpdatedByLoop = true;
 
-        names.add(f.featureName().baseName());
+        names.add(f.baseName());
         prologBlock.add(createInternalIterArgFeature(f, FuzionConstants.ITER_ARG_PREFIX_INIT));
         nextItBlock.add(createInternalIterArgFeature(n, FuzionConstants.ITER_ARG_PREFIX_NEXT));
       }
@@ -770,7 +778,7 @@ public class Loop extends ANY
   private Feature createInternalIterArgFeature(Feature f, String prefix)
   {
     var f1 = new Feature(f.visibility(), f.modifiers(), f.returnType(),
-      new List<>(new ParsedName(f.pos(), prefix + f.featureName().baseName())),
+      new List<>(new ParsedName(f.pos(), prefix + f.baseName())),
       new List<>(), new List<>(),
       Contract.EMPTY_CONTRACT, f.impl(), null);
     f1._isLoopIterator = f._isLoopIterator;

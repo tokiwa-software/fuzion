@@ -166,19 +166,22 @@ public abstract class FUIR extends IR
 
 
   /**
-   * String representation of clazz, for creation of unique type names.
+   * Unique String representation of a clazz, fully qualified and including type
+   * parameters, for creation of unique type names.
    *
    * @param cl a clazz id.
    */
-  public abstract String clazzAsString(int cl);
+  public abstract String clazzName(int cl);
 
 
   /**
-   * human readable String representation of clazz, for stack traces and debugging.
+   * human readable String representation of clazz, for stack traces and
+   * debugging. May not be used for code generation since this might not be
+   * unique.
    *
    * @param cl a clazz id.
    */
-  public abstract String clazzAsStringHuman(int cl);
+  public abstract String clazzNameHuman(int cl);
 
 
   /**
@@ -197,20 +200,20 @@ public abstract class FUIR extends IR
    *
    * @param cl a clazz id.
    */
-  public String clazzAsStringWithArgsAndResult(int cl)
+  public String clazzNameWithArgsAndResult(int cl)
   {
     if (PRECONDITIONS) require
       (cl >= firstClazz(),
        cl <= lastClazz());
 
     var sb = new StringBuilder();
-    sb.append(clazzAsString(cl))
+    sb.append(clazzName(cl))
       .append("(");
     var o = clazzOuterClazz(cl);
     if (o != NO_CLAZZ)
       {
         sb.append("outer ")
-          .append(clazzAsString(o));
+          .append(clazzName(o));
       }
     for (var i = 0; i < clazzArgCount(cl); i++)
       {
@@ -218,10 +221,10 @@ public abstract class FUIR extends IR
         sb.append(o != NO_CLAZZ || i > 0 ? ", " : "")
           .append(clazzBaseName(ai))
           .append(" ")
-          .append(clazzAsString(clazzResultClazz(ai)));
+          .append(clazzName(clazzResultClazz(ai)));
       }
     sb.append(") ")
-      .append(clazzAsString(clazzResultClazz(cl)));
+      .append(clazzName(clazzResultClazz(cl)));
     return sb.toString();
   }
 
@@ -1148,12 +1151,12 @@ public abstract class FUIR extends IR
   {
     return switch (codeAt(s))
       {
-      case Assign  -> "Assign " + clazzAsString(assignedType(s)) + " to " + clazzAsString(accessedClazz(s));
-      case Box     -> "Box "       + clazzAsString(boxValueClazz(s)) + " => " + clazzAsString(boxResultClazz  (s));
+      case Assign  -> "Assign " + clazzName(assignedType(s)) + " to " + clazzName(accessedClazz(s));
+      case Box     -> "Box "       + clazzName(boxValueClazz(s)) + " => " + clazzName(boxResultClazz  (s));
       case Call    -> {
                         var sb = new StringBuilder("Call ");
                         var cc = accessedClazz(s);
-                        sb.append(clazzAsStringWithArgsAndResult(cc));
+                        sb.append(clazzNameWithArgsAndResult(cc));
                         yield sb.toString();
                        }
       case Current -> "Current";
@@ -1161,7 +1164,7 @@ public abstract class FUIR extends IR
       case Const   -> {
                         var data = constData(s);
                         var sb = new StringBuilder("Const of type ");
-                        sb.append(clazzAsString(constClazz(s)));
+                        sb.append(clazzName(constClazz(s)));
                         for (var i = 0; i < Math.min(8, data.length); i++)
                           {
                             sb.append(String.format(" %02x", data[i] & 0xff));
@@ -1173,7 +1176,7 @@ public abstract class FUIR extends IR
                         for (var cix = 0; cix < matchCaseCount(s); cix++)
                           {
                             var f = matchCaseField(s, cix);
-                            sb.append(" " + cix + (f == NO_CLAZZ ? "" : "("+clazzAsString(clazzResultClazz(f))+")") + "=>" + label(matchCaseCode(s, cix)));
+                            sb.append(" " + cix + (f == NO_CLAZZ ? "" : "("+clazzName(clazzResultClazz(f))+")") + "=>" + label(matchCaseCode(s, cix)));
                           }
                         yield sb.toString();
                       }
@@ -1253,7 +1256,7 @@ public abstract class FUIR extends IR
     if (PRECONDITIONS) require
       (clazzKind(cl) == FeatureKind.Routine);
 
-    say("Code for " + clazzAsStringWithArgsAndResult(cl) + (cl == mainClazz() ? " *** main *** " : ""));
+    say("Code for " + clazzNameWithArgsAndResult(cl) + (cl == mainClazz() ? " *** main *** " : ""));
     dumpCode(cl, clazzCode(cl));
   }
 

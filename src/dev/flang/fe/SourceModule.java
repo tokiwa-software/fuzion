@@ -186,7 +186,7 @@ public class SourceModule extends Module implements SrcModule
                 f.legalPartOfUniverse();  // suppress FeErrors.initialValueNotAllowed
                 if (expr.size() == 1 && !f.isField())
                   {
-                    res = f.featureName().baseName();
+                    res = f.baseName();
                   }
               }
           }
@@ -356,7 +356,7 @@ public class SourceModule extends Module implements SrcModule
     else
       {
         var d = dirExists(root, o);
-        return d == null ? null : d.dir(f.featureName().baseName());
+        return d == null ? null : d.dir(f.baseName());
       }
   }
 
@@ -476,7 +476,7 @@ part of the (((inner features))) declarations of the corresponding
   {
     if (PRECONDITIONS) require
       (inner.isUniverse() || inner.state() == State.LOADING,
-       ((outer == null) == (inner.featureName().baseName().equals(FuzionConstants.UNIVERSE_NAME))),
+       ((outer == null) == (inner.baseName().equals(FuzionConstants.UNIVERSE_NAME))),
        !inner.outerSet());
 
     if (inner._qname.size() > 1)
@@ -961,7 +961,7 @@ A post-condition of a feature that redefines one or several inherited features m
 A feature that does not redefine an inherited feature must not use the `redef` modifier.
     // end::fuzion_rule_PARS_NO_REDEF[]
             */
-            List<FeatureAndOuter> hiddenFeaturesSameSignature = lookup(outer, f.featureName().baseName(), null, true, true)
+            List<FeatureAndOuter> hiddenFeaturesSameSignature = lookup(outer, f.baseName(), null, true, true)
               .stream().filter(fo->fo._feature.featureName().equals(f.featureName())).collect(List.collector());
             AstErrors.redefineModifierDoesNotRedefine(f, hiddenFeaturesSameSignature);
           }

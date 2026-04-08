@@ -205,7 +205,7 @@ public class OptimizedFUIR extends GeneratingFUIR {
                 lookupStaticFinally(cl),
                 isRoutine ? lifeTime(cl) : null,
                 clazzTypeName(cl),
-                clazzAsStringHuman(cl),
+                clazzNameHuman(cl),
                 clazzSrcFile(cl),
                 clazzDeclarationPos(cl).bytePos(),
                 lookupJavaRef(cl),

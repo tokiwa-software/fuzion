@@ -148,7 +148,7 @@ public class JavaInterface extends FUIRContext
     Value result;
     var ok = e == null;
     // NYI: HACK:
-    if (fuir().clazzAsString(resultClazz).startsWith("outcome"))
+    if (fuir().clazzName(resultClazz).startsWith("outcome"))
       {
         var valClazz = fuir().clazzChoice(resultClazz, ok ? 0 : 1);
         var res = ok ? javaObjectToPlainInstance(o, valClazz)
@@ -219,7 +219,7 @@ public class JavaInterface extends FUIRContext
                       case "forbidden" -> Value.VOID;
                       default -> fuir().clazzIsOuterRef(f)
                         ? new Instance(fuir().clazzOuterClazz(rc))
-                        : (Value) (Object) new Object() { { if (true) throw new Error("unexpected field in fuzion.java.Array: "+fuir().clazzAsString(f)); }};
+                        : (Value) (Object) new Object() { { if (true) throw new Error("unexpected field in fuzion.java.Array: "+fuir().clazzName(f)); }};
                       };
                     if (v != Value.VOID && /* NYI: HACK: */ inst.refs.length > off)
                       {

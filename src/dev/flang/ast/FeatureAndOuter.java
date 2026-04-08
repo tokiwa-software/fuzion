@@ -264,9 +264,9 @@ public class FeatureAndOuter extends ANY
   public String toString()
   {
     return
-      "[" + _feature.qualifiedName() +
-      " found in " + _outer.qualifiedName() + ", " +
-      (_nextInner == null ? "no next inner" : "next inner " + _nextInner.qualifiedName()) + ", " +
+      "[" + _feature.qualifiedNameHuman() +
+      " found in " + _outer.qualifiedNameHuman() + ", " +
+      (_nextInner == null ? "no next inner" : "next inner " + _nextInner.qualifiedNameHuman()) + ", " +
       (isNextInnerFixed() ? "fixed" : "not fixed") + "]";
   }
 

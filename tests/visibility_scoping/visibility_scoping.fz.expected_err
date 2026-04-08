@@ -3,7 +3,7 @@
     say ((0..1).map y->x)  #  3. should flag an error: feature not found
 -----------------------^
 Feature not found: 'x' (no arguments)
-Target feature: 'visibility_scoping.test4.λ.call'
+Target feature: 'visibility_scoping.test4.(λy->x).call'
 In call: 'x'
 
 

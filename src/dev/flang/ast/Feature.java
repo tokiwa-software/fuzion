@@ -835,13 +835,13 @@ public class Feature extends AbstractFeature
 
     // check args for duplicate names
     if (!a.stream()
-          .map(arg -> arg.featureName().baseName())
+          .map(arg -> arg.baseName())
           .filter(argName -> !argName.equals("_"))
           .allMatch(new HashSet<>()::add))
       {
         var usedNames = new HashSet<>();
         var duplicateNames = a.stream()
-              .map(arg -> arg.featureName().baseName())
+              .map(arg -> arg.baseName())
               .filter(argName -> !argName.equals("_"))
               .filter(argName -> !usedNames.add(argName))
               .collect(Collectors.toSet());
@@ -1214,7 +1214,7 @@ public class Feature extends AbstractFeature
       {
         // we mangle the field's base name into the name such that during
         // monomorphization, we know what field to use
-        var name = FuzionConstants.createFieldsOfOpenTypeName(featureName().baseName());
+        var name = FuzionConstants.createFieldsOfOpenTypeName(baseName());
         var otf = new Feature(pos(), visibility().typeVisibility(), 0, NoType.INSTANCE, new List<>(name), new List<>(),
                               new List<>(new Call(pos(), Universe.instance, Types.resolved.f_Values_Of_Open_Type)),
                               Contract.EMPTY_CONTRACT,
@@ -1356,7 +1356,7 @@ public class Feature extends AbstractFeature
        i != null);
 
     var parent = p.calledFeature();
-    String inh = "    inherits " + parent.qualifiedName() + " at " + p.pos().show() + "\n";
+    String inh = "    inherits " + parent.qualifiedNameHuman() + " at " + p.pos().show() + "\n";
     if (_detectedCyclicInheritance)
       { // the cycle closes while returning from recursion in resolveInheritance, so show the error:
         StringBuilder cycle = new StringBuilder(inh);
@@ -1369,7 +1369,7 @@ public class Feature extends AbstractFeature
       }
     else
       { // mark all member of the cycle
-        cyclicInhData.add(": feature " + qualifiedName()+" at " + _pos.show() + "\n" + inh);
+        cyclicInhData.add(": feature " + qualifiedNameHuman()+" at " + _pos.show() + "\n" + inh);
         _detectedCyclicInheritance = true;
       }
 
@@ -1982,9 +1982,9 @@ A ((Choice)) declaration must not contain a result type.
                                                   p ->
       {
         // primitives must not have any fields
-        if (p.isField() && !p.isOuterRef() && !(p.featureName().baseName().equals("val") && p.resultType().compareTo(selfType())==0) )
+        if (p.isField() && !p.isOuterRef() && !(p.baseName().equals("val") && p.resultType().compareTo(selfType())==0) )
           {
-            AstErrors.mustNotContainFields(_pos, p, this.featureName().baseName());
+            AstErrors.mustNotContainFields(_pos, p, this.baseName());
           }
       });
   }
@@ -2758,7 +2758,7 @@ A ((Choice)) declaration must not contain a result type.
 
     return Types.resolved != null
       ? this == Types.resolved.f_choice
-      : (featureName().baseName().equals(FuzionConstants.CHOICE_NAME) && featureName().argCount() == 1 && outer().isUniverse());
+      : (baseName().equals(FuzionConstants.CHOICE_NAME) && featureName().argCount() == 1 && outer().isUniverse());
   }
 
 

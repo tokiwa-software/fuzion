@@ -81,7 +81,7 @@ public class TypeTool extends ANY
                     : "")
           + (type.feature() == null
                                           ? baseName(type)
-                                          : type.feature().featureName().baseName());
+                                          : type.feature().baseName());
       }
     else if (type.feature() == null || type.feature() == Types.f_ERROR)
       {
@@ -89,7 +89,7 @@ public class TypeTool extends ANY
       }
     else
       {
-        return type.feature().featureName().baseName();
+        return type.feature().baseName();
       }
   }
 

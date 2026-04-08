@@ -308,9 +308,10 @@ public class FZJava extends Tool
 
         for (var fn : df.values())
           {
-            if (name.startsWith(fn.qualifiedName()))
+            var qn = fn. qualifiedName();
+            if (name.startsWith(qn))
               {
-                _existingFeatures.add(fn.qualifiedName());
+                _existingFeatures.add(qn);
                 recurseDeclaredFeature(name, fn);
               }
           }

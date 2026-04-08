@@ -106,7 +106,7 @@ public class AstErrors extends ANY
   public static String s(AbstractFeature f)
   {
     return f == Types.f_ERROR ? err()
-                              : sqn(f.qualifiedName());
+                              : sqn(f.qualifiedNameHuman());
   }
   public static String s_feat_with_pos(AbstractFeature f)
   {
@@ -115,7 +115,7 @@ public class AstErrors extends ANY
   static String sbnf(AbstractFeature f) // feature base name
   {
     return f == Types.f_ERROR ? err()
-                              : sbn(f.featureName().baseNameHuman());
+                              : sbn(f.baseNameHuman());
   }
   static String sbnf(FeatureName fn) // feature base name plus arg count and id string
   {
@@ -126,7 +126,7 @@ public class AstErrors extends ANY
     if (PRECONDITIONS) require
       (f.isTypeParameter());
 
-    return sbn(f.featureName().baseNameHuman() + " : " + f.constraint());
+    return sbn(f.baseNameHuman() + " : " + f.constraint());
   }
   static String slbn(List<FeatureName> l)
   {
@@ -215,7 +215,7 @@ public class AstErrors extends ANY
    */
   static String sc(List<FeatureAndOuter> candidates, boolean addArgCallHint)
   {
-    return candidates.stream().map(c -> (candidates.size() > 1 ? "• " : "") + sbn(c._feature.featureName().baseName()) + " " + argCountStr(c._feature)
+    return candidates.stream().map(c -> (candidates.size() > 1 ? "• " : "") + sbn(c._feature.baseName()) + " " + argCountStr(c._feature)
                                         + " at " + c._feature.pos().show() + (Terminal.ENABLED ? "" : "\n")
                                         + (addArgCallHint ? callableArgCountMsg(c._feature) + "\n\n" : ""))
       .collect(List.collector())
@@ -235,15 +235,15 @@ public class AstErrors extends ANY
         typeCount--;
         open = "one open type parameter";
       }
-    if (typeCount > 0 ) { msg.add(StringHelpers.typeParametersString( typeCount ) + " " + ta.take(typeCount).map2(a->a.featureName().baseName()).toString("", " ", "")); }
+    if (typeCount > 0 ) { msg.add(StringHelpers.typeParametersString( typeCount ) + " " + ta.take(typeCount).map2(a->a.baseName()).toString("", " ", "")); }
     if (open != null  ) { msg.add(open + " " + ta.getLast().featureName()); }
-    if (valueCount > 0) { msg.add(StringHelpers.valueArgumentsString(valueCount) + " " + va                .map2(a->a.featureName().baseName()).toString("", " ", "")); }
+    if (valueCount > 0) { msg.add(StringHelpers.valueArgumentsString(valueCount) + " " + va                .map2(a->a.baseName()).toString("", " ", "")); }
     return msg.size() == 0 ? "(no arguments)" :  msg.toString("(", ", ", ")");
   }
 
   private static String callableArgCountMsg(AbstractFeature f)
   {
-    return "To call " + sbn(f.featureName().baseName())
+    return "To call " + sbn(f.baseName())
       + (f.arguments().isEmpty()
           ? ", you must not provide arguments."
           : ", you must provide "
@@ -348,7 +348,7 @@ public class AstErrors extends ANY
    *
    * @param detail detail on the use of incompatible types, e.g., "assignment to field abc.fgh\n".
    *
-   * @param target string representing the target of the assignment, e.g., "field abc.fgh".
+   * @param target string representing the target of the assignment, e.g., ss("field abc.fgh").
    *
    * @param frmlT the expected formal type
    *
@@ -356,14 +356,14 @@ public class AstErrors extends ANY
    *
    * @param typeValue the type that was assigned, must be non-null iff value==null.
    */
-  static void incompatibleType(SourcePosition pos,
-                               String where,
-                               String detail,
-                               String target,
-                               AbstractType frmlT,
-                               Expr value,
-                               AbstractType typeValue,
-                               Context context)
+  private static void incompatibleType(SourcePosition pos,
+                                       String where,
+                                       String detail,
+                                       String target,
+                                       AbstractType frmlT,
+                                       Expr value,
+                                       AbstractType typeValue,
+                                       Context context)
   {
     String remedy = null;
     String actlFound;
@@ -407,7 +407,7 @@ public class AstErrors extends ANY
           }
         if (remedy == null && !frmlT.isGenericArgument() && frmlT.asRef(true).isAssignableFromWithoutBoxing(actlT, context).yes())
           {
-            remedy = "To solve this, you could change the type of " + ss(target) + " to a " + st("ref")+ " type like " + s(frmlT.asRef(true)) + ".\n";
+            remedy = "To solve this, you could change the type of " + target + " to a " + st("ref")+ " type like " + s(frmlT.asRef(true)) + ".\n";
           }
         else if (integerType(frmlT) && integerType(actlT))
           {
@@ -431,9 +431,9 @@ public class AstErrors extends ANY
             remedy = frmlT.isValue() && !actlT.isGenericArgument() && !frmlT.isGenericArgument() && actlT.feature().inheritsFrom(frmlT.feature()) ?
                         "To solve this you could:\n" + //
                             (frmlT.isChoice() ? "" : "  • make  " + s(frmlT) + " a reference by adding the " + st("ref")+ " keyword, so all its heirs can be used in place of it,\n") +
-                            "  • change the type of the target " + ss(target) + " to " + s(actlT) + ", or\n" +
+                            "  • change the type of the target " + target + " to " + s(actlT) + ", or\n" +
                             "  • convert the type of the assigned value to " + s(frmlT) + "."
-                        : "To solve this, you could change the type of the target " + ss(target) + " to " + s(actlT) + " or convert the type of the assigned value to " + s(frmlT) + ".\n";
+                        : "To solve this, you could change the type of the target " + target + " to " + s(actlT) + " or convert the type of the assigned value to " + s(frmlT) + ".\n";
           }
         actlFound   = "actual type found   : " + s(actlT);
         valAssigned = "for value assigned  : " + s(value) + "\n";
@@ -474,7 +474,7 @@ public class AstErrors extends ANY
     incompatibleType(pos,
                      "in assignment",
                      "assignment to field : " + s(field) + "\n",
-                     field.qualifiedName(),
+                     s(field),
                      frmlT,
                      value,
                      null,
@@ -513,7 +513,7 @@ public class AstErrors extends ANY
                      "when passing argument in a call",
                      "Actual type for argument #" + (count+1) + (f == null ? "" : " " + sbnf(f)) + " does not match expected type.\n" +
                      "In call to          : " + s(calledFeature) + "\n",
-                     (f == null ? "argument #" + (count+1) : f.featureName().baseNameHuman()),
+                     f == null ? ss("argument #" + (count+1)) : sbnf(f),
                      frmlT,
                      value,
                      null,
@@ -542,7 +542,7 @@ public class AstErrors extends ANY
     incompatibleType(pos,
                      "in array initialization",
                      "array type          : " + s(arrayType) + "\n",
-                     "array element",
+                     ss("array element"),
                      frmlT,
                      value,
                      null,
@@ -1061,7 +1061,7 @@ public class AstErrors extends ANY
               "Duplicate feature declaration",
               "Feature that was declared repeatedly: " + s(of) + "\n" +
               "originally declared at " + aa.pos().show() + "\n" +
-              "To solve this, consider renaming one of these two features, e.g., as " + sbn(of.featureName().baseNameHuman() + "ʼ") +
+              "To solve this, consider renaming one of these two features, e.g., as " + sbn(of.baseNameHuman() + "ʼ") +
               " (using a unicode modifier letter apostrophe " + sbn("ʼ")+ " U+02BC) "+
               (aa.isCotype()
                ? ("or changing it into a routine by returning a " +
@@ -1252,7 +1252,7 @@ public class AstErrors extends ANY
         outerLevels.add(o);
         qualifiedCalls
           .append(qualifiedCalls.length() > 0 ? " or " : "")
-          .append(code(o.qualifiedName() + (o.isUniverse() ? "." : ".this.") + fn.baseNameHuman()));
+          .append(code(o.qualifiedNameHuman() + (o.isUniverse() ? "." : ".this.") + fn.baseNameHuman()));
       }
     error(pos,
           "Ambiguous targets found for " + operation + " to " + sbn(fn.baseNameHuman()),
@@ -1400,7 +1400,9 @@ public class AstErrors extends ANY
         var solution5 = solutionLambda(call);
         error(call.pos(), msg,
               "Feature not found: " + sbnf(calledName) + "\n" +
-              (targetFeature != null ? "Target feature: " + s(targetFeature) + "\n" : "") +
+              (targetFeature != null
+                ? (targetFeature.isCotype() ? "Target expression: " + expr(target.toString()) + "\n" : "Target feature: " + s(targetFeature) + "\n")
+                : "") +
               "In call: " + s(call) + "\n" +
               (solution0 != "" ? solution0 :
                solution1 != "" ? solution1 :
@@ -1486,9 +1488,9 @@ public class AstErrors extends ANY
       (f.isField());
 
     if (CHECKS) check
-      (any() || !f.featureName().baseNameHuman().equals(ERROR_STRING));
+      (any() || !f.baseNameHuman().equals(ERROR_STRING));
 
-    if (!f.featureName().baseNameHuman().equals(ERROR_STRING))
+    if (!f.baseNameHuman().equals(ERROR_STRING))
       {
         error(f.pos(),
               "Missing result type in field declaration with initialization",
@@ -2087,8 +2089,8 @@ public class AstErrors extends ANY
           + f.arguments()
             .stream()
             .map(a -> "Argument #" + (cnt[0]++) + ": " + sbnf(a) +
-                 (duplicateNames.contains(a.featureName().baseNameHuman()) ? " is duplicate "
-                                                                      : " is ok"        ) + "\n")
+                 (duplicateNames.contains(a.baseNameHuman()) ? " is duplicate "
+                                                             : " is ok"        ) + "\n")
             .collect(Collectors.joining(""))
           + "To solve this, rename the arguments to have unique names."
         );
@@ -2117,7 +2119,7 @@ public class AstErrors extends ANY
    */
   public static void routineMustNotReturnItself(AbstractFeature f)
   {
-    String n = f.featureName().baseNameHuman();
+    String n = f.baseNameHuman();
     String args = f.arguments().size() > 0 ? "(..args..)" : "";
     String old_code =
       "\n" +
@@ -2617,6 +2619,14 @@ public class AstErrors extends ANY
   {
     error(c.pos(), "Choice must not inherit from feature with contract.",
       "The feature that "+ s(c) + " inherits that has a contract:\n" + s_feat_with_pos(f));
+  }
+
+  public static void illegalNumLiteral(ParsedCall c)
+  {
+    error(c.pos(),
+      "Illegal use of numeric literal.",
+      s(((Call)c.target()).calledFeature()) + " or its constraint does not implement " + sbn("from_u32") + "."
+    );
   }
 
 }

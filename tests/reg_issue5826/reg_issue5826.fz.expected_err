@@ -41,7 +41,7 @@ In call:
   (1..10).for_each x ->
 -------------------^
 Feature not found: 'x' (one argument)
-Target feature: 'example.λ.call'
+Target feature: 'example.(λx).call'
 In call: 'x'
 This call was created automatically by partial application. To solve this, you might want to use an explicit lambda expression of the form '( a0 -> ..code using a0..)'.
 
