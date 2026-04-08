@@ -399,6 +399,15 @@ public class FuzionConstants extends ANY
 
 
   /**
+   * Human-readable name to be used instead of a names starting in LAMBDA_PREFIX
+   * if there is no additional information available. @see
+   * dev.flang.ast.AbstractFeature.baseNameHuman() and
+   * dev.flang.ast.FeatureName.baseNameHuman().
+   */
+  public static final String HUMAN_READABLE_LAMBDA_NAME = "λ";
+
+
+  /**
    * Field introduced in, e.g.,
    *
    * <pre>{@code

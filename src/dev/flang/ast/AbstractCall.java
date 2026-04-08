@@ -35,6 +35,7 @@ import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.StringHelpers;
+import dev.flang.util.YesNo;
 
 
 /**
@@ -45,6 +46,14 @@ import dev.flang.util.StringHelpers;
  */
 public abstract class AbstractCall extends Expr
 {
+
+
+  /*-----------------------------  fields  -----------------------------*/
+
+  /**
+   * to cache result of GeneratingFuir.isConst
+   */
+  public YesNo _isConst = YesNo.dontKnow;
 
 
   /*----------------------------  constants  ----------------------------*/
@@ -295,9 +304,15 @@ public abstract class AbstractCall extends Expr
    * be used to check for AstErrors.illegalOuterRefTypeInCall.
    *
    */
-  protected AbstractType adjustResultType(Resolution res, Context context, AbstractType tt, AbstractType rt, BiConsumer<AbstractType, AbstractType> foundRef, boolean forArg /* NYI: UNDER DEVELOPMENT: try to remove this parameter */)
+  protected AbstractType adjustResultType(Resolution res,
+                                          Context context,
+                                          AbstractType tt,
+                                          AbstractType rt,
+                                          BiConsumer<AbstractType, AbstractType> foundRef,
+                                          boolean forArg /* NYI: UNDER DEVELOPMENT: try to remove this parameter */)
   {
-    var t1 = rt == Types.t_ERROR                           ? rt : adjustThisTypeForTarget(context, rt, foundRef);
+    var t0 = calledFeature() == Types.f_ERROR ? Types.t_ERROR : rt;
+    var t1 = t0 == Types.t_ERROR                           ? t0 : adjustThisTypeForTarget(context, t0, foundRef);
     var t2 = t1 == Types.t_ERROR                           ? t1 : calledFeature().outer().handDownToType(t1, tt);  // NYI: CLEANUP: try to use handDownAndApply
     var t3 = t2 == Types.t_ERROR                           ? t2 : t2.applyTypePars(tt);
     var t4 = t3 == Types.t_ERROR                           ? t3 : t3.applyTypePars(calledFeature(), actualTypeParameters());
@@ -532,7 +547,7 @@ public abstract class AbstractCall extends Expr
             (target() instanceof This t && t.toString().equals(FuzionConstants.UNIVERSE_NAME + ".this"))
             ? ""
             : StringHelpers.wrapInParentheses(target().toString()) + ".")
-      + (this instanceof Call c && !c.calledFeatureKnown() ? c._name : calledFeature().featureName().baseNameHuman())
+      + (this instanceof Call c && !c.calledFeatureKnown() ? c._name : calledFeature().baseNameHuman())
       + actualTypeParameters().toString(" ", " ", "", t -> (t == null ? "--null--" : t.toStringWrapped(true)))
       + actuals()             .toString(" ", " ", "", e -> (e == null ? "--null--" : e.toStringWrapped()))
       + (select() < 0        ? "" : " ." + select());

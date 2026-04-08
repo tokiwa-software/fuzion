@@ -61,11 +61,11 @@ public class HasSourcePositionTool
               {
                 return "called feature unknown";
               }
-            return c.calledFeature().qualifiedName();
+            return c.calledFeature().qualifiedNameHuman();
           }
         if (item instanceof Assign a)
           {
-            return a._assignedField.qualifiedName();
+            return a._assignedField.qualifiedNameHuman();
           }
         if (item instanceof AbstractFeature af)
           {

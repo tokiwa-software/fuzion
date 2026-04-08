@@ -355,7 +355,149 @@ Declared at {base.fum}/Function.fz:35:10:
 ---------^^^^
 
 
---CURDIR--/generics_negative.fz:162:5: error 35: Incompatible types in assignment
+--CURDIR--/generics_negative.fz:117:23: error 35: Incompatible types when passing argument in a call
+    _ i32  := x2.call 3         # 26. should flag an error: wrong argument type
+----------------------^
+Actual type for argument #1 'a' does not match expected type.
+In call to          : 'Function.call'
+expected formal type: 'bool'
+actual type found   : 'i32'
+assignable to       : 'i32'
+for value assigned  : '3'
+To solve this, you could change the type of the target 'a' to 'i32' or convert the type of the assigned value to 'bool'.
+
+
+--CURDIR--/generics_negative.fz:118:5: error 36: Incompatible types in assignment
+    _ bool := x2.call true      # 27. should flag an error: wrong type in assignment
+----^
+assignment to field : 'generics_negative.opengenerics24._'
+expected formal type: 'bool'
+actual type found   : 'i32'
+assignable to       : 'i32'
+for value assigned  : 'x2.call true'
+To solve this, you could change the type of the target 'generics_negative.opengenerics24._' to 'i32' or convert the type of the assigned value to 'bool'.
+
+
+--CURDIR--/generics_negative.fz:120:18: error 37: Incompatible types when passing argument in a call
+    _ i32  := x2 3              # 28. should flag an error: wrong argument type
+-----------------^
+Actual type for argument #1 'a' does not match expected type.
+In call to          : 'Function.call'
+expected formal type: 'bool'
+actual type found   : 'i32'
+assignable to       : 'i32'
+for value assigned  : '3'
+To solve this, you could change the type of the target 'a' to 'i32' or convert the type of the assigned value to 'bool'.
+
+
+--CURDIR--/generics_negative.fz:121:5: error 38: Incompatible types in assignment
+    _ bool := x2 true           # 29. should flag an error: wrong type in assignment
+----^
+assignment to field : 'generics_negative.opengenerics24._'
+expected formal type: 'bool'
+actual type found   : 'i32'
+assignable to       : 'i32'
+for value assigned  : 'x2'
+To solve this, you could change the type of the target 'generics_negative.opengenerics24._' to 'i32' or convert the type of the assigned value to 'bool'.
+
+
+--CURDIR--/generics_negative.fz:124:13: error 39: Incompatible types when passing argument in a call
+    x3.call false false          # 30. should flag an error: wrong argument type
+------------^^^^^
+Actual type for argument #1 'a' does not match expected type.
+In call to          : 'Function.call'
+expected formal type: 'i32'
+actual type found   : 'bool'
+assignable to       : 'bool'
+for value assigned  : 'false'
+To solve this, you could change the type of the target 'a' to 'bool' or convert the type of the assigned value to 'i32'.
+
+
+--CURDIR--/generics_negative.fz:125:15: error 40: Incompatible types when passing argument in a call
+    x3.call 3 3                  # 31. should flag an error: wrong argument type
+--------------^
+Actual type for argument #2 does not match expected type.
+In call to          : 'Function.call'
+expected formal type: 'bool'
+actual type found   : 'i32'
+assignable to       : 'i32'
+for value assigned  : '3'
+To solve this, you could change the type of the target 'argument #2' to 'i32' or convert the type of the assigned value to 'bool'.
+
+
+--CURDIR--/generics_negative.fz:126:8: error 41: Wrong number of actual value arguments in call
+    x3.call 3 true 3             # 32. should flag an error: wrong argument count
+-------^^^^
+Number of actual value arguments is 3, while call expects 2 value arguments.
+Actual value arguments: '3', 'true', '3'
+Called feature: 'Function.call'
+Formal value arguments: 'a' 'i32', 'a' 'bool'
+Declared at {base.fum}/Function.fz:35:10:
+  public call(a A...) R
+---------^^^^
+
+
+--CURDIR--/generics_negative.fz:127:8: error 42: Wrong number of actual value arguments in call
+    x3.call 3                    # 33. should flag an error: wrong argument count
+-------^^^^
+Number of actual value arguments is 1, while call expects 2 value arguments.
+Actual value arguments: '3'
+Called feature: 'Function.call'
+Formal value arguments: 'a' 'i32', 'a' 'bool'
+Declared at {base.fum}/Function.fz:35:10:
+  public call(a A...) R
+---------^^^^
+
+
+--CURDIR--/generics_negative.fz:129:8: error 43: Incompatible types when passing argument in a call
+    x3 false false               # 34. should flag an error: wrong argument type
+-------^^^^^
+Actual type for argument #1 'a' does not match expected type.
+In call to          : 'Function.call'
+expected formal type: 'i32'
+actual type found   : 'bool'
+assignable to       : 'bool'
+for value assigned  : 'false'
+To solve this, you could change the type of the target 'a' to 'bool' or convert the type of the assigned value to 'i32'.
+
+
+--CURDIR--/generics_negative.fz:130:10: error 44: Incompatible types when passing argument in a call
+    x3 3 3                       # 35. should flag an error: wrong argument type
+---------^
+Actual type for argument #2 does not match expected type.
+In call to          : 'Function.call'
+expected formal type: 'bool'
+actual type found   : 'i32'
+assignable to       : 'i32'
+for value assigned  : '3'
+To solve this, you could change the type of the target 'argument #2' to 'i32' or convert the type of the assigned value to 'bool'.
+
+
+--CURDIR--/generics_negative.fz:131:5: error 45: Wrong number of actual value arguments in call
+    x3 3 true 3                  # 36. should flag an error: wrong argument count
+----^^
+Number of actual value arguments is 3, while call expects 2 value arguments.
+Actual value arguments: '3', 'true', '3'
+Called feature: 'Function.call'
+Formal value arguments: 'a' 'i32', 'a' 'bool'
+Declared at {base.fum}/Function.fz:35:10:
+  public call(a A...) R
+---------^^^^
+
+
+--CURDIR--/generics_negative.fz:132:5: error 46: Wrong number of actual value arguments in call
+    x3 3                         # 37. should flag an error: wrong argument count
+----^^
+Number of actual value arguments is 1, while call expects 2 value arguments.
+Actual value arguments: '3'
+Called feature: 'Function.call'
+Formal value arguments: 'a' 'i32', 'a' 'bool'
+Declared at {base.fum}/Function.fz:35:10:
+  public call(a A...) R
+---------^^^^
+
+
+--CURDIR--/generics_negative.fz:162:5: error 47: Incompatible types in assignment
     x2 (A i32 i32   ).B String bool := (A i64 bool).B String bool true  # 45. should flag an error: incompatible types
 ----^^
 assignment to field : 'generics_negative.outerGenerics.x2'
@@ -369,7 +511,7 @@ To solve this you could:
   • convert the type of the assigned value to '(generics_negative.outerGenerics.this.A i32 i32).B String bool'.
 
 
---CURDIR--/generics_negative.fz:163:5: error 36: Incompatible types in assignment
+--CURDIR--/generics_negative.fz:163:5: error 48: Incompatible types in assignment
     x3 (A i32 String).B String bool := x1                               # 46. should flag an error: incompatible types
 ----^^
 assignment to field : 'generics_negative.outerGenerics.x3'
@@ -383,7 +525,7 @@ To solve this you could:
   • convert the type of the assigned value to '(generics_negative.outerGenerics.this.A i32 String).B String bool'.
 
 
---CURDIR--/generics_negative.fz:179:9: error 37: Incompatible types when passing argument in a call
+--CURDIR--/generics_negative.fz:179:9: error 49: Incompatible types when passing argument in a call
     x.f "String" false 7  # 47. should flag an error: incompatible argument #1
 --------^^^^^^^^
 Actual type for argument #1 'a0' does not match expected type.
@@ -395,7 +537,7 @@ for value assigned  : '"String"'
 To solve this, you could change the type of the target 'a0' to 'String' or convert the type of the assigned value to 'i32'.
 
 
---CURDIR--/generics_negative.fz:180:11: error 38: Incompatible types when passing argument in a call
+--CURDIR--/generics_negative.fz:180:11: error 50: Incompatible types when passing argument in a call
     x.f 4 3 7             # 48. should flag an error: incompatible argument #2
 ----------^
 Actual type for argument #2 'a1' does not match expected type.
@@ -407,7 +549,7 @@ for value assigned  : '3'
 To solve this, you could change the type of the target 'a1' to 'i32' or convert the type of the assigned value to 'bool'.
 
 
---CURDIR--/generics_negative.fz:181:17: error 39: Incompatible types when passing argument in a call
+--CURDIR--/generics_negative.fz:181:17: error 51: Incompatible types when passing argument in a call
     x.f 4 false "false"   # 49.a should flag an error: incompatible argument #3
 ----------------^^^^^^^
 Actual type for argument #3 'a2' does not match expected type.
@@ -419,7 +561,7 @@ for value assigned  : '"false"'
 To solve this, you could change the type of the target 'a2' to 'String' or convert the type of the assigned value to 'i32'.
 
 
---CURDIR--/generics_negative.fz:184:9: error 40: Incompatible types when passing argument in a call
+--CURDIR--/generics_negative.fz:184:9: error 52: Incompatible types when passing argument in a call
     y.f "String" false 8  # 49.b should flag an error: incompatible argument #1
 --------^^^^^^^^
 Actual type for argument #1 'a' does not match expected type.
@@ -431,7 +573,7 @@ for value assigned  : '"String"'
 To solve this, you could change the type of the target 'a' to 'String' or convert the type of the assigned value to 'i32'.
 
 
---CURDIR--/generics_negative.fz:185:11: error 41: Incompatible types when passing argument in a call
+--CURDIR--/generics_negative.fz:185:11: error 53: Incompatible types when passing argument in a call
     y.f 9 10 8            # 50. should flag an error: incompatible argument #2
 ----------^^
 Actual type for argument #2 does not match expected type.
@@ -443,7 +585,7 @@ for value assigned  : '10'
 To solve this, you could change the type of the target 'argument #2' to 'i32' or convert the type of the assigned value to 'bool'.
 
 
---CURDIR--/generics_negative.fz:186:17: error 42: Incompatible types when passing argument in a call
+--CURDIR--/generics_negative.fz:186:17: error 54: Incompatible types when passing argument in a call
     y.f 9 false "8"       # 51. should flag an error: incompatible argument #3
 ----------------^^^
 Actual type for argument #3 does not match expected type.
@@ -453,147 +595,5 @@ actual type found   : 'codepoint'
 assignable to       : 'codepoint'
 for value assigned  : '"8"'
 To solve this, you could change the type of the target 'argument #3' to 'codepoint' or convert the type of the assigned value to 'i32'.
-
-
---CURDIR--/generics_negative.fz:117:23: error 43: Incompatible types when passing argument in a call
-    _ i32  := x2.call 3         # 26. should flag an error: wrong argument type
-----------------------^
-Actual type for argument #1 'a' does not match expected type.
-In call to          : 'Function.call'
-expected formal type: 'bool'
-actual type found   : 'i32'
-assignable to       : 'i32'
-for value assigned  : '3'
-To solve this, you could change the type of the target 'a' to 'i32' or convert the type of the assigned value to 'bool'.
-
-
---CURDIR--/generics_negative.fz:118:5: error 44: Incompatible types in assignment
-    _ bool := x2.call true      # 27. should flag an error: wrong type in assignment
-----^
-assignment to field : 'generics_negative.opengenerics24._'
-expected formal type: 'bool'
-actual type found   : 'i32'
-assignable to       : 'i32'
-for value assigned  : 'x2.call true'
-To solve this, you could change the type of the target 'generics_negative.opengenerics24._' to 'i32' or convert the type of the assigned value to 'bool'.
-
-
---CURDIR--/generics_negative.fz:120:18: error 45: Incompatible types when passing argument in a call
-    _ i32  := x2 3              # 28. should flag an error: wrong argument type
------------------^
-Actual type for argument #1 'a' does not match expected type.
-In call to          : 'Function.call'
-expected formal type: 'bool'
-actual type found   : 'i32'
-assignable to       : 'i32'
-for value assigned  : '3'
-To solve this, you could change the type of the target 'a' to 'i32' or convert the type of the assigned value to 'bool'.
-
-
---CURDIR--/generics_negative.fz:121:5: error 46: Incompatible types in assignment
-    _ bool := x2 true           # 29. should flag an error: wrong type in assignment
-----^
-assignment to field : 'generics_negative.opengenerics24._'
-expected formal type: 'bool'
-actual type found   : 'i32'
-assignable to       : 'i32'
-for value assigned  : 'x2'
-To solve this, you could change the type of the target 'generics_negative.opengenerics24._' to 'i32' or convert the type of the assigned value to 'bool'.
-
-
---CURDIR--/generics_negative.fz:124:13: error 47: Incompatible types when passing argument in a call
-    x3.call false false          # 30. should flag an error: wrong argument type
-------------^^^^^
-Actual type for argument #1 'a' does not match expected type.
-In call to          : 'Function.call'
-expected formal type: 'i32'
-actual type found   : 'bool'
-assignable to       : 'bool'
-for value assigned  : 'false'
-To solve this, you could change the type of the target 'a' to 'bool' or convert the type of the assigned value to 'i32'.
-
-
---CURDIR--/generics_negative.fz:125:15: error 48: Incompatible types when passing argument in a call
-    x3.call 3 3                  # 31. should flag an error: wrong argument type
---------------^
-Actual type for argument #2 does not match expected type.
-In call to          : 'Function.call'
-expected formal type: 'bool'
-actual type found   : 'i32'
-assignable to       : 'i32'
-for value assigned  : '3'
-To solve this, you could change the type of the target 'argument #2' to 'i32' or convert the type of the assigned value to 'bool'.
-
-
---CURDIR--/generics_negative.fz:126:8: error 49: Wrong number of actual value arguments in call
-    x3.call 3 true 3             # 32. should flag an error: wrong argument count
--------^^^^
-Number of actual value arguments is 3, while call expects 2 value arguments.
-Actual value arguments: '3', 'true', '3'
-Called feature: 'Function.call'
-Formal value arguments: 'a' 'i32', 'a' 'bool'
-Declared at {base.fum}/Function.fz:35:10:
-  public call(a A...) R
----------^^^^
-
-
---CURDIR--/generics_negative.fz:127:8: error 50: Wrong number of actual value arguments in call
-    x3.call 3                    # 33. should flag an error: wrong argument count
--------^^^^
-Number of actual value arguments is 1, while call expects 2 value arguments.
-Actual value arguments: '3'
-Called feature: 'Function.call'
-Formal value arguments: 'a' 'i32', 'a' 'bool'
-Declared at {base.fum}/Function.fz:35:10:
-  public call(a A...) R
----------^^^^
-
-
---CURDIR--/generics_negative.fz:129:8: error 51: Incompatible types when passing argument in a call
-    x3 false false               # 34. should flag an error: wrong argument type
--------^^^^^
-Actual type for argument #1 'a' does not match expected type.
-In call to          : 'Function.call'
-expected formal type: 'i32'
-actual type found   : 'bool'
-assignable to       : 'bool'
-for value assigned  : 'false'
-To solve this, you could change the type of the target 'a' to 'bool' or convert the type of the assigned value to 'i32'.
-
-
---CURDIR--/generics_negative.fz:130:10: error 52: Incompatible types when passing argument in a call
-    x3 3 3                       # 35. should flag an error: wrong argument type
----------^
-Actual type for argument #2 does not match expected type.
-In call to          : 'Function.call'
-expected formal type: 'bool'
-actual type found   : 'i32'
-assignable to       : 'i32'
-for value assigned  : '3'
-To solve this, you could change the type of the target 'argument #2' to 'i32' or convert the type of the assigned value to 'bool'.
-
-
---CURDIR--/generics_negative.fz:131:5: error 53: Wrong number of actual value arguments in call
-    x3 3 true 3                  # 36. should flag an error: wrong argument count
-----^^
-Number of actual value arguments is 3, while call expects 2 value arguments.
-Actual value arguments: '3', 'true', '3'
-Called feature: 'Function.call'
-Formal value arguments: 'a' 'i32', 'a' 'bool'
-Declared at {base.fum}/Function.fz:35:10:
-  public call(a A...) R
----------^^^^
-
-
---CURDIR--/generics_negative.fz:132:5: error 54: Wrong number of actual value arguments in call
-    x3 3                         # 37. should flag an error: wrong argument count
-----^^
-Number of actual value arguments is 1, while call expects 2 value arguments.
-Actual value arguments: '3'
-Called feature: 'Function.call'
-Formal value arguments: 'a' 'i32', 'a' 'bool'
-Declared at {base.fum}/Function.fz:35:10:
-  public call(a A...) R
----------^^^^
 
 54 errors.

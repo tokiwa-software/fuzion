@@ -316,7 +316,7 @@ public class ParsedCall extends Call
         _actuals = new List<Expr>(ab);
         _calledFeature = Types.resolved.f_bool_AND;
         _pendingError = null;
-        _name = _calledFeature.featureName().baseName();
+        _name = _calledFeature.baseName();
         var result = res.resolveType(ab, context);
         _actuals = new List<Expr>(result);
       }

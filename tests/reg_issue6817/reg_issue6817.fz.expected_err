@@ -2,11 +2,11 @@
 --CURDIR--/reg_issue6817.fz:32:24: error 1: Incompatible types in assignment
       say <| v.or_else false
 -----------------------^^^^^
-assignment to field : 'reg_issue6817.h.λ.call.result'
+assignment to field : 'reg_issue6817.h.(λfalse).call.result'
 expected formal type: 'T'
 actual type found   : 'bool'
 assignable to       : 'bool'
 for value assigned  : 'false'
-To solve this, you could change the type of the target 'reg_issue6817.h.λ.call.result' to 'bool' or convert the type of the assigned value to 'T'.
+To solve this, you could change the type of the target 'reg_issue6817.h.(λfalse).call.result' to 'bool' or convert the type of the assigned value to 'T'.
 
 one error.

@@ -307,7 +307,7 @@ public class Call extends AbstractCall
    */
   public Call(SourcePosition pos, Expr t, AbstractFeature calledFeature)
   {
-    this(pos, t, calledFeature.featureName().baseName(), FuzionConstants.NO_SELECT, NO_GENERICS, Expr.NO_EXPRS, calledFeature);
+    this(pos, t, calledFeature.baseName(), FuzionConstants.NO_SELECT, NO_GENERICS, Expr.NO_EXPRS, calledFeature);
   }
 
 
@@ -346,7 +346,7 @@ public class Call extends AbstractCall
        List<Expr> actuals,
        AbstractFeature calledFeature)
   {
-    this(pos, target, calledFeature.featureName().baseName(), FuzionConstants.NO_SELECT, generics, actuals, calledFeature);
+    this(pos, target, calledFeature.baseName(), FuzionConstants.NO_SELECT, generics, actuals, calledFeature);
     if (PRECONDITIONS) check
       (calledFeature.generics().sizeMatches(generics) || generics.contains(Types.t_ERROR));
   }
@@ -1436,9 +1436,9 @@ public class Call extends AbstractCall
       }
 
     // see test #5391 when this might happen
-    return result != null && result.containsUndefined()
-      ? null
-      : result;
+    return result == null || result == Types.t_ERROR || !result.containsUndefined()
+      ? result
+      : null;
   }
 
 
@@ -1493,7 +1493,7 @@ public class Call extends AbstractCall
       .errorIfSizeDoesNotMatch(_generics,
                                pos(),
                                FuzionConstants.OPERATION_CALL,
-                               "Called feature: "+_calledFeature.qualifiedName()+"\n");
+                               "Called feature: "+_calledFeature.qualifiedNameHuman()+"\n");
   }
 
 
@@ -2015,8 +2015,22 @@ public class Call extends AbstractCall
                                  *     _ := a %%2
                                  */
                                 actual = propagateForPartial(res, context, argnum, c);
-                                actual = actual.propagateExpectedType(res, context, c.applyTypePars(calledFeature(), actualTypeParameters()),
-                                                                      () -> "formal argument type in call to " + AstErrors.s(_calledFeature));
+                                var ac = c.applyTypePars(calledFeature(), actualTypeParameters());
+                                /* ac may contain undefined for code from #6849 as follows
+
+                                     x(F type : ()->unit, G type : F, f G) => {}
+                                     x ()->
+
+                                   where for the call to `x ()->` the type `G`'s
+                                   constraint `c` is `F` and the type parameter
+                                   `F` cannot be inferred such that `ac` is
+                                   `UNDEFINED`, which should not be propagated.
+                                 */
+                                if (!ac.containsUndefined())
+                                  {
+                                    actual = actual.propagateExpectedType(res, context, ac,
+                                                                          () -> "formal argument type in call to " + AstErrors.s(_calledFeature));
+                                  }
                                 _actuals = _actuals.setOrClone(argnum, actual);
                                 actualType = typeFromActual(res, context, actual);
                               }
@@ -2028,6 +2042,17 @@ public class Call extends AbstractCall
                           }
                         if (resultExpression(actual) instanceof AbstractLambda al)
                           {
+                            var tc = t.selfOrConstraint();
+                            if (t != tc)
+                              { /* we might need to infer two type parameters in code like
+                                 *
+                                 *   f(R type, F type : ()->R, f F) => ...
+                                 *   f ()->"bla"
+                                 *
+                                 * here, we first must infer `R` to be `String`, then `F` to be `Nullary String`
+                                 */
+                                checked[vai] = inferGenericLambdaResult(res, context, tc, frml, al, actual.pos(), conflict, foundAt);
+                              }
                             checked[vai] = inferGenericLambdaResult(res, context, t, frml, al, actual.pos(), conflict, foundAt);
                           }
                       }
@@ -2211,16 +2236,14 @@ public class Call extends AbstractCall
         if (g.outer() == _calledFeature)
           { // we found a use of a generic type, so record it:
             var i = g.typeParameterIndex();
-            if (!conflict[i])
+            var gt = _generics.get(i);
+            if (!conflict[i] && gt != Types.t_ERROR)
               {
-                var gt = _generics.get(i);
-                var nt = gt == Types.t_UNDEFINED ? actualType
-                                                 : gt.union(actualType, context);
-                if (nt == Types.t_ERROR)
-                  {
-                    conflict[i] = true;
-                    nt = Types.t_UNDEFINED;
-                  }
+                var nt = actualType.containsUndefined() ? gt :
+                         gt == Types.t_UNDEFINED        ? actualType
+                                                        : gt.commonSupertype(actualType, context);
+                conflict[i] = nt == Types.t_ERROR;
+                nt          = nt == Types.t_ERROR ? Types.t_UNDEFINED : nt;
                 _generics = _generics.setOrClone(i, nt);
                 addPair(foundAt, i, pos, actualType);
               }
@@ -2414,8 +2437,8 @@ public class Call extends AbstractCall
                 var rt = al.inferLambdaResultType(res, context, argumentType);
                 if (rt != null)
                   {
-                      inferGeneric(res, context, lambdaResultType, rt, pos, conflict, foundAt);
-                      result = true;
+                    inferGeneric(res, context, lambdaResultType, rt, pos, conflict, foundAt);
+                    result = true;
                   }
               }
           }
@@ -3210,7 +3233,7 @@ public class Call extends AbstractCall
             (target() instanceof This t && t.toString().equals(FuzionConstants.UNIVERSE_NAME + ".this"))
             ? ""
             : StringHelpers.wrapInParentheses(target().toString()) + ".")
-      + (this instanceof Call c && !c.calledFeatureKnown() ? c._name : calledFeature().featureName().baseNameHuman())
+      + (this instanceof Call c && !c.calledFeatureKnown() ? c._name : calledFeature().baseNameHuman())
       + actualTypeParameters().toString(" ", " ", "", t -> (t == null ? "--null--" : t.toStringWrapped(true)))
       + actuals()             .toString(" ", " ", "", e -> (e == null ? "--null--" : e.toStringWrapped()))
       + (select() < 0        ? "" : " ." + select());

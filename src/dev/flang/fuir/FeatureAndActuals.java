@@ -143,7 +143,7 @@ public class FeatureAndActuals extends ANY implements Comparable<FeatureAndActua
    */
   public String toString()
   {
-    return _f.qualifiedName() + _tp.toString(t -> " " + t.toStringWrapped(true));
+    return _f.qualifiedNameHuman() + _tp.toString(t -> " " + t.toStringWrapped(true));
   }
 
 }

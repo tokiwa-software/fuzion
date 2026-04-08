@@ -286,7 +286,7 @@ public class Function extends AbstractLambda
     else if (!t.isLambdaTarget(res))
       {
         // suppress error for t_ERROR and t_UNDEFINED, but only if other error was already reported
-        if (!t.isArtificialType() || !Errors.any())
+        if (!t.containsUndefined() || !Errors.any())
           {
             AstErrors.expectedFunctionTypeForLambda(pos(), t, from);
           }
@@ -368,7 +368,7 @@ public class Function extends AbstractLambda
             var rt0 = t.lambdaTargetResultType(res);
             var rt = inferResultType ? NoType.INSTANCE      : new FunctionReturnType(rt0);
             var im = inferResultType ? Impl.Kind.RoutineDef : Impl.Kind.Routine;
-            var feature = new Feature(pos(), Visi.PRIV, FuzionConstants.MODIFIER_REDEFINE, rt, new List<String>(cl.featureName().baseName()), args, NO_CALLS, Contract.EMPTY_CONTRACT, new Impl(_expr.pos(), _expr, im))
+            var feature = new Feature(pos(), Visi.PRIV, FuzionConstants.MODIFIER_REDEFINE, rt, new List<String>(cl.baseName()), args, NO_CALLS, Contract.EMPTY_CONTRACT, new Impl(_expr.pos(), _expr, im))
               {
                 @Override
                 public boolean isLambdaCall()  // NYI: what is this for?
@@ -449,7 +449,7 @@ public class Function extends AbstractLambda
         // handle the case that one of the outer features in context is the same
         // as f.outer() and use the correct chain of current and outer refs
         // instead.
-        return new Call(pos(), targetCalls(res, context, f.outer()), f.featureName().baseName());
+        return new Call(pos(), targetCalls(res, context, f.outer()), f.baseName());
       }
   }
 

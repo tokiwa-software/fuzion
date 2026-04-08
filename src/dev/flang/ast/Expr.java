@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import java.util.Comparator;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -214,13 +215,13 @@ public abstract class Expr extends ANY implements HasSourcePosition
     // Union of the types of the expressions
     // that are sure about their types.
     var foundType = false;
-    for (var e : exprs)
+    for (var e : choicesAndRefsFirstSorting(exprs, e->e.typeForUnion()))
       {
         var et = e.typeForUnion();
         if (et != null)
           {
             foundType = true;
-            t = t.union(et, context);
+            t = t.commonSupertype(et, context);
           }
       }
 
@@ -237,13 +238,13 @@ public abstract class Expr extends ANY implements HasSourcePosition
     // Union of the types of the expressions
     AbstractType result = Types.resolved.t_void;
     foundType = false;
-    for (var e : exprs)
+    for (var e : choicesAndRefsFirstSorting(exprs, e->e.typeForInferencing()))
       {
         var et = e.typeForInferencing();
         if (et != null)
           {
             foundType = true;
-            result = result.union(et, context);
+            result = result.commonSupertype(et, context);
           }
       }
 
@@ -251,13 +252,13 @@ public abstract class Expr extends ANY implements HasSourcePosition
     // In case we have not found any type yet, but we need one, force a type
     if (urgent && !foundType)
       {
-        for (var e : exprs)
+        for (var e : choicesAndRefsFirstSorting(exprs, e->e.type()))
           {
             var et = e.type();
             if (et != null)
               {
                 foundType = true;
-                result = result.union(et, context);
+                result = result.commonSupertype(et, context);
               }
           }
       }
@@ -269,6 +270,36 @@ public abstract class Expr extends ANY implements HasSourcePosition
        !urgent || !exprs.isEmpty() || result == Types.resolved.t_void);
 
     return result;
+  }
+
+
+  /**
+   * Sort the expressions by type, choices first, then refs, then all others.
+   *
+   * @param exprs the expressions to sort
+   *
+   * @param keyExtractor  the function to get the type from the expression
+   */
+  private static List<Expr> choicesAndRefsFirstSorting(List<Expr> exprs, java.util.function.Function<Expr, AbstractType> keyExtractor)
+  {
+    return exprs.stream()
+      .sorted(
+        Comparator.comparing(keyExtractor,
+          (t1,t2) -> t1 == null
+            ? +1
+            : t2 == null
+            ? -1
+            : t1.isChoice()
+            ? -1
+            : t2.isChoice()
+            ? +1
+            : t1.isRef()
+            ? -1
+            : t2.isRef()
+            ? +1
+            : 0)
+      )
+      .collect(List.collector());
   }
 
 

@@ -575,6 +575,7 @@ public class Impl extends ANY
             if (positions.size() > 1)
               {
                 AstErrors.incompatibleTypesOfActualArguments(formalArg, types, positions);
+                _initialCalls.forEach(ic -> ic.setDefunct());
               }
             else
               {

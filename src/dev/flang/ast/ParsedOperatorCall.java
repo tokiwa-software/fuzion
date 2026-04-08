@@ -195,7 +195,7 @@ public class ParsedOperatorCall extends ParsedCall
   {
     Call result = null;
     if (isOperatorCall(true) && // outer may be in parentheses `(a - «b + c»)`
-        _calledFeature.featureName().baseName().startsWith(FuzionConstants.INFIX_OPERATOR_PREFIX) &&
+        _calledFeature.baseName().startsWith(FuzionConstants.INFIX_OPERATOR_PREFIX) &&
         (_actuals.size() == 1 || _actuals.size() == 2) &&
         _actuals.get(_actuals.size()-1) instanceof ParsedOperatorCall b_plus_c &&
         b_plus_c.isOperatorCall(false) && // next may not be in parentheses `a - (b + c)` should stay unchanged while `a - «b + c»` should become `(a - b) + c`.

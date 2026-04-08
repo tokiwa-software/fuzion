@@ -1036,18 +1036,28 @@ class CodeGen
       case onEveryUse               -> c;  // create constant inline
       case onUniverseInitialization ->     // or create constant in universe' static initializer:
         {
-          var ucl = _types.classFile(_fuir.clazzUniverse());
-          var f = _names.preallocatedConstantField(constCl, d);
-          var jt = _types.resultType(constCl);
-          if (!ucl.hasField(f))
+          Pair<Expr,Expr> result = null;
+          // NYI: CLEANUP: AI/FUIR should not give us unit like consts
+          if (_fuir.clazzIsUnitType(constCl))
             {
-              ucl.field(ACC_STATIC | ACC_PUBLIC,
-                        f,
-                        jt.descriptor());
-              ucl.addToClInit(c.v1());
-              ucl.addToClInit(c.v0().andThen(Expr.putstatic(ucl._name, f, jt)));
+              result = new Pair<>(Expr.UNIT, Expr.UNIT);
             }
-          yield new Pair<Expr, Expr>(Expr.getstatic(ucl._name, f, jt), Expr.UNIT);
+          if (result == null)
+            {
+              var ucl = _types.classFile(_fuir.clazzUniverse());
+              var f = _names.preallocatedConstantField(constCl, d);
+              var jt = _types.resultType(constCl);
+              if (!ucl.hasField(f))
+                {
+                  ucl.field(ACC_STATIC | ACC_PUBLIC,
+                            f,
+                            jt.descriptor());
+                  ucl.addToClInit(c.v1());
+                  ucl.addToClInit(c.v0().andThen(Expr.putstatic(ucl._name, f, jt)));
+                }
+              result = new Pair<Expr, Expr>(Expr.getstatic(ucl._name, f, jt), Expr.UNIT);
+            }
+          yield result;
         }
       };
   }
@@ -1223,7 +1233,7 @@ class CodeGen
    */
   private String clazzInQuotes(int c)
   {
-    return "`" + _fuir.clazzAsString(c) + "`";
+    return "`" + _fuir.clazzName(c) + "`";
   }
 
 

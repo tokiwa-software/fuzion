@@ -26,7 +26,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import java.util.Comparator;
 import java.util.LinkedList;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -216,7 +219,37 @@ public class Resolution extends ANY
   /**
    * List of features scheduled for second pass of type checking
    */
-  final LinkedList<Feature> forCheckTypes = new LinkedList<>();
+  final SortedSet<Feature> forCheckTypes = new TreeSet<>(
+                                                Comparator.comparing(x->x,
+                                                  (x,y) ->
+                                                    {
+                                                      /**
+                                                       * The idea here is to check types in sourcecode order
+                                                       * and to check features like universe with built-in pos last.
+                                                       */
+                                                      var fc = x.compareTo(y);
+                                                      if (fc == 0 || x.pos().isBuiltIn() && y.pos().isBuiltIn())
+                                                        {
+                                                          return fc;
+                                                        }
+                                                      else if (x.pos().isBuiltIn())
+                                                        {
+                                                          return +1;
+                                                        }
+                                                      else if (y.pos().isBuiltIn())
+                                                        {
+                                                          return -1;
+                                                        }
+                                                      else
+                                                        {
+                                                          var c = x.pos().compareTo(y.pos());
+                                                          return c == 0
+                                                            ? fc
+                                                            : c;
+                                                        }
+                                                    }
+                                                )
+                                               );
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -577,7 +610,7 @@ public class Resolution extends ANY
           }
         else
           {
-            var name = af.featureName().baseName() + ".";
+            var name = af.baseName() + ".";
             if (!af.isConstructor() && !af.isChoice())
               {
                 name = name + "_" + (_cotypeId_++) + "_" + _module.name();
@@ -608,7 +641,7 @@ public class Resolution extends ANY
                 var constraint0 = (t instanceof Feature tf ? tf.returnType().functionReturnType() : t.resultType())
                   .resolve(this, af.context());
                 var constraint = af.rebaseTypeForCotype(constraint0);
-                var ta = new Feature(p, t.visibility(), t.modifiers() & FuzionConstants.MODIFIER_REDEFINE, constraint, t.featureName().baseName(),
+                var ta = new Feature(p, t.visibility(), t.modifiers() & FuzionConstants.MODIFIER_REDEFINE, constraint, t.baseName(),
                                      Contract.EMPTY_CONTRACT,
                                      i);
                 typeArgs.add(ta);
@@ -617,7 +650,7 @@ public class Resolution extends ANY
             if (inh.isEmpty() && !Errors.any())
               { // let `Any.type` inherit from `Type`
                 if (CHECKS) check
-                  (af instanceof Feature && af.featureName().baseName().equals(FuzionConstants.ANY_NAME));
+                  (af instanceof Feature && af.baseName().equals(FuzionConstants.ANY_NAME));
                 inh.add(new Call(af.pos(), FuzionConstants.TYPE_FEAT));
               }
             existingOrNewCotype(af, name, typeArgs, inh);

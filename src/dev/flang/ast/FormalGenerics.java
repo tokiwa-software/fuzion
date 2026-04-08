@@ -181,7 +181,7 @@ public class FormalGenerics extends ANY
   {
     return !isOpen() && _feature.typeArguments().isEmpty()
       ? ""
-      : _feature.typeArguments().map2(f -> f.featureName().baseNameHuman()) + (isOpen() ? "..." : "");
+      : _feature.typeArguments().map2(f -> f.baseNameHuman()) + (isOpen() ? "..." : "");
   }
 
 }

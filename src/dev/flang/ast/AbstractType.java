@@ -433,15 +433,17 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * Check if this or any of its generic arguments is {@code Types.t_UNDEFINED}.
+   * Check if this or any of its generic arguments is {@code Types.t_UNDEFINED},
+   * {@code Types.t_ERROR}, or {@code Types.t_FORWARD_CYCLIC}.
    *
    * @param except index of a generic argument should be ignored, it may be
    * {@code Types.t_UNDEFINED}.  This is used in a lambda {@code x -> f x} of
    * type {@code Function<R,X>} when {@code R} is unknown and to be inferred. -1
    * to not ignore any argument.
    *
-   * @return true if this depends on {@code Types.t_UNDEFINED} except for only
-   * type parameter #`except` being {@code Types.t_UNDEFINED}.
+   * @return true if this depends on {@code Types.t_UNDEFINED}, {@code
+   * Types.t_ERROR}, or {@code Types.t_FORWARD_CYCLIC} except for type parameter
+   * #`except` being {@code Types.t_UNDEFINED}.
    */
   public boolean containsUndefined(int except)
   {
@@ -449,7 +451,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       (except == -1 || except >= 0 && except <= generics().size());
 
     boolean result = false;
-    if (this == Types.t_UNDEFINED)
+    if (isArtificialType())
       {
         result = true;
       }
@@ -460,7 +462,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           {
             if (CHECKS) check
               (Errors.any() || t != null);
-            result = result || ix != except && t != null && t.containsUndefined(-1);
+            result = result || t != null && t.isArtificialType() && (ix != except || t != Types.t_UNDEFINED);
             ix++;
           }
       }
@@ -572,22 +574,28 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @param context the source code context where this Type is used
    *
    * @param assignableTo in case we want to show all types actual is assignable
-   * to in an error message, this collects the types converted to strings.
+   * to in an error message, this collects those types.
    *
    * @return
    *  - yes      if assignable
    *  - no       if not assignable
    *  - dontKnow if contains error
    */
-  YesNo isAssignableFrom(AbstractType actual, Context context, boolean allowBoxing, boolean allowTagging, Set<String> assignableTo)
+  YesNo isAssignableFrom(AbstractType actual, Context context, boolean allowBoxing, boolean allowTagging, Set<AbstractType> assignableTo)
   {
     if (PRECONDITIONS) require
       (this  .isGenericArgument() || this  .feature() != null || Errors.any(),
        actual.isGenericArgument() || actual.feature() != null || Errors.any());
 
+        /*
+    // tag::fuzion_rule_TYPE_SYSTEM_ASSIGNABLE_FROM[]
+    NYI: UNDER DEVELOPMENT:
+    // end::fuzion_rule_TYPE_SYSTEM_ASSIGNABLE_FROM[]
+        */
+
     if (assignableTo != null)
       {
-        assignableTo.add(actual.toString(true));
+        assignableTo.add(actual);
       }
     var target_type = this  .remove_type_parameter_used_for_this_type_in_cotype();
     var actual_type = actual.remove_type_parameter_used_for_this_type_in_cotype();
@@ -767,13 +775,19 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         var gt = g.selfOrConstraint(context);
 
         if (
-          // NYI: BUG: #5002: check recursive type, e.g.:
-          // this  = monad monad.A monad.MA
-          // other = monad option.T (option option.T)
-          // for now just prevent infinite recursion
-            gt.compareTo(this) != 0 &&
-
-            !gt.constraintAssignableFrom(context, og))
+          switch (g.kind())
+            {
+              case GenericArgument ->
+                                      // NYI: BUG: #5002: check recursive type, e.g.:
+                                      // this  = monad monad.A monad.MA
+                                      // other = monad option.T (option option.T)
+                                      // for now just prevent infinite recursion
+                                      gt.compareTo(this) != 0
+                                      &&
+                                      !gt.constraintAssignableFrom(context, og);
+              case ValueType, RefType, ThisType -> g.compareTo(og) != 0;
+            }
+          )
           {
             return false;
           }
@@ -1475,7 +1489,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     return
       isPlainType() &&
       // NYI: UNDER DEVELOPMENT: Replace String comparison by a flag or similar
-      feature().featureName().baseName().startsWith(FuzionConstants.LAMBDA_PREFIX);
+      feature().baseName().startsWith(FuzionConstants.LAMBDA_PREFIX);
   }
 
 
@@ -1651,8 +1665,29 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @return a type that is assignable both from this and that, or Types.t_ERROR if none
    * exists.
    */
-  AbstractType union(AbstractType that, Context context)
+  AbstractType commonSupertype(AbstractType that, Context context)
   {
+        /*
+    // tag::fuzion_rule_TYPE_SYSTEM_COMMON_SUPERTYPE[]
+Here is how to find the common super type of two types.
+
+1. One of the types is void
++
+result is the other type.
+
+2. first type is assignable from second type (boxing and/or tagging is allowed)
++
+result is the first type
+
+3. second type is assignable from first type (boxing and/or tagging is allowed)
++
+result is the second type
+
+4. none if the above applies
++
+there is no common super type of the two types (Types.t_ERROR)
+    // end::fuzion_rule_TYPE_SYSTEM_COMMON_SUPERTYPE[]
+        */
     AbstractType result =
       this == Types.t_ERROR                        ? Types.t_ERROR     :
       that == Types.t_ERROR                        ? Types.t_ERROR     :
@@ -2402,7 +2437,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     if (isGenericArgument())
       {
         var ga = genericArgument();
-        result = (ga.isCoTypesThisType() ? ga.qualifiedName(context) : ga.featureName().baseName()) + (isRef() ? " (boxed)" : "");
+        result = (ga.isCoTypesThisType() ? ga.qualifiedName(context, humanReadable) : ga.baseName()) + (isRef() ? " (boxed)" : "");
       }
     else
       {
@@ -2416,7 +2451,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         // for a feature that does not define a type itself, the name is not
         // unique due to overloading with different argument counts. So we add
         // the argument count to get a unique name.
-        var fname = (humanReadable ? fn.baseNameHuman() : fn.baseName())
+        var fname = (humanReadable ? f.baseNameHuman() : f.baseName())
           +  (f.definesType() || fn.argCount() == 0 || fn.isInternal() || humanReadable
                 ? ""
                 : FuzionConstants.INTERNAL_NAME_PREFIX + fn.argCount());
@@ -2466,7 +2501,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   {
     var o = outer();
     return isThisType()
-        ? (feature().outer().isUniverse() ? "" : feature().outer().qualifiedName() + ".")
+        ? (feature().outer().isUniverse() ? "" : feature().outer().qualifiedName(humanReadable) + ".")
         : o != null && (o.isGenericArgument() || !o.feature().isUniverse())
         ? o.toStringWrapped(humanReadable) + "."
         : "";
@@ -2788,8 +2823,29 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       if (t.isThisType()&& t.feature().compareTo(ff.outer()) == 0)
         {
           AstErrors.useConcreteTypeInFixed(a, t);
+          setContractFeaturesImplEmpty(ff);
         }
     });
+  }
+
+
+  /**
+   * set implementations of contract features to empty
+   * to avoid checking those.
+   */
+  private void setContractFeaturesImplEmpty(Feature ff)
+  {
+    if (PRECONDITIONS) require
+      (Errors.any());
+
+    var emptyImpl = new Impl(
+      SourcePosition.builtIn,
+      new Block(new List<Expr>()),
+      Impl.Kind.Routine);
+    if (ff._preFeature != null) { ff._preFeature.setImpl(emptyImpl); }
+    if (ff._preBoolFeature != null) { ff._preBoolFeature.setImpl(emptyImpl); }
+    if (ff._preAndCallFeature != null) { ff._preAndCallFeature.setImpl(emptyImpl); }
+    if (ff._postFeature != null) { ff._postFeature.setImpl(emptyImpl); }
   }
 
 

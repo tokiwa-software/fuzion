@@ -32,7 +32,7 @@ reg_issue3801 is
     #
     # The problem was that during monomorphizaiton, for the co-type of the
     # feature generated for the lambda expression `_->`, the inherits call
-    # includes a call to `Unary.type e.λ.this.type unit e.this` and the
+    # includes a call to `Unary.type e.(λ_->).this.type unit e.this` and the
     # last type parameter `e.this` was not monomorphized, i.e., was not
     # replaced by `e`.
     #

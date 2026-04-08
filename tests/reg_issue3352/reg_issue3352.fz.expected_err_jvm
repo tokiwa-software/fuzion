@@ -2,11 +2,11 @@
 error 1: FATAL FAULT `*** panic ***`: *** invalid mutate for Type of 'm'
 Call stack:
 fuzion.sys.fatal_fault#2 at {base.fum}/fuzion/sys.fz:55
-fuzion.type.runtime.type.fault.type.install_default.λ.call#1 at {base.fum}/fuzion/runtime/fault.fz:43
+fuzion.type.runtime.type.fault.type.install_default.(λkind_and_msg-> kind, msg := kind_and_m...).call#1 at {base.fum}/fuzion/runtime/fault.fz:59
 fuzion.runtime.fault.cause#1 at {base.fum}/eff/fallible.fz:35
-panic.type.install_default.λ.call#1 at {base.fum}/panic.fz:36
+panic.type.install_default.(λ(msg->fuzion.runtime.fault.cause ("***...).call#1 at {base.fum}/panic.fz:36
 panic.cause#1 at {base.fum}/eff/fallible.fz:35
-panic#1 at {base.fum}/panic.fz:56
+panic#1 at {base.fum}/panic.fz:58
 m.mpanic#1 at {base.fum}/mutate.fz:75
 (m.new i32).check_and_replace at {base.fum}/mutate.fz:101
 (m.new i32).get at {base.fum}/mutate.fz:136

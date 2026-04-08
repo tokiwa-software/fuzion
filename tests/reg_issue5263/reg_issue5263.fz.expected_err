@@ -12,7 +12,7 @@ This call was created automatically by partial application. To solve this, you m
   f (q "hi" "ho" 32)             # 2. should flag an error
 -----^
 Feature not found: 'q' (5 arguments)
-Target feature: 'reg_issue5263.λ.call'
+Target feature: 'reg_issue5263.(λq).call'
 In call: '(q "hi" "ho" 32)'
 This call was created automatically by partial application. To solve this, you might want to use an explicit lambda expression of the form '( a0,a1 -> ..code using a0,a1..)'.
 
@@ -21,7 +21,7 @@ This call was created automatically by partial application. To solve this, you m
   f (q Any)                      # 3. should flag an error
 -----^
 Feature not found: 'q' (3 arguments)
-Target feature: 'reg_issue5263.λ.call'
+Target feature: 'reg_issue5263.(λq).call'
 In call: '(q Any)'
 This call was created automatically by partial application. To solve this, you might want to use an explicit lambda expression of the form '( a0,a1 -> ..code using a0,a1..)'.
 
