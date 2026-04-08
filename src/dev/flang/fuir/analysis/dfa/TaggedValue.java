@@ -170,7 +170,7 @@ public class TaggedValue extends Value implements Comparable<TaggedValue>
    */
   public String toString()
   {
-    return _dfa._fuir.clazzAsString(_clazz) + "[tag:" + _tag + ",val:" + _original + "]";
+    return _dfa._fuir.clazzName(_clazz) + "[tag:" + _tag + ",val:" + _original + "]";
   }
 
 }

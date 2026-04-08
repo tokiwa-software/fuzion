@@ -373,7 +373,7 @@ public class Env extends ANY implements Comparable<Env>
     for (var et : _types)
       {
         sb.append(sep)
-          .append(_dfa._fuir.clazzAsString(et))
+          .append(_dfa._fuir.clazzName(et))
           .append("->")
           .append(getActualEffectValues(et));
         sep = ", ";
@@ -392,7 +392,7 @@ public class Env extends ANY implements Comparable<Env>
     for (var et : _types)
       {
         sb.append(sep)
-          .append(_dfa._fuir.clazzAsStringHuman(et));
+          .append(_dfa._fuir.clazzNameHuman(et));
         sep = ", ";
       }
     return sb.toString();
@@ -460,7 +460,7 @@ public class Env extends ANY implements Comparable<Env>
         if (Value.compare(oe, ne) != 0)
           {
             _actualEffectValues = ne;
-            _dfa.wasChanged(() -> "effect.replace called: "+_dfa._fuir.clazzAsString(ecl));
+            _dfa.wasChanged(() -> "effect.replace called: "+_dfa._fuir.clazzName(ecl));
           }
       }
     else if (_outer != null)
@@ -510,7 +510,7 @@ public class Env extends ANY implements Comparable<Env>
         if (!_isAborted)
           {
             _isAborted = true;
-            _dfa.wasChanged(() -> "effect.abort0 called: "+_dfa._fuir.clazzAsString(ecl));
+            _dfa.wasChanged(() -> "effect.abort0 called: "+_dfa._fuir.clazzName(ecl));
           }
       }
     else if (_outer != null)
@@ -519,7 +519,7 @@ public class Env extends ANY implements Comparable<Env>
       }
     else
       {
-        throw new Error("DFA: Aborted effect `" + _dfa._fuir.clazzAsString(ecl) + "` not found in current environment");
+        throw new Error("DFA: Aborted effect `" + _dfa._fuir.clazzName(ecl) + "` not found in current environment");
       }
   }
 

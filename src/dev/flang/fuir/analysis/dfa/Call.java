@@ -473,7 +473,7 @@ public class Call extends ANY implements Comparable<Call>, Context
       {
         _toStringRecursion_.add(this);
         var sb = new StringBuilder();
-        sb.append(_dfa._fuir.clazzAsString(calledClazz()));
+        sb.append(_dfa._fuir.clazzName(calledClazz()));
         if (target() != Value.UNIT)
           {
             sb.append(" target=")
@@ -507,12 +507,12 @@ public class Call extends ANY implements Comparable<Call>, Context
     return
       (forEnv
        ? (on.equals(EFFECT_INSTATE_NAME)
-          ? "install effect " + Errors.effe(_dfa._fuir.clazzAsStringHuman(_dfa._fuir.effectTypeFromIntrinsic(calledClazz()))) + ", old environment was "
+          ? "install effect " + Errors.effe(_dfa._fuir.clazzNameHuman(_dfa._fuir.effectTypeFromIntrinsic(calledClazz()))) + ", old environment was "
           : "effect environment ") +
          Errors.effe(Env.envAsString(env())) +
          " for call to "
        : "call ")+
-      Errors.sqn(_dfa._fuir.clazzAsStringHuman(calledClazz())) +
+      Errors.sqn(_dfa._fuir.clazzNameHuman(calledClazz())) +
       (pos != null ? " at " + pos.pos().show() : "");
   }
 
@@ -618,7 +618,7 @@ public class Call extends ANY implements Comparable<Call>, Context
         if (result == null && _dfa._reportResults && !ignoreError)
           {
             DfaErrors.usedEffectNotInstalled(_dfa._fuir.sitePos(s),
-                                             _dfa._fuir.clazzAsString(ecl),
+                                             _dfa._fuir.clazzName(ecl),
                                              this);
           }
       }
@@ -670,7 +670,7 @@ public class Call extends ANY implements Comparable<Call>, Context
         if (_dfa._reportResults && DFA.TRACE_ENVS)
           {
             // NYI: Make this a normal error similar to DfaErrors.usedEffectnotinstalled:
-            Errors.fatal("Trying to replace effect " + Errors.code(_dfa._fuir.clazzAsString(ecl))
+            Errors.fatal("Trying to replace effect " + Errors.code(_dfa._fuir.clazzName(ecl))
                          + " that is not yet installed: \n" + toString(false) + "\n" + toString(true));
           }
       }

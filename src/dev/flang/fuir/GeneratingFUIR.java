@@ -958,17 +958,18 @@ public class GeneratingFUIR extends FUIR
        cl < CLAZZ_BASE + _clazzes.size());
 
     var cc = id2clazz(cl);
-    return cc.feature().qualifiedNameInternal();
+    return cc.feature().qualifiedName();
   }
 
 
   /**
-   * String representation of clazz, for creation of unique type names.
+   * Unique String representation of a clazz, fully qualified and including type
+   * parameters, for creation of unique type names.
    *
    * @param cl a clazz id.
    */
   @Override
-  public String clazzAsString(int cl)
+  public String clazzName(int cl)
   {
     if (PRECONDITIONS) require
       (cl == NO_CLAZZ || cl >= CLAZZ_BASE,
@@ -981,12 +982,14 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
-   * human readable String representation of clazz, for stack traces and debugging.
+   * human readable String representation of clazz, for stack traces and
+   * debugging. May not be used for code generation since this might not be
+   * unique.
    *
    * @param cl a clazz id.
    */
   @Override
-  public String clazzAsStringHuman(int cl)
+  public String clazzNameHuman(int cl)
   {
     if (PRECONDITIONS) require
       (cl >= CLAZZ_BASE,
@@ -1909,7 +1912,7 @@ public class GeneratingFUIR extends FUIR
         if (e instanceof AbstractCall call)
           {
             var cf = call.calledFeature();
-            var qn = cf.qualifiedNameInternal();
+            var qn = cf.qualifiedName();
             if (cf.isIntrinsic() && _removedIntrinsics_.containsKey(qn))
               {
                 e = _removedIntrinsics_.get(qn).code(call, _currentClazz);
@@ -2119,7 +2122,7 @@ public class GeneratingFUIR extends FUIR
       {
         var cl = clazzAt(s);
         var p = sitePos(s);
-        res = clazzAsString(cl) + "(" + clazzArgCount(cl) + " args)" + (p == null ? "" : " at " + sitePos(s).show());
+        res = clazzName(cl) + "(" + clazzArgCount(cl) + " args)" + (p == null ? "" : " at " + sitePos(s).show());
       }
     else
       {
