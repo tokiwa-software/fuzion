@@ -341,7 +341,7 @@ public class DFA extends ANY
               if (_reportResults && _options.verbose(9))
                 {
                   say("DFA for "+_fuir.siteAsString(s) + ": "+_fuir.codeAtAsString(s)+": " +
-                                     tvalue + ".set("+_fuir.clazzAsString(cc)+") := " + args.get(0));
+                                     tvalue + ".set("+_fuir.clazzName(cc)+") := " + args.get(0));
                 }
               var v = args.get(0);
               tvalue.value().setField(DFA.this, cc, v.value());
@@ -375,7 +375,7 @@ public class DFA extends ANY
         {
         case Abstract :
           Errors.error("Call to abstract feature encountered.",
-                       "Found call to  " + _fuir.clazzAsString(cc));
+                       "Found call to  " + _fuir.clazzName(cc));
           break;
         case Routine  :
         case Intrinsic:
@@ -413,7 +413,7 @@ public class DFA extends ANY
             if (_reportResults && _options.verbose(9))
               {
                 say("DFA for "+_fuir.siteAsString(s) + ": "+_fuir.codeAtAsString(s)+": " +
-                                   tvalue + ".get(" + _fuir.clazzAsString(cc) + ") => " + res);
+                                   tvalue + ".get(" + _fuir.clazzName(cc) + ") => " + res);
               }
             break;
           }
@@ -493,7 +493,7 @@ public class DFA extends ANY
             else
               {
                 Errors.error("Unsupported constant in DFA analysis.",
-                             "DFA cannot handle constant of clazz '" + _fuir.clazzAsString(constCl) + "' ");
+                             "DFA cannot handle constant of clazz '" + _fuir.clazzName(constCl) + "' ");
                 yield null;
               }
           }
@@ -1359,7 +1359,7 @@ public class DFA extends ANY
                            realIter,
                            _calls.size(),
                            _numUniqueValues,
-                           _fuir.clazzAsString(_fuir.mainClazz()));
+                           _fuir.clazzName(_fuir.mainClazz()));
       }
   }
 
@@ -1508,8 +1508,8 @@ public class DFA extends ANY
           .filter(c -> counts.get(c) > total / 500)
           .forEach(c ->
                    {
-                     System.out.println("Call count "+counts.get(c)+"/"+total+" for "+_fuir.clazzAsString(c)+" "+(_fuir.clazzIsUnitType(c)?"UNIT":""));
-                     if (_fuir.clazzAsString(c).equals(SHOW_CALLS))
+                     System.out.println("Call count "+counts.get(c)+"/"+total+" for "+_fuir.clazzName(c)+" "+(_fuir.clazzIsUnitType(c)?"UNIT":""));
+                     if (_fuir.clazzName(c).equals(SHOW_CALLS))
                        {
                          var i = 0;
                          Call prev = null;
@@ -1552,8 +1552,8 @@ public class DFA extends ANY
           .filter(c -> counts.get(c) > total / 5000)
           .forEach(c ->
                    {
-                     System.out.println("Value count "+counts.get(c)+"/"+total+" for "+_fuir.clazzAsString(c));
-                     if (_fuir.clazzAsString(c).equals(SHOW_VALUES))
+                     System.out.println("Value count "+counts.get(c)+"/"+total+" for "+_fuir.clazzName(c));
+                     if (_fuir.clazzName(c).equals(SHOW_VALUES))
                        {
                          var i = 0;
                          for (var v : _uniqueValues)
@@ -1732,7 +1732,7 @@ public class DFA extends ANY
   {
     if (_escapes.add(cc))
       {
-        wasChanged(() -> "Escapes: " + _fuir.clazzAsString(cc));
+        wasChanged(() -> "Escapes: " + _fuir.clazzName(cc));
       }
   }
 
@@ -2178,7 +2178,7 @@ public class DFA extends ANY
               if (oev != ev)
                 {
                   cl._dfa._preEffectValues.put(ecl, ev);
-                  cl._dfa.wasChanged(() -> "effect.type.replace0 called: " + fuir(cl).clazzAsString(cl.calledClazz()));
+                  cl._dfa.wasChanged(() -> "effect.type.replace0 called: " + fuir(cl).clazzName(cl.calledClazz()));
                 }
             }
 
@@ -2195,7 +2195,7 @@ public class DFA extends ANY
                 {
                   cl._dfa._defaultEffects.put(ecl, new_e);
                   cl._dfa._defaultEffectContexts.put(ecl, cl);
-                  cl._dfa.wasChanged(() -> "effect.default called: " + fuir(cl).clazzAsString(cl.calledClazz()));
+                  cl._dfa.wasChanged(() -> "effect.default called: " + fuir(cl).clazzName(cl.calledClazz()));
                 }
             }
           else
@@ -2205,7 +2205,7 @@ public class DFA extends ANY
               if (oev != ev)
                 {
                   cl._dfa._preEffectValues.put(ecl, ev);
-                  cl._dfa.wasChanged(() -> "effect.default called: " + fuir(cl).clazzAsString(cl.calledClazz()));
+                  cl._dfa.wasChanged(() -> "effect.default called: " + fuir(cl).clazzName(cl.calledClazz()));
                 }
             }
           return Value.UNIT;
@@ -2251,7 +2251,7 @@ public class DFA extends ANY
               if (oev != ev)
                 {
                   cl._dfa._preEffectValues.put(ecl, ev);
-                  cl._dfa.wasChanged(() -> EFFECT_INSTATE_NAME + " called: " + fuir(cl).clazzAsString(cl.calledClazz()));
+                  cl._dfa.wasChanged(() -> EFFECT_INSTATE_NAME + " called: " + fuir(cl).clazzName(cl.calledClazz()));
                 }
             }
           var aborted =
@@ -2646,7 +2646,7 @@ public class DFA extends ANY
             if (old_e == null || Value.compare(old_e, new_e) != 0)
               {
                 _defaultEffects.put(ecl, new_e);
-                wasChanged(() -> "effect.replace called: " + _fuir.clazzAsString(ecl));
+                wasChanged(() -> "effect.replace called: " + _fuir.clazzName(ecl));
               }
           }
       }
@@ -2745,7 +2745,7 @@ public class DFA extends ANY
         if (onlyOneInstance(cl))
           {
             var ni = new Instance(this, cl, site, context);
-            wasChanged(() -> "DFA: new instance " + _fuir.clazzAsString(cl));
+            wasChanged(() -> "DFA: new instance " + _fuir.clazzName(cl));
             makeUnique(ni);
             ao = ni;
           }
@@ -2791,7 +2791,7 @@ public class DFA extends ANY
         if (r == null)
           {
             var ni = new Instance(this, cl, site, context);
-            wasChanged(() -> "DFA: new instance " + _fuir.clazzAsString(cl));
+            wasChanged(() -> "DFA: new instance " + _fuir.clazzName(cl));
             clazzm.put(k, ni);
             makeUnique(ni);
             r = ni;
@@ -2814,7 +2814,7 @@ public class DFA extends ANY
     if (!_readFields.get(fnum))
       {
         _readFields.set(fnum);
-        wasChanged(() -> "DFA: read field " + _fuir.clazzAsString(field));
+        wasChanged(() -> "DFA: read field " + _fuir.clazzName(field));
         _fuir.doesNeedCode(field);
       }
     var cl = _fuir.clazzAsValue(_fuir.clazzOuterClazz(field));
@@ -3032,7 +3032,7 @@ public class DFA extends ANY
       //
       //   b := !_fuir.clazzIsChoice(clazz) && !_fuir.clazzIsRef(clazz);
       //
-      switch (_fuir.clazzAsString(clazz))
+      switch (_fuir.clazzName(clazz))
       {
       case
         "list u8",

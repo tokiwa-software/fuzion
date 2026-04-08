@@ -10,7 +10,7 @@ effect environment 'test_effect_neg.f, test_effect_neg.g' for call to 'test_effe
 effect environment 'test_effect_neg.f, test_effect_neg.g' for call to 'test_effect_neg.use_e' at --CURDIR--/test_effect_neg.fz:96:9:
         use_e      # 7. should flag an error: effect not installed
 --------^^^^^
-effect environment 'test_effect_neg.f, test_effect_neg.g' for call to 'test_effect_neg.λ.call.λ.call' at {base.fum}/effect.fz:435:18:
+effect environment 'test_effect_neg.f, test_effect_neg.g' for call to 'test_effect_neg.(λ()-> g ! ()-> use_e).call.(λ()-> use_e).call' at {base.fum}/effect.fz:435:18:
       set res := code()
 -----------------^^^^
 effect environment 'test_effect_neg.f, test_effect_neg.g' for call to '(instate_helper unit test_effect_neg.g).call_code.call'
@@ -34,7 +34,7 @@ effect environment 'test_effect_neg.f' for call to 'test_effect_neg.g.infix !#2 
 ------^^^^^^^^
         use_e      # 7. should flag an error: effect not installed
 --------^^^^^
-effect environment 'test_effect_neg.f' for call to 'test_effect_neg.λ.call' at {base.fum}/effect.fz:435:18:
+effect environment 'test_effect_neg.f' for call to 'test_effect_neg.(λ()-> g ! ()-> use_e).call' at {base.fum}/effect.fz:435:18:
       set res := code()
 -----------------^^^^
 effect environment 'test_effect_neg.f' for call to '(instate_helper unit test_effect_neg.f).call_code.call'
@@ -73,7 +73,7 @@ effect environment 'test_effect_neg.e, test_effect_neg.g' for call to 'test_effe
 effect environment 'test_effect_neg.e, test_effect_neg.g' for call to 'test_effect_neg.use_f' at --CURDIR--/test_effect_neg.fz:92:9:
         use_f      # 6. should flag an error: effect not installed
 --------^^^^^
-effect environment 'test_effect_neg.e, test_effect_neg.g' for call to 'test_effect_neg.λ.call.λ.call' at {base.fum}/effect.fz:435:18:
+effect environment 'test_effect_neg.e, test_effect_neg.g' for call to 'test_effect_neg.(λ()-> g ! ()-> use_f).call.(λ()-> use_f).call' at {base.fum}/effect.fz:435:18:
       set res := code()
 -----------------^^^^
 effect environment 'test_effect_neg.e, test_effect_neg.g' for call to '(instate_helper unit test_effect_neg.g).call_code.call'
@@ -97,7 +97,7 @@ effect environment 'test_effect_neg.e' for call to 'test_effect_neg.g.infix !#2 
 ------^^^^^^^^
         use_f      # 6. should flag an error: effect not installed
 --------^^^^^
-effect environment 'test_effect_neg.e' for call to 'test_effect_neg.λ.call' at {base.fum}/effect.fz:435:18:
+effect environment 'test_effect_neg.e' for call to 'test_effect_neg.(λ()-> g ! ()-> use_f).call' at {base.fum}/effect.fz:435:18:
       set res := code()
 -----------------^^^^
 effect environment 'test_effect_neg.e' for call to '(instate_helper unit test_effect_neg.e).call_code.call'
@@ -136,7 +136,7 @@ effect environment 'test_effect_neg.e, test_effect_neg.f' for call to 'test_effe
 effect environment 'test_effect_neg.e, test_effect_neg.f' for call to 'test_effect_neg.use_g' at --CURDIR--/test_effect_neg.fz:88:9:
         use_g      # 5. should flag an error: effect not installed
 --------^^^^^
-effect environment 'test_effect_neg.e, test_effect_neg.f' for call to 'test_effect_neg.λ.call.λ.call' at {base.fum}/effect.fz:435:18:
+effect environment 'test_effect_neg.e, test_effect_neg.f' for call to 'test_effect_neg.(λ()-> f ! ()-> use_g).call.(λ()-> use_g).call' at {base.fum}/effect.fz:435:18:
       set res := code()
 -----------------^^^^
 effect environment 'test_effect_neg.e, test_effect_neg.f' for call to '(instate_helper unit test_effect_neg.f).call_code.call'
@@ -160,7 +160,7 @@ effect environment 'test_effect_neg.e' for call to 'test_effect_neg.f.infix !#2 
 ------^^^^^^^^
         use_g      # 5. should flag an error: effect not installed
 --------^^^^^
-effect environment 'test_effect_neg.e' for call to 'test_effect_neg.λ.call' at {base.fum}/effect.fz:435:18:
+effect environment 'test_effect_neg.e' for call to 'test_effect_neg.(λ()-> f ! ()-> use_g).call' at {base.fum}/effect.fz:435:18:
       set res := code()
 -----------------^^^^
 effect environment 'test_effect_neg.e' for call to '(instate_helper unit test_effect_neg.e).call_code.call'
@@ -199,7 +199,7 @@ effect environment 'test_effect_neg.a' for call to 'test_effect_neg.type.b.type.
 effect environment 'test_effect_neg.a' for call to 'test_effect_neg.use_b_err2' at --CURDIR--/test_effect_neg.fz:71:11:
   a ! ()->use_b_err2
 ----------^^^^^^^^^^
-effect environment 'test_effect_neg.a' for call to 'test_effect_neg.λ.call' at {base.fum}/effect.fz:435:18:
+effect environment 'test_effect_neg.a' for call to 'test_effect_neg.(λ()->use_b_err2).call' at {base.fum}/effect.fz:435:18:
       set res := code()
 -----------------^^^^
 effect environment 'test_effect_neg.a' for call to '(instate_helper unit test_effect_neg.a).call_code.call'
@@ -235,7 +235,7 @@ effect environment 'test_effect_neg.b' for call to 'test_effect_neg.type.c.type.
 effect environment 'test_effect_neg.b' for call to 'test_effect_neg.use_c_err3' at --CURDIR--/test_effect_neg.fz:72:11:
   b ! ()->use_c_err3
 ----------^^^^^^^^^^
-effect environment 'test_effect_neg.b' for call to 'test_effect_neg.λ.call' at {base.fum}/effect.fz:435:18:
+effect environment 'test_effect_neg.b' for call to 'test_effect_neg.(λ()->use_c_err3).call' at {base.fum}/effect.fz:435:18:
       set res := code()
 -----------------^^^^
 effect environment 'test_effect_neg.b' for call to '(instate_helper unit test_effect_neg.b).call_code.call'
@@ -271,7 +271,7 @@ effect environment 'test_effect_neg.c' for call to 'test_effect_neg.type.a.type.
 effect environment 'test_effect_neg.c' for call to 'test_effect_neg.use_a_err1' at --CURDIR--/test_effect_neg.fz:73:11:
   c ! ()->use_a_err1
 ----------^^^^^^^^^^
-effect environment 'test_effect_neg.c' for call to 'test_effect_neg.λ.call' at {base.fum}/effect.fz:435:18:
+effect environment 'test_effect_neg.c' for call to 'test_effect_neg.(λ()->use_a_err1).call' at {base.fum}/effect.fz:435:18:
       set res := code()
 -----------------^^^^
 effect environment 'test_effect_neg.c' for call to '(instate_helper unit test_effect_neg.c).call_code.call'
@@ -307,7 +307,7 @@ effect environment 'test_effect_neg.a, test_effect_neg.b, test_effect_neg.c' for
 effect environment 'test_effect_neg.a, test_effect_neg.b, test_effect_neg.c' for call to 'test_effect_neg.use_d_err4' at --CURDIR--/test_effect_neg.fz:80:9:
         use_d_err4
 --------^^^^^^^^^^
-effect environment 'test_effect_neg.a, test_effect_neg.b, test_effect_neg.c' for call to 'test_effect_neg.λ.call.λ.call.λ.call' at {base.fum}/effect.fz:435:18:
+effect environment 'test_effect_neg.a, test_effect_neg.b, test_effect_neg.c' for call to 'test_effect_neg.(λ()-> b ! ()-> c ! ()-> use_a use_b use...).call.(λ()-> c ! ()-> use_a use_b use_c use_d_...).call.(λ()-> use_a use_b use_c use_d_err4).call' at {base.fum}/effect.fz:435:18:
       set res := code()
 -----------------^^^^
 effect environment 'test_effect_neg.a, test_effect_neg.b, test_effect_neg.c' for call to '(instate_helper unit test_effect_neg.c).call_code.call'
@@ -335,7 +335,7 @@ effect environment 'test_effect_neg.a, test_effect_neg.b' for call to 'test_effe
 --------^^^^^
         use_c
 --------^^^^^
-effect environment 'test_effect_neg.a, test_effect_neg.b' for call to 'test_effect_neg.λ.call.λ.call' at {base.fum}/effect.fz:435:18:
+effect environment 'test_effect_neg.a, test_effect_neg.b' for call to 'test_effect_neg.(λ()-> b ! ()-> c ! ()-> use_a use_b use...).call.(λ()-> c ! ()-> use_a use_b use_c).call' at {base.fum}/effect.fz:435:18:
       set res := code()
 -----------------^^^^
 effect environment 'test_effect_neg.a, test_effect_neg.b' for call to '(instate_helper unit test_effect_neg.b).call_code.call'
@@ -365,7 +365,7 @@ effect environment 'test_effect_neg.a' for call to 'test_effect_neg.b.infix !#2 
 --------^^^^^
         use_c
 --------^^^^^
-effect environment 'test_effect_neg.a' for call to 'test_effect_neg.λ.call' at {base.fum}/effect.fz:435:18:
+effect environment 'test_effect_neg.a' for call to 'test_effect_neg.(λ()-> b ! ()-> c ! ()-> use_a use_b use...).call' at {base.fum}/effect.fz:435:18:
       set res := code()
 -----------------^^^^
 effect environment 'test_effect_neg.a' for call to '(instate_helper unit test_effect_neg.a).call_code.call'

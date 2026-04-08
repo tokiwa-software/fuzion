@@ -2319,20 +2319,20 @@ Target feature: 'visibility_negative.visi8'
 In call: 'c'
 
 
---CURDIR--/visibility_negative.fz:534:9: error 291: Could not find called feature
-        c # 276. should flag an error: feature not visible
---------^
-Feature not found: 'c' (no arguments)
-Target feature: 'visibility_negative.visi8'
-In call: 'c'
-
-
---CURDIR--/visibility_negative.fz:540:9: error 292: Could not find called feature
+--CURDIR--/visibility_negative.fz:540:9: error 291: Could not find called feature
         b # 278. should flag an error: feature not visible
 --------^
 Feature not found: 'b' (no arguments)
 Target feature: 'visibility_negative.visi8'
 In call: 'b'
+
+
+--CURDIR--/visibility_negative.fz:534:9: error 292: Could not find called feature
+        c # 276. should flag an error: feature not visible
+--------^
+Feature not found: 'c' (no arguments)
+Target feature: 'visibility_negative.visi8'
+In call: 'c'
 
 
 --CURDIR--/visibility_negative.fz:542:5: error 293: Could not find called feature

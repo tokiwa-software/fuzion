@@ -1,0 +1,87 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue5561
+#
+# -----------------------------------------------------------------------
+
+reg_issue5561 =>
+
+  f1(x i32) =>                  # *** fails ***
+    if      x = 1 then "aa"
+    else if x = 2 then nil
+    else               option "bb"
+
+  f2(x i32) =>
+    if      x = 1 then option "bb"
+    else if x = 2 then nil
+    else               "aa"
+
+  f3(x i32) =>                  # *** fails ***
+    if      x = 1 then nil
+    else if x = 2 then "aa"
+    else               option "bb"
+
+  f4(x i32) =>
+    if      x = 1 then nil
+    else if x = 2 then option "bb"
+    else               "aa"
+
+  g1(x i32) =>                  # *** fails ***
+    if      x = 1 then "aa"
+    else if x = 2 then nil
+    else if x = 3 then option "bb"
+    else               Any
+
+  g2(x i32) =>
+    if      x = 1 then Any
+    else if x = 2 then nil
+    else if x = 3 then option "bb"
+    else               "aa"
+
+  g3(x i32) =>
+    if      x = 1 then option "bb"
+    else if x = 2 then nil
+    else if x = 3 then "aa"
+    else               Any
+
+  h(x i32) =>
+    if      x = 1 then "aa"
+    else               option "bb"
+
+  # an example the requires boxing
+
+  a : C is
+  b : C is
+  C ref is
+  b1(x i32) =>                  # *** fails ***
+    if      x = 1 then a
+    else if x = 2 then b
+    else               C
+
+
+  say (f1 envir.args.count)
+  say (f2 envir.args.count)
+  say (f3 envir.args.count)
+  say (f4 envir.args.count)
+  say (g1 envir.args.count)
+  say (g2 envir.args.count)
+  say (g3 envir.args.count)
+  say (h envir.args.count)
+  say (b1 envir.args.count)

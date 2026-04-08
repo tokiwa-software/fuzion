@@ -94,9 +94,9 @@ reg_issue5818_calling_with_open_type =>
   h _                  3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  # ok.
 
   # but giving types is not ok, the parser cannot tell them apart from calls:
-  (h                                                                      # 16. should flag an error: failed to infer open type parameters
-     f64                                                                  # 17. should flag an error: cannot call `f64`
-     (array String)                                                       # 18. should flag an error: cannot call `array String`
+  (h                                                                      # does not flag an inference error: since args already error
+     f64                                                                  # 16. should flag an error: cannot call `f64`
+     (array String)                                                       # 17. should flag an error: cannot call `array String`
      3.14
      ["true","false"])
 
@@ -107,13 +107,13 @@ reg_issue5818_calling_with_open_type =>
   i(T,U type, A type ..., a A...) =>
     say "i $T $U $A $a"
 
-  i nil unit           3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  # 19. should flag an error: failed to infer T, U
+  i nil unit           3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  # 18. should flag an error: failed to infer T, U
   i nil unit _                                                            # ok.
   i nil unit _         3.14                                               # ok.
   i nil unit _         3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  # ok.
-  (i nil unit                                                             # 20. should flag an error: failed to infer T, U
-     f64                                                                  # 21. should flag an error: cannot call `f64`
-     (array String)                                                       # 22. should flag an error: cannot call `array String`
+  (i nil unit                                                             # does not flag an inference error: since args already error
+     f64                                                                  # 19. should flag an error: cannot call `f64`
+     (array String)                                                       # 20. should flag an error: cannot call `array String`
      3.14
      ["true","false"])
 
@@ -130,12 +130,12 @@ reg_issue5818_calling_with_open_type =>
   j _   unit _         3.14 ["true","false"]                              # ok.
   j f64 unit _         3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  # ok.
   j _   unit _         3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  # ok.
-  j f64 unit           3.14                                               # 23. should flag an error: failed to infer T, U
-  j _   unit           3.14                                               # 24. should flag an error: open type must be inferred using `_`
-  j f64 unit           3.14 ["true","false"]                              # 25. should flag an error: feature not found `f64`
-  j _   unit           3.14 ["true","false"]                              # 26. should flag an error: open type must be inferred using `_`
-  j f64 unit           3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  # 27. should flag an error: feature not found `f64`
-  j _   unit           3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  # 28. should flag an error: open type must be inferred using `_`
+  j f64 unit           3.14                                               # 21. should flag an error: failed to infer T, U
+  j _   unit           3.14                                               # 22. should flag an error: open type must be inferred using `_`
+  j f64 unit           3.14 ["true","false"]                              # 23. should flag an error: feature not found `f64`
+  j _   unit           3.14 ["true","false"]                              # 24. should flag an error: open type must be inferred using `_`
+  j f64 unit           3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  # 25. should flag an error: feature not found `f64`
+  j _   unit           3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  # 26. should flag an error: open type must be inferred using `_`
 
 
   # ------------------------------
@@ -153,12 +153,12 @@ reg_issue5818_calling_with_open_type =>
   k f64 Any _ 3.14 ["true","false"] "?!?"  (num.complex 3.14 4)             # ok.
   k _   Any _ 3.14 ["true","false"] "?!?"  (num.complex 3.14 4)             # ok.
   k _   _   _ 3.14 ["true","false"] "?!?"  (num.complex 3.14 4)             # ok.
-  k f64 Any   3.14 ["true","false"]                                         # 29. should flag an error: feature not found `f64`
-  k _   Any   3.14 ["true","false"]                                         # 30. should flag an error: open type must be inferred using `_`
-  k _   _     3.14 ["true","false"]                                         # 31. should flag an error: open type must be inferred using `_`
-  k f64 Any   3.14 ["true","false"] "?!?"                                   # 32. should flag an error: feature not found `f64`
-  k _   Any   3.14 ["true","false"] "?!?"                                   # 33. should flag an error: open type must be inferred using `_`
-  k _   _     3.14 ["true","false"] "?!?"                                   # 34. should flag an error: open type must be inferred using `_`
-  k f64 Any   3.14 ["true","false"] "?!?"  (num.complex 3.14 4)             # 35. should flag an error: feature not found `f64`
-  k _   Any   3.14 ["true","false"] "?!?"  (num.complex 3.14 4)             # 36. should flag an error: open type must be inferred using `_`
-  k _   _     3.14 ["true","false"] "?!?"  (num.complex 3.14 4)             # 37. should flag an error: open type must be inferred using `_`
+  k f64 Any   3.14 ["true","false"]                                         # 27. should flag an error: feature not found `f64`
+  k _   Any   3.14 ["true","false"]                                         # 28. should flag an error: open type must be inferred using `_`
+  k _   _     3.14 ["true","false"]                                         # 29. should flag an error: open type must be inferred using `_`
+  k f64 Any   3.14 ["true","false"] "?!?"                                   # 30. should flag an error: feature not found `f64`
+  k _   Any   3.14 ["true","false"] "?!?"                                   # 31. should flag an error: open type must be inferred using `_`
+  k _   _     3.14 ["true","false"] "?!?"                                   # 32. should flag an error: open type must be inferred using `_`
+  k f64 Any   3.14 ["true","false"] "?!?"  (num.complex 3.14 4)             # 33. should flag an error: feature not found `f64`
+  k _   Any   3.14 ["true","false"] "?!?"  (num.complex 3.14 4)             # 34. should flag an error: open type must be inferred using `_`
+  k _   _     3.14 ["true","false"] "?!?"  (num.complex 3.14 4)             # 35. should flag an error: open type must be inferred using `_`

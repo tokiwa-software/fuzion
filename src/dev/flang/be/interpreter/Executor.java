@@ -538,7 +538,7 @@ public class Executor extends ProcessExpression<Value, Object>
         else
           {
             Errors.error("Unsupported constant.",
-                         "Backend cannot handle constant of clazz '" + _fuir.clazzAsString(constCl) + "' ");
+                         "Backend cannot handle constant of clazz '" + _fuir.clazzName(constCl) + "' ");
             yield null;
           }
       }
@@ -696,7 +696,7 @@ public class Executor extends ProcessExpression<Value, Object>
   {
     if (frame != NO_CLAZZ)
       {
-        sb.append(_fuir.clazzAsStringHuman(frame)).append(": ");
+        sb.append(_fuir.clazzNameHuman(frame)).append(": ");
       }
     sb.append(_fuir.sitePos(callSite).show()).append("\n");
   }
