@@ -5,7 +5,7 @@ error 1: java.lang.Error: No effect of reg_issue6882.lm instated.
 	at fzC_3instate_helper_unit_panic.fzRoutine({base.fum}/effect.fz:430)
 	at fzC_panic_INTERN_type_panic__3instate_unit.fzRoutine({base.fum}/effect.fz:166)
 	at fzC_eff__1try_String_panic_unit__1catch0.fzRoutine({base.fum}/eff/try.fz:63)
-	at fzC_eff__1try_String_panic_unit__1catch__INTERN_fun5__call.fzRoutine({base.fum}/eff/try.fz:50)
+	at fzC_eff__1try_String_panic_unit__1catch__INTERN_fun3__call.fzRoutine({base.fum}/eff/try.fz:50)
 	at fzC__L1034_3instate_h__try_String_panic_unit_lm__call_code__call.fzRoutine({base.fum}/effect.fz:435)
 	at fzC_3instate_helper__unit__eff_try_String_panic_unit_lm.fzRoutine({base.fum}/effect.fz:430)
 	at fzC__L1008_eff_INTERN__f_try_String_panic_unit_lm__3instate_unit.fzRoutine({base.fum}/effect.fz:166)
@@ -13,15 +13,14 @@ error 1: java.lang.Error: No effect of reg_issue6882.lm instated.
 	at fzC_eff__1try_String_panic_unit__lm__1instate_self_unit.fzRoutine({base.fum}/effect.fz:208)
 	at fzC_eff__1try_String_panic_unit__lm__1infix_not_unit.fzRoutine({base.fum}/effect.fz:225)
 	at fzC_eff__1try_String_panic_unit__1catch.fzRoutine({base.fum}/eff/try.fz:49)
-	at fzC_reg_issue6882__INTERN_fun0__call__INTERN_fun1__call.fzRoutine(--CURDIR--/reg_issue6882.fz:35)
+	at fzC_reg_issue6882__INTERN_fun0__call__INTERN_fun1__call.fzRoutine(--CURDIR--/reg_issue6882.fz:38)
 	at fzC_fuzion__sys__thread__1spawn__Do_Call__call.fzRoutine({base.fum}/fuzion/sys/thread.fz:36)
 	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
 	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
 	at dev.flang.be.jvm.runtime.FuzionThread.lambda$new$0(FuzionThread.java:100)
-	at dev.flang.util.Errors.runAndExit(Errors.java:912)
+	at dev.flang.util.Errors.runAndExit(Errors.java:930)
 	at dev.flang.be.jvm.runtime.FuzionThread.lambda$new$2(FuzionThread.java:132)
 	at java.base/java.lang.Thread.run(Thread.java:1474)
 
 *** fatal errors encountered, stopping.
-one error.
 one error.
