@@ -603,6 +603,8 @@ public class FuzionConstants extends ANY
   public static final int FUIR_FILE_MAGIC0 = 0xF710DEED;  // FuZIOn DEED, fuzion IR, .fuir
   public static final byte[] FUIR_FILE_MAGIC = int2Bytes(FUIR_FILE_MAGIC0);
 
+  public static final String NO_CLAZZ = "-- no clazz --";
+
 
   /*-----------------  special values for modifiers  -----------------*/
 
