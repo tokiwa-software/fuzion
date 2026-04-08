@@ -156,7 +156,8 @@ public abstract class AbstractMatch extends ExprWithPos
       }
 
     if (CHECKS) check
-      (Errors.any() || st != Types.t_ERROR);
+      (Errors.any() || st != Types.t_ERROR,
+       Errors.any() || !producesResult());
 
     if (st != Types.t_ERROR)
       {

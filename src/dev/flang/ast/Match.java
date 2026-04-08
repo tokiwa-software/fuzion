@@ -121,7 +121,7 @@ public class Match extends AbstractMatch
    *
    * @return this.
    */
-  public Match visit(FeatureVisitor v, AbstractFeature outer)
+  public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     var os = _subject;
     var ns = _subject.visit(v, outer);
@@ -130,12 +130,15 @@ public class Match extends AbstractMatch
       // while okay for it to change after a visit
       (os == _subject);
     _subject = ns;
-    v.action(this);
+    var atf = _assignedToField;
+    var result  = v.action(this);
+    if (CHECKS) check
+      (!atf || result == this);
     for (var c: cases())
       {
         c.visit(v, this, outer);
       }
-    return this;
+    return result;
   }
 
 
@@ -241,11 +244,13 @@ public class Match extends AbstractMatch
   @Override
   Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
   {
-    // NYI: CLEANUP: there should be another mechanism, for
-    // adding missing result fields instead of misusing
-    // `propagateExpectedType`.
-    //
-    return addFieldForResult(res, context, t);
+    _type = t.isLazyType() ? t.generics().get(0) : t;
+    for (var ac: cases())
+      {
+        var c = (Case) ac;
+        c._code = c._code.propagateExpectedType(res, context, t, from);
+      }
+    return this;
   }
 
 
@@ -278,20 +283,6 @@ public class Match extends AbstractMatch
     return result;
   }
 
-
-  /**
-   * This will trigger addFieldForResult in some cases, e.g.:
-   * `match (if true then true else true) * =>`
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
-   * @param context the source code context where this Expr is used
-   */
-  void addFieldsForSubject(Resolution res, Context context)
-  {
-    _subject = subject().propagateExpectedType(res, context, subject().type(), null);
-  }
 
 
   /**
@@ -467,11 +458,10 @@ public class Match extends AbstractMatch
             }
           });
 
-    var result = new Match(pos, c, cases)
+    return new Match(pos, c, cases)
       {
         @Override Kind kind() { return fromContract ? Kind.Contract : Kind.If; }
       };
-    return result;
   }
 
 
@@ -488,6 +478,14 @@ public class Match extends AbstractMatch
         sb.append(c.toString()).append("\n");
       }
     return sb.toString();
+  }
+
+
+  public Expr resolveSyntacticSugar2(Resolution res, Context _context)
+  {
+    return producesResult()
+      ? addFieldForResult(res, _context, type())
+      : this;
   }
 
 }

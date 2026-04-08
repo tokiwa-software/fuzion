@@ -1528,12 +1528,13 @@ public class Feature extends AbstractFeature
       return f;
     }
     @Override public Function     action      (Function        f) {        f.resolveTypes      (res,   _context); return f; }
-    @Override public void         action      (AbstractMatch   m)
+    @Override public Expr         action      (AbstractMatch   m)
     {
       if (m instanceof Match mm)
         {
           mm.resolveTypes(res, _context);
         }
+      return m;
     }
 
     @Override public Expr         action      (This            t) { return t.resolveTypes      (res,   _context); }
@@ -2063,7 +2064,7 @@ A ((Choice)) declaration must not contain a result type.
 
         if (isConstructor())
           {
-            _impl.propagateExpectedType(res, context(), Types.resolved.t_unit);
+            _impl.propagateExpectedType(res, context());
           }
 
         _state = State.TYPES_INFERENCED;
@@ -2101,8 +2102,8 @@ A ((Choice)) declaration must not contain a result type.
         @Override public void         action(AbstractAssign a) {        a.checkTypes(res,  _context);           }
         @Override public Call         action(Call           c) {        c.checkTypes(res,  _context); return c; }
         @Override public Expr         action(Constant       c) {        c.checkRange(); return c;               }
-        @Override public void         action(AbstractMatch  m) {        m.checkTypes(_context);                 }
-        @Override public Expr         action(InlineArray    i) {        i.checkTypes(      _context); return i; }
+        @Override public Expr         action(AbstractMatch  m) {        m.checkTypes(_context); return m; }
+        @Override public Expr         action(InlineArray    i) {        i.checkTypes(_context); return i; }
         @Override public AbstractType action(AbstractType   t) { return t.checkConstraints(_context);           }
         @Override public void         actionBefore(Block    b) {        b.checkTypes();                         }
         @Override public Expr         action(Function       f) { return f.checkTypes();                         }
@@ -2278,7 +2279,7 @@ A ((Choice)) declaration must not contain a result type.
         @Override public Expr action(InlineArray i) { return i.resolveSyntacticSugar2(res, _context); }
         @Override public void action(Impl        i) {        i.resolveSyntacticSugar2(res, _context); }
         @Override public Expr action(Constant    c) { return c.resolveSyntacticSugar2(res, _context); }
-        @Override public void action(AbstractMatch am){ if (am instanceof Match m) { m.addFieldsForSubject(res, _context); } }
+        @Override public Expr action(AbstractMatch am){ if (am instanceof Match m) { return m.resolveSyntacticSugar2(res, _context); } return am; }
         @Override public void  action(AbstractCall c)
           {
             if (!(c instanceof Call cc) || cc.calledFeatureKnown())
