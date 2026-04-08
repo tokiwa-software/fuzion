@@ -1,0 +1,9 @@
+
+--CURDIR--/reg_issue5622.fz:27:10: error 1: Could not find called feature
+  s => t.x
+---------^
+Feature not found: 'x' (no arguments)
+Target feature: 'unit'
+In call: 't.x'
+
+one error.
