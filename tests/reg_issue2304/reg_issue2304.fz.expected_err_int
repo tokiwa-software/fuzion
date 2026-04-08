@@ -22,21 +22,21 @@ p => panic "bah"
 (λx->p).call#1: --CURDIR--/reg_issue2304.fz:25:20:
 _ := [1].filter x->p
 -------------------^
-(list i32).filter_list#1.(λ(a -> !(p a))).call#1: {base.fum}/list.fz:558:35:
+(list i32).filter_list#1.(λ(a -> !(p a))).call#1: {base.fum}/list.fz:564:35:
     match drop_while_list (a -> !(p a))
 ----------------------------------^
-(list i32).drop_while_list#1: {base.fum}/list.fz:537:12:
+(list i32).drop_while_list#1: {base.fum}/list.fz:543:12:
         if p c.head
 -----------^
-(list i32).filter_list#1: {base.fum}/list.fz:558:11:
+(list i32).filter_list#1: {base.fum}/list.fz:564:11:
     match drop_while_list (a -> !(p a))
 ----------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(list i32).filter#1: {base.fum}/list.fz:549:5:
+(list i32).filter#1: {base.fum}/list.fz:555:5:
     filter_list p
 ----^^^^^^^^^^^^^
-(array i32).filter#1: {base.fum}/Sequence.fz:282:47:
-  public filter   (f T -> bool) Sequence T => as_list.filter f
-----------------------------------------------^^^^^^^^^^^^^^^^
+(array i32).filter#1: {base.fum}/Sequence.fz:291:6:
+  => as_list.filter f
+-----^^^^^^^^^^^^^^^^
 universe: --CURDIR--/reg_issue2304.fz:25:6:
 _ := [1].filter x->p
 -----^^^^^^^^^^^^^^^
