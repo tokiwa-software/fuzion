@@ -255,7 +255,7 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
                            }
                        });
 
-        _dfa.wasChanged(() -> "needs effect "+_dfa._fuir.clazzAsString(ecl)+" for "+this);
+        _dfa.wasChanged(() -> "needs effect "+_dfa._fuir.clazzName(ecl)+" for "+this);
         for (var f : _from)
           {
             f.usesEffect(ecl);
@@ -288,7 +288,7 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
   String clazzesAsString(java.util.Set<Integer> s)
   {
     return s == null ? "{}" :
-      s.stream().map(_dfa._fuir::clazzAsString).collect(Collectors.joining(","));
+      s.stream().map(_dfa._fuir::clazzName).collect(Collectors.joining(","));
   }
 
 
@@ -316,7 +316,7 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
   @Override
   public String toString()
   {
-    return "CALLGROUP to "+_dfa._fuir.clazzAsString(_cc)+" at "+_dfa._fuir.siteAsString(_site)+" effects: "+
+    return "CALLGROUP to "+_dfa._fuir.clazzName(_cc)+" at "+_dfa._fuir.siteAsString(_site)+" effects: "+
       (_dfa._real
        ? usedEffectsAsString()
        : requiredEffectsAsString());

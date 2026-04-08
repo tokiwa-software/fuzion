@@ -538,7 +538,7 @@ public class Intrinsics extends ANY
               case "effect.type.abort0"        ->
                 CStmnt.seq(CStmnt.iff(evi, CExpr.call("longjmp",new List<>(evj.deref(), CExpr.int32const(eid)))),
                            CExpr.fprintfstderr("*** abort called for effect `%s` that is not instated!\n",
-                                               CExpr.string(c._fuir.clazzAsString(ecl))),
+                                               CExpr.string(c._fuir.clazzName(ecl))),
                            CExpr.exit(1));
               case "effect.type.default0"     -> CStmnt.iff(evi.not(), CStmnt.seq(effect_is_unit_type ? CExpr.UNIT : ev.assign(e),
                                                                                   evi.assign(CIdent.TRUE )));
@@ -605,7 +605,7 @@ public class Intrinsics extends ANY
                   else
                     {
                       yield CStmnt.seq(CExpr.fprintfstderr("*** C backend no code for class '%s'\n",
-                                                           CExpr.string(c._fuir.clazzAsString(call))),
+                                                           CExpr.string(c._fuir.clazzName(call))),
                                        CExpr.call("exit", new List<>(CExpr.int32const(1))));
                     }
                 }
@@ -621,7 +621,7 @@ public class Intrinsics extends ANY
         {
           var ecl = c._fuir.clazzResultClazz(cl); // type
           var o = CStmnt.seq(CExpr.fprintfstderr("*** effect `%s` not present in current environment\n",
-                                                CExpr.string(c._fuir.clazzAsString(ecl))),
+                                                CExpr.string(c._fuir.clazzName(ecl))),
                             CExpr.exit(1));
           if (Arrays.binarySearch(c._effectClazzes, ecl) >= 0)
             {

@@ -82,7 +82,7 @@ public abstract class ValueWithClazz extends Value
   @Override
   public String toString()
   {
-    return fuir().clazzAsString(_clazz);
+    return fuir().clazzName(_clazz);
   }
 
 
