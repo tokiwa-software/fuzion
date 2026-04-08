@@ -799,13 +799,12 @@ public class Intrinsix extends ANY implements ClassFileConstants
                    // we need to call stackoverflow_cause first
                    .andThen(Expr.branch(
                      O_ifne,
-                     pop_and_finally
-                       .andThen(handleStackOverflowError(jvm, si)))
+                     handleStackOverflowError(jvm, si)))
                    .andThen(Expr.DUP) // duplicate exception for instanceof check
                    .andThen(Expr.instanceOf(Names.ABORT_TYPE))
                    .andThen(Expr.branch(
                      O_ifeq,
-                     pop_fin_and_throw)
+                     pop_fin_and_throw))
                    .andThen(
                      Expr
                        .checkcast(Names.ABORT_TYPE)
@@ -822,7 +821,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
                            .andThen(pop_effect)
                            .andThen(unit_effect ? Expr.UNIT : Expr.DUP)
                            .andThen(call_finally)
-                           .andThen(jvm._types.invokeStatic(call_def, jvm._fuir.sitePos(si).line()))))))))
+                           .andThen(jvm._types.invokeStatic(call_def, jvm._fuir.sitePos(si).line()))))))
             .andThen(try_after);
           return new Pair<>(Expr.UNIT, result);
         });
@@ -1103,7 +1102,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
                                   Names.ABORT_TYPE);
 
     var ba_type = PrimitiveType.type_byte.array();
-    int str_bytes  = jvm.allocLocal(si, ba_type.stackSlots());      // local var slot for bytes of exception string
+    var str_bytes = jvm.allocLocal(si, ba_type.stackSlots());      // local var slot for bytes of exception string
     return Expr.POP
           .andThen(Expr.invokeVirtual("java/lang/Object", "toString", "()Ljava/lang/String;", JAVA_LANG_STRING))
           .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS, "stringToUtf8ByteArray", "(Ljava/lang/String;)[B", ba_type))
