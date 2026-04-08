@@ -74,6 +74,13 @@ public class Errors extends ANY
 
 
   /**
+   * Flag used to suppress repeated output "*** fatal errors encountered,
+   * stopping." in case several threads see fatal errors.
+   */
+  private static boolean _fatal_reported_ = false;
+
+
+  /**
    * Set of errors that have been shown so far. This is used to avoid presenting
    * error repeatedly.
    */
@@ -560,8 +567,16 @@ public class Errors extends ANY
   public static synchronized void fatal(SourcePosition pos, String s, String detail)
   {
     error(pos, s, detail);
-    say_err("*** fatal errors encountered, stopping.");
-    showAndExit();
+    if (_fatal_reported_)
+      {
+        throw new FatalError(1);
+      }
+    else
+      {
+        say_err("*** fatal errors encountered, stopping.");
+        _fatal_reported_ = true;
+        showAndExit();
+      }
   }
 
 
@@ -641,15 +656,18 @@ public class Errors extends ANY
   {
     if (any())
       {
-        println(StringHelpers.singularOrPlural(count(), "error") +
-                (warningCount() > 0 ? " and " + StringHelpers.singularOrPlural(warningCount(), "warning")
-                                    : "") +
-                ".");
+        if (!_shutting_down_)
+          {
+            println(StringHelpers.singularOrPlural(count(), "error") +
+                    (warningCount() > 0 ? " and " + StringHelpers.singularOrPlural(warningCount(), "warning")
+                                        : "") +
+                    ".");
 
-        // See #3142: clear all errors and warnings to ensure that any other
-        // thread that might call `showAndExit` while we are terminating the
-        // current thread will not print anything.
-        _shutting_down_ = true;
+            // See #3142: clear all errors and warnings to ensure that any other
+            // thread that might call `showAndExit` while we are terminating the
+            // current thread will not print anything.
+            _shutting_down_ = true;
+          }
 
         throw new FatalError(1);
       }
