@@ -500,14 +500,14 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * qualifiedNameInternal returns the qualified name of this feature, leaving
+   * qualifiedName returns the qualified name of this feature, leaving
    * internal auto-generated names untouched.  This is not ideal for user
    * output, but required for any internal use of these names in generated code.
    *
    * @return the qualified name, e.g. "some_feature.#FUN124.call.result" or
    * "xyz.#preandcall_xyz_pqr#bla", etc.
    */
-  public String qualifiedNameInternal()
+  public String qualifiedName()
   {
     return qualifiedName(false);
   }

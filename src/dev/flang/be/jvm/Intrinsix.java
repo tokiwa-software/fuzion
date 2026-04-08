@@ -924,7 +924,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
             }
           else
             { // unreachable, call type cannot be primitive type
-              throw new Error("unexpected type " + call_t + " for " + jvm._fuir.clazzAsString(call));
+              throw new Error("unexpected type " + call_t + " for " + jvm._fuir.clazzName(call));
             }
         });
 
@@ -1022,7 +1022,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
                            .andThen(Expr.new0(JAVA_LANG_ERROR.className(), Names.JAVA_LANG_ERROR) )                   // Error
 
                            .andThen(Expr.DUP)                                                                         // Error, Error
-                           .andThen(Expr.stringconst("No effect of "+jvm._fuir.clazzAsStringHuman(ecl)+" instated.")) // Error, Error, String
+                           .andThen(Expr.stringconst("No effect of "+jvm._fuir.clazzNameHuman(ecl)+" instated.")) // Error, Error, String
                            .andThen(Expr.invokeSpecial(JAVA_LANG_ERROR.className(),                                   // Error
                                                        "<init>",
                                                        "(" + Names.JAVA_LANG_STRING.descriptor() + ")V"))

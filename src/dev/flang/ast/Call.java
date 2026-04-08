@@ -832,7 +832,7 @@ public class Call extends AbstractCall
                                     FeatureAndOuter.findExactOrCandidate(fos,
                                                                         (FeatureName fn) -> false,
                                                                          (AbstractFeature f) -> names.stream().anyMatch(fn -> f.featureName().equalsBaseName(fn))),
-                                    res._options.isLanguageServer() && tf == null
+                                    res._options.isLanguageServer() || tf == null
                                       ? new List<FeatureAndOuter>()
                                       : hiddenCandidates(res, tf, calledName));
   }
@@ -1967,7 +1967,7 @@ public class Call extends AbstractCall
                         while (argnum < _actuals.size())
                           {
                             var actual = resolveTypeForNextActual(Types.t_UNDEFINED, argnum, res, context);
-                            var actualType = typeFromActual(res, context, actual);
+                            var actualType = typeFromActual(res, context, actual, pass==1);
                             if (actualType == null)
                               {
                                 actualType = Types.t_ERROR;
@@ -1994,7 +1994,7 @@ public class Call extends AbstractCall
                     */
                     if (t.dependsOnGenerics())
                       {
-                        var actualType = typeFromActual(res, context, actual);
+                        var actualType = typeFromActual(res, context, actual, false);
                         if (t.isGenericArgument())
                           {
                             res.resolveTypes(g);
@@ -2032,7 +2032,7 @@ public class Call extends AbstractCall
                                                                           () -> "formal argument type in call to " + AstErrors.s(_calledFeature));
                                   }
                                 _actuals = _actuals.setOrClone(argnum, actual);
-                                actualType = typeFromActual(res, context, actual);
+                                actualType = typeFromActual(res, context, actual, false);
                               }
                           }
                         if (actualType != null)
@@ -2120,9 +2120,10 @@ public class Call extends AbstractCall
    */
   AbstractType typeFromActual(Resolution res,
                               Context context,
-                              Expr actual)
+                              Expr actual,
+                              boolean urgent)
   {
-    var actualType = actual == null ? null : actual.typeForInferencing();
+    var actualType = actual == null ? null : (urgent ? actual.type() : actual.typeForInferencing());
     if (actualType != null)
       {
         actualType = actualType.replace_type_parameters_of_cotype_origin(context.outerFeature());

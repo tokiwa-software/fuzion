@@ -97,7 +97,7 @@ public class QualThisType extends UnresolvedType
             var fo = res._module.lookupType(pos(), cur, _name, false, false, true);
             if (fo != null &&
                 fo._feature
-                  .qualifiedNameInternal()
+                  .qualifiedName()
                   .endsWith(_qual.stream().filter(x -> !x._name.equals(FuzionConstants.UNIVERSE_NAME))
                   .map(x -> x._name)
                   .collect(Collectors.joining("."))))

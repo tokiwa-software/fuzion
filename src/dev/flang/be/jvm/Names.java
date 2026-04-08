@@ -286,7 +286,7 @@ public class Names extends ANY implements ClassFileConstants
             result
               .append(j)
               .append("\t")
-              .append(_fuir.clazzAsStringHuman(cl))
+              .append(_fuir.clazzNameHuman(cl))
               .append("\n");
           }
       }
@@ -411,7 +411,7 @@ public class Names extends ANY implements ClassFileConstants
               res = nres;
             }
           _cache.set(num, res);
-          Profiler.addMangledName(res, _fuir.clazzAsStringHuman(cl));
+          Profiler.addMangledName(res, _fuir.clazzNameHuman(cl));
           if (_existing != null)
             {
               _existing.put(res, 1);

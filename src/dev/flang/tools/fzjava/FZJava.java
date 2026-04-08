@@ -308,7 +308,7 @@ public class FZJava extends Tool
 
         for (var fn : df.values())
           {
-            var qn = fn. qualifiedNameInternal();
+            var qn = fn. qualifiedName();
             if (name.startsWith(qn))
               {
                 _existingFeatures.add(qn);

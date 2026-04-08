@@ -2654,7 +2654,7 @@ A ((Choice)) declaration must not contain a result type.
     if (PRECONDITIONS) require
       (_outer != null);
 
-    return FuzionConstants.OUTER_REF_PREFIX + qualifiedNameInternal() + FuzionConstants.OUTER_REF_SUFFIX;
+    return FuzionConstants.OUTER_REF_PREFIX + qualifiedName() + FuzionConstants.OUTER_REF_SUFFIX;
   }
 
 

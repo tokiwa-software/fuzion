@@ -145,15 +145,15 @@ public class LibraryFuir extends FUIR {
   }
 
   @Override
-  public String clazzAsString(int cl)
+  public String clazzName(int cl)
   {
-    return cl == NO_CLAZZ ? "-- no clazz --" : clazzOriginalName(cl);
+    return cl == NO_CLAZZ ? FuzionConstants.NO_CLAZZ : _clazzes[clazzId2num(cl)].clazzName();
   }
 
   @Override
-  public String clazzAsStringHuman(int cl)
+  public String clazzNameHuman(int cl)
   {
-    return  cl == NO_CLAZZ ? "-- no clazz --" : _clazzes[clazzId2num(cl)].clazzAsStringHuman();
+    return  cl == NO_CLAZZ ? FuzionConstants.NO_CLAZZ : _clazzes[clazzId2num(cl)].clazzNameHuman();
   }
 
   @Override
@@ -374,7 +374,7 @@ public class LibraryFuir extends FUIR {
       {
         var cl = clazzAt(s);
         var p = sitePos(s);
-        res = clazzAsString(cl) + "(" + clazzArgCount(cl) + " args)" + (p == null ? "" : " at " + sitePos(s).show());
+        res = clazzName(cl) + "(" + clazzArgCount(cl) + " args)" + (p == null ? "" : " at " + sitePos(s).show());
       }
     else
       {

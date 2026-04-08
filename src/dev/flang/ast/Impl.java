@@ -642,7 +642,7 @@ public class Impl extends ANY
           // may not be resolved yet.
           // see #348 for an example.
           var fo = f.outer();
-          if (res != null && t == null && (fo.isUniverse() || !fo.state().atLeast(State.RESOLVING_TYPES)))
+          if (res != null && t == null && (fo.isUniverse() || !fo.state().atLeast(State.RESOLVED_TYPES)))
             {
               f.visit(res.resolveTypesFully(fo), fo);
               t  = _expr.typeForInferencing();
