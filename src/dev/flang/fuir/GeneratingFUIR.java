@@ -976,7 +976,7 @@ public class GeneratingFUIR extends FUIR
        cl == NO_CLAZZ || cl < CLAZZ_BASE + _clazzes.size());
 
     return cl == NO_CLAZZ
-      ? "-- no clazz --"
+      ? FuzionConstants.NO_CLAZZ
       : id2clazz(cl).toString(false);
   }
 
