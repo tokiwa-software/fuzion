@@ -74,9 +74,11 @@ module:public thread(thrd Thread) : property.equatable is
       error "fzE_thread_setschedparam error {e}"
 
 
-  public set_affinity(core i32) outcome unit
+  # pin a thread to the CPUs given by core_mask
+  #
+  public set_affinity(core_mask i32) outcome unit
   =>
-    e := fuzion.sys.thread.set_affinity thrd core
+    e := fuzion.sys.thread.set_affinity thrd core_mask
     if e = 0
       unit
     else

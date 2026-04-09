@@ -592,12 +592,24 @@ int fzE_thread_setschedparam(void * thrd, int policy, int priority)
 /*
  * Set the scheduling CPU affinity of a running thread.
  */
-int fzE_thread_setaffinity(void * thrd, int core)
+int fzE_thread_setaffinity(void * thrd, int core_mask)
 {
 #ifdef __linux__
   cpu_set_t cpuset;
   CPU_ZERO(&cpuset);
-  CPU_SET(core, &cpuset);
+
+  for (int i = 0; i < CPU_SETSIZE; i++)
+    {
+      bool core_included = core_mask & (1 << i);
+      if (core_included)
+        { 
+          CPU_SET(i, &cpuset);
+        }
+      else
+        {
+          CPU_CLR(i, &cpuset);
+        }
+    }
 
   return pthread_setaffinity_np(*(pthread_t *)thrd, sizeof(cpu_set_t), &cpuset);
 #else
