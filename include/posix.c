@@ -552,6 +552,18 @@ void fzE_thread_join(void * thrd)
 }
 
 
+/*
+ * Set the scheduling policy and priority of a running thread.
+ */
+int fzE_thread_setschedparam(void * thrd, int policy, int priority)
+{
+  struct sched_param param;
+  param.sched_priority = priority;
+  int ret = pthread_setschedparam(*(pthread_t *)thrd, policy, &param);
+  return ret;
+}
+
+
 /**
  * Global lock
  */
