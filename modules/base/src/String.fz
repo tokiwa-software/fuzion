@@ -387,7 +387,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
       debug: from=to || String.is_valid_utf8_first_byte utf8[from]
       debug: from=to || !String.is_multi_byte_start_byte utf8[to-1]
     post
-      pedantic: result.codepoints_and_errors ∀ x->x.ok
+      debug 10 : result.codepoints_and_errors ∀ x->x.ok
   =>
     String.from_bytes (String.this.utf8.slice from to)
 
