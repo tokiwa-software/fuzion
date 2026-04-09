@@ -1632,16 +1632,20 @@ public class AstErrors extends ANY
           "Min representable value > 0: " + ss(min) + " or " + ss(minH));
   }
 
-  static void wrongNumberOfArgumentsInLambda(SourcePosition pos, List<ParsedName> names, AbstractType funType)
+  static void wrongNumberOfArgumentsInLambda(SourcePosition pos, List<ParsedName> names, AbstractType funType, int ntypes, int nvalues)
   {
-    int req = funType.generics().size() - 1;
+    int req = ntypes + nvalues;
     int delta = names.size() - req;
-    var ns = spn(names);
+    var ns = ss(names.toString("", ",", ""));
+    var expected_args =
+      ntypes  == 0 ? StringHelpers.singularOrPlural(nvalues, "argument"     )
+                   : StringHelpers.singularOrPlural(ntypes , "type argument") + " and " +
+                     StringHelpers.singularOrPlural(nvalues, "value argument");
     error(pos,
           "Wrong number of arguments in lambda expression",
           "Lambda expression has " + StringHelpers.singularOrPlural(names.size(), "argument") + " while the target type expects " +
-          StringHelpers.singularOrPlural(funType.generics().size()-1, "argument") + ".\n" +
-          "Arguments of lambda expression: " + ns + "\n" +
+          expected_args + ".\n" +
+          "Arguments of lambda expression: " + spn(names) + "\n" +
           "Expected function type: " + funType + "\n" +
           "To solve this, " +
           (req == 0 ? "replace the list " + ns + " by " + ss("()") + "."
