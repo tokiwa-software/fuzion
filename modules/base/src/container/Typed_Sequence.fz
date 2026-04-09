@@ -225,8 +225,8 @@ public typed_zipper(# the result type of two values that were zipped
 public Typed_Value ref is
 
 
-  # Feed this value and its type into `a.apply`.  Add the
-  # cumulative value `e` and return the resulting cumulative value.
+  # Feed this value's type, the comulative value `e` and this value itself into
+  # `a.apply` and return the resulting cumulative value.
   #
   public apply_to(E type, a typed_applicator E, e E) E
   =>
@@ -237,7 +237,7 @@ public Typed_Value ref is
 #
 # This must be a heir of `Typed_Value` since we need to be able to
 # have different actual type parameters and still create ref values
-# of all the same type  `Typed_Value`
+# of all the same type `Typed_Value`.
 #
 public typed_value(# the type
                    A type,
