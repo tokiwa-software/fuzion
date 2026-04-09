@@ -473,7 +473,7 @@ public class Match extends AbstractMatch
 
   public Expr resolveSyntacticSugar2(Resolution res, Context _context)
   {
-    var result = producesResult() &&  type() != Types.resolved.t_void
+    var result = producesResult() && subject().type() != Types.t_ERROR && type() != Types.resolved.t_void
       ? addFieldForResult(res, _context)
       : this;
 
