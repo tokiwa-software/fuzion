@@ -677,6 +677,17 @@ public class Loop extends ANY
           }
         return super.action(f);
       }
+
+      @Override
+      public Expr action(Feature f, AbstractFeature outer)
+      {
+        var expr = f.impl().expr();
+        if (expr != null)
+          {
+            expr.visit(this, f);
+          }
+        return super.action(f, outer);
+      }
     };
   }
 
