@@ -1,0 +1,40 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue6882
+#
+# -----------------------------------------------------------------------
+
+# The problem in this test is that a local mutate `lm` is used in a newly
+# spawned thread without being instated explicitly. This resulted in reporting
+# of a stack overflow error, even though there was never any stack overflow,
+# just all errors other than dev.flang.be.jvm.runtime.Runtime$Abort were
+# treated like a stack overflow.
+#
+# NYI: UNDER DEVELOPMENT: #6850: DFA does not support effects for threads, which
+# is why this fails at runtime.
+#
+reg_issue6882 =>
+
+  lm : mutate is
+  lm ! ()->
+    _ := concur.threads.spawn ()->
+           panic.try ()->
+                   _ := lm.env
+                .catch _->

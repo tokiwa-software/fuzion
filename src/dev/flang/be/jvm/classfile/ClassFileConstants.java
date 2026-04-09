@@ -111,7 +111,7 @@ public interface ClassFileConstants
 
 
   /**
-   * JavaType provides an abstract of type sin the JVM and a basis for user
+   * JavaType provides an abstraction of types in the JVM and a basis for user
    * defined types that are useful for generating bytecode.
    */
   public static interface JavaType
@@ -675,10 +675,11 @@ public interface ClassFileConstants
   }
 
 
-  static final ClassType JAVA_LANG_CLASS  = new ClassType("java/lang/Class");
-  static final ClassType JAVA_LANG_OBJECT = new ClassType("java/lang/Object");
-  static final ClassType JAVA_LANG_STRING = new ClassType("java/lang/String");
-  static final ClassType JAVA_LANG_ERROR  = new ClassType("java/lang/Error");
+  static final ClassType JAVA_LANG_CLASS              = new ClassType("java/lang/Class");
+  static final ClassType JAVA_LANG_OBJECT             = new ClassType("java/lang/Object");
+  static final ClassType JAVA_LANG_STRING             = new ClassType("java/lang/String");
+  static final ClassType JAVA_LANG_ERROR              = new ClassType("java/lang/Error");
+  static final ClassType JAVA_LANG_STACKOVERFLOWERROR = new ClassType("java/lang/StackOverflowError");
 
   static final ClassType NULL_TYPE = new ClassType("java/lang/Object");
   static final ClassType ERROR_TYPE = new ClassType("dev/flang/be/jvm/runtime/JavaError");

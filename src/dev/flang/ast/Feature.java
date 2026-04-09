@@ -1095,15 +1095,6 @@ public class Feature extends AbstractFeature
 
 
   /**
-   * Is this a case-field declared in a match-clause?
-   */
-  public boolean isCaseField()
-  {
-    return false;
-  }
-
-
-  /**
    * true iff this feature is a function or field that returns a result, but not
    * a constructor that returns its frame object.
    *
