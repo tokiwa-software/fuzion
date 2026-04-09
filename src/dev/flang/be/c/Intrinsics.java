@@ -515,9 +515,9 @@ public class Intrinsics extends ANY
             }
         });
     put("fuzion.sys.thread.join0", (c,cl,outer,in) ->
-    {
-      return CExpr.call("fzE_thread_join", new List<>(A0));
-    });
+        {
+          return CExpr.call("fzE_thread_join", new List<>(A0));
+        });
 
     put("effect.type.abort0"     ,
         "effect.type.default0"   ,
