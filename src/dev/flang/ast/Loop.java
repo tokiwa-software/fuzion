@@ -667,14 +667,11 @@ public class Loop extends ANY
       @Override
       public Expr action(Function f)
       {
-        var lambdaArgNames = f._names.stream().map(x -> x._name).collect(Collectors.toSet());
-        lambdaArgNames.retainAll(names);
-        // if lambdaArgNames is not empty this will
-        // probably trigger an "Ambiguous targets found call to" error later
-        if (lambdaArgNames.isEmpty())
-          {
-            f.expr().visit(this, null);
-          }
+        // we must not replace calls to the lambda args
+        // this will raise ambiguity errors later
+        var n = new TreeSet<>(names);
+        n.removeAll(f._names.stream().map(x -> x._name).collect(Collectors.toSet()));
+        f.expr().visit(prefixVisitor(n, prefix), null);
         return super.action(f);
       }
 
@@ -684,7 +681,16 @@ public class Loop extends ANY
         var expr = f.impl().expr();
         if (expr != null)
           {
-            expr.visit(this, f);
+            // we must not replace calls to the
+            // feature itself or any of its args
+            // this will raise ambiguity errors later
+            var n = new TreeSet<>(names);
+            n.remove(f.baseName());
+            for (var arg : f.arguments())
+              {
+                n.remove(arg.baseName());
+              }
+            expr.visit(prefixVisitor(n, prefix), f);
           }
         return super.action(f, outer);
       }
