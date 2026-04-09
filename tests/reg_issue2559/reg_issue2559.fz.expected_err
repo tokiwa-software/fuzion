@@ -1,0 +1,20 @@
+
+--CURDIR--/reg_issue2559.fz:24:10: error 1: IMPLEMENTATION RESTRICTION: An expression used as a lazy value must not contain feature declarations
+say (0 : (match true { a true_ => { say a; nil }; b false_ => { say b; nil } }))
+---------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Declared features:
+declared 'a' at --CURDIR--/reg_issue2559.fz:24:24:
+say (0 : (match true { a true_ => { say a; nil }; b false_ => { say b; nil } }))
+-----------------------^
+declared 'b' at --CURDIR--/reg_issue2559.fz:24:51:
+say (0 : (match true { a true_ => { say a; nil }; b false_ => { say b; nil } }))
+--------------------------------------------------^
+This is an implementation restriction that should be removed in a future version of Fuzion.
+
+To solve this, create a helper feature 'lazy_value' that calculates the value as follows:
+
+  lazy_value => '(match true { a true_ => { say a; nil }; b false_ => { say b; nil } })'
+
+and then use 'lazy_value' as instead of the original expression.
+
+one error.

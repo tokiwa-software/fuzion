@@ -1,8 +1,14 @@
 
---CURDIR--/reg_issue6540.fz:24:11: error 1: Block must end with a result expression
+--CURDIR--/reg_issue6540.fz:24:11: error 1: Incompatible types in assignment
 x bool => do until true
 ----------^^^^^^^^^^^^^
-This block must produce a value since its result is used by the enclosing expression.
-Expected type of value: 'bool'
+assignment to field : 'x.loop.result'
+expected formal type: 'bool'
+actual type found   : 'unit'
+assignable to       : 'unit'
+for value assigned  : 
+do until true
+
+To solve this, you could change the type of the target 'x.loop.result' to 'unit' or convert the type of the assigned value to 'bool'.
 
 one error.

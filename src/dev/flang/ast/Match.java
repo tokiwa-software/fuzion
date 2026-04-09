@@ -297,7 +297,7 @@ public class Match extends AbstractMatch
    */
   @Override public boolean producesResult()
   {
-    return !_assignedToField && type() != Types.resolved.t_void;
+    return !_assignedToField;
   }
 
 
@@ -473,9 +473,13 @@ public class Match extends AbstractMatch
 
   public Expr resolveSyntacticSugar2(Resolution res, Context _context)
   {
-    return producesResult()
+    var result = producesResult() &&  type() != Types.resolved.t_void
       ? addFieldForResult(res, _context)
       : this;
+
+    _type = null;
+
+    return result;
   }
 
 

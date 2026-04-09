@@ -1,9 +1,9 @@
 
---CURDIR--/reg_issue6814.fz:24:14: error 1: Could not find called feature
+--CURDIR--/reg_issue6814.fz:24:5: error 1: Failed to infer actual type parameters
 say <| match choice
--------------^^^^^^
-Feature not found: 'choice' (no arguments)
-Target feature: 'universe'
-In call: 'choice'
+----^^
+In call to 'infix_right <|', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: 'A, R'
+Type inference failed for 2 type parameters 'A', 'R'
 
 one error.
