@@ -111,9 +111,13 @@ public class Block extends AbstractBlock
       {
         result = null;
       }
-    else if (e instanceof Block)
+    else if (e instanceof Block b)
       {
-        result = (Block) e;
+        result = b;
+      }
+    else if (e instanceof AbstractBlock ab)
+      {
+        result = new Block(ab._expressions);
       }
     else
       {

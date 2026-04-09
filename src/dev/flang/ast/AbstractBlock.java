@@ -56,6 +56,8 @@ public abstract class AbstractBlock extends Expr
    */
   public AbstractBlock(List<Expr> e)
   {
+    if (PRECONDITIONS) require
+      (e.size() != 1 || !(e.get(0) instanceof AbstractBlock));
     this._expressions = e;
   }
 
