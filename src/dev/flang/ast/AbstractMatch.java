@@ -54,9 +54,10 @@ public abstract class AbstractMatch extends ExprWithPos
 
 
   /**
-   * Static type of this match or null if none. Set during resolveTypes().
+   * Static type of this match or null if none.
+   * Cache for type().
    */
-  AbstractType _type;
+  private AbstractType _type;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -141,6 +142,16 @@ public abstract class AbstractMatch extends ExprWithPos
   Kind kind()
   {
     return Kind.Plain;
+  }
+
+
+  /**
+   * Some Expressions do not produce a result, e.g., a Block
+   * whose last expression is not an expression that produces a result.
+   */
+  @Override public boolean producesResult()
+  {
+    return false;
   }
 
 

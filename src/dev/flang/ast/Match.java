@@ -65,6 +65,12 @@ public class Match extends AbstractMatch
 
 
   /**
+   * Static type of this match or null if none. Set by propgateExpectedType.
+   */
+  private AbstractType _type;
+
+
+  /**
    * The subject under investigation here.
    */
   Expr _subject;
@@ -262,25 +268,25 @@ public class Match extends AbstractMatch
    *
    * @param context the source code context where this assignment is used
    *
-   * @param t the type to use for the result field
    */
-  private Expr addFieldForResult(Resolution res, Context context, AbstractType t)
+  private Expr addFieldForResult(Resolution res, Context context)
   {
-    Expr result = this;
-    if (!t.isVoid())
-      {
-        var pos = pos();
-        Feature r = new Feature(res,
-                                pos,
-                                Visi.PRIV,
-                                t,
-                                FuzionConstants.EXPRESSION_RESULT_PREFIX + (_id_++),
-                                context.outerFeature());
-        res.resolveTypes(r);
-        result = new Block(new List<>(assignToField(res, context, r),
-                                      new Call(pos, new Current(pos, context.outerFeature()), r).resolveTypes(res, context)));
-      }
-    return result;
+    var pos = pos();
+    Feature r = new Feature(res,
+                            pos,
+                            Visi.PRIV,
+                            type(),
+                            FuzionConstants.EXPRESSION_RESULT_PREFIX + (_id_++),
+                            context.outerFeature());
+
+    res.resolveTypes(r);
+
+    return new Block(
+      new List<>(
+        assignToField(res, context, r),
+        new Call(pos, new Current(pos, context.outerFeature()), r)
+          .resolveTypes(res, context)
+      ));
   }
 
 
@@ -291,7 +297,7 @@ public class Match extends AbstractMatch
    */
   @Override public boolean producesResult()
   {
-    return !_assignedToField;
+    return !_assignedToField && type() != Types.resolved.t_void;
   }
 
 
@@ -465,6 +471,21 @@ public class Match extends AbstractMatch
   }
 
 
+  public Expr resolveSyntacticSugar2(Resolution res, Context _context)
+  {
+    return producesResult()
+      ? addFieldForResult(res, _context)
+      : this;
+  }
+
+
+  @Override
+  void checkTypes(Context context)
+  {
+    super.checkTypes(context);
+  }
+
+
   /**
    * toString
    *
@@ -480,12 +501,5 @@ public class Match extends AbstractMatch
     return sb.toString();
   }
 
-
-  public Expr resolveSyntacticSugar2(Resolution res, Context _context)
-  {
-    return producesResult()
-      ? addFieldForResult(res, _context, type())
-      : this;
-  }
 
 }
