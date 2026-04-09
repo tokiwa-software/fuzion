@@ -527,9 +527,16 @@ public class Intrinsics extends ANY
           return CExpr.call("fzE_thread_setschedparam", new List<>(A0, A1, A2))
                       .ret();
         });
-    put("fuzion.sys.thread.set_affinity", (c,cl,outer,in) ->
+    put("fuzion.sys.thread.set_affinity0", (c,cl,outer,in) ->
         {
-          return CExpr.call("fzE_thread_setaffinity", new List<>(A0, A1))
+          var internalArray = c._fuir.clazzArgClazz(cl, 1);
+          var data = c._fuir.clazzArg(internalArray, 0);
+          var length = c._fuir.clazzArg(internalArray, 1);
+          return CExpr.call("fzE_thread_setaffinity", new List<>(
+                        A0,
+                        A1.field(c._names.fieldName(data)),
+                        A1.field(c._names.fieldName(length))
+                      ))
                       .ret();
         });
 

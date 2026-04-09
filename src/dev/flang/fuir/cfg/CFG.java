@@ -391,7 +391,7 @@ public class CFG extends ANY
     put("fuzion.sys.thread.spawn0"       , (cfg, cl) -> { } );
     put("fuzion.sys.thread.join0"        , (cfg, cl) -> { } );
     put("fuzion.sys.thread.set_policy"   , (cfg, cl) -> { } );
-    put("fuzion.sys.thread.set_affinity" , (cfg, cl) -> { } );
+    put("fuzion.sys.thread.set_affinity0", (cfg, cl) -> { } );
 
     put("effect.type.default0"           , (cfg, cl) -> { } );
     put(FuzionConstants.EFFECT_INSTATE_NAME , (cfg, cl) ->
