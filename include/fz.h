@@ -423,6 +423,11 @@ void * fzE_thread_create(void *(*code)(void *),
 // NYI: UNDER DEVELOPMENT:  add return value
 void fzE_thread_join(void * thrd);
 
+/*
+ * Set the scheduling policy and priority of a running thread.
+ */
+int fzE_thread_setschedparam(void * thrd, int policy, int priority);
+
 /**
  * Global lock
  *

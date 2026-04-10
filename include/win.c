@@ -659,6 +659,15 @@ void fzE_thread_join(void * thrd) {
 }
 
 
+/*
+ * Set the scheduling policy and priority of a running thread.
+ */
+int fzE_thread_setschedparam(void * thrd, int policy, int priority)
+{
+  return 38; // ENOSYS - Function not implemented
+}
+
+
 /**
  * Global lock
  */
