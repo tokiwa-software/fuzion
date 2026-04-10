@@ -177,6 +177,8 @@ public class Types extends ANY
     public final AbstractFeature f_effect;
     public final AbstractFeature f_effect_finally;
     public final AbstractFeature f_effect_static_finally;
+    public final AbstractFeature f_effect_from_env;
+    public final AbstractFeature f_effect_unsafe_from_env;
     public final AbstractFeature f_fuzion;
     public final AbstractFeature f_fuzion_java;
     public final AbstractFeature f_fuzion_Java_Object;
@@ -250,6 +252,8 @@ public class Types extends ANY
       f_effect                  = universe.get(mod, "effect", 0);
       f_effect_finally          = f_effect.get(mod, "finally", 0);
       f_effect_static_finally   = f_effect.get(mod, "static_finally", 0);
+      f_effect_from_env         = f_effect.cotype().get(mod, "from_env", 0);
+      f_effect_unsafe_from_env  = f_effect.cotype().get(mod, "unsafe_from_env", 0);
       f_fuzion                  = universe.get(mod, "fuzion", 0);
       f_fuzion_java             = f_fuzion.get(mod, "java", 0);
       f_fuzion_Java_Object      = f_fuzion_java.get(mod, "Java_Object", 1);

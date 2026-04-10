@@ -127,7 +127,7 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
 
   # pipe this processes output to new process
   #
-  public infix | (process_and_args Sequence String) outcome os.process ! processes
+  public infix | (process_and_args Sequence String) outcome os.process ! os.processes
   pre
     process_and_args ∀ .is_ascii
     !process_and_args[0].contains_whitespace
@@ -163,13 +163,13 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
 
   # wait for this process
   #
-  public wait outcome u32 ! time.nano, processes =>
+  public wait outcome u32 ! time.nano, os.processes =>
     wait time.duration.max
 
 
   # wait for this process
   #
-  public wait(timeout time.duration) outcome u32 ! time.nano, processes =>
+  public wait(timeout time.duration) outcome u32 ! time.nano, os.processes =>
     # NYI: process should be ref?
     os.processes.wait (os.process pid std_in std_out std_err name args) timeout
 
@@ -182,19 +182,19 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
 
   # start a process with name, arguments and environment variables
   #
-  public type.start(n String, args Sequence String, env_vars container.Map String String) outcome os.process ! processes =>
+  public type.start(n String, args Sequence String, env_vars container.Map String String) outcome os.process ! os.processes =>
     os.processes.start n args env_vars
 
 
   # start a process with name and arguments
   #
-  public type.start(n String, args Sequence String) outcome os.process ! processes =>
+  public type.start(n String, args Sequence String) outcome os.process ! os.processes =>
     start n args (container.ps_map String String).empty
 
 
   # start a process with name and no arguments
   #
-  public type.start(n String) outcome os.process ! processes =>
+  public type.start(n String) outcome os.process ! os.processes =>
     start n []
 
 
@@ -211,7 +211,7 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
 
   # this process as a human readable String
   #
-  public redef as_string String ! time.nano, processes =>
+  public redef as_string String ! time.nano, os.processes =>
     match wait time.duration.zero
       error  => "$name {String.join args " "} (running, PID: $pid)"
       ec u32 => "$name {String.join args " "} (exited with exit code: $ec)"
