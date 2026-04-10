@@ -280,6 +280,8 @@ public class FeatureName extends ANY implements Comparable<FeatureName>
       n.startsWith(FuzionConstants.PRECONDITION_FEATURE_PREFIX       ) ? n.replaceFirst(FuzionConstants.PRECONDITION_FEATURE_PREFIX        + ".*#", "pre "    ) :
       n.startsWith(FuzionConstants.POSTCONDITION_FEATURE_PREFIX      ) ? n.replaceFirst(FuzionConstants.POSTCONDITION_FEATURE_PREFIX       + ".*#", "post "   ) :
       n.endsWith(FuzionConstants.TYPE_NAME)                            ? n.replace("." + FuzionConstants.TYPE_NAME, "") :
+      n.startsWith(FuzionConstants.ITER_ARG_PREFIX_INIT)               ? n.replace(FuzionConstants.ITER_ARG_PREFIX_INIT, "") :
+      n.startsWith(FuzionConstants.ITER_ARG_PREFIX_NEXT)               ? n.replace(FuzionConstants.ITER_ARG_PREFIX_NEXT, "") :
       n.startsWith(FuzionConstants.INTERNAL_NAME_SYMBOL)               ? "_" :
       n.endsWith(FuzionConstants.VALUES_OF_OPEN_TYPE_SUFFIX)           ? n.replace(FuzionConstants.VALUES_OF_OPEN_TYPE_SUFFIX, "._") :
       n;
