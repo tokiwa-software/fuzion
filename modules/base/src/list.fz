@@ -596,10 +596,11 @@ is
   # 'list.this' and the empty list 'nil'.
   #
   public redef tails list (list A) =>
+    lazy_value => (list.this ? nil => nil | c Cons => c.tail.tails)
     list
       (list A)
       list.this
-      (list.this ? nil => nil | c Cons => c.tail.tails)
+      lazy_value
 
 
   # create a new list from the result of applying 'f' to the
