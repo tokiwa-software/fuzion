@@ -228,7 +228,7 @@ public Typed_Value ref is
   # Feed this value's type, the comulative value `e` and this value itself into
   # `a.apply` and return the resulting cumulative value.
   #
-  public apply_to(E type, a typed_applicator E, e E) E
+  public apply_to(E type, A type: typed_applicator E, e E, a A) E
   =>
     abstract
 
@@ -240,17 +240,17 @@ public Typed_Value ref is
 # of all the same type `Typed_Value`.
 #
 public typed_value(# the type
-                   A type,
+                   T type,
 
                    # the value
-                   v A)
+                   v T)
   : Typed_Value is
 
-  # apply `a` to `A` `e` `v`
+  # apply `a` to `T` `e` `v`
   #
-  public redef apply_to(E type, a typed_applicator E, e E) E
+  public redef apply_to(E type, A type: typed_applicator E, e E, a A) E
   =>
-    a.apply A e v
+    a.apply T e v
 
 
   # create a String of the form `"<type> <value>"` where `<type>`
@@ -265,7 +265,7 @@ public typed_value(# the type
   #
   public redef as_string String
   =>
-    t := A.name
+    t := T.name
     if t.find " " ??
       "($t) $v"
     else
