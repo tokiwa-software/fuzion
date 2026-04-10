@@ -673,6 +673,12 @@ public class Function extends AbstractLambda
     return this;
   }
 
+
+  public void setDefunct()
+  {
+    _expr = Call.ERROR;
+  }
+
 }
 
 /* end of file */
