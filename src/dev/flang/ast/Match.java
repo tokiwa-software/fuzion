@@ -471,22 +471,28 @@ public class Match extends AbstractMatch
   }
 
 
-  public Expr resolveSyntacticSugar2(Resolution res, Context _context)
+  /**
+   * For matches that have not been assigned to a result field
+   * we create a new result field, assign the cases results to this field
+   * and replace this match by a call to this field.
+   *
+   * @param res this is called during type resolution, res gives the resolution
+   * instance.
+   *
+   * @param context the source code context where this assignment is used
+   */
+  public Expr resolveSyntacticSugar2(Resolution res, Context context)
   {
     var result = producesResult() && subject().type() != Types.t_ERROR && type() != Types.resolved.t_void
-      ? addFieldForResult(res, _context)
+      ? addFieldForResult(res, context)
       : this;
 
+    // reset type to prevent giving out
+    // a - potentially wrong - propagated type
+    // in checkTypes phase.
     _type = null;
 
     return result;
-  }
-
-
-  @Override
-  void checkTypes(Context context)
-  {
-    super.checkTypes(context);
   }
 
 

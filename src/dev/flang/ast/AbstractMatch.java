@@ -56,6 +56,11 @@ public abstract class AbstractMatch extends ExprWithPos
   /**
    * Static type of this match or null if none.
    * Cache for type().
+   *
+   * This will only be:
+   * - void, for a match known to never return
+   * - unit, for a match that may return (and whose result is assigned to some field)
+   *
    */
   private AbstractType _type;
 
