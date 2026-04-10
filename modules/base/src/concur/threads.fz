@@ -37,9 +37,30 @@ public threads (
   ) : effect
 is
 
-  # spawn a new thread
+  # spawn a new thread, teleporting the current effect environment
+  # the new thread.
   #
-  public spawn(code ()->unit) concur.thread =>
+  # This is to be used in environments where code interacts with data
+  # shared with the current thread, e.g., mutable variables that where
+  # created with a thread-safe mutate effect.
+  #
+  public spawn(# code to run in the new thread with the teleported effect environemnt
+               code ()->unit
+              ) concur.thread =>
+    ewh := effect_wormhole
+    spawn_detached ()->
+      ewh.teleport code
+
+
+  # spawn a new thread without inheriting the current thread's
+  # effect environment, i.e., using a new, empty effect environment.
+  #
+  # This is intended for use in, e.g., thread pools that are used to perform
+  # tasks that may require different effects.
+  #
+  public spawn_detached(# code ot run int he new thread without an new, empty effect environment
+                        code ()->unit
+                       ) concur.thread =>
     st := p.spawn code
     (threads p (running++[st]).as_array).replace
     st

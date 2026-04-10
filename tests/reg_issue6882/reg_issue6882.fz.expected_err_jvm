@@ -5,7 +5,7 @@ error 1: java.lang.Error: No effect of reg_issue6882.lm instated.
 	at fzC_3instate_helper_unit_panic.fzRoutine({base.fum}/effect.fz:430)
 	at fzC_panic_INTERN_type_panic__3instate_unit.fzRoutine({base.fum}/effect.fz:166)
 	at fzC_eff__1try_String_panic_unit__1catch0.fzRoutine({base.fum}/eff/try.fz:63)
-	at fzC_eff__1try_String_panic_unit__1catch__INTERN_fun3__call.fzRoutine({base.fum}/eff/try.fz:50)
+	at fzC_eff__1try_String_panic_unit__1catch__INTERN_fun5__call.fzRoutine({base.fum}/eff/try.fz:50)
 	at fzC__L1034_3instate_h__try_String_panic_unit_lm__call_code__call.fzRoutine({base.fum}/effect.fz:435)
 	at fzC_3instate_helper__unit__eff_try_String_panic_unit_lm.fzRoutine({base.fum}/effect.fz:430)
 	at fzC__L1008_eff_INTERN__f_try_String_panic_unit_lm__3instate_unit.fzRoutine({base.fum}/effect.fz:166)
