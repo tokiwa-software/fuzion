@@ -8,4 +8,16 @@ m(a A) => if A : i32 then
 ^
 To solve this, consider renaming one of these two features, e.g., as 'mʼ' (using a unicode modifier letter apostrophe 'ʼ' U+02BC) or adding an additional argument (e.g. '_ unit' for an ignored unit argument used only to disambiguate these two).
 
-one error.
+
+--CURDIR--/reg_issue4540.fz:24:1: error 2: Ambiguous targets found for call to 'm'
+m 3
+^
+Found several possible call targets within the current feature at the same outer level in 'universe' found 'm' defined at --CURDIR--/reg_issue4540.fz:25:1:
+m(a A) => if A : i32 then
+^
+and in 'universe' found 'm' defined at --CURDIR--/reg_issue4540.fz:26:1:
+m(B type, b B) =>
+^
+To solve this, you may rename one of these features.
+
+2 errors.
