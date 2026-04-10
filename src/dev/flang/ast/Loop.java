@@ -495,8 +495,7 @@ public class Loop extends ANY
     var initialCall = new Call(pos, null, loopName, initialActuals);
     prologSuccessBlock.add(initialCall);
 
-    _impl           = new Block(new List<>(loop, prologBlock));
-    _impl._newScope = true;
+    _impl           = new Block(true, new List<>(loop, prologBlock));
   }
 
 
