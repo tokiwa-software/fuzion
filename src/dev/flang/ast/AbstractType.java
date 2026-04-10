@@ -2437,7 +2437,7 @@ there is no common super type of the two types (Types.t_ERROR)
     if (isGenericArgument())
       {
         var ga = genericArgument();
-        result = (ga.isCoTypesThisType() ? ga.qualifiedName(context, humanReadable) : ga.baseName()) + (isRef() ? " (boxed)" : "");
+        result = (ga.isCoTypesThisType() ? ga.qualifiedName(context, humanReadable) : (humanReadable ? ga.baseNameHuman() : ga.baseName())) + (isRef() ? " (boxed)" : "");
       }
     else
       {
@@ -2490,6 +2490,10 @@ there is no common super type of the two types (Types.t_ERROR)
               }
           }
       }
+
+    if (POSTCONDITIONS) ensure
+      (!humanReadable || !result.contains("#"));
+
     return result;
   }
 
