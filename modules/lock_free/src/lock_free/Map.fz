@@ -514,15 +514,12 @@ is
         if xidx = yidx
           # NYI: BUG: type inference
           sub_node := indirection_node CTK CTV (dual x y (lev + width) gen) gen
-          # NYI: BUG: type inference
-          container_node CTK CTV bmp [sub_node] gen
+          container_node bmp [sub_node] gen
         else
           if (xidx < yidx)
-            # NYI: BUG: type inference
-            container_node CTK CTV bmp [x, y] gen
+            container_node bmp [x, y] gen
           else
-            # NYI: BUG: type inference
-            container_node CTK CTV bmp [y, x] gen
+            container_node bmp [y, x] gen
       else
         list_node [(singleton_node x.k x.v), (singleton_node y.k y.v)]
 
