@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import java.util.ListIterator;
+import java.util.function.Supplier;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
@@ -2801,6 +2802,7 @@ public class Call extends AbstractCall
       (Errors.any() || t != Types.t_ERROR);
 
     _type = t;
+    propagateToActualsSafely(res, context);
 
     if (_type == null || isTailRecursive(context.outerFeature()))
       {
@@ -2811,6 +2813,7 @@ public class Call extends AbstractCall
               (_type == null || t2.compareTo(_type) == 0,
               Errors.any() || t2 != Types.t_ERROR);
             _type = t2;
+            propagateToActualsSafely(res, context);
           });
       }
   }
@@ -2841,17 +2844,43 @@ public class Call extends AbstractCall
    *
    * @param context the source code context where this Expr is used
    */
-  void propagateExpectedType(Resolution res, Context context)
+  private void propagateToActuals(Resolution res, Context context)
   {
     applyToActualsAndFormalTypes
       (resolvedFormalArgumentTypes(res, context),
-       (actual, formalType) ->
+      (actual, formalType) ->
         formalType == Types.t_UNDEFINED
           ? actual
           : actual.propagateExpectedType(res,
                                          context,
                                          formalType,
                                          () -> "formal argument type in call to " + AstErrors.s(_calledFeature)));
+  }
+
+
+  private void propagateToActualsSafely(Resolution res, Context context)
+  {
+    if (_type != null && !_type.isArtificialType() && calledFeature().state().atLeast(State.TYPES_INFERENCED))
+      {
+        propagateToActuals(res, context);
+      }
+  }
+
+
+  /**
+   * During type inference: Inform this expression that it is used in an
+   * environment that expects the given type.  In particular, if this
+   * expression's result is assigned to a field, this will be called with the
+   * type of the field.
+   *
+   * @param res this is called during type inference, res gives the resolution
+   * instance.
+   *
+   * @param context the source code context where this Expr is used
+   */
+  void propagateExpectedType(Resolution res, Context context)
+  {
+    propagateToActuals(res, context);
 
     if (_target != null)
       {
@@ -2869,6 +2898,57 @@ public class Call extends AbstractCall
         if (t != null)
           {
             _target = _target.propagateExpectedType(res, context, t, null);
+          }
+      }
+  }
+
+
+
+  /**
+   * During type inference: Inform this expression that it is used in an
+   * environment that expects the given type.  In particular, if this
+   * expression's result is assigned to a field, this will be called with the
+   * type of the field.
+   *
+   * @param res this is called during type inference, res gives the resolution
+   * instance.
+   *
+   * @param context the source code context where this Expr is used
+   *
+   * @param t the expected type.
+   *
+   * @param from for error output: if non-null, produces a String describing
+   * where the expected type came from.
+   *
+   * @return either this or a new Expr that replaces thiz and produces the
+   * result. In particular, if the result is assigned to a temporary field, this
+   * will be replaced by the expression that reads the field.
+   */
+  @Override Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
+  {
+    loadCalledFeatureIfTargetResolved(res, context);
+    if (calledFeatureKnown() && calledFeature().resultTypeIfPresent(res) == null)
+      {
+        ((Feature)calledFeature()).impl().expr().propagateExpectedType(res, context, t, from);
+      }
+
+    return super.propagateExpectedType(res,context,t,from);
+  }
+
+
+  private void loadCalledFeatureIfTargetResolved(Resolution res, Context context)
+  {
+    if (!calledFeatureKnown() && (!(_target instanceof Call c) || c.calledFeatureKnown()))
+      {
+        var targetFeature = targetFeature(res, context);
+        if (targetFeature != null)
+          {
+            res.resolveDeclarations(targetFeature);
+            var fo = findOnTarget(res, targetFeature, true).v1();
+            if (fo != null)
+              {
+                loadCalledFeatureUnlessTargetVoid(res, context);
+              }
           }
       }
   }

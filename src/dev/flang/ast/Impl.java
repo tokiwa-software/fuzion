@@ -626,7 +626,7 @@ public class Impl extends ANY
         }
       case FieldDef ->
         {
-          var t = _expr.typeForInferencing();
+          var t = urgent ? _expr.typeForInferencing() : _expr.typeForUnion();
           // second try, the feature containing the field
           // may not be resolved yet.
           // see #348 for an example.
@@ -634,7 +634,7 @@ public class Impl extends ANY
           if (res != null && t == null && (fo.isUniverse() || !fo.state().atLeast(State.RESOLVED_TYPES)))
             {
               f.visit(res.resolveTypesFully(fo), fo);
-              t  = _expr.typeForInferencing();
+              t  = urgent ? _expr.typeForInferencing() : _expr.typeForUnion();
             }
           if (t == null && urgent)
             {
