@@ -531,7 +531,7 @@ public effect_wormhole is
                                                      .or_else e
 
   # teleport the effects from the environment this wormhole was created
-  # to this environment and execute given code with this.
+  # to the current environment and execute given code.
   #
   public teleport(R type, code ()->R) R =>
     effect_values.for_each (.apply_to unit T,_,v->
