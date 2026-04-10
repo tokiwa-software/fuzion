@@ -112,6 +112,12 @@ public class Call extends AbstractCall
 
 
   /**
+   * the generics that were determined by splitOffTypeArgs
+   * We must not change those as those were given by user
+   */
+  List<AbstractType> _splitOffGenerics;
+
+  /**
    * actual generic arguments, set by parser
    */
   /*final*/ List<AbstractType> _generics; // NYI: Make this final again when resolveTypes can replace a call
@@ -2238,7 +2244,7 @@ public class Call extends AbstractCall
           { // we found a use of a generic type, so record it:
             var i = g.typeParameterIndex();
             var gt = _generics.get(i);
-            if (!conflict[i] && gt != Types.t_ERROR)
+            if (!conflict[i] && gt != Types.t_ERROR && changingGenericAllowed(i))
               {
                 var nt = actualType.containsUndefined() ? gt :
                          gt == Types.t_UNDEFINED        ? actualType
@@ -2349,6 +2355,19 @@ public class Call extends AbstractCall
               }
           }
       }
+  }
+
+
+  /**
+   * Is it allowed to change/infer actual type argument with index i?
+   *
+   * @param i the index of the actual type argument
+   *
+   * @return
+   */
+  private boolean changingGenericAllowed(int i)
+  {
+    return _splitOffGenerics == null || i >= _splitOffGenerics.size() || _splitOffGenerics.get(i) == Types.t_UNDEFINED;
   }
 
 
