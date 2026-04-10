@@ -724,11 +724,6 @@ public class Impl extends ANY
   }
 
 
-  public void assignToField(Resolution res, Context context, Feature rf)
-  {
-    this._expr = _expr.assignToField(res, context, rf);
-  }
-
 }
 
 /* end of file */

@@ -299,7 +299,7 @@ public class Function extends AbstractLambda
         var argTypes = t.lambdaTargetArgumentTypes(res);
         if (_names.size() != cl.typeArguments().size() + argTypes.size())
           {
-            AstErrors.wrongNumberOfArgumentsInLambda(pos(), _names, t);
+            AstErrors.wrongNumberOfArgumentsInLambda(pos(), _names, t, cl.typeArguments().size(), argTypes.size());
             t = Types.t_ERROR;
             _type = t;
           }
