@@ -71,7 +71,7 @@ is
   # element at this index was deleted, this index should be treated as occupied when looking up elements
   # to not cause unexpected gaps that could lead to lost elements
   # for insertions it is treated the same as an empty index
-  del is
+  universe.del is
 
   # number of entries currently in this map
   #
