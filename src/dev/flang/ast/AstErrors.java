@@ -2641,6 +2641,13 @@ public class AstErrors extends ANY
      );
   }
 
+  public static void lamdaOuterMustNotBeGenericArgument(SourcePosition pos, AbstractType tt)
+  {
+    error(pos, "Can not create lambda since an outer of its type is a generic argument and we don't now how to create an instance of this.",
+      "The generic argument used in lambdas type " + s(tt) + "."
+     );
+  }
+
 }
 
 /* end of file */

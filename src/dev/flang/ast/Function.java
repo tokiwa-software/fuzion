@@ -448,6 +448,11 @@ public class Function extends AbstractLambda
       {
         return new Current(pos(), tt.feature());
       }
+    else if (tt.isGenericArgument())
+      {
+        AstErrors.lamdaOuterMustNotBeGenericArgument(pos(), tt);
+        return Call.ERROR;
+      }
     else if (!tt.feature().valueArguments().isEmpty())
       {
         AstErrors.lamdaOuterMustNotHaveArgs(pos(), tt);
