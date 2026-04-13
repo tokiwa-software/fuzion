@@ -3127,18 +3127,27 @@ public class GeneratingFUIR extends FUIR
     if (switch (clazzOriginalName(cl))
           {
           case FuzionConstants.EFFECT_INSTATE_NAME,
+               "effect.type.from_env",
                "effect.type.default0"              -> true;
           default                                  -> false;
-          }  &&
-        !_instatedEffectTypes.contains(res))
+          })
       {
-        _instatedEffectTypes.add(res);
+        recordEffectUsage(res);
+      }
+    return res;
+  }
+
+
+  public void recordEffectUsage(int cl)
+  {
+    if (!_instatedEffectTypes.contains(cl))
+      {
+        _instatedEffectTypes.add(cl);
         for (var c : _clazzesWhoseCodeDependsOnInstatedEffectTypes)
           {
             c._code = NO_SITE;
           }
       }
-    return res;
   }
 
 
