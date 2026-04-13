@@ -22,13 +22,13 @@ p => panic "bah"
 (λx->p).call#1: --CURDIR--/reg_issue2304.fz:25:20:
 _ := [1].filter x->p
 -------------------^
-(list i32).filter_list#1.(λ(a -> !(p a))).call#1: {base.fum}/list.fz:564:35:
+((list i32).filter_list#2 (Unary bool i32)).(λ(a -> !(p a))).call#1: {base.fum}/list.fz:564:35:
     match drop_while_list (a -> !(p a))
 ----------------------------------^
-(list i32).drop_while_list#1: {base.fum}/list.fz:543:12:
+(list i32).drop_while_list#2 ((list i32).filter_list#2 (Unary bool i32)).(λ(a -> !(p a))): {base.fum}/list.fz:543:12:
         if p c.head
 -----------^
-(list i32).filter_list#1: {base.fum}/list.fz:564:11:
+(list i32).filter_list#2 (Unary bool i32): {base.fum}/list.fz:564:11:
     match drop_while_list (a -> !(p a))
 ----------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 (list i32).filter#1: {base.fum}/list.fz:555:5:
