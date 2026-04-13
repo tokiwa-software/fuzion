@@ -2161,6 +2161,7 @@ public class DFA extends ANY
           return genericResult(cl);
         });
     put("fuzion.sys.thread.join0"        , cl -> Value.UNIT);
+    put("fuzion.sys.thread.set_policy"   , cl -> genericNumResult(cl));
 
     put("effect.type.replace0"              , cl ->
         {

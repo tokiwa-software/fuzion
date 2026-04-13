@@ -24,8 +24,8 @@
 # The problem in this test is that a local mutate `lm` is used in a newly
 # spawned thread without being instated explicitly. This resulted in reporting
 # of a stack overflow error, even though there was never any stack overflow,
-# just all errors other than dev.flang.be.jvm.Runtime.Abort were treated like a
-# stack overflow.
+# just all errors other than dev.flang.be.jvm.runtime.Runtime$Abort were
+# treated like a stack overflow.
 #
 # NYI: UNDER DEVELOPMENT: #6850: DFA does not support effects for threads, which
 # is why this fails at runtime.

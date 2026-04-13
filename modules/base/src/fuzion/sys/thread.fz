@@ -44,3 +44,8 @@ module thread is
   # NOTE: this must only be called once!
   #
   module join0(thread_id Thread) unit => intrinsic
+
+
+  # intrinsic to set the scheduling policy and priority
+  #
+  module set_policy(thread_id Thread, policy, priority i32) i32 => intrinsic

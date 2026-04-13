@@ -378,7 +378,10 @@ public abstract class Expr extends ANY implements HasSourcePosition
    */
   Expr assignToField(Resolution res, Context context, Feature r)
   {
-    return new Assign(res, pos(), r, this, context);
+    var result = new Assign(res, pos(), r, this, context);
+    result.wrapValueInLazy(res, context);
+    result.unwrapValue  (res, context);
+    return result;
   }
 
 

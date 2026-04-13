@@ -229,6 +229,11 @@ public class Intrinsics extends ANY
     while (!result);
   }
 
+  public static int fuzion_sys_thread_set_policy(Object thread, int policy, int priority)
+  {
+    return 38 /* ENOSYS - Function not implemented */;
+  }
+
 }
 
 /* end of file */

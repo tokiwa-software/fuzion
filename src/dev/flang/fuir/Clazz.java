@@ -315,15 +315,13 @@ class Clazz extends ANY implements Comparable<Clazz>
        outer == null || outer.isValue() || !type.feature().isField());
 
     _fuir = fuir;
-    outer = normalizeOuter(type, outer);
-    this._type = outer != null
-      ? type.replaceGenericsAndOuter(type.generics(), outer._type)
-      : type;
-
-    _outer = outer;
     _select = select;
     _needsCode = false;
     _code = IR.NO_SITE;
+    _outer = normalizeOuter(type, outer);
+    _type = _outer != null
+      ? type.replaceGenericsAndOuter(type.generics(), _outer._type)
+      : type;
 
     // needed in DFA-Phase to meet FUIR invariant that
     // stack must be empty at the end of a basic block
@@ -416,12 +414,12 @@ class Clazz extends ANY implements Comparable<Clazz>
    *
    * @param f the feature to check if it has an outer ref
    */
-  private boolean needsSpecialization(AbstractFeature f)
+  private static boolean needsSpecialization(AbstractFeature f)
   {
-    var or = f.outerRef();
-
-    return !f.isConstructor()  // do not specialize a constructor
-      && or != null;
+    // NYI: CLEANUP: add documentation why we do not
+    // specialize constructors
+    return !f.isConstructor()
+      && f.hasOuterRef();
   }
 
 

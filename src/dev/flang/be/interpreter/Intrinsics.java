@@ -471,6 +471,10 @@ public class Intrinsics extends ANY
           while (!result);
           return Value.UNIT;
         });
+    put("fuzion.sys.thread.set_policy", (executor, innerClazz) -> args ->
+        {
+          return new i32Value(38 /* ENOSYS - Function not implemented */);
+        });
 
     put("safety"                , (executor, innerClazz) -> args -> new boolValue(executor.options().fuzionSafety()));
     put("debug"                 , (executor, innerClazz) -> args -> new boolValue(executor.options().fuzionDebug()));

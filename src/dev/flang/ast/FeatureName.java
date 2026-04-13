@@ -270,7 +270,6 @@ public class FeatureName extends ANY implements Comparable<FeatureName>
   {
     var n = baseName();
     return
-      n.startsWith(FuzionConstants.UNDERSCORE_PREFIX)                  ? "_"          :
       n.startsWith(FuzionConstants.LAMBDA_PREFIX)                      ? FuzionConstants.HUMAN_READABLE_LAMBDA_NAME :
       n.startsWith(FuzionConstants.ANONYMOUS_FEATURE_PREFIX)           ? "anonymous"  :
       n.startsWith(FuzionConstants.REC_LOOP_PREFIX)                    ? (n.contains("else") ? "else" : "loop") :
@@ -283,6 +282,8 @@ public class FeatureName extends ANY implements Comparable<FeatureName>
       n.endsWith(FuzionConstants.TYPE_NAME)                            ? n.replace("." + FuzionConstants.TYPE_NAME, "") :
       n.startsWith(FuzionConstants.ITER_ARG_PREFIX_INIT)               ? n.replace(FuzionConstants.ITER_ARG_PREFIX_INIT, "") :
       n.startsWith(FuzionConstants.ITER_ARG_PREFIX_NEXT)               ? n.replace(FuzionConstants.ITER_ARG_PREFIX_NEXT, "") :
+      n.startsWith(FuzionConstants.INTERNAL_NAME_SYMBOL)               ? "_" :
+      n.endsWith(FuzionConstants.VALUES_OF_OPEN_TYPE_SUFFIX)           ? n.replace(FuzionConstants.VALUES_OF_OPEN_TYPE_SUFFIX, "._") :
       n;
   }
 

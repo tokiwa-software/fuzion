@@ -17,31 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test ex_nested_lazy
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-ex_nested_lazy is
-  lazy_evaluator(T type, lv Lazy T) T => lv
-
-  fun Function bool i32 := x -> x = 0
-
-  say (lazy_evaluator bool (fun 42))
-  say (lazy_evaluator bool (fun 0))
-
-  say (fun (lazy_evaluator i32 42))
-  say (fun (lazy_evaluator i32 0))
-
-  lazy0(l Lazy (Function i32)) i32 =>
-    l.call
-
-  say (lazy0 ()->42)
-  fn Function i32 := ()->42
-  say (lazy0 fn)
-
-  lazy1(f Function (Lazy i32)) i32 =>
-    f().call
-
-  say (lazy1 ()->42)
-  x1 Lazy i32 := ()->42
-  say (lazy1 x1)
+override NAME = reg_issue6235
+include ../simple.mk

@@ -143,9 +143,10 @@ public typed_fold(E type, e E, s container.Typed_Sequence) : container.typed_app
 #
 #       process 1 a    # precess returns result of last `apply`
 #
-# NYI: CLEANUP: This is somewhat redundant with `typed_fold`, we should decide on
-# only one of these variant, maybe once lambdas for `typed_applicator` are
-# supported #5892 and we can compare the usability.
+# NYI: CLEANUP: #6896 This is somewhat redundant with `typed_fold`, we should
+# decide on only one of these variants or find a different solution now that
+# lambdas for `typed_applicator` are supported.  We should compare example and
+# the usability of different APis.
 #
 public variadic(E type) : container.typed_applicator E is
 
