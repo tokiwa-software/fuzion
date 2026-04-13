@@ -57,6 +57,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <assert.h>
 #include <dirent.h>
 #include <pthread.h>
+#include <signal.h>
 
 #include "fz.h"
 
@@ -499,6 +500,14 @@ int fzE_lstat(const char *pathname, int64_t * metadata)
 
 static pthread_mutex_t fzE_global_mutex;
 
+// NYI: init in fzE_init
+extern void *(*fzE_stackoverflow_cause)(void);
+void fzE_stackoverflow_handler(int sig, siginfo_t *si, void *unused)
+{
+  fprintf(stderr, "*** NYI: stackoverflow detected %d ***", si->si_code);
+  exit(EXIT_FAILURE);
+}
+
 /**
  * Run plattform specific initialisation code
  */
@@ -513,6 +522,12 @@ void fzE_init()
             pthread_mutex_init(&fzE_global_mutex, &attr) == 0;
   assert(res);
 
+  struct sigaction sa;
+  sa.sa_flags = SA_SIGINFO; // NYI | SA_ONSTACK;
+  sa.sa_sigaction = fzE_stackoverflow_handler;
+  sigemptyset(&sa.sa_mask);
+  sigaction(SIGSEGV, &sa, NULL);
+
 #ifdef GC_THREADS
   GC_INIT();
 #endif
@@ -526,10 +541,16 @@ void * fzE_thread_create(void *(*code)(void *),
                           void *restrict args)
 {
   pthread_t * pt = fzE_malloc_safe(sizeof(pthread_t));
+
+  pthread_attr_t attr;
+  pthread_attr_init(&attr);
+  pthread_attr_setstacksize(&attr, 2097152 /* NYI: configurable? */);
+  pthread_attr_setguardsize(&attr, 4096 /* NYI: should be fuir/DFA should give us max stack usage of routine */);
+
 #ifdef GC_THREADS
-  int res = GC_pthread_create(pt,NULL,code,args);
+  int res = GC_pthread_create(pt,&attr,code,args);
 #else
-  int res = pthread_create(pt,NULL,code,args);
+  int res = pthread_create(pt,&attr,code,args);
 #endif
   if (res!=0)
   {
