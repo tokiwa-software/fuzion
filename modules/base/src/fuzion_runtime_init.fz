@@ -26,3 +26,4 @@
 #
 fuzion_runtime_init =>
   fzE_init
+  effect.instate_defaults

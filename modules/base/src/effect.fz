@@ -139,6 +139,17 @@ public effect is
     effect.this.default effect.this
 
 
+  module type.instate_defaults =>
+    effect_types.type_foldf unit T,e->
+      if T : effect then
+        match (T.default_value)
+          v T =>
+            T.default0 v
+          nil =>
+
+  public type.default_value option effect.this => nil
+
+
   # --------------------  effect instation  --------------------
 
 
