@@ -28,15 +28,15 @@ is
 
   public get u64 => {replace; p.get}
 
-  type.install_default =>
-    (unique_id default_handler).default
 
-  # default handler using
-  # fuzion.sys.misc.unique_id to get unique id
+  # default implementation of fuzion.runtime.unique_id
   #
-  type.default_handler =>
-    _ : Unique_Id_Handler is
-      public redef get u64 => fzE_unique_id
+  # this will get instated automatically at startup
+  #
+  public redef fixed type.default_value option unique_id =>
+    unique_id (_ : Unique_Id_Handler is
+                 public redef get u64 => fzE_unique_id
+              )
 
 
 public Unique_Id_Handler ref is
@@ -53,5 +53,4 @@ public Unique_Id_Handler ref is
 # (2^64/10^9/3600/24/365.25).
 #
 public unique_id u64 ! unique_id =>
-  unique_id.install_default
   unique_id.env.get

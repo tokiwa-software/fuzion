@@ -37,26 +37,30 @@ public provide ref : effect is
     public currency(c i32) String => abstract
 
     # current -- operation of the internationalization.provide effect to be able to install the default effect
-    public current internationalization.provide ! envir.vars, internationalization.provide =>
-        internationalization.provide.install_default
+    #
+    # NYI: CLEANUP: Remove and use `internationalization.provide.env` directly.
+    #
+    public current internationalization.provide ! internationalization.provide =>
         internationalization.provide.env
 
 
-    public type.install_default unit ! envir.vars =>
+    # default implementation of internationalization.provide
+    #
+    # this will get instated automatically at startup
+    #
+    public redef fixed type.default_value option internationalization.provide =>
+        l := envir.vars["LANG"].or_default ""
 
-        if !internationalization.provide.is_instated
-            l := envir.vars["LANG"].or_default ""
+        p internationalization.provide :=
+            if l.starts_with "de"
+                internationalization.german
+            else if l.starts_with "jp"
+                internationalization.japanese
+            else if l.starts_with "en"
+                internationalization.american
+            else if l.starts_with "kr"
+                internationalization.korean
+            else
+                internationalization.ISO
 
-            p internationalization.provide :=
-                if l.starts_with "de"
-                    internationalization.german
-                else if l.starts_with "jp"
-                    internationalization.japanese
-                else if l.starts_with "en"
-                    internationalization.american
-                else if l.starts_with "kr"
-                    internationalization.korean
-                else
-                    internationalization.ISO
-
-            internationalization.provide.type.default p
+        p

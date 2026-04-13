@@ -102,11 +102,12 @@ public stat(ps Stat_Handler) : effect is
       error "lstat error {res[0]} for {path}"
 
 
-
-# install default effect io.file.stat
-#
-install_default =>
-  (stat default_stat_handler).default
+  # default implementation of stat
+  #
+  # this will get instated automatically at startup
+  #
+  public redef fixed type.default_value option io.file.stat =>
+    io.file.stat io.file.default_stat_handler
 
 
 
@@ -123,9 +124,9 @@ default_stat_handler : Stat_Handler is
 
 # shorthand for accessing the stat effect in current environment
 #
-public stat stat ! stat =>
-  install_default
-  stat.env
+# NYI: CLEANUP: Remove and use `stat.env` directly.
+#
+public stat stat ! stat => stat.env
 
 
 # shorthand for accessing and using stats/lstats provided by the stat effect in current environment
@@ -139,7 +140,6 @@ public stat(
      path path,
      # a boolean resolve flag to resolve symbolic links or not
      resolve bool) outcome meta_data ! stat =>
-  install_default
   if resolve
     stat.env.stats path
   else

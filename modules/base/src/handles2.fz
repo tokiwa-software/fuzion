@@ -143,8 +143,9 @@ handles2_(T type) => handles2 T unit unit nil oneway_monad_mode.plain
 
 # shorthand for accessing handles monad for given type in current environment
 #
+# NYI: CLEANUP: Remove and use `handles2.env` directly.
+#
 handles2(T type) =>
-  (handles2_type T).install_default
   (handles2 T unit).env
 
 
@@ -175,11 +176,6 @@ is
 # unit type containing features related to handles but nor requiring an instance
 #
 handles2_type(T type) is
-
-  # install default instance of handles2
-  #
-  install_default unit =>
-    (handles2 T unit unit nil oneway_monad_mode.inst).default
 
 
 # create a new handle2 using the handles2 instance from the current environment

@@ -192,8 +192,9 @@ public handles_(T type) handles T unit => handles unit (array T 0 x->do) oneway_
 
 # shorthand for accessing handles monad for given type in current environment
 #
+# NYI: CLEANUP: Remove and use `handles.env` directly.
+#
 public handles(T type) handles T unit =>
-  (handles_type T).install_default
   (handles T unit).env
 
 
@@ -227,11 +228,6 @@ is
 # unit type containing features related to handles but not requiring an instance
 #
 handles_type(T type) is
-
-  # install default instance of handles
-  #
-  install_default unit =>
-    (handles unit (array T 0 x->do) oneway_monad_mode.inst).default
 
 
 # initializes a new handle with the given initial value
