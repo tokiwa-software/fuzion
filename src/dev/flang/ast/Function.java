@@ -380,7 +380,7 @@ public class Function extends AbstractLambda
             feature._sourceCodeContext = context;
 
             // inherits clause for wrapper feature: Function<R,A,B,C,...>
-            _inheritsCall = targetCalls(res, context, t.feature());
+            _inheritsCall = (Call)targetCalls(res, context, t);
             _inheritsCall._generics = t.generics();
             _inheritsCall._generics.freeze();
             List<Expr> expressions = new List<Expr>(feature);
@@ -433,23 +433,27 @@ public class Function extends AbstractLambda
    *
    * @param context the source code context where this Call is used
    *
-   * @param f the (inner) feature for which we want an outer instance.
+   * @param tt the target type of the lambda or any outer, can be a this type as in #6044
    *
    * @return the code to create the outer instances of {@code null} if outer is
    * the unverse.
    */
-  private Call targetCalls(Resolution res, Context context, AbstractFeature f)
+  private Expr targetCalls(Resolution res, Context context, AbstractType tt)
   {
-    if (f == null || f.isUniverse())
+    if (tt == null || tt.backingFeature().isUniverse())
       {
         return null;
+      }
+    else if (tt.isThisType())
+      {
+        return new Current(pos(), tt.feature());
       }
     else
       { // NYI: UNDER DEVELOPMENT: Report error if arg list is not empty. Also
         // handle the case that one of the outer features in context is the same
         // as f.outer() and use the correct chain of current and outer refs
         // instead.
-        return new Call(pos(), targetCalls(res, context, f.outer()), f.baseName());
+        return new Call(pos(), targetCalls(res, context, tt.outer()), tt.feature().baseName());
       }
   }
 
