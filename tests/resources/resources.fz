@@ -1,0 +1,37 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test resources
+#
+# -----------------------------------------------------------------------
+
+resources_test =>
+
+  _ := io.file.write "file" "Content"
+
+  f2 outcome io.file.file2 := (resources_observer say) ! ()->
+    # resources will be closed when this effect finishes
+    resources ! ()->
+      io.file
+        .open2 (path.of "file") io.file.mode.append
+        .bind f->
+          _ := f.mmap 0 7 .bind mb->
+            say <| String.from mb.as_array
+          f
+  say <| f2.bind (.read 1)
