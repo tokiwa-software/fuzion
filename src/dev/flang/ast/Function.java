@@ -448,6 +448,11 @@ public class Function extends AbstractLambda
       {
         return new Current(pos(), tt.feature());
       }
+    else if (!tt.feature().valueArguments().isEmpty())
+      {
+        AstErrors.lamdaOuterMustNotHaveArgs(pos(), tt);
+        return Call.ERROR;
+      }
     else
       { // NYI: UNDER DEVELOPMENT: Report error if arg list is not empty. Also
         // handle the case that one of the outer features in context is the same
