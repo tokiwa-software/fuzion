@@ -48,12 +48,28 @@ module:public Binary_Heap_Queue(
   elements := LM.array T .empty
 
 
-  parent(I type : idx, i I) I =>
-    p := (i-1) / 2
-    p < 0 ? (panic "parent $p of $i does not exist") : p
 
-  children(I type : idx, i I) tuple I I =>
-    (i*2+1, i*2+2)
+  # for a given index return the index of the parent node in the tree
+  # if not already the root
+  #
+  parent(I type : idx, i I) option I
+    pre debug 5 : i.as_i64 < elements.length
+  =>
+    p := (i-1) / 2
+    p < 0 ? nil : p
+
+  # for a given index return the indices of the two children in the tree
+  # if they exist
+  #
+  children(I type : idx, i I) tuple (option I) (option I) =>
+    left  := i*2 + 1
+    right := i*2 + 2
+
+    if left.as_i64 < elements.length
+      (option left, id (option I) (right.as_i64 < elements.length ? right : nil))
+    else
+      (option I nil, option I nil)
+
 
   swap(I type : idx, a I, b I) unit
     pre debug: (i64 0) <= a.as_i64 <= elements.length
@@ -64,24 +80,34 @@ module:public Binary_Heap_Queue(
     elements[b] := tmp
 
 
+  # fix the heap property going up from the given index
+  #
+  # to be used when inserting at the end of a branch
+  # fixes only that branch
+  #
   up_heap(I type : idx, i I) unit =>
-    # NYI: OPTIMIZATION: call `parent i` only once
-    if i > 0 && !first_or_same elements[parent i] elements[i]
-      swap i (parent i)
-      up_heap (parent i)
+    _ := parent i .bind p->
+      if !first_or_same elements[p] elements[i]
+        swap i p
+        up_heap p
 
 
+  # fix the heap property going down from the given index
+  #
+  # expects parts higher up to be ok or already fixed
+  #
   down_heap(I type : idx, i I) unit =>
-      c := children i
+    c := children i
 
-      if c.0.as_i64 < elements.length && !first_or_same elements[i] elements[c.0]
-        swap i c.0
-        down_heap c.0
-
-        if c.1.as_i64 < elements.length && !first_or_same elements[i] elements[c.1]
-          swap i c.1
-          down_heap c.1
-
+    _ := c.0.bind lc-> # left child
+      if !first_or_same elements[i] elements[lc]
+        swap i lc
+        down_heap lc
+        
+      _ := c.1.bind rc-> # right child
+        if !first_or_same elements[i] elements[rc]
+          swap i rc
+          down_heap rc
 
 
   public redef enqueue(elem T) unit =>
