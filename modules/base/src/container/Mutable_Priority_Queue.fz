@@ -33,6 +33,12 @@ module:public Mutable_Priority_Queue(public T type) ref is
   #
   public enqueue(elem T) unit => abstract
 
+  # iteratively add all element to the queue
+  #
+  public enqueue_all(elements Sequence T) unit =>
+    for e in elements do enqueue e
+
+
   # get and remove the element with highest priority
   #
   # this is the element with either minimum or maximum value
