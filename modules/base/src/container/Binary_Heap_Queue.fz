@@ -225,6 +225,34 @@ module:public Binary_Heap_Queue(
     say "peek=$peek"
 
 
+  # level in the binary tree, root is 0,
+  # direct children of root are 1, their children are 2, etc
+  #
+  level(i I : idx) =>
+    (i.as_i64.as_f64 + 1) .log 2 .as_i32
+
+  # check if the heap property still holds
+  #
+  public check_heap_property bool => # NYI: CLEANUP: remove debug code
+
+    chk1(I type : idx, i I, j I) bool =>
+      if !first_or_same elements[i] elements[j]
+        e := error "'{elements[i]}' at level {level i} should come after {elements[j]} at level {level j}"
+        say e
+        false
+      else true
+
+    chk(i I : idx) bool =>
+      c := children i
+
+      res_l     := c.0.bind (cl->chk1 i cl) .or_else true
+      res_l_sub := c.0.bind (cl->chk cl) .or_else true
+      res_r     := c.1.bind (cr->chk1 i cr) .or_else true
+      res_r_sub := c.1.bind (cr->chk cr) .or_else true
+
+      res_l & res_r & res_l_sub & res_r_sub
+
+    elements.length > 0 ? chk 0 : true
 
 
 
