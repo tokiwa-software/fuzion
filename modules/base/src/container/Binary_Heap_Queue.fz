@@ -50,7 +50,30 @@ module:public Binary_Heap_Queue(
 
 
   # binary heap with the elements in the queue
-  # implemented as an array with ahnentafel ordering
+  #
+  # implemented as an array with ahnentafel ordering:
+  # for any index i the children are at indices 2i+1 and 2i+2
+  # while the parent is at ⌊(i-1)/2⌋
+  #
+  # A binary tree like this
+  #
+  #             [1]
+  #            /   \
+  #         [2]     [3]
+  #         / \     / \
+  #      [4]  [5] [6]  [7]
+  #      / \
+  #    [8] [9]
+  #
+  # is represented as following
+  #
+  #   ╭───┬───╮   ╭───────────────┬───╮
+  #   │   v   v   │               v   v
+  #  [1] [2] [3] [4] [5] [6] [7] [8] [9]
+  #       │   │   ^   ^   ^   ^
+  #       ╰───────┴───╯   │   │
+  #           │           │   │
+  #           ╰───────────┴───╯
   #
   elements :=
     match initial_elements
