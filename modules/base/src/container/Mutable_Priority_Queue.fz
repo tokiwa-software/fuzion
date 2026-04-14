@@ -23,12 +23,6 @@
 
 module:public Mutable_Priority_Queue(public T type) ref is
 
-  # test_is_fist_or_same(a, b T) bool =>  # FIXME: remove debug code
-  #   first_or_same a b
-
-  # test_get_fist_or_same(a, b T) T =>    # FIXME: remove debug code
-  #   first_or_same a b ? a : b
-
   # add an element to the queue
   #
   public enqueue(elem T) unit => abstract
@@ -63,6 +57,8 @@ module:public Mutable_Priority_Queue(public T type) ref is
   public peek option T => abstract
 
 
+  # does this queue contain elem?
+  #
   public contains(elem T) bool
     pre T : property.equatable
   => abstract
