@@ -388,7 +388,7 @@ public class Function extends AbstractLambda
             _wrapper = new Feature(pos(),
                                    Visi.PRIV,
                                    0,
-                                   RefType.INSTANCE,
+                                   ValueType.INSTANCE,
                                    new List<String>(wrapperName),
                                    AbstractFeature._NO_FEATURES_,
                                    new List<>(_inheritsCall),
@@ -685,6 +685,12 @@ public class Function extends AbstractLambda
   {
     type(); // just for triggering error messages
     return this;
+  }
+
+
+  public void setDefunct()
+  {
+    _expr = Call.ERROR;
   }
 
 }
