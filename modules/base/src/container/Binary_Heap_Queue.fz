@@ -290,6 +290,12 @@ module:public Binary_Heap_Queue(
     elements.length > 0 ? chk 0 : true
 
 
+  # all elements in this queue as an unordered Sequence
+  #
+  public redef as_unordered Sequence T =>
+    elements.as_array
+
+
 
   # Create a new priority queue that returns the smallest element first
   # using natural ordering of the elements
