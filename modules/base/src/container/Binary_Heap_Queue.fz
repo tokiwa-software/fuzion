@@ -39,9 +39,10 @@ module:public Binary_Heap_Queue(
 
   # comparator to determine priority of the elements
   #
-  # `first_or_same a b` is true iff a has higher priority than b or the same as b
+  # less means an element comes first, i.e. has higher priority
+  # that can be either the highest value (max-queue) or the lowest (min-queue)
   #
-  public first_or_same Binary bool T T,
+  public less_or_equal Binary bool T T,
 
   # unordered elements to construct the queue from
   #
@@ -79,11 +80,11 @@ module:public Binary_Heap_Queue(
       _ := c.1.bind cr->(build_heap_fix cr)
 
       # determine the subtree with the higher priority root
-      prio_child := c.1.bind cr->(!first_or_same elements[cl] elements[cr] ? cr : cl)
+      prio_child := c.1.bind cr->(!less_or_equal elements[cl] elements[cr] ? cr : cl)
                      .or_else cl
 
       # down heap on higher priority side if current node has lower priority
-      if !first_or_same elements[i] elements[prio_child]
+      if !less_or_equal elements[i] elements[prio_child]
         swap i prio_child
         build_heap_fix prio_child
 
@@ -132,7 +133,7 @@ module:public Binary_Heap_Queue(
   #
   up_heap(I type : integer, i I) unit =>
     _ := parent i .bind p->
-      if !first_or_same elements[p] elements[i]
+      if !less_or_equal elements[p] elements[i]
         swap i p
         up_heap p
 
@@ -145,12 +146,12 @@ module:public Binary_Heap_Queue(
     c := children i
 
     _ := c.0.bind lc-> # left child
-      if !first_or_same elements[i] elements[lc]
+      if !less_or_equal elements[i] elements[lc]
         swap i lc
         down_heap lc
 
       _ := c.1.bind rc-> # right child
-        if !first_or_same elements[i] elements[rc]
+        if !less_or_equal elements[i] elements[rc]
           swap i rc
           down_heap rc
 
@@ -183,7 +184,7 @@ module:public Binary_Heap_Queue(
   # this is more efficient than an enqueue followed by a dequeue
   #
   public redef enqueue_dequeue(elem T) T =>
-    if elements.length > 0 && !first_or_same elem elements[0]
+    if elements.length > 0 && !less_or_equal elem elements[0]
       res := elements[0]
       elements[0] := elem
       down_heap 0
@@ -285,7 +286,7 @@ module:public Binary_Heap_Queue(
   public check_heap_property bool => # NYI: CLEANUP: remove debug code
 
     chk1(I type : integer, i I, j I) bool =>
-      if !first_or_same elements[i] elements[j]
+      if !less_or_equal elements[i] elements[j]
         e := error "'{elements[i]}' at level {level i} should come after '{elements[j]}' at level {level j}"
         say e
         false
@@ -354,19 +355,19 @@ module:public Binary_Heap_Queue(
 
 
   # Create a new priority queue that returns the elements in the
-  # order defined by the the supplied comparator `first_or_same`
+  # order defined by the the supplied comparator `less_or_equal`
   #
-  public fixed redef type.empty_comp(first_or_same Binary bool T1 T1) container.Binary_Heap_Queue LM T1 =>
-    container.Binary_Heap_Queue LM T1 first_or_same nil
+  public fixed redef type.empty_comp(less_or_equal Binary bool T1 T1) container.Binary_Heap_Queue LM T1 =>
+    container.Binary_Heap_Queue LM T1 less_or_equal nil
 
 
-  # Create a priority queue from the given elements
-  # that determines the element to return first by the given comparator
+  # Create a priority queue from the given elements that returns the elements
+  # in the order defined by the the supplied comparator `less_or_equal`
   #
   # Note: This is more efficient than iterative `enqueue` or `enqueue_all`,
   #       running in O(n) time rather than O(n log n).
   #
-  public fixed redef type.comp_from(first_or_same Binary bool T1 T1,
+  public fixed redef type.comp_from(less_or_equal Binary bool T1 T1,
                                     initial_elements Sequence T1) container.Binary_Heap_Queue LM T1
   =>
-    container.Binary_Heap_Queue LM T1 first_or_same (option initial_elements)
+    container.Binary_Heap_Queue LM T1 less_or_equal (option initial_elements)

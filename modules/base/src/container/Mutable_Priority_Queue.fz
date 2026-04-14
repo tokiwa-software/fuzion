@@ -118,7 +118,7 @@ public Mutable_Priority_Queue(public T type) ref is
   # Create an empty priority queue that determines which element
   # to return first by the given comparator
   #
-  public type.empty_comp(first_or_same Binary bool T1 T1) container.Mutable_Priority_Queue T1
+  public type.empty_comp(less_or_equal Binary bool T1 T1) container.Mutable_Priority_Queue T1
   => abstract
 
 
@@ -127,6 +127,6 @@ public Mutable_Priority_Queue(public T type) ref is
   #
   # Note: this is more efficient than iterative enqueue or enqueue_all
   #
-  public type.comp_from(first_or_same Binary bool T1 T1,
+  public type.comp_from(less_or_equal Binary bool T1 T1,
                         initial_elements Sequence T1) container.Mutable_Priority_Queue T1
   => abstract
