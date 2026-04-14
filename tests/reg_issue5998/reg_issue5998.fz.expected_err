@@ -8,6 +8,9 @@ expected formal type: 'myf'
 actual type found   : '(λa->a>0)'
 assignable to       : '(λa->a>0)'
 for value assigned  : 'a->a>0'
-To solve this, you could change the type of 'f' to a 'ref' type like 'ref myf'.
+To solve this you could:
+  • make  'myf' a reference by adding the 'ref' keyword, so all its heirs can be used in place of it,
+  • change the type of the target 'f' to '(λa->a>0)', or
+  • convert the type of the assigned value to 'myf'.
 
 one error.
