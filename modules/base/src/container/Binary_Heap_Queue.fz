@@ -62,7 +62,7 @@ module:public Binary_Heap_Queue(
   # until the heap property of that subtree is restored
   # does not need to touch the lower priority subtree
   #
-  build_heap_fix(i I : idx) unit =>
+  build_heap_fix(i I : integer) unit =>
     c := children i
 
     # if left child does not exist, nothing to do on this level
@@ -84,17 +84,17 @@ module:public Binary_Heap_Queue(
   # for a given index return the index of the parent node in the tree
   # if not already the root
   #
-  parent(I type : idx, i I) option I
+  parent(I type : integer, i I) option I
     pre debug 5 : i.as_i64 < elements.length
   =>
     p := (i-1) / 2
     p < 0 ? nil : p
 
-    
+
   # for a given index return the indices of the two children in the tree
   # if they exist
   #
-  children(I type : idx, i I) tuple (option I) (option I)
+  children(I type : integer, i I) tuple (option I) (option I)
     pre debug 5 : i >= 0 && i.as_i64 < elements.length
   =>
     left  := i*2 + 1
@@ -109,7 +109,7 @@ module:public Binary_Heap_Queue(
 
   # swap elements for the given two indices
   #
-  swap(I type : idx, a I, b I) unit
+  swap(I type : integer, a I, b I) unit
     pre debug: (i64 0) <= a.as_i64 < elements.length
         debug: (i64 0) <= b.as_i64 < elements.length
   =>
@@ -123,7 +123,7 @@ module:public Binary_Heap_Queue(
   # to be used when inserting at the end of a branch
   # fixes only that branch
   #
-  up_heap(I type : idx, i I) unit =>
+  up_heap(I type : integer, i I) unit =>
     _ := parent i .bind p->
       if !first_or_same elements[p] elements[i]
         swap i p
@@ -134,7 +134,7 @@ module:public Binary_Heap_Queue(
   #
   # expects parts higher up to be ok or already fixed
   #
-  down_heap(I type : idx, i I) unit =>
+  down_heap(I type : integer, i I) unit =>
     c := children i
 
     _ := c.0.bind lc-> # left child
@@ -166,7 +166,7 @@ module:public Binary_Heap_Queue(
       elements.remove_last
     else
       res := elements[0]
-      elements[0] := elements.remove_last.val
+      elements[0] := elements.remove_last.or_panic
       down_heap 0
       res
 
@@ -230,8 +230,8 @@ module:public Binary_Heap_Queue(
         # width of current node, left and right subtree
         cur_w, sub_l_w, sub_r_w :=
           {
-            tmp_sub_l_w := sub_l.val[0].codepoint_length
-            tmp_sub_r_w := sub_r.ok ? sub_r.val[0].codepoint_length : 1
+            tmp_sub_l_w := sub_l.or_panic[0].codepoint_length
+            tmp_sub_r_w := sub_r.ok ? sub_r.or_panic[0].codepoint_length : 1
             sub_w := tmp_sub_l_w + tmp_sub_r_w + 1 # width of subtrees with space between them
             if sub_w >= str_len # subtrees are wider, need to pad current node
               (sub_w, tmp_sub_l_w, tmp_sub_r_w)
@@ -252,7 +252,7 @@ module:public Binary_Heap_Queue(
 
         lvlres:= [str.pad_center cur_w]
                 ++ (sub_l.ok ? ["{" "*lh}┌{"─"*rh}┴{sub_r.ok ? "{"─"*lh}┐{" "*rh}" : " "*(lh+rh+1)}"] : [])
-                ++ (sub_l.ok ? sub_l.val.zip sub_r_new (s1,s2)->("{s1.pad_center sub_l_w} {s2.pad_center sub_r_w}") : [])
+                ++ (sub_l.ok ? sub_l.or_panic.zip sub_r_new (s1,s2)->("{s1.pad_center sub_l_w} {s2.pad_center sub_r_w}") : [])
 
         lvlres
 
@@ -270,21 +270,21 @@ module:public Binary_Heap_Queue(
   # level in the binary tree, root is 0,
   # direct children of root are 1, their children are 2, etc
   #
-  level(i I : idx) =>
+  level(i I : integer) =>
     (i.as_i64.as_f64 + 1) .log 2 .as_i32
 
   # check if the heap property still holds
   #
   public check_heap_property bool => # NYI: CLEANUP: remove debug code
 
-    chk1(I type : idx, i I, j I) bool =>
+    chk1(I type : integer, i I, j I) bool =>
       if !first_or_same elements[i] elements[j]
         e := error "'{elements[i]}' at level {level i} should come after '{elements[j]}' at level {level j}"
         say e
         false
       else true
 
-    chk(i I : idx) bool =>
+    chk(i I : integer) bool =>
       c := children i
 
       res_l     := c.0.bind (cl->chk1 i cl) .or_else true
