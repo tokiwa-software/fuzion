@@ -1,0 +1,13 @@
+
+--CURDIR--/reg_issue5998.fz:39:3: error 1: Incompatible types when passing argument in a call
+q a->a>0
+--^^^^^^
+Actual type for argument #1 'f' does not match expected type.
+In call to          : 'q'
+expected formal type: 'myf'
+actual type found   : '(λa->a>0)'
+assignable to       : '(λa->a>0)'
+for value assigned  : 'a->a>0'
+To solve this, you could change the type of 'f' to a 'ref' type like 'ref myf'.
+
+one error.
