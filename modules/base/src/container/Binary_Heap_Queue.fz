@@ -92,7 +92,7 @@ module:public Binary_Heap_Queue(
   # for a given index return the index of the parent node in the tree
   # if not already the root
   #
-  parent(I type : integer, i I) option I
+  parent(i I : integer) option I
     pre debug 5 : i.as_i64 < elements.length
   =>
     p := (i-1) / 2
@@ -102,7 +102,7 @@ module:public Binary_Heap_Queue(
   # for a given index return the indices of the two children in the tree
   # if they exist
   #
-  children(I type : integer, i I) tuple (option I) (option I)
+  children(i I : integer) tuple (option I) (option I)
     pre debug 5 : i >= 0 && i.as_i64 < elements.length
   =>
     left  := i*2 + 1
@@ -117,7 +117,7 @@ module:public Binary_Heap_Queue(
 
   # swap elements for the given two indices
   #
-  swap(I type : integer, a I, b I) unit
+  swap(a, b I : integer) unit
     pre debug: (i64 0) <= a.as_i64 < elements.length
         debug: (i64 0) <= b.as_i64 < elements.length
   =>
@@ -131,7 +131,7 @@ module:public Binary_Heap_Queue(
   # to be used when inserting at the end of a branch
   # fixes only that branch
   #
-  up_heap(I type : integer, i I) unit =>
+  up_heap(i I : integer) unit =>
     _ := parent i .bind p->
       if !less_or_equal elements[p] elements[i]
         swap i p
@@ -142,7 +142,7 @@ module:public Binary_Heap_Queue(
   #
   # expects parts higher up to be ok or already fixed
   #
-  down_heap(I type : integer, i I) unit =>
+  down_heap(i I : integer) unit =>
     c := children i
 
     _ := c.0.bind lc-> # left child
@@ -269,7 +269,7 @@ module:public Binary_Heap_Queue(
 
   # print the string representation of the binary heap
   #
-  public dbg_say unit =>
+  public dbg_say unit => # NYI: CLEANUP: remove debug code
     say elements
     say dbg_str
     say "peek=$peek"
@@ -278,14 +278,14 @@ module:public Binary_Heap_Queue(
   # level in the binary tree, root is 0,
   # direct children of root are 1, their children are 2, etc
   #
-  level(i I : integer) =>
+  level(i I : integer) i32 =>
     (i.as_i64.as_f64 + 1) .log 2 .as_i32
 
   # check if the heap property still holds
   #
   public check_heap_property bool => # NYI: CLEANUP: remove debug code
 
-    chk1(I type : integer, i I, j I) bool =>
+    chk1(i, j I : integer) bool =>
       if !less_or_equal elements[i] elements[j]
         e := error "'{elements[i]}' at level {level i} should come after '{elements[j]}' at level {level j}"
         say e
@@ -357,7 +357,7 @@ module:public Binary_Heap_Queue(
   # Create a new priority queue that returns the elements in the
   # order defined by the the supplied comparator `less_or_equal`
   #
-  public fixed redef type.empty_comp(less_or_equal Binary bool T1 T1) container.Binary_Heap_Queue LM T1 =>
+  public fixed redef type.empty_comp(less_or_equal (T1, T1)->bool) container.Binary_Heap_Queue LM T1 =>
     container.Binary_Heap_Queue LM T1 less_or_equal nil
 
 
@@ -367,7 +367,7 @@ module:public Binary_Heap_Queue(
   # Note: This is more efficient than iterative `enqueue` or `enqueue_all`,
   #       running in O(n) time rather than O(n log n).
   #
-  public fixed redef type.comp_from(less_or_equal Binary bool T1 T1,
+  public fixed redef type.comp_from(less_or_equal (T1, T1)->bool,
                                     initial_elements Sequence T1) container.Binary_Heap_Queue LM T1
   =>
     container.Binary_Heap_Queue LM T1 less_or_equal (option initial_elements)
