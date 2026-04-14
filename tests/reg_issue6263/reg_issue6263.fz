@@ -1,0 +1,88 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue6263
+#
+# -----------------------------------------------------------------------
+
+reg_issue6263 =>
+
+  LM : mutate is
+  input := LM ! ()->io.stdin.reader LM ! ()->io.buffered LM
+    .read_lines
+    .filter !=""
+
+  data := input.map action
+  action(s String) =>
+    s3 := s.split " "
+    action s3[0] s3[1].parse_i32.or_panic (s3[2].substring 2 8).parse_i32_hex.or_panic
+  action(dir String, len i32, col i32) is
+
+  dirs := "UDLR"
+  dx := [0,0,-1,+1]
+  dy := [-1,+1,0,0]
+
+  part1 =>
+    lm : mutate is
+    lm.instate_self i32 ()->
+      cell(n lm.new String) ref is
+      area := array2 cell 1000 1000 _,_->(cell (lm.env.new $"."))
+      say "start: "
+      for px := 500, nx
+          py := 500, ny
+          min_x := px-1, min min_x px-1
+          min_y := py-1, min min_y py-1
+          max_x := px+1, max max_x px+1
+          max_y := py+1, max max_y py+1
+          a in data
+          d := (dirs.find a.dir).or_panic
+      do
+        for i in 0..(a.len-1) do
+          area[_,px+i*dx[d],py+i*dy[d]].n <- "#"
+        nx := px + a.len*dx[d]
+        ny := py + a.len*dy[d]
+      else
+        show =>
+          for y in min_y..max_y do
+            for x in min_x..max_x do
+              yak area[_,x,y].n.get
+            say ""
+        show
+        say "fill: "
+        fill(x,y i32) unit =>
+          if (min_x <= x <= max_x &&
+              min_y <= y <= max_y) then
+            if area[_,x,y].n.get = "." then
+              area[_,x,y].n <- "_"
+              fill x-1 y
+              fill x+1 y
+              fill x y-1
+              fill x y+1
+        fill min_x min_y
+        say "filled: "
+        show
+        res := lm.env.new 0 # (max_x-min_x+1)*(max_y-min_y+1)
+        for y in min_y..max_y do
+          for x in min_x..max_x do
+            c := area[_,x,y].n.get
+            if c = "#" || c = "." then
+              res <- res.get + 1
+        res.get
+
+  say "part1 $part1"

@@ -2641,6 +2641,13 @@ public class AstErrors extends ANY
      );
   }
 
+  public static void loopResultsInTwoIncompatibleTypes(SourcePosition pos, Match m)
+  {
+    error(pos, "Loop results in two incompatible types." ,
+      "The incompatible types are: " + m.cases().map2(c -> s(c.code().type())).stream().collect(Collectors.joining(","))
+    );
+  }
+
 }
 
 /* end of file */
