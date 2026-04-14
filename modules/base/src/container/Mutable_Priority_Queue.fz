@@ -21,6 +21,8 @@
 #
 # -----------------------------------------------------------------------
 
+# An abstract mutable priority queue, returning the element with the highest priority first
+#
 module:public Mutable_Priority_Queue(public T type) ref is
 
   # add an element to the queue
