@@ -384,7 +384,7 @@ is
   #
   # NYI: UNDER DEVELOPMENT: do we want this public?
   #
-  first_index_of(cond T->bool) i32
+  first_index_of(F type: T->bool, cond F) i32
   =>
     for i:=0, i+1
         el in Sequence.this
@@ -1106,9 +1106,9 @@ is
   # via mapping all elements to key value pairs
   #
   public as_ordered_map(KEY type : property.orderable,
-                          VALUE type,
-                          mapper T -> (KEY,VALUE)
-                          ) container.ordered_map KEY VALUE
+                        VALUE type,
+                        mapper T -> (KEY,VALUE)
+                        ) container.ordered_map KEY VALUE
   =>
 
     keys, values :=
