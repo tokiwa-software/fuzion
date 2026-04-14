@@ -2601,34 +2601,37 @@ public class Call extends AbstractCall
         {
           var tf = tt.feature();
           res.resolveDeclarations(tf);
-          var ttf = tf.isUniverse() ? tf : res.cotype(tf);
-          res.resolveDeclarations(tf);
-          var fo = findOnTarget(res, tf, false).v1();
-          var tfo = findOnTarget(res, ttf, false).v1();
-          var f = tfo == null ? null : tfo._feature;
-          if (f != null
-              && f.outer() != null
-              /* omitting dot-type does not work when calling
-               the inherited methods of `Type`. Otherwise we
-               would always have an ambiguity when calling `as_string` */
-              && f.outer().isCotype())
+          if (!tf.isTypeParameter())
             {
-              if (fo != null)
+              var ttf = tf.isUniverse() ? tf : res.cotype(tf);
+              res.resolveDeclarations(tf);
+              var fo = findOnTarget(res, tf, false).v1();
+              var tfo = findOnTarget(res, ttf, false).v1();
+              var f = tfo == null ? null : tfo._feature;
+              if (f != null
+                  && f.outer() != null
+                  /* omitting dot-type does not work when calling
+                   the inherited methods of `Type`. Otherwise we
+                   would always have an ambiguity when calling `as_string` */
+                  && f.outer().isCotype())
                 {
-                  AstErrors.ambiguousCall(this, fo._feature, tfo._feature);
-                  setToErrorState();
+                  if (fo != null && !fo._feature.isTypeParameter())
+                    {
+                      AstErrors.ambiguousCall(this, fo._feature, tfo._feature);
+                      setToErrorState();
+                    }
+                  else
+                    {
+                      // we found a feature that fits a dot-type-call.
+                      _calledFeature = f;
+                      _pendingError = null;
+                      _target = Call.typeAsValue(_pos, _target.asParsedType()).resolveTypes(res, context);
+                    }
                 }
-              else
+              if (_calledFeature != null)
                 {
-                  // we found a feature that fits a dot-type-call.
-                  _calledFeature = f;
-                  _pendingError = null;
-                  _target = Call.typeAsValue(_pos, _target.asParsedType()).resolveTypes(res, context);
+                  splitOffTypeArgs(res, context);
                 }
-            }
-          if (_calledFeature != null)
-            {
-              splitOffTypeArgs(res, context);
             }
         }
     }
