@@ -45,6 +45,9 @@ module:public Binary_Heap_Queue(
     first_or_same a b ? a : b
 
 
+  # binary heap with the elements in the queue
+  # implemented as an array with ahnentafel ordering
+  #
   elements := LM.array T .empty
 
 
@@ -61,19 +64,24 @@ module:public Binary_Heap_Queue(
   # for a given index return the indices of the two children in the tree
   # if they exist
   #
-  children(I type : idx, i I) tuple (option I) (option I) =>
+  children(I type : idx, i I) tuple (option I) (option I)
+    pre debug 5 : i >= 0 && i.as_i64 < elements.length
+  =>
     left  := i*2 + 1
     right := i*2 + 2
 
+    # NYI: CLEANUP: explicit types could be removed when type inference for tuples improves
     if left.as_i64 < elements.length
       (option left, id (option I) (right.as_i64 < elements.length ? right : nil))
     else
       (option I nil, option I nil)
 
 
+  # swap elements for the given two indices
+  #
   swap(I type : idx, a I, b I) unit
-    pre debug: (i64 0) <= a.as_i64 <= elements.length
-        debug: (i64 0) <= b.as_i64 <= elements.length
+    pre debug: (i64 0) <= a.as_i64 < elements.length
+        debug: (i64 0) <= b.as_i64 < elements.length
   =>
     tmp := elements[a]
     elements[a] := elements[b]
@@ -103,7 +111,7 @@ module:public Binary_Heap_Queue(
       if !first_or_same elements[i] elements[lc]
         swap i lc
         down_heap lc
-        
+
       _ := c.1.bind rc-> # right child
         if !first_or_same elements[i] elements[rc]
           swap i rc
@@ -113,6 +121,7 @@ module:public Binary_Heap_Queue(
   public redef enqueue(elem T) unit =>
     elements.add elem
     up_heap (elements.length - 1)
+
 
   public redef dequeue option T =>
 
@@ -138,12 +147,13 @@ module:public Binary_Heap_Queue(
     else
       elem
 
-  public redef peek option T => elements.length = 0 ? nil : elements[0]
 
-  public redef contains(elem T) bool => elements.contains elem
+  public redef peek option T =>
+    elements.length = 0 ? nil : elements[0]
 
 
-
+  public redef contains(elem T) bool =>
+    elements.contains elem
 
 
   # create a string representation of the binary heap
@@ -216,6 +226,8 @@ module:public Binary_Heap_Queue(
 
 
 
+
+
   # Create a new priority queue that returns the smallest element first
   # using natural ordering of the elements
   #
@@ -224,7 +236,7 @@ module:public Binary_Heap_Queue(
   =>
     container.Binary_Heap_Queue LM T lteq
 
-    
+
   # Create a new priority queue that returns the largest element first
   # using natural ordering of the elements
   #
@@ -239,14 +251,3 @@ module:public Binary_Heap_Queue(
   #
   public fixed redef type.new_comp(first_or_same Binary bool T1 T1) container.Binary_Heap_Queue LM T1 =>
     container.Binary_Heap_Queue LM T1 first_or_same
-
-
-
-
-# q1 := Binary_Heap_Queue String (lteq)
-# q2 := Binary_Heap_Queue String (a,b->lteq b a)
-
-# say <| q1.test_is_fist_or_same  "abc" "xyz"
-# say <| q1.test_get_fist_or_same "abc" "xyz"
-# say <| q2.test_is_fist_or_same  "abc" "xyz"
-# say <| q2.test_get_fist_or_same "abc" "xyz"
