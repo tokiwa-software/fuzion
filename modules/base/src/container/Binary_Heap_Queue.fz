@@ -229,9 +229,52 @@ module:public Binary_Heap_Queue(
     elements.contains elem
 
 
-  # create a string representation of the binary heap
+  # create a multiline string representation of the binary heap
+  # using an indented, top-down tree layout (filesystem-style)
   #
-  public dbg_str String =>
+  # This is more efficient than as_string_tree_pretty,
+  # and works on larger trees
+  #
+  # e.g.
+  #
+  #  1
+  #  ├── 2
+  #  │   ├── 4
+  #  │   └── 5
+  #  └── 3
+  #      └── 6
+  #
+  public as_string_tree_vertical String =>
+
+    lvl(indent String, oi option i32, is_last bool) String =>
+
+      match oi
+        nil => ""
+        i i32 =>
+          prfx := is_last ? "└── " : "├── "
+          new_ind := indent + (is_last ? "    " : "│   ")
+          c := children i
+          indent + prfx + $elements[i] + (lvl new_ind c.0 (c.1.is_nil)) + (lvl new_ind c.1 true)
+
+    chd := children 0
+    elements.is_empty ? "" : $elements[0] + (lvl "\n" chd.0 false) + (lvl "\n" chd.1 true)
+
+
+  # create a multiline string representation of the binary heap
+  # using a centered, pretty-printed tree layout (balanced/symmetric)
+  #
+  # Note: this will likely fail on very large queues (~2000)
+  #       as the whole string is constructed recursively at once
+  #       But in these cases the horizontal representation is likely not suitable
+  #
+  # e.g.
+  #       1
+  #     ┌─┴─┐
+  #     2   3
+  #    ┌┴┐ ┌┴
+  #    4 5 6
+  #
+  public as_string_tree_pretty String =>
 
     # create string representation of binary tree from index i
     #
@@ -294,7 +337,7 @@ module:public Binary_Heap_Queue(
   #
   public dbg_say unit => # NYI: CLEANUP: remove debug code
     say elements
-    say dbg_str
+    say as_string_tree_pretty
     say "peek=$peek"
 
 
