@@ -29,14 +29,22 @@ module:public Mutable_Priority_Queue(public T type) ref is
   # test_get_fist_or_same(a, b T) T =>    # FIXME: remove debug code
   #   first_or_same a b ? a : b
 
+  # add an element to the queue
+  #
   public enqueue(elem T) unit => abstract
 
+  # get and remove the element with highest priority
+  #
+  # this is the element with either minimum or maximum value
+  # depending on the chosen queue/comparator
+  #
   public dequeue option T => abstract
 
 
   # enqueue elem and then dequeue (return and remove) the highest priority element
   #
   public enqueue_dequeue(elem T) T => abstract
+
   public peek option T => abstract
 
   public contains(elem T) bool
