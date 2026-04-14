@@ -21,7 +21,20 @@
 #
 # -----------------------------------------------------------------------
 
-module:public Binary_Heap_Queue(public T type, public first_or_same Binary bool T T) ref : container.Mutable_Priority_Queue T is
+module:public Binary_Heap_Queue(
+  # the mutate effect
+  #
+  public LM type : mutate,
+
+  # type of the elements in the queue
+  #
+  public T type,
+
+  # comparator to determine priority of the elements
+  #
+  # `first_or_same a b` is true iff a has higher priority than b or the same as b
+  #
+  public first_or_same Binary bool T T) ref : container.Mutable_Priority_Queue T is
 
   test_is_fist_or_same(a, b T) bool =>  # FIXME: remove debug code
     first_or_same a b
@@ -43,6 +56,14 @@ module:public Binary_Heap_Queue(public T type, public first_or_same Binary bool 
   #
   public fixed redef type.new_max_first(T1 type : property.orderable) container.Binary_Heap_Queue T1 =>
     container.Binary_Heap_Queue T1 (>=)
+
+  # Create a new priority queue that returns the elements in the
+  # order defined by the the supplied comparator `first_or_same`
+  #
+  public fixed redef type.new_comp(first_or_same Binary bool T1 T1) container.Binary_Heap_Queue T1 =>
+    container.Binary_Heap_Queue T1 first_or_same
+
+
 
 
 # q1 := Binary_Heap_Queue String (lteq)
