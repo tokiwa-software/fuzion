@@ -134,56 +134,69 @@ module:public Binary_Heap_Queue(
 
 
 
+  # create a string representation of the binary heap
+  #
   public dbg_str String =>
 
-    lvl(i i64) option (Sequence String) =>
-      if i >= elements.length then nil # (2,(id (Sequence String) [$"   "]))
+    # create string representation of binary tree from index i
+    #
+    # each level is padded to uneven length
+    # each node is centered on the total width of both its subtrees
+    #
+    # e.g.
+    #         a
+    # ┌───────┴┐
+    # b long_node_name
+    #
+    lvl(i i64) Sequence String
+      pre debug 5 : 0 <= i < elements.length
+    =>
+      str := elements[_,i].as_string
+      str_len := {l := str.codepoint_length; l%%2 ? l+1 : l}
+
+      c := children i
+      sub_l := c.0.bind lvl
+      sub_r := c.1.bind lvl
+
+      if sub_l.is_nil # leaf - no more subtrees
+        lvlres := [str.pad_center str_len]
+
+        lvlres
       else
-        str := elements[_,i].as_string
-        str_len := {l := str.codepoint_length; l%%2 ? l+1 : l}
+        # width of current node, left and right subtree
+        cur_w, sub_l_w, sub_r_w :=
+          {
+            tmp_sub_l_w := sub_l.val[0].codepoint_length
+            tmp_sub_r_w := sub_r.ok ? sub_r.val[0].codepoint_length : 1
+            sub_w := tmp_sub_l_w + tmp_sub_r_w + 1 # width of subtrees with space between them
+            if sub_w >= str_len # subtrees are wider, need to pad current node
+              (sub_w, tmp_sub_l_w, tmp_sub_r_w)
+            else # current node is wider, need to pad subtrees
+              sub_dif := str_len - sub_w # amount that sub tree with is too small
+              # additional padding so total padding can be divided by 4
+              # to evenly pad subtrees on each side
+              div_4_pad := 4 - (sub_dif%4)
+              sub_half := (sub_dif + div_4_pad) / 2
+              check sub_half%%2
+              (str_len + div_4_pad, tmp_sub_l_w + sub_half, tmp_sub_r_w + sub_half)
+          }
+        lh := sub_l_w/2 # half width of left subtree, excluding center char
+        rh := sub_r_w/2 # half width of right subtree, excluding center char
 
-        c := children i
-        sub_l := lvl (c.0)
-        sub_r := lvl (c.1)
+        # NYI: CLEANUP: concat_list currently required, see #6740
+        sub_r_new := sub_r.or_else [$" "," "," "] .as_list.concat_list [$""].cycle.as_list # extension needed if the right side is only a leaf but the left side contains a subtree
 
-        if sub_l.is_nil
-          lvlres := [str.pad_center str_len]
+        lvlres:= [str.pad_center cur_w]
+                ++ (sub_l.ok ? ["{" "*lh}┌{"─"*rh}┴{sub_r.ok ? "{"─"*lh}┐{" "*rh}" : " "*(lh+rh+1)}"] : [])
+                ++ (sub_l.ok ? sub_l.val.zip sub_r_new (s1,s2)->("{s1.pad_center sub_l_w} {s2.pad_center sub_r_w}") : [])
 
-          lvlres
-        else
-          cur_w, sub_l_w, sub_r_w :=
-            {
-              tmp_sub_l_w := sub_l.val[0].codepoint_length
-              tmp_sub_r_w := sub_r.ok ? sub_r.val[0].codepoint_length : 1
-              sub_w := tmp_sub_l_w + tmp_sub_r_w + 1
-              if sub_w >= str_len
-                (sub_w, tmp_sub_l_w, tmp_sub_r_w)
-              else
-                sub_dif := str_len - sub_w # amount that sub tree with is too small
-                div_4_pad := 4 - (sub_dif%4)   # additional padding so total padding can be divided by four
+        lvlres
 
-
-                sub_half := (sub_dif + div_4_pad) / 2
-                check sub_half%%2
-                (str_len + div_4_pad, tmp_sub_l_w + sub_half, tmp_sub_r_w + sub_half)
-            }
-          lh := sub_l_w/2
-          rh := sub_r_w/2
-
-          # NYI: CLEANUP: concat_list currently required, see #6740
-          sub_r_new := sub_r.or_else [$" "," "," "] .as_list.concat_list [$""].cycle.as_list # extension needed if the right side is only a leaf but the left side contains a subtree
-
-          lvlres:= [str.pad_center cur_w]
-                  ++ (sub_l.ok ? ["{" "*lh}┌{"─"*rh}┴{sub_r.ok ? "{"─"*lh}┐{" "*rh}" : " "*(lh+rh+1)}"] : [])
-                  ++ (sub_l.ok ? sub_l.val.zip sub_r_new (s1,s2)->("{s1.pad_center sub_l_w} {s2.pad_center sub_r_w}") : [])
-
-          lvlres
-
-    res := lvl 0 .or_else (Sequence String .empty)
-    res.as_string "\n"
+    elements.length = 0 ? "" : (lvl 0).as_string "\n"
 
 
-
+  # print the string representation of the binary heap
+  #
   public dbg_say unit =>
     say elements
     say dbg_str
