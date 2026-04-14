@@ -29,6 +29,16 @@ module:public Mutable_Priority_Queue(public T type) ref is
   # test_get_fist_or_same(a, b T) T =>    # FIXME: remove debug code
   #   first_or_same a b ? a : b
 
+  public enqueue(elem T) unit => abstract
+
+  public dequeue T => abstract
+
+  public peek T => abstract
+
+  public contains(elem T) bool => abstract
+
+  # Does remove make sense? If so should there be a remove_one and remove_all?
+  # public remove(elem T) => abstract
 
 
 
