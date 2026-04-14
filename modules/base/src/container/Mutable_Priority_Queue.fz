@@ -47,13 +47,19 @@ module:public Mutable_Priority_Queue(public T type) ref is
   # Create a new priority queue that returns the smallest element first
   # using natural ordering of the elements
   #
-  public type.new_min_first(T1 type : property.orderable) container.Mutable_Priority_Queue T1 => abstract # FIXME: how to get rid of the type parameter but keep the constraint?
-    # Mutable_Priority_Queue T1 lteq
+  public type.new_min_first container.Mutable_Priority_Queue T
+    pre T : property.orderable
+  => abstract
 
   # Create a new priority queue that returns the largest element first
   # using natural ordering of the elements
   #
-  public type.new_max_first(T1 type : property.orderable) container.Mutable_Priority_Queue T1 => abstract # FIXME: how to get rid of the type parameter but keep the constraint?
-    # Mutable_Priority_Queue T1 (>=)
+  public type.new_max_first container.Mutable_Priority_Queue T
+    pre T : property.orderable
+  => abstract
+
+  public type.new_max_first_test container.Mutable_Priority_Queue T
+    pre T : property.orderable
+  => abstract
 
   public type.new_comp(first_or_same Binary bool T1 T1) container.Mutable_Priority_Queue T1 => abstract
