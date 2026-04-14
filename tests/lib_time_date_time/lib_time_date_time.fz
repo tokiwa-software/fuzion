@@ -26,6 +26,7 @@ lib_time_date_time =>
   a := time.date_time 2024 1 30 10 30 12 1E8
   b := time.date_time 2024 1 30 10 30 12 1E7
   c := time.date_time 2023 1 30 10 30 12 1E8
+  duration := time.duration.h 1 + time.duration.min 15 + time.duration.s 30
 
   say "a = $a"
   say "b = $b"
@@ -50,7 +51,10 @@ lib_time_date_time =>
   say "c is_before a = {c < a}"
   say "c is_before b = {c < b}"
   say "c is_before c = {c < c}"
-
+  say  "{a} + {duration} = {a + duration}"
+  say  "{a} - {duration} = {a - duration}"
+  check a + duration = time.date_time 2024 1 30 11 45 42 100000000
+  check a - duration = time.date_time 2024 1 30 9 14 42 100000000
   say "time.date_time.from_seconds 1758620705 = time.date_time 2025 9 23 9 45 5 0 = {time.date_time.from_seconds 1758620705 = time.date_time 2025 9 23 9 45 5 0}"
 
   one_day_eleven_seconds := ((u64 60)*60*24)+11

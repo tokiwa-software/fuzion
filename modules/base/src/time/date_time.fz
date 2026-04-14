@@ -85,11 +85,36 @@ is
                               "T$hour_as_string:$minute_as_string:$second_as_string.$nano_second_as_string")
 
 
-  # # NYI
-  # infix + (other time.duration) date_time is
+  # internal helper: total nanoseconds since unix epoch
+  #
+  public nanos u64
+  =>
+    unix_time_stamp.as_u64 * 1000000000 + nano_second.as_u64
 
-  # infix - (other date_time) time.duration is
-  # infix - (other time.duration) date_time is
+
+  # add a duration to this date time
+  #
+  public fixed infix + (other time.duration) date_time
+  =>
+    total_nanos := nanos + other.nanos
+    seconds := total_nanos / 1000000000
+    new_nano := total_nanos % 1000000000
+    base := time.date_time.from_seconds seconds
+    date_time base.year base.month base.day base.hour base.minute base.second new_nano.as_i32
+
+
+  # subtract a duration from this date time
+  #
+  public fixed infix - (other time.duration) date_time
+  pre
+    debug: nanos >= other.nanos
+  =>
+    total_nanos := nanos - other.nanos
+    seconds := total_nanos / 1000000000
+    new_nano := total_nanos % 1000000000
+    base := time.date_time.from_seconds seconds
+    date_time base.year base.month base.day base.hour base.minute base.second new_nano.as_i32
+
 
   # as_string(f date_time_format, local/time_zone) String is
   # ...
