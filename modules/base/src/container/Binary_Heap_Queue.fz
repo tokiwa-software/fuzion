@@ -120,64 +120,14 @@ module:public Binary_Heap_Queue(
           lh := sub_l_w/2
           rh := sub_r_w/2
 
-          sub_r_new := (sub_r.or_else (id (Sequence String) [" "," "," "]) ++ [""].cycle)
+          # NYI: CLEANUP: concat_list currently required, see #6740
+          sub_r_new := sub_r.or_else [$" "," "," "] .as_list.concat_list [$""].cycle.as_list # extension needed if the right side is only a leaf but the left side contains a subtree
 
           lvlres:= [str.pad_center cur_w]
                   ++ (sub_l.ok ? ["{" "*lh}┌{"─"*rh}┴{sub_r.ok ? "{"─"*lh}┐{" "*rh}" : " "*(lh+rh+1)}"] : [])
                   ++ (sub_l.ok ? sub_l.val.zip sub_r_new (s1,s2)->("{s1.pad_center sub_l_w} {s2.pad_center sub_r_w}") : [])
 
           lvlres
-
-    res := lvl 0 .or_else (Sequence String .empty)
-    res.as_string "\n"
-
-
-  dbg_str_arr(arr array T) String =>
-    len := arr.length
-
-    lvl(i i32) option (Sequence String) =>
-      if i >= len then nil # (2,(id (Sequence String) [$"   "]))
-      else
-        str := arr[_,i].as_string
-        str_len := {l := str.codepoint_length; l%%2 ? l+1 : l}
-
-        sub_l := lvl (2*i+1)
-        sub_r := lvl (2*i+2)
-
-        if sub_l.is_nil
-          lvlres := [str.pad_center str_len]
-
-          lvlres
-        else
-
-          cur_w, sub_l_w, sub_r_w :=
-            {
-              tmp_sub_l_w := sub_l.val[0].codepoint_length
-              tmp_sub_r_w := sub_r.ok ? sub_r.val[0].codepoint_length : 1
-              sub_w := tmp_sub_l_w + tmp_sub_r_w + 1
-              if sub_w >= str_len
-                (sub_w, tmp_sub_l_w, tmp_sub_r_w)
-              else
-                sub_dif := str_len - sub_w # amount that sub tree with is too small
-                div_4_pad := 4 - (sub_dif%4)   # additional padding so total padding can be divided by four
-
-
-                sub_half := (sub_dif + div_4_pad) / 2
-                check sub_half%%2
-                (str_len + div_4_pad, tmp_sub_l_w + sub_half, tmp_sub_r_w + sub_half)
-            }
-
-          lh := sub_l_w/2
-          rh := sub_r_w/2
-
-          sub_r_new := (sub_r.or_else (id (Sequence String) [" "," "," "]) ++ [""].cycle)
-
-          lvlres:= [str.pad_center cur_w]
-                  ++ (sub_l.ok ? ["{" "*lh}┌{"─"*rh}┴{sub_r.ok ? "{"─"*lh}┐{" "*rh}" : " "*(lh+rh+1)}"] : [])
-                  ++ (sub_l.ok ? sub_l.val.zip sub_r_new (s1,s2)->("{s1.pad_center sub_l_w} {s2.pad_center sub_r_w}") : [])
-
-          lvlres
-
 
     res := lvl 0 .or_else (Sequence String .empty)
     res.as_string "\n"
