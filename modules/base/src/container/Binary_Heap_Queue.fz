@@ -259,7 +259,7 @@ module:public Binary_Heap_Queue(
   # Create a new priority queue that returns the smallest element first
   # using natural ordering of the elements
   #
-  public fixed redef type.new_min_first container.Binary_Heap_Queue LM T
+  public fixed redef type.empty_min_first container.Binary_Heap_Queue LM T
     pre else T : property.orderable
   =>
     container.Binary_Heap_Queue LM T lteq
@@ -268,7 +268,7 @@ module:public Binary_Heap_Queue(
   # Create a new priority queue that returns the largest element first
   # using natural ordering of the elements
   #
-  public fixed redef type.new_max_first container.Binary_Heap_Queue LM T
+  public fixed redef type.empty_max_first container.Binary_Heap_Queue LM T
     pre else T : property.orderable
   =>
     container.Binary_Heap_Queue LM T (>=)
@@ -277,5 +277,5 @@ module:public Binary_Heap_Queue(
   # Create a new priority queue that returns the elements in the
   # order defined by the the supplied comparator `first_or_same`
   #
-  public fixed redef type.new_comp(first_or_same Binary bool T1 T1) container.Binary_Heap_Queue LM T1 =>
+  public fixed redef type.empty_comp(first_or_same Binary bool T1 T1) container.Binary_Heap_Queue LM T1 =>
     container.Binary_Heap_Queue LM T1 first_or_same
