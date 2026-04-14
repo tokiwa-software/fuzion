@@ -106,6 +106,7 @@ is
   # return the next alternative position to check
   #
   collision (at i64) =>
+    # large prime number, generated using https://bigprimes.org/
     (at + 904644503766293287) % allocated_size.get.as_i64
 
 
