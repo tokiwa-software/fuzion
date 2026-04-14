@@ -43,25 +43,168 @@ module:public Binary_Heap_Queue(
     first_or_same a b ? a : b
 
 
+  elements := LM.array T .empty
+
+
+  parent(I type : idx, i I) I =>
+    p := (i-1) / 2
+    p < 0 ? (panic "parent $p of $i does not exist") : p
+
+  children(I type : idx, i I) tuple I I =>
+    (i*2+1, i*2+2)
+
+  swap(I type : idx, a I, b I) unit
+    pre debug: (i64 0) <= a.as_i64 <= elements.length
+        debug: (i64 0) <= b.as_i64 <= elements.length
+  =>
+    tmp := elements[a]
+    elements[a] := elements[b]
+    elements[b] := tmp
+
+
+  up_heap(I type : idx, i I) unit =>
+    # NYI: OPTIMIZATION: call `parent i` only once
+    if i > 0 && first_or_same elements[parent i] elements[i]
+      swap i (parent i)
+      up_heap (parent i)
+
+
+
+  public redef enqueue(elem T) unit =>
+    elements.add elem
+    up_heap (elements.length - 1)
+
+  public redef dequeue T => panic "NYI"
+
+  public redef peek T => panic "NYI"
+
+  public redef contains(elem T) bool => panic "NYI"
+
+
+
+
+
+  public dbg_str String =>
+
+    lvl(i i64) option (Sequence String) =>
+      if i >= elements.length then nil # (2,(id (Sequence String) [$"   "]))
+      else
+        str := elements[_,i].as_string
+        str_len := {l := str.codepoint_length; l%%2 ? l+1 : l}
+
+        c := children i
+        sub_l := lvl (c.0)
+        sub_r := lvl (c.1)
+
+        if sub_l.is_nil
+          lvlres := [str.pad_center str_len]
+
+          lvlres
+        else
+          cur_w, sub_l_w, sub_r_w :=
+            {
+              tmp_sub_l_w := sub_l.val[0].codepoint_length
+              tmp_sub_r_w := sub_r.ok ? sub_r.val[0].codepoint_length : 1
+              sub_w := tmp_sub_l_w + tmp_sub_r_w + 1
+              if sub_w >= str_len
+                (sub_w, tmp_sub_l_w, tmp_sub_r_w)
+              else
+                sub_dif := str_len - sub_w # amount that sub tree with is too small
+                div_4_pad := 4 - (sub_dif%4)   # additional padding so total padding can be divided by four
+
+
+                sub_half := (sub_dif + div_4_pad) / 2
+                check sub_half%%2
+                (str_len + div_4_pad, tmp_sub_l_w + sub_half, tmp_sub_r_w + sub_half)
+            }
+          lh := sub_l_w/2
+          rh := sub_r_w/2
+
+          sub_r_new := (sub_r.or_else (id (Sequence String) [" "," "," "]) ++ [""].cycle)
+
+          lvlres:= [str.pad_center cur_w]
+                  ++ (sub_l.ok ? ["{" "*lh}┌{"─"*rh}┴{sub_r.ok ? "{"─"*lh}┐{" "*rh}" : " "*(lh+rh+1)}"] : [])
+                  ++ (sub_l.ok ? sub_l.val.zip sub_r_new (s1,s2)->("{s1.pad_center sub_l_w} {s2.pad_center sub_r_w}") : [])
+
+          lvlres
+
+    res := lvl 0 .or_else (Sequence String .empty)
+    res.as_string "\n"
+
+
+  dbg_str_arr(arr array T) String =>
+    len := arr.length
+
+    lvl(i i32) option (Sequence String) =>
+      if i >= len then nil # (2,(id (Sequence String) [$"   "]))
+      else
+        str := arr[_,i].as_string
+        str_len := {l := str.codepoint_length; l%%2 ? l+1 : l}
+
+        sub_l := lvl (2*i+1)
+        sub_r := lvl (2*i+2)
+
+        if sub_l.is_nil
+          lvlres := [str.pad_center str_len]
+
+          lvlres
+        else
+
+          cur_w, sub_l_w, sub_r_w :=
+            {
+              tmp_sub_l_w := sub_l.val[0].codepoint_length
+              tmp_sub_r_w := sub_r.ok ? sub_r.val[0].codepoint_length : 1
+              sub_w := tmp_sub_l_w + tmp_sub_r_w + 1
+              if sub_w >= str_len
+                (sub_w, tmp_sub_l_w, tmp_sub_r_w)
+              else
+                sub_dif := str_len - sub_w # amount that sub tree with is too small
+                div_4_pad := 4 - (sub_dif%4)   # additional padding so total padding can be divided by four
+
+
+                sub_half := (sub_dif + div_4_pad) / 2
+                check sub_half%%2
+                (str_len + div_4_pad, tmp_sub_l_w + sub_half, tmp_sub_r_w + sub_half)
+            }
+
+          lh := sub_l_w/2
+          rh := sub_r_w/2
+
+          sub_r_new := (sub_r.or_else (id (Sequence String) [" "," "," "]) ++ [""].cycle)
+
+          lvlres:= [str.pad_center cur_w]
+                  ++ (sub_l.ok ? ["{" "*lh}┌{"─"*rh}┴{sub_r.ok ? "{"─"*lh}┐{" "*rh}" : " "*(lh+rh+1)}"] : [])
+                  ++ (sub_l.ok ? sub_l.val.zip sub_r_new (s1,s2)->("{s1.pad_center sub_l_w} {s2.pad_center sub_r_w}") : [])
+
+          lvlres
+
+
+    res := lvl 0 .or_else (Sequence String .empty)
+    res.as_string "\n"
+
+
+  # public dbg_say unit => say (dbg_str_arr elements.as_array)
+  public dbg_say unit => say elements
+
 
 
   # Create a new priority queue that returns the smallest element first
   # using natural ordering of the elements
   #
-  public fixed redef type.new_min_first(T1 type : property.orderable) container.Binary_Heap_Queue T1 =>
-    container.Binary_Heap_Queue T1 lteq
+  public fixed redef type.new_min_first(T1 type : property.orderable) container.Binary_Heap_Queue LM T1 =>
+    container.Binary_Heap_Queue LM T1 lteq
 
   # Create a new priority queue that returns the largest element first
   # using natural ordering of the elements
   #
-  public fixed redef type.new_max_first(T1 type : property.orderable) container.Binary_Heap_Queue T1 =>
-    container.Binary_Heap_Queue T1 (>=)
+  public fixed redef type.new_max_first(T1 type : property.orderable) container.Binary_Heap_Queue LM T1 =>
+    container.Binary_Heap_Queue LM T1 (>=)
 
   # Create a new priority queue that returns the elements in the
   # order defined by the the supplied comparator `first_or_same`
   #
-  public fixed redef type.new_comp(first_or_same Binary bool T1 T1) container.Binary_Heap_Queue T1 =>
-    container.Binary_Heap_Queue T1 first_or_same
+  public fixed redef type.new_comp(first_or_same Binary bool T1 T1) container.Binary_Heap_Queue LM T1 =>
+    container.Binary_Heap_Queue LM T1 first_or_same
 
 
 
