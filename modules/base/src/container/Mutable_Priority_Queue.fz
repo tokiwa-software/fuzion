@@ -51,33 +51,41 @@ module:public Mutable_Priority_Queue(public T type) ref is
   #
   public enqueue_dequeue(elem T) T => abstract
 
+
+  # get the first element without removing it from the queue
+  # nil iff queue is empty
+  #
   public peek option T => abstract
+
 
   public contains(elem T) bool
     pre T : property.equatable
   => abstract
 
+
+  # NYI: UNDER DEVELOPMENT:
   # Does remove make sense? If so should there be a remove_one and remove_all?
   # public remove(elem T) => abstract
 
 
 
-  # Create a new priority queue that returns the smallest element first
+
+
+  # Create an empty priority queue that returns the smallest element first
   # using natural ordering of the elements
   #
-  public type.new_min_first container.Mutable_Priority_Queue T
+  public type.empty_min_first container.Mutable_Priority_Queue T
     pre T : property.orderable
   => abstract
 
-  # Create a new priority queue that returns the largest element first
+  # Create an empty priority queue that returns the largest element first
   # using natural ordering of the elements
   #
-  public type.new_max_first container.Mutable_Priority_Queue T
+  public type.empty_max_first container.Mutable_Priority_Queue T
     pre T : property.orderable
   => abstract
 
-  public type.new_max_first_test container.Mutable_Priority_Queue T
-    pre T : property.orderable
-  => abstract
-
-  public type.new_comp(first_or_same Binary bool T1 T1) container.Mutable_Priority_Queue T1 => abstract
+  # Create an empty priority queue that determines which element
+  # to return first by the given comparator
+  #
+  public type.empty_comp(first_or_same Binary bool T1 T1) container.Mutable_Priority_Queue T1 => abstract
