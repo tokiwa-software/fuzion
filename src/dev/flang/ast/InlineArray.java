@@ -200,24 +200,23 @@ public class InlineArray extends ExprWithPos
   @Override
   Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
   {
-    if (_type == null)
-      {
-        // if expected type is choice, examine if there is exactly one
-        // array in choice generics, if so use this for further type propagation.
-        t = t.findInChoice(cg -> !cg.isGenericArgument() && cg.feature() == Types.resolved.f_array, context);
+    // if expected type is choice, examine if there is exactly one
+    // array in choice generics, if so use this for further type propagation.
+    t = t.findInChoice(cg -> !cg.isGenericArgument() && cg.feature() == Types.resolved.f_array, context);
 
-        var elementType = elementType(t);
-        if (elementType != Types.t_ERROR)
+    var elementType = elementType(t);
+    if (elementType != Types.t_ERROR
+      // keep the most general element type
+      && (_type == null || elementType.isAssignableFrom(elementType(_type)).yes()))
+      {
+        var li = _elements.listIterator();
+        while (li.hasNext())
           {
-            var li = _elements.listIterator();
-            while (li.hasNext())
-              {
-                li.set(li.next().propagateExpectedType(res, context, elementType, null));
-              }
-            var arr = Types.resolved.f_array;
-            _type = arr.resultType()
-                       .applyTypePars(arr, new List<>(elementType));
+            li.set(li.next().propagateExpectedType(res, context, elementType, null));
           }
+        var arr = Types.resolved.f_array;
+        _type = arr.resultType()
+                    .applyTypePars(arr, new List<>(elementType));
       }
     return this;
   }

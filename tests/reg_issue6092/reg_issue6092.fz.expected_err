@@ -1,0 +1,14 @@
+
+--CURDIR--/reg_issue6092.fz:25:1: error 1: Different count of arguments needed when calling feature
+r u8 2
+^
+Feature not found: 'r' (2 arguments)
+Target feature: 'universe'
+In call: 'r u8 2'
+To solve this, you might change the actual number of arguments to match the feature 'r' (2 type parameters A C, one value argument c) at --CURDIR--/reg_issue6092.fz:24:1:
+r(A type, c C) =>
+^
+To call 'r', you must provide 3 arguments. The type arguments may be omitted or `_` may be used in place of a type argument if they can be inferred from the value arguments..
+
+
+one error.

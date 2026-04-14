@@ -638,7 +638,20 @@ public class Impl extends ANY
             }
           if (t == null && urgent)
             {
-              t = _expr.type();  // produce _expr's error if we really need the type and can't get it
+              // for a field definition that is a lambda
+              // we do not call type() since this would
+              // possibly give us t_FORWARD_CYCLIC
+              if (_expr instanceof Function fun && !fun._names.isEmpty())
+                {
+                  t = Types.t_ERROR;
+                  // suppress any further errors in the lambda
+                  fun.setDefunct();
+                  AstErrors.noTypeInferenceFromLambda(_expr.pos());
+                }
+              else
+                {
+                  t = _expr.type();  // produce _expr's error if we really need the type and can't get it
+                }
             }
           yield t;
         }

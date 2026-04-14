@@ -17,35 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature fuzion.sys.thread
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion test reg_issue6092
 #
 # -----------------------------------------------------------------------
 
-# fuzion.sys.thread -- low-level feature to manage threads
-#
-module thread is
-
-
-  # intrinsic to spawn a new thread
-  #
-  module spawn(code ()->unit) =>
-    Do_Call ref : Function unit is
-      public redef call unit =>
-        code()
-
-    spawn0 Do_Call
-
-  spawn0(T type : ()->unit, code T) Thread => intrinsic
-
-  # intrinsic to join with a terminated thread
-  #
-  # NOTE: this must only be called once!
-  #
-  module join0(thread_id Thread) unit => intrinsic
-
-
-  # intrinsic to set the scheduling policy and priority
-  #
-  module set_policy(thread_id Thread, policy, priority i32) i32 => intrinsic
+r(A type, c C) =>
+r u8 2
