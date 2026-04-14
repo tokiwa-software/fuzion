@@ -34,7 +34,9 @@ module:public Binary_Heap_Queue(
   #
   # `first_or_same a b` is true iff a has higher priority than b or the same as b
   #
-  public first_or_same Binary bool T T) ref : container.Mutable_Priority_Queue T is
+  public first_or_same Binary bool T T,
+
+  initial_elements option (Sequence T)) ref : container.Mutable_Priority_Queue T is
 
 
 
@@ -48,8 +50,41 @@ module:public Binary_Heap_Queue(
   # binary heap with the elements in the queue
   # implemented as an array with ahnentafel ordering
   #
-  elements := LM.array T .empty
+  elements :=
+    match initial_elements
+      nil             => LM.array T .empty
+      elem Sequence T => LM.array T .from_Sequence elem
 
+  # fix heap if created from initial elements
+  if initial_elements.ok
+    build_heap_fix 0
+
+
+  # restores the heap property on a randomly arranged array
+  #
+  # starting from the lowest level going up to the root
+  # if a node contains an element with priority lower than it's subtrees
+  # it pushes it down the higher priority side of that subtree
+  # until the heap property of that subtree is restored
+  # does not need to touch the lower priority subtree
+  #
+  build_heap_fix(i I : idx) unit =>
+    c := children i
+
+    # if left child does not exist, nothing to do on this level
+    _ := c.0.bind cl->
+      # fix left and right subtrees first (if existing)
+      build_heap_fix cl
+      _ := c.1.bind cr->(build_heap_fix cr)
+
+      # determine the subtree with the higher priority root
+      prio_child := c.1.bind cr->(!first_or_same elements[cl] elements[cr] ? cr : cl)
+                     .or_else cl
+
+      # down heap on higher priority side if current node has lower priority
+      if !first_or_same elements[i] elements[prio_child]
+        swap i prio_child
+        build_heap_fix prio_child
 
 
   # for a given index return the index of the parent node in the tree
@@ -262,7 +297,19 @@ module:public Binary_Heap_Queue(
   public fixed redef type.empty_min_first container.Binary_Heap_Queue LM T
     pre else T : property.orderable
   =>
-    container.Binary_Heap_Queue LM T lteq
+    container.Binary_Heap_Queue LM T lteq nil
+
+
+  # Create a priority queue from the given elements
+  # which returns smallest element first using natural ordering of the elements
+  #
+  # Note: This is more efficient than iterative `enqueue` or `enqueue_all`,
+  #       running in O(n) time rather than O(n log n).
+  #
+  public fixed redef type.min_first_from(initial_elements Sequence T) container.Binary_Heap_Queue LM T
+    pre else T : property.orderable
+  =>
+    container.Binary_Heap_Queue LM T lteq initial_elements
 
 
   # Create a new priority queue that returns the largest element first
@@ -271,11 +318,35 @@ module:public Binary_Heap_Queue(
   public fixed redef type.empty_max_first container.Binary_Heap_Queue LM T
     pre else T : property.orderable
   =>
-    container.Binary_Heap_Queue LM T (>=)
+    container.Binary_Heap_Queue LM T (>=) nil
+
+
+  # Create a priority queue from the given elements
+  # which returns largest element first using natural ordering of the elements
+  #
+  # Note: This is more efficient than iterative `enqueue` or `enqueue_all`,
+  #       running in O(n) time rather than O(n log n).
+  #
+  public fixed redef type.max_first_from(initial_elements Sequence T) container.Binary_Heap_Queue LM T
+    pre else T : property.orderable
+  =>
+    container.Binary_Heap_Queue LM T (>=) initial_elements
 
 
   # Create a new priority queue that returns the elements in the
   # order defined by the the supplied comparator `first_or_same`
   #
   public fixed redef type.empty_comp(first_or_same Binary bool T1 T1) container.Binary_Heap_Queue LM T1 =>
-    container.Binary_Heap_Queue LM T1 first_or_same
+    container.Binary_Heap_Queue LM T1 first_or_same nil
+
+
+  # Create a priority queue from the given elements
+  # that determines the element to return first by the given comparator
+  #
+  # Note: This is more efficient than iterative `enqueue` or `enqueue_all`,
+  #       running in O(n) time rather than O(n log n).
+  #
+  public fixed redef type.comp_from(first_or_same Binary bool T1 T1,
+                                    initial_elements Sequence T1) container.Binary_Heap_Queue LM T1
+  =>
+    container.Binary_Heap_Queue LM T1 first_or_same (option initial_elements)
