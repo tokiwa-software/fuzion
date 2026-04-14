@@ -125,6 +125,18 @@ module:public Binary_Heap_Queue(
       res
 
 
+  # enqueue elem and then dequeue (return and remove) the highest priority element
+  #
+  # this is more efficient than an enqueue followed by a dequeue
+  #
+  public redef enqueue_dequeue(elem T) T =>
+    if elements.length > 0 && !first_or_same elem elements[0]
+      res := elements[0]
+      elements[0] := elem
+      down_heap 0
+      res
+    else
+      elem
 
   public redef peek option T => elements.length = 0 ? nil : elements[0]
 

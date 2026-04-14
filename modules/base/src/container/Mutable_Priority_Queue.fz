@@ -33,6 +33,10 @@ module:public Mutable_Priority_Queue(public T type) ref is
 
   public dequeue option T => abstract
 
+
+  # enqueue elem and then dequeue (return and remove) the highest priority element
+  #
+  public enqueue_dequeue(elem T) T => abstract
   public peek option T => abstract
 
   public contains(elem T) bool
