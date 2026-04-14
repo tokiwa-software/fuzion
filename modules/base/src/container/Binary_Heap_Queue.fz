@@ -1,0 +1,54 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature mutable_priority_queue
+#
+# -----------------------------------------------------------------------
+
+module:public Binary_Heap_Queue(public T type, public first_or_same Binary bool T T) ref : container.Mutable_Priority_Queue T is
+
+  test_is_fist_or_same(a, b T) bool =>  # FIXME: remove debug code
+    first_or_same a b
+
+  test_get_fist_or_same(a, b T) T =>    # FIXME: remove debug code
+    first_or_same a b ? a : b
+
+
+
+
+  # Create a new priority queue that returns the smallest element first
+  # using natural ordering of the elements
+  #
+  public fixed redef type.new_min_first(T1 type : property.orderable) container.Binary_Heap_Queue T1 =>
+    container.Binary_Heap_Queue T1 lteq
+
+  # Create a new priority queue that returns the largest element first
+  # using natural ordering of the elements
+  #
+  public fixed redef type.new_max_first(T1 type : property.orderable) container.Binary_Heap_Queue T1 =>
+    container.Binary_Heap_Queue T1 (>=)
+
+
+# q1 := Binary_Heap_Queue String (lteq)
+# q2 := Binary_Heap_Queue String (a,b->lteq b a)
+
+# say <| q1.test_is_fist_or_same  "abc" "xyz"
+# say <| q1.test_get_fist_or_same "abc" "xyz"
+# say <| q2.test_is_fist_or_same  "abc" "xyz"
+# say <| q2.test_get_fist_or_same "abc" "xyz"
