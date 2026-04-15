@@ -298,7 +298,7 @@ module:public Binary_Heap_Queue(
       pre debug 5 : 0 <= i < elements.length
     =>
       str := elements[_,i].as_string
-      str_len := {l := str.codepoint_length; l%%2 ? l+1 : l}
+      str_len := {l := str.codepoint_count; l%%2 ? l+1 : l}
 
       c := children i
       sub_l := c.0.bind lvl
@@ -312,8 +312,8 @@ module:public Binary_Heap_Queue(
         # width of current node, left and right subtree
         cur_w, sub_l_w, sub_r_w :=
           {
-            tmp_sub_l_w := sub_l.or_panic[0].codepoint_length
-            tmp_sub_r_w := sub_r.ok ? sub_r.or_panic[0].codepoint_length : 1
+            tmp_sub_l_w := sub_l.or_panic[0].codepoint_count
+            tmp_sub_r_w := sub_r.ok ? sub_r.or_panic[0].codepoint_count : 1
             sub_w := tmp_sub_l_w + tmp_sub_r_w + 1 # width of subtrees with space between them
             if sub_w >= str_len # subtrees are wider, need to pad current node
               (sub_w, tmp_sub_l_w, tmp_sub_r_w)
