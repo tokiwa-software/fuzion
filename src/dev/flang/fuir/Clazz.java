@@ -1857,7 +1857,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     var err = new List<Consumer<AbstractCall>>();
     var ft = t; // final variant of t to be used in lambda
     BiConsumer<AbstractType, AbstractType> foundRef = (from,to) ->
-      { err.add((c)->AstErrors.illegalOuterRefTypeInCall(c, false, feature(), ft, from, to)); };
+      { err.add((c)->AstErrors.illegalOuterRefTypeInCall(c, false, feature(), ft, from, _type)); };
 
     t = handDown(t, select, foundRef, inh);
 

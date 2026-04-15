@@ -6,7 +6,7 @@ The result type of this call depends on the target type.  Since the target type 
 Called feature: 'switch.and_then'
 Original result type: 'option Y.this'
 Type depending on target: 'Y.this'
-Target type: 'Y'
+Target type: '(value Y).c'
 To solve this, you could try to use a value type as the target type of the call, e,g., 'switch A B', or change the result type of 'switch.and_then' to no longer depend on 'Y.this'.
 
 
@@ -17,7 +17,7 @@ The result type of this call depends on the target type.  Since the target type 
 Called feature: 'Function.call'
 Original result type: 'option Y.this'
 Type depending on target: 'Y.this'
-Target type: 'Y'
+Target type: 'Y.(λx->Y.this).call'
 To solve this, you could try to use a value type as the target type of the call or change the result type of 'Function.call' to no longer depend on 'Y.this'.
 
 2 errors.

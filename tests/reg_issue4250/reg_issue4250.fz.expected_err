@@ -6,7 +6,7 @@ The result type of this call depends on the target type.  Since the target type 
 Called feature: 'e.me'
 Original result type: 'option e.this'
 Type depending on target: 'e.this'
-Target type: 'p.this'
+Target type: 'p.me'
 To solve this, you could try to use a value type as the target type of the call, e,g., 'e', or change the result type of 'e.me' to no longer depend on 'e.this'.
 
 one error.
