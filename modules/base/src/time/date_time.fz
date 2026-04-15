@@ -87,9 +87,9 @@ is
 
   # internal helper: total nanoseconds since unix epoch
   #
-  public nanos u64
+  nanos i64
   =>
-    unix_time_stamp.as_u64 * 1000000000 + nano_second.as_u64
+    unix_time_stamp.as_u64 * 1E9 + nano_second.as_i64
 
 
   # add a duration to this date time
@@ -97,22 +97,20 @@ is
   public fixed infix + (other time.duration) date_time
   =>
     total_nanos := nanos + other.nanos
-    seconds := total_nanos / 1000000000
-    new_nano := total_nanos % 1000000000
-    base := time.date_time.from_seconds seconds
+    seconds := total_nanos / 1E9
+    new_nano := total_nanos % 1E9
+    base := time.date_time.from_seconds_i64 seconds
     date_time base.year base.month base.day base.hour base.minute base.second new_nano.as_i32
 
 
   # subtract a duration from this date time
   #
   public fixed infix - (other time.duration) date_time
-  pre
-    debug: nanos >= other.nanos
   =>
     total_nanos := nanos - other.nanos
-    seconds := total_nanos / 1000000000
-    new_nano := total_nanos % 1000000000
-    base := time.date_time.from_seconds seconds
+    seconds := total_nanos / 1E9
+    new_nano := total_nanos % 1E9
+    base := time.date_time.from_seconds_i64 seconds
     date_time base.year base.month base.day base.hour base.minute base.second new_nano.as_i32
 
 
@@ -161,6 +159,26 @@ is
     days.as_u64*86400 + time_seconds.as_u64
 
 
+  # convert to unix time stamp (i64 version for dates before 1970)
+  #
+  public unix_time_stamp_i64 i64
+  =>
+    leap_days =>
+      ((year-1) / 4) - ((year-1) / 100) + ((year-1) / 400) - ((1969 / 4) - (1969 / 100) + (1969 / 400))
+
+    day_of_year =>
+      for res := day-1, res + days_in_month year m
+          m in 1..(month-1)
+      else
+        res
+
+    days => 365*(year-1970)+leap_days+day_of_year
+
+    time_seconds => hour*3600 + minute*60 + second
+
+    days.as_i64*86400 + time_seconds.as_i64
+
+
   # create a date_time from given seconds since 1970-01-01T00:00:00
   #
   # NOTE: this does not adjust for leap seconds
@@ -193,6 +211,67 @@ is
     minute, second := (r3 / seconds_in_minute, r3 % seconds_in_minute)
 
     time.date_time year month day.as_i32 hour.as_i32 minute.as_i32 second.as_i32 0
+
+
+  # create a date_time from given seconds since 1970-01-01T00:00:00 (i64 version for negative values, i.e. dates before 1970)
+  #
+  public type.from_seconds_i64(n i64) time.date_time
+    pre debug    : n < 3E11 # this restriction is arbitrary (year 11476)
+  =>
+    total_seconds := n
+    days_raw := total_seconds / 86400 # number of days since 1970-01-01 (can be negative for dates before 1970)
+    time_seconds_raw := total_seconds % 86400 # leftover seconds after previous calculation
+    days := days_raw - (if time_seconds_raw < 0 then 1 else 0) # add one day if time_seconds_raw is negative, because in that case we are actually in the previous day
+    time_seconds := time_seconds_raw + (if time_seconds_raw < 0 then 86400 else 0) # add 24 hours to time_seconds_raw if it is negative, to get a value in the range of 0..86399 representing the time of day
+
+    year, month, day :=
+      if days >= 0 # after 1970
+        y, rest_days :=
+          for rest := days, rest - days_in_year.as_i64
+              yy := 1970, yy+1
+              leap := time.is_leap_year yy
+              days_in_year := 365 + (leap ? 1 : 0)
+          while rest >= days_in_year.as_i64
+          else
+            (yy, rest)
+
+        m, r1 :=
+          for rest := rest_days, rest - days_in_month.as_i64
+              mm := 1, mm+1
+              days_in_month := time.days_in_month y mm
+          while rest >= days_in_month.as_i64
+          else
+            (mm, rest)
+
+        (y, m, r1.as_i32 + 1)
+      else # before 1970, calculate backwards
+        y, rest_days :=
+          for rest := -days, rest - days_in_year.as_i64
+              yy := 1969, yy-1
+              leap := time.is_leap_year yy
+              days_in_year := 365 + (leap ? 1 : 0)
+          while rest > days_in_year.as_i64
+          else
+            (yy, rest)
+
+        m, r1 :=
+          for rest := rest_days, rest - days_in_month.as_i64
+              mm := 12, mm-1
+              days_in_month := time.days_in_month y mm
+          while rest > days_in_month.as_i64
+          else
+            (mm, rest)
+
+        days_in_month_local := time.days_in_month y m
+        (y, m, days_in_month_local.as_i32 - r1.as_i32 + 1) # for dates before 1970, the day is calculated as the number of days in the month minus the leftover days, because we calculated backwards
+
+
+    hour := (time_seconds / 3600).as_i32
+    r3 := time_seconds % 3600
+    minute := (r3 / 60).as_i32
+    second := (r3 % 60).as_i32
+
+    time.date_time year month day hour minute second 0
 
 
 
