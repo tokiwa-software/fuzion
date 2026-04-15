@@ -76,28 +76,13 @@ public Any ref is
   # these values converted to `f64` and build a function `sum` that sums them up
   # as follows:
   #
-  #     sum(values Sequence Any)
-  #     =>
-  #       get_f64 : Typed_Function f64 is
-  #         public redef call(T type, v T) f64
-  #         =>
-  #           if      T : i32 then v.as_f64
-  #           else if T : f64 then v.val
-  #                           else compile_time_panic
-  #
-  #       values.map (.dynamic_apply get_f64)
-  #             .foldf 0.0 (+)
-  #
-  #     say <| sum [3.14, 32, 16.0, 8]
-  #
-  # NYI: ENHANCEMENT: #5892: If this is fixed, we could write
   #
   #     sum(values Sequence Any)
   #     =>
-  #       values.map .dynamic_apply T,v->
+  #       values.map (.dynamic_apply T,v->
   #                     if      T : i32 then v.as_f64
   #                     else if T : f64 then v.val
-  #                                     else compile_time_panic
+  #                                     else compile_time_panic)
   #             .foldf 0.0 (+)
   #
   #     say <| sum [3.14, 32, 16.0, 8]
@@ -107,9 +92,4 @@ public Any ref is
                        f F
                        ) R
   =>
-    # NYI: BUG: #5894 if fixed, we should be able to write
-    #
-    #   f.call Any.this Any.this
-    #
-    # for now, using type inference for `T` works:
-    f.call Any.this
+    f.call Any.this Any.this
