@@ -541,12 +541,21 @@ public effect_wormhole is
       (if T : effect then T.get_if_instated else nil).bind    (v -> e ++ [container.typed_value T v])
                                                      .or_else e
 
-  # teleport the effects from the environment this wormhole was created
+  # teleport the effects from the environment this wormhole was created in
   # to the current environment and execute given code.
   #
-  public teleport(R type, code ()->R) R =>
+  public teleport(R type, code ()->R) R
+  =>
+    ta : container.typed_applicator unit is
+      public redef apply(T type, e unit, v T) unit =>
+                              if T : effect then
+                                T.default0 v
+
+    effect_values.for_each (.apply_to unit ta)
+    /* this used to compile at 3bde5fb9344cbfce5607b57a1432409ac689fbd9, but stopped for some reason
     effect_values.for_each (.apply_to unit T,_,v->
                               if T : effect then
                                 T.default0 v)
+                                */
     code()
     # NYI: restore the original environment!
