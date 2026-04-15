@@ -30,14 +30,3 @@ lib_switch =>
   say (b.and_then x->x+5)
   say (a.or ()->5)
   say (b.or ()->5)
-
-  /* NYI: BUG: check-condition: #5729
-
-  Y ref is
-
-    c option Y.this := Y.this
-    say (c.and_then x->Y.this)
-
-  _ := Y
-
-  */

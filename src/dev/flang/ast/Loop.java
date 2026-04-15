@@ -211,6 +211,12 @@ public class Loop extends ANY
   private final SourcePosition _elsePos;
 
 
+  /**
+   * the sourceposition position of the loop
+   */
+  private final SourcePosition _pos;
+
+
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -233,6 +239,13 @@ public class Loop extends ANY
    * routines, the first for the prolog, the other for the rest of the loop.
    */
   private Feature[] _loopElse;
+
+
+  /**
+   * Has there been an error found in the loops code?
+   * This is used for displaying/supressing loop specific error messages.
+   */
+  private boolean _defunct = false;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -284,6 +297,7 @@ public class Loop extends ANY
        sb == null || untilCond != null,
        eb0 == null || eb0 instanceof Block || eb0 instanceof Match);
 
+    _pos       = pos;
     _elsePos   = ePos;
     _indexVars = iv;
     _nextValues = nv;
@@ -749,10 +763,25 @@ public class Loop extends ANY
             List<Expr> nextIt2 = new List<>();
             Case match1c = new Case(p, consType, listName + "cons", new Block(prolog2));
             Case match1n = new Case(p, nilType, listName + "nil", (_loopElse != null) ? Block.fromExpr(callLoopElse(0)) : Block.newIfNull(null));
-            Match match1 = new Match(p, new Call(p, listName), new List<AbstractCase>(match1c, match1n));
+            Match match1 = new Match(p, new Call(p, listName), new List<AbstractCase>(match1c, match1n))
+            {
+              @Override
+              void showIncomptiableTypesError()
+              {
+                _defunct = true;
+                AstErrors.loopResultsInTwoIncompatibleTypes(_pos, this);
+              }
+            };
             Case match2c = new Case(p, consType, listName + "cons", new Block(nextIt2));
             Case match2n = new Case(p, nilType, listName + "nil", (_loopElse != null) ? Block.fromExpr(callLoopElse(2)) : Block.newIfNull(null));
-            Match match2 = new Match(p, new Call(p, listName + "arg"), new List<AbstractCase>(match2c, match2n));
+            Match match2 = new Match(p, new Call(p, listName + "arg"), new List<AbstractCase>(match2c, match2n))
+              {
+                @Override
+                Match assignToField(Resolution res, Context context, Feature r)
+                {
+                  return _defunct ? this : super.assignToField(res, context, r);
+                }
+              };
             prologBlock.add(match1);
             nextItBlock.add(match2);
             prologBlock = prolog2;

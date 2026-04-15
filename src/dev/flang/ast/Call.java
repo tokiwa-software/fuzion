@@ -112,6 +112,12 @@ public class Call extends AbstractCall
 
 
   /**
+   * the generics that were determined by splitOffTypeArgs
+   * We must not change those as those were given by user
+   */
+  List<AbstractType> _splitOffGenerics;
+
+  /**
    * actual generic arguments, set by parser
    */
   /*final*/ List<AbstractType> _generics; // NYI: Make this final again when resolveTypes can replace a call
@@ -2238,7 +2244,7 @@ public class Call extends AbstractCall
           { // we found a use of a generic type, so record it:
             var i = g.typeParameterIndex();
             var gt = _generics.get(i);
-            if (!conflict[i] && gt != Types.t_ERROR)
+            if (!conflict[i] && gt != Types.t_ERROR && changingGenericAllowed(i))
               {
                 var nt = actualType.containsUndefined() ? gt :
                          gt == Types.t_UNDEFINED        ? actualType
@@ -2349,6 +2355,19 @@ public class Call extends AbstractCall
               }
           }
       }
+  }
+
+
+  /**
+   * Is it allowed to change/infer actual type argument with index i?
+   *
+   * @param i the index of the actual type argument
+   *
+   * @return
+   */
+  private boolean changingGenericAllowed(int i)
+  {
+    return _splitOffGenerics == null || i >= _splitOffGenerics.size() || _splitOffGenerics.get(i) == Types.t_UNDEFINED;
   }
 
 
@@ -2582,34 +2601,37 @@ public class Call extends AbstractCall
         {
           var tf = tt.feature();
           res.resolveDeclarations(tf);
-          var ttf = tf.isUniverse() ? tf : res.cotype(tf);
-          res.resolveDeclarations(tf);
-          var fo = findOnTarget(res, tf, false).v1();
-          var tfo = findOnTarget(res, ttf, false).v1();
-          var f = tfo == null ? null : tfo._feature;
-          if (f != null
-              && f.outer() != null
-              /* omitting dot-type does not work when calling
-               the inherited methods of `Type`. Otherwise we
-               would always have an ambiguity when calling `as_string` */
-              && f.outer().isCotype())
+          if (!tf.isTypeParameter())
             {
-              if (fo != null)
+              var ttf = tf.isUniverse() ? tf : res.cotype(tf);
+              res.resolveDeclarations(tf);
+              var fo = findOnTarget(res, tf, false).v1();
+              var tfo = findOnTarget(res, ttf, false).v1();
+              var f = tfo == null ? null : tfo._feature;
+              if (f != null
+                  && f.outer() != null
+                  /* omitting dot-type does not work when calling
+                   the inherited methods of `Type`. Otherwise we
+                   would always have an ambiguity when calling `as_string` */
+                  && f.outer().isCotype())
                 {
-                  AstErrors.ambiguousCall(this, fo._feature, tfo._feature);
-                  setToErrorState();
+                  if (fo != null && !fo._feature.isTypeParameter())
+                    {
+                      AstErrors.ambiguousCall(this, fo._feature, tfo._feature);
+                      setToErrorState();
+                    }
+                  else
+                    {
+                      // we found a feature that fits a dot-type-call.
+                      _calledFeature = f;
+                      _pendingError = null;
+                      _target = Call.typeAsValue(_pos, _target.asParsedType()).resolveTypes(res, context);
+                    }
                 }
-              else
+              if (_calledFeature != null)
                 {
-                  // we found a feature that fits a dot-type-call.
-                  _calledFeature = f;
-                  _pendingError = null;
-                  _target = Call.typeAsValue(_pos, _target.asParsedType()).resolveTypes(res, context);
+                  splitOffTypeArgs(res, context);
                 }
-            }
-          if (_calledFeature != null)
-            {
-              splitOffTypeArgs(res, context);
             }
         }
     }

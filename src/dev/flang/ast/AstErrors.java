@@ -2605,12 +2605,6 @@ public class AstErrors extends ANY
      skw("fixed")+ " fixed is only allowed on function features not in universe.");
   }
 
-  public static void multipleOperatorsFound(SourcePosition p)
-  {
-    error(p,
-      "Multiple successive operators are not allowed.", "");
-  }
-
   public static void nonExhaustiveDestructuring(SourcePosition pos, int exp, int found)
   {
     error(
@@ -2630,6 +2624,28 @@ public class AstErrors extends ANY
     error(c.pos(),
       "Illegal use of numeric literal.",
       s(((Call)c.target()).calledFeature()) + " or its constraint does not implement " + sbn("from_u32") + "."
+    );
+  }
+
+  public static void lamdaOuterMustNotHaveArgs(SourcePosition pos, AbstractType tt)
+  {
+    error(pos, "Can not create lambda since an outer has unkown arguments.",
+      "The outer having the arguments:\n\n" + s_feat_with_pos(tt.feature()) + "\n"+
+      "To solve this, either create the lambda inside of " + s(tt.feature()) + " or remove the arguments from " + s(tt.feature()) + "."
+     );
+  }
+
+  public static void lamdaOuterMustNotBeGenericArgument(SourcePosition pos, AbstractType tt)
+  {
+    error(pos, "Can not create lambda since an outer of its type is a generic argument.",
+      "The generic argument used in lambdas type " + s(tt) + "."
+     );
+  }
+
+  public static void loopResultsInTwoIncompatibleTypes(SourcePosition pos, Match m)
+  {
+    error(pos, "Loop results in two incompatible types." ,
+      "The incompatible types are: " + m.cases().map2(c -> s(c.code().type())).stream().collect(Collectors.joining(","))
     );
   }
 

@@ -354,14 +354,24 @@ public class Match extends AbstractMatch
     var result = Expr.union(new List<>(casesForType()), Context.NONE, urgent);
     if (result == Types.t_ERROR)
       {
-        new IncompatibleResultsOnBranches
-          (pos(),
-           "Incompatible types in " +
-           (kind() == Kind.Plain ? "cases of match" : "branches of if") +
-           " expression",
-           casesForType());
+        showIncomptiableTypesError();
       }
     return result;
+  }
+
+
+  /**
+   * show error that incompatible types
+   * have been found in the cases.
+   */
+  void showIncomptiableTypesError()
+  {
+    new IncompatibleResultsOnBranches
+      (pos(),
+       "Incompatible types in " +
+       (kind() == Kind.Plain ? "cases of match" : "branches of if") +
+       " expression",
+       casesForType());
   }
 
 

@@ -1,0 +1,7 @@
+
+--CURDIR--/reg_issue6917.fz:30:13: error 1: Can not create lambda since an outer of its type is a generic argument.
+    _ O.F:= x->x+1   # can not work
+------------^^^^^^
+The generic argument used in lambdas type 'O'.
+
+one error.

@@ -516,7 +516,7 @@ is
 
   # Lazily take the first elements of a list for which predicate 'p' holds.
   #
-  take_while_list (p A -> bool) list A
+  take_while_list (F type : A -> bool, p F) list A
   =>
     match list.this
       nil    => nil
@@ -536,7 +536,7 @@ is
 
   # Lazily drop the first elements of a list for which predicate 'p' holds.
   #
-  drop_while_list (p A -> bool) list A =>
+  drop_while_list (F type : A -> bool, p F) list A =>
     match list.this
       nil    => nil
       c Cons =>
@@ -560,7 +560,7 @@ is
   # The result contains exactly those elements for which p
   # is true.
   #
-  filter_list (p A -> bool) list A =>
+  filter_list (F type : A -> bool, p F) list A =>
     match drop_while_list (a -> !(p a))
       nil    => nil
       c Cons =>
@@ -668,7 +668,7 @@ is
   #     [4,2,2,6,2,1,2,4].dedup_list (a,b -> a%2=b%2) = [4,1,2]
   #     [4,2,2,6,2,1,2,4].dedup_list (<=) = [4,2,1]
   #
-  public dedup_list(by (A,A) -> bool) list A
+  public dedup_list(F type : (A,A) -> bool, by F) list A
     pre
       A : property.equatable
     =>

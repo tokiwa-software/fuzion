@@ -9,9 +9,9 @@ panic.cause#1 at {base.fum}/eff/fallible.fz:35
 panic#1 at {base.fum}/panic.fz:59
 p at --CURDIR--/reg_issue2304.fz:24
 (λx->p).call#1 at --CURDIR--/reg_issue2304.fz:25
-(list i32).filter_list#1.(λ(a -> !(p a))).call#1 at {base.fum}/list.fz:564
-(list i32).drop_while_list#1 at {base.fum}/list.fz:543
-(list i32).filter_list#1 at {base.fum}/list.fz:564
+((list i32).filter_list#2 (Unary bool i32)).(λ(a -> !(p a))).call#1 at {base.fum}/list.fz:564
+(list i32).drop_while_list#2 ((list i32).filter_list#2 (Unary bool i32)).(λ(a -> !(p a))) at {base.fum}/list.fz:543
+(list i32).filter_list#2 (Unary bool i32) at {base.fum}/list.fz:564
 (list i32).filter#1 at {base.fum}/list.fz:555
 (array i32).filter#1 at {base.fum}/Sequence.fz:291
 universe at --builtin--:25

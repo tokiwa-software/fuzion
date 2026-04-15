@@ -1,6 +1,9 @@
 
---CURDIR--/reg_issue6792.fz:24:1: error 1: Multiple successive operators are not allowed.
+--CURDIR--/reg_issue6792.fz:24:6: error 1: Could not find called feature
 : := e
-^^^^^^
+-----^
+Feature not found: 'e' (no arguments)
+Target feature: 'universe'
+In call: 'e'
 
 one error.

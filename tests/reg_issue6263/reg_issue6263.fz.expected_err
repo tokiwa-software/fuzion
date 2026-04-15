@@ -1,0 +1,19 @@
+
+--CURDIR--/reg_issue6263.fz:56:9: error 1: Loop results in two incompatible types.
+        for i in 0..(a.len-1) do
+--------^
+The incompatible types are: 'i32','unit'
+
+
+--CURDIR--/reg_issue6263.fz:81:9: error 2: Loop results in two incompatible types.
+        for y in min_y..max_y do
+--------^
+The incompatible types are: 'i32','unit'
+
+
+--CURDIR--/reg_issue6263.fz:82:11: error 3: Loop results in two incompatible types.
+          for x in min_x..max_x do
+----------^
+The incompatible types are: 'i32','unit'
+
+3 errors.
