@@ -89,14 +89,14 @@ is
   #
   nanos i64
   =>
-    unix_time_stamp.as_u64 * 1E9 + nano_second.as_i64
+    unix_time_stamp.as_u64 * 1E9 + nano_second.as_u64
 
 
   # add a duration to this date time
   #
   public fixed infix + (other time.duration) date_time
   =>
-    total_nanos := nanos + other.nanos
+    total_nanos := nanos + other.nanos.as_i64
     seconds := total_nanos / 1E9
     new_nano := total_nanos % 1E9
     base := time.date_time.from_seconds_i64 seconds
@@ -107,7 +107,7 @@ is
   #
   public fixed infix - (other time.duration) date_time
   =>
-    total_nanos := nanos - other.nanos
+    total_nanos := nanos - other.nanos.as_i64
     seconds := total_nanos / 1E9
     new_nano := total_nanos % 1E9
     base := time.date_time.from_seconds_i64 seconds
