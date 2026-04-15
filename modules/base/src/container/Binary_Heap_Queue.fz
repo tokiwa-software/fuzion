@@ -42,7 +42,7 @@ module:public Binary_Heap_Queue(
   # less means an element comes first, i.e. has higher priority
   # that can be either the highest value (max-queue) or the lowest (min-queue)
   #
-  public less_or_equal Binary bool T T,
+  less_or_equal Binary bool T T,
 
   # unordered elements to construct the queue from
   #
