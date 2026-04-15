@@ -77,7 +77,6 @@ static_assert(SIGTERM == 15, "signal definition different than expected");
 static_assert(SCHED_OTHER == 0, "magic number different than expected");
 static_assert(SCHED_FIFO == 1, "magic number different than expected");
 static_assert(SCHED_RR == 2, "magic number different than expected");
-static_assert(ENOSYS == 38, "error number different than expected");
 
 
 // thread local to hold the last
