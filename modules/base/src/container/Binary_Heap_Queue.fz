@@ -377,6 +377,14 @@ module:public Binary_Heap_Queue(
   public redef as_unordered Sequence T =>
     elements.as_array
 
+    
+  # number of elements in this queue
+  #
+  public redef count i64 =>
+    elements.length
+
+
+
 
 
   # Create a new priority queue that returns the smallest element first
