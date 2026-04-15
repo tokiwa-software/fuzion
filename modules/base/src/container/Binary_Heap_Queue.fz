@@ -162,21 +162,28 @@ module:public Binary_Heap_Queue(
 
 
   # fix the heap property going down from the given index
-  #
   # expects parts higher up to be ok or already fixed
+  #
+  # always swap with the lesser one of the two children (if they both exist)
+  # that way the other one does not need to be modified
   #
   down_heap(i I : integer) unit =>
     c := children i
 
     _ := c.0.bind lc-> # left child
+
+      _ := c.1.bind rc-> # right child
+
+        # swap with right child only if it is less_or_equal than left child
+        if less_or_equal elements[rc] elements[lc] && !less_or_equal elements[i] elements[rc]
+            swap i rc
+            down_heap rc
+
+      # always check left child, if swap was done with right child
+      # this will terminate immediately
       if !less_or_equal elements[i] elements[lc]
         swap i lc
         down_heap lc
-
-      _ := c.1.bind rc-> # right child
-        if !less_or_equal elements[i] elements[rc]
-          swap i rc
-          down_heap rc
 
 
   # add an element to the queue
@@ -377,7 +384,7 @@ module:public Binary_Heap_Queue(
   public redef as_unordered Sequence T =>
     elements.as_array
 
-    
+
   # number of elements in this queue
   #
   public redef count i64 =>
