@@ -46,7 +46,7 @@ mod_webserver =>
           .new
             200
             [("Server", "FuzionWebServer v0.0.0"),
-             ("Content-Length", resp.byte_length.as_string),
+             ("Content-Length", resp.byte_count.as_string),
              ("Host", "localhost")]
             (io.Read_Handler.from mutate resp)
 

@@ -655,7 +655,7 @@ fzE_jvm_result fzE_call_s0(jstring class_name, jstring name, jstring signature, 
 fzE_jvm_result fzE_call_v0(jstring class_name, jstring name, jstring signature, jobject thiz, jvalue *args);
 
 // convert a 0-terminated utf8-bytes array to a jstring.
-jvalue fzE_string_to_java_object(const void * utf8_bytes, int byte_length);
+jvalue fzE_string_to_java_object(const void * utf8_bytes, int byte_count);
 
 // test if jobj is null
 bool fzE_java_object_is_null(jobject jobj);

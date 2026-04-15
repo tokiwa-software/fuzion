@@ -403,7 +403,7 @@ is
         c := h.log2, c-1
       while c >= 0 do
         units_str := " KMGTPEZY"; /* Kilo, Mega, Giga, Tera, etc. */
-        unit0 := min units_str.byte_length-1 c/10  # 2^10 is times 1024
+        unit0 := min units_str.byte_count-1 c/10  # 2^10 is times 1024
         cnt := u64 1 << (c - unit0 * 10).as_u64
         str := for
                  hgap := c %% 4 ? hori : empt

@@ -27,9 +27,9 @@
 test_interval is
 
   test(x interval i32) =>
-    say "$x{" "*(10 - ($x).codepoint_length)}{
+    say "$x{" "*(10 - ($x).codepoint_count)}{
         for
-          s := "", s+" "+(if x.contains i then "$i" else " "*($i).byte_length)
+          s := "", s+" "+(if x.contains i then "$i" else " "*($i).byte_count)
           i in -4 .. +4
         else
           s

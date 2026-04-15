@@ -95,7 +95,7 @@ to_fuzion_type(ct String, is_result_type_or_value_type_arg bool, n i32) outcome 
     x := c_type.split "(*)"
     rt := to_fuzion_type x[0].trim true
     args := x[1]
-      .substring 1 x[1].byte_length-1
+      .substring 1 x[1].byte_count-1
       .split (", ")
       .map (at -> (to_fuzion_type at true))
     if rt.ok && (args ∀ .ok)
