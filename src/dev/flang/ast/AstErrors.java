@@ -2635,6 +2635,13 @@ public class AstErrors extends ANY
      );
   }
 
+  public static void lamdaOuterMustNotBeGenericArgument(SourcePosition pos, AbstractType tt)
+  {
+    error(pos, "Can not create lambda since an outer of its type is a generic argument.",
+      "The generic argument used in lambdas type " + s(tt) + "."
+     );
+  }
+
   public static void loopResultsInTwoIncompatibleTypes(SourcePosition pos, Match m)
   {
     error(pos, "Loop results in two incompatible types." ,
