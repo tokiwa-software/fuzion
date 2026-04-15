@@ -69,7 +69,7 @@ To solve this, you could change the type of the target 'a' to 'f64' or convert t
 
 --CURDIR--/typeinference_for_args_negative.fz:47:33: error 9: Incompatible types when passing argument in a call
   say (a4 "1.0"       " world!".byte_count)
---------------------------------^^^^^^^^^^^
+--------------------------------^^^^^^^^^^
 Actual type for argument #2 'b' does not match expected type.
 In call to          : 'typeinference_for_args_negative.a4'
 expected formal type: 'String'
@@ -130,7 +130,7 @@ actual is value of type 'String' at --CURDIR--/typeinference_for_args_negative.f
 ----------------------^^^^^^^^^
 actual is value of type 'i32' at --CURDIR--/typeinference_for_args_negative.fz:47:33:
   say (a4 "1.0"       " world!".byte_count)
---------------------------------^^^^^^^^^^^
+--------------------------------^^^^^^^^^^
 actual is value of type 'f64' at --CURDIR--/typeinference_for_args_negative.fz:48:23:
   say (a4 "10.as_f64" 3.14)
 ----------------------^^^^
