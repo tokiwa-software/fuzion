@@ -2605,12 +2605,6 @@ public class AstErrors extends ANY
      skw("fixed")+ " fixed is only allowed on function features not in universe.");
   }
 
-  public static void multipleOperatorsFound(SourcePosition p)
-  {
-    error(p,
-      "Multiple successive operators are not allowed.", "");
-  }
-
   public static void nonExhaustiveDestructuring(SourcePosition pos, int exp, int found)
   {
     error(
@@ -2646,6 +2640,13 @@ public class AstErrors extends ANY
     error(pos, "Can not create lambda since an outer of its type is a generic argument.",
       "The generic argument used in lambdas type " + s(tt) + "."
      );
+  }
+
+  public static void loopResultsInTwoIncompatibleTypes(SourcePosition pos, Match m)
+  {
+    error(pos, "Loop results in two incompatible types." ,
+      "The incompatible types are: " + m.cases().map2(c -> s(c.code().type())).stream().collect(Collectors.joining(","))
+    );
   }
 
 }
