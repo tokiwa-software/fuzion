@@ -237,12 +237,12 @@ module:public Binary_Heap_Queue(
   #
   # e.g.
   #
-  #  1
-  #  ├── 2
-  #  │   ├── 4
-  #  │   └── 5
-  #  └── 3
-  #      └── 6
+  #     1
+  #     ├── 2
+  #     │   ├── 4
+  #     │   └── 5
+  #     └── 3
+  #         └── 6
   #
   public as_string_tree_vertical String =>
 
@@ -268,11 +268,12 @@ module:public Binary_Heap_Queue(
   #       But in these cases the horizontal representation is likely not suitable
   #
   # e.g.
-  #       1
-  #     ┌─┴─┐
-  #     2   3
-  #    ┌┴┐ ┌┴
-  #    4 5 6
+  #
+  #        1
+  #      ┌─┴─┐
+  #      2   3
+  #     ┌┴┐ ┌┴
+  #     4 5 6
   #
   public as_string_tree_pretty String =>
 
