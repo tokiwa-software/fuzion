@@ -1,0 +1,184 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test priority_queue_test
+#
+# -----------------------------------------------------------------------
+
+priority_queue_test =>
+
+  exp_msg(actual, expected T : property.equatable, err_msg String) =>
+    say (actual = expected ? "OK" : "FAILED: $err_msg")
+
+  expect(actual, expected T : property.equatable) =>
+    say (actual = expected ? "OK" : "FAILED: got '$actual' but expected '$expected'")
+
+
+  # expect(actual, expected T : property.equatable, err_msg option String) =>
+  #   if actual = expected
+  #     say "OK"
+  #   else
+  #     match err_msg
+  #       nil => say "FAILED: got '$actual' but expected '$expected'"
+  #       m String => say "FAILED: $m"
+
+
+  lm : mutate is
+  lm ! ()->
+
+    # Basic functionality
+    say "Basic functionality:"
+    q1 := container.Binary_Heap_Queue lm codepoint .empty_min_first
+    expect q1.is_empty true
+    expect q1.count 0
+    q1.enqueue "F"
+    expect q1.is_empty false
+    expect q1.count 1
+    expect q1.peek "F"
+    expect q1.dequeue "F"
+    expect q1.is_empty true
+    expect q1.count 0
+
+
+    # Order of priorities
+    say "\nOrder of priorities:"
+    q2 := container.Binary_Heap_Queue lm f64 .max_first_from []
+    expect q2.is_empty true
+    q2.enqueue 0.3
+    q2.enqueue_all [0.1, -0.9, 5E7, 13.7]
+    say ""
+    say q2.as_string_tree_pretty
+    say ""
+    say q2.as_string_tree_vertical
+    q2.enqueue 0.5
+    q2.enqueue 0.1
+    say ""
+    say q2.as_string_tree_pretty
+    say ""
+    say q2.as_string_tree_vertical
+    say ""
+
+    for prev := q2.dequeue, head
+        head := q2.dequeue
+    while head.ok
+    do
+      yak "$prev: "
+      expect (prev.or_panic >= head.or_panic) true
+    else
+      say prev
+
+
+    # Edge cases
+    say "\nEdge cases:"
+    q3 := container.Binary_Heap_Queue lm String .empty_max_first
+    expect q3.peek nil
+    expect q3.dequeue nil
+    expect q3.count 0
+    q3.enqueue "aaa"
+    q3.enqueue "aaa"
+    q3.enqueue "aaa"
+    q3.enqueue "aaa"
+    say ""
+    say q3.as_string_tree_pretty
+    say ""
+    expect q3.dequeue "aaa"
+    say ""
+    say q3.as_string_tree_pretty
+    say ""
+
+    # Heap property min-heap
+    say "\nHeap property min-heap:"
+    q4 := container.Binary_Heap_Queue lm i32 .empty_min_first
+
+    for i in (1..10).reverse ++ [i32.min, i32.max]
+    do
+      say "enqueue $i"
+      q4.enqueue i
+      say q4.as_string_tree_pretty
+
+      if i%%3
+        say "dequeue: {q4.dequeue}"
+        say q4.as_string_tree_pretty
+
+    # Heap property max-heap
+    say "\nHeap property max-heap:"
+    q5 := container.Binary_Heap_Queue lm i32 .empty_max_first
+
+    for i in (-5..6)
+    do
+      say "enqueue $i"
+      q5.enqueue i
+      say q5.as_string_tree_pretty
+
+
+    # Custom comparator
+    say "\nCustom comparator:"
+
+    digit_sum(i i32) i32 =>
+      i.as_string.codepoints
+       .map (.parse_i32.or_panic)
+       .sum
+
+    digit_sum_comp(a,b i32) bool =>(digit_sum a) <= (digit_sum b)
+
+    q6 := container.Binary_Heap_Queue lm i32 .empty_comp (id ((i32, i32)->bool) (a, b)->((digit_sum a) <= (digit_sum b)))
+    _ := q6
+    simple_random 42 ()->
+      for i in 0..9
+          r := random.next_i32 199 - 99
+      do
+        say "enqueue $r"
+        q6.enqueue r
+        say q6.as_string_tree_pretty
+
+
+
+        
+  sort_test_random(random_test_size i32) =>
+
+    simple_random 42 ()->
+
+    m : mutate is
+    m ! ()->
+
+      elements := array random_test_size _->random.next_i32
+
+      pq_make := container.Binary_Heap_Queue m i32 .min_first_from elements
+      pq_add  := container.Binary_Heap_Queue m i32 .empty_min_first
+
+      for e in elements do
+        pq_add.enqueue e
+
+      sorted_elements := elements.sort
+
+      for i in 0..
+          expected in sorted_elements
+          mk_actual := pq_make.dequeue.or_panic
+          add_actual := pq_add.dequeue.or_panic
+      do
+        mk_res  outcome unit := expected = mk_actual  ? unit : error "$i. dequeue on queue initialized with make heap returned '$mk_actual' but expected '$expected'"
+        add_res outcome unit := expected = add_actual ? unit : error "$i. dequeue on queue initialized with iterative add returned '$add_actual' but expected '$expected'"
+      until mk_res.is_error || add_res.is_error
+        mk_res  ? e error => say e | * => unit
+        add_res ? e error => say e | * => unit
+      else
+        say "\n[PASSED] priority queue sorts $random_test_size random elements as expected"
+
+
+  sort_test_random 1000
