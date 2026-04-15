@@ -163,6 +163,8 @@ is
           store (collision at) k v update_size is_update
       del =>
         if is_update
+          # Treat `del` as occupied since we don't yet know if this is an update;
+          # the same key could still exist at a later index.
           store (collision at) k v update_size is_update
         else
           contents.get[at] := (k, v) # insert new key value pair
