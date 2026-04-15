@@ -89,7 +89,7 @@ is
   #
   nanos i64
   =>
-    unix_time_stamp.as_u64 * 1E9 + nano_second.as_u64
+    unix_time_stamp.as_i64 * 1000000000 + nano_second.as_i64
 
 
   # add a duration to this date time
