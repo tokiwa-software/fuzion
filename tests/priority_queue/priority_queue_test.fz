@@ -149,7 +149,7 @@ priority_queue_test =>
 
 
 
-        
+
   sort_test_random(random_test_size i32) =>
 
     simple_random 42 ()->
@@ -181,4 +181,4 @@ priority_queue_test =>
         say "\n[PASSED] priority queue sorts $random_test_size random elements as expected"
 
 
-  sort_test_random 1000
+  sort_test_random 100000
