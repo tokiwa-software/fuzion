@@ -84,7 +84,7 @@ record_process(
           match (io.buffered lm).read_line
             io.end_of_file => panic "eof"
             out String =>
-              len := out.substring "Content-Length:".byte_length .trim .parse_i32.or_panic
+              len := out.substring "Content-Length:".byte_count .trim .parse_i32.or_panic
               fout <- fout.add (String.from <| (io.buffered lm).read_bytes len+2 /* +2 because \r\n */ .or_panic)
         check y.ok
 
@@ -240,7 +240,7 @@ shutdown_req =>
 
 as_json_rpc(str String) =>
   b := str.replace "\n" "\r\n"
-  "Content-Length: {b.byte_length}\r\n\r\n{b}"
+  "Content-Length: {b.byte_count}\r\n\r\n{b}"
 
 fuzion_home := os.cwd.or_panic.resolve "../../" .as_string
 

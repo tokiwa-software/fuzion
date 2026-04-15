@@ -126,7 +126,7 @@ is
   #
   public stem String =>
     match base_name.find_last "."
-      i i32 => 0 < i < base_name.byte_length-1 ? base_name.substring 0 i : base_name
+      i i32 => 0 < i < base_name.byte_count-1 ? base_name.substring 0 i : base_name
       nil   => base_name
 
   # consider this to represent a file
@@ -134,7 +134,7 @@ is
   #
   public suffix String =>
     match base_name.find_last "."
-      i i32 => 0 < i < base_name.byte_length-1 ? base_name.substring i+1 : ""
+      i i32 => 0 < i < base_name.byte_count-1 ? base_name.substring i+1 : ""
       nil   => ""
 
 

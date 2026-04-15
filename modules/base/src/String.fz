@@ -38,7 +38,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
     pre
       debug: max_codepoints > 0
   =>
-    if codepoint_length <= max_codepoints then
+    if codepoint_count <= max_codepoints then
       String.this
     else
       substring_codepoint 0 max_codepoints-1 + "…"
@@ -56,10 +56,10 @@ public String ref : property.equatable, property.hashable, property.orderable is
   public contains_whitespace bool => utf8 ∃ .is_ascii_white_space
 
   # length of this string in bytes
-  public byte_length i32 => utf8.count
+  public byte_count i32 => utf8.count
 
   # length of this string in codepoints
-  public codepoint_length i32 => codepoints.count
+  public codepoint_count i32 => codepoints.count
 
   # concatenate string with string representation of another object
   public infix + (other Any) String =>
@@ -383,7 +383,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   #
   public substring(from, to i32) String
     pre
-      debug: 0 ≤ from ≤ to ≤ String.this.byte_length
+      debug: 0 ≤ from ≤ to ≤ String.this.byte_count
       debug: from=to || String.is_valid_utf8_first_byte utf8[from]
       debug: from=to || !String.is_multi_byte_start_byte utf8[to-1]
     post
@@ -392,13 +392,13 @@ public String ref : property.equatable, property.hashable, property.orderable is
     String.from_bytes (String.this.utf8.slice from to)
 
 
-  # create substring of this string consisting of bytes from (inclusive) .. byte_length (exclusive).
+  # create substring of this string consisting of bytes from (inclusive) .. byte_count (exclusive).
   #
   public substring(from i32) String
     pre
-      debug: 0 ≤ from ≤ byte_length
+      debug: 0 ≤ from ≤ byte_count
   =>
-    substring from byte_length
+    substring from byte_count
 
 
   # create substring of this string consisting of codepoints from (inclusive) .. to (exclusive).
@@ -406,7 +406,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   public substring_codepoint(from, to i32) String
     pre
       debug    : 0 ≤ from ≤ to
-      (debug 2): to ≤ codepoint_length
+      (debug 2): to ≤ codepoint_count
   =>
     codepoints
       .slice from to
@@ -414,14 +414,14 @@ public String ref : property.equatable, property.hashable, property.orderable is
       .fold String.concat
 
 
-  # create substring of this string consisting of codepoints from (inclusive) .. codepoint_length (exclusive).
+  # create substring of this string consisting of codepoints from (inclusive) .. codepoint_count (exclusive).
   #
   public substring_codepoint(from i32) String
     pre
       debug    : 0 ≤ from
-      (debug 2): from ≤ codepoint_length
+      (debug 2): from ≤ codepoint_count
   =>
-    substring_codepoint from codepoint_length
+    substring_codepoint from codepoint_count
 
 
   # splits this string in chunks of codepoint length n, the last part might be shorter
@@ -444,8 +444,8 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # check if this string ends with given suffix
   #
   public ends_with(suffix String) bool =>
-    l  := byte_length
-    sl := suffix.byte_length
+    l  := byte_count
+    sl := suffix.byte_count
     end := utf8.drop l-sl
     end.starts_with suffix.utf8
 
@@ -481,9 +481,9 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # within this string.
   find_last(substring String, found option i32) option i32 =>
     match find substring
-      nil => found >>= (pos -> pos - substring.byte_length)
+      nil => found >>= (pos -> pos - substring.byte_count)
       i i32 =>
-        skip := i + substring.byte_length
+        skip := i + substring.byte_count
         s := String.from_bytes (utf8.drop skip)
 
         s.find_last substring (skip + (found.or_else 0))
@@ -523,12 +523,12 @@ public String ref : property.equatable, property.hashable, property.orderable is
   #
   public split_at_byte(i i32) (String, String)
     pre
-      debug: 0 ≤ i ≤ byte_length
+      debug: 0 ≤ i ≤ byte_count
       # NYI: ENHANCEMENT: #6342, #6381: re-enable when Sequence.conat
       # consistently can return an expanding_array for finite Strings
       # debug: utf8.is_array_backed
   =>
-    (substring 0 i, substring i byte_length)
+    (substring 0 i, substring i byte_count)
 
 
   # Split string separated by (ASCII) white space
@@ -713,31 +713,31 @@ public String ref : property.equatable, property.hashable, property.orderable is
           String.from_codepoints s
 
 
-  # pad this string at the end with spaces such that its `codepoint_length` is at least `n`.
+  # pad this string at the end with spaces such that its `codepoint_count` is at least `n`.
   #
   public pad(n i32) String
   pre
     debug: n >= 0
   post
-    debug: result.codepoint_length >= n
-    debug: ((result.codepoint_length != n): result = String.this)
+    debug: result.codepoint_count >= n
+    debug: ((result.codepoint_count != n): result = String.this)
   =>
     pad " " n
 
 
-  # pad this string at the beginning with spaces such that its `codepoint_length` is at least `n`.
+  # pad this string at the beginning with spaces such that its `codepoint_count` is at least `n`.
   #
   public pad_left(n i32) String
   pre
     debug: n >= 0
   post
-    debug: result.codepoint_length >= n
-    debug: ((result.codepoint_length != n): result = String.this)
+    debug: result.codepoint_count >= n
+    debug: ((result.codepoint_count != n): result = String.this)
   =>
     pad_left " " n
 
 
-  # pad this string at the beginning and at the end with spaces such that its `codepoint_length` is at least `n`.
+  # pad this string at the beginning and at the end with spaces such that its `codepoint_count` is at least `n`.
   #
   # In case the required number of codepoints to add is odd, the padding at the end will be longer.
   #
@@ -745,8 +745,8 @@ public String ref : property.equatable, property.hashable, property.orderable is
   pre
     debug: n >= 0
   post
-    debug: result.codepoint_length >= n
-    debug: ((result.codepoint_length != n): result = String.this)
+    debug: result.codepoint_count >= n
+    debug: ((result.codepoint_count != n): result = String.this)
   =>
     pad_center " " n
 
@@ -755,48 +755,48 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # of `p` needed to pad String.this to length >= n.
   #
   pad_count(p String, n i32) =>
-    pl := p.codepoint_length
-    add_cps := max 0 n-codepoint_length
+    pl := p.codepoint_count
+    add_cps := max 0 n-codepoint_count
     (add_cps + pl - 1) / pl
 
 
-  # pad this string at the end with `p` such that its `codepoint_length` is at least `n`.
+  # pad this string at the end with `p` such that its `codepoint_count` is at least `n`.
   #
   public pad(p String, n i32) String
   pre
-    safety: p.codepoint_length > 0
+    safety: p.codepoint_count > 0
     debug: n >= 0
   post
-    debug: result.codepoint_length >= n
-    debug: ((result.codepoint_length >= n+p.codepoint_length): result = String.this)
+    debug: result.codepoint_count >= n
+    debug: ((result.codepoint_count >= n+p.codepoint_count): result = String.this)
   =>
     String.this + p * (pad_count p n)
 
 
-  # pad this string at the beginning with `p` such that its `codepoint_length` is at least `n`.
+  # pad this string at the beginning with `p` such that its `codepoint_count` is at least `n`.
   #
   public pad_left(p String, n i32) String
   pre
-    safety: p.codepoint_length > 0
+    safety: p.codepoint_count > 0
     debug: n >= 0
   post
-    debug: result.codepoint_length >= n
-    debug: ((result.codepoint_length >= n+p.codepoint_length): result = String.this)
+    debug: result.codepoint_count >= n
+    debug: ((result.codepoint_count >= n+p.codepoint_count): result = String.this)
   =>
     p * (pad_count p n) + String.this
 
 
-  # pad this string at the beginning and at the end with `p` such that its `codepoint_length` is at least `n`.
+  # pad this string at the beginning and at the end with `p` such that its `codepoint_count` is at least `n`.
   #
   # In case the required number of copies of `p` is odd, the padding at the end will be longer.
   #
   public pad_center(p String, n i32) String
   pre
-    safety: p.codepoint_length > 0
+    safety: p.codepoint_count > 0
     debug: n >= 0
   post
-    debug: result.codepoint_length >= n
-    debug: ((result.codepoint_length >= n+p.codepoint_length): result = String.this)
+    debug: result.codepoint_count >= n
+    debug: ((result.codepoint_count >= n+p.codepoint_count): result = String.this)
   =>
     pn := pad_count p n
     l := pn/2
@@ -808,9 +808,9 @@ public String ref : property.equatable, property.hashable, property.orderable is
   # padding codepoint s to start of string
   #
   public pad_codepoint_start(l i32, s String) String
-  pre safety: s.codepoint_length = 1
+  pre safety: s.codepoint_count = 1
   =>
-    missing := l - codepoint_length
+    missing := l - codepoint_count
     if missing ≤ 0
       String.this
     else
@@ -859,8 +859,8 @@ public String ref : property.equatable, property.hashable, property.orderable is
     match find sep
       nil => cut_result String.this "" false
       i i32 =>
-        l := byte_length
-        sepl := sep.byte_length
+        l := byte_count
+        sepl := sep.byte_count
 
         before := String.from_bytes (utf8.slice 0 i)
         after := String.from_bytes (utf8.slice (i + sepl) l)

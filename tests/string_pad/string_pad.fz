@@ -29,7 +29,7 @@ string_pad is
   for w in 0..38 do
     _ :=
       for s := "", s+"A"
-      while s.byte_length < 4 do
+      while s.byte_count < 4 do
         say "$w right |{s.pad w}|"
         say "$w left  |{s.pad_left w}|"
         say "$w center|{s.pad_center w}|"

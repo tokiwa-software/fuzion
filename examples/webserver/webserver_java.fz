@@ -59,7 +59,7 @@ webserver_java is
         output := jio.DataOutputStream.new s.getOutputStream?
 
         req := read?
-        say "got request ({req.byte_length} bytes): $req"
+        say "got request ({req.byte_count} bytes): $req"
         if req.starts_with "GET "
           (send200 "<html>Hello Fuzion $n!</html>")?
 
@@ -83,7 +83,7 @@ webserver_java is
           output.writeBytes ( "HTTP/1.1 200 OK\n"
                             + "Connection: close\n"
                             + "Server: Fuzion demo WebServer v0.01\n"
-                            + "Content-Length: " + data.byte_length + "\n"
+                            + "Content-Length: " + data.byte_count + "\n"
                             + "Content-Type: text/html\n"
                             + "\n"
                             + data)?
@@ -117,7 +117,7 @@ webserver_java is
                     ok := output.writeBytes ( "HTTP/1.1 200 OK\n"
                                       + "Connection: close\n"
                                       + "Server: Fuzion demo WebServer v0.01\n"
-                                      + "Content-Length: " + data.byte_length + "\n"
+                                      + "Content-Length: " + data.byte_count + "\n"
                                       + "Content-Type: text/html\n"
                                       + "\n"
                                       + data)
@@ -128,7 +128,7 @@ webserver_java is
                   output := jio.DataOutputStream.new o
 
                   req := read
-                  say "got request ({req.byte_length} bytes): $req"
+                  say "got request ({req.byte_count} bytes): $req"
                   if req.starts_with "GET "
                     send200 "<html>Hello Fuzion $n!</html>"
 

@@ -137,7 +137,7 @@ pre debug: n >= 0
       .map String (.or_panic)
       .as_array
 
-    bytes_used := (v.map c->c.as_string.byte_length).fold i32.sum
+    bytes_used := (v.map c->c.as_string.byte_count).fold i32.sum
     reader.env.discard bytes_used
     v
 
@@ -225,10 +225,10 @@ public read_fully Sequence u8 ! reader =>
 #
 public read_delimiter_full(delim String, strip_cr bool) array String ! reader =>
   str := String.from_bytes read_fully
-  if str.byte_length > 0
-    (str.ends_with "\n" ? str.substring 0 str.byte_length-1 : str)
+  if str.byte_count > 0
+    (str.ends_with "\n" ? str.substring 0 str.byte_count-1 : str)
       .split delim
-      .map (s -> if strip_cr && s.ends_with "\r" then s.substring 0 s.byte_length-1 else s)
+      .map (s -> if strip_cr && s.ends_with "\r" then s.substring 0 s.byte_count-1 else s)
       .as_array
   else
     []
