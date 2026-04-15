@@ -446,11 +446,11 @@ jvalue *fzE_convert_args(const char *sig, jvalue *args) {
 
 
 // convert a 0-terminated utf8-bytes array to a jstring.
-jvalue fzE_string_to_java_object(const void * utf8_bytes, int byte_count)
+jvalue fzE_string_to_java_object(const void * utf8_bytes, int byte_length)
 {
-  // NYI: UNDER DEVELOPMENT: we don't really need 4*byte_count, see modifiedUtf8LengthOfUtf8:
+  // NYI: UNDER DEVELOPMENT: we don't really need 4*byte_length, see modifiedUtf8LengthOfUtf8:
   // https://github.com/openjdk/jdk/blob/eb9e754b3a439cc3ce36c2c9393bc8b250343844/src/java.instrument/share/native/libinstrument/EncodingSupport.c#L98
-  char outstr[4*byte_count];
+  char outstr[4*byte_length];
   utf8_to_mod_utf8(utf8_bytes, outstr);
   jvalue result = (jvalue){ .l = (*getJNIEnv())->NewStringUTF(getJNIEnv(), outstr) };
   return result;
