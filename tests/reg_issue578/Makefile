@@ -17,16 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test lib_switch
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-lib_switch =>
-
-  a option i32 := 4
-  b option i32 := nil
-
-  say (a.and_then x->x+5)
-  say (b.and_then x->x+5)
-  say (a.or ()->5)
-  say (b.or ()->5)
+override NAME = reg_issue578
+include ../simple.mk

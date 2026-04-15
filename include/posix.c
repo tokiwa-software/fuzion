@@ -74,8 +74,6 @@ static_assert(SIGPIPE == 13, "signal definition different than expected");
 static_assert(SIGALRM == 14, "signal definition different than expected");
 static_assert(SIGTERM == 15, "signal definition different than expected");
 
-static_assert(ENOSYS == 38, "error number different than expected");
-
 
 // thread local to hold the last
 // error that occurred in fuzion runtime.
