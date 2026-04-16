@@ -23,7 +23,7 @@
 
 # japanese -- provides data for japanese format
 #
-public japanese : provide is
+public japanese : Provide is
 
     # format date using the most common Japanese formatting rules, see
     # https://en.wikipedia.org/wiki/Date_and_time_notation_in_Japan
