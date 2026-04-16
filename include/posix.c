@@ -74,11 +74,6 @@ static_assert(SIGPIPE == 13, "signal definition different than expected");
 static_assert(SIGALRM == 14, "signal definition different than expected");
 static_assert(SIGTERM == 15, "signal definition different than expected");
 
-static_assert(SCHED_OTHER == 0, "magic number different than expected");
-static_assert(SCHED_FIFO == 1, "magic number different than expected");
-static_assert(SCHED_RR == 2, "magic number different than expected");
-static_assert(ENOSYS == 38, "error number different than expected");
-
 
 // thread local to hold the last
 // error that occurred in fuzion runtime.
@@ -558,13 +553,31 @@ void fzE_thread_join(void * thrd)
 
 
 /*
+ * Convert internal policy number to system policy number.
+ */
+int fzE_thread_setschedparam_convert_policy(int policy)
+{
+  switch (policy)
+    {
+      case 0:
+        return SCHED_OTHER;
+      case 1:
+        return SCHED_FIFO;
+      case 2:
+        return SCHED_RR;
+      default:
+        assert(false);
+    }
+}
+
+/*
  * Set the scheduling policy and priority of a running thread.
  */
 int fzE_thread_setschedparam(void * thrd, int policy, int priority)
 {
   struct sched_param param;
   param.sched_priority = priority;
-  int ret = pthread_setschedparam(*(pthread_t *)thrd, policy, &param);
+  int ret = pthread_setschedparam(*(pthread_t *)thrd, fzE_thread_setschedparam_convert_policy(policy), &param);
   return ret;
 }
 

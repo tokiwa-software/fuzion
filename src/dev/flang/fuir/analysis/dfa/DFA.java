@@ -1677,39 +1677,6 @@ public class DFA extends ANY
 
 
   /**
-   * Flag to detect and stop (endless) recursion within NYIintrinsicMissing.
-   */
-  static boolean _recursion_in_NYIintrinsicMissing = false;
-
-
-  /**
-   * Report that intrinsic 'cl' is missing and return Value.UNDEFINED.
-   */
-  static Value NYIintrinsicMissing(Call cl)
-  {
-    if (true || cl._dfa._reportResults)
-      {
-        var name = fuir(cl).clazzOriginalName(cl.calledClazz());
-
-        // NYI: Proper error handling.
-        Errors.error("NYI: Support for intrinsic '" + name + "' missing");
-
-        // cl.showWhy(sb) may try to print result values that depend on
-        // intrinsics, so we risk running into an endless recursion here:
-        if (!_recursion_in_NYIintrinsicMissing)
-          {
-            _recursion_in_NYIintrinsicMissing = true;
-            var sb = new StringBuilder();
-            var ignore = cl.showWhy(sb);
-            say_err(sb);
-            _recursion_in_NYIintrinsicMissing = false;
-          }
-      }
-    return Value.UNDEFINED;
-  }
-
-
-  /**
    * Set of clazzes whose instance may escape the call to the clazz's routine.
    */
   TreeSet<Integer> _escapes = new TreeSet<>();

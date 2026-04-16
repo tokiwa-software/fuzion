@@ -13,7 +13,7 @@ error 1: java.lang.Error: No effect of reg_issue6882.lm instated.
 	at fzC_eff__1try_String_panic_unit__lm__1instate_self_unit.fzRoutine({base.fum}/effect.fz:219)
 	at fzC_eff__1try_String_panic_unit__lm__1infix_not_unit.fzRoutine({base.fum}/effect.fz:236)
 	at fzC_eff__1try_String_panic_unit__1catch.fzRoutine({base.fum}/eff/try.fz:49)
-	at fzC_reg_issue6882__INTERN_fun0__call__INTERN_fun1__call.fzRoutine(--CURDIR--/reg_issue6882.fz:38)
+	at fzC__L972_reg_issue6__call__INTERN_fun1__call__INTERN_fun2__call.fzRoutine(--CURDIR--/reg_issue6882.fz:40)
 	at fzC_fuzion__sys__thread__1spawn__Do_Call__call.fzRoutine({base.fum}/fuzion/sys/thread.fz:36)
 	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
 	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
