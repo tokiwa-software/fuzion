@@ -17,41 +17,41 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature internationalization.provide
+#  Source code of Fuzion standard library feature internationalization.Provide
 #
 # -----------------------------------------------------------------------
 
-# provide -- effect that provides operations that are specific for a geographical, political,
+# Provide -- effect that provides operations that are specific for a geographical, political,
 # or cultural region. Such operations include formatting of dates,  numbers, currencies,
 # etc.
 #
-public provide ref : effect is
+public Provide ref : effect is
 
-    # date -- operation of the internationalization.provide effect and formats a date specific to the installed location
+    # date -- operation of the internationalization.Provide effect and formats a date specific to the installed location
     #
     public date(d i32, m i32, y i32) String => abstract
 
-    # currency -- operation of the internationalization.provide effect and
+    # currency -- operation of the internationalization.Provide effect and
     # formats the currency specific to the installed location
     #
     public currency(c i32) String => abstract
 
     # current -- operation of the internationalization.provide effect to be able to install the default effect
     #
-    # NYI: CLEANUP: Remove and use `internationalization.provide.env` directly.
+    # NYI: CLEANUP: Remove and use `internationalization.Provide.env` directly.
     #
-    public current internationalization.provide ! internationalization.provide =>
-        internationalization.provide.env
+    public current internationalization.Provide ! internationalization.Provide =>
+        internationalization.Provide.env
 
 
     # default implementation of internationalization.provide
     #
     # this will get instated automatically at startup
     #
-    public redef fixed type.default_value option internationalization.provide =>
+    public redef fixed type.default_value option internationalization.Provide =>
         l := envir.vars["LANG"].or_default ""
 
-        p internationalization.provide :=
+        p internationalization.Provide :=
             if l.starts_with "de"
                 internationalization.german
             else if l.starts_with "jp"

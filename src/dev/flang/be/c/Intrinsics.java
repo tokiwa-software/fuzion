@@ -523,6 +523,11 @@ public class Intrinsics extends ANY
           return CExpr.call("fzE_thread_setschedparam", new List<>(A0, A1, A2))
                       .ret();
         });
+    put("fuzion.sys.thread.set_affinity", (c,cl,outer,in) ->
+        {
+          return CExpr.call("fzE_thread_setaffinity", new List<>(A0, A1))
+                      .ret();
+        });
 
     put("effect.type.abort0"     ,
         "effect.type.default0"   ,

@@ -34,7 +34,10 @@ reg_issue6882 =>
 
   lm : mutate is
   lm ! ()->
-    _ := concur.threads.spawn_detached ()->
-           panic.try ()->
+    concur.threads.spawn_detached ()->
+            panic.try ()->
                    _ := lm.env
-                .catch _->
+                 .catch _->
+
+          # NYI: CLEANUP: needed due to #6895
+          .join
