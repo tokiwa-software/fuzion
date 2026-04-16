@@ -64,7 +64,7 @@ webserver_native is
               HTTP/1.1 200 OK
               Connection: close
               Server: Fuzion demo WebServer v0.02
-              Content-Length: {data.byte_length}
+              Content-Length: {data.byte_count}
               Content-Type: text/html
 
               {data}

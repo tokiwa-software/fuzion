@@ -228,7 +228,7 @@ private:public uuid(val u128) : property.orderable is
     # f81d4fae-7dec-11d0-a765-00a0c91e6bf6
 
     # check format: length and required "-" in correct position
-    if uuid_str.byte_length = 36 && ls[8] = ls[13] = ls[18] = ls[23] = "-"
+    if uuid_str.byte_count = 36 && ls[8] = ls[13] = ls[18] = ls[23] = "-"
       # decode hexadecimal digits, illegal characters or wrong "-" are found here
       encodings
         .base16

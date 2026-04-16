@@ -88,7 +88,7 @@ module parse_url(url String) outcome web.parsed_url
     debug: !url.contains_whitespace
 =>
   is_https      := url.starts_with "https"
-  schema_length := "http{is_https ? "s" : ""}://".byte_length
+  schema_length := "http{is_https ? "s" : ""}://".byte_count
 
   # extract host, port (optional) and target (optional) from url
   #

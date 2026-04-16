@@ -35,7 +35,7 @@ inherit_outer is
   bucket(U type, redef v U) : eimer U is
 
   hellos => bucket "hello"
-  fives => hellos.map s->s.byte_length
+  fives => hellos.map s->s.byte_count
 
   say hellos.v
   # say fives.v  (v not implemented by map)

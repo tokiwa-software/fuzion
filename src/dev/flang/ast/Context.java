@@ -34,7 +34,7 @@ import dev.flang.util.ANY;
  *
  *   f(v T) =>
  *      if      T : String then
- *        say "String of {v.codepoint_length} codepoints"
+ *        say "String of {v.codepoint_count} codepoints"
  *      else if T : integer then
  *        say "integer, neg is {-v}"
  *

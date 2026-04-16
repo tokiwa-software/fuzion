@@ -93,16 +93,16 @@ compile_time_type_casts =>
     for_String
       pre T : String
     =>
-      say "String '$v' type $T len {v.byte_length}"
+      say "String '$v' type $T len {v.byte_count}"
 
     if T : String
       say "String '$v' type $T"
-      say "String '$v' type $T len {v.byte_length}"
+      say "String '$v' type $T len {v.byte_count}"
       for_String
-      uselambda ()->(say "lambda : codepoint len {v.codepoint_length}")
-      uselambda     (say "partial: codepoint len {v.codepoint_length}")   # partial using constraint in args
+      uselambda ()->(say "lambda : codepoint len {v.codepoint_count}")
+      uselambda     (say "partial: codepoint len {v.codepoint_count}")   # partial using constraint in args
       uselazy         v
-      uselazy_num i32 v.codepoint_length
+      uselazy_num i32 v.codepoint_count
     else if T : bool
       # note that `T` is not of type `bool` but of any type that inherits from `bool`. This is why built-in
       # operation like `prefix !`, `infix &&` and `infix ||` that are compiled into `if-then-else` expressions
@@ -131,7 +131,7 @@ compile_time_type_casts =>
       say "other type $v type $T"
 
     match T : String
-      true_  => say "matched String '$v' type $T len {v.byte_length}"; for_String
+      true_  => say "matched String '$v' type $T len {v.byte_count}"; for_String
       false_ =>
 
   x "Fuzion!"
