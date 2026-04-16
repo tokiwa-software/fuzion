@@ -226,10 +226,10 @@ public typed_zipper(# the result type of two values that were zipped
 public Typed_Value ref is
 
 
-  # Feed this value and its type into `a.apply`.  Add the
-  # cumulative value `e` and return the resulting cumulative value.
+  # Feed this value's type, the comulative value `e` and this value itself into
+  # `a.apply` and return the resulting cumulative value.
   #
-  public apply_to(E type, a typed_applicator E, e E) E
+  public apply_to(E type, A type: container.typed_applicator E, e E, a A) E
   =>
     abstract
 
@@ -238,20 +238,20 @@ public Typed_Value ref is
 #
 # This must be a heir of `Typed_Value` since we need to be able to
 # have different actual type parameters and still create ref values
-# of all the same type  `Typed_Value`
+# of all the same type `Typed_Value`.
 #
 public typed_value(# the type
-                   A type,
+                   T type,
 
                    # the value
-                   v A)
+                   v T)
   : Typed_Value is
 
-  # apply `a` to `A` `e` `v`
+  # apply `a` to `T` `e` `v`
   #
-  public redef apply_to(E type, a typed_applicator E, e E) E
+  public redef apply_to(E type, A type: container.typed_applicator E, e E, a A) E
   =>
-    a.apply A e v
+    a.apply T e v
 
 
   # create a String of the form `"<type> <value>"` where `<type>`
@@ -266,7 +266,7 @@ public typed_value(# the type
   #
   public redef as_string String
   =>
-    t := A.name
+    t := T.name
     if t.find " " ??
       "($t) $v"
     else
