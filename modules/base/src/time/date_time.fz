@@ -317,8 +317,7 @@ is
 
 public supported_year(y i32) bool
   pre
-    debug: y <= 2260
-    debug: 1650 <= y
+    debug: 1650 <= y <= 2260
   =>
   true
 
