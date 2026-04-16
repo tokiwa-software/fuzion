@@ -139,11 +139,21 @@ public stat(
      # the (relative or absolute) file name, using platform specific path separators
      path path,
      # a boolean resolve flag to resolve symbolic links or not
-     resolve bool) outcome meta_data ! stat =>
+     resolve bool) outcome io.file.meta_data ! stat =>
   if resolve
-    stat.env.stats path
+    io.file.stat.env.stats path
   else
-    stat.env.lstats path
+    io.file.stat.env.lstats path
+
+/* NYI: BUG: The following code run in a `test.fz` file causes uninitialized vars and preconditions failures:
+
+f : io.file is
+_ := f.stat1
+
+io.file.stat1 outcome meta_data =>
+    stat.env.stats (path.of "bla")
+
+*/
 
 
 # reference to the stats that could be provided
