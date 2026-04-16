@@ -254,25 +254,19 @@ is
 
         (y, m, r1.as_i32 + 1)
       else # before 1970, calculate backwards
-        y, rest_days :=
-          for rest := -days, rest - days_in_year.as_i64
-              yy := 1969, yy-1
-              leap := time.is_leap_year yy
-              days_in_year := 365 + (leap ? 1 : 0)
-          while rest > days_in_year.as_i64
-          else
-            (yy, rest)
-
-        m, r1 :=
-          for rest := rest_days, rest - days_in_month.as_i64
+        for rest := -days, rest - days_in_year.as_i64
+            yy := 1969, yy-1
+            leap := time.is_leap_year yy
+            days_in_year := 365 + (leap ? 1 : 0)
+        while rest > days_in_year.as_i64
+        else
+          for remaining := rest, remaining - days_in_month.as_i64
               mm := 12, mm-1
-              days_in_month := time.days_in_month y mm
-          while rest > days_in_month.as_i64
+              days_in_month := time.days_in_month yy mm
+          while remaining > days_in_month.as_i64
           else
-            (mm, rest)
-
-        days_in_month_local := time.days_in_month y m
-        (y, m, days_in_month_local.as_i32 - r1.as_i32 + 1) # for dates before 1970, the day is calculated as the number of days in the month minus the leftover days, because we calculated backwards
+            days_in_month_local := time.days_in_month yy mm
+            (yy, mm, days_in_month_local.as_i32 - remaining.as_i32 + 1) # for dates before 1970, the day is calculated as the number of days in the month minus the leftover days, because we calculated backwards
 
 
     hour := (time_seconds / 3600).as_i32
