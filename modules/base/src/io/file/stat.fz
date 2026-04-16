@@ -145,16 +145,6 @@ public stat(
   else
     io.file.stat.env.lstats path
 
-/* NYI: BUG: The following code run in a `test.fz` file causes uninitialized vars and preconditions failures:
-
-f : io.file is
-_ := f.stat1
-
-io.file.stat1 outcome meta_data =>
-    stat.env.stats (path.of "bla")
-
-*/
-
 
 # reference to the stats that could be provided
 #
