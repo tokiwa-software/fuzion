@@ -267,10 +267,7 @@ public class SourceModule extends Module implements SrcModule
    */
   private void addRuntimeInitCall()
   {
-    var d = _main == null
-      ? _universe
-      : lookupFeature(_universe, FeatureName.get(_main, 0));
-    if (d instanceof Feature f)
+    if (effectiveMain(_universe, _main) instanceof Feature f)
       {
         f
           .impl()
