@@ -229,11 +229,12 @@ is
   public type.from_seconds_i64(n i64) time.date_time
     pre debug    : n < 3E11 # this restriction is arbitrary (year 11476)
   =>
+    seconds_in_day := 86400
     total_seconds := n
-    days_raw := total_seconds / 86400 # number of days since 1970-01-01 (can be negative for dates before 1970)
-    time_seconds_raw := total_seconds % 86400 # leftover seconds after previous calculation
-    days := days_raw - (if time_seconds_raw < 0 then 1 else 0) # add one day if time_seconds_raw is negative, because in that case we are actually in the previous day
-    time_seconds := time_seconds_raw + (if time_seconds_raw < 0 then 86400 else 0) # add 24 hours to time_seconds_raw if it is negative, to get a value in the range of 0..86399 representing the time of day
+    days_since_1970 := total_seconds / seconds_in_day # number of days since 1970-01-01 (can be negative for dates before 1970)
+    leftover_seconds := total_seconds % seconds_in_day # leftover seconds after previous calculation
+    days := days_since_1970 - (if leftover_seconds < 0 then 1 else 0) # add one day if leftover_seconds is negative, because in that case we are actually in the previous day
+    time_seconds := leftover_seconds + (if leftover_seconds < 0 then seconds_in_day else 0) # add 24 hours to leftover_seconds if it is negative, to get a value in the range of 0..86399 representing the time of day
 
     year, month, day :=
       if days >= 0 # after 1970
@@ -352,5 +353,5 @@ days_in_month(year, month i32) =>
 public is_valid_date(year, month, day i32) bool
   pre
     debug: 1 ≤ month ≤ 12
-  =>
+=>
   1 ≤ day ≤ days_in_month year month

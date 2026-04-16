@@ -21,9 +21,10 @@ c is_before b = true
 c is_before c = false
 2024-01-30T10:30:12.100 + 75m = 2024-01-30T11:45:42.100
 2024-01-30T10:30:12.100 - 75m = 2024-01-30T09:14:42.100
+Caught precondition fault: debug: year ≤ 2260
 d = 1969-12-31T23:59:59.000
-d + duration = 1970-01-01T01:15:29.000
-d - duration = 1969-12-31T22:44:29.000
+d + one_hour_15min_30s = 1970-01-01T01:15:29.000
+d - one_hour_15min_30s = 1969-12-31T22:44:29.000
 time.date_time.from_seconds 1758620705 = time.date_time 2025 9 23 9 45 5 0 = true
 1970-01-01T00:00:00.000
 1970-01-02T00:00:11.000
