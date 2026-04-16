@@ -34,17 +34,16 @@ module:public array (
        public redef length i64,
 
        # length below which the internal array wont shrink, must be multiple of 2
-       minimum_length option i64,
+       min_length i64,
 
        _ unit
 
       ) : container.Mutable_Array T mutate.this, mutable_element
 pre
   safety: (length ≥ 0) && (length ≤ data.length.as_i64)
-  safety: (minimum_length.or_default 2) %% 2
+  safety: min_length %% 2
 is
 
-  min_length := minimum_length.or_default 8
 
   # get element at given index i
   #
@@ -151,7 +150,7 @@ is
     init T
 
    ) mutate.this.array T
-  => array.this.type.new length nil init
+  => array.this.type.new length default_min_length init
 
   # initialize one-dimensional mutable array
   #
@@ -162,7 +161,7 @@ is
 
     # minimum length below which the internal array size will not shrink when removing elements
     # must be multiple of 2
-    min_length option i64,
+    min_length i64,
 
     # initial value for elements
     init T
@@ -190,13 +189,13 @@ is
     for x in data.indices do
       data[x] := s[x]
 
-    mutate.this.env.array data length.as_i64 nil unit
+    mutate.this.env.array data length.as_i64 default_min_length unit
 
 
   # initialize an empty mutable array of type T
   #
   public type.empty mutate.this.array T =>
-    mutate.this.env.array (fuzion.sys.internal_array_init T 0) 0 nil unit
+    mutate.this.env.array (fuzion.sys.internal_array_init T 0) 0 default_min_length unit
 
   # initialize an empty mutable array of type T, that won't shrink below the minimum size
   # min_length must be multiple of 2
@@ -204,10 +203,14 @@ is
   public type.empty(min_length i64) mutate.this.array T =>
     mutate.this.env.array (fuzion.sys.internal_array_init T min_length.as_i32) 0 min_length unit
 
+  module type.default_min_length i64 => 8
+
+
+
 
 # convenience feature for creating a new array,
 # in some cases even with type inference
 #
 public new_array (T type, length i64, init T) mutate.this.array T
 =>
-  (mutate.this.array T).new length nil init
+  (mutate.this.array T).new length (mutate.array unit .default_min_length) init
