@@ -55,7 +55,8 @@ lib_time_date_time =>
   say  "{a} - {duration} = {a - duration}"
   check a + duration = time.date_time 2024 1 30 11 45 42 100000000
   check a - duration = time.date_time 2024 1 30 9 14 42 100000000
-  
+  #test := time.date_time 2280 12 31 23 59 59 0 
+  #say "limit test = {test - duration}" #Intended to fail with "FATAL FAULT `precondition`: debug: year ≤ 2260"
   d := time.date_time 1969 12 31 23 59 59 0
   say "d = $d"
   say "d + duration = {d + duration}"

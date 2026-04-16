@@ -23,11 +23,18 @@
 #
 # -----------------------------------------------------------------------
 
+
+
 # Represents a date and a time in the Gregorian calendar, without any specification of
 # a time zone or reference point.
 #
+
+
+
 public date_time(public year, month, day, hour, minute, second, nano_second i32) : property.orderable
 pre
+  debug: 1650 ≤ year
+  debug: year ≤ 2260
   debug: 1 ≤ month ≤ 12
   debug: is_valid_date year month day
   debug: 0 ≤ hour ≤ 23
@@ -89,13 +96,18 @@ is
   #
   nanos i64
   =>
-    unix_time_stamp.as_i64 * 1000000000 + nano_second.as_i64
+    _ := supported_year year
+    unix_time_stamp_i64 * 1000000000 + nano_second.as_i64
 
 
   # add a duration to this date time
   #
   public fixed infix + (other time.duration) date_time
+    pre
+      debug: year <= 2260
+      debug: 1650 <= year
   =>
+    _ := supported_year year
     total_nanos := nanos + other.nanos.as_i64
     seconds := total_nanos / 1E9
     new_nano := total_nanos % 1E9
@@ -106,7 +118,11 @@ is
   # subtract a duration from this date time
   #
   public fixed infix - (other time.duration) date_time
+    pre
+      debug: year <= 2260
+      debug: 1650 <= year
   =>
+    _ := supported_year year
     total_nanos := nanos - other.nanos.as_i64
     seconds := total_nanos / 1E9
     new_nano := total_nanos % 1E9
@@ -162,7 +178,11 @@ is
   # convert to unix time stamp (i64 version for dates before 1970)
   #
   public unix_time_stamp_i64 i64
+    pre
+      debug: year <= 2260
+      debug: 1650 <= year
   =>
+    _ := supported_year year
     leap_days =>
       ((year-1) / 4) - ((year-1) / 100) + ((year-1) / 400) - ((1969 / 4) - (1969 / 100) + (1969 / 400))
 
@@ -303,6 +323,12 @@ is
 
     ternary_compare.is_yes_or_unknown
 
+public supported_year(y i32) bool
+  pre
+    debug: y <= 2260
+    debug: 1650 <= y
+  =>
+  true
 
 # is the given year a leap year?
 #
@@ -335,5 +361,5 @@ days_in_month(year, month i32) =>
 public is_valid_date(year, month, day i32) bool
   pre
     debug: 1 ≤ month ≤ 12
-=>
+  =>
   1 ≤ day ≤ days_in_month year month
