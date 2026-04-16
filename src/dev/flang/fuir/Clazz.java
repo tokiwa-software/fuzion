@@ -1194,7 +1194,8 @@ class Clazz extends ANY implements Comparable<Clazz>
  */
 
             var outerUnboxed = isBoxed() && !f.isConstructor() ? asValue() : this;
-            innerClazz = _fuir.newClazz(outerUnboxed, t, select);
+            var cio = containedInOuter(t, outerUnboxed);
+            innerClazz =  cio != null ? cio : _fuir.newClazz(outerUnboxed, t, select);
             if (CHECKS) check
               (innerClazz._select == select);
             if (select < 0)
@@ -1217,6 +1218,21 @@ class Clazz extends ANY implements Comparable<Clazz>
       innerClazz != null);
 
     return innerClazz;
+  }
+
+
+  private Clazz containedInOuter(AbstractType t, Clazz outerUnboxed)
+  {
+    var s = outerUnboxed;
+    while (s!= null)
+      {
+        if (s._type.compareTo(t) == 0)
+          {
+            return s;
+          }
+        s = s._outer;
+      }
+    return null;
   }
 
 
