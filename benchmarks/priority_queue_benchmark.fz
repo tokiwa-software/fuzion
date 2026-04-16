@@ -23,7 +23,7 @@ priority_queue_benchmark =>
       m : mutate is
       m ! ()->
 
-        q := container.Binary_Heap_Queue m i32 .empty_min_first
+        q := container.Binary_Heap_Queue m i32 .empty_min_first (size + 10).as_i64
 
         hist_enq := time.histogram.new "Enqueue $size" nil
         hist_deq := time.histogram.new "Dequeue $size" nil
@@ -74,7 +74,7 @@ priority_queue_benchmark =>
     m : mutate is
     m ! ()->
 
-      q := container.Binary_Heap_Queue m i32 .empty_min_first
+      q := container.Binary_Heap_Queue m i32 .empty_min_first (queue_size + 30).as_i64
 
       # fill queue
       for i in 1..queue_size do q.enqueue random.next_i32
