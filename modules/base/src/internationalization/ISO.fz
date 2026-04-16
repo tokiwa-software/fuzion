@@ -23,7 +23,7 @@
 
 # ISO -- provides data for ISO 8601 format
 #
-public ISO : provide is
+public ISO : Provide is
 
     # format date using ISO formatting rules, see https://en.wikipedia.org/wiki/ISO_8601
     #

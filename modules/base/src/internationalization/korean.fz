@@ -23,7 +23,7 @@
 
 # korean -- provides data for korean format
 #
-public korean : provide is
+public korean : Provide is
 
     # format date using the most common Korean formatting rules, see
     # https://en.wikipedia.org/wiki/Date_and_time_notation_in_South_Korea
