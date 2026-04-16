@@ -311,7 +311,7 @@ public class LibraryModule extends Module implements MirModule
   {
     if (_mir == null)
       {
-        var d = effectiveMain(main);
+        var d = effectiveMain(universe(), main);
         if (CHECKS) check
           (d != null);
 

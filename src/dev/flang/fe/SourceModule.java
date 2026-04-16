@@ -267,7 +267,7 @@ public class SourceModule extends Module implements SrcModule
    */
   private void addRuntimeInitCall()
   {
-    if (effectiveMain(_main) instanceof Feature f)
+    if (effectiveMain(_universe, _main) instanceof Feature f)
       {
         f
           .impl()
