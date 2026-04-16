@@ -311,10 +311,7 @@ public class LibraryModule extends Module implements MirModule
   {
     if (_mir == null)
       {
-        var d = main == null
-          ? universe()
-          : lookupFeature(universe(), FeatureName.get(main, 0));
-
+        var d = effectiveMain(main);
         if (CHECKS) check
           (d != null);
 

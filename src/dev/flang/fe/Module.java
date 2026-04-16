@@ -533,6 +533,29 @@ public abstract class Module extends ANY implements FeatureLookup
 
 
   /**
+   * Find the effective main feature from the given main feature name. In case
+   * main is null, this is the universe.  Otherwise, it is a feature with given
+   * name `main` or, if exits, its `preAndCallFeature`.
+   *
+   * @param main the main features name
+   *
+   * @return the effecive main feature
+   */
+  AbstractFeature effectiveMain(String main)
+  {
+    var result = main == null
+      ? universe()
+      : lookupFeature(universe(), FeatureName.get(main, 0));
+    var pac = result.preAndCallFeature();
+    if (pac != null)
+      {
+        result = pac;
+      }
+    return result;
+  }
+
+
+  /**
    * Create MIR based on given main feature.
    */
   static MIR createMIR(MirModule mirMod, AbstractFeature universe, AbstractFeature main)
