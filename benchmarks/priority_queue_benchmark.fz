@@ -20,40 +20,40 @@ priority_queue_benchmark =>
 
     simple_random 42 ()->
 
-    m : mutate is
-    m ! ()->
+      m : mutate is
+      m ! ()->
 
-      q := container.Binary_Heap_Queue m i32 .empty_min_first
+        q := container.Binary_Heap_Queue m i32 .empty_min_first
 
-      hist_enq := time.histogram.new "Enqueue $size" nil
-      hist_deq := time.histogram.new "Dequeue $size" nil
+        hist_enq := time.histogram.new "Enqueue $size" nil
+        hist_deq := time.histogram.new "Dequeue $size" nil
 
-      total_enq :=
-        for t := time.duration.zero, t + dur
-            i in 1..size
-        do
-          rand := random.next_i32
-          dur :=time.stopwatch (()->q.enqueue rand)
-          hist_enq.add dur
-        else
-          t
+        total_enq :=
+          for t := time.duration.zero, t + dur
+              i in 1..size
+          do
+            rand := random.next_i32
+            dur := time.stopwatch (()->q.enqueue rand)
+            hist_enq.add dur
+          else
+            t
 
-      total_deq :=
-        for t := time.duration.zero, t + dur
-            i in 1..size
-        do
-          dur :=time.stopwatch (()->_ := q.dequeue)
-          hist_deq.add dur
-        else
-          t
+        total_deq :=
+          for t := time.duration.zero, t + dur
+              i in 1..size
+          do
+            dur := time.stopwatch (()->_ := q.dequeue)
+            hist_deq.add dur
+          else
+            t
 
-      say "{hist_enq}Total time to enqueue $size elements: $total_enq\n"
-      say "{hist_deq}Total time to dequeue $size elements: $total_deq\n"
+        say "{hist_enq}Total time to enqueue $size elements: $total_enq\n"
+        say "{hist_deq}Total time to dequeue $size elements: $total_deq\n"
 
   show_random_enqueue_dequeue unit =>
     say """
         \n********************************************************************************
-        * Fill empty queue with random elements, then empty it                         *
+        *{"Fill empty queue with random elements, then empty it".pad_center 78}*
         ********************************************************************************
         """
     random_enqueue_dequeue 1E3
@@ -67,7 +67,7 @@ priority_queue_benchmark =>
 
   random_log_performance(queue_size i32) tuple time.histogram time.histogram =>
 
-    sample_size := 1E4 + 20
+    sample_size := 1E4 + 20 # histogram ignores first and last 10 samples
 
     simple_random 13 ()->
 
@@ -95,7 +95,7 @@ priority_queue_benchmark =>
   show_random_log_performance unit =>
     say """
         \n********************************************************************************
-        * Enqueue and dequeue performance on fixed size queue                          *
+        *{"Enqueue and dequeue performance on fixed size queue".pad_center 78}*
         ********************************************************************************
         """
     for enq_hist := Sequence (tuple i32 time.histogram) .empty, enq_hist ++ [(queue_size, enq)]
