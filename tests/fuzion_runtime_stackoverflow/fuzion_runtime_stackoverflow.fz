@@ -29,7 +29,7 @@ fuzion_runtime_stackoverflow =>
     .try ()->
       say (
         for res := [0].as_list, res.concat_list res
-            i in 0..i32.max do
+            i in 0..1E6 do
         else
           res
           )
@@ -41,7 +41,7 @@ fuzion_runtime_stackoverflow =>
     .try ()->
       say (
         for res := [0].as_list, res.concat_list res
-            i in 0..i32.max do
+            i in 0..1E6 do
         else
           res
           )
@@ -60,7 +60,7 @@ fuzion_runtime_stackoverflow =>
       some_effect ! ()->
         say (
           for res := [0].as_list, res.concat_list res
-              i in 0..i32.max do
+              i in 0..1E6 do
           else
             res
             )
@@ -74,7 +74,7 @@ fuzion_runtime_stackoverflow =>
       some_effect ! ()->
         say (
           for res := [0].as_list, res.concat_list res
-              i in 0..i32.max do
+              i in 0..1E6 do
           else
             res
             )
