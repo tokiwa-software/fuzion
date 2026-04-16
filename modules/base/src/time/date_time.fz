@@ -24,17 +24,14 @@
 # -----------------------------------------------------------------------
 
 
-
 # Represents a date and a time in the Gregorian calendar, without any specification of
 # a time zone or reference point.
 #
 
 
-
 public date_time(public year, month, day, hour, minute, second, nano_second i32) : property.orderable
 pre
-  debug: 1650 ≤ year
-  debug: year ≤ 2260
+  debug: supported_year year
   debug: 1 ≤ month ≤ 12
   debug: is_valid_date year month day
   debug: 0 ≤ hour ≤ 23
@@ -315,9 +312,9 @@ is
 
     ternary_compare.is_yes_or_unknown
 
-public supported_year(y i32) bool
+public supported_year(y i32) bool # Causes a debug error if the given year would cause an overflow, returns true otherwise
   pre
-    debug: 1650 <= y <= 2260
+    debug: 1650 <= y <= 2260 # Dates too far away from the unix epoch (1970-01-01) would cause an overflow in the unix_time_stamp calculation, which is currently implemented using a 64-bit integer counting nanoseconds since the epoch.
   =>
   true
 
