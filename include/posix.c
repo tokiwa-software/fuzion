@@ -25,6 +25,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *---------------------------------------------------------------------*/
 
 #define _POSIX_C_SOURCE 200809L
+#ifdef __linux__
+#define _GNU_SOURCE
+#endif
 
 #ifdef GC_THREADS
 #define GC_DONT_INCLUDE_WINDOWS_H
@@ -57,6 +60,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <assert.h>
 #include <dirent.h>
 #include <pthread.h>
+#ifdef __linux__
+#include <sched.h> // CPU_SET
+#endif
 
 #include "fz.h"
 
@@ -570,6 +576,7 @@ int fzE_thread_setschedparam_convert_policy(int policy)
     }
 }
 
+
 /*
  * Set the scheduling policy and priority of a running thread.
  */
@@ -579,6 +586,23 @@ int fzE_thread_setschedparam(void * thrd, int policy, int priority)
   param.sched_priority = priority;
   int ret = pthread_setschedparam(*(pthread_t *)thrd, fzE_thread_setschedparam_convert_policy(policy), &param);
   return ret;
+}
+
+
+/*
+ * Set the scheduling CPU affinity of a running thread.
+ */
+int fzE_thread_setaffinity(void * thrd, int core)
+{
+#ifdef __linux__
+  cpu_set_t cpuset;
+  CPU_ZERO(&cpuset);
+  CPU_SET(core, &cpuset);
+
+  return pthread_setaffinity_np(*(pthread_t *)thrd, sizeof(cpu_set_t), &cpuset);
+#else
+  return 38;
+#endif
 }
 
 

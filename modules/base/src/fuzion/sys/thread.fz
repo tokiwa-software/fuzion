@@ -49,3 +49,8 @@ module thread is
   # intrinsic to set the scheduling policy and priority
   #
   module set_policy(thread_id Thread, policy, priority i32) i32 => intrinsic
+
+
+  # intrinsic to pin a thread to a specific CPU
+  #
+  module set_affinity(thread_id Thread, core i32) i32 => intrinsic
