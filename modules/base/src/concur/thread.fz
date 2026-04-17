@@ -48,6 +48,18 @@ module:public thread(thrd Thread) : property.equatable is
     # thread that it can remove its list of running threads?
 
 
+  # set the scheduling policy and priority of this thread
+  #
+  # policy offers a choice between various options provided
+  # by the operating system.
+  #
+  # reset_on_fork specifies whether to inherit the scheduling
+  # policy on a fork(2) (when it is not set) or not (when it
+  # is set).
+  #
+  # priority only applies to some scheduling policies and is
+  # currently limited to a value between 0 and 99.
+  #
   public set_policy(policy choice
                             concur.scheduling_policy.sched_other
                             concur.scheduling_policy.sched_fifo
@@ -74,6 +86,8 @@ module:public thread(thrd Thread) : property.equatable is
       error "fzE_thread_setschedparam error {e}"
 
 
+  # pin a thread to the given CPU core
+  #
   public set_affinity(core i32) outcome unit
   =>
     e := fuzion.sys.thread.set_affinity thrd core
