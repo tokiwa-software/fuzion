@@ -51,6 +51,6 @@ module thread is
   module set_policy(thread_id Thread, policy, priority i32) i32 => intrinsic
 
 
-  # intrinsic to pin a thread to a specific CPU
+  # intrinsic to pin a thread to the CPUs given by a mask
   #
-  module set_affinity(thread_id Thread, core i32) i32 => intrinsic
+  module set_affinity(thread_id Thread, core_mask i32) i32 => intrinsic
