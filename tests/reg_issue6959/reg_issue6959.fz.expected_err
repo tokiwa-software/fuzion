@@ -1,0 +1,18 @@
+
+{base.fum}/mutate/array.fz:115:5: error 1: Failed to verify that effect 'lm' is installed in current environment.
+    mutate.this.env.array data length unit
+----^^^^^^^^^^^^^^^
+Callchain that lead to this point:
+
+effect environment '--empty--' for call to 'lm.type.from_env' at {base.fum}/mutate/array.fz:115:5:
+    mutate.this.env.array data length unit
+----^^^^^^^^^^^^^^^
+effect environment '--empty--' for call to '(lm.type.array.type (Sequence (tuple i32 String i32))).new#2' at --CURDIR--/reg_issue6959.fz:25:8:
+  _ := lm.array (Sequence (tuple i32 String i32)) .new 0 []
+-------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+effect environment '--empty--' for call to 'lm'
+effect environment '--empty--' at program entry
+
+To fix this, you should make sure that an effect for type 'lm' is instated along all call paths to this effect use.
+
+one error.
