@@ -1,12 +1,15 @@
 
-{base.fum}/mutate/array.fz:115:5: error 1: Failed to verify that effect 'mutate' is installed in current environment.
-    mutate.this.env.array data length unit
+{base.fum}/mutate/array.fz:176:5: error 1: Failed to verify that effect 'mutate' is installed in current environment.
+    mutate.this.env.array data length min_length unit
 ----^^^^^^^^^^^^^^^
 Callchain that lead to this point:
 
-effect environment '--empty--' for call to 'mutate.type.from_env' at {base.fum}/mutate/array.fz:115:5:
-    mutate.this.env.array data length unit
+effect environment '--empty--' for call to 'mutate.type.from_env' at {base.fum}/mutate/array.fz:176:5:
+    mutate.this.env.array data length min_length unit
 ----^^^^^^^^^^^^^^^
+effect environment '--empty--' for call to '(mutate.type.array.type door).new#3' at {base.fum}/mutate/array.fz:153:6:
+  => array.this.type.new length default_min_length init
+-----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 effect environment '--empty--' for call to '(mutate.type.array.type door).new#2' at --CURDIR--/reg_issue2273.fz:34:6:
 d := (mutate.array door).new 100 closed
 -----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
