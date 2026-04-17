@@ -93,7 +93,6 @@ is
   #
   nanos i64
   =>
-    _ := supported_year year
     unix_time_stamp_i64 * 1000000000 + nano_second.as_i64
 
 
@@ -101,7 +100,6 @@ is
   #
   public fixed infix + (other time.duration) date_time
   =>
-    _ := supported_year year
     total_nanos := nanos + other.nanos.as_i64
     seconds := total_nanos / 1E9
     new_nano := total_nanos % 1E9
@@ -113,7 +111,6 @@ is
   #
   public fixed infix - (other time.duration) date_time
   =>
-    _ := supported_year year
     total_nanos := nanos - other.nanos.as_i64
     seconds := total_nanos / 1E9
     new_nano := total_nanos % 1E9
@@ -170,7 +167,6 @@ is
   #
   public unix_time_stamp_i64 i64
   =>
-    _ := supported_year year
     leap_days =>
       ((year-1) / 4) - ((year-1) / 100) + ((year-1) / 400) - ((1969 / 4) - (1969 / 100) + (1969 / 400))
 
