@@ -26,4 +26,4 @@
 #
 fuzion_runtime_init =>
   fzE_init
-  effect.instate_defaults
+  effect.big_bang_singularity

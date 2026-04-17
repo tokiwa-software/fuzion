@@ -2154,6 +2154,13 @@ public class DFA extends ANY
 
           return Value.UNIT;
         });
+    put("effect.type.remove0"              , cl ->
+        {
+          var ecl = fuir(cl).effectTypeFromIntrinsic(cl.calledClazz());
+          // NYI: UNDER DEVELOPMENT: do we need to change the enviornment?
+          // cl.removeEffect(ecl);
+          return Value.UNIT;
+        });
     put("effect.type.default0"              , cl ->
         {
           var ecl = fuir(cl).effectTypeFromIntrinsic(cl.calledClazz());
