@@ -172,7 +172,6 @@ public class Types extends ANY
     public final AbstractFeature f_Function;
     public final AbstractFeature f_Function_call;
     public final AbstractFeature f_array;
-    public final AbstractFeature f_array_internal_array;
     public final AbstractFeature f_mutate_array;
     public final AbstractFeature f_effect;
     public final AbstractFeature f_effect_finally;
@@ -245,7 +244,6 @@ public class Types extends ANY
       f_Function                = universe.get(mod, FUNCTION_NAME, 2);
       f_Function_call           = f_Function.get(mod, FuzionConstants.OPERATION_CALL, 1);
       f_array                   = universe.get(mod, FuzionConstants.ARRAY_NAME, 5);
-      f_array_internal_array    = f_array.get(mod, "internal_array", 0);
       f_mutate_array            = universe.get(mod, "mutate", 0).get(mod, FuzionConstants.ARRAY_NAME, 4);
       f_effect                  = universe.get(mod, "effect", 0);
       f_effect_finally          = f_effect.get(mod, "finally", 0);
