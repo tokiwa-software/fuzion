@@ -226,7 +226,7 @@ public typed_zipper(# the result type of two values that were zipped
 public Typed_Value ref is
 
 
-  # Feed this value's type, the comulative value `e` and this value itself into
+  # Feed this value's type, the cumulative value `e` and this value itself into
   # `a.apply` and return the resulting cumulative value.
   #
   public apply_to(E type, A type: container.typed_applicator E, e E, a A) E
