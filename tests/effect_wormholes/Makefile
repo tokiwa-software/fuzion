@@ -17,26 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test i18n_default_test
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-i18n_default_test is
-
-    h : envir.Vars_Handler is
-      public redef get(v String) option String =>
-        if v = "LANG"
-          "de_DE.UTF-8"
-        else
-          nil
-
-    (envir.vars h) ! ()->
-
-      internationalization.Provide.instate internationalization.Provide.default_value.or_panic ()->
-
-    # formats given date and currency using default-setting, in this case German-format
-        main ! internationalization.Provide =>
-            say "{internationalization.Provide.env.current.date 30 5 2024}"
-            say "{internationalization.Provide.env.current.currency 300000}"
-
-        main
+override NAME = effect_wormholes
+include ../simple.mk

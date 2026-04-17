@@ -52,31 +52,27 @@ public nano (p Nano_Time_Handler) : Clock is
     res
 
 
-  module type.default_nano_time =>
 
-    _ : time.Nano_Time_Handler is
-
-      # no guarantee can be given for precision nor resolution
-      #
-      redef read => fzE_nanotime
-
-      # no guarantee can be given for precision nor resolution
-      #
-      redef sleep(d time.duration) => fzE_nanosleep d.nanos
-
-
-  # install default effect time using default_nano_time
+  # default implementation of time.nano.
   #
-  type.install_default =>
-    (time.nano default_nano_time).default
+  public redef fixed type.default_value option time.nano =>
+    time.nano (_ : time.Nano_Time_Handler is
+
+                 # no guarantee can be given for precision nor resolution
+                 #
+                 redef read => fzE_nanotime
+
+                 # no guarantee can be given for precision nor resolution
+                 #
+                 redef sleep(d time.duration) => fzE_nanosleep d.nanos
+         )
 
 
 # shorthand for accessing time.nano effect in current environment
 #
-public nano time.nano ! time.nano =>
-  if !nano.is_instated
-    nano.install_default
-  time.nano.env
+# NYI: CLEANUP: Remove and use `time.nano.env` directly.
+#
+public nano time.nano ! time.nano => time.nano.env
 
 
 # abstract handler that can deliver a nano time

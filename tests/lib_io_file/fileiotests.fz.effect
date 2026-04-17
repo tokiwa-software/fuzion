@@ -1,6 +1,5 @@
 fileiotests.f.delete
 fileiotests.f.move
-fileiotests.f.stat
 fuzion.runtime.check_fault
 fuzion.runtime.contract_fault
 fuzion.runtime.fault
@@ -11,4 +10,5 @@ io.Buffer_Size
 io.Err
 io.Out
 io.dir.make
+io.file.stat
 panic

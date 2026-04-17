@@ -39,28 +39,24 @@ public read(ro Dir_Read_Handler) : effect is
 
   # the default directory reading operation reading the next entry via fuzion.sys.fileio.read_dir
   #
-  type.default_read_handler =>
-    _ : io.dir.Dir_Read_Handler is
-      redef read(dd Directory_Descriptor) outcome path =>
-        internal_array := fuzion.sys.internal_array_init u8 os.max_path_length
-        len := fzE_dir_read dd internal_array.data
-        if len = 0
-          error "no more directory entries"
-        else if len < 0
-          error "error reading dir"
-        else
-          path.of (String.from_bytes (internal_array.as_array.take len))
-
-
-  # install default effect io.dir.read
-  type.install_default =>
-    (io.dir.read default_read_handler).default
+  public redef fixed type.default_value option io.dir.read =>
+    io.dir.read (
+      _ : io.dir.Dir_Read_Handler is
+        redef read(dd Directory_Descriptor) outcome path =>
+          internal_array := fuzion.sys.internal_array_init u8 os.max_path_length
+          len := fzE_dir_read dd internal_array.data
+          if len = 0
+            error "no more directory entries"
+          else if len < 0
+            error "error reading dir"
+          else
+            path.of (String.from_bytes (internal_array.as_array.take len))
+      )
 
 
 # shorthand for accessing read effect in current environment
 #
 public read io.dir.read ! io.dir.read =>
-  read.type.install_default
   io.dir.read.env
 
 

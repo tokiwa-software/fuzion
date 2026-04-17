@@ -27,8 +27,11 @@
 #
 public Err ref : print_effect is
 
-  type.install_default =>
-    io.Err.default io.default_err
+
+  # default implementation of this effect that will get instated
+  # automatically at startup
+  #
+  public redef fixed type.default_value option io.Err => io.default_err
 
 
   # implementation of io.Err that just
@@ -60,6 +63,4 @@ module default_err : io.Err is
 
 # shorthand for accessing out effect in current environment
 #
-public err io.Err =>
-  Err.install_default
-  io.Err.env
+public err io.Err => io.Err.env

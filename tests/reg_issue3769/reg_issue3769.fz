@@ -24,4 +24,7 @@
 # this used to result in a check failure. Should produce an error due to missing
 # effect `io.out`.
 #
+# UPDATE: no longer produces an error in `io.Out` is now instated automatically
+# at the effect singularity during startup.
+#
 _ := io.Out.env

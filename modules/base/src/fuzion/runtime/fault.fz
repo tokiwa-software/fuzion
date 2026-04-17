@@ -52,12 +52,15 @@ public fault (
   ) : eff.fallible p
 is
 
-  # install default fault handler
-  type.install_default =>
-    (new kind_and_msg->
+
+  # default implementation of fuzion.runtime.fault
+  #
+  # this will get instated automatically at startup
+  #
+  public redef fixed type.default_value option fuzion.runtime.fault =>
+    new kind_and_msg->
       kind, msg := kind_and_msg
       fuzion.sys.fatal_fault kind msg
-    ).default
 
 
   # create an instance of `fault` with the given error handler.
@@ -68,6 +71,6 @@ is
 # fault with no argument returns fault.env, the currently installed
 # runtime fault handler.
 #
-public fault fault =>
-  fault.install_default
-  fault.env
+# NYI: CLEANUP: Remove and use `fault.env` directly.
+#
+public fault fault => fault.env

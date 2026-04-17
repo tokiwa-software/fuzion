@@ -1,0 +1,90 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test effect_wormholes
+#
+# -----------------------------------------------------------------------
+
+# This test uses two new `io.Out` effect handlers `out_A` and `out_B` and
+# performes nested `instate`s for these creating worm holes for the default
+# environment and the the environments using `out_A` and `out_B`.
+#
+# It spawns threads checking whilie `out_A` and `out_B` are instated and uses
+# warmholes in the new threads to change the environments
+#
+# finally, it uses these wormholes in the main thread to perform nested
+# teleportation of these environments.
+#
+effect_wormholes =>
+
+  lm : mutate is
+
+  out_A : io.Out is
+    public redef print(s Any) unit =>
+      io.err.print (($s).replace "!" "! -- out_A on io.err")
+
+  out_B : io.Out is
+    public redef print(s Any) unit =>
+      io.err.print (($s).replace "!" "! -- out_B on io.err")
+
+  lm ! ()->
+
+    wh0 := effect_wormhole
+    whAm := lm.env.new (option effect_wormhole nil)
+    whBm := lm.env.new (option effect_wormhole nil)
+
+    io.Out.env.println "01 - using                    default io.Out in main    thread!"
+    io.Out.instate out_A ()->
+      io.Out.env.println "02 - using level 1 instated   out_A          in main    thread!"
+      whAm <- effect_wormhole
+      concur.threads.spawn ()->
+              io.Out.env.println "03 - using inherited          out_A          in spawned thread!"
+              _ := wh0.teleport ()->
+                io.Out.env.println "04 - using level 1 teleported default io.Out in spawned thread!"
+            .join
+
+      io.Out.instate out_B ()->
+        io.Out.env.println "05 - using level 2 instated   out_B          in main    thread!"
+        whBm <- effect_wormhole
+        concur.threads.spawn ()->
+                io.Out.env.println "06 - using inherited          out_B          in spawned thread!"
+                whAm.or_panic.teleport ()->
+                  io.Out.env.println "07 - using level 1 teleported out_A          in spawned thread!"
+              .join
+      io.Out.env.println "08 - using level 1 instated   out_A          in main    thread!"
+
+    whA := whAm.or_panic
+    whB := whBm.or_panic
+
+    wh0.teleport ()->
+      io.Out.env.println "09 - using level 1 teleported default io.Out in main    thread!"
+    whA.teleport ()->
+      io.Out.env.println "10 - using level 1 teleported out_A          in main    thread!"
+    whB.teleport ()->
+      io.Out.env.println "11 - using level 1 teleported out_B          in main    thread!"
+      wh0.teleport ()->
+        io.Out.env.println "12 - using level 2 teleported default io.Out in main    thread!"
+      io.Out.env.println "13 - using level 1 teleported out_B          in main    thread!"
+      whA.teleport ()->
+        io.Out.env.println "14 - using level 2 teleported out_A          in main    thread!"
+        wh0.teleport ()->
+          io.Out.env.println "15 - using level 3 teleported default io.Out in main    thread!"
+        io.Out.env.println "16 - using level 2 teleported out_A          in main    thread!"
+      io.Out.env.println "17 - using level 1 teleported out_B          in main    thread!"
+    io.Out.env.println "18 - using default                    io.Out in main    thread!"

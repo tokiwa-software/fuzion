@@ -1438,7 +1438,8 @@ public abstract class FUIR extends IR
            "effect.type.default0",
            FuzionConstants.EFFECT_INSTATE_NAME,
            "effect.type.is_instated0",
-           "effect.type.replace0" -> true;
+           "effect.type.replace0",
+           "effect.type.remove0" -> true;
       default -> false;
       };
   }

@@ -194,17 +194,19 @@ public mutate : linear_effect is
 
 
 
-  # install default instance of mutate
+  # default implementation of mutate
   #
-  module type.install_default =>
-    mutate.default
+  # this will get instated automatically at startup
+  #
+  public redef fixed type.default_value option mutate =>
+    mutate
 
 
 # shorthand for accessing mut effect in current environment
 #
-public mut mutate ! mutate =>
-  mutate.install_default
-  mutate.env
+# NYI: CLEANUP: Remove and use `mutate.env` directly.
+#
+public mut mutate ! mutate => mutate.env
 
 
 # create a new mutable value of type T with initial value v

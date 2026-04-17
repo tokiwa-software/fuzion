@@ -34,9 +34,10 @@ public now (p () -> time.date_time) : effect is
     res
 
 
-  # default handler for now effect.
-  # returns the current date_time
-  # the system is giving us.
+  # default implementation of now.
+  # returns the current date_time the system is giving us.
+  #
+  # this will get instated automatically at startup
   #
   # this default handler fills the result with the UTC time of
   # the current system.
@@ -44,21 +45,17 @@ public now (p () -> time.date_time) : effect is
   # NYI: UNDER DEVELOPMENT: since Fuzion does not properly support datetimes with
   # timezones, these results need to be handled with care.
   #
-  type.default_now ()->time.date_time => () ->
-
-    a := fuzion.sys.internal_array_init i32 7
-    fzE_date_time a.data
-    time.date_time a[0] a[1] a[2] a[3] a[4] a[5] a[6]
-
-
-  type.install_default =>
-    (time.now default_now).default
+  public redef fixed type.default_value option time.now =>
+    time.now ()->
+      a := fuzion.sys.internal_array_init i32 7
+      fzE_date_time a.data
+      time.date_time a[0] a[1] a[2] a[3] a[4] a[5] a[6]
 
 
 # get the current date_time.
 # Uses currently installed time.now effect
 # or installs the default_now handler
 #
-public now now ! now =>
-  now.install_default
-  now.env
+# NYI: CLEANUP: Remove and use `time.now.env` directly.
+#
+public now now ! now => now.env
