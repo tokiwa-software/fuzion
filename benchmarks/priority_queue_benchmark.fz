@@ -1,0 +1,126 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+
+priority_queue_benchmark =>
+
+  random_enqueue_dequeue(size i32) unit =>
+
+    simple_random 42 ()->
+
+      m : mutate is
+      m ! ()->
+
+        q := container.Binary_Heap_Queue m i32 .empty_min_first (size + 10).as_i64
+
+        hist_enq := time.histogram.new "Enqueue $size" nil
+        hist_deq := time.histogram.new "Dequeue $size" nil
+
+        total_enq :=
+          for t := time.duration.zero, t + dur
+              i in 1..size
+          do
+            rand := random.next_i32
+            dur := time.stopwatch (()->q.enqueue rand)
+            hist_enq.add dur
+          else
+            t
+
+        total_deq :=
+          for t := time.duration.zero, t + dur
+              i in 1..size
+          do
+            dur := time.stopwatch (()->_ := q.dequeue)
+            hist_deq.add dur
+          else
+            t
+
+        say "{hist_enq}Total time to enqueue $size elements: $total_enq\n"
+        say "{hist_deq}Total time to dequeue $size elements: $total_deq\n"
+
+  show_random_enqueue_dequeue unit =>
+    say """
+        \n********************************************************************************
+        *{"Fill empty queue with random elements, then empty it".pad_center 78}*
+        ********************************************************************************
+        """
+    random_enqueue_dequeue 1E3
+    random_enqueue_dequeue 1E4
+    random_enqueue_dequeue 1E5
+    random_enqueue_dequeue 1E6
+    random_enqueue_dequeue 1E7
+    random_enqueue_dequeue 1E8
+
+
+
+  random_log_performance(queue_size i32) tuple time.histogram time.histogram =>
+
+    sample_size := 1E4 + 20 # histogram ignores first and last 10 samples
+
+    simple_random 13 ()->
+
+    m : mutate is
+    m ! ()->
+
+      q := container.Binary_Heap_Queue m i32 .empty_min_first (queue_size + 30).as_i64
+
+      # fill queue
+      for i in 1..queue_size do q.enqueue random.next_i32
+
+      hist_enq := time.histogram.new "Enqueue in queue of size $queue_size" nil 10 10
+      hist_deq := time.histogram.new "Dequeue in queue of size $queue_size" nil 10 10
+
+      for i in 1..sample_size
+      do
+        rand := random.next_i32
+        dur_enq :=time.stopwatch (()->q.enqueue rand)
+        hist_enq.add dur_enq
+        dur_deq :=time.stopwatch (()->_ := q.dequeue)
+        hist_deq.add dur_deq
+
+      (hist_enq, hist_deq)
+
+  show_random_log_performance unit =>
+    say """
+        \n********************************************************************************
+        *{"Enqueue and dequeue performance on fixed size queue".pad_center 78}*
+        ********************************************************************************
+        """
+    for enq_hist := Sequence (tuple i32 time.histogram) .empty, enq_hist ++ [(queue_size, enq)]
+        deq_hist := Sequence (tuple i32 time.histogram) .empty, deq_hist ++ [(queue_size, deq)]
+        i in [1E2, 1E3, 1E4, 1E5, 1E6, 1E7, 1E8]
+    do
+      queue_size := i
+      enq, deq := (random_log_performance i)
+    else
+      say "\nENQUEUE:\n"
+      say "average"
+      enq_hist.for_each szh->(sz,h := szh; say "{sz.as_string.pad_left 9}: {h.average.as_string_pad}")
+      say "\naverage / log_2"
+      enq_hist.for_each szh->(sz,h := szh; say "{sz.as_string.pad_left 9}: {h.average.times (f64.one / (sz.as_f64.log 2)) .as_string_pad}")
+      enq_hist.for_each szh->(_ ,h := szh; say h)
+
+
+      say "\n\nDEQUEUE:\n"
+      say "average"
+      deq_hist.for_each szh->(sz,h := szh; say "{sz.as_string.pad_left 9}: {h.average.as_string_pad}")
+      say "\naverage / log_2"
+      deq_hist.for_each szh->(sz,h := szh; say "{sz.as_string.pad_left 9}: {h.average.times (f64.one / (sz.as_f64.log 2)) .as_string_pad}")
+      deq_hist.for_each szh->(_ ,h := szh; say h)
+
+
+
+  show_random_enqueue_dequeue
+  show_random_log_performance

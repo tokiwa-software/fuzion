@@ -1,0 +1,142 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature Mutable_Priority_Queue
+#
+# -----------------------------------------------------------------------
+
+# An abstract mutable priority queue, returning the element with the highest priority first
+#
+public Mutable_Priority_Queue(public T type) ref is
+
+  # add an element to the queue
+  #
+  public enqueue(elem T) unit => abstract
+
+
+  # iteratively add all element to the queue
+  #
+  # Note: When creating a new queue, this is less efficient than using
+  #       one of the `..._from` features to construct a queue from an
+  #       unordered sequence of elements.
+  #
+  public enqueue_all(elements Sequence T) unit =>
+    for e in elements do enqueue e
+
+
+  # get and remove the element with highest priority
+  #
+  # this is the element with either minimum or maximum value
+  # depending on the chosen queue/comparator
+  #
+  public dequeue option T => abstract
+
+
+  # enqueue elem and then dequeue (return and remove) the highest priority element
+  #
+  public enqueue_dequeue(elem T) T => abstract
+
+
+  # get the first element without removing it from the queue
+  # nil iff queue is empty
+  #
+  public peek option T => abstract
+
+
+  # does this queue contain elem?
+  #
+  public contains(elem T) bool
+    pre T : property.equatable
+  => abstract
+
+
+  # all elements in this queue as an unordered Sequence
+  #
+  public as_unordered Sequence T => abstract
+
+
+  # is this queue empty?
+  #
+  public is_empty bool => peek.is_nil
+
+
+  # number of elements in this queue
+  #
+  public count i64 => abstract
+
+
+  # NYI: UNDER DEVELOPMENT:
+  # Does remove make sense? If so should there be a remove_one and remove_all?
+  # public remove(elem T) => abstract
+
+
+
+
+
+  # Create an empty priority queue that returns the smallest element first
+  # using natural ordering of the elements
+  #
+  public type.empty_min_first container.Mutable_Priority_Queue T
+    pre T : property.orderable
+  => abstract
+
+
+  # Create a priority queue from the given unordered elements
+  # which returns smallest element first using natural ordering of the elements
+  #
+  # Note: this is more efficient than iterative enqueue or enqueue_all
+  #
+  public type.min_first_from(initial_elements Sequence T) container.Mutable_Priority_Queue T
+    pre T : property.orderable
+  => abstract
+
+
+  # Create an empty priority queue that returns the largest element first
+  # using natural ordering of the elements
+  #
+  public type.empty_max_first container.Mutable_Priority_Queue T
+    pre T : property.orderable
+  => abstract
+
+
+  # Create a priority queue from the given unordered elements
+  # which returns largest element first using natural ordering of the elements
+  #
+  # Note: this is more efficient than iterative enqueue or enqueue_all
+  #
+  public type.max_first_from(initial_elements Sequence T) container.Mutable_Priority_Queue T
+    pre T : property.orderable
+  => abstract
+
+
+  # Create an empty priority queue that determines which element
+  # to return first by the given comparator
+  #
+  public type.empty_comp(less_or_equal (T1, T1)->bool) container.Mutable_Priority_Queue T1
+  => abstract
+
+
+  # Create a priority queue from the given unordered elements
+  # that determines the element to return first by the given comparator
+  #
+  # Note: this is more efficient than iterative enqueue or enqueue_all
+  #
+  public type.comp_from(less_or_equal (T1, T1)->bool,
+                        initial_elements Sequence T1) container.Mutable_Priority_Queue T1
+  => abstract

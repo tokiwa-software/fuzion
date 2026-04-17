@@ -33,12 +33,17 @@ module:public array (
        # length of the array to create
        public redef length i64,
 
+       # length below which the internal array wont shrink, must be multiple of 2
+       min_length i64,
+
        _ unit
 
       ) : container.Mutable_Array T mutate.this, mutable_element
 pre
   safety: (length ≥ 0) && (length ≤ data.length.as_i64)
+  safety: min_length %% 2
 is
+
 
   # get element at given index i
   #
@@ -57,18 +62,40 @@ is
 
   # add an element at the end of this array
   #
+  # amortized O(1) but worst case of O(n)
+  #
   public redef add (o T) unit
   =>
     check_and_replace
     d := if (data.length.as_i64 > length) data
          else
-           new_data := fuzion.sys.internal_array_init T (max 8 data.length*2)
+           new_data := fuzion.sys.internal_array_init T (max min_length.as_i32 data.length*2)
            for i in indices do
              new_data[i.as_i32] := data[i]
            new_data
     d[length.as_i32] := o
     set data := d
     set length := length+1
+
+
+  # remove the last element of the this array
+  #
+  # amortized O(1) but worst case of O(n)
+  #
+  public remove_last option T =>
+    if length = 0
+      nil
+    else
+      res := data[length-1]
+      set length := length-1
+
+      if (max i64 length (min_length/2)) <= data.length.as_i64 / 4
+        new_data := fuzion.sys.internal_array_init T (data.length/2)
+        for i in indices do
+          new_data[i.as_i32] := data[i]
+        set data := new_data
+
+      res
 
 
   # create immutable array of length len from this
@@ -94,6 +121,23 @@ is
     as_array.as_list
 
 
+  # is this array empty?
+  #
+  public is_empty bool => length = 0
+
+  # does this array contain elem?
+  #
+  public contains(elem T) bool
+    pre T : property.equatable
+  =>
+    for i in indices
+    until data[i] = elem
+      true
+    else
+      false
+
+
+
 
   # initialize one-dimensional mutable array
   #
@@ -106,13 +150,30 @@ is
     init T
 
    ) mutate.this.array T
+  => array.this.type.new length default_min_length init
+
+  # initialize one-dimensional mutable array
+  #
+  public type.new
+   (
+    # length of the array to create
+    length i64,
+
+    # minimum length below which the internal array size will not shrink when removing elements
+    # must be multiple of 2
+    min_length i64,
+
+    # initial value for elements
+    init T
+
+   ) mutate.this.array T
   =>
     data := fuzion.sys.internal_array_init T length.as_i32
 
     for x in data.indices do
       data[x] := init
 
-    mutate.this.env.array data length unit
+    mutate.this.env.array data length min_length unit
 
 
   # initialize one-dimensional mutable array from a Sequence
@@ -128,13 +189,23 @@ is
     for x in data.indices do
       data[x] := s[x]
 
-    mutate.this.env.array data length.as_i64 unit
+    mutate.this.env.array data length.as_i64 default_min_length unit
 
 
   # initialize an empty mutable array of type T
   #
   public type.empty mutate.this.array T =>
-    mutate.this.env.array (fuzion.sys.internal_array_init T 0) 0 unit
+    mutate.this.env.array (fuzion.sys.internal_array_init T 0) 0 default_min_length unit
+
+  # initialize an empty mutable array of type T, that won't shrink below the minimum size
+  # min_length must be multiple of 2
+  #
+  public type.empty(min_length i64) mutate.this.array T =>
+    mutate.this.env.array (fuzion.sys.internal_array_init T min_length.as_i32) 0 min_length unit
+
+  module type.default_min_length i64 => 8
+
+
 
 
 # convenience feature for creating a new array,
@@ -142,4 +213,4 @@ is
 #
 public new_array (T type, length i64, init T) mutate.this.array T
 =>
-  (mutate.this.array T).new length init
+  (mutate.this.array T).new length (mutate.array unit .default_min_length) init

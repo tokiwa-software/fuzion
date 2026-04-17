@@ -1,0 +1,488 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature Binary_Heap_Queue
+#
+# -----------------------------------------------------------------------
+
+# An mutable priority queue implemented using a binary heap
+#
+# Time complexity of internal operations is amortized, du to expanding/shrinking
+# of internal array, this can be avoided by setting a minimum size and
+# staying within that limit
+#
+# Merging queues is not supported as it would be linear with a binary heap,
+# enqueue_all can be used, but if merging is frequently required
+# a different implementation would be better suited
+#
+module:public Binary_Heap_Queue(
+  # the mutate effect
+  #
+  public LM type : mutate,
+
+  # type of the elements in the queue
+  #
+  public T type,
+
+  # comparator to determine priority of the elements
+  #
+  # less means an element comes first, i.e. has higher priority
+  # that can be either the highest value (max-queue) or the lowest (min-queue)
+  #
+  less_or_equal Binary bool T T,
+
+  min_size option i64,
+
+  # unordered elements to construct the queue from
+  #
+  initial_elements option (Sequence T)) ref : container.Mutable_Priority_Queue T is
+
+
+  # binary heap with the elements in the queue
+  #
+  # implemented as an array with ahnentafel ordering:
+  # for any index i the children are at indices 2i+1 and 2i+2
+  # while the parent is at ⌊(i-1)/2⌋
+  #
+  # A binary tree like this
+  #
+  #             [1]
+  #            /   \
+  #         [2]     [3]
+  #         / \     / \
+  #      [4]  [5] [6]  [7]
+  #      / \
+  #    [8] [9]
+  #
+  # is represented as following
+  #
+  #   ╭───┬───╮   ╭───────────────┬───╮
+  #   │   v   v   │               v   v
+  #  [1] [2] [3] [4] [5] [6] [7] [8] [9]
+  #       │   │   ^   ^   ^   ^
+  #       ╰───────┴───╯   │   │
+  #           │           │   │
+  #           ╰───────────┴───╯
+  #
+  elements :=
+    match initial_elements
+      nil             =>
+        match min_size
+          nil => LM.array T .empty
+          i i64 => LM.array T .empty i
+      elem Sequence T => LM.array T .from_Sequence elem
+
+  # fix heap if created from initial elements
+  if initial_elements.ok
+    build_heap_fix 0
+
+
+  # restores the heap property on a randomly arranged array
+  #
+  # starting from the lowest level going up to the root
+  # if a node contains an element with priority lower than it's subtrees
+  # it pushes it down the higher priority side of that subtree
+  # until the heap property of that subtree is restored
+  # does not need to touch the lower priority subtree
+  #
+  build_heap_fix(i I : integer) unit =>
+    c := children i
+
+    # if left child does not exist, nothing to do on this level
+    _ := c.0.bind cl->
+      # fix left and right subtrees first (if existing)
+      build_heap_fix cl
+      _ := c.1.bind cr->(build_heap_fix cr)
+
+      # determine the subtree with the higher priority root
+      prio_child := c.1.bind cr->(!less_or_equal elements[cl] elements[cr] ? cr : cl)
+                     .or_else cl
+
+      # down heap on higher priority side if current node has lower priority
+      if !less_or_equal elements[i] elements[prio_child]
+        swap i prio_child
+        build_heap_fix prio_child
+
+
+  # for a given index return the index of the parent node in the tree
+  # if not already the root
+  #
+  parent(i I : integer) option I
+    pre debug 5 : i.as_i64 < elements.length
+  =>
+    p := (i-1) / 2
+    p < 0 ? nil : p
+
+
+  # for a given index return the indices of the two children in the tree
+  # if they exist
+  #
+  children(i I : integer) tuple (option I) (option I)
+    pre debug 5 : i >= 0 && i.as_i64 < elements.length
+  =>
+    left  := i*2 + 1
+    right := i*2 + 2
+
+    # NYI: CLEANUP: explicit types could be removed when type inference for tuples improves
+    if left.as_i64 < elements.length
+      (option left, id (option I) (right.as_i64 < elements.length ? right : nil))
+    else
+      (option I nil, option I nil)
+
+
+  # swap elements for the given two indices
+  #
+  swap(a, b I : integer) unit
+    pre debug: (i64 0) <= a.as_i64 < elements.length
+        debug: (i64 0) <= b.as_i64 < elements.length
+  =>
+    tmp := elements[a]
+    elements[a] := elements[b]
+    elements[b] := tmp
+
+
+  # fix the heap property going up from the given index
+  #
+  # to be used when inserting at the end of a branch
+  # fixes only that branch
+  #
+  up_heap(i I : integer) unit =>
+    _ := parent i .bind p->
+      if !less_or_equal elements[p] elements[i]
+        swap i p
+        up_heap p
+
+
+  # fix the heap property going down from the given index
+  # expects parts higher up to be ok or already fixed
+  #
+  # always swap with the lesser one of the two children (if they both exist)
+  # that way the other one does not need to be modified
+  #
+  down_heap(i I : integer) unit =>
+    c := children i
+
+    _ := c.0.bind lc-> # left child
+
+      _ := c.1.bind rc-> # right child
+
+        # swap with right child only if it is less_or_equal than left child
+        if less_or_equal elements[rc] elements[lc] && !less_or_equal elements[i] elements[rc]
+            swap i rc
+            down_heap rc
+
+      # always check left child, if swap was done with right child
+      # this will terminate immediately
+      if !less_or_equal elements[i] elements[lc]
+        swap i lc
+        down_heap lc
+
+
+  # add an element to the queue
+  #
+  public redef enqueue(elem T) unit =>
+    elements.add elem
+    up_heap (elements.length - 1)
+
+
+  # get and remove the element with highest priority
+  #
+  # this is the element with either minimum or maximum value
+  # depending on the chosen queue/comparator
+  #
+  public redef dequeue option T =>
+
+    if elements.length < 2
+      elements.remove_last
+    else
+      res := elements[0]
+      elements[0] := elements.remove_last.or_panic
+      down_heap 0
+      res
+
+
+  # enqueue elem and then dequeue (return and remove) the highest priority element
+  #
+  # this is more efficient than an enqueue followed by a dequeue
+  #
+  public redef enqueue_dequeue(elem T) T =>
+    if elements.length > 0 && !less_or_equal elem elements[0]
+      res := elements[0]
+      elements[0] := elem
+      down_heap 0
+      res
+    else
+      elem
+
+
+  # get the first element without removing it from the queue
+  # nil iff queue is empty
+  #
+  public redef peek option T =>
+    elements.length = 0 ? nil : elements[0]
+
+
+  # does this queue contain elem?
+  #
+  public redef contains(elem T) bool =>
+    elements.contains elem
+
+
+  # create a multiline string representation of the binary heap
+  # using an indented, top-down tree layout (filesystem-style)
+  #
+  # This is more efficient than as_string_tree_pretty,
+  # and works on larger trees
+  #
+  # e.g.
+  #
+  #     1
+  #     ├── 2
+  #     │   ├── 4
+  #     │   └── 5
+  #     └── 3
+  #         └── 6
+  #
+  public as_string_tree_vertical String =>
+
+    lvl(indent String, oi option i32, is_last bool) String =>
+
+      match oi
+        nil => ""
+        i i32 =>
+          prfx := is_last ? "└── " : "├── "
+          new_ind := indent + (is_last ? "    " : "│   ")
+          c := children i
+          indent + prfx + $elements[i] + (lvl new_ind c.0 (c.1.is_nil)) + (lvl new_ind c.1 true)
+
+    chd := children 0
+    elements.is_empty ? "" : $elements[0] + (lvl "\n" chd.0 false) + (lvl "\n" chd.1 true)
+
+
+  # create a multiline string representation of the binary heap
+  # using a centered, pretty-printed tree layout (balanced/symmetric)
+  #
+  # Note: this will likely fail on very large queues (~2000)
+  #       as the whole string is constructed recursively at once
+  #       But in these cases the horizontal representation is likely not suitable
+  #
+  # e.g.
+  #
+  #        1
+  #      ┌─┴─┐
+  #      2   3
+  #     ┌┴┐ ┌┴
+  #     4 5 6
+  #
+  public as_string_tree_pretty String =>
+
+    # create string representation of binary tree from index i
+    #
+    # each level is padded to uneven length
+    # each node is centered on the total width of both its subtrees
+    #
+    # e.g.
+    #         a
+    # ┌───────┴┐
+    # b long_node_name
+    #
+    lvl(i i64) Sequence String
+      pre debug 5 : 0 <= i < elements.length
+    =>
+      str := elements[_,i].as_string
+      str_len := {l := str.codepoint_count; l%%2 ? l+1 : l}
+
+      c := children i
+      sub_l := c.0.bind lvl
+      sub_r := c.1.bind lvl
+
+      if sub_l.is_nil # leaf - no more subtrees
+        lvlres := [str.pad_center str_len]
+
+        lvlres
+      else
+        # width of current node, left and right subtree
+        cur_w, sub_l_w, sub_r_w :=
+          {
+            tmp_sub_l_w := sub_l.or_panic[0].codepoint_count
+            tmp_sub_r_w := sub_r.ok ? sub_r.or_panic[0].codepoint_count : 1
+            sub_w := tmp_sub_l_w + tmp_sub_r_w + 1 # width of subtrees with space between them
+            if sub_w >= str_len # subtrees are wider, need to pad current node
+              (sub_w, tmp_sub_l_w, tmp_sub_r_w)
+            else # current node is wider, need to pad subtrees
+              sub_dif := str_len - sub_w # amount that sub tree with is too small
+              # additional padding so total padding can be divided by 4
+              # to evenly pad subtrees on each side
+              div_4_pad := 4 - (sub_dif%4)
+              sub_half := (sub_dif + div_4_pad) / 2
+              check sub_half%%2
+              (str_len + div_4_pad, tmp_sub_l_w + sub_half, tmp_sub_r_w + sub_half)
+          }
+        lh := sub_l_w/2 # half width of left subtree, excluding center char
+        rh := sub_r_w/2 # half width of right subtree, excluding center char
+
+        # NYI: CLEANUP: concat_list currently required, see #6740
+        sub_r_new := sub_r.or_else [$" "," "," "] .as_list.concat_list [$""].cycle.as_list # extension needed if the right side is only a leaf but the left side contains a subtree
+
+        lvlres:= [str.pad_center cur_w]
+                ++ (sub_l.ok ? ["{" "*lh}┌{"─"*rh}┴{sub_r.ok ? "{"─"*lh}┐{" "*rh}" : " "*(lh+rh+1)}"] : [])
+                ++ (sub_l.ok ? sub_l.or_panic.zip sub_r_new (s1,s2)->("{s1.pad_center sub_l_w} {s2.pad_center sub_r_w}") : [])
+
+        lvlres
+
+    elements.length = 0 ? "" : (lvl 0).as_string "\n"
+
+
+  # print the string representation of the binary heap
+  #
+  public dbg_say unit => # NYI: CLEANUP: remove debug code
+    say elements
+    say as_string_tree_pretty
+    say "peek=$peek"
+
+
+  # level in the binary tree, root is 0,
+  # direct children of root are 1, their children are 2, etc
+  #
+  level(i I : integer) i32 =>
+    (i.as_i64.as_f64 + 1) .log 2 .as_i32
+
+  # check if the heap property still holds
+  #
+  public check_heap_property bool => # NYI: CLEANUP: remove debug code
+
+    chk1(i, j I : integer) bool =>
+      if !less_or_equal elements[i] elements[j]
+        e := error "'{elements[i]}' at level {level i} should come after '{elements[j]}' at level {level j}"
+        say e
+        false
+      else true
+
+    chk(i I : integer) bool =>
+      c := children i
+
+      res_l     := c.0.bind (cl->chk1 i cl) .or_else true
+      res_l_sub := c.0.bind (cl->chk cl) .or_else true
+      res_r     := c.1.bind (cr->chk1 i cr) .or_else true
+      res_r_sub := c.1.bind (cr->chk cr) .or_else true
+
+      res_l & res_r & res_l_sub & res_r_sub
+
+    elements.length > 0 ? chk 0 : true
+
+
+  # all elements in this queue as an unordered Sequence
+  #
+  public redef as_unordered Sequence T =>
+    elements.as_array
+
+
+  # number of elements in this queue
+  #
+  public redef count i64 =>
+    elements.length
+
+
+
+
+
+  # Create a new priority queue that returns the smallest element first
+  # using natural ordering of the elements
+  #
+  public fixed redef type.empty_min_first container.Binary_Heap_Queue LM T
+    pre else T : property.orderable
+  =>
+    container.Binary_Heap_Queue LM T lteq nil nil
+
+
+  # Create a new priority queue that returns the smallest element first
+  # using natural ordering of the elements
+  #
+  public fixed type.empty_min_first(min_size i64) container.Binary_Heap_Queue LM T
+    pre T : property.orderable
+  =>
+    container.Binary_Heap_Queue LM T lteq min_size nil
+
+
+  # Create a priority queue from the given elements
+  # which returns smallest element first using natural ordering of the elements
+  #
+  # Note: This is more efficient than iterative `enqueue` or `enqueue_all`,
+  #       running in O(n) time rather than O(n log n).
+  #
+  public fixed redef type.min_first_from(initial_elements Sequence T) container.Binary_Heap_Queue LM T
+    pre else T : property.orderable
+  =>
+    container.Binary_Heap_Queue LM T lteq nil initial_elements
+
+
+  # Create a new priority queue that returns the largest element first
+  # using natural ordering of the elements
+  #
+  public fixed redef type.empty_max_first container.Binary_Heap_Queue LM T
+    pre else T : property.orderable
+  =>
+    container.Binary_Heap_Queue LM T (>=) nil nil
+
+
+  # Create a new priority queue that returns the largest element first
+  # using natural ordering of the elements
+  #
+  public fixed type.empty_max_first(min_size i64) container.Binary_Heap_Queue LM T
+    pre T : property.orderable
+  =>
+    container.Binary_Heap_Queue LM T (>=) min_size nil
+
+
+  # Create a priority queue from the given elements
+  # which returns largest element first using natural ordering of the elements
+  #
+  # Note: This is more efficient than iterative `enqueue` or `enqueue_all`,
+  #       running in O(n) time rather than O(n log n).
+  #
+  public fixed redef type.max_first_from(initial_elements Sequence T) container.Binary_Heap_Queue LM T
+    pre else T : property.orderable
+  =>
+    container.Binary_Heap_Queue LM T (>=) nil initial_elements
+
+
+  # Create a new priority queue that returns the elements in the
+  # order defined by the the supplied comparator `less_or_equal`
+  #
+  public fixed redef type.empty_comp(less_or_equal (T1, T1)->bool) container.Binary_Heap_Queue LM T1 =>
+    container.Binary_Heap_Queue LM T1 less_or_equal nil nil
+
+
+  # Create a new priority queue that returns the elements in the
+  # order defined by the the supplied comparator `less_or_equal`
+  #
+  public fixed type.empty_comp_min_size(less_or_equal (T1, T1)->bool, min_size i64) container.Binary_Heap_Queue LM T1 =>
+    container.Binary_Heap_Queue LM T1 less_or_equal min_size nil
+
+
+  # Create a priority queue from the given elements that returns the elements
+  # in the order defined by the the supplied comparator `less_or_equal`
+  #
+  # Note: This is more efficient than iterative `enqueue` or `enqueue_all`,
+  #       running in O(n) time rather than O(n log n).
+  #
+  public fixed redef type.comp_from(less_or_equal (T1, T1)->bool,
+                                    initial_elements Sequence T1) container.Binary_Heap_Queue LM T1
+  =>
+    container.Binary_Heap_Queue LM T1 less_or_equal nil (option initial_elements)
