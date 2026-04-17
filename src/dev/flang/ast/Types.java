@@ -358,7 +358,7 @@ public class Types extends ANY
     {
       if (_fuzionSysCall == null)
         {
-          var fuzion       = new Call(SourcePosition.builtIn, null, "fuzion").resolveTypes(res, context);
+          var fuzion       = new Call(SourcePosition.builtIn, Universe.instance, "fuzion").resolveTypes(res, context);
           _fuzionSysCall   = new Call(SourcePosition.builtIn, fuzion, "sys" ).resolveTypes(res, context);
         }
       return _fuzionSysCall;
