@@ -28,14 +28,17 @@
 #
 private:module atomic_access : effect is
 
-  # install default instance of mutate
+
+  # default implementation of atomic_access
   #
-  type.install_default =>
-    concur.atomic_access.default  /* NYI: `concur.` could be added automatically by front end */
+  # this will get instated automatically at startup
+  #
+  public redef fixed type.default_value option concur.atomic_access =>
+    concur.atomic_access  /* NYI: `concur.` could be added automatically by front end */
 
 
 # shorthand for accessing mut effect in current environment
 #
-module atomic_access_env =>
-  atomic_access.install_default
-  atomic_access.env
+# NYI: CLEANUP: Remove and use `atomic_access.env` directly.
+#
+module atomic_access_env => atomic_access.env

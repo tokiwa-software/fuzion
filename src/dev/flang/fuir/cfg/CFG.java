@@ -404,6 +404,7 @@ public class CFG extends ANY
             }
         });
     put("effect.type.replace0"              , (cfg, cl) -> { } );
+    put("effect.type.remove0"               , (cfg, cl) -> { } );
     put("effect.type.abort0"                , (cfg, cl) -> { } );
     put("effect.type.is_instated0"          , (cfg, cl) -> { } );
     put("effect.type.from_env"              , (cfg, cl) -> { } );

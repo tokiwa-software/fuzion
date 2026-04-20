@@ -2065,6 +2065,7 @@ public class DFA extends ANY
     put("effect.type.from_env"           , cl ->
     {
       var ecl = fuir(cl).clazzResultClazz(cl.calledClazz());
+      fuir(cl).recordEffectUsage(ecl);
       return cl.useAndGetEffect(cl.site(), ecl, false);
     });
     put("effect.type.unsafe_from_env"    , cl ->
@@ -2151,6 +2152,13 @@ public class DFA extends ANY
                 }
             }
 
+          return Value.UNIT;
+        });
+    put("effect.type.remove0"              , cl ->
+        {
+          var ecl = fuir(cl).effectTypeFromIntrinsic(cl.calledClazz());
+          // NYI: UNDER DEVELOPMENT: do we need to change the enviornment?
+          // cl.removeEffect(ecl);
           return Value.UNIT;
         });
     put("effect.type.default0"              , cl ->

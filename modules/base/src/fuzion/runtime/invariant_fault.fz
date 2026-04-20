@@ -33,10 +33,13 @@ public invariant_fault (
 is
 
 
-  # install default invariant_fault handler
-  type.install_default =>
-    (fuzion.runtime.invariant_fault msg->
-      fuzion.runtime.contract_fault.cause ("inv", msg)).default
+  # default implementation of fuzion.runtime.invariant_fault
+  #
+  # this will get instated automatically at startup
+  #
+  public redef fixed type.default_value option fuzion.runtime.invariant_fault =>
+    fuzion.runtime.invariant_fault msg->
+      fuzion.runtime.contract_fault.cause ("inv", msg)
 
 
   # create an instance of `invariant_fault` with the given error handler.
@@ -47,9 +50,9 @@ is
 # invariant_fault with no argument returns invariant_fault.env, the currently installed
 # runtime invariant_fault handler.
 #
-public invariant_fault invariant_fault =>
-  invariant_fault.install_default
-  invariant_fault.env
+# NYI: CLEANUP: Remove and use `invariant_fault.env` directly.
+#
+public invariant_fault invariant_fault => invariant_fault.env
 
 
 # cause an invariant fault with given msg argument, i.e., call invariant_fault.cause

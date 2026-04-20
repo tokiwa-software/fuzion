@@ -484,6 +484,19 @@ public class Runtime extends ANY
 
 
   /**
+   * Helper method to implement intrinsic effect.remove0.
+   *
+   * @param id an effect type id.
+   */
+  public static void effect_remove(int id)
+  {
+    var t = currentThread();
+
+    t.effect_store(id, null);
+  }
+
+
+  /**
    * Helper method to handle an InvocationTargetException caused by a call to
    * java.lang.reflect.Method.invoke.  This checks the causing exception, if
    * that is an unchecked RuntimeException or Error, it just re-throws it to be

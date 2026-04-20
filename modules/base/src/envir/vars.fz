@@ -58,24 +58,21 @@ public vars (p Vars_Handler) : effect is
     container.map_of kvs
 
 
-  # install default instance of vars
+  # default implementation of envir.vars
   #
-  type.install_default =>
-    (envir.vars default_vars_handler).default
-
-
-  # default handler using fuzion.sys.env_vars
+  # this will get instated automatically at startup
   #
-  type.default_vars_handler =>
-    _ : envir.Vars_Handler is
-      public redef get(v String) option String => fuzion.sys.env_vars.get v
+  public redef fixed type.default_value option envir.vars =>
+    envir.vars (_ : envir.Vars_Handler is
+                  public redef get(v String) option String => fuzion.sys.env_vars.get v
+               )
 
 
 # shorthand for accessing envir.vars effect in current environment
 #
-public vars envir.vars ! envir.vars =>
-  vars.install_default
-  envir.vars.env
+# NYI: CLEANUP: Remove and use `envir.vars.env` directly.
+#
+public vars envir.vars ! envir.vars => envir.vars.env
 
 
 # Vars_Handler -- abstract source of environment vars

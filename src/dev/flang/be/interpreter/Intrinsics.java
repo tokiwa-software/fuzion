@@ -104,6 +104,7 @@ public class Intrinsics extends ANY
   private static void put(String n1, String n2, String n3, IntrinsicCode c) { put(n1, c); put(n2, c); put(n3, c); }
   private static void put(String n1, String n2, String n3, String n4, IntrinsicCode c) { put(n1, c); put(n2, c); put(n3, c); put(n4, c); }
   private static void put(String n1, String n2, String n3, String n4, String n5, IntrinsicCode c) { put(n1, c); put(n2, c); put(n3, c); put(n4, c); put(n5, c); }
+  private static void put(String n1, String n2, String n3, String n4, String n5, String n6, IntrinsicCode c) { put(n1, c); put(n2, c); put(n3, c); put(n4, c); put(n5, c); put(n6, c); }
 
 
   /**
@@ -638,7 +639,8 @@ public class Intrinsics extends ANY
         "effect.type.default0"    ,
         FuzionConstants.EFFECT_INSTATE_NAME,
         "effect.type.is_instated0",
-        "effect.type.replace0"    , (executor, innerClazz) -> effect(executor, innerClazz));
+        "effect.type.replace0"    ,
+        "effect.type.remove0"     , (executor, innerClazz) -> effect(executor, innerClazz));
 
     put("effect.type.from_env",
         "effect.type.unsafe_from_env",
@@ -805,6 +807,7 @@ public class Intrinsics extends ANY
             break;
           case "effect.type.is_instated0": return new boolValue(effects.get(ecl) != null /* NOTE not containsKey since ecl may map to null! */ );
           case "effect.type.replace0"    : check(effects.get(ecl) != null, fuir.clazzIsUnitType(ecl) || ev != Value.UNIT); effects.put(ecl, ev);   break;
+          case "effect.type.remove0"     : effects.put(ecl, null); break;
           default: throw new Error("unexpected effect intrinsic '"+in+"'");
           }
         return Value.UNIT;

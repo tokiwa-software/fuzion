@@ -31,10 +31,13 @@ public variant_fault (
 is
 
 
-  # install default variant_fault handler
-  type.install_default =>
-    (fuzion.runtime.variant_fault msg->
-      fuzion.runtime.contract_fault.cause ("variant", msg)).default
+  # default implementation of fuzion.runtime.variant_fault
+  #
+  # this will get instated automatically at startup
+  #
+  public redef fixed type.default_value option fuzion.runtime.variant_fault =>
+    fuzion.runtime.variant_fault msg->
+      fuzion.runtime.contract_fault.cause ("variant", msg)
 
 
   # create an instance of `variant_fault` with the given error handler.
@@ -45,9 +48,9 @@ is
 # variant_fault with no argument returns variant_fault.env, the currently installed
 # runtime variant_fault handler.
 #
-public variant_fault variant_fault =>
-  variant_fault.install_default
-  variant_fault.env
+# NYI: CLEANUP: Remove and use `variant_fault.env` directly.
+#
+public variant_fault variant_fault => variant_fault.env
 
 
 # cause a var fault with given msg argument, i.e., call variant_fault.cause

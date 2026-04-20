@@ -32,14 +32,16 @@ public args (all array String) : Sequence String, effect is
   public redef as_list list String => all.as_list
 
 
-  # install default effect args using fuzion.sys.args
+  # default implementation of envir.args
   #
-  type.install_default =>
-    (envir.args fuzion.sys.args).default
+  # this will get instated automatically at startup
+  #
+  public redef fixed type.default_value option envir.args =>
+    envir.args fuzion.sys.args     # default uses fuzion.sys.args
 
 
 # shorthand for accessing envir.args effect in current environment
 #
-public args envir.args ! envir.args =>
-  args.install_default
-  envir.args.env
+# NYI: CLEANUP: Remove and use `envir.args.env` directly.
+#
+public args envir.args ! envir.args => envir.args.env
