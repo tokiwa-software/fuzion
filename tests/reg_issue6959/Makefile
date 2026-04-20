@@ -17,21 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test reg_issue5609
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-reg_issue5609 =>
-
-  a(T type, x T) is
-    c T
-      pre 0 = 1 # required to avoid pre-else-error
-    =>
-      x
-
-  b(X type) : a X 4 is
-    redef c X
-      pre else X : i32
-    => x
-
-  say (b i32).c
+override NAME = reg_issue6959
+include ../simple.mk

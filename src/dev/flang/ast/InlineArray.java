@@ -430,9 +430,15 @@ public class InlineArray extends ExprWithPos
                                          unit,
                                          unit,
                                          unit);
-    var arrayCall       = new Call(SourcePosition.builtIn, null, FuzionConstants.ARRAY_NAME, FuzionConstants.NO_SELECT,
-                                   eT,
-                                   sysArrArgsE, null).resolveTypes(res, context);
+    var arrayCall = new Call(
+        SourcePosition.builtIn,
+        Universe.instance,
+        FuzionConstants.ARRAY_NAME,
+        FuzionConstants.NO_SELECT,
+        eT,
+        sysArrArgsE,
+        null)
+      .resolveTypes(res, context);
     exprs.add(arrayCall);
 
     // we do not "replace" this inline array by instantiation code
