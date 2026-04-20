@@ -228,8 +228,10 @@ is
     total_seconds := n
     days_since_1970 := total_seconds / seconds_in_day # number of days since 1970-01-01 (can be negative for dates before 1970)
     leftover_seconds := total_seconds % seconds_in_day # leftover seconds after previous calculation
-    days := days_since_1970 - (if leftover_seconds < 0 then 1 else 0) # add one day if leftover_seconds is negative, because in that case we are actually in the previous day
-    time_seconds := leftover_seconds + (if leftover_seconds < 0 then seconds_in_day else 0) # add 24 hours to leftover_seconds if it is negative, to get a value in the range of 0..86399 representing the time of day
+    days := days_since_1970 - (if leftover_seconds < 0 then 1 else 0) # add one day if leftover_seconds is negative, 
+    # because in that case we are actually in the previous day
+    time_seconds := leftover_seconds + (if leftover_seconds < 0 then seconds_in_day else 0) 
+    # add 24 hours to leftover_seconds if it is negative, to get a value in the range of 0..86399 representing the time of day
 
     year, month, day :=
       if days >= 0 # after 1970
@@ -264,7 +266,9 @@ is
           while remaining > days_in_month.as_i64
           else
             days_in_month_local := time.days_in_month yy mm
-            (yy, mm, days_in_month_local.as_i32 - remaining.as_i32 + 1) # for dates before 1970, the day is calculated as the number of days in the month minus the leftover days, because we calculated backwards
+            (yy, mm, days_in_month_local.as_i32 - remaining.as_i32 + 1) 
+            # for dates before 1970, the day is calculated as the number of days in the month minus the leftover days,
+            # because we calculated backwards
 
 
     hour := (time_seconds / 3600).as_i32
@@ -305,7 +309,8 @@ is
     ternary_compare.is_yes_or_unknown
 
 public fixed supported_year(y i32) bool =>
-  1650 <= y <= 2260 # Dates too far away from the unix epoch (1970-01-01) would cause an overflow in the unix_time_stamp calculation, which is currently implemented using a 64-bit integer counting nanoseconds since the epoch.
+  1650 <= y <= 2260 # Dates too far away from the unix epoch (1970-01-01) would cause an overflow in the unix_time_stamp calculation,
+  # which is currently implemented using a 64-bit integer counting nanoseconds since the epoch.
 
 # is the given year a leap year?
 #
