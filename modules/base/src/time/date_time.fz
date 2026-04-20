@@ -19,7 +19,9 @@
 #
 #  Source code of Fuzion standard library feature time.date_time
 #
-#  Author: Michael Lill (michael.lill@tokiwa.software)
+#  Authors: 
+#  - Michael Lill (michael.lill@tokiwa.software)
+#  - Yann Glady (yann.glady@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
