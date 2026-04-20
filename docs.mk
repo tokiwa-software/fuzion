@@ -86,7 +86,7 @@ $(DOC_JAVA): $(JAVA_FILE_UTIL_VERSION) $(JAVA_FILE_FUIR_ANALYSIS_ABSTRACT_INTERP
 
 $(BUILD_DIR)/generated/doc/unicode_version.adoc:
 	mkdir -p $(@D)
-	cd $(FZ_SRC) && git log modules/base/src/encodings/unicode/data.fz  | grep --extended-regexp "^Date:" | head | sed "s-Date:   -:UNICODE_VERSION: -g" | head -n1 > $(realpath $(@D))/unicode_version.adoc
+	cd $(FZ_SRC) && git log modules/base/src/encodings/unicode/data.fz  | grep --extended-regexp "^Date:" | head | sed "s-Date:   -:UNICODE_VERSION: -g" | head -n1 > $$(realpath $(@D))/unicode_version.adoc
 
 $(BUILD_DIR)/generated/doc/codepoints_white_space.adoc: $(CLASS_FILES_PARSER)
 	mkdir -p $(@D)
