@@ -25,7 +25,7 @@
 # performes nested `instate`s for these creating worm holes for the default
 # environment and the the environments using `out_A` and `out_B`.
 #
-# It spawns threads checking whilie `out_A` and `out_B` are instated and uses
+# It spawns threads checking while `out_A` and `out_B` are instated and uses
 # warmholes in the new threads to change the environments
 #
 # finally, it uses these wormholes in the main thread to perform nested
