@@ -1156,7 +1156,7 @@ int64_t fzE_mmap_offset_multiple(void)
 //
 int as_posix_style_path(void * buf, size_t size)
 {
-  // turn C: into C/
+  // turn C: into /C
   ((char * )buf)[1] = ((char * )buf)[0];
   ((char * )buf)[0] = '/';
   for (char *p = buf; *p; ++p) {
