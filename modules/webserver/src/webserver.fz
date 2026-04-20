@@ -30,7 +30,7 @@ public Webserver(/*NYI: UNDER DEVELOPMENT: custom thread pool TP type : concur.t
   public shutdown unit =>
     is_running.write false
 
-  _ := concur.threads.spawn ()->
+  _ := concur.threads.env.spawn ()->
 
     # start a thread pool
     # NYI: UNDER DEVELOPMENT: thread_pool size should be determined programmatically

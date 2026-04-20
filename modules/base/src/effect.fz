@@ -123,18 +123,6 @@ public effect is
   # --------------------  default effects  --------------------
 
 
-  # set default instance for effect type `effect.this` to `e`
-  #
-  # NYI: UNDER DEVELOPMENT: This is a manual work-around to automatically install
-  # default effects. It should be replaced by a effect configuration file that
-  # is defined locally to a fuzion project or globally to the fuzion installation
-  # the defines the default effects to be used. The DFA should then automatically
-  # determine the required effects and create code to  instate them at the beginning
-  # of an application.
-  #
-  public type.default(e effect.this) unit => default0 e
-
-
   # convenience version of `type.default` for effect values whose type is
   # exactly the effect type (i.e., the value type does not inherit
   # from the effect type).
@@ -143,9 +131,9 @@ public effect is
   #
   # NYI: UNDER DEVELOPMENT: See type.default
   #
-  public default unit
+  public defaultXXX unit
   =>
-    effect.this.default effect.this
+    effect.this.default0 effect.this
 
 
   # --------------  effect big bang singularity  --------------

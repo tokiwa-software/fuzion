@@ -37,6 +37,6 @@ reg_issue1396 is
 
   match create
     p target =>
-      _ := concur.threads.spawn (() ->
+      _ := concur.threads.env.spawn (() ->
         _:= p.my_call)
     error =>

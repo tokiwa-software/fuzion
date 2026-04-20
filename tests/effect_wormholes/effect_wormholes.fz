@@ -53,7 +53,7 @@ effect_wormholes =>
     io.Out.instate out_A ()->
       io.Out.env.println "02 - using level 1 instated   out_A          in main    thread!"
       whAm <- effect_wormhole
-      concur.threads.spawn ()->
+      concur.threads.env.spawn ()->
               io.Out.env.println "03 - using inherited          out_A          in spawned thread!"
               _ := wh0.teleport ()->
                 io.Out.env.println "04 - using level 1 teleported default io.Out in spawned thread!"
@@ -62,7 +62,7 @@ effect_wormholes =>
       io.Out.instate out_B ()->
         io.Out.env.println "05 - using level 2 instated   out_B          in main    thread!"
         whBm <- effect_wormhole
-        concur.threads.spawn ()->
+        concur.threads.env.spawn ()->
                 io.Out.env.println "06 - using inherited          out_B          in spawned thread!"
                 whAm.or_panic.teleport ()->
                   io.Out.env.println "07 - using level 1 teleported out_A          in spawned thread!"

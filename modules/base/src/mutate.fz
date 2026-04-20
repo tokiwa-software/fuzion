@@ -193,7 +193,6 @@ public mutate : linear_effect is
     public redef as_string String => $get
 
 
-
   # default implementation of mutate
   #
   # this will get instated automatically at startup

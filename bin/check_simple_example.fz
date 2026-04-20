@@ -210,7 +210,7 @@ else
     # setrlimit for executed processes
     # stack_size_limit, cpu_time_limit
 
-    _ := concur.threads.spawn ()->
+    _ := concur.threads.env.spawn ()->
       time.nano.sleep <| time.duration.s cpu_time_limit
       say "{"*** CANCELLED:".bold.red} test $file exceeded cpu time limit of $cpu_time_limit s"
       exit 1

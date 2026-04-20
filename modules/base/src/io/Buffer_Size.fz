@@ -35,10 +35,14 @@ public Buffer_Size ref : effect is
     os.page_size
 
 
+  # default implementation of Buffer_Size
+  #
+  # this will get instated automatically at startup
+  #
+  public redef fixed type.default_value option io.Buffer_Size => io.Buffer_Size
+
+
 # get the current buffer size from effect Buffer_Size
 #
 public type.buffer_size i64 ! io.Buffer_Size =>
-  io.Buffer_Size.default
   io.Buffer_Size.env.get
-
-

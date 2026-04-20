@@ -76,7 +76,7 @@ is
   bq := Blocking_Queue ()->unit
 
   thrds := array size _->
-      concur.threads.spawn ()->
+      concur.threads.env.spawn ()->
         for x := bq.dequeue
         while x.exists
           x.or_panic.call

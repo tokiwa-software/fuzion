@@ -178,7 +178,7 @@ sockets_test is
   protocols array net.protocol.val := [net.protocol.tcp, net.protocol.udp]
   for f in families do
     for p in protocols do
-      _ := concur.threads.spawn ()->
+      _ := concur.threads.env.spawn ()->
         lm ! ()->
           _ := server f p
 
