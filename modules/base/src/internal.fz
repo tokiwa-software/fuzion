@@ -65,4 +65,4 @@ private:module Thread ref is
 # called by backends
 #
 stackoverflow_cause(msg String) =>
-  fuzion.runtime.stackoverflow.cause msg
+  fuzion.runtime.stackoverflow.env.cause msg

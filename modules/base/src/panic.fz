@@ -32,8 +32,11 @@ public panic (
   ) : eff.fallible (String) p
 is
 
-  type.install_default =>
-    (panic (msg->fuzion.runtime.fault.cause ("*** panic ***", msg)) unit).default
+  # default implementation of this effect that will get instated
+  # automatically at startup
+  #
+  public redef fixed type.default_value option panic =>
+    (panic (msg->fuzion.runtime.fault.cause ("*** panic ***", msg)) unit)
 
 
   # type feature that to create an instance of `panic` with the given error handler.
@@ -45,9 +48,7 @@ is
 # panic with no argument returns panic.env, the currently installed
 # panic handler.
 #
-public panic panic =>
-  panic.install_default
-  panic.env
+public panic panic => panic.env
 
 
 # panic calls panic.cause msg, i.e., it uses the

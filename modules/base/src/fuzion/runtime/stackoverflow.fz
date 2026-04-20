@@ -30,21 +30,15 @@ private:public stackoverflow (
 is
 
 
-  # install default stackoverflow handler
+  # default implementation of fuzion.runtime.stackoveflow
   #
-  type.install_default =>
-    (fuzion.runtime.stackoverflow msg->
-      fuzion.runtime.fault.cause ("stackoverflow", msg)).default
+  # this will get instated automatically at startup
+  #
+  public redef fixed type.default_value option fuzion.runtime.stackoverflow =>
+    fuzion.runtime.stackoverflow msg->
+      fuzion.runtime.fault.cause ("stackoverflow", msg)
 
 
   # create an instance of `stackoverflow` with the given error handler.
   #
   public fixed redef type.new(h String -> void) fuzion.runtime.stackoverflow => fuzion.runtime.stackoverflow h
-
-
-# stackoverflow with no argument returns stackoverflow.env, the currently installed
-# runtime stackoverflow handler.
-#
-public stackoverflow stackoverflow =>
-  stackoverflow.install_default
-  stackoverflow.env

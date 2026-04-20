@@ -533,7 +533,8 @@ public class Intrinsics extends ANY
         "effect.type.default0"   ,
         FuzionConstants.EFFECT_INSTATE_NAME,
         "effect.type.is_instated0",
-        "effect.type.replace0"   , (c,cl,outer,in) ->
+        "effect.type.replace0"   ,
+        "effect.type.remove0"    , (c,cl,outer,in) ->
         {
           var ecl = c._fuir.effectTypeFromIntrinsic(cl);
           var eid = c._fuir.clazzId2num(ecl) + 1; // must be != 0 since setjmp uses 0 for the normal return case, so we add `1`:
@@ -621,6 +622,7 @@ public class Intrinsics extends ANY
                 }
               case "effect.type.is_instated0" -> CStmnt.seq(CStmnt.iff(evi, c._names.FZ_TRUE.ret()), c._names.FZ_FALSE.ret());
               case "effect.type.replace0"     -> c._fuir.clazzIsUnitType(ecl) ? CExpr.UNIT : ev.assign(e);
+              case "effect.type.remove0"      -> evi.assign(CIdent.FALSE);
               default -> throw new Error("unexpected intrinsic '" + in + "'.");
               };
         });
@@ -961,6 +963,7 @@ public class Intrinsics extends ANY
   private static void put(String n1, String n2, String n3, IntrinsicCode c) { put(n1, c); put(n2, c); put(n3, c); }
   private static void put(String n1, String n2, String n3, String n4, IntrinsicCode c) { put(n1, c); put(n2, c); put(n3, c); put(n4, c); }
   private static void put(String n1, String n2, String n3, String n4, String n5, IntrinsicCode c) { put(n1, c); put(n2, c); put(n3, c); put(n4, c); put(n5, c); }
+  private static void put(String n1, String n2, String n3, String n4, String n5, String n6, IntrinsicCode c) { put(n1, c); put(n2, c); put(n3, c); put(n4, c); put(n5, c); put(n6, c); }
 
 
   /**

@@ -873,6 +873,21 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(Expr.UNIT, result);
         });
 
+   put("effect.type.remove0",
+        (jvm, si, cc, tvalue, args) ->
+        {
+          var ecl = jvm._fuir.effectTypeFromIntrinsic(cc);
+          var result = Expr.UNIT;
+          var eid = jvm.effectId(ecl);
+          result = Expr
+            .iconst(eid)
+            .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                       "effect_remove",
+                                       "(I)V",
+                                       ClassFileConstants.PrimitiveType.type_void));
+          return new Pair<>(Expr.UNIT, result);
+        });
+
     put("effect.type.is_instated0",
         (jvm, si, cc, tvalue, args) ->
         {
