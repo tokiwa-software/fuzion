@@ -31,7 +31,6 @@
 
 public date_time(public year, month, day, hour, minute, second, nano_second i32) : property.orderable
 pre
-  debug: supported_year year
   debug: 1 ≤ month ≤ 12
   debug: is_valid_date year month day
   debug: 0 ≤ hour ≤ 23
@@ -166,6 +165,7 @@ is
   # convert to unix time stamp (i64 version for dates before 1970)
   #
   public unix_time_stamp_i64 i64
+    pre debug: time.supported_year year
   =>
     leap_days =>
       ((year-1) / 4) - ((year-1) / 100) + ((year-1) / 400) - ((1969 / 4) - (1969 / 100) + (1969 / 400))
@@ -302,7 +302,7 @@ is
 
     ternary_compare.is_yes_or_unknown
 
-public supported_year(y i32) bool =>
+public fixed supported_year(y i32) bool =>
   1650 <= y <= 2260 # Dates too far away from the unix epoch (1970-01-01) would cause an overflow in the unix_time_stamp calculation, which is currently implemented using a 64-bit integer counting nanoseconds since the epoch.
 
 # is the given year a leap year?
