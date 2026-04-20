@@ -309,8 +309,10 @@ is
     ternary_compare.is_yes_or_unknown
 
 public fixed supported_year(y i32) bool =>
-  1650 <= y <= 2260 # Dates too far away from the unix epoch (1970-01-01) would cause an overflow in the unix_time_stamp calculation,
+  # Dates too far away from the unix epoch (1970-01-01) would cause an overflow in the unix_time_stamp calculation,
   # which is currently implemented using a 64-bit integer counting nanoseconds since the epoch.
+  1650 <= y <= 2260
+  
 
 # is the given year a leap year?
 #
