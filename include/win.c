@@ -1152,11 +1152,26 @@ int64_t fzE_mmap_offset_multiple(void)
   return (int64_t)(uint64_t)sys_info.dwAllocationGranularity;
 }
 
+// convert C:\path\file to /c/path/file
+//
+int as_posix_style_path(void * buf, size_t size)
+{
+  // turn C: into C/
+  ((char * )buf)[1] = ((char * )buf)[0];
+  ((char * )buf)[0] = '/';
+  for (char *p = buf; *p; ++p) {
+    if (*p == '\\') {
+      *p = '/';
+    }
+  }
+  return 0;
+}
+
 int fzE_cwd(void * buf, size_t size)
 {
   return _getcwd(buf, size) == NULL
     ? -1
-    : 0;
+    : as_posix_style_path(buf, size);
 }
 
 int fzE_isnan(double d)
