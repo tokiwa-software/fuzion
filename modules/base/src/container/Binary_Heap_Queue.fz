@@ -107,6 +107,8 @@ module:public Binary_Heap_Queue(
   if initial_elements.ok
     build_heap_fix 0
 
+  check debug 5 : check_heap_property
+
 
   # restores the heap property on a randomly arranged array
   #
@@ -116,7 +118,9 @@ module:public Binary_Heap_Queue(
   # until the heap property of that subtree is restored
   # does not need to touch the lower priority subtree
   #
-  build_heap_fix(i i64) unit =>
+  build_heap_fix(i i64) unit
+    post debug 5 : check_heap_property
+  =>
     c := children i
 
     # if left child does not exist, nothing to do on this level
@@ -211,7 +215,9 @@ module:public Binary_Heap_Queue(
 
   # add an element to the queue
   #
-  public redef enqueue(elem T) unit =>
+  public redef enqueue(elem T) unit
+    post then debug 5 : check_heap_property
+  =>
     elements.add elem
     up_heap (elements.length.as_i64 - 1)
 
@@ -221,7 +227,9 @@ module:public Binary_Heap_Queue(
   # this is the element with either minimum or maximum value
   # depending on the chosen queue/comparator
   #
-  public redef dequeue option T =>
+  public redef dequeue option T
+    post then debug 5 : check_heap_property
+  =>
 
     if elements.length < 2
       elements.remove_last
@@ -236,7 +244,9 @@ module:public Binary_Heap_Queue(
   #
   # this is more efficient than an enqueue followed by a dequeue
   #
-  public redef enqueue_dequeue(elem T) T =>
+  public redef enqueue_dequeue(elem T) T
+    post then debug 5 : check_heap_property
+  =>
     if elements.length > 0 && !less_or_equal elem elements[0]
       res := elements[0]
       elements[0] := elem
@@ -378,24 +388,24 @@ module:public Binary_Heap_Queue(
   level(i i64) i64 =>
     (i.as_f64 + 1) .log 2 .as_i64
 
+    
   # check if the heap property still holds
   #
-  public check_heap_property bool => # NYI: CLEANUP: remove debug code
+  public check_heap_property bool =>
 
-    chk1(i, j i64) bool =>
+    chk_1(i, j i64) bool =>
       if !less_or_equal elements[i] elements[j]
-        e := error "'{elements[i]}' at level {level i} should come after '{elements[j]}' at level {level j}"
-        say e
+        panic "heap property violated: '{elements[i]}' at level {level i} should come after '{elements[j]}' at level {level j}"
         false
       else true
 
     chk(i i64) bool =>
       c := children i
 
-      res_l     := c.0.bind (cl->chk1 i cl) .or_else true
-      res_l_sub := c.0.bind (cl->chk cl) .or_else true
-      res_r     := c.1.bind (cr->chk1 i cr) .or_else true
-      res_r_sub := c.1.bind (cr->chk cr) .or_else true
+      res_l     := c.0.bind (cl->chk_1 i cl) .or_else true
+      res_l_sub := c.0.bind (cl->chk cl    ) .or_else true
+      res_r     := c.1.bind (cr->chk_1 i cr) .or_else true
+      res_r_sub := c.1.bind (cr->chk cr    ) .or_else true
 
       res_l & res_r & res_l_sub & res_r_sub
 
@@ -480,14 +490,16 @@ module:public Binary_Heap_Queue(
   # Create a new priority queue that returns the elements in the
   # order defined by the the supplied comparator `less_or_equal`
   #
-  public fixed redef type.empty_comp(less_or_equal (T1, T1)->bool) container.Binary_Heap_Queue LM T1 =>
+  public fixed redef type.empty_comp(less_or_equal (T1, T1)->bool) container.Binary_Heap_Queue LM T1
+  =>
     container.Binary_Heap_Queue LM T1 less_or_equal nil nil
 
 
   # Create a new priority queue that returns the elements in the
   # order defined by the the supplied comparator `less_or_equal`
   #
-  public fixed type.empty_comp_min_size(less_or_equal (T1, T1)->bool, min_size i64) container.Binary_Heap_Queue LM T1 =>
+  public fixed type.empty_comp_min_size(less_or_equal (T1, T1)->bool, min_size i64) container.Binary_Heap_Queue LM T1
+  =>
     container.Binary_Heap_Queue LM T1 less_or_equal min_size nil
 
 
