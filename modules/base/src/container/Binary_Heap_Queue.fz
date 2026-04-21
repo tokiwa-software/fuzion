@@ -56,9 +56,22 @@ module:public Binary_Heap_Queue(
 
   # binary heap with the elements in the queue
   #
-  # implemented as an array with ahnentafel ordering:
-  # for any index i the children are at indices 2i+1 and 2i+2
-  # while the parent is at ⌊(i-1)/2⌋
+  # A binary heap is defined as a binary tree with two additional constraints:
+  #
+  #   Shape property: a binary heap is a complete binary tree; that is, all
+  #                   levels of the tree, except possibly the last one (deepest)
+  #                   are fully filled, and, if the last level of the tree is
+  #                   not complete, the nodes of that level are filled from
+  #                   left to right.
+  #
+  #   Heap property: the key stored in each node is either less than or equal
+  #                  to (≤) the keys in the node's children, according to some
+  #                  total order.
+
+  #                 -- from Wikipedia: https://en.wikipedia.org/wiki/Binary_heap
+  #
+  # It is stored in an array using heap-style indexing, where for any index i
+  # the children are at indices 2i+1 and 2i+2, while the parent is at ⌊(i-1)/2⌋
   #
   # A binary tree like this
   #
