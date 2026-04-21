@@ -21,7 +21,7 @@
 #
 # -----------------------------------------------------------------------
 
-# An mutable priority queue implemented using a binary heap
+# A mutable priority queue implemented using a binary heap
 #
 # Time complexity of internal operations is amortized, du to expanding/shrinking
 # of internal array, this can be avoided by setting a minimum size and
@@ -51,7 +51,9 @@ module:public Binary_Heap_Queue(
 
   # unordered elements to construct the queue from
   #
-  initial_elements option (Sequence T)) ref : container.Mutable_Priority_Queue T is
+  initial_elements option (Sequence T)
+
+) ref : container.Mutable_Priority_Queue T is
 
 
   # binary heap with the elements in the queue
