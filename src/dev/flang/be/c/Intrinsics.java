@@ -262,7 +262,11 @@ public class Intrinsics extends ANY
             .boxedConstString(str, CExpr.call("strlen",new List<>(str)))
             .ret();
         });
-    put("fuzion.std.exit"      , (c,cl,outer,in) -> CExpr.call("exit", new List<>(A0)));
+    /*
+     * Why this is locked, from man 3 exit:
+     * The exit() function uses a global variable that is not protected, so it is not thread-safe.
+     */
+    put("fuzion.std.exit"      , (c,cl,outer,in) -> locked(CExpr.call("exit", new List<>(A0))));
     put("fuzion.sys.fatal_fault0"      , (c,cl,outer,in) ->
         CStmnt.seq(CExpr.fprintfstderr("*** failed %s: `%s`\n", new CExpr[] {A0.castTo("char *"),
                                                                              A1.castTo("char *")}),
@@ -652,7 +656,7 @@ public class Intrinsics extends ANY
           ? noJava
           : CExpr
              .call("fzE_java_object_is_null",
-                   new List<CExpr>(A0.castTo("jobject")))
+                   new List<>(A0.castTo("jobject")))
              .cond(c._names.FZ_TRUE, c._names.FZ_FALSE)
              .ret()
        );
@@ -665,7 +669,7 @@ public class Intrinsics extends ANY
         {
           return c.returnJavaObject(c._fuir.clazzResultClazz(cl), CExpr
             .call("fzE_array_get",
-              new List<CExpr>(
+              new List<>(
                 A0.castTo("jarray"),
                 A1,
                 A2.castTo("char *"))),
@@ -687,7 +691,7 @@ public class Intrinsics extends ANY
           var elements = c._names.newTemp();
           return CExpr
                 .call("fzE_array_to_java_object0",
-                  new List<CExpr>(
+                  new List<>(
                     A0.field(c._names.fieldName(length)),
                     c._fuir.getSpecialClazz(
                       elementType) == SpecialClazzes.c_NOT_FOUND
@@ -754,7 +758,7 @@ public class Intrinsics extends ANY
             .seq(c.returnJavaObject(c._fuir.clazzResultClazz(cl),
               CExpr
                 .call("fzE_call_c0",
-                  new List<CExpr>(
+                  new List<>(
                     A0.castTo("jstring"),
                     A1.castTo("jstring"),
                     A2.field(c._names.fieldName(data)).castTo("jvalue *"))), true));
@@ -785,7 +789,7 @@ public class Intrinsics extends ANY
               // not inherit Java_Object or Java_String
               c.returnJavaObject(c._fuir.clazzResultClazz(cl), CExpr
                 .call("fzE_call_s0",
-                  new List<CExpr>(
+                  new List<>(
                     A0.castTo("jstring"),
                     A1.castTo("jstring"),
                     A2.castTo("jstring"),
@@ -805,7 +809,7 @@ public class Intrinsics extends ANY
             .seq(
               c.returnJavaObject(c._fuir.clazzResultClazz(cl), CExpr
                 .call("fzE_call_v0",
-                  new List<CExpr>(
+                  new List<>(
                     A0.castTo("jstring"),
                     A1.castTo("jstring"),
                     A2.castTo("jstring"),
@@ -827,7 +831,7 @@ public class Intrinsics extends ANY
               return
                 CExpr
                   .call("fzE_" + c._fuir.clazzBaseName(pt) + "_to_java_object",
-                        new List<CExpr>(c._fuir.clazzIs(pt, SpecialClazzes.c_bool) ? A0.field(CNames.TAG_NAME) : A0))
+                        new List<>(c._fuir.clazzIs(pt, SpecialClazzes.c_bool) ? A0.field(CNames.TAG_NAME) : A0))
                   .field(new CIdent("l"))
                   .castTo(c._types.clazz(rc))
                   .ret();
@@ -845,7 +849,7 @@ public class Intrinsics extends ANY
               var tmp = new CIdent("tmp");
               return CStmnt.seq(
                 CStmnt.decl("const char *", tmp),
-                tmp.assign(CExpr.call("fzE_java_string_to_utf8_bytes", new List<CExpr>(A0.castTo("jstring")))),
+                tmp.assign(CExpr.call("fzE_java_string_to_utf8_bytes", new List<>(A0.castTo("jstring")))),
                 c.boxedConstString(tmp, CExpr.call("strlen",new List<>(tmp)))
                   .ret());
             }
@@ -858,7 +862,7 @@ public class Intrinsics extends ANY
           return C.JAVA_HOME == null
             ? noJava
             : CExpr
-                .call("fzE_string_to_java_object", new List<CExpr>(
+                .call("fzE_string_to_java_object", new List<>(
                   A0.field(c._names.fieldName(data)),
                   A0.field(c._names.fieldName(length))
                   ))

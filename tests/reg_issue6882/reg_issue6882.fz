@@ -34,7 +34,7 @@ reg_issue6882 =>
 
   lm : mutate is
   lm ! ()->
-    concur.threads.env.spawn_detached ()->
+    concur.threads.spawn_without_inherited_effects ()->
             panic.try ()->
                    _ := lm.env
                  .catch _->

@@ -48,7 +48,7 @@ is
                code ()->unit
               ) concur.thread =>
     ewh := effect_wormhole
-    spawn_detached ()->
+    spawn_without_inherited_effects ()->
       ewh.teleport code
 
 
@@ -58,9 +58,9 @@ is
   # This is intended for use in, e.g., thread pools that are used to perform
   # tasks that may require different effects.
   #
-  public spawn_detached(# code ot run int he new thread without an new, empty effect environment
-                        code ()->unit
-                       ) concur.thread =>
+  public spawn_without_inherited_effects(# code ot run int he new thread without an new, empty effect environment
+                                         code ()->unit
+                                        ) concur.thread =>
     st := p.spawn code
     (threads p (running++[st]).as_array).replace
     st
