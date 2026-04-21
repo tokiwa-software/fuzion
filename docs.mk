@@ -84,8 +84,10 @@ REF_MANUAL_ATTRIBUTES = \
 $(DOC_JAVA): $(JAVA_FILE_UTIL_VERSION) $(JAVA_FILE_FUIR_ANALYSIS_ABSTRACT_INTERPRETER2)
 	javadoc --release $(JAVA_VERSION) --enable-preview -d $(dir $(DOC_JAVA)) $(JAVA_FILES_FOR_JAVA_DOC)
 
-$(BUILD_DIR)/generated/doc/unicode_version.adoc:
-	mkdir -p $(@D)
+$(BUILD_DIR)/generated/doc:
+	mkdir -p $@
+
+$(BUILD_DIR)/generated/doc/unicode_version.adoc: $(BUILD_DIR)/generated/doc
 	cd $(FZ_SRC) && git log modules/base/src/encodings/unicode/data.fz  | grep --extended-regexp "^Date:" | head | sed "s-Date:   -:UNICODE_VERSION: -g" | head -n1 > $(realpath $(@D))/unicode_version.adoc
 
 $(BUILD_DIR)/generated/doc/codepoints_white_space.adoc: $(CLASS_FILES_PARSER)
