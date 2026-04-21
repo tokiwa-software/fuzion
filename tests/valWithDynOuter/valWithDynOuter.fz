@@ -110,10 +110,10 @@ valWithDynOuter is
   test (v "v1").e ".v1-v:v.x."
   testw w.g ".w-w:w.x."
   _ ref_v := v "v2"
-#  testrv rv.g ".v2-v:v.x."
+#  testrv rv.g ".v2-v:v.x." NYI: CLEANUP: unclear what this is?
   _ ref_v := w
-#  testrv rw.g ".w-w:w.x."
-#  tests s.g ".s-s:s.x."
+#  testrv rw.g ".w-w:w.x." NYI: CLEANUP: unclear what this is?
+#  tests s.g ".s-s:s.x." # Call has ambiguous result type
 
   # extend 'outer's lifespan
   #
@@ -126,14 +126,13 @@ valWithDynOuter is
   q3 ref_v.e =>
     rv0 ref_v := v "v2"
     rv0.e
-#    rv0.g
+#    rv0.g # Call has ambiguous result type
   testrv q3 ".v2-v:v.x."
   q4 ref_v.e =>
     rw0 ref_v := w
     rw0.e
-#    rw0.g
+#    rw0.g # Call has ambiguous result type
   testrv q4 ".w-w:w.x."
-#  q5 s.e is s.g
   q5 s.e => s.e
   tests q5 ".s-s:s.x."
 
@@ -154,18 +153,18 @@ valWithDynOuter is
   rv2 ref_v := v "v2"
   o2 := rv2
   chck o2.f "v2"
-#  testrv_mut rv2.g ".v2v2-v:v.x."
+#  testrv_mut rv2.g ".v2v2-v:v.x." # Call has ambiguous result type
 #  chck o2.f "v2v2"
 
   rw2 ref_v := w
   o3 := rw2
   chck o3.f "w"
-#  testrv_mut rw2.g ".ww-w:w.x."
+#  testrv_mut rw2.g ".ww-w:w.x." # Call has ambiguous result type
 #  chck o3.f "ww"
 
   o4 := s
   chck o4.f "s"
-#  tests_mut o4.g ".ss-s:s.x."
+#  tests_mut o4.g ".ss-s:s.x." # Call has ambiguous result type
 #  chck o4.f "ss"
 
   exit
