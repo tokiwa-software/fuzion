@@ -474,13 +474,12 @@ class Clazz extends ANY implements Comparable<Clazz>
       }
     else
       {
-        var st1 = f.selfType();
-        var st2 = st1.asRef();
-        var st3 = st2.outer().feature().isRef()
-          ? st2
-          : st2.replaceGenericsAndOuter(st2.generics(), st2.outer().asThis());
-        var st4 = f.handDownAndApply(st3, _type);
-        return normalize2(replaceThisType(st4, new List<>()));
+        var t0 = f.selfType().asRef();
+        var t1 = t0.outer().feature().isRef()
+          ? t0
+          : t0.replaceGenericsAndOuter(t0.generics(), t0.outer().asThis());
+        var t2 = f.handDownAndApply(t1, _type);
+        return normalize2(replaceThisType(t2, new List<>()));
       }
   }
 
