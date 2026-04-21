@@ -83,6 +83,7 @@ is
   # amortized O(1) but worst case of O(n)
   #
   public remove_last option T =>
+    check_and_replace
     if length = 0
       nil
     else
