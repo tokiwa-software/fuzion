@@ -530,7 +530,6 @@ public class Intrinsics extends ANY
         });
 
     put("effect.type.abort0"     ,
-        "effect.type.default0"   ,
         FuzionConstants.EFFECT_INSTATE_NAME,
         "effect.type.is_instated0",
         "effect.type.replace0"   ,
@@ -551,8 +550,6 @@ public class Intrinsics extends ANY
                            CExpr.fprintfstderr("*** abort called for effect `%s` that is not instated!\n",
                                                CExpr.string(c._fuir.clazzName(ecl))),
                            CExpr.exit(1));
-              case "effect.type.default0"     -> CStmnt.iff(evi.not(), CStmnt.seq(effect_is_unit_type ? CExpr.UNIT : ev.assign(e),
-                                                                                  evi.assign(CIdent.TRUE )));
               case FuzionConstants.EFFECT_INSTATE_NAME ->
                 {
                   var call     = c._fuir.lookupCall(c._fuir.clazzActualGeneric(cl, 0));

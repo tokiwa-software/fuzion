@@ -636,7 +636,6 @@ public class Intrinsics extends ANY
     put("f64.as_f32"            , (executor, innerClazz) -> args -> new f32Value((float)                                     args.get(0).f64Value() ));
     put("f64.cast_to_u64"       , (executor, innerClazz) -> args -> new u64Value (    Double.doubleToLongBits(               args.get(0).f64Value())));
     put("effect.type.abort0"      ,
-        "effect.type.default0"    ,
         FuzionConstants.EFFECT_INSTATE_NAME,
         "effect.type.is_instated0",
         "effect.type.replace0"    ,
@@ -767,7 +766,6 @@ public class Intrinsics extends ANY
         switch (in)
           {
           case "effect.type.abort0"    : throw new Abort(ecl);
-          case "effect.type.default0"  : if (effects.get(ecl) == null) { check(fuir.clazzIsUnitType(ecl) || ev != Value.UNIT); effects.put(ecl, ev); } break;
           case FuzionConstants.EFFECT_INSTATE_NAME :
             {
               // save old and instate new effect value ev:

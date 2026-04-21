@@ -67,12 +67,24 @@
 #
 public cache(T type, f () -> T) T =>
 
-  # use wrapper type because we do not want to prevent
-  # the use of `state` for type T
-  cache_item(val T) is
+  cached_item T .env.get f
 
-  if !(state unit cache_item).is_instated
-    (state unit cache_item unit (cache_item f()) oneway_monad_mode.inst).defaultXXX
+# state effect to cache a value of type T
+#
+cached_item(T type, val option T) : effect is
 
-  state_get cache_item
-    .val
+  # default implementation of `cached_item` with `val` set to `nil`.
+  #
+  # this will get instated automatically at startup
+  #
+  public redef fixed type.default_value option (cached_item T) =>
+    cached_item T nil
+
+  # effect operation to get a cached value or calculate it in case
+  # that was not done yet.
+  #
+  get(f ()->T) T =>
+    val.or_else ()->
+      res := f()
+      cached_item res .replace
+      res

@@ -393,7 +393,6 @@ public class CFG extends ANY
     put("fuzion.sys.thread.set_policy"   , (cfg, cl) -> { } );
     put("fuzion.sys.thread.set_affinity" , (cfg, cl) -> { } );
 
-    put("effect.type.default0"           , (cfg, cl) -> { } );
     put(FuzionConstants.EFFECT_INSTATE_NAME , (cfg, cl) ->
         {
           var oc  = cfg._fuir.clazzActualGeneric(cl, 1);

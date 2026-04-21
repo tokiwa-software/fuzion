@@ -1435,7 +1435,6 @@ public abstract class FUIR extends IR
       switch(clazzOriginalName(cl))
       {
       case "effect.type.abort0"  ,
-           "effect.type.default0",
            FuzionConstants.EFFECT_INSTATE_NAME,
            "effect.type.is_instated0",
            "effect.type.replace0",
