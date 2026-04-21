@@ -262,7 +262,11 @@ public class Intrinsics extends ANY
             .boxedConstString(str, CExpr.call("strlen",new List<>(str)))
             .ret();
         });
-    put("fuzion.std.exit"      , (c,cl,outer,in) -> CExpr.call("exit", new List<>(A0)));
+    /*
+     * Why this is locked, from man 3 exit:
+     * The exit() function uses a global variable that is not protected, so it is not thread-safe.
+     */
+    put("fuzion.std.exit"      , (c,cl,outer,in) -> locked(CExpr.call("exit", new List<>(A0))));
     put("fuzion.sys.fatal_fault0"      , (c,cl,outer,in) ->
         CStmnt.seq(CExpr.fprintfstderr("*** failed %s: `%s`\n", new CExpr[] {A0.castTo("char *"),
                                                                              A1.castTo("char *")}),
