@@ -197,20 +197,20 @@ module:public Binary_Heap_Queue(
   down_heap(i i64) unit =>
     c := children i
 
-    _ := c.0.bind lc-> # left child
+    # first check if left or right is smaller
+    smaller :=
+      match c.0  # left child
+        lc i64 => match c.1  # right child
+                    rc i64 => less_or_equal elements[rc] elements[lc] ? rc : lc
+                    nil    => lc
+        nil    => option i64 nil
 
-      _ := c.1.bind rc-> # right child
-
-        # swap with right child only if it is less_or_equal than left child
-        if less_or_equal elements[rc] elements[lc] && !less_or_equal elements[i] elements[rc]
-            swap i rc
-            down_heap rc
-
-      # always check left child, if swap was done with right child
-      # this will terminate immediately
-      if !less_or_equal elements[i] elements[lc]
-        swap i lc
-        down_heap lc
+    # swap with smaller child, if current element is greater than it
+    match smaller
+      s i64 => if !less_or_equal elements[i] elements[s] then
+                 swap i s
+                 down_heap s
+      nil   => # terminate, no further child exists
 
 
   # add an element to the queue
@@ -388,7 +388,7 @@ module:public Binary_Heap_Queue(
   level(i i64) i64 =>
     (i.as_f64 + 1) .log 2 .as_i64
 
-    
+
   # check if the heap property still holds
   #
   public check_heap_property bool =>
