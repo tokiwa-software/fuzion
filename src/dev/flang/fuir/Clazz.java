@@ -475,11 +475,13 @@ class Clazz extends ANY implements Comparable<Clazz>
     else
       {
         var t0 = f.selfType().asRef();
-        var t1 = t0.outer().feature().isRef()
+        // we are dealing with a ref (`t0`) inside of a ref (`t0.outer()`)
+        // We have to use the outer-this type and use replaceThisType to find
+        // the correct t0.outer() within this clazz. see #5653 for an example
+        var t1 = t0.outer().isRef()
           ? t0
-          : t0.replaceGenericsAndOuter(t0.generics(), t0.outer().asThis());
-        var t2 = f.handDownAndApply(t1, _type);
-        return normalize2(replaceThisType(t2, new List<>()));
+          : t0.replaceGenericsAndOuter(t0.generics(), replaceThisType(t0.outer().asThis(), new List<>()));
+        return normalize2(f.handDownAndApply(t1, _type));
       }
   }
 

@@ -25,9 +25,9 @@ ex(d i32) is
 
   a is
     b is
-      dd => d
+      dd => ex.this.d
 
-  B ref : a is
+  B ref : ex.this.a is
 
   say B.b.dd
 
