@@ -1923,6 +1923,29 @@ there is no common super type of the two types (Types.t_ERROR)
           }
         result = tt;
       }
+    // we have a,b,c.this.type and tt is type parameter with constraint x.y.z: So replace it if
+    // any of `a.b.c`, `a.b`, or `a` inherits from this. During monomorphization, when the type
+    // parameter will be replaced, we will find that actual outer type that fits here.
+    //
+    // NYI: BUG: instead of returning `tt` here, we need to create a new type that refers to the n`th outer type
+    // of the actual type parameter, i.e., `Outer(1,tt)` in case `a.b` inherits from this, and `Outer(2,tt)` and in
+    // case `a` inherits from this.
+    else if (isThisType() && tt.isGenericArgument() && tt.genericArgument().constraint(context).whichOuterInheritsFrom(feature()) >= 0)
+      {
+        if (tt.genericArgument().constraint(context).whichOuterInheritsFrom(feature()) == 0)
+          {
+            if (foundRef != null && tt.isRef())
+              {
+                foundRef.accept(this, tt);
+              }
+            result = tt;
+          }
+        else
+          {
+            Errors.fatal("IMPLEMENTATION RESTRICTION: refering to (an outer) in a constraint is not yet supported.");
+            result = Types.t_ERROR;
+          }
+      }
     else
       {
         result = applyToGenericsAndOuter(g -> g.replace_this_type_by_actual_outer2(tt, foundRef, context));
@@ -1941,19 +1964,10 @@ there is no common super type of the two types (Types.t_ERROR)
   private boolean replacesThisType(AbstractType tt, Context context)
   {
     return
-      isThisTypeInCotype() && tt.isGenericArgument()   // we have a type parameter TT.THIS#TYPE, which is equal to TT
-      ||
-      isThisType() && (!tt.isGenericArgument() && tt.feature().inheritsFrom(feature())  // we have abc.this.type with tt inheriting from abc, so use tt
-                       ||
-                       // we have a,b,c.this.type and tt is type parameter with constraint x.y.z: So replace it if
-                       // any of `a.b.c`, `a.b`, or `a` inherits from this. During monomorphization, when the type
-                       // parameter will be replaced, we will find that actual outer type that fits here.
-                       //
-                       // NYI: CLEANUP: instead of returning `tt` here, we might create a new type that refers to the n`th outer type
-                       // of the actual type parameter, i.e., `Outer(1,tt)` in case `a.b` inherits from this, and `Outer(2,tt)` and in
-                       // case `a` inherits from this.
-                       tt.isGenericArgument() && tt.genericArgument().constraint(context).whichOuterInheritsFrom(feature()) >= 0
-                       );
+      // we have a type parameter TT.THIS#TYPE, which is equal to TT
+      isThisTypeInCotype() && tt.isGenericArgument() ||
+      // we have abc.this.type with tt inheriting from abc, so use tt
+      isThisType() && (!tt.isGenericArgument() && tt.feature().inheritsFrom(feature()));
   }
 
 
