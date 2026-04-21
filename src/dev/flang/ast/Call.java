@@ -1388,7 +1388,7 @@ public class Call extends AbstractCall
    * type of the called feature is not available, false if this is still
    * acceptable and the result type can be set later.
    */
-  protected AbstractType getActualResultType(Resolution res, Context context, boolean urgent)
+  protected AbstractType getResultType(Resolution res, Context context, boolean urgent)
   {
     if (PRECONDITIONS) require
       (res != null);
@@ -2701,7 +2701,7 @@ public class Call extends AbstractCall
                 setToErrorState();
               }
             inferFormalArgTypesFromActualArgs();
-            setActualResultType(res, context);
+            setResultType(res, context);
           }
         resolveTypesOfActuals(res, context);
         notifyInferred();
@@ -2815,9 +2815,9 @@ public class Call extends AbstractCall
   /**
    * set the actual result type of this call
    */
-  private void setActualResultType(Resolution res, Context context)
+  private void setResultType(Resolution res, Context context)
   {
-    var t = getActualResultType(res, context, false);
+    var t = getResultType(res, context, false);
 
     if (CHECKS) check
       (Errors.any() || t != Types.t_ERROR);
@@ -2828,7 +2828,7 @@ public class Call extends AbstractCall
       {
         _calledFeature.whenResolvedTypes(() ->
           {
-            var t2 = getActualResultType(res, context, true);
+            var t2 = getResultType(res, context, true);
             if (CHECKS) check
               (_type == null || t2.compareTo(_type) == 0,
               Errors.any() || t2 != Types.t_ERROR);
