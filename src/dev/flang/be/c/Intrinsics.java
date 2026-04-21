@@ -555,7 +555,7 @@ public class Intrinsics extends ANY
                            CExpr.fprintfstderr("*** abort called for effect `%s` that is not instated!\n",
                                                CExpr.string(c._fuir.clazzName(ecl))),
                            CExpr.exit(1));
-              case "effect.type.instate_at_singulariry0" ->
+              case "effect.type.instate_at_singularity0" ->
                 CStmnt.iff(evi.not(), CStmnt.seq(effect_is_unit_type ? CExpr.UNIT : ev.assign(e),
                                                  evi.assign(CIdent.TRUE)                         ));
 
