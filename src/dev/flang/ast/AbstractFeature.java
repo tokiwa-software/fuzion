@@ -2104,7 +2104,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
     var result = this;
     var o = outer();
-    if (!isThisTypeInCotype() && o.isCotype())
+    if (!isCoTypesThisType() && o.isCotype())
       {
         result = o.cotypeOrigin().typeArguments().get(typeParameterIndex()-1);
       }
@@ -2131,23 +2131,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
         result = o.cotype().typeArguments().get(typeParameterIndex()+1);
       }
     return result;
-  }
-
-
-  /**
-   * For a feature {@code f(A, B type)} the corresponding type feature has an implicit
-   * THIS#TYPE type parameter: {@code f.type(THIS#TYPE, A, B type)}.
-   *
-   * This checks if this Generic is this implicit type parameter.
-   */
-  boolean isThisTypeInCotype()
-  {
-    if (PRECONDITIONS) require
-      (isTypeParameter());
-
-    return state().atLeast(State.FINDING_DECLARATIONS)
-      && outer().isCotype()
-      && typeParameterIndex() == 0;
   }
 
 
