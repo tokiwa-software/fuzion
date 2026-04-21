@@ -1,5 +1,0 @@
-
-error 1: IMPLEMENTATION RESTRICTION: refering to (an outer) in a constraint is not yet supported.
-
-*** fatal errors encountered, stopping.
-one error.

@@ -36,7 +36,8 @@ public enum TypeKind {
   GenericArgument(0x00),
   ValueType(0x01),
   RefType(0x02),
-  ThisType(0x03);
+  ThisType(0x03),
+  OuterType(0x04);
 
   public int num;
 
@@ -51,6 +52,7 @@ public enum TypeKind {
       case 0x01 -> TypeKind.ValueType;
       case 0x02 -> TypeKind.RefType;
       case 0x03 -> TypeKind.ThisType;
+      case 0x04->  TypeKind.OuterType;
       default   -> throw new Error("Illegal TypeKind: " + num);
     };
   }

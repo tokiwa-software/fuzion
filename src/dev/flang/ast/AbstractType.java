@@ -119,6 +119,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public abstract TypeKind kind();
 
 
+  public int outerLevel() { throw new UnsupportedOperationException("only legal to call for OuterType"); }
+
+
 
   /*-----------------------------  methods  -----------------------------*/
 
@@ -175,7 +178,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
        allowForThisType || !isThisType());
 
     return switch (kind()) {
-      case GenericArgument -> throw new Error("asValue not legal for genericArgument");
+      case GenericArgument, OuterType -> throw new Error("asValue not legal for genericArgument");
       case ThisType -> allowForThisType
         ? ResolvedNormalType.create(
             feature().genericsAsActuals(),
@@ -204,7 +207,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
        !isGenericArgument());
 
     return switch (kind()) {
-      case GenericArgument -> throw new Error("asThis not legal for genericArgument");
+      case GenericArgument, OuterType -> throw new Error("asThis not legal for genericArgument");
       case ThisType -> this;
       case RefType, ValueType ->
         feature().isUniverse()
@@ -304,7 +307,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   public boolean isChoice()
   {
-    return !isGenericArgument() && feature().isChoice();
+    return (isNormalType() || isThisType()) && feature().isChoice();
   }
 
 
@@ -356,7 +359,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       switch (kind())
       {
         case RefType, ValueType        -> true;
-        case ThisType, GenericArgument -> false;
+        case ThisType, GenericArgument, OuterType -> false;
       };
   }
 
@@ -788,6 +791,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                                       &&
                                       !gt.constraintAssignableFrom(context, og);
               case ValueType, RefType, ThisType -> g.compareTo(og) != 0;
+              case OuterType -> throw new UnsupportedOperationException("unexpected");
             }
           )
           {
@@ -930,7 +934,12 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     YesNo result = _dependsOnGenerics;
     if (result == YesNo.dontKnow)
       {
-        if (isGenericArgument())
+        // NYI: CLEANUP: use switch(kind())
+        if (kind() == TypeKind.OuterType)
+          {
+            result = YesNo.no;
+          }
+        else if (isGenericArgument())
           {
             result = YesNo.yes;
           }
@@ -1289,7 +1298,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
               }
             yield result;
           }
-        case ThisType -> this;
+        case ThisType, OuterType -> this;
       };
   }
 
@@ -1942,8 +1951,11 @@ there is no common super type of the two types (Types.t_ERROR)
           }
         else
           {
-            Errors.fatal("IMPLEMENTATION RESTRICTION: refering to (an outer) in a constraint is not yet supported.");
-            result = Types.t_ERROR;
+            if (foundRef != null && tt.isRef())
+              {
+                foundRef.accept(this, tt);
+              }
+            result = new OuterType(tt.genericArgument(), tt.genericArgument().constraint(context).whichOuterInheritsFrom(feature()));
           }
       }
     else
@@ -2414,6 +2426,16 @@ there is no common super type of the two types (Types.t_ERROR)
       isThisType() ||
       !isGenericArgument() && (generics().stream().anyMatch(g -> g.containsThisType()) ||
                                outer() != null && outer().containsThisType());
+  }
+
+
+
+  public boolean containsOuterType()
+  {
+    return
+      kind() == TypeKind.OuterType ||
+      !isGenericArgument() && (generics().stream().anyMatch(g -> g.containsOuterType()) ||
+                               outer() != null && outer().containsOuterType());
   }
 
 

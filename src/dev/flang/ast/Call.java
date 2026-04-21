@@ -1600,7 +1600,7 @@ public class Call extends AbstractCall
               tg.addAll(t.generics());            // followed by the generics
               yield tf.selfType().applyTypePars(tf, tg);
             }
-          case ThisType -> t;
+          case ThisType, OuterType -> t;
           // See AstErrors.constraintMustNotBeGenericArgument
           case GenericArgument -> t;
         };
