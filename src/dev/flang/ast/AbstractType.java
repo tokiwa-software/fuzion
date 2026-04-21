@@ -1938,7 +1938,7 @@ there is no common super type of the two types (Types.t_ERROR)
               {
                 foundRef.accept(this, tt);
               }
-            result = tt;
+            result = tt.genericArgument().asGenericType();
           }
         else
           {
