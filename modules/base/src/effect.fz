@@ -63,6 +63,12 @@ public effect is
   public type.from_env effect.this => intrinsic
 
 
+  # at the bing_bang_singularity, set the effect of type `efffect.this`
+  # to the given effect value `e`.
+  #
+  type.instate_at_singularity0(e effect.this) unit => intrinsic
+
+
   # instate e for effect type effect.this in the current environment.
   #
   # execute code provided by `code` while this effect `e` is instated in the
@@ -124,7 +130,7 @@ public effect is
     effect_types.type_foldf unit T,e->
       if T : effect then
         match T.default_value
-          v T => T.replace0 v
+          v T => T.instate_at_singularity0 v
           nil =>
 
 
@@ -543,7 +549,7 @@ public effect_wormhole is
                             else nil
       redef re_instate =>
         match v
-          ev T => T.remove0; T.replace0 ev
+          ev T => T.replace0 ev
           nil  => T.remove0
 
     # get original effect values
@@ -558,7 +564,6 @@ public effect_wormhole is
     # teleport effect values
     effect_values.for_each (.apply_to unit T,_,v->
                               if T : effect then
-                                T.remove0
                                 T.replace0 v)
 
     # run code using teleported effect environment

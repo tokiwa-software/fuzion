@@ -533,11 +533,12 @@ public class Intrinsics extends ANY
                       .ret();
         });
 
-    put("effect.type.abort0"     ,
-        FuzionConstants.EFFECT_INSTATE_NAME,
-        "effect.type.is_instated0",
-        "effect.type.replace0"   ,
-        "effect.type.remove0"    , (c,cl,outer,in) ->
+    put("effect.type.abort0"                 ,
+        "effect.type.instate_at_singularity0",
+        FuzionConstants.EFFECT_INSTATE_NAME  ,
+        "effect.type.is_instated0"           ,
+        "effect.type.replace0"               ,
+        "effect.type.remove0"                , (c,cl,outer,in) ->
         {
           var ecl = c._fuir.effectTypeFromIntrinsic(cl);
           var eid = c._fuir.clazzId2num(ecl) + 1; // must be != 0 since setjmp uses 0 for the normal return case, so we add `1`:
@@ -554,6 +555,10 @@ public class Intrinsics extends ANY
                            CExpr.fprintfstderr("*** abort called for effect `%s` that is not instated!\n",
                                                CExpr.string(c._fuir.clazzName(ecl))),
                            CExpr.exit(1));
+              case "effect.type.instate_at_singulariry0" ->
+                CStmnt.iff(evi.not(), CStmnt.seq(effect_is_unit_type ? CExpr.UNIT : ev.assign(e),
+                                                 evi.assign(CIdent.TRUE)                         ));
+
               case FuzionConstants.EFFECT_INSTATE_NAME ->
                 {
                   var call     = c._fuir.lookupCall(c._fuir.clazzActualGeneric(cl, 0));

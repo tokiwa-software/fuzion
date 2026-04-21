@@ -443,13 +443,17 @@ public class Runtime extends ANY
   }
 
 
-  public static void effect_default(int id, AnyI instance)
+  /**
+   * Helper for instrinsic for `effect.instate_at_singularity0` to instate
+   * an effect at startup.
+   */
+  public static void effect_instate_at_singularity(int id, AnyI instance)
   {
     var t = currentThread();
-    if (t.effect_load(id) == null)
-      {
-        t.effect_store(id, instance);
-      }
+    if (CHECKS) check
+     (t.effect_load(id) == null);
+
+    t.effect_store(id, instance);
   }
 
 

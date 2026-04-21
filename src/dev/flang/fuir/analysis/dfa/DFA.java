@@ -2161,6 +2161,32 @@ public class DFA extends ANY
           // cl.removeEffect(ecl);
           return Value.UNIT;
         });
+    put("effect.type.instate_at_singularity0", cl ->
+        {
+          var ecl = fuir(cl).effectTypeFromIntrinsic(cl.calledClazz());
+          var new_e = cl._args.get(0).value();
+          if (cl._dfa._real)
+            {
+              var old_e = cl._dfa._defaultEffects.get(ecl);
+              if (old_e == null)
+                {
+                  cl._dfa._defaultEffects.put(ecl, new_e);
+                  cl._dfa._defaultEffectContexts.put(ecl, cl);
+                  cl._dfa.wasChanged(() -> "effect.instate_at_singularity0 called: " + fuir(cl).clazzName(cl.calledClazz()));
+                }
+            }
+          else
+            {
+              var oev = cl._dfa._preEffectValues.get(ecl);
+              var ev = oev == null ? new_e : oev.join(cl._dfa, new_e, ecl);
+              if (oev != ev)
+                {
+                  cl._dfa._preEffectValues.put(ecl, ev);
+                  cl._dfa.wasChanged(() -> "effect.instate_at_singularity0 called: " + fuir(cl).clazzName(cl.calledClazz()));
+                }
+            }
+          return Value.UNIT;
+        });
     put(EFFECT_INSTATE_NAME                 , cl ->
         {
           var fuir = fuir(cl);

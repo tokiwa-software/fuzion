@@ -3127,8 +3127,9 @@ public class GeneratingFUIR extends FUIR
     if (switch (clazzOriginalName(cl))
           {
           case FuzionConstants.EFFECT_INSTATE_NAME,
-               "effect.type.from_env"              -> true;
-          default                                  -> false;
+               "effect.type.from_env",
+               "effect.type.instate_at_singularity0" -> true;
+          default                                    -> false;
           })
       {
         recordEffectUsage(res);
