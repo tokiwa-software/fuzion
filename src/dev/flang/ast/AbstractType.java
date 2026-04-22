@@ -2430,7 +2430,7 @@ there is no common super type of the two types (Types.t_ERROR)
   public boolean contains(Predicate<AbstractType> p)
   {
     return p.test(this) ||
-      !isGenericArgument() && (generics().stream().anyMatch(g -> g.contains(p)) ||
+      !isGenericArgument() && (isNormalType() && generics().stream().anyMatch(g -> g.contains(p)) ||
                                outer() != null && outer().contains(p));
   }
 
