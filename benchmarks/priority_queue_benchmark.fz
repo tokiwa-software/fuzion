@@ -176,7 +176,47 @@ priority_queue_benchmark =>
 
 
 
+  # check if make heap has linear time complexity
+  #
+  # seems to be dominated by some constant overhead up to 1E4
+  # linear behavior shows from 1E5
+  #
+  make_heap_linear_time(test_lengths Sequence i32) unit =>
+    say """
+      \n********************************************************************************
+      *{"Check if make heap has linear time complexity".pad_center 78}*
+      ********************************************************************************
+      """
+
+    test(elements array T, elem_desc String) =>
+
+      sample_size := 20
+
+      hist_mk_heap := time.histogram.new "Make heap with {elements.length} $elem_desc elements" nil 10 0
+
+      for _ in 1..sample_size do
+        m : mutate is
+        m ! ()->
+          hist_mk_heap.add (time.stopwatch ()->(q := container.Binary_Heap_Queue m T .min_first_from elements; _:=q))
+
+      say """
+          {hist_mk_heap.average.times (1.0 / elements.length.as_f64) .as_string_pad} \
+          per element for {elements.length.as_string.pad_left (test_lengths.last.or_panic.as_string.byte_count)} \
+          $elem_desc elements. Total time was {hist_mk_heap.average.as_string_pad}"""
+
+
+    say "Random:\n"
+    simple_random 904644503766293287 ()->
+      for len in test_lengths do
+        test (array i32 .new len _->random.next_i32) "random"
+
+
+
+
+
+
 
   random_enqueue_dequeue   [1E3, 1E4, 1E5, 1E6, 1E7, 1E8]
   random_log_performance   [1E2, 1E3, 1E4, 1E5, 1E6, 1E7, 1E8]
   make_heap_vs_enqueue_all [1E2, 1E3, 1E4, 1E5, 1E6]
+  make_heap_linear_time    [1E1, 1E2, 1E3, 1E4, 1E5, 1E6, 1E7]
