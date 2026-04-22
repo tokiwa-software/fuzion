@@ -28,12 +28,6 @@
 #
 private:module atomic_access : effect is
 
-  # NYI: CLEANUP: Make sure this does not end up being a unit type value since that
-  # currently breaks the JVM backend:
-  #
-  x := 23
-  y := x + x
-  if y > 1000 then say x
 
   # default implementation of atomic_access
   #
