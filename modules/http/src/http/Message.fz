@@ -213,8 +213,8 @@ body_reader(LM type : mutate, reader_size i32, _ unit) : io.Read_Handler is
               if remaining.get > 0
                 error """
                   Connection closed before complete content was read.
-                  content-length: {reader_size} bytes"
-                  remaining bytes to read: {remaining.get} bytes"
+                  Content-Length: {reader_size} bytes
+                  remaining bytes to read: {remaining.get} bytes
                   """
               else
                 io.end_of_file
