@@ -269,6 +269,16 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   }
 
 
+  /**
+   * This returns feature() unless this is an OuterType
+   * Then it returns the feature in the constraint that is referenced
+   * by the OuterType.
+   */
+  public AbstractFeature effectiveFeature()
+  {
+    return feature();
+  }
+
 
   /**
    * resolve this type. This is only needed for ast.Type, for fe.LibraryType

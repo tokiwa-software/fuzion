@@ -53,5 +53,23 @@ public class OuterType extends LibraryType {
     return lvl;
   }
 
+  /**
+   * This returns feature() unless this is an OuterType
+   * Then it returns the feature in the constraint that is referenced
+   * by the OuterType.
+   */
+  @Override
+  public AbstractFeature effectiveFeature()
+  {
+    var l = outerLevel();
+    var t = feature().constraint();
+    while (l>0)
+      {
+        t = t.outer();
+        l--;
+      }
+    return t.feature();
+  }
+
 
 }

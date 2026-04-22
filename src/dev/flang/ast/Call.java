@@ -581,7 +581,7 @@ public class Call extends AbstractCall
           }
         else if (tt != null)
           {
-            result = tt.feature();
+            result = tt.effectiveFeature();
           }
       }
     else
