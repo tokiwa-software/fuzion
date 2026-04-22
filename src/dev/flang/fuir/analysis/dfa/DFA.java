@@ -2131,7 +2131,7 @@ public class DFA extends ANY
     put("fuzion.sys.thread.set_policy"   , cl -> genericNumResult(cl));
     put("fuzion.sys.thread.set_affinity" , cl -> genericNumResult(cl));
 
-    put("effect.type.replace0"              , cl ->
+    put("effect.type.set0"               , cl ->
         {
           var ecl = fuir(cl).effectTypeFromIntrinsic(cl.calledClazz());
           var new_e = cl._args.get(0).value();
@@ -2148,7 +2148,7 @@ public class DFA extends ANY
               if (oev != ev)
                 {
                   cl._dfa._preEffectValues.put(ecl, ev);
-                  cl._dfa.wasChanged(() -> "effect.type.replace0 called: " + fuir(cl).clazzName(cl.calledClazz()));
+                  cl._dfa.wasChanged(() -> "effect.type.set0 called: " + fuir(cl).clazzName(cl.calledClazz()));
                 }
             }
 

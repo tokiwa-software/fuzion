@@ -537,7 +537,7 @@ public class Intrinsics extends ANY
         "effect.type.instate_at_singularity0",
         FuzionConstants.EFFECT_INSTATE_NAME  ,
         "effect.type.is_instated0"           ,
-        "effect.type.replace0"               ,
+        "effect.type.set0"                   ,
         "effect.type.remove0"                , (c,cl,outer,in) ->
         {
           var ecl = c._fuir.effectTypeFromIntrinsic(cl);
@@ -627,7 +627,7 @@ public class Intrinsics extends ANY
                     }
                 }
               case "effect.type.is_instated0" -> CStmnt.seq(CStmnt.iff(evi, c._names.FZ_TRUE.ret()), c._names.FZ_FALSE.ret());
-              case "effect.type.replace0"     -> CStmnt.seq(evi.assign(CIdent.TRUE),
+              case "effect.type.set0"         -> CStmnt.seq(evi.assign(CIdent.TRUE),
                                                             c._fuir.clazzIsUnitType(ecl) ? CExpr.UNIT : ev.assign(e));
               case "effect.type.remove0"      -> evi.assign(CIdent.FALSE);
               default -> throw new Error("unexpected intrinsic '" + in + "'.");

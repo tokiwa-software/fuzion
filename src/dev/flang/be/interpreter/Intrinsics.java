@@ -639,7 +639,7 @@ public class Intrinsics extends ANY
         "effect.type.instate_at_singularity0",
         FuzionConstants.EFFECT_INSTATE_NAME  ,
         "effect.type.is_instated0"           ,
-        "effect.type.replace0"               ,
+        "effect.type.set0"                   ,
         "effect.type.remove0"                , (executor, innerClazz) -> effect(executor, innerClazz));
 
     put("effect.type.from_env",
@@ -812,7 +812,8 @@ public class Intrinsics extends ANY
             }
             break;
           case "effect.type.is_instated0": return new boolValue(effects.get(ecl) != null /* NOTE not containsKey since ecl may map to null! */ );
-          case "effect.type.replace0"    : check(effects.get(ecl) != null, fuir.clazzIsUnitType(ecl) || ev != Value.UNIT); effects.put(ecl, ev);   break;
+          case "effect.type.set0"        : check(fuir.clazzIsUnitType(ecl) || ev != Value.UNIT);
+                                           effects.put(ecl, ev);   break;
           case "effect.type.remove0"     : effects.put(ecl, null); break;
           default: throw new Error("unexpected effect intrinsic '"+in+"'");
           }

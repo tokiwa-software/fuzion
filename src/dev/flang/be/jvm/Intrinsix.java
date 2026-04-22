@@ -852,7 +852,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(Expr.UNIT, result);
         });
 
-   put("effect.type.replace0",
+   put("effect.type.set0",
         (jvm, si, cc, tvalue, args) ->
         {
           var ecl = jvm._fuir.effectTypeFromIntrinsic(cc);
@@ -866,7 +866,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
                 .iconst(eid)
                 .andThen(args.get(0))
                 .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
-                                           "effect_replace",
+                                           "effect_set",
                                            "(I" + Names.ANYI_DESCR + ")V",
                                            ClassFileConstants.PrimitiveType.type_void));
             }

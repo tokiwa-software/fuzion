@@ -92,9 +92,11 @@ public effect is
                 def  _ : Function unit effect.this) unit => intrinsic
 
 
-  # replace existing effect of type `E` with the new effect value `e`
+  # set effect of type `E` to effect value `e`.  This can be used to
+  # replace existing effect value or to initially set the value
+  # (e.g., during wormhole.teleport).
   #
-  type.replace0(e effect.this) unit => intrinsic
+  type.set0(e effect.this) unit => intrinsic
 
 
   # Intrinsic version of abort. For all surrounding instated effects,
@@ -299,7 +301,7 @@ public effect is
   pre
     safety: effect.this.is_instated
   =>
-    replace0 e
+    set0 e
 
 
   # replace existing effect of type `effect.this` by the new effect value `effect.this`.
@@ -330,7 +332,7 @@ public effect is
     safety: effect.this.is_instated
     safety: effect.this.env.abortable
   =>
-    replace0 e
+    set0 e
     abort0
 
 
@@ -549,7 +551,7 @@ public effect_wormhole is
                             else nil
       redef re_instate =>
         match v
-          ev T => T.replace0 ev
+          ev T => T.set0 ev
           nil  => T.remove0
 
     # get original effect values
@@ -564,7 +566,7 @@ public effect_wormhole is
     # teleport effect values
     effect_values.for_each (.apply_to unit T,_,v->
                               if T : effect then
-                                T.replace0 v)
+                                T.set0 v)
 
     # run code using teleported effect environment
     res := code()

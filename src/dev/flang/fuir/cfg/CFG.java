@@ -403,7 +403,7 @@ public class CFG extends ANY
               cfg.addToCallGraph(cl, call);
             }
         });
-    put("effect.type.replace0"              , (cfg, cl) -> { } );
+    put("effect.type.set0"                  , (cfg, cl) -> { } );
     put("effect.type.remove0"               , (cfg, cl) -> { } );
     put("effect.type.abort0"                , (cfg, cl) -> { } );
     put("effect.type.is_instated0"          , (cfg, cl) -> { } );
