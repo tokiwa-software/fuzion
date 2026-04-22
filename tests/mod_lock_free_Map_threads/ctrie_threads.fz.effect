@@ -1,9 +1,5 @@
-((list i32).group_by#2 i32).lm
-(container.sorted_array i32).sort#2.m
 concur.atomic_access
 concur.threads
-container.expanding (tuple i32 (Sequence i32))
-container.expanding i32
 envir.args
 fuzion.runtime.check_fault
 fuzion.runtime.contract_fault
