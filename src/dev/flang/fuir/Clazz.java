@@ -308,7 +308,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     if (PRECONDITIONS) require
       (!type.dependsOnGenericsNoOuter(),
        !type.containsThisType(),
-       !type.containsLevelType(),
+       !type.contains(a -> a.kind() == TypeKind.LevelType),
        // NYI: UNDER DEVELOPMENT: currently not possible because of type_as_value and `Type.infix :`
        //  !type.feature().isTypeParameter(),
        type.feature().resultType().isOpenGeneric() == (select >= 0),

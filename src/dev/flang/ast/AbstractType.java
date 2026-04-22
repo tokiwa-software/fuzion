@@ -2438,22 +2438,19 @@ there is no common super type of the two types (Types.t_ERROR)
    */
   public boolean containsThisType()
   {
-    return
-      isThisType() ||
-      !isGenericArgument() && (generics().stream().anyMatch(g -> g.containsThisType()) ||
-                               outer() != null && outer().containsThisType());
+    return contains(t -> t.isThisType());
   }
 
 
-
-  public boolean containsLevelType()
+  /**
+   * Check if for this, outers or any generics predicate p results in true.
+   */
+  public boolean contains(Predicate<AbstractType> p)
   {
-    return
-      kind() == TypeKind.LevelType ||
-      !isGenericArgument() && (generics().stream().anyMatch(g -> g.containsLevelType()) ||
-                               outer() != null && outer().containsLevelType());
+    return p.test(this) ||
+      !isGenericArgument() && (generics().stream().anyMatch(g -> g.contains(p)) ||
+                               outer() != null && outer().contains(p));
   }
-
 
 
   /**
