@@ -1139,8 +1139,9 @@ class Clazz extends ANY implements Comparable<Clazz>
           }
         else
           {
+            // e.g., {@code (Types.get (array f64)).T} -> {@code array f64}
             t = _type.actualType(t);
-            t = replaceLevelTypes(t);  // e.g., {@code (Types.get (array f64)).T} -> {@code array f64}
+            t = replaceLevelTypes(t);
 
 /*
   We have the following possibilities when calling a feature {@code f} declared in do {@code on}
