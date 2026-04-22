@@ -51,6 +51,12 @@ module thread is
   module set_policy(thread_id Thread, policy, priority i32) i32 => intrinsic
 
 
-  # intrinsic to pin a thread to a specific CPU
+  # intrinsic to pin a thread to the CPUs given by the array
   #
-  module set_affinity(thread_id Thread, core i32) i32 => intrinsic
+  module set_affinity0(thread_id Thread, cores fuzion.sys.internal_array u64) i32 => intrinsic
+
+
+  # pin a thread to the CPUs given in an array
+  #
+  module set_affinity(thread_id Thread, cores array u64) i32 =>
+    set_affinity0 thread_id cores.internal_array

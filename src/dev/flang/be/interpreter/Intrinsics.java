@@ -476,7 +476,7 @@ public class Intrinsics extends ANY
         {
           return new i32Value(38 /* ENOSYS - Function not implemented */);
         });
-    put("fuzion.sys.thread.set_affinity", (executor, innerClazz) -> args ->
+    put("fuzion.sys.thread.set_affinity0", (executor, innerClazz) -> args ->
         {
           return new i32Value(38 /* ENOSYS - Function not implemented */);
         });
