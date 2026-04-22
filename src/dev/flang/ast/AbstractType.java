@@ -114,12 +114,18 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * The mode of the type: GenericArgument, ThisType, RefType or ValueType.
+   * The mode of the type: GenericArgument, ThisType, RefType, ValueType or LevelType.
    */
   public abstract TypeKind kind();
 
 
-  public int outerLevel() { throw new UnsupportedOperationException("only legal to call for OuterType"); }
+  /**
+   * The number of steps we have to go outside in a
+   * type parameter constraint.
+   *
+   * Requires that typeKind() == LevelType.
+   */
+  public int outerLevel() { throw new UnsupportedOperationException("only legal to call for LevelType"); }
 
 
 
@@ -178,7 +184,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
        allowForThisType || !isThisType());
 
     return switch (kind()) {
-      case GenericArgument, OuterType -> throw new Error("asValue not legal for genericArgument");
+      case GenericArgument, LevelType -> throw new Error("asValue not legal for genericArgument");
       case ThisType -> allowForThisType
         ? ResolvedNormalType.create(
             feature().genericsAsActuals(),
@@ -207,7 +213,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
        !isGenericArgument());
 
     return switch (kind()) {
-      case GenericArgument, OuterType -> throw new Error("asThis not legal for genericArgument");
+      case GenericArgument, LevelType -> throw new Error("asThis not legal for genericArgument");
       case ThisType -> this;
       case RefType, ValueType ->
         feature().isUniverse()
@@ -270,9 +276,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * This returns feature() unless this is an OuterType
+   * This returns feature() unless this is an LevelType
    * Then it returns the feature in the constraint that is referenced
-   * by the OuterType.
+   * by the LevelType.
    */
   public AbstractFeature effectiveFeature()
   {
@@ -369,7 +375,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       switch (kind())
       {
         case RefType, ValueType        -> true;
-        case ThisType, GenericArgument, OuterType -> false;
+        case ThisType, GenericArgument, LevelType -> false;
       };
   }
 
@@ -801,7 +807,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                                       &&
                                       !gt.constraintAssignableFrom(context, og);
               case ValueType, RefType, ThisType -> g.compareTo(og) != 0;
-              case OuterType -> throw new UnsupportedOperationException("unexpected");
+              case LevelType -> throw new UnsupportedOperationException("unexpected");
             }
           )
           {
@@ -945,7 +951,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     if (result == YesNo.dontKnow)
       {
         // NYI: CLEANUP: use switch(kind())
-        if (kind() == TypeKind.OuterType)
+        if (kind() == TypeKind.LevelType)
           {
             result = YesNo.no;
           }
@@ -1308,7 +1314,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
               }
             yield result;
           }
-        case ThisType, OuterType -> this;
+        case ThisType, LevelType -> this;
       };
   }
 
@@ -1965,7 +1971,7 @@ there is no common super type of the two types (Types.t_ERROR)
               {
                 foundRef.accept(this, tt);
               }
-            result = new OuterType(tt.genericArgument(), tt.genericArgument().constraint(context).whichOuterInheritsFrom(feature()));
+            result = new LevelType(tt.genericArgument(), tt.genericArgument().constraint(context).whichOuterInheritsFrom(feature()));
           }
       }
     else
@@ -2440,12 +2446,12 @@ there is no common super type of the two types (Types.t_ERROR)
 
 
 
-  public boolean containsOuterType()
+  public boolean containsLevelType()
   {
     return
-      kind() == TypeKind.OuterType ||
-      !isGenericArgument() && (generics().stream().anyMatch(g -> g.containsOuterType()) ||
-                               outer() != null && outer().containsOuterType());
+      kind() == TypeKind.LevelType ||
+      !isGenericArgument() && (generics().stream().anyMatch(g -> g.containsLevelType()) ||
+                               outer() != null && outer().containsLevelType());
   }
 
 

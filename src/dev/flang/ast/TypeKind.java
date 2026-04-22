@@ -29,7 +29,7 @@ package dev.flang.ast;
 
 /**
  * For specifying the kind of a type.
- * May be one of "GenericArgument", "ValueType", "RefType" or "ThisType".
+ * May be one of "GenericArgument", "ValueType", "RefType", "ThisType" or "LevelType".
  */
 public enum TypeKind {
 
@@ -37,7 +37,7 @@ public enum TypeKind {
   ValueType(0x01),
   RefType(0x02),
   ThisType(0x03),
-  OuterType(0x04);
+  LevelType(0x04);
 
   public int num;
 
@@ -52,7 +52,7 @@ public enum TypeKind {
       case 0x01 -> TypeKind.ValueType;
       case 0x02 -> TypeKind.RefType;
       case 0x03 -> TypeKind.ThisType;
-      case 0x04->  TypeKind.OuterType;
+      case 0x04->  TypeKind.LevelType;
       default   -> throw new Error("Illegal TypeKind: " + num);
     };
   }

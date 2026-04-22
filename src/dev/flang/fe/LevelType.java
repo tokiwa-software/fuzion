@@ -1,19 +1,21 @@
-package dev.flang.ast;
+package dev.flang.fe;
 
+import dev.flang.ast.AbstractCall;
+import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.AbstractType;
+import dev.flang.ast.TypeKind;
 import dev.flang.util.List;
 
-public class OuterType extends ResolvedType {
+public class LevelType extends LibraryType {
 
   private final AbstractFeature constraint;
-  private final int level;
+  private final int lvl;
 
-  public OuterType(AbstractFeature constraint, int level)
+  public LevelType(LibraryModule libraryModule, int at, AbstractFeature constraint, int lvl)
   {
-    if (PRECONDITIONS) require
-      (constraint.isTypeParameter());
-
+    super(libraryModule, at);
     this.constraint = constraint;
-    this.level = level;
+    this.lvl = lvl;
   }
 
   @Override
@@ -31,25 +33,30 @@ public class OuterType extends ResolvedType {
   @Override
   public AbstractType outer()
   {
-    return Types.resolved.universe.selfType();
+    var universe = constraint;
+    while (!universe.isUniverse())
+      {
+        universe = universe.outer();
+      }
+    return universe.selfType();
   }
 
   @Override
   public TypeKind kind()
   {
-    return TypeKind.OuterType;
+    return TypeKind.LevelType;
   }
 
   @Override
   public int outerLevel()
   {
-    return level;
+    return lvl;
   }
 
   /**
-   * This returns feature() unless this is an OuterType
+   * This returns feature() unless this is an LevelType
    * Then it returns the feature in the constraint that is referenced
-   * by the OuterType.
+   * by the LevelType.
    */
   @Override
   public AbstractFeature effectiveFeature()
@@ -63,5 +70,6 @@ public class OuterType extends ResolvedType {
       }
     return t.feature();
   }
+
 
 }

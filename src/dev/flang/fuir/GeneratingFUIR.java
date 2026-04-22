@@ -2493,7 +2493,7 @@ public class GeneratingFUIR extends FUIR
     var cf      = c.calledFeature();
     var dynamic = c.isDynamic() && tclazz.isRef();
     var needsCode = !dynamic || explicitTarget != null;
-    var typePars = outerClazz.actualGenerics(c.actualTypeParameters(), inh).map(g -> outerClazz.replaceOuterType(g));
+    var typePars = outerClazz.actualGenerics(c.actualTypeParameters(), inh).map(g -> outerClazz.replaceLevelTypes(g));
     if (!tclazz.isVoidType())
       {
         innerClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars), c.select(), c.isInheritanceCall());

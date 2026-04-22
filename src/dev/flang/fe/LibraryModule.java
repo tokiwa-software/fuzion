@@ -553,8 +553,9 @@ public class LibraryModule extends Module implements MirModule
             var tk = TypeKind.fromInt(Integer.min(4, typeValRefOrThis(at)));
             result = tk == TypeKind.ThisType
               ? new ThisType(this, at, feature)
-              : tk == TypeKind.OuterType
-              ? new OuterType(this, at, feature, typeValRefOrThis(at)-4)
+              // tricky, outerLevel was added to the kind
+              : tk == TypeKind.LevelType
+              ? new LevelType(this, at, feature, typeValRefOrThis(at)-4)
               : new NormalType(this, at, feature, tk, generics, outer);
           }
         _libraryTypes.put(at, result);
