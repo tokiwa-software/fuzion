@@ -2602,7 +2602,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
 
     if (POSTCONDITIONS) ensure
       (Errors.any() || result != Types.t_ERROR,
-       Errors.any() || !result.containsUndefined());
+       Errors.any() || !result.containsArtificialType());
 
     return result;
   }

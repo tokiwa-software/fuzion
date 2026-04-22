@@ -1442,7 +1442,7 @@ public class Call extends AbstractCall
       }
 
     // see test #5391 when this might happen
-    return result == null || result == Types.t_ERROR || !result.containsUndefined()
+    return result == null || result == Types.t_ERROR || !result.containsArtificialType()
       ? result
       : null;
   }
@@ -2032,7 +2032,7 @@ public class Call extends AbstractCall
                                    `F` cannot be inferred such that `ac` is
                                    `UNDEFINED`, which should not be propagated.
                                  */
-                                if (!ac.containsUndefined())
+                                if (!ac.containsArtificialType())
                                   {
                                     actual = actual.propagateExpectedType(res, context, ac,
                                                                           () -> "formal argument type in call to " + AstErrors.s(_calledFeature));
@@ -2246,7 +2246,7 @@ public class Call extends AbstractCall
             var gt = _generics.get(i);
             if (!conflict[i] && gt != Types.t_ERROR && changingGenericAllowed(i))
               {
-                var nt = actualType.containsUndefined() ? gt :
+                var nt = actualType.containsArtificialType() ? gt :
                          gt == Types.t_UNDEFINED        ? actualType
                                                         : gt.commonSupertype(actualType, context);
                 conflict[i] = nt == Types.t_ERROR;
@@ -2407,7 +2407,7 @@ public class Call extends AbstractCall
         if (g != null)
           {
             var at = actualArgType(res, context, formalType, frml);
-            if (!at.containsUndefined(g.typeParameterIndex()))
+            if (!at.containsArtificialType(g.typeParameterIndex()))
               {
                 var lambdaResultType = formalType.lambdaTargetResultType(res);
                 result = inferGenericLambdaResult(res, context, al, pos, conflict, foundAt, lambdaResultType, new List<>(lambdaResultType), at);
@@ -2541,7 +2541,7 @@ public class Call extends AbstractCall
       _calledFeature != null                                       &&
       !_calledFeature.typeArguments().isEmpty()                    &&
       (_generics == NO_GENERICS                                ||
-       _generics.stream().anyMatch(g -> g.containsUndefined()) ||
+       _generics.stream().anyMatch(g -> g.containsArtificialType()) ||
        _generics.size() < _calledFeature.typeArguments().size()  );
   }
 
@@ -3108,7 +3108,7 @@ public class Call extends AbstractCall
   private Expr createIf(Resolution res, Context context, Expr true_, Expr false_, AbstractType rt)
   {
     var result = Match.createIf(pos(), _target, true_, false_, false);
-    if (!rt.containsUndefined())
+    if (!rt.containsArtificialType())
       {
         result = result.propagateExpectedType(res, context, rt, null);;
       }
@@ -3207,7 +3207,7 @@ public class Call extends AbstractCall
       (// NYI: CLEANUP: #5866 breaks this precondition, but there are also other cases where
        // the actuals still contain t_UNDEFINED that still need to be checked.
        true ||
-       !actualTypeParameters().stream().anyMatch(atp -> atp.containsUndefined()));
+       !actualTypeParameters().stream().anyMatch(atp -> atp.containsArtificialType()));
 
     for (var r : _whenInferredTypeParameters)
       {

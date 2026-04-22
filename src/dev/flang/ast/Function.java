@@ -286,7 +286,7 @@ public class Function extends AbstractLambda
     else if (!t.isLambdaTarget(res))
       {
         // suppress error for t_ERROR and t_UNDEFINED, but only if other error was already reported
-        if (!t.containsUndefined() || !Errors.any())
+        if (!t.containsArtificialType() || !Errors.any())
           {
             AstErrors.expectedFunctionTypeForLambda(pos(), t, from);
           }

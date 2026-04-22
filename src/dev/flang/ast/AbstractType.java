@@ -445,7 +445,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * Types.t_ERROR}, or {@code Types.t_FORWARD_CYCLIC} except for type parameter
    * #`except` being {@code Types.t_UNDEFINED}.
    */
-  public boolean containsUndefined(int except)
+  public boolean containsArtificialType(int except)
   {
     if (PRECONDITIONS) require
       (except == -1 || except >= 0 && except <= generics().size());
@@ -476,9 +476,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @return true if this depends on {@code Types.t_UNDEFINED}.
    */
-  public boolean containsUndefined()
+  public boolean containsArtificialType()
   {
-    return containsUndefined(-1);
+    return containsArtificialType(-1);
   }
 
   /**

@@ -45,7 +45,7 @@ public class TypeTool extends ANY
   {
 
     if (containsError(type)
-      || type.containsUndefined())
+      || type.containsArtificialType())
       {
         return baseName(type);
       }
@@ -68,7 +68,7 @@ public class TypeTool extends ANY
   private static String labelNoErrorOrUndefined(AbstractType type)
   {
     if (PRECONDITIONS)
-      require(!containsError(type), !type.containsUndefined());
+      require(!containsError(type), !type.containsArtificialType());
 
     if (type.isGenericArgument())
       {
