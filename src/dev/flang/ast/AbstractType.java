@@ -416,25 +416,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   public boolean containsError()
   {
-    boolean result = false;
-    if (this == Types.t_ERROR)
-      {
-        result = true;
-      }
-    else if (isNormalType())
-      {
-        for (var t: generics())
-          {
-            if (CHECKS) check
-              (Errors.any() || t != null);
-            result = result || t == null || t.containsError();
-          }
-      }
-
-    if (POSTCONDITIONS) ensure
-      (!result || Errors.any());
-
-    return result;
+    return contains(t -> t == Types.t_ERROR);
   }
 
 
