@@ -390,6 +390,8 @@ class Clazz extends ANY implements Comparable<Clazz>
     // to avoid adding clazzes one lookupDone is set:
     //
     // var ignore = resultClazz();
+    if (CHECKS) check
+      (_outer ==  null || _type.outer().compareTo(_outer._type) == 0);
   }
 
 
