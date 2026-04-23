@@ -26,9 +26,7 @@
 #
 module:public Mutable_Array3
   (T type,
-
    E type : mutate) ref
-
 is
 
 
@@ -87,11 +85,11 @@ is
   # create immutable array from this
   #
   public as_array array T ! E =>
-    array (length0.as_i32 * length1.as_i32 * length2.as_i32) (i ->
+    array (length0 * length1 * length2).as_i32 (i ->
       Mutable_Array3.this[
-        (i.as_i64 / (length1.as_i64 * length2.as_i64)),
-        ((i.as_i64 % (length1.as_i64 * length2.as_i64)) / length2.as_i64),
-        (i.as_i64 % length2.as_i64)])
+        i.as_i64 / (length1 * length2),
+        (i.as_i64 % (length1 * length2)) / length2,
+        i.as_i64 % length2])
 
 
   # create a list from this array

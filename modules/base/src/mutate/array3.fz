@@ -89,12 +89,16 @@ is
 
    ) mutate.this.array3 T
   =>
-    data := fuzion.sys.internal_array_init T (length0.as_i32 * length1.as_i32 * length2.as_i32)
+    length0i := length0.as_i32
+    length1i := length1.as_i32
+    length2i := length2.as_i32
 
-    for i0 in (i64 0)..length0-1 do
-      for i1 in (i64 0)..length1-1 do
-        for i2 in (i64 0)..length2-1 do
-          data[((i0.as_i32 * length1.as_i32) + i1.as_i32) * length2.as_i32 + i2.as_i32] := init
+    data := fuzion.sys.internal_array_init T (length0i * length1i * length2i)
+
+    for i0 in 0..length0i-1 do
+      for i1 in 0..length1i-1 do
+        for i2 in 0..length2i-1 do
+          data[((i0 * length1i) + i1) * length2i + i2] := init
 
     mutate.this.env.array3 length0 length1 length2 data unit
 
