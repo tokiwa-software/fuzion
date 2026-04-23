@@ -182,3 +182,45 @@ priority_queue_test =>
 
 
   sort_test_random 100000
+
+
+
+  # mix enqueue and dequeue and compare with sorted list
+  #
+  # NYI: OPTIMIZATION: slow for higher enq rate due to sorting of list
+  #
+  # 🡩 : enqueue operation
+  # 🡫 : dequeue operation returned smallest element
+  # - : dequeue returned noting, queue expected to be empty
+  #
+  interleaved_random_test(
+    # rate of enqueue in percent
+    enq_rate i32,
+    # number of operations
+    test_size i32)
+  =>
+    simple_random 273661186099400849 ()->
+      m : mutate is
+      m ! ()->
+        q := container.Binary_Heap_Queue m i32 .empty_min_first
+
+        for sort list i32 := nil, new_sort
+            i in 1..test_size
+            enq := true, (random.next_i32 100) < enq_rate
+        do
+          new_sort :=
+            if enq
+              e := random.next_i32 test_size
+              yak "🡩"
+              q.enqueue e
+              (sort ++ [e]).sort.as_list
+            else
+              match q.dequeue
+                e i32 => yak (e = sort[0] ? "🡫" : "\nError in round $i expected '{sort[i]}' but cot '$e'\n")
+                nil => yak (sort.is_empty ? "-" : "\nError queue is empty but sort is $sort\n")
+              sort.tail
+    say "\n"
+
+
+  interleaved_random_test 40 10000
+  interleaved_random_test 60 1000
