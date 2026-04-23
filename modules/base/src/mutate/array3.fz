@@ -1,0 +1,106 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+# Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature mutate.array3
+#
+# -----------------------------------------------------------------------
+
+# create a mutable array with three dimensions.
+#
+module:public array3 (
+       # element type
+       public T type,
+
+       # length of each dimension
+       public redef length0 i64,
+       public redef length1 i64,
+       public redef length2 i64,
+
+       # contents of the array
+       module data fuzion.sys.internal_array T,
+       _ unit
+
+      ) : container.Mutable_Array3 T mutate.this, mutable_element
+pre
+  safety: length0 ≥ 0
+  safety: length0 ≤ data.length.as_i64
+  safety: length1 ≥ 0
+  safety: length1 ≤ data.length.as_i64
+  safety: length2 ≥ 0
+  safety: length2 ≤ data.length.as_i64
+  safety: length0 *? length1 *? length2 >=? 0
+  safety: length0 * length1 * length2 ≤ data.length.as_i64
+is
+
+  # get element at given index i
+  #
+  public redef index [ ] (I type : integer, i0, i1, i2 I) T =>
+    data[((i0.as_i32 * length1.as_i32) + i1.as_i32) * length2.as_i32 + i2.as_i32]
+
+
+  # set element at given index i to given value o
+  #
+  public redef set [ ] (I type : integer, i0, i1, i2 I, o T) unit =>
+    check_and_replace
+    data[((i0.as_i32 * length1.as_i32) + i1.as_i32) * length2.as_i32 + i2.as_i32] := o
+
+
+  # create immutable array from this
+  #
+  public redef as_array universe.array T =>
+    array (length0.as_i32 * length1.as_i32 * length2.as_i32) i->data[i]
+
+
+  # create a list from this array
+  #
+  public redef as_list list T =>
+    # since array is mutable,
+    # we first copy the elements
+    # to an immutable array.
+    as_array.as_list
+
+
+  # initialize three-dimensional mutable array
+  #
+  public type.new
+   (# length of the array to create
+    length0 i64,
+    length1 i64,
+    length2 i64,
+
+    # initial value for elements
+    init T
+
+   ) mutate.this.array3 T
+  =>
+    data := fuzion.sys.internal_array_init T (length0.as_i32 * length1.as_i32 * length2.as_i32)
+
+    for i0 in (i64 0)..length0-1 do
+      for i1 in (i64 0)..length1-1 do
+        for i2 in (i64 0)..length2-1 do
+          data[((i0.as_i32 * length1.as_i32) + i1.as_i32) * length2.as_i32 + i2.as_i32] := init
+
+    mutate.this.env.array3 length0 length1 length2 data unit
+
+
+# convenience feature for creating a new array3,
+# in some cases even with type inference
+#
+public new_array3 (T type, length0, length1, length2 i64, init T) container.Mutable_Array3 T mutate.this =>
+  (mutate.this.array3 T).new length0 length1 length2 init
