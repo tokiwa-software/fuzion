@@ -162,8 +162,8 @@ clean_err(f path) =>
     "sed -i s|/|#|g $f".execute .or_panic
     # 8 slashes here intentional, unclear why so many are needed though...
     "sed -i s|\\\\\\\\|#|g $f".execute .or_panic
-    say "3"
     "sed -i s|{os.cwd.or_panic.as_string.replace "\\" "#" .replace "/" "#"}|--CURDIR--| $f".execute .or_panic
+    "sed -i s|{("{os.cwd.or_panic.as_string.substring 1 2}:{os.cwd.or_panic.as_string.substring 2}").replace "\\" "#" .replace "/" "#"}|--CURDIR--| $f".execute .or_panic
   "sed -i s#{os.cwd.or_panic.as_string}#--CURDIR--# $f".execute .or_panic
   # line numbers
   "sed -E -i s/\\.fz:[0-9]+:[0-9]+:/\\.fz:n:n:/g $f".execute .or_panic
