@@ -212,6 +212,36 @@ priority_queue_benchmark =>
 
 
 
+  # test repeated insertion of element with same priority
+  #
+  # should run in O(1) as heap property can not be violated and therefore not fixing is required
+  #
+  all_same_priority(queue_length i64) unit =>
+    say """
+      \n********************************************************************************
+      *{"Repeatedly enqueue identical priority then dequeue".pad_center 78}*
+      ********************************************************************************
+      """
+
+    hist_enq := time.histogram.new "Enqueue equal priority $queue_length times" nil #(time.duration.ms 5)
+    hist_deq := time.histogram.new "Dequeue from queue with $queue_length equal elements" nil #(time.duration.ms 5)
+
+    m : mutate is
+    m ! ()->
+
+      q := container.Binary_Heap_Queue m i32 .empty_min_first queue_length
+
+      for i in 1..queue_length.as_i32 do
+        hist_enq.add (time.stopwatch ()->(q.enqueue 42))
+
+      for i in 1..queue_length.as_i32 do
+        hist_deq.add (time.stopwatch ()->(ignore q.dequeue))
+
+    say hist_enq
+    say hist_deq
+
+
+
 
 
 
@@ -220,3 +250,4 @@ priority_queue_benchmark =>
   random_log_performance   [1E2, 1E3, 1E4, 1E5, 1E6, 1E7, 1E8]
   make_heap_vs_enqueue_all [1E2, 1E3, 1E4, 1E5, 1E6]
   make_heap_linear_time    [1E1, 1E2, 1E3, 1E4, 1E5, 1E6, 1E7]
+  all_same_priority 1E6
