@@ -770,11 +770,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
           var pop_fin_and_throw = pop_and_finally.andThen(Expr.THROW);  // pop effect, call finally and rethrow exception from stack
 
           var result = Expr.iconst(eid)
-            .andThen(unit_effect ? args.get(0).drop()
-                                    .andThen(Expr.getstatic(Names.RUNTIME_CLASS,
-                                                            "_UNIT_TYPE_EFFECT_",
-                                                            Names.ANYI_TYPE))
-                                 : args.get(0))
+            .andThen(effectToAny(jvm, ecl, args.get(0)))
             .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
                                        "effect_push",
                                        "(" + ("I" +
@@ -826,25 +822,16 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(Expr.UNIT, result);
         });
 
-    put("effect.type.default0",
+    put("effect.type.instate_at_singularity0",
         (jvm, si, cc, tvalue, args) ->
         {
           var ecl = jvm._fuir.effectTypeFromIntrinsic(cc);
           var eid = jvm.effectId(ecl);
-          var arg = args.get(0);
-          if (jvm._types.resultType(ecl) == ClassFileConstants.PrimitiveType.type_void)
-            {
-              arg = arg
-                .drop()
-                .andThen(
-                  Expr.getstatic(Names.RUNTIME_CLASS,
-                                 "_UNIT_TYPE_EFFECT_",
-                                 Names.ANYI_TYPE));
-            }
+          var arg = effectToAny(jvm, ecl, args.get(0));
           var result = Expr.iconst(eid)
             .andThen(arg)
             .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
-                                       "effect_default",
+                                       "effect_instate_at_singularity",
                                        "(" + ("I" +
                                               Names.ANYI_DESCR) +
                                        ")V",
@@ -852,24 +839,18 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(Expr.UNIT, result);
         });
 
-   put("effect.type.replace0",
+   put("effect.type.set0",
         (jvm, si, cc, tvalue, args) ->
         {
           var ecl = jvm._fuir.effectTypeFromIntrinsic(cc);
-          var result = Expr.UNIT;
-          // _UNIT_TYPE_EFFECT_ does not need to be replaced
-          // since it has just one possible value.
-          if (jvm._types.resultType(ecl) != ClassFileConstants.PrimitiveType.type_void)
-            {
-              var eid = jvm.effectId(ecl);
-              result = Expr
-                .iconst(eid)
-                .andThen(args.get(0))
-                .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
-                                           "effect_replace",
-                                           "(I" + Names.ANYI_DESCR + ")V",
-                                           ClassFileConstants.PrimitiveType.type_void));
-            }
+          var eid = jvm.effectId(ecl);
+          var result = Expr
+            .iconst(eid)
+            .andThen(effectToAny(jvm, ecl, args.get(0)))
+            .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS,
+                                       "effect_set",
+                                       "(I" + Names.ANYI_DESCR + ")V",
+                                       ClassFileConstants.PrimitiveType.type_void));
           return new Pair<>(Expr.UNIT, result);
         });
 
@@ -1102,6 +1083,36 @@ public class Intrinsix extends ANY implements ClassFileConstants
         });
   }
 
+  /**
+   * Convert an effect value of type `ecl` given as `arg` to a value that can be
+   * passed as type `dev.flang.be.jvm.runtime.AnyI` to one of the effect related methods
+   * in `dev.flang.be.jvm.runtime.Runtime`.
+   *
+   * This is needed for effect types that are effectively unit types, which are
+   * `void` types in Java.  These have to be replaced by the special value
+   * `Runtime._UNIT_TYPE_EFFECT_`.
+   *
+   * @param jvm the backend
+   *
+   * @param the effect clazz
+   *
+   * @param the effect value
+   *
+   * @return code to be passed as effect value to effect related `Runtime.*` method.
+   */
+  private static Expr effectToAny(JVM jvm, int ecl, Expr arg)
+  {
+    if (jvm._types.resultType(ecl) == ClassFileConstants.PrimitiveType.type_void)
+      {
+        arg = arg
+          .drop()
+          .andThen(
+                   Expr.getstatic(Names.RUNTIME_CLASS,
+                                  "_UNIT_TYPE_EFFECT_",
+                                  Names.ANYI_TYPE));
+      }
+    return arg;
+  }
 
   /**
    * Handle StackOverflow exception

@@ -41,6 +41,15 @@ public move(mop Move_Handler) : effect is
     tmp
 
 
+  # default implementation of move
+  #
+  # this will get instated automatically at startup
+  #
+  public redef fixed type.default_value option io.file.move
+  =>
+    io.file.move io.file.default_move_handler
+
+
 # the default file/dir move operation via fuzion.sys.fileio.move
 #
 default_move_handler : Move_Handler is
@@ -58,9 +67,8 @@ public move(
      # the old (relative or absolute) file name, using platform specific path separators
      old path,
      # the new (relative or absolute) file name, using platform specific path separators
-     new path) outcome unit ! move =>
-  (move default_move_handler).default
-  move.env.move old new
+     new path) outcome unit ! io.file.move =>
+  io.file.move.env.move old new
 
 # reference to the move operations that could take place
 #

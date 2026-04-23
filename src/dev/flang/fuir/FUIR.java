@@ -1434,12 +1434,12 @@ public abstract class FUIR extends IR
       (clazzKind(cl) == FeatureKind.Intrinsic) &&
       switch(clazzOriginalName(cl))
       {
-      case "effect.type.abort0"  ,
-           "effect.type.default0",
-           FuzionConstants.EFFECT_INSTATE_NAME,
-           "effect.type.is_instated0",
-           "effect.type.replace0",
-           "effect.type.remove0" -> true;
+      case "effect.type.abort0"                 ,
+           "effect.type.instate_at_singularity0",
+           FuzionConstants.EFFECT_INSTATE_NAME  ,
+           "effect.type.is_instated0"           ,
+           "effect.type.set0"                   ,
+           "effect.type.remove0"                 -> true;
       default -> false;
       };
   }

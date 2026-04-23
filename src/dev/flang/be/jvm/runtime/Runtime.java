@@ -151,7 +151,10 @@ public class Runtime extends ANY
    * Value used for {@code FuzionThread.effect_store} and {@code FuzionThread.effect_load}
    * to distinguish a unit value effect from a not existing effect
    */
-  public static final AnyI _UNIT_TYPE_EFFECT_ = new AnyI() { };
+  public static final AnyI _UNIT_TYPE_EFFECT_ = new AnyI()
+    {
+      public String toString() { return "UNIT_TYPE_EFFECT"; }
+    };
 
 
   /*--------------------------  static fields  --------------------------*/
@@ -443,13 +446,17 @@ public class Runtime extends ANY
   }
 
 
-  public static void effect_default(int id, AnyI instance)
+  /**
+   * Helper for instrinsic for `effect.instate_at_singularity0` to instate
+   * an effect at startup.
+   */
+  public static void effect_instate_at_singularity(int id, AnyI instance)
   {
     var t = currentThread();
-    if (t.effect_load(id) == null)
-      {
-        t.effect_store(id, instance);
-      }
+    if (CHECKS) check
+     (t.effect_load(id) == null);
+
+    t.effect_store(id, instance);
   }
 
 
@@ -469,13 +476,13 @@ public class Runtime extends ANY
 
 
   /**
-   * Helper method to implement intrinsic effect.replace0.
+   * Helper method to implement intrinsic effect.set0.
    *
    * @param id an effect type id.
    *
    * @param instance a new instance to replace the old one
    */
-  public static void effect_replace(int id, AnyI instance)
+  public static void effect_set(int id, AnyI instance)
   {
     var t = currentThread();
 

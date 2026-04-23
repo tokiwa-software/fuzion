@@ -393,7 +393,7 @@ public class CFG extends ANY
     put("fuzion.sys.thread.set_policy"   , (cfg, cl) -> { } );
     put("fuzion.sys.thread.set_affinity0", (cfg, cl) -> { } );
 
-    put("effect.type.default0"           , (cfg, cl) -> { } );
+    put("effect.type.instate_at_singularity0", (cfg, cl) -> { } );
     put(FuzionConstants.EFFECT_INSTATE_NAME , (cfg, cl) ->
         {
           var oc  = cfg._fuir.clazzActualGeneric(cl, 1);
@@ -403,7 +403,7 @@ public class CFG extends ANY
               cfg.addToCallGraph(cl, call);
             }
         });
-    put("effect.type.replace0"              , (cfg, cl) -> { } );
+    put("effect.type.set0"                  , (cfg, cl) -> { } );
     put("effect.type.remove0"               , (cfg, cl) -> { } );
     put("effect.type.abort0"                , (cfg, cl) -> { } );
     put("effect.type.is_instated0"          , (cfg, cl) -> { } );

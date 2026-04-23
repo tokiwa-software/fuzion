@@ -39,6 +39,15 @@ public delete(dop Delete_Handler, _ unit) : effect is
     tmp
 
 
+  # default implementation of delete
+  #
+  # this will get instated automatically at startup
+  #
+  public redef fixed type.default_value option io.file.delete
+  =>
+    io.file.delete io.file.default_delete_handler unit
+
+
 # the default file/dir delete operation via fuzion.sys.fileio.delete
 #
 default_delete_handler : Delete_Handler is
@@ -51,9 +60,8 @@ default_delete_handler : Delete_Handler is
 # returns unit as outcome in case of successful deletion and error in case of failure
 # if the targeted dir has content, then the return value will be error and the deletion will not take place
 #
-public delete(path path) outcome unit ! delete =>
-  (delete default_delete_handler unit).default
-  delete.env.delete path
+public delete(path path) outcome unit ! io.file.delete =>
+  io.file.delete.env.delete path
 
 # reference to the delete operations that could take place
 #

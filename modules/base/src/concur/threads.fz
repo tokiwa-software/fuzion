@@ -82,6 +82,14 @@ is
       t.join
 
 
+  # default implementation of threads
+  #
+  # this will get instated automatically at startup
+  #
+  public redef fixed type.default_value option concur.threads
+  =>
+    concur.threads concur.default_thread_handler []
+
 
 # default thread handler
 #
@@ -96,8 +104,7 @@ default_thread_handler : Thread_Handler is
 # thread with no argument returns thread.env, i.e., the currently installed
 # source of thread concurrency.
 #
-public threads threads ! threads =>
-  (threads default_thread_handler []).default
+public threads threads ! threads =>   # NYI: REMOVE!
   threads.env
 
 

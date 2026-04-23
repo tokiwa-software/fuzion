@@ -3128,8 +3128,8 @@ public class GeneratingFUIR extends FUIR
           {
           case FuzionConstants.EFFECT_INSTATE_NAME,
                "effect.type.from_env",
-               "effect.type.default0"              -> true;
-          default                                  -> false;
+               "effect.type.instate_at_singularity0" -> true;
+          default                                    -> false;
           })
       {
         recordEffectUsage(res);
