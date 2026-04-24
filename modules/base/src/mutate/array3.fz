@@ -76,6 +76,32 @@ is
     as_array.as_list
 
 
+  # create a string representation of this array in nested 3D form.
+  #
+  public redef as_string String : encodings =>
+    dim_2(i0 i64, i1 i64) =>
+      ("["
+        + indices2
+            .map (i2 -> "{index[] i0 i1 i2}")
+            .fold (String.concat ", ")
+        + "]")
+
+    dim_1(i0 i64) =>
+      ("["
+        + indices1
+            .map (i1 -> dim_2 i0 i1)
+            .fold (String.concat ", ")
+        + "]")
+
+    ("["
+      + ascii.lf_str
+      + indices0
+          .map (i0 -> "    " + dim_1 i0)
+          .fold (String.concat ("," + ascii.lf_str))
+      + ascii.lf_str
+      + "]")
+
+
   # initialize three-dimensional mutable array
   #
   public type.new
@@ -89,16 +115,13 @@ is
 
    ) mutate.this.array3 T
   =>
-    length0i := length0.as_i32
-    length1i := length1.as_i32
-    length2i := length2.as_i32
 
-    data := fuzion.sys.internal_array_init T (length0i * length1i * length2i)
+    data := fuzion.sys.internal_array_init T (length0 * length1 * length2).as_i32
 
-    for i0 in 0..length0i-1 do
-      for i1 in 0..length1i-1 do
-        for i2 in 0..length2i-1 do
-          data[((i0 * length1i) + i1) * length2i + i2] := init
+    for i0 in (i64 0)..length0-1 do
+      for i1 in (i64 0)..length1-1 do
+        for i2 in (i64 0)..length2-1 do
+          data[(((i0 * length1) + i1) * length2 + i2).as_i32] := init
 
     mutate.this.env.array3 length0 length1 length2 data unit
 
