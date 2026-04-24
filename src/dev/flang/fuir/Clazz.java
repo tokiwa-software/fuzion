@@ -58,7 +58,12 @@ import dev.flang.util.YesNo;
 
 
 /**
- * Clazz represents a runtime type, i.e, a Type with actual generic arguments.
+ * Clazz represents a runtime type, i.e., a Type with actual generic arguments.
+ *
+ * It is fully described by the type in _type
+ * (and _select in case it represents a field of an open generic type).
+ *
+ * The _outer.type is always equal to _type.outer.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
