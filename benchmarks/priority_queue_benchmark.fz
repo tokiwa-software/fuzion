@@ -1,0 +1,253 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+
+priority_queue_benchmark =>
+
+
+
+  random_enqueue_dequeue(test_lengths Sequence i32) unit =>
+    say """
+        \n********************************************************************************
+        *{"Fill empty queue with random elements, then empty it".pad_center 78}*
+        ********************************************************************************
+        """
+
+    test(size i32) unit =>
+
+      simple_random 42 ()->
+
+        m : mutate is
+        m ! ()->
+
+          q := container.Binary_Heap_Queue m i32 .empty_min_first (size + 10).as_i64
+
+          hist_enq := time.histogram.new "Enqueue $size" nil
+          hist_deq := time.histogram.new "Dequeue $size" nil
+
+          total_enq :=
+            for t := time.duration.zero, t + dur
+                i in 1..size
+            do
+              rand := random.next_i32
+              dur := time.stopwatch (()->q.enqueue rand)
+              hist_enq.add dur
+            else
+              t
+
+          total_deq :=
+            for t := time.duration.zero, t + dur
+                i in 1..size
+            do
+              dur := time.stopwatch (()->_ := q.dequeue)
+              hist_deq.add dur
+            else
+              t
+
+          say "{hist_enq}Total time to enqueue $size elements: $total_enq\n"
+          say "{hist_deq}Total time to dequeue $size elements: $total_deq\n"
+
+
+    for i in test_lengths do
+      test i
+
+
+
+
+
+  random_log_performance(test_lengths Sequence i32) unit =>
+    say """
+        \n********************************************************************************
+        *{"Enqueue and dequeue performance on fixed size queue".pad_center 78}*
+        ********************************************************************************
+        """
+
+    test(queue_size i32) tuple time.histogram time.histogram =>
+
+      sample_size := 1E4 + 20 # histogram ignores first and last 10 samples
+
+      simple_random 13 ()->
+
+      m : mutate is
+      m ! ()->
+
+        q := container.Binary_Heap_Queue m i32 .empty_min_first (queue_size + 30).as_i64
+
+        # fill queue
+        for i in 1..queue_size do q.enqueue random.next_i32
+
+        hist_enq := time.histogram.new "Enqueue in queue of size $queue_size" nil 10 10
+        hist_deq := time.histogram.new "Dequeue in queue of size $queue_size" nil 10 10
+
+        for i in 1..sample_size
+        do
+          rand := random.next_i32
+          dur_enq :=time.stopwatch (()->q.enqueue rand)
+          hist_enq.add dur_enq
+          dur_deq :=time.stopwatch (()->_ := q.dequeue)
+          hist_deq.add dur_deq
+
+        (hist_enq, hist_deq)
+
+
+    for enq_hist := Sequence (tuple i32 time.histogram) .empty, enq_hist ++ [(queue_size, enq)]
+        deq_hist := Sequence (tuple i32 time.histogram) .empty, deq_hist ++ [(queue_size, deq)]
+        i in test_lengths
+    do
+      queue_size := i
+      enq, deq := (test i)
+    else
+      say "\nENQUEUE:\n"
+      say "average"
+      enq_hist.for_each szh->(sz,h := szh; say "{sz.as_string.pad_left 9}: {h.average.as_string_pad}")
+      say "\naverage / log_2"
+      enq_hist.for_each szh->(sz,h := szh; say "{sz.as_string.pad_left 9}: {h.average.times (f64.one / (sz.as_f64.log 2)) .as_string_pad}")
+      enq_hist.for_each szh->(_ ,h := szh; say h)
+
+
+      say "\n\nDEQUEUE:\n"
+      say "average"
+      deq_hist.for_each szh->(sz,h := szh; say "{sz.as_string.pad_left 9}: {h.average.as_string_pad}")
+      say "\naverage / log_2"
+      deq_hist.for_each szh->(sz,h := szh; say "{sz.as_string.pad_left 9}: {h.average.times (f64.one / (sz.as_f64.log 2)) .as_string_pad}")
+      deq_hist.for_each szh->(_ ,h := szh; say h)
+
+
+
+
+
+
+  make_heap_vs_enqueue_all(test_lengths Sequence i32) unit =>
+    say """
+      \n********************************************************************************
+      *{"Make heap vs. enqueue all".pad_center 78}*
+      ********************************************************************************
+      """
+
+    test(elements array T, elem_desc String) =>
+
+      sample_size := 20
+
+      hist_mk_heap := time.histogram.new "Make heap with {elements.length} $elem_desc elements" nil 10 0
+      hist_enq_all := time.histogram.new "Iteratively adding {elements.length} $elem_desc elements" nil 10 0
+
+      for _ in 1..sample_size do
+        m2 : mutate is
+        m2 ! ()->
+          hist_enq_all.add (time.stopwatch ()->(q := container.Binary_Heap_Queue m2 T .empty_min_first; q.enqueue_all (id (Sequence T) elements)))
+
+        m1 : mutate is
+        m1 ! ()->
+          hist_mk_heap.add (time.stopwatch ()->(q := container.Binary_Heap_Queue m1 T .min_first_from elements; _:=q))
+
+      say "{hist_mk_heap.average.as_string_pad} {hist_mk_heap.title}"
+      say "{hist_enq_all.average.as_string_pad} {hist_enq_all.title}"
+      say "Compared to iterative add, make heap reduces time to: {(hist_mk_heap.average.nanos.as_f64 / hist_enq_all.average.nanos.as_f64 * 100) .as_string.substring 0 4} %"
+
+
+    say "\nRandom:\n"
+    simple_random 904644503766293287 ()->
+      for len in test_lengths do
+        test (array i32 .new len _->random.next_i32) "random"
+        say ""
+
+    say "\nReverse ordered:\n"
+    for len in test_lengths do
+      test (1..len).reverse.as_array "reverse ordered"
+      say ""
+
+    say "\nOrdered:\n"
+    for len in test_lengths do
+      test (1..len).as_array "ordered"
+      say ""
+
+
+
+
+  # check if make heap has linear time complexity
+  #
+  # seems to be dominated by some constant overhead up to 1E4
+  # linear behavior shows from 1E5
+  #
+  make_heap_linear_time(test_lengths Sequence i32) unit =>
+    say """
+      \n********************************************************************************
+      *{"Check if make heap has linear time complexity".pad_center 78}*
+      ********************************************************************************
+      """
+
+    test(elements array T, elem_desc String) =>
+
+      sample_size := 20
+
+      hist_mk_heap := time.histogram.new "Make heap with {elements.length} $elem_desc elements" nil 10 0
+
+      for _ in 1..sample_size do
+        m : mutate is
+        m ! ()->
+          hist_mk_heap.add (time.stopwatch ()->(q := container.Binary_Heap_Queue m T .min_first_from elements; _:=q))
+
+      say """
+          {hist_mk_heap.average.times (1.0 / elements.length.as_f64) .as_string_pad} \
+          per element for {elements.length.as_string.pad_left (test_lengths.last.or_panic.as_string.byte_count)} \
+          $elem_desc elements. Total time was {hist_mk_heap.average.as_string_pad}"""
+
+
+    say "Random:\n"
+    simple_random 904644503766293287 ()->
+      for len in test_lengths do
+        test (array i32 .new len _->random.next_i32) "random"
+
+
+
+  # test repeated insertion of element with same priority
+  #
+  # should run in O(1) as heap property can not be violated and therefore not fixing is required
+  #
+  all_same_priority(queue_length i64) unit =>
+    say """
+      \n********************************************************************************
+      *{"Repeatedly enqueue identical priority then dequeue".pad_center 78}*
+      ********************************************************************************
+      """
+
+    hist_enq := time.histogram.new "Enqueue equal priority $queue_length times" nil #(time.duration.ms 5)
+    hist_deq := time.histogram.new "Dequeue from queue with $queue_length equal elements" nil #(time.duration.ms 5)
+
+    m : mutate is
+    m ! ()->
+
+      q := container.Binary_Heap_Queue m i32 .empty_min_first queue_length
+
+      for i in 1..queue_length.as_i32 do
+        hist_enq.add (time.stopwatch ()->(q.enqueue 42))
+
+      for i in 1..queue_length.as_i32 do
+        hist_deq.add (time.stopwatch ()->(ignore q.dequeue))
+
+    say hist_enq
+    say hist_deq
+
+
+
+
+
+
+
+  random_enqueue_dequeue   [1E3, 1E4, 1E5, 1E6, 1E7, 1E8]
+  random_log_performance   [1E2, 1E3, 1E4, 1E5, 1E6, 1E7, 1E8]
+  make_heap_vs_enqueue_all [1E2, 1E3, 1E4, 1E5, 1E6]
+  make_heap_linear_time    [1E1, 1E2, 1E3, 1E4, 1E5, 1E6, 1E7]
+  all_same_priority 1E6
