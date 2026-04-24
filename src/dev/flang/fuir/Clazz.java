@@ -180,11 +180,11 @@ class Clazz extends ANY implements Comparable<Clazz>
   Clazz _resultClazz = null;
 
 
-
   /**
    * Will instances of this class be created?
    */
   private boolean _isInstantiatedChoice = true; // NYI: false;
+
 
   /**
    * Is this a normalized outer clazz? If so, there might be calls on this as an
@@ -200,7 +200,6 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
   List<Clazz> _inner = new List<>();
-
 
 
   /**
@@ -223,7 +222,6 @@ class Clazz extends ANY implements Comparable<Clazz>
    * Cached result of parents(), null before first call to parents().
    */
   private Set<Clazz> _parents = null;
-
 
 
   /**
@@ -255,7 +253,6 @@ class Clazz extends ANY implements Comparable<Clazz>
    * For a routine with _needsCode: Site of the code block of this clazz
    */
   int _code;
-
 
 
   /**
@@ -482,6 +479,8 @@ class Clazz extends ANY implements Comparable<Clazz>
         return normalize2(st3);
       }
   }
+
+
   private Clazz normalize2(AbstractType t)
   {
     var f = t.feature();
