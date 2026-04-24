@@ -555,7 +555,18 @@ class Clazz extends ANY implements Comparable<Clazz>
           {
             var pt = inh_call.type();
             var t0 = handDown(pt, NO_SELECT, (_,_)->{}, new List<>());
-            var pc  = _fuir.newClazz(t0);
+            // NYI: BUG: remove replaceThisType, should be done by handDown
+            // but this types that refer to inheritance call targets are not
+            // properly replaced yet as in e.g.
+            //   o is
+            //     a is
+            //       (_ : i is).a
+            //     i is
+            //       a => say "a"
+            //   b : o.a is
+            //   ignore b
+            var t1 = replaceThisType(t0, new List<>());
+            var pc = _fuir.newClazz(t1);
 
             if (!result.contains(pc))
               {
