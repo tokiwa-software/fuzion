@@ -600,11 +600,6 @@ class Clazz extends ANY implements Comparable<Clazz>
     if (!_needsCode && !_fuir._lookupDone)
       {
         _needsCode = true;
-        var r = resultField();
-        if (r != null)
-          { // NYI: UNDER DEVELOPMENT: This is require for tests/javaBase. Check why this is needed only there and not otherwise!
-            r.doesNeedCode();
-          }
       }
   }
 
