@@ -32,7 +32,6 @@ import java.util.TreeSet;
 import java.util.TreeMap;
 
 import java.security.SecureRandom;
-import java.security.NoSuchAlgorithmException;
 
 import dev.flang.ast.AbstractAssign;
 import dev.flang.ast.AbstractBlock;
@@ -47,12 +46,14 @@ import dev.flang.ast.Feature;
 import dev.flang.ast.InlineArray;
 import dev.flang.ast.ResolvedType;
 import dev.flang.ast.State;
-import dev.flang.ast.Types;
+import dev.flang.ast.TypeKind;
 import dev.flang.ast.Universe;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.FuzionConstants.MirExprKind;
+
 import static dev.flang.util.FuzionConstants.MirExprKind;
 import dev.flang.util.List;
 import dev.flang.util.SourceFile;
@@ -619,7 +620,8 @@ class LibraryOut extends ANY
           {
             _data.writeInt(t.isNormalType() ? t.generics().size() : 0);
             _data.writeOffset(t.feature());
-            _data.writeByte(t.kind().num);
+            // tricky, outerLevel is added to the kind
+            _data.writeByte(t.kind().num + (t.kind() == TypeKind.LevelType ? t.outerLevel() : 0));
             if (t.isNormalType())
               {
                 for (var gt : t.generics())

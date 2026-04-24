@@ -372,7 +372,7 @@ public abstract class AbstractCall extends Expr
         var declF = calledFeature().outer();
         if (!tt.isGenericArgument() && declF != tt.feature())
           {
-            var heir = tt.feature();
+            var heir = tt.effectiveFeature();
             t = t.replace_inherited_this_type(declF, heir, foundRef);
           }
         var inner = ResolvedNormalType.newType(calledFeature().selfType(),

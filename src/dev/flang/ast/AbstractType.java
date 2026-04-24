@@ -114,9 +114,18 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * The mode of the type: GenericArgument, ThisType, RefType or ValueType.
+   * The mode of the type: GenericArgument, ThisType, RefType, ValueType or LevelType.
    */
   public abstract TypeKind kind();
+
+
+  /**
+   * The number of steps we have to go outside in a
+   * type parameter constraint.
+   *
+   * Requires that typeKind() == LevelType.
+   */
+  public int outerLevel() { throw new UnsupportedOperationException("only legal to call for LevelType"); }
 
 
 
@@ -175,7 +184,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
        allowForThisType || !isThisType());
 
     return switch (kind()) {
-      case GenericArgument -> throw new Error("asValue not legal for genericArgument");
+      case GenericArgument, LevelType -> throw new Error("asValue not legal for genericArgument");
       case ThisType -> allowForThisType
         ? ResolvedNormalType.create(
             feature().genericsAsActuals(),
@@ -204,7 +213,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
        !isGenericArgument());
 
     return switch (kind()) {
-      case GenericArgument -> throw new Error("asThis not legal for genericArgument");
+      case GenericArgument, LevelType -> throw new Error("asThis not legal for genericArgument");
       case ThisType -> this;
       case RefType, ValueType ->
         feature().isUniverse()
@@ -266,6 +275,16 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   }
 
 
+  /**
+   * This returns feature() unless this is an LevelType
+   * Then it returns the feature in the constraint that is referenced
+   * by the LevelType.
+   */
+  public AbstractFeature effectiveFeature()
+  {
+    return feature();
+  }
+
 
   /**
    * resolve this type. This is only needed for ast.Type, for fe.LibraryType
@@ -304,7 +323,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   public boolean isChoice()
   {
-    return !isGenericArgument() && feature().isChoice();
+    return (isNormalType() || isThisType()) && feature().isChoice();
   }
 
 
@@ -356,7 +375,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       switch (kind())
       {
         case RefType, ValueType        -> true;
-        case ThisType, GenericArgument -> false;
+        case ThisType, GenericArgument, LevelType -> false;
       };
   }
 
@@ -397,25 +416,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   public boolean containsError()
   {
-    boolean result = false;
-    if (this == Types.t_ERROR)
-      {
-        result = true;
-      }
-    else if (isNormalType())
-      {
-        for (var t: generics())
-          {
-            if (CHECKS) check
-              (Errors.any() || t != null);
-            result = result || t == null || t.containsError();
-          }
-      }
-
-    if (POSTCONDITIONS) ensure
-      (!result || Errors.any());
-
-    return result;
+    return contains(t -> t == Types.t_ERROR);
   }
 
 
@@ -788,6 +789,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                                       &&
                                       !gt.constraintAssignableFrom(context, og);
               case ValueType, RefType, ThisType -> g.compareTo(og) != 0;
+              case LevelType -> throw new UnsupportedOperationException("unexpected");
             }
           )
           {
@@ -930,7 +932,12 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     YesNo result = _dependsOnGenerics;
     if (result == YesNo.dontKnow)
       {
-        if (isGenericArgument())
+        // NYI: CLEANUP: use switch(kind())
+        if (kind() == TypeKind.LevelType)
+          {
+            result = YesNo.no;
+          }
+        else if (isGenericArgument())
           {
             result = YesNo.yes;
           }
@@ -1289,7 +1296,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
               }
             yield result;
           }
-        case ThisType -> this;
+        case ThisType, LevelType -> this;
       };
   }
 
@@ -1923,6 +1930,32 @@ there is no common super type of the two types (Types.t_ERROR)
           }
         result = tt;
       }
+    // we have a,b,c.this.type and tt is type parameter with constraint x.y.z: So replace it if
+    // any of `a.b.c`, `a.b`, or `a` inherits from this. During monomorphization, when the type
+    // parameter will be replaced, we will find that actual outer type that fits here.
+    //
+    // NYI: BUG: instead of returning `tt` here, we need to create a new type that refers to the n`th outer type
+    // of the actual type parameter, i.e., `Outer(1,tt)` in case `a.b` inherits from this, and `Outer(2,tt)` and in
+    // case `a` inherits from this.
+    else if (isThisType() && tt.isGenericArgument() && tt.genericArgument().constraint(context).whichOuterInheritsFrom(feature()) >= 0)
+      {
+        if (tt.genericArgument().constraint(context).whichOuterInheritsFrom(feature()) == 0)
+          {
+            if (foundRef != null && tt.isRef())
+              {
+                foundRef.accept(this, tt);
+              }
+            result = tt.genericArgument().asGenericType();
+          }
+        else
+          {
+            if (foundRef != null && tt.isRef())
+              {
+                foundRef.accept(this, tt);
+              }
+            result = new LevelType(tt.genericArgument(), tt.genericArgument().constraint(context).whichOuterInheritsFrom(feature()));
+          }
+      }
     else
       {
         result = applyToGenericsAndOuter(g -> g.replace_this_type_by_actual_outer2(tt, foundRef, context));
@@ -1941,19 +1974,10 @@ there is no common super type of the two types (Types.t_ERROR)
   private boolean replacesThisType(AbstractType tt, Context context)
   {
     return
-      isThisTypeInCotype() && tt.isGenericArgument()   // we have a type parameter TT.THIS#TYPE, which is equal to TT
-      ||
-      isThisType() && (!tt.isGenericArgument() && tt.feature().inheritsFrom(feature())  // we have abc.this.type with tt inheriting from abc, so use tt
-                       ||
-                       // we have a,b,c.this.type and tt is type parameter with constraint x.y.z: So replace it if
-                       // any of `a.b.c`, `a.b`, or `a` inherits from this. During monomorphization, when the type
-                       // parameter will be replaced, we will find that actual outer type that fits here.
-                       //
-                       // NYI: CLEANUP: instead of returning `tt` here, we might create a new type that refers to the n`th outer type
-                       // of the actual type parameter, i.e., `Outer(1,tt)` in case `a.b` inherits from this, and `Outer(2,tt)` and in
-                       // case `a` inherits from this.
-                       tt.isGenericArgument() && tt.genericArgument().constraint(context).whichOuterInheritsFrom(feature()) >= 0
-                       );
+      // we have a type parameter TT.THIS#TYPE, which is equal to TT
+      isThisTypeInCotype() && tt.isGenericArgument() ||
+      // we have abc.this.type with tt inheriting from abc, so use tt
+      isThisType() && (!tt.isGenericArgument() && tt.feature().inheritsFrom(feature()));
   }
 
 
@@ -2396,12 +2420,19 @@ there is no common super type of the two types (Types.t_ERROR)
    */
   public boolean containsThisType()
   {
-    return
-      isThisType() ||
-      !isGenericArgument() && (generics().stream().anyMatch(g -> g.containsThisType()) ||
-                               outer() != null && outer().containsThisType());
+    return contains(t -> t.isThisType());
   }
 
+
+  /**
+   * Check if for this, outers or any generics predicate p results in true.
+   */
+  public boolean contains(Predicate<AbstractType> p)
+  {
+    return p.test(this) ||
+      !isGenericArgument() && (isNormalType() && generics().stream().anyMatch(g -> g.contains(p)) ||
+                               outer() != null && outer().contains(p));
+  }
 
 
   /**
