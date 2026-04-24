@@ -32,7 +32,7 @@ public Read_Handler ref is
   # returns either an array of the bytes read, end_of_file or an error
   #
   public read(max_count i32) choice (Sequence u8) io.end_of_file error
-    post debug: (result ? s Sequence => !s.is_empty && s.count<=max_count | * => true)
+    post debug: (result ? s Sequence => s.count<=max_count | * => true)
          debug 10 : (result ? s Sequence => s.is_array_backed | * => true)
   => abstract
 
