@@ -36,9 +36,6 @@
 #
 webserver_native is
 
-  # NYI: CLEANUP: just to install the default mutate effect
-  _ := mut
-
   port u16 := 8080
   say <| net.server.start net.family.ipv6 net.protocol.tcp port ()->
     say "started server on port: $port"
