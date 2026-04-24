@@ -4,7 +4,7 @@ Call stack:
 fuzion.sys.fatal_fault#2 at {base.fum}/fuzion/sys.fz:55
 fuzion.type.runtime.type.fault.type.default_value.(λkind_and_msg-> kind, msg := kind_and_m...).call#1 at {base.fum}/fuzion/runtime/fault.fz:63
 fuzion.runtime.fault.cause#1 at {base.fum}/eff/fallible.fz:35
-panic.type.default_value.(λ(msg->fuzion.runtime.fault.cause ("***...).call#1 at {base.fum}/panic.fz:39
+panic.type.default_value.(λ(msg->fuzion.runtime.fault.env.cause (...).call#1 at {base.fum}/panic.fz:39
 panic.cause#1 at {base.fum}/eff/fallible.fz:35
 panic#1 at {base.fum}/panic.fz:59
 m.mpanic#1 at {base.fum}/mutate.fz:75

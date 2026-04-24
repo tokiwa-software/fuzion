@@ -92,8 +92,6 @@ sqlite_database(db Native_Ref) : Database is
     else
       error "could not open database"
 
-_ := mut
-
 _ := (sqlite_database.open "test.db").bind unit db->
   db.query "select * from table_name;" res->
     say (res.map t->"{t.0} => {t.1}")

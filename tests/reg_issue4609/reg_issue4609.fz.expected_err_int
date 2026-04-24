@@ -7,21 +7,21 @@ fuzion.type.runtime.type.fault.type.default_value.(λkind_and_msg-> kind, msg :=
 fuzion.runtime.fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
   => h e
 -----^
-fuzion.type.runtime.type.contract_fault.type.default_value.(λkind_and_msg-> fuzion.runtime.fault.ca...).call#1: {base.fum}/fuzion/runtime/contract_fault.fz:42:7:
-      fuzion.runtime.fault.cause kind_and_msg
-------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-fuzion.runtime.contract_fault.en...#1: {base.fum}/eff/fallible.fz:35:6:
+fuzion.type.runtime.type.contract_fault.type.default_value.(λkind_and_msg-> fuzion.runtime.fault.en...).call#1: {base.fum}/fuzion/runtime/contract_fault.fz:42:7:
+      fuzion.runtime.fault.env.cause kind_and_msg
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+fuzion.runtime.contract_fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
   => h e
 -----^
 fuzion.type.runtime.type.check_fault.type.default_value.(λmsg-> fuzion.runtime.contract_fault.en...).call#1: {base.fum}/fuzion/runtime/check_fault.fz:42:7:
-      fuzion.runtime.contract_fault.en... ("check", msg)
-------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      fuzion.runtime.contract_fault.env.cause ("check", msg)
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 fuzion.runtime.check_fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
   => h e
 -----^
-fuzion.runtime.checkcondition_fault#1: {base.fum}/fuzion/runtime/check_fault.fz:61:49:
-public checkcondition_fault(msg String) void => check_fault.cause msg
-------------------------------------------------^^^^^^^^^^^^^^^^^^^^^
+fuzion.runtime.checkcondition_fault#1: {base.fum}/fuzion/runtime/check_fault.fz:56:3:
+  fuzion.runtime.check_fault.env.cause msg
+--^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 reg_issue4609.s.call: --CURDIR--/reg_issue4609.fz:33:37:
     public redef call unit => check false
 ------------------------------------^^^^^

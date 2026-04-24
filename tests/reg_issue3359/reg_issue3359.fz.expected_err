@@ -7,15 +7,15 @@ Feature 'reg_issue3359.g.type' instantiated at <source position not available>:
 inherits or declares abstract feature 'reg_issue3359.f.type.n' declared at --CURDIR--/reg_issue3359.fz:35:10:
     type.n unit => abstract
 ---------^
-which is called at --CURDIR--/reg_issue3359.fz:54:39:
-    if      envir.args.count = 0 then T.n
---------------------------------------^^^
+which is called at --CURDIR--/reg_issue3359.fz:54:43:
+    if      envir.args.env.count = 0 then T.n
+------------------------------------------^^^
 and abstract feature 'reg_issue3359.f.type.o' declared at --CURDIR--/reg_issue3359.fz:36:10:
     type.o unit => abstract
 ---------^
-which is called at --CURDIR--/reg_issue3359.fz:55:39:
-    else if envir.args.count = 1 then T.o
---------------------------------------^^^
+which is called at --CURDIR--/reg_issue3359.fz:55:43:
+    else if envir.args.env.count = 1 then T.o
+------------------------------------------^^^
 without providing an implementation
 
 Callchain that lead to this point:
@@ -35,9 +35,9 @@ Feature 'reg_issue3359.h.type' instantiated at <source position not available>:
 inherits or declares abstract feature 'reg_issue3359.f.type.o' declared at --CURDIR--/reg_issue3359.fz:36:10:
     type.o unit => abstract
 ---------^
-which is called at --CURDIR--/reg_issue3359.fz:55:39:
-    else if envir.args.count = 1 then T.o
---------------------------------------^^^
+which is called at --CURDIR--/reg_issue3359.fz:55:43:
+    else if envir.args.env.count = 1 then T.o
+------------------------------------------^^^
 without providing an implementation
 
 Callchain that lead to this point:
@@ -58,15 +58,15 @@ Feature 'reg_issue3359.i' instantiated at --CURDIR--/reg_issue3359.fz:103:5:
 inherits or declares abstract feature 'reg_issue3359.i.q' declared at --CURDIR--/reg_issue3359.fz:77:5:
     q unit => abstract
 ----^
-which is called at --CURDIR--/reg_issue3359.fz:96:39:
-    if      envir.args.count = 0 then v.q
---------------------------------------^^^
+which is called at --CURDIR--/reg_issue3359.fz:96:43:
+    if      envir.args.env.count = 0 then v.q
+------------------------------------------^^^
 and abstract feature 'reg_issue3359.i.r' declared at --CURDIR--/reg_issue3359.fz:78:5:
     r unit => abstract
 ----^
-which is called at --CURDIR--/reg_issue3359.fz:97:39:
-    else if envir.args.count = 1 then v.r
---------------------------------------^^^
+which is called at --CURDIR--/reg_issue3359.fz:97:43:
+    else if envir.args.env.count = 1 then v.r
+------------------------------------------^^^
 without providing an implementation
 
 Callchain that lead to this point:
@@ -87,15 +87,15 @@ Feature 'reg_issue3359.j' instantiated at --CURDIR--/reg_issue3359.fz:106:5:
 inherits or declares abstract feature 'reg_issue3359.i.q' declared at --CURDIR--/reg_issue3359.fz:77:5:
     q unit => abstract
 ----^
-which is called at --CURDIR--/reg_issue3359.fz:96:39:
-    if      envir.args.count = 0 then v.q
---------------------------------------^^^
+which is called at --CURDIR--/reg_issue3359.fz:96:43:
+    if      envir.args.env.count = 0 then v.q
+------------------------------------------^^^
 and abstract feature 'reg_issue3359.i.r' declared at --CURDIR--/reg_issue3359.fz:78:5:
     r unit => abstract
 ----^
-which is called at --CURDIR--/reg_issue3359.fz:97:39:
-    else if envir.args.count = 1 then v.r
---------------------------------------^^^
+which is called at --CURDIR--/reg_issue3359.fz:97:43:
+    else if envir.args.env.count = 1 then v.r
+------------------------------------------^^^
 without providing an implementation
 
 Callchain that lead to this point:
@@ -116,9 +116,9 @@ Feature 'reg_issue3359.k' instantiated at --CURDIR--/reg_issue3359.fz:109:5:
 inherits or declares abstract feature 'reg_issue3359.i.r' declared at --CURDIR--/reg_issue3359.fz:78:5:
     r unit => abstract
 ----^
-which is called at --CURDIR--/reg_issue3359.fz:97:39:
-    else if envir.args.count = 1 then v.r
---------------------------------------^^^
+which is called at --CURDIR--/reg_issue3359.fz:97:43:
+    else if envir.args.env.count = 1 then v.r
+------------------------------------------^^^
 without providing an implementation
 
 Callchain that lead to this point:
@@ -138,15 +138,15 @@ Feature 'reg_issue3359.f.type' instantiated at <source position not available>:
 inherits or declares abstract feature 'reg_issue3359.f.type.n' declared at --CURDIR--/reg_issue3359.fz:35:10:
     type.n unit => abstract
 ---------^
-which is called at --CURDIR--/reg_issue3359.fz:54:39:
-    if      envir.args.count = 0 then T.n
---------------------------------------^^^
+which is called at --CURDIR--/reg_issue3359.fz:54:43:
+    if      envir.args.env.count = 0 then T.n
+------------------------------------------^^^
 and abstract feature 'reg_issue3359.f.type.o' declared at --CURDIR--/reg_issue3359.fz:36:10:
     type.o unit => abstract
 ---------^
-which is called at --CURDIR--/reg_issue3359.fz:55:39:
-    else if envir.args.count = 1 then T.o
---------------------------------------^^^
+which is called at --CURDIR--/reg_issue3359.fz:55:43:
+    else if envir.args.env.count = 1 then T.o
+------------------------------------------^^^
 without providing an implementation
 
 Callchain that lead to this point:

@@ -38,7 +38,7 @@ mod_webserver =>
 
         # inject fault in 4th request, causes 500 response
         if cnt.read = 4
-          fuzion.runtime.contract_fault.env.cuase ("some fault", "___")
+          fuzion.runtime.contract_fault.env.cause ("some fault", "___")
 
         resp := "Pong"
         http
