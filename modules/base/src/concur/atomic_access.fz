@@ -35,10 +35,3 @@ private:module atomic_access : effect is
   #
   public redef fixed type.default_value option concur.atomic_access =>
     concur.atomic_access  /* NYI: `concur.` could be added automatically by front end */
-
-
-# shorthand for accessing mut effect in current environment
-#
-# NYI: CLEANUP: Remove and use `atomic_access.env` directly.
-#
-module atomic_access_env => atomic_access.env

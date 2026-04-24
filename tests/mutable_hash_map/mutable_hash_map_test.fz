@@ -285,9 +285,9 @@ random_test is
     for i in 1..random_test_size do
 
       # limited range to have a good chance for repeated numbers (for modifications or removals)
-      next_rand := random.next_i32 (random_test_size/2)
+      next_rand := random.env.next_i32 (random_test_size/2)
 
-      if random.next_bool # put value
+      if random.env.next_bool # put value
 
         if verify_map.has next_rand
           # update existing value

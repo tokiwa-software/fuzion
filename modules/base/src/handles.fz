@@ -190,14 +190,6 @@ public handles(T type, rr ()->unit) unit =>
 public handles_(T type) handles T unit => handles unit (array T 0 x->do) oneway_monad_mode.plain
 
 
-# shorthand for accessing handles monad for given type in current environment
-#
-# NYI: CLEANUP: Remove and use `handles.env` directly.
-#
-public handles(T type) handles T unit =>
-  (handles T unit).env
-
-
 # type of the reference to the cell that holds a value of type T which can be updated
 # using the handles interface
 #

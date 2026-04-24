@@ -76,12 +76,12 @@ reg_issue5561 =>
     else               C
 
 
-  say (f1 envir.args.count)
-  say (f2 envir.args.count)
-  say (f3 envir.args.count)
-  say (f4 envir.args.count)
-  say (g1 envir.args.count)
-  say (g2 envir.args.count)
-  say (g3 envir.args.count)
-  say (h envir.args.count)
-  say (b1 envir.args.count)
+  say (f1 envir.args.env.count)
+  say (f2 envir.args.env.count)
+  say (f3 envir.args.env.count)
+  say (f4 envir.args.env.count)
+  say (g1 envir.args.env.count)
+  say (g2 envir.args.env.count)
+  say (g3 envir.args.env.count)
+  say (h envir.args.env.count)
+  say (b1 envir.args.env.count)

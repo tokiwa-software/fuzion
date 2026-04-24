@@ -43,12 +43,3 @@ module:public open(dd Directory_Descriptor,
   public redef finally unit =>
     if fzE_dir_close dd != 0
       fuzion.runtime.fault.cause ("io.dir.open.finally", "closing directory failed.")
-
-
-# short hand to get the currently
-# installed open effect
-#
-# NYI: CLEANUP: remove
-#
-public open open ! open =>
-  open.env

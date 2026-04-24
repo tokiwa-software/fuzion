@@ -5,8 +5,8 @@ fuzion.sys.fatal_fault#2 at {base.fum}/fuzion/sys.fz:55
 fuzion.type.runtime.type.fault.type.default_value.(λkind_and_msg-> kind, msg := kind_and_m...).call#1 at {base.fum}/fuzion/runtime/fault.fz:63
 fuzion.runtime.fault.cause#1 at {base.fum}/eff/fallible.fz:35
 fuzion.type.runtime.type.contract_fault.type.default_value.(λkind_and_msg-> fuzion.runtime.fault.ca...).call#1 at {base.fum}/fuzion/runtime/contract_fault.fz:42
-fuzion.runtime.contract_fault.cause#1 at {base.fum}/eff/fallible.fz:35
-fuzion.type.runtime.type.pre_fault.type.default_value.(λmsg-> fuzion.runtime.contract_fault.ca...).call#1 at {base.fum}/fuzion/runtime/pre_fault.fz:42
+fuzion.runtime.contract_fault.en...#1 at {base.fum}/eff/fallible.fz:35
+fuzion.type.runtime.type.pre_fault.type.default_value.(λmsg-> fuzion.runtime.contract_fault.en...).call#1 at {base.fum}/fuzion/runtime/pre_fault.fz:42
 fuzion.runtime.pre_fault.cause#1 at {base.fum}/eff/fallible.fz:35
 fuzion.runtime.precondition_fault#1 at {base.fum}/fuzion/runtime/pre_fault.fz:61
 i8.pre infix + at {base.fum}/num/wrap_around.fz:87

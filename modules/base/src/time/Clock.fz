@@ -71,12 +71,6 @@ public Clock ref : effect is
   public redef fixed type.default_value option time.Clock =>
     nano.default_value.bind (x -> id time.Clock x)
 
-  # shorthand for accessing time.Clock.env effect in current environment
-  #
-  # NYI: CLEANUP: Remove and use `time.Clock.env` directly.
-  #
-  public type.clock Clock.this => Clock.this.env
-
 
   # run the given code once at the provided instant within the current thread
   #

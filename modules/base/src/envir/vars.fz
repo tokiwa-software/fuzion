@@ -68,13 +68,6 @@ public vars (p Vars_Handler) : effect is
                )
 
 
-# shorthand for accessing envir.vars effect in current environment
-#
-# NYI: CLEANUP: Remove and use `envir.vars.env` directly.
-#
-public vars envir.vars ! envir.vars => envir.vars.env
-
-
 # Vars_Handler -- abstract source of environment vars
 #
 # Different heirs of this feature may provided different sources for environment
