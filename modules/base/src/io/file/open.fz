@@ -72,7 +72,7 @@ module:public open(fd File_Descriptor,
   #
   public redef finally unit =>
     match fuzion.sys.fileio.close fd
-      e error => fuzion.runtime.fault.cause ("io.file.open.finally", "closing file failed:  {e}")
+      e error => fuzion.runtime.fault.env.cause ("io.file.open.finally", "closing file failed:  {e}")
       unit =>
 
 

@@ -26,7 +26,7 @@
 
 # envir vars as map
 #
-envir_vars := envir.vars.map_of [
+envir_vars := envir.vars.env.map_of [
     "PATH",
     "LANG",
     "JAVA_HOME",
@@ -91,7 +91,7 @@ find_tests(dir path) array path =>
     io.dir.use _ dir ()->
       res := (m.array path).type.new 0 (path.of "")
       _ :=
-        for x := io.dir.open.read
+        for x := io.dir.open.env.read
         while x.ok
           dir_x := dir.resolve x.or_panic
           if io.file.exists (dir_x.resolve "Makefile")
@@ -118,20 +118,20 @@ main =>
 
   # NYI: UNDER DEVELOPMENT: react to Ctrl+c like in bash scripts (trap)
 
-  if (envir.args.count != 3)
+  if (envir.args.env.count != 3)
     say "wrong argument count"
     say "usage:"
     say "run_tests.fz <build_dir> <target>"
     exit 1
 
-  build_dir := path.of envir.args[1]
-  target := envir.args[2]
+  build_dir := path.of envir.args.env[1]
+  target := envir.args.env[2]
 
 
   # source: https://stackoverflow.com/questions/45181115/portable-way-to-find-the-number-of-processors-cpus-in-a-shell-script
   # first, try third arg then try a few executables, if everything fails use default value
   thread_count :=
-      envir.vars["FUZION_RUN_TESTS_PARALLELISM"]      .flat_map (    .trim.parse_i32) .first
+      envir.vars.env["FUZION_RUN_TESTS_PARALLELISM"]  .flat_map (    .trim.parse_i32) .first
         .or_else (     (!!"nproc --all"              ).flat_map (.out.trim.parse_i32) .first
           .or_else (   (!!"getconf _NPROCESSORS_ONLN").flat_map (.out.trim.parse_i32) .first
             .or_else ( (!!"sysctl -n hw.ncpu"        ).flat_map (.out.trim.parse_i32) .first
@@ -262,12 +262,7 @@ main =>
 
   say_section "$target done"
 
-  match
-    {
-    envir
-      .vars
-      .get "INFLUXDB_TOKEN"
-    }
+  match envir.vars.env.get "INFLUXDB_TOKEN"
     nil => say "INFLUXDB_TOKEN not set, not sending to influxdb."
     token String =>
       data := test_durations.items

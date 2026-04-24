@@ -57,7 +57,7 @@ is
   pre
     debug: racy_accesses_supported
   =>
-    racy_access_env.replace
+    racy_access.env.replace
     v
 
 
@@ -70,7 +70,7 @@ is
   pre
     debug: racy_accesses_supported
   =>
-    racy_access_env.replace
+    racy_access.env.replace
     set v := new_value
 
 
@@ -78,7 +78,7 @@ is
   # performed by concurrent threads
   #
   public read T ! atomic_access =>
-    atomic_access_env.replace
+    atomic_access.env.replace
     read0
 
 
@@ -86,7 +86,7 @@ is
   # operations performed by concurrent threads
   #
   public write(new_value T) unit ! atomic_access =>
-    atomic_access_env.replace
+    atomic_access.env.replace
     write0 new_value
 
 
@@ -97,7 +97,7 @@ is
   # equal to `expected` or not.
   #
   public compare_and_swap(expected, new_value T) T  ! atomic_access =>
-    atomic_access_env.replace
+    atomic_access.env.replace
     compare_and_swap0 expected new_value
 
 
@@ -107,7 +107,7 @@ is
   # returns true, if successful
   #
   public compare_and_set(expected, new_value T) bool ! atomic_access =>
-    atomic_access_env.replace
+    atomic_access.env.replace
     compare_and_set0 expected new_value
 
 
@@ -172,6 +172,3 @@ is
   #
   public type.new(v T) concur.atomic T =>
     concur.atomic v
-
-
-

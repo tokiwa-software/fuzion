@@ -39,7 +39,7 @@ is
   #
   public redef fixed type.default_value option fuzion.runtime.post_fault =>
     fuzion.runtime.post_fault msg->
-      fuzion.runtime.contract_fault.env.cuase ("postcondition", msg)
+      fuzion.runtime.contract_fault.env.cause ("postcondition", msg)
 
 
   # create an instance of `post_fault` with the given error handler.

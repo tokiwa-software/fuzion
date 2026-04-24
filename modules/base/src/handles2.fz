@@ -172,4 +172,6 @@ handles2_type(T type) is
 
 # create a new handle2 using the handles2 instance from the current environment
 #
-public handle2(T type, v T) handle2_id T => (handles2 T).create v
+public handle2(T type, v T) handle2_id T ! handles2 T unit
+=>
+  (handles2 T unit).env.create v

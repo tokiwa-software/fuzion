@@ -52,7 +52,7 @@ public vars (p Vars_Handler) : effect is
   public map_of(s Sequence String) container.Map String String =>
     kvs =>
       s.flat_map k->
-        match envir.vars[k].bind v->(k, v)
+        match vars.this[k].bind v->(k, v)
           t tuple => [t]
           nil => []
     container.map_of kvs

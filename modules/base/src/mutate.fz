@@ -205,4 +205,4 @@ public mutate : linear_effect is
 #
 public mut(T type, v T) mutate.new T ! mutate
 =>
-  mut.new v
+  mutate.env.new v
