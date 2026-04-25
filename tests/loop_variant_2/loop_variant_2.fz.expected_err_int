@@ -7,21 +7,21 @@ fuzion.type.runtime.type.fault.type.default_value.(λkind_and_msg-> kind, msg :=
 fuzion.runtime.fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
   => h e
 -----^
-fuzion.type.runtime.type.contract_fault.type.default_value.(λkind_and_msg-> fuzion.runtime.fault.ca...).call#1: {base.fum}/fuzion/runtime/contract_fault.fz:42:7:
-      fuzion.runtime.fault.cause kind_and_msg
-------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+fuzion.type.runtime.type.contract_fault.type.default_value.(λkind_and_msg-> fuzion.runtime.fault.en...).call#1: {base.fum}/fuzion/runtime/contract_fault.fz:42:7:
+      fuzion.runtime.fault.env.cause kind_and_msg
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 fuzion.runtime.contract_fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
   => h e
 -----^
-fuzion.type.runtime.type.variant_fault.type.default_value.(λmsg-> fuzion.runtime.contract_fault.ca...).call#1: {base.fum}/fuzion/runtime/variant_fault.fz:40:7:
-      fuzion.runtime.contract_fault.cause ("variant", msg)
-------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+fuzion.type.runtime.type.variant_fault.type.default_value.(λmsg-> fuzion.runtime.contract_fault.en...).call#1: {base.fum}/fuzion/runtime/variant_fault.fz:40:7:
+      fuzion.runtime.contract_fault.env.cause ("variant", msg)
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 fuzion.runtime.variant_fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
   => h e
 -----^
-fuzion.runtime.variantcondition_fault#1: {base.fum}/fuzion/runtime/variant_fault.fz:59:51:
-public variantcondition_fault(msg String) void => variant_fault.cause msg
---------------------------------------------------^^^^^^^^^^^^^^^^^^^^^^^
+fuzion.runtime.variantcondition_fault#1: {base.fum}/fuzion/runtime/variant_fault.fz:55:3:
+  fuzion.runtime.variant_fault.env.cause msg
+--^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 loop_variant_2.test_6.loop: --CURDIR--/loop_variant_2.fz:82:13:
     variant i64.min        # 5. should flag an error: variant violated in first iteration
 ------------^^^^^^^
@@ -34,21 +34,21 @@ loop_variant_2.test_6: --CURDIR--/loop_variant_2.fz:81:5:
 (eff.try String fuzion.runtime.variant_fault unit).catch#1.(λ()-> catch0 code_catch).call: {base.fum}/eff/try.fz:50:7:
       catch0 code_catch
 ------^^^^^^^^^^^^^^^^^
-(instate_helper unit (eff.try String fuzion.runtime.variant_fault unit).lm).call_code.call: {base.fum}/effect.fz:446:18:
+(instate_helper unit (eff.try String fuzion.runtime.variant_fault unit).lm).call_code.call: {base.fum}/effect.fz:439:18:
       set res := code()
 -----------------^^^^
 instate_helper unit (eff.try String fuzion.runtime.variant_fault unit).lm: <source position not available>:
 
-(eff.type.try.type String fuzion.runtime.variant_fault unit).lm.type.instate#4 unit: {base.fum}/effect.fz:177:10:
+(eff.type.try.type String fuzion.runtime.variant_fault unit).lm.type.instate#4 unit: {base.fum}/effect.fz:170:10:
     x := instate_helper R effect.this e code def
 ---------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(eff.type.try.type String fuzion.runtime.variant_fault unit).lm.type.instate#3 unit: {base.fum}/effect.fz:198:5:
+(eff.type.try.type String fuzion.runtime.variant_fault unit).lm.type.instate#3 unit: {base.fum}/effect.fz:191:5:
     instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(eff.try String fuzion.runtime.variant_fault unit).lm.instate_self#2 unit: {base.fum}/effect.fz:219:5:
+(eff.try String fuzion.runtime.variant_fault unit).lm.instate_self#2 unit: {base.fum}/effect.fz:212:5:
     effect.this.instate R effect.this code
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(eff.try String fuzion.runtime.variant_fault unit).lm.infix !#2 unit: {base.fum}/effect.fz:236:5:
+(eff.try String fuzion.runtime.variant_fault unit).lm.infix !#2 unit: {base.fum}/effect.fz:229:5:
     instate_self code
 ----^^^^^^^^^^^^^^^^^
 (eff.try String fuzion.runtime.variant_fault unit).catch#1: {base.fum}/eff/try.fz:49:5:
@@ -73,21 +73,21 @@ loop_variant_2.test#2: --CURDIR--/loop_variant_2.fz:32:5:
 (eff.try String fuzion.runtime.variant_fault unit).catch#1.(λ()-> catch0 code_catch).call: {base.fum}/eff/try.fz:50:7:
       catch0 code_catch
 ------^^^^^^^^^^^^^^^^^
-(instate_helper unit (eff.try String fuzion.runtime.variant_fault unit).lm).call_code.call: {base.fum}/effect.fz:446:18:
+(instate_helper unit (eff.try String fuzion.runtime.variant_fault unit).lm).call_code.call: {base.fum}/effect.fz:439:18:
       set res := code()
 -----------------^^^^
 instate_helper unit (eff.try String fuzion.runtime.variant_fault unit).lm: <source position not available>:
 
-(eff.type.try.type String fuzion.runtime.variant_fault unit).lm.type.instate#4 unit: {base.fum}/effect.fz:177:10:
+(eff.type.try.type String fuzion.runtime.variant_fault unit).lm.type.instate#4 unit: {base.fum}/effect.fz:170:10:
     x := instate_helper R effect.this e code def
 ---------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(eff.type.try.type String fuzion.runtime.variant_fault unit).lm.type.instate#3 unit: {base.fum}/effect.fz:198:5:
+(eff.type.try.type String fuzion.runtime.variant_fault unit).lm.type.instate#3 unit: {base.fum}/effect.fz:191:5:
     instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(eff.try String fuzion.runtime.variant_fault unit).lm.instate_self#2 unit: {base.fum}/effect.fz:219:5:
+(eff.try String fuzion.runtime.variant_fault unit).lm.instate_self#2 unit: {base.fum}/effect.fz:212:5:
     effect.this.instate R effect.this code
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(eff.try String fuzion.runtime.variant_fault unit).lm.infix !#2 unit: {base.fum}/effect.fz:236:5:
+(eff.try String fuzion.runtime.variant_fault unit).lm.infix !#2 unit: {base.fum}/effect.fz:229:5:
     instate_self code
 ----^^^^^^^^^^^^^^^^^
 (eff.try String fuzion.runtime.variant_fault unit).catch#1: {base.fum}/eff/try.fz:49:5:
@@ -112,21 +112,21 @@ loop_variant_2.test#2: --CURDIR--/loop_variant_2.fz:32:5:
 (eff.try String fuzion.runtime.variant_fault unit).catch#1.(λ()-> catch0 code_catch).call: {base.fum}/eff/try.fz:50:7:
       catch0 code_catch
 ------^^^^^^^^^^^^^^^^^
-(instate_helper unit (eff.try String fuzion.runtime.variant_fault unit).lm).call_code.call: {base.fum}/effect.fz:446:18:
+(instate_helper unit (eff.try String fuzion.runtime.variant_fault unit).lm).call_code.call: {base.fum}/effect.fz:439:18:
       set res := code()
 -----------------^^^^
 instate_helper unit (eff.try String fuzion.runtime.variant_fault unit).lm: <source position not available>:
 
-(eff.type.try.type String fuzion.runtime.variant_fault unit).lm.type.instate#4 unit: {base.fum}/effect.fz:177:10:
+(eff.type.try.type String fuzion.runtime.variant_fault unit).lm.type.instate#4 unit: {base.fum}/effect.fz:170:10:
     x := instate_helper R effect.this e code def
 ---------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(eff.type.try.type String fuzion.runtime.variant_fault unit).lm.type.instate#3 unit: {base.fum}/effect.fz:198:5:
+(eff.type.try.type String fuzion.runtime.variant_fault unit).lm.type.instate#3 unit: {base.fum}/effect.fz:191:5:
     instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(eff.try String fuzion.runtime.variant_fault unit).lm.instate_self#2 unit: {base.fum}/effect.fz:219:5:
+(eff.try String fuzion.runtime.variant_fault unit).lm.instate_self#2 unit: {base.fum}/effect.fz:212:5:
     effect.this.instate R effect.this code
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(eff.try String fuzion.runtime.variant_fault unit).lm.infix !#2 unit: {base.fum}/effect.fz:236:5:
+(eff.try String fuzion.runtime.variant_fault unit).lm.infix !#2 unit: {base.fum}/effect.fz:229:5:
     instate_self code
 ----^^^^^^^^^^^^^^^^^
 (eff.try String fuzion.runtime.variant_fault unit).catch#1: {base.fum}/eff/try.fz:49:5:
@@ -151,21 +151,21 @@ loop_variant_2.test#2: --CURDIR--/loop_variant_2.fz:32:5:
 (eff.try String fuzion.runtime.variant_fault unit).catch#1.(λ()-> catch0 code_catch).call: {base.fum}/eff/try.fz:50:7:
       catch0 code_catch
 ------^^^^^^^^^^^^^^^^^
-(instate_helper unit (eff.try String fuzion.runtime.variant_fault unit).lm).call_code.call: {base.fum}/effect.fz:446:18:
+(instate_helper unit (eff.try String fuzion.runtime.variant_fault unit).lm).call_code.call: {base.fum}/effect.fz:439:18:
       set res := code()
 -----------------^^^^
 instate_helper unit (eff.try String fuzion.runtime.variant_fault unit).lm: <source position not available>:
 
-(eff.type.try.type String fuzion.runtime.variant_fault unit).lm.type.instate#4 unit: {base.fum}/effect.fz:177:10:
+(eff.type.try.type String fuzion.runtime.variant_fault unit).lm.type.instate#4 unit: {base.fum}/effect.fz:170:10:
     x := instate_helper R effect.this e code def
 ---------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(eff.type.try.type String fuzion.runtime.variant_fault unit).lm.type.instate#3 unit: {base.fum}/effect.fz:198:5:
+(eff.type.try.type String fuzion.runtime.variant_fault unit).lm.type.instate#3 unit: {base.fum}/effect.fz:191:5:
     instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(eff.try String fuzion.runtime.variant_fault unit).lm.instate_self#2 unit: {base.fum}/effect.fz:219:5:
+(eff.try String fuzion.runtime.variant_fault unit).lm.instate_self#2 unit: {base.fum}/effect.fz:212:5:
     effect.this.instate R effect.this code
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(eff.try String fuzion.runtime.variant_fault unit).lm.infix !#2 unit: {base.fum}/effect.fz:236:5:
+(eff.try String fuzion.runtime.variant_fault unit).lm.infix !#2 unit: {base.fum}/effect.fz:229:5:
     instate_self code
 ----^^^^^^^^^^^^^^^^^
 (eff.try String fuzion.runtime.variant_fault unit).catch#1: {base.fum}/eff/try.fz:49:5:

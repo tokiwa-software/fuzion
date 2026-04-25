@@ -50,12 +50,3 @@ public now (p () -> time.date_time) : effect is
       a := fuzion.sys.internal_array_init i32 7
       fzE_date_time a.data
       time.date_time a[0] a[1] a[2] a[3] a[4] a[5] a[6]
-
-
-# get the current date_time.
-# Uses currently installed time.now effect
-# or installs the default_now handler
-#
-# NYI: CLEANUP: Remove and use `time.now.env` directly.
-#
-public now now ! now => now.env

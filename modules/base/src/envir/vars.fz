@@ -52,7 +52,7 @@ public vars (p Vars_Handler) : effect is
   public map_of(s Sequence String) container.Map String String =>
     kvs =>
       s.flat_map k->
-        match envir.vars[k].bind v->(k, v)
+        match vars.this[k].bind v->(k, v)
           t tuple => [t]
           nil => []
     container.map_of kvs
@@ -66,13 +66,6 @@ public vars (p Vars_Handler) : effect is
     envir.vars (_ : envir.Vars_Handler is
                   public redef get(v String) option String => fuzion.sys.env_vars.get v
                )
-
-
-# shorthand for accessing envir.vars effect in current environment
-#
-# NYI: CLEANUP: Remove and use `envir.vars.env` directly.
-#
-public vars envir.vars ! envir.vars => envir.vars.env
 
 
 # Vars_Handler -- abstract source of environment vars

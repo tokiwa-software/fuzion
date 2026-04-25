@@ -68,13 +68,6 @@ public nano (p Nano_Time_Handler) : Clock is
          )
 
 
-# shorthand for accessing time.nano effect in current environment
-#
-# NYI: CLEANUP: Remove and use `time.nano.env` directly.
-#
-public nano time.nano ! time.nano => time.nano.env
-
-
 # abstract handler that can deliver a nano time
 #
 private:public Nano_Time_Handler ref is

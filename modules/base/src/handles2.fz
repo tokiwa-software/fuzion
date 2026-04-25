@@ -141,14 +141,6 @@ handles2(T type, rr ()->unit) =>
 handles2_(T type) => handles2 T unit unit nil oneway_monad_mode.plain
 
 
-# shorthand for accessing handles monad for given type in current environment
-#
-# NYI: CLEANUP: Remove and use `handles2.env` directly.
-#
-handles2(T type) =>
-  (handles2 T unit).env
-
-
 # handle value created by `handles2.new`
 #
 private:public handle2_id(
@@ -180,4 +172,6 @@ handles2_type(T type) is
 
 # create a new handle2 using the handles2 instance from the current environment
 #
-public handle2(T type, v T) handle2_id T => (handles2 T).create v
+public handle2(T type, v T) handle2_id T ! handles2 T unit
+=>
+  (handles2 T unit).env.create v

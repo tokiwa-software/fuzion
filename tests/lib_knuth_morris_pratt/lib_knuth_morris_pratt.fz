@@ -60,7 +60,7 @@ lib_knuth_morris_pratt =>
 
     len := 250
 
-    if (envir.args.index_of "-benchmark")??
+    if (envir.args.env.index_of "-benchmark")??
 
       # for len=250 and interpreter takes ~70s on my machine
       brute_force := time.stopwatch (()-> _:= test_brute_force len)
