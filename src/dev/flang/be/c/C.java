@@ -442,7 +442,7 @@ public class C extends ANY
           for (var tagNum : tags)
             {
               var tc = _fuir.clazzChoice(subjClazz, tagNum);
-              if (!hasTag && _fuir.clazzIsRef(tc))  // do we need to check the clazzId of a ref?
+              if (!hasTag && _fuir.clazzIsRef(tc))  // NYI: CLEANUP: do we need to check the clazzId of a ref?
                 {
                   for (var h : _fuir.clazzInstantiatedHeirs(tc))
                     {
