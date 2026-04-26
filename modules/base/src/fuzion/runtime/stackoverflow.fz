@@ -36,7 +36,7 @@ is
   #
   public redef fixed type.default_value option fuzion.runtime.stackoverflow =>
     fuzion.runtime.stackoverflow msg->
-      fuzion.runtime.fault.cause ("stackoverflow", msg)
+      fuzion.runtime.fault.env.cause ("stackoverflow", msg)
 
 
   # create an instance of `stackoverflow` with the given error handler.

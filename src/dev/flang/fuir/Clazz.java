@@ -58,7 +58,12 @@ import dev.flang.util.YesNo;
 
 
 /**
- * Clazz represents a runtime type, i.e, a Type with actual generic arguments.
+ * Clazz represents a runtime type, i.e., a Type with actual generic arguments.
+ *
+ * It is fully described by the type in _type
+ * (and _select in case it represents a field of an open generic type).
+ *
+ * The _outer.type is always equal to _type.outer.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -180,11 +185,11 @@ class Clazz extends ANY implements Comparable<Clazz>
   Clazz _resultClazz = null;
 
 
-
   /**
    * Will instances of this class be created?
    */
   private boolean _isInstantiatedChoice = true; // NYI: false;
+
 
   /**
    * Is this a normalized outer clazz? If so, there might be calls on this as an
@@ -200,7 +205,6 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
   List<Clazz> _inner = new List<>();
-
 
 
   /**
@@ -223,7 +227,6 @@ class Clazz extends ANY implements Comparable<Clazz>
    * Cached result of parents(), null before first call to parents().
    */
   private Set<Clazz> _parents = null;
-
 
 
   /**
@@ -255,7 +258,6 @@ class Clazz extends ANY implements Comparable<Clazz>
    * For a routine with _needsCode: Site of the code block of this clazz
    */
   int _code;
-
 
 
   /**
@@ -483,6 +485,8 @@ class Clazz extends ANY implements Comparable<Clazz>
         return normalize2(st3);
       }
   }
+
+
   private Clazz normalize2(AbstractType t)
   {
     var f = t.feature();
@@ -557,11 +561,19 @@ class Clazz extends ANY implements Comparable<Clazz>
         for (var inh_call : feature().inherits())
           {
             var pt = inh_call.type();
-            var t1 = feature().handDownAndApply(pt, _type);
-            // NYI: CLEANUP: @fridi "I am not sure if or why handDown and replaceThisType are needed here at all."
-            var t2 = handDown(t1, NO_SELECT, (_,_)->{}, new List<>());
-            var t3 = replaceThisType(t2, new List<>());
-            var pc  = _fuir.newClazz(t3);
+            var t0 = handDown(pt, NO_SELECT, (_,_)->{}, new List<>());
+            // NYI: BUG: remove replaceThisType, should be done by handDown
+            // but this types that refer to inheritance call targets are not
+            // properly replaced yet as in e.g.
+            //   o is
+            //     a is
+            //       (_ : i is).a
+            //     i is
+            //       a => say "a"
+            //   b : o.a is
+            //   ignore b
+            var t1 = replaceThisType(t0, new List<>());
+            var pc = _fuir.newClazz(t1);
 
             if (!result.contains(pc))
               {

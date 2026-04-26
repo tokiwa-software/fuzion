@@ -53,5 +53,5 @@ public traverse(
                 t
           }
     while res.ok
-      np := io.dir.open.read .bind p.resolve
+      np := io.dir.open.env.read .bind p.resolve
     until !np.ok then res else res

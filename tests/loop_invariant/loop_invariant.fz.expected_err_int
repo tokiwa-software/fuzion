@@ -7,21 +7,21 @@ fuzion.type.runtime.type.fault.type.default_value.(λkind_and_msg-> kind, msg :=
 fuzion.runtime.fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
   => h e
 -----^
-fuzion.type.runtime.type.contract_fault.type.default_value.(λkind_and_msg-> fuzion.runtime.fault.ca...).call#1: {base.fum}/fuzion/runtime/contract_fault.fz:42:7:
-      fuzion.runtime.fault.cause kind_and_msg
-------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+fuzion.type.runtime.type.contract_fault.type.default_value.(λkind_and_msg-> fuzion.runtime.fault.en...).call#1: {base.fum}/fuzion/runtime/contract_fault.fz:42:7:
+      fuzion.runtime.fault.env.cause kind_and_msg
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 fuzion.runtime.contract_fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
   => h e
 -----^
-fuzion.type.runtime.type.invariant_fault.type.default_value.(λmsg-> fuzion.runtime.contract_fault.ca...).call#1: {base.fum}/fuzion/runtime/invariant_fault.fz:42:7:
-      fuzion.runtime.contract_fault.cause ("inv", msg)
-------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+fuzion.type.runtime.type.invariant_fault.type.default_value.(λmsg-> fuzion.runtime.contract_fault.en...).call#1: {base.fum}/fuzion/runtime/invariant_fault.fz:42:7:
+      fuzion.runtime.contract_fault.env.cause ("inv", msg)
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 fuzion.runtime.invariant_fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
   => h e
 -----^
-fuzion.runtime.invariantcondition_fault#1: {base.fum}/fuzion/runtime/invariant_fault.fz:61:53:
-public invariantcondition_fault(msg String) void => invariant_fault.cause msg
-----------------------------------------------------^^^^^^^^^^^^^^^^^^^^^^^^^
+fuzion.runtime.invariantcondition_fault#1: {base.fum}/fuzion/runtime/invariant_fault.fz:56:3:
+  fuzion.runtime.invariant_fault.env.cause msg
+--^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 loop_invariant.loop: --CURDIR--/loop_invariant.fz:32:13:
   invariant i < 1
 ------------^^^^^

@@ -1202,12 +1202,14 @@ public class GeneratingFUIR extends FUIR
 
 
   /**
-   * Get all heirs of given clazz that are instantiated.
+   * Get all _real_ heirs of given clazz that are instantiated.
+   * For value clazzes an empty array is returned.
    *
    * @param cl a clazz id
    *
-   * @return an array of the clazz id's of all heirs for cl that are
-   * instantiated, including cl itself, provided that cl is instantiated.
+   * @return an empty array if cl is not a ref.
+   *         An array of the clazz id's of all heirs for cl that are
+   *         instantiated, provided that cl is instantiated.
    */
   @Override
   public int[] clazzInstantiatedHeirs(int cl)
@@ -1216,22 +1218,19 @@ public class GeneratingFUIR extends FUIR
       (cl >= CLAZZ_BASE,
        cl < CLAZZ_BASE + _clazzes.size());
 
-    if (!clazzIsRef(cl))
-      {
-        // NYI: this is sometimes (e.g. in tests/inheritance) called for non-ref
-        // clazzes. Check what this is needed for, seems not to make not so much
-        // sense.
-      }
-
-    var c = id2clazz(cl);
     var result = new List<Clazz>();
-    for (var h : c.heirs())
-      {
-        if (h.isInstantiatedChoice())
-          {
-            result.add(h);
-          }
-      }
+    if (clazzIsRef(cl))
+        {
+          var c = id2clazz(cl);
+          for (var h : c.heirs())
+            {
+              if (h.isInstantiatedChoice())
+                {
+                  result.add(h);
+                }
+            }
+        }
+
     var res = new int[result.size()];
     for (var i = 0; i < result.size(); i++)
       {

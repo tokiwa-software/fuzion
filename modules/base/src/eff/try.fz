@@ -68,7 +68,7 @@ public try(ERROR type, F type : fallible ERROR, T type, code_try ()->T) is
   # usage example:
   #
   #     fuzion.runtime.contract_fault
-  #       .try ()->(envir.args.nth 3).or_panic.trim.parse_i32.or_panic
+  #       .try ()->(envir.args.env.nth 3).or_panic.trim.parse_i32.or_panic
   #       .or_try _->envir.vars["DEBUG_LEVEL"].or_panic.trim.parse_i32.or_panic
   #       .catch  _->4
   #
