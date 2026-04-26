@@ -478,27 +478,27 @@ class Clazz extends ANY implements Comparable<Clazz>
       }
     else
       {
-        var st1 = f.selfType();
-        var st2 = f.handDownAndApply(st1, _type);
-        var st3 = st2.asRef();
-        return normalize2(st3);
+        var t0 = f.selfType().asRef();
+        // we are dealing with a ref (`t0`) inside of a ref (`t0.outer()`)
+        // We have to use the outer-this type and use replaceThisType to find
+        // the correct t0.outer() within this clazz. see #5653 for an example
+        var t1 = t0.outer().isRef()
+          ? t0
+          : t0.replaceGenericsAndOuter(t0.generics(), replaceThisType(t0.outer().asThis(), new List<>()));
+        return normalize2(f.handDownAndApply(t1, _type));
       }
   }
 
 
   private Clazz normalize2(AbstractType t)
   {
-    var f = t.feature();
-    if (f.isUniverse())
+    var result = _fuir.universe();
+    if (!t.feature().isUniverse())
       {
-        return _fuir.universe();
+        result = _fuir.newClazz(normalize2(t.outer().feature().selfType()), t, FuzionConstants.NO_SELECT);
+        result._isNormalized = true;
       }
-    else
-      {
-        var normalized = _fuir.newClazz(normalize2(f.outer().selfType()), t, FuzionConstants.NO_SELECT);
-        normalized._isNormalized = true;
-        return normalized;
-      }
+    return result;
   }
 
 
