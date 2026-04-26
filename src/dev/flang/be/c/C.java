@@ -1921,6 +1921,8 @@ public class C extends ANY
       {
         l.add(_fuir.isConstructor(cl)
                 ? current(_fuir.clazzCode(cl)).ret()                                                      // a constructor, return current instance
+                : _fuir.clazzResultField(cl) == FUIR.NO_CLAZZ
+                ? reportErrorInCode0("unreachable code, unused result field.")
                 : current(_fuir.clazzCode(cl)).field(_names.fieldName(_fuir.clazzResultField(cl))).ret()  // a routine, return result field
               );
       }
