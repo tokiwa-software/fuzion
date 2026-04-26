@@ -221,6 +221,186 @@ body_reader(LM type : mutate, reader_size i32, _ unit) : io.Read_Handler is
             e error => e
 
 
+# version of body reader that handles connections with Transfer-Encoding:
+# chunked
+body_reader_chunked(LM type : mutate) : io.Read_Handler is
+
+  chunk_start is
+  chunk_size is
+  chunk_post_size is
+  chunk_end_start is
+  chunk_end_finalize is
+  chunk_body is
+  chunk_post_body_start is
+  chunk_post_body_finalize is
+  chunk_end_of_file is
+
+  chunk_enum : choice
+    chunk_start
+    chunk_size
+    chunk_post_size
+    chunk_end_start
+    chunk_end_finalize
+    chunk_body
+    chunk_post_body_start
+    chunk_post_body_finalize
+    chunk_end_of_file is
+
+  position := mut chunk_enum chunk_start
+  current_chunk_size := mut u64 0
+
+  update_ccs_or_err (new option u64) choice (Sequence u8) io.end_of_file error =>
+    match new
+      nil => error "overflow while parsing chunk size"
+      i u64 =>
+        current_chunk_size <- i
+        position <- chunk_size
+        Sequence u8 .empty
+
+  handle_start (s Sequence u8) choice (Sequence u8) io.end_of_file error =>
+    c := s.first.or_panic .as_u64
+
+    (io.buffered LM).reader.env.discard 1
+
+    current_chunk_size <- 0
+
+    if 0x30 ≤ c ≤ 0x39
+      update_ccs_or_err ((current_chunk_size.get *? 16) +? (c - 0x30))
+    else if 0x41 ≤ c ≤ 0x5a
+      update_ccs_or_err ((current_chunk_size.get *? 16) +? (c + 10 - 0x41))
+    else if 0x61 ≤ c ≤ 0x7a
+      update_ccs_or_err ((current_chunk_size.get *? 16) +? (c + 10 - 0x61))
+    else
+      error "no chunk size provided"
+
+
+  handle_size (s Sequence u8) choice (Sequence u8) io.end_of_file error =>
+    c := s.first.or_panic .as_u64
+
+    (io.buffered LM).reader.env.discard 1
+
+    if 0x30 ≤ c ≤ 0x39
+      update_ccs_or_err ((current_chunk_size.get *? 16) +? (c - 0x30))
+    else if 0x41 ≤ c ≤ 0x5a
+      update_ccs_or_err ((current_chunk_size.get *? 16) +? (c + 10 - 0x41))
+    else if 0x61 ≤ c ≤ 0x7a
+      update_ccs_or_err ((current_chunk_size.get *? 16) +? (c + 10 - 0x61))
+    else if c = 0x0d
+      position <- chunk_post_size
+      Sequence u8 .empty
+    else
+      error "chunk size invalid"
+
+
+  handle_post_size (s Sequence u8) choice (Sequence u8) io.end_of_file error =>
+    # current_chunk_size is finalized now
+    c := s.first.or_panic
+
+    (io.buffered LM).reader.env.discard 1
+
+    if c = 0x0a
+      if current_chunk_size.get = 0
+        position <- chunk_end_start
+      else
+        position <- chunk_body
+
+      Sequence u8 .empty
+    else
+      error "invalid termination for chunk size, expected LF found {c}"
+
+
+  handle_end_start (s Sequence u8) choice (Sequence u8) io.end_of_file error =>
+    c := s.first.or_panic
+
+    (io.buffered LM).reader.env.discard 1
+
+    if c = 0x0d
+      position <- chunk_end_finalize
+      Sequence u8 .empty
+    else
+      error "NYI: trailers"
+
+
+  handle_end_finalize (s Sequence u8) choice (Sequence u8) io.end_of_file error =>
+    c := s.first.or_panic
+
+    (io.buffered LM).reader.env.discard 1
+
+    if c = 0x0a
+      position <- chunk_end_of_file
+      io.end_of_file
+    else
+      error "invalid termination of chunked transaction, expected LF found {c}"
+
+
+  handle_body (s Sequence u8) choice (Sequence u8) io.end_of_file error =>
+    chunk := s.take current_chunk_size.get
+    count := chunk.count
+
+    (io.buffered LM).reader.env.discard count
+
+    match current_chunk_size.get -? count.as_u64
+      new u64 =>
+        current_chunk_size <- new
+
+        if new > 0
+          position <- chunk_body
+        else
+          position <- chunk_post_body_start
+      nil => panic "should not happen, underflow when calculating new chunk size"
+
+    chunk
+
+
+  handle_post_body_start (s Sequence u8) choice (Sequence u8) io.end_of_file error =>
+    c := s.first.or_panic
+
+    (io.buffered LM).reader.env.discard 1
+
+    if c = 0x0d
+      position <- chunk_post_body_finalize
+      Sequence u8 .empty
+    else
+      error "invalid termination of body, expected CR found {c}"
+
+
+  handle_post_body_finalize (s Sequence u8) choice (Sequence u8) io.end_of_file error =>
+    c := s.first.or_panic
+
+    (io.buffered LM).reader.env.discard 1
+
+    if c = 0x0a
+      position <- chunk_start
+      Sequence u8 .empty
+    else
+      error "invalid termination of body, expected LF found {c}"
+
+
+  public redef read(max_count i32) choice (Sequence u8) io.end_of_file error =>
+    match (io.buffered LM).reader.env.read
+      s Sequence =>
+        if s.is_empty
+          Sequence u8 .empty # do nothing for now, wait for buffered reader to buffer
+        else
+          match position.get
+            chunk_start => handle_start s
+            chunk_size => handle_size s
+            chunk_post_size => handle_post_size s
+            chunk_end_start => handle_end_start s
+            chunk_end_finalize => handle_end_finalize s
+            chunk_body => handle_body s
+            chunk_post_body_start => handle_post_body_start s
+            chunk_post_body_finalize => handle_post_body_finalize s
+            chunk_end_of_file => io.end_of_file
+      o outcome =>
+        match o
+          e error => e
+          io.end_of_file =>
+            match position.get
+              chunk_end_of_file => io.end_of_file
+              * => error "unexpected end of file"
+
+
 # create a body_reader for the specified options
 #
 module body_reader(
@@ -255,7 +435,7 @@ module body_helper(LM type : mutate, is_req bool, header_fields container.Map St
 
       # If a Transfer-Encoding header field is present and the chunked transfer coding (Section 7.1) is the final encoding, the message body length is determined by reading and decoding the chunked data until the transfer coding indicates the data is complete.
       if transfer_encodings.last.or_panic = "chunked"
-        panic "NYI: UNDER DEVELOPMENT: chunked transfer encoding not yet supported"
+        body_reader_chunked LM
 
       # If a Transfer-Encoding header field is present in a response and the chunked transfer coding is not the final encoding, the message body length is determined by reading the connection until it is closed by the server.
       else if !is_req
