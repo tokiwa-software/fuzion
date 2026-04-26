@@ -155,8 +155,9 @@ private:public uuid(val u128) : property.orderable is
   #
   # https://datatracker.ietf.org/doc/html/rfc9562#name-uuid-version-4
   #
-  public type.create_random uuid =>
-    uuid ((u128 random.next_u64 random.next_u64) & data_mask | v4_vers_var_bits)
+  public type.create_random uuid ! random
+  =>
+    uuid ((u128 random.env.next_u64 random.env.next_u64) & data_mask | v4_vers_var_bits)
 
 
   # Version 8 UUID containing 122 bits of custom data

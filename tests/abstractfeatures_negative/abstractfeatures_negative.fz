@@ -26,7 +26,7 @@
 abstractfeatures_negative is
 
   # flag that may be true of false in a way that is unknown to the compiler.
-  maybe => envir.args.count > 3
+  maybe => envir.args.env.count > 3
 
   opengenerics12 =>
     F(A type...) ref is

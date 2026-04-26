@@ -28,7 +28,7 @@
 #
 test_effect_neg is
 
-  maybe => envir.args.count > 3
+  maybe => envir.args.env.count > 3
 
   a : mutate is
   b : mutate is

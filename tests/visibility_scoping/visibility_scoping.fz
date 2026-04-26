@@ -106,7 +106,7 @@ visibility_scoping is
       unit.y is
       b is
 
-      if envir.args.count > 2
+      if envir.args.env.count > 2
 
         # `unit.z1`, `unit.z2`, `c1` and `c2` should be visible in this `if` clause only
         unit.z1 is

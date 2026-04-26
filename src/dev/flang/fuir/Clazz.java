@@ -393,7 +393,8 @@ class Clazz extends ANY implements Comparable<Clazz>
     //
     // var ignore = resultClazz();
     if (CHECKS) check
-      (_outer ==  null || _type.outer().compareTo(_outer._type) == 0);
+      (_outer ==  null || _type.outer().compareTo(_outer._type) == 0,
+       outerRef() == null || outerRef().resultClazz().compareTo(_outer) == 0);
   }
 
 
@@ -560,11 +561,19 @@ class Clazz extends ANY implements Comparable<Clazz>
         for (var inh_call : feature().inherits())
           {
             var pt = inh_call.type();
-            var t1 = feature().handDownAndApply(pt, _type);
-            // NYI: CLEANUP: @fridi "I am not sure if or why handDown and replaceThisType are needed here at all."
-            var t2 = handDown(t1, NO_SELECT, (_,_)->{}, new List<>());
-            var t3 = replaceThisType(t2, new List<>());
-            var pc  = _fuir.newClazz(t3);
+            var t0 = handDown(pt, NO_SELECT, (_,_)->{}, new List<>());
+            // NYI: BUG: remove replaceThisType, should be done by handDown
+            // but this types that refer to inheritance call targets are not
+            // properly replaced yet as in e.g.
+            //   o is
+            //     a is
+            //       (_ : i is).a
+            //     i is
+            //       a => say "a"
+            //   b : o.a is
+            //   ignore b
+            var t1 = replaceThisType(t0, new List<>());
+            var pc = _fuir.newClazz(t1);
 
             if (!result.contains(pc))
               {
