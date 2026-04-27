@@ -2076,8 +2076,8 @@ addSemiElmts: SEMI semiSepElmts
     bracketTermWithNLs(BRACKETS, "inlineArray",
                        () -> {
                         var sep = Token.t_undefined;              // separator in use t_comma or t_semicolon
-                        var sep1 = SourcePosition.notAvailable;  // position of first separator
-                        while (current() != Token.t_rbracket && (sep == Types.t_undefined || skip(Token.t_comma) || skip(Token.t_semicolon))
+                        var sep1 = -1;  // position of first separator
+                        while (current() != Token.t_rbracket && (sep == Token.t_undefined || skip(Token.t_comma) || skip(Token.t_semicolon)))
                           {
                             elements.add(operatorExpr());
                             var s = current();
