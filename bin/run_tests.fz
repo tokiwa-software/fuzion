@@ -229,8 +229,11 @@ main =>
     say (io.slurp failures)
     say_section "run_tests.failures END"
 
+    common_prefix := 1 + results_content.map (.split[0].find_last "/" .or_else -1)
+                                        .min.or_else 0
+
     failed_test_names := failed_tests
-                           .map (.split[0].substring 12) # remove "build/tests/"
+                           .map (.split[0].substring common_prefix) # remove prefix, e.g., "build/tests/"
                            .as_string " "
 
     say """
