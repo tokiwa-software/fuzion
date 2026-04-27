@@ -323,15 +323,13 @@ public class GeneratingFUIR extends FUIR
 
          return codeForTypeFold(call,
                                 currentClazz,
-                                new List<>
-                                  (fuir._usedEffectTypes.stream()
-                                        .map(c -> fuir.id2clazz(c)._type) // for all actual types assigned to the open type parameter
-
-                                        // The effects come in the order they were found by DFA, which is arbitrary.  To have a
-                                        // defined order, we order them by their string representation.  Is there a better,
-                                        // more natural order we can use here?
-                                        .sorted((t1,t2)->t1.toString(false).compareTo(t2.toString(false)))
-                                   .collect(Collectors.toList()).toArray(new AbstractType[0]))
+                                fuir._usedEffectTypes.stream()
+                                    .map(c -> fuir.id2clazz(c)._type) // for all actual types assigned to the open type parameter
+                                    // The effects come in the order they were found by DFA, which is arbitrary.  To have a
+                                    // defined order, we order them by their string representation.  Is there a better,
+                                    // more natural order we can use here?
+                                    .sorted((t1,t2)->t1.toString(false).compareTo(t2.toString(false)))
+                                    .collect(List.collector())
                                 );
        });
   }
