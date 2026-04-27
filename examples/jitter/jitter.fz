@@ -68,6 +68,11 @@ jitter =>
   show_log_csv => false
 
 
+  # run jitter test in dedicated spawned thread?
+  #
+  run_on_dedicated_thread => true
+
+
 
   # run jitter test using C.clock.run_periodic
   #
@@ -150,5 +155,11 @@ jitter =>
       e error => say $e
       void    => # will not happen
 
-  time.nano ! ()->
-    test_jitter time.nano time.nano
+  concur.threads ! ()->
+    time.nano ! ()->
+      if run_on_dedicated_thread
+        thrd := concur.threads.env.spawn ()->
+          test_jitter time.nano time.nano
+        _ := thrd.join
+      else
+        test_jitter time.nano time.nano
