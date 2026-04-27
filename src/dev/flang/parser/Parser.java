@@ -2075,25 +2075,28 @@ addSemiElmts: SEMI semiSepElmts
     var elements = new List<Expr>();
     bracketTermWithNLs(BRACKETS, "inlineArray",
                        () -> {
-                         elements.add(operatorExpr());
-                         var sep = current();
-                         var s = sep;
-                         var p1 = tokenPos();
-                         boolean reportedMixed = false;
-                         while ((s == Token.t_comma || s == Token.t_semicolon) && skip(s))
-                           {
-                             if (current() != Token.t_rbracket)
-                               {
-                                 elements.add(operatorExpr());
-                               }
-                             s = current();
-                             if ((s == Token.t_comma || s == Token.t_semicolon) && s != sep && !reportedMixed)
-                               {
-                                 AstErrors.arrayInitCommaAndSemiMixed(pos, sourcePos(p1), tokenSourcePos());
-                                 reportedMixed = true;
-                               }
-                           }
-                         return Void.TYPE;
+                        if (current() != Token.t_rbracket)
+                          {
+                            elements.add(operatorExpr());
+                          }
+                        var sep = current();
+                        var s = sep;
+                        var p1 = tokenPos();
+                        boolean reportedMixed = false;
+                        while ((s == Token.t_comma || s == Token.t_semicolon) && skip(s))
+                          {
+                            if (current() != Token.t_rbracket)
+                              {
+                                elements.add(operatorExpr());
+                              }
+                            s = current();
+                            if ((s == Token.t_comma || s == Token.t_semicolon) && s != sep && !reportedMixed)
+                              {
+                                AstErrors.arrayInitCommaAndSemiMixed(pos, sourcePos(p1), tokenSourcePos());
+                                reportedMixed = true;
+                              }
+                          }
+                        return Void.TYPE;
                        },
                        () -> Void.TYPE);
     return new InlineArray(pos, elements);
