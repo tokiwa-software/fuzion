@@ -2075,25 +2075,21 @@ addSemiElmts: SEMI semiSepElmts
     var elements = new List<Expr>();
     bracketTermWithNLs(BRACKETS, "inlineArray",
                        () -> {
-                        if (current() != Token.t_rbracket)
+                        var sep = Token.t_undefined;              // separator in use t_comma or t_semicolon
+                        var sep1 = SourcePosition.notAvailable;  // position of first separator
+                        while (current() != Token.t_rbracket && (sep == Types.t_undefined || skip(Token.t_comma) || skip(Token.t_semicolon))
                           {
                             elements.add(operatorExpr());
-                          }
-                        var sep = current();
-                        var s = sep;
-                        var p1 = tokenPos();
-                        boolean reportedMixed = false;
-                        while ((s == Token.t_comma || s == Token.t_semicolon) && skip(s))
-                          {
-                            if (current() != Token.t_rbracket)
+                            var s = current();
+                            if (sep == Token.t_undefined)
                               {
-                                elements.add(operatorExpr());
+                                sep = s;
+                                sep1 = tokenPos();
                               }
-                            s = current();
-                            if ((s == Token.t_comma || s == Token.t_semicolon) && s != sep && !reportedMixed)
+                            else if ((s == Token.t_comma || s == Token.t_semicolon) && s != sep && sep != Token.t_error)
                               {
-                                AstErrors.arrayInitCommaAndSemiMixed(pos, sourcePos(p1), tokenSourcePos());
-                                reportedMixed = true;
+                                AstErrors.arrayInitCommaAndSemiMixed(pos, sourcePos(sep1), tokenSourcePos());
+                                sep = Token.t_error;
                               }
                           }
                         return Void.TYPE;
