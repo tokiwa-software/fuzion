@@ -1903,42 +1903,40 @@ class Clazz extends ANY implements Comparable<Clazz>
         t = t.replace_inherited_this_type(c.calledFeature(), feature(), foundRef);
       }
 
-    return handDown(t, select, foundRef, feature());
+    return handDown(t, select, foundRef, feature(), feature().isField());
   }
 
 
   // iterate using {@code child} and {@code parent} over outer clazzes starting at
   // {@code this} where {@code child} is the current outer clazz and {@code parent} is the
   // parent feature the previous inner clazz' feature was inherited from.
-  // find outer that inherits this clazz, e.g.
-  //
-  //   Any.me =>
-  //     res := Any.this
-  //     res
-  //   x : Any is
-  //
-  // here, for {@code x.me.res} inherited from {@code Any.me.res}, the
-  // inheritance is two features out when {@code x} ({@code childf}) inherits
-  // form {@code Any} ({@code parent}).
-  private AbstractType handDown(AbstractType t, int select, BiConsumer<AbstractType,AbstractType> foundRef,
-    AbstractFeature parent)
+  private AbstractType handDown(AbstractType t, int select, BiConsumer<AbstractType, AbstractType> foundRef,
+    AbstractFeature parent, boolean originClazzIsField)
   {
+    // find outer that inherits this clazz, e.g.
+    //
+    //   Any.me =>
+    //     res := Any.this
+    //     res
+    //   x : Any is
+    //
+    // here, for {@code x.me.res} inherited from {@code Any.me.res}, the
+    // inheritance is two features out when {@code x} ({@code childf}) inherits
+    // form {@code Any} ({@code parent}).
     var t0 = t.replace_inherited_this_type(parent, feature(), foundRef);
-    var t1 = AbstractFeature.handDownThroughInheritsCalls(t0, select, feature().findInheritanceChain(parent));
+    var inh = feature().findInheritanceChain(parent);
+    var t1 = AbstractFeature.handDownThroughInheritsCalls(t0, select, inh);
     var t2 = t1.applyTypePars(_type, select);
-
     // NYI: CLEANUP: ugly special handling.
     // outers of fields are currently normalized to be values
     // see: GeneratingFuir.newClazz
     // need to undo this here.
-    var x = _type.isValue() && _type.feature().isRef() && feature().isField()
+    var x = isValue() && feature().isRef() && originClazzIsField
       ? _type.asRef()
       : _type;
-
     var t3 = t2.replace_this_type_by_actual_outer_locally(x, foundRef);
-
     return _outer != null
-      ? _outer.handDown(t3, select, foundRef, feature().outer())
+      ? _outer.handDown(t3, select, foundRef, feature().outer(), originClazzIsField)
       : t3;
   }
 
