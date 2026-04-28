@@ -251,7 +251,13 @@ module body_helper(LM type : mutate, is_req bool, header_fields container.Map St
 
     else if header_fields.has "transfer-encoding"
 
-      transfer_encodings := header_fields["transfer-encoding"].or_panic.split "," .map (.trim)
+      # transfer codings are case-insensitive
+      # https://www.rfc-editor.org/rfc/rfc7230#section-4
+      transfer_encodings :=
+        header_fields["transfer-encoding"]
+          .or_panic
+          .split ","
+          .map (.trim.lower_case)
 
       # If a Transfer-Encoding header field is present and the chunked transfer coding (Section 7.1) is the final encoding, the message body length is determined by reading and decoding the chunked data until the transfer coding indicates the data is complete.
       if transfer_encodings.last.or_panic = "chunked"
