@@ -440,31 +440,32 @@ public class Function extends AbstractLambda
    */
   private Expr targetCalls(Resolution res, Context context, AbstractType tt)
   {
-    if (tt == null || tt.backingFeature().isUniverse())
+    return switch(tt.kind())
       {
-        return null;
-      }
-    else if (tt.isThisType())
-      {
-        return new Current(pos(), tt.feature());
-      }
-    else if (tt.isGenericArgument())
-      {
-        AstErrors.lamdaOuterMustNotBeGenericArgument(pos(), tt);
-        return Call.ERROR;
-      }
-    else if (!tt.feature().valueArguments().isEmpty())
-      {
-        AstErrors.lamdaOuterMustNotHaveArgs(pos(), tt);
-        return Call.ERROR;
-      }
-    else
-      { // NYI: UNDER DEVELOPMENT: Report error if arg list is not empty. Also
-        // handle the case that one of the outer features in context is the same
-        // as f.outer() and use the correct chain of current and outer refs
-        // instead.
-        return new Call(pos(), targetCalls(res, context, tt.outer()), tt.feature().baseName());
-      }
+        case TypeKind.ThisType -> new Current(pos(), tt.feature());
+        case TypeKind.GenericArgument -> {
+          AstErrors.lamdaOuterMustNotBeGenericArgument(pos(), tt);
+          yield Call.ERROR;
+        }
+        default -> {
+          if (!tt.feature().valueArguments().isEmpty())
+            {
+              AstErrors.lamdaOuterMustNotHaveArgs(pos(), tt);
+              yield Call.ERROR;
+            }
+          else
+            { // NYI: UNDER DEVELOPMENT: Report error if arg list is not empty. Also
+              // handle the case that one of the outer features in context is the same
+              // as f.outer() and use the correct chain of current and outer refs
+              // instead.
+              var tto = tt.outer();
+              var tc = tto == null || tto.backingFeature().isUniverse()
+                ? null
+                : targetCalls(res, context, tto);
+              yield new Call(pos(), tc, tt.feature().baseName());
+            }
+        }
+      };
   }
 
 
