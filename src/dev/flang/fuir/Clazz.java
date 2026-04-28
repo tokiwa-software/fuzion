@@ -1891,19 +1891,15 @@ class Clazz extends ANY implements Comparable<Clazz>
    * that is to be chosen. NO_SELECT otherwise.
    *
    */
-  private AbstractType handDown(AbstractType t, int select, BiConsumer<AbstractType, AbstractType> foundRef, List<AbstractCall> inh0)
+  private AbstractType handDown(AbstractType t, int select, BiConsumer<AbstractType, AbstractType> foundRef, List<AbstractCall> inh)
   {
     if (PRECONDITIONS) require
       (t != null,
        Errors.any() || t != Types.t_ERROR,
        Errors.any() || (t.isOpenGeneric() == (select >= 0)));
 
-    for (AbstractCall c : inh0)
-      {
-        t = t.replace_inherited_this_type(c.calledFeature(), feature(), foundRef);
-      }
 
-    return handDown(t, select, foundRef, feature(), feature().isField());
+    return handDown(t, select, foundRef, inh, feature().isField());
   }
 
 
@@ -1911,7 +1907,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   // {@code this} where {@code child} is the current outer clazz and {@code parent} is the
   // parent feature the previous inner clazz' feature was inherited from.
   private AbstractType handDown(AbstractType t, int select, BiConsumer<AbstractType, AbstractType> foundRef,
-    AbstractFeature parent, boolean originClazzIsField)
+    List<AbstractCall> inh, boolean originClazzIsField)
   {
     // find outer that inherits this clazz, e.g.
     //
@@ -1923,9 +1919,12 @@ class Clazz extends ANY implements Comparable<Clazz>
     // here, for {@code x.me.res} inherited from {@code Any.me.res}, the
     // inheritance is two features out when {@code x} ({@code childf}) inherits
     // form {@code Any} ({@code parent}).
-    var t0 = t.replace_inherited_this_type(parent, feature(), foundRef);
-    var inh = feature().findInheritanceChain(parent);
-    var t1 = AbstractFeature.handDownThroughInheritsCalls(t0, select, inh);
+
+    for (AbstractCall c : inh)
+      {
+        t = t.replace_inherited_this_type(c.calledFeature(), feature(), foundRef);
+      }
+    var t1 = AbstractFeature.handDownThroughInheritsCalls(t, select, inh);
     var t2 = t1.applyTypePars(_type, select);
     // NYI: CLEANUP: ugly special handling.
     // outers of fields are currently normalized to be values
@@ -1936,7 +1935,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       : _type;
     var t3 = t2.replace_this_type_by_actual_outer_locally(x, foundRef);
     return _outer != null
-      ? _outer.handDown(t3, select, foundRef, feature().outer(), originClazzIsField)
+      ? _outer.handDown(t3, select, foundRef, _outer.feature().findInheritanceChain(feature().outer()), originClazzIsField)
       : t3;
   }
 
