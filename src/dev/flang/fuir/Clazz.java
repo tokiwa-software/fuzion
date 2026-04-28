@@ -1898,45 +1898,48 @@ class Clazz extends ANY implements Comparable<Clazz>
        Errors.any() || t != Types.t_ERROR,
        Errors.any() || (t.isOpenGeneric() == (select >= 0)));
 
-
     return handDown(t, select, foundRef, inh, feature().isField());
   }
 
 
-  // iterate using {@code child} and {@code parent} over outer clazzes starting at
-  // {@code this} where {@code child} is the current outer clazz and {@code parent} is the
-  // parent feature the previous inner clazz' feature was inherited from.
+  /**
+   * recursively handdown {@code t} to outer clazzes starting at {@code this}.
+   */
   private AbstractType handDown(AbstractType t, int select, BiConsumer<AbstractType, AbstractType> foundRef,
     List<AbstractCall> inh, boolean originClazzIsField)
   {
-    // find outer that inherits this clazz, e.g.
-    //
-    //   Any.me =>
-    //     res := Any.this
-    //     res
-    //   x : Any is
-    //
-    // here, for {@code x.me.res} inherited from {@code Any.me.res}, the
-    // inheritance is two features out when {@code x} ({@code childf}) inherits
-    // form {@code Any} ({@code parent}).
+    // NYI: CLEANUP: ugly special handling.
+    // outers of fields are currently normalized to be values
+    // see: GeneratingFuir.newClazz
+    // need to undo this here.
+    var tt = isValue() && feature().isRef() && originClazzIsField
+      ? _type.asRef()
+      : _type;
+
+    // NYI: UNDER DEVELOPMENT: this code needs documentation / motivation
+    // particularly it is unclear to me how the order in which
+    // we do these things affects t
 
     for (AbstractCall c : inh)
       {
         t = t.replace_inherited_this_type(c.calledFeature(), feature(), foundRef);
       }
     var t1 = AbstractFeature.handDownThroughInheritsCalls(t, select, inh);
-    var t2 = t1.applyTypePars(_type, select);
-    // NYI: CLEANUP: ugly special handling.
-    // outers of fields are currently normalized to be values
-    // see: GeneratingFuir.newClazz
-    // need to undo this here.
-    var x = isValue() && feature().isRef() && originClazzIsField
-      ? _type.asRef()
-      : _type;
-    var t3 = t2.replace_this_type_by_actual_outer_locally(x, foundRef);
+    var t2 = t1.applyTypePars(tt, select);
+    // NYI: CLEANUP: unclear why this is needed?
+    var t3 = t2.replace_this_type_by_actual_outer_locally(tt, foundRef);
     return _outer != null
-      ? _outer.handDown(t3, select, foundRef, _outer.feature().findInheritanceChain(feature().outer()), originClazzIsField)
+      ? _outer.handDown(t3, select, foundRef, inhOuter(), originClazzIsField)
       : t3;
+  }
+
+
+  /**
+   * get the inheritance chain from _outer.feature() to this features original outer.
+   */
+  private List<AbstractCall> inhOuter()
+  {
+    return _outer.feature().findInheritanceChain(feature().outer());
   }
 
 
