@@ -63,7 +63,7 @@ public effect is
   public type.from_env effect.this => intrinsic
 
 
-  # at the bing_bang_singularity, set the effect of type `efffect.this`
+  # at the bing_bang_singularity, set the effect of type `effect.this`
   # to the given effect value `e`.
   #
   type.instate_at_singularity0(e effect.this) unit => intrinsic
