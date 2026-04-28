@@ -235,7 +235,7 @@ primes_test is
 
   primes_test_size := 75
 
-  # NYI: calculation of prime numbers very slow
+  # NYI: PREFORMANCE: calculation of prime numbers very slow
   primes(n i32) =>
     sieve(l list i32) list i32 =>
       l.head.or_panic : sieve (l.tail.filter ((x) -> !(x%%l.head.or_panic))).as_list
