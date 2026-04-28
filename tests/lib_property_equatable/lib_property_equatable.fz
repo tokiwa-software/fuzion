@@ -46,5 +46,4 @@ lib_property_equatable =>
   say (0 = option 1)
   say (0 = option i32 nil)
 
-  # NYI: UNDER DEVELOPMENT: ugly that we have to use (id (container.Set i32) ...)
-  say (id (container.Set i32) ((container.ps_set i32).empty))=((container.ps_set i32).empty)
+  say (id (container.Set i32) (container.ps_set i32).empty)=(container.ps_set i32).empty
