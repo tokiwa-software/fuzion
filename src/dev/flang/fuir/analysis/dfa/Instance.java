@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir.analysis.dfa;
 
+import static dev.flang.ir.IR.NO_CLAZZ;
+
 import java.util.TreeMap;
 
 import dev.flang.ir.IR;
@@ -156,7 +158,8 @@ public class Instance extends Value
   public void setField(DFA dfa, int field, Value v)
   {
     if (PRECONDITIONS) require
-      (v != null);
+      (v != null,
+       v._clazz == NO_CLAZZ || dfa._fuir.clazzIsRef(v._clazz) || dfa._fuir.clazzResultClazz(field) == v._clazz);
 
     var oldv = _fields.get(field);
     if (oldv != null)
