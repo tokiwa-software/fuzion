@@ -1903,47 +1903,43 @@ class Clazz extends ANY implements Comparable<Clazz>
         t = t.replace_inherited_this_type(c.calledFeature(), feature(), foundRef);
       }
 
-    // iterate using {@code child} and {@code parent} over outer clazzes starting at
-    // {@code this} where {@code child} is the current outer clazz and {@code parent} is the
-    // parent feature the previous inner clazz' feature was inherited from.
-    var child = this;
-    AbstractFeature parent = feature();
-    while (child != null)
-      {
-        var childf = child.feature();
-        // find outer that inherits this clazz, e.g.
-        //
-        //   Any.me =>
-        //     res := Any.this
-        //     res
-        //   x : Any is
-        //
-        // here, for {@code x.me.res} inherited from {@code Any.me.res}, the
-        // inheritance is two features out when {@code x} ({@code childf}) inherits
-        // form {@code Any} ({@code parent}).
-        t = t.replace_inherited_this_type(parent, childf, foundRef);
-        var inh = childf.tryFindInheritanceChain(parent);
-        if (CHECKS) check
-          (Errors.any() || inh != null);
-        if (inh != null)
-          {
-            t = AbstractFeature.handDownThroughInheritsCalls(t, select, inh);
-          }
-        t = t.applyTypePars(child._type, select);
-        // NYI: CLEANUP: ugly special handling.
-        // outers of fields are currently normalized to be values
-        // see: GeneratingFuir.newClazz
-        // need to undo this here.
-        var x = child._type.isValue() && child._type.feature().isRef() && feature().isField()
-          ? child._type.asRef()
-          : child._type;
-        t = t.replace_this_type_by_actual_outer_locally(x, foundRef);
-        child = child._outer;
-        parent = childf.outer();
-      }
-    if (CHECKS) check
-      (Errors.any() || (child == null) == (parent == null));
-    return t;
+    return handDown(t, select, foundRef, feature());
+  }
+
+
+  // iterate using {@code child} and {@code parent} over outer clazzes starting at
+  // {@code this} where {@code child} is the current outer clazz and {@code parent} is the
+  // parent feature the previous inner clazz' feature was inherited from.
+  // find outer that inherits this clazz, e.g.
+  //
+  //   Any.me =>
+  //     res := Any.this
+  //     res
+  //   x : Any is
+  //
+  // here, for {@code x.me.res} inherited from {@code Any.me.res}, the
+  // inheritance is two features out when {@code x} ({@code childf}) inherits
+  // form {@code Any} ({@code parent}).
+  private AbstractType handDown(AbstractType t, int select, BiConsumer<AbstractType,AbstractType> foundRef,
+    AbstractFeature parent)
+  {
+    var t0 = t.replace_inherited_this_type(parent, feature(), foundRef);
+    var t1 = AbstractFeature.handDownThroughInheritsCalls(t0, select, feature().findInheritanceChain(parent));
+    var t2 = t1.applyTypePars(_type, select);
+
+    // NYI: CLEANUP: ugly special handling.
+    // outers of fields are currently normalized to be values
+    // see: GeneratingFuir.newClazz
+    // need to undo this here.
+    var x = _type.isValue() && _type.feature().isRef() && feature().isField()
+      ? _type.asRef()
+      : _type;
+
+    var t3 = t2.replace_this_type_by_actual_outer_locally(x, foundRef);
+
+    return _outer != null
+      ? _outer.handDown(t3, select, foundRef, feature().outer())
+      : t3;
   }
 
 
