@@ -393,7 +393,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
        isChoice());
 
     var g = feature().choiceGenerics();
-           // NYI: UNDER DEVELOPMENT: a bit weird, choice this types.
     return
       isThisType()
       ? g
@@ -852,8 +851,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public List<AbstractType> applyTypeParsMaybeOpen(AbstractFeature f,
                                                    List<AbstractType> actualTypes)
   {
-    return isOpenGeneric() ? genericArgument().replaceOpen(actualTypes)
-                           : new List<>(applyTypePars(f, actualTypes));
+    return isOpenGeneric() && genericArgument().outer() == f
+      ? genericArgument().replaceOpen(actualTypes)
+      : new List<>(applyTypePars(f, actualTypes));
   }
 
 

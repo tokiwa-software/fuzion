@@ -527,18 +527,25 @@ public class Intrinsics extends ANY
           return CExpr.call("fzE_thread_setschedparam", new List<>(A0, A1, A2))
                       .ret();
         });
-    put("fuzion.sys.thread.set_affinity", (c,cl,outer,in) ->
+    put("fuzion.sys.thread.set_affinity0", (c,cl,outer,in) ->
         {
-          return CExpr.call("fzE_thread_setaffinity", new List<>(A0, A1))
+          var internalArray = c._fuir.clazzArgClazz(cl, 1);
+          var data = c._fuir.clazzArg(internalArray, 0);
+          var length = c._fuir.clazzArg(internalArray, 1);
+          return CExpr.call("fzE_thread_setaffinity", new List<>(
+                        A0,
+                        A1.field(c._names.fieldName(data)),
+                        A1.field(c._names.fieldName(length))
+                      ))
                       .ret();
         });
 
-    put("effect.type.abort0"     ,
-        "effect.type.default0"   ,
-        FuzionConstants.EFFECT_INSTATE_NAME,
-        "effect.type.is_instated0",
-        "effect.type.replace0"   ,
-        "effect.type.remove0"    , (c,cl,outer,in) ->
+    put("effect.type.abort0"                 ,
+        "effect.type.instate_at_singularity0",
+        FuzionConstants.EFFECT_INSTATE_NAME  ,
+        "effect.type.is_instated0"           ,
+        "effect.type.set0"                   ,
+        "effect.type.remove0"                , (c,cl,outer,in) ->
         {
           var ecl = c._fuir.effectTypeFromIntrinsic(cl);
           var eid = c._fuir.clazzId2num(ecl) + 1; // must be != 0 since setjmp uses 0 for the normal return case, so we add `1`:
@@ -555,8 +562,10 @@ public class Intrinsics extends ANY
                            CExpr.fprintfstderr("*** abort called for effect `%s` that is not instated!\n",
                                                CExpr.string(c._fuir.clazzName(ecl))),
                            CExpr.exit(1));
-              case "effect.type.default0"     -> CStmnt.iff(evi.not(), CStmnt.seq(effect_is_unit_type ? CExpr.UNIT : ev.assign(e),
-                                                                                  evi.assign(CIdent.TRUE )));
+              case "effect.type.instate_at_singularity0" ->
+                CStmnt.iff(evi.not(), CStmnt.seq(effect_is_unit_type ? CExpr.UNIT : ev.assign(e),
+                                                 evi.assign(CIdent.TRUE)                         ));
+
               case FuzionConstants.EFFECT_INSTATE_NAME ->
                 {
                   var call     = c._fuir.lookupCall(c._fuir.clazzActualGeneric(cl, 0));
@@ -625,7 +634,8 @@ public class Intrinsics extends ANY
                     }
                 }
               case "effect.type.is_instated0" -> CStmnt.seq(CStmnt.iff(evi, c._names.FZ_TRUE.ret()), c._names.FZ_FALSE.ret());
-              case "effect.type.replace0"     -> c._fuir.clazzIsUnitType(ecl) ? CExpr.UNIT : ev.assign(e);
+              case "effect.type.set0"         -> CStmnt.seq(evi.assign(CIdent.TRUE),
+                                                            c._fuir.clazzIsUnitType(ecl) ? CExpr.UNIT : ev.assign(e));
               case "effect.type.remove0"      -> evi.assign(CIdent.FALSE);
               default -> throw new Error("unexpected intrinsic '" + in + "'.");
               };

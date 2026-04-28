@@ -26,14 +26,14 @@ lib_concur_sync =>
   test_signal =>
 
     cnd_res := concur.sync.condition.new.bind cnd->
-      a := concur.threads.spawn ()->
+      a := concur.threads.env.spawn ()->
         cnd.synchronized ()->
           check cnd.wait
           say "Thread proceeding after signal"
 
-      b := concur.threads.spawn ()->
+      b := concur.threads.env.spawn ()->
         say "Thread sleeping"
-        time.nano.sleep (time.duration.ms 100)
+        time.nano.env.sleep (time.duration.ms 100)
         cnd.synchronized ()->
           say "Thread sending signal"
           check cnd.signal
@@ -48,14 +48,14 @@ lib_concur_sync =>
   test_broadcast =>
 
     cnd_res := concur.sync.condition.new.bind cnd->
-      a := concur.threads.spawn ()->
+      a := concur.threads.env.spawn ()->
         cnd.synchronized ()->
           check cnd.wait
           say "Thread proceeding after broadcast"
 
-      b := concur.threads.spawn ()->
+      b := concur.threads.env.spawn ()->
         say "Thread sleeping"
-        time.nano.sleep (time.duration.ms 100)
+        time.nano.env.sleep (time.duration.ms 100)
         cnd.synchronized ()->
           say "Thread sending broadcast"
           check cnd.broadcast

@@ -107,7 +107,7 @@ Sequence.execute(
   feed_stdin Sequence (String, i32)
 ) =>
   seq := map x->x.as_string
-  match os.process.start seq.first.or_panic (seq.drop 1) envir_vars
+  match os.process.start seq.first.or_panic (seq.drop 1) envir_vars.env
     e error => panic "failed executing {Sequence.this}, error is $e"
     p os.process => record_process p Sequence.this.as_string feed_stdin
 

@@ -2129,9 +2129,17 @@ public class DFA extends ANY
         });
     put("fuzion.sys.thread.join0"        , cl -> Value.UNIT);
     put("fuzion.sys.thread.set_policy"   , cl -> genericNumResult(cl));
-    put("fuzion.sys.thread.set_affinity" , cl -> genericNumResult(cl));
+    put("fuzion.sys.thread.set_affinity0", cl ->
+        {
+          var ia = fuir(cl).clazzArgClazz(cl.calledClazz(), 1);
+          var data = fuir(cl).clazzArg(ia, 0);
+          var length = fuir(cl).clazzArg(ia, 1);
+          cl._dfa.readField(data);
+          cl._dfa.readField(length);
+          return genericNumResult(cl);
+        });
 
-    put("effect.type.replace0"              , cl ->
+    put("effect.type.set0"               , cl ->
         {
           var ecl = fuir(cl).effectTypeFromIntrinsic(cl.calledClazz());
           var new_e = cl._args.get(0).value();
@@ -2148,7 +2156,7 @@ public class DFA extends ANY
               if (oev != ev)
                 {
                   cl._dfa._preEffectValues.put(ecl, ev);
-                  cl._dfa.wasChanged(() -> "effect.type.replace0 called: " + fuir(cl).clazzName(cl.calledClazz()));
+                  cl._dfa.wasChanged(() -> "effect.type.set0 called: " + fuir(cl).clazzName(cl.calledClazz()));
                 }
             }
 
@@ -2161,7 +2169,7 @@ public class DFA extends ANY
           // cl.removeEffect(ecl);
           return Value.UNIT;
         });
-    put("effect.type.default0"              , cl ->
+    put("effect.type.instate_at_singularity0", cl ->
         {
           var ecl = fuir(cl).effectTypeFromIntrinsic(cl.calledClazz());
           var new_e = cl._args.get(0).value();
@@ -2172,7 +2180,7 @@ public class DFA extends ANY
                 {
                   cl._dfa._defaultEffects.put(ecl, new_e);
                   cl._dfa._defaultEffectContexts.put(ecl, cl);
-                  cl._dfa.wasChanged(() -> "effect.default called: " + fuir(cl).clazzName(cl.calledClazz()));
+                  cl._dfa.wasChanged(() -> "effect.instate_at_singularity0 called: " + fuir(cl).clazzName(cl.calledClazz()));
                 }
             }
           else
@@ -2182,7 +2190,7 @@ public class DFA extends ANY
               if (oev != ev)
                 {
                   cl._dfa._preEffectValues.put(ecl, ev);
-                  cl._dfa.wasChanged(() -> "effect.default called: " + fuir(cl).clazzName(cl.calledClazz()));
+                  cl._dfa.wasChanged(() -> "effect.instate_at_singularity0 called: " + fuir(cl).clazzName(cl.calledClazz()));
                 }
             }
           return Value.UNIT;

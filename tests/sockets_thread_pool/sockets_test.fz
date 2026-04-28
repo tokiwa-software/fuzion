@@ -172,7 +172,7 @@ sockets_thread_pool_test is
 
   port(f net.family.val, p net.protocol.val) =>
     while servers.read[server_ident f p] = 0
-      time.nano.sleep (time.duration.s 1)
+      time.nano.env.sleep (time.duration.s 1)
     servers.read[server_ident f p]
 
 ########### Tests ################
@@ -181,7 +181,7 @@ sockets_thread_pool_test is
   protocols array net.protocol.val := [net.protocol.tcp, net.protocol.udp]
   for f in families do
     for p in protocols do
-      _ := concur.threads.spawn ()->
+      _ := concur.threads.env.spawn ()->
         _ := concur.thread_pool 3 ()->
           _ := server f p
 

@@ -138,7 +138,7 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
       # NYI: UNDER DEVELOPMENT: this works only when pipes buffer is large enough for
       # what is being written/read to/from pipes
       # thread to pipe from one process to other
-      _ := concur.threads.spawn ()->
+      _ := concur.threads.env.spawn ()->
         _ :=
           for p1rb := std_out_read_handler.read pipe_buffer_size
           while
@@ -169,9 +169,10 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
 
   # wait for this process
   #
-  public wait(timeout time.duration) outcome u32 ! time.nano, processes =>
+  public wait(timeout time.duration) outcome u32 ! time.nano, os.processes
+  =>
     # NYI: process should be ref?
-    os.processes.wait (os.process pid std_in std_out std_err name args) timeout
+    os.processes.env.wait (os.process pid std_in std_out std_err name args) timeout
 
 
   # send signal to process
@@ -182,8 +183,9 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
 
   # start a process with name, arguments and environment variables
   #
-  public type.start(n String, args Sequence String, env_vars container.Map String String) outcome os.process ! processes =>
-    os.processes.start n args env_vars
+  public type.start(n String, args Sequence String, env_vars container.Map String String) outcome os.process ! os.processes
+  =>
+    os.processes.env.start n args env_vars
 
 
   # start a process with name and arguments

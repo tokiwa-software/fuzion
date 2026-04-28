@@ -1,4 +1,3 @@
-(concur.sync.mutex.synchronized#2 unit).lock_effect
 concur.atomic_access
 concur.threads
 fuzion.runtime.check_fault

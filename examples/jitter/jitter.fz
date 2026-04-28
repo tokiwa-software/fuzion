@@ -98,7 +98,7 @@ jitter =>
     run_for_period(period time.duration)
     =>
 
-      start := C.clock.read + start_delay
+      start := C.env.read + start_delay
       end := start + test_duration
       yak "testing period $period for $test_duration..."
 
@@ -113,7 +113,7 @@ jitter =>
         h2 := time.histogram.new "cycle jitter $period, log count / log time"     nil    nil      1 0
 
         # run test
-        _ := C.clock.run_periodic start period end run_one_release
+        _ := C.env.run_periodic start period end run_one_release
 
         # output results
         say terminal.clear_line
@@ -128,7 +128,7 @@ jitter =>
         # in case of a late release or a overrun into the next release time, cause `exception jitter_too_high`
         #
         run_one_release ! exception jitter_too_high =>
-          actual_release := TIMER.clock.read
+          actual_release := TIMER.env.read
           h .add_instant actual_release
           h2.add_instant actual_release
           expected_rel := state_get next_release .t
@@ -137,7 +137,7 @@ jitter =>
             (exception jitter_too_high).env.cause <| error "release time jitter exceeded period"
 
           payload
-          actual_finish := TIMER.clock.read
+          actual_finish := TIMER.env.read
           if actual_finish >= next_rel
             e := error "*** overrun: run started at {actual_release-expected_rel}  and took {actual_finish-actual_release}, which is larger than period $period"
             (exception jitter_too_high).env.cause e
@@ -150,5 +150,4 @@ jitter =>
       e error => say $e
       void    => # will not happen
 
-  time.nano ! ()->
-    test_jitter time.nano time.nano
+  test_jitter time.nano time.nano

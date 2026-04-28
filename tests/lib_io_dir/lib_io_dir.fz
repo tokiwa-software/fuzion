@@ -36,6 +36,6 @@ lib_io_dir =>
   _ := io.file.use unit file2 io.file.mode.write (()-> io.file.writer.write "")
 
   res := io.dir.use (Sequence String) path ()->
-    array 3 _->io.dir.open.read.as_string
+    array 3 _->io.dir.open.env.read.as_string
 
   res.or_panic.sort.for_each say

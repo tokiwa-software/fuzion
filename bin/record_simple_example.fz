@@ -1,8 +1,32 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of record_simple_example script
+#
+# -----------------------------------------------------------------------
+
+
 ########### Extensions ###############
 
 # envir vars as map
 #
-envir_vars := container.map_of ((envir.vars.map_of [
+envir_vars := container.map_of ((envir.vars.env.map_of [
     "PATH",
     "LANG",
     "JAVA_HOME",
@@ -46,7 +70,7 @@ String.prefix !! =>
 ####### record_simple_example ########
 
 
-if envir.args.count != 4
+if envir.args.env.count != 4
   say """
       Usage  : record_simple_example <any|jvm|c|int|effect> <fz+args> <test.fz>
       Example: record_simple_example jvm "build/bin/fz -modules=nom" /tests/hello/HelloWorld.fz
@@ -54,15 +78,15 @@ if envir.args.count != 4
   exit 1
 
 
-type_ := envir.args[1]
-fz_run   := envir.args[2] # NYI: UNDER DEVELOPMENT: code should be same as check_simple_example.fz
-file     := envir.args[3]
+type_ := envir.args.env[1]
+fz_run   := envir.args.env[2] # NYI: UNDER DEVELOPMENT: code should be same as check_simple_example.fz
+file     := envir.args.env[3]
 
 res :=
   if type_ = "jvm" || type_ = "any"
-    !!"$fz_run -XmaxErrors=-1 -jvm {envir.vars["FUZION_JVM_BACKEND_OPTIONS"].or_default ""} $file"
+    !!"$fz_run -XmaxErrors=-1 -jvm {envir.vars.env["FUZION_JVM_BACKEND_OPTIONS"].or_default ""} $file"
   else if type_ = "c"
-    c := !!"$fz_run -XmaxErrors=-1 -c {envir.vars["FUZION_C_BACKEND_OPTIONS"].or_default ""} -o=testbin $file"
+    c := !!"$fz_run -XmaxErrors=-1 -c {envir.vars.env["FUZION_C_BACKEND_OPTIONS"].or_default ""} -o=testbin $file"
     if (c.exit_code = 0)
       e := !!"./testbin"
       _ := io.file.delete (path.of "testbin")

@@ -121,14 +121,6 @@ default_stat_handler : Stat_Handler is
     fzE_lstat path meta_data_arr
 
 
-
-# shorthand for accessing the stat effect in current environment
-#
-# NYI: CLEANUP: Remove and use `stat.env` directly.
-#
-public stat stat ! stat => stat.env
-
-
 # shorthand for accessing and using stats/lstats provided by the stat effect in current environment
 # in success it will return a meta_data outcome storing stats regarding the file/dir
 # in case of failure an error will be returned

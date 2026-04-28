@@ -180,7 +180,4 @@ ex =>
   clang_disposeTranslationUnit tu
   clang_disposeIndex ci
 
-
-_ := mut
-
 ex

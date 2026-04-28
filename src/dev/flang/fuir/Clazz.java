@@ -59,7 +59,12 @@ import dev.flang.util.YesNo;
 
 
 /**
- * Clazz represents a runtime type, i.e, a Type with actual generic arguments.
+ * Clazz represents a runtime type, i.e., a Type with actual generic arguments.
+ *
+ * It is fully described by the type in _type
+ * (and _select in case it represents a field of an open generic type).
+ *
+ * The _outer.type is always equal to _type.outer.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -181,11 +186,11 @@ class Clazz extends ANY implements Comparable<Clazz>
   Clazz _resultClazz = null;
 
 
-
   /**
    * Will instances of this class be created?
    */
   private boolean _isInstantiatedChoice = true; // NYI: false;
+
 
   /**
    * Is this a normalized outer clazz? If so, there might be calls on this as an
@@ -201,7 +206,6 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
   List<Clazz> _inner = new List<>();
-
 
 
   /**
@@ -224,7 +228,6 @@ class Clazz extends ANY implements Comparable<Clazz>
    * Cached result of parents(), null before first call to parents().
    */
   private Set<Clazz> _parents = null;
-
 
 
   /**
@@ -256,7 +259,6 @@ class Clazz extends ANY implements Comparable<Clazz>
    * For a routine with _needsCode: Site of the code block of this clazz
    */
   int _code;
-
 
 
   /**
@@ -392,6 +394,9 @@ class Clazz extends ANY implements Comparable<Clazz>
     // to avoid adding clazzes one lookupDone is set:
     //
     // var ignore = resultClazz();
+    if (CHECKS) check
+      (_outer ==  null || _type.outer().compareTo(_outer._type) == 0,
+       outerRef() == null || outerRef().resultClazz().compareTo(_outer) == 0);
   }
 
 
@@ -482,6 +487,8 @@ class Clazz extends ANY implements Comparable<Clazz>
         return normalize2(st3);
       }
   }
+
+
   private Clazz normalize2(AbstractType t)
   {
     var f = t.feature();
@@ -556,12 +563,8 @@ class Clazz extends ANY implements Comparable<Clazz>
         for (var inh_call : feature().inherits())
           {
             var pt = inh_call.type();
-            var t1 = feature().handDownAndApply(pt, _type);
-            // NYI: CLEANUP: @fridi "I am not sure if or why handDown and replaceThisType are needed here at all."
-            var t2 = handDown(t1, NO_SELECT, (_,_)->{}, new List<>());
-            var t3 = replaceThisType(t2, new List<>());
-            var t4 = replaceLevelTypes(t3);
-            var pc  = _fuir.newClazz(t4);
+            var t0 = handDownAndReplaceThisType(pt, NO_SELECT, (_,_)->{}, new List<>());
+            var pc = _fuir.newClazz(t0);
 
             if (!result.contains(pc))
               {
@@ -576,6 +579,24 @@ class Clazz extends ANY implements Comparable<Clazz>
         _parents = result;
       }
     return result;
+  }
+
+
+  private AbstractType handDownAndReplaceThisType(AbstractType t, int select, BiConsumer<AbstractType, AbstractType> foundRef, List<AbstractCall> inh)
+  {
+    var t0 = handDown(t, select, foundRef, inh);
+    // NYI: BUG: remove replaceThisType, should be done by handDown
+    // but this types that refer to inheritance call targets are not
+    // properly replaced yet as in e.g.
+    //   o is
+    //     a is
+    //       (_ : i is).a
+    //     i is
+    //       a => say "a"
+    //   b : o.a is
+    //   ignore b
+    var t1 = replaceThisType(t0, inh);
+    return replaceLevelTypes(t1);
   }
 
 
@@ -635,11 +656,6 @@ class Clazz extends ANY implements Comparable<Clazz>
     if (!_needsCode && !_fuir._lookupDone)
       {
         _needsCode = true;
-        var r = resultField();
-        if (r != null)
-          { // NYI: UNDER DEVELOPMENT: This is require for tests/javaBase. Check why this is needed only there and not otherwise!
-            r.doesNeedCode();
-          }
       }
   }
 
@@ -1732,11 +1748,6 @@ class Clazz extends ANY implements Comparable<Clazz>
             var ag = (f == Types.resolved.f_type_as_value ? this : o).actualTypeParameters();
             result = ag[0].typeClazz();
           }
-        // NYI: UNDER DEVELOPMENT: special handling for #2262
-        else if (isBoxed())
-          {
-            result = _asValue;
-          }
         else
           {
             if (f.isOpenTypeParameter())
@@ -1902,8 +1913,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     BiConsumer<AbstractType, AbstractType> foundRef = (from,to) ->
       { err.add((c)->AstErrors.illegalOuterRefTypeInCall(c, false, feature(), ft, from, to)); };
 
-    t = handDown(t, select, foundRef, inh);
-    t = replaceLevelTypes(t);
+    t = handDownAndReplaceThisType(t, select, foundRef, inh);
 
     var res = _fuir.type2clazz(t);
     if (res.feature().isCotype())
