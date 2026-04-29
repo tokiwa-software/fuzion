@@ -1287,7 +1287,10 @@ public class DFA extends ANY
         public int accessedClazz(int s)
         {
           return codeAt(s) == ExprKind.Assign &&
-            (clazzIsUnitType(assignedType(s)) || clazzIsUnitType(accessTargetClazz(s)))
+                 (clazzIsUnitType(assignedType(s)) ||
+                  clazzIsUnitType(accessTargetClazz(s)) ||
+                  super.accessedClazz(s) == NO_CLAZZ ||
+                  !hasData(super.accessedClazz(s)))
             ? NO_CLAZZ
             : super.accessedClazz(s);
         }
