@@ -159,7 +159,7 @@ public class Instance extends Value
   {
     if (PRECONDITIONS) require
       (v != null,
-       v._clazz == NO_CLAZZ || dfa._fuir.clazzIsRef(v._clazz) || dfa._fuir.clazzResultClazz(field) == v._clazz);
+       Errors.any() || v._clazz == NO_CLAZZ || dfa._fuir.clazzIsRef(v._clazz) || dfa._fuir.clazzResultClazz(field) == v._clazz);
 
     var oldv = _fields.get(field);
     if (oldv != null)
