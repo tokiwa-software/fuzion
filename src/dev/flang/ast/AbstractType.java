@@ -722,7 +722,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                   {
                     if (!result)
                       {
-                        var pa = p.type().applyTypePars(actual);
+                        var pa = actualType(p.type().applyTypePars(actual));
                         result = pa!=actual && constraintAssignableFrom(context, pa);
                       }
                   }
