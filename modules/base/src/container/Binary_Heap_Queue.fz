@@ -128,7 +128,7 @@ module:public Binary_Heap_Queue(
   # if not already the root
   #
   parent(i i64) option i64
-    pre debug 5 : i.as_i64 < elements.length
+    pre debug 5 : i < elements.length
   =>
     p := (i-1) / 2
     p < 0 ? nil : p
@@ -138,14 +138,14 @@ module:public Binary_Heap_Queue(
   # if they exist
   #
   children(i i64) tuple (option i64) (option i64)
-    pre debug 5 : i >= 0 && i.as_i64 < elements.length
+    pre debug 5 : i >= 0 && i < elements.length
   =>
     left  := i*2 + 1
     right := i*2 + 2
 
     # NYI: CLEANUP: explicit types could be removed when type inference for tuples improves
-    if left.as_i64 < elements.length
-      (option left, id (option i64) (right.as_i64 < elements.length ? right : nil))
+    if left < elements.length
+      (option left, id (option i64) (right < elements.length ? right : nil))
     else
       (option i64 nil, option i64 nil)
 
@@ -153,8 +153,8 @@ module:public Binary_Heap_Queue(
   # swap elements for the given two indices
   #
   swap(a, b i64) unit
-    pre debug: (i64 0) <= a.as_i64 < elements.length
-        debug: (i64 0) <= b.as_i64 < elements.length
+    pre debug: (i64 0) <= a < elements.length
+        debug: (i64 0) <= b < elements.length
   =>
     tmp := elements[a]
     elements[a] := elements[b]
@@ -204,7 +204,7 @@ module:public Binary_Heap_Queue(
     post then debug 5 : check_heap_property
   =>
     elements.add elem
-    up_heap (elements.length.as_i64 - 1)
+    up_heap (elements.length - 1)
 
 
   # get and remove the element with highest priority
