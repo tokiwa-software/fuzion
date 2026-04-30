@@ -23,7 +23,7 @@
 
 # A mutable priority queue implemented using a binary heap
 #
-# Time complexity of internal operations is amortized, du to expanding/shrinking
+# Time complexity of internal operations is amortized, due to expanding/shrinking
 # of internal array, this can be avoided by setting a minimum size and
 # staying within that limit
 #
@@ -143,7 +143,7 @@ module:public Binary_Heap_Queue(
     left  := i*2 + 1
     right := i*2 + 2
 
-    # NYI: CLEANUP: explicit types could be removed when type inference for tuples improves
+    # NYI: CLEANUP: explicit types could be removed when type inference for tuples improves, see #3370
     if left < elements.length
       (option left, id (option i64) (right < elements.length ? right : nil))
     else
@@ -357,14 +357,6 @@ module:public Binary_Heap_Queue(
         lvlres
 
     elements.length = 0 ? "" : (lvl 0).as_string "\n"
-
-
-  # print the string representation of the binary heap
-  #
-  public dbg_say unit => # NYI: CLEANUP: remove debug code
-    say elements
-    say as_string_tree_pretty
-    say "peek=$peek"
 
 
   # level in the binary tree, root is 0,

@@ -30,7 +30,7 @@ public Mutable_Priority_Queue(public T type) ref is
   public enqueue(elem T) unit => abstract
 
 
-  # iteratively add all element to the queue
+  # iteratively add all elements to the queue
   #
   # Note: When creating a new queue, this is less efficient than using
   #       one of the `..._from` features to construct a queue from an
@@ -79,11 +79,6 @@ public Mutable_Priority_Queue(public T type) ref is
   # number of elements in this queue
   #
   public count i64 => abstract
-
-
-  # NYI: UNDER DEVELOPMENT:
-  # Does remove make sense? If so should there be a remove_one and remove_all?
-  # public remove(elem T) => abstract
 
 
 
