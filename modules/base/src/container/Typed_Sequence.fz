@@ -331,7 +331,7 @@ public Types ref : Sequence Type is
   #
   # In case this `Types` instance is empty, the result is `e`.
   #
-  public type_foldf(E type, A type : type_applicator E, e E, a A) E
+  public type_foldf(E type, A type : container.type_applicator E, e E, a A) E
   =>
     abstract
 
