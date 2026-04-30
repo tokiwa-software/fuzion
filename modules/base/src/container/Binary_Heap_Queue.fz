@@ -292,7 +292,7 @@ module:public Binary_Heap_Queue(
           indent + prfx + $elements[i] + (lvl new_ind c.0 (c.1.is_nil)) + (lvl new_ind c.1 true)
 
     chd := children 0
-    elements.is_empty ? "" : $elements[0] + (lvl "\n" chd.0 false) + (lvl "\n" chd.1 true)
+    elements.is_empty ? "" : $elements[0] + (lvl "\n" chd.0 !chd.1.ok) + (lvl "\n" chd.1 true)
 
 
   # create a multiline string representation of the binary heap
