@@ -200,6 +200,8 @@ module:public Binary_Heap_Queue(
 
   # add an element to the queue
   #
+  # Time complexity: amortized O(log n) or O(log n) when staying within min_size
+  #
   public redef enqueue(elem T) unit
     post then debug 5 : check_heap_property
   =>
@@ -211,6 +213,8 @@ module:public Binary_Heap_Queue(
   #
   # this is the element with either minimum or maximum value
   # depending on the chosen queue/comparator
+  #
+  # Time complexity: amortized O(log n) or O(log n) when staying within min_size
   #
   public redef dequeue option T
     post then debug 5 : check_heap_property
@@ -227,7 +231,9 @@ module:public Binary_Heap_Queue(
 
   # enqueue elem and then dequeue (return and remove) the highest priority element
   #
-  # this is more efficient than an enqueue followed by a dequeue
+  # this is more efficient (factor 2) than an enqueue followed by a dequeue
+  #
+  # Time complexity: amortized O(log n) or O(log n) when staying within min_size
   #
   public redef enqueue_dequeue(elem T) T
     post then debug 5 : check_heap_property
@@ -244,11 +250,15 @@ module:public Binary_Heap_Queue(
   # get the first element without removing it from the queue
   # nil iff queue is empty
   #
+  # Time complexity: O(1)
+  #
   public redef peek option T =>
     elements.length = 0 ? nil : elements[0]
 
 
   # does this queue contain elem?
+  #
+  # Time complexity: O(n)
   #
   public redef contains(elem T) bool =>
     elements.contains elem
@@ -425,8 +435,10 @@ module:public Binary_Heap_Queue(
   # Create a priority queue from the given elements
   # which returns smallest element first using natural ordering of the elements
   #
-  # Note: This is more efficient than iterative `enqueue` or `enqueue_all`,
-  #       running in O(n) time rather than O(n log n).
+  # Note: In the worst case this is more efficient than iterative `enqueue` or
+  #       `enqueue_all`, running in O(n) time rather than O(n log n).
+  #       But the actual runtime depends on the order of the elements,
+  #       for (almost) ordered elements iterative inserts will be faster.
   #
   public fixed redef type.min_first_from(initial_elements Sequence T) container.Binary_Heap_Queue LM T
     pre else T : property.orderable
@@ -455,8 +467,10 @@ module:public Binary_Heap_Queue(
   # Create a priority queue from the given elements
   # which returns largest element first using natural ordering of the elements
   #
-  # Note: This is more efficient than iterative `enqueue` or `enqueue_all`,
-  #       running in O(n) time rather than O(n log n).
+  # Note: In the worst case this is more efficient than iterative `enqueue` or
+  #       `enqueue_all`, running in O(n) time rather than O(n log n).
+  #       But the actual runtime depends on the order of the elements,
+  #       for (almost) ordered elements iterative inserts will be faster.
   #
   public fixed redef type.max_first_from(initial_elements Sequence T) container.Binary_Heap_Queue LM T
     pre else T : property.orderable
@@ -483,8 +497,10 @@ module:public Binary_Heap_Queue(
   # Create a priority queue from the given elements that returns the elements
   # in the order defined by the the supplied comparator `less_than_or_equal`
   #
-  # Note: This is more efficient than iterative `enqueue` or `enqueue_all`,
-  #       running in O(n) time rather than O(n log n).
+  # Note: In the worst case this is more efficient than iterative `enqueue` or
+  #       `enqueue_all`, running in O(n) time rather than O(n log n).
+  #       But the actual runtime depends on the order of the elements,
+  #       for (almost) ordered elements iterative inserts will be faster.
   #
   public fixed redef type.comp_from(less_than_or_equal (T1, T1)->bool,
                                     initial_elements Sequence T1) container.Binary_Heap_Queue LM T1
