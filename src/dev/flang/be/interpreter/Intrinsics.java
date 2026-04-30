@@ -441,6 +441,12 @@ public class Intrinsics extends ANY
         });
     put("fuzion.sys.env_vars.has0", (executor, innerClazz) -> args -> new boolValue(System.getenv(utf8ByteArrayDataToString(args.get(1))) != null));
     put("fuzion.sys.env_vars.get0", (executor, innerClazz) -> args -> Interpreter.boxedConstString(System.getenv(utf8ByteArrayDataToString(args.get(1)))));
+    put("fuzion.sys.thread.current", (executor, innerClazz) -> args ->
+        {
+          // NYI: CLEANUP: should not use javaObjectToInstance
+          var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
+          return JavaInterface.javaObjectToInstance(FuzionThread.current(), resultClazz);
+        });
     put("fuzion.sys.thread.spawn0", (executor, innerClazz) -> args ->
         {
           var oc   = executor.fuir().clazzArgClazz(innerClazz, 0);

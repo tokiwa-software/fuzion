@@ -68,6 +68,22 @@ public mutate : linear_effect is
   id := fzE_unique_id
 
 
+  # NYI: UNDER DEVELOPMENT: thread id used to make sure this effect is
+  # not teleported to another thread and used there to mutate data.
+  #
+  # This should become more sophisticated with mutate effects that support
+  # synchronization in a way that access by several threads is possible.
+  #
+  tid := concur.threads.env.current
+
+
+  # test if the current thread is the same as the thread this mutate was created in
+  #
+  correct_thread
+  =>
+    tid = concur.threads.env.current
+
+
   # panic operation to be used in case of a severe problem.  This is redefined within the
   # base lib to make sure fundamental uses of local mutability do not cause dependency
   # on the panic effect.
@@ -89,7 +105,7 @@ public mutate : linear_effect is
     #
     is_currently_instated =>
       match M.get_if_instated
-        x mutate.this => my_id = x.id
+        x mutate.this => my_id = x.id && correct_thread
         nil           => false
 
 
@@ -98,7 +114,7 @@ public mutate : linear_effect is
     module check_and_replace
     =>
       if !is_currently_instated
-        mpanic "*** invalid mutate for {M}"
+        mpanic "*** invalid mutate for {M.name}"
       mutate.this.env.replace
 
 
@@ -191,6 +207,27 @@ public mutate : linear_effect is
     # returns `as_string` of the current value
     #
     public redef as_string String => $get
+
+
+  # is instance `mutate.this` instated for type `mutate.this` and, if `mutate.this` does
+  # not support use in several threads, check we are running in the thread `mutate.this`
+  # was created in?
+  #
+  public is_this_mutate_instated bool
+  =>
+    match M.get_if_instated
+      x mutate.this => id = x.id && correct_thread
+      nil           => false
+
+
+  # perform given code with exclusive access to the mutable values created with
+  # this instance of `mutate`.
+  #
+  public exclusive(R type, F type: ()->R, code F) R
+  pre
+    safety: is_this_mutate_instated
+  =>
+    code()
 
 
   # default implementation of mutate

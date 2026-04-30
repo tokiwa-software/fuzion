@@ -412,6 +412,11 @@ int fzE_lstat(const char *pathname, int64_t * metadata);
 void fzE_init(void);
 
 /**
+ * Get pointer to current thread.
+ */
+void * fzE_thread_current();
+
+/**
  * Start a new thread, returns a pointer to the thread.
  */
 void * fzE_thread_create(void *(*code)(void *),

@@ -519,6 +519,17 @@ void fzE_init()
 #endif
 }
 
+/**
+ * Get pointer to current thread.
+ */
+void * fzE_thread_current()
+{
+  // NYI: BUG: #7029 should not be needed to heap allocate pthread_t
+  pthread_t * pt = fzE_malloc_safe(sizeof(pthread_t));
+  *pt = pthread_self();
+  return pt;
+}
+
 
 /**
  * Start a new thread, returns a pointer to the thread.
