@@ -21,6 +21,8 @@
 #
 # -----------------------------------------------------------------------
 
+# tests for Fuzion base module feature `Binary_Heap_Queue`
+#
 priority_queue_test =>
 
   exp_msg(actual, expected T : property.equatable, err_msg String) =>
@@ -30,19 +32,13 @@ priority_queue_test =>
     say (actual = expected ? "OK" : "FAILED: got '$actual' but expected '$expected'")
 
 
-  # expect(actual, expected T : property.equatable, err_msg option String) =>
-  #   if actual = expected
-  #     say "OK"
-  #   else
-  #     match err_msg
-  #       nil => say "FAILED: got '$actual' but expected '$expected'"
-  #       m String => say "FAILED: $m"
-
-
   lm : mutate is
   lm ! ()->
 
     # Basic functionality
+    #
+    # Add and remove an element.
+    #
     say "Basic functionality:"
     q1 := container.Binary_Heap_Queue lm codepoint .empty_min_first
     expect q1.is_empty true
@@ -57,6 +53,10 @@ priority_queue_test =>
 
 
     # Order of priorities
+    #
+    # Add some arbitrary big and small numbers. Check the internal tree
+    # structure and the order of the elements when removing them
+    #
     say "\nOrder of priorities:"
     q2 := container.Binary_Heap_Queue lm f64 .max_first_from []
     expect q2.is_empty true
@@ -85,6 +85,10 @@ priority_queue_test =>
 
 
     # Edge cases
+    #
+    # Test behavior of an empty queue and insertion of multiple equal elements.
+    # Check the output of the internal tree structure.
+    #
     say "\nEdge cases:"
     q3 := container.Binary_Heap_Queue lm String .empty_max_first
     expect q3.peek nil
@@ -102,7 +106,13 @@ priority_queue_test =>
     say q3.as_string_tree_pretty
     say ""
 
-    # Heap property min-heap
+
+    # Heap property min-heap using as_string_tree_pretty
+    #
+    # Output the tree structure of the binary heap to check the heap property,
+    # using reverse ordered elements and very large and small number.
+    # This also checks the correct alignment in the output of the tree.
+    #
     say "\nHeap property min-heap:"
     q4 := container.Binary_Heap_Queue lm i32 .empty_min_first
 
@@ -116,7 +126,11 @@ priority_queue_test =>
         say "dequeue: {q4.dequeue}"
         say q4.as_string_tree_pretty
 
-    # Heap property max-heap
+
+    # Heap property max-heap using as_string_tree_pretty
+    #
+    # Output the tree structure of the binary heap to check the heap property.
+    #
     say "\nHeap property max-heap:"
     q5 := container.Binary_Heap_Queue lm i32 .empty_max_first
 
@@ -128,6 +142,10 @@ priority_queue_test =>
 
 
     # Custom comparator
+    #
+    # Use a custom comparator that orders integers based on their digit sum
+    # and check it by printing the tree structure of the binary heap.
+    #
     say "\nCustom comparator:"
 
     digit_sum(i i32) i32 =>
@@ -150,6 +168,12 @@ priority_queue_test =>
 
 
 
+  # Sorting of pseudo-random elements
+  #
+  # Test correct sorting order by iteratively removing pseudo-random elements.
+  # Use one queue created from initial elements (make heap) as well as one where
+  # elements were iteratively inserted.
+  #
   sort_test_random(random_test_size i32) =>
 
     simple_random 42 ()->
@@ -180,21 +204,21 @@ priority_queue_test =>
       else
         say "\n[PASSED] priority queue sorts $random_test_size random elements as expected"
 
-
   sort_test_random 100000
 
 
 
-  # mix enqueue and dequeue and compare with sorted list
+  # mix enqueue and dequeue of pseudo-random elements
+  # and compare the order of removed elements with a sorted list
   #
   # NYI: OPTIMIZATION: slow for higher enq rate due to sorting of list
   #
   # 🡩 : enqueue operation
   # 🡫 : dequeue operation returned smallest element
-  # - : dequeue returned noting, queue expected to be empty
+  # - : dequeue returned nothing, queue expected to be empty
   #
   interleaved_random_test(
-    # rate of enqueue in percent
+    # rate of enqueue operations in percent
     enq_rate i32,
     # number of operations
     test_size i32)
@@ -220,7 +244,6 @@ priority_queue_test =>
                 nil => yak (sort.is_empty ? "-" : "\nError queue is empty but sort is $sort\n")
               sort.tail
     say "\n"
-
 
   interleaved_random_test 40 10000
   interleaved_random_test 60 1000
