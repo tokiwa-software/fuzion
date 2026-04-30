@@ -1024,14 +1024,6 @@ public class DFA extends ANY
 
 
   /**
-   * All fields that are ever written.  These will be needed even if they are
-   * never read unless the assignments are actually removed (which is currently
-   * not the case).
-   */
-  BitSet _writtenFields = new BitSet();
-
-
-  /**
    * All fields that are ever read.
    */
   BitSet _readFields = new BitSet();

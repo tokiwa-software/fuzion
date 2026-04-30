@@ -66,11 +66,3 @@ is
   # create an instance of `fault` with the given error handler.
   #
   public fixed redef type.new(h ((String,String))->void) fuzion.runtime.fault => fuzion.runtime.fault h
-
-
-# fault with no argument returns fault.env, the currently installed
-# runtime fault handler.
-#
-# NYI: CLEANUP: Remove and use `fault.env` directly.
-#
-public fault fault => fault.env

@@ -1250,7 +1250,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
     if (f.outer() == p.calledFeature())
       {
-        // NYI: This might be incorrect in case p.actualTypeParameters() is inferred but not set yet.
+        // NYI: BUG: This might be incorrect in case p.actualTypeParameters() is inferred but not set yet.
         fn = f.effectiveName(res, p.actualTypeParameters());
       }
 
@@ -1461,16 +1461,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       {
         var cf = c.calledFeature();
         var actualTypes = c.actualTypeParameters();
-        if (true)
-          {
-            l = l.flatMap(t -> t.isOpenGeneric() && t.genericArgument().outer() == cf
-                               ? t.genericArgument().replaceOpen(actualTypes)
-                               : new List<>(t.applyTypePars(cf, actualTypes)));
-          }
-        else
-          { // NYI: CLEANUP: This simpler code does not work for reg_issue5895, need to check why:
-            l = l.flatMap(t -> t.applyTypeParsMaybeOpen(cf, actualTypes));
-          }
+        l = l.flatMap(t -> t.applyTypeParsMaybeOpen(cf, actualTypes));
       }
     return l;
   }

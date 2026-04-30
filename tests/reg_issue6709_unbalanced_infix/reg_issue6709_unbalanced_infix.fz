@@ -93,7 +93,7 @@ reg_6709_unbalanced_infix =>
   # from ‎modules/base/src/time/histogram.fz‎
   from_base_time_histogram =>
     ignore_last_buffer => [1,2,3]
-    ignore_last_buffer_index := mut.new 42
+    ignore_last_buffer_index := mutate.env.new 42
     ignore_last_buffer_index <- (ignore_last_buffer_index.get = 0 ? ignore_last_buffer.length
                                                                   : ignore_last_buffer_index.get)- 1     # 16. should flag an error: unbalanced infix `-`
 

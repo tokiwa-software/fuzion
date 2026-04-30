@@ -97,13 +97,13 @@ main =>
   else
     new_line := "\n"
 
-    if envir.args.count < 2
+    if envir.args.env.count < 2
       panic "expecting at least one file name argument"
 
     # header
     ebnf_header := "grammar Fuzion;$new_line$new_line"
 
-    ebnf := envir.args.drop 1
+    ebnf := envir.args.env.drop 1
       .map (s->path.of s)
       .map src->
         if !io.file.exists src

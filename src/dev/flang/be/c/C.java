@@ -442,7 +442,7 @@ public class C extends ANY
           for (var tagNum : tags)
             {
               var tc = _fuir.clazzChoice(subjClazz, tagNum);
-              if (!hasTag && _fuir.clazzIsRef(tc))  // do we need to check the clazzId of a ref?
+              if (!hasTag && _fuir.clazzIsRef(tc))  // NYI: CLEANUP: do we need to check the clazzId of a ref?
                 {
                   for (var h : _fuir.clazzInstantiatedHeirs(tc))
                     {
@@ -1921,6 +1921,8 @@ public class C extends ANY
       {
         l.add(_fuir.isConstructor(cl)
                 ? current(_fuir.clazzCode(cl)).ret()                                                      // a constructor, return current instance
+                : _fuir.clazzResultField(cl) == FUIR.NO_CLAZZ
+                ? reportErrorInCode0("unreachable code, unused result field.")
                 : current(_fuir.clazzCode(cl)).field(_names.fieldName(_fuir.clazzResultField(cl))).ret()  // a routine, return result field
               );
       }

@@ -51,8 +51,8 @@ reg_issue3359 is
   # t will call T.n and T.o, but not T.p since this call is unreachable
   #
   t(T type : f) =>
-    if      envir.args.count = 0 then T.n
-    else if envir.args.count = 1 then T.o
+    if      envir.args.env.count = 0 then T.n
+    else if envir.args.env.count = 1 then T.o
     else if true                 then
                                  else T.p  # unreachable, will not be reported!
 
@@ -93,8 +93,8 @@ reg_issue3359 is
   # u will call T.q and T.r, but not T.s since this call is unreachable
   #
   u(v T : i) =>
-    if      envir.args.count = 0 then v.q
-    else if envir.args.count = 1 then v.r
+    if      envir.args.env.count = 0 then v.q
+    else if envir.args.env.count = 1 then v.r
     else if true                 then
                                  else v.s  # unreachable, will not be reported!
 

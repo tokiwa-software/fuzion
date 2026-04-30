@@ -41,9 +41,9 @@ concur_simple =>
   t3 := d.ms 180
 
   count(s String, t0, t time.duration) =>
-    time.nano.sleep t0
+    time.nano.env.sleep t0
     for i in 0..N do
-      time.nano.sleep t
+      time.nano.env.sleep t
       yak s
 
   thread_1 := concur.threads.env.spawn (()->count "/"  (d.ms 20) t1)

@@ -169,7 +169,7 @@ sockets_test is
 
   port(f net.family.val, p net.protocol.val) =>
     while servers.read[server_ident f p] = 0
-      time.nano.sleep (time.duration.s 1)
+      time.nano.env.sleep (time.duration.s 1)
     servers.read[server_ident f p]
 
 ########### Tests ################
