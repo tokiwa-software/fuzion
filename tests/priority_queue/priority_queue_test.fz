@@ -21,15 +21,15 @@
 #
 # -----------------------------------------------------------------------
 
-# tests for Fuzion base module feature `Binary_Heap_Queue`
+# Tests for the Fuzion base module feature `container.Binary_Heap_Queue`
 #
 priority_queue_test =>
 
-  exp_msg(actual, expected T : property.equatable, err_msg String) =>
-    say (actual = expected ? "OK" : "FAILED: $err_msg")
-
+  # Verify that the actual value equals the expected one,
+  # and print an error message if that is not the case
+  #
   expect(actual, expected T : property.equatable) =>
-    say (actual = expected ? "OK" : "FAILED: got '$actual' but expected '$expected'")
+    actual = expected ? unit : say "FAILED: got '$actual' but expected '$expected'"
 
 
   lm : mutate is
@@ -59,7 +59,7 @@ priority_queue_test =>
     #
     say "\nOrder of priorities:"
     q2 := container.Binary_Heap_Queue lm f64 .max_first_from []
-    expect q2.is_empty true
+    say "is_empty is '{q2.is_empty}', expected 'true'"
     q2.enqueue 0.3
     q2.enqueue_all [0.1, -0.9, 5E7, 13.7]
     say ""
@@ -78,8 +78,7 @@ priority_queue_test =>
         head := q2.dequeue
     while head.ok
     do
-      yak "$prev: "
-      expect (prev.or_panic >= head.or_panic) true
+      say "$prev: {(prev.or_panic >= head.or_panic) ? "OK" : "WRONG"}"
     else
       say prev
 
@@ -91,9 +90,9 @@ priority_queue_test =>
     #
     say "\nEdge cases:"
     q3 := container.Binary_Heap_Queue lm String .empty_max_first
-    expect q3.peek nil
-    expect q3.dequeue nil
-    expect q3.count 0
+    say "peek is '{q3.peek}', expected 'nil'"
+    say "dequeue is '{q3.dequeue}', expected 'nil'"
+    say "count is '{q3.count}', expected '0'"
     q3.enqueue "aaa"
     q3.enqueue "aaa"
     q3.enqueue "aaa"
@@ -101,7 +100,7 @@ priority_queue_test =>
     say ""
     say q3.as_string_tree_pretty
     say ""
-    expect q3.dequeue "aaa"
+    say "dequeue is '{q3.dequeue}', expected 'aaa'"
     say ""
     say q3.as_string_tree_pretty
     say ""
@@ -118,16 +117,16 @@ priority_queue_test =>
 
     for i in (1..10).reverse ++ [i32.min, i32.max]
     do
-      say "enqueue $i"
+      say "\nenqueue $i\n"
       q4.enqueue i
       say q4.as_string_tree_pretty
 
       if i%%3
-        say "dequeue: {q4.dequeue}"
+        say "\ndequeue: {q4.dequeue}\n"
         say q4.as_string_tree_pretty
 
 
-    # Heap property max-heap using as_string_tree_pretty
+    # Heap property max-heap using as_string_tree_vertical
     #
     # Output the tree structure of the binary heap to check the heap property.
     #
@@ -138,7 +137,7 @@ priority_queue_test =>
     do
       say "enqueue $i"
       q5.enqueue i
-      say q5.as_string_tree_pretty
+      say q5.as_string_tree_vertical
 
 
     # Custom comparator
