@@ -145,30 +145,6 @@ ex =>
 
   header_file := "./fz.h"
 
-
-  # NYI: DFA mark value arg fields as read/written
-  cxc := CXCursor 0 0 ffi.null ffi.null ffi.null
-  cxs := CXString ffi.null 0 0
-  cxt := CXType 0 0 ffi.null ffi.null
-  _ := cxc.kind
-  _ := cxc.xdata
-  _ := cxc.data1
-  _ := cxc.data2
-  _ := cxc.data3
-  _ := cxs.data
-  _ := cxs.private_flags
-  _ := cxs.padding
-  _ := cxt.kind
-  _ := cxt.padding
-  _ := cxt.data1
-  _ := cxt.data2
-
-
-  # fzE_to_native(arr mutate.array u8) Native_Ref => native
-  # args := ["-I/usr/include"]
-  #   .map (arg -> fzE_to_native (arg.as_c_string mutate))
-  #   .as_array
-
   tu := clang_parseTranslationUnit ci (header_file.as_c_string mutate) (mutate.array Native_Ref).empty 0 ffi.null 0 0
 
   check !(ffi.is_null tu)
@@ -179,8 +155,5 @@ ex =>
 
   clang_disposeTranslationUnit tu
   clang_disposeIndex ci
-
-
-_ := mut
 
 ex

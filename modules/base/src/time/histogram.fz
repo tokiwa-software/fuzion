@@ -81,35 +81,19 @@ public histogram(# title to be printed for this histogram
                  )
 is
 
-
-  # a local mutate instance we are using to modify our state
-  #
-  local_mutate : mutate is
-
-
-  # get local mutate instance from env, install it if necessary
-  #
-  lm =>
-    # NYI: should be done via effect configuration file, see `effect.type.default`.
-    #
-    if !local_mutate.is_instated
-      local_mutate.default
-    local_mutate.env
-
-
   # total number of measurements, including ignored ones.
   #
-  total_number := lm.new (u64 0)
+  total_number := time.histogram_mutate.env.new (u64 0)
 
 
   # buffer of measurements at the end that should be ignored.
   #
-  ignore_last_buffer := lm.new_array ignore_last.as_i64 (option time.duration nil)
+  ignore_last_buffer := histogram_mutate.env.new_array ignore_last.as_i64 (option time.duration nil)
 
 
   # current index to add new data to ignore_last_buffer
   #
-  ignore_last_buffer_index := lm.new (i64 0)
+  ignore_last_buffer_index := histogram_mutate.env.new (i64 0)
 
 
   # Number of distinct buckets that are recorded
@@ -121,28 +105,28 @@ is
   # the counts for different value ranges corresponding to buckets are
   # stored in buckets.
   #
-  size := lm.new (u64 0)
+  size := histogram_mutate.env.new (u64 0)
 
 
   # min and max recorded durations
   #
-  min_ := lm.new (option time.duration) nil
-  max_ := lm.new (option time.duration) nil
+  min_ := histogram_mutate.env.new (option time.duration) nil
+  max_ := histogram_mutate.env.new (option time.duration) nil
 
 
   # sum of recorded durations
   #
-  sum := lm.new time.duration.zero
+  sum := histogram_mutate.env.new time.duration.zero
 
 
   # sum of squares of recorded ns values
   #
-  squares := lm.new 0.0
+  squares := histogram_mutate.env.new 0.0
 
 
   # time of first sample
   #
-  start_time := lm.new (option time.instant) nil
+  start_time := histogram_mutate.env.new (option time.instant) nil
 
 
   # table of durations in each bucket, each entry gives the maximum duration for that index
@@ -178,7 +162,7 @@ is
 
   # The frequency counts for each bucket
   #
-  buckets := lm.new_array (indx time.duration.max)+1 (u64 0)
+  buckets := histogram_mutate.env.new_array (indx time.duration.max)+1 (u64 0)
 
 
   # create an empty histogram
@@ -450,3 +434,15 @@ is
       )
     else
       ""
+
+
+# a local mutate instance we are using to modify our state
+#
+histogram_mutate : mutate
+is
+
+  # default implementation of mutate
+  #
+  # this will get instated automatically at startup
+  #
+  public redef fixed type.default_value option time.histogram_mutate => time.histogram_mutate

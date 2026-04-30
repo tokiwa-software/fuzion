@@ -36,6 +36,14 @@ public make(fwh Make_Dir_Handler, _ unit) : effect is
     fwh.mkdir path
 
 
+  # default implementation of make
+  #
+  # this will get instated automatically at startup
+  #
+  public redef fixed type.default_value option io.dir.make
+  =>
+    io.dir.make io.dir.make.default_handler unit
+
   # the default handler
   #
   type.default_handler =>
@@ -50,8 +58,6 @@ public make(fwh Make_Dir_Handler, _ unit) : effect is
 # install the effect and perform the operation.
 #
 public make(path path) outcome unit ! make =>
-  if !io.dir.make.is_instated
-    (io.dir.make make.default_handler unit).default
   make.env.make_dir path
 
 

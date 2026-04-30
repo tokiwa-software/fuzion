@@ -6,7 +6,7 @@ test_issue1918 =>
   ignore =>
     (1..4)
       .map (_)->
-        concur.threads.spawn ()->
+        concur.threads.env.spawn ()->
           do
             p option i32 := 1
             while !(count p.or_panic)

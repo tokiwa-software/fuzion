@@ -33,8 +33,16 @@ public Config ref : effect is
     [("User-Agent", "Fuzion/v0.0.1 (+https://fuzion-lang.dev; Fuzion)")]
 
 
+  # default implementation of Config
+  #
+  # this will get instated automatically at startup
+  #
+  public redef fixed type.default_value option web.Config
+  =>
+    web.Config
+
+
 # get the current config from env
 #
-public type.config web.Config =>
-  web.Config.default web.Config
+public type.config web.Config =>   # NYI: REMOVE, use `web.Config.env` instead.
   web.Config.env

@@ -49,7 +49,6 @@ is
   #
   public read switch (Sequence u8) (outcome io.end_of_file)
     post
-      debug: (result ? outcome => true | s Sequence => !s.is_empty)
       debug: (result ? outcome => true | s Sequence => s.is_array_backed)
   =>
     if buffer.is_empty
@@ -85,7 +84,6 @@ is
 
 
 # read n bytes using the currently installed byte reader effect
-# if the returned sequence is empty or count is less than n, end of file has been reached.
 #
 public read_bytes(n i32) outcome (Sequence u8) ! reader
   post debug: {

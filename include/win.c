@@ -733,7 +733,7 @@ int fzE_thread_setschedparam(void * thrd, int policy, int priority)
 /*
  * Set the scheduling CPU affinity of a running thread.
  */
-int fzE_thread_setaffinity(void * thrd, int core)
+int fzE_thread_setaffinity(void * thrd, const void * cores, int length)
 {
   return 38;
 }

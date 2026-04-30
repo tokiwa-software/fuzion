@@ -32,15 +32,15 @@
 #
 public bench(warm_up time.duration, d time.duration, f ()->unit) time.frequency ! time.nano =>
 
-  wa_start := time.nano.read
+  wa_start := time.nano.env.read
 
-  while time.nano.read - wa_start < d
+  while time.nano.env.read - wa_start < d
   do
     f.call
 
-  start := time.nano.read
+  start := time.nano.env.read
   for iter := (u64 0), iter + 1
-  while time.nano.read - start < d
+  while time.nano.env.read - start < d
   do
     f.call
   else

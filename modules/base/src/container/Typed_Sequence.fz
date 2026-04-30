@@ -98,7 +98,7 @@ public Typed_Sequence ref : Sequence container.Typed_Value is
   #
   # In case this `Typed_Sequence` is empty, the result is `e`.
   #
-  public typed_zip_and_fold(E type, Z type : typed_zipper E, b Typed_Sequence.this, e E, z Z) E
+  public typed_zip_and_fold(E type, Z type : container.typed_zipper E, b Typed_Sequence.this, e E, z Z) E
   =>
     abstract
 
@@ -331,7 +331,7 @@ public Types ref : Sequence Type is
   #
   # In case this `Types` instance is empty, the result is `e`.
   #
-  public type_foldf(E type, A type : type_applicator E, e E, a A) E
+  public type_foldf(E type, A type : container.type_applicator E, e E, a A) E
   =>
     abstract
 

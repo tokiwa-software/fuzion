@@ -38,10 +38,3 @@ public args (all array String) : Sequence String, effect is
   #
   public redef fixed type.default_value option envir.args =>
     envir.args fuzion.sys.args     # default uses fuzion.sys.args
-
-
-# shorthand for accessing envir.args effect in current environment
-#
-# NYI: CLEANUP: Remove and use `envir.args.env` directly.
-#
-public args envir.args ! envir.args => envir.args.env

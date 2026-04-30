@@ -6,7 +6,7 @@ fuzion.runtime.pre_fault
 fuzion.runtime.stackoverflow
 io.Err
 io.Out
-lib_memoize.#loop0.fib1#1.memoized i64 i64
+memoized_effect lib_memoize.#loop0.fib1#1 i64 i64
 mutate
 panic
 unique_id

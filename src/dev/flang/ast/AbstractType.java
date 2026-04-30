@@ -374,7 +374,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
        isChoice());
 
     var g = feature().choiceGenerics();
-           // NYI: UNDER DEVELOPMENT: a bit weird, choice this types.
     return
       isThisType()
       ? g
@@ -718,12 +717,12 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                 // NYI: BUG: Check: What about open generics?
                 result = actual.feature() == feature() &&
                   (actual.isThisType() || (genericsAssignable(actual, context) &&
-                                          (outer() == null || actual.outer() != null && outer().constraintAssignableFrom(actual.outer()))));
+                                          (outer() == null || actual.outer() != null && outer().isAssignableFromDirectly(actual.outer()).yes())));
                 for (var p: actual.feature().inherits())
                   {
                     if (!result)
                       {
-                        var pa = p.type().applyTypePars(actual);
+                        var pa = actualType(p.type().applyTypePars(actual));
                         result = pa!=actual && constraintAssignableFrom(context, pa);
                       }
                   }
@@ -850,8 +849,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public List<AbstractType> applyTypeParsMaybeOpen(AbstractFeature f,
                                                    List<AbstractType> actualTypes)
   {
-    return isOpenGeneric() ? genericArgument().replaceOpen(actualTypes)
-                           : new List<>(applyTypePars(f, actualTypes));
+    return isOpenGeneric() && genericArgument().outer() == f
+      ? genericArgument().replaceOpen(actualTypes)
+      : new List<>(applyTypePars(f, actualTypes));
   }
 
 
@@ -1958,8 +1958,6 @@ there is no common super type of the two types (Types.t_ERROR)
 
 
   /**
-   * Helper for replace_this_type_by_actual_outer to replace {@code this.type} for
-   * exactly tt, ignoring tt.outer().
    *
    * @param tt the type feature we are calling
    *
@@ -1969,29 +1967,11 @@ there is no common super type of the two types (Types.t_ERROR)
   public AbstractType replace_this_type_by_actual_outer_locally(AbstractType tt,
                                                         BiConsumer<AbstractType, AbstractType> foundRef)
   {
-    return replace_this_type_by_actual_outer_locally(tt, foundRef, Context.NONE);
-  }
-
-
-  /**
-   * Helper for replace_this_type_by_actual_outer to replace {@code this.type} for
-   * exactly tt, ignoring tt.outer().
-   *
-   * @param tt the type feature we are calling
-   *
-   * @param foundRef a consumer that will be called for all the this-types found
-   * together with the ref type they are replaced with.  May be null.
-   */
-  private AbstractType replace_this_type_by_actual_outer_locally(AbstractType tt,
-                                                         BiConsumer<AbstractType, AbstractType> foundRef,
-                                                         Context context)
-  {
+    if (PRECONDITIONS) require
+      (tt.isNormalType());
     var result = this;
-    var att = tt.selfOrConstraint(context);
-    if (isThisTypeInCotype() && tt.isGenericArgument()   // we have a type parameter TT.THIS#TYPE, which is equal to TT
-        ||
-        isThisType() && att.feature() == feature()  // we have abc.this.type with att == abc, so use tt
-        )
+    // we have abc.this with tt == abc, so use tt
+    if (isThisType() && tt.feature() == feature())
       {
         if (foundRef != null && tt.isRef())
           {
@@ -2001,7 +1981,7 @@ there is no common super type of the two types (Types.t_ERROR)
       }
     else
       {
-        result = applyToGenericsAndOuter(g -> g.replace_this_type_by_actual_outer_locally(tt, foundRef, context));
+        result = applyToGenericsAndOuter(g -> g.replace_this_type_by_actual_outer_locally(tt, foundRef));
       }
     return result;
   }

@@ -1,0 +1,8 @@
+
+--CURDIR--/reg_issue7025.fz:32:1: error 1: Incompatible type parameter
+v t2.e
+^
+formal type parameter 'E : t.e'
+actual type parameter 't2.e'
+
+one error.
