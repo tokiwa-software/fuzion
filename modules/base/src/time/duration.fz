@@ -38,7 +38,7 @@ module:public duration (
   #
   public nanos u64
   )
-  : Period,
+  : time.Period,
     property.orderable,
     property.hashable
 
