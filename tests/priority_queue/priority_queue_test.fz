@@ -158,7 +158,7 @@ priority_queue_test =>
     _ := q6
     simple_random 42 ()->
       for i in 0..9
-          r := random.next_i32 199 - 99
+          r := random.env.next_i32 199 - 99
       do
         say "enqueue $r"
         q6.enqueue r
@@ -180,7 +180,7 @@ priority_queue_test =>
     m : mutate is
     m ! ()->
 
-      elements := array random_test_size _->random.next_i32
+      elements := array random_test_size _->random.env.next_i32
 
       pq_make := container.Binary_Heap_Queue m i32 .min_first_from elements
       pq_add  := container.Binary_Heap_Queue m i32 .empty_min_first
@@ -229,11 +229,11 @@ priority_queue_test =>
 
         for sort list i32 := nil, new_sort
             i in 1..test_size
-            enq := true, (random.next_i32 100) < enq_rate
+            enq := true, (random.env.next_i32 100) < enq_rate
         do
           new_sort :=
             if enq
-              e := random.next_i32 test_size
+              e := random.env.next_i32 test_size
               yak "🡩"
               q.enqueue e
               (sort ++ [e]).sort.as_list
