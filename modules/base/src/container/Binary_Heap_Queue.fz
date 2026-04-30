@@ -378,7 +378,7 @@ module:public Binary_Heap_Queue(
 
   # check if the heap property still holds
   #
-  public check_heap_property bool =>
+  check_heap_property bool =>
 
     chk_1(i, j i64) bool =>
       if !less_than_or_equal elements[i] elements[j]
