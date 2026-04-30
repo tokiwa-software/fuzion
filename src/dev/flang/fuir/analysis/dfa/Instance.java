@@ -175,7 +175,6 @@ public class Instance extends Value
           }
         _fields.put(field, v);
       }
-    dfa._writtenFields.set(field);
   }
 
 
