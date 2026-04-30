@@ -13,11 +13,15 @@
 # Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 
-
+# Benchmarks for the Fuzion base module feature `container.Binary_Heap_Queue`
+#
 priority_queue_benchmark =>
 
 
-
+  # Fill an empty queue with pseudo-random elements and then empty it
+  #
+  # Measure time of individual operations and show their distribution.
+  #
   random_enqueue_dequeue(test_lengths Sequence i32) unit =>
     say """
         \n********************************************************************************
@@ -59,14 +63,19 @@ priority_queue_benchmark =>
           say "{hist_enq}Total time to enqueue $size elements: $total_enq\n"
           say "{hist_deq}Total time to dequeue $size elements: $total_deq\n"
 
-
     for i in test_lengths do
       test i
 
 
 
 
-
+  # Check logarithmic time complexity for enqueue and dequeue using pseudo-random elements
+  #
+  # Alternating addition and removal of elements is performed on queue of fixed size.
+  # The time of the individual operations is measured and average is divided by log n,
+  # where n is the length of the queue.
+  # The results should then be roughly the same size, regardless of the size of the queue.
+  #
   random_log_performance(test_lengths Sequence i32) unit =>
     say """
         \n********************************************************************************
@@ -101,7 +110,6 @@ priority_queue_benchmark =>
 
         (hist_enq, hist_deq)
 
-
     for enq_hist := Sequence (tuple i32 time.histogram) .empty, enq_hist ++ [(queue_size, enq)]
         deq_hist := Sequence (tuple i32 time.histogram) .empty, deq_hist ++ [(queue_size, deq)]
         i in test_lengths
@@ -116,7 +124,6 @@ priority_queue_benchmark =>
       enq_hist.for_each szh->(sz,h := szh; say "{sz.as_string.pad_left 9}: {h.average.times (f64.one / (sz.as_f64.log 2)) .as_string_pad}")
       enq_hist.for_each szh->(_ ,h := szh; say h)
 
-
       say "\n\nDEQUEUE:\n"
       say "average"
       deq_hist.for_each szh->(sz,h := szh; say "{sz.as_string.pad_left 9}: {h.average.as_string_pad}")
@@ -127,8 +134,10 @@ priority_queue_benchmark =>
 
 
 
-
-
+  # Compare performance of make heap against iterative enqueue
+  #
+  # Do this for sorted, reverse-sorted, and random elements.
+  #
   make_heap_vs_enqueue_all(test_lengths Sequence i32) unit =>
     say """
       \n********************************************************************************
@@ -156,7 +165,6 @@ priority_queue_benchmark =>
       say "{hist_enq_all.average.as_string_pad} {hist_enq_all.title}"
       say "Compared to iterative add, make heap reduces time to: {(hist_mk_heap.average.nanos.as_f64 / hist_enq_all.average.nanos.as_f64 * 100) .as_string.substring 0 4} %"
 
-
     say "\nRandom:\n"
     simple_random 904644503766293287 ()->
       for len in test_lengths do
@@ -176,10 +184,10 @@ priority_queue_benchmark =>
 
 
 
-  # check if make heap has linear time complexity
+  # Check if make heap has linear time complexity
   #
-  # seems to be dominated by some constant overhead up to 1E4
-  # linear behavior shows from 1E5
+  # It seems to be dominated by some constant overhead for smaller sizes,
+  # linear behavior shows from 1E5.
   #
   make_heap_linear_time(test_lengths Sequence i32) unit =>
     say """
@@ -203,7 +211,6 @@ priority_queue_benchmark =>
           {hist_mk_heap.average.times (1.0 / elements.length.as_f64) .as_string_pad} \
           per element for {elements.length.as_string.pad_left (test_lengths.last.or_panic.as_string.byte_count)} \
           $elem_desc elements. Total time was {hist_mk_heap.average.as_string_pad}"""
-
 
     say "Random:\n"
     simple_random 904644503766293287 ()->
@@ -244,10 +251,17 @@ priority_queue_benchmark =>
 
 
 
+  # Note: large queue sizes result in considerable memory requirements:
+  #
+  #   1E8 * i32 (4 byte) ≈ 400 MB
+  #
+  #   1E9 * i32 (4 byte) ≈ 4 GB
 
+  random_enqueue_dequeue   [1E3, 1E4, 1E5, 1E6]
 
-  random_enqueue_dequeue   [1E3, 1E4, 1E5, 1E6, 1E7, 1E8]
   random_log_performance   [1E2, 1E3, 1E4, 1E5, 1E6, 1E7, 1E8]
+
   make_heap_vs_enqueue_all [1E2, 1E3, 1E4, 1E5, 1E6]
+
   make_heap_linear_time    [1E1, 1E2, 1E3, 1E4, 1E5, 1E6, 1E7]
   all_same_priority 1E6
