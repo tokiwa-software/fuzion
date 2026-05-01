@@ -83,7 +83,8 @@ public mutate : linear_effect is
 
   # the thread this mutate was created with
   #
-  # NYI: UNDER DEVELOPMENT: Since effect order is currently not enforced during the big bang singulariy, we set this lazily.
+  # NYI: UNDER DEVELOPMENT: Since effect order is currently not enforced during the
+  # big bang singulariy, we set this lazily.
   #
   tid0 option concur.thread := if concur.threads.is_instated then concur.threads.env.current
                                                              else nil

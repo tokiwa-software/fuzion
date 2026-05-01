@@ -22,8 +22,10 @@
 # -----------------------------------------------------------------------
 
 
-# an interface defining a ring buffer of a fixed number of elements of a given
-# type.  The ring buffer can be used locally or for for communication between
+# Ring_Buffer -- A simple fixed-size ring buffer
+#
+# A feature defining a ring buffer of a fixed number of elements of a given
+# type `T`.  The ring buffer can be used locally or for communication between
 # threads.
 #
 public Ring_Buffer(
@@ -31,11 +33,18 @@ public Ring_Buffer(
   public T type,
 
   # effect used to modify this buffer
+  #
+  # If this ring buffer is to be used to communicate between threads,
+  # this mutate effect must support multi-threaded mutations. An instance
+  # of this mustate effect must be instated by when this Ring_Buffer is
+  # constructed and when it is accessed.
+  #
   M type : mutate,
 
   # the maximun number of elements that can be stored in
   # this buffer
   size i64
+
 ) ref ! M
 is
 
@@ -43,7 +52,18 @@ is
   #
   data := M.env.new_array (option T) size nil
 
+  # Index of the first element that will be returned by `poll`
+  #
+  # This may be in the range `0..(size-1)`.
+  #
   first := M.env.new (i64 0)
+
+  # number of elements that are currently stored in this `Ring_Buffer`.
+  #
+  # This may be any value in the range `0..size`. `data` at indices
+  # `first..(first + used).map (%size)` contains the elements stored in
+  # this buffer.
+  #
   used  := M.env.new (i64 0)
 
 
@@ -84,6 +104,7 @@ is
 
 
   # the number of values currently stored in the ring buffer
+  #
   public count i64 ! M
   =>
     used

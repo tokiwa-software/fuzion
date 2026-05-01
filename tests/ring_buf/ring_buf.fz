@@ -22,7 +22,10 @@
 # -----------------------------------------------------------------------
 
 # Test that verifies mutate effects behave correctly when used in multiple
-# threads
+# threads.
+#
+# This test uses `container.Ring_Buffer` as example code that requires a
+# mutate effect.
 #
 ring_buf =>
 
