@@ -17,29 +17,28 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test reg_issue6882
+#  Source code of Fuzion standard library feature shared_mutate
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# The problem in this test is that a local mutate `lm` is used in a newly
-# spawned thread without being instated explicitly. This resulted in reporting
-# of a stack overflow error, even though there was never any stack overflow,
-# just all errors other than dev.flang.be.jvm.runtime.Runtime$Abort were
-# treated like a stack overflow.
+# racy_mutate -- a variant of mutate that may be shared between threads
 #
-# NYI: UNDER DEVELOPMENT: #6850: DFA does not support effects for threads, which
-# is why this fails at runtime.
+# NYI: UNDER DEVELOPMENT: Currently, this does not do anything to make sure
+# shared accesses are ok, i.e., there are no memory fences, there are no
+# atomic operations and `exclusive` does not enforce exlusivity.  This is
+# only an intermediate solution to permit sharing a mutate even though the
+# resulting code is full of races.
 #
-reg_issue6882 =>
+# The idea is to remove this as soon as we have proper, thread-save effects
+# using mutexes, memory fences, atomic operations, transations or other
+# means to ensure thread-safety.
+#
+public racy_mutate : mutate is
 
-  lm : mutate is
-  lm ! ()->
-    concur.threads.env.spawn_without_inherited_effects ()->
-            panic.try ()->
-                   _ := lm.env
-                 .catch _->
-
-            _ := lm.env
-
-          # NYI: CLEANUP: needed due to #6895
-          .join
+  # test if the current thread is the same as the thread this mutate was created in
+  #
+  module redef correct_thread
+  =>
+    true

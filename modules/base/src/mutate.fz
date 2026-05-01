@@ -74,12 +74,24 @@ public mutate : linear_effect is
   # This should become more sophisticated with mutate effects that support
   # synchronization in a way that access by several threads is possible.
   #
-  tid := concur.threads.env.current
+  tid =>
+    tid0.or_else ()->
+        res := concur.threads.env.current
+        set tid0 := res
+        res
+
+
+  # the thread this mutate was created with
+  #
+  # NYI: UNDER DEVELOPMENT: Since effect order is currently not enforced during the big bang singulariy, we set this lazily.
+  #
+  tid0 option concur.thread := if concur.threads.is_instated then concur.threads.env.current
+                                                             else nil
 
 
   # test if the current thread is the same as the thread this mutate was created in
   #
-  correct_thread
+  module correct_thread
   =>
     tid = concur.threads.env.current
 
@@ -114,7 +126,7 @@ public mutate : linear_effect is
     module check_and_replace
     =>
       if !is_currently_instated
-        mpanic "*** invalid mutate for {M.name}"
+        mpanic "*** invalid mutate for '{M.name}'"
       mutate.this.env.replace
 
 

@@ -33,7 +33,7 @@
 #
 effect_wormholes =>
 
-  lm : mutate is
+  lm : racy_mutate is
 
   out_A : io.Out is
     public redef print(s Any) unit =>
