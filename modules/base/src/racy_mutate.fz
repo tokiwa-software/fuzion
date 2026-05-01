@@ -17,7 +17,7 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature shared_mutate
+#  Source code of Fuzion standard library feature racy_mutate
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
@@ -26,7 +26,7 @@
 # racy_mutate -- a variant of mutate that may be shared between threads
 #
 # NYI: UNDER DEVELOPMENT: Currently, this does not do anything to make sure
-# shared accesses are ok, i.e., there are no memory fences, there are no
+# racy accesses are ok, i.e., there are no memory fences, there are no
 # atomic operations and `exclusive` does not enforce exlusivity.  This is
 # only an intermediate solution to permit sharing a mutate even though the
 # resulting code is full of races.
