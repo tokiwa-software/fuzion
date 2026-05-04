@@ -133,29 +133,8 @@ class Layout extends FUIRContext
         for (int i = 0; i < fuir().clazzFieldCount(cl); i++)
           {
             var f = fuir().clazzField(cl, i);
-            int fc = fuir().clazzResultClazz(f);
-            var fsz = fuir().clazzFieldIsAdrOfValue(f) || fuir().clazzIsRef(fc)
-              ? 1
-              : switch (fuir().getSpecialClazz(fc))
-                {
-                case c_i8   -> 1;
-                case c_i16  -> 1;
-                case c_i32  -> 1;
-                case c_i64  -> 2;
-                case c_u8   -> 1;
-                case c_u16  -> 1;
-                case c_u32  -> 1;
-                case c_u64  -> 2;
-                case c_f32  -> 1;
-                case c_f64  -> 2;
-                case c_void -> 0;
-                default     ->
-                  fuir().clazzIsUnitType(fc)
-                    ? 0
-                    : get(fc).size();
-                };
             _offsets.put(f, size - Integer.MIN_VALUE);
-            size += fsz;
+            size += fieldSize(f);
           }
         size -= Integer.MIN_VALUE;
       }
@@ -164,6 +143,38 @@ class Layout extends FUIRContext
 
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * For field f get the size needed to store it.
+   *
+   * @param f
+   * @return
+   */
+  private int fieldSize(int f)
+  {
+    int fc = fuir().clazzResultClazz(f);
+    var fsz = fuir().clazzIsUnitType(fc)
+      ? 0
+      : fuir().clazzFieldIsAdrOfValue(f) || fuir().clazzIsRef(fc)
+      ? 1
+      : switch (fuir().getSpecialClazz(fc))
+        {
+        case c_i8   -> 1;
+        case c_i16  -> 1;
+        case c_i32  -> 1;
+        case c_i64  -> 2;
+        case c_u8   -> 1;
+        case c_u16  -> 1;
+        case c_u32  -> 1;
+        case c_u64  -> 2;
+        case c_f32  -> 1;
+        case c_f64  -> 2;
+        case c_void -> 0;
+        default     -> get(fc).size();
+        };
+    return fsz;
+  }
 
 
   /**
