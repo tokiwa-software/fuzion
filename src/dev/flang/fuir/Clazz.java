@@ -785,7 +785,9 @@ class Clazz extends ANY implements Comparable<Clazz>
         // Object layout will later report an error for this case. (NYI: check this with a test!)
         _isUnitType = YesNo.no;
 
-        res = YesNo.yes;
+        res = clazzKind() == IR.FeatureKind.Field
+          ? YesNo.no
+          : YesNo.yes;
 
         // NOTE: We cannot use {@code for (var i : _inner)} since {@code resultClazz} may
         // add inner clazzes even if lookupDone() is set.
