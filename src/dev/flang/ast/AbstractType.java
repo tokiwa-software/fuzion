@@ -2455,7 +2455,7 @@ there is no common super type of the two types (Types.t_ERROR)
           {
             result = result + ".this";
           }
-        if (cotypeType)
+        if (!humanReadable && cotypeType)
           {
             result = result + ".type";
           }
