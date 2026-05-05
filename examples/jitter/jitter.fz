@@ -160,6 +160,14 @@ jitter =>
       if run_on_dedicated_thread
         thrd := concur.threads.env.spawn ()->
           test_jitter time.nano time.nano
+        match thrd.set_policy concur.scheduling_policy.sched_fifo false 99
+          e error => say "could not raise jitter thread priority: $e. Hint: error 38 means backend does not implement thread policy (try native backend with -c), error 1 means insufficient privileges (CAP_SYS_NICE/root on Linux)."
+          unit    => unit
         _ := thrd.join
       else
         test_jitter time.nano time.nano
+
+        # How to run with high priority :
+        # FUZION_HOME=build bash bin/fz -c examples/jitter/jitter.fz
+        # sudo setcap cap_sys_nice=ep ./jitter
+        # ./jitter
