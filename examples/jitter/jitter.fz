@@ -155,7 +155,7 @@ jitter =>
       e error => say $e
       void    => # will not happen
 
-  concur.threads ! ()->
+  concur.threads.type.default_value.or_panic ! ()->
       if run_on_dedicated_thread
         thrd := concur.threads.env.spawn ()->
           test_jitter time.nano time.nano
