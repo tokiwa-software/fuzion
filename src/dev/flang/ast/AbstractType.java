@@ -847,11 +847,12 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * exactly one element.
    */
   public List<AbstractType> applyTypeParsMaybeOpen(AbstractFeature f,
-                                                   List<AbstractType> actualTypes)
+                                                   List<AbstractType> actualTypes,
+                                                   int select)
   {
     return isOpenGeneric() && genericArgument().outer() == f
       ? genericArgument().replaceOpen(actualTypes)
-      : new List<>(applyTypePars(f, actualTypes));
+      : new List<>(applyTypePars(f, actualTypes, select));
   }
 
 
@@ -868,7 +869,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   public List<AbstractType> applyTypeParsMaybeOpen(AbstractType t)
   {
-    return t.isPlainType() ? applyTypeParsMaybeOpen(t.feature(), t.generics())
+    return t.isPlainType() ? applyTypeParsMaybeOpen(t.feature(), t.generics(), NO_SELECT)
                            : new List<>(t);
   }
 
