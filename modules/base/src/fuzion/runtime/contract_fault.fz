@@ -39,17 +39,9 @@ is
   #
   public redef fixed type.default_value option fuzion.runtime.contract_fault =>
     fuzion.runtime.contract_fault kind_and_msg->
-      fuzion.runtime.fault.cause kind_and_msg
+      fuzion.runtime.fault.env.cause kind_and_msg
 
 
   # create an instance of `contract_fault` with the given error handler.
   #
   public fixed redef type.new(h ((String,String)) -> void) fuzion.runtime.contract_fault => fuzion.runtime.contract_fault h
-
-
-# contract_fault with no argument returns contract_fault.env, the currently installed
-# runtime contract_fault handler.
-#
-# NYI: CLEANUP: Remove and use `contract_fault.env` directly.
-#
-public contract_fault contract_fault => contract_fault.env

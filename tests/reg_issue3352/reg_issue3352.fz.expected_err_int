@@ -7,9 +7,9 @@ fuzion.type.runtime.type.fault.type.default_value.(λkind_and_msg-> kind, msg :=
 fuzion.runtime.fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
   => h e
 -----^
-panic.type.default_value.(λ(msg->fuzion.runtime.fault.cause ("***...).call#1: {base.fum}/panic.fz:39:18:
-    (panic (msg->fuzion.runtime.fault.cause ("*** panic ***", msg)) unit)
------------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+panic.type.default_value.(λ(msg->fuzion.runtime.fault.env.cause (...).call#1: {base.fum}/panic.fz:39:18:
+    (panic (msg->fuzion.runtime.fault.env.cause ("*** panic ***", msg)) unit)
+-----------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 panic.cause#1: {base.fum}/eff/fallible.fz:35:6:
   => h e
 -----^

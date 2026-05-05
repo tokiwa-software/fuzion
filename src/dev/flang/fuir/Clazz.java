@@ -393,7 +393,8 @@ class Clazz extends ANY implements Comparable<Clazz>
     //
     // var ignore = resultClazz();
     if (CHECKS) check
-      (_outer ==  null || _type.outer().compareTo(_outer._type) == 0);
+      (_outer ==  null || _type.outer().compareTo(_outer._type) == 0,
+       outerRef() == null || outerRef().resultClazz().compareTo(_outer) == 0);
   }
 
 
@@ -560,11 +561,8 @@ class Clazz extends ANY implements Comparable<Clazz>
         for (var inh_call : feature().inherits())
           {
             var pt = inh_call.type();
-            var t1 = feature().handDownAndApply(pt, _type);
-            // NYI: CLEANUP: @fridi "I am not sure if or why handDown and replaceThisType are needed here at all."
-            var t2 = handDown(t1, NO_SELECT, (_,_)->{}, new List<>());
-            var t3 = replaceThisType(t2, new List<>());
-            var pc  = _fuir.newClazz(t3);
+            var t0 = handDownAndReplaceThisType(pt, NO_SELECT, (_,_)->{}, new List<>());
+            var pc = _fuir.newClazz(t0);
 
             if (!result.contains(pc))
               {
@@ -579,6 +577,23 @@ class Clazz extends ANY implements Comparable<Clazz>
         _parents = result;
       }
     return result;
+  }
+
+
+  private AbstractType handDownAndReplaceThisType(AbstractType t, int select, BiConsumer<AbstractType, AbstractType> foundRef, List<AbstractCall> inh)
+  {
+    var t0 = handDown(t, select, foundRef, inh);
+    // NYI: BUG: remove replaceThisType, should be done by handDown
+    // but this types that refer to inheritance call targets are not
+    // properly replaced yet as in e.g.
+    //   o is
+    //     a is
+    //       (_ : i is).a
+    //     i is
+    //       a => say "a"
+    //   b : o.a is
+    //   ignore b
+    return replaceThisType(t0, inh);
   }
 
 
@@ -600,11 +615,6 @@ class Clazz extends ANY implements Comparable<Clazz>
     if (!_needsCode && !_fuir._lookupDone)
       {
         _needsCode = true;
-        var r = resultField();
-        if (r != null)
-          { // NYI: UNDER DEVELOPMENT: This is require for tests/javaBase. Check why this is needed only there and not otherwise!
-            r.doesNeedCode();
-          }
       }
   }
 
@@ -775,7 +785,9 @@ class Clazz extends ANY implements Comparable<Clazz>
         // Object layout will later report an error for this case. (NYI: check this with a test!)
         _isUnitType = YesNo.no;
 
-        res = YesNo.yes;
+        res = clazzKind() == IR.FeatureKind.Field
+          ? YesNo.no
+          : YesNo.yes;
 
         // NOTE: We cannot use {@code for (var i : _inner)} since {@code resultClazz} may
         // add inner clazzes even if lookupDone() is set.
@@ -1695,11 +1707,6 @@ class Clazz extends ANY implements Comparable<Clazz>
             var ag = (f == Types.resolved.f_type_as_value ? this : o).actualTypeParameters();
             result = ag[0].typeClazz();
           }
-        // NYI: UNDER DEVELOPMENT: special handling for #2262
-        else if (isBoxed())
-          {
-            result = _asValue;
-          }
         else
           {
             if (f.isOpenTypeParameter())
@@ -1865,7 +1872,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     BiConsumer<AbstractType, AbstractType> foundRef = (from,to) ->
       { err.add((c)->AstErrors.illegalOuterRefTypeInCall(c, false, feature(), ft, from, to)); };
 
-    t = handDown(t, select, foundRef, inh);
+    t = handDownAndReplaceThisType(t, select, foundRef, inh);
 
     var res = _fuir.type2clazz(t);
     if (res.feature().isCotype())
@@ -1892,59 +1899,55 @@ class Clazz extends ANY implements Comparable<Clazz>
    * that is to be chosen. NO_SELECT otherwise.
    *
    */
-  private AbstractType handDown(AbstractType t, int select, BiConsumer<AbstractType, AbstractType> foundRef, List<AbstractCall> inh0)
+  private AbstractType handDown(AbstractType t, int select, BiConsumer<AbstractType, AbstractType> foundRef, List<AbstractCall> inh)
   {
     if (PRECONDITIONS) require
       (t != null,
        Errors.any() || t != Types.t_ERROR,
        Errors.any() || (t.isOpenGeneric() == (select >= 0)));
 
-    for (AbstractCall c : inh0)
+    return handDown(t, select, foundRef, inh, feature().isField());
+  }
+
+
+  /**
+   * recursively handdown {@code t} to outer clazzes starting at {@code this}.
+   */
+  private AbstractType handDown(AbstractType t, int select, BiConsumer<AbstractType, AbstractType> foundRef,
+    List<AbstractCall> inh, boolean originClazzIsField)
+  {
+    // NYI: CLEANUP: ugly special handling.
+    // outers of fields are currently normalized to be values
+    // see: GeneratingFuir.newClazz
+    // need to undo this here.
+    var tt = isValue() && feature().isRef() && originClazzIsField
+      ? _type.asRef()
+      : _type;
+
+    // NYI: UNDER DEVELOPMENT: this code needs documentation / motivation
+    // particularly it is unclear to me how the order in which
+    // we do these things affects t
+
+    for (AbstractCall c : inh)
       {
         t = t.replace_inherited_this_type(c.calledFeature(), feature(), foundRef);
       }
+    var t1 = AbstractFeature.handDownThroughInheritsCalls(t, select, inh);
+    var t2 = t1.applyTypePars(tt, select);
+    // NYI: CLEANUP: unclear why this is needed?
+    var t3 = t2.replace_this_type_by_actual_outer_locally(tt, foundRef);
+    return _outer != null
+      ? _outer.handDown(t3, select, foundRef, inhOuter(), originClazzIsField)
+      : t3;
+  }
 
-    // iterate using {@code child} and {@code parent} over outer clazzes starting at
-    // {@code this} where {@code child} is the current outer clazz and {@code parent} is the
-    // parent feature the previous inner clazz' feature was inherited from.
-    var child = this;
-    AbstractFeature parent = feature();
-    while (child != null)
-      {
-        var childf = child.feature();
-        // find outer that inherits this clazz, e.g.
-        //
-        //   Any.me =>
-        //     res := Any.this
-        //     res
-        //   x : Any is
-        //
-        // here, for {@code x.me.res} inherited from {@code Any.me.res}, the
-        // inheritance is two features out when {@code x} ({@code childf}) inherits
-        // form {@code Any} ({@code parent}).
-        t = t.replace_inherited_this_type(parent, childf, foundRef);
-        var inh = childf.tryFindInheritanceChain(parent);
-        if (CHECKS) check
-          (Errors.any() || inh != null);
-        if (inh != null)
-          {
-            t = AbstractFeature.handDownThroughInheritsCalls(t, select, inh);
-          }
-        t = t.applyTypePars(child._type, select);
-        // NYI: CLEANUP: ugly special handling.
-        // outers of fields are currently normalized to be values
-        // see: GeneratingFuir.newClazz
-        // need to undo this here.
-        var x = child._type.isValue() && child._type.feature().isRef() && feature().isField()
-          ? child._type.asRef()
-          : child._type;
-        t = t.replace_this_type_by_actual_outer_locally(x, foundRef);
-        child = child._outer;
-        parent = childf.outer();
-      }
-    if (CHECKS) check
-      (Errors.any() || (child == null) == (parent == null));
-    return t;
+
+  /**
+   * get the inheritance chain from _outer.feature() to this features original outer.
+   */
+  private List<AbstractCall> inhOuter()
+  {
+    return _outer.feature().findInheritanceChain(feature().outer());
   }
 
 

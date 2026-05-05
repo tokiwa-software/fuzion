@@ -34,7 +34,7 @@ read_10mb_file =>
 
   io.file.write f s .or_panic
 
-  say <| io.file.stat.stats f
+  say <| io.file.stat.env.stats f
 
   test(arg path) =>
     say "mmap: $arg iterations/s"

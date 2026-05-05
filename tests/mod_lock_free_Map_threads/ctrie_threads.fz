@@ -58,7 +58,7 @@ ctrie_threads is
     # all keys which are multiples of 3 should have been removed
     say "all keys multiple of three removed: {(ctrie.items ∀ (x -> x.values.0 % 3 != 0))}"
 
-    if ((envir.args.nth 1).or_else "")="-debug"
+    if ((envir.args.env.nth 1).or_else "")="-debug"
       say "==="
       say (ctrie.items.map x->"{x.values.0} was inserted by thread {x.values.1}")
       say "==="

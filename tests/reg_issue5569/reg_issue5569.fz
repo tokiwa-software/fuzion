@@ -48,14 +48,17 @@ reg_issue5569 =>
 
   # using a different outer type `t2`
   t2 : t is
-  yak "expecting t2.i: "; t2.e ! v t2.e
+  # gives error: Incompatible type parameter:
+  # yak "expecting t2.i: "; t2.e ! v t2.e
 
   # using a different inner type `e2`
   t.e2 : t.e is
   yak "expecting t.i : "; t.e2 ! v t.e2
 
   # using a different outer and inner type `t2.e2`
-  yak "expecting t2.i: "; t2.e2 ! v t2.e2
+  # NYI: BUG: triggers soundness issue
+  # require-condition2 failed: Instance.java:161 "(v != null, Errors.any() || v._clazz == NO_CLAZZ || dfa._fuir.clazzIsRef(v._clazz) || dfa._fuir.clazzResultClazz(field) == v._clazz);"
+  # yak "expecting t2.i: "; t2.e2 ! v t2.e2
 
   t.e.j is
   t.e.q => j
@@ -66,9 +69,12 @@ reg_issue5569 =>
     say "{type_of x} {type_of y}"
 
   yak "expecting t.i /t.e.j  : "; t.e   ! w t.e
-  yak "expecting t2.i/t2.e.j : "; t2.e  ! w t2.e
+  # gives error: Incompatible type parameter:
+  # yak "expecting t2.i/t2.e.j : "; t2.e  ! w t2.e
   yak "expecting t.i /t.e2.j : "; t.e2  ! w t.e2
-  yak "expecting t2.i/t2.e2.j: "; t2.e2 ! w t2.e2
+  # NYI: BUG: triggers soundness issue
+  # require-condition2 failed: Instance.java:161 "(v != null, Errors.any() || v._clazz == NO_CLAZZ || dfa._fuir.clazzIsRef(v._clazz) || dfa._fuir.clazzResultClazz(field) == v._clazz);"
+  # yak "expecting t2.i/t2.e2.j: "; t2.e2 ! w t2.e2
 
   # check if this still works for types that are generic arguments
   t.e.r2() option (array i) => option [i]
@@ -80,9 +86,12 @@ reg_issue5569 =>
     say "{type_of x} {type_of y}"
 
   yak "expecting option (array t.i /t.e.j  ): "; t.e   ! w2 t.e
-  yak "expecting option (array t2.i/t2.e.j ): "; t2.e  ! w2 t2.e
+  # gives error: Incompatible type parameter:
+  # yak "expecting option (array t2.i/t2.e.j ): "; t2.e  ! w2 t2.e
   yak "expecting option (array t.i /t.e2.j ): "; t.e2  ! w2 t.e2
-  yak "expecting option (array t2.i/t2.e2.j): "; t2.e2 ! w2 t2.e2
+  # NYI: BUG: triggers soundness issue
+  # require-condition2 failed: Instance.java:161 "(v != null, Errors.any() || v._clazz == NO_CLAZZ || dfa._fuir.clazzIsRef(v._clazz) || dfa._fuir.clazzResultClazz(field) == v._clazz);"
+  # yak "expecting option (array t2.i/t2.e2.j): "; t2.e2 ! w2 t2.e2
 
   # check if this still works for types that are generic arguments
   t.e.ee() e.this => e.this

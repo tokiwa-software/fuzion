@@ -1,0 +1,107 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature Mutable_Array3
+#
+# -----------------------------------------------------------------------
+
+
+# Mutable_Array3 -- three-dimensional mutable array with effect
+#
+module:public Mutable_Array3
+  (T type,
+   E type : mutate) ref
+is
+
+
+  # length of this array in the first dimension
+  #
+  public length0 i64 => abstract
+
+
+  # length of this array in the second dimension
+  #
+  public length1 i64 => abstract
+
+
+  # length of this array in the third dimension
+  #
+  public length2 i64 => abstract
+
+
+  # indices range in the first dimension
+  #
+  public indices0 interval i64 => (i64 0)..length0-1
+
+
+  # indices range in the second dimension
+  #
+  public indices1 interval i64 => (i64 0)..length1-1
+
+
+  # indices range in the third dimension
+  #
+  public indices2 interval i64 => (i64 0)..length2-1
+
+
+  # get element at given index i
+  #
+  public index [ ] (I type : integer, i0, i1, i2 I) T ! E
+    pre
+      safety: 0 ≤ i0.as_i64 < length0
+      safety: 0 ≤ i1.as_i64 < length1
+      safety: 0 ≤ i2.as_i64 < length2
+  =>
+    abstract
+
+
+  # set element at given index i to given value o
+  #
+  public set [ ] (I type : integer, i0, i1, i2 I, o T) unit ! E
+    pre
+      safety: 0 ≤ i0.as_i64 < length0
+      safety: 0 ≤ i1.as_i64 < length1
+      safety: 0 ≤ i2.as_i64 < length2
+  =>
+    abstract
+
+
+  # create immutable array from this
+  #
+  public as_array array T ! E =>
+    array (length0 * length1 * length2).as_i32 (i ->
+      Mutable_Array3.this[
+        i.as_i64 / (length1 * length2),
+        (i.as_i64 % (length1 * length2)) / length2,
+        i.as_i64 % length2])
+
+
+  # create a list from this array
+  #
+  public as_list list T =>
+    # since buffer is mutable,
+    # we first copy the elements
+    # to an immutable array.
+    as_array.as_list
+
+
+  # the current state of the buffer
+  # as a string.
+  #
+  public redef as_string String => $as_array

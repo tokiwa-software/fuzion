@@ -50,7 +50,7 @@ is
   public redef finally unit =>
     match flush
       e error =>
-        fuzion.runtime.fault.cause ("{writer.this.type.name}.finally", e.msg)
+        fuzion.runtime.fault.env.cause ("{writer.this.type.name}.finally", e.msg)
       unit =>
 
 

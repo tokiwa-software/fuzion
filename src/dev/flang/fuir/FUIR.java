@@ -1642,7 +1642,6 @@ public abstract class FUIR extends IR
    */
   public int matchCaseIndex(int s, int tag)
   {
-    // NYI: PERFORMANCE: cache this?
     var result = -1;
     for (var j = 0; result < 0 && j <  matchCaseCount(s); j++)
       {

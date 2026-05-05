@@ -34,7 +34,7 @@ lib_concur_Channel =>
       check chan <- 3
 
 
-    time.nano.sleep (time.duration.ms 250)
+    time.nano.env.sleep (time.duration.ms 250)
 
 
     check concur.thread_pool.env.submit ()->
@@ -44,7 +44,7 @@ lib_concur_Channel =>
           say "received {n}"
 
 
-    time.nano.sleep (time.duration.ms 250)
+    time.nano.env.sleep (time.duration.ms 250)
 
 
     check concur.thread_pool.env.submit ()->

@@ -36,7 +36,7 @@ is
   # automatically at startup
   #
   public redef fixed type.default_value option panic =>
-    (panic (msg->fuzion.runtime.fault.cause ("*** panic ***", msg)) unit)
+    (panic (msg->fuzion.runtime.fault.env.cause ("*** panic ***", msg)) unit)
 
 
   # type feature that to create an instance of `panic` with the given error handler.

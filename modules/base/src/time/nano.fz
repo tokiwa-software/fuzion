@@ -34,7 +34,7 @@
 # not be the right source of time to, e.g., feed an alarm clock that should
 # wake you up at 6h30 every morning.
 #
-public nano (p Nano_Time_Handler) : Clock is
+public nano (p Nano_Time_Handler) : time.Clock is
 
   # no guarantee can be given for precision nor resolution
   #
@@ -66,13 +66,6 @@ public nano (p Nano_Time_Handler) : Clock is
                  #
                  redef sleep(d time.duration) => fzE_nanosleep d.nanos
          )
-
-
-# shorthand for accessing time.nano effect in current environment
-#
-# NYI: CLEANUP: Remove and use `time.nano.env` directly.
-#
-public nano time.nano ! time.nano => time.nano.env
 
 
 # abstract handler that can deliver a nano time

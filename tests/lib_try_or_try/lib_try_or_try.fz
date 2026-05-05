@@ -41,8 +41,8 @@
 # and some example code
 # ```
 #    panic
-#      .try ()->(envir.args.nth 3).or_panic.trim.parse_i32.or_panic
-#      .or_try _->envir.vars["DEBUG_LEVEL"].or_panic.trim.parse_i32.or_panic
+#      .try ()->(envir.args.env.nth 3).or_panic.trim.parse_i32.or_panic
+#      .or_try _->envir.vars.env["DEBUG_LEVEL"].or_panic.trim.parse_i32.or_panic
 #      .catch  _->4
 # ```
 
@@ -56,9 +56,8 @@
 
 x :=
   panic
-    .try ()->(envir.args.nth 3).or_panic.trim.parse_i32.or_panic
-    .or_try _->(say "failed envir args"; envir.vars["DEBUG_LEVEL"].or_panic.trim.parse_i32.or_panic)
+    .try ()->(envir.args.env.nth 3).or_panic.trim.parse_i32.or_panic
+    .or_try _->(say "failed envir args"; envir.vars.env["DEBUG_LEVEL"].or_panic.trim.parse_i32.or_panic)
     .catch  _->(say "failed envir vars";4)
 
 say x
-

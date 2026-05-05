@@ -42,11 +42,11 @@
 #       # which need a very long time for their calculations.
 #
 #       fn Function cache_key := (() ->
-#         time.nano.sleep (time.durations.seconds 2)
+#         time.nano.env.sleep (time.durations.seconds 2)
 #         cache_key ([6,4,1,9].sort))
 #
 #       fm Function cache_kex := (() ->
-#         time.nano.sleep (time.durations.seconds 3)
+#         time.nano.env.sleep (time.durations.seconds 3)
 #         cache_kex 42)
 #
 #       # we define two more wrappers, which will actually call the functions if

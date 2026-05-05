@@ -100,15 +100,6 @@ default_thread_handler : Thread_Handler is
   redef spawn(code ()->unit) => concur.thread (fuzion.sys.thread.spawn code)
 
 
-
-# thread with no argument returns thread.env, i.e., the currently installed
-# source of thread concurrency.
-#
-public threads threads ! threads =>   # NYI: REMOVE!
-  threads.env
-
-
-
 # Thread_Handler -- abstract source of concurrency
 #
 private:public Thread_Handler ref is
