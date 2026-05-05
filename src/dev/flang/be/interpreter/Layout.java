@@ -154,7 +154,7 @@ class Layout extends FUIRContext
   private int fieldSize(int f)
   {
     int fc = fuir().clazzResultClazz(f);
-    var fsz = fuir().clazzIsUnitType(fc)
+    return fuir().clazzIsUnitType(fc)
       ? 0
       : fuir().clazzFieldIsAdrOfValue(f) || fuir().clazzIsRef(fc)
       ? 1
@@ -173,7 +173,6 @@ class Layout extends FUIRContext
         case c_void -> 0;
         default     -> get(fc).size();
         };
-    return fsz;
   }
 
 
