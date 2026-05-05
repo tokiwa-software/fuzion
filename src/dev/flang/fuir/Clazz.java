@@ -325,6 +325,15 @@ class Clazz extends ANY implements Comparable<Clazz>
       ? type.replaceGenericsAndOuter(type.generics(), _outer._type)
       : type;
 
+    if (_type.feature().isFixed() &&
+        !_type.feature().isTypeParameter() &&
+        _type.outer().outer().feature() != _type.feature().outer().outer())
+      {
+        var x = "IMPLEMANTATION RESTRICTION: illegal inheritance and usage of fixed feature: \n" +
+        _type.toString() + "\n" + _type.outer().outer().feature().toString() + "\n" + _type.feature().outer().outer().toString();
+        Errors.fatal(x);
+      }
+
     // needed in DFA-Phase to meet FUIR invariant that
     // stack must be empty at the end of a basic block
     // In other words, it needs to be known that `unit`
