@@ -39,7 +39,5 @@ reg_issue6882 =>
                    _ := lm.env
                  .catch _->
 
-            _ := lm.env
-
           # NYI: CLEANUP: needed due to #6895
           .join
