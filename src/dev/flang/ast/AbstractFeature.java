@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import static dev.flang.util.FuzionConstants.NO_SELECT;
+
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -1433,13 +1435,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
        Errors.any() || !t.isOpenGeneric() || (select >= 0),
        inh != null);
 
-    // NYI: CLEANUP: wold be good to base this on handDownListThroughInheritsCalls.
-    for (AbstractCall c : inh)
-      {
-        t = t.applyTypePars(c.calledFeature(),
-                            c.actualTypeParameters(), select);
-      }
-    return t;
+    return handDownListThroughInheritsCalls(new List<>(t), inh, select).get(0);
   }
 
 
@@ -1447,11 +1443,25 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * Variant of handDownThroughInheritsCalls that operates on a list of types
    * and support open type parameters.
    *
-   * @param l the lsit of types to be handed down.
+   * @param l the list of types to be handed down.
    *
    * @param inh the inheritance chain along which types should be handed down.
    */
   public static List<AbstractType> handDownListThroughInheritsCalls(List<AbstractType> l, List<AbstractCall> inh)
+  {
+    return handDownListThroughInheritsCalls(l, inh, NO_SELECT);
+  }
+
+
+  /**
+   * Variant of handDownThroughInheritsCalls that operates on a list of types
+   * and support open type parameters.
+   *
+   * @param l the list of types to be handed down.
+   *
+   * @param inh the inheritance chain along which types should be handed down.
+   */
+  public static List<AbstractType> handDownListThroughInheritsCalls(List<AbstractType> l, List<AbstractCall> inh, int select)
   {
     if (PRECONDITIONS) require
       (l != null,
@@ -1461,7 +1471,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       {
         var cf = c.calledFeature();
         var actualTypes = c.actualTypeParameters();
-        l = l.flatMap(t -> t.applyTypeParsMaybeOpen(cf, actualTypes));
+        l = l.flatMap(t -> t.applyTypeParsMaybeOpen(cf, actualTypes, select));
       }
     return l;
   }
