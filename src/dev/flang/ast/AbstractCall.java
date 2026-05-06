@@ -441,7 +441,7 @@ public abstract class AbstractCall extends Expr
   {
     var f = ft.genericArgument().outer();
     return
-      calledFeature() == f ? ft.applyTypeParsMaybeOpen(f, actualTypeParameters())
+      calledFeature() == f ? ft.applyTypeParsMaybeOpen(f, actualTypeParameters(), NO_SELECT)
                            : openGenericsFor(res, context, ft, target().type());
   }
 

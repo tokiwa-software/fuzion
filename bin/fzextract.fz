@@ -157,9 +157,6 @@ say """
 
 function_declarations := mut (container.expanding_array String).empty
 
-# NYI: CLEANUP: use local mutate
-_ := mutate
-
 # store known structs
 #
 known_structs := container.mutable_tree_map mutate String clang.struct_decl .empty

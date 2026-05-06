@@ -358,23 +358,6 @@ public effect is
   public abortable bool => true
 
 
-  # abort the current execution and return from the surrounding call to
-  # `instate`.
-  #
-  # NYI: CLEANUP: `return` is the same as `abort`. The term `return` seems
-  # common for algebraic effects, but is confusing since it is different to
-  # returning from a call. We need to decide to break with algebraic effect
-  # jargon (and remove `return`) or to stick with it (and rename `abort` as
-  # `return`).
-  #
-  public type.return void
-  pre
-    safety: effect.this.is_instated
-    safety: effect.this.env.abortable
-  =>
-    abort
-
-
   # --------------------  resource cleanup  --------------------
 
 

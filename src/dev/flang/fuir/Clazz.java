@@ -325,6 +325,15 @@ class Clazz extends ANY implements Comparable<Clazz>
       ? type.replaceGenericsAndOuter(type.generics(), _outer._type)
       : type;
 
+    if (_type.feature().isFixed() &&
+        !_type.feature().isTypeParameter() &&
+        _type.outer().outer().feature() != _type.feature().outer().outer())
+      {
+        var x = "IMPLEMANTATION RESTRICTION: illegal inheritance and usage of fixed feature: \n" +
+        _type.toString() + "\n" + _type.outer().outer().feature().toString() + "\n" + _type.feature().outer().outer().toString();
+        Errors.fatal(x);
+      }
+
     // needed in DFA-Phase to meet FUIR invariant that
     // stack must be empty at the end of a basic block
     // In other words, it needs to be known that `unit`
@@ -785,7 +794,9 @@ class Clazz extends ANY implements Comparable<Clazz>
         // Object layout will later report an error for this case. (NYI: check this with a test!)
         _isUnitType = YesNo.no;
 
-        res = YesNo.yes;
+        res = clazzKind() == IR.FeatureKind.Field
+          ? YesNo.no
+          : YesNo.yes;
 
         // NOTE: We cannot use {@code for (var i : _inner)} since {@code resultClazz} may
         // add inner clazzes even if lookupDone() is set.
