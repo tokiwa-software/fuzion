@@ -850,7 +850,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                                                    List<AbstractType> actualTypes,
                                                    int select)
   {
-    return isOpenGeneric() && genericArgument().outer() == f
+    return isOpenGeneric() && genericArgument().outer() == f && select == NO_SELECT
       ? genericArgument().replaceOpen(actualTypes)
       : new List<>(applyTypePars(f, actualTypes, select));
   }
