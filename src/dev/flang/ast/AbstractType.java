@@ -1927,9 +1927,6 @@ there is no common super type of the two types (Types.t_ERROR)
     // any of `a.b.c`, `a.b`, or `a` inherits from this. During monomorphization, when the type
     // parameter will be replaced, we will find that actual outer type that fits here.
     //
-    // NYI: BUG: instead of returning `tt` here, we need to create a new type that refers to the n`th outer type
-    // of the actual type parameter, i.e., `Outer(1,tt)` in case `a.b` inherits from this, and `Outer(2,tt)` and in
-    // case `a` inherits from this.
     else if (isThisType() && tt.isGenericArgument() && tt.genericArgument().constraint(context).whichOuterInheritsFrom(feature()) >= 0)
       {
         if (tt.genericArgument().constraint(context).whichOuterInheritsFrom(feature()) == 0)
