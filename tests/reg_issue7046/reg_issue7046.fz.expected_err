@@ -1,0 +1,16 @@
+
+--CURDIR--/reg_issue7046.fz:27:11: error 1: Wrong type parameter constraint in redefined feature
+  redef a(T type : String) unit =>
+----------^
+In 'g.a' that redefines 'f.a'
+type parameter constraint is       : 'String'
+type parameter constraint should be: 'codepoint'
+
+Original argument declared at --CURDIR--/reg_issue7046.fz:25:6:
+  a (T type : codepoint) unit =>
+-----^
+To solve this, change constraint of type parameter to 'codepoint' at --CURDIR--/reg_issue7046.fz:27:11:
+  redef a(T type : String) unit =>
+----------^
+
+one error.
