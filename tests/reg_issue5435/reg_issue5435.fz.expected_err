@@ -14,7 +14,37 @@ To solve this, change constraint of type parameter to 'integer' at --CURDIR--/re
 ------------^
 
 
---CURDIR--/reg_issue5435.fz:57:11: error 2: Wrong number of type parameters in redefined feature
+--CURDIR--/reg_issue5435.fz:42:13: error 2: Wrong type parameter constraint in redefined feature
+    redef f(C type : Any, v C) =>          # ok, type constraint is relaxed
+------------^
+In 'reg_issue5435.i.f' that redefines 'reg_issue5435.h.f'
+type parameter constraint is       : 'Any'
+type parameter constraint should be: 'integer'
+
+Original argument declared at --CURDIR--/reg_issue5435.fz:31:7:
+    f(A type : integer, v A) unit =>
+------^
+To solve this, change constraint of type parameter to 'integer' at --CURDIR--/reg_issue5435.fz:42:13:
+    redef f(C type : Any, v C) =>          # ok, type constraint is relaxed
+------------^
+
+
+--CURDIR--/reg_issue5435.fz:47:13: error 3: Wrong type parameter constraint in redefined feature
+    redef f(D type, v D) =>                # ok, type constraint is relaxed
+------------^
+In 'reg_issue5435.j.f' that redefines 'reg_issue5435.h.f'
+type parameter constraint is       : 'Any'
+type parameter constraint should be: 'integer'
+
+Original argument declared at --CURDIR--/reg_issue5435.fz:31:7:
+    f(A type : integer, v A) unit =>
+------^
+To solve this, change constraint of type parameter to 'integer' at --CURDIR--/reg_issue5435.fz:47:13:
+    redef f(D type, v D) =>                # ok, type constraint is relaxed
+------------^
+
+
+--CURDIR--/reg_issue5435.fz:57:11: error 4: Wrong number of type parameters in redefined feature
     redef f(F i32, v i32) =>               # 2. should flag an error: type parameter count changed
 ----------^
 In 'reg_issue5435.l.f' that redefines 'reg_issue5435.h.f' type parameter count is 0 while it should be 1.
@@ -25,7 +55,7 @@ Original feature declared at --CURDIR--/reg_issue5435.fz:31:5:
 ----^
 
 
---CURDIR--/reg_issue5435.fz:62:13: error 3: Wrong argument kind in redefined feature
+--CURDIR--/reg_issue5435.fz:62:13: error 5: Wrong argument kind in redefined feature
     redef f(G type ..., v G...) =>         # 3. should flag an error: type par redefined as open type par
 ------------^
 In 'reg_issue5435.m.f' that redefines 'reg_issue5435.h.f'
@@ -40,7 +70,7 @@ To solve this, change argument kind to type parameter at --CURDIR--/reg_issue543
 ------------^
 
 
---CURDIR--/reg_issue5435.fz:67:11: error 4: Wrong number of type parameters in redefined feature
+--CURDIR--/reg_issue5435.fz:67:11: error 6: Wrong number of type parameters in redefined feature
     redef f(H, I type) =>                  # 4. should flag an error: type parameter count changed
 ----------^
 In 'reg_issue5435.n.f' that redefines 'reg_issue5435.h.f' type parameter count is 2 while it should be 1.
@@ -51,7 +81,7 @@ Original feature declared at --CURDIR--/reg_issue5435.fz:31:5:
 ----^
 
 
---CURDIR--/reg_issue5435.fz:72:11: error 5: Wrong number of type parameters in redefined feature
+--CURDIR--/reg_issue5435.fz:72:11: error 7: Wrong number of type parameters in redefined feature
     redef f(J type, K type ...) =>         # 5. should flag an error: type parameter count changed
 ----------^
 In 'reg_issue5435.o.f' that redefines 'reg_issue5435.h.f' type parameter count is 2 while it should be 1.
@@ -62,7 +92,7 @@ Original feature declared at --CURDIR--/reg_issue5435.fz:31:5:
 ----^
 
 
---CURDIR--/reg_issue5435.fz:86:11: error 6: Wrong number of type parameters in redefined feature
+--CURDIR--/reg_issue5435.fz:86:11: error 8: Wrong number of type parameters in redefined feature
     redef g(v i32)       => say "hi"       # 6. should flag an error, type parameter count changed
 ----------^
 In 'reg_issue5435.q.g' that redefines 'reg_issue5435.h.g' type parameter count is 0 while it should be 1.
@@ -73,7 +103,7 @@ Original feature declared at --CURDIR--/reg_issue5435.fz:32:5:
 ----^
 
 
---CURDIR--/reg_issue5435.fz:89:11: error 7: Wrong number of type parameters in redefined feature
+--CURDIR--/reg_issue5435.fz:89:11: error 9: Wrong number of type parameters in redefined feature
     redef i(v i32)       => say "hi"       # 7. should flag an error, type parameter count changed
 ----------^
 In 'reg_issue5435.q.i' that redefines 'reg_issue5435.h.i' type parameter count is 0 while it should be 1.
@@ -84,7 +114,7 @@ Original feature declared at --CURDIR--/reg_issue5435.fz:33:5:
 ----^
 
 
---CURDIR--/reg_issue5435.fz:94:13: error 8: Wrong argument kind in redefined feature
+--CURDIR--/reg_issue5435.fz:94:13: error 10: Wrong argument kind in redefined feature
     redef g(L type)      => say "hi"       # 8. should flag an error, cannot redefine open type parameter as      type parameter
 ------------^
 In 'reg_issue5435.r.g' that redefines 'reg_issue5435.h.g'
@@ -99,7 +129,7 @@ To solve this, change argument kind to open type parameter at --CURDIR--/reg_iss
 ------------^
 
 
---CURDIR--/reg_issue5435.fz:97:13: error 9: Wrong argument kind in redefined feature
+--CURDIR--/reg_issue5435.fz:97:13: error 11: Wrong argument kind in redefined feature
     redef i(M type ...)  => say "hi"       # 9. should flag an error, cannot redefine      type parameter as open type parameter
 ------------^
 In 'reg_issue5435.r.i' that redefines 'reg_issue5435.h.i'
@@ -114,7 +144,7 @@ To solve this, change argument kind to type parameter at --CURDIR--/reg_issue543
 ------------^
 
 
---CURDIR--/reg_issue5435.fz:111:13: error 10: Wrong argument type in redefined feature
+--CURDIR--/reg_issue5435.fz:111:13: error 12: Wrong argument type in redefined feature
     redef g(x1 i64, x2 bool, x3 unit) =>   # 10. should flag an error for x1
 ------------^^
 In 'reg_issue5435.z1.g' that redefines 'reg_issue5435.x.g'
@@ -129,7 +159,7 @@ To solve this, change type of argument to 'i32' at --CURDIR--/reg_issue5435.fz:1
 ------------^^
 
 
---CURDIR--/reg_issue5435.fz:116:21: error 11: Wrong argument type in redefined feature
+--CURDIR--/reg_issue5435.fz:116:21: error 13: Wrong argument type in redefined feature
     redef g(x1 i32, x2 u8  , x3 unit) =>   # 11. should flag an error for x2
 --------------------^^
 In 'reg_issue5435.z2.g' that redefines 'reg_issue5435.x.g'
@@ -144,7 +174,7 @@ To solve this, change type of argument to 'bool' at --CURDIR--/reg_issue5435.fz:
 --------------------^^
 
 
---CURDIR--/reg_issue5435.fz:121:30: error 12: Wrong argument type in redefined feature
+--CURDIR--/reg_issue5435.fz:121:30: error 14: Wrong argument type in redefined feature
     redef g(x1 i32, x2 bool, x3 bool) =>   # 12. should flag an error for x3
 -----------------------------^^
 In 'reg_issue5435.z3.g' that redefines 'reg_issue5435.x.g'
@@ -158,4 +188,4 @@ To solve this, change type of argument to 'unit' at --CURDIR--/reg_issue5435.fz:
     redef g(x1 i32, x2 bool, x3 bool) =>   # 12. should flag an error for x3
 -----------------------------^^
 
-12 errors.
+14 errors.
