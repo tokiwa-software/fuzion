@@ -1,0 +1,75 @@
+package dev.flang.fe;
+
+import dev.flang.ast.AbstractCall;
+import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.AbstractType;
+import dev.flang.ast.TypeKind;
+import dev.flang.util.List;
+
+public class LevelType extends LibraryType {
+
+  private final AbstractFeature constraint;
+  private final int lvl;
+
+  public LevelType(LibraryModule libraryModule, int at, AbstractFeature constraint, int lvl)
+  {
+    super(libraryModule, at);
+    this.constraint = constraint;
+    this.lvl = lvl;
+  }
+
+  @Override
+  protected AbstractFeature backingFeature()
+  {
+    return constraint;
+  }
+
+  @Override
+  public List<AbstractType> generics()
+  {
+    return AbstractCall.NO_GENERICS;
+  }
+
+  @Override
+  public AbstractType outer()
+  {
+    var universe = constraint;
+    while (!universe.isUniverse())
+      {
+        universe = universe.outer();
+      }
+    return universe.selfType();
+  }
+
+  @Override
+  public TypeKind kind()
+  {
+    return TypeKind.LevelType;
+  }
+
+  @Override
+  public int outerLevel()
+  {
+    return lvl;
+  }
+
+  /**
+   * This returns feature() unless this is an LevelType
+   * Then it returns the feature in the constraint that is referenced
+   * by the LevelType.
+   */
+  @Override
+  public AbstractFeature effectiveFeature()
+  {
+    var l = outerLevel();
+    var t = feature().constraint();
+    while (l>0)
+      {
+        t = t.outer();
+        l--;
+      }
+    return t.feature();
+  }
+
+
+}

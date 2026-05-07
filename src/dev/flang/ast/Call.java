@@ -581,7 +581,7 @@ public class Call extends AbstractCall
           }
         else if (tt != null)
           {
-            result = tt.feature();
+            result = tt.effectiveFeature();
           }
       }
     else
@@ -1600,7 +1600,7 @@ public class Call extends AbstractCall
               tg.addAll(t.generics());            // followed by the generics
               yield tf.selfType().applyTypePars(tf, tg);
             }
-          case ThisType -> t;
+          case ThisType, LevelType -> t;
           // See AstErrors.constraintMustNotBeGenericArgument
           case GenericArgument -> t;
         };
