@@ -67,6 +67,31 @@ module body_reader(LM type : mutate, reader_size i32, _ unit) : io.Read_Handler 
             e error => e
 
 
+chunk_start is
+chunk_size is
+chunk_extension is
+chunk_post_size is
+chunk_end_start is
+chunk_end_finalize is
+chunk_body is
+chunk_post_body_start is
+chunk_post_body_finalize is
+chunk_end_of_file is
+
+
+chunk_enum : choice
+  chunk_start
+  chunk_size
+  chunk_extension
+  chunk_post_size
+  chunk_end_start
+  chunk_end_finalize
+  chunk_body
+  chunk_post_body_start
+  chunk_post_body_finalize
+  chunk_end_of_file is
+
+
 # version of body reader that handles connections with Transfer-Encoding:
 # chunked
 #
@@ -82,29 +107,6 @@ module body_reader(LM type : mutate, reader_size i32, _ unit) : io.Read_Handler 
 # https://datatracker.ietf.org/doc/html/rfc9112#section-7.1
 #
 module body_reader_chunked(LM type : mutate) : io.Read_Handler is
-
-  chunk_start is
-  chunk_size is
-  chunk_extension is
-  chunk_post_size is
-  chunk_end_start is
-  chunk_end_finalize is
-  chunk_body is
-  chunk_post_body_start is
-  chunk_post_body_finalize is
-  chunk_end_of_file is
-
-  chunk_enum : choice
-    chunk_start
-    chunk_size
-    chunk_extension
-    chunk_post_size
-    chunk_end_start
-    chunk_end_finalize
-    chunk_body
-    chunk_post_body_start
-    chunk_post_body_finalize
-    chunk_end_of_file is
 
   extension_limit := (u64 1024) * 64 # arbitrary value, see below
 
