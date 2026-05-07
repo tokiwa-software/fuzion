@@ -1,0 +1,110 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature container.Ring_Buffer
+#
+# -----------------------------------------------------------------------
+
+
+# Ring_Buffer -- A simple fixed-size ring buffer
+#
+# A feature defining a ring buffer of a fixed number of elements of a given
+# type `T`.  The ring buffer can be used locally or for communication between
+# threads.
+#
+public Ring_Buffer(
+  # the type of elements stored in this buffer
+  public T type,
+
+  # effect used to modify this buffer
+  #
+  # If this ring buffer is to be used to communicate between threads,
+  # this mutate effect must support multi-threaded mutations. An instance
+  # of this mustate effect must be instated by when this Ring_Buffer is
+  # constructed and when it is accessed.
+  #
+  M type : mutate,
+
+  # the maximun number of elements that can be stored in
+  # this buffer
+  size i64
+
+) ref ! M
+is
+
+  # the elements in the ring buffer. Valid entries are at indices first..last-1 MOD size
+  #
+  data := M.env.new_array (option T) size nil
+
+  # Index of the first element that will be returned by `poll`
+  #
+  # This may be in the range `0..(size-1)`.
+  #
+  first := M.env.new (i64 0)
+
+  # number of elements that are currently stored in this `Ring_Buffer`.
+  #
+  # This may be any value in the range `0..size`. `data` at indices
+  # `first..(first + used).map (%size)` contains the elements stored in
+  # this buffer.
+  #
+  used  := M.env.new (i64 0)
+
+
+  # add an element to this ring buffer
+  #
+  # Result is true iff ring buffer had space for one more element and `v` was
+  # added to it, false iff the ring buffer is full and was not changed.
+  #
+  public add(v T) bool ! M
+  =>
+    M.env.exclusive ()->
+      if used < size then
+        i := first + used
+        data[i < size ? i : i-size] := v
+        used <- used+1
+        true
+      else
+        false
+
+
+  # poll remove the oldest element from this ring buffer
+  #
+  # Result is an option containing the removed element iff the ring buffer was
+  # not empty. Otherwise, result if nil.
+  #
+  public poll option T ! M
+  =>
+    M.env.exclusive ()->
+      if used > 0 then
+        i := first.get
+        res := data[i]
+        data[i] := nil
+        first <- (i+1 = size ? 0 : i+1)
+        used <- used-1
+        res
+      else
+        nil
+
+
+  # the number of values currently stored in the ring buffer
+  #
+  public count i64 ! M
+  =>
+    used

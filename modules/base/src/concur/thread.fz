@@ -25,10 +25,13 @@
 
 # type for a spawned thread
 #
-module:public thread(thrd Thread) : property.equatable is
+module:public thread(thrd Thread,
 
-  # NYI: CLEANUP: use thread id
-  id := unique_id
+                     # NYI: CLEANUP: use thread id
+                     id u64
+                     )
+  : property.equatable
+is
 
   joined := concur.atomic trit .new trit.no
 

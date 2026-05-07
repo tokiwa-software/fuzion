@@ -195,7 +195,7 @@ body_reader(LM type : mutate) : io.Read_Handler is
 #
 body_reader(LM type : mutate, reader_size i32, _ unit) : io.Read_Handler is
 
-  remaining := mut reader_size
+  remaining := LM.env.new reader_size
 
   public redef read(max_count i32) choice (Sequence u8) io.end_of_file error =>
     if remaining.get <= 0
@@ -262,9 +262,9 @@ body_reader_chunked(LM type : mutate) : io.Read_Handler is
 
   extension_limit := (u64 1024) * 64 # arbitrary value, see below
 
-  position := mut chunk_enum chunk_start
-  current_chunk_size := mut u64 0
-  extension_size := mut u64 0
+  position := LM.env.new chunk_enum chunk_start
+  current_chunk_size := LM.env.new u64 0
+  extension_size := LM.env.new u64 0
 
   update_current_chunk_size (new option u64) choice (Sequence u8) io.end_of_file error =>
     match new

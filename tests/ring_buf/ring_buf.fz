@@ -1,0 +1,71 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test ring_buf
+#
+# -----------------------------------------------------------------------
+
+# Test that verifies mutate effects behave correctly when used in multiple
+# threads.
+#
+# This test uses `container.Ring_Buffer` as example code that requires a
+# mutate effect.
+#
+ring_buf =>
+
+  # try a thread-local local mutate
+  #
+  lm : mutate is
+
+  lm ! ()->
+    rb := container.Ring_Buffer String lm 3
+
+    # add and poll elements including poll on empty and add on full:
+    say <| "expecting --nil-- got: " + rb.poll          # poll on empty ring buffer []      -> []
+    say <| "expecting true    got: " + rb.add "A"       # add first element         []      -> [A]
+    say <| "expecting A       got: " + rb.poll          # poll only element         [A]     -> []
+    say <| "expecting --nil-- got: " + rb.poll          # poll on empty ring buffer []      -> []
+    say <| "expecting true    got: " + rb.add "B"       # add first element         []      -> [B]
+    say <| "expecting true    got: " + rb.add "C"       # add second element        [B]     -> [B,C]
+    say <| "expecting true    got: " + rb.add "D"       # add third element         [B,C]   -> [B,C,D]
+    say <| "expecting B       got: " + rb.poll          # poll on three elements    [B,C,D] -> [C,D]
+    say <| "expecting C       got: " + rb.poll          # poll on two elements      [C,D]   -> [D]
+    say <| "expecting true    got: " + rb.add "E"       # add second element        [D]     -> [D,E]
+    say <| "expecting true    got: " + rb.add "F"       # add third element         [D,E]   -> [D,E,F]
+    say <| "expecting false   got: " + rb.add "G"       # add to full ring          [D,E,F] -> [D,E,F]
+    say <| "expecting D       got: " + rb.poll          # poll on three elements    [D,E,F] -> [E,F]
+    say <| "expecting E       got: " + rb.poll          # poll on two elements      [E,F]   -> [F]
+    say <| "expecting F       got: " + rb.poll          # poll on one element       [F]     -> []
+    say <| "expecting --nil-- got: " + rb.poll          # poll on empty ring buffer []      -> []
+    say <| "expecting true    got: " + rb.add "H"       # add first element         []      -> [H]
+
+    # Now try to poll from another thread, which is expected to fail:
+    t1 := concur.threads.env.spawn ()->
+      fuzion.runtime.fault
+        .try ()->
+          say <| "t1: " + rb.poll + "*** FAILED! NOT ALLOWED in other thread!";
+        .catch m->
+          if $m = "(precondition, safety: is_this_mutate_instated)"
+            say "OK, expected fault: $m"
+          else
+            say "*** FAILED! $m"
+
+    t1.join
+
+  # NYI: UNDER DEVELOPMENT: More tests to be added with mutate effects that are thread-safe once they are there!
