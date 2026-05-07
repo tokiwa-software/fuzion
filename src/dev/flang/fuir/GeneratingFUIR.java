@@ -1513,8 +1513,6 @@ public class GeneratingFUIR extends FUIR
             Clazz or = (of == null) ? null : c.lookup(of);
             var needsOuterRef = outerRefNeeded(or);
             toStack(code, p.target(), !needsOuterRef /* dump result if not needed */);
-            while (inhe.size() < code.size()) { inhe.add(inh); }
-            while (_inh.size() < _allCode.size()) { _inh.add(inh); }
             if (needsOuterRef)
               {
                 code.add(ExprKind.Current);
@@ -1544,13 +1542,13 @@ public class GeneratingFUIR extends FUIR
               {
                 var a = p.actuals().get(i);
                 toStack(code, boxAndTag(a, fat[i]));
-                while (inhe.size() < code.size()) { inhe.add(inh); }
-                while (_inh.size() < _allCode.size()) { _inh.add(inh); }
                 code.add(ExprKind.Current);
                 // Field clazz means assign value to that field
                 code.add(argFields[i]);
               }
 
+            while (inhe.size() < code.size()) { inhe.add(inh); }
+            while (_inh.size() < _allCode.size()) { _inh.add(inh); }
             var inh1 = new List<AbstractCall>();
             inh1.add(p);
             inh1.addAll(inh);
