@@ -25,7 +25,8 @@
 # threads.
 #
 # This test uses `container.Ring_Buffer` as example code that requires a
-# mutate effect.
+# mutate effect, but it also contains some specific tests for `mutate.array`,
+# `mutate.array2`, and `mutate.array3`.
 #
 ring_buf =>
 
@@ -77,6 +78,56 @@ ring_buf =>
 
     say <| "t0: expecting H       got: " + rb.poll               # poll on one element       [H]       -> []
     say <| "t0: expecting nil     got: " + rb.poll               # poll on empty ring buffer []        -> []
+
+    # testing mutable arrays from another thread
+
+    my_array1 := lm.new_array 256 (i64 42)
+    my_array1[192] := 99
+    my_array2 := lm.new_array2 16 16 (u8 67)
+    my_array2[08,15] := 99
+    my_array3 := lm.new_array3 4 4 4 (i16 -32000)
+    my_array3[1,2,3] := 4711
+
+    ta := concur.threads.env.spawn ()->
+      fuzion.runtime.fault
+        .try ()->
+          say <| "ta: " + my_array1[ 67] + "*** FAILED! NOT ALLOWED in other thread!";
+          say <| "ta: " + my_array1[192] + "*** FAILED! NOT ALLOWED in other thread!";
+          my_array1[192] := -9999999999999
+          say <| "ta: " + my_array1[ 67] + "*** FAILED! NOT ALLOWED in other thread!";
+          say <| "ta: " + my_array1[192] + "*** FAILED! NOT ALLOWED in other thread!";
+        .catch m->
+          if $m = "(precondition, safety: is_accessible)"
+            say "OK, expected fault: $m"
+          else
+            say "*** FAILED! $m"
+      fuzion.runtime.fault
+        .try ()->
+          my_array2[08,15] := 55
+          say <| "ta: " + my_array2[ 6, 7] + "*** FAILED! NOT ALLOWED in other thread!";
+          say <| "ta: " + my_array2[08,15] + "*** FAILED! NOT ALLOWED in other thread!";
+          my_array2[08,15] := 255
+          say <| "ta: " + my_array2[ 6, 7] + "*** FAILED! NOT ALLOWED in other thread!";
+          say <| "ta: " + my_array2[08,15] + "*** FAILED! NOT ALLOWED in other thread!";
+        .catch m->
+          if $m = "(precondition, safety: is_accessible)"
+            say "OK, expected fault: $m"
+          else
+            say "*** FAILED! $m"
+      fuzion.runtime.fault
+        .try ()->
+          say <| "ta: " + my_array3[0,1,2] + "*** FAILED! NOT ALLOWED in other thread!";
+          say <| "ta: " + my_array3[1,2,3] + "*** FAILED! NOT ALLOWED in other thread!";
+          my_array3[1,2,3] := 303
+          say <| "ta: " + my_array3[0,1,2] + "*** FAILED! NOT ALLOWED in other thread!";
+          say <| "ta: " + my_array3[1,2,3] + "*** FAILED! NOT ALLOWED in other thread!";
+        .catch m->
+          if $m = "(precondition, safety: is_accessible)"
+            say "OK, expected fault: $m"
+          else
+            say "*** FAILED! $m"
+
+    ta.join
 
 
   # test blocking_mutate that can be used in several threads:
@@ -146,5 +197,48 @@ ring_buf =>
     expect "t0" "M"     (rm                )    # poll on one/two elems     [M]/[M,N] -> []/[N]
     expect "t0" "N"     (rn                )    # poll on one element       [N]       -> []
     expect "t0" nil     (rnl               )    # poll on empty ring buffer []        -> []
+
+    # testing mutable arrays from another thread
+
+    my_array1 := bm.env.new_array 256 (i64 42)
+    my_array2 := bm.env.new_array2 16 16 (u8 67)
+    my_array3 := bm.env.new_array3 4 4 4 (i16 -32000)
+    bm.env.exclusive ()->
+      my_array1[192] := 99
+      my_array2[08,15] := 99
+      my_array3[1,2,3] := 4711
+
+    tb := concur.threads.env.spawn ()->
+      bm.env.exclusive ()->
+        fuzion.runtime.fault
+          .try ()->
+            expect "tb" (i64 42) my_array1[ 67]
+            expect "tb" (i64 99) my_array1[192]
+            my_array1[192] := -9999999999999
+            expect "tb" (i64 42) my_array1[ 67]
+            expect "tb" (i64 -9999999999999) my_array1[192]
+          .catch m->
+            say "*** FAILED! $m"
+        fuzion.runtime.fault
+          .try ()->
+            expect "tb" (u8  67) my_array2[ 6, 7]
+            expect "tb" (u8  99) my_array2[08,15]
+            my_array2[08,15] := 255
+            expect "tb" (u8  67) my_array2[ 6, 7]
+            expect "tb" (u8 255) my_array2[08,15]
+          .catch m->
+            say "*** FAILED! $m"
+        fuzion.runtime.fault
+          .try ()->
+            expect "tb" (i16 -32000) my_array3[0,1,2]
+            expect "tb" (i16   4711) my_array3[1,2,3]
+            my_array3[1,2,3] := 303
+            expect "tb" (i16 -32000) my_array3[0,1,2]
+            expect "tb" (i16    303) my_array3[1,2,3]
+          .catch m->
+            say "*** FAILED! $m"
+
+    tb.join
+
 
   # NYI: UNDER DEVELOPMENT: More tests to be added with blocking operations!

@@ -43,9 +43,20 @@ pre
   safety: length0 * length1 * length2 ≤ data.length.as_i64
 is
 
+
+  # A mutable array might be inaccessible if we are running in a thread that is
+  # not permitted be the underlying mutate instance to access its mutable elements
+  # at this point. See `blocking_mutate` and `mutate.exclusive`.
+  #
+  public redef is_accessible bool
+  =>
+    is_correct_thread
+
+
   # get element at given index i
   #
   public redef index [ ] (I type : integer, i0, i1, i2 I) T =>
+    check_and_replace
     data[((i0.as_i32 * length1.as_i32) + i1.as_i32) * length2.as_i32 + i2.as_i32]
 
 
@@ -59,6 +70,7 @@ is
   # create immutable array from this
   #
   public redef as_array universe.array T =>
+    check_and_replace
     array (length0.as_i32 * length1.as_i32 * length2.as_i32) i->data[i]
 
 
@@ -74,28 +86,30 @@ is
   # create a string representation of this array in nested 3D form.
   #
   public redef as_string String : encodings =>
-    dim_2(i0 i64, i1 i64) =>
+    if is_accessible
+      dim_2(i0 i64, i1 i64) =>
+        ("["
+          + indices2
+              .map (i2 -> "{index[] i0 i1 i2}")
+              .fold (String.concat ", ")
+          + "]")
+
+      dim_1(i0 i64) =>
+        ("["
+          + indices1
+              .map (i1 -> dim_2 i0 i1)
+              .fold (String.concat ", ")
+          + "]")
+
       ("["
-        + indices2
-            .map (i2 -> "{index[] i0 i1 i2}")
-            .fold (String.concat ", ")
+        + ascii.lf_str
+        + indices0
+            .map (i0 -> "    " + dim_1 i0)
+            .fold (String.concat ("," + ascii.lf_str))
+        + ascii.lf_str
         + "]")
-
-    dim_1(i0 i64) =>
-      ("["
-        + indices1
-            .map (i1 -> dim_2 i0 i1)
-            .fold (String.concat ", ")
-        + "]")
-
-    ("["
-      + ascii.lf_str
-      + indices0
-          .map (i0 -> "    " + dim_1 i0)
-          .fold (String.concat ("," + ascii.lf_str))
-      + ascii.lf_str
-      + "]")
-
+    else
+      "inaccessible '{mutate.array3.this.type}'"
 
   # initialize three-dimensional mutable array
   #

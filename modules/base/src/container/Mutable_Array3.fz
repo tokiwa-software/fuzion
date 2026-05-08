@@ -60,6 +60,14 @@ is
   public indices2 interval i64 => (i64 0)..length2-1
 
 
+  # A Mutable_Array3 might be inaccessible, e.g. because it is a shared mutate.array that
+  # is not accessible by the current thread.
+  #
+  public is_accessible bool
+  =>
+    true
+
+
   # get element at given index i
   #
   public index [ ] (I type : integer, i0, i1, i2 I) T ! E
@@ -67,6 +75,7 @@ is
       safety: 0 ≤ i0.as_i64 < length0
       safety: 0 ≤ i1.as_i64 < length1
       safety: 0 ≤ i2.as_i64 < length2
+      safety: is_accessible
   =>
     abstract
 
@@ -78,13 +87,17 @@ is
       safety: 0 ≤ i0.as_i64 < length0
       safety: 0 ≤ i1.as_i64 < length1
       safety: 0 ≤ i2.as_i64 < length2
+      safety: is_accessible
   =>
     abstract
 
 
   # create immutable array from this
   #
-  public as_array array T ! E =>
+  public as_array array T ! E
+    pre
+      safety: is_accessible
+  =>
     array (length0 * length1 * length2).as_i32 (i ->
       Mutable_Array3.this[
         i.as_i64 / (length1 * length2),
@@ -94,7 +107,10 @@ is
 
   # create a list from this array
   #
-  public as_list list T =>
+  public as_list list T
+    pre
+      safety: is_accessible
+  =>
     # since buffer is mutable,
     # we first copy the elements
     # to an immutable array.
@@ -104,4 +120,9 @@ is
   # the current state of the buffer
   # as a string.
   #
-  public redef as_string String => $as_array
+  public redef as_string String
+  =>
+    if is_accessible
+      $as_array
+    else
+      "inaccessible '{Mutable_Array3.this.type}'"

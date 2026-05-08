@@ -18,6 +18,9 @@ t0 expecting true    true
 OK, expected fault: (precondition, safety: is_this_mutate_instated_and_usable)
 t0: expecting H       got: H
 t0: expecting nil     got: --nil--
+OK, expected fault: (precondition, safety: is_accessible)
+OK, expected fault: (precondition, safety: is_accessible)
+OK, expected fault: (precondition, safety: is_accessible)
 t0 expecting --nil-- --nil-- 
 t0 expecting true    true    
 t0 expecting A       A       
@@ -48,3 +51,15 @@ t3 expecting K       K
 t0 expecting M       M       
 t0 expecting N       N       
 t0 expecting --nil-- --nil-- 
+tb expecting 42      42      
+tb expecting 99      99      
+tb expecting 42      42      
+tb expecting -9999999999999 -9999999999999 
+tb expecting 67      67      
+tb expecting 99      99      
+tb expecting 67      67      
+tb expecting 255     255     
+tb expecting -32000  -32000  
+tb expecting 4711    4711    
+tb expecting -32000  -32000  
+tb expecting 303     303     

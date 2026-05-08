@@ -106,7 +106,7 @@ public mutate : linear_effect is
   #
   module is_correct_thread
   =>
-    match exclusive_thread
+    match mutate.this.env.exclusive_thread
      t concur.thread => t = concur.threads.env.current
      nil             => false
 
