@@ -41,9 +41,9 @@ public Ring_Buffer(
   #
   M type : mutate,
 
-  # the maximun number of elements that can be stored in
+  # the maximum number of elements that can be stored in
   # this buffer
-  size i64
+  public size i64
 
 ) ref ! M
 is
