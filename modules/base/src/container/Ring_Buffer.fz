@@ -87,7 +87,7 @@ is
   # poll remove the oldest element from this ring buffer
   #
   # Result is an option containing the removed element iff the ring buffer was
-  # not empty. Otherwise, result if nil.
+  # not empty. Otherwise, result is nil.
   #
   public poll option T ! M
   =>
@@ -103,8 +103,23 @@ is
         nil
 
 
+  # peek return the oldest element from this ring buffer without changing the buffer
+  #
+  # Result is an option containing the oldest element iff the ring buffer was
+  # not empty. Otherwise, result is nil.
+  #
+  public peek option T ! M
+  =>
+    M.env.exclusive ()->
+      if used > 0 then
+        data[first.get]
+      else
+        nil
+
+
   # the number of values currently stored in the ring buffer
   #
   public count i64 ! M
   =>
-    used
+    M.env.exclusive ()->
+      used
