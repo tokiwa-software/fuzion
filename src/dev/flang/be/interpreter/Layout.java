@@ -171,7 +171,11 @@ class Layout extends FUIRContext
         case c_f32  -> 1;
         case c_f64  -> 2;
         case c_void -> 0;
-        default     -> get(fc).size();
+        // NYI: BUG: this does not work yet:
+        // FUIR should ne present us fields that
+        // effectively store unit values
+        // default     -> get(fc).size();
+        default     -> get(fc).size() == 0 ? 1 : get(fc).size();
         };
   }
 
