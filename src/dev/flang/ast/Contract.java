@@ -1031,7 +1031,7 @@ all of their redefinition to `true`. +
                                         ? f.thisType()
                                         // we will later replace type parameters of f
                                         // by type parameters of f post
-                                        : f.resultType(),
+                                        : f.resultTypeIfPresentUrgent(res, true),
                                       FuzionConstants.RESULT_NAME)
           {
             public boolean isResultField() { return true; }
@@ -1096,7 +1096,10 @@ The conditions of a post-condition are checked at run-time in sequential source-
                                       new Current(pos, pF),
                                       a);
                     ca = ca.resolveTypes(res, pF.context());
-                    args2.add(ca);
+                    if (!ca.calledFeature().isTypeParameter())
+                      {
+                        args2.add(ca);
+                      }
                   }
                 var inhpost = callPostCondition(res, inh, pF.context(), args2);
                 inhpost = inhpost.resolveTypes(res, pF.context());
