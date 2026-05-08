@@ -108,3 +108,9 @@ is
   public count i64 ! M
   =>
     used
+
+
+  # amount of elements free for adding
+  #
+  public available i64 =>
+    size - count
