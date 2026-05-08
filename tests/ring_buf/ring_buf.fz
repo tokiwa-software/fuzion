@@ -131,13 +131,20 @@ ring_buf =>
         .catch m->
           say "*** FAILED! $m"
 
-    # busy wait for `K` to be first
+    # busy wait for `M` to be first
     do until rb.peek.or_else "" = "M"
-    expect "t0" "M"     (rb.poll           )    # poll on one/two elems     [M]/[M,N] -> []/[N]
+    rm := rb.poll                               # poll on one/two elems     [M]/[M,N] -> []/[N]
+
+    # busy wait for `N` to be first
     do until rb.peek.or_else "" = "N"
-    expect "t0" "N"     (rb.poll           )    # poll on one element       [N]       -> []
-    expect "t0" nil     (rb.poll           )    # poll on empty ring buffer []        -> []
+    rn := rb.poll                               # poll on one element       [N]       -> []
+    rnl := rb.poll                              # poll on empty ring buffer []        -> []
 
     t3.join
+
+    # output results after `t3.join` to avoid races with `t3` during output:
+    expect "t0" "M"     (rm                )    # poll on one/two elems     [M]/[M,N] -> []/[N]
+    expect "t0" "N"     (rn                )    # poll on one element       [N]       -> []
+    expect "t0" nil     (rnl               )    # poll on empty ring buffer []        -> []
 
   # NYI: UNDER DEVELOPMENT: More tests to be added with blocking operations!
