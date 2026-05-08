@@ -689,6 +689,16 @@ unsigned int __stdcall trampoline_wrapper(void* raw_arg) {
   return 0;
 }
 
+
+/**
+ * Get pointer to current thread.
+ */
+void * fzE_thread_current()
+{
+  return GetCurrentThread();
+}
+
+
 /**
  * Start a new thread, returns a pointer to the thread.
  */
