@@ -41,7 +41,6 @@ public Message ref is
   public header container.Map String String => abstract
 
 
-  # NYI: BUG: can only be called once
   # body of the message, if it has one
   #
   # NYI: CLEANUP: should probably be possible for body to be
@@ -51,7 +50,6 @@ public Message ref is
   public body io.Read_Handler => abstract
 
 
-  # NYI: BUG: can only be called once
   # get the body of the message as a String
   #
   public body_as_string String =>
@@ -64,7 +62,6 @@ public Message ref is
             public redef utf8 Sequence u8 := (io.buffered lm).read_fully
 
 
-  # NYI: BUG: can only be called once
   # the whole message as a sequence of bytes
   #
   public bytes(
@@ -84,7 +81,6 @@ public Message ref is
   public redef as_string String => start_line + header_as_canonical_string + crlf
 
 
-  # NYI: BUG: can only be called once
   # String representation of the whole message, i.e. header and body
   #
   public as_string_with_body(
