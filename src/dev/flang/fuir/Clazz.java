@@ -480,7 +480,7 @@ class Clazz extends ANY implements Comparable<Clazz>
         // the correct t0.outer() within this clazz. see #5653 for an example
         var t1 = t0.outer().isRef()
           ? t0
-          : t0.replaceGenericsAndOuter(t0.generics(), replaceThisType(t0.outer().asThis(), new List<>()));
+          : t0.replaceGenericsAndOuter(t0.generics(), _type.actualType(t0.outer().asThis()));
         return normalize2(f.handDownAndApply(t1, _type));
       }
   }
