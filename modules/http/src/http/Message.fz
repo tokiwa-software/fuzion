@@ -237,13 +237,6 @@ https://datatracker.ietf.org/doc/html/rfc9112#name-reconstructing-the-target-u
 Obsolete Line Folding
 https://datatracker.ietf.org/doc/html/rfc9112#name-obsolete-line-folding
 
-Transfer-Encoding
-https://datatracker.ietf.org/doc/html/rfc9112#name-transfer-encoding
-also: https://datatracker.ietf.org/doc/html/rfc9112#name-message-body-length
-
-Transfer Codings
-https://datatracker.ietf.org/doc/html/rfc9112#name-transfer-codings
-
 Missing, everything from 8 and up
 https://datatracker.ietf.org/doc/html/rfc9112#name-handling-incomplete-message
 
