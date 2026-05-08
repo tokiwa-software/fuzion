@@ -17,7 +17,7 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature racy_mutate
+#  Source code of Fuzion standard library feature blocking_mutate
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
