@@ -751,7 +751,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
     pad_center " " n
 
 
-  # Helper for pad, pad_left and pad_right to determine minimum number of copies
+  # Helper for pad, pad_left and pad_center to determine minimum number of copies
   # of `p` needed to pad String.this to length >= n.
   #
   pad_count(p String, n i32) =>
