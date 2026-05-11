@@ -41,6 +41,10 @@ public blocking_mutate : mutate is
             (panic "`concur.sync.mutex.new` failed to create mutex for `concur.blocking_mutate`")
 
 
+  # Threads that are currently blocked in `wait`
+  #
+  waiting := concur.Thread_List
+
   # thread that currently has exclusive access to this mutate.
   #
   # This is usually `nil`, unless we are in an exclusive section.
@@ -59,7 +63,34 @@ public blocking_mutate : mutate is
       res := code()
       set exclusive_thread := nil
       blocking_mutate.this.replace
+
+      match waiting.first
+        f concur.thread =>
+          for t := f, nxt
+              nxt := t.next
+          while !t.park_condition()
+          until nxt = f  # we eant once around the linked list and found norhing
+          else
+            # t.park_condition() is true, so unpark `t`.
+            waiting.remove t
+            t.unpark
+        nil =>
+
       res
+
+
+  # wait for the given condition to become true by a mutation of the underlying data.
+  #
+  # In case this mutate is not multi-threaded and `condition()` is `false`, this will
+  # `panic`.
+  #
+  public redef wait(F type: ()->bool, condition F) unit
+  =>
+    while !condition() do
+      concur.threads.env.current.park condition ()->
+        waiting.add concur.threads.env.current
+        _ := mtx.unlock  # NYI: result ignored
+      _ := mtx.lock    # NYI: result ignored,
 
 
   # is instance `mutate.this` instated for type `mutate.this` and, if `mutate.this` does
@@ -68,7 +99,7 @@ public blocking_mutate : mutate is
   #
   public redef is_this_mutate_instated_and_usable bool
   =>
-    M.get_if_instated >>? (x -> id = x.id)
+    blocking_mutate.this.get_if_instated >>? (x -> id = x.id)
 
 
   # cleanup feature to destroy mutex and other resources associated with this

@@ -25,11 +25,13 @@
 
 # type for a spawned thread
 #
+# NYI: UNDER DEVELOPMENT: rename as `Thread` since this is a `ref`!
+#
 module:public thread(thrd Thread,
 
                      # NYI: CLEANUP: use thread id
                      id u64
-                     )
+                     ) ref
   : property.equatable
 is
 
@@ -105,3 +107,127 @@ is
   public fixed redef type.equality(a, b thread.this) bool
   =>
     a.id = b.id
+
+
+  # private condition variable for this thread, used to put this
+  # thread in park mode.
+  #
+  cond := concur.sync.condition.new.or_else (panic "failed to create condition variable")
+
+  # is this thread parked?
+  #
+  # this is modified only in `park` and `unpark` while protected by `cond`.
+  #
+  parked := false
+
+
+  # park this thread atomically after storing `condition` in `park_condition` and
+  # execuding `code`.
+  #
+  # The idea is that `code` may release a mutex in a way that ensures that this thread
+  # is parked before it is released.
+  #
+  module park(F type : ()->unit, condition ()->bool, code F)
+  =>
+    cond.synchronized ()->
+      code()
+      set park_condition := condition
+      set parked := true
+      while parked   # perform this in a while to catch spurious wakeups
+        _ := cond.wait      # NYI: CLEANUP: Why is there a `bool` result for `wait`? Remove!
+
+
+  # unpark this thread if it is parked.
+  #
+  module unpark()
+  =>
+    cond.synchronized ()->
+      if parked
+        set parked := false
+        _ := cond.signal    # NYI: CLEANUP: Why is there a `bool` result for `signal`? Remove!
+
+
+  # threads that are parked may use these link fields to form a list of
+  # parked threads.  Since a thread can never be parked more than once, these links can be used
+  # exclusively by the mechanism using park.
+  #
+  module prev thread := thread.this
+  module next thread := thread.this
+
+
+  # set `prev` and `next` to the given values `p` and `n` while this is parked.
+  #
+  fixed setpn(p, n thread) unit =>
+    set prev := p
+    set next := n
+
+
+  # for a parked this, this holds a condition that must hold for the
+  # thread to be unparked.
+  #
+  module park_condition ()->bool := ()->true
+
+
+# A list of threads that are parked, linked for `next`/`prev`.
+#
+# This is currently a simple cyclic list. It might make sense to sort this by
+# priority and to add some user payload.
+#
+module Thread_List ref is
+
+  # the first (oldest) entry in this list
+  #
+  module first option thread := nil
+
+  # add new entry to this list
+  #
+  module add(t thread) unit
+  pre
+    debug: t.next = t && t.prev = t   # links are unused
+  =>
+    match first
+      f thread =>
+        # add `t` before `f` in existing list
+        p := f.prev
+        f.setpn t f
+        p.setpn p.prev t
+        f.setpn t f.next
+      nil =>
+        # add `t` as first entry in this list
+        set first := t
+        t.setpn t t
+
+  # remove first thread from this list
+  #
+  # result is `nil` if list is empty
+  #
+  module remove option thread
+  =>
+    first >>= (t -> remove t; t)
+
+  # remove the given thread `t` from this list
+  #
+  # `t` must be in this list
+  #
+  module remove(t thread) unit =>
+    p := t.prev
+    n := t.next
+    if p = t
+      # `t` is the only thread in this list, so now it will be empty:
+      set first := nil
+    else
+      # note that for p=n, i.e., only one element left when `t` was removed,
+      # we could do
+      #
+      #   if p = n
+      #     p.setpn p p
+      #
+      # but the following, general code for >1 elements has the same effect:
+
+      # link p and n directly:
+      n.setpn p      n.next
+      p.setpn p.prev n
+
+      # set first to next element if it was removed
+      if t = first
+        set first := n

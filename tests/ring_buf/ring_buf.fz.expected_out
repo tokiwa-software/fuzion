@@ -17,7 +17,7 @@ t0 expecting --nil-- --nil--
 t0 expecting true    true    
 OK, expected fault: (precondition, safety: is_this_mutate_instated_and_usable)
 t0: expecting H       got: H
-t0: expecting nil     got: --nil--
+t0 expecting (*** panic ***, mutate.wait on '(container.Ring_Buffer String ring_buf.lm).take.(λ(()-> !is_empty0))' would wait forever) (*** panic ***, mutate.wait on '(container.Ring_Buffer String ring_buf.lm).take.(λ(()-> !is_empty0))' would wait forever) 
 OK, expected fault: (precondition, safety: is_accessible)
 OK, expected fault: (precondition, safety: is_accessible)
 OK, expected fault: (precondition, safety: is_accessible)
@@ -50,6 +50,21 @@ t3 expecting true    true
 t3 expecting K       K       
 t0 expecting M       M       
 t0 expecting N       N       
+t0 expecting --nil-- --nil-- 
+t4 expecting true    true    
+t4 expecting true    true    
+t4 expecting true    true    
+t4 expecting unit    unit    
+t4 expecting unit    unit    
+t4 expecting unit    unit    
+t4 expecting unit    unit    
+t0 expecting O       O       
+t0 expecting P       P       
+t0 expecting Q       Q       
+t0 expecting R       R       
+t0 expecting S       S       
+t0 expecting T       T       
+t0 expecting U       U       
 t0 expecting --nil-- --nil-- 
 tb expecting 42      42      
 tb expecting 99      99      

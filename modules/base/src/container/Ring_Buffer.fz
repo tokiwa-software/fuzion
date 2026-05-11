@@ -67,6 +67,32 @@ is
   used  := M.env.new (i64 0)
 
 
+  # is this buffer full?
+  public is_full bool
+  =>
+    M.env.exclusive ()->is_full0
+
+
+  # is this buffer full? Must be called while in `exclusive`:
+  #
+  is_full0 bool
+  =>
+    used = size
+
+
+  # is this buffer empty?
+  public is_empty bool
+  =>
+    M.env.exclusive ()->is_empty0
+
+
+  # is this buffer empty? Must be called while in `exclusive`:
+  #
+  is_empty0 bool
+  =>
+    used = 0
+
+
   # add an element to this ring buffer
   #
   # Result is true iff ring buffer had space for one more element and `v` was
@@ -75,13 +101,31 @@ is
   public add(v T) bool ! M
   =>
     M.env.exclusive ()->
-      if used < size then
-        i := first + used
-        data[i < size ? i : i-size] := v
-        used <- used+1
+      if !is_full0 then
+        put1 v
         true
       else
         false
+
+
+  # put is a blocking version of add: add an element to this ring buffer,
+  # wait in case the buffer is full
+  #
+  public put(v T) unit ! M
+  =>
+    M.env.exclusive_when (()-> !is_full0) ()->
+      put1 v
+
+
+  # put1 is a helper for `add` and `put`: add an element to this non-full ring buffer
+  #
+  put1(v T) ! M
+  pre
+    debug: M.env.is_exclusive && !is_full0
+  =>
+    i := first + used
+    data[i < size ? i : i-size] := v
+    used <- used+1
 
 
   # poll remove the oldest element from this ring buffer
@@ -92,15 +136,10 @@ is
   public poll option T ! M
   =>
     M.env.exclusive ()->
-      if used > 0 then
-        i := first.get
-        res := data[i]
-        data[i] := nil
-        first <- (i+1 = size ? 0 : i+1)
-        used <- used-1
-        res
+      if is_empty0 then
+        option T nil
       else
-        nil
+        take1
 
 
   # peek return the oldest element from this ring buffer without changing the buffer
@@ -111,10 +150,35 @@ is
   public peek option T ! M
   =>
     M.env.exclusive ()->
-      if used > 0 then
-        data[first.get]
+      if is_empty0 then
+        option T nil
       else
-        nil
+        data[first.get]
+
+
+  # take is a blocking version of poll: remove the oldest element from this ring buffer
+  #
+  # Result is the removed element. If none is available, this will block until one is
+  # available.
+  #
+  public take T ! M
+  =>
+    M.env.exclusive_when (()-> !is_empty0) ()->
+      take1
+
+
+  # take1 is a helper for `poll` and `take`: remove oldest element from non-empty ring buffer
+  #
+  take1 T ! M
+  pre
+    debug: M.env.is_exclusive && !is_empty0
+  =>
+    i := first.get
+    res := data[i].or_panic
+    data[i] := nil
+    first <- (i+1 = size ? 0 : i+1)
+    used <- used-1
+    res
 
 
   # the number of values currently stored in the ring buffer

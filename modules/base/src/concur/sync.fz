@@ -57,10 +57,22 @@ public sync is
 
       lock_effect : effect is
         public redef finally unit =>
-          check mtx_unlock mtx
+          unlock
 
-      check mtx_lock mtx
+      lock
       lock_effect ! code.call
+
+    # low-level lock this mutex
+    module lock
+    =>
+      res := mtx_lock mtx
+      check res
+
+    # low-level unlock this mutex
+    module unlock
+    =>
+      res := mtx_unlock mtx
+      check res
 
 
     # initialize a new mutex
