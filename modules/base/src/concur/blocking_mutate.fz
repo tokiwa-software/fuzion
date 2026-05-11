@@ -68,9 +68,7 @@ public blocking_mutate : mutate is
   #
   public redef is_this_mutate_instated_and_usable bool
   =>
-    match M.get_if_instated
-      x blocking_mutate.this => id = x.id
-      nil                    => false
+    M.get_if_instated >>? (x -> id = x.id)
 
 
   # cleanup feature to destroy mutex and other resources associated with this

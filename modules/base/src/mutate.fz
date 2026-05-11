@@ -106,9 +106,7 @@ public mutate : linear_effect is
   #
   module is_correct_thread
   =>
-    match mutate.this.env.exclusive_thread
-     t concur.thread => t = concur.threads.env.current
-     nil             => false
+    mutate.this.env.exclusive_thread >>? (=concur.threads.env.current)
 
 
   # panic operation to be used in case of a severe problem.  This is redefined within the
@@ -127,9 +125,7 @@ public mutate : linear_effect is
     # `mutate.this`
     #
     is_currently_instated =>
-      match M.get_if_instated
-        x mutate.this => open && id = x.id && x.is_correct_thread
-        nil           => false
+      open && is_this_mutate_instated_and_usable
 
 
     # check that this effect is instated and replace it.
@@ -238,9 +234,7 @@ public mutate : linear_effect is
   #
   public is_this_mutate_instated_and_usable bool
   =>
-    match M.get_if_instated
-      x mutate.this => id = x.id && is_correct_thread
-      nil           => false
+    M.get_if_instated >>? (x -> id = x.id && is_correct_thread)
 
 
   # perform given code with exclusive access to the mutable values created with

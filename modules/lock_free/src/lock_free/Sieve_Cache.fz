@@ -90,10 +90,7 @@ public Sieve_Cache(K type : property.hashable, V type, public capacity i32) ref 
     for obj := init_obj, match obj.or_panic.prev.read
                            p lock_free.Node => p
                            nil => tail.read
-    while match obj
-            nil => false
-            o lock_free.Node => o.visited.read
-    do
+    while obj >>? (.visited.read) do
       obj.or_panic.visited.write false
     else
       match obj
