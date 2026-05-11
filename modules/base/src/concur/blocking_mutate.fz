@@ -76,8 +76,8 @@ public blocking_mutate : mutate is
   # cleanup feature to destroy mutex and other resources associated with this
   # effect.
   #
-  # NYI: UNDER DEVELOPMENT: Ensure that this does not get called or redefined
-  # by user code
+  # NYI: UNDER DEVELOPMENT: Ensure that this does not get redefined by user
+  # code.
   #
   public redef finally unit
   =>
