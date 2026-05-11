@@ -60,12 +60,13 @@ public mutate : linear_effect is
 
   # shorthand to access effect type
   #
-  M := mutate.this.type
+  module M := mutate.this.type
+
 
   # an id used for runtime checks to verify that mutation made with the same effect
   # the mutable value was created with
   #
-  id := fzE_unique_id
+  module id := fzE_unique_id
 
 
   # NYI: UNDER DEVELOPMENT: thread id used to make sure this effect is
@@ -74,7 +75,7 @@ public mutate : linear_effect is
   # This should become more sophisticated with mutate effects that support
   # synchronization in a way that access by several threads is possible.
   #
-  tid =>
+  module tid =>
     tid0.or_else ()->
         res := concur.threads.env.current
         set tid0 := res
@@ -90,11 +91,24 @@ public mutate : linear_effect is
                                                              else nil
 
 
-  # test if the current thread is the same as the thread this mutate was created in
+  # thread that currently has exclusive access to this mutate. This is the creating thread
+  # for a mutate that is not sharable by threads. Otherwise, this is `nil` if no thread
+  # currently has exclusive access, or the thread that currently does have exclusive
+  # access.
   #
-  module correct_thread
+  module exclusive_thread option concur.thread => tid
+
+
+  # test if the current thread is permitted to access mutable state managed by mutate.this.
+  # This is usually the case for the same thread this mutate was created in.  Furthermore,
+  # child features of mutate may provide support for multi-threaded access to mutable data,
+  # so they may permit other threads as well.
+  #
+  module is_correct_thread
   =>
-    tid = concur.threads.env.current
+    match mutate.this.env.exclusive_thread
+     t concur.thread => t = concur.threads.env.current
+     nil             => false
 
 
   # panic operation to be used in case of a severe problem.  This is redefined within the
@@ -108,17 +122,13 @@ public mutate : linear_effect is
   #
   module:public mutable_element is
 
-    # id used to verify that mutation made with the same effect
-    # the mutable value was created with
-    my_id := id
-
 
     # check that this effect is the same as the currently instated effect of type
     # `mutate.this`
     #
     is_currently_instated =>
       match M.get_if_instated
-        x mutate.this => my_id = x.id && correct_thread
+        x mutate.this => open && id = x.id && x.is_correct_thread
         nil           => false
 
 
@@ -133,13 +143,13 @@ public mutate : linear_effect is
 
     # is this element open, i.e., can it be mutated?
     #
-    public open bool => my_id != u64 0
+    public open bool := true
 
 
     # stop any further mutations of this element
     #
     public close unit =>
-      set my_id := 0
+      set open := false
 
 
   # create a new mutable value with the given initial value and update the
@@ -226,10 +236,10 @@ public mutate : linear_effect is
   # not support use in several threads, check we are running in the thread `mutate.this`
   # was created in?
   #
-  public is_this_mutate_instated bool
+  public is_this_mutate_instated_and_usable bool
   =>
     match M.get_if_instated
-      x mutate.this => id = x.id && correct_thread
+      x mutate.this => id = x.id && is_correct_thread
       nil           => false
 
 
@@ -238,7 +248,7 @@ public mutate : linear_effect is
   #
   public exclusive(R type, F type: ()->R, code F) R
   pre
-    safety: is_this_mutate_instated
+    safety: is_this_mutate_instated_and_usable
   =>
     code()
 

@@ -37,8 +37,8 @@
 #
 public racy_mutate : mutate is
 
-  # test if the current thread is the same as the thread this mutate was created in
+  # this uses racy accesses to all data, so any thread is allowed.
   #
-  module redef correct_thread
+  module redef is_correct_thread
   =>
     true
