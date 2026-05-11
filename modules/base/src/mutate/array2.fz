@@ -47,7 +47,7 @@ is
 
 
   # A mutable array might be inaccessible if we are running in a thread that is
-  # not permitted be the underlying mutate instance to access its mutable elements
+  # not permitted by the underlying mutate instance to access its mutable elements
   # at this point. See `blocking_mutate` and `mutate.exclusive`.
   #
   public redef is_accessible bool

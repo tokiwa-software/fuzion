@@ -91,8 +91,8 @@ public mutate : linear_effect is
                                                              else nil
 
 
-  # thread that currently has exclusive acces to this mutate. This is the creating thread
-  # for a mutate that is not sharable by threads. Other wise, this is `nil` if no thread
+  # thread that currently has exclusive access to this mutate. This is the creating thread
+  # for a mutate that is not sharable by threads. Otherwise, this is `nil` if no thread
   # currently has exclusive access, or the thread that currently does have exclusive
   # access.
   #

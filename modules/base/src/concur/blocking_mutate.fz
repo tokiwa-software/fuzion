@@ -41,7 +41,7 @@ public blocking_mutate : mutate is
             (panic "`concur.sync.mutex.new` failed to create mutex for `concur.blocking_mutate`")
 
 
-  # thread that currently has exclusive acces to this mutate.
+  # thread that currently has exclusive access to this mutate.
   #
   # This is usually `nil`, unless we are in an exclusive section.
   #
