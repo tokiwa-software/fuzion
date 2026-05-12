@@ -155,16 +155,15 @@ jitter =>
       e error => say $e
       void    => # will not happen
 
-  concur.threads.type.default_value.or_panic ! ()->
-      if run_on_dedicated_thread
-        thrd := concur.threads.env.spawn ()->
-          test_jitter time.nano time.nano
-        match thrd.set_policy concur.scheduling_policy.sched_fifo false 99
-          e error => say "jitter thread priority: $e. Error 38 : backend does not implement thread policy \n Error 1 : insufficient privileges."
-          unit    => unit
-        _ := thrd.join
-      else
-        test_jitter time.nano time.nano
+  if run_on_dedicated_thread
+    thrd := concur.threads.env.spawn ()->
+      test_jitter time.nano time.nano
+    match thrd.set_policy concur.scheduling_policy.sched_fifo false 99
+      e error => say "jitter thread priority: $e. Error 38 : backend does not implement thread policy \n Error 1 : insufficient privileges."
+      unit    => unit
+    _ := thrd.join
+  else
+    test_jitter time.nano time.nano
 
         # How to run with high priority :
         # FUZION_HOME=build bash bin/fz -c examples/jitter/jitter.fz
