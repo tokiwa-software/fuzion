@@ -39,6 +39,6 @@ public racy_mutate : mutate is
 
   # this uses racy accesses to all data, so any thread is allowed.
   #
-  module redef is_correct_thread
+  public redef is_exclusive bool
   =>
     true
