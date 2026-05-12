@@ -178,7 +178,7 @@ is
     "thread#$id"
 
 
-# A list of threads that are parked, linked for `next`/`prev`.
+# A list of threads that are parked, linked via `next`/`prev`.
 #
 # This is currently a simple cyclic list. It might make sense to sort this by
 # priority and to add some user payload.
@@ -226,7 +226,7 @@ module Thread_List ref is
       # `t` is the only thread in this list, so now it will be empty:
       set first := nil
     else
-      # note that for p=n, i.e., only one element left when `t` was removed,
+      # note that for p=n, i.e., only one element left after `t` was removed,
       # we could do
       #
       #   if p = n

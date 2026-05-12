@@ -69,7 +69,7 @@ public blocking_mutate : mutate is
           for t := f, nxt
               nxt := t.next
           while !t.park_condition()
-          until nxt = f  # we eant once around the linked list and found norhing
+          until nxt = f  # we went once around the linked list but found norhing
           else
             # t.park_condition() is true, so unpark `t`.
             waiting.remove t
@@ -81,8 +81,8 @@ public blocking_mutate : mutate is
 
   # wait for the given condition to become true by a mutation of the underlying data.
   #
-  # In case this mutate is not multi-threaded and `condition()` is `false`, this will
-  # `panic`.
+  # In case this mutate is not a multi-thread implementation and `condition()` is `false`,
+  # this will `panic`.
   #
   public redef wait(F type: ()->bool, condition F) unit
   =>

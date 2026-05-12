@@ -103,8 +103,8 @@ public mutate : linear_effect is
   # exclusively.
   #
   # For a single-thread mutate, this is usually the case for the same thread this mutate was
-  # created in.  Furthermore, multi-threaded mutate implementations may ensure exclusive
-  # access to other threads via redefining the `exclusive` featurrs.
+  # created in.  Furthermore, multi-thread mutate implementations may ensure exclusive
+  # access to other threads via redefining the `exclusive` features.
   #
   public is_exclusive bool
   =>
@@ -249,10 +249,10 @@ public mutate : linear_effect is
     code()
 
 
-  # wait for the given condition to becomes true by a mutation of the underlying data.
+  # wait for the given condition to become true by a mutation of the underlying data.
   #
-  # In case this mutate is not multi-threaded and `condition()` is `false`, this will
-  # `panic`.
+  # In case this mutate is not a multi-thread implementation and `condition()` is `false`,
+  # this will `panic`.
   #
   public wait(F type: ()->bool, condition F) unit
   pre
