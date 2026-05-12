@@ -165,7 +165,7 @@ jitter =>
   else
     test_jitter time.nano time.nano
 
-        # How to run with high priority :
-        # FUZION_HOME=build bash bin/fz -c examples/jitter/jitter.fz
-        # sudo setcap cap_sys_nice=ep ./jitter
-        # ./jitter
+  # How to run with high priority :
+  # FUZION_HOME=build bash bin/fz -c examples/jitter/jitter.fz
+  # sudo setcap cap_sys_nice=ep ./jitter
+  # ./jitter
