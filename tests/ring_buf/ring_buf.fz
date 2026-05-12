@@ -284,5 +284,45 @@ ring_buf =>
 
     tb.join
 
+    # now test using three consumer threads t5, t6, t7 that are fed by one
+    # producer thread (current thread):
+
+    t5 := concur.threads.env.spawn ()->
+      fuzion.runtime.fault
+        .try ()->
+          for x := rb.take until x = "QUIT"
+        .catch m->
+          say "*** FAILED! $m"
+    t6 := concur.threads.env.spawn ()->
+      fuzion.runtime.fault
+        .try ()->
+          for x := rb.take until x = "QUIT"
+        .catch m->
+          say "*** FAILED! $m"
+    t7 := concur.threads.env.spawn ()->
+      fuzion.runtime.fault
+        .try ()->
+          for x := rb.take until x = "QUIT"
+        .catch m->
+          say "*** FAILED! $m"
+
+    for i in 1..10 do
+
+      # give the threads some time to start or empty the buffer:
+      time.nano.env.sleep (time.duration.ms 10)
+
+      # push 5000 entries to the ring buffer
+      for j in 1..5000 do
+        rb.put "X"
+
+    # tell all threads to stop
+    rb.put "QUIT"
+    rb.put "QUIT"
+    rb.put "QUIT"
+
+    t5.join
+    t6.join
+    t7.join
+
 
   # NYI: UNDER DEVELOPMENT: More tests to be added with blocking operations!

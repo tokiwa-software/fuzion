@@ -168,6 +168,16 @@ is
   module park_condition ()->bool := ()->true
 
 
+  # String representation of thread
+  #
+  # NYI: we should provide some support for thread names. Currently, this is usind the
+  # thread id.
+  #
+  public redef as_string String
+  =>
+    "thread#$id"
+
+
 # A list of threads that are parked, linked for `next`/`prev`.
 #
 # This is currently a simple cyclic list. It might make sense to sort this by
@@ -189,7 +199,7 @@ module Thread_List ref is
       f thread =>
         # add `t` before `f` in existing list
         p := f.prev
-        f.setpn t f
+        t.setpn f.prev f
         p.setpn p.prev t
         f.setpn t f.next
       nil =>
@@ -231,3 +241,5 @@ module Thread_List ref is
       # set first to next element if it was removed
       if t = first
         set first := n
+
+      t.setpn t t
