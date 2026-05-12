@@ -122,7 +122,7 @@ is
 
 
   # park this thread atomically after storing `condition` in `park_condition` and
-  # execuding `code`.
+  # executing `code`.
   #
   # The idea is that `code` may release a mutex in a way that ensures that this thread
   # is parked before it is released.
@@ -155,7 +155,7 @@ is
   module next thread := thread.this
 
 
-  # for a parked this, this holds a condition that must hold for the
+  # for a parked `thread.this`, this holds a condition that must hold for the
   # thread to be unparked.
   #
   module park_condition ()->bool := ()->true
