@@ -147,19 +147,12 @@ is
         _ := cond.signal    # NYI: CLEANUP: Why is there a `bool` result for `signal`? Remove!
 
 
-  # threads that are parked may use these link fields to form a list of
-  # parked threads.  Since a thread can never be parked more than once, these links can be used
-  # exclusively by the mechanism using park.
+  # threads that are parked may use these link fields to form a `Thread_List` of
+  # parked threads.  Since a thread can never be parked more than once, these links
+  # can be used exclusively by the mechanism using park.
   #
   module prev thread := thread.this
   module next thread := thread.this
-
-
-  # set `prev` and `next` to the given values `p` and `n` while this is parked.
-  #
-  fixed setpn(p, n thread) unit =>
-    set prev := p
-    set next := n
 
 
   # for a parked this, this holds a condition that must hold for the
@@ -176,70 +169,3 @@ is
   public redef as_string String
   =>
     "thread#$id"
-
-
-# A list of threads that are parked, linked via `next`/`prev`.
-#
-# This is currently a simple cyclic list. It might make sense to sort this by
-# priority and to add some user payload.
-#
-module Thread_List ref is
-
-  # the first (oldest) entry in this list
-  #
-  module first option thread := nil
-
-  # add new entry to this list
-  #
-  module add(t thread) unit
-  pre
-    debug: t.next = t && t.prev = t   # links are unused
-  =>
-    match first
-      f thread =>
-        # add `t` before `f` in existing list
-        p := f.prev
-        t.setpn f.prev f
-        p.setpn p.prev t
-        f.setpn t f.next
-      nil =>
-        # add `t` as first entry in this list
-        set first := t
-        t.setpn t t
-
-  # remove first thread from this list
-  #
-  # result is `nil` if list is empty
-  #
-  module remove option thread
-  =>
-    first >>= (t -> remove t; t)
-
-  # remove the given thread `t` from this list
-  #
-  # `t` must be in this list
-  #
-  module remove(t thread) unit =>
-    p := t.prev
-    n := t.next
-    if p = t
-      # `t` is the only thread in this list, so now it will be empty:
-      set first := nil
-    else
-      # note that for p=n, i.e., only one element left after `t` was removed,
-      # we could do
-      #
-      #   if p = n
-      #     p.setpn p p
-      #
-      # but the following, general code for >1 elements has the same effect:
-
-      # link p and n directly:
-      n.setpn p      n.next
-      p.setpn p.prev n
-
-      # set first to next element if it was removed
-      if t = first
-        set first := n
-
-      t.setpn t t
