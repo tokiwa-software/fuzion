@@ -57,26 +57,18 @@ public class Call extends AbstractCall
 
   static final Expr TRUE  = new AbstractCall() {
           @Override public SourcePosition pos() { return SourcePosition.notAvailable; }
-          @Override public List<AbstractType> actualTypeParameters() { return NO_GENERICS; }
           @Override public AbstractFeature calledFeature() { return Types.resolved.f_true; }
           @Override public Expr target() { return Universe.instance; }
           @Override public AbstractType typeForInferencing() { return calledFeature().resultType(); }
-          @Override public List<Expr> actuals() { return NO_EXPRS; }
-          @Override public int select() { return FuzionConstants.NO_SELECT; }
-          @Override public boolean isInheritanceCall() { return false; }
           @Override public Expr visit(FeatureVisitor v, AbstractFeature outer) { v.action(this); return this; }
         };
 
 
   static final Expr FALSE = new AbstractCall() {
           @Override public SourcePosition pos() { return SourcePosition.notAvailable; }
-          @Override public List<AbstractType> actualTypeParameters() { return NO_GENERICS; }
           @Override public AbstractFeature calledFeature() { return Types.resolved.f_false; }
           @Override public Expr target() { return Universe.instance; }
           @Override public AbstractType typeForInferencing() { return calledFeature().resultType(); }
-          @Override public List<Expr> actuals() { return NO_EXPRS; }
-          @Override public int select() { return FuzionConstants.NO_SELECT; }
-          @Override public boolean isInheritanceCall() { return false; }
           @Override public Expr visit(FeatureVisitor v, AbstractFeature outer) { v.action(this); return this; }
         };
 
