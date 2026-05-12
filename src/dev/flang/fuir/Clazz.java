@@ -1841,6 +1841,21 @@ class Clazz extends ANY implements Comparable<Clazz>
         res = res._outer;
       }
 
+    res = this;
+    var i = feature();
+    while (i != null && i != of)
+      {
+        res = i.hasOuterRef()
+          ? res.lookup(i.outerRef()).resultClazz()
+          : res._outer;
+        i = (LibraryFeature) i.outer();
+      }
+    if (i == of)
+      {
+        check(res != null);
+        result.add(res);
+      }
+
     if (result.size() > 1)
       {
         Errors.fatal("IMPLEMENTATION RESTRICTION: found multiple this types for " + o.toString() + " in " + toString() + ": " + result);
