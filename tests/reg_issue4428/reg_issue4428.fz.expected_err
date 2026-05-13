@@ -1,0 +1,13 @@
+
+--CURDIR--/reg_issue4428.fz:25:3: error 1: Result type of lambda must not refer to itself.
+f ()->
+--^^^^
+  a is
+--^^^^
+    x => a
+----^^^^^^
+  a.x
+--^^^
+The inferred result type of the lambda: '(λ()-> a is x => a a.x).call.this.a'
+
+one error.

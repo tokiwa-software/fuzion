@@ -2167,6 +2167,15 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   }
 
 
+  /**
+   * return true if this == f or if this is an inner feature of f.
+   */
+  public boolean isSelfOrInnerFeatureOf(Feature f)
+  {
+    return this == f || outer() != null && outer().isSelfOrInnerFeatureOf(f);
+  }
+
+
 
 
 }

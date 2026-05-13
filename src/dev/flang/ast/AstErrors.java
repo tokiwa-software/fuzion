@@ -2669,6 +2669,11 @@ public class AstErrors extends ANY
     );
   }
 
+  public static void inferredResultTypeOfLambdaIllegal(Function fun, AbstractType t)
+  {
+    error(fun.pos(), "Result type of lambda must not refer to itself.", "The inferred result type of the lambda: " + s(t));
+  }
+
 }
 
 /* end of file */

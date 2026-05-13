@@ -399,7 +399,14 @@ public class Function extends AbstractLambda
             res.resolveTypes(_feature);
             if (inferResultType)
               {
-                result = refineResultType(res, context, rt0, _feature.resultType());
+                var frt = _feature.resultType();
+                frt.selfOuterAndGenerics(rtt -> {
+                  if (rtt.backingFeature().isSelfOrInnerFeatureOf(_wrapper))
+                    {
+                      AstErrors.inferredResultTypeOfLambdaIllegal(this, frt);
+                    }
+                });
+                result = refineResultType(res, context, rt0, frt);
                 var g = t.lambdaTargetResultTypeParameter(res);
                 if (g != null && !_inheritsCall.isDefunct())
                   {
