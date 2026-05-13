@@ -42,6 +42,7 @@ import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.AstErrors;
 import dev.flang.ast.Expr;
+import dev.flang.ast.TypeKind;
 import dev.flang.ast.Types;
 
 import dev.flang.fe.LibraryFeature;
@@ -309,6 +310,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     if (PRECONDITIONS) require
       (!type.dependsOnGenericsNoOuter(),
        !type.containsThisType(),
+       !type.contains(a -> a.kind() == TypeKind.LevelType),
        // NYI: UNDER DEVELOPMENT: currently not possible because of type_as_value and `Type.infix :`
        //  !type.feature().isTypeParameter(),
        type.feature().resultType().isOpenGeneric() == (select >= 0),
@@ -602,7 +604,46 @@ class Clazz extends ANY implements Comparable<Clazz>
     //       a => say "a"
     //   b : o.a is
     //   ignore b
-    return replaceThisType(t0, inh);
+    var t1 = replaceThisType(t0, inh);
+    return replaceLevelTypes(t1);
+  }
+
+
+  /**
+   * In t, self, generics and outer replace all level types.
+   */
+  public AbstractType replaceLevelTypes(AbstractType t)
+  {
+    return replaceLevelType(t).applyToGenericsAndOuter(x -> {
+      x = replaceLevelTypes(x);
+      return x;
+    });
+  }
+
+
+  /**
+   * If t is a LevelType, replace it by the correct type
+   * according to this clazz.
+   */
+  private AbstractType replaceLevelType(AbstractType t)
+  {
+    if (t.kind() == TypeKind.LevelType)
+      {
+        var o = this;
+        while (!o.feature().typeArguments().contains(t.feature()))
+          {
+            o = o._outer;
+          }
+        var atp = o._actualTypeParameters[o.feature().typeArguments().indexOf(t.feature())];
+        var lvl = t.outerLevel();
+        while (lvl > 0)
+          {
+            atp = atp._outer;
+            lvl--;
+          }
+        t = atp._type;
+      }
+    return t;
   }
 
 
@@ -695,7 +736,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    */
   List<AbstractType> actualGenerics(List<AbstractType> generics, List<AbstractCall> inh)
   {
-    var new_generics = AbstractFeature.handDownListThroughInheritsCalls(generics, inh);
+    var new_generics = AbstractFeature.handDownListThroughInheritsCalls(generics, inh).map(g -> replaceLevelTypes(g));
     var result = this._type.replaceGenerics(new_generics);
 
     // Replace any {@code a.this.type} actual generics by the actual outer clazz:
@@ -1126,7 +1167,9 @@ class Clazz extends ANY implements Comparable<Clazz>
           }
         else
           {
-            t = _type.actualType(t);  // e.g., {@code (Types.get (array f64)).T} -> {@code array f64}
+            // e.g., {@code (Types.get (array f64)).T} -> {@code array f64}
+            t = _type.actualType(t);
+            t = replaceLevelTypes(t);
 
 /*
   We have the following possibilities when calling a feature {@code f} declared in do {@code on}
