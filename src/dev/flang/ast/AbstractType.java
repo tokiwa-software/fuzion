@@ -2658,10 +2658,10 @@ there is no common super type of the two types (Types.t_ERROR)
             AstErrors.illegalThisType(pos, this);
           }
       }
-    if (!isGenericArgument() && outer() != null)
-      {
-        outer().checkLegalThisType(pos, context);
-      }
+    applyToGenericsAndOuter(t -> {
+      t.checkLegalThisType(pos, context);
+      return t;
+    });
   }
 
 
