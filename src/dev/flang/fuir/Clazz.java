@@ -412,7 +412,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     if (PRECONDITIONS) require
       (!_fuir._lookupDone,
        i.clazzKind() != IR.FeatureKind.Field || isValue(),
-       !i.feature().isField() || _fields == null);
+       !i.feature().isField() || i.feature().isOuterRef() || _fields == null);
 
     _inner.add(i);
   }
