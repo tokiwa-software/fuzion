@@ -2625,7 +2625,7 @@ there is no common super type of the two types (Types.t_ERROR)
 
 
   /**
-   * If the type is a this-type, check if it is legal.
+   * If the type contains a this-type, check if it is legal.
    */
   public void checkLegalThisType(SourcePosition pos, AbstractFeature outer)
   {
@@ -2634,7 +2634,7 @@ there is no common super type of the two types (Types.t_ERROR)
 
 
   /**
-   * If the type is a this-type, check if it is legal.
+   * If the type contains a this-type, check if it is legal.
    */
   private void checkLegalThisType(SourcePosition pos, Context context)
   {
@@ -2657,6 +2657,10 @@ there is no common super type of the two types (Types.t_ERROR)
           {
             AstErrors.illegalThisType(pos, this);
           }
+      }
+    if (!isGenericArgument() && outer() != null)
+      {
+        outer().checkLegalThisType(pos, context);
       }
   }
 
