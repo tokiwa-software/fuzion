@@ -168,6 +168,9 @@ jitter =>
     match thrd.set_policy concur.scheduling_policy.sched_fifo false 99
       e error => say "Warning: Could not set realtime priority: $e. Error 38: backend unsupported, Error 1: insufficient privileges (use setcap)."
       unit    => say "Successfully set realtime scheduling policy."
+    match thrd.set_affinity [u64 0].as_array
+      e error => say "Warning: Could not pin jitter thread to CPU 0: $e."
+      unit    => say "Successfully pinned jitter thread to CPU 0."
     _ := thrd.join
     match result_ch.next
       msg String => say msg
