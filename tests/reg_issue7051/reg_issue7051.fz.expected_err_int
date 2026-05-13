@@ -1,0 +1,39 @@
+
+error 1: Postcondition `result < 0` does not hold after call
+Call stack:
+fuzion.type.runtime.type.fault.type.default_value.(λkind_and_msg-> kind, msg := kind_and_m...).call#1: {base.fum}/fuzion/runtime/fault.fz:63:7:
+      fuzion.sys.fatal_fault kind msg
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+fuzion.runtime.fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
+  => h e
+-----^
+fuzion.type.runtime.type.contract_fault.type.default_value.(λkind_and_msg-> fuzion.runtime.fault.en...).call#1: {base.fum}/fuzion/runtime/contract_fault.fz:42:7:
+      fuzion.runtime.fault.env.cause kind_and_msg
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+fuzion.runtime.contract_fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
+  => h e
+-----^
+fuzion.type.runtime.type.post_fault.type.default_value.(λmsg-> fuzion.runtime.contract_fault.en...).call#1: {base.fum}/fuzion/runtime/post_fault.fz:42:7:
+      fuzion.runtime.contract_fault.env.cause ("postcondition", msg)
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+fuzion.runtime.post_fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
+  => h e
+-----^
+fuzion.runtime.postcondition_fault#1: {base.fum}/fuzion/runtime/post_fault.fz:56:3:
+  fuzion.runtime.post_fault.env.cause msg
+--^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+reg_issue7051.outer2.post a i32: --CURDIR--/reg_issue7051.fz:28:12:
+      post result < 0
+-----------^^^^^^^^^^
+reg_issue7051.outer2.post a i32: --CURDIR--/reg_issue7051.fz:34:11:
+    redef a(T type : integer, t T) T =>
+----------^
+reg_issue7051.outer2.a#2 i32: --CURDIR--/reg_issue7051.fz:34:11:
+    redef a(T type : integer, t T) T =>
+----------^
+reg_issue7051: --CURDIR--/reg_issue7051.fz:37:3:
+  outer2.a 3
+--^^^^^^^^^^
+
+*** fatal errors encountered, stopping.
+one error.

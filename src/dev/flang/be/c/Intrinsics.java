@@ -496,6 +496,10 @@ public class Intrinsics extends ANY
                             str.assign(CExpr.call("getenv",new List<>(A0.castTo("char*")))),
                             c.boxedConstString(str, CExpr.call("strlen",new List<>(str))).ret());
         });
+     put("fuzion.sys.thread.current", (c,cl,outer,in) ->
+        {
+          return CExpr.call("fzE_thread_current", new List<>()).ret();
+        });
      put("fuzion.sys.thread.spawn0", (c,cl,outer,in) ->
         {
           var oc = c._fuir.clazzActualGeneric(cl, 0);

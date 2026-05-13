@@ -31,4 +31,8 @@ public Mutable_Array(
 ) ref : Buffer T E is
 
   # add an element at the end of the array
-  public add(t T) unit => abstract
+  public add(t T) unit
+    pre
+      safety: is_accessible
+  =>
+    abstract

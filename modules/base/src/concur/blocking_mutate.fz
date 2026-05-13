@@ -1,0 +1,113 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature blocking_mutate
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# blocking_mutate -- a variant of mutate that may be shared between threads
+#
+# This mutate ensure exclusive access to shared memory via using locks and
+# blocking.
+#
+# Accidental race accesses are not permitted by this mutate, i.e., accessing
+# mutable elements, e.g, via `get` or `put` on a mutable var `mutate.new T`,
+# are not permitted unless we are in code run via
+# `blocking_mutate.this.exclusive`.
+#
+public blocking_mutate : mutate is
+
+  # mutex to be used for synchronization
+  #
+  mtx := concur.sync.mutex.new.or_else
+            (panic "`concur.sync.mutex.new` failed to create mutex for `concur.blocking_mutate`")
+
+
+  # Threads that are currently blocked in `wait`
+  #
+  waiting := concur.Thread_List
+
+  # thread that currently has exclusive access to this mutate.
+  #
+  # This is usually `nil`, unless we are in an exclusive section.
+  #
+  module redef exclusive_thread option concur.thread := nil
+
+
+  # perform given code with exclusive access to the mutable values created with
+  # this instance of `mutate`.
+  #
+  public redef exclusive(R type, F type: ()->R, code F) R
+  =>
+    mtx.synchronized ()->
+      set exclusive_thread := concur.threads.env.current
+      blocking_mutate.this.replace
+      res := code()
+      set exclusive_thread := nil
+      blocking_mutate.this.replace
+
+      match waiting.first
+        f concur.thread =>
+          for t := f, nxt
+              nxt := t.next
+          while !t.park_condition()
+          until nxt = f  # we went once around the linked list but found norhing
+          else
+            # t.park_condition() is true, so unpark `t`.
+            waiting.remove t
+            t.unpark
+        nil =>
+
+      res
+
+
+  # wait for the given condition to become true by a mutation of the underlying data.
+  #
+  # In case this mutate is not a multi-thread implementation and `condition()` is `false`,
+  # this will `panic`.
+  #
+  public redef wait(F type: ()->bool, condition F) unit
+  =>
+    while !condition() do
+      concur.threads.env.current.park condition ()->
+        waiting.add concur.threads.env.current
+        _ := mtx.unlock  # NYI: result ignored
+      _ := mtx.lock    # NYI: result ignored,
+
+
+  # is instance `mutate.this` instated for type `mutate.this` and, if `mutate.this` does
+  # not support use in several threads, check we are running in the thread `mutate.this`
+  # was created in?
+  #
+  public redef is_this_mutate_instated_and_usable bool
+  =>
+    blocking_mutate.this.get_if_instated >>? (x -> id = x.id)
+
+
+  # cleanup feature to destroy mutex and other resources associated with this
+  # effect.
+  #
+  # NYI: UNDER DEVELOPMENT: Ensure that this does not get redefined by user
+  # code.
+  #
+  public redef finally unit
+  =>
+    mtx.destroy

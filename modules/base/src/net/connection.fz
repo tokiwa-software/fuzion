@@ -80,8 +80,8 @@ module:public connection(desc i32) is
   #
   # NYI: DOCUMENTATION: see tests/sockets_thread_pool for now
   #
-  public in_thread_pool(T type, TP type : concur.thread_pool, LM type : mutate, lm LM, fn ()->T) concur.Future (outcome T)
+  public in_thread_pool(T type, TP type : concur.thread_pool, LM type : mutate, fn ()->T) concur.Future (outcome T)
   =>
     TP.env.submit (outcome T) ()->
-      lm ! ()->
+      LM.default_value.or_panic ! ()->
         with T LM fn

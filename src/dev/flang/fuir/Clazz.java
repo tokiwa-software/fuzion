@@ -204,7 +204,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   Set<Clazz> _heirs = null;
 
 
-  List<Clazz> _inner = new List<>();
+  final Set<Clazz> _inner = new TreeSet<>();
 
 
   /**
@@ -324,6 +324,15 @@ class Clazz extends ANY implements Comparable<Clazz>
     _type = _outer != null
       ? type.replaceGenericsAndOuter(type.generics(), _outer._type)
       : type;
+
+    if (_type.feature().isFixed() &&
+        !_type.feature().isTypeParameter() &&
+        _type.outer().outer().feature() != _type.feature().outer().outer())
+      {
+        var x = "IMPLEMANTATION RESTRICTION: illegal inheritance and usage of fixed feature: \n" +
+        _type.toString() + "\n" + _type.outer().outer().feature().toString() + "\n" + _type.feature().outer().outer().toString();
+        Errors.fatal(x);
+      }
 
     // needed in DFA-Phase to meet FUIR invariant that
     // stack must be empty at the end of a basic block
@@ -791,9 +800,10 @@ class Clazz extends ANY implements Comparable<Clazz>
 
         // NOTE: We cannot use {@code for (var i : _inner)} since {@code resultClazz} may
         // add inner clazzes even if lookupDone() is set.
-        for (var ix = 0; ix < _inner.size(); ix++)
+        var iter = _inner.iterator();
+        while (iter.hasNext())
           {
-            var i = _inner.get(ix);
+            var i = iter.next();
             res =
               i.clazzKind() != IR.FeatureKind.Field ||
               i.resultClazz().isUnitType()             ? res

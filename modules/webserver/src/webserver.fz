@@ -46,22 +46,20 @@ public Webserver(/*NYI: UNDER DEVELOPMENT: custom thread pool TP type : concur.t
           while is_running.read do
             accept_res := net.server.env.accept.bind unit conn->
 
-              lm : mutate is
-
-              _ := conn.in_thread_pool unit concur.thread_pool lm lm ()->
+              _ := conn.in_thread_pool unit concur.thread_pool mutate ()->
 
                 # compute response
                 #
-                response := h.call (http.read_request lm).or_panic
+                response := h.call (http.read_request mutate).or_panic
 
                 # send response
                 #
-                match (io.buffered lm)
+                match (io.buffered mutate)
                     .writer.env
                     .write (response.bytes i32.max)
                   e error => log "writing response failed: {e}"
                   unit =>
-                    flush_ok := (io.buffered lm).writer.env.flush
+                    flush_ok := (io.buffered mutate).writer.env.flush
                     if flush_ok!!
                       log "flushing response failed: {flush_ok.err}"
 

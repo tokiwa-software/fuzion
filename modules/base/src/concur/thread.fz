@@ -25,10 +25,15 @@
 
 # type for a spawned thread
 #
-module:public thread(thrd Thread) : property.equatable is
+# NYI: UNDER DEVELOPMENT: rename as `Thread` since this is a `ref`!
+#
+module:public thread(thrd Thread,
 
-  # NYI: CLEANUP: use thread id
-  id := unique_id
+                     # NYI: CLEANUP: use thread id
+                     id u64
+                     ) ref
+  : property.equatable
+is
 
   joined := concur.atomic trit .new trit.no
 
@@ -102,3 +107,65 @@ module:public thread(thrd Thread) : property.equatable is
   public fixed redef type.equality(a, b thread.this) bool
   =>
     a.id = b.id
+
+
+  # private condition variable for this thread, used to put this
+  # thread in park mode.
+  #
+  cond := concur.sync.condition.new.or_else (panic "failed to create condition variable")
+
+  # is this thread parked?
+  #
+  # this is modified only in `park` and `unpark` while protected by `cond`.
+  #
+  parked := false
+
+
+  # park this thread atomically after storing `condition` in `park_condition` and
+  # executing `code`.
+  #
+  # The idea is that `code` may release a mutex in a way that ensures that this thread
+  # is parked before it is released.
+  #
+  module park(F type : ()->unit, condition ()->bool, code F)
+  =>
+    cond.synchronized ()->
+      code()
+      set park_condition := condition
+      set parked := true
+      while parked   # perform this in a while to catch spurious wakeups
+        _ := cond.wait      # NYI: CLEANUP: Why is there a `bool` result for `wait`? Remove!
+
+
+  # unpark this thread if it is parked.
+  #
+  module unpark()
+  =>
+    cond.synchronized ()->
+      if parked
+        set parked := false
+        _ := cond.signal    # NYI: CLEANUP: Why is there a `bool` result for `signal`? Remove!
+
+
+  # threads that are parked may use these link fields to form a `Thread_List` of
+  # parked threads.  Since a thread can never be parked more than once, these links
+  # can be used exclusively by the mechanism using park.
+  #
+  module prev thread := thread.this
+  module next thread := thread.this
+
+
+  # for a parked `thread.this`, this holds a condition that must hold for the
+  # thread to be unparked.
+  #
+  module park_condition ()->bool := ()->true
+
+
+  # String representation of thread
+  #
+  # NYI: we should provide some support for thread names. Currently, this is usind the
+  # thread id.
+  #
+  public redef as_string String
+  =>
+    "thread#$id"

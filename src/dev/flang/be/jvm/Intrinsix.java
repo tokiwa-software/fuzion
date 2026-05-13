@@ -898,6 +898,16 @@ public class Intrinsix extends ANY implements ClassFileConstants
             PrimitiveType.type_byte.array())));
     });
 
+    put("fuzion.sys.thread.current",
+        (jvm, si, cc, tvalue, args) ->
+        {
+          var rt0 = jvm._fuir.clazzResultClazz(cc); // universe.Thread, internal base.fum type
+          var rt = jvm._types.resultType(rt0);
+          var val = currentThread()
+            .andThen(Expr.checkcast(rt));
+          return new Pair<>(val, Expr.UNIT);
+        });
+
     put("fuzion.sys.thread.spawn0",
         (jvm, si, cc, tvalue, args) ->
         {
@@ -1006,10 +1016,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
         var rt = jvm._types.resultType(ecl);
         var ftCt = new ClassType("dev/flang/be/jvm/runtime/FuzionThread");
         var val =
-          Expr.invokeStatic(Names.RUNTIME_CLASS,
-                            "currentThread",
-                            "()" + ftCt.descriptor(),
-                            ftCt)                                                                                     // FuzionThread
+          currentThread()
           .andThen(Expr.iconst(jvm.effectId(ecl)))                                                                    // FuzionThread, int
           .andThen(Expr.invokeVirtual(ftCt.className(), "effect_load", "(I)" + Names.ANYI_DESCR , Names.ANYI_TYPE))   // AnyI
           .andThen(Expr.DUP)                                                                                          // AnyI, AnyI
@@ -1081,6 +1088,18 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(null,
                             jvm.reportErrorInCode(msg));
         });
+  }
+
+  /**
+   * Helper for intrinsics to create call to `Runtime.currentThread()`.
+   */
+  private static Expr currentThread()
+  {
+    var ftCt = new ClassType("dev/flang/be/jvm/runtime/FuzionThread");
+    return Expr.invokeStatic(Names.RUNTIME_CLASS,
+                             "currentThread",
+                             "()" + ftCt.descriptor(),
+                             ftCt);     // FuzionThread
   }
 
   /**

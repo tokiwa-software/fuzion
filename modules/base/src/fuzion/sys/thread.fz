@@ -39,6 +39,9 @@ module thread is
 
   spawn0(T type : ()->unit, code T) Thread => intrinsic
 
+  # intrinsic to obtain the current Thread
+  module current Thread => intrinsic
+
   # intrinsic to join with a terminated thread
   #
   # NOTE: this must only be called once!

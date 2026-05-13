@@ -61,11 +61,20 @@ is
   public indices interval i64 => (i64 0)..length-1
 
 
+  # A buffer might be inaccessible, e.g. because it is a shared mutate.array that
+  # is not accessible by the current thread.
+  #
+  public is_accessible bool
+  =>
+    true
+
+
   # get element at index i
   #
   public index [ ] (I type : integer, i I) T ! E
     pre
       safety: 0 ≤ i.as_i64 < length
+      safety: is_accessible
   =>
     abstract
 
@@ -75,19 +84,26 @@ is
   public set [ ] (I type : integer, i I, o T) unit ! E
     pre
       safety: 0 ≤ i.as_i64 < length
+      safety: is_accessible
   =>
     abstract
 
 
   # convert this buffer to an immutable array
   #
-  public as_array array T ! E =>
+  public as_array array T ! E
+    pre
+      safety: is_accessible
+  =>
     array length.as_i32 (i -> Buffer.this[i])
 
 
   # create a list from this buffer
   #
-  public as_list list T =>
+  public as_list list T
+    pre
+      safety: is_accessible
+  =>
     # since buffer is mutable,
     # we first copy the elements
     # to an immutable array.
@@ -96,4 +112,9 @@ is
 
   # string representation of this buffer's contents
   #
-  public redef as_string String => $as_array
+  public redef as_string String
+  =>
+    if is_accessible
+      $as_array
+    else
+      "inaccessible '{Buffer.this.type}'"
