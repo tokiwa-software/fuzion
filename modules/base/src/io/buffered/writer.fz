@@ -63,8 +63,9 @@ is
   #
   public flush outcome unit =>
     for res := outcome unit, wh.write [b.or_panic]
+        to_be_written := buffer.count, to_be_written-1
         b := buffer.poll
-    while b.ok
+    while to_be_written>0 && b.ok
     else
       res
 
