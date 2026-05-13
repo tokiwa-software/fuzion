@@ -178,10 +178,7 @@ public abstract class IR extends ANY
   protected int addCode(List<Object> code)
   {
     var result = _allCode.size() + SITE_BASE;
-    for (var c : code)
-      {
-        _allCode.add(c);
-      }
+    _allCode.addAll(code);
     _allCode.add(null);
     return result;
   }

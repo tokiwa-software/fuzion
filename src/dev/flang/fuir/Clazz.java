@@ -204,7 +204,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   Set<Clazz> _heirs = null;
 
 
-  final List<Clazz> _inner = new List<>();
+  final Set<Clazz> _inner = new TreeSet<>();
 
 
   /**
@@ -800,9 +800,10 @@ class Clazz extends ANY implements Comparable<Clazz>
 
         // NOTE: We cannot use {@code for (var i : _inner)} since {@code resultClazz} may
         // add inner clazzes even if lookupDone() is set.
-        for (var ix = 0; ix < _inner.size(); ix++)
+        var iter = _inner.iterator();
+        while (iter.hasNext())
           {
-            var i = _inner.get(ix);
+            var i = iter.next();
             res =
               i.clazzKind() != IR.FeatureKind.Field ||
               i.resultClazz().isUnitType()             ? res
