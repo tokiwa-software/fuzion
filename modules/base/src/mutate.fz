@@ -60,12 +60,13 @@ public mutate : linear_effect is
 
   # shorthand to access effect type
   #
-  M := mutate.this.type
+  module M := mutate.this.type
+
 
   # an id used for runtime checks to verify that mutation made with the same effect
   # the mutable value was created with
   #
-  id := fzE_unique_id
+  module id := fzE_unique_id
 
 
   # NYI: UNDER DEVELOPMENT: thread id used to make sure this effect is
@@ -74,7 +75,7 @@ public mutate : linear_effect is
   # This should become more sophisticated with mutate effects that support
   # synchronization in a way that access by several threads is possible.
   #
-  tid =>
+  module tid =>
     tid0.or_else ()->
         res := concur.threads.env.current
         set tid0 := res
@@ -90,11 +91,24 @@ public mutate : linear_effect is
                                                              else nil
 
 
-  # test if the current thread is the same as the thread this mutate was created in
+  # thread that currently has exclusive access to this mutate. This is the creating thread
+  # for a mutate that is not sharable by threads. Otherwise, this is `nil` if no thread
+  # currently has exclusive access, or the thread that currently does have exclusive
+  # access.
   #
-  module correct_thread
+  module exclusive_thread option concur.thread => tid
+
+
+  # check if the current thread is permitted to access mutable state managed by mutate.this
+  # exclusively.
+  #
+  # For a single-thread mutate, this is usually the case for the same thread this mutate was
+  # created in.  Furthermore, multi-thread mutate implementations may ensure exclusive
+  # access to other threads via redefining the `exclusive` features.
+  #
+  public is_exclusive bool
   =>
-    tid = concur.threads.env.current
+    mutate.this.env.exclusive_thread >>? (=concur.threads.env.current)
 
 
   # panic operation to be used in case of a severe problem.  This is redefined within the
@@ -108,18 +122,12 @@ public mutate : linear_effect is
   #
   module:public mutable_element is
 
-    # id used to verify that mutation made with the same effect
-    # the mutable value was created with
-    my_id := id
-
 
     # check that this effect is the same as the currently instated effect of type
     # `mutate.this`
     #
     is_currently_instated =>
-      match M.get_if_instated
-        x mutate.this => my_id = x.id && correct_thread
-        nil           => false
+      open && is_this_mutate_instated_and_usable
 
 
     # check that this effect is instated and replace it.
@@ -133,13 +141,13 @@ public mutate : linear_effect is
 
     # is this element open, i.e., can it be mutated?
     #
-    public open bool => my_id != u64 0
+    public open bool := true
 
 
     # stop any further mutations of this element
     #
     public close unit =>
-      set my_id := 0
+      set open := false
 
 
   # create a new mutable value with the given initial value and update the
@@ -226,11 +234,9 @@ public mutate : linear_effect is
   # not support use in several threads, check we are running in the thread `mutate.this`
   # was created in?
   #
-  public is_this_mutate_instated bool
+  public is_this_mutate_instated_and_usable bool
   =>
-    match M.get_if_instated
-      x mutate.this => id = x.id && correct_thread
-      nil           => false
+    M.get_if_instated >>? (x -> id = x.id && is_exclusive)
 
 
   # perform given code with exclusive access to the mutable values created with
@@ -238,9 +244,42 @@ public mutate : linear_effect is
   #
   public exclusive(R type, F type: ()->R, code F) R
   pre
-    safety: is_this_mutate_instated
+    safety: is_this_mutate_instated_and_usable
   =>
     code()
+
+
+  # wait for the given condition to become true by a mutation of the underlying data.
+  #
+  # In case this mutate is not a multi-thread implementation and `condition()` is `false`,
+  # this will `panic`.
+  #
+  public wait(F type: ()->bool, condition F) unit
+  pre
+    safety: is_this_mutate_instated_and_usable
+    safety: is_exclusive
+  post
+    debug: condition()
+  =>
+    if !condition() then
+      panic "mutate.wait on '{F.name}' would wait forever"
+
+
+  # exclusively wait for the given condition to hold and then perform given code with
+  # exclusive access to the mutable values created with this instance of `mutate`.
+  #
+  public exclusive_when(R type,
+                        C type: ()->bool,
+                        F type: ()->R,
+                        condition C,
+                        code F
+                        ) R
+  pre
+    safety: is_this_mutate_instated_and_usable
+  =>
+    mutate.this.env.exclusive ()->
+      mutate.this.env.wait condition
+      code()
 
 
   # default implementation of mutate

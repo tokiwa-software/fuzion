@@ -45,7 +45,7 @@ public Typed_Sequence ref : Sequence container.Typed_Value is
   # create a list from this Typed_Sequence.
   #
   # Note that this creates boxed ref instances of `Typed_Value`.  The preferred
-  # means to acces the values is via a call to `typed_foldf`.
+  # means to access the values is via a call to `typed_foldf`.
   #
   public redef as_list list container.Typed_Value =>
 
@@ -290,7 +290,7 @@ public Types ref : Sequence Type is
   # create a list from this `Types` instance.
   #
   # Note that this creates boxed ref instances of `Type`.  The preferred
-  # means to acces the values is via a call to `type_foldf`.
+  # means to access the values is via a call to `type_foldf`.
   #
   public redef as_list list Type =>
 

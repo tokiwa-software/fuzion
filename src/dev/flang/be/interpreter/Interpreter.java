@@ -439,11 +439,6 @@ public class Interpreter extends FUIRContext
         curValue = ((Boxed)curValue)._contents;
       }
     int off = Layout.get(clazz).offset(thiz);
-
-    // NYI: UNDER DEVELOPMENT:
-    // if (CHECKS) check
-    //   (Layout.get(clazz).size() != 0);
-
     return curValue.at(fclazz, off);
   }
 

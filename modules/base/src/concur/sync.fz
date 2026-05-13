@@ -53,14 +53,26 @@ public sync is
     # run code synchronized across all threads
     # that also use this mutex
     #
-    public synchronized(T type, code ()->T) T =>
+    public synchronized(T type, F type : ()->T, code F) T =>
 
       lock_effect : effect is
         public redef finally unit =>
-          check mtx_unlock mtx
+          unlock
 
-      check mtx_lock mtx
-      lock_effect ! code
+      lock
+      lock_effect ! code.call
+
+    # low-level lock this mutex
+    module lock
+    =>
+      res := mtx_lock mtx
+      check res
+
+    # low-level unlock this mutex
+    module unlock
+    =>
+      res := mtx_unlock mtx
+      check res
 
 
     # initialize a new mutex
@@ -69,7 +81,12 @@ public sync is
       concur.sync.mtx_init.bind mtx->
         concur.sync.mutex mtx
 
-    # NYI: UNDER DEVELOPMENT: destroy
+    # destroy this mutex, i.e., release its resources
+    #
+    # NYI: UNDER DEVELOPMENT: check that destroy is called by all code that creates new mutexes
+    #
+    module destroy =>
+      mtx_destroy mtx
 
 
   # a condition is synchronization primitive
