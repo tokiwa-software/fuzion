@@ -67,8 +67,8 @@ public class LValue extends ValueWithClazz
     if (PRECONDITIONS) require
       (cont != null,
        fuir().clazzIsUnitType(c) || off >= 0,
-       fuir().clazzIsUnitType(c) || off < Layout.get(cont._clazz).size(),
-       fuir().clazzIsUnitType(c) || off < cont.refs.length);
+       fuir().clazzIsUnitType(c) || Layout.get(cont._clazz).size() == 0 || off < Layout.get(cont._clazz).size(),
+       fuir().clazzIsUnitType(c) || Layout.get(cont._clazz).size() == 0 || off < cont.refs.length);
 
     this.container = cont;
     this.offset = off;
