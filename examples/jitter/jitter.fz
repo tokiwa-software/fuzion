@@ -80,90 +80,103 @@ jitter =>
               C type : time.Clock,
 
               # the clock used to measure the times
-              TIMER type : time.Clock)
+              TIMER type : time.Clock,
+
+              # thread label for results reporting
+              label String)
   =>
+    mutate ! ()->
 
-    # type used to identify exception to stop in case jitter is too high
-    #
-    jitter_too_high is
+      report := mutate.env.new String ""
 
-    # test payload, just some dummy code requiring a moderate amount of calculation
-    #
-    payload =>
-      for
-        i := 0, i+1
-        s := i, s +° i
-      while i < 1000
-      else
-        if s = s +° 1   # make sure the compiler does not optimize this aways
-          say "$s (never called)"
+      # type used to identify exception to stop in case jitter is too high
+      #
+      jitter_too_high is
 
-    # perform jitter test for given period
-    #
-    run_for_period(period time.duration)
-    =>
+      # test payload, just some dummy code requiring a moderate amount of calculation
+      #
+      payload =>
+        for
+          i := 0, i+1
+          s := i, s +° i
+        while i < 1000
+        else
+          if s = s +° 1   # make sure the compiler does not optimize this aways
+            say "$s (never called)"
 
-      start := C.env.read + start_delay
-      end := start + test_duration
-      yak "testing period $period for $test_duration..."
+      # perform jitter test for given period
+      #
+      run_for_period(period time.duration)
+      =>
 
-      # time for next release used by state effect
-      next_release(t time.instant) is
+        start := C.env.read + start_delay
+        end := start + test_duration
+        report <- "{report.get}testing period $period for $test_duration...\n"
 
-      # NYI: BUG: #5634: use `infix !` in this example once #5634 is fixed
-      state _ _ (next_release start) ()->
+        # time for next release used by state effect
+        next_release(t time.instant) is
 
-        # record jitter using linear and log histograms
-        h  := time.histogram.new "period jitter $period, log count / linear time" period period*2 1 0
-        h2 := time.histogram.new "cycle jitter $period, log count / log time"     nil    nil      1 0
+        # NYI: BUG: #5634: use `infix !` in this example once #5634 is fixed
+        state _ _ (next_release start) ()->
 
-        # run test
-        _ := C.env.run_periodic start period end run_one_release
+          # record jitter using linear and log histograms
+          h  := time.histogram.new "period jitter $period, log count / linear time" period period*2 1 0
+          h2 := time.histogram.new "cycle jitter $period, log count / log time"     nil    nil      1 0
 
-        # output results
-        say terminal.clear_line
-        if show_lin_histogram then say h
-        if show_log_histogram then say h2
-        if show_lin_csv       then say h.csv
-        if show_log_csv       then say h2.csv
-        say ""
+          # run test
+          _ := C.env.run_periodic start period end run_one_release
 
-        # run one single release: record the actual release and run the payload
-        #
-        # in case of a late release or a overrun into the next release time, cause `exception jitter_too_high`
-        #
-        run_one_release ! exception jitter_too_high =>
-          actual_release := TIMER.env.read
-          h .add_instant actual_release
-          h2.add_instant actual_release
-          expected_rel := state_get next_release .t
-          next_rel     := state_modify next_release (x -> next_release x.t+period) .get.t
-          if actual_release >= next_rel
-            (exception jitter_too_high).env.cause <| error "release time jitter exceeded period"
+          # collect output for main thread reporting
+          report <- "{report.get}$label period jitter:\n$h\n"
+          report <- "{report.get}$label cycle jitter:\n$h2\n"
+          if show_lin_csv then report <- "{report.get}{h.csv}\n"
+          if show_log_csv then report <- "{report.get}{h2.csv}\n"
+          report <- "{report.get}\n"
 
-          payload
-          actual_finish := TIMER.env.read
-          if actual_finish >= next_rel
-            e := error "*** overrun: run started at {actual_release-expected_rel}  and took {actual_finish-actual_release}, which is larger than period $period"
-            (exception jitter_too_high).env.cause e
+          # run one single release: record the actual release and run the payload
+          #
+          # in case of a late release or a overrun into the next release time, cause `exception jitter_too_high`
+          #
+          run_one_release ! exception jitter_too_high =>
+            actual_release := TIMER.env.read
+            h .add_instant actual_release
+            h2.add_instant actual_release
+            expected_rel := state_get next_release .t
+            next_rel     := state_modify next_release (x -> next_release x.t+period) .get.t
+            if actual_release >= next_rel
+              (exception jitter_too_high).env.cause <| error "release time jitter exceeded period"
 
-    match exception jitter_too_high .on ()->
+            payload
+            actual_finish := TIMER.env.read
+            if actual_finish >= next_rel
+              e := error "*** overrun: run started at {actual_release-expected_rel}  and took {actual_finish-actual_release}, which is larger than period $period"
+              (exception jitter_too_high).env.cause e
 
-         for p := period_default, p.times 0.5 do
-           run_for_period p
+      match exception jitter_too_high .on ()->
 
-      e error => say $e
-      void    => # will not happen
+           for p := period_default, p.times 0.5 do
+             run_for_period p
+
+        e error => "{report.get}$label ERROR: $e"
+        void    => "{report.get}$label test completed successfully"
 
   if run_on_dedicated_thread
+    say "Starting jitter test on dedicated thread..."
+    result_ch := concur.Channel String
     thrd := concur.threads.env.spawn ()->
-      test_jitter time.nano time.nano
+      check result_ch <- (test_jitter time.nano time.nano "(thread 1)")
     match thrd.set_policy concur.scheduling_policy.sched_fifo false 99
-      e error => panic "jitter thread priority: $e. Error 38 : backend does not implement thread policy \n Error 1 : insufficient privileges."
-      unit    => unit
+      e error => say "Warning: Could not set realtime priority: $e. Error 38: backend unsupported, Error 1: insufficient privileges (use setcap)."
+      unit    => say "Successfully set realtime scheduling policy."
     _ := thrd.join
+    match result_ch.next
+      msg String => say msg
+      nil        => say "No result received from dedicated thread."
+    say "Dedicated thread completed."
   else
-    test_jitter time.nano time.nano
+    say "Starting jitter test on main thread..."
+    say (test_jitter time.nano time.nano "(main)")
+    say "Main thread test completed."
 
 # How to run with high priority :
 # FUZION_HOME=build bash bin/fz -c examples/jitter/jitter.fz
