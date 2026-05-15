@@ -22,11 +22,27 @@
 # -----------------------------------------------------------------------
 
 
-# defer - postpone execution of a feature until the end of a piece of code
+# defer - postpone execution of code until effect is deinstated
 #
-public defer (code () -> unit) : effect is
+private:public defer (code_to_run list ()->unit) : effect is
+
+  # add code to effect
+  #
+  # no specific ordering of running these is guaranteed on effect finalization
+  #
+  public add (code ()->unit) unit =>
+    (defer (code : code_to_run)).replace
+
 
   # run code after effect is deinstated
   #
   public redef finally unit =>
-    code.call
+    for c in code_to_run
+    do
+      c.call
+
+
+# alias for defer with no initial code provided
+#
+public defer defer =>
+  defer (list ()->unit).empty
