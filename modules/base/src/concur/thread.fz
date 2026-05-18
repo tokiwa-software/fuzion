@@ -27,7 +27,7 @@
 #
 # NYI: UNDER DEVELOPMENT: rename as `Thread` since this is a `ref`!
 #
-module:public thread(thrd Thread,
+module:public thread(thrd Internal_Thread,
 
                      # NYI: CLEANUP: use thread id
                      id u64

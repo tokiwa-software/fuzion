@@ -60,7 +60,7 @@ public enum SpecialClazzes
   c_Java_Ref    ("Java_Ref"                    , 0, c_universe  ),
   c_Mapped_Memory("Mapped_Memory"              , 0, c_universe  ),
   c_Native_Ref  ("Native_Ref"                  , 0, c_universe  ),
-  c_Thread      ("Thread"                      , 0, c_universe  ),
+  c_Internal_Thread("Internal_Thread"          , 0, c_universe  ),
   c_stackoverflow_cause("stackoverflow_cause"  , 1, c_universe  )
   ;
 

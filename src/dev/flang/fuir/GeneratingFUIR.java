@@ -704,7 +704,7 @@ public class GeneratingFUIR extends FUIR
               case "Java_Ref"                  -> SpecialClazzes.c_Java_Ref;
               case "Mapped_Memory"             -> SpecialClazzes.c_Mapped_Memory;
               case "Native_Ref"                -> SpecialClazzes.c_Native_Ref;
-              case "Thread"                    -> SpecialClazzes.c_Thread;
+              case "Internal_Thread"           -> SpecialClazzes.c_Internal_Thread;
               case "stackoverflow_cause"       -> SpecialClazzes.c_stackoverflow_cause;
               default                          -> SpecialClazzes.c_NOT_FOUND   ;
               };
