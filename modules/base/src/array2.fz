@@ -69,6 +69,14 @@ is
       compile_time_panic  # array is not equatable since element type is not
 
 
+  # NOT implemented, calling this fails at compile time
+  #
+  # There is no natural total ordering for two-dimensional arrays
+  #
+  public redef fixed type.lteq(a, b array2 T) bool =>
+    compile_time_panic # no natural total ordering for two-dimensional arrays
+
+
   # create hash code for this array2.
   #
   # This should satisfy the following condition:
