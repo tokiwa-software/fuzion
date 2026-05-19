@@ -87,7 +87,7 @@ public mutate : linear_effect is
   # NYI: UNDER DEVELOPMENT: Since effect order is currently not enforced during the
   # big bang singulariy, we set this lazily.
   #
-  tid0 option concur.thread := if concur.threads.is_instated then concur.threads.env.current
+  tid0 option concur.Thread := if concur.threads.is_instated then concur.threads.env.current
                                                              else nil
 
 
@@ -96,7 +96,7 @@ public mutate : linear_effect is
   # currently has exclusive access, or the thread that currently does have exclusive
   # access.
   #
-  module exclusive_thread option concur.thread => tid
+  module exclusive_thread option concur.Thread => tid
 
 
   # check if the current thread is permitted to access mutable state managed by mutate.this

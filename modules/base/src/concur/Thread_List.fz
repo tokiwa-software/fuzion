@@ -34,23 +34,23 @@ module Thread_List ref is
   # set `prev` and `next` to the given values `p` and `n` while this thread
   # is parked.
   #
-  fixed thread.setpn(p, n thread) unit =>
+  fixed Thread.setpn(p, n Thread) unit =>
     set prev := p
     set next := n
 
 
   # the first (oldest) entry in this list
   #
-  module first option thread := nil
+  module first option Thread := nil
 
   # add new entry to this list
   #
-  module add(t thread) unit
+  module add(t Thread) unit
   pre
     debug: t.next = t && t.prev = t   # links are unused
   =>
     match first
-      f thread =>
+      f Thread =>
         # add `t` before `f` in existing list
         p := f.prev
         t.setpn f.prev f
@@ -65,7 +65,7 @@ module Thread_List ref is
   #
   # result is `nil` if list is empty
   #
-  module remove option thread
+  module remove option Thread
   =>
     first >>= (t -> remove t; t)
 
@@ -73,7 +73,7 @@ module Thread_List ref is
   #
   # `t` must be in this list
   #
-  module remove(t thread) unit =>
+  module remove(t Thread) unit =>
     p := t.prev
     n := t.next
     if p = t

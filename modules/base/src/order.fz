@@ -74,14 +74,14 @@ public order : choice less greater equal, property.equatable is
 
   # the value of this order is `greater` or `equal`
   #
-  public is_greater_or_equal bool =>
+  public is_greater_than_or_equal bool =>
     match order.this
       less => false
       * => true
 
   # the value of this order is `less` or `equal`
   #
-  public is_less_or_equal bool =>
+  public is_less_than_or_equal bool =>
     match order.this
       greater => false
       * => true
