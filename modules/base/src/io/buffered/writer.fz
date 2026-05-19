@@ -105,7 +105,7 @@ is
   #
   write_detailed (data Sequence u8, written i32) write_result =>
     # still fits into buffer, no need to flush yet
-    if buffer.available.as_i32 >= data.count
+    if buffer.unused.as_i32 >= data.count
       data.for_each b->
         res := buffer.add b
         check debug: res

@@ -191,5 +191,5 @@ is
 
   # amount of elements free for adding
   #
-  public available i64 =>
+  public unused i64 =>
     size - count
