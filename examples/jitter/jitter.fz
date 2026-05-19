@@ -31,7 +31,7 @@
 # `time.nano.run_periodic`.  Once we have support for periodic tasks run by dedicated
 # threads, we should add jitter tests for those.
 #
-jitter_old =>
+jitter =>
 
   # the period to start with
   #
