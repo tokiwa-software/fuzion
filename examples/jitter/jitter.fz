@@ -173,9 +173,11 @@ jitter =>
       unit => say "Worker thread pinned to CPU 0"
       e error => say "Worker thread affinity setup failed: $e"
 
-    # If explicitly requested, attempt to set SCHED_FIFO (may require privileges)
+    # If explicitly requested, attempt to set SCHED_FIFO (may require privileges).
+    # The current runtime bridge does not handle the reset-on-fork flag here,
+    # so we keep it disabled and request plain SCHED_FIFO.
     if enable_rt
-      match thrd.set_policy(concur.scheduling_policy.sched_fifo, true, 99)
+      match thrd.set_policy(concur.scheduling_policy.sched_fifo, false, 99)
         unit => say "Worker thread configured for SCHED_FIFO priority 99"
         e error =>
           say "Worker thread priority setup failed: $e"
@@ -233,3 +235,4 @@ jitter =>
 # FUZION_HOME=build bash bin/fz -c examples/jitter/jitter.fz
 # sudo setcap cap_sys_nice=ep ./jitter
 # ./jitter
+# or sudo ENABLE_RT=1 ./jitter
