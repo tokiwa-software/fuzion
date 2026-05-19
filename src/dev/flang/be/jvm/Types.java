@@ -369,7 +369,7 @@ public class Types extends ANY implements ClassFileConstants
            c_Java_Ref,
            c_Mapped_Memory,
            c_Native_Ref,
-           c_Thread -> JAVA_LANG_OBJECT;
+           c_Internal_Thread -> JAVA_LANG_OBJECT;
       default        ->
         {
           if (cl == _fuir.clazzUniverse()                        ||
