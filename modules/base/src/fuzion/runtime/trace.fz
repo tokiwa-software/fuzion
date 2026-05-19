@@ -1,0 +1,49 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature fuzion.runtime.trace
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# fuzion.runtime.trace -- tracing probe
+#
+# Perform a runtime tracing probe.  Depending on the target system, this
+# performs executes a function like
+#
+#     DTRACE_PROBE(fuzion, probe, col, msg)
+#
+# That permits tools like feeze to display information on what is happening.
+#
+# NYI: UNDER DEVELOPMENT: Currently, this may infer a significant runtime
+# overhead even if tracing is disabled.
+#
+#
+public trace(# an identifier to chose a unique color for displaying this probe
+             #
+             col u8,
+
+             # an message to be displayed. Note that this message might get
+             # trunkated to, e.g., 16 utf8 bytes.
+             #
+             msg String
+             ) unit
+=>
+  fzE_dtrace_probe col (fuzion.sys.c_string msg)
