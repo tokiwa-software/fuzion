@@ -54,7 +54,7 @@ public sorted_array
   #
   # see also: https://en.wikipedia.org/wiki/Total_order
   #
-  less_or_equal (T, T) -> bool
+  less_than_or_equal (T, T) -> bool
 
   )
 
@@ -109,7 +109,7 @@ is
           heap2_empty := (h2 ≥ heap_size) || (i2 ≥ a.length)
 
           # check if next element comes from first heap
-          if heap2_empty || !heap1_empty && (less_or_equal a[i1] a[i2])
+          if heap2_empty || !heap1_empty && (less_than_or_equal a[i1] a[i2])
             # if so, increment index in first heap and return element from first heap
             h1 <- h1.get + 1
             a[i1]
@@ -135,16 +135,16 @@ is
     post
       match result
         i i32 => # sorted_array.this[i] = key, but we do not have 'infix =' available, so
-                 # use less_or_equal instead:
+                 # use less_than_or_equal instead:
                  #
-                 less_or_equal sorted_array.this[i] key && less_or_equal key sorted_array.this[i]
+                 less_than_or_equal sorted_array.this[i] key && less_than_or_equal key sorted_array.this[i]
         nil   => true # NYI: analysis: for all i=a.indices, sorted_array.this[i] != key
   =>
     binary_search(l, r i32) option i32 =>
       m := (l + r) / 2
       if l > r                                     then nil
-      else if !less_or_equal key sorted_array.this[m] then binary_search m+1 r
-      else if !less_or_equal sorted_array.this[m] key then binary_search l m-1
+      else if !less_than_or_equal key sorted_array.this[m] then binary_search m+1 r
+      else if !less_than_or_equal sorted_array.this[m] key then binary_search l m-1
       else                                                 m
 
     binary_search 0 length-1
