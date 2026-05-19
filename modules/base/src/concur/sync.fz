@@ -111,6 +111,7 @@ public sync is
     #
     public signal bool
       pre is_locked.read
+      post debug: result
     => cnd_signal cnd
 
 
@@ -118,6 +119,7 @@ public sync is
     #
     public broadcast bool
       pre is_locked.read
+      post debug: result
     => cnd_broadcast cnd
 
 
@@ -125,6 +127,7 @@ public sync is
     #
     public wait bool
       pre is_locked.read
+      post debug: result
     => cnd_wait cnd mtx.mtx
 
 

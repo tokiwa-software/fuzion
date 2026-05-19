@@ -49,7 +49,7 @@ public blocking_mutate : mutate is
   #
   # This is usually `nil`, unless we are in an exclusive section.
   #
-  module redef exclusive_thread option concur.thread := nil
+  module redef exclusive_thread option concur.Thread := nil
 
 
   # perform given code with exclusive access to the mutable values created with
@@ -65,7 +65,7 @@ public blocking_mutate : mutate is
       blocking_mutate.this.replace
 
       match waiting.first
-        f concur.thread =>
+        f concur.Thread =>
           for t := f, nxt
               nxt := t.next
           while !t.park_condition()

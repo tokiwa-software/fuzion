@@ -37,29 +37,29 @@ module thread is
 
     spawn0 Do_Call
 
-  spawn0(T type : ()->unit, code T) Thread => intrinsic
+  spawn0(T type : ()->unit, code T) Internal_Thread => intrinsic
 
-  # intrinsic to obtain the current Thread
-  module current Thread => intrinsic
+  # intrinsic to obtain the current Internal_Thread
+  module current Internal_Thread => intrinsic
 
   # intrinsic to join with a terminated thread
   #
   # NOTE: this must only be called once!
   #
-  module join0(thread_id Thread) unit => intrinsic
+  module join0(thread_id Internal_Thread) unit => intrinsic
 
 
   # intrinsic to set the scheduling policy and priority
   #
-  module set_policy(thread_id Thread, policy, priority i32) i32 => intrinsic
+  module set_policy(thread_id Internal_Thread, policy, priority i32) i32 => intrinsic
 
 
   # intrinsic to pin a thread to the CPUs given by the array
   #
-  module set_affinity0(thread_id Thread, cores fuzion.sys.internal_array u64) i32 => intrinsic
+  module set_affinity0(thread_id Internal_Thread, cores fuzion.sys.internal_array u64) i32 => intrinsic
 
 
   # pin a thread to the CPUs given in an array
   #
-  module set_affinity(thread_id Thread, cores array u64) i32 =>
+  module set_affinity(thread_id Internal_Thread, cores array u64) i32 =>
     set_affinity0 thread_id cores.internal_array

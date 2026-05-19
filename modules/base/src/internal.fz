@@ -59,7 +59,7 @@ private:module Array(ET type) ref is
 
 # a type denoting a (started) thread
 #
-private:module Thread ref is
+private:module Internal_Thread ref is
 
 
 # called by backends

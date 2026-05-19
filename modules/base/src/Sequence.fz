@@ -83,7 +83,7 @@ is
        .filter (.is_unequal)
        .first
        .or_else (count_order a b)
-       .is_less_or_equal
+       .is_less_than_or_equal
     else
       compile_time_panic  # Sequence is not orderable since element type is not
 
@@ -727,9 +727,9 @@ is
     take at ++ [v] ++ drop at
 
 
-  # sort this Sequence using the order defined by less_or_equal
+  # sort this Sequence using the order defined by less_than_or_equal
   #
-  public sort_by(less_or_equal (T, T) -> bool) container.sorted_array T => container.sorted_array Sequence.this less_or_equal
+  public sort_by(less_than_or_equal (T, T) -> bool) container.sorted_array T => container.sorted_array Sequence.this less_than_or_equal
 
 
   # create a new Sequence from the result of applying 'f' to the

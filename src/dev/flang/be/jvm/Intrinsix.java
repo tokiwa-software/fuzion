@@ -529,7 +529,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
            c_Directory_Descriptor,
            c_Java_Ref,
            c_Mapped_Memory,
-           c_Thread ->
+           c_Internal_Thread ->
         Expr.aload(slot, JAVA_LANG_OBJECT);
       default -> {
         var res = Expr.ACONST_NULL;
