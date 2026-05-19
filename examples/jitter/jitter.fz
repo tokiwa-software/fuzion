@@ -165,8 +165,7 @@ jitter =>
       check result_ch <- (test_jitter time.nano time.nano)
 
     # Try to enable CPU affinity and optionally real-time scheduling.
-    # This is gated by env var `ENABLE_RT`. Set ENABLE_RT=1 to attempt RT.
-    enable_rt := (envir.vars.env["ENABLE_RT"].or_default "").lower_case = "1"
+    enable_rt := true
 
     # affinity: pin the worker thread to CPU 0 (best-effort)
     match thrd.set_affinity ([0.as_u64].as_array)
@@ -235,4 +234,4 @@ jitter =>
 # FUZION_HOME=build bash bin/fz -c examples/jitter/jitter.fz
 # sudo setcap cap_sys_nice=ep ./jitter
 # ./jitter
-# or sudo ENABLE_RT=1 ./jitter
+# or sudo ./jitter
