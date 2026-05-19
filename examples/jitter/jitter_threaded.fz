@@ -180,12 +180,11 @@ jitter_threaded =>
   # wait for thread to send results
   match result_ch.next
     samples list =>
-      samples_arr := samples.as_array
-      say "received samples: $samples_arr.length"
-      for i := 0, i+1 while i < samples_arr.length do
-        period := samples_arr[i].values.0
-        period_samples := samples_arr[i].values.1
-        cycle_samples := samples_arr[i].values.2
+      say "received samples"
+      for sample in samples do
+        period := sample.values.0
+        period_samples := sample.values.1
+        cycle_samples := sample.values.2
         say "testing period $period for $test_duration..."
         h  := time.histogram.new "period jitter $period, log count / linear time" period period*2 1 0
         h2 := time.histogram.new "cycle jitter $period, log count / log time"     nil    nil      1 0
