@@ -31,7 +31,7 @@
 # `time.nano.run_periodic`.  Once we have support for periodic tasks run by dedicated
 # threads, we should add jitter tests for those.
 #
-jitter =>
+jitter_old =>
 
   # the period to start with
   #
@@ -68,8 +68,9 @@ jitter =>
   show_log_csv => false
 
 
+
   # run jitter test using C.clock.run_periodic
-  # the worker returns raw sample lists; the caller builds histograms
+  #
   test_jitter(# the clock used to schedule the releases
               C type : time.Clock,
 
@@ -77,66 +78,60 @@ jitter =>
               TIMER type : time.Clock)
   =>
 
-    mutate ! ()->
+    # type used to identify exception to stop in case jitter is too high
+    #
+    jitter_too_high is
 
-      results := mutate.env.new (list (tuple time.duration (list time.duration) (list time.duration))) nil
+    # test payload, just some dummy code requiring a moderate amount of calculation
+    #
+    payload =>
+      for
+        i := 0, i+1
+        s := i, s +° i
+      while i < 1000
+      else
+        if s = s +° 1   # make sure the compiler does not optimize this aways
+          say "$s (never called)"
 
-      # type used to identify exception to stop in case jitter is too high
-      jitter_too_high is
+    # perform jitter test for given period
+    #
+    run_for_period(period time.duration)
+    =>
 
-      # test payload, just some dummy code requiring a moderate amount of calculation
-      payload =>
-        for
-          i := 0, i+1
-          s := i, s +° i
-        while i < 1000
-        else
-          if s = s +° 1   # make sure the compiler does not optimize this aways
-            say "$s (never called)"
+      start := C.env.read + start_delay
+      end := start + test_duration
+      yak "testing period $period for $test_duration..."
 
-      # perform jitter test for given period: collect raw samples
-      run_for_period(period time.duration)
-      =>
+      # time for next release used by state effect
+      next_release(t time.instant) is
 
-        start := C.env.read + start_delay
-        end := start + test_duration
+      # NYI: BUG: #5634: use `infix !` in this example once #5634 is fixed
+      state _ _ (next_release start) ()->
 
-        period_samples := mutate.env.new (list time.duration) nil
-        cycle_samples := mutate.env.new (list time.duration) nil
-        previous_release := mutate.env.new (option time.instant) nil
+        # record jitter using linear and log histograms
+        h  := time.histogram.new "period jitter $period, log count / linear time" period period*2 1 0
+        h2 := time.histogram.new "cycle jitter $period, log count / log time"     nil    nil      1 0
 
-        # time for next release used by state effect
-        next_release(t time.instant) is
+        # run test
+        _ := C.env.run_periodic start period end run_one_release
 
-        state _ _ (next_release start) ()->
-
-          # run test; run_one_release will append to the sample lists
-          _ := C.env.run_periodic start period end run_one_release
-
-          # return raw samples to the caller; histogram creation is done by the main thread
-          sample_data := (period, period_samples.get.reverse_list, cycle_samples.get.reverse_list)
-          old_results := results.get
-          results <- (sample_data : old_results)
+        # output results
+        say terminal.clear_line
+        if show_lin_histogram then say h
+        if show_log_histogram then say h2
+        if show_lin_csv       then say h.csv
+        if show_log_csv       then say h2.csv
+        say ""
 
         # run one single release: record the actual release and run the payload
-        # in case of a late release or an overrun into the next release time, cause `exception jitter_too_high`
+        #
+        # in case of a late release or a overrun into the next release time, cause `exception jitter_too_high`
+        #
         run_one_release ! exception jitter_too_high =>
           actual_release := TIMER.env.read
+          h .add_instant actual_release
+          h2.add_instant actual_release
           expected_rel := state_get next_release .t
-          period_delta := (actual_release >= expected_rel ? actual_release - expected_rel
-                                                          : expected_rel - actual_release)
-          old_period_samples := period_samples.get
-          period_samples <- (period_delta : old_period_samples)
-
-          match previous_release.get
-            prev time.instant =>
-              old_cycle_samples := cycle_samples.get
-              cycle_delta := actual_release >= prev ? actual_release - prev
-                                                    : prev - actual_release
-              cycle_samples <- (cycle_delta : old_cycle_samples)
-            nil => unit
-
-          previous_release <- actual_release
           next_rel     := state_modify next_release (x -> next_release x.t+period) .get.t
           if actual_release >= next_rel
             (exception jitter_too_high).env.cause <| error "release time jitter exceeded period"
@@ -144,91 +139,15 @@ jitter =>
           payload
           actual_finish := TIMER.env.read
           if actual_finish >= next_rel
-            err := error "*** overrun: run started at {actual_release-expected_rel}  and took {actual_finish-actual_release}, which is larger than period $period"
-            (exception jitter_too_high).env.cause err
+            e := error "*** overrun: run started at {actual_release-expected_rel}  and took {actual_finish-actual_release}, which is larger than period $period"
+            (exception jitter_too_high).env.cause e
 
-      match exception jitter_too_high .on ()->
+    match exception jitter_too_high .on ()->
 
-           for p := period_default, p.times 0.5 do
-             run_for_period p
+         for p := period_default, p.times 0.5 do
+           run_for_period p
 
-        _ error => results.get.reverse_list
-        void    => results.get.reverse_list
+      e error => say $e
+      void    => # will not happen
 
-  # offer a dedicated-thread run option
-  run_on_dedicated_thread => true
-
-  if run_on_dedicated_thread
-    say "Starting jitter test on dedicated thread..."
-    result_ch := concur.Channel (list (tuple time.duration (list time.duration) (list time.duration)))
-    thrd := concur.threads.env.spawn ()->
-      check result_ch <- (test_jitter time.nano time.nano)
-
-    # Try to enable CPU affinity and optionally real-time scheduling.
-    enable_rt := true
-
-    # affinity: pin the worker thread to CPU 0 (best-effort)
-    match thrd.set_affinity ([0.as_u64].as_array)
-      unit => say "Worker thread pinned to CPU 0"
-      e error => say "Worker thread affinity setup failed: $e"
-
-    # Attempt to set SCHED_FIFO.
-    if enable_rt
-      match thrd.set_policy(concur.scheduling_policy.sched_fifo, false, 99)
-        unit => say "Worker thread configured for SCHED_FIFO priority 99"
-        e error =>
-          say "Worker thread priority setup failed: $e"
-          say "(Hint: run with sudo or use setcap cap_sys_nice=ep ./jitter)"
-
-    # wait for thread to send results
-    match result_ch.next
-      samples list =>
-        samples_arr := samples.as_array
-        say "received samples: $samples_arr.length"
-        for i := 0, i+1 while i < samples_arr.length do
-          period := samples_arr[i].values.0
-          period_samples := samples_arr[i].values.1
-          cycle_samples := samples_arr[i].values.2
-          say "testing period $period for $test_duration..."
-          h  := time.histogram.new "period jitter $period, log count / linear time" period period*2 1 0
-          h2 := time.histogram.new "cycle jitter $period, log count / log time"     nil    nil      1 0
-          ps_arr := period_samples.as_array
-          for j := 0, j+1 while j < ps_arr.length do h.add ps_arr[j]
-          cs_arr := cycle_samples.as_array
-          for j := 0, j+1 while j < cs_arr.length do h2.add cs_arr[j]
-          say "period jitter:"
-          say "$h"
-          say "cycle jitter:"
-          say "$h2"
-          if show_lin_csv then say "{h.csv}"
-          if show_log_csv then say "{h2.csv}"
-      nil => say "No result received from dedicated thread."
-    say "Dedicated thread completed."
-  else
-    say "Starting jitter test on main thread..."
-    # (main thread runs test directly, no priority configuration available)
-    samples := test_jitter time.nano time.nano
-    samples_arr := samples.as_array
-    for i := 0, i+1 while i < samples_arr.length do
-      period := samples_arr[i].values.0
-      period_samples := samples_arr[i].values.1
-      cycle_samples := samples_arr[i].values.2
-      say "testing period $period for $test_duration..."
-      h  := time.histogram.new "period jitter $period, log count / linear time" period period*2 1 0
-      h2 := time.histogram.new "cycle jitter $period, log count / log time"     nil    nil      1 0
-      ps_arr := period_samples.as_array
-      for j := 0, j+1 while j < ps_arr.length do h.add ps_arr[j]
-      cs_arr := cycle_samples.as_array
-      for k := 0, k+1 while k < cs_arr.length do h2.add cs_arr[k]
-      say "period jitter:"
-      say "$h"
-      say "cycle jitter:"
-      say "$h2"
-      if show_lin_csv then say "{h.csv}"
-      if show_log_csv then say "{h2.csv}"
-    say "Main thread test completed."
-
-# How to run with high priority :
-# FUZION_HOME=build bash bin/fz -c examples/jitter/jitter.fz
-# sudo setcap cap_sys_nice=ep ./jitter
-# ./jitter
+  test_jitter time.nano time.nano
