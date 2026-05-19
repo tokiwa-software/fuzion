@@ -1023,7 +1023,33 @@ void fzE_dtrace_probe(char col, const char* msg)
         }
     }
   while (i < N && c);
+
+  /*  we have do disable '-Wgnu-zero-variadic-macro-arguments', otherwise we get
+
+/home/runner/work/fuzion/fuzion/build/include/posix.c:1049:3: error: must specify at least one argument for '...' parameter of variadic macro [-Werror,-Wgnu-zero-variadic-macro-arguments]
+ 1049 |   DTRACE_PROBE5(fuzion, probe, col, args[0], args[1], args[2], args[3]);
+      |   ^
+/usr/include/x86_64-linux-gnu/sys/sdt.h:492:3: note: expanded from macro 'DTRACE_PROBE5'
+  492 |   STAP_PROBE5(provider,probe,parm1,parm2,parm3,parm4,parm5)
+      |   ^
+/usr/include/x86_64-linux-gnu/sys/sdt.h:378:3: note: expanded from macro 'STAP_PROBE5'
+  378 |   _SDT_PROBE(provider, name, 5, (arg1, arg2, arg3, arg4, arg5))
+      |   ^
+/usr/include/x86_64-linux-gnu/sys/sdt.h:78:75: note: expanded from macro '_SDT_PROBE'
+   78 |     __asm__ __volatile__ (_SDT_ASM_BODY(provider, name, _SDT_ASM_ARGS, (n)) \
+      |                                                                           ^
+/usr/include/x86_64-linux-gnu/sys/sdt.h:283:9: note: macro '_SDT_ASM_BODY' defined here
+  283 | #define _SDT_ASM_BODY(provider, name, pack_args, args, ...)                   \
+      |         ^
+1 error generated.
+  */
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wgnu-zero-variadic-macro-arguments"
+
   DTRACE_PROBE5(fuzion, probe, col, args[0], args[1], args[2], args[3]);
+
+#pragma clang diagnostic pop
+
   #undef N
 #endif
 }
