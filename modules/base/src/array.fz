@@ -44,7 +44,7 @@ is
 
 
   # equality of two arrays is true iff `a` and `b` have the same length and for all
-  # `in in indices` we have `a[i] = b[i]`.
+  # `i in indices` we have `a[i] = b[i]`.
   #
   # For performance, this will compare the length of the arrays first.
   #
@@ -61,7 +61,7 @@ is
                                else
                                  true))
     else
-      compile_time_panic  # tuple is not hashable since one element type is not
+      compile_time_panic  # array is not equatable since element type is not
 
 
   # A total order for arrays is defined by the lowest index `i` for
@@ -81,7 +81,7 @@ is
       else
         a.length <= b.length
     else
-      compile_time_panic  # tuple is not hashable since one element type is not
+      compile_time_panic  # array is not orderable since element type is not
 
 
   # create hash code for this array.

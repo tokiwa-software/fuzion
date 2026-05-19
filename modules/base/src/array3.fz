@@ -47,6 +47,70 @@ is
   internal_array.freeze
 
 
+  # equality of two arrays2 is true iff `a` and `b` have the same dimensions and for all
+  # `i in indices0`, `j in indices1` and `k in indices 2` we have `a[i][j][k] = b[i][j][k]`.
+  #
+  # For performance, this will compare the length of the arrays first.
+  #
+  # This is defined only if T : property.equatable, it will result in a compile-time panic
+  # if this is not the case.
+  #
+  public redef fixed type.equality(a, b array3 T) bool
+  =>
+    if T : property.equatable then
+      (a.length0 = b.length0 &&
+       a.length1 = b.length1 &&
+       a.length2 = b.length2 &&
+       (for ae in a
+            be in b
+        until ae != be
+          false
+        else
+          true))
+    else
+      compile_time_panic  # array is not equatable since element type is not
+
+      
+  # NOT implemented, calling this fails at compile time
+  #
+  # There is no natural total ordering for three-dimensional arrays
+  #
+  public redef fixed type.lteq(a, b array3 T) bool =>
+    compile_time_panic # no natural total ordering for three-dimensional arrays
+
+
+  # create hash code for this array3.
+  #
+  # This should satisfy the following condition:
+  #
+  #   (T.equality a b) : (T.hash_code a = T.hash_code b)
+  #
+  # This will result in a compile-time `panic` in case T : property.hashable does not hold.
+  #
+  # The algorithm used here is a variation of (XXXHash)[https://xxhash.com] as used in
+  # (Python's tuple)[https://github.com/python/cpython/blob/849a80ec412c36bbca5d400a7db5645b8cf54f1f/Objects/tupleobject.c#L305]:
+  #
+  #   we start with a constant `hash_prime1`
+  #   for each value:
+  #     we take its hash code * `hash_prime2` and add it
+  #     then we rotate by `hash_rotate`
+  #     and multiply by `hash_prime3`
+  #
+  public redef fixed type.hash_code(a array3 T) u64
+  =>
+    if T : property.hashable then
+      h0 := xxh_next
+              (xxh_next
+                (xxh_next xxh_first 0xa495991b7852b855) # created using https://cryptotools.dev/
+                # include dimensions so reshaped arrays with identical elements hash differently
+                (a.length0.as_u64 << 32 | a.length1.as_u64))
+              a.length2.as_u64
+      a.map (T.hash_code)
+       .foldf h0 xxh_next
+    else
+      compile_time_panic  # array is not hashable since element type is not
+
+
   # indices range in first dimension
   #
   public indices0 interval i32 => 0..length0-1
