@@ -93,11 +93,12 @@ is
   #
   public set_affinity(cores array u64) outcome unit
   =>
-    e := fuzion.sys.thread.set_affinity thrd cores
-    if e = 0
-      unit
-    else
-      error "fzE_thread_setaffinity error $(e)"
+    cond.synchronized (outcome unit) ()->
+      e := fuzion.sys.thread.set_affinity thrd cores
+      if e = 0
+        unit
+      else
+        error "fzE_thread_setaffinity error $(e)"
 
 
   # equality

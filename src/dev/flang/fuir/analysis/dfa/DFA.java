@@ -2125,15 +2125,7 @@ public class DFA extends ANY
         });
     put("fuzion.sys.thread.join0"        , cl -> Value.UNIT);
     put("fuzion.sys.thread.set_policy"   , cl -> genericNumResult(cl));
-    put("fuzion.sys.thread.set_affinity0", cl ->
-        {
-          var ia = fuir(cl).clazzArgClazz(cl.calledClazz(), 1);
-          var data = fuir(cl).clazzArg(ia, 0);
-          var length = fuir(cl).clazzArg(ia, 1);
-          cl._dfa.readField(data);
-          cl._dfa.readField(length);
-          return genericNumResult(cl);
-        });
+    put("fuzion.sys.thread.set_affinity0", cl -> genericNumResult(cl));
 
     put("effect.type.set0"               , cl ->
         {

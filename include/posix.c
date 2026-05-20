@@ -62,7 +62,12 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <pthread.h>
 #ifdef __linux__
 #include <sched.h>    // CPU_SET
-#include <sys/sdt.h>  // dtrace_probe
+#if defined(__has_include)
+#  if __has_include(<sys/sdt.h>)
+#    include <sys/sdt.h>  // dtrace_probe
+#    define HAVE_SYS_SDT_H 1
+#  endif
+#endif
 #endif
 
 #include "fz.h"
@@ -1016,7 +1021,7 @@ int fzE_isnan(double d)
  */
 void fzE_dtrace_probe(char col, const char* msg)
 {
-#ifdef __linux__
+#ifdef HAVE_SYS_SDT_H
   // we currently use DTRACE_PROBE5(fuzion, probe, col, a0, a1, a2, a3) where
   //
   // col is a char representing the color

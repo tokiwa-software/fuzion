@@ -234,7 +234,7 @@ public class Intrinsics extends ANY
     return 38 /* ENOSYS - Function not implemented */;
   }
 
-  public static int fuzion_sys_thread_set_affinity0(Object thread, int core)
+  public static int fuzion_sys_thread_set_affinity0(Object thread, Object cores, int cores_len)
   {
     return 38 /* ENOSYS - Function not implemented */;
   }

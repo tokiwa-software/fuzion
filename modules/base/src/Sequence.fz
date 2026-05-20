@@ -480,7 +480,7 @@ is
   # is empty, returns 'nil'
   #
   public cycle Sequence T
-   post debug: is_empty && result.finite.is_yes || result.finite.is_no
+   post debug: is_empty.as_trit = result.finite
   => as_list.cycle
 
 
