@@ -975,7 +975,7 @@ class LibraryOut extends ANY
   String fileName(SourceFile sf)
   {
     var sp = _sourceModule._options.sourcePaths();
-    var sd = sp.length == 1 ? sp[0] : null;
+    var sd = sp.length == 1 ? sp[0].normalize() : null;
     var sfp = sf._fileName;
     if (sd != null && sfp.startsWith(sd))
       {

@@ -180,7 +180,7 @@ To solve this, check the spelling of the type you have used.
 Feature not found: 'hjkl' (no arguments)
 Target feature: 'qwerty.uiop.asdfg'
 In call: 'qwert.uiop.asdfg.hjkl'
-To solve this, you might change the actual number of arguments to match the feature 'hjkl' (one value argument x) at ./qwerty.fz:36:14:
+To solve this, you might change the actual number of arguments to match the feature 'hjkl' (one value argument x) at qwerty.fz:36:14:
       module hjkl(x T) is
 -------------^^^^
 To call 'hjkl', you must provide one argument.
