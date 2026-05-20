@@ -182,9 +182,7 @@ jitter_threaded =>
     samples list =>
       say "received samples"
       for sample in samples do
-        period := sample.values.0
-        period_samples := sample.values.1
-        cycle_samples := sample.values.2
+        period, period_samples, cycle_samples := sample
         say "testing period $period for $test_duration..."
         h  := time.histogram.new "period jitter $period, log count / linear time" period period*2 1 0
         h2 := time.histogram.new "cycle jitter $period, log count / log time"     nil    nil      1 0
@@ -192,7 +190,8 @@ jitter_threaded =>
         cs_arr := cycle_samples.as_array
         for j := 0, j+1 while j < ps_arr.length do
           h.add ps_arr[j]
-          h2.add cs_arr[j]
+          if j < cs_arr.length
+            h2.add cs_arr[j]
         say "period jitter:"
         say "$h"
         say "cycle jitter:"
