@@ -35,6 +35,16 @@ is
 
   joined := concur.atomic trit .new trit.no
 
+  public policy choice
+    concur.scheduling_policy.sched_other
+    concur.scheduling_policy.sched_fifo
+    concur.scheduling_policy.sched_rr
+  :=
+     concur.scheduling_policy.sched_other
+
+
+  public priority i32 := 0
+
   # wait for this thread to finish execution
   #
   public join unit ! atomic_access =>
@@ -63,30 +73,33 @@ is
   # priority only applies to some scheduling policies and is
   # currently limited to a value between 0 and 99.
   #
-  public set_policy(policy choice
+  public set_policy(policy0 choice
                             concur.scheduling_policy.sched_other
                             concur.scheduling_policy.sched_fifo
                             concur.scheduling_policy.sched_rr,
                     reset_on_fork bool,
-                    priority i32) outcome unit
+                    priority0 i32) outcome unit
     pre
-      safety: 0 ≤ priority ≤ 99
+      safety: 0 ≤ priority0 ≤ 99
   =>
-    p :=
-      match policy
-        concur.scheduling_policy.sched_other => 0
-        concur.scheduling_policy.sched_fifo => 1
-        concur.scheduling_policy.sched_rr => 2
-    p2 :=
-      if reset_on_fork
-        p | 0x40000000
+    cond.synchronized (outcome unit) ()->
+      p :=
+        match policy0
+          concur.scheduling_policy.sched_other => 0
+          concur.scheduling_policy.sched_fifo => 1
+          concur.scheduling_policy.sched_rr => 2
+      p2 :=
+        if reset_on_fork
+          p | 0x40000000
+        else
+          p
+      e := fuzion.sys.thread.set_policy thrd p2 priority0
+      if e = 0
+        set policy := policy0
+        set priority := priority0
+        unit
       else
-        p
-    e := fuzion.sys.thread.set_policy thrd p2 priority
-    if e = 0
-      unit
-    else
-      error "fzE_thread_setschedparam error {e}"
+        error "fzE_thread_setschedparam error {e}"
 
 
   # pin a thread to the CPUs given by cores
