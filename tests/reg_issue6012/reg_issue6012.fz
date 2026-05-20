@@ -23,4 +23,4 @@
 
 reg_issue6012 =>
 
-  ignore i32 "abcd{unit}efgt"
+  ignore i32 "abcd$(unit)efgt"

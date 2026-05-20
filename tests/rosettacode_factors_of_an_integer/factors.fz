@@ -58,7 +58,7 @@ factors is
   ((1..n).filter (x -> n %% x)).for_each print
   say ""
 
-  say "factors embedded in String: {(1..n).filter (x -> n %% x)}"
+  say "factors embedded in String: $((1..n).filter (x -> n %% x))"
 
   (1..n).for_each m->
     say("factors of $m: " +

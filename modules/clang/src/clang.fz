@@ -106,15 +106,16 @@ public clang is
   #
   public function_decl(public name String, public args array clang.arg, public return_type String) is
 
+  lmbda clang.arg -> String => (f -> "  $f;")
 
   # a parsed struct declaration
   #
   public struct_decl(public name String, public fields array clang.arg) is
     public redef as_string String =>
       """
-       struct $name \{
-       {fields.map (f -> "  $f;") .as_string "\n"}
-       \};
+       struct $name {
+       $(fields.map lmbda .as_string "\n")
+       };
       """
 
 
@@ -123,9 +124,9 @@ public clang is
   public union_decl(public name String, public fields array clang.arg) is
     public redef as_string String =>
       """
-       union $name \{
-       {fields.map (f -> "  $f;") .as_string "\n"}
-       \};
+       union $name {
+       $(fields.map lmbda .as_string "\n")
+       };
       """
 
 
@@ -134,7 +135,7 @@ public clang is
   public enum_decl(public name String) is
     public redef as_string String =>
       """
-       enum $name \{\};
+       enum $name {};
       """
 
 
@@ -173,11 +174,11 @@ public clang is
         if ck = CXCursor_FunctionDecl
 
           func_name := clang_getCursorSpelling crsr
-          fn := "{cx_string_to_string func_name}"
+          fn := "$(cx_string_to_string func_name)"
 
           return_type := clang_getCanonicalType (clang_getCursorResultType crsr)
           return_type_spelling := clang_getTypeSpelling return_type
-          rt := "{cx_string_to_string return_type_spelling}"
+          rt := "$(cx_string_to_string return_type_spelling)"
 
           num_args := clang_Cursor_getNumArguments crsr
 
@@ -198,21 +199,21 @@ public clang is
         else if ck = CXCursor_StructDecl
 
           name := clang_getCursorSpelling crsr
-          n := "{cx_string_to_string name}"
+          n := "$(cx_string_to_string name)"
           if !n.contains_whitespace
             cb (clang.struct_decl n (get_fields crsr))
 
         else if ck = CXCursor_UnionDecl
 
           name := clang_getCursorSpelling crsr
-          n := "{cx_string_to_string name}"
+          n := "$(cx_string_to_string name)"
           if !n.contains_whitespace
             cb (clang.union_decl n (get_fields crsr))
 
         else if ck = CXCursor_EnumDecl
 
           name := clang_getCursorSpelling crsr
-          n := "{cx_string_to_string name}"
+          n := "$(cx_string_to_string name)"
           if !n.contains_whitespace
             cb (clang.enum_decl n)
 

@@ -59,7 +59,7 @@ public mail is
 
     # the credentials separated by NUL, base64 encoded
     cred =>
-      encodings.base64.encode_to_string "{username}\0{username}\0{password}".utf8.as_array
+      encodings.base64.encode_to_string "$(username)\0$(username)\0$(password)".utf8.as_array
 
 
     # from: https://en.wikipedia.org/wiki/List_of_SMTP_server_return_codes
@@ -88,16 +88,16 @@ public mail is
     mail_data => """
       From: <$from>
       To: $to
-      Subject: =?UTF-8?B?{encodings.base64.encode_to_string subject.utf8.as_array}?=
+      Subject: =?UTF-8?B?$(encodings.base64.encode_to_string subject.utf8.as_array)?=
       MIME-Version: 1.0
       Content-Type: text/plain; charset="UTF-8"
       Content-Transfer-Encoding: base64
 
-      {
+      $(
         # https://www.rfc-editor.org/rfc/rfc2045.html#section-6.8
         b64 := encodings.base64.encode_to_string text.utf8.as_array
-        String.join_lines (b64.chunk 76)
-      }
+        String.join_lines <| b64.chunk 76
+      )
       .
       """.replace "\n" "\r\n"
 
@@ -184,6 +184,6 @@ public mail is
                   write_or_cause net_lm "STARTTLS\r\n"
                   ok := (io.buffered net_lm).read_line
                   if ok != "220 OK"
-                    (exception unit).env.cause (error "Expected 220 OK, got {ok}")
+                    (exception unit).env.cause (error "Expected 220 OK, got $(ok)")
 
                 wolfssl _ net_lm ssl_lm write_request

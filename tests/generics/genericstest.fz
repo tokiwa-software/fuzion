@@ -50,7 +50,7 @@ genericstest is
       print0(i OptNode) =>
         match i
           n Node =>
-            say "print el in loop: {n.el}"
+            say "print el in loop: $(n.el)"
             print0 n.n
           Nil =>
 
@@ -72,7 +72,7 @@ genericstest is
   li.add 8
   li.add 9
   li.print
-  say "size: {li.size}"
+  say "size: $(li.size)"
 
   Complex1(real, imag i32) is
 
@@ -85,7 +85,7 @@ genericstest is
   lc0.add (Complex1 5 6)
   lc0.add (Complex1 7 8)
   lc0.print
-  say "0: size: {lc0.size}"
+  say "0: size: $(lc0.size)"
 
   # The parser uses some tricks to distinguish multiple ">" in a list of actual
   # generics from an operator consisting of multiple ">". So we check if such an
@@ -107,23 +107,23 @@ genericstest is
     postfix >>>> i32 => qa-1000  # q>>>> is 1000 smaller
 
   a q := q 1
-  set a := q     2; yak "a({a.qa}, 10) infix > is {a > 10}, {a >> 10}, {a >>> 10}, {a >>>> 10}"
-  set a := q    20; yak "a({a.qa}, 10) infix > is {a > 10}, {a >> 10}, {a >>> 10}, {a >>>> 10}"
-  set a := q   200; yak "a({a.qa}, 10) infix > is {a > 10}, {a >> 10}, {a >>> 10}, {a >>>> 10}"
-  set a := q  2000; yak "a({a.qa}, 10) infix > is {a > 10}, {a >> 10}, {a >>> 10}, {a >>>> 10}"
-  set a := q 20000; yak "a({a.qa}, 10) infix > is {a > 10}, {a >> 10}, {a >>> 10}, {a >>>> 10}"
+  set a := q     2; yak "a($(a.qa), 10) infix > is $(a > 10), $(a >> 10), $(a >>> 10), $(a >>>> 10)"
+  set a := q    20; yak "a($(a.qa), 10) infix > is $(a > 10), $(a >> 10), $(a >>> 10), $(a >>>> 10)"
+  set a := q   200; yak "a($(a.qa), 10) infix > is $(a > 10), $(a >> 10), $(a >>> 10), $(a >>>> 10)"
+  set a := q  2000; yak "a($(a.qa), 10) infix > is $(a > 10), $(a >> 10), $(a >>> 10), $(a >>>> 10)"
+  set a := q 20000; yak "a($(a.qa), 10) infix > is $(a > 10), $(a >> 10), $(a >>> 10), $(a >>>> 10)"
 
-  set a := q     2; yak "a({a.qa}) prefix > is {>a}, {>>a}, {>>>a}, {>>>>a}"
-  set a := q    20; yak "a({a.qa}) prefix > is {>a}, {>>a}, {>>>a}, {>>>>a}"
-  set a := q   200; yak "a({a.qa}) prefix > is {>a}, {>>a}, {>>>a}, {>>>>a}"
-  set a := q  2000; yak "a({a.qa}) prefix > is {>a}, {>>a}, {>>>a}, {>>>>a}"
-  set a := q 20000; yak "a({a.qa}) prefix > is {>a}, {>>a}, {>>>a}, {>>>>a}"
+  set a := q     2; yak "a($(a.qa)) prefix > is $(>a), $(>>a), $(>>>a), $(>>>>a)"
+  set a := q    20; yak "a($(a.qa)) prefix > is $(>a), $(>>a), $(>>>a), $(>>>>a)"
+  set a := q   200; yak "a($(a.qa)) prefix > is $(>a), $(>>a), $(>>>a), $(>>>>a)"
+  set a := q  2000; yak "a($(a.qa)) prefix > is $(>a), $(>>a), $(>>>a), $(>>>>a)"
+  set a := q 20000; yak "a($(a.qa)) prefix > is $(>a), $(>>a), $(>>>a), $(>>>>a)"
 
-  set a := q     2; yak "a({a.qa}) postfix > is {a>}, {a>>}, {a>>>}, {a>>>>}"
-  set a := q    20; yak "a({a.qa}) postfix > is {a>}, {a>>}, {a>>>}, {a>>>>}"
-  set a := q   200; yak "a({a.qa}) postfix > is {a>}, {a>>}, {a>>>}, {a>>>>}"
-  set a := q  2000; yak "a({a.qa}) postfix > is {a>}, {a>>}, {a>>>}, {a>>>>}"
-  set a := q 20000; yak "a({a.qa}) postfix > is {a>}, {a>>}, {a>>>}, {a>>>>}"
+  set a := q     2; yak "a($(a.qa)) postfix > is $(a>), $(a>>), $(a>>>), $(a>>>>)"
+  set a := q    20; yak "a($(a.qa)) postfix > is $(a>), $(a>>), $(a>>>), $(a>>>>)"
+  set a := q   200; yak "a($(a.qa)) postfix > is $(a>), $(a>>), $(a>>>), $(a>>>>)"
+  set a := q  2000; yak "a($(a.qa)) postfix > is $(a>), $(a>>), $(a>>>), $(a>>>>)"
+  set a := q 20000; yak "a($(a.qa)) postfix > is $(a>), $(a>>), $(a>>>), $(a>>>>)"
 
   lc1 := List Complex2
   lc1.add (Complex2 3 4)
@@ -131,7 +131,7 @@ genericstest is
   lc1.add (Complex2 5 6)
   lc1.add (Complex2 7 8)
   lc1.print
-  say "1: size: {lc1.size}"
+  say "1: size: $(lc1.size)"
 
   # lets see if we can derive actual generics automatically:
   lc2 := List (Complex i32)
@@ -140,7 +140,7 @@ genericstest is
   lc2.add (Complex i32 5 6)
   lc2.add (Complex i32 7 8)
   lc2.print
-  yak "2: size: {lc2.size}"
+  yak "2: size: $(lc2.size)"
 
   Complex3(redef real, imag i32) : Complex i32 real imag is
   lc3 := List Complex3;
@@ -149,13 +149,13 @@ genericstest is
   lc3.add (Complex3 5 6)
   lc3.add (Complex3 7 8)
   lc3.print
-  yak "3: size: {lc3.size}"
+  yak "3: size: $(lc3.size)"
 
   outerGenerics =>
     A(T, U type) is
       B(V, W type, y U) is
         p =>
-          say "y is{y}"
+          say "y is$(y)"
     _ A i32 bool := A i32 bool
     x1 (A i32 bool).B String bool := (A i32 bool).B String bool true
     x1.p

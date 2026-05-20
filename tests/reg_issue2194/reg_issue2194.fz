@@ -26,7 +26,7 @@ pre a < 3
 is
 
 y(b i32) : x b+b =>
-  say "$b: {b+b<3 ? "ok" : "*** FAIL ***"}"
+  say "$b: $(b+b<3 ? "ok" : "*** FAIL ***")"
 
 for i in 0..10 do
   y i

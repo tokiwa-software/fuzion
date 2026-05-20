@@ -41,7 +41,7 @@ lib_concur_Channel =>
       _ :=
         for n := chan.next
         while n.ok
-          say "received {n}"
+          say "received $(n)"
 
 
     time.nano.env.sleep (time.duration.ms 250)

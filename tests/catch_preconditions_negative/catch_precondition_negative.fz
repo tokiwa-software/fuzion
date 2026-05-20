@@ -107,12 +107,12 @@ catch_precondition_negative is
 
   fuzion.runtime.pre_fault
     .try unit ()->
-      say "p.f  3 {p.f  3}"
-      say "q.f  3 {q.f  3}"
-      say "q.f  0 {q.f  0}"
+      say "p.f  3 $(p.f  3)"
+      say "q.f  3 $(q.f  3)"
+      say "q.f  0 $(q.f  0)"
 
       yak "*** This should fail: "
-      say "q.f -1 {q.f -1}"
+      say "q.f -1 $(q.f -1)"
       panic "**** did not fail as expected ****"
 
     .catch s->

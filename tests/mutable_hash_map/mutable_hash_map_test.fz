@@ -32,8 +32,8 @@ show_op(A type, B type, itm (option (tuple A B))) String =>
 
 
 show(m container.Mutable_Hash_Map (LM : mutate) (HK : property.hashable) V)=>
-  say "load={m.size} content={m.as_string}"
-  say "\n{m.int_arr.map(x->show_op(x)).as_string}"
+  say "load=$(m.size) content=$(m.as_string)"
+  say "\n$(m.int_arr.map(x->show_op(x)).as_string)"
   say "\n"
 
 test_put(m container.Mutable_Hash_Map (LM : mutate) (HK : property.hashable) V, k HK, v V) =>

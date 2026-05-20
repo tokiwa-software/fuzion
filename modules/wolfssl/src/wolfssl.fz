@@ -69,7 +69,7 @@ public wolfssl(T type, LM type : mutate, LM2 type: mutate, code ()->T) T ! LM, L
         arr := lm.array u8 .new max_count.as_i64 0
         res := c.wolfSSL_read ssl arr max_count
         if res = -1
-          error "error reading from ssl ($res) {c.wolfSSL_get_error ssl res}"
+          error "error reading from ssl ($res) $(c.wolfSSL_get_error ssl res)"
         else if res = 0
           io.end_of_file
         else
@@ -83,7 +83,7 @@ public wolfssl(T type, LM type : mutate, LM2 type: mutate, code ()->T) T ! LM, L
       write outcome unit =>
         res := c.wolfSSL_write ssl (lm.array u8 .from_Sequence b) b.count
         if res <= 0
-          error "error writing to ssl connection ($res) {c.wolfSSL_get_error ssl res}"
+          error "error writing to ssl connection ($res) $(c.wolfSSL_get_error ssl res)"
       lm ! write
 
 

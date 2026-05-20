@@ -100,9 +100,9 @@ choicetest is
     say sum
 
   sum_monoid =>
-    say "summing array using monoid: {a.map c->c.value_in_cents
+    say "summing array using monoid: $(a.map c->c.value_in_cents
                                       .fold i32.sum
-                                    }"
+                                    )"
 
   sum_loop
   sum_iter

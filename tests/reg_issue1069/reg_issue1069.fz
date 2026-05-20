@@ -24,7 +24,7 @@
 reg_issue1069 is
 
   a := [0.3, option 3.142, nil, 42]
-  for v in a do say "$v {type_of v}"
+  for v in a do say "$v $(type_of v)"
 
   f(b bool) =>
     if b

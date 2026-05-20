@@ -63,7 +63,7 @@ module:public open(fd File_Descriptor,
     mapped_memory := fzE_mmap fd offset size
 
     if fzE_is_valid_mapped_memory mapped_memory
-      error "mmap failed, error code: {fzE_last_error}"
+      error "mmap failed, error code: $(fzE_last_error)"
     else
       (mapped_buffer mapped_memory size) ! code
 
@@ -72,7 +72,7 @@ module:public open(fd File_Descriptor,
   #
   public redef finally unit =>
     match fuzion.sys.fileio.close fd
-      e error => fuzion.runtime.fault.env.cause ("io.file.open.finally", "closing file failed:  {e}")
+      e error => fuzion.runtime.fault.env.cause ("io.file.open.finally", "closing file failed:  $(e)")
       unit =>
 
 

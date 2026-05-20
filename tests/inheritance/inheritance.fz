@@ -409,7 +409,7 @@ inheritance is
       z := 42
       hi => ""
       v ref : s is
-        redef hi => "hi v {s.this.z}"
+        redef hi => "hi v $(s.this.z)"
 
     chck(msg, v, expected String) =>
       if v = expected

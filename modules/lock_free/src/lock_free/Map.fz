@@ -115,7 +115,7 @@ is
   index [] (pos i32) branch CTK CTV =>
     array[pos]
 
-  public redef as_string String => "container_node[gen=$gen]({array.as_string ", "})"
+  public redef as_string String => "container_node[gen=$gen]($(array.as_string ", "))"
 
   as_list(f Indirection_Node CTK CTV -> Main_Node CTK CTV) =>
     array.flat_map /* NYI: UNDER DEVELOPMENT: type inference */ (tuple CTK CTV) (.as_list f)
@@ -165,7 +165,7 @@ Main_Node(CTK type : property.hashable, CTV type, data choice (container_node CT
       container_node container_node => "$container_node"
       tomb_node tomb_node => "$tomb_node"
       list_node list_node => "$list_node"
-    "Main_Node[prev={prev.read}]($s)"
+    "Main_Node[prev=$(prev.read)]($s)"
 
   as_list(f Indirection_Node CTK CTV -> Main_Node CTK CTV)
     pre
@@ -203,7 +203,7 @@ Indirection_Node(CTK type : property.hashable, CTV type, data concur.atomic (Mai
   cas(old_n, new_n Main_Node CTK CTV) =>
     data.compare_and_set old_n new_n
 
-  public redef as_string String => "Indirection_Node[gen=$gen]({data.read})"
+  public redef as_string String => "Indirection_Node[gen=$gen]($(data.read))"
 
   as_list(f Indirection_Node CTK CTV -> Main_Node CTK CTV) =>
     (f Indirection_Node.this).as_list f
@@ -226,7 +226,7 @@ is
   #
   public redef finite trit => trit.yes
 
-  public redef as_string String => "list_node({from.as_string ", "})"
+  public redef as_string String => "list_node($(from.as_string ", "))"
 
   # find k in linked nodes
   find_key(k CTK) choice restart not_found CTV =>
@@ -281,7 +281,7 @@ is
   # the data structure as human readable string
   # for debugging purposes
   as_string_internal =>
-    "Ctrie[ro=$read_only]({root.read})"
+    "Ctrie[ro=$read_only]($(root.read))"
 
   # compare and swap root of the ctrie
   cas_root(ov, nv root_node CTK CTV) =>

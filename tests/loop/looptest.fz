@@ -121,7 +121,7 @@ looptest is
     invariant (0..ix-1) ∀ (x -> !isWhatWeWant data[x])
     while ix < data.length
     until isWhatWeWant data[ix]
-      say "We found it at $ix: {data[ix]}"
+      say "We found it at $ix: $(data[ix])"
     else
       say "Not found! ix is $ix"
 
@@ -140,7 +140,7 @@ looptest is
     invariant (0..ix-1) ∀ (x -> !isWhatWeWant data[x])
     until (ix ≥ data.length) || isWhatWeWant data[ix]
       if (ix < data.length)
-        say "We found it at $ix: {data[ix]}"
+        say "We found it at $ix: $(data[ix])"
       else
         say "Not found! ix is $ix"
 

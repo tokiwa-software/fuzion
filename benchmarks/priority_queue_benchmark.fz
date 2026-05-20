@@ -25,7 +25,7 @@ priority_queue_benchmark =>
   random_enqueue_dequeue(test_lengths Sequence i32) unit =>
     say """
         \n********************************************************************************
-        *{"Fill empty queue with random elements, then empty it".pad_center 78}*
+        *$("Fill empty queue with random elements, then empty it".pad_center 78)*
         ********************************************************************************
         """
 
@@ -60,8 +60,8 @@ priority_queue_benchmark =>
             else
               t
 
-          say "{hist_enq}Total time to enqueue $size elements: $total_enq\n"
-          say "{hist_deq}Total time to dequeue $size elements: $total_deq\n"
+          say "$(hist_enq)Total time to enqueue $size elements: $total_enq\n"
+          say "$(hist_deq)Total time to dequeue $size elements: $total_deq\n"
 
     for i in test_lengths do
       test i
@@ -79,7 +79,7 @@ priority_queue_benchmark =>
   random_log_performance(test_lengths Sequence i32) unit =>
     say """
         \n********************************************************************************
-        *{"Enqueue and dequeue performance on fixed size queue".pad_center 78}*
+        *$("Enqueue and dequeue performance on fixed size queue".pad_center 78)*
         ********************************************************************************
         """
 
@@ -119,16 +119,16 @@ priority_queue_benchmark =>
     else
       say "\nENQUEUE:\n"
       say "average"
-      enq_hist.for_each szh->(sz,h := szh; say "{sz.as_string.pad_left 9}: {h.average.as_string_pad}")
+      enq_hist.for_each szh->(sz,h := szh; say "$(sz.as_string.pad_left 9): $(h.average.as_string_pad)")
       say "\naverage / log_2"
-      enq_hist.for_each szh->(sz,h := szh; say "{sz.as_string.pad_left 9}: {h.average.times (f64.one / (sz.as_f64.log 2)) .as_string_pad}")
+      enq_hist.for_each szh->(sz,h := szh; say "$(sz.as_string.pad_left 9): $(h.average.times (f64.one / (sz.as_f64.log 2)) .as_string_pad)")
       enq_hist.for_each szh->(_ ,h := szh; say h)
 
       say "\n\nDEQUEUE:\n"
       say "average"
-      deq_hist.for_each szh->(sz,h := szh; say "{sz.as_string.pad_left 9}: {h.average.as_string_pad}")
+      deq_hist.for_each szh->(sz,h := szh; say "$(sz.as_string.pad_left 9): $(h.average.as_string_pad)")
       say "\naverage / log_2"
-      deq_hist.for_each szh->(sz,h := szh; say "{sz.as_string.pad_left 9}: {h.average.times (f64.one / (sz.as_f64.log 2)) .as_string_pad}")
+      deq_hist.for_each szh->(sz,h := szh; say "$(sz.as_string.pad_left 9): $(h.average.times (f64.one / (sz.as_f64.log 2)) .as_string_pad)")
       deq_hist.for_each szh->(_ ,h := szh; say h)
 
 
@@ -141,7 +141,7 @@ priority_queue_benchmark =>
   make_heap_vs_enqueue_all(test_lengths Sequence i32) unit =>
     say """
       \n********************************************************************************
-      *{"Make heap vs. enqueue all".pad_center 78}*
+      *$("Make heap vs. enqueue all".pad_center 78)*
       ********************************************************************************
       """
 
@@ -149,8 +149,8 @@ priority_queue_benchmark =>
 
       sample_size := 20
 
-      hist_mk_heap := time.histogram.new "Make heap with {elements.length} $elem_desc elements" nil 10 0
-      hist_enq_all := time.histogram.new "Iteratively adding {elements.length} $elem_desc elements" nil 10 0
+      hist_mk_heap := time.histogram.new "Make heap with $(elements.length) $elem_desc elements" nil 10 0
+      hist_enq_all := time.histogram.new "Iteratively adding $(elements.length) $elem_desc elements" nil 10 0
 
       for _ in 1..sample_size do
         m2 : mutate is
@@ -161,9 +161,9 @@ priority_queue_benchmark =>
         m1 ! ()->
           hist_mk_heap.add (time.stopwatch ()->(q := container.Binary_Heap_Queue m1 T .min_first_from elements; _:=q))
 
-      say "{hist_mk_heap.average.as_string_pad} {hist_mk_heap.title}"
-      say "{hist_enq_all.average.as_string_pad} {hist_enq_all.title}"
-      say "Compared to iterative add, make heap reduces time to: {(hist_mk_heap.average.nanos.as_f64 / hist_enq_all.average.nanos.as_f64 * 100) .as_string.substring 0 4} %"
+      say "$(hist_mk_heap.average.as_string_pad) $(hist_mk_heap.title)"
+      say "$(hist_enq_all.average.as_string_pad) $(hist_enq_all.title)"
+      say "Compared to iterative add, make heap reduces time to: $((hist_mk_heap.average.nanos.as_f64 / hist_enq_all.average.nanos.as_f64 * 100) .as_string.substring 0 4) %"
 
     say "\nRandom:\n"
     simple_random 904644503766293287 ()->
@@ -192,7 +192,7 @@ priority_queue_benchmark =>
   make_heap_linear_time(test_lengths Sequence i32) unit =>
     say """
       \n********************************************************************************
-      *{"Check if make heap has linear time complexity".pad_center 78}*
+      *$("Check if make heap has linear time complexity".pad_center 78)*
       ********************************************************************************
       """
 
@@ -200,7 +200,7 @@ priority_queue_benchmark =>
 
       sample_size := 20
 
-      hist_mk_heap := time.histogram.new "Make heap with {elements.length} $elem_desc elements" nil 10 0
+      hist_mk_heap := time.histogram.new "Make heap with $(elements.length) $elem_desc elements" nil 10 0
 
       for _ in 1..sample_size do
         m : mutate is
@@ -208,9 +208,9 @@ priority_queue_benchmark =>
           hist_mk_heap.add (time.stopwatch ()->(q := container.Binary_Heap_Queue m T .min_first_from elements; _:=q))
 
       say """
-          {hist_mk_heap.average.times (1.0 / elements.length.as_f64) .as_string_pad} \
-          per element for {elements.length.as_string.pad_left (test_lengths.last.or_panic.as_string.byte_count)} \
-          $elem_desc elements. Total time was {hist_mk_heap.average.as_string_pad}"""
+          $(hist_mk_heap.average.times (1.0 / elements.length.as_f64) .as_string_pad) \
+          per element for $(elements.length.as_string.pad_left (test_lengths.last.or_panic.as_string.byte_count)) \
+          $elem_desc elements. Total time was $(hist_mk_heap.average.as_string_pad)"""
 
     say "Random:\n"
     simple_random 904644503766293287 ()->
@@ -228,7 +228,7 @@ priority_queue_benchmark =>
   all_same_priority(test_lengths Sequence i64) unit =>
     say """
       \n********************************************************************************
-      *{"Repeatedly enqueue identical priority then dequeue".pad_center 78}*
+      *$("Repeatedly enqueue identical priority then dequeue".pad_center 78)*
       ********************************************************************************
       """
 

@@ -50,7 +50,7 @@ lib_memoize is
       if n <= 1 then 1 else fib0 n-1 + fib0 n-2
 
     # use only smaller input values since this is very slow
-    slow_set.for_each (n->say "$n {fib0 n} (no memoization, {calls_to_fib0} calls, should always increase)")
+    slow_set.for_each (n->say "$n $(fib0 n) (no memoization, $(calls_to_fib0) calls, should always increase)")
 
     # fibonacci with global (but thread local) memoization
     #
@@ -58,7 +58,7 @@ lib_memoize is
       calls_to_fib1 <- 1 + calls_to_fib1
       if n <= 1 then 1 else fib1 n-1 + fib1 n-2
 
-    fast_set.for_each (n->say "$n {fib1 n} (global memoization, {calls_to_fib1} calls, should become stable)")
+    fast_set.for_each (n->say "$n $(fib1 n) (global memoization, $(calls_to_fib1) calls, should become stable)")
 
     # fibonacci with local memoization
     #
@@ -69,4 +69,4 @@ lib_memoize is
         calls_to_fib2 <- 1 + calls_to_fib2
         if n <= 1 then 1 else fib2 n-1 + fib2 n-2
 
-      fast_set.for_each (n->say "$n {fib2 n} (local memoization, {calls_to_fib2} calls, should become stable for each iteration)")
+      fast_set.for_each (n->say "$n $(fib2 n) (local memoization, $(calls_to_fib2) calls, should become stable for each iteration)")

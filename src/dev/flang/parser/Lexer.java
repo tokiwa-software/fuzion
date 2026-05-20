@@ -2967,7 +2967,7 @@ PIPE        : "|"
   {
     QUOTE,   // A string starting with '"' or '"""' as in "normal string...
     DOLLAR,  // Following '$<id>' as " dollar string..." in "previous $ident dollar string...
-    BRACE;   // Following '{<expr>}' as " rbrace string..." in "previous {a+b} rbrace string...
+    PAREN;   // Following '{<expr>}' as " rbrace string..." in "previous {a+b} rbrace string...
 
     /**
      * Get the partial string token for a string starting with this and ending with end.
@@ -2976,13 +2976,13 @@ PIPE        : "|"
     {
       if      (this == StringEnd.QUOTE  && end == StringEnd.QUOTE ) { return Token.t_stringQQ; }
       else if (this == StringEnd.QUOTE  && end == StringEnd.DOLLAR) { return Token.t_stringQD; }
-      else if (this == StringEnd.QUOTE  && end == StringEnd.BRACE ) { return Token.t_stringQB; }
+      else if (this == StringEnd.QUOTE  && end == StringEnd.PAREN ) { return Token.t_stringQB; }
       else if (this == StringEnd.DOLLAR && end == StringEnd.QUOTE ) { return Token.t_StringDQ; }
       else if (this == StringEnd.DOLLAR && end == StringEnd.DOLLAR) { return Token.t_StringDD; }
-      else if (this == StringEnd.DOLLAR && end == StringEnd.BRACE ) { return Token.t_StringDB; }
-      else if (this == StringEnd.BRACE  && end == StringEnd.QUOTE ) { return Token.t_stringBQ; }
-      else if (this == StringEnd.BRACE  && end == StringEnd.DOLLAR) { return Token.t_stringBD; }
-      else if (this == StringEnd.BRACE  && end == StringEnd.BRACE ) { return Token.t_stringBB; }
+      else if (this == StringEnd.DOLLAR && end == StringEnd.PAREN ) { return Token.t_StringDB; }
+      else if (this == StringEnd.PAREN  && end == StringEnd.QUOTE ) { return Token.t_stringBQ; }
+      else if (this == StringEnd.PAREN  && end == StringEnd.DOLLAR) { return Token.t_stringBD; }
+      else if (this == StringEnd.PAREN  && end == StringEnd.PAREN ) { return Token.t_stringBB; }
       throw new Error("impossible StringEnd.token combination "+this+" and "+end);
     }
   }
@@ -3007,7 +3007,7 @@ PIPE        : "|"
       case t_StringDB: return StringEnd.DOLLAR;
       case t_stringBQ:
       case t_stringBD:
-      case t_stringBB: return StringEnd.BRACE;
+      case t_stringBB: return StringEnd.PAREN;
       default        : throw new Error();
 
       }
@@ -3033,7 +3033,7 @@ PIPE        : "|"
       case t_stringBD: return StringEnd.DOLLAR;
       case t_stringQB:
       case t_StringDB:
-      case t_stringBB: return StringEnd.BRACE;
+      case t_stringBB: return StringEnd.PAREN;
       default        : throw new Error();
 
       }
@@ -3058,7 +3058,7 @@ PIPE        : "|"
      */
     final Optional<Integer> _pos;
 
-    int _braceCount;
+    int _parensCount;
 
     /**
      * In case of nested string lexers, this is the outer lexer.
@@ -3091,8 +3091,6 @@ PIPE        : "|"
         { '\"', '\"' },  // "  0x22
         { '$',  '$'  },  // $  0x24
         { '\\', '\\' },  // \  0x5c
-        { '{',  '{'  },  // {  0x7b
-        { '}',  '}'  },  // }  0x7d
         { '\n', -1   },
         { '\r', -1   },
         { '0', '\0'  },  // NUL 0x00
@@ -3152,7 +3150,7 @@ PIPE        : "|"
 
       this._stringStart = original._stringStart;
       this._pos = original._pos;
-      this._braceCount = original._braceCount;
+      this._parensCount = original._parensCount;
       this._beginning = original._beginning;
       this._state = original._state;
       this._outer = original._outer == null ? null : new StringLexer(original._outer);
@@ -3201,6 +3199,7 @@ PIPE        : "|"
           else
             {
               checkIndentation(pos);
+              var foundStart = false;
               if (escaped)
                 {
                   var i = 0;
@@ -3236,8 +3235,11 @@ PIPE        : "|"
                 {
                   t = _beginning.token(StringEnd.QUOTE);
                 }
-              else if (p == '$') { t = _beginning.token(StringEnd.DOLLAR); }
-              else if (p == '{') { t = _beginning.token(StringEnd.BRACE);  }
+              else if (p == '$')
+                {
+                  t = _beginning.token(StringEnd.DOLLAR);
+                  foundStart = true;
+                }
               else if (!skipped(pos))
                 {
                   c = p;
@@ -3253,6 +3255,12 @@ PIPE        : "|"
                 }
               pos = advance(pos, 1);
               p = raw(pos);
+              if (foundStart && p == '(')
+                {
+                  t = _beginning.token(StringEnd.PAREN);
+                  pos = advance(pos, 1);
+                  p = raw(pos);
+                }
             }
           if (c >= 0 && sb != null)
             {
@@ -3441,16 +3449,16 @@ PIPE        : "|"
         case EXPR_EXPECTED:
           switch (kind(p))
             {
-            case K_LBRACE:
-              _braceCount++;
+            case K_LPAREN:
+              _parensCount++;
               return Token.t_undefined;
-            case K_RBRACE:
-              _braceCount--;
-              if (_stringLexer._braceCount > 0)
+            case K_RPAREN:
+              _parensCount--;
+              if (_stringLexer._parensCount > -1)
                 {
-                  return Token.t_rbrace;
+                  return Token.t_rparen;
                 }
-              _beginning = StringEnd.BRACE;
+              _beginning = StringEnd.PAREN;
               break;
             default:
               return Token.t_undefined;
@@ -3494,7 +3502,7 @@ PIPE        : "|"
           switch (end(t))
             {
             case DOLLAR -> _state = StringState.IDENT_EXPECTED;
-            case BRACE  -> _state = StringState.EXPR_EXPECTED;
+            case PAREN  -> _state = StringState.EXPR_EXPECTED;
             default     -> throw new Error("default:");
             }
         }

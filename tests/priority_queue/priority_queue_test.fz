@@ -59,7 +59,7 @@ priority_queue_test =>
     #
     say "\nOrder of priorities:"
     q2 := container.Binary_Heap_Queue lm f64 .max_first_from []
-    say "is_empty is '{q2.is_empty}', expected 'true'"
+    say "is_empty is '$(q2.is_empty)', expected 'true'"
     q2.enqueue 0.3
     q2.enqueue_all [0.1, -0.9, 5E7, 13.7]
     say ""
@@ -78,7 +78,7 @@ priority_queue_test =>
         head := q2.dequeue
     while head.ok
     do
-      say "$prev: {(prev.or_panic >= head.or_panic) ? "OK" : "WRONG"}"
+      say "$prev: $((prev.or_panic >= head.or_panic) ? "OK" : "WRONG")"
     else
       say prev
 
@@ -90,9 +90,9 @@ priority_queue_test =>
     #
     say "\nEdge cases:"
     q3 := container.Binary_Heap_Queue lm String .empty_max_first
-    say "peek is '{q3.peek}', expected 'nil'"
-    say "dequeue is '{q3.dequeue}', expected 'nil'"
-    say "count is '{q3.count}', expected '0'"
+    say "peek is '$(q3.peek)', expected 'nil'"
+    say "dequeue is '$(q3.dequeue)', expected 'nil'"
+    say "count is '$(q3.count)', expected '0'"
     q3.enqueue "aaa"
     q3.enqueue "aaa"
     q3.enqueue "aaa"
@@ -100,7 +100,7 @@ priority_queue_test =>
     say ""
     say q3.as_string_tree_pretty
     say ""
-    say "dequeue is '{q3.dequeue}', expected 'aaa'"
+    say "dequeue is '$(q3.dequeue)', expected 'aaa'"
     say ""
     say q3.as_string_tree_pretty
     say ""
@@ -122,7 +122,7 @@ priority_queue_test =>
       say q4.as_string_tree_pretty
 
       if i%%3
-        say "\ndequeue: {q4.dequeue}\n"
+        say "\ndequeue: $(q4.dequeue)\n"
         say q4.as_string_tree_pretty
 
 
@@ -239,7 +239,7 @@ priority_queue_test =>
               (sort ++ [e]).sort.as_list
             else
               match q.dequeue
-                e i32 => yak (e = sort[0] ? "🡫" : "\nError in round $i expected '{sort[i]}' but cot '$e'\n")
+                e i32 => yak (e = sort[0] ? "🡫" : "\nError in round $i expected '$(sort[i])' but cot '$e'\n")
                 nil => yak (sort.is_empty ? "-" : "\nError queue is empty but sort is $sort\n")
               sort.tail
     say "\n"

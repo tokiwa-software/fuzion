@@ -104,7 +104,7 @@ module net is
   # set descriptor to blocking / none blocking mode.
   module set_blocking(sd i32, blocking bool) outcome unit =>
     res := if blocking then fzE_set_blocking sd 0 else fzE_set_blocking sd 1
-    if res = 0 then unit else error "error setting socket to {blocking ? "blocking" : "nonblocking"} mode" fzE_last_error
+    if res = 0 then unit else error "error setting socket to $(blocking ? "blocking" : "nonblocking") mode" fzE_last_error
 
 
   # get a socket's peer's ip address

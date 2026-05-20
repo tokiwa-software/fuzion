@@ -86,7 +86,7 @@ is
     if e = 0
       unit
     else
-      error "fzE_thread_setschedparam error {e}"
+      error "fzE_thread_setschedparam error $(e)"
 
 
   # pin a thread to the CPUs given by cores
@@ -97,7 +97,7 @@ is
     if e = 0
       unit
     else
-      error "fzE_thread_setaffinity error {e}"
+      error "fzE_thread_setaffinity error $(e)"
 
 
   # equality

@@ -215,8 +215,8 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
   #
   public redef as_string String ! time.nano, processes =>
     match wait time.duration.zero
-      error  => "$name {String.join args " "} (running, PID: $pid)"
-      ec u32 => "$name {String.join args " "} (exited with exit code: $ec)"
+      error  => "$name $(String.join args " ") (running, PID: $pid)"
+      ec u32 => "$name $(String.join args " ") (exited with exit code: $ec)"
 
 
   # NYI: UNDER DEVELOPMENT:

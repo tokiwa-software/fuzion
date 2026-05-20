@@ -24,10 +24,10 @@
 i128_test =>
 
   i128.bi =>
-    "0b{hi.bi}__{(lo.bin 64).chunk(8).as_string "_"}"
+    "0b$(hi.bi)__$((lo.bin 64).chunk(8).as_string "_")"
 
   i128.bi_bare =>
-    "{hi.as_bytes.map(.bin 8).as_string("")}{(lo.bin 64).chunk(8).as_string ""}"
+    "$(hi.as_bytes.map(.bin 8).as_string(""))$((lo.bin 64).chunk(8).as_string "")"
 
   i64.bi =>
     as_bytes
@@ -156,10 +156,10 @@ i128_test =>
   # test .as_f64
   u64_max_plus_42:= u64.max.as_i128 + 42.as_i128
   say """
-    {i128 0 6174}
-    {i128 0 6174 .as_f64}
+    $(i128 0 6174)
+    $(i128 0 6174 .as_f64)
 
-     {u64.max} <- u64.max"
+     $(u64.max) <- u64.max"
      $u64_max_plus_42 <- u64.max + 42
     {u64_max_plus_42.as_f64} <- as_f64 (loss of precision)
 

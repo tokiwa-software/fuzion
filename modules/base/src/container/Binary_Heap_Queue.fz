@@ -361,8 +361,8 @@ module:public Binary_Heap_Queue(
         sub_r_new := sub_r.or_else [$" "," "," "] .as_list.concat_list [$""].cycle.as_list # extension needed if the right side is only a leaf but the left side contains a subtree
 
         lvlres:= [str.pad_center cur_w]
-                ++ (sub_l.ok ? ["{" "*lh}┌{"─"*rh}┴{sub_r.ok ? "{"─"*lh}┐{" "*rh}" : " "*(lh+rh+1)}"] : [])
-                ++ (sub_l.ok ? sub_l.or_panic.zip sub_r_new (s1,s2)->("{s1.pad_center sub_l_w} {s2.pad_center sub_r_w}") : [])
+                ++ (sub_l.ok ? ["$(" "*lh)┌$("─"*rh)┴$(sub_r.ok ? "$("─"*lh)┐$(" "*rh)" : " "*{lh+rh+1})"] : [])
+                ++ (sub_l.ok ? sub_l.or_panic.zip sub_r_new (s1,s2)->("$(s1.pad_center sub_l_w) $(s2.pad_center sub_r_w)") : [])
 
         lvlres
 
@@ -382,7 +382,7 @@ module:public Binary_Heap_Queue(
 
     chk_1(i, j i64) bool =>
       if !less_than_or_equal elements[i] elements[j]
-        panic "heap property violated: '{elements[i]}' at level {level i} should come after '{elements[j]}' at level {level j}"
+        panic "heap property violated: '$(elements[i])' at level $(level i) should come after '$(elements[j])' at level $(level j)"
         false
       else true
 
