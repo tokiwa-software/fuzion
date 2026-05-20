@@ -539,16 +539,39 @@ void * fzE_thread_create(void *(*code)(void *),
                           void *restrict args)
 {
   pthread_t * pt = fzE_malloc_safe(sizeof(pthread_t));
+  pthread_attr_t attr;
+
+  int s = pthread_attr_init(&attr);
+  if (s != 0)
+  {
+    fprintf(stderr,"*** pthread_attr_init failed with return code %d\012",s);
+    exit(EXIT_FAILURE);
+  }
+
+  struct sched_param default_schedparam;
+  default_schedparam.sched_priority = 0;
+
+  assert (pthread_attr_setschedparam(&attr, &default_schedparam) == 0);
+  assert (pthread_attr_setschedpolicy(&attr, SCHED_OTHER) == 0);
+
 #ifdef GC_THREADS
   int res = GC_pthread_create(pt,NULL,code,args);
 #else
   int res = pthread_create(pt,NULL,code,args);
 #endif
-  if (res!=0)
+  if (res != 0)
   {
     fprintf(stderr,"*** pthread_create failed with return code %d\012",res);
     exit(EXIT_FAILURE);
   }
+
+  s = pthread_attr_destroy(&attr);
+  if (s != 0)
+  {
+    fprintf(stderr,"*** pthread_attr_destroy failed with return code %d\012",s);
+    exit(EXIT_FAILURE);
+  }
+
   return pt;
 }
 

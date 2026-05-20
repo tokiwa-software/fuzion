@@ -38,9 +38,9 @@ partial_application_negative is
   test "data.map *3          " (data.map    *3) "[3,6,9,12,15,18,21,24,27,30]"    # ok
   test "data.map -3          " (data.map    -3) "[3,6,9,12,15,18,21,24,27,30]"    # ok
 
-  test "data.map 3.infix*    " (data.map    3.infix*) "[3,6,9,12,15,18,21,24,27,30]"
-  test "data.map 3.prefix*   " (data.map    3.prefix*) "[3,6,9,12,15,18,21,24,27,30]"    # 1. should flag an error, do not change named prefix call to infix call
-  test "data.map 3.prefix-   " (data.map    3.prefix-) "[3,6,9,12,15,18,21,24,27,30]"    # 2. should flag an error, do not change named prefix call to infix call
+  test "data.map 3.infix*    " (data.map    3.infix*  ) "[3,6,9,12,15,18,21,24,27,30]"
+  test "data.map 3.prefix*   " (data.map    3.prefix* ) "[3,6,9,12,15,18,21,24,27,30]"  # 1. should flag an error, do not change named prefix call to infix call
+  test "data.map 3.prefix-   " (data.map    3.prefix- ) "[3,6,9,12,15,18,21,24,27,30]"  # 2. should flag an error, do not change named prefix call to infix call
   test "data.map 3.postfix*  " (data.map    3.postfix*) "[3,6,9,12,15,18,21,24,27,30]"  # 3. should flag an error, do not change named prefix call to infix call
 
   _ := data.map *3

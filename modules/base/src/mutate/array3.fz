@@ -50,7 +50,7 @@ is
   #
   public redef is_accessible bool
   =>
-    is_correct_thread
+    is_exclusive
 
 
   # get element at given index i

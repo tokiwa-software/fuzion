@@ -35,10 +35,10 @@ public threads (
   p Thread_Handler,
 
   # NYI: UNDER DEVELOPMENT: use more suitable data structure
-  public running array concur.thread,
+  public running array concur.Thread,
 
   # the currently running thread
-  public current concur.thread
+  public current concur.Thread
   ) : effect
 is
 
@@ -51,12 +51,12 @@ is
   #
   public spawn(# code to run in the new thread with the teleported effect environemnt
                code ()->unit
-              ) concur.thread =>
+              ) concur.Thread =>
     ewh := effect_wormhole
     tid := unique_id  # NYI: CLEANUP: use thread id
     spawn_without_inherited_effects tid ()->
       ewh.teleport ()->
-        st := concur.thread fuzion.sys.thread.current  tid
+        st := concur.Thread fuzion.sys.thread.current  tid
         (threads p (running++[st]).as_array st).replace
         code()
 
@@ -69,7 +69,7 @@ is
   #
   public spawn_without_inherited_effects(# code ot run int he new thread without an new, empty effect environment
                                          code ()->unit
-                                        ) concur.thread
+                                        ) concur.Thread
   =>
     tid := unique_id  # NYI: CLEANUP: use thread id
     spawn_without_inherited_effects tid code
@@ -83,7 +83,7 @@ is
 
                                          # code ot run int he new thread without an new, empty effect environment
                                          code ()->unit
-                                        ) concur.thread =>
+                                        ) concur.Thread =>
     st := p.spawn tid code
     (threads p (running++[st]).as_array current).replace
     st
@@ -91,7 +91,7 @@ is
 
   # detach a running thread
   #
-  public detach(thrd concur.thread) unit
+  public detach(thrd concur.Thread) unit
   pre debug: running.contains thrd
   =>
     # NYI: UNDER DEVELOPMENT: pthread_detach
@@ -111,7 +111,7 @@ is
   #
   public redef fixed type.default_value option concur.threads
   =>
-    initial := concur.thread fuzion.sys.thread.current 0
+    initial := concur.Thread fuzion.sys.thread.current 0
     concur.threads concur.default_thread_handler [initial] initial
 
 
@@ -125,7 +125,7 @@ default_thread_handler : Thread_Handler is
               tid u64,
               code ()->unit)
   =>
-    concur.thread (fuzion.sys.thread.spawn code) tid
+    concur.Thread (fuzion.sys.thread.spawn code) tid
 
 # Thread_Handler -- abstract source of concurrency
 #
@@ -135,6 +135,6 @@ private:public Thread_Handler ref is
   #
   spawn(# NYI: CLEANUP: remove this argument and use system thread id
         tid u64,
-        code ()->unit) concur.thread
+        code ()->unit) concur.Thread
   =>
     abstract

@@ -17,28 +17,12 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature racy_mutate
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion test reg_issue4428
 #
 # -----------------------------------------------------------------------
 
-# racy_mutate -- a variant of mutate that may be shared between threads
-#
-# NYI: UNDER DEVELOPMENT: Currently, this does not do anything to make sure
-# racy accesses are ok, i.e., there are no memory fences, there are no
-# atomic operations and `exclusive` does not enforce exlusivity.  This is
-# only an intermediate solution to permit sharing a mutate even though the
-# resulting code is full of races.
-#
-# The idea is to remove this as soon as we have proper, thread-save effects
-# using mutexes, memory fences, atomic operations, transations or other
-# means to ensure thread-safety.
-#
-public racy_mutate : mutate is
-
-  # this uses racy accesses to all data, so any thread is allowed.
-  #
-  public redef is_exclusive bool
-  =>
-    true
+f(x ()->T) =>
+f ()->
+  a is
+    x => a
+  a.x

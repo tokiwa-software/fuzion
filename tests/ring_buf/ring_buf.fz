@@ -76,8 +76,15 @@ ring_buf =>
 
     t1.join
 
-    say <| "t0: expecting H       got: " + rb.poll               # poll on one element       [H]       -> []
-    say <| "t0: expecting nil     got: " + rb.poll               # poll on empty ring buffer []        -> []
+    say <| "t0: expecting H       got: " + rb.take               # take on one element       [H]       -> []
+    fuzion.runtime.fault
+      .try ()->
+        say <| "t0: " + rb.take + "*** FAILED! BLOCKING in single thread"   # poll on empty ring buffer []        -> []
+      .catch m->
+        exp := ("*** panic ***",
+                "mutate.wait on '(container.Ring_Buffer String ring_buf.lm).take.(λ(()-> !is_empty0))' would wait forever")
+        expect "t0" exp m
+
 
     # testing mutable arrays from another thread
 
@@ -198,6 +205,43 @@ ring_buf =>
     expect "t0" "N"     (rn                )    # poll on one element       [N]       -> []
     expect "t0" nil     (rnl               )    # poll on empty ring buffer []        -> []
 
+    # Now try to poll from yet another thread
+    t4 := concur.threads.env.spawn ()->
+      fuzion.runtime.fault
+        .try ()->
+          expect "t4" true    (rb.add "O"        )    # add second element        []     -> [O]
+          expect "t4" true    (rb.add "P"        )    # add second element        [O]    -> [O,P]
+          time.nano.env.sleep (time.duration.ms 100)
+          expect "t4" true    (rb.add "Q"        )    # add second element        [O,P]  -> [O,P,Q]
+          expect "t4" unit    (rb.put "R"        )    # add second element        [..,Q] -> [..,Q,R]
+          expect "t4" unit    (rb.put "S"        )    # add second element        [..,R] -> [..,R,S]
+          expect "t4" unit    (rb.put "T"        )    # add second element        [..,S] -> [..,S,T]
+          expect "t4" unit    (rb.put "U"        )    # add second element        [..,T] -> [..,T,U]
+        .catch m->
+          say "*** FAILED! $m"
+
+    ro := rb.take               # blocking take from ring_buffer [O?,P?,Q?] -> [P?,Q?]
+    rp := rb.take               # blocking take from ring_buffer [P?,Q?]    -> [Q?]
+    rq := rb.take               # blocking take from ring_buffer [Q?]       -> []
+    time.nano.env.sleep (time.duration.ms 100)
+    rr := rb.take               # blocking take from ring_buffer [R?,..]    -> [S?,..]
+    rs := rb.take               # blocking take from ring_buffer [S?,..]    -> [T?,..]
+    rt := rb.take               # blocking take from ring_buffer [T?,..]    -> [U?]
+    ru := rb.take               # blocking take from ring_buffer [U?,..]    -> []
+    rn2:= rb.poll               # poll on empty ring buffer      []         -> []
+
+    t4.join
+
+    # output results after `t4.join` to avoid races with `t3` during output:
+    expect "t0" "O"     (ro           )    # blocking take from ring_buffer [O?,P?,Q?] -> [P?,Q?]
+    expect "t0" "P"     (rp           )    # blocking take from ring_buffer [P?,Q?]    -> [Q?]
+    expect "t0" "Q"     (rq           )    # blocking take from ring_buffer [Q?]       -> []
+    expect "t0" "R"     (rr           )    # blocking take from ring_buffer [R?,..]    -> [S?,..]
+    expect "t0" "S"     (rs           )    # blocking take from ring_buffer [S?,..]    -> [T?,..]
+    expect "t0" "T"     (rt           )    # blocking take from ring_buffer [T?,..]    -> [U?]
+    expect "t0" "U"     (ru           )    # blocking take from ring_buffer [U?,..]    -> []
+    expect "t0" nil     (rn2          )    # poll on empty ring buffer      []         -> []
+
     # testing mutable arrays from another thread
 
     my_array1 := bm.env.new_array 256 (i64 42)
@@ -239,6 +283,46 @@ ring_buf =>
             say "*** FAILED! $m"
 
     tb.join
+
+    # now test using three consumer threads t5, t6, t7 that are fed by one
+    # producer thread (current thread):
+
+    t5 := concur.threads.env.spawn ()->
+      fuzion.runtime.fault
+        .try ()->
+          for x := rb.take until x = "QUIT"
+        .catch m->
+          say "*** FAILED! $m"
+    t6 := concur.threads.env.spawn ()->
+      fuzion.runtime.fault
+        .try ()->
+          for x := rb.take until x = "QUIT"
+        .catch m->
+          say "*** FAILED! $m"
+    t7 := concur.threads.env.spawn ()->
+      fuzion.runtime.fault
+        .try ()->
+          for x := rb.take until x = "QUIT"
+        .catch m->
+          say "*** FAILED! $m"
+
+    for i in 1..10 do
+
+      # give the threads some time to start or empty the buffer:
+      time.nano.env.sleep (time.duration.ms 10)
+
+      # push 5000 entries to the ring buffer
+      for j in 1..5000 do
+        rb.put "X"
+
+    # tell all threads to stop
+    rb.put "QUIT"
+    rb.put "QUIT"
+    rb.put "QUIT"
+
+    t5.join
+    t6.join
+    t7.join
 
 
   # NYI: UNDER DEVELOPMENT: More tests to be added with blocking operations!
