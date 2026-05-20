@@ -533,13 +533,10 @@ public class Intrinsics extends ANY
         });
     put("fuzion.sys.thread.set_affinity0", (c,cl,outer,in) ->
         {
-          var internalArray = c._fuir.clazzArgClazz(cl, 1);
-          var data = c._fuir.clazzArg(internalArray, 0);
-          var length = c._fuir.clazzArg(internalArray, 1);
           return CExpr.call("fzE_thread_setaffinity", new List<>(
                         A0,
-                        A1.field(c._names.fieldName(data)),
-                        A1.field(c._names.fieldName(length))
+                        A1.castTo("uint64_t *"),
+                        A2
                       ))
                       .ret();
         });
