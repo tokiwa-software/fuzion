@@ -572,7 +572,7 @@ is
   #
   public redef cycle Sequence A =>
     _ : Sequence A is
-      public redef finite trit => trit.no
+      public redef finite trit => list.this.is_empty.as_trit
       public redef as_list list A => cycle_list
 
 
