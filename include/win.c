@@ -1250,3 +1250,12 @@ int fzE_isnan(double d)
 {
   return _isnan(d);
 }
+
+
+/**
+ * wrapper around DTRACE_PROBE
+ */
+void fzE_dtrace_probe(char col, const char* msg)
+{
+  // NYI: UNDER DEVELOPMENT: No support for DTRACE_PROBE for windows yet
+}

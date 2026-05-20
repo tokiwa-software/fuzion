@@ -48,6 +48,10 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install openjdk-25-jdk-headless sqlite3 libgc1 libgc-dev libclang1 libclang-dev libwolfssl-dev libsodium23 libsodium-dev
+
+          # for DTRACE_PROBE
+          sudo apt-get install systemtap-sdt-dev
+
           echo "JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64" >> $GITHUB_ENV
           echo "/usr/lib/jvm/java-25-openjdk-amd64/bin" >> $GITHUB_PATH
 
