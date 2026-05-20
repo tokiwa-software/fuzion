@@ -820,4 +820,9 @@ int fzE_cwd(void * buf, size_t size);
 
 int fzE_isnan(double d);
 
+/**
+ * wrapper around DTRACE_PROBE
+ */
+void fzE_dtrace_probe(char col, const char* msg);
+
 #endif /* fz.h  */
