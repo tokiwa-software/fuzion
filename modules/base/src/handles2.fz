@@ -33,7 +33,13 @@
 # For performance, this implementation uses mutable state. It can consequently
 # only be used as an effect (oneway_monad).
 #
-private /* NYI: CLEANUP: remove eventually */ handles2(
+# NYI: CLEANUP: This is currently used as an example for the equivalence of an
+# effect and a monad in the [Fuzion design]("https://fuzion-lang.dev/design/monadic_lifting).
+# We might remove `oneway_monad` from the base lib if this is needed only for the
+# design pages and add code for a `handles` monad to the example code where this
+# is currently used as a monad.
+#
+private:public handles2(
   T, X type,
 
   # the inner value of this monad
@@ -133,12 +139,12 @@ is
 
 # shorthand for creating and installing an empty set of handles2 of given type.
 #
-handles2(T type, rr ()->unit) =>
+public handles2(T type, rr ()->unit) unit =>
   (handles2 T unit unit nil oneway_monad_mode.inst) ! rr
 
 # shorthand for creating an empty set of handles2 of given type.
 #
-handles2_(T type) => handles2 T unit unit nil oneway_monad_mode.plain
+handles2_(T type) handles2 T unit => handles2 T unit unit nil oneway_monad_mode.plain
 
 
 # handle value created by `handles2.new`
