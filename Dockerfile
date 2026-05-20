@@ -14,7 +14,8 @@ RUN apt-get update && apt-get -y --no-install-recommends install \
   ruby-asciidoctor-pdf \
   antlr4 \
   clang-18 \
-  wget
+  wget \
+  systemtap-sdt-dev
 RUN ln -s /usr/bin/clang-18 /usr/bin/clang
 ENV FUZION_REPRODUCIBLE_BUILD="true" PRECONDITIONS="true" POSTCONDITIONS="true"
 RUN make all build/apidocs_git/index.html
