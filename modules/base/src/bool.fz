@@ -155,6 +155,15 @@ public bool : choice false_ true_, property.equatable, property.hashable, java_p
       "false"
 
 
+  # as a trit
+  #
+  public as_trit trit =>
+    if bool.this
+      trit.yes
+    else
+      trit.no
+
+
   # monoid of bool with infix & operation.  Will be true iff all elements are
   # true.
   #
