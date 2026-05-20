@@ -40,51 +40,22 @@ public wolfssl(T type, LM type : mutate, LM2 type: mutate, code ()->T) T ! LM, L
   check !(ffi.is_null ctx)
 
 
-  my_IORecv : Function i32 Native_Ref Native_Ref i32 Native_Ref is
-    public redef call(ssl Native_Ref, buf Native_Ref, sz i32, ctx Native_Ref) i32 =>
-      match (io.buffered LM).reader.env.read
-        s Sequence =>
-          (io.buffered LM).reader.env.discard sz
-          x := (min sz s.count)
-          lm ! ()->
-            _ := memcpy buf (lm.array u8 .from_Sequence s) x.as_i64
-          x
-        outcome => exit 1
-
-
-  my_IOSend : Function i32 Native_Ref Native_Ref i32 Native_Ref is
-    public redef call(ssl Native_Ref, buf Native_Ref, sz i32, ctx Native_Ref) i32 =>
-      arr := ffi.from_native_array u8 buf sz
-      (io.buffered LM).writer.env.write arr .or_panic
-      (io.buffered LM).writer.env.flush.or_panic
-      sz
-
-
-  c.wolfSSL_CTX_SetIORecv ctx my_IORecv
-
-  c.wolfSSL_CTX_SetIOSend ctx my_IOSend
-
-  /**
-
-  NYI: BUG: does not work yet e.g.: /tests/mod_wolfssl/
-
   c.wolfSSL_CTX_SetIORecv ctx (ssl, buf, sz, ctx)->
     match (io.buffered LM).reader.env.read
       s Sequence =>
         (io.buffered LM).reader.env.discard sz
         x := (min sz s.count)
-        _ := memcpy buf (lm.array u8 .from_Sequence s) x
+        lm ! ()->
+          _ := memcpy buf (lm.array u8 .from_Sequence s) x.as_i64
         x
       outcome => exit 1
+
 
   c.wolfSSL_CTX_SetIOSend ctx (ssl, buf, sz, ctx)->
     arr := ffi.from_native_array u8 buf sz
     ((io.buffered LM).writer.env.write arr) .or_panic
     (io.buffered LM).writer.env.flush .or_panic
     sz
-
-  */
-
 
 
   ssl := c.wolfSSL_new ctx
