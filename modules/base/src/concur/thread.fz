@@ -35,7 +35,7 @@ is
 
   joined := concur.atomic trit .new trit.no
 
-  public policy choice
+  policy choice
     concur.scheduling_policy.sched_other
     concur.scheduling_policy.sched_fifo
     concur.scheduling_policy.sched_rr
@@ -43,7 +43,7 @@ is
      concur.scheduling_policy.sched_other
 
 
-  public priority i32 := 0
+  priority i32 := 0
 
   # wait for this thread to finish execution
   #
@@ -100,6 +100,20 @@ is
         unit
       else
         error "fzE_thread_setschedparam error {e}"
+
+
+  # get the current scheduling policy and priority of this thread
+  #
+  public get_policy
+    tuple
+      (choice
+        concur.scheduling_policy.sched_other
+        concur.scheduling_policy.sched_fifo
+        concur.scheduling_policy.sched_rr)
+      i32
+  =>
+    cond.synchronized ()->
+      (policy, priority)
 
 
   # pin a thread to the CPUs given by cores
