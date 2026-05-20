@@ -186,12 +186,12 @@ jitter_threaded =>
         say "testing period $period for $test_duration..."
         h  := time.histogram.new "period jitter $period, log count / linear time" period period*2 1 0
         h2 := time.histogram.new "cycle jitter $period, log count / log time"     nil    nil      1 0
-        ps_arr := period_samples.as_array
-        cs_arr := cycle_samples.as_array
-        for j := 0, j+1 while j < ps_arr.length do
-          h.add ps_arr[j]
-          if j < cs_arr.length
-            h2.add cs_arr[j]
+        h.add period_samples.first.or_panic
+        for ps in period_samples.drop 1
+            cs in cycle_samples
+        do
+          h.add ps
+          h2.add cs
         say "period jitter:"
         say "$h"
         say "cycle jitter:"
