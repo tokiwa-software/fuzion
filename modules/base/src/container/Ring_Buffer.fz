@@ -187,3 +187,9 @@ is
   =>
     M.env.exclusive ()->
       used
+
+
+  # amount of elements free for adding
+  #
+  public unused i64 =>
+    size - count
