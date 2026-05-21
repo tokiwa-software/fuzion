@@ -183,6 +183,10 @@ public class Select extends Call {
           {
             AstErrors.useOfSelectorRequiresCallWithOpenGeneric(pos(), _calledFeature, null, select(), _target.type());
           }
+        else if (_pendingError != null)
+          {
+            _pendingError.run();
+          }
         else
           {
             if (CHECKS)  check
