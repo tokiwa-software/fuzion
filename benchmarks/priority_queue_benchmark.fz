@@ -36,7 +36,7 @@ priority_queue_benchmark =>
         m : mutate is
         m ! ()->
 
-          q := container.Binary_Heap_Queue m i32 .empty_min_first (size + 10).as_i64
+          q := container.Binary_Heap_Queue m i32 .empty (size + 10).as_i64
 
           hist_enq := time.histogram.new "Enqueue $size" nil
           hist_deq := time.histogram.new "Dequeue $size" nil
@@ -92,7 +92,7 @@ priority_queue_benchmark =>
       m : mutate is
       m ! ()->
 
-        q := container.Binary_Heap_Queue m i32 .empty_min_first (queue_size + 30).as_i64
+        q := container.Binary_Heap_Queue m i32 .empty (queue_size + 30).as_i64
 
         # fill queue
         for i in 1..queue_size do q.enqueue random.env.next_i32
@@ -155,11 +155,11 @@ priority_queue_benchmark =>
       for _ in 1..sample_size do
         m2 : mutate is
         m2 ! ()->
-          hist_enq_all.add (time.stopwatch ()->(q := container.Binary_Heap_Queue m2 T .empty_min_first; q.enqueue_all (id (Sequence T) elements)))
+          hist_enq_all.add (time.stopwatch ()->(q := container.Binary_Heap_Queue m2 T .empty; q.enqueue_all (id (Sequence T) elements)))
 
         m1 : mutate is
         m1 ! ()->
-          hist_mk_heap.add (time.stopwatch ()->(q := container.Binary_Heap_Queue m1 T .min_first_from elements; _:=q))
+          hist_mk_heap.add (time.stopwatch ()->(q := container.Binary_Heap_Queue m1 T .from elements; _:=q))
 
       say "{hist_mk_heap.average.as_string_pad} {hist_mk_heap.title}"
       say "{hist_enq_all.average.as_string_pad} {hist_enq_all.title}"
@@ -205,7 +205,7 @@ priority_queue_benchmark =>
       for _ in 1..sample_size do
         m : mutate is
         m ! ()->
-          hist_mk_heap.add (time.stopwatch ()->(q := container.Binary_Heap_Queue m T .min_first_from elements; _:=q))
+          hist_mk_heap.add (time.stopwatch ()->(q := container.Binary_Heap_Queue m T .from elements; _:=q))
 
       say """
           {hist_mk_heap.average.times (1.0 / elements.length.as_f64) .as_string_pad} \
@@ -240,7 +240,7 @@ priority_queue_benchmark =>
       m : mutate is
       m ! ()->
 
-        q := container.Binary_Heap_Queue m i32 .empty_min_first queue_length
+        q := container.Binary_Heap_Queue m i32 .empty queue_length
 
         for i in 1..queue_length.as_i32 do
           hist_enq.add (time.stopwatch ()->(q.enqueue 42))

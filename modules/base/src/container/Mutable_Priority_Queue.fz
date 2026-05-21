@@ -87,7 +87,7 @@ public Mutable_Priority_Queue(public T type) ref is
   # Create an empty priority queue that returns the smallest element first
   # using natural ordering of the elements
   #
-  public type.empty_min_first container.Mutable_Priority_Queue T
+  public type.empty container.Mutable_Priority_Queue T
     pre T : property.orderable
   => abstract
 
@@ -95,37 +95,20 @@ public Mutable_Priority_Queue(public T type) ref is
   # Create a priority queue from the given unordered elements
   # which returns smallest element first using natural ordering of the elements
   #
-  public type.min_first_from(initial_elements Sequence T) container.Mutable_Priority_Queue T
+  public type.from(initial_elements Sequence T) container.Mutable_Priority_Queue T
     pre T : property.orderable
   => abstract
 
 
-  # Create an empty priority queue that returns the largest element first
-  # using natural ordering of the elements
+  # Create an empty priority queue that determines return order
+  # by mapping elements to an orderable type using `by`
   #
-  public type.empty_max_first container.Mutable_Priority_Queue T
-    pre T : property.orderable
+  public type.empty_by(O type : property.orderable, by (T)->O) container.Mutable_Priority_Queue T
   => abstract
 
 
-  # Create a priority queue from the given unordered elements
-  # which returns largest element first using natural ordering of the elements
+  # Create a priority queue from the given unordered elements that determines
+  # return order by mapping elements to an orderable type using `by`
   #
-  public type.max_first_from(initial_elements Sequence T) container.Mutable_Priority_Queue T
-    pre T : property.orderable
-  => abstract
-
-
-  # Create an empty priority queue that determines which element
-  # to return first by the given comparator
-  #
-  public type.empty_comp(less_than_or_equal (T1, T1)->bool) container.Mutable_Priority_Queue T1
-  => abstract
-
-
-  # Create a priority queue from the given unordered elements
-  # that determines the element to return first by the given comparator
-  #
-  public type.comp_from(less_than_or_equal (T1, T1)->bool,
-                        initial_elements Sequence T1) container.Mutable_Priority_Queue T1
+  public type.from_by(O type : property.orderable, initial_elements Sequence T, by (T)->O) container.Mutable_Priority_Queue T
   => abstract
