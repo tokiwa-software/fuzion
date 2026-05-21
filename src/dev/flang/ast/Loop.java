@@ -494,7 +494,10 @@ public class Loop extends ANY
              outer.baseName().startsWith(FuzionConstants.REC_LOOP_PREFIX);
           if (((Feature)outer).returnType() instanceof FunctionReturnType frt && setExplicitResultType)
             {
-              this.setFunctionReturnType(frt.functionReturnType());
+              if (Loop.this.producesResult())
+                {
+                  setFunctionReturnType(frt.functionReturnType());
+                }
               if (_loopElse != null)
                 {
                   for (int i = 0; i < _loopElse.length; i++)
@@ -527,6 +530,17 @@ public class Loop extends ANY
       }
     return _impl;
   }
+
+
+  /**
+   * Does this loop potentially yield a result?
+   * @return
+   */
+  private boolean producesResult()
+  {
+    return _successBlock != null || _elseBlock0 != null;
+  }
+
 
   /**
    * Creates code for the given loop variant expression
