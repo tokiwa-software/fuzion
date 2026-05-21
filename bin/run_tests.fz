@@ -259,7 +259,7 @@ main =>
 
   test_durations
     .items
-    .sort_by (td1,td2 -> td2.1<=td1.1)
+    .sort_by (.1)
     .take num_slowest
     .for_each (td -> say "{td.1.as_string_pad} {td.0}")
 
