@@ -38,6 +38,9 @@
 #
 public trace(# an identifier to chose a unique color for displaying this probe
              #
+             # This is useful in a graphical display to easily distinguish
+             # different trace probes
+             #
              col u8,
 
              # an message to be displayed. Note that this message might get
@@ -47,3 +50,22 @@ public trace(# an identifier to chose a unique color for displaying this probe
              ) unit
 =>
   fzE_dtrace_probe col (fuzion.sys.c_string msg)
+
+
+
+# fuzion.runtime.trace -- tracing probe
+#
+# Convenience function to call `fuzion.runtime.trace 0 msg`, use the default
+# color 0.
+#
+# NYI: UNDER DEVELOPMENT: Currently, this may infer a significant runtime
+# overhead even if tracing is disabled.
+#
+#
+public trace(# an message to be displayed. Note that this message might get
+             # trunkated to, e.g., 16 utf8 bytes.
+             #
+             msg String
+             ) unit
+=>
+  trace 0 msg
