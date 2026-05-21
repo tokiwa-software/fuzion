@@ -329,7 +329,7 @@ class Clazz extends ANY implements Comparable<Clazz>
         !_type.feature().isTypeParameter() &&
         _type.outer().outer().feature() != _type.feature().outer().outer())
       {
-        var x = "IMPLEMANTATION RESTRICTION: illegal inheritance and usage of fixed feature: \n" +
+        var x = "IMPLEMENTATION RESTRICTION: illegal inheritance and usage of fixed feature: \n" +
         _type.toString() + "\n" + _type.outer().outer().feature().toString() + "\n" + _type.feature().outer().outer().toString();
         Errors.fatal(x);
       }
