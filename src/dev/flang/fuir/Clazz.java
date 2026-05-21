@@ -412,7 +412,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     if (PRECONDITIONS) require
       (!_fuir._lookupDone,
        i.clazzKind() != IR.FeatureKind.Field || isValue(),
-       !i.feature().isField() || _fields == null);
+       !i.feature().isField() || i.feature().isOuterRef() || _fields == null);
 
     _inner.add(i);
   }
@@ -1821,7 +1821,6 @@ class Clazz extends ANY implements Comparable<Clazz>
    *
    * @return the outer clazz of this corresponding this-type {@code o}.
    */
-  // NYI: UNDER DEVELOPMENT: logic too complicated and likely subtly wrong.
   private Clazz findOuter(AbstractType o, List<AbstractCall> inh)
   {
     if (PRECONDITIONS) require
@@ -1832,34 +1831,56 @@ class Clazz extends ANY implements Comparable<Clazz>
      */
     var of = handDown(o, NO_SELECT, (_,_)->{}, inh).feature();
     var res = this;
+    var result = new TreeSet<Clazz>();
+    while (res != null)
+      {
+        if (res.feature() == of)
+          {
+            result.add(res);
+          }
+        res.findInOuterRefs(result, of);
+        res = res._outer;
+      }
+
+    res = this;
     var i = feature();
     while (i != null && i != of)
       {
-        res = res._outer;
-        i = res == null
-          ? null
-          : res.feature();
+        res = i.hasOuterRef()
+          ? res.lookup(i.outerRef()).resultClazz()
+          : res._outer;
+        i = (LibraryFeature) i.outer();
+      }
+    if (i == of)
+      {
+        check(res != null);
+        result.add(res);
       }
 
-    // NYI: BUG: inh that is passed to handDown is incorrectly empty
-    // for some cases in test/covariance
-    if (i == null)
+    if (result.size() > 1)
       {
-        res = this;
-        i = feature();
-        while (i != null && i != of)
+        Errors.fatal("IMPLEMENTATION RESTRICTION: found multiple this types for " + o.toString() + " in " + toString() + ": " + result);
+      }
+    return result.first();
+  }
+
+
+  private void findInOuterRefs(TreeSet<Clazz> result, AbstractFeature of)
+  {
+    for (var cl : _inner)
+      {
+        if (cl.feature().isOuterRef())
           {
-            res = i.hasOuterRef()
-              ? res.lookup(i.outerRef()).resultClazz()
-              : res._outer;
-            i = (LibraryFeature) i.outer();
+            if (cl.feature().resultType().feature() == of)
+              {
+                result.add(cl.resultClazz());
+              }
+            else
+              {
+                cl.resultClazz().findInOuterRefs(result, of);
+              }
           }
       }
-
-    if (CHECKS) check
-      (Errors.any() || i == of);
-
-    return i == null ? _fuir.error() : res;
   }
 
 
