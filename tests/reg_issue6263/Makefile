@@ -22,4 +22,4 @@
 # -----------------------------------------------------------------------
 
 override NAME = reg_issue6263
-include ../simple.mk
+include ../compile.mk
