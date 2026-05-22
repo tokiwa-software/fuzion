@@ -2,9 +2,11 @@
 
 - Fuzion language
 
-  - support generic arguments as lambda targets ([6811](https://github.com/tokiwa-software/fuzion/pull/6811))
+  - support generic arguments as lambda targets
+    ([6811](https://github.com/tokiwa-software/fuzion/pull/6811))
 
-    This enables type parameters for the types of lambda expressions like `F` in the following code
+    This enables type parameters for the types of lambda expressions like `F` in
+    the following code
 
         apply(f F : i32->i32) => f 42
 
@@ -83,7 +85,8 @@
 
         if x then if y then a else b
 
-    is no longer accepted, explicit nesting using  braces `{` and `}` is required to distinguish
+    is no longer accepted, explicit nesting using braces `{` and `}` is required
+    to distinguish
 
         if x then { if y then a else b }
 
@@ -91,7 +94,8 @@
 
         if x then { if y then a } else b
 
-    The same holds for nesting of loops and `if` statements.  Nesting of several loops in a single line always requires braces.
+    The same holds for nesting of loops and `if` statements.  Nesting of several
+    loops in a single line always requires braces.
 
   - changed anonymous feature syntax to use `_ :` instead of `ref :`
     ([6402](https://github.com/tokiwa-software/fuzion/pull/6402)) Now, an
@@ -349,11 +353,14 @@
 
   - New library features
 
-    - Added `mutable.array3` for three-dimensional mutable arrays ([6985](https://github.com/tokiwa-software/fuzion/pull/6985))
+    - Added `mutable.array3` for three-dimensional mutable arrays
+      ([6985](https://github.com/tokiwa-software/fuzion/pull/6985))
 
-    - Add priority queue interface with a binary heap-based implementation ([6873](https://github.com/tokiwa-software/fuzion/pull/6873))
+    - Add priority queue interface with a binary heap-based implementation
+      ([6873](https://github.com/tokiwa-software/fuzion/pull/6873))
 
-    - provide wormholes to teleport effects between threads ([6905](https://github.com/tokiwa-software/fuzion/pull/6905))
+    - provide wormholes to teleport effects between threads
+      ([6905](https://github.com/tokiwa-software/fuzion/pull/6905))
 
       This enables passing effects to new threads as follows
 
@@ -368,7 +375,8 @@
             ...
             t.join
 
-      The underlying mechanism that is used by `spawn` can also be used explicitly as follows
+      The underlying mechanism that is used by `spawn` can also be used
+      explicitly as follows
 
 
           wh := effect_wormhole            # (1) create wormhole for effects at this point
@@ -405,7 +413,8 @@
     - add `Cons.finite` for better handling of infinite lists
       ([6343](https://github.com/tokiwa-software/fuzion/pull/6343))
 
-    - add enhanced effect composition means ([6775](https://github.com/tokiwa-software/fuzion/pull/6775))
+    - add enhanced effect composition means
+      ([6775](https://github.com/tokiwa-software/fuzion/pull/6775))
 
       To instate effects `e1`, `e2`, and `e3` to run `code`, it used to be
       required to instate each effect individually as in
@@ -442,19 +451,26 @@
 
       This change consists of the following pull requests:
 
-        - Finger tree ([6493](https://github.com/tokiwa-software/fuzion/pull/6493))
+        - Finger tree
+          ([6493](https://github.com/tokiwa-software/fuzion/pull/6493))
 
-        - don't wrap `Finger_Tree` in single ([6636](https://github.com/tokiwa-software/fuzion/pull/6636))
+        - don't wrap `Finger_Tree` in single
+          ([6636](https://github.com/tokiwa-software/fuzion/pull/6636))
 
-        - `buffered.read_bytes`, use `Finger_Tree` to concat the read bytes ([6617](https://github.com/tokiwa-software/fuzion/pull/6617))
+        - `buffered.read_bytes`, use `Finger_Tree` to concat the read bytes
+          ([6617](https://github.com/tokiwa-software/fuzion/pull/6617))
 
-        - Finger_Tree redef as_array ([6628](https://github.com/tokiwa-software/fuzion/pull/6628))
+        - Finger_Tree redef as_array
+          ([6628](https://github.com/tokiwa-software/fuzion/pull/6628))
 
-        - `Finger_Tree`, slight performance improvements ([6638](https://github.com/tokiwa-software/fuzion/pull/6638))
+        - `Finger_Tree`, slight performance improvements
+          ([6638](https://github.com/tokiwa-software/fuzion/pull/6638))
 
-        - Concat use finger tree instead of list ([6553](https://github.com/tokiwa-software/fuzion/pull/6553))
+        - Concat use finger tree instead of list
+          ([6553](https://github.com/tokiwa-software/fuzion/pull/6553))
 
-        - finger tree implement merging ([6575](https://github.com/tokiwa-software/fuzion/pull/6575))
+        - finger tree implement merging
+          ([6575](https://github.com/tokiwa-software/fuzion/pull/6575))
 
     - Improvements and usage of `path` feature
 
@@ -506,7 +522,8 @@
     - add `io.write`, change arg types of `io.file.write`
       ([6434](https://github.com/tokiwa-software/fuzion/pull/6434))
 
-    - add stackoverflow effect ([6477](https://github.com/tokiwa-software/fuzion/pull/6477))
+    - add stackoverflow effect
+      ([6477](https://github.com/tokiwa-software/fuzion/pull/6477))
 
       It can be used as follows to handle a stack overflow
 
@@ -518,7 +535,8 @@
             .catch e->
                 say "*** error: $e"
 
-      Support for stack overflow detection is currently only available in the jvm backend.
+      Support for stack overflow detection is currently only available in the
+      jvm backend.
 
     - `bool` now implements `hashable`
       ([6441](https://github.com/tokiwa-software/fuzion/pull/6441))
@@ -663,7 +681,8 @@
     - add `switch.fold`
       ([5999](https://github.com/tokiwa-software/fuzion/pull/5999))
 
-    - update to Unicode 17 ([5992](https://github.com/tokiwa-software/fuzion/pull/5992))
+    - update to Unicode 17
+      ([5992](https://github.com/tokiwa-software/fuzion/pull/5992))
 
     - Base time add histogram
       ([5627](https://github.com/tokiwa-software/fuzion/pull/5627),
@@ -697,7 +716,8 @@
       [5650](https://github.com/tokiwa-software/fuzion/issues/5650)
       ([5802](https://github.com/tokiwa-software/fuzion/pull/5802))
 
-    - fix visibility and add comments to `state.fz` ([5638](https://github.com/tokiwa-software/fuzion/pull/5638))
+    - fix visibility and add comments to `state.fz`
+      ([5638](https://github.com/tokiwa-software/fuzion/pull/5638))
 
     - add `codepoint.is_ascii_alpha_num`
       ([5727](https://github.com/tokiwa-software/fuzion/pull/5727))
@@ -1341,7 +1361,7 @@
 
         x(f F : i32->i32)
         =>
-          say F.name}
+          say F.name
 
         x i->i+1
         x i->123+2*i"
@@ -2264,9 +2284,6 @@
 
 - Tools
 
-  - Makefile: use shell&#39;s realpath instead of the make one
-    ([6967](https://github.com/tokiwa-software/fuzion/pull/6967))
-
   - util/Terminal: add environment variable to force ANSI output
     ([6747](https://github.com/tokiwa-software/fuzion/pull/6747))
 
@@ -2584,6 +2601,9 @@
     ([5732](https://github.com/tokiwa-software/fuzion/pull/5732))
 
 - Build Infrastructure
+
+  - Makefile: use shell&#39;s realpath instead of the make one
+    ([6967](https://github.com/tokiwa-software/fuzion/pull/6967))
 
   - add makefile target `rerecord_expected_err`
     ([6805](https://github.com/tokiwa-software/fuzion/pull/6805))
