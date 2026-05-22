@@ -1,3 +1,10 @@
+## 2026-05-22: V0.096
+
+- Build Infrastructure
+
+  - try fix github release action, set immutableCreate to true
+    ([7119](https://github.com/tokiwa-software/fuzion/pull/7119))
+
 ## 2026-05-22: V0.095
 
 - Fuzion language
