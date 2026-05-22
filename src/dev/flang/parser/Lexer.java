@@ -3446,9 +3446,11 @@ PIPE        : "|"
               return Token.t_undefined;
             case K_RBRACE:
               _braceCount--;
-              if (_stringLexer._braceCount > 0)
+              if (_stringLexer._braceCount > -1)
                 {
-                  return Token.t_rbrace;
+                  // we (stringlexer) took note of the bracecount,
+                  // let normal lexer continue.
+                  return Token.t_undefined;
                 }
               _beginning = StringEnd.BRACE;
               break;
