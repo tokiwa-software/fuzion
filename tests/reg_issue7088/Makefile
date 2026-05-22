@@ -21,5 +21,5 @@
 #
 # -----------------------------------------------------------------------
 
-override NAME = reg_issue6263
-include ../compile.mk
+override NAME = reg_issue7088
+include ../simple.mk

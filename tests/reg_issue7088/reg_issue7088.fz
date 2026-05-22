@@ -17,9 +17,17 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test Makefile
+#  Source code of Fuzion test reg_issue7088
 #
 # -----------------------------------------------------------------------
 
-override NAME = reg_issue6263
-include ../compile.mk
+part1 =>
+  lm : mutate is
+  lm.instate_self i32 ()->
+
+    for x in [0,1,2] do
+      for i in 0..3 do unit
+    else
+      0
+
+say part1

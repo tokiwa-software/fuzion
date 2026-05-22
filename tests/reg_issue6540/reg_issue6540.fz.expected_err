@@ -1,14 +1,12 @@
 
 --CURDIR--/reg_issue6540.fz:24:11: error 1: Incompatible types in assignment
 x bool => do until true
-----------^^^^^^^^^^^^^
-assignment to field : 'x.loop.result'
+----------^
+assignment to field : 'x.result'
 expected formal type: 'bool'
 actual type found   : 'unit'
 assignable to       : 'unit'
-for value assigned  : 
-do until true
-
-To solve this, you could change the type of the target 'x.loop.result' to 'unit' or convert the type of the assigned value to 'bool'.
+for value assigned  : ''
+To solve this, you could change the type of the target 'x.result' to 'unit' or convert the type of the assigned value to 'bool'.
 
 one error.
