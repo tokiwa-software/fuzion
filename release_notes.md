@@ -31,12 +31,10 @@
     changes in the base lib that avoids redundant type parameters.  In
     particular, this results in the possibility to write
 
-
             lm.array u8 .empty
 
     when creating a mutable array for a local mutate type `lm`.  Originally,
     this required a redundant `lm` argument as follows
-
 
             lm.array u8 .empty lm
 
@@ -45,7 +43,6 @@
 
     The following code is forbidden now since the infix operator is `unbalanced`
     and could be confused with a prefix or postfix operator:
-
 
         c := (a) +b    # *** causes error!
         d := a+ b      # *** causes error!
