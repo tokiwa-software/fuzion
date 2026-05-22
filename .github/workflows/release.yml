@@ -66,4 +66,5 @@ jobs:
         tag: "v${{ steps.getversion.outputs.version }}"
         prerelease: false
         generateReleaseNotes: false
+        immutableCreate: true
         token: ${{ secrets.GITHUB_TOKEN }}
