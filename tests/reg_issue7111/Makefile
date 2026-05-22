@@ -17,20 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test reg_issue4348
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-public Sequence.sort2 container.sorted_array T
-pre
-  T : property.orderable
-post
-  zip (drop 1) (<=) |> .reduce true (&&)
-=>
-  res := sort_by id
-  say ((T : property.orderable): res.zip res.(drop 1)  (<=) |> .reduce true (&&))
-  say ((T : property.orderable): res.zip res.(drop 1)  (a,b -> { say "$a $b {a <= b}"; a<=b }) |> .reduce true (&&))
-  res
-
-
-say [0,8,15,32,16,8].sort2
+override NAME = reg_issue7111
+include ../simple.mk
