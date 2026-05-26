@@ -105,13 +105,12 @@ jitter =>
       # time for next release used by state effect
       next_release(t time.instant) is
 
-      state (next_release start) ! ()->
+      # NYI: BUG: #5634: use `infix !` in this example once #5634 is fixed
+      state _ _ (next_release start) ()->
 
         # record jitter using linear and log histograms
         h  := time.histogram.new "period jitter $period, log count / linear time" period period*2 1 0
         h2 := time.histogram.new "cycle jitter $period, log count / log time"     nil    nil      1 0
-        # allow small timing tolerance to avoid spurious exceptions
-        tolerance := time.duration.ms 1
 
         # run test
         _ := C.env.run_periodic start period end run_one_release
@@ -134,33 +133,21 @@ jitter =>
           h2.add_instant actual_release
           expected_rel := state_get next_release .t
           next_rel     := state_modify next_release (x -> next_release x.t+period) .get.t
-          # allow a release that occurs within `tolerance` of the next release instant
-          if actual_release > next_rel + tolerance
-            say "warning: release time jitter exceeded period"
+          if actual_release >= next_rel
+            (exception jitter_too_high).env.cause <| error "release time jitter exceeded period"
 
           payload
           actual_finish := TIMER.env.read
-          # allow finishing within `tolerance` of the next release instant
-          if actual_finish > next_rel + tolerance
-            say "warning: overrun: run started at {actual_release-expected_rel} and took {actual_finish-actual_release}, which is larger than period $period"
+          if actual_finish >= next_rel
+            e := error "*** overrun: run started at {actual_release-expected_rel}  and took {actual_finish-actual_release}, which is larger than period $period"
+            (exception jitter_too_high).env.cause e
 
     match exception jitter_too_high .on ()->
 
-          p1 := period_default
-          p2 := p1.times 0.5
-          p3 := p2.times 0.5
-          p4 := p3.times 0.5
-          p5 := p4.times 0.5
-          p6 := p5.times 0.5
-
-          run_for_period p1
-          run_for_period p2
-          run_for_period p3
-          run_for_period p4
-          run_for_period p5
-          run_for_period p6
+         for p := period_default, p.times 0.5 do
+           run_for_period p
 
       e error => say $e
-      unit    => # will not happen
+      void    => # will not happen
 
   test_jitter time.nano time.nano
