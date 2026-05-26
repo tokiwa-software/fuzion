@@ -106,7 +106,7 @@ jitter =>
       next_release(t time.instant) is
 
       # NYI: BUG: #5634: use `infix !` in this example once #5634 is fixed
-      state _ _ (next_release start) ()->
+      state (next_release start) ! ()->
 
         # record jitter using linear and log histograms
         h  := time.histogram.new "period jitter $period, log count / linear time" period period*2 1 0

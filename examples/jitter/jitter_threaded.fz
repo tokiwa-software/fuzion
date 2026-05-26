@@ -112,7 +112,7 @@ jitter_threaded =>
         # time for next release used by state effect
         next_release(t time.instant) is
 
-        state _ _ (next_release start) ()->
+        state (next_release start) ! ()->
 
           # run test; run_one_release will append to the sample lists
           _ := C.env.run_periodic start period end run_one_release
