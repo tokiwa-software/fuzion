@@ -156,8 +156,8 @@ jitter_threaded =>
            for p := period_default, p.times 0.5 do
              run_for_period p
 
-        _ error => state_get results_acc .results.reverse_list
-        void    => state_get results_acc .results.reverse_list
+        _ error => unit
+        void    => unit
 
       state_get results_acc .results.reverse_list
 
