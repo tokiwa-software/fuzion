@@ -81,9 +81,13 @@ jitter_threaded =>
               TIMER type : time.Clock)
   =>
 
-    mutate ! ()->
+    results_acc(results list (tuple time.duration (list time.duration) (list time.duration))) is
 
-      results := mutate.env.new (list (tuple time.duration (list time.duration) (list time.duration))) nil
+    sample_acc(period_samples list time.duration,
+               cycle_samples list time.duration,
+               previous_release option time.instant) is
+
+    state (results_acc nil) ! ()->
 
       # type used to identify exception to stop in case jitter is too high
       jitter_too_high is
@@ -105,59 +109,57 @@ jitter_threaded =>
         start := C.env.read + start_delay
         end := start + test_duration
 
-        period_samples := mutate.env.new (list time.duration) nil
-        cycle_samples := mutate.env.new (list time.duration) nil
-        previous_release := mutate.env.new (option time.instant) nil
+        state (sample_acc nil nil nil) ! ()->
 
-        # time for next release used by state effect
-        next_release(t time.instant) is
+          # time for next release used by state effect
+          next_release(t time.instant) is
 
-        state (next_release start) ! ()->
+          _ := state (next_release start) ! ()->
 
-          # run test; run_one_release will append to the sample lists
-          _ := C.env.run_periodic start period end run_one_release
+            # run test; run_one_release will append to the sample lists
+            _ := C.env.run_periodic start period end run_one_release
 
-          # return raw samples to the caller; histogram creation is done by the main thread
-          sample_data := (period, period_samples.get.reverse_list, cycle_samples.get.reverse_list)
-          old_results := results.get
-          results <- (sample_data : old_results)
+            # return raw samples to the caller; histogram creation is done by the main thread
+            sample_data := (period, state_get sample_acc .period_samples.reverse_list, state_get sample_acc .cycle_samples.reverse_list)
+            _ := state_modify results_acc (x -> results_acc (sample_data : x.results))
 
-        # run one single release: record the actual release and run the payload
-        # in case of a late release or an overrun into the next release time, cause `exception jitter_too_high`
-        run_one_release ! exception jitter_too_high =>
-          actual_release := TIMER.env.read
-          expected_rel := state_get next_release .t
-          period_delta := (actual_release >= expected_rel ? actual_release - expected_rel
-                                                          : expected_rel - actual_release)
-          old_period_samples := period_samples.get
-          period_samples <- (period_delta : old_period_samples)
+          # run one single release: record the actual release and run the payload
+          # in case of a late release or an overrun into the next release time, cause `exception jitter_too_high`
+          run_one_release ! exception jitter_too_high =>
+            actual_release := TIMER.env.read
+            expected_rel := state_get next_release .t
+            period_delta := (actual_release >= expected_rel ? actual_release - expected_rel
+                                                            : expected_rel - actual_release)
+            current_samples := state_get sample_acc
+            _ := state_modify sample_acc (x -> sample_acc (period_delta : x.period_samples) x.cycle_samples x.previous_release)
 
-          match previous_release.get
-            prev time.instant =>
-              old_cycle_samples := cycle_samples.get
-              cycle_delta := actual_release >= prev ? actual_release - prev
-                                                    : prev - actual_release
-              cycle_samples <- (cycle_delta : old_cycle_samples)
-            nil => unit
+            match current_samples.previous_release
+              prev time.instant =>
+                cycle_delta := actual_release >= prev ? actual_release - prev
+                                                      : prev - actual_release
+                _ := state_modify sample_acc (x -> sample_acc x.period_samples (cycle_delta : x.cycle_samples) x.previous_release)
+              nil => unit
 
-          previous_release <- actual_release
-          next_rel     := state_modify next_release (x -> next_release x.t+period) .get.t
-          if actual_release >= next_rel
-            (exception jitter_too_high).env.cause <| error "release time jitter exceeded period"
+            _ := state_modify sample_acc (x -> sample_acc x.period_samples x.cycle_samples (option actual_release))
+            next_rel     := state_modify next_release (x -> next_release x.t+period) .get.t
+            if actual_release >= next_rel
+              (exception jitter_too_high).env.cause <| error "release time jitter exceeded period"
 
-          payload
-          actual_finish := TIMER.env.read
-          if actual_finish >= next_rel
-            err := error "*** overrun: run started at {actual_release-expected_rel}  and took {actual_finish-actual_release}, which is larger than period $period"
-            (exception jitter_too_high).env.cause err
+            payload
+            actual_finish := TIMER.env.read
+            if actual_finish >= next_rel
+              err := error "*** overrun: run started at {actual_release-expected_rel}  and took {actual_finish-actual_release}, which is larger than period $period"
+              (exception jitter_too_high).env.cause err
 
-      match exception jitter_too_high .on ()->
+      _ := match exception jitter_too_high .on ()->
 
            for p := period_default, p.times 0.5 do
              run_for_period p
 
-        _ error => results.get.reverse_list
-        void    => results.get.reverse_list
+        _ error => state_get results_acc .results.reverse_list
+        void    => state_get results_acc .results.reverse_list
+
+      state_get results_acc .results.reverse_list
 
   say "Starting jitter test on dedicated thread..."
   result_ch := concur.Channel (list (tuple time.duration (list time.duration) (list time.duration)))
