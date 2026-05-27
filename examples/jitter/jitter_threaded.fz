@@ -73,21 +73,21 @@ jitter_threaded =>
 
 
   # run jitter test using C.clock.run_periodic
-  # the worker returns raw sample lists; the caller builds histograms
+  # the worker streams raw sample tuples to `sample_ch`; the caller builds histograms
   test_jitter(# the clock used to schedule the releases
               C type : time.Clock,
 
               # the clock used to measure the times
-              TIMER type : time.Clock)
-  =>
+              TIMER type : time.Clock,
 
-    results_acc(results list (tuple time.duration (list time.duration) (list time.duration))) is
+              sample_ch concur.Channel (tuple time.duration (list time.duration) (list time.duration)))
+  =>
 
     sample_acc(period_samples list time.duration,
                cycle_samples list time.duration,
                previous_release option time.instant) is
 
-    state (results_acc nil) ! ()->
+    state () ! ()->
 
       # type used to identify exception to stop in case jitter is too high
       jitter_too_high is
@@ -119,9 +119,9 @@ jitter_threaded =>
             # run test; run_one_release will append to the sample lists
             _ := C.env.run_periodic start period end run_one_release
 
-            # return raw samples to the caller; histogram creation is done by the main thread
+            # stream raw samples for one period to the caller; histogram creation is done by the main thread
             sample_data := (period, state_get sample_acc .period_samples.reverse_list, state_get sample_acc .cycle_samples.reverse_list)
-            _ := state_modify results_acc (x -> results_acc (sample_data : x.results))
+            check sample_ch <- sample_data
 
           # run one single release: record the actual release and run the payload
           # in case of a late release or an overrun into the next release time, cause `exception jitter_too_high`
@@ -159,12 +159,13 @@ jitter_threaded =>
         _ error => unit
         void    => unit
 
-      state_get results_acc .results.reverse_list
+      unit
 
   say "Starting jitter test on dedicated thread..."
-  result_ch := concur.Channel (list (tuple time.duration (list time.duration) (list time.duration)))
+  result_ch := concur.Channel (tuple time.duration (list time.duration) (list time.duration))
   thrd := concur.threads.env.spawn ()->
-    check result_ch <- (test_jitter time.nano time.nano)
+    test_jitter time.nano time.nano result_ch
+    result_ch.close
 
   # affinity: pin the worker thread to CPU 0 (best-effort)
   match thrd.set_affinity ([0.as_u64].as_array)
@@ -179,27 +180,33 @@ jitter_threaded =>
         say "Worker thread priority setup failed: $e"
         say "(Hint: run with sudo or use setcap cap_sys_nice=ep ./jitter)"
 
-  # wait for thread to send results
-  match result_ch.next
-    samples list =>
-      say "received samples"
-      for sample in samples do
-        period, period_samples, cycle_samples := sample
-        say "testing period $period for $test_duration..."
-        h  := time.histogram.new "period jitter $period, log count / linear time" period period*2 1 0
-        h2 := time.histogram.new "cycle jitter $period, log count / log time"     nil    nil      1 0
-        for ps in period_samples
-            cs in cycle_samples
-        do
-          h.add ps
-          h2.add cs
-        say "period jitter:"
-        say "$h"
-        say "cycle jitter:"
-        say "$h2"
-        if show_lin_csv then say "{h.csv}"
-        if show_log_csv then say "{h2.csv}"
-    nil => say "No result received from dedicated thread."
+  # collect streamed samples from worker thread
+  collect_results(received_ch concur.Channel (tuple time.duration (list time.duration) (list time.duration)),
+                  collected list (tuple time.duration (list time.duration) (list time.duration)))
+                  list (tuple time.duration (list time.duration) (list time.duration))
+  =>
+    match received_ch.next
+      sample tuple => collect_results received_ch (sample : collected)
+      nil => collected.reverse_list
+
+  received_samples := collect_results result_ch nil
+  say "received samples"
+  for sample in received_samples do
+    period, period_samples, cycle_samples := sample
+    say "testing period $period for $test_duration..."
+    h  := time.histogram.new "period jitter $period, log count / linear time" period period*2 1 0
+    h2 := time.histogram.new "cycle jitter $period, log count / log time"     nil    nil      1 0
+    for ps in period_samples
+        cs in cycle_samples
+    do
+      h.add ps
+      h2.add cs
+    say "period jitter:"
+    say "$h"
+    say "cycle jitter:"
+    say "$h2"
+    if show_lin_csv then say "{h.csv}"
+    if show_log_csv then say "{h2.csv}"
   say "Dedicated thread completed."
 
 # How to run with high priority :
