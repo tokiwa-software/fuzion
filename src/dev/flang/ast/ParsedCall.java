@@ -372,13 +372,13 @@ public class ParsedCall extends Call
   private boolean isValidOperatorInChainedBoolean()
   {
     return
-      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "<") ||
-      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + ">") ||
-      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "≤") ||
-      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "≥") ||
+      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "<" ) ||
+      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + ">" ) ||
+      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "≤" ) ||
+      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "≥" ) ||
       _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "<=") ||
       _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + ">=") ||
-      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "=") ||
+      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "=" ) ||
       _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "!=") ||
       // && is used to chain the calls together, needed for longer chains like `a < b < c < d`.
       _name.equals(FuzionConstants.INFIX_OPERATOR_PREFIX + "&&");

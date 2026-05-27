@@ -44,7 +44,7 @@ public byte_iec(
 
   # byte unit
   #
-  public type.b   units.byte_iec => units.byte_iec nil kib 1.as_u128            "B"   "byte"
+  public type.b   units.byte_iec => units.byte_iec nil kib 1.as_u128              "B"   "byte"
 
   # kibibyte unit
   #
