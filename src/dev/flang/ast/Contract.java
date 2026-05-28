@@ -153,7 +153,7 @@ public class Contract extends ANY
     _hasPostThen = hasThen;
     _declared_preconditions   = r1 == null || r1.isEmpty() ? NO_COND : r1;
     _declared_preconditions2  = r2 == null || r2.isEmpty() ? NO_COND : r2;
-    _declared_postconditions = e == null || e.isEmpty() ? NO_COND : e;
+    _declared_postconditions  = e == null  ||  e.isEmpty() ? NO_COND : e;
     _argsSupplier = args;
   }
 

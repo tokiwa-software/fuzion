@@ -2579,7 +2579,7 @@ public class AstErrors extends ANY
 
   public static void explicitTypeRequired(AbstractFeature f, AbstractType inf)
   {
-    String inferredMsg = (inf != null && inf != Types.t_ERROR && inf != Types.t_ERROR) ?
+    String inferredMsg = (inf != null && inf != Types.t_ERROR) ?
                            "\nInferred type is " + s(inf) : "\nNo type could be inferred";
 
     error(f.pos(),
