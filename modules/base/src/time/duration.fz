@@ -134,53 +134,100 @@ is
     nanos / other.nanos
 
 
-  # create a string representation of this duration. The string
-  # representation is not accurate, it consists of at least two
-  # and at most 4 decimal digits followed by a time unit string.
+  # Returns a compact string representation of this duration using
+  # a short unit name without padding.
+  #
+  # The unit is determined by `unit_for_as_string`, preferring the
+  # largest unit whose integer part still contains at least two digits.
+  #
+  # The representation is not exact. Fractional parts are omitted.
+  #
+  # Example:
+  #
+  #     say "'{time.duration.h 3 .as_string}'"
+  #     # Output: '180m'
   #
   public redef as_string String =>
     as_string unit_for_as_string false
 
 
-  # create a string representation of this duration. The string
-  # representation is not accurate, it consists of at least two
-  # and at most 4 decimal digits followed by a time unit string.
-  # Output is padded for nice alignment in e.g. a table.
+  # Returns a compact string representation of this duration using
+  # a short unit name with left-padded output for alignment.
+  #
+  # The unit is determined by `unit_for_as_string`, preferring the
+  # largest unit whose integer part still contains at least two digits.
+  #
+  # The representation is not exact. Fractional parts are omitted.
+  #
+  # Example:
+  #
+  #     say "'{time.duration.h 3 .as_string_pad}'"
+  #     # Output: ' 180m'
   #
   public as_string_pad String =>
     as_string unit_for_as_string true
 
 
-  # create a string representation of this duration. The string
-  # representation is not accurate, it consists of at least two
-  # and at most 4 decimal digits followed by a time unit string.
+  # Returns a string representation of this duration using
+  # a long unit name without padding.
+  #
+  # The unit is determined by `unit_for_as_string`, preferring the
+  # largest unit whose integer part still contains at least two digits.
+  #
+  # The representation is not exact. Fractional parts are omitted.
+  #
+  # Example:
+  #
+  #     say "'{time.duration.h 3 .as_string_long}'"
+  #     # Output: '180 min'
   #
   public as_string_long String =>
     as_string_long unit_for_as_string
 
 
-  # create a string representation of this duration using the given unit.
+  # Returns a string representation of this duration using
+  # the supplied unit and its short name without padding.
+  #
+  # The representation is not exact. Fractional parts are omitted.
+  #
+  # Example:
+  #
+  #     say "'{time.duration.h 3 .as_string time.time_unit.s}'"
+  #     # Output: '10800s'
   #
   public as_string(u time.time_unit) String =>
     as_string u false
 
-  # create a string representation of this duration using the given unit.
+  # Returns a string representation of this duration using
+  # the supplied unit and its short name.
+  #
+  # The representation is not exact. Fractional parts are omitted.
+  #
+  # When `pad` is true, the numeric value is left-padded to four digits.
   #
   as_string(u time.time_unit, pad bool) String =>
     n := $(nanos / u.in_ns)
     "{pad ? n.pad_left 4 : n}{u.short_name}"
 
 
-  # create a string representation of this duration using the given unit
-  # use the long version of the unit (e.g. 'hours' instead of 'h')
+  # Returns a string representation of this duration using
+  # the supplied unit and its long name without padding.
+  #
+  # The representation is not exact. Fractional parts are omitted.
+  #
+  # Example:
+  #
+  #     say "'{time.duration.h 3 .as_string_long time.time_unit.s}'"
+  #     # Output: '10800 sec'
   #
   public as_string_long(u time.time_unit) String =>
     "{nanos / u.in_ns} {u.name}"
 
 
-  # create a string representation of this duration. The string
-  # representation is not accurate, it consists of at least two
-  # and at most 4 decimal digits followed by a time unit string.
+  # Determines the unit for compact string representation.
+  #
+  # Prefers larger units, but keeps at least two integer digits so
+  # values such as "0h" or "2h" are avoided in favor of "59m" or "120m".
   #
   public unit_for_as_string time.time_unit =>
     for
