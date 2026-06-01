@@ -439,18 +439,28 @@ module:public Binary_Heap_Queue(
     container.Binary_Heap_Queue LM T lteq min_size nil
 
 
-  # Create an empty priority queue that determines return order
-  # by mapping elements to an orderable type using `by`
+  # Create an empty priority queue that returns the smallest element first,
+  # where elements are ordered by mapping them to an orderable type using `by`
+  #
+  # To reverse the sorting order and have the largest element
+  # returned first, `property.reverse_order` can be used.
   #
   public fixed redef type.empty_by(O type : property.orderable, by T->O) container.Binary_Heap_Queue LM T
   =>
     container.Binary_Heap_Queue LM T (a,b->(by a)<=(by b)) nil nil
 
 
-  # Create an empty priority queue that determines return order
-  # by mapping elements to an orderable type using `by`
+  # Create an empty priority queue that returns the smallest element first,
+  # where elements are ordered by mapping them to an orderable type using `by`
   #
-  public fixed type.empty_by(O type : property.orderable, by T->O, min_size i64) container.Binary_Heap_Queue LM T
+  # To reverse the sorting order and have the largest element
+  # returned first, `property.reverse_order` can be used.
+  #
+  public fixed type.empty_by(O type : property.orderable, by T->O,
+      # minimum size for the internal data structure
+      # staying within this limit, avoids amortized runtimes
+      min_size i64
+    ) container.Binary_Heap_Queue LM T
   =>
     container.Binary_Heap_Queue LM T (a,b->(by a)<=(by b)) min_size nil
 
@@ -469,8 +479,12 @@ module:public Binary_Heap_Queue(
     container.Binary_Heap_Queue LM T lteq nil initial_elements
 
 
-  # Create a priority queue from the given unordered elements that determines
-  # return order by mapping elements to an orderable type using `by`
+  # Create a priority queue from the given unordered elements that returns the
+  # smallest element first, where elements are ordered by mapping them to an
+  # orderable type using `by`
+  #
+  # To reverse the sorting order and have the largest element
+  # returned first, `property.reverse_order` can be used.
   #
   # Note: In the worst case this is more efficient than iterative `enqueue` or
   #       `enqueue_all`, running in O(n) time rather than O(n log n).

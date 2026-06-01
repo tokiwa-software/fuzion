@@ -152,7 +152,7 @@ priority_queue_test =>
        .map (.parse_i32.or_panic)
        .sum
 
-    digit_sum_comp(a,b i32) bool =>(digit_sum a) <= (digit_sum b)
+    digit_sum_comp(a,b i32) bool => (digit_sum a) <= (digit_sum b)
 
     q6 := container.Binary_Heap_Queue lm i32 .empty_by digit_sum
     _ := q6
