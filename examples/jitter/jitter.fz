@@ -156,7 +156,8 @@ jitter =>
 
   if run_on_dedicated_thread
     thrd := concur.threads.env.spawn ()->
-      test_jitter time.nano time.nano
+      time.histogram_mutate ! ()->
+        test_jitter time.nano time.nano
     match thrd.set_policy concur.scheduling_policy.sched_fifo false 99
       e error => panic "jitter thread priority: $e. Error 38 : backend does not implement thread policy \n Error 1 : insufficient privileges."
       unit    => unit

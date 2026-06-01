@@ -60,7 +60,7 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
       if res = -1
         # NYI: UNDER DEVELOPMENT: register failures
         _ := fzE_pipe_close desc
-        error "error ({fzE_last_error}) reading from {read_handler.this.name} of process {pid}."
+        error "error reading from {read_handler.this.name} of process {pid}." fzE_last_error
       else if res = 0
         # NYI: UNDER DEVELOPMENT: register failures
         _ := fzE_pipe_close desc
@@ -75,7 +75,7 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
   write_handler (name String, desc i64) : io.Write_Handler is
     public redef write (bytes Sequence u8) outcome unit =>
       if fzE_pipe_write desc bytes.as_array.internal_array.data bytes.count = -1
-        error "error ({fzE_last_error}) writing to {write_handler.this.name} of process {pid}. Tried writing {bytes.count} bytes."
+        error "error writing to {write_handler.this.name} of process {pid}. Tried writing {bytes.count} bytes." fzE_last_error
       else
         unit
 
@@ -98,7 +98,7 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
         arr := t.as_array
         bw := fzE_pipe_write desc arr.internal_array.data arr.count
         if bw = -1
-          abort (outcome i32) (error "error while writing. wrote $r bytes already.")
+          abort (outcome i32) (error "failed writing to stdin. wrote $r bytes already." fzE_last_error)
         else
           r+bw
 
@@ -158,7 +158,7 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
   #
   public close_in outcome unit =>
     if fzE_pipe_close std_in != 0
-      error "closing standard in was not successful, error code: $fzE_last_error"
+      error "closing standard in was not successful" fzE_last_error
 
 
   # wait for this process
@@ -178,7 +178,7 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
   # send signal to process
   #
   public send_signal(sig signal) outcome unit =>
-    fzE_send_signal pid sig.as_i32 = 0 ? unit : error "error sending signal to process $pid: $fzE_last_error"
+    fzE_send_signal pid sig.as_i32 = 0 ? unit : error "failed sending signal to process $pid" fzE_last_error
 
 
   # start a process with name, arguments and environment variables
