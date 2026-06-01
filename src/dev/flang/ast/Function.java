@@ -368,10 +368,10 @@ public class Function extends AbstractLambda
             var rt0 = t.lambdaTargetResultType(res);
             var rt = inferResultType ? NoType.INSTANCE      : new FunctionReturnType(rt0);
             var im = inferResultType ? Impl.Kind.RoutineDef : Impl.Kind.Routine;
-            var feature = new Feature(pos(), Visi.PRIV, FuzionConstants.MODIFIER_REDEFINE, rt, new List<String>(cl.baseName()), args, NO_CALLS, Contract.EMPTY_CONTRACT, new Impl(_expr.pos(), _expr, im))
+            var feature = new Feature(pos(), Visi.PUB, FuzionConstants.MODIFIER_REDEFINE, rt, new List<String>(cl.baseName()), args, NO_CALLS, Contract.EMPTY_CONTRACT, new Impl(_expr.pos(), _expr, im))
               {
                 @Override
-                public boolean isLambdaCall()  // NYI: what is this for?
+                public boolean isLambdaCall()
                 {
                   return true;
                 }

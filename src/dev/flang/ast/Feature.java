@@ -2177,7 +2177,8 @@ A pre-condition of a feature that does not redefine an inherited feature must st
       && (visibility().eraseTypeVisibility() == Visi.PUB
           || outer().visibility().eraseTypeVisibility() == Visi.PUB && isArgument())
       && !(featureName().toString().startsWith(FuzionConstants.COTYPE_THIS_TYPE))
-      && rt == NoType.INSTANCE;
+      && rt == NoType.INSTANCE
+      && !isLambdaCall();
   }
 
 
