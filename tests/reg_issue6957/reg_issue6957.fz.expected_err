@@ -1,5 +1,5 @@
 
-error 1: IMPLEMANTATION RESTRICTION: illegal inheritance and usage of fixed feature: 
+error 1: IMPLEMENTATION RESTRICTION: illegal inheritance and usage of fixed feature: 
 f.type.stat.type.default_value
 private type.f(private fixed THIS#TYPE Type (type parameter)) f.type : (io f.this.type).file f.this.type is
 public type.file(private fixed THIS#TYPE Type (type parameter)) io.type.file.type : Any io.file.this.type is

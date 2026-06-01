@@ -849,7 +849,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
 
   # Cuts out the first appearance of the string sep from this string, in other words,
   # returns a tuple of two strings and a bool, the first string is the substring before
-  # the first appreance of sep, the second string is the substring after the first
+  # the first appearance of sep, the second string is the substring after the first
   # appearance of sep. The bool result is true iff sep appears in this string.
   #
   # If sep does not appear in this string at all, return this string as the first string,

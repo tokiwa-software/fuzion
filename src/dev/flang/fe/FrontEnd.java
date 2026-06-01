@@ -389,7 +389,7 @@ public class FrontEnd extends ANY
         if (_options.serializeFuir())
           {
             // We need this for source positions in fuir
-            _sourceModule.writeToFile(Path.of(Long.toString(_options.serializationHash()) + ".fum"));
+            _sourceModule.writeToFile(Path.of(Long.toString(_options.serializationHash()) + FuzionConstants.MODULE_FILE_SUFFIX));
           }
         reset();
         _mainModule = libModule(data, null /* use universe of module */);

@@ -3456,7 +3456,9 @@ PIPE        : "|"
               _parensCount--;
               if (_stringLexer._parensCount > -1)
                 {
-                  return Token.t_rparen;
+                  // we (stringlexer) took note of the bracecount,
+                  // let normal lexer continue.
+                  return Token.t_undefined;
                 }
               _beginning = StringEnd.PAREN;
               break;

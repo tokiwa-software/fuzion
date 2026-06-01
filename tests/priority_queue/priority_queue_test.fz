@@ -40,7 +40,7 @@ priority_queue_test =>
     # Add and remove an element.
     #
     say "Basic functionality:"
-    q1 := container.Binary_Heap_Queue lm codepoint .empty_min_first
+    q1 := container.Binary_Heap_Queue lm codepoint .empty
     expect q1.is_empty true
     expect q1.count 0
     q1.enqueue "F"
@@ -58,7 +58,7 @@ priority_queue_test =>
     # structure and the order of the elements when removing them
     #
     say "\nOrder of priorities:"
-    q2 := container.Binary_Heap_Queue lm f64 .max_first_from []
+    q2 := container.Binary_Heap_Queue lm f64 .from_by [] property.reverse_order
     say "is_empty is '$(q2.is_empty)', expected 'true'"
     q2.enqueue 0.3
     q2.enqueue_all [0.1, -0.9, 5E7, 13.7]
@@ -89,7 +89,7 @@ priority_queue_test =>
     # Check the output of the internal tree structure.
     #
     say "\nEdge cases:"
-    q3 := container.Binary_Heap_Queue lm String .empty_max_first
+    q3 := container.Binary_Heap_Queue lm String .empty_by property.reverse_order
     say "peek is '$(q3.peek)', expected 'nil'"
     say "dequeue is '$(q3.dequeue)', expected 'nil'"
     say "count is '$(q3.count)', expected '0'"
@@ -113,7 +113,7 @@ priority_queue_test =>
     # This also checks the correct alignment in the output of the tree.
     #
     say "\nHeap property min-heap:"
-    q4 := container.Binary_Heap_Queue lm i32 .empty_min_first
+    q4 := container.Binary_Heap_Queue lm i32 .empty
 
     for i in (1..10).reverse ++ [i32.min, i32.max]
     do
@@ -131,7 +131,7 @@ priority_queue_test =>
     # Output the tree structure of the binary heap to check the heap property.
     #
     say "\nHeap property max-heap:"
-    q5 := container.Binary_Heap_Queue lm i32 .empty_max_first
+    q5 := container.Binary_Heap_Queue lm i32 .empty_by property.reverse_order
 
     for i in (-5..6)
     do
@@ -152,9 +152,9 @@ priority_queue_test =>
        .map (.parse_i32.or_panic)
        .sum
 
-    digit_sum_comp(a,b i32) bool =>(digit_sum a) <= (digit_sum b)
+    digit_sum_comp(a,b i32) bool => (digit_sum a) <= (digit_sum b)
 
-    q6 := container.Binary_Heap_Queue lm i32 .empty_comp (id ((i32, i32)->bool) (a, b)->((digit_sum a) <= (digit_sum b)))
+    q6 := container.Binary_Heap_Queue lm i32 .empty_by digit_sum
     _ := q6
     simple_random 42 ()->
       for i in 0..9
@@ -182,8 +182,8 @@ priority_queue_test =>
 
       elements := array random_test_size _->random.env.next_i32
 
-      pq_make := container.Binary_Heap_Queue m i32 .min_first_from elements
-      pq_add  := container.Binary_Heap_Queue m i32 .empty_min_first
+      pq_make := container.Binary_Heap_Queue m i32 .from elements
+      pq_add  := container.Binary_Heap_Queue m i32 .empty
 
       for e in elements do
         pq_add.enqueue e
@@ -225,7 +225,7 @@ priority_queue_test =>
     simple_random 273661186099400849 ()->
       m : mutate is
       m ! ()->
-        q := container.Binary_Heap_Queue m i32 .empty_min_first
+        q := container.Binary_Heap_Queue m i32 .empty
 
         for sort list i32 := nil, new_sort
             i in 1..test_size

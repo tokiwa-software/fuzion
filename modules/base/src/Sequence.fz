@@ -727,9 +727,10 @@ is
     take at ++ [v] ++ drop at
 
 
-  # sort this Sequence using the order defined by less_than_or_equal
+  # sort this Sequence using `by` to map elements to an orderable type.
   #
-  public sort_by(less_than_or_equal (T, T) -> bool) container.sorted_array T => container.sorted_array Sequence.this less_than_or_equal
+  public sort_by(O type : property.orderable, by T->O) container.sorted_array T =>
+    container.sorted_array Sequence.this ((a,b)->(by a) <= (by b))
 
 
   # create a new Sequence from the result of applying 'f' to the

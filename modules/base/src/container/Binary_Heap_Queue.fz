@@ -47,6 +47,9 @@ module:public Binary_Heap_Queue(
   #
   less_than_or_equal Binary bool T T,
 
+  # minimum size for the internal data structure
+  # staying within this limit, avoids amortized runtimes
+  #
   min_size option i64,
 
   # unordered elements to construct the queue from
@@ -417,7 +420,7 @@ module:public Binary_Heap_Queue(
   # Create a new priority queue that returns the smallest element first
   # using natural ordering of the elements
   #
-  public fixed redef type.empty_min_first container.Binary_Heap_Queue LM T
+  public fixed redef type.empty container.Binary_Heap_Queue LM T
     pre else T : property.orderable
   =>
     container.Binary_Heap_Queue LM T lteq nil nil
@@ -426,10 +429,40 @@ module:public Binary_Heap_Queue(
   # Create a new priority queue that returns the smallest element first
   # using natural ordering of the elements
   #
-  public fixed type.empty_min_first(min_size i64) container.Binary_Heap_Queue LM T
+  public fixed type.empty(
+      # minimum size for the internal data structure
+      # staying within this limit, avoids amortized runtimes
+      min_size i64
+    ) container.Binary_Heap_Queue LM T
     pre T : property.orderable
   =>
     container.Binary_Heap_Queue LM T lteq min_size nil
+
+
+  # Create an empty priority queue that returns the smallest element first,
+  # where elements are ordered by mapping them to an orderable type using `by`
+  #
+  # To reverse the sorting order and have the largest element
+  # returned first, `property.reverse_order` can be used.
+  #
+  public fixed redef type.empty_by(O type : property.orderable, by T->O) container.Binary_Heap_Queue LM T
+  =>
+    container.Binary_Heap_Queue LM T (a,b->(by a)<=(by b)) nil nil
+
+
+  # Create an empty priority queue that returns the smallest element first,
+  # where elements are ordered by mapping them to an orderable type using `by`
+  #
+  # To reverse the sorting order and have the largest element
+  # returned first, `property.reverse_order` can be used.
+  #
+  public fixed type.empty_by(O type : property.orderable, by T->O,
+      # minimum size for the internal data structure
+      # staying within this limit, avoids amortized runtimes
+      min_size i64
+    ) container.Binary_Heap_Queue LM T
+  =>
+    container.Binary_Heap_Queue LM T (a,b->(by a)<=(by b)) min_size nil
 
 
   # Create a priority queue from the given elements
@@ -440,69 +473,27 @@ module:public Binary_Heap_Queue(
   #       But the actual runtime depends on the order of the elements,
   #       for (almost) ordered elements iterative inserts will be faster.
   #
-  public fixed redef type.min_first_from(initial_elements Sequence T) container.Binary_Heap_Queue LM T
+  public fixed redef type.from(initial_elements Sequence T) container.Binary_Heap_Queue LM T
     pre else T : property.orderable
   =>
     container.Binary_Heap_Queue LM T lteq nil initial_elements
 
 
-  # Create a new priority queue that returns the largest element first
-  # using natural ordering of the elements
+  # Create a priority queue from the given unordered elements that returns the
+  # smallest element first, where elements are ordered by mapping them to an
+  # orderable type using `by`
   #
-  public fixed redef type.empty_max_first container.Binary_Heap_Queue LM T
-    pre else T : property.orderable
-  =>
-    container.Binary_Heap_Queue LM T (>=) nil nil
-
-
-  # Create a new priority queue that returns the largest element first
-  # using natural ordering of the elements
-  #
-  public fixed type.empty_max_first(min_size i64) container.Binary_Heap_Queue LM T
-    pre T : property.orderable
-  =>
-    container.Binary_Heap_Queue LM T (>=) min_size nil
-
-
-  # Create a priority queue from the given elements
-  # which returns largest element first using natural ordering of the elements
+  # To reverse the sorting order and have the largest element
+  # returned first, `property.reverse_order` can be used.
   #
   # Note: In the worst case this is more efficient than iterative `enqueue` or
   #       `enqueue_all`, running in O(n) time rather than O(n log n).
   #       But the actual runtime depends on the order of the elements,
   #       for (almost) ordered elements iterative inserts will be faster.
   #
-  public fixed redef type.max_first_from(initial_elements Sequence T) container.Binary_Heap_Queue LM T
-    pre else T : property.orderable
+  public fixed redef type.from_by(O type : property.orderable,
+                                  initial_elements Sequence T,
+                                  by T->O
+                                 ) container.Binary_Heap_Queue LM T
   =>
-    container.Binary_Heap_Queue LM T (>=) nil initial_elements
-
-
-  # Create a new priority queue that returns the elements in the
-  # order defined by the the supplied comparator `less_than_or_equal`
-  #
-  public fixed redef type.empty_comp(less_than_or_equal (T1, T1)->bool) container.Binary_Heap_Queue LM T1
-  =>
-    container.Binary_Heap_Queue LM T1 less_than_or_equal nil nil
-
-
-  # Create a new priority queue that returns the elements in the
-  # order defined by the the supplied comparator `less_than_or_equal`
-  #
-  public fixed type.empty_comp_min_size(less_than_or_equal (T1, T1)->bool, min_size i64) container.Binary_Heap_Queue LM T1
-  =>
-    container.Binary_Heap_Queue LM T1 less_than_or_equal min_size nil
-
-
-  # Create a priority queue from the given elements that returns the elements
-  # in the order defined by the the supplied comparator `less_than_or_equal`
-  #
-  # Note: In the worst case this is more efficient than iterative `enqueue` or
-  #       `enqueue_all`, running in O(n) time rather than O(n log n).
-  #       But the actual runtime depends on the order of the elements,
-  #       for (almost) ordered elements iterative inserts will be faster.
-  #
-  public fixed redef type.comp_from(less_than_or_equal (T1, T1)->bool,
-                                    initial_elements Sequence T1) container.Binary_Heap_Queue LM T1
-  =>
-    container.Binary_Heap_Queue LM T1 less_than_or_equal nil (option initial_elements)
+    container.Binary_Heap_Queue LM T (a,b->(by a)<=(by b)) nil (option initial_elements)

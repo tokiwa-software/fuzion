@@ -17,41 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-ex_circular_buffer =>
-  m : mutate is
-
-  m ! ()->
-    b := (m.Circular_Buffer codepoint).new 7 "0"
-    say <| b.put "1"
-    say <| b.enqueue ["2", "3"]
-    say <| b.enqueue ["4", "5", "6", "7"]
-    say <| b.enqueue ["8", "9"]
-    say <| b.get
-    say <| b.get
-    say <| b.enqueue ["A", "B", "C"]
-    say <| b.get
-    say <| b.enqueue ["D", "E", "F"]
-    say <| b.get
-    say <| b.get
-    say <| b.get
-    say <| b.get
-    say <| b.get
-    say <| b.get
-    say <| b.get
-    say <| b.get
-    say <| b.get
-    say <| b.enqueue ["2", "3"]
-    say <| b.enqueue ["4", "5", "6", "7"]
-    say <| b.put "1"
-    say <| b.put "B"
-    say b
-    say <| b.get
-    say <| b.flush 2
-    # say <| b.flush 400
-    say b
-    say <| b.flush 4
-    say b
+override NAME = reg_issue7111
+include ../simple.mk

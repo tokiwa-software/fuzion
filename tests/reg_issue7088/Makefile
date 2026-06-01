@@ -17,16 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test reg_issue4143
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-reg_issue4143 =>
-
-  a : mutate is
-
-    _ := instate_self (() -> (a.this.array u8).new 42 0)
-
-  c : a is
-
-  say c
+override NAME = reg_issue7088
+include ../simple.mk

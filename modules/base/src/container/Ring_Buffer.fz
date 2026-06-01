@@ -36,7 +36,7 @@ public Ring_Buffer(
   #
   # If this ring buffer is to be used to communicate between threads,
   # this mutate effect must be a multi-thread implementation of mutate like
-  # `concur.blocking_mutate`.  An instance of this mustate effect must be
+  # `concur.blocking_mutate`.  An instance of this mutate effect must be
   # instated by when this Ring_Buffer is constructed and when it is accessed.
   #
   M type : mutate,
@@ -187,3 +187,9 @@ is
   =>
     M.env.exclusive ()->
       used
+
+
+  # amount of elements free for adding
+  #
+  public unused i64 =>
+    size - count
