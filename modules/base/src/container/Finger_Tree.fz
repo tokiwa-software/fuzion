@@ -63,9 +63,12 @@ private:public Finger_Tree(T type) ref : container.abstract_array T is
   # concat s to the Finger_Tree
   #
   public redef concat (s Sequence T) Sequence T =>
-    match s.as_finger_tree
-      nil => append s.as_array_backed
-      ft Finger_Tree => merge ft
+    if s.finite.is_no
+      as_list.concat_list s.as_list
+    else
+      match s.as_finger_tree
+        nil => append s.as_array_backed
+        ft Finger_Tree => merge ft
 
 
   # collect the contents of this Sequence into an array
