@@ -370,6 +370,13 @@ public class Function extends AbstractLambda
             var im = inferResultType ? Impl.Kind.RoutineDef : Impl.Kind.Routine;
             var feature = new Feature(pos(), Visi.PUB, FuzionConstants.MODIFIER_REDEFINE, rt, new List<String>(cl.baseName()), args, NO_CALLS, Contract.EMPTY_CONTRACT, new Impl(_expr.pos(), _expr, im))
               {
+                /**
+                 * Is this the {@code call} implementation of a lambda?
+                 *
+                 * This is used to allow an implicit result type even though
+                 * {@code call} is marked as public and to suppress some redundant errors.
+                 *
+                 */
                 @Override
                 public boolean isLambdaCall()
                 {
