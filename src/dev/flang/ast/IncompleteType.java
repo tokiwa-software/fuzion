@@ -27,6 +27,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import java.util.function.Predicate;
+
 import dev.flang.util.Errors;
 import dev.flang.util.List;
 
@@ -47,4 +49,13 @@ public class IncompleteType extends ResolvedType {
   @Override public AbstractType outer() { if (CHECKS) check(Errors.any()); return null; }
   @Override public TypeKind kind() { return _typeKind; }
   @Override protected String outerToString(boolean humanReadable) { return ""; }
+
+  /**
+   * Check if for this, outers or any generics predicate p results in true.
+   */
+  @Override public boolean contains(Predicate<AbstractType> p)
+  {
+    return p.test(this) ||
+      isNormalType() && generics().stream().anyMatch(g -> g.contains(p));
+  }
 }
