@@ -2767,7 +2767,7 @@ loopEpilog  : "until" exprInLine thenPart elseBlockOpt
                 syntaxError(tokenPos(), "loopBody or loopEpilog: 'while', 'do', 'until' or 'else'", "loop");
               }
           }
-        return new Loop(pos, indexVars, nextValues, v, i, w, b, u, ub, ePos, els, els1, els2).tailRecursiveLoop();
+        return new Loop(sourceRange(pos), indexVars, nextValues, v, i, w, b, u, ub, ePos, els, els1, els2).tailRecursiveLoop();
       });
   }
 
