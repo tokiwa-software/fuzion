@@ -1,0 +1,12 @@
+
+--CURDIR--/reg_issue6921.fz:27:42: error 1: Incompatible types in assignment
+  public transpose a T => (a T).new _ i->b
+-----------------------------------------^
+assignment to field : 'a.transpose.(λi->b).call.result'
+expected formal type: 'a.type.T'
+actual type found   : 'T'
+assignable to       : 'T'
+for value assigned  : 'b'
+To solve this, you could change the type of the target 'a.transpose.(λi->b).call.result' to 'T' or convert the type of the assigned value to 'a.type.T'.
+
+one error.
