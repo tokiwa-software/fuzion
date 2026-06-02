@@ -57,7 +57,7 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
     if      desc = std_in  then "stdin"
     else if desc = std_out then "stdout"
     else if desc = std_err then "stderr"
-    else "file_desc#$desc"
+    else "file_descriptor#$desc"
 
 
   # read bytes from standard out
