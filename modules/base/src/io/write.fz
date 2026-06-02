@@ -21,9 +21,9 @@
 #
 # -----------------------------------------------------------------------
 
-# write what to where
+# write data to dest
 #
 #  NYI: where path should eventually be choice of path, network connection etc.
 #
-public write(where path , what Any) outcome unit =>
-  io.file.write where what
+public write(dest path, data Any) outcome unit =>
+  io.file.write dest data
