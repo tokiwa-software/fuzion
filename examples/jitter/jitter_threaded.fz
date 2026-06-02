@@ -82,7 +82,7 @@ jitter_threaded =>
               # the clock used to measure the times
               TIMER type : time.Clock,
 
-              sample_ch concur.Channel (tuple time.duration time.instant time.instant bool))
+              sample_ch concur.Channel (tuple time.duration time.instant i32))
   =>
 
       # type used to identify exception to stop in case jitter is too high
@@ -98,57 +98,52 @@ jitter_threaded =>
           if s = s +° 1   # make sure the compiler does not optimize this aways
             say "$s (never called)"
 
+      # per-release callback will be defined inside run_for_period so it can
+      # reference the current `period` value.
+
       # perform jitter test for given period: collect raw samples
+      # Worker sends three kinds of messages to `sample_ch`:
+      #  kind=0 -> start marker (period, start_time, 0)
+      #  kind=1 -> actual release (period, actual_time, 1)
+      #  kind=2 -> end marker (period, end_time, 2)
       run_for_period(period time.duration)
       =>
 
         start := C.env.read + start_delay
         end := start + test_duration
 
-        # time for next release used by state effect
-        next_release(t time.instant) is
+        # send start marker to receiver
+        check sample_ch <- (period, start, 0)
 
-        _ := state (next_release start) ! ()->
+        # run test; run_one_release will send raw records for every release
+        # define per-release callback here so it can reference `period`
+        run_one_release ! exception jitter_too_high =>
+          actual_release := TIMER.env.read
+          check sample_ch <- (period, actual_release, 1)
+          payload
 
-          # run test; run_one_release will send raw records for every release
-          _ := C.env.run_periodic start period end run_one_release
+        _ := C.env.run_periodic start period end run_one_release
 
-          # indicate end-of-period to receiver (use current time as marker)
-          marker := TIMER.env.read
-          check sample_ch <- (period, marker, marker, true)
+        # indicate end-of-period to receiver (use current time as marker)
+        marker := TIMER.env.read
+        check sample_ch <- (period, marker, 2)
 
-          # run one single release: record the actual release and run the payload
-          # in case of a late release or an overrun into the next release time, cause `exception jitter_too_high`
-          run_one_release ! exception jitter_too_high =>
-            actual_release := TIMER.env.read
-            expected_rel := state_get next_release .t
-
-            # send raw record to main thread: worker no longer accumulates lists
-            check sample_ch <- (period, actual_release, expected_rel, false)
-
-            # advance expected release time
-            next_rel     := state_modify next_release (x -> next_release x.t+period) .get.t
-            if actual_release >= next_rel
-              (exception jitter_too_high).env.cause <| error "release time jitter exceeded period"
-
-            payload
-            actual_finish := TIMER.env.read
-            if actual_finish >= next_rel
-              err := error "*** overrun: run started at {actual_release-expected_rel}  and took {actual_finish-actual_release}, which is larger than period $period"
-              (exception jitter_too_high).env.cause err
+        # run_one_release is expected to be defined elsewhere in this feature
+        # and must send (period, actual_release, 1) for each release.
 
       _ := match exception jitter_too_high .on ()->
 
-           for p := period_default, p.times 0.5 do
-             run_for_period p
+         for p := period_default, p.times 0.5
+         while p.as_duration >= time.duration.ms 1 do
+           run_for_period p
 
         _ error => unit
-        void    => unit
+        unit    => unit
 
       unit
 
   say "Starting jitter test on dedicated thread..."
-  result_ch := concur.Channel (tuple time.duration time.instant time.instant bool)
+  result_ch := concur.Channel (tuple time.duration time.instant i32)
   thrd := concur.threads.env.spawn ()->
     test_jitter time.nano time.nano result_ch
     result_ch.close
@@ -167,9 +162,9 @@ jitter_threaded =>
         say "(Hint: run with sudo or use setcap cap_sys_nice=ep ./jitter)"
 
   # collect streamed raw records from worker thread
-  collect_results(received_ch concur.Channel (tuple time.duration time.instant time.instant bool),
-                  collected list (tuple time.duration time.instant time.instant bool))
-                  list (tuple time.duration time.instant time.instant bool)
+  collect_results(received_ch concur.Channel (tuple time.duration time.instant i32),
+                  collected list (tuple time.duration time.instant i32))
+                  list (tuple time.duration time.instant i32)
   =>
     match received_ch.next
       sample tuple => collect_results received_ch (sample : collected)
@@ -178,53 +173,48 @@ jitter_threaded =>
   # grouping accumulator type for folding raw records into per-period tuples
   grouping_acc(results list (tuple time.duration (list time.duration) (list time.duration)),
                 cur_period option time.duration,
+                start_time option time.instant,
                 per_acc list time.duration,
                 cyc_acc list time.duration,
-                prev_actual option time.instant) is
+                prev_actual option time.instant,
+                count i32) is
 
   raw_records := collect_results result_ch nil
 
-  # fold raw records into per-period tuples without using the state effect
-  g0 := grouping_acc (list (tuple time.duration (list time.duration) (list time.duration))).empty nil (list time.duration).empty (list time.duration).empty nil
+  # fold raw records into per-period tuples
+  g0 := grouping_acc (list (tuple time.duration (list time.duration) (list time.duration))).empty nil nil (list time.duration).empty (list time.duration).empty nil 0
 
-  g_final := raw_records.foldf g0 (g, rec ->
+  g_final := raw_records.foldf _ g0 (g, rec ->
     period := rec.0
-    actual := rec.1
-    expected := rec.2
-    done_flag := rec.3
-    period_delta := (actual >= expected ? actual - expected : expected - actual)
+    ts := rec.1
+    kind := rec.2
 
-    match g.cur_period
-      nil =>
-        per1 := (period_delta : (list time.duration).empty)
-        cyc1 := (list time.duration).empty
-        prev1 := option actual
-        if done_flag
-          res := (period, per1, cyc1)
-          grouping_acc (res : g.results) nil nil nil nil
-        else
-          grouping_acc g.results (option period) per1 cyc1 prev1
-      p time.duration =>
-        if p = period
-          per2 := (period_delta : g.per_acc)
-          cyc2 := match g.prev_actual
-                    nil => g.cyc_acc
-                    prev time.instant =>
-                      cyc_d := (actual >= prev ? actual - prev : prev - actual)
-                      (cyc_d : g.cyc_acc)
-          prev2 := option actual
-          if done_flag
-            res := (p, per2, cyc2)
-            grouping_acc (res : g.results) nil nil nil nil
-          else
-            grouping_acc g.results (option p) per2 cyc2 prev2
-        else
-          # finalize previous and start new
+    if kind = 0 then
+      # start marker: initialize accumulators and record start time
+      grouping_acc g.results (option period) (option ts) (list time.duration).empty (list time.duration).empty nil 0
+    else if kind = 1 then
+      # actual release: compute expected from start_time + period*count
+      match g.cur_period
+        nil => g # stray actual before start - ignore
+        p time.duration =>
+          if p = period then
+            start_t := g.start_time.or_panic
+            expected := start_t + (period * g.count.as_u64)
+            per_d := (ts >= expected ? ts - expected : expected - ts)
+            cyc_acc2 := match g.prev_actual
+                          nil => g.cyc_acc
+                          prev time.instant => ( (ts >= prev ? ts - prev : prev - ts) : g.cyc_acc )
+            per_acc2 := per_d : g.per_acc
+            grouping_acc g.results (option p) g.start_time per_acc2 cyc_acc2 (option ts) (g.count + 1)
+          else g
+    else if kind = 2 then
+      # end marker: finalize current period
+      match g.cur_period
+        nil => g
+        p time.duration =>
           res := (p, g.per_acc, g.cyc_acc)
-          per1 := (period_delta : (list time.duration).empty)
-          cyc1 := (list time.duration).empty
-          prev1 := option actual
-          grouping_acc (res : g.results) (option period) per1 cyc1 prev1
+          grouping_acc (res : g.results) nil nil (list time.duration).empty (list time.duration).empty nil 0
+    else g
   )
 
   received_samples := g_final.results.reverse_list
