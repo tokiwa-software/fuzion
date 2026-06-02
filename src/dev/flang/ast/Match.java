@@ -440,10 +440,18 @@ public class Match extends AbstractMatch
      * If there is no else / elseif, create a default else
      * branch returning unit.
      */
+    var elseB0 = elseB;
     if (elseB == null)
       {
-        var unit = new Call(pos, FuzionConstants.UNIT_NAME);
-        elseB = new Block(new List<>(unit));
+        var unit = new Call(pos, FuzionConstants.UNIT_NAME)
+          {
+            @Override
+            public String sourceText()
+            {
+              return SourcePosition.range(new List<>(pos, b)).sourceText();
+            }
+          };
+        elseB0 = new Block(new List<>(unit));
       }
 
     // Types.resolved may still be null, so we have to
@@ -461,7 +469,7 @@ public class Match extends AbstractMatch
               return true;
             }
           },
-          new Case(elseB.pos(), null, elseB)
+          new Case(elseB0.pos(), null, elseB0)
           {
             @Override public List<AbstractType> types() { return Types.resolved == null ? null : new List<>(Types.resolved.f_FALSE.selfType()); }
             @Override boolean resolveType(Resolution res, List<AbstractType> cgs, Context context, SourcePosition[] matched)
