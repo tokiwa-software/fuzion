@@ -75,6 +75,11 @@ public float : numeric is
       (float.this + float.this.one/float.this.two).floor
 
 
+  # convert this float to a string with a fixed number of digits after the decimal point.
+  #
+  public as_string(fraction_digits i32) String => abstract
+
+
   # floor: the greatest integer lower or equal to this
   public floor float.this =>
     if fract < float.this.zero
