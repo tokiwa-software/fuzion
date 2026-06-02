@@ -161,15 +161,6 @@ jitter_threaded =>
         say "Worker thread priority setup failed: $e"
         say "(Hint: run with sudo or use setcap cap_sys_nice=ep ./jitter)"
 
-  # collect streamed raw records from worker thread
-  collect_results(received_ch concur.Channel (tuple time.duration time.instant i32),
-                  collected list (tuple time.duration time.instant i32))
-                  list (tuple time.duration time.instant i32)
-  =>
-    match received_ch.next
-      sample tuple => collect_results received_ch (sample : collected)
-      nil => collected.reverse_list
-
   # grouping accumulator type for folding raw records into per-period tuples
   grouping_acc(results list (tuple time.duration (list time.duration) (list time.duration)),
                 cur_period option time.duration,
@@ -179,43 +170,52 @@ jitter_threaded =>
                 prev_actual option time.instant,
                 count i32) is
 
-  raw_records := collect_results result_ch nil
+  # consume records as soon as they arrive from the worker thread
+  consume_results(acc grouping_acc)
+                  grouping_acc
+  =>
+    match result_ch.next
+      sample tuple =>
+        period := sample.0
+        ts := sample.1
+        kind := sample.2
 
-  # fold raw records into per-period tuples
+        acc2 :=
+          if kind = 0 then
+            # start marker: initialize accumulators and record start time
+            grouping_acc acc.results (option period) (option ts) (list time.duration).empty (list time.duration).empty nil 0
+          else if kind = 1 then
+            # actual release: compute expected from start_time + period*count
+            match acc.cur_period
+              nil => acc # stray actual before start - ignore
+              p time.duration =>
+                if p = period then
+                  start_t := acc.start_time.or_panic
+                  expected := start_t + (period * acc.count.as_u64)
+                  per_d := (ts >= expected ? ts - expected : expected - ts)
+                  cyc_acc2 := match acc.prev_actual
+                                nil => acc.cyc_acc
+                                prev time.instant => ( (ts >= prev ? ts - prev : prev - ts) : acc.cyc_acc )
+                  per_acc2 := per_d : acc.per_acc
+                  grouping_acc acc.results (option p) acc.start_time per_acc2 cyc_acc2 (option ts) (acc.count + 1)
+                else acc
+          else if kind = 2 then
+            # end marker: finalize current period
+            match acc.cur_period
+              nil => acc
+              p time.duration =>
+                res := (p, acc.per_acc, acc.cyc_acc)
+                grouping_acc (res : acc.results) nil nil (list time.duration).empty (list time.duration).empty nil 0
+          else acc
+
+        consume_results acc2
+
+      nil =>
+        acc
+
   g0 := grouping_acc (list (tuple time.duration (list time.duration) (list time.duration))).empty nil nil (list time.duration).empty (list time.duration).empty nil 0
 
-  g_final := raw_records.foldf _ g0 (g, rec ->
-    period := rec.0
-    ts := rec.1
-    kind := rec.2
-
-    if kind = 0 then
-      # start marker: initialize accumulators and record start time
-      grouping_acc g.results (option period) (option ts) (list time.duration).empty (list time.duration).empty nil 0
-    else if kind = 1 then
-      # actual release: compute expected from start_time + period*count
-      match g.cur_period
-        nil => g # stray actual before start - ignore
-        p time.duration =>
-          if p = period then
-            start_t := g.start_time.or_panic
-            expected := start_t + (period * g.count.as_u64)
-            per_d := (ts >= expected ? ts - expected : expected - ts)
-            cyc_acc2 := match g.prev_actual
-                          nil => g.cyc_acc
-                          prev time.instant => ( (ts >= prev ? ts - prev : prev - ts) : g.cyc_acc )
-            per_acc2 := per_d : g.per_acc
-            grouping_acc g.results (option p) g.start_time per_acc2 cyc_acc2 (option ts) (g.count + 1)
-          else g
-    else if kind = 2 then
-      # end marker: finalize current period
-      match g.cur_period
-        nil => g
-        p time.duration =>
-          res := (p, g.per_acc, g.cyc_acc)
-          grouping_acc (res : g.results) nil nil (list time.duration).empty (list time.duration).empty nil 0
-    else g
-  )
+  g_final := consume_results g0
 
   received_samples := g_final.results.reverse_list
   say "received samples"
