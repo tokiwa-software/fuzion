@@ -161,7 +161,10 @@ is
 
   # is this Sequence empty?
   #
-  public is_empty bool => as_list.is_empty
+  public is_empty bool
+    post debug : !finite.is_no || result = false
+  =>
+    finite.is_no ? false : as_list.is_empty
 
 
   # count the number of elements in this Sequence.  Note that this typically
@@ -442,17 +445,14 @@ is
   # in `O(n²)` performance for the concatenations.
   #
   public concat (s Sequence T) Sequence T =>
-    c1 :=   finite.is_yes ? count   : -1
-    c2 := s.finite.is_yes ? s.count : -1
-    if c1 = 0
+    if is_empty
       s
-                      #
-                      # if this sequence is infinite,
-                      # no need to concat s
-                      #
-    else if c2 = 0 || finite.is_no
+    #
+    # if this sequence is infinite,
+    # no need to concat s
+    #
+    else if s.is_empty || finite.is_no
       Sequence.this
-
     #
     # if s is infinite we use list concat
     # otherwise we would hang forever
