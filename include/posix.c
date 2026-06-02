@@ -796,6 +796,26 @@ int64_t fzE_process_wait(int64_t p){
 }
 
 
+// open a new pipe
+//
+int fzE_pipe_create(int64_t * fds)
+{
+  int pipefd[2];
+
+  if (pipe(pipefd) == -1)
+  {
+    return errno; 
+  }
+  else
+  {
+    fds[0] = (int64_t) pipefd[0];
+    fds[1] = (int64_t) pipefd[1];
+  }
+
+  return 0;
+}
+
+
 // returns -1 on error, 0 on pipe exhausted/closed
 // otherwise the number of bytes read
 int fzE_pipe_read(int64_t desc, char * buf, size_t nbytes){
