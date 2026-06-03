@@ -2515,7 +2515,14 @@ A pre-condition of a feature that does not redefine an inherited feature must st
           {
             if (urgent)
               {
-                AstErrors.failedToInferResultType(this);
+                if ( !(isAbstract() || isIntrinsic() || isNative()) )
+                  {
+                    AstErrors.failedToInferResultType(this);
+                  }
+                else if (!(Errors.any() && impl() == Impl.ERROR))
+                  {
+                    AstErrors.explicitTypeRequired(this, null);
+                  }
               }
             result = urgent ? Types.t_ERROR : null;
           }
