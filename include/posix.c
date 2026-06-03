@@ -904,17 +904,30 @@ void fzE_cnd_destroy(void * cnd) {
 
 int32_t fzE_file_read(void * file, void * buf, int32_t size)
 {
+  int32_t result = -1; // ERROR, unless we succeed
   struct pollfd fds;
   fds.fd = fileno(file);
   fds.events = POLLIN;
 
-  while(poll(&fds, 1, -1) == 0);
+  int res;
+  do
+    {
+      res = poll(&fds, 1, -1);
+    }
+  while (res == 0 ||                  // timeout, should never happen, retry just in case
+         (res < 0 && errno == EINTR)  // we got interrupted, so retry
+         );
 
-  size_t result = fread(buf, 1, size, (FILE*)file);
+  if (res > 0)
+    {
+      size_t fread_result = fread(buf, 1, size, (FILE*)file);
+      if (fread_result > 0 || errno == 0)
+        {
+          result = fread_result;
+        }
+    }
 
-  return result >= 0
-    ? result
-    : -1; // ERROR
+  return result;
 }
 
 
