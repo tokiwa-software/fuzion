@@ -325,13 +325,13 @@ public class Lexer extends SourceFile
             case t_ident             : result = "identifier"                                 ; break;
             case t_stringQQ          : result = "string constant"                            ; break;
             case t_stringQD          : result = "string constant ending in $"                ; break;
-            case t_stringQB          : result = "string constant ending in {"                ; break;
+            case t_stringQB          : result = "string constant ending in $("               ; break;
             case t_StringDQ          : result = "string constant after $<id>"                ; break;
             case t_StringDD          : result = "string constant after $<id> ending in $"    ; break;
-            case t_StringDB          : result = "string constant after $<id> ending in {"    ; break;
-            case t_stringBQ          : result = "string constant after {<expr>}"             ; break;
-            case t_stringBD          : result = "string constant after {<expr>} ending in $" ; break;
-            case t_stringBB          : result = "string constant after {<expr>} ending in {" ; break;
+            case t_StringDB          : result = "string constant after $<id> ending in $("   ; break;
+            case t_stringBQ          : result = "string constant after $(<expr>)"            ; break;
+            case t_stringBD          : result = "string constant after $(<expr>) ending in $"; break;
+            case t_stringBB          : result = "string constant after $(<expr>) ending in $("; break;
             case t_eof               : result = "end-of-file"                                ; break;
             default                  : result = super.toString()                             ; break;
             }
