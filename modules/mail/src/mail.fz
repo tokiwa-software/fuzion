@@ -96,7 +96,7 @@ public mail is
       $(
         # https://www.rfc-editor.org/rfc/rfc2045.html#section-6.8
         b64 := encodings.base64.encode_to_string text.utf8.as_array
-        String.join_lines <| b64.chunk 76
+        String.join_lines (b64.chunk 76)
       )
       .
       """.replace "\n" "\r\n"

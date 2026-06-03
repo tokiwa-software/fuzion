@@ -106,7 +106,6 @@ public clang is
   #
   public function_decl(public name String, public args array clang.arg, public return_type String) is
 
-  lmbda clang.arg -> String => (f -> "  $f;")
 
   # a parsed struct declaration
   #
@@ -114,7 +113,7 @@ public clang is
     public redef as_string String =>
       """
        struct $name {
-       $(fields.map lmbda .as_string "\n")
+       $(fields.map (f -> "  $f;") .as_string "\n")
        };
       """
 
@@ -125,7 +124,7 @@ public clang is
     public redef as_string String =>
       """
        union $name {
-       $(fields.map lmbda .as_string "\n")
+       $(fields.map (f -> "  $f;") .as_string "\n")
        };
       """
 

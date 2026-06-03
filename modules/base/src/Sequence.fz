@@ -1170,7 +1170,7 @@ is
   #
   #     (0..10).group_reduce String (x -> x%%2 ? "even" : "odd") (+)
   #
-  # => {(even => 30), (odd => 25)
+  # => {(even => 30), (odd => 25)}
   #
   public group_reduce (
     # type of the keys
@@ -1196,7 +1196,7 @@ is
   #
   #     values.group_map_reduce String i32 classify (_->1) (+)
   #
-  # => {(digit => 2), (letter => 3), (other => 1)
+  # => {(digit => 2), (letter => 3), (other => 1)}
   #
   public group_map_reduce (
     # type of the keys
@@ -1237,7 +1237,7 @@ is
   #
   #     values.group_map String String classify (x->"_{x}_")
   #
-  # => {(digit => [_1_, _4_]), (letter => [_A_, _b_, _X_]), (other => [_?_])
+  # => {(digit => [_1_, _4_]), (letter => [_A_, _b_, _X_]), (other => [_?_])}
   #
   public group_map (
     # type of the keys
