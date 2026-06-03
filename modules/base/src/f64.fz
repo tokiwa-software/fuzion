@@ -207,7 +207,7 @@ public f64(public val f64) : float, java_primitive is
 
   # convert this to a string with a fixed number of digits after the decimal point.
   #
-  public redef as_string(fraction_digits i32) String =>
+  public redef as_string_decimals(fraction_digits i32) String =>
     if fraction_digits <= 0
       f64.this.as_string
     else

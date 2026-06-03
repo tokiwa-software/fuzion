@@ -77,7 +77,7 @@ public float : numeric is
 
   # convert this float to a string with a fixed number of digits after the decimal point.
   #
-  public as_string(fraction_digits i32) String => abstract
+  public as_string_decimals(fraction_digits i32) String => abstract
 
 
   # floor: the greatest integer lower or equal to this
