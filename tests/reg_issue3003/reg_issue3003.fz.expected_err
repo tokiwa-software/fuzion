@@ -1,7 +1,8 @@
 
---CURDIR--/reg_issue3003.fz:27:5: error 1: Failed to infer result type for feature 'reg_issue3003.a.f'.
+--CURDIR--/reg_issue3003.fz:27:5: error 1: Explicit type required
     f => abstract
 ----^
-To solve this, please specify a result type explicitly.
+Feature 'reg_issue3003.a.f' is 'abstract', but has no type specified.
+To solve this, please specify a type explicitly.
 
 one error.

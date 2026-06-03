@@ -1,7 +1,8 @@
 
---CURDIR--/reg_issue7149.fz:26:3: error 1: Failed to infer result type for feature 'reg_issue7149.x'.
+--CURDIR--/reg_issue7149.fz:26:3: error 1: Explicit type required
   x => native
 --^
-To solve this, please specify a result type explicitly.
+Feature 'reg_issue7149.x' is 'native', but has no type specified.
+To solve this, please specify a type explicitly.
 
 one error.
