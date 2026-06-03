@@ -168,6 +168,8 @@ clean_err(f path) =>
   # line numbers
   "sed -E -i s/\\.fz:[0-9]+:[0-9]+:/\\.fz:n:n:/g $f".execute .or_panic
   "sed -E -i s/\\.fz:[0-9]+/\\.fz:n/g $f".execute .or_panic
+  # replace CLASS_PREFIX_WITH_ID
+  "sed -E -i s/fzC__L[0-9]+/fzC_LXXX/g $f".execute .or_panic
 
 
 # delete temporary files

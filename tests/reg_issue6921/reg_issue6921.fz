@@ -17,13 +17,11 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature io.write
+#  Source code of Fuzion test reg_issue6921
 #
 # -----------------------------------------------------------------------
 
-# write data to dest
-#
-#  NYI: where path should eventually be choice of path, network connection etc.
-#
-public write(dest path, data Any) outcome unit =>
-  io.file.write dest data
+a(T type) is
+  b T => abstract
+  type.new(F type: i32->T, f F) a T=> a T
+  public transpose a T => (a T).new _ i->b
