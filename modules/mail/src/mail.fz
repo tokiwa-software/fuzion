@@ -96,10 +96,27 @@ public mail is
       $(
         # https://www.rfc-editor.org/rfc/rfc2045.html#section-6.8
         b64 := encodings.base64.encode_to_string text.utf8.as_array
-        String.join_lines (b64.chunk 76)
+        String.join_lines <| b64.chunk 76
       )
       .
       """.replace "\n" "\r\n"
+
+    # NYI: BUG: String.join_lines (b64.chunk 76) is parsed as tuple which trips the Lexer/Parser
+    # mail_data => """
+    #   From: <$from>
+    #   To: $to
+    #   Subject: =?UTF-8?B?$(encodings.base64.encode_to_string subject.utf8.as_array)?=
+    #   MIME-Version: 1.0
+    #   Content-Type: text/plain; charset="UTF-8"
+    #   Content-Transfer-Encoding: base64
+
+    #   $(
+    #     # https://www.rfc-editor.org/rfc/rfc2045.html#section-6.8
+    #     b64 := encodings.base64.encode_to_string text.utf8.as_array
+    #     String.join_lines (b64.chunk 76)
+    #   )
+    #   .
+    #   """.replace "\n" "\r\n"
 
     quit => """
       QUIT
