@@ -126,6 +126,10 @@ public i64(public val i64) : num.wrap_around, has_interval, java_primitive is
   public as_int int =>
     int val
 
+  # Convert this to a string with a fixed number of digits after the decimal point.
+  public as_string_decimals(fraction_digits i32) String =>
+    as_f64.as_string_decimals fraction_digits
+
 
   # this i64 as an uint
   #
