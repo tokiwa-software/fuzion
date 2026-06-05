@@ -921,7 +921,7 @@ int32_t fzE_file_read(void * file, void * buf, int32_t size)
   if (res > 0)
     {
       size_t fread_result = fread(buf, 1, size, (FILE*)file);
-      if (fread_result > 0 || errno == 0)
+      if (!ferror((FILE*)file))
         {
           result = fread_result;
         }
