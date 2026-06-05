@@ -936,11 +936,10 @@ int32_t fzE_file_read(void * file, void * buf, int32_t size)
           //
           // So let's do that:
           //
-          // Possible problem: What if we read, say, 16 bytes and then there is an error? Should
-          // we return 16 instead of an error? And how do we distinguish a valid 16 bytes from
-          // a `small item count` that is returned if an error occured?
+          // We might get fread_result > 0 combined with an error like EAGAIN.  In this case, we
+          // return fread_result and not indicate an error by returning -1.
         }
-      while (fread_result == 0 && !feof((FILE*)file) && ferror((FILE*)file) && errno == EAGAIN);  // if we got no data and no EOF, then repeat.
+      while (fread_result == 0 && !feof((FILE*)file) && (ferror((FILE*)file) && errno == EAGAIN));  // if we got no data and no EOF, then repeat.
       if (!ferror((FILE*)file) || errno == EAGAIN)
         {
           result = fread_result;
