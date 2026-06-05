@@ -336,9 +336,7 @@ module:public Binary_Heap_Queue(
       sub_r := c.1.bind lvl
 
       if sub_l.is_nil # leaf - no more subtrees
-        lvlres := [str.pad_center str_len]
-
-        lvlres
+        [str.pad_center str_len]
       else
         # width of current node, left and right subtree
         cur_w, sub_l_w, sub_r_w :=
@@ -357,17 +355,15 @@ module:public Binary_Heap_Queue(
               check sub_half%%2
               (str_len + div_4_pad, tmp_sub_l_w + sub_half, tmp_sub_r_w + sub_half)
           }
-        lh := sub_l_w/2 # half width of left subtree, excluding center char
+        lh := sub_l_w/2 # half width of left  subtree, excluding center char
         rh := sub_r_w/2 # half width of right subtree, excluding center char
 
-        # NYI: CLEANUP: concat_list currently required, see #6740
-        sub_r_new := sub_r.or_else [$" "," "," "] .as_list.concat_list [$""].cycle.as_list # extension needed if the right side is only a leaf but the left side contains a subtree
+        # additional empty elements are needed if the right side is only a leaf but the left side contains a subtree
+        sub_r_new := sub_r.or_else [$" "," "," "] ++ [$""].cycle
 
-        lvlres:= [str.pad_center cur_w]
-                ++ (sub_l.ok ? ["{" "*lh}┌{"─"*rh}┴{sub_r.ok ? "{"─"*lh}┐{" "*rh}" : " "*(lh+rh+1)}"] : [])
-                ++ (sub_l.ok ? sub_l.or_panic.zip sub_r_new (s1,s2)->("{s1.pad_center sub_l_w} {s2.pad_center sub_r_w}") : [])
-
-        lvlres
+        [str.pad_center cur_w]
+          ++ (sub_l.ok ? ["{" "*lh}┌{"─"*rh}┴{sub_r.ok ? "{"─"*lh}┐{" "*rh}" : " "*(lh+rh+1)}"] : [])
+          ++ (sub_l.ok ? sub_l.or_panic.zip sub_r_new (s1,s2)->("{s1.pad_center sub_l_w} {s2.pad_center sub_r_w}") : [])
 
     elements.length = 0 ? "" : (lvl 0).as_string "\n"
 
@@ -439,18 +435,28 @@ module:public Binary_Heap_Queue(
     container.Binary_Heap_Queue LM T lteq min_size nil
 
 
-  # Create an empty priority queue that determines return order
-  # by mapping elements to an orderable type using `by`
+  # Create an empty priority queue that returns the smallest element first,
+  # where elements are ordered by mapping them to an orderable type using `by`
+  #
+  # To reverse the sorting order and have the largest element
+  # returned first, `property.reverse_order` can be used.
   #
   public fixed redef type.empty_by(O type : property.orderable, by T->O) container.Binary_Heap_Queue LM T
   =>
     container.Binary_Heap_Queue LM T (a,b->(by a)<=(by b)) nil nil
 
 
-  # Create an empty priority queue that determines return order
-  # by mapping elements to an orderable type using `by`
+  # Create an empty priority queue that returns the smallest element first,
+  # where elements are ordered by mapping them to an orderable type using `by`
   #
-  public fixed type.empty_by(O type : property.orderable, by T->O, min_size i64) container.Binary_Heap_Queue LM T
+  # To reverse the sorting order and have the largest element
+  # returned first, `property.reverse_order` can be used.
+  #
+  public fixed type.empty_by(O type : property.orderable, by T->O,
+      # minimum size for the internal data structure
+      # staying within this limit, avoids amortized runtimes
+      min_size i64
+    ) container.Binary_Heap_Queue LM T
   =>
     container.Binary_Heap_Queue LM T (a,b->(by a)<=(by b)) min_size nil
 
@@ -469,8 +475,12 @@ module:public Binary_Heap_Queue(
     container.Binary_Heap_Queue LM T lteq nil initial_elements
 
 
-  # Create a priority queue from the given unordered elements that determines
-  # return order by mapping elements to an orderable type using `by`
+  # Create a priority queue from the given unordered elements that returns the
+  # smallest element first, where elements are ordered by mapping them to an
+  # orderable type using `by`
+  #
+  # To reverse the sorting order and have the largest element
+  # returned first, `property.reverse_order` can be used.
   #
   # Note: In the worst case this is more efficient than iterative `enqueue` or
   #       `enqueue_all`, running in O(n) time rather than O(n log n).

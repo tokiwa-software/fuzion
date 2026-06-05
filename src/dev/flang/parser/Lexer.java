@@ -2110,14 +2110,9 @@ PLUSMINUS   : "+"
      */
     BigInteger mantissaValue()
     {
-      if (_hasError)
-        {
-          return BigInteger.valueOf(0);
-        }
-      else
-        {
-          return _mantissa.absValue();
-        }
+      return _hasError
+        ? BigInteger.valueOf(0)
+        : _mantissa.absValue();
     }
 
     /**
@@ -3066,7 +3061,7 @@ PIPE        : "|"
     StringLexer _outer;
 
     /**
-     * One of t_stringQQ. t_stringQD or t_stringQB to identify the
+     * One of QUOTE, DOLLAR or BRACE to identify the
      * beginning of this partial string.
      */
     StringEnd _beginning;
@@ -3446,9 +3441,11 @@ PIPE        : "|"
               return Token.t_undefined;
             case K_RBRACE:
               _braceCount--;
-              if (_stringLexer._braceCount > 0)
+              if (_stringLexer._braceCount > -1)
                 {
-                  return Token.t_rbrace;
+                  // we (stringlexer) took note of the bracecount,
+                  // let normal lexer continue.
+                  return Token.t_undefined;
                 }
               _beginning = StringEnd.BRACE;
               break;

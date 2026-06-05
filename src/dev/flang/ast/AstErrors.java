@@ -2579,14 +2579,19 @@ public class AstErrors extends ANY
 
   public static void explicitTypeRequired(AbstractFeature f, AbstractType inf)
   {
-    String inferredMsg = (inf != null && inf != Types.t_ERROR && inf != Types.t_ERROR) ?
-                           "\nInferred type is " + s(inf) : "\nNo type could be inferred";
+    String inferredMsg = (inf != null && inf != Types.t_ERROR) ? " Inferred type is " + s(inf)
+                                                               : "";
+
+    String reason = f.isAbstract()                                   ? skw("abstract")  :
+                    f.isIntrinsic()                                  ? skw("intrinsic") :
+                    f.isNative()                                     ? skw("native")    :
+                    f.visibility().eraseTypeVisibility() == Visi.PUB ? skw("public")
+                                                                     : "argument of a " + skw("public") + " feature";
 
     error(f.pos(),
-          (f.visibility().eraseTypeVisibility() == Visi.PUB)
-            ? "Public features must have explicit result type"
-            : "Arguments of public features must have explicit type",
-          "Feature " + s(f) + " is " + skw("public") + " but has no explicit type specified"
+          "Explicit type required",
+          "Feature " + s(f) + " is " + reason + ", but has no type specified.\n"
+          + "To solve this, please specify a type explicitly."
           + inferredMsg);
   }
 

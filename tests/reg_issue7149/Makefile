@@ -17,13 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature io.write
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# write data to dest
-#
-#  NYI: where path should eventually be choice of path, network connection etc.
-#
-public write(dest path, data Any) outcome unit =>
-  io.file.write dest data
+override NAME = reg_issue7149
+include ../simple.mk

@@ -2420,7 +2420,13 @@ there is no common super type of the two types (Types.t_ERROR)
     if (isGenericArgument())
       {
         var ga = genericArgument();
-        result = (ga.isCoTypesThisType() ? ga.qualifiedName(context, humanReadable) : (humanReadable ? ga.baseNameHuman() : ga.baseName())) + (isRef() ? " (boxed)" : "");
+        result =
+          (ga.isCoTypesThisType()
+            ? ga.qualifiedName(context, humanReadable)
+            : ga.isTypeFeature()
+            ? ga.qualifiedName(humanReadable)
+            : (humanReadable ? ga.baseNameHuman() : ga.baseName())) +
+          (isRef() ? " (boxed)" : "");
       }
     else
       {

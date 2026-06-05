@@ -438,7 +438,7 @@ is
 
 # a local mutate instance we are using to modify our state
 #
-histogram_mutate : mutate
+public histogram_mutate : mutate
 is
 
   # default implementation of mutate
