@@ -926,7 +926,7 @@ int32_t fzE_file_read(void * file, void * buf, int32_t size)
       //    If an error occurs, or the end of the file is reached, the return value is a
       //    short item count (or zero).
       //
-      // so we cannot use fread_result to detect an erro, instead, it says
+      // so we cannot use fread_result to detect an error. Instead, it says
       //
       //    fread() does not distinguish between end-of-file and error, and callers must
       //    use feof(3) and ferror(3) to determine which occurred.
