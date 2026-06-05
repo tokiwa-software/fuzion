@@ -51,6 +51,15 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
   std_in_write_handler => write_handler std_in
 
 
+  # get a name for the given descriptor
+  #
+  desc_name(desc) =>
+    if      desc = std_in  then "stdin"
+    else if desc = std_out then "stdout"
+    else if desc = std_err then "stderr"
+    else "file_descriptor#$desc"
+
+
   # read bytes from standard out
   #
   read_handler(desc i64) : io.Read_Handler is
@@ -60,7 +69,7 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
       if res = -1
         # NYI: UNDER DEVELOPMENT: register failures
         _ := fzE_pipe_close desc
-        error "failed reading from stdout" fzE_last_error
+        error "reading from {desc_name desc} of process {pid}." fzE_last_error
       else if res = 0
         # NYI: UNDER DEVELOPMENT: register failures
         _ := fzE_pipe_close desc
@@ -75,7 +84,7 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
   write_handler (desc i64) : io.Write_Handler is
     public redef write (bytes Sequence u8) outcome unit =>
       if fzE_pipe_write desc bytes.as_array.internal_array.data bytes.count = -1
-        error "failed writing to stdin" fzE_last_error
+        error "writing to {desc_name desc} of process {pid}. Tried writing {bytes.count} bytes." fzE_last_error
       else
         unit
 
