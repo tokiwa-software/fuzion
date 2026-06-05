@@ -42,7 +42,7 @@ reg_issue2280 is
       #      last  :=  l2.is_empty ? 0 : l2.last        # NYI: does not work since ? : is not lazy on its arguments!
 
       last  :=  {if l2.is_empty then u32 0 else l2.last.or_panic}
-      # NYI: why this assymmetry between head returning option and last returning the element or panicking?
+      # NYI: why this asymmetry between head returning option and last returning the element or panicking?
       # NYI: would be nice if `u32` would be inferred and not needed explicitly here!
       # NYI: can we get rid of the `{`/`}`
 
