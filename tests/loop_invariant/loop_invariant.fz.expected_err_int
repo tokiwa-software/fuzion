@@ -27,7 +27,13 @@ loop_invariant.loop: --CURDIR--/loop_invariant.fz:32:13:
 ------------^^^^^
 loop_invariant: --CURDIR--/loop_invariant.fz:31:3:
   for i in 0..1
---^
+--^^^^^^^^^^^^^
+  invariant i < 1
+--^^^^^^^^^^^^^^^
+  do
+--^^
+    say "iteration $i"
+----^^^^^^^^^^^^^^^^^^
 
 *** fatal errors encountered, stopping.
 one error.

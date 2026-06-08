@@ -33,7 +33,9 @@ loop: --CURDIR--/reg_issue2194.fz:32:3:
 --^^^
 universe: --CURDIR--/reg_issue2194.fz:31:1:
 for i in 0..10 do
-^
+^^^^^^^^^^^^^^^^^
+  y i
+--^^^
 
 *** fatal errors encountered, stopping.
 one error.

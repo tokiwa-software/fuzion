@@ -2221,7 +2221,8 @@ A pre-condition of a feature that does not redefine an inherited feature must st
   private void checkLegalNativeResultType(Resolution res, SourcePosition pos, AbstractType rt)
   {
     ensureTypeSetsInitialized(res);
-    if (!(Types.resolved.legalNativeResultTypes.contains(rt) || !rt.isGenericArgument() && rt.feature().mayBeNativeValue()))
+    if (!(Types.resolved.legalNativeResultTypes.contains(rt) || !rt.isGenericArgument() && rt.feature().mayBeNativeValue())
+        && !(Errors.any() && rt == Types.t_ERROR))
       {
         AstErrors.illegalNativeType(pos, "Result type", rt);
       }
@@ -2514,7 +2515,14 @@ A pre-condition of a feature that does not redefine an inherited feature must st
           {
             if (urgent)
               {
-                AstErrors.failedToInferResultType(this);
+                if ( !(isAbstract() || isIntrinsic() || isNative()) )
+                  {
+                    AstErrors.failedToInferResultType(this);
+                  }
+                else if (!(Errors.any() && impl() == Impl.ERROR))
+                  {
+                    AstErrors.explicitTypeRequired(this, null);
+                  }
               }
             result = urgent ? Types.t_ERROR : null;
           }
