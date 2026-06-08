@@ -28,7 +28,7 @@
 module:public Thread(thrd Internal_Thread,
 
                      # NYI: CLEANUP: use thread id
-                     id u64
+                     id uid
                      ) ref
   : property.equatable
 is

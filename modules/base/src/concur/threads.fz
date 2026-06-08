@@ -79,7 +79,7 @@ is
   # with given tid.
   #
   public spawn_without_inherited_effects(# NYI: CLEANUP: remove this argument and use system thread id
-                                         tid u64,
+                                         tid uid,
 
                                          # code ot run int he new thread without an new, empty effect environment
                                          code ()->unit
@@ -122,7 +122,7 @@ default_thread_handler : Thread_Handler is
   # spawn a new thread using given code
   #
   redef spawn(# NYI: CLEANUP: remove this argument and use system thread id
-              tid u64,
+              tid uid,
               code ()->unit)
   =>
     concur.Thread (fuzion.sys.thread.spawn code) tid
@@ -134,7 +134,7 @@ private:public Thread_Handler ref is
   # spawn a new thread using given code
   #
   spawn(# NYI: CLEANUP: remove this argument and use system thread id
-        tid u64,
+        tid uid,
         code ()->unit) concur.Thread
   =>
     abstract
