@@ -53,7 +53,7 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
 
   # get a name for the given descriptor
   #
-  desc_name(desc) =>
+  desc_name(desc i64) =>
     if      desc = std_in  then "stdin"
     else if desc = std_out then "stdout"
     else if desc = std_err then "stderr"

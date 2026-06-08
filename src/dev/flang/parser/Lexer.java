@@ -3053,7 +3053,7 @@ PIPE        : "|"
      */
     final Optional<Integer> _pos;
 
-    int _parensCount;
+    int _parensCount = 0;
 
     /**
      * In case of nested string lexers, this is the outer lexer.
@@ -3448,9 +3448,9 @@ PIPE        : "|"
               _parensCount++;
               return Token.t_undefined;
             case K_RPAREN:
-              _parensCount--;
-              if (_stringLexer._parensCount > -1)
+              if (_parensCount > 0)
                 {
+                  _parensCount--;
                   // we (stringlexer) took note of the bracecount,
                   // let normal lexer continue.
                   return Token.t_undefined;
@@ -3496,6 +3496,8 @@ PIPE        : "|"
           // push this onto the stack of string lexers:
           _outer = _stringLexer;
           _stringLexer = this;
+          if (CHECKS) check
+            (_stringLexer._parensCount >= 0);
           switch (end(t))
             {
             case DOLLAR -> _state = StringState.IDENT_EXPECTED;
