@@ -198,15 +198,22 @@ public f32(public val f32) : float, java_primitive is
 
 
   # convert this to a string with a fixed number of digits after the decimal point.
-  #
+  # If the given values are unusable, the result is the same as `as_string`.
+  # Overflows are technically possible, but floats become inaccurate long before that.
   public redef as_string_decimals(fraction_digits i32) String =>
-    if fraction_digits <= 0
+    if is_NaN
+      "NaN"
+    else if val = f32.positive_infinity
+      "Infinity"
+    else if val = f32.negative_infinity
+      "-Infinity"
+    else if fraction_digits <= 0
       f32.this.as_string
     else
       scale := 10.0 ** fraction_digits.as_f64
 
       rounded_scaled :=
-        if val >= 0.0
+        if val.as_f64 >= 0.0
           ((val.as_f64 * scale) + 0.5).as_i64_lax
         else
           ((val.as_f64 * scale) - 0.5).as_i64_lax
