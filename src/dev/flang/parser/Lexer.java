@@ -167,11 +167,11 @@ public class Lexer extends SourceFile
                    //          quotation if part of multiline string
     t_StringDD,    // '+-*$'      in "abc$x+-*$x.".
     t_StringDB,    // '+-*{'      in "abc$x+-*{a+b}."
-    t_stringBQ,    // '}+-*"'     in "abc{x}+-*"
+    t_stringPQ,    // ')+-*"'     in "abc$(x)+-*"
                    //      ^--- fat quotations (""") instead of single
                    //           quotation if part of multiline string
-    t_stringBD,    // '}+-*$'     in "abc{x}+-*$x.".
-    t_stringBB,    // '}+-*{'     in "abc{x}+-*{a+b}."
+    t_stringPD,    // ')+-*$'     in "abc$(x)+-*$x.".
+    t_stringPB,    // ')+-*{'     in "abc$(x)+-*$(a+b)."
     t_this("this"),
     t_env("env"),
     t_check("check"),
@@ -329,9 +329,9 @@ public class Lexer extends SourceFile
             case t_StringDQ          : result = "string constant after $<id>"                ; break;
             case t_StringDD          : result = "string constant after $<id> ending in $"    ; break;
             case t_StringDB          : result = "string constant after $<id> ending in $("   ; break;
-            case t_stringBQ          : result = "string constant after $(<expr>)"            ; break;
-            case t_stringBD          : result = "string constant after $(<expr>) ending in $"; break;
-            case t_stringBB          : result = "string constant after $(<expr>) ending in $("; break;
+            case t_stringPQ          : result = "string constant after $(<expr>)"            ; break;
+            case t_stringPD          : result = "string constant after $(<expr>) ending in $"; break;
+            case t_stringPB          : result = "string constant after $(<expr>) ending in $("; break;
             case t_eof               : result = "end-of-file"                                ; break;
             default                  : result = super.toString()                             ; break;
             }
@@ -2975,9 +2975,9 @@ PIPE        : "|"
       else if (this == StringEnd.DOLLAR && end == StringEnd.QUOTE ) { return Token.t_StringDQ; }
       else if (this == StringEnd.DOLLAR && end == StringEnd.DOLLAR) { return Token.t_StringDD; }
       else if (this == StringEnd.DOLLAR && end == StringEnd.PAREN ) { return Token.t_StringDB; }
-      else if (this == StringEnd.PAREN  && end == StringEnd.QUOTE ) { return Token.t_stringBQ; }
-      else if (this == StringEnd.PAREN  && end == StringEnd.DOLLAR) { return Token.t_stringBD; }
-      else if (this == StringEnd.PAREN  && end == StringEnd.PAREN ) { return Token.t_stringBB; }
+      else if (this == StringEnd.PAREN  && end == StringEnd.QUOTE ) { return Token.t_stringPQ; }
+      else if (this == StringEnd.PAREN  && end == StringEnd.DOLLAR) { return Token.t_stringPD; }
+      else if (this == StringEnd.PAREN  && end == StringEnd.PAREN ) { return Token.t_stringPB; }
       throw new Error("impossible StringEnd.token combination "+this+" and "+end);
     }
   }
@@ -3000,9 +3000,9 @@ PIPE        : "|"
       case t_StringDQ:
       case t_StringDD:
       case t_StringDB: return StringEnd.DOLLAR;
-      case t_stringBQ:
-      case t_stringBD:
-      case t_stringBB: return StringEnd.PAREN;
+      case t_stringPQ:
+      case t_stringPD:
+      case t_stringPB: return StringEnd.PAREN;
       default        : throw new Error();
 
       }
@@ -3022,13 +3022,13 @@ PIPE        : "|"
       {
       case t_stringQQ:
       case t_StringDQ:
-      case t_stringBQ: return StringEnd.QUOTE;
+      case t_stringPQ: return StringEnd.QUOTE;
       case t_stringQD:
       case t_StringDD:
-      case t_stringBD: return StringEnd.DOLLAR;
+      case t_stringPD: return StringEnd.DOLLAR;
       case t_stringQB:
       case t_StringDB:
-      case t_stringBB: return StringEnd.PAREN;
+      case t_stringPB: return StringEnd.PAREN;
       default        : throw new Error();
 
       }
@@ -3527,9 +3527,9 @@ PIPE        : "|"
       case t_StringDQ:
       case t_StringDD:
       case t_StringDB:
-      case t_stringBQ:
-      case t_stringBD:
-      case t_stringBB: return true;
+      case t_stringPQ:
+      case t_stringPD:
+      case t_stringPB: return true;
       default        : return false;
       }
   }
