@@ -85,15 +85,15 @@ reg_issue5542 =>
   say (id (i32,i32,i32,i32,i32->unit)     ({{_,_,_,_,_->unit}}))
   say (id (i32,i32,i32,i32,i32,i32->unit) ({{_,_,_,_,_,_->unit}}))
 
-  # examples using ({{(())})
-  say "using ({{(())}) and _,_,_,..:"
-  say (id (()->unit)                      ({{((()->unit))}))
-  say (id (i32->unit)                     ({{((_->unit))}))
-  say (id (i32,i32->unit)                 ({{((_,_->unit))}))
-  say (id (i32,i32,i32->unit)             ({{((_,_,_->unit))}))
-  say (id (i32,i32,i32,i32->unit)         ({{((_,_,_,_->unit))}))
-  say (id (i32,i32,i32,i32,i32->unit)     ({{((_,_,_,_,_->unit))}))
-  say (id (i32,i32,i32,i32,i32,i32->unit) ({{((_,_,_,_,_,_->unit))}))
+  # examples using ({{(())}})
+  say "using ({{(())}}) and _,_,_,..:"
+  say (id (()->unit)                      ({{((()->unit))}}))
+  say (id (i32->unit)                     ({{((_->unit))}}))
+  say (id (i32,i32->unit)                 ({{((_,_->unit))}}))
+  say (id (i32,i32,i32->unit)             ({{((_,_,_->unit))}}))
+  say (id (i32,i32,i32,i32->unit)         ({{((_,_,_,_->unit))}}))
+  say (id (i32,i32,i32,i32,i32->unit)     ({{((_,_,_,_,_->unit))}}))
+  say (id (i32,i32,i32,i32,i32,i32->unit) ({{((_,_,_,_,_,_->unit))}}))
 
   # examples using nothing
   say "using plain _,_,_,..:"
@@ -149,14 +149,14 @@ reg_issue5542 =>
   say (id (i32,i32,i32,i32->unit)         ({{a,b,c,d->unit}}))
   say (id (i32,i32,i32,i32,i32->unit)     ({{a,b,c,d,e->unit}}))
   say (id (i32,i32,i32,i32,i32,i32->unit) ({{a,b,c,d,e,f->unit}}))
-  say "using ({{(())}) and a,b,c,..:"
-  say (id (()->unit)                      ({{((()->unit))}))
-  say (id (i32->unit)                     ({{((a->unit))}))
-  say (id (i32,i32->unit)                 ({{((a,b->unit))}))
-  say (id (i32,i32,i32->unit)             ({{((a,b,c->unit))}))
-  say (id (i32,i32,i32,i32->unit)         ({{((a,b,c,d->unit))}))
-  say (id (i32,i32,i32,i32,i32->unit)     ({{((a,b,c,d,e->unit))}))
-  say (id (i32,i32,i32,i32,i32,i32->unit) ({{((a,b,c,d,e,f->unit))}))
+  say "using ({{(())}}) and a,b,c,..:"
+  say (id (()->unit)                      ({{((()->unit))}}))
+  say (id (i32->unit)                     ({{((a->unit))}}))
+  say (id (i32,i32->unit)                 ({{((a,b->unit))}}))
+  say (id (i32,i32,i32->unit)             ({{((a,b,c->unit))}}))
+  say (id (i32,i32,i32,i32->unit)         ({{((a,b,c,d->unit))}}))
+  say (id (i32,i32,i32,i32,i32->unit)     ({{((a,b,c,d,e->unit))}}))
+  say (id (i32,i32,i32,i32,i32,i32->unit) ({{((a,b,c,d,e,f->unit))}}))
   say "using plain a,b,c,..:"
   say (id (()->unit)                      ()->unit)
   say (id (i32->unit)                     a->unit)

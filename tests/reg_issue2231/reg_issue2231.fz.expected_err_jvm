@@ -7,9 +7,9 @@ fuzion.runtime.fault.cause#1 at {base.fum}/eff/fallible.fz:35
 panic.type.default_value.(λ(msg->fuzion.runtime.fault.env.cause (...).call#1 at {base.fum}/panic.fz:39
 panic.cause#1 at {base.fum}/eff/fallible.fz:35
 panic#1 at {base.fum}/panic.fz:59
-(reg_issue2231.type.ef.type.instate#3 void).(λ(_ -> panic "unexpected abort in {effe...).call#1 at {base.fum}/effect.fz:191
-(instate_helper void reg_issue2231.ef).call_def.call#1 at {base.fum}/effect.fz:444
-instate_helper void reg_issue2231.ef at {base.fum}/effect.fz:434
+(reg_issue2231.type.ef.type.instate#3 void).(λ(_ -> panic "unexpected abort in $(eff...).call#1 at {base.fum}/effect.fz:191
+(instate_helper void reg_issue2231.ef).call_def.call#1 at {base.fum}/effect.fz:427
+instate_helper void reg_issue2231.ef at {base.fum}/effect.fz:417
 reg_issue2231.type.ef.type.instate#4 void at {base.fum}/effect.fz:170
 reg_issue2231.type.ef.type.instate#3 void at {base.fum}/effect.fz:191
 reg_issue2231.ef.instate_self#2 void at {base.fum}/effect.fz:212

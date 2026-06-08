@@ -161,7 +161,7 @@ i128_test =>
 
      $(u64.max) <- u64.max"
      $u64_max_plus_42 <- u64.max + 42
-    {u64_max_plus_42.as_f64} <- as_f64 (loss of precision)
+    $(u64_max_plus_42.as_f64) <- as_f64 (loss of precision)
 
-     {i128.min} <- i128.min
-    {i128.min.as_f64}                    <- i128.min.as_f64 (loss of precision)"""
+     $(i128.min) <- i128.min
+    $(i128.min.as_f64)                    <- i128.min.as_f64 (loss of precision)"""

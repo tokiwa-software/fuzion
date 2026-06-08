@@ -26,7 +26,7 @@
 # encoding to json
 #
 public Any.json_encode /* NYI: UNDER DEVELOPMENT: option-args? */ String =>
-  "{$( String.join (Any.this.json_members.map (x -> "{x.0.json_encode}:{x.1.json_encode}" )) "," )}"
+  "{$( String.join (Any.this.json_members.map (x -> "$(x.0.json_encode):$(x.1.json_encode)" )) "," )}"
 
 
 # Define the members from this feature to encode
