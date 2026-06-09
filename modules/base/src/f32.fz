@@ -201,13 +201,7 @@ public f32(public val f32) : float, java_primitive is
   # If the given values are unusable, the result is the same as `as_string`.
   # Overflows are technically possible, but floats become inaccurate long before that.
   public redef as_string_decimals(fraction_digits i32) String =>
-    if is_NaN
-      "NaN"
-    else if val = f32.positive_infinity
-      "Infinity"
-    else if val = f32.negative_infinity
-      "-Infinity"
-    else if fraction_digits <= 0
+    if is_NaN || val.abs = f32.positive_infinity || fraction_digits <= 0
       f32.this.as_string
     else
       scale := 10.0 ** fraction_digits.as_f64
