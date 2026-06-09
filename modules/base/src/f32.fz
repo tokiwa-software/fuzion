@@ -200,6 +200,7 @@ public f32(public val f32) : float, java_primitive is
   # convert this to a string with a fixed number of digits after the decimal point.
   # If the given values are unusable, the result is the same as `as_string`.
   # Overflows are technically possible, but floats become inaccurate long before that.
+  #
   public redef as_string_decimals(fraction_digits i32) String =>
     if is_NaN || val.abs = f32.positive_infinity || fraction_digits <= 0
       f32.this.as_string
