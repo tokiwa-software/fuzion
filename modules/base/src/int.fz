@@ -144,7 +144,7 @@ is
     if ns then "$n" else "-$n"
 
   # Convert this to a string with a fixed number of digits after the decimal point.
-  
+    #
   public as_string_decimals(fraction_digits i32) String =>
     as_i64.as_f64.as_string_decimals fraction_digits
 
