@@ -35,7 +35,7 @@ module:public open(dd Directory_Descriptor,
   # NOTES: current directory `.` and parent directory `..` are omitted.
   #
   public read outcome path ! io.dir.read =>
-    io.dir.read.read dd
+    io.dir.read.env.read dd
 
 
   # close dir when de-instating effect

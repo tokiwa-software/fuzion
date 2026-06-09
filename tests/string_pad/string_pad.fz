@@ -22,7 +22,7 @@
 # -----------------------------------------------------------------------
 
 # A simple test that calls `String` features `pad`, `pad_left` and `pad_center`
-# with different parameters and prints the result to `io.out`.
+# with different parameters and prints the result to `io.Out`.
 #
 string_pad is
 
