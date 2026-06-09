@@ -111,7 +111,7 @@ is
   #
   public redef fixed type.default_value option concur.threads
   =>
-    initial := concur.Thread fuzion.sys.thread.current 0
+    initial := concur.Thread fuzion.sys.thread.current (uid 0)
     concur.threads concur.default_thread_handler [initial] initial
 
 
