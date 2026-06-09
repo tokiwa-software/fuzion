@@ -76,7 +76,7 @@ public float : numeric is
 
 
   # convert this float to a string with a fixed number of digits after the decimal point.
-  # NYI : In the future, this should be replaced by a version of as_string with more formatting options,
+  # NYI: ENHANCEMENT: In the future, this should be replaced by a version of as_string with more formatting options,
   # as described here : https://github.com/tokiwa-software/fuzion/pull/7152#issuecomment-4613267795
   #
   public as_string_decimals(fraction_digits i32) String => abstract
