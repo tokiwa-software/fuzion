@@ -68,7 +68,7 @@ is
               check debug: !(str.contains ">")
               "{"  "*(indent+1)}{str}"
             n nom.parsers.xml_node => n.as_string indent+1
-        .as_string "\n"
+        .as_string encodings.ascii.lf_str
 
     if attributes.is_empty
       "{"  "*indent}<{name}>\n{dat_str}\n{"  "*(indent)}</{name}>"

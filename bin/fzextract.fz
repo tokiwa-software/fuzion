@@ -207,7 +207,7 @@ match {
       {" function declarations ".pad_center "#" 80}
       """
 
-    say <| (container.set_of_ordered function_declarations.get).sort.as_string "\n"
+    say <| (container.set_of_ordered function_declarations.get).sort.as_string encodings.ascii.lf_str
 
   e error =>
     say e

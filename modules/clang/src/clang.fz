@@ -113,7 +113,7 @@ public clang is
     public redef as_string String =>
       """
        struct $name \{
-       {fields.map (f -> "  $f;") .as_string "\n"}
+       {fields.map (f -> "  $f;") .as_string encodings.ascii.lf_str}
        \};
       """
 
@@ -124,7 +124,7 @@ public clang is
     public redef as_string String =>
       """
        union $name \{
-       {fields.map (f -> "  $f;") .as_string "\n"}
+       {fields.map (f -> "  $f;") .as_string encodings.ascii.lf_str}
        \};
       """
 
