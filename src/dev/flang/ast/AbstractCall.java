@@ -285,7 +285,7 @@ public abstract class AbstractCall extends Expr
       (!frmlT.isOpenGeneric());
 
     return adjustResultType(res, context, target().type(), frmlT,
-                            (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, true, arg, frmlT, from, to), true);
+                            (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, true, arg, frmlT, from, to));
   }
 
 
@@ -308,20 +308,18 @@ public abstract class AbstractCall extends Expr
                                           Context context,
                                           AbstractType tt,
                                           AbstractType rt,
-                                          BiConsumer<AbstractType, AbstractType> foundRef,
-                                          boolean forArg /* NYI: UNDER DEVELOPMENT: try to remove this parameter */)
+                                          BiConsumer<AbstractType, AbstractType> foundRef)
   {
     var t0 = calledFeature() == Types.f_ERROR ? Types.t_ERROR : rt;
-    var t1 = t0 == Types.t_ERROR                           ? t0 : adjustThisTypeForTarget(context, t0, foundRef);
-    var t2 = t1 == Types.t_ERROR                           ? t1 : calledFeature().outer().handDownToType(t1, tt);  // NYI: CLEANUP: try to use handDownAndApply
+    var t1 = t0 == Types.t_ERROR                           ? t0 : calledFeature().outer().handDownToType(t0, tt);
+    var t2 = t1 == Types.t_ERROR                           ? t1 : adjustThisTypeForTarget(context, t1, foundRef);  // NYI: CLEANUP: try to use handDownAndApply
     var t3 = t2 == Types.t_ERROR                           ? t2 : t2.applyTypePars(tt);
     var t4 = t3 == Types.t_ERROR                           ? t3 : t3.applyTypePars(calledFeature(), actualTypeParameters());
     var t5 = t4 == Types.t_ERROR || tt.isGenericArgument() ? t4 : t4.resolve(res, tt.feature().context());
-    var t6 = t5 == Types.t_ERROR || forArg                 ? t5 : adjustThisTypeForTarget(context, t5, foundRef);
     if (POSTCONDITIONS) ensure
-      (t6 != null);
+      (t5 != null);
 
-    return t6;
+    return t5;
   }
 
 
