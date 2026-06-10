@@ -308,33 +308,32 @@ public class Lexer extends SourceFile
         }
       else
         {
-          switch (this)
-            {
-            case t_op                : result = "operator"                                   ; break;
-            case t_comma             : result = "comma ','"                                  ; break;
-            case t_period            : result = "period '.'"                                 ; break;
-            case t_lparen            : result = "left parenthesis '('"                       ; break;
-            case t_rparen            : result = "right parenthesis ')'"                      ; break;
-            case t_lbrace            : result = "left curly brace '{'"                       ; break;
-            case t_rbrace            : result = "right curly brace '}'"                      ; break;
-            case t_lbracket          : result = "left bracket '['"                           ; break;
-            case t_rbracket          : result = "right bracket ']'"                          ; break;
-            case t_semicolon         : result = "semicolon ';'"                              ; break;
-            case t_question          : result = "question mark '?'"                          ; break;
-            case t_numliteral        : result = "numeric literal"                            ; break;
-            case t_ident             : result = "identifier"                                 ; break;
-            case t_stringQQ          : result = "string constant"                            ; break;
-            case t_stringQD          : result = "string constant ending in $"                ; break;
-            case t_stringQB          : result = "string constant ending in $("               ; break;
-            case t_StringDQ          : result = "string constant after $<id>"                ; break;
-            case t_StringDD          : result = "string constant after $<id> ending in $"    ; break;
-            case t_StringDB          : result = "string constant after $<id> ending in $("   ; break;
-            case t_stringPQ          : result = "string constant after $(<expr>)"            ; break;
-            case t_stringPD          : result = "string constant after $(<expr>) ending in $"; break;
-            case t_stringPB          : result = "string constant after $(<expr>) ending in $("; break;
-            case t_eof               : result = "end-of-file"                                ; break;
-            default                  : result = super.toString()                             ; break;
-            }
+          result = switch (this) {
+              case t_op         -> "operator";
+              case t_comma      -> "comma ','";
+              case t_period     -> "period '.'";
+              case t_lparen     -> "left parenthesis '('";
+              case t_rparen     -> "right parenthesis ')'";
+              case t_lbrace     -> "left curly brace '{'";
+              case t_rbrace     -> "right curly brace '}'";
+              case t_lbracket   -> "left bracket '['";
+              case t_rbracket   -> "right bracket ']'";
+              case t_semicolon  -> "semicolon ';'";
+              case t_question   -> "question mark '?'";
+              case t_numliteral -> "numeric literal";
+              case t_ident      -> "identifier";
+              case t_stringQQ   -> "string constant";
+              case t_stringQD   -> "string constant ending in $";
+              case t_stringQB   -> "string constant ending in $(";
+              case t_StringDQ   -> "string constant after $<id>";
+              case t_StringDD   -> "string constant after $<id> ending in $";
+              case t_StringDB   -> "string constant after $<id> ending in $(";
+              case t_stringPQ   -> "string constant after $(<expr>)";
+              case t_stringPD   -> "string constant after $(<expr>) ending in $";
+              case t_stringPB   -> "string constant after $(<expr>) ending in $(";
+              case t_eof        -> "end-of-file";
+              default           -> super.toString();
+          };
         }
       return result;
     }
