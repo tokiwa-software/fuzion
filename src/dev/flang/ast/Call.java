@@ -765,7 +765,8 @@ public class Call extends AbstractCall
    */
   private boolean needsPendingError(AbstractFeature targetFeature)
   {
-    return _calledFeature == null &&                  // nothing found, so flag error
+    return targetFeature != null &&
+           _calledFeature == null &&                  // nothing found, so flag error
            (Types.resolved == null ||                 // may happen when building bad base.fum
             targetFeature != Types.resolved.f_void);  // but allow to call anything on void
   }
@@ -776,10 +777,7 @@ public class Call extends AbstractCall
    */
   private void addPendingError(Resolution res, AbstractFeature targetFeature)
   {
-    // NYI: UNDER DEVELOPMENT: why can we not run this inside the lambda?, test typeinference_negative fails
-    var fos = targetFeature == null
-      ? new List<FeatureAndOuter>()
-      : findOnTarget(res, targetFeature, true).v0();
+    var fos = findOnTarget(res, targetFeature, true).v0();
     _pendingError = ()->
       {
         if (!fos.isEmpty() && _actuals.size() == 0 && fos.get(0)._feature.isChoice())
