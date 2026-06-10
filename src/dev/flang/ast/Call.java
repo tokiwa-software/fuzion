@@ -823,6 +823,7 @@ public class Call extends AbstractCall
   {
     var calledName = FeatureName.get(_name, _actuals.size());
     var names = ParsedOperatorCall.lookupNames(_name).map2(n -> FeatureName.get(n, _actuals.size()));
+    var direktLookup = res._module.lookupFeature(tf, calledName);
     AstErrors.calledFeatureNotFound(this,
                                     calledName,
                                     tf,
@@ -832,7 +833,8 @@ public class Call extends AbstractCall
                                                                          (AbstractFeature f) -> names.stream().anyMatch(fn -> f.featureName().equalsBaseName(fn))),
                                     res._options.isLanguageServer() || tf == null
                                       ? new List<FeatureAndOuter>()
-                                      : hiddenCandidates(res, tf, calledName));
+                                      : hiddenCandidates(res, tf, calledName),
+                                    direktLookup);
   }
 
 

@@ -1402,7 +1402,8 @@ public class AstErrors extends ANY
                                     AbstractFeature targetFeature,
                                     Expr target,
                                     List<FeatureAndOuter> candidatesArgCountMismatch,
-                                    List<FeatureAndOuter> candidatesHidden)
+                                    List<FeatureAndOuter> candidatesHidden,
+                                    AbstractFeature lo)
   {
     if (!any() || !errorInOuterFeatures(targetFeature) && !call.errorInActuals())
       {
@@ -1410,6 +1411,8 @@ public class AstErrors extends ANY
           ? StringHelpers.plural(candidatesHidden.size(), "Feature") + " not visible at call site"
           : !candidatesArgCountMismatch.isEmpty()
           ? "Different count of arguments needed when calling feature"
+          : lo != null && lo.isChoice()
+          ? "Must not call choice feature"
           : "Could not find called feature";
         var solution0 = solutionPartialApplication(call);
         var solution1 = solutionDeclareReturnTypeIfResult(calledName.baseNameHuman(),
@@ -1419,7 +1422,7 @@ public class AstErrors extends ANY
         var solution4 = solutionHidden(candidatesHidden);
         var solution5 = solutionLambda(call);
         error(call.pos(), msg,
-              "Feature not found: " + sbnf(calledName) + "\n" +
+              (lo != null && lo.isChoice() ? "" : "Feature not found: " + sbnf(calledName) + "\n") +
               (targetFeature != null
                 ? (targetFeature.isCotype() ? "Target expression: " + expr(target.toString()) + "\n" : "Target feature: " + s(targetFeature) + "\n")
                 : "") +
