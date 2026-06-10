@@ -3,7 +3,7 @@ ex_buffered_writer =>
   wh :=
     _ : io.Write_Handler is
       public redef write(b Sequence u8) outcome unit =>
-        io.out.write b
+        io.Out.env.write b
 
   lm : mutate is
 

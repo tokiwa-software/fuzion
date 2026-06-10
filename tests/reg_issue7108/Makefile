@@ -17,17 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature yap
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# yap -- shortcut for io.Out.env.print
-#
-# A handy shortcut for io.Out.env.print, output string representation of
-# an object, do not add a line break at the end.
-#
-# 'yap' as in: They kept yapping about something.
-#
-public yap(s Any) unit ! io.Out => io.Out.env.print s
+override NAME = reg_issue7108
+include ../simple.mk
