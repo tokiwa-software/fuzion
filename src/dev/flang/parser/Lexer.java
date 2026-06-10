@@ -3194,7 +3194,6 @@ PIPE        : "|"
           else
             {
               checkIndentation(pos);
-              var foundStart = false;
               if (escaped)
                 {
                   var i = 0;
@@ -3233,7 +3232,6 @@ PIPE        : "|"
               else if (p == '$')
                 {
                   t = _beginning.token(StringEnd.DOLLAR);
-                  foundStart = true;
                 }
               else if (!skipped(pos))
                 {
@@ -3250,7 +3248,7 @@ PIPE        : "|"
                 }
               pos = advance(pos, 1);
               p = raw(pos);
-              if (foundStart && p == '(')
+              if (isString(t) && end(t)==StringEnd.DOLLAR && p == '(')
                 {
                   t = _beginning.token(StringEnd.PAREN);
                   pos = advance(pos, 1);
