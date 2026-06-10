@@ -658,7 +658,7 @@ Module File
   }
   byte[] hash(int at)
   {
-    var r = new byte[16];
+    var r = new byte[32];
     for (int i = 0; i<r.length; i++)
       {
         r[i] = _data.get(at);
@@ -672,7 +672,7 @@ Module File
   }
   int hashNextPos()
   {
-    return hashPos() + 16;
+    return hashPos() + 32;
   }
   int moduleRefsCountPos()
   {
@@ -777,7 +777,7 @@ ModuleRef
   }
   int moduleRefHashNextPos(int at)
   {
-    return moduleRefHashPos(at) + 16;
+    return moduleRefHashPos(at) + 32;
   }
   int moduleRefNextPos(int at)
   {

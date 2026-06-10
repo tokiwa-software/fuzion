@@ -31,7 +31,7 @@ import java.nio.ByteBuffer;
 import java.util.TreeSet;
 import java.util.TreeMap;
 
-import java.security.SecureRandom;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 import dev.flang.ast.AbstractAssign;
@@ -47,7 +47,6 @@ import dev.flang.ast.Feature;
 import dev.flang.ast.InlineArray;
 import dev.flang.ast.ResolvedType;
 import dev.flang.ast.State;
-import dev.flang.ast.Types;
 import dev.flang.ast.Universe;
 
 import dev.flang.util.ANY;
@@ -131,43 +130,40 @@ class LibraryOut extends ANY
     _data = null;
 
     // now that we know the referenced modules, we start over:
-    var v = hash();
-    if (v != null)
+    _data = new FixUps();
+    _data.writeBytes(FuzionConstants.MIR_FILE_MAGIC);
+    _data.writeString(name);
+    var hashOffset = _data.offset();
+    _data.writeBytes(new byte[32]);
+    _data.writeInt(rm.size());
+    for (var m : rm)
       {
-        _data = new FixUps();
-        _data.writeBytes(FuzionConstants.MIR_FILE_MAGIC);
-        _data.writeString(name);
-        _data.writeBytes(v);
-        _data.writeInt(rm.size());
-        for (var m : rm)
-          {
-            moduleRef(m);
-          }
-        allDeclFeatures(sm);
-        sourceFiles();
-        _data.fixUps(this);
-        sm._options.verbosePrintln(2, "" +
-                                   _data.featureCount() + " features " +
-                                   _data.typeCount() + " types and " +
-                                   _sourceFiles.size() + " source files included in fum file.");
+        moduleRef(m);
       }
+    allDeclFeatures(sm);
+    sourceFiles();
+    _data.fixUps(this);
+    MessageDigest md;
+    try
+      {
+        md = MessageDigest.getInstance("SHA3-256");
+        byte[] digest = md.digest(_data.buffer().array());
+        check(digest.length == 32);
+        _data.writeAt(hashOffset, digest);
+      }
+    catch (NoSuchAlgorithmException e)
+      {
+        Errors.fatal("SHA3-256 missing?");
+      }
+
+    sm._options.verbosePrintln(2, "" +
+                                _data.featureCount() + " features " +
+                                _data.typeCount() + " types and " +
+                                _sourceFiles.size() + " source files included in fum file.");
   }
 
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * Create a cryptographic hash for this module file.
-   * Currently, the hash is just a cryptographically strong random number.
-   */
-  byte[] hash()
-  {
-    var result = new byte[16];
-    var r = new SecureRandom();
-    r.nextBytes(result);
-    return result;
-  }
 
 
   /**
