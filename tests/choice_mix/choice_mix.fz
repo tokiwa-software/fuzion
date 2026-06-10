@@ -45,7 +45,7 @@ choice_mix is
   e Mix := MyRef 3 4 5
 
   show_a =>
-    yak "show_a "
+    yap "show_a "
     match a
       i32    => say "i32:    "
       bool   => say "bool:   "
@@ -54,7 +54,7 @@ choice_mix is
       MyRef  => say "MyRef:  "
 
   show_v =>
-    yak "show_v "
+    yap "show_v "
     match a
       i i32    => say "i32:    $i"
       b1 bool  => say "bool:   $b1"
@@ -63,13 +63,13 @@ choice_mix is
       m MyRef  => say "MyRef:  $m"
 
   show_i =>
-    yak "show_a "
+    yap "show_a "
     match a
       i32, String, Nil => say "has 'i'"
       bool, MyRef      => say "has no 'i'"
 
   show_b =>
-    yak "show_b  "
+    yap "show_b  "
     match b
       i32    => say "i32:    "
       bool   => say "bool:   "
@@ -78,7 +78,7 @@ choice_mix is
       MyRef  => say "MyRef:  "
 
   show_c =>
-    yak "show_c  "
+    yap "show_c  "
     match c
       i32    => say "i32:    "
       bool   => say "bool:   "
@@ -87,7 +87,7 @@ choice_mix is
       MyRef  => say "MyRef:  "
 
   show_d =>
-    yak "show_d  "
+    yap "show_d  "
     match d
       i32    => say "i32:    "
       bool   => say "bool:   "
@@ -96,7 +96,7 @@ choice_mix is
       MyRef  => say "MyRef:  "
 
   show_e =>
-    yak "show_e  "
+    yap "show_e  "
     match e
       i32    => say "i32:    "
       bool   => say "bool:   "
@@ -107,7 +107,7 @@ choice_mix is
   v00 Mix := 42
 
   show00 =>
-    yak "show00 "
+    yap "show00 "
     match v00
       i32    => say "i32:    "
       bool   => say "bool:   "
@@ -116,7 +116,7 @@ choice_mix is
       MyRef  => say "MyRef:  "
 
   show0(v Mix) =>
-    yak "show0  "
+    yap "show0  "
     match v
       i32    => say "i32:    "
       bool   => say "bool:   "
@@ -125,7 +125,7 @@ choice_mix is
       MyRef  => say "MyRef:  "
 
   show(v Mix) =>
-    yak "show   "
+    yap "show   "
     match v
       i i32    => say "i32:    $i"
       b1 bool  => say "bool:   $b1"
@@ -133,35 +133,35 @@ choice_mix is
       n Nil    => say "Nil:    $n"
       m MyRef  => say "MyRef:  $m"
 
-  yak "a: "; show_a
-  yak "b: "; show_b
-  yak "c: "; show_c
-  yak "d: "; show_d
-  yak "e: "; show_e
+  yap "a: "; show_a
+  yap "b: "; show_b
+  yap "c: "; show_c
+  yap "d: "; show_d
+  yap "e: "; show_e
 
-  yak "a: "; set v00 := a; show00
-  yak "b: "; set v00 := b; show00
-  yak "c: "; set v00 := c; show00
-  yak "d: "; set v00 := d; show00
-  yak "e: "; set v00 := e; show00
+  yap "a: "; set v00 := a; show00
+  yap "b: "; set v00 := b; show00
+  yap "c: "; set v00 := c; show00
+  yap "d: "; set v00 := d; show00
+  yap "e: "; set v00 := e; show00
 
-  yak "a: "; show0 a
-  yak "b: "; show0 b
-  yak "c: "; show0 c
-  yak "d: "; show0 d
-  yak "e: "; show0 e
+  yap "a: "; show0 a
+  yap "b: "; show0 b
+  yap "c: "; show0 c
+  yap "d: "; show0 d
+  yap "e: "; show0 e
 
   for
     i := 0, i + 1
   while i < 6
     if i > 0 say "-------------"
-    yak "show_a : "; show_a
-    yak "show_v : "; show_v
-    yak "show_i : "; show_i
-    yak "show a: "; show a
-    yak "show b: "; show b
-    yak "show c: "; show c
-    yak "show d: "; show d
+    yap "show_a : "; show_a
+    yap "show_v : "; show_v
+    yap "show_i : "; show_i
+    yap "show a: "; show a
+    yap "show b: "; show b
+    yap "show c: "; show c
+    yap "show d: "; show d
     x Mix := a
     set a := b
     set b := c
@@ -348,15 +348,15 @@ choice_mix is
     for
       i := 0, i + 1
     while i < 25
-      yak "$i ==> "
+      yap "$i ==> "
       match f i
-        x i32    => yak x
-        b1 bool  => { if b1 { yak  "true" } else { yak "false" } }
-        s String => yak s
+        x i32    => yap x
+        b1 bool  => { if b1 { yap  "true" } else { yap "false" } }
+        s String => yap s
       say ""
 
     # check that pipe also works as operator:
-    (1..10).for_each yak
+    (1..10).for_each yap
     say ""
   alternatives1
 
