@@ -39,4 +39,4 @@ public uid(val u64) : property.orderable is
   # Defines a total ordering for uid values based on their
   # underlying numeric representation.
   #
-  public redef type.lteq(a, b uid.this) bool => a.val <= b.val
+  public fixed redef type.lteq(a, b uid.this) bool => a.val <= b.val
