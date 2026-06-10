@@ -35,10 +35,7 @@ is
 
   joined := concur.atomic trit .new trit.no
 
-  policy choice
-    concur.scheduling_policy.sched_other
-    concur.scheduling_policy.sched_fifo
-    concur.scheduling_policy.sched_rr
+  policy concur.scheduling_policy.val
   :=
      concur.scheduling_policy.sched_other
 
@@ -73,10 +70,7 @@ is
   # priority only applies to some scheduling policies and is
   # currently limited to a value between 0 and 99.
   #
-  public set_policy(policy0 choice
-                            concur.scheduling_policy.sched_other
-                            concur.scheduling_policy.sched_fifo
-                            concur.scheduling_policy.sched_rr,
+  public set_policy(policy0 concur.scheduling_policy.val,
                     reset_on_fork bool,
                     priority0 i32) outcome unit
     pre
@@ -106,10 +100,7 @@ is
   #
   public get_policy
     tuple
-      (choice
-        concur.scheduling_policy.sched_other
-        concur.scheduling_policy.sched_fifo
-        concur.scheduling_policy.sched_rr)
+      concur.scheduling_policy.val
       i32
   =>
     cond.synchronized ()->
