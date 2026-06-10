@@ -105,7 +105,7 @@ jitter =>
 
       start := C.env.read + start_delay
       end := start + test_duration
-      yak "testing period $period for $test_duration..."
+      yap "testing period $period for $test_duration..."
 
       # time for next release used by state effect
       next_release(t time.instant) is

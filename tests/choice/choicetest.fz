@@ -79,7 +79,7 @@ choicetest is
 
 
   sum_loop =>
-    yak "summing array using loop: "
+    yap "summing array using loop: "
     sum := { for i := -1, i+1
                  s := 0, s + value_in_cents a[i]
              until i ≥ a.length-1
@@ -88,13 +88,13 @@ choicetest is
     say sum
 
   sum_iter =>
-    yak "summing array using iterator: "
+    yap "summing array using iterator: "
     sum := mut 0;
     a.for_each (c -> sum <- (sum.get + value_in_cents c))
     say sum
 
   sum_iter_inner =>
-    yak "summing array using iterator and inner feature: "
+    yap "summing array using iterator and inner feature: "
     sum := mut 0;
     a.for_each (c -> sum <- (sum.get + c.value_in_cents))
     say sum

@@ -106,6 +106,10 @@ public i32(public val i32) : num.wrap_around, has_interval, java_primitive is
   public as_f64 f64 => intrinsic
   public as_f32 f32 => as_f64.as_f32
 
+  # Convert this to a string with a fixed number of digits after the decimal point.
+  #
+  public as_string_decimals(fraction_digits i32) String =>
+    as_f32.as_string_decimals fraction_digits
 
   # create hash code from this number
   public redef type.hash_code(a i32.this) u64 =>

@@ -107,23 +107,23 @@ genericstest is
     postfix >>>> i32 => qa-1000  # q>>>> is 1000 smaller
 
   a q := q 1
-  set a := q     2; yak "a($(a.qa), 10) infix > is $(a > 10), $(a >> 10), $(a >>> 10), $(a >>>> 10)"
-  set a := q    20; yak "a($(a.qa), 10) infix > is $(a > 10), $(a >> 10), $(a >>> 10), $(a >>>> 10)"
-  set a := q   200; yak "a($(a.qa), 10) infix > is $(a > 10), $(a >> 10), $(a >>> 10), $(a >>>> 10)"
-  set a := q  2000; yak "a($(a.qa), 10) infix > is $(a > 10), $(a >> 10), $(a >>> 10), $(a >>>> 10)"
-  set a := q 20000; yak "a($(a.qa), 10) infix > is $(a > 10), $(a >> 10), $(a >>> 10), $(a >>>> 10)"
+  set a := q     2; yap "a($(a.qa), 10) infix > is $(a > 10), $(a >> 10), $(a >>> 10), $(a >>>> 10)"
+  set a := q    20; yap "a($(a.qa), 10) infix > is $(a > 10), $(a >> 10), $(a >>> 10), $(a >>>> 10)"
+  set a := q   200; yap "a($(a.qa), 10) infix > is $(a > 10), $(a >> 10), $(a >>> 10), $(a >>>> 10)"
+  set a := q  2000; yap "a($(a.qa), 10) infix > is $(a > 10), $(a >> 10), $(a >>> 10), $(a >>>> 10)"
+  set a := q 20000; yap "a($(a.qa), 10) infix > is $(a > 10), $(a >> 10), $(a >>> 10), $(a >>>> 10)"
 
-  set a := q     2; yak "a($(a.qa)) prefix > is $(>a), $(>>a), $(>>>a), $(>>>>a)"
-  set a := q    20; yak "a($(a.qa)) prefix > is $(>a), $(>>a), $(>>>a), $(>>>>a)"
-  set a := q   200; yak "a($(a.qa)) prefix > is $(>a), $(>>a), $(>>>a), $(>>>>a)"
-  set a := q  2000; yak "a($(a.qa)) prefix > is $(>a), $(>>a), $(>>>a), $(>>>>a)"
-  set a := q 20000; yak "a($(a.qa)) prefix > is $(>a), $(>>a), $(>>>a), $(>>>>a)"
+  set a := q     2; yap "a($(a.qa)) prefix > is $(>a), $(>>a), $(>>>a), $(>>>>a)"
+  set a := q    20; yap "a($(a.qa)) prefix > is $(>a), $(>>a), $(>>>a), $(>>>>a)"
+  set a := q   200; yap "a($(a.qa)) prefix > is $(>a), $(>>a), $(>>>a), $(>>>>a)"
+  set a := q  2000; yap "a($(a.qa)) prefix > is $(>a), $(>>a), $(>>>a), $(>>>>a)"
+  set a := q 20000; yap "a($(a.qa)) prefix > is $(>a), $(>>a), $(>>>a), $(>>>>a)"
 
-  set a := q     2; yak "a($(a.qa)) postfix > is $(a>), $(a>>), $(a>>>), $(a>>>>)"
-  set a := q    20; yak "a($(a.qa)) postfix > is $(a>), $(a>>), $(a>>>), $(a>>>>)"
-  set a := q   200; yak "a($(a.qa)) postfix > is $(a>), $(a>>), $(a>>>), $(a>>>>)"
-  set a := q  2000; yak "a($(a.qa)) postfix > is $(a>), $(a>>), $(a>>>), $(a>>>>)"
-  set a := q 20000; yak "a($(a.qa)) postfix > is $(a>), $(a>>), $(a>>>), $(a>>>>)"
+  set a := q     2; yap "a($(a.qa)) postfix > is $(a>), $(a>>), $(a>>>), $(a>>>>)"
+  set a := q    20; yap "a($(a.qa)) postfix > is $(a>), $(a>>), $(a>>>), $(a>>>>)"
+  set a := q   200; yap "a($(a.qa)) postfix > is $(a>), $(a>>), $(a>>>), $(a>>>>)"
+  set a := q  2000; yap "a($(a.qa)) postfix > is $(a>), $(a>>), $(a>>>), $(a>>>>)"
+  set a := q 20000; yap "a($(a.qa)) postfix > is $(a>), $(a>>), $(a>>>), $(a>>>>)"
 
   lc1 := List Complex2
   lc1.add (Complex2 3 4)
@@ -140,7 +140,7 @@ genericstest is
   lc2.add (Complex i32 5 6)
   lc2.add (Complex i32 7 8)
   lc2.print
-  yak "2: size: $(lc2.size)"
+  yap "2: size: $(lc2.size)"
 
   Complex3(redef real, imag i32) : Complex i32 real imag is
   lc3 := List Complex3;
@@ -149,7 +149,7 @@ genericstest is
   lc3.add (Complex3 5 6)
   lc3.add (Complex3 7 8)
   lc3.print
-  yak "3: size: $(lc3.size)"
+  yap "3: size: $(lc3.size)"
 
   outerGenerics =>
     A(T, U type) is

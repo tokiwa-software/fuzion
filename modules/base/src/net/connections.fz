@@ -63,9 +63,3 @@ module:public connections(active container.Set i32) : effect is
   public redef fixed type.default_value option net.connections
   =>
     net.connections (container.set_of_ordered i32 [])
-
-
-# shorthand to get connections effect
-#
-public connections net.connections ! net.connections =>
-  net.connections.env

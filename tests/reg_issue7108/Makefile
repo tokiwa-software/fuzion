@@ -17,28 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature concur.scheduling_policy
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-
-# unit type grouping scheduling policies
-#
-public scheduling_policy is
-
-  # unit type denoting scheduling policy "other"
-  #
-  public sched_other is
-
-  # unit type denoting scheduling policy "first in first out"
-  #
-  public sched_fifo is
-
-  # unit type denoting scheduling policy "round robin"
-  #
-  public sched_rr is
-
-  # choice of available scheduling policies
-  #
-  public val : choice concur.scheduling_policy.sched_other concur.scheduling_policy.sched_fifo concur.scheduling_policy.sched_rr is
-
+override NAME = reg_issue7108
+include ../simple.mk

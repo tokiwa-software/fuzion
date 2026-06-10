@@ -39,13 +39,13 @@ i128_test =>
 
   shift_test_right(x i128) =>
     for i in (i64 0)..129 do
-      yak (x >> i128 i).bi_bare
+      yap (x >> i128 i).bi_bare
       say "  >> $i"
     say ""
 
   shift_test_left(x i128) =>
     for i in (i64 0)..129 do
-      yak (x << i128 i).bi_bare
+      yap (x << i128 i).bi_bare
       say "  << $i"
     say ""
 
@@ -67,13 +67,13 @@ i128_test =>
     i128 hi.cast_to_i64 lo
 
   test_eq(T type : num.wrap_around, actual, expected T) =>
-    yak actual
+    yap actual
     say (actual = expected ? "  [ok]" : "  [Error] expected $expected")
 
   test_op(T type : num.wrap_around,  op (T,T)->T, op_name String, a, b, expected T, exp_str String) =>
 
     actual := op a b
-    yak "$a $op_name $b = $actual "
+    yap "$a $op_name $b = $actual "
 
     if actual = expected && (exp_str = "" | actual.as_string = exp_str)
       say "[ok]"

@@ -23,9 +23,9 @@
 #
 # -----------------------------------------------------------------------
 
-# say -- shortcut for io.out.println
+# say -- shortcut for io.Out.env.println
 #
-# A handy shortcut for io.out.println, output string representation of
+# A handy shortcut for io.Out.env.println, output string representation of
 # an object followed by a line break.
 #
-public say(s Any) unit ! io.Out => io.out.println s
+public say(s Any) unit ! io.Out => io.Out.env.println s

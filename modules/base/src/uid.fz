@@ -17,28 +17,26 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature concur.scheduling_policy
+#  Source code of Fuzion standard library feature uid
 #
 # -----------------------------------------------------------------------
 
-
-# unit type grouping scheduling policies
+# uid -- unique identifier type
 #
-public scheduling_policy is
+# Wraps a u64 in a dedicated type to prevent accidental mixing
+# with other numeric values while preserving ordering semantics.
+#
+# Instances are typically created by the unique_id effect.
+#
+public uid(val u64) : property.orderable is
 
-  # unit type denoting scheduling policy "other"
+
+  # Returns the identifier as its decimal string representation.
   #
-  public sched_other is
+  public redef as_string String => val.as_string
 
-  # unit type denoting scheduling policy "first in first out"
+
+  # Defines a total ordering for uid values based on their
+  # underlying numeric representation.
   #
-  public sched_fifo is
-
-  # unit type denoting scheduling policy "round robin"
-  #
-  public sched_rr is
-
-  # choice of available scheduling policies
-  #
-  public val : choice concur.scheduling_policy.sched_other concur.scheduling_policy.sched_fifo concur.scheduling_policy.sched_rr is
-
+  public fixed redef type.lteq(a, b uid.this) bool => a.val <= b.val

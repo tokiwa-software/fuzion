@@ -234,13 +234,13 @@ priority_queue_test =>
           new_sort :=
             if enq
               e := random.env.next_i32 test_size
-              yak "🡩"
+              yap "🡩"
               q.enqueue e
               (sort ++ [e]).sort.as_list
             else
               match q.dequeue
-                e i32 => yak (e = sort[0] ? "🡫" : "\nError in round $i expected '$(sort[i])' but cot '$e'\n")
-                nil => yak (sort.is_empty ? "-" : "\nError queue is empty but sort is $sort\n")
+                e i32 => yap (e = sort[0] ? "🡫" : "\nError in round $i expected '$(sort[i])' but cot '$e'\n")
+                nil => yap (sort.is_empty ? "-" : "\nError queue is empty but sort is $sort\n")
               sort.tail
     say "\n"
 

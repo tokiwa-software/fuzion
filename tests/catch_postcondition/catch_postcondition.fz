@@ -39,7 +39,7 @@ catch_postcondition is
     =>
       x +^ x
 
-    yak "trying $T... "
+    yap "trying $T... "
     for v := T.one, double v
         i in 0..50
     else
