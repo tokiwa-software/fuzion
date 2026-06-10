@@ -154,7 +154,7 @@ base32hex_test is
                  "CPNM🌍U=="]    # non alphabet multi byte unicode character
 
   for t in broken_enc do
-    yak "$t: "
+    yap "$t: "
     say (match encodings.base32hex.decode_str t
         arr array u8 => String.from arr
         e error => e.as_string)

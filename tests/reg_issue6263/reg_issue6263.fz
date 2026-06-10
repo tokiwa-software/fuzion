@@ -61,7 +61,7 @@ reg_issue6263 =>
         show =>
           for y in min_y..max_y do
             for x in min_x..max_x do
-              yak area[_,x,y].n.get
+              yap area[_,x,y].n.get
             say ""
         show
         say "fill: "

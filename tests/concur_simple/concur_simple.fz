@@ -44,7 +44,7 @@ concur_simple =>
     time.nano.env.sleep t0
     for i in 0..N do
       time.nano.env.sleep t
-      yak s
+      yap s
 
   thread_1 := concur.threads.env.spawn (()->count "/"  (d.ms 20) t1)
   thread_2 := concur.threads.env.spawn (()->count "\\" (d.ms 40) t2)
