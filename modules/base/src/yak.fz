@@ -23,12 +23,12 @@
 #
 # -----------------------------------------------------------------------
 
-# yak -- shortcut for io.out.print
+# yak -- shortcut for io.Out.env.print
 #
-# A handy shortcut for io.out.print, output string representation of
+# A handy shortcut for io.Out.env.print, output string representation of
 # an object, do not add a line break at the end.
 #
 # The term 'yak' was taken from the expression 'Yakety Yak' as in the
 # song by The Coasters.
 #
-public yak(s Any) unit ! io.Out => io.out.print s
+public yak(s Any) unit ! io.Out => io.Out.env.print s
