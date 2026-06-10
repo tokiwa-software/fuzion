@@ -1,0 +1,133 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue7166
+#
+# -----------------------------------------------------------------------
+
+# test for mutate and blocking_mutate to produce correct errors when used without proper
+# `exclusive` sections.
+#
+reg_issue7166 =>
+
+
+  # ------ run test using non-blocking mutate ------
+
+  say "NON-BLOCKING: "
+  lm : mutate is
+  lm ! ()->
+    test lm false
+
+  # ------ run test using blocking mutate ------
+
+  say "BLOCKING: "
+  bm : concur.blocking_mutate is
+  bm ! ()->
+    test bm true
+
+  # the common test code
+  #
+  test(LM type : mutate, thread_safe bool) =>
+
+    # first, create mutable field and array:
+
+    v1 := LM.env.new 13
+    a1 := LM.env.new_array 32 "bla"
+
+    # ------------------------------------
+
+    # next, check if accesses without `exclusive` work as expected, i.e. works
+    # for the non-thread-safe version only:
+
+    yak "PART 1 in main thread: read & update non-exclusive"
+    fuzion.runtime.pre_fault.try ()->
+        v1 <- v1 + 4711
+        say <| (thread_safe ? ", expected pre_fault -- failed" : " -- ok")
+      .catch e->
+        say <| (thread_safe ? ", got pre_fault $e -- ok" : "got unexpected pre_fault $e -- failed")
+
+    yak "PART 2 in main thread: write to array non-exclusive in main thread"
+    fuzion.runtime.pre_fault.try ()->
+        a1[2] := "ble"
+        say <| (thread_safe ? ", expected pre_fault, got nothing -- failed" : " -- ok")
+      .catch e->
+        say <| (thread_safe ? ", got pre_fault $e -- ok" : "got unexpected pre_fault $e -- failed")
+
+    # ------------------------------------
+
+    # next, check that accesses with `exclusive` always work:
+
+    LM.env.exclusive ()->
+      yak "PART 3 in main thread: read & update exclusive"
+      v1 <- 2*v1
+      say " -- ok"
+      yak "PART 4 in main thread: write to array"
+      a1[1] := "blub"
+      say " -- ok"
+
+
+    # now, check accesses from another thread
+
+    t := concur.threads.env.spawn ()->
+
+      # first, non-exclusive accesses to a field in another thread must fail in the pre-condition
+
+      # try mutating a field
+      yak "PART 5 in thread: read & update non-exclusive "
+      fuzion.runtime.pre_fault.try ()->
+          v1 <- v1 + 4711
+          say ", expected pre_fault, got nothing -- failed,"
+        .catch e->
+          say " got $e -- ok"
+
+      # then, non-exclusive accesses to an array in another thread must also fail in the pre-condition
+
+      # try mutating an array
+      yak "PART 6 in thread: write to array array non-exclusive"
+      fuzion.runtime.pre_fault.try ()->
+          a1[2] := "blök!"
+          say ", expected pre_fault, got nothing -- failed"
+        .catch e->
+          say " got $e -- ok"
+
+      # then, explicitly exclusive accesses to a field should work for
+      # thread-_safe mutate, should not for a normal thread-local mutate:
+
+      # try mutating a field
+      yak "PART 7 in thread: read and update field exclusively"
+      fuzion.runtime.pre_fault.try ()->
+          LM.env.exclusive ()->
+            v1 <- v1 + 4711
+            say <| (thread_safe ? " -- ok" : "expected pre_fault, got nothing -- failed,")
+        .catch e->
+          say (thread_safe ? ", expected no error, got $e -- failed" : " got $e -- ok")
+
+      # same for array accesses: explicitly exclusive should work for
+      # thread-_safe mutate, should not for a normal thread-local mutate:
+
+      # try mutating an array
+      yak "PART 8 in thread: write array exclusively"
+      fuzion.runtime.pre_fault.try ()->
+          LM.env.exclusive ()->
+            a1[2] := "blök!"
+            say <| (thread_safe ? " -- ok" : "expected pre_fault, got nothing -- failed,")
+        .catch e->
+          say (thread_safe ? ", expected no error, got $e -- failed" : " got $e -- ok")
+
+    t.join
