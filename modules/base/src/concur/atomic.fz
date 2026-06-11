@@ -166,7 +166,7 @@ is
   #
   # returns the (old_value, new_value)
   #
-  public update(compute_new T->T) (T,T) =>
+  public update(F type : T->T, compute_new F) (T,T) =>
     for current_value := read
         new_value     := compute_new current_value
     while !(compare_and_set current_value new_value)
