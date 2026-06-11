@@ -1,5 +1,5 @@
 
-error 1: FATAL FAULT `*** panic ***`: *** invalid mutate for 'm'
+error 1: FATAL FAULT `precondition`: safety: !open || is_exclusive2
 Call stack:
 fuzion.type.runtime.type.fault.type.default_value.(λkind_and_msg-> kind, msg := kind_and_m...).call#1: {base.fum}/fuzion/runtime/fault.fz:63:7:
       fuzion.sys.fatal_fault kind msg
@@ -7,24 +7,29 @@ fuzion.type.runtime.type.fault.type.default_value.(λkind_and_msg-> kind, msg :=
 fuzion.runtime.fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
   => h e
 -----^
-panic.type.default_value.(λ(msg->fuzion.runtime.fault.env.cause (...).call#1: {base.fum}/panic.fz:39:18:
-    (panic (msg->fuzion.runtime.fault.env.cause ("*** panic ***", msg)) unit)
------------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-panic.cause#1: {base.fum}/eff/fallible.fz:35:6:
+fuzion.type.runtime.type.contract_fault.type.default_value.(λkind_and_msg-> fuzion.runtime.fault.en...).call#1: {base.fum}/fuzion/runtime/contract_fault.fz:42:7:
+      fuzion.runtime.fault.env.cause kind_and_msg
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+fuzion.runtime.contract_fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
   => h e
 -----^
-panic#1: {base.fum}/panic.fz:59:19:
-    msg String => panic.cause msg
-------------------^^^^^^^^^^^^^^^
-m.mpanic#1: {base.fum}/mutate.fz:103:32:
-  module mpanic(msg String) => panic msg
--------------------------------^^^^^^^^^
-(m.new i32).check_and_replace: {base.fum}/mutate.fz:129:9:
-        mpanic "*** invalid mutate for '{M.name}'"
---------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(m.new i32).get: {base.fum}/mutate.fz:164:9:
-        check_and_replace
---------^^^^^^^^^^^^^^^^^
+fuzion.type.runtime.type.pre_fault.type.default_value.(λmsg-> fuzion.runtime.contract_fault.en...).call#1: {base.fum}/fuzion/runtime/pre_fault.fz:42:7:
+      fuzion.runtime.contract_fault.env.cause ("precondition", msg)
+------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+fuzion.runtime.pre_fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
+  => h e
+-----^
+fuzion.runtime.precondition_fault#1: {base.fum}/fuzion/runtime/pre_fault.fz:56:3:
+  fuzion.runtime.pre_fault.env.cause msg
+--^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(m.new i32).pre get: {base.fum}/mutate.fz:176:9:
+        safety: !open || is_exclusive2
+--------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(m.new i32).precall get: {base.fum}/mutate.fz:175:7:
+      pre
+------^^^
+        safety: !open || is_exclusive2
+--------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 universe: --CURDIR--/reg_issue3352.fz:26:6:
 _ := s.get
 -----^^^^^

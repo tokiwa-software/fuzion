@@ -83,12 +83,12 @@ test_local_mutate is
       neg_test3 =>
         s := m ! ()->count2
         say s             # *** will cause an error, requires m to be installed
-        "** failed, did not panic **"
+        "** failed, did not cause precondition fault **"
 
       caught_msg(msg) => "*** got '$msg' ***\nok"
 
-      say (panic.try   neg_test3
-                .catch caught_msg)
+      say (fuzion.runtime.pre_fault.try   neg_test3
+                                   .catch caught_msg)
 
       say (panic.try   neg_test4
                 .catch caught_msg)
