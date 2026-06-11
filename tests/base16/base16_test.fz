@@ -148,7 +148,7 @@ base16_test is
                  "666🌍F6"]    # non alphabet multi byte unicode character
 
   for t in broken_enc do
-    yak "$t: "
+    yap "$t: "
     say (match encodings.base16.decode_str t
         arr array u8 => String.from arr
         e error => e.as_string)

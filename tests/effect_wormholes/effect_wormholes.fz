@@ -37,11 +37,11 @@ effect_wormholes =>
 
   out_A : io.Out is
     public redef print(s Any) unit =>
-      io.err.print (($s).replace "!" "! -- out_A on io.err")
+      io.Err.env.print (($s).replace "!" "! -- out_A on io.err")
 
   out_B : io.Out is
     public redef print(s Any) unit =>
-      io.err.print (($s).replace "!" "! -- out_B on io.err")
+      io.Err.env.print (($s).replace "!" "! -- out_B on io.err")
 
   lm ! ()->
 

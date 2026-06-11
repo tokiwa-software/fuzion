@@ -155,7 +155,7 @@ base64_test is
                  "Zm9v;Yg=="]  # non alphabet ascii character
 
   for t in broken_enc do
-    yak "$t: "
+    yap "$t: "
     say (match encodings.base64.decode_str t
         arr array u8 => String.from arr
         e error => e.as_string)

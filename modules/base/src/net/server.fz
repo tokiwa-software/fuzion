@@ -53,7 +53,7 @@ is
   public accept outcome net.connection =>
     fuzion.sys.net.accept sock
       .bind desc->
-        net.connections.add desc
+        net.connections.env.add desc
         net.connection desc
 
 

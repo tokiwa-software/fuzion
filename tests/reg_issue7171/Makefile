@@ -17,18 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test reg_issue3932
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-g(start i32) : effect is
-
-  call =>
-    # replace current effect instance with next value
-    (g start+1).replace
-    start
-
-(g 0) ! ()->
-  for _ in 1..10 do
-    yap g.env.call
-
+override NAME = reg_issue7171
+include ../simple.mk
