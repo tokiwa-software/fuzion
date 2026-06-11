@@ -55,14 +55,14 @@ reg_issue7166 =>
     # next, check if accesses without `exclusive` work as expected, i.e. works
     # for the non-thread-safe version only:
 
-    yak "PART 1 in main thread: read & update non-exclusive"
+    yap "PART 1 in main thread: read & update non-exclusive"
     fuzion.runtime.pre_fault.try ()->
         v1 <- v1 + 4711
         say <| (thread_safe ? ", expected pre_fault -- failed" : " -- ok")
       .catch e->
         say <| (thread_safe ? ", got pre_fault $e -- ok" : "got unexpected pre_fault $e -- failed")
 
-    yak "PART 2 in main thread: write to array non-exclusive in main thread"
+    yap "PART 2 in main thread: write to array non-exclusive in main thread"
     fuzion.runtime.pre_fault.try ()->
         a1[2] := "ble"
         say <| (thread_safe ? ", expected pre_fault, got nothing -- failed" : " -- ok")
@@ -74,10 +74,10 @@ reg_issue7166 =>
     # next, check that accesses with `exclusive` always work:
 
     LM.env.exclusive ()->
-      yak "PART 3 in main thread: read & update exclusive"
+      yap "PART 3 in main thread: read & update exclusive"
       v1 <- 2*v1
       say " -- ok"
-      yak "PART 4 in main thread: write to array"
+      yap "PART 4 in main thread: write to array"
       a1[1] := "blub"
       say " -- ok"
 
@@ -89,7 +89,7 @@ reg_issue7166 =>
       # first, non-exclusive accesses to a field in another thread must fail in the pre-condition
 
       # try mutating a field
-      yak "PART 5 in thread: read & update non-exclusive "
+      yap "PART 5 in thread: read & update non-exclusive "
       fuzion.runtime.pre_fault.try ()->
           v1 <- v1 + 4711
           say ", expected pre_fault, got nothing -- failed,"
@@ -99,7 +99,7 @@ reg_issue7166 =>
       # then, non-exclusive accesses to an array in another thread must also fail in the pre-condition
 
       # try mutating an array
-      yak "PART 6 in thread: write to array array non-exclusive"
+      yap "PART 6 in thread: write to array array non-exclusive"
       fuzion.runtime.pre_fault.try ()->
           a1[2] := "blök!"
           say ", expected pre_fault, got nothing -- failed"
@@ -110,7 +110,7 @@ reg_issue7166 =>
       # thread-_safe mutate, should not for a normal thread-local mutate:
 
       # try mutating a field
-      yak "PART 7 in thread: read and update field exclusively"
+      yap "PART 7 in thread: read and update field exclusively"
       fuzion.runtime.pre_fault.try ()->
           LM.env.exclusive ()->
             v1 <- v1 + 4711
@@ -122,7 +122,7 @@ reg_issue7166 =>
       # thread-_safe mutate, should not for a normal thread-local mutate:
 
       # try mutating an array
-      yak "PART 8 in thread: write array exclusively"
+      yap "PART 8 in thread: write array exclusively"
       fuzion.runtime.pre_fault.try ()->
           LM.env.exclusive ()->
             a1[2] := "blök!"
