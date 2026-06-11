@@ -17,18 +17,18 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test reg_issue3932
+#  Source code of Fuzion test reg_issue7108
 #
 # -----------------------------------------------------------------------
 
-g(start i32) : effect is
+rev(T type : property.orderable, val T) : property.orderable is
 
-  call =>
-    # replace current effect instance with next value
-    (g start+1).replace
-    start
+  public redef type.lteq(a, b rev.this) bool
+  =>
+    b.val <= a.val
 
-(g 0) ! ()->
-  for _ in 1..10 do
-    yap g.env.call
+property.orderable.rev1 => rev orderable.this
 
+s := ["A", "Q", "B", "C"]
+
+say <| s.map (.rev1) .sort
