@@ -162,9 +162,6 @@ public mutate : linear_effect is
         auto_unwrap T mutate
   is
 
-    # NYI: UNDER DEVELOPMENT: workaround for #7171, remove if that is fixed.
-    public is_exclusive2 bool => is_exclusive
-
 
     # read the current value of this mutable value.
     #
@@ -173,7 +170,7 @@ public mutate : linear_effect is
     #
     public get T ! mutate.this
       pre
-        safety: !open || is_exclusive2
+        safety: !open || is_exclusive
     =>
       if open
         check_and_replace
