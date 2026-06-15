@@ -145,7 +145,7 @@ ex =>
 
   header_file := "./fz.h"
 
-  tu := clang_parseTranslationUnit ci (header_file.as_c_string mutate) (mutate.array Native_Ref).empty 0 ffi.null 0 0
+  tu := clang_parseTranslationUnit ci (header_file.as_c_string mutate) (mutate.array Native_Ref .from_Sequence (Sequence Native_Ref .empty)) 0 ffi.null 0 0
 
   check !(ffi.is_null tu)
 
