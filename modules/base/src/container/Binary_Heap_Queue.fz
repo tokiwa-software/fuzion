@@ -98,13 +98,13 @@ module:public Binary_Heap_Queue(
   #           │           │   │
   #           ╰───────────┴───╯
   #
-  elements :=
+  elements LM.dynamic_array T :=
     match initial_elements
       nil             =>
         match min_size
-          nil => LM.array T .empty
-          i i64 => LM.array T .empty i
-      elem Sequence T => LM.array T .from_Sequence elem
+          nil => LM.dynamic_array T .empty
+          i i64 => LM.dynamic_array T .empty i
+      elem Sequence T => LM.dynamic_array T .from_Sequence elem
 
   # fix heap if created from initial elements
   if initial_elements.ok
