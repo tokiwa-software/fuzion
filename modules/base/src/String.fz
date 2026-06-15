@@ -424,7 +424,8 @@ public String ref : property.equatable, property.hashable, property.orderable is
     substring_codepoint from codepoint_count
 
 
-  # splits this string in chunks of codepoint length n, the last part might be shorter
+  # splits this string in Strings of `n` codepoints each, except the
+  # last one that might be shorter.
   #
   public chunk(n i32) Sequence String
     pre
