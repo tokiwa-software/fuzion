@@ -738,7 +738,9 @@ A `_` may be used as placeholder for a xref:fuzion_actual_typeparameter[actual t
               }
             i++;
           }
-        _generics = res.resolveTypes(g, context);
+        _generics = context.outerFeature().state().atLeast(State.RESOLVED_DECLARATIONS)
+          ? res.resolveTypes(g, context)
+          : g;
         _splitOffGenerics = g.freeze();
         _actuals = a;
       }
