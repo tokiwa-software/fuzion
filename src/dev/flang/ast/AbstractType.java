@@ -698,7 +698,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
     if (!result && !isGenericArgument())
       {
-        // NYI: BUG: likely unsound
+        // NYI: BUG: #4756, #5002, likely unsound
         result = switch (actual.kind())
           {
             /**
