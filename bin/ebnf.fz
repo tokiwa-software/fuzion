@@ -167,7 +167,7 @@ main =>
               else
                 (res, in_rule)
           else
-            res.is_empty ? "" : (res.as_string new_line) + new_line
+            res.is_empty ? "" : (res.as_string encodings.ascii.lf_str) + encodings.ascii.lf_str
 
 
         ebnf_rules.replace "\"" "'"     # replace " by '
