@@ -51,10 +51,15 @@ module fileio is
   # this might overwrite parts or all of an existing file.
   #
   module write(fd File_Descriptor, content array u8) outcome unit =>
-    res := fzE_file_write fd content.internal_array.data content.length
+    for tbw := content, tbw.drop res .as_array
+        res := fzE_file_write fd tbw.internal_array.data tbw.length
+    while res >= 0 && res != tbw.length
+    else
+      if res < 0
+        error "writing to file" fzE_last_error
+      else
+        unit
 
-    if res < 0
-      error "failed writing" res.as_i64
 
 
   # wrapper for fzE_file_flush

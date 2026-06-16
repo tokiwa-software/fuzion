@@ -323,8 +323,7 @@ int fzE_socket_read(int sockfd, void * buf, size_t count);
  * @param count
  *      number of bytes to write
  *
- * @return 0 on success, or error code
- *         may block if socket is set to blocking
+ * @return -1 or number of bytes written on success
  */
 int fzE_socket_write(int sockfd, const void * buf, size_t count);
 
@@ -540,7 +539,7 @@ int32_t fzE_file_read(void * file, void * buf, int32_t size);
  *
  * @param size the size of buf in bytes
  *
- * @return amounts of bytes writter, or negative number on error
+ * @return amounts of bytes written, or negative number on error
  */
 int32_t fzE_file_write(void * file, void * buf, int32_t size);
 

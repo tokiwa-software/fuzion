@@ -361,7 +361,7 @@ int fzE_socket_read(int sockfd, void * buf, size_t count){
 
 // write buf to sockfd
 // may block if socket is set to blocking.
-// return error code or zero on success
+// return -1 or number of bytes written on success
 int fzE_socket_write(int sockfd, const void * buf, size_t count){
   return set_last_error(sendto( sockfd, buf, count, 0, NULL, 0));
 }
