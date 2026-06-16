@@ -108,7 +108,7 @@ public mutate : linear_effect is
   #
   public is_exclusive bool
   =>
-    mutate.this.env.exclusive_thread >>? (=concur.threads.env.current)
+    M.get_if_instated >>? (x -> id = x.id && x.exclusive_thread=concur.threads.env.current)
 
 
   # panic operation to be used in case of a severe problem.  This is redefined within the
@@ -134,7 +134,7 @@ public mutate : linear_effect is
     #
     module check_and_replace
     =>
-      if !is_currently_instated
+      if !is_exclusive
         mpanic "*** invalid mutate for '$(M.name)'"
       mutate.this.env.replace
 
@@ -162,13 +162,19 @@ public mutate : linear_effect is
         auto_unwrap T mutate
   is
 
+    # NYI: UNDER DEVELOPMENT: workaround for #7171, remove if that is fixed.
+    public is_exclusive2 bool => is_exclusive
+
 
     # read the current value of this mutable value.
     #
     # If this is open, check that the mutate effect this was created with is still
     # instated in the current environment.
     #
-    public get T ! mutate.this =>
+    public get T ! mutate.this
+      pre
+        safety: !open || is_exclusive2
+    =>
       if open
         check_and_replace
       mutable_value
@@ -232,11 +238,16 @@ public mutate : linear_effect is
 
   # is instance `mutate.this` instated for type `mutate.this` and, if `mutate.this` does
   # not support use in several threads, check we are running in the thread `mutate.this`
-  # was created in?
+  # was created in.
+  #
+  # This is used a pre-condition for `exclusive` and `exclusive_when`.
+  #
+  # Note that this is redefined in `blocking_mutate` since it does not require
+  # exclusivity there, but it is sufficient if that is instated.
   #
   public is_this_mutate_instated_and_usable bool
   =>
-    M.get_if_instated >>? (x -> id = x.id && is_exclusive)
+    is_exclusive
 
 
   # perform given code with exclusive access to the mutable values created with
@@ -256,7 +267,6 @@ public mutate : linear_effect is
   #
   public wait(F type: ()->bool, condition F) unit
   pre
-    safety: is_this_mutate_instated_and_usable
     safety: is_exclusive
   post
     debug: condition()

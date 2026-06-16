@@ -1,1 +1,1 @@
-*** failed *** panic ***: `*** invalid mutate for 'm'`
+*** failed precondition: `safety: !open || is_exclusive2`

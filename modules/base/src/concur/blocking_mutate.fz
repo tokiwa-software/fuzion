@@ -60,9 +60,8 @@ public blocking_mutate : mutate is
     mtx.synchronized ()->
       set exclusive_thread := concur.threads.env.current
       blocking_mutate.this.replace
+
       res := code()
-      set exclusive_thread := nil
-      blocking_mutate.this.replace
 
       match waiting.first
         f concur.Thread =>
@@ -75,6 +74,9 @@ public blocking_mutate : mutate is
             waiting.remove t
             t.unpark
         nil =>
+
+      set exclusive_thread := nil
+      blocking_mutate.this.replace
 
       res
 
