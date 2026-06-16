@@ -102,7 +102,7 @@ public Mutable_Map(public K type : property.equatable, public V type) ref is
   #
   public redef as_string String =>
     for
-      r := $"\{", r + c + "($k => {get k})"
+      r := $"{", r + c + "($k => $(get k))"
       k in keys
       c := "", ", "
     else

@@ -110,7 +110,7 @@ is
   public redef as_string String =>
     thru := through.bind ($)
                    .or_else ()->if step.sign < 0 then "-∞" else "∞"
-    "$from..$thru{if step = T.one then "" else ":$step"}"
+    "$from..$thru$(if step = T.one then "" else ":$step")"
 
 
   # create a new interval from a sequence of elements

@@ -38,8 +38,8 @@ outerNormalization is
   testCodepointsStream(s String) is
     l := s.codepoints
 
-  say "testCodepointsStream of \$1234 is {(testCodepointsStream $1234).l}"
-  say "testCodepointsStream of \$true is {(testCodepointsStream $true).l}"
+  say "testCodepointsStream of \$1234 is $((testCodepointsStream $1234).l)"
+  say "testCodepointsStream of \$true is $((testCodepointsStream $true).l)"
 
 
   # similar to testCodepointsStream, testConstructor tests that constructor a.f
@@ -58,7 +58,7 @@ outerNormalization is
 
     call_f (v a) unit =>
       x a.f := v.f
-      say "testConstructor: {x.s}"
+      say "testConstructor: $(x.s)"
 
     call_f b
     call_f c
@@ -79,7 +79,7 @@ outerNormalization is
 
     call_f (v a) unit =>
       x a.f := v.f
-      say "testConstructor2: {x.s}"
+      say "testConstructor2: $(x.s)"
 
     call_f b
 
@@ -99,7 +99,7 @@ outerNormalization is
       public redef as_string String => "a 'j'"
 
     t(r rj) =>
-      say "testNormalize: {r.b}"
+      say "testNormalize: $(r.b)"
 
     t j
 
@@ -120,7 +120,7 @@ outerNormalization is
       public redef as_string String => "a 'j'"
 
     t(r rj) =>
-      say "testNormalize2: {r.b}"
+      say "testNormalize2: $(r.b)"
 
     t j
 

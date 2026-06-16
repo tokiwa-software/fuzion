@@ -93,14 +93,14 @@ compile_time_type_casts =>
     for_String
       pre T : String
     =>
-      say "String '$v' type $T len {v.byte_count}"
+      say "String '$v' type $T len $(v.byte_count)"
 
     if T : String
       say "String '$v' type $T"
-      say "String '$v' type $T len {v.byte_count}"
+      say "String '$v' type $T len $(v.byte_count)"
       for_String
-      uselambda ()->(say "lambda : codepoint len {v.codepoint_count}")
-      uselambda     (say "partial: codepoint len {v.codepoint_count}")   # partial using constraint in args
+      uselambda ()->(say "lambda : codepoint len $(v.codepoint_count)")
+      uselambda     (say "partial: codepoint len $(v.codepoint_count)")   # partial using constraint in args
       uselazy         v
       uselazy_num i32 v.codepoint_count
     else if T : bool
@@ -112,7 +112,7 @@ compile_time_type_casts =>
       # as exact constraints.
       #
       vb := v ^ false
-      say "bool $v {type_of(v)} {! vb}"
+      say "bool $v $(type_of(v)) $(! vb)"
     else if T : a
       v.do_a_thing
     else if T : b
@@ -131,7 +131,7 @@ compile_time_type_casts =>
       say "other type $v type $T"
 
     match T : String
-      true_  => say "matched String '$v' type $T len {v.byte_count}"; for_String
+      true_  => say "matched String '$v' type $T len $(v.byte_count)"; for_String
       false_ =>
 
   x "Fuzion!"
@@ -158,9 +158,9 @@ compile_time_type_casts =>
   bc  : B, C is
   abc : A, B, C is
 
-  take_A(v A) => say "take_A: ok: {type_of v} dynamic {v.dynamic_type}"
-  take_B(v B) => say "take_B: ok: {type_of v} dynamic {v.dynamic_type}"
-  take_C(v C) => say "take_C: ok: {type_of v} dynamic {v.dynamic_type}"
+  take_A(v A) => say "take_A: ok: $(type_of v) dynamic $(v.dynamic_type)"
+  take_B(v B) => say "take_B: ok: $(type_of v) dynamic $(v.dynamic_type)"
+  take_C(v C) => say "take_C: ok: $(type_of v) dynamic $(v.dynamic_type)"
 
   say ""
   say "------ simple calls passing A, B, C, ab, ac, bc, abc. no type pars ------"
@@ -184,7 +184,7 @@ compile_time_type_casts =>
   # lets try nesting
 
   y1(v T : A) =>
-    say "y1 for {type_of v}"
+    say "y1 for $(type_of v)"
 
     take_A v
     # take_B v   # -- would fail, v is of type : A
@@ -193,21 +193,21 @@ compile_time_type_casts =>
     y2
       pre T : B
     =>
-      say "y2 for {type_of v}"
+      say "y2 for $(type_of v)"
 
       # take_A v   # -- would fail, v is of type : B
       take_B v
       # take_C v   # -- would fail, v is of type : B
 
       y3 =>
-        say "y3 for {type_of v}"
+        say "y3 for $(type_of v)"
 
         # take_A v   # -- would fail, v is of type : B
         take_B v
         # take_C v   # -- would fail, v is of type : B
 
         if T : C
-          say "y3 if for {type_of v}"
+          say "y3 if for $(type_of v)"
 
           # take_A v   # -- would fail, v is of type : C
           # take_B v   # -- would fail, v is of type : C
@@ -231,7 +231,7 @@ compile_time_type_casts =>
   z1(v T : A) =>
 
     uselambda ()->
-      say "z1 for {type_of v}"
+      say "z1 for $(type_of v)"
 
       take_A v
       # take_B v   # -- would fail, v is of type : A
@@ -241,14 +241,14 @@ compile_time_type_casts =>
         pre T : B
       =>
         uselambda ()->
-          say "z2 for {type_of v}"
+          say "z2 for $(type_of v)"
 
           # take_A v   # -- would fail, v is of type : B
           take_B v
           # take_C v   # -- would fail, v is of type : B
 
           uselambda ()->
-            say "z3 for {type_of v}"
+            say "z3 for $(type_of v)"
 
             # take_A v   # -- would fail, v is of type : B
             take_B v
@@ -256,7 +256,7 @@ compile_time_type_casts =>
 
             if T : C
               uselambda ()->
-                say "z3 if for {type_of v}"
+                say "z3 if for $(type_of v)"
 
                 # take_A v   # -- would fail, v is of type : C
                 # take_B v   # -- would fail, v is of type : C
@@ -279,7 +279,7 @@ compile_time_type_casts =>
   q1(v1 T1 : A, v2 T2 : B, v3 T3 : C) =>
 
     uselambda ()->
-      say "q1 for {type_of v1} {type_of v2} {type_of v3}"
+      say "q1 for $(type_of v1) $(type_of v2) $(type_of v3)"
 
       take_A v1
       take_B v2
@@ -289,7 +289,7 @@ compile_time_type_casts =>
         pre T1 : B
       =>
         uselambda ()->
-          say "q2 for {type_of v1} {type_of v2} {type_of v3}"
+          say "q2 for $(type_of v1) $(type_of v2) $(type_of v3)"
 
           # take_A v1   # -- would fail, v1 is of type : B
           take_B v1
@@ -297,7 +297,7 @@ compile_time_type_casts =>
           take_C v3
 
           uselambda ()->
-            say "q3 for {type_of v1} {type_of v2} {type_of v3}"
+            say "q3 for $(type_of v1) $(type_of v2) $(type_of v3)"
 
             # take_A v1   # -- would fail, v1 is of type : B
             take_B v1
@@ -306,7 +306,7 @@ compile_time_type_casts =>
 
             if T2 : C
               uselambda ()->
-                say "q3 if for {type_of v1} {type_of v2} {type_of v3}"
+                say "q3 if for $(type_of v1) $(type_of v2) $(type_of v3)"
 
                 # take_A v1   # -- would fail, v1 is of type : B
                 take_B v1
@@ -346,7 +346,7 @@ compile_time_type_casts =>
       take_C v3   # out
 
       uselambda ()->
-        say "r1 for {type_of v1} {type_of v2} {type_of v3}"
+        say "r1 for $(type_of v1) $(type_of v2) $(type_of v3)"
 
         take_A v1   # in
         take_B v2   # in
@@ -356,7 +356,7 @@ compile_time_type_casts =>
           pre T1 : B
         =>
           uselambda ()->
-            say "r2 for {type_of v1} {type_of v2} {type_of v3}"
+            say "r2 for $(type_of v1) $(type_of v2) $(type_of v3)"
 
             # take_A v1   # -- would fail, v1 is of type : B
             take_B v1   # in 2
@@ -364,7 +364,7 @@ compile_time_type_casts =>
             take_C v3   # in 2
 
             uselambda ()->
-              say "r3 for {type_of v1} {type_of v2} {type_of v3}"
+              say "r3 for $(type_of v1) $(type_of v2) $(type_of v3)"
 
               # take_A v1   # -- would fail, v1 is of type : B
               take_B v1   # in 3
@@ -373,7 +373,7 @@ compile_time_type_casts =>
 
               if T2 : C
                 uselambda ()->
-                  say "r3 if for {type_of v1} {type_of v2} {type_of v3}"
+                  say "r3 if for $(type_of v1) $(type_of v2) $(type_of v3)"
 
                   # take_A v1   # -- would fail, v1 is of type : B
                   take_B v1   # in 4

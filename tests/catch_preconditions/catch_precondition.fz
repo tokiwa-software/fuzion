@@ -106,12 +106,12 @@ catch_precondition is
 
   fuzion.runtime.pre_fault
     .try unit ()->
-      say "p.f  3 {p.f  3}"
-      say "q.f  3 {q.f  3}"
-      say "q.f  0 {q.f  0}"
+      say "p.f  3 $(p.f  3)"
+      say "q.f  3 $(q.f  3)"
+      say "q.f  0 $(q.f  0)"
 
       yap "*** This should fail: "
-      say "q.f -1 {q.f -1}"
+      say "q.f -1 $(q.f -1)"
       panic "**** did not fail as expected ****"
 
     .catch s->
@@ -821,7 +821,7 @@ catch_precondition is
 
   tst(f ()->i32) =>
     fuzion.runtime.pre_fault
-      .try   ()->(say " OK {f.call}")
+      .try   ()->(say " OK $(f.call)")
       .catch s->(say " FAILED $s")
 
                                                           #  inherited 1    inherited 2   pre else

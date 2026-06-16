@@ -172,7 +172,7 @@ is
     if is_empty
       "∅"
     else
-      ("\{"
+      ("{"
        + (as_list.map (.as_string)).fold(String.concat ";")
        + "}")
 

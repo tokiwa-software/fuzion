@@ -62,4 +62,4 @@ stdintest =>
       # when stdin is empty, read_line should return an empty string
       say "nothing: '$read_line'."
       # now at end_of_file.
-      say "nothing: '{read 1}'."
+      say "nothing: '$(read 1)'."

@@ -29,7 +29,7 @@ post
 =>
   res := sort_by id
   say ((T : property.orderable): res.zip res.(drop 1)  (<=) |> .reduce true (&&))
-  say ((T : property.orderable): res.zip res.(drop 1)  (a,b -> { say "$a $b {a <= b}"; a<=b }) |> .reduce true (&&))
+  say ((T : property.orderable): res.zip res.(drop 1)  (a,b -> { say "$a $b $(a <= b)"; a<=b }) |> .reduce true (&&))
   res
 
 

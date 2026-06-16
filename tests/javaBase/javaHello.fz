@@ -70,7 +70,7 @@ javaHello : Java is
     match javaBytes
       err error => say "got an error: $err"
       bytes fuzion.java.Array =>
-        say "string has {bytes.count} bytes: $bytes"
+        say "string has $(bytes.count) bytes: $bytes"
         javaString2 := java.lang.__jString.new bytes 6 bytes.count-6                # create Java string from bytes subset,
         say "Hello "+javaString2                                                 # append Java string to Fuzion string and print it
 

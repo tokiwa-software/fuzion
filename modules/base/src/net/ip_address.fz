@@ -86,7 +86,7 @@ public ip_address (val u128) : property.equatable is
 
         from_sequence x
       .catch m->
-        error "Unable to parse provided string as an IP address: {m}"
+        error "Unable to parse provided string as an IP address: $(m)"
 
 
   # parse an IPv6 address from a String
@@ -106,7 +106,7 @@ public ip_address (val u128) : property.equatable is
 
         from_sequence x
       .catch m->
-        error "Unable to parse provided string as an IP address: {m}"
+        error "Unable to parse provided string as an IP address: $(m)"
 
 
   # parse an ip_address from a String

@@ -144,7 +144,7 @@ calls is
       cnt := mut 0
       f String =>
         cnt <- cnt.get + 1
-        "f#$cnt in $where type {on.this.type.name}"
+        "f#$cnt in $where type $(on.this.type.name)"
       where => "on"
 
     oa : on is
@@ -176,7 +176,7 @@ calls is
       cnt := mut 0
       f String =>
         cnt <- cnt.get + 1
-        "f#$cnt in $where type {on.this.type.name}"
+        "f#$cnt in $where type $(on.this.type.name)"
       where => "on"
 
     oa ref : on is
@@ -215,7 +215,7 @@ calls is
       redef cnt := mut 0
       redef f String =>
         cnt <- cnt.get + 1
-        "f#$cnt in $where type {on.this.type.name}"
+        "f#$cnt in $where type $(on.this.type.name)"
       where => "on"
 
     roa ref : on is
@@ -258,7 +258,7 @@ calls is
       cnt := mut 0
       f String =>
         cnt <- cnt.get + 1
-        "f#$cnt in $where type {on.this.type.name}"
+        "f#$cnt in $where type $(on.this.type.name)"
       where => "on"
 
     oa : on is
@@ -292,7 +292,7 @@ calls is
       cnt := mut 0
       f String =>
         cnt <- cnt.get + 1
-        "f#$cnt in $where type {on.this.type.name}"
+        "f#$cnt in $where type $(on.this.type.name)"
       where => "on"
 
     oa ref : on is
@@ -326,7 +326,7 @@ calls is
       cnt := mut 0
       f String =>
         cnt <- cnt.get + 1
-        "f#$cnt in $where type {on.this.type.name}"
+        "f#$cnt in $where type $(on.this.type.name)"
       where => "on"
 
     oa : on is
@@ -362,7 +362,7 @@ calls is
       cnt := mut 0
       f is
         cnt <- cnt.get + 1
-        s := "f#$cnt in $where type {on.this.type.name}"
+        s := "f#$cnt in $where type $(on.this.type.name)"
       where => "on"
 
     oa : on is
@@ -392,7 +392,7 @@ calls is
       cnt := mut 0
       f is
         cnt <- cnt.get + 1
-        s := "f#$cnt in $where type {on.this.type.name}"
+        s := "f#$cnt in $where type $(on.this.type.name)"
       where => "on"
 
     oa ref : on is
@@ -428,7 +428,7 @@ calls is
       cnt := mut 0
       f is
         cnt <- cnt.get + 1
-        s := "f#$cnt in $where type {on.this.type.name}"
+        s := "f#$cnt in $where type $(on.this.type.name)"
       where => "on"
 
     roa ref : on is
@@ -460,7 +460,7 @@ calls is
       cnt := mut 0
       f is
         cnt <- cnt.get + 1
-        s := "f#$cnt in $where type {on.this.type.name}"
+        s := "f#$cnt in $where type $(on.this.type.name)"
       where => "on"
 
     oa : on is
@@ -485,7 +485,7 @@ calls is
       cnt := mut 0
       f is
         cnt <- cnt.get + 1
-        s := "f#$cnt in $where type {on.this.type.name}"
+        s := "f#$cnt in $where type $(on.this.type.name)"
       where => "on"
 
     oa ref : on is
@@ -518,7 +518,7 @@ calls is
       cnt := mut 0
       f is
         cnt <- cnt.get + 1
-        s := "f#$cnt in $where type {on.this.type.name}"
+        s := "f#$cnt in $where type $(on.this.type.name)"
       where => "on"
 
     oa : on is
@@ -551,5 +551,5 @@ calls is
 
 */
 
-  say "{failed.get} failed {passed.get} passed."
+  say "$(failed.get) failed $(passed.get) passed."
   exit

@@ -88,7 +88,7 @@ is
         else if c = 10 || c = 13
           error """
                 line breaks are not allowed within encoded data, as required by RFC464, found \
-                {if c=10 then "LF" else "CR"} at position $i"""
+                $(if c=10 then "LF" else "CR") at position $i"""
 
         # other non alphabet character
         else

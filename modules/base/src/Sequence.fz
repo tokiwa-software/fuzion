@@ -528,7 +528,7 @@ is
   # NOTE: In case this Sequence is not finite, this will attempt to create an
   # infinitely long string resulting in failure due to resource exhaustion.
   #
-  public as_string_all String => "[{as_string ", "}]"
+  public as_string_all String => "[$(as_string ", ")]"
 
 
   # create a string representation of this Sequence including all the string

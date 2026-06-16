@@ -120,7 +120,7 @@ is
         else if c = 10 || c = 13
           error """
                 line breaks are not allowed within encoded data, as required by RFC464, found \
-                {if c=10 then "LF" else "CR"} at position $i"""
+                $(if c=10 then "LF" else "CR") at position $i"""
         # other non alphabet character
         else
           inv_char := String.from (d.slice i (i+4 > d.length ? d.length : i+4))

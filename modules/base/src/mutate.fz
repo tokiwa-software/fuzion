@@ -135,7 +135,7 @@ public mutate : linear_effect is
     module check_and_replace
     =>
       if !is_exclusive
-        mpanic "*** invalid mutate for '{M.name}'"
+        mpanic "*** invalid mutate for '$(M.name)'"
       mutate.this.env.replace
 
 
@@ -272,7 +272,7 @@ public mutate : linear_effect is
     debug: condition()
   =>
     if !condition() then
-      panic "mutate.wait on '{F.name}' would wait forever"
+      panic "mutate.wait on '$(F.name)' would wait forever"
 
 
   # exclusively wait for the given condition to hold and then perform given code with

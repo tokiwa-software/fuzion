@@ -54,12 +54,12 @@ sockets_thread_pool_test is
 
           rr := (io.buffered mutate).read_line_while (s -> !s.is_empty)
 
-          say_silent "$protocol/$family-server, read lines: >{rr}<"
+          say_silent "$protocol/$family-server, read lines: >$(rr)<"
 
           match protocol
             net.protocol.tcp =>
 
-              res := "received: {rr.as_string}\n\n"
+              res := "received: $(rr.as_string)\n\n"
 
               w =>
                 match (io.buffered mutate).writer.env.write res
@@ -99,7 +99,7 @@ sockets_thread_pool_test is
 
     match net.client family protocol host port
       error =>
-        say "$protocol/$family-client {sockets_thread_pool_test.client.this.num}, $host: error establishing connection"
+        say "$protocol/$family-client $(sockets_thread_pool_test.client.this.num), $host: error establishing connection"
       c net.connection =>
 
         res := c.in_thread_pool String concur.thread_pool mutate ()->
@@ -108,20 +108,20 @@ sockets_thread_pool_test is
 
             req := ("GET / HTTP\n"
               + "Host: $host\n"
-              + "Client: {sockets_thread_pool_test.client.this.num}\n\n")
+              + "Client: $(sockets_thread_pool_test.client.this.num)\n\n")
 
             w =>
               _ := (io.buffered mutate).writer.env.write req
               _ := (io.buffered mutate).writer.env.flush
 
-            str := "$protocol/$family-client {sockets_thread_pool_test.client.this.num}, write to $host => {w}"
+            str := "$protocol/$family-client $(sockets_thread_pool_test.client.this.num), write to $host => $(w)"
 
             match protocol
               net.protocol.tcp =>
 
                 rr := (io.buffered mutate).read_line_while (s -> !s.is_empty)
 
-                str + "\n" + "$protocol/$family-client {sockets_thread_pool_test.client.this.num}, read lines from  $host: >{rr}<"
+                str + "\n" + "$protocol/$family-client $(sockets_thread_pool_test.client.this.num), read lines from  $host: >$(rr)<"
 
               # for UDP reading would block indefinitely
               net.protocol.udp =>

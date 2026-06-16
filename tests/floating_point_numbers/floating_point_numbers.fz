@@ -44,18 +44,18 @@ floating_point_numbers is
     three := one + one + one
 
     # serialize floating point numbers
-    chck ("{T.quiet_NaN}" =  "NaN")                                        "{T.name}: quiet nan serializes correctly"
-    chck ("{T.negative_infinity}"
+    chck ("$(T.quiet_NaN)" =  "NaN")                                        "$(T.name): quiet nan serializes correctly"
+    chck ("$(T.negative_infinity)"
       .replace("I", "i")
-      .substring(0, 4) =  "-inf")                                          "{T.name}: neg inf serializes correctly"
-    chck ("{T.positive_infinity}"
+      .substring(0, 4) =  "-inf")                                          "$(T.name): neg inf serializes correctly"
+    chck ("$(T.positive_infinity)"
       .replace("I", "i")
-      .substring(0, 3) =  "inf")                                           "{T.name}: pos inf serializes correctly"
-    chck ("{zero}".starts_with "0")                                        "{T.name}: 0 serializes to string"
-    chck ("{-zero}".starts_with "-0")                                      "{T.name}: -0 serializes to string"
-    chck ("{one}".starts_with "1")                                         "{T.name}: 1 serializes to string"
-    chck ("{one / two}" = "0.5")                                           "{T.name}: 0.5 serializes to string"
-    chck ("{one / three}".starts_with "0.3333333")                         "{T.name}: 1/3 serializes to string"
+      .substring(0, 3) =  "inf")                                           "$(T.name): pos inf serializes correctly"
+    chck ("$(zero)".starts_with "0")                                        "$(T.name): 0 serializes to string"
+    chck ("$(-zero)".starts_with "-0")                                      "$(T.name): -0 serializes to string"
+    chck ("$(one)".starts_with "1")                                         "$(T.name): 1 serializes to string"
+    chck ("$(one / two)" = "0.5")                                           "$(T.name): 0.5 serializes to string"
+    chck ("$(one / three)".starts_with "0.3333333")                         "$(T.name): 1/3 serializes to string"
 
     # comparison operators
     chck (
@@ -65,38 +65,38 @@ floating_point_numbers is
       (zero ≤ one) &&
       (zero = zero) &&
       (one  >  zero) &&
-      (zero <  one))                                                       "{T.name}: comparison operators work as expected"
+      (zero <  one))                                                       "$(T.name): comparison operators work as expected"
 
     # negation operator
     chck ((-(-zero) = zero) &&
           (-(-one) = one) &&
           (-(-T.positive_infinity) = T.positive_infinity) &&
-          (-(-T.negative_infinity) = T.negative_infinity))                 "{T.name}: double negation is same number"
+          (-(-T.negative_infinity) = T.negative_infinity))                 "$(T.name): double negation is same number"
 
     # operator +,-,*,/ test
-    chck (zero + one = one)                                                "{T.name}: plus operator"
-    chck (zero - one = -one)                                               "{T.name}: minus operator"
-    chck (zero * one = zero)                                               "{T.name}: product operator"
-    chck (zero / one = zero)                                               "{T.name}: division operator"
+    chck (zero + one = one)                                                "$(T.name): plus operator"
+    chck (zero - one = -one)                                               "$(T.name): minus operator"
+    chck (zero * one = zero)                                               "$(T.name): product operator"
+    chck (zero / one = zero)                                               "$(T.name): division operator"
 
     # modulo
-    chck (three % two = one)                                               "{T.name}: 3 modulo 2 equals 1"
+    chck (three % two = one)                                               "$(T.name): 3 modulo 2 equals 1"
 
     # power
-    chck (two ** three = three + three + two)                              "{T.name}: 2 to the power 3 equals 8"
-    chck (three ** two = three + three + three)                            "{T.name}: 3 to the power 2 equals 9"
+    chck (two ** three = three + three + two)                              "$(T.name): 2 to the power 3 equals 8"
+    chck (three ** two = three + three + three)                            "$(T.name): 3 to the power 2 equals 9"
 
     # is_NaN
-    chck T.NaN.is_NaN                                                      "{T.name}: is_NaN NaN"
-    chck !zero.is_NaN                                                      "{T.name}: is_NaN 0"
-    chck !T.π.is_NaN                                                       "{T.name}: is_NaN π"
-    chck !T.infinity.is_NaN                                                "{T.name}: is_NaN infinity"
+    chck T.NaN.is_NaN                                                      "$(T.name): is_NaN NaN"
+    chck !zero.is_NaN                                                      "$(T.name): is_NaN 0"
+    chck !T.π.is_NaN                                                       "$(T.name): is_NaN π"
+    chck !T.infinity.is_NaN                                                "$(T.name): is_NaN infinity"
 
     # sqrt
-    chck ((two * two).sqrt = two)                                          "{T.name}: sqrt (2*2) = 2"
+    chck ((two * two).sqrt = two)                                          "$(T.name): sqrt (2*2) = 2"
 
     # exponentation / logarithm
-    chck (zero.exp     = one   )                                           "{T.name}: exp 0 = 1"
+    chck (zero.exp     = one   )                                           "$(T.name): exp 0 = 1"
     # NYI: BUG: chck (T.exp one      = T.ℇ)                                            "{T.name}: exp 1 = ℇ"
     # on macOS with ARM and be/jvm or be/int:
     # (f64.exp 1.0)              # 2.7182818284590455
@@ -104,61 +104,61 @@ floating_point_numbers is
     # (f64.ℇ = f64.exp 1.0)      # false
     # (f64.exp 1.0).cast_to_u64  # 4613303445314885482
     # f64.ℇ.cast_to_u64          # 4613303445314885481
-    chck ((one.exp - three*T.epsilon) <= T.ℇ <= (one.exp + three*T.epsilon))   "{T.name}: exp 1 ~= ℇ"
-    chck (one.log      = zero  )                                           "{T.name}: log 1 = 0"
+    chck ((one.exp - three*T.epsilon) <= T.ℇ <= (one.exp + three*T.epsilon))   "$(T.name): exp 1 ~= ℇ"
+    chck (one.log      = zero  )                                           "$(T.name): log 1 = 0"
 
     # trigonometric
-    chck (zero.sin     = zero  )                                           "{T.name}: sin 0  = 0"
-    chck (T.π.sin      < T.epsilon)                                        "{T.name}: sin π  ~= 0"
-    chck (zero.cos     = one  )                                            "{T.name}: cos 0  = 1"
-    chck (T.π.cos      = -one  )                                           "{T.name}: cos π  = -1"
-    chck (zero.tan     = zero  )                                           "{T.name}: tan 0  = 0"
-    chck (zero.asin    = zero  )                                           "{T.name}: asin 0 = 0"
-    chck (one.acos     = zero  )                                           "{T.name}: acos 1 = 0"
-    chck (zero.atan    = zero  )                                           "{T.name}: atan 0 = 0"
+    chck (zero.sin     = zero  )                                           "$(T.name): sin 0  = 0"
+    chck (T.π.sin      < T.epsilon)                                        "$(T.name): sin π  ~= 0"
+    chck (zero.cos     = one  )                                            "$(T.name): cos 0  = 1"
+    chck (T.π.cos      = -one  )                                           "$(T.name): cos π  = -1"
+    chck (zero.tan     = zero  )                                           "$(T.name): tan 0  = 0"
+    chck (zero.asin    = zero  )                                           "$(T.name): asin 0 = 0"
+    chck (one.acos     = zero  )                                           "$(T.name): acos 1 = 0"
+    chck (zero.atan    = zero  )                                           "$(T.name): atan 0 = 0"
 
     # atan2
-    chck (T.atan2 T.NaN one  ).is_NaN                                                          "{T.name}: atan2 NaN 1            = NaN        "
-    chck (T.atan2 one   T.NaN).is_NaN                                                          "{T.name}: atan2 1 NaN            = NaN        "
-    chck (T.atan2 +zero   one               = +zero  )                                         "{T.name}: atan2 +0 1             = +0         "
-    chck (T.atan2 -zero   one               = -zero  )                                         "{T.name}: atan2 -0 1             = -0         "
-    chck (T.atan2 +zero   -one              = +T.π)                                            "{T.name}: atan2 +0 -1            = +π         "
-    chck (T.atan2 -zero   -one              = -T.π)                                            "{T.name}: atan2 -0 -1            = -π         "
-    chck (T.atan2 one   zero                = +T.π/two)                                        "{T.name}: atan2 1 0              = +π/two     "
-    chck (T.atan2 -one   zero               = -T.π/two)                                        "{T.name}: atan2 -1 0             = -π/two     "
-    chck (T.atan2 +T.infinity +T.infinity   = +T.π/T.from_u32(4))                              "{T.name}: atan2 +infinity +infinity   = +π/4  "
-    chck (T.atan2 -T.infinity +T.infinity   = -T.π/T.from_u32(4))                              "{T.name}: atan2 -infinity +infinity   = -π/4  "
-    chck (T.atan2 +T.infinity -T.infinity   = T.from_u32(3)*T.π/T.from_u32(4))                 "{T.name}: atan2 +infinity -infinity   = 3*π/4 "
-    chck (T.atan2 -T.infinity -T.infinity   = -T.from_u32(3)*T.π/T.from_u32(4))                "{T.name}: atan2 -infinity -infinity   = -3*π/4"
-    chck (T.atan2 one   +T.infinity         = zero  )                                          "{T.name}: atan2 1 +infinity         = 0       "
-    chck (T.atan2 one   -T.infinity         = +T.π)                                            "{T.name}: atan2 1 -infinity         = +π      "
-    chck (T.atan2 -one   -T.infinity        = -T.π)                                            "{T.name}: atan2 -1 -infinity        = -π      "
-    chck (T.atan2 +T.infinity one           = +T.π/two)                                        "{T.name}: atan2 +infinity 1         = +π/two  "
-    chck (T.atan2 -T.infinity one           = -T.π/two)                                        "{T.name}: atan2 -infinity 1         = -π/two  "
+    chck (T.atan2 T.NaN one  ).is_NaN                                                          "$(T.name): atan2 NaN 1            = NaN        "
+    chck (T.atan2 one   T.NaN).is_NaN                                                          "$(T.name): atan2 1 NaN            = NaN        "
+    chck (T.atan2 +zero   one               = +zero  )                                         "$(T.name): atan2 +0 1             = +0         "
+    chck (T.atan2 -zero   one               = -zero  )                                         "$(T.name): atan2 -0 1             = -0         "
+    chck (T.atan2 +zero   -one              = +T.π)                                            "$(T.name): atan2 +0 -1            = +π         "
+    chck (T.atan2 -zero   -one              = -T.π)                                            "$(T.name): atan2 -0 -1            = -π         "
+    chck (T.atan2 one   zero                = +T.π/two)                                        "$(T.name): atan2 1 0              = +π/two     "
+    chck (T.atan2 -one   zero               = -T.π/two)                                        "$(T.name): atan2 -1 0             = -π/two     "
+    chck (T.atan2 +T.infinity +T.infinity   = +T.π/T.from_u32(4))                              "$(T.name): atan2 +infinity +infinity   = +π/4  "
+    chck (T.atan2 -T.infinity +T.infinity   = -T.π/T.from_u32(4))                              "$(T.name): atan2 -infinity +infinity   = -π/4  "
+    chck (T.atan2 +T.infinity -T.infinity   = T.from_u32(3)*T.π/T.from_u32(4))                 "$(T.name): atan2 +infinity -infinity   = 3*π/4 "
+    chck (T.atan2 -T.infinity -T.infinity   = -T.from_u32(3)*T.π/T.from_u32(4))                "$(T.name): atan2 -infinity -infinity   = -3*π/4"
+    chck (T.atan2 one   +T.infinity         = zero  )                                          "$(T.name): atan2 1 +infinity         = 0       "
+    chck (T.atan2 one   -T.infinity         = +T.π)                                            "$(T.name): atan2 1 -infinity         = +π      "
+    chck (T.atan2 -one   -T.infinity        = -T.π)                                            "$(T.name): atan2 -1 -infinity        = -π      "
+    chck (T.atan2 +T.infinity one           = +T.π/two)                                        "$(T.name): atan2 +infinity 1         = +π/two  "
+    chck (T.atan2 -T.infinity one           = -T.π/two)                                        "$(T.name): atan2 -infinity 1         = -π/two  "
 
     # hyperbolicus
-    chck (zero.sinh        = zero)                                           "{T.name}: sinh  0 = 0"
-    chck (zero.cosh        = one )                                           "{T.name}: cosh  0 = 1"
-    chck (zero.tanh        = zero)                                           "{T.name}: tanh  0 = 0"
-    chck (zero.asinh       = zero)                                           "{T.name}: asinh 0 = 0"
-    chck (one.acosh        = zero)                                           "{T.name}: acosh 1 = 0"
-    chck (zero.atanh       = zero)                                           "{T.name}: atanh 0 = 0"
+    chck (zero.sinh        = zero)                                           "$(T.name): sinh  0 = 0"
+    chck (zero.cosh        = one )                                           "$(T.name): cosh  0 = 1"
+    chck (zero.tanh        = zero)                                           "$(T.name): tanh  0 = 0"
+    chck (zero.asinh       = zero)                                           "$(T.name): asinh 0 = 0"
+    chck (one.acosh        = zero)                                           "$(T.name): acosh 1 = 0"
+    chck (zero.atanh       = zero)                                           "$(T.name): atanh 0 = 0"
 
     # round
     a_half := one   / two
-    chck (a_half.round             =  one  )                                      "{T.name}: round  1/2 =  1"
-    chck (-a_half.round            = -one  )                                      "{T.name}: round -1/2 = -1"
-    chck (-(one   + a_half).round  = -two)                                        "{T.name}: round -3/2 = -2"
+    chck (a_half.round             =  one  )                                      "$(T.name): round  1/2 =  1"
+    chck (-a_half.round            = -one  )                                      "$(T.name): round -1/2 = -1"
+    chck (-(one   + a_half).round  = -two)                                        "$(T.name): round -3/2 = -2"
 
     # floor
-    chck (zero  .floor = zero  )                                               "{T.name}: floor 0 = 0"
-    chck (one  .floor  = one  )                                                "{T.name}: floor 1 = 1"
-    chck (T.ℇ.floor    = two)                                                  "{T.name}: floor ℇ = 2"
+    chck (zero  .floor = zero  )                                               "$(T.name): floor 0 = 0"
+    chck (one  .floor  = one  )                                                "$(T.name): floor 1 = 1"
+    chck (T.ℇ.floor    = two)                                                  "$(T.name): floor ℇ = 2"
 
     # ceil
-    chck (zero  .ceil = zero  )                                                "{T.name}: ceil 0 = 0"
-    chck (one  .ceil  = one  )                                                 "{T.name}: ceil 1 = 1"
-    chck (T.ℇ.ceil    = two + one  )                                           "{T.name}: ceil ℇ = 3"
+    chck (zero  .ceil = zero  )                                                "$(T.name): ceil 0 = 0"
+    chck (one  .ceil  = one  )                                                 "$(T.name): ceil 1 = 1"
+    chck (T.ℇ.ceil    = two + one  )                                           "$(T.name): ceil ℇ = 3"
 
 
 

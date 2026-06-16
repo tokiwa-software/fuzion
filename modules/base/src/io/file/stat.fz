@@ -54,9 +54,9 @@ private:public meta_data(
     """
       path              : $path
       size in bytes     : $size
-      access time       : {universe.time.date_time.from_seconds meta_data.this.atime.as_u64}
-      modification time : {universe.time.date_time.from_seconds meta_data.this.mtime.as_u64}
-      creation time     : {universe.time.date_time.from_seconds meta_data.this.ctime.as_u64}
+      access time       : $(universe.time.date_time.from_seconds meta_data.this.atime.as_u64)
+      modification time : $(universe.time.date_time.from_seconds meta_data.this.mtime.as_u64)
+      creation time     : $(universe.time.date_time.from_seconds meta_data.this.ctime.as_u64)
       is regular file   : $is_regular
       is directory      : $is_dir
       is link           : $is_link
@@ -82,7 +82,7 @@ public stat(ps Stat_Handler) : effect is
       path.as_absolute.bind p->
         meta_data p res[0] res[1] res[2] res[3] (res[4] = 1) (res[5] = 1) (res[6] = 1) res[7] res[8]
     else
-      error "stat error {res[0]} for {path}"
+      error "stat error $(res[0]) for $(path)"
 
   # returns stats of the file/dir passed in the pathname
   # in success it will return a meta_data outcome storing stats regarding the file/dir
@@ -99,7 +99,7 @@ public stat(ps Stat_Handler) : effect is
       path.as_absolute.bind p->
         meta_data p res[0] res[1] res[2] res[3] (res[4] = 1) (res[5] = 1) (res[6] = 1) res[7] res[8]
     else
-      error "lstat error {res[0]} for {path}"
+      error "lstat error $(res[0]) for $(path)"
 
 
   # default implementation of stat

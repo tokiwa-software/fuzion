@@ -57,14 +57,14 @@ public Webserver(/*NYI: UNDER DEVELOPMENT: custom thread pool TP type : concur.t
                 match (io.buffered mutate)
                     .writer.env
                     .write (response.bytes i32.max)
-                  e error => log "writing response failed: {e}"
+                  e error => log "writing response failed: $(e)"
                   unit =>
                     flush_ok := (io.buffered mutate).writer.env.flush
                     if flush_ok!!
-                      log "flushing response failed: {flush_ok.err}"
+                      log "flushing response failed: $(flush_ok.err)"
 
             accept_res.or_else ()->
-              log "failed accepting connection {accept_res}"
+              log "failed accepting connection $(accept_res)"
 
 
       match res

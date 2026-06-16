@@ -131,7 +131,7 @@ public Message ref is
       .items
       .map kv->
         k, v := kv
-        "{canonical_header_key k}: $v" + crlf
+        "$(canonical_header_key k): $v" + crlf
       .as_string ""
 
 
