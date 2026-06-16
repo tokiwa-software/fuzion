@@ -68,7 +68,7 @@ test_process =>
         _ := p.with_out unit lm ()->
           out := ((io.buffered lm).read_string 1E9)
             .or_panic
-            .split "\n"
+            .lines
             # for some reason on windows/msys these are included, even though we want empty env...
             .filter (l -> !(l.starts_with "HOME=" || l.starts_with "TERM="))
           say (String.join out)
