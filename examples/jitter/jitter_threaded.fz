@@ -167,71 +167,11 @@ jitter_threaded =>
         say "Worker thread priority setup failed: $e"
         say "(Hint: run with sudo or use setcap cap_sys_nice=ep ./jitter)"
 
-  # collect streamed raw records from worker thread
-  collect_results(received_ch concur.Channel (tuple time.duration time.instant time.instant bool),
-                  collected list (tuple time.duration time.instant time.instant bool))
-                  list (tuple time.duration time.instant time.instant bool)
+  # print histograms for one completed period immediately
+  print_period_histograms(period time.duration,
+                           period_samples list time.duration,
+                           cycle_samples  list time.duration)
   =>
-    match received_ch.next
-      sample tuple => collect_results received_ch (sample : collected)
-      nil => collected.reverse_list
-
-  # grouping accumulator type for folding raw records into per-period tuples
-  grouping_acc(results list (tuple time.duration (list time.duration) (list time.duration)),
-                cur_period option time.duration,
-                per_acc list time.duration,
-                cyc_acc list time.duration,
-                prev_actual option time.instant) is
-
-  raw_records := collect_results result_ch nil
-
-  # fold raw records into per-period tuples without using the state effect
-  g0 := grouping_acc (list (tuple time.duration (list time.duration) (list time.duration))).empty nil (list time.duration).empty (list time.duration).empty nil
-
-  g_final := raw_records.foldf g0 (g, rec ->
-    period := rec.0
-    actual := rec.1
-    expected := rec.2
-    done_flag := rec.3
-    period_delta := (actual >= expected ? actual - expected : expected - actual)
-
-    match g.cur_period
-      nil =>
-        per1 := (period_delta : (list time.duration).empty)
-        cyc1 := (list time.duration).empty
-        prev1 := option actual
-        if done_flag
-          res := (period, per1, cyc1)
-          grouping_acc (res : g.results) nil nil nil nil
-        else
-          grouping_acc g.results (option period) per1 cyc1 prev1
-      p time.duration =>
-        if p = period
-          per2 := (period_delta : g.per_acc)
-          cyc2 := match g.prev_actual
-                    nil => g.cyc_acc
-                    prev time.instant =>
-                      cyc_d := (actual >= prev ? actual - prev : prev - actual)
-                      (cyc_d : g.cyc_acc)
-          prev2 := option actual
-          if done_flag
-            res := (p, per2, cyc2)
-            grouping_acc (res : g.results) nil nil nil nil
-          else
-            grouping_acc g.results (option p) per2 cyc2 prev2
-        else
-          # finalize previous and start new
-          res := (p, g.per_acc, g.cyc_acc)
-          per1 := (period_delta : (list time.duration).empty)
-          cyc1 := (list time.duration).empty
-          prev1 := option actual
-          grouping_acc (res : g.results) (option period) per1 cyc1 prev1
-  )
-
-  received_samples := g_final.results.reverse_list
-  say "received samples"
-  for sample in received_samples do
-    period, period_samples, cycle_samples := sample
     say "testing period $period for $test_duration..."
     h  := time.histogram.new "period jitter $period, log count / linear time" period period*2 1 0
     h2 := time.histogram.new "cycle jitter $period, log count / log time"     nil    nil      1 0
@@ -246,6 +186,62 @@ jitter_threaded =>
     say "$h2"
     if show_lin_csv then say "{h.csv}"
     if show_log_csv then say "{h2.csv}"
+
+  # accumulator state, flat record instead of nested option/lists juggling
+  acc_state(cur_period time.duration,
+            has_period bool,
+            per_acc list time.duration,
+            cyc_acc list time.duration,
+            prev_actual option time.instant) is
+
+  empty_acc => acc_state (time.duration.ms 0) false (list time.duration).empty (list time.duration).empty nil
+
+  # fold one record into the accumulator, possibly flushing+printing a
+  # finished period as a side effect. Returns the new accumulator.
+  fold_record(acc acc_state,
+              period time.duration,
+              actual time.instant,
+              expected time.instant,
+              done_flag bool)
+              acc_state
+  =>
+    period_delta := (actual >= expected ? actual - expected : expected - actual)
+
+    same_period := acc.has_period && acc.cur_period = period
+
+    per_acc2 := if same_period then (period_delta : acc.per_acc)
+                else (period_delta : (list time.duration).empty)
+
+    cyc_acc2 := if !same_period then (list time.duration).empty
+                else match acc.prev_actual
+                       nil => acc.cyc_acc
+                       prev time.instant =>
+                         cyc_d := (actual >= prev ? actual - prev : prev - actual)
+                         (cyc_d : acc.cyc_acc)
+
+    # if we're tracking a different period that never got its done_flag, flush it first
+    _ := if acc.has_period && !same_period
+           print_period_histograms acc.cur_period acc.per_acc acc.cyc_acc
+
+    if done_flag
+      print_period_histograms period per_acc2 cyc_acc2
+      empty_acc
+    else
+      acc_state period true per_acc2 cyc_acc2 (option actual)
+
+  # incrementally consume records from the worker thread: as soon as a period's
+  # done_flag arrives, print its histograms right away.
+  consume_and_display(acc acc_state) unit
+  =>
+    match result_ch.next
+      rec tuple =>
+        acc2 := fold_record acc rec.0 rec.1 rec.2 rec.3
+        consume_and_display acc2
+      nil =>
+        unit
+
+  say "received samples"
+  consume_and_display empty_acc
   say "Dedicated thread completed."
 
 # How to run with high priority :
