@@ -46,6 +46,7 @@ public Ring_Buffer(
   public size i64
 
 ) ref ! M
+  pre safety: size ≥ 0
 is
 
   # the elements in the ring buffer. Valid entries are at indices first..last-1 MOD size
