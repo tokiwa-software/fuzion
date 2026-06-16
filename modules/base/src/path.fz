@@ -179,14 +179,14 @@ is
       (names.take p.names.count) = p.names
 
 
-  # this relative path resolved against
-  # the current working directory (`os.cwd`)
+  # relative paths are resolved against the current working
+  # directory (`os.cwd`); absolute paths are returned unchanged
   #
   public as_absolute outcome path
-    pre debug: !is_absolute
   =>
-    os.cwd.bind c->
-      c.resolve (path names is_absolute)
+    is_absolute ? outcome (path names is_absolute)
+                : os.cwd.bind c->
+                    c.resolve (path names is_absolute)
 
 
   # String representation of this path
