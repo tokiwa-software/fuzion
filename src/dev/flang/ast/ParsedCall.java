@@ -738,7 +738,7 @@ A `_` may be used as placeholder for a xref:fuzion_actual_typeparameter[actual t
               }
             i++;
           }
-        _generics = g;
+        _generics = res.resolveTypes(g, context);
         _splitOffGenerics = g.freeze();
         _actuals = a;
       }

@@ -29,6 +29,7 @@ package dev.flang.fe;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
+import dev.flang.ast.ResolvedType;
 import dev.flang.ast.TypeKind;
 
 import dev.flang.util.List;
@@ -85,7 +86,8 @@ class NormalType extends LibraryType
     super(mod, at);
 
     if (PRECONDITIONS) require
-      (typeKind == TypeKind.RefType || typeKind == TypeKind.ValueType);
+      (typeKind == TypeKind.RefType || typeKind == TypeKind.ValueType,
+       generics.stream().allMatch(g -> g instanceof ResolvedType));
 
     this._feature = feature;
     this._typeKind = typeKind;
