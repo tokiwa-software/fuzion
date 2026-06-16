@@ -707,10 +707,7 @@ public class Call extends AbstractCall
         findOperatorOnOuter(res, context);
       }
 
-    if (needsPendingError(targetFeature))
-      {
-        addPendingError(res, targetFeature);
-      }
+    addPendingError(res, targetFeature);
 
     resolveTypesOfActuals(res, context);
 
@@ -761,34 +758,41 @@ public class Call extends AbstractCall
 
 
   /**
-   * Do we need to add a pending error to this call?
-   */
-  private boolean needsPendingError(AbstractFeature targetFeature)
-  {
-    return targetFeature != null &&
-           _calledFeature == null &&                  // nothing found, so flag error
-           (Types.resolved == null ||                 // may happen when building bad base.fum
-            targetFeature != Types.resolved.f_void);  // but allow to call anything on void
-  }
-
-
-  /**
    * Add a pending error to this call to be called later (or never).
    */
   private void addPendingError(Resolution res, AbstractFeature targetFeature)
   {
-    var fos = findOnTarget(res, targetFeature, true).v0();
-    _pendingError = ()->
+    if (_calledFeature != null ||                 // found sth, no error needed
+        Types.resolved != null &&                 // may happen when building bad base.fum
+        targetFeature == Types.resolved.f_void)   // but allow to call anything on void)
       {
-        if (!fos.isEmpty() && _actuals.size() == 0 && fos.get(0)._feature.isChoice())
-          { // give a more specific error when trying to call a choice feature
-            AstErrors.cannotCallChoice(pos(), fos.get(0)._feature);
-          }
-        else
+
+      }
+    else if (targetFeature == null)
+      {
+        _pendingError = ()->
           {
-            triggerFeatureNotFoundError(res, fos, targetFeature);
-          }
-      };
+            if (_target.type() != Types.t_ERROR)
+              {
+                triggerFeatureNotFoundError(res, new List<>(), _target.type().feature());
+              }
+          };
+      }
+    else
+      {
+        var fos = findOnTarget(res, targetFeature, true).v0();
+        _pendingError = ()->
+          {
+            if (!fos.isEmpty() && _actuals.size() == 0 && fos.get(0)._feature.isChoice())
+              { // give a more specific error when trying to call a choice feature
+                AstErrors.cannotCallChoice(pos(), fos.get(0)._feature);
+              }
+            else
+              {
+                triggerFeatureNotFoundError(res, fos, targetFeature);
+              }
+          };
+      }
   }
 
 
