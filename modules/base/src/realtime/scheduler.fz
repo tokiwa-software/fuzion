@@ -17,34 +17,36 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature concur.task_pool
+#  Source code of Fuzion standard library feature realtime.scheduler
 #
 # -----------------------------------------------------------------------
 
-# simple, dynamically sized task runner
+# scheduler primitive for realtime tasks
 #
-public task_pool : realtime.Scheduler_Handler
+public scheduler (s Scheduler_Handler) : effect
 is
 
-  thrds := concur.atomic (list concur.Thread) .new nil
-
-
-  # submit a task to the thread pool
+  # submit a task to the scheduler
   #
-  public redef submit(P type : time.Period, t realtime.task P) unit ! atomic_access =>
-
-    nt := concur.threads.env.spawn ()->
-      now := time.nano.env.read
-      end_of_time := time.instant u64.max
-      _ := time.nano.env.run_periodic now t.period end_of_time t.code
-
-    thrds.write (list nt thrds)
+  public submit(P type : time.Period, t realtime.task P) unit =>
+    s.submit P t
 
 
-  # stop accepting tasks and wait for remaining tasks to finish
+  # stop accepting new tasks for scheduling
   #
-  public redef finally unit ! atomic_access =>
+  public redef finally unit =>
+    s.finally
 
-    # wait for all threads to finish
-    thrds.read.for_each t->
-      t.join
+
+# Scheduler_Handler -- abstract definition of a scheduler
+#
+public Scheduler_Handler ref is
+
+  # accept a task for processing
+  #
+  public submit(P type : time.Period, t realtime.task P) unit => abstract
+
+
+  # stop accepting new tasks
+  #
+  public finally unit => abstract
