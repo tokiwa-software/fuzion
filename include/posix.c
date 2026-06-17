@@ -85,6 +85,7 @@ static_assert(SIGSEGV == 11, "signal definition different than expected");
 static_assert(SIGPIPE == 13, "signal definition different than expected");
 static_assert(SIGALRM == 14, "signal definition different than expected");
 static_assert(SIGTERM == 15, "signal definition different than expected");
+static_assert(sizeof(pthread_t) <= sizeof(void *), "pthread_t must be smaller or equal to pointer size");
 
 
 // thread local to hold the last
@@ -530,10 +531,7 @@ void fzE_init()
  */
 void * fzE_thread_current()
 {
-  // NYI: BUG: #7029 should not be needed to heap allocate pthread_t
-  pthread_t * pt = fzE_malloc_safe(sizeof(pthread_t));
-  *pt = pthread_self();
-  return pt;
+  return (void *)pthread_self();
 }
 
 
@@ -543,7 +541,7 @@ void * fzE_thread_current()
 void * fzE_thread_create(void *(*code)(void *),
                           void *restrict args)
 {
-  pthread_t * pt = fzE_malloc_safe(sizeof(pthread_t));
+  pthread_t pt = (pthread_t){0};
   pthread_attr_t attr;
 
   int s = pthread_attr_init(&attr);
@@ -560,9 +558,9 @@ void * fzE_thread_create(void *(*code)(void *),
   assert (pthread_attr_setschedpolicy(&attr, SCHED_OTHER) == 0);
 
 #ifdef GC_THREADS
-  int res = GC_pthread_create(pt,NULL,code,args);
+  int res = GC_pthread_create(&pt,NULL,code,args);
 #else
-  int res = pthread_create(pt,NULL,code,args);
+  int res = pthread_create(&pt,NULL,code,args);
 #endif
   if (res != 0)
   {
@@ -577,7 +575,7 @@ void * fzE_thread_create(void *(*code)(void *),
     exit(EXIT_FAILURE);
   }
 
-  return pt;
+  return (void *)pt;
 }
 
 
@@ -588,13 +586,12 @@ void fzE_thread_join(void * thrd)
 {
   // NYI: BUG: return error code on failure
 #ifdef GC_THREADS
-  int ret = GC_pthread_join(*(pthread_t *)thrd, NULL);
+  int ret = GC_pthread_join((pthread_t)thrd, NULL);
   assert (ret == 0);
 #else
-  int ret = pthread_join(*(pthread_t *)thrd, NULL);
+  int ret = pthread_join((pthread_t)thrd, NULL);
   assert (ret == 0);
 #endif
-  fzE_free(thrd);
 }
 
 
@@ -624,7 +621,7 @@ int fzE_thread_setschedparam(void * thrd, int policy, int priority)
 {
   struct sched_param param;
   param.sched_priority = priority;
-  int ret = pthread_setschedparam(*(pthread_t *)thrd, fzE_thread_setschedparam_convert_policy(policy), &param);
+  int ret = pthread_setschedparam((pthread_t)thrd, fzE_thread_setschedparam_convert_policy(policy), &param);
   return ret;
 }
 
@@ -643,7 +640,7 @@ int fzE_thread_setaffinity(void * thrd, const void * cores, int length)
       CPU_SET(((uint64_t *)cores)[i], &cpuset);
     }
 
-  return pthread_setaffinity_np(*(pthread_t *)thrd, sizeof(cpu_set_t), &cpuset);
+  return pthread_setaffinity_np((pthread_t)thrd, sizeof(cpu_set_t), &cpuset);
 #else
   return 38;
 #endif
