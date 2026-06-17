@@ -16,9 +16,12 @@ panic.cause#1: {base.fum}/eff/fallible.fz:35:6:
 panic#1: {base.fum}/panic.fz:59:19:
     msg String => panic.cause msg
 ------------------^^^^^^^^^^^^^^^
-(option Stack.Node).or_panic: {base.fum}/switch.fz:175:14:
-      b B => panic $b
--------------^^^^^^^^
+(option Stack.Node).or_panic#1: {base.fum}/switch.fz:171:14:
+      b B => panic (msg b)
+-------------^^^^^^^^^^^^^
+(option Stack.Node).or_panic: {base.fum}/switch.fz:163:5:
+    or_panic ($)
+----^^^^^^^^^^^^
 Stack.push#2 i32: --CURDIR--/reg_issue5064.fz:46:10:
     _ := top.or_panic
 ---------^^^^^^^^^^^^
