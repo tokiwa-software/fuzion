@@ -187,14 +187,13 @@ jitter_threaded =>
     if show_lin_csv then say "{h.csv}"
     if show_log_csv then say "{h2.csv}"
 
-  # accumulator state, flat record instead of nested option/lists juggling
-  acc_state(cur_period time.duration,
-            has_period bool,
-            per_acc list time.duration,
-            cyc_acc list time.duration,
+  # accumulator: plain immutable record threaded through the recursion below.
+  acc_state(cur_period  option time.duration,
+            per_acc     list time.duration,
+            cyc_acc     list time.duration,
             prev_actual option time.instant) is
 
-  empty_acc => acc_state (time.duration.ms 0) false (list time.duration).empty (list time.duration).empty nil
+  empty_acc => acc_state nil (list time.duration).empty (list time.duration).empty nil
 
   # fold one record into the accumulator, possibly flushing+printing a
   # finished period as a side effect. Returns the new accumulator.
@@ -207,7 +206,9 @@ jitter_threaded =>
   =>
     period_delta := (actual >= expected ? actual - expected : expected - actual)
 
-    same_period := acc.has_period && acc.cur_period = period
+    same_period := match acc.cur_period
+                     nil => false
+                     p time.duration => p = period
 
     per_acc2 := if same_period then (period_delta : acc.per_acc)
                 else (period_delta : (list time.duration).empty)
@@ -220,14 +221,16 @@ jitter_threaded =>
                          (cyc_d : acc.cyc_acc)
 
     # if we're tracking a different period that never got its done_flag, flush it first
-    _ := if acc.has_period && !same_period
-           print_period_histograms acc.cur_period acc.per_acc acc.cyc_acc
+    _ := match acc.cur_period
+           nil => unit
+           p time.duration =>
+             if !same_period then print_period_histograms p acc.per_acc acc.cyc_acc
 
     if done_flag
       print_period_histograms period per_acc2 cyc_acc2
       empty_acc
     else
-      acc_state period true per_acc2 cyc_acc2 (option actual)
+      acc_state (option period) per_acc2 cyc_acc2 (option actual)
 
   # incrementally consume records from the worker thread: as soon as a period's
   # done_flag arrives, print its histograms right away.
