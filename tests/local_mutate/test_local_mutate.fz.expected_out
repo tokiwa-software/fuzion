@@ -1,7 +1,7 @@
 inside m.go: s.get = 81
 inside m.go: count = 81
 using m.instate_self and count: 81
-*** got 'safety: !open || is_exclusive2' ***
+*** got 'safety: !open || is_exclusive' ***
 ok
 *** got '*** invalid mutate for 'test_local_mutate.test_sum.sum.m'' ***
 ok

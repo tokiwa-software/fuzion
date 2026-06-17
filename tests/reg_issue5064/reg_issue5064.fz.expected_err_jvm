@@ -4,7 +4,8 @@ Call stack:
 fuzion.sys.fatal_fault#2 at {base.fum}/fuzion/sys.fz:55
 [..]
 panic#1 at {base.fum}/panic.fz:59
-(option Stack.Node).or_panic at {base.fum}/switch.fz:165
+(option Stack.Node).or_panic#1 at {base.fum}/switch.fz:171
+(option Stack.Node).or_panic at {base.fum}/switch.fz:163
 Stack.push#2 i32 at --CURDIR--/reg_issue5064.fz:46
 universe at --builtin--:48
 

@@ -94,7 +94,7 @@ is
   #
   public redef as_string String =>
     match highest
-      nil   => "\{}"
+      nil   => "{}"
       h u64 =>
         for
           first := true, first && !(has i)
@@ -102,7 +102,7 @@ is
           comma := if (first) "" else ", "
           i in u64 0 .. h
         else
-          "\{" + s + "}"
+          "{" + s + "}"
 
 
   # an empty bitset

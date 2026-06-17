@@ -188,7 +188,7 @@ public effect is
                       code () -> R
                       ) R
   =>
-    instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
+    instate R e code (_ -> panic "unexpected abort in $(effect.this.type)")
 
 
   # convenience version of `instate` for effect values whose type is
@@ -461,7 +461,7 @@ public linear_effect : effect is
 
   module redef check_depletion =>
     if !depleted.depleted.compare_and_set0 false true
-      fuzion.std.panic "effect {linear_effect.this.type.name} already depleted. effect may only be instated once."
+      fuzion.std.panic "effect $(linear_effect.this.type.name) already depleted. effect may only be instated once."
 
 
 Depleted_Wrapper ref is

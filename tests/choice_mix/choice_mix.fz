@@ -234,14 +234,14 @@ choice_mix is
                    transparent) unit
     =>
       match c1
-        re red         => say "red {re.rgb}"
-        g green        => say "grn {g.rgb}"
-        bl blue        => say "blu {bl.rgb}"
-        y yellow       => say "yel {y.rgb}"
-        m magenta      => say "mag {m.rgb}"
-        k black        => say "blk {k.rgb}"
-        w white        => say "wht {w.rgb}"
-        tr transparent => say "trp {tr.rgb}"
+        re red         => say "red $(re.rgb)"
+        g green        => say "grn $(g.rgb)"
+        bl blue        => say "blu $(bl.rgb)"
+        y yellow       => say "yel $(y.rgb)"
+        m magenta      => say "mag $(m.rgb)"
+        k black        => say "blk $(k.rgb)"
+        w white        => say "wht $(w.rgb)"
+        tr transparent => say "trp $(tr.rgb)"
 
     set p := red
     set q := green
@@ -320,14 +320,14 @@ choice_mix is
           | transparent) unit
     =>
       match c1
-        re red         => say "red{re.rgb}"
-        g green        => say "grn{g.rgb}"
-        bl blue        => say "blu{bl.rgb}"
-        y yellow       => say "yel{y.rgb}"
-        m magenta      => say "mag{m.rgb}"
-        k black        => say "blk{k.rgb}"
-        w white        => say "wht{w.rgb}"
-        tr transparent => say "trp{tr.rgb}"
+        re red         => say "red$(re.rgb)"
+        g green        => say "grn$(g.rgb)"
+        bl blue        => say "blu$(bl.rgb)"
+        y yellow       => say "yel$(y.rgb)"
+        m magenta      => say "mag$(m.rgb)"
+        k black        => say "blk$(k.rgb)"
+        w white        => say "wht$(w.rgb)"
+        tr transparent => say "trp$(tr.rgb)"
     set p := red
     set q := green
     set r := black

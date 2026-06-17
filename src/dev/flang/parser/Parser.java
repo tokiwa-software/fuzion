@@ -1626,9 +1626,9 @@ actualArgs  : actualSpaces
            t_do              ,
            t_while           ,
            t_until           ,
-           t_stringBD        ,
-           t_stringBQ        ,
-           t_stringBB        ,
+           t_stringPD        ,
+           t_stringPQ        ,
+           t_stringPB        ,
            t_question        ,
            t_eof             -> true;
 

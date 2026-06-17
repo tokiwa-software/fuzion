@@ -125,4 +125,4 @@ is
     if is_accessible
       $as_array
     else
-      "inaccessible '{Mutable_Array3.this.type}'"
+      "inaccessible '$(Mutable_Array3.this.type)'"

@@ -107,7 +107,7 @@ is
     for
       r := "", r + c + n
       i in ks.indices
-      n := "({ks[i]} => {vs[i]})"
+      n := "($(ks[i]) => $(vs[i]))"
       c := "", ", "
     else
       r

@@ -194,7 +194,7 @@ is
   # e.g. "/folder/file" or "relative_folder/file"
   #
   public redef as_string String =>
-    "{is_absolute ? "/" : names.is_empty ? "." : ""}{String.join names "/"}"
+    "$(is_absolute ? "/" : names.is_empty ? "." : "")$(String.join names "/")"
 
 
   # Platform dependent String representation of this path
@@ -205,7 +205,7 @@ is
   #
   public as_platform_string String =>
     # relative paths should always start with `./` to avoid problems on Windows
-    "{if is_absolute then "/" else "./"}{String.join names "/"}"
+    "$(if is_absolute then "/" else "./")$(String.join names "/")"
 
 
   # define order for paths

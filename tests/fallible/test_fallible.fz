@@ -72,7 +72,7 @@ test_fallible =>
     .try ()->
       if 3 < 4 then panic "expected failure"
     .catch m->
-      say "11: expecting fault, got fault: {m.0} {m.1}"
+      say "11: expecting fault, got fault: $(m.0) $(m.1)"
 
 # run the tests:
 test_fallible

@@ -90,7 +90,7 @@ is
       dim_2(i0 i64, i1 i64) =>
         ("["
           + indices2
-              .map (i2 -> "{index[] i0 i1 i2}")
+              .map (i2 -> "$(index[] i0 i1 i2)")
               .fold (String.concat ", ")
           + "]")
 
@@ -109,7 +109,7 @@ is
         + ascii.lf_str
         + "]")
     else
-      "inaccessible '{mutate.array3.this.type}'"
+      "inaccessible '$(mutate.array3.this.type)'"
 
   # initialize three-dimensional mutable array
   #

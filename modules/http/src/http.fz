@@ -52,7 +52,7 @@ module crlf => "\r\n"
 # https://datatracker.ietf.org/doc/html/rfc9110#section-2.5-6
 #
 module parse_http_version(ver String) =>
-  err(_ error) => error "broken format of HTTP version '{ver}'"
+  err(_ error) => error "broken format of HTTP version '$(ver)'"
   v := ver.substring 5
   match v.find "."
     nil => (v.parse_i32.or_cause unit err, 0)

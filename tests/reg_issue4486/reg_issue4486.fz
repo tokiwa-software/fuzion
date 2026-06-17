@@ -48,7 +48,7 @@ reg_issue4486 =>
 
   for input in test_strings do
 
-    say "input: '{input.replace "\n" "\\n"}'"
+    say "input: '$(input.replace "\n" "\\n")'"
 
     lm ! ()->
       b := io.buffered lm

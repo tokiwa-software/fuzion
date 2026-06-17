@@ -78,9 +78,9 @@ public processes (ph os.Process_Handler, public running_processes container.Set 
         r.as_u32
       else
         if elapsed_time > timeout
-          error "Waiting for process with id {p.pid} timed out."
+          error "Waiting for process with id $(p.pid) timed out."
         else
-          error "Waiting for process with id {p.pid} was unsuccessful" fzE_last_error
+          error "Waiting for process with id $(p.pid) was unsuccessful" fzE_last_error
 
 
   # the processes that were registered

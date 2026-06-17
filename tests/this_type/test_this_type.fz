@@ -127,7 +127,7 @@ test_redef_using_fixed =>
 
   b(val String) : a is
 
-    public redef as_string String => "instance of {b.type.as_string} with $val"
+    public redef as_string String => "instance of $(b.type.as_string) with $val"
 
     redef me2 b.this => b.this
 
@@ -147,7 +147,7 @@ test_redef_using_fixed =>
 
   c : b "from c" is
 
-    public redef as_string String => "instance of {c.type.as_string}"
+    public redef as_string String => "instance of $(c.type.as_string)"
 
     # redefine abstract feature with co-variant argument and result
     #
@@ -161,17 +161,17 @@ test_redef_using_fixed =>
   b2 := b "2"
   say (b1.op b2)
 
-  say "expecting 'a': {a.me1}"
-  say "expecting 'a': {a.me2}"
-  say "expecting 'b with 1': {b1.me1}"
-  say "expecting 'b with 2': {b2.me2}"
+  say "expecting 'a': $(a.me1)"
+  say "expecting 'a': $(a.me2)"
+  say "expecting 'b with 1': $(b1.me1)"
+  say "expecting 'b with 2': $(b2.me2)"
 
   c1 := c
   c2 := c
   say (c1.op c2)
 
-  say "expecting 'a.op_implemented: {a.op_implemented}"
-  say "expecting 'b.op_implemented: {b1.op_implemented}"
-  say "expecting 'a.op_implemented: {c1.op_implemented}"
+  say "expecting 'a.op_implemented: $(a.op_implemented)"
+  say "expecting 'b.op_implemented: $(b1.op_implemented)"
+  say "expecting 'a.op_implemented: $(c1.op_implemented)"
 
 test_redef_using_fixed

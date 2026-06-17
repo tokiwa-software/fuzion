@@ -677,19 +677,14 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * Check if a type parameter actual can be assigned to a type parameter with
+   * Check if actual can be assigned to a type parameter with
    * constraint this.
    *
    * @param context the source code context where this Type is used
    *
-   * @param call if this is a formal type in a call, this is the call, otherwise
-   * null. This call is used to replace type parameters that depend on the
-   * call's target or actual type parameters. Also this is used to for error
-   * messages that require the source position of the call.
-   *
    * @param actual the actual type.
    */
-  boolean constraintAssignableFrom(Context context, AbstractType actual)
+  private boolean constraintAssignableFrom(Context context, AbstractType actual)
   {
     if (PRECONDITIONS) require
       (this  .isGenericArgument() || this  .feature() != null || Errors.any(),
@@ -703,33 +698,62 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
     if (!result && !isGenericArgument())
       {
-        if (actual.isGenericArgument())
+        // NYI: BUG: #4756, #5002, likely unsound
+        result = switch (actual.kind())
           {
-            result = constraintAssignableFrom(context, actual.genericArgument().constraint(context));
-          }
-        else
-          {
-            if (CHECKS) check
-              (actual.feature() != null || Errors.any());
-            if (actual.feature() != null)
-              {
-                // NYI: BUG: #5714 soundness issues probable
-                // NYI: BUG: Check: What about open generics?
-                result = actual.feature() == feature() &&
-                  (actual.isThisType() || (genericsAssignable(actual, context) &&
-                                          (outer() == null || actual.outer() != null && outer().isAssignableFromDirectly(actual.outer()).yes())));
-                for (var p: actual.feature().inherits())
-                  {
-                    if (!result)
-                      {
-                        var pa = actualType(p.type().applyTypePars(actual));
-                        result = pa!=actual && constraintAssignableFrom(context, pa);
-                      }
-                  }
-              }
-          }
+            /**
+             * e.g.:
+             *
+             * this: 'T : property.orderable'
+             * actual: 'I : integer'
+             */
+            case GenericArgument -> constraintAssignableFrom(context, actual.genericArgument().constraint(context));
+            /**
+             * e.g.:
+             *
+             * this: 'TP : concur.thread_pool'
+             * actual: 'concur.thread_pool.this'
+             */
+            case ThisType -> {
+              yield actual.feature() == feature()
+              ||
+                constraintAssignableViaInherits(context, actual);
+            }
+            /**
+             * e.g.:
+             *
+             * this: 'TP : concur.thread_pool'
+             * actual: 'concur.thread_pool'
+             */
+            case RefType, ValueType -> {
+              yield actual.feature() == feature() &&
+                genericsAssignable(actual, context) &&
+                (outer() == null && actual.outer() == null || outer().isAssignableFromDirectly(actual.outer()).yes())
+              ||
+                constraintAssignableViaInherits(context, actual);
+            }
+          };
       }
     return result;
+  }
+
+
+  /**
+   * Check if actual can be assigned to a type parameter with
+   * constraint this via the feature that actual.feature inherits from.
+   *
+   * @param context the source code context where this Type is used
+   *
+   * @param actual the actual type.
+   */
+  private boolean constraintAssignableViaInherits(Context context, AbstractType actual)
+  {
+    return actual.feature().inherits().stream().anyMatch(p ->
+      {
+        var pa = actual.actualType(p.type());
+        return pa!=actual && constraintAssignableFrom(context, pa);
+      }
+    );
   }
 
 

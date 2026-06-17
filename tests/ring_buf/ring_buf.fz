@@ -34,7 +34,7 @@ ring_buf =>
          expect option X,
          got    option X)
   =>
-    say "$thread expecting {($expect).pad 7} {($got).pad 7} {expect = got ? "" : "*** FAIL ***"}"
+    say "$thread expecting $(($expect).pad 7) $(($got).pad 7) $(expect = got ? "" : "*** FAIL ***")"
 
 
   # try a thread-local local mutate

@@ -207,7 +207,7 @@ is
   #
   as_string(u time.time_unit, pad bool) String =>
     n := $(nanos / u.in_ns)
-    "{pad ? n.pad_left 4 : n}{u.short_name}"
+    "$(pad ? n.pad_left 4 : n)$(u.short_name)"
 
 
   # Returns a string representation of this duration using
@@ -221,7 +221,7 @@ is
   #     # Output: '10800 sec'
   #
   public as_string_long(u time.time_unit) String =>
-    "{nanos / u.in_ns} {u.name}"
+    "$(nanos / u.in_ns) $(u.name)"
 
 
   # Determines the unit for compact string representation.

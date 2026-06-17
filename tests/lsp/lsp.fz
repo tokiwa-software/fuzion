@@ -108,7 +108,7 @@ Sequence.execute(
 ) =>
   seq := map x->x.as_string
   match os.process.start seq.first.or_panic (seq.drop 1) envir_vars
-    e error => panic "failed executing {Sequence.this}, error is $e"
+    e error => panic "failed executing $(Sequence.this), error is $e"
     p os.process => record_process p Sequence.this.as_string feed_stdin
 
 # execute this string by splitting at all whitespaces
@@ -140,7 +140,7 @@ init_req =>
     }
   """
 
-test_file := "file://{os.cwd}/hello.fz"
+test_file := "file://$(os.cwd)/hello.fz"
 
 open_file_req =>
   """
@@ -179,7 +179,7 @@ hover_req =>
 
 
 
-test_file2 := "file://{os.cwd}/compl.fz"
+test_file2 := "file://$(os.cwd)/compl.fz"
 
 comp_ex =>
   """
@@ -240,7 +240,7 @@ shutdown_req =>
 
 as_json_rpc(str String) =>
   b := str.replace "\n" "\r\n"
-  "Content-Length: {b.byte_count}\r\n\r\n{b}"
+  "Content-Length: $(b.byte_count)\r\n\r\n$(b)"
 
 fuzion_home := os.cwd.or_panic.resolve "../../" .as_string
 
@@ -248,7 +248,7 @@ test_def := [(init_req, 2), (open_file_req, 4), (hover_req, 3), (open_file_req2,
   .map_to_array t->
     (as_json_rpc t.0, t.1)
 
-res := "java -Dfuzion.home={fuzion_home} -Dfile.encoding=UTF-8 -cp {fuzion_home}/fuzion.jar dev.flang.lsp.Main -stdio".execute test_def .out
+res := "java -Dfuzion.home=$(fuzion_home) -Dfile.encoding=UTF-8 -cp $(fuzion_home)/fuzion.jar dev.flang.lsp.Main -stdio".execute test_def .out
 
 # logMessages contain unstable data like dates and "finished in Xms"
 # NYI: UNDER DEVELOPMENT: unclear where error "CompletableFuture is expected..." originates

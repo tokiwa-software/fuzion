@@ -42,7 +42,7 @@ testLists is
     print(on) =>
       match on
         n Node =>
-            say "print el in recursion: {n.el}"
+            say "print el in recursion: $(n.el)"
             print n.n
         Nil =>
 
@@ -62,7 +62,7 @@ testLists is
   li.add 8
   li.add 9
   li.print
-  say "size: {li.size}"
+  say "size: $(li.size)"
 
   Complex(real, imag i32) is
 
@@ -72,4 +72,4 @@ testLists is
   lc.add (Complex 5 6)
   lc.add (Complex 7 8)
   lc.print
-  say "size: {lc.size}"
+  say "size: $(lc.size)"

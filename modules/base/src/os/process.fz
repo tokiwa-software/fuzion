@@ -53,7 +53,7 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
 
   # get a name for the given descriptor
   #
-  desc_name(desc) =>
+  desc_name(desc i64) =>
     if      desc = std_in  then "stdin"
     else if desc = std_out then "stdout"
     else if desc = std_err then "stderr"
@@ -148,12 +148,11 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
       # what is being written/read to/from pipes
       # thread to pipe from one process to other
       _ := concur.threads.env.spawn ()->
-        _ :=
-          for p1rb := std_out_read_handler.read pipe_buffer_size
-          while
-            match p1rb
-              s Sequence => (write_bytes p.std_in s).ok
-              * => false
+        for p1rb := std_out_read_handler.read pipe_buffer_size
+        while
+          match p1rb
+            s Sequence => (write_bytes p.std_in s).ok
+            * => false
 
         # NYI: UNDER DEVELOPMENT: error handling
         _ := fzE_pipe_close p.std_in
@@ -224,8 +223,8 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
   #
   public redef as_string String ! time.nano, processes =>
     match wait time.duration.zero
-      error  => "$name {String.join args " "} (running, PID: $pid)"
-      ec u32 => "$name {String.join args " "} (exited with exit code: $ec)"
+      error  => "$name $(String.join args " ") (running, PID: $pid)"
+      ec u32 => "$name $(String.join args " ") (exited with exit code: $ec)"
 
 
   # NYI: UNDER DEVELOPMENT:

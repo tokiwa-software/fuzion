@@ -56,7 +56,7 @@ is
       attributes
         .items
         .map t->
-          "{t.0}=\"{t.1}\""
+          "$(t.0)=\"$(t.1)\""
         .as_string " "
 
     dat_str =>
@@ -66,14 +66,14 @@ is
             str String =>
               check debug: !(str.contains "<")
               check debug: !(str.contains ">")
-              "{"  "*(indent+1)}{str}"
+              "$("  "*{indent+1})$(str)"
             n nom.parsers.xml_node => n.as_string indent+1
         .as_string "\n"
 
     if attributes.is_empty
-      "{"  "*indent}<{name}>\n{dat_str}\n{"  "*(indent)}</{name}>"
+      "$("  "*indent)<$(name)>\n$(dat_str)\n$("  "*indent)</$(name)>"
     else
-      "{"  "*indent}<{name} {attr}>\n{dat_str}\n{"  "*(indent)}</{name}>"
+      "$("  "*indent)<$(name) $(attr)>\n$(dat_str)\n$("  "*indent)</$(name)>"
 
 
 

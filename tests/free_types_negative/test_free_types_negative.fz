@@ -28,7 +28,7 @@ test_free_type_negative is
   # free type with explicit constraint
   #
   a1(v T : Any    ) => say "a: $T $v"
-  a2(v T : numeric) => say "a: $T {v+v}"
+  a2(v T : numeric) => say "a: $T $(v+v)"
   a1 42
   a1 "fourty two"
   a2 42
@@ -98,17 +98,17 @@ test_free_type_negative is
   # free types as type parameters to Sequence
   #
   x1(s Sequence T, v T) => [v] ++ s ++ [v]
-  say "x1: {x1 [4,6,4] 1}"
+  say "x1: $(x1 [4,6,4] 1)"
 
   # different type parameters result in incompatible types
   #
   x2(s Sequence T, v U) => [v] ++ s ++ [v]    # 7. should flag an error since types are incompatible due to different free types
-  say "x2: {x2 [4,6,4] 1}"
+  say "x2: $(x2 [4,6,4] 1)"
 
   # explicit type as type parameter to Seuqnce
   #
   x3(T type, s Sequence T, v T) => [v] ++ s ++ [v]
-  say "x3: {x3 [4,6,4] 1}"
+  say "x3: $(x3 [4,6,4] 1)"
 
   # typo in a type that turns it into an accidental free type
   #

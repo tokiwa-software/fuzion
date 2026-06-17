@@ -135,7 +135,7 @@ public mutate : linear_effect is
     module check_and_replace
     =>
       if !is_exclusive
-        mpanic "*** invalid mutate for '{M.name}'"
+        mpanic "*** invalid mutate for '$(M.name)'"
       mutate.this.env.replace
 
 
@@ -162,9 +162,6 @@ public mutate : linear_effect is
         auto_unwrap T mutate
   is
 
-    # NYI: UNDER DEVELOPMENT: workaround for #7171, remove if that is fixed.
-    public is_exclusive2 bool => is_exclusive
-
 
     # read the current value of this mutable value.
     #
@@ -173,7 +170,7 @@ public mutate : linear_effect is
     #
     public get T ! mutate.this
       pre
-        safety: !open || is_exclusive2
+        safety: !open || is_exclusive
     =>
       if open
         check_and_replace
@@ -272,7 +269,7 @@ public mutate : linear_effect is
     debug: condition()
   =>
     if !condition() then
-      panic "mutate.wait on '{F.name}' would wait forever"
+      panic "mutate.wait on '$(F.name)' would wait forever"
 
 
   # exclusively wait for the given condition to hold and then perform given code with

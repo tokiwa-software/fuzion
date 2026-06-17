@@ -93,7 +93,7 @@ is
         set priority := priority0
         unit
       else
-        error "fzE_thread_setschedparam error {e}"
+        error "fzE_thread_setschedparam error $(e)"
 
 
   # get the current scheduling policy and priority of this thread
@@ -116,7 +116,7 @@ is
       if e = 0
         unit
       else
-        error "fzE_thread_setaffinity error {e}"
+        error "fzE_thread_setaffinity error $(e)"
 
 
   # equality

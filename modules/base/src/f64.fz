@@ -228,9 +228,9 @@ public f64(public val f64) : float, java_primitive is
         i i32 =>
           digits := s.substring i+1
           if digits.byte_count > fraction_digits
-            "{s.substring 0 i}.{digits.substring 0 fraction_digits}"
+            "$(s.substring 0 i).$(digits.substring 0 fraction_digits)"
           else
-            "{s.substring 0 i}.{digits.pad "0" fraction_digits}"
+            "$(s.substring 0 i).$(digits.pad "0" fraction_digits)"
         nil => s
 
 

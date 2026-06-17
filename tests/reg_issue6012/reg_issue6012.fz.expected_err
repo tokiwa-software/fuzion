@@ -1,13 +1,13 @@
 
 --CURDIR--/reg_issue6012.fz:26:14: error 1: Incompatible types when passing argument in a call
-  ignore i32 "abcd{unit}efgt"
--------------^^^^^^^^^^^^^^^^
+  ignore i32 "abcd$(unit)efgt"
+-------------^^^^^^^^^^^^^^^^^
 Actual type for argument #1 'x' does not match expected type.
 In call to          : 'ignore'
 expected formal type: 'i32'
 actual type found   : 'String'
 assignable to       : 'String'
-for value assigned  : '"abcd{unit}efgt"'
+for value assigned  : '"abcd$(unit)efgt"'
 To solve this, you could change the type of the target 'x' to 'String' or convert the type of the assigned value to 'i32'.
 
 one error.

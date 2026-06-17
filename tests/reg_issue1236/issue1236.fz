@@ -57,7 +57,7 @@ test2 is
     show a.b
     show c
 
-  show(x a) => say "$x: {x.dt}"
+  show(x a) => say "$x: $(x.dt)"
 
   ex_1236b
 

@@ -42,7 +42,7 @@ reg_issue4425 =>
 
   # same tests, but producing some output:
   (id i32->bool p->{if p = 3 then
-                      say "hi using \{\}"
+                      say "hi using {}"
                     false}).call 3 |> say
   (id i32->bool p->(if p = 3 then
                       say "hi using ()"

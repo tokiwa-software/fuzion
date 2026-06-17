@@ -51,6 +51,13 @@ module Blocking_Queue(T type) ref is
       check cnd.broadcast
 
 
+  # has this queue been closed?
+  #
+  module is_closed =>
+    cnd.synchronized ()->
+      s.read.is_closed
+
+
   # enqueue an element
   # if queue is already closed, returns false
   # otherwise enqueues the element and returns true
@@ -95,4 +102,3 @@ module Blocking_Queue(T type) ref is
         depleted => nil
         t T => t
         retry => panic "Illegal state in Blocking_Queue, bug!"
-

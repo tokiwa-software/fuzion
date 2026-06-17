@@ -47,7 +47,7 @@ private:public jvm : effect is
       # NYI: UNDER DEVELOPMENT: return error code
       res := fuzion.jvm.env.create_jvm (option_strings.map (str -> fuzion.sys.c_string str)).as_array.internal_array.data option_strings.count
       if res != 0
-        panic "JVM failed to start, error code {res}"
+        panic "JVM failed to start, error code $(res)"
       else
         code.call
 
