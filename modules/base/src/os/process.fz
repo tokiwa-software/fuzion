@@ -156,13 +156,9 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
               * => false
 
         # NYI: UNDER DEVELOPMENT: error handling
-        res_std_in_close := fzE_pipe_close p.std_in
-        res_std_out_close := fzE_pipe_close process.this.std_out
-        res_std_err_close := fzE_pipe_close process.this.std_err
-
-        # check debug : res_std_in_close=0
-        # check debug : res_std_out_close=0
-        # check debug : res_std_err_close=0
+        _ := fzE_pipe_close p.std_in
+        _ := fzE_pipe_close process.this.std_out
+        _ := fzE_pipe_close process.this.std_err
 
       p
 
