@@ -137,12 +137,12 @@ is
     match max_recorded
       mr time.duration => n := num_buckets.as_i32
                           array n i->
-                            if i<n-1 then mr.times ((i+1).as_f64 / (num_buckets.as_f64-1))
-                                     else time.duration.max
+                            if i<(n-1) then mr.times ((i+1).as_f64 / (num_buckets.as_f64-1))
+                                       else time.duration.max
       nil              => log_table
 
   check
-    debug: table.length = num_buckets.as_i32
+    debug: table.length = num_buckets
     debug: table[num_buckets.as_i32-1] = time.duration.max
 
 
@@ -150,7 +150,7 @@ is
   #
   log_table
   post
-    debug: result.length = num_buckets.as_i32
+    debug: result.length = num_buckets
   =>
     step := 1.65  # step factor determined via trial and error
     (1.0 :: *step).map f->(time.duration.ns 1 .times f)
@@ -208,7 +208,7 @@ is
   #
   indx(l time.duration)
   post
-    debug: result.as_i32 ∈ table.indices
+    debug: result ∈ table.indices
     debug: l <= table[result]
     debug: result = 0 || table[result-1] < l
   =>

@@ -76,12 +76,12 @@ private:public Finger_Tree(T type) ref : container.abstract_array T is
   public redef as_array array T =>
     internal := fuzion.sys.internal_array_init T count
     fill_internal_array internal 0
-    array internal unit unit unit
+    array T internal unit unit unit unit
 
 
   # helper for as_array to copy contents to internal_array
   #
-  fill_internal_array(ia fuzion.sys.internal_array T, i i32) unit => unit
+  fill_internal_array(ia fuzion.sys.internal_array T, i i64) unit => unit
 
 
   # merge this Finger_Tree with ft
@@ -104,7 +104,7 @@ private:public Finger_Tree(T type) ref : container.abstract_array T is
 # an empty finger tree
 #
 empty(T type) : container.Finger_Tree T is
-  public redef length i32 => 0
+  public redef length i64 => 0
   public redef prepend(seq Sequence T) container.Finger_Tree T =>
     match seq.as_finger_tree
       nil            => single T seq
@@ -131,7 +131,7 @@ single(T type, data Sequence T) : container.Finger_Tree T
   pre
     debug 2 : data.as_finger_tree.is_nil
 is
-  public redef length i32 => data.count
+  public redef length i64 => data.count.as_i64
   public redef prepend(seq Sequence T) container.Finger_Tree T =>
     deep (container.hand [seq]) (empty T) (container.hand [data])
   public redef append (seq Sequence T) container.Finger_Tree T =>
@@ -146,11 +146,11 @@ is
     else
       r.prepend data
   redef modus choice (container.empty T) (container.single T) (container.deep T) => container.single data
-  redef fill_internal_array(ia fuzion.sys.internal_array T, i i32) unit =>
-    for j:=0, j+1
-    while j<data.count
+  redef fill_internal_array(ia fuzion.sys.internal_array T, i i64) unit =>
+    for j := 0, j+1
+    while j < data.count
     do
-      ia[i+j] := data[j]
+      ia[i.as_i32+j] := data[j]
 
 
 
@@ -176,7 +176,7 @@ deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.ha
   cnt := lft.count + ft.count + rght.count
 
 
-  public redef length i32 => cnt
+  public redef length i64 => cnt.as_i64
 
 
   public redef prepend(seq Sequence T) container.Finger_Tree T =>
@@ -233,13 +233,13 @@ deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.ha
           .append s.data
       d deep =>
         # NYI: BUG: triggers ugly case in DFA: deep lft (ft.merge ([rght.finger, seq, d.lft.finger].flat_map id) d.ft) d.rght
-        x := array rght.finger.count+seq.count+d.lft.finger.count i->
-          if i<rght.finger.count
+        x := array rght.finger.count.as_i64+seq.count.as_i64+d.lft.finger.count.as_i64 i->
+          if i.as_i64 < rght.finger.count.as_i64
             rght.finger[i]
-          else if i<rght.finger.count+seq.count
-            seq[i-rght.finger.count]
+          else if i.as_i64 < rght.finger.count.as_i64+seq.count.as_i64
+            seq[i-rght.finger.count.as_i64]
           else
-            d.lft.finger[i-rght.finger.count-seq.count]
+            d.lft.finger[i-rght.finger.count.as_i64-seq.count.as_i64]
         deep lft (ft.merge x d.ft) d.rght
 
 
@@ -247,10 +247,10 @@ deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.ha
   redef modus choice (container.empty T) (container.single T) (container.deep T) => container.deep lft ft rght
 
 
-  redef fill_internal_array(ia fuzion.sys.internal_array T, i i32) unit =>
+  redef fill_internal_array(ia fuzion.sys.internal_array T, i i64) unit =>
     lft.fill_internal_array ia i
-    ft.fill_internal_array ia i+lft.count
-    rght.fill_internal_array ia i+lft.count+ft.count
+    ft.fill_internal_array ia i+lft.count.as_i64
+    rght.fill_internal_array ia i+lft.count.as_i64+ft.count.as_i64
 
 
 # this is called digit in the paper
@@ -260,12 +260,12 @@ hand(T type, finger Sequence (Sequence T)) : property.countable
     debug 2 : 1 <= finger.count <= 4
     debug 2 : finger.is_array_backed
 is
-  f0cnt := finger[0].count
-  f1cnt := if finger.count < 2 then 0 else finger[1].count
-  f2cnt := if finger.count < 3 then 0 else finger[2].count
-  f3cnt := if finger.count < 4 then 0 else finger[3].count
+  f0cnt := finger[0].count.as_i64
+  f1cnt := if finger.count < 2 then i64.zero else finger[1].count.as_i64
+  f2cnt := if finger.count < 3 then i64.zero else finger[2].count.as_i64
+  f3cnt := if finger.count < 4 then i64.zero else finger[3].count.as_i64
   cnt   := f0cnt + f1cnt + f2cnt + f3cnt
-  public redef count i32 => cnt
+  public redef count i32 => cnt.as_i32
 
 
   # new hand without the first finger
@@ -319,29 +319,30 @@ is
   # index access to the element in this hand
   #
   public index [ ] (n i32) T =>
-    if n >= cnt
+    m := n.as_i64
+    if m >= cnt
       panic "illegal unless debug turned off"
-    else if n < f0cnt
-      finger[0][n]
-    else if n < f0cnt+f1cnt
-      finger[1][n-f0cnt]
-    else if n < f0cnt+f1cnt+f2cnt
-      finger[2][n-f0cnt-f1cnt]
+    else if m < f0cnt
+      finger[0][m]
+    else if m < f0cnt+f1cnt
+      finger[1][m-f0cnt]
+    else if m < f0cnt+f1cnt+f2cnt
+      finger[2][m-f0cnt-f1cnt]
     else
-      finger[3][n-f0cnt-f1cnt-f2cnt]
+      finger[3][m-f0cnt-f1cnt-f2cnt]
 
 
   # fill ia with contens of the fingers
   # starting at index i
   #
-  fill_internal_array(ia fuzion.sys.internal_array T, i i32) unit =>
+  fill_internal_array(ia fuzion.sys.internal_array T, i i64) unit =>
 
-    fill(f Sequence T, s i32) =>
+    fill(f Sequence T, s i64) =>
       match f.as_finger_tree
         nil =>
           for j := 0, j+1
           while j < f.count do
-            ia[s+j] := f[j]
+            ia[s.as_i32+j] := f[j]
         ft Finger_Tree =>
           ft.fill_internal_array ia s
 

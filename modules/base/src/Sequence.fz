@@ -217,7 +217,7 @@ is
   #
   public as_array array T =>
     if is_array_backed
-      array count (i -> Sequence.this[i])
+      array count.as_i64 (i -> Sequence.this[i])
     else
       as_list.as_array
 

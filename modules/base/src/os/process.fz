@@ -64,7 +64,7 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
   #
   read_handler(desc i64) : io.Read_Handler is
     public redef read(max_count i32) choice (Sequence u8) io.end_of_file error =>
-      arr := array u8 pipe_buffer_size i->0
+      arr := array u8 _ pipe_buffer_size _->(u8 0)
       res := fzE_pipe_read desc arr.internal_array.data arr.count
       if res = -1
         # NYI: UNDER DEVELOPMENT: register failures

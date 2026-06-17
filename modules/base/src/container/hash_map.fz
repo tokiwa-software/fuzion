@@ -42,7 +42,7 @@ is
 
   # number of entries in this map
   #
-  public redef size i32 := ks.count
+  public redef size i64 := ks.count.as_i64
 
 
   # size of allocated contents array, allows for some empty slots
