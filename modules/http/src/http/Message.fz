@@ -131,7 +131,7 @@ public Message ref is
       .items
       .map kv->
         k, v := kv
-        "{canonical_header_key k}: $v" + crlf
+        "$(canonical_header_key k): $v" + crlf
       .as_string ""
 
 
@@ -140,7 +140,7 @@ public Message ref is
 # a recipient MAY recognize a single LF as a line terminator and ignore any preceding CR.
 # https://datatracker.ietf.org/doc/html/rfc9112#section-2.2-3
 #
-module next_line(LM type : mutate) => (io.buffered LM).read_delimiter "\n".utf8[0] true
+module next_line(LM type : mutate) => (io.buffered LM).read_delimiter encodings.ascii.lf true
 
 
 

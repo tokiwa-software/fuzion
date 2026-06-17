@@ -32,10 +32,10 @@ public korean : Provide is
     #
     public redef date(d i32, m i32, y i32) String
     =>
-        "{y}년 {m}월 {d}일"
+        "$(y)년 $(m)월 $(d)일"
 
     # example: `currency 300000` results in `300000₩`.
     #
     public redef currency(c i32) String
     =>
-        "{c}₩"
+        "$(c)₩"

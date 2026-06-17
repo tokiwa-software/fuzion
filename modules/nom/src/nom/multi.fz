@@ -55,7 +55,7 @@ module multi is
               abort (r.0, r.1)
 
       if acc.count < m
-        error "matched only {acc.count} times"
+        error "matched only $(acc.count) times"
       else
         success rest acc
 

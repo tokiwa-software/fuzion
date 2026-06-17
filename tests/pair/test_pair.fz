@@ -30,5 +30,5 @@ test_pair is
   pl i64 := 5;
   p1 pair i32 i64 := pair i32 i64 pi pl
 
-  say "p1.a = {p1.a}"
-  say "p1.b = {p1.b}"
+  say "p1.a = $(p1.a)"
+  say "p1.b = $(p1.b)"

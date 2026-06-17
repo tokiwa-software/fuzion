@@ -275,7 +275,7 @@ catch_postcondition is
     r := fuzion.runtime.fault.try ()->
            option tries[c].call
          .catch s->
-           say "*** failed: {s.0} {s.1} ***"
+           say "*** failed: $(s.0) $(s.1) ***"
            nil
   until r??
     say r

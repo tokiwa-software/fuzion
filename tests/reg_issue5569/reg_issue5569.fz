@@ -66,7 +66,7 @@ reg_issue5569 =>
   w(E type : t.e) =>
     x := E.c.r
     y := E.c.q
-    say "{type_of x} {type_of y}"
+    say "$(type_of x) $(type_of y)"
 
   yap "expecting t.i /t.e.j  : "; t.e   ! w t.e
   # gives error: Incompatible type parameter:
@@ -83,7 +83,7 @@ reg_issue5569 =>
   w2(E type : t.e) =>
     x := E.c.r2
     y := E.c.q2
-    say "{type_of x} {type_of y}"
+    say "$(type_of x) $(type_of y)"
 
   yap "expecting option (array t.i /t.e.j  ): "; t.e   ! w2 t.e
   # gives error: Incompatible type parameter:
@@ -104,7 +104,7 @@ reg_issue5569 =>
     y := E.c.tt
     _ := x.j
     _ := y.i
-    say "{type_of x} {type_of y}"
+    say "$(type_of x) $(type_of y)"
 
   yap "expecting t.e /t  : "; t.e   ! w3 t.e
   yap "expecting t2.e/t2 : "; t2.e  ! w3 t2.e

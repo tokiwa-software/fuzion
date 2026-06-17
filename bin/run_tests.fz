@@ -168,20 +168,20 @@ main =>
       match opt_res
         e error =>
           yap "!"
-          append_line results "$test in {elapsed_time}: $e error"
+          append_line results "$test in $(elapsed_time): $e error"
           append_line failures "$test: $e"
         res tokiwa.process_result =>
           if res.exit_code = 0 || target = "fuir" then
             yap "."
-            append_line results "$test in {elapsed_time}: ok"
+            append_line results "$test in $(elapsed_time): ok"
           else
             yap "#"
-            append_line results "$test in {elapsed_time}: failed"
+            append_line results "$test in $(elapsed_time): failed"
             append_line failures res.out
             append_line failures res.err
 
 
-  say "{tests.count} tests, running $thread_count tests in parallel."
+  say "$(tests.count) tests, running $thread_count tests in parallel."
 
 
 
@@ -203,11 +203,11 @@ main =>
   produced_error := results_content.count (.ends_with "error"  )
 
   say ""
-  say ("$ok/{tests.count} tests passed" +
+  say ("$ok/$(tests.count) tests passed" +
        ", $skipped skipped" +
        ", $failed failed" +
        (produced_error = 0 ? "" :", $produced_error produced error") +
-       " in {elapsed_time_total.as_string.trim}.")
+       " in $(elapsed_time_total.as_string.trim).")
 
   max_recorded := test_durations
     .values
@@ -261,7 +261,7 @@ main =>
     .items
     .sort_by (.1)
     .take num_slowest
-    .for_each (td -> say "{td.1.as_string_pad} {td.0}")
+    .for_each (td -> say "$(td.1.as_string_pad) $(td.0)")
 
   say_section "$target done"
 
@@ -269,12 +269,12 @@ main =>
     nil => say "INFLUXDB_TOKEN not set, not sending to influxdb."
     token String =>
       data := test_durations.items
-        .map td->"test_runtime,backend={target},test={td.0} value={td.1.millis}"
+        .map td->"test_runtime,backend=$(target),test=$(td.0) value=$(td.1.millis)"
       if token.is_blank
         say "INFLUXDB_TOKEN is blank, not sending to influxdb."
       else
         say <| tokiwa.post_to_influx "tokiwa" "benchmarks" token.trim (String.join_lines data)
-        say <| tokiwa.post_to_influx "tokiwa" "benchmarks" token.trim "run_tests,backend={target} total_time={elapsed_time_total.millis}"
+        say <| tokiwa.post_to_influx "tokiwa" "benchmarks" token.trim "run_tests,backend=$(target) total_time=$(elapsed_time_total.millis)"
 
   exit
 

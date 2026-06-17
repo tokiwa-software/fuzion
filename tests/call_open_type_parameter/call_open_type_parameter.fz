@@ -134,10 +134,10 @@ call_open_type_parameter =>
           say B
 
           x := B
-          say "$x {type_of x}  ——internal value type of `B`"
+          say "$x $(type_of x)  ——internal value type of `B`"
 
           y Open_Types := B
-          say "$y {type_of y}  ——boxed `Open_Types` value"
+          say "$y $(type_of y)  ——boxed `Open_Types` value"
 
     b : a i32 unit bool is
 

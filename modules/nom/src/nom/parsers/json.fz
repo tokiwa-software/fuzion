@@ -34,7 +34,7 @@ public json_value : choice String f64 bool nil (Sequence json_value) (container.
       b bool => $b
       nil => "null"
       seq Sequence => $seq
-      m container.Map => "\{$m}"
+      m container.Map => "{$m}"
 
 
   # access feature to access deeply nested maps and sequences
@@ -199,7 +199,7 @@ public json Parser String (Sequence codepoint) json_value =>
     parser_key_values =>
       separated_list1 (tag ",") ()->parser_key_value
 
-    delimited (tag "\{") (alt [parser_key_values, parser_no_key_values]) (tag "}")
+    delimited (tag "{") (alt [parser_key_values, parser_no_key_values]) (tag "}")
       .map json_value (x -> container.map_of x.as_array)
 
 

@@ -117,4 +117,4 @@ is
     if is_accessible
       $as_array
     else
-      "inaccessible '{Buffer.this.type}'"
+      "inaccessible '$(Buffer.this.type)'"

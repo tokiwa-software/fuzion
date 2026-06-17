@@ -162,7 +162,7 @@ is
       i in 0..(n-1)
     do
       match data0[length+i]
-        container.reserved => panic "container.expanding_array.expand $n filler did not init element at {length+i} (=$length+$i)"
+        container.reserved => panic "container.expanding_array.expand $n filler did not init element at $(length+i) (=$length+$i)"
         * =>
     expanding_array data0 new_length
 

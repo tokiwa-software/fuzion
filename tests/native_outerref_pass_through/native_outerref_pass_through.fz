@@ -94,5 +94,5 @@ sqlite_database(db Native_Ref) : Database is
 
 _ := (sqlite_database.open "test.db").bind unit db->
   db.query "select * from table_name;" res->
-    say (res.map t->"{t.0} => {t.1}")
+    say (res.map t->"$(t.0) => $(t.1)")
     0

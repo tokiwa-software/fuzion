@@ -26,10 +26,10 @@ reg_issue4912 =>
   a := "a"
   b := "b"
 
-  Any.f      => "({Any.this}.f)"
-  Any.f(a)   => "({Any.this}.f $a)"
+  Any.f      => "($(Any.this).f)"
+  Any.f(a)   => "($(Any.this).f $a)"
   f(x)       => "(f $x)"
 
-  String.prefix ^ => "(^{String.this})"
+  String.prefix ^ => "(^$(String.this))"
 
-  say "10. f a^b   : {f a^b}"
+  say "10. f a^b   : $(f a^b)"

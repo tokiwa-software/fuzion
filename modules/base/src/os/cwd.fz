@@ -32,4 +32,4 @@ public cwd outcome path =>
     # NYI: BUG: path.of does not work here
     path.type.of <| String.from_bytes (a.take_while x->x!=0)
   else
-    error "error getting current working directory, error code {fzE_last_error}"
+    error "error getting current working directory, error code $(fzE_last_error)"

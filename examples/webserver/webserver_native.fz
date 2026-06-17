@@ -61,10 +61,10 @@ webserver_native is
               HTTP/1.1 200 OK
               Connection: close
               Server: Fuzion demo WebServer v0.02
-              Content-Length: {data.byte_count}
+              Content-Length: $(data.byte_count)
               Content-Type: text/html
 
-              {data}
+              $(data)
             """.utf8.as_array
           (io.buffered mutate).writer.env.flush
 

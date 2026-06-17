@@ -64,7 +64,7 @@ nom_test =>
     json_parser := nom.parsers.json
     say (json_parser.call "")
     say (json_parser.call " ")
-    say (json_parser.call "\{}")
+    say (json_parser.call "{}")
     say (json_parser.call " 42 ")
     say (json_parser.call " null ")
     say (json_parser.call " true ")
@@ -73,39 +73,39 @@ nom_test =>
     say (json_parser.call "[1.5,2.5,3.5]")
     say (json_parser.call "[-1.5,2.5E2,5.0e-1]")
     say (json_parser.call "\"hello\\nworld\"")
-    say (json_parser.call "\{ \"name \":  \"sonoo\" }")
-    say (json_parser.call "\{ \"name \":  [ 1, true, false, null, \"sonoo\", \{ \"name \":  \"sonoo\" } ] }")
-    say (json_parser.call "\{  \"employee \":  \{  \"name \":  \"sonoo\",  \"salary \": 56000,  \"married \": true } }")
+    say (json_parser.call "{ \"name \":  \"sonoo\" }")
+    say (json_parser.call "{ \"name \":  [ 1, true, false, null, \"sonoo\", { \"name \":  \"sonoo\" } ] }")
+    say (json_parser.call "{  \"employee \":  {  \"name \":  \"sonoo\",  \"salary \": 56000,  \"married \": true } }")
     say (json_parser.call """
         [
-        \{
-            "employee": \{
+        {
+            "employee": {
                 "id": "E00001",
                 "name": "Bryan Smith",
                 "position": "Chemical engineer",
-                "department": \{
+                "department": {
                     "id": "D080",
                     "name": "Incentivize",
-                    "manager": \{
+                    "manager": {
                         "id": "M2858",
                         "name": "Rebecca Andrews",
-                        "contact": \{
+                        "contact": {
                             "email": "amanda52@example.net",
                             "phone": "815-823-1247x52270"
                         }
                     }
                 },
                 "projects": [
-                    \{
+                    {
                         "projectId": "P5216",
                         "projectName": "Multi-tiered discrete Internet solution",
                         "startDate": "2025-05-25",
                         "tasks": [
-                            \{
+                            {
                                 "taskId": "T522",
                                 "title": "Evolve Best-Of-Breed E-Tailers",
                                 "status": "In Progress",
-                                "details": \{
+                                "details": {
                                     "hoursSpent": 41,
                                     "technologiesUsed": [
                                         "Python",
@@ -114,11 +114,11 @@ nom_test =>
                                     "expectedCompletion": "2025-09-11"
                                 }
                             },
-                            \{
+                            {
                                 "taskId": "T405",
                                 "title": "Empower Cross-Media Users",
                                 "status": "In Progress",
-                                "details": \{
+                                "details": {
                                     "hoursSpent": 41,
                                     "technologiesUsed": [
                                         "PyTorch",

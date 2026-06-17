@@ -31,4 +31,4 @@ man_or_boy2 is
   K(n i32) () -> i32 => () -> n
 
   (0..10).for_each n->
-    say "manorboy a($n) = {a n (K 1) (K -1) (K -1) (K 1) (K 0)}"
+    say "manorboy a($n) = $(a n (K 1) (K -1) (K -1) (K 1) (K 0))"
