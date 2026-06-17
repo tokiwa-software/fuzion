@@ -153,21 +153,20 @@ module parse_header_fields(LM type : mutate) outcome (container.mutable_tree_map
 
     fields := (container.mutable_tree_map LM String String) .empty
 
-    _ :=
-      for cur := match next_line LM
-                    io.end_of_file => cause "unexpected end of input"
-                    s String => s
-      while cur != ""
-      do
+    for cur := match next_line LM
+                  io.end_of_file => cause "unexpected end of input"
+                  s String => s
+    while cur != ""
+    do
 
-        # A recipient that receives whitespace between the start-line and the first header field MUST either reject the message as invalid or consume each whitespace-preceded line without further processing of it
-        # https://datatracker.ietf.org/doc/html/rfc9112#section-2.2-8
-        if cur.starts_with " " then cause "whitespace between start line and header field"
+      # A recipient that receives whitespace between the start-line and the first header field MUST either reject the message as invalid or consume each whitespace-preceded line without further processing of it
+      # https://datatracker.ietf.org/doc/html/rfc9112#section-2.2-8
+      if cur.starts_with " " then cause "whitespace between start line and header field"
 
-        parts := cur.split_n ":" 1
-        if parts.count != 2 then cause "broken header field '$cur'"
-        # NYI: UNDER DEVELOPMENT: must duplicate header fields cause an error?
-        fields.put parts[0].lower_case parts[1].trim
+      parts := cur.split_n ":" 1
+      if parts.count != 2 then cause "broken header field '$cur'"
+      # NYI: UNDER DEVELOPMENT: must duplicate header fields cause an error?
+      fields.put parts[0].lower_case parts[1].trim
 
     fields
 

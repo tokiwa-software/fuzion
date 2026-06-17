@@ -148,12 +148,11 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
       # what is being written/read to/from pipes
       # thread to pipe from one process to other
       _ := concur.threads.env.spawn ()->
-        _ :=
-          for p1rb := std_out_read_handler.read pipe_buffer_size
-          while
-            match p1rb
-              s Sequence => (write_bytes p.std_in s).ok
-              * => false
+        for p1rb := std_out_read_handler.read pipe_buffer_size
+        while
+          match p1rb
+            s Sequence => (write_bytes p.std_in s).ok
+            * => false
 
         # NYI: UNDER DEVELOPMENT: error handling
         _ := fzE_pipe_close p.std_in
