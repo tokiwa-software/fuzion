@@ -40,7 +40,7 @@ base32hex_test is
   own_test_vectors array (tuple my_c String) :=
     [(mk_choice [(u8 0), 0, 0, 0],    "0000000="),
      (mk_choice [(u8 255), 255, 255], "VVVVU==="),
-     (mk_choice (array u8 5 _->255), "VVVVVVVV"),
+     (mk_choice (array u8 _ 5 _->(u8 255)), "VVVVVVVV"),
      (mk_choice "123890ABCXYZabcxyz_:;>~<%&\$§!", "64P36E1P610K4GQOB5D62OJ3F1SNKNPQ7CV7SF154OIC59P1"),
      (mk_choice """
      Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidun\

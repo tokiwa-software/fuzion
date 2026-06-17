@@ -33,13 +33,13 @@ looptest_negative is
       say "FAILED: $msg"
       _ := set_exit_code 1
 
-  a := array i32 100 (i -> if (i % 23 = 0) (-2)*i else i*i)
+  a := array i32 _ 100 (i -> if (i % 23 = 0) (-2)*i else i*i)
 
   say "testLoop_neg1: loop return 3333 on success and 4444 in else branch"
   testLoop_neg1(data array i32, isWhatWeWant i32 -> bool) =>
     for
       ix := 0, ix + 1
-    while ix < data.length
+    while ix < data.length.as_i32
       element := data[ix]
     until isWhatWeWant(data[ix])     #  1.a should flag an error: incompatible result types i32 vs. String
       3333              #  1.a should flag an error: incompatible result types i32 vs. String
@@ -50,7 +50,7 @@ looptest_negative is
   testLoop_neg2(data array i32, isWhatWeWant i32 -> bool) =>
     for
       ix := 0, ix + 1
-    while ix < data.length
+    while ix < data.length.as_i32
       element := data[ix]
     until isWhatWeWant(data[ix])    #  2.a should flag an error: incompatible result types i32 vs. String
       ix                #  2.a should flag an error: incompatible result types i32 vs. String
@@ -61,7 +61,7 @@ looptest_negative is
   testLoop_neg3(data array i32, isWhatWeWant i32 -> bool) =>
     for
       ix := 0, ix + 1
-    while ix < data.length
+    while ix < data.length.as_i32
       element := data[ix]
     until isWhatWeWant(data[ix])
   _ i32    := testLoop_neg3 a (i -> i > 10) #  3.a should flag an error: incompatible result types unit vs. i32
@@ -71,7 +71,7 @@ looptest_negative is
   testLoop_neg4(data array i32, isWhatWeWant i32 -> bool) =>
     for
       ix := 0, ix + 1
-    while ix < data.length
+    while ix < data.length.as_i32
       element := data[ix]
     else
       "4444"            #  ok
@@ -80,7 +80,7 @@ looptest_negative is
   testLoop_neg5(data array i32, isWhatWeWant i32 -> bool) =>
     for
       ix := 0, ix + 1   # ok
-    while ix < data.length
+    while ix < data.length.as_i32
 
   testWriteToIndexVar is
     for
