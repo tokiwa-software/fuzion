@@ -68,11 +68,6 @@ jitter =>
   show_log_csv => false
 
 
-  # run jitter test in dedicated spawned thread?
-  #
-  run_on_dedicated_thread => true
-
-
 
   # run jitter test using C.clock.run_periodic
   #
@@ -105,7 +100,7 @@ jitter =>
 
       start := C.env.read + start_delay
       end := start + test_duration
-      yap "testing period $period for $test_duration..."
+      yak "testing period $period for $test_duration..."
 
       # time for next release used by state effect
       next_release(t time.instant) is
@@ -143,7 +138,7 @@ jitter =>
           payload
           actual_finish := TIMER.env.read
           if actual_finish >= next_rel
-            e := error "*** overrun: run started at $(actual_release-expected_rel)  and took $(actual_finish-actual_release), which is larger than period $period"
+            e := error "*** overrun: run started at {actual_release-expected_rel}  and took {actual_finish-actual_release}, which is larger than period $period"
             (exception jitter_too_high).env.cause e
 
     match exception jitter_too_high .on ()->
@@ -154,18 +149,4 @@ jitter =>
       e error => say $e
       void    => # will not happen
 
-  if run_on_dedicated_thread
-    thrd := concur.threads.env.spawn ()->
-      time.histogram_mutate ! ()->
-        test_jitter time.nano time.nano
-    match thrd.set_policy concur.scheduling_policy.sched_fifo false 99
-      e error => panic "jitter thread priority: $e. Error 38 : backend does not implement thread policy \n Error 1 : insufficient privileges."
-      unit    => unit
-    _ := thrd.join
-  else
-    test_jitter time.nano time.nano
-
-# How to run with high priority :
-# FUZION_HOME=build bash bin/fz -c examples/jitter/jitter.fz
-# sudo setcap cap_sys_nice=ep ./jitter
-# ./jitter
+  test_jitter time.nano time.nano
