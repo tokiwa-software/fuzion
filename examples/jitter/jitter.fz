@@ -100,7 +100,7 @@ jitter =>
 
       start := C.env.read + start_delay
       end := start + test_duration
-      yak "testing period $period for $test_duration..."
+      say "testing period $period for $test_duration..."
 
       # time for next release used by state effect
       next_release(t time.instant) is
@@ -130,7 +130,6 @@ jitter =>
           actual_release := TIMER.env.read
           h .add_instant actual_release
           h2.add_instant actual_release
-          expected_rel := state_get next_release .t
           next_rel     := state_modify next_release (x -> next_release x.t+period) .get.t
           if actual_release >= next_rel
             (exception jitter_too_high).env.cause <| error "release time jitter exceeded period"
@@ -138,7 +137,7 @@ jitter =>
           payload
           actual_finish := TIMER.env.read
           if actual_finish >= next_rel
-            e := error "*** overrun: run started at {actual_release-expected_rel}  and took {actual_finish-actual_release}, which is larger than period $period"
+            e := error "*** overrun: run started at {actual_release-(state_get next_release .t)}  and took {actual_finish-actual_release}, which is larger than period $period"
             (exception jitter_too_high).env.cause e
 
     match exception jitter_too_high .on ()->

@@ -115,7 +115,7 @@ jitter_threaded =>
 
           # indicate end-of-period to receiver (use current time as marker)
           marker := TIMER.env.read
-          check sample_ch <- (period, marker, marker, true)
+          sample_ch <- (period, marker, marker, true)
 
           # run one single release: record the actual release and run the payload
           # in case of a late release or an overrun into the next release time, cause `exception jitter_too_high`
@@ -124,7 +124,7 @@ jitter_threaded =>
             expected_rel := state_get next_release .t
 
             # send raw record to main thread: worker no longer accumulates lists
-            check sample_ch <- (period, actual_release, expected_rel, false)
+            sample_ch <- (period, actual_release, expected_rel, false)
 
             # advance expected release time
             next_rel     := state_modify next_release (x -> next_release x.t+period) .get.t
