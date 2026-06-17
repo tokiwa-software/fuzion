@@ -49,8 +49,8 @@ instate_helper unit (eff.try String fuzion.runtime.variant_fault unit).lm: <sour
     x := instate_helper R effect.this e code def
 ---------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 (eff.type.try.type String fuzion.runtime.variant_fault unit).lm.type.instate#3 unit: {base.fum}/effect.fz:191:5:
-    instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
-----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    instate R e code (_ -> panic "unexpected abort in $(effect.this.type)")
+----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 (eff.try String fuzion.runtime.variant_fault unit).lm.instate_self#2 unit: {base.fum}/effect.fz:212:5:
     effect.this.instate R effect.this code
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -88,8 +88,8 @@ instate_helper unit (eff.try String fuzion.runtime.variant_fault unit).lm: <sour
     x := instate_helper R effect.this e code def
 ---------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 (eff.type.try.type String fuzion.runtime.variant_fault unit).lm.type.instate#3 unit: {base.fum}/effect.fz:191:5:
-    instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
-----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    instate R e code (_ -> panic "unexpected abort in $(effect.this.type)")
+----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 (eff.try String fuzion.runtime.variant_fault unit).lm.instate_self#2 unit: {base.fum}/effect.fz:212:5:
     effect.this.instate R effect.this code
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -127,8 +127,8 @@ instate_helper unit (eff.try String fuzion.runtime.variant_fault unit).lm: <sour
     x := instate_helper R effect.this e code def
 ---------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 (eff.type.try.type String fuzion.runtime.variant_fault unit).lm.type.instate#3 unit: {base.fum}/effect.fz:191:5:
-    instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
-----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    instate R e code (_ -> panic "unexpected abort in $(effect.this.type)")
+----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 (eff.try String fuzion.runtime.variant_fault unit).lm.instate_self#2 unit: {base.fum}/effect.fz:212:5:
     effect.this.instate R effect.this code
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -166,8 +166,8 @@ instate_helper unit (eff.try String fuzion.runtime.variant_fault unit).lm: <sour
     x := instate_helper R effect.this e code def
 ---------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 (eff.type.try.type String fuzion.runtime.variant_fault unit).lm.type.instate#3 unit: {base.fum}/effect.fz:191:5:
-    instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
-----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    instate R e code (_ -> panic "unexpected abort in $(effect.this.type)")
+----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 (eff.try String fuzion.runtime.variant_fault unit).lm.instate_self#2 unit: {base.fum}/effect.fz:212:5:
     effect.this.instate R effect.this code
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
