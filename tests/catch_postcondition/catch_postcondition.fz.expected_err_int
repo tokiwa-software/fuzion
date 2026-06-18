@@ -74,8 +74,8 @@ instate_helper (option String) (eff.try (tuple String String) fuzion.runtime.fau
     x := instate_helper R effect.this e code def
 ---------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 (eff.type.try.type (tuple String String) fuzion.runtime.fault (option String)).lm.type.instate#3 (option String): {base.fum}/effect.fz:191:5:
-    instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
-----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    instate R e code (_ -> panic "unexpected abort in $(effect.this.type)")
+----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 (eff.try (tuple String String) fuzion.runtime.fault (option String)).lm.instate_self#2 (option String): {base.fum}/effect.fz:212:5:
     effect.this.instate R effect.this code
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -94,8 +94,8 @@ instate_helper (option String) (eff.try (tuple String String) fuzion.runtime.fau
 -----------^^^^^^^^^^^^^^^^^^^^
          .catch s->
 ---------^^^^^^^^^^
-           say "*** failed: {s.0} {s.1} ***"
------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+           say "*** failed: $(s.0) $(s.1) ***"
+-----------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
            nil
 -----------^^^
 catch_postcondition.test#1 i32: --CURDIR--/catch_postcondition.fz:43:5:
@@ -136,8 +136,8 @@ instate_helper (option String) (eff.try (tuple String String) fuzion.runtime.fau
     x := instate_helper R effect.this e code def
 ---------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 (eff.type.try.type (tuple String String) fuzion.runtime.fault (option String)).lm.type.instate#3 (option String): {base.fum}/effect.fz:191:5:
-    instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
-----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    instate R e code (_ -> panic "unexpected abort in $(effect.this.type)")
+----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 (eff.try (tuple String String) fuzion.runtime.fault (option String)).lm.instate_self#2 (option String): {base.fum}/effect.fz:212:5:
     effect.this.instate R effect.this code
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -156,8 +156,8 @@ catch_postcondition.loop: --CURDIR--/catch_postcondition.fz:275:10:
 -----------^^^^^^^^^^^^^^^^^^^^
          .catch s->
 ---------^^^^^^^^^^
-           say "*** failed: {s.0} {s.1} ***"
------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+           say "*** failed: $(s.0) $(s.1) ***"
+-----------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
            nil
 -----------^^^
 instate_helper (option String) fuzion.runtime.post_fault: --CURDIR--/catch_postcondition.fz:272:3:
@@ -173,8 +173,8 @@ instate_helper (option String) fuzion.runtime.post_fault: --CURDIR--/catch_postc
 -----------^^^^^^^^^^^^^^^^^^^^
          .catch s->
 ---------^^^^^^^^^^
-           say "*** failed: {s.0} {s.1} ***"
------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+           say "*** failed: $(s.0) $(s.1) ***"
+-----------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
            nil
 -----------^^^
   until r??
@@ -203,8 +203,8 @@ instate_helper (option String) (eff.try String fuzion.runtime.post_fault (option
     x := instate_helper R effect.this e code def
 ---------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 (eff.type.try.type String fuzion.runtime.post_fault (option String)).lm.type.instate#3 (option String): {base.fum}/effect.fz:191:5:
-    instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
-----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    instate R e code (_ -> panic "unexpected abort in $(effect.this.type)")
+----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 (eff.try String fuzion.runtime.post_fault (option String)).lm.instate_self#2 (option String): {base.fum}/effect.fz:212:5:
     effect.this.instate R effect.this code
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -247,8 +247,8 @@ instate_helper (option String) (eff.try String fuzion.runtime.post_fault (option
     x := instate_helper R effect.this e code def
 ---------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 (eff.type.try.type String fuzion.runtime.post_fault (option String)).lm.type.instate#3 (option String): {base.fum}/effect.fz:191:5:
-    instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
-----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    instate R e code (_ -> panic "unexpected abort in $(effect.this.type)")
+----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 (eff.try String fuzion.runtime.post_fault (option String)).lm.instate_self#2 (option String): {base.fum}/effect.fz:212:5:
     effect.this.instate R effect.this code
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -328,8 +328,8 @@ instate_helper (option String) (catch_postcondition.try_post (option String)).ca
     x := instate_helper R effect.this e code def
 ---------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 (catch_postcondition.type.try_post.type (option String)).catch#1.type.h.type.lm.type.instate#3 (option String): {base.fum}/effect.fz:191:5:
-    instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
-----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    instate R e code (_ -> panic "unexpected abort in $(effect.this.type)")
+----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 (catch_postcondition.try_post (option String)).catch#1.h.lm.instate_self#2 (option String): {base.fum}/effect.fz:212:5:
     effect.this.instate R effect.this code
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -404,8 +404,8 @@ instate_helper (option String) (catch_postcondition.try_post (option String)).ca
     x := instate_helper R effect.this e code def
 ---------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 (catch_postcondition.type.try_post.type (option String)).catch#1.type.h.type.lm.type.instate#3 (option String): {base.fum}/effect.fz:191:5:
-    instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
-----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    instate R e code (_ -> panic "unexpected abort in $(effect.this.type)")
+----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 (catch_postcondition.try_post (option String)).catch#1.h.lm.instate_self#2 (option String): {base.fum}/effect.fz:212:5:
     effect.this.instate R effect.this code
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -497,8 +497,8 @@ instate_helper String (catch_postcondition.try_post String).catch#1.h.lm: <sourc
     x := instate_helper R effect.this e code def
 ---------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 (catch_postcondition.type.try_post.type String).catch#1.type.h.type.lm.type.instate#3 String: {base.fum}/effect.fz:191:5:
-    instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
-----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    instate R e code (_ -> panic "unexpected abort in $(effect.this.type)")
+----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 (catch_postcondition.try_post String).catch#1.h.lm.instate_self#2 String: {base.fum}/effect.fz:212:5:
     effect.this.instate R effect.this code
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -565,8 +565,8 @@ instate_helper String (catch_postcondition.try_post String).catch#1.h.lm: <sourc
     x := instate_helper R effect.this e code def
 ---------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 (catch_postcondition.type.try_post.type String).catch#1.type.h.type.lm.type.instate#3 String: {base.fum}/effect.fz:191:5:
-    instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
-----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    instate R e code (_ -> panic "unexpected abort in $(effect.this.type)")
+----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 (catch_postcondition.try_post String).catch#1.h.lm.instate_self#2 String: {base.fum}/effect.fz:212:5:
     effect.this.instate R effect.this code
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -641,8 +641,8 @@ catch_postcondition.type.loop.type.h.type.lm.type.instate#4 (option String): {ba
     x := instate_helper R effect.this e code def
 ---------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 catch_postcondition.type.loop.type.h.type.lm.type.instate#3 (option String): {base.fum}/effect.fz:191:5:
-    instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
-----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    instate R e code (_ -> panic "unexpected abort in $(effect.this.type)")
+----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 catch_postcondition.loop.h.lm.instate_self#2 (option String): {base.fum}/effect.fz:212:5:
     effect.this.instate R effect.this code
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -706,8 +706,8 @@ catch_postcondition.type.loop.type.h.type.lm.type.instate#4 (option String): {ba
     x := instate_helper R effect.this e code def
 ---------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 catch_postcondition.type.loop.type.h.type.lm.type.instate#3 (option String): {base.fum}/effect.fz:191:5:
-    instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
-----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    instate R e code (_ -> panic "unexpected abort in $(effect.this.type)")
+----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 catch_postcondition.loop.h.lm.instate_self#2 (option String): {base.fum}/effect.fz:212:5:
     effect.this.instate R effect.this code
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -840,8 +840,8 @@ catch_postcondition.type.z.type.lm.type.instate#4 (option String): {base.fum}/ef
     x := instate_helper R effect.this e code def
 ---------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 catch_postcondition.type.z.type.lm.type.instate#3 (option String): {base.fum}/effect.fz:191:5:
-    instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
-----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    instate R e code (_ -> panic "unexpected abort in $(effect.this.type)")
+----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 catch_postcondition.z.lm.instate_self#2 (option String): {base.fum}/effect.fz:212:5:
     effect.this.instate R effect.this code
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -902,8 +902,8 @@ instate_helper String (catch_postcondition.ref handle_post String).lm: <source p
     x := instate_helper R effect.this e code def
 ---------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 (catch_postcondition.type.handle_post.type String).lm.type.instate#3 String: {base.fum}/effect.fz:191:5:
-    instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
-----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    instate R e code (_ -> panic "unexpected abort in $(effect.this.type)")
+----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 (catch_postcondition.ref handle_post String).lm.instate_self#2 String: {base.fum}/effect.fz:212:5:
     effect.this.instate R effect.this code
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -974,8 +974,8 @@ catch_postcondition.type.y.type.lm.type.instate#4 String: {base.fum}/effect.fz:1
     x := instate_helper R effect.this e code def
 ---------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 catch_postcondition.type.y.type.lm.type.instate#3 String: {base.fum}/effect.fz:191:5:
-    instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
-----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    instate R e code (_ -> panic "unexpected abort in $(effect.this.type)")
+----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 catch_postcondition.y.lm.instate_self#2 String: {base.fum}/effect.fz:212:5:
     effect.this.instate R effect.this code
 ----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
