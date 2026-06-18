@@ -421,65 +421,6 @@ public class Call extends AbstractCall
 
 
   /**
-   * Is the target of this call a type parameter?
-   *
-   * @return true for a call to {@code T.xyz}, {@code U.xyz} or {@code V.xyz} in a feature
-   * {@code f(T,U,V type)}, false otherwise.
-   */
-  private boolean targetIsTypeParameter()
-  {
-    return _target instanceof Call tc && tc != ERROR && tc._calledFeature.isTypeParameter();
-  }
-
-
-  /**
-   * Get the type of the target as seen by this call
-   *
-   * When calling {@code X.f} and {@code X} is a type parameter and {@code f} is a constructor,
-   * then {@code X}'s type is the type {@code X}, while for a function {@code f} the type is {@code X}'s
-   * constraint.
-   *
-   * @param context the source code context where this Call is used
-   *
-   * @return the type of the target.
-   */
-  protected AbstractType targetType(Resolution res, Context context)
-  {
-    _target = res.resolveType(_target, context);
-    return targetType(context);
-  }
-
-
-  /**
-   * Type of the target of this call.
-   */
-  protected AbstractType targetType(Context context)
-  {
-    var tt = _target.type();
-    var cf = calledFeature();
-    return
-      // first, check if have a situation like `x.this.T.from_u32 0` where `T type : integer`
-      //
-      // This occurs, e.g., in String.fz at the line
-      //
-      //     t := parse_integer.this.T.from_u32 b.as_u32  # i converted to T
-      //
-      // NYI: UNDER DEVELOPMENT: this special handling is not needed if we change that line to
-      //
-      //     t := T.from_u32 b.as_u32  # i converted to T
-      //
-      // we need to check why the implicit `parse_integer.this` target makes a difference here and
-      // remove the special handling if possible.
-      targetIsTypeParameter() &&
-      cf.resultType().isThisTypeInCotype() ? tt.feature().selfType() :
-
-      // NYI: UNDER DEVELOPMENT: Also unclear why we need special handling for a constructor here
-      cf.isConstructor() ? tt
-                         : tt.selfOrConstraint(context);
-  }
-
-
-  /**
    * Get the type of the target feature.
    *
    * NYI: CLEANUP: can we merge targetFeatureType/targetType?
@@ -1426,21 +1367,35 @@ public class Call extends AbstractCall
             setToErrorState();
           }
 
-        var tt = targetType(res, context);
-        if (urgent && !tt.isGenericArgument())
-          {
-            res.resolveTypes(tt.feature());
-          }
+        resolveTarget(res, context, urgent);
 
         result = result == null
           ? result
-          : adjustResultType0(res, context, result , tt);
+          : adjustResultType0(res, context, result);
       }
 
     // see test #5391 when this might happen
     return result == null || result == Types.t_ERROR || !result.containsUndefined()
       ? result
       : null;
+  }
+
+
+  /**
+   * resolve the _target of this call
+   *
+   * @param res
+   * @param context
+   * @param urgent
+   */
+  private void resolveTarget(Resolution res, Context context, boolean urgent)
+  {
+    _target = res.resolveType(_target, context);
+    var tt = targetType(context);
+    if (urgent && !tt.isGenericArgument())
+      {
+        res.resolveTypes(tt.feature());
+      }
   }
 
 
@@ -1461,18 +1416,17 @@ public class Call extends AbstractCall
    *
    * @param rt the raw result type
    *
-   * @param tt the target type
-   *
    * @return The actual result type of the call
    */
-  private AbstractType adjustResultType0(Resolution res, Context context, AbstractType rt, AbstractType tt)
+  private AbstractType adjustResultType0(Resolution res, Context context, AbstractType rt)
   {
     // NYI: CLEANUP: There is some overlap between Call.adjustResultType0,
     // Call.adjustResultType and AbstractType.genericsAssignable, might be nice to
     // consolidate this (i.e., bring the calls to applyTypePars / adjustThisType
     // / etc. in the same order and move them to a dedicated function).
+    var tt = targetType(context);
     var t0 = tt == Types.t_ERROR ? tt : resolveSelect(res, rt, tt);
-    var t4 = adjustResultType(res, context, tt, t0,
+    var t4 = adjustResultType(res, context, t0,
                               (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, false, calledFeature(), t0, from, to));
     // NYI: UNDER DEVELOPMENT: can we move more to previous call to adjustResultType()?
     var t5 = t4 == Types.t_ERROR ? t4 : resolveForCalledFeature(res, t4, tt, context);
@@ -3019,7 +2973,7 @@ public class Call extends AbstractCall
               _generics,
               _originalGenerics,
               pos(),
-              constraint -> adjustResultType(res, context, targetType(context), constraint, null));
+              constraint -> adjustResultType(res, context, constraint, null));
           }
       }
   }
@@ -3158,7 +3112,7 @@ public class Call extends AbstractCall
       @Override AbstractType typeForInferencing() { return Types.t_ERROR; }
       @Override public AbstractType type() { return Types.t_ERROR; }
       @Override
-      protected AbstractType targetType(Resolution res, Context context)
+      protected AbstractType targetType(Context context)
       {
         return Types.t_ERROR;
       }

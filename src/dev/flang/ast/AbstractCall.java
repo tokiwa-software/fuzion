@@ -284,7 +284,7 @@ public abstract class AbstractCall extends Expr
     if (PRECONDITIONS) require
       (!frmlT.isOpenGeneric());
 
-    return adjustResultType(res, context, target().type(), frmlT,
+    return adjustResultType(res, context, frmlT,
                             (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, true, arg, frmlT, from, to));
   }
 
@@ -306,10 +306,10 @@ public abstract class AbstractCall extends Expr
    */
   protected AbstractType adjustResultType(Resolution res,
                                           Context context,
-                                          AbstractType tt,
                                           AbstractType rt,
                                           BiConsumer<AbstractType, AbstractType> foundRef)
   {
+    var tt = targetType(context);
     var t0 = calledFeature() == Types.f_ERROR ? Types.t_ERROR : rt;
     var t1 = t0 == Types.t_ERROR                           ? t0 : calledFeature().outer().handDownToType(t0, tt);
     var t2 = t1 == Types.t_ERROR                           ? t1 : replace_type_parameter_used_for_this_type_in_cotype(t1, target());
@@ -321,6 +321,47 @@ public abstract class AbstractCall extends Expr
       (t5 != null);
 
     return t5;
+  }
+
+
+  /**
+   * Type of the target of this call.
+   */
+  protected AbstractType targetType(Context context)
+  {
+    var tt = target().type();
+    var cf = calledFeature();
+    return
+      // first, check if have a situation like `x.this.T.from_u32 0` where `T type : integer`
+      //
+      // This occurs, e.g., in String.fz at the line
+      //
+      //     t := parse_integer.this.T.from_u32 b.as_u32  # i converted to T
+      //
+      // NYI: UNDER DEVELOPMENT: this special handling is not needed if we change that line to
+      //
+      //     t := T.from_u32 b.as_u32  # i converted to T
+      //
+      // we need to check why the implicit `parse_integer.this` target makes a difference here and
+      // remove the special handling if possible.
+      targetIsTypeParameter() && cf.resultType().isThisTypeInCotype()
+        ? tt.feature().selfType()
+        // NYI: UNDER DEVELOPMENT: Also unclear why we need special handling for a constructor here
+        : cf.isConstructor()
+        ? tt
+        : tt.selfOrConstraint(context);
+  }
+
+
+  /**
+   * Is the target of this call a type parameter?
+   *
+   * @return true for a call to {@code T.xyz}, {@code U.xyz} or {@code V.xyz} in a feature
+   * {@code f(T,U,V type)}, false otherwise.
+   */
+  private boolean targetIsTypeParameter()
+  {
+    return target() instanceof AbstractCall tc && tc != Call.ERROR && tc.calledFeature().isTypeParameter();
   }
 
 
