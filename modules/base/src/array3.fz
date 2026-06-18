@@ -32,11 +32,11 @@
 #
 private:public array3(
        public T type,
-       public length0, length1, length2 i32,
+       public length0, length1, length2 i64,
        module redef internal_array fuzion.sys.internal_array T,
        _ unit,
        _ unit)
- : array internal_array unit unit unit
+ : array T internal_array unit unit unit unit
   pre
     safety: length0 ≥ 0
     safety: length1 ≥ 0
@@ -70,7 +70,7 @@ is
     else
       compile_time_panic  # array is not equatable since element type is not
 
-      
+
   # NOT implemented, calling this fails at compile time
   #
   # There is no natural total ordering for three-dimensional arrays
@@ -113,26 +113,26 @@ is
 
   # indices range in first dimension
   #
-  public indices0 interval i32 => 0..length0-1
+  public indices0 interval i64 => i64.zero..length0.as_i64-1
 
 
   # indices range in second dimension
   #
-  public indices1 interval i32 => 0..length1-1
+  public indices1 interval i64 => i64.zero..length1.as_i64-1
 
 
   # indices range in third dimension
   #
-  public indices2 interval i32 => 0..length2-1
+  public indices2 interval i64 => i64.zero..length2.as_i64-1
 
 
   public index [ ] (I type : integer, i0, i1, i2 I) T
     pre
-      safety: 0 ≤ i0.as_i32 < length0
-      safety: 0 ≤ i1.as_i32 < length1
-      safety: 0 ≤ i2.as_i32 < length2
+      safety: i64.zero ≤ i0.as_i64 < length0
+      safety: i64.zero ≤ i1.as_i64 < length1
+      safety: i64.zero ≤ i2.as_i64 < length2
   =>
-    array3.this[(i0.as_i32 * length1 + i1.as_i32) * length2 + i2.as_i32]
+    array3.this[(i0.as_i64 * length1 + i1.as_i64) * length2 + i2.as_i64]
 
 
   # create a string representation of this array including all the string
@@ -140,14 +140,14 @@ is
   # and ']'.  Arrays in inner dimensions are grouped using '[' and ']'.
   #
   public redef as_string String : encodings =>
-    dim_1(i i32) =>
+    dim_1(i i64) =>
       ("  [" + ascii.lf_str
         + indices1
             .map (j -> dim_2 i j)
             .fold (String.concat ("," + ascii.lf_str))
         + ascii.lf_str + "  ]")
 
-    dim_2(i i32, j i32) =>
+    dim_2(i i64, j i64) =>
       from := (i * length1 + j) * length2
       to := from + length2
       "    " + slice from to
@@ -161,24 +161,24 @@ is
 
   # get a list of tuples indices and elements in this array
   #
-  public enumerate3 list (i32, i32, i32, T) =>
+  public enumerate3 list (i64, i64, i64, T) =>
     if length = 0 then nil else enumerate_cons 0 0 0
 
 
   # create a cons cell for a list of tuples of this array's indices and elements
   # starting at the given indices.
   #
-  enumerate_cons (i, j, k i32) : Cons (tuple i32 i32 i32 T) (list (tuple i32 i32 i32 T))
+  enumerate_cons (I type : integer, i, j, k I) : Cons (tuple i64 i64 i64 T) (list (tuple i64 i64 i64 T))
     pre
-      debug: 0 ≤ i < length0
-      debug: 0 ≤ j < length1
-      debug: 0 ≤ k < length2
+      debug: i64.zero ≤ i.as_i64 < length0
+      debug: i64.zero ≤ j.as_i64 < length1
+      debug: i64.zero ≤ k.as_i64 < length2
   is
-    public redef head tuple i32 i32 i32 T => (i, j, k, index[] i j k)
-    public redef tail list (tuple i32 i32 i32 T) =>
-      if      k < length2-1 then enumerate_cons i   j   k+1
-      else if j < length1-1 then enumerate_cons i   j+1 0
-      else if i < length0-1 then enumerate_cons i+1 0   0
+    public redef head tuple i64 i64 i64 T => (i.as_i64, j.as_i64, k.as_i64, index[] i j k)
+    public redef tail list (tuple i64 i64 i64 T) =>
+      if      k.as_i64 < length2-1 then enumerate_cons i   j   k+1
+      else if j.as_i64 < length1-1 then enumerate_cons i   j+1 0
+      else if i.as_i64 < length0-1 then enumerate_cons i+1 0   0
       else                       nil
 
 
@@ -190,23 +190,25 @@ is
   # three index parameters.
   #
   public type.new(
-          length0, length1, length2 i32,
-          init3 (i32, i32, i32) -> T) array3 T
+          I type : integer,
+          length0, length1, length2 I,
+          init3 (I, I, I) -> T) array3 T
     pre
       safety: length0 ≥ 0
       safety: length1 ≥ 0
       safety: length2 ≥ 0
-      safety: length0 *? length1 *? length2 >=? 0
+      safety: length0.as_i64 *? length1.as_i64 *? length2.as_i64 >=? 0
+      # NYI pre fits in i64 ?
   =>
 
-    internal_array := fuzion.sys.internal_array_init T length0*length1*length2
-    for i1 in 0..length0-1 do
-      for i2 in 0..length1-1 do
-        for i3 in 0..length2-1 do
-          internal_array[(i1 * length1 + i2) * length2 + i3] := init3 i1 i2 i3
+    internal_array := fuzion.sys.internal_array_init T length0.as_i32*length1.as_i32*length2.as_i32
+    for i1 := I.zero, i1+1 while i1 < length0
+      for i2 := I.zero, i2+1 while i2 < length1
+        for i3 := I.zero, i3+1 while i3 < length2
+          internal_array[(i1.as_i32 * length1.as_i32 + i2.as_i32) * length2.as_i32 + i3.as_i32] := init3 i1 i2 i3
 
 
-    array3 length0 length1 length2 internal_array unit unit
+    array3 T length0.as_i64 length1.as_i64 length2.as_i64 internal_array unit unit
 
 
 
@@ -217,12 +219,14 @@ is
 # three index parameters.
 #
 public array3(T type,
-        length0, length1, length2 i32,
-        init3 (i32, i32, i32) -> T) array3 T
+        I type : integer,
+        length0, length1, length2 I,
+        init3 (I, I, I) -> T) array3 T
   pre
     safety: length0 ≥ 0
     safety: length1 ≥ 0
     safety: length2 ≥ 0
-    safety: length0 *? length1 *? length2 >=? 0
+    safety: length0.as_i64 *? length1.as_i64 *? length2.as_i64 >=? 0
+    # NYI pre fits in i64 ?
 =>
-  (array3 T).new length0 length1 length2 init3
+  (array3 T).new I length0 length1 length2 init3

@@ -98,7 +98,7 @@ is
     pre
       safety: is_accessible
   =>
-    array (length0 * length1 * length2).as_i32 (i ->
+    array (length0 * length1 * length2) (i ->
       Mutable_Array3.this[
         i.as_i64 / (length1 * length2),
         (i.as_i64 % (length1 * length2)) / length2,

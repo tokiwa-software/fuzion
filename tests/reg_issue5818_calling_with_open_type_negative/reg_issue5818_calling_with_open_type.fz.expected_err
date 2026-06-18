@@ -90,10 +90,10 @@ To call 'f64', you must provide one argument.
 Feature not found: 'array' (one argument)
 Target feature: 'reg_issue5818_calling_with_open_type'
 In call: '(array String)'
-To solve this, you might change the actual number of arguments to match the feature 'array' (one type parameter T, 2 value arguments length init) at {base.fum}/array.fz:188:8:
-public array(T type, length i32, init i32 -> T) array T =>
+To solve this, you might change the actual number of arguments to match the feature 'array' (2 type parameters T I, 2 value arguments length init) at {base.fum}/array.fz:195:8:
+public array(T type, I type : integer, length I, init I -> T) array T =>
 -------^^^^^
-To call 'array', you must provide 3 arguments. The type arguments may be omitted or `_` may be used in place of a type argument if they can be inferred from the value arguments..
+To call 'array', you must provide 4 arguments. The type arguments may be omitted or `_` may be used in place of a type argument if they can be inferred from the value arguments..
 
 
 
@@ -116,10 +116,10 @@ To call 'f64', you must provide one argument.
 Feature not found: 'array' (one argument)
 Target feature: 'reg_issue5818_calling_with_open_type'
 In call: '(array String)'
-To solve this, you might change the actual number of arguments to match the feature 'array' (one type parameter T, 2 value arguments length init) at {base.fum}/array.fz:188:8:
-public array(T type, length i32, init i32 -> T) array T =>
+To solve this, you might change the actual number of arguments to match the feature 'array' (2 type parameters T I, 2 value arguments length init) at {base.fum}/array.fz:195:8:
+public array(T type, I type : integer, length I, init I -> T) array T =>
 -------^^^^^
-To call 'array', you must provide 3 arguments. The type arguments may be omitted or `_` may be used in place of a type argument if they can be inferred from the value arguments..
+To call 'array', you must provide 4 arguments. The type arguments may be omitted or `_` may be used in place of a type argument if they can be inferred from the value arguments..
 
 
 

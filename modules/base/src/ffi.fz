@@ -44,13 +44,13 @@ public ffi is
   public from_native_string(x Native_Ref) String =>
     len := native_string_length x
     arr := native_array u8 x len
-    String.from <| array (fuzion.sys.internal_array u8 arr len) unit unit unit
+    String.from <| array _ (fuzion.sys.internal_array u8 arr len) unit unit unit unit
 
 
   # create an array from a Pointer and a length
   #
   public from_native_array(T type, x Native_Ref, len i32) array T =>
-    array (fuzion.sys.internal_array T (native_array T x len) len) unit unit unit
+    array _ (fuzion.sys.internal_array T (native_array T x len) len) unit unit unit unit
 
 
 native_string_length(x Native_Ref) i32 => intrinsic
