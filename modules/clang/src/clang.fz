@@ -225,7 +225,7 @@ public clang is
     check !(ffi.is_null ci)
 
     tu := lm ! ()->
-      clang_parseTranslationUnit ci (header_file.as_c_string lm) ((lm.array Native_Ref).empty) 0 ffi.null 0 0
+      clang_parseTranslationUnit ci (header_file.as_c_string lm) ((lm.array Native_Ref).from_Sequence (Sequence Native_Ref .empty)) 0 ffi.null 0 0
 
     if ffi.is_null tu
       error "failed to open header file: $header_file"
