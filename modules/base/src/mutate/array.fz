@@ -87,24 +87,6 @@ is
     as_array.as_list
 
 
-  # is this array empty?
-  #
-  public is_empty bool => length = 0
-
-
-  # does this array contain elem?
-  #
-  public contains(elem T) bool
-    pre T : property.equatable
-  =>
-    for i in indices
-    until data[i] = elem
-      true
-    else
-      false
-
-
-
 
   # initialize one-dimensional mutable array
   #

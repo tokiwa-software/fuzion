@@ -52,6 +52,11 @@ is
   public length i64 => abstract
 
 
+  # is this empty?
+  #
+  public is_empty bool => length = 0
+
+
   # a sequence of all valid indices to access this array. Useful e.g., for
   # `for`-loops:
   #
@@ -87,6 +92,18 @@ is
       safety: is_accessible
   =>
     abstract
+
+
+  # does this array contain elem?
+  #
+  public contains(elem T) bool
+    pre T : property.equatable
+  =>
+    for i in indices
+    until Buffer.this[i] = elem
+      true
+    else
+      false
 
 
   # convert this buffer to an immutable array
