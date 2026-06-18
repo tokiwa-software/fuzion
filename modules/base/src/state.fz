@@ -41,13 +41,13 @@
 #        # now, we can access the value using `state_get demo`
 #        # or, to unwrap it `state_get demo .contents`
 #        #
-#        say "state value is {state_get demo .contents}"
+#        say "state value is $(state_get demo .contents)"
 #
 #        # we can now modify the value, e.g, doubling it via
 #        #
 #        new_demo := state_modify demo (x -> demo x.contents*2)
-#        say "state value is {new_demo.get.contents}"
-#        say "state value is {state_get demo .contents}"
+#        say "state value is $(new_demo.get.contents)"
+#        say "state value is $(state_get demo .contents)"
 #
 # note that access to the state value is possible in any code executed while the state
 # is instated, also, e.g., in lambdas that are passed to a call and then called

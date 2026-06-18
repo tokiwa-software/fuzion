@@ -144,7 +144,7 @@ is
   #
   # Example:
   #
-  #     say "'{time.duration.h 3 .as_string}'"
+  #     say "'$(time.duration.h 3 .as_string)'"
   #     # Output: '180m'
   #
   public redef as_string String =>
@@ -161,7 +161,7 @@ is
   #
   # Example:
   #
-  #     say "'{time.duration.h 3 .as_string_pad}'"
+  #     say "'$(time.duration.h 3 .as_string_pad)'"
   #     # Output: ' 180m'
   #
   public as_string_pad String =>
@@ -178,7 +178,7 @@ is
   #
   # Example:
   #
-  #     say "'{time.duration.h 3 .as_string_long}'"
+  #     say "'$(time.duration.h 3 .as_string_long)'"
   #     # Output: '180 min'
   #
   public as_string_long String =>
@@ -192,7 +192,7 @@ is
   #
   # Example:
   #
-  #     say "'{time.duration.h 3 .as_string time.time_unit.s}'"
+  #     say "'$(time.duration.h 3 .as_string time.time_unit.s)'"
   #     # Output: '10800s'
   #
   public as_string(u time.time_unit) String =>
@@ -217,7 +217,7 @@ is
   #
   # Example:
   #
-  #     say "'{time.duration.h 3 .as_string_long time.time_unit.s}'"
+  #     say "'$(time.duration.h 3 .as_string_long time.time_unit.s)'"
   #     # Output: '10800 sec'
   #
   public as_string_long(u time.time_unit) String =>
