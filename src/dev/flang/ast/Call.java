@@ -1376,7 +1376,7 @@ public class Call extends AbstractCall
   private void resolveTarget(Resolution res, Context context, boolean urgent)
   {
     _target = _target != null ? res.resolveType(_target, context) : _target;
-    var tt = effectiveTargetType(context);
+    var tt = target().type();
     if (urgent && !tt.isGenericArgument())
       {
         res.resolveTypes(tt.feature());
@@ -1433,12 +1433,12 @@ public class Call extends AbstractCall
     // Call.adjustResultType and AbstractType.genericsAssignable, might be nice to
     // consolidate this (i.e., bring the calls to applyTypePars / adjustThisType
     // / etc. in the same order and move them to a dedicated function).
-    var tt = effectiveTargetType(context);
+    var tt = target().type().selfOrConstraint(context);
     var t0 = tt == Types.t_ERROR ? tt : resolveSelect(res, rt, tt);
     var t4 = adjustResultType(res, context, t0,
                               (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, false, calledFeature(), t0, from, to));
     // NYI: UNDER DEVELOPMENT: can we move more to previous call to adjustResultType()?
-    var t5 = t4 == Types.t_ERROR ? t4 : resolveForCalledFeature(res, t4, tt, context);
+    var t5 = t4 == Types.t_ERROR ? t4 : resolveForCalledFeature(res, t4, target().type(), context);
     var t6 = t5 == Types.t_ERROR ? t5 : calledFeature().isCotype() ? t5 : t5.replace_type_parameters_of_cotype_origin(context.outerFeature());
     return t6 == Types.t_UNDEFINED
       ? null
@@ -3123,11 +3123,6 @@ public class Call extends AbstractCall
       }
       @Override AbstractType typeForInferencing() { return Types.t_ERROR; }
       @Override public AbstractType type() { return Types.t_ERROR; }
-      @Override
-      protected AbstractType effectiveTargetType(Context context)
-      {
-        return Types.t_ERROR;
-      }
       public void setSourceRange(SourceRange r)
       { // do not change the source position if there was an error.
       }
