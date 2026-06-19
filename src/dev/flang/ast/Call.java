@@ -1397,22 +1397,7 @@ public class Call extends AbstractCall
     else
       {
         _recursiveResolveType = true;
-        var cf = _calledFeature;
-        result =
-          cf.isOpenTypeParameter() ? cf.openTypesFeature(res).resultTypeIfPresentUrgent(res, urgent) :
-          /*
-           * The following enables
-           * calling type feature on type parameter:
-           *
-           *  Sequence.is_sorted bool
-           *    pre
-           *      T : property.orderable
-           *  =>
-           *    zip (drop 1) (T.lteq)
-           *      .fold bool.all
-           */
-          cf.isTypeParameter()     ? cf.constraint(res, context)
-                                   : cf.resultTypeIfPresentUrgent(res, urgent);
+        result = effectiveResultType(res, context, _calledFeature , urgent);
         _recursiveResolveType = false;
 
         if (!isDefunct() && result == Types.t_FORWARD_CYCLIC)
@@ -1441,6 +1426,30 @@ public class Call extends AbstractCall
     return result == null || result == Types.t_ERROR || !result.containsUndefined()
       ? result
       : null;
+  }
+
+
+  /**
+   * Returns the effective result type, i.e. for (open) type par the constraint of the type.
+   *
+   * The following enables
+   * calling type feature on type parameter:
+   *
+   *  Sequence.is_sorted bool
+   *    pre
+   *      T : property.orderable
+   *  =>
+   *    zip (drop 1) (T.lteq)
+   *      .fold bool.all
+   */
+  private static AbstractType effectiveResultType(Resolution res, Context context, AbstractFeature cf, boolean urgent)
+  {
+    return switch (cf.kind())
+      {
+        case OpenTypeParameter -> cf.openTypesFeature(res).resultTypeIfPresentUrgent(res, urgent);
+        case TypeParameter     -> cf.constraint(res, context);
+        default                -> cf.resultTypeIfPresentUrgent(res, urgent);
+      };
   }
 
 
