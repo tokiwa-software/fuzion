@@ -1375,7 +1375,7 @@ public class Call extends AbstractCall
    */
   private void resolveTarget(Resolution res, Context context, boolean urgent)
   {
-    _target = res.resolveType(_target, context);
+    _target = _target != null ? res.resolveType(_target, context) : _target;
     var tt = targetType(context);
     if (urgent && !tt.isGenericArgument())
       {

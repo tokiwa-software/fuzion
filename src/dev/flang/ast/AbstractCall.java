@@ -295,8 +295,6 @@ public abstract class AbstractCall extends Expr
    *
    * @param context the source code context where this Call is used
    *
-   * @param tt the target type to use when adjusting t.
-   *
    * @param rt the result type to adjust
    *
    * @param foundRef a consumer that will be called for all the this-types found
