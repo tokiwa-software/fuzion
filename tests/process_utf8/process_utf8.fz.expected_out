@@ -5,7 +5,7 @@
 👨‍💻☯️
 
 ===  Test: unicode environment variable 2  ===
-safety: env_vars.keys    ∀ (x -> x.codepoints ∀ .is_ascii)
+safety: env_vars.keys ∀ (x -> x.codepoints ∀ .is_ascii)
 ===  Test: unicode in executable name  ===
 Fuzion says «Ⓗⓔⓛⓛⓞ».
 

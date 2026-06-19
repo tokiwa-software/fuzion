@@ -165,7 +165,7 @@ is
 
     else
       if last_err
-        (sxt_last.filter (e -> e.is_error)).first.or_panic.err
+        (sxt_last.filter (.is_error)).first.or_panic.err
       else
         # remove zero bytes caused by padding
         outcome (res.take res.count.as_i64-pad_size).as_array
