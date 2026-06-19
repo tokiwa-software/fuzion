@@ -1587,7 +1587,7 @@ public class Feature extends AbstractFeature
 
         if (Contract.requiresPreConditionsFeature(this) && preFeature() == null)
           {
-            Contract.addPreFeature(res, this, context(), false);
+            Contract.addPreFeature(res, this, false);
           }
 
         if (isOpenTypeParameter())
