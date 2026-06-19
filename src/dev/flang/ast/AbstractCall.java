@@ -339,6 +339,12 @@ public abstract class AbstractCall extends Expr
    *
    * For the call {@code T.equality x y}, we must replace the formal argument type
    * for {@code a} (and {@code b}) by {@code T}.
+   *
+   *
+   * @param t the formal type to be adjusted
+   *
+   * @param target the target of the call
+   *
    */
   private static AbstractType replace_type_parameter_used_for_this_type_in_cotype(AbstractType t, Expr target)
   {
@@ -356,6 +362,10 @@ public abstract class AbstractCall extends Expr
    * @param context the source code context where this Call is used
    *
    * @param t the formal type to be adjusted.
+   *
+   * @param cf the called feature
+   *
+   * @param tt the call targets type
    *
    * @param foundRef a consumer that will be called for all the this-types found
    * together with the ref type they are replaced with.  May be null.  This will
