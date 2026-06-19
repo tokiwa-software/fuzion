@@ -135,7 +135,7 @@ pre debug: n >= 0
       .map String (.or_panic)
       .as_array
 
-    bytes_used := (v.map c->c.as_string.byte_count).fold i32.sum
+    bytes_used := v.map (.as_string.byte_count) .fold i32.sum
     reader.env.discard bytes_used
     v
 

@@ -27,7 +27,7 @@
 #
 issue293 is
   human(age i32) is
-  ages := map (Sequence i32) human i32 (x -> x.age)
+  ages := map (Sequence i32) human i32 (.age)
   say (into i32 human [human 4, human 12, human 30] ages)
 
   into(TACC, T type, seq Sequence T, xf (Transducer (Sequence TACC) TACC T)) Sequence TACC =>

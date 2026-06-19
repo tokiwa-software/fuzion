@@ -177,7 +177,7 @@ is
   # create an array2 from a Sequence of a Sequence of elements
   #
   public type.create2(s Sequence (Sequence T)) array2 T =>
-    a := s.map s1->s1.as_array
+    a := s.map (.as_array)
           .as_array
     (array2 T).new _ a.count a[0].count i,j->a[i][j]
 

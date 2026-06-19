@@ -211,7 +211,7 @@ module body_helper(LM type : mutate, is_req bool, header_fields container.Map St
 
         length u64 =>
           # content Sequence u8 := (io.buffered LM).read_bytes length
-          # (content.count = length) ? option content : (cause "input closed after {content.count} bytes, but specified content-length: $length")
+          # (content.count = length) ? option content : (cause "input closed after $(content.count) bytes, but specified content-length: $length")
           body_reader LM length
 
     # If this is a request message and none of the above are true, then the message body length is zero (no message body is present).

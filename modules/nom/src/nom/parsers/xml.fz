@@ -208,14 +208,14 @@ public xml Parser String (Sequence codepoint) (Sequence nom.parsers.xml_node) =>
   # parser for a string enclosed in double quotes
   #
   parser_xml_string =>
-    delimited (tag "\"") (take_while0 codepoint (c -> c != "\"")) (tag "\"")
+    delimited (tag "\"") (take_while0 codepoint (!= "\"")) (tag "\"")
       .map (s -> String.from s)
 
 
   # parser for text, ends at first <
   #
   parser_text =>
-    take_while1 codepoint (c -> c != "<")
+    take_while1 codepoint (!= "<")
       .map o->
         String.from o .trim
 
