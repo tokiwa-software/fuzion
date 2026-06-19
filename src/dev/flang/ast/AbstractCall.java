@@ -327,39 +327,10 @@ public abstract class AbstractCall extends Expr
    */
   protected AbstractType targetType(Context context)
   {
-    var tt = target().type();
-    var cf = calledFeature();
     return
-      // first, check if have a situation like `x.this.T.from_u32 0` where `T type : integer`
-      //
-      // This occurs, e.g., in String.fz at the line
-      //
-      //     t := parse_integer.this.T.from_u32 b.as_u32  # i converted to T
-      //
-      // NYI: UNDER DEVELOPMENT: this special handling is not needed if we change that line to
-      //
-      //     t := T.from_u32 b.as_u32  # i converted to T
-      //
-      // we need to check why the implicit `parse_integer.this` target makes a difference here and
-      // remove the special handling if possible.
-      targetIsTypeParameter() && cf.resultType().isThisTypeInCotype()
-        ? tt.feature().selfType()
-        // NYI: UNDER DEVELOPMENT: Also unclear why we need special handling for a constructor here
-        : cf.isConstructor()
-        ? tt
-        : tt.selfOrConstraint(context);
-  }
-
-
-  /**
-   * Is the target of this call a type parameter?
-   *
-   * @return true for a call to {@code T.xyz}, {@code U.xyz} or {@code V.xyz} in a feature
-   * {@code f(T,U,V type)}, false otherwise.
-   */
-  private boolean targetIsTypeParameter()
-  {
-    return target() instanceof AbstractCall tc && tc != Call.ERROR && tc.calledFeature().isTypeParameter();
+      calledFeature().isConstructor()
+        ? target().type()
+        : target().type().selfOrConstraint(context);
   }
 
 
