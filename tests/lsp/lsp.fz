@@ -127,14 +127,14 @@ String.execute(
 
 init_req =>
   """
-    \{
+    {
       "jsonrpc": "2.0",
       "id": 1,
       "method": "initialize",
-      "params": \{
+      "params": {
         "processId": 12345,
         "rootUri": "file:///path/to/your/project",
-        "capabilities": \{},
+        "capabilities": {},
         "trace": "off"
       }
     }
@@ -144,13 +144,13 @@ test_file := "file://$(os.cwd)/hello.fz"
 
 open_file_req =>
   """
-    \{
+    {
       "jsonrpc": "2.0",
       "id": 2,
       "method": "textDocument/didOpen",
-      "params": \{
-        "textDocument": \{
-          "uri": "{test_file}",
+      "params": {
+        "textDocument": {
+          "uri": "$(test_file)",
           "languageId": "fuzion",
           "version": 1,
           "text": "hello => say Any"
@@ -161,15 +161,15 @@ open_file_req =>
 
 hover_req =>
   """
-    \{
+    {
       "jsonrpc": "2.0",
       "id": 3,
       "method": "textDocument/hover",
-      "params": \{
-        "textDocument": \{
-          "uri": "{test_file}"
+      "params": {
+        "textDocument": {
+          "uri": "$(test_file)"
         },
-        "position": \{
+        "position": {
           "line": 0,
           "character": 10
         }
@@ -189,16 +189,16 @@ comp_ex =>
 
 open_file_req2 =>
   """
-    \{
+    {
       "jsonrpc": "2.0",
       "id": 4,
       "method": "textDocument/didOpen",
-      "params": \{
-        "textDocument": \{
-          "uri": "{test_file2}",
+      "params": {
+        "textDocument": {
+          "uri": "$(test_file2)",
           "languageId": "fuzion",
           "version": 1,
-          "text": "{comp_ex.replace "\n" "\\n"}"
+          "text": "$(comp_ex.replace "\n" "\\n")"
         }
       }
     }
@@ -206,19 +206,19 @@ open_file_req2 =>
 
 completion_req =>
   """
-    \{
+    {
       "jsonrpc": "2.0",
       "id": 5,
       "method": "textDocument/completion",
-      "params": \{
-        "textDocument": \{
-          "uri": "{test_file2}"
+      "params": {
+        "textDocument": {
+          "uri": "$(test_file2)"
         },
-        "position": \{
+        "position": {
           "line": 1,
           "character": 12
         },
-        "context": \{
+        "context": {
           "triggerKind": 2,
           "triggerCharacter": "."
         }
@@ -230,7 +230,7 @@ completion_req =>
 
 shutdown_req =>
   """
-    \{
+    {
       "jsonrpc": "2.0",
       "id": 6,
       "method": "shutdown",
