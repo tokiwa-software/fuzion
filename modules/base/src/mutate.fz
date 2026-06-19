@@ -36,7 +36,7 @@
 #
 # To read it, call 'get' as in
 #
-#     say "v is {v.get}"
+#     say "v is $(v.get)"
 #
 # Convenience feature 'mut' and type inference allow the creation to be
 # written as
