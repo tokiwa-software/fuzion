@@ -1285,7 +1285,7 @@ public class Feature extends AbstractFeature
   {
     for (var c: _inherits)
       {
-        Expr nc = c.visit(v, this);
+        Expr nc = c.visit(v, outer());
         if (CHECKS) check
           (Errors.any() || c == nc); // NYI: This will fail when doing funny stuff like inherit from bool.infix &&, need to check and handle explicitly
       }
