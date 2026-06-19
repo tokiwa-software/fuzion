@@ -307,7 +307,7 @@ public abstract class AbstractCall extends Expr
                                           AbstractType rt,
                                           BiConsumer<AbstractType, AbstractType> foundRef)
   {
-    var tt = targetType(context);
+    var tt = effectiveTargetType(context);
     var t0 = calledFeature() == Types.f_ERROR ? Types.t_ERROR : rt;
     var t1 = t0 == Types.t_ERROR                           ? t0 : calledFeature().outer().handDownToType(t0, tt);
     var t2 = t1 == Types.t_ERROR                           ? t1 : replace_type_parameter_used_for_this_type_in_cotype(t1, target());
@@ -324,11 +324,12 @@ public abstract class AbstractCall extends Expr
 
   /**
    * Type of the target of this call.
+   *
+   * In case the target is a call to a type parameter, its constraint is returned.
    */
-  protected AbstractType targetType(Context context)
+  protected AbstractType effectiveTargetType(Context context)
   {
-    return
-      calledFeature().isConstructor()
+    return target().asTypeParameterType() == null
         ? target().type()
         : target().type().selfOrConstraint(context);
   }
