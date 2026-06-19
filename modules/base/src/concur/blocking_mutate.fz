@@ -74,7 +74,7 @@ public blocking_mutate : mutate is
             for t := f, nxt
                 nxt := t.next
             while !t.park_condition()
-            until nxt = f  # we went once around the linked list but found norhing
+            until nxt = f  # we went once around the linked list but found nothing
             else
               # t.park_condition() is true, so unpark `t`.
               waiting.remove t
