@@ -57,28 +57,34 @@ public blocking_mutate : mutate is
   #
   public redef exclusive(R type, F type: ()->R, code F) R
   =>
-    mtx.synchronized ()->
-      set exclusive_thread := concur.threads.env.current
-      blocking_mutate.this.replace
+    me := concur.threads.env.current
+    if exclusive_thread = me then
+      # recursive `exclusive` section, so we can just run `code`:
+      code()
+    else
+      # we must synchronize first:
+      mtx.synchronized ()->
+        set exclusive_thread := me
+        blocking_mutate.this.replace
 
-      res := code()
+        res := code()
 
-      match waiting.first
-        f concur.Thread =>
-          for t := f, nxt
-              nxt := t.next
-          while !t.park_condition()
-          until nxt = f  # we went once around the linked list but found norhing
-          else
-            # t.park_condition() is true, so unpark `t`.
-            waiting.remove t
-            t.unpark
-        nil =>
+        match waiting.first
+          f concur.Thread =>
+            for t := f, nxt
+                nxt := t.next
+            while !t.park_condition()
+            until nxt = f  # we went once around the linked list but found nothing
+            else
+              # t.park_condition() is true, so unpark `t`.
+              waiting.remove t
+              t.unpark
+          nil =>
 
-      set exclusive_thread := nil
-      blocking_mutate.this.replace
+        set exclusive_thread := nil
+        blocking_mutate.this.replace
 
-      res
+        res
 
 
   # wait for the given condition to become true by a mutation of the underlying data.
@@ -93,6 +99,7 @@ public blocking_mutate : mutate is
         waiting.add concur.threads.env.current
         _ := mtx.unlock  # NYI: result ignored
       _ := mtx.lock    # NYI: result ignored,
+      set exclusive_thread := concur.threads.env.current
 
 
   # is instance `mutate.this` instated for type `mutate.this` and, if `mutate.this` does
