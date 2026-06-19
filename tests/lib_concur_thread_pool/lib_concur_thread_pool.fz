@@ -50,7 +50,7 @@ lib_concur_thread_pool =>
 
       (1..49)
         .map (i -> concur.thread_pool.env.submit i32 ()->i)
-        .map x->x.get
+        .map (.get)
         .fold i32.sum
 
     say sum
@@ -63,7 +63,7 @@ lib_concur_thread_pool =>
 
       (1..49)
         .map (i -> concur.thread_pool.env.submit i32 (() -> time.nano.env.sleep (time.duration.ms 100); i))
-        .map x->x.get
+        .map (.get)
         .fold i32.sum
 
     say sum
@@ -85,13 +85,13 @@ lib_concur_thread_pool =>
       fut3 := concur.thread_pool.env.submit (Sequence u16) (() -> parts[3].map i->i*i)
 
       # convert to u64 and sum up list
-      new_fut0 := fut0.and_then s->(s.map x->x.as_u64)
+      new_fut0 := fut0.and_then s->(s.map (.as_u64))
                       .and_then (s->s.fold u64.sum)
-      new_fut1 := fut1.and_then s->(s.map x->x.as_u64)
+      new_fut1 := fut1.and_then s->(s.map (.as_u64))
                       .and_then (s->s.fold u64.sum)
-      new_fut2 := fut2.and_then s->(s.map x->x.as_u64)
+      new_fut2 := fut2.and_then s->(s.map (.as_u64))
                       .and_then (s->s.fold u64.sum)
-      new_fut3 := fut3.and_then s->(s.map x->x.as_u64)
+      new_fut3 := fut3.and_then s->(s.map (.as_u64))
                       .and_then (s->s.fold u64.sum)
 
       # collect results

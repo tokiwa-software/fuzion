@@ -37,7 +37,7 @@ main =>
     lm : mutate is
 
     lm ! ()->
-      seq := map x->x.as_string
+      seq := map (.as_string)
       match os.process.start seq.first.or_panic (seq.drop 1)
         e error => panic "failed executing $(Sequence.this), error is $e"
         p os.process =>

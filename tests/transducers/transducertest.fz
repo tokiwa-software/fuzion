@@ -47,7 +47,7 @@ transducertest is
 
 
   human(age i32) is
-  ages := td1.map (x -> x.age)
+  ages := td1.map (.age)
   gt_ten := td1.filter (x -> x > 10)
   r2 := [human 4, human 12, human 30].into (ages ∘ gt_ten)
   chck (r2 = [12, 30])                          "compose transducers"

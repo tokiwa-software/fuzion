@@ -55,7 +55,7 @@ envir_vars := container.map_of ((envir.vars.env.map_of [
 # execute this Sequence of process+args
 #
 Sequence.prefix ! =>
-  seq := map x->x.as_string
+  seq := map (.as_string)
   match os.process.start seq.first.or_panic (seq.drop 1) envir_vars
     e error => panic "failed executing $(Sequence.this), error is $e"
     p os.process => tokiwa.record_process p Sequence.this.as_string nil nil

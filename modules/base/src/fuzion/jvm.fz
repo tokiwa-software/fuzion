@@ -126,7 +126,7 @@ private:public jvm : effect is
     n := string_to_java_object1 name
     s := string_to_java_object1 signature
     t := thiz.java_ref
-    a := (args.map_to_array (x -> x.java_ref)).internal_array
+    a := (args.map_to_array (.java_ref)).internal_array
     call_v0 T c n s t a
 
 
@@ -142,7 +142,7 @@ private:public jvm : effect is
     c := string_to_java_object1 class_name
     n := string_to_java_object1 name
     s := string_to_java_object1 signature
-    a := (args.map_to_array (x -> x.java_ref)).internal_array
+    a := (args.map_to_array (.java_ref)).internal_array
     call_s0 T c n s a
 
 
@@ -156,7 +156,7 @@ private:public jvm : effect is
   =>
     c := string_to_java_object1 class_name
     s := string_to_java_object1 signature
-    a := (args.map_to_array (x -> x.java_ref)).internal_array
+    a := (args.map_to_array (.java_ref)).internal_array
     call_c0 T c s a
 
 
