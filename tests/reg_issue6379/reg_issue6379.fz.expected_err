@@ -1,0 +1,14 @@
+
+--CURDIR--/reg_issue6379.fz:24:1: error 1: Different count of arguments needed when calling feature
+ignore unit (array 3 _->1) _->
+^^^^^^
+Feature not found: 'ignore' (3 arguments)
+Target feature: 'universe'
+In call: 'ignore unit (array 3 _->1) _->'
+To solve this, you might change the actual number of arguments to match the feature 'ignore' (one type parameter T, one value argument x) at {base.fum}/ignore.fz:50:8:
+public ignore(T type, x T) unit =>
+-------^^^^^^
+To call 'ignore', you must provide 2 arguments. The type arguments may be omitted or `_` may be used in place of a type argument if they can be inferred from the value arguments..
+
+
+one error.
