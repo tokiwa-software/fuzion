@@ -284,7 +284,7 @@ public abstract class AbstractCall extends Expr
     if (PRECONDITIONS) require
       (!frmlT.isOpenGeneric());
 
-    return adjustResultType(res, context, target().type(), frmlT,
+    return adjustResultType(res, context, frmlT,
                             (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, true, arg, frmlT, from, to));
   }
 
@@ -295,8 +295,6 @@ public abstract class AbstractCall extends Expr
    *
    * @param context the source code context where this Call is used
    *
-   * @param tt the target type to use when adjusting t.
-   *
    * @param rt the result type to adjust
    *
    * @param foundRef a consumer that will be called for all the this-types found
@@ -306,15 +304,14 @@ public abstract class AbstractCall extends Expr
    */
   protected AbstractType adjustResultType(Resolution res,
                                           Context context,
-                                          AbstractType tt,
                                           AbstractType rt,
                                           BiConsumer<AbstractType, AbstractType> foundRef)
   {
     var t0 = calledFeature() == Types.f_ERROR ? Types.t_ERROR : rt;
-    var t1 = t0 == Types.t_ERROR                           ? t0 : calledFeature().outer().handDownToType(t0, tt);
+    var t1 = t0 == Types.t_ERROR                           ? t0 : calledFeature().outer().handDownToType(t0, target().type().selfOrConstraint(context));
     var t2 = t1 == Types.t_ERROR                           ? t1 : replace_type_parameter_used_for_this_type_in_cotype(t1, target());
     var t3 = t2 == Types.t_ERROR                           ? t2 : adjustThisTypeForTarget(context, t2, calledFeature(), target().type(), foundRef);  // NYI: CLEANUP: try to use handDownAndApply
-    var t4 = t3 == Types.t_ERROR                           ? t3 : t3.applyTypePars(tt);
+    var t4 = t3 == Types.t_ERROR                           ? t3 : t3.applyTypePars(target().type());
     var t5 = t4 == Types.t_ERROR                           ? t4 : t4.applyTypePars(calledFeature(), actualTypeParameters());
 
     if (POSTCONDITIONS) ensure
