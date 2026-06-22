@@ -1375,11 +1375,14 @@ public class Call extends AbstractCall
    */
   private void resolveTarget(Resolution res, Context context, boolean urgent)
   {
-    _target = _target != null ? res.resolveType(_target, context) : _target;
-    var tt = target().type();
-    if (urgent && !tt.isGenericArgument())
+    if (_target != null)
       {
-        res.resolveTypes(tt.feature());
+        _target = res.resolveType(_target, context);
+        var tt = target().type();
+        if (urgent && !tt.isGenericArgument())
+          {
+            res.resolveTypes(tt.feature());
+          }
       }
   }
 
@@ -1433,7 +1436,7 @@ public class Call extends AbstractCall
     // Call.adjustResultType and AbstractType.genericsAssignable, might be nice to
     // consolidate this (i.e., bring the calls to applyTypePars / adjustThisType
     // / etc. in the same order and move them to a dedicated function).
-    var tt = target().type().selfOrConstraint(context);
+    var tt = (_target == null ? Types.t_ERROR : target().type()).selfOrConstraint(context);
     var t0 = tt == Types.t_ERROR ? tt : resolveSelect(res, rt, tt);
     var t4 = adjustResultType(res, context, t0,
                               (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, false, calledFeature(), t0, from, to));
