@@ -711,6 +711,33 @@ public abstract class Expr extends ANY implements HasSourcePosition
 
 
   /**
+   * Do automatic unwrapping of features inheriting {@code unwrap}
+   * if unwrapped type is a choice.
+   *
+   * @param res the resolution instance
+   *
+   * @param context the source code context where this Expr is used
+   *
+   * @return the unwrapped expression
+   */
+  Expr unwrapChoice(Resolution res, Context context)
+  {
+    var t = type();
+    return this != Call.ERROR && t != Types.t_ERROR
+      && !t.isChoice()
+      && !t.isGenericArgument()
+      && allInherited(t.feature())
+          .stream()
+          .anyMatch(c ->
+            c.calledFeature().equals(Types.resolved.f_auto_unwrap)
+            && !c.actualTypeParameters().isEmpty()
+                    && c.actualTypeParameters().get(0).applyTypePars(t).isChoice())
+      ? new ParsedCall(this, new ParsedName(pos(), FuzionConstants.UNWRAP)).resolveTypes(res, context)
+      : this;
+  }
+
+
+  /**
    * @param f
    *
    * @return the whole tree of inherited features flattened to a list.
