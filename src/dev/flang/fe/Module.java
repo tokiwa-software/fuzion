@@ -31,9 +31,6 @@ import dev.flang.ast.FeatureName;
 import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
 
-import dev.flang.mir.MIR;
-import dev.flang.mir.MirModule;
-
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
@@ -292,7 +289,17 @@ public abstract class Module extends ANY implements FeatureLookup
         var existing = it.next();
         if (f != existing)
           {
-            if (redefines(f, existing))
+            var fInherited = f.outer() != outer;
+            var existingInherited = existing.outer() != outer;
+            if (
+                fInherited && existingInherited &&
+                ((f.modifiers() & FuzionConstants.MODIFIER_REDEFINE) != 0) ==
+                ((existing.modifiers() & FuzionConstants.MODIFIER_REDEFINE) != 0)
+               )
+              {
+                // will trigger: Repeated inheritance, see #7062
+              }
+            else if (redefines(f, existing))
               {
                 it.remove();
               }
