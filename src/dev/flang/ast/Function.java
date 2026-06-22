@@ -399,6 +399,10 @@ public class Function extends AbstractLambda
             res.resolveTypes(_feature);
             if (inferResultType)
               {
+                if (!(rt0.containsUndefined() || rt0.containsError()))
+                  {
+                    _expr.propagateExpectedType(res, context, rt0, from);
+                  }
                 result = refineResultType(res, context, rt0, _feature.resultType());
                 var g = t.lambdaTargetResultTypeParameter(res);
                 if (g != null && !_inheritsCall.isDefunct())

@@ -42,8 +42,8 @@ base64url_test is
      (mk_choice [(u8 255), 240],      "__A="),
      (mk_choice [],                   ""    ),
      (mk_choice [(u8 251), 239, 190], "----"),
-     (mk_choice (array u8 _ 3 _->(u8 255)),  "____"),
-     (mk_choice (array u8 _ 3 _->(u8 0)),    "AAAA"),
+     (mk_choice (array u8 _ 3 _->255),  "____"),
+     (mk_choice (array u8 _ 3 _->0),    "AAAA"),
      (mk_choice "123890ABCXYZabcxyz_:;>~<%&\$§!", "MTIzODkwQUJDWFlaYWJjeHl6Xzo7Pn48JSYkwqch"),
      (mk_choice """
      Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidun\
