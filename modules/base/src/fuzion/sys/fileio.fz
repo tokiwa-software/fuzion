@@ -52,7 +52,7 @@ module fileio is
   #
   module write(fd File_Descriptor, content array u8) outcome unit =>
     for tbw := content, tbw.drop res .as_array
-        res := fzE_file_write fd tbw.internal_array.data tbw.length
+        res := fzE_file_write fd tbw.internal_array.data tbw.length.as_i32 .as_i64
     while res >= 0 && res != tbw.length
     else
       if res < 0

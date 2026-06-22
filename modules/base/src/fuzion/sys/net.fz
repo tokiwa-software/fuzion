@@ -92,7 +92,7 @@ module net is
   #
   module write(descriptor i32, data array u8) outcome unit =>
     for tbw := data, tbw.drop res .as_array
-        res := fzE_socket_write descriptor tbw.internal_array.data tbw.length.as_i64
+        res := fzE_socket_write descriptor tbw.internal_array.data tbw.length.as_i64 .as_i64
     while res >= 0 && res != tbw.length
     else
       if res < 0
