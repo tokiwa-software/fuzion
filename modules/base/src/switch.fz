@@ -160,9 +160,15 @@ is
   # get A or panic with `B.as_string`
   #
   public or_panic A =>
+    or_panic ($)
+
+
+  # get A or panic with result of `msg`
+  #
+  public or_panic(msg B->String) A =>
     match switch.this
       a A => a
-      b B => panic $b
+      b B => panic (msg b)
 
 
   # fold this choice to new type `C`.

@@ -26,8 +26,8 @@ pre
   T : tuple A B
 =>
   if T : tuple A B
-    (map x->x.0,
-     map x->x.1)
+    (map (.0),
+     map (.1))
   else
     panic "Sequence.unzip only usable on sequence of 2-tuples, not $T"
 

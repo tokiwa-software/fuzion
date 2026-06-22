@@ -217,7 +217,7 @@ is
   #
   public as_array array T =>
     if is_array_backed
-      array count (i -> Sequence.this[i])
+      array count.as_i64 (i -> Sequence.this[i])
     else
       as_list.as_array
 
@@ -1235,7 +1235,7 @@ is
   #
   #     classify (c codepoint) String => c.is_ascii_letter ? "letter" : c.is_ascii_digit ? "digit" : "other"
   #
-  #     values.group_map String String classify (x->"_{x}_")
+  #     values.group_map String String classify (x->"_$(x)_")
   #
   # => {(digit => [_1_, _4_]), (letter => [_A_, _b_, _X_]), (other => [_?_])}
   #

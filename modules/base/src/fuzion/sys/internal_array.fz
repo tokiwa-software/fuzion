@@ -51,7 +51,7 @@ module internal_array(T type, module data Array T, module length i32) is
   # wrap this into an immutable array.
   #
   module fixed as_array =>
-    array (fuzion.sys.internal_array T data length) unit unit unit
+    array (fuzion.sys.internal_array T data length) unit unit unit unit
 
 
   module indices => 0..length-1

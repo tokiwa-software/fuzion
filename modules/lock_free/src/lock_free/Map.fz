@@ -103,7 +103,7 @@ is
   # remove a child node and return a new container_node
   remove(pos, flag u32, g uid)
     pre
-      debug: array.indices.contains pos.as_i32
+      debug: array.indices.contains pos.as_i64
     post
       debug: array.length = result.array.length + 1
   =>

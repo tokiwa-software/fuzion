@@ -429,6 +429,7 @@ public class InlineArray extends ExprWithPos
     var sysArrArgsE     = new List<Expr>(readSysArrayVar,
                                          unit,
                                          unit,
+                                         unit,
                                          unit);
     var arrayCall = new Call(
         SourcePosition.builtIn,

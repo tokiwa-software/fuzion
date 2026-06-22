@@ -66,7 +66,7 @@ Was defined as loop index variable at --CURDIR--/looptest_negative.fz:101:7:
 
 
 --CURDIR--/looptest_negative.fz:42:14: error 7: Incompatible types in branches of if expression
-    while ix < data.length
+    while ix < data.length.as_i32
 -------------^
 Incompatible result types in different branches:
 block returns value of type 'i32' at --CURDIR--/looptest_negative.fz:45:7:
@@ -78,7 +78,7 @@ block returns value of type 'String' at --CURDIR--/looptest_negative.fz:47:7:
 
 
 --CURDIR--/looptest_negative.fz:53:14: error 8: Incompatible types in branches of if expression
-    while ix < data.length
+    while ix < data.length.as_i32
 -------------^
 Incompatible result types in different branches:
 block returns value of type 'i32' at --CURDIR--/looptest_negative.fz:56:7:

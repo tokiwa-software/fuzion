@@ -62,4 +62,4 @@ module thread is
   # pin a thread to the CPUs given in an array
   #
   module set_affinity(thread_id Internal_Thread, cores array u64) i32 =>
-    set_affinity0 thread_id cores.internal_array.data cores.internal_array.length
+    set_affinity0 thread_id cores.internal_array.data cores.internal_array.length.as_i32

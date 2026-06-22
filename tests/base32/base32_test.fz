@@ -40,7 +40,7 @@ base32_test is
   own_test_vectors array (tuple my_c String) :=
     [(mk_choice [(u8 0), 0, 0, 0],    "AAAAAAA="),
      (mk_choice [(u8 255), 255, 255], "77776==="),
-     (mk_choice (array u8 5 _->255), "77777777"),
+     (mk_choice (array u8 _ 5 _->255), "77777777"),
      (mk_choice "123890ABCXYZabcxyz_:;>~<%&\$§!", "GEZDGOBZGBAUEQ2YLFNGCYTDPB4XUXZ2HM7H4PBFEYSMFJZB"),
      (mk_choice """
      Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidun\

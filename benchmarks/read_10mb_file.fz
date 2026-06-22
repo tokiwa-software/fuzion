@@ -19,7 +19,7 @@ read_10mb_file =>
     io.file.use file io.file.mode.append ()->
       sz := (io.file.stat file false).or_panic.size
       io.file.open.mmap 0 sz ()->
-        array u8 sz.as_i32 i->
+        array u8 _ sz.as_i32 i->
           io.file.mapped_buffer.env[i.as_i64]
 
   read_file2(file path) outcome (Sequence u8) =>
@@ -28,7 +28,7 @@ read_10mb_file =>
 
   f := path.of "/tmp/file"
 
-  a := array u8 1E7 x->65
+  a := array u8 _ 1E7 _->65
   s := _ : String is
          public redef utf8 Sequence u8 => a
 

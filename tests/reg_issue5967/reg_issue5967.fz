@@ -36,7 +36,7 @@ reg_issue5967 =>
     o.as_array
 
   scheme(ls) is
-    cp := ls.map x->x.codepoints
+    cp := ls.map (.codepoints)
     a := array2 cp.count cp[0].count i,j->cp[i][j]
     w => a.length1
     h => a.length0

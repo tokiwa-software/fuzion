@@ -140,7 +140,7 @@ public terminal is
     public clear_line                           String => "2K"
     public erase_end_of_line                    String => "K"
     public clear_screen                         String => "2J"
-    public put_cursor(line, column i32)         String => "$(line);$(column)H" # or "{line};{column}f"
+    public put_cursor(line, column i32)         String => "$(line);$(column)H" # or "$(line);$(column)f"
     public cursor_up(n i32)                     String => "$(n)A"
     public cursor_down(n i32)                   String => "$(n)B"
     public cursor_forward(n i32)                String => "$(n)C"

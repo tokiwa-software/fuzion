@@ -43,7 +43,7 @@ is
 
     # extract four sextets from 24 bits (of an u32)
     enc24(n u32) =>
-      array u8 4 i->
+      array u8 _ 4 i->
         j := ((n >> (18-i*6).as_u32) & 63).as_i32
         alphabet[j]
 
@@ -92,7 +92,7 @@ is
     d := data.as_array
 
     # determine size of padding, i.e. number of '=' (61 in ASCII) at the end
-    pad_size :=
+    pad_size i64 :=
       if d.length > 1 && d[d.length - 1] = 61
         if d[d.length - 2] = 61 then 2
         else                               1
@@ -100,7 +100,7 @@ is
 
     check_input(i) =>
 
-      if i >= d.length
+      if i.as_i64 >= d.length
         error "length of input data is not multiple of four, as required by RFC4648"
       else
         c := d[i]
@@ -110,7 +110,7 @@ is
 
         # padding character =
         else if c = 61
-          if i < d.length - pad_size
+          if i.as_i64 < d.length - pad_size
             error """
                   padding character '=' not allowed within the input data, \
                   only at the very end, as required by RFC464"""
@@ -123,7 +123,7 @@ is
                 $(if c=10 then "LF" else "CR") at position $i"""
         # other non alphabet character
         else
-          inv_char := String.from (d.slice i (i+4 > d.length ? d.length : i+4))
+          inv_char := String.from (d.slice i.as_i64 ((i+4).as_i64 > d.length ? d.length : i.as_i64+4))
                             .substring_codepoint 0 1
 
           error "invalid $encoding_name input at byte position $i, decoding to unicode character '$inv_char'"
@@ -152,7 +152,7 @@ is
       last_err := false, is_err
       sxt_last array (outcome u32) := [], sextets
 
-    while nxt < d.length && !last_err
+    while nxt.as_i64 < d.length && !last_err
     do
       sextets := [check_input nxt, check_input nxt+1, check_input nxt+2, check_input nxt+3]
       is_err := (sextets ∃ .is_error)
@@ -165,10 +165,10 @@ is
 
     else
       if last_err
-        (sxt_last.filter (e -> e.is_error)).first.or_panic.err
+        (sxt_last.filter (.is_error)).first.or_panic.err
       else
         # remove zero bytes caused by padding
-        outcome (res.take res.count-pad_size).as_array
+        outcome (res.take res.count.as_i64-pad_size).as_array
 
 
 

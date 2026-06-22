@@ -68,7 +68,7 @@ module Blocking_Queue(T type) ref is
       if c.is_closed
         false
       else
-        s.write (bqstate false (c.data.put c.data.length el))
+        s.write (bqstate false (c.data.put c.data.length.as_i32 el))
         # signal a waiting thread to pick up the work
         check cnd.signal
         true

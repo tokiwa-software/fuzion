@@ -127,7 +127,7 @@ public ip_address (val u128) : property.equatable is
           amount_of_padding_zeros := 8 - f.count - b.count
           check amount_of_padding_zeros > 0
 
-          t := f.as_list ++ (array String amount_of_padding_zeros x->"").as_list ++ b.as_list
+          t := f.as_list ++ (array String _ amount_of_padding_zeros x->"").as_list ++ b.as_list
 
           check t.count = 8
           from_string_v6 t

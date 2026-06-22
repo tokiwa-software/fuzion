@@ -95,14 +95,13 @@ is
   pre debug: running.contains thrd
   =>
     # NYI: UNDER DEVELOPMENT: pthread_detach
-    (threads p (running.filter (t->t!=thrd)).as_array current).replace
+    (threads p (running.filter (!=thrd)).as_array current).replace
 
 
   # join all running threads
   #
   public redef finally unit =>
-    running.for_each t->
-      t.join
+    running.for_each (.join)
 
 
   # default implementation of threads

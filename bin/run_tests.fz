@@ -48,7 +48,7 @@ max_test_time := (time.duration.min 10)
 # execute this Sequence of process+args
 #
 Sequence.prefix ! =>
-  seq := map x->x.as_string
+  seq := map (.as_string)
   os.process.start seq.first.or_panic (seq.drop 1) envir_vars
             .bind (p -> tokiwa.record_process p Sequence.this.as_string max_test_time nil)
 

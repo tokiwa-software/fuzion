@@ -84,10 +84,10 @@ envir_var_kv := [
 envir_vars :=
   (container.ordered_map
     (envir_var_kv
-      .map x->x.0
+      .map (.0)
       .as_array)
     (envir_var_kv
-      .map x->x.1
+      .map (.1)
       .as_array))
   .add "FUZION_DISABLE_ANSI_ESCAPES" "true"
 
@@ -97,7 +97,7 @@ Sequence.execute(
   # feed .stdin file to executed process?
   feed_stdin bool
 ) =>
-  seq := map x->x.as_string
+  seq := map (.as_string)
   match os.process.start seq.first.or_panic (seq.drop 1) envir_vars
     e error => panic "failed executing $(Sequence.this), error is $e"
     p os.process =>

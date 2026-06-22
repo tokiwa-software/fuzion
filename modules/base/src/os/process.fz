@@ -64,12 +64,12 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
   #
   read_handler(desc i64) : io.Read_Handler is
     public redef read(max_count i32) choice (Sequence u8) io.end_of_file error =>
-      arr := array u8 pipe_buffer_size i->0
+      arr := array u8 _ pipe_buffer_size _->0
       res := fzE_pipe_read desc arr.internal_array.data arr.count
       if res = -1
         # NYI: UNDER DEVELOPMENT: register failures
         _ := fzE_pipe_close desc
-        error "reading from {desc_name desc} of process {pid}" fzE_last_error
+        error "reading from $(desc_name desc) of process $(pid)" fzE_last_error
       else if res = 0
         # NYI: UNDER DEVELOPMENT: register failures
         _ := fzE_pipe_close desc
@@ -88,7 +88,7 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
       while res >= 0 && res != tbw.length
       else
         if res < 0
-          error "writing to {desc_name desc} of process {pid}. Tried writing {tbw.count} bytes." fzE_last_error
+          error "writing to $(desc_name desc) of process $(pid). Tried writing $(tbw.count) bytes." fzE_last_error
         else
           unit
 
@@ -111,7 +111,7 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
         arr := t.as_array
         bw := fzE_pipe_write desc arr.internal_array.data arr.count
         if bw = -1
-          abort (outcome i32) (error "writing to {desc_name desc} of process {pid}. Wrote $r bytes already." fzE_last_error)
+          abort (outcome i32) (error "writing to $(desc_name desc) of process $(pid). Wrote $r bytes already." fzE_last_error)
         else
           r+bw
 
@@ -152,12 +152,11 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
       # what is being written/read to/from pipes
       # thread to pipe from one process to other
       _ := concur.threads.env.spawn ()->
-        _ :=
-          for p1rb := std_out_read_handler.read pipe_buffer_size
-          while
-            match p1rb
-              s Sequence => (write_bytes p.std_in s).ok
-              * => false
+        for p1rb := std_out_read_handler.read pipe_buffer_size
+        while
+          match p1rb
+            s Sequence => (write_bytes p.std_in s).ok
+            * => false
 
         # NYI: UNDER DEVELOPMENT: error handling
         _ := fzE_pipe_close p.std_in
@@ -171,7 +170,7 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
   #
   public close_in outcome unit =>
     if fzE_pipe_close std_in != 0
-      error "closing {desc_name std_in} of process {pid}" fzE_last_error
+      error "closing $(desc_name std_in) of process $(pid)" fzE_last_error
 
 
   # wait for this process

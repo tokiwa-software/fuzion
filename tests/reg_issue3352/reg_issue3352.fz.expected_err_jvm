@@ -1,11 +1,11 @@
 
-error 1: FATAL FAULT `precondition`: safety: !open || is_exclusive2
+error 1: FATAL FAULT `precondition`: safety: !open || is_exclusive
 Call stack:
 fuzion.sys.fatal_fault#2 at {base.fum}/fuzion/sys.fz:55
 [..]
 fuzion.runtime.precondition_fault#1 at {base.fum}/fuzion/runtime/pre_fault.fz:56
-(m.new i32).pre get at {base.fum}/mutate.fz:176
-(m.new i32).precall get at {base.fum}/mutate.fz:175
+(m.new i32).pre get at {base.fum}/mutate.fz:173
+(m.new i32).precall get at {base.fum}/mutate.fz:172
 universe at --builtin--:26
 
 *** fatal errors encountered, stopping.

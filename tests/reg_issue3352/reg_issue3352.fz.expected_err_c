@@ -1,1 +1,1 @@
-*** failed precondition: `safety: !open || is_exclusive2`
+*** failed precondition: `safety: !open || is_exclusive`

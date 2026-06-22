@@ -83,9 +83,8 @@ public tokiwa is
           stdin_file path =>
             if io.file.exists stdin_file
               lm ! ()->
-                res0 := p.with_in unit lm ()->
-                  (io.buffered lm).writer.env.write (io.slurp stdin_file).or_panic .or_panic
-                res0.or_panic
+                (p.with_in unit lm ()->
+                  (io.buffered lm).writer.env.write (io.slurp stdin_file).or_panic .or_panic).or_panic
 
         match p.wait (timeout.or_default time.duration.max)
           e error => process_result "" "failed waiting for $cmd, error is: $e" 1

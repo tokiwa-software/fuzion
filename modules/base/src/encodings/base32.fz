@@ -53,8 +53,8 @@ is
 
     # extract 8 quintets from 40 bits (of an u64)
     enc40(n u64) =>
-      array u8 8 i->
-        j := ((n >> (35-i*5).as_u64) & 31).as_i32
+      array u8 _ 8 i->
+        j := ((n >> (35-i.as_i32*5).as_u64) & 31).as_i64
         alphabet[j]
 
     for
@@ -71,8 +71,8 @@ is
       if bit_len = 0
         res
       else
-        block_len := bit_len/5 + (bit_len%%5 ? 0 : 1)  # number ob characters in last block
-        res ++ (enc40 (last_n<<((u64 40)-bit_len.as_u64))).slice 0 block_len ++ (array u8 (8-block_len) _->61)
+        block_len := bit_len/5 + (bit_len%%5 ? i64.zero : i64.one)  # number of characters in last block
+        res ++ (enc40 (last_n<<((u64 40)-bit_len.as_u64))).slice 0 block_len ++ (array u8 _ (8.as_i64-block_len) _->61)
 
 
   # Encodes a given byte sequence in base32, output is padded to multiple of 8
@@ -103,20 +103,20 @@ is
     d := data.as_array
 
     # determine size of padding, i.e. number of '=' (61 in ASCII) at the end
-    pad_size :=
+    pad_size i64 :=
       for
-        pad_len := 0, pad_len + (d[i] = 61 ? 1 : 0)
+        pad_len := i64.zero, pad_len + (d[i] = 61 ? 1.as_i64 : 0.as_i64)
         i in (d.indices.reverse)
         _ in 1..6                             # padding can not be longer than 6
       while d[i] = 61
       else
-        pad_len = 2 ? 1                       # padding can not be 2
-                    : (pad_len = 5 ? 4        # padding can not be 5
+        pad_len = 2 ? 1.as_i64                       # padding can not be 2
+                    : (pad_len = 5 ? 4.as_i64        # padding can not be 5
                                    : pad_len)
 
-    dec_input(i) =>
+    dec_input(i i64) =>
 
-      if i >= d.length
+      if i.as_i64 >= d.length
         error "length of input data is not multiple of 8, as required by RFC4648"
       else
         c := d[i]
@@ -127,7 +127,7 @@ is
 
         # padding character =
         else if c = 61
-          if i < d.length - pad_size
+          if i.as_i64 < d.length - pad_size
             # only complain about pad car if length is ok, otherwise wrong length is probably more helpful
             if d.length%%8
               error """
@@ -145,18 +145,18 @@ is
 
         # other non alphabet character
         else
-          inv_char := String.from (d.slice i (i+4 > d.length ? d.length : i+4))
+          inv_char := String.from (d.slice i ((i+4).as_i64 > d.length ? d.length : i+4))
                             .substring_codepoint 0 1
 
           error "invalid $encoding_name input at byte position $i, decoding to unicode character '$inv_char'"
 
     for
       res := (Sequence u8).empty, res ++ bytes  # contains the decoded data at the end
-      nxt := 0, nxt + 8
+      nxt := i64.zero, nxt + 8
       last_err := false, is_err
       qnt_last := (Sequence (outcome u64)).empty, quintets
 
-    while nxt < d.length && !last_err
+    while nxt.as_i64 < d.length && !last_err
     do
       quintets :=
         (nxt :: +1)
@@ -177,8 +177,8 @@ is
       if last_err
         (qnt_last.filter (.is_error)).first.or_panic.err
       else
-        dump_size := 5 - ((40 - (pad_size * 5)) / 8)    # number of decoded bytes caused by zeroed padding
-        outcome (res.take res.count-dump_size).as_array # remove zero bytes caused by padding
+        dump_size := 5.as_i64 - ((40.as_i64 - (pad_size * 5)) / 8)    # number of decoded bytes caused by zeroed padding
+        outcome (res.take res.count.as_i64-dump_size).as_array # remove zero bytes caused by padding
 
 
 # Base32 encoding and decoding as defined in RFC 4648

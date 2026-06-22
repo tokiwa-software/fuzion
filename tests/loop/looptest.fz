@@ -34,13 +34,13 @@ looptest is
            "FAILED: "
     say (s + msg)
 
-  a := array i32 100 (i -> if (i % 23 = 0) then -2*i else i*i)
+  a := array i32 _ 100 (i -> if (i % 23 = 0) then -2*i else i*i)
 
   say "testLoop0: plain while loop"
   testLoop0(data array i32, isWhatWeWant (i32) -> bool) =>
     found := false
     ix := 0
-    while ix < data.length && !found
+    while ix < data.length.as_i32 && !found
       element := data[ix]
       if isWhatWeWant(element)
         say "We found it at $ix: $element"
@@ -60,7 +60,7 @@ looptest is
   say "testLoop1: plain while-until loop"
   testLoop1(data array i32, isWhatWeWant (i32) -> bool) =>
     ix := 0
-    while ix < data.length
+    while ix < data.length.as_i32
       element := data[ix]
       set ix := ix + 1
     until isWhatWeWant element
@@ -79,7 +79,7 @@ looptest is
   say "testLoop2: loop with index variables"
   testLoop2(data array i32, isWhatWeWant (i32) -> bool) =>
     for ix := 0, ix + 1
-    while ix < data.length
+    while ix < data.length.as_i32
       element := data[ix]
     until isWhatWeWant element
       say "We found it at $ix: $element"
@@ -97,9 +97,9 @@ looptest is
   say "testLoop3: loop with index variables, variant and invariant"
   testLoop3(data array i32, isWhatWeWant (i32) -> bool) =>
     for ix := 0, ix + 1
-    variant (data.length - ix).as_i64
+    variant (data.length.as_i32 - ix).as_i64
     invariant (0..ix-1) ∀ (x -> !isWhatWeWant data[x])
-    while ix < data.length
+    while ix < data.length.as_i32
       element := data[ix]
     until isWhatWeWant element
       say "We found it at $ix: $element"
@@ -117,9 +117,9 @@ looptest is
   say "testLoop4: loop with index variables, empty body"
   testLoop4(data array i32, isWhatWeWant (i32) -> bool) =>
     for ix := 0, ix + 1
-    variant (data.length - ix).as_i64
+    variant (data.length.as_i32 - ix).as_i64
     invariant (0..ix-1) ∀ (x -> !isWhatWeWant data[x])
-    while ix < data.length
+    while ix < data.length.as_i32
     until isWhatWeWant data[ix]
       say "We found it at $ix: $(data[ix])"
     else
@@ -136,10 +136,10 @@ looptest is
   say "testLoop5: loop with index variables, no while and empty body"
   testLoop5(data array i32, isWhatWeWant (i32) -> bool) =>
     for ix := 0, ix + 1
-    variant (data.length - ix).as_i64
+    variant (data.length.as_i32 - ix).as_i64
     invariant (0..ix-1) ∀ (x -> !isWhatWeWant data[x])
-    until (ix ≥ data.length) || isWhatWeWant data[ix]
-      if (ix < data.length)
+    until (ix ≥ data.length.as_i32) || isWhatWeWant data[ix]
+      if (ix < data.length.as_i32)
         say "We found it at $ix: $(data[ix])"
       else
         say "Not found! ix is $ix"
@@ -155,9 +155,9 @@ looptest is
   say "testLoop6: loop which returns a String"
   testLoop6(data array i32, isWhatWeWant (i32) -> bool) =>
     for ix := 0, ix + 1
-    variant (data.length - ix).as_i64
+    variant (data.length.as_i32 - ix).as_i64
     invariant (0..ix-1) ∀ (x -> !isWhatWeWant data[x])
-    while ix < data.length
+    while ix < data.length.as_i32
       element := data[ix]
     until isWhatWeWant element
       element
@@ -174,7 +174,7 @@ looptest is
   say "testLoop7: loop return 3333 on success and 4444 in else branch"
   testLoop7(data array i32, isWhatWeWant (i32) -> bool) i32 =>
     for ix := 0, ix + 1
-    while ix < data.length
+    while ix < data.length.as_i32
       element := data[ix]
     until isWhatWeWant data[ix]
       3333
@@ -186,7 +186,7 @@ looptest is
   say "testLoop8: loop return success index as default and 4444 in else branch"
   testLoop8(data array i32, isWhatWeWant (i32) -> bool) i32 =>
     for ix := 0, ix + 1
-    while ix < data.length
+    while ix < data.length.as_i32
       element := data[ix]
     until isWhatWeWant data[ix]
       ix
@@ -198,7 +198,7 @@ looptest is
   say "testLoop9: loop return 3333 on success, index as default"
   testLoop9(data array i32, isWhatWeWant (i32) -> bool) i32 =>
     for ix := 0, ix + 1
-    while ix < data.length
+    while ix < data.length.as_i32
       element := data[ix]
     until isWhatWeWant data[ix]
       3333
@@ -210,7 +210,7 @@ looptest is
   say "testLoop10: loop return 4444 on else branch, no success possible"
   testLoop10(data array i32, isWhatWeWant (i32) -> bool) i32 =>
     for ix := 0, ix + 1
-    while ix < data.length
+    while ix < data.length.as_i32
       element := data[ix]
     else
       4444
@@ -220,7 +220,7 @@ looptest is
   say "testLoop11: loop returns last index"
   testLoop11(data array i32, isWhatWeWant (i32) -> bool) i32 =>
     for ix := 0, ix + 1
-    while ix < data.length
+    while ix < data.length.as_i32
     else ix
   chck (testLoop11(a, (i -> i >    100)) =  100) "testLoop11 returns 100 in index branch"
   chck (testLoop11(a, (i -> i >  10000)) =  100) "testLoop11 returns 100 in index branch"
@@ -230,7 +230,7 @@ looptest is
     for
       ix := 0, ix + 1
       found := false, found || isWhatWeWant data[ix-1]
-    while ix < data.length
+    while ix < data.length.as_i32
     else found
   chck (testLoop12(a, (i -> i >    100)) =  true) "testLoop12 returns true  in index branch"
   chck (testLoop12(a, (i -> i >  10000)) = false) "testLoop12 returns false in index branch"
@@ -240,7 +240,7 @@ looptest is
     for
       ix  := 0, ix + 1
       sum := 0, sum + data[ix - 1]
-    while ix < data.length
+    while ix < data.length.as_i32
     else sum
   chck (testLoop13(a) =  312020) "testLoop13 returns 312020 in index branch"
 

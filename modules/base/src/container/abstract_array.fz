@@ -37,13 +37,13 @@ public abstract_array
 
   # length of this array
   #
-  public length i32 => abstract
+  public length i64 => abstract
 
 
   # redefines Sequence.count for array,
   # reducing complexity from O(n) to O(1).
   #
-  public redef count i32 => length
+  public redef count i32 => length.as_i32
 
 
   # is this Sequence empty?
@@ -82,7 +82,7 @@ public abstract_array
   #
   # Unlike for general Sequences, this performs in O(1).
   #
-  public redef is_valid_index(I type : integer, i I) bool => 0 ≤ i.as_i32 < length
+  public redef is_valid_index(I type : integer, i I) bool => i64.zero ≤ i.as_i64 < length
 
 
   # create a list that consists of the elements of this Sequence except the first
@@ -96,7 +96,7 @@ public abstract_array
     else if n < 0
       abstract_array.this
     else
-      slice n.as_i32 count
+      slice n.as_i64 count.as_i64
 
 
   # create a Sequence that consists only of the first n elements of this
@@ -141,7 +141,7 @@ public abstract_array
   #     for i in arr.indices do
   #       say arr[i]
   #
-  public indices interval i32 => 0..length-1
+  public indices interval i64 => i64.zero..length-1
 
 
   # get the contents of this array at the given index
@@ -168,9 +168,9 @@ public abstract_array
   public as_list(i i32) list T
     pre
       debug: i ≥ 0
-      debug: i=0 || i<length
+      debug: i=0 || i.as_i64<length
   =>
-    (slice i length).as_list
+    (slice i.as_i64 length).as_list
 
 
   # create a slice from this array's elements at index 'from' (included)
@@ -197,19 +197,19 @@ public abstract_array
       #
       public redef index [ ] (J type : integer, i J) T
       =>
-        abstract_array.this[from.as_i32+i.as_i32]
+        abstract_array.this[from.as_i64+i.as_i64]
 
 
       # redefines abstract_array.length for array.
       #
-      public redef length i32 := (to-from).as_i32
+      public redef length i64 := (to-from).as_i64
 
 
       # a slice of a slice, need to adjust from and to args
       #
       public redef slice(J type : integer, from_, to_ J) Sequence T
       =>
-        abstract_array.this.slice from.as_i32+from_.as_i32 from.as_i32+to_.as_i32
+        abstract_array.this.slice from.as_i64+from_.as_i64 from.as_i64+to_.as_i64
 
     array_slice
 
@@ -219,7 +219,7 @@ public abstract_array
   #
   array_cons(I type : integer, a A : container.abstract_array T, i, to I)
     pre
-      debug: 0 ≤ i.as_i32 < to.as_i32 ≤ a.length
+      debug: i64.zero ≤ i.as_i64 < to.as_i64 ≤ a.length
   =>
     (list T).of_finite a[i] (a.slice i+1 to).as_list
 
@@ -227,14 +227,14 @@ public abstract_array
   # map the array to a new array applying function f to all elements
   #
   public map_to_array(B type, f T -> B) array B =>
-    array B abstract_array.this.length (i -> f abstract_array.this[i])
+    array B _ abstract_array.this.length (i -> f abstract_array.this[i])
 
 
   # variant of map which additionally passes the index to
   # the mapping function f
   #
-  public map_indexed(B type, f (T, i32) -> B) array B =>
-    array B abstract_array.this.length (i -> f abstract_array.this[i] i)
+  public map_indexed(B type, f (T, i64) -> B) array B =>
+    array B _ abstract_array.this.length (i -> f abstract_array.this[i] i)
 
 
   # fold the elements of this array using the given monoid.
@@ -250,9 +250,9 @@ public abstract_array
   #
   public fold (i i32, s T, m Monoid T) T
     pre
-      debug: 0 ≤ i ≤ length
+      debug: i64.zero ≤ i.as_i64 ≤ length
   =>
-    if i = length
+    if i.as_i64 = length
       s
     else
       fold i+1 (m.op s abstract_array.this[i]) m
@@ -284,18 +284,18 @@ public abstract_array
   enumerate_cons (i i32) : Cons (i32, T) (list (i32, T))
     pre
       debug: 0 ≤ i
-      debug: i < length
+      debug: i.as_i64 < length
   is
     public redef head tuple i32 T => (i, index[] i)
     public redef tail list (tuple i32 T) =>
-      if i < length-1 then enumerate_cons i+1
+      if i.as_i64 < length-1 then enumerate_cons i+1
       else                 nil
 
 
   # create a mutable copy of this array
   #
   public as_mutable(LM type : mutate) LM.array T =>
-    data := fuzion.sys.internal_array_init T length
+    data := fuzion.sys.internal_array_init T length.as_i32
 
     # NYI: PERFORMANCE: copy complete array at once
     for x in data.indices do
