@@ -129,6 +129,7 @@ is
   =>
     internal_array[i.as_i64]
 
+
   # create a new array with element i set to v. Grow the array in case i == length.
   #
   # Complexity: O(array.this.length)
@@ -141,6 +142,7 @@ is
     # better use a persistent array implementation such as persistent hash array
     # mapped trie.
     array (max length i.as_i64+1) (ix -> if (ix = i.as_i64) v else array.this[ix])
+
 
   # create a new array with element i set to v. Grow the array in case i >= length.
   # New array elements at indices array.this.length..i-1 will be set to z.
@@ -179,7 +181,7 @@ is
 
     internal := fuzion.sys.internal_array_init T length.as_i32
     for x := I.zero, x+1
-    while x<length do
+    while x < length do
       internal[x.as_i32] := init x
 
     array T internal unit unit unit unit

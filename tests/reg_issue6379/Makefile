@@ -17,19 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion os.cwd
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# get the current working directory
-#
-public cwd outcome path =>
-
-  pm := fzE_path_max
-  a := array u8 _ pm _->0
-
-  if fzE_cwd a.internal_array.data pm.as_i64 = 0
-    # NYI: BUG: path.of does not work here
-    path.type.of <| String.from_bytes (a.take_while x->x!=0)
-  else
-    error "error getting current working directory, error code $(fzE_last_error)"
+override NAME = reg_issue6379
+include ../simple.mk

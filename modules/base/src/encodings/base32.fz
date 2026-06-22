@@ -72,7 +72,7 @@ is
         res
       else
         block_len := bit_len/5 + (bit_len%%5 ? i64.zero : i64.one)  # number of characters in last block
-        res ++ (enc40 (last_n<<((u64 40)-bit_len.as_u64))).slice 0 block_len ++ (array u8 _ (8.as_i64-block_len) _->61.as_u8)
+        res ++ (enc40 (last_n<<((u64 40)-bit_len.as_u64))).slice 0 block_len ++ (array u8 _ (8.as_i64-block_len) _->61)
 
 
   # Encodes a given byte sequence in base32, output is padded to multiple of 8
