@@ -159,7 +159,7 @@ public class Match extends AbstractMatch
   {
     var st = _subject.typeForInferencing(context);
 
-    if (!subject().type().isChoice())
+    if (st != null && !st.isChoice())
       {
         _subject = _subject.unwrapChoice(res, context);
         st = _subject.typeForInferencing();
