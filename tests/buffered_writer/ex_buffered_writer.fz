@@ -10,9 +10,9 @@ ex_buffered_writer =>
   lm ! ()->
 
     _ := (io.buffered lm).writer wh ! ()->
-      x := array u8 _ 1023 i->(u8 0x61)
-      y := array u8 _ 2049 i->(u8 0x62)
-      z := array u8 _ 128  i->(u8 0x63)
+      x := array u8 _ 1023 i->0x61
+      y := array u8 _ 2049 i->0x62
+      z := array u8 _ 128  i->0x63
 
       _ := (io.buffered lm).writer.env.write x
       _ := (io.buffered lm).writer.env.write y

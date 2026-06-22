@@ -28,7 +28,7 @@ read_10mb_file =>
 
   f := path.of "/tmp/file"
 
-  a := array u8 _ 1E7 _->(u8 65)
+  a := array u8 _ 1E7 _->65
   s := _ : String is
          public redef utf8 Sequence u8 => a
 
