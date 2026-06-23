@@ -745,7 +745,7 @@ void *  fzE_cnd_init     (void);
  *
  * @return -1 on error, 0 on success
  */
-int32_t fzE_cnd_signal   (void * cnd);
+void fzE_cnd_signal   (void * cnd);
 
 /**
  * unblocks all threads waiting on this condition
@@ -754,7 +754,7 @@ int32_t fzE_cnd_signal   (void * cnd);
  *
  * @return -1 on error, 0 on success
  */
-int32_t fzE_cnd_broadcast(void * cnd);
+void fzE_cnd_broadcast(void * cnd);
 
 /**
  * blocks thread until signal, broadcast or spurious wakeup
@@ -765,7 +765,7 @@ int32_t fzE_cnd_broadcast(void * cnd);
  *
  * @return -1 on error, 0 on success
  */
-int32_t fzE_cnd_wait     (void * cnd, void * mtx);
+void fzE_cnd_wait     (void * cnd, void * mtx);
 
 /**
  * destroys the condition

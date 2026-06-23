@@ -881,16 +881,16 @@ void * fzE_cnd_init() {
   return pthread_cond_init(cnd, NULL) == 0 ? (void *)cnd : NULL;
 }
 
-int32_t fzE_cnd_signal(void * cnd) {
-  return pthread_cond_signal((pthread_cond_t *)cnd) == 0 ? 0 : -1;
+void fzE_cnd_signal(void * cnd) {
+  pthread_cond_signal((pthread_cond_t *)cnd);
 }
 
-int32_t fzE_cnd_broadcast(void * cnd) {
-  return pthread_cond_broadcast((pthread_cond_t *)cnd) == 0 ? 0 : -1;
+void fzE_cnd_broadcast(void * cnd) {
+  pthread_cond_broadcast((pthread_cond_t *)cnd);
 }
 
-int32_t fzE_cnd_wait(void * cnd, void * mtx) {
-  return pthread_cond_wait((pthread_cond_t *)cnd, (pthread_mutex_t *)mtx) == 0 ? 0 : -1;
+void fzE_cnd_wait(void * cnd, void * mtx) {
+  pthread_cond_wait((pthread_cond_t *)cnd, (pthread_mutex_t *)mtx);
 }
 
 void fzE_cnd_destroy(void * cnd) {

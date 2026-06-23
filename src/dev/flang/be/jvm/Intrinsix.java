@@ -966,11 +966,11 @@ public class Intrinsix extends ANY implements ClassFileConstants
                           ClassFileConstants.PrimitiveType.type_boolean)), Expr.UNIT)
       );
     put("concur.sync.mtx_destroy",  (jvm, si, cc, tvalue, args) ->
-      new Pair<>(args.get(0).andThen(
+      new Pair<>(Expr.UNIT, args.get(0).andThen(
         Expr.invokeStatic(Names.RUNTIME_CLASS,
                           "mtx_destroy",
                           "(Ljava/lang/Object;)V",
-                          ClassFileConstants.PrimitiveType.type_void)), Expr.UNIT)
+                          ClassFileConstants.PrimitiveType.type_void)))
       );
 
     /* Condition */
@@ -982,32 +982,32 @@ public class Intrinsix extends ANY implements ClassFileConstants
                           "(Ljava/lang/Object;)Ljava/lang/Object;",
                           JAVA_LANG_OBJECT))));
     put("concur.sync.cnd_signal",  (jvm, si, cc, tvalue, args) ->
-      new Pair<>(args.get(0).andThen(
+      new Pair<>(Expr.UNIT, args.get(0).andThen(
         Expr.invokeStatic(Names.RUNTIME_CLASS,
                           "cnd_signal",
-                          "(Ljava/lang/Object;)Z",
-                          ClassFileConstants.PrimitiveType.type_boolean)), Expr.UNIT)
+                          "(Ljava/lang/Object;)V",
+                          ClassFileConstants.PrimitiveType.type_void)))
       );
     put("concur.sync.cnd_broadcast",  (jvm, si, cc, tvalue, args) ->
-      new Pair<>(args.get(0).andThen(
+      new Pair<>(Expr.UNIT, args.get(0).andThen(
         Expr.invokeStatic(Names.RUNTIME_CLASS,
                           "cnd_broadcast",
-                          "(Ljava/lang/Object;)Z",
-                          ClassFileConstants.PrimitiveType.type_boolean)), Expr.UNIT)
+                          "(Ljava/lang/Object;)V",
+                          ClassFileConstants.PrimitiveType.type_void)))
       );
     put("concur.sync.cnd_wait",  (jvm, si, cc, tvalue, args) ->
-      new Pair<>(args.get(0).andThen(
+      new Pair<>(Expr.UNIT, args.get(0).andThen(
         Expr.invokeStatic(Names.RUNTIME_CLASS,
                           "cnd_wait",
-                          "(Ljava/lang/Object;)Z",
-                          ClassFileConstants.PrimitiveType.type_boolean)), Expr.UNIT)
+                          "(Ljava/lang/Object;)V",
+                          ClassFileConstants.PrimitiveType.type_void)))
       );
     put("concur.sync.cnd_destroy",  (jvm, si, cc, tvalue, args) ->
-      new Pair<>(args.get(0).andThen(
+      new Pair<>(Expr.UNIT, args.get(0).andThen(
         Expr.invokeStatic(Names.RUNTIME_CLASS,
                           "cnd_destroy",
                           "(Ljava/lang/Object;)V",
-                          ClassFileConstants.PrimitiveType.type_void)), Expr.UNIT)
+                          ClassFileConstants.PrimitiveType.type_void)))
       );
     put("effect.type.from_env",
         "effect.type.unsafe_from_env", (jvm, si, cc, tvalue, args) ->

@@ -2573,18 +2573,18 @@ public class DFA extends ANY
     put("concur.sync.cnd_signal"            , cl ->
       {
         cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
-        return cl._dfa.bool();
+        return Value.UNIT;
       });
     put("concur.sync.cnd_broadcast"         , cl ->
       {
         cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
-        return cl._dfa.bool();
+        return Value.UNIT;
       });
     put("concur.sync.cnd_wait"              , cl ->
       {
         cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
         cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 1));
-        return cl._dfa.bool();
+        return Value.UNIT;
       });
     put("concur.sync.cnd_destroy"           , cl ->
       {

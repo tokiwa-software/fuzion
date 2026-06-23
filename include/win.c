@@ -1069,23 +1069,24 @@ void * fzE_cnd_init() {
   return (void *)cnd;
 }
 
-int32_t fzE_cnd_signal(void *cnd) {
+void fzE_cnd_signal(void *cnd) {
   WakeConditionVariable((CONDITION_VARIABLE *)cnd);
-  return 0;
 }
 
-int32_t fzE_cnd_broadcast(void *cnd) {
+void fzE_cnd_broadcast(void *cnd) {
   WakeAllConditionVariable((CONDITION_VARIABLE *)cnd);
-  return 0;
 }
 
-int32_t fzE_cnd_wait(void *cnd, void *mtx) {
+void fzE_cnd_wait(void *cnd, void *mtx) {
   BOOL ok = SleepConditionVariableCS(
       (CONDITION_VARIABLE *)cnd,
       (CRITICAL_SECTION *)mtx,
       INFINITE);
-
-  return ok ? 0 : -1;
+  if (!ok)
+    {
+      fprintf(stderr, "*** SleepConditionVariableCS failed\n");
+      exit(EXIT_FAILURE);
+    }
 }
 
 void fzE_cnd_destroy(void *cnd) {
