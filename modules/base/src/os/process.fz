@@ -83,10 +83,14 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
   #
   write_handler (desc i64) : io.Write_Handler is
     public redef write (bytes Sequence u8) outcome unit =>
-      if fzE_pipe_write desc bytes.as_array.internal_array.data bytes.count = -1
-        error "writing to $(desc_name desc) of process $(pid). Tried writing $(bytes.count) bytes." fzE_last_error
+      for tbw := bytes.as_array, tbw.drop res .as_array
+          res := fzE_pipe_write desc tbw.internal_array.data tbw.count .as_i64
+      while res >= 0 && res != tbw.length
       else
-        unit
+        if res < 0
+          error "writing to $(desc_name desc) of process $(pid). Tried writing $(tbw.count) bytes." fzE_last_error
+        else
+          unit
 
 
   # write bytes to stdin of child process
