@@ -284,8 +284,8 @@ public abstract class AbstractCall extends Expr
     if (PRECONDITIONS) require
       (!frmlT.isOpenGeneric());
 
-    return adjustResultType(res, context, frmlT,
-                            (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, true, arg, frmlT, from, to));
+    return adjustType(res, context, frmlT,
+                      (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, true, arg, frmlT, from, to));
   }
 
 
@@ -302,10 +302,10 @@ public abstract class AbstractCall extends Expr
    * be used to check for AstErrors.illegalOuterRefTypeInCall.
    *
    */
-  protected AbstractType adjustResultType(Resolution res,
-                                          Context context,
-                                          AbstractType rt,
-                                          BiConsumer<AbstractType, AbstractType> foundRef)
+  protected AbstractType adjustType(Resolution res,
+                                    Context context,
+                                    AbstractType rt,
+                                    BiConsumer<AbstractType, AbstractType> foundRef)
   {
     var t0 = calledFeature() == Types.f_ERROR ? Types.t_ERROR : rt;
     var t1 = t0 == Types.t_ERROR                           ? t0 : calledFeature().outer().handDownToType(t0, target().type().selfOrConstraint(context));

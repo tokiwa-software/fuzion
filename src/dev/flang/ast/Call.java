@@ -1337,8 +1337,10 @@ public class Call extends AbstractCall
       }
     else
       {
+        resolveTarget(res, context, urgent);
+
         _recursiveResolveType = true;
-        result = effectiveResultType(res, context, _calledFeature , urgent);
+        result = getResultType0(res, context, urgent);
         _recursiveResolveType = false;
 
         if (!isDefunct() && result == Types.t_FORWARD_CYCLIC)
@@ -1351,18 +1353,36 @@ public class Call extends AbstractCall
             result = Types.t_ERROR;
             setToErrorState();
           }
-
-        resolveTarget(res, context, urgent);
-
-        result = result == null
-          ? result
-          : adjustResultType0(res, context, result);
       }
+    return result;
+  }
 
-    // see test #5391 when this might happen
-    return result == null || result == Types.t_ERROR || !result.containsUndefined()
+
+  /**
+   * Helper function for getResultType to determine the static result type of
+   * this call.
+   *
+   * In particular, this replaces formal generic types by actual generics
+   * provided to this call and it replaces select calls to fields of open
+   * generic type by calls to the actual fields.
+   *
+   * @param res the resolution instance.
+   *
+   * @param context the source code context where this Call is used
+   *
+   * @param urgent true if we should produce an error in case the formal result
+   * type of the called feature is not available, false if this is still
+   * acceptable and the result type can be set later.
+   */
+  private AbstractType getResultType0(Resolution res, Context context, boolean urgent)
+  {
+    AbstractType result;
+    // NYI: CLEANUP: merge effectiveResultType/adjustResultType?
+    result = effectiveResultType(res, context, _calledFeature, urgent);
+    result = result == null || result.isArtificialType()
       ? result
-      : null;
+      : adjustResultType(res, context, result);
+    return result;
   }
 
 
@@ -1430,22 +1450,22 @@ public class Call extends AbstractCall
    *
    * @return The actual result type of the call
    */
-  private AbstractType adjustResultType0(Resolution res, Context context, AbstractType rt)
+  private AbstractType adjustResultType(Resolution res, Context context, AbstractType rt)
   {
     // NYI: CLEANUP: There is some overlap between Call.adjustResultType0,
     // Call.adjustResultType and AbstractType.genericsAssignable, might be nice to
     // consolidate this (i.e., bring the calls to applyTypePars / adjustThisType
     // / etc. in the same order and move them to a dedicated function).
-    var tt = (_target == null ? Types.t_ERROR : target().type()).selfOrConstraint(context);
-    var t0 = tt == Types.t_ERROR ? tt : resolveSelect(res, rt, tt);
-    var t4 = adjustResultType(res, context, t0,
+    var t0 = resolveSelect(res, context, rt);
+    var t1 = adjustType(res, context, t0,
                               (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, false, calledFeature(), t0, from, to));
-    // NYI: UNDER DEVELOPMENT: can we move more to previous call to adjustResultType()?
-    var t5 = t4 == Types.t_ERROR ? t4 : resolveForCalledFeature(res, t4, target().type(), context);
-    var t6 = t5 == Types.t_ERROR ? t5 : calledFeature().isCotype() ? t5 : t5.replace_type_parameters_of_cotype_origin(context.outerFeature());
-    return t6 == Types.t_UNDEFINED
+    // NYI: CLEANUP: can we move more to previous call to adjustResultType()?
+    var t2 = t1 == Types.t_ERROR ? t1 : resolveForCalledFeature(res, t1, target().type(), context);
+    var t3 = t2 == Types.t_ERROR ? t2 : calledFeature().isCotype() ? t2 : t2.replace_type_parameters_of_cotype_origin(context.outerFeature());
+    // #5391 for an example of t3 containing undefined
+    return t3 == Types.t_UNDEFINED || t3.containsUndefined()
       ? null
-      : t6;
+      : t3;
   }
 
 
@@ -1472,17 +1492,22 @@ public class Call extends AbstractCall
    *
    * @param res the resolution instance.
    *
-   * @param t the result type of the called feature, might be open generic.
+   * @param context the source code context where this Call is used
    *
-   * @param tt target type or constraint.
+   * @param t the result type of the called feature, might be open generic.
    *
    * @return the actual, non open generic result type to Types.t_ERROR in case
    * of an error.
    */
-  private AbstractType resolveSelect(Resolution res, AbstractType t, AbstractType tt)
+  private AbstractType resolveSelect(Resolution res, Context context, AbstractType t)
   {
-    if (t.isOpenGeneric())
+    if (_target == null || target().type() == Types.t_ERROR)
       {
+        t = Types.t_ERROR;
+      }
+    else if (t.isOpenGeneric())
+      {
+        var tt = target().type().selfOrConstraint(context);
         if (_select < 0)
           {
             if (CHECKS) check
@@ -2988,7 +3013,7 @@ public class Call extends AbstractCall
               _generics,
               _originalGenerics,
               pos(),
-              constraint -> adjustResultType(res, context, constraint, null));
+              constraint -> adjustType(res, context, constraint, null));
           }
       }
   }
