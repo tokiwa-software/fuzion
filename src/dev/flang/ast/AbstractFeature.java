@@ -268,7 +268,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * All arguments of this feature. This includes type arguments.
+   * All arguments of this feature. This includes type parameters.
    */
   public abstract List<AbstractFeature> arguments();
 
@@ -1700,7 +1700,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * Is this feature an argument of its outer feature, but not a type argument?
+   * Is this feature an argument of its outer feature, but not a type parameter?
    */
   boolean isValueArgument()
   {
@@ -1788,7 +1788,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * Return the index of this type parameter within the type arguments of its
+   * Return the index of this type parameter within the type parameters of its
    * outer feature.
    *
    * @return the index such that formalGenerics.get(result)) this

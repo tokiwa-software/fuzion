@@ -249,7 +249,7 @@ public class AstErrors extends ANY
           : ", you must provide "
             + StringHelpers.singularOrPlural(f.arguments().size(), "argument") + "."
             + (f.typeArguments().size() > 0
-                ? " The type arguments may be omitted or `_` may be used in place of a type argument if they can be inferred from the value arguments.."
+                ? " The type parameters may be omitted or `_` may be used in place of a type parameter if they can be inferred from the value arguments.."
                 : ""));
   }
 
@@ -1662,7 +1662,7 @@ public class AstErrors extends ANY
     var ns = ss(names.toString("", ",", ""));
     var expected_args =
       ntypes  == 0 ? StringHelpers.singularOrPlural(nvalues, "argument"     )
-                   : StringHelpers.singularOrPlural(ntypes , "type argument") + " and " +
+                   : StringHelpers.singularOrPlural(ntypes , "type parameter") + " and " +
                      StringHelpers.singularOrPlural(nvalues, "value argument");
     error(pos,
           "Wrong number of arguments in lambda expression",

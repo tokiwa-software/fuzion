@@ -88,7 +88,7 @@ test_free_type_negative is
   ga3 f64    | String := 3.14
   g ga1
   g ga2
-  g ga3              # 6. should flag an error since type arguments are in the wrong order such that constraint is not matched
+  g ga3              # 6. should flag an error since type parameters are in the wrong order such that constraint is not matched
 
   # mixture of explicit and free type parameters
   #

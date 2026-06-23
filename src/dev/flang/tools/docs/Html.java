@@ -544,7 +544,7 @@ public class Html extends ANY
         universeFunctions.addAll(allUniverseFeat.getOrDefault(AbstractFeature.Kind.Intrinsic, new TreeSet<AbstractFeature>()));
         universeFunctions.addAll(allUniverseFeat.getOrDefault(AbstractFeature.Kind.Native, new TreeSet<AbstractFeature>()));
 
-        // only keep features that have a matching type argument with a type other than Any
+        // only keep features that have a matching type parameter with a type other than Any
         universeFunctions.removeIf(
           af->af.typeArguments().isEmpty()
           || af.typeArguments().stream().noneMatch(typeParam->typeParam.constraint().compareTo(Types.resolved.t_Any ) != 0

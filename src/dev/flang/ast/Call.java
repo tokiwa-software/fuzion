@@ -2321,9 +2321,9 @@ public class Call extends AbstractCall
 
 
   /**
-   * Is it allowed to change/infer actual type argument with index i?
+   * Is it allowed to change/infer actual type parameter with index i?
    *
-   * @param i the index of the actual type argument
+   * @param i the index of the actual type parameter
    *
    * @return
    */

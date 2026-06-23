@@ -138,7 +138,7 @@ public class Function extends AbstractLambda
    *
    * @param names the names of the arguments, "x", "y". The are parsed as
    * expressions and these might end up being turned into types by asParsedType
-   * if this lambda ends up used as an actual type argument.
+   * if this lambda ends up used as an actual type parameter.
    *
    * @param e the code on the right hand side of '->'.
    */
