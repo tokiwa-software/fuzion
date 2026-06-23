@@ -685,7 +685,7 @@ A `_` may be used as placeholder for a xref:fuzion_actual_typeparameter[actual t
                   {
                     firstValueIndex = tn;
                   }
-                else if (_actuals.size() == vn)  // value args are present, type args are inferred
+                else if (_actuals.size() == vn)  // value args are present, type parameters are inferred
                   {
                     firstValueIndex = 0;
                   }
