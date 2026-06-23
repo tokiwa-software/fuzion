@@ -1463,7 +1463,7 @@ public class Call extends AbstractCall
     var t2 = t1 == Types.t_ERROR ? t1 : resolveForCalledFeature(res, t1, target().type(), context);
     var t3 = t2 == Types.t_ERROR ? t2 : calledFeature().isCotype() ? t2 : t2.replace_type_parameters_of_cotype_origin(context.outerFeature());
     // #5391 for an example of t3 containing undefined
-    return t3 == Types.t_UNDEFINED || t3.containsUndefined()
+    return t3.containsUndefined()
       ? null
       : t3;
   }
