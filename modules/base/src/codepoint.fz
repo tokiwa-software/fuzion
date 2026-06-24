@@ -84,6 +84,12 @@ is
   #
   public is_not_a_character bool => codepoint.not_a_character.contains val
 
+  # shortcut to get this codepoint as a u8
+  #
+  public as_u8
+    pre codepoint.utf8_encoded_in_one_byte.contains val
+  => val.as_u8
+
 
   # range of permitted value for a codepoint
   #
