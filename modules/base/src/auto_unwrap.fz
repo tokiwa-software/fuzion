@@ -32,4 +32,10 @@
 #
 #
 public auto_unwrap(T type, E type... : effect) is
+
+  # the feature that is called to
+  # unwrap the value
+  #
+  # must be implemented by inheriting features
+  #
   public unwrap T => abstract
