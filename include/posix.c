@@ -87,6 +87,16 @@ static_assert(SIGALRM == 14, "signal definition different than expected");
 static_assert(SIGTERM == 15, "signal definition different than expected");
 static_assert(sizeof(pthread_t) <= sizeof(void *), "pthread_t must be smaller or equal to pointer size");
 
+// NYI: DOCUMENTATION: document these platform specific peculiarities somewhere
+#if defined(__APPLE__) && !defined(fileno_unlocked)
+#define fileno_unlocked      fileno
+#define fread_unlocked       fread
+#define fwrite_unlocked      fwrite
+#define fflush_unlocked      fflush
+#define feof_unlocked        feof
+#define ferror_unlocked      ferror
+#endif
+
 
 // thread local to hold the last
 // error that occurred in fuzion runtime.
