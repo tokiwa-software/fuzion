@@ -1323,16 +1323,16 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
                                         AbstractType heirType)
   {
     var result = l;
-    heirType = heirType.selfOrConstraint(Context.NONE);
-    var heir = heirType.feature();
-    if (heir.inheritsFrom(this))
+    var effectiveHeirType = heirType.selfOrConstraint(Context.NONE);
+    var effectiveHeir = effectiveHeirType.feature();
+    if (effectiveHeir.inheritsFrom(this))
       {
-        result = handDown(result, heir);
+        result = handDown(result, effectiveHeir);
       }
-    heirType = heirType.isThisType() ? null : heirType.outer();
-    if (heirType != null && outer() != null)
+    var effectiveHeirTypeOuter = effectiveHeirType.isThisType() ? null : effectiveHeirType.outer();
+    if (effectiveHeirTypeOuter != null && outer() != null)
       {
-        result = outer().handDownListToType(result, heirType);
+        result = outer().handDownListToType(result, effectiveHeirTypeOuter);
       }
     return result;
   }
