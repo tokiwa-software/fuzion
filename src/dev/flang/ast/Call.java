@@ -1166,27 +1166,22 @@ public class Call extends AbstractCall
   {
     // type() will only be called when we really need the type, so we can report
     // an error in case there is one pending.
-    var hasPendingError = _pendingError != null;
+    var failedToInferActualGenerics =
+      _pendingError == null &&
+      !errorInActuals() &&
+      calledFeatureKnown() &&
+      calledFeature().state().atLeast(State.RESOLVED_TYPES) &&
+      !missingGenerics().isEmpty();
     reportPendingError();
     var result = typeForInferencing();
     if (result == null)
       {
-        // NYI: CLEANUP: Why can't we use `errorInActuals()` in the following condition?
-        if (hasPendingError || errorInActuals())
-          {
-            result = Types.t_ERROR;
-            setToErrorState0();
-          }
-        else if (calledFeatureKnown() && calledFeature().state().atLeast(State.RESOLVED_TYPES) && !missingGenerics().isEmpty())
+        if (failedToInferActualGenerics)
           {
             AstErrors.failedToInferActualGeneric(_pos, _calledFeature, missingGenerics());
-            result = Types.t_ERROR;
-            setToErrorState0();
           }
-        else
-          {
-            result = Types.t_FORWARD_CYCLIC;
-          }
+        result = Errors.any() ? Types.t_ERROR : Types.t_FORWARD_CYCLIC;
+        setToErrorState0();
       }
 
     if (POSTCONDITIONS)
