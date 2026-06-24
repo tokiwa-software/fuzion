@@ -1229,42 +1229,39 @@ public class Runtime extends ANY
     return ((ReentrantLock)rl).newCondition();
   }
 
-  public static boolean cnd_signal(Object cnd)
+  public static void cnd_signal(Object cnd)
   {
     try
       {
         ((Condition)cnd).signal();
-        return true;
       }
     catch(Exception e)
       {
-        return false;
+        Errors.fatal(e);
       }
   }
 
-  public static boolean cnd_broadcast(Object cnd)
+  public static void cnd_broadcast(Object cnd)
   {
     try
       {
         ((Condition)cnd).signalAll();
-        return true;
       }
     catch(Exception e)
       {
-        return false;
+        Errors.fatal(e);
       }
   }
 
-  public static boolean cnd_wait(Object cnd)
+  public static void cnd_wait(Object cnd)
   {
     try
       {
         ((Condition)cnd).await();
-        return true;
       }
     catch(Exception e)
       {
-        return false;
+        Errors.fatal(e);
       }
   }
 

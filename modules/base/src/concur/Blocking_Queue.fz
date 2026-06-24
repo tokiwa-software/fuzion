@@ -48,7 +48,7 @@ module Blocking_Queue(T type) ref is
     cnd.synchronized ()->
       c := s.read
       s.write (bqstate true c.data)
-      check cnd.broadcast
+      cnd.broadcast
 
 
   # has this queue been closed?
@@ -70,7 +70,7 @@ module Blocking_Queue(T type) ref is
       else
         s.write (bqstate false (c.data.put c.data.length.as_i32 el))
         # signal a waiting thread to pick up the work
-        check cnd.signal
+        cnd.signal
         true
 
 
@@ -90,7 +90,7 @@ module Blocking_Queue(T type) ref is
             if c.is_closed
               depleted
             else
-              check cnd.wait
+              cnd.wait
               retry
           else
             s.write (bqstate c.is_closed (c.data.drop 1 .as_array))

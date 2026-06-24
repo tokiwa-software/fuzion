@@ -51,14 +51,14 @@ Computable_Future(
     cr := task.call
     cnd.synchronized ()->
       compute_result.write cr
-      check cnd.broadcast
+      cnd.broadcast
 
   public redef is_done bool  ! atomic_access => compute_result.read.exists
 
   public redef get T ! atomic_access =>
     cnd.synchronized ()->
       if !is_done
-        check cnd.wait
+        cnd.wait
 
     compute_result.read.or_panic
 

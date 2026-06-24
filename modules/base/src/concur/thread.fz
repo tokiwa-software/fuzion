@@ -151,7 +151,7 @@ is
       set park_condition := condition
       set parked := true
       while parked   # perform this in a while to catch spurious wakeups
-        _ := cond.wait      # NYI: CLEANUP: Why is there a `bool` result for `wait`? Remove!
+        cond.wait
 
 
   # unpark this thread if it is parked.
@@ -161,7 +161,7 @@ is
     cond.synchronized ()->
       if parked
         set parked := false
-        _ := cond.signal    # NYI: CLEANUP: Why is there a `bool` result for `signal`? Remove!
+        cond.signal
 
 
   # threads that are parked may use these link fields to form a `Thread_List` of
