@@ -1,0 +1,94 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature mutate.fixed_capacity_array
+#
+# -----------------------------------------------------------------------
+
+# fixed_capacity_array -- a mutable dynamic array with fixed internal capacity
+#
+# It is created with a fixed internal capacity and never reallocates.
+# Elements can be added to and removed from the end in worst-case O(1) time,
+# rather than amortized O(1) time.
+# The length may vary, but it must never exceed the internal capacity.
+#
+public fixed_capacity_array(
+       # element type
+       public T type,
+
+       # contents of the array
+       data mutate.this.array T,
+
+       # length -- number of elements in data that are in use,
+       #           i.e. store actual elements
+       len i64
+
+      ) : dynamic_array T data len is
+
+
+  public redef may_shrink bool => false
+
+  public redef may_grow   bool => false
+
+
+
+  # initialize one-dimensional mutable fixed_capacity_array
+  #
+  public redef type.new
+   (
+    # length of the array to create
+    length i64,
+
+    # initial value for elements
+    init i64->T
+
+   ) abstract_dynamic_array T
+  =>
+    d := fixed_capacity_array.this.type.empty length
+    for i in i64.zero..(length-1) do
+      d.add (init i)
+    d
+
+
+  # initialize one-dimensional mutable array from a Sequence
+  #
+  public redef type.from_sequence(s Sequence T) abstract_dynamic_array T
+  =>
+    # NYI: possible to only iterate once, does as_array make sense?
+
+    init_len := s.is_array_backed ? s.count.as_i64 : min_length
+
+    d := mutate.this.env.fixed_capacity_array (mutate.this.array T .empty init_len) 0
+
+    for e in s do d.add e
+
+    d
+
+
+  # initialize an empty mutable array of type T
+  #
+  public redef type.empty abstract_dynamic_array T =>
+    mutate.this.env.fixed_capacity_array (mutate.this.array T .empty min_length) 0
+
+
+  # initialize an empty mutable array of type T, that won't shrink below the minimum size
+  # min_length must be multiple of 2 # NYI: COMMENT:
+  #
+  public redef type.empty(initial_internal_length i64) abstract_dynamic_array T =>
+    mutate.this.env.fixed_capacity_array (mutate.this.array T .empty initial_internal_length) 0

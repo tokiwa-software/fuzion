@@ -124,6 +124,12 @@ is
     mutate.this.env.array T data
 
 
+  # create an uninitialized mutate.array, for use in mutate.dynamic_array
+  #
+  module type.empty(len i64) mutate.this.array T =>
+    mutate.this.env.array T (fuzion.sys.internal_array_init T len.as_i32)
+
+
 # convenience feature for creating a new array,
 # in some cases even with type inference
 #
