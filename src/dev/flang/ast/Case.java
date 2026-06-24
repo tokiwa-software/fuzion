@@ -99,11 +99,7 @@ public class Case extends AbstractCase
               Block c)
   {
     this(pos,
-         new Feature(pos, Visi.PRIV, t, n)
-         {
-           @Override
-           public boolean isCaseField() { return true; }
-         },
+         new Feature(pos, Visi.PRIV, t, n),
          null,
          c);
   }

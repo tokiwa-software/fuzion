@@ -53,10 +53,9 @@ Target feature: 'choice_negative.instantiate1'
 In call: 'choice i32 String'
 
 
---CURDIR--/choice_negative.fz:58:10: error 9: Could not find called feature
+--CURDIR--/choice_negative.fz:58:10: error 9: Must not call choice feature
     _ := MyChoice  # 8. should flag an error: cannot instantiate choice
 ---------^^^^^^^^
-Feature not found: 'MyChoice' (no arguments)
 Target feature: 'choice_negative.instantiate2'
 In call: 'MyChoice'
 

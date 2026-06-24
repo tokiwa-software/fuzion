@@ -126,7 +126,7 @@ is
   #
   public stem String =>
     match base_name.find_last "."
-      i i32 => 0 < i < base_name.byte_length-1 ? base_name.substring 0 i : base_name
+      i i32 => 0 < i < base_name.byte_count-1 ? base_name.substring 0 i : base_name
       nil   => base_name
 
   # consider this to represent a file
@@ -134,7 +134,7 @@ is
   #
   public suffix String =>
     match base_name.find_last "."
-      i i32 => 0 < i < base_name.byte_length-1 ? base_name.substring i+1 : ""
+      i i32 => 0 < i < base_name.byte_count-1 ? base_name.substring i+1 : ""
       nil   => ""
 
 
@@ -179,14 +179,14 @@ is
       (names.take p.names.count) = p.names
 
 
-  # this relative path resolved against
-  # the current working directory (`os.cwd`)
+  # relative paths are resolved against the current working
+  # directory (`os.cwd`); absolute paths are returned unchanged
   #
   public as_absolute outcome path
-    pre debug: !is_absolute
   =>
-    os.cwd.bind c->
-      c.resolve (path names is_absolute)
+    is_absolute ? outcome (path names is_absolute)
+                : os.cwd.bind c->
+                    c.resolve (path names is_absolute)
 
 
   # String representation of this path
@@ -194,7 +194,7 @@ is
   # e.g. "/folder/file" or "relative_folder/file"
   #
   public redef as_string String =>
-    "{is_absolute ? "/" : names.is_empty ? "." : ""}{String.join names "/"}"
+    "$(is_absolute ? "/" : names.is_empty ? "." : "")$(String.join names "/")"
 
 
   # Platform dependent String representation of this path
@@ -205,7 +205,7 @@ is
   #
   public as_platform_string String =>
     # relative paths should always start with `./` to avoid problems on Windows
-    "{if is_absolute then "/" else "./"}{String.join names "/"}"
+    "$(if is_absolute then "/" else "./")$(String.join names "/")"
 
 
   # define order for paths

@@ -375,11 +375,10 @@ int fzE_socket_read(int sockfd, void * buf, size_t count){
 
 // write buf to sockfd
 // may block if socket is set to blocking.
-// return error code or zero on success
+// -1 or number of bytes written on success
 int fzE_socket_write(int sockfd, const void * buf, size_t count){
-return ( sendto( sockfd, buf, count, 0, NULL, 0 ) == -1 )
-  ? fzE_net_error()
-  : 0;
+  // NYI: setlast error missing: fzE_net_error
+  return sendto( sockfd, buf, count, 0, NULL, 0 );
 }
 
 
@@ -584,7 +583,69 @@ int fzE_stat(const char *pathname, int64_t * metadata)
  */
 int fzE_lstat(const char *pathname, int64_t * metadata)
 {
-  return fzE_stat(pathname, metadata);
+  int result = -1;
+
+  BY_HANDLE_FILE_INFORMATION fileInfo;
+
+  SECURITY_ATTRIBUTES sa = {0};
+  sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+  sa.bInheritHandle = FALSE;
+  sa.lpSecurityDescriptor = NULL;
+
+  wchar_t* wideStr = utf8_to_wide_str(pathname);
+
+  HANDLE hFile = CreateFileW(
+      wideStr,
+      GENERIC_READ,
+      FILE_SHARE_READ,
+      &sa,
+      OPEN_EXISTING,
+      FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS,
+      NULL
+  );
+
+  free(wideStr);
+
+  if (hFile != INVALID_HANDLE_VALUE && GetFileInformationByHandle(hFile, &fileInfo)) {
+    LARGE_INTEGER fileSize;
+    fileSize.HighPart = fileInfo.nFileSizeHigh;
+    fileSize.LowPart = fileInfo.nFileSizeLow;
+
+    ULARGE_INTEGER lat;
+    lat.LowPart =  fileInfo.ftLastAccessTime.dwLowDateTime;
+    lat.HighPart = fileInfo.ftLastAccessTime.dwHighDateTime;
+
+    ULARGE_INTEGER lwt;
+    lwt.LowPart =  fileInfo.ftLastWriteTime.dwLowDateTime;
+    lwt.HighPart = fileInfo.ftLastWriteTime.dwHighDateTime;
+
+    ULARGE_INTEGER ct;
+    ct.LowPart =  fileInfo.ftCreationTime.dwLowDateTime;
+    ct.HighPart = fileInfo.ftCreationTime.dwHighDateTime;
+
+    metadata[0] = fileSize.QuadPart;
+    metadata[1] = win_time_to_unix_time(lat.QuadPart); /* Time of last access */
+    metadata[2] = win_time_to_unix_time(lwt.QuadPart); /* Time of last modification */
+    metadata[3] = win_time_to_unix_time(ct.QuadPart);  /* Time of last status change */
+    metadata[4] = (fileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? 0 : 1;
+    metadata[5] = (fileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? 1 : 0;
+    metadata[6] = 0; /* NYI: UNDER DEVELOPMENT: is link  */
+    metadata[7] = 0; /* NYI: UNDER DEVELOPMENT: uid  */
+    metadata[8] = 0; /* NYI: UNDER DEVELOPMENT: gid  */
+
+    result = 0;
+  }
+  else {
+    metadata[0] = (int64_t)GetLastError();
+    metadata[1] = 0LL;
+    metadata[2] = 0LL;
+    metadata[3] = 0LL;
+    result = -1;
+  }
+
+  CloseHandle(hFile);
+
+  return result;
 }
 
 CRITICAL_SECTION fzE_global_mutex;
@@ -627,6 +688,16 @@ unsigned int __stdcall trampoline_wrapper(void* raw_arg) {
   return 0;
 }
 
+
+/**
+ * Get pointer to current thread.
+ */
+void * fzE_thread_current()
+{
+  return GetCurrentThread();
+}
+
+
 /**
  * Start a new thread, returns a pointer to the thread.
  */
@@ -656,6 +727,24 @@ void * fzE_thread_create(void *(*code)(void *),
 void fzE_thread_join(void * thrd) {
   WaitForSingleObject((HANDLE)thrd, INFINITE);
   CloseHandle((HANDLE)thrd);
+}
+
+
+/*
+ * Set the scheduling policy and priority of a running thread.
+ */
+int fzE_thread_setschedparam(void * thrd, int policy, int priority)
+{
+  return 38; // ENOSYS - Function not implemented
+}
+
+
+/*
+ * Set the scheduling CPU affinity of a running thread.
+ */
+int fzE_thread_setaffinity(void * thrd, const void * cores, int length)
+{
+  return 38;
 }
 
 
@@ -979,23 +1068,24 @@ void * fzE_cnd_init() {
   return (void *)cnd;
 }
 
-int32_t fzE_cnd_signal(void *cnd) {
+void fzE_cnd_signal(void *cnd) {
   WakeConditionVariable((CONDITION_VARIABLE *)cnd);
-  return 0;
 }
 
-int32_t fzE_cnd_broadcast(void *cnd) {
+void fzE_cnd_broadcast(void *cnd) {
   WakeAllConditionVariable((CONDITION_VARIABLE *)cnd);
-  return 0;
 }
 
-int32_t fzE_cnd_wait(void *cnd, void *mtx) {
+void fzE_cnd_wait(void *cnd, void *mtx) {
   BOOL ok = SleepConditionVariableCS(
       (CONDITION_VARIABLE *)cnd,
       (CRITICAL_SECTION *)mtx,
       INFINITE);
-
-  return ok ? 0 : -1;
+  if (!ok)
+    {
+      fprintf(stderr, "*** SleepConditionVariableCS failed\n");
+      exit(EXIT_FAILURE);
+    }
 }
 
 void fzE_cnd_destroy(void *cnd) {
@@ -1134,14 +1224,38 @@ int64_t fzE_mmap_offset_multiple(void)
   return (int64_t)(uint64_t)sys_info.dwAllocationGranularity;
 }
 
+// convert C:\path\file to /c/path/file
+//
+int as_posix_style_path(void * buf, size_t size)
+{
+  // turn C: into /C
+  ((char * )buf)[1] = ((char * )buf)[0];
+  ((char * )buf)[0] = '/';
+  for (char *p = buf; *p; ++p) {
+    if (*p == '\\') {
+      *p = '/';
+    }
+  }
+  return 0;
+}
+
 int fzE_cwd(void * buf, size_t size)
 {
   return _getcwd(buf, size) == NULL
     ? -1
-    : 0;
+    : as_posix_style_path(buf, size);
 }
 
 int fzE_isnan(double d)
 {
   return _isnan(d);
+}
+
+
+/**
+ * wrapper around DTRACE_PROBE
+ */
+void fzE_dtrace_probe(char col, const char* msg)
+{
+  // NYI: UNDER DEVELOPMENT: No support for DTRACE_PROBE for windows yet
 }

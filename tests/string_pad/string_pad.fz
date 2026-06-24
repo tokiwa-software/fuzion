@@ -22,23 +22,23 @@
 # -----------------------------------------------------------------------
 
 # A simple test that calls `String` features `pad`, `pad_left` and `pad_center`
-# with different parameters and prints the result to `io.out`.
+# with different parameters and prints the result to `io.Out`.
 #
 string_pad is
 
   for w in 0..38 do
     _ :=
       for s := "", s+"A"
-      while s.byte_length < 4 do
-        say "$w right |{s.pad w}|"
-        say "$w left  |{s.pad_left w}|"
-        say "$w center|{s.pad_center w}|"
-        say "$w right |{s.pad "<>" w}|"
-        say "$w left  |{s.pad_left "<>" w}|"
-        say "$w center|{s.pad_center "<>" w}|"
-        say "$w right |{s.pad "<->" w}|"
-        say "$w left  |{s.pad_left "<->" w}|"
-        say "$w center|{s.pad_center "<->" w}|"
-        say "$w right |{s.pad "<-->" w}|"
-        say "$w left  |{s.pad_left "<-->" w}|"
-        say "$w center|{s.pad_center "<-->" w}|"
+      while s.byte_count < 4 do
+        say "$w right |$(s.pad w)|"
+        say "$w left  |$(s.pad_left w)|"
+        say "$w center|$(s.pad_center w)|"
+        say "$w right |$(s.pad "<>" w)|"
+        say "$w left  |$(s.pad_left "<>" w)|"
+        say "$w center|$(s.pad_center "<>" w)|"
+        say "$w right |$(s.pad "<->" w)|"
+        say "$w left  |$(s.pad_left "<->" w)|"
+        say "$w center|$(s.pad_center "<->" w)|"
+        say "$w right |$(s.pad "<-->" w)|"
+        say "$w left  |$(s.pad_left "<-->" w)|"
+        say "$w center|$(s.pad_center "<-->" w)|"

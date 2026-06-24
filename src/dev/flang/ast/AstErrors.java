@@ -249,7 +249,7 @@ public class AstErrors extends ANY
           : ", you must provide "
             + StringHelpers.singularOrPlural(f.arguments().size(), "argument") + "."
             + (f.typeArguments().size() > 0
-                ? " The type arguments may be omitted or `_` may be used in place of a type argument if they can be inferred from the value arguments.."
+                ? " The type parameters may be omitted or `_` may be used in place of a type parameter if they can be inferred from the value arguments.."
                 : ""));
   }
 
@@ -509,7 +509,7 @@ public class AstErrors extends ANY
         frml = frmls.next();
       }
     var f = ((c == count+1) && (frml != null)) ? frml : null;
-    incompatibleType(value.pos(),
+    incompatibleType(value.sourceRange(),
                      "when passing argument in a call",
                      "Actual type for argument #" + (count+1) + (f == null ? "" : " " + sbnf(f)) + " does not match expected type.\n" +
                      "In call to          : " + s(calledFeature) + "\n",
@@ -1190,7 +1190,8 @@ public class AstErrors extends ANY
   static void notRedefinedContractMustNotUseElseOrThen(SourcePosition pos, AbstractFeature f, PreOrPost preOrPost)
   {
     error(pos,
-          preOrPost + " must use " + code(preOrPost.elseOrThen()) + " only in a feature that redefines another feature.",
+          preOrPost + " must use " + code(preOrPost.elseOrThen()) + " only in a feature " +
+          "that redefines another feature with a precondition.",
           "Surrounding feature: " + s(f) + "\n" +
           "To solve this, check if you are properly redefining another feature or, if you do not intend " +
           "to do so, remove the " + code(preOrPost.elseOrThen()) + " keyword ");
@@ -1220,11 +1221,12 @@ public class AstErrors extends ANY
         redefs.append("Redefines: " + s(r) + " from " + rp.show() + "\n");
       }
     error(pos,
-          preOrPost + " must use " + code(preOrPost.elseOrThen()) + " in a feature that redefines another feature.",
+          preOrPost + " must use " + code(preOrPost.elseOrThen()) + " in a feature that redefines " +
+          "another feature with a precondition.",
           "Affected feature: " + s(f) + "\n" +
           (redefs.length() > 0 ? redefs : "No redefined features found\n") +
-          "To solve this, check if you are accidentally redefining another feature or, if you do not intend " +
-          "to do so, add the " + code(preOrPost.elseOrThen()) + " keyword ");
+          "To solve this, check if you are accidentally redefining another feature or, if you intend " +
+          "to redefine, add the " + code(preOrPost.elseOrThen()) + " keyword ");
   }
 
   public static void redefinePreconditionMustUseElse(SourcePosition pos, AbstractFeature f)
@@ -1234,6 +1236,24 @@ public class AstErrors extends ANY
   public static void redefinePostconditionMustUseThen(SourcePosition pos, AbstractFeature f)
   {
     redefineContractMustUseElseOrThen(pos, f, PreOrPost.Post);
+  }
+
+  public static void preWithImplicitTrueInherited(AbstractFeature f)
+  {
+    var redefinedPreTrue = f.redefines().stream().filter(af->af.preFeature() == null)
+                            .map(af->s(af))
+                            .collect(Collectors.joining(" and "));
+
+    int count = (int)f.redefines().stream().filter(af->af.preFeature() == null).count();
+
+    error(f.contract()._hasPre,
+          "Precondition added, although implicit " + code("pre true") + " was inherited",
+          s(f) + " redefines " + StringHelpers.plural(count, "feature") + " " + redefinedPreTrue
+          + " which " + (count>1 ? "do" : "does") + " not have an explicit precondition, leading to implicit "
+          + code("pre true") + " being inherited, which results in this precondition never being called."
+          + " Preconditions can only be weakened in the redefinition."
+          + "\nTo solve this remove the precondition or add one to all features being redefined."
+          );
   }
 
   static void ambiguousTargets(SourcePosition pos,
@@ -1382,7 +1402,8 @@ public class AstErrors extends ANY
                                     AbstractFeature targetFeature,
                                     Expr target,
                                     List<FeatureAndOuter> candidatesArgCountMismatch,
-                                    List<FeatureAndOuter> candidatesHidden)
+                                    List<FeatureAndOuter> candidatesHidden,
+                                    AbstractFeature lo)
   {
     if (!any() || !errorInOuterFeatures(targetFeature) && !call.errorInActuals())
       {
@@ -1390,6 +1411,8 @@ public class AstErrors extends ANY
           ? StringHelpers.plural(candidatesHidden.size(), "Feature") + " not visible at call site"
           : !candidatesArgCountMismatch.isEmpty()
           ? "Different count of arguments needed when calling feature"
+          : lo != null && lo.isChoice()
+          ? "Must not call choice feature"
           : "Could not find called feature";
         var solution0 = solutionPartialApplication(call);
         var solution1 = solutionDeclareReturnTypeIfResult(calledName.baseNameHuman(),
@@ -1399,7 +1422,7 @@ public class AstErrors extends ANY
         var solution4 = solutionHidden(candidatesHidden);
         var solution5 = solutionLambda(call);
         error(call.pos(), msg,
-              "Feature not found: " + sbnf(calledName) + "\n" +
+              (lo != null && lo.isChoice() ? "" : "Feature not found: " + sbnf(calledName) + "\n") +
               (targetFeature != null
                 ? (targetFeature.isCotype() ? "Target expression: " + expr(target.toString()) + "\n" : "Target feature: " + s(targetFeature) + "\n")
                 : "") +
@@ -1632,16 +1655,20 @@ public class AstErrors extends ANY
           "Min representable value > 0: " + ss(min) + " or " + ss(minH));
   }
 
-  static void wrongNumberOfArgumentsInLambda(SourcePosition pos, List<ParsedName> names, AbstractType funType)
+  static void wrongNumberOfArgumentsInLambda(SourcePosition pos, List<ParsedName> names, AbstractType funType, int ntypes, int nvalues)
   {
-    int req = funType.generics().size() - 1;
+    int req = ntypes + nvalues;
     int delta = names.size() - req;
-    var ns = spn(names);
+    var ns = ss(names.toString("", ",", ""));
+    var expected_args =
+      ntypes  == 0 ? StringHelpers.singularOrPlural(nvalues, "argument"     )
+                   : StringHelpers.singularOrPlural(ntypes , "type parameter") + " and " +
+                     StringHelpers.singularOrPlural(nvalues, "value argument");
     error(pos,
           "Wrong number of arguments in lambda expression",
           "Lambda expression has " + StringHelpers.singularOrPlural(names.size(), "argument") + " while the target type expects " +
-          StringHelpers.singularOrPlural(funType.generics().size()-1, "argument") + ".\n" +
-          "Arguments of lambda expression: " + ns + "\n" +
+          expected_args + ".\n" +
+          "Arguments of lambda expression: " + spn(names) + "\n" +
           "Expected function type: " + funType + "\n" +
           "To solve this, " +
           (req == 0 ? "replace the list " + ns + " by " + ss("()") + "."
@@ -2555,14 +2582,19 @@ public class AstErrors extends ANY
 
   public static void explicitTypeRequired(AbstractFeature f, AbstractType inf)
   {
-    String inferredMsg = (inf != null && inf != Types.t_ERROR && inf != Types.t_ERROR) ?
-                           "\nInferred type is " + s(inf) : "\nNo type could be inferred";
+    String inferredMsg = (inf != null && inf != Types.t_ERROR) ? " Inferred type is " + s(inf)
+                                                               : "";
+
+    String reason = f.isAbstract()                                   ? skw("abstract")  :
+                    f.isIntrinsic()                                  ? skw("intrinsic") :
+                    f.isNative()                                     ? skw("native")    :
+                    f.visibility().eraseTypeVisibility() == Visi.PUB ? skw("public")
+                                                                     : "argument of a " + skw("public") + " feature";
 
     error(f.pos(),
-          (f.visibility().eraseTypeVisibility() == Visi.PUB)
-            ? "Public features must have explicit result type"
-            : "Arguments of public features must have explicit type",
-          "Feature " + s(f) + " is " + skw("public") + " but has no explicit type specified"
+          "Explicit type required",
+          "Feature " + s(f) + " is " + reason + ", but has no type specified.\n"
+          + "To solve this, please specify a type explicitly."
           + inferredMsg);
   }
 
@@ -2601,12 +2633,6 @@ public class AstErrors extends ANY
      skw("fixed")+ " fixed is only allowed on function features not in universe.");
   }
 
-  public static void multipleOperatorsFound(SourcePosition p)
-  {
-    error(p,
-      "Multiple successive operators are not allowed.", "");
-  }
-
   public static void nonExhaustiveDestructuring(SourcePosition pos, int exp, int found)
   {
     error(
@@ -2626,6 +2652,28 @@ public class AstErrors extends ANY
     error(c.pos(),
       "Illegal use of numeric literal.",
       s(((Call)c.target()).calledFeature()) + " or its constraint does not implement " + sbn("from_u32") + "."
+    );
+  }
+
+  public static void lamdaOuterMustNotHaveArgs(SourcePosition pos, AbstractType tt)
+  {
+    error(pos, "Can not create lambda since an outer has unkown arguments.",
+      "The outer having the arguments:\n\n" + s_feat_with_pos(tt.feature()) + "\n"+
+      "To solve this, either create the lambda inside of " + s(tt.feature()) + " or remove the arguments from " + s(tt.feature()) + "."
+     );
+  }
+
+  public static void lamdaOuterMustNotBeGenericArgument(SourcePosition pos, AbstractType tt)
+  {
+    error(pos, "Can not create lambda since an outer of its type is a generic argument.",
+      "The generic argument used in lambdas type " + s(tt) + "."
+     );
+  }
+
+  public static void loopResultsInTwoIncompatibleTypes(SourcePosition pos, Match m)
+  {
+    error(pos, "Loop results in two incompatible types." ,
+      "The incompatible types are: " + m.cases().map2(c -> s(c.code().type())).stream().collect(Collectors.joining(","))
     );
   }
 

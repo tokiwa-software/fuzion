@@ -58,7 +58,7 @@ ambiguous_declaration is
 
   # function to be called
   f(p ()->i32) =>
-    say "in f: {p.call}"
+    say "in f: $(p.call)"
 
   # calls
 

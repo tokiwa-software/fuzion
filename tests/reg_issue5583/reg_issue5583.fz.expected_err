@@ -1,0 +1,8 @@
+
+error 1: IMPLEMENTATION RESTRICTION: illegal inheritance and usage of fixed feature: 
+q.type.b.type.me
+private type.q(private fixed THIS#TYPE Type (type parameter)) q.type : a q.this.type is
+private type.a(private fixed THIS#TYPE Type (type parameter)) a.type : has_me a.this.type is
+
+*** fatal errors encountered, stopping.
+one error.

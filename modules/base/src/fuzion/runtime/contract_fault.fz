@@ -33,20 +33,15 @@ public contract_fault (
 is
 
 
-  # install default contract_fault handler
-  type.install_default =>
-    (fuzion.runtime.contract_fault kind_and_msg->
-      fuzion.runtime.fault.cause kind_and_msg).default
+  # default implementation of fuzion.runtime.contract_fault
+  #
+  # this will get instated automatically at startup
+  #
+  public redef fixed type.default_value option fuzion.runtime.contract_fault =>
+    fuzion.runtime.contract_fault kind_and_msg->
+      fuzion.runtime.fault.env.cause kind_and_msg
 
 
   # create an instance of `contract_fault` with the given error handler.
   #
   public fixed redef type.new(h ((String,String)) -> void) fuzion.runtime.contract_fault => fuzion.runtime.contract_fault h
-
-
-# contract_fault with no argument returns contract_fault.env, the currently installed
-# runtime contract_fault handler.
-#
-public contract_fault contract_fault =>
-  contract_fault.install_default
-  contract_fault.env

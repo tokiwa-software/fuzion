@@ -47,7 +47,7 @@ public class Block extends AbstractBlock
   /*----------------------------  variables  ----------------------------*/
 
 
-  public boolean _newScope;
+  public final boolean _newScope;
 
 
   /*--------------------------  constructors  ---------------------------*/

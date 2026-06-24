@@ -439,3 +439,15 @@ module fzE_mmap_offset_multiple i64 => native
 
 
 module fzE_cwd(buf Array u8, size i64) i32 => native
+
+
+# wrapper around DTRACE_PROBE macro if the target supports this.
+#
+# NYI: UNDER DEVELOPMENT: Actual argument passing mechanism is
+# work-in-progress.
+#
+module fzE_dtrace_probe(# color id to display msg with
+                        col u8,
+
+                        # the message to display, as C string
+                        msg Array u8) unit => native

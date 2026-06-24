@@ -31,10 +31,10 @@ reg_issue3168_parsing_tuples is
 
     # AoC issue: Tuple type syntax sugar does not work well as actual type parameter
     # https://github.com/tokiwa-software/fuzion/issues/2377
-    _ := array (Sequence (tuple i32 String)) 0 i->[]
-    _ := array (Sequence (i32, String)) 0 i->[]
+    _ := array (Sequence (tuple i32 String)) .empty
+    _ := array (Sequence (i32, String)) .empty
     lm : mutate is
-      lm.instate_self unit ()->
+    lm.instate_self unit ()->
       _ := lm.array (Sequence (tuple i32 String i32)) .new 0 []
       _ := lm.array (Sequence (i32, i32)) .new 0 []
 

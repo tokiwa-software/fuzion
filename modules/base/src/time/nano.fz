@@ -34,7 +34,7 @@
 # not be the right source of time to, e.g., feed an alarm clock that should
 # wake you up at 6h30 every morning.
 #
-public nano (p Nano_Time_Handler) : Clock is
+public nano (p Nano_Time_Handler) : time.Clock is
 
   # no guarantee can be given for precision nor resolution
   #
@@ -52,31 +52,20 @@ public nano (p Nano_Time_Handler) : Clock is
     res
 
 
-  module type.default_nano_time =>
 
-    _ : time.Nano_Time_Handler is
-
-      # no guarantee can be given for precision nor resolution
-      #
-      redef read => fzE_nanotime
-
-      # no guarantee can be given for precision nor resolution
-      #
-      redef sleep(d time.duration) => fzE_nanosleep d.nanos
-
-
-  # install default effect time using default_nano_time
+  # default implementation of time.nano.
   #
-  type.install_default =>
-    (time.nano default_nano_time).default
+  public redef fixed type.default_value option time.nano =>
+    time.nano (_ : time.Nano_Time_Handler is
 
+                 # no guarantee can be given for precision nor resolution
+                 #
+                 redef read => fzE_nanotime
 
-# shorthand for accessing time.nano effect in current environment
-#
-public nano time.nano ! time.nano =>
-  if !nano.is_instated
-    nano.install_default
-  time.nano.env
+                 # no guarantee can be given for precision nor resolution
+                 #
+                 redef sleep(d time.duration) => fzE_nanosleep d.nanos
+         )
 
 
 # abstract handler that can deliver a nano time

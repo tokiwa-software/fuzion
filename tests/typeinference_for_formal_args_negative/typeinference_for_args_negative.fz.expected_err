@@ -43,9 +43,9 @@ for value assigned  : '1.0'
 To solve this, you could change the type of the target 'a' to 'f64' or convert the type of the assigned value to 'String'.
 
 
---CURDIR--/typeinference_for_args_negative.fz:43:14: error 7: Incompatible types when passing argument in a call
+--CURDIR--/typeinference_for_args_negative.fz:43:11: error 7: Incompatible types when passing argument in a call
   say (a3 10.as_f64   " world!")
--------------^^^^^^
+----------^^^^^^^^^
 Actual type for argument #1 'a' does not match expected type.
 In call to          : 'typeinference_for_args_negative.a3'
 expected formal type: 'String'
@@ -67,15 +67,15 @@ for value assigned  : '1.1'
 To solve this, you could change the type of the target 'a' to 'f64' or convert the type of the assigned value to 'String'.
 
 
---CURDIR--/typeinference_for_args_negative.fz:47:33: error 9: Incompatible types when passing argument in a call
-  say (a4 "1.0"       " world!".byte_length)
---------------------------------^^^^^^^^^^^
+--CURDIR--/typeinference_for_args_negative.fz:47:23: error 9: Incompatible types when passing argument in a call
+  say (a4 "1.0"       " world!".byte_count)
+----------------------^^^^^^^^^^^^^^^^^^^^
 Actual type for argument #2 'b' does not match expected type.
 In call to          : 'typeinference_for_args_negative.a4'
 expected formal type: 'String'
 actual type found   : 'i32'
 assignable to       : 'i32'
-for value assigned  : '" world!".byte_length'
+for value assigned  : '" world!".byte_count'
 To solve this, you could change the type of the target 'b' to 'i32' or convert the type of the assigned value to 'String'.
 
 
@@ -91,9 +91,9 @@ for value assigned  : '3.14'
 To solve this, you could change the type of the target 'b' to 'f64' or convert the type of the assigned value to 'String'.
 
 
---CURDIR--/typeinference_for_args_negative.fz:49:32: error 11: Incompatible types when passing argument in a call
+--CURDIR--/typeinference_for_args_negative.fz:49:23: error 11: Incompatible types when passing argument in a call
   say (a4 "1.1"       " world!"=" monde!")
--------------------------------^
+----------------------^^^^^^^^^^^^^^^^^^^
 Actual type for argument #2 'b' does not match expected type.
 In call to          : 'typeinference_for_args_negative.a4'
 expected formal type: 'String'
@@ -129,8 +129,8 @@ actual is value of type 'String' at --CURDIR--/typeinference_for_args_negative.f
   say (a4 "hello"     " world!")
 ----------------------^^^^^^^^^
 actual is value of type 'i32' at --CURDIR--/typeinference_for_args_negative.fz:47:33:
-  say (a4 "1.0"       " world!".byte_length)
---------------------------------^^^^^^^^^^^
+  say (a4 "1.0"       " world!".byte_count)
+--------------------------------^^^^^^^^^^
 actual is value of type 'f64' at --CURDIR--/typeinference_for_args_negative.fz:48:23:
   say (a4 "10.as_f64" 3.14)
 ----------------------^^^^

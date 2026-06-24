@@ -37,17 +37,17 @@ main =>
     lm : mutate is
 
     lm ! ()->
-      seq := map x->x.as_string
+      seq := map (.as_string)
       match os.process.start seq.first.or_panic (seq.drop 1)
-        e error => panic "failed executing {Sequence.this}, error is $e"
+        e error => panic "failed executing $(Sequence.this), error is $e"
         p os.process =>
           res :=
             match p.with_out String lm (()->String.from (io.buffered lm).read_fully)
-              e error => panic "failed reading stdout from {Sequence.this}, error is: $e"
+              e error => panic "failed reading stdout from $(Sequence.this), error is: $e"
               s String => s.trim_end
           err :=
             match p.with_err String lm (()->String.from (io.buffered lm).read_fully)
-              e error => panic "failed reading stderr from {Sequence.this}, error is: $e"
+              e error => panic "failed reading stderr from $(Sequence.this), error is: $e"
               s String => s.trim_end
           ec := p.wait.or_default 1
           if ec != 0
@@ -92,18 +92,18 @@ main =>
   ########### EBNF ###############
 
   if !(is_installed "antlr" || is_installed "antlr4")
-    io.err.println "not generating ebnf due to missing dependency antlr"
+    io.Err.env.println "not generating ebnf due to missing dependency antlr"
     exit 0
   else
     new_line := "\n"
 
-    if envir.args.count < 2
+    if envir.args.env.count < 2
       panic "expecting at least one file name argument"
 
     # header
     ebnf_header := "grammar Fuzion;$new_line$new_line"
 
-    ebnf := envir.args.drop 1
+    ebnf := envir.args.env.drop 1
       .map (s->path.of s)
       .map src->
         if !io.file.exists src

@@ -23,7 +23,7 @@
 
 
 Node(K type, V type, pair (K,V), visited concur.atomic bool, prev concur.atomic (option (lock_free.Node K V)), next concur.atomic (option (lock_free.Node K V))) ref is
-  public redef as_string String => "({pair.0},{pair.1})"
+  public redef as_string String => "($(pair.0),$(pair.1))"
 
 
 # "SIEVE is a cache eviction algorithm that decides what to keep in the cache and what to discard.
@@ -90,10 +90,7 @@ public Sieve_Cache(K type : property.hashable, V type, public capacity i32) ref 
     for obj := init_obj, match obj.or_panic.prev.read
                            p lock_free.Node => p
                            nil => tail.read
-    while match obj
-            nil => false
-            o lock_free.Node => o.visited.read
-    do
+    while obj >>? (.visited.read) do
       obj.or_panic.visited.write false
     else
       match obj
@@ -139,7 +136,7 @@ public Sieve_Cache(K type : property.hashable, V type, public capacity i32) ref 
 
 
   public redef as_string String =>
-    for res := "", res + "{n.or_panic} (Visited: {n.or_panic.visited.read})" + (if n.or_panic.next.read?? then " -> " else "")
+    for res := "", res + "$(n.or_panic) (Visited: $(n.or_panic.visited.read))" + (if n.or_panic.next.read?? then " -> " else "")
         n := head.read, n.or_panic.next
     while n??
     else

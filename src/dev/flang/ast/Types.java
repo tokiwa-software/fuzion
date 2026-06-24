@@ -172,7 +172,6 @@ public class Types extends ANY
     public final AbstractFeature f_Function;
     public final AbstractFeature f_Function_call;
     public final AbstractFeature f_array;
-    public final AbstractFeature f_array_internal_array;
     public final AbstractFeature f_mutate_array;
     public final AbstractFeature f_effect;
     public final AbstractFeature f_effect_finally;
@@ -192,7 +191,10 @@ public class Types extends ANY
     public final AbstractFeature f_concur;
     public final AbstractFeature f_concur_atomic;
     public final AbstractFeature f_concur_atomic_v;
+    public final AbstractFeature f_effect_types;
+    public final AbstractFeature f_effect_types_type_foldf;
     public final AbstractFeature f_Open_Types;
+    public final AbstractFeature f_Open_Types_type_foldf;
     public final AbstractFeature f_Values_Of_Open_Type;
     public final AbstractFeature f_container;
     public final AbstractFeature f_type_applicator;
@@ -244,9 +246,8 @@ public class Types extends ANY
       f_bool_TERNARY            = forFrontEnd ? f_bool.get(mod, FuzionConstants.TERNARY_OPERATOR_PREFIX + "? :", 3) : null;
       f_Function                = universe.get(mod, FUNCTION_NAME, 2);
       f_Function_call           = f_Function.get(mod, FuzionConstants.OPERATION_CALL, 1);
-      f_array                   = universe.get(mod, FuzionConstants.ARRAY_NAME, 5);
-      f_array_internal_array    = f_array.get(mod, "internal_array", 0);
-      f_mutate_array            = universe.get(mod, "mutate", 0).get(mod, FuzionConstants.ARRAY_NAME, 4);
+      f_array                   = universe.get(mod, FuzionConstants.ARRAY_NAME, 6);
+      f_mutate_array            = universe.get(mod, "mutate", 0).get(mod, FuzionConstants.ARRAY_NAME, 5);
       f_effect                  = universe.get(mod, "effect", 0);
       f_effect_finally          = f_effect.get(mod, "finally", 0);
       f_effect_static_finally   = f_effect.get(mod, "static_finally", 0);
@@ -265,7 +266,10 @@ public class Types extends ANY
       f_concur                  = universe.get(mod, "concur", 0);
       f_concur_atomic           = f_concur.get(mod, "atomic", 2);
       f_concur_atomic_v         = f_concur_atomic.get(mod, "v", 0);
+      f_effect_types            = universe.get(mod, "effect_types", 0);
+      f_effect_types_type_foldf = f_effect_types.get(mod, "type_foldf", 4);
       f_Open_Types              = universe.get(mod, FuzionConstants.OPEN_TYPES_FEAT, 0);
+      f_Open_Types_type_foldf   = f_Open_Types.get(mod, "type_foldf", 4);
       f_Values_Of_Open_Type     = universe.get(mod, FuzionConstants.VALUES_OF_OPEN_TYPE_FEAT, 0);
       f_container               = universe.get(mod, "container", 0);
       f_type_applicator         = f_container.get(mod, FuzionConstants.TYPE_APPLICATOR_FEAT, 1);
@@ -358,7 +362,7 @@ public class Types extends ANY
     {
       if (_fuzionSysCall == null)
         {
-          var fuzion       = new Call(SourcePosition.builtIn, null, "fuzion").resolveTypes(res, context);
+          var fuzion       = new Call(SourcePosition.builtIn, Universe.instance, "fuzion").resolveTypes(res, context);
           _fuzionSysCall   = new Call(SourcePosition.builtIn, fuzion, "sys" ).resolveTypes(res, context);
         }
       return _fuzionSysCall;

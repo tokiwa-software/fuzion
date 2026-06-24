@@ -1,0 +1,9 @@
+
+--CURDIR--/reg_issue7188.fz:24:6: error 1: Could not find called feature
+unit + ([1] .map i32 _->1 .sum)
+-----^
+Feature not found: 'infix/infix_right +' (one argument)
+Target feature: 'unit'
+In call: 'unit + ([1] .map i32 _->1 .sum)'
+
+one error.

@@ -31,9 +31,6 @@ import dev.flang.ast.FeatureName;
 import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
 
-import dev.flang.mir.MIR;
-import dev.flang.mir.MirModule;
-
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
@@ -292,7 +289,17 @@ public abstract class Module extends ANY implements FeatureLookup
         var existing = it.next();
         if (f != existing)
           {
-            if (redefines(f, existing))
+            var fInherited = f.outer() != outer;
+            var existingInherited = existing.outer() != outer;
+            if (
+                fInherited && existingInherited &&
+                ((f.modifiers() & FuzionConstants.MODIFIER_REDEFINE) != 0) ==
+                ((existing.modifiers() & FuzionConstants.MODIFIER_REDEFINE) != 0)
+               )
+              {
+                // will trigger: Repeated inheritance, see #7062
+              }
+            else if (redefines(f, existing))
               {
                 it.remove();
               }
@@ -533,19 +540,31 @@ public abstract class Module extends ANY implements FeatureLookup
 
 
   /**
-   * Create MIR based on given main feature.
+   * Find the effective main feature from the given main feature name. In case
+   * main is null, this is the universe.  Otherwise, it is a feature with given
+   * name `main` or, if exits, its `preAndCallFeature`.
+   *
+   * @param universe the universe feature, may be null
+   *
+   * @param main the main features name, may be null
+   *
+   * @return the effecive main feature, null in case universe is null or lookup failed.
    */
-  static MIR createMIR(MirModule mirMod, AbstractFeature universe, AbstractFeature main)
+  AbstractFeature effectiveMain(AbstractFeature universe, String main)
   {
-    var result = new MIR(universe, main, mirMod);
-    if (!Errors.any())
+    var result = universe == null || main == null
+      ? universe
+      : lookupFeature(universe, FeatureName.get(main, 0));
+    if (result != null)
       {
-        new DFA(result).check();
+        var pac = result.preAndCallFeature();
+        if (pac != null)
+          {
+            result = pac;
+          }
       }
-
     return result;
   }
-
 
 }
 

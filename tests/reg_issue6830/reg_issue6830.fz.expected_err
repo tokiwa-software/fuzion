@@ -32,7 +32,7 @@ To solve this, change constraint of type parameter to 'reg_issue6830.part2.this.
 --CURDIR--/reg_issue6830.fz:66:9: error 3: Incompatible type parameter
       p.w x
 --------^
-formal type parameter '_ : reg_issue6830.part2.this.storage String' with constraint '#_2.storage String'
+formal type parameter '_ : reg_issue6830.part2.this.storage String' with constraint '_.storage String'
 actual type parameter 'reg_issue6830.part2.this.storage String'
 
 3 errors.

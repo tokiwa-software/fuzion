@@ -51,11 +51,12 @@ is
   => p.set_exit_code code
 
 
-  # install default instance of exit
+  # default implementation of exit
   #
-  type.install_default unit =>
-    if !exit.is_instated
-      (exit default_exit_handler unit unit).default
+  # this will get instated automatically at startup
+  #
+  public redef fixed type.default_value option exit =>
+    exit default_exit_handler unit unit
 
 
   # default exit handler
@@ -94,30 +95,22 @@ is
             error "exit code is already set"
 
 
-# exit with no argument returns exit.env, the currently installed
-# exit handler.
-#
-exit0 =>
-  exit.install_default
-  exit.env
-
-
 # exit with a code argument calls exit.exit code, i.e., it uses the
 # current exit effect to exit with the given message.
 #
-public exit(code u8) void ! exit => exit0.exit code
+public exit(code u8) void ! exit => exit.env.exit code
 
 
 # exit with the currently stored exit code
 #
-public exit void ! exit => exit0.exit
+public exit void ! exit => exit.env.exit
 
 
 # change the currently stored exit code
 #
 public set_exit_code(code u8) outcome unit ! exit
 pre debug: code ≤ 127
-  => exit0.set_exit_code code
+  => exit.env.set_exit_code code
 
 
 # install given exit handler and run code with it.

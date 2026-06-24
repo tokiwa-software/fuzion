@@ -544,7 +544,7 @@ public class Html extends ANY
         universeFunctions.addAll(allUniverseFeat.getOrDefault(AbstractFeature.Kind.Intrinsic, new TreeSet<AbstractFeature>()));
         universeFunctions.addAll(allUniverseFeat.getOrDefault(AbstractFeature.Kind.Native, new TreeSet<AbstractFeature>()));
 
-        // only keep features that have a matching type argument with a type other than Any
+        // only keep features that have a matching type parameter with a type other than Any
         universeFunctions.removeIf(
           af->af.typeArguments().isEmpty()
           || af.typeArguments().stream().noneMatch(typeParam->typeParam.constraint().compareTo(Types.resolved.t_Any ) != 0
@@ -656,7 +656,7 @@ public class Html extends ANY
                 + "</pre></div>")
       .collect(Collectors.joining());
 
-    return res.isBlank() ? "" : "<details close><summary><span class=fd-contract-title>" + contractType + "</span></summary>" + res + "</details>";
+    return res.isBlank() ? "" : "<details class=\"cursor-pointer\" open><summary><span class=fd-contract-title>" + contractType + "</span></summary>" + res + "</details>";
   }
 
   /**
@@ -736,7 +736,7 @@ public class Html extends ANY
                   : c.startsWith("<details open>")
                   ? Stream.of(c)
                   : Stream.of(
-                    "<details open><summary>Comment of <span class=fd-fname>" +
+                    "<details class=\"cursor-pointer\" open><summary>Comment of <span class=fd-fname>" +
                     relativeAnchor(r, af.outer())
                     + "</span></summary>" + c + "</details>"
                   );

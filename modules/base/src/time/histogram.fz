@@ -81,35 +81,19 @@ public histogram(# title to be printed for this histogram
                  )
 is
 
-
-  # a local mutate instance we are using to modify our state
-  #
-  local_mutate : mutate is
-
-
-  # get local mutate instance from env, install it if necessary
-  #
-  lm =>
-    # NYI: should be done via effect configuration file, see `effect.type.default`.
-    #
-    if !local_mutate.is_instated
-      local_mutate.default
-    local_mutate.env
-
-
   # total number of measurements, including ignored ones.
   #
-  total_number := lm.new (u64 0)
+  total_number := time.histogram_mutate.env.new (u64 0)
 
 
   # buffer of measurements at the end that should be ignored.
   #
-  ignore_last_buffer := lm.new_array ignore_last.as_i64 (option time.duration nil)
+  ignore_last_buffer := histogram_mutate.env.new_array ignore_last.as_i64 (option time.duration nil)
 
 
   # current index to add new data to ignore_last_buffer
   #
-  ignore_last_buffer_index := lm.new (i64 0)
+  ignore_last_buffer_index := histogram_mutate.env.new (i64 0)
 
 
   # Number of distinct buckets that are recorded
@@ -121,28 +105,28 @@ is
   # the counts for different value ranges corresponding to buckets are
   # stored in buckets.
   #
-  size := lm.new (u64 0)
+  size := histogram_mutate.env.new (u64 0)
 
 
   # min and max recorded durations
   #
-  min_ := lm.new (option time.duration) nil
-  max_ := lm.new (option time.duration) nil
+  min_ := histogram_mutate.env.new (option time.duration) nil
+  max_ := histogram_mutate.env.new (option time.duration) nil
 
 
   # sum of recorded durations
   #
-  sum := lm.new time.duration.zero
+  sum := histogram_mutate.env.new time.duration.zero
 
 
   # sum of squares of recorded ns values
   #
-  squares := lm.new 0.0
+  squares := histogram_mutate.env.new 0.0
 
 
   # time of first sample
   #
-  start_time := lm.new (option time.instant) nil
+  start_time := histogram_mutate.env.new (option time.instant) nil
 
 
   # table of durations in each bucket, each entry gives the maximum duration for that index
@@ -153,12 +137,12 @@ is
     match max_recorded
       mr time.duration => n := num_buckets.as_i32
                           array n i->
-                            if i<n-1 then mr.times ((i+1).as_f64 / (num_buckets.as_f64-1))
-                                     else time.duration.max
+                            if i<(n-1) then mr.times ((i+1).as_f64 / (num_buckets.as_f64-1))
+                                       else time.duration.max
       nil              => log_table
 
   check
-    debug: table.length = num_buckets.as_i32
+    debug: table.length = num_buckets
     debug: table[num_buckets.as_i32-1] = time.duration.max
 
 
@@ -166,7 +150,7 @@ is
   #
   log_table
   post
-    debug: result.length = num_buckets.as_i32
+    debug: result.length = num_buckets
   =>
     step := 1.65  # step factor determined via trial and error
     (1.0 :: *step).map f->(time.duration.ns 1 .times f)
@@ -178,7 +162,7 @@ is
 
   # The frequency counts for each bucket
   #
-  buckets := lm.new_array (indx time.duration.max)+1 (u64 0)
+  buckets := histogram_mutate.env.new_array (indx time.duration.max)+1 (u64 0)
 
 
   # create an empty histogram
@@ -224,7 +208,7 @@ is
   #
   indx(l time.duration)
   post
-    debug: result.as_i32 ∈ table.indices
+    debug: result ∈ table.indices
     debug: l <= table[result]
     debug: result = 0 || table[result-1] < l
   =>
@@ -395,7 +379,7 @@ is
       bar => "▉"   # unicode 0x2589 LEFT SEVEN EIGHTHS BLOCK
 
       titl := """
-              {"---  $title  ---".pad_center 78}
+              $("---  $title  ---".pad_center 78)
               count
               """
       for
@@ -403,11 +387,11 @@ is
         c := h.log2, c-1
       while c >= 0 do
         units_str := " KMGTPEZY"; /* Kilo, Mega, Giga, Tera, etc. */
-        unit0 := min units_str.byte_length-1 c/10  # 2^10 is times 1024
+        unit0 := min units_str.byte_count-1 c/10  # 2^10 is times 1024
         cnt := u64 1 << (c - unit0 * 10).as_u64
         str := for
                  hgap := c %% 4 ? hori : empt
-                 str1 := "{($cnt).pad_left 3}{units_str.substring unit0 unit0+1}$hgap", str1 + str2 + str3
+                 str1 := "$(cnt.as_string.pad_left 3)$(units_str.substring unit0 unit0+1)$hgap", str1 + str2 + str3
                  i in buckets.indices
                  last := i = num_buckets-1
                  gap :=  i %% 8 || last ? vert : hgap
@@ -445,8 +429,20 @@ is
       first := non_zero_buckets.first.or_panic
       last  := non_zero_buckets.last .or_panic
       ("from/ns;to/ns;count\n" +
-        (first..last).map i->"{smallest i .nanos};{largest i .nanos};{buckets[i]}"
+        (first..last).map i->"$(smallest i .nanos);$(largest i .nanos);$(buckets[i])"
                      .as_string "\n"
       )
     else
       ""
+
+
+# a local mutate instance we are using to modify our state
+#
+public histogram_mutate : mutate
+is
+
+  # default implementation of mutate
+  #
+  # this will get instated automatically at startup
+  #
+  public redef fixed type.default_value option time.histogram_mutate => time.histogram_mutate

@@ -36,7 +36,7 @@
 #
 # To read it, call 'get' as in
 #
-#     say "v is {v.get}"
+#     say "v is $(v.get)"
 #
 # Convenience feature 'mut' and type inference allow the creation to be
 # written as
@@ -60,12 +60,55 @@ public mutate : linear_effect is
 
   # shorthand to access effect type
   #
-  M := mutate.this.type
+  module M := mutate.this.type
+
 
   # an id used for runtime checks to verify that mutation made with the same effect
   # the mutable value was created with
   #
-  id := fzE_unique_id
+  module id := fzE_unique_id
+
+
+  # NYI: UNDER DEVELOPMENT: thread id used to make sure this effect is
+  # not teleported to another thread and used there to mutate data.
+  #
+  # This should become more sophisticated with mutate effects that support
+  # synchronization in a way that access by several threads is possible.
+  #
+  module tid =>
+    tid0.or_else ()->
+        res := concur.threads.env.current
+        set tid0 := res
+        res
+
+
+  # the thread this mutate was created with
+  #
+  # NYI: UNDER DEVELOPMENT: Since effect order is currently not enforced during the
+  # big bang singulariy, we set this lazily.
+  #
+  tid0 option concur.Thread := if concur.threads.is_instated then concur.threads.env.current
+                                                             else nil
+
+
+  # thread that currently has exclusive access to this mutate. This is the creating thread
+  # for a mutate that is not sharable by threads. Otherwise, this is `nil` if no thread
+  # currently has exclusive access, or the thread that currently does have exclusive
+  # access.
+  #
+  module exclusive_thread option concur.Thread => tid
+
+
+  # check if the current thread is permitted to access mutable state managed by mutate.this
+  # exclusively.
+  #
+  # For a single-thread mutate, this is usually the case for the same thread this mutate was
+  # created in.  Furthermore, multi-thread mutate implementations may ensure exclusive
+  # access to other threads via redefining the `exclusive` features.
+  #
+  public is_exclusive bool
+  =>
+    M.get_if_instated >>? (x -> id = x.id && x.exclusive_thread=concur.threads.env.current)
 
 
   # panic operation to be used in case of a severe problem.  This is redefined within the
@@ -79,38 +122,32 @@ public mutate : linear_effect is
   #
   module:public mutable_element is
 
-    # id used to verify that mutation made with the same effect
-    # the mutable value was created with
-    my_id := id
-
 
     # check that this effect is the same as the currently instated effect of type
     # `mutate.this`
     #
     is_currently_instated =>
-      match M.get_if_instated
-        x mutate.this => my_id = x.id
-        nil           => false
+      open && is_this_mutate_instated_and_usable
 
 
     # check that this effect is instated and replace it.
     #
     module check_and_replace
     =>
-      if !is_currently_instated
-        mpanic "*** invalid mutate for {M}"
+      if !is_exclusive
+        mpanic "*** invalid mutate for '$(M.name)'"
       mutate.this.env.replace
 
 
     # is this element open, i.e., can it be mutated?
     #
-    public open bool => my_id != u64 0
+    public open bool := true
 
 
     # stop any further mutations of this element
     #
     public close unit =>
-      set my_id := 0
+      set open := false
 
 
   # create a new mutable value with the given initial value and update the
@@ -131,7 +168,10 @@ public mutate : linear_effect is
     # If this is open, check that the mutate effect this was created with is still
     # instated in the current environment.
     #
-    public get T ! mutate.this =>
+    public get T ! mutate.this
+      pre
+        safety: !open || is_exclusive
+    =>
       if open
         check_and_replace
       mutable_value
@@ -193,20 +233,72 @@ public mutate : linear_effect is
     public redef as_string String => $get
 
 
-
-  # install default instance of mutate
+  # is instance `mutate.this` instated for type `mutate.this` and, if `mutate.this` does
+  # not support use in several threads, check we are running in the thread `mutate.this`
+  # was created in.
   #
-  module type.install_default =>
-    mutate.default
+  # This is used a pre-condition for `exclusive` and `exclusive_when`.
+  #
+  # Note that this is redefined in `blocking_mutate` since it does not require
+  # exclusivity there, but it is sufficient if that is instated.
+  #
+  public is_this_mutate_instated_and_usable bool
+  =>
+    is_exclusive
 
 
-# shorthand for accessing mut effect in current environment
-#
-public mut mutate ! mutate =>
-  mutate.install_default
-  mutate.env
+  # perform given code with exclusive access to the mutable values created with
+  # this instance of `mutate`.
+  #
+  public exclusive(R type, F type: ()->R, code F) R
+  pre
+    safety: is_this_mutate_instated_and_usable
+  =>
+    code()
+
+
+  # wait for the given condition to become true by a mutation of the underlying data.
+  #
+  # In case this mutate is not a multi-thread implementation and `condition()` is `false`,
+  # this will `panic`.
+  #
+  public wait(F type: ()->bool, condition F) unit
+  pre
+    safety: is_exclusive
+  post
+    debug: condition()
+  =>
+    if !condition() then
+      panic "mutate.wait on '$(F.name)' would wait forever"
+
+
+  # exclusively wait for the given condition to hold and then perform given code with
+  # exclusive access to the mutable values created with this instance of `mutate`.
+  #
+  public exclusive_when(R type,
+                        C type: ()->bool,
+                        F type: ()->R,
+                        condition C,
+                        code F
+                        ) R
+  pre
+    safety: is_this_mutate_instated_and_usable
+  =>
+    mutate.this.env.exclusive ()->
+      mutate.this.env.wait condition
+      code()
+
+
+  # default implementation of mutate
+  #
+  # this will get instated automatically at startup
+  #
+  public redef fixed type.default_value option mutate =>
+    mutate
 
 
 # create a new mutable value of type T with initial value v
 #
-public mut(T type, v T) mutate.new T ! mutate => mut.new v
+public mut(T type, v T) mutate.new T ! mutate
+=>
+  mutate.env.new v

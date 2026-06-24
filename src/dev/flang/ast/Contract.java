@@ -153,7 +153,7 @@ public class Contract extends ANY
     _hasPostThen = hasThen;
     _declared_preconditions   = r1 == null || r1.isEmpty() ? NO_COND : r1;
     _declared_preconditions2  = r2 == null || r2.isEmpty() ? NO_COND : r2;
-    _declared_postconditions = e == null || e.isEmpty() ? NO_COND : e;
+    _declared_postconditions  = e == null  ||  e.isEmpty() ? NO_COND : e;
     _argsSupplier = args;
   }
 
@@ -577,7 +577,7 @@ public class Contract extends ANY
    *
    * @param preBool true to create pre bool feature, false for pre feature.
    */
-  static void addPreFeature(Resolution res, Feature f, Context context, boolean preBool)
+  static void addPreFeature(Resolution res, Feature f, boolean preBool)
   {
     var fc = f.contract();
     var name = preBool ? preBoolConditionsFeatureName(f)
@@ -972,11 +972,11 @@ all of their redefinition to `true`. +
 
         if (f._preBoolFeature == null)
           {
-            addPreFeature(res, f, context, true);
+            addPreFeature(res, f, true);
           }
         if (f._preFeature == null)
           {
-            addPreFeature(res, f, context, false);
+            addPreFeature(res, f, false);
           }
 
         if (!f.isConstructor())
@@ -1031,7 +1031,7 @@ all of their redefinition to `true`. +
                                         ? f.thisType()
                                         // we will later replace type parameters of f
                                         // by type parameters of f post
-                                        : f.resultType(),
+                                        : f.resultTypeIfPresentUrgent(res, true),
                                       FuzionConstants.RESULT_NAME)
           {
             public boolean isResultField() { return true; }
@@ -1096,7 +1096,10 @@ The conditions of a post-condition are checked at run-time in sequential source-
                                       new Current(pos, pF),
                                       a);
                     ca = ca.resolveTypes(res, pF.context());
-                    args2.add(ca);
+                    if (!ca.calledFeature().isTypeParameter())
+                      {
+                        args2.add(ca);
+                      }
                   }
                 var inhpost = callPostCondition(res, inh, pF.context(), args2);
                 inhpost = inhpost.resolveTypes(res, pF.context());

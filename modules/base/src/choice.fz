@@ -43,7 +43,7 @@
 # with actual generics.
 #
 # A field of choice type can be assigned a value of the same choice type
-# or of any of the actual generic type arguments provided to the choice
+# or of any of the actual generic type parameters provided to the choice
 # feature.
 #
 # Two choice types choice A B and choice B A that differ only in the order

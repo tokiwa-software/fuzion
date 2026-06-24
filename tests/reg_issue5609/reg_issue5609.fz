@@ -25,6 +25,7 @@ reg_issue5609 =>
 
   a(T type, x T) is
     c T
+      pre 0 = 1 # required to avoid pre-else-error
     =>
       x
 

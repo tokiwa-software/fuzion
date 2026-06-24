@@ -374,7 +374,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
        isChoice());
 
     var g = feature().choiceGenerics();
-           // NYI: UNDER DEVELOPMENT: a bit weird, choice this types.
     return
       isThisType()
       ? g
@@ -678,19 +677,14 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * Check if a type parameter actual can be assigned to a type parameter with
+   * Check if actual can be assigned to a type parameter with
    * constraint this.
    *
    * @param context the source code context where this Type is used
    *
-   * @param call if this is a formal type in a call, this is the call, otherwise
-   * null. This call is used to replace type parameters that depend on the
-   * call's target or actual type parameters. Also this is used to for error
-   * messages that require the source position of the call.
-   *
    * @param actual the actual type.
    */
-  boolean constraintAssignableFrom(Context context, AbstractType actual)
+  private boolean constraintAssignableFrom(Context context, AbstractType actual)
   {
     if (PRECONDITIONS) require
       (this  .isGenericArgument() || this  .feature() != null || Errors.any(),
@@ -704,31 +698,62 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
     if (!result && !isGenericArgument())
       {
-        if (actual.isGenericArgument())
+        // NYI: BUG: #4756, #5002, likely unsound
+        result = switch (actual.kind())
           {
-            result = constraintAssignableFrom(context, actual.genericArgument().constraint(context));
-          }
-        else
-          {
-            if (CHECKS) check
-              (actual.feature() != null || Errors.any());
-            if (actual.feature() != null)
-              {
-                // NYI: BUG: #5714 soundness issues probable
-                // NYI: BUG: Check: What about open generics?
-                result = actual.feature() == feature() &&
-                  (actual.isThisType() || (genericsAssignable(actual, context) &&
-                                          (outer() == null || actual.outer() != null && outer().constraintAssignableFrom(actual.outer()))));
-                for (var p: actual.feature().inherits())
-                  {
-                    result |= p.type().applyTypePars(actual)==actual
-                      ? false
-                      : constraintAssignableFrom(context, p.type().applyTypePars(actual));
-                  }
-              }
-          }
+            /**
+             * e.g.:
+             *
+             * this: 'T : property.orderable'
+             * actual: 'I : integer'
+             */
+            case GenericArgument -> constraintAssignableFrom(context, actual.genericArgument().constraint(context));
+            /**
+             * e.g.:
+             *
+             * this: 'TP : concur.thread_pool'
+             * actual: 'concur.thread_pool.this'
+             */
+            case ThisType -> {
+              yield actual.feature() == feature()
+              ||
+                constraintAssignableViaInherits(context, actual);
+            }
+            /**
+             * e.g.:
+             *
+             * this: 'TP : concur.thread_pool'
+             * actual: 'concur.thread_pool'
+             */
+            case RefType, ValueType -> {
+              yield actual.feature() == feature() &&
+                genericsAssignable(actual, context) &&
+                (outer() == null && actual.outer() == null || outer().isAssignableFromDirectly(actual.outer()).yes())
+              ||
+                constraintAssignableViaInherits(context, actual);
+            }
+          };
       }
     return result;
+  }
+
+
+  /**
+   * Check if actual can be assigned to a type parameter with
+   * constraint this via the feature that actual.feature inherits from.
+   *
+   * @param context the source code context where this Type is used
+   *
+   * @param actual the actual type.
+   */
+  private boolean constraintAssignableViaInherits(Context context, AbstractType actual)
+  {
+    return actual.feature().inherits().stream().anyMatch(p ->
+      {
+        var pa = actual.actualType(p.type());
+        return pa!=actual && constraintAssignableFrom(context, pa);
+      }
+    );
   }
 
 
@@ -846,10 +871,12 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * exactly one element.
    */
   public List<AbstractType> applyTypeParsMaybeOpen(AbstractFeature f,
-                                                   List<AbstractType> actualTypes)
+                                                   List<AbstractType> actualTypes,
+                                                   int select)
   {
-    return isOpenGeneric() ? genericArgument().replaceOpen(actualTypes)
-                           : new List<>(applyTypePars(f, actualTypes));
+    return isOpenGeneric() && genericArgument().outer() == f && select == NO_SELECT
+      ? genericArgument().replaceOpen(actualTypes)
+      : new List<>(applyTypePars(f, actualTypes, select));
   }
 
 
@@ -866,7 +893,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   public List<AbstractType> applyTypeParsMaybeOpen(AbstractType t)
   {
-    return t.isPlainType() ? applyTypeParsMaybeOpen(t.feature(), t.generics())
+    return t.isPlainType() ? applyTypeParsMaybeOpen(t.feature(), t.generics(), NO_SELECT)
                            : new List<>(t);
   }
 
@@ -1956,8 +1983,6 @@ there is no common super type of the two types (Types.t_ERROR)
 
 
   /**
-   * Helper for replace_this_type_by_actual_outer to replace {@code this.type} for
-   * exactly tt, ignoring tt.outer().
    *
    * @param tt the type feature we are calling
    *
@@ -1967,29 +1992,11 @@ there is no common super type of the two types (Types.t_ERROR)
   public AbstractType replace_this_type_by_actual_outer_locally(AbstractType tt,
                                                         BiConsumer<AbstractType, AbstractType> foundRef)
   {
-    return replace_this_type_by_actual_outer_locally(tt, foundRef, Context.NONE);
-  }
-
-
-  /**
-   * Helper for replace_this_type_by_actual_outer to replace {@code this.type} for
-   * exactly tt, ignoring tt.outer().
-   *
-   * @param tt the type feature we are calling
-   *
-   * @param foundRef a consumer that will be called for all the this-types found
-   * together with the ref type they are replaced with.  May be null.
-   */
-  private AbstractType replace_this_type_by_actual_outer_locally(AbstractType tt,
-                                                         BiConsumer<AbstractType, AbstractType> foundRef,
-                                                         Context context)
-  {
+    if (PRECONDITIONS) require
+      (tt.isNormalType());
     var result = this;
-    var att = tt.selfOrConstraint(context);
-    if (isThisTypeInCotype() && tt.isGenericArgument()   // we have a type parameter TT.THIS#TYPE, which is equal to TT
-        ||
-        isThisType() && att.feature() == feature()  // we have abc.this.type with att == abc, so use tt
-        )
+    // we have abc.this with tt == abc, so use tt
+    if (isThisType() && tt.feature() == feature())
       {
         if (foundRef != null && tt.isRef())
           {
@@ -1999,7 +2006,7 @@ there is no common super type of the two types (Types.t_ERROR)
       }
     else
       {
-        result = applyToGenericsAndOuter(g -> g.replace_this_type_by_actual_outer_locally(tt, foundRef, context));
+        result = applyToGenericsAndOuter(g -> g.replace_this_type_by_actual_outer_locally(tt, foundRef));
       }
     return result;
   }
@@ -2437,7 +2444,13 @@ there is no common super type of the two types (Types.t_ERROR)
     if (isGenericArgument())
       {
         var ga = genericArgument();
-        result = (ga.isCoTypesThisType() ? ga.qualifiedName(context, humanReadable) : ga.baseName()) + (isRef() ? " (boxed)" : "");
+        result =
+          (ga.isCoTypesThisType()
+            ? ga.qualifiedName(context, humanReadable)
+            : ga.isTypeFeature()
+            ? ga.qualifiedName(humanReadable)
+            : (humanReadable ? ga.baseNameHuman() : ga.baseName())) +
+          (isRef() ? " (boxed)" : "");
       }
     else
       {
@@ -2454,7 +2467,7 @@ there is no common super type of the two types (Types.t_ERROR)
         var fname = (humanReadable ? f.baseNameHuman() : f.baseName())
           +  (f.definesType() || fn.argCount() == 0 || fn.isInternal() || humanReadable
                 ? ""
-                : FuzionConstants.INTERNAL_NAME_PREFIX + fn.argCount());
+                : FuzionConstants.INTERNAL_NAME_SYMBOL + fn.argCount());
 
         // NYI: would be good if postFeatures could be identified not be string comparison, but with something like
         // `f.isPostFeature()`. Note that this would need to be saved in .fum file as well!
@@ -2490,6 +2503,10 @@ there is no common super type of the two types (Types.t_ERROR)
               }
           }
       }
+
+    if (POSTCONDITIONS) ensure
+      (!humanReadable || !result.contains("#"));
+
     return result;
   }
 
@@ -2638,7 +2655,7 @@ there is no common super type of the two types (Types.t_ERROR)
 
 
   /**
-   * If the type is a this-type, check if it is legal.
+   * If the type contains a this-type, check if it is legal.
    */
   public void checkLegalThisType(SourcePosition pos, AbstractFeature outer)
   {
@@ -2647,7 +2664,7 @@ there is no common super type of the two types (Types.t_ERROR)
 
 
   /**
-   * If the type is a this-type, check if it is legal.
+   * If the type contains a this-type, check if it is legal.
    */
   private void checkLegalThisType(SourcePosition pos, Context context)
   {
@@ -2671,6 +2688,10 @@ there is no common super type of the two types (Types.t_ERROR)
             AstErrors.illegalThisType(pos, this);
           }
       }
+    applyToGenericsAndOuter(t -> {
+      t.checkLegalThisType(pos, context);
+      return t;
+    });
   }
 
 

@@ -21,7 +21,7 @@ module string_parsers is
   public tag(str String) Parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) =>
     parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) input->
       if input.starts_with str.codepoints
-        success (input.drop str.codepoint_length) str.codepoints
+        success (input.drop str.codepoint_count) str.codepoints
       else
         error "tag ($str) not found"
 

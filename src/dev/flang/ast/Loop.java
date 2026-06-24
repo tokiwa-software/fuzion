@@ -211,6 +211,12 @@ public class Loop extends ANY
   private final SourcePosition _elsePos;
 
 
+  /**
+   * the sourceposition position of the loop
+   */
+  private final SourcePosition _pos;
+
+
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -233,6 +239,13 @@ public class Loop extends ANY
    * routines, the first for the prolog, the other for the rest of the loop.
    */
   private Feature[] _loopElse;
+
+
+  /**
+   * Has there been an error found in the loops code?
+   * This is used for displaying/supressing loop specific error messages.
+   */
+  private boolean _defunct = false;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -284,6 +297,7 @@ public class Loop extends ANY
        sb == null || untilCond != null,
        eb0 == null || eb0 instanceof Block || eb0 instanceof Match);
 
+    _pos       = pos;
     _elsePos   = ePos;
     _indexVars = iv;
     _nextValues = nv;
@@ -480,7 +494,10 @@ public class Loop extends ANY
              outer.baseName().startsWith(FuzionConstants.REC_LOOP_PREFIX);
           if (((Feature)outer).returnType() instanceof FunctionReturnType frt && setExplicitResultType)
             {
-              this.setFunctionReturnType(frt.functionReturnType());
+              if (Loop.this.producesResult())
+                {
+                  setFunctionReturnType(frt.functionReturnType());
+                }
               if (_loopElse != null)
                 {
                   for (int i = 0; i < _loopElse.length; i++)
@@ -495,8 +512,7 @@ public class Loop extends ANY
     var initialCall = new Call(pos, null, loopName, initialActuals);
     prologSuccessBlock.add(initialCall);
 
-    _impl           = new Block(new List<>(loop, prologBlock));
-    _impl._newScope = true;
+    _impl           = new Block(true, new List<>(loop, prologBlock));
   }
 
 
@@ -514,6 +530,17 @@ public class Loop extends ANY
       }
     return _impl;
   }
+
+
+  /**
+   * Does this loop potentially yield a result?
+   * @return
+   */
+  private boolean producesResult()
+  {
+    return _successBlock != null || _elseBlock0 != null;
+  }
+
 
   /**
    * Creates code for the given loop variant expression
@@ -667,15 +694,32 @@ public class Loop extends ANY
       @Override
       public Expr action(Function f)
       {
-        var lambdaArgNames = f._names.stream().map(x -> x._name).collect(Collectors.toSet());
-        lambdaArgNames.retainAll(names);
-        // if lambdaArgNames is not empty this will
-        // probably trigger an "Ambiguous targets found call to" error later
-        if (lambdaArgNames.isEmpty())
-          {
-            f.expr().visit(this, null);
-          }
+        // we must not replace calls to the lambda args
+        // this will raise ambiguity errors later
+        var n = new TreeSet<>(names);
+        n.removeAll(f._names.stream().map(x -> x._name).collect(Collectors.toSet()));
+        f.expr().visit(prefixVisitor(n, prefix), null);
         return super.action(f);
+      }
+
+      @Override
+      public Expr action(Feature f, AbstractFeature outer)
+      {
+        var expr = f.impl().expr();
+        if (expr != null)
+          {
+            // we must not replace calls to the
+            // feature itself or any of its args
+            // this will raise ambiguity errors later
+            var n = new TreeSet<>(names);
+            n.remove(f.baseName());
+            for (var arg : f.arguments())
+              {
+                n.remove(arg.baseName());
+              }
+            expr.visit(prefixVisitor(n, prefix), f);
+          }
+        return super.action(f, outer);
       }
     };
   }
@@ -733,10 +777,25 @@ public class Loop extends ANY
             List<Expr> nextIt2 = new List<>();
             Case match1c = new Case(p, consType, listName + "cons", new Block(prolog2));
             Case match1n = new Case(p, nilType, listName + "nil", (_loopElse != null) ? Block.fromExpr(callLoopElse(0)) : Block.newIfNull(null));
-            Match match1 = new Match(p, new Call(p, listName), new List<AbstractCase>(match1c, match1n));
+            Match match1 = new Match(p, new Call(p, listName), new List<AbstractCase>(match1c, match1n))
+            {
+              @Override
+              void showIncomptiableTypesError()
+              {
+                _defunct = true;
+                AstErrors.loopResultsInTwoIncompatibleTypes(_pos, this);
+              }
+            };
             Case match2c = new Case(p, consType, listName + "cons", new Block(nextIt2));
             Case match2n = new Case(p, nilType, listName + "nil", (_loopElse != null) ? Block.fromExpr(callLoopElse(2)) : Block.newIfNull(null));
-            Match match2 = new Match(p, new Call(p, listName + "arg"), new List<AbstractCase>(match2c, match2n));
+            Match match2 = new Match(p, new Call(p, listName + "arg"), new List<AbstractCase>(match2c, match2n))
+              {
+                @Override
+                Match assignToField(Resolution res, Context context, Feature r)
+                {
+                  return _defunct ? this : super.assignToField(res, context, r);
+                }
+              };
             prologBlock.add(match1);
             nextItBlock.add(match2);
             prologBlock = prolog2;

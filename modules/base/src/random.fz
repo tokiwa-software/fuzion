@@ -122,19 +122,12 @@ is
     p.get % exclusive_bound  # NYI: This implementation is bad if exclusive_bound is big
 
 
-  # install default instance of random
+  # default implementation of random
   #
-  type.install_default =>
-    if !random.is_instated
-      (random simple_random_handler.default).default
-
-
-# random with no argument returns random.env, i.e., the currently installed
-# source of randomness.
-#
-public random random ! random, envir.vars =>
-  random.install_default
-  random.env
+  # this will get instated automatically at startup
+  #
+  public redef fixed type.default_value option random =>
+    random simple_random_handler.default
 
 
 # instate a random that is seed seeded and run rr in its context
@@ -215,7 +208,7 @@ simple_random_handler(seed1 u64, seed2 u64) : Random_Handler is
   # create the default random handler depending on the environment settings
   #
   type.default =>
-    match envir.vars[random_seed_env_var]
+    match envir.vars.env[random_seed_env_var]
      s String =>
        match s.parse_u64
          seed u64 => simple_random_handler seed 98765432109876543
@@ -231,4 +224,3 @@ simple_random_handler(seed1 u64, seed2 u64) : Random_Handler is
     # initialize with large numbers XORed with nano time
     #
     simple_random_handler (u64 77777777777777 ^ fzE_nanotime) 98765432109876543
-

@@ -26,7 +26,7 @@
 reg_issue5987 =>
 
   test(F type : i32->i32, f F) =>
-    say "$F {f.call 42}"
+    say "$F $(f.call 42)"
 
   test i32->i32 x->x+1
   test i32->i32 (-)

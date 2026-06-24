@@ -60,7 +60,7 @@ reg_issue3619 =>
   h1 : r2 is
   h2 : r2 is
 
-  v r2 := if random.next_bool then h1 else h2
+  v r2 := if random.env.next_bool then h1 else h2
   _ := v.g
 
   # The problem is that `v` may refer to `h1` or `h2` such that `v.g` will

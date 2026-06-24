@@ -46,7 +46,7 @@ test_fib2 =>
 
   # use `fib`
   for i in 0..50 do
-    say "$i:{fib i}"
+    say "$i:$(fib i)"
 
 test_fib1
 test_fib2

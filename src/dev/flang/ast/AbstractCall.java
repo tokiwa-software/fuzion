@@ -284,8 +284,8 @@ public abstract class AbstractCall extends Expr
     if (PRECONDITIONS) require
       (!frmlT.isOpenGeneric());
 
-    return adjustResultType(res, context, target().type(), frmlT,
-                            (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, true, arg, frmlT, from, to), true);
+    return adjustResultType(res, context, frmlT,
+                            (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, true, arg, frmlT, from, to));
   }
 
 
@@ -294,8 +294,6 @@ public abstract class AbstractCall extends Expr
    * instance.
    *
    * @param context the source code context where this Call is used
-   *
-   * @param tt the target type to use when adjusting t.
    *
    * @param rt the result type to adjust
    *
@@ -306,22 +304,51 @@ public abstract class AbstractCall extends Expr
    */
   protected AbstractType adjustResultType(Resolution res,
                                           Context context,
-                                          AbstractType tt,
                                           AbstractType rt,
-                                          BiConsumer<AbstractType, AbstractType> foundRef,
-                                          boolean forArg /* NYI: UNDER DEVELOPMENT: try to remove this parameter */)
+                                          BiConsumer<AbstractType, AbstractType> foundRef)
   {
     var t0 = calledFeature() == Types.f_ERROR ? Types.t_ERROR : rt;
-    var t1 = t0 == Types.t_ERROR                           ? t0 : adjustThisTypeForTarget(context, t0, foundRef);
-    var t2 = t1 == Types.t_ERROR                           ? t1 : calledFeature().outer().handDownToType(t1, tt);  // NYI: CLEANUP: try to use handDownAndApply
-    var t3 = t2 == Types.t_ERROR                           ? t2 : t2.applyTypePars(tt);
-    var t4 = t3 == Types.t_ERROR                           ? t3 : t3.applyTypePars(calledFeature(), actualTypeParameters());
-    var t5 = t4 == Types.t_ERROR || tt.isGenericArgument() ? t4 : t4.resolve(res, tt.feature().context());
-    var t6 = t5 == Types.t_ERROR || forArg                 ? t5 : adjustThisTypeForTarget(context, t5, foundRef);
-    if (POSTCONDITIONS) ensure
-      (t6 != null);
+    var t1 = t0 == Types.t_ERROR                           ? t0 : calledFeature().outer().handDownToType(t0, target().type().selfOrConstraint(context));
+    var t2 = t1 == Types.t_ERROR                           ? t1 : replace_type_parameter_used_for_this_type_in_cotype(t1, target());
+    var t3 = t2 == Types.t_ERROR                           ? t2 : adjustThisTypeForTarget(context, t2, calledFeature(), target().type(), foundRef);  // NYI: CLEANUP: try to use handDownAndApply
+    var t4 = t3 == Types.t_ERROR                           ? t3 : t3.applyTypePars(target().type());
+    var t5 = t4 == Types.t_ERROR                           ? t4 : t4.applyTypePars(calledFeature(), actualTypeParameters());
 
-    return t6;
+    if (POSTCONDITIONS) ensure
+      (t5 != null);
+
+    return t5;
+  }
+
+
+  /**
+   * For a call {@code T.f} on a type parameter whose result type contains
+   * {@code this.type}, make sure we replace the implicit type parameter to
+   * {@code this.type}.
+   *
+   * example:
+   *
+   *   equatable is
+   *
+   *     type.equality(a, b equatable.this.type) bool is abstract
+   *
+   *   equals(T type : equatable, x, y T) => T.equality x y
+   *
+   * For the call {@code T.equality x y}, we must replace the formal argument type
+   * for {@code a} (and {@code b}) by {@code T}.
+   *
+   *
+   * @param t the formal type to be adjusted
+   *
+   * @param target the target of the call
+   *
+   */
+  private static AbstractType replace_type_parameter_used_for_this_type_in_cotype(AbstractType t, Expr target)
+  {
+    var tpt = target.asTypeParameterType();
+    return tpt != null
+      ? t.replace_type_parameter_used_for_this_type_in_cotype(target.type().feature(), tpt)
+      : t;
   }
 
 
@@ -333,6 +360,10 @@ public abstract class AbstractCall extends Expr
    *
    * @param t the formal type to be adjusted.
    *
+   * @param cf the called feature
+   *
+   * @param tt the call targets type
+   *
    * @param foundRef a consumer that will be called for all the this-types found
    * together with the ref type they are replaced with.  May be null.  This will
    * be used to check for AstErrors.illegalOuterRefTypeInCall.
@@ -340,43 +371,18 @@ public abstract class AbstractCall extends Expr
    * @return a type derived from t where {@code this.type} is replaced by actual types
    * from the call's target where this is possible.
    */
-  AbstractType adjustThisTypeForTarget(Context context, AbstractType t, BiConsumer<AbstractType, AbstractType> foundRef)
+  private static AbstractType adjustThisTypeForTarget(Context context, AbstractType t, AbstractFeature cf, AbstractType tt, BiConsumer<AbstractType, AbstractType> foundRef)
   {
-    /**
-     * For a call {@code T.f} on a type parameter whose result type contains
-     * {@code this.type}, make sure we replace the implicit type parameter to
-     * {@code this.type}.
-     *
-     * example:
-     *
-     *   equatable is
-     *
-     *     type.equality(a, b equatable.this.type) bool is abstract
-     *
-     *   equals(T type : equatable, x, y T) => T.equality x y
-     *
-     * For the call {@code T.equality x y}, we must replace the formal argument type
-     * for {@code a} (and {@code b}) by {@code T}.
-     */
-    var target = target();
-    var tt = target().type();
-    var tpt = target.asTypeParameterType();
-    if (tpt != null)
+    if (!cf.isOuterRef())
       {
-        t = t.replace_type_parameter_used_for_this_type_in_cotype
-          (tt.feature(),
-           tpt);
-      }
-    if (!calledFeature().isOuterRef())
-      {
-        var declF = calledFeature().outer();
+        var declF = cf.outer();
         if (!tt.isGenericArgument() && declF != tt.feature())
           {
             var heir = tt.feature();
             t = t.replace_inherited_this_type(declF, heir, foundRef);
           }
-        var inner = ResolvedNormalType.newType(calledFeature().selfType(),
-                                               target().type());
+        var inner = ResolvedNormalType.newType(cf.selfType(),
+                                               tt);
         t = t.replace_this_type_by_actual_outer(inner, foundRef, context);
       }
     return t;
@@ -441,7 +447,7 @@ public abstract class AbstractCall extends Expr
   {
     var f = ft.genericArgument().outer();
     return
-      calledFeature() == f ? ft.applyTypeParsMaybeOpen(f, actualTypeParameters())
+      calledFeature() == f ? ft.applyTypeParsMaybeOpen(f, actualTypeParameters(), NO_SELECT)
                            : openGenericsFor(res, context, ft, target().type());
   }
 

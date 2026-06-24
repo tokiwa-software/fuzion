@@ -71,6 +71,7 @@ import dev.flang.util.Errors;
 import dev.flang.util.JavaInterface;
 import dev.flang.util.Pair;
 import dev.flang.util.StringHelpers;
+import dev.flang.util.Terminal;
 
 
 /**
@@ -151,7 +152,10 @@ public class Runtime extends ANY
    * Value used for {@code FuzionThread.effect_store} and {@code FuzionThread.effect_load}
    * to distinguish a unit value effect from a not existing effect
    */
-  public static final AnyI _UNIT_TYPE_EFFECT_ = new AnyI() { };
+  public static final AnyI _UNIT_TYPE_EFFECT_ = new AnyI()
+    {
+      public String toString() { return "UNIT_TYPE_EFFECT"; }
+    };
 
 
   /*--------------------------  static fields  --------------------------*/
@@ -443,13 +447,17 @@ public class Runtime extends ANY
   }
 
 
-  public static void effect_default(int id, AnyI instance)
+  /**
+   * Helper for instrinsic for `effect.instate_at_singularity0` to instate
+   * an effect at startup.
+   */
+  public static void effect_instate_at_singularity(int id, AnyI instance)
   {
     var t = currentThread();
-    if (t.effect_load(id) == null)
-      {
-        t.effect_store(id, instance);
-      }
+    if (CHECKS) check
+     (t.effect_load(id) == null);
+
+    t.effect_store(id, instance);
   }
 
 
@@ -469,17 +477,30 @@ public class Runtime extends ANY
 
 
   /**
-   * Helper method to implement intrinsic effect.replace0.
+   * Helper method to implement intrinsic effect.set0.
    *
    * @param id an effect type id.
    *
    * @param instance a new instance to replace the old one
    */
-  public static void effect_replace(int id, AnyI instance)
+  public static void effect_set(int id, AnyI instance)
   {
     var t = currentThread();
 
     t.effect_store(id, instance);
+  }
+
+
+  /**
+   * Helper method to implement intrinsic effect.remove0.
+   *
+   * @param id an effect type id.
+   */
+  public static void effect_remove(int id)
+  {
+    var t = currentThread();
+
+    t.effect_store(id, null);
   }
 
 
@@ -663,8 +684,8 @@ public class Runtime extends ANY
 
     var stacktrace = new StringWriter();
     stacktrace.write("Call stack:\n");
-    String last = "";
-    int count = 0;
+    var allStartWithFuzionDot = true;
+    var strs = new dev.flang.util.List<String>();
     for (var s : t.getStackTrace())
       {
         var m = s.getMethodName();
@@ -693,24 +714,53 @@ public class Runtime extends ANY
                   }
                 str = cl.substring(start);
               }
-            if (str.equals(last))
+            // we try to remove all lines that are inner features of `fuzion` or `panic.type` up to and including
+            // a call to `fuzion...cause` or `panic.cause`.
+            //
+            // NYI: CLEANUP: This might remove user defined features with
+            // carefully chosen names as well. Once the code base is
+            // sufficiently stable, we could instead have a fixed list of
+            // features to suppress here.
+            allStartWithFuzionDot = allStartWithFuzionDot && (str.startsWith("fuzion.") ||
+                                                              str.startsWith("panic.type."));
+            if (allStartWithFuzionDot &&
+                str.matches("fuzion\\..*\\.cause.*") ||
+                str.matches("panic.cause.*"))
               {
-                count++;
+                while (strs.size() > 1)  // we leave the topmost feature in
+                                         // (usually `fuzion.sys.fatal_fault`).
+                  {
+                    strs.removeLast();
+                  }
+                strs.add("[..]");
               }
             else
               {
-                if (count > 1)
-                  {
-                    stacktrace.write("\n  " + StringHelpers.repeated(count));
-                  }
-                else if (count > 0)
-                  {
-                    stacktrace.write("\n");
-                  }
-                stacktrace.write(str + " at " + s.getFileName().replace(File.separator, "/") + ":" + s.getLineNumber());
-                last = str;
-                count = 1;
+                strs.add(str + " at " + Terminal.GREEN + s.getFileName().replace(File.separator, "/") + ":" + s.getLineNumber() + Terminal.REGULAR_COLOR);
               }
+          }
+      }
+    String last = "";
+    int count = 0;
+    for (var str : strs)
+      {
+        if (str.equals(last))
+          {
+            count++;
+          }
+        else
+          {
+            if (count > 1)
+              {
+                stacktrace.write("\n  " + StringHelpers.repeated(count) + "\n");
+              }
+            else if (count > 0)
+              {
+                stacktrace.write("\n");
+              }
+            stacktrace.write(str);
+            last = str;
+            count = 1;
           }
       }
     if (count > 1)
@@ -1179,42 +1229,39 @@ public class Runtime extends ANY
     return ((ReentrantLock)rl).newCondition();
   }
 
-  public static boolean cnd_signal(Object cnd)
+  public static void cnd_signal(Object cnd)
   {
     try
       {
         ((Condition)cnd).signal();
-        return true;
       }
     catch(Exception e)
       {
-        return false;
+        Errors.fatal(e);
       }
   }
 
-  public static boolean cnd_broadcast(Object cnd)
+  public static void cnd_broadcast(Object cnd)
   {
     try
       {
         ((Condition)cnd).signalAll();
-        return true;
       }
     catch(Exception e)
       {
-        return false;
+        Errors.fatal(e);
       }
   }
 
-  public static boolean cnd_wait(Object cnd)
+  public static void cnd_wait(Object cnd)
   {
     try
       {
         ((Condition)cnd).await();
-        return true;
       }
     catch(Exception e)
       {
-        return false;
+        Errors.fatal(e);
       }
   }
 

@@ -18,13 +18,13 @@ It is unclear whether this semicolon terminates the inner block or not. To solve
 
 
 --CURDIR--/semicolon_ambiguity.fz:37:36: error 4: Ambiguous semicolon in nested blocks.
-      i i32       => ()->yak "'$i'"; say " is a number"
+      i i32       => ()->yap "'$i'"; say " is a number"
 -----------------------------------^
 It is unclear whether this semicolon terminates the inner block or not. To solve this, add braces { }.
 
 
 --CURDIR--/semicolon_ambiguity.fz:38:36: error 5: Ambiguous semicolon in nested blocks.
-      c codepoint => ()->yak "'$c'"; say " is a codepoint"
+      c codepoint => ()->yap "'$c'"; say " is a codepoint"
 -----------------------------------^
 It is unclear whether this semicolon terminates the inner block or not. To solve this, add braces { }.
 

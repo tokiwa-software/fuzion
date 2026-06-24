@@ -5,7 +5,7 @@ fuzion.runtime.fault
 fuzion.runtime.post_fault
 fuzion.runtime.pre_fault
 fuzion.runtime.stackoverflow
-internationalization.provide
+internationalization.Provide
 io.Err
 io.Out
 panic

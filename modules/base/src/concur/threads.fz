@@ -30,36 +30,88 @@
 # When the threads effect is uninstated all threads are joined.
 #
 public threads (
+
   # the handler this effect uses to spawn threads
   p Thread_Handler,
+
   # NYI: UNDER DEVELOPMENT: use more suitable data structure
-  public running array concur.thread
+  public running array concur.Thread,
+
+  # the currently running thread
+  public current concur.Thread
   ) : effect
 is
 
-  # spawn a new thread
+  # spawn a new thread, teleporting the current effect environment
+  # the new thread.
   #
-  public spawn(code ()->unit) concur.thread =>
-    st := p.spawn code
-    (threads p (running++[st]).as_array).replace
+  # This is to be used in environments where code interacts with data
+  # shared with the current thread, e.g., mutable variables that where
+  # created with a thread-safe mutate effect.
+  #
+  public spawn(# code to run in the new thread with the teleported effect environemnt
+               code ()->unit
+              ) concur.Thread =>
+    ewh := effect_wormhole
+    tid := unique_id  # NYI: CLEANUP: use thread id
+    spawn_without_inherited_effects tid ()->
+      ewh.teleport ()->
+        st := concur.Thread fuzion.sys.thread.current  tid
+        (threads p (running++[st]).as_array st).replace
+        code()
+
+
+  # spawn a new thread without inheriting the current thread's
+  # effect environment, i.e., using a new, empty effect environment.
+  #
+  # This is intended for use in, e.g., thread pools that are used to perform
+  # tasks that may require different effects.
+  #
+  public spawn_without_inherited_effects(# code ot run int he new thread without an new, empty effect environment
+                                         code ()->unit
+                                        ) concur.Thread
+  =>
+    tid := unique_id  # NYI: CLEANUP: use thread id
+    spawn_without_inherited_effects tid code
+
+
+  # helper for spawn and spawn_without_inherited_effects to spawn a thread
+  # with given tid.
+  #
+  public spawn_without_inherited_effects(# NYI: CLEANUP: remove this argument and use system thread id
+                                         tid uid,
+
+                                         # code ot run int he new thread without an new, empty effect environment
+                                         code ()->unit
+                                        ) concur.Thread =>
+    st := p.spawn tid code
+    (threads p (running++[st]).as_array current).replace
     st
 
 
   # detach a running thread
   #
-  public detach(thrd concur.thread) unit
+  public detach(thrd concur.Thread) unit
   pre debug: running.contains thrd
   =>
     # NYI: UNDER DEVELOPMENT: pthread_detach
-    (threads p (running.filter (t->t!=thrd)).as_array).replace
+    (threads p (running.filter (!=thrd)).as_array current).replace
 
 
   # join all running threads
   #
   public redef finally unit =>
-    running.for_each t->
-      t.join
+    running.for_each (.join)
 
+
+  # default implementation of threads
+  #
+  # this will get instated automatically at startup
+  #
+  public redef fixed type.default_value option concur.threads
+  =>
+    initial := concur.Thread fuzion.sys.thread.current (uid 0)
+    concur.threads concur.default_thread_handler [initial] initial
 
 
 # default thread handler
@@ -68,18 +120,11 @@ default_thread_handler : Thread_Handler is
 
   # spawn a new thread using given code
   #
-  redef spawn(code ()->unit) => concur.thread (fuzion.sys.thread.spawn code)
-
-
-
-# thread with no argument returns thread.env, i.e., the currently installed
-# source of thread concurrency.
-#
-public threads threads ! threads =>
-  (threads default_thread_handler []).default
-  threads.env
-
-
+  redef spawn(# NYI: CLEANUP: remove this argument and use system thread id
+              tid uid,
+              code ()->unit)
+  =>
+    concur.Thread (fuzion.sys.thread.spawn code) tid
 
 # Thread_Handler -- abstract source of concurrency
 #
@@ -87,4 +132,8 @@ private:public Thread_Handler ref is
 
   # spawn a new thread using given code
   #
-  spawn(code ()->unit) concur.thread => abstract
+  spawn(# NYI: CLEANUP: remove this argument and use system thread id
+        tid uid,
+        code ()->unit) concur.Thread
+  =>
+    abstract

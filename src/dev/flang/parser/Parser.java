@@ -344,7 +344,7 @@ field       : returnType
     return
       isNonEmptyVisibilityPrefix() ||
       isModifiersPrefix() ||
-      (isNamePrefix() && !isAnonymousPrefix() || current() == Token.t_type) && fork().skipFeaturePrefix();
+      (isNamePrefix(false, true) && !isAnonymousPrefix() || current() == Token.t_type) && fork().skipFeaturePrefix();
   }
 
 
@@ -469,11 +469,12 @@ visiFlag    : "private" colon "module"
   /**
    * Parse qualified name
    *
-qual        : namequal
-            | "type" dot namequal
+qual        : "type" dot namequal
+            | "universe" dot namequal
+            | namequal
             ;
-namequal    : name
-            | name dot qual
+namequal    : name dot qual
+            | name
             ;
    */
   List<ParsedName> qual(boolean mayBeAtMinIndent)
@@ -483,7 +484,12 @@ namequal    : name
       {
         if (skip(mayBeAtMinIndent, Token.t_type))
           {
-            result.add(new ParsedName(SourcePosition.builtIn, FuzionConstants.TYPE_NAME));
+            result.add(new ParsedName(tokenSourcePos(), FuzionConstants.TYPE_NAME));
+            dot();
+          }
+        else if (skip(mayBeAtMinIndent, Token.t_universe))
+          {
+            result.add(new ParsedName(tokenSourcePos(), FuzionConstants.UNIVERSE_NAME));
             dot();
           }
         result.add(name(mayBeAtMinIndent, false));
@@ -503,6 +509,10 @@ namequal    : name
   boolean skipQual()
   {
     if (skip(Token.t_type))
+      {
+        return skipDot() && skipQual();
+      }
+    else if (skip(Token.t_universe))
       {
         return skipDot() && skipQual();
       }
@@ -536,7 +546,7 @@ name        : IDENT                            // all parts of name must be in s
   {
     var result = ParsedName.ERROR_NAME;
     int pos = tokenPos();
-    if (isNamePrefix(mayBeAtMinIndent))
+    if (isNamePrefix(mayBeAtMinIndent, false))
       {
         var oldLine = sameLine(line());
         switch (current(mayBeAtMinIndent))
@@ -641,9 +651,9 @@ name        : IDENT                            // all parts of name must be in s
    */
   boolean isNamePrefix()
   {
-    return isNamePrefix(false);
+    return isNamePrefix(false, false);
   }
-  boolean isNamePrefix(boolean mayBeAtMinIndent)
+  boolean isNamePrefix(boolean mayBeAtMinIndent, boolean allowUniverseQualifier)
   {
     switch (current(mayBeAtMinIndent))
       {
@@ -655,6 +665,7 @@ name        : IDENT                            // all parts of name must be in s
       case t_ternary    :
       case t_index      :
       case t_set        : return true;
+      case t_universe   : return allowUniverseQualifier;
       default           : return false;
       }
   }
@@ -1615,9 +1626,9 @@ actualArgs  : actualSpaces
            t_do              ,
            t_while           ,
            t_until           ,
-           t_stringBD        ,
-           t_stringBQ        ,
-           t_stringBB        ,
+           t_stringPD        ,
+           t_stringPQ        ,
+           t_stringPB        ,
            t_question        ,
            t_eof             -> true;
 
@@ -2064,25 +2075,28 @@ addSemiElmts: SEMI semiSepElmts
     var elements = new List<Expr>();
     bracketTermWithNLs(BRACKETS, "inlineArray",
                        () -> {
-                         elements.add(operatorExpr());
-                         var sep = current();
-                         var s = sep;
-                         var p1 = tokenPos();
-                         boolean reportedMixed = false;
-                         while ((s == Token.t_comma || s == Token.t_semicolon) && skip(s))
-                           {
-                             if (current() != Token.t_rbracket)
-                               {
-                                 elements.add(operatorExpr());
-                               }
-                             s = current();
-                             if ((s == Token.t_comma || s == Token.t_semicolon) && s != sep && !reportedMixed)
-                               {
-                                 AstErrors.arrayInitCommaAndSemiMixed(pos, sourcePos(p1), tokenSourcePos());
-                                 reportedMixed = true;
-                               }
-                           }
-                         return Void.TYPE;
+                        if (current() != Token.t_rbracket)
+                          {
+                            elements.add(operatorExpr());
+                          }
+                        var sep = current();
+                        var s = sep;
+                        var p1 = tokenPos();
+                        boolean reportedMixed = false;
+                        while ((s == Token.t_comma || s == Token.t_semicolon) && skip(s))
+                          {
+                            if (current() != Token.t_rbracket)
+                              {
+                                elements.add(operatorExpr());
+                              }
+                            s = current();
+                            if ((s == Token.t_comma || s == Token.t_semicolon) && s != sep && !reportedMixed)
+                              {
+                                AstErrors.arrayInitCommaAndSemiMixed(pos, sourcePos(p1), tokenSourcePos());
+                                reportedMixed = true;
+                              }
+                          }
+                        return Void.TYPE;
                        },
                        () -> Void.TYPE);
     return new InlineArray(pos, elements);
@@ -2753,7 +2767,7 @@ loopEpilog  : "until" exprInLine thenPart elseBlockOpt
                 syntaxError(tokenPos(), "loopBody or loopEpilog: 'while', 'do', 'until' or 'else'", "loop");
               }
           }
-        return new Loop(pos, indexVars, nextValues, v, i, w, b, u, ub, ePos, els, els1, els2).tailRecursiveLoop();
+        return new Loop(sourceRange(pos), indexVars, nextValues, v, i, w, b, u, ub, ePos, els, els1, els2).tailRecursiveLoop();
       });
   }
 
@@ -2951,7 +2965,7 @@ ifexpr      : "if" exprInLine thenPart elseBlockOpt
 
         if (oldMinIdent != null) { setMinIndent(oldMinIdent); }
 
-        return Match.createIf(pos, e, b,
+        return Match.createIf(sourceRange(pos), e, b,
           // do no use empty blocks as else blocks since the source position
           // of those block might be somewhere unexpected.
           els != null && els._expressions.size() > 0 ? els : null,

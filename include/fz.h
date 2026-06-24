@@ -323,8 +323,7 @@ int fzE_socket_read(int sockfd, void * buf, size_t count);
  * @param count
  *      number of bytes to write
  *
- * @return 0 on success, or error code
- *         may block if socket is set to blocking
+ * @return -1 or number of bytes written on success
  */
 int fzE_socket_write(int sockfd, const void * buf, size_t count);
 
@@ -412,6 +411,11 @@ int fzE_lstat(const char *pathname, int64_t * metadata);
 void fzE_init(void);
 
 /**
+ * Get pointer to current thread.
+ */
+void * fzE_thread_current();
+
+/**
  * Start a new thread, returns a pointer to the thread.
  */
 void * fzE_thread_create(void *(*code)(void *),
@@ -422,6 +426,16 @@ void * fzE_thread_create(void *(*code)(void *),
  */
 // NYI: UNDER DEVELOPMENT:  add return value
 void fzE_thread_join(void * thrd);
+
+/*
+ * Set the scheduling policy and priority of a running thread.
+ */
+int fzE_thread_setschedparam(void * thrd, int policy, int priority);
+
+/*
+ * Set the scheduling CPU affinity of a running thread.
+ */
+int fzE_thread_setaffinity(void * thrd, const void * cores, int length);
 
 /**
  * Global lock
@@ -525,7 +539,7 @@ int32_t fzE_file_read(void * file, void * buf, int32_t size);
  *
  * @param size the size of buf in bytes
  *
- * @return amounts of bytes writter, or negative number on error
+ * @return amounts of bytes written, or negative number on error
  */
 int32_t fzE_file_write(void * file, void * buf, int32_t size);
 
@@ -730,7 +744,7 @@ void *  fzE_cnd_init     (void);
  *
  * @return -1 on error, 0 on success
  */
-int32_t fzE_cnd_signal   (void * cnd);
+void fzE_cnd_signal   (void * cnd);
 
 /**
  * unblocks all threads waiting on this condition
@@ -739,7 +753,7 @@ int32_t fzE_cnd_signal   (void * cnd);
  *
  * @return -1 on error, 0 on success
  */
-int32_t fzE_cnd_broadcast(void * cnd);
+void fzE_cnd_broadcast(void * cnd);
 
 /**
  * blocks thread until signal, broadcast or spurious wakeup
@@ -750,7 +764,7 @@ int32_t fzE_cnd_broadcast(void * cnd);
  *
  * @return -1 on error, 0 on success
  */
-int32_t fzE_cnd_wait     (void * cnd, void * mtx);
+void fzE_cnd_wait     (void * cnd, void * mtx);
 
 /**
  * destroys the condition
@@ -804,5 +818,10 @@ int64_t fzE_mmap_offset_multiple(void);
 int fzE_cwd(void * buf, size_t size);
 
 int fzE_isnan(double d);
+
+/**
+ * wrapper around DTRACE_PROBE
+ */
+void fzE_dtrace_probe(char col, const char* msg);
 
 #endif /* fz.h  */

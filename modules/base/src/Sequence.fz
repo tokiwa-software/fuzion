@@ -83,7 +83,7 @@ is
        .filter (.is_unequal)
        .first
        .or_else (count_order a b)
-       .is_less_or_equal
+       .is_less_than_or_equal
     else
       compile_time_panic  # Sequence is not orderable since element type is not
 
@@ -161,7 +161,10 @@ is
 
   # is this Sequence empty?
   #
-  public is_empty bool => as_list.is_empty
+  public is_empty bool
+    post debug : !finite.is_no || result = false
+  =>
+    finite.is_no ? false : as_list.is_empty
 
 
   # count the number of elements in this Sequence.  Note that this typically
@@ -214,7 +217,7 @@ is
   #
   public as_array array T =>
     if is_array_backed
-      array count (i -> Sequence.this[i])
+      array count.as_i64 (i -> Sequence.this[i])
     else
       as_list.as_array
 
@@ -349,10 +352,9 @@ is
       debug : from ≥ 0
       debug : to = 0 || (if is_array_backed || debug_level > 1 then is_valid_index to-1 else true)
       debug : from <= to
-    # NYI: BUG: postcondition on parametrized feature do not work yet?
-    # post
-    #   debug: result.finite.is_yes_or_unknown
-    #   debug: result.count = (to-from).as_i32
+    post
+      debug: result.finite.is_yes_or_unknown
+      debug: result.count = (to-from).as_i32
   =>
     drop from
       .take to-from
@@ -384,7 +386,7 @@ is
   #
   # NYI: UNDER DEVELOPMENT: do we want this public?
   #
-  first_index_of(cond T->bool) i32
+  first_index_of(F type: T->bool, cond F) i32
   =>
     for i:=0, i+1
         el in Sequence.this
@@ -443,17 +445,14 @@ is
   # in `O(n²)` performance for the concatenations.
   #
   public concat (s Sequence T) Sequence T =>
-    c1 :=   finite.is_yes ? count   : -1
-    c2 := s.finite.is_yes ? s.count : -1
-    if c1 = 0
+    if is_empty
       s
-                      #
-                      # if this sequence is infinite,
-                      # no need to concat s
-                      #
-    else if c2 = 0 || finite.is_no
+    #
+    # if this sequence is infinite,
+    # no need to concat s
+    #
+    else if s.is_empty || finite.is_no
       Sequence.this
-
     #
     # if s is infinite we use list concat
     # otherwise we would hang forever
@@ -481,7 +480,7 @@ is
   # is empty, returns 'nil'
   #
   public cycle Sequence T
-   post debug: result.finite.is_no
+   post debug: is_empty.as_trit = result.finite
   => as_list.cycle
 
 
@@ -529,7 +528,7 @@ is
   # NOTE: In case this Sequence is not finite, this will attempt to create an
   # infinitely long string resulting in failure due to resource exhaustion.
   #
-  public as_string_all String => "[{as_string ", "}]"
+  public as_string_all String => "[$(as_string ", ")]"
 
 
   # create a string representation of this Sequence including all the string
@@ -728,9 +727,10 @@ is
     take at ++ [v] ++ drop at
 
 
-  # sort this Sequence using the order defined by less_or_equal
+  # sort this Sequence using `by` to map elements to an orderable type.
   #
-  public sort_by(less_or_equal (T, T) -> bool) container.sorted_array T => container.sorted_array Sequence.this less_or_equal
+  public sort_by(O type : property.orderable, by T->O) container.sorted_array T =>
+    container.sorted_array Sequence.this ((a,b)->(by a) <= (by b))
 
 
   # create a new Sequence from the result of applying 'f' to the
@@ -1106,9 +1106,9 @@ is
   # via mapping all elements to key value pairs
   #
   public as_ordered_map(KEY type : property.orderable,
-                          VALUE type,
-                          mapper T -> (KEY,VALUE)
-                          ) container.ordered_map KEY VALUE
+                        VALUE type,
+                        mapper T -> (KEY,VALUE)
+                        ) container.ordered_map KEY VALUE
   =>
 
     keys, values :=
@@ -1235,7 +1235,7 @@ is
   #
   #     classify (c codepoint) String => c.is_ascii_letter ? "letter" : c.is_ascii_digit ? "digit" : "other"
   #
-  #     values.group_map String String classify (x->"_{x}_")
+  #     values.group_map String String classify (x->"_$(x)_")
   #
   # => {(digit => [_1_, _4_]), (letter => [_A_, _b_, _X_]), (other => [_?_])}
   #

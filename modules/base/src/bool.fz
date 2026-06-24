@@ -155,6 +155,15 @@ public bool : choice false_ true_, property.equatable, property.hashable, java_p
       "false"
 
 
+  # as a trit
+  #
+  public as_trit trit =>
+    if bool.this
+      trit.yes
+    else
+      trit.no
+
+
   # monoid of bool with infix & operation.  Will be true iff all elements are
   # true.
   #
@@ -180,6 +189,29 @@ public bool : choice false_ true_, property.equatable, property.hashable, java_p
     _ : Monoid bool is
       public redef infix ∙ (a, b bool) bool => a ^ b
       public redef e bool => false
+
+
+  # takes an arbitrary amount of bool arguments and returns true if and only if
+  # all of them are true
+  #
+  public type.all_of (B type..., values B...) bool =>
+    values.typed_foldf true T,e,v->
+      if T : bool
+        v & e
+      else
+        compile_time_panic
+
+
+  # takes an arbitrary amount of bool arguments and returns true if and only if
+  # any of them is true
+  #
+  public type.any_of (B type..., values B...) bool =>
+    values.typed_foldf false T,e,v->
+      if T : bool
+        v | e
+      else
+        compile_time_panic
+
 
 
 # boolean value "false"
@@ -222,23 +254,3 @@ public false bool => false_
 public true bool => true_
 
 
-# takes an arbitrary amount of bool arguments and returns true if and only if
-# all of them are true
-#
-public all_of (B type..., values B...) bool =>
-  values.typed_foldf true T,e,v->
-    if T : bool
-      v & e
-    else
-      compile_time_panic
-
-
-# takes an arbitrary amount of bool arguments and returns true if and only if
-# any of them is true
-#
-public any_of (B type..., values B...) bool =>
-  values.typed_foldf false T,e,v->
-    if T : bool
-      v | e
-    else
-      compile_time_panic

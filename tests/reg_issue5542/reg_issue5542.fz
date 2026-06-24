@@ -37,7 +37,7 @@
 #
 reg_issue5542 =>
 
-  say "using (\{\}) and _,_,_,..:"
+  say "using ({}) and _,_,_,..:"
 
   # the original, working examples from #5542
   #
@@ -76,7 +76,7 @@ reg_issue5542 =>
   say (id (i32,i32,i32,i32,i32,i32->unit) ((_,_,_,_,_,_->unit)))
 
   # examples using ({{}})
-  say "using (\{\{\}\}) and _,_,_,..:"
+  say "using ({{}}) and _,_,_,..:"
   say (id (()->unit)                      ({{()->unit}}))
   say (id (i32->unit)                     ({{_->unit}}))
   say (id (i32,i32->unit)                 ({{_,_->unit}}))
@@ -86,7 +86,7 @@ reg_issue5542 =>
   say (id (i32,i32,i32,i32,i32,i32->unit) ({{_,_,_,_,_,_->unit}}))
 
   # examples using ({{(())}})
-  say "using (\{\{(())\}\}) and _,_,_,..:"
+  say "using ({{(())}}) and _,_,_,..:"
   say (id (()->unit)                      ({{((()->unit))}}))
   say (id (i32->unit)                     ({{((_->unit))}}))
   say (id (i32,i32->unit)                 ({{((_,_->unit))}}))
@@ -117,7 +117,7 @@ reg_issue5542 =>
 
   # all the examples using real names a,b,c,... for lambda arguments
   #
-  say "using (\{\}) and a,b,c,..:"
+  say "using ({}) and a,b,c,..:"
   say (id (()->unit)                      ({()->unit}))
   say (id (i32->unit)                     ({a->unit}))
   say (id (i32,i32->unit)                 ({a,b->unit}))
@@ -125,7 +125,7 @@ reg_issue5542 =>
   say (id (i32,i32,i32,i32->unit)         ({a,b,c,d->unit}))
   say (id (i32,i32,i32,i32,i32->unit)     ({a,b,c,d,e->unit}))
   say (id (i32,i32,i32,i32,i32,i32->unit) ({a,b,c,d,e,f->unit}))
-  say "using {} and a,b,c,..:"
+  say "using $() and a,b,c,..:"
   say (id (()->unit)                      (()->unit))
   say (id (i32->unit)                     (a->unit))
   say (id (i32,i32->unit)                 (a,b->unit))
@@ -141,7 +141,7 @@ reg_issue5542 =>
   say (id (i32,i32,i32,i32->unit)         ((a,b,c,d->unit)))
   say (id (i32,i32,i32,i32,i32->unit)     ((a,b,c,d,e->unit)))
   say (id (i32,i32,i32,i32,i32,i32->unit) ((a,b,c,d,e,f->unit)))
-  say "using (\{\{\}\}) and a,b,c,..:"
+  say "using ({{}}) and a,b,c,..:"
   say (id (()->unit)                      ({{()->unit}}))
   say (id (i32->unit)                     ({{a->unit}}))
   say (id (i32,i32->unit)                 ({{a,b->unit}}))
@@ -149,7 +149,7 @@ reg_issue5542 =>
   say (id (i32,i32,i32,i32->unit)         ({{a,b,c,d->unit}}))
   say (id (i32,i32,i32,i32,i32->unit)     ({{a,b,c,d,e->unit}}))
   say (id (i32,i32,i32,i32,i32,i32->unit) ({{a,b,c,d,e,f->unit}}))
-  say "using (\{\{(())\}\}) and a,b,c,..:"
+  say "using ({{(())}}) and a,b,c,..:"
   say (id (()->unit)                      ({{((()->unit))}}))
   say (id (i32->unit)                     ({{((a->unit))}}))
   say (id (i32,i32->unit)                 ({{((a,b->unit))}}))

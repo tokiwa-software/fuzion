@@ -23,7 +23,7 @@
 
 String.mysubstring(from, to i32) String
   pre
-    debug: 0 <= from <= to <= String.this.byte_length
+    debug: 0 <= from <= to <= String.this.byte_count
   =>
     _ : String is
       public redef utf8 Sequence u8 =>

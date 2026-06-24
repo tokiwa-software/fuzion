@@ -52,16 +52,16 @@ To solve this, rename one of the ambiguous features.
 
 
 --CURDIR--/partial_application_negative.fz:42:47: error 6: Could not find called feature
-  test "data.map 3.prefix*   " (data.map    3.prefix*) "[3,6,9,12,15,18,21,24,27,30]"    # 1. should flag an error, do not change named prefix call to infix call
+  test "data.map 3.prefix*   " (data.map    3.prefix* ) "[3,6,9,12,15,18,21,24,27,30]"  # 1. should flag an error, do not change named prefix call to infix call
 ----------------------------------------------^^^^^^^
 Feature not found: 'prefix *' (one argument)
 Target feature: 'i32'
 In call: '3.prefix*'
 
 
---CURDIR--/partial_application_negative.fz:43:47: error 7: Incompatible types when passing argument in a call
-  test "data.map 3.prefix-   " (data.map    3.prefix-) "[3,6,9,12,15,18,21,24,27,30]"    # 2. should flag an error, do not change named prefix call to infix call
-----------------------------------------------^^^^^^^
+--CURDIR--/partial_application_negative.fz:43:45: error 7: Incompatible types when passing argument in a call
+  test "data.map 3.prefix-   " (data.map    3.prefix- ) "[3,6,9,12,15,18,21,24,27,30]"  # 2. should flag an error, do not change named prefix call to infix call
+--------------------------------------------^^^^^^^^^
 Actual type for argument #1 'f' does not match expected type.
 In call to          : 'Sequence.map'
 expected formal type: 'Unary B T'
@@ -86,10 +86,10 @@ This call was created automatically by partial application. To solve this, you m
 Feature not found: 'map' (no arguments)
 Target feature: 'interval'
 In call: 'map'
-To solve this, you might change the actual number of arguments to match the feature 'map' (one type parameter B, one value argument f) at {base.fum}/Sequence.fz:554:10:
+To solve this, you might change the actual number of arguments to match the feature 'map' (one type parameter B, one value argument f) at {base.fum}/Sequence.fz:553:10:
   public map(B type, f T->B) Sequence B
 ---------^^^
-To call 'map', you must provide 2 arguments. The type arguments may be omitted or `_` may be used in place of a type argument if they can be inferred from the value arguments..
+To call 'map', you must provide 2 arguments. The type parameters may be omitted or `_` may be used in place of a type parameter if they can be inferred from the value arguments..
 
 
 

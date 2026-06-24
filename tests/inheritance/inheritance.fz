@@ -104,11 +104,11 @@ inheritance is
       p => print
       print => say pid
       Q ref is
-        q => {yak "q"; p}
+        q => {yap "q"; p}
         R ref is
-          r => {yak "r"; p}
+          r => {yap "r"; p}
           S ref is
-            s => {yak "s"; p}
+            s => {yap "s"; p}
           Sv : S is
         Rv : R is
       Qv : Q is
@@ -409,7 +409,7 @@ inheritance is
       z := 42
       hi => ""
       v ref : s is
-        redef hi => "hi v {s.this.z}"
+        redef hi => "hi v $(s.this.z)"
 
     chck(msg, v, expected String) =>
       if v = expected

@@ -23,44 +23,45 @@
 
 mod_webserver =>
 
-  started := concur.atomic bool .new false
+  lm : racy_mutate is
+  lm ! ()->
+    started := concur.atomic bool .new false
 
-  cnt := concur.atomic i32 .new 0
+    cnt := concur.atomic i32 .new 0
 
-  ows :=
-    webserver_create
-      9999
-      net.family.ipv4
-      (x -> if x.starts_with "listening on port:" then started.write true else say x)
-      req->
-        _ := mutate
-        _ := cnt.incr
+    ows :=
+      webserver_create
+        9999
+        net.family.ipv4
+        (x -> if x.starts_with "listening on port:" then started.write true else say x)
+        req->
+          _ := cnt.incr
 
-        # inject fault in 4th request, causes 500 response
-        if cnt.read = 4
-          fuzion.runtime.contract_fault.cause ("some fault", "___")
+          # inject fault in 4th request, causes 500 response
+          if cnt.read = 4
+            fuzion.runtime.contract_fault.env.cause ("some fault", "___")
 
-        resp := "Pong"
-        http
-          .response_message
-          .new
-            200
-            [("Server", "FuzionWebServer v0.0.0"),
-             ("Content-Length", resp.byte_length.as_string),
-             ("Host", "localhost")]
-            (io.Read_Handler.from mutate resp)
+          resp := "Pong"
+          http
+            .response_message
+            .new
+              200
+              [("Server", "FuzionWebServer v0.0.0"),
+               ("Content-Length", resp.byte_count.as_string),
+               ("Host", "localhost")]
+              (io.Read_Handler.from lm resp)
 
 
-  match ows
-    e error => say e
-    ws Webserver =>
-      # busy loop
-      while !started.read do
+    match ows
+      e error => say e
+      ws Webserver =>
+        # busy loop
+        while !started.read do
 
-      for i in 1..10 do
+        for i in 1..10 do
+          say <| web.get4 "http://localhost:9999/"
+
+        ws.shutdown
+
+        # one more request after shutdown to unblock the accept
         say <| web.get4 "http://localhost:9999/"
-
-      ws.shutdown
-
-      # one more request after shutdown to unblock the accept
-      say <| web.get4 "http://localhost:9999/"

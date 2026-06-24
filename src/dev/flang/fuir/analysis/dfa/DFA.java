@@ -1024,14 +1024,6 @@ public class DFA extends ANY
 
 
   /**
-   * All fields that are ever written.  These will be needed even if they are
-   * never read unless the assignments are actually removed (which is currently
-   * not the case).
-   */
-  BitSet _writtenFields = new BitSet();
-
-
-  /**
    * All fields that are ever read.
    */
   BitSet _readFields = new BitSet();
@@ -1287,7 +1279,12 @@ public class DFA extends ANY
         public int accessedClazz(int s)
         {
           return codeAt(s) == ExprKind.Assign &&
-            (clazzIsUnitType(assignedType(s)) || clazzIsUnitType(accessTargetClazz(s)))
+            (
+              clazzIsUnitType(assignedType(s)) ||
+              clazzIsUnitType(accessTargetClazz(s)) ||
+              super.accessedClazz(s) == NO_CLAZZ ||
+              clazzIsUnitType(clazzResultClazz(super.accessedClazz(s)))
+            )
             ? NO_CLAZZ
             : super.accessedClazz(s);
         }
@@ -1673,39 +1670,6 @@ public class DFA extends ANY
         var ignore = c.showWhy(sb);
         say(sb);
       }
-  }
-
-
-  /**
-   * Flag to detect and stop (endless) recursion within NYIintrinsicMissing.
-   */
-  static boolean _recursion_in_NYIintrinsicMissing = false;
-
-
-  /**
-   * Report that intrinsic 'cl' is missing and return Value.UNDEFINED.
-   */
-  static Value NYIintrinsicMissing(Call cl)
-  {
-    if (true || cl._dfa._reportResults)
-      {
-        var name = fuir(cl).clazzOriginalName(cl.calledClazz());
-
-        // NYI: Proper error handling.
-        Errors.error("NYI: Support for intrinsic '" + name + "' missing");
-
-        // cl.showWhy(sb) may try to print result values that depend on
-        // intrinsics, so we risk running into an endless recursion here:
-        if (!_recursion_in_NYIintrinsicMissing)
-          {
-            _recursion_in_NYIintrinsicMissing = true;
-            var sb = new StringBuilder();
-            var ignore = cl.showWhy(sb);
-            say_err(sb);
-            _recursion_in_NYIintrinsicMissing = false;
-          }
-      }
-    return Value.UNDEFINED;
   }
 
 
@@ -2098,6 +2062,7 @@ public class DFA extends ANY
     put("effect.type.from_env"           , cl ->
     {
       var ecl = fuir(cl).clazzResultClazz(cl.calledClazz());
+      fuir(cl).recordEffectUsage(ecl);
       return cl.useAndGetEffect(cl.site(), ecl, false);
     });
     put("effect.type.unsafe_from_env"    , cl ->
@@ -2146,6 +2111,10 @@ public class DFA extends ANY
                                          , cl -> Value.UNIT);
     put("fuzion.sys.env_vars.has0"       , cl -> cl._dfa.bool() );
     put("fuzion.sys.env_vars.get0"       , cl -> cl._dfa.newConstString(null, cl) );
+    put("fuzion.sys.thread.current"      , cl ->
+        {
+          return genericResult(cl);
+        });
     put("fuzion.sys.thread.spawn0"       , cl ->
         {
           var oc = fuir(cl).clazzActualGeneric(cl.calledClazz(), 0);
@@ -2160,8 +2129,10 @@ public class DFA extends ANY
           return genericResult(cl);
         });
     put("fuzion.sys.thread.join0"        , cl -> Value.UNIT);
+    put("fuzion.sys.thread.set_policy"   , cl -> genericNumResult(cl));
+    put("fuzion.sys.thread.set_affinity0", cl -> genericNumResult(cl));
 
-    put("effect.type.replace0"              , cl ->
+    put("effect.type.set0"               , cl ->
         {
           var ecl = fuir(cl).effectTypeFromIntrinsic(cl.calledClazz());
           var new_e = cl._args.get(0).value();
@@ -2178,13 +2149,20 @@ public class DFA extends ANY
               if (oev != ev)
                 {
                   cl._dfa._preEffectValues.put(ecl, ev);
-                  cl._dfa.wasChanged(() -> "effect.type.replace0 called: " + fuir(cl).clazzName(cl.calledClazz()));
+                  cl._dfa.wasChanged(() -> "effect.type.set0 called: " + fuir(cl).clazzName(cl.calledClazz()));
                 }
             }
 
           return Value.UNIT;
         });
-    put("effect.type.default0"              , cl ->
+    put("effect.type.remove0"              , cl ->
+        {
+          var ecl = fuir(cl).effectTypeFromIntrinsic(cl.calledClazz());
+          // NYI: UNDER DEVELOPMENT: do we need to change the enviornment?
+          // cl.removeEffect(ecl);
+          return Value.UNIT;
+        });
+    put("effect.type.instate_at_singularity0", cl ->
         {
           var ecl = fuir(cl).effectTypeFromIntrinsic(cl.calledClazz());
           var new_e = cl._args.get(0).value();
@@ -2195,7 +2173,7 @@ public class DFA extends ANY
                 {
                   cl._dfa._defaultEffects.put(ecl, new_e);
                   cl._dfa._defaultEffectContexts.put(ecl, cl);
-                  cl._dfa.wasChanged(() -> "effect.default called: " + fuir(cl).clazzName(cl.calledClazz()));
+                  cl._dfa.wasChanged(() -> "effect.instate_at_singularity0 called: " + fuir(cl).clazzName(cl.calledClazz()));
                 }
             }
           else
@@ -2205,7 +2183,7 @@ public class DFA extends ANY
               if (oev != ev)
                 {
                   cl._dfa._preEffectValues.put(ecl, ev);
-                  cl._dfa.wasChanged(() -> "effect.default called: " + fuir(cl).clazzName(cl.calledClazz()));
+                  cl._dfa.wasChanged(() -> "effect.instate_at_singularity0 called: " + fuir(cl).clazzName(cl.calledClazz()));
                 }
             }
           return Value.UNIT;
@@ -2600,18 +2578,18 @@ public class DFA extends ANY
     put("concur.sync.cnd_signal"            , cl ->
       {
         cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
-        return cl._dfa.bool();
+        return Value.UNIT;
       });
     put("concur.sync.cnd_broadcast"         , cl ->
       {
         cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
-        return cl._dfa.bool();
+        return Value.UNIT;
       });
     put("concur.sync.cnd_wait"              , cl ->
       {
         cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
         cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 1));
-        return cl._dfa.bool();
+        return Value.UNIT;
       });
     put("concur.sync.cnd_destroy"           , cl ->
       {

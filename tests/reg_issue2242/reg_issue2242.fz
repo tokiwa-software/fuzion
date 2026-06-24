@@ -25,7 +25,7 @@ reg_issue2242 =>
 
   print(T type, E type : mutate, arr container.Mutable_Array T E) =>
     for x in arr do
-      yak "$x, "
+      yap "$x, "
     say ""
 
   partition(T type : property.orderable, E type : mutate, arr container.Mutable_Array T E, low i64, high i64) =>
@@ -57,7 +57,7 @@ reg_issue2242 =>
 
     a := mi.array f64 .new 10 0.0
     for i in a.indices do
-      a[i] := random.next_f64
+      a[i] := random.env.next_f64
 
 
     say "unsorted"

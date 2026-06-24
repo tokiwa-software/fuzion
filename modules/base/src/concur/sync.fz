@@ -34,9 +34,9 @@ public sync is
   mtx_destroy(mtx Mutex) unit => intrinsic
 
   cnd_init(mtx Mutex) outcome Condition => intrinsic
-  cnd_signal(cnd Condition) bool => intrinsic
-  cnd_broadcast(cnd Condition) bool => intrinsic
-  cnd_wait(cnd Condition, mtx Mutex) bool => intrinsic
+  cnd_signal(cnd Condition) unit => intrinsic
+  cnd_broadcast(cnd Condition) unit => intrinsic
+  cnd_wait(cnd Condition, mtx Mutex) unit => intrinsic
   # NYI: cnd_timedwait
   cnd_destroy(cnd Condition) unit => intrinsic
 
@@ -53,14 +53,26 @@ public sync is
     # run code synchronized across all threads
     # that also use this mutex
     #
-    public synchronized(T type, code ()->T) T =>
+    public synchronized(T type, F type : ()->T, code F) T =>
 
       lock_effect : effect is
         public redef finally unit =>
-          check mtx_unlock mtx
+          unlock
 
-      check mtx_lock mtx
-      lock_effect ! code
+      lock
+      lock_effect ! code.call
+
+    # low-level lock this mutex
+    module lock
+    =>
+      res := mtx_lock mtx
+      check res
+
+    # low-level unlock this mutex
+    module unlock
+    =>
+      res := mtx_unlock mtx
+      check res
 
 
     # initialize a new mutex
@@ -69,7 +81,12 @@ public sync is
       concur.sync.mtx_init.bind mtx->
         concur.sync.mutex mtx
 
-    # NYI: UNDER DEVELOPMENT: destroy
+    # destroy this mutex, i.e., release its resources
+    #
+    # NYI: UNDER DEVELOPMENT: check that destroy is called by all code that creates new mutexes
+    #
+    module destroy =>
+      mtx_destroy mtx
 
 
   # a condition is synchronization primitive
@@ -92,21 +109,21 @@ public sync is
 
     # signal one waiting thread to wake up
     #
-    public signal bool
+    public signal unit
       pre is_locked.read
     => cnd_signal cnd
 
 
     # signal all waiting threads to wake up
     #
-    public broadcast bool
+    public broadcast unit
       pre is_locked.read
     => cnd_broadcast cnd
 
 
     # make this thread wait for signal
     #
-    public wait bool
+    public wait unit
       pre is_locked.read
     => cnd_wait cnd mtx.mtx
 

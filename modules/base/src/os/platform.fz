@@ -35,9 +35,7 @@ public platform : choice os.windows os.posix is
 
   public type.or_panic platform =>
     # NYI: UNDER DEVELOPMENT: better make this an intrinsic
-    if (envir.vars["OS"].or_default "").lower_case.contains "windows"
+    if (envir.vars.env["OS"].or_default "").lower_case.contains "windows"
       os.windows
     else
       os.posix
-
-

@@ -104,6 +104,7 @@ public class Intrinsics extends ANY
   private static void put(String n1, String n2, String n3, IntrinsicCode c) { put(n1, c); put(n2, c); put(n3, c); }
   private static void put(String n1, String n2, String n3, String n4, IntrinsicCode c) { put(n1, c); put(n2, c); put(n3, c); put(n4, c); }
   private static void put(String n1, String n2, String n3, String n4, String n5, IntrinsicCode c) { put(n1, c); put(n2, c); put(n3, c); put(n4, c); put(n5, c); }
+  private static void put(String n1, String n2, String n3, String n4, String n5, String n6, IntrinsicCode c) { put(n1, c); put(n2, c); put(n3, c); put(n4, c); put(n5, c); put(n6, c); }
 
 
   /**
@@ -275,7 +276,7 @@ public class Intrinsics extends ANY
         {
           Errors.runTime(utf8ByteArrayDataToString(args.get(1)),
                          utf8ByteArrayDataToString(args.get(2)),
-                         Executor.callStack(executor.fuir()));
+                         Executor.callStack());
           return Value.UNIT;
         });
 
@@ -440,6 +441,12 @@ public class Intrinsics extends ANY
         });
     put("fuzion.sys.env_vars.has0", (executor, innerClazz) -> args -> new boolValue(System.getenv(utf8ByteArrayDataToString(args.get(1))) != null));
     put("fuzion.sys.env_vars.get0", (executor, innerClazz) -> args -> Interpreter.boxedConstString(System.getenv(utf8ByteArrayDataToString(args.get(1)))));
+    put("fuzion.sys.thread.current", (executor, innerClazz) -> args ->
+        {
+          // NYI: CLEANUP: should not use javaObjectToInstance
+          var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
+          return JavaInterface.javaObjectToInstance(FuzionThread.current(), resultClazz);
+        });
     put("fuzion.sys.thread.spawn0", (executor, innerClazz) -> args ->
         {
           var oc   = executor.fuir().clazzArgClazz(innerClazz, 0);
@@ -470,6 +477,14 @@ public class Intrinsics extends ANY
             }
           while (!result);
           return Value.UNIT;
+        });
+    put("fuzion.sys.thread.set_policy", (executor, innerClazz) -> args ->
+        {
+          return new i32Value(38 /* ENOSYS - Function not implemented */);
+        });
+    put("fuzion.sys.thread.set_affinity0", (executor, innerClazz) -> args ->
+        {
+          return new i32Value(38 /* ENOSYS - Function not implemented */);
         });
 
     put("safety"                , (executor, innerClazz) -> args -> new boolValue(executor.options().fuzionSafety()));
@@ -626,11 +641,12 @@ public class Intrinsics extends ANY
     put("f64.as_i64_lax"        , (executor, innerClazz) -> args -> new i64Value((long)                                      args.get(0).f64Value() ));
     put("f64.as_f32"            , (executor, innerClazz) -> args -> new f32Value((float)                                     args.get(0).f64Value() ));
     put("f64.cast_to_u64"       , (executor, innerClazz) -> args -> new u64Value (    Double.doubleToLongBits(               args.get(0).f64Value())));
-    put("effect.type.abort0"      ,
-        "effect.type.default0"    ,
-        FuzionConstants.EFFECT_INSTATE_NAME,
-        "effect.type.is_instated0",
-        "effect.type.replace0"    , (executor, innerClazz) -> effect(executor, innerClazz));
+    put("effect.type.abort0"                 ,
+        "effect.type.instate_at_singularity0",
+        FuzionConstants.EFFECT_INSTATE_NAME  ,
+        "effect.type.is_instated0"           ,
+        "effect.type.set0"                   ,
+        "effect.type.remove0"                , (executor, innerClazz) -> effect(executor, innerClazz));
 
     put("effect.type.from_env",
         "effect.type.unsafe_from_env",
@@ -676,7 +692,7 @@ public class Intrinsics extends ANY
           return new boolValue(false);
         }
     });
-    put("concur.sync.mtx_destroy", (executor, innerClazz) -> args -> executor.unitValue());
+    put("concur.sync.mtx_destroy", (executor, innerClazz) -> args -> Value.UNIT);
 
     /* Condition */
     put("concur.sync.cnd_init", (executor, innerClazz) -> args -> {
@@ -688,36 +704,36 @@ public class Intrinsics extends ANY
       try
         {
           ((Condition) ((JavaRef) args.get(1))._javaRef).signal();
-          return new boolValue(true);
         }
       catch (Exception e)
         {
-          return new boolValue(false);
+          Errors.fatal(e);
         }
+      return Value.UNIT;
     });
     put("concur.sync.cnd_broadcast", (executor, innerClazz) -> args -> {
       try
         {
           ((Condition) ((JavaRef) args.get(1))._javaRef).signalAll();
-          return new boolValue(true);
         }
       catch (Exception e)
         {
-          return new boolValue(false);
+          Errors.fatal(e);
         }
+      return Value.UNIT;
     });
     put("concur.sync.cnd_wait", (executor, innerClazz) -> args -> {
       try
         {
           ((Condition) ((JavaRef) args.get(1))._javaRef).await();
-          return new boolValue(true);
         }
       catch (Exception e)
         {
-          return new boolValue(false);
+          Errors.fatal(e);
         }
+      return Value.UNIT;
     });
-    put("concur.sync.cnd_destroy", (executor, innerClazz) -> args -> executor.unitValue());
+    put("concur.sync.cnd_destroy", (executor, innerClazz) -> args -> Value.UNIT);
     put("native_string_length", (executor, innerClazz) -> args -> {
       throw new UnsupportedOperationException("NYI: UNDER DEVELOPMENT: native_string_length");
     });
@@ -757,7 +773,13 @@ public class Intrinsics extends ANY
         switch (in)
           {
           case "effect.type.abort0"    : throw new Abort(ecl);
-          case "effect.type.default0"  : if (effects.get(ecl) == null) { check(fuir.clazzIsUnitType(ecl) || ev != Value.UNIT); effects.put(ecl, ev); } break;
+          case "effect.type.instate_at_singularity0":
+            {
+              check(effects.get(ecl) == null);
+              check(fuir.clazzIsUnitType(ecl) || ev != Value.UNIT);
+              effects.put(ecl, ev);
+              break;
+            }
           case FuzionConstants.EFFECT_INSTATE_NAME :
             {
               // save old and instate new effect value ev:
@@ -796,7 +818,9 @@ public class Intrinsics extends ANY
             }
             break;
           case "effect.type.is_instated0": return new boolValue(effects.get(ecl) != null /* NOTE not containsKey since ecl may map to null! */ );
-          case "effect.type.replace0"    : check(effects.get(ecl) != null, fuir.clazzIsUnitType(ecl) || ev != Value.UNIT); effects.put(ecl, ev);   break;
+          case "effect.type.set0"        : check(fuir.clazzIsUnitType(ecl) || ev != Value.UNIT);
+                                           effects.put(ecl, ev);   break;
+          case "effect.type.remove0"     : effects.put(ecl, null); break;
           default: throw new Error("unexpected effect intrinsic '"+in+"'");
           }
         return Value.UNIT;

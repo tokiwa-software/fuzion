@@ -269,16 +269,13 @@ public class Types extends ANY implements ClassFileConstants
   {
     var i = new ClassFile(_opt, _names.javaInterface(cl), "java/lang/Object", true, _fuir.clazzSrcFile(cl));
     _interfaceFiles.put(cl, i);
-    if (!_fuir.clazzIsChoice(cl))
+    var hs = _fuir.clazzInstantiatedHeirs(cl);
+    for (var h : hs)
       {
-        var hs = _fuir.clazzInstantiatedHeirs(cl);
-        for (var h : hs)
+        var c = classFile(h);
+        if (c != null)
           {
-            var c = classFile(h);
-            if (c != null)
-              {
-                c.addImplements(i._name);
-              }
+            c.addImplements(i._name);
           }
       }
   }
@@ -372,7 +369,7 @@ public class Types extends ANY implements ClassFileConstants
            c_Java_Ref,
            c_Mapped_Memory,
            c_Native_Ref,
-           c_Thread -> JAVA_LANG_OBJECT;
+           c_Internal_Thread -> JAVA_LANG_OBJECT;
       default        ->
         {
           if (cl == _fuir.clazzUniverse()                        ||
@@ -412,7 +409,7 @@ public class Types extends ANY implements ClassFileConstants
    */
   JavaType resultType(int cl)
   {
-    if (_fuir.clazzIsRef(cl) && hasRealHeirs(cl))
+    if (hasRealHeirs(cl))
       {
         return interfaceFile(cl).classType();
       }

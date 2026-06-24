@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import static dev.flang.util.FuzionConstants.NO_SELECT;
+
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -266,7 +268,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * All arguments of this feature. This includes type arguments.
+   * All arguments of this feature. This includes type parameters.
    */
   public abstract List<AbstractFeature> arguments();
 
@@ -433,7 +435,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     var result = featureName().baseNameHuman();
     if (result == FuzionConstants.HUMAN_READABLE_LAMBDA_NAME)
       {
-        var code = result + pos().sourceText().trim();
+        var code = result + pos().sourceText().split("#")[0].trim();
         var dotdotdot = "";
         code = code.replaceAll("\n", " ");
         while (code.indexOf("  ") >= 0)
@@ -1250,7 +1252,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
     if (f.outer() == p.calledFeature())
       {
-        // NYI: This might be incorrect in case p.actualTypeParameters() is inferred but not set yet.
+        // NYI: BUG: This might be incorrect in case p.actualTypeParameters() is inferred but not set yet.
         fn = f.effectiveName(res, p.actualTypeParameters());
       }
 
@@ -1433,13 +1435,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
        Errors.any() || !t.isOpenGeneric() || (select >= 0),
        inh != null);
 
-    // NYI: CLEANUP: wold be good to base this on handDownListThroughInheritsCalls.
-    for (AbstractCall c : inh)
-      {
-        t = t.applyTypePars(c.calledFeature(),
-                            c.actualTypeParameters(), select);
-      }
-    return t;
+    return handDownListThroughInheritsCalls(new List<>(t), inh, select).get(0);
   }
 
 
@@ -1447,11 +1443,25 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * Variant of handDownThroughInheritsCalls that operates on a list of types
    * and support open type parameters.
    *
-   * @param l the lsit of types to be handed down.
+   * @param l the list of types to be handed down.
    *
    * @param inh the inheritance chain along which types should be handed down.
    */
   public static List<AbstractType> handDownListThroughInheritsCalls(List<AbstractType> l, List<AbstractCall> inh)
+  {
+    return handDownListThroughInheritsCalls(l, inh, NO_SELECT);
+  }
+
+
+  /**
+   * Variant of handDownThroughInheritsCalls that operates on a list of types
+   * and support open type parameters.
+   *
+   * @param l the list of types to be handed down.
+   *
+   * @param inh the inheritance chain along which types should be handed down.
+   */
+  public static List<AbstractType> handDownListThroughInheritsCalls(List<AbstractType> l, List<AbstractCall> inh, int select)
   {
     if (PRECONDITIONS) require
       (l != null,
@@ -1461,16 +1471,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       {
         var cf = c.calledFeature();
         var actualTypes = c.actualTypeParameters();
-        if (true)
-          {
-            l = l.flatMap(t -> t.isOpenGeneric() && t.genericArgument().outer() == cf
-                               ? t.genericArgument().replaceOpen(actualTypes)
-                               : new List<>(t.applyTypePars(cf, actualTypes)));
-          }
-        else
-          { // NYI: CLEANUP: This simpler code does not work for reg_issue5895, need to check why:
-            l = l.flatMap(t -> t.applyTypeParsMaybeOpen(cf, actualTypes));
-          }
+        l = l.flatMap(t -> t.applyTypeParsMaybeOpen(cf, actualTypes, select));
       }
     return l;
   }
@@ -1699,7 +1700,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * Is this feature an argument of its outer feature, but not a type argument?
+   * Is this feature an argument of its outer feature, but not a type parameter?
    */
   boolean isValueArgument()
   {
@@ -1787,7 +1788,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * Return the index of this type parameter within the type arguments of its
+   * Return the index of this type parameter within the type parameters of its
    * outer feature.
    *
    * @return the index such that formalGenerics.get(result)) this
@@ -2104,7 +2105,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
     var result = this;
     var o = outer();
-    if (!isThisTypeInCotype() && o.isCotype())
+    if (!isCoTypesThisType() && o.isCotype())
       {
         result = o.cotypeOrigin().typeArguments().get(typeParameterIndex()-1);
       }
@@ -2131,23 +2132,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
         result = o.cotype().typeArguments().get(typeParameterIndex()+1);
       }
     return result;
-  }
-
-
-  /**
-   * For a feature {@code f(A, B type)} the corresponding type feature has an implicit
-   * THIS#TYPE type parameter: {@code f.type(THIS#TYPE, A, B type)}.
-   *
-   * This checks if this Generic is this implicit type parameter.
-   */
-  boolean isThisTypeInCotype()
-  {
-    if (PRECONDITIONS) require
-      (isTypeParameter());
-
-    return state().atLeast(State.FINDING_DECLARATIONS)
-      && outer().isCotype()
-      && typeParameterIndex() == 0;
   }
 
 

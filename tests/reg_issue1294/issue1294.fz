@@ -65,7 +65,7 @@ scenario2 is
       _ : scenario2.M T is
         fixed redef e => zero
 
-  b : a scenario2.b is
+  b : scenario2.a scenario2.b is
 
     fixed redef type.zero scenario2.b => scenario2.b
 
@@ -140,7 +140,7 @@ ex202 =>
       s ? nil    => sum
         | c Cons => sum_of_squares (sum + c.head**2) c.tail
 
-    say "sum is {sum_of_squares 0 a.as_list}"
+    say "sum is $(sum_of_squares 0 a.as_list)"
 
   sum_map
   sum_map_fold
@@ -194,11 +194,11 @@ ex204 =>
 
   a f64 := 3.14
   b, c := frexp a
-  say "{b} {c}"
+  say "$(b) $(c)"
 
   d f64 := 5E-324
   e, f := frexp d
-  say "{e} {f}"
+  say "$(e) $(f)"
 
 ex204
 
@@ -313,7 +313,7 @@ scenario8 is
     # create string representation consisting of type, to_u32
     # and valueString
     #
-    public redef as_string String => "num0.this {to_u32} {to_u32_loop} '$valueString'"
+    public redef as_string String => "num0.this $(to_u32) $(to_u32_loop) '$valueString'"
 
     # string representation of this value, to be implemented by
     # children.
@@ -328,7 +328,7 @@ scenario8 is
 
   # integer mod 2 implementation of num0
   #
-  intM2(is_zero bool) : num0 is
+  intM2(is_zero bool) : scenario8.num0 is
     fixed z => intM2 true
     fixed o => intM2 false
     fixed redef type.zero => scenario8.intM2 true

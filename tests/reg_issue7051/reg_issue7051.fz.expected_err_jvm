@@ -1,0 +1,13 @@
+
+error 1: Postcondition `result < 0` does not hold after call
+Call stack:
+fuzion.sys.fatal_fault#2 at {base.fum}/fuzion/sys.fz:55
+[..]
+fuzion.runtime.postcondition_fault#1 at {base.fum}/fuzion/runtime/post_fault.fz:56
+reg_issue7051.outer2.post a i32 at --CURDIR--/reg_issue7051.fz:28
+reg_issue7051.outer2.post a i32 at --CURDIR--/reg_issue7051.fz:34
+reg_issue7051.outer2.a#2 i32 at --CURDIR--/reg_issue7051.fz:34
+reg_issue7051 at --CURDIR--/reg_issue7051.fz:37
+
+*** fatal errors encountered, stopping.
+one error.

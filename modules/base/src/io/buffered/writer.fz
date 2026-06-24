@@ -40,7 +40,7 @@ is
 
   # circular buffer backing this writer
   #
-  buffer := (LM.Circular_Buffer u8).new buf_size.as_i64 0
+  buffer := container.Ring_Buffer u8 LM buf_size.as_i64
 
 
 
@@ -50,7 +50,7 @@ is
   public redef finally unit =>
     match flush
       e error =>
-        fuzion.runtime.fault.cause ("{writer.this.type.name}.finally", e.msg)
+        fuzion.runtime.fault.env.cause ("$(writer.this.type.name).finally", e.msg)
       unit =>
 
 
@@ -62,11 +62,12 @@ is
   # when the effect is deinstated
   #
   public flush outcome unit =>
-    if buffer.buffered = 0
-      unit
+    for res := outcome unit, wh.write [b.or_panic]
+        to_be_written := buffer.count, to_be_written-1
+        b := buffer.poll
+    while to_be_written>0 && b.ok
     else
-      n := buffer.buffered # we are expecting to write this number of bytes
-      wh.write (buffer.flush n)
+      res
 
 
   # buffered writing of the given byte
@@ -104,10 +105,13 @@ is
   #
   write_detailed (data Sequence u8, written i32) write_result =>
     # still fits into buffer, no need to flush yet
-    if buffer.available.as_i32 >= data.count
-      write_result written (buffer.enqueue data)
+    if buffer.unused.as_i32 >= data.count
+      data.for_each b->
+        res := buffer.add b
+        check debug: res
+      write_result written unit
     else
-      bfrd := buffer.buffered.as_i32
+      bfrd := buffer.count.as_i32
       match flush
         e error => write_result written e
         unit =>

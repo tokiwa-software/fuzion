@@ -27,4 +27,4 @@ apply(A type,
 =>
   f.call a
 
-say <| apply _ _ 99 x->"$x*2={x*2}"
+say <| apply _ _ 99 x->"$x*2=$(x*2)"

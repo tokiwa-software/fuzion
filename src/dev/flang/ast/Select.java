@@ -177,11 +177,15 @@ public class Select extends Call {
               // explicit
               ? new Call(pos(), _target, _name, select(), Call.NO_GENERICS, NO_EXPRS, null)
               // implicit
-              : resolveImplicit(res, context, getActualResultType(res, context, true));
+              : resolveImplicit(res, context, getResultType(res, context, true));
           }
         else if (_target != null)
           {
             AstErrors.useOfSelectorRequiresCallWithOpenGeneric(pos(), _calledFeature, null, select(), _target.type());
+          }
+        else if (_pendingError != null)
+          {
+            _pendingError.run();
           }
         else
           {

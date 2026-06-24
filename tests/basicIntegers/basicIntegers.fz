@@ -30,14 +30,14 @@
 basicIntegers =>
 
   test(T type : num.wrap_around, a, b T) unit =>
-    say "{T.name}: $a +° $b = {a +° b}"
-    say "{T.name}: $a -° $b = {a -° b}"
-    say "{T.name}: $a *° $b = {a *° b}"
+    say "$(T.name): $a +° $b = $(a +° b)"
+    say "$(T.name): $a -° $b = $(a -° b)"
+    say "$(T.name): $a *° $b = $(a *° b)"
     if !b.is_zero
-      say "{T.name}: $a / $b = {a / b}"
-      say "{T.name}: $a % $b = {a % b}"
+      say "$(T.name): $a / $b = $(a / b)"
+      say "$(T.name): $a % $b = $(a % b)"
     if a -! b
-      say "{T.name}: |$a - $b| = {|a-b|}"
+      say "$(T.name): |$a - $b| = $(|a-b|)"
 
   test_i128 (a, b i64) unit => test i128 a.as_i128               b.as_i128
   test_i64  (a, b i64) unit => test i64  a                       b

@@ -311,14 +311,15 @@ public class LibraryModule extends Module implements MirModule
   {
     if (_mir == null)
       {
-        var d = main == null
-          ? universe()
-          : lookupFeature(universe(), FeatureName.get(main, 0));
-
+        var d = effectiveMain(universe(), main);
         if (CHECKS) check
           (d != null);
 
-        _mir = createMIR(this, universe(), d);
+        _mir = new MIR(universe(), d, this);
+        if (!Errors.any())
+          {
+            new DFA(_mir).check();
+          }
 
         Errors.showAndExit();
       }
@@ -657,7 +658,7 @@ Module File
   }
   byte[] hash(int at)
   {
-    var r = new byte[16];
+    var r = new byte[32];
     for (int i = 0; i<r.length; i++)
       {
         r[i] = _data.get(at);
@@ -671,7 +672,7 @@ Module File
   }
   int hashNextPos()
   {
-    return hashPos() + 16;
+    return hashPos() + 32;
   }
   int moduleRefsCountPos()
   {
@@ -776,7 +777,7 @@ ModuleRef
   }
   int moduleRefHashNextPos(int at)
   {
-    return moduleRefHashPos(at) + 16;
+    return moduleRefHashPos(at) + 32;
   }
   int moduleRefNextPos(int at)
   {

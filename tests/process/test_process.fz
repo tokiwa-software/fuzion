@@ -68,7 +68,7 @@ test_process =>
         _ := p.with_out unit lm ()->
           out := ((io.buffered lm).read_string 1E9)
             .or_panic
-            .split "\n"
+            .lines
             # for some reason on windows/msys these are included, even though we want empty env...
             .filter (l -> !(l.starts_with "HOME=" || l.starts_with "TERM="))
           say (String.join out)
@@ -89,7 +89,7 @@ test_process =>
       (p | ["cat"]).bind p2->
         _ := lm ! ()->
           _ := p2.with_out unit lm ()->
-            say ((io.buffered lm).read_string 1E9).or_panic.byte_length
+            say ((io.buffered lm).read_string 1E9).or_panic.byte_count
           say p2.wait
 
 
@@ -98,10 +98,10 @@ test_process =>
   test "100kb argument, piped to another process" ()->
     (os.process.start "echo" ["-n", (get_str 1E5)]).bind p->
       (p | ["cat"]).bind p2->
-        say p2.read_string.or_panic.byte_length
-        say "exit code: {p2.wait}"
+        say p2.read_string.or_panic.byte_count
+        say "exit code: $(p2.wait)"
         # execute wait twice:
-        say "exit code: {p2.wait}"
+        say "exit code: $(p2.wait)"
 
 
 
@@ -109,8 +109,8 @@ test_process =>
   test "10mb write to stdin, piped to another process"
   p := os.process.start ["cat"]
     p := spawned
-    concur.threads.spawn ()->
-      time.nano.sleep (time.duration.s 1)
+    concur.threads.env.spawn ()->
+      time.nano.env.sleep (time.duration.s 1)
       say "start reading"
       while
         match p.read_bytes 100
@@ -119,7 +119,7 @@ test_process =>
 
     # NYI: UNDER DEVELOPMENT: write should block here?
     say (p.write_bytes (get_str 1E7).utf8)
-    say "exit code: {p.wait}"
+    say "exit code: $(p.wait)"
   */
 
 

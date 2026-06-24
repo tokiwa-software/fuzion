@@ -180,14 +180,12 @@ public class FeatureAndOuter extends ANY
       {
         var f = fo._feature;
         var fn = f.featureName();
+        // NYI: CLEANUP: hack due to featureName not being updated on free types
+        fn = (f instanceof Feature ff)
+          ? FeatureName.get(fn.baseName(), fn.argCount() + ff.freeTypesCount())
+          : fn;
         if (isExact.test(fn))  /* an exact match, so use it: */
           {
-            if (CHECKS) check
-              (Errors.any() ||
-               !match ||
-               fn.argCount() == 0 /* we might have several exact matches for fields */ ||
-               found.get(0)._outer != fo._outer /* we might have several exact matches at different outer levels */
-               );
             if (!match)
               {
                 found = new List<>();

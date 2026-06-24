@@ -40,6 +40,6 @@ encodings_html =>
   for test_case in test_cases do
     encoded := encodings.html.encode test_case.0 false
     if encoded = test_case.1
-      say "PASSED: {test_case}"
+      say "PASSED: $(test_case)"
     else
-      say "FAILED: {test_case} got {encoded}"
+      say "FAILED: $(test_case) got $(encoded)"

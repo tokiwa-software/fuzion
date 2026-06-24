@@ -1313,9 +1313,9 @@ should be avoided as much as possible.
             /* Example:
 
               count(a,b,n i32) =>
-                yak n
+                yap n
                 if a < b then
-                  yak " "
+                  yap " "
                   count a+1 b n+1
                 else
                   say ""

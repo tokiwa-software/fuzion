@@ -68,6 +68,11 @@ jitter =>
   show_log_csv => false
 
 
+  # run jitter test in dedicated spawned thread?
+  #
+  run_on_dedicated_thread => true
+
+
 
   # run jitter test using C.clock.run_periodic
   #
@@ -98,22 +103,21 @@ jitter =>
     run_for_period(period time.duration)
     =>
 
-      start := C.clock.read + start_delay
+      start := C.env.read + start_delay
       end := start + test_duration
-      yak "testing period $period for $test_duration..."
+      yap "testing period $period for $test_duration..."
 
       # time for next release used by state effect
       next_release(t time.instant) is
 
-      # NYI: BUG: #5634: use `infix !` in this example once #5634 is fixed
-      state _ _ (next_release start) ()->
+      state (next_release start) ! ()->
 
         # record jitter using linear and log histograms
         h  := time.histogram.new "period jitter $period, log count / linear time" period period*2 1 0
         h2 := time.histogram.new "cycle jitter $period, log count / log time"     nil    nil      1 0
 
         # run test
-        _ := C.clock.run_periodic start period end run_one_release
+        _ := C.env.run_periodic start period end run_one_release
 
         # output results
         say terminal.clear_line
@@ -128,7 +132,7 @@ jitter =>
         # in case of a late release or a overrun into the next release time, cause `exception jitter_too_high`
         #
         run_one_release ! exception jitter_too_high =>
-          actual_release := TIMER.clock.read
+          actual_release := TIMER.env.read
           h .add_instant actual_release
           h2.add_instant actual_release
           expected_rel := state_get next_release .t
@@ -137,9 +141,9 @@ jitter =>
             (exception jitter_too_high).env.cause <| error "release time jitter exceeded period"
 
           payload
-          actual_finish := TIMER.clock.read
+          actual_finish := TIMER.env.read
           if actual_finish >= next_rel
-            e := error "*** overrun: run started at {actual_release-expected_rel}  and took {actual_finish-actual_release}, which is larger than period $period"
+            e := error "*** overrun: run started at $(actual_release-expected_rel)  and took $(actual_finish-actual_release), which is larger than period $period"
             (exception jitter_too_high).env.cause e
 
     match exception jitter_too_high .on ()->
@@ -150,5 +154,18 @@ jitter =>
       e error => say $e
       void    => # will not happen
 
-  time.nano ! ()->
+  if run_on_dedicated_thread
+    thrd := concur.threads.env.spawn ()->
+      time.histogram_mutate ! ()->
+        test_jitter time.nano time.nano
+    match thrd.set_policy concur.scheduling_policy.sched_fifo false 99
+      e error => panic "jitter thread priority: $e. Error 38 : backend does not implement thread policy \n Error 1 : insufficient privileges."
+      unit    => unit
+    _ := thrd.join
+  else
     test_jitter time.nano time.nano
+
+# How to run with high priority :
+# FUZION_HOME=build bash bin/fz -c examples/jitter/jitter.fz
+# sudo setcap cap_sys_nice=ep ./jitter
+# ./jitter

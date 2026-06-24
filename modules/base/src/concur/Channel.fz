@@ -22,37 +22,101 @@
 # -----------------------------------------------------------------------
 
 
-# a Channel can be used to send values
-# to another thread
+# A Channel is a means to send values from one or several threads to one or several
+# receiver threads. Both, sender and receiver may block if the channel is full or
+# empty, respectively.
+#
+# A channel is originally open. It may be closed by a call to `Channel.close` to
+# close the channel. A closed channel may no longer be used to send data: An attempt
+# to send data to a closed channel will cause a fault (pre_fault if `safety` is enabled,
+# otherwise `panic`).
+#
+# A closed channel may still contain values that have not been received yet. These
+# values may still be received.  Any attempts to receive data from a closed empty
+# channel will return `nil`.
 #
 # NYI: UNDER DEVELOPMENT: max buf size
-public Channel(T type/*, buf_size i32*/) ref : Iterator T, Sending_Channel T, Receiving_Channel T is
+public Channel(public T type/*, buf_size i32*/) ref : Iterator T, Sending_Channel T, Receiving_Channel T is
 
   bq := Blocking_Queue T
 
 
-  # send a value to this Channel
-  # returns true if sending was successful,
-  # false if not
+  # send a value to this Channel.
   #
-  public redef infix <- (to T) bool ! atomic_access
+  # The channel must be open. Sending a value to a closed channel will cause a fault
+  # (pre_fault if `safety` is enabled, otherwise `panic`).
+  #
+  # In case the Channel is full, the attempt to send data will block until the Channel
+  # is no longer full or closed.
+  #
+  public redef infix <- (to T) unit ! atomic_access
   =>
-    bq.enqueue to
+    if ! bq.enqueue to then
+      panic "send to closed Channel $T"
 
 
-  # close the Channel
+  # receive the next value from this channel.  Return nil if
+  # the channel is empty and closed.
   #
-  # infix <- will now always return false
-  # next will return nil once Channel is empty
+  # If the channel is open and has no values available, this will
+  # block until values are available or the channel is closed.
   #
-  public redef close unit ! atomic_access =>
-    bq.close
-    # NYI: BUG: free/dispose cnd
+  public prefix <- option T => next
 
 
-  # returns nil when Channel is closed and empty
-  # otherwise returns the next received value
+  # receive the next value from this channel.  Return nil if
+  # the channel is empty and closed.
+  #
+  # If the channel is open and has no values available, this will
+  # block until values are available or the channel is closed.
+  #
+  # NYI: CLEANUP: Since this is a duplicate of `prefix <-`, we could
+  # remove it.
   #
   public redef next option T ! atomic_access =>
     bq.dequeue
 
+
+  # close this Channel
+  #
+  # Sending data via `infix <-` will no more be allowed and result in a fault.
+  #
+  # Receiving via `prefix <-` or `next` will return `nil` once Channel is empty
+  #
+  public redef close unit ! atomic_access
+  =>
+    bq.close
+    # NYI: BUG: free/dispose cnd
+
+
+  # Has this Channel been closed?
+  #
+  public redef is_closed bool
+  =>
+    bq.is_closed
+
+
+  # Create a lazy list of received values from a channel
+  #
+  # This can be used to process all the values of a channel, e.g., you can
+  #
+  #   sum_channel(ch Channel N : numeric) =>
+  #     ch.as_list.sum
+  #
+  # Note that in case of several concurrent readers, each value will end up
+  # with being seen by only one reader.
+  #
+  # Unless the Channel is closed, this will block to read at least one
+  # value from this Channel.
+  #
+  public as_list list T =>
+    match next
+      v T => v : as_list
+      nil => nil
+
+
+# create a Channel of the given type
+#
+public channel(T type) Channel T
+=>
+  Channel T

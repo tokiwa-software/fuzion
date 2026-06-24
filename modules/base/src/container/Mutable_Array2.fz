@@ -58,12 +58,21 @@ is
       indices1.map j->(i,j)
 
 
+  # A Mutable_Array2 might be inaccessible, e.g. because it is a shared mutate.array that
+  # is not accessible by the current thread.
+  #
+  public is_accessible bool
+  =>
+    true
+
+
   # get element at given index i
   #
   public index [ ] (I type : integer, i1, i2 I) T ! E
     pre
       safety: 0 ≤ i1.as_i64 < length0
       safety: 0 ≤ i2.as_i64 < length1
+      safety: is_accessible
   =>
     abstract
 
@@ -74,6 +83,7 @@ is
     pre
       safety: 0 ≤ i1.as_i64 < length0
       safety: 0 ≤ i2.as_i64 < length1
+      safety: is_accessible
   =>
     abstract
 
@@ -81,12 +91,15 @@ is
   # create immutable array from this buffer
   #
   public as_array array T ! E =>
-    array (length0.as_i32 * length1.as_i32) (i -> Mutable_Array2.this[(i.as_i64 / length1), (i.as_i64 % length1)])
+    array (length0 * length1) (i -> Mutable_Array2.this[(i.as_i64 / length1), (i.as_i64 % length1)])
 
 
   # create a list from this buffer
   #
-  public as_list list T =>
+  public as_list list T
+    pre
+      safety: is_accessible
+  =>
     # since buffer is mutable,
     # we first copy the elements
     # to an immutable array.
@@ -96,4 +109,9 @@ is
   # the current state of the buffer
   # as a string.
   #
-  public redef as_string String => $as_array
+  public redef as_string String
+  =>
+    if is_accessible
+      $as_array
+    else
+      "inaccessible '$(Mutable_Array2.this.type)'"

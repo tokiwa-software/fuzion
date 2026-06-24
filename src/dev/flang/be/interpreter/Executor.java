@@ -684,15 +684,13 @@ public class Executor extends ProcessExpression<Value, Object>
   /**
    * Helper for callStack() to show one single frame
    *
-   * @param fuir
-   *
    * @param sb used to append the output
    *
    * @param frame the clazz of the entry to show
    *
    * @param callSite the call of the entry to show
    */
-  private static void showFrame(FUIR fuir, StringBuilder sb, int frame, int callSite)
+  private static void showFrame(StringBuilder sb, int frame, int callSite)
   {
     if (frame != NO_CLAZZ)
       {
@@ -705,8 +703,6 @@ public class Executor extends ProcessExpression<Value, Object>
   /**
    * Helper for callStack() to show a repeated frame
    *
-   * @param fuir
-   *
    * @param sb used to append the output
    *
    * @param repeat how often was the previous entry repeated? >= 0 where 0 means
@@ -717,7 +713,7 @@ public class Executor extends ProcessExpression<Value, Object>
    *
    * @param callSite the call of the previous entry
    */
-  private static void showRepeat(FUIR fuir, StringBuilder sb, int repeat, int frame, int callSite)
+  private static void showRepeat(StringBuilder sb, int repeat, int frame, int callSite)
   {
     if (repeat > 1)
       {
@@ -725,7 +721,7 @@ public class Executor extends ProcessExpression<Value, Object>
       }
     else if (repeat > 0)
       {
-        showFrame(fuir, sb, frame, callSite);
+        showFrame(sb, frame, callSite);
       }
   }
 
@@ -733,7 +729,7 @@ public class Executor extends ProcessExpression<Value, Object>
   /**
    * Current call stack as a string for debugging output.
    */
-  public static String callStack(FUIR fuir)
+  public static String callStack()
   {
     StringBuilder sb = new StringBuilder("Call stack:\n");
     int lastFrame = NO_CLAZZ;
@@ -751,14 +747,14 @@ public class Executor extends ProcessExpression<Value, Object>
           }
         else
           {
-            showRepeat(fuir, sb, repeat, lastFrame, lastCallSite);
+            showRepeat(sb, repeat, lastFrame, lastCallSite);
             repeat = 0;
-            showFrame(fuir, sb, frame, call);
+            showFrame(sb, frame, call);
             lastFrame = frame;
             lastCallSite = call;
           }
       }
-    showRepeat(fuir, sb, repeat, lastFrame, lastCallSite);
+    showRepeat(sb, repeat, lastFrame, lastCallSite);
     return sb.toString();
   }
 

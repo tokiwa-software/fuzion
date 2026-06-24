@@ -63,10 +63,10 @@ public effect is
   public type.from_env effect.this => intrinsic
 
 
-  # set default effect in the current context to this if none is
-  # installed
+  # at the bing_bang_singularity, set the effect of type `effect.this`
+  # to the given effect value `e`.
   #
-  type.default0(e effect.this) unit => intrinsic
+  type.instate_at_singularity0(e effect.this) unit => intrinsic
 
 
   # instate e for effect type effect.this in the current environment.
@@ -92,9 +92,11 @@ public effect is
                 def  _ : Function unit effect.this) unit => intrinsic
 
 
-  # replace existing effect of type `E` in the new effect value `e`
+  # set effect of type `E` to effect value `e`.  This can be used to
+  # replace existing effect value or to initially set the value
+  # (e.g., during wormhole.teleport).
   #
-  type.replace0(e effect.this) unit => intrinsic
+  type.set0(e effect.this) unit => intrinsic
 
 
   # Intrinsic version of abort. For all surrounding instated effects,
@@ -106,37 +108,39 @@ public effect is
   type.abort0 void => intrinsic
 
 
+  # remove the effect instated for this effect type.
+  #
+  type.remove0 unit => intrinsic
+
+
   # has an effect of this type been instated?
   #
   type.is_instated0 bool => intrinsic
 
 
-  # --------------------  default effects  --------------------
+  # --------------  effect big bang singularity  --------------
 
 
-  # set default instance for effect type `effect.this` to `e`
+  # When creating the universe, there is one effect singularity that instates
+  # all the effects required by the application.
   #
-  # NYI: UNDER DEVELOPMENT: This is a manual work-around to automatically install
-  # default effects. It should be replaced by a effect configuration file that
-  # is defined locally to a fuzion project or globally to the fuzion installation
-  # the defines the default effects to be used. The DFA should then automatically
-  # determine the required effects and create code to  instate them at the beginning
-  # of an application.
+  # This feature is called by `fuzion_runtime_init` to instate default implementations
+  # of all used effects.
   #
-  public type.default(e effect.this) unit => default0 e
-
-
-  # convenience version of `type.default` for effect values whose type is
-  # exactly the effect type (i.e., the value type does not inherit
-  # from the effect type).
-  #
-  # set default instance for effect type `effect.this` to value `effect.this`.
-  #
-  # NYI: UNDER DEVELOPMENT: See type.default
-  #
-  public default unit
+  module type.big_bang_singularity
   =>
-    effect.this.default effect.this
+    effect_types.type_foldf unit T,e->
+      if T : effect then
+        match T.default_value
+          v T => T.instate_at_singularity0 v
+          nil =>
+
+
+  # If this effect may be instated automatically at application start (during the
+  # effect big bang singularity), this should be redefined to return the
+  # corresponding effect value
+  #
+  public type.default_value option effect.this => nil
 
 
   # --------------------  effect instation  --------------------
@@ -184,7 +188,7 @@ public effect is
                       code () -> R
                       ) R
   =>
-    instate R e code (_ -> panic "unexpected abort in {effect.this.type}")
+    instate R e code (_ -> panic "unexpected abort in $(effect.this.type)")
 
 
   # convenience version of `instate` for effect values whose type is
@@ -297,7 +301,7 @@ public effect is
   pre
     safety: effect.this.is_instated
   =>
-    replace0 e
+    set0 e
 
 
   # replace existing effect of type `effect.this` by the new effect value `effect.this`.
@@ -328,7 +332,7 @@ public effect is
     safety: effect.this.is_instated
     safety: effect.this.env.abortable
   =>
-    replace0 e
+    set0 e
     abort0
 
 
@@ -352,23 +356,6 @@ public effect is
   # reporting `panic` as an effect of the use of a local mutate instance.
   #
   public abortable bool => true
-
-
-  # abort the current execution and return from the surrounding call to
-  # `instate`.
-  #
-  # NYI: CLEANUP: `return` is the same as `abort`. The term `return` seems
-  # common for algebraic effects, but is confusing since it is different to
-  # returning from a call. We need to decide to break with algebraic effect
-  # jargon (and remove `return`) or to stick with it (and rename `abort` as
-  # `return`).
-  #
-  public type.return void
-  pre
-    safety: effect.this.is_instated
-    safety: effect.this.env.abortable
-  =>
-    abort
 
 
   # --------------------  resource cleanup  --------------------
@@ -474,9 +461,100 @@ public linear_effect : effect is
 
   module redef check_depletion =>
     if !depleted.depleted.compare_and_set0 false true
-      fuzion.std.panic "effect {linear_effect.this.type.name} already depleted. effect may only be instated once."
+      fuzion.std.panic "effect $(linear_effect.this.type.name) already depleted. effect may only be instated once."
 
 
 Depleted_Wrapper ref is
 
   depleted := concur.atomic bool .new false
+
+
+# effect_types provides access to all effect types that are used by the
+# current application.
+#
+public effect_types : container.Types is
+
+
+  # fold all types of instated effects using the given `type_applicator` `a`
+  # and initial value `e`.
+  #
+  public redef fixed type_foldf(E type,
+                                A type : container.type_applicator E,
+                                e E,
+                                a A) E
+  =>
+    autogenerated_code_for_effect_types_fold E A e a
+
+  /* the auto-generated code looks as follows:
+
+    a.apply io.Out    (
+      a.apply panic     (
+        a.apply io.Err    (
+          ...
+          ...                  (e)
+          ...
+                          )
+                        )
+                      )
+
+   */
+
+
+# magic intrinsic used by middle end to create code for `type_foldf`, see above.
+#
+autogenerated_code_for_effect_types_fold(E type,
+                                         A type : container.type_applicator E,
+                                         e E,
+                                         a A) E => intrinsic
+
+
+# effect_wormhole opens a wormhole through which all the instated effects in the current
+# environment may be transferred to the effect environment of another threads.
+#
+public effect_wormhole is
+
+  # the environment at the entry point of this wormhole, i.e., the
+  # envirnment the effects are taken from
+  #
+  effect_values := effect_types.type_foldf (Sequence container.Typed_Value).empty T,e->
+      (if T : effect then T.get_if_instated else nil).bind    (v -> e ++ [container.typed_value T v])
+                                                     .or_else e
+
+
+  # teleport the effects from the environment this wormhole was created in
+  # to the current environment and execute given code.
+  #
+  public teleport(R type, code ()->R) R
+  =>
+    Old_EV ref is
+      re_instate unit => abstract
+
+    old_ev(T type : effect) : Old_EV is
+      v := if T.is_instated then option T.env
+                            else nil
+      redef re_instate =>
+        match v
+          ev T => T.set0 ev
+          nil  => T.remove0
+
+    # get original effect values
+    original_values :=
+      effect_values.reduce (Sequence Old_EV).empty e,a->
+                            a.apply_to (Sequence Old_EV) T,_,v->
+                              if T : effect then
+                                e ++ [old_ev T]
+                              else
+                                compile_time_panic
+
+    # teleport effect values
+    effect_values.for_each (.apply_to unit T,_,v->
+                              if T : effect then
+                                T.set0 v)
+
+    # run code using teleported effect environment
+    res := code()
+
+    # restore original effect values
+    original_values.for_each (.re_instate)
+
+    res

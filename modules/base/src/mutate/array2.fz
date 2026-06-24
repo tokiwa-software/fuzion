@@ -45,10 +45,21 @@ pre
   safety: length0 * length1 ≤ data.length.as_i64
 is
 
+
+  # A mutable array might be inaccessible if we are running in a thread that is
+  # not permitted by the underlying mutate instance to access its mutable elements
+  # at this point. See `blocking_mutate` and `mutate.exclusive`.
+  #
+  public redef is_accessible bool
+  =>
+    is_exclusive
+
+
   # get element at given index i
   #
   public redef index [ ] (I type : integer, i1, i2 I) T =>
-    data[i1.as_i32 * length1.as_i32 + i2.as_i32]
+    check_and_replace
+    data[i1.as_i64 * length1 + i2.as_i64]
 
 
   # set element at given index i to given value o
@@ -61,7 +72,8 @@ is
   # create immutable array from this
   #
   public redef as_array universe.array T =>
-    array (length0.as_i32 * length1.as_i32) i->data[i]
+    check_and_replace
+    array (length0 * length1) i->data[i]
 
 
   # create a list from this array
@@ -85,11 +97,11 @@ is
 
    ) mutate.this.array2 T
   =>
-    data := fuzion.sys.internal_array_init T (length0.as_i32 * length1.as_i32)
+    data := fuzion.sys.internal_array_init T (length0 * length1).as_i32
 
     for i1 in (i64 0)..length0-1 do
       for i2 in (i64 0)..length1-1 do
-        data[i1.as_i32 * length1.as_i32 + i2.as_i32] := init
+        data[(i1 * length1 + i2).as_i32] := init
 
     mutate.this.env.array2 length0 length1 data unit
 

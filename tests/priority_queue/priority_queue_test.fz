@@ -1,0 +1,248 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test priority_queue_test
+#
+# -----------------------------------------------------------------------
+
+# Tests for the Fuzion base module feature `container.Binary_Heap_Queue`
+#
+priority_queue_test =>
+
+  # Verify that the actual value equals the expected one,
+  # and print an error message if that is not the case
+  #
+  expect(actual, expected T : property.equatable) =>
+    actual = expected ? unit : say "FAILED: got '$actual' but expected '$expected'"
+
+
+  lm : mutate is
+  lm ! ()->
+
+    # Basic functionality
+    #
+    # Add and remove an element.
+    #
+    say "Basic functionality:"
+    q1 := container.Binary_Heap_Queue lm codepoint .empty
+    expect q1.is_empty true
+    expect q1.count 0
+    q1.enqueue "F"
+    expect q1.is_empty false
+    expect q1.count 1
+    expect q1.peek "F"
+    expect q1.dequeue "F"
+    expect q1.is_empty true
+    expect q1.count 0
+
+
+    # Order of priorities
+    #
+    # Add some arbitrary big and small numbers. Check the internal tree
+    # structure and the order of the elements when removing them
+    #
+    say "\nOrder of priorities:"
+    q2 := container.Binary_Heap_Queue lm f64 .from_by [] property.reverse_order
+    say "is_empty is '$(q2.is_empty)', expected 'true'"
+    q2.enqueue 0.3
+    q2.enqueue_all [0.1, -0.9, 5E7, 13.7]
+    say ""
+    say q2.as_string_tree_pretty
+    say ""
+    say q2.as_string_tree_vertical
+    q2.enqueue 0.5
+    q2.enqueue 0.1
+    say ""
+    say q2.as_string_tree_pretty
+    say ""
+    say q2.as_string_tree_vertical
+    say ""
+
+    for prev := q2.dequeue, head
+        head := q2.dequeue
+    while head.ok
+    do
+      say "$prev: $((prev.or_panic >= head.or_panic) ? "OK" : "WRONG")"
+    else
+      say prev
+
+
+    # Edge cases
+    #
+    # Test behavior of an empty queue and insertion of multiple equal elements.
+    # Check the output of the internal tree structure.
+    #
+    say "\nEdge cases:"
+    q3 := container.Binary_Heap_Queue lm String .empty_by property.reverse_order
+    say "peek is '$(q3.peek)', expected 'nil'"
+    say "dequeue is '$(q3.dequeue)', expected 'nil'"
+    say "count is '$(q3.count)', expected '0'"
+    q3.enqueue "aaa"
+    q3.enqueue "aaa"
+    q3.enqueue "aaa"
+    q3.enqueue "aaa"
+    say ""
+    say q3.as_string_tree_pretty
+    say ""
+    say "dequeue is '$(q3.dequeue)', expected 'aaa'"
+    say ""
+    say q3.as_string_tree_pretty
+    say ""
+
+
+    # Heap property min-heap using as_string_tree_pretty
+    #
+    # Output the tree structure of the binary heap to check the heap property,
+    # using reverse ordered elements and very large and small number.
+    # This also checks the correct alignment in the output of the tree.
+    #
+    say "\nHeap property min-heap:"
+    q4 := container.Binary_Heap_Queue lm i32 .empty
+
+    for i in (1..10).reverse ++ [i32.min, i32.max]
+    do
+      say "\nenqueue $i\n"
+      q4.enqueue i
+      say q4.as_string_tree_pretty
+
+      if i%%3
+        say "\ndequeue: $(q4.dequeue)\n"
+        say q4.as_string_tree_pretty
+
+
+    # Heap property max-heap using as_string_tree_vertical
+    #
+    # Output the tree structure of the binary heap to check the heap property.
+    #
+    say "\nHeap property max-heap:"
+    q5 := container.Binary_Heap_Queue lm i32 .empty_by property.reverse_order
+
+    for i in (-5..6)
+    do
+      say "enqueue $i"
+      q5.enqueue i
+      say q5.as_string_tree_vertical
+
+
+    # Custom comparator
+    #
+    # Use a custom comparator that orders integers based on their digit sum
+    # and check it by printing the tree structure of the binary heap.
+    #
+    say "\nCustom comparator:"
+
+    digit_sum(i i32) i32 =>
+      i.as_string.codepoints
+       .map (.parse_i32.or_panic)
+       .sum
+
+    digit_sum_comp(a,b i32) bool => (digit_sum a) <= (digit_sum b)
+
+    q6 := container.Binary_Heap_Queue lm i32 .empty_by digit_sum
+    _ := q6
+    simple_random 42 ()->
+      for i in 0..9
+          r := random.env.next_i32 199 - 99
+      do
+        say "enqueue $r"
+        q6.enqueue r
+        say q6.as_string_tree_pretty
+
+
+
+
+  # Sorting of pseudo-random elements
+  #
+  # Test correct sorting order by iteratively removing pseudo-random elements.
+  # Use one queue created from initial elements (make heap) as well as one where
+  # elements were iteratively inserted.
+  #
+  sort_test_random(random_test_size i32) =>
+
+    simple_random 42 ()->
+
+    m : mutate is
+    m ! ()->
+
+      elements := array random_test_size _->random.env.next_i32
+
+      pq_make := container.Binary_Heap_Queue m i32 .from elements
+      pq_add  := container.Binary_Heap_Queue m i32 .empty
+
+      for e in elements do
+        pq_add.enqueue e
+
+      sorted_elements := elements.sort
+
+      for i in 0..
+          expected in sorted_elements
+          mk_actual := pq_make.dequeue.or_panic
+          add_actual := pq_add.dequeue.or_panic
+      do
+        mk_res  outcome unit := expected = mk_actual  ? unit : error "$i. dequeue on queue initialized with make heap returned '$mk_actual' but expected '$expected'"
+        add_res outcome unit := expected = add_actual ? unit : error "$i. dequeue on queue initialized with iterative add returned '$add_actual' but expected '$expected'"
+      until mk_res.is_error || add_res.is_error
+        mk_res  ? e error => say e | * => unit
+        add_res ? e error => say e | * => unit
+      else
+        say "\n[PASSED] priority queue sorts $random_test_size random elements as expected"
+
+  sort_test_random 100000
+
+
+
+  # mix enqueue and dequeue of pseudo-random elements
+  # and compare the order of removed elements with a sorted list
+  #
+  # NYI: OPTIMIZATION: slow for higher enq rate due to sorting of list
+  #
+  # 🡩 : enqueue operation
+  # 🡫 : dequeue operation returned smallest element
+  # - : dequeue returned nothing, queue expected to be empty
+  #
+  interleaved_random_test(
+    # rate of enqueue operations in percent
+    enq_rate i32,
+    # number of operations
+    test_size i32)
+  =>
+    simple_random 273661186099400849 ()->
+      m : mutate is
+      m ! ()->
+        q := container.Binary_Heap_Queue m i32 .empty
+
+        for sort list i32 := nil, new_sort
+            i in 1..test_size
+            enq := true, (random.env.next_i32 100) < enq_rate
+        do
+          new_sort :=
+            if enq
+              e := random.env.next_i32 test_size
+              yap "🡩"
+              q.enqueue e
+              (sort ++ [e]).sort.as_list
+            else
+              match q.dequeue
+                e i32 => yap (e = sort[0] ? "🡫" : "\nError in round $i expected '$(sort[i])' but cot '$e'\n")
+                nil => yap (sort.is_empty ? "-" : "\nError queue is empty but sort is $sort\n")
+              sort.tail
+    say "\n"
+
+  interleaved_random_test 40 10000
+  interleaved_random_test 60 1000

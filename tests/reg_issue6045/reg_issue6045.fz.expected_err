@@ -1,0 +1,12 @@
+
+--CURDIR--/reg_issue6045.fz:30:10: error 1: Can not create lambda since an outer has unkown arguments.
+_ o.F := x->x+1   # cannot work, but produces confusing error
+---------^^^^^^
+The outer having the arguments:
+
+'o' defined at --CURDIR--/reg_issue6045.fz:24:1:
+o(a i32) is
+^
+To solve this, either create the lambda inside of 'o' or remove the arguments from 'o'.
+
+one error.

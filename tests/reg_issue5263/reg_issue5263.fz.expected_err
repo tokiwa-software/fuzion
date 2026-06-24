@@ -1,7 +1,7 @@
 
---CURDIR--/reg_issue5263.fz:39:24: error 1: Different count of arguments needed when calling feature
-  say |<| .byte_length |<| "hi"  # 1. should flag an error
------------------------^^^
+--CURDIR--/reg_issue5263.fz:39:23: error 1: Different count of arguments needed when calling feature
+  say |<| .byte_count |<| "hi"  # 1. should flag an error
+----------------------^^^
 Feature not found: 'infix/infix_right |<|' (3 arguments)
 Target feature: 'reg_issue5263'
 In call: '|<|'

@@ -1095,15 +1095,6 @@ public class Feature extends AbstractFeature
 
 
   /**
-   * Is this a case-field declared in a match-clause?
-   */
-  public boolean isCaseField()
-  {
-    return false;
-  }
-
-
-  /**
    * true iff this feature is a function or field that returns a result, but not
    * a constructor that returns its frame object.
    *
@@ -1294,7 +1285,7 @@ public class Feature extends AbstractFeature
   {
     for (var c: _inherits)
       {
-        Expr nc = c.visit(v, this);
+        Expr nc = c.visit(v, outer());
         if (CHECKS) check
           (Errors.any() || c == nc); // NYI: This will fail when doing funny stuff like inherit from bool.infix &&, need to check and handle explicitly
       }
@@ -1528,12 +1519,13 @@ public class Feature extends AbstractFeature
       return f;
     }
     @Override public Function     action      (Function        f) {        f.resolveTypes      (res,   _context); return f; }
-    @Override public void         action      (AbstractMatch   m)
+    @Override public Expr         action      (AbstractMatch   m)
     {
       if (m instanceof Match mm)
         {
           mm.resolveTypes(res, _context);
         }
+      return m;
     }
 
     @Override public Expr         action      (This            t) { return t.resolveTypes      (res,   _context); }
@@ -1595,7 +1587,7 @@ public class Feature extends AbstractFeature
 
         if (Contract.requiresPreConditionsFeature(this) && preFeature() == null)
           {
-            Contract.addPreFeature(res, this, context(), false);
+            Contract.addPreFeature(res, this, false);
           }
 
         if (isOpenTypeParameter())
@@ -2063,7 +2055,7 @@ A ((Choice)) declaration must not contain a result type.
 
         if (isConstructor())
           {
-            _impl.propagateExpectedType(res, context(), Types.resolved.t_unit);
+            _impl.propagateExpectedType(res, context());
           }
 
         _state = State.TYPES_INFERENCED;
@@ -2101,8 +2093,8 @@ A ((Choice)) declaration must not contain a result type.
         @Override public void         action(AbstractAssign a) {        a.checkTypes(res,  _context);           }
         @Override public Call         action(Call           c) {        c.checkTypes(res,  _context); return c; }
         @Override public Expr         action(Constant       c) {        c.checkRange(); return c;               }
-        @Override public void         action(AbstractMatch  m) {        m.checkTypes(_context);                 }
-        @Override public Expr         action(InlineArray    i) {        i.checkTypes(      _context); return i; }
+        @Override public Expr         action(AbstractMatch  m) {        m.checkTypes(_context); return m; }
+        @Override public Expr         action(InlineArray    i) {        i.checkTypes(_context); return i; }
         @Override public AbstractType action(AbstractType   t) { return t.checkConstraints(_context);           }
         @Override public void         actionBefore(Block    b) {        b.checkTypes();                         }
         @Override public Expr         action(Function       f) { return f.checkTypes();                         }
@@ -2123,11 +2115,49 @@ A ((Choice)) declaration must not contain a result type.
         AstErrors.explicitTypeRequired(this, resultType());
       }
 
-    if (isFixed())
+   if (isFixed())
       {
         resultType().checkForNoneConcreteTypeInFixed(this, this);
         arguments().forEach(a -> a.resultType().checkForNoneConcreteTypeInFixed(this, a));
       }
+
+    // check precondition
+    // make sure to not extend implicit `pre true` and to use `pre else` correctly
+    if (this.contract()._hasPre != null)
+      {
+       var hasElse = contract()._hasPreElse != null;
+       var implicitPreTrueInherited = _inheritedPre.stream().anyMatch(f -> f.preFeature() == null);
+       var redefines = !this.redefines().isEmpty();
+
+       if (redefines && implicitPreTrueInherited)
+         {
+           /*
+    // tag::fuzion_rule_PARS_CONTR_PRE_REDEF[]
+A feature that redefines a feature without explicit or inherited precondition, must not introduce a precondition.
+    // end::fuzion_rule_PARS_CONTR_PRE_REDEF[]
+           */
+           AstErrors.preWithImplicitTrueInherited(this);
+         }
+       else if (!hasElse && redefines)
+         {
+           /*
+    // tag::fuzion_rule_PARS_CONTR_PRE_ELSE[]
+A pre-condition of a feature that redefines one or several inherited features must start with `pre else`, independent of whether the redefined, inherited features are `abstract` or not.
+    // end::fuzion_rule_PARS_CONTR_PRE_ELSE[]
+           */
+           AstErrors.redefinePreconditionMustUseElse(this.contract()._hasPre, this);
+         }
+       else if (hasElse && !redefines)
+         {
+           /*
+    // tag::fuzion_rule_PARS_CONTR_PRE_NO_ELSE[]
+A pre-condition of a feature that does not redefine an inherited feature must start with `pre`, not `pre else`.
+    // end::fuzion_rule_PARS_CONTR_PRE_NO_ELSE[]
+           */
+           AstErrors.notRedefinedPreconditionMustNotUseElse(this.contract()._hasPre, this);
+         }
+      }
+
 
     _state = State.RESOLVED;
   }
@@ -2191,7 +2221,8 @@ A ((Choice)) declaration must not contain a result type.
   private void checkLegalNativeResultType(Resolution res, SourcePosition pos, AbstractType rt)
   {
     ensureTypeSetsInitialized(res);
-    if (!(Types.resolved.legalNativeResultTypes.contains(rt) || !rt.isGenericArgument() && rt.feature().mayBeNativeValue()))
+    if (!(Types.resolved.legalNativeResultTypes.contains(rt) || !rt.isGenericArgument() && rt.feature().mayBeNativeValue())
+        && !(Errors.any() && rt == Types.t_ERROR))
       {
         AstErrors.illegalNativeType(pos, "Result type", rt);
       }
@@ -2278,7 +2309,7 @@ A ((Choice)) declaration must not contain a result type.
         @Override public Expr action(InlineArray i) { return i.resolveSyntacticSugar2(res, _context); }
         @Override public void action(Impl        i) {        i.resolveSyntacticSugar2(res, _context); }
         @Override public Expr action(Constant    c) { return c.resolveSyntacticSugar2(res, _context); }
-        @Override public void action(AbstractMatch am){ if (am instanceof Match m) { m.addFieldsForSubject(res, _context); } }
+        @Override public Expr action(AbstractMatch am){ if (am instanceof Match m) { return m.resolveSyntacticSugar2(res, _context); } return am; }
         @Override public void  action(AbstractCall c)
           {
             if (!(c instanceof Call cc) || cc.calledFeatureKnown())
@@ -2484,7 +2515,14 @@ A ((Choice)) declaration must not contain a result type.
           {
             if (urgent)
               {
-                AstErrors.failedToInferResultType(this);
+                if ( !(isAbstract() || isIntrinsic() || isNative()) )
+                  {
+                    AstErrors.failedToInferResultType(this);
+                  }
+                else if (!(Errors.any() && impl() == Impl.ERROR))
+                  {
+                    AstErrors.explicitTypeRequired(this, null);
+                  }
               }
             result = urgent ? Types.t_ERROR : null;
           }

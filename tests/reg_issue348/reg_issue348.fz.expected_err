@@ -1,12 +1,15 @@
 
-{base.fum}/mutate/array.fz:115:5: error 1: Failed to verify that effect 'reg_issue348.m' is installed in current environment.
-    mutate.this.env.array data length unit
+{base.fum}/mutate/array.fz:176:5: error 1: Failed to verify that effect 'reg_issue348.m' is installed in current environment.
+    mutate.this.env.array data length min_length unit
 ----^^^^^^^^^^^^^^^
 Callchain that lead to this point:
 
-effect environment '--empty--' for call to 'reg_issue348.type.m.type.from_env' at {base.fum}/mutate/array.fz:115:5:
-    mutate.this.env.array data length unit
+effect environment '--empty--' for call to 'reg_issue348.type.m.type.from_env' at {base.fum}/mutate/array.fz:176:5:
+    mutate.this.env.array data length min_length unit
 ----^^^^^^^^^^^^^^^
+effect environment '--empty--' for call to '(reg_issue348.type.m.type.array.type reg_issue348.a).new#3' at {base.fum}/mutate/array.fz:153:6:
+  => array.this.type.new length default_min_length init
+-----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 effect environment '--empty--' for call to '(reg_issue348.type.m.type.array.type reg_issue348.a).new#2' at --CURDIR--/reg_issue348.fz:33:10:
   arr := m.array a .new 10 a
 ---------^^^^^^^^^^^^^^^^^^^

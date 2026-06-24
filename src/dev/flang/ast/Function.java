@@ -138,7 +138,7 @@ public class Function extends AbstractLambda
    *
    * @param names the names of the arguments, "x", "y". The are parsed as
    * expressions and these might end up being turned into types by asParsedType
-   * if this lambda ends up used as an actual type argument.
+   * if this lambda ends up used as an actual type parameter.
    *
    * @param e the code on the right hand side of '->'.
    */
@@ -299,7 +299,7 @@ public class Function extends AbstractLambda
         var argTypes = t.lambdaTargetArgumentTypes(res);
         if (_names.size() != cl.typeArguments().size() + argTypes.size())
           {
-            AstErrors.wrongNumberOfArgumentsInLambda(pos(), _names, t);
+            AstErrors.wrongNumberOfArgumentsInLambda(pos(), _names, t, cl.typeArguments().size(), argTypes.size());
             t = Types.t_ERROR;
             _type = t;
           }
@@ -380,7 +380,7 @@ public class Function extends AbstractLambda
             feature._sourceCodeContext = context;
 
             // inherits clause for wrapper feature: Function<R,A,B,C,...>
-            _inheritsCall = targetCalls(res, context, t.feature());
+            _inheritsCall = (Call)targetCalls(res, context, t);
             _inheritsCall._generics = t.generics();
             _inheritsCall._generics.freeze();
             List<Expr> expressions = new List<Expr>(feature);
@@ -388,7 +388,7 @@ public class Function extends AbstractLambda
             _wrapper = new Feature(pos(),
                                    Visi.PRIV,
                                    0,
-                                   RefType.INSTANCE,
+                                   ValueType.INSTANCE,
                                    new List<String>(wrapperName),
                                    AbstractFeature._NO_FEATURES_,
                                    new List<>(_inheritsCall),
@@ -399,6 +399,10 @@ public class Function extends AbstractLambda
             res.resolveTypes(_feature);
             if (inferResultType)
               {
+                if (!(rt0.containsUndefined() || rt0.containsError()))
+                  {
+                    _expr.propagateExpectedType(res, context, rt0, from);
+                  }
                 result = refineResultType(res, context, rt0, _feature.resultType());
                 var g = t.lambdaTargetResultTypeParameter(res);
                 if (g != null && !_inheritsCall.isDefunct())
@@ -433,24 +437,39 @@ public class Function extends AbstractLambda
    *
    * @param context the source code context where this Call is used
    *
-   * @param f the (inner) feature for which we want an outer instance.
+   * @param tt the target type of the lambda or any outer, can be a this type as in #6044
    *
    * @return the code to create the outer instances of {@code null} if outer is
    * the unverse.
    */
-  private Call targetCalls(Resolution res, Context context, AbstractFeature f)
+  private Expr targetCalls(Resolution res, Context context, AbstractType tt)
   {
-    if (f == null || f.isUniverse())
+    return switch(tt.kind())
       {
-        return null;
-      }
-    else
-      { // NYI: UNDER DEVELOPMENT: Report error if arg list is not empty. Also
-        // handle the case that one of the outer features in context is the same
-        // as f.outer() and use the correct chain of current and outer refs
-        // instead.
-        return new Call(pos(), targetCalls(res, context, f.outer()), f.baseName());
-      }
+        case TypeKind.ThisType -> new Current(pos(), tt.feature());
+        case TypeKind.GenericArgument -> {
+          AstErrors.lamdaOuterMustNotBeGenericArgument(pos(), tt);
+          yield Call.ERROR;
+        }
+        default -> {
+          if (!tt.feature().valueArguments().isEmpty())
+            {
+              AstErrors.lamdaOuterMustNotHaveArgs(pos(), tt);
+              yield Call.ERROR;
+            }
+          else
+            { // NYI: UNDER DEVELOPMENT: Report error if arg list is not empty. Also
+              // handle the case that one of the outer features in context is the same
+              // as f.outer() and use the correct chain of current and outer refs
+              // instead.
+              var tto = tt.outer();
+              var tc = tto == null || tto.backingFeature().isUniverse()
+                ? null
+                : targetCalls(res, context, tto);
+              yield new Call(pos(), tc, tt.feature().baseName());
+            }
+        }
+      };
   }
 
 
@@ -671,6 +690,12 @@ public class Function extends AbstractLambda
   {
     type(); // just for triggering error messages
     return this;
+  }
+
+
+  public void setDefunct()
+  {
+    _expr = Call.ERROR;
   }
 
 }

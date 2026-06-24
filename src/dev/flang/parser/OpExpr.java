@@ -68,24 +68,24 @@ class OpExpr extends ANY
    * table of precedences
    */
   private final Precedence[] precedences = {
-    new Precedence(16,        "@"  ),
-    new Precedence(15,        "^"  ),
-    new Precedence(14, 5, 14, "!"  ),
-    new Precedence(13,        "~"  ),
-    new Precedence(12,        "⁄"  ),
-    new Precedence(11,        "*/%⊛⊗⊘⦸⊝⊚⊙⦾⦿⨸⨁⨂⨷"),
-    new Precedence(10,        "+-⊕⊖" ),
-    new Precedence( 9,        "."  ),
-    new Precedence( 8,        "#"  ),
-    new Precedence(14, 7, 14, "$"  ),
-    new Precedence( 6,        ""   ),
-    new Precedence( 5,        "<>=⧁⧀⊜⩹⩺⩻⩼⩽⩾⩿⪀⪁⪂⪃⪄⪅⪆⪇⪈⪉⪊⪋⪌⪍⪎⪏⪐⪑⪒⪓⪔⪕⪖⪗⪘⪙⪚⪛⪜⪝⪞⪟⪠⪡⪢⪤⪥⪦⪧⪨⪩⪪⪫⪬⪭⪮⪯⪰⪱⪲⪴⪵⪶⪷⪸⪹⪺⪻⪼⫷⫸⫹⫺≟≤≥"),
-    new Precedence( 4,        "&"  ),
-    new Precedence( 3,        "|⦶⦷"),
-    new Precedence( 2,        "∀"  ),
-    new Precedence( 1,        "∃"  ),
-    // all other operators: 0
-    new Precedence( -1,       ":" ),
+    new Precedence(17,        "@"  ),
+    new Precedence(16,        "^"  ),
+    new Precedence(15, 6, 15, "!"  ),
+    new Precedence(14,        "~"  ),
+    new Precedence(13,        "⁄"  ),
+    new Precedence(12,        "*/%⊛⊗⊘⦸⊝⊚⊙⦾⦿⨸⨁⨂⨷"),
+    new Precedence(11,        "+-⊕⊖" ),
+    new Precedence(10,        "."  ),
+    new Precedence( 9,        "#"  ),
+    new Precedence(15, 8, 15, "$"  ),
+    new Precedence( 7,        ""   ),
+    new Precedence( 6,        "<>=⧁⧀⊜⩹⩺⩻⩼⩽⩾⩿⪀⪁⪂⪃⪄⪅⪆⪇⪈⪉⪊⪋⪌⪍⪎⪏⪐⪑⪒⪓⪔⪕⪖⪗⪘⪙⪚⪛⪜⪝⪞⪟⪠⪡⪢⪤⪥⪦⪧⪨⪩⪪⪫⪬⪭⪮⪯⪰⪱⪲⪴⪵⪶⪷⪸⪹⪺⪻⪼⫷⫸⫹⫺≟≤≥"),
+    new Precedence( 5,        "&"  ),
+    new Precedence( 4,        "|⦶⦷"),
+    new Precedence( 3,        "∀"  ),
+    new Precedence( 2,        "∃"  ),
+    // all other operators: 1
+    new Precedence( 0,        ":"  ),
   };
 
 
@@ -234,19 +234,12 @@ class OpExpr extends ANY
             _els.remove(max+1);
             _els.set(max, e);
           }
-        else if (isExpr(max-1))
+        else
           { // postfix op:
             Expr e1 = expr(max-1);
             Expr e = new ParsedOperatorCall( e1, new ParsedName(op._pos, FuzionConstants.POSTFIX_OPERATOR_PREFIX + op._text), pmax);
             _els.remove(max);
             _els.set(max-1, e);
-          }
-        else
-          {
-            AstErrors.multipleOperatorsFound(
-              posOf(_els.getFirst())
-                .rangeTo(posOf(_els.getLast()).byteEndPos()));
-            return Call.ERROR;
           }
       }
     //    show();
@@ -383,7 +376,7 @@ class OpExpr extends ANY
             ? (kind == Kind.prefix ? precedences[i].prefix :
                kind == Kind.infix  ? precedences[i].infix :
                /* Kind.postfix */    precedences[i].postfix )
-            : 0);
+            : 1);
   }
 
 

@@ -58,6 +58,7 @@ public record ClazzRecord(
   int lookupStaticFinally,
   LifeTime lifeTime,
   byte[] clazzTypeName,
+  String clazzName,
   String clazzNameHuman,
   String clazzSrcFile,
   int clazzSrcBytePos,

@@ -64,17 +64,12 @@ public Clock ref : effect is
   public sleep(d time.duration) unit => abstract
 
 
-  # install default effect time using default_nano_time
+  # default implementation of Clock using default_nano_time.
   #
-  type.install_default =>
-    time.Clock.default (time.nano nano.default_nano_time)
-
-  # shorthand for accessing time.Clock.env effect in current environment
+  # this will get instated automatically at startup
   #
-  public type.clock Clock.this =>
-    if !Clock.this.is_instated
-      Clock.this.install_default
-    Clock.this.env
+  public redef fixed type.default_value option time.Clock =>
+    nano.default_value.bind (x -> id time.Clock x)
 
 
   # run the given code once at the provided instant within the current thread

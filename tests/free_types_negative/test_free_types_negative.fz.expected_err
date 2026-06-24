@@ -92,7 +92,7 @@ To solve this, you could change the type of the target 'v' to 'f64' or convert t
 
 
 --CURDIR--/test_free_types_negative.fz:91:3: error 10: Incompatible type parameter
-  g ga3              # 6. should flag an error since type arguments are in the wrong order such that constraint is not matched
+  g ga3              # 6. should flag an error since type parameters are in the wrong order such that constraint is not matched
 --^
 formal type parameter 'B : numeric'
 actual type parameter 'String'

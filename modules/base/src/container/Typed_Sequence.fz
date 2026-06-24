@@ -45,7 +45,7 @@ public Typed_Sequence ref : Sequence container.Typed_Value is
   # create a list from this Typed_Sequence.
   #
   # Note that this creates boxed ref instances of `Typed_Value`.  The preferred
-  # means to acces the values is via a call to `typed_foldf`.
+  # means to access the values is via a call to `typed_foldf`.
   #
   public redef as_list list container.Typed_Value =>
 
@@ -88,7 +88,7 @@ public Typed_Sequence ref : Sequence container.Typed_Value is
   #
   # In case this `Typed_Sequence` is empty, the result is `e`.
   #
-  public typed_foldf(E type, A type : typed_applicator E, e E, a A) E
+  public typed_foldf(E type, A type : container.typed_applicator E, e E, a A) E
   =>
     abstract
 
@@ -98,7 +98,7 @@ public Typed_Sequence ref : Sequence container.Typed_Value is
   #
   # In case this `Typed_Sequence` is empty, the result is `e`.
   #
-  public typed_zip_and_fold(E type, Z type : typed_zipper E, b Typed_Sequence.this, e E, z Z) E
+  public typed_zip_and_fold(E type, Z type : container.typed_zipper E, b Typed_Sequence.this, e E, z Z) E
   =>
     abstract
 
@@ -143,9 +143,10 @@ public typed_fold(E type, e E, s container.Typed_Sequence) : container.typed_app
 #
 #       process 1 a    # precess returns result of last `apply`
 #
-# NYI: CLEANUP: This is somewhat redundant with `typed_fold`, we should decide on
-# only one of these variant, maybe once lambdas for `typed_applicator` are
-# supported #5892 and we can compare the usability.
+# NYI: CLEANUP: #6896 This is somewhat redundant with `typed_fold`, we should
+# decide on only one of these variants or find a different solution now that
+# lambdas for `typed_applicator` are supported.  We should compare example and
+# the usability of different APis.
 #
 public variadic(E type) : container.typed_applicator E is
 
@@ -225,10 +226,10 @@ public typed_zipper(# the result type of two values that were zipped
 public Typed_Value ref is
 
 
-  # Feed this value and its type into `a.apply`.  Add the
-  # cumulative value `e` and return the resulting cumulative value.
+  # Feed this value's type, the cumulative value `e` and this value itself into
+  # `a.apply` and return the resulting cumulative value.
   #
-  public apply_to(E type, a typed_applicator E, e E) E
+  public apply_to(E type, A type: container.typed_applicator E, e E, a A) E
   =>
     abstract
 
@@ -237,20 +238,20 @@ public Typed_Value ref is
 #
 # This must be a heir of `Typed_Value` since we need to be able to
 # have different actual type parameters and still create ref values
-# of all the same type  `Typed_Value`
+# of all the same type `Typed_Value`.
 #
 public typed_value(# the type
-                   A type,
+                   T type,
 
                    # the value
-                   v A)
+                   v T)
   : Typed_Value is
 
-  # apply `a` to `A` `e` `v`
+  # apply `a` to `T` `e` `v`
   #
-  public redef apply_to(E type, a typed_applicator E, e E) E
+  public redef apply_to(E type, A type: container.typed_applicator E, e E, a A) E
   =>
-    a.apply A e v
+    a.apply T e v
 
 
   # create a String of the form `"<type> <value>"` where `<type>`
@@ -265,7 +266,7 @@ public typed_value(# the type
   #
   public redef as_string String
   =>
-    t := A.name
+    t := T.name
     if t.find " " ??
       "($t) $v"
     else
@@ -289,7 +290,7 @@ public Types ref : Sequence Type is
   # create a list from this `Types` instance.
   #
   # Note that this creates boxed ref instances of `Type`.  The preferred
-  # means to acces the values is via a call to `type_foldf`.
+  # means to access the values is via a call to `type_foldf`.
   #
   public redef as_list list Type =>
 
@@ -330,7 +331,7 @@ public Types ref : Sequence Type is
   #
   # In case this `Types` instance is empty, the result is `e`.
   #
-  public type_foldf(E type, A type : type_applicator E, e E, a A) E
+  public type_foldf(E type, A type : container.type_applicator E, e E, a A) E
   =>
     abstract
 

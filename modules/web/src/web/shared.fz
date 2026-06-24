@@ -39,12 +39,12 @@ module read_reponse(LM type : mutate) ! LM =>
       if resp.status_code >= 400
         msg :=
           if body.is_blank
-            "{resp.status_code} {resp.reason_phrase}"
+            "$(resp.status_code) $(resp.reason_phrase)"
           else
             """
-            {resp.status_code} {resp.reason_phrase}
+            $(resp.status_code) $(resp.reason_phrase)
 
-            {body}
+            $(body)
             """
         error msg
       else
@@ -88,7 +88,7 @@ module parse_url(url String) outcome web.parsed_url
     debug: !url.contains_whitespace
 =>
   is_https      := url.starts_with "https"
-  schema_length := "http{is_https ? "s" : ""}://".byte_length
+  schema_length := "http$(is_https ? "s" : "")://".byte_count
 
   # extract host, port (optional) and target (optional) from url
   #
@@ -103,7 +103,7 @@ module parse_url(url String) outcome web.parsed_url
           host_and_port := tpl.0.substring schema_length
           host_and_port_seq := host_and_port.split ":" .as_array
           if host_and_port_seq.length > 2
-            id (outcome (tuple String (option u16) (option String))) (error "invalid host+port {host_and_port}")
+            id (outcome (tuple String (option u16) (option String))) (error "invalid host+port $(host_and_port)")
           else
             match host_and_port_seq.nth 1
               p_str String =>

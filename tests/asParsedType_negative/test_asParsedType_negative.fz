@@ -42,7 +42,7 @@ test_asParsedType_negative is
   y(T type, v T) => say "GOT: y $T"
 
 
-  # ------  tests using actual type arguments  ------
+  # ------  tests using actual type parameters  ------
 
 
   say "EXP: x Type of 'i32'"

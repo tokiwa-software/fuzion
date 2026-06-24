@@ -46,6 +46,10 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install openjdk-25-jdk-headless libgc1 libgc-dev ruby-asciidoctor-pdf antlr4 asciidoc-base
+
+        # for DTRACE_PROBE
+        sudo apt-get install systemtap-sdt-dev
+
         echo "JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64" >> $GITHUB_ENV
         echo "/usr/lib/jvm/java-25-openjdk-amd64/bin" >> $GITHUB_PATH
 
@@ -62,4 +66,5 @@ jobs:
         tag: "v${{ steps.getversion.outputs.version }}"
         prerelease: false
         generateReleaseNotes: false
+        immutableCreate: true
         token: ${{ secrets.GITHUB_TOKEN }}

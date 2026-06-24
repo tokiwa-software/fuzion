@@ -26,7 +26,7 @@
 
 # envir vars as map
 #
-envir_vars := envir.vars.map_of [
+envir_vars := envir.vars.env.map_of [
     "PATH",
     "LANG",
     "JAVA_HOME",
@@ -48,7 +48,7 @@ max_test_time := (time.duration.min 10)
 # execute this Sequence of process+args
 #
 Sequence.prefix ! =>
-  seq := map x->x.as_string
+  seq := map (.as_string)
   os.process.start seq.first.or_panic (seq.drop 1) envir_vars
             .bind (p -> tokiwa.record_process p Sequence.this.as_string max_test_time nil)
 
@@ -91,7 +91,7 @@ find_tests(dir path) array path =>
     io.dir.use _ dir ()->
       res := (m.array path).type.new 0 (path.of "")
       _ :=
-        for x := io.dir.open.read
+        for x := io.dir.open.env.read
         while x.ok
           dir_x := dir.resolve x.or_panic
           if io.file.exists (dir_x.resolve "Makefile")
@@ -118,20 +118,20 @@ main =>
 
   # NYI: UNDER DEVELOPMENT: react to Ctrl+c like in bash scripts (trap)
 
-  if (envir.args.count != 3)
+  if (envir.args.env.count != 3)
     say "wrong argument count"
     say "usage:"
     say "run_tests.fz <build_dir> <target>"
     exit 1
 
-  build_dir := path.of envir.args[1]
-  target := envir.args[2]
+  build_dir := path.of envir.args.env[1]
+  target := envir.args.env[2]
 
 
   # source: https://stackoverflow.com/questions/45181115/portable-way-to-find-the-number-of-processors-cpus-in-a-shell-script
   # first, try third arg then try a few executables, if everything fails use default value
   thread_count :=
-      envir.vars["FUZION_RUN_TESTS_PARALLELISM"]      .flat_map (    .trim.parse_i32) .first
+      envir.vars.env["FUZION_RUN_TESTS_PARALLELISM"]  .flat_map (    .trim.parse_i32) .first
         .or_else (     (!!"nproc --all"              ).flat_map (.out.trim.parse_i32) .first
           .or_else (   (!!"getconf _NPROCESSORS_ONLN").flat_map (.out.trim.parse_i32) .first
             .or_else ( (!!"sysctl -n hw.ncpu"        ).flat_map (.out.trim.parse_i32) .first
@@ -156,7 +156,7 @@ main =>
        io.file.exists (test.resolve "skip_$target") ||
        (os.platform.or_panic ? os.windows => io.file.exists (test.resolve "skip_win") | os.posix => false)
        )
-      yak "_"
+      yap "_"
       append_line results "$test: skipped"
     else
 
@@ -167,21 +167,21 @@ main =>
 
       match opt_res
         e error =>
-          yak "!"
-          append_line results "$test in {elapsed_time}: $e error"
+          yap "!"
+          append_line results "$test in $(elapsed_time): $e error"
           append_line failures "$test: $e"
         res tokiwa.process_result =>
           if res.exit_code = 0 || target = "fuir" then
-            yak "."
-            append_line results "$test in {elapsed_time}: ok"
+            yap "."
+            append_line results "$test in $(elapsed_time): ok"
           else
-            yak "#"
-            append_line results "$test in {elapsed_time}: failed"
+            yap "#"
+            append_line results "$test in $(elapsed_time): failed"
             append_line failures res.out
             append_line failures res.err
 
 
-  say "{tests.count} tests, running $thread_count tests in parallel."
+  say "$(tests.count) tests, running $thread_count tests in parallel."
 
 
 
@@ -203,11 +203,11 @@ main =>
   produced_error := results_content.count (.ends_with "error"  )
 
   say ""
-  say ("$ok/{tests.count} tests passed" +
+  say ("$ok/$(tests.count) tests passed" +
        ", $skipped skipped" +
        ", $failed failed" +
        (produced_error = 0 ? "" :", $produced_error produced error") +
-       " in {elapsed_time_total.as_string.trim}.")
+       " in $(elapsed_time_total.as_string.trim).")
 
   max_recorded := test_durations
     .values
@@ -229,8 +229,11 @@ main =>
     say (io.slurp failures)
     say_section "run_tests.failures END"
 
+    common_prefix := 1 + results_content.map (.split[0].find_last "/" .or_else -1)
+                                        .min.or_else 0
+
     failed_test_names := failed_tests
-                           .map (.split[0].substring 12) # remove "build/tests/"
+                           .map (.split[0].substring common_prefix) # remove prefix, e.g., "build/tests/"
                            .as_string " "
 
     say """
@@ -256,27 +259,22 @@ main =>
 
   test_durations
     .items
-    .sort_by (td1,td2 -> td2.1<=td1.1)
+    .sort_by (.1)
     .take num_slowest
-    .for_each (td -> say "{td.1.as_string_pad} {td.0}")
+    .for_each (td -> say "$(td.1.as_string_pad) $(td.0)")
 
   say_section "$target done"
 
-  match
-    {
-    envir
-      .vars
-      .get "INFLUXDB_TOKEN"
-    }
+  match envir.vars.env.get "INFLUXDB_TOKEN"
     nil => say "INFLUXDB_TOKEN not set, not sending to influxdb."
     token String =>
       data := test_durations.items
-        .map td->"test_runtime,backend={target},test={td.0} value={td.1.millis}"
+        .map td->"test_runtime,backend=$(target),test=$(td.0) value=$(td.1.millis)"
       if token.is_blank
         say "INFLUXDB_TOKEN is blank, not sending to influxdb."
       else
         say <| tokiwa.post_to_influx "tokiwa" "benchmarks" token.trim (String.join_lines data)
-        say <| tokiwa.post_to_influx "tokiwa" "benchmarks" token.trim "run_tests,backend={target} total_time={elapsed_time_total.millis}"
+        say <| tokiwa.post_to_influx "tokiwa" "benchmarks" token.trim "run_tests,backend=$(target) total_time=$(elapsed_time_total.millis)"
 
   exit
 

@@ -1,0 +1,8 @@
+
+--CURDIR--/reg_issue6605.fz:24:20: error 1: Must not call choice feature
+x : choice is { }; x
+-------------------^
+Target feature: 'universe'
+In call: 'x'
+
+one error.

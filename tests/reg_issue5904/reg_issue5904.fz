@@ -30,7 +30,7 @@ reg_issue5904 =>
   find2(a array i32, v i32) option i32 =>
     for
       i := 0, i+1
-    while i < a.length
+    while i < a.length.as_i32
     until a[i]=v
       a[i]
     else

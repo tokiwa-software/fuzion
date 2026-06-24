@@ -1,3 +1,5 @@
+cached_item (num.ryū f64).step_3#7.pow5_inv_split_cache_key
+cached_item (num.ryū f64).step_3#7.pow5_split_cache_key
 concur.atomic_access
 concur.racy_access
 concur.threads
@@ -11,7 +13,5 @@ fuzion.runtime.stackoverflow
 io.Err
 io.Out
 panic
-state unit (cache#2 (num.ryū f64).step_3#7.pow5_inv_split_cache_key).cache_item
-state unit (cache#2 (num.ryū f64).step_3#7.pow5_split_cache_key).cache_item
 time.nano
 unique_id

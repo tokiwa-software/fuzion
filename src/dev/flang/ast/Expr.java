@@ -378,7 +378,10 @@ public abstract class Expr extends ANY implements HasSourcePosition
    */
   Expr assignToField(Resolution res, Context context, Feature r)
   {
-    return new Assign(res, pos(), r, this, context);
+    var result = new Assign(res, pos(), r, this, context);
+    result.wrapValueInLazy(res, context);
+    result.unwrapValue  (res, context);
+    return result;
   }
 
 
@@ -702,6 +705,33 @@ public abstract class Expr extends ANY implements HasSourcePosition
             c.calledFeature().equals(Types.resolved.f_auto_unwrap)
             && !c.actualTypeParameters().isEmpty()
                     && expectedType.isAssignableFromWithoutBoxing(c.actualTypeParameters().get(0).applyTypePars(t), context).yes())
+      ? new ParsedCall(this, new ParsedName(pos(), FuzionConstants.UNWRAP)).resolveTypes(res, context)
+      : this;
+  }
+
+
+  /**
+   * Do automatic unwrapping of features inheriting {@code unwrap}
+   * if unwrapped type is a choice.
+   *
+   * @param res the resolution instance
+   *
+   * @param context the source code context where this Expr is used
+   *
+   * @return the unwrapped expression
+   */
+  Expr unwrapChoice(Resolution res, Context context)
+  {
+    var t = type();
+    return this != Call.ERROR && t != Types.t_ERROR
+      && !t.isChoice()
+      && !t.isGenericArgument()
+      && allInherited(t.feature())
+          .stream()
+          .anyMatch(c ->
+            c.calledFeature().equals(Types.resolved.f_auto_unwrap)
+            && !c.actualTypeParameters().isEmpty()
+                    && c.actualTypeParameters().get(0).applyTypePars(t).isChoice())
       ? new ParsedCall(this, new ParsedName(pos(), FuzionConstants.UNWRAP)).resolveTypes(res, context)
       : this;
   }

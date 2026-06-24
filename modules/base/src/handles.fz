@@ -164,7 +164,7 @@ is
   #
   update0 (
     # a handle created by `new`
-    x i32,
+    x i64,
 
     # function calculating the new value from the old value
     f T->T
@@ -183,18 +183,11 @@ is
 # shorthand for creating and installing an empty set of handles of given type.
 #
 public handles(T type, rr ()->unit) unit =>
-  (handles unit (array T 0 x->do) oneway_monad_mode.inst) ! rr
+  (handles unit (array T).empty oneway_monad_mode.inst) ! rr
 
 # shorthand for creating an empty set of handles of given type.
 #
-public handles_(T type) handles T unit => handles unit (array T 0 x->do) oneway_monad_mode.plain
-
-
-# shorthand for accessing handles monad for given type in current environment
-#
-public handles(T type) handles T unit =>
-  (handles_type T).install_default
-  (handles T unit).env
+public handles_(T type) handles T unit => handles unit (array T).empty oneway_monad_mode.plain
 
 
 # type of the reference to the cell that holds a value of type T which can be updated
@@ -203,7 +196,7 @@ public handles(T type) handles T unit =>
 private:public handle_id(
   T type,
   # the index in `handles.ar`
-  x i32
+  x i64
   )
 is
 
@@ -215,27 +208,24 @@ is
   # update value stored in this handle using f.
   #
   public update(f T->T) T =>
-    (handles T).update0 x f
+    (handles T unit).env.update0 x f
     get
 
   # get value stored in this handle
   #
   public get T =>
-    (handles T).ar[x]
+    (handles T unit).env.ar[x]
 
 
 # unit type containing features related to handles but not requiring an instance
 #
 handles_type(T type) is
 
-  # install default instance of handles
-  #
-  install_default unit =>
-    (handles unit (array T 0 x->do) oneway_monad_mode.inst).default
-
 
 # initializes a new handle with the given initial value
 #
 # this uses the handles instance from the current environment
 #
-public handle(T type, v T) handle_id T => (handles T).create v
+public handle(T type, v T) handle_id T ! handles T unit
+=>
+  (handles T unit).env.create v

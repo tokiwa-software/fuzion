@@ -83,7 +83,7 @@ public memoize(MM type : container.Mutable_Map T R, T type : property.equatable,
 #
 #     > ./build//bin/fz -effects fib.fz
 #      ...
-#     fib#1.memoized i32 i32
+#     memoized_effect fib#1 i32 i32
 #      ...
 #
 # It might be desired not to keep memoized results forever. To do so, we have
@@ -130,37 +130,8 @@ public memoize is
                   # the value type, i.e., result type of memoized function
                   #
                   V type)
-    : effect
+    : memoized_effect memoized.this K V
   is
-
-
-    # the store used for memoization
-    #
-    # NYI: ENHANCEMENT: would be nice to also support property.hashable keys
-    # using a tree map here
-    #
-    store := (container.ps_map K V).empty # (lock_free.Map K V).empty
-
-
-    # use this memoized effect to retrieve the value for a given key or,
-    # if that value was not calculated yet, to return it
-    #
-    public keep(# the function input
-                #
-                k K,
-
-                # the function to calculate the result
-                #
-                f K->V) V
-    =>
-      store[k].or_else ()->
-        v := f k
-        memoized.this.env.update k v
-        v
-
-    update(k,v) =>
-      set store := store.put k v
-      memoized.this.replace memoized.this
 
 
   # use global memoized effect to retrieve the value for a given key or,
@@ -183,10 +154,59 @@ public memoize is
               f K->V
               ) V
   =>
+    (memoized_effect memoize.this K V).env.keep k f
 
-    # NYI: should be done via effect configuration file, see `effect.type.default`.
-    #
-    if !(memoized K V).is_instated
-      (memoized K V).default
 
-    (memoized K V).env.keep k f
+# effect to memoize values calculated from given keys.
+#
+module:public memoized_effect(# type to identify this memoized instance
+                              #
+                              M type,
+
+                              # the key type, i.e, input type of memoized function
+                              #
+                              K type : property.orderable,
+
+                              # the value type, i.e., result type of memoized function
+                              #
+                              V type)
+  : effect
+is
+
+
+  # the store used for memoization
+  #
+  # NYI: ENHANCEMENT: would be nice to also support property.hashable keys
+  # using a tree map here
+  #
+  store := (container.ps_map K V).empty # (lock_free.Map K V).empty
+
+
+  # use this memoized effect to retrieve the value for a given key or,
+  # if that value was not calculated yet, to calculate it
+  #
+  public keep(# the function input
+              #
+              k K,
+
+              # the function to calculate the result
+              #
+              f K->V) V
+  =>
+    memoized_effect.this.env.store[k].or_else ()->
+      v := f k
+      memoized_effect.this.env.update k v
+      v
+
+  # update the memoized value stored for key k to hold value v.
+  #
+  update(k,v) =>
+    set store := store.put k v
+    memoized_effect.this.replace memoized_effect.this
+
+
+  # default implementation of memoized_effect
+  #
+  # this will get instated automatically at startup
+  #
+  public redef fixed type.default_value option (memoized_effect M K V) => memoized_effect M K V

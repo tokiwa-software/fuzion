@@ -372,13 +372,13 @@ public class ParsedCall extends Call
   private boolean isValidOperatorInChainedBoolean()
   {
     return
-      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "<") ||
-      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + ">") ||
-      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "≤") ||
-      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "≥") ||
+      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "<" ) ||
+      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + ">" ) ||
+      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "≤" ) ||
+      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "≥" ) ||
       _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "<=") ||
       _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + ">=") ||
-      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "=") ||
+      _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "=" ) ||
       _name.equals(FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "!=") ||
       // && is used to chain the calls together, needed for longer chains like `a < b < c < d`.
       _name.equals(FuzionConstants.INFIX_OPERATOR_PREFIX + "&&");
@@ -685,7 +685,7 @@ A `_` may be used as placeholder for a xref:fuzion_actual_typeparameter[actual t
                   {
                     firstValueIndex = tn;
                   }
-                else if (_actuals.size() == vn)  // value args are present, type args are inferred
+                else if (_actuals.size() == vn)  // value args are present, type parameters are inferred
                   {
                     firstValueIndex = 0;
                   }
@@ -739,6 +739,7 @@ A `_` may be used as placeholder for a xref:fuzion_actual_typeparameter[actual t
             i++;
           }
         _generics = g;
+        _splitOffGenerics = g.freeze();
         _actuals = a;
       }
   }

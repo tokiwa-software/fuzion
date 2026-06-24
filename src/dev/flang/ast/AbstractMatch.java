@@ -54,9 +54,15 @@ public abstract class AbstractMatch extends ExprWithPos
 
 
   /**
-   * Static type of this match or null if none. Set during resolveTypes().
+   * Static type of this match or null if none.
+   * Cache for type().
+   *
+   * This will only be:
+   * - void, for a match known to never return
+   * - unit, for a match that may return (and whose result is assigned to some field)
+   *
    */
-  AbstractType _type;
+  private AbstractType _type;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -145,6 +151,16 @@ public abstract class AbstractMatch extends ExprWithPos
 
 
   /**
+   * Some Expressions do not produce a result, e.g., a Block
+   * whose last expression is not an expression that produces a result.
+   */
+  @Override public boolean producesResult()
+  {
+    return false;
+  }
+
+
+  /**
    * checks the subject type of this match.
    */
   void checkTypes(Context context)
@@ -156,7 +172,8 @@ public abstract class AbstractMatch extends ExprWithPos
       }
 
     if (CHECKS) check
-      (Errors.any() || st != Types.t_ERROR);
+      (Errors.any() || st != Types.t_ERROR,
+       Errors.any() || !producesResult());
 
     if (st != Types.t_ERROR)
       {

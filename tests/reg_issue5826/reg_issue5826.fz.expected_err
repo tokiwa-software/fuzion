@@ -23,7 +23,16 @@ Target feature: 'example'
 In call: 'x'
 
 
---CURDIR--/reg_issue5826.fz:27:22: error 4: Could not find called feature
+--CURDIR--/reg_issue5826.fz:27:20: error 4: Could not find called feature
+  (1..10).for_each x ->
+-------------------^
+Feature not found: 'x' (one argument)
+Target feature: 'example.(λx).call'
+In call: 'x'
+This call was created automatically by partial application. To solve this, you might want to use an explicit lambda expression of the form '( a0 -> ..code using a0..)'.
+
+
+--CURDIR--/reg_issue5826.fz:27:22: error 5: Could not find called feature
   (1..10).for_each x ->
 ---------------------^^
 Feature not found: 'infix/infix_right ->' (one argument)
@@ -35,14 +44,5 @@ In call:
     else
       say "$x not in squares"
 
-
-
---CURDIR--/reg_issue5826.fz:27:20: error 5: Could not find called feature
-  (1..10).for_each x ->
--------------------^
-Feature not found: 'x' (one argument)
-Target feature: 'example.(λx).call'
-In call: 'x'
-This call was created automatically by partial application. To solve this, you might want to use an explicit lambda expression of the form '( a0 -> ..code using a0..)'.
 
 5 errors.

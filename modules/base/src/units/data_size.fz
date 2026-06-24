@@ -276,7 +276,7 @@ is
   #
   public as_string_pad String =>
     val, unt := as_string_help unit_iec_for_as_string
-    "{val.pad_left 4} {unt.pad 3}"
+    "$(val.pad_left 4) $(unt.pad 3)"
 
 
   # Output fo as_string_si padded for nice alignment in a table, e.g.
@@ -286,7 +286,7 @@ is
   #
   public as_string_si_pad String =>
     val, unt := as_string_help unit_si_for_as_string
-    "{val.pad_left 4} {unt.pad 2}"
+    "$(val.pad_left 4) $(unt.pad 2)"
 
 
   # Create a string representation of this units.data_size using the given unit
@@ -304,7 +304,7 @@ is
   #
   public as_string_pad(iec_or_si_unit choice units.byte_iec units.byte_si) String =>
     val, unt := as_string_help iec_or_si_unit
-    "{val.pad_left 4} {unt.pad 3}"
+    "$(val.pad_left 4) $(unt.pad 3)"
 
   # Helper feature for as_string, returns unpadded strings for value and unit
   #

@@ -31,13 +31,13 @@ ctrie_threads is
 
   in_threads(code i32->unit) =>
     (array num_threads t->
-      concur.threads.spawn ()->
+      concur.threads.env.spawn ()->
         code t
       ).for_each t->t.join
 
 
   test1 =>
-    say "test1: in {$num_threads} threads, adding 999 keys, removing every third key and taking a snapshot at key=500."
+    say "test1: in $($num_threads) threads, adding 999 keys, removing every third key and taking a snapshot at key=500."
 
     ctrie := (lock_free.Map i32 i32).empty
 
@@ -46,28 +46,27 @@ ctrie_threads is
     in_threads t->
       for k in keys
           snap := ctrie.snapshot true, if k=500 then ctrie.snapshot true else snap
-          snap_size := snap.size, (if k!=500 && snap_size != snap.size then panic "snapshot changed, was $snap_size is {snap.size}" else snap.size)
+          snap_size := snap.size, (if k!=500 && snap_size != snap.size then panic "snapshot changed, was $snap_size is $(snap.size)" else snap.size)
       do
         ctrie.put k t
         if k % 3 = 0
           _ := ctrie.remove k
 
-    say "empty snapshot size: {empty.size}" # should still be zero
-    say "ctrie size: {ctrie.size}" # the number of the beast = 666
+    say "empty snapshot size: $(empty.size)" # should still be zero
+    say "ctrie size: $(ctrie.size)" # the number of the beast = 666
 
     # all keys which are multiples of 3 should have been removed
-    say "all keys multiple of three removed: {(ctrie.items ∀ (x -> x.values.0 % 3 != 0))}"
+    say "all keys multiple of three removed: $((ctrie.items ∀ (x -> x.values.0 % 3 != 0)))"
 
-    if ((envir.args.nth 1).or_else "")="-debug"
+    if ((envir.args.env.nth 1).or_else "")="-debug"
       say "==="
-      say (ctrie.items.map x->"{x.values.0} was inserted by thread {x.values.1}")
+      say (ctrie.items.map x->"$(x.values.0) was inserted by thread $(x.values.1)")
       say "==="
-      # NYI: BUG: Used abstract feature 'container.Mutable_Map.or_panic' is not implemented by 'lock_free.Map'
-      # say ((ctrie.items.map x->x.values.1).group_by id)
+      say ((ctrie.items.map (.values.1)).group_by id)
 
 
   test2(take_snapshots bool) =>
-    say "test2: in {$num_threads} threads, {if take_snapshots then "adding keys while taking snapshots, removing keys while taking snapshots." else "add keys, remove keys."}"
+    say "test2: in $($num_threads) threads, $(if take_snapshots then "adding keys while taking snapshots, removing keys while taking snapshots." else "add keys, remove keys.")"
 
     ctrie := (lock_free.Map i32 i32).empty
 
@@ -101,11 +100,11 @@ ctrie_threads is
             panic "illegal snap size: $k $s1"
 
     say ctrie.size # 999-900 = 99
-    say (ctrie.items.map x->x.0).sort.as_string_all
+    say (ctrie.items.map (.0)).sort.as_string_all
 
 
   test3 =>
-    say "test3: in {$num_threads} threads, add non-overlapping keys, then remove key, test if added/removed."
+    say "test3: in $($num_threads) threads, add non-overlapping keys, then remove key, test if added/removed."
 
     ctrie := (lock_free.Map i32 i32).empty
 
@@ -118,7 +117,7 @@ ctrie_threads is
           panic "added key $kt not present"
 
         if ctrie[kt].or_panic != kt
-          panic "added key/value does not match $kt != {ctrie[kt].or_panic}"
+          panic "added key/value does not match $kt != $(ctrie[kt].or_panic)"
 
         if k%100 = 0
           _ := ctrie.snapshot true
@@ -134,7 +133,7 @@ ctrie_threads is
 
 
   test4 =>
-    say "test4: in {$num_threads} threads, add non-overlapping keys, then remove key, test if added/removed."
+    say "test4: in $($num_threads) threads, add non-overlapping keys, then remove key, test if added/removed."
 
     ctrie := (lock_free.Map i32 i32).empty
 

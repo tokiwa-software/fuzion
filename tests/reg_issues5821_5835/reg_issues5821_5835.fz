@@ -36,7 +36,7 @@ reg_issues5821_5835 =>
 
   # a more comprehensive set of tests using 0, 1 and 2 actual
   # type parameters in the inheritance call and printing the
-  # actual values to io.out:
+  # actual values to io.Out:
   #
   say "tests using 0, 1 and 2 actual types passed to open type:"
 

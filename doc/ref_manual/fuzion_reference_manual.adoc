@@ -391,7 +391,7 @@ include::rule.adoc[]
 Pre- and postconditions of features are introduced using the `pre` or `post`
 keyword if those features do not redefine an inherited feature:
 
-:RULE_SRC: src/dev/flang/fe/SourceModule.java
+:RULE_SRC: src/dev/flang/ast/Feature.java
 :RULE_ID: PARS_CONTR_PRE_NO_ELSE
 include::rule.adoc[]
 
@@ -399,15 +399,22 @@ include::rule.adoc[]
 :RULE_ID: PARS_CONTR_POST_NO_THEN
 include::rule.adoc[]
 
-In case of redefining an inhertied feature, pre- and postconditions are
+In case of redefining an inherited feature, pre- and postconditions are
 introduced using `pre else` or `post then`, respectively:
 
-:RULE_SRC: src/dev/flang/fe/SourceModule.java
+:RULE_SRC: src/dev/flang/ast/Feature.java
 :RULE_ID: PARS_CONTR_PRE_ELSE
 include::rule.adoc[]
 
 :RULE_SRC: src/dev/flang/fe/SourceModule.java
 :RULE_ID: PARS_CONTR_POST_THEN
+include::rule.adoc[]
+
+A feature redefining another feature, can only extend a precondition if
+all of the redefined features have or inherit a explicit precondition
+
+:RULE_SRC: src/dev/flang/ast/Feature.java
+:RULE_ID: PARS_CONTR_PRE_REDEF
 include::rule.adoc[]
 
 === Choice features

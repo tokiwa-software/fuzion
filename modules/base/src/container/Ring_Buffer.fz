@@ -1,0 +1,197 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature container.Ring_Buffer
+#
+# -----------------------------------------------------------------------
+
+
+# Ring_Buffer -- A simple fixed-size ring buffer
+#
+# A feature defining a ring buffer of a fixed number of elements of a given
+# type `T`.  The ring buffer can be used locally or for communication between
+# threads.
+#
+public Ring_Buffer(
+  # the type of elements stored in this buffer
+  public T type,
+
+  # effect used to modify this buffer
+  #
+  # If this ring buffer is to be used to communicate between threads,
+  # this mutate effect must be a multi-thread implementation of mutate like
+  # `concur.blocking_mutate`.  An instance of this mutate effect must be
+  # instated by when this Ring_Buffer is constructed and when it is accessed.
+  #
+  M type : mutate,
+
+  # the maximum number of elements that can be stored in
+  # this buffer
+  public size i64
+
+) ref ! M
+  pre safety: size ≥ 0
+is
+
+  # the elements in the ring buffer. Valid entries are at indices first..last-1 MOD size
+  #
+  data := M.env.new_array (option T) size nil
+
+  # Index of the first element that will be returned by `poll`
+  #
+  # This may be in the range `0..(size-1)`.
+  #
+  first := M.env.new (i64 0)
+
+  # number of elements that are currently stored in this `Ring_Buffer`.
+  #
+  # This may be any value in the range `0..size`. `data` at indices
+  # `first..(first + used).map (%size)` contains the elements stored in
+  # this buffer.
+  #
+  used  := M.env.new (i64 0)
+
+
+  # is this buffer full?
+  public is_full bool
+  =>
+    M.env.exclusive ()->is_full0
+
+
+  # is this buffer full? Must be called while in `exclusive`:
+  #
+  is_full0 bool
+  =>
+    used = size
+
+
+  # is this buffer empty?
+  #
+  public is_empty bool
+  =>
+    M.env.exclusive ()->is_empty0
+
+
+  # is this buffer empty? Must be called while in `exclusive`:
+  #
+  is_empty0 bool
+  =>
+    used = 0
+
+
+  # add -- add an element to this ring buffer
+  #
+  # Result is true iff ring buffer had space for one more element and `v` was
+  # added to it, false iff the ring buffer is full and was not changed.
+  #
+  public add(v T) bool ! M
+  =>
+    M.env.exclusive ()->
+      if !is_full0 then
+        put1 v
+        true
+      else
+        false
+
+
+  # put -- blocking version of add: add an element to this ring buffer,
+  # wait in case the buffer is full
+  #
+  public put(v T) unit ! M
+  =>
+    M.env.exclusive_when (()-> !is_full0) ()->
+      put1 v
+
+
+  # put1 is a helper for `add` and `put`: add an element to this non-full ring buffer
+  #
+  put1(v T) ! M
+  pre
+    debug: M.env.is_exclusive && !is_full0
+  =>
+    i := first + used
+    data[i < size ? i : i-size] := v
+    used <- used+1
+
+
+  # poll -- remove the oldest element from this ring buffer
+  #
+  # Result is an option containing the removed element iff the ring buffer was
+  # not empty. Otherwise, result is nil.
+  #
+  public poll option T ! M
+  =>
+    M.env.exclusive ()->
+      if is_empty0 then
+        option T nil
+      else
+        take1
+
+
+  # peek -- return the oldest element from this ring buffer without changing the buffer
+  #
+  # Result is an option containing the oldest element iff the ring buffer was
+  # not empty. Otherwise, result is nil.
+  #
+  public peek option T ! M
+  =>
+    M.env.exclusive ()->
+      if is_empty0 then
+        option T nil
+      else
+        data[first.get]
+
+
+  # take -- blocking version of poll: remove the oldest element from this ring buffer
+  #
+  # Result is the removed element. If none is available, this will block until one is
+  # available.
+  #
+  public take T ! M
+  =>
+    M.env.exclusive_when (()-> !is_empty0) ()->
+      take1
+
+
+  # take1 is a helper for `poll` and `take`: remove oldest element from non-empty ring buffer
+  #
+  take1 T ! M
+  pre
+    debug: M.env.is_exclusive && !is_empty0
+  =>
+    i := first.get
+    res := data[i].or_panic
+    data[i] := nil
+    first <- (i+1 = size ? 0 : i+1)
+    used <- used-1
+    res
+
+
+  # count -- the number of values currently stored in the ring buffer
+  #
+  public count i64 ! M
+  =>
+    M.env.exclusive ()->
+      used
+
+
+  # unused -- number of elements free for adding
+  #
+  public unused i64 =>
+    size - count

@@ -26,7 +26,7 @@
 #
 # usage example:
 #
-#     say <| io.dir.traverse (path.of ".") true "" (r,t)->"{r}\n{t}"
+#     say <| io.dir.traverse (path.of ".") true "" (r,t)->"$(r)n$(t)"
 #
 public traverse(
   # the type of the result
@@ -53,5 +53,5 @@ public traverse(
                 t
           }
     while res.ok
-      np := io.dir.open.read .bind p.resolve
+      np := io.dir.open.env.read .bind p.resolve
     until !np.ok then res else res

@@ -31,7 +31,7 @@
 # NYI: the compiler should check that features inheriting from this are
 # actually immutable.
 #
-public orderable : partially_orderable
+public orderable : property.partially_orderable
 
 /* NYI: quantor intrinsics not supported yet:
 
@@ -73,3 +73,20 @@ is
   #   result = (b <= a <= b)
   =>
     a <= b <= a
+
+
+# wrap an orderable as a new orderable type with the order reversed
+#
+# This allows to reverse the sorting order, e.g.,
+#     [1,5,3,4,2].sort_by property.reverse_order
+#
+public reverse_order(public O type : property.orderable,
+                     public val O
+                     ) : property.orderable
+is
+
+  public redef type.equality(a,b property.reverse_order.this) bool =>
+    a.val = b.val
+
+  public redef type.lteq(a, b reverse_order.this) bool =>
+    b.val <= a.val
