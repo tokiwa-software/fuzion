@@ -47,6 +47,7 @@ import dev.flang.ast.Feature;
 import dev.flang.ast.InlineArray;
 import dev.flang.ast.ResolvedType;
 import dev.flang.ast.State;
+import dev.flang.ast.Types;
 import dev.flang.ast.Universe;
 
 import dev.flang.util.ANY;
@@ -623,7 +624,8 @@ class LibraryOut extends ANY
                     type(gt);
                   }
               }
-            type(t.outer());
+            // NYI: CLEANUP: do not write outer for this types.
+            type(t.isThisType() ? Types.resolved.universe.selfType() : t.outer());
           }
       }
   }

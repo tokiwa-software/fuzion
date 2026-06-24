@@ -2237,11 +2237,14 @@ public class Call extends AbstractCall
                                  pos, conflict, foundAt);
                   }
               }
-            inferGeneric(res,
-                         context,
-                         formalType.outer(),
-                         actualType.outer(),
-                         pos, conflict, foundAt);
+            if (formalType.isNormalType() && actualType.isNormalType())
+              {
+                inferGeneric(res,
+                             context,
+                             formalType.outer(),
+                             actualType.outer(),
+                             pos, conflict, foundAt);
+              }
           }
         else if (formalType.isChoice())
           {
