@@ -315,8 +315,8 @@ public class AstErrors extends ANY
   static void declarationOfResultFeature(SourcePosition pos)
   {
     error(pos,
-          "Feature declaration may not declare a feature with name " + sbn(FuzionConstants.RESULT_NAME) + "",
-          "" + sbn(FuzionConstants.RESULT_NAME) + " is an automatically declared field for a routine's result value.\n"+
+          "Feature declaration may not declare a feature with name " + sbn(FuzionConstants.RESULT_NAME),
+          sbn(FuzionConstants.RESULT_NAME) + " is an automatically declared field for a routine's result value.\n"+
           "To solve this, choose a different name than " + sbn(FuzionConstants.RESULT_NAME) + " for your feature.");
   }
 
@@ -669,8 +669,8 @@ public class AstErrors extends ANY
               "Wrong number of type parameters",
               "Wrong number of actual type parameters in " + detail1 + ":\n" +
               detail2 +
-              "expected " + fg.sizeText() + (fg._feature.typeArguments().isEmpty() ? "" : " for " + s(fg) + "") + "\n" +
-              "found " + (actualGenerics.size() == 0 ? "none" : "" + actualGenerics.size() + ": " + s(actualGenerics) + "" ) + ".\n");
+              "expected " + fg.sizeText() + (fg._feature.typeArguments().isEmpty() ? "" : " for " + s(fg)) + "\n" +
+              "found " + (actualGenerics.size() == 0 ? "none" : actualGenerics.size() + ": " + s(actualGenerics)  ) + ".\n");
       }
   }
 
@@ -794,7 +794,7 @@ public class AstErrors extends ANY
   {
     var rt = res.type();
     var srt = rt == null ? "an unknown type" : s(rt);
-    error(res.posOfLast(), "Constructor code should result in type " + st(FuzionConstants.UNIT_NAME) + "",
+    error(res.posOfLast(), "Constructor code should result in type " + st(FuzionConstants.UNIT_NAME) ,
           "Type returned by this constructor's implementation is " +srt + "\n" +
           "To solve this, you could turn this constructor into a routine by adding a matching result type " +
           "compatible to " + srt + " or by using " + code("=>") + " instead of " + code("is") + " to "+
@@ -829,35 +829,28 @@ public class AstErrors extends ANY
           "Original feature declared at " + originalFeature.pos().show());
   }
 
-  /* NYI: currently unused, need to check if a "while (23)" produces a useful error message
-  static void whileConditionMustBeBool(SourcePosition pos, Type type)
+  static void whileConditionMustBeBool(Expr sub)
+  {
+    loopTermCond(sub, "while");
+  }
+
+  static void untilConditionMustBeBool(Expr sub)
+  {
+    loopTermCond(sub, "until");
+  }
+
+  private static void loopTermCond(Expr sub, String ltc)
   {
     if (CHECKS) check
-      (any() || type != Types.t_ERROR);
+      (any() || sub.type() != Types.t_ERROR);
 
-    if (type != Types.t_ERROR)
+    if (sub.type() != Types.t_ERROR)
       {
-        error(pos,
-              "Loop termination condition following 'while' must be assignable to type 'bool'",
-              "Actual type is " + type);
+        error(sub.pos(),
+              "Loop termination condition following '" + ltc + "' must be assignable to type 'bool'",
+              "Actual type is " + s(sub.type()));
       }
   }
-  */
-
-  /* NYI: currently unused, need to check if a "do until (23)" produces a useful error message
-  static void untilConditionMustBeBool(SourcePosition pos, Type type)
-  {
-    if (CHECKS) check
-      (any() || type != Types.t_ERROR);
-
-    if (type != Types.t_ERROR)
-      {
-        error(pos,
-              "Loop termination condition following 'until' must be assignable to type 'bool'",
-              "Actual type is " + type);
-      }
-  }
-  */
 
   static void ifConditionMustBeBool(Expr sub)
   {
@@ -867,15 +860,15 @@ public class AstErrors extends ANY
     if (sub.type() != Types.t_ERROR)
       {
         error(sub.pos(),
-              "If condition must be assignable to type " + s(Types.resolved.t_bool) + "",
-              "Actual type is " + s(sub.type()) + "");
+              "If condition must be assignable to type " + s(Types.resolved.t_bool),
+              "Actual type is " + s(sub.type()));
       }
   }
 
   static void matchSubjectMustNotBeTypeParameter(SourcePosition pos, AbstractType t)
   {
     error(pos,
-          "" + skw("match") + " subject type must not be a type parameter",
+          skw("match") + " subject type must not be a type parameter",
           "Matched type: " + s(t) + "\n" +
           "which is a type parameter declared at " + t.declarationPos().show());
 
@@ -884,7 +877,7 @@ public class AstErrors extends ANY
   static void matchSubjectMustBeChoice(SourcePosition pos, AbstractType t)
   {
     error(pos,
-          "" + skw("match") + " subject type must be a choice type",
+          skw("match") + " subject type must be a choice type",
           "Matched type: " + s(t) + ", which is not a choice type");
 
   }
@@ -906,7 +899,7 @@ public class AstErrors extends ANY
           }
       }
     error(pos,
-          "" + skw("case") + " clause matches type that had been matched already.",
+          skw("case") + " clause matches type that had been matched already.",
           caseMatches(typeOrNull) +
           "Originally matched at " + earlierPosString + ".\n" +
           subjectTypes(choiceGenerics));
@@ -921,7 +914,7 @@ public class AstErrors extends ANY
   static void matchCaseDoesNotMatchAny(SourcePosition pos, AbstractType typeOrNull, List<AbstractType> choiceGenerics)
   {
     error(pos,
-          "" + skw("case") + " clause in " + skw("match") + " expression does not match any type of the subject.",
+          skw("case") + " clause in " + skw("match") + " expression does not match any type of the subject.",
           caseMatches(typeOrNull) +
           subjectTypes(choiceGenerics));
   }
@@ -929,7 +922,7 @@ public class AstErrors extends ANY
   static void matchCaseMatchesSeveral(SourcePosition pos, AbstractType t, List<AbstractType> choiceGenerics, List<AbstractType> matches)
   {
     error(pos,
-          "" + skw("case") + " clause in " + skw("match") + " expression matches several types of the subject",
+          skw("case") + " clause in " + skw("match") + " expression matches several types of the subject",
           caseMatches(t) +
           subjectTypes(choiceGenerics) +
           "matches are " + typeListConjunction(matches));
@@ -940,7 +933,7 @@ public class AstErrors extends ANY
     if (choiceGenerics.size() == missingMatches.size())
       {
         error(pos,
-              "" + skw("match") + " expression requires at least one case",
+              skw("match") + " expression requires at least one case",
               "Match expression at " + pos.show() + "\n" +
               "To solve this, add a case.  If a case exists, check that the indentation is deeper than that of the surrounding " + skw("match") + " expression");
       }
@@ -948,7 +941,7 @@ public class AstErrors extends ANY
       {
         var n = missingMatches.size();
         error(pos,
-              "" + skw("match") + " expression does not cover all of the subject's types",
+              skw("match") + " expression does not cover all of the subject's types",
               "Missing " + StringHelpers.plural(n,"case") +
               " for "    + StringHelpers.plural(n,"type") + ": " + typeListConjunction(missingMatches) + "\n" +
               subjectTypes(choiceGenerics));
@@ -997,7 +990,7 @@ public class AstErrors extends ANY
           {
             sb.append("\nand ");
           }
-        sb.append("" + s_feat_with_pos(f));
+        sb.append(s_feat_with_pos(f));
       }
     error(pos,
           "Internally referenced feature not unique",
@@ -1151,7 +1144,7 @@ public class AstErrors extends ANY
 
   public static void redefineModifierMissing(SourcePosition pos, AbstractFeature f, AbstractFeature existing)
   {
-    cannotRedefine(pos, f, existing, "Redefinition must be declared using modifier " + skw("redef") + "",
+    cannotRedefine(pos, f, existing, "Redefinition must be declared using modifier " + skw("redef") ,
                    "To solve this, if you did not intend to redefine an inherited feature, " +
                    "choose a different name for " + sbnf(f) + ".\n" +
                    "Otherwise, if you want to redefine an inherited feature, add a " + skw("redef") +
@@ -1517,7 +1510,7 @@ public class AstErrors extends ANY
       {
         error(f.pos(),
               "Missing result type in field declaration with initialization",
-              "Field declared: " + s(f) + "");
+              "Field declared: " + s(f) );
       }
   }
 
@@ -1558,7 +1551,7 @@ public class AstErrors extends ANY
         error(pos,
               "Block must end with a result expression",
               "This block must produce a value since its result is used by the enclosing expression.\n" +
-              "Expected type of value: " + s(expectedType) + "");
+              "Expected type of value: " + s(expectedType) );
       }
   }
 
@@ -1604,8 +1597,8 @@ public class AstErrors extends ANY
     error(pos,
           "Actual type parameters to choice type must be disjoint types",
           "The following types have overlapping values:\n" +
-          "" + s(t1) + "" + /* " at " + t1.pos().show() + */ "\n" +  // NYI: use pos before Types were interned!
-          "" + s(t2) + "" + /* " at " + t2.pos().show() + */ "\n");
+          s(t1) + /* " at " + t1.pos().show() + */ "\n" +  // NYI: use pos before Types were interned!
+          s(t2) + /* " at " + t2.pos().show() + */ "\n");
   }
 
   static void illegalUseOfOpenFormalGeneric(SourcePosition pos, AbstractFeature generic)
@@ -1613,7 +1606,7 @@ public class AstErrors extends ANY
     error(pos,
           "Illegal use of open formal type parameter type",
           "Open formal type parameter type is permitted only as the type of an argument.  If the argument and the formal type parameter are part of the same argument list, the argument must be the last argument.\n" +
-          "Open formal argument: " + sbnf(generic) + "");
+          "Open formal argument: " + sbnf(generic) );
   }
 
   static void integerConstantOutOfLegalRange(SourcePosition pos, String constant, AbstractType t, String from, String to)
@@ -1972,7 +1965,7 @@ public class AstErrors extends ANY
           "Destructuring mismatch between number of visible fields and number of target variables.",
           "Found " + ((fn == 0) ? "no visible argument fields" :
                       (fn == 1) ? "one visible argument field" :
-                      "" + fn + " visible argument fields"     ) + "\n" +
+                      fn + " visible argument fields"     ) + "\n" +
           (nn == 0 ? "while there are no destructuring variables" :
            nn == 1 ? "while there is one destructuring variable"
                    : "while there are " + nn + " destructuring variables.\n")
