@@ -2478,17 +2478,21 @@ there is no common super type of the two types (Types.t_ERROR)
     String result = switch (kind())
       {
         case GenericArgument :
-         {
-          var ga = genericArgument();
-          yield
-            (ga.isCoTypesThisType()
-              ? ga.qualifiedName(context, humanReadable)
-              : ga.isTypeFeature()
-              ? ga.qualifiedName(humanReadable)
-              : (humanReadable ? ga.baseNameHuman() : ga.baseName())) +
-            (isRef() ? " (boxed)" : "");
-         }
-        case ThisType : { yield featureName(humanReadable) + ".this" + (feature().isCotype() ? ".type" : ""); }
+          {
+            var ga = genericArgument();
+            yield
+              (ga.isCoTypesThisType()
+                ? ga.qualifiedName(context, humanReadable)
+                : ga.isTypeFeature()
+                ? ga.qualifiedName(humanReadable)
+                : (humanReadable ? ga.baseNameHuman() : ga.baseName())) +
+              (isRef() ? " (boxed)" : "");
+          }
+        case ThisType :
+          {
+            yield (feature().outer().isUniverse() ? "" : feature().outer().qualifiedName(humanReadable) + ".")
+              + featureName(humanReadable) + ".this" + (feature().isCotype() ? ".type" : "");
+          }
         case RefType, ValueType :
           {
             var res = outerToString(humanReadable)
@@ -2517,9 +2521,7 @@ there is no common super type of the two types (Types.t_ERROR)
   protected String outerToString(boolean humanReadable)
   {
     var o = outer();
-    return isThisType()
-        ? (feature().outer().isUniverse() ? "" : feature().outer().qualifiedName(humanReadable) + ".")
-        : o != null && (o.isGenericArgument() || !o.feature().isUniverse())
+    return o != null && (o.isGenericArgument() || !o.feature().isUniverse())
         ? o.toStringWrapped(humanReadable) + "."
         : "";
   }
