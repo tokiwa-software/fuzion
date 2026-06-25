@@ -2224,9 +2224,9 @@ public class AstErrors extends ANY
           "may represent a number of different actual dynamic types, the " + art + " is not clearly defined.\n"+
           "Called feature: " + s(c.calledFeature()) + "\n" +
           "Original " + art + ": " + s(t) +
-          (tp != null
-           ? " declared at " + tp.show()
-           : "") + "\n" +
+          (tp.equals(calledOrArg.pos())
+           ? ""
+           : " declared at " + tp.show()) + "\n" +
           "Type depending on target: " + s(from) + "\n" +
           "Target type: " + s(to) + "\n" +
           "To solve this, you could try to use a value type as the target type of the call" +
