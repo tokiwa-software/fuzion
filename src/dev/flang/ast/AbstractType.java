@@ -1873,7 +1873,7 @@ there is no common super type of the two types (Types.t_ERROR)
         tt = switch(tt.kind())
           {
             case GenericArgument, ThisType -> null;
-            case RefType,ValueType -> tt.outer();
+            case RefType, ValueType -> tt.outer();
           };
       }
     while (tt != null);
