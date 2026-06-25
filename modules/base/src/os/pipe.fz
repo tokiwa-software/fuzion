@@ -1,0 +1,85 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature os.pipe
+#
+# -----------------------------------------------------------------------
+
+
+# effect for creating pipes
+#
+public pipe : effect is
+
+  # the underlying pipe's file descriptors
+  #
+  pipefd array i64 := [0, 0]
+
+
+  # create the pipe
+  #
+  check pipefd.count = 2
+  status := fzE_pipe_create pipefd.internal_array.data
+
+
+  # has this pipe been used already?
+  #
+  used := false
+
+
+  # write bytes to a write end
+  #
+  write_handler (desc i64) : io.Write_Handler is
+    public redef write (bytes Sequence u8) outcome unit =>
+      if fzE_pipe_write desc bytes.as_array.internal_array.data bytes.count = -1
+        error "failed writing to {desc}" fzE_last_error
+      else
+        unit
+
+
+  # with writer for one pipe
+  #
+  public with_writer(T type, LM type : mutate, w () -> outcome unit, r i64 -> T) outcome T =>
+    if used
+      error "cannot reuse pipe"
+    else if status != 0
+      error "creating pipe" status.as_i64
+    else
+      set used := true
+      read_desc, write_desc := (pipefd[0], pipefd[1])
+
+      match (io.buffered LM).writer (write_handler write_desc) ! w
+        unit =>
+          _ := fzE_pipe_close write_desc
+          r read_desc
+        e error => e
+
+
+  # NYI: UNDER DEVELOPMENT: add the same but for reading from the pipe
+  #
+
+
+  # close all remaining pipes
+  #
+  public redef finally unit =>
+    for fd in pipefd
+    do
+      if fd != 0
+        _ := fzE_pipe_close fd
+      else
+        unit # ignore

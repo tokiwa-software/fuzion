@@ -942,6 +942,15 @@ int64_t fzE_process_wait(int64_t p){
 }
 
 
+// always return 38, pipe creation not yet implemented
+//
+// NYI: ENHANCEMENT: support pipe creation on Windows
+//
+int fzE_pipe_create(int64_t *fds)
+{
+  return 38; // ENOSYS on Linux
+}
+
 // returns -1 on error, 0 on pipe exhausted/closed
 // otherwise the number of bytes read
 int fzE_pipe_read(int64_t desc, char * buf, size_t nbytes){
