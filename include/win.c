@@ -91,8 +91,6 @@ int64_t fzE_last_error(void){
     : last_error;
 }
 
-// NYI: UNDER DEVELOPMENT: missing set_last_error, see posix.c
-
 // make directory, return zero on success
 int fzE_mkdir(const char *pathname){
   wchar_t* wideStr = utf8_to_wide_str(pathname);
