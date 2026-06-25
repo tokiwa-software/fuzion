@@ -31,7 +31,7 @@ lib_io_dir =>
   _ := io.file.delete file2
   _ := io.file.delete path
   say (io.dir.make path)
-  say (io.dir.make path)
+  say (io.dir.make path).err.msg
   _ := io.file.use unit file1 io.file.mode.write (()-> io.file.writer.write "")
   _ := io.file.use unit file2 io.file.mode.write (()-> io.file.writer.write "")
 
