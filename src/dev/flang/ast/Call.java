@@ -28,6 +28,7 @@ package dev.flang.ast;
 
 import java.util.ListIterator;
 
+import dev.flang.ast.AbstractMatch.Kind;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
@@ -3072,7 +3073,7 @@ public class Call extends AbstractCall
    */
   private Expr createIf(Resolution res, Context context, Expr true_, Expr false_, AbstractType rt)
   {
-    var result = Match.createIf(pos(), _target, true_, false_, false);
+    var result = Match.createIf(pos(), _target, true_, false_, Kind.If);
     if (!rt.containsUndefined())
       {
         result = result.propagateExpectedType(res, context, rt, null);;

@@ -47,7 +47,7 @@ public abstract class AbstractMatch extends ExprWithPos
    * where this match came from.
    * used only for better error messages.
    */
-  enum Kind { Plain, If, Contract }
+  enum Kind { Plain, If, Contract, Until, While }
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -177,24 +177,38 @@ public abstract class AbstractMatch extends ExprWithPos
 
     if (st != Types.t_ERROR)
       {
-        if (kind() == Kind.Plain)
-          {
+        switch (kind()) {
+          case Plain:
             if (!st.isChoice())
               {
                 AstErrors.matchSubjectMustBeChoice(subject().pos(), st);
               }
-          }
-        else if (Types.resolved.t_bool.asThis().isAssignableFromWithoutBoxing(st, context).no())
-          {
-            if (kind() == Kind.Contract)
+            break;
+          case Contract:
+            if (Types.resolved.t_bool.asThis().isAssignableFromWithoutBoxing(st, context).no())
               {
                 AstErrors.contractExpressionMustResultInBool(subject());
               }
-            else
+            break;
+          case If:
+            if (Types.resolved.t_bool.asThis().isAssignableFromWithoutBoxing(st, context).no())
               {
                 AstErrors.ifConditionMustBeBool(subject());
               }
-          }
+            break;
+          case While:
+            if (Types.resolved.t_bool.asThis().isAssignableFromWithoutBoxing(st, context).no())
+              {
+                AstErrors.whileConditionMustBeBool(subject());
+              }
+            break;
+          case Until:
+            if (Types.resolved.t_bool.asThis().isAssignableFromWithoutBoxing(st, context).no())
+              {
+                AstErrors.untilConditionMustBeBool(subject());
+              }
+            break;
+        }
       }
   }
 

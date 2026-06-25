@@ -1,0 +1,13 @@
+
+--CURDIR--/loop_termination_conditions.fz:28:13: error 1: Loop termination condition following 'until' must be assignable to type 'bool'
+  do until (23)
+------------^^
+Actual type is 'i32'
+
+
+--CURDIR--/loop_termination_conditions.fz:32:10: error 2: Loop termination condition following 'while' must be assignable to type 'bool'
+  while (23)
+---------^^
+Actual type is 'i32'
+
+2 errors.

@@ -344,12 +344,12 @@ public class Loop extends ANY
                _successBlock == null
                  ? new Block() { public SourcePosition pos() { return new SourceRange(pos._sourceFile, pos.bytePos(), _elsePos.byteEndPos()); }; }
                  : Block.fromExpr(_successBlock),
-               new Block(nextItBlock), false);
+               new Block(nextItBlock), AbstractMatch.Kind.Until);
 
     block._expressions.add(nextIteration);
     if (whileCond != null)
       {
-        block = Block.fromExpr(Match.createIf(whileCond.pos(), whileCond, block, _elseBlock0, false));
+        block = Block.fromExpr(Match.createIf(whileCond.pos(), whileCond, block, _elseBlock0, AbstractMatch.Kind.While));
       }
     if (inv != null)
       {
@@ -553,7 +553,7 @@ public class Loop extends ANY
     var f = new Call(p, "fuzion");
     var r = new Call(p, f, "runtime");
     var e = new Call(p, r, "variantcondition_fault", new List<>(new StrConst(p, p.sourceText())));
-    return Match.createIf(p, variantExpr, new Block(), e, false);
+    return Match.createIf(p, variantExpr, new Block(), e, AbstractMatch.Kind.Contract);
   }
 
 

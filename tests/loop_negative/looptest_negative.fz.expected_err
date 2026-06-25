@@ -111,25 +111,25 @@ for value assigned  : 'testLoop_neg3 a (i -> i > 10)'
 To solve this, you could change the type of the target 'looptest_negative._' to 'unit' or convert the type of the assigned value to 'String'.
 
 
---CURDIR--/looptest_negative.fz:108:11: error 11: If condition must be assignable to type 'bool'
+--CURDIR--/looptest_negative.fz:108:11: error 11: Loop termination condition following 'while' must be assignable to type 'bool'
     while "string"  # 8. should flag an error: must be of type bool
 ----------^^^^^^^^
 Actual type is 'String'
 
 
---CURDIR--/looptest_negative.fz:112:11: error 12: If condition must be assignable to type 'bool'
+--CURDIR--/looptest_negative.fz:112:11: error 12: Loop termination condition following 'while' must be assignable to type 'bool'
     while 23  # 9. should flag an error: must be of type bool
 ----------^^
 Actual type is 'i32'
 
 
---CURDIR--/looptest_negative.fz:122:11: error 13: If condition must be assignable to type 'bool'
+--CURDIR--/looptest_negative.fz:122:11: error 13: Loop termination condition following 'until' must be assignable to type 'bool'
     until "string"  # 10. should flag an error: must be of type bool
 ----------^^^^^^^^
 Actual type is 'String'
 
 
---CURDIR--/looptest_negative.fz:127:11: error 14: If condition must be assignable to type 'bool'
+--CURDIR--/looptest_negative.fz:127:11: error 14: Loop termination condition following 'until' must be assignable to type 'bool'
     until 23  # 11. should flag an error: must be of type bool
 ----------^^
 Actual type is 'i32'
