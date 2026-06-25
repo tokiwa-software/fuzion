@@ -87,7 +87,7 @@ is
   # shortcut to get this codepoint as a u8
   #
   public as_u8 u8
-    pre codepoint.utf8_encoded_in_one_byte.contains val
+    pre debug: val.fits_in_u8
   => val.as_u8
 
 
