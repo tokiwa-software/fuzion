@@ -1024,14 +1024,14 @@ public String ref : property.equatable, property.hashable, property.orderable is
 
   # NYI: remove the convenience functions when Fuzion supports char literals
   #
-  public type.minus_char  u8 => "-".utf8.first.or_panic
-  public type.plus_char   u8 => "+".utf8.first.or_panic
-  public type.zero_char   u8 => "0".utf8.first.or_panic
-  public type.nine_char   u8 => "9".utf8.first.or_panic
-  public type.a_char      u8 => "a".utf8.first.or_panic
-  public type.z_char      u8 => "z".utf8.first.or_panic
-  public type.cap_a_char  u8 => "A".utf8.first.or_panic
-  public type.cap_z_char  u8 => "Z".utf8.first.or_panic
+  module type.minus_char  u8 => "-".as_u8
+  module type.plus_char   u8 => "+".as_u8
+  module type.zero_char   u8 => "0".as_u8
+  module type.nine_char   u8 => "9".as_u8
+  module type.a_char      u8 => "a".as_u8
+  module type.z_char      u8 => "z".as_u8
+  module type.cap_a_char  u8 => "A".as_u8
+  module type.cap_z_char  u8 => "Z".as_u8
 
 
   # is byte a valid starting byte of a utf-8 string?
