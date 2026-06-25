@@ -1033,12 +1033,12 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * Internal version of applyTypePars(target) that does not perform caching.
    *
-   * @param target a target type this is used in
+   * @param tt a target type this is used in
    *
    * @return this with all generic arguments from target.feature._generics
    * replaced by target._generics.
    */
-  private AbstractType applyTypePars_(AbstractType target)
+  private AbstractType applyTypePars_(AbstractType tt)
   {
     /* NYI: Performance: This requires time in O(this.depth *
      * feature.inheritanceDepth * t.depth), i.e. it is in O(n³)! Caching
@@ -1047,20 +1047,19 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     var result = this;
     if (dependsOnGenerics())
       {
-        target = target.selfOrConstraint(Context.NONE);
-        result = result.applyTypePars(target.feature(), target.actualGenerics());
-        if (target.isThisType())
+        var effectiveTargetType = tt.selfOrConstraint(Context.NONE);
+        result = switch(effectiveTargetType.kind())
           {
-            // see #659 for when this is relevant
-            result = result.applyTypePars(target.feature().outer().thisType());
-          }
-        else
-          {
-            if (target.outer() != null)
+            case GenericArgument -> throw new Error("unexpected case in applyTypePars_");
+            case ThisType -> applyTypePars(effectiveTargetType.feature(), effectiveTargetType.feature().genericsAsActuals());
+            case ValueType, RefType ->
               {
-                result = result.applyTypePars(target.outer());
+                var res = applyTypePars(effectiveTargetType.feature(), effectiveTargetType.generics());
+                yield effectiveTargetType.outer() != null
+                  ? res.applyTypePars(effectiveTargetType.outer())
+                  : res;
               }
-          }
+          };
       }
     return result;
   }
