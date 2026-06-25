@@ -126,6 +126,6 @@ default_handler : os.Process_Handler is
     res_data := sys.internal_array_init i64 4
 
     if (fzE_process_create arg_data.internal_array.data arg_data.count env_data.internal_array.data env_data.count res_data.data) = -1
-      error "*** error creating process $n" fzE_last_error
+      error "creating process $n" fzE_last_error
     else
       os.process res_data[0] res_data[1] res_data[2] res_data[3] n args

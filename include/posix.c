@@ -447,7 +447,7 @@ int fzE_rm(char * path)
 {
   return unlink(path) == 0
     ? 0
-    : rmdir(path) == 0;
+    : rmdir(path);
 }
 
 
