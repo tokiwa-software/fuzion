@@ -28,6 +28,8 @@ package dev.flang.ast;
 
 import java.util.ListIterator;
 import java.util.function.Supplier;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
@@ -468,7 +470,7 @@ public class ParsedCall extends Call
       (expectedType.isLambdaTargetButNotLazy(res));
 
     var paa = partiallyApplicableAlternative(res, context, expectedType);
-    Expr l = paa != null ? resolveTypes(res, context)  // this ensures _calledFeature is set such that possible ambiguity is reported
+    Expr l = paa != null ? resolveTypesForPartial(res, context)  // this ensures _calledFeature is set such that possible ambiguity is reported
                          : this;
     if (l == this  /* resolution did not replace this call by sth different */ &&
         _calledFeature != Types.f_ERROR /* resolution did not cause an error */    )
@@ -492,6 +494,28 @@ public class ParsedCall extends Call
           }
       }
     return l;
+  }
+
+
+  /**
+   * Consider this example:
+   * _ := [1,2,3].map (id Any)
+   *
+   * Here we must not resolve `id` via normal means but consider `Any`
+   * to be a type argument.
+   */
+  private Expr resolveTypesForPartial(Resolution res, Context context)
+  {
+    loadCalledFeature(res, context);
+    if (calledFeatureKnown() &&
+        !_actuals.isEmpty() &&
+        _actuals.size() >= _calledFeature.typeArguments().size() &&
+        _actuals.stream().limit(_calledFeature.typeArguments().size()).allMatch(a -> !(a instanceof Function) && a.asType() != null))
+      {
+        _generics = _actuals.stream().limit(_calledFeature.typeArguments().size()).map(x -> x.asType().resolve(res, context)).collect(List.collector());
+        _actuals = _actuals.stream().skip(_calledFeature.typeArguments().size()).collect(List.collector());
+      }
+    return resolveTypes(res, context);
   }
 
 
