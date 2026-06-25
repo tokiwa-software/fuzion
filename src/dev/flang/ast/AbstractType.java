@@ -2477,7 +2477,7 @@ there is no common super type of the two types (Types.t_ERROR)
   {
     String result = switch (kind())
       {
-        case GenericArgument :
+        case GenericArgument:
           {
             var ga = genericArgument();
             yield
@@ -2488,12 +2488,12 @@ there is no common super type of the two types (Types.t_ERROR)
                 : (humanReadable ? ga.baseNameHuman() : ga.baseName())) +
               (isRef() ? " (boxed)" : "");
           }
-        case ThisType :
+        case ThisType:
           {
             yield (feature().outer().isUniverse() ? "" : feature().outer().qualifiedName(humanReadable) + ".")
               + featureName(humanReadable) + ".this" + (feature().isCotype() ? ".type" : "");
           }
-        case RefType, ValueType :
+        case RefType, ValueType:
           {
             var res = outerToString(humanReadable)
                   + (isRef() != feature().isRef() ? (isRef() ? "ref " : "value ") : "")
