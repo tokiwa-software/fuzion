@@ -82,7 +82,6 @@ class ThisType extends ResolvedType {
   @Override
   public List<AbstractType> generics()
   {
-    // TODO Auto-generated method stub
     throw new UnsupportedOperationException("Unimplemented method 'generics'");
   }
 
@@ -90,15 +89,12 @@ class ThisType extends ResolvedType {
   /**
    * The outer of this type. May be null.
    *
-   * Requires that this is resolved and !isGenericArgument().
+   * Requires that this is resolved and isNormalType().
    */
   @Override
   public AbstractType outer()
   {
-    // NYI: UNDER DEVELOPMENT: better null or not legal to call?
-    return Types.resolved == null
-      ? null
-      : Types.resolved.universe.selfType();
+    throw new UnsupportedOperationException("Unimplemented method 'outer'");
   }
 
 

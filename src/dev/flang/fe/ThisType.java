@@ -50,15 +50,13 @@ class ThisType extends LibraryType {
   @Override
   public List<AbstractType> generics()
   {
-    // TODO Auto-generated method stub
     throw new UnsupportedOperationException("Unimplemented method 'generics'");
   }
 
   @Override
   public AbstractType outer()
   {
-    // NYI: UNDER DEVELOPMENT: better null or not legal to call?
-    return _libModule.libraryUniverse().selfType();
+    throw new UnsupportedOperationException("Unimplemented method 'outer'");
   }
 
   @Override

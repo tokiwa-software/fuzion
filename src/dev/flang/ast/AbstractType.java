@@ -108,7 +108,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /**
    * The outer of this type. May be null.
    *
-   * Requires that this is resolved and !isGenericArgument().
+   * Requires that this is resolved and isNormalType().
    */
   public abstract AbstractType outer();
 
@@ -728,7 +728,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
             case RefType, ValueType -> {
               yield actual.feature() == feature() &&
                 genericsAssignable(actual, context) &&
-                (outer() == null && actual.outer() == null || outer().isAssignableFromDirectly(actual.outer()).yes())
+                // NYI: BUG: isThisType logic certainly wrong...
+                (isThisType() || outer() == null && actual.outer() == null || outer().isAssignableFromDirectly(actual.outer()).yes())
               ||
                 constraintAssignableViaInherits(context, actual);
             }
@@ -1869,7 +1870,11 @@ there is no common super type of the two types (Types.t_ERROR)
     do
       {
         result = result.replace_this_type_by_actual_outer2(tt, foundRef, context);
-        tt = tt.isGenericArgument() ? null : tt.outer();
+        tt = switch(tt.kind())
+          {
+            case GenericArgument, ThisType -> null;
+            case RefType, ValueType -> tt.outer();
+          };
       }
     while (tt != null);
     return result;
@@ -2429,6 +2434,37 @@ there is no common super type of the two types (Types.t_ERROR)
 
 
   /**
+   * Helper function for toString
+   */
+  private String featureName(boolean humanReadable)
+  {
+    var f = feature();
+    var cotypeType = f.isCotype();
+    if (cotypeType)
+      {
+        f = f.cotypeOrigin();
+      }
+    var fn = f.featureName();
+    // for a feature that does not define a type itself, the name is not
+    // unique due to overloading with different argument counts. So we add
+    // the argument count to get a unique name.
+    var fname = (humanReadable ? f.baseNameHuman() : f.baseName())
+      +  (f.definesType() || fn.argCount() == 0 || fn.isInternal() || humanReadable
+            ? ""
+            : FuzionConstants.INTERNAL_NAME_SYMBOL + fn.argCount());
+
+    // NYI: would be good if postFeatures could be identified not be string comparison, but with something like
+    // `f.isPostFeature()`. Note that this would need to be saved in .fum file as well!
+    ///
+    return fname.startsWith(FuzionConstants.POSTCONDITION_FEATURE_PREFIX)
+      ? fname.substring(FuzionConstants.POSTCONDITION_FEATURE_PREFIX.length(),
+                                fname.lastIndexOf("_")) +
+          ".postcondition"
+      : fname;
+  }
+
+
+  /**
    * Get a String representation of this Type.
    *
    * Note that this does not work for instances of Type before they were
@@ -2439,70 +2475,38 @@ there is no common super type of the two types (Types.t_ERROR)
    */
   public String toString(boolean humanReadable, AbstractFeature context)
   {
-    String result;
-
-    if (isGenericArgument())
+    String result = switch (kind())
       {
-        var ga = genericArgument();
-        result =
-          (ga.isCoTypesThisType()
-            ? ga.qualifiedName(context, humanReadable)
-            : ga.isTypeFeature()
-            ? ga.qualifiedName(humanReadable)
-            : (humanReadable ? ga.baseNameHuman() : ga.baseName())) +
-          (isRef() ? " (boxed)" : "");
-      }
-    else
-      {
-        var f = feature();
-        var cotypeType = f.isCotype();
-        if (cotypeType)
+        case GenericArgument:
           {
-            f = f.cotypeOrigin();
+            var ga = genericArgument();
+            yield
+              (ga.isCoTypesThisType()
+                ? ga.qualifiedName(context, humanReadable)
+                : ga.isTypeFeature()
+                ? ga.qualifiedName(humanReadable)
+                : (humanReadable ? ga.baseNameHuman() : ga.baseName())) +
+              (isRef() ? " (boxed)" : "");
           }
-        var fn = f.featureName();
-        // for a feature that does not define a type itself, the name is not
-        // unique due to overloading with different argument counts. So we add
-        // the argument count to get a unique name.
-        var fname = (humanReadable ? f.baseNameHuman() : f.baseName())
-          +  (f.definesType() || fn.argCount() == 0 || fn.isInternal() || humanReadable
-                ? ""
-                : FuzionConstants.INTERNAL_NAME_SYMBOL + fn.argCount());
-
-        // NYI: would be good if postFeatures could be identified not be string comparison, but with something like
-        // `f.isPostFeature()`. Note that this would need to be saved in .fum file as well!
-        ///
-        if (fname.startsWith(FuzionConstants.POSTCONDITION_FEATURE_PREFIX))
+        case ThisType:
           {
-            fname = fname.substring(FuzionConstants.POSTCONDITION_FEATURE_PREFIX.length(),
-                                    fname.lastIndexOf("_")) +
-              ".postcondition";
+            yield (feature().outer().isUniverse() ? "" : feature().outer().qualifiedName(humanReadable) + ".")
+              + featureName(humanReadable) + ".this" + (feature().isCotype() ? ".type" : "");
           }
-
-        result = outerToString(humanReadable)
-              + (isNormalType() && isRef() != feature().isRef() ? (isRef() ? "ref " : "value ") : "" )
-              + fname;
-        if (isThisType())
+        case RefType, ValueType:
           {
-            result = result + ".this";
-          }
-        if (cotypeType)
-          {
-            result = result + ".type";
-          }
-        if (isNormalType())
-          {
-            var skip = cotypeType;
-            for (var g : generics())
+            var res = outerToString(humanReadable)
+                  + (isRef() != feature().isRef() ? (isRef() ? "ref " : "value ") : "")
+                  + featureName(humanReadable)
+                  + (feature().isCotype() ? ".type" : "");
+            // skip first generic 'THIS#TYPE' for types of type features.
+            for (var g : generics().drop(feature().isCotype() ? 1 : 0))
               {
-                if (!skip) // skip first generic 'THIS#TYPE' for types of type features.
-                  {
-                    result = result + " " + g.toStringWrapped(humanReadable, context);
-                  }
-                skip = false;
+                res = res + " " + g.toStringWrapped(humanReadable, context);
               }
+            yield res;
           }
-      }
+      };
 
     if (POSTCONDITIONS) ensure
       (!humanReadable || !result.contains("#"));
@@ -2517,9 +2521,7 @@ there is no common super type of the two types (Types.t_ERROR)
   protected String outerToString(boolean humanReadable)
   {
     var o = outer();
-    return isThisType()
-        ? (feature().outer().isUniverse() ? "" : feature().outer().qualifiedName(humanReadable) + ".")
-        : o != null && (o.isGenericArgument() || !o.feature().isUniverse())
+    return o != null && (o.isGenericArgument() || !o.feature().isUniverse())
         ? o.toStringWrapped(humanReadable) + "."
         : "";
   }
