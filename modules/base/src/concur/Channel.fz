@@ -110,7 +110,7 @@ public Channel(public T type/*, buf_size i32*/) ref : Iterator T, Sending_Channe
   # value from this Channel.
   #
   public as_list list T =>
-    match next
+    match prefix <-
       v T => v : as_list
       nil => nil
 
@@ -119,4 +119,266 @@ public Channel(public T type/*, buf_size i32*/) ref : Iterator T, Sending_Channe
 #
 public channel(T type) Channel T
 =>
-  Channel T
+  Unbuffered_Channel (channel_mutate T) T
+
+
+# create a Channel of the given type and given capacity
+#
+public channel(# type of elements that can be sent through this channel
+               #
+               T type,
+
+               # capacity of this channel.
+               #
+               # May be 0 to create a channel that always blocks on
+               # `infix <-` (`send`) until a corresponding `prefix <-` (`receive`)
+               # is performed by another thread.
+               #
+               # A value larger than 0 creates a channel with that capacity, i.e.,
+               # `infix <-` (`send`) will block only if the number of calls to
+               # `infix <-` (`send`) exceeds the number of corresponding `prefix <-`
+               # (`receive`) by more than `capacity`.
+               #
+               capacity i64) Channel T
+pre
+  debug: capacity >= 0
+=>
+  if capacity > 0 then
+    # NYI: UNDER DEVELOPMENT use `container.Ring_Buffer`
+    Channel T
+  else
+    Unbuffered_Channel (channel_mutate T) T
+
+
+# mutate instance used for channels of given type
+#
+# We strictly do not need the type here, we could instead just
+# use one single channel_mutate instance.  However, the type
+# enables effect analysis to show what this channel is used
+# for.
+#
+universe.channel_mutate(T type) : concur.blocking_mutate is
+
+  # default instance.
+  #
+  public redef fixed type.default_value option (channel_mutate T)
+  =>
+    channel_mutate T
+
+
+# Unbuffered_Channel -- a Channel without internal storage
+#
+# This channel always blocks on `infix <-` (`send`) until a corresponding
+# `prefix <-` (`receive`) is performed by another thread, there is no
+# buffering performed except for the single value that is currently
+# being sent from one thread to another.
+#
+public Unbuffered_Channel(# the mutate environment to be used for this channel.
+                          #
+                          # Note that this cannot be a single-thread `mutate` since
+                          # we would immediately block forever when trying to send
+                          # or receive data.
+                          #
+                          # A multi-thread variant like `concur.blocking_mutate` is
+                          # required.
+                          #
+                          public M type : mutate,
+
+                          # The type of the elements sent through this channel.
+                          #
+                          public T type
+                          ) : Channel T
+is
+
+  # states this channel may be in:
+
+  # ready -- channel state indicating that we are unused, no sender nor receiver
+  #
+  universe.ready is
+
+  # receiving -- channel state indicating that a thread is blocked receiving
+  #
+  universe.receiving is
+
+  # sent -- channel state indicating that data was sent to blocked receiving threda
+  #
+  universe.sent(T type, data T) is
+
+  # sending -- channel state indicating that data was sent with no receiver waiting, so the sender will wait for a receiver
+  #
+  universe.sending(T type, data T) is
+
+  # empty -- channel state indicating that sending data was received, so sender can continue
+  #
+  universe.empty is
+
+  # closed -- channel state indicating that channel was closed
+  #
+  universe.closed is
+
+  # State of an unbuffered channel. The following gives the state diagram, the left
+  # path is for closing a channel, the middle one for a blocking receive and the
+  # right one for a blocking send:
+  #
+  #
+  #                       ready <------------------------------------------------------------------------------+
+  #                                                                                                            |
+  #                         |                                                                                  |
+  #                         |                                                                                  |
+  #     +---------+---------+-----------------------------------+                                              |
+  #     |         |                                             |                                              |
+  #     |         |                                             |                                              |
+  #     |         |Thread B: <-ch (receive) blocks              |Thread A: ch <- v (send) blocks               |
+  #     |         |                                             |                                              |
+  #     |         V                                             V                                              |
+  #     |                                                                                                      |
+  #     +----- receiving                                     sending T                                         |
+  #     |                                                                                                      |
+  #     |         |                                             |                                              |
+  #     |         |                                             |                                              |
+  #     |         |Thread A: ch <- v (send)                     |Thread B: <-ch (receive)                      |
+  #     |         |                                             |                                              |
+  #     |         V                                             V                                              |
+  #     |                                                                                                      |
+  #     |        sent v                                       received                                         |
+  #     |                                                                                                      |
+  #     |         |                                             |                                              |
+  #     |         |                                             |                                              |
+  #     |         |Thread B: <-ch (receive) unbocks             |Thread A: ch <- v (send) unblocks             |
+  #     |         |                                             |                                              |
+  #     |         |                                             |                                              |
+  #     |         +---------+-----------------------------------+                                              |
+  #     |                   |                                                                                  |
+  #     |                   |                                                                                  |
+  #     |                   +----------------------------------------------------------------------------------+
+  #     V
+  #
+  #   closed
+  #
+  universe.unbuffered_channel_state(T type) : choice ready receiving  (sending T) (sent T) received closed is
+
+    may_receive =>
+      match unbuffered_channel_state.this
+        ready     => true
+        sending   => true
+        sent      => false
+        receiving => false
+        received     => false
+        closed    => true
+
+    may_send =>
+      match unbuffered_channel_state.this
+        ready     => true
+        sending   => false
+        sent      => false
+        receiving => true
+        received     => false
+        closed    => true   # this does not sound logical, but it is: send will not block, but cauee a fault instead!
+
+    is_received =>
+      match unbuffered_channel_state.this
+        received     => true
+        *         => false
+    is_sent =>
+      match unbuffered_channel_state.this
+        sent      => true
+        *         => false
+
+    get_sent =>
+      match unbuffered_channel_state.this
+        s sent => s.data
+        *      => panic "expected state `sent`, got $(unbuffered_channel_state.this)"
+
+    is_closed =>
+      match unbuffered_channel_state.this
+        closed => true
+        *      => false
+
+    public redef as_string String =>
+      "channel $T " + match unbuffered_channel_state.this
+        ready     => "ready"
+        sending   => "sending"
+        sent      => "sent"
+        receiving => "receiving"
+        received     => "received"
+        closed    => "closed"
+
+
+  # current value in the channel, nil if none.
+  #
+  state := M.env.new (unbuffered_channel_state T) ready
+
+
+  # send a value to this Channel.
+  #
+  # The channel must be open. Sending a value to a closed channel will cause a fault
+  # (pre_fault if `safety` is enabled, otherwise `panic`).
+  #
+  # In case the Channel is full, the attempt to send data will block until the Channel
+  # is no longer full or closed.
+  #
+  public redef infix <- (val T) unit ! channel_mutate T
+  =>
+    M.env.exclusive_when ()->state.may_send ()->
+      match state
+        ready     => state <- sending val
+                     M.env.wait (()-> state.is_received || state.is_closed)
+                     match state
+                       received  => state <- ready
+                       closed =>  panic "send to closed Unbuffered_Channel $T"
+                       *      => panic "unexpected unbuffered channel state $state"
+        receiving => state <- sent val
+        closed    => panic "send to closed Unbuffered_Channel $T"
+        *         => panic "unexpected unbuffered channel state $state"
+
+
+  # receive the next value from this channel.  Return nil if
+  # the channel is closed.
+  #
+  # If the channel is open and has no values available, this will
+  # block until values are available or the channel is closed.
+  #
+  public redef prefix <- option T ! channel_mutate T
+  =>
+    res1 := M.env.exclusive_when ()->state.may_receive ()->
+      match state
+        ready     => state <- receiving
+                     M.env.wait (() -> state.is_sent || state.is_closed)
+                     match state
+                       sent   => res := state.get_sent
+                                 state <- ready
+                                 option res
+                       closed => nil
+                       *      => panic "unexpected unbuffered channel state $state"
+        s sending => res := s.data
+                     state <- received
+                     option res
+        closed    => nil
+        *         => panic "unexpected unbuffered channel state $state"
+    res1
+
+
+  # close this Channel
+  #
+  # Sending data via `infix <-` will no more be allowed and result in a fault.
+  #
+  # Receiving via `prefix <-` or `next` will return `nil` once Channel is closed
+  #
+  public redef close unit ! channel_mutate T
+  =>
+    M.env.exclusive_when ()->state.may_send ()->
+      state <- closed
+
+
+  # Has this Channel been closed?
+  #
+  public redef is_closed bool
+  =>
+    M.env.exclusive ()->
+      state.is_closed
+
+
+  # for debugging
+  #
+  public redef as_string String =>
+    "channel $T"
