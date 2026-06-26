@@ -208,9 +208,9 @@ is
   #
   universe.sending(T type, data T) is
 
-  # empty -- channel state indicating that sending data was received, so sender can continue
+  # received -- channel state indicating that sending data was received, so sender can continue
   #
-  universe.empty is
+  universe.received is
 
   # closed -- channel state indicating that channel was closed
   #
