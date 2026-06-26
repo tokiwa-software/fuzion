@@ -21,5 +21,5 @@
 #
 # -----------------------------------------------------------------------
 
-override NAME = reg_issue5818_calling_with_open_type
+override NAME = reg_issue5818_calling_with_open_type_negative
 include ../simple_and_negative.mk
