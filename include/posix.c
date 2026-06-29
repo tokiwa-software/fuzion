@@ -87,16 +87,6 @@ static_assert(SIGALRM == 14, "signal definition different than expected");
 static_assert(SIGTERM == 15, "signal definition different than expected");
 static_assert(sizeof(pthread_t) <= sizeof(void *), "pthread_t must be smaller or equal to pointer size");
 
-// NYI: DOCUMENTATION: document these platform specific peculiarities somewhere
-#if defined(__APPLE__) && !defined(fileno_unlocked)
-#define fileno_unlocked      fileno
-#define fread_unlocked       fread
-#define fwrite_unlocked      fwrite
-#define fflush_unlocked      fflush
-#define feof_unlocked        feof
-#define ferror_unlocked      ferror
-#endif
-
 // returns the latest error number of
 // the current thread
 int64_t fzE_last_error(void){
@@ -396,7 +386,7 @@ void * fzE_mmap(void * file, uint64_t offset, size_t size) {
     return NULL;
   }
 
-  int file_descriptor = fileno_unlocked((FILE *)file);
+  int file_descriptor = fileno((FILE *)file);
 
   assert (file_descriptor != -1);
 
@@ -830,7 +820,7 @@ void * fzE_file_open(char * file_name, int64_t * open_results, file_open_mode mo
   FILE * fp = fopen(file_name, m);
   if (fp!=NULL)
   {
-    fcntl(fileno_unlocked(fp), F_SETFD, FD_CLOEXEC);
+    fcntl(fileno(fp), F_SETFD, FD_CLOEXEC);
   }
   else
   {
@@ -893,7 +883,7 @@ int32_t fzE_file_read(void * file, void * buf, int32_t size)
 {
   int32_t result = -1; // ERROR, unless we succeed
   struct pollfd fds;
-  fds.fd = fileno_unlocked(file);
+  fds.fd = fileno(file);
   fds.events = POLLIN;
 
   int res;
@@ -910,7 +900,7 @@ int32_t fzE_file_read(void * file, void * buf, int32_t size)
       size_t fread_result;
       do
         {
-          fread_result = fread_unlocked(buf, 1, size, (FILE*)file);
+          fread_result = fread(buf, 1, size, (FILE*)file);
           // man pages of fread say:
           //
           //    If an error occurs, or the end of the file is reached, the return value is a
@@ -919,15 +909,15 @@ int32_t fzE_file_read(void * file, void * buf, int32_t size)
           // so we cannot use fread_result to detect an error. Instead, it says
           //
           //    fread() does not distinguish between end-of-file and error, and callers must
-          //    use feof_unlocked(3) and ferror_unlocked(3) to determine which occurred.
+          //    use feof(3) and ferror(3) to determine which occurred.
           //
           // So let's do that:
           //
           // We might get fread_result > 0 combined with an error like EAGAIN.  In this case, we
           // return fread_result and not indicate an error by returning -1.
         }
-      while (fread_result == 0 && !feof_unlocked((FILE*)file) && (ferror_unlocked((FILE*)file) && errno == EAGAIN));  // if we got no data and no EOF, then repeat.
-      if (!ferror_unlocked((FILE*)file) || errno == EAGAIN)
+      while (fread_result == 0 && !feof((FILE*)file) && (ferror((FILE*)file) && errno == EAGAIN));  // if we got no data and no EOF, then repeat.
+      if (!ferror((FILE*)file) || errno == EAGAIN)
         {
           result = fread_result;
         }
@@ -968,8 +958,8 @@ void fzE_date_time(int32_t * result)
 
 int32_t fzE_file_write(void * file, void * buf, int32_t size)
 {
-  size_t result = fwrite_unlocked(buf, 1, size, (FILE*)file);
-  return ferror_unlocked((FILE*)file)!=0
+  size_t result = fwrite(buf, 1, size, (FILE*)file);
+  return ferror((FILE*)file)!=0
     ? -1
     : result;
 }
@@ -1000,7 +990,7 @@ void * fzE_file_stderr(void) { return stderr; }
 
 int32_t fzE_file_flush(void * file)
 {
-  return fflush_unlocked(file) == 0 ? 0 : -1;
+  return fflush(file) == 0 ? 0 : -1;
 }
 
 int fzE_send_signal(int64_t pid, int sig)
