@@ -1357,7 +1357,7 @@ public class Call extends AbstractCall
 
         result = result == null
           ? result
-          : adjustResultType0(res, context, result);
+          : adjustResultType(res, context, result);
       }
 
     // see test #5391 when this might happen
@@ -1431,15 +1431,15 @@ public class Call extends AbstractCall
    *
    * @return The actual result type of the call
    */
-  private AbstractType adjustResultType0(Resolution res, Context context, AbstractType rt)
+  private AbstractType adjustResultType(Resolution res, Context context, AbstractType rt)
   {
-    // NYI: CLEANUP: There is some overlap between Call.adjustResultType0,
-    // Call.adjustResultType and AbstractType.genericsAssignable, might be nice to
+    // NYI: CLEANUP: There is some overlap between Call.adjustResultType,
+    // Call.adjustType and AbstractType.genericsAssignable, might be nice to
     // consolidate this (i.e., bring the calls to applyTypePars / adjustThisType
     // / etc. in the same order and move them to a dedicated function).
     var tt = (_target == null ? Types.t_ERROR : target().type()).selfOrConstraint(context);
     var t0 = tt == Types.t_ERROR ? tt : resolveSelect(res, rt, tt);
-    var t1 = adjustResultType(res, context, t0,
+    var t1 = adjustType(res, context, t0,
       (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, false, calledFeature(), t0, from, to));
 
     // NYI: CLEANUP: potential overlap with Clazz.replaceThisTypeForCotype
@@ -3028,7 +3028,7 @@ public class Call extends AbstractCall
               _generics,
               _originalGenerics,
               pos(),
-              constraint -> adjustResultType(res, context, constraint, null));
+              constraint -> adjustType(res, context, constraint, null));
           }
       }
   }
