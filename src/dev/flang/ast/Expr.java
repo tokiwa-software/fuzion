@@ -698,7 +698,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
     return this != Call.ERROR && t != Types.t_ERROR
       && expectedType.isAssignableFromWithoutBoxing(t, context).no()
       && expectedType.compareTo(Types.resolved.t_Any) != 0
-      && !t.isGenericArgument()
+      && !t.isParametricType()
       && allInherited(t.feature())
           .stream()
           .anyMatch(c ->
@@ -725,7 +725,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
     var t = type();
     return this != Call.ERROR && t != Types.t_ERROR
       && !t.isChoice()
-      && !t.isGenericArgument()
+      && !t.isParametricType()
       && allInherited(t.feature())
           .stream()
           .anyMatch(c ->
@@ -832,7 +832,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
       {
         return null;
       }
-    else if (frmlT.isRef() || frmlT.isGenericArgument() || frmlT.isThisType() && !frmlT.isChoice())
+    else if (frmlT.isRef() || frmlT.isParametricType() || frmlT.isThisType() && !frmlT.isChoice())
       {
         /* Boxing needed when we assign to generic argument (so it
          * could be a ref) or frmlT is this type and the underlying feature is by

@@ -78,7 +78,7 @@ class ResolvedParametricType extends ResolvedType
 
 
   /**
-   * genericArgument gives the Generic instance of a type defined by a generic
+   * typeParameter gives the Generic instance of a type defined by a generic
    * argument.
    *
    * @return the Generic instance, never null.
@@ -105,7 +105,7 @@ class ResolvedParametricType extends ResolvedType
   @Override
   void usedFeatures(Set<AbstractFeature> s)
   {
-    if (!genericArgument().isCoTypesThisType() &&
+    if (!typeParameter().isCoTypesThisType() &&
         /**
          * Must not be recursive definition as in:
          *
@@ -113,20 +113,20 @@ class ResolvedParametricType extends ResolvedType
          *   fs(F type : F) =>
          * scenario1
          */
-        this != genericArgument().resultType())
+        this != typeParameter().resultType())
       {
-        genericArgument().resultType().usedFeatures(s);
+        typeParameter().resultType().usedFeatures(s);
       }
   }
 
 
   /**
-   * The mode of the type: GenericArgument, ThisType, RefType or ValueType.
+   * The mode of the type: ParametricType, ThisType, RefType or ValueType.
    */
   @Override
   public TypeKind kind()
   {
-    return TypeKind.GenericArgument;
+    return TypeKind.ParametricType;
   }
 
 

@@ -447,8 +447,8 @@ public class Function extends AbstractLambda
     return switch(tt.kind())
       {
         case TypeKind.ThisType -> new Current(pos(), tt.feature());
-        case TypeKind.GenericArgument -> {
-          AstErrors.lamdaOuterMustNotBeGenericArgument(pos(), tt);
+        case TypeKind.ParametricType -> {
+          AstErrors.lamdaOuterMustNotBeTypeParameter(pos(), tt);
           yield Call.ERROR;
         }
         default -> {
@@ -488,7 +488,7 @@ public class Function extends AbstractLambda
   private AbstractType refineResultType(Resolution res, Context context, AbstractType frmlRt, AbstractType lmbdRt)
   {
     var result = lmbdRt;
-    if (!frmlRt.isGenericArgument())
+    if (!frmlRt.isParametricType())
       {
         if (frmlRt.isChoice()
             // NYI: UNDER DEVELOPMENT: We may want to go further here and support more than
@@ -504,7 +504,7 @@ public class Function extends AbstractLambda
                   }
               }
           }
-        else if (!lmbdRt.isGenericArgument()
+        else if (!lmbdRt.isParametricType()
                  && lmbdRt.feature() != frmlRt.feature()
                  && lmbdRt.feature().inheritsFrom(frmlRt.feature()))
           {

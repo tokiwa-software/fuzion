@@ -376,7 +376,7 @@ public abstract class AbstractCall extends Expr
     if (!cf.isOuterRef())
       {
         var declF = cf.outer();
-        if (!tt.isGenericArgument() && declF != tt.feature())
+        if (!tt.isParametricType() && declF != tt.feature())
           {
             var heir = tt.feature();
             t = t.replace_inherited_this_type(declF, heir, foundRef);
@@ -445,7 +445,7 @@ public abstract class AbstractCall extends Expr
    */
   private List<AbstractType> openGenericsFor(Resolution res, Context context, AbstractType ft)
   {
-    var f = ft.genericArgument().outer();
+    var f = ft.typeParameter().outer();
     return
       calledFeature() == f ? ft.applyTypeParsMaybeOpen(f, actualTypeParameters(), NO_SELECT)
                            : openGenericsFor(res, context, ft, target().type());
@@ -472,7 +472,7 @@ public abstract class AbstractCall extends Expr
       (tt != null);
 
     var x = res == null ? tt.selfOrConstraint(context) : tt.selfOrConstraint(res, context);
-    var f = ft.genericArgument().outer();
+    var f = ft.typeParameter().outer();
 
     if (CHECKS) check
       (x.isPlainType() || Errors.any());

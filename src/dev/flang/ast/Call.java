@@ -452,7 +452,7 @@ public class Call extends AbstractCall
       }
 
     if (POSTCONDITIONS) ensure
-      (result == null || !result.isGenericArgument());
+      (result == null || !result.isParametricType());
     return result;
   }
 
@@ -743,7 +743,7 @@ public class Call extends AbstractCall
    */
   private boolean mayUnwrapTarget()
   {
-    return _target != null && _target.typeForInferencing() != null && !_target.typeForInferencing().isGenericArgument() && _target.typeForInferencing().feature().inheritsFrom(Types.resolved.f_auto_unwrap);
+    return _target != null && _target.typeForInferencing() != null && !_target.typeForInferencing().isParametricType() && _target.typeForInferencing().feature().inheritsFrom(Types.resolved.f_auto_unwrap);
   }
 
 
@@ -1143,9 +1143,9 @@ public class Call extends AbstractCall
   AbstractType typeForInferencing(Context context)
   {
     var result = typeForInferencing();
-    if (result != null && result.isGenericArgument())
+    if (result != null && result.isParametricType())
       {
-        result = result.genericArgument().constraint(context);
+        result = result.typeParameter().constraint(context);
         if (result.compareTo(Types.resolved.t_Any) != 0)
           {
             _type = result;
@@ -1380,7 +1380,7 @@ public class Call extends AbstractCall
       {
         _target = res.resolveType(_target, context);
         var tt = target().type();
-        if (urgent && !tt.isGenericArgument())
+        if (urgent && !tt.isParametricType())
           {
             res.resolveTypes(tt.feature());
           }
@@ -1506,7 +1506,7 @@ public class Call extends AbstractCall
           }
         else if (_select >= 0)
           {
-            var types = t.genericArgument().replaceOpen(tt.generics());
+            var types = t.typeParameter().replaceOpen(tt.generics());
             int sz = types.size();
             if (_select >= sz)
               {
@@ -1564,8 +1564,8 @@ public class Call extends AbstractCall
               yield tf.selfType().applyTypePars(tf, tg);
             }
           case ThisType -> t;
-          // See AstErrors.constraintMustNotBeGenericArgument
-          case GenericArgument -> t;
+          // See AstErrors.constraintMustNotBeParametricType
+          case ParametricType -> t;
         };
       }
     else if (isTypeAsValueCall())
@@ -1574,9 +1574,9 @@ public class Call extends AbstractCall
         // we are using `.this.type` inside a type feature, see #2295
         if (t.isThisTypeInCotype())
           {
-            t = t.genericArgument().outer().thisType();
+            t = t.typeParameter().outer().thisType();
           }
-        else if (!t.isGenericArgument())
+        else if (!t.isParametricType())
           {
             t = t.cotypeType(res);
           }
@@ -1629,12 +1629,12 @@ public class Call extends AbstractCall
       { // a NumLiteral in first pass, no type provided
         actual = null;
       }
-    else if (formalTypeForPropagation.isGenericArgument() &&
-             formalTypeForPropagation.genericArgument().outer() == _calledFeature)
+    else if (formalTypeForPropagation.isParametricType() &&
+             formalTypeForPropagation.typeParameter().outer() == _calledFeature)
       { // a NumLiteral in second pass and type is a type parameter, e.g., `T`
         // in `f(T type, a,b T)` in a call `f 12 x` where x returns `f64`, so we
         // propagate this to NumLiteral `12`:
-        var t = _generics.get(formalTypeForPropagation.genericArgument().typeParameterIndex());
+        var t = _generics.get(formalTypeForPropagation.typeParameter().typeParameterIndex());
         actual = actual.propagateExpectedType(res, context, t, null);
         _actuals.set(argnum, actual);
       }
@@ -1720,8 +1720,8 @@ public class Call extends AbstractCall
   private boolean mustReportMissingImmediately(AbstractType rt, boolean[] conflict)
   {
     var x = (rt == null ||
-        !rt.isGenericArgument() ||
-         rt.genericArgument().outer().outer() != _calledFeature.outer()) ||
+        !rt.isParametricType() ||
+         rt.typeParameter().outer().outer() != _calledFeature.outer()) ||
          // NYI: CLEANUP: why true, i.e., must report errors, in case of previous errors in the actuals?
          _actuals.stream().anyMatch(a -> a.typeForInferencing() == Types.t_ERROR);
 
@@ -1926,7 +1926,7 @@ public class Call extends AbstractCall
             if (!checked[vai])
               {
                 var t = frml.resultTypeIfPresent(res);
-                var g = t.isGenericArgument() ? t.genericArgument() : null;
+                var g = t.isParametricType() ? t.typeParameter() : null;
                 if (t.isOpenGeneric() && g.outer() == _calledFeature)
                   { // open type that must be inferred as in `tuple 42 "x"`
                     if (pass == 1)
@@ -1940,7 +1940,7 @@ public class Call extends AbstractCall
                             if (actualType == null)
                               {
                                 actualType = Types.t_ERROR;
-                                AstErrors.failedToInferOpenGenericArg(pos(), argnum+1, actual);
+                                AstErrors.failedToInferOpenTypeParameterType(pos(), argnum+1, actual);
                               }
                             _generics.add(actualType);
                             argnum++;
@@ -1964,7 +1964,7 @@ public class Call extends AbstractCall
                     if (t.dependsOnGenerics())
                       {
                         var actualType = typeFromActual(res, context, actual, false);
-                        if (t.isGenericArgument())
+                        if (t.isParametricType())
                           {
                             res.resolveTypes(g);
                             var c = g.constraint();
@@ -2096,7 +2096,7 @@ public class Call extends AbstractCall
     if (actualType != null)
       {
         actualType = actualType.replace_type_parameters_of_cotype_origin(context.outerFeature());
-        if (!actualType.isGenericArgument() && actualType.feature().isCotype())
+        if (!actualType.isParametricType() && actualType.feature().isCotype())
           {
             actualType = actual instanceof Call c && c.calledFeature().isOpenTypeParameter()
               ? Types.resolved.f_Open_Types.selfType()
@@ -2200,9 +2200,9 @@ public class Call extends AbstractCall
       {
         inferGeneric(res, context, formalType.generics().get(0), actualType, pos, conflict, foundAt);
       }
-    else if (formalType.isGenericArgument())
+    else if (formalType.isParametricType())
       {
-        var g = formalType.genericArgument();
+        var g = formalType.typeParameter();
         if (g.outer() == _calledFeature)
           { // we found a use of a generic type, so record it:
             var i = g.typeParameterIndex();
@@ -2223,7 +2223,7 @@ public class Call extends AbstractCall
       {
         var fft = formalType.feature();
         res.resolveTypes(fft);
-        var aft = actualType.isGenericArgument() ? null : actualType.feature();
+        var aft = actualType.isParametricType() ? null : actualType.feature();
         if (fft == aft)
           {
             for (int i=0; i < formalType.actualGenerics().size(); i++)
@@ -2279,8 +2279,8 @@ public class Call extends AbstractCall
                   .choiceGenerics(context)
                   .stream()
                   .filter(x -> x.dependsOnGenerics()
-                           && !x.isGenericArgument()
-                           && !actualType.isGenericArgument()
+                           && !x.isParametricType()
+                           && !actualType.isParametricType()
                            && x.feature() == actualType.feature())
                   .toList();
                 for (var ct : matchingFeature)
@@ -2410,13 +2410,13 @@ public class Call extends AbstractCall
       .stream()
       .map(g -> {
         var result = false;
-        if (!g.isGenericArgument())
+        if (!g.isParametricType())
           {
             result = inferGenericLambdaResult(res, context, al, pos, conflict, foundAt, lambdaResultType, g.generics(), argumentType);
           }
         else
           {
-            var rg = g.genericArgument();
+            var rg = g.typeParameter();
             var ri = rg.typeParameterIndex();
             if (rg.outer() == _calledFeature && foundAt.get(ri) == null)
               {
