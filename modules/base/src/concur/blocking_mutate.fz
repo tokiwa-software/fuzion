@@ -49,6 +49,18 @@ public blocking_mutate : mutate is
   #
   # This is usually `nil`, unless we are in an exclusive section.
   #
+  # Note that from the point of view of a thread `T1` the value of
+  # `blocking_mutate.this.env.exclusive_thread` may be `nil` while this
+  # value for another thread `T2` may be equal to `T2` since this is a value
+  # type feature and setting this in one thread usually has no effect on
+  # the value seen in other threads.
+  #
+  # There is one exception, though: If a new thread `T3` is spawned off
+  # from `T1` in an exclusive section, then `T3` will receive a copy of
+  # `T1`'s `blocking_mutate.this.env` where `exclusive_thread` is `T1`. Apart
+  # from this case, `exclusive_thread` should always be either `nil` or, if
+  # in an exclusive section, the `concur.threads.env.current`.
+  #
   module redef exclusive_thread option concur.Thread := nil
 
 
@@ -69,22 +81,30 @@ public blocking_mutate : mutate is
 
         res := code()
 
-        match waiting.first
-          f concur.Thread =>
-            for t := f, nxt
-                nxt := t.next
-            while !t.park_condition()
-            until nxt = f  # we went once around the linked list but found nothing
-            else
-              # t.park_condition() is true, so unpark `t`.
-              waiting.remove t
-              t.unpark
-          nil =>
+        wakeup_next_in_waiting_list
 
         set exclusive_thread := nil
         blocking_mutate.this.replace
 
         res
+
+
+  # before we leave an exclusive section, check if the wait condition
+  # of any waiting thread evaluates to true and, if so, wake up that
+  # thread.
+  #
+  wakeup_next_in_waiting_list =>
+    match waiting.first
+      f concur.Thread =>
+        for t := f, nxt
+            nxt := t.next
+        while !t.park_condition()
+        until nxt = f  # we went once around the linked list but found nothing
+        else
+          # t.park_condition() is true, so unpark `t`.
+          waiting.remove t
+          t.unpark
+      nil =>
 
 
   # wait for the given condition to become true by a mutation of the underlying data.
@@ -95,6 +115,7 @@ public blocking_mutate : mutate is
   public redef wait(F type: ()->bool, condition F) unit
   =>
     while !condition() do
+      wakeup_next_in_waiting_list
       concur.threads.env.current.park condition ()->
         waiting.add concur.threads.env.current
         _ := mtx.unlock  # NYI: result ignored
