@@ -226,7 +226,7 @@ public abstract class AbstractCall extends Expr
   Call cotypeInheritanceCall(Resolution res, AbstractFeature that)
   {
     var selfType = new ParsedType(pos(),
-                                  FuzionConstants.COTYPE_THIS_TYPE);
+                                  FuzionConstants.COTYPE_RELAY_TYPE);
     var typeParameters = new List<AbstractType>(selfType);
     if (this instanceof Call cpc && cpc.needsToInferTypeParametersFromArgs())
       {
@@ -309,7 +309,7 @@ public abstract class AbstractCall extends Expr
   {
     var t0 = calledFeature() == Types.f_ERROR ? Types.t_ERROR : rt;
     var t1 = t0 == Types.t_ERROR                           ? t0 : calledFeature().outer().handDownToType(t0, target().type().selfOrConstraint(context));
-    var t2 = t1 == Types.t_ERROR                           ? t1 : replace_type_parameter_used_for_this_type_in_cotype(t1, target());
+    var t2 = t1 == Types.t_ERROR                           ? t1 : replace_type_parameter_used_for_relay_type_in_cotype(t1, target());
     var t3 = t2 == Types.t_ERROR                           ? t2 : adjustThisTypeForTarget(context, t2, calledFeature(), target().type(), foundRef);  // NYI: CLEANUP: try to use handDownAndApply
     var t4 = t3 == Types.t_ERROR                           ? t3 : t3.applyTypePars(target().type());
     var t5 = t4 == Types.t_ERROR                           ? t4 : t4.applyTypePars(calledFeature(), actualTypeParameters());
@@ -343,11 +343,11 @@ public abstract class AbstractCall extends Expr
    * @param target the target of the call
    *
    */
-  private static AbstractType replace_type_parameter_used_for_this_type_in_cotype(AbstractType t, Expr target)
+  private static AbstractType replace_type_parameter_used_for_relay_type_in_cotype(AbstractType t, Expr target)
   {
     var tpt = target.asTypeParameterType();
     return tpt != null
-      ? t.replace_type_parameter_used_for_this_type_in_cotype(target.type().feature(), tpt)
+      ? t.replace_type_parameter_used_for_relay_type_in_cotype(target.type().feature(), tpt)
       : t;
   }
 

@@ -478,7 +478,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
           {
             var inCotype = of != originalOuterFeature(of);
             var mayBeFreeType = mayBeFreeType() && outer.isValueArgument();
-            var traverseOuter = outer() == null && _name != FuzionConstants.COTYPE_THIS_TYPE;
+            var traverseOuter = outer() == null && _name != FuzionConstants.COTYPE_RELAY_TYPE;
             var fo = res._module.lookupType(pos(), of, _name, traverseOuter,
                                             tolerant                                /* ignore ambiguous */,
                                             tolerant || mayBeFreeType || inCotype   /* ignore not found */);

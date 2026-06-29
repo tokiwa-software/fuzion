@@ -105,7 +105,7 @@ class ResolvedParametricType extends ResolvedType
   @Override
   void usedFeatures(Set<AbstractFeature> s)
   {
-    if (!genericArgument().isCoTypesThisType() &&
+    if (!genericArgument().isCoTypesRelayTypeParameter() &&
         /**
          * Must not be recursive definition as in:
          *

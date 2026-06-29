@@ -329,7 +329,7 @@ class Clazz extends ANY implements Comparable<Clazz>
         !_type.feature().isTypeParameter() &&
         _type.outer().outer().feature() != _type.feature().outer().outer())
       {
-        var x = "IMPLEMENTATION RESTRICTION: illegal inheritance and usage of fixed feature: \n" +
+        var x = "IMPLEMENTATION RESTRICTION: illegal inheritance and usage of fixed feature:\n" +
         _type.toString() + "\n" + _type.outer().outer().feature().toString() + "\n" + _type.feature().outer().outer().toString();
         Errors.fatal(x);
       }
@@ -1299,7 +1299,7 @@ class Clazz extends ANY implements Comparable<Clazz>
         var skip = cotypeType;
         for (var g : actualTypeParameters())
           {
-            if (!skip) // skip first generic 'THIS#TYPE' for types of type features.
+            if (!skip) // skip first generic 'RELAY#TYPE' for types of cotype features.
               {
                 result = result + " " + StringHelpers.wrapInParentheses(g.toString(humanReadable));
               }
