@@ -17,25 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature os.platform
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# unit type - denoting Windows
-#
-public windows is
-
-# unit type - denoting POSIX
-#
-public posix is
-
-# get the platform we are running on
-#
-public platform : choice os.windows os.posix is
-
-  public type.or_panic os.platform =>
-    # NYI: UNDER DEVELOPMENT: better make this an intrinsic
-    if (envir.vars.env["OS"].or_default "").lower_case.contains "windows"
-      os.windows
-    else
-      os.posix
+override NAME = reg_issue7256
+include ../simple.mk

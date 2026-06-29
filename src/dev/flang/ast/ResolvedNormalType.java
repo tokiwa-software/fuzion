@@ -166,7 +166,9 @@ public class ResolvedNormalType extends ResolvedType
     if (POSTCONDITIONS) ensure
       (_feature == null /* artificial built in type */
        || feature().generics().sizeMatches(generics())
-       || generics().isEmpty() /* e.g. an incomplete type in a match case */);
+       || generics().isEmpty() /* e.g. an incomplete type in a match case */,
+        generics().stream().allMatch(x -> !x.isCotypeType()),
+        o == null || o.backingFeature().isUniverse() || _feature == null || !_feature.isCotype() || o.isGenericArgument() || o.isCotypeType());
   }
 
   /**

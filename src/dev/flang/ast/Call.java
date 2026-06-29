@@ -1439,14 +1439,43 @@ public class Call extends AbstractCall
     // / etc. in the same order and move them to a dedicated function).
     var tt = (_target == null ? Types.t_ERROR : target().type()).selfOrConstraint(context);
     var t0 = tt == Types.t_ERROR ? tt : resolveSelect(res, rt, tt);
-    var t4 = adjustResultType(res, context, t0,
-                              (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, false, calledFeature(), t0, from, to));
+    var t1 = adjustResultType(res, context, t0,
+      (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, false, calledFeature(), t0, from, to));
+
+    // NYI: CLEANUP: potential overlap with Clazz.replaceThisTypeForCotype
+    var t2 = tt.isCotypeType()
+      ? t1.applyToGenericsAndOuter(x ->
+          x.isThisType()
+            ? extractRelayedTypeFromCoType(context, x, tt)
+            : x
+        )
+      : t1;
     // NYI: UNDER DEVELOPMENT: can we move more to previous call to adjustResultType()?
-    var t5 = t4 == Types.t_ERROR ? t4 : resolveForCalledFeature(res, t4, target().type(), context);
-    var t6 = t5 == Types.t_ERROR ? t5 : calledFeature().isCotype() ? t5 : t5.replace_type_parameters_of_cotype_origin(context.outerFeature());
-    return t6 == Types.t_UNDEFINED
+    var t3 = t2 == Types.t_ERROR ? t2 : resolveForCalledFeature(res, t2, target().type(), context);
+    var t4 = t3 == Types.t_ERROR ? t3 : calledFeature().isCotype() ? t3 : t3.replace_type_parameters_of_cotype_origin(context.outerFeature());
+    return t4 == Types.t_UNDEFINED
       ? null
-      : t6;
+      : t4;
+  }
+
+
+  /**
+   * use RELAY#TYPE to find the actual type of
+   * the this-type.
+   *
+   * @param thisType
+   * @param coTypeTarget
+   * @return
+   */
+  private static AbstractType extractRelayedTypeFromCoType(Context context, AbstractType thisType, AbstractType coTypeTarget)
+  {
+    if (PRECONDITIONS) require
+      (thisType.isThisType(),
+       coTypeTarget.isCotypeType());
+
+    return coTypeTarget.generics().get(0).isThisTypeInCotype()
+      ? coTypeTarget.generics().get(0).genericArgument().outer().selfType().actualType(thisType, context)
+      : coTypeTarget.generics().get(0).actualType(thisType, context);
   }
 
 
@@ -2801,6 +2830,13 @@ public class Call extends AbstractCall
             _type = t2;
           });
       }
+
+    // if (_type != null)
+    //   {
+    //     _type.selfOuterAndGenerics(x -> {
+    //       x.checkLegalThisType(_pos, context.outerFeature());
+    //     });
+    //   }
   }
 
 
