@@ -1357,7 +1357,7 @@ public class Call extends AbstractCall
 
         result = result == null
           ? result
-          : adjustResultType0(res, context, result);
+          : adjustResultType(res, context, result);
       }
 
     // see test #5391 when this might happen
@@ -1431,17 +1431,17 @@ public class Call extends AbstractCall
    *
    * @return The actual result type of the call
    */
-  private AbstractType adjustResultType0(Resolution res, Context context, AbstractType rt)
+  private AbstractType adjustResultType(Resolution res, Context context, AbstractType rt)
   {
-    // NYI: CLEANUP: There is some overlap between Call.adjustResultType0,
-    // Call.adjustResultType and AbstractType.genericsAssignable, might be nice to
+    // NYI: CLEANUP: There is some overlap between Call.adjustResultType,
+    // Call.adjustType and AbstractType.genericsAssignable, might be nice to
     // consolidate this (i.e., bring the calls to applyTypePars / adjustThisType
     // / etc. in the same order and move them to a dedicated function).
     var tt = (_target == null ? Types.t_ERROR : target().type()).selfOrConstraint(context);
     var t0 = tt == Types.t_ERROR ? tt : resolveSelect(res, rt, tt);
-    var t4 = adjustResultType(res, context, t0,
+    var t4 = adjustType(res, context, t0,
                               (from,to) -> AstErrors.illegalOuterRefTypeInCall(this, false, calledFeature(), t0, from, to));
-    // NYI: UNDER DEVELOPMENT: can we move more to previous call to adjustResultType()?
+    // NYI: UNDER DEVELOPMENT: can we move more to previous call to adjustType()?
     var t5 = t4 == Types.t_ERROR ? t4 : resolveForCalledFeature(res, t4, target().type(), context);
     var t6 = t5 == Types.t_ERROR ? t5 : calledFeature().isCotype() ? t5 : t5.replace_type_parameters_of_cotype_origin(context.outerFeature());
     return t6 == Types.t_UNDEFINED
@@ -2992,7 +2992,7 @@ public class Call extends AbstractCall
               _generics,
               _originalGenerics,
               pos(),
-              constraint -> adjustResultType(res, context, constraint, null));
+              constraint -> adjustType(res, context, constraint, null));
           }
       }
   }
