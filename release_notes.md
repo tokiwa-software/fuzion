@@ -4842,7 +4842,7 @@
 
   - docs: hide non public arguments in section 'Fields' ([#3899](https://github.com//tokiwa-software/fuzion/pull/3899))
 
-  - docs: put type features in seperate sections ([#3891](https://github.com//tokiwa-software/fuzion/pull/3891))
+  - docs: put type features in separate sections ([#3891](https://github.com//tokiwa-software/fuzion/pull/3891))
 
   - docs: reorganize content of navigation panel on the left side ([#3883](https://github.com//tokiwa-software/fuzion/pull/3883))
 
