@@ -670,8 +670,8 @@ class Clazz extends ANY implements Comparable<Clazz>
       // clazz actually describes a cotype
       feature().isCotype() &&
       // NYI: UNDER DEVELOPMENT: can this logic be simplified?
-         (t.isGenericArgument() && t.genericArgument().outer().isCotype() ||
-         !t.isGenericArgument() && t.feature() == _type.generics().get(0).actualType(t).feature()))
+         (t.isParametricType() && t.typeParameter().outer().isCotype() ||
+         !t.isParametricType() && t.feature() == _type.generics().get(0).actualType(t).feature()))
       {
         t = _type.generics().get(0).actualType(t);
       }
@@ -749,7 +749,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       {
       case RefType -> true;
       case ValueType -> false;
-      case GenericArgument -> throw new Error("unexpected generic argument type: " + _type);
+      case ParametricType -> throw new Error("unexpected generic argument type: " + _type);
       case ThisType        -> throw new Error("unexpected this type: " + _type);
       default              -> throw new Error("unexpected type kind: " + _type.kind() + " type: " + _type);
       };
@@ -1785,11 +1785,11 @@ class Clazz extends ANY implements Comparable<Clazz>
   Clazz typeClazz()
   {
     if (PRECONDITIONS)
-      require(Errors.any() || !_type.isGenericArgument());
+      require(Errors.any() || !_type.isParametricType());
 
     if (_typeClazz == null)
       {
-        if (_type.isGenericArgument())
+        if (_type.isParametricType())
           {
             _typeClazz = _fuir.error();
           }
@@ -1994,7 +1994,7 @@ class Clazz extends ANY implements Comparable<Clazz>
 
     List<AbstractType> types;
     var inh = _outer == null ? null : _outer.feature().tryFindInheritanceChain(fouter.outer());
-    var declaredIn = ft.genericArgument().outer();
+    var declaredIn = ft.typeParameter().outer();
     if (inh != null &&
         inh.stream().anyMatch(c -> c.calledFeature() == declaredIn))
       {
@@ -2002,7 +2002,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       }
     else if (feature() == declaredIn)
       {
-        types = ft.genericArgument().replaceOpen(_type.generics());
+        types = ft.typeParameter().replaceOpen(_type.generics());
       }
     else if (_outer != null)
       {

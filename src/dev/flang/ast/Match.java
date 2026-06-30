@@ -165,7 +165,7 @@ public class Match extends AbstractMatch
         st = _subject.typeForInferencing();
       }
 
-    if (st != null && st != Types.t_ERROR && !st.isGenericArgument())
+    if (st != null && st != Types.t_ERROR && !st.isParametricType())
       {
         res.resolveTypes(st.feature());
       }

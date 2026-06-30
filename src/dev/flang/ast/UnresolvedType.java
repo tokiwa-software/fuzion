@@ -208,7 +208,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
     this._generics = (((g == null) || g.isEmpty()) ? NONE : g).freeze();
     this._outer    = o;
     this._typeKind = typeKind;
-    // to make caching of _isGenericArgument work
+    // to make caching of _isParametricType work
     // we call constructor after _typeKind is set
     super();
   }
@@ -260,7 +260,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
     this._pos               = original._pos;
     this._typeKind          = Optional.of(typeKind);
-    // to make caching of _isGenericArgument work
+    // to make caching of _isParametricType work
     // we call constructor after _typeKind is set
     super();
     this._name              = original._name;
@@ -282,7 +282,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
   {
     this._pos               = original._pos;
     this._typeKind          = original._typeKind;
-    // to make caching of _isGenericArgument work
+    // to make caching of _isParametricType work
     // we call constructor after _typeKind is set
     super();
     this._name              = original._name;
@@ -524,7 +524,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
                           {
                             if (!tolerant)
                               {
-                                AstErrors.formalGenericWithGenericArgs(pos(), this, f);
+                                AstErrors.formalGenericWithTypeParameters(pos(), this, f);
                                 _resolved = Types.t_ERROR;
                               }
                           }
@@ -535,7 +535,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
                               {
                                 if (!tolerant)
                                   {
-                                    AstErrors.illegalUseOfOpenFormalGeneric(pos(), gt.genericArgument());
+                                    AstErrors.illegalUseOfOpenFormalGeneric(pos(), gt.typeParameter());
                                     _resolved = Types.t_ERROR;
                                   }
                               }
@@ -923,7 +923,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
 
   /**
-   * The mode of the type: GenericArgument, ThisType, RefType or ValueType.
+   * The mode of the type: ParametricType, ThisType, RefType or ValueType.
    */
   @Override
   public TypeKind kind()
