@@ -209,7 +209,7 @@ public effect is
                       code () -> R
                       ) R
   =>
-    effect.this.instate R effect.this code
+    instate R effect.this code
 
 
 
@@ -316,9 +316,9 @@ public effect is
   #
   public replace unit
   pre
-    safety: effect.this.is_instated
+    safety: is_instated
   =>
-    effect.this.replace effect.this
+    replace effect.this
 
 
   # --------------------  aborting code execution  --------------------
