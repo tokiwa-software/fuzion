@@ -701,7 +701,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
                       {
                         t = a.resultType();
                       }
-                    result = result || t.isGenericArgument() && t.genericArgument() == g;
+                    result = result || t.isParametricType() && t.typeParameter() == g;
                   }
               }
           }
@@ -744,7 +744,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
               {
                 t = a.resultType();
               }
-            return t.isGenericArgument() && t.genericArgument() == g;
+            return t.isParametricType() && t.typeParameter() == g;
           })
          );
   }
@@ -1957,7 +1957,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
         .allMatch(rt ->
              Types.resolved.numericTypes.contains(rt)
              || Types.resolved.legalNativeResultTypes.contains(rt)
-             || !rt.isGenericArgument() && rt.feature().mayBeNativeValue());
+             || !rt.isParametricType() && rt.feature().mayBeNativeValue());
   }
 
   /**

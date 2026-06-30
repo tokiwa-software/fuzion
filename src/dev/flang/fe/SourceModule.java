@@ -1788,9 +1788,9 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
     if (f.isTypeParameter() &&
         !f.outer().isCotype()) // reg_issue1932 shows error twice without this)
       {
-        if (f.constraint().isGenericArgument())
+        if (f.constraint().isParametricType())
           {
-            AstErrors.constraintMustNotBeGenericArgument(f);
+            AstErrors.constraintMustNotBeParametricType(f);
           }
         if (f.constraint().isChoice())
           {

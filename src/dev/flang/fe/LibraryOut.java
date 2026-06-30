@@ -600,17 +600,17 @@ class LibraryOut extends ANY
         _data.writeInt(-2);     // NYI: optimization: maybe write just one integer, e.g., -index-2
         _data.writeInt(off);
       }
-    else if (!t.isGenericArgument() && t.feature().isUniverse())
+    else if (!t.isParametricType() && t.feature().isUniverse())
       {
         _data.writeInt(-3);
       }
     else
       {
         _data.addOffset(t, _data.offset());
-        if (t.isGenericArgument())
+        if (t.isParametricType())
           {
             _data.writeInt(-1);
-            _data.writeOffset(t.genericArgument());
+            _data.writeOffset(t.typeParameter());
           }
         else
           {

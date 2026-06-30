@@ -2209,9 +2209,9 @@ A pre-condition of a feature that does not redefine an inherited feature must st
           || Types.resolved.legalNativeArgumentTypes.contains(at)
           || at.selfOrConstraint(Context.NONE).isLambdaTargetButNotLazy(res)
           // NYI: BUG: check if array element type is valid
-          || !at.isGenericArgument() && at.feature() == Types.resolved.f_mutate_array
-          || !at.isGenericArgument() && at.feature().mayBeNativeValue()
-          || !at.isGenericArgument() && Types.resolved.f_fuzion_sys_array_data.resultType().feature() == at.feature()
+          || !at.isParametricType() && at.feature() == Types.resolved.f_mutate_array
+          || !at.isParametricType() && at.feature().mayBeNativeValue()
+          || !at.isParametricType() && Types.resolved.f_fuzion_sys_array_data.resultType().feature() == at.feature()
           )
         )
       {
@@ -2223,7 +2223,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
   private void checkLegalNativeResultType(Resolution res, SourcePosition pos, AbstractType rt)
   {
     ensureTypeSetsInitialized(res);
-    if (!(Types.resolved.legalNativeResultTypes.contains(rt) || !rt.isGenericArgument() && rt.feature().mayBeNativeValue())
+    if (!(Types.resolved.legalNativeResultTypes.contains(rt) || !rt.isParametricType() && rt.feature().mayBeNativeValue())
         && !(Errors.any() && rt == Types.t_ERROR))
       {
         AstErrors.illegalNativeType(pos, "Result type", rt);

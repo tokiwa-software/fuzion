@@ -142,11 +142,11 @@ public class FormalGenerics extends ANY
     var result = sizeMatches(actualGenerics) || actualGenerics.contains(Types.t_ERROR);
     if (!result)
       {
-        AstErrors.wrongNumberOfGenericArguments(this,
-                                                actualGenerics,
-                                                pos,
-                                                detail1,
-                                                detail2);
+        AstErrors.wrongNumberOfTypeArguments(this,
+                                             actualGenerics,
+                                             pos,
+                                             detail1,
+                                             detail2);
       }
     return result;
   }

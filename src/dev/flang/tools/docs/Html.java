@@ -164,7 +164,7 @@ public class Html extends ANY
   private String anchorType(AbstractFeature af, AbstractFeature context, AbstractFeature relativeTo)
   {
     var at = af.resultType();
-    if (at.isGenericArgument())
+    if (at.isParametricType())
       {
         return htmlEncodeNbsp(at.toString(false, context))
                + (at.isOpenGeneric() ? "..." : "");

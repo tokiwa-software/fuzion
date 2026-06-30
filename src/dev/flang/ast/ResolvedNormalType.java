@@ -254,7 +254,7 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * The mode of the type: GenericArgument, ThisType, RefType or ValueType.
+   * The mode of the type: ParametricType, ThisType, RefType or ValueType.
    */
   @Override
   public TypeKind kind()
@@ -268,7 +268,7 @@ public class ResolvedNormalType extends ResolvedType
    *
    * @return the underlying feature.
    *
-   * @throws Error if this is not resolved or isGenericArgument().
+   * @throws Error if this is not resolved or isParametricType().
    */
   @Override
   protected AbstractFeature backingFeature()
