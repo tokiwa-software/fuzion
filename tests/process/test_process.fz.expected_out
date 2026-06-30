@@ -13,4 +13,4 @@ MYENVVAR=content
 1000
 0
 ===  Test: start process that does not exist  ===
-error(code=2): *** error creating process ohQue1AheiPu4aaw
+creating process ohQue1AheiPu4aaw

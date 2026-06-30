@@ -87,34 +87,10 @@ static_assert(SIGALRM == 14, "signal definition different than expected");
 static_assert(SIGTERM == 15, "signal definition different than expected");
 static_assert(sizeof(pthread_t) <= sizeof(void *), "pthread_t must be smaller or equal to pointer size");
 
-// NYI: DOCUMENTATION: document these platform specific peculiarities somewhere
-#if defined(__APPLE__) && !defined(fileno_unlocked)
-#define fileno_unlocked      fileno
-#define fread_unlocked       fread
-#define fwrite_unlocked      fwrite
-#define fflush_unlocked      fflush
-#define feof_unlocked        feof
-#define ferror_unlocked      ferror
-#endif
-
-
-// thread local to hold the last
-// error that occurred in fuzion runtime.
-_Thread_local int64_t last_error = 0;
-
-
 // returns the latest error number of
 // the current thread
 int64_t fzE_last_error(void){
-  return last_error;
-}
-
-// helper to set last_error
-// if return value of some function is -1.
-int set_last_error(int ret_val)
-{
-  last_error = ret_val == -1 ? errno : 0;
-  return ret_val;
+  return errno;
 }
 
 // zero memory
@@ -155,7 +131,6 @@ int fzE_dir_read(intptr_t * dir, int8_t * result) {
          (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0));
 
   if ( entry == NULL ) {
-    last_error = errno;
     return errno == 0
       // end reached
       ? 0
@@ -172,7 +147,7 @@ int fzE_dir_read(intptr_t * dir, int8_t * result) {
 
 
 int fzE_dir_close(intptr_t * dir) {
-  return set_last_error(closedir((DIR *)dir));
+  return closedir((DIR *)dir);
 }
 
 
@@ -232,7 +207,7 @@ int fzE_get_protocol(int protocol)
 // close a socket descriptor
 int fzE_socket_close(int sockfd)
 {
-  return set_last_error(close(sockfd));
+  return close(sockfd);
 }
 
 
@@ -243,7 +218,7 @@ int fzE_socket(int family, int type, int protocol){
   // make sure no fork is done while we open socket
   fzE_lock();
 
-  int sockfd = set_last_error(socket(fzE_get_family(family), fzE_get_socket_type(type), fzE_get_protocol(protocol)));
+  int sockfd = socket(fzE_get_family(family), fzE_get_socket_type(type), fzE_get_protocol(protocol));
   if (sockfd != -1)
   {
     fcntl(sockfd, F_SETFD, FD_CLOEXEC);
@@ -280,7 +255,7 @@ int fzE_bind(int sockfd, int family, int socktype, int protocol, char * host, ch
   {
     return -1;
   }
-  int bind_res = set_last_error(bind(sockfd, addr_info->ai_addr, (int)addr_info->ai_addrlen));
+  int bind_res = bind(sockfd, addr_info->ai_addr, (int)addr_info->ai_addrlen);
 
   if(bind_res == -1)
   {
@@ -294,14 +269,14 @@ int fzE_bind(int sockfd, int family, int socktype, int protocol, char * host, ch
 // set the given socket to listening
 // backlog = queuelength of pending connections
 int fzE_listen(int sockfd, int backlog){
-  return set_last_error(listen(sockfd, backlog));
+  return listen(sockfd, backlog);
 }
 
 
 // accept a new connection
 // blocks if socket is blocking
 int fzE_accept(int sockfd){
-  return set_last_error(accept(sockfd, NULL, NULL));
+  return accept(sockfd, NULL, NULL);
 }
 
 
@@ -329,7 +304,7 @@ int fzE_get_peer_address(int sockfd, void * buf) {
   struct sockaddr_storage peeraddr;
   fzE_mem_zero_secure(&peeraddr, sizeof(peeraddr));
   socklen_t peeraddrlen = sizeof(peeraddr);
-  if (set_last_error(getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen)) == 0) {
+  if (getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen) == 0) {
     if (peeraddr.ss_family == AF_INET) {
       fzE_memcpy(buf, &(((struct sockaddr_in *)&peeraddr)->sin_addr.s_addr), 4);
       return 4;
@@ -351,7 +326,7 @@ unsigned short fzE_get_peer_port(int sockfd) {
   struct sockaddr_storage peeraddr;
   fzE_mem_zero_secure(&peeraddr, sizeof(peeraddr));
   socklen_t peeraddrlen = sizeof(peeraddr);
-  if (set_last_error(getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen)) == 0) {
+  if (getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen) == 0) {
     if (peeraddr.ss_family == AF_INET) {
       return ntohs(((struct sockaddr_in *)&peeraddr)->sin_port);
     } else if (peeraddr.ss_family == AF_INET6) {
@@ -366,7 +341,7 @@ unsigned short fzE_get_peer_port(int sockfd) {
 // into buf. may block if socket is  set to blocking.
 // return -1 on error or number of bytes read
 int fzE_socket_read(int sockfd, void * buf, size_t count){
-  return set_last_error(recvfrom( sockfd, buf, count, 0, NULL, NULL));
+  return recvfrom( sockfd, buf, count, 0, NULL, NULL);
 }
 
 
@@ -374,15 +349,15 @@ int fzE_socket_read(int sockfd, void * buf, size_t count){
 // may block if socket is set to blocking.
 // return -1 or number of bytes written on success
 int fzE_socket_write(int sockfd, const void * buf, size_t count){
-  return set_last_error(sendto( sockfd, buf, count, 0, NULL, 0));
+  return sendto( sockfd, buf, count, 0, NULL, 0);
 }
 
 
 // returns -1 on error, size of file in bytes otherwise
 long fzE_get_file_size(void * file) {
   // store current pos
-  long cur_pos = set_last_error(ftell((FILE *)file));
-  if(cur_pos == -1 || set_last_error(fseek((FILE *)file, 0, SEEK_END)) == -1){
+  long cur_pos = ftell((FILE *)file);
+  if(cur_pos == -1 || fseek((FILE *)file, 0, SEEK_END) == -1){
     return -1;
   }
 
@@ -408,17 +383,15 @@ long fzE_get_file_size(void * file) {
 void * fzE_mmap(void * file, uint64_t offset, size_t size) {
 
   if ((unsigned long)fzE_get_file_size((FILE *)file) < (offset + size)){
-    // NYI: UNDER DEVELOPMENT: set_last_error();
     return NULL;
   }
 
-  int file_descriptor = fileno_unlocked((FILE *)file);
+  int file_descriptor = fileno((FILE *)file);
 
   assert (file_descriptor != -1);
 
   void * mapped_address = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, file_descriptor, offset);
   if (mapped_address == MAP_FAILED) {
-    set_last_error(-1);
     return NULL;
   }
   return mapped_address;
@@ -428,7 +401,7 @@ void * fzE_mmap(void * file, uint64_t offset, size_t size) {
 // unmap an address that was previously mapped by fzE_mmap
 // -1 error, 0 success
 int fzE_munmap(void * mapped_address, const int file_size){
-  return set_last_error(munmap(mapped_address, file_size));
+  return munmap(mapped_address, file_size);
 }
 
 
@@ -464,9 +437,7 @@ int fzE_rm(char * path)
 {
   return unlink(path) == 0
     ? 0
-    : set_last_error(rmdir(path)) == 0
-    ? 0
-    : -1;
+    : rmdir(path);
 }
 
 
@@ -476,7 +447,7 @@ int fzE_rm(char * path)
 int fzE_stat(const char *pathname, int64_t * metadata)
 {
   struct stat statbuf;
-  int result = set_last_error(stat(pathname,&statbuf));
+  int result = stat(pathname,&statbuf);
   if (result == 0)
   {
     metadata[0] = statbuf.st_size;
@@ -499,7 +470,7 @@ int fzE_stat(const char *pathname, int64_t * metadata)
 int fzE_lstat(const char *pathname, int64_t * metadata)
 {
   struct stat statbuf;
-  int result = set_last_error(lstat(pathname,&statbuf));
+  int result = lstat(pathname,&statbuf);
   if (result == 0)
   {
     metadata[0] = statbuf.st_size;
@@ -703,17 +674,17 @@ int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLe
   int stdOut[2];
   int stdErr[2];
   int ret = 0;
-  if (set_last_error(pipe(stdIn)) == -1)
+  if (pipe(stdIn) == -1)
   {
     ret = -1;
   }
-  if (ret == 0 && set_last_error(pipe(stdOut)) == -1)
+  if (ret == 0 && pipe(stdOut) == -1)
   {
     close(stdIn[0]);
     close(stdIn[1]);
     ret = -1;
   }
-  if (ret == 0 && set_last_error(pipe(stdErr)) == -1)
+  if (ret == 0 && pipe(stdErr) == -1)
   {
     close(stdIn[0]);
     close(stdIn[1]);
@@ -721,7 +692,7 @@ int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLe
     close(stdOut[1]);
     ret = -1;
   }
-  if (set_last_error(ret) == 0)
+  if (ret == 0)
   {
     fcntl(stdIn[1], F_SETFD, FD_CLOEXEC);
     fcntl(stdOut[0], F_SETFD, FD_CLOEXEC);
@@ -763,7 +734,6 @@ int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLe
 
     if(s != 0)
     {
-      last_error = s;
       close(stdIn[0]);
       close(stdIn[1]);
       close(stdOut[0]);
@@ -806,20 +776,20 @@ int64_t fzE_process_wait(int64_t p){
 // returns -1 on error, 0 on pipe exhausted/closed
 // otherwise the number of bytes read
 int fzE_pipe_read(int64_t desc, char * buf, size_t nbytes){
-  return set_last_error(read((int) desc, buf, nbytes));
+  return read((int) desc, buf, nbytes);
 }
 
 
-// return -1 on error, the number of written bytes otherwise
+// return -1 on error, thenumber of written bytes otherwise
 int fzE_pipe_write(int64_t desc, char * buf, size_t nbytes){
-  return set_last_error(write((int) desc, buf, nbytes));
+  return write((int) desc, buf, nbytes);
 }
 
 
 // return -1 on error, 0 on success
 int fzE_pipe_close(int64_t desc){
 // NYI: UNDER DEVELOPMENT: do we need to flush?
-  return set_last_error(close((int) desc));
+  return close((int) desc);
 }
 
 
@@ -850,7 +820,7 @@ void * fzE_file_open(char * file_name, int64_t * open_results, file_open_mode mo
   FILE * fp = fopen(file_name, m);
   if (fp!=NULL)
   {
-    fcntl(fileno_unlocked(fp), F_SETFD, FD_CLOEXEC);
+    fcntl(fileno(fp), F_SETFD, FD_CLOEXEC);
   }
   else
   {
@@ -913,7 +883,7 @@ int32_t fzE_file_read(void * file, void * buf, int32_t size)
 {
   int32_t result = -1; // ERROR, unless we succeed
   struct pollfd fds;
-  fds.fd = fileno_unlocked(file);
+  fds.fd = fileno(file);
   fds.events = POLLIN;
 
   int res;
@@ -930,7 +900,7 @@ int32_t fzE_file_read(void * file, void * buf, int32_t size)
       size_t fread_result;
       do
         {
-          fread_result = fread_unlocked(buf, 1, size, (FILE*)file);
+          fread_result = fread(buf, 1, size, (FILE*)file);
           // man pages of fread say:
           //
           //    If an error occurs, or the end of the file is reached, the return value is a
@@ -939,15 +909,15 @@ int32_t fzE_file_read(void * file, void * buf, int32_t size)
           // so we cannot use fread_result to detect an error. Instead, it says
           //
           //    fread() does not distinguish between end-of-file and error, and callers must
-          //    use feof_unlocked(3) and ferror_unlocked(3) to determine which occurred.
+          //    use feof(3) and ferror(3) to determine which occurred.
           //
           // So let's do that:
           //
           // We might get fread_result > 0 combined with an error like EAGAIN.  In this case, we
           // return fread_result and not indicate an error by returning -1.
         }
-      while (fread_result == 0 && !feof_unlocked((FILE*)file) && (ferror_unlocked((FILE*)file) && errno == EAGAIN));  // if we got no data and no EOF, then repeat.
-      if (!ferror_unlocked((FILE*)file) || errno == EAGAIN)
+      while (fread_result == 0 && !feof((FILE*)file) && (ferror((FILE*)file) && errno == EAGAIN));  // if we got no data and no EOF, then repeat.
+      if (!ferror((FILE*)file) || errno == EAGAIN)
         {
           result = fread_result;
         }
@@ -988,8 +958,8 @@ void fzE_date_time(int32_t * result)
 
 int32_t fzE_file_write(void * file, void * buf, int32_t size)
 {
-  size_t result = fwrite_unlocked(buf, 1, size, (FILE*)file);
-  return ferror_unlocked((FILE*)file)!=0
+  size_t result = fwrite(buf, 1, size, (FILE*)file);
+  return ferror((FILE*)file)!=0
     ? -1
     : result;
 }
@@ -1020,7 +990,7 @@ void * fzE_file_stderr(void) { return stderr; }
 
 int32_t fzE_file_flush(void * file)
 {
-  return fflush_unlocked(file) == 0 ? 0 : -1;
+  return fflush(file) == 0 ? 0 : -1;
 }
 
 int fzE_send_signal(int64_t pid, int sig)

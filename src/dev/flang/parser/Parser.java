@@ -2968,8 +2968,7 @@ ifexpr      : "if" exprInLine thenPart elseBlockOpt
         return Match.createIf(sourceRange(pos), e, b,
           // do no use empty blocks as else blocks since the source position
           // of those block might be somewhere unexpected.
-          els != null && els._expressions.size() > 0 ? els : null,
-          false
+          els != null && els._expressions.size() > 0 ? els : null
         );
       });
   }

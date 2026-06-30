@@ -28,7 +28,7 @@ file content is: 👋🏢🧑‍💻☯️
 Tests from lib_io_dir/lib_io_dir.fz using unicode:
 
 unit
---error: an error occurred while creating the following directory: "⚗️🧫"--
+an error occurred while creating the following directory: "⚗️🧫"
 --error: no more directory entries--
 1️⃣📜
 2️⃣🗒️

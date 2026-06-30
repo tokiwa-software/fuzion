@@ -894,12 +894,14 @@ public class Feature extends AbstractFeature
 
 
   /**
-   * The sourcecode position of this feature declaration's result type, null if
-   * not available.
+   * The sourcecode position of this feature declaration's result type,
+   * the features source position if not available
    */
   public SourcePosition resultTypePos()
   {
-    return _returnType.posOrNull();
+    return _returnType.posOrNull() == null
+      ? pos()
+      : _returnType.posOrNull();
   }
 
 

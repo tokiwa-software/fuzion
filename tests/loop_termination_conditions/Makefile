@@ -17,25 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-lib_io_dir =>
-
-  path := path.of "test_path_😀"
-  file1 := path.resolve "file1_😀"
-  file2 := path.resolve "file2_😀"
-
-  _ := io.file.delete file1
-  _ := io.file.delete file2
-  _ := io.file.delete path
-  say (io.dir.make path)
-  say (io.dir.make path).err.msg
-  _ := io.file.use unit file1 io.file.mode.write (()-> io.file.writer.write "")
-  _ := io.file.use unit file2 io.file.mode.write (()-> io.file.writer.write "")
-
-  res := io.dir.use (Sequence String) path ()->
-    array 3 _->io.dir.open.env.read.as_string
-
-  res.or_panic.sort.for_each say
+override NAME = loop_termination_conditions
+include ../simple.mk
