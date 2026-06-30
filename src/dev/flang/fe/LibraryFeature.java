@@ -498,7 +498,7 @@ public class LibraryFeature extends AbstractFeature
 
   /**
    * constraint returns the constraint type of this type parameter, Any if no
-   * constraint was set.  This ignores any context constraints like `pre T : numeric`
+   * constraint was set.  This ignores any context constraints like {@code pre T : numeric}
    *
    * @return the constraint.
    */

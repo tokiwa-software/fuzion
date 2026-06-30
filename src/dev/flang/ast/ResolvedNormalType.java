@@ -294,7 +294,7 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * `this` as a value.
+   * {@code this} as a value.
    *
    * Requires that at isNormalType().
    */

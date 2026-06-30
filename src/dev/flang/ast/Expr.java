@@ -778,7 +778,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
 
   /**
    * Source text for this Expr. This is used in error message: It takes the
-   * source code at `sourceRange()`. Only for artificial expressions, this should
+   * source code at {@code sourceRange()}. Only for artificial expressions, this should
    * probably be redefined to create more useful text.
    */
   public String sourceText()
@@ -788,7 +788,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
 
 
   /**
-   * Is this expression a call to `type_as_value`?
+   * Is this expression a call to {@code type_as_value}?
    */
   boolean isTypeAsValueCall()
   {

@@ -136,7 +136,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * `this` as a value.
+   * {@code this} as a value.
    *
    * Requires that at isNormalType().
    */
@@ -442,7 +442,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @return true if this depends on {@code Types.t_UNDEFINED}, {@code
    * Types.t_ERROR}, or {@code Types.t_FORWARD_CYCLIC} except for type parameter
-   * #`except` being {@code Types.t_UNDEFINED}.
+   * #{@code except} being {@code Types.t_UNDEFINED}.
    */
   public boolean containsUndefined(int except)
   {
@@ -1175,13 +1175,13 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * Is this a type parameter of given feature `f`, including a type parameter
-   * of `f`'s cotype.
+   * Is this a type parameter of given feature {@code f}, including a type parameter
+   * of {@code f}'s cotype.
    *
    * @param f a feature
    *
-   * @return the actual type parameter feature corresponding to `this` or `null`
-   * if `this` is not a type parameter of `f` or `f`'s cotype.
+   * @return the actual type parameter feature corresponding to {@code this} or {@code null}
+   * if {@code this} is not a type parameter of {@code f} or {@code f}'s cotype.
    */
   private AbstractFeature matchingTypeParameter(AbstractFeature f)
   {
@@ -1217,9 +1217,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * actual generic.
    *
    * @param forOuter in case we replace an outer type that is a type parameter
-   * as in `T.i`, forOuter gives the original outer feature  of `i` such that `T`
+   * as in {@code T.i}, forOuter gives the original outer feature  of {@code i} such that {@code T}
    * can be replaced with the corresponding actual type that inherits from that
-   * outer type. `null` in case we are not handling an outer type.
+   * outer type. {@code null} in case we are not handling an outer type.
    *
    * @return t iff t does not depend on a formal generic parameter of this,
    * otherwise the type that results by replacing all formal generic parameters
@@ -1479,7 +1479,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
   /**
    * isLambdaTargetButNotLazy checks if this is can be the target of a lambda expressions,
-   * e.g., `(i32, i32) -> String`, but is not a lazy value.
+   * e.g., {@code (i32, i32) -> String}, but is not a lazy value.
    *
    * @return true iff this is a function type but not a {@code Lazy}.
    */
@@ -1621,15 +1621,15 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    *     x (i -> i.as_string)
    *
-   * for the lambda `i -> i.as_string`, this will return `Function.R`.
+   * for the lambda {@code i -> i.as_string}, this will return {@code Function.R}.
    *
-   * This is used by `Call.inferGenericLambdaResult` and `Function.propagateTypeAndInferResult` to
-   * determine that `T` must be `String`.
+   * This is used by {@code Call.inferGenericLambdaResult} and {@code Function.propagateTypeAndInferResult} to
+   * determine that {@code T} must be {@code String}.
    *
    * @param res the resolution instance
    *
    * @return null if the formal result type is not a type parameter, otherwise
-   * that type parameter, i.e. `Function.R` in the example above.
+   * that type parameter, i.e. {@code Function.R} in the example above.
    */
   AbstractFeature lambdaTargetResultTypeParameter(Resolution res)
   {
@@ -1897,20 +1897,20 @@ there is no common super type of the two types (Types.t_ERROR)
 
   /**
    * For checking if a type constraint or any of the outer types of the
-   * constraint corresponds to a `this` type.
+   * constraint corresponds to a {@code this} type.
    *
-   * This is used in a call `E.x` were `E` has a constraint `E : a.b` and `x`
-   * has a result type `a.this.p` or `a.b.this.q` to replace the `this` type by
-   * the constraint to bet `E.p` (alternatively `E.outer(1).p`,
-   * see @replace_this_type_by_actual_outer2) or `E.q`, respectively.
+   * This is used in a call {@code E.x} were {@code E} has a constraint {@code E : a.b} and {@code x}
+   * has a result type {@code a.this.p} or {@code a.b.this.q} to replace the {@code this} type by
+   * the constraint to bet {@code E.p} (alternatively {@code E.outer(1).p},
+   * see @replace_this_type_by_actual_outer2) or {@code E.q}, respectively.
    *
    * @param f the feature this might be inheriting from (or from f.outer()...).
    *
    * @return the outer level that inherits from f, i.e.,
    *         <ul>
-   *           <li>-1 if no inheritance from `f` was found,</li>
+   *           <li>-1 if no inheritance from {@code f} was found,</li>
    *           <li> 0 if this type's feature inherits from f,</li>
-   *           <li> 1 if the next outer feature inherits from `f , etc.</li>
+   *           <li> 1 if the next outer feature inherits from {@code f}, etc.</li>
    *         </ul>
    */
   int whichOuterInheritsFrom(AbstractFeature f)
@@ -1961,7 +1961,7 @@ there is no common super type of the two types (Types.t_ERROR)
 
 
   /**
-   * Is this a `.this` type that should be replaced by `tt`?
+   * Is this a {@code .this} type that should be replaced by {@code tt}?
    *
    * @param tt the type feature we are calling
    *

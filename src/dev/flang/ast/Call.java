@@ -677,7 +677,7 @@ public class Call extends AbstractCall
 
   /**
    * is this Call defunct, i.e., an error occurred or this is unreachable due to
-   * target resulting in `void`.
+   * target resulting in {@code void}.
    */
   protected boolean isDefunct()
   {
@@ -686,7 +686,7 @@ public class Call extends AbstractCall
 
 
   /**
-   * set _calledFeature and _target fields according to `fo`
+   * set _calledFeature and _target fields according to {@code fo}
    */
   private void setCalledFeatureAndTarget(Resolution res, Context context, FeatureAndOuter fo)
   {

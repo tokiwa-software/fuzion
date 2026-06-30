@@ -213,11 +213,11 @@ public class ParsedCall extends Call
 
 
   /**
-   * For a ParsedCall `x | y | z`, add the corresponding types of `x`, `y` and
-   * `z` to `l`.
+   * For a ParsedCall {@code x | y | z}, add the corresponding types of {@code x}, {@code y} and
+   * {@code z} to {@code l}.
    *
    * Note that the AST produced by the parser uses right associative operators,
-   * so this is `x | «y | z»`.
+   * so this is {@code x | «y | z»}.
    *
    * @param l list of types.
    */
@@ -324,17 +324,17 @@ public class ParsedCall extends Call
 
 
   /**
-   * For a chained boolean `a < b < c < d < e`, perform the chaining of one element `a < b < c`
+   * For a chained boolean {@code a < b < c < d < e}, perform the chaining of one element {@code a < b < c}
    *
    * @param res Resolution instance
    *
    * @param context the source code context where this Call is used
    *
-   * @param ab the expression `a < b`, will be changed into `a < { tmp := b; tmp }`
+   * @param ab the expression {@code a < b}, will be changed into {@code a < { tmp := b; tmp }}
    *
-   * @param b the expression `b`.
+   * @param b the expression {@code b}.
    *
-   * @return the right hand side of the chaining `tmp < c`
+   * @return the right hand side of the chaining {@code tmp < c}
    */
   private Call chainBool(Resolution res, Context context, Call ab, Expr b)
   {
@@ -427,7 +427,7 @@ public class ParsedCall extends Call
 
   /**
    * Check if partial application would change this pre-/postfix call into an
-   * infix operator, e.g., `[1,2,3].map (*2)` ->  `[1,2,3].map (x->x*2)`
+   * infix operator, e.g., {@code [1,2,3].map (*2)} ->  {@code [1,2,3].map (x->x*2)}
    *
    * @param expectedType the expected function type
    *

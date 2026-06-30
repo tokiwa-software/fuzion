@@ -124,7 +124,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * Result of `handDown(Resolution, AbstractType[], AbstractFeature) in case of
+   * Result of {@code handDown(Resolution, AbstractType[], AbstractFeature)} in case of
    * failure due to previous errors.
    */
   public static final List<AbstractType> HAND_DOWN_FAILED = new List<AbstractType>().freeze();
@@ -715,7 +715,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * Check if this feature's argument list contains value arguments of an open
    * type parameter of this feature.
    *
-   * Note that in contrast to `hasOpenGenericsArgList()`, this does not consider
+   * Note that in contrast to {@code hasOpenGenericsArgList()}, this does not consider
    * arguments whose type is an open type from an outer feature.
    *
    * @param res resolution used before type resolution is done to resolve
@@ -1004,15 +1004,15 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * Return `ValuesAsOpenType` feature corresponding to this open type parameter.
+   * Return {@code ValuesAsOpenType} feature corresponding to this open type parameter.
    * An instance of this feature is returned as the result of a call to a field whose
-   * type is an open type parameter auch as `tuple.values`.
+   * type is an open type parameter auch as {@code tuple.values}.
    */
   public abstract AbstractFeature valuesAsOpenTypeFeature();
 
 
   /**
-   * Does this feature come with a corresponding `ValuesAsOpenType` feature, i.e., the
+   * Does this feature come with a corresponding {@code ValuesAsOpenType} feature, i.e., the
    * result that is produced when calling a field whose type is an open type
    * parameter and not selecting one specific variant.
    */
@@ -1023,9 +1023,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * Return `Open_Types` feature corresponding to this open type parameter.
+   * Return {@code Open_Types} feature corresponding to this open type parameter.
    * An instance of this feature is returned as the result of a call to a field whose
-   * type is an open type parameter auch as `tuple.values`.
+   * type is an open type parameter auch as {@code tuple.values}.
    *
    * In case this feature is part of the currently compiled module and does not have an
    * open types feature yet, add one.
@@ -1037,9 +1037,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * Return `Open_Types` feature corresponding to this open type parameter.
+   * Return {@code Open_Types} feature corresponding to this open type parameter.
    * An instance of this feature is returned as the result of a call to a field whose
-   * type is an open type parameter auch as `tuple.values`.
+   * type is an open type parameter auch as {@code tuple.values}.
    */
   public abstract AbstractFeature openTypesFeature();
 
@@ -1999,7 +1999,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
   /**
    * constraint returns the constraint type of this type parameter, Any if no
-   * constraint was set.  This ignores any context constraints like `pre T : numeric`
+   * constraint was set.  This ignores any context constraints like {@code pre T : numeric}
    *
    * @return the constraint.
    */

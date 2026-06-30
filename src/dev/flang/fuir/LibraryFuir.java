@@ -547,7 +547,7 @@ public class LibraryFuir extends FUIR {
    *
    * @param site any site
    *
-   * @return the site of the first Expr in the code block containing `site`
+   * @return the site of the first Expr in the code block containing {@code site}
    */
   @Override
   public int codeBlockStart(int site)
@@ -568,7 +568,7 @@ public class LibraryFuir extends FUIR {
    *
    * @param site any site
    *
-   * @return the site of the last Expr in the code block containing `site`
+   * @return the site of the last Expr in the code block containing {@code site}
    */
   @Override
   public int codeBlockEnd(int site)

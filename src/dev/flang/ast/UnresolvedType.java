@@ -585,8 +585,8 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
   }
 
   /**
-   * After it was found that `this` resolves as the open type parameter `otp` in
-   * the `context`, check if this is a legal use of an open type parameter.
+   * After it was found that {@code this} resolves as the open type parameter {@code otp} in
+   * the {@code context}, check if this is a legal use of an open type parameter.
    *
    * Check if this is the last argument of a feature and t is its return type.
    * This is needed during type resolution since this is the only place where an

@@ -191,7 +191,7 @@ public class Env extends ANY implements Comparable<Env>
    * Compare two environments by looking only at those effect values of effects
    * in the given set of effect types
    *
-   * NOTE: iterating the elements of `which` must be deterministic!
+   * NOTE: iterating the elements of {@code which} must be deterministic!
    *
    * @param which set of clazz ids of effect types to compare
    *
@@ -200,7 +200,7 @@ public class Env extends ANY implements Comparable<Env>
    * @param b second environment
    *
    * @return -1/0/+1 defining a total order while ignoring effects not in
-   * `which`.
+   * {@code which}.
    */
   static int compare(Set<Integer> which, Env a, Env b)
   {
@@ -280,15 +280,15 @@ public class Env extends ANY implements Comparable<Env>
 
 
   /**
-   * Check the environment if it contains an effect of clazz `cl` instantiated at
-   * `site`.
+   * Check the environment if it contains an effect of clazz {@code cl} instantiated at
+   * {@code site}.
    *
    * @param cl a clazz
    *
-   * @param site a site that contains a constructor call to `cl`
+   * @param site a site that contains a constructor call to {@code cl}
    *
    * @return in case the context contains an environment with an instance of
-   * `cl` created at `site` instated, then return that existing instance.
+   * {@code cl} created at {@code site} instated, then return that existing instance.
    * Return null otherwise.
    */
   Instance find(int cl, int site)
