@@ -333,7 +333,7 @@ public class FuzionConstants extends ANY
    * names with this prefix will be removed from .fum files which results in
    * this not being found in redefinitions.
    */
-  public static final String COTYPE_THIS_TYPE = "THIS" + INTERNAL_NAME_SYMBOL + "TYPE";
+  public static final String COTYPE_RELAY_TYPE = "RELAY" + INTERNAL_NAME_SYMBOL + "TYPE";
 
 
   /**

@@ -596,8 +596,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         assignableTo.add(actual);
       }
-    var target_type = this  .remove_type_parameter_used_for_this_type_in_cotype();
-    var actual_type = actual.remove_type_parameter_used_for_this_type_in_cotype();
+    var target_type = this  .remove_type_parameter_used_for_relay_type_in_cotype();
+    var actual_type = actual.remove_type_parameter_used_for_relay_type_in_cotype();
     var result = isArtificialType() || actual.isArtificialType()
         ? YesNo.dontKnow
         : YesNo.fromBool(target_type.compareTo(actual_type) == 0 || actual_type.isVoid());
@@ -618,7 +618,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
               }
           }
       }
-    if (result.no() && allowTagging && target_type.isChoice() && !isThisTypeInCotype())
+    if (result.no() && allowTagging && target_type.isChoice() && !isRelayTypeInCotype())
       {
         result = YesNo.fromBool(target_type.isChoiceMatch(actual_type, context));
       }
@@ -1287,10 +1287,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
             if (isCotypeType())
               {
                 /* A cotype has the actual underlying type as its first type parameter
-                 * {@code THIS_TYPE} in addition to the type parameters of the original type.
+                 * {@code RELAY_TYPE} in addition to the type parameters of the original type.
                  *
                  * In case this is a cotype, determine the actual types for the types in {@code g2}
-                 * by applying the actual type parameters passed to {@code THIS_TYPE}.
+                 * by applying the actual type parameters passed to {@code RELAY_TYPE}.
                  */
                 var this_type = g2.get(0);
                 g3 = g2.map(x -> x == this_type                ||        // leave first type parameter unchanged
@@ -1970,7 +1970,7 @@ there is no common super type of the two types (Types.t_ERROR)
   private boolean replacesThisType(AbstractType tt, Context context)
   {
     return
-      isThisTypeInCotype() && tt.isParametricType()   // we have a type parameter TT.THIS#TYPE, which is equal to TT
+      isRelayTypeInCotype() && tt.isParametricType()   // we have a type parameter TT.THIS#TYPE, which is equal to TT
       ||
       isThisType() && (!tt.isParametricType() && tt.feature().inheritsFrom(feature())  // we have abc.this.type with tt inheriting from abc, so use tt
                        ||
@@ -2018,7 +2018,7 @@ there is no common super type of the two types (Types.t_ERROR)
 
   /**
    * Check this and, recursively, all types contained in this' type parameters
-   * and outer types if isThisTypeInCotype() is true and the surrounding
+   * and outer types if isRelayTypeInCotype() is true and the surrounding
    * type feature equals cotype.  Replace all matches by cotype's self
    * type.
    *
@@ -2032,11 +2032,11 @@ there is no common super type of the two types (Types.t_ERROR)
    *
    * @param cotype the type feature whose this.type we are replacing
    */
-  public AbstractType replace_this_type_in_cotype(AbstractFeature cotype)
+  public AbstractType replace_relay_type_in_cotype(AbstractFeature cotype)
   {
-    return isThisTypeInCotype() && cotype  == typeParameter().outer()
+    return isRelayTypeInCotype() && cotype  == typeParameter().outer()
       ? cotype.cotypeOrigin().selfTypeInCoType()
-      : applyToGenericsAndOuter(g -> g.replace_this_type_in_cotype(cotype));
+      : applyToGenericsAndOuter(g -> g.replace_relay_type_in_cotype(cotype));
   }
 
 
@@ -2170,7 +2170,7 @@ there is no common super type of the two types (Types.t_ERROR)
     else
       {
         var g = new List<AbstractType>(
-            // THIS#TYPE
+            // RELAY#TYPE
             this,
             // all other generics
             actualGenerics()
@@ -2230,7 +2230,7 @@ there is no common super type of the two types (Types.t_ERROR)
    *
    * @param tpt the type parameters type that is the target of the call ({@code T} in the example above).
    */
-  AbstractType replace_type_parameter_used_for_this_type_in_cotype(AbstractFeature tf, AbstractType tpt)
+  AbstractType replace_type_parameter_used_for_relay_type_in_cotype(AbstractFeature tf, AbstractType tpt)
   {
     if (PRECONDITIONS) require
       (tpt.isParametricType());
@@ -2247,7 +2247,7 @@ there is no common super type of the two types (Types.t_ERROR)
       }
     else
       {
-        result = applyToGenericsAndOuter(g -> g.replace_type_parameter_used_for_this_type_in_cotype(tf, tpt));
+        result = applyToGenericsAndOuter(g -> g.replace_type_parameter_used_for_relay_type_in_cotype(tf, tpt));
       }
     return result;
   }
@@ -2272,7 +2272,7 @@ there is no common super type of the two types (Types.t_ERROR)
    * replaced by the implicit first generic argument of {@code num.type}, but it needs
    * to be changed back to {@code num.this.type}.
    */
-  AbstractType remove_type_parameter_used_for_this_type_in_cotype()
+  AbstractType remove_type_parameter_used_for_relay_type_in_cotype()
   {
     var result = this;
     if (isParametricType())
@@ -2288,7 +2288,7 @@ there is no common super type of the two types (Types.t_ERROR)
       }
     else
       {
-        result = applyToGenericsAndOuter(g -> g.remove_type_parameter_used_for_this_type_in_cotype());
+        result = applyToGenericsAndOuter(g -> g.remove_type_parameter_used_for_relay_type_in_cotype());
       }
     return result;
   }
@@ -2383,11 +2383,11 @@ there is no common super type of the two types (Types.t_ERROR)
 
   /**
    * For a feature {@code f(A, B type)} the corresponding type feature has an implicit
-   * THIS#TYPE type parameter: {@code f.type(THIS#TYPE, A, B type)}.
+   * RELAY#TYPE type parameter: {@code f.type(RELAY#TYPE, A, B type)}.
    *
-   + This checks if this type is this implicit type parameter.
+   * This checks if this type is this implicit type parameter.
    */
-  public boolean isThisTypeInCotype()
+  public boolean isRelayTypeInCotype()
   {
     return isParametricType()
       && typeParameter().state().atLeast(State.FINDING_DECLARATIONS)
@@ -2480,7 +2480,7 @@ there is no common super type of the two types (Types.t_ERROR)
           {
             var ga = typeParameter();
             yield
-              (ga.isCoTypesThisType()
+              (ga.isCoTypesRelayTypeParameter()
                 ? ga.qualifiedName(context, humanReadable)
                 : ga.isTypeFeature()
                 ? ga.qualifiedName(humanReadable)
@@ -2498,7 +2498,7 @@ there is no common super type of the two types (Types.t_ERROR)
                   + (isRef() != feature().isRef() ? (isRef() ? "ref " : "value ") : "")
                   + featureName(humanReadable)
                   + (feature().isCotype() ? ".type" : "");
-            // skip first generic 'THIS#TYPE' for types of type features.
+            // skip first generic 'RELAY#TYPE' for types of type features.
             for (var g : generics().drop(feature().isCotype() ? 1 : 0))
               {
                 res = res + " " + g.toStringWrapped(humanReadable, context);
@@ -2637,7 +2637,7 @@ there is no common super type of the two types (Types.t_ERROR)
                                           // will be checked in SourceModule.checkTypes(Feature)
                 !c.constraintAssignableFrom(context, a))
               {
-                if (!f.isCoTypesThisType())
+                if (!f.isCoTypesRelayTypeParameter())
                   {
                     // In case of choice, error will be shown
                     // by SourceModule.checkTypes(): AstErrors.constraintMustNotBeChoice

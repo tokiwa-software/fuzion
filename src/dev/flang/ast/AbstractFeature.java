@@ -545,7 +545,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   {
     var tfo = state().atLeast(State.FINDING_DECLARATIONS) && outer() != null && outer().isCotype() ? outer().cotypeOrigin() : null;
     return
-      isCoTypesThisType()
+      isCoTypesRelayTypeParameter()
         /* special type parameter used for this.type in type features */
         ? (tfo != null ? tfo.qualifiedName(context, human) : "null")
           + ".this.type"
@@ -863,9 +863,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * Is this the 'THIS_TYPE' type parameter in a cotype?
+   * Is this the 'RELAY_TYPE' type parameter in a cotype?
    */
-  public boolean isCoTypesThisType()
+  public boolean isCoTypesRelayTypeParameter()
   {
     return outer() != null
       && outer().isCotype()
@@ -2105,7 +2105,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
     var result = this;
     var o = outer();
-    if (!isCoTypesThisType() && o.isCotype())
+    if (!isCoTypesRelayTypeParameter() && o.isCotype())
       {
         result = o.cotypeOrigin().typeArguments().get(typeParameterIndex()-1);
       }
