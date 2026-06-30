@@ -1463,8 +1463,8 @@ public class Call extends AbstractCall
    * use RELAY#TYPE to find the actual type of
    * the this-type.
    *
-   * Example: where `my_mut.this` in the result type of `type.empty`
-   * needs to be replaced by `foo.this.m`.
+   * Example: where {@code my_mut.this} in the result type of {@code type.empty}
+   * needs to be replaced by {@code foo.this.m}.
    *
    * ```
    *
