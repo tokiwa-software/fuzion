@@ -1463,6 +1463,22 @@ public class Call extends AbstractCall
    * use RELAY#TYPE to find the actual type of
    * the this-type.
    *
+   * Example: where `my_mut.this` in the result type of `type.empty`
+   * needs to be replaced by `foo.this.m`.
+   *
+   * ```
+   *
+   *   my_mut is
+   *
+   *     abstract_a is
+   *     public type.empty my_mut.this.abstract_a => ...
+   *
+   *   foo is
+   *     m : my_mut is
+   *     _ := m.type.empty
+   *
+   * ```
+   *
    * @param thisType
    * @param coTypeTarget
    * @return
@@ -2832,13 +2848,6 @@ public class Call extends AbstractCall
             _type = t2;
           });
       }
-
-    // if (_type != null)
-    //   {
-    //     _type.selfOuterAndGenerics(x -> {
-    //       x.checkLegalThisType(_pos, context.outerFeature());
-    //     });
-    //   }
   }
 
 
