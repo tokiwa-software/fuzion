@@ -1473,7 +1473,9 @@ public class Call extends AbstractCall
       (thisType.isThisType(),
        coTypeTarget.isCotypeType());
 
-    return coTypeTarget.generics().get(0).isThisTypeInCotype()
+    return coTypeTarget.isThisType()
+      ? thisType
+      : coTypeTarget.generics().get(0).isThisTypeInCotype()
       ? coTypeTarget.generics().get(0).genericArgument().outer().selfType().actualType(thisType, context)
       : coTypeTarget.generics().get(0).actualType(thisType, context);
   }
