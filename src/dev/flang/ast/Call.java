@@ -1464,7 +1464,7 @@ public class Call extends AbstractCall
    * Example: where {@code my_mut.this} in the result type of {@code type.empty}
    * needs to be replaced by {@code foo.this.m}.
    *
-   * ```
+   * {@snippet :
    *
    *   my_mut is
    *
@@ -1475,7 +1475,7 @@ public class Call extends AbstractCall
    *     m : my_mut is
    *     _ := m.type.empty
    *
-   * ```
+   * }
    *
    * @param thisType
    * @param coTypeTarget
