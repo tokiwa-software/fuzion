@@ -1,0 +1,18 @@
+
+--CURDIR--/reg_issue7277.fz:24:41: error 1: Type not found
+Foo(T type) ref : container.Linked_List X is
+----------------------------------------^
+Type 'X' was not found, no corresponding feature nor formal type parameter exists
+Type that was not found: 'X'
+in feature: 'Foo'
+To solve this, check the spelling of the type you have used.
+
+
+--CURDIR--/reg_issue7277.fz:28:5: error 2: Could not find called feature
+    Clock_Cache T
+----^^^^^^^^^^^
+Feature not found: 'Clock_Cache' (one argument)
+Target feature: 'Foo.type.new'
+In call: 'Clock_Cache T'
+
+2 errors.

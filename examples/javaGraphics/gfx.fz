@@ -98,11 +98,11 @@ is
     c3 := java.awt.Color.new_III 130 106 175
 
 
-    G2D (g0 Java.java.awt.Graphics, tx, ty, rot f64) ref is  # NYI: UNDER DEVELOPMENT: #167: 'ref' due to lack of 'like this'
+    G2D (g0 Java.java.awt.Graphics, tx, ty, rot f64) is
 
       rotate (d f64) => G2D g0 tx ty rot+d
 
-      three_times(draw (G2D, Java.java.awt.Color) -> T) =>
+      fixed three_times(draw (G2D, Java.java.awt.Color) -> T) =>
         _ := draw  G2D.this                      c1
         _ := draw (G2D.this.rotate -2.0*f64.π/3) c2
         _ := draw (G2D.this.rotate -4.0*f64.π/3) c3

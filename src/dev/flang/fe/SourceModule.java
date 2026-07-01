@@ -1920,11 +1920,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
    */
   private void checkRedefVisibility(Feature f)
   {
-    if (!f.isCoTypesRelayTypeParameter()
-    // Function.call is public while actual lambdas-impl are not.
-    // If lambda-impl were public then result-type and all arg-types
-    // would have to be public as well. Hence this exception.
-    && !f.isLambdaCall())
+    if (!f.isCoTypesRelayTypeParameter())
     {
       for (var redefined : f.redefines()) {
         if (redefined.visibility().ordinal() > f.visibility().ordinal())
