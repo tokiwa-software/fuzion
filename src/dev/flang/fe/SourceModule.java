@@ -1623,8 +1623,8 @@ A post-condition of a feature that does not redefine an inherited feature must s
 
 
   /**
-   * Hand down a type from `original` to be compared to types in
-   * `redefinition`. This does two things: it hands down the type along the
+   * Hand down a type from {@code original} to be compared to types in
+   * {@code redefinition}. This does two things: it hands down the type along the
    * inheritance chain and then replaces the type parameters by the type
    * parameters used in the redefinition.
    */

@@ -2024,10 +2024,10 @@ A ((Choice)) declaration must not contain a result type.
          *   myfun : Function i32 i32 is
          *   h myfun => a->a*a
          *
-         * Here, i64 will be propagated to be used as the type of `23` and
-         * `-17`, choice<A, f32> will be used as the type of `3.4` and `A`, and
-         * myfun will be used as the type of `a->a*a`, which implies
-         * that i32 will be the type for `a`.
+         * Here, i64 will be propagated to be used as the type of {@code 23} and
+         * {@code -17}, choice<A, f32> will be used as the type of {@code 3.4} and {@code A}, and
+         * myfun will be used as the type of {@code a->a*a}, which implies
+         * that i32 will be the type for {@code a}.
          */
         visit(new ContextVisitor(context()) {
             @Override public void  action(AbstractAssign a) { a.propagateExpectedType(res, _context); }
@@ -2620,7 +2620,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
 
   /**
    * constraint returns the constraint type of this type parameter, Any if no
-   * constraint was set.  This ignores any context constraints like `pre T : numeric`
+   * constraint was set.  This ignores any context constraints like {@code pre T : numeric}
    *
    * @return the constraint.
    */

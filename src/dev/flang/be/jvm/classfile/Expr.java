@@ -1918,7 +1918,7 @@ public abstract class Expr extends ByteCode
 
 
   /**
-   * Is bc an `if` instruction?
+   * Is bc an {@code if} instruction?
    */
   private static boolean isIfInstruction(byte bc)
   {

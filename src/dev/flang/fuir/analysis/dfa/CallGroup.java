@@ -203,9 +203,9 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
 
 
   /**
-   * For all effects `e` that this needs and that this may have, record that
-   * `_cc` requires `e` in `_dfa._clazzesThatRequireEffect` and
-   * `_dfa._effectsRequiredByClazz`.
+   * For all effects {@code e} that this needs and that this may have, record that
+   * {@code _cc} requires {@code e} in {@code _dfa._clazzesThatRequireEffect} and
+   * {@code _dfa._effectsRequiredByClazz}.
    */
   void saveEffects()
   {
@@ -221,12 +221,12 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
 
 
   /**
-   * Is this ca call to `effect.instate0` that instates effect with clazz id `ecl`?
+   * Is this ca call to {@code effect.instate0} that instates effect with clazz id {@code ecl}?
    *
    * @param ecl clazz id for an effect
    *
-   * @return true iff this is `effect.instate0` and this instates an effect of
-   * type `ecl`.
+   * @return true iff this is {@code effect.instate0} and this instates an effect of
+   * type {@code ecl}.
    */
   private boolean instates(int ecl)
   {
@@ -239,7 +239,7 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
 
   /**
    * Record the fact that this CallGroup (and all its targets and callers)
-   * uses the instated effect type `ecl`.
+   * uses the instated effect type {@code ecl}.
    *
    * @param ecl clazz id for an effect.
    */
@@ -265,8 +265,8 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
 
 
   /**
-   * Record the fact that this CallGroup is called from `from`.  Propagate all
-   * used effects to `from` and may have effects from `from`.
+   * Record the fact that this CallGroup is called from {@code from}.  Propagate all
+   * used effects to {@code from} and may have effects from {@code from}.
    *
    * @param from CallGroup of a caller to this.
    */

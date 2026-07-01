@@ -101,7 +101,7 @@ class NormalType extends LibraryType
 
 
   /**
-   * `this` as a value.
+   * {@code this} as a value.
    *
    * Requires that at isNormalType().
    */

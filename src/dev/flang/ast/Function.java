@@ -81,9 +81,9 @@ public class Function extends AbstractLambda
 
 
   /**
-   * In case `type()` is called and we have not received a type via
-   * `propagateExpectedType`, this will be called. This is currently set by
-   * `resolveTypes` to handle cases like `()->true`.
+   * In case {@code type()} is called and we have not received a type via
+   * {@code propagateExpectedType}, this will be called. This is currently set by
+   * {@code resolveTypes} to handle cases like {@code ()->true}.
    */
   Runnable _resultTypeLastResort = ()->{};
 
