@@ -471,9 +471,11 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * Check if this or any of its generic arguments is {@code Types.t_UNDEFINED}.
+   * Check if this or any of its generic arguments is {@code Types.t_UNDEFINED},
+   * {@code Types.t_ERROR}, or {@code Types.t_FORWARD_CYCLIC}.
    *
-   * @return true if this depends on {@code Types.t_UNDEFINED}.
+   * @return true if this depends on {@code Types.t_UNDEFINED}, {@code
+   * Types.t_ERROR}, or {@code Types.t_FORWARD_CYCLIC}.
    */
   public boolean containsUndefined()
   {

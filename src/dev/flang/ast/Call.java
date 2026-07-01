@@ -3158,21 +3158,18 @@ public class Call extends AbstractCall
 
 
   /**
-   * Notify this call that it all of its type parameters have been inferred.
+   * Notify this call that all of its type parameters have been inferred.
    */
   public void notifyInferred()
   {
-    if (PRECONDITIONS) require
-      (// NYI: CLEANUP: #5866 breaks this precondition, but there are also other cases where
-       // the actuals still contain t_UNDEFINED that still need to be checked.
-       true ||
-       !actualTypeParameters().stream().anyMatch(atp -> atp.containsUndefined()));
-
-    for (var r : _whenInferredTypeParameters)
+    if (!actualTypeParameters().stream().anyMatch(atp -> atp.containsUndefined()))
       {
-        r.run();
+        for (var r : _whenInferredTypeParameters)
+          {
+            r.run();
+          }
+        _whenInferredTypeParameters = NO_RUNNABLE;
       }
-    _whenInferredTypeParameters = NO_RUNNABLE;
   }
 
 

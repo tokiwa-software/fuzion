@@ -234,7 +234,7 @@ public abstract class AbstractCall extends Expr
         cpc.whenInferredTypeParameters(() ->
           {
             if (CHECKS) check
-              (actualTypeParameters().stream().allMatch(atp -> !atp.containsUndefined()));
+              (Errors.any() || actualTypeParameters().stream().allMatch(atp -> !atp.containsUndefined()));
             if (CHECKS) check
               (Errors.any() || !typeParameters.isFrozen());
             if (!typeParameters.isFrozen())
