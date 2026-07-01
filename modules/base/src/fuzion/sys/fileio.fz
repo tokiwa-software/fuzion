@@ -51,10 +51,15 @@ module fileio is
   # this might overwrite parts or all of an existing file.
   #
   module write(fd File_Descriptor, content array u8) outcome unit =>
-    res := fzE_file_write fd content.internal_array.data content.length
+    for tbw := content, tbw.drop res .as_array
+        res := fzE_file_write fd tbw.internal_array.data tbw.length.as_i32 .as_i64
+    while res >= 0 && res != tbw.length
+    else
+      if res < 0
+        error "writing to file" fzE_last_error
+      else
+        unit
 
-    if res < 0
-      error "failed writing" res.as_i64
 
 
   # wrapper for fzE_file_flush
@@ -63,7 +68,7 @@ module fileio is
     if fzE_file_flush fd = 0
       unit
     else
-      error "error when flushing"
+      error "error when flushing" fzE_last_error
 
 
   # deletes the file/dir found in the path
@@ -75,7 +80,7 @@ module fileio is
                 path path) outcome unit =>
     arr := fuzion.sys.c_string path.as_platform_string
     if fzE_rm arr != 0
-      error "an error occurred while performing the delete operation on the following file/dir: \"$path\""
+      error "an error occurred while performing the delete operation on the following file/dir: \"$path\"" fzE_last_error
 
 
   #  moves file/dir from an old path to a the new path
@@ -90,7 +95,7 @@ module fileio is
     arr0 := fuzion.sys.c_string old.as_platform_string
     arr1 := fuzion.sys.c_string new.as_platform_string
     if fzE_file_move arr0 arr1 != 0
-      error "an error occurred while performing the following move operation: \"$old\" --> \"$new\""
+      error "an error occurred while performing the following move operation: \"$old\" --> \"$new\"" fzE_last_error
 
 
   # creates a directory using the specified path
@@ -101,7 +106,7 @@ module fileio is
                     path path) outcome unit =>
     arr := fuzion.sys.c_string path.as_platform_string
     if fzE_mkdir arr != 0
-      error "an error occurred while creating the following directory: \"$path\""
+      error "an error occurred while creating the following directory: \"$path\"" fzE_last_error
 
 
   # Opens an IO source using a Fuzion Pointer as path and flag to represent the opening method (Read: 0, Write: 1, Append: 2)
@@ -127,9 +132,8 @@ module fileio is
   module close(
                # file descriptor
                fd File_Descriptor) outcome unit =>
-    closing_result := fzE_file_close fd
-    if closing_result != 0
-      error "failed closing file" closing_result.as_i64
+    if fzE_file_close fd != 0
+      error "failed closing file" fzE_last_error
 
 
   # seek offset in the stream represented by fd
@@ -141,9 +145,8 @@ module fileio is
               fd File_Descriptor,
               # the offset to seek from the beginning of this file
               offset i64) outcome unit =>
-    res := fzE_file_seek fd offset
-    if res = -1
-      error "failed seeking file" res.as_i64
+    if fzE_file_seek fd offset = -1
+      error "failed seeking file" fzE_last_error
 
 
   # returns the current file-pointer offset as an outcome i64,
@@ -155,7 +158,7 @@ module fileio is
                        fd File_Descriptor) outcome i64 =>
     res := fzE_file_position fd
     if res = -1
-      error "failed getting position in file" res
+      error "failed getting position in file" fzE_last_error
     else
       res
 

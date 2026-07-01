@@ -49,7 +49,7 @@ is
   # entry represents the pair of key and value at the given
   # index i of the ordered map.
   #
-  public entry(i i32) : property.orderable is
+  public entry(i i64) : property.orderable is
 
 
     public key OK => ks[i]
@@ -70,7 +70,7 @@ is
 
   # number of entries in this map
   #
-  public redef size i32 => sorted_entries.length
+  public redef size i64 => sorted_entries.length
 
 
   # get the value k is mapped to, or nil if none.
@@ -107,7 +107,7 @@ is
     for
       r := "", r + c + n
       i in ks.indices
-      n := "({ks[i]} => {vs[i]})"
+      n := "($(ks[i]) => $(vs[i]))"
       c := "", ", "
     else
       r

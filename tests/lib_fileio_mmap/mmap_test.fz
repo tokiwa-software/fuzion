@@ -30,11 +30,11 @@ mmap_test =>
 
   say <| io.file.use testfile io.file.mode.append ()->
 
-    io.file.writer.write (array u8 os.mmap_offset_multiple.as_i32 i->0)
+    (io.buffered io.file.file_mutate).writer.env.write (array u8 _ os.mmap_offset_multiple.as_i32 _->0)
       .or_panic
-    io.file.writer.write "hello!"
+    (io.buffered io.file.file_mutate).writer.env.write "hello!"
       .or_panic
-    io.file.writer.flush
+    (io.buffered io.file.file_mutate).writer.env.flush
       .or_panic
 
     offset := os.mmap_offset_multiple

@@ -28,17 +28,14 @@
 module:public Thread(thrd Internal_Thread,
 
                      # NYI: CLEANUP: use thread id
-                     id u64
+                     id uid
                      ) ref
   : property.equatable
 is
 
   joined := concur.atomic trit .new trit.no
 
-  policy choice
-    concur.scheduling_policy.sched_other
-    concur.scheduling_policy.sched_fifo
-    concur.scheduling_policy.sched_rr
+  policy concur.scheduling_policy.val
   :=
      concur.scheduling_policy.sched_other
 
@@ -73,10 +70,7 @@ is
   # priority only applies to some scheduling policies and is
   # currently limited to a value between 0 and 99.
   #
-  public set_policy(policy0 choice
-                            concur.scheduling_policy.sched_other
-                            concur.scheduling_policy.sched_fifo
-                            concur.scheduling_policy.sched_rr,
+  public set_policy(policy0 concur.scheduling_policy.val,
                     reset_on_fork bool,
                     priority0 i32) outcome unit
     pre
@@ -99,17 +93,14 @@ is
         set priority := priority0
         unit
       else
-        error "fzE_thread_setschedparam error {e}"
+        error "fzE_thread_setschedparam error $(e)"
 
 
   # get the current scheduling policy and priority of this thread
   #
   public get_policy
     tuple
-      (choice
-        concur.scheduling_policy.sched_other
-        concur.scheduling_policy.sched_fifo
-        concur.scheduling_policy.sched_rr)
+      concur.scheduling_policy.val
       i32
   =>
     cond.synchronized ()->
@@ -125,7 +116,7 @@ is
       if e = 0
         unit
       else
-        error "fzE_thread_setaffinity error {e}"
+        error "fzE_thread_setaffinity error $(e)"
 
 
   # equality
@@ -160,7 +151,7 @@ is
       set park_condition := condition
       set parked := true
       while parked   # perform this in a while to catch spurious wakeups
-        _ := cond.wait      # NYI: CLEANUP: Why is there a `bool` result for `wait`? Remove!
+        cond.wait
 
 
   # unpark this thread if it is parked.
@@ -170,7 +161,7 @@ is
     cond.synchronized ()->
       if parked
         set parked := false
-        _ := cond.signal    # NYI: CLEANUP: Why is there a `bool` result for `signal`? Remove!
+        cond.signal
 
 
   # threads that are parked may use these link fields to form a `Thread_List` of

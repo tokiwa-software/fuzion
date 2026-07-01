@@ -137,12 +137,12 @@ is
     match max_recorded
       mr time.duration => n := num_buckets.as_i32
                           array n i->
-                            if i<n-1 then mr.times ((i+1).as_f64 / (num_buckets.as_f64-1))
-                                     else time.duration.max
+                            if i<(n-1) then mr.times ((i+1).as_f64 / (num_buckets.as_f64-1))
+                                       else time.duration.max
       nil              => log_table
 
   check
-    debug: table.length = num_buckets.as_i32
+    debug: table.length = num_buckets
     debug: table[num_buckets.as_i32-1] = time.duration.max
 
 
@@ -150,7 +150,7 @@ is
   #
   log_table
   post
-    debug: result.length = num_buckets.as_i32
+    debug: result.length = num_buckets
   =>
     step := 1.65  # step factor determined via trial and error
     (1.0 :: *step).map f->(time.duration.ns 1 .times f)
@@ -208,7 +208,7 @@ is
   #
   indx(l time.duration)
   post
-    debug: result.as_i32 ∈ table.indices
+    debug: result ∈ table.indices
     debug: l <= table[result]
     debug: result = 0 || table[result-1] < l
   =>
@@ -379,7 +379,7 @@ is
       bar => "▉"   # unicode 0x2589 LEFT SEVEN EIGHTHS BLOCK
 
       titl := """
-              {"---  $title  ---".pad_center 78}
+              $("---  $title  ---".pad_center 78)
               count
               """
       for
@@ -391,7 +391,7 @@ is
         cnt := u64 1 << (c - unit0 * 10).as_u64
         str := for
                  hgap := c %% 4 ? hori : empt
-                 str1 := "{($cnt).pad_left 3}{units_str.substring unit0 unit0+1}$hgap", str1 + str2 + str3
+                 str1 := "$(cnt.as_string.pad_left 3)$(units_str.substring unit0 unit0+1)$hgap", str1 + str2 + str3
                  i in buckets.indices
                  last := i = num_buckets-1
                  gap :=  i %% 8 || last ? vert : hgap
@@ -429,7 +429,7 @@ is
       first := non_zero_buckets.first.or_panic
       last  := non_zero_buckets.last .or_panic
       ("from/ns;to/ns;count\n" +
-        (first..last).map i->"{smallest i .nanos};{largest i .nanos};{buckets[i]}"
+        (first..last).map i->"$(smallest i .nanos);$(largest i .nanos);$(buckets[i])"
                      .as_string "\n"
       )
     else

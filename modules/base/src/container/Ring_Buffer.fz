@@ -46,6 +46,7 @@ public Ring_Buffer(
   public size i64
 
 ) ref ! M
+  pre safety: size ≥ 0
 is
 
   # the elements in the ring buffer. Valid entries are at indices first..last-1 MOD size
@@ -81,6 +82,7 @@ is
 
 
   # is this buffer empty?
+  #
   public is_empty bool
   =>
     M.env.exclusive ()->is_empty0
@@ -93,7 +95,7 @@ is
     used = 0
 
 
-  # add an element to this ring buffer
+  # add -- add an element to this ring buffer
   #
   # Result is true iff ring buffer had space for one more element and `v` was
   # added to it, false iff the ring buffer is full and was not changed.
@@ -108,7 +110,7 @@ is
         false
 
 
-  # put is a blocking version of add: add an element to this ring buffer,
+  # put -- blocking version of add: add an element to this ring buffer,
   # wait in case the buffer is full
   #
   public put(v T) unit ! M
@@ -128,7 +130,7 @@ is
     used <- used+1
 
 
-  # poll remove the oldest element from this ring buffer
+  # poll -- remove the oldest element from this ring buffer
   #
   # Result is an option containing the removed element iff the ring buffer was
   # not empty. Otherwise, result is nil.
@@ -142,7 +144,7 @@ is
         take1
 
 
-  # peek return the oldest element from this ring buffer without changing the buffer
+  # peek -- return the oldest element from this ring buffer without changing the buffer
   #
   # Result is an option containing the oldest element iff the ring buffer was
   # not empty. Otherwise, result is nil.
@@ -156,7 +158,7 @@ is
         data[first.get]
 
 
-  # take is a blocking version of poll: remove the oldest element from this ring buffer
+  # take -- blocking version of poll: remove the oldest element from this ring buffer
   #
   # Result is the removed element. If none is available, this will block until one is
   # available.
@@ -181,7 +183,7 @@ is
     res
 
 
-  # the number of values currently stored in the ring buffer
+  # count -- the number of values currently stored in the ring buffer
   #
   public count i64 ! M
   =>
@@ -189,7 +191,7 @@ is
       used
 
 
-  # amount of elements free for adding
+  # unused -- number of elements free for adding
   #
   public unused i64 =>
     size - count

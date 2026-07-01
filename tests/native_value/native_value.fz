@@ -107,12 +107,12 @@ ex =>
         return_type := clang_getCursorResultType crsr
         return_type_spelling := clang_getTypeSpelling return_type
 
-        yak "{cx_string_to_string func_name}"
+        yap "$(cx_string_to_string func_name)"
 
         num_args := clang_Cursor_getNumArguments crsr
 
         if num_args > 0
-          yak "("
+          yap "("
 
         for i in 0..num_args-1 do
           arg := clang_Cursor_getArgument crsr i
@@ -121,17 +121,17 @@ ex =>
           arg_type_spelling := clang_getTypeSpelling arg_type
 
           if i!=0
-            yak ", "
+            yap ", "
 
-          yak "{cx_string_to_string arg_name} {to_fuzion_type (cx_string_to_string arg_type_spelling)}"
+          yap "$(cx_string_to_string arg_name) $(to_fuzion_type (cx_string_to_string arg_type_spelling))"
 
           clang_disposeString arg_name
           clang_disposeString arg_type_spelling
 
         if num_args > 0
-          yak ")"
+          yap ")"
 
-        say " {to_fuzion_type (cx_string_to_string return_type_spelling)} => native"
+        say " $(to_fuzion_type (cx_string_to_string return_type_spelling)) => native"
 
         clang_disposeString func_name
         clang_disposeString return_type_spelling

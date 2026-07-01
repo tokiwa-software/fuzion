@@ -95,7 +95,7 @@ is
     pre
       safety: is_accessible
   =>
-    array length.as_i32 (i -> Buffer.this[i])
+    array length (i -> Buffer.this[i])
 
 
   # create a list from this buffer
@@ -117,4 +117,4 @@ is
     if is_accessible
       $as_array
     else
-      "inaccessible '{Buffer.this.type}'"
+      "inaccessible '$(Buffer.this.type)'"

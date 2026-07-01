@@ -27,4 +27,4 @@ reg_issue4332 =>
 
   x0 := x 3
 
-  say "{x0.v} {x0.values.0} {x0.values.1}"
+  say "$(x0.v) $(x0.values.0) $(x0.values.1)"

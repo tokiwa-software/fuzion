@@ -59,7 +59,7 @@ webserver_java is
         output := jio.DataOutputStream.new s.getOutputStream?
 
         req := read?
-        say "got request ({req.byte_count} bytes): $req"
+        say "got request ($(req.byte_count) bytes): $req"
         if req.starts_with "GET "
           (send200 "<html>Hello Fuzion $n!</html>")?
 
@@ -107,7 +107,7 @@ webserver_java is
                     until s.or_panic = "" || !ready.or_panic
                       r
                     else
-                      say "#### {if (s.ok) s.err else ready.err}"
+                      say "#### $(if (s.ok) s.err else ready.err)"
                       "--error--"
 
 
@@ -128,7 +128,7 @@ webserver_java is
                   output := jio.DataOutputStream.new o
 
                   req := read
-                  say "got request ({req.byte_count} bytes): $req"
+                  say "got request ($(req.byte_count) bytes): $req"
                   if req.starts_with "GET "
                     send200 "<html>Hello Fuzion $n!</html>"
 

@@ -89,21 +89,21 @@ branch(CTK type : property.hashable, CTV type) : choice (Indirection_Node CTK CT
 
 # a container node
 # consists of a bitmap of filled spaces and an array of child nodes
-container_node(CTK type : property.hashable, CTV type, bmp u32, array array (branch CTK CTV), gen u64)
+container_node(CTK type : property.hashable, CTV type, bmp u32, array array (branch CTK CTV), gen uid)
 is
 
   # update a child node and return a new container_node
-  update(pos u32, node branch CTK CTV, g u64) =>
+  update(pos u32, node branch CTK CTV, g uid) =>
     container_node bmp (array.put pos.as_i32 node) g
 
   # add a child node and return a new container_node
-  put(sn singleton_node CTK CTV, pos, flag u32, g u64) =>
+  put(sn singleton_node CTK CTV, pos, flag u32, g uid) =>
     container_node (bmp | flag) (array.insert pos.as_i32 sn).as_array g
 
   # remove a child node and return a new container_node
-  remove(pos, flag u32, g u64)
+  remove(pos, flag u32, g uid)
     pre
-      debug: array.indices.contains pos.as_i32
+      debug: array.indices.contains pos.as_i64
     post
       debug: array.length = result.array.length + 1
   =>
@@ -115,7 +115,7 @@ is
   index [] (pos i32) branch CTK CTV =>
     array[pos]
 
-  public redef as_string String => "container_node[gen=$gen]({array.as_string ", "})"
+  public redef as_string String => "container_node[gen=$gen]($(array.as_string ", "))"
 
   as_list(f Indirection_Node CTK CTV -> Main_Node CTK CTV) =>
     array.flat_map /* NYI: UNDER DEVELOPMENT: type inference */ (tuple CTK CTV) (.as_list f)
@@ -165,7 +165,7 @@ Main_Node(CTK type : property.hashable, CTV type, data choice (container_node CT
       container_node container_node => "$container_node"
       tomb_node tomb_node => "$tomb_node"
       list_node list_node => "$list_node"
-    "Main_Node[prev={prev.read}]($s)"
+    "Main_Node[prev=$(prev.read)]($s)"
 
   as_list(f Indirection_Node CTK CTV -> Main_Node CTK CTV)
     pre
@@ -187,12 +187,12 @@ failed_node(CTK type : property.hashable, CTV type, prev Main_Node CTK CTV) is
 
 
 # shorthand for creating a new indirection node from Main_Node and gen
-indirection_node(CTK type : property.hashable, CTV type, data Main_Node CTK CTV, gen u64) =>
+indirection_node(CTK type : property.hashable, CTV type, data Main_Node CTK CTV, gen uid) =>
   Indirection_Node (concur.atomic (Main_Node CTK CTV) .new data) gen
 
 
 # an indirection node
-Indirection_Node(CTK type : property.hashable, CTV type, data concur.atomic (Main_Node CTK CTV), gen u64) ref : property.equatable is
+Indirection_Node(CTK type : property.hashable, CTV type, data concur.atomic (Main_Node CTK CTV), gen uid) ref : property.equatable is
 
   id := unique_id
 
@@ -203,7 +203,7 @@ Indirection_Node(CTK type : property.hashable, CTV type, data concur.atomic (Mai
   cas(old_n, new_n Main_Node CTK CTV) =>
     data.compare_and_set old_n new_n
 
-  public redef as_string String => "Indirection_Node[gen=$gen]({data.read})"
+  public redef as_string String => "Indirection_Node[gen=$gen]($(data.read))"
 
   as_list(f Indirection_Node CTK CTV -> Main_Node CTK CTV) =>
     (f Indirection_Node.this).as_list f
@@ -226,7 +226,7 @@ is
   #
   public redef finite trit => trit.yes
 
-  public redef as_string String => "list_node({from.as_string ", "})"
+  public redef as_string String => "list_node($(from.as_string ", "))"
 
   # find k in linked nodes
   find_key(k CTK) choice restart not_found CTV =>
@@ -281,7 +281,7 @@ is
   # the data structure as human readable string
   # for debugging purposes
   as_string_internal =>
-    "Ctrie[ro=$read_only]({root.read})"
+    "Ctrie[ro=$read_only]($(root.read))"
 
   # compare and swap root of the ctrie
   cas_root(ov, nv root_node CTK CTV) =>
@@ -293,7 +293,7 @@ is
   # 1) taking a snapshot and the root node needs to be copied to a new generation
   # 2) copying a container node to a new generation
   #
-  copy_to_gen(i Indirection_Node CTK CTV, new_gen u64)
+  copy_to_gen(i Indirection_Node CTK CTV, new_gen uid)
     post
       debug: result.data.read.prev.read.is_nil
   =>
@@ -301,7 +301,7 @@ is
 
 
   # copy this container_node to new generation
-  renew(cn container_node CTK CTV, new_gen u64) =>
+  renew(cn container_node CTK CTV, new_gen uid) =>
     copy => cn
       .array
       .map (branch CTK CTV) x->
@@ -438,7 +438,7 @@ is
 
 
   # compress a container node
-  compress(cn container_node CTK CTV, lev u32, g u64) =>
+  compress(cn container_node CTK CTV, lev u32, g uid) =>
     narr => cn.array.map_to_array (branch CTK CTV) n->
       match n
         i Indirection_Node =>
@@ -474,7 +474,7 @@ is
 
   # turns this: container_node -> Indirection_Node -> tomb_node -> singleton_node
   # into  this: container_node -> singleton_node
-  clean_parent(parent option (Indirection_Node CTK CTV), i Indirection_Node CTK CTV, hash, lev u32, gen u64) unit =>
+  clean_parent(parent option (Indirection_Node CTK CTV), i Indirection_Node CTK CTV, hash, lev u32, gen uid) unit =>
     _ := parent >>= p->
       m := gcas_read p
       match m.data
@@ -504,7 +504,7 @@ is
   # Main_Node -> list_node -> singleton_nodes
   # or recurse
   # Main_Node -> container_node -> Indirection_Node -> dual x y
-  dual(x, y singleton_node CTK CTV, lev u32, gen u64) =>
+  dual(x, y singleton_node CTK CTV, lev u32, gen uid) =>
     d choice (container_node CTK CTV) (tomb_node CTK CTV) (list_node CTK CTV) =>
       # NYI: UNDER DEVELOPMENT: why 35??
       if lev < 35
@@ -540,7 +540,7 @@ is
 
   # try lookup key in ctrie
   # may fail and result in a restart
-  lookup(i Indirection_Node CTK CTV, k CTK, lev u32, parent option (Indirection_Node CTK CTV), gen u64) choice restart not_found CTV
+  lookup(i Indirection_Node CTK CTV, k CTK, lev u32, parent option (Indirection_Node CTK CTV), gen uid) choice restart not_found CTV
   =>
     m := gcas_read i
     match m.data
@@ -578,7 +578,7 @@ is
 
   # try adding an element to the ctrie
   # may fail and result in a restart
-  put(i Indirection_Node CTK CTV, k CTK, v CTV, lev u32, parent option (Indirection_Node CTK CTV), gen u64) choice restart ctrie_ok
+  put(i Indirection_Node CTK CTV, k CTK, v CTV, lev u32, parent option (Indirection_Node CTK CTV), gen uid) choice restart ctrie_ok
   =>
     m := gcas_read i
     match m.data
@@ -621,7 +621,7 @@ is
 
   # try remove an element from the ctrie
   # may fail and result in a restart
-  remove(i Indirection_Node CTK CTV, k CTK, lev u32, parent option (Indirection_Node CTK CTV), gen u64) choice restart not_found CTV
+  remove(i Indirection_Node CTK CTV, k CTK, lev u32, parent option (Indirection_Node CTK CTV), gen uid) choice restart not_found CTV
   =>
     m := gcas_read i
     match m.data

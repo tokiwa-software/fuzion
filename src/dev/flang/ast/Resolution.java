@@ -623,12 +623,12 @@ public class Resolution extends ANY
                                       Visi.PRIV,
                                       0,
                                       af.selfType(),
-                                      FuzionConstants.COTYPE_THIS_TYPE,
+                                      FuzionConstants.COTYPE_RELAY_TYPE,
                                       Contract.EMPTY_CONTRACT,
                                       Impl.TYPE_PARAMETER)
               {
                 @Override
-                public boolean isCoTypesThisType()
+                public boolean isCoTypesRelayTypeParameter()
                 {
                   return true;
                 }

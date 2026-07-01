@@ -34,9 +34,9 @@ public tokiwa is
   public post_to_influx(org, bucket, token, str String) outcome String =>
     web.post_r
       net.family.ipv4
-      "https://influxdb.tokiwa.software:8086/api/v2/write?org={org}&bucket={bucket}&precision=s"
+      "https://influxdb.tokiwa.software:8086/api/v2/write?org=$(org)&bucket=$(bucket)&precision=s"
       str.utf8
-      (container.map_of [("Authorization", "Token {token}"),
+      (container.map_of [("Authorization", "Token $(token)"),
                          ("Content-Type", "text/plain")])
 
 
@@ -52,7 +52,7 @@ public tokiwa is
 
 
     public redef as_string String =>
-      "{exit_code}: {out}{err}"
+      "$(exit_code): $(out)$(err)"
 
 
   # helper to get out, err, exit_code from started process
@@ -83,8 +83,8 @@ public tokiwa is
           stdin_file path =>
             if io.file.exists stdin_file
               lm ! ()->
-                _ := p.with_in unit lm ()->
-                  _ := (io.buffered lm).writer.env.write (io.slurp stdin_file).or_panic
+                (p.with_in unit lm ()->
+                  (io.buffered lm).writer.env.write (io.slurp stdin_file).or_panic .or_panic).or_panic
 
         match p.wait (timeout.or_default time.duration.max)
           e error => process_result "" "failed waiting for $cmd, error is: $e" 1

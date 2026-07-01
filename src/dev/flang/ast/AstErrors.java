@@ -249,7 +249,7 @@ public class AstErrors extends ANY
           : ", you must provide "
             + StringHelpers.singularOrPlural(f.arguments().size(), "argument") + "."
             + (f.typeArguments().size() > 0
-                ? " The type arguments may be omitted or `_` may be used in place of a type argument if they can be inferred from the value arguments.."
+                ? " The type parameters may be omitted or `_` may be used in place of a type parameter if they can be inferred from the value arguments.."
                 : ""));
   }
 
@@ -315,8 +315,8 @@ public class AstErrors extends ANY
   static void declarationOfResultFeature(SourcePosition pos)
   {
     error(pos,
-          "Feature declaration may not declare a feature with name " + sbn(FuzionConstants.RESULT_NAME) + "",
-          "" + sbn(FuzionConstants.RESULT_NAME) + " is an automatically declared field for a routine's result value.\n"+
+          "Feature declaration may not declare a feature with name " + sbn(FuzionConstants.RESULT_NAME),
+          sbn(FuzionConstants.RESULT_NAME) + " is an automatically declared field for a routine's result value.\n"+
           "To solve this, choose a different name than " + sbn(FuzionConstants.RESULT_NAME) + " for your feature.");
   }
 
@@ -405,7 +405,7 @@ public class AstErrors extends ANY
                   .append(st(ts.toString(true)));
               }
           }
-        if (remedy == null && !frmlT.isGenericArgument() && frmlT.asRef(true).isAssignableFromWithoutBoxing(actlT, context).yes())
+        if (remedy == null && !frmlT.isParametricType() && frmlT.asRef(true).isAssignableFromWithoutBoxing(actlT, context).yes())
           {
             remedy = "To solve this, you could change the type of " + target + " to a " + st("ref")+ " type like " + s(frmlT.asRef(true)) + ".\n";
           }
@@ -428,7 +428,7 @@ public class AstErrors extends ANY
           }
         else
           {
-            remedy = frmlT.isValue() && !actlT.isGenericArgument() && !frmlT.isGenericArgument() && actlT.feature().inheritsFrom(frmlT.feature()) ?
+            remedy = frmlT.isValue() && !actlT.isParametricType() && !frmlT.isParametricType() && actlT.feature().inheritsFrom(frmlT.feature()) ?
                         "To solve this you could:\n" + //
                             (frmlT.isChoice() ? "" : "  • make  " + s(frmlT) + " a reference by adding the " + st("ref")+ " keyword, so all its heirs can be used in place of it,\n") +
                             "  • change the type of the target " + target + " to " + s(actlT) + ", or\n" +
@@ -655,7 +655,7 @@ public class AstErrors extends ANY
    * @param detail2 optional extra lines of detail message giving further
    * information, like "Calling feature: xyz.f\n" or "Type: Stack bool int\n".
    */
-  static void wrongNumberOfGenericArguments(FormalGenerics fg,
+  static void wrongNumberOfTypeArguments(FormalGenerics fg,
                                             List<AbstractType> actualGenerics,
                                             SourcePosition pos,
                                             String detail1,
@@ -669,8 +669,8 @@ public class AstErrors extends ANY
               "Wrong number of type parameters",
               "Wrong number of actual type parameters in " + detail1 + ":\n" +
               detail2 +
-              "expected " + fg.sizeText() + (fg._feature.typeArguments().isEmpty() ? "" : " for " + s(fg) + "") + "\n" +
-              "found " + (actualGenerics.size() == 0 ? "none" : "" + actualGenerics.size() + ": " + s(actualGenerics) + "" ) + ".\n");
+              "expected " + fg.sizeText() + (fg._feature.typeArguments().isEmpty() ? "" : " for " + s(fg)) + "\n" +
+              "found " + (actualGenerics.size() == 0 ? "none" : actualGenerics.size() + ": " + s(actualGenerics)  ) + ".\n");
       }
   }
 
@@ -716,7 +716,7 @@ public class AstErrors extends ANY
   {
     return t.compareTo(from) == 0
       ? s(t)
-      : s(t) + " (from " + (from.isGenericArgument() ? s(from.genericArgument()) : s(from)) + ")";
+      : s(t) + " (from " + (from.isParametricType() ? s(from.typeParameter()) : s(from)) + ")";
   }
 
   public static void argumentTypeMismatchInRedefinition(AbstractFeature originalFeature, AbstractFeature originalArg, AbstractType originalArgType,
@@ -794,7 +794,7 @@ public class AstErrors extends ANY
   {
     var rt = res.type();
     var srt = rt == null ? "an unknown type" : s(rt);
-    error(res.posOfLast(), "Constructor code should result in type " + st(FuzionConstants.UNIT_NAME) + "",
+    error(res.posOfLast(), "Constructor code should result in type " + st(FuzionConstants.UNIT_NAME) ,
           "Type returned by this constructor's implementation is " +srt + "\n" +
           "To solve this, you could turn this constructor into a routine by adding a matching result type " +
           "compatible to " + srt + " or by using " + code("=>") + " instead of " + code("is") + " to "+
@@ -829,35 +829,28 @@ public class AstErrors extends ANY
           "Original feature declared at " + originalFeature.pos().show());
   }
 
-  /* NYI: currently unused, need to check if a "while (23)" produces a useful error message
-  static void whileConditionMustBeBool(SourcePosition pos, Type type)
+  static void whileConditionMustBeBool(Expr sub)
+  {
+    loopTermCond(sub, "while");
+  }
+
+  static void untilConditionMustBeBool(Expr sub)
+  {
+    loopTermCond(sub, "until");
+  }
+
+  private static void loopTermCond(Expr sub, String ltc)
   {
     if (CHECKS) check
-      (any() || type != Types.t_ERROR);
+      (any() || sub.type() != Types.t_ERROR);
 
-    if (type != Types.t_ERROR)
+    if (sub.type() != Types.t_ERROR)
       {
-        error(pos,
-              "Loop termination condition following 'while' must be assignable to type 'bool'",
-              "Actual type is " + type);
+        error(sub.pos(),
+              "Loop termination condition following '" + ltc + "' must be assignable to type 'bool'",
+              "Actual type is " + s(sub.type()));
       }
   }
-  */
-
-  /* NYI: currently unused, need to check if a "do until (23)" produces a useful error message
-  static void untilConditionMustBeBool(SourcePosition pos, Type type)
-  {
-    if (CHECKS) check
-      (any() || type != Types.t_ERROR);
-
-    if (type != Types.t_ERROR)
-      {
-        error(pos,
-              "Loop termination condition following 'until' must be assignable to type 'bool'",
-              "Actual type is " + type);
-      }
-  }
-  */
 
   static void ifConditionMustBeBool(Expr sub)
   {
@@ -867,15 +860,15 @@ public class AstErrors extends ANY
     if (sub.type() != Types.t_ERROR)
       {
         error(sub.pos(),
-              "If condition must be assignable to type " + s(Types.resolved.t_bool) + "",
-              "Actual type is " + s(sub.type()) + "");
+              "If condition must be assignable to type " + s(Types.resolved.t_bool),
+              "Actual type is " + s(sub.type()));
       }
   }
 
   static void matchSubjectMustNotBeTypeParameter(SourcePosition pos, AbstractType t)
   {
     error(pos,
-          "" + skw("match") + " subject type must not be a type parameter",
+          skw("match") + " subject type must not be a type parameter",
           "Matched type: " + s(t) + "\n" +
           "which is a type parameter declared at " + t.declarationPos().show());
 
@@ -884,7 +877,7 @@ public class AstErrors extends ANY
   static void matchSubjectMustBeChoice(SourcePosition pos, AbstractType t)
   {
     error(pos,
-          "" + skw("match") + " subject type must be a choice type",
+          skw("match") + " subject type must be a choice type",
           "Matched type: " + s(t) + ", which is not a choice type");
 
   }
@@ -906,7 +899,7 @@ public class AstErrors extends ANY
           }
       }
     error(pos,
-          "" + skw("case") + " clause matches type that had been matched already.",
+          skw("case") + " clause matches type that had been matched already.",
           caseMatches(typeOrNull) +
           "Originally matched at " + earlierPosString + ".\n" +
           subjectTypes(choiceGenerics));
@@ -921,7 +914,7 @@ public class AstErrors extends ANY
   static void matchCaseDoesNotMatchAny(SourcePosition pos, AbstractType typeOrNull, List<AbstractType> choiceGenerics)
   {
     error(pos,
-          "" + skw("case") + " clause in " + skw("match") + " expression does not match any type of the subject.",
+          skw("case") + " clause in " + skw("match") + " expression does not match any type of the subject.",
           caseMatches(typeOrNull) +
           subjectTypes(choiceGenerics));
   }
@@ -929,7 +922,7 @@ public class AstErrors extends ANY
   static void matchCaseMatchesSeveral(SourcePosition pos, AbstractType t, List<AbstractType> choiceGenerics, List<AbstractType> matches)
   {
     error(pos,
-          "" + skw("case") + " clause in " + skw("match") + " expression matches several types of the subject",
+          skw("case") + " clause in " + skw("match") + " expression matches several types of the subject",
           caseMatches(t) +
           subjectTypes(choiceGenerics) +
           "matches are " + typeListConjunction(matches));
@@ -940,7 +933,7 @@ public class AstErrors extends ANY
     if (choiceGenerics.size() == missingMatches.size())
       {
         error(pos,
-              "" + skw("match") + " expression requires at least one case",
+              skw("match") + " expression requires at least one case",
               "Match expression at " + pos.show() + "\n" +
               "To solve this, add a case.  If a case exists, check that the indentation is deeper than that of the surrounding " + skw("match") + " expression");
       }
@@ -948,7 +941,7 @@ public class AstErrors extends ANY
       {
         var n = missingMatches.size();
         error(pos,
-              "" + skw("match") + " expression does not cover all of the subject's types",
+              skw("match") + " expression does not cover all of the subject's types",
               "Missing " + StringHelpers.plural(n,"case") +
               " for "    + StringHelpers.plural(n,"type") + ": " + typeListConjunction(missingMatches) + "\n" +
               subjectTypes(choiceGenerics));
@@ -997,7 +990,7 @@ public class AstErrors extends ANY
           {
             sb.append("\nand ");
           }
-        sb.append("" + s_feat_with_pos(f));
+        sb.append(s_feat_with_pos(f));
       }
     error(pos,
           "Internally referenced feature not unique",
@@ -1151,7 +1144,7 @@ public class AstErrors extends ANY
 
   public static void redefineModifierMissing(SourcePosition pos, AbstractFeature f, AbstractFeature existing)
   {
-    cannotRedefine(pos, f, existing, "Redefinition must be declared using modifier " + skw("redef") + "",
+    cannotRedefine(pos, f, existing, "Redefinition must be declared using modifier " + skw("redef") ,
                    "To solve this, if you did not intend to redefine an inherited feature, " +
                    "choose a different name for " + sbnf(f) + ".\n" +
                    "Otherwise, if you want to redefine an inherited feature, add a " + skw("redef") +
@@ -1377,8 +1370,8 @@ public class AstErrors extends ANY
     if (target            instanceof Call    c                                  &&
         c.calledFeature() instanceof Feature cf                                 &&
         cf.state().atLeast(State.RESOLVED_TYPES)                                &&
-        cf.resultType().isGenericArgument()                                     &&
-        cf.resultType().genericArgument() instanceof Feature tp                 &&
+        cf.resultType().isParametricType()                                     &&
+        cf.resultType().typeParameter() instanceof Feature tp                 &&
         tp.isFreeType()                                                         &&
         tp.constraint().compareTo(Types.resolved.t_Any) == 0)
       {
@@ -1402,7 +1395,8 @@ public class AstErrors extends ANY
                                     AbstractFeature targetFeature,
                                     Expr target,
                                     List<FeatureAndOuter> candidatesArgCountMismatch,
-                                    List<FeatureAndOuter> candidatesHidden)
+                                    List<FeatureAndOuter> candidatesHidden,
+                                    AbstractFeature lo)
   {
     if (!any() || !errorInOuterFeatures(targetFeature) && !call.errorInActuals())
       {
@@ -1410,6 +1404,8 @@ public class AstErrors extends ANY
           ? StringHelpers.plural(candidatesHidden.size(), "Feature") + " not visible at call site"
           : !candidatesArgCountMismatch.isEmpty()
           ? "Different count of arguments needed when calling feature"
+          : lo != null && lo.isChoice()
+          ? "Must not call choice feature"
           : "Could not find called feature";
         var solution0 = solutionPartialApplication(call);
         var solution1 = solutionDeclareReturnTypeIfResult(calledName.baseNameHuman(),
@@ -1419,7 +1415,7 @@ public class AstErrors extends ANY
         var solution4 = solutionHidden(candidatesHidden);
         var solution5 = solutionLambda(call);
         error(call.pos(), msg,
-              "Feature not found: " + sbnf(calledName) + "\n" +
+              (lo != null && lo.isChoice() ? "" : "Feature not found: " + sbnf(calledName) + "\n") +
               (targetFeature != null
                 ? (targetFeature.isCotype() ? "Target expression: " + expr(target.toString()) + "\n" : "Target feature: " + s(targetFeature) + "\n")
                 : "") +
@@ -1514,7 +1510,7 @@ public class AstErrors extends ANY
       {
         error(f.pos(),
               "Missing result type in field declaration with initialization",
-              "Field declared: " + s(f) + "");
+              "Field declared: " + s(f) );
       }
   }
 
@@ -1555,11 +1551,11 @@ public class AstErrors extends ANY
         error(pos,
               "Block must end with a result expression",
               "This block must produce a value since its result is used by the enclosing expression.\n" +
-              "Expected type of value: " + s(expectedType) + "");
+              "Expected type of value: " + s(expectedType) );
       }
   }
 
-  public static void constraintMustNotBeGenericArgument(AbstractFeature tp)
+  public static void constraintMustNotBeParametricType(AbstractFeature tp)
   {
     error(tp.pos(),
           "Constraint for type parameter must not be a type parameter",
@@ -1586,14 +1582,14 @@ public class AstErrors extends ANY
           "The else block of this loop is declared at " + elseBlock.pos().show());
   }
 
-  static void formalGenericWithGenericArgs(SourcePosition pos, UnresolvedType t, AbstractFeature generic)
+  static void formalGenericWithTypeParameters(SourcePosition pos, UnresolvedType t, AbstractFeature tp)
   {
     error(pos,
           "Formal type parameter must not have type parameters",
           "In a type with type parameters >>A B<<, the base type >>A<< must not be a formal type parameter.\n" +
           "Type used: " + s(t) + "\n" +
-          "Formal type parameter used " + sbnf(generic) + "\n" +
-          "Formal type parameter declared in " + generic.pos().show() + "\n");
+          "Formal type parameter used " + sbnf(tp) + "\n" +
+          "Formal type parameter declared in " + tp.pos().show() + "\n");
   }
 
   static void genericsMustBeDisjoint(SourcePosition pos, AbstractType t1, AbstractType t2)
@@ -1601,8 +1597,8 @@ public class AstErrors extends ANY
     error(pos,
           "Actual type parameters to choice type must be disjoint types",
           "The following types have overlapping values:\n" +
-          "" + s(t1) + "" + /* " at " + t1.pos().show() + */ "\n" +  // NYI: use pos before Types were interned!
-          "" + s(t2) + "" + /* " at " + t2.pos().show() + */ "\n");
+          s(t1) + /* " at " + t1.pos().show() + */ "\n" +  // NYI: use pos before Types were interned!
+          s(t2) + /* " at " + t2.pos().show() + */ "\n");
   }
 
   static void illegalUseOfOpenFormalGeneric(SourcePosition pos, AbstractFeature generic)
@@ -1610,7 +1606,7 @@ public class AstErrors extends ANY
     error(pos,
           "Illegal use of open formal type parameter type",
           "Open formal type parameter type is permitted only as the type of an argument.  If the argument and the formal type parameter are part of the same argument list, the argument must be the last argument.\n" +
-          "Open formal argument: " + sbnf(generic) + "");
+          "Open formal argument: " + sbnf(generic) );
   }
 
   static void integerConstantOutOfLegalRange(SourcePosition pos, String constant, AbstractType t, String from, String to)
@@ -1659,7 +1655,7 @@ public class AstErrors extends ANY
     var ns = ss(names.toString("", ",", ""));
     var expected_args =
       ntypes  == 0 ? StringHelpers.singularOrPlural(nvalues, "argument"     )
-                   : StringHelpers.singularOrPlural(ntypes , "type argument") + " and " +
+                   : StringHelpers.singularOrPlural(ntypes , "type parameter") + " and " +
                      StringHelpers.singularOrPlural(nvalues, "value argument");
     error(pos,
           "Wrong number of arguments in lambda expression",
@@ -1901,7 +1897,7 @@ public class AstErrors extends ANY
           "Actual type parameters: " + (sz == 0 ? "none" : s(types)) + "\n");
   }
 
-  static void failedToInferOpenGenericArg(SourcePosition pos, int count, Expr actual)
+  static void failedToInferOpenTypeParameterType(SourcePosition pos, int count, Expr actual)
   {
     error(pos,
           "Failed to infer open type parameter type from actual argument.",
@@ -1969,7 +1965,7 @@ public class AstErrors extends ANY
           "Destructuring mismatch between number of visible fields and number of target variables.",
           "Found " + ((fn == 0) ? "no visible argument fields" :
                       (fn == 1) ? "one visible argument field" :
-                      "" + fn + " visible argument fields"     ) + "\n" +
+                      fn + " visible argument fields"     ) + "\n" +
           (nn == 0 ? "while there are no destructuring variables" :
            nn == 1 ? "while there is one destructuring variable"
                    : "while there are " + nn + " destructuring variables.\n")
@@ -2221,9 +2217,9 @@ public class AstErrors extends ANY
           "may represent a number of different actual dynamic types, the " + art + " is not clearly defined.\n"+
           "Called feature: " + s(c.calledFeature()) + "\n" +
           "Original " + art + ": " + s(t) +
-          (tp != null
-           ? " declared at " + tp.show()
-           : "") + "\n" +
+          (tp.equals(calledOrArg.pos())
+           ? ""
+           : " declared at " + tp.show()) + "\n" +
           "Type depending on target: " + s(from) + "\n" +
           "Target type: " + s(to) + "\n" +
           "To solve this, you could try to use a value type as the target type of the call" +
@@ -2402,7 +2398,7 @@ public class AstErrors extends ANY
   {
     var t = e.type();
     error(e.pos(), "Expression produces result of type " + s(t) +  " but result is not used.",
-        (!t.isGenericArgument() && t.feature().isConstructor()
+        (!t.isParametricType() && t.feature().isConstructor()
           ? "To solve this, use the result, explicitly ignore the result " + st("_ := <expression>") + " or change " + s(t.feature()) + " from constructor to routine by replacing " + skw("is") + " by " + skw("=>") + "."
           : "To solve this, use the result or explicitly ignore the result " + st("_ := <expression>") + "."));
   }
@@ -2486,7 +2482,7 @@ public class AstErrors extends ANY
 
   public static void notAnEffect(AbstractType t, SourcePosition pos)
   {
-    var f = t.isGenericArgument() ? t.genericArgument().outer() : t.feature();
+    var f = t.isParametricType() ? t.typeParameter().outer() : t.feature();
     error(pos,
           "Feature " + sbnf(f) + " is not an effect.",
           "Effects required by a feature are specified with " + skw("!") + " in the signature. " +
@@ -2579,14 +2575,19 @@ public class AstErrors extends ANY
 
   public static void explicitTypeRequired(AbstractFeature f, AbstractType inf)
   {
-    String inferredMsg = (inf != null && inf != Types.t_ERROR) ?
-                           "\nInferred type is " + s(inf) : "\nNo type could be inferred";
+    String inferredMsg = (inf != null && inf != Types.t_ERROR) ? " Inferred type is " + s(inf)
+                                                               : "";
+
+    String reason = f.isAbstract()                                   ? skw("abstract")  :
+                    f.isIntrinsic()                                  ? skw("intrinsic") :
+                    f.isNative()                                     ? skw("native")    :
+                    f.visibility().eraseTypeVisibility() == Visi.PUB ? skw("public")
+                                                                     : "argument of a " + skw("public") + " feature";
 
     error(f.pos(),
-          (f.visibility().eraseTypeVisibility() == Visi.PUB)
-            ? "Public features must have explicit result type"
-            : "Arguments of public features must have explicit type",
-          "Feature " + s(f) + " is " + skw("public") + " but has no explicit type specified"
+          "Explicit type required",
+          "Feature " + s(f) + " is " + reason + ", but has no type specified.\n"
+          + "To solve this, please specify a type explicitly."
           + inferredMsg);
   }
 
@@ -2649,13 +2650,13 @@ public class AstErrors extends ANY
 
   public static void lamdaOuterMustNotHaveArgs(SourcePosition pos, AbstractType tt)
   {
-    error(pos, "Can not create lambda since an outer has unkown arguments.",
+    error(pos, "Can not create lambda since an outer has unknown arguments.",
       "The outer having the arguments:\n\n" + s_feat_with_pos(tt.feature()) + "\n"+
       "To solve this, either create the lambda inside of " + s(tt.feature()) + " or remove the arguments from " + s(tt.feature()) + "."
      );
   }
 
-  public static void lamdaOuterMustNotBeGenericArgument(SourcePosition pos, AbstractType tt)
+  public static void lamdaOuterMustNotBeTypeParameter(SourcePosition pos, AbstractType tt)
   {
     error(pos, "Can not create lambda since an outer of its type is a generic argument.",
       "The generic argument used in lambdas type " + s(tt) + "."

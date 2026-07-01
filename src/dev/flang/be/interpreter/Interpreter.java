@@ -79,11 +79,11 @@ public class Interpreter extends FUIRContext
       }
     catch (StackOverflowError e)
       {
-        Errors.fatal("*** " + e + "\n" + Executor.callStack(_fuir));
+        Errors.fatal("*** " + e + "\n" + Executor.callStack());
       }
     catch (RuntimeException | Error e)
       {
-        Errors.error("*** " + e + "\n" + Executor.callStack(_fuir));
+        Errors.error("*** " + e + "\n" + Executor.callStack());
         throw e;
       }
   }

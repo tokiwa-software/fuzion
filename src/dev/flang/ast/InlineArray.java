@@ -202,7 +202,7 @@ public class InlineArray extends ExprWithPos
   {
     // if expected type is choice, examine if there is exactly one
     // array in choice generics, if so use this for further type propagation.
-    t = t.findInChoice(cg -> !cg.isGenericArgument() && cg.feature() == Types.resolved.f_array, context);
+    t = t.findInChoice(cg -> !cg.isParametricType() && cg.feature() == Types.resolved.f_array, context);
 
     var elementType = elementType(t);
     if (elementType != Types.t_ERROR
@@ -427,6 +427,7 @@ public class InlineArray extends ExprWithPos
       }
     var unit = Types.resolved.unitCall(res, context);
     var sysArrArgsE     = new List<Expr>(readSysArrayVar,
+                                         unit,
                                          unit,
                                          unit,
                                          unit);

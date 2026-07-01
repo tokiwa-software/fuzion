@@ -69,4 +69,4 @@ man_or_boy is
   K(n i32) Function i32 => ()->n
 
   (0..8).for_each n->
-    say "manorboy a($n) = {a n K(1) K(-1) K(-1) K(1) K(0)}"
+    say "manorboy a($n) = $(a n K(1) K(-1) K(-1) K(1) K(0))"

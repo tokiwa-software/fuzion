@@ -66,7 +66,7 @@ public class Parser extends Lexer
   {
 
     /**
-     * Pre-allocated instance of `GiveUp`
+     * Pre-allocated instance of {@code GiveUp}
      */
     static final GiveUp _INSTANCE_ = new GiveUp();
 
@@ -1626,9 +1626,9 @@ actualArgs  : actualSpaces
            t_do              ,
            t_while           ,
            t_until           ,
-           t_stringBD        ,
-           t_stringBQ        ,
-           t_stringBB        ,
+           t_stringPD        ,
+           t_stringPQ        ,
+           t_stringPB        ,
            t_question        ,
            t_eof             -> true;
 
@@ -1667,16 +1667,16 @@ actualArgs  : actualSpaces
   /**
    * Parse actualCommas
    *
-   * @param endAtComma true to treat `x, v->2*v` as two actuals `x` and `v->2*v`
-   * instead of one `(x,v)->2*v`.
+   * @param endAtComma true to treat {@code x, v->2*v} as two actuals {@code x} and {@code v->2*v}
+   * instead of one {@code (x,v)->2*v}.
    *
    * NYI: CLEANUP: It might be better to omit the case endAtComma==true and to always
-   * parse the case `x, v->2*v` as one actual.
+   * parse the case {@code x, v->2*v} as one actual.
    *
 actualCommas: actualSome
             |
             ;
-actualSome  : operatorExpr          // may not contain `,` unless enclosed in { }, [ ], or ( ).
+actualSome  : operatorExpr          // may not contain {@code ,} unless enclosed in { }, [ ], or ( ).
               actualMore
             ;
 actualMore  : COMMA actualSome
@@ -1793,7 +1793,7 @@ operatorExpr: opExpr
               |
               )
             ;
-exprNoColon : operatorExpr          // may not contain `:` unless enclosed in { }, [ ], or ( ).
+exprNoColon : operatorExpr          // may not contain {@code :} unless enclosed in { }, [ ], or ( ).
             ;
   */
   Expr operatorExpr()
@@ -2108,9 +2108,9 @@ addSemiElmts: SEMI semiSepElmts
    *
 term        : simpleterm callTail
             | dotCall   // if white space before last OPERATOR, i.e.,
-                        // `1.. ∀ .is_even` is fully parsed as opExpr while
-                        // `1.. .filter %%2` returns `x..`, which becomes the
-                        // target in a call `(x..).filter %%2`
+                        // {@code 1.. ∀ .is_even} is fully parsed as opExpr while
+                        // {@code 1.. .filter %%2} returns {@code x..}, which becomes the
+                        // target in a call {@code (x..).filter %%2}
             ;
 simpleterm  : bracketTerm
             | stringTerm
@@ -2236,8 +2236,8 @@ stringTermB : '}any chars&quot;'
    * Check if the current position starts a term that is not a loop.  Does not change the position
    * of the parser.
    *
-   * @param mayBeDotCall true if this may be a `dotCall` (which is forbidden
-   * in opExpr after operator stuck at previous operand like `(x)++ .bla`.
+   * @param mayBeDotCall true if this may be a {@code dotCall} (which is forbidden
+   * in opExpr after operator stuck at previous operand like {@code (x)++ .bla}.
    *
    * @return true iff the next token(s) start a term.
    */
@@ -2327,7 +2327,7 @@ casesNoBars : caze semiOrFlatLF casesNoBars
    * @param in the Indentation instance created at the position of '?' or at
    * current position (for a 'match'-expression).
    *
-casesBars   : caze                  // may not contain `|` unless enclosed in { }, [ ], or ( ).
+casesBars   : caze                  // may not contain {@code |} unless enclosed in { }, [ ], or ( ).
               ( '|' casesBars
               |
               )
@@ -2767,7 +2767,7 @@ loopEpilog  : "until" exprInLine thenPart elseBlockOpt
                 syntaxError(tokenPos(), "loopBody or loopEpilog: 'while', 'do', 'until' or 'else'", "loop");
               }
           }
-        return new Loop(pos, indexVars, nextValues, v, i, w, b, u, ub, ePos, els, els1, els2).tailRecursiveLoop();
+        return new Loop(sourceRange(pos), indexVars, nextValues, v, i, w, b, u, ub, ePos, els, els1, els2).tailRecursiveLoop();
       });
   }
 
@@ -2907,7 +2907,7 @@ nextValue   : COMMA exprInLine
   /**
    * Parse ifexpr
    *
-   * @param outerElse is this part of an `else if`, the position of `else`, otherwise `null`.
+   * @param outerElse is this part of an {@code else if}, the position of {@code else}, otherwise {@code null}.
    *
 ifexpr      : "if" exprInLine thenPart elseBlockOpt
             ;
@@ -2965,11 +2965,10 @@ ifexpr      : "if" exprInLine thenPart elseBlockOpt
 
         if (oldMinIdent != null) { setMinIndent(oldMinIdent); }
 
-        return Match.createIf(pos, e, b,
+        return Match.createIf(sourceRange(pos), e, b,
           // do no use empty blocks as else blocks since the source position
           // of those block might be somewhere unexpected.
-          els != null && els._expressions.size() > 0 ? els : null,
-          false
+          els != null && els._expressions.size() > 0 ? els : null
         );
       });
   }
@@ -2993,7 +2992,7 @@ thenPart    : "then" block
 
 
   /**
-   * Helper for `elseBlockOpt`: Check if the three given positions are != null and
+   * Helper for {@code elseBlockOpt}: Check if the three given positions are != null and
    * refer to the same line.
    *
    * @param p1 a position or null.
@@ -3021,11 +3020,11 @@ thenPart    : "then" block
   /**
    * Parse elseBlockOpt
    *
-   * @param surroundingIf position of surrounding `if` in case of nesting
+   * @param surroundingIf position of surrounding {@code if} in case of nesting
    *
    * @param surroundingLoop position of surrounding loop in case of nesting
    *
-   * @param thisIf if part of an `if`, the position
+   * @param thisIf if part of an {@code if}, the position
    *
    * @param thisLoop if part of a loop, the position
    *
@@ -3625,8 +3624,8 @@ boundType   : onetype ( PIPE onetype ) *
   /**
    * Parse onetype
    *
-onetype     : simpletype "->" simpletype    // if used as function return type, no line break allowed after `->`
-            | pTypeList  "->" simpletype    // if used as function return type, no line break allowed after `->`
+onetype     : simpletype "->" simpletype    // if used as function return type, no line break allowed after {@code ->}
+            | pTypeList  "->" simpletype    // if used as function return type, no line break allowed after {@code ->}
             | pTypeList
             | LPAREN type RPAREN typeTail
             | simpletype

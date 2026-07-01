@@ -91,7 +91,7 @@ is
   # create immutable array from this buffer
   #
   public as_array array T ! E =>
-    array (length0.as_i32 * length1.as_i32) (i -> Mutable_Array2.this[(i.as_i64 / length1), (i.as_i64 % length1)])
+    array (length0 * length1) (i -> Mutable_Array2.this[(i.as_i64 / length1), (i.as_i64 % length1)])
 
 
   # create a list from this buffer
@@ -114,4 +114,4 @@ is
     if is_accessible
       $as_array
     else
-      "inaccessible '{Mutable_Array2.this.type}'"
+      "inaccessible '$(Mutable_Array2.this.type)'"

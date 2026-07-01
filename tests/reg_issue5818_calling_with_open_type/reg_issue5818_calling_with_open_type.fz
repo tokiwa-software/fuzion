@@ -24,9 +24,7 @@
 # Several test cases that call features with type and value arguments of
 # open type.
 #
-# This is a negative test for many cases that should produce errors.  A positive
-# version of the same code is available as
-# ../reg_issue5818_calling_with_open_type/reg_issue5818_calling_with_open_type.fz,
+# This is the same code as ../reg_issue5818_calling_with_open_type_negative/reg_issue5818_calling_with_open_type_negative.fz,
 # only with all failing cases commented out such that we can verify that the
 # positive cases work.
 #
@@ -78,7 +76,7 @@ reg_issue5818_calling_with_open_type =>
 
   # ------------------------------
 
-  # Now an open type argument that is used as the type of a value arguemnt.
+  # Now an open type parameter that is used as the type of a value arguemnt.
   #
   # if open type parameters are used as type of value arguments, the types must be inferred:
   #

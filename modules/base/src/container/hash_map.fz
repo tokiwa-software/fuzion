@@ -42,7 +42,7 @@ is
 
   # number of entries in this map
   #
-  public redef size i32 := ks.count
+  public redef size i64 := ks.count.as_i64
 
 
   # size of allocated contents array, allows for some empty slots
@@ -203,7 +203,7 @@ is
   public redef items Sequence (tuple HK V) =>
     contents
       .filter o->o??
-      .map (o -> o.or_else (panic "filter failed"))
+      .map (.or_else (panic "filter failed"))
 
 
   # NYI: implement this when #4642 is done

@@ -65,7 +65,7 @@ public class QualThisType extends UnresolvedType
 
   /**
    * resolve this type, i.e., find or create the corresponding instance of
-   * ResolvedType of this and all outer types and type arguments this depends on.
+   * ResolvedType of this and all outer types and type parameters this depends on.
    *
    * @param res this is called during type resolution, res gives the resolution
    * instance.

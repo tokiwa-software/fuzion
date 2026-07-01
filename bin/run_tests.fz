@@ -48,7 +48,7 @@ max_test_time := (time.duration.min 10)
 # execute this Sequence of process+args
 #
 Sequence.prefix ! =>
-  seq := map x->x.as_string
+  seq := map (.as_string)
   os.process.start seq.first.or_panic (seq.drop 1) envir_vars
             .bind (p -> tokiwa.record_process p Sequence.this.as_string max_test_time nil)
 
@@ -156,7 +156,7 @@ main =>
        io.file.exists (test.resolve "skip_$target") ||
        (os.platform.or_panic ? os.windows => io.file.exists (test.resolve "skip_win") | os.posix => false)
        )
-      yak "_"
+      yap "_"
       append_line results "$test: skipped"
     else
 
@@ -167,21 +167,21 @@ main =>
 
       match opt_res
         e error =>
-          yak "!"
-          append_line results "$test in {elapsed_time}: $e error"
+          yap "!"
+          append_line results "$test in $(elapsed_time): $e error"
           append_line failures "$test: $e"
         res tokiwa.process_result =>
           if res.exit_code = 0 || target = "fuir" then
-            yak "."
-            append_line results "$test in {elapsed_time}: ok"
+            yap "."
+            append_line results "$test in $(elapsed_time): ok"
           else
-            yak "#"
-            append_line results "$test in {elapsed_time}: failed"
+            yap "#"
+            append_line results "$test in $(elapsed_time): failed"
             append_line failures res.out
             append_line failures res.err
 
 
-  say "{tests.count} tests, running $thread_count tests in parallel."
+  say "$(tests.count) tests, running $thread_count tests in parallel."
 
 
 
@@ -203,11 +203,11 @@ main =>
   produced_error := results_content.count (.ends_with "error"  )
 
   say ""
-  say ("$ok/{tests.count} tests passed" +
+  say ("$ok/$(tests.count) tests passed" +
        ", $skipped skipped" +
        ", $failed failed" +
        (produced_error = 0 ? "" :", $produced_error produced error") +
-       " in {elapsed_time_total.as_string.trim}.")
+       " in $(elapsed_time_total.as_string.trim).")
 
   max_recorded := test_durations
     .values
@@ -259,9 +259,9 @@ main =>
 
   test_durations
     .items
-    .sort_by (.1)
+    .sort_by (t -> property.reverse_order t.1)
     .take num_slowest
-    .for_each (td -> say "{td.1.as_string_pad} {td.0}")
+    .for_each (td -> say "$(td.1.as_string_pad) $(td.0)")
 
   say_section "$target done"
 
@@ -269,12 +269,12 @@ main =>
     nil => say "INFLUXDB_TOKEN not set, not sending to influxdb."
     token String =>
       data := test_durations.items
-        .map td->"test_runtime,backend={target},test={td.0} value={td.1.millis}"
+        .map td->"test_runtime,backend=$(target),test=$(td.0) value=$(td.1.millis)"
       if token.is_blank
         say "INFLUXDB_TOKEN is blank, not sending to influxdb."
       else
         say <| tokiwa.post_to_influx "tokiwa" "benchmarks" token.trim (String.join_lines data)
-        say <| tokiwa.post_to_influx "tokiwa" "benchmarks" token.trim "run_tests,backend={target} total_time={elapsed_time_total.millis}"
+        say <| tokiwa.post_to_influx "tokiwa" "benchmarks" token.trim "run_tests,backend=$(target) total_time=$(elapsed_time_total.millis)"
 
   exit
 

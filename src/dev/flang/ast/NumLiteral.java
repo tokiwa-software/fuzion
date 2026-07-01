@@ -772,7 +772,7 @@ public class NumLiteral extends Constant
     else if (t.compareTo(Types.resolved.t_u64) == 0) { return ConstantType.ct_u64; }
     else if (t.compareTo(Types.resolved.t_f32) == 0) { return ConstantType.ct_f32; }
     else if (t.compareTo(Types.resolved.t_f64) == 0) { return ConstantType.ct_f64; }
-    else                                             { return t.isGenericArgument() ? ConstantType.ct_numeric : null; }
+    else                                             { return t.isParametricType() ? ConstantType.ct_numeric : null; }
   }
 
 
@@ -838,7 +838,7 @@ public class NumLiteral extends Constant
     // if expected type is choice, examine if there is exactly one numeric
     // constant type in choice generics, if so use that for further type
     // propagation.
-    t = t.findInChoice(cg -> !cg.isGenericArgument() && findConstantType(cg) != null, context);
+    t = t.findInChoice(cg -> !cg.isParametricType() && findConstantType(cg) != null, context);
     if (_propagatedType == null && findConstantType(t) != null)
       {
         _propagatedType = t;
@@ -912,28 +912,28 @@ public class NumLiteral extends Constant
   @Override
   protected Expr resolveSyntacticSugar2(Resolution res, Context _context)
   {
-    if (_propagatedType != null && _propagatedType.isGenericArgument())
+    if (_propagatedType != null && _propagatedType.isParametricType())
       {
         Call result;
 
         if (_originalString.equals("0"))
           {
             result = new ParsedCall(
-                          new ParsedCall(new ParsedName(pos(), _propagatedType.genericArgument().baseName())),
+                          new ParsedCall(new ParsedName(pos(), _propagatedType.typeParameter().baseName())),
                           new ParsedName(pos(), "zero"))
                   .resolveTypes(res, _context);
           }
         else if (_originalString.equals("1"))
           {
             result = new ParsedCall(
-                          new ParsedCall(new ParsedName(pos(), _propagatedType.genericArgument().baseName())),
+                          new ParsedCall(new ParsedName(pos(), _propagatedType.typeParameter().baseName())),
                           new ParsedName(pos(), "one"))
                   .resolveTypes(res, _context);
           }
         else
           {
             result = new ParsedCall(
-                      new ParsedCall(new ParsedName(pos(), _propagatedType.genericArgument().baseName())),
+                      new ParsedCall(new ParsedName(pos(), _propagatedType.typeParameter().baseName())),
                       new ParsedName(pos(), "from_u32"),
                       new List<>(this))
               {

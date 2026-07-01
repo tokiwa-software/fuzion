@@ -158,7 +158,14 @@ public class Match extends AbstractMatch
   void resolveTypes(Resolution res, Context context)
   {
     var st = _subject.typeForInferencing(context);
-    if (st != null && st != Types.t_ERROR && !st.isGenericArgument())
+
+    if (st != null && !st.isChoice())
+      {
+        _subject = _subject.unwrapChoice(res, context);
+        st = _subject.typeForInferencing();
+      }
+
+    if (st != null && st != Types.t_ERROR && !st.isParametricType())
       {
         res.resolveTypes(st.feature());
       }
@@ -418,7 +425,7 @@ public class Match extends AbstractMatch
 
 
   /**
-   * create an if expr,
+   * create an if expr
    *
    * @param pos the source position of the if
    *
@@ -428,13 +435,14 @@ public class Match extends AbstractMatch
    *
    * @param elseB else block, may be null
    *
-   * @param fromContract is this an if generated from a contract? (for error messages)
+   * @param kind the kind of the if (Contract, If, Until, While)
    */
-  public static Expr createIf(SourcePosition pos, Expr c, Expr b, Expr elseB, boolean fromContract)
+  static Expr createIf(SourcePosition pos, Expr c, Expr b, Expr elseB, Kind kind)
   {
     if (PRECONDITIONS) require
       (c != null,
-       b != null);
+       b != null,
+       kind != Kind.Plain);
 
     /**
      * If there is no else / elseif, create a default else
@@ -476,8 +484,25 @@ public class Match extends AbstractMatch
 
     return new Match(pos, c, cases)
       {
-        @Override Kind kind() { return fromContract ? Kind.Contract : Kind.If; }
+        @Override Kind kind() { return kind; }
       };
+  }
+
+
+  /**
+   * create an if expr
+   *
+   * @param pos the source position of the if
+   *
+   * @param c then condition
+   *
+   * @param b the "true"-block, must not be null
+   *
+   * @param elseB else block, may be null
+   */
+  public static Expr createIf(SourcePosition pos, Expr c, Expr b, Expr elseB)
+  {
+    return createIf(pos, c, b, elseB, Kind.If);
   }
 
 

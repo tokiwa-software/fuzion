@@ -31,8 +31,8 @@ path_test =>
   check rel.is_relative
   check !abs.is_root
 
-  say "$abs has {abs.segments_count} levels"
-  say "$rel has {rel.segments_count} levels"
+  say "$abs has $(abs.segments_count) levels"
+  say "$rel has $(rel.segments_count) levels"
 
   say <| abs.subpath 1
 
@@ -61,9 +61,9 @@ path_test =>
 
   split_file_name(p path) =>
     say "\n$p"
-    say "  base: {p.base_name}"
-    say "  stem: {p.stem}"
-    say "suffix: {p.suffix}"
+    say "  base: $(p.base_name)"
+    say "  stem: $(p.stem)"
+    say "suffix: $(p.suffix)"
 
   rel_file := rel.resolve "myfile.txt"
   abs_file := abs.resolve "ex.fz"
@@ -87,7 +87,7 @@ path_test =>
   split_file_name dots_ext
 
   subp := abs_rel_foo.subpath 4 7
-  say "\n'$abs_rel_foo'.subpath 4 7 -> {subp}"
+  say "\n'$abs_rel_foo'.subpath 4 7 -> $(subp)"
   check subp = rel
 
 
@@ -137,11 +137,11 @@ path_test =>
 
   create(s String) =>
     say "\nIN:  '$s'"
-    say "OUT: '{path.of s}'"
+    say "OUT: '$(path.of s)'"
 
   create(s Sequence String, is_abs bool) =>
-    say "\nIN:  '$s' {is_abs ? "absolute" : "relative"}"
-    say "OUT: '{path.of s is_abs}'"
+    say "\nIN:  '$s' $(is_abs ? "absolute" : "relative")"
+    say "OUT: '$(path.of s is_abs)'"
 
   check (path.of "/./././foo/./././../././bar/././././.." = path.root)
   create "/./././foo/./././../././bar/././././.."
@@ -161,12 +161,12 @@ path_test =>
   # expect failure to create a path
   #
   fail_create(s String) =>
-    fuzion.runtime.contract_fault.try ()->(say "FAILED: crated path '{path.of s}' from '$s'") .catch (x->say x)
+    fuzion.runtime.contract_fault.try ()->(say "FAILED: crated path '$(path.of s)' from '$s'") .catch (x->say x)
 
   # expect failure to create a path
   #
   fail_create(seg Sequence String, is_abs bool) =>
-    fuzion.runtime.contract_fault.try ()->(say "FAILED: crated {is_abs ? "absolute" : "relative"} path '{path.of seg is_abs}' from '$seg'") .catch (x->say x)
+    fuzion.runtime.contract_fault.try ()->(say "FAILED: crated $(is_abs ? "absolute" : "relative") path '$(path.of seg is_abs)' from '$seg'") .catch (x->say x)
 
   # uproot a path
   fail_create "/.."                         # 1. should flag an error: path uprooted
@@ -183,7 +183,7 @@ path_test =>
   # expect a contract fault
   #
   fail(f Function Any) =>
-    fuzion.runtime.contract_fault.try ()->(say "FAILED: got {f.call} but expected failure") .catch (x->say x)
+    fuzion.runtime.contract_fault.try ()->(say "FAILED: got $(f.call) but expected failure") .catch (x->say x)
 
   fail ()->(path.of "/tmp" .resolve (path.of "../.."))
 

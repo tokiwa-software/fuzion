@@ -31,12 +31,12 @@
 testOnesCount is
 
   show(x u64) =>
-    yak ((x.bin 64) + ": " + x.ones_count+" "+x.cast_to_i64.ones_count+" "+x.low32bits.ones_count+" "+x.low32bits.cast_to_i32.ones_count + " ")
-    yak ($x.low16bits.ones_count+" "+x.low16bits.cast_to_i16.ones_count+" "+x.low8bits.ones_count+" "+x.low8bits.cast_to_i8.ones_count + " ")
-    yak ($x.highest_one_bit+" "+x.cast_to_i64.highest_one_bit+" "+x.low32bits.highest_one_bit+" "+x.low32bits.cast_to_i32.highest_one_bit + " ")
-    yak ($x.low16bits.highest_one_bit+" "+x.low16bits.cast_to_i16.highest_one_bit+" "+x.low8bits.highest_one_bit+" "+x.low8bits.cast_to_i8.highest_one_bit + " ")
-    yak ($x.trailing_zeros+" "+x.cast_to_i64.trailing_zeros+" "+x.low32bits.trailing_zeros+" "+x.low32bits.cast_to_i32.trailing_zeros + " ")
-    yak ($x.low16bits.trailing_zeros+" "+x.low16bits.cast_to_i16.trailing_zeros+" "+x.low8bits.trailing_zeros+" "+x.low8bits.cast_to_i8.trailing_zeros + ".")
+    yap ((x.bin 64) + ": " + x.ones_count+" "+x.cast_to_i64.ones_count+" "+x.low32bits.ones_count+" "+x.low32bits.cast_to_i32.ones_count + " ")
+    yap ($x.low16bits.ones_count+" "+x.low16bits.cast_to_i16.ones_count+" "+x.low8bits.ones_count+" "+x.low8bits.cast_to_i8.ones_count + " ")
+    yap ($x.highest_one_bit+" "+x.cast_to_i64.highest_one_bit+" "+x.low32bits.highest_one_bit+" "+x.low32bits.cast_to_i32.highest_one_bit + " ")
+    yap ($x.low16bits.highest_one_bit+" "+x.low16bits.cast_to_i16.highest_one_bit+" "+x.low8bits.highest_one_bit+" "+x.low8bits.cast_to_i8.highest_one_bit + " ")
+    yap ($x.trailing_zeros+" "+x.cast_to_i64.trailing_zeros+" "+x.low32bits.trailing_zeros+" "+x.low32bits.cast_to_i32.trailing_zeros + " ")
+    yap ($x.low16bits.trailing_zeros+" "+x.low16bits.cast_to_i16.trailing_zeros+" "+x.low8bits.trailing_zeros+" "+x.low8bits.cast_to_i8.trailing_zeros + ".")
     say ""
 
   show 0

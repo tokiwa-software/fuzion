@@ -83,7 +83,7 @@ class GenericType extends LibraryType
 
 
   /**
-   * genericArgument gives the Generic instance of a type defined by a generic
+   * typeParameter gives the Generic instance of a type defined by a generic
    * argument.
    *
    * @return the Generic instance, never null.
@@ -104,12 +104,12 @@ class GenericType extends LibraryType
 
 
   /**
-   * The mode of the type: GenericArgument, ThisType, RefType or ValueType.
+   * The mode of the type: ParametricType, ThisType, RefType or ValueType.
    */
   @Override
   public TypeKind kind()
   {
-    return TypeKind.GenericArgument;
+    return TypeKind.ParametricType;
   }
 
 }

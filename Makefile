@@ -127,6 +127,8 @@ FUZION_FILES_RT       = $(shell find $(FZ_SRC_INCLUDE))
 FZ_SRC_EXAMPLES       = $(FZ_SRC)/examples
 FUZION_FILES_EXAMPLES = $(shell find $(FZ_SRC_EXAMPLES))
 
+FUZION_RUNTIME_VERSION    = $(BUILD_DIR)/modules/base/src/fuzion/runtime/version.fz
+FUZION_RUNTIME_VERSION_IN =    $(FZ_SRC)/modules/base/src/fuzion/runtime/version.fz.in
 MOD_BASE              = $(BUILD_DIR)/modules/base.fum
 MOD_TERMINAL          = $(BUILD_DIR)/modules/terminal.fum
 MOD_LOCK_FREE         = $(BUILD_DIR)/modules/lock_free.fum
@@ -257,18 +259,22 @@ $(FUZION_EBNF): $(FUZION_BASE) $(FZ_SRC)/bin/ebnf.fz
 	mkdir -p $(@D)
 	$(FZ) $(FZ_SRC)/bin/ebnf.fz $(JAVA_FILES_PARSER) > $@
 
-$(JAVA_FILE_UTIL_VERSION): $(FZ_SRC)/version.txt $(JAVA_FILE_UTIL_VERSION_IN)
-	mkdir -p $(@D)
-	cat $(JAVA_FILE_UTIL_VERSION_IN) \
-          | sed "s^@@VERSION@@^$(VERSION)^g" \
+ifeq ($(FUZION_REPRODUCIBLE_BUILD),true)
+SED_DATE_AND_BUILTBY = "s^@@DATE@@^^g;s^@@BUILTBY@@^^g"
+else
+SED_DATE_AND_BUILTBY = "s^@@DATE@@^`date +%Y-%m-%d\ %H:%M:%S`^g;s^@@BUILTBY@@^`printf $(USER)@; hostname`^g"
+endif
+
+PROCESS_VERSION_IN := \
+            sed "s^@@VERSION@@^$(VERSION)^g" \
           | sed "s^@@JAVA_VERSION@@^$(JAVA_VERSION)^g" \
           | sed "s^@@REPO_PATH@@^$(dir $(abspath $(lastword $(MAKEFILE_LIST))))^g" \
-          | sed "s^@@GIT_HASH@@^`cd $(FZ_SRC); printf \`git rev-parse HEAD\` \`git diff-index --quiet HEAD -- || echo with local changes\``^g" >$@
-ifeq ($(FUZION_REPRODUCIBLE_BUILD),true)
-	sed -i "s^@@DATE@@^^g;s^@@BUILTBY@@^^g" $@
-else
-	sed -i "s^@@DATE@@^`date +%Y-%m-%d\ %H:%M:%S`^g;s^@@BUILTBY@@^`printf $(USER)@; hostname`^g" $@
-endif
+          | sed "s^@@GIT_HASH@@^`cd $(FZ_SRC); printf \`git rev-parse HEAD\` \`git diff-index --quiet HEAD -- || echo with local changes\``^g" \
+          | sed $(SED_DATE_AND_BUILTBY)
+
+$(JAVA_FILE_UTIL_VERSION): $(FZ_SRC)/version.txt $(JAVA_FILE_UTIL_VERSION_IN)
+	mkdir -p $(@D)
+	cat $(JAVA_FILE_UTIL_VERSION_IN) | $(PROCESS_VERSION_IN) >$@
 
 $(CLASS_FILES_UTIL): $(JAVA_FILES_UTIL)
 	mkdir -p $(CLASSES_DIR)
@@ -421,10 +427,11 @@ $(FZ): $(FZ_SRC)/bin/fz | $(CLASS_FILES_TOOLS)
 	cp -rf $(FZ_SRC)/bin/fz $@
 	chmod +x $@
 
-$(MOD_BASE): $(FZ) $(shell find $(FZ_SRC)/modules/base/src -name "*.fz")
+$(MOD_BASE): $(FZ) $(shell find $(FZ_SRC)/modules/base/src -name "*.fz") $(FUZION_RUNTIME_VERSION_IN)
 	rm -rf $(@D)/base
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC)/modules/base $(@D)
+	cat $(FUZION_RUNTIME_VERSION_IN) | $(PROCESS_VERSION_IN) >$(FUZION_RUNTIME_VERSION)
 	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/base/src -XloadBaseModule=off -saveModule=$@ -XenableSetKeyword
 	$(FZ) -XXcheckIntrinsics
 

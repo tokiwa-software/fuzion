@@ -48,7 +48,7 @@ private:public expanding_array
    data fuzion.sys.internal_array (container.slot T),
 
    # the length of the array
-   public redef length i32
+   public redef length i64
   )
   : abstract_array T
 
@@ -58,14 +58,14 @@ is
   # Get the capacity of this `expanding_array`, i.e., the number of
   # elements that can be added without re-allocating the array data.
   #
-  public capacity i32 => data.length
+  public capacity i64 => data.length.as_i64
 
 
   # get the contents of this array at the given index
   #
   public redef index [](I type : integer, i I) T
   =>
-    data[i].val
+    data[i.as_i64].val
 
 
   # make sure this `expanding_array` has capacity of at least
@@ -80,7 +80,7 @@ is
   # In the latter cases, a new internal array of required capacity
   # will be allocated and the existing elements will be copied over.
   #
-  public fixed ensure_capacity(new_capacity i32) expanding_array T
+  public fixed ensure_capacity(new_capacity i64) expanding_array T
     post
       debug: ((capacity < new_capacity) : result.capacity = new_capacity)
   =>
@@ -96,14 +96,14 @@ is
   # Complexity: O(1) if no allocation is required, O(new_capacity)
   # otherwise.
   #
-  realloc(new_capacity i32)
+  realloc(new_capacity i64)
   =>
     if capacity >= new_capacity && (length=capacity || !data[length])
       data
     else
-      internal := fuzion.sys.internal_array_init (container.slot T) new_capacity
-      for x in 0..(new_capacity-1) do
-        internal[x] := if x < capacity then data[x]
+      internal := fuzion.sys.internal_array_init (container.slot T) new_capacity.as_i32
+      for x in 0..(new_capacity.as_i32-1) do
+        internal[x] := if x < capacity.as_i32 then data[x]
                        else                 container.unused
       internal
 
@@ -125,10 +125,10 @@ is
   public add(v T) expanding_array T
     pre
       # prevent i32-overflow in capacity
-      safety: (length+1).highest_one_bit < i32.max.highest_one_bit
+      safety: (length+1).highest_one_bit < i32.max.highest_one_bit.as_i64
   =>
     data0 := realloc (capacity>length ? capacity : (length+1).highest_one_bit*2)
-    data0[length] := v
+    data0[length.as_i32] := v
     expanding_array data0 length+1
 
 
@@ -147,22 +147,22 @@ is
   #
   # expand is not thread-safe.
   #
-  public expand(n i32, filler ()->unit) expanding_array T
+  public expand(n i64, filler ()->unit) expanding_array T
     pre
       debug: n >= 0
   =>
     new_length := length + n
     data0 := realloc (capacity >= new_length ? capacity : new_length.highest_one_bit*2)
     for
-      i in 0..(n-1)
+      i in i64.zero..(n-1)
     do
-      data0[length+i] := container.reserved
+      data0[(length+i).as_i32] := container.reserved
     (expanding T data0 length n).instate_self filler
     for
-      i in 0..(n-1)
+      i in i64.zero..(n-1)
     do
       match data0[length+i]
-        container.reserved => panic "container.expanding_array.expand $n filler did not init element at {length+i} (=$length+$i)"
+        container.reserved => panic "container.expanding_array.expand $n filler did not init element at $(length+i) (=$length+$i)"
         * =>
     expanding_array data0 new_length
 
@@ -212,10 +212,10 @@ is
     else
 
       # bulk expand by all elements of `s`
-      expand s.count ()->
+      expand s.count.as_i64 ()->
         for e in s.indexed do
           i, v := e
-          container.expanding T .env.put length+i v
+          container.expanding T .env.put length+i.as_i64 v
 
 
   # collect the contents of this expanding_array as an array.
@@ -241,11 +241,11 @@ is
   #
   # Complexity: O(1)
   #
-  public fixed type.empty(initial_capacity i32) container.expanding_array T
+  public fixed type.empty(I type : integer, initial_capacity I) container.expanding_array T
     pre
       debug: initial_capacity >= 0
   =>
-    internal := fuzion.sys.internal_array_init (container.slot T) initial_capacity
+    internal := fuzion.sys.internal_array_init (container.slot T) initial_capacity.as_i32
     for x in 0..(internal.length-1) do
       internal[x] := container.unused
     container.expanding_array T internal 0
@@ -311,8 +311,8 @@ slot(T type) : choice reserved unused T is
 #
 private:public expanding(T type,
                          data fuzion.sys.internal_array (container.slot T),
-                         public length i32,
-                         public n i32
+                         public length i64,
+                         public n i64
                         ) : effect
 is
 
@@ -322,26 +322,26 @@ is
   #
   # `put` must be called for all indices of newly added entries.
   #
-  public put(i i32, v T) unit
+  public put(I type : integer, i I, v T) unit
     pre
-      safety: length <= i < length+n
+      safety: length <= i.as_i64 < length+n
   =>
     replace
-    data[i] := v
+    data[i.as_i32] := v
 
 
   # has element at index `i` been set already?  This is true after an explicit
   # call to `put i v` for some value `v` or for indices in the range `0..length-1`
   # for all indices that existed before `expand` was called.
   #
-  public has(i i32) bool
+  public has(I type : integer, i I) bool
     pre
-      safety: 0 <= i < length+n
+      safety: i64.zero <= i.as_i64 < length+n
   =>
-    if i < length
+    if i.as_i64 < length
       true
     else
-      match data[i]
+      match data[i.as_i64]
         T      => true
         container.reserved => false
         container.unused => panic "unexpected unused slot"
@@ -351,20 +351,20 @@ is
   # before the call to `expand` as well as for indices that where initialized
   # via a call to `put` afterwards.
   #
-  public get(i i32) T
+  public get(I type : integer, i I) T
     pre
-      safety: 0 <= i < length+n
+      safety: i64.zero <= i.as_i64 < length+n
       debug: has i
   =>
     replace
-    data[i].val
+    data[i.as_i64].val
 
 
   # shorthand index operator alias for `get`
   #
   public index [](I type : integer, i I) T
     pre
-      safety: 0 <= i.as_i32 < length+n
+      safety: i64.zero <= i.as_i64 < length+n
       debug: has i.as_i32
   =>
     get i.as_i32
@@ -374,6 +374,6 @@ is
   #
   public set [](I type : integer, i I, v T) unit
     pre
-      safety: length <= i.as_i32 < length+n
+      safety: length <= i.as_i64 < length+n
   =>
     put i.as_i32 v

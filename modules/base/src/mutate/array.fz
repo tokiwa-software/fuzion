@@ -59,7 +59,7 @@ is
   public redef index [ ] (I type : integer, i I) T
   =>
     check_and_replace
-    data[i]
+    data[i.as_i64]
 
 
   # set element at given index i to given value o
@@ -79,9 +79,9 @@ is
     check_and_replace
     d := if (data.length.as_i64 > length) data
          else
-           new_data := fuzion.sys.internal_array_init T (max min_length.as_i32 data.length*2)
+           new_data := fuzion.sys.internal_array_init T (max i32 min_length.as_i32 data.length*2)
            for i in indices do
-             new_data[i.as_i32] := data[i]
+             new_data[i.as_i32] := data[i.as_i32]
            new_data
     d[length.as_i32] := o
     set data := d
@@ -103,7 +103,7 @@ is
       if (max i64 length (min_length/2)) <= data.length.as_i64 / 4
         new_data := fuzion.sys.internal_array_init T (data.length/2)
         for i in indices do
-          new_data[i.as_i32] := data[i]
+          new_data[i.as_i32] := data[i.as_i32]
         set data := new_data
 
       res
@@ -111,16 +111,16 @@ is
 
   # create immutable array of length len from this
   #
-  public as_array(len i32) universe.array T
-    pre debug: len <= length.as_i32
+  public as_array(I type : integer, len I) universe.array T
+    pre debug: len.as_i64 <= length
   =>
-    array len (i -> data[i])
+    array len (i -> data[i.as_i64])
 
 
   # create immutable array from this
   #
   public redef as_array universe.array T =>
-    array length.as_i32 (i -> data[i])
+    array length.as_i32 (i -> data[i.as_i64])
 
 
   # create a list from this array
@@ -194,14 +194,14 @@ is
   =>
     ab := s.as_array_backed
 
-    length := ab.count
+    length := ab.count.as_i64
 
-    data := fuzion.sys.internal_array_init T length
+    data := fuzion.sys.internal_array_init T length.as_i32
 
     for x in data.indices do
       data[x] := s[x]
 
-    mutate.this.env.array data length.as_i64 default_min_length unit
+    mutate.this.env.array data length default_min_length unit
 
 
   # initialize an empty mutable array of type T

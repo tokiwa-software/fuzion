@@ -34,9 +34,9 @@ public sync is
   mtx_destroy(mtx Mutex) unit => intrinsic
 
   cnd_init(mtx Mutex) outcome Condition => intrinsic
-  cnd_signal(cnd Condition) bool => intrinsic
-  cnd_broadcast(cnd Condition) bool => intrinsic
-  cnd_wait(cnd Condition, mtx Mutex) bool => intrinsic
+  cnd_signal(cnd Condition) unit => intrinsic
+  cnd_broadcast(cnd Condition) unit => intrinsic
+  cnd_wait(cnd Condition, mtx Mutex) unit => intrinsic
   # NYI: cnd_timedwait
   cnd_destroy(cnd Condition) unit => intrinsic
 
@@ -109,25 +109,22 @@ public sync is
 
     # signal one waiting thread to wake up
     #
-    public signal bool
+    public signal unit
       pre is_locked.read
-      post debug: result
     => cnd_signal cnd
 
 
     # signal all waiting threads to wake up
     #
-    public broadcast bool
+    public broadcast unit
       pre is_locked.read
-      post debug: result
     => cnd_broadcast cnd
 
 
     # make this thread wait for signal
     #
-    public wait bool
+    public wait unit
       pre is_locked.read
-      post debug: result
     => cnd_wait cnd mtx.mtx
 
 

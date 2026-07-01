@@ -164,7 +164,7 @@ is
   #
   update0 (
     # a handle created by `new`
-    x i32,
+    x i64,
 
     # function calculating the new value from the old value
     f T->T
@@ -183,11 +183,11 @@ is
 # shorthand for creating and installing an empty set of handles of given type.
 #
 public handles(T type, rr ()->unit) unit =>
-  (handles unit (array T 0 x->do) oneway_monad_mode.inst) ! rr
+  (handles unit (array T).empty oneway_monad_mode.inst) ! rr
 
 # shorthand for creating an empty set of handles of given type.
 #
-public handles_(T type) handles T unit => handles unit (array T 0 x->do) oneway_monad_mode.plain
+public handles_(T type) handles T unit => handles unit (array T).empty oneway_monad_mode.plain
 
 
 # type of the reference to the cell that holds a value of type T which can be updated
@@ -196,7 +196,7 @@ public handles_(T type) handles T unit => handles unit (array T 0 x->do) oneway_
 private:public handle_id(
   T type,
   # the index in `handles.ar`
-  x i32
+  x i64
   )
 is
 

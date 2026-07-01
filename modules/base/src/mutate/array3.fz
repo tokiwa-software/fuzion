@@ -57,21 +57,21 @@ is
   #
   public redef index [ ] (I type : integer, i0, i1, i2 I) T =>
     check_and_replace
-    data[((i0.as_i32 * length1.as_i32) + i1.as_i32) * length2.as_i32 + i2.as_i32]
+    data[((i0.as_i64 * length1) + i1.as_i64) * length2 + i2.as_i64]
 
 
   # set element at given index i to given value o
   #
   public redef set [ ] (I type : integer, i0, i1, i2 I, o T) unit =>
     check_and_replace
-    data[((i0.as_i32 * length1.as_i32) + i1.as_i32) * length2.as_i32 + i2.as_i32] := o
+    data[(((i0.as_i64 * length1) + i1.as_i64) * length2.as_i64 + i2.as_i64).as_i32] := o
 
 
   # create immutable array from this
   #
   public redef as_array universe.array T =>
     check_and_replace
-    array (length0.as_i32 * length1.as_i32 * length2.as_i32) i->data[i]
+    array (length0 * length1 * length2) i->data[i]
 
 
   # create a list from this array
@@ -90,7 +90,7 @@ is
       dim_2(i0 i64, i1 i64) =>
         ("["
           + indices2
-              .map (i2 -> "{index[] i0 i1 i2}")
+              .map (i2 -> "$(index[] i0 i1 i2)")
               .fold (String.concat ", ")
           + "]")
 
@@ -109,7 +109,7 @@ is
         + ascii.lf_str
         + "]")
     else
-      "inaccessible '{mutate.array3.this.type}'"
+      "inaccessible '$(mutate.array3.this.type)'"
 
   # initialize three-dimensional mutable array
   #

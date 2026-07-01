@@ -1,0 +1,18 @@
+NON-BLOCKING: 
+PART 1 in main thread: read & update non-exclusive -- ok
+PART 2 in main thread: write to array non-exclusive in main thread -- ok
+PART 3 in main thread: read & update exclusive -- ok
+PART 4 in main thread: write to array -- ok
+PART 5 in thread: read & update non-exclusive  got safety: !open || is_exclusive -- ok
+PART 6 in thread: write to array array non-exclusive got safety: is_accessible -- ok
+PART 7 in thread: read and update field exclusively got safety: is_this_mutate_instated_and_usable -- ok
+PART 8 in thread: write array exclusively got safety: is_this_mutate_instated_and_usable -- ok
+BLOCKING: 
+PART 1 in main thread: read & update non-exclusive, got pre_fault safety: !open || is_exclusive -- ok
+PART 2 in main thread: write to array non-exclusive in main thread, got pre_fault safety: is_accessible -- ok
+PART 3 in main thread: read & update exclusive -- ok
+PART 4 in main thread: write to array -- ok
+PART 5 in thread: read & update non-exclusive  got safety: !open || is_exclusive -- ok
+PART 6 in thread: write to array array non-exclusive got safety: is_accessible -- ok
+PART 7 in thread: read and update field exclusively -- ok
+PART 8 in thread: write array exclusively -- ok

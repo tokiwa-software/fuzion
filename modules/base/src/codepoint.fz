@@ -46,7 +46,7 @@ is
                                                                       (u32 0x80 | (val >>  6) & 0x3f).low8bits,
                                                                       (u32 0x80 |  val        & 0x3f).low8bits ]
     else
-      fuzion.std.panic "failed to encode code point {codepoint.this}"
+      fuzion.std.panic "failed to encode code point $(codepoint.this)"
 
 
   # is this an ASCII code encoded in one byte
@@ -83,6 +83,12 @@ is
   # is this codepoint guaranteed to never be a legal unicode character
   #
   public is_not_a_character bool => codepoint.not_a_character.contains val
+
+  # shortcut to get this codepoint as a u8
+  #
+  public as_u8 u8
+    pre debug: val.fits_in_u8
+  => val.as_u8
 
 
   # range of permitted value for a codepoint

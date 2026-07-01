@@ -65,7 +65,7 @@ public class FeatureTool extends ANY
 
   /**
    * All inner features of given feature.
-   * given feature `a` returns:
+   * given feature {@code a} returns:
    * a.b
    * a.c
    * a.b.d

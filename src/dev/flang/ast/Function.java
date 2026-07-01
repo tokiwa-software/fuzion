@@ -81,9 +81,9 @@ public class Function extends AbstractLambda
 
 
   /**
-   * In case `type()` is called and we have not received a type via
-   * `propagateExpectedType`, this will be called. This is currently set by
-   * `resolveTypes` to handle cases like `()->true`.
+   * In case {@code type()} is called and we have not received a type via
+   * {@code propagateExpectedType}, this will be called. This is currently set by
+   * {@code resolveTypes} to handle cases like {@code ()->true}.
    */
   Runnable _resultTypeLastResort = ()->{};
 
@@ -138,7 +138,7 @@ public class Function extends AbstractLambda
    *
    * @param names the names of the arguments, "x", "y". The are parsed as
    * expressions and these might end up being turned into types by asParsedType
-   * if this lambda ends up used as an actual type argument.
+   * if this lambda ends up used as an actual type parameter.
    *
    * @param e the code on the right hand side of '->'.
    */
@@ -406,6 +406,10 @@ public class Function extends AbstractLambda
             res.resolveTypes(_feature);
             if (inferResultType)
               {
+                if (!(rt0.containsUndefined() || rt0.containsError()))
+                  {
+                    _expr.propagateExpectedType(res, context, rt0, from);
+                  }
                 result = refineResultType(res, context, rt0, _feature.resultType());
                 var g = t.lambdaTargetResultTypeParameter(res);
                 if (g != null && !_inheritsCall.isDefunct())
@@ -450,8 +454,8 @@ public class Function extends AbstractLambda
     return switch(tt.kind())
       {
         case TypeKind.ThisType -> new Current(pos(), tt.feature());
-        case TypeKind.GenericArgument -> {
-          AstErrors.lamdaOuterMustNotBeGenericArgument(pos(), tt);
+        case TypeKind.ParametricType -> {
+          AstErrors.lamdaOuterMustNotBeTypeParameter(pos(), tt);
           yield Call.ERROR;
         }
         default -> {
@@ -491,7 +495,7 @@ public class Function extends AbstractLambda
   private AbstractType refineResultType(Resolution res, Context context, AbstractType frmlRt, AbstractType lmbdRt)
   {
     var result = lmbdRt;
-    if (!frmlRt.isGenericArgument())
+    if (!frmlRt.isParametricType())
       {
         if (frmlRt.isChoice()
             // NYI: UNDER DEVELOPMENT: We may want to go further here and support more than
@@ -507,7 +511,7 @@ public class Function extends AbstractLambda
                   }
               }
           }
-        else if (!lmbdRt.isGenericArgument()
+        else if (!lmbdRt.isParametricType()
                  && lmbdRt.feature() != frmlRt.feature()
                  && lmbdRt.feature().inheritsFrom(frmlRt.feature()))
           {

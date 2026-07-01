@@ -40,7 +40,7 @@ varargs_via_open_type_parameter =>
 
     # The type of `a` is a compiler generated internal feature
     #
-    say "type is {type_of a .name}"
+    say "type is $(type_of a .name)"
 
   test 3.14 42 true [1,2,3]
 
@@ -63,7 +63,7 @@ varargs_via_open_type_parameter =>
       =>
         vs := if      T : numeric then "(number: $v)"
               else if T : String  then "\"$v\""
-              else                     "(*** unknown type `{T.name}` ***)"
+              else                     "(*** unknown type `$(T.name)` ***)"
         (e.0.replace "%"+e.1 vs, e.1+1)
 
     say (a.typed_foldf (s, 0) doit .0)
@@ -81,7 +81,7 @@ varargs_via_open_type_parameter =>
       =>
         vs := if      T : numeric then "(number: $v)"
               else if T : String  then "\"$v\""
-              else                     "(*** unknown type `{T.name}` ***)"
+              else                     "(*** unknown type `$(T.name)` ***)"
         (e.0.replace "%"+e.1 vs, e.1+1)
 
     say doit.res.0
@@ -97,7 +97,7 @@ varargs_via_open_type_parameter =>
     =>
       vs := if      T : numeric then "(number: $v)"
             else if T : String  then "\"$v\""
-            else                     "(*** unknown type `{T.name}` ***)"
+            else                     "(*** unknown type `$(T.name)` ***)"
       (e.0.replace "%"+e.1 vs, e.1+1)
 
     say res.0
@@ -112,7 +112,7 @@ varargs_via_open_type_parameter =>
     say <| a.typed_foldf (String, i32) _ (s, 0) T,e,v->
               vs := if      T : numeric then "(number: $v)"
                     else if T : String  then "\"$v\""
-                    else                     "(*** unknown type `{T.name}` ***)"
+                    else                     "(*** unknown type `$(T.name)` ***)"
               (e.0.replace "%"+e.1 vs, e.1+1)
             .0
 
@@ -126,7 +126,7 @@ varargs_via_open_type_parameter =>
     say <| a.typed_foldf (s, 0) T,e,v->
               vs := if      T : numeric then "(number: $v)"
                     else if T : String  then "\"$v\""
-                    else                     "(*** unknown type `{T.name}` ***)"
+                    else                     "(*** unknown type `$(T.name)` ***)"
               (e.0.replace "%"+e.1 vs, e.1+1)
             .0
 

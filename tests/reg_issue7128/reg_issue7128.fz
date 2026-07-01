@@ -1,0 +1,51 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue7128
+#
+# -----------------------------------------------------------------------
+
+elements := mutate.array i32 .from_Sequence 0..10
+
+children(i i64) tuple (option i64) (option i64) =>
+  left  option i64 := (i*2+1) < elements.length ? (i*2+1) : nil
+  right option i64 := (i*2+2) < elements.length ? (i*2+2) : nil
+  (left, right)
+
+lvl(i i64) Sequence String =>
+  str := elements[_,i].as_string
+
+  c := children i
+  sub_l := c.0.bind lvl
+  sub_r := c.1.bind lvl
+
+  if sub_l.is_nil then [str]
+  else
+
+    # This works
+    # sub_r_new := sub_r.or_else [$" "," "," "] .as_list.concat_list [$""].cycle.as_list
+
+    # NYI: BUG: This seems to not terminate
+    sub_r_new := (sub_r.or_else [$" "," "," "]) ++ [$""].cycle
+
+    [str] ++ (sub_l.ok ? [" ┌─┴$(sub_r.ok ? "─┐ " : " ")"] : [])
+          ++ (sub_l.ok ? sub_l.or_panic.zip sub_r_new (s1,s2)->("$(s1) $(s2)") : [])
+
+
+say <| lvl 0 .as_string "\n"

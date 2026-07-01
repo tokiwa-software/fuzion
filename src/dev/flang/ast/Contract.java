@@ -577,7 +577,7 @@ public class Contract extends ANY
    *
    * @param preBool true to create pre bool feature, false for pre feature.
    */
-  static void addPreFeature(Resolution res, Feature f, Context context, boolean preBool)
+  static void addPreFeature(Resolution res, Feature f, boolean preBool)
   {
     var fc = f.contract();
     var name = preBool ? preBoolConditionsFeatureName(f)
@@ -621,7 +621,7 @@ public class Contract extends ANY
                          cond,
                          new Block(),
                          pc(p, FuzionConstants.FUZION_RUNTIME_PRECONDITION_FAULT, new List<>(new StrConst(p, p.sourceText()))),
-                         true));
+                         AbstractMatch.Kind.Contract));
           }
       }
     if (cc != null)
@@ -713,7 +713,7 @@ public class Contract extends ANY
                                        cc,
                                        new Block(),
                                        new Block(new_code),
-                                       false));
+                                       AbstractMatch.Kind.If));
       }
     code._expressions = new_code;
     var e = res.resolveType(code, pF.context());
@@ -972,11 +972,11 @@ all of their redefinition to `true`. +
 
         if (f._preBoolFeature == null)
           {
-            addPreFeature(res, f, context, true);
+            addPreFeature(res, f, true);
           }
         if (f._preFeature == null)
           {
-            addPreFeature(res, f, context, false);
+            addPreFeature(res, f, false);
           }
 
         if (!f.isConstructor())
@@ -1045,7 +1045,7 @@ all of their redefinition to `true`. +
                            c.cond(),
                            new Block(),
                            pc(p, FuzionConstants.FUZION_RUNTIME_POSTCONDITION_FAULT, new List<>(new StrConst(p, p.sourceText()))),
-                           false));
+                           AbstractMatch.Kind.If));
           }
         var code = new Block(l);
         var pF = new Feature(pos,
@@ -1149,7 +1149,7 @@ The conditions of a post-condition are checked at run-time in sequential source-
         var f = new Call(p, "fuzion");
         var r = new Call(p, f, "runtime");
         var e = new Call(p, r, fault, new List<>(new StrConst(p, p.sourceText())));
-        l.add(Match.createIf(p, c.cond(), new Block(), e, false));
+        l.add(Match.createIf(p, c.cond(), new Block(), e, AbstractMatch.Kind.If));
       }
     return new Block(l);
   }

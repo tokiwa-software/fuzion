@@ -17,18 +17,8 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature yak
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion test reg_issue4471
 #
 # -----------------------------------------------------------------------
 
-# yak -- shortcut for io.out.print
-#
-# A handy shortcut for io.out.print, output string representation of
-# an object, do not add a line break at the end.
-#
-# The term 'yak' was taken from the expression 'Yakety Yak' as in the
-# song by The Coasters.
-#
-public yak(s Any) unit ! io.Out => io.out.print s
+say (s 10); s(n i32) Sequence i32 => n>0 ? container.set_of_ordered [n] : []

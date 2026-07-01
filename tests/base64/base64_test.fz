@@ -42,8 +42,8 @@ base64_test is
      (mk_choice [(u8 255), 240],      "//A="),
      (mk_choice [],                   ""    ),
      (mk_choice [(u8 251), 239, 190], "++++"),
-     (mk_choice (array u8 3 _->255),  "////"),
-     (mk_choice (array u8 3 _->0),    "AAAA"),
+     (mk_choice (array u8 _ 3 _->255),  "////"),
+     (mk_choice (array u8 _ 3 _->0),    "AAAA"),
      (mk_choice "123890ABCXYZabcxyz_:;>~<%&\$§!", "MTIzODkwQUJDWFlaYWJjeHl6Xzo7Pn48JSYkwqch"),
      (mk_choice """
      Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidun\
@@ -115,13 +115,13 @@ base64_test is
                 if str = String.from actual
                   outcome "ok"
                 else
-                  error "decoding $code produced '{String.from actual}' but should have been '$str'"
+                  error "decoding $code produced '$(String.from actual)' but should have been '$str'"
               arr array u8 =>
                 if arr.length=actual.length && ((arr.zip actual a,b->a=b) ∀ id)
                   outcome "ok"
                 else
                   error "decoding $code produced '$actual' but should have been '$arr'"
-          e error => error "decoding failed when it should not have: {e.msg}"
+          e error => error "decoding failed when it should not have: $(e.msg)"
     else
       if results ∀ (.ok)
         say "$name test vectors are decoded correctly"
@@ -155,7 +155,7 @@ base64_test is
                  "Zm9v;Yg=="]  # non alphabet ascii character
 
   for t in broken_enc do
-    yak "$t: "
+    yap "$t: "
     say (match encodings.base64.decode_str t
         arr array u8 => String.from arr
         e error => e.as_string)

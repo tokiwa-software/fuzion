@@ -42,7 +42,7 @@ public frequency(# the frequency per base
 
                  # the base duration
                  base time.duration)
-                 : Period
+                 : time.Period
 is
 
 

@@ -40,7 +40,7 @@ base32_test is
   own_test_vectors array (tuple my_c String) :=
     [(mk_choice [(u8 0), 0, 0, 0],    "AAAAAAA="),
      (mk_choice [(u8 255), 255, 255], "77776==="),
-     (mk_choice (array u8 5 _->255), "77777777"),
+     (mk_choice (array u8 _ 5 _->255), "77777777"),
      (mk_choice "123890ABCXYZabcxyz_:;>~<%&\$§!", "GEZDGOBZGBAUEQ2YLFNGCYTDPB4XUXZ2HM7H4PBFEYSMFJZB"),
      (mk_choice """
      Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidun\
@@ -111,13 +111,13 @@ base32_test is
                 if str = String.from actual
                   outcome "ok"
                 else
-                  error "decoding $code produced '{String.from actual}' but should have been '$str'"
+                  error "decoding $code produced '$(String.from actual)' but should have been '$str'"
               arr array u8 =>
                 if arr.length=actual.length && ((arr.zip actual a,b->a=b) ∀ id)
                   outcome "ok"
                 else
                   error "decoding $code produced '$actual' but should have been '$arr'"
-          e error => error "decoding failed when it should not have: {e.msg}"
+          e error => error "decoding failed when it should not have: $(e.msg)"
     else
       if results ∀ (.ok)
         say "$name test vectors are decoded correctly"
@@ -154,7 +154,7 @@ base32_test is
                  "MZX🌍6==="]     # non alphabet multi byte unicode character
 
   for t in broken_enc do
-    yak "$t: "
+    yap "$t: "
     say (match encodings.base32.decode_str t
         arr array u8 => String.from arr
         e error => e.as_string)

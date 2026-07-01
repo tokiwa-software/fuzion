@@ -43,7 +43,7 @@ partial_application is
   test "map *t" $([1, 2, 3, 4].map *t) "[2, 4, 6, 8]"
   test "map %t" $([1, 2, 3, 4].map %t) "[1, 0, 1, 0]"
 
-  qqq(f,g i32->i32) => "{f 42} {g 42}"
+  qqq(f,g i32->i32) => "$(f 42) $(g 42)"
   test "qqq lambdas " (qqq x->2*x x->3*x) "84 126"
   test "qqq partials" (qqq    2*     3*)  "84 126"
 

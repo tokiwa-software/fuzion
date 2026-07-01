@@ -50,10 +50,10 @@ reg_issue4253_infix_assiciativity =>
   # execution:
 
   say "expecting `hi!unit`"
-  say <<< "hi!" >>> yak
+  say <<< "hi!" >>> yap
 
   say "expecting `hi! right unit left`"
-  say <<< +" left" <<< ($) <<< "hi!" >>> ($) >>> +" right " >>> yak
+  say <<< +" left" <<< ($) <<< "hi!" >>> ($) >>> +" right " >>> yap
 
 
   # ------------------------------------

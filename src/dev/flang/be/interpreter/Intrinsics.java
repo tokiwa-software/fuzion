@@ -276,7 +276,7 @@ public class Intrinsics extends ANY
         {
           Errors.runTime(utf8ByteArrayDataToString(args.get(1)),
                          utf8ByteArrayDataToString(args.get(2)),
-                         Executor.callStack(executor.fuir()));
+                         Executor.callStack());
           return Value.UNIT;
         });
 
@@ -692,7 +692,7 @@ public class Intrinsics extends ANY
           return new boolValue(false);
         }
     });
-    put("concur.sync.mtx_destroy", (executor, innerClazz) -> args -> executor.unitValue());
+    put("concur.sync.mtx_destroy", (executor, innerClazz) -> args -> Value.UNIT);
 
     /* Condition */
     put("concur.sync.cnd_init", (executor, innerClazz) -> args -> {
@@ -704,36 +704,36 @@ public class Intrinsics extends ANY
       try
         {
           ((Condition) ((JavaRef) args.get(1))._javaRef).signal();
-          return new boolValue(true);
         }
       catch (Exception e)
         {
-          return new boolValue(false);
+          Errors.fatal(e);
         }
+      return Value.UNIT;
     });
     put("concur.sync.cnd_broadcast", (executor, innerClazz) -> args -> {
       try
         {
           ((Condition) ((JavaRef) args.get(1))._javaRef).signalAll();
-          return new boolValue(true);
         }
       catch (Exception e)
         {
-          return new boolValue(false);
+          Errors.fatal(e);
         }
+      return Value.UNIT;
     });
     put("concur.sync.cnd_wait", (executor, innerClazz) -> args -> {
       try
         {
           ((Condition) ((JavaRef) args.get(1))._javaRef).await();
-          return new boolValue(true);
         }
       catch (Exception e)
         {
-          return new boolValue(false);
+          Errors.fatal(e);
         }
+      return Value.UNIT;
     });
-    put("concur.sync.cnd_destroy", (executor, innerClazz) -> args -> executor.unitValue());
+    put("concur.sync.cnd_destroy", (executor, innerClazz) -> args -> Value.UNIT);
     put("native_string_length", (executor, innerClazz) -> args -> {
       throw new UnsupportedOperationException("NYI: UNDER DEVELOPMENT: native_string_length");
     });

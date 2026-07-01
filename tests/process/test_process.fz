@@ -32,7 +32,7 @@ test_process =>
     _ : String is
       public redef utf8 Sequence u8 =>
         (1..byte_size)
-          .map u8 (x -> codepoint.type.zero_char)
+          .map u8 (x -> "0".as_u8)
 
 
   test(str String, f () -> outcome unit) =>
@@ -68,7 +68,7 @@ test_process =>
         _ := p.with_out unit lm ()->
           out := ((io.buffered lm).read_string 1E9)
             .or_panic
-            .split "\n"
+            .lines
             # for some reason on windows/msys these are included, even though we want empty env...
             .filter (l -> !(l.starts_with "HOME=" || l.starts_with "TERM="))
           say (String.join out)
@@ -99,9 +99,9 @@ test_process =>
     (os.process.start "echo" ["-n", (get_str 1E5)]).bind p->
       (p | ["cat"]).bind p2->
         say p2.read_string.or_panic.byte_count
-        say "exit code: {p2.wait}"
+        say "exit code: $(p2.wait)"
         # execute wait twice:
-        say "exit code: {p2.wait}"
+        say "exit code: $(p2.wait)"
 
 
 
@@ -119,9 +119,9 @@ test_process =>
 
     # NYI: UNDER DEVELOPMENT: write should block here?
     say (p.write_bytes (get_str 1E7).utf8)
-    say "exit code: {p.wait}"
+    say "exit code: $(p.wait)"
   */
 
 
   test "start process that does not exist" ()->
-    (os.process.start "ohQue1AheiPu4aaw").bind _->
+    say (os.process.start "ohQue1AheiPu4aaw").err.msg

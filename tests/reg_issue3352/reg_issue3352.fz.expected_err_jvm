@@ -1,15 +1,11 @@
 
-error 1: FATAL FAULT `*** panic ***`: *** invalid mutate for 'm'
+error 1: FATAL FAULT `precondition`: safety: !open || is_exclusive
 Call stack:
 fuzion.sys.fatal_fault#2 at {base.fum}/fuzion/sys.fz:55
-fuzion.type.runtime.type.fault.type.default_value.(λkind_and_msg-> kind, msg := kind_and_m...).call#1 at {base.fum}/fuzion/runtime/fault.fz:63
-fuzion.runtime.fault.cause#1 at {base.fum}/eff/fallible.fz:35
-panic.type.default_value.(λ(msg->fuzion.runtime.fault.env.cause (...).call#1 at {base.fum}/panic.fz:39
-panic.cause#1 at {base.fum}/eff/fallible.fz:35
-panic#1 at {base.fum}/panic.fz:59
-m.mpanic#1 at {base.fum}/mutate.fz:103
-(m.new i32).check_and_replace at {base.fum}/mutate.fz:129
-(m.new i32).get at {base.fum}/mutate.fz:164
+[..]
+fuzion.runtime.precondition_fault#1 at {base.fum}/fuzion/runtime/pre_fault.fz:56
+(m.new i32).pre get at {base.fum}/mutate.fz:173
+(m.new i32).precall get at {base.fum}/mutate.fz:172
 universe at --builtin--:26
 
 *** fatal errors encountered, stopping.

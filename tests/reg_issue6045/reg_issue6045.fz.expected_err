@@ -1,5 +1,5 @@
 
---CURDIR--/reg_issue6045.fz:30:10: error 1: Can not create lambda since an outer has unkown arguments.
+--CURDIR--/reg_issue6045.fz:30:10: error 1: Can not create lambda since an outer has unknown arguments.
 _ o.F := x->x+1   # cannot work, but produces confusing error
 ---------^^^^^^
 The outer having the arguments:

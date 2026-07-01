@@ -60,7 +60,3 @@ module default_err : io.Err is
     io.Err.replace default_err.this
     fuzion.sys.fileio.flush fzE_file_stderr
 
-
-# shorthand for accessing out effect in current environment
-#
-public err io.Err => io.Err.env

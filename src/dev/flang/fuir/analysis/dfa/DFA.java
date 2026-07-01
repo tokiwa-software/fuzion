@@ -789,7 +789,7 @@ public class DFA extends ANY
   /**
    * Should instance of certain clazzes be joined into a single Instance for
    * performance?  This is used to avoid large number of instances of, e.g.,
-   * `array u8` where tracking the individual instances gives no benefit.
+   * {@code array u8} where tracking the individual instances gives no benefit.
    *
    * To disable, use fz with
    *
@@ -1279,7 +1279,12 @@ public class DFA extends ANY
         public int accessedClazz(int s)
         {
           return codeAt(s) == ExprKind.Assign &&
-            (clazzIsUnitType(assignedType(s)) || clazzIsUnitType(accessTargetClazz(s)))
+            (
+              clazzIsUnitType(assignedType(s)) ||
+              clazzIsUnitType(accessTargetClazz(s)) ||
+              super.accessedClazz(s) == NO_CLAZZ ||
+              clazzIsUnitType(clazzResultClazz(super.accessedClazz(s)))
+            )
             ? NO_CLAZZ
             : super.accessedClazz(s);
         }
@@ -2573,18 +2578,18 @@ public class DFA extends ANY
     put("concur.sync.cnd_signal"            , cl ->
       {
         cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
-        return cl._dfa.bool();
+        return Value.UNIT;
       });
     put("concur.sync.cnd_broadcast"         , cl ->
       {
         cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
-        return cl._dfa.bool();
+        return Value.UNIT;
       });
     put("concur.sync.cnd_wait"              , cl ->
       {
         cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
         cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 1));
-        return cl._dfa.bool();
+        return Value.UNIT;
       });
     put("concur.sync.cnd_destroy"           , cl ->
       {
@@ -2995,7 +3000,7 @@ public class DFA extends ANY
   /**
    * Should instance of given clazz be joined into a single Instance for
    * performance?  This is used to avoid large number of instances of, e.g.,
-   * `array u8` where tracking the individual instances gives no benefit.
+   * {@code array u8} where tracking the individual instances gives no benefit.
    */
   boolean onlyOneInstance(int clazz)
   {

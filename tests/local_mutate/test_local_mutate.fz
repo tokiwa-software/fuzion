@@ -65,10 +65,10 @@ test_local_mutate is
         for e in l do
           s.update a->a+e
 
-        say "inside m.go: s.get = {s.get}"
-        say "inside m.go: count = {count}"
+        say "inside m.go: s.get = $(s.get)"
+        say "inside m.go: count = $(count)"
 
-      say "using m.instate_self and count: {m ! ()->count}"
+      say "using m.instate_self and count: $(m ! ()->count)"
 
       count2 =>
         s := m.env.new 0
@@ -83,12 +83,12 @@ test_local_mutate is
       neg_test3 =>
         s := m ! ()->count2
         say s             # *** will cause an error, requires m to be installed
-        "** failed, did not panic **"
+        "** failed, did not cause precondition fault **"
 
       caught_msg(msg) => "*** got '$msg' ***\nok"
 
-      say (panic.try   neg_test3
-                .catch caught_msg)
+      say (fuzion.runtime.pre_fault.try   neg_test3
+                                   .catch caught_msg)
 
       say (panic.try   neg_test4
                 .catch caught_msg)
@@ -211,7 +211,7 @@ test_local_mutate is
           i in 1..10
           e := r, e.n.get
         do
-          say "$i: {e.data}"
+          say "$i: $(e.data)"
 
         for cur := r, cur.next
         while cur.n.open do
@@ -225,7 +225,7 @@ test_local_mutate is
         i in 1..10
         e := r0, e.next
       do
-        say "$i: {e.data}"
+        say "$i: $(e.data)"
       r0
 
     _ := ring [0,1,2,3]
@@ -247,7 +247,7 @@ test_local_mutate is
 
       public redef as_string String =>
         for
-          s := "[ ", s + "{e.data} <-> "
+          s := "[ ", s + "$(e.data) <-> "
           # e2 := r, e2.next    # NYI: BUG: causes crash!
           e Ring T := Ring.this, e.next
           i in 0..3
@@ -366,7 +366,7 @@ test_local_mutate is
         e := r, e.next
         b := r, b.prev
       do
-        say "$i: {e.data} {b.data}"
+        say "$i: $(e.data) $(b.data)"
       r
 
     _ := create_ring [0,1,2,3]

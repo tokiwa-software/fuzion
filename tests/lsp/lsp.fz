@@ -106,9 +106,9 @@ Sequence.execute(
   # feed .stdin file to executed process?
   feed_stdin Sequence (String, i32)
 ) =>
-  seq := map x->x.as_string
+  seq := map (.as_string)
   match os.process.start seq.first.or_panic (seq.drop 1) envir_vars
-    e error => panic "failed executing {Sequence.this}, error is $e"
+    e error => panic "failed executing $(Sequence.this), error is $e"
     p os.process => record_process p Sequence.this.as_string feed_stdin
 
 # execute this string by splitting at all whitespaces
@@ -127,30 +127,30 @@ String.execute(
 
 init_req =>
   """
-    \{
+    {
       "jsonrpc": "2.0",
       "id": 1,
       "method": "initialize",
-      "params": \{
+      "params": {
         "processId": 12345,
         "rootUri": "file:///path/to/your/project",
-        "capabilities": \{},
+        "capabilities": {},
         "trace": "off"
       }
     }
   """
 
-test_file := "file://{os.cwd}/hello.fz"
+test_file := "file://$(os.cwd)/hello.fz"
 
 open_file_req =>
   """
-    \{
+    {
       "jsonrpc": "2.0",
       "id": 2,
       "method": "textDocument/didOpen",
-      "params": \{
-        "textDocument": \{
-          "uri": "{test_file}",
+      "params": {
+        "textDocument": {
+          "uri": "$(test_file)",
           "languageId": "fuzion",
           "version": 1,
           "text": "hello => say Any"
@@ -161,15 +161,15 @@ open_file_req =>
 
 hover_req =>
   """
-    \{
+    {
       "jsonrpc": "2.0",
       "id": 3,
       "method": "textDocument/hover",
-      "params": \{
-        "textDocument": \{
-          "uri": "{test_file}"
+      "params": {
+        "textDocument": {
+          "uri": "$(test_file)"
         },
-        "position": \{
+        "position": {
           "line": 0,
           "character": 10
         }
@@ -179,7 +179,7 @@ hover_req =>
 
 
 
-test_file2 := "file://{os.cwd}/compl.fz"
+test_file2 := "file://$(os.cwd)/compl.fz"
 
 comp_ex =>
   """
@@ -189,16 +189,16 @@ comp_ex =>
 
 open_file_req2 =>
   """
-    \{
+    {
       "jsonrpc": "2.0",
       "id": 4,
       "method": "textDocument/didOpen",
-      "params": \{
-        "textDocument": \{
-          "uri": "{test_file2}",
+      "params": {
+        "textDocument": {
+          "uri": "$(test_file2)",
           "languageId": "fuzion",
           "version": 1,
-          "text": "{comp_ex.replace "\n" "\\n"}"
+          "text": "$(comp_ex.replace "\n" "\\n")"
         }
       }
     }
@@ -206,19 +206,19 @@ open_file_req2 =>
 
 completion_req =>
   """
-    \{
+    {
       "jsonrpc": "2.0",
       "id": 5,
       "method": "textDocument/completion",
-      "params": \{
-        "textDocument": \{
-          "uri": "{test_file2}"
+      "params": {
+        "textDocument": {
+          "uri": "$(test_file2)"
         },
-        "position": \{
+        "position": {
           "line": 1,
           "character": 12
         },
-        "context": \{
+        "context": {
           "triggerKind": 2,
           "triggerCharacter": "."
         }
@@ -230,7 +230,7 @@ completion_req =>
 
 shutdown_req =>
   """
-    \{
+    {
       "jsonrpc": "2.0",
       "id": 6,
       "method": "shutdown",
@@ -240,7 +240,7 @@ shutdown_req =>
 
 as_json_rpc(str String) =>
   b := str.replace "\n" "\r\n"
-  "Content-Length: {b.byte_count}\r\n\r\n{b}"
+  "Content-Length: $(b.byte_count)\r\n\r\n$(b)"
 
 fuzion_home := os.cwd.or_panic.resolve "../../" .as_string
 
@@ -248,7 +248,7 @@ test_def := [(init_req, 2), (open_file_req, 4), (hover_req, 3), (open_file_req2,
   .map_to_array t->
     (as_json_rpc t.0, t.1)
 
-res := "java -Dfuzion.home={fuzion_home} -Dfile.encoding=UTF-8 -cp {fuzion_home}/fuzion.jar dev.flang.lsp.Main -stdio".execute test_def .out
+res := "java -Dfuzion.home=$(fuzion_home) -Dfile.encoding=UTF-8 -cp $(fuzion_home)/fuzion.jar dev.flang.lsp.Main -stdio".execute test_def .out
 
 # logMessages contain unstable data like dates and "finished in Xms"
 # NYI: UNDER DEVELOPMENT: unclear where error "CompletableFuture is expected..." originates

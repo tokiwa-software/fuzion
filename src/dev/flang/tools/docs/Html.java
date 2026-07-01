@@ -164,7 +164,7 @@ public class Html extends ANY
   private String anchorType(AbstractFeature af, AbstractFeature context, AbstractFeature relativeTo)
   {
     var at = af.resultType();
-    if (at.isGenericArgument())
+    if (at.isParametricType())
       {
         return htmlEncodeNbsp(at.toString(false, context))
                + (at.isOpenGeneric() ? "..." : "");
@@ -544,7 +544,7 @@ public class Html extends ANY
         universeFunctions.addAll(allUniverseFeat.getOrDefault(AbstractFeature.Kind.Intrinsic, new TreeSet<AbstractFeature>()));
         universeFunctions.addAll(allUniverseFeat.getOrDefault(AbstractFeature.Kind.Native, new TreeSet<AbstractFeature>()));
 
-        // only keep features that have a matching type argument with a type other than Any
+        // only keep features that have a matching type parameter with a type other than Any
         universeFunctions.removeIf(
           af->af.typeArguments().isEmpty()
           || af.typeArguments().stream().noneMatch(typeParam->typeParam.constraint().compareTo(Types.resolved.t_Any ) != 0
@@ -663,7 +663,7 @@ public class Html extends ANY
    * Does text start with keyword, ignoring whitespaces at the beginning
    *
    * NYI: OPTIMIZATION: This is a poor way to determine if a feature with a pre-/postcondition defines one itself or only
-   *                    inherits one. If a precondition is inherited but not defined `.preFeature().sourceText()`
+   *                    inherits one. If a precondition is inherited but not defined {@code .preFeature().sourceText()}
    *                    returns the source code of the feature itself, and not an empty string.
    *                    So there seems to be no simple and good way to do this at the moment.
    *

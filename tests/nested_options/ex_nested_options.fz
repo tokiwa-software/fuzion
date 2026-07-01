@@ -33,8 +33,8 @@ ex_nested_options is
 
   test(T type, v option T) =>
     match v
-      x T   => "{T.name}: T $x"
-      n nil => "{T.name}: nil $n"
+      x T   => "$(T.name): T $x"
+      n nil => "$(T.name): nil $n"
 
   chk "i32: nil --nil--" (test i32 nil)
   chk "i32: T 42" (test i32 42)

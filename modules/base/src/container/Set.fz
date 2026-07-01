@@ -39,7 +39,7 @@ is
   # number of entries in this set.  May be undefined, i.e., a range of
   # floating point numbers or an infinite set.
   #
-  public size_option option i32 => nil
+  public size_option option i64 => nil
 
 
   # does this set contain the given value?
@@ -172,7 +172,7 @@ is
     if is_empty
       "∅"
     else
-      ("\{"
+      ("{"
        + (as_list.map (.as_string)).fold(String.concat ";")
        + "}")
 

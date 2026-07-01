@@ -966,11 +966,11 @@ public class Intrinsix extends ANY implements ClassFileConstants
                           ClassFileConstants.PrimitiveType.type_boolean)), Expr.UNIT)
       );
     put("concur.sync.mtx_destroy",  (jvm, si, cc, tvalue, args) ->
-      new Pair<>(args.get(0).andThen(
+      new Pair<>(Expr.UNIT, args.get(0).andThen(
         Expr.invokeStatic(Names.RUNTIME_CLASS,
                           "mtx_destroy",
                           "(Ljava/lang/Object;)V",
-                          ClassFileConstants.PrimitiveType.type_void)), Expr.UNIT)
+                          ClassFileConstants.PrimitiveType.type_void)))
       );
 
     /* Condition */
@@ -982,32 +982,32 @@ public class Intrinsix extends ANY implements ClassFileConstants
                           "(Ljava/lang/Object;)Ljava/lang/Object;",
                           JAVA_LANG_OBJECT))));
     put("concur.sync.cnd_signal",  (jvm, si, cc, tvalue, args) ->
-      new Pair<>(args.get(0).andThen(
+      new Pair<>(Expr.UNIT, args.get(0).andThen(
         Expr.invokeStatic(Names.RUNTIME_CLASS,
                           "cnd_signal",
-                          "(Ljava/lang/Object;)Z",
-                          ClassFileConstants.PrimitiveType.type_boolean)), Expr.UNIT)
+                          "(Ljava/lang/Object;)V",
+                          ClassFileConstants.PrimitiveType.type_void)))
       );
     put("concur.sync.cnd_broadcast",  (jvm, si, cc, tvalue, args) ->
-      new Pair<>(args.get(0).andThen(
+      new Pair<>(Expr.UNIT, args.get(0).andThen(
         Expr.invokeStatic(Names.RUNTIME_CLASS,
                           "cnd_broadcast",
-                          "(Ljava/lang/Object;)Z",
-                          ClassFileConstants.PrimitiveType.type_boolean)), Expr.UNIT)
+                          "(Ljava/lang/Object;)V",
+                          ClassFileConstants.PrimitiveType.type_void)))
       );
     put("concur.sync.cnd_wait",  (jvm, si, cc, tvalue, args) ->
-      new Pair<>(args.get(0).andThen(
+      new Pair<>(Expr.UNIT, args.get(0).andThen(
         Expr.invokeStatic(Names.RUNTIME_CLASS,
                           "cnd_wait",
-                          "(Ljava/lang/Object;)Z",
-                          ClassFileConstants.PrimitiveType.type_boolean)), Expr.UNIT)
+                          "(Ljava/lang/Object;)V",
+                          ClassFileConstants.PrimitiveType.type_void)))
       );
     put("concur.sync.cnd_destroy",  (jvm, si, cc, tvalue, args) ->
-      new Pair<>(args.get(0).andThen(
+      new Pair<>(Expr.UNIT, args.get(0).andThen(
         Expr.invokeStatic(Names.RUNTIME_CLASS,
                           "cnd_destroy",
                           "(Ljava/lang/Object;)V",
-                          ClassFileConstants.PrimitiveType.type_void)), Expr.UNIT)
+                          ClassFileConstants.PrimitiveType.type_void)))
       );
     put("effect.type.from_env",
         "effect.type.unsafe_from_env", (jvm, si, cc, tvalue, args) ->
@@ -1091,7 +1091,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
   }
 
   /**
-   * Helper for intrinsics to create call to `Runtime.currentThread()`.
+   * Helper for intrinsics to create call to {@code Runtime.currentThread()}.
    */
   private static Expr currentThread()
   {
@@ -1103,13 +1103,13 @@ public class Intrinsix extends ANY implements ClassFileConstants
   }
 
   /**
-   * Convert an effect value of type `ecl` given as `arg` to a value that can be
-   * passed as type `dev.flang.be.jvm.runtime.AnyI` to one of the effect related methods
-   * in `dev.flang.be.jvm.runtime.Runtime`.
+   * Convert an effect value of type {@code ecl} given as {@code arg} to a value that can be
+   * passed as type {@code dev.flang.be.jvm.runtime.AnyI} to one of the effect related methods
+   * in {@code dev.flang.be.jvm.runtime.Runtime}.
    *
    * This is needed for effect types that are effectively unit types, which are
-   * `void` types in Java.  These have to be replaced by the special value
-   * `Runtime._UNIT_TYPE_EFFECT_`.
+   * {@code void} types in Java.  These have to be replaced by the special value
+   * {@code Runtime._UNIT_TYPE_EFFECT_}.
    *
    * @param jvm the backend
    *
@@ -1117,7 +1117,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
    *
    * @param the effect value
    *
-   * @return code to be passed as effect value to effect related `Runtime.*` method.
+   * @return code to be passed as effect value to effect related {@code Runtime.*} method.
    */
   private static Expr effectToAny(JVM jvm, int ecl, Expr arg)
   {
