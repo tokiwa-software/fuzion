@@ -2447,7 +2447,7 @@ public class GeneratingFUIR extends FUIR
 
     var innerClazz = switch (e)
       {
-      case AbstractCall   call -> calledInner(call, outerClazz, tclazz, _inh.get(s - SITE_BASE));
+      case AbstractCall   call -> calledInner(s, call, outerClazz, tclazz, _inh.get(s - SITE_BASE));
       case AbstractAssign a    -> assignedField(outerClazz, tclazz, a, _inh.get(s - SITE_BASE));
       case Clazz          fld  -> fld;
       default                  -> { throw new Error("accessedClazz found unexpected Expr " + (e == null ? e : e.getClass()) + "."); }
@@ -2470,7 +2470,7 @@ public class GeneratingFUIR extends FUIR
   }
 
 
-  private Clazz calledInner(AbstractCall c, Clazz outerClazz, Clazz explicitTarget, List<AbstractCall> inh)
+  private Clazz calledInner(int s, AbstractCall c, Clazz outerClazz, Clazz explicitTarget, List<AbstractCall> inh)
   {
     if (PRECONDITIONS) require
       (Errors.any() || c.calledFeature() != null && c.target() != null);
@@ -2499,7 +2499,7 @@ public class GeneratingFUIR extends FUIR
             // NYI: CLEANUP: need to detect pre condition feature properly!
              && outerClazz.feature().featureName().isInternal())
               {
-                FuirErrors.unmetTypeContraint(c.pos(), tclazz._type.generics().get(0), T);
+                FuirErrors.unmetTypeContraint(sitePos(s), tclazz._type.generics().get(0), T);
               }
             cf = T._type.constraintAssignableFrom(tclazz._type.generics().get(0))
               ? Types.resolved.f_Type_infix_colon_true
@@ -2866,7 +2866,7 @@ public class GeneratingFUIR extends FUIR
         res = switch (ac.origin())
           {
           case Constant     c -> clazz(c, outerClazz, _inh.get(s - SITE_BASE));
-          case AbstractCall c -> calledInner(c, outerClazz, null, _inh.get(s - SITE_BASE));
+          case AbstractCall c -> calledInner(s, c, outerClazz, null, _inh.get(s - SITE_BASE));
           case InlineArray  ia -> outerClazz.handDown(ia.type(),  _inh.get(s - SITE_BASE));
           default -> throw new Error("constClazz origin of unknown class " + ac.origin().getClass());
           };
@@ -3046,7 +3046,7 @@ public class GeneratingFUIR extends FUIR
             cf == Types.resolved.f_Type_infix_colon          )
           {
             var outer = id2clazz(clazzAt(s));
-            var innerClazz = calledInner(sc, outer, null, _inh.get(s - SITE_BASE));
+            var innerClazz = calledInner(s, sc, outer, null, _inh.get(s - SITE_BASE));
             var tclazz = innerClazz._outer;
             var T = innerClazz.actualTypeParameters()[0];
             var pos = cf == Types.resolved.f_Type_infix_colon_true ||

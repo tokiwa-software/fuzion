@@ -1,0 +1,6 @@
+
+{base.fum}/Sequence/orderable.fz:67:3: error 1: Actual type parameter 'num' does not satisfy constraint 'property.orderable'
+  T : property.orderable
+--^^^^^^^^^^^^^^^^^^^^^^
+
+one error.
