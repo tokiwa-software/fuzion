@@ -2179,7 +2179,8 @@ A pre-condition of a feature that does not redefine an inherited feature must st
       && (visibility().eraseTypeVisibility() == Visi.PUB
           || outer().visibility().eraseTypeVisibility() == Visi.PUB && isArgument())
       && !(featureName().toString().startsWith(FuzionConstants.COTYPE_RELAY_TYPE))
-      && rt == NoType.INSTANCE;
+      && rt == NoType.INSTANCE
+      && !isLambdaCall();
   }
 
 
@@ -2766,6 +2767,10 @@ A pre-condition of a feature that does not redefine an inherited feature must st
 
   /**
    * Is this the {@code call} implementation of a lambda?
+   *
+   * This is used to allow an implicit result type even though
+   * {@code call} is marked as public and to suppress some redundant errors.
+   *
    */
   public boolean isLambdaCall()
   {
