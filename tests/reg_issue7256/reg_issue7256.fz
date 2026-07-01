@@ -17,31 +17,28 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test string
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion test reg_issue7256
 #
 # -----------------------------------------------------------------------
 
-# tests some basic functionality of library feature string
-stringtest is
+public my_mut : mutate is
 
-  say ("hell😀" * 3)
+  public abstract_a (public T type) ref is
 
-  say "".is_empty
-  say "notEmpty".is_empty
+  public arr (public T type) ref : abstract_a T is
+    public type.empty abstract_a T =>
+      my_mut.this.env.arr T
 
-  say ("hell😀"="hell😀")
-  say ("hell😀"="again")
+foo is
+  m : my_mut is
+  m ! ()->
+    say <| (m.arr path).empty
 
+  a(M type : m, mm M) =>
+    mm ! ()->
+      say <| (M.arr path).empty
+  a m
 
-  match "13".parse_integer i32 10
-    n i32 => say n=13
-    error => say "FAIL"
+foo2 : foo is
 
-  say 10
-  say [0,1,2]
-
-  say (String.from "hell😀".codepoints)
-
-  say "abcd".quoted
+_ := foo2

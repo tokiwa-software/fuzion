@@ -17,22 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature container.Mutable_Array
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-
-# an interface defining a mutable array
-#
-public Mutable_Array(
-  public T type,
-  # effect used to modify this mutable array
-  E type : mutate
-) ref : Buffer T E is
-
-  # add an element at the end of the array
-  public add(t T) unit
-    pre
-      safety: is_accessible
-  =>
-    abstract
+override NAME = reg_issue7256
+include ../simple.mk

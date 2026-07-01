@@ -1,0 +1,194 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature mutate.dynamic_array
+#
+# -----------------------------------------------------------------------
+
+# dynamic_array -- a mutable array that can grow and shrink in size
+#
+# Elements can be added to and removed from the end in amortized O(1)
+# with the worst case being in O(n)
+#
+public dynamic_array (
+       # element type
+       public T type,
+
+       # contents of the array
+       data mutate.this.array T,
+
+       # length -- number of elements in data that are in use,
+       #           i.e. store actual elements
+       len i64
+
+      ) ref : abstract_dynamic_array T
+pre
+  safety: (len ≥ 0) && (len ≤ data.length.as_i64)
+  # safety: data.length %% 2 # NYI: UNDER DEVELOPMENT: is this really required? Could odd lengths cause problems?
+is
+
+
+  public may_shrink bool => true
+
+  public may_grow   bool => true
+
+
+  # length of this array
+  #
+  public redef length i64 => len
+
+  # A mutable array might be inaccessible if we are running in a thread that is
+  # not permitted by the underlying mutate instance to access its mutable elements
+  # at this point. See `blocking_mutate` and `mutate.exclusive`.
+  #
+  public redef is_accessible bool
+  =>
+    is_exclusive
+
+
+  # get element at given index i
+  #
+  public redef index [ ] (I type : integer, i I) T
+  =>
+    data[i]
+
+
+  # set element at given index i to given value o
+  #
+  public redef set [ ] (I type : integer, i I, o T) unit
+  =>
+    data[i.as_i32] := o
+
+
+  # add an element at the end of this array
+  #
+  # amortized O(1) but worst case of O(n)
+  #
+  public redef add (o T) unit
+  =>
+    d := if data.length > len then data
+         else if !may_grow
+           panic "$(dynamic_array.this.dynamic_type) can not grow, exceeded limit of $(data.length) elements "
+         else
+           new_data := mutate.this.array T .empty (max 1 data.length*2) # multiplying does not work for array length 0
+           check debug : data.length < new_data.length
+           for i in indices do
+             new_data[i] := data[i]
+           new_data
+
+    d[len.as_i32] := o
+    set data := d
+    set len := len+1
+
+
+  # remove the last element of the this array
+  #
+  # amortized O(1) but worst case of O(n)
+  #
+  public redef remove_last option T =>
+    if is_empty
+      nil
+    else
+      res := data[len-1]
+      set len := len-1
+
+      # NYI: UNDER DEVELOPMENT: is shrinking to exactly min length important? E.g. array with 10 initial elements an min_length of 8
+
+      if may_shrink && len ≤ data.length/4 && data.length ≥ dynamic_array.this.type.min_length*2
+        new_data := mutate.this.array T .empty data.length/2
+        for i in indices do
+          new_data[i] := data[i]
+        set data := new_data
+
+      res
+
+
+  # create immutable array from this taking at most max_elements
+  #
+  public as_array(I type : integer, max_length I) universe.array T # NYI: UNDER DEVELOPMENT: is this useful? maybe move it to Buffer?
+    pre debug: max_length.as_i64 <= length
+  =>
+    array T _ len (i -> data[i])
+
+
+  # create immutable array from this
+  #
+  public redef as_array universe.array T =>
+    array T _ len (i -> data[i])
+
+
+  # create a list from this array
+  #
+  public redef as_list list T =>
+    # since array is mutable,
+    # we first copy the elements
+    # to an immutable array.
+    as_array.as_list
+
+
+
+
+  # initialize one-dimensional mutable dynamic_array
+  #
+  public type.new
+   (
+    # length of the array to create
+    length i64,
+
+    # initial value for elements
+    init i64->T
+
+   ) abstract_dynamic_array T
+   pre safety: length > 0
+  =>
+    d := dynamic_array.this.type.empty length # NYI: why full qualification necessary here?
+    for i in i64.zero..(length-1) do
+      d.add (init i)
+    d
+
+
+  # initialize one-dimensional mutable array from a Sequence
+  #
+  public type.from_sequence(s Sequence T) abstract_dynamic_array T
+  =>
+    # NYI: possible to only iterate once, does as_array make sense?
+
+    init_len := s.is_array_backed ? s.count.as_i64 : min_length
+
+    d := mutate.this.env.dynamic_array (mutate.this.array T .empty init_len) 0
+
+    for e in s do d.add e
+
+    d
+
+
+  # initialize an empty mutable array of type T
+  #
+  public type.empty abstract_dynamic_array T =>
+    mutate.this.env.dynamic_array (mutate.this.array T .empty min_length) 0
+
+
+  # initialize an empty mutable array of type T, that won't shrink below the minimum size
+  # min_length must be multiple of 2 # NYI: COMMENT:
+  #
+  public type.empty(initial_internal_length i64) abstract_dynamic_array T =>
+    mutate.this.env.dynamic_array (mutate.this.array T .empty initial_internal_length) 0
+
+
+  public type.min_length i64 => 4

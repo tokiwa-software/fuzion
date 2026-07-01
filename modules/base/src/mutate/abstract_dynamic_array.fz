@@ -17,31 +17,32 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test string
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion standard library feature mutate.abstract_dynamic_array
 #
 # -----------------------------------------------------------------------
 
-# tests some basic functionality of library feature string
-stringtest is
+# abstract_dynamic_array -- parent of array implementation like `dynamic_array` and `fixed_capacity_array`
+#
+# This provides basic functionality for adding to and removing from the end of the array
+#
+public abstract_dynamic_array (
+       # element type
+       public T type
+       ) ref : container.Buffer T mutate.this, mutable_element # NYI: UNDER DEVELOPMENT: should this be a ref?
+is
 
-  say ("hell😀" * 3)
 
-  say "".is_empty
-  say "notEmpty".is_empty
-
-  say ("hell😀"="hell😀")
-  say ("hell😀"="again")
+  # add an element at the end of this array
+  #
+  public add (o T) unit => abstract
 
 
-  match "13".parse_integer i32 10
-    n i32 => say n=13
-    error => say "FAIL"
+  # add an element at the end of this array
+  #
+  public add_all (s Sequence T) unit =>
+    for e in s do add e
 
-  say 10
-  say [0,1,2]
 
-  say (String.from "hell😀".codepoints)
-
-  say "abcd".quoted
+  # remove the last element of the this array
+  #
+  public remove_last option T => abstract
