@@ -2650,7 +2650,7 @@ public class AstErrors extends ANY
 
   public static void lamdaOuterMustNotHaveArgs(SourcePosition pos, AbstractType tt)
   {
-    error(pos, "Can not create lambda since an outer has unkown arguments.",
+    error(pos, "Can not create lambda since an outer has unknown arguments.",
       "The outer having the arguments:\n\n" + s_feat_with_pos(tt.feature()) + "\n"+
       "To solve this, either create the lambda inside of " + s(tt.feature()) + " or remove the arguments from " + s(tt.feature()) + "."
      );

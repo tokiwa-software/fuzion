@@ -664,8 +664,8 @@ types passed to `T`.  The actual types of `T` will always be inferred from the a
                 /*
     // tag::fuzion_rule_CALL_OPEN_TYPE_ARGS[]
 A xref:fuzion_call[call] to a xref:fuzion_feature[feature] that expects an xref:fuzion_opentypeparameter[open type parameter] must provide
-xref:fuzion_actual[actual arguments] for all xref:fuzion_actual_typeparameter[actual type paramaters] and all xref:fuzion_actual_value_argument[actual value arguments]
-expected by the called feature. For the non-open type paramaters, `_` may be used as a placeholder for a type inferred from the actual value arguments.
+xref:fuzion_actual[actual arguments] for all xref:fuzion_actual_typeparameter[actual type parameters] and all xref:fuzion_actual_value_argument[actual value arguments]
+expected by the called feature. For the non-open type parameters, `_` may be used as a placeholder for a type inferred from the actual value arguments.
     // end::fuzion_rule_CALL_OPEN_TYPE_ARGS[]
                 */
                 firstValueIndex = _actuals.size() - vn;  // number of value arguments is fixed, so all others are type parameters
@@ -675,10 +675,10 @@ expected by the called feature. For the non-open type paramaters, `_` may be use
                 /*
     // tag::fuzion_rule_CALL_NON_VARIADIC_ARGS[]
 A xref:fuzion_call[call] to a xref:fuzion_feature[feature] that expects no xref:fuzion_opentypeparameter[open type parameter] may either provide
-xref:fuzion_actual[actual arguments] for all xref:fuzion_actual_typeparameter[actual type paramater] and all xref:fuzion_actual_value_argument[actual value arguments]
+xref:fuzion_actual[actual arguments] for all xref:fuzion_actual_typeparameter[actual type parameter] and all xref:fuzion_actual_value_argument[actual value arguments]
 expected by the called feature, or, it may receive only xref:fuzion_actual_value_argument[actual value arguments] and infer the actual type parameter values from the
 static types of the actual value arguments. +
-A `_` may be used as placeholder for a xref:fuzion_actual_typeparameter[actual type paramaters] that shall be inferred from the xref:fuzion_actual_value_argument[actual value arguments].
+A `_` may be used as placeholder for a xref:fuzion_actual_typeparameter[actual type parameters] that shall be inferred from the xref:fuzion_actual_value_argument[actual value arguments].
     // end::fuzion_rule_CALL_NON_VARIADIC_ARGS[]
                 */
                 if (_actuals.size() == tn+vn)  // type and value args are present

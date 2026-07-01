@@ -27,7 +27,7 @@
 #
 reg_issue5569 =>
 
-  # the orginal example from #5569:
+  # the original example from #5569:
   #
   #   - the result type of t.e.r is `t.this.i`
   #   - so the result type of `E.c.r` for `E`=`t.e` must be `t.i`
