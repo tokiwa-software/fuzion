@@ -202,7 +202,7 @@ is
   #
   public redef items Sequence (tuple HK V) =>
     contents
-      .filter o->o??
+      .filter (??)
       .map (.or_else (panic "filter failed"))
 
 
