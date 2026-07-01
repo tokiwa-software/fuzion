@@ -43,7 +43,7 @@ import dev.flang.lsp.shared.concurrent.MaxExecutionTimeExceededException;
 
 public class Computation
 {
-  private static final int INTERVALL_CHECK_CANCELLED_MS = 250;
+  private static final int INTERVAL_CHECK_CANCELLED_MS = 250;
   private static LocalDateTime lastErrorMessageSent = LocalDateTime.MIN;
 
   public static <T> CompletableFuture<T> cancellableComputation(Callable<T> callable, String callee, int maxTimeInMs)
@@ -60,7 +60,7 @@ public class Computation
               {
                 throw new CancellationException();
               }
-          }, INTERVALL_CHECK_CANCELLED_MS,
+          }, INTERVAL_CHECK_CANCELLED_MS,
             maxTimeInMs);
 
           var ms = res.nanoSeconds() / 1_000_000;

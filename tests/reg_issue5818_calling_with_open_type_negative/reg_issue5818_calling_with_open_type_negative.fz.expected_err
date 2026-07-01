@@ -407,7 +407,15 @@ To call 'g', you must provide 3 arguments. The type parameters may be omitted or
 
 
 
---CURDIR--/reg_issue5818_calling_with_open_type_negative.fz:48:3: error 31: Wrong number of actual value arguments in call
+--CURDIR--/reg_issue5818_calling_with_open_type_negative.fz:112:3: error 31: Failed to infer actual type parameters
+  i nil unit           3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  # 18. should flag an error: failed to infer T, U
+--^
+In call to 'reg_issue5818_calling_with_open_type_negative.i', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: 'T, U, A...'
+Type inference failed for 2 type parameters 'T', 'U'
+
+
+--CURDIR--/reg_issue5818_calling_with_open_type_negative.fz:48:3: error 32: Wrong number of actual value arguments in call
   f u8 _                                                           #  2. should flag an error: undefined open type parameter
 --^
 Number of actual value arguments is 1, while call expects no value arguments.
@@ -419,7 +427,7 @@ Declared at --CURDIR--/reg_issue5818_calling_with_open_type_negative.fz:41:3:
 --^
 
 
---CURDIR--/reg_issue5818_calling_with_open_type_negative.fz:51:3: error 32: Wrong number of actual value arguments in call
+--CURDIR--/reg_issue5818_calling_with_open_type_negative.fz:51:3: error 33: Wrong number of actual value arguments in call
   f             3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  #  5. should flag an error: too many value arguments
 --^
 Number of actual value arguments is 4, while call expects no value arguments.
@@ -431,7 +439,7 @@ Declared at --CURDIR--/reg_issue5818_calling_with_open_type_negative.fz:41:3:
 --^
 
 
---CURDIR--/reg_issue5818_calling_with_open_type_negative.fz:52:3: error 33: Wrong number of actual value arguments in call
+--CURDIR--/reg_issue5818_calling_with_open_type_negative.fz:52:3: error 34: Wrong number of actual value arguments in call
   f u8 unit i32 3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  #  6. should flag an error: too many value arguments
 --^
 Number of actual value arguments is 4, while call expects no value arguments.
@@ -443,7 +451,7 @@ Declared at --CURDIR--/reg_issue5818_calling_with_open_type_negative.fz:41:3:
 --^
 
 
---CURDIR--/reg_issue5818_calling_with_open_type_negative.fz:69:3: error 34: Wrong number of actual value arguments in call
+--CURDIR--/reg_issue5818_calling_with_open_type_negative.fz:69:3: error 35: Wrong number of actual value arguments in call
   g u8 unit i32 3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  #  9. should flag an error: too many value arguments
 --^
 Number of actual value arguments is 4, while call expects no value arguments.
@@ -453,13 +461,5 @@ Formal value arguments: --none--
 Declared at --CURDIR--/reg_issue5818_calling_with_open_type_negative.fz:61:3:
   g(T,U type, A type ...) =>
 --^
-
-
---CURDIR--/reg_issue5818_calling_with_open_type_negative.fz:112:3: error 35: Failed to infer actual type parameters
-  i nil unit           3.14 ["true","false"] "?!?"  (num.complex 3.14 4)  # 18. should flag an error: failed to infer T, U
---^
-In call to 'reg_issue5818_calling_with_open_type_negative.i', no actual type parameters are given and inference of the type parameters failed.
-Expected type parameters: 'T, U, A...'
-Type inference failed for 2 type parameters 'T', 'U'
 
 35 errors.

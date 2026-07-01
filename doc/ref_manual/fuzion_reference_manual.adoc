@@ -492,7 +492,7 @@ include::rule.adoc[]
 [#fuzion_actual]
 ((Actual)):: An _actual argument_ is an expression that is parsed as an `actual` as part of a
 xref:feature_call[call] or the right hand side of an infix operator call. An _actual argument_ is either
-an xref:fuzion_actual_typeparameter[actual type paramater] or an xref:fuzion_actual_value_argument[actual value argument].
+an xref:fuzion_actual_typeparameter[actual type parameter] or an xref:fuzion_actual_value_argument[actual value argument].
 
 [#fuzion_actual_typeparameter]
 ((Actual Type Parameter)):: An _actual type parameter_ is a xref:fuzion_type[type] that replaces a

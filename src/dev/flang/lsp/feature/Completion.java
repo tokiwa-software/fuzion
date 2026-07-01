@@ -201,7 +201,7 @@ public class Completion
 
 
   /**
-   * completion item for keyword `type`
+   * completion item for keyword {@code type}
    * @return
    */
   private static Stream<CompletionItem> completionItemType()
@@ -210,7 +210,7 @@ public class Completion
   }
 
   /**
-   * completion item for keyword `this`
+   * completion item for keyword {@code this}
    * @return
    */
   private static Stream<CompletionItem> completionItemThis()

@@ -542,7 +542,7 @@ public abstract class Module extends ANY implements FeatureLookup
   /**
    * Find the effective main feature from the given main feature name. In case
    * main is null, this is the universe.  Otherwise, it is a feature with given
-   * name `main` or, if exits, its `preAndCallFeature`.
+   * name {@code main} or, if exits, its {@code preAndCallFeature}.
    *
    * @param universe the universe feature, may be null
    *

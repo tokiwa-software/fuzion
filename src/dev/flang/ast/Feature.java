@@ -2024,10 +2024,10 @@ A ((Choice)) declaration must not contain a result type.
          *   myfun : Function i32 i32 is
          *   h myfun => a->a*a
          *
-         * Here, i64 will be propagated to be used as the type of `23` and
-         * `-17`, choice<A, f32> will be used as the type of `3.4` and `A`, and
-         * myfun will be used as the type of `a->a*a`, which implies
-         * that i32 will be the type for `a`.
+         * Here, i64 will be propagated to be used as the type of {@code 23} and
+         * {@code -17}, choice<A, f32> will be used as the type of {@code 3.4} and {@code A}, and
+         * myfun will be used as the type of {@code a->a*a}, which implies
+         * that i32 will be the type for {@code a}.
          */
         visit(new ContextVisitor(context()) {
             @Override public void  action(AbstractAssign a) { a.propagateExpectedType(res, _context); }
@@ -2178,7 +2178,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
       && !isUniverse()
       && (visibility().eraseTypeVisibility() == Visi.PUB
           || outer().visibility().eraseTypeVisibility() == Visi.PUB && isArgument())
-      && !(featureName().toString().startsWith(FuzionConstants.COTYPE_THIS_TYPE))
+      && !(featureName().toString().startsWith(FuzionConstants.COTYPE_RELAY_TYPE))
       && rt == NoType.INSTANCE;
   }
 
@@ -2209,9 +2209,9 @@ A pre-condition of a feature that does not redefine an inherited feature must st
           || Types.resolved.legalNativeArgumentTypes.contains(at)
           || at.selfOrConstraint(Context.NONE).isLambdaTargetButNotLazy(res)
           // NYI: BUG: check if array element type is valid
-          || !at.isGenericArgument() && at.feature() == Types.resolved.f_mutate_array
-          || !at.isGenericArgument() && at.feature().mayBeNativeValue()
-          || !at.isGenericArgument() && Types.resolved.f_fuzion_sys_array_data.resultType().feature() == at.feature()
+          || !at.isParametricType() && at.feature() == Types.resolved.f_mutate_array
+          || !at.isParametricType() && at.feature().mayBeNativeValue()
+          || !at.isParametricType() && Types.resolved.f_fuzion_sys_array_data.resultType().feature() == at.feature()
           )
         )
       {
@@ -2223,7 +2223,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
   private void checkLegalNativeResultType(Resolution res, SourcePosition pos, AbstractType rt)
   {
     ensureTypeSetsInitialized(res);
-    if (!(Types.resolved.legalNativeResultTypes.contains(rt) || !rt.isGenericArgument() && rt.feature().mayBeNativeValue())
+    if (!(Types.resolved.legalNativeResultTypes.contains(rt) || !rt.isParametricType() && rt.feature().mayBeNativeValue())
         && !(Errors.any() && rt == Types.t_ERROR))
       {
         AstErrors.illegalNativeType(pos, "Result type", rt);
@@ -2620,7 +2620,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
 
   /**
    * constraint returns the constraint type of this type parameter, Any if no
-   * constraint was set.  This ignores any context constraints like `pre T : numeric`
+   * constraint was set.  This ignores any context constraints like {@code pre T : numeric}
    *
    * @return the constraint.
    */
@@ -2774,14 +2774,14 @@ A pre-condition of a feature that does not redefine an inherited feature must st
 
 
   /**
-   * Is this the 'THIS_TYPE' type parameter in a type feature?
+   * Is this the 'RELAY_TYPE' type parameter in a type feature?
    *
    * Overriding since AbstractFeature.isCoTypesThisType needs outer to be
    * in state of at least FINDING_DECLARATIONS which is not always the case
    * when isCoTypesThisType is called.
    */
   @Override
-  public boolean isCoTypesThisType()
+  public boolean isCoTypesRelayTypeParameter()
   {
     return false;
   }

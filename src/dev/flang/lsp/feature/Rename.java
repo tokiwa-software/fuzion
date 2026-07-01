@@ -129,7 +129,7 @@ public class Rename extends ANY
     var typePositions = FeatureTool.selfAndDescendants(ParserTool.universe(Util.toURI(params.getTextDocument().getUri())))
       .filter(f ->
         !f.equals(featureToRename)
-        && !f.resultType().isGenericArgument()
+        && !f.resultType().isParametricType()
         && f.resultType().outer() != null
         && f.resultType().outer().equals(featureToRename)
       )

@@ -672,15 +672,15 @@ public class Lexer extends SourceFile
 
 
   /**
-   * In case there is a surrounding `if` statement, this gives the start position. This is used
-   * to detect ambiguous `else` statements.
+   * In case there is a surrounding {@code if} statement, this gives the start position. This is used
+   * to detect ambiguous {@code else} statements.
    */
   private SourcePosition _surroundingIf = null;
 
 
   /**
    * In case there is a surrounding loop statement, this gives the start position. This is used
-   * to detect ambiguous `else` statements.
+   * to detect ambiguous {@code else} statements.
    */
   private SourcePosition _surroundingLoop = null;
 
@@ -961,7 +961,7 @@ public class Lexer extends SourceFile
 
 
   /**
-   * Remember that we are parsing in `if` statement. This will be reset
+   * Remember that we are parsing in {@code if} statement. This will be reset
    * automatically on relaxLineAndSpaceLimit.
    */
   SourcePosition surroundingIf(SourcePosition pos)
@@ -974,7 +974,7 @@ public class Lexer extends SourceFile
 
 
   /**
-   * The `if` statement that we are currently parsing.
+   * The {@code if} statement that we are currently parsing.
    */
   SourcePosition surroundingIf()
   {

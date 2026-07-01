@@ -698,7 +698,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
     return this != Call.ERROR && t != Types.t_ERROR
       && expectedType.isAssignableFromWithoutBoxing(t, context).no()
       && expectedType.compareTo(Types.resolved.t_Any) != 0
-      && !t.isGenericArgument()
+      && !t.isParametricType()
       && allInherited(t.feature())
           .stream()
           .anyMatch(c ->
@@ -725,7 +725,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
     var t = type();
     return this != Call.ERROR && t != Types.t_ERROR
       && !t.isChoice()
-      && !t.isGenericArgument()
+      && !t.isParametricType()
       && allInherited(t.feature())
           .stream()
           .anyMatch(c ->
@@ -778,7 +778,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
 
   /**
    * Source text for this Expr. This is used in error message: It takes the
-   * source code at `sourceRange()`. Only for artificial expressions, this should
+   * source code at {@code sourceRange()}. Only for artificial expressions, this should
    * probably be redefined to create more useful text.
    */
   public String sourceText()
@@ -788,7 +788,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
 
 
   /**
-   * Is this expression a call to `type_as_value`?
+   * Is this expression a call to {@code type_as_value}?
    */
   boolean isTypeAsValueCall()
   {
@@ -832,7 +832,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
       {
         return null;
       }
-    else if (frmlT.isRef() || frmlT.isGenericArgument() || frmlT.isThisType() && !frmlT.isChoice())
+    else if (frmlT.isRef() || frmlT.isParametricType() || frmlT.isThisType() && !frmlT.isChoice())
       {
         /* Boxing needed when we assign to generic argument (so it
          * could be a ref) or frmlT is this type and the underlying feature is by

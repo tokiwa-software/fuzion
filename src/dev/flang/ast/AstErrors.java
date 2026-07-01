@@ -405,7 +405,7 @@ public class AstErrors extends ANY
                   .append(st(ts.toString(true)));
               }
           }
-        if (remedy == null && !frmlT.isGenericArgument() && frmlT.asRef(true).isAssignableFromWithoutBoxing(actlT, context).yes())
+        if (remedy == null && !frmlT.isParametricType() && frmlT.asRef(true).isAssignableFromWithoutBoxing(actlT, context).yes())
           {
             remedy = "To solve this, you could change the type of " + target + " to a " + st("ref")+ " type like " + s(frmlT.asRef(true)) + ".\n";
           }
@@ -428,7 +428,7 @@ public class AstErrors extends ANY
           }
         else
           {
-            remedy = frmlT.isValue() && !actlT.isGenericArgument() && !frmlT.isGenericArgument() && actlT.feature().inheritsFrom(frmlT.feature()) ?
+            remedy = frmlT.isValue() && !actlT.isParametricType() && !frmlT.isParametricType() && actlT.feature().inheritsFrom(frmlT.feature()) ?
                         "To solve this you could:\n" + //
                             (frmlT.isChoice() ? "" : "  • make  " + s(frmlT) + " a reference by adding the " + st("ref")+ " keyword, so all its heirs can be used in place of it,\n") +
                             "  • change the type of the target " + target + " to " + s(actlT) + ", or\n" +
@@ -655,7 +655,7 @@ public class AstErrors extends ANY
    * @param detail2 optional extra lines of detail message giving further
    * information, like "Calling feature: xyz.f\n" or "Type: Stack bool int\n".
    */
-  static void wrongNumberOfGenericArguments(FormalGenerics fg,
+  static void wrongNumberOfTypeArguments(FormalGenerics fg,
                                             List<AbstractType> actualGenerics,
                                             SourcePosition pos,
                                             String detail1,
@@ -716,7 +716,7 @@ public class AstErrors extends ANY
   {
     return t.compareTo(from) == 0
       ? s(t)
-      : s(t) + " (from " + (from.isGenericArgument() ? s(from.genericArgument()) : s(from)) + ")";
+      : s(t) + " (from " + (from.isParametricType() ? s(from.typeParameter()) : s(from)) + ")";
   }
 
   public static void argumentTypeMismatchInRedefinition(AbstractFeature originalFeature, AbstractFeature originalArg, AbstractType originalArgType,
@@ -1370,8 +1370,8 @@ public class AstErrors extends ANY
     if (target            instanceof Call    c                                  &&
         c.calledFeature() instanceof Feature cf                                 &&
         cf.state().atLeast(State.RESOLVED_TYPES)                                &&
-        cf.resultType().isGenericArgument()                                     &&
-        cf.resultType().genericArgument() instanceof Feature tp                 &&
+        cf.resultType().isParametricType()                                     &&
+        cf.resultType().typeParameter() instanceof Feature tp                 &&
         tp.isFreeType()                                                         &&
         tp.constraint().compareTo(Types.resolved.t_Any) == 0)
       {
@@ -1555,7 +1555,7 @@ public class AstErrors extends ANY
       }
   }
 
-  public static void constraintMustNotBeGenericArgument(AbstractFeature tp)
+  public static void constraintMustNotBeParametricType(AbstractFeature tp)
   {
     error(tp.pos(),
           "Constraint for type parameter must not be a type parameter",
@@ -1582,14 +1582,14 @@ public class AstErrors extends ANY
           "The else block of this loop is declared at " + elseBlock.pos().show());
   }
 
-  static void formalGenericWithGenericArgs(SourcePosition pos, UnresolvedType t, AbstractFeature generic)
+  static void formalGenericWithTypeParameters(SourcePosition pos, UnresolvedType t, AbstractFeature tp)
   {
     error(pos,
           "Formal type parameter must not have type parameters",
           "In a type with type parameters >>A B<<, the base type >>A<< must not be a formal type parameter.\n" +
           "Type used: " + s(t) + "\n" +
-          "Formal type parameter used " + sbnf(generic) + "\n" +
-          "Formal type parameter declared in " + generic.pos().show() + "\n");
+          "Formal type parameter used " + sbnf(tp) + "\n" +
+          "Formal type parameter declared in " + tp.pos().show() + "\n");
   }
 
   static void genericsMustBeDisjoint(SourcePosition pos, AbstractType t1, AbstractType t2)
@@ -1897,7 +1897,7 @@ public class AstErrors extends ANY
           "Actual type parameters: " + (sz == 0 ? "none" : s(types)) + "\n");
   }
 
-  static void failedToInferOpenGenericArg(SourcePosition pos, int count, Expr actual)
+  static void failedToInferOpenTypeParameterType(SourcePosition pos, int count, Expr actual)
   {
     error(pos,
           "Failed to infer open type parameter type from actual argument.",
@@ -2398,7 +2398,7 @@ public class AstErrors extends ANY
   {
     var t = e.type();
     error(e.pos(), "Expression produces result of type " + s(t) +  " but result is not used.",
-        (!t.isGenericArgument() && t.feature().isConstructor()
+        (!t.isParametricType() && t.feature().isConstructor()
           ? "To solve this, use the result, explicitly ignore the result " + st("_ := <expression>") + " or change " + s(t.feature()) + " from constructor to routine by replacing " + skw("is") + " by " + skw("=>") + "."
           : "To solve this, use the result or explicitly ignore the result " + st("_ := <expression>") + "."));
   }
@@ -2482,7 +2482,7 @@ public class AstErrors extends ANY
 
   public static void notAnEffect(AbstractType t, SourcePosition pos)
   {
-    var f = t.isGenericArgument() ? t.genericArgument().outer() : t.feature();
+    var f = t.isParametricType() ? t.typeParameter().outer() : t.feature();
     error(pos,
           "Feature " + sbnf(f) + " is not an effect.",
           "Effects required by a feature are specified with " + skw("!") + " in the signature. " +
@@ -2650,13 +2650,13 @@ public class AstErrors extends ANY
 
   public static void lamdaOuterMustNotHaveArgs(SourcePosition pos, AbstractType tt)
   {
-    error(pos, "Can not create lambda since an outer has unkown arguments.",
+    error(pos, "Can not create lambda since an outer has unknown arguments.",
       "The outer having the arguments:\n\n" + s_feat_with_pos(tt.feature()) + "\n"+
       "To solve this, either create the lambda inside of " + s(tt.feature()) + " or remove the arguments from " + s(tt.feature()) + "."
      );
   }
 
-  public static void lamdaOuterMustNotBeGenericArgument(SourcePosition pos, AbstractType tt)
+  public static void lamdaOuterMustNotBeTypeParameter(SourcePosition pos, AbstractType tt)
   {
     error(pos, "Can not create lambda since an outer of its type is a generic argument.",
       "The generic argument used in lambdas type " + s(tt) + "."

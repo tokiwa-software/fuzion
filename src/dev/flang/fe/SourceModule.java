@@ -1612,7 +1612,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
       fixed                                &&
       original    .outer().isCotype() &&
       redefinition.outer().isCotype() &&
-      to.replace_this_type_in_cotype(redefinition.outer())
+      to.replace_relay_type_in_cotype(redefinition.outer())
         .compareTo(tr) == 0                                                       ||
 
       /* avoid reporting errors in case of previous errors
@@ -1623,8 +1623,8 @@ A post-condition of a feature that does not redefine an inherited feature must s
 
 
   /**
-   * Hand down a type from `original` to be compared to types in
-   * `redefinition`. This does two things: it hands down the type along the
+   * Hand down a type from {@code original} to be compared to types in
+   * {@code redefinition}. This does two things: it hands down the type along the
    * inheritance chain and then replaces the type parameters by the type
    * parameters used in the redefinition.
    */
@@ -1788,9 +1788,9 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
     if (f.isTypeParameter() &&
         !f.outer().isCotype()) // reg_issue1932 shows error twice without this)
       {
-        if (f.constraint().isGenericArgument())
+        if (f.constraint().isParametricType())
           {
-            AstErrors.constraintMustNotBeGenericArgument(f);
+            AstErrors.constraintMustNotBeParametricType(f);
           }
         if (f.constraint().isChoice())
           {
@@ -1920,7 +1920,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
    */
   private void checkRedefVisibility(Feature f)
   {
-    if (!f.isCoTypesThisType()
+    if (!f.isCoTypesRelayTypeParameter()
     // Function.call is public while actual lambdas-impl are not.
     // If lambda-impl were public then result-type and all arg-types
     // would have to be public as well. Hence this exception.

@@ -41,7 +41,7 @@ fileiotests =>
   say "$file exists: $(f.exists file)"
 
   _ := f
-    .use file f.mode.write (() -> f.writer.write content)
+    .use file f.mode.write (() -> (io.buffered f.file_mutate).writer.env.write content)
     .bind (_ -> say "$file was created")
   say "$file exists: $(f.exists file)"
 

@@ -70,7 +70,7 @@ public class TypeTool extends ANY
     if (PRECONDITIONS)
       require(!containsError(type), !type.containsUndefined());
 
-    if (type.isGenericArgument())
+    if (type.isParametricType())
       {
         return baseName(type) + (type.isRef() ? " (boxed)": "");
       }
@@ -99,8 +99,8 @@ public class TypeTool extends ANY
    */
   public static String baseName(AbstractType t)
   {
-    return (t.isGenericArgument()
-              ? t.genericArgument()
+    return (t.isParametricType()
+              ? t.typeParameter()
               : t.feature())
       .featureName()
       .baseName();

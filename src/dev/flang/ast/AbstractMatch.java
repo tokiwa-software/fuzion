@@ -166,7 +166,7 @@ public abstract class AbstractMatch extends ExprWithPos
   void checkTypes(Context context)
   {
     var st = subject().type();
-    if (st.isGenericArgument())
+    if (st.isParametricType())
       {
         AstErrors.matchSubjectMustNotBeTypeParameter(subject().pos(), st);
       }

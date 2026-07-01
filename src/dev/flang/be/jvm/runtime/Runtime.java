@@ -448,7 +448,7 @@ public class Runtime extends ANY
 
 
   /**
-   * Helper for instrinsic for `effect.instate_at_singularity0` to instate
+   * Helper for instrinsic for {@code effect.instate_at_singularity0} to instate
    * an effect at startup.
    */
   public static void effect_instate_at_singularity(int id, AnyI instance)
