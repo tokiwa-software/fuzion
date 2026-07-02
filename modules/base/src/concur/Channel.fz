@@ -273,7 +273,7 @@ is
         sent      => false
         receiving => true
         received     => false
-        closed    => true   # this does not sound logical, but it is: send will not block, but cauee a fault instead!
+        closed    => true   # this does not sound logical, but it is: send will not block, but cause a fault instead!
 
     is_received =>
       match unbuffered_channel_state.this
