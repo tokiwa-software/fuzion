@@ -525,7 +525,7 @@ public class Html extends ANY
       }
 
     var normalFunctions = allFunctions.stream().filter(f->!f.isTypeFeature()).collect(Collectors.toCollection(TreeSet::new));
-    var typeFunctions   = allFunctions.stream().filter(f->f.isTypeFeature()).collect(Collectors.toCollection(TreeSet::new));
+    var typeFeatures    = allFunctions.stream().filter(f->f.isTypeFeature()).collect(Collectors.toCollection(TreeSet::new));
 
     // Choice Types
     var choices = map.getOrDefault(AbstractFeature.Kind.Choice, new TreeSet<AbstractFeature>());
@@ -556,7 +556,7 @@ public class Html extends ANY
          + mainSection0("Constructors",                 null,         normalConstructors, outer, true)
          + mainSection0("Type Constructors",            null,         typeConstructors,   outer, true)
          + mainSection0("Functions",                    null,         normalFunctions,    outer, true)
-         + mainSection0("Type Functions",               null,         typeFunctions,      outer, true)
+         + mainSection0("Type Features",                null,         typeFeatures,       outer, true)
          + mainSection0("Choice Types",                 null,         choices,            outer, true)
          + mainSection0("Applicable universe features", univFuncDesc, universeFunctions,  outer, true);
   }
