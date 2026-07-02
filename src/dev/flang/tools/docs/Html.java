@@ -202,7 +202,7 @@ public class Html extends ANY
    */
   private String typePrfx(AbstractFeature af)
   {
-    // NYI: does not treat features that `Type` inherits but does not redefine as type features, see #3716
+    // NYI: BUG: does not show features that `Type` inherits but does not redefine as type features, see #3913
     return af.outer() != null && (af.outer().isCotype() || af.outer().compareTo(Types.resolved.f_Type) == 0) && !af.isCotype() ? "<span class=\"fd-keyword\">type</span>." : "";
   }
 
