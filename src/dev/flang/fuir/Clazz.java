@@ -53,6 +53,7 @@ import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
+import dev.flang.util.SourcePosition;
 import dev.flang.util.StringHelpers;
 import dev.flang.util.YesNo;
 
@@ -279,7 +280,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    * Used when lookupDone=true but looking up
    * not yet existing clazz.
    */
-  private static final Clazz NO_CLAZZ = new Clazz()
+  public static final Clazz NO_CLAZZ = new Clazz()
     {
       @Override void doesNeedCode() { }
     };
@@ -2117,6 +2118,31 @@ class Clazz extends ANY implements Comparable<Clazz>
       (_asValue.isValue());
 
     return _asValue;
+  }
+
+    /**
+   * The source position where this clazz was instantiated/called.
+   * Used for better error reporting when type constraints fail.
+   */
+  private SourcePosition _instantiationPos = SourcePosition.notAvailable;
+
+  /**
+   * Set the source position where this clazz was instantiated.
+   */
+  void setInstantiationPos(SourcePosition pos)
+  {
+    if (pos != null && pos != SourcePosition.notAvailable)
+      {
+        _instantiationPos = pos;
+      }
+  }
+
+  /**
+   * Get the source position where this clazz was instantiated.
+   */
+  SourcePosition getInstantiationPos()
+  {
+    return _instantiationPos;
   }
 
 }

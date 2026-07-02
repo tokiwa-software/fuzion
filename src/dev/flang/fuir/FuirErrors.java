@@ -64,16 +64,21 @@ public class FuirErrors extends AstErrors
   public static void error(SourcePosition pos, String msg, String detail)
   {
     if (PRECONDITIONS) require
-      (pos != null,
-       msg != null,
-       detail != null);
+      (msg != null,
+      detail != null);
+
+    // If pos is null, use a default position
+    if (pos == null)
+      {
+        pos = SourcePosition.notAvailable;
+      }
 
     int old = Errors.count();
     Errors.error(pos, msg, detail);
-    int delta = Errors.count() - old;  // Errors detects duplicates, so the count might not have changed.
+    int delta = Errors.count() - old;
     count += delta;
   }
-
+  
   public static void abstractFeatureNotImplemented(AbstractFeature featureThatDoesNotImplementAbstract,
                                                    Map<AbstractFeature, String> abstractFeature,
                                                    HasSourcePosition instantiatedAt,
@@ -114,13 +119,40 @@ public class FuirErrors extends AstErrors
           abstracts + "\n" +
           "Callchain that lead to this point:\n\n" + context);
   }
-
-
-  public static void unmetTypeContraint(SourcePosition pos, AbstractType tp, Clazz constraint)
+  /**
+   * Report an unmet type constraint with both the constraint declaration position
+   * and the call site position.
+   */
+  public static void unmetTypeContraint(SourcePosition constraintPos, 
+                                        SourcePosition callPos, 
+                                        AbstractType tp, 
+                                        Clazz constraint)
   {
-    error(pos, "Actual type parameter " + s(tp) + " does not satisfy constraint " + s(constraint._type), "");
+    // Create a descriptive message
+    String msg = "Actual type parameter '" + s(tp) + "' does not satisfy constraint '" + s(constraint._type) + "'";
+    
+    if (callPos != null && callPos != SourcePosition.notAvailable)
+      {
+        // Report the error at the call site with reference to constraint
+        error(callPos, 
+              msg,
+              "Constraint '" + s(constraint._type) + "' declared at " + constraintPos.show() + "\n" +
+              "The type '" + s(tp) + "' does not implement the required features of '" + s(constraint._type) + "'");
+      }
+    else
+      {
+        // Fallback: report at constraint position
+        error(constraintPos, 
+              msg, 
+              "");
+      }
   }
 
+  // Single definition of the original method
+  public static void unmetTypeContraint(SourcePosition pos, AbstractType tp, Clazz constraint)
+  {
+    unmetTypeContraint(pos, null, tp, constraint);
+  }
 }
 
 /* end of file */

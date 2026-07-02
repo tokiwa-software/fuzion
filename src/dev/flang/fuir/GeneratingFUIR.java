@@ -856,7 +856,14 @@ public class GeneratingFUIR extends FUIR
     if (PRECONDITIONS) require
       (Errors.any());
 
-    return _clazzes.get(clazz(SpecialClazzes.c_void));  // NYI: UNDER DEVELOPMENT: have a dedicated clazz for this?
+    // Get the void clazz safely
+    int voidClazzId = clazz(SpecialClazzes.c_void);
+    if (voidClazzId == NO_CLAZZ || voidClazzId < CLAZZ_BASE || voidClazzId >= CLAZZ_BASE + _clazzes.size())
+      {
+        // If void clazz doesn't exist yet, return a dummy error clazz or the universe
+        return id2clazz(_universe);
+      }
+    return _clazzes.get(clazzId2num(voidClazzId));
   }
 
 
@@ -2484,38 +2491,86 @@ public class GeneratingFUIR extends FUIR
       ? calledTarget(c, outerClazz, inh)
       : explicitTarget;
 
+    // If tclazz is an error or null, return early
+    if (tclazz == null || tclazz == error())
+      {
+        return error();
+      }
+
     Clazz innerClazz = null;
     var cf      = c.calledFeature();
     var dynamic = c.isDynamic() && tclazz.isRef();
     var needsCode = !dynamic || explicitTarget != null;
     var typePars = outerClazz.actualGenerics(c.actualTypeParameters(), inh);
+    
     if (!tclazz.isVoidType())
       {
-        innerClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars), c.select(), c.isInheritanceCall());
-        if (c.calledFeature() == Types.resolved.f_Type_infix_colon)
+        try
           {
-            var T = innerClazz.actualTypeParameters()[0];
-            if (!T._type.constraintAssignableFrom(tclazz._type.generics().get(0))
-            // NYI: CLEANUP: need to detect pre condition feature properly!
-             && outerClazz.feature().featureName().isInternal())
+            innerClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars), c.select(), c.isInheritanceCall());
+            
+            // Store the call position for better error reporting
+            if (innerClazz != null && innerClazz != error() && innerClazz != Clazz.NO_CLAZZ)
               {
-                FuirErrors.unmetTypeContraint(c.pos(), tclazz._type.generics().get(0), T);
+                innerClazz.setInstantiationPos(c.pos());
+                
+                // Also store position on type parameter clazzes if they're being checked
+                for (var tp : innerClazz.actualTypeParameters())
+                  {
+                    if (tp != null && tp != error() && tp != Clazz.NO_CLAZZ)
+                      {
+                        tp.setInstantiationPos(c.pos());
+                      }
+                  }
               }
-            cf = T._type.constraintAssignableFrom(tclazz._type.generics().get(0))
-              ? Types.resolved.f_Type_infix_colon_true
-              : Types.resolved.f_Type_infix_colon_false;
-            innerClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars), FuzionConstants.NO_SELECT, c.isInheritanceCall());
-          }
-        if (needsCode)
-          {
-            innerClazz.doesNeedCode();
-          }
+            if (c.calledFeature() == Types.resolved.f_Type_infix_colon)
+              {
+                var T = innerClazz.actualTypeParameters()[0];
+                if (T != null && T != error() && T != Clazz.NO_CLAZZ)
+                  {
+                    var tclazzGenerics = tclazz._type.generics();
+                    if (tclazzGenerics != null && !tclazzGenerics.isEmpty())
+                      {
+                        // Check if the type satisfies the constraint
+                        boolean satisfies = T._type.constraintAssignableFrom(tclazzGenerics.get(0));
+                        if (!satisfies && outerClazz.feature().featureName().isInternal())
+                          {
+                            // Use c.pos() for the call site position
+                            FuirErrors.unmetTypeContraint(
+                              T._type.declarationPos(),  // constraint position
+                              c.pos(),                   // call site position
+                              tclazzGenerics.get(0),     // actual type (unit)
+                              T                          // constraint (numeric)
+                            );
+                          }
+                        cf = satisfies
+                          ? Types.resolved.f_Type_infix_colon_true
+                          : Types.resolved.f_Type_infix_colon_false;
+                      }
+                  }
+                innerClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars), FuzionConstants.NO_SELECT, c.isInheritanceCall());
+              }
+            if (needsCode && innerClazz != null && innerClazz != error() && innerClazz != Clazz.NO_CLAZZ)
+              {
+                innerClazz.doesNeedCode();
+              }
 
-        if (innerClazz.resultClazz()._showErrorIfCallResult_ != null &&
-            innerClazz.clazzKind() == FeatureKind.Routine &&
-            !innerClazz.feature().isConstructor())
+            if (innerClazz != null && innerClazz != error() && innerClazz != Clazz.NO_CLAZZ &&
+                innerClazz.resultClazz() != null &&
+                innerClazz.resultClazz()._showErrorIfCallResult_ != null &&
+                innerClazz.clazzKind() == FeatureKind.Routine &&
+                !innerClazz.feature().isConstructor())
+              {
+                innerClazz.resultClazz()._showErrorIfCallResult_.accept(c);
+              }
+          }
+        catch (Exception e)
           {
-            innerClazz.resultClazz()._showErrorIfCallResult_.accept(c);
+            // If we get an exception during lookup, report the error at the call site
+            FuirErrors.error(c.pos(), 
+              "Failed to resolve call to '" + c.calledFeature().baseName() + "'", 
+              e.getMessage() != null ? e.getMessage() : "Internal error during type checking");
+            return error();
           }
       }
     return innerClazz == null ? error() : innerClazz;
