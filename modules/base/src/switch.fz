@@ -189,6 +189,18 @@ is
       b B => fb b
 
 
+  # retag switch.this as switch A B
+  #
+  # NYI : UNDER DEVELOPMENT:
+  # currently necessary because constraints can not be choice types
+  # see also: Sequence.collect
+  #
+  public as_switch switch A B =>
+    match switch.this
+      a A => a
+      b B => b
+
+
   # converts switch to a string
   #
   public redef as_string String =>

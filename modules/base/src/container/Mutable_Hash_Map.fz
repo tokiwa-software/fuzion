@@ -246,9 +246,9 @@ is
   #
   public redef items Sequence (tuple HK V) =>
     LM.env.exclusive ()->
-      contents.get.as_array
-        .filter (o -> o ? tuple => true | * => false)
-        .map (x -> x ? t tuple => t | * => panic "filter failed" )
+      contents.get
+        .as_array
+        .collect (tuple HK V) nil (o -> o ? t tuple => t | * => nil)
 
 
   # create an immutable map from this
