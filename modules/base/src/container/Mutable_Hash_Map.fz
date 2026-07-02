@@ -47,8 +47,6 @@ module:public Mutable_Hash_Map(
         #
         min_size i32,
 
-        # NYI: use fractions instead of floats (3x)
-
         # lower boundary at which the size of the internal array is decreased
         #
         lower_load_factor num.fraction i32,
