@@ -78,7 +78,7 @@ public class FuirErrors extends AstErrors
     int delta = Errors.count() - old;
     count += delta;
   }
-  
+
   public static void abstractFeatureNotImplemented(AbstractFeature featureThatDoesNotImplementAbstract,
                                                    Map<AbstractFeature, String> abstractFeature,
                                                    HasSourcePosition instantiatedAt,
