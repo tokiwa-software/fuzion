@@ -50,9 +50,6 @@ This document is intended to provide help for the comprehension of Realtime syst
 [#event]
 ((Event)):: An occurrence that happens at a specific time in a realtime system.
 
-[#precision]
-((Precision)):: How fast the observer runs, and therefore how small each mesured period is. This reduces the odds of observation data being lumped together in the same unit of time. So the shorter the timeframe, the better, but excessively short timeframes can lead to performance issues.
-
 [#period]
 ((Period)):: The time between two specific events in a realtime system. A period can itself contain and observe other events or periods.
 
@@ -73,6 +70,9 @@ This document is intended to provide help for the comprehension of Realtime syst
 
 [#cycle]
 ((Cycle)):: Observes the spacing between two consecutive events in a realtime system, irrespective of schedule.
+
+[#precision]
+((Precision)):: How fast the observer runs, and therefore how small each mesured period is. This reduces the odds of observation data being lumped together in the same unit of time. So the shorter the timeframe, the better, but excessively short timeframes can lead to performance issues.
 
 [#affinity]
 ((Affinity)):: Restriction binding a thread to specific CPU cores.
