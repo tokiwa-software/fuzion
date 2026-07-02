@@ -152,7 +152,7 @@ pre
 
 # mutate instance used for channels of given type
 #
-# We strictly do not need the type here, we could instead just
+# Strictly, we do not need the type here, we could instead just
 # use one single channel_mutate instance.  However, the type
 # enables effect analysis to show what this channel is used
 # for.
