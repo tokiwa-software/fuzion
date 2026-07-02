@@ -1,0 +1,238 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature mutate.dynamic_array
+#
+# -----------------------------------------------------------------------
+
+# create a mutable array.
+#
+module:public dynamic_array (
+       # element type
+       public T type,
+
+       # contents of the array
+       data mutate.this.array T,
+
+       # length -- number of elements in data that are in use,
+       #           i.e. store actual elements
+       len i64,
+
+       # length below which the internal array wont shrink, must be multiple of 2
+       min_length i64
+
+      ) : container.Buffer T mutate.this, mutable_element
+pre
+  safety: (len ≥ 0) && (len ≤ data.length.as_i64)
+  safety: { data.length < min_length || (
+              min_length ** (data.length.as_f64.log min_length.as_f64 .as_i64) = data.length)
+          } # NYI: UNDER DEVELOPMENT: is shrinking precisely to min_length important?
+  safety: min_length %% 2 # NYI: UNDER DEVELOPMENT: is this really required? Could odd lengths cause problems?
+is
+
+
+  # length of this array
+  #
+  public redef length i64 => len
+
+  # A mutable array might be inaccessible if we are running in a thread that is
+  # not permitted by the underlying mutate instance to access its mutable elements
+  # at this point. See `blocking_mutate` and `mutate.exclusive`.
+  #
+  public redef is_accessible bool
+  =>
+    is_exclusive
+
+
+  # get element at given index i
+  #
+  public redef index [ ] (I type : integer, i I) T
+  =>
+    data[i]
+
+
+  # set element at given index i to given value o
+  #
+  public redef set [ ] (I type : integer, i I, o T) unit
+  =>
+    data[i.as_i32] := o
+
+
+  # add an element at the end of this array
+  #
+  # amortized O(1) but worst case of O(n)
+  #
+  public add (o T) unit
+  =>
+    d := if data.length > len then data
+         else
+          new_data := mutate.this.array T .empty data.length*2
+          for i in indices do
+            new_data[i] := data[i]
+          new_data
+
+    d[len.as_i32] := o
+    set data := d
+    set len := len+1
+
+
+  # remove the last element of the this array
+  #
+  # amortized O(1) but worst case of O(n)
+  #
+  public remove_last option T =>
+    if len = 0
+      nil
+    else
+      res := data[len-1]
+      set len := len-1
+
+      # NYI: UNDER DEVELOPMENT: is shrinking to exactly min length important? E.g. array with 10 initial elements an min_length of 8
+
+      if len ≤ data.length/4 && len/2 ≥ min_length
+        new_data := mutate.this.array T .empty data.length/2
+        for i in indices do
+          new_data[i] := data[i]
+        set data := new_data
+
+      res
+
+
+  # create immutable array from this taking at most max_elements
+  #
+  public as_array(I type : integer, max_length I) universe.array T
+    pre debug: max_length.as_i64 <= length
+  =>
+    array T _ len (i -> data[i])
+
+
+  # create immutable array from this
+  #
+  public redef as_array universe.array T =>
+    array T _ len (i -> data[i])
+
+
+  # create a list from this array
+  #
+  public redef as_list list T =>
+    # since array is mutable,
+    # we first copy the elements
+    # to an immutable array.
+    as_array.as_list
+
+
+  # is this array empty?
+  #
+  public is_empty bool => len = 0
+
+
+  # does this array contain elem?
+  #
+  public contains(elem T) bool
+    pre T : property.equatable
+  =>
+    for i in indices
+    until data[i] = elem
+      true
+    else
+      false
+
+
+
+
+  # initialize one-dimensional mutable dynamic_array
+  #
+  public type.new
+   (
+    # length of the array to create
+    length i64,
+
+    # initial value for elements
+    init i64->T
+
+   ) mutate.this.dynamic_array T
+   pre safety: length > 0
+  =>
+    d := dynamic_array.this.type.empty
+    for i in i64.zero..(length-1) do
+      d.add (init i)
+    d
+
+
+  # initialize one-dimensional mutable dynamic_array
+  #
+  public type.new
+   (
+    # length of the array to create
+    length i64,
+
+    # minimum length below which the internal array size will not shrink when removing elements
+    # must be multiple of 2
+    min_length i64,
+
+    # initial value for elements
+    init i64->T
+
+   ) mutate.this.dynamic_array T
+   pre safety: i64.zero ≤ length ≤ min_length # NYI: UNDER DEVELOPMENT: does it make sense to allow initial length > min_length?
+  =>
+    d := dynamic_array.this.empty
+
+    for i in i64.zero..(length-1) do
+      d.add (init i)
+
+    d
+
+
+  # initialize one-dimensional mutable array from a Sequence
+  #
+  public type.from_Sequence(s Sequence T) mutate.this.dynamic_array T
+  =>
+    ab := s.as_array
+
+    init_len :=
+      if ab.length.as_i64 > default_min_length
+        default_min_length ** (ab.length.as_f64.log default_min_length.as_f64 .ceil.as_i64)
+      else
+        default_min_length
+
+    d := mutate.this.env.dynamic_array (mutate.this.array T .empty init_len) 0 default_min_length
+
+    for i in ab.indices do
+      d.add ab[i]
+
+    d
+
+
+  # initialize an empty mutable array of type T
+  #
+  public type.empty mutate.this.dynamic_array T =>
+    mutate.this.env.dynamic_array (mutate.this.array T .empty default_min_length) 0 default_min_length
+
+
+  # initialize an empty mutable array of type T, that won't shrink below the minimum size
+  # min_length must be multiple of 2
+  #
+  public type.empty(min_length i64) mutate.this.dynamic_array T =>
+    mutate.this.env.dynamic_array (mutate.this.array T .empty min_length) 0 min_length
+
+
+  # the default length below which the dynamic_array will not shrink
+  #
+  module type.default_min_length i64 => 8
