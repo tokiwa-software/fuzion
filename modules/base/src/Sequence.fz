@@ -1304,6 +1304,17 @@ is
   */
 
 
+  # filter and map in one pass.
+  #
+  # map items to a switch, return only "good" values
+  #
+  # NYI: UNDER DEVELOPMENT: can this somehow work?
+  #
+  # public collect(A type, B type, S type: switch A B, fn T -> S) Sequence A =>
+  #
+  public collect(A type, B type, fn T -> switch A B) Sequence A =>
+    flat_map A t->
+      (fn t).fold (a->[a]) (b->[])
 
 
   # create an empty Sequence
