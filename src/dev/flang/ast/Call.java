@@ -895,6 +895,10 @@ public class Call extends AbstractCall
     if (targetFeature != null && a >= 0)
       {
         var fos = res._module.lookup(targetFeature, _name, this, traverseOuter, false);
+        if (targetFeature.hasCotype())
+          {
+            fos.addAll(res._module.lookup(targetFeature.cotype(), _name, this, false, false));
+          }
         var n = a + (_wasImplicitImmediateCall ? _originalArgCount : _actuals.size());
         var calledName = FeatureName.get(_name, n);
         result = FeatureAndOuter.filter(

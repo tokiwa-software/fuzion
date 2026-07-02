@@ -432,7 +432,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   =>
     codepoints
       .chunk n
-      .map String.type.from_codepoints
+      .map String.from_codepoints
 
 
   # check if this string starts with given prefix
@@ -608,8 +608,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
                n u32 => n > 0
     =>
       utf8.split0 s.utf8 limit split_after
-          # NYI: BUG: could be just: .map String.from_bytes
-          .map String.type.from
+          .map String.from
 
 
   # split string at line feeds
