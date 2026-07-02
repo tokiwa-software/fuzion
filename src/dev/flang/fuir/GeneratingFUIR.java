@@ -305,7 +305,7 @@ public class GeneratingFUIR extends FUIR
          var openTypesFeature          = currentClazz._outer.feature();         // the actual outer instance of (xyz T U O...).#Open_Types<n>
          var featWithOpenTypeParameter = openTypesFeature.outer();              // the feature with open type parameter: `xyz(T, U type, O type...)`
          var openTypePar = featWithOpenTypeParameter.typeArguments().getLast(); // the open type parameter `xyz.O`
-         var openType    = openTypePar.asGenericType();                         // the open type parameter as a type `O`
+         var openType    = openTypePar.asParametricType();                         // the open type parameter as a type `O`
 
          return codeForTypeFold(call,
                                 currentClazz,

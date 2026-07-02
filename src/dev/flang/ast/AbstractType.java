@@ -2338,7 +2338,7 @@ there is no common super type of the two types (Types.t_ERROR)
       {
         if (typeParameter().outer() == outerCotype.cotypeOrigin())
           {
-            result = outerCotype.typeArguments().get(typeParameter().typeParameterIndex() + 1).asGenericType();
+            result = outerCotype.typeArguments().get(typeParameter().typeParameterIndex() + 1).asParametricType();
           }
         else
           {
@@ -2881,7 +2881,7 @@ there is no common super type of the two types (Types.t_ERROR)
   {
     return isParametricType()
       ? typeParameter().outer() == postFeature.origin()
-          ? postFeature.typeArguments().get(typeParameter().typeParameterIndex()).asGenericType()
+          ? postFeature.typeArguments().get(typeParameter().typeParameterIndex()).asParametricType()
           : this
       : applyToGenericsAndOuter(x -> x.replaceTypeParameters(postFeature));
   }
