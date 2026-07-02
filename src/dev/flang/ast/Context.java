@@ -147,7 +147,7 @@ abstract class Context extends ANY
                                 )
                               .findFirst()
                               .get()
-                              .asGenericType()
+                              .asParametricType()
                             : x);
                     }
                 }

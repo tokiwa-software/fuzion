@@ -357,7 +357,7 @@ public class Function extends AbstractLambda
                                           i < cl.typeArguments().size() ? Impl.TYPE_PARAMETER : Impl.FIELD);
                     if (i < cl.typeArguments().size())
                       {
-                        tps_as_actuals.add(arg.asGenericType());
+                        tps_as_actuals.add(arg.asParametricType());
                       }
                     args.add(arg);
                   }

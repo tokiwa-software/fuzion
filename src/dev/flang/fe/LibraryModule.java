@@ -529,7 +529,7 @@ public class LibraryModule extends Module implements MirModule
           }
         else if (k == -1)
           {
-            result = new GenericType(this, at, typeParameter(typeTypeParameter(at)));
+            result = new ParametricType(this, at, typeParameter(typeTypeParameter(at)));
           }
         else
           {

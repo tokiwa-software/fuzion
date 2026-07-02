@@ -2585,7 +2585,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
    * corresponding to this type parameter.
    */
   @Override
-  public AbstractType asGenericType()
+  public AbstractType asParametricType()
   {
     if (PRECONDITIONS) require
       (isTypeParameter());

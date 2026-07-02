@@ -773,7 +773,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * require
    *   (isTypeParameter());
    */
-  public abstract AbstractType asGenericType();
+  public abstract AbstractType asParametricType();
 
 
   /**
@@ -924,7 +924,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       {
         if (!first)
           {
-            tl.add(ta.asGenericType());
+            tl.add(ta.asParametricType());
           }
         first = false;
       }
@@ -1781,7 +1781,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   {
     if (_genericsAsActuals == null)
       {
-        _genericsAsActuals = typeArguments().map2(x -> x.asGenericType()).freeze();
+        _genericsAsActuals = typeArguments().map2(x -> x.asParametricType()).freeze();
       }
     return _genericsAsActuals;
   }
