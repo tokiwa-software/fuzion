@@ -200,7 +200,7 @@ is
   #
   universe.receiving is
 
-  # sent -- channel state indicating that data was sent to blocked receiving threda
+  # sent -- channel state indicating that data was sent to a blocked receiving thread
   #
   universe.sent(T type, data T) is
 
