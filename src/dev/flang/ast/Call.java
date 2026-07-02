@@ -599,11 +599,9 @@ public class Call extends AbstractCall
   {
     var outer = context.outerFeature();
     if (PRECONDITIONS) require
-      (outer.isTypeParameter()   // NYI: type parameters apparently inherit ANY and are not resolved yet. Type parameters should not inherit anything and this special handling should go.
-       ||
-       (res.state(outer) == State.RESOLVING_INHERITANCE
+      (res.state(outer) == State.RESOLVING_INHERITANCE
        ? res.state(outer.outer()).atLeast(State.RESOLVING_DECLARATIONS)
-       : res.state(outer)        .atLeast(State.RESOLVING_DECLARATIONS)));
+       : res.state(outer)        .atLeast(State.RESOLVING_DECLARATIONS));
 
     AbstractFeature targetFeature = null;
 
