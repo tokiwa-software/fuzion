@@ -240,13 +240,7 @@ public effect is
   # which allows composition of effects
   #
   public as_functional(R type) Functional R =>
-
-    # NYI: BUG: does not work: Wrong number of arguments in lambda expression
-    # code -> instate_self code
-
-    _ : Functional R is
-      public redef call(code Function R) R =>
-        instate_self code
+    code -> instate_self code
 
 
   # infix variant of effect.instate
