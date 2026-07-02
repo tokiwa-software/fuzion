@@ -279,6 +279,7 @@ is
       match unbuffered_channel_state.this
         received     => true
         *         => false
+    
     is_sent =>
       match unbuffered_channel_state.this
         sent      => true
