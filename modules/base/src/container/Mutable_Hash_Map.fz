@@ -51,20 +51,20 @@ module:public Mutable_Hash_Map(
 
         # lower boundary at which the size of the internal array is decreased
         #
-        lower_load_factor f32,
+        lower_load_factor num.fraction i32,
 
         # upper boundary at which the size of the internal array is increased
         #
-        upper_load_factor f32,
+        upper_load_factor num.fraction i32,
 
         # factor by which the allocated_size is increased if load reaches upper_load_factor
         #
-        resize_factor f32 ) ref : container.Mutable_Map HK V
+        resize_factor num.fraction i32) ref : container.Mutable_Map HK V
 pre
   debug: min_size > 0
-  debug: 0.0 < lower_load_factor < upper_load_factor
-  debug: lower_load_factor < upper_load_factor < 1.0
-  debug: resize_factor >= 2.0
+  debug: (num.fraction i32).zero < lower_load_factor < upper_load_factor
+  debug: lower_load_factor < upper_load_factor < (num.fraction i32).one
+  debug: resize_factor >= (num.fraction i32).two
 
 is
 
@@ -79,15 +79,15 @@ is
 
   # maximum number of pairs before size is increased
   #
-  max_elem => (allocated_size.get.as_f32 * upper_load_factor).ceil.as_i32
+  max_elem => ((num.fraction allocated_size.get 1) * upper_load_factor).ceil
 
   # minimum number of pairs before size is decreased
   #
-  min_elem => (allocated_size.get.as_f32 * lower_load_factor).floor.as_i32
+  min_elem => ((num.fraction allocated_size.get 1) * lower_load_factor).floor
 
   # size of allocated contents array, allows for some empty slots
   #
-  allocated_size := LM.env.new (min_size.as_f32 / upper_load_factor).ceil.as_i32
+  allocated_size := LM.env.new ((num.fraction min_size 1) / upper_load_factor).ceil
 
   # the contents
   #
@@ -114,22 +114,22 @@ is
   #
   increase_if_necessary =>
     if size > max_elem
-      change_allocated_size (allocated_size.get.as_f32 * resize_factor).ceil.as_i32
+      change_allocated_size ((num.fraction allocated_size.get 1) * resize_factor).ceil
 
 
   # decrease internal allocation if lower_load_factor is reached
   #
   decrease_if_necessary =>
     if size < min_elem && max_elem > min_size
-      change_allocated_size (allocated_size.get.as_f32 / resize_factor).ceil.as_i32
+      change_allocated_size ((num.fraction allocated_size.get 1) / resize_factor).ceil
 
 
   # change size of internal allocation to new_alloc_size
   #
   change_allocated_size(new_alloc_size i32)
     pre
-      debug: size <= (new_alloc_size.as_f32 * upper_load_factor).ceil.as_i32
-      debug: max size min_size >= (new_alloc_size.as_f32 * lower_load_factor).floor.as_i32
+      debug: size <= ((num.fraction new_alloc_size 1) * upper_load_factor).ceil
+      debug: max size min_size >= ((num.fraction new_alloc_size 1) * lower_load_factor).floor
   =>
     allocated_size <- new_alloc_size
     old_contents := contents.get.as_array
@@ -262,4 +262,4 @@ is
   # create an empty instance of Mutable_Hash_Map
   #
   public fixed redef type.empty container.Mutable_Hash_Map LM HK V =>
-    container.Mutable_Hash_Map LM HK V 11 0.25 0.5 2
+    container.Mutable_Hash_Map LM HK V 11 (num.fraction 1 4) (num.fraction 1 2) (num.fraction 2 1)
