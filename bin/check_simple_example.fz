@@ -75,8 +75,7 @@ envir_var_kv := [
   else
     envir.vars.env[k].bind v->
       (k,v)
- .filter (.ok)
- .map (.or_panic)
+ .flat_map id
  .as_array
 
 # envir vars as map
