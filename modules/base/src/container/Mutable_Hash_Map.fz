@@ -151,7 +151,7 @@ is
           store (idx k) k v update_size false
         else
           contents.get[at] := (k, v) # insert new key value pair
-          if update_size then load <- load.get + 1
+          if update_size then load <- load + 1
 
       t tuple =>
         ek, _ := t
@@ -166,7 +166,7 @@ is
           store (collision at) k v update_size is_update
         else
           contents.get[at] := (k, v) # insert new key value pair
-          if update_size then load <- load.get + 1
+          if update_size then load <- load + 1
 
 
   # number of entries in this map
@@ -223,7 +223,7 @@ is
             ek, v := t
             if ek = k
               contents.get[del_idx] := nil
-              load <- load.get - 1
+              load <- load - 1
               contents.get[del_idx] := del
               v
             else
