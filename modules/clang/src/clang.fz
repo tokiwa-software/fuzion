@@ -141,7 +141,7 @@ public clang is
   # get the fields of a struct/union
   #
   get_fields(crsr CXCursor) =>
-    childs := mut (container.expanding_array clang.arg .empty)
+    childs := lm.new (container.expanding_array clang.arg .empty)
 
     visitor : Function i32 CXCursor Native_Ref Native_Ref is
       public redef call(cxc CXCursor, parent Native_Ref, client_data Native_Ref) i32 =>

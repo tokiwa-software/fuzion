@@ -111,7 +111,7 @@ is
           # check if next element comes from first heap
           if heap2_empty || !heap1_empty && (less_than_or_equal a[i1] a[i2])
             # if so, increment index in first heap and return element from first heap
-            h1 <- h1.get + 1
+            h1 <- h1 + 1
             a[i1]
           else
             # otherwise, return element from second heap

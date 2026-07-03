@@ -47,9 +47,9 @@ module Entry(module key KEY, module val VAL) ref is
   #
   module get(k KEY) =>
     if k < key
-      left.get.bind VAL (e -> e.get k)
+      left.get.bind VAL (.get k)
     else if key < k
-      right.get.bind VAL (e -> e.get k)
+      right.get.bind VAL (.get k)
     else
       val
 
