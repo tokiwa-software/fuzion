@@ -1572,7 +1572,7 @@ public class Call extends AbstractCall
       {
         t = _generics.get(0);
         // we are using `.this.type` inside a type feature, see #2295
-        if (t.isRelayTypeInCotype())
+        if (t.isRelayType())
           {
             t = t.typeParameter().outer().thisType();
           }
