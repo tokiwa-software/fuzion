@@ -56,6 +56,12 @@ public abstract class AbstractCall extends Expr
   public YesNo _isConst = YesNo.dontKnow;
 
 
+  /**
+   * to cache result of formalArgumentTypes()
+   */
+  private AbstractType[] _formalArgumentTypes;
+
+
   /*----------------------------  constants  ----------------------------*/
 
 
@@ -511,9 +517,9 @@ public abstract class AbstractCall extends Expr
    */
   AbstractType[] resolvedFormalArgumentTypes(Resolution res, Context context)
   {
-    // NYI: UNDER DEVELOPMENT: cache this? cache key: calledFeature/target
-    var result = calledFeature().valueArguments()
-                                .flatMap2(frml -> resolveFormalArg(res, context, frml));
+    var result = calledFeature()
+      .valueArguments()
+      .flatMap2(frml -> resolveFormalArg(res, context, frml));
     return result.toArray(new AbstractType[result.size()]);
   }
 
@@ -530,7 +536,11 @@ public abstract class AbstractCall extends Expr
    */
   public AbstractType[] formalArgumentTypes()
   {
-    return resolvedFormalArgumentTypes(null, Context.NONE);
+    if (_formalArgumentTypes == null)
+      {
+        _formalArgumentTypes = resolvedFormalArgumentTypes(null, Context.NONE);
+      }
+    return _formalArgumentTypes;
   }
 
 
