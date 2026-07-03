@@ -35,20 +35,18 @@
 # The performance of iterating the utf8 bytes of a string is O(l+n) for an
 # array of length l created by concatenating n sub-strings.
 #
-String.type.from_mutable_array(E type : mutate, a container.Mutable_Array Any E) String =>  # NYI: Remove?
+String.type.from_mutable_array(E type : mutate, a container.Abstract_Dynamic_Array E Any) String =>
 
   _ : String is
 
     public redef utf8 Sequence u8 =>
       a.as_list.flat_map (.as_string.utf8)
 
-
     public redef infix + (other Any) String =>
       a.add other
-      from_mutable_array a
-
+      from_mutable_array E a
 
 mi : mutate is
 mi ! ()->
-  b := (String.type.from_mutable_array (mi.array Any .new 1 false))
+  b := (String.type.from_mutable_array mi (container.Dynamic_Array mi Any .new 1 _->false))
   _ := type_of b
