@@ -430,12 +430,12 @@ public class LibraryFeature extends AbstractFeature
    * corresponding to this type parameter.
    */
   @Override
-  public AbstractType asGenericType()
+  public AbstractType asParametricType()
   {
     if (PRECONDITIONS) require
       (isTypeParameter());
 
-    return new GenericType(_libModule, -1, this);
+    return new ParametricType(_libModule, -1, this);
   }
 
 

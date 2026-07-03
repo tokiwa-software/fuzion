@@ -536,7 +536,7 @@ fzT
 fzTag
 fzThrd
 genericsToReplace
-GenericType
+ParametricType
 getAll
 getchar
 getClass

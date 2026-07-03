@@ -530,7 +530,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
                           }
                         else
                           {
-                            var gt = f.asGenericType();
+                            var gt = f.asParametricType();
                             if (gt.isOpenGeneric() && !isValidUseOfOpenType(context, f))
                               {
                                 if (!tolerant)
@@ -758,7 +758,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
       {
         if (isMatchingCotype(o))
           {
-            result = o.typeArguments().get(0).asGenericType();
+            result = o.typeArguments().get(0).asParametricType();
             o = null;
           }
         else
@@ -890,7 +890,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
       };
     var g = outer.outer().addTypeParameter(res, tp);
     tp.scheduleForResolution(res);
-    return g.asGenericType();
+    return g.asParametricType();
   }
 
 

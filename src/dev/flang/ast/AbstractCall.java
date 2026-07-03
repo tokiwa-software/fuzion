@@ -397,7 +397,7 @@ public abstract class AbstractCall extends Expr
   AbstractType asTypeParameterType()
   {
     return calledFeature().isTypeParameter()
-      ? calledFeature().asGenericType()
+      ? calledFeature().asParametricType()
       : null;
   }
 
