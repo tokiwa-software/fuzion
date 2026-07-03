@@ -240,7 +240,7 @@ is
   # total order
   #
   public fixed redef type.lteq(a, b time.duration) bool =>
-    u64.type.lteq a.nanos b.nanos
+    u64.lteq a.nanos b.nanos
 
 
   # create hash code from a duration
