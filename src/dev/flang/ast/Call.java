@@ -1441,13 +1441,67 @@ public class Call extends AbstractCall
     var t1 = t0 == null || t0.isArtificialType() ? t0 : resolveSelect(res, context, t0);
     var t2 = t1 == null || t1.isArtificialType() ? t1 : adjustType(res, context, t1, (from,to) ->
       AstErrors.illegalOuterRefTypeInCall(this, false, calledFeature(), t1, from, to));
+
+    // NYI: CLEANUP: potential overlap with Clazz.replaceThisTypeForCotype
+    var t3 = t2 == null || t2.isArtificialType()
+      ? t2
+      : target().type().selfOrConstraint(context).isCotypeType()
+      ? t2.applyToGenericsAndOuter(x ->
+          x.isThisType()
+            ? extractRelayedTypeFromCoType(context, x, target().type().selfOrConstraint(context))
+            : x
+        )
+      : t2;
+
     // NYI: UNDER DEVELOPMENT: can we move more to previous call to adjustType()?
-    var t3 = t2 == null || t2.isArtificialType() ? t2 : resolveForCalledFeature(res, t2, target().type(), context);
-    var t4 = t3 == null || t3.isArtificialType() ? t3 : calledFeature().isCotype() ? t3 : t3.replace_type_parameters_of_cotype_origin(context.outerFeature());
+    var t4 = t3 == null || t3.isArtificialType() ? t3 : resolveForCalledFeature(res, t3, target().type(), context);
+    var t5 = t4 == null || t4.isArtificialType() ? t4 : calledFeature().isCotype() ? t4 : t4.replace_type_parameters_of_cotype_origin(context.outerFeature());
     // NYI: CLEANUP: cleanup potential?
-    return t4 == Types.t_UNDEFINED
+    return t5 == Types.t_UNDEFINED
       ? null
-      : t4;
+      : t5;
+  }
+
+
+  /**
+   * use RELAY#TYPE to find the actual type of
+   * the this-type.
+   *
+   * Example: where {@code my_mut.this} in the result type of {@code type.empty}
+   * needs to be replaced by {@code foo.this.m}.
+   *
+   * {@snippet :
+   *
+   *   my_mut is
+   *
+   *     abstract_a is
+   *     public type.empty my_mut.this.abstract_a => ...
+   *
+   *   foo is
+   *     m : my_mut is
+   *     _ := m.type.empty
+   *
+   * }
+   *
+   * @param thisType
+   * @param coTypeTarget
+   * @return
+   */
+  private static AbstractType extractRelayedTypeFromCoType(Context context, AbstractType thisType, AbstractType coTypeTarget)
+  {
+    if (PRECONDITIONS) require
+      (thisType.isThisType(),
+       coTypeTarget.isCotypeType());
+
+    AbstractType result = thisType; 
+    if (!coTypeTarget.isThisType())
+      {
+        var g0 = coTypeTarget.generics().get(0);
+        var g0a = g0.isRelayTypeInCotype() ? g0.typeParameter().outer().selfType()
+                                           : g0;
+        result = g0a.actualType(thisType, context);
+      }
+    return result; 
   }
 
 

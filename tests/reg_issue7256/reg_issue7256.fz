@@ -17,25 +17,28 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature os.platform
+#  Source code of Fuzion test reg_issue7256
 #
 # -----------------------------------------------------------------------
 
-# unit type - denoting Windows
-#
-public windows is
+public my_mut : mutate is
 
-# unit type - denoting POSIX
-#
-public posix is
+  public abstract_a (public T type) ref is
 
-# get the platform we are running on
-#
-public platform : choice os.windows os.posix is
+  public arr (public T type) ref : abstract_a T is
+    public type.empty abstract_a T =>
+      my_mut.this.env.arr T
 
-  public type.or_panic os.platform =>
-    # NYI: UNDER DEVELOPMENT: better make this an intrinsic
-    if (envir.vars.env["OS"].or_default "").lower_case.contains "windows"
-      os.windows
-    else
-      os.posix
+foo is
+  m : my_mut is
+  m ! ()->
+    say <| (m.arr path).empty
+
+  a(M type : m, mm M) =>
+    mm ! ()->
+      say <| (M.arr path).empty
+  a m
+
+foo2 : foo is
+
+_ := foo2
