@@ -1820,7 +1820,7 @@ exprNoColon : operatorExpr          // may not contain {@code :} unless enclosed
             matchOperator(":", "expr of the form >>a ? b : c<<");
             Expr g = operatorExpr();
             i.end();
-            result = new ParsedCall(result, new ParsedName(pos, "ternary ? :"), new List<>(f, g));
+            result = new ParsedCall(result, new ParsedName(result.pos().rangeTo(g.pos().byteEndPos()), "ternary ? :"), new List<>(f, g));
           }
       }
     return result;
