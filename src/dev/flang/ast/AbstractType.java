@@ -620,7 +620,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
               }
           }
       }
-    if (result.no() && allowTagging && target_type.isChoice() && !isRelayTypeInCotype())
+    if (result.no() && allowTagging && target_type.isChoice() && !isRelayType())
       {
         result = YesNo.fromBool(target_type.isChoiceMatch(actual_type, context));
       }
@@ -1972,7 +1972,7 @@ there is no common super type of the two types (Types.t_ERROR)
   private boolean replacesThisType(AbstractType tt, Context context)
   {
     return
-      isRelayTypeInCotype() && tt.isParametricType()   // we have a type parameter TT.THIS#TYPE, which is equal to TT
+      isRelayType() && tt.isParametricType()   // we have a type parameter TT.THIS#TYPE, which is equal to TT
       ||
       isThisType() && (!tt.isParametricType() && tt.feature().inheritsFrom(feature())  // we have abc.this.type with tt inheriting from abc, so use tt
                        ||
@@ -2020,7 +2020,7 @@ there is no common super type of the two types (Types.t_ERROR)
 
   /**
    * Check this and, recursively, all types contained in this' type parameters
-   * and outer types if isRelayTypeInCotype() is true and the surrounding
+   * and outer types if isRelayType() is true and the surrounding
    * type feature equals cotype.  Replace all matches by cotype's self
    * type.
    *
@@ -2036,7 +2036,7 @@ there is no common super type of the two types (Types.t_ERROR)
    */
   public AbstractType replace_relay_type_in_cotype(AbstractFeature cotype)
   {
-    return isRelayTypeInCotype() && cotype  == typeParameter().outer()
+    return isRelayType() && cotype  == typeParameter().outer()
       ? cotype.cotypeOrigin().selfTypeInCoType()
       : applyToGenericsAndOuter(g -> g.replace_relay_type_in_cotype(cotype));
   }
@@ -2389,7 +2389,7 @@ there is no common super type of the two types (Types.t_ERROR)
    *
    * This checks if this type is this implicit type parameter.
    */
-  public boolean isRelayTypeInCotype()
+  boolean isRelayType()
   {
     return isParametricType()
       && typeParameter().state().atLeast(State.FINDING_DECLARATIONS)
