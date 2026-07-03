@@ -1493,15 +1493,15 @@ public class Call extends AbstractCall
       (thisType.isThisType(),
        coTypeTarget.isCotypeType());
 
-    AbstractType result = thisType; 
+    AbstractType result = thisType;
     if (!coTypeTarget.isThisType())
       {
         var g0 = coTypeTarget.generics().get(0);
-        var g0a = g0.isRelayTypeInCotype() ? g0.typeParameter().outer().selfType()
+        var g0a = g0.isRelayType() ? g0.typeParameter().outer().selfType()
                                            : g0;
         result = g0a.actualType(thisType, context);
       }
-    return result; 
+    return result;
   }
 
 
