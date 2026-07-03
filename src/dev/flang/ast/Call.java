@@ -897,8 +897,8 @@ public class Call extends AbstractCall
         var fos = res._module.lookup(targetFeature, _name, this, traverseOuter, false);
         if (_target != null && _target.asParsedType() != null)
           {
-            var tt = _target.asParsedType().resolve(res, context);
-            if (tt.isNormalType() && tt.feature().hasCotype())
+            var tt = _target.asParsedType().resolve(res, context, true);
+            if (tt != null && tt.isNormalType() && tt.feature().hasCotype())
               {
                 fos.addAll(res._module.lookup(tt.feature().cotype(), _name, this, false, false));
               }
