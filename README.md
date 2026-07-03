@@ -36,6 +36,7 @@ Scorecard](https://api.securityscorecards.dev/projects/github.com/tokiwa-softwar
        * [Emacs](#emacs)
          * [Eglot](#eglot)
          * [LSP-Mode](#lsp-mode)
+     * [Build](#build-language-server)
      * [Run standalone](#run-standalone)
        * [socket](#transport-socket)
        * [stdio](#transport-stdio)
@@ -505,6 +506,13 @@ For emacs there is two options eglot or lsp-mode.
 - add following line to ~/.emacs.d/init.el or to ~/.emacs
 
   (load "~/.emacs.d/fuzion-lsp.el")
+
+
+### Build Language Server
+
+To build the language server run `make lsp/compile`.
+This will - among other things - download the necessary 3rd-party jar-files and leave you with a starter script `./bin/fuzion_language_server`.
+
 
 ### Run standalone
 

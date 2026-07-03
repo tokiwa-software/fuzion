@@ -192,20 +192,22 @@ is
   public type.new(
           I type : integer,
           length0, length1, length2 I,
-          init3 (I, I, I) -> T) array3 T
+          init (I, I, I) -> T) array3 T
     pre
       safety: length0 ≥ 0
       safety: length1 ≥ 0
       safety: length2 ≥ 0
       safety: length0.as_i64 *? length1.as_i64 *? length2.as_i64 >=? 0
-      # NYI pre fits in i64 ?
+      debug : length0.fits_in_i64
+      debug : length1.fits_in_i64
+      debug : length2.fits_in_i64
   =>
 
     internal_array := fuzion.sys.internal_array_init T length0.as_i32*length1.as_i32*length2.as_i32
     for i1 := I.zero, i1+1 while i1 < length0
       for i2 := I.zero, i2+1 while i2 < length1
         for i3 := I.zero, i3+1 while i3 < length2
-          internal_array[(i1.as_i32 * length1.as_i32 + i2.as_i32) * length2.as_i32 + i3.as_i32] := init3 i1 i2 i3
+          internal_array[(i1.as_i32 * length1.as_i32 + i2.as_i32) * length2.as_i32 + i3.as_i32] := init i1 i2 i3
 
 
     array3 T length0.as_i64 length1.as_i64 length2.as_i64 internal_array unit unit
@@ -221,12 +223,14 @@ is
 public array3(T type,
         I type : integer,
         length0, length1, length2 I,
-        init3 (I, I, I) -> T) array3 T
+        init (I, I, I) -> T) array3 T
   pre
     safety: length0 ≥ 0
     safety: length1 ≥ 0
     safety: length2 ≥ 0
     safety: length0.as_i64 *? length1.as_i64 *? length2.as_i64 >=? 0
-    # NYI pre fits in i64 ?
+    debug : length0.fits_in_i64
+    debug : length1.fits_in_i64
+    debug : length2.fits_in_i64
 =>
-  (array3 T).new I length0 length1 length2 init3
+  (array3 T).new I length0 length1 length2 init

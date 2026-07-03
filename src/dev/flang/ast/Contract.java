@@ -481,8 +481,11 @@ public class Contract extends ANY
     var oc = outer.contract();
     var p = oc._hasPost != null ? oc._hasPost : outer.pos();
     List<Expr> args = new List<>();
-    // NYI: CLEANUP: use outer.kind() and switch
-    if (!outer.isConstructor())
+    if (outer.isConstructor())
+      {
+        args.add(new Current(p, outer));
+      }
+    else
       {
         for (var a : outer.valueArguments())
           {
@@ -492,18 +495,14 @@ public class Contract extends ANY
             ca = ca.resolveTypes(res, context);
             args.add(ca);
           }
-      }
-    if (outer.hasResultField())
-      {
-        var c2 = new Call(p,
-                          new Current(p, outer),
-                          outer.resultField());
-        c2 = c2.resolveTypes(res, context);
-        args.add(c2);
-      }
-    else if (outer.isConstructor())
-      {
-        args.add(new Current(p, outer));
+        if (outer.hasResultField())
+          {
+            var c2 = new Call(p,
+                              new Current(p, outer),
+                              outer.resultField());
+            c2 = c2.resolveTypes(res, context);
+            args.add(c2);
+          }
       }
     return callPostCondition(res, outer, context, args);
   }
@@ -621,7 +620,7 @@ public class Contract extends ANY
                          cond,
                          new Block(),
                          pc(p, FuzionConstants.FUZION_RUNTIME_PRECONDITION_FAULT, new List<>(new StrConst(p, p.sourceText()))),
-                         true));
+                         AbstractMatch.Kind.Contract));
           }
       }
     if (cc != null)
@@ -713,7 +712,7 @@ public class Contract extends ANY
                                        cc,
                                        new Block(),
                                        new Block(new_code),
-                                       false));
+                                       AbstractMatch.Kind.If));
       }
     code._expressions = new_code;
     var e = res.resolveType(code, pF.context());
@@ -1045,7 +1044,7 @@ all of their redefinition to `true`. +
                            c.cond(),
                            new Block(),
                            pc(p, FuzionConstants.FUZION_RUNTIME_POSTCONDITION_FAULT, new List<>(new StrConst(p, p.sourceText()))),
-                           false));
+                           AbstractMatch.Kind.If));
           }
         var code = new Block(l);
         var pF = new Feature(pos,
@@ -1149,7 +1148,7 @@ The conditions of a post-condition are checked at run-time in sequential source-
         var f = new Call(p, "fuzion");
         var r = new Call(p, f, "runtime");
         var e = new Call(p, r, fault, new List<>(new StrConst(p, p.sourceText())));
-        l.add(Match.createIf(p, c.cond(), new Block(), e, false));
+        l.add(Match.createIf(p, c.cond(), new Block(), e, AbstractMatch.Kind.If));
       }
     return new Block(l);
   }

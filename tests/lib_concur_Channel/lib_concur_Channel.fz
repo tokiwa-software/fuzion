@@ -25,6 +25,8 @@ lib_concur_Channel =>
 
   chan := concur.Channel u8
 
+  sent_items := concur.atomic bool .new false
+  received_item := concur.atomic bool .new false
 
   concur.thread_pool _ 8 ()->
 
@@ -32,9 +34,10 @@ lib_concur_Channel =>
       chan <- 1
       chan <- 2
       chan <- 3
+      sent_items.write true
 
 
-    time.nano.env.sleep (time.duration.ms 250)
+    while !sent_items.read
 
 
     check concur.thread_pool.env.submit ()->
@@ -42,9 +45,10 @@ lib_concur_Channel =>
         for n := chan.next
         while n.ok
           say "received $(n)"
+          received_item.write true
 
 
-    time.nano.env.sleep (time.duration.ms 250)
+    while !received_item.read
 
 
     check concur.thread_pool.env.submit ()->

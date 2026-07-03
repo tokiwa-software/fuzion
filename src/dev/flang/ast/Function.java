@@ -81,9 +81,9 @@ public class Function extends AbstractLambda
 
 
   /**
-   * In case `type()` is called and we have not received a type via
-   * `propagateExpectedType`, this will be called. This is currently set by
-   * `resolveTypes` to handle cases like `()->true`.
+   * In case {@code type()} is called and we have not received a type via
+   * {@code propagateExpectedType}, this will be called. This is currently set by
+   * {@code resolveTypes} to handle cases like {@code ()->true}.
    */
   Runnable _resultTypeLastResort = ()->{};
 
@@ -357,7 +357,7 @@ public class Function extends AbstractLambda
                                           i < cl.typeArguments().size() ? Impl.TYPE_PARAMETER : Impl.FIELD);
                     if (i < cl.typeArguments().size())
                       {
-                        tps_as_actuals.add(arg.asGenericType());
+                        tps_as_actuals.add(arg.asParametricType());
                       }
                     args.add(arg);
                   }
@@ -368,10 +368,17 @@ public class Function extends AbstractLambda
             var rt0 = t.lambdaTargetResultType(res);
             var rt = inferResultType ? NoType.INSTANCE      : new FunctionReturnType(rt0);
             var im = inferResultType ? Impl.Kind.RoutineDef : Impl.Kind.Routine;
-            var feature = new Feature(pos(), Visi.PRIV, FuzionConstants.MODIFIER_REDEFINE, rt, new List<String>(cl.baseName()), args, NO_CALLS, Contract.EMPTY_CONTRACT, new Impl(_expr.pos(), _expr, im))
+            var feature = new Feature(pos(), Visi.PUB, FuzionConstants.MODIFIER_REDEFINE, rt, new List<String>(cl.baseName()), args, NO_CALLS, Contract.EMPTY_CONTRACT, new Impl(_expr.pos(), _expr, im))
               {
+                /**
+                 * Is this the {@code call} implementation of a lambda?
+                 *
+                 * This is used to allow an implicit result type even though
+                 * {@code call} is marked as public and to suppress some redundant errors.
+                 *
+                 */
                 @Override
-                public boolean isLambdaCall()  // NYI: what is this for?
+                public boolean isLambdaCall()
                 {
                   return true;
                 }
@@ -447,8 +454,8 @@ public class Function extends AbstractLambda
     return switch(tt.kind())
       {
         case TypeKind.ThisType -> new Current(pos(), tt.feature());
-        case TypeKind.GenericArgument -> {
-          AstErrors.lamdaOuterMustNotBeGenericArgument(pos(), tt);
+        case TypeKind.ParametricType -> {
+          AstErrors.lamdaOuterMustNotBeTypeParameter(pos(), tt);
           yield Call.ERROR;
         }
         default -> {
@@ -488,7 +495,7 @@ public class Function extends AbstractLambda
   private AbstractType refineResultType(Resolution res, Context context, AbstractType frmlRt, AbstractType lmbdRt)
   {
     var result = lmbdRt;
-    if (!frmlRt.isGenericArgument())
+    if (!frmlRt.isParametricType())
       {
         if (frmlRt.isChoice()
             // NYI: UNDER DEVELOPMENT: We may want to go further here and support more than
@@ -504,7 +511,7 @@ public class Function extends AbstractLambda
                   }
               }
           }
-        else if (!lmbdRt.isGenericArgument()
+        else if (!lmbdRt.isParametricType()
                  && lmbdRt.feature() != frmlRt.feature()
                  && lmbdRt.feature().inheritsFrom(frmlRt.feature()))
           {

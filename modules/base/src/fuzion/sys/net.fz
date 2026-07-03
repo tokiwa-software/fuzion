@@ -104,7 +104,7 @@ module net is
   # close socket descriptor
   module close(sd i32) outcome unit =>
     res := fzE_socket_close sd
-    if res = -1 then error "error: $res" else unit
+    if res = -1 then error "error: $res" fzE_last_error else unit
 
 
   # set descriptor to blocking / none blocking mode.

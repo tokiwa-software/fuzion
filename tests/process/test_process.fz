@@ -32,7 +32,7 @@ test_process =>
     _ : String is
       public redef utf8 Sequence u8 =>
         (1..byte_size)
-          .map u8 (x -> codepoint.type.zero_char)
+          .map u8 (x -> "0".as_u8)
 
 
   test(str String, f () -> outcome unit) =>
@@ -124,4 +124,4 @@ test_process =>
 
 
   test "start process that does not exist" ()->
-    (os.process.start "ohQue1AheiPu4aaw").bind _->
+    say (os.process.start "ohQue1AheiPu4aaw").err.msg

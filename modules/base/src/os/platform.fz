@@ -33,7 +33,7 @@ public posix is
 #
 public platform : choice os.windows os.posix is
 
-  public type.or_panic platform =>
+  public type.or_panic os.platform =>
     # NYI: UNDER DEVELOPMENT: better make this an intrinsic
     if (envir.vars.env["OS"].or_default "").lower_case.contains "windows"
       os.windows

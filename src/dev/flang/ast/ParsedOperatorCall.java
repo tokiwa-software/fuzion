@@ -117,10 +117,10 @@ public class ParsedOperatorCall extends ParsedCall
    * For a given feature name, check if it is an operator call that has to be
    * looked up under different actual names. If so, return all the actual names.
    *
-   * This is used for infix operators that might be `infix` or `infix_right` and
-   * for unary operators that might be `prefix` or `postfix`.
+   * This is used for infix operators that might be {@code infix} or {@code infix_right} and
+   * for unary operators that might be {@code prefix} or {@code postfix}.
    *
-   * @return a non-empty list containing either just `name` or the list of
+   * @return a non-empty list containing either just {@code name} or the list of
    * possible names that would match the given operator name.
    */
   public static List<String> lookupNames(String name)

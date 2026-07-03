@@ -52,7 +52,7 @@ lib_io_utf8 =>
     say "$file exists: $(f.exists file)"
 
     _ := f
-      .use file f.mode.write ()->(f.writer.write content)
+      .use file f.mode.write ()->((io.buffered f.file_mutate).writer.env.write content)
       .bind (_ -> say "$file was created")
     say "$file exists: $(f.exists file)"
 
@@ -95,9 +95,9 @@ lib_io_utf8 =>
     _ := io.file.delete (path.of "⚗️🧫/2️⃣🗒️")
     _ := io.file.delete (path.of "⚗️🧫")
     say (io.dir.make (path.of "⚗️🧫"))
-    say (io.dir.make (path.of "⚗️🧫"))
-    _ := io.file.use (path.of "⚗️🧫/1️⃣📜") io.file.mode.write ()->(io.file.writer.write "")
-    _ := io.file.use (path.of "⚗️🧫/2️⃣🗒️") io.file.mode.write ()->(io.file.writer.write "")
+    say (io.dir.make (path.of "⚗️🧫")).err.msg
+    _ := io.file.use (path.of "⚗️🧫/1️⃣📜") io.file.mode.write ()->((io.buffered io.file.file_mutate).writer.env.write "")
+    _ := io.file.use (path.of "⚗️🧫/2️⃣🗒️") io.file.mode.write ()->((io.buffered io.file.file_mutate).writer.env.write "")
 
     res := io.dir.use (Sequence String) (path.of "⚗️🧫") ()->
       array 3 _->io.dir.open.env.read.as_string

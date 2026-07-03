@@ -430,12 +430,12 @@ public class LibraryFeature extends AbstractFeature
    * corresponding to this type parameter.
    */
   @Override
-  public AbstractType asGenericType()
+  public AbstractType asParametricType()
   {
     if (PRECONDITIONS) require
       (isTypeParameter());
 
-    return new GenericType(_libModule, -1, this);
+    return new ParametricType(_libModule, -1, this);
   }
 
 
@@ -498,7 +498,7 @@ public class LibraryFeature extends AbstractFeature
 
   /**
    * constraint returns the constraint type of this type parameter, Any if no
-   * constraint was set.  This ignores any context constraints like `pre T : numeric`
+   * constraint was set.  This ignores any context constraints like {@code pre T : numeric}
    *
    * @return the constraint.
    */
@@ -518,12 +518,12 @@ public class LibraryFeature extends AbstractFeature
 
 
   /**
-   * The sourcecode position of this feature declaration's result type, null if
-   * not available.
+   * The sourcecode position of this feature declaration's result type,
+   * the features source position if not available.
    */
   public SourcePosition resultTypePos()
   {
-    return null; // NYI: UNDER DEVELOPMENT: resultTypePos currently missing in module file
+    return pos(); // NYI: UNDER DEVELOPMENT: resultTypePos currently missing in module file
   }
 
 

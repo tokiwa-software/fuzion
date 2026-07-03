@@ -24,9 +24,7 @@
 # Several test cases that call features with type and value arguments of
 # open type.
 #
-# This is a negative test for many cases that should produce errors.  A positive
-# version of the same code is available as
-# ../reg_issue5818_calling_with_open_type/reg_issue5818_calling_with_open_type.fz,
+# This is the same code as ../reg_issue5818_calling_with_open_type_negative/reg_issue5818_calling_with_open_type_negative.fz,
 # only with all failing cases commented out such that we can verify that the
 # positive cases work.
 #
