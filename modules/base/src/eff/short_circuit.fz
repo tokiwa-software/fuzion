@@ -24,6 +24,15 @@
 # short_circuit -- short_circuit is an effect to model a computation
 # that may return early from somewhere in the code
 #
+# synthetic usage example, in a loop early return when result 42 is found:
+#
+#      say <| eff.short_circuit (option i32) .run ()->
+#        for i in 1..100 do
+#          if i=42
+#            (eff.short_circuit (option i32)).env.return i
+#        nil
+#
+#
 public short_circuit(T type, h T->void) : /* NYI: need to inherit this privately */ fallible T h is
 
 
