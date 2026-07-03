@@ -481,8 +481,11 @@ public class Contract extends ANY
     var oc = outer.contract();
     var p = oc._hasPost != null ? oc._hasPost : outer.pos();
     List<Expr> args = new List<>();
-    // NYI: CLEANUP: use outer.kind() and switch
-    if (!outer.isConstructor())
+    if (outer.isConstructor())
+      {
+        args.add(new Current(p, outer));
+      }
+    else
       {
         for (var a : outer.valueArguments())
           {
@@ -492,18 +495,14 @@ public class Contract extends ANY
             ca = ca.resolveTypes(res, context);
             args.add(ca);
           }
-      }
-    if (outer.hasResultField())
-      {
-        var c2 = new Call(p,
-                          new Current(p, outer),
-                          outer.resultField());
-        c2 = c2.resolveTypes(res, context);
-        args.add(c2);
-      }
-    else if (outer.isConstructor())
-      {
-        args.add(new Current(p, outer));
+        if (outer.hasResultField())
+          {
+            var c2 = new Call(p,
+                              new Current(p, outer),
+                              outer.resultField());
+            c2 = c2.resolveTypes(res, context);
+            args.add(c2);
+          }
       }
     return callPostCondition(res, outer, context, args);
   }
