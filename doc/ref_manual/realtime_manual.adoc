@@ -78,6 +78,9 @@ This document explains Fuzion's realtime systems.
 ((Affinity)):: Restriction binding a thread to specific CPU cores.
 
 [#fifo_scheduling]
-((FIFO Scheduling)):: Real-time scheduling policy where highest-priority runnable thread runs until blocked or preempted.
+((FIFO Scheduling)):: First In First Out scheduling, where tasks are executed in the order they arrive.
+
+[#priority_scheduling]
+((Priority Scheduling)):: A scheduling algorithm where tasks are executed based on their priority levels.
 
 
