@@ -37,7 +37,7 @@ include::../../version.txt[]
 toc::[]
 
 == About this Document
-This document is intended to provide help for the comprehension of Realtime systems in Fuzion.
+This document explains Fuzion's realtime systems.
 
 == Glossary
 
