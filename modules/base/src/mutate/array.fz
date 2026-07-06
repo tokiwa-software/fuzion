@@ -64,20 +64,6 @@ is
     data[i.as_i32] := o
 
 
-  # create immutable array of length len from this
-  #
-  public as_array(I type : integer, len I) universe.array T
-    pre debug: len.as_i64 <= length
-  =>
-    array T _ len (i -> data[i])
-
-
-  # create immutable array from this
-  #
-  public redef as_array universe.array T =>
-    array T _ length (i -> data[i])
-
-
   # create a list from this array
   #
   public redef as_list list T =>
@@ -85,24 +71,6 @@ is
     # we first copy the elements
     # to an immutable array.
     as_array.as_list
-
-
-  # is this array empty?
-  #
-  public is_empty bool => length = 0
-
-
-  # does this array contain elem?
-  #
-  public contains(elem T) bool
-    pre T : property.equatable
-  =>
-    for i in indices
-    until data[i] = elem
-      true
-    else
-      false
-
 
 
 
