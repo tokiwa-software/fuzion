@@ -89,7 +89,7 @@ find_tests(dir path) array path =>
   m : mutate is
   tests := m ! ()->
     io.dir.use _ dir ()->
-      res := (m.array path).type.new 0 (path.of "")
+      res := (container.Dynamic_Array m path).empty
       _ :=
         for x := io.dir.open.env.read
         while x.ok
