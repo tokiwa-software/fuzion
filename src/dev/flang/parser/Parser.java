@@ -3804,7 +3804,7 @@ typeTail    : dot simpletype
   boolean skipTypeTail()
   {
     return
-      !skipDot() || skip(Token.t_this) || skipSimpletype();
+      !skipDot() || skip(Token.t_this) && (!skipDot() || skipSimpletype()) || skipSimpletype();
   }
 
 
