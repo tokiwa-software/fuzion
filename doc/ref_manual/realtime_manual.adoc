@@ -72,7 +72,7 @@ This document explains Fuzion's realtime systems.
 ((Cycle)):: Observes the spacing between two consecutive events in a realtime system, irrespective of schedule.
 
 [#precision]
-((Precision)):: How fast the observer runs, and therefore how small each mesured period is. This reduces the odds of observation data being lumped together in the same unit of time. So the shorter the timeframe, the better, but excessively short timeframes can lead to performance issues.
+((Precision)):: How often the observer runs, and therefore how small each measured period is. This reduces the odds of observation data being lumped together in the same unit of time. So the shorter the timeframe, the more precise, but excessively short timeframes can lead to performance issues.
 
 [#affinity]
 ((Affinity)):: Restriction binding a thread to specific CPU cores.
