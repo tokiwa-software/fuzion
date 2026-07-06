@@ -484,12 +484,12 @@ namequal    : name dot qual
       {
         if (skip(mayBeAtMinIndent, Token.t_type))
           {
-            result.add(new ParsedName(tokenSourcePos(), FuzionConstants.TYPE_NAME));
+            result.add(new ParsedName(tokenSourceRange(), FuzionConstants.TYPE_NAME));
             dot();
           }
         else if (skip(mayBeAtMinIndent, Token.t_universe))
           {
-            result.add(new ParsedName(tokenSourcePos(), FuzionConstants.UNIVERSE_NAME));
+            result.add(new ParsedName(tokenSourceRange(), FuzionConstants.UNIVERSE_NAME));
             dot();
           }
         result.add(name(mayBeAtMinIndent, false));
@@ -1345,7 +1345,7 @@ indexTail   : ":=" exprInLine
     Call result;
     do
       {
-        SourcePosition pos = tokenSourcePos();
+        SourcePosition pos = tokenSourceRange();
         var l = bracketTermWithNLs(BRACKETS, "indexCall", () -> actualCommas(true));
         String n = FuzionConstants.FEATURE_NAME_INDEX;
         if (skip(":="))
@@ -1934,7 +1934,7 @@ klammer     : LPAREN block RPAREN
           }
         else if (forked_t.size() != 1)
           {
-            res = new ParsedCall(null, new ParsedName(tokenSourcePos(), "tuple"), tuple());
+            res = new ParsedCall(null, new ParsedName(tokenSourceRange(), "tuple"), tuple());
           }
         else
           {
