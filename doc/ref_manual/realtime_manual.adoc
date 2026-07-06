@@ -1,0 +1,83 @@
+// This file is part of the Fuzion language implementation.
+//
+// The Fuzion language implementation is free software: you can redistribute it
+// and/or modify it under the terms of the GNU General Public License as published
+// by the Free Software Foundation, version 3 of the License.
+//
+// The Fuzion language implementation is distributed in the hope that it will be
+// useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+// License for more details.
+//
+// You should have received a copy of the GNU General Public License along with The
+// Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+//
+//
+//
+// -----------------------------------------------------------------------
+//
+//  Tokiwa Software GmbH, Germany
+//
+//  ASCIIdoc source of the Fuzion Realtime Manual
+//
+// -----------------------------------------------------------------------
+
+= Fuzion Realtime
+The Fuzion Team <info@tokiwa.software>
+include::../../version.txt[]
+:title-logo-image: image:../../assets/logo.svg[top=5%,align=center,pdfwidth=1.5cm]
+:doctype: book
+:description: Fuzion Realtime Manual
+:sectanchors:
+:url-repo: https://github.com/tokiwa-software/fuzion/
+:sectnums:
+:icons: font
+:toc: macro
+
+toc::[]
+
+== About this Document
+This document is intended to provide help for the comprehension of Realtime systems in Fuzion.
+
+== Glossary
+
+[#jitter]
+((Jitter)):: The variation in the timing of events in a realtime system. Lower jitter indicates more consistent performance.
+
+[#task]
+((Task)):: A unit of work that can be scheduled and executed in a realtime system.
+
+[#event]
+((Event)):: An occurrence that happens at a specific time in a realtime system.
+
+[#period]
+((Period)):: The time between two specific events in a realtime system. A period can itself contain and observe other events or periods.
+
+[#jitter_period]
+((Jitter Period)):: Compares the real release time of an event with the expected release time. The difference between these two times is the jitter period.
+
+[#periodic_task]
+((Periodic Task)):: A task that is executed at regular intervals, defined by its period.
+
+[#sporadic_task]
+((Sporadic Task)):: A task that is executed irregularly, with a minimum inter-arrival time between executions.
+
+[#deadline]
+((Deadline)):: The latest time by which a task must complete its execution to be considered successful.
+
+[#response_time]
+((Response Time)):: The time taken from the release of a task to its completion.
+
+[#cycle]
+((Cycle)):: Observes the spacing between two consecutive events in a realtime system, irrespective of schedule.
+
+[#precision]
+((Precision)):: How fast the observer runs, and therefore how small each mesured period is. This reduces the odds of observation data being lumped together in the same unit of time. So the shorter the timeframe, the better, but excessively short timeframes can lead to performance issues.
+
+[#affinity]
+((Affinity)):: Restriction binding a thread to specific CPU cores.
+
+[#fifo_scheduling]
+((FIFO Scheduling)):: Real-time scheduling policy where highest-priority runnable thread runs until blocked or preempted.
+
+
