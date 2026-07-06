@@ -42,7 +42,7 @@ This document explains Fuzion's realtime systems.
 == Glossary
 
 [#jitter]
-((Jitter)):: The variation in the timing of events in a realtime system. Lower jitter indicates more consistent performance.
+((Jitter)):: The variation in the timing of events in a realtime system. Low jitter indicates that events occur at predictable intervals, while high jitter indicates that events occur at irregular intervals.
 
 [#task]
 ((Task)):: A unit of work that can be scheduled and executed in a realtime system.
