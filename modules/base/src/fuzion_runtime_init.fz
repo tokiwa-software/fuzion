@@ -27,3 +27,17 @@
 fuzion_runtime_init =>
   fzE_init
   effect.big_bang_singularity
+
+
+# platform specific deinitialisation
+# of the fuzion runtime system
+#
+fuzion_runtime_deinit =>
+  # NYI: BUG: must run this in reverse order of instantiation
+  # NYI: BUG: need to make sure that exit effect runs last
+  #           basically we need a way to order default effects
+  effect_types.type_foldf unit T,e->
+    if T : effect then
+      match T.default_value
+        T => T.env.finally
+        nil =>
