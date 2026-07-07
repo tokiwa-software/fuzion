@@ -60,10 +60,6 @@ public processes (ph os.Process_Handler, public running_processes container.Set 
     #
     upper_bound_poll_time := time.duration.s 1
 
-    os.processes ph (running_processes ∖ (container.set_of_ordered [p]))
-      .replace
-    # NYI: UNDER DEVELOPMENT: register errors in runtime_errors_effect
-    _ := fzE_pipe_close p.std_in = 0
 
     for
       r := fzE_process_wait p.pid
@@ -71,14 +67,23 @@ public processes (ph os.Process_Handler, public running_processes container.Set 
       # NYI: UNDER DEVELOPMENT: replace polling by signaled waits (POSIX) / events (WIN) or similar.
       # 1ms, 2ms, 4ms, 8ms, 16ms, 32ms, ..., 1s
       polling_time := time.duration.ms 1, min upper_bound_poll_time polling_time*2
-    while r < 0 && elapsed_time <= timeout
+    while r = -1 && elapsed_time <= timeout
       time.nano.env.sleep (min timeout-elapsed_time polling_time)
     else
       if r >= 0
-        r.as_u32
+        res := outcome r.as_u32
+        os.processes ph (running_processes ∖ (container.set_of_ordered [p]))
+          .replace
+        # NYI: UNDER DEVELOPMENT: register errors in runtime_errors_effect
+        _ := fzE_pipe_close p.std_in = 0
+        res
       else
-        if elapsed_time > timeout
+        if r = -1 && elapsed_time > timeout
           error "Waiting for process with id $(p.pid) timed out."
+        else if r < -100
+          sig := (r.abs - 100).as_i32
+          sig_name := os.signal.from_number sig .bind s->" ($(s.as_string))" .or_default ""
+          error "Process $(p.pid) was terminated by signal $sig$sig_name"
         else
           error "Waiting for process with id $(p.pid) was unsuccessful" fzE_last_error
 
