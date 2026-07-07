@@ -60,7 +60,6 @@ public processes (ph os.Process_Handler, public running_processes container.Set 
     #
     upper_bound_poll_time := time.duration.s 1
 
-
     for
       r := fzE_process_wait p.pid
       elapsed_time := time.nano.env.read-start
@@ -71,12 +70,9 @@ public processes (ph os.Process_Handler, public running_processes container.Set 
       time.nano.env.sleep (min timeout-elapsed_time polling_time)
     else
       if r >= 0
-        res := outcome r.as_u32
         os.processes ph (running_processes ∖ (container.set_of_ordered [p]))
           .replace
-        # NYI: UNDER DEVELOPMENT: register errors in runtime_errors_effect
-        _ := fzE_pipe_close p.std_in = 0
-        res
+        outcome r.as_u32
       else
         if r = -1 && elapsed_time > timeout
           error "Waiting for process with id $(p.pid) timed out."
