@@ -138,7 +138,7 @@ Type inference failed for one type parameter 'T'
 ---------------------^
 For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
 Type that is ambiguous: 'X'
-Possible features that match this type: 
+Possible features that match this type:
 'generics_negative.ambiguousTypeParameterName.outer.inner.X' defined at --CURDIR--/generics_negative.fz:191:13:
       inner(X type, Y2 type, Z type)
 ------------^
@@ -154,7 +154,7 @@ To solve this, rename these features such that each one has a unique name.
 ---------------------^
 For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
 Type that is ambiguous: 'Z'
-Possible features that match this type: 
+Possible features that match this type:
 'generics_negative.ambiguousTypeParameterName.outer.inner.Z' defined at --CURDIR--/generics_negative.fz:191:30:
       inner(X type, Y2 type, Z type)
 -----------------------------^
