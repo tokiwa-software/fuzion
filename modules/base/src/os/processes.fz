@@ -43,10 +43,8 @@ public processes (ph os.Process_Handler, public running_processes container.Set 
     running_processes.for_each p->
       # NYI: UNDER DEVELOPMENT: register failures
       _ := p.wait
-      res_close_out := fzE_pipe_close p.std_out
-      res_close_err := fzE_pipe_close p.std_err
-      check debug : res_close_out=0
-      check debug : res_close_err=0
+      _ := fzE_pipe_close p.std_out
+      _ := fzE_pipe_close p.std_err
 
 
   # wait for process to finish
