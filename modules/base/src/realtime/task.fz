@@ -24,6 +24,6 @@
 # task -- a piece of code to be executed periodically and concurrently
 # with other tasks.
 #
-public task(P type : time.Period,
+public task(P type : time.period,
             module code Function unit,
             module period P) is
