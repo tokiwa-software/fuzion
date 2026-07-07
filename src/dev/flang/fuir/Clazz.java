@@ -280,7 +280,7 @@ class Clazz extends ANY implements Comparable<Clazz>
    * Used when lookupDone=true but looking up
    * not yet existing clazz.
    */
-  public static final Clazz NO_CLAZZ = new Clazz()
+  protected static final Clazz NO_CLAZZ = new Clazz()
     {
       @Override void doesNeedCode() { }
     };
