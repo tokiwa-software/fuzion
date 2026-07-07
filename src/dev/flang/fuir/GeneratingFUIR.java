@@ -2491,54 +2491,109 @@ public class GeneratingFUIR extends FUIR
       ? calledTarget(c, outerClazz, inh)
       : explicitTarget;
 
-    // If tclazz is an error or null, return early
-    if (tclazz == null || tclazz == error())
-      {
-        return error();
-      }
-
     Clazz innerClazz = null;
     var cf      = c.calledFeature();
     var dynamic = c.isDynamic() && tclazz.isRef();
     var needsCode = !dynamic || explicitTarget != null;
     var typePars = outerClazz.actualGenerics(c.actualTypeParameters(), inh);
-    
     if (!tclazz.isVoidType())
       {
-        try
+        innerClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars), c.select(), c.isInheritanceCall());
+        
+        // Store the call position for better error reporting
+        SourcePosition callPos = c.pos();
+        if (innerClazz != null && innerClazz != error() && innerClazz != Clazz.NO_CLAZZ)
           {
-            innerClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars), c.select(), c.isInheritanceCall());
-            
-            // Store the call position for better error reporting
-            if (innerClazz != null && innerClazz != error() && innerClazz != Clazz.NO_CLAZZ)
+            // Only store if this is a meaningful position (not null or notAvailable)
+            if (callPos != null && callPos != SourcePosition.notAvailable)
               {
-                innerClazz.setInstantiationPos(c.pos());
+                innerClazz.setInstantiationPos(callPos);
                 
                 // Also store position on type parameter clazzes if they're being checked
                 for (var tp : innerClazz.actualTypeParameters())
                   {
                     if (tp != null && tp != error() && tp != Clazz.NO_CLAZZ)
                       {
-                        tp.setInstantiationPos(c.pos());
+                        tp.setInstantiationPos(callPos);
                       }
                   }
               }
-            if (c.calledFeature() == Types.resolved.f_Type_infix_colon)
+          }
+        
+        if (c.calledFeature() == Types.resolved.f_Type_infix_colon)
+          {
+            // Make sure we have actual type parameters
+            if (innerClazz.actualTypeParameters() != null && innerClazz.actualTypeParameters().length > 0)
               {
                 var T = innerClazz.actualTypeParameters()[0];
                 if (T != null && T != error() && T != Clazz.NO_CLAZZ)
                   {
+                    // Check if T._type exists and we can access it
                     var tclazzGenerics = tclazz._type.generics();
                     if (tclazzGenerics != null && !tclazzGenerics.isEmpty())
                       {
-                        // Check if the type satisfies the constraint
                         boolean satisfies = T._type.constraintAssignableFrom(tclazzGenerics.get(0));
                         if (!satisfies && outerClazz.feature().featureName().isInternal())
                           {
-                            // Use c.pos() for the call site position
+                            // Try to get the original call position from multiple sources
+                            SourcePosition originalCallPos = SourcePosition.notAvailable;
+                            
+                            // 1. Check if the type parameter has a stored call position
+                            if (T != null)
+                              {
+                                SourcePosition tpPos = T.getOriginalCallPosition();
+                                if (tpPos != SourcePosition.notAvailable)
+                                  {
+                                    originalCallPos = tpPos;
+                                  }
+                              }
+                            
+                            // 2. Check the target clazz
+                            if (originalCallPos == SourcePosition.notAvailable && tclazz != null)
+                              {
+                                SourcePosition tclazzPos = tclazz.getOriginalCallPosition();
+                                if (tclazzPos != SourcePosition.notAvailable)
+                                  {
+                                    originalCallPos = tclazzPos;
+                                  }
+                              }
+                            
+                            // 3. Check the outer clazz
+                            if (originalCallPos == SourcePosition.notAvailable && outerClazz != null)
+                              {
+                                SourcePosition outerPos = outerClazz.getOriginalCallPosition();
+                                if (outerPos != SourcePosition.notAvailable)
+                                  {
+                                    originalCallPos = outerPos;
+                                  }
+                              }
+                            
+                            // 4. Try to get the position from the original call's target
+                            if (originalCallPos == SourcePosition.notAvailable && c.target() != null)
+                              {
+                                SourcePosition targetPos = c.target().pos();
+                                if (targetPos != SourcePosition.notAvailable)
+                                  {
+                                    originalCallPos = targetPos;
+                                  }
+                              }
+                            
+                            // 5. Fallback to the current call position
+                            if (originalCallPos == SourcePosition.notAvailable)
+                              {
+                                originalCallPos = c.pos();
+                              }
+                            
+                            // 6. Last resort: use the position of the outer clazz's feature
+                            if (originalCallPos == SourcePosition.notAvailable && outerClazz != null)
+                              {
+                                originalCallPos = outerClazz.feature().pos();
+                              }
+                            
+                            // Report the error with both positions
                             FuirErrors.unmetTypeContraint(
-                              T._type.declarationPos(),  // constraint position
-                              c.pos(),                   // call site position
+                              T._type.declarationPos(),  // constraint position (numeric.fz:28)
+                              originalCallPos,           // original call site ([unit].sum)
                               tclazzGenerics.get(0),     // actual type (unit)
                               T                          // constraint (numeric)
                             );
@@ -2548,29 +2603,31 @@ public class GeneratingFUIR extends FUIR
                           : Types.resolved.f_Type_infix_colon_false;
                       }
                   }
-                innerClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars), FuzionConstants.NO_SELECT, c.isInheritanceCall());
               }
-            if (needsCode && innerClazz != null && innerClazz != error() && innerClazz != Clazz.NO_CLAZZ)
+            innerClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars), FuzionConstants.NO_SELECT, c.isInheritanceCall());
+            
+            // Store position on the new inner clazz too
+            if (innerClazz != null && innerClazz != error() && innerClazz != Clazz.NO_CLAZZ)
               {
-                innerClazz.doesNeedCode();
-              }
-
-            if (innerClazz != null && innerClazz != error() && innerClazz != Clazz.NO_CLAZZ &&
-                innerClazz.resultClazz() != null &&
-                innerClazz.resultClazz()._showErrorIfCallResult_ != null &&
-                innerClazz.clazzKind() == FeatureKind.Routine &&
-                !innerClazz.feature().isConstructor())
-              {
-                innerClazz.resultClazz()._showErrorIfCallResult_.accept(c);
+                SourcePosition pos = c.pos();
+                if (pos != null && pos != SourcePosition.notAvailable)
+                  {
+                    innerClazz.setInstantiationPos(pos);
+                  }
               }
           }
-        catch (Exception e)
+        if (needsCode && innerClazz != null && innerClazz != error() && innerClazz != Clazz.NO_CLAZZ)
           {
-            // If we get an exception during lookup, report the error at the call site
-            FuirErrors.error(c.pos(), 
-              "Failed to resolve call to '" + c.calledFeature().baseName() + "'", 
-              e.getMessage() != null ? e.getMessage() : "Internal error during type checking");
-            return error();
+            innerClazz.doesNeedCode();
+          }
+
+        if (innerClazz != null && innerClazz != error() && innerClazz != Clazz.NO_CLAZZ &&
+            innerClazz.resultClazz() != null &&
+            innerClazz.resultClazz()._showErrorIfCallResult_ != null &&
+            innerClazz.clazzKind() == FeatureKind.Routine &&
+            !innerClazz.feature().isConstructor())
+          {
+            innerClazz.resultClazz()._showErrorIfCallResult_.accept(c);
           }
       }
     return innerClazz == null ? error() : innerClazz;

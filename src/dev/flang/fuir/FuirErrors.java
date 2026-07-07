@@ -119,6 +119,7 @@ public class FuirErrors extends AstErrors
           abstracts + "\n" +
           "Callchain that lead to this point:\n\n" + context);
   }
+
   /**
    * Report an unmet type constraint with both the constraint declaration position
    * and the call site position.
@@ -128,23 +129,24 @@ public class FuirErrors extends AstErrors
                                         AbstractType tp, 
                                         Clazz constraint)
   {
-    // Create a descriptive message
     String msg = "Actual type parameter '" + s(tp) + "' does not satisfy constraint '" + s(constraint._type) + "'";
     
-    if (callPos != null && callPos != SourcePosition.notAvailable)
+    // Check if we have a valid call position (not the constraint position)
+    if (callPos != null && callPos != SourcePosition.notAvailable && 
+        !callPos.equals(constraintPos))
       {
-        // Report the error at the call site with reference to constraint
-        error(callPos, 
-              msg,
+        // Report at the call site with reference to constraint
+        error(callPos, msg,
               "Constraint '" + s(constraint._type) + "' declared at " + constraintPos.show() + "\n" +
               "The type '" + s(tp) + "' does not implement the required features of '" + s(constraint._type) + "'");
       }
     else
       {
-        // Fallback: report at constraint position
-        error(constraintPos, 
-              msg, 
-              "");
+        // Fallback: report at constraint position with explanation
+        error(constraintPos, msg,
+              "This constraint is declared here.\n" +
+              "The type '" + s(tp) + "' was used in a context that requires '" + s(constraint._type) + "'\n" +
+              "To fix this, ensure that '" + s(tp) + "' implements all features required by '" + s(constraint._type) + "'");
       }
   }
 

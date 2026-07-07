@@ -2145,6 +2145,45 @@ class Clazz extends ANY implements Comparable<Clazz>
     return _instantiationPos;
   }
 
+  /**
+   * Get the original call position by checking this clazz and its outer clazzes.
+   * This traverses the outer chain to find the first non-internal position.
+   */
+  SourcePosition getOriginalCallPosition()
+  {
+    // Check if this clazz has a stored position
+    if (_instantiationPos != null && _instantiationPos != SourcePosition.notAvailable)
+      {
+        return _instantiationPos;
+      }
+    
+    // Check if the type has a position
+    if (_type != null && _type.declarationPos() != null && 
+        _type.declarationPos() != SourcePosition.notAvailable)
+      {
+        return _type.declarationPos();
+      }
+    
+    // Check outer clazz
+    if (_outer != null)
+      {
+        SourcePosition outerPos = _outer.getOriginalCallPosition();
+        if (outerPos != SourcePosition.notAvailable)
+          {
+            return outerPos;
+          }
+      }
+    
+    // Check feature position
+    if (feature() != null && feature().pos() != null &&
+        feature().pos() != SourcePosition.notAvailable)
+      {
+        return feature().pos();
+      }
+    
+    return SourcePosition.notAvailable;
+  }
+
 }
 
 /* end of file */
