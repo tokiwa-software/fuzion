@@ -271,7 +271,10 @@ public class SourceModule extends Module implements SrcModule
       {
         f
           .impl()
-          .addInitialCall(plainCall("fuzion_runtime_init"));
+          .addCalls(
+            plainCall("fuzion_runtime_init"),
+            plainCall("fuzion_runtime_deinit")
+          );
       }
   }
 

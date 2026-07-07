@@ -725,15 +725,16 @@ public class Impl extends ANY
 
 
   /**
-   * Add initial call to the expression of
+   * Add surrounding calls to the expression of
    * this implementation.
    */
-  public void addInitialCall(AbstractCall ac)
+  public void addCalls(AbstractCall start, AbstractCall end)
   {
     if (PRECONDITIONS) require
-      (ac.type().compareTo(Types.resolved.t_unit) == 0);
+      (start.type().compareTo(Types.resolved.t_unit) == 0,
+       end.type().compareTo(Types.resolved.t_unit) == 0);
 
-    _expr = new Block(new List<>(ac, _expr));
+    _expr = new Block(new List<>(start, _expr, end));
   }
 
 

@@ -2975,7 +2975,8 @@ public class Call extends AbstractCall
     if (_calledFeature != null &&
         context.outerFeature() != Types.resolved.f_effect_static_finally &&
         (_calledFeature == Types.resolved.f_effect_finally ||
-         _calledFeature.redefinesFull().contains(Types.resolved.f_effect_finally))
+         _calledFeature.redefinesFull().contains(Types.resolved.f_effect_finally)) &&
+        !res._module.name().equals(FuzionConstants.BASE_MODULE_NAME)
        )
       {
         AstErrors.mustNotCallEffectFinally(this);
