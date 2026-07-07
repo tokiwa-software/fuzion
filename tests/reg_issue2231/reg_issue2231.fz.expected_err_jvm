@@ -3,10 +3,10 @@ error 1: FATAL FAULT `*** panic ***`: unexpected abort in Type of 'reg_issue2231
 Call stack:
 fuzion.sys.fatal_fault#2 at {base.fum}/fuzion/sys.fz:55
 [..]
-panic#1 at {base.fum}/panic.fz:59
-(reg_issue2231.type.ef.type.instate#3 void).(λ(_ -> panic "unexpected abort in $(flow...).call#1 at {base.fum}/effect.fz:191
-(instate_helper void reg_issue2231.ef).call_def.call#1 at {base.fum}/effect.fz:427
-instate_helper void reg_issue2231.ef at {base.fum}/effect.fz:417
+panic#1 at {base.fum}/panic.fz:53
+(reg_issue2231.type.ef.type.instate#3 void).(λ(_ -> panic "unexpected abort in $(eff...).call#1 at {base.fum}/effect.fz:191
+(instate_helper void reg_issue2231.ef).call_def.call#1 at {base.fum}/effect.fz:421
+instate_helper void reg_issue2231.ef at {base.fum}/effect.fz:411
 reg_issue2231.type.ef.type.instate#4 void at {base.fum}/effect.fz:170
 reg_issue2231.type.ef.type.instate#3 void at {base.fum}/effect.fz:191
 reg_issue2231.ef.instate_self#2 void at {base.fum}/effect.fz:212

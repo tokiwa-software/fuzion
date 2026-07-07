@@ -29,10 +29,10 @@ test_fallible =>
 
   a is
 
-  # success and failure using `exception a`:
+  # success and failure using `flow.exception a`:
 
-  r0 := exception a String (()->"ok")
-  r1 := exception a String (()->(exception a).env.cause (error "r1 fail"))
+  r0 := flow.exception a String (()->"ok")
+  r1 := flow.exception a String (()->(flow.exception a).env.cause (error "r1 fail"))
   say "0: expecting ok,    got $r0"
   say "1: expecting error, got $r1"
 
@@ -50,10 +50,10 @@ test_fallible =>
   say "4: expecting ok,    got $r4"
   say "5: expecting error, got $r5"
 
-  # success and failure using `exception_or_panic a`:
+  # success and failure using `flow.exception_or_panic a`:
 
-  r6 := panic.try (()->exception_or_panic a String (()->"ok"))                                      .catch m->"*** panic $m ***"
-  r7 := panic.try (()->exception_or_panic a String (()->(exception a).env.cause (error "r7 fail"))) .catch m->"*** panic $m ***"
+  r6 := panic.try (()->flow.exception_or_panic a String (()->"ok"))                                      .catch m->"*** panic $m ***"
+  r7 := panic.try (()->flow.exception_or_panic a String (()->(flow.exception a).env.cause (error "r7 fail"))) .catch m->"*** panic $m ***"
   say "6: expecting ok,    got $r6"
   say "7: expecting error, got $r7"
 
@@ -82,5 +82,5 @@ test_fallible
 # Note that we have to declare this outside of `test_fallible` since creating an
 # instance via `test_fallible.try_unit h` would result in an endless recursion.
 #
-try_unit(h error->void) : exception unit h is
+try_unit(h error->void) : flow.exception unit h is
   public fixed redef type.new(h error->void) try_unit => try_unit h
