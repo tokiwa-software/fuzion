@@ -26,10 +26,11 @@
 #
 # synthetic usage example, in a loop early return when result 42 is found:
 #
-#      say <| eff.short_circuit (option i32) .run ()->
+#      sc : eff.short_circuit (option i32) is
+#      say <| sc.run ()->
 #        for i in 1..100 do
 #          if i=42
-#            (eff.short_circuit (option i32)).env.return i
+#            sc.env.return i
 #        nil
 #
 #
