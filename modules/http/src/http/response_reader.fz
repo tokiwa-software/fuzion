@@ -38,10 +38,10 @@ public read_response(
   # the request for which this response is generated
   req option (http.request_message)) outcome (http.response_message)
 =>
-  exception unit _ ()->
+  flow.exception unit _ ()->
 
     cause(s String) void =>
-      (exception unit).env.cause (error s)
+      (flow.exception unit).env.cause (error s)
 
     # status line, e.g.: HTTP/1.1 200 OK
     sl := match next_line LM

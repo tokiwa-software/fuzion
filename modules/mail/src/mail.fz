@@ -131,7 +131,7 @@ public mail is
     read_or_cause(expected, where String) unit =>
       l := (io.buffered ssl_lm).read_line ? s String => s | io.end_of_file => ""
       if !l.starts_with expected
-        (exception unit).env.cause <| error "expected $expected after sending $where, got $l"
+        (flow.exception unit).env.cause <| error "expected $expected after sending $where, got $l"
 
 
     # do the get request
@@ -174,7 +174,7 @@ public mail is
         .bind c->
           c.with _ net_lm ()->
             ssl_lm ! ()->
-              exception unit _ ()->
+              flow.exception unit _ ()->
 
                 # do we need to initiate STARTTLS
                 #
@@ -184,6 +184,6 @@ public mail is
                   write_or_cause net_lm "STARTTLS\r\n"
                   ok := (io.buffered net_lm).read_line
                   if ok != "220 OK"
-                    (exception unit).env.cause (error "Expected 220 OK, got $(ok)")
+                    (flow.exception unit).env.cause (error "Expected 220 OK, got $(ok)")
 
                 wolfssl _ net_lm ssl_lm write_request

@@ -26,7 +26,7 @@
 private:public stackoverflow (
   # the handler this effect uses to fail
   p String -> void
-) : eff.fallible p
+) : flow.fallible p
 is
 
 
