@@ -1,0 +1,50 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue1201
+#
+# -----------------------------------------------------------------------
+
+demo1_unit_types is
+  Monoid (T type) ref is
+    zero T => abstract
+    add (a, b T) T => abstract
+
+  accum (T type, a array T, m demo1_unit_types.this.Monoid T) T =>
+    for
+      res := m.zero, m.add res x
+      x in a
+    else
+      res
+
+  sum : demo1_unit_types.this.Monoid i32 is
+    redef zero => 0
+    redef add (a, b i32) => a + b
+
+  product : demo1_unit_types.this.Monoid i32 is
+    redef zero => 1
+    redef add (a, b i32) => a * b
+
+  i32array     := [ 23, 345 , 3, 1, 3 ]
+  totalSum     := accum i32 i32array sum
+  totalProduct := accum i32 i32array product
+
+  say i32array
+  say totalSum
+  say totalProduct
