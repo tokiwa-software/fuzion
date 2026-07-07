@@ -151,10 +151,10 @@ is
 
   # get A or cause an `exception T`
   #
-  public or_cause(T type, e B->error) A =>
+  public or_cause(T type, e B->error) A ! flow.exception T =>
     match switch.this
       a A => a
-      b B => (exception T).env.cause (e b)
+      b B => (flow.exception T).env.cause (e b)
 
 
   # get A or panic with `B.as_string`

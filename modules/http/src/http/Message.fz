@@ -146,10 +146,10 @@ module next_line(LM type : mutate) => (io.buffered LM).read_delimiter encodings.
 
 module parse_header_fields(LM type : mutate) outcome (container.mutable_tree_map LM String String) =>
 
-  exception unit _ ()->
+  flow.exception unit _ ()->
 
     cause(s String) void =>
-      (exception unit).env.cause (error s)
+      (flow.exception unit).env.cause (error s)
 
     fields := (container.mutable_tree_map LM String String) .empty
 
@@ -172,10 +172,10 @@ module parse_header_fields(LM type : mutate) outcome (container.mutable_tree_map
 
 
 module body_helper(LM type : mutate, is_req bool, header_fields container.Map String String) outcome io.Read_Handler =>
-  exception unit io.Read_Handler ()->
+  flow.exception unit io.Read_Handler ()->
 
     cause(s String) void =>
-      (exception unit).env.cause (error s)
+      (flow.exception unit).env.cause (error s)
 
     # If a message is received with both a Transfer-Encoding and a Content-Length header field, the Transfer-Encoding overrides the Content-Length.
     # Such a message might indicate an attempt to perform request smuggling (Section 11.2) or response splitting (Section 11.1) and ought to be handled as an error.

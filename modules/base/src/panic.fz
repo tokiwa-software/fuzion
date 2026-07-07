@@ -29,7 +29,7 @@ public panic (
   # the handler this effect uses to panic
   p String->void,
   _ unit
-  ) : eff.fallible (String) p
+  ) : flow.fallible (String) p
 is
 
   # default implementation of this effect that will get instated
