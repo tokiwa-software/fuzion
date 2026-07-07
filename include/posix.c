@@ -765,7 +765,7 @@ int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLe
 //   -2  : an error occurred when calling waitpid, check errno
 //  <-100: process was terminated by a signal
 //         -100-SIG, e.g., -109 for 9 (SIGKILL)
-int64_t fzE_process_wait(int64_t p){
+int64_t fzE_process_poll(int64_t p){
 
   assert(p>0);
 
