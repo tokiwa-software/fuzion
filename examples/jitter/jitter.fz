@@ -78,7 +78,7 @@ jitter =>
               TIMER type : time.Clock)
   =>
 
-    # type used to identify exception to stop in case jitter is too high
+    # type used to identify flow.exception to stop in case jitter is too high
     #
     jitter_too_high is
 
@@ -124,23 +124,23 @@ jitter =>
 
         # run one single release: record the actual release and run the payload
         #
-        # in case of a late release or a overrun into the next release time, cause `exception jitter_too_high`
+        # in case of a late release or a overrun into the next release time, cause `flow.exception jitter_too_high`
         #
-        run_one_release ! exception jitter_too_high =>
+        run_one_release ! flow.exception jitter_too_high =>
           actual_release := TIMER.env.read
           h .add_instant actual_release
           h2.add_instant actual_release
           next_rel     := state_modify next_release (x -> next_release x.t+period) .get.t
           if actual_release >= next_rel
-            (exception jitter_too_high).env.cause <| error "release time jitter exceeded period"
+            (flow.exception jitter_too_high).env.cause <| error "release time jitter exceeded period"
 
           payload
           actual_finish := TIMER.env.read
           if actual_finish >= next_rel
             e := error "*** overrun: run started at {actual_release-(state_get next_release .t)}  and took {actual_finish-actual_release}, which is larger than period $period"
-            (exception jitter_too_high).env.cause e
+            (flow.exception jitter_too_high).env.cause e
 
-    match exception jitter_too_high .on ()->
+    match flow.exception jitter_too_high .on ()->
 
          for p := period_default, p.times 0.5 do
            run_for_period p
