@@ -72,19 +72,18 @@ is
       s signals.terminate                => s.as_string
 
 
-  module type.from_number(I type : integer, n I) option os.signal =>
+  module type.from_number(n i32) option os.signal =>
 
-    if !n.fits_in_i32                                                            then nil
-    else if n.as_i32 = (id os.signal os.signals.hangup).as_i32                   then option (id os.signal os.signals.hangup)
-    else if n.as_i32 = (id os.signal os.signals.interrupt).as_i32                then option (id os.signal os.signals.interrupt)
-    else if n.as_i32 = (id os.signal os.signals.quit).as_i32                     then option (id os.signal os.signals.quit)
-    else if n.as_i32 = (id os.signal os.signals.illegal_instruction).as_i32      then option (id os.signal os.signals.illegal_instruction)
-    else if n.as_i32 = (id os.signal os.signals.trap).as_i32                     then option (id os.signal os.signals.trap)
-    else if n.as_i32 = (id os.signal os.signals.abort).as_i32                    then option (id os.signal os.signals.abort)
-    else if n.as_i32 = (id os.signal os.signals.arithmetic_error).as_i32         then option (id os.signal os.signals.arithmetic_error)
-    else if n.as_i32 = (id os.signal os.signals.kill).as_i32                     then option (id os.signal os.signals.kill)
-    else if n.as_i32 = (id os.signal os.signals.invalid_memory_reference).as_i32 then option (id os.signal os.signals.invalid_memory_reference)
-    else if n.as_i32 = (id os.signal os.signals.broken_pipe).as_i32              then option (id os.signal os.signals.broken_pipe)
-    else if n.as_i32 = (id os.signal os.signals.alarm).as_i32                    then option (id os.signal os.signals.alarm)
-    else if n.as_i32 = (id os.signal os.signals.terminate).as_i32                then option (id os.signal os.signals.terminate)
+    if      n = (id os.signal os.signals.hangup).as_i32                   then option (id os.signal os.signals.hangup)
+    else if n = (id os.signal os.signals.interrupt).as_i32                then option (id os.signal os.signals.interrupt)
+    else if n = (id os.signal os.signals.quit).as_i32                     then option (id os.signal os.signals.quit)
+    else if n = (id os.signal os.signals.illegal_instruction).as_i32      then option (id os.signal os.signals.illegal_instruction)
+    else if n = (id os.signal os.signals.trap).as_i32                     then option (id os.signal os.signals.trap)
+    else if n = (id os.signal os.signals.abort).as_i32                    then option (id os.signal os.signals.abort)
+    else if n = (id os.signal os.signals.arithmetic_error).as_i32         then option (id os.signal os.signals.arithmetic_error)
+    else if n = (id os.signal os.signals.kill).as_i32                     then option (id os.signal os.signals.kill)
+    else if n = (id os.signal os.signals.invalid_memory_reference).as_i32 then option (id os.signal os.signals.invalid_memory_reference)
+    else if n = (id os.signal os.signals.broken_pipe).as_i32              then option (id os.signal os.signals.broken_pipe)
+    else if n = (id os.signal os.signals.alarm).as_i32                    then option (id os.signal os.signals.alarm)
+    else if n = (id os.signal os.signals.terminate).as_i32                then option (id os.signal os.signals.terminate)
     else nil
