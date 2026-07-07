@@ -453,11 +453,9 @@ class Clazz extends ANY implements Comparable<Clazz>
   private Clazz normalizeOuter(AbstractType t, Clazz outer)
   {
     var f = t.feature();
-    if (outer != null && !needsSpecialization(f) && !f.isField() && t != Types.t_ERROR)
-      {
-        outer = outer.normalize(t.feature().outer());
-      }
-    return outer;
+    return outer == null || needsSpecialization(f) || f.isField() || t == Types.t_ERROR
+      ? outer
+      : outer.normalize(f.outer());
   }
 
 
