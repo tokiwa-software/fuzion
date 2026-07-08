@@ -789,7 +789,8 @@ int64_t fzE_process_poll(int64_t p){
   else if (WIFSIGNALED(status)) {
       // process was terminated by a signal
       res = -100 - WTERMSIG(status);
-  } else {
+  }
+  else {
     assert(false);
   }
   return res;
