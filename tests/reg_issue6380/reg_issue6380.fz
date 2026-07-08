@@ -22,9 +22,9 @@
 # -----------------------------------------------------------------------
 
 reg_issue6380 =>
-  say <| eff.short_circuit (option i32) .run ()->
+  say <| flow.short_circuit (option i32) .run ()->
     for i in 1..100 do
       if i=42
-        (eff.short_circuit (option i32)).env.return i
+        (flow.short_circuit (option i32)).env.return i
     nil
 
