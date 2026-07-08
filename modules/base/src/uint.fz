@@ -26,7 +26,7 @@
 # unsigned integer of arbitrary size, including zero
 # represented by its bit sequence
 #
-module:public uint (module b Sequence u32, _ unit) : has_interval
+module:public uint (module b Sequence u32, _ unit) : property.interval
 is
 
   # the actually relevant data of this uint.

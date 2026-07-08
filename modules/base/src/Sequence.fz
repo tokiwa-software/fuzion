@@ -850,7 +850,7 @@ is
   # adds an index to every element
   # in the sequence starting at start_idx
   #
-  public indexed(I type : has_interval, start_idx I) Sequence (tuple I T) =>
+  public indexed(I type : property.interval, start_idx I) Sequence (tuple I T) =>
     zip (start_idx..) (a,b -> (b, a))
 
 

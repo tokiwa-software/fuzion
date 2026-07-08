@@ -684,7 +684,7 @@ public class Call extends ANY implements Comparable<Call>, Context
           {
             // NYI: Make this a normal error similar to DfaErrors.usedEffectnotinstalled:
             Errors.fatal("Trying to replace effect " + Errors.code(_dfa._fuir.clazzName(ecl))
-                         + " that is not yet installed: \n" + toString(false) + "\n" + toString(true));
+                         + " that is not yet installed:\n" + toString(false) + "\n" + toString(true));
           }
       }
     if (_env != null)

@@ -25,7 +25,7 @@
 
 # int -- signed integer values of arbitrary size
 #
-module:public int (is_positive bool, n uint) : has_interval
+module:public int (is_positive bool, n uint) : property.interval
 is
 
   # normalize the sign => no minus zero

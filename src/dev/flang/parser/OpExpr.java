@@ -212,8 +212,8 @@ class OpExpr extends ANY
                 var p = op._pos;
                 Errors.error(p,
                              "Syntax error: infix operator "+Errors.code(op._text)+" appears to be "+(op._whiteSpaceAfter ? "postfix" : "prefix")+" operator.",
-                             "Whitespace "+(op._whiteSpaceBefore?"before":"after")+ " this operator suggests that \n" +
-                             "it was not intended as an infix operator. \n"+
+                             "Whitespace "+(op._whiteSpaceBefore?"before":"after")+ " this operator suggests that\n" +
+                             "it was not intended as an infix operator.\n"+
                              "To fix this, you may try to insert white space "+(op._whiteSpaceBefore?"after":"before")+" the operator at "+
                              (op._whiteSpaceAfter ? p.startPos()
                                                   : p.endPos()).show() + "\n" +

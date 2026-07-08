@@ -893,7 +893,7 @@ public class AstErrors extends ANY
             processed.add(ep);
             if (earlierPosString.length() > 0)
               {
-                earlierPosString.append(", and at \n");
+                earlierPosString.append(", and at\n");
               }
             earlierPosString.append(ep.show());
           }
@@ -1454,7 +1454,7 @@ public class AstErrors extends ANY
           "Ambiguous type",
           "For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.\n" +
           "Type that is ambiguous: " + st(t) + "\n" +
-          "Possible features that match this type: \n" +
+          "Possible features that match this type:\n" +
           featureList(possibilities) + "\n" +
           "To solve this, rename these features such that each one has a unique name.");
   }
@@ -1700,7 +1700,7 @@ public class AstErrors extends ANY
       {
         error(pos,
               "Target type of a lambda expression must be a plain type whose feature inherits " + sqn("fuzion.lambda_target") + ", e.g., " + sqn("Function") + ".",
-              "A lambda expression can only be used if assigned to a field or argument whose type contains an abstract lambda target feature \n" +
+              "A lambda expression can only be used if assigned to a field or argument whose type contains an abstract lambda target feature\n" +
               "with argument count of the lambda expression equal to the effective argument count of the lambda target.\n" +
               "Target type: " + s(t) + (from == null ? "" : " from " + from.get()) + "\n" +
               "To solve this, assign the lambda expression to a type that is a lambda target, e.g., " + ss("f (i32, i32) -> bool := x, y -> x > y") + ".");
@@ -1747,7 +1747,7 @@ public class AstErrors extends ANY
   {
     error(pos,
           "Choice type must not access features of surrounding scope.",
-          "A closure cannot be built for a choice type. Forbidden accesses occur at \n" +
+          "A closure cannot be built for a choice type. Forbidden accesses occur at\n" +
           accesses + "\n" +
           "To solve this, you might move the accessed features outside of the common outer feature.");
   }
