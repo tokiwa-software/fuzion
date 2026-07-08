@@ -87,7 +87,7 @@ module:public Binary_Heap_Queue(
   #           │           │   │
   #           ╰───────────┴───╯
   #
-  elements Abstract_Dynamic_Array LM T
+  elements Dynamic_Array LM T
 
 ) ref : container.Mutable_Priority_Queue T is
 

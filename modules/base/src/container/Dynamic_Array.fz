@@ -44,7 +44,7 @@ module:public Dynamic_Array (
   #           i.e. store actual elements
   len LM.new i64
 
-) ref : Abstract_Dynamic_Array LM T
+) ref : Buffer T LM
   pre
     safety: (len ≥ 0) && (len ≤ data.length.as_i64)
     # safety: data.length %% 2 # NYI: UNDER DEVELOPMENT: is this really required? Could odd lengths cause problems?
@@ -94,7 +94,7 @@ is
   #
   # amortized O(1) but worst case of O(n)
   #
-  public redef add (o T) unit
+  public add (o T) unit
     pre safety : can_add
   =>
     d := if data.length > len.get then data.get
@@ -114,11 +114,17 @@ is
     len  <- len+1
 
 
+  # iteratively add all element at the end of this Dynamic_Array
+  #
+  public add_all (s Sequence T) unit =>
+    for e in s do add e
+
+
   # remove the last element of the this Dynamic_Array
   #
   # amortized O(1) but worst case of O(n)
   #
-  public redef remove_last option T =>
+  public remove_last option T =>
     if is_empty
       nil
     else
@@ -158,7 +164,7 @@ is
     # initial value for elements
     init i64->T
 
-   ) container.Abstract_Dynamic_Array LM T
+   ) container.Dynamic_Array LM T
    pre safety: length > 0
   =>
     d := Dynamic_Array.this.empty length
@@ -169,7 +175,7 @@ is
 
   # initialize a Dynamic_Array from a Sequence
   #
-  public type.from_sequence(s Sequence T) container.Abstract_Dynamic_Array LM T
+  public type.from_sequence(s Sequence T) container.Dynamic_Array LM T
   =>
     init_len := s.is_array_backed ? s.count.as_i64 : min_length
 
@@ -182,7 +188,7 @@ is
 
   # initialize an empty Dynamic_Array of type T
   #
-  public type.empty container.Abstract_Dynamic_Array LM T =>
+  public type.empty container.Dynamic_Array LM T =>
     container.Dynamic_Array LM T (LM.env.new (LM.array T .empty min_length)) (LM.env.new i64 0)
 
 
@@ -192,7 +198,7 @@ is
   # but if an element is removed before the internal array is half filled it will shrink,
   # resulting in a reallocation of the internal array
   #
-  module type.empty(initial_internal_length i64) container.Abstract_Dynamic_Array LM T =>
+  module type.empty(initial_internal_length i64) container.Dynamic_Array LM T =>
     container.Dynamic_Array LM T (LM.env.new (LM.array T .empty initial_internal_length)) (LM.env.new i64 0)
 
 

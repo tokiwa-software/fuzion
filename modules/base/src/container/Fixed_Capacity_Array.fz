@@ -66,7 +66,7 @@ is
     # function to create initial values for elements
     init i64->T
 
-   ) container.Abstract_Dynamic_Array LM T
+   ) container.Dynamic_Array LM T
   =>
     d := container.Fixed_Capacity_Array LM T .empty length
     for i in i64.zero..(length-1) do
@@ -76,7 +76,7 @@ is
 
   # initialize a Fixed_Capacity_Array from a Sequence, capacity is set to the length of the Sequence
   #
-  public redef type.from_sequence(s Sequence T) container.Abstract_Dynamic_Array LM T =>
+  public redef type.from_sequence(s Sequence T) container.Dynamic_Array LM T =>
     arr := s.as_array_backed
 
     d := container.Fixed_Capacity_Array LM T (LM.env.new (LM.array T .empty arr.count.as_i64)) (LM.env.new i64 0)
@@ -88,11 +88,11 @@ is
 
   # initialize an empty Fixed_Capacity_Array of type T with default capacity of `min_length`
   #
-  public redef type.empty container.Abstract_Dynamic_Array LM T =>
+  public redef type.empty container.Dynamic_Array LM T =>
     container.Fixed_Capacity_Array LM T (LM.env.new (LM.array T .empty min_length)) (LM.env.new i64 0)
 
 
   # initialize an empty Fixed_Capacity_Array of type T with the given capacity
   #
-  public redef type.empty(capacity i64) container.Abstract_Dynamic_Array LM T =>
+  public redef type.empty(capacity i64) container.Dynamic_Array LM T =>
     container.Fixed_Capacity_Array LM T (LM.env.new (LM.array T .empty capacity)) (LM.env.new i64 0)

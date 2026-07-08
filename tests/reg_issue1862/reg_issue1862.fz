@@ -35,7 +35,7 @@
 # The performance of iterating the utf8 bytes of a string is O(l+n) for an
 # array of length l created by concatenating n sub-strings.
 #
-String.type.from_mutable_array(E type : mutate, a container.Abstract_Dynamic_Array E Any) String =>
+String.type.from_mutable_array(E type : mutate, a container.Dynamic_Array E Any) String =>
 
   _ : String is
 
