@@ -217,21 +217,19 @@ public class Loop extends ANY
   private final SourcePosition _pos;
 
 
-  /*----------------------------  variables  ----------------------------*/
-
-
   /**
    * Success block or null.
    */
-  private Block _successBlock;
+  private final Block _successBlock;
 
 
   /**
-   * Else block or null if not present. Parsed twice since we might need the code twice.
+   * Else block or null if not present. Parsed three times since we might need the code three times.
    */
-  private Expr _elseBlock0;
-  private Expr _elseBlock1;
-  private Expr _elseBlock2;
+  private final Expr _elseBlock;
+
+
+  /*----------------------------  variables  ----------------------------*/
 
 
   /**
@@ -303,24 +301,24 @@ public class Loop extends ANY
     _nextValues = nv;
     block = Block.newIfNull(block);
     _successBlock = sb;
-    _elseBlock0 = eb0;
-    _elseBlock1 = eb1;
-    _elseBlock2 = eb2;
     var loopName = FuzionConstants.REC_LOOP_PREFIX +  _id_++ ;
     _rawLoopName = loopName;
-    if (!iterates() && whileCond == null && _elseBlock0 != null)
+    var iterates = iterates();
+    if (!iterates && whileCond == null && eb0 != null)
       {
-        AstErrors.loopElseBlockRequiresWhileOrIterator(pos, _elseBlock0);
+        AstErrors.loopElseBlockRequiresWhileOrIterator(pos, eb0);
       }
 
     // if there are no iterates then else block may access every loop var.
     // if there are iterates we move else block to feature and
     // insert it later, see `addIterators()`.
-    if (_elseBlock0 != null && iterates())
+    if (eb0 != null && iterates)
       {
-        moveElseBlockToRoutine();
-        _elseBlock0 = new Block(new List<>(_loopElse[1], callLoopElse(1)));
+        moveElseBlockToRoutine(eb0, eb1, eb2);
       }
+    _elseBlock = eb0 != null && iterates
+      ? new Block(new List<>(_loopElse[1], callLoopElse(1)))
+      : eb0;
 
     var prologBlock = new List<Expr>();
     var nextItBlock = new List<Expr>();
@@ -349,7 +347,7 @@ public class Loop extends ANY
     block._expressions.add(nextIteration);
     if (whileCond != null)
       {
-        block = Block.fromExpr(Match.createIf(whileCond.pos(), whileCond, block, _elseBlock0, AbstractMatch.Kind.While));
+        block = Block.fromExpr(Match.createIf(whileCond.pos(), whileCond, block, _elseBlock, AbstractMatch.Kind.While));
       }
     if (inv != null)
       {
@@ -538,7 +536,7 @@ public class Loop extends ANY
    */
   private boolean producesResult()
   {
-    return _successBlock != null || _elseBlock0 != null;
+    return _successBlock != null || _elseBlock != null;
   }
 
 
@@ -574,7 +572,7 @@ public class Loop extends ANY
   /**
    * Create code that moves the else block into dedicated routines.
    */
-  private void moveElseBlockToRoutine()
+  private void moveElseBlockToRoutine(Expr eb0, Expr eb1, Expr eb2)
   {
     _loopElse = new Feature[3];
     for (int ei=0; ei<3; ei++)
@@ -588,7 +586,7 @@ public class Loop extends ANY
                                     new List<>(),
                                     Function.NO_CALLS,
                                     Contract.EMPTY_CONTRACT,
-                                    new Impl(_elsePos, ei == 0 ? _elseBlock0 : (ei == 1 ? _elseBlock1 : _elseBlock2), Impl.Kind.RoutineDef));
+                                    new Impl(_elsePos, ei == 0 ? eb0 : (ei == 1 ? eb1 : eb2), Impl.Kind.RoutineDef));
       }
   }
 
