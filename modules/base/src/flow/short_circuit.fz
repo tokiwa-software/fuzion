@@ -17,7 +17,7 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature eff.short_circuit
+#  Source code of Fuzion standard library feature flow.short_circuit
 #
 # -----------------------------------------------------------------------
 
@@ -26,7 +26,7 @@
 #
 # synthetic usage example, in a loop early return when result 42 is found:
 #
-#      sc : eff.short_circuit (option i32) is
+#      sc : flow.short_circuit (option i32) is
 #      say <| sc.run ()->
 #        for i in 1..100 do
 #          if i=42
@@ -51,13 +51,13 @@ public short_circuit(T type, h T->void) : /* NYI: need to inherit this privately
                   # abort using another effect (e.g., panic),
                   #
                   h T->void
-                  ) eff.short_circuit T
-  => eff.short_circuit T h
+                  ) flow.short_circuit T
+  => flow.short_circuit T h
 
 
   # run the code where we may early return from
   #
   public type.run(code_try ()->T) T =>
-    eff
+    flow
       .try T short_circuit.this T code_try
       .catch id
