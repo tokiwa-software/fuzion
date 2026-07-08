@@ -1,5 +1,5 @@
 ===  Test: write to stdin of process  ===
-0
+unit
 Hello from the other side.
 ===  Test: read stdout of process  ===
 eecchhoo
