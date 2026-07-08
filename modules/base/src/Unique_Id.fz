@@ -17,30 +17,25 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature unique_id
+#  Source code of Fuzion standard library feature Unique_Id
 #
 # -----------------------------------------------------------------------
 
-# unique_id -- effect that generates a unique id
+# Unique_Id -- effect that generates a unique id
 #
-public unique_id (p Unique_Id_Handler) : effect
+public Unique_Id ref : effect
 is
 
-  public get uid => {replace; p.get}
+  public get uid => abstract
 
 
-  # default implementation of fuzion.runtime.unique_id
+  # default implementation of Unique_Id
   #
   # this will get instated automatically at startup
   #
-  public redef fixed type.default_value option unique_id =>
-    unique_id (_ : Unique_Id_Handler is
-                 public redef get uid => uid fzE_unique_id
-              )
-
-
-public Unique_Id_Handler ref is
-  public get uid => abstract
+  public redef fixed type.default_value option Unique_Id =>
+    _ : Unique_Id is
+      public redef get uid => uid fzE_unique_id
 
 
 # get a unique id > 0
@@ -52,5 +47,5 @@ public Unique_Id_Handler ref is
 # would take more than 500 years before we run out of values
 # (2^64/10^9/3600/24/365.25).
 #
-public unique_id uid ! unique_id =>
-  unique_id.env.get
+public unique_id uid ! Unique_Id =>
+  Unique_Id.env.get

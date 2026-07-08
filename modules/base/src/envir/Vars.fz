@@ -25,13 +25,11 @@
 
 # envir.vars -- effect providing access to environment variables
 #
-public vars (p Vars_Handler) : effect is
+public Vars ref : effect is
 
   # If set, get the environment variable corresponding to v.
   #
-  public get(v String) option String =>
-    vars.this.env.replace
-    p.get v
+  public get(v String) option String => abstract
 
 
   # get the value v is mapped to, or nil if none.
@@ -52,7 +50,7 @@ public vars (p Vars_Handler) : effect is
   public map_of(s Sequence String) container.Map String String =>
     kvs =>
       s.flat_map k->
-        match vars.this[k].bind v->(k, v)
+        match Vars.this[k].bind v->(k, v)
           t tuple => [t]
           nil => []
     container.map_of kvs
@@ -62,19 +60,6 @@ public vars (p Vars_Handler) : effect is
   #
   # this will get instated automatically at startup
   #
-  public redef fixed type.default_value option envir.vars =>
-    envir.vars (_ : envir.Vars_Handler is
-                  public redef get(v String) option String => fuzion.sys.env_vars.get v
-               )
-
-
-# Vars_Handler -- abstract source of environment vars
-#
-# Different heirs of this feature may provided different sources for environment
-# variables
-#
-public Vars_Handler ref is
-
-  # If set, get the environment variable corresponding to v
-  #
-  public get(v String) option String => abstract
+  public redef fixed type.default_value option envir.Vars =>
+    _ : envir.Vars is
+      public redef get(v String) option String => fuzion.sys.env_vars.get v
