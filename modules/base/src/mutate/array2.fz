@@ -73,7 +73,7 @@ is
   #
   public redef as_array universe.array T =>
     check_and_replace
-    array _ _ (length0 * length1) i->data[i]
+    universe.array (length0 * length1) i->data[i]
 
 
   # create a list from this array
