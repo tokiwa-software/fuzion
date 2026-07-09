@@ -166,7 +166,7 @@ clean_err(f path) =>
   "sed -i s#$(os.cwd.or_panic.as_string)#--CURDIR--# $f".execute .or_panic
   # line numbers
   "sed -E -i s/\\.fz:[0-9]+:[0-9]+:/\\.fz:n:n:/g $f".execute .or_panic
-  "sed -E -i s/\\.fz:[0-9]+/\\.fz:n/g $f".execute .or_panic
+  "sed -E -i s/\\.(fz|java):[0-9]+/\\.\\1:n/g $f".execute .or_panic
   # replace CLASS_PREFIX_WITH_ID
   "sed -E -i s/fzC__L[0-9]+/fzC_LXXX/g $f".execute .or_panic
 
