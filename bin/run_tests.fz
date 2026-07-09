@@ -118,14 +118,14 @@ main =>
 
   # NYI: UNDER DEVELOPMENT: react to Ctrl+c like in bash scripts (trap)
 
-  if (envir.args.env.count != 3)
+  if (envir.Args.env.count != 3)
     say "wrong argument count"
     say "usage:"
     say "run_tests.fz <build_dir> <target>"
     exit 1
 
-  build_dir := path.of envir.args.env[1]
-  target := envir.args.env[2]
+  build_dir := path.of envir.Args.env[1]
+  target := envir.Args.env[2]
 
 
   # source: https://stackoverflow.com/questions/45181115/portable-way-to-find-the-number-of-processors-cpus-in-a-shell-script

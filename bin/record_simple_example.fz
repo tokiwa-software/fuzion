@@ -92,7 +92,7 @@ String.execute =>
 ####### record_simple_example ########
 
 
-if envir.args.env.count != 4
+if envir.Args.env.count != 4
   say """
       Usage  : record_simple_example <any|jvm|c|int|effect> <fz+args> <test.fz>
       Example: record_simple_example jvm "build/bin/fz -modules=nom" /tests/hello/HelloWorld.fz
@@ -100,9 +100,9 @@ if envir.args.env.count != 4
   exit 1
 
 
-type_ := envir.args.env[1]
-fz_run   := envir.args.env[2] # NYI: UNDER DEVELOPMENT: code should be same as check_simple_example.fz
-file     := envir.args.env[3]
+type_    := envir.Args.env[1]
+fz_run   := envir.Args.env[2] # NYI: UNDER DEVELOPMENT: code should be same as check_simple_example.fz
+file     := envir.Args.env[3]
 
 res :=
   if type_ = "jvm" || type_ = "any"
