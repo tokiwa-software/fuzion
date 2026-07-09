@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# gfx is a minimalistic example that shows how Java's
+# gfx is a minimalist example that shows how Java's
 # java.awt graphics can be called from Fuzion code.
 #
 # See Makefile for how to start fuzion to run this example.

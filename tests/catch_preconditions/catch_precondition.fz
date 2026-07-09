@@ -381,7 +381,7 @@ catch_precondition is
   # now we inherit from all combinations and add a new precondition as follows:
   #
   # feature `c<n><m><k>` inherits from `p<n>` and `p<m>` and redefines `f1`..`f7`
-  # using variang `<k>`
+  # using varying `<k>`
   #
   c111 : p1, p1 is
     redef f1(x i32)

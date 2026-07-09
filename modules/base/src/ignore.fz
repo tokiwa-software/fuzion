@@ -27,7 +27,7 @@
 # ignore -- function mapping any value to unit
 #
 # This can be used to ignore the result of an expression, e.g. the
-# instance returned by a constructor or the value returned by a fuction.
+# instance returned by a constructor or the value returned by a function.
 #
 # Ex. with these features
 #

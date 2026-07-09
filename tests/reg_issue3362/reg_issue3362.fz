@@ -58,7 +58,7 @@ reg_issue3362 is
   say dec_test
 
 
-  # minimalistic-example
+  # minimalist-example
   #
   c : choice i32 unit is
   a c := 0

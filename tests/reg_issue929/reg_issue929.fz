@@ -23,7 +23,7 @@
 
 reg_issue929 =>
 
-  # NYI: UNDER DEVELOPMENT: #5311, needs support for nullary-lambda inference incl. cylces
+  # NYI: UNDER DEVELOPMENT: #5311, needs support for nullary-lambda inference incl. cycles
   fibs => 0 : fibs.zip 1:()->fibs (+) .as_list
   fib(n i32) => (fibs().drop n).first
 

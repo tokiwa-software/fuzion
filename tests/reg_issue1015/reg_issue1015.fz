@@ -41,11 +41,11 @@ reg_issue1015 =>
 
   _ := test_ambig
 
-  # minimalistic example
+  # minimalist example
   i := () -> unit
   say i()
 
-  # minimalistic example that worked before #1015 was fixed
+  # minimalist example that worked before #1015 was fixed
   j := () -> "unit"
   say j()
 

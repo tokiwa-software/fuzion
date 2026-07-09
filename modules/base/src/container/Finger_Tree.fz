@@ -332,7 +332,7 @@ is
       finger[3][m-f0cnt-f1cnt-f2cnt]
 
 
-  # fill ia with contens of the fingers
+  # fill ia with contents of the fingers
   # starting at index i
   #
   fill_internal_array(ia fuzion.sys.internal_array T, i i64) unit =>

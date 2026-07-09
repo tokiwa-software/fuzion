@@ -32,7 +32,7 @@ test_free_type is
   a1 42
   a1 "fourty two"
   a2 42
-  # a2 "fourty two"        -- should flag an error
+  # a2 "forty two"        -- should flag an error
 
   # free type with implicit constraint `Any`
   #
