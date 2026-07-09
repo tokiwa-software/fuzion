@@ -282,7 +282,7 @@ public effect is
   #
   # For effects that model the outside world (e.g., i/o, time, sensors and actuators, etc.),
   # the effect might be a unit type, so the replace is effectively a no-operation.  However,
-  # the call to `replace` is used ot model the change of the outside world and must be
+  # the call to `replace` is used to model the change of the outside world and must be
   # included for analysis tools to appreciate this.
   #
   # replace may only be called during the execution of an operation of a currently instated
