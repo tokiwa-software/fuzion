@@ -78,8 +78,7 @@ The period is a scheduling property describing how often an activity should occu
 ((Cycle)):: Observes the spacing between two consecutive events in a realtime system, irrespective of schedule.
 
 [#precision]
-((Precision)):: The smallest time difference that can be distinguished by a measurement system. Precision depends on the resolution of the clock and the frequency at which measurements are taken. Higher precision allows smaller timing variations to be detected and distinguished.
-For example, a clock with microsecond precision can distinguish events separated by 1 µs, whereas a clock with millisecond precision cannot reliably distinguish events occurring less than 1 ms apart.
+((Precision)):: The smallest time difference that a measurement system can reliably distinguish. Higher precision allows smaller variations in timing to be measured accurately. Precision depends on factors such as the resolution of the clock used, the frequency at which timestamps are sampled, and the overhead of the measurement mechanism.
 
 [#affinity]
 ((Affinity)):: Restriction binding a thread to specific CPU cores.
@@ -93,4 +92,4 @@ Under Linux SCHED_FIFO, a running task continues executing until it blocks, yiel
 When multiple runnable tasks have the same priority, an additional policy determines their ordering. For example, Linux SCHED_FIFO uses first-in-first-out ordering among tasks of equal priority, while still allowing higher-priority tasks to preempt lower-priority ones.
 
 [#observer]
-((Observer)):: A component that records, measures, or analyzes the timing of events in a realtime system. Examples include timers, tracing tools, profilers, schedulers, and measurement code used to collect latency or jitter data.
+((Observer)):: The measurement mechanism that records the times at which events occur in order to analyze their timing properties. An observer may consist of instrumentation code, tracing facilities, or profiling tools that collect timestamps and compare them with expected execution times. The observer itself does not influence the schedule; it only measures it.
