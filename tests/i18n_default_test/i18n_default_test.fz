@@ -23,14 +23,14 @@
 
 i18n_default_test is
 
-    h : envir.Vars_Handler is
+    custom_env_vars : envir.Vars is
       public redef get(v String) option String =>
         if v = "LANG"
           "de_DE.UTF-8"
         else
           nil
 
-    (envir.vars h) ! ()->
+    envir.Vars.instate custom_env_vars ()->
 
       internationalization.Provide.instate internationalization.Provide.default_value.or_panic ()->
 

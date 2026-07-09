@@ -30,7 +30,7 @@ protected_space := codepoint codepoint.utf8_encoded_in_four_bytes.as_list.last.o
 
 # envir vars as map
 #
-envir_vars := container.map_of ((envir.vars.env.map_of [
+envir_vars := container.map_of ((envir.Vars.env.map_of [
     "PATH",
     "LANG",
     "JAVA_HOME",
@@ -106,9 +106,9 @@ file     := envir.args.env[3]
 
 res :=
   if type_ = "jvm" || type_ = "any"
-    "$fz_run -XmaxErrors=-1 -jvm $(envir.vars.env["FUZION_JVM_BACKEND_OPTIONS"].or_default "") $file".execute true
+    "$fz_run -XmaxErrors=-1 -jvm $(envir.Vars.env["FUZION_JVM_BACKEND_OPTIONS"].or_default "") $file".execute true
   else if type_ = "c"
-    c := "$fz_run -XmaxErrors=-1 -c $(envir.vars.env["FUZION_C_BACKEND_OPTIONS"].or_default "") -o=testbin $file".execute true
+    c := "$fz_run -XmaxErrors=-1 -c $(envir.Vars.env["FUZION_C_BACKEND_OPTIONS"].or_default "") -o=testbin $file".execute true
     if (c.exit_code = 0)
       e := "./testbin".execute
       _ := io.file.delete (path.of "testbin")

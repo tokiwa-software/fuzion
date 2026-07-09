@@ -29,7 +29,7 @@ protected_space := codepoint codepoint.utf8_encoded_in_four_bytes.as_list.last.o
 
 # envir vars as map
 #
-envir_vars := container.map_of ((envir.vars.env.map_of [
+envir_vars := container.map_of ((envir.Vars.env.map_of [
     "PATH",
     "LANG",
     "JAVA_HOME",
