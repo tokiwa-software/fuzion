@@ -59,7 +59,7 @@ A realtime system with low jitter produces events close to their expected times.
 ((Event)):: An occurrence that happens at a specific time in a realtime system.
 
 [#period]
-((Period)):: The intended time interval between successive releases of a periodic activity. For example, a task configured to run every 10 ms has a period of 10 ms. If the first release occurs at time 0 ms, subsequent releases are expected at : 10 ms, 20 ms, 30 ms, ...
+((Period)):: The intended time interval between successive releases of a task. For example, a task configured to run every 10 ms has a period of 10 ms. If the first release occurs at time 0 ms, subsequent releases are expected at : 10 ms, 20 ms, 30 ms, ...
 The period is a scheduling property describing how often an activity should occur.
 
 [#periodic_task]
