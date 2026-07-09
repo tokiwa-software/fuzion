@@ -17,65 +17,46 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature time.nano
+#  Source code of Fuzion standard library feature time.Nano
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# time.nano -- effect providing nano time
+# time.Nano -- effect providing nano time
 #
-# time.nano is a timer that provides high precision but possibly low
+# time.Nano is a timer that provides high precision but possibly low
 # accuracy.  Such a timer is typically useful for timing the duration
 # of events, such as measuring the time it takes to perform some
 # calculation.
 #
-# time.nano may have a significant drift compared to actual time, it might
+# time.Nano may have a significant drift compared to actual time, it might
 # not be the right source of time to, e.g., feed an alarm clock that should
 # wake you up at 6h30 every morning.
 #
-public nano (p Nano_Time_Handler) : time.Clock is
+public Nano ref : time.Clock is
 
   # no guarantee can be given for precision nor resolution
   #
-  public redef read time.instant =>
-    res := p.read
-    replace
-    time.instant res
+  public redef read time.instant => abstract
 
 
   # no guarantee can be given for precision nor resolution
   #
-  public redef sleep(d time.duration) unit =>
-    res := p.sleep d
-    replace
-    res
+  public redef sleep(d time.duration) unit => abstract
 
 
 
-  # default implementation of time.nano.
+  # default implementation of time.Nano.
   #
-  public redef fixed type.default_value option time.nano =>
-    time.nano (_ : time.Nano_Time_Handler is
+  public redef fixed type.default_value option time.Nano =>
+    _ : time.Nano is
 
-                 # no guarantee can be given for precision nor resolution
-                 #
-                 redef read => fzE_nanotime
+      # no guarantee can be given for precision nor resolution
+      #
+      public redef read time.instant => time.instant fzE_nanotime
 
-                 # no guarantee can be given for precision nor resolution
-                 #
-                 redef sleep(d time.duration) => fzE_nanosleep d.nanos
-         )
+      # no guarantee can be given for precision nor resolution
+      #
+      public redef sleep(d time.duration) unit => fzE_nanosleep d.nanos
 
-
-# abstract handler that can deliver a nano time
-#
-private:public Nano_Time_Handler ref is
-
-  # no guarantee can be given for precision nor resolution
-  #
-  read u64 => abstract
-
-  # no guarantee can be given for precision nor resolution
-  #
-  sleep(d time.duration) unit => abstract

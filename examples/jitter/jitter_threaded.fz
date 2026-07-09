@@ -147,7 +147,7 @@ jitter_threaded =>
   say "Starting jitter test on dedicated thread..."
   result_ch := concur.Channel (tuple time.duration time.instant time.instant bool)
   thrd := concur.threads.env.spawn ()->
-    test_jitter time.nano time.nano result_ch
+    test_jitter time.Nano time.Nano result_ch
     result_ch.close
 
   # affinity: pin the worker thread to CPU 0 (best-effort)

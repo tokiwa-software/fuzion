@@ -211,7 +211,7 @@ ring_buf =>
         .try ()->
           expect "t4" true    (rb.add "O"        )    # add second element        []     -> [O]
           expect "t4" true    (rb.add "P"        )    # add second element        [O]    -> [O,P]
-          time.nano.env.sleep (time.duration.ms 100)
+          time.Nano.env.sleep (time.duration.ms 100)
           expect "t4" true    (rb.add "Q"        )    # add second element        [O,P]  -> [O,P,Q]
           expect "t4" unit    (rb.put "R"        )    # add second element        [..,Q] -> [..,Q,R]
           expect "t4" unit    (rb.put "S"        )    # add second element        [..,R] -> [..,R,S]
@@ -223,7 +223,7 @@ ring_buf =>
     ro := rb.take               # blocking take from ring_buffer [O?,P?,Q?] -> [P?,Q?]
     rp := rb.take               # blocking take from ring_buffer [P?,Q?]    -> [Q?]
     rq := rb.take               # blocking take from ring_buffer [Q?]       -> []
-    time.nano.env.sleep (time.duration.ms 100)
+    time.Nano.env.sleep (time.duration.ms 100)
     rr := rb.take               # blocking take from ring_buffer [R?,..]    -> [S?,..]
     rs := rb.take               # blocking take from ring_buffer [S?,..]    -> [T?,..]
     rt := rb.take               # blocking take from ring_buffer [T?,..]    -> [U?]
@@ -309,7 +309,7 @@ ring_buf =>
     for i in 1..10 do
 
       # give the threads some time to start or empty the buffer:
-      time.nano.env.sleep (time.duration.ms 10)
+      time.Nano.env.sleep (time.duration.ms 10)
 
       # push 5000 entries to the ring buffer
       for j in 1..5000 do

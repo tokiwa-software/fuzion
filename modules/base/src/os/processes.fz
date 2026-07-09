@@ -54,7 +54,7 @@ public processes (ph os.Process_Handler, public running_processes container.Set 
   module wait(p os.process, timeout time.duration) outcome u32
   pre running_processes.contains p
   =>
-    start := time.nano.env.read
+    start := time.Nano.env.read
 
     # the maximum poll time for process exit
     #
@@ -62,12 +62,12 @@ public processes (ph os.Process_Handler, public running_processes container.Set 
 
     for
       r := fzE_process_poll p.pid
-      elapsed_time := time.nano.env.read-start
+      elapsed_time := time.Nano.env.read-start
       # NYI: UNDER DEVELOPMENT: replace polling by signaled waits (POSIX) / events (WIN) or similar.
       # 1ms, 2ms, 4ms, 8ms, 16ms, 32ms, ..., 1s
       polling_time := time.duration.ms 1, min upper_bound_poll_time polling_time*2
     while r = -1 && elapsed_time <= timeout
-      time.nano.env.sleep (min timeout-elapsed_time polling_time)
+      time.Nano.env.sleep (min timeout-elapsed_time polling_time)
     else
       if r >= 0
         os.processes ph (running_processes ∖ (container.set_of_ordered [p]))
