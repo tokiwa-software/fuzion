@@ -1,0 +1,201 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature container.Dynamic_Array
+#
+# -----------------------------------------------------------------------
+
+# Dynamic_Array -- a mutable array that can grow and shrink in size
+#
+# Elements can be added to and removed from the end in amortized O(1)
+# with the worst case being in O(n)
+#
+module:public Dynamic_Array (
+
+  # the mutate effect
+  #
+  public LM type : mutate,
+
+  # element type
+  #
+  public T type,
+
+  # contents of the array
+  #
+  data LM.new (LM.array T),
+
+  # length -- number of elements in data that are in use,
+  #           i.e. store actual elements
+  len LM.new i64
+
+) ref : Abstract_Dynamic_Array LM T
+  pre
+    safety: (len ≥ 0) && (len ≤ data.length.as_i64)
+    # safety: data.length %% 2 # NYI: UNDER DEVELOPMENT: is this really required? Could odd lengths cause problems?
+is
+
+
+  public may_shrink bool => true
+
+  public may_grow   bool => true
+
+
+  # length of this array, i.e. number of actual elements, NOT the length of the internal array
+  #
+  public redef length i64 => len
+
+
+  # get element at given index i
+  #
+  public redef index [ ] (I type : integer, i I) T
+  =>
+    data[i]
+
+
+  # set element at given index i to given value o
+  #
+  public redef set [ ] (I type : integer, i I, o T) unit
+  =>
+    data[i.as_i32] := o
+
+
+  # can another element be added to the end of this Dynamic_Array?
+  #
+  # True if either the internal data structure has space
+  # for another element or this Dynamic_Array is able to grow
+  #
+  public can_add bool =>
+    may_grow || data.length > len.get
+
+
+  # the maximum length this array can grow to in case it is limited
+  #
+  public max_capacity option i64 =>
+    may_grow ? nil : data.length
+
+
+  # add an element at the end of this Dynamic_Array
+  #
+  # amortized O(1) but worst case of O(n)
+  #
+  public redef add (o T) unit
+    pre safety : can_add
+  =>
+    d := if data.length > len.get then data.get
+         else if may_grow
+           new_data := LM.array T .empty (max 1 data.length*2) # multiplying does not work for array length 0
+           check debug : data.length < new_data.length
+           for i in indices do
+             new_data[i] := data[i]
+           new_data
+         else
+           # this should not happen
+           panic "'$(Dynamic_Array.this.type.name)' can not grow, exceeded capacity of $(data.length) elements"
+
+
+    d[len.as_i32] := o
+    data <- d
+    len  <- len+1
+
+
+  # remove the last element of the this Dynamic_Array
+  #
+  # amortized O(1) but worst case of O(n)
+  #
+  public redef remove_last option T =>
+    if is_empty
+      nil
+    else
+      res := data[len-1]
+      len <- len-1
+
+      # NYI: UNDER DEVELOPMENT: is shrinking to exactly min length important? E.g. array with 10 initial elements an min_length of 8
+
+      if may_shrink && len ≤ data.length/4 && data.length ≥ Dynamic_Array.this.type.min_length*2
+        new_data := LM.array T .empty data.length/2
+        for i in indices do
+          new_data[i] := data[i]
+        data <- new_data
+
+      res
+
+
+  # create a list from this Dynamic_Array
+  #
+  public redef as_list list T =>
+    # since array is mutable,
+    # we first copy the elements
+    # to an immutable array.
+    as_array.as_list
+
+
+
+
+
+  # initialize a Dynamic_Array
+  #
+  public type.new
+   (
+    # length of the array to create
+    length i64,
+
+    # initial value for elements
+    init i64->T
+
+   ) container.Abstract_Dynamic_Array LM T
+   pre safety: length > 0
+  =>
+    d := Dynamic_Array.this.empty length
+    for i in i64.zero..(length-1) do
+      d.add (init i)
+    d
+
+
+  # initialize a Dynamic_Array from a Sequence
+  #
+  public type.from_sequence(s Sequence T) container.Abstract_Dynamic_Array LM T
+  =>
+    init_len := s.is_array_backed ? s.count.as_i64 : min_length
+
+    d := container.Dynamic_Array LM T (LM.env.new (LM.array T .empty init_len)) (LM.env.new i64 0)
+
+    for e in s do d.add e
+
+    d
+
+
+  # initialize an empty Dynamic_Array of type T
+  #
+  public type.empty container.Abstract_Dynamic_Array LM T =>
+    container.Dynamic_Array LM T (LM.env.new (LM.array T .empty min_length)) (LM.env.new i64 0)
+
+
+  # initialize an empty Dynamic_Array of type T, allocates the internal array with the given initial length
+  #
+  # Up to `initial_internal_elements` can be added without reallocation of the internal array,
+  # but if an element is removed before the internal array is half filled it will shrink,
+  # resulting in a reallocation of the internal array
+  #
+  module type.empty(initial_internal_length i64) container.Abstract_Dynamic_Array LM T =>
+    container.Dynamic_Array LM T (LM.env.new (LM.array T .empty initial_internal_length)) (LM.env.new i64 0)
+
+
+  # the length below which the internal array won't shrink
+  #
+  public type.min_length i64 => 4
