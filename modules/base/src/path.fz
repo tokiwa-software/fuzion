@@ -226,7 +226,7 @@ is
   public redef fixed type.hash_code(a path) u64 =>
     xxh_next
       (hash a.is_absolute)
-      ((array String).type.hash_code a.names)
+      ((array String).hash_code a.names)
 
 
   # instantiates a path via a given String

@@ -4,7 +4,7 @@
 -----------------------^^^^^^
 For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
 Type that is ambiguous: 'String'
-Possible features that match this type: 
+Possible features that match this type:
 'reg_issue3337.test1.String' defined at --CURDIR--/reg_issue3337.fz:28:9:
   test1(String type, h String) is                #  1. should flag an error: `h String` ambiguous
 --------^^^^^^
@@ -20,7 +20,7 @@ To solve this, rename these features such that each one has a unique name.
 -----------------------^^^^^^
 For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
 Type that is ambiguous: 'String'
-Possible features that match this type: 
+Possible features that match this type:
 'reg_issue3337.test2.String' defined at --CURDIR--/reg_issue3337.fz:29:9:
   test2(String type, h String) =>                #  2. should flag an error: `h String` ambiguous
 --------^^^^^^
@@ -36,7 +36,7 @@ To solve this, rename these features such that each one has a unique name.
 ---------------------^^^^^^
 For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
 Type that is ambiguous: 'String'
-Possible features that match this type: 
+Possible features that match this type:
 'reg_issue3337.test7.String' defined at --CURDIR--/reg_issue3337.fz:34:9:
   test7(String type) String =>                   #  7. should flag an error: `String` ambiguous
 --------^^^^^^
@@ -52,7 +52,7 @@ To solve this, rename these features such that each one has a unique name.
 ----------------------------^^^^^^
 For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
 Type that is ambiguous: 'String'
-Possible features that match this type: 
+Possible features that match this type:
 'reg_issue3337.test8.String' defined at --CURDIR--/reg_issue3337.fz:35:9:
   test8(String type) option String =>            #  8. should flag an error: `option String` ambiguous
 --------^^^^^^
@@ -68,7 +68,7 @@ To solve this, rename these features such that each one has a unique name.
 -----------------------------------^^^^^^
 For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
 Type that is ambiguous: 'String'
-Possible features that match this type: 
+Possible features that match this type:
 'reg_issue3337.test3.String' defined at --CURDIR--/reg_issue3337.fz:30:9:
   test3(String type, h type : list String) is    #  3. should flag an error: `list  String` ambiguous
 --------^^^^^^
@@ -84,7 +84,7 @@ To solve this, rename these features such that each one has a unique name.
 -----------------------------------^^^^^^
 For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
 Type that is ambiguous: 'String'
-Possible features that match this type: 
+Possible features that match this type:
 'reg_issue3337.test4.String' defined at --CURDIR--/reg_issue3337.fz:31:9:
   test4(String type, h type : list String) =>    #  4. should flag an error: `list String` ambiguous
 --------^^^^^^
@@ -100,7 +100,7 @@ To solve this, rename these features such that each one has a unique name.
 ----------------------^^^^^^
 For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
 Type that is ambiguous: 'String'
-Possible features that match this type: 
+Possible features that match this type:
 'reg_issue3337.test5.String' defined at --CURDIR--/reg_issue3337.fz:32:31:
   test5(h type : list String, String type) is    #  5. should flag an error: `list String` ambiguous
 ------------------------------^^^^^^
@@ -116,7 +116,7 @@ To solve this, rename these features such that each one has a unique name.
 ----------------------^^^^^^
 For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
 Type that is ambiguous: 'String'
-Possible features that match this type: 
+Possible features that match this type:
 'reg_issue3337.test6.String' defined at --CURDIR--/reg_issue3337.fz:33:31:
   test6(h type : list String, String type) =>    #  6. should flag an error: `list String` ambiguous
 ------------------------------^^^^^^
@@ -132,7 +132,7 @@ To solve this, rename these features such that each one has a unique name.
 ------------------------------------^^^^^^
 For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
 Type that is ambiguous: 'String'
-Possible features that match this type: 
+Possible features that match this type:
 'reg_issue3337.test9.String' defined at --CURDIR--/reg_issue3337.fz:36:9:
   test9(String type) is _ := option String nil   #  9. should flag an error: `option String` ambiguous
 --------^^^^^^
@@ -148,7 +148,7 @@ To solve this, rename these features such that each one has a unique name.
 -------------------------------------^^^^^^
 For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
 Type that is ambiguous: 'String'
-Possible features that match this type: 
+Possible features that match this type:
 'reg_issue3337.test10.String' defined at --CURDIR--/reg_issue3337.fz:37:10:
   test10(String type) => _ := option String nil  # 10. should flag an error: `option String` ambiguous
 ---------^^^^^^

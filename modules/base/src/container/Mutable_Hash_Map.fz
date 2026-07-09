@@ -47,24 +47,22 @@ module:public Mutable_Hash_Map(
         #
         min_size i32,
 
-        # NYI: use fractions instead of floats (3x)
-
         # lower boundary at which the size of the internal array is decreased
         #
-        lower_load_factor f32,
+        lower_load_factor num.fraction i32,
 
         # upper boundary at which the size of the internal array is increased
         #
-        upper_load_factor f32,
+        upper_load_factor num.fraction i32,
 
         # factor by which the allocated_size is increased if load reaches upper_load_factor
         #
-        resize_factor f32 ) ref : container.Mutable_Map HK V
+        resize_factor num.fraction i32) ref : container.Mutable_Map HK V
 pre
   debug: min_size > 0
-  debug: 0.0 < lower_load_factor < upper_load_factor
-  debug: lower_load_factor < upper_load_factor < 1.0
-  debug: resize_factor >= 2.0
+  debug: (num.fraction i32).zero < lower_load_factor < upper_load_factor
+  debug: lower_load_factor < upper_load_factor < (num.fraction i32).one
+  debug: resize_factor >= (num.fraction i32).two
 
 is
 
@@ -75,23 +73,23 @@ is
 
   # number of entries currently in this map
   #
-  load := mut 0
+  load := LM.env.new 0
 
   # maximum number of pairs before size is increased
   #
-  max_elem => (allocated_size.get.as_f32 * upper_load_factor).ceil.as_i32
+  max_elem => ((num.fraction allocated_size.get 1) * upper_load_factor).ceil
 
   # minimum number of pairs before size is decreased
   #
-  min_elem => (allocated_size.get.as_f32 * lower_load_factor).floor.as_i32
+  min_elem => ((num.fraction allocated_size.get 1) * lower_load_factor).floor
 
   # size of allocated contents array, allows for some empty slots
   #
-  allocated_size := mut (min_size.as_f32 / upper_load_factor).ceil.as_i32
+  allocated_size := LM.env.new ((num.fraction min_size 1) / upper_load_factor).ceil
 
   # the contents
   #
-  contents := mut (LM.env.new_array (choice nil del (tuple HK V)) allocated_size.get.as_i64 nil)
+  contents := LM.env.new (LM.env.new_array (choice nil del (tuple HK V)) allocated_size.get.as_i64 nil)
 
 
   # calculate the index of k within contents array in case of no conflict
@@ -114,22 +112,22 @@ is
   #
   increase_if_necessary =>
     if size > max_elem
-      change_allocated_size (allocated_size.get.as_f32 * resize_factor).ceil.as_i32
+      change_allocated_size ((num.fraction allocated_size.get 1) * resize_factor).ceil
 
 
   # decrease internal allocation if lower_load_factor is reached
   #
   decrease_if_necessary =>
     if size < min_elem && max_elem > min_size
-      change_allocated_size (allocated_size.get.as_f32 / resize_factor).ceil.as_i32
+      change_allocated_size ((num.fraction allocated_size.get 1) / resize_factor).ceil
 
 
   # change size of internal allocation to new_alloc_size
   #
   change_allocated_size(new_alloc_size i32)
     pre
-      debug: size <= (new_alloc_size.as_f32 * upper_load_factor).ceil.as_i32
-      debug: max size min_size >= (new_alloc_size.as_f32 * lower_load_factor).floor.as_i32
+      debug: size <= ((num.fraction new_alloc_size 1) * upper_load_factor).ceil
+      debug: max size min_size >= ((num.fraction new_alloc_size 1) * lower_load_factor).floor
   =>
     allocated_size <- new_alloc_size
     old_contents := contents.get.as_array
@@ -153,7 +151,7 @@ is
           store (idx k) k v update_size false
         else
           contents.get[at] := (k, v) # insert new key value pair
-          if update_size then load <- load.get + 1
+          if update_size then load <- load + 1
 
       t tuple =>
         ek, _ := t
@@ -168,13 +166,14 @@ is
           store (collision at) k v update_size is_update
         else
           contents.get[at] := (k, v) # insert new key value pair
-          if update_size then load <- load.get + 1
+          if update_size then load <- load + 1
 
 
   # number of entries in this map
   #
   public redef size i32 =>
-    load.get
+    LM.env.exclusive ()->
+      load.get
 
 
   # add key-value pair to this map
@@ -182,75 +181,82 @@ is
   #
   public redef put(k HK, v V) unit =>
 
-    store (idx k) k v true true
+    LM.env.exclusive ()->
 
-    increase_if_necessary
+      store (idx k) k v true true
+
+      increase_if_necessary
 
 
   # get the value k is mapped to or nil if it does not exist
   #
   public redef get(k HK) option V =>
 
-    retrieve (at i64, stop_at_start bool) option V =>
-      match contents.get[at]
-        nil     => nil
-        t tuple =>
-          ek, v := t
-          if ek = k
-            v
-          else
-            retrieve (collision at) true
-        del =>
-          (at = start_idx && stop_at_start) ? nil : retrieve (collision at) true
+    LM.env.exclusive ()->
 
-    start_idx := idx k
-    retrieve start_idx false
+      retrieve (at i64, stop_at_start bool) option V =>
+        match contents.get[at]
+          nil     => nil
+          t tuple =>
+            ek, v := t
+            if ek = k
+              v
+            else
+              retrieve (collision at) true
+          del =>
+            (at = start_idx && stop_at_start) ? nil : retrieve (collision at) true
+
+      start_idx := idx k
+      retrieve start_idx false
 
 
   # remove key from map, returns the removed value
   #
   public redef remove(k HK) option V ! LM =>
 
+    LM.env.exclusive ()->
 
-    delete(del_idx i64, stop_at_start bool) option V =>
-      match contents.get[del_idx]
-        nil => nil
-        t tuple =>
-          ek, v := t
-          if ek = k
-            contents.get[del_idx] := nil
-            load <- load.get - 1
-            contents.get[del_idx] := del
-            v
-          else
-            delete (collision del_idx) true
-        del =>
-          (stop_at_start && del_idx = del_start_idx) ? nil : delete (collision del_idx) true
+      delete(del_idx i64, stop_at_start bool) option V =>
+        match contents.get[del_idx]
+          nil => nil
+          t tuple =>
+            ek, v := t
+            if ek = k
+              contents.get[del_idx] := nil
+              load <- load - 1
+              contents.get[del_idx] := del
+              v
+            else
+              delete (collision del_idx) true
+          del =>
+            (stop_at_start && del_idx = del_start_idx) ? nil : delete (collision del_idx) true
 
-    del_start_idx := idx k
+      del_start_idx := idx k
 
-    return_val := delete del_start_idx false
+      return_val := delete del_start_idx false
 
-    decrease_if_necessary
+      decrease_if_necessary
 
-    return_val
+      return_val
 
 
   # get a list of all key/value pairs in this map
   #
   public redef items Sequence (tuple HK V) =>
-    contents.get.as_array
-      .filter (o -> o ? tuple => true | * => false)
-      .map (x -> x ? t tuple => t | * => panic "filter failed" )
+    LM.env.exclusive ()->
+      contents.get.as_array
+        .flat_map (tuple HK V) (o -> o ? t tuple => [t] | * => [])
 
 
   # create an immutable map from this
   #
   public redef as_map container.Map HK V =>
-    pairs := items
-    container.hash_map HK V (pairs.map (.0) ).as_array (pairs.map (.1)).as_array
+    LM.env.exclusive ()->
+      pairs := items
+      container.hash_map HK V (pairs.map (.0) ).as_array (pairs.map (.1)).as_array
 
 
   # create an empty instance of Mutable_Hash_Map
   #
-  public fixed redef type.empty container.Mutable_Hash_Map LM HK V => container.Mutable_Hash_Map LM HK V 11 0.25 0.5 2
+  public fixed redef type.empty container.Mutable_Hash_Map LM HK V =>
+    container.Mutable_Hash_Map LM HK V 11 (num.fraction 1 4) (num.fraction 1 2) (num.fraction 2 1)

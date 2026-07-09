@@ -1,0 +1,67 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature concur.sync.mutext
+#
+# -----------------------------------------------------------------------
+
+
+# a mutex is a synchronization primitive
+# that allows threads to wait for one another.
+#
+module:public mutex(module mtx Mutex) is
+
+  # run code synchronized across all threads
+  # that also use this mutex
+  #
+  public synchronized(T type, F type : ()->T, code F) T =>
+
+    lock_effect : effect is
+      public redef finally unit =>
+        unlock
+
+    lock
+    lock_effect ! code.call
+
+  # low-level lock this mutex
+  module lock
+  =>
+    res := mtx_lock mtx
+    check res
+
+  # low-level unlock this mutex
+  module unlock
+  =>
+    res := mtx_unlock mtx
+    check res
+
+
+  # initialize a new mutex
+  #
+  public type.new outcome concur.sync.mutex =>
+    concur.sync.mtx_init.bind mtx->
+      concur.sync.mutex mtx
+
+  # destroy this mutex, i.e., release its resources
+  #
+  # NYI: UNDER DEVELOPMENT: check that destroy is called by all code that creates new mutexes
+  #
+  module destroy =>
+    mtx_destroy mtx
+

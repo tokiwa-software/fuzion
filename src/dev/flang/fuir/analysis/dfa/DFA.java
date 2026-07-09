@@ -789,7 +789,7 @@ public class DFA extends ANY
   /**
    * Should instance of certain clazzes be joined into a single Instance for
    * performance?  This is used to avoid large number of instances of, e.g.,
-   * `array u8` where tracking the individual instances gives no benefit.
+   * {@code array u8} where tracking the individual instances gives no benefit.
    *
    * To disable, use fz with
    *
@@ -3000,7 +3000,7 @@ public class DFA extends ANY
   /**
    * Should instance of given clazz be joined into a single Instance for
    * performance?  This is used to avoid large number of instances of, e.g.,
-   * `array u8` where tracking the individual instances gives no benefit.
+   * {@code array u8} where tracking the individual instances gives no benefit.
    */
   boolean onlyOneInstance(int clazz)
   {

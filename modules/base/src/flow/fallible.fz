@@ -17,14 +17,14 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature eff.fallible
+#  Source code of Fuzion standard library feature flow.fallible
 #
 # -----------------------------------------------------------------------
 
 # fallible -- fallible is a generic type for effects that may signal a fault
 #
 # Any effect that may signal a fault should inherit from fallible to permit
-# its use within type parameteric features such as `eff.try`
+# its use within type parameteric features such as `flow.try`
 #
 public fallible(ERROR type, h ERROR->void) : effect is
 
@@ -66,5 +66,5 @@ public fallible(ERROR type, h ERROR->void) : effect is
   # Note that the code is not executed unless `.catch` or `infix ||` is applied
   # to the result of the call to `try`.
   #
-  public type.try(T type, code_try ()->T) eff.try ERROR fallible.this T =>
-    eff.try ERROR fallible.this T code_try
+  public type.try(T type, code_try ()->T) flow.try ERROR fallible.this T =>
+    flow.try ERROR fallible.this T code_try

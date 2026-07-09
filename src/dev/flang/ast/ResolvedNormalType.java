@@ -166,7 +166,10 @@ public class ResolvedNormalType extends ResolvedType
     if (POSTCONDITIONS) ensure
       (_feature == null /* artificial built in type */
        || feature().generics().sizeMatches(generics())
-       || generics().isEmpty() /* e.g. an incomplete type in a match case */);
+       || generics().isEmpty() /* e.g. an incomplete type in a match case */,
+        generics().stream().allMatch(x -> !x.isCotypeType()),
+        // the outer of a cotype must be a parametric type or a cotype
+        o == null || o.backingFeature().isUniverse() || _feature == null || !_feature.isCotype() || o.isParametricType() || o.isCotypeType());
   }
 
   /**
@@ -254,7 +257,7 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * The mode of the type: GenericArgument, ThisType, RefType or ValueType.
+   * The mode of the type: ParametricType, ThisType, RefType or ValueType.
    */
   @Override
   public TypeKind kind()
@@ -268,7 +271,7 @@ public class ResolvedNormalType extends ResolvedType
    *
    * @return the underlying feature.
    *
-   * @throws Error if this is not resolved or isGenericArgument().
+   * @throws Error if this is not resolved or isParametricType().
    */
   @Override
   protected AbstractFeature backingFeature()
@@ -294,7 +297,7 @@ public class ResolvedNormalType extends ResolvedType
 
 
   /**
-   * `this` as a value.
+   * {@code this} as a value.
    *
    * Requires that at isNormalType().
    */

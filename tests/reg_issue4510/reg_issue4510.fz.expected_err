@@ -1,0 +1,13 @@
+
+--CURDIR--/reg_issue4510.fz:24:29: error 1: Incompatible types found during type inference for type parameters
+x := true; _ := array 3 i->i=x
+----------------------------^
+Types inferred for first type parameter 'T':
+'i32' found at --CURDIR--/reg_issue4510.fz:24:28:
+x := true; _ := array 3 i->i=x
+---------------------------^
+'bool' found at --CURDIR--/reg_issue4510.fz:24:30:
+x := true; _ := array 3 i->i=x
+-----------------------------^
+
+one error.

@@ -45,7 +45,7 @@ private:public handles2(
   # the inner value of this monad
   public v X,
 
-  last_opt option (handle2_id T),
+  last_opt option (Handle2_Id T),
 
   # `plain` monad or effect to be `inst`alled or `repl`aced by new value?
   mode oneway_monad_mode.val
@@ -63,7 +63,7 @@ is
   post
     debug: result.has_last
   =>
-    handles2 v (handle2_id w) mode.next
+    handles2 v (Handle2_Id w) mode.next
 
 
   # has one element been created using `new`?
@@ -73,7 +73,7 @@ is
 
   # return the last handle that was created by `new`
   #
-  public last handle2_id T
+  public last Handle2_Id T
     pre
       debug: has_last
   =>
@@ -87,7 +87,7 @@ is
   public create (
     # initial value referred to by the new handle
     w T
-    ) handle2_id T
+    ) Handle2_Id T
   =>
     (new w).last
 
@@ -96,7 +96,7 @@ is
   #
   public get (
     # a handle created by `new`
-    h handle2_id T
+    h Handle2_Id T
     ) T
   =>
     h.get
@@ -106,7 +106,7 @@ is
   #
   public put (
     # a handle created by `new`
-    h handle2_id T,
+    h Handle2_Id T,
 
     # the new value to be stored with `h`
     w T) handles2 T X
@@ -120,7 +120,7 @@ is
   #
   public update (
     # a handle created by `new`
-    h handle2_id T,
+    h Handle2_Id T,
 
     # function calculating the new value from the old value
     f T->T
@@ -149,7 +149,7 @@ handles2_(T type) handles2 T unit => handles2 T unit unit nil oneway_monad_mode.
 
 # handle value created by `handles2.new`
 #
-private:public handle2_id(
+private:public Handle2_Id(
   T type,
 
   # get value stored in this handle
@@ -178,6 +178,6 @@ handles2_type(T type) is
 
 # create a new handle2 using the handles2 instance from the current environment
 #
-public handle2(T type, v T) handle2_id T ! handles2 T unit
+public handle2(T type, v T) Handle2_Id T ! handles2 T unit
 =>
   (handles2 T unit).env.create v

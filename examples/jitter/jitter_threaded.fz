@@ -1,0 +1,249 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion example jitter
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# jitter -- demo measuring periodic task jitter using time.histogram
+#
+# See Makefile for how to start fuzion to run this example.
+#
+jitter_threaded =>
+
+  # the period to start with
+  #
+  period_default => time.duration.ms  500
+
+
+  # the time to spend with each period
+  #
+  test_duration  => time.duration.ms 2100
+
+
+  # the time to wait before first release
+  #
+  start_delay    => time.duration.ms  500
+
+
+  # should the linear histogram be output?
+  #
+  show_lin_histogram => true
+
+
+  # should the log histogram be output?
+  #
+  show_log_histogram => true
+
+
+  # should the linear csv be output?
+  #
+  show_lin_csv => false
+
+
+  # should the log csv be output?
+  #
+  show_log_csv => false
+
+  # Try to enable CPU affinity and optionally real-time scheduling.
+  #
+  enable_rt := true
+
+
+  # run jitter test using C.clock.run_periodic
+  # the worker streams raw per-release records to `sample_ch`; the caller groups
+  # them into per-period tuples and builds histograms.
+  # message format: (period, actual_release, expected_release, end_of_period_flag)
+  test_jitter(# the clock used to schedule the releases
+              C type : time.Clock,
+
+              # the clock used to measure the times
+              TIMER type : time.Clock,
+
+              sample_ch concur.Channel (tuple time.duration time.instant time.instant bool))
+  =>
+
+      # type used to identify flow.exception to stop in case jitter is too high
+      jitter_too_high is
+
+      # test payload, just some dummy code requiring a moderate amount of calculation
+      payload =>
+        for
+          i := 0, i+1
+          s := i, s +° i
+        while i < 1000
+        else
+          if s = s +° 1   # make sure the compiler does not optimize this aways
+            say "$s (never called)"
+
+      # perform jitter test for given period: collect raw samples
+      run_for_period(period time.duration)
+      =>
+
+        start := C.env.read + start_delay
+        end := start + test_duration
+
+        # time for next release used by state effect
+        next_release(t time.instant) is
+
+        _ := state (next_release start) ! ()->
+
+          # run test; run_one_release will send raw records for every release
+          _ := C.env.run_periodic start period end run_one_release
+
+          # indicate end-of-period to receiver (use current time as marker)
+          marker := TIMER.env.read
+          sample_ch <- (period, marker, marker, true)
+
+          # run one single release: record the actual release and run the payload
+          # in case of a late release or an overrun into the next release time, cause `flow.exception jitter_too_high`
+          run_one_release ! flow.exception jitter_too_high =>
+            actual_release := TIMER.env.read
+            expected_rel := state_get next_release .t
+
+            # send raw record to main thread: worker no longer accumulates lists
+            sample_ch <- (period, actual_release, expected_rel, false)
+
+            # advance expected release time
+            next_rel     := state_modify next_release (x -> next_release x.t+period) .get.t
+            if actual_release >= next_rel
+              (flow.exception jitter_too_high).env.cause <| error "release time jitter exceeded period"
+
+            payload
+            actual_finish := TIMER.env.read
+            if actual_finish >= next_rel
+              err := error "*** overrun: run started at {actual_release-expected_rel}  and took {actual_finish-actual_release}, which is larger than period $period"
+              (flow.exception jitter_too_high).env.cause err
+
+      _ := match flow.exception jitter_too_high .on ()->
+
+           for p := period_default, p.times 0.5
+           while p.as_duration >= time.duration.ms 1 do
+             run_for_period p
+
+        e error => say "jitter test stopped: $e"
+        unit    => unit
+
+      unit
+
+  say "Starting jitter test on dedicated thread..."
+  result_ch := concur.Channel (tuple time.duration time.instant time.instant bool)
+  thrd := concur.threads.env.spawn ()->
+    test_jitter time.nano time.nano result_ch
+    result_ch.close
+
+  # affinity: pin the worker thread to CPU 0 (best-effort)
+  match thrd.set_affinity ([0.as_u64].as_array)
+    unit => say "Worker thread pinned to CPU 0"
+    e error => say "Worker thread affinity setup failed: $e"
+
+  # Attempt to set SCHED_FIFO.
+  if enable_rt
+    match thrd.set_policy(concur.scheduling_policy.sched_fifo, false, 99)
+      unit => say "Worker thread configured for SCHED_FIFO priority 99"
+      e error =>
+        say "Worker thread priority setup failed: $e"
+        say "(Hint: run with sudo or use setcap cap_sys_nice=ep ./jitter)"
+
+  # print histograms for one completed period immediately
+  print_period_histograms(period time.duration,
+                           period_samples list time.duration,
+                           cycle_samples  list time.duration)
+  =>
+    say "testing period $period for $test_duration..."
+    h  := time.histogram.new "period jitter $period, log count / linear time" period period*2 1 0
+    h2 := time.histogram.new "cycle jitter $period, log count / log time"     nil    nil      1 0
+    for ps in period_samples
+        cs in cycle_samples
+    do
+      h.add ps
+      h2.add cs
+    say "period jitter:"
+    say "$h"
+    say "cycle jitter:"
+    say "$h2"
+    if show_lin_csv then say "{h.csv}"
+    if show_log_csv then say "{h2.csv}"
+
+  # accumulator: plain immutable record threaded through the recursion below.
+  acc_state(cur_period  option time.duration,
+            per_acc     list time.duration,
+            cyc_acc     list time.duration,
+            prev_actual option time.instant) is
+
+  empty_acc => acc_state nil (list time.duration).empty (list time.duration).empty nil
+
+  # fold one record into the accumulator, possibly flushing+printing a
+  # finished period as a side effect. Returns the new accumulator.
+  fold_record(acc acc_state,
+              period time.duration,
+              actual time.instant,
+              expected time.instant,
+              done_flag bool)
+              acc_state
+  =>
+    period_delta := (actual >= expected ? actual - expected : expected - actual)
+
+    same_period := match acc.cur_period
+                     nil => false
+                     p time.duration => p = period
+
+    per_acc2 := if same_period then (period_delta : acc.per_acc)
+                else (period_delta : (list time.duration).empty)
+
+    cyc_acc2 := if !same_period then (list time.duration).empty
+                else match acc.prev_actual
+                       nil => acc.cyc_acc
+                       prev time.instant =>
+                         cyc_d := (actual >= prev ? actual - prev : prev - actual)
+                         (cyc_d : acc.cyc_acc)
+
+    # if we're tracking a different period that never got its done_flag, flush it first
+    _ := match acc.cur_period
+           nil => unit
+           p time.duration =>
+             if !same_period then print_period_histograms p acc.per_acc acc.cyc_acc
+
+    if done_flag
+      print_period_histograms period per_acc2 cyc_acc2
+      empty_acc
+    else
+      acc_state (option period) per_acc2 cyc_acc2 (option actual)
+
+  # incrementally consume records from the worker thread: as soon as a period's
+  # done_flag arrives, print its histograms right away.
+  consume_and_display(acc acc_state) unit
+  =>
+    match result_ch.next
+      rec tuple =>
+        acc2 := fold_record acc rec.0 rec.1 rec.2 rec.3
+        consume_and_display acc2
+      nil =>
+        unit
+
+  say "received samples"
+  consume_and_display empty_acc
+  say "Dedicated thread completed."
+
+# How to run with high priority :
+# FUZION_HOME=build bash bin/fz -c examples/jitter/jitter.fz
+# sudo setcap cap_sys_nice=ep ./jitter
+# ./jitter

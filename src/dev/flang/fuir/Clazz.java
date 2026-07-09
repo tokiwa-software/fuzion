@@ -330,7 +330,7 @@ class Clazz extends ANY implements Comparable<Clazz>
         !_type.feature().isTypeParameter() &&
         _type.outer().outer().feature() != _type.feature().outer().outer())
       {
-        var x = "IMPLEMENTATION RESTRICTION: illegal inheritance and usage of fixed feature: \n" +
+        var x = "IMPLEMENTATION RESTRICTION: illegal inheritance and usage of fixed feature:\n" +
         _type.toString() + "\n" + _type.outer().outer().feature().toString() + "\n" + _type.feature().outer().outer().toString();
         Errors.fatal(x);
       }
@@ -454,11 +454,9 @@ class Clazz extends ANY implements Comparable<Clazz>
   private Clazz normalizeOuter(AbstractType t, Clazz outer)
   {
     var f = t.feature();
-    if (outer != null && !needsSpecialization(f) && !f.isField() && t != Types.t_ERROR)
-      {
-        outer = outer.normalize(t.feature().outer());
-      }
-    return outer;
+    return outer == null || needsSpecialization(f) || f.isField() || t == Types.t_ERROR
+      ? outer
+      : outer.normalize(f.outer());
   }
 
 
@@ -671,8 +669,8 @@ class Clazz extends ANY implements Comparable<Clazz>
       // clazz actually describes a cotype
       feature().isCotype() &&
       // NYI: UNDER DEVELOPMENT: can this logic be simplified?
-         (t.isGenericArgument() && t.genericArgument().outer().isCotype() ||
-         !t.isGenericArgument() && t.feature() == _type.generics().get(0).actualType(t).feature()))
+         (t.isParametricType() && t.typeParameter().outer().isCotype() ||
+         !t.isParametricType() && t.feature() == _type.generics().get(0).actualType(t).feature()))
       {
         t = _type.generics().get(0).actualType(t);
       }
@@ -750,7 +748,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       {
       case RefType -> true;
       case ValueType -> false;
-      case GenericArgument -> throw new Error("unexpected generic argument type: " + _type);
+      case ParametricType -> throw new Error("unexpected generic argument type: " + _type);
       case ThisType        -> throw new Error("unexpected this type: " + _type);
       default              -> throw new Error("unexpected type kind: " + _type.kind() + " type: " + _type);
       };
@@ -1300,7 +1298,7 @@ class Clazz extends ANY implements Comparable<Clazz>
         var skip = cotypeType;
         for (var g : actualTypeParameters())
           {
-            if (!skip) // skip first generic 'THIS#TYPE' for types of type features.
+            if (!skip) // skip first generic 'RELAY#TYPE' for types of cotype features.
               {
                 result = result + " " + StringHelpers.wrapInParentheses(g.toString(humanReadable));
               }
@@ -1786,11 +1784,11 @@ class Clazz extends ANY implements Comparable<Clazz>
   Clazz typeClazz()
   {
     if (PRECONDITIONS)
-      require(Errors.any() || !_type.isGenericArgument());
+      require(Errors.any() || !_type.isParametricType());
 
     if (_typeClazz == null)
       {
-        if (_type.isGenericArgument())
+        if (_type.isParametricType())
           {
             _typeClazz = _fuir.error();
           }
@@ -1995,7 +1993,7 @@ class Clazz extends ANY implements Comparable<Clazz>
 
     List<AbstractType> types;
     var inh = _outer == null ? null : _outer.feature().tryFindInheritanceChain(fouter.outer());
-    var declaredIn = ft.genericArgument().outer();
+    var declaredIn = ft.typeParameter().outer();
     if (inh != null &&
         inh.stream().anyMatch(c -> c.calledFeature() == declaredIn))
       {
@@ -2003,7 +2001,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       }
     else if (feature() == declaredIn)
       {
-        types = ft.genericArgument().replaceOpen(_type.generics());
+        types = ft.typeParameter().replaceOpen(_type.generics());
       }
     else if (_outer != null)
       {

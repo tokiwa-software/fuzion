@@ -4,18 +4,18 @@ Call stack:
 fuzion.type.runtime.type.fault.type.default_value.(λkind_and_msg-> kind, msg := kind_and_m...).call#1: {base.fum}/fuzion/runtime/fault.fz:63:7:
       fuzion.sys.fatal_fault kind msg
 ------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-fuzion.runtime.fault.cause#1: {base.fum}/eff/fallible.fz:35:6:
+fuzion.runtime.fault.cause#1: {base.fum}/flow/fallible.fz:35:6:
   => h e
 -----^
 panic.type.default_value.(λ(msg->fuzion.runtime.fault.env.cause (...).call#1: {base.fum}/panic.fz:39:18:
     (panic (msg->fuzion.runtime.fault.env.cause ("*** panic ***", msg)) unit)
 -----------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-panic.cause#1: {base.fum}/eff/fallible.fz:35:6:
+panic.cause#1: {base.fum}/flow/fallible.fz:35:6:
   => h e
 -----^
-panic#1: {base.fum}/panic.fz:59:19:
-    msg String => panic.cause msg
-------------------^^^^^^^^^^^^^^^
+panic#1: {base.fum}/panic.fz:53:19:
+    msg String => panic.env.cause msg
+------------------^^^^^^^^^^^^^^^^^^^
 p: --CURDIR--/reg_issue2304.fz:24:6:
 p => panic "bah"
 -----^^^^^^^^^^^
@@ -34,7 +34,7 @@ _ := [1].filter x->p
 (list i32).filter#1: {base.fum}/list.fz:555:5:
     filter_list p
 ----^^^^^^^^^^^^^
-(array i32).filter#1: {base.fum}/Sequence.fz:291:6:
+(array i32).filter#1: {base.fum}/Sequence.fz:294:6:
   => as_list.filter f
 -----^^^^^^^^^^^^^^^^
 universe: --CURDIR--/reg_issue2304.fz:25:6:

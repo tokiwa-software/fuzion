@@ -36,7 +36,7 @@
 #
 #     res := try ERROR_TYPE FALLIBLE_TYPE RESULT_TYPE code || (s->handle post condition failure `s`)
 #
-public try(ERROR type, F type : eff.fallible ERROR, T type, code_try ()->T) is
+public try(ERROR type, F type : flow.fallible ERROR, T type, code_try ()->T) is
 
   # a local mutate used for storing an error
   # when throwing an exception

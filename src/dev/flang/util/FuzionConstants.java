@@ -277,7 +277,7 @@ public class FuzionConstants extends ANY
   public static final String POSTFIX_OPERATOR_PREFIX = "postfix ";
 
   /**
-   * Infix operator parsed for choice type syntax sugar `i32 | unit | bool`
+   * Infix operator parsed for choice type syntax sugar {@code i32 | unit | bool}
    */
   public static final String INFIX_PIPE = INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "|";
 
@@ -287,7 +287,7 @@ public class FuzionConstants extends ANY
   public static final String CHOICE_NAME = "choice";
 
   /**
-   * Infix operator parsed for function type `a.b->c`
+   * Infix operator parsed for function type {@code a.b->c}
    */
   public static final String INFIX_ARROW = INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + "->";
 
@@ -333,7 +333,7 @@ public class FuzionConstants extends ANY
    * names with this prefix will be removed from .fum files which results in
    * this not being found in redefinitions.
    */
-  public static final String COTYPE_THIS_TYPE = "THIS" + INTERNAL_NAME_SYMBOL + "TYPE";
+  public static final String COTYPE_RELAY_TYPE = "RELAY" + INTERNAL_NAME_SYMBOL + "TYPE";
 
 
   /**
@@ -676,7 +676,7 @@ public class FuzionConstants extends ANY
    *
    * @param argFieldBaseName the base name of the argument field
    *
-   * @return the names, looks something like `#Values_Of_Open_Type#argFieldBaseName#uniqueId`.
+   * @return the names, looks something like {@code #Values_Of_Open_Type#argFieldBaseName#uniqueId}.
    */
   public static String createFieldsOfOpenTypeName(String argFieldBaseName)
   {
@@ -685,11 +685,11 @@ public class FuzionConstants extends ANY
 
 
   /**
-   * Extract the field base name from a name created by `createValuesOfOpenTypeName`.
+   * Extract the field base name from a name created by {@code createValuesOfOpenTypeName}.
    *
-   * @param valuesAsOpenTypeName the name obtained form `createValuesOfOpenTypeName`.
+   * @param valuesAsOpenTypeName the name obtained form {@code createValuesOfOpenTypeName}.
    *
-   * @return the original `argFieldBaseName` passed to `createValuesOfOpenTypeName`.
+   * @return the original {@code argFieldBaseName} passed to {@code createValuesOfOpenTypeName}.
    */
   public static String extractBaseNameFromFieldsOfOpenTypeName(String valuesAsOpenTypeName)
   {

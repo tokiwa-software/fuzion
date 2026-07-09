@@ -80,9 +80,17 @@ public Map(public K type : property.equatable, public V type) ref is
 
   # create a mutable map from this
   #
-  # NYI: maybe add default implementation when there is a naive implementation only requiring property.equatable
-  #
-  public as_mutable_map(LM type : mutate) container.Mutable_Map K V => abstract
+  public as_mutable_map(LM type : mutate) container.Mutable_Map K V
+    pre (K : property.orderable) || (K : property.hashable)
+  =>
+    if K : property.orderable
+      (container.mutable_tree_map LM K V).from items
+    else if K : property.hashable
+      mhm := container.Mutable_Hash_Map LM K V .empty
+      mhm.put_all items
+      mhm
+    else
+      compile_time_panic
 
 
   # initializer for this map

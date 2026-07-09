@@ -20,7 +20,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class GenericType
+ * Source of class ParametricType
  *
  *---------------------------------------------------------------------*/
 
@@ -37,11 +37,11 @@ import dev.flang.util.List;
 
 
 /**
- * A GenericType is a LibraryType for a type parameter.
+ * A ParametricType is a LibraryType for a type parameter.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-class GenericType extends LibraryType
+class ParametricType extends LibraryType
 {
 
 
@@ -59,7 +59,7 @@ class GenericType extends LibraryType
   /**
    * Constructor for a generic type that might be boxed.
    */
-  GenericType(LibraryModule mod, int at, AbstractFeature generic)
+  ParametricType(LibraryModule mod, int at, AbstractFeature generic)
   {
     super(mod, at);
 
@@ -83,7 +83,7 @@ class GenericType extends LibraryType
 
 
   /**
-   * genericArgument gives the Generic instance of a type defined by a generic
+   * typeParameter gives the Generic instance of a type defined by a generic
    * argument.
    *
    * @return the Generic instance, never null.
@@ -104,12 +104,12 @@ class GenericType extends LibraryType
 
 
   /**
-   * The mode of the type: GenericArgument, ThisType, RefType or ValueType.
+   * The mode of the type: ParametricType, ThisType, RefType or ValueType.
    */
   @Override
   public TypeKind kind()
   {
-    return TypeKind.GenericArgument;
+    return TypeKind.ParametricType;
   }
 
 }

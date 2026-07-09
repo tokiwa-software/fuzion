@@ -66,6 +66,21 @@ is
   public fixed redef infix / (b fraction B) fraction B => (fraction (numerator * b.denominator) (denominator * b.numerator)).reduce
 
 
+  # floor: the greatest integer lower or equal to this
+  #
+  public floor B =>
+    numerator / denominator
+
+
+  # ceiling: the smallest integer greater or equal to this
+  #
+  public ceil B =>
+    if numerator % denominator = 0
+      numerator / denominator
+    else
+      numerator / denominator + 1
+
+
   public redef as_string String => "$(numerator)⁄$(denominator)"
 
 

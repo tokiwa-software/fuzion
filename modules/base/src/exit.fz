@@ -95,6 +95,12 @@ is
             error "exit code is already set"
 
 
+  # exit program when leaving the effect
+  #
+  public redef finally unit =>
+    p.exit
+
+
 # exit with a code argument calls exit.exit code, i.e., it uses the
 # current exit effect to exit with the given message.
 #

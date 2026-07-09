@@ -35,7 +35,7 @@ public threads (
   p Thread_Handler,
 
   # NYI: UNDER DEVELOPMENT: use more suitable data structure
-  public running array concur.Thread,
+  public children array concur.Thread,
 
   # the currently running thread
   public current concur.Thread
@@ -49,7 +49,7 @@ is
   # shared with the current thread, e.g., mutable variables that where
   # created with a thread-safe mutate effect.
   #
-  public spawn(# code to run in the new thread with the teleported effect environemnt
+  public spawn(# code to run in the new thread with the teleported effect environment
                code ()->unit
               ) concur.Thread =>
     ewh := effect_wormhole
@@ -57,7 +57,7 @@ is
     spawn_without_inherited_effects tid ()->
       ewh.teleport ()->
         st := concur.Thread fuzion.sys.thread.current  tid
-        (threads p (running++[st]).as_array st).replace
+        (threads p (children++[st]).as_array st).replace
         code()
 
 
@@ -85,23 +85,23 @@ is
                                          code ()->unit
                                         ) concur.Thread =>
     st := p.spawn tid code
-    (threads p (running++[st]).as_array current).replace
+    (threads p (children++[st]).as_array current).replace
     st
 
 
-  # detach a running thread
+  # detach a child thread
   #
   public detach(thrd concur.Thread) unit
-  pre debug: running.contains thrd
   =>
+    check debug: children.contains thrd
     # NYI: UNDER DEVELOPMENT: pthread_detach
-    (threads p (running.filter (!=thrd)).as_array current).replace
+    (threads p (children.filter (!=thrd)).as_array current).replace
 
 
-  # join all running threads
+  # join all child threads
   #
   public redef finally unit =>
-    running.for_each (.join)
+    children.for_each (.join)
 
 
   # default implementation of threads
@@ -111,7 +111,7 @@ is
   public redef fixed type.default_value option concur.threads
   =>
     initial := concur.Thread fuzion.sys.thread.current (uid 0)
-    concur.threads concur.default_thread_handler [initial] initial
+    concur.threads concur.default_thread_handler [] initial
 
 
 # default thread handler

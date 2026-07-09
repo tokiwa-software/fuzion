@@ -1,0 +1,63 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature flow.short_circuit
+#
+# -----------------------------------------------------------------------
+
+# short_circuit -- short_circuit is an effect to model a computation
+# that may return early from somewhere in the code
+#
+# synthetic usage example, in a loop early return when result 42 is found:
+#
+#      sc : flow.short_circuit (option i32) is
+#      say <| sc.run ()->
+#        for i in 1..100 do
+#          if i=42
+#            sc.env.return i
+#        nil
+#
+#
+public short_circuit(T type, h T->void) : /* NYI: need to inherit this privately */ fallible T h is
+
+
+  # return early with result r
+  #
+  public return(r T) void
+  => h r
+
+
+  # type feature that must be implemented by all children to create an
+  # instance of `fallible.this.type` with the given error handler.
+  #
+  public fixed redef type.new(
+                  # the error handler, this will usually abort this effect or
+                  # abort using another effect (e.g., panic),
+                  #
+                  h T->void
+                  ) flow.short_circuit T
+  => flow.short_circuit T h
+
+
+  # run the code where we may early return from
+  #
+  public type.run(code_try ()->T) T =>
+    flow
+      .try T short_circuit.this T code_try
+      .catch id

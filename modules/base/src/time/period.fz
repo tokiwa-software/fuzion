@@ -17,27 +17,27 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature time.Period
+#  Source code of Fuzion standard library feature time.period
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# time.Period -- template for periods
+# time.period -- template for periods
 #
 # This provides abstract features that define a period of time and that
 # permit multiplications with large integers avoiding drift.
 #
 # An example is a period of 1/60sec. Using `time.duration`, which is a child
-# of `Period`, this can only be represented as `16666667 ns`, resulting in
+# of `period`, this can only be represented as `16666667 ns`, resulting in
 # a drift of 1/3ns per period, which would result in a drift of 1.7ms (a whole
 # period) per day. Such inaccuracy can result in catastrophic failure, see
 # (The Patriot Missile Failure)[https://www-users.cse.umn.edu/~arnold/disasters/patriot.html].
 #
-public Period
+public period
 is
 
-  # this Period represented as a duration.  Note that the duration might
+  # this period represented as a duration.  Note that the duration might
   # be inaccurate since it will be rounded or truncated to full nanoseconds.
   #
   public as_duration time.duration
@@ -53,7 +53,7 @@ is
     abstract
 
 
-  # this Period multiplied by factor n
+  # this period multiplied by factor n
   #
   # If n=0, the result is `time.duration.zero` even if `is_infinity`.
   #

@@ -91,7 +91,7 @@ public class OptimizedFUIR extends GeneratingFUIR {
 
 
   /**
-   * for clazz `cl` get all argument clazzes.
+   * for clazz {@code cl} get all argument clazzes.
    */
   private int[] clazzArgs(int cl)
   {
@@ -105,7 +105,7 @@ public class OptimizedFUIR extends GeneratingFUIR {
 
 
   /**
-   * for choice `cl` get the choice element clazzes.
+   * for choice {@code cl} get the choice element clazzes.
    */
   private int[] clazzChoices(int cl)
   {
@@ -120,7 +120,7 @@ public class OptimizedFUIR extends GeneratingFUIR {
 
 
   /**
-   * the actual generics for clazz `cl`
+   * the actual generics for clazz {@code cl}
    */
   private int[] clazzActualGenerics(int cl)
   {
@@ -136,7 +136,7 @@ public class OptimizedFUIR extends GeneratingFUIR {
 
 
   /**
-   * for clazz `cl` get all field clazzes.
+   * for clazz {@code cl} get all field clazzes.
    */
   private int[] clazzFields(int cl)
   {
@@ -276,9 +276,9 @@ public class OptimizedFUIR extends GeneratingFUIR {
 
 
   /**
-   * Does `s` represent an invalid site?
+   * Does {@code s} represent an invalid site?
    *
-   * This either means `s` does not point to any code
+   * This either means {@code s} does not point to any code
    * or the code was never accessed during the DFA.
    */
   private boolean invalidSite(int s)
@@ -288,7 +288,7 @@ public class OptimizedFUIR extends GeneratingFUIR {
 
 
   /**
-   * For the match at `s` for each case get the tags
+   * For the match at {@code s} for each case get the tags
    * that it matches.
    */
   private int[][] matchCaseTags(int s)
@@ -303,7 +303,7 @@ public class OptimizedFUIR extends GeneratingFUIR {
 
 
   /**
-   * For the match at `s` get the sites of the code of the cases
+   * For the match at {@code s} get the sites of the code of the cases
    */
   private int[] matchCaseCode(int s)
   {
@@ -317,7 +317,7 @@ public class OptimizedFUIR extends GeneratingFUIR {
 
 
   /**
-   * For the match at `s` get the clazzes of the field cases
+   * For the match at {@code s} get the clazzes of the field cases
    */
   private int[] matchCaseFields(int s)
   {

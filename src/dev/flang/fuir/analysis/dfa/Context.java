@@ -152,15 +152,15 @@ public interface Context
 
 
   /**
-   * Check the context if it contains an effect of clazz `cl` instantiated at
-   * `site`.
+   * Check the context if it contains an effect of clazz {@code cl} instantiated at
+   * {@code site}.
    *
    * @param cl a clazz
    *
-   * @param site a site that contains a constructor call to `cl`
+   * @param site a site that contains a constructor call to {@code cl}
    *
    * @return in case the context contains an environment with an instance of
-   * `cl` created at `site` instated, then return that existing instance.
+   * {@code cl} created at {@code site} instated, then return that existing instance.
    * Return null otherwise.
    */
   default Instance findEffect(int cl, int site)

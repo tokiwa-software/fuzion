@@ -348,7 +348,7 @@ public class Call extends ANY implements Comparable<Call>, Context
   }
 
   /**
-   * Mark all arg fields of `cl` as read/used so
+   * Mark all arg fields of {@code cl} as read/used so
    * that they aren't optimized out later.
    */
   private void markValueFieldsAsRead(int cl)
@@ -644,7 +644,7 @@ public class Call extends ANY implements Comparable<Call>, Context
 
 
   /**
-   * Mark effect of type `ecl` used and return its values via {@link getEffect}.
+   * Mark effect of type {@code ecl} used and return its values via {@link getEffect}.
    *
    * @param s the site that requires this effect, for error message in case
    * _dfa._reportResults.
@@ -684,7 +684,7 @@ public class Call extends ANY implements Comparable<Call>, Context
           {
             // NYI: Make this a normal error similar to DfaErrors.usedEffectnotinstalled:
             Errors.fatal("Trying to replace effect " + Errors.code(_dfa._fuir.clazzName(ecl))
-                         + " that is not yet installed: \n" + toString(false) + "\n" + toString(true));
+                         + " that is not yet installed:\n" + toString(false) + "\n" + toString(true));
           }
       }
     if (_env != null)
