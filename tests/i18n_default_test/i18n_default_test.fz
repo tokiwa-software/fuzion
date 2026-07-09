@@ -30,7 +30,7 @@ i18n_default_test is
         else
           nil
 
-    custom_env_vars ! ()->
+    envir.Vars.instate custom_env_vars ()->
 
       internationalization.Provide.instate internationalization.Provide.default_value.or_panic ()->
 
