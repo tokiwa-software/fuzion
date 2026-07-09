@@ -45,7 +45,7 @@ priority_queue_benchmark =>
             for t := time.duration.zero, t + dur
                 i in 1..size
             do
-              rand := random.env.next_i32
+              rand := Random.env.next_i32
               dur := time.stopwatch (()->q.enqueue rand)
               hist_enq.add dur
             else
@@ -95,14 +95,14 @@ priority_queue_benchmark =>
         q := container.Binary_Heap_Queue m i32 .empty (queue_size + 30).as_i64
 
         # fill queue
-        for i in 1..queue_size do q.enqueue random.env.next_i32
+        for i in 1..queue_size do q.enqueue Random.env.next_i32
 
         hist_enq := time.histogram.new "Enqueue in queue of size $queue_size" nil 10 10
         hist_deq := time.histogram.new "Dequeue in queue of size $queue_size" nil 10 10
 
         for i in 1..sample_size
         do
-          rand := random.env.next_i32
+          rand := Random.env.next_i32
           dur_enq :=time.stopwatch (()->q.enqueue rand)
           hist_enq.add dur_enq
           dur_deq :=time.stopwatch (()->_ := q.dequeue)
@@ -168,7 +168,7 @@ priority_queue_benchmark =>
     say "\nRandom:\n"
     simple_random 904644503766293287 ()->
       for len in test_lengths do
-        test (array i32 .new len _->random.env.next_i32) "random"
+        test (array i32 .new len _->Random.env.next_i32) "random"
         say ""
 
     say "\nReverse ordered:\n"
@@ -215,7 +215,7 @@ priority_queue_benchmark =>
     say "Random:\n"
     simple_random 904644503766293287 ()->
       for len in test_lengths do
-        test (array i32 .new len _->random.env.next_i32) "random"
+        test (array i32 .new len _->Random.env.next_i32) "random"
 
 
 
