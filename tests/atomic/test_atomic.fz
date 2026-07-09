@@ -166,11 +166,11 @@ test_atomic is
     s2 := concur.atomic i64 .new -1
 
     thrd1 := concur.threads.env.spawn (()->
-      end := time.nano.env.read + (time.duration.seconds 5)
+      end := time.Nano.env.read + (time.duration.seconds 5)
       for
         s := i64 0, o=v ? s+1 : s
         c := i64 0, c+1
-      while time.nano.env.read < end do
+      while time.Nano.env.read < end do
         v := a1.read
         n := v + 1
         o := a1.compare_and_swap v n
@@ -180,11 +180,11 @@ test_atomic is
       )
 
     thrd2 := concur.threads.env.spawn (()->
-      end := time.nano.env.read + (time.duration.seconds 5)
+      end := time.Nano.env.read + (time.duration.seconds 5)
       for
         s := i64 0, o=v ? s+1 : s
         c := i64 0, c+1
-      while time.nano.env.read < end do
+      while time.Nano.env.read < end do
         v := a1.read
         n := v + 0x1_0000_0000
         o := a1.compare_and_swap v n

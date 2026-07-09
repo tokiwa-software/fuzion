@@ -33,7 +33,7 @@ lib_concur_sync =>
 
       b := concur.threads.env.spawn ()->
         say "Thread sleeping"
-        time.nano.env.sleep (time.duration.ms 100)
+        time.Nano.env.sleep (time.duration.ms 100)
         cnd.synchronized ()->
           say "Thread sending signal"
           cnd.signal
@@ -55,7 +55,7 @@ lib_concur_sync =>
 
       b := concur.threads.env.spawn ()->
         say "Thread sleeping"
-        time.nano.env.sleep (time.duration.ms 100)
+        time.Nano.env.sleep (time.duration.ms 100)
         cnd.synchronized ()->
           say "Thread sending broadcast"
           cnd.broadcast

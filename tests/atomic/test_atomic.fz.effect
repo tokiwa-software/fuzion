@@ -13,5 +13,5 @@ fuzion.runtime.stackoverflow
 io.Err
 io.Out
 panic
-time.nano
+time.Nano
 unique_id

@@ -27,7 +27,7 @@
 #
 # This is a `ref` feature such that code that requires an arbitrary `Clock`
 # effect could be written in a way that permits its execution using different
-# actual `Clock` implementations like `time.nano` that provides high
+# actual `Clock` implementations like `time.Nano` that provides high
 # precision with low accuracy or a different clock that provides higher accuracy.
 #
 public Clock ref : effect is
@@ -69,7 +69,7 @@ public Clock ref : effect is
   # this will get instated automatically at startup
   #
   public redef fixed type.default_value option time.Clock =>
-    nano.default_value.bind (x -> id time.Clock x)
+    Nano.default_value.bind (x -> id time.Clock x)
 
 
   # run the given code once at the provided instant within the current thread

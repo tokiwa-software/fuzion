@@ -28,7 +28,7 @@
 # See Makefile for how to start fuzion to run this example.
 #
 # NYI: UNDER DEVELOPMENT: Currently, this supports only one single test using
-# `time.nano.run_periodic`.  Once we have support for periodic tasks run by dedicated
+# `time.Nano.run_periodic`.  Once we have support for periodic tasks run by dedicated
 # threads, we should add jitter tests for those.
 #
 jitter =>
@@ -148,4 +148,4 @@ jitter =>
       e error => say $e
       void    => # will not happen
 
-  test_jitter time.nano time.nano
+  test_jitter time.Nano time.Nano
