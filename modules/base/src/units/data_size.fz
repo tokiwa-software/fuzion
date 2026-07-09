@@ -350,7 +350,7 @@ is
   # total order
   #
   public fixed redef type.lteq(a, b units.data_size) bool =>
-    u128.type.lteq a.bytes b.bytes
+    u128.lteq a.bytes b.bytes
 
 
   # create hash code from a units.data_size

@@ -488,7 +488,7 @@ public class LibraryModule extends Module implements MirModule
    *
    * @param offset the offset of the Generic
    */
-  AbstractFeature genericArgument(int offset)
+  AbstractFeature typeParameter(int offset)
   {
     var tp = feature(offset);
     var o = tp.outer();
@@ -529,7 +529,7 @@ public class LibraryModule extends Module implements MirModule
           }
         else if (k == -1)
           {
-            result = new GenericType(this, at, genericArgument(typeTypeParameter(at)));
+            result = new ParametricType(this, at, typeParameter(typeTypeParameter(at)));
           }
         else
           {

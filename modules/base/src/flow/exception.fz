@@ -37,13 +37,13 @@ public exception (# type parameter used only to distinguish different
                   public T type,
 
                   h error->void
-                  ) : eff.fallible error h
+                  ) : flow.fallible error h
 is
 
   # type feature to create an instance of `exception` with the given error handler.
   #
-  public fixed redef type.new(h error->void) exception T =>
-    exception T h
+  public fixed redef type.new(h error->void) flow.exception T =>
+    flow.exception T h
 
 
   # install this effect and execute 'f'. Wrap the result of 'f' into an

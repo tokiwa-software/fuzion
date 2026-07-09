@@ -148,7 +148,7 @@ is
   =>
     cond.synchronized ()->
       code()
-      set park_condition := condition
+      set park_condition_var := condition
       set parked := true
       while parked   # perform this in a while to catch spurious wakeups
         cond.wait
@@ -173,9 +173,21 @@ is
 
 
   # for a parked `thread.this`, this holds a condition that must hold for the
-  # thread to be unparked.
+  # thread to be unparked.  All read- and write accesses to this are protected
+  # by `cond.synchronized`.
   #
-  module park_condition ()->bool := ()->true
+  park_condition_var ()->bool := ()->true
+
+
+  # for a parked `thread.this`, the condition that must hold for the thread to
+  # be unparked.
+  #
+  # This will synchronize the read of `park_condition_var` using
+  # `cond.synchronized`.
+  #
+  module park_condition ()->bool =>
+    cond.synchronized ()->
+      park_condition_var
 
 
   # String representation of thread

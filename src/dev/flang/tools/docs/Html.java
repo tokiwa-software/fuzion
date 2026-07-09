@@ -164,7 +164,7 @@ public class Html extends ANY
   private String anchorType(AbstractFeature af, AbstractFeature context, AbstractFeature relativeTo)
   {
     var at = af.resultType();
-    if (at.isGenericArgument())
+    if (at.isParametricType())
       {
         return htmlEncodeNbsp(at.toString(false, context))
                + (at.isOpenGeneric() ? "..." : "");
@@ -202,7 +202,7 @@ public class Html extends ANY
    */
   private String typePrfx(AbstractFeature af)
   {
-    // NYI: does not treat features that `Type` inherits but does not redefine as type features, see #3716
+    // NYI: BUG: does not show features that `Type` inherits but does not redefine as type features, see #3913
     return af.outer() != null && (af.outer().isCotype() || af.outer().compareTo(Types.resolved.f_Type) == 0) && !af.isCotype() ? "<span class=\"fd-keyword\">type</span>." : "";
   }
 
@@ -525,7 +525,7 @@ public class Html extends ANY
       }
 
     var normalFunctions = allFunctions.stream().filter(f->!f.isTypeFeature()).collect(Collectors.toCollection(TreeSet::new));
-    var typeFunctions   = allFunctions.stream().filter(f->f.isTypeFeature()).collect(Collectors.toCollection(TreeSet::new));
+    var typeFeatures    = allFunctions.stream().filter(f->f.isTypeFeature()).collect(Collectors.toCollection(TreeSet::new));
 
     // Choice Types
     var choices = map.getOrDefault(AbstractFeature.Kind.Choice, new TreeSet<AbstractFeature>());
@@ -556,7 +556,7 @@ public class Html extends ANY
          + mainSection0("Constructors",                 null,         normalConstructors, outer, true)
          + mainSection0("Type Constructors",            null,         typeConstructors,   outer, true)
          + mainSection0("Functions",                    null,         normalFunctions,    outer, true)
-         + mainSection0("Type Functions",               null,         typeFunctions,      outer, true)
+         + mainSection0("Type Features",                null,         typeFeatures,       outer, true)
          + mainSection0("Choice Types",                 null,         choices,            outer, true)
          + mainSection0("Applicable universe features", univFuncDesc, universeFunctions,  outer, true);
   }
@@ -663,7 +663,7 @@ public class Html extends ANY
    * Does text start with keyword, ignoring whitespaces at the beginning
    *
    * NYI: OPTIMIZATION: This is a poor way to determine if a feature with a pre-/postcondition defines one itself or only
-   *                    inherits one. If a precondition is inherited but not defined `.preFeature().sourceText()`
+   *                    inherits one. If a precondition is inherited but not defined {@code .preFeature().sourceText()}
    *                    returns the source code of the feature itself, and not an empty string.
    *                    So there seems to be no simple and good way to do this at the moment.
    *

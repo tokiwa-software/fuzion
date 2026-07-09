@@ -56,6 +56,12 @@ public abstract class AbstractCall extends Expr
   public YesNo _isConst = YesNo.dontKnow;
 
 
+  /**
+   * to cache result of formalArgumentTypes()
+   */
+  private AbstractType[] _formalArgumentTypes;
+
+
   /*----------------------------  constants  ----------------------------*/
 
 
@@ -226,7 +232,7 @@ public abstract class AbstractCall extends Expr
   Call cotypeInheritanceCall(Resolution res, AbstractFeature that)
   {
     var selfType = new ParsedType(pos(),
-                                  FuzionConstants.COTYPE_THIS_TYPE);
+                                  FuzionConstants.COTYPE_RELAY_TYPE);
     var typeParameters = new List<AbstractType>(selfType);
     if (this instanceof Call cpc && cpc.needsToInferTypeParametersFromArgs())
       {
@@ -234,7 +240,7 @@ public abstract class AbstractCall extends Expr
         cpc.whenInferredTypeParameters(() ->
           {
             if (CHECKS) check
-              (actualTypeParameters().stream().allMatch(atp -> !atp.containsUndefined()));
+              (Errors.any() || actualTypeParameters().stream().allMatch(atp -> !atp.containsUndefined()));
             if (CHECKS) check
               (Errors.any() || !typeParameters.isFrozen());
             if (!typeParameters.isFrozen())
@@ -254,7 +260,7 @@ public abstract class AbstractCall extends Expr
 
 
   /**
-   * Is this expression a call to `type_as_value`?
+   * Is this expression a call to {@code type_as_value}?
    */
   @Override
   boolean isTypeAsValueCall()
@@ -309,7 +315,7 @@ public abstract class AbstractCall extends Expr
   {
     var t0 = calledFeature() == Types.f_ERROR ? Types.t_ERROR : t;
     var t1 = t0 == Types.t_ERROR                           ? t0 : calledFeature().outer().handDownToType(t0, target().type().selfOrConstraint(context));
-    var t2 = t1 == Types.t_ERROR                           ? t1 : replace_type_parameter_used_for_this_type_in_cotype(t1, target());
+    var t2 = t1 == Types.t_ERROR                           ? t1 : replace_type_parameter_used_for_relay_type_in_cotype(t1, target());
     var t3 = t2 == Types.t_ERROR                           ? t2 : adjustThisTypeForTarget(context, t2, calledFeature(), target().type(), foundRef);  // NYI: CLEANUP: try to use handDownAndApply
     var t4 = t3 == Types.t_ERROR                           ? t3 : t3.applyTypePars(target().type());
     var t5 = t4 == Types.t_ERROR                           ? t4 : t4.applyTypePars(calledFeature(), actualTypeParameters());
@@ -343,11 +349,11 @@ public abstract class AbstractCall extends Expr
    * @param target the target of the call
    *
    */
-  private static AbstractType replace_type_parameter_used_for_this_type_in_cotype(AbstractType t, Expr target)
+  private static AbstractType replace_type_parameter_used_for_relay_type_in_cotype(AbstractType t, Expr target)
   {
     var tpt = target.asTypeParameterType();
     return tpt != null
-      ? t.replace_type_parameter_used_for_this_type_in_cotype(target.type().feature(), tpt)
+      ? t.replace_type_parameter_used_for_relay_type_in_cotype(target.type().feature(), tpt)
       : t;
   }
 
@@ -376,7 +382,7 @@ public abstract class AbstractCall extends Expr
     if (!cf.isOuterRef())
       {
         var declF = cf.outer();
-        if (!tt.isGenericArgument() && declF != tt.feature())
+        if (!tt.isParametricType() && declF != tt.feature())
           {
             var heir = tt.feature();
             t = t.replace_inherited_this_type(declF, heir, foundRef);
@@ -397,7 +403,7 @@ public abstract class AbstractCall extends Expr
   AbstractType asTypeParameterType()
   {
     return calledFeature().isTypeParameter()
-      ? calledFeature().asGenericType()
+      ? calledFeature().asParametricType()
       : null;
   }
 
@@ -445,7 +451,7 @@ public abstract class AbstractCall extends Expr
    */
   private List<AbstractType> openGenericsFor(Resolution res, Context context, AbstractType ft)
   {
-    var f = ft.genericArgument().outer();
+    var f = ft.typeParameter().outer();
     return
       calledFeature() == f ? ft.applyTypeParsMaybeOpen(f, actualTypeParameters(), NO_SELECT)
                            : openGenericsFor(res, context, ft, target().type());
@@ -472,7 +478,7 @@ public abstract class AbstractCall extends Expr
       (tt != null);
 
     var x = res == null ? tt.selfOrConstraint(context) : tt.selfOrConstraint(res, context);
-    var f = ft.genericArgument().outer();
+    var f = ft.typeParameter().outer();
 
     if (CHECKS) check
       (x.isPlainType() || Errors.any());
@@ -511,9 +517,9 @@ public abstract class AbstractCall extends Expr
    */
   AbstractType[] resolvedFormalArgumentTypes(Resolution res, Context context)
   {
-    // NYI: UNDER DEVELOPMENT: cache this? cache key: calledFeature/target
-    var result = calledFeature().valueArguments()
-                                .flatMap2(frml -> resolveFormalArg(res, context, frml));
+    var result = calledFeature()
+      .valueArguments()
+      .flatMap2(frml -> resolveFormalArg(res, context, frml));
     return result.toArray(new AbstractType[result.size()]);
   }
 
@@ -530,7 +536,11 @@ public abstract class AbstractCall extends Expr
    */
   public AbstractType[] formalArgumentTypes()
   {
-    return resolvedFormalArgumentTypes(null, Context.NONE);
+    if (_formalArgumentTypes == null)
+      {
+        _formalArgumentTypes = resolvedFormalArgumentTypes(null, Context.NONE);
+      }
+    return _formalArgumentTypes;
   }
 
 

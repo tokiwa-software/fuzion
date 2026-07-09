@@ -17,10 +17,14 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature eff
+#  Source code of Fuzion test reg_issue6380
 #
 # -----------------------------------------------------------------------
 
-# eff -- unit feature to group features that relate in some way to effects
-#
-public eff is
+reg_issue6380 =>
+  say <| flow.short_circuit (option i32) .run ()->
+    for i in 1..100 do
+      if i=42
+        (flow.short_circuit (option i32)).env.return i
+    nil
+

@@ -93,17 +93,17 @@ resource_cleanunp =>
 
   # now, open two resouces P, Q and then throw `exc`
 
-  # our exception
+  # our flow.exception
   exc is
 
   test3 =>
     e.env.open "P"
     e.env.open "Q"
     say "throw!"
-    (exception exc).env.cause (error "throw!")
+    (flow.exception exc).env.cause (error "throw!")
 
   say "--------------------------- open / throw / close / error"
-  say <| exception exc unit ()->
+  say <| flow.exception exc unit ()->
     r := e.instate String e test3 def
     say "*** unreachable *** $r"
 
@@ -136,6 +136,6 @@ resource_cleanunp =>
 
   say "--------------------------- open L M / open P Q / throw / close Q P / close M L / error"
 
-  say <| exception exc unit ()->
+  say <| flow.exception exc unit ()->
     r := e.instate String e test5 def
     say "*** unreachable *** $r"

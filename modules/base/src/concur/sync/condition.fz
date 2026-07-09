@@ -1,0 +1,71 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature concur.sync.condition
+#
+# -----------------------------------------------------------------------
+
+
+# a condition is synchronization primitive
+# that allows threads to signal and wait for one another.
+#
+private:public condition(mtx concur.sync.mutex, cnd Condition) is
+
+  public is_locked concur.atomic bool := concur.atomic bool .new false
+
+  # run code synchronized across all threads
+  # that also use this condition
+  #
+  public synchronized(T type, code ()->T) T ! atomic_access =>
+    mtx.synchronized ()->
+      is_locked.write true
+      res := code.call
+      is_locked.write false
+      res
+
+
+  # signal one waiting thread to wake up
+  #
+  public signal unit
+    pre is_locked.read
+  => cnd_signal cnd
+
+
+  # signal all waiting threads to wake up
+  #
+  public broadcast unit
+    pre is_locked.read
+  => cnd_broadcast cnd
+
+
+  # make this thread wait for signal
+  #
+  public wait unit
+    pre is_locked.read
+  => cnd_wait cnd mtx.mtx
+
+
+  # initialize a new condition
+  #
+  public type.new outcome concur.sync.condition =>
+    concur.sync.mtx_init.bind mtx->
+      (concur.sync.cnd_init mtx).bind cnd->
+        concur.sync.condition (concur.sync.mutex mtx) cnd
+
+  # NYI: UNDER DEVELOPMENT: destroy

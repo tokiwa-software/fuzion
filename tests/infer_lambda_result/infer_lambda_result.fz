@@ -49,7 +49,7 @@ infer_lambda_result =>
     say "$(type_of y .name): $y"
 
   # next, we use our own lambda target which has the result type
-  # as the first type paramater
+  # as the first type parameter
   #
   case3 =>
 

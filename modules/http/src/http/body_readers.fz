@@ -44,19 +44,19 @@ module body_reader(LM type : mutate, reader_size i32, _ unit) : io.Read_Handler 
   remaining := LM.env.new reader_size
 
   public redef read(max_count i32) choice (Sequence u8) io.end_of_file error =>
-    if remaining.get <= 0
+    if remaining <= 0
       io.end_of_file
     else
       match (io.buffered LM).reader.env.read
         s Sequence =>
           c := s.take (min remaining.get max_count)
-          remaining <- remaining.get - c.count
+          remaining <- remaining - c.count
           (io.buffered LM).reader.env.discard c.count
           c
         o outcome =>
           match o
             io.end_of_file =>
-              if remaining.get > 0
+              if remaining > 0
                 error """
                   Connection closed before complete content was read.
                   Content-Length: $(reader_size) bytes
@@ -130,11 +130,11 @@ module body_reader_chunked(LM type : mutate) : io.Read_Handler is
     current_chunk_size <- 0
 
     if 0x30 ≤ c ≤ 0x39
-      update_current_chunk_size ((current_chunk_size.get *? 16) +? (c - 0x30))
+      update_current_chunk_size ((current_chunk_size *? 16) +? (c - 0x30))
     else if 0x41 ≤ c ≤ 0x5a
-      update_current_chunk_size ((current_chunk_size.get *? 16) +? (c + 10 - 0x41))
+      update_current_chunk_size ((current_chunk_size *? 16) +? (c + 10 - 0x41))
     else if 0x61 ≤ c ≤ 0x7a
-      update_current_chunk_size ((current_chunk_size.get *? 16) +? (c + 10 - 0x61))
+      update_current_chunk_size ((current_chunk_size *? 16) +? (c + 10 - 0x61))
     else
       error "no chunk size provided"
 
@@ -145,11 +145,11 @@ module body_reader_chunked(LM type : mutate) : io.Read_Handler is
     (io.buffered LM).reader.env.discard 1
 
     if 0x30 ≤ c ≤ 0x39
-      update_current_chunk_size ((current_chunk_size.get *? 16) +? (c - 0x30))
+      update_current_chunk_size ((current_chunk_size *? 16) +? (c - 0x30))
     else if 0x41 ≤ c ≤ 0x5a
-      update_current_chunk_size ((current_chunk_size.get *? 16) +? (c + 10 - 0x41))
+      update_current_chunk_size ((current_chunk_size *? 16) +? (c + 10 - 0x41))
     else if 0x61 ≤ c ≤ 0x7a
-      update_current_chunk_size ((current_chunk_size.get *? 16) +? (c + 10 - 0x61))
+      update_current_chunk_size ((current_chunk_size *? 16) +? (c + 10 - 0x61))
     else if c = 0x0d
       position <- chunk_post_size
       Sequence u8 .empty
@@ -167,7 +167,7 @@ module body_reader_chunked(LM type : mutate) : io.Read_Handler is
     (io.buffered LM).reader.env.discard 1
 
     if c = 0x0a
-      if current_chunk_size.get = 0
+      if current_chunk_size = 0
         position <- chunk_end_start
       else
         position <- chunk_body
@@ -207,7 +207,7 @@ module body_reader_chunked(LM type : mutate) : io.Read_Handler is
 
     (io.buffered LM).reader.env.discard count
 
-    match current_chunk_size.get -? count.as_u64
+    match current_chunk_size -? count.as_u64
       new u64 =>
         current_chunk_size <- new
 
@@ -255,9 +255,9 @@ module body_reader_chunked(LM type : mutate) : io.Read_Handler is
     else if c = 0x0a
       error "invalid newline in chunk extension"
     else
-      extension_size <- extension_size.get + 1
+      extension_size <- extension_size + 1
 
-      if extension_size.get > extension_limit
+      if extension_size > extension_limit
         # this static limit is kinda arbitrary, we could add more magic to allow
         # extensions proportional to the content size, but this does not matter
         # yet

@@ -432,7 +432,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   =>
     codepoints
       .chunk n
-      .map String.type.from_codepoints
+      .map String.from_codepoints
 
 
   # check if this string starts with given prefix
@@ -608,8 +608,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
                n u32 => n > 0
     =>
       utf8.split0 s.utf8 limit split_after
-          # NYI: BUG: could be just: .map String.from_bytes
-          .map String.type.from
+          .map String.from
 
 
   # split string at line feeds
@@ -968,33 +967,6 @@ public String ref : property.equatable, property.hashable, property.orderable is
   #
   public type.join_lines(elems Sequence String) String =>
     join elems "\n"
-
-
-  # create string by concatenating the results of $a[a.indices].
-  #
-  # This uses a growing array if further strings are appended using 'infix +',
-  # so it avoids quadratic runtime caused if each 'infix +' would create its
-  # own concatenation-string.
-  #
-  # The performance of creating a string a0+a1+a2+...+a<n> is in O(n) since the
-  # backing array is shared and doubled in size when full (so the final array size
-  # is less than 2n in size and the sum of all arrays is less than 4n = 2n + n +
-  # n/2+n/4+...).
-  #
-  # The performance of iterating the utf8 bytes of a string is O(l+n) for an
-  # array of length l created by concatenating n sub-strings.
-  #
-  public type.from_mutable_array(E type : mutate, a container.Mutable_Array Any E) String =>  # NYI: Remove?
-
-    _ : String is
-
-      public redef utf8 Sequence u8 =>
-        a.as_list.flat_map (.as_string.utf8)
-
-
-      public redef infix + (other Any) String =>
-        a.add other
-        from_mutable_array a
 
 
   # create string from the given utf8 bytes

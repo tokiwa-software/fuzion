@@ -37,6 +37,7 @@ process_buffered_writer =>
       _ := lm ! ()->
         _ := p.with_in unit lm ()->
           _ := (io.buffered lm).writer.env.write "Hello, World!\n"
-        say p.wait
+        # closing input so cat knows we are done and must write to standard out
+        say p.close_in
         _ := p.with_out unit lm ()->
           say ((io.buffered lm).read_string 1E9).or_panic

@@ -29,10 +29,10 @@ public read_request(
   LM type: mutate) outcome request_message
 =>
 
-  exception unit _ ()->
+  flow.exception unit _ ()->
 
     cause(s String) void =>
-      (exception unit).env.cause (error s)
+      (flow.exception unit).env.cause (error s)
 
     # NYI: must parse header as superset of ASCII
     # https://datatracker.ietf.org/doc/html/rfc9112#section-2.2-2

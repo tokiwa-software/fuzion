@@ -93,7 +93,10 @@ public blocking_mutate : mutate is
   # of any waiting thread evaluates to true and, if so, wake up that
   # thread.
   #
-  wakeup_next_in_waiting_list =>
+  wakeup_next_in_waiting_list
+  pre
+    debug: is_exclusive
+  =>
     match waiting.first
       f concur.Thread =>
         for t := f, nxt

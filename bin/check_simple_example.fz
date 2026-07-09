@@ -75,8 +75,7 @@ envir_var_kv := [
   else
     envir.vars.env[k].bind v->
       (k,v)
- .filter (.ok)
- .map (.or_panic)
+ .flat_map id
  .as_array
 
 # envir vars as map
@@ -212,10 +211,12 @@ else
     # setrlimit for executed processes
     # stack_size_limit, cpu_time_limit
 
-    _ := concur.threads.env.spawn ()->
+    bt := concur.threads.env.spawn ()->
       time.nano.env.sleep <| time.duration.s cpu_time_limit
       say "$("*** CANCELLED:".bold.red) test $file exceeded cpu time limit of $cpu_time_limit s"
       exit 1
+
+    concur.threads.env.detach bt
 
     backend_options(x) =>
       s := envir.vars.env

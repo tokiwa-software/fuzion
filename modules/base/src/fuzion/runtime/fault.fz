@@ -49,7 +49,7 @@ public fault (
       # the error message of the fault
       String)
     ) -> void
-  ) : eff.fallible p
+  ) : flow.fallible p
 is
 
 

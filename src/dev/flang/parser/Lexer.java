@@ -672,15 +672,15 @@ public class Lexer extends SourceFile
 
 
   /**
-   * In case there is a surrounding `if` statement, this gives the start position. This is used
-   * to detect ambiguous `else` statements.
+   * In case there is a surrounding {@code if} statement, this gives the start position. This is used
+   * to detect ambiguous {@code else} statements.
    */
   private SourcePosition _surroundingIf = null;
 
 
   /**
    * In case there is a surrounding loop statement, this gives the start position. This is used
-   * to detect ambiguous `else` statements.
+   * to detect ambiguous {@code else} statements.
    */
   private SourcePosition _surroundingLoop = null;
 
@@ -961,7 +961,7 @@ public class Lexer extends SourceFile
 
 
   /**
-   * Remember that we are parsing in `if` statement. This will be reset
+   * Remember that we are parsing in {@code if} statement. This will be reset
    * automatically on relaxLineAndSpaceLimit.
    */
   SourcePosition surroundingIf(SourcePosition pos)
@@ -974,7 +974,7 @@ public class Lexer extends SourceFile
 
 
   /**
-   * The `if` statement that we are currently parsing.
+   * The {@code if} statement that we are currently parsing.
    */
   SourcePosition surroundingIf()
   {
@@ -2624,10 +2624,10 @@ Fuzion xref:input_source[input sources] must match the Fuzion grammar defined in
                                                                       sourcePos(_minIndentStartPos),
                                                                       detail);
       case t_lineLimit        -> Errors.lineBreakNotAllowedHere (sourcePos(lineEndPos(_sameLine)), detail);
-      case t_spaceOrSemiLimit -> Errors.whiteSpaceNotAllowedHere(sourcePos(tokenPos()), detail);
-      case t_commaLimit       -> Errors.commaNotAllowedHere     (sourcePos(tokenPos()), detail);
-      case t_colonLimit       -> Errors.colonPartOfTernary      (sourcePos(tokenPos()), detail);
-      case t_barLimit         -> Errors.barPartOfCase           (sourcePos(tokenPos()), detail);
+      case t_spaceOrSemiLimit -> Errors.whiteSpaceNotAllowedHere(tokenSourceRange(), detail);
+      case t_commaLimit       -> Errors.commaNotAllowedHere     (tokenSourceRange(), detail);
+      case t_colonLimit       -> Errors.colonPartOfTernary      (tokenSourceRange(), detail);
+      case t_barLimit         -> Errors.barPartOfCase           (tokenSourceRange(), detail);
       case t_ambiguousSemi    -> Errors.ambiguousSemicolon(sourcePos(pos));
       default                 -> Errors.syntax(sourcePos(pos), expected, currentAsString(), detail);
       }

@@ -47,7 +47,7 @@ test_process =>
     (os.process.start "cat").bind p->
       _ := p.write_string "Hello from the other side."
       # closing input so cat knows we are done and must write to standard out
-      say p.wait
+      say p.close_in
       _ := lm ! ()->
         _ := p.with_out unit lm ()->
           say ((io.buffered lm).read_string 1E9).or_panic

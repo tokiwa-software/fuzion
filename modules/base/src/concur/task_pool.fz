@@ -33,7 +33,7 @@ is
   #
   # returns false if the pool is already shutting down
   #
-  public submit(P type : time.Period, t realtime.task P) unit ! atomic_access =>
+  public submit(P type : time.period, t realtime.task P) unit ! atomic_access =>
 
     nt := concur.threads.env.spawn ()->
       now := time.nano.env.read
