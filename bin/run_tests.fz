@@ -251,7 +251,7 @@ main =>
         done
         """
 
-    set_exit_code 1 .or_panic
+    Exit.env.set_exit_code 1 .or_panic
 
 
   num_slowest := 10
@@ -276,6 +276,6 @@ main =>
         say <| tokiwa.post_to_influx "tokiwa" "benchmarks" token.trim (String.join_lines data)
         say <| tokiwa.post_to_influx "tokiwa" "benchmarks" token.trim "run_tests,backend=$(target) total_time=$(elapsed_time_total.millis)"
 
-  exit
+  Exit.env.exit
 
 _ := main

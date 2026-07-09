@@ -40,7 +40,7 @@ inheritance_for_value_types is
       say "PASSED: $msg"
     else
       say "FAILED: $msg"
-      _ := set_exit_code 1
+      _ := Exit.env.set_exit_code 1
 
   ra ref is
     x (msg String, expected i32) unit => abstract
@@ -91,4 +91,4 @@ inheritance_for_value_types is
   # v (b.q "v b.q" 2)   # b.q not assignment compatible to a.q
   # v (c.q "v c.q" 3)   # c.q not assignment compatible to a.q
 
-  exit
+  Exit.env.exit

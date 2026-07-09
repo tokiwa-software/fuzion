@@ -31,7 +31,7 @@ transducertest is
       say "PASSED: $msg"
     else
       say "FAILED: $msg"
-      _ := set_exit_code 1
+      _ := Exit.env.set_exit_code 1
 
   td1 := (transducer (Sequence i32) i32 human).type
 
@@ -52,4 +52,4 @@ transducertest is
   r2 := [human 4, human 12, human 30].into (ages ∘ gt_ten)
   chck (r2 = [12, 30])                          "compose transducers"
 
-  exit
+  Exit.env.exit
