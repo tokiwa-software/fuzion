@@ -853,16 +853,21 @@ public class GeneratingFUIR extends FUIR
 
   Clazz error()
   {
-    if (PRECONDITIONS) require
-      (Errors.any());
+    // If there are no errors, this is being called inappropriately
+    // Return the universe as a safe fallback
+    if (!Errors.any())
+      {
+        return id2clazz(_universe);
+      }
 
     // Get the void clazz safely
     int voidClazzId = clazz(SpecialClazzes.c_void);
     if (voidClazzId == NO_CLAZZ || voidClazzId < CLAZZ_BASE || voidClazzId >= CLAZZ_BASE + _clazzes.size())
       {
-        // If void clazz doesn't exist yet, return a dummy error clazz or the universe
+        // If void clazz doesn't exist yet, return the universe as fallback
         return id2clazz(_universe);
       }
+    
     return _clazzes.get(clazzId2num(voidClazzId));
   }
 
@@ -2484,25 +2489,33 @@ public class GeneratingFUIR extends FUIR
 
     if (c.calledFeature() == null  || c.target() == null)
       {
-        return error();  // previous errors, give up
+        // Only return error() if there are actual errors
+        return Errors.any() ? error() : null;
       }
 
     var tclazz = explicitTarget == null
       ? calledTarget(c, outerClazz, inh)
       : explicitTarget;
 
+    // If tclazz is null, return null (not error) unless there are actual errors
+    if (tclazz == null)
+      {
+        return Errors.any() ? error() : null;
+      }
+
     Clazz innerClazz = null;
     var cf      = c.calledFeature();
     var dynamic = c.isDynamic() && tclazz.isRef();
     var needsCode = !dynamic || explicitTarget != null;
     var typePars = outerClazz.actualGenerics(c.actualTypeParameters(), inh);
+    
     if (!tclazz.isVoidType())
       {
         innerClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars), c.select(), c.isInheritanceCall());
         
         // Store the call position for better error reporting
         SourcePosition callPos = c.pos();
-        if (innerClazz != null && innerClazz != error() && innerClazz != Clazz.NO_CLAZZ)
+        if (innerClazz != null && innerClazz != error())
           {
             // Only store if this is a meaningful position (not null or notAvailable)
             if (callPos != null && callPos != SourcePosition.notAvailable)
@@ -2512,7 +2525,7 @@ public class GeneratingFUIR extends FUIR
                 // Also store position on type parameter clazzes if they're being checked
                 for (var tp : innerClazz.actualTypeParameters())
                   {
-                    if (tp != null && tp != error() && tp != Clazz.NO_CLAZZ)
+                    if (tp != null && tp != error())
                       {
                         tp.setInstantiationPos(callPos);
                       }
@@ -2523,10 +2536,12 @@ public class GeneratingFUIR extends FUIR
         if (c.calledFeature() == Types.resolved.f_Type_infix_colon)
           {
             // Make sure we have actual type parameters
-            if (innerClazz.actualTypeParameters() != null && innerClazz.actualTypeParameters().length > 0)
+            if (innerClazz != null && innerClazz != error() &&
+                innerClazz.actualTypeParameters() != null && 
+                innerClazz.actualTypeParameters().length > 0)
               {
                 var T = innerClazz.actualTypeParameters()[0];
-                if (T != null && T != error() && T != Clazz.NO_CLAZZ)
+                if (T != null && T != error())
                   {
                     // Check if T._type exists and we can access it
                     var tclazzGenerics = tclazz._type.generics();
@@ -2592,10 +2607,10 @@ public class GeneratingFUIR extends FUIR
                             
                             // Report the error with both positions
                             FuirErrors.unmetTypeContraint(
-                              T._type.declarationPos(),  // constraint position (numeric.fz:28)
-                              originalCallPos,           // original call site ([unit].sum)
-                              tclazzGenerics.get(0),     // actual type (unit)
-                              T                          // constraint (numeric)
+                              T._type.declarationPos(),  // constraint position
+                              originalCallPos,           // original call site
+                              tclazzGenerics.get(0),     // actual type
+                              T                          // constraint
                             );
                           }
                         cf = satisfies
@@ -2607,7 +2622,7 @@ public class GeneratingFUIR extends FUIR
             innerClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars), FuzionConstants.NO_SELECT, c.isInheritanceCall());
             
             // Store position on the new inner clazz too
-            if (innerClazz != null && innerClazz != error() && innerClazz != Clazz.NO_CLAZZ)
+            if (innerClazz != null && innerClazz != error())
               {
                 SourcePosition pos = c.pos();
                 if (pos != null && pos != SourcePosition.notAvailable)
@@ -2616,12 +2631,12 @@ public class GeneratingFUIR extends FUIR
                   }
               }
           }
-        if (needsCode && innerClazz != null && innerClazz != error() && innerClazz != Clazz.NO_CLAZZ)
+        if (needsCode && innerClazz != null && innerClazz != error())
           {
             innerClazz.doesNeedCode();
           }
 
-        if (innerClazz != null && innerClazz != error() && innerClazz != Clazz.NO_CLAZZ &&
+        if (innerClazz != null && innerClazz != error() &&
             innerClazz.resultClazz() != null &&
             innerClazz.resultClazz()._showErrorIfCallResult_ != null &&
             innerClazz.clazzKind() == FeatureKind.Routine &&
@@ -2630,7 +2645,10 @@ public class GeneratingFUIR extends FUIR
             innerClazz.resultClazz()._showErrorIfCallResult_.accept(c);
           }
       }
-    return innerClazz == null ? error() : innerClazz;
+    
+    // Return innerClazz if found, otherwise return null (not error)
+    // Only return error() if there are actual errors
+    return innerClazz == null ? (Errors.any() ? error() : null) : innerClazz;
   }
 
 
