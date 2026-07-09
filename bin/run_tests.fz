@@ -122,7 +122,7 @@ main =>
     say "wrong argument count"
     say "usage:"
     say "run_tests.fz <build_dir> <target>"
-    exit 1
+    Exit.env.exit 1
 
   build_dir := path.of envir.args.env[1]
   target := envir.args.env[2]

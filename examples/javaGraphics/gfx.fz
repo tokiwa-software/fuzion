@@ -177,4 +177,4 @@ is
           f.setVisible false
 
     gfx_
-    exit 0   # explicitly exit since JVM would otherwise keep us alive
+    Exit.env.exit 0   # explicitly exit since JVM would otherwise keep us alive

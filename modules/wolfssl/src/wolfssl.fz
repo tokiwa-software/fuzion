@@ -48,7 +48,7 @@ public wolfssl(T type, LM type : mutate, LM2 type: mutate, code ()->T) T ! LM, L
         lm ! ()->
           _ := memcpy buf (lm.array u8 .from_Sequence s) x.as_i64
         x
-      outcome => exit 1
+      outcome => Exit.env.exit 1
 
 
   c.wolfSSL_CTX_SetIOSend ctx (ssl, buf, sz, ctx)->

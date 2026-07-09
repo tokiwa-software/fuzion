@@ -93,7 +93,7 @@ main =>
 
   if !(is_installed "antlr" || is_installed "antlr4")
     io.Err.env.println "not generating ebnf due to missing dependency antlr"
-    exit 0
+    Exit.env.exit 0
   else
     new_line := "\n"
 
