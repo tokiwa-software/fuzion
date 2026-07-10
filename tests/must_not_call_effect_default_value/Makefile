@@ -17,17 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test i18n_default_test
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-i18n_default_test is
-
-  internationalization.Provide.instate internationalization.german ()->
-
-    # formats given date and currency using default-setting, in this case German-format
-    main ! internationalization.Provide =>
-      say "$(internationalization.Provide.env.date 30 5 2024)"
-      say "$(internationalization.Provide.env.currency 300000)"
-
-    main
+override NAME = must_not_call_effect_default_value
+include ../simple.mk
