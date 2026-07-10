@@ -37,7 +37,7 @@ reg_issue4253_infix_assiciativity =>
   # ------------------------------------
 
 
-  # we define our own pipes with the same precendence:
+  # we define our own pipes with the same precedence:
   #
   infix_right <<< (f A->R, a A) => f <| a
   infix       >>> (a A, f A->R) => a |> f
@@ -62,7 +62,7 @@ reg_issue4253_infix_assiciativity =>
   # using left and right associativity will result in left-to-right
   # execution:
 
-  # feature returning lambe that subtracts x from an i23.
+  # feature returning lambda that subtracts x from an i23.
   sub(x i32) i32->i32 => -x
 
   say "expecting `-36`"

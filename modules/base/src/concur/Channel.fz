@@ -244,7 +244,7 @@ is
   #     |                                                                                                |
   #     |            |                                          |                                        |
   #     |            |                                          |                                        |
-  #     |            |Thread B: <-ch (receive) unbocks          |Thread A: ch <- v (send) unblocks       |
+  #     |            |Thread B: <-ch (receive) unblocks         |Thread A: ch <- v (send) unblocks       |
   #     |            |                                          |                                        |
   #     |            |                                          |                                        |
   #     |            +---------+--------------------------------+                                        |

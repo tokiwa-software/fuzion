@@ -95,7 +95,7 @@ floating_point_numbers is
     # sqrt
     chck ((two * two).sqrt = two)                                          "$(T.name): sqrt (2*2) = 2"
 
-    # exponentation / logarithm
+    # exponentiation / logarithm
     chck (zero.exp     = one   )                                           "$(T.name): exp 0 = 1"
     # NYI: BUG: chck (T.exp one      = T.ℇ)                                            "$(T.name): exp 1 = ℇ"
     # on macOS with ARM and be/jvm or be/int:

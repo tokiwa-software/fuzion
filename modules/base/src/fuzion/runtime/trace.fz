@@ -44,7 +44,7 @@ public trace(# an identifier to chose a unique color for displaying this probe
              col u8,
 
              # an message to be displayed. Note that this message might get
-             # trunkated to, e.g., 16 utf8 bytes.
+             # truncated to, e.g., 16 utf8 bytes.
              #
              msg String
              ) unit

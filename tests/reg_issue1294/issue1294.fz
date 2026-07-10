@@ -266,11 +266,11 @@ run_scenario7
 
 
 
-# ------  eigth scenario  ------
+# ------  eighth scenario  ------
 #
 # taken from issue #1590. The problematic code is at the bottom:
 # `arr2.fold T.sum` which creates an instance of `sum` with an outer
-# type defined by a type paraemter.
+# type defined by a type parameter.
 
 scenario8 is
 

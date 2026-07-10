@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# javaHello is a minimalistic example that shows how Java's
+# javaHello is a minimalist example that shows how Java's
 # java.lang.System.out.println can be called from Fuzion code.
 #
 # See Makefile for how to start fuzion to run this example.

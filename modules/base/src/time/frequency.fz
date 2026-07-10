@@ -25,7 +25,7 @@
 
 # time.frequency -- a child of period that is defined by a frequency per duration
 #
-# This provices abstract features that define a period of time and that
+# This provides abstract features that define a period of time and that
 # permit multiplications with large integers avoiding drift.
 #
 # An example is a frequency of 60Hz that can be specified as

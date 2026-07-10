@@ -286,7 +286,7 @@ module fzE_pipe_close(
 # after opening the source represented by the path parameter
 #
 module fzE_file_open(
-              # a Fuzion Pointer represention the path for the source to be opened
+              # a Fuzion Pointer representation the path for the source to be opened
               path Array u8,
               # open_results[error number] as a Fuzion Pointer
               open_results Array i64,

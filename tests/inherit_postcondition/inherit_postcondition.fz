@@ -261,7 +261,7 @@ test_postcondition is
   _ := post_accessing_result_child4.f
 
 
-  # ------ accesssing postconditions in a module
+  # ------ accessing postconditions in a module
 
   _ := mod.post_accessing_result.f
   _ := mod.post_accessing_result.g

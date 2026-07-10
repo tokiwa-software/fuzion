@@ -42,7 +42,7 @@ reg_issue3359 is
   g : f is
 
 
-  # h implementes type feature n, but not o nor p
+  # h implements type feature n, but not o nor p
   #
   h : g is
     redef type.n =>
@@ -84,7 +84,7 @@ reg_issue3359 is
   j : i is
 
 
-  # k implementes feature q, but not r nor s
+  # k implements feature q, but not r nor s
   #
   k : j is
     redef q =>

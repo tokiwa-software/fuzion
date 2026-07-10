@@ -27,7 +27,7 @@ resource_cleanunp =>
 
   # effect that maintains a Sequence of opened resources and
   # provides a operations to open a new resource and return
-  # a status including the resouce count
+  # a status including the resource count
   #
   e(# effect state: opened resources
     opened Sequence String,
@@ -91,7 +91,7 @@ resource_cleanunp =>
 
   # -----------------------------------------------------------------------
 
-  # now, open two resouces P, Q and then throw `exc`
+  # now, open two resources P, Q and then throw `exc`
 
   # our flow.exception
   exc is

@@ -101,7 +101,7 @@ int_test is
       chck (uint m*n = (uint m * uint n)) "uint: m $m * n $n"
 
 
-  # test uint exponentation for numbers larger than u32.max
+  # test uint exponentiation for numbers larger than u32.max
   for m in u32_max..(u32_max+2) do
     for n in (u64 0)..(u64 1) do
 

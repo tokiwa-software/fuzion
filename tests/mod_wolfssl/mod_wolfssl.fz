@@ -23,7 +23,7 @@
 
 mod_wolfssl =>
 
-  # this lm is used for the raw netwok connection
+  # this lm is used for the raw network connection
   #
   net_lm : mutate is
 
