@@ -29,7 +29,10 @@ public Process ref : effect is
 
   # start a process with name, arguments and environment variables
   #
-  public start(name String, args Sequence String, env_vars container.Map String String) outcome os.process => abstract
+  public start(name String, args Sequence String, env_vars container.Map String String) outcome os.process
+    pre
+      safety: env_vars.keys ∀ (x -> x.codepoints ∀ .is_ascii)
+  => abstract
 
 
   # wait for process to finish
