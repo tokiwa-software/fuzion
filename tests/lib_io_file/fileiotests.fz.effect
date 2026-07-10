@@ -12,6 +12,7 @@ io.Err
 io.Out
 io.dir.Make
 io.file.Delete
+io.file.L_Stat
 io.file.Move
 io.file.Stat
 panic
