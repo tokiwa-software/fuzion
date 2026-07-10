@@ -37,7 +37,12 @@ public Clock ref : effect is
   #
   # This might be `nil` for `Clock`s that do not correspond to a POSIX clock.
   #
-  public posix_id option posix.clockid_t
+  # NYI: UNDER DEVELOPMENT: would be nicer to have this as a normal feature, not
+  # a type feature, and then call it via Clock.env.posix_id.  This currently
+  # fails to verify that the default effect is instated, probably because this
+  # would be required very eary during startup.
+  #
+  public type.posix_id option posix.clockid_t
   =>
     nil
 

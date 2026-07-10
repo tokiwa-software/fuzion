@@ -31,21 +31,27 @@ public posix is
 
   # a clock identifier
   #
-  public clockid(# the native value used for this clock
-                 #
-                 public val i32) is
+  public clockid is
 
 
   # the wall clock (NOTE: This is usually not useful for real-tiem code)
   #
-  public clock_realtime  : clockid 0 is
+  public clock_realtime  : clockid is
 
 
   # the monotonic clock
   #
-  public clock_monotonic : clockid 1 is
+  public clock_monotonic : clockid is
 
 
   # The posix clocks that are currently supported
   #
   public clockid_t : choice clock_realtime clock_monotonic is
+
+    # the native value used for this clock
+    #
+    public val i32
+    =>
+      match clockid_t.this
+        clock_realtime  => 0
+        clock_monotonic => 1

@@ -65,10 +65,11 @@ private:public condition(mtx concur.sync.mutex, cnd Condition) is
   #
   public type.new(C type : time.Clock) outcome concur.sync.condition
   pre
-    safety: C.env.posix_id??
+    safety: C.posix_id??
   =>
+    clockid := C.posix_id.or_panic.val
     concur.sync.mtx_init.bind mtx->
-      (concur.sync.cnd_init mtx C.env.posix_id.or_panic).bind cnd->
+      (concur.sync.cnd_init mtx clockid).bind cnd->
         concur.sync.condition (concur.sync.mutex mtx) cnd
 
 

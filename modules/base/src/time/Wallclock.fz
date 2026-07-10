@@ -34,7 +34,7 @@ public Wallclock ref : time.Clock is
 
   # This clock corresponds to POSIX 1003.1's CLOCK_REALTIME
   #
-  public redef posix_id option posix.clockid_t
+  public redef type.posix_id option posix.clockid_t
   =>
     posix.clock_realtime
 
