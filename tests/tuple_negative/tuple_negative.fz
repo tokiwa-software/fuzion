@@ -31,7 +31,7 @@ tuple_negative is
       say "PASSED: $msg"
     else
       say "FAILED: $msg"
-      _ := set_exit_code 1
+      _ := Exit.env.set_exit_code 1
 
   p(s Any) => say s
 
@@ -187,4 +187,4 @@ tuple_negative is
   _,t15a2,_                := (01, true, 23); # 38. should flag an error, duplicate declaration
   _,_,t15a3                := (01, true, 23); # 39. should flag an error, duplicate declaration
 
-  exit
+  Exit.env.exit

@@ -29,8 +29,8 @@ genericstest is
     s := if b
            "PASSED: "
          else
-           set_exit_code 1 ? unit =>
-                           | error =>
+           Exit.env.set_exit_code 1 ? unit =>
+                                    | error =>
            "FAILED: "
     say (s + msg)
 
@@ -237,4 +237,4 @@ genericstest is
 
   inheriting_type_parameters
 
-  exit
+  Exit.env.exit

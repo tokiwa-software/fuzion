@@ -30,7 +30,7 @@ redef_args is
     s := if (b)
            "PASSED: "
          else
-           _ := set_exit_code 1
+           _ := Exit.env.set_exit_code 1
            "FAILED: "
     say (s + msg)
 
@@ -77,4 +77,4 @@ redef_args is
     chck (a = 2) "redefined field as in #165"
 
 
-  exit
+  Exit.env.exit

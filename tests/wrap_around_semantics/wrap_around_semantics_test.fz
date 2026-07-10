@@ -29,7 +29,7 @@ wrap_around_semantics_test is
       say "PASSED: $msg"
     else
       say "FAILED: $msg"
-      _ := set_exit_code 1
+      _ := Exit.env.set_exit_code 1
 
 
   test_unsigned (T type : num.wrap_around) =>
@@ -54,4 +54,4 @@ wrap_around_semantics_test is
   test_signed i64
   test_signed i128
 
-  exit
+  Exit.env.exit

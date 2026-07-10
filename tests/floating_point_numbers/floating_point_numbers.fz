@@ -31,7 +31,7 @@ floating_point_numbers is
     s := if b
            "PASSED: "
          else
-           _ := set_exit_code 1
+           _ := Exit.env.set_exit_code 1
            "FAILED: "
     say (s + msg)
 
@@ -242,4 +242,4 @@ floating_point_numbers is
   chck ((f64 1.0)   .fract  =   0.0)                                          "f64.fraction of  1.0 equals expected"
 
 
-  exit
+  Exit.env.exit

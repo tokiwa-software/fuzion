@@ -30,7 +30,7 @@ partial_application_negative is
       say "PASSED: $msg: got '$got'"
     else
       say "FAILED: $msg: got '$got' expected '$exp'"
-      _ := set_exit_code 1
+      _ := Exit.env.set_exit_code 1
 
   data := 1..10
 
