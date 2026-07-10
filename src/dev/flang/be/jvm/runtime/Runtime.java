@@ -1224,9 +1224,10 @@ public class Runtime extends ANY
   }
 
 
-  public static Object cnd_init(Object rl)
+  public static Object cnd_init(Object rl, int clock)
   {
-    return ((ReentrantLock)rl).newCondition();
+    // NYI: clock is currently ignored, what is Java's default clock for this? CLOCK_MONOTONIC?
+    return ((ReentrantLock)rl).newCondition(/* NYI: clock */);
   }
 
   public static void cnd_signal(Object cnd)

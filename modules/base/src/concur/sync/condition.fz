@@ -61,11 +61,22 @@ private:public condition(mtx concur.sync.mutex, cnd Condition) is
   => cnd_wait cnd mtx.mtx
 
 
-  # initialize a new condition
+  # initialize a new condition using the given clock
   #
-  public type.new outcome concur.sync.condition =>
+  public type.new(C type : time.Clock) outcome concur.sync.condition
+  pre
+    safety: C.env.posix_id??
+  =>
     concur.sync.mtx_init.bind mtx->
-      (concur.sync.cnd_init mtx).bind cnd->
+      (concur.sync.cnd_init mtx C.env.posix_id.or_panic).bind cnd->
         concur.sync.condition (concur.sync.mutex mtx) cnd
+
+
+  # initialize a new condition using `time.Monotonic` as underlying clock.
+  #
+  public type.new outcome concur.sync.condition
+  =>
+    new time.Monotonic
+
 
   # NYI: UNDER DEVELOPMENT: destroy

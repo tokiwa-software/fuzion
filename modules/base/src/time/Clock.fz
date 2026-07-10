@@ -32,6 +32,16 @@
 #
 public Clock ref : effect is
 
+
+  # in case this clock corresponds to a POSIX 1003.1 clock, give that clock's id.
+  #
+  # This might be `nil` for `Clock`s that do not correspond to a POSIX clock.
+  #
+  public posix_id option posix.clockid_t
+  =>
+    nil
+
+
   # read the time of this clock
   #
   public read time.instant => abstract

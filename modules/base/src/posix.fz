@@ -17,28 +17,35 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature concur.sync
+#  Source code of Fuzion standard library feature posix
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# concur.sync -- synchronization primitives
-# NYI: sync should probably be an effect
+# posix -- collection of features corresponding to POSIX IEEE Std 1003.1 standard
 #
-public sync is
-
-  module mtx_init outcome Mutex => intrinsic
-  module mtx_lock(mtx Mutex) bool => intrinsic
-  # NYI: mtx_timedlock
-  module mtx_trylock(mtx Mutex) bool => intrinsic
-  module mtx_unlock(mtx Mutex) bool => intrinsic
-  module mtx_destroy(mtx Mutex) unit => intrinsic
-
-  module cnd_init(mtx Mutex, i32 clock) outcome Condition => intrinsic
-  module cnd_signal(cnd Condition) unit => intrinsic
-  module cnd_broadcast(cnd Condition) unit => intrinsic
-  module cnd_wait(cnd Condition, mtx Mutex) unit => intrinsic
-  # NYI: cnd_timedwait
-  module cnd_destroy(cnd Condition) unit => intrinsic
+#
+public posix is
 
 
-  # NYI: tie life of mutex/condition to thread pool?
+  # a clock identifier
+  #
+  public clockid(# the native value used for this clock
+                 #
+                 public val i32) is
+
+
+  # the wall clock (NOTE: This is usually not useful for real-tiem code)
+  #
+  public clock_realtime  : clockid 0 is
+
+
+  # the monotonic clock
+  #
+  public clock_monotonic : clockid 1 is
+
+
+  # The posix clocks that are currently supported
+  #
+  public clockid_t : choice clock_realtime clock_monotonic is

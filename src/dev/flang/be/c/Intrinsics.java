@@ -919,7 +919,7 @@ public class Intrinsics extends ANY
         var tmp = new CIdent("tmp");
         var rc = c._fuir.clazzResultClazz(cl);
         return CStmnt.seq(
-          CStmnt.decl("void *", tmp, CExpr.call("fzE_cnd_init",      new List<>())),
+          CStmnt.decl("void *", tmp, CExpr.call("fzE_cnd_init",      new List<>(A0))),
           CStmnt.iff(tmp.eq(CNames.NULL),
             c.returnOutcome(c._fuir.clazzChoice(rc, 1), c.error(c._fuir.clazzChoice(rc, 1), c.boxedConstString("An error occurred initializing the condition variable.")), rc, 1),
             c.returnOutcome(c._fuir.clazzChoice(rc, 0), tmp, rc , 0)

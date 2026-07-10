@@ -17,28 +17,41 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature concur.sync
+#  Source code of Fuzion standard library feature time.Monotonic
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# concur.sync -- synchronization primitives
-# NYI: sync should probably be an effect
+# time.monotonic -- effect providing access to system's monotonic clock
 #
-public sync is
-
-  module mtx_init outcome Mutex => intrinsic
-  module mtx_lock(mtx Mutex) bool => intrinsic
-  # NYI: mtx_timedlock
-  module mtx_trylock(mtx Mutex) bool => intrinsic
-  module mtx_unlock(mtx Mutex) bool => intrinsic
-  module mtx_destroy(mtx Mutex) unit => intrinsic
-
-  module cnd_init(mtx Mutex, i32 clock) outcome Condition => intrinsic
-  module cnd_signal(cnd Condition) unit => intrinsic
-  module cnd_broadcast(cnd Condition) unit => intrinsic
-  module cnd_wait(cnd Condition, mtx Mutex) unit => intrinsic
-  # NYI: cnd_timedwait
-  module cnd_destroy(cnd Condition) unit => intrinsic
+#
+public Monotonic ref : time.Clock is
 
 
-  # NYI: tie life of mutex/condition to thread pool?
+  # This clock corresponds to POSIX 1003.1's CLOCK_MONOONIC
+  #
+  public redef posix_id option posix.clockid_t
+  =>
+    posix.clock_monotonic
+
+
+  # no guarantee can be given for precision nor resolution
+  #
+  public redef read time.instant
+  =>
+    panic "NYI: time.Monotonic.read"
+
+
+  # no guarantee can be given for precision nor resolution
+  #
+  public redef sleep(d time.duration) unit
+  =>
+    panic "NYI: time.Monotonic.sleep"
+
+
+  # default implementation of time.Nano.
+  #
+  public redef fixed type.default_value option time.Monotonic
+  =>
+    time.Monotonic

@@ -1071,7 +1071,40 @@ void fzE_mtx_destroy(void *mtx) {
   fzE_free(mtx);
 }
 
-void * fzE_cnd_init() {
+/**
+ * initialize a condition
+ *
+ * @param clock the clock to be used:
+ *
+ *   - 0 for CLOCK_REALTIME (which is not a real-time clock, but wallclock time)
+ *   - 1 for CLOCK_MONOTONIC (which does not jump for leap seconds are when system time is changed)
+ *
+ * other values taken from /use/include/x86_64-linux-gnu/bits/time.h:
+ *
+ *   ** High-resolution timer from the CPU.  **
+ *   # define CLOCK_PROCESS_CPUTIME_ID	2
+ *   ** Thread-specific CPU-time clock.  **
+ *   # define CLOCK_THREAD_CPUTIME_ID	3
+ *   ** Monotonic system-wide clock, not adjusted for frequency scaling.  **
+ *   # define CLOCK_MONOTONIC_RAW		4
+ *   ** Identifier for system-wide realtime clock, updated only on ticks.  **
+ *   # define CLOCK_REALTIME_COARSE		5
+ *   ** Monotonic system-wide clock, updated only on ticks.  **
+ *   # define CLOCK_MONOTONIC_COARSE		6
+ *   ** Monotonic system-wide clock that includes time spent in suspension.  **
+ *   # define CLOCK_BOOTTIME			7
+ *   ** Like CLOCK_REALTIME but also wakes suspended system.  **
+ *   # define CLOCK_REALTIME_ALARM		8
+ *   ** Like CLOCK_BOOTTIME but also wakes suspended system.  **
+ *   # define CLOCK_BOOTTIME_ALARM		9
+ *   ** Like CLOCK_REALTIME but in International Atomic Time.  **
+ *   # define CLOCK_TAI			11
+ *
+ * @return NULL on error or pointer to condition
+ *         NOTE: eventually needs to be destroyed via fzE_cnd_destroy.
+ */
+void * fzE_cnd_init(int clock) {
+  // NYI: UNDER DEVELOPMENT: clock is ignored for condition variable
   CONDITION_VARIABLE *cnd = (CONDITION_VARIABLE *)fzE_malloc_safe(sizeof(CONDITION_VARIABLE));
   InitializeConditionVariable(cnd);
   return (void *)cnd;

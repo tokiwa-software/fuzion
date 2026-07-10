@@ -1,0 +1,60 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature time.Wallclock
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# time.Wallclock -- effect providing access to system's main clock
+#
+# Note that this clock is non-monotonic, there might be jumps as for leap
+# seconds or adjustments towards the future and the past.
+#
+#
+public Wallclock ref : time.Clock is
+
+
+  # This clock corresponds to POSIX 1003.1's CLOCK_REALTIME
+  #
+  public redef posix_id option posix.clockid_t
+  =>
+    posix.clock_realtime
+
+
+  # no guarantee can be given for precision nor resolution
+  #
+  public redef read time.instant
+  =>
+    panic "NYI: time.Wallclock.read"
+
+
+  # no guarantee can be given for precision nor resolution
+  #
+  public redef sleep(d time.duration) unit
+  =>
+    panic "NYI: time.Wallclock.sleep"
+
+
+  # default implementation of time.Wallclock.
+  #
+  public redef fixed type.default_value option time.Wallclock
+  =>
+    time.Wallclock
