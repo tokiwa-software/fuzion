@@ -2982,6 +2982,17 @@ public class Call extends AbstractCall
         AstErrors.mustNotCallEffectFinally(this);
       }
 
+
+    if (_calledFeature != null &&
+        (_calledFeature == Types.resolved.f_effect_default_value ||
+         _calledFeature.redefinesFull().contains(Types.resolved.f_effect_default_value)) &&
+        !res._module.name().equals(FuzionConstants.BASE_MODULE_NAME)
+       )
+      {
+        AstErrors.mustNotCallEffectDefaultValue(this);
+      }
+
+
     if (t != Types.t_ERROR)
       {
         var o = t;
