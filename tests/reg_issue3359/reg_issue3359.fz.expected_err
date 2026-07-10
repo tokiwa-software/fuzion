@@ -8,13 +8,13 @@ inherits or declares abstract feature 'reg_issue3359.f.type.n' declared at --CUR
     type.n unit => abstract
 ---------^
 which is called at --CURDIR--/reg_issue3359.fz:54:43:
-    if      envir.args.env.count = 0 then T.n
+    if      envir.Args.env.count = 0 then T.n
 ------------------------------------------^^^
 and abstract feature 'reg_issue3359.f.type.o' declared at --CURDIR--/reg_issue3359.fz:36:10:
     type.o unit => abstract
 ---------^
 which is called at --CURDIR--/reg_issue3359.fz:55:43:
-    else if envir.args.env.count = 1 then T.o
+    else if envir.Args.env.count = 1 then T.o
 ------------------------------------------^^^
 without providing an implementation
 
@@ -36,13 +36,13 @@ inherits or declares abstract feature 'reg_issue3359.f.type.n' declared at --CUR
     type.n unit => abstract
 ---------^
 which is called at --CURDIR--/reg_issue3359.fz:54:43:
-    if      envir.args.env.count = 0 then T.n
+    if      envir.Args.env.count = 0 then T.n
 ------------------------------------------^^^
 and abstract feature 'reg_issue3359.f.type.o' declared at --CURDIR--/reg_issue3359.fz:36:10:
     type.o unit => abstract
 ---------^
 which is called at --CURDIR--/reg_issue3359.fz:55:43:
-    else if envir.args.env.count = 1 then T.o
+    else if envir.Args.env.count = 1 then T.o
 ------------------------------------------^^^
 without providing an implementation
 
@@ -64,7 +64,7 @@ inherits or declares abstract feature 'reg_issue3359.f.type.o' declared at --CUR
     type.o unit => abstract
 ---------^
 which is called at --CURDIR--/reg_issue3359.fz:55:43:
-    else if envir.args.env.count = 1 then T.o
+    else if envir.Args.env.count = 1 then T.o
 ------------------------------------------^^^
 without providing an implementation
 
@@ -87,13 +87,13 @@ inherits or declares abstract feature 'reg_issue3359.i.q' declared at --CURDIR--
     q unit => abstract
 ----^
 which is called at --CURDIR--/reg_issue3359.fz:96:43:
-    if      envir.args.env.count = 0 then v.q
+    if      envir.Args.env.count = 0 then v.q
 ------------------------------------------^^^
 and abstract feature 'reg_issue3359.i.r' declared at --CURDIR--/reg_issue3359.fz:78:5:
     r unit => abstract
 ----^
 which is called at --CURDIR--/reg_issue3359.fz:97:43:
-    else if envir.args.env.count = 1 then v.r
+    else if envir.Args.env.count = 1 then v.r
 ------------------------------------------^^^
 without providing an implementation
 
@@ -116,13 +116,13 @@ inherits or declares abstract feature 'reg_issue3359.i.q' declared at --CURDIR--
     q unit => abstract
 ----^
 which is called at --CURDIR--/reg_issue3359.fz:96:43:
-    if      envir.args.env.count = 0 then v.q
+    if      envir.Args.env.count = 0 then v.q
 ------------------------------------------^^^
 and abstract feature 'reg_issue3359.i.r' declared at --CURDIR--/reg_issue3359.fz:78:5:
     r unit => abstract
 ----^
 which is called at --CURDIR--/reg_issue3359.fz:97:43:
-    else if envir.args.env.count = 1 then v.r
+    else if envir.Args.env.count = 1 then v.r
 ------------------------------------------^^^
 without providing an implementation
 
@@ -145,7 +145,7 @@ inherits or declares abstract feature 'reg_issue3359.i.r' declared at --CURDIR--
     r unit => abstract
 ----^
 which is called at --CURDIR--/reg_issue3359.fz:97:43:
-    else if envir.args.env.count = 1 then v.r
+    else if envir.Args.env.count = 1 then v.r
 ------------------------------------------^^^
 without providing an implementation
 
