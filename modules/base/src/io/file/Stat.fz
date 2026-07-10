@@ -1,0 +1,90 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature Stat
+#
+#  Author: Wael Youssfi (wael.youssfi@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+
+# Stat -- effect providing operations to retrieve file stats
+#
+public Stat ref : effect is
+
+  # returns stats of the file/dir passed in the pathname
+  # in success it will return a meta_data outcome storing stats regarding the file/dir
+  # in case of failure an error will be returned
+  # this feature resolves symbolic links
+  #
+  public stats(
+    # the (relative or absolute) file name, using platform specific path separators
+    path path) outcome io.file.meta_data => abstract
+
+
+  # returns stats of the file/dir passed in the pathname
+  # in success it will return a meta_data outcome storing stats regarding the file/dir
+  # in case of failure an error will be returned
+  # this feature does not resolve symbolic links and returns stats of the link itself
+  #
+  public lstats(
+    # the (relative or absolute) file name, using platform specific path separators
+    path path) outcome io.file.meta_data => abstract
+
+
+  # default implementation of Stat
+  #
+  # this will get instated automatically at startup
+  #
+  public redef fixed type.default_value option io.file.Stat =>
+    _ : io.file.Stat is
+
+      public redef stats(path path) outcome io.file.meta_data =>
+        res := fuzion.sys.internal_array_init i64 9
+        if fzE_stat (fuzion.sys.c_string path.as_platform_string) res.data = 0
+          path.as_absolute.bind p->
+            io.file.meta_data p res[0] res[1] res[2] res[3] (res[4] = 1) (res[5] = 1) (res[6] = 1) res[7] res[8]
+        else
+          error "stat error $(res[0]) for $(path)"
+
+      public redef lstats(path path) outcome io.file.meta_data =>
+        res := fuzion.sys.internal_array_init i64 9
+        if fzE_lstat (fuzion.sys.c_string path.as_platform_string) res.data = 0
+          path.as_absolute.bind p->
+            io.file.meta_data p res[0] res[1] res[2] res[3] (res[4] = 1) (res[5] = 1) (res[6] = 1) res[7] res[8]
+        else
+          error "lstat error $(res[0]) for $(path)"
+
+
+# shorthand for accessing and using stats/lstats provided by the stat effect in current environment
+# in success it will return a meta_data outcome storing stats regarding the file/dir
+# in case of failure an error will be returned
+# resolve flag is used to indicate whether to resolve sym links or not
+#
+public stat(
+     # the (relative or absolute) file name, using platform specific path separators
+     path path,
+     # a boolean resolve flag to resolve symbolic links or not
+     resolve bool) outcome io.file.meta_data ! io.file.Stat =>
+  if resolve
+    io.file.Stat.env.stats path
+  else
+    io.file.Stat.env.lstats path
+
+

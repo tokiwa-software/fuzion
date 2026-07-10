@@ -13,5 +13,5 @@ io.Out
 io.dir.make
 io.file.delete
 io.file.move
-io.file.stat
+io.file.Stat
 panic
