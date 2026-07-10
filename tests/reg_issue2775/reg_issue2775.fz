@@ -24,7 +24,7 @@
 a(v void) =>
 b(a Any) =>
 v choice unit := unit
-a (match (v) unit => exit)
+a (match (v) unit => Exit.env.exit)
 a (match (v) unit => 4711)
-b (match (v) unit => exit)
+b (match (v) unit => Exit.env.exit)
 b (match (v) unit => 4711)

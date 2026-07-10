@@ -8,5 +8,5 @@ fuzion.runtime.stackoverflow
 io.Buffer_Size
 io.Err
 io.Out
-io.file.delete
+io.file.Delete
 panic

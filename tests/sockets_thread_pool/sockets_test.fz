@@ -193,4 +193,4 @@ sockets_thread_pool_test is
         _ := concur.thread_pool 3 ()->
           client f p (net.family.localhost f) (port f p) i
 
-  exit 0
+  Exit.env.exit 0

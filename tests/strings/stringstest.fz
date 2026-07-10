@@ -32,7 +32,7 @@ stringstest is
     s := if b0
            "PASSED: "
          else
-           _ := set_exit_code 1
+           _ := Exit.env.set_exit_code 1
            "FAILED: "
     say (s + msg)
 
@@ -52,4 +52,4 @@ stringstest is
 
   chck ("abcdefabcdefabcdef".find "abcdef" 11 = 12) "find(substring, from)"
 
-  exit
+  Exit.env.exit

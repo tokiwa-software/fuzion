@@ -97,7 +97,7 @@ if envir.Args.env.count != 4
       Usage  : record_simple_example <any|jvm|c|int|effect> <fz+args> <test.fz>
       Example: record_simple_example jvm "build/bin/fz -modules=nom" /tests/hello/HelloWorld.fz
       """
-  exit 1
+  Exit.env.exit 1
 
 
 type_    := envir.Args.env[1]

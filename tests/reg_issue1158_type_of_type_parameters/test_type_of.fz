@@ -30,7 +30,7 @@ test_type_of is
     s := if b
            "PASSED: "
          else
-           _ := set_exit_code 1
+           _ := Exit.env.set_exit_code 1
            "FAILED: "
     say (s + msg)
 
@@ -102,4 +102,4 @@ test_type_of is
   chck_cmp $(type_of ()->"bal"                         ) "Type of 'String'"
   chck_cmp $(type_of ()->(panic "***")                 ) "Type of 'void'"
 
-  exit
+  Exit.env.exit

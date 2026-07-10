@@ -122,7 +122,7 @@ main =>
     say "wrong argument count"
     say "usage:"
     say "run_tests.fz <build_dir> <target>"
-    exit 1
+    Exit.env.exit 1
 
   build_dir := path.of envir.Args.env[1]
   target := envir.Args.env[2]
@@ -251,7 +251,7 @@ main =>
         done
         """
 
-    set_exit_code 1 .or_panic
+    Exit.env.set_exit_code 1 .or_panic
 
 
   num_slowest := 10
@@ -276,6 +276,6 @@ main =>
         say <| tokiwa.post_to_influx "tokiwa" "benchmarks" token.trim (String.join_lines data)
         say <| tokiwa.post_to_influx "tokiwa" "benchmarks" token.trim "run_tests,backend=$(target) total_time=$(elapsed_time_total.millis)"
 
-  exit
+  Exit.env.exit
 
 _ := main

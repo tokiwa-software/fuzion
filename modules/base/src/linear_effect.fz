@@ -17,33 +17,21 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test redefineAsVoid
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion standard library feature linear_effect
 #
 # -----------------------------------------------------------------------
 
-# Regression test for #26: https://github.com/tokiwa-software/fuzion/issues/26
+# linear variant of an effect
+# that may only be instated/used once.
 #
-# A simple test that redefines a feature to return void
-#
-# The test should be run and its output should be compared to the expected
-# output.
-#
-redefineAsVoid is
+public linear_effect : effect is
+  depleted := Depleted_Wrapper
 
-  p is
-    f String => abstract
-    res := f
-    say "FAILED: $res!"
+  module redef check_depletion =>
+    if !depleted.depleted.compare_and_set0 false true
+      fuzion.std.panic "effect $(linear_effect.this.type.name) already depleted. effect may only be instated once."
 
-  h : p is
 
-    # void is assignment compatible to anything, so we can redefine f
-    # to return void!
-    #
-    redef f void =>
-      say "PASSED: exiting f that was redefined to return void."
-      Exit.env.exit 0
+Depleted_Wrapper ref is
 
-  _ := h
+  depleted := concur.atomic bool .new false

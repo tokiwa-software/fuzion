@@ -30,7 +30,7 @@ partial_application is
       say "PASSED: $msg: got '$got'"
     else
       say "FAILED: $msg: got '$got' expected '$exp'"
-      _ := set_exit_code 1
+      _ := Exit.env.set_exit_code 1
 
   test "map +(1+0)" $([1, 2, 3, 4].map +(1+0)) "[2, 3, 4, 5]"
 

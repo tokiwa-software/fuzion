@@ -145,7 +145,7 @@ to_fuzion_name(str String) =>
 if envir.Args.env.count != 2
   say "usage: "
   say "fz -modules=clang fzextract.fz some_header_file.h"
-  exit 1
+  Exit.env.exit 1
 
 say """
   #
@@ -211,4 +211,4 @@ match {
 
   e error =>
     say e
-    exit 1
+    Exit.env.exit 1
