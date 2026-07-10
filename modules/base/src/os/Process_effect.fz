@@ -51,7 +51,7 @@ public Process ref : effect is
 
     # this needs to be a ref since it contains an atomic field
     #
-    P_ref ref : os.Process is
+    universe.P_ref ref : os.Process is
 
       running_processes := concur.atomic (container.Set os.process) .new (container.ps_set os.process).empty
 
@@ -142,4 +142,4 @@ public Process ref : effect is
           _ := fzE_pipe_close p.std_out
           _ := fzE_pipe_close p.std_err
 
-    P_ref
+    universe.P_ref
