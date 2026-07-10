@@ -17,53 +17,40 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature delete
+#  Source code of Fuzion standard library feature Delete
 #
 #  Author: Wael Youssfi (wael.youssfi@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# delete -- effect wrapping the file delete operation
+# Delete -- effect wrapping the file delete operation
 #
-public delete(dop Delete_Handler, _ unit) : effect is
+public Delete ref : effect is
 
   # deletes the file/dir found in the path
   # returns unit as outcome in case of successful deletion and error in case of failure
   # if the targeted dir has content, then the return value will be error and the deletion will not take place
   #
-  delete(
+  public delete(
          # the (relative or absolute) dir name, using platform specific path separators
-         path path) =>
-    tmp := dop.delete path
-    replace
-    tmp
+         path path) outcome unit => abstract
 
 
   # default implementation of delete
   #
   # this will get instated automatically at startup
   #
-  public redef fixed type.default_value option io.file.delete
+  public redef fixed type.default_value option io.file.Delete
   =>
-    io.file.delete io.file.default_delete_handler unit
+    _ : io.file.Delete is
+      public redef delete(path path) outcome unit =>
+        fuzion.sys.fileio.delete path
 
 
-# the default file/dir delete operation via fuzion.sys.fileio.delete
-#
-default_delete_handler : Delete_Handler is
-  redef delete(path path) =>
-    fuzion.sys.fileio.delete path
-
-
-# shorthand for accessing delete effect in current environment and performing the default delete operation using io.file.delete.delete path
+# shorthand for accessing Delete effect in current environment and performing the default delete operation using io.file.Delete.delete path
 # deletes the file/dir found in the path
 # returns unit as outcome in case of successful deletion and error in case of failure
 # if the targeted dir has content, then the return value will be error and the deletion will not take place
 #
-public delete(path path) outcome unit ! io.file.delete =>
-  io.file.delete.env.delete path
-
-# reference to the delete operations that could take place
-#
-private:public Delete_Handler ref is
-    delete(path path) outcome unit => abstract
+public delete(path path) outcome unit ! io.file.Delete =>
+  io.file.Delete.env.delete path

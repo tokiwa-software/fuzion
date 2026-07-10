@@ -11,7 +11,7 @@ io.Buffer_Size
 io.Err
 io.Out
 io.dir.make
-io.file.delete
+io.file.Delete
 io.file.move
 io.file.stat
 panic
