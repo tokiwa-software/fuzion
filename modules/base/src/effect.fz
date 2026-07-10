@@ -143,7 +143,7 @@ public effect is
   public type.default_value option effect.this => nil
 
 
-  # --------------------  effect instantiation  --------------------
+  # --------------------  effect instation  --------------------
 
 
   # execute 'code' in a context where the effect instance `e` has been
@@ -360,7 +360,7 @@ public effect is
   #
   # This happens either on a normal return form the code passed to
   # `instate`, on an abort performed on this effect or on an abort
-  # performed on an effect instated prior to this effect's instantiation.
+  # performed on an effect instated prior to this effect's instation.
   #
   # This can be used to perform actions when leaving an effect such
   # a cleanup up resources that were created or opened by operations

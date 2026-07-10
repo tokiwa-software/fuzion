@@ -30,7 +30,7 @@ test_free_type is
   a1(v T : Any    ) => say "a: $T $v"
   a2(v T : numeric) => say "a: $T $(v+v)"
   a1 42
-  a1 "fourty two"
+  a1 "forty two"
   a2 42
   # a2 "forty two"        -- should flag an error
 

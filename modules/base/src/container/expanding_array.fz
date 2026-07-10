@@ -137,7 +137,7 @@ is
   # This is useful if the new elements will not be added in order or if the new
   # elements need to be moved around, e.g., for sorting.
   #
-  # `filler` will be run with an instantiated instance of `container.expanding T`
+  # `filler` will be run with an instated instance of `container.expanding T`
   # that will permit to set the new elements.  During the execution of `filler`
   # elements that have been set already (i.e., indices <length or those for
   # which `set []` or `put` was called) maybe be read using `get` or `index []`.
