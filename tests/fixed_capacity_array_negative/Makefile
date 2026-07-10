@@ -17,31 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test string
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# tests some basic functionality of library feature string
-stringtest is
-
-  say ("hell😀" * 3)
-
-  say "".is_empty
-  say "notEmpty".is_empty
-
-  say ("hell😀"="hell😀")
-  say ("hell😀"="again")
-
-
-  match "13".parse_integer i32 10
-    n i32 => say n=13
-    error => say "FAIL"
-
-  say 10
-  say [0,1,2]
-
-  say (String.from "hell😀".codepoints)
-
-  say "abcd".quoted
+override NAME = fixed_capacity_array_test_negative
+include ../simple.mk
