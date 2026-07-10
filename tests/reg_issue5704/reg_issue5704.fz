@@ -22,6 +22,6 @@
 # -----------------------------------------------------------------------
 
 fuzion.std is
-  Exit.env.exit(bla String) void => intrinsic
+  exit(bla String) void => intrinsic
 
 fuzion.std.exit "bla"
