@@ -23,20 +23,11 @@
 
 i18n_default_test is
 
-    custom_env_vars : envir.Vars is
-      public redef get(v String) option String =>
-        if v = "LANG"
-          "de_DE.UTF-8"
-        else
-          nil
-
-    envir.Vars.instate custom_env_vars ()->
-
-      internationalization.Provide.instate internationalization.Provide.default_value.or_panic ()->
+  internationalization.Provide.instate internationalization.german ()->
 
     # formats given date and currency using default-setting, in this case German-format
-        main ! internationalization.Provide =>
-            say "$(internationalization.Provide.env.date 30 5 2024)"
-            say "$(internationalization.Provide.env.currency 300000)"
+    main ! internationalization.Provide =>
+      say "$(internationalization.Provide.env.date 30 5 2024)"
+      say "$(internationalization.Provide.env.currency 300000)"
 
-        main
+    main
