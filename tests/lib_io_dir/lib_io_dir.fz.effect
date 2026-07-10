@@ -10,5 +10,5 @@ io.Err
 io.Out
 io.dir.make
 io.dir.read
-io.file.delete
+io.file.Delete
 panic
