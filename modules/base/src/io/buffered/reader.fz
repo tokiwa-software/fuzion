@@ -167,7 +167,7 @@ public read_delimiter (delim u8, strip_cr bool) switch String io.end_of_file ! r
   if reader.env.read ? outcome => true | * => false
     io.end_of_file
   else
-    res := LM.array u8 .empty
+    res := container.Dynamic_Array LM u8 .empty
 
     while
       match reader.env.read
