@@ -17,22 +17,21 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature container.Mutable_Array
+#  Source code of Fuzion standard library feature linear_effect
 #
 # -----------------------------------------------------------------------
 
-
-# an interface defining a mutable array
+# linear variant of an effect
+# that may only be instated/used once.
 #
-public Mutable_Array(
-  public T type,
-  # effect used to modify this mutable array
-  E type : mutate
-) ref : Buffer T E is
+public linear_effect : effect is
+  depleted := Depleted_Wrapper
 
-  # add an element at the end of the array
-  public add(t T) unit
-    pre
-      safety: is_accessible
-  =>
-    abstract
+  module redef check_depletion =>
+    if !depleted.depleted.compare_and_set0 false true
+      fuzion.std.panic "effect $(linear_effect.this.type.name) already depleted. effect may only be instated once."
+
+
+Depleted_Wrapper ref is
+
+  depleted := concur.atomic bool .new false

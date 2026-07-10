@@ -17,31 +17,34 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test string
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion test fixed_capacity_array_test_negative
 #
 # -----------------------------------------------------------------------
 
-# tests some basic functionality of library feature string
-stringtest is
-
-  say ("hell😀" * 3)
-
-  say "".is_empty
-  say "notEmpty".is_empty
-
-  say ("hell😀"="hell😀")
-  say ("hell😀"="again")
+fixed_capacity_array_test_negative =>
 
 
-  match "13".parse_integer i32 10
-    n i32 => say n=13
-    error => say "FAIL"
+  m : mutate is
+  m ! ()->
 
-  say 10
-  say [0,1,2]
+    fca := container.Fixed_Capacity_Array m i32 .empty 10
 
-  say (String.from "hell😀".codepoints)
+    check fca.max_capacity = 10
+    check fca.can_add
 
-  say "abcd".quoted
+    for i in 1..10 do
+      fca.add i
+      check fca.length = i.as_i64
+
+
+    for i in (1..10).reverse do
+      check i = (fca.remove_last)
+      check fca.length = i.as_i64-1
+
+    for i in 11..20 do
+      fca.add i
+      check fca.length = i.as_i64-10
+
+    check !fca.can_add
+
+    fca.add 21 # should panic: Fixed_Capacity_Array can not grow, exceeded limit of 10 elements

@@ -17,31 +17,30 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test string
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion test dynamic_array_test
 #
 # -----------------------------------------------------------------------
 
-# tests some basic functionality of library feature string
-stringtest is
+dynamic_array_test =>
 
-  say ("hell😀" * 3)
+  m : mutate is
+  m ! ()->
 
-  say "".is_empty
-  say "notEmpty".is_empty
+    da := container.Dynamic_Array m i32 .empty
 
-  say ("hell😀"="hell😀")
-  say ("hell😀"="again")
+    check da.can_add
+    check da.max_capacity.is_nil
 
+    for i in 1..10 do
+      da.add i
+      check da.length = i.as_i64
 
-  match "13".parse_integer i32 10
-    n i32 => say n=13
-    error => say "FAIL"
+    da.add_all 11..20
+    check da.length = 20
 
-  say 10
-  say [0,1,2]
+    for i in da.indices do
+      da[i] := da[i] * 2
 
-  say (String.from "hell😀".codepoints)
-
-  say "abcd".quoted
+    for i in (1..20).reverse do
+      check da.remove_last = i*2
+      check da.length = i.as_i64-1
