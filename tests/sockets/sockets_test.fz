@@ -190,4 +190,4 @@ sockets_test is
         lm ! ()->
           client f p (net.family.localhost f) (port f p) i
 
-  exit 0
+  Exit.env.exit 0

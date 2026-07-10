@@ -30,7 +30,7 @@ typeinference is
     s := if b
            "PASSED: "
          else
-           _ := set_exit_code 1
+           _ := Exit.env.set_exit_code 1
            "FAILED: "
     say (s + msg)
 
@@ -94,4 +94,4 @@ typeinference is
             e E => e
         )
 
-  exit
+  Exit.env.exit
