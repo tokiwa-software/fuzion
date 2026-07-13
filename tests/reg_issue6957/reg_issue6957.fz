@@ -25,4 +25,4 @@ f : io.file is
 _ := f.stat1
 
 io.file.stat1 outcome meta_data =>
-    stat.env.stats (path.of "bla")
+    stat.env.stats (io.path.of "bla")

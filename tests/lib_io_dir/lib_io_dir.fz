@@ -23,15 +23,15 @@
 
 lib_io_dir =>
 
-  path := path.of "test_path_😀"
+  path := io.path.of "test_path_😀"
   file1 := path.resolve "file1_😀"
   file2 := path.resolve "file2_😀"
 
   _ := io.file.delete file1
   _ := io.file.delete file2
   _ := io.file.delete path
-  say (io.dir.make path)
-  say (io.dir.make path).err.msg
+  say (io.dir.make io.path)
+  say (io.dir.make io.path).err.msg
   _ := io.file.use unit file1 io.file.mode.write (()-> (io.buffered io.file.file_mutate).writer.env.write "")
   _ := io.file.use unit file2 io.file.mode.write (()-> (io.buffered io.file.file_mutate).writer.env.write "")
 

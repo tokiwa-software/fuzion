@@ -24,6 +24,6 @@
 
 # read all contents from file
 #
-public read(p path) outcome String =>
+public read(p io.path) outcome String =>
   io.file.use p io.file.mode.read ()->
     String.from (io.buffered io.file.file_mutate).read_fully

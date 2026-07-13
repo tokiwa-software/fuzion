@@ -24,6 +24,6 @@
 
 # append `a`.as_string to file `f`
 #
-public append(p path, a Any) outcome unit =>
+public append(p io.path, a Any) outcome unit =>
   use p mode.append ()->
     (io.buffered file_mutate).writer.env.write $a

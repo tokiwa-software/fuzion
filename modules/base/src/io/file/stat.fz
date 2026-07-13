@@ -26,7 +26,7 @@
 # meta_data will be a feature storing the metadata of file/dir
 #
 private:public meta_data(
-          public path path,
+          public path io.path,
           # the size of the file/dir
           sz i64,
           # the time of last access to the path
@@ -98,7 +98,7 @@ public stat(ps Stat_Handler) : effect is
   #
   public stats(
         # the (relative or absolute) file name, using platform specific path separators
-        path path) outcome meta_data =>
+        path io.path) outcome meta_data =>
     replace
     # will contain: [size, time of last modification in seconds, regular file? 1 : 0, dir? 1 : 0]
     res := fuzion.sys.internal_array_init i64 9
@@ -116,7 +116,7 @@ public stat(ps Stat_Handler) : effect is
   #
   public lstats(
          # the (relative or absolute) file name, using platform specific path separators
-         path path) outcome meta_data =>
+         path io.path) outcome meta_data =>
     replace
     # will contain: [size, time of last modification in seconds, regular file? 1 : 0, dir? 1 : 0]
     res := fuzion.sys.internal_array_init i64 9
@@ -153,7 +153,7 @@ default_stat_handler : Stat_Handler is
 #
 public stat(
      # the (relative or absolute) file name, using platform specific path separators
-     path path,
+     path io.path,
      # a boolean resolve flag to resolve symbolic links or not
      resolve bool) outcome io.file.meta_data ! stat =>
   if resolve

@@ -15,18 +15,18 @@
 # NYI: UNDER DEVELOPMENT: define common benchmark interface, refactor to use this
 read_10mb_file =>
 
-  read_file(file path) outcome (array u8) =>
+  read_file(file io.path) outcome (array u8) =>
     io.file.use file io.file.mode.append ()->
       sz := (io.file.stat file false).or_panic.size
       io.file.open.mmap 0 sz.bytes.as_i64 ()->
         array u8 _ sz.bytes i->
           io.file.mapped_buffer.env[i.as_i64]
 
-  read_file2(file path) outcome (Sequence u8) =>
+  read_file2(file io.path) outcome (Sequence u8) =>
     io.file.use file io.file.mode.read ()->
       (io.buffered io.file.file_mutate).read_fully
 
-  f := path.of "/tmp/file"
+  f := io.path.of "/tmp/file"
 
   a := array u8 _ 1E7 _->65
   s := _ : String is
@@ -36,13 +36,13 @@ read_10mb_file =>
 
   say <| io.file.stat.env.stats f
 
-  test(arg path) =>
+  test(arg io.path) =>
     say "mmap: $arg iterations/s"
     say <| bench
       (time.duration.s 1)
       (time.duration.s 10)
       (()->
-       check read_file (path.of "$arg") .or_panic.count=1E7
+       check read_file (io.path.of "$arg") .or_panic.count=1E7
         )
     say "stdlib: $arg iterations/s"
     say <| bench
