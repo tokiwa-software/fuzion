@@ -26,7 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.mir;
 
-import dev.flang.ast.AbstractModule; // NYI: Remove dependency!
+import dev.flang.ast.AbstractModule; // NYI: LABEL_MISSING: Remove dependency!
 
 
 /**

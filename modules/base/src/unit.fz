@@ -83,7 +83,7 @@
 #
 public unit : property.orderable, property.hashable is
 
-# NYI: possible alternative definitions based on tuple types
+# NYI: LABEL_MISSING: possible alternative definitions based on tuple types
 #
 # unit : tuple is
 #

@@ -297,7 +297,7 @@ public class Completion
       .range(0, arguments.size())
       .<String>mapToObj(index -> {
         var argument = arguments.get(index);
-        if (true || !argument.resultType().isLambdaTargetButNotLazy(null)) // NYI: Support for lambda target
+        if (true || !argument.resultType().isLambdaTargetButNotLazy(null)) // NYI: LABEL_MISSING: Support for lambda target
           {
             return " ${" + (index + 1) + ":" + argument.baseName() + "}";
           }

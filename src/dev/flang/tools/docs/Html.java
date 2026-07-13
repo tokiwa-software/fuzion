@@ -268,7 +268,7 @@ public class Html extends ANY
     return af.isUnitType()
       ? "<div class='fd-parent ml-10' title='This feature is guaranteed to be a unit type, "
         + "it does not have any internal state and might serve as a namespace.\n\n"
-        + "Note that features without this annotation might still be unit types.'>[Unit Type]</div>" // NYI: replace title attribute with proper tooltip
+        + "Note that features without this annotation might still be unit types.'>[Unit Type]</div>" // NYI: LABEL_MISSING: replace title attribute with proper tooltip
       : "";
   }
 
@@ -378,7 +378,7 @@ public class Html extends ANY
   {
     return af.visibility().eraseTypeVisibility() != Visi.PUB && af.isConstructor()
              ? "<div class='fd-parent ml-10' title='This feature can not be called to construct a new instance of itself, " +
-               "only the type it defines is visible.'>[Private constructor]</div>" // NYI: replace title attribute with proper tooltip
+               "only the type it defines is visible.'>[Private constructor]</div>" // NYI: LABEL_MISSING: replace title attribute with proper tooltip
              : "";
   }
 
@@ -398,7 +398,7 @@ public class Html extends ANY
         .filter(f->f instanceof LibraryFeature lf && lm.sameOrDependent(lf._libModule))
         .anyMatch(f->f.isAbstract())
              ? "<div class='fd-parent ml-10' title='This feature contains inner or inherited features " +
-               "which are abstract.'>[Contains abstract features]</div>" // NYI: replace title attribute with proper tooltip
+               "which are abstract.'>[Contains abstract features]</div>" // NYI: LABEL_MISSING: replace title attribute with proper tooltip
              : "";
   }
 

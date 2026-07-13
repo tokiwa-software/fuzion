@@ -23,7 +23,7 @@
 
 # write data to dest
 #
-#  NYI: where path should eventually be choice of path, network connection etc.
+#  NYI: LABEL_MISSING: where path should eventually be choice of path, network connection etc.
 #
 public write(dest path, data Any) outcome unit =>
   io.file.write dest data

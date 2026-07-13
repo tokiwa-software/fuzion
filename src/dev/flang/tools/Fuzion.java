@@ -375,7 +375,7 @@ public class Fuzion extends Tool
     /**
      * backend to dump the IR of the main clazz to stdout
      *
-     * NYI: make this dump all clazzes or give some way to control what clazzes should be dumped.
+     * NYI: LABEL_MISSING: make this dump all clazzes or give some way to control what clazzes should be dumped.
      */
     dumpFUIR   ("-XdumpFUIR")
     {

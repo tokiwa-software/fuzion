@@ -25,4 +25,4 @@ reg_issue2691_c =>
 
   while false
   else if false then say "a"
-  else say "b"          # causes a syntax error NYI: an indentation error would be nicer
+  else say "b"          # causes a syntax error NYI: LABEL_MISSING: an indentation error would be nicer

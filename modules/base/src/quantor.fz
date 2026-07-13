@@ -36,7 +36,7 @@ public quantor is
   # These quantors can be used to check that predicates hold for all values
   # of one or several specific types.
   #
-  # NYI: If open generics could be passed as actual generic arguments, we no
+  # NYI: LABEL_MISSING: If open generics could be passed as actual generic arguments, we no
   # longer need this code duplication here:
   #   for_all(A..., f A -> bool) bool => intrinsic
   #
@@ -59,7 +59,7 @@ public quantor is
   # These quantors can be used to check that predicates hold for at least one
   # value of one or several specific types.
   #
-  # NYI: If open generics could be passed as actual generic arguments, we no
+  # NYI: LABEL_MISSING: If open generics could be passed as actual generic arguments, we no
   # longer need this code duplication here:
   #   exists(A..., f A -> bool) bool => intrinsic
   #
@@ -78,7 +78,7 @@ public quantor is
   public prefix ∃ (A type, f A -> bool) bool => exists f
 
   /*
-    NYI: eventually, the following declaration should become possible:
+    NYI: LABEL_MISSING: eventually, the following declaration should become possible:
 
     prefix ∃ (A type, f A -> bool) => !∀ fun bool.prefix ! ∘ f
   */

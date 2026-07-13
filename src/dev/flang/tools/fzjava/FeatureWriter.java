@@ -153,7 +153,7 @@ class FeatureWriter extends ANY
                  s.equals("lines")
                 )
           {
-            // NYI: this is just a precaution to avoid confusion with Fuzion
+            // NYI: LABEL_MISSING: this is just a precaution to avoid confusion with Fuzion
             // types.  Need to find a way to avoid this, e.g., by using
             // 'universe.string' to refer to the Fuzion string or by renaming
             // inherited 'hashCode'

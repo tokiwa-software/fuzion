@@ -183,7 +183,7 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
   #
   public wait(timeout time.duration) outcome u32 ! time.Nano, os.Process
   =>
-    # NYI: process should be ref?
+    # NYI: LABEL_MISSING: process should be ref?
     os.Process.env.wait (os.process pid std_in std_out std_err name args) timeout
 
 

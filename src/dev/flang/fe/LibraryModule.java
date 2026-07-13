@@ -92,7 +92,7 @@ public class LibraryModule extends Module implements MirModule
 
 
   /**
-   * NYI: Instead of using env var, create a new tool "fzdump" or similar to
+   * NYI: LABEL_MISSING: Instead of using env var, create a new tool "fzdump" or similar to
    * dump intermediate files.
    *
    * To enable, use fz with:
@@ -338,7 +338,7 @@ public class LibraryModule extends Module implements MirModule
     var result = declaredFeaturesShallow(outer);
     for (Module d : _dependsOn)
       {
-        result.putAll(d.declaredFeatures(outer));  // NYI: handle equally named features from different modules
+        result.putAll(d.declaredFeatures(outer));  // NYI: LABEL_MISSING: handle equally named features from different modules
       }
     return result;
   }
@@ -357,12 +357,12 @@ public class LibraryModule extends Module implements MirModule
       {
         for (var d : lf.declaredFeatures())
           {
-            result.put(d.featureName(), d);  // NYI: handle equally named features from different modules
+            result.put(d.featureName(), d);  // NYI: LABEL_MISSING: handle equally named features from different modules
           }
       }
     for (var d : features(outer))
       {
-        result.put(d.featureName(), d);  // NYI: handle equally named features from different modules
+        result.put(d.featureName(), d);  // NYI: LABEL_MISSING: handle equally named features from different modules
       }
     return result;
   }
@@ -1822,7 +1822,7 @@ Call
    |cond.     | repeat | type          | what
 
 .2+| true     | 1      | int           | called feature f index
-              | 1      | Type          | result type (NYI: remove, redundant!)s
+              | 1      | Type          | result type (NYI: LABEL_MISSING: remove, redundant!)s
    | hasOpenArgList
               | 1      | int           | num actual args (TBD: this is redundant,
                                          should be possible to determine)
@@ -1842,7 +1842,7 @@ Call
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | int           | called feature f index                        |
    *   |        +--------+---------------+-----------------------------------------------+
-   *   |        | 1      | Type          | result type (NYI: remove, redundant!)s        |
+   *   |        | 1      | Type          | result type (NYI: LABEL_MISSING: remove, redundant!)s        |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | hasOpen| 1      | int           | num actual args (TBD: this is redundant,      |
    *   | ArgList|        |               | should be possible to determine)              |
@@ -2333,7 +2333,7 @@ SourceFile
         if (sf == null)
           {
             var bb = sourceFileBytes(at);
-            var ba = new byte[bb.limit()]; // NYI: Would be better if SourceFile could use bb directly.
+            var ba = new byte[bb.limit()]; // NYI: LABEL_MISSING: Would be better if SourceFile could use bb directly.
             bb.get(0, ba);
             // "main" is the implicit module name for code compiled by the user
             // therefore it should not be included in the source file path, which gets printed in error messages

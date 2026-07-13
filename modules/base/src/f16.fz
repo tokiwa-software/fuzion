@@ -27,7 +27,7 @@
 #
 # NYI: UNDER DEVELOPMENT:
 f16(public val f16) is
-  public infix + (other f16) f16 => compile_time_panic # "NYI: f16 is not supported"
-  public infix - (other f16) f16 => compile_time_panic # "NYI: f16 is not supported"
-  public infix * (other f16) f16 => compile_time_panic # "NYI: f16 is not supported"
-  public infix / (other f16) f16 => compile_time_panic # "NYI: f16 is not supported"
+  public infix + (other f16) f16 => compile_time_panic # "NYI: LABEL_MISSING: f16 is not supported"
+  public infix - (other f16) f16 => compile_time_panic # "NYI: LABEL_MISSING: f16 is not supported"
+  public infix * (other f16) f16 => compile_time_panic # "NYI: LABEL_MISSING: f16 is not supported"
+  public infix / (other f16) f16 => compile_time_panic # "NYI: LABEL_MISSING: f16 is not supported"

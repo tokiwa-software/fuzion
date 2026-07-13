@@ -94,7 +94,7 @@ is
     # background and wedge colors:
     background := java.awt.Color.BLACK
     c1 := java.awt.Color.WHITE
-    c2 := java.awt.Color.new_III 81 36 128     # NYI: Overloading of Java constructors
+    c2 := java.awt.Color.new_III 81 36 128     # NYI: LABEL_MISSING: Overloading of Java constructors
     c3 := java.awt.Color.new_III 130 106 175
 
 

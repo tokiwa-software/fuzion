@@ -80,7 +80,7 @@ public composition is
   # we can emulate this if we require the argument to be given twice:
   public M(T, U, V type, f0 (T->U)->(T->V), f1 T->U) T->V => f0 f1
   # applying M to id:
-  public Mid(T type) Unary T T => M T T T x->x x->x   # NYI: should also work:  (composition.this.id T) (composition.this.id T)
+  public Mid(T type) Unary T T => M T T T x->x x->x   # NYI: LABEL_MISSING: should also work:  (composition.this.id T) (composition.this.id T)
   # applying M to M
   # public MM(T type) => M T T T x->(MM x) x->(MM x)
 
@@ -232,12 +232,12 @@ public composition is
 
   # The Y fixed-point combinator
   # \f.(\x.f(xx))(\x.f(xx))
-  # NYI: possible?
+  # NYI: LABEL_MISSING: possible?
 
   # The Z fixed-point combinator
   # \f.(\x.f(\v.xxv))(\x.f(\v.xxv))
   # \f.M(\x.f(\v.Mxv))
-  # NYI: possible?
+  # NYI: LABEL_MISSING: possible?
 
   # fixed-point combinator using Lazy:
   #

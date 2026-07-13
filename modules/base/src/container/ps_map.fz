@@ -133,7 +133,7 @@ O(n log n).
   #
   public fixed redef put (k PK, v V) ps_map PK V =>
     if has k
-      panic "NYI: ps_map currently does not handle updates for existing key"
+      panic "NYI: LABEL_MISSING: ps_map currently does not handle updates for existing key"
     else
       put (k,v)
 

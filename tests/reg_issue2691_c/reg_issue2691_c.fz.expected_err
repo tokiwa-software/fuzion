@@ -1,6 +1,6 @@
 
 --CURDIR--/reg_issue2691_c.fz:28:3: error 1: Syntax error: expected end-of-file, found keyword 'else'
-  else say "b"          # causes a syntax error NYI: an indentation error would be nicer
+  else say "b"          # causes a syntax error NYI: LABEL_MISSING: an indentation error would be nicer
 --^
 While parsing: Unit, parse stack: unit
 

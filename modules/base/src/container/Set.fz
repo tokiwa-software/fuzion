@@ -50,7 +50,7 @@ is
   # return a new Set containing all elements of this Set plus element k
   #
   public add (k E) container.Set E =>
-    compile_time_panic # "*** NYI: REMOVE Set.add, we need some support for mutable Sets ***"
+    compile_time_panic # "*** NYI: LABEL_MISSING: REMOVE Set.add, we need some support for mutable Sets ***"
 
 
   # list representation of values in this set
@@ -181,7 +181,7 @@ is
   #
   public fixed redef type.equality(a, b Set.this) bool
   =>
-    # NYI: a bit expensive
+    # NYI: LABEL_MISSING: a bit expensive
     (a ∪ b).size_option.or_panic = a.size_option.or_panic
 
 

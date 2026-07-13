@@ -130,7 +130,7 @@ public class FeatureTool extends ANY
       .sorted(HasSourcePositionTool.compareByLineThenByColumn())
       .reduce("", (a, item) -> {
         var position = item.pos();
-        // NYI
+        // NYI: LABEL_MISSING
         var indent = 0;
         if (position.isBuiltIn())
           {

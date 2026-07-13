@@ -447,7 +447,7 @@ is
 
   # create units.data_size of n bytes
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: LABEL_MISSING: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.b (n u64) units.data_size
   pre
@@ -456,7 +456,7 @@ is
 
   # create units.data_size of n kibibytes (1024**1 bytes)
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: LABEL_MISSING: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.kib (n u64) units.data_size
   pre
@@ -465,7 +465,7 @@ is
 
   # create units.data_size of n mebibytes (1024**2 bytes)
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: LABEL_MISSING: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.mib (n u64) units.data_size
   pre
@@ -474,7 +474,7 @@ is
 
   # create units.data_size of n gibibytes (1024**3 bytes)
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: LABEL_MISSING: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.gib (n u64) units.data_size
   pre
@@ -483,7 +483,7 @@ is
 
   # create units.data_size of n tebibytes (1024**4 bytes)
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: LABEL_MISSING: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.tib (n u64) units.data_size
   pre
@@ -492,7 +492,7 @@ is
 
   # create units.data_size of n pebibytes (1024**5 bytes)
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: LABEL_MISSING: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.pib (n u64) units.data_size
   pre
@@ -501,7 +501,7 @@ is
 
   # create units.data_size of n exbibytes (1024**6 bytes)
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: LABEL_MISSING: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.eib (n u64) units.data_size
   pre
@@ -510,7 +510,7 @@ is
 
   # create units.data_size of n zebibytes (1024**7 bytes)
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: LABEL_MISSING: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.zib (n u64) units.data_size
   pre
@@ -519,7 +519,7 @@ is
 
   # create units.data_size of n yobibytes (1024**8 bytes)
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: LABEL_MISSING: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.yib (n u64) units.data_size
   pre
@@ -528,7 +528,7 @@ is
 
   # create units.data_size of n robibytes (1024**9 bytes)
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: LABEL_MISSING: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.rib (n u64) units.data_size
   pre
@@ -537,7 +537,7 @@ is
 
   # create units.data_size of n quebibytes (1024**10 bytes)
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: LABEL_MISSING: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.qib (n u64) units.data_size
   pre
@@ -547,7 +547,7 @@ is
 
   # create units.data_size of n kilobytes (10**3 bytes)
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: LABEL_MISSING: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.kb (n u64) units.data_size
   pre
@@ -556,7 +556,7 @@ is
 
   # create units.data_size of n megabytes (10**6 bytes)
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: LABEL_MISSING: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.mb (n u64) units.data_size
   pre
@@ -565,7 +565,7 @@ is
 
   # create units.data_size of n gigabytes (10**9 bytes)
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: LABEL_MISSING: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.gb (n u64) units.data_size
   pre
@@ -574,7 +574,7 @@ is
 
   # create units.data_size of n terabytes (10**12 bytes)
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: LABEL_MISSING: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.tb (n u64) units.data_size
   pre
@@ -583,7 +583,7 @@ is
 
   # create units.data_size of n petabytes (10**15 bytes)
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: LABEL_MISSING: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.pb (n u64) units.data_size
   pre
@@ -592,7 +592,7 @@ is
 
   # create units.data_size of n exabytes (10**18 bytes)
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: LABEL_MISSING: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.eb (n u64) units.data_size
   pre
@@ -601,7 +601,7 @@ is
 
   # create units.data_size of n zettabytes (10**21 bytes)
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: LABEL_MISSING: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.zb (n u64) units.data_size
   pre
@@ -610,7 +610,7 @@ is
 
   # create units.data_size of n yottabytes (10**24 bytes)
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: LABEL_MISSING: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.yb (n u64) units.data_size
   pre
@@ -619,7 +619,7 @@ is
 
   # create units.data_size of n ronnabytes (10**27 bytes)
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: LABEL_MISSING: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.rb (n u64) units.data_size
   pre
@@ -628,7 +628,7 @@ is
 
   # create units.data_size of n quettabytes (10**30 bytes)
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: LABEL_MISSING: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.qb (n u64) units.data_size
   pre

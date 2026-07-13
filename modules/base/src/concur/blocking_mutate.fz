@@ -121,8 +121,8 @@ public blocking_mutate : mutate is
       wakeup_next_in_waiting_list
       concur.threads.env.current.park condition ()->
         waiting.add concur.threads.env.current
-        _ := mtx.unlock  # NYI: result ignored
-      _ := mtx.lock    # NYI: result ignored,
+        _ := mtx.unlock  # NYI: LABEL_MISSING: result ignored
+      _ := mtx.lock    # NYI: LABEL_MISSING: result ignored,
       set exclusive_thread := concur.threads.env.current
 
 

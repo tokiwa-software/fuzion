@@ -188,11 +188,11 @@ public class ParsedCall extends Call
       {
         if (tt != null && isInfixArrow())
           {
-            // NYI: a function type like `a.b->c` is currently parsed as a call
+            // NYI: LABEL_MISSING: a function type like `a.b->c` is currently parsed as a call
             // to `infix ->`. Would be better if the parser generated the
             // function type directly, for new we do it here:
             var a = new List<AbstractType>(tt);
-            // NYI: if tt is of the form `()` or `(a,b,c)`, we need to create an
+            // NYI: LABEL_MISSING: if tt is of the form `()` or `(a,b,c)`, we need to create an
             // empty list or a list of types `a`, `b` and `c`.
             result =  UnresolvedType.funType(pos(), l.getFirst(), a);
           }
@@ -622,7 +622,7 @@ public class ParsedCall extends Call
         var ts = cf.typeArguments();
         var tn = ts.size();
         var ti = 0;
-        var vs = cf.valueArguments();  // NYI: must hand down to get the correct number!
+        var vs = cf.valueArguments();  // NYI: LABEL_MISSING: must hand down to get the correct number!
         var vn = vs.size();
         var firstValueIndex = _actuals.size() - vn;
 
@@ -768,7 +768,7 @@ A `_` may be used as placeholder for a xref:fuzion_actual_typeparameter[actual t
     if (CHECKS) check
       (select() == FuzionConstants.NO_SELECT);
 
-    var result = new Call(pos(),   // NYI: ParsedCall?
+    var result = new Call(pos(),   // NYI: LABEL_MISSING: ParsedCall?
                           this /* this becomes target of "call" */,
                           name,
                           _actuals)
@@ -821,7 +821,7 @@ A `_` may be used as placeholder for a xref:fuzion_actual_typeparameter[actual t
       typeForInferencing() != null &&
       typeForInferencing().isLambdaTarget(res) &&
       !isInheritanceCall()                     && // exclude inherits call in function type
-      _calledFeature.arguments().size() == 0   && // no arguments (NYI: maybe allow args for `Lazy (Function R V)`, then `l a` could become `l.call.call a`
+      _calledFeature.arguments().size() == 0   && // no arguments (NYI: LABEL_MISSING: maybe allow args for `Lazy (Function R V)`, then `l a` could become `l.call.call a`
       (!typeForInferencing().isLazyType() && _actuals != NO_PARENTHESES ||
         typeForInferencing().isLazyType() && _actuals.isEmpty()            );
   }

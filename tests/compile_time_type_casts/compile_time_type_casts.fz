@@ -334,7 +334,7 @@ compile_time_type_casts =>
 
   r1(v1 T1, v2 T2, v3 T3) =>
 
-    # NYI: &&, || and ! do not work yet
+    # NYI: LABEL_MISSING: &&, || and ! do not work yet
     #
     # if (T1 : A) && (T2 : B) && (T3 : C)
    if T1 : A

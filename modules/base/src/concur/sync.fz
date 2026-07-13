@@ -22,13 +22,13 @@
 # -----------------------------------------------------------------------
 
 # concur.sync -- synchronization primitives
-# NYI: sync should probably be an effect
+# NYI: LABEL_MISSING: sync should probably be an effect
 #
 public sync is
 
   module mtx_init outcome Mutex => intrinsic
   module mtx_lock(mtx Mutex) bool => intrinsic
-  # NYI: mtx_timedlock
+  # NYI: LABEL_MISSING: mtx_timedlock
   module mtx_trylock(mtx Mutex) bool => intrinsic
   module mtx_unlock(mtx Mutex) bool => intrinsic
   module mtx_destroy(mtx Mutex) unit => intrinsic
@@ -37,9 +37,9 @@ public sync is
   module cnd_signal(cnd Condition) unit => intrinsic
   module cnd_broadcast(cnd Condition) unit => intrinsic
   module cnd_wait(cnd Condition, mtx Mutex) unit => intrinsic
-  # NYI: cnd_timedwait
+  # NYI: LABEL_MISSING: cnd_timedwait
   module cnd_destroy(cnd Condition) unit => intrinsic
 
 
-  # NYI: tie life of mutex/condition to thread pool?
+  # NYI: LABEL_MISSING: tie life of mutex/condition to thread pool?
 

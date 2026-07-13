@@ -77,7 +77,7 @@ public sqlite(db Native_Ref) : Database is
 
 
   public redef close outcome unit =>
-    # NYI: proper error handling
+    # NYI: LABEL_MISSING: proper error handling
     check c.sqlite3_close db = 0
     unit
 

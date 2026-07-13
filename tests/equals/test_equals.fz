@@ -121,7 +121,7 @@ test_equals_types is
     #
     public fixed redef type.equality(a, b test_equals_types.Has_color) bool =>
 
-      # NYI: There is currently no easy way to compare choice types, so we do exhaustive
+      # NYI: LABEL_MISSING: There is currently no easy way to compare choice types, so we do exhaustive
       # matches:
       #
       match a.col

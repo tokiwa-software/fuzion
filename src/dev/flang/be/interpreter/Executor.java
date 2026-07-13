@@ -217,7 +217,7 @@ public class Executor extends ProcessExpression<Value, Object>
   @Override
   public Object assign(int s, Value tvalue, Value avalue)
   {
-    // NYI: better check clazz containing field is universe
+    // NYI: LABEL_MISSING: better check clazz containing field is universe
     if (tvalue == unitValue())
       {
         tvalue = _universe;
@@ -329,7 +329,7 @@ public class Executor extends ProcessExpression<Value, Object>
               .orElseThrow(() -> new UnsatisfiedLinkError(
               "Unresolved symbol: " + _fuir.clazzBaseName(cc) + ". " +
               (true
-                ? "NYI: interpreter does not yet support libraries. You probably forgot to use the -Libraries option."
+                ? "NYI: LABEL_MISSING: interpreter does not yet support libraries. You probably forgot to use the -Libraries option."
                 : "Likely causes: Either your native method is misspelled or you forgot to include a library in the -Libraries option.")
               )),
 

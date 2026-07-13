@@ -311,7 +311,7 @@ public class DFA extends ANY
       else
         {
           var instantiatedAt = _calls.keySet().stream()
-            .filter(c -> (c.calledClazz() == _fuir.clazzAsValue(t_cl) ||  // NYI: CLEANUP would be nice if c.calledClazz() would be a ref already, should have been boxed at some point
+            .filter(c -> (c.calledClazz() == _fuir.clazzAsValue(t_cl) ||  // NYI: LABEL_MISSING: CLEANUP would be nice if c.calledClazz() would be a ref already, should have been boxed at some point
                           c.calledClazz() == t_cl                       ) && c.site() != NO_SITE)
             .map(c -> c.site())
             .findAny()
@@ -326,7 +326,7 @@ public class DFA extends ANY
     /**
      * Helper routine for access (above) to perform a static access (cal or write).
      */
-    Val access0(int s, Val tvalue, List<Val> args, int cc, Val original_tvalue /* NYI: ugly */)
+    Val access0(int s, Val tvalue, List<Val> args, int cc, Val original_tvalue /* NYI: LABEL_MISSING: ugly */)
     {
       var isCall = _fuir.codeAt(s) == FUIR.ExprKind.Call;
       Val r;
@@ -1038,7 +1038,7 @@ public class DFA extends ANY
   /**
    * Map from type to corresponding default effects.
    *
-   * NYI: this might need to be thread-local and not global!
+   * NYI: LABEL_MISSING: this might need to be thread-local and not global!
    */
   public final IntMap<Value> _defaultEffects = new IntMap<>();
 
@@ -1046,7 +1046,7 @@ public class DFA extends ANY
   /**
    * Map from effect-type to corresponding call that uses this effect.
    *
-   * NYI: this might need to be thread-local and not global!
+   * NYI: LABEL_MISSING: this might need to be thread-local and not global!
    */
   public final IntMap<Call> _defaultEffectContexts = new IntMap<>();
 
@@ -1830,7 +1830,7 @@ public class DFA extends ANY
 
           cl._dfa.markReadRecursively(v);
 
-          // NYI: we could make compare_and_swap more accurate and call setField only if res contains expected, need bit-wise comparison
+          // NYI: LABEL_MISSING: we could make compare_and_swap more accurate and call setField only if res contains expected, need bit-wise comparison
           atomic.setField(cl._dfa, v, new_value);
           return res;
         });
@@ -1849,14 +1849,14 @@ public class DFA extends ANY
 
           cl._dfa.markReadRecursively(v);
 
-          // NYI: we could make compare_and_set more accurate and call setField only if res contains expected, need bit-wise comparison
+          // NYI: LABEL_MISSING: we could make compare_and_set more accurate and call setField only if res contains expected, need bit-wise comparison
           atomic.setField(cl._dfa, v, new_value);
           return cl._dfa.bool();
         });
 
     put("concur.atomic.racy_accesses_supported",  cl ->
         {
-          // NYI: racy_accesses_supported could return true or false depending on the backend's behavior.
+          // NYI: LABEL_MISSING: racy_accesses_supported could return true or false depending on the backend's behavior.
           return cl._dfa.bool();
         });
 
@@ -2075,7 +2075,7 @@ public class DFA extends ANY
     put("fuzion.sys.type.alloc"          , cl ->
         {
           var ec = fuir(cl).clazzActualGeneric(cl.calledClazz(), 0);
-          return cl._dfa.newSysArray(null, ec); // NYI: get length from args
+          return cl._dfa.newSysArray(null, ec); // NYI: LABEL_MISSING: get length from args
         });
     put("fuzion.sys.type.setel"          , cl ->
         {
@@ -2123,7 +2123,7 @@ public class DFA extends ANY
           if (CHECKS) check
             (fuir(cl).clazzNeedsCode(call));
 
-          // NYI: spawn0 needs to set up an environment representing the new
+          // NYI: LABEL_MISSING: spawn0 needs to set up an environment representing the new
           // thread and perform thread-related checks (race-detection. etc.)!
           var ignore = cl._dfa.newCall(cl, call, NO_SITE, cl._args.get(0).value(), new List<>(), null /* new environment */, cl);
           return genericResult(cl);
@@ -2143,7 +2143,7 @@ public class DFA extends ANY
             }
           else
             {
-              cl.replaceEffect(ecl, new_e); // NYI: Why here as well? base16_test.fz needs this??!!??
+              cl.replaceEffect(ecl, new_e); // NYI: LABEL_MISSING: Why here as well? base16_test.fz needs this??!!??
               var oev = cl._dfa._preEffectValues.get(ecl);
               var ev = oev == null ? new_e : oev.join(cl._dfa, new_e, ecl);
               if (oev != ev)
@@ -2233,7 +2233,7 @@ public class DFA extends ANY
                 }
             }
           var aborted =
-            // NYI: Why check both, newEnv.isAborted and _preEffectsAborted?
+            // NYI: LABEL_MISSING: Why check both, newEnv.isAborted and _preEffectsAborted?
             // newEnv != null && newEnv.isAborted(ecl) ||
             // cl._dfa._preEffectsAborted.contains(ecl) ||
             (cl._dfa._real ? newEnv != null && newEnv.isAborted(ecl)
@@ -2258,12 +2258,12 @@ public class DFA extends ANY
           var ev = cl.useAndGetEffect(cl.site(), ecl, false);
           if (cl._dfa._real)
             {
-              if (ev != null      /* NYI: needed? */ &&
-                  cl._env != null /* NYI: needed? */ )
+              if (ev != null      /* NYI: LABEL_MISSING: needed? */ &&
+                  cl._env != null /* NYI: LABEL_MISSING: needed? */ )
                 {
                   cl._env.aborted(ecl);
                 }
-              //              cl._dfa._preEffectsAborted.add(ecl);  // NYI: why here as well ?
+              //              cl._dfa._preEffectsAborted.add(ecl);  // NYI: LABEL_MISSING: why here as well ?
             }
           else
             {
@@ -2275,7 +2275,7 @@ public class DFA extends ANY
         cl.useAndGetEffect(cl.site(), fuir(cl).effectTypeFromIntrinsic(cl.calledClazz()), true) != null &&
         TRACE_ENVS
         ? cl._dfa.True()
-        : cl._dfa.bool()  /* NYI: currently, this is never FALSE since a default effect might get installed turning this into TRUE
+        : cl._dfa.bool()  /* NYI: LABEL_MISSING: currently, this is never FALSE since a default effect might get installed turning this into TRUE
                            * should reconsider if handling of default effects changes
                            */
         );
@@ -3032,7 +3032,7 @@ public class DFA extends ANY
   /**
    * Create new SysArray instance of the given element values and element clazz.
    *
-   * NYI: We currently do not distinguish SysArrays by the array instance that
+   * NYI: LABEL_MISSING: We currently do not distinguish SysArrays by the array instance that
    * contains it.  We probably should do this to make sure that, e.g.,
    *
    *   a3 := array 10 i->3
@@ -3322,7 +3322,7 @@ public class DFA extends ANY
           }
         var k = TRACE_ALL_EFFECT_ENVS
           ? callQuickHash(cl, site, tvalue, env)
-          : -1 // NYI: quick hashing currently disabled since env should not be
+          : -1 // NYI: LABEL_MISSING: quick hashing currently disabled since env should not be
                // compared, only needed effects should be.
           ;
         if (k != -1)
@@ -3537,9 +3537,9 @@ public class DFA extends ANY
    */
   SourcePosition effectTypePosition(int ecl)
   {
-    // NYI: declarationPos may be equal for two effects declared in different modules, so we have to compare the modules as well!
+    // NYI: LABEL_MISSING: declarationPos may be equal for two effects declared in different modules, so we have to compare the modules as well!
     var res = _fuir.clazzDeclarationPos(ecl);
-    if (res == null)   // NYI: Check if this can be replaced by check(res != null)!
+    if (res == null)   // NYI: LABEL_MISSING: Check if this can be replaced by check(res != null)!
       {
         var cd = _fuir.clazzCode(ecl);
         check
@@ -3565,7 +3565,7 @@ public class DFA extends ANY
    */
   private Env newEnv2(Env env, int ecl, Value ev)
   {
-    if (env != null)  // NYI: explain what this is doing!
+    if (env != null)  // NYI: LABEL_MISSING: explain what this is doing!
       {
         env = env.filterPos(effectTypePosition(ecl));
       }

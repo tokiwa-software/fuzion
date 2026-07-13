@@ -354,7 +354,7 @@ public class ValueSet extends Value
   Value box(DFA dfa, int vc, int rc, Context context)
   {
     Value result = null;
-    // NYI: performance in O(_components.size()²)
+    // NYI: LABEL_MISSING: performance in O(_components.size()²)
     for (var v : _componentsArray)
       {
         var u = v.box(dfa, vc, rc, context);
@@ -370,7 +370,7 @@ public class ValueSet extends Value
   Value unbox(DFA dfa, int vc)
   {
     Value result = null;
-    // NYI: performance in O(_components.size()²)
+    // NYI: LABEL_MISSING: performance in O(_components.size()²)
     for (var v : _componentsArray)
       {
         var u = v.unbox(dfa, vc);

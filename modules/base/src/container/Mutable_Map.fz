@@ -111,7 +111,7 @@ public Mutable_Map(public K type : property.equatable, public V type) ref is
 
   # create an immutable copy of this mutable map
   #
-  # NYI: maybe add default implementation when there is a naive implementation only requiring property.equatable
+  # NYI: LABEL_MISSING: maybe add default implementation when there is a naive implementation only requiring property.equatable
   #
   public as_map container.Map K V => abstract
 
@@ -125,7 +125,7 @@ public Mutable_Map(public K type : property.equatable, public V type) ref is
 
 /*
 
-  NYI: BUG?: To solve this, you could change the type of the target 'k' to 'container.Mutable_Map.type.K' or convert the type of the assigned value to 'container.Mutable_Map.K'.
+  NYI: LABEL_MISSING: BUG?: To solve this, you could change the type of the target 'k' to 'container.Mutable_Map.type.K' or convert the type of the assigned value to 'container.Mutable_Map.K'.
 
 
   # from_entries -- routine to initialize a Mutable_Map from

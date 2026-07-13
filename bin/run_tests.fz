@@ -63,7 +63,7 @@ String.infix | (seq Sequence String) =>
       e error => panic "failed executing $seq, error is $e"
       p os.process =>
         _ := p.with_in unit lm ()->
-          # NYI: ambiguous result type:
+          # NYI: LABEL_MISSING: ambiguous result type:
           # _ := write_to lm
           _ := (io.buffered lm).writer.env.write String.this
           _ := (io.buffered lm).writer.env.flush

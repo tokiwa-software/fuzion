@@ -2920,7 +2920,7 @@ ifexpr      : "if" exprInLine thenPart elseBlockOpt
         var pos = tokenSourcePos();
         surroundingIf(pos);
 
-        var oldMinIdent = outerElse!=null ? null : setMinIndent(tokenPos()); // NYI: why?
+        var oldMinIdent = outerElse!=null ? null : setMinIndent(tokenPos()); // NYI: LABEL_MISSING: why?
 
         var l = line();
         boolean nestedIf = surroundingIf != null && surroundingIf.line() == l;
@@ -2981,7 +2981,7 @@ thenPart    : "then" block
             |        block
             ;
    */
-  Block thenPart(/* NYI: ClEANUP: remove this argument, a `null` result is used only in Loop to create a default result which is being removed */
+  Block thenPart(/* NYI: LABEL_MISSING: ClEANUP: remove this argument, a `null` result is used only in Loop to create a default result which is being removed */
                  boolean nullIfNothing)
   {
     var p = tokenPos();
@@ -3292,9 +3292,9 @@ ensure      : "post"        block   // may start at min indent
     if (skip(true, Token.t_pre))
       {
         var oldSemiSt = semiState(SemiState.CONTINUE);
-        var f = fork();              // NYI: REMOVE!
-        f.skip(Token.t_else);        // NYI: REMOVE!
-        pre1 = Cond.from(f.block()); // NYI: REMOVE!
+        var f = fork();              // NYI: LABEL_MISSING: REMOVE!
+        f.skip(Token.t_else);        // NYI: LABEL_MISSING: REMOVE!
+        pre1 = Cond.from(f.block()); // NYI: LABEL_MISSING: REMOVE!
 
         var p = lastTokenPos();
         hasElse = skip(Token.t_else) ? lastTokenSourceRange() : null;
@@ -3312,7 +3312,7 @@ ensure      : "post"        block   // may start at min indent
         semiState(oldSemiSt);
       }
     return pre0 == null && post == null
-      && false // NYI: We cannot use EMPTY_CONTRACT since we might need the last
+      && false // NYI: LABEL_MISSING: We cannot use EMPTY_CONTRACT since we might need the last
                // argument, formArgs supplier, in case we inherit a contract:
       ? Contract.EMPTY_CONTRACT
       : new Contract(pre0, pre1, prePos,  hasElse,

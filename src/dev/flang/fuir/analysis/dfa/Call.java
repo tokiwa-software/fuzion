@@ -666,7 +666,7 @@ public class Call extends ANY implements Comparable<Call>, Context
   /**
    * Replace effect of given type with a new value.
    *
-   * NYI: This currently modifies the effect and hence the call. We should check
+   * NYI: LABEL_MISSING: This currently modifies the effect and hence the call. We should check
    * how this could be avoided or handled better.
    *
    * @param ecl clazz defining the effect type.
@@ -682,7 +682,7 @@ public class Call extends ANY implements Comparable<Call>, Context
       {
         if (_dfa._reportResults && DFA.TRACE_ENVS)
           {
-            // NYI: Make this a normal error similar to DfaErrors.usedEffectnotinstalled:
+            // NYI: LABEL_MISSING: Make this a normal error similar to DfaErrors.usedEffectnotinstalled:
             Errors.fatal("Trying to replace effect " + Errors.code(_dfa._fuir.clazzName(ecl))
                          + " that is not yet installed:\n" + toString(false) + "\n" + toString(true));
           }
