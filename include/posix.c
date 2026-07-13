@@ -944,6 +944,13 @@ void fzE_cnd_broadcast(void * cnd) {
 void fzE_cnd_wait(void * cnd, void * mtx) {
   pthread_cond_wait((pthread_cond_t *)cnd, (pthread_mutex_t *)mtx);
 }
+void fzE_cnd_timedwait(void * cnd, void * mtx, int64_t time_ns)
+{
+  int64_t  s  =                   time_ns / 1000000000;
+  long     ns = (long) (time_ns - s       * 1000000000);
+  const struct timespec abstime = { s, ns };
+  pthread_cond_timedwait((pthread_cond_t *)cnd, (pthread_mutex_t *)mtx, &abstime);
+}
 
 void fzE_cnd_destroy(void * cnd) {
   pthread_cond_destroy((pthread_cond_t *)cnd);

@@ -542,8 +542,11 @@ public effect_wormhole is
 
     # teleport effect values
     effect_values.for_each (.apply_to unit T,_,v->
-                              if T : effect then
-                                T.set0 v)
+                              if      T : thread_local_effect then T.set0 (v.instance_for_new_thread)
+                              else if T : effect              then T.set0 v
+                              else
+                                compile_time_panic
+                           )
 
     # run code using teleported effect environment
     res := code()
@@ -552,3 +555,10 @@ public effect_wormhole is
     original_values.for_each (.re_instate)
 
     res
+
+
+public thread_local_effect : effect is
+
+  public instance_for_new_thread thread_local_effect.this
+  =>
+    thread_local_effect.this

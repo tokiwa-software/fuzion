@@ -1266,6 +1266,19 @@ public class Runtime extends ANY
       }
   }
 
+  public static void cnd_timedwait(Object cnd)
+  {
+    try
+      {
+        if (true) throw new Error("interpreter backend: timedwait not supported");
+        ((Condition)cnd).await();
+      }
+    catch(Exception e)
+      {
+        Errors.fatal(e);
+      }
+  }
+
   public static void cnd_destroy(Object cnd)
   {
 

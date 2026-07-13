@@ -37,6 +37,7 @@ public sync is
   module cnd_signal(cnd Condition) unit => intrinsic
   module cnd_broadcast(cnd Condition) unit => intrinsic
   module cnd_wait(cnd Condition, mtx Mutex) unit => intrinsic
+  module cnd_timedwait(i64 timeout, cnd Condition, mtx Mutex) unit => intrinsic
   # NYI: cnd_timedwait
   module cnd_destroy(cnd Condition) unit => intrinsic
 

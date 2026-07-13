@@ -733,6 +733,18 @@ public class Intrinsics extends ANY
         }
       return Value.UNIT;
     });
+    put("concur.sync.cnd_timedwait", (executor, innerClazz) -> args -> {
+      try
+        {
+          if (true) throw new Error("interpreter backend: timedwait not supported");
+          ((Condition) ((JavaRef) args.get(1))._javaRef).await();
+        }
+      catch (Exception e)
+        {
+          Errors.fatal(e);
+        }
+      return Value.UNIT;
+    });
     put("concur.sync.cnd_destroy", (executor, innerClazz) -> args -> Value.UNIT);
     put("native_string_length", (executor, innerClazz) -> args -> {
       throw new UnsupportedOperationException("NYI: UNDER DEVELOPMENT: native_string_length");

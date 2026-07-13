@@ -157,7 +157,7 @@ pre
 # enables effect analysis to show what this channel is used
 # for.
 #
-universe.channel_mutate(T type) : concur.blocking_mutate is
+universe.channel_mutate(T type) : concur.blocking_mutate time.Monotonic is
 
   # default instance.
   #

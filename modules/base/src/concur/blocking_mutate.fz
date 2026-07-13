@@ -33,7 +33,7 @@
 # are not permitted unless we are in code run via
 # `blocking_mutate.this.exclusive`.
 #
-public blocking_mutate : mutate is
+public blocking_mutate(C type : time.Clock) : mutate is
 
   # mutex to be used for synchronization
   #
@@ -124,6 +124,23 @@ public blocking_mutate : mutate is
         _ := mtx.unlock  # NYI: result ignored
       _ := mtx.lock    # NYI: result ignored,
       set exclusive_thread := concur.threads.env.current
+
+
+  public timeout(d time.duration) is
+    public wait(F type: ()->bool, condition F) bool
+    =>
+      timeout := C.env.read + d
+      while !condition() do
+        wakeup_next_in_waiting_list
+        wokeup := concur.threads.env.current.park_until C _ timeout condition ()->
+          waiting.add concur.threads.env.current
+          _ := mtx.unlock  # NYI: result ignored
+        _   := mtx.lock    # NYI: result ignored,
+        set exclusive_thread := concur.threads.env.current
+      until !wokeup  # -- timeout
+        false
+      else
+        true
 
 
   # is instance `mutate.this` instated for type `mutate.this` and, if `mutate.this` does

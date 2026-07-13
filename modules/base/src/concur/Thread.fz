@@ -129,7 +129,8 @@ is
   # private condition variable for this thread, used to put this
   # thread in park mode.
   #
-  cond := concur.sync.condition.new.or_else (panic "failed to create condition variable")
+  # cond := concur.sync.condition.new.or_else (panic "failed to create condition variable")
+  cond ! park_condition time.Monotonic => (park_condition time.Monotonic).env.cond
 
   # is this thread parked?
   #
@@ -144,14 +145,37 @@ is
   # The idea is that `code` may release a mutex in a way that ensures that this thread
   # is parked before it is released.
   #
-  module park(F type : ()->unit, condition ()->bool, code F)
+  module park_using_clock(C type : time.Clock, F type : ()->unit, condition ()->bool, code F)
   =>
-    cond.synchronized ()->
+    c := (park_condition C).env.cond
+    c.synchronized ()->
       code()
       set park_condition_var := condition
       set parked := true
       while parked   # perform this in a while to catch spurious wakeups
-        cond.wait
+        c.wait
+
+  module park_until(C type : time.Clock,
+                    F type : ()->unit,
+                    timeout   time.instant,
+                    condition ()->bool,
+                    code      F) bool =>
+    c := (park_condition C).env.cond
+    c.synchronized ()->
+      code()
+      set park_condition_var := condition
+      set parked := true
+      while C.env.read < timeout   # while timeout not reached
+        c.wait timeout
+      until !parked                # perform unpark was called
+        true        # unpark was used to wake us up
+      else
+        false       # timed out
+
+
+  module park(F type : ()->unit, condition ()->bool, code F)
+  =>
+    park_using_clock time.Monotonic F condition code
 
 
   # unpark this thread if it is parked.
@@ -198,3 +222,13 @@ is
   public redef as_string String
   =>
     "Thread#$id"
+
+
+module park_condition(C type : time.Clock) : thread_local_effect is
+
+  cond := (concur.sync.condition.new C).or_else (panic "failed to create condition variable")
+
+
+  public redef fixed instance_for_new_thread park_condition C
+  =>
+    park_condition C

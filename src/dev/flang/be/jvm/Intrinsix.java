@@ -1003,6 +1003,14 @@ public class Intrinsix extends ANY implements ClassFileConstants
                           "(Ljava/lang/Object;)V",
                           ClassFileConstants.PrimitiveType.type_void)))
       );
+    put("concur.sync.cnd_timed_wait",  (jvm, si, cc, tvalue, args) ->
+      new Pair<>(Expr.UNIT, args.get(0).andThen(
+                            args.get(1).andThen(
+        Expr.invokeStatic(Names.RUNTIME_CLASS,
+                          "cnd_timedwait",
+                          "(Ljava/lang/Object;J)V",
+                          ClassFileConstants.PrimitiveType.type_void))))
+      );
     put("concur.sync.cnd_destroy",  (jvm, si, cc, tvalue, args) ->
       new Pair<>(Expr.UNIT, args.get(0).andThen(
         Expr.invokeStatic(Names.RUNTIME_CLASS,
