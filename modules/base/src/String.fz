@@ -255,7 +255,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
         parse_error "invalid integer digit for base $base"
       else
         hi0 := hi *? base;
-        # NYI: #3298 can not qualify call in lambda
+        # NYI: LABEL_MISSING: #3298 can not qualify call in lambda
         v := if (neg) hi0 -? t
              else     hi0 +? t
         match s
@@ -410,7 +410,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   =>
     codepoints
       .slice from to
-      .map String c->c  # NYI: this should maybe not be needed since codepoint is a string
+      .map String c->c  # NYI: LABEL_MISSING: this should maybe not be needed since codepoint is a string
       .fold String.concat
 
 
@@ -994,7 +994,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
       codepoints Sequence codepoint => String.from_codepoints codepoints
 
 
-  # NYI: remove the convenience functions when Fuzion supports char literals
+  # NYI: LABEL_MISSING: remove the convenience functions when Fuzion supports char literals
   #
   module type.minus_char  u8 => "-".as_u8
   module type.plus_char   u8 => "+".as_u8

@@ -90,7 +90,7 @@ public class ArrayData extends Value
     var l = length();
     if (x < 0 || x >= l)
       {
-        Errors.fatal("array index out of bounds: " + x + " not in 0.."+l+"\n" /* NYI: need fuir + Executor.callStack(fuir) */);
+        Errors.fatal("array index out of bounds: " + x + " not in 0.."+l+"\n" /* NYI: LABEL_MISSING: need fuir + Executor.callStack(fuir) */);
       }
   }
 
@@ -272,7 +272,7 @@ public class ArrayData extends Value
     else if (_data instanceof double []) { return 8; }
     else if (_data instanceof boolean[]) { return 4; }
     else if (_data instanceof Value  []) { return 8; }
-    throw new Error("NYI: ArrayData.elementByteSize");
+    throw new Error("NYI: LABEL_MISSING: ArrayData.elementByteSize");
   }
 
 
@@ -288,7 +288,7 @@ public class ArrayData extends Value
         else if (_data instanceof float  [] arr) { arr[i] = memSegment.getAtIndex(ValueLayout.JAVA_FLOAT, i); }
         else if (_data instanceof double [] arr) { arr[i] = memSegment.getAtIndex(ValueLayout.JAVA_DOUBLE, i); }
         else if (_data instanceof boolean[] arr) { arr[i] = memSegment.getAtIndex(ValueLayout.JAVA_BOOLEAN, i); }
-        else if (_data instanceof Value  [] arr) { /* NYI: UNDER DEVELOPMENT */ }
+        else if (_data instanceof Value  [] arr) { /* NYI: LABEL_MISSING: UNDER DEVELOPMENT */ }
         else throw new Error("NYI: UNDER DEVELOPMENT: set: " + _data.getClass());
       }
   }

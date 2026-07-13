@@ -160,7 +160,7 @@ public class JavaInterface extends FUIRContext
         result = javaObjectToPlainInstance(o, resultClazz);
       }
     else
-      { // NYI: Instead of throwing an exception, cause a panic and stop the
+      { // NYI: LABEL_MISSING: Instead of throwing an exception, cause a panic and stop the
         // current thread in an orderly way.
         throw new Error("Java code returned with unexpected exception: " + e, e);
       }

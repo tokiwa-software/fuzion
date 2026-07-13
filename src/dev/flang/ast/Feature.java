@@ -598,7 +598,7 @@ public class Feature extends AbstractFeature
     this(pos,
          v,
          0,
-         t == null ? NoType.INSTANCE : new FunctionReturnType(t), /* NYI: try to avoid creation of ReturnType here, set actualtype directly? */
+         t == null ? NoType.INSTANCE : new FunctionReturnType(t), /* NYI: LABEL_MISSING: try to avoid creation of ReturnType here, set actualtype directly? */
          new List<String>(qname),
          new List<>(),
          new List<>(),
@@ -637,7 +637,7 @@ public class Feature extends AbstractFeature
     this(pos,
          v,
          m,
-         t == null ? NoType.INSTANCE: new FunctionReturnType(t), /* NYI: try to avoid creation of ReturnType here, set actualtype directly? */
+         t == null ? NoType.INSTANCE: new FunctionReturnType(t), /* NYI: LABEL_MISSING: try to avoid creation of ReturnType here, set actualtype directly? */
          new List<String>(n),
          new List<>(),
          new List<>(),
@@ -810,7 +810,7 @@ public class Feature extends AbstractFeature
     String n = qname.getLast();
     if (n.equals("_"))
       {
-        // NYI: Check that this feature is allowed to have this name, i.e., it
+        // NYI: LABEL_MISSING: Check that this feature is allowed to have this name, i.e., it
         // is declared in a Destructure expression.
         n = FuzionConstants.UNDERSCORE_PREFIX + underscoreId++;
       }
@@ -1289,7 +1289,7 @@ public class Feature extends AbstractFeature
       {
         Expr nc = c.visit(v, outer());
         if (CHECKS) check
-          (Errors.any() || c == nc); // NYI: This will fail when doing funny stuff like inherit from bool.infix &&, need to check and handle explicitly
+          (Errors.any() || c == nc); // NYI: LABEL_MISSING: This will fail when doing funny stuff like inherit from bool.infix &&, need to check and handle explicitly
       }
     _impl.visit(v, this);
     _returnType.visit(v, this);

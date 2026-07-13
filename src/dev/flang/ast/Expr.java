@@ -147,7 +147,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
     if (result == null)
       {
         result = Types.t_ERROR;
-        // NYI: This should try to find the reason for the missing type and
+        // NYI: LABEL_MISSING: This should try to find the reason for the missing type and
         // print the problem
         AstErrors.failedToInferType(this);
       }
@@ -439,7 +439,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
     if (!declarations.isEmpty())
       {
         /*
-         * NYI: Instead of producing an error here, we could instead remove what
+         * NYI: LABEL_MISSING: Instead of producing an error here, we could instead remove what
          * was done during SourceModule.findDeclarations() performed in this
          * expression, or, alternatively, create a new parse tree for this
          * expression and use that instead.

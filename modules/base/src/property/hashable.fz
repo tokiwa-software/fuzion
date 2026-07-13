@@ -23,7 +23,7 @@
 
 # hashable -- feature for immutable values that have a hash function
 #
-# NYI: the compiler should check that features inheriting from this are
+# NYI: LABEL_MISSING: the compiler should check that features inheriting from this are
 # actually immutable.
 #
 public hashable : property.equatable is

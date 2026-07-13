@@ -252,7 +252,7 @@ public class Env extends ANY implements Comparable<Env>
     var ce = _dfa._effectsRequiredByClazz.get(cg._cc);
     if (DFA.TRACE_ALL_EFFECT_ENVS ||
         ce != null && ce.contains(_effectType) ||
-        cg._usedEffects.contains(_effectType) /* NYI: redundant with previous line? */ )
+        cg._usedEffects.contains(_effectType) /* NYI: LABEL_MISSING: redundant with previous line? */ )
       {
         if (o != _outer)
           {

@@ -39,7 +39,7 @@ module:public connections(active container.Set i32) : effect is
   module close(desc i32) =>
     connections (active.difference (container.set_of_ordered [desc]))
       .replace
-    fuzion.sys.net.close desc # NYI: handle errors
+    fuzion.sys.net.close desc # NYI: LABEL_MISSING: handle errors
 
 
   module is_active(desc i32) => active.contains desc

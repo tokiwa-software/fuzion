@@ -78,7 +78,7 @@ public interface SrcModule extends AbstractModule
 
   /*----------------------  methods needed by AIR  ----------------------*/
 
-  /* NYI: cleanup: methods for AIR phase should not be defined in package ast! */
+  /* NYI: LABEL_MISSING: cleanup: methods for AIR phase should not be defined in package ast! */
 
   String name();
 

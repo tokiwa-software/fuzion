@@ -862,7 +862,7 @@ public class C extends ANY
 
     // add the c-files
     command.addAll(_options.pathOf("include/shared.c"));
-    // NYI: should select includes based on cTarget
+    // NYI: LABEL_MISSING: should select includes based on cTarget
     if (isWindows())
       {
         command.addAll(_options.pathOf("include/win.c"));
@@ -1350,7 +1350,7 @@ public class C extends ANY
                   }
                 else if (_fuir.hasData(rt) && rv != null)
                   {
-                    if (rt != rti && _fuir.clazzIsRef(rt)) // NYI: Check why result can be different
+                    if (rt != rti && _fuir.clazzIsRef(rt)) // NYI: LABEL_MISSING: Check why result can be different
                       {
                         rv = rv.castTo(_types.clazz(rt));
                       }
@@ -1378,7 +1378,7 @@ public class C extends ANY
         ol.add(acc);
         res = _fuir.alwaysResultsInVoid(s)
           ? null
-          : callsResultEscapes || isCall && _fuir.hasData(rt) && _fuir.clazzFieldIsAdrOfValue(cc0)  // NYI: deref an outer ref to value type. Would be nice to have a separate expression for this
+          : callsResultEscapes || isCall && _fuir.hasData(rt) && _fuir.clazzFieldIsAdrOfValue(cc0)  // NYI: LABEL_MISSING: deref an outer ref to value type. Would be nice to have a separate expression for this
             ? res.deref()
             : res;
       }
@@ -1797,7 +1797,7 @@ public class C extends ANY
         if (or != NO_CLAZZ && _fuir.hasData(oc))
           {
             result.add(_fuir.clazzIsRef(oc)             ? tvalue        .castTo(_types.clazzField(_fuir.clazzOuterRef(cc))) :
-                       /* NYI: special handling in backend should be
+                       /* NYI: LABEL_MISSING: special handling in backend should be
                         * replaced by AdrOf in FUIR code: */
                        _fuir.clazzFieldIsAdrOfValue(or) ? tvalue.adrOf().castTo(_types.clazzField(_fuir.clazzOuterRef(cc)))
                                                         : tvalue);

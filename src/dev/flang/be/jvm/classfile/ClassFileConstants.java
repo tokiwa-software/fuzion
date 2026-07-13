@@ -74,7 +74,7 @@ public interface ClassFileConstants
   public static final byte[] VERSION_JDK_20  = new byte[] { 0, 0, 0, 64 };
   public static final byte[] VERSION_JDK_21  = new byte[] { 0, 0, 0, 65 };   // LTS
 
-  // NYI: update JDK version,
+  // NYI: LABEL_MISSING: update JDK version,
   //      check what has changed in the JVM spec for the class file and make sure that the class files we generate conform to that version
   public static final byte[] DEFAULT_VERSION = VERSION_JDK_21;
 

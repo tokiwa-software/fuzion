@@ -50,7 +50,7 @@ webserver_java is
             unit      => say "ok."
             err error => say "#### $err ####"
 
-  /* NYI: This syntactic sugar is not supported yet: 'pstfix ?' should return immediately in case of error and unwrap outcome otherwise:
+  /* NYI: LABEL_MISSING: This syntactic sugar is not supported yet: 'pstfix ?' should return immediately in case of error and unwrap outcome otherwise:
 
       accept outcome unit is
         # accept and handle connection

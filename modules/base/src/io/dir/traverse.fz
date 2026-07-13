@@ -38,7 +38,7 @@ public traverse(
   # the initial result
   init R,
   # the reducing function allowing a premature abort
-  red_fn (R,path) -> R /* NYI: | abort (outcome R)*/) outcome R
+  red_fn (R,path) -> R /* NYI: LABEL_MISSING: | abort (outcome R)*/) outcome R
 =>
   io.dir.use _ p ()->
     for res outcome R := init,
@@ -47,7 +47,7 @@ public traverse(
               t => red_fn res.or_panic x
               if descend
                 match io.file.stat x false
-                  error => res # NYI
+                  error => res # NYI: LABEL_MISSING
                   m io.file.meta_data => if m.is_dir then traverse x descend t red_fn else t
               else
                 t

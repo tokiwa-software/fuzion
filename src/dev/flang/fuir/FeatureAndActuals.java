@@ -26,9 +26,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir;
 
-import dev.flang.ast.AbstractCall; // NYI: remove dependency!
-import dev.flang.ast.AbstractFeature; // NYI: remove dependency!
-import dev.flang.ast.AbstractType; // NYI: remove dependency!
+import dev.flang.ast.AbstractCall; // NYI: CLEANUP: remove dependency!
+import dev.flang.ast.AbstractFeature; // NYI: CLEANUP: remove dependency!
+import dev.flang.ast.AbstractType; // NYI: CLEANUP: remove dependency!
 
 import dev.flang.util.ANY;
 import dev.flang.util.List;

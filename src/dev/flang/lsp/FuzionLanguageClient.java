@@ -43,7 +43,7 @@ public class FuzionLanguageClient
     var progress = new WorkDoneProgressBegin();
     progress.setTitle(title);
     progress.setMessage(message);
-    // NYI
+    // NYI: LABEL_MISSING
     progress.setCancellable(false);
     progress.setPercentage(0);
     Config.languageClient().notifyProgress(new ProgressParams(Either.forLeft(token), Either.forLeft(progress)));

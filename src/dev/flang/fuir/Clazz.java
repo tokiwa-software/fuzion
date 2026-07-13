@@ -188,7 +188,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Will instances of this class be created?
    */
-  private boolean _isInstantiatedChoice = true; // NYI: false;
+  private boolean _isInstantiatedChoice = true; // NYI: LABEL_MISSING: false;
 
 
   /**
@@ -789,7 +789,7 @@ class Clazz extends ANY implements Comparable<Clazz>
         // have a recursive type, isUnitType() will return false, so recursion will
         // stop and the result for the recursive type will be false.
         //
-        // Object layout will later report an error for this case. (NYI: check this with a test!)
+        // Object layout will later report an error for this case. (NYI: LABEL_MISSING: check this with a test!)
         _isUnitType = YesNo.no;
 
         res = clazzKind() == IR.FeatureKind.Field
@@ -936,7 +936,7 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * find redefinition of a given feature in this clazz. NYI: This will have to
+   * find redefinition of a given feature in this clazz. NYI: LABEL_MISSING: This will have to
    * take the whole inheritance chain into account including the parent view that is
    * being filled with live:
    */
@@ -958,7 +958,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       {
         for (var p: chain)
           {
-            fn = f.outer().handDown(null, f, fn, p, feature());  // NYI: need to update f/f.outer() to support several levels of inheritance correctly!
+            fn = f.outer().handDown(null, f, fn, p, feature());  // NYI: LABEL_MISSING: need to update f/f.outer() to support several levels of inheritance correctly!
           }
       }
 
@@ -1275,7 +1275,7 @@ class Clazz extends ANY implements Comparable<Clazz>
               ? ""
               : FuzionConstants.INTERNAL_NAME_SYMBOL + fn.argCount());
 
-        // NYI: would be good if postFeatures could be identified not be string comparison, but with something like
+        // NYI: LABEL_MISSING: would be good if postFeatures could be identified not be string comparison, but with something like
         // {@code f.isPostFeature()}. Note that this would need to be saved in .fum file as well!
         //
         if (fname.startsWith(FuzionConstants.POSTCONDITION_FEATURE_PREFIX))
@@ -1409,7 +1409,7 @@ class Clazz extends ANY implements Comparable<Clazz>
         if (result == 0)
           {
             if (to.isRef() && oo.isRef())
-              { // NYI: If outer is normalized for refs as described in the
+              { // NYI: LABEL_MISSING: If outer is normalized for refs as described in the
                 // constructor, there should be no need for special handling of
                 // ref types here.
                 result = to._type.compareToIgnoreOuter(oo._type);
@@ -1473,7 +1473,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   @Override
   public int hashCode()
   {
-    return (_type.isRef() ? 0x777377 : 0) ^ feature().globalIndex();  // NYI: outer and type parameters!
+    return (_type.isRef() ? 0x777377 : 0) ^ feature().globalIndex();  // NYI: LABEL_MISSING: outer and type parameters!
   }
 
 
@@ -1567,7 +1567,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     var o = _outer;
     return o == null ||
 
-      // NYI: Once Clazz.normalize() is implemented better, a clazz C has
+      // NYI: LABEL_MISSING: Once Clazz.normalize() is implemented better, a clazz C has
       // to be considered instantiated if there is any clazz D that
       // normalize() would replace by C if it occurs as an outer clazz.
       o._specialClazzId == SpecialClazzes.c_Any    ||

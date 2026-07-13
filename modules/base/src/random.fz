@@ -119,7 +119,7 @@ is
   #
   public get (exclusive_bound u64) u64
   =>
-    p.get % exclusive_bound  # NYI: This implementation is bad if exclusive_bound is big
+    p.get % exclusive_bound  # NYI: LABEL_MISSING: This implementation is bad if exclusive_bound is big
 
 
   # default implementation of random
@@ -181,7 +181,7 @@ simple_random_handler(seed1 u64, seed2 u64) : Random_Handler is
   # get next instance by shuffling bits in seeds around
   #
   public redef next Random_Handler =>
-    # NYI: This does not meet any requirements on a decent random number generator
+    # NYI: LABEL_MISSING: This does not meet any requirements on a decent random number generator
     s1 := (seed1 *° 1717171717 +° 13113131313) ^ seed2
     s2 := (seed2 *° 9191919191 +° 37637373737) ^ seed1
     rot1 := s2 & 0x3f

@@ -192,7 +192,7 @@ is
 
   # String representation of thread
   #
-  # NYI: we should provide some support for thread names. Currently, this is usind the
+  # NYI: LABEL_MISSING: we should provide some support for thread names. Currently, this is usind the
   # thread id.
   #
   public redef as_string String

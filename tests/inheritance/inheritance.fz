@@ -95,7 +95,7 @@ inheritance is
     b.p # all type info is static in this call
 
     c := 1000
-    count => set c := c + 1; c # NYI: this should cause an ambiguous semicolon error. Does it do so?
+    count => set c := c + 1; c # NYI: LABEL_MISSING: this should cause an ambiguous semicolon error. Does it do so?
 
     # nested features with a ref (P, Q, R, S) and a value (Pv, Qv, Rv, Sv)
     # variant and calls to features of the corresponding outer features.

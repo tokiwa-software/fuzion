@@ -44,5 +44,5 @@ public Config ref : effect is
 
 # get the current config from env
 #
-public type.config web.Config =>   # NYI: REMOVE, use `web.Config.env` instead.
+public type.config web.Config =>   # NYI: LABEL_MISSING: REMOVE, use `web.Config.env` instead.
   web.Config.env

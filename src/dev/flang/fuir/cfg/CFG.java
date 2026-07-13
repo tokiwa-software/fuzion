@@ -453,7 +453,7 @@ public class CFG extends ANY
    */
   void createCallGraphForBlock(int cl, int s0)
   {
-    for (var s = s0; /* NYI: !containsVoid(stack) &&*/ _fuir.withinCode(s); s = s + _fuir.codeSizeAt(s))
+    for (var s = s0; /* NYI: LABEL_MISSING: !containsVoid(stack) &&*/ _fuir.withinCode(s); s = s + _fuir.codeSizeAt(s))
       {
         var e = _fuir.codeAt(s);
         createCallGraphForExpr(cl, s, e);

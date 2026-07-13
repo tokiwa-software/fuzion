@@ -334,7 +334,7 @@ public class Instance extends ValueWithClazz
   {
     if (fuir().clazzIsRef(expected))
       {
-        // NYI:
+        // NYI: LABEL_MISSING:
         // if (!expected.isAssignableFromWithoutTagging(clazz()))
         //   {
         //     throw new Error("Dynamic runtime clazz "+clazz()+" does not match static "+expected);

@@ -100,7 +100,7 @@ Fuzion input sources use UTF8 encoding.
 
 include::{GENERATED}/doc/unicode_version.adoc[]
 
-CAUTION: NYI: Actual Unicode version has not been fixed yet!
+CAUTION: NYI: LABEL_MISSING: Actual Unicode version has not been fixed yet!
 
 :RULE_SRC: src/dev/flang/util/SourceFile.java
 :RULE_ID: SRCF_UTF8
@@ -370,7 +370,7 @@ include::rule.adoc[]
 
 The types of xref:fuzion_value_argument[value arguments] in a redefined feature
 usually must stay the same with the exception of covariant changes of `this`
-types (NYI: reference).
+types (NYI: LABEL_MISSING: reference).
 
 :RULE_SRC: src/dev/flang/fe/SourceModule.java
 :RULE_ID: REDEF_VALUE_ARGUMENT

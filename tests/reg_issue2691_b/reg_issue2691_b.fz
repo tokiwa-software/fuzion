@@ -31,5 +31,5 @@ reg_issue2691_b =>
   h : f is
     redef chk(x i32)
     pre else if x < -10 then false
-        else true       # causes a syntax error NYI: an indentation error would be nicer
+        else true       # causes a syntax error NYI: LABEL_MISSING: an indentation error would be nicer
     => x                #   when the `else` is aligned with the `pre` it does cause an indentation error

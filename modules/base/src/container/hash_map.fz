@@ -169,7 +169,7 @@ is
             else         # conflict
               store (collision at h)
 
-/* NYI: With better pattern matching, this could be:
+/* NYI: LABEL_MISSING: With better pattern matching, this could be:
         match mcontents[at]
           nil,
           (k, _) =>  mcontent[at] := (k, v)  # no conflict

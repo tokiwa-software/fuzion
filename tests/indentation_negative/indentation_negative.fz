@@ -143,7 +143,7 @@ indentation_negative is
   #
   arg => 42
 
-  # NYI: no negative tests for calls with actuals yet
+  # NYI: LABEL_MISSING: no negative tests for calls with actuals yet
 
   # -----------------------------------------------------------------------
   #

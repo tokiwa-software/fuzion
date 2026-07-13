@@ -25,7 +25,7 @@
 
 # error represents an error condition described by a message string
 #
-# NYI: Future versions of error might be equipped with a stack trace if
+# NYI: LABEL_MISSING: Future versions of error might be equipped with a stack trace if
 # debugging is enabled
 #
 public error (

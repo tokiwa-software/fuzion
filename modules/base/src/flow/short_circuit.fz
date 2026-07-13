@@ -34,7 +34,7 @@
 #        nil
 #
 #
-public short_circuit(T type, h T->void) : /* NYI: need to inherit this privately */ fallible T h is
+public short_circuit(T type, h T->void) : /* NYI: LABEL_MISSING: need to inherit this privately */ fallible T h is
 
 
   # return early with result r

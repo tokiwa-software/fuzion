@@ -540,7 +540,7 @@ public class Function extends AbstractLambda
       {
         var e = this._call.visit(v, outer);
         if (CHECKS) check
-          (e == this._call); // NYI: This will fail e.g. if _call is a call to bool.infix &&, need to handle explicitly
+          (e == this._call); // NYI: LABEL_MISSING: This will fail e.g. if _call is a call to bool.infix &&, need to handle explicitly
         this._call = (Call) e;
       }
     return v.action(this);

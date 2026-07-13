@@ -84,7 +84,7 @@ is
 
   # decodes a base32 string, decoding is strict as required by RFC 4648
   # lowercase letters, non alphabet characters, line breaks, missing padding cause errors
-  # NYI: decoding does currently not reject encodings where the padding bits have not been set to zero prior to encoding
+  # NYI: LABEL_MISSING: decoding does currently not reject encodings where the padding bits have not been set to zero prior to encoding
   #      therefore in some cases multiple encodings can be decoded to the same data
   #      See RFC4648 section 3.5: https://datatracker.ietf.org/doc/html/rfc4648#section-3.5
   #
@@ -94,7 +94,7 @@ is
 
   # decodes a sequence of ASCII characters, decoding is strict as required by RFC 4648
   # lowercase letters, non alphabet characters, line breaks, missing padding cause errors
-  # NYI: decoding does currently not reject encodings where the padding bits have not been set to zero prior to encoding
+  # NYI: LABEL_MISSING: decoding does currently not reject encodings where the padding bits have not been set to zero prior to encoding
   #      therefore in some cases multiple encodings can be decoded to the same data
   #      See RFC4648 section 3.5: https://datatracker.ietf.org/doc/html/rfc4648#section-3.5
   #

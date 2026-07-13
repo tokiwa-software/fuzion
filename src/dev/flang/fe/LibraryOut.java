@@ -495,8 +495,8 @@ class LibraryOut extends ANY
       }
     _data.writeString(bn);
     var argCount = n.argCount() + f.freeTypesCount();
-    _data.writeInt (argCount);      // NYI: use better integer encoding
-    _data.writeInt (n._id);         // NYI: id /= 0 only if argCount = 0, so join these two values.
+    _data.writeInt (argCount);      // NYI: LABEL_MISSING: use better integer encoding
+    _data.writeInt (n._id);         // NYI: LABEL_MISSING: id /= 0 only if argCount = 0, so join these two values.
     pos(f.pos());
     featureIndexOrZeroForUniverse(f.outer());
     if (CHECKS) check
@@ -531,7 +531,7 @@ class LibraryOut extends ANY
       {
         type(f.constraint());
       }
-    // NYI: Suppress output of inherits for fields, intrinsics, etc.?
+    // NYI: LABEL_MISSING: Suppress output of inherits for fields, intrinsics, etc.?
     var i = f.inherits();
     _data.writeInt(i.size());
     for (var p : i)
@@ -597,7 +597,7 @@ class LibraryOut extends ANY
     var off = _data.offset(t);
     if (off >= 0)
       {
-        _data.writeInt(-2);     // NYI: optimization: maybe write just one integer, e.g., -index-2
+        _data.writeInt(-2);     // NYI: LABEL_MISSING: optimization: maybe write just one integer, e.g., -index-2
         _data.writeInt(off);
       }
     else if (!t.isParametricType() && t.feature().isUniverse())
@@ -806,7 +806,7 @@ class LibraryOut extends ANY
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | int           | called feature f index                        |
    *   |        +--------+---------------+-----------------------------------------------+
-   *   |        | 1      | Type          | result type (NYI: remove, redundant!)s        |
+   *   |        | 1      | Type          | result type (NYI: LABEL_MISSING: remove, redundant!)s        |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | hasOpen| 1      | int           | num actual args (TBD: this is redundant,      |
    *   | ArgList|        |               | should be possible to determine)              |
