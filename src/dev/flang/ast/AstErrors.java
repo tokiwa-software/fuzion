@@ -2530,6 +2530,12 @@ public class AstErrors extends ANY
       ss("<effect>.finally") + " is called automatically.");
   }
 
+  public static void mustNotCallEffectDefaultValue(Call call)
+  {
+    error(call.pos(), "Must not call " + ss("<effect>.default_value") + ".",
+      ss("<effect>.default_value") + " is called automatically on big bang singularity.");
+  }
+
   public static void ambiguousIfIfElse(SourcePosition pos, SourcePosition if1, SourcePosition if2)
   {
     error(pos,
