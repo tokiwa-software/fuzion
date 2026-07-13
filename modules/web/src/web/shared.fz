@@ -109,7 +109,7 @@ module parse_url(url String) outcome web.parsed_url
                 match p_str.parse_u32
                   e error => e
                   p u32 =>
-                    if !p.fits_in_u16
+                    if p.fits_in_u16
                       (host_and_port_seq[0], id (option u16) p.as_u16, tpl.1)
                     else
                       error "Port number invalid, should fit in 16 bits: $p_str"
