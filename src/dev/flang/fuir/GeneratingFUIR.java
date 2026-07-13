@@ -2495,12 +2495,20 @@ public class GeneratingFUIR extends FUIR
         if (c.calledFeature() == Types.resolved.f_Type_infix_colon)
           {
             var T = innerClazz.actualTypeParameters()[0];
-            if (!T._type.constraintAssignableFrom(tclazz._type.generics().get(0))
-            // NYI: CLEANUP: need to detect pre condition feature properly!
-             && outerClazz.feature().featureName().isInternal())
-              {
-                FuirErrors.unmetTypeContraint(c.pos(), tclazz._type.generics().get(0), T);
-              }
+            if (!T._type.constraintAssignableFrom(tclazz._type.generics().get(0)))
+            {
+                // Get the position of the actual type parameter usage
+                AbstractType actualType = tclazz._type.generics().get(0);
+                SourcePosition errorPos = actualType.declarationPos(); // Position of the type parameter in the source
+                
+                // If declarationPos is null or built-in, use the call position as fallback
+                if (errorPos == null || errorPos.isBuiltIn())
+                {
+                    errorPos = c.pos();
+                }
+                
+                FuirErrors.unmetTypeContraint(errorPos, actualType, T);
+            }
             cf = T._type.constraintAssignableFrom(tclazz._type.generics().get(0))
               ? Types.resolved.f_Type_infix_colon_true
               : Types.resolved.f_Type_infix_colon_false;

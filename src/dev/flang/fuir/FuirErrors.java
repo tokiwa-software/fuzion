@@ -116,10 +116,42 @@ public class FuirErrors extends AstErrors
   }
 
 
-  public static void unmetTypeContraint(SourcePosition pos, AbstractType tp, Clazz constraint)
-  {
-    error(pos, "Actual type parameter " + s(tp) + " does not satisfy constraint " + s(constraint._type), "");
-  }
+    public static void unmetTypeContraint(SourcePosition pos, AbstractType tp, Clazz constraint)
+    {
+        // Build the error message
+        StringBuilder fullMsg = new StringBuilder();
+        fullMsg.append("Actual type parameter '").append(s(tp)).append("' does not satisfy constraint '")
+            .append(s(constraint._type)).append("'");
+        
+        // Show the source code with underlining at the error position
+        if (!pos.isBuiltIn())
+        {
+            // Underline the source code at the error position
+            fullMsg.append("\n").append(pos.showInSource());
+        }
+        
+        // Add information about where the type parameter is defined
+        SourcePosition defPos = tp.declarationPos();
+        if (defPos != null && !defPos.isBuiltIn())
+        {
+            fullMsg.append("\nConstraint defined at: ").append(defPos.fileNameWithPosition());
+        }
+        
+        error(pos, fullMsg.toString(), "");
+    }
+
+    // Helper to get source line
+    private static String getSourceLine(SourcePosition pos)
+    {
+        if (pos.isBuiltIn() || pos._sourceFile == null)
+            return "";
+        
+        int line = pos.line();
+        if (line <= 0 || line > pos._sourceFile.numLines())
+            return "";
+        
+        return pos._sourceFile.line(line);
+    }
 
 }
 
