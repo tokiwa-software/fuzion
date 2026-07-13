@@ -45,37 +45,6 @@ envir_vars := envir.Vars.env.map_of [
 #
 max_test_time := (time.duration.min 10)
 
-# execute this Sequence of process+args
-#
-Sequence.prefix ! =>
-  seq := map (.as_string)
-  os.process.start seq.first.or_panic (seq.drop 1) envir_vars
-            .bind (p -> tokiwa.record_process p Sequence.this.as_string max_test_time nil)
-
-
-# feed this string to a new process
-#
-String.infix | (seq Sequence String) =>
-
-  lm : mutate is
-  lm ! ()->
-    match os.process.start seq.first.or_panic (seq.drop 1) envir_vars
-      e error => panic "failed executing $seq, error is $e"
-      p os.process =>
-        _ := p.with_in unit lm ()->
-          # NYI: ambiguous result type:
-          # _ := write_to lm
-          _ := (io.buffered lm).writer.env.write String.this
-          _ := (io.buffered lm).writer.env.flush
-          _ := p.close_in
-        tokiwa.record_process p seq.as_string max_test_time nil
-
-
-# execute this string by splitting at all whitespaces
-#
-String.prefix !! =>
-  !split
-
 
 append_line(mtx concur.sync.mutex, dest path, str String) =>
   mtx.synchronized ()->
@@ -132,9 +101,9 @@ main =>
   # first, try third arg then try a few executables, if everything fails use default value
   thread_count :=
       envir.Vars.env["FUZION_RUN_TESTS_PARALLELISM"]  .flat_map (    .trim.parse_i32) .first
-        .or_else (     (!!"nproc --all"              ).flat_map (.out.trim.parse_i32) .first
-          .or_else (   (!!"getconf _NPROCESSORS_ONLN").flat_map (.out.trim.parse_i32) .first
-            .or_else ( (!!"sysctl -n hw.ncpu"        ).flat_map (.out.trim.parse_i32) .first
+        .or_else (    "nproc --all"              .execute.flat_map (.out.trim.parse_i32) .first
+          .or_else (  "getconf _NPROCESSORS_ONLN".execute.flat_map (.out.trim.parse_i32) .first
+            .or_else ("sysctl -n hw.ncpu"        .execute.flat_map (.out.trim.parse_i32) .first
               .or_else 4)))
 
   tests := find_tests (build_dir.resolve "tests")
@@ -161,7 +130,7 @@ main =>
     else
 
       opt_res, elapsed_time := time.stopwatch _ ()->
-            !!"make $target --environment-overrides --directory=$test"
+            "make $target --environment-overrides --directory=$test".execute envir_vars nil max_test_time
 
       test_durations.put test elapsed_time
 

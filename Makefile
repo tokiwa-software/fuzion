@@ -257,7 +257,7 @@ $(BUILD_DIR)/%.md: $(FZ_SRC)/%.md
 
 $(FUZION_EBNF): $(FUZION_BASE) $(FZ_SRC)/bin/ebnf.fz
 	mkdir -p $(@D)
-	$(FZ) $(FZ_SRC)/bin/ebnf.fz $(JAVA_FILES_PARSER) > $@
+	$(FZ) -modules=tokiwa $(FZ_SRC)/bin/ebnf.fz $(JAVA_FILES_PARSER) > $@
 
 ifeq ($(FUZION_REPRODUCIBLE_BUILD),true)
 SED_DATE_AND_BUILTBY = "s^@@DATE@@^^g;s^@@BUILTBY@@^^g"
