@@ -91,7 +91,7 @@ find_tests(dir path) array path =>
     io.dir.use _ dir ()->
       res := (container.Dynamic_Array m path).empty
       _ :=
-        for x := io.dir.open.env.read
+        for x := io.dir.Read.env.next
         while x.ok
           dir_x := dir.resolve x.or_panic
           if io.file.exists (dir_x.resolve "Makefile")
