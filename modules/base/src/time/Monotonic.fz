@@ -40,7 +40,10 @@ public Monotonic ref : time.Clock is
   #
   public redef read time.instant
   =>
-    panic "NYI: time.Monotonic.read"
+    ns => match Monotonic.this.type.posix_id
+      clockid posix.clockid_t => fzE_posix_time clockid.val
+      * => panic "$(Monotonic.this.type) is not a posix clock"
+    time.instant ns
 
 
   # no guarantee can be given for precision nor resolution

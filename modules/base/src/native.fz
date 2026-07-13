@@ -194,6 +194,10 @@ module fzE_munmap(address Mapped_Memory, size i64) i32 => native
 # no guarantee can be given for precision nor resolution
 module fzE_nanotime u64 => native
 
+# read the current value of the given POSIX clockid
+#
+module fzE_posix_time(clockid i32) u64 => native
+
 
 # no guarantee can be given for precision nor resolution
 module fzE_nanosleep(arg1 u64) unit => native

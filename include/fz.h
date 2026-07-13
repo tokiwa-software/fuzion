@@ -378,6 +378,11 @@ bool fzE_bitwise_compare_double(double d1, double d2);
 uint64_t fzE_nanotime(void);
 
 /**
+ * @return the time of the given posix clock
+ */
+uint64_t fzE_posix_time(int clockid);
+
+/**
  * Sleep for at least `n` nano seconds.
  *
  * @param n the amount of nano seconds to sleep for.
@@ -791,6 +796,19 @@ void fzE_cnd_broadcast(void * cnd);
  * @return -1 on error, 0 on success
  */
 void fzE_cnd_wait     (void * cnd, void * mtx);
+
+/**
+ * blocks thread until signal, broadcast or spurious wakeup or given absolute time is reached
+ *
+ * @param cnd pointer to a condition
+ *
+ * @param mtx pointer to a mutex
+ *
+ * @param time_ns the timeout as an absolute time relative to the clock associated with cnd.
+ *
+ * @return -1 on error, 0 on success
+ */
+void fzE_cnd_timedwait(void * cnd, void * mtx, int64_t time_ns);
 
 /**
  * destroys the condition

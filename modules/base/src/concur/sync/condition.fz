@@ -67,7 +67,7 @@ private:public condition(mtx concur.sync.mutex, cnd Condition) is
   public wait(timeout time.instant) unit
     pre is_locked.read
   =>
-    cnd_timedwait timeout cnd mtx.mtx
+    cnd_timedwait cnd mtx.mtx timeout.ns
 
 
   # initialize a new condition using the given clock

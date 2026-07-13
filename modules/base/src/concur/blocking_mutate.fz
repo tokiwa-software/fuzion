@@ -129,7 +129,8 @@ public blocking_mutate(C type : time.Clock) : mutate is
   public timeout(d time.duration) is
     public wait(F type: ()->bool, condition F) bool
     =>
-      timeout := C.env.read + d
+      now := C.env.read
+      timeout := now + d
       while !condition() do
         wakeup_next_in_waiting_list
         wokeup := concur.threads.env.current.park_until C _ timeout condition ()->

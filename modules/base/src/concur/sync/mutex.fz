@@ -64,4 +64,3 @@ module:public mutex(module mtx Mutex) is
   #
   module destroy =>
     mtx_destroy mtx
-

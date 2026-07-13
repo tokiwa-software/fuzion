@@ -421,6 +421,21 @@ uint64_t fzE_nanotime()
 
 
 /**
+ * @return the time of the given posix clock
+ */
+uint64_t fzE_posix_time(int clockid)
+{
+  struct timespec result;
+  if (clock_gettime(clockid, &result)!=0)
+  {
+    fprintf(stderr,"*** clock_gettime failed for clockid %d \012", clockid);
+    exit(EXIT_FAILURE);
+  }
+  return result.tv_sec*1000000000ULL+result.tv_nsec;
+}
+
+
+/**
  * Sleep for `n` nano seconds.
  */
 void fzE_nanosleep(uint64_t n)
@@ -944,6 +959,7 @@ void fzE_cnd_broadcast(void * cnd) {
 void fzE_cnd_wait(void * cnd, void * mtx) {
   pthread_cond_wait((pthread_cond_t *)cnd, (pthread_mutex_t *)mtx);
 }
+
 void fzE_cnd_timedwait(void * cnd, void * mtx, int64_t time_ns)
 {
   int64_t  s  =                   time_ns / 1000000000;
