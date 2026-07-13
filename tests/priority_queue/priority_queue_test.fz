@@ -156,7 +156,7 @@ priority_queue_test =>
 
     q6 := container.Binary_Heap_Queue lm i32 .empty_by digit_sum
     _ := q6
-    simple_random 42 ()->
+    Random.simple 42 ()->
       for i in 0..9
           r := Random.env.next_i32 199 - 99
       do
@@ -175,7 +175,7 @@ priority_queue_test =>
   #
   sort_test_random(random_test_size i32) =>
 
-    simple_random 42 ()->
+    Random.simple 42 ()->
 
     m : mutate is
     m ! ()->
@@ -222,7 +222,7 @@ priority_queue_test =>
     # number of operations
     test_size i32)
   =>
-    simple_random 273661186099400849 ()->
+    Random.simple 273661186099400849 ()->
       m : mutate is
       m ! ()->
         q := container.Binary_Heap_Queue m i32 .empty

@@ -276,7 +276,7 @@ primes_test is
 # put or remove random numbers at random , checking against mutable_tree_map
 #
 random_test is
-  simple_random 42 ()->
+  Random.simple 42 ()->
 
     random_test_size := 75
     random_map := container.Mutable_Hash_Map mutate i32 String .empty

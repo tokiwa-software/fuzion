@@ -32,7 +32,7 @@ is
   # environment to the next random value.  The the contents of the current
   # instance are left unchanged, 'Random.env' will provide the new instance.
   #
-  public next Random.this => abstract
+  public next Random => abstract
 
 
   # get current random number
@@ -94,7 +94,7 @@ is
   #
   public next_u64 u64 =>
     x := next
-    x.replace
+    Random.replace x
     x.get
 
 
@@ -141,16 +141,16 @@ is
     simple_random.default
 
 
-# instate a random that is seed seeded and run rr in its context
-#
-public simple_random(T type, seed u64, rr ()->T) T =>
-  simple_random seed seed ! rr
+  # instate a random that is seed seeded and run rr in its context
+  #
+  public type.simple(T type, seed u64, rr ()->T) T =>
+    Random.instate (simple_random seed seed) rr
 
 
-# instate a random that is time seeded and run rr in its context
-#
-public time_seeded_random(T type, rr ()->T) T =>
-  simple_random.time_seeded ! rr
+  # instate a random that is time seeded and run rr in its context
+  #
+  public type.time_seeded(T type, rr ()->T) T ! time.Nano =>
+    Random.instate simple_random.time_seeded rr
 
 
 # simple random number for pseudo random numbers that are not safe
@@ -161,7 +161,7 @@ simple_random(seed1 u64, seed2 u64) : Random is
 
   # get next instance by shuffling bits in seeds around
   #
-  public fixed redef next simple_random =>
+  public redef next Random =>
     # NYI: This does not meet any requirements on a decent random number generator
     s1 := (seed1 *° 1717171717 +° 13113131313) ^ seed2
     s2 := (seed2 *° 9191919191 +° 37637373737) ^ seed1
@@ -189,7 +189,10 @@ simple_random(seed1 u64, seed2 u64) : Random is
   # create the default random handler depending on the environment settings
   #
   type.default =>
-    match envir.Vars.env[random_seed_env_var]
+    # NYI: BUG: should be : match envir.Vars.env[random_seed_env_var]
+    # but we need to be able to define order of default effects for this to work
+    #
+    match envir.Vars.default_value.or_panic.get random_seed_env_var
      s String =>
        match s.parse_u64
          seed u64 => simple_random seed 98765432109876543
@@ -201,7 +204,9 @@ simple_random(seed1 u64, seed2 u64) : Random is
   # for security and that do not meet typical requirements for a good
   # random number generator.
   #
-  type.time_seeded Random =>
+  type.time_seeded Random ! time.Nano =>
     # initialize with large numbers XORed with nano time
     #
+    # NYI: BUG: we need ordering of default effects
+    # simple_random (u64 77777777777777 ^ time.Nano.env.read.val) 98765432109876543
     simple_random (u64 77777777777777 ^ fzE_nanotime) 98765432109876543

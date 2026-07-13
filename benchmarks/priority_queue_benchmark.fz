@@ -31,7 +31,7 @@ priority_queue_benchmark =>
 
     test(size i32) unit =>
 
-      simple_random 42 ()->
+      Random.simple 42 ()->
 
         m : mutate is
         m ! ()->
@@ -87,7 +87,7 @@ priority_queue_benchmark =>
 
       sample_size := 1E4 + 20 # histogram ignores first and last 10 samples
 
-      simple_random 13 ()->
+      Random.simple 13 ()->
 
       m : mutate is
       m ! ()->
@@ -166,7 +166,7 @@ priority_queue_benchmark =>
       say "Compared to iterative add, make heap reduces time to: $((hist_mk_heap.average.nanos.as_f64 / hist_enq_all.average.nanos.as_f64 * 100) .as_string.substring 0 4) %"
 
     say "\nRandom:\n"
-    simple_random 904644503766293287 ()->
+    Random.simple 904644503766293287 ()->
       for len in test_lengths do
         test (array i32 .new len _->Random.env.next_i32) "random"
         say ""
@@ -213,7 +213,7 @@ priority_queue_benchmark =>
           $elem_desc elements. Total time was $(hist_mk_heap.average.as_string_pad)"""
 
     say "Random:\n"
-    simple_random 904644503766293287 ()->
+    Random.simple 904644503766293287 ()->
       for len in test_lengths do
         test (array i32 .new len _->Random.env.next_i32) "random"
 
