@@ -76,7 +76,7 @@ is
     pre
       safety: 0 ≤ priority0 ≤ 99
   =>
-    cond.synchronized (outcome unit) ()->
+    cond2.synchronized (outcome unit) ()->
       p :=
         match policy0
           concur.scheduling_policy.sched_other => 0
@@ -103,7 +103,7 @@ is
       concur.scheduling_policy.val
       i32
   =>
-    cond.synchronized ()->
+    cond2.synchronized ()->
       (policy, priority)
 
 
@@ -111,7 +111,7 @@ is
   #
   public set_affinity(cores array u64) outcome unit
   =>
-    cond.synchronized (outcome unit) ()->
+    cond2.synchronized (outcome unit) ()->
       e := fuzion.sys.thread.set_affinity thrd cores
       if e = 0
         unit
@@ -129,14 +129,16 @@ is
   # private condition variable for this thread, used to put this
   # thread in park mode.
   #
-  # cond := concur.sync.condition.new.or_else (panic "failed to create condition variable")
-  cond ! park_condition time.Monotonic => (park_condition time.Monotonic).env.cond
+#  cond2 := concur.sync.condition.new.or_else (panic "failed to create condition variable")
+  cond  := (park_condition time.Monotonic).env.cond
+  cond2 := cond
 
   # is this thread parked?
   #
   # this is modified only in `park` and `unpark` while protected by `cond`.
   #
-  parked := false
+  #  parked := false
+  parked_on option concur.sync.condition := nil
 
 
   # park this thread atomically after storing `condition` in `park_condition` and
@@ -151,8 +153,8 @@ is
     c.synchronized ()->
       code()
       set park_condition_var := condition
-      set parked := true
-      while parked   # perform this in a while to catch spurious wakeups
+      set parked_on := c
+      while parked_on??   # perform this in a while to catch spurious wakeups
         c.wait
 
   module park_until(C type : time.Clock,
@@ -164,10 +166,10 @@ is
     c.synchronized ()->
       code()
       set park_condition_var := condition
-      set parked := true
+      set parked_on := c
       while C.env.read < timeout   # while timeout not reached
         c.wait timeout
-      until !parked                # perform unpark was called
+      until !(parked_on??)                # perform unpark was called
         true        # unpark was used to wake us up
       else
         false       # timed out
@@ -182,10 +184,14 @@ is
   #
   module unpark()
   =>
+    say "unpark $(Thread.this) $cond $(cond.is_locked)"
     cond.synchronized ()->
-      if parked
-        set parked := false
-        cond.signal
+      match parked_on
+        c concur.sync.condition =>
+          set parked_on := nil
+          say "unpark $(Thread.this) $cond $(cond.is_locked)"
+          c.signal
+        nil =>
 
 
   # threads that are parked may use these link fields to form a `Thread_List` of
@@ -226,9 +232,15 @@ is
 
 module park_condition(C type : time.Clock) : thread_local_effect is
 
-  cond := (concur.sync.condition.new C).or_else (panic "failed to create condition variable")
+  cond_var := (concur.sync.condition.new C).or_else (panic "failed to create condition variable")
+  cond =>
+    cond_var
 
 
   public redef fixed instance_for_new_thread park_condition C
   =>
     park_condition C
+
+
+  public redef fixed type.default_value option (concur.park_condition C) =>
+    concur.park_condition C
