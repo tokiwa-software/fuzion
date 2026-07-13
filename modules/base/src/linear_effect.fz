@@ -17,15 +17,21 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature Process_Handler
+#  Source code of Fuzion standard library feature linear_effect
 #
 # -----------------------------------------------------------------------
 
-# Process_Handler
+# linear variant of an effect
+# that may only be instated/used once.
 #
-public Process_Handler ref is
+public linear_effect : effect is
+  depleted := Depleted_Wrapper
 
-  public start(name String, args Sequence String, env_vars container.Map String String) outcome os.process
-    pre
-      safety: env_vars.keys ∀ (x -> x.codepoints ∀ .is_ascii)
-  => abstract
+  module redef check_depletion =>
+    if !depleted.depleted.compare_and_set0 false true
+      fuzion.std.panic "effect $(linear_effect.this.type.name) already depleted. effect may only be instated once."
+
+
+Depleted_Wrapper ref is
+
+  depleted := concur.atomic bool .new false

@@ -41,7 +41,7 @@ issue293 is
     else
       res
 
-  # a Transducer mappping values from T to U
+  # a Transducer mapping values from T to U
   map(TACC, T, U type, mapper T -> U) Transducer TACC U T =>
     _ : Transducer TACC U T is
       public redef call(red reducing_fn TACC U) reducing_fn TACC T =>

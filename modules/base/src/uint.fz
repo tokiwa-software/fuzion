@@ -218,7 +218,7 @@ is
     remainder
 
 
-  # exponentation operator:
+  # exponentiation operator:
   # this uint to the power of other
   public fixed redef infix ** (other uint) uint
   =>

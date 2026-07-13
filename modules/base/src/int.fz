@@ -102,7 +102,7 @@ is
     int ns n%other.n
 
 
-  # exponentation operator:
+  # exponentiation operator:
   # this int to the power of other
   public fixed redef infix ** (other int) int
   =>

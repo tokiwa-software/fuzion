@@ -145,7 +145,7 @@ pre debug: n >= 0
     next_codepoints        := take_valid_codepoints next_bytes n, take_valid_codepoints next_bytes n-codepoint_count
     # if we did not use any bytes and `next_bytes` contains not enough bytes for a codepoint potentially,
     # we trigger a `discard` and remember what we read so far via `rest`.
-    # this is necesarry e.g. for stdin where we read one byte at a time.
+    # this is necessary e.g. for stdin where we read one byte at a time.
     rest Sequence u8       := if n>0 && next_codepoints.is_empty && next_bytes.count < 4 then reader.env.discard; next_bytes else []
     codepoint_count        := next_codepoints.count, codepoint_count+next_codepoints.count
     res Sequence String    := next_codepoints, res ++ next_codepoints
@@ -167,7 +167,7 @@ public read_delimiter (delim u8, strip_cr bool) switch String io.end_of_file ! r
   if reader.env.read ? outcome => true | * => false
     io.end_of_file
   else
-    res := LM.array u8 .empty
+    res := container.Dynamic_Array LM u8 .empty
 
     while
       match reader.env.read

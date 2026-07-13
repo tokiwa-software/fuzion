@@ -31,7 +31,7 @@ test_issue1610 =>
   case1_tmp =>
 
     # f contains a temporary variable that holds an instance of `a` and this instance
-    # is kept alive longer than `f.this` by returing an instance of `a.g`
+    # is kept alive longer than `f.this` by returning an instance of `a.g`
 
     f =>
       (a 1234567890).g
@@ -48,7 +48,7 @@ test_issue1610 =>
   case2_field =>
 
     # f contains a field `x` that holds an instance of `a` and this instance
-    # is kept alive longer than `f.this` by returing an instance of `a.g`
+    # is kept alive longer than `f.this` by returning an instance of `a.g`
 
     f =>
       x := (a 1234567890)
@@ -66,7 +66,7 @@ test_issue1610 =>
   case3_field_tmp =>
 
     # f contains a temporary variable that contains a field that holds an instance of `a`
-    # and this instance is kept alive longer than `f.this` by returing an instance
+    # and this instance is kept alive longer than `f.this` by returning an instance
     # of `a.g`
 
     y(T, U, V type, t T, u U, v V) is
@@ -86,7 +86,7 @@ test_issue1610 =>
   case4_field_field =>
 
     # f contains a field `x` that itself contains a field that holds an instance of `a`
-    # and this instance is kept alive longer than `f.this` by returing an instance
+    # and this instance is kept alive longer than `f.this` by returning an instance
     # of `a.g`
 
     y(T, U, V type, t T, u U, v V) is
@@ -109,7 +109,7 @@ test_issue1610 =>
     # same as case1 but `a.g` is returned as a ref
     #
     # f contains a temporary variable that holds an instance of `a` and this instance
-    # is kept alive longer than `f.this` by returing an instance of `a.g`
+    # is kept alive longer than `f.this` by returning an instance of `a.g`
 
     r ref is
       v u64 => abstract
@@ -131,7 +131,7 @@ test_issue1610 =>
     # same as case2 but `a.g` is returned as a ref
     #
     # f contains a field `x` that holds an instance of `a` and this instance
-    # is kept alive longer than `f.this` by returing an instance of `a.g`
+    # is kept alive longer than `f.this` by returning an instance of `a.g`
 
     r ref is
       v u64 => abstract
@@ -154,7 +154,7 @@ test_issue1610 =>
     # same as case3 but `a.g` is returned as a ref
     #
     # f contains a temporary variable that contains a field that holds an instance of `a`
-    # and this instance is kept alive longer than `f.this` by returing an instance
+    # and this instance is kept alive longer than `f.this` by returning an instance
     # of `a.g`
 
     y(T, U, V type, t T, u U, v V) is
@@ -179,7 +179,7 @@ test_issue1610 =>
     # same as case4 but `a.g` is returned as a ref
     #
     # f contains a field `x` that itself contains a field that holds an instance of `a`
-    # and this instance is kept alive longer than `f.this` by returing an instance
+    # and this instance is kept alive longer than `f.this` by returning an instance
     # of `a.g`
 
     y(T, U, V type, t T, u U, v V) is
@@ -205,7 +205,7 @@ test_issue1610 =>
     # same as case1 but result is stored in a mutable field
     #
     # f contains a temporary variable that holds an instance of `a` and this instance
-    # is kept alive longer than `f.this` by returing an instance of `a.g`
+    # is kept alive longer than `f.this` by returning an instance of `a.g`
 
     m := mut (option a.g) nil
 
@@ -227,7 +227,7 @@ test_issue1610 =>
     # same as case2 but result is stored in a mutable field
     #
     # f contains a field `x` that holds an instance of `a` and this instance
-    # is kept alive longer than `f.this` by returing an instance of `a.g`
+    # is kept alive longer than `f.this` by returning an instance of `a.g`
 
     m := mut (option a.g) nil
 
@@ -250,7 +250,7 @@ test_issue1610 =>
     # same as case3 but result is stored in a mutable field
     #
     # f contains a temporary variable that contains a field that holds an instance of `a`
-    # and this instance is kept alive longer than `f.this` by returing an instance
+    # and this instance is kept alive longer than `f.this` by returning an instance
     # of `a.g`
 
     m := mut (option a.g) nil
@@ -275,7 +275,7 @@ test_issue1610 =>
     # same as case4 but result is stored in a mutable field
     #
     # f contains a field `x` that itself contains a field that holds an instance of `a`
-    # and this instance is kept alive longer than `f.this` by returing an instance
+    # and this instance is kept alive longer than `f.this` by returning an instance
     # of `a.g`
 
     m := mut (option a.g) nil
@@ -301,7 +301,7 @@ test_issue1610 =>
     # same as case1 but result is stored as a ref in a mutable field
     #
     # f contains a temporary variable that holds an instance of `a` and this instance
-    # is kept alive longer than `f.this` by returing an instance of `a.g`
+    # is kept alive longer than `f.this` by returning an instance of `a.g`
 
     m := mut (option r) nil
 
@@ -326,7 +326,7 @@ test_issue1610 =>
     # same as case2 but result is stored as a ref in a mutable field
     #
     # f contains a field `x` that holds an instance of `a` and this instance
-    # is kept alive longer than `f.this` by returing an instance of `a.g`
+    # is kept alive longer than `f.this` by returning an instance of `a.g`
 
     m := mut (option r) nil
 
@@ -352,7 +352,7 @@ test_issue1610 =>
     # same as case3 but result is stored as a ref in a mutable field
     #
     # f contains a temporary variable that contains a field that holds an instance of `a`
-    # and this instance is kept alive longer than `f.this` by returing an instance
+    # and this instance is kept alive longer than `f.this` by returning an instance
     # of `a.g`
 
     m := mut (option r) nil
@@ -380,7 +380,7 @@ test_issue1610 =>
     # same as case4 but result is stored as a ref in a mutable field
     #
     # f contains a field `x` that itself contains a field that holds an instance of `a`
-    # and this instance is kept alive longer than `f.this` by returing an instance
+    # and this instance is kept alive longer than `f.this` by returning an instance
     # of `a.g`
 
     m := mut (option r) nil

@@ -1,0 +1,50 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test fixed_capacity_array_test_negative
+#
+# -----------------------------------------------------------------------
+
+fixed_capacity_array_test_negative =>
+
+
+  m : mutate is
+  m ! ()->
+
+    fca := container.Fixed_Capacity_Array m i32 .empty 10
+
+    check fca.max_capacity = 10
+    check fca.can_add
+
+    for i in 1..10 do
+      fca.add i
+      check fca.length = i.as_i64
+
+
+    for i in (1..10).reverse do
+      check i = (fca.remove_last)
+      check fca.length = i.as_i64-1
+
+    for i in 11..20 do
+      fca.add i
+      check fca.length = i.as_i64-10
+
+    check !fca.can_add
+
+    fca.add 21 # should panic: Fixed_Capacity_Array can not grow, exceeded limit of 10 elements

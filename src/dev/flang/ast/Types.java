@@ -176,6 +176,7 @@ public class Types extends ANY
     public final AbstractFeature f_effect;
     public final AbstractFeature f_effect_finally;
     public final AbstractFeature f_effect_static_finally;
+    public final AbstractFeature f_effect_default_value;
     public final AbstractFeature f_fuzion;
     public final AbstractFeature f_fuzion_java;
     public final AbstractFeature f_fuzion_Java_Object;
@@ -247,10 +248,11 @@ public class Types extends ANY
       f_Function                = universe.get(mod, FUNCTION_NAME, 2);
       f_Function_call           = f_Function.get(mod, FuzionConstants.OPERATION_CALL, 1);
       f_array                   = universe.get(mod, FuzionConstants.ARRAY_NAME, 6);
-      f_mutate_array            = universe.get(mod, "mutate", 0).get(mod, FuzionConstants.ARRAY_NAME, 5);
+      f_mutate_array            = universe.get(mod, "mutate", 0).get(mod, FuzionConstants.ARRAY_NAME, 2);
       f_effect                  = universe.get(mod, "effect", 0);
       f_effect_finally          = f_effect.get(mod, "finally", 0);
       f_effect_static_finally   = f_effect.get(mod, "static_finally", 0);
+      f_effect_default_value    = f_effect.cotype().get(mod, "default_value", 0);
       f_fuzion                  = universe.get(mod, "fuzion", 0);
       f_fuzion_java             = f_fuzion.get(mod, "java", 0);
       f_fuzion_Java_Object      = f_fuzion_java.get(mod, "Java_Object", 1);
