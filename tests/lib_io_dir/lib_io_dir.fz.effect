@@ -9,6 +9,6 @@ io.Buffer_Size
 io.Err
 io.Out
 io.dir.Make
-io.dir.read
+io.dir.Read
 io.file.Delete
 panic

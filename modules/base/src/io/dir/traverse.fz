@@ -38,7 +38,7 @@ public traverse(
   # the initial result
   init R,
   # the reducing function allowing a premature abort
-  red_fn (R,path) -> R /* NYI: | abort (outcome R)*/) outcome R
+  red_fn (R,path) -> R /* NYI: | abort (outcome R)*/) outcome R ! io.dir.Read
 =>
   io.dir.use _ p ()->
     for res outcome R := init,
@@ -53,5 +53,5 @@ public traverse(
                 t
           }
     while res.ok
-      np := io.dir.open.env.read .bind p.resolve
+      np := io.dir.Read.env.next .bind p.resolve
     until !np.ok then res else res
