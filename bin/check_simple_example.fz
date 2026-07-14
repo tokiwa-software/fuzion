@@ -128,7 +128,7 @@ String.execute =>
 
 # limit cpu time and stack size for executing test
 cpu_time_limit   := time.duration.min 10  # NYI: UNDER DEVELOPMENT: we should decrease this value
-stack_size_limit := units.data_size.b 1024
+stack_size_limit := units.data_size.b 1024 # NYI: UNDER DEVELOPMENT: stack limit is not yet set
 
 
 # check exit code for validity
