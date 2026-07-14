@@ -147,19 +147,6 @@ public class FuirErrors extends AstErrors
         error(pos, fullMsg.toString(), "");
     }
 
-    // Helper to get source line
-    private static String getSourceLine(SourcePosition pos)
-    {
-        if (pos.isBuiltIn() || pos._sourceFile == null)
-            return "";
-        
-        int line = pos.line();
-        if (line <= 0 || line > pos._sourceFile.numLines())
-            return "";
-        
-        return pos._sourceFile.line(line);
-    }
-
 }
 
 /* end of file */
