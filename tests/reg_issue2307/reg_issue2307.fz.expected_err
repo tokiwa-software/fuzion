@@ -1,8 +1,10 @@
 
---CURDIR--/reg_issue2307.fz:26:5: error 1: Constraint for type parameter must not be a choice type
-  a(T type: void, a T) is
-----^
-Affected type parameter: 'reg_issue2307.a.T'
-constraint: 'void'
+error 1: FATAL FAULT `*** panic ***`: hello
+Call stack:
+fuzion.sys.fatal_fault#2 at {base.fum}/fuzion/sys.fz:55
+[..]
+panic#1 at {base.fum}/panic.fz:53
+reg_issue2307 at --CURDIR--/reg_issue2307.fz:29
 
+*** fatal errors encountered, stopping.
 one error.
