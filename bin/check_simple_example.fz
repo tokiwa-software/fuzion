@@ -140,7 +140,7 @@ check_exit_code(run tokiwa.process_result) =>
     Exit.env.exit 1
   # 139 - 128 = 11 -> signal SIGSEGV
   else if run.exit_code = 139
-    say "$("*** CANCELLED:".bold.red) test $file exceeded stack size limit of $stack_size_limit KB"
+    say "$("*** CANCELLED:".bold.red) test $file exceeded stack size limit of $stack_size_limit"
     Exit.env.exit 1
   # pipe to head may result in exit code 141 -- broken pipe.
   else if run.exit_code != 0 && run.exit_code != 1 && run.exit_code != 141
