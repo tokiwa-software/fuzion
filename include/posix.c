@@ -757,19 +757,63 @@ int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLe
 }
 
 
-// wait for process to finish
-// returns exit code or -1 on wait-failure.
-int64_t fzE_process_wait(int64_t p){
+// check the process status, does not wait for process to finish
+//
+// result
+//   >=0 : the process exit code
+//   -1  : process is still running
+//   -2  : an error occurred when calling waitpid, check errno
+//  <-100: process was terminated by a signal
+//         -100-SIG, e.g., -109 for 9 (SIGKILL)
+int64_t fzE_process_poll(int64_t p){
 
   assert(p>0);
 
   int status;
-  int ret = waitpid(p, &status, WNOHANG);
+  pid_t ret = waitpid(p, &status, WNOHANG);
 
-  return ret > 0 && WIFEXITED(status)
-    // man waitpid: "This macro should be employed only if WIFEXITED returned true."
-    ? WEXITSTATUS(status)
-    : -1;
+  int res = 0;
+
+  if (ret == 0) {
+      // Child is still running.
+      res = -1;
+  }
+  else if (ret == -1) {
+      // Error. Check errno.
+      res = -2;
+  }
+  else if (WIFEXITED(status)) {
+      // process exited
+      res = WEXITSTATUS(status);
+  }
+  else if (WIFSIGNALED(status)) {
+      // process was terminated by a signal
+      res = -100 - WTERMSIG(status);
+  }
+  else {
+    assert(false);
+  }
+  return res;
+}
+
+
+// open a new pipe
+//
+int fzE_pipe_create(int64_t * fds)
+{
+  int pipefd[2];
+
+  if (pipe(pipefd) == -1)
+  {
+    return errno; 
+  }
+  else
+  {
+    fds[0] = (int64_t) pipefd[0];
+    fds[1] = (int64_t) pipefd[1];
+  }
+
+  return 0;
 }
 
 

@@ -37,7 +37,7 @@ test1 is
   ex
 
 # calling `show` with ref to different dynamic types, using
-# `dt`, which is a lokal implementation of Any.dynamic_type.
+# `dt`, which is a local implementation of Any.dynamic_type.
 #
 test2 is
   a ref is

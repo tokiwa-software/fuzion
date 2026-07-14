@@ -31,7 +31,7 @@ looptest_negative is
       say "PASSED: $msg"
     else
       say "FAILED: $msg"
-      _ := set_exit_code 1
+      _ := Exit.env.set_exit_code 1
 
   a := array i32 _ 100 (i -> if (i % 23 = 0) (-2)*i else i*i)
 
@@ -132,4 +132,4 @@ looptest_negative is
   testBooleanUntil7 is { do { } until !false }; _ := testBooleanUntil7  # ok
   testBooleanUntil8 is { do { } until !true  }; _ := testBooleanUntil8  # ok
 
-  exit
+  Exit.env.exit

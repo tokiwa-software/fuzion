@@ -35,7 +35,7 @@ valWithDynOuter is
       say "PASSED: $str"
     else
       say "FAILED: $str /= $expected"
-      _ := set_exit_code 1
+      _ := Exit.env.set_exit_code 1
 
   # test if e.y produces expected as result
   #
@@ -167,4 +167,4 @@ valWithDynOuter is
 #  tests_mut o4.g ".ss-s:s.x." # Call has ambiguous result type
 #  chck o4.f "ss"
 
-  exit
+  Exit.env.exit

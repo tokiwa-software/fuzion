@@ -177,7 +177,7 @@ sockets_test is
   protocols array net.protocol.val := [net.protocol.tcp, net.protocol.udp]
   for f in families do
     for p in protocols do
-      _ := concur.threads.env.spawn ()->
+      _ := concur.Threads.env.spawn ()->
         lm ! ()->
           _ := server f p
 
@@ -190,4 +190,4 @@ sockets_test is
         lm ! ()->
           client f p (net.family.localhost f) (port f p) i
 
-  exit 0
+  Exit.env.exit 0

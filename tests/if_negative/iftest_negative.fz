@@ -30,7 +30,7 @@ iftest_negative is
     s := if b
            "PASSED: "
          else
-           _ := set_exit_code 1
+           _ := Exit.env.set_exit_code 1
            "FAILED: "
     say (s + msg)
 
@@ -63,4 +63,4 @@ iftest_negative is
     if b # 6. should flag an error: Incompatible types in branches of if expression
       "Hello"
 
-  exit
+  Exit.env.exit

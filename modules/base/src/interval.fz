@@ -124,37 +124,3 @@ is
   #
   public redef finite trit =>
     if through.exists then trit.yes else trit.no
-
-
-
-# has_interval -- feature for integers that can define an interval
-#
-public has_interval : integer is
-
-
-  # defining an integer interval from this to other, both inclusive
-  #
-  # special cases of interval a..b:
-  #
-  #     a <  b: the interval from a to b, both inclusive
-  #     a == b: the interval containing only one element, a
-  #     a >  b: an empty interval
-  public infix .. (through has_interval.this) interval has_interval.this =>
-    interval has_interval.this through has_interval.this.one
-
-
-  # an infinite integer Sequence starting from this up to the maximum value
-  # has_interval.this.max
-  #
-  public postfix .. interval has_interval.this =>
-    interval has_interval.this nil has_interval.this.one
-
-
-  # an infinite integer Sequence starting from this up to the maximum value
-  # has_interval.this.max
-  #
-  # NYI: CLEANUP: Eventually remove `postfix ..` or `postfix ..∞` in favor of the
-  # other one, for now this is here to show that `∞` is a legal symbol in an operator.
-  #
-  public postfix ..∞ interval has_interval.this =>
-    postfix ..

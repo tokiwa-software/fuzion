@@ -471,7 +471,17 @@ int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLe
  *
  * @return -1 error, >=0 exit code
  */
-int64_t fzE_process_wait(int64_t p);
+int64_t fzE_process_poll(int64_t p);
+
+/**
+ * open a new pipe, put read and write end into array passed here
+ *
+ * @param fds array to be filled with pipe's file descriptors
+ *
+ * @return non-zero error number, or 0 on success
+ *
+ */
+int fzE_pipe_create(int64_t * fds);
 
 /**
  * read nbytes bytes into `buf` from pipe `desc`.

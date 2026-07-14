@@ -1,0 +1,65 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature envir.Vars
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# envir.Vars -- effect providing access to environment variables
+#
+public Vars ref : effect is
+
+  # If set, get the environment variable corresponding to v.
+  #
+  public get(v String) option String => abstract
+
+
+  # get the value v is mapped to, or nil if none.
+  #
+  public index [] (v String) option String =>
+    get v
+
+
+  # get a map of the given env vars, vars that are not set
+  # are not included in the map
+  #
+  #     envir.vars.map_of ["PATH", "DISPLAY", "NOT_SET_VAR"]
+  #
+  # results in e.g.:
+  #
+  # (PATH => /usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games:build/bin/), (DISPLAY => :0)
+  #
+  public map_of(s Sequence String) container.Map String String =>
+    kvs =>
+      s.flat_map k->
+        match Vars.this[k].bind v->(k, v)
+          t tuple => [t]
+          nil => []
+    container.map_of kvs
+
+
+  # default implementation of envir.vars
+  #
+  # this will get instated automatically at startup
+  #
+  public redef fixed type.default_value option envir.Vars =>
+    _ : envir.Vars is
+      public redef get(v String) option String => fuzion.sys.env_vars.get v

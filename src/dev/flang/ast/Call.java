@@ -2975,11 +2975,23 @@ public class Call extends AbstractCall
     if (_calledFeature != null &&
         context.outerFeature() != Types.resolved.f_effect_static_finally &&
         (_calledFeature == Types.resolved.f_effect_finally ||
-         _calledFeature.redefinesFull().contains(Types.resolved.f_effect_finally))
+         _calledFeature.redefinesFull().contains(Types.resolved.f_effect_finally)) &&
+        !res._module.name().equals(FuzionConstants.BASE_MODULE_NAME)
        )
       {
         AstErrors.mustNotCallEffectFinally(this);
       }
+
+
+    if (_calledFeature != null &&
+        (_calledFeature == Types.resolved.f_effect_default_value ||
+         _calledFeature.redefinesFull().contains(Types.resolved.f_effect_default_value)) &&
+        !res._module.name().equals(FuzionConstants.BASE_MODULE_NAME)
+       )
+      {
+        AstErrors.mustNotCallEffectDefaultValue(this);
+      }
+
 
     if (t != Types.t_ERROR)
       {

@@ -630,7 +630,7 @@ public abstract class FUIR extends IR
 
 
   /**
-   * For a clazz of eff.fallible, lookup cause.
+   * For a clazz of flow.fallible, lookup cause.
    *
    * @param ecl index of a clazz representing fallible effect
    *

@@ -47,17 +47,6 @@ module:public Binary_Heap_Queue(
   #
   less_than_or_equal Binary bool T T,
 
-  # minimum size for the internal data structure
-  # staying within this limit, avoids amortized runtimes
-  #
-  min_size option i64,
-
-  # unordered elements to construct the queue from
-  #
-  initial_elements option (Sequence T)
-
-) ref : container.Mutable_Priority_Queue T is
-
 
   # binary heap with the elements in the queue
   #
@@ -98,16 +87,14 @@ module:public Binary_Heap_Queue(
   #           │           │   │
   #           ╰───────────┴───╯
   #
-  elements :=
-    match initial_elements
-      nil             =>
-        match min_size
-          nil => LM.array T .empty
-          i i64 => LM.array T .empty i
-      elem Sequence T => LM.array T .from_Sequence elem
+  elements Dynamic_Array LM T
+
+) ref : container.Mutable_Priority_Queue T is
+
+  public elem_type unit => say elements.dynamic_type
 
   # fix heap if created from initial elements
-  if initial_elements.ok
+  if elements.length > 0
     build_heap_fix
 
   check debug 5 : check_heap_property
@@ -419,7 +406,7 @@ module:public Binary_Heap_Queue(
   public fixed redef type.empty container.Binary_Heap_Queue LM T
     pre else T : property.orderable
   =>
-    container.Binary_Heap_Queue LM T lteq nil nil
+    container.Binary_Heap_Queue LM T lteq (container.Dynamic_Array LM T .empty)
 
 
   # Create a new priority queue that returns the smallest element first
@@ -432,7 +419,7 @@ module:public Binary_Heap_Queue(
     ) container.Binary_Heap_Queue LM T
     pre T : property.orderable
   =>
-    container.Binary_Heap_Queue LM T lteq min_size nil
+    container.Binary_Heap_Queue LM T lteq (container.Fixed_Capacity_Array LM T .empty min_size)
 
 
   # Create an empty priority queue that returns the smallest element first,
@@ -443,7 +430,7 @@ module:public Binary_Heap_Queue(
   #
   public fixed redef type.empty_by(O type : property.orderable, by T->O) container.Binary_Heap_Queue LM T
   =>
-    container.Binary_Heap_Queue LM T (a,b->(by a)<=(by b)) nil nil
+    container.Binary_Heap_Queue LM T (a,b->(by a)<=(by b)) (container.Dynamic_Array LM T .empty)
 
 
   # Create an empty priority queue that returns the smallest element first,
@@ -452,13 +439,17 @@ module:public Binary_Heap_Queue(
   # To reverse the sorting order and have the largest element
   # returned first, `property.reverse_order` can be used.
   #
-  public fixed type.empty_by(O type : property.orderable, by T->O,
+  public fixed type.empty_by(
+      O type : property.orderable,
+
+      by T->O,
+
       # minimum size for the internal data structure
       # staying within this limit, avoids amortized runtimes
       min_size i64
     ) container.Binary_Heap_Queue LM T
   =>
-    container.Binary_Heap_Queue LM T (a,b->(by a)<=(by b)) min_size nil
+    container.Binary_Heap_Queue LM T (a,b->(by a)<=(by b)) (container.Fixed_Capacity_Array LM T .empty min_size)
 
 
   # Create a priority queue from the given elements
@@ -472,7 +463,7 @@ module:public Binary_Heap_Queue(
   public fixed redef type.from(initial_elements Sequence T) container.Binary_Heap_Queue LM T
     pre else T : property.orderable
   =>
-    container.Binary_Heap_Queue LM T lteq nil initial_elements
+    container.Binary_Heap_Queue LM T lteq (container.Dynamic_Array LM T .from_sequence initial_elements)
 
 
   # Create a priority queue from the given unordered elements that returns the
@@ -492,4 +483,4 @@ module:public Binary_Heap_Queue(
                                   by T->O
                                  ) container.Binary_Heap_Queue LM T
   =>
-    container.Binary_Heap_Queue LM T (a,b->(by a)<=(by b)) nil (option initial_elements)
+    container.Binary_Heap_Queue LM T (a,b->(by a)<=(by b)) (container.Dynamic_Array LM T .from_sequence initial_elements)

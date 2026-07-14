@@ -30,17 +30,17 @@
 #
 # returns: iterations per second
 #
-public bench(warm_up time.duration, d time.duration, f ()->unit) time.frequency ! time.nano =>
+public bench(warm_up time.duration, d time.duration, f ()->unit) time.frequency ! time.Nano =>
 
-  wa_start := time.nano.env.read
+  wa_start := time.Nano.env.read
 
-  while time.nano.env.read - wa_start < d
+  while time.Nano.env.read - wa_start < d
   do
     f.call
 
-  start := time.nano.env.read
+  start := time.Nano.env.read
   for iter := (u64 0), iter + 1
-  while time.nano.env.read - start < d
+  while time.Nano.env.read - start < d
   do
     f.call
   else
@@ -54,5 +54,5 @@ public bench(warm_up time.duration, d time.duration, f ()->unit) time.frequency 
 #
 # returns: iterations per second
 #
-public bench(f ()->unit) time.frequency ! time.nano =>
+public bench(f ()->unit) time.frequency ! time.Nano =>
   bench (time.duration.s 5) (time.duration.s 10) f

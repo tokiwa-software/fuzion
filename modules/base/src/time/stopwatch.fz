@@ -25,17 +25,17 @@
 
 # stopwatch measures the execution duration of f
 #
-public stopwatch(f () -> unit) time.duration ! time.nano =>
-  start := time.nano.env.read
+public stopwatch(f () -> unit) time.duration ! time.Nano =>
+  start := time.Nano.env.read
   f()
-  end := time.nano.env.read
+  end := time.Nano.env.read
   end - start
 
 
 # stopwatch measures the execution duration of f
 #
-public stopwatch(T type, f () -> T) (T, time.duration) ! time.nano =>
-  start := time.nano.env.read
+public stopwatch(T type, f () -> T) (T, time.duration) ! time.Nano =>
+  start := time.Nano.env.read
   res := f()
-  end := time.nano.env.read
+  end := time.Nano.env.read
   (res, end - start)

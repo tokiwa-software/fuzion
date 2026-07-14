@@ -81,7 +81,7 @@ jitter_threaded =>
               sample_ch concur.Channel (tuple time.duration time.instant time.instant bool))
   =>
 
-      # type used to identify exception to stop in case jitter is too high
+      # type used to identify flow.exception to stop in case jitter is too high
       jitter_too_high is
 
       # test payload, just some dummy code requiring a moderate amount of calculation
@@ -114,8 +114,8 @@ jitter_threaded =>
           sample_ch <- (period, marker, marker, true)
 
           # run one single release: record the actual release and run the payload
-          # in case of a late release or an overrun into the next release time, cause `exception jitter_too_high`
-          run_one_release ! exception jitter_too_high =>
+          # in case of a late release or an overrun into the next release time, cause `flow.exception jitter_too_high`
+          run_one_release ! flow.exception jitter_too_high =>
             actual_release := TIMER.env.read
             expected_rel := state_get next_release .t
 
@@ -125,15 +125,15 @@ jitter_threaded =>
             # advance expected release time
             next_rel     := state_modify next_release (x -> next_release x.t+period) .get.t
             if actual_release >= next_rel
-              (exception jitter_too_high).env.cause <| error "release time jitter exceeded period"
+              (flow.exception jitter_too_high).env.cause <| error "release time jitter exceeded period"
 
             payload
             actual_finish := TIMER.env.read
             if actual_finish >= next_rel
               err := error "*** overrun: run started at {actual_release-expected_rel}  and took {actual_finish-actual_release}, which is larger than period $period"
-              (exception jitter_too_high).env.cause err
+              (flow.exception jitter_too_high).env.cause err
 
-      _ := match exception jitter_too_high .on ()->
+      _ := match flow.exception jitter_too_high .on ()->
 
            for p := period_default, p.times 0.5
            while p.as_duration >= time.duration.ms 1 do
@@ -146,8 +146,8 @@ jitter_threaded =>
 
   say "Starting jitter test on dedicated thread..."
   result_ch := concur.Channel (tuple time.duration time.instant time.instant bool)
-  thrd := concur.threads.env.spawn ()->
-    test_jitter time.nano time.nano result_ch
+  thrd := concur.Threads.env.spawn ()->
+    test_jitter time.Nano time.Nano result_ch
     result_ch.close
 
   # affinity: pin the worker thread to CPU 0 (best-effort)

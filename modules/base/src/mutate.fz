@@ -77,7 +77,7 @@ public mutate : linear_effect is
   #
   module tid =>
     tid0.or_else ()->
-        res := concur.threads.env.current
+        res := concur.Threads.env.current
         set tid0 := res
         res
 
@@ -85,9 +85,9 @@ public mutate : linear_effect is
   # the thread this mutate was created with
   #
   # NYI: UNDER DEVELOPMENT: Since effect order is currently not enforced during the
-  # big bang singulariy, we set this lazily.
+  # big bang singularity, we set this lazily.
   #
-  tid0 option concur.Thread := if concur.threads.is_instated then concur.threads.env.current
+  tid0 option concur.Thread := if concur.Threads.is_instated then concur.Threads.env.current
                                                              else nil
 
 
@@ -108,7 +108,7 @@ public mutate : linear_effect is
   #
   public is_exclusive bool
   =>
-    M.get_if_instated >>? (x -> id = x.id && x.exclusive_thread=concur.threads.env.current)
+    M.get_if_instated >>? (x -> id = x.id && x.exclusive_thread=concur.Threads.env.current)
 
 
   # panic operation to be used in case of a severe problem.  This is redefined within the

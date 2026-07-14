@@ -29,7 +29,7 @@ protected_space := codepoint codepoint.utf8_encoded_in_four_bytes.as_list.last.o
 
 # envir vars as map
 #
-envir_vars := container.map_of ((envir.vars.env.map_of [
+envir_vars := container.map_of ((envir.Vars.env.map_of [
     "PATH",
     "LANG",
     "JAVA_HOME",
@@ -95,7 +95,7 @@ record_process(
   # NYI: BUG: unclear why lsp does not shut down
   match p.wait (time.duration.s 1)
     error =>
-      check p.send_signal os.signals.kill .ok
+      check p.kill.ok
       tokiwa.process_result (String.join_lines fout.get) "" 1
     ec u32 =>
       tokiwa.process_result (String.join_lines fout.get) "" ec

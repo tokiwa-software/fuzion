@@ -1,0 +1,19 @@
+
+error 1: FATAL FAULT `precondition`: safety : can_add
+Call stack:
+fuzion.sys.fatal_fault#2 at {base.fum}/fuzion/sys.fz:55
+[..]
+fuzion.runtime.precondition_fault#1 at {base.fum}/fuzion/runtime/pre_fault.fz:56
+(container.Fixed_Capacity_Array fixed_capacity_array_test_negative.m i32).pre add at {base.fum}/container/Dynamic_Array.fz:98
+(container.Fixed_Capacity_Array fixed_capacity_array_test_negative.m i32).precall add at {base.fum}/container/Dynamic_Array.fz:98
+fixed_capacity_array_test_negative.(λ()-> fca := container.Fixed_Capacity_A...).call at --CURDIR--/fixed_capacity_array_test_negative.fz:50
+(instate_helper unit fixed_capacity_array_test_negative.m).call_code.call at {base.fum}/effect.fz:416
+instate_helper unit fixed_capacity_array_test_negative.m at {base.fum}/effect.fz:411
+fixed_capacity_array_test_negative.type.m.type.instate#4 unit at {base.fum}/effect.fz:170
+fixed_capacity_array_test_negative.type.m.type.instate#3 unit at {base.fum}/effect.fz:191
+fixed_capacity_array_test_negative.m.instate_self#2 unit at {base.fum}/effect.fz:212
+fixed_capacity_array_test_negative.m.infix !#2 unit at {base.fum}/effect.fz:229
+fixed_capacity_array_test_negative at --CURDIR--/fixed_capacity_array_test_negative.fz:28
+
+*** fatal errors encountered, stopping.
+one error.

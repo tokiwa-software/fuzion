@@ -176,6 +176,7 @@ public class Types extends ANY
     public final AbstractFeature f_effect;
     public final AbstractFeature f_effect_finally;
     public final AbstractFeature f_effect_static_finally;
+    public final AbstractFeature f_effect_default_value;
     public final AbstractFeature f_fuzion;
     public final AbstractFeature f_fuzion_java;
     public final AbstractFeature f_fuzion_Java_Object;
@@ -185,9 +186,9 @@ public class Types extends ANY
     public final AbstractFeature f_fuzion_sys_array;
     public final AbstractFeature f_fuzion_sys_array_length;
     public final AbstractFeature f_fuzion_sys_array_data;
-    public final AbstractFeature f_eff;
-    public final AbstractFeature f_eff_fallible;
-    public final AbstractFeature f_eff_fallible_cause;
+    public final AbstractFeature f_flow;
+    public final AbstractFeature f_flow_fallible;
+    public final AbstractFeature f_flow_fallible_cause;
     public final AbstractFeature f_concur;
     public final AbstractFeature f_concur_atomic;
     public final AbstractFeature f_concur_atomic_v;
@@ -247,10 +248,11 @@ public class Types extends ANY
       f_Function                = universe.get(mod, FUNCTION_NAME, 2);
       f_Function_call           = f_Function.get(mod, FuzionConstants.OPERATION_CALL, 1);
       f_array                   = universe.get(mod, FuzionConstants.ARRAY_NAME, 6);
-      f_mutate_array            = universe.get(mod, "mutate", 0).get(mod, FuzionConstants.ARRAY_NAME, 5);
+      f_mutate_array            = universe.get(mod, "mutate", 0).get(mod, FuzionConstants.ARRAY_NAME, 2);
       f_effect                  = universe.get(mod, "effect", 0);
       f_effect_finally          = f_effect.get(mod, "finally", 0);
       f_effect_static_finally   = f_effect.get(mod, "static_finally", 0);
+      f_effect_default_value    = f_effect.cotype().get(mod, "default_value", 0);
       f_fuzion                  = universe.get(mod, "fuzion", 0);
       f_fuzion_java             = f_fuzion.get(mod, "java", 0);
       f_fuzion_Java_Object      = f_fuzion_java.get(mod, "Java_Object", 1);
@@ -260,9 +262,9 @@ public class Types extends ANY
       f_fuzion_sys_array        = f_fuzion_sys.get(mod, "internal_array", 3);
       f_fuzion_sys_array_data   = f_fuzion_sys_array.get(mod, "data", 0);
       f_fuzion_sys_array_length = f_fuzion_sys_array.get(mod, "length", 0);
-      f_eff                     = universe.get(mod, "eff", 0);
-      f_eff_fallible            = f_eff.get(mod, "fallible", 2);
-      f_eff_fallible_cause      = f_eff_fallible.get(mod, "cause", 1);
+      f_flow                     = universe.get(mod, "flow", 0);
+      f_flow_fallible            = f_flow.get(mod, "fallible", 2);
+      f_flow_fallible_cause      = f_flow_fallible.get(mod, "cause", 1);
       f_concur                  = universe.get(mod, "concur", 0);
       f_concur_atomic           = f_concur.get(mod, "atomic", 2);
       f_concur_atomic_v         = f_concur_atomic.get(mod, "v", 0);

@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# javaHello is a minimalistic example that shows how Java's
+# javaHello is a minimalist example that shows how Java's
 # java.lang.System.out.println can be called from Fuzion code.
 #
 # See Makefile for how to start fuzion to run this example.
@@ -133,7 +133,7 @@ javaHello : Java is
       util_map := fuzion.jvm.env.cast Java.java.util.Map tm
 
       tm2 := Java.java.util.TreeMap.new
-      _ := exception (outcome Java.java.util.Map) unit ()->
+      _ := flow.exception (outcome Java.java.util.Map) unit ()->
         tm2.putAll util_map.or_panic
         say tm2.toString
 
@@ -148,7 +148,7 @@ javaHello : Java is
       util_map := fuzion.jvm.env.cast Java.java.util.Map jstr
 
       tm2 := Java.java.util.TreeMap.new
-      _ := exception (outcome Java.java.util.Map) unit ()->
+      _ := flow.exception (outcome Java.java.util.Map) unit ()->
         tm2.putAll util_map.or_panic
         say tm2.toString
 

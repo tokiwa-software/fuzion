@@ -1,0 +1,51 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature Unique_Id
+#
+# -----------------------------------------------------------------------
+
+# Unique_Id -- effect that generates a unique id
+#
+public Unique_Id ref : effect
+is
+
+  public get uid => abstract
+
+
+  # default implementation of Unique_Id
+  #
+  # this will get instated automatically at startup
+  #
+  public redef fixed type.default_value option Unique_Id =>
+    _ : Unique_Id is
+      public redef get uid => uid fzE_unique_id
+
+
+# get a unique id > 0
+#
+# this can be used to add a unique identifier to compare instances.
+#
+# sine there are 2^64-1 possible values, you can safely assume that these are
+# in fact unique.  Assuming one unique id is consumed every nanosecond, it
+# would take more than 500 years before we run out of values
+# (2^64/10^9/3600/24/365.25).
+#
+public unique_id uid ! Unique_Id =>
+  Unique_Id.env.get

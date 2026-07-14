@@ -106,7 +106,7 @@ public bool : choice false_ true_, property.equatable, property.hashable, java_p
 
   # xor, either or
   #
-  # true if exatly one of the two
+  # true if exactly one of the two
   # bools is true
   #
   public infix ^   (other bool) bool =>

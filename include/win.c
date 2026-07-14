@@ -923,22 +923,42 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
 }
 
 
-// wait for process to finish
-// returns exit code or -1 on wait-failure.
-int64_t fzE_process_wait(int64_t p){
-  DWORD status = 0;
-  if (GetExitCodeProcess((HANDLE)p, &status)){
-    if (status == STILL_ACTIVE){
-      return -1;
+// check the process status, does not wait for process to finish
+//
+// result
+//   >=0 : the process exit code (including exception/termination codes)
+//   -1  : process is still running
+//   -2  : an error occurred when calling waitpid, check errno
+int64_t fzE_process_poll(int64_t p){
+
+    assert(p != 0);
+
+    DWORD status;
+
+    if (!GetExitCodeProcess((HANDLE)p, &status)) {
+        // Error calling GetExitCodeProcess()
+        return -2;
     }
-    else {
-      CloseHandle((HANDLE)p);
-      return (int64_t)status;
+
+    if (status == STILL_ACTIVE) {
+        // Process is still running.
+        return -1;
     }
-  }
-  return 255;
+
+    // Process has exited.
+    CloseHandle((HANDLE)p);
+    return (int64_t)status;
 }
 
+
+// always return 38, pipe creation not yet implemented
+//
+// NYI: ENHANCEMENT: support pipe creation on Windows
+//
+int fzE_pipe_create(int64_t *fds)
+{
+  return 38; // ENOSYS on Linux
+}
 
 // returns -1 on error, 0 on pipe exhausted/closed
 // otherwise the number of bytes read

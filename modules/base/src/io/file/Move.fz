@@ -1,0 +1,64 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature Move
+#
+#  Author: Wael Youssfi (wael.youssfi@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# Move -- effect wrapping the file move operation
+#
+public Move ref : effect is
+
+  # moves file/dir from an old path to a the new path
+  # can rename the file/dir as well by changing the name of the old file/dir to a new name in the new_path
+  # returns a unit type as outcome in case of success and error in case of failure
+  #
+  public move(
+       # the old (relative or absolute) file name, using platform specific path separators
+       old path,
+       # the new (relative or absolute) file name, using platform specific path separators
+       new path) outcome unit =>
+    abstract
+
+
+  # default implementation of Move
+  #
+  # this will get instated automatically at startup
+  #
+  public redef fixed type.default_value option io.file.Move
+  =>
+    _ : io.file.Move is
+      public redef move(old, new path) outcome unit =>
+        fuzion.sys.fileio.move old new
+
+
+# shorthand for accessing Move effect in current environment and performing the default move operation using
+# io.file.Move.move old new
+# moves file/dir from an old path to a the new path
+# can rename the file/dir as well by changing the name of the old file/dir to a new name in the new_path
+# returns a unit type as outcome in case of success and error in case of failure
+#
+public move(
+     # the old (relative or absolute) file name, using platform specific path separators
+     old path,
+     # the new (relative or absolute) file name, using platform specific path separators
+     new path) outcome unit ! io.file.Move =>
+  io.file.Move.env.move old new

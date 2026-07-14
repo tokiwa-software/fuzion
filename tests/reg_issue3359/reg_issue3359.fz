@@ -42,7 +42,7 @@ reg_issue3359 is
   g : f is
 
 
-  # h implementes type feature n, but not o nor p
+  # h implements type feature n, but not o nor p
   #
   h : g is
     redef type.n =>
@@ -51,8 +51,8 @@ reg_issue3359 is
   # t will call T.n and T.o, but not T.p since this call is unreachable
   #
   t(T type : f) =>
-    if      envir.args.env.count = 0 then T.n
-    else if envir.args.env.count = 1 then T.o
+    if      envir.Args.env.count = 0 then T.n
+    else if envir.Args.env.count = 1 then T.o
     else if true                 then
                                  else T.p  # unreachable, will not be reported!
 
@@ -84,7 +84,7 @@ reg_issue3359 is
   j : i is
 
 
-  # k implementes feature q, but not r nor s
+  # k implements feature q, but not r nor s
   #
   k : j is
     redef q =>
@@ -93,8 +93,8 @@ reg_issue3359 is
   # u will call T.q and T.r, but not T.s since this call is unreachable
   #
   u(v T : i) =>
-    if      envir.args.env.count = 0 then v.q
-    else if envir.args.env.count = 1 then v.r
+    if      envir.Args.env.count = 0 then v.q
+    else if envir.Args.env.count = 1 then v.r
     else if true                 then
                                  else v.s  # unreachable, will not be reported!
 

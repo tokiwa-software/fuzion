@@ -893,7 +893,7 @@ public class AstErrors extends ANY
             processed.add(ep);
             if (earlierPosString.length() > 0)
               {
-                earlierPosString.append(", and at \n");
+                earlierPosString.append(", and at\n");
               }
             earlierPosString.append(ep.show());
           }
@@ -1454,7 +1454,7 @@ public class AstErrors extends ANY
           "Ambiguous type",
           "For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.\n" +
           "Type that is ambiguous: " + st(t) + "\n" +
-          "Possible features that match this type: \n" +
+          "Possible features that match this type:\n" +
           featureList(possibilities) + "\n" +
           "To solve this, rename these features such that each one has a unique name.");
   }
@@ -1700,7 +1700,7 @@ public class AstErrors extends ANY
       {
         error(pos,
               "Target type of a lambda expression must be a plain type whose feature inherits " + sqn("fuzion.lambda_target") + ", e.g., " + sqn("Function") + ".",
-              "A lambda expression can only be used if assigned to a field or argument whose type contains an abstract lambda target feature \n" +
+              "A lambda expression can only be used if assigned to a field or argument whose type contains an abstract lambda target feature\n" +
               "with argument count of the lambda expression equal to the effective argument count of the lambda target.\n" +
               "Target type: " + s(t) + (from == null ? "" : " from " + from.get()) + "\n" +
               "To solve this, assign the lambda expression to a type that is a lambda target, e.g., " + ss("f (i32, i32) -> bool := x, y -> x > y") + ".");
@@ -1747,7 +1747,7 @@ public class AstErrors extends ANY
   {
     error(pos,
           "Choice type must not access features of surrounding scope.",
-          "A closure cannot be built for a choice type. Forbidden accesses occur at \n" +
+          "A closure cannot be built for a choice type. Forbidden accesses occur at\n" +
           accesses + "\n" +
           "To solve this, you might move the accessed features outside of the common outer feature.");
   }
@@ -2530,6 +2530,12 @@ public class AstErrors extends ANY
       ss("<effect>.finally") + " is called automatically.");
   }
 
+  public static void mustNotCallEffectDefaultValue(Call call)
+  {
+    error(call.pos(), "Must not call " + ss("<effect>.default_value") + ".",
+      ss("<effect>.default_value") + " is called automatically on big bang singularity.");
+  }
+
   public static void ambiguousIfIfElse(SourcePosition pos, SourcePosition if1, SourcePosition if2)
   {
     error(pos,
@@ -2668,6 +2674,13 @@ public class AstErrors extends ANY
     error(pos, "Loop results in two incompatible types." ,
       "The incompatible types are: " + m.cases().map2(c -> s(c.code().type())).stream().collect(Collectors.joining(","))
     );
+  }
+
+  public static void anonymousFeatureMustNotInheritFromMultiple(SourcePosition range, List<AbstractCall> i)
+  {
+    error(range, "Anonymous feature must not inherit from multiple features.",
+      "Found inheritance calls:\n\n" +
+      i.stream().map(ic -> ic.pos().showInSource()).collect(Collectors.joining("\nand\n\n")));
   }
 
 }

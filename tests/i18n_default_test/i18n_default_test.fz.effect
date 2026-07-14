@@ -1,4 +1,4 @@
-envir.vars
+envir.Vars
 fuzion.runtime.check_fault
 fuzion.runtime.contract_fault
 fuzion.runtime.fault

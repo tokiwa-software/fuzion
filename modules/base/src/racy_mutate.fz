@@ -27,12 +27,12 @@
 #
 # NYI: UNDER DEVELOPMENT: Currently, this does not do anything to make sure
 # racy accesses are ok, i.e., there are no memory fences, there are no
-# atomic operations and `exclusive` does not enforce exlusivity.  This is
+# atomic operations and `exclusive` does not enforce exclusivity.  This is
 # only an intermediate solution to permit sharing a mutate even though the
 # resulting code is full of races.
 #
 # The idea is to remove this as soon as we have proper, thread-save effects
-# using mutexes, memory fences, atomic operations, transations or other
+# using mutexes, memory fences, atomic operations, transactions or other
 # means to ensure thread-safety.
 #
 public racy_mutate : mutate is

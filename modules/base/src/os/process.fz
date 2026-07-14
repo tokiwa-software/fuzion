@@ -140,7 +140,7 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
 
   # pipe this processes output to new process
   #
-  public infix | (process_and_args Sequence String) outcome os.process ! processes
+  public infix | (process_and_args Sequence String) outcome os.process ! os.Process
   pre
     process_and_args ∀ .is_ascii
     !process_and_args[0].contains_whitespace
@@ -151,7 +151,7 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
       # NYI: UNDER DEVELOPMENT: this works only when pipes buffer is large enough for
       # what is being written/read to/from pipes
       # thread to pipe from one process to other
-      _ := concur.threads.env.spawn ()->
+      _ := concur.Threads.env.spawn ()->
         for p1rb := std_out_read_handler.read pipe_buffer_size
         while
           match p1rb
@@ -175,40 +175,53 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
 
   # wait for this process
   #
-  public wait outcome u32 ! time.nano, processes =>
+  public wait outcome u32 ! time.Nano, os.Process =>
     wait time.duration.max
 
 
   # wait for this process
   #
-  public wait(timeout time.duration) outcome u32 ! time.nano, os.processes
+  public wait(timeout time.duration) outcome u32 ! time.Nano, os.Process
   =>
     # NYI: process should be ref?
-    os.processes.env.wait (os.process pid std_in std_out std_err name args) timeout
+    os.Process.env.wait (os.process pid std_in std_out std_err name args) timeout
 
 
   # send signal to process
   #
-  public send_signal(sig signal) outcome unit =>
+  public send_signal(sig os.signal) outcome unit =>
+    # NYI: CLEANUP: move this to Process effect
     fzE_send_signal pid sig.as_i32 = 0 ? unit : error "sending signal to process $pid" fzE_last_error
+
+
+  # send kill signal to process
+  #
+  public kill outcome unit =>
+    send_signal os.signals.kill
+
+
+  # send terminate signal to process
+  #
+  public terminate outcome unit =>
+    send_signal os.signals.terminate
 
 
   # start a process with name, arguments and environment variables
   #
-  public type.start(n String, args Sequence String, env_vars container.Map String String) outcome os.process ! os.processes
+  public type.start(n String, args Sequence String, env_vars container.Map String String) outcome os.process ! os.Process
   =>
-    os.processes.env.start n args env_vars
+    os.Process.env.start n args env_vars
 
 
   # start a process with name and arguments
   #
-  public type.start(n String, args Sequence String) outcome os.process ! processes =>
+  public type.start(n String, args Sequence String) outcome os.process ! os.Process =>
     start n args (container.ps_map String String).empty
 
 
   # start a process with name and no arguments
   #
-  public type.start(n String) outcome os.process ! processes =>
+  public type.start(n String) outcome os.process ! os.Process =>
     start n []
 
 
@@ -225,7 +238,7 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
 
   # this process as a human readable String
   #
-  public redef as_string String ! time.nano, processes =>
+  public redef as_string String ! time.Nano, os.Process =>
     match wait time.duration.zero
       error  => "$name $(String.join args " ") (running, PID: $pid)"
       ec u32 => "$name $(String.join args " ") (exited with exit code: $ec)"

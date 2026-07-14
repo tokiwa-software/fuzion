@@ -53,7 +53,7 @@ varargs_via_open_type_parameter =>
 
   # printf that replaces %0/%1/... by a.0/a.1/...
   #
-  # this implementation uses a lokal instance of `typed_applicator`
+  # this implementation uses a local instance of `typed_applicator`
   #
   printf1(A type ..., s String, a A...) =>
 
@@ -71,7 +71,7 @@ varargs_via_open_type_parameter =>
 
   # printf that replaces %0/%1/... by a.0/a.1/...
   #
-  # this implementation uses a lokal instance of `typed_fold`
+  # this implementation uses a local instance of `typed_fold`
   #
   printf2(A type ..., s String, a A...) =>
 

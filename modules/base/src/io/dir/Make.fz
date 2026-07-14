@@ -1,0 +1,53 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature io.dir.Make
+#
+# -----------------------------------------------------------------------
+
+# Make -- effect providing make directory
+#
+public Make ref : effect is
+
+  # makes a directory using the specified path
+  # parent directories in the path should exist otherwise, no creation will take place and an error will be the outcome
+  # in case of successful creation a unit type will be the outcome
+  #
+  public mkdir(path path) outcome unit => abstract
+
+
+  # default implementation of Make
+  #
+  # this will get instated automatically at startup
+  #
+  public redef fixed type.default_value option io.dir.Make
+  =>
+    _ : io.dir.Make is
+      public redef mkdir(path path) outcome unit =>
+        fuzion.sys.fileio.create_dir path
+
+
+# make dir with the currently installed dir.Make-effect.
+#
+# if none is installed the default handler will be used to
+# install the effect and perform the operation.
+#
+public make(path path) outcome unit ! io.dir.Make =>
+  io.dir.Make.env.mkdir path
+

@@ -31,7 +31,7 @@ int_test is
       say "PASSED: $msg"
     else
       say "FAILED: $msg"
-      _ := set_exit_code 1
+      _ := Exit.env.set_exit_code 1
 
 
   # test basic int operations with small numbers
@@ -101,7 +101,7 @@ int_test is
       chck (uint m*n = (uint m * uint n)) "uint: m $m * n $n"
 
 
-  # test uint exponentation for numbers larger than u32.max
+  # test uint exponentiation for numbers larger than u32.max
   for m in u32_max..(u32_max+2) do
     for n in (u64 0)..(u64 1) do
 
@@ -119,4 +119,4 @@ int_test is
   chck ((u64 3) .as_int = int 3 ) "i64.as_int"
 
 
-  exit
+  Exit.env.exit

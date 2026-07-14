@@ -244,7 +244,7 @@ is
   #     |                                                                                                |
   #     |            |                                          |                                        |
   #     |            |                                          |                                        |
-  #     |            |Thread B: <-ch (receive) unbocks          |Thread A: ch <- v (send) unblocks       |
+  #     |            |Thread B: <-ch (receive) unblocks         |Thread A: ch <- v (send) unblocks       |
   #     |            |                                          |                                        |
   #     |            |                                          |                                        |
   #     |            +---------+--------------------------------+                                        |
@@ -263,7 +263,7 @@ is
         sending   => true
         sent      => false
         receiving => false
-        received     => false
+        received  => false
         closed    => true
 
     may_send =>
@@ -272,14 +272,14 @@ is
         sending   => false
         sent      => false
         receiving => true
-        received     => false
+        received  => false
         closed    => true   # this does not sound logical, but it is: send will not block, but cause a fault instead!
 
     is_received =>
       match unbuffered_channel_state.this
-        received     => true
+        received  => true
         *         => false
-    
+
     is_sent =>
       match unbuffered_channel_state.this
         sent      => true
@@ -301,7 +301,7 @@ is
         sending   => "sending"
         sent      => "sent"
         receiving => "receiving"
-        received     => "received"
+        received  => "received"
         closed    => "closed"
 
 
@@ -318,16 +318,16 @@ is
   # In case the Channel is full, the attempt to send data will block until the Channel
   # is no longer full or closed.
   #
-  public redef infix <- (val T) unit ! channel_mutate T
+  public redef infix <- (val T) unit ! M
   =>
     M.env.exclusive_when ()->state.may_send ()->
       match state
         ready     => state <- sending val
                      M.env.wait (()-> state.is_received || state.is_closed)
                      match state
-                       received  => state <- ready
-                       closed =>  panic "send to closed Unbuffered_Channel $T"
-                       *      => panic "unexpected unbuffered channel state $state"
+                       received => state <- ready
+                       closed   => panic "send to closed Unbuffered_Channel $T"
+                       *        => panic "unexpected unbuffered channel state $state"
         receiving => state <- sent val
         closed    => panic "send to closed Unbuffered_Channel $T"
         *         => panic "unexpected unbuffered channel state $state"
@@ -339,7 +339,7 @@ is
   # If the channel is open and has no values available, this will
   # block until values are available or the channel is closed.
   #
-  public redef prefix <- option T ! channel_mutate T
+  public redef prefix <- option T ! M
   =>
     res1 := M.env.exclusive_when ()->state.may_receive ()->
       match state
@@ -365,7 +365,7 @@ is
   #
   # Receiving via `prefix <-` or `next` will return `nil` once Channel is closed
   #
-  public redef close unit ! channel_mutate T
+  public redef close unit ! M
   =>
     M.env.exclusive_when ()->state.may_send ()->
       state <- closed

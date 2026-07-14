@@ -220,7 +220,7 @@ The following types have overlapping values:
 --CURDIR--/choice_negative.fz:126:5: error 30: Choice type must not access features of surrounding scope.
     A : choice i64 f32 is
 ----^
-A closure cannot be built for a choice type. Forbidden accesses occur at 
+A closure cannot be built for a choice type. Forbidden accesses occur at
 --CURDIR--/choice_negative.fz:128:14:
         _ := x # 25. should flag an error: access to closure not permitted in choice
 -------------^
@@ -231,7 +231,7 @@ To solve this, you might move the accessed features outside of the common outer 
 --CURDIR--/choice_negative.fz:134:9: error 31: Choice type must not access features of surrounding scope.
     B : A, choice i64 f32 is
 --------^
-A closure cannot be built for a choice type. Forbidden accesses occur at 
+A closure cannot be built for a choice type. Forbidden accesses occur at
 --CURDIR--/choice_negative.fz:133:14:
         _ := x # 26. should flag an error: access to closure not permitted in choice
 -------------^

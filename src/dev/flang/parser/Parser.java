@@ -484,12 +484,12 @@ namequal    : name dot qual
       {
         if (skip(mayBeAtMinIndent, Token.t_type))
           {
-            result.add(new ParsedName(tokenSourcePos(), FuzionConstants.TYPE_NAME));
+            result.add(new ParsedName(tokenSourceRange(), FuzionConstants.TYPE_NAME));
             dot();
           }
         else if (skip(mayBeAtMinIndent, Token.t_universe))
           {
-            result.add(new ParsedName(tokenSourcePos(), FuzionConstants.UNIVERSE_NAME));
+            result.add(new ParsedName(tokenSourceRange(), FuzionConstants.UNIVERSE_NAME));
             dot();
           }
         result.add(name(mayBeAtMinIndent, false));
@@ -1345,7 +1345,7 @@ indexTail   : ":=" exprInLine
     Call result;
     do
       {
-        SourcePosition pos = tokenSourcePos();
+        SourcePosition pos = tokenSourceRange();
         var l = bracketTermWithNLs(BRACKETS, "indexCall", () -> actualCommas(true));
         String n = FuzionConstants.FEATURE_NAME_INDEX;
         if (skip(":="))
@@ -1820,7 +1820,7 @@ exprNoColon : operatorExpr          // may not contain {@code :} unless enclosed
             matchOperator(":", "expr of the form >>a ? b : c<<");
             Expr g = operatorExpr();
             i.end();
-            result = new ParsedCall(result, new ParsedName(pos, "ternary ? :"), new List<>(f, g));
+            result = f == Call.ERROR || g == Call.ERROR ? Call.ERROR : new ParsedCall(result, new ParsedName(result.pos().rangeTo(g.pos().byteEndPos()), "ternary ? :"), new List<>(f, g));
           }
       }
     return result;
@@ -1934,7 +1934,7 @@ klammer     : LPAREN block RPAREN
           }
         else if (forked_t.size() != 1)
           {
-            res = new ParsedCall(null, new ParsedName(tokenSourcePos(), "tuple"), tuple());
+            res = new ParsedCall(null, new ParsedName(tokenSourceRange(), "tuple"), tuple());
           }
         else
           {
@@ -3236,6 +3236,10 @@ anonymous   : "_"
     check(skipName());
     ReturnType r = RefType.INSTANCE; // NYI: UNDER DEVELOPMENT: value type
     var        i = inherit();
+    if (i.size() > 1)
+      {
+        AstErrors.anonymousFeatureMustNotInheritFromMultiple(SourceRange.range(i), i);
+      }
     match(Token.t_is, "anonymous");
     Block      b = block();
     var f = Feature.anonymous(pos, r, i, Contract.EMPTY_CONTRACT, b);
@@ -3804,7 +3808,7 @@ typeTail    : dot simpletype
   boolean skipTypeTail()
   {
     return
-      !skipDot() || skip(Token.t_this) || skipSimpletype();
+      !skipDot() || skip(Token.t_this) && (!skipDot() || skipSimpletype()) || skipSimpletype();
   }
 
 

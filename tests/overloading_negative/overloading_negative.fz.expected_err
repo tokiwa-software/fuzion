@@ -4,7 +4,7 @@
 -------^
 For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
 Type that is ambiguous: 'a'
-Possible features that match this type: 
+Possible features that match this type:
 'overloading_negative.test1.a' defined at --CURDIR--/overloading_negative.fz:37:5:
     a is
 ----^
@@ -23,7 +23,7 @@ To solve this, rename these features such that each one has a unique name.
 -------^
 For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
 Type that is ambiguous: 'a'
-Possible features that match this type: 
+Possible features that match this type:
 'overloading_negative.test1.a' defined at --CURDIR--/overloading_negative.fz:37:5:
     a is
 ----^
@@ -42,7 +42,7 @@ To solve this, rename these features such that each one has a unique name.
 -------^
 For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
 Type that is ambiguous: 'a'
-Possible features that match this type: 
+Possible features that match this type:
 'overloading_negative.test1.a' defined at --CURDIR--/overloading_negative.fz:37:5:
     a is
 ----^

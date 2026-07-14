@@ -23,7 +23,7 @@
 
 mod_wolfssl =>
 
-  # this lm is used for the raw netwok connection
+  # this lm is used for the raw network connection
   #
   net_lm : mutate is
 
@@ -34,7 +34,7 @@ mod_wolfssl =>
   net_lm ! ()->
 
     match net.client net.family.ipv4 net.protocol.tcp "fuzion-lang.dev" 443
-      error => exit 1
+      error => Exit.env.exit 1
       c net.connection =>
         c.with _ net_lm ()->
           ssl_lm ! ()->

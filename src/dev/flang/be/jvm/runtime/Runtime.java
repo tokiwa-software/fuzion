@@ -165,7 +165,7 @@ public class Runtime extends ANY
 
 
   /**
-   * The result of {@code envir.args[0]}
+   * The result of {@code envir.Args[0]}
    */
   public static final String _cmd_ =
     System.getProperties().computeIfAbsent(FUZION_COMMAND_PROPERTY,
@@ -176,7 +176,7 @@ public class Runtime extends ANY
 
 
   /**
-   * The results of {@code envir.args[1..n]}
+   * The results of {@code envir.Args[1..n]}
    */
   public static String[] _args_ = new String[] { "argument list not initialized", "this may indicate a severe bug" };
 

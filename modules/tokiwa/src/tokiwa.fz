@@ -85,8 +85,11 @@ public tokiwa is
               lm ! ()->
                 (p.with_in unit lm ()->
                   (io.buffered lm).writer.env.write (io.slurp stdin_file).or_panic .or_panic).or_panic
+        _ := p.close_in
 
         match p.wait (timeout.or_default time.duration.max)
-          e error => process_result "" "failed waiting for $cmd, error is: $e" 1
+          e error =>
+            _ := p.kill
+            process_result "" "failed waiting for $cmd, error is: $e" 1
           ec u32 => process_result fout.get ferr.get ec)
       .or_panic

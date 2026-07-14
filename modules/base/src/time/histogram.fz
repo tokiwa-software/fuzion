@@ -260,7 +260,7 @@ is
       match start_time.get
         nil             => start_time <- t
         st time.instant =>
-          match period
+          match histogram.this.period
             p time.duration => add (t - st - p*size)
             nil             => start_time <- t
                                add t-st

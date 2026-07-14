@@ -250,7 +250,12 @@ module fzE_process_create(
 
 # wait for process to exit
 #
-module fzE_process_wait(process i64) i64 => native
+module fzE_process_poll(process i64) i64 => native
+
+
+# returns error code on error or zero on success
+#
+module fzE_pipe_create(pipefd Array i64) i32 => native
 
 
 # returns -1 on error, 0 on end_of_file, number of read bytes otherwise.
@@ -286,7 +291,7 @@ module fzE_pipe_close(
 # after opening the source represented by the path parameter
 #
 module fzE_file_open(
-              # a Fuzion Pointer represention the path for the source to be opened
+              # a Fuzion Pointer representation the path for the source to be opened
               path Array u8,
               # open_results[error number] as a Fuzion Pointer
               open_results Array i64,

@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# webserver is a minimalistic webserver example based on the Java module
+# webserver is a minimalist webserver example based on the Java module
 # java.base.
 #
 # See Makefile for how to start fuzion to run this webserver.

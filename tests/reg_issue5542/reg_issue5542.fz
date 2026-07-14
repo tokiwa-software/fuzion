@@ -174,7 +174,7 @@ reg_issue5542 =>
   say <| id i32,i32,i32,i32,i32->unit     a,b,c,d,e->unit
   say <| id i32,i32,i32,i32,i32,i32->unit a,b,c,d,e,f->unit
 
-  # function declaratiosn returning lambdas directly
+  # function declarations returning lambdas directly
   say "lambdas as function resutls:"
   f0 ()->i32                        => ()          -> 42
   f1 (i32)->i32                     => x           -> x

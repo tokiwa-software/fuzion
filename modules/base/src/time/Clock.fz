@@ -27,7 +27,7 @@
 #
 # This is a `ref` feature such that code that requires an arbitrary `Clock`
 # effect could be written in a way that permits its execution using different
-# actual `Clock` implementations like `time.nano` that provides high
+# actual `Clock` implementations like `time.Nano` that provides high
 # precision with low accuracy or a different clock that provides higher accuracy.
 #
 public Clock ref : effect is
@@ -69,7 +69,7 @@ public Clock ref : effect is
   # this will get instated automatically at startup
   #
   public redef fixed type.default_value option time.Clock =>
-    nano.default_value.bind (x -> id time.Clock x)
+    Nano.default_value.bind (x -> id time.Clock x)
 
 
   # run the given code once at the provided instant within the current thread
@@ -97,24 +97,24 @@ public Clock ref : effect is
   #
   # return the number of times the `code` was run.
   #
-  public run_periodic(P type : time.Period,
+  public run_periodic(P type : time.period,
                       first time.instant,
-                      period P,
+                      p P,
                       last time.instant,
                       code ()->unit) u64
   pre
-    debug: period.is_infinity || period.as_duration > time.duration.ns 0
+    debug: p.is_infinity || p.as_duration > time.duration.ns 0
   post
-    debug: ((last >= first): result <= ((last - first) / period.as_duration) + 1)
+    debug: ((last >= first): result <= ((last - first) / p.as_duration) + 1)
     debug: ((last <  first): result = 0)
   =>
     for
       cnt := u64 0, cnt + 1
       just_now := read
-      next1 := first + period * cnt
-      skipped := if just_now > next1 then (just_now - next1) / period.as_duration + 1
+      next1 := first + p * cnt
+      skipped := if just_now > next1 then (just_now - next1) / p.as_duration + 1
                                      else 0
-      next := first + period * (cnt + skipped)
+      next := first + p * (cnt + skipped)
     while next <= last
       sleep_until next just_now
       code()

@@ -64,7 +64,7 @@ ring_buf =>
     expect "t0" true    (rb.add "H"        )    # add first element         []        -> [H]
 
     # Now try to poll from another thread, which is expected to fail:
-    t1 := concur.threads.env.spawn ()->
+    t1 := concur.Threads.env.spawn ()->
       fuzion.runtime.fault
         .try ()->
           say <| "t1: " + rb.poll + "*** FAILED! NOT ALLOWED in other thread!";
@@ -95,7 +95,7 @@ ring_buf =>
     my_array3 := lm.new_array3 4 4 4 (i16 -32000)
     my_array3[1,2,3] := 4711
 
-    ta := concur.threads.env.spawn ()->
+    ta := concur.Threads.env.spawn ()->
       fuzion.runtime.fault
         .try ()->
           say <| "ta: " + my_array1[ 67] + "*** FAILED! NOT ALLOWED in other thread!";
@@ -164,7 +164,7 @@ ring_buf =>
     expect "t0" true    (rb.add "H"        )    # add first element         []        -> [H]
 
     # Now try to poll from another thread
-    t2 := concur.threads.env.spawn ()->
+    t2 := concur.Threads.env.spawn ()->
       fuzion.runtime.fault
         .try ()->
           expect "t2" "H"     (rb.poll           )    # poll on one element       [H]     -> []
@@ -179,7 +179,7 @@ ring_buf =>
     t2.join
 
     # Now try to poll from yet another thread
-    t3 := concur.threads.env.spawn ()->
+    t3 := concur.Threads.env.spawn ()->
       fuzion.runtime.fault
         .try ()->
           expect "t3" "J"     (rb.poll           )    # poll on two elements      [J,K]   -> [K]
@@ -206,12 +206,12 @@ ring_buf =>
     expect "t0" nil     (rnl               )    # poll on empty ring buffer []        -> []
 
     # Now try to poll from yet another thread
-    t4 := concur.threads.env.spawn ()->
+    t4 := concur.Threads.env.spawn ()->
       fuzion.runtime.fault
         .try ()->
           expect "t4" true    (rb.add "O"        )    # add second element        []     -> [O]
           expect "t4" true    (rb.add "P"        )    # add second element        [O]    -> [O,P]
-          time.nano.env.sleep (time.duration.ms 100)
+          time.Nano.env.sleep (time.duration.ms 100)
           expect "t4" true    (rb.add "Q"        )    # add second element        [O,P]  -> [O,P,Q]
           expect "t4" unit    (rb.put "R"        )    # add second element        [..,Q] -> [..,Q,R]
           expect "t4" unit    (rb.put "S"        )    # add second element        [..,R] -> [..,R,S]
@@ -223,7 +223,7 @@ ring_buf =>
     ro := rb.take               # blocking take from ring_buffer [O?,P?,Q?] -> [P?,Q?]
     rp := rb.take               # blocking take from ring_buffer [P?,Q?]    -> [Q?]
     rq := rb.take               # blocking take from ring_buffer [Q?]       -> []
-    time.nano.env.sleep (time.duration.ms 100)
+    time.Nano.env.sleep (time.duration.ms 100)
     rr := rb.take               # blocking take from ring_buffer [R?,..]    -> [S?,..]
     rs := rb.take               # blocking take from ring_buffer [S?,..]    -> [T?,..]
     rt := rb.take               # blocking take from ring_buffer [T?,..]    -> [U?]
@@ -252,7 +252,7 @@ ring_buf =>
       my_array2[08,15] := 99
       my_array3[1,2,3] := 4711
 
-    tb := concur.threads.env.spawn ()->
+    tb := concur.Threads.env.spawn ()->
       bm.env.exclusive ()->
         fuzion.runtime.fault
           .try ()->
@@ -287,19 +287,19 @@ ring_buf =>
     # now test using three consumer threads t5, t6, t7 that are fed by one
     # producer thread (current thread):
 
-    t5 := concur.threads.env.spawn ()->
+    t5 := concur.Threads.env.spawn ()->
       fuzion.runtime.fault
         .try ()->
           for x := rb.take until x = "QUIT"
         .catch m->
           say "*** FAILED! $m"
-    t6 := concur.threads.env.spawn ()->
+    t6 := concur.Threads.env.spawn ()->
       fuzion.runtime.fault
         .try ()->
           for x := rb.take until x = "QUIT"
         .catch m->
           say "*** FAILED! $m"
-    t7 := concur.threads.env.spawn ()->
+    t7 := concur.Threads.env.spawn ()->
       fuzion.runtime.fault
         .try ()->
           for x := rb.take until x = "QUIT"
@@ -309,7 +309,7 @@ ring_buf =>
     for i in 1..10 do
 
       # give the threads some time to start or empty the buffer:
-      time.nano.env.sleep (time.duration.ms 10)
+      time.Nano.env.sleep (time.duration.ms 10)
 
       # push 5000 entries to the ring buffer
       for j in 1..5000 do

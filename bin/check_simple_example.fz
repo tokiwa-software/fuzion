@@ -69,11 +69,11 @@ envir_var_kv := [
   "INFLUXDB_TOKEN"
 ].map k->
   if k="DYLD_FALLBACK_LIBRARY_PATH"||k="PATH"||k="LD_LIBRARY_PATH"
-    envir.vars.env[k]
+    envir.Vars.env[k]
       .bind v->(k,"$v$path_separator../../lib")
       .or_else (k,"../../lib")
   else
-    envir.vars.env[k].bind v->
+    envir.Vars.env[k].bind v->
       (k,v)
  .flat_map id
  .as_array
@@ -105,7 +105,7 @@ Sequence.execute(
           path.of "$file.stdin"
         else
           nil
-      tokiwa.record_process p Sequence.this.as_string nil feed
+      tokiwa.record_process p Sequence.this.as_string cpu_time_limit feed
 
 # execute this string by splitting at all whitespaces
 #
@@ -127,8 +127,8 @@ String.execute =>
 
 
 # limit cpu time and stack size for executing test
-cpu_time_limit   := u64 600  # NYI: UNDER DEVELOPMENT: we should decrease this value
-stack_size_limit := 1024
+cpu_time_limit   := time.duration.min 10  # NYI: UNDER DEVELOPMENT: we should decrease this value
+stack_size_limit := units.data_size.b 1024 # NYI: UNDER DEVELOPMENT: stack limit is not yet set
 
 
 # check exit code for validity
@@ -137,15 +137,15 @@ check_exit_code(run tokiwa.process_result) =>
   # 152 - 128 = 24 -> signal SIGXCPU
   if run.exit_code = 152
     say "$("*** CANCELLED:".bold.red) test $file exceeded cpu time limit of $cpu_time_limit s"
-    exit 1
+    Exit.env.exit 1
   # 139 - 128 = 11 -> signal SIGSEGV
   else if run.exit_code = 139
-    say "$("*** CANCELLED:".bold.red) test $file exceeded stack size limit of $stack_size_limit KB"
-    exit 1
+    say "$("*** CANCELLED:".bold.red) test $file exceeded stack size limit of $stack_size_limit"
+    Exit.env.exit 1
   # pipe to head may result in exit code 141 -- broken pipe.
   else if run.exit_code != 0 && run.exit_code != 1 && run.exit_code != 141
     say "unexpected exit code $(run.exit_code)"
-    exit 1
+    Exit.env.exit 1
 
 
 # clean error output from random names
@@ -166,7 +166,7 @@ clean_err(f path) =>
   "sed -i s#$(os.cwd.or_panic.as_string)#--CURDIR--# $f".execute .or_panic
   # line numbers
   "sed -E -i s/\\.fz:[0-9]+:[0-9]+:/\\.fz:n:n:/g $f".execute .or_panic
-  "sed -E -i s/\\.fz:[0-9]+/\\.fz:n/g $f".execute .or_panic
+  "sed -E -i s/\\.(fz|java):[0-9]+/\\.\\1:n/g $f".execute .or_panic
   # replace CLASS_PREFIX_WITH_ID
   "sed -E -i s/fzC__L[0-9]+/fzC_LXXX/g $f".execute .or_panic
 
@@ -180,18 +180,18 @@ delete_tmp_files =>
   _ := io.file.delete exp_err_cleaned
 
 
-if envir.args.env.count != 4
+if envir.Args.env.count != 4
   say """
       Usage  : check_simple_example <jvm|c|int|effect> <fz+args> <test.fz>
       Example: check_simple_example jvm "build/bin/fz -modules=nom" tests/hello/HelloWorld.fz
       """
-  exit 1
+  Exit.env.exit 1
 
 
-be     := envir.args.env[1]
+be     := envir.Args.env[1]
 # can not execute bash script fz on windows with CreateProcess
-fz_run := envir.args.env[2].replace "../../bin/fz" "java $(is_windows ? "-Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8" : "") --enable-preview --enable-native-access=ALL-UNNAMED --class-path ../../classes $(envir.vars.env["FUZION_JAVA_OPTIONS"].or_else "") -Xss5m -Dline.separator=\n -Dfile.encoding=UTF-8 -Dfuzion.home=../../ -Dfuzion.command=fz dev.flang.tools.Fuzion"
-file   := envir.args.env[3]
+fz_run := envir.Args.env[2].replace "../../bin/fz" "java $(is_windows ? "-Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8" : "") --enable-preview --enable-native-access=ALL-UNNAMED --class-path ../../classes $(envir.Vars.env["FUZION_JAVA_OPTIONS"].or_else "") -Xss5m -Dline.separator=\n -Dfile.encoding=UTF-8 -Dfuzion.home=../../ -Dfuzion.command=fz dev.flang.tools.Fuzion"
+file   := envir.Args.env[3]
 exp_out := if be = "effect"
              path.of "$file.effect"
            else
@@ -211,13 +211,15 @@ else
     # setrlimit for executed processes
     # stack_size_limit, cpu_time_limit
 
-    _ := concur.threads.env.spawn ()->
-      time.nano.env.sleep <| time.duration.s cpu_time_limit
+    bt := concur.Threads.env.spawn ()->
+      time.Nano.env.sleep cpu_time_limit
       say "$("*** CANCELLED:".bold.red) test $file exceeded cpu time limit of $cpu_time_limit s"
-      exit 1
+      Exit.env.exit 1
+
+    concur.Threads.env.detach bt
 
     backend_options(x) =>
-      s := envir.vars.env
+      s := envir.Vars.env
                 .get x
                 .or_default ""
                 .replace " " protected_space
@@ -282,4 +284,4 @@ else
     if out.ok && err.ok
       say "$("PASSED".bold.green)."
     else
-      exit 1
+      Exit.env.exit 1

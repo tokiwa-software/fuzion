@@ -12,7 +12,7 @@
 # You should have received a copy of the GNU General Public License along with The
 # Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
-# NYI: UNDER DEVELOPMENT: define common benchmark interface, refator to use this
+# NYI: UNDER DEVELOPMENT: define common benchmark interface, refactor to use this
 read_10mb_file =>
 
   read_file(file path) outcome (array u8) =>
@@ -34,7 +34,7 @@ read_10mb_file =>
 
   io.file.write f s .or_panic
 
-  say <| io.file.stat.env.stats f
+  say <| io.file.Stat.env.stats f
 
   test(arg path) =>
     say "mmap: $arg iterations/s"
