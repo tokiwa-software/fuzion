@@ -1266,6 +1266,20 @@ public class Runtime extends ANY
       }
   }
 
+
+  public static void cnd_timedwait(Object cnd, long timeout)
+  {
+    try
+      {
+        ((Condition)cnd).await(timeout - System.nanoTime(),  /* NYI: depending on underlying clock! */
+                               java.util.concurrent.TimeUnit.NANOSECONDS);
+      }
+    catch(Exception e)
+      {
+        Errors.fatal(e);
+      }
+  }
+
   public static void cnd_timedwait(Object cnd)
   {
     try

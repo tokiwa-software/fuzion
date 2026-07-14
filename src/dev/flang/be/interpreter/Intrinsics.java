@@ -736,8 +736,9 @@ public class Intrinsics extends ANY
     put("concur.sync.cnd_timedwait", (executor, innerClazz) -> args -> {
       try
         {
-          if (true) throw new Error("interpreter backend: timedwait not supported");
-          ((Condition) ((JavaRef) args.get(1))._javaRef).await();
+          var timeout = args.get(3).i64Value();
+          ((Condition) ((JavaRef) args.get(1))._javaRef).await(timeout - System.nanoTime(),  /* NYI: depending on underlying clock! */
+                                                               java.util.concurrent.TimeUnit.NANOSECONDS);
         }
       catch (Exception e)
         {

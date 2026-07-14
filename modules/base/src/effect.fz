@@ -511,8 +511,10 @@ public effect_wormhole is
   # environment the effects are taken from
   #
   effect_values := effect_types.type_foldf (Sequence container.Typed_Value).empty T,e->
-      (if T : effect then T.get_if_instated else nil).bind    (v -> e ++ [container.typed_value T v])
-                                                     .or_else e
+      (if      T : local_effect then nil
+       else if T : effect       then T.get_if_instated
+                                else nil              ).bind    (v -> e ++ [container.typed_value T v])
+                                                       .or_else e
 
 
   # teleport the effects from the environment this wormhole was created in
@@ -542,7 +544,8 @@ public effect_wormhole is
 
     # teleport effect values
     effect_values.for_each (.apply_to unit T,_,v->
-                              if      T : thread_local_effect then T.set0 (v.instance_for_new_thread)
+                              if      T : local_effect        then panic "local effect should have been filtered out when wormhole was created"
+                              else if T : thread_local_effect then T.set0 (v.instance_for_new_thread)
                               else if T : effect              then T.set0 v
                               else
                                 compile_time_panic
@@ -557,8 +560,12 @@ public effect_wormhole is
     res
 
 
+# effect that has a different instance when used in different threads
 public thread_local_effect : effect is
 
   public instance_for_new_thread thread_local_effect.this
   =>
     thread_local_effect.this
+
+# effect that is only used in one thread and never teleported
+public local_effect : effect is

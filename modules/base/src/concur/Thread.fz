@@ -184,12 +184,10 @@ is
   #
   module unpark()
   =>
-    say "unpark $(Thread.this) $cond $(cond.is_locked)"
     cond.synchronized ()->
       match parked_on
         c concur.sync.condition =>
           set parked_on := nil
-          say "unpark $(Thread.this) $cond $(cond.is_locked)"
           c.signal
         nil =>
 

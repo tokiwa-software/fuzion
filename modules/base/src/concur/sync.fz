@@ -28,7 +28,6 @@ public sync is
 
   module mtx_init outcome Mutex => intrinsic
   module mtx_lock(mtx Mutex) bool => intrinsic
-  # NYI: mtx_timedlock
   module mtx_trylock(mtx Mutex) bool => intrinsic
   module mtx_unlock(mtx Mutex) bool => intrinsic
   module mtx_destroy(mtx Mutex) unit => intrinsic
@@ -38,7 +37,6 @@ public sync is
   module cnd_broadcast(cnd Condition) unit => intrinsic
   module cnd_wait(cnd Condition, mtx Mutex) unit => intrinsic
   module cnd_timedwait(cnd Condition, mtx Mutex, i64 timeout) unit => intrinsic
-  # NYI: cnd_timedwait
   module cnd_destroy(cnd Condition) unit => intrinsic
 
 
