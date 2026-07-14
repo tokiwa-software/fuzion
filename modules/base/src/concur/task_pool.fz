@@ -35,7 +35,7 @@ is
   #
   public submit(P type : time.period, t realtime.task P) unit ! atomic_access =>
 
-    nt := concur.threads.env.spawn ()->
+    nt := concur.Threads.env.spawn ()->
       now := time.Nano.env.read
       end_of_time := time.instant u64.max
       _ := time.Nano.env.run_periodic now t.period end_of_time t.code

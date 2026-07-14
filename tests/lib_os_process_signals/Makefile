@@ -17,12 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test reg_issue6957
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-f : io.file is
-_ := f.stat1
-
-io.file.stat1 outcome io.file.meta_data =>
-    Stat.env.stats (io.path.of "bla")
+override NAME = lib_os_process_signals
+include ../simple.mk
