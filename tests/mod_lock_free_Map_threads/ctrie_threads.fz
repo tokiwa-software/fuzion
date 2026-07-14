@@ -31,7 +31,7 @@ ctrie_threads is
 
   in_threads(code i32->unit) =>
     (array num_threads t->
-      concur.threads.env.spawn ()->
+      concur.Threads.env.spawn ()->
         code t
       ).for_each t->t.join
 

@@ -211,12 +211,12 @@ else
     # setrlimit for executed processes
     # stack_size_limit, cpu_time_limit
 
-    bt := concur.threads.env.spawn ()->
+    bt := concur.Threads.env.spawn ()->
       time.Nano.env.sleep <| time.duration.s cpu_time_limit
       say "$("*** CANCELLED:".bold.red) test $file exceeded cpu time limit of $cpu_time_limit s"
       Exit.env.exit 1
 
-    concur.threads.env.detach bt
+    concur.Threads.env.detach bt
 
     backend_options(x) =>
       s := envir.Vars.env
