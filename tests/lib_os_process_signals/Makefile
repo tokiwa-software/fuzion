@@ -17,26 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion feature web.config
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-
-# effect for configuring the web module
-#
-public Config ref : effect is
-
-  # default headers to use for get/post requests
-  #
-  public default_headers Sequence (String, String)
-  =>
-    [("User-Agent", "Fuzion/v0.0.1 (+https://fuzion-lang.dev; Fuzion)")]
-
-
-  # default implementation of Config
-  #
-  # this will get instated automatically at startup
-  #
-  public redef fixed type.default_value option web.Config
-  =>
-    web.Config
+override NAME = lib_os_process_signals
+include ../simple.mk

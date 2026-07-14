@@ -30,7 +30,8 @@ public Map(public K type : property.equatable, public V type) ref is
   # number of entries in this map
   #
   public size i64
-    # NYI: BUG: post result >= 0
+    # NYI: BUG: support for post condition of fields missing
+    # post result >= 0
   => abstract
 
 

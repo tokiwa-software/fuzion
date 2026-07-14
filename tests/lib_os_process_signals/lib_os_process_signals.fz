@@ -17,26 +17,16 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion feature web.config
+#  Source code of Fuzion test lib_os_process_signals
 #
 # -----------------------------------------------------------------------
 
+lib_os_process_signals =>
 
-# effect for configuring the web module
-#
-public Config ref : effect is
+  p := os.process.start "sleep" ["999m"] .or_panic
+  check p.kill.ok
+  check p.wait.err.as_string.contains "was terminated by signal 9 (SIGKILL)"
 
-  # default headers to use for get/post requests
-  #
-  public default_headers Sequence (String, String)
-  =>
-    [("User-Agent", "Fuzion/v0.0.1 (+https://fuzion-lang.dev; Fuzion)")]
-
-
-  # default implementation of Config
-  #
-  # this will get instated automatically at startup
-  #
-  public redef fixed type.default_value option web.Config
-  =>
-    web.Config
+  p2 := os.process.start "sleep" ["999m"] .or_panic
+  check p2.terminate.ok
+  check p2.wait.err.as_string.contains "was terminated by signal 15 (SIGTERM)"

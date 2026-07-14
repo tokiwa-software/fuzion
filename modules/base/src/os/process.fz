@@ -151,7 +151,7 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
       # NYI: UNDER DEVELOPMENT: this works only when pipes buffer is large enough for
       # what is being written/read to/from pipes
       # thread to pipe from one process to other
-      _ := concur.threads.env.spawn ()->
+      _ := concur.Threads.env.spawn ()->
         for p1rb := std_out_read_handler.read pipe_buffer_size
         while
           match p1rb

@@ -30,7 +30,7 @@
 # created this instant and verify that `infix -` is called only on `instant`s
 # created by the same clock.
 #
-module:public instant (val u64) : property.orderable is
+module:public instant (module val u64) : property.orderable is
 
   # which instant will be after the time specified by the duration
   # has passed after this instant?

@@ -25,7 +25,7 @@
 
 # test for basic threads
 #
-# A simple test for concur.threads.env.spawn
+# A simple test for concur.Threads.env.spawn
 #
 # NOTE: This test is brittle on a loaded system, it depends on timing and on no
 # threads being delayed for more then a few ms during test run.  Disable this
@@ -46,9 +46,9 @@ concur_simple =>
       time.Nano.env.sleep t
       yap s
 
-  thread_1 := concur.threads.env.spawn (()->count "/"  (d.ms 20) t1)
-  thread_2 := concur.threads.env.spawn (()->count "\\" (d.ms 40) t2)
-  thread_3 := concur.threads.env.spawn (()->count "."  (d.ms 60) t3)
+  thread_1 := concur.Threads.env.spawn (()->count "/"  (d.ms 20) t1)
+  thread_2 := concur.Threads.env.spawn (()->count "\\" (d.ms 40) t2)
+  thread_3 := concur.Threads.env.spawn (()->count "."  (d.ms 60) t3)
 
   thread_1.join
   thread_2.join
