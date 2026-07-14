@@ -183,15 +183,19 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
   #
   public wait(timeout time.duration) outcome u32 ! time.Nano, os.Process
   =>
-    # NYI: process should be ref?
+    # NYI: UNDER DEVELOPMENT:
+    # with fixed this should be possible:
+    # os.Process.env.wait process.this timeout
     os.Process.env.wait (os.process pid std_in std_out std_err name args) timeout
 
 
   # send signal to process
   #
   public send_signal(sig os.signal) outcome unit =>
-    # NYI: CLEANUP: move this to Process effect
-    fzE_send_signal pid sig.as_i32 = 0 ? unit : error "sending signal to process $pid" fzE_last_error
+    # NYI: UNDER DEVELOPMENT:
+    # with fixed this should be possible:
+    # os.Process.env.send_signal process.this sig
+    os.Process.env.send_signal (os.process pid std_in std_out std_err name args) sig
 
 
   # send kill signal to process
