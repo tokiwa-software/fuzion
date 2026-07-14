@@ -2497,11 +2497,28 @@ public class GeneratingFUIR extends FUIR
             var T = innerClazz.actualTypeParameters()[0];
             if (!T._type.constraintAssignableFrom(tclazz._type.generics().get(0)))
             {
-                // Get the position of the actual type parameter usage
                 AbstractType actualType = tclazz._type.generics().get(0);
-                SourcePosition errorPos = actualType.declarationPos(); // Position of the type parameter in the source
                 
-                // If declarationPos is null or built-in, use the call position as fallback
+                // Get the position where this type is actually used
+                SourcePosition errorPos = null;
+                
+                // If we have the actual expression that provides this type parameter
+                // we can get its position from the AST
+                if (c.actuals() != null && c.actuals().size() > 0)
+                {
+                    // Find the actual expression that corresponds to this type parameter
+                    for (Expr actual : c.actuals())
+                    {
+                        // Check if this corresponds to the type parameter
+                        if (actual.type() != null && actual.type().equals(actualType))
+                        {
+                            errorPos = actual.pos();
+                            break;
+                        }
+                    }
+                }
+                
+                // Fallback to call position if it couldn't find a better one
                 if (errorPos == null || errorPos.isBuiltIn())
                 {
                     errorPos = c.pos();

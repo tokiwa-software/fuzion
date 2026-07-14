@@ -120,21 +120,28 @@ public class FuirErrors extends AstErrors
     {
         // Build the error message
         StringBuilder fullMsg = new StringBuilder();
-        fullMsg.append("Actual type parameter '").append(s(tp)).append("' does not satisfy constraint '")
-            .append(s(constraint._type)).append("'");
+        fullMsg.append("Actual type parameter ").append(s(tp)).append(" does not satisfy constraint ")
+              .append(s(constraint._type));
         
         // Show the source code with underlining at the error position
         if (!pos.isBuiltIn())
         {
-            // Underline the source code at the error position
             fullMsg.append("\n").append(pos.showInSource());
         }
         
         // Add information about where the type parameter is defined
+        // Only show this if it's different from the error position
         SourcePosition defPos = tp.declarationPos();
-        if (defPos != null && !defPos.isBuiltIn())
+        if (defPos != null && !defPos.isBuiltIn() && !defPos.equals(pos))
         {
             fullMsg.append("\nConstraint defined at: ").append(defPos.fileNameWithPosition());
+            // Show the constraint definition too
+            fullMsg.append("\n").append(defPos.showInSource());
+        }
+        else if (defPos != null && !defPos.isBuiltIn())
+        {
+            // If it's the same position, just mention it briefly
+            fullMsg.append("\nConstraint defined at this location");
         }
         
         error(pos, fullMsg.toString(), "");
