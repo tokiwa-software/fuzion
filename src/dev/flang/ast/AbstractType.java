@@ -2641,13 +2641,7 @@ there is no common super type of the two types (Types.t_ERROR)
               {
                 if (!f.isCoTypesRelayTypeParameter())
                   {
-                    // In case of choice, error will be shown
-                    // by SourceModule.checkTypes(): AstErrors.constraintMustNotBeChoice
-                    if (!c.isChoice())
-                      {
-                        AstErrors.incompatibleActualGeneric(p, f, c, a);
-                      }
-
+                    AstErrors.incompatibleActualGeneric(p, f, c, a);
                     result = false;
                   }
               }
