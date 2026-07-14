@@ -2976,7 +2976,7 @@ public class Call extends AbstractCall
         context.outerFeature() != Types.resolved.f_effect_static_finally &&
         (_calledFeature == Types.resolved.f_effect_finally ||
          _calledFeature.redefinesFull().contains(Types.resolved.f_effect_finally)) &&
-        !res._module.name().equals(FuzionConstants.BASE_MODULE_NAME)
+        !res._module.isBaseModule()
        )
       {
         AstErrors.mustNotCallEffectFinally(this);
@@ -2986,7 +2986,7 @@ public class Call extends AbstractCall
     if (_calledFeature != null &&
         (_calledFeature == Types.resolved.f_effect_default_value ||
          _calledFeature.redefinesFull().contains(Types.resolved.f_effect_default_value)) &&
-        !res._module.name().equals(FuzionConstants.BASE_MODULE_NAME)
+        !res._module.isBaseModule()
        )
       {
         AstErrors.mustNotCallEffectDefaultValue(this);
@@ -3130,6 +3130,14 @@ public class Call extends AbstractCall
           {
             _calledFeature = cf.preAndCallFeature();
           }
+      }
+    if (_calledFeature != null && _calledFeature.isNative() && !res._module.isBaseModule())
+      {
+        var nativeAccessFromEnv = new ParsedCall(
+          Call.typeAsValue(SourcePosition.notAvailable, new ParsedType(SourcePosition.notAvailable, "native_access")),
+          new ParsedName(SourcePosition.notAvailable, "from_env"));
+        var replace = new ParsedCall(nativeAccessFromEnv, new ParsedName(SourcePosition.notAvailable, "replace"));
+        result = new Block(new List<>(replace.resolveTypes(res, context), result));
       }
     return result;
   }
