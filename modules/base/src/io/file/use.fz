@@ -85,5 +85,5 @@ public use(R type, file_name io.path, m mode.val, code ()-> outcome R) outcome R
            io.buffered file_mutate .reader (read_handler fd)) ! code
         * =>
           (open fd file_name,
-           io.buffered file_mutate .reader (read_handler fd),
-           (id (io.buffered file_mutate).Writer (writer fd))) ! code
+           io.buffered file_mutate .reader (read_handler fd)) ! ()->
+            (io.buffered file_mutate).Writer.instate (writer fd) code
