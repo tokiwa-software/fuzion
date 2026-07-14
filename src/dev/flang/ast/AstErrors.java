@@ -2676,6 +2676,13 @@ public class AstErrors extends ANY
     );
   }
 
+  public static void anonymousFeatureMustNotInheritFromMultiple(SourcePosition range, List<AbstractCall> i)
+  {
+    error(range, "Anonymous feature must not inherit from multiple features.",
+      "Found inheritance calls:\n\n" +
+      i.stream().map(ic -> ic.pos().showInSource()).collect(Collectors.joining("\nand\n\n")));
+  }
+
 }
 
 /* end of file */
