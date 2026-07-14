@@ -75,6 +75,7 @@ public interface SrcModule extends AbstractModule
                  Feature         innerType);
   void addTypeParameter(AbstractFeature outerType,
                         Feature         innerType);
+  boolean isBaseModule();
 
   /*----------------------  methods needed by AIR  ----------------------*/
 
