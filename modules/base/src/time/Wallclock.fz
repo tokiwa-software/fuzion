@@ -29,7 +29,7 @@
 # seconds or adjustments towards the future and the past.
 #
 #
-public Wallclock ref : time.Clock is
+public Wallclock ref : posix_clock is
 
 
   # This clock corresponds to POSIX 1003.1's CLOCK_REALTIME
@@ -37,23 +37,6 @@ public Wallclock ref : time.Clock is
   public redef type.posix_id option posix.clockid_t
   =>
     posix.clock_realtime
-
-
-  # no guarantee can be given for precision nor resolution
-  #
-  public redef read time.instant
-  =>
-    ns => match Wallclock.this.type.posix_id
-      clockid posix.clockid_t => fzE_posix_time clockid.val
-      * => panic "$(Wallclock.this.type) is not a posix clock"
-    time.instant ns
-
-
-  # no guarantee can be given for precision nor resolution
-  #
-  public redef sleep(d time.duration) unit
-  =>
-    panic "NYI: time.Wallclock.sleep"
 
 
   # default implementation of time.Wallclock.
