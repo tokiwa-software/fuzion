@@ -242,8 +242,8 @@ public mutate : linear_effect is
   #
   # This is used a pre-condition for `exclusive` and `exclusive_when`.
   #
-  # Note that this is redefined in `blocking_mutate` since it does not require
-  # exclusivity there, but it is sufficient if that is instated.
+  # Note that this is redefined in `blocking_mutate_using_clock` since it does not
+  # require exclusivity there, but it is sufficient if that is instated.
   #
   public is_this_mutate_instated_and_usable bool
   =>
