@@ -130,7 +130,7 @@ is
   # thread in park mode.
   #
 #  cond2 := concur.sync.condition.new.or_else (panic "failed to create condition variable")
-  cond  := (park_condition time.Monotonic).env.cond
+  cond  := (A_park_condition time.Monotonic).env.cond
   cond2 := cond
 
   # is this thread parked?
@@ -141,7 +141,7 @@ is
   parked_on option concur.sync.condition := nil
 
 
-  # park this thread atomically after storing `condition` in `park_condition` and
+  # park this thread atomically after storing `condition` in `park_condition_var` and
   # executing `code`.
   #
   # The idea is that `code` may release a mutex in a way that ensures that this thread
@@ -149,7 +149,7 @@ is
   #
   module park_using_clock(C type : time.Clock, F type : ()->unit, condition ()->bool, code F)
   =>
-    c := (park_condition C).env.cond
+    c := (A_park_condition C).env.cond
     c.synchronized ()->
       code()
       set park_condition_var := condition
@@ -162,7 +162,7 @@ is
                     timeout   time.instant,
                     condition ()->bool,
                     code      F) bool =>
-    c := (park_condition C).env.cond
+    c := (A_park_condition C).env.cond
     c.synchronized ()->
       code()
       set park_condition_var := condition
@@ -228,17 +228,17 @@ is
     "Thread#$id"
 
 
-module park_condition(C type : time.Clock) : thread_local_effect is
+module A_park_condition(C type : time.Clock) : thread_local_effect is
 
   cond_var := (concur.sync.condition.new C).or_else (panic "failed to create condition variable")
   cond =>
     cond_var
 
 
-  public redef fixed instance_for_new_thread park_condition C
+  public redef fixed instance_for_new_thread A_park_condition C
   =>
-    park_condition C
+    A_park_condition C
 
 
-  public redef fixed type.default_value option (concur.park_condition C) =>
-    concur.park_condition C
+  public redef fixed type.default_value option (concur.A_park_condition C) =>
+    concur.A_park_condition C
