@@ -23,9 +23,9 @@
 #
 # -----------------------------------------------------------------------
 
-# blocking_mutate -- a variant of mutate that may be shared between threads
+# blocking_mutate_using_lock -- a multi-thread variant mutate using a given Clock
 #
-# This mutate ensure exclusive access to shared memory via using locks and
+# This mutate ensures exclusive access to shared memory via using locks and
 # blocking.
 #
 # Accidental race accesses are not permitted by this mutate, i.e., accessing
@@ -220,7 +220,7 @@ public blocking_mutate_using_clock(C type : time.Clock) : mutate is
 
 # blocking_mutate -- a multi-thread variant mutate using time.Monotonic
 #
-# This mutate ensure exclusive access to shared memory via using locks and
+# This mutates ensure exclusive access to shared memory via using locks and
 # blocking.
 #
 # Accidental race accesses are not permitted by this mutate, i.e., accessing

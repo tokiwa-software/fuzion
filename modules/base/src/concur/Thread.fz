@@ -76,7 +76,7 @@ is
     pre
       safety: 0 ≤ priority0 ≤ 99
   =>
-    cond2.synchronized (outcome unit) ()->
+    cond.synchronized (outcome unit) ()->
       p :=
         match policy0
           concur.scheduling_policy.sched_other => 0
@@ -103,7 +103,7 @@ is
       concur.scheduling_policy.val
       i32
   =>
-    cond2.synchronized ()->
+    cond.synchronized ()->
       (policy, priority)
 
 
@@ -111,7 +111,7 @@ is
   #
   public set_affinity(cores array u64) outcome unit
   =>
-    cond2.synchronized (outcome unit) ()->
+    cond.synchronized (outcome unit) ()->
       e := fuzion.sys.thread.set_affinity thrd cores
       if e = 0
         unit
@@ -129,9 +129,7 @@ is
   # private condition variable for this thread, used to put this
   # thread in park mode.
   #
-#  cond2 := concur.sync.condition.new.or_else (panic "failed to create condition variable")
-  cond  := (A_park_condition time.Monotonic).env.cond
-  cond2 := cond
+  cond := (A_park_condition time.Monotonic).env.cond
 
   # is this thread parked?
   #
