@@ -3236,6 +3236,10 @@ anonymous   : "_"
     check(skipName());
     ReturnType r = RefType.INSTANCE; // NYI: UNDER DEVELOPMENT: value type
     var        i = inherit();
+    if (i.size() > 1)
+      {
+        AstErrors.anonymousFeatureMustNotInheritFromMultiple(SourceRange.range(i), i);
+      }
     match(Token.t_is, "anonymous");
     Block      b = block();
     var f = Feature.anonymous(pos, r, i, Contract.EMPTY_CONTRACT, b);

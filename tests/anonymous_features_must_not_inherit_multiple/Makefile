@@ -17,15 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature Process_Handler
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# Process_Handler
-#
-public Process_Handler ref is
-
-  public start(name String, args Sequence String, env_vars container.Map String String) outcome os.process
-    pre
-      safety: env_vars.keys ∀ (x -> x.codepoints ∀ .is_ascii)
-  => abstract
+override NAME = anonymous_features_must_not_inherit_multiple
+include ../simple.mk

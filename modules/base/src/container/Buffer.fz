@@ -52,6 +52,11 @@ is
   public length i64 => abstract
 
 
+  # is this empty?
+  #
+  public is_empty bool => length = 0
+
+
   # a sequence of all valid indices to access this array. Useful e.g., for
   # `for`-loops:
   #
@@ -89,13 +94,33 @@ is
     abstract
 
 
+  # does this array contain elem?
+  #
+  public contains(elem T) bool
+    pre T : property.equatable
+  =>
+    for i in indices
+    until Buffer.this[i] = elem
+      true
+    else
+      false
+
+
+  # create immutable array from this taking at most max_length elements
+  #
+  public as_array(I type : integer, max_length I) universe.array T
+    pre debug: max_length.as_i64 <= length
+  =>
+    array max_length (index [])
+
+
   # convert this buffer to an immutable array
   #
   public as_array array T ! E
     pre
       safety: is_accessible
   =>
-    array length (i -> Buffer.this[i])
+    array length (index [])
 
 
   # create a list from this buffer

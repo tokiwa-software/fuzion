@@ -26,7 +26,7 @@ tail_call_optimization =>
   tco(i i16) =>
     if i = i16.max
       say "reached i16 max"
-      exit 0
+      Exit.env.exit 0
     tco i+1
 
   tco 0

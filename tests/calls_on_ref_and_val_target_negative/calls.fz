@@ -38,7 +38,7 @@ calls is
     else
       say "FAILED: $str /= $expected"
       failed <- failed.get + 1
-      _ := set_exit_code 1
+      _ := Exit.env.set_exit_code 1
 
 
   caseC3 is
@@ -80,4 +80,4 @@ calls is
 
 
   say "$(failed.get) failed $(passed.get) passed."
-  exit
+  Exit.env.exit

@@ -99,9 +99,9 @@ test_process =>
     (os.process.start "echo" ["-n", (get_str 1E5)]).bind p->
       (p | ["cat"]).bind p2->
         say p2.read_string.or_panic.byte_count
-        say "exit code: $(p2.wait)"
+        say "Exit.env.exit code: $(p2.wait)"
         # execute wait twice:
-        say "exit code: $(p2.wait)"
+        say "Exit.env.exit code: $(p2.wait)"
 
 
 
@@ -109,7 +109,7 @@ test_process =>
   test "10mb write to stdin, piped to another process"
   p := os.process.start ["cat"]
     p := spawned
-    concur.threads.env.spawn ()->
+    concur.Threads.env.spawn ()->
       time.Nano.env.sleep (time.duration.s 1)
       say "start reading"
       while
@@ -119,7 +119,7 @@ test_process =>
 
     # NYI: UNDER DEVELOPMENT: write should block here?
     say (p.write_bytes (get_str 1E7).utf8)
-    say "exit code: $(p.wait)"
+    say "Env.exit.exit code: $(p.wait)"
   */
 
 

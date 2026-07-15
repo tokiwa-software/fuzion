@@ -30,7 +30,7 @@ looptest is
     s := if b
            "PASSED: "
          else
-           _ := set_exit_code 1
+           _ := Exit.env.set_exit_code 1
            "FAILED: "
     say (s + msg)
 
@@ -262,4 +262,4 @@ looptest is
   chck (testWriteToDeclaredVar2.values.0 = 100  ) "testWriteToDeclaredVar returns (100, 10000)"
   chck (testWriteToDeclaredVar2.values.1 = 10000) "testWriteToDeclaredVar returns (100, 10000)"
 
-  exit
+  Exit.env.exit

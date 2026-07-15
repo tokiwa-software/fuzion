@@ -23,12 +23,12 @@
 
 reg_issue2242 =>
 
-  print(T type, E type : mutate, arr container.Mutable_Array T E) =>
+  print(T type, E type : mutate, arr container.Buffer T E) =>
     for x in arr do
       yap "$x, "
     say ""
 
-  partition(T type : property.orderable, E type : mutate, arr container.Mutable_Array T E, low i64, high i64) =>
+  partition(T type : property.orderable, E type : mutate, arr container.Buffer T E, low i64, high i64) =>
 
     swap(x i64, y i64)
       =>
@@ -46,7 +46,7 @@ reg_issue2242 =>
     swap (i.get + 1) high
     (i.get + 1)
 
-  quick_sort(T type : property.orderable, E type : mutate, arr container.Mutable_Array T E, low i64, high i64) =>
+  quick_sort(T type : property.orderable, E type : mutate, arr container.Buffer T E, low i64, high i64) =>
     if (low < high)
       pi := partition T E arr low high
       quick_sort arr low (pi - 1)
@@ -57,7 +57,7 @@ reg_issue2242 =>
 
     a := mi.array f64 .new 10 0.0
     for i in a.indices do
-      a[i] := random.env.next_f64
+      a[i] := Random.env.next_f64
 
 
     say "unsorted"

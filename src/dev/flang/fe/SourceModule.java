@@ -2163,6 +2163,13 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
       }
   }
 
+
+  @Override
+  public boolean isBaseModule()
+  {
+    return !_options._loadBaseMod;
+  }
+
 }
 
 /* end of file */

@@ -2530,6 +2530,12 @@ public class AstErrors extends ANY
       ss("<effect>.finally") + " is called automatically.");
   }
 
+  public static void mustNotCallEffectDefaultValue(Call call)
+  {
+    error(call.pos(), "Must not call " + ss("<effect>.default_value") + ".",
+      ss("<effect>.default_value") + " is called automatically on big bang singularity.");
+  }
+
   public static void ambiguousIfIfElse(SourcePosition pos, SourcePosition if1, SourcePosition if2)
   {
     error(pos,
@@ -2668,6 +2674,13 @@ public class AstErrors extends ANY
     error(pos, "Loop results in two incompatible types." ,
       "The incompatible types are: " + m.cases().map2(c -> s(c.code().type())).stream().collect(Collectors.joining(","))
     );
+  }
+
+  public static void anonymousFeatureMustNotInheritFromMultiple(SourcePosition range, List<AbstractCall> i)
+  {
+    error(range, "Anonymous feature must not inherit from multiple features.",
+      "Found inheritance calls:\n\n" +
+      i.stream().map(ic -> ic.pos().showInSource()).collect(Collectors.joining("\nand\n\n")));
   }
 
 }
