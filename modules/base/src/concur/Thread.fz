@@ -228,6 +228,11 @@ is
     "Thread#$id"
 
 
+# a thread-local effect that produces a condition var for given Clock for each thread
+#
+# NYI: BUG: #7400 This must be instated before `concur.Threads`. Currently, the order
+# is not be dependency, but alphabetically, so we add prefix 'A_' as a workaround.
+#
 module A_park_condition(C type : time.Clock) : thread_local_effect is
 
   cond_var := (concur.sync.condition.new C).or_else (panic "failed to create condition variable")
