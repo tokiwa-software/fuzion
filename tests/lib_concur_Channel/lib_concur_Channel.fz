@@ -41,11 +41,10 @@ lib_concur_Channel =>
 
 
     check concur.thread_pool.env.submit ()->
-      _ :=
-        for n := chan.next
-        while n.ok
-          say "received $(n)"
-          received_item.write true
+      for n := chan.next
+      while n.ok
+        say "received $(n)"
+        received_item.write true
 
 
     while !received_item.read
