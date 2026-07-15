@@ -128,11 +128,42 @@ public blocking_mutate_using_clock(C type : time.Clock) : mutate is
       set exclusive_thread := concur.Threads.env.current
 
 
-  public timeout(d time.duration) is
+  # Perform a wait or exclusive_when with a given timeout
+  #
+  # This allows perform `wait` or `exclusive_when` with a timeout as follows:
+  #
+  #     mutate_type.env.exclusive ()->
+  #       if mutate_type.env.timeout t
+  #                         .wait condition
+  #       then
+  #         # condition was met before timeout
+  #       else
+  #         # timeout occured before condition became true
+  #
+  # or
+  #
+  #       match mutate_type.env.timeout t
+  #                            .exclusive_when condition ()->
+  #                              # condition was met before timeout
+  #         nil => # timeout occured before condition became true
+  #         r T => # r was returned by code passed ot `exclusive_when`.
+  #
+  public timeout(deadline time.duration | time.instant)
+  is
+
+    # convert relative duration to absolute instant:
+    timeout := match deadline
+      d time.duration => C.env.read + d
+      i time.instant  => i
+
+    # wait for the given condition to become true by a mutation of the underlying data.
+    #
     public wait(F type: ()->bool, condition F) bool
+    pre
+      safety: is_exclusive
+    post
+      debug: (result: condition())
     =>
-      now := C.env.read
-      timeout := now + d
       while !condition() do
         wakeup_next_in_waiting_list
         wokeup := concur.Threads.env.current.park_until C _ timeout condition ()->
@@ -144,6 +175,27 @@ public blocking_mutate_using_clock(C type : time.Clock) : mutate is
         false
       else
         true
+
+    # exclusively wait for the given condition to hold and then perform given code with
+    # exclusive access to the mutable values created with this instance of `mutate`.
+    #
+    # In case of a timeout, the result will be nil. Otherwise, the result of running `code()`
+    # will be wrapped in an option and returned.
+    #
+    public exclusive_when(R type,
+                          O type: ()->bool,
+                          F type: ()->R,
+                          condition O,
+                          code F
+                          ) option R
+    pre
+      safety: is_this_mutate_instated_and_usable
+    =>
+      blocking_mutate_using_clock.this.env.exclusive ()->
+        if timeout.this.wait condition
+          option code()
+        else
+          nil
 
 
   # is instance `mutate.this` instated for type `mutate.this` and, if `mutate.this` does
