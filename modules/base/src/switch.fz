@@ -160,7 +160,7 @@ is
   # get A or panic with `B.as_string`
   #
   public or_panic A =>
-    or_panic ($)
+    or_panic b->"'switch.or_panic' called on '$(switch.this.type.name)' that is '$b'"
 
 
   # get A or panic with result of `msg`
