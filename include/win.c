@@ -954,6 +954,31 @@ int64_t fzE_process_poll(int64_t p){
 }
 
 
+// returns -1 on error or length of the hostname otherwise
+//
+int fzE_hostname(char *buf, size_t nbytes)
+{
+    WSADATA wsa;
+
+    if (buf == NULL || nbytes == 0)
+        return -1;
+
+    if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+        return -1;
+
+    if (gethostname(buf, (int)nbytes) == SOCKET_ERROR) {
+        WSACleanup();
+        return -1;
+    }
+
+    buf[nbytes - 1] = '\0';
+
+    WSACleanup();
+
+    return (int)strnlen(buf, nbytes);
+}
+
+
 // always return 38, pipe creation not yet implemented
 //
 // NYI: ENHANCEMENT: support pipe creation on Windows
