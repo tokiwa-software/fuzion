@@ -76,7 +76,7 @@ is
     pre
       safety: 0 ≤ priority0 ≤ 99
   =>
-    cond.synchronized (outcome unit) ()->
+    mtx.synchronized (outcome unit) _ ()->
       p :=
         match policy0
           concur.scheduling_policy.sched_other => 0
@@ -103,7 +103,7 @@ is
       concur.scheduling_policy.val
       i32
   =>
-    cond.synchronized ()->
+    mtx.synchronized ()->
       (policy, priority)
 
 
@@ -111,7 +111,7 @@ is
   #
   public set_affinity(cores array u64) outcome unit
   =>
-    cond.synchronized (outcome unit) ()->
+    mtx.synchronized (outcome unit) _ ()->
       e := fuzion.sys.thread.set_affinity thrd cores
       if e = 0
         unit
@@ -126,12 +126,9 @@ is
     a.id = b.id
 
 
-  # condition variable used to make accesses to this thread atomic.
+  # mutex used to make accesses to this thread exclusive.
   #
-  # NYI: CLEANUP: This could be just a mutex (`A0_park_mutex.env.mtx`),
-  # there is no condition or signalling.
-  #
-  cond := (A1_park_condition time.Monotonic).env.cond
+  mtx := sync.mutex (A0_park_mutex).env.mtx
 
 
   # private condition variable for this thread, used to put this
@@ -158,10 +155,12 @@ is
   #
   module park_using_clock(C type : time.Clock, F type : ()->unit, condition ()->bool, code F)
   =>
+    mtx.lock
     c := cond C
     c.synchronized ()->
       code()
       set parked_on := (c, condition)
+      mtx.unlock
       while parked_on??   # perform this in a while to catch spurious wakeups
         c.wait
 
@@ -182,10 +181,12 @@ is
                     timeout   time.instant,
                     condition ()->bool,
                     code      F) bool =>
+    mtx.lock
     c := cond C
-    c.synchronized ()->
+    c.synchronized ()->            # this is redundant for C backend, but required for Java where mtx adiffer
       code()
       set parked_on := (c, condition)
+      mtx.unlock
       while C.env.read < timeout   # while timeout not reached
         c.wait timeout
       until !(parked_on??)                # perform unpark was called
@@ -203,10 +204,14 @@ is
   #
   module unpark
   =>
-    c := parked_on.or_panic.0
-    c.synchronized ()->
-      set parked_on := nil
-      c.signal
+    mtx.lock
+    if parked_on??
+      c := parked_on.or_panic.0
+      c.synchronized ()->            # this is redundant for C backend, but required for Java where mtx adiffer
+        parked_on.for_each x->x.0.signal
+        set parked_on := nil
+        mtx.unlock
+        c.signal
 
 
   # threads that are parked may use these link fields to form a `Thread_List` of
@@ -224,7 +229,8 @@ is
   #
   module park_condition ()->bool
   =>
-    parked_on.or_panic.1
+    mtx.synchronized ()->
+      parked_on.or_panic.1
 
 
   # String representation of thread
