@@ -38,27 +38,29 @@ blocking_mutate_timeout =>
 
   test_relative(BM type : concur.blocking_mutate_using_clock C, C type : time.Clock, name String)
   =>
-    running := BM.env.new false
+    running := BM.env.new "init"
     counter := BM.env.new u64 0
 
     t_start := C.env.read
 
     t1 := concur.Threads.env.spawn ()->
-      BM.env.exclusive_when ()->running.get ()->
+      BM.env.exclusive_when ()->running="start" ()->
+        running <- "run"
 
       while BM.env.exclusive ()->
         counter <- counter +^ 1
-        running.get
+        running="run"
       do
 
     delay => time.duration.s 1
 
     BM.env.exclusive ()->
-      running <- true
+      running <- "start"
+      BM.env.wait ()->running="run"
       res := BM.env.timeout delay
                    .wait ()->false
       check !res   # condition `false` is never `true`, we return due to a timeout
-      running <- false
+      running <- "done"
 
       t_end := C.env.read
       actual_delay := t_end - t_start
@@ -74,25 +76,27 @@ blocking_mutate_timeout =>
 
   test_absolute(BM type : concur.blocking_mutate_using_clock C, C type : time.Clock, name String)
   =>
-    running := BM.env.new false
+    running := BM.env.new "init"
     counter := BM.env.new u64 0
 
     t1 := concur.Threads.env.spawn ()->
-      BM.env.exclusive_when ()->running.get ()->
+      BM.env.exclusive_when ()->running="start" ()->
+        running <- "run"
 
       while BM.env.exclusive ()->
         counter <- counter +^ 1
-        running.get
+        running="run"
       do
 
     abs_timeout := C.env.read + time.duration.s 1
 
     BM.env.exclusive ()->
-      running <- true
+      running <- "start"
+      BM.env.wait ()->running="run"
       res := BM.env.timeout abs_timeout
                    .wait ()->false
       check !res   # condition `false` is never `true`, we return due to a timeout
-      running <- false
+      running <- "done"
 
       t_end := C.env.read
 
