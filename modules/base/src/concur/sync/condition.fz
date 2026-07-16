@@ -62,7 +62,7 @@ private:public condition(mtx concur.sync.mutex, cnd Condition) is
     cnd_wait cnd mtx.mtx
 
 
-  # make this thread wait for signal
+  # make this thread wait for signal using given timeout
   #
   public wait(timeout time.instant) unit
     pre is_locked.read
@@ -80,6 +80,17 @@ private:public condition(mtx concur.sync.mutex, cnd Condition) is
     concur.sync.mtx_init.bind mtx->
       (concur.sync.cnd_init mtx clockid).bind cnd->
         concur.sync.condition (concur.sync.mutex mtx) cnd
+
+
+  # initialize a new condition using the given clock
+  #
+  module type.new(C type : time.Clock, mtx Mutex) outcome concur.sync.condition
+  pre
+    safety: C.posix_id??
+  =>
+    clockid := C.posix_id.or_panic.val
+    (concur.sync.cnd_init mtx clockid).bind cnd->
+      concur.sync.condition (concur.sync.mutex mtx) cnd
 
 
   # initialize a new condition using `time.Monotonic` as underlying clock.

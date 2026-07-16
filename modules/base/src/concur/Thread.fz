@@ -126,20 +126,31 @@ is
     a.id = b.id
 
 
+  # condition variable used to make accesses to this thread atomic.
+  #
+  # NYI: CLEANUP: This could be just a mutex (`A0_park_mutex.env.mtx`),
+  # there is no condition or signalling.
+  #
+  cond := (A1_park_condition time.Monotonic).env.cond
+
+
   # private condition variable for this thread, used to put this
-  # thread in park mode.
+  # thread in park mode using the given clock for timeouts
   #
-  cond := (A_park_condition time.Monotonic).env.cond
-
-  # is this thread parked?
-  #
-  # this is modified only in `park` and `unpark` while protected by `cond`.
-  #
-  #  parked := false
-  parked_on option concur.sync.condition := nil
+  cond(C type : time.Clock) => (A1_park_condition C).env.cond
 
 
-  # park this thread atomically after storing `condition` in `park_condition_var` and
+  # is this thread parked? This is an option of a tuple containing the condition
+  # variable and a Nullaray function that checks the condition that must hold for
+  # the thread to be unparked.
+  #
+  # All read- and write accesses to this are protected by the mutex used to park
+  # this thread, e.g., `blocking_mutate.mtx`.
+  #
+  parked_on := option (concur.sync.condition, ()->bool) nil
+
+
+  # park this thread atomically after storing `condition` as `park_condition` and
   # executing `code`.
   #
   # The idea is that `code` may release a mutex in a way that ensures that this thread
@@ -147,24 +158,34 @@ is
   #
   module park_using_clock(C type : time.Clock, F type : ()->unit, condition ()->bool, code F)
   =>
-    c := (A_park_condition C).env.cond
+    c := cond C
     c.synchronized ()->
       code()
-      set park_condition_var := condition
-      set parked_on := c
+      set parked_on := (c, condition)
       while parked_on??   # perform this in a while to catch spurious wakeups
         c.wait
 
+
+  # park this thread atomically after storing `condition` as `park_condition` and
+  # executing `code`.
+  #
+  # The idea is that `code` may release a mutex in a way that ensures that this thread
+  # is parked before it is released.
+  #
+  # Return early from park in case timeout was reached.
+  #
+  # result is `true`  if this returns due to a call to `unpark`, it is `false` if there
+  # was no timeout.
+  #
   module park_until(C type : time.Clock,
                     F type : ()->unit,
                     timeout   time.instant,
                     condition ()->bool,
                     code      F) bool =>
-    c := (A_park_condition C).env.cond
+    c := cond C
     c.synchronized ()->
       code()
-      set park_condition_var := condition
-      set parked_on := c
+      set parked_on := (c, condition)
       while C.env.read < timeout   # while timeout not reached
         c.wait timeout
       until !(parked_on??)                # perform unpark was called
@@ -180,14 +201,12 @@ is
 
   # unpark this thread if it is parked.
   #
-  module unpark()
+  module unpark
   =>
-    cond.synchronized ()->
-      match parked_on
-        c concur.sync.condition =>
-          set parked_on := nil
-          c.signal
-        nil =>
+    c := parked_on.or_panic.0
+    c.synchronized ()->
+      set parked_on := nil
+      c.signal
 
 
   # threads that are parked may use these link fields to form a `Thread_List` of
@@ -198,22 +217,14 @@ is
   module next Thread := Thread.this
 
 
-  # for a parked `thread.this`, this holds a condition that must hold for the
-  # thread to be unparked.  All read- and write accesses to this are protected
-  # by `cond.synchronized`.
-  #
-  park_condition_var ()->bool := ()->true
-
-
   # for a parked `thread.this`, the condition that must hold for the thread to
-  # be unparked.
+  # be unparked, e.g., `blocking_mutate.mtx`.
   #
-  # This will synchronize the read of `park_condition_var` using
-  # `cond.synchronized`.
+  # This must be called while synchronized on the mutex that caused this to park.
   #
-  module park_condition ()->bool =>
-    cond.synchronized ()->
-      park_condition_var
+  module park_condition ()->bool
+  =>
+    parked_on.or_panic.1
 
 
   # String representation of thread
@@ -226,22 +237,49 @@ is
     "Thread#$id"
 
 
+# a thread-local effect that contains a  mutex for this thread used for park conditions
+#
+# NYI: CLEANUP: This could be just a field in thread as follows
+#
+#    mtx := concur.sync.mtx_init.or_else (panic "failed to create mutex")
+#
+# but there is currently no easy way to access this field while `concur.Threads.env.current`
+# cannot be used becuse `concur.Threads` is not yet instated.
+#
+# NYI: BUG: #7400 This must be instated before `concur.Threads`. Currently, the order
+# is not be dependency, but alphabetically, so we add prefix 'A_' as a workaround.
+#
+module A0_park_mutex : thread_local_effect is
+
+  mtx_var := concur.sync.mtx_init.or_else (panic "failed to create mutex")
+  mtx =>
+    mtx_var
+
+
+  public redef fixed instance_for_new_thread A0_park_mutex
+  =>
+    A0_park_mutex
+
+  public redef fixed type.default_value option concur.A0_park_mutex =>
+    concur.A0_park_mutex
+
+
 # a thread-local effect that produces a condition var for given Clock for each thread
 #
 # NYI: BUG: #7400 This must be instated before `concur.Threads`. Currently, the order
 # is not be dependency, but alphabetically, so we add prefix 'A_' as a workaround.
 #
-module A_park_condition(C type : time.Clock) : thread_local_effect is
+module A1_park_condition(C type : time.Clock) ref : thread_local_effect is
 
-  cond_var := (concur.sync.condition.new C).or_else (panic "failed to create condition variable")
+  cond_var := (concur.sync.condition.new C A0_park_mutex.mtx).or_else (panic "failed to create condition variable")
   cond =>
     cond_var
 
 
-  public redef fixed instance_for_new_thread A_park_condition C
+  public redef fixed instance_for_new_thread A1_park_condition C
   =>
-    A_park_condition C
+    A1_park_condition C
 
 
-  public redef fixed type.default_value option (concur.A_park_condition C) =>
-    concur.A_park_condition C
+  public redef fixed type.default_value option (concur.A1_park_condition C) =>
+    concur.A1_park_condition C
