@@ -1,15 +1,15 @@
 
-{base.fum}/mutate/array.fz:108:5: error 1: Failed to verify that effect 'reg_issue348.m' is installed in current environment.
+{base.fum}/mutate/array.fz:97:5: error 1: Failed to verify that effect 'reg_issue348.m' is installed in current environment.
     mutate.this.env.array T data
 ----^^^^^^^^^^^^^^^
 Callchain that lead to this point:
 
-effect environment '--empty--' for call to 'reg_issue348.type.m.type.from_env' at {base.fum}/mutate/array.fz:108:5:
+effect environment '--empty--' for call to 'reg_issue348.type.m.type.from_env' at {base.fum}/mutate/array.fz:97:5:
     mutate.this.env.array T data
 ----^^^^^^^^^^^^^^^
-effect environment '--empty--' for call to '(reg_issue348.type.m.type.array.type reg_issue348.a).new#2' at --CURDIR--/reg_issue348.fz:33:10:
-  arr := m.array a .new 10 a
----------^^^^^^^^^^^^^^^^^^^
+effect environment '--empty--' for call to '(reg_issue348.type.m.type.array.type reg_issue348.a).new#3 i32' at --CURDIR--/reg_issue348.fz:33:10:
+  arr := m.array a .new 10 _->a
+---------^^^^^^^^^^^^^^^^^^^^^^
 effect environment '--empty--' for call to 'reg_issue348'
 effect environment '--empty--' at program entry
 
