@@ -29,18 +29,16 @@ primes is
   mi ! ()->
 
     primes(n i64) => # sieve using loops
-      _ :=
-        for
-          a := (mi.array bool).new n+1 _->false, a
-          i := i64 2, i + 1
-        while i ≤ n
-          if !a[i]
-            yap "$i "
-            _ :=
-              for
-                j := i, j + i
-              while j ≤ n
-                a[j] := true
+      for
+        a := (mi.array bool).new n+1 _->false, a
+        i := i64 2, i + 1
+      while i ≤ n
+        if !a[i]
+          yap "$i "
+          for
+            j := i, j + i
+          while j ≤ n
+            a[j] := true
     say "Primes using loop:"; primes 1000; say ""
 
     primes2(n i64) =>   # sieve using streams

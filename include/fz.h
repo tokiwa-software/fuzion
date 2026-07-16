@@ -467,9 +467,13 @@ void fzE_unlock(void);
 int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLen, int64_t * result);
 
 /**
- * wait for process `p` to exit
+ * check the status of process p, does not wait for process to finish
  *
- * @return -1 error, >=0 exit code
+ * @return  >=0 : the process exit code
+ *          -1  : process is still running
+ *          -2  : an error occurred when calling waitpid, check errno
+ *        <-100 : Unix systems only: process was terminated by a signal
+ *                -100-SIG, e.g., -109 for 9 (SIGKILL)
  */
 int64_t fzE_process_poll(int64_t p);
 
