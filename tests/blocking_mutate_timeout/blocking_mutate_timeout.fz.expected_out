@@ -1,0 +1,6 @@
+default blocking_mutate relative timeout: got timeout
+default blocking_mutate absolute timeout: got timeout
+blocking_mutate using time.Wallclock relative timeout: got timeout
+blocking_mutate using time.Wallclock absolute timeout: got timeout
+blocking_mutate using time.Monotonic relative timeout: got timeout
+blocking_mutate using time.Monotonic absolute timeout: got timeout
