@@ -89,7 +89,7 @@ is
 
   # the contents
   #
-  contents := LM.env.new (LM.env.new_array (choice nil del (tuple HK V)) allocated_size.get.as_i64 nil)
+  contents := LM.env.new (LM.env.new_array (choice nil del (tuple HK V)) _ allocated_size.get _->(id (choice nil del (tuple HK V)) nil))
 
 
   # calculate the index of k within contents array in case of no conflict
@@ -131,7 +131,7 @@ is
   =>
     allocated_size <- new_alloc_size
     old_contents := contents.get.as_array
-    contents <- LM.env.new_array (choice nil del (tuple HK V)) allocated_size.get.as_i64 nil
+    contents <- LM.env.new_array (choice nil del (tuple HK V)) _ allocated_size.get (_->id (choice nil del (tuple HK V)) nil)
     for elem in old_contents do
       match elem
         t tuple HK V =>

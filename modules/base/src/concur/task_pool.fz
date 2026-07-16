@@ -23,7 +23,7 @@
 
 # simple, dynamically sized task runner
 #
-public task_pool : effect
+public task_pool : realtime.Scheduler
 is
 
   thrds := concur.atomic (list concur.Thread) .new nil
@@ -31,9 +31,7 @@ is
 
   # submit a task to the thread pool
   #
-  # returns false if the pool is already shutting down
-  #
-  public submit(P type : time.period, t realtime.task P) unit ! atomic_access =>
+  public redef submit(P type : time.period, t realtime.task P) unit ! atomic_access =>
 
     nt := concur.Threads.env.spawn ()->
       now := time.Nano.env.read
@@ -43,9 +41,7 @@ is
     thrds.write (list nt thrds)
 
 
-  # stop accepting jobs,
-  # notify all threads to wake up,
-  # wait for all threads to finish
+  # stop accepting tasks and wait for remaining tasks to finish
   #
   public redef finally unit ! atomic_access =>
 

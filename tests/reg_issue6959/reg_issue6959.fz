@@ -22,5 +22,5 @@
 # -----------------------------------------------------------------------
 
 lm : mutate is
-  _ := lm.array (Sequence (tuple i32 String i32)) .new 0 []
-  _ := lm.array (Sequence (i32, i32)) .new 0 []
+  _ := lm.array (Sequence (tuple i32 String i32)) .new 0 _->[]
+  _ := lm.array (Sequence (i32, i32)) .new 0 _->[]

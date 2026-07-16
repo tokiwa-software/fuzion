@@ -88,7 +88,7 @@ is
 
   # buffer of measurements at the end that should be ignored.
   #
-  ignore_last_buffer := histogram_mutate.env.new_array ignore_last.as_i64 (option time.duration nil)
+  ignore_last_buffer := histogram_mutate.env.new_array ignore_last.as_i64 _->(option time.duration nil)
 
 
   # current index to add new data to ignore_last_buffer
@@ -162,7 +162,7 @@ is
 
   # The frequency counts for each bucket
   #
-  buckets := histogram_mutate.env.new_array (indx time.duration.max)+1 (u64 0)
+  buckets := histogram_mutate.env.new_array (indx time.duration.max)+1 _->(u64 0)
 
 
   # create an empty histogram
