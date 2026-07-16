@@ -155,6 +155,11 @@ is
   #
   module park_using_clock(C type : time.Clock, F type : ()->unit, condition ()->bool, code F)
   =>
+    # NYI: UNDER DEVELOPMENT: We are locking both `mtx` and `c` here. This is redudant
+    # since `cond C` is based on `mtx`.  However, this does not seem to be the case for the
+    # Java backend, I run into deadlocks in the C backend and the preconditions in
+    # `condition` do not work if the remove `c.synchronized`.
+    #
     mtx.lock
     c := cond C
     c.synchronized ()->
@@ -181,9 +186,14 @@ is
                     timeout   time.instant,
                     condition ()->bool,
                     code      F) bool =>
+    # NYI: UNDER DEVELOPMENT: We are locking both `mtx` and `c` here. This is redudant
+    # since `cond C` is based on `mtx`.  However, this does not seem to be the case for the
+    # Java backend, I run into deadlocks in the C backend and the preconditions in
+    # `condition` do not work if the remove `c.synchronized`.
+    #
     mtx.lock
     c := cond C
-    c.synchronized ()->            # this is redundant for C backend, but required for Java where mtx adiffer
+    c.synchronized ()->
       code()
       set parked_on := (c, condition)
       mtx.unlock
@@ -204,6 +214,11 @@ is
   #
   module unpark
   =>
+    # NYI: UNDER DEVELOPMENT: We are locking both `mtx` and `c` here. This is redudant
+    # since `cond C` is based on `mtx`.  However, this does not seem to be the case for the
+    # Java backend, I run into deadlocks in the C backend and the preconditions in
+    # `condition` do not work if the remove `c.synchronized`.
+    #
     mtx.lock
     if parked_on??
       c := parked_on.or_panic.0
