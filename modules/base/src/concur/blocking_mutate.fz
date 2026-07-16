@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# blocking_mutate_using_lock -- a multi-thread variant mutate using a given Clock
+# blocking_mutate_using_clock -- a multi-thread variant mutate using a given Clock
 #
 # This mutate ensures exclusive access to shared memory via using locks and
 # blocking.
