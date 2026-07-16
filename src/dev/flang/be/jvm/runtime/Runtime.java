@@ -63,6 +63,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.WeakHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -157,6 +158,11 @@ public class Runtime extends ANY
       public String toString() { return "UNIT_TYPE_EFFECT"; }
     };
 
+
+  /* NYI: UNDER DEVELOPMENT: Constants to be kept in sync with `modules/baser/src/posix.fz`, should be automated.
+   */
+  static final int CLOCK_REALTIME  = 0;
+  static final int CLOCK_MONOTONIC = 1;
 
   /*--------------------------  static fields  --------------------------*/
 
@@ -1223,18 +1229,22 @@ public class Runtime extends ANY
 
   }
 
+  /**
+   * A JvmCondition, we try to mimic a pthread condition connected to a clock
+   * with given clockid_t.
+   */
+  record JvmCondition(Condition cnd, int clockid) { }
 
   public static Object cnd_init(Object rl, int clock)
   {
-    // NYI: clock is currently ignored, what is Java's default clock for this? CLOCK_MONOTONIC?
-    return ((ReentrantLock)rl).newCondition(/* NYI: clock */);
+    return new JvmCondition(((ReentrantLock)rl).newCondition(), clock);
   }
 
   public static void cnd_signal(Object cnd)
   {
     try
       {
-        ((Condition)cnd).signal();
+        (((JvmCondition)cnd).cnd).signal();
       }
     catch(Exception e)
       {
@@ -1246,7 +1256,7 @@ public class Runtime extends ANY
   {
     try
       {
-        ((Condition)cnd).signalAll();
+        (((JvmCondition)cnd).cnd).signalAll();
       }
     catch(Exception e)
       {
@@ -1258,7 +1268,7 @@ public class Runtime extends ANY
   {
     try
       {
-        ((Condition)cnd).await();
+        (((JvmCondition)cnd).cnd).await();
       }
     catch(Exception e)
       {
@@ -1271,21 +1281,14 @@ public class Runtime extends ANY
   {
     try
       {
-        ((Condition)cnd).await(timeout - System.nanoTime(),  /* NYI: depending on underlying clock! */
-                               java.util.concurrent.TimeUnit.NANOSECONDS);
-      }
-    catch(Exception e)
-      {
-        Errors.fatal(e);
-      }
-  }
-
-  public static void cnd_timedwait(Object cnd)
-  {
-    try
-      {
-        if (true) throw new Error("interpreter backend: timedwait not supported");
-        ((Condition)cnd).await();
+        var jc = (JvmCondition) cnd;
+        var ns = switch (jc.clockid)
+          {
+          case CLOCK_REALTIME  -> timeout - System.currentTimeMillis() * 1000000L;
+          case CLOCK_MONOTONIC -> timeout - System.nanoTime();
+          default              -> { Errors.fatal("JVM backend unexpected POSIX clockid "+jc.clockid); throw new Error(); }
+          };
+        jc.cnd.await(ns, TimeUnit.NANOSECONDS);
       }
     catch(Exception e)
       {
