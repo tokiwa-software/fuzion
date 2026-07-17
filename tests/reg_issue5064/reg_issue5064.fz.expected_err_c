@@ -1,1 +1,1 @@
-*** failed *** panic ***: `--nil--`
+*** failed *** panic ***: `'switch.or_panic' called on 'option Stack.Node' that is '--nil--'`
