@@ -1,0 +1,9 @@
+
+--CURDIR--/reg_issue5711.fz:26:12: error 1: Could not find called feature
+  say (3,2,complex 3.14 2) # should flag an error: Could not find called feature
+-----------^^^^^^^
+Feature not found: 'complex' (2 arguments)
+Target feature: 'reg_issue5711'
+In call: 'complex 3.14 2'
+
+one error.
