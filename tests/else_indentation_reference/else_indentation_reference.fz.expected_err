@@ -63,7 +63,7 @@ When 'else' is not in the same line as 'if', it must be aligned with 'if', 'then
 
 
 --CURDIR--/else_indentation_reference.fz:178:3: error 8: Inconsistent indentation
-  c0 then "-true-" # 8. should flag an error: inconsistent indentation
+  c0 then "-true-"                # 8. should flag an error: inconsistent indentation
 --^
 Indentation reference point is --CURDIR--/else_indentation_reference.fz:177:3:
   if
@@ -71,7 +71,70 @@ Indentation reference point is --CURDIR--/else_indentation_reference.fz:177:3:
 While parsing: term, parse stack: term, opExpr, operatorExpr, exprInLine, ifexpr (twice), term, opExpr, operatorExpr, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
 
 
---CURDIR--/else_indentation_reference.fz:138:3: error 9: Incompatible types in branches of if expression
+--CURDIR--/else_indentation_reference.fz:178:6: error 9: Syntax error: expected end of expressions, found keyword 'then'
+  c0 then "-true-"                # 8. should flag an error: inconsistent indentation
+-----^
+While parsing: exprs, parse stack: exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
+
+
+--CURDIR--/else_indentation_reference.fz:179:3: error 10: Inconsistent indentation
+  else if
+--^
+Indentation reference point is --CURDIR--/else_indentation_reference.fz:178:3:
+  c0 then "-true-"                # 8. should flag an error: inconsistent indentation
+--^
+While parsing: exprs, parse stack: exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
+
+
+--CURDIR--/else_indentation_reference.fz:180:3: error 11: Inconsistent indentation
+  c1 then "-false::true-"         # 8a. should flag an error: inconsistent indentation
+--^
+Indentation reference point is --CURDIR--/else_indentation_reference.fz:179:8:
+  else if
+-------^
+While parsing: term, parse stack: term, opExpr, operatorExpr, exprInLine, ifexpr (twice), term, opExpr, operatorExpr, expr, exprs, block (twice), elseBlockOpt, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
+
+
+--CURDIR--/else_indentation_reference.fz:180:6: error 12: Syntax error: expected end of expressions, found keyword 'then'
+  c1 then "-false::true-"         # 8a. should flag an error: inconsistent indentation
+-----^
+While parsing: exprs, parse stack: exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
+
+
+--CURDIR--/else_indentation_reference.fz:181:3: error 13: Inconsistent indentation
+  else       "-false::false-"
+--^
+Indentation reference point is --CURDIR--/else_indentation_reference.fz:180:3:
+  c1 then "-false::true-"         # 8a. should flag an error: inconsistent indentation
+--^
+While parsing: exprs, parse stack: exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
+
+
+--CURDIR--/else_indentation_reference.fz:186:5: error 14: Inconsistent indentation
+    c0 then "-true-"              # 9. should flag an error: inconsistent indentation
+----^
+Indentation reference point is --CURDIR--/else_indentation_reference.fz:185:7:
+      if
+------^
+While parsing: term, parse stack: term, opExpr, operatorExpr, exprInLine, ifexpr (twice), term, opExpr, operatorExpr, expr, exprs, block, thenPart, ifexpr (twice), term, opExpr, operatorExpr, expr, exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
+
+
+--CURDIR--/else_indentation_reference.fz:186:8: error 15: Syntax error: expected end of expressions, found keyword 'then'
+    c0 then "-true-"              # 9. should flag an error: inconsistent indentation
+-------^
+While parsing: exprs, parse stack: exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
+
+
+--CURDIR--/else_indentation_reference.fz:192:3: error 16: Inconsistent indentation
+  else         "-false::false-"   # 10. should flag an error: broken if because of indentation
+--^
+Indentation reference point is --CURDIR--/else_indentation_reference.fz:189:3:
+  if c0 then "-true-"
+--^
+While parsing: exprs, parse stack: exprs, block (twice), implRout, implFldOrRout, routOrField, feature, expr, exprs, block (twice), unit
+
+
+--CURDIR--/else_indentation_reference.fz:138:3: error 17: Incompatible types in branches of if expression
   if c0 then "-true-"
 --^^^^^^^^^^^^^^^^^^^
   else if c1 then "-false::true-"
@@ -95,7 +158,26 @@ block returns value of type 'unit' at --CURDIR--/else_indentation_reference.fz:1
 ----------------------------------------------^
 
 
---CURDIR--/else_indentation_reference.fz:140:16: error 10: Wrong number of actual value arguments in call
+--CURDIR--/else_indentation_reference.fz:189:3: error 18: Incompatible types in branches of if expression
+  if c0 then "-true-"
+--^^^^^^^^^^^^^^^^^^^
+  else
+--^^^^
+    if c1 then "-false::true-"
+----^^^^^^^^^^^^^^^^^^^^^^^^^^
+Incompatible result types in different branches:
+blocks return values of type 'String' at --CURDIR--/else_indentation_reference.fz:189:14:
+  if c0 then "-true-"
+-------------^^^^^^^^
+and at --CURDIR--/else_indentation_reference.fz:191:16:
+    if c1 then "-false::true-"
+---------------^^^^^^^^^^^^^^^
+block returns value of type 'unit' at --CURDIR--/else_indentation_reference.fz:191:5:
+    if c1 then "-false::true-"
+----^
+
+
+--CURDIR--/else_indentation_reference.fz:140:16: error 19: Wrong number of actual value arguments in call
        else if c2       "-false::false::true-"
 ---------------^^
 Number of actual value arguments is 1, while call expects no value arguments.
@@ -106,4 +188,28 @@ Declared at --CURDIR--/else_indentation_reference.fz:26:1:
 c2 := false
 ^^
 
-10 errors.
+
+--CURDIR--/else_indentation_reference.fz:178:3: error 20: Expression produces result of type 'bool' but result is not used.
+  c0 then "-true-"                # 8. should flag an error: inconsistent indentation
+--^^
+To solve this, use the result or explicitly ignore the result '_ := <expression>'.
+
+
+--CURDIR--/else_indentation_reference.fz:178:11: error 21: Expression produces result of type 'String' but result is not used.
+  c0 then "-true-"                # 8. should flag an error: inconsistent indentation
+----------^^^^^^^^
+To solve this, use the result, explicitly ignore the result '_ := <expression>' or change 'String' from constructor to routine by replacing 'is' by '=>'.
+
+
+--CURDIR--/else_indentation_reference.fz:180:3: error 22: Expression produces result of type 'bool' but result is not used.
+  c1 then "-false::true-"         # 8a. should flag an error: inconsistent indentation
+--^^
+To solve this, use the result or explicitly ignore the result '_ := <expression>'.
+
+
+--CURDIR--/else_indentation_reference.fz:186:5: error 23: Expression produces result of type 'bool' but result is not used.
+    c0 then "-true-"              # 9. should flag an error: inconsistent indentation
+----^^
+To solve this, use the result or explicitly ignore the result '_ := <expression>'.
+
+23 errors.
