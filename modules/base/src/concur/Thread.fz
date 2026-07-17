@@ -155,7 +155,7 @@ is
   #
   module park_using_clock(C type : time.Clock, F type : ()->unit, condition ()->bool, code F)
   =>
-    # NYI: UNDER DEVELOPMENT: We are locking both `mtx` and `c` here. This is redudant
+    # NYI: UNDER DEVELOPMENT: We are locking both `mtx` and `c` here. This is redundant
     # since `cond C` is based on `mtx`.  However, this does not seem to be the case for the
     # Java backend, I run into deadlocks in the C backend and the preconditions in
     # `condition` do not work if the remove `c.synchronized`.
@@ -186,7 +186,7 @@ is
                     timeout   time.instant,
                     condition ()->bool,
                     code      F) bool =>
-    # NYI: UNDER DEVELOPMENT: We are locking both `mtx` and `c` here. This is redudant
+    # NYI: UNDER DEVELOPMENT: We are locking both `mtx` and `c` here. This is redundant
     # since `cond C` is based on `mtx`.  However, this does not seem to be the case for the
     # Java backend, I run into deadlocks in the C backend and the preconditions in
     # `condition` do not work if the remove `c.synchronized`.
@@ -214,7 +214,7 @@ is
   #
   module unpark
   =>
-    # NYI: UNDER DEVELOPMENT: We are locking both `mtx` and `c` here. This is redudant
+    # NYI: UNDER DEVELOPMENT: We are locking both `mtx` and `c` here. This is redundant
     # since `cond C` is based on `mtx`.  However, this does not seem to be the case for the
     # Java backend, I run into deadlocks in the C backend and the preconditions in
     # `condition` do not work if the remove `c.synchronized`.
