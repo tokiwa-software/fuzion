@@ -142,7 +142,7 @@ jitter =>
 
     match flow.exception jitter_too_high .on ()->
 
-         for p := period_default, p.times 0.5 do
+         for p := period_default, p.scale 0.5 do
            run_for_period p
 
       e error => say $e

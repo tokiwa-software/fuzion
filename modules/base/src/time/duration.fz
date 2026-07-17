@@ -122,7 +122,7 @@ is
 
   # this duration multiplied by factor f
   #
-  public times(f f64) time.duration
+  public scale(f f64) time.duration
   =>
     time.duration (nanos.as_f64 * f).as_i64.as_u64
 
