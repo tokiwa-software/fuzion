@@ -157,14 +157,13 @@ O(n log n).
       #
       join (ole i64, new i64, sz i64) =>
         if (size & sz) != 0
-          _ :=
-            for
-              i  i64 := 0, i+1
-              i1 i64 := 0, if (use1) i1+1 else i1
-              i2 i64 := 0, if (use1) i2   else i2+1
-              use1 := i1 < sz && (i2 ≥ sz || data[ole + i1].0 < a[new+i2].0)
-            while  i < sz*2
-              a[new-sz+i] := if use1 then data[ole + i1] else a[new+i2]
+          for
+            i  i64 := 0, i+1
+            i1 i64 := 0, if (use1) i1+1 else i1
+            i2 i64 := 0, if (use1) i2   else i2+1
+            use1 := i1 < sz && (i2 ≥ sz || data[ole + i1].0 < a[new+i2].0)
+          while  i < sz*2
+            a[new-sz+i] := if use1 then data[ole + i1] else a[new+i2]
           join (fill - sz - (fill - ole - sz)*2 - sz*2) new-sz sz*2
 
       a[nfill+nsz-1] := kv
@@ -221,14 +220,13 @@ O(n log n).
       join (ole i64, sz i64, rsz i64, skip i64) unit =>
         if sz ≤ size
           if (size & sz) != 0
-            _ :=
-              for
-                i in i64.zero..
-                i1 := i64.zero, if (use1) i1+1 else i1
-                i2 := i64.zero, if (use1) i2   else i2+1
-                use1 := i1 < sz && ((i2 ≥ rsz) || (data[ole + i1].0 < a[size-rsz+i2]))
-              while i < sz+rsz
-                a[size-rsz-sz + i1 + i2] := if (use1) data[ole + i1].0 else a[size-rsz+i2]
+            for
+              i in i64.zero..
+              i1 := i64.zero, if (use1) i1+1 else i1
+              i2 := i64.zero, if (use1) i2   else i2+1
+              use1 := i1 < sz && ((i2 ≥ rsz) || (data[ole + i1].0 < a[size-rsz+i2]))
+            while i < sz+rsz
+              a[size-rsz-sz + i1 + i2] := if (use1) data[ole + i1].0 else a[size-rsz+i2]
             join (ole - skip - sz*2) sz*2 rsz+sz (skip + sz + skip)
           else
             join ole-sz sz*2 rsz (skip + sz + skip)

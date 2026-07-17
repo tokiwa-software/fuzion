@@ -17,39 +17,10 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test lib_concur_Channel
+#  Source code of Fuzion test reg_issue5264
 #
 # -----------------------------------------------------------------------
 
-lib_concur_Channel =>
+reg_issue5264 =>
 
-  chan := concur.Channel u8
-
-  sent_items := concur.atomic bool .new false
-  received_item := concur.atomic bool .new false
-
-  concur.thread_pool _ 8 ()->
-
-    check concur.thread_pool.env.submit ()->
-      chan <- 1
-      chan <- 2
-      chan <- 3
-      sent_items.write true
-
-
-    while !sent_items.read
-
-
-    check concur.thread_pool.env.submit ()->
-      for n := chan.next
-      while n.ok
-        say "received $(n)"
-        received_item.write true
-
-
-    while !received_item.read
-
-
-    check concur.thread_pool.env.submit ()->
-      chan <- 9
-      chan.close
+  (say <| id) <| "hi" # should flag an error: Different count of arguments needed when calling feature

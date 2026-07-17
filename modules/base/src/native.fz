@@ -252,7 +252,14 @@ module fzE_process_create(
   res Array i64) i32 => native
 
 
-# wait for process to exit
+# check the process status, does not wait for process to finish
+#
+# result
+#   >=0 : the process exit code
+#   -1  : process is still running
+#   -2  : an error occurred when calling waitpid, check errno
+#  <-100: Unix systems only: process was terminated by a signal
+#         -100-SIG, e.g., -109 for 9 (SIGKILL)
 #
 module fzE_process_poll(process i64) i64 => native
 
