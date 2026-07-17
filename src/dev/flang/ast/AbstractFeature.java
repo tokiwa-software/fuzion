@@ -858,7 +858,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   public boolean isTypeFeature()
   {
     // NYI: BUG: wrongly returns false for features that a cotype inherits from Type but which are implemented in Any i.e. its outer feature is Any, see #3913
-    return outer() != null && (outer().isCotype() || Types.resolved!=null && outer().compareTo(Types.resolved.f_Type) == 0);
+    return outer() != null && (outer().isCotype() || Types.resolved != null && outer().compareTo(Types.resolved.f_Type) == 0);
   }
 
 
