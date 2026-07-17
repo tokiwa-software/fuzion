@@ -153,7 +153,7 @@ is
   # The idea is that `code` may release a mutex in a way that ensures that this thread
   # is parked before it is released.
   #
-  module park_using_clock(C type : time.Clock, F type : ()->unit, condition ()->bool, code F)
+  module park(F type : ()->unit, condition ()->bool, code F)
   =>
     # NYI: UNDER DEVELOPMENT: We are locking both `mtx` and `c` here. This is redundant
     # since `cond C` is based on `mtx`.  However, this does not seem to be the case for the
@@ -161,7 +161,7 @@ is
     # `condition` do not work if the remove `c.synchronized`.
     #
     mtx.lock
-    c := cond C
+    c := cond time.Monotonic # using condition var for monotonic clock here, but time is not needed
     c.synchronized ()->
       code()
       set parked_on := (c, condition)
@@ -203,11 +203,6 @@ is
         true        # unpark was used to wake us up
       else
         false       # timed out
-
-
-  module park(F type : ()->unit, condition ()->bool, code F)
-  =>
-    park_using_clock time.Monotonic F condition code
 
 
   # unpark this thread if it is parked.
