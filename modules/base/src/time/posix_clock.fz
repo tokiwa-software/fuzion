@@ -28,7 +28,7 @@
 # This is not meant to be used directly, but for other posix-based clocks
 # to inherit from.
 #
-public posix_clock : time.Clock is
+module:public posix_clock : time.Clock is
 
 
   # no guarantee can be given for precision nor resolution
