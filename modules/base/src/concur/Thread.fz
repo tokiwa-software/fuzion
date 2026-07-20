@@ -138,7 +138,7 @@ is
 
 
   # is this thread parked? This is an option of a tuple containing the condition
-  # variable and a Nullaray function that checks the condition that must hold for
+  # variable and a Nullary function that checks the condition that must hold for
   # the thread to be unparked.
   #
   # All read- and write accesses to this are protected by the mutex used to park
