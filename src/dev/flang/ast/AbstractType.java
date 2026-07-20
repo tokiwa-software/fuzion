@@ -2114,7 +2114,7 @@ there is no common super type of the two types (Types.t_ERROR)
   public AbstractType replace_inherited_this_type(AbstractFeature declF, AbstractFeature heir, BiConsumer<AbstractType, AbstractType> foundRef)
   {
     if (PRECONDITIONS) require
-      (declF == Types.f_ERROR || heir == Types.f_ERROR || heir.inheritsFrom(declF));
+      (Errors.any() || declF == Types.f_ERROR || heir == Types.f_ERROR || heir.inheritsFrom(declF));
 
     var t = this;
     var inh = heir.tryFindInheritanceChain(declF);
