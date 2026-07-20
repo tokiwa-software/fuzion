@@ -42,7 +42,8 @@ public Read ref : effect is
     _ : io.dir.Read is
       public redef next outcome path =>
         internal_array := fuzion.sys.internal_array_init u8 os.max_path_length
-        len := fzE_dir_read io.dir.open.env.dd internal_array.data
+        dd := io.dir.open.env.dd
+        len := fzE_dir_read dd internal_array.data
         if len = 0
           error "no more directory entries"
         else if len < 0
