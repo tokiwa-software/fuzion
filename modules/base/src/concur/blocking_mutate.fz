@@ -224,7 +224,7 @@ public blocking_mutate_using_clock(C type : time.Clock) : mutate is
 # blocking.
 #
 # Accidental race accesses are not permitted by this mutate, i.e., accessing
-# mutable elements, e.g, via `get` or `put` on a mutable var `mutate.new T`,
+# mutable elements, e.g. via `get` or `put` on a mutable var `mutate.new T`,
 # are not permitted unless we are in code run via
 # `blocking_mutate.this.exclusive`.
 #
