@@ -42,6 +42,11 @@ public Process ref : effect is
   public wait(p os.process, timeout time.duration) outcome u32 => abstract
 
 
+  # send signal to process
+  #
+  public send_signal(p os.process, sig os.signal) outcome unit => abstract
+
+
 
   # default implementation of os.Process
   #
@@ -124,6 +129,12 @@ public Process ref : effect is
                 error "Process $(p.pid) was terminated by signal $sig$sig_name"
               else
                 error "Waiting for process with id $(p.pid) was unsuccessful" fzE_last_error
+
+
+      # send signal to process
+      #
+      public redef send_signal(p os.process, sig os.signal) outcome unit =>
+        fzE_send_signal p.pid sig.as_i32 = 0 ? unit : error "sending signal to process $(p.pid)" fzE_last_error
 
 
       # the processes that were registered

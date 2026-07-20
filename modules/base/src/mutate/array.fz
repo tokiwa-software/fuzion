@@ -78,18 +78,21 @@ is
   #
   public type.new
    (
+    I type : integer,
+
     # length of the array to create
-    length i64,
+    length I,
 
     # initial value for elements
-    init T
+    init I->T
 
    ) mutate.this.array T
   =>
     data := fuzion.sys.internal_array_init T length.as_i32
 
-    for x in data.indices do
-      data[x] := init
+    for x := I.zero, x+1
+    while x < length
+    do data[x.as_i32] := init x
 
     mutate.this.env.array T data
 
@@ -112,13 +115,13 @@ is
 
   # create an uninitialized mutate.array, for use in container.Dynamic_Array
   #
-  module type.empty(len i64) mutate.this.array T =>
+  module type.empty(I type : integer, len I) mutate.this.array T =>
     mutate.this.env.array T (fuzion.sys.internal_array_init T len.as_i32)
 
 
 # convenience feature for creating a new array,
 # in some cases even with type inference
 #
-public new_array (T type, length i64, init T) mutate.this.array T
+public new_array (T type, I type : integer, length I, init I->T) mutate.this.array T
 =>
   mutate.this.array T .new length init

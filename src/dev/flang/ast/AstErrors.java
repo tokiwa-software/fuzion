@@ -661,7 +661,7 @@ public class AstErrors extends ANY
                                             String detail1,
                                             String detail2)
   {
-    // supress errors in cotypes unless we did not find the original error (in
+    // suppress errors in cotypes unless we did not find the original error (in
     // the original feature):
     if (!fg._feature.isCotype() || !Errors.any())
       {
@@ -2674,6 +2674,13 @@ public class AstErrors extends ANY
     error(pos, "Loop results in two incompatible types." ,
       "The incompatible types are: " + m.cases().map2(c -> s(c.code().type())).stream().collect(Collectors.joining(","))
     );
+  }
+
+  public static void anonymousFeatureMustNotInheritFromMultiple(SourcePosition range, List<AbstractCall> i)
+  {
+    error(range, "Anonymous feature must not inherit from multiple features.",
+      "Found inheritance calls:\n\n" +
+      i.stream().map(ic -> ic.pos().showInSource()).collect(Collectors.joining("\nand\n\n")));
   }
 
 }

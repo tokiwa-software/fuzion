@@ -59,7 +59,7 @@ public blocking_mutate : mutate is
   # from `T1` in an exclusive section, then `T3` will receive a copy of
   # `T1`'s `blocking_mutate.this.env` where `exclusive_thread` is `T1`. Apart
   # from this case, `exclusive_thread` should always be either `nil` or, if
-  # in an exclusive section, the `concur.threads.env.current`.
+  # in an exclusive section, the `concur.Threads.env.current`.
   #
   module redef exclusive_thread option concur.Thread := nil
 
@@ -69,7 +69,7 @@ public blocking_mutate : mutate is
   #
   public redef exclusive(R type, F type: ()->R, code F) R
   =>
-    me := concur.threads.env.current
+    me := concur.Threads.env.current
     if exclusive_thread = me then
       # recursive `exclusive` section, so we can just run `code`:
       code()
@@ -119,11 +119,11 @@ public blocking_mutate : mutate is
   =>
     while !condition() do
       wakeup_next_in_waiting_list
-      concur.threads.env.current.park condition ()->
-        waiting.add concur.threads.env.current
+      concur.Threads.env.current.park condition ()->
+        waiting.add concur.Threads.env.current
         _ := mtx.unlock  # NYI: result ignored
       _ := mtx.lock    # NYI: result ignored,
-      set exclusive_thread := concur.threads.env.current
+      set exclusive_thread := concur.Threads.env.current
 
 
   # is instance `mutate.this` instated for type `mutate.this` and, if `mutate.this` does

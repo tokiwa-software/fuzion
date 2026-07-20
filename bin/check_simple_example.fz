@@ -105,7 +105,7 @@ Sequence.execute(
           path.of "$file.stdin"
         else
           nil
-      tokiwa.record_process p Sequence.this.as_string nil feed
+      tokiwa.record_process p Sequence.this.as_string cpu_time_limit feed
 
 # execute this string by splitting at all whitespaces
 #
@@ -127,8 +127,8 @@ String.execute =>
 
 
 # limit cpu time and stack size for executing test
-cpu_time_limit   := u64 600  # NYI: UNDER DEVELOPMENT: we should decrease this value
-stack_size_limit := 1024
+cpu_time_limit   := time.duration.min 10  # NYI: UNDER DEVELOPMENT: we should decrease this value
+stack_size_limit := units.data_size.b 1024 # NYI: UNDER DEVELOPMENT: stack limit is not yet set
 
 
 # check exit code for validity
@@ -140,7 +140,7 @@ check_exit_code(run tokiwa.process_result) =>
     Exit.env.exit 1
   # 139 - 128 = 11 -> signal SIGSEGV
   else if run.exit_code = 139
-    say "$("*** CANCELLED:".bold.red) test $file exceeded stack size limit of $stack_size_limit KB"
+    say "$("*** CANCELLED:".bold.red) test $file exceeded stack size limit of $stack_size_limit"
     Exit.env.exit 1
   # pipe to head may result in exit code 141 -- broken pipe.
   else if run.exit_code != 0 && run.exit_code != 1 && run.exit_code != 141
@@ -211,12 +211,12 @@ else
     # setrlimit for executed processes
     # stack_size_limit, cpu_time_limit
 
-    bt := concur.threads.env.spawn ()->
-      time.Nano.env.sleep <| time.duration.s cpu_time_limit
+    bt := concur.Threads.env.spawn ()->
+      time.Nano.env.sleep cpu_time_limit
       say "$("*** CANCELLED:".bold.red) test $file exceeded cpu time limit of $cpu_time_limit s"
       Exit.env.exit 1
 
-    concur.threads.env.detach bt
+    concur.Threads.env.detach bt
 
     backend_options(x) =>
       s := envir.Vars.env

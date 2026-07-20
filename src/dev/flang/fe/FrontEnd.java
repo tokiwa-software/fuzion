@@ -118,7 +118,7 @@ public class FrontEnd extends ANY
 
 
   /**
-   * The total # of bytes loadeded for modules. Global indices are in this range.
+   * The total # of bytes loaded for modules. Global indices are in this range.
    */
   private int _totalModuleData = 0;
 

@@ -48,7 +48,7 @@ reg_issue7166 =>
     # first, create mutable field and array:
 
     v1 := LM.env.new 13
-    a1 := LM.env.new_array 32 "bla"
+    a1 := LM.env.new_array 32 _->"bla"
 
     # ------------------------------------
 
@@ -84,7 +84,7 @@ reg_issue7166 =>
 
     # now, check accesses from another thread
 
-    t := concur.threads.env.spawn ()->
+    t := concur.Threads.env.spawn ()->
 
       # first, non-exclusive accesses to a field in another thread must fail in the pre-condition
 

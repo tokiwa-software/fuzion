@@ -30,6 +30,6 @@ public cwd outcome path =>
 
   if fzE_cwd a.internal_array.data pm.as_i64 = 0
     # NYI: BUG: path.of does not work here
-    path.type.of <| String.from_bytes (a.take_while x->x!=0)
+    path.type.of <| String.from_bytes (a.take_while !=0)
   else
     error "error getting current working directory, error code $(fzE_last_error)"

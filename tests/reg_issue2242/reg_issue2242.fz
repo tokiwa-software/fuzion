@@ -55,9 +55,9 @@ reg_issue2242 =>
   mi : mutate is
   mi ! ()->
 
-    a := mi.array f64 .new 10 0.0
+    a := mi.array f64 .new 10 _->0.0
     for i in a.indices do
-      a[i] := random.env.next_f64
+      a[i] := Random.env.next_f64
 
 
     say "unsorted"

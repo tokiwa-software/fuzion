@@ -923,7 +923,7 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
 }
 
 
-// check the process status, does not wait for process to finish
+// check the status of process p, does not wait for process to finish
 //
 // result
 //   >=0 : the process exit code (including exception/termination codes)
@@ -950,6 +950,15 @@ int64_t fzE_process_poll(int64_t p){
     return (int64_t)status;
 }
 
+
+// always return 38, pipe creation not yet implemented
+//
+// NYI: ENHANCEMENT: support pipe creation on Windows
+//
+int fzE_pipe_create(int64_t *fds)
+{
+  return 38; // ENOSYS on Linux
+}
 
 // returns -1 on error, 0 on pipe exhausted/closed
 // otherwise the number of bytes read
