@@ -1,0 +1,9 @@
+
+--CURDIR--/reg_issue7401.fz:25:5: error 1: Failed to infer actual type parameters
+b : a is
+----^
+In call to 'a', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: 'C'
+Type inference failed for one type parameter 'C'
+
+one error.
