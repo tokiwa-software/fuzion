@@ -1657,7 +1657,7 @@ actualArgs  : actualSpaces
         }
 
       // No more actuals if we have a string continuation as in "value $x is
-      // ok" for the string after '$x' or in "bla{f a b}blub" for the string
+      // ok" for the string after '$x' or in "bla$(f a b)blub" for the string
       // after 'f a b'.
       default              -> isContinuedString(current(atMinIndent));
       };
@@ -2176,15 +2176,15 @@ simpleterm  : bracketTerm
    *
 stringTerm  : '&quot;any chars&quot;'
             | '&quot; any chars &dollar;' IDENT stringTermD
-            | '&quot; any chars{' block stringTermB
+            | '&quot; any chars&dollar;(' block stringTermB
             ;
 stringTermD : 'any chars&quot;'
             | 'any chars&dollar;' IDENT stringTermD
-            | 'any chars{' block stringTermB
+            | 'any chars&dollar;(' block stringTermB
             ;
-stringTermB : '}any chars&quot;'
-            | '}any chars&dollar;' IDENT stringTermD
-            | '}any chars{' block stringTermB
+stringTermB : ')any chars&quot;'
+            | ')any chars&dollar;' IDENT stringTermD
+            | ')any chars&dollar;(' block stringTermB
             ;
   */
   Expr stringTerm(Expr leftString, Optional<Integer> multiLineIndentation)
