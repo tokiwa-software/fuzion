@@ -263,7 +263,7 @@ is
 # cannot be used becuse `concur.Threads` is not yet instated.
 #
 # NYI: BUG: #7400 This must be instated before `concur.Threads`. Currently, the order
-# is not be dependency, but alphabetically, so we add prefix 'A_' as a workaround.
+# is sorted by dependency, but alphabetically, so we add prefix 'A_' as a workaround.
 #
 module A0_park_mutex : thread_local_effect is
 
