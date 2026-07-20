@@ -34,7 +34,7 @@ public posix is
   public clockid is
 
 
-  # the wall clock (NOTE: This is usually not useful for real-tiem code)
+  # the wall clock (NOTE: This is usually not useful for real-time code)
   #
   public clock_realtime  : clockid is
 
