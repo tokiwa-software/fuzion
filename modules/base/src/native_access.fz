@@ -17,19 +17,18 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test
+#  Source code of Fuzion standard library feature native_access
 #
 # -----------------------------------------------------------------------
 
-reg_issue348 =>
+# native_access -- effect to denote access of native code
+#
+private:public native_access : effect is
 
-  a is
-    x    := mut 500
-    c =>
-      x <- x.get
-      false
 
-  m:mutate is
-  arr := m.array a .new 10 _->a
-
-  arr[0].c
+  # default implementation of native_access
+  #
+  # this will get instated automatically at startup
+  #
+  public redef fixed type.default_value option native_access =>
+    native_access

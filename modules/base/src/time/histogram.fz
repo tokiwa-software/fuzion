@@ -88,7 +88,7 @@ is
 
   # buffer of measurements at the end that should be ignored.
   #
-  ignore_last_buffer := histogram_mutate.env.new_array ignore_last.as_i64 (option time.duration nil)
+  ignore_last_buffer := histogram_mutate.env.new_array ignore_last.as_i64 _->(option time.duration nil)
 
 
   # current index to add new data to ignore_last_buffer
@@ -137,7 +137,7 @@ is
     match max_recorded
       mr time.duration => n := num_buckets.as_i32
                           array n i->
-                            if i<(n-1) then mr.times ((i+1).as_f64 / (num_buckets.as_f64-1))
+                            if i<(n-1) then mr.scale ((i+1).as_f64 / (num_buckets.as_f64-1))
                                        else time.duration.max
       nil              => log_table
 
@@ -153,7 +153,7 @@ is
     debug: result.length = num_buckets
   =>
     step := 1.65  # step factor determined via trial and error
-    (1.0 :: *step).map f->(time.duration.ns 1 .times f)
+    (1.0 :: *step).map f->(time.duration.ns 1 .scale f)
                   .dedup     # some lower values might be duplicates like 1ns*1.65=1ns
                   .take num_buckets.as_i32-1
                   .concat [time.duration.max]
@@ -162,7 +162,7 @@ is
 
   # The frequency counts for each bucket
   #
-  buckets := histogram_mutate.env.new_array (indx time.duration.max)+1 (u64 0)
+  buckets := histogram_mutate.env.new_array (indx time.duration.max)+1 _->(u64 0)
 
 
   # create an empty histogram
@@ -321,7 +321,7 @@ is
   public average time.duration
   =>
     if size.get > 0
-      sum.get.times 1.0/size.get.as_f64
+      sum.get.scale 1.0/size.get.as_f64
     else
       time.duration.zero
 

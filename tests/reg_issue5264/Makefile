@@ -17,19 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-reg_issue348 =>
-
-  a is
-    x    := mut 500
-    c =>
-      x <- x.get
-      false
-
-  m:mutate is
-  arr := m.array a .new 10 _->a
-
-  arr[0].c
+override NAME = reg_issue5264
+include ../simple_and_negative.mk

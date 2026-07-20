@@ -48,7 +48,7 @@ reg_issue7166 =>
     # first, create mutable field and array:
 
     v1 := LM.env.new 13
-    a1 := LM.env.new_array 32 "bla"
+    a1 := LM.env.new_array 32 _->"bla"
 
     # ------------------------------------
 

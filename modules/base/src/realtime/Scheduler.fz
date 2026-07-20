@@ -17,19 +17,20 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test
+#  Source code of Fuzion standard library feature realtime.Scheduler
 #
 # -----------------------------------------------------------------------
 
-reg_issue348 =>
+# scheduler primitive for realtime tasks
+#
+public Scheduler ref : effect
+is
 
-  a is
-    x    := mut 500
-    c =>
-      x <- x.get
-      false
+  # submit a task to the scheduler
+  #
+  public submit(P type : time.period, t realtime.task P) unit => abstract
 
-  m:mutate is
-  arr := m.array a .new 10 _->a
 
-  arr[0].c
+  # stop accepting new tasks for scheduling
+  #
+  public redef finally unit => abstract

@@ -757,7 +757,7 @@ int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLe
 }
 
 
-// check the process status, does not wait for process to finish
+// check the status of process p, does not wait for process to finish
 //
 // result
 //   >=0 : the process exit code
@@ -794,6 +794,26 @@ int64_t fzE_process_poll(int64_t p){
     assert(false);
   }
   return res;
+}
+
+
+// open a new pipe
+//
+int fzE_pipe_create(int64_t * fds)
+{
+  int pipefd[2];
+
+  if (pipe(pipefd) == -1)
+  {
+    return errno;
+  }
+  else
+  {
+    fds[0] = (int64_t) pipefd[0];
+    fds[1] = (int64_t) pipefd[1];
+  }
+
+  return 0;
 }
 
 

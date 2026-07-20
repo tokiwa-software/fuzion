@@ -132,7 +132,7 @@ public state(S type, initial_value S) state unit S => state unit initial_value o
 #
 public state(S, R type, initial_value S, r ()->R) R =>
   res option R := nil
-  (state unit S) <- (state unit S unit initial_value oneway_monad_mode.inst) ! (()->set res := r.call)
+  (state unit S).instate _ (state unit S unit initial_value oneway_monad_mode.inst) (()->set res := r.call)
   res.or_panic
 
 

@@ -29,7 +29,7 @@ public cwd outcome io.path =>
   a := array u8 _ pm _->0
 
   if fzE_cwd a.internal_array.data pm.as_i64 = 0
-    # NYI: BUG: io.path.of does not work here
-    io.path.type.of <| String.from_bytes (a.take_while x->x!=0)
+    # NYI: BUG: path.of does not work here
+    io.path.type.of <| String.from_bytes (a.take_while !=0)
   else
     error "error getting current working directory, error code $(fzE_last_error)"

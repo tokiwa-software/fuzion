@@ -28,19 +28,21 @@ module:public open(fd File_Descriptor,
                    public file_name io.path) : effect is
 
 
-  # install seek effect an run code
+  # install Seek effect for type `io.file.this.Seek`
+  # and run `code`
   #
   public seek(R type, code ()->R) outcome R =>
 
-    hndlr :=
-      _ : Seek_Handler is
-        public redef seek(offset i64) outcome unit =>
-          fuzion.sys.fileio.seek fd offset
+    sk : Seek is
+      public redef seek(offset i64) outcome unit =>
+        Seek.replace sk.this
+        fuzion.sys.fileio.seek fd offset
 
-        public redef file_position outcome i64 =>
-          fuzion.sys.fileio.file_position fd
+      public redef file_position outcome i64 =>
+        Seek.replace sk.this
+        fuzion.sys.fileio.file_position fd
 
-    file.this.seek hndlr ! code
+    Seek.instate sk code
 
 
   # install mmap effect an run code

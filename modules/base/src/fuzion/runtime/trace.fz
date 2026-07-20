@@ -35,7 +35,6 @@
 # NYI: UNDER DEVELOPMENT: Currently, this may infer a significant runtime
 # overhead even if tracing is disabled.
 #
-#
 public trace(# an identifier to chose a unique color for displaying this probe
              #
              # This is useful in a graphical display to easily distinguish
@@ -60,7 +59,6 @@ public trace(# an identifier to chose a unique color for displaying this probe
 #
 # NYI: UNDER DEVELOPMENT: Currently, this may infer a significant runtime
 # overhead even if tracing is disabled.
-#
 #
 public trace(# an message to be displayed. Note that this message might get
              # truncated to, e.g., 16 utf8 bytes.

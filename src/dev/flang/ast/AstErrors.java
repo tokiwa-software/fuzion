@@ -661,7 +661,7 @@ public class AstErrors extends ANY
                                             String detail1,
                                             String detail2)
   {
-    // supress errors in cotypes unless we did not find the original error (in
+    // suppress errors in cotypes unless we did not find the original error (in
     // the original feature):
     if (!fg._feature.isCotype() || !Errors.any())
       {
