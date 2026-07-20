@@ -88,7 +88,7 @@ public wolfssl(T type, LM type : mutate, LM2 type: mutate, code ()->T) T ! LM, L
 
 
   r := ((io.buffered LM2).reader wolf_ssl_read_handler) ! ()->
-    (io.buffered LM2).Writer.instate _ wolf_ssl_writer code
+    (io.buffered LM2).Writer.instate wolf_ssl_writer code
 
 
   c.wolfSSL_free ssl
