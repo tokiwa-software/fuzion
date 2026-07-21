@@ -81,16 +81,6 @@ is
     write [b]
 
 
-  # helper type for write result
-  #
-  private:public write_result(public bytes_written i32, public error outcome unit) is
-
-
-    # was writing successful?
-    #
-    public ok bool => error.ok
-
-
   # buffered writing of the given array
   #
   public write (data Sequence u8 | String) outcome unit =>
@@ -123,3 +113,13 @@ is
           match writer (data.take buf_size)
             e error => write_result written+bfrd e
             unit => write_detailed (data.drop buf_size) written+bfrd+buf_size
+
+
+# helper type for write result
+#
+private:public write_result(public bytes_written i32, public error outcome unit) is
+
+
+  # was writing successful?
+  #
+  public ok bool => error.ok
