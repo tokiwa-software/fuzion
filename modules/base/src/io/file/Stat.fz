@@ -35,7 +35,7 @@ public Stat ref : effect is
   #
   public stats(
     # the (relative or absolute) file name, using platform specific path separators
-    path path) outcome io.file.meta_data => abstract
+    path io.path) outcome io.file.meta_data => abstract
 
 
   # default implementation of Stat
@@ -45,7 +45,7 @@ public Stat ref : effect is
   public redef fixed type.default_value option io.file.Stat =>
     _ : io.file.Stat is
 
-      public redef stats(path path) outcome io.file.meta_data =>
+      public redef stats(path io.path) outcome io.file.meta_data =>
         res := fuzion.sys.internal_array_init i64 9
         if fzE_stat (fuzion.sys.c_string path.as_platform_string) res.data = 0
           path.as_absolute.bind p->
@@ -61,7 +61,7 @@ public Stat ref : effect is
 #
 public stat(
      # the (relative or absolute) file name, using platform specific path separators
-     path path,
+     path io.path,
      # a boolean resolve flag to resolve symbolic links or not
      resolve bool) outcome io.file.meta_data ! io.file.Stat, io.file.L_Stat =>
   if resolve

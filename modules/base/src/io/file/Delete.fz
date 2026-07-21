@@ -33,7 +33,7 @@ public Delete ref : effect is
   #
   public delete(
          # the (relative or absolute) dir name, using platform specific path separators
-         path path) outcome unit => abstract
+         path io.path) outcome unit => abstract
 
 
   # default implementation of delete
@@ -43,7 +43,7 @@ public Delete ref : effect is
   public redef fixed type.default_value option io.file.Delete
   =>
     _ : io.file.Delete is
-      public redef delete(path path) outcome unit =>
+      public redef delete(path io.path) outcome unit =>
         fuzion.sys.fileio.delete path
 
 
@@ -52,5 +52,5 @@ public Delete ref : effect is
 # returns unit as outcome in case of successful deletion and error in case of failure
 # if the targeted dir has content, then the return value will be error and the deletion will not take place
 #
-public delete(path path) outcome unit ! io.file.Delete =>
+public delete(path io.path) outcome unit ! io.file.Delete =>
   io.file.Delete.env.delete path
