@@ -53,8 +53,8 @@ public wolfssl(T type, LM type : mutate, LM2 type: mutate, code ()->T) T ! LM, L
 
   c.wolfSSL_CTX_SetIOSend ctx (ssl, buf, sz, ctx)->
     arr := ffi.from_native_array u8 buf sz
-    ((io.buffered LM).writer.env.write arr) .or_panic
-    (io.buffered LM).writer.env.flush .or_panic
+    ((io.buffered LM).Writer.env.write arr) .or_panic
+    (io.buffered LM).Writer.env.flush .or_panic
     sz
 
 
@@ -77,9 +77,9 @@ public wolfssl(T type, LM type : mutate, LM2 type: mutate, code ()->T) T ! LM, L
       lm ! read
 
 
-  wolf_ssl_writer_handler : io.Write_Handler is
+  wolf_ssl_writer : (io.buffered LM2).Writer is
 
-    public redef write(b Sequence u8) outcome unit =>
+    public redef writer(b Sequence u8) outcome unit =>
       write outcome unit =>
         res := c.wolfSSL_write ssl (lm.array u8 .from_Sequence b) b.count
         if res <= 0
@@ -88,8 +88,7 @@ public wolfssl(T type, LM type : mutate, LM2 type: mutate, code ()->T) T ! LM, L
 
 
   r := ((io.buffered LM2).reader wolf_ssl_read_handler) ! ()->
-    (io.buffered LM2).writer wolf_ssl_writer_handler ! ()->
-      code.call
+    (io.buffered LM2).Writer.instate _ wolf_ssl_writer code
 
 
   c.wolfSSL_free ssl

@@ -26,4 +26,4 @@
 #
 public append(p io.path, a Any) outcome unit =>
   use p mode.append ()->
-    (io.buffered file_mutate).writer.env.write $a
+    (io.buffered file_mutate).Writer.env.write $a

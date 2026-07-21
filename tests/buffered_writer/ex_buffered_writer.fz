@@ -1,20 +1,20 @@
 ex_buffered_writer =>
 
-  wh :=
-    _ : io.Write_Handler is
-      public redef write(b Sequence u8) outcome unit =>
-        io.Out.env.write b
 
   lm : mutate is
 
+  wh : (io.buffered lm).Writer is
+    public redef writer(b Sequence u8) outcome unit =>
+      io.Out.env.write b
+
   lm ! ()->
 
-    _ := (io.buffered lm).writer wh ! ()->
+    _ := (io.buffered lm).Writer.instate _ wh ()->
       x := array u8 _ 1023 i->0x61
       y := array u8 _ 2049 i->0x62
       z := array u8 _ 128  i->0x63
 
-      _ := (io.buffered lm).writer.env.write x
-      _ := (io.buffered lm).writer.env.write y
-      _ := (io.buffered lm).writer.env.write z
-      _ := (io.buffered lm).writer.env.flush
+      _ := (io.buffered lm).Writer.env.write x
+      _ := (io.buffered lm).Writer.env.write y
+      _ := (io.buffered lm).Writer.env.write z
+      _ := (io.buffered lm).Writer.env.flush

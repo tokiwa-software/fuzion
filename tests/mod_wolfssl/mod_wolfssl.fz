@@ -40,7 +40,7 @@ mod_wolfssl =>
           ssl_lm ! ()->
             wolfssl _ net_lm ssl_lm ()->
               check ("GET / HTTP/1.1\r\nHost: fuzion-lang.dev\r\n\r\n".write_to ssl_lm).ok
-              check (io.buffered ssl_lm).writer.env.flush.ok
+              check (io.buffered ssl_lm).Writer.env.flush.ok
               match (io.buffered ssl_lm).read_line
                 str String => say <| str.substring 0 8
                 * =>

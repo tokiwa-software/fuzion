@@ -53,23 +53,17 @@ module:public connection(desc i32) is
         .reader read_handler
 
     writer =>
-
-      # helper feature to create a read handler
-      # for a given descriptor
-      #
-      write_handler : io.Write_Handler is
-        public redef write(data Sequence u8) outcome unit =>
+      _ : (io.buffered LM).Writer is
+        public redef writer(data Sequence u8) outcome unit =>
           fuzion.sys.net.write desc data.as_array
 
-      (io.buffered LM)
-        .writer write_handler
 
     channel_ =>
       net
         .channel desc
 
     reader
-      .and T _ writer
+      .and T (io.buffered LM).Writer writer
       .and channel_
       .call fn
 
