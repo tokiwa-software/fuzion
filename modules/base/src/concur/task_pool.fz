@@ -41,6 +41,16 @@ is
     thrds.write (list nt thrds)
 
 
+  # submit a task to the thread pool and run it once
+  #
+  public submit_once(P type : time.period, t realtime.task P) unit ! atomic_access =>
+
+    nt := concur.Threads.env.spawn ()->
+      _ := t.code.call
+
+    thrds.write (list nt thrds)
+
+
   # stop accepting tasks and wait for remaining tasks to finish
   #
   public redef finally unit ! atomic_access =>
