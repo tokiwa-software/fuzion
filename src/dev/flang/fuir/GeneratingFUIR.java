@@ -856,7 +856,7 @@ public class GeneratingFUIR extends FUIR
     if (PRECONDITIONS) require
       (Errors.any());
 
-    return _clazzes.get(clazz(SpecialClazzes.c_void));  // NYI: UNDER DEVELOPMENT: have a dedicated clazz for this?
+    return _clazzes.get(clazz(SpecialClazzes.c_void)-CLAZZ_BASE);  // NYI: UNDER DEVELOPMENT: have a dedicated clazz for this?
   }
 
 
