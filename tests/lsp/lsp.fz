@@ -23,10 +23,6 @@
 
 ########### Extensions ###############
 
-# used for protecting spaces when splitting command string
-#
-protected_space := codepoint codepoint.utf8_encoded_in_four_bytes.as_list.last.or_panic
-
 # envir vars as map
 #
 envir_vars := container.map_of ((envir.Vars.env.map_of [
@@ -99,27 +95,6 @@ record_process(
       tokiwa.process_result (String.join_lines fout.get) "" 1
     ec u32 =>
       tokiwa.process_result (String.join_lines fout.get) "" ec
-
-# execute this Sequence of process+args
-#
-Sequence.execute(
-  # feed .stdin file to executed process?
-  feed_stdin Sequence (String, i32)
-) =>
-  seq := map (.as_string)
-  match os.process.start seq.first.or_panic (seq.drop 1) envir_vars
-    e error => panic "failed executing $(Sequence.this), error is $e"
-    p os.process => record_process p Sequence.this.as_string feed_stdin
-
-# execute this string by splitting at all whitespaces
-#
-String.execute(
-  # feed .stdin file to executed process?
-  feed_stdin Sequence (String, i32)
-) =>
-  split_if (=" ")
-    .map (.replace protected_space " ")
-    .execute feed_stdin
 
 
 ############################################################################

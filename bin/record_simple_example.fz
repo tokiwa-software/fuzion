@@ -24,10 +24,6 @@
 
 ########### Extensions ###############
 
-# used for protecting spaces when splitting command string
-#
-protected_space := codepoint codepoint.utf8_encoded_in_four_bytes.as_list.last.or_panic
-
 # envir vars as map
 #
 envir_vars := container.map_of ((envir.Vars.env.map_of [
@@ -56,38 +52,6 @@ envir_vars := container.map_of ((envir.Vars.env.map_of [
     "LANGUAGE"
   ]).items ++ [("FUZION_DISABLE_ANSI_ESCAPES", "true")])
 
-# execute this Sequence of process+args
-#
-Sequence.execute(
-  # feed .stdin file to executed process?
-  feed_stdin bool
-) =>
-  seq := map (.as_string)
-  match os.process.start seq.first.or_panic (seq.drop 1) envir_vars
-    e error => panic "failed executing $(Sequence.this), error is $e"
-    p os.process =>
-      feed option path :=
-        if feed_stdin
-          path.of "$file.stdin"
-        else
-          nil
-      tokiwa.record_process p Sequence.this.as_string nil feed
-
-# execute this string by splitting at all whitespaces
-#
-String.execute(
-  # feed .stdin file to executed process?
-  feed_stdin bool
-) =>
-  split_if (=" ")
-    .map (.replace protected_space " ")
-    .execute feed_stdin
-
-# execute this string by splitting at all whitespaces
-#
-String.execute =>
-  String.this.execute false
-
 
 ####### record_simple_example ########
 
@@ -103,22 +67,23 @@ if envir.Args.env.count != 4
 type_    := envir.Args.env[1]
 fz_run   := envir.Args.env[2] # NYI: UNDER DEVELOPMENT: code should be same as check_simple_example.fz
 file     := envir.Args.env[3]
+input  := path.of "$file.stdin"
 
-res :=
+res tokiwa.process_result :=
   if type_ = "jvm" || type_ = "any"
-    "$fz_run -XmaxErrors=-1 -jvm $(envir.Vars.env["FUZION_JVM_BACKEND_OPTIONS"].or_default "") $file".execute true
+    "$fz_run -XmaxErrors=-1 -jvm $(envir.Vars.env["FUZION_JVM_BACKEND_OPTIONS"].or_default "") $file".execute envir_vars input nil .or_panic
   else if type_ = "c"
-    c := "$fz_run -XmaxErrors=-1 -c $(envir.Vars.env["FUZION_C_BACKEND_OPTIONS"].or_default "") -o=testbin $file".execute true
+    c := "$fz_run -XmaxErrors=-1 -c $(envir.Vars.env["FUZION_C_BACKEND_OPTIONS"].or_default "") -o=testbin $file".execute envir_vars input nil .or_panic
     if (c.exit_code = 0)
-      e := "./testbin".execute
+      e := "./testbin".execute envir_vars nil nil .or_panic
       _ := io.file.delete (path.of "testbin")
       tokiwa.process_result c.out+e.out c.err+e.err e.exit_code
     else
       c
   else if type_ = "int"
-    "$fz_run -XmaxErrors=-1 -interpreter $file".execute true
+    "$fz_run -XmaxErrors=-1 -interpreter $file".execute envir_vars input nil .or_panic
   else if type_ = "effect"
-    "$fz_run -XmaxErrors=-1 -effects $file".execute
+    "$fz_run -XmaxErrors=-1 -effects $file".execute envir_vars nil nil .or_panic
   else
     panic "not supported"
 

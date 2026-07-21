@@ -26,6 +26,61 @@
 #
 public tokiwa is
 
+  # used for protecting spaces when splitting command string
+  #
+  public protected_space codepoint := codepoint codepoint.utf8_encoded_in_four_bytes.as_list.last.or_panic
+
+
+  # execute this Sequence of process+args
+  #
+  public Sequence.execute(
+    # environment variables
+    env_vars option (container.Map String String),
+
+    # feed .stdin file to executed process?
+    feed_stdin option path,
+
+    # maximum time to wait for the execution to finish
+    timeout option time.duration
+  ) outcome tokiwa.process_result =>
+    seq := map (.as_string)
+    ( if env_vars.ok
+        os.process.start seq.first.or_panic (seq.drop 1) env_vars.or_panic
+      else
+        os.process.start seq.first.or_panic (seq.drop 1)
+    ).bind p->
+      tokiwa.record_process p Sequence.this.as_string timeout feed_stdin
+
+  # execute this string by splitting at all whitespaces
+  #
+  public String.execute(
+    # environment variables
+    env_vars option (container.Map String String),
+
+    # feed .stdin file to executed process?
+    feed_stdin option path,
+
+    # maximum time to wait for the execution to finish
+    timeout option time.duration
+  ) outcome tokiwa.process_result =>
+    split_if (=" ")
+      .map (.replace tokiwa.protected_space " ")
+      .execute env_vars feed_stdin timeout
+
+  # execute this string by splitting at all whitespaces
+  #
+  public String.execute(
+    # environment variables
+    env_vars option (container.Map String String)
+  ) outcome tokiwa.process_result =>
+    String.this.execute env_vars nil nil
+
+  # execute this string by splitting at all whitespaces
+  #
+  public String.execute outcome tokiwa.process_result =>
+    String.this.execute nil nil nil
+
+
   #
   # send something to our influx database
   #
@@ -45,6 +100,12 @@ public tokiwa is
   public process_result(public out, err String, public exit_code u32) is
 
     public ok bool => exit_code = 0
+
+    public panic_on_error unit =>
+      if !ok then panic "$(exit_code): $(err)"
+
+    public out_or_panic String =>
+      if ok then out else panic "$(exit_code): $(err)"
 
 
     public type.empty_success tokiwa.process_result =>
