@@ -49,4 +49,4 @@ public Functional(R type) ref : Unary R (Function R) is
   # fluent interface for using multiple effects together
   #
   public and(E type: effect, e Lazy E) Functional R =>
-    compose (e.as_functional R)
+    compose (e.as_functional E R)

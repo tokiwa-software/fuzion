@@ -141,8 +141,8 @@ is
     (values.typed_foldf (option (Functional R) nil) T,e,v->
       if T : effect
         match e
-          nil => v.as_functional R
-          f (Functional R) => f.and v
+          nil => v.as_functional T R
+          f (Functional R) => f.and T v
       else
         compile_time_panic).or_panic.call code
 

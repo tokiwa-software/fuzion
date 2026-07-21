@@ -640,6 +640,11 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
             result = isAssignableFrom(actual.asRef(true), context, false, allowTagging, assignableTo);
           }
       }
+    // NYI: UNDER DEVELOPMENT: check if sound!
+    if (result.no() && target_type.selfOrConstraint(context).isThisType() && target_type.selfOrConstraint(context).compareTo(actual_type) == 0)
+      {
+        result = YesNo.yes;
+      }
     return result;
   }
 

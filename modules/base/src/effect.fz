@@ -232,15 +232,16 @@ public effect is
   # fluent interface for using multiple effects together
   #
   public and(R type, E type : effect, e Lazy E) Functional R =>
-    as_functional R
-      .compose (e.as_functional R)
+    as_functional effect.this R
+      .compose (e.as_functional E R)
 
 
   # this effect reinterpreted as a Functional
   # which allows composition of effects
   #
-  public as_functional(R type) Functional R =>
-    code -> instate_self code
+  public as_functional(E type : effect.this, R type) Functional R =>
+    code ->
+      E.instate _ effect.this code
 
 
   # has an effect of this type been instated?
