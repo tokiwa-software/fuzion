@@ -25,7 +25,7 @@
 # effect for manipulating open directories
 #
 module:public open(module dd Directory_Descriptor,
-                   public path path) : effect is
+                   public path io.path) : effect is
 
   # close dir when de-instating effect
   #

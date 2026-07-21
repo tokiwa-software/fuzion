@@ -23,7 +23,7 @@
 
 lib_io_dir =>
 
-  path := path.of "test_path_😀"
+  path := io.path.of "test_path_😀"
   file1 := path.resolve "file1_😀"
   file2 := path.resolve "file2_😀"
 

@@ -25,6 +25,6 @@
 #
 # NYI: UNDER DEVELOPMENT: could accept more than just path(s)
 #
-public copy(src, dest path) outcome unit =>
+public copy(src, dest io.path) outcome unit =>
   io.slurp src .bind c->
     io.write dest c
