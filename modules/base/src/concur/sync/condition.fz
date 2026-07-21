@@ -58,14 +58,46 @@ private:public condition(mtx concur.sync.mutex, cnd Condition) is
   #
   public wait unit
     pre is_locked.read
-  => cnd_wait cnd mtx.mtx
+  =>
+    cnd_wait cnd mtx.mtx
 
 
-  # initialize a new condition
+  # make this thread wait for signal using given timeout
   #
-  public type.new outcome concur.sync.condition =>
+  public wait(timeout time.instant) unit
+    pre is_locked.read
+  =>
+    cnd_timedwait cnd mtx.mtx timeout.ns
+
+
+  # initialize a new condition using the given clock
+  #
+  public type.new(C type : time.Clock) outcome concur.sync.condition
+  pre
+    safety: C.posix_id??
+  =>
+    clockid := C.posix_id.or_panic.val
     concur.sync.mtx_init.bind mtx->
-      (concur.sync.cnd_init mtx).bind cnd->
+      (concur.sync.cnd_init mtx clockid).bind cnd->
         concur.sync.condition (concur.sync.mutex mtx) cnd
+
+
+  # initialize a new condition using the given clock
+  #
+  module type.new(C type : time.Clock, mtx Mutex) outcome concur.sync.condition
+  pre
+    safety: C.posix_id??
+  =>
+    clockid := C.posix_id.or_panic.val
+    (concur.sync.cnd_init mtx clockid).bind cnd->
+      concur.sync.condition (concur.sync.mutex mtx) cnd
+
+
+  # initialize a new condition using `time.Monotonic` as underlying clock.
+  #
+  public type.new outcome concur.sync.condition
+  =>
+    new time.Monotonic
+
 
   # NYI: UNDER DEVELOPMENT: destroy

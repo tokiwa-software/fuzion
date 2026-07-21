@@ -17,27 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature concur.sync
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# concur.sync -- synchronization primitives
-# NYI: sync should probably be an effect
-#
-public sync is
-
-  module mtx_init outcome Mutex => intrinsic
-  module mtx_lock(mtx Mutex) bool => intrinsic
-  module mtx_trylock(mtx Mutex) bool => intrinsic
-  module mtx_unlock(mtx Mutex) bool => intrinsic
-  module mtx_destroy(mtx Mutex) unit => intrinsic
-
-  module cnd_init(mtx Mutex, i32 clock) outcome Condition => intrinsic
-  module cnd_signal(cnd Condition) unit => intrinsic
-  module cnd_broadcast(cnd Condition) unit => intrinsic
-  module cnd_wait(cnd Condition, mtx Mutex) unit => intrinsic
-  module cnd_timedwait(cnd Condition, mtx Mutex, i64 timeout) unit => intrinsic
-  module cnd_destroy(cnd Condition) unit => intrinsic
-
-
-  # NYI: tie life of mutex/condition to thread pool?
+override NAME = blocking_mutate_timeout
+include ../simple.mk
