@@ -1,0 +1,95 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test choice_constraints
+#
+# -----------------------------------------------------------------------
+
+choice_constraints =>
+
+
+  /*
+   * match on a constrainted arg
+   */
+
+  a(T type: option String, t T) =>
+    match t
+      n nil => say n
+      str String => say str
+
+  a (option String) nil
+  a (option String) "hello"
+
+  /*
+   * return a constrainted arg
+   */
+
+  b(T type: option String, seq Sequence T) T =>
+    seq[0]
+
+  say <| b (option String) [(id (option String) nil)]
+
+
+  /*
+   * match on returned constrainted type
+   */
+
+  match b (option String) [(id (option String) nil)]
+    str String => say str
+    n nil => say n
+
+
+
+  /*
+   * return parametrized constraint
+   */
+
+
+  c(X type, T type: option X, seq Sequence T) T =>
+    seq[0]
+
+  # NYI: UNDER DEVELOPMENT: type inference
+  # should work:
+  # say <| c _ (option String) [(id (option String) nil)]
+  # say <| c String _ [(id (option String) nil)]
+  say <| c String (option String) [(id (option String) nil)]
+
+
+  /*
+   * match on returned parametrized constraint
+   */
+
+  match c String (option String) [(id (option String) nil)]
+    str String => say str
+    n nil => say n
+
+
+  switch.test(X type : switch.this, x X) X => x
+  say <| (id (option String) nil).test (option String) nil
+
+
+  # NYI: BUG: Type 'A' was not found, no corresponding feature nor formal type parameter exists
+
+  # switch.test2(X type : switch.this, x X) =>
+  #   match x
+  #     a A => say a
+  #     b B => say b
+
+  # (id (option String) nil).test2 (option String) nil
+

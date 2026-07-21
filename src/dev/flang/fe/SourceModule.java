@@ -1795,10 +1795,6 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
           {
             AstErrors.constraintMustNotBeParametricType(f);
           }
-        if (f.constraint().isChoice())
-          {
-            AstErrors.constraintMustNotBeChoice(f);
-          }
       }
     checkLegalVisibility(f);
     checkRedefVisibility(f);
