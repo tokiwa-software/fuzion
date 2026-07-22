@@ -86,6 +86,8 @@ static_assert(SIGPIPE == 13, "signal definition different than expected");
 static_assert(SIGALRM == 14, "signal definition different than expected");
 static_assert(SIGTERM == 15, "signal definition different than expected");
 static_assert(sizeof(pthread_t) <= sizeof(void *), "pthread_t must be smaller or equal to pointer size");
+static_assert(CLOCK_REALTIME  == 0, "CLOCK_REALTIME  != 0, different than expected");
+static_assert(CLOCK_MONOTONIC == 1, "CLOCK_MONOTONIC != 1, different than expected");
 
 // returns the latest error number of
 // the current thread
@@ -535,8 +537,10 @@ void * fzE_thread_create(void *(*code)(void *),
   struct sched_param default_schedparam;
   default_schedparam.sched_priority = 0;
 
-  assert (pthread_attr_setschedparam(&attr, &default_schedparam) == 0);
-  assert (pthread_attr_setschedpolicy(&attr, SCHED_OTHER) == 0);
+  int schedparamres = pthread_attr_setschedparam(&attr, &default_schedparam);
+  assert(schedparamres == 0);
+  int schedpolicyres = pthread_attr_setschedpolicy(&attr, SCHED_OTHER);
+  assert(schedpolicyres == 0);
 
 #ifdef GC_THREADS
   int res = GC_pthread_create(&pt,NULL,code,args);
@@ -916,9 +920,6 @@ void fzE_mtx_destroy(void * mtx) {
  */
 void * fzE_cnd_init(int clock)
 {
-  assert(CLOCK_REALTIME  == 0);
-  assert(CLOCK_MONOTONIC == 1);
-
   pthread_cond_t *cnd = (pthread_cond_t *)fzE_malloc_safe(sizeof(pthread_cond_t));
   pthread_condattr_t attr;
   void * res = NULL;
