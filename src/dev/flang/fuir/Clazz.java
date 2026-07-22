@@ -479,9 +479,7 @@ class Clazz extends ANY implements Comparable<Clazz>
         // normalize anymore
         feature() == f ||
 
-        needsSpecialization(feature()) ||
-
-        f.isRef() && needsSpecialization(f.outer())
+        needsSpecialization(feature())
         )
       {
         return this;
