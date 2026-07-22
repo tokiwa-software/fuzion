@@ -86,8 +86,25 @@ static_assert(SIGPIPE == 13, "signal definition different than expected");
 static_assert(SIGALRM == 14, "signal definition different than expected");
 static_assert(SIGTERM == 15, "signal definition different than expected");
 static_assert(sizeof(pthread_t) <= sizeof(void *), "pthread_t must be smaller or equal to pointer size");
-static_assert(CLOCK_REALTIME  == 0, "CLOCK_REALTIME  != 0, different than expected");
-static_assert(CLOCK_MONOTONIC == 1, "CLOCK_MONOTONIC != 1, different than expected");
+
+
+/**
+ *   - 0 for CLOCK_REALTIME (which is not a real-time clock, but wallclock time)
+ *   - 1 for CLOCK_MONOTONIC (which does not jump for leap seconds are when system time is changed)
+ */
+clockid_t get_clock_id(int clock)
+{
+  switch(clock)
+    {
+      case 0:
+        return CLOCK_REALTIME;
+      case 1:
+        return CLOCK_MONOTONIC;
+      default:
+        assert(false);
+        return -1;
+    }
+}
 
 // returns the latest error number of
 // the current thread
@@ -413,7 +430,7 @@ int fzE_munmap(void * mapped_address, const int file_size){
 uint64_t fzE_posix_time(int clockid)
 {
   struct timespec result;
-  if (clock_gettime(clockid, &result)!=0)
+  if (clock_gettime(get_clock_id(clockid), &result)!=0)
   {
     fprintf(stderr,"*** clock_gettime failed for clockid %d \012", clockid);
     exit(EXIT_FAILURE);
@@ -927,7 +944,7 @@ void * fzE_cnd_init(int clock)
     {
 // NYI: BUG: pthread_condattr_setclock not available on macOS
 #ifndef __APPLE__
-      if (pthread_condattr_setclock(&attr, clock) == 0) // may return EINVAL in case clock not supported
+      if (pthread_condattr_setclock(&attr, get_clock_id(clock)) == 0) // may return EINVAL in case clock not supported
 #endif
         {
           if (pthread_cond_init(cnd, &attr) == 0) // may return EAGAIN or ENOMEM
