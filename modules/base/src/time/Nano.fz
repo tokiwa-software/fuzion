@@ -54,7 +54,7 @@ public Nano ref : time.Clock is
 
       # no guarantee can be given for precision nor resolution
       #
-      public redef read time.instant => time.instant fzE_nanotime
+      public redef read time.instant => time.instant (fzE_posix_time (id posix.clockid_t posix.clock_monotonic).val)
 
       # no guarantee can be given for precision nor resolution
       #

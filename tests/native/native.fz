@@ -23,12 +23,12 @@
 
 test_native =>
 
-  fzE_nanotime u64 => native
+  fzE_posix_time(clockid i32) u64 => native
   fzE_nanosleep(arg1 u64) unit => native
 
-  start := fzE_nanotime
+  start := fzE_posix_time (id posix.clockid_t posix.clock_monotonic).val
   fzE_nanosleep 1E9
-  end := fzE_nanotime
+  end := fzE_posix_time (id posix.clockid_t posix.clock_monotonic).val
 
   say (end-start)>=1E9
 
