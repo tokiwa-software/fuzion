@@ -86,6 +86,8 @@ static_assert(SIGPIPE == 13, "signal definition different than expected");
 static_assert(SIGALRM == 14, "signal definition different than expected");
 static_assert(SIGTERM == 15, "signal definition different than expected");
 static_assert(sizeof(pthread_t) <= sizeof(void *), "pthread_t must be smaller or equal to pointer size");
+static_assert(CLOCK_REALTIME  == 0, "CLOCK_REALTIME  != 0, different than expected");
+static_assert(CLOCK_MONOTONIC == 1, "CLOCK_MONOTONIC != 1, different than expected");
 
 // returns the latest error number of
 // the current thread
@@ -406,21 +408,6 @@ int fzE_munmap(void * mapped_address, const int file_size){
 
 
 /**
- * returns a monotonically increasing timestamp.
- */
-uint64_t fzE_nanotime()
-{
-  struct timespec result;
-  if (clock_gettime(CLOCK_MONOTONIC,&result)!=0)
-  {
-    fprintf(stderr,"*** clock_gettime failed\012");
-    exit(EXIT_FAILURE);
-  }
-  return result.tv_sec*1000000000ULL+result.tv_nsec;
-}
-
-
-/**
  * @return the time of the given posix clock
  */
 uint64_t fzE_posix_time(int clockid)
@@ -550,8 +537,10 @@ void * fzE_thread_create(void *(*code)(void *),
   struct sched_param default_schedparam;
   default_schedparam.sched_priority = 0;
 
-  assert (pthread_attr_setschedparam(&attr, &default_schedparam) == 0);
-  assert (pthread_attr_setschedpolicy(&attr, SCHED_OTHER) == 0);
+  int schedparamres = pthread_attr_setschedparam(&attr, &default_schedparam);
+  assert(schedparamres == 0);
+  int schedpolicyres = pthread_attr_setschedpolicy(&attr, SCHED_OTHER);
+  assert(schedpolicyres == 0);
 
 #ifdef GC_THREADS
   int res = GC_pthread_create(&pt,NULL,code,args);
@@ -931,15 +920,15 @@ void fzE_mtx_destroy(void * mtx) {
  */
 void * fzE_cnd_init(int clock)
 {
-  assert(CLOCK_REALTIME  == 0);
-  assert(CLOCK_MONOTONIC == 1);
-
   pthread_cond_t *cnd = (pthread_cond_t *)fzE_malloc_safe(sizeof(pthread_cond_t));
   pthread_condattr_t attr;
   void * res = NULL;
   if (pthread_condattr_init(&attr) == 0) // may return ENOMEM
     {
+// NYI: BUG: pthread_condattr_setclock not available on macOS
+#ifndef __APPLE__
       if (pthread_condattr_setclock(&attr, clock) == 0) // may return EINVAL in case clock not supported
+#endif
         {
           if (pthread_cond_init(cnd, &attr) == 0) // may return EAGAIN or ENOMEM
             {
@@ -967,6 +956,12 @@ void fzE_cnd_timedwait(void * cnd, void * mtx, int64_t time_ns)
   int64_t  s  =                   time_ns / 1000000000;
   long     ns = (long) (time_ns - s       * 1000000000);
   const struct timespec abstime = { s, ns };
+  // NYI: BUG: we need sth. like this on macOS:
+  // #ifdef __APPLE__
+  //     pthread_cond_timedwait_relative_np(cond, mutex, &relative);
+  // #else
+  //     pthread_cond_timedwait(cond, mutex, &absolute_monotonic);
+  // #endif
   pthread_cond_timedwait((pthread_cond_t *)cnd, (pthread_mutex_t *)mtx, &abstime);
 }
 
