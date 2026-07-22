@@ -925,7 +925,10 @@ void * fzE_cnd_init(int clock)
   void * res = NULL;
   if (pthread_condattr_init(&attr) == 0) // may return ENOMEM
     {
+// NYI: BUG: pthread_condattr_setclock not available on macOS
+#ifndef __APPLE__
       if (pthread_condattr_setclock(&attr, clock) == 0) // may return EINVAL in case clock not supported
+#endif
         {
           if (pthread_cond_init(cnd, &attr) == 0) // may return EAGAIN or ENOMEM
             {
@@ -953,6 +956,12 @@ void fzE_cnd_timedwait(void * cnd, void * mtx, int64_t time_ns)
   int64_t  s  =                   time_ns / 1000000000;
   long     ns = (long) (time_ns - s       * 1000000000);
   const struct timespec abstime = { s, ns };
+  // NYI: BUG: we need sth. like this on macOS:
+  // #ifdef __APPLE__
+  //     pthread_cond_timedwait_relative_np(cond, mutex, &relative);
+  // #else
+  //     pthread_cond_timedwait(cond, mutex, &absolute_monotonic);
+  // #endif
   pthread_cond_timedwait((pthread_cond_t *)cnd, (pthread_mutex_t *)mtx, &abstime);
 }
 
