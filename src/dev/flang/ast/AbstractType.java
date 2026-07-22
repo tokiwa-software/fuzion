@@ -633,6 +633,20 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         result = isAssignableFrom(actual.selfOrConstraint(context).asRef(true), context, allowBoxing, allowTagging, assignableTo);
       }
+    /**
+     * This allows code like this:
+     *
+     *     e is
+     *
+     *       type.i(_ e.this) => unit
+     *
+     *       af(E type : e.this) =>
+     *         E.i e.this
+     */
+    if (result.no() && target_type.selfOrConstraint(context).isThisType() && target_type.selfOrConstraint(context).compareTo(actual_type) == 0)
+      {
+        result = YesNo.yes;
+      }
     return result;
   }
 
@@ -2634,7 +2648,13 @@ there is no common super type of the two types (Types.t_ERROR)
               {
                 if (!f.isCoTypesRelayTypeParameter())
                   {
-                    AstErrors.incompatibleActualGeneric(p, f, c, a);
+                    // In case of choice, error will be shown
+                    // by SourceModule.checkTypes(): AstErrors.constraintMustNotBeChoice
+                    if (!c.isChoice())
+                      {
+                        AstErrors.incompatibleActualGeneric(p, f, c, a);
+                      }
+
                     result = false;
                   }
               }
