@@ -1,0 +1,53 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature time.posix_clock
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# time.posix_clock -- template for POSIX based clocks like Monotonic, etc.
+#
+# This is not meant to be used directly, but for other posix-based clocks
+# to inherit from.
+#
+module:public posix_clock : time.Clock is
+
+
+  # no guarantee can be given for precision nor resolution
+  #
+  public redef read time.instant
+  =>
+    ns => match posix_clock.this.type.posix_id
+            clockid posix.clockid_t => fzE_posix_time clockid.val
+            *                       => panic "$(posix_clock.this.type) is not a posix clock"
+    time.instant ns
+
+
+  # no guarantee can be given for precision nor resolution
+  #
+  public redef sleep(d time.duration) unit
+  =>
+    # convert relative duration to absolute instant:
+    timeout := posix_clock.this.env.read + d
+
+    wakeup := concur.Threads.env.current.park_until posix_clock.this _ timeout false ()->unit
+    check
+      debug: !wakeup   # -- currently, there should be no means to wake us up here!

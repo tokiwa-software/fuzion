@@ -378,6 +378,11 @@ bool fzE_bitwise_compare_double(double d1, double d2);
 uint64_t fzE_nanotime(void);
 
 /**
+ * @return the time of the given posix clock
+ */
+uint64_t fzE_posix_time(int clockid);
+
+/**
  * Sleep for at least `n` nano seconds.
  *
  * @param n the amount of nano seconds to sleep for.
@@ -467,9 +472,13 @@ void fzE_unlock(void);
 int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLen, int64_t * result);
 
 /**
- * wait for process `p` to exit
+ * check the status of process p, does not wait for process to finish
  *
- * @return -1 error, >=0 exit code
+ * @return  >=0 : the process exit code
+ *          -1  : process is still running
+ *          -2  : an error occurred when calling waitpid, check errno
+ *        <-100 : Unix systems only: process was terminated by a signal
+ *                -100-SIG, e.g., -109 for 9 (SIGKILL)
  */
 int64_t fzE_process_poll(int64_t p);
 
@@ -742,10 +751,18 @@ void    fzE_mtx_destroy  (void * mtx);
 /**
  * initialize a condition
  *
+ * @param clock the clock to be used:
+ *
+ *   - 0 for CLOCK_REALTIME (which is not a real-time clock, but wallclock time)
+ *   - 1 for CLOCK_MONOTONIC (which does not jump for leap seconds are when system time is changed)
+ *
+ * NYI: support for other values defined in
+ * /use/include/x86_64-linux-gnu/bits/time.h for CPU-time, coarse time etc.
+ *
  * @return NULL on error or pointer to condition
  *         NOTE: eventually needs to be destroyed via fzE_cnd_destroy.
  */
-void *  fzE_cnd_init     (void);
+void *  fzE_cnd_init     (int clock);
 
 /**
  * unblocks one thread waiting on this condition
@@ -775,6 +792,19 @@ void fzE_cnd_broadcast(void * cnd);
  * @return -1 on error, 0 on success
  */
 void fzE_cnd_wait     (void * cnd, void * mtx);
+
+/**
+ * blocks thread until signal, broadcast or spurious wakeup or given absolute time is reached
+ *
+ * @param cnd pointer to a condition
+ *
+ * @param mtx pointer to a mutex
+ *
+ * @param time_ns the timeout as an absolute time relative to the clock associated with cnd.
+ *
+ * @return -1 on error, 0 on success
+ */
+void fzE_cnd_timedwait(void * cnd, void * mtx, int64_t time_ns);
 
 /**
  * destroys the condition

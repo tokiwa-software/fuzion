@@ -52,7 +52,7 @@ is
 
   # the elements in the ring buffer. Valid entries are at indices first..last-1 MOD size
   #
-  data := M.env.new_array (option T) size nil
+  data := M.env.new_array (option T) _ size (_->option T nil)
 
   # Index of the first element that will be returned by `poll`
   #

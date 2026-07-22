@@ -923,7 +923,7 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
 }
 
 
-// check the process status, does not wait for process to finish
+// check the status of process p, does not wait for process to finish
 //
 // result
 //   >=0 : the process exit code (including exception/termination codes)
@@ -1080,7 +1080,22 @@ void fzE_mtx_destroy(void *mtx) {
   fzE_free(mtx);
 }
 
-void * fzE_cnd_init() {
+/**
+ * initialize a condition
+ *
+ * @param clock the clock to be used:
+ *
+ *   - 0 for CLOCK_REALTIME (which is not a real-time clock, but wallclock time)
+ *   - 1 for CLOCK_MONOTONIC (which does not jump for leap seconds are when system time is changed)
+ *
+ * NYI: support for other values defined in
+ * /use/include/x86_64-linux-gnu/bits/time.h for CPU-time, coarse time etc.
+ *
+ * @return NULL on error or pointer to condition
+ *         NOTE: eventually needs to be destroyed via fzE_cnd_destroy.
+ */
+void * fzE_cnd_init(int clock) {
+  // NYI: UNDER DEVELOPMENT: clock is ignored for condition variable
   CONDITION_VARIABLE *cnd = (CONDITION_VARIABLE *)fzE_malloc_safe(sizeof(CONDITION_VARIABLE));
   InitializeConditionVariable(cnd);
   return (void *)cnd;

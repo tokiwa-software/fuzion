@@ -77,7 +77,7 @@ String.prefix !! =>
   !split
 
 
-append_line(mtx concur.sync.mutex, dest path, str String) =>
+append_line(mtx concur.sync.mutex, dest io.path, str String) =>
   mtx.synchronized ()->
     (io.file.use dest io.file.mode.append ()->
       "$str\n".write_to io.file.file_mutate .or_panic).or_panic
@@ -85,17 +85,16 @@ append_line(mtx concur.sync.mutex, dest path, str String) =>
 ########### run_tests ###############
 
 
-find_tests(dir path) array path =>
+find_tests(dir io.path) array io.path =>
   m : mutate is
   tests := m ! ()->
     io.dir.use _ dir ()->
-      res := (container.Dynamic_Array m path).empty
-      _ :=
-        for x := io.dir.open.env.read
-        while x.ok
-          dir_x := dir.resolve x.or_panic
-          if io.file.exists (dir_x.resolve "Makefile")
-            res.add dir_x
+      res := (container.Dynamic_Array m io.path).empty
+      for x := io.dir.Read.env.next
+      while x.ok
+        dir_x := dir.resolve x.or_panic
+        if io.file.exists (dir_x.resolve "Makefile")
+          res.add dir_x
       res.as_array
 
   tests
@@ -113,7 +112,7 @@ main =>
 
   mtx := concur.sync.mutex.new.or_panic
 
-  append_line(dest path, str String) =>
+  append_line(dest io.path, str String) =>
     append_line mtx dest str
 
   # NYI: UNDER DEVELOPMENT: react to Ctrl+c like in bash scripts (trap)
@@ -124,7 +123,7 @@ main =>
     say "run_tests.fz <build_dir> <target>"
     Exit.env.exit 1
 
-  build_dir := path.of envir.Args.env[1]
+  build_dir := io.path.of envir.Args.env[1]
   target := envir.Args.env[2]
 
 
@@ -148,9 +147,9 @@ main =>
   _ := io.file.delete failures
 
   # for storing the elapsed time of each test
-  test_durations := (lock_free.Map path time.duration).empty
+  test_durations := (lock_free.Map io.path time.duration).empty
 
-  run_single_test(test path) =>
+  run_single_test(test io.path) =>
     if (
        io.file.exists (test.resolve "skip") ||
        io.file.exists (test.resolve "skip_$target") ||

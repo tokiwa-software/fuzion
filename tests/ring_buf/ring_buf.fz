@@ -88,7 +88,7 @@ ring_buf =>
 
     # testing mutable arrays from another thread
 
-    my_array1 := lm.new_array 256 (i64 42)
+    my_array1 := lm.new_array 256 _->(i64 42)
     my_array1[192] := 99
     my_array2 := lm.new_array2 16 16 (u8 67)
     my_array2[08,15] := 99
@@ -244,7 +244,7 @@ ring_buf =>
 
     # testing mutable arrays from another thread
 
-    my_array1 := bm.env.new_array 256 (i64 42)
+    my_array1 := bm.env.new_array 256 _->(i64 42)
     my_array2 := bm.env.new_array2 16 16 (u8 67)
     my_array3 := bm.env.new_array3 4 4 4 (i16 -32000)
     bm.env.exclusive ()->

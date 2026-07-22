@@ -23,7 +23,7 @@
 
 mmap_test =>
 
-  testfile := path.of "testfile"
+  testfile := io.path.of "testfile"
 
   f =>
     io.file.open

@@ -63,7 +63,7 @@ public tokiwa is
         cmd String,
         timeout option time.duration,
         # feed file to stdin of executed process?
-        feed_stdin option path
+        feed_stdin option io.path
   ) process_result =>
     lm : mutate is
     (concur.thread_pool 2 ()->
@@ -80,7 +80,7 @@ public tokiwa is
 
         match feed_stdin
           nil =>
-          stdin_file path =>
+          stdin_file io.path =>
             if io.file.exists stdin_file
               lm ! ()->
                 (p.with_in unit lm ()->

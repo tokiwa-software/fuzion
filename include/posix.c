@@ -421,6 +421,21 @@ uint64_t fzE_nanotime()
 
 
 /**
+ * @return the time of the given posix clock
+ */
+uint64_t fzE_posix_time(int clockid)
+{
+  struct timespec result;
+  if (clock_gettime(clockid, &result)!=0)
+  {
+    fprintf(stderr,"*** clock_gettime failed for clockid %d \012", clockid);
+    exit(EXIT_FAILURE);
+  }
+  return result.tv_sec*1000000000ULL+result.tv_nsec;
+}
+
+
+/**
  * Sleep for `n` nano seconds.
  */
 void fzE_nanosleep(uint64_t n)
@@ -757,7 +772,7 @@ int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLe
 }
 
 
-// check the process status, does not wait for process to finish
+// check the status of process p, does not wait for process to finish
 //
 // result
 //   >=0 : the process exit code
@@ -805,7 +820,7 @@ int fzE_pipe_create(int64_t * fds)
 
   if (pipe(pipefd) == -1)
   {
-    return errno; 
+    return errno;
   }
   else
   {
@@ -900,9 +915,39 @@ void fzE_mtx_destroy(void * mtx) {
   fzE_free(mtx);
 }
 
-void * fzE_cnd_init() {
+/**
+ * initialize a condition
+ *
+ * @param clock the clock to be used:
+ *
+ *   - 0 for CLOCK_REALTIME (which is not a real-time clock, but wallclock time)
+ *   - 1 for CLOCK_MONOTONIC (which does not jump for leap seconds are when system time is changed)
+ *
+ * NYI: support for other values defined in
+ * /use/include/x86_64-linux-gnu/bits/time.h for CPU-time, coarse time etc.
+ *
+ * @return NULL on error or pointer to condition
+ *         NOTE: eventually needs to be destroyed via fzE_cnd_destroy.
+ */
+void * fzE_cnd_init(int clock)
+{
+  assert(CLOCK_REALTIME  == 0);
+  assert(CLOCK_MONOTONIC == 1);
+
   pthread_cond_t *cnd = (pthread_cond_t *)fzE_malloc_safe(sizeof(pthread_cond_t));
-  return pthread_cond_init(cnd, NULL) == 0 ? (void *)cnd : NULL;
+  pthread_condattr_t attr;
+  void * res = NULL;
+  if (pthread_condattr_init(&attr) == 0) // may return ENOMEM
+    {
+      if (pthread_condattr_setclock(&attr, clock) == 0) // may return EINVAL in case clock not supported
+        {
+          if (pthread_cond_init(cnd, &attr) == 0) // may return EAGAIN or ENOMEM
+            {
+              res = (void *)cnd;
+            }
+        }
+    }
+  return res;
 }
 
 void fzE_cnd_signal(void * cnd) {
@@ -915,6 +960,14 @@ void fzE_cnd_broadcast(void * cnd) {
 
 void fzE_cnd_wait(void * cnd, void * mtx) {
   pthread_cond_wait((pthread_cond_t *)cnd, (pthread_mutex_t *)mtx);
+}
+
+void fzE_cnd_timedwait(void * cnd, void * mtx, int64_t time_ns)
+{
+  int64_t  s  =                   time_ns / 1000000000;
+  long     ns = (long) (time_ns - s       * 1000000000);
+  const struct timespec abstime = { s, ns };
+  pthread_cond_timedwait((pthread_cond_t *)cnd, (pthread_mutex_t *)mtx, &abstime);
 }
 
 void fzE_cnd_destroy(void * cnd) {

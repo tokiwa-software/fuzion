@@ -135,7 +135,7 @@ jitter_threaded =>
 
       _ := match flow.exception jitter_too_high .on ()->
 
-           for p := period_default, p.times 0.5
+           for p := period_default, p.scale 0.5
            while p.as_duration >= time.duration.ms 1 do
              run_for_period p
 

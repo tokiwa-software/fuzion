@@ -976,10 +976,11 @@ public class Intrinsix extends ANY implements ClassFileConstants
     /* Condition */
     put("concur.sync.cnd_init",  (jvm, si, cc, tvalue, args) ->
       returnResult(jvm, si, jvm._fuir.clazzResultClazz(cc),
-          args.get(0).andThen(Expr.invokeStatic(
-                          Names.RUNTIME_CLASS,
+                   args.get(0).andThen(args.get(1))
+                              .andThen(
+        Expr.invokeStatic(Names.RUNTIME_CLASS,
                           "cnd_init",
-                          "(Ljava/lang/Object;)Ljava/lang/Object;",
+                          "(Ljava/lang/Object;I)Ljava/lang/Object;",
                           JAVA_LANG_OBJECT))));
     put("concur.sync.cnd_signal",  (jvm, si, cc, tvalue, args) ->
       new Pair<>(Expr.UNIT, args.get(0).andThen(
@@ -1001,6 +1002,14 @@ public class Intrinsix extends ANY implements ClassFileConstants
                           "cnd_wait",
                           "(Ljava/lang/Object;)V",
                           ClassFileConstants.PrimitiveType.type_void)))
+      );
+    put("concur.sync.cnd_timedwait",  (jvm, si, cc, tvalue, args) ->
+      new Pair<>(Expr.UNIT, args.get(0).andThen(
+                            args.get(2).andThen(
+        Expr.invokeStatic(Names.RUNTIME_CLASS,
+                          "cnd_timedwait",
+                          "(Ljava/lang/Object;J)V",
+                          ClassFileConstants.PrimitiveType.type_void))))
       );
     put("concur.sync.cnd_destroy",  (jvm, si, cc, tvalue, args) ->
       new Pair<>(Expr.UNIT, args.get(0).andThen(

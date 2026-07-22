@@ -102,7 +102,7 @@ public effect is
   # Intrinsic version of abort. For all surrounding instated effects,
   # remove the effect and run `finally` until we have reached an
   # effect of this type. Then return from that effect's `instate0` call
-  # with the rsult produced by calling `def` on the currently instated
+  # with the result produced by calling `def` on the currently instated
   # value.
   #
   type.abort0 void => intrinsic
@@ -241,17 +241,6 @@ public effect is
   #
   public as_functional(R type) Functional R =>
     code -> instate_self code
-
-
-  # infix variant of effect.instate
-  #
-  # use it like this:
-  #
-  #     effect_type <- effect_instance ! code
-  #
-  public type.infix <- (E type : effect, e E) effect_to_be_instated E =>
-    effect_to_be_instated e
-
 
 
   # has an effect of this type been instated?
@@ -421,27 +410,13 @@ instate_helper(# result type
       set res := def cur_e
 
 
-
-# a constructor for holding an effect type and instance that is to be instated
+# effect that has a different instance when used in different threads
 #
-# this allows defining operators to instate effects like
-#
-#     effect_type <- effect_instance ! code
-#
-private:public effect_to_be_instated(E type : effect, e E) is
+public thread_local_effect : effect is
 
-
-  # infix variant of effect.instate
-  #
-  # use it like this:
-  #
-  #     effect_type <- effect_instance ! code
-  #
-  public infix !(# result type
-                 R type,
-
-                 # the code to execute with `e` instated.
-                 code () -> R
-  ) R
+  public instance_for_new_thread thread_local_effect.this
   =>
-    E.instate R e code
+    thread_local_effect.this
+
+# effect that is only used in one thread and never teleported
+public local_effect : effect is

@@ -21,7 +21,7 @@
 #
 # -----------------------------------------------------------------------
 
-# time.instant -- abstract moment in time used for measuring durations
+# time.instant -- abstract moment in time measured by a Clock
 #
 # An instant is an absolute time relative to some fixed start of an epoch
 # that depends on the clock that created this instant.
@@ -30,13 +30,13 @@
 # created this instant and verify that `infix -` is called only on `instant`s
 # created by the same clock.
 #
-module:public instant (module val u64) : property.orderable is
+module:public instant (module ns u64) : property.orderable is
 
   # which instant will be after the time specified by the duration
   # has passed after this instant?
   #
   public fixed infix + (d time.duration) instant =>
-    instant (val + d.nanos)
+    instant (ns + d.nanos)
 
 
   # how much time passed between two instants?
@@ -45,29 +45,29 @@ module:public instant (module val u64) : property.orderable is
   pre
     debug: other <= instant.this
   =>
-    time.duration (val - other.val)
+    time.duration (ns - other.ns)
 
 
   # create a string representation of this instant.
   #
   public redef as_string String
   =>
-    $time.duration val
+    $time.duration ns
 
 
   # create a string representation of this instant using the given unit.
   #
   public as_string(u time.time_unit) String
   =>
-    time.duration val .as_string u
+    time.duration ns .as_string u
 
 
   # do two given instants represent the same moment in time?
   #
-  public fixed redef type.equality(a, b time.instant) bool => a.val = b.val
+  public fixed redef type.equality(a, b time.instant) bool => a.ns = b.ns
 
 
   # check whether an instant happened before or at the same moment in time
   # as another instant
   #
-  public fixed redef type.lteq(a, b time.instant) bool => a.val ≤ b.val
+  public fixed redef type.lteq(a, b time.instant) bool => a.ns ≤ b.ns

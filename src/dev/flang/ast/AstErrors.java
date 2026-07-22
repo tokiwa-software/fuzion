@@ -661,7 +661,7 @@ public class AstErrors extends ANY
                                             String detail1,
                                             String detail2)
   {
-    // supress errors in cotypes unless we did not find the original error (in
+    // suppress errors in cotypes unless we did not find the original error (in
     // the original feature):
     if (!fg._feature.isCotype() || !Errors.any())
       {
@@ -1562,14 +1562,6 @@ public class AstErrors extends ANY
           "Affected type parameter: " + s(tp) + "\n" +
           "constraint: " + s(tp.constraint()) + "\n" +
           "To solve this, change the type provided, e.g. to the unconstrained " + st("type") + ".\n");
-  }
-
-  public static void constraintMustNotBeChoice(AbstractFeature typeParameter)
-  {
-    error(typeParameter.pos(),
-          "Constraint for type parameter must not be a choice type",
-          "Affected type parameter: " + s(typeParameter) + "\n" +
-          "constraint: " + s(typeParameter.constraint()) + "\n");
   }
 
   static void loopElseBlockRequiresWhileOrIterator(SourcePosition pos, Expr elseBlock)

@@ -44,7 +44,7 @@ public Threads ref : effect is
   public current concur.Thread  => abstract
 
 
-  # spawn a new thread, teleporting the current effect environment
+  # spawn a new thread, teleporting the current effect environment to
   # the new thread.
   #
   # This is to be used in environments where code interacts with data

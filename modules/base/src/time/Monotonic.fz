@@ -1,0 +1,43 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature time.Monotonic
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# time.monotonic -- effect providing access to system's monotonic clock
+#
+#
+public Monotonic ref : posix_clock is
+
+
+  # This clock corresponds to POSIX 1003.1's CLOCK_MONOONIC
+  #
+  public redef type.posix_id option posix.clockid_t
+  =>
+    posix.clock_monotonic
+
+
+  # default implementation of time.Nano.
+  #
+  public redef fixed type.default_value option time.Monotonic
+  =>
+    time.Monotonic

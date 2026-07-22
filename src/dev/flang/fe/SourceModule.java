@@ -1795,10 +1795,6 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
           {
             AstErrors.constraintMustNotBeParametricType(f);
           }
-        if (f.constraint().isChoice())
-          {
-            AstErrors.constraintMustNotBeChoice(f);
-          }
       }
     checkLegalVisibility(f);
     checkRedefVisibility(f);
@@ -2161,6 +2157,13 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
         Errors.fatal("-saveModule: I/O error when writing module file",
                       "While trying to write file '"+ p + "' received '" + io + "'");
       }
+  }
+
+
+  @Override
+  public boolean isBaseModule()
+  {
+    return !_options._loadBaseMod;
   }
 
 }
