@@ -1484,6 +1484,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   private static List<AbstractType> handDownListThroughInheritsCall(List<AbstractType> l, int select, AbstractCall c)
   {
+    // NYI: BUG: it is not really sufficient to only do this for targets that are calls
     return (c.target() instanceof AbstractCall ac
         ? handDownListThroughInheritsCall(l, ac.select(), ac)
         : l)
