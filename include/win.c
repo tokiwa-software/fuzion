@@ -448,10 +448,11 @@ int fzE_munmap(void * mapped_address, const int file_size){
 
 
 /**
- * returns a monotonically increasing timestamp.
+ * @return the time of the given posix clock
  */
-uint64_t fzE_nanotime()
+uint64_t fzE_posix_time(int clockid)
 {
+  // NYI: BUG: clockid currently ignored
   static LARGE_INTEGER frequency = {0};
   if (frequency.QuadPart == 0) {
       if (!QueryPerformanceFrequency(&frequency)) {
@@ -475,11 +476,11 @@ uint64_t fzE_nanotime()
  */
 void fzE_nanosleep(uint64_t n)
 {
-  uint64_t start = fzE_nanotime();
+  uint64_t start = fzE_posix_time(-1);
   uint64_t end = start + n;
 
-  while (fzE_nanotime() < end) {
-    uint64_t remaining_ns = end - fzE_nanotime();
+  while (fzE_posix_time(-1) < end) {
+    uint64_t remaining_ns = end - fzE_posix_time(-1);
     if (remaining_ns > 1000000ULL) {
       Sleep((DWORD)(remaining_ns / 1000000ULL));
     } else if (remaining_ns > 0) {

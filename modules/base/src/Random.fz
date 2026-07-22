@@ -209,4 +209,4 @@ simple_random(seed1 u64, seed2 u64) : Random is
     #
     # NYI: BUG: we need ordering of default effects
     # simple_random (u64 77777777777777 ^ time.Nano.env.read.val) 98765432109876543
-    simple_random (u64 77777777777777 ^ fzE_nanotime) 98765432109876543
+    simple_random (u64 77777777777777 ^ (fzE_posix_time (id posix.clockid_t posix.clock_monotonic).val)) 98765432109876543
