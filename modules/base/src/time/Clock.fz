@@ -105,18 +105,31 @@ public Clock ref : effect is
   pre
     debug: p.is_infinity || p.as_duration > time.duration.ns 0
   post
-    debug: ((last >= first): result <= ((last - first) / p.as_duration) + 1)
-    debug: ((last <  first): result = 0)
+    debug: p.is_infinity || ((last >= first): result <= ((last - first) / p.as_duration) + 1)
+    debug: p.is_infinity || ((last < first): result = 0)
   =>
-    for
-      cnt := u64 0, cnt + 1
+    if p.is_infinity
       just_now := read
-      next1 := first + p * cnt
-      skipped := if just_now > next1 then (just_now - next1) / p.as_duration + 1
-                                     else 0
-      next := first + p * (cnt + skipped)
-    while next <= last
-      sleep_until next just_now
-      code()
+      if first <= last
+        sleep_until first just_now
+        code()
+        1
+      else
+        0
     else
-      cnt
+      for
+        cnt := u64 0, cnt + 1
+        just_now := read
+        next1 := first + p * cnt
+        skipped :=
+          if just_now > next1
+          then
+            (just_now - next1) / p.as_duration + 1
+          else
+            0
+        next := first + p * (cnt + skipped)
+      while next <= last
+        sleep_until next just_now
+        code()
+      else
+        cnt
