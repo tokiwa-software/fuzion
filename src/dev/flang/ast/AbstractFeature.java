@@ -1469,11 +1469,26 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
     for (AbstractCall c : inh)
       {
-        var cf = c.calledFeature();
-        var actualTypes = c.actualTypeParameters();
-        l = l.flatMap(t -> t.applyTypeParsMaybeOpen(cf, actualTypes, select));
+        l = handDownListThroughInheritsCall(l, select, c);
       }
     return l;
+  }
+
+
+  /**
+   * Hand down l in the inheritance call c
+   *
+   * @param l the list of types to be handed down.
+   *
+   * @param c the inheritance call where l is supposed to be handed down
+   */
+  private static List<AbstractType> handDownListThroughInheritsCall(List<AbstractType> l, int select, AbstractCall c)
+  {
+    // NYI: BUG: it is not really sufficient to only do this for targets that are calls
+    return (c.target() instanceof AbstractCall ac
+        ? handDownListThroughInheritsCall(l, ac.select(), ac)
+        : l)
+      .flatMap(t -> t.applyTypeParsMaybeOpen(c.calledFeature(), c.actualTypeParameters(), select));
   }
 
 
