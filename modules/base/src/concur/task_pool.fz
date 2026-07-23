@@ -34,19 +34,12 @@ is
   public redef submit(P type : time.period, t realtime.task P) unit ! atomic_access =>
 
     nt := concur.Threads.env.spawn ()->
-      now := time.Nano.env.read
-      end_of_time := time.instant u64.max
-      _ := time.Nano.env.run_periodic now t.period end_of_time t.code
-
-    thrds.write (list nt thrds)
-
-
-  # submit a task to the thread pool and run it once
-  #
-  public submit_once(P type : time.period, t realtime.task P) unit ! atomic_access =>
-
-    nt := concur.Threads.env.spawn ()->
-      _ := t.code.call
+      if t.period.is_infinity
+        _ := t.code.call
+      else
+        now := time.Nano.env.read
+        end_of_time := time.instant u64.max
+        _ := time.Nano.env.run_periodic now t.period end_of_time t.code
 
     thrds.write (list nt thrds)
 

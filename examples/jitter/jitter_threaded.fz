@@ -223,11 +223,12 @@ jitter_threaded =>
     test_jitter time.Nano time.Nano result_ch
     result_ch.close
 
-  jitter_task := realtime.task time.duration jitter_worker period_default
+  jitter_task := realtime.task time.frequency jitter_worker (time.frequency 0 (time.duration.ms 1))
 
   _ := concur.task_pool ! ()->
     pool := concur.task_pool.from_env
-    _ := pool.submit_once jitter_task
+    _ := pool.submit time.frequency jitter_task
+
     say "received samples"
     consume_and_display empty_acc
 
