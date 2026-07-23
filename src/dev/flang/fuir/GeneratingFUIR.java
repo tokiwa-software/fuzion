@@ -758,7 +758,7 @@ public class GeneratingFUIR extends FUIR
    *
    * @param fn the feature name that we are searching for
    */
-  public AbstractFeature lookupFeature(AbstractFeature feature, FeatureName fn)
+  AbstractFeature lookupFeature(AbstractFeature feature, FeatureName fn)
   {
     return _featureLookup.lookupFeature(feature, fn);
   }
