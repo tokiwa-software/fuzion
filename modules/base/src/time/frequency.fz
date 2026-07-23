@@ -73,10 +73,14 @@ is
   #
   public redef infix *(n u64) time.duration
   =>
-    ns := base.nanos.as_u128
-    nn := n         .as_u128
-    ff := f         .as_u128
-    time.duration (ns * nn / ff).as_u64
+    if n = 0
+      # by API definition
+      time.duration.zero
+    else
+      ns := base.nanos.as_u128
+      nn := n         .as_u128
+      ff := f         .as_u128
+      time.duration (ns * nn / ff).as_u64
 
 
   # create a string representation of this frequency
