@@ -219,6 +219,7 @@ jitter_threaded =>
   say "Starting jitter test using task_pool..."
   result_ch := concur.Channel (tuple time.duration time.instant time.instant bool)
 
+  # NYI: There is no priority or affinity support in the API at the moment, so we just run the jitter_worker in a separate thread.
   jitter_worker =>
     test_jitter time.Nano time.Nano result_ch
     result_ch.close
