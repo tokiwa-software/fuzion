@@ -226,14 +226,12 @@ jitter_threaded =>
 
   jitter_task := realtime.task time.frequency jitter_worker (time.frequency 0 (time.duration.ms 1))
 
-  _ := concur.task_pool ! ()->
-    pool := concur.task_pool.from_env
-    _ := pool.submit time.frequency jitter_task
-
+  realtime.Scheduler.instate concur.task_pool ()->
+    _ := realtime.Scheduler.env.submit jitter_task
     say "received samples"
     consume_and_display empty_acc
+    panic "Task-pool worker completed."
 
-  say "Task-pool worker completed."
 
 # How to run with high priority :
 # FUZION_HOME=build bash bin/fz -c examples/jitter/jitter.fz
