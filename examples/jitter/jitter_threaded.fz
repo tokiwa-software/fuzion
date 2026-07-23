@@ -230,7 +230,8 @@ jitter_threaded =>
     _ := realtime.Scheduler.env.submit jitter_task
     say "received samples"
     consume_and_display empty_acc
-    panic "Task-pool worker completed."
+    say "Task-pool worker completed."
+    Exit.env.exit 1
 
 
 # How to run with high priority :
