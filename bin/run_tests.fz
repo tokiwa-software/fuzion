@@ -65,8 +65,8 @@ String.infix | (seq Sequence String) =>
         _ := p.with_in unit lm ()->
           # NYI: ambiguous result type:
           # _ := write_to lm
-          _ := (io.buffered lm).writer.env.write String.this
-          _ := (io.buffered lm).writer.env.flush
+          _ := (io.buffered lm).Writer.env.write String.this
+          _ := (io.buffered lm).Writer.env.flush
           _ := p.close_in
         tokiwa.record_process p seq.as_string max_test_time nil
 

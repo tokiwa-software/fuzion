@@ -67,8 +67,8 @@ main =>
         e error => panic "failed executing $seq, error is $e"
         p os.process =>
           _ := p.with_in unit lm ()->
-            _ := (io.buffered lm).writer.env.write String.this
-            _ := (io.buffered lm).writer.env.flush
+            _ := (io.buffered lm).Writer.env.write String.this
+            _ := (io.buffered lm).Writer.env.flush
             _ := p.wait # close stdin
           match p.with_out String lm (()->String.from (io.buffered lm).read_fully)
             e error => panic "failed reading stdout from $seq, error is: $e"

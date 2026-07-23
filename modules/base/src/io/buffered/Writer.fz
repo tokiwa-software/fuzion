@@ -17,17 +17,16 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature io.buffered.writer
+#  Source code of Fuzion standard library feature io.buffered.Writer
 #
 # -----------------------------------------------------------------------
 
 
-# buffered.writer effect allows buffered writing
-# by using the given Write_Handler
+# buffered.Writer effect allows buffered writing
 #
 # note: anything in the buffer when effect is uninstalled will be discarded.
 #
-public writer(wh Write_Handler) : effect
+public Writer ref : effect
 is
 
   buf_size
@@ -43,6 +42,12 @@ is
   buffer := container.Ring_Buffer u8 LM buf_size.as_i64
 
 
+  # write bytes to the underlying output
+  #
+  public writer(b Sequence u8) outcome unit
+    pre b.finite.is_yes
+  => abstract
+
 
   # finally
   # i.e. flush all unwritten bytes
@@ -50,7 +55,7 @@ is
   public redef finally unit =>
     match flush
       e error =>
-        fuzion.runtime.fault.env.cause ("$(writer.this.type.name).finally", e.msg)
+        fuzion.runtime.fault.env.cause ("$(Writer.this.type.name).finally", e.msg)
       unit =>
 
 
@@ -62,7 +67,7 @@ is
   # when the effect is deinstated
   #
   public flush outcome unit =>
-    for res := outcome unit, wh.write [b.or_panic]
+    for res := outcome unit, writer [b.or_panic]
         to_be_written := buffer.count, to_be_written-1
         b := buffer.poll
     while to_be_written>0 && b.ok
@@ -74,16 +79,6 @@ is
   #
   public write_byte (b u8) outcome unit =>
     write [b]
-
-
-  # helper type for write result
-  #
-  private:public write_result(public bytes_written i32, public error outcome unit) is
-
-
-    # was writing successful?
-    #
-    public ok bool => error.ok
 
 
   # buffered writing of the given array
@@ -115,6 +110,16 @@ is
       match flush
         e error => write_result written e
         unit =>
-          match wh.write (data.take buf_size)
+          match writer (data.take buf_size)
             e error => write_result written+bfrd e
             unit => write_detailed (data.drop buf_size) written+bfrd+buf_size
+
+
+# helper type for write result
+#
+private:public write_result(public bytes_written i32, public error outcome unit) is
+
+
+  # was writing successful?
+  #
+  public ok bool => error.ok
