@@ -2062,7 +2062,6 @@ public class GeneratingFUIR extends FUIR
     if (ac._isConst == YesNo.dontKnow)
       {
         var result =
-          !ac.isInheritanceCall() &&
           // these are handled via other means anyway
           !ac.calledFeature().isUnitType() &&
           ac.calledFeature().isConstructor() &&
@@ -2072,7 +2071,7 @@ public class GeneratingFUIR extends FUIR
           ac.calledFeature().selfType().isValue() &&
           // only features without args and no fields may be inherited
           // NYI: UNDER DEVELOPMENT: we could relax this more
-          ac.calledFeature().inherits().stream().allMatch(c -> c.calledFeature().arguments().isEmpty() && c.calledFeature().code().containsOnlyDeclarations()) &&
+          ac.calledFeature().inherits().stream().allMatch(c -> isConst(c)) &&
           // NYI: UNDER DEVELOPMENT: support consts with contracts
           ac.calledFeature().contract().isEmpty() &&
           ac.actuals().stream().allMatch(x -> isConst(x));
