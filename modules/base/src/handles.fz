@@ -75,7 +75,7 @@ private:public handles(
 
   # `plain` monad or effect to be `inst`alled or `repl`aced by new value?
   mode oneway_monad_mode.val
-  ) : oneway_monad X (handles T X) mode
+  ) : oneway_monad X mode
 is
 
   # number of handles created
@@ -173,12 +173,12 @@ is
     _ := handles v (ar.put x (f ar[x])) mode.next
 
 
-  public redef infix >>= (f X -> handles T X) handles T X => bind X f
+  public fixed redef infix >>= (f X -> handles T X) handles T X => bind X f
 
-  public bind(B type, f X -> handles T B) handles T B =>
+  public fixed bind(B type, f X -> handles T B) handles T B =>
     handles (f v).v ar oneway_monad_mode.plain
 
-  public return( B type, w B) handles T B => handles w ar oneway_monad_mode.plain
+  public fixed return( B type, w B) handles T B => handles w ar oneway_monad_mode.plain
 
 # shorthand for creating and installing an empty set of handles of given type.
 #

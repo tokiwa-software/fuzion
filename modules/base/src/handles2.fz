@@ -49,7 +49,7 @@ private:public handles2(
 
   # `plain` monad or effect to be `inst`alled or `repl`aced by new value?
   mode oneway_monad_mode.val
-  ) : oneway_monad X (handles2 T X) mode
+  ) : oneway_monad X mode
 is
 
   # create a new instance with one additional handle
@@ -130,12 +130,12 @@ is
     handles2 v last_opt mode.next
 
 
-  public redef infix >>= (f X -> handles2 T X) handles2 T X => bind X f
+  public fixed redef infix >>= (f X -> handles2 T X) handles2 T X => bind X f
 
-  public bind(B type, f X -> handles2 T B) handles2 T B =>
+  public fixed bind(B type, f X -> handles2 T B) handles2 T B =>
     handles2 (f v).v last_opt oneway_monad_mode.plain
 
-  public return(B type, w B) handles2 T B => handles2 T B w last_opt oneway_monad_mode.plain
+  public fixed return(B type, w B) handles2 T B => handles2 T B w last_opt oneway_monad_mode.plain
 
 # shorthand for creating and installing an empty set of handles2 of given type.
 #

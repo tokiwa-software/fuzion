@@ -702,7 +702,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
              * this: 'T : property.orderable'
              * actual: 'I : integer'
              */
-            case ParametricType -> constraintAssignableFrom(context, actual.typeParameter().constraint(context));
+            case ParametricType -> !isThisType() && constraintAssignableFrom(context, actual.typeParameter().constraint(context));
             /**
              * e.g.:
              *
