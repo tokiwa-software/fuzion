@@ -475,22 +475,9 @@ public class Call extends AbstractCall
     AbstractFeature result = null;
 
     // are we searching for features called via outer's inheritance calls?
-    if (res.state(context.outerFeature()) == State.RESOLVING_INHERITANCE)
+    if (res.state(context.outerFeature()) == State.RESOLVING_INHERITANCE && _target == null)
       {
-        if (_target instanceof Universe)
-          {
-            result = _target.type().feature();
-          }
-        else if (_target instanceof Call tc)
-          {
-            _target.loadCalledFeature(res, context);
-            result = tc.calledFeature();
-          }
-        else
-          {
-            result = context.outerFeature().outer();   // For an inheritance call, we do not permit call to outer' features,
-                                                       // but only to the outer clazz' features:
-          }
+        result = context.outerFeature().outer();
       }
     else if (_target != null)
       {
@@ -644,7 +631,10 @@ public class Call extends AbstractCall
     // !isInheritanceCall: see issue #2153
     if (_calledFeature == null && !isInheritanceCall())
       { // nothing found, try if we can build operator call: `a + b` => `x.y.z.this.infix + a b`
-        findOperatorOnOuter(res, context);
+        findOperatorOnOuter(res,
+          context.outerFeature().state().atLeast(State.RESOLVED_INHERITANCE)
+            ? context
+            : context.outerFeature().outer().context());
       }
 
     addPendingError(res, targetFeature);

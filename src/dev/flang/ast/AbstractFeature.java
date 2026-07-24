@@ -1325,7 +1325,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     var result = l;
     var effectiveHeirType = heirType.selfOrConstraint(Context.NONE);
     var effectiveHeir = effectiveHeirType.feature();
-    if (effectiveHeir.inheritsFrom(this))
+    if (effectiveHeir.inheritsFrom(this) && this != effectiveHeir)
       {
         result = handDown(result, effectiveHeir);
       }

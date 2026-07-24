@@ -2732,9 +2732,6 @@ A pre-condition of a feature that does not redefine an inherited feature must st
    */
   public AbstractFeature outerRef()
   {
-    if (PRECONDITIONS) require
-      (isUniverse() || _state.atLeast(State.RESOLVING_DECLARATIONS));
-
     Feature result = _outerRef;
 
     if (POSTCONDITIONS) ensure
