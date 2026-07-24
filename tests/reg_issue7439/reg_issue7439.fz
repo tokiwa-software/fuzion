@@ -21,30 +21,30 @@
 #
 # -----------------------------------------------------------------------
 
-x(i i32) is
-  y is
-    z(a i32) is
-      say "$a $i"
-q : (
-  match envir.Args.env.count>3
-    true_  => x 1
-    false_ => x 2
-  ).y.z 3 is
-_ := q
+
+test1 =>
+  x(i i32) is
+    y is
+      z(a i32) is
+        say "$a $i"
+  q : (
+    match envir.Args.env.count>3
+      true_  => x 1
+      false_ => x 2
+    ).y.z 3 is
+  _ := q
 
 
-# NYI: BUG: does not work yet
-# handdown fails in fuir
-#
-#
+test2 =>
+  x(U type, i i32) is
+    y is
+      z(a U) is
+        say "$a type $U i $i"
+  q(T type, v T) : (
+    match envir.Args.env.count>3
+      true_  => x T 1
+      false_ => x T 2
+    ).y.z v is
+  _ := q "bla"
 
-# x(U type, i i32) is
-#   y is
-#     z(a U) is
-#       say "$a type $U i $i"
-# q(T type, v T) : (
-#   match envir.Args.env.count>3
-#     true_  => x T 1
-#     false_ => x T 2
-#   ).y.z v is
-# _ := q "bla"
+test1; test2
