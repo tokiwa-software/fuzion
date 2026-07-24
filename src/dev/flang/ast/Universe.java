@@ -44,6 +44,14 @@ public class Universe extends ExprWithPos
   public static final Universe instance = new Universe(SourcePosition.notAvailable);
 
 
+  /**
+   * cache for universe type,
+   * needed early when resolving inheritance
+   * in base.fum
+   */
+  private AbstractType _type;
+
+
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -72,7 +80,7 @@ public class Universe extends ExprWithPos
   @Override
   AbstractType typeForInferencing()
   {
-    return Types.resolved == null ? null : Types.resolved.universe.selfType();
+    return Types.resolved == null ? _type : Types.resolved.universe.selfType();
   }
 
 
@@ -88,6 +96,14 @@ public class Universe extends ExprWithPos
    */
   public Universe visit(FeatureVisitor v, AbstractFeature outer)
   {
+    if (_type == null)
+      {
+        while (outer != null && !outer.isUniverse())
+          {
+            outer = outer.outer();
+          }
+        _type = outer != null ? outer.selfType() : null;
+      }
     return this;
   }
 

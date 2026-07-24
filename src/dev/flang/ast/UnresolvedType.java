@@ -451,7 +451,31 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
        context != null);
 
     var outer = context.outerFeature();
-    res.resolveDeclarations(outer);
+    if (outer instanceof Feature f)
+      {
+        f.scheduleForResolution(res);
+        f.resolveInheritance(res);
+        // we might resolve a type in an inheritance call...
+        // example, we want to resolve LM here:
+        //     writer (LM type: mutate, desc i64) : (io.buffered LM).Writer is
+        if (f.state() == State.RESOLVING_INHERITANCE)
+          {
+            // first look in the features type parameters
+            var x = outer
+              .arguments()
+              .stream()
+              .filter(a -> a.isTypeParameter() && a.baseName().equals(_name))
+              .findAny();
+            // if we don't find it there we outer outers context
+            return x.isEmpty()
+              ? resolve(res, context.outerFeature().outer().context(), tolerant)
+              : x.get().asParametricType();
+          }
+        else
+          {
+            f.resolveDeclarations(res);
+          }
+      }
 
     if (!tolerant && _resolved == null)
       {
