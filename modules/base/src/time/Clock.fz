@@ -101,21 +101,15 @@ public Clock ref : effect is
                       first time.instant,
                       p P,
                       last time.instant,
-                      code ()->unit) u64
+                      code ()->unit) unit
   pre
     debug: p.is_infinity || p.as_duration > time.duration.ns 0
-  post
-    debug: ((last >= first): if p.is_infinity then result = 1 else result <= ((last - first) / p.as_duration) + 1)
-    debug: ((last < first): result = 0)
   =>
     if p.is_infinity
       just_now := read
       if first <= last
         sleep_until first just_now
         code()
-        1
-      else
-        0
     else
       for
         cnt := u64 0, cnt + 1
@@ -131,5 +125,3 @@ public Clock ref : effect is
       while next <= last
         sleep_until next just_now
         code()
-      else
-        cnt
