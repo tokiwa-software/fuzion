@@ -105,8 +105,8 @@ public Clock ref : effect is
   pre
     debug: p.is_infinity || p.as_duration > time.duration.ns 0
   post
-    debug: p.is_infinity || ((last >= first): result <= ((last - first) / p.as_duration) + 1)
-    debug: p.is_infinity || ((last < first): result = 0)
+    debug: ((last >= first): if p.is_infinity then result = 1 else result <= ((last - first) / p.as_duration) + 1)
+    debug: ((last < first): result = 0)
   =>
     if p.is_infinity
       just_now := read
