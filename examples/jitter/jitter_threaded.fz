@@ -63,10 +63,6 @@ jitter_threaded =>
   #
   show_log_csv => false
 
-  # Try to enable CPU affinity and optionally real-time scheduling.
-  #
-  enable_rt := true
-
 
   # run jitter test using C.clock.run_periodic
   # the worker streams raw per-release records to `sample_ch`; the caller groups
@@ -144,25 +140,6 @@ jitter_threaded =>
 
       unit
 
-  say "Starting jitter test on dedicated thread..."
-  result_ch := concur.Channel (tuple time.duration time.instant time.instant bool)
-  thrd := concur.Threads.env.spawn ()->
-    test_jitter time.Nano time.Nano result_ch
-    result_ch.close
-
-  # affinity: pin the worker thread to CPU 0 (best-effort)
-  match thrd.set_affinity ([0.as_u64].as_array)
-    unit => say "Worker thread pinned to CPU 0"
-    e error => say "Worker thread affinity setup failed: $e"
-
-  # Attempt to set SCHED_FIFO.
-  if enable_rt
-    match thrd.set_policy(concur.scheduling_policy.sched_fifo, false, 99)
-      unit => say "Worker thread configured for SCHED_FIFO priority 99"
-      e error =>
-        say "Worker thread priority setup failed: $e"
-        say "(Hint: run with sudo or use setcap cap_sys_nice=ep ./jitter)"
-
   # print histograms for one completed period immediately
   print_period_histograms(period time.duration,
                            period_samples list time.duration,
@@ -228,7 +205,7 @@ jitter_threaded =>
     else
       acc_state (option period) per_acc2 cyc_acc2 (option actual)
 
-  # incrementally consume records from the worker thread: as soon as a period's
+  # incrementally consume records from the worker task: as soon as a period's
   # done_flag arrives, print its histograms right away.
   consume_and_display(acc acc_state) unit
   =>
@@ -239,9 +216,23 @@ jitter_threaded =>
       nil =>
         unit
 
-  say "received samples"
-  consume_and_display empty_acc
-  say "Dedicated thread completed."
+  say "Starting jitter test using task_pool..."
+  result_ch := concur.Channel (tuple time.duration time.instant time.instant bool)
+
+  # NYI: There is no priority or affinity support in the API at the moment, so we just run the jitter_worker in a separate thread.
+  jitter_worker =>
+    test_jitter time.Nano time.Nano result_ch
+    result_ch.close
+
+  jitter_task := realtime.task time.frequency jitter_worker (time.frequency 0 (time.duration.ms 1))
+
+  realtime.Scheduler.instate concur.task_pool ()->
+    _ := realtime.Scheduler.env.submit jitter_task
+    say "received samples"
+    consume_and_display empty_acc
+    say "Task-pool worker completed."
+    Exit.env.exit 1
+
 
 # How to run with high priority :
 # FUZION_HOME=build bash bin/fz -c examples/jitter/jitter.fz
