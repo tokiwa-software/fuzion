@@ -95,8 +95,6 @@ public Clock ref : effect is
   #
   # In case `period.is_infinity`, run `code` once unless `first > last`.
   #
-  # return the number of times the `code` was run.
-  #
   public run_periodic(P type : time.period,
                       first time.instant,
                       p P,
