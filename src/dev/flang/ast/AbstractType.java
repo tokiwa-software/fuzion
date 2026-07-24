@@ -877,7 +877,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * Convenience wrapper for applyTypeParsmaybeOpen for a given target type
+   * Convenience wrapper for applyTypeParsMaybeOpen for a given target type
    * t. If t is a plain type, apply t's feature and type parameters to this.
    *
    * @param t the type describing the feature and actual type parameters to applay.
