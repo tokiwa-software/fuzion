@@ -130,7 +130,7 @@ is
     handles2 v last_opt mode.next
 
 
-  public redef infix >>= (f X -> handles2 T X) handles2 T X => bind X f
+  public fixed redef infix >>= (f X -> handles2 T X) handles2 T X => bind X f
 
   public bind(B type, f X -> handles2 T B) handles2 T B =>
     handles2 (f v).v last_opt oneway_monad_mode.plain

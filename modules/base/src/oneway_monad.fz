@@ -46,7 +46,7 @@ public oneway_monad(
   # which is not needed if used as an explicit monad.
   #
   mode oneway_monad_mode.val
-  ) : monad A OMA, effect
+  ) : monad A, effect
 is
 
   match mode
