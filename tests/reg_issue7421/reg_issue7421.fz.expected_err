@@ -1,0 +1,15 @@
+
+--CURDIR--/reg_issue7421.fz:26:5: error 1: Incompatible type parameter
+    b E
+----^
+formal type parameter 'E : e.this'
+actual type parameter 'E'
+
+
+--CURDIR--/reg_issue7421.fz:28:3: error 2: Incompatible type parameter
+  b(E type : e.this) unit =>
+--^
+formal type parameter 'E : e.this'
+actual type parameter 'E'
+
+2 errors.
