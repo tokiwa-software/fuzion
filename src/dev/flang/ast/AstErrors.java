@@ -882,7 +882,7 @@ public class AstErrors extends ANY
 
   }
 
-  static void repeatedMatch(SourcePosition pos, SourcePosition[] earlierPos, AbstractType typeOrNull, List<AbstractType> choiceGenerics)
+  static void repeatedMatch(SourcePosition pos, SourcePosition[] earlierPos, AbstractType typeOrNull, List<AbstractType> choiceArguments)
   {
     StringBuilder earlierPosString = new StringBuilder();
     TreeSet<SourcePosition> processed = new TreeSet<>();
@@ -902,35 +902,35 @@ public class AstErrors extends ANY
           skw("case") + " clause matches type that had been matched already.",
           caseMatches(typeOrNull) +
           "Originally matched at " + earlierPosString + ".\n" +
-          subjectTypes(choiceGenerics));
+          subjectTypes(choiceArguments));
   }
 
-  static void repeatedMatch(SourcePosition pos, SourcePosition earlierPos, AbstractType t, List<AbstractType> choiceGenerics)
+  static void repeatedMatch(SourcePosition pos, SourcePosition earlierPos, AbstractType t, List<AbstractType> choiceArguments)
   {
-    repeatedMatch(pos, new SourcePosition[] { earlierPos }, t, choiceGenerics);
+    repeatedMatch(pos, new SourcePosition[] { earlierPos }, t, choiceArguments);
   }
 
 
-  static void matchCaseDoesNotMatchAny(SourcePosition pos, AbstractType typeOrNull, List<AbstractType> choiceGenerics)
+  static void matchCaseDoesNotMatchAny(SourcePosition pos, AbstractType typeOrNull, List<AbstractType> choiceArguments)
   {
     error(pos,
           skw("case") + " clause in " + skw("match") + " expression does not match any type of the subject.",
           caseMatches(typeOrNull) +
-          subjectTypes(choiceGenerics));
+          subjectTypes(choiceArguments));
   }
 
-  static void matchCaseMatchesSeveral(SourcePosition pos, AbstractType t, List<AbstractType> choiceGenerics, List<AbstractType> matches)
+  static void matchCaseMatchesSeveral(SourcePosition pos, AbstractType t, List<AbstractType> choiceArguments, List<AbstractType> matches)
   {
     error(pos,
           skw("case") + " clause in " + skw("match") + " expression matches several types of the subject",
           caseMatches(t) +
-          subjectTypes(choiceGenerics) +
+          subjectTypes(choiceArguments) +
           "matches are " + typeListConjunction(matches));
   }
 
-  static void missingMatches(SourcePosition pos, List<AbstractType> choiceGenerics, List<AbstractType> missingMatches)
+  static void missingMatches(SourcePosition pos, List<AbstractType> choiceArguments, List<AbstractType> missingMatches)
   {
-    if (choiceGenerics.size() == missingMatches.size())
+    if (choiceArguments.size() == missingMatches.size())
       {
         error(pos,
               skw("match") + " expression requires at least one case",
@@ -944,7 +944,7 @@ public class AstErrors extends ANY
               skw("match") + " expression does not cover all of the subject's types",
               "Missing " + StringHelpers.plural(n,"case") +
               " for "    + StringHelpers.plural(n,"type") + ": " + typeListConjunction(missingMatches) + "\n" +
-              subjectTypes(choiceGenerics));
+              subjectTypes(choiceArguments));
       }
   }
 
@@ -974,11 +974,11 @@ public class AstErrors extends ANY
     return "Case matches " + typeOrAnyType(typeOrNull) + ".\n";
   }
 
-  private static String subjectTypes(List<AbstractType> choiceGenerics)
+  private static String subjectTypes(List<AbstractType> choiceArguments)
   {
-    return choiceGenerics.isEmpty()
+    return choiceArguments.isEmpty()
       ? "Subject type is an empty choice type that cannot match any case.\n"
-      : "Subject type is one of " + typeListAlternatives(choiceGenerics) + ".\n";
+      : "Subject type is one of " + typeListAlternatives(choiceArguments) + ".\n";
   }
 
   public static void internallyReferencedFeatureNotUnique(SourcePosition pos, String qname, Collection<AbstractFeature> set)
@@ -1593,12 +1593,12 @@ public class AstErrors extends ANY
           s(t2) + /* " at " + t2.pos().show() + */ "\n");
   }
 
-  static void illegalUseOfOpenFormalGeneric(SourcePosition pos, AbstractFeature generic)
+  static void illegalUseOfOpenFormalGeneric(SourcePosition pos, AbstractFeature tp)
   {
     error(pos,
           "Illegal use of open formal type parameter type",
           "Open formal type parameter type is permitted only as the type of an argument.  If the argument and the formal type parameter are part of the same argument list, the argument must be the last argument.\n" +
-          "Open formal argument: " + sbnf(generic) );
+          "Open formal argument: " + sbnf(tp) );
   }
 
   static void integerConstantOutOfLegalRange(SourcePosition pos, String constant, AbstractType t, String from, String to)
@@ -2112,10 +2112,10 @@ public class AstErrors extends ANY
   {
     if (!any() || (frmlT        != Types.t_ERROR &&
                    value.type() != Types.t_ERROR &&
-                   !frmlT.choiceGenerics(Context.NONE).stream().anyMatch(x -> x==Types.t_ERROR)))
+                   !frmlT.choiceArguments(Context.NONE).stream().anyMatch(x -> x==Types.t_ERROR)))
       {
         error(value.pos(),
-              "Ambiguous assignment to " + s(frmlT) + " from " + s(value.type()), s(value.type()) + " is assignable to " + frmlT.choiceGenerics(Context.NONE).stream()
+              "Ambiguous assignment to " + s(frmlT) + " from " + s(value.type()), s(value.type()) + " is assignable to " + frmlT.choiceArguments(Context.NONE).stream()
               .filter(cg -> cg.isAssignableFromWithoutBoxing(value.type(), Context.NONE).yes())
               .map(cg -> s(cg))
               .collect(Collectors.joining(", "))

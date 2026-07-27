@@ -170,11 +170,11 @@ public class Rename extends ANY
       });
 
 
-    var choiceGenerics = ASTWalker
+    var choiceArguments = ASTWalker
       .Features(LSP4jUtils.getUri(params))
       .filter(f -> f.resultType().isChoice())
       .filter(f -> {
-        return f.resultType().choiceGenerics().stream().anyMatch(t -> {
+        return f.resultType().choiceArguments().stream().anyMatch(t -> {
           return TypeTool.baseName(t).equals(featureToRename.baseName());
         });
       })
@@ -185,7 +185,7 @@ public class Rename extends ANY
       typePositions,
       Stream.of(pos),
       assignmentPositions,
-      choiceGenerics);
+      choiceArguments);
   }
 
   private static SourcePosition positionOfChoiceGeneric(String name, AbstractFeature f)

@@ -500,12 +500,12 @@ public class Function extends AbstractLambda
         if (frmlRt.isChoice()
             // NYI: UNDER DEVELOPMENT: We may want to go further here and support more than
             // one missing undefined
-            && frmlRt.choiceGenerics().stream().filter(x -> x == Types.t_UNDEFINED).count() == 1)
+            && frmlRt.choiceArguments().stream().filter(x -> x == Types.t_UNDEFINED).count() == 1)
           {
             if (frmlRt.feature() != lmbdRt.selfOrConstraint(res, context).feature())
               {
                 result = frmlRt.applyToTypeArgumentsAndOuter(x -> x == Types.t_UNDEFINED ? lmbdRt: x);
-                if (result.isChoice() && result.choiceGenerics().stream().filter(x -> x == Types.t_UNDEFINED).count() == 0)
+                if (result.isChoice() && result.choiceArguments().stream().filter(x -> x == Types.t_UNDEFINED).count() == 0)
                   {
                     _feature.setRefinedResultType(res, context, result);
                   }

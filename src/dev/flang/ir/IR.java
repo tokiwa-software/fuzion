@@ -443,7 +443,7 @@ public abstract class IR extends ANY
     //  t choice A B := C
     //
     else if (frmlT
-             .choiceGenerics()
+             .choiceArguments()
              .stream()
              .filter(cg -> cg.isAssignableFromWithoutTagging(expr.type()).yes())
              .count() > 1)
@@ -455,7 +455,7 @@ public abstract class IR extends ANY
     // there is a choice generic in this choice
     // that this value is "directly" assignable to
     else if (frmlT
-             .choiceGenerics()
+             .choiceArguments()
              .stream()
              .anyMatch(cg -> cg.isAssignableFromWithoutTagging(expr.type()).yes()))
       {
@@ -469,7 +469,7 @@ public abstract class IR extends ANY
         // we assign to the choice generic
         // that expr is assignable to
         var cgs = frmlT
-          .choiceGenerics()
+          .choiceArguments()
           .stream()
           .filter(cg -> cg.isChoice() && cg.isAssignableFromWithoutBoxing(expr.type()).yes())
           .collect(Collectors.toList());

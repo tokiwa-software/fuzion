@@ -1168,7 +1168,7 @@ public class Html extends ANY
 
   private String typeArgAsString(AbstractFeature f, AbstractFeature relativeTo)
   {
-    if (f.constraint().isParametric())
+    if (f.constraint().dependsOnSubstitution())
       {
         return "<div class='fd-keyword'>type</div>"
                + (f.isOpenTypeParameter() ? "..." : "")

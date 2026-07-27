@@ -623,7 +623,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * @return null if this is not a choice feature, the actual generic
    * parameters, i.e, the actual choice types, otherwise.
    */
-  public List<AbstractType> choiceGenerics()
+  public List<AbstractType> choiceArguments()
   {
     if (PRECONDITIONS) require
       (state().atLeast(State.RESOLVED_DECLARATIONS));
@@ -645,7 +645,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
             var pf = p.calledFeature();
             if (pf.isChoice())
               { // we need to do a hand down to get the actual choice generics
-                result = pf.handDown(pf.choiceGenerics(), this);
+                result = pf.handDown(pf.choiceArguments(), this);
               }
           }
       }
@@ -1227,7 +1227,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    *
    * The reasons for a feature name to change during inheritance are
    *
-   * - actual generic arguments to open generic parameters change the argument
+   * - type arguments to open generic parameters change the argument
    *   count.
    *
    * - explicit renaming during inheritance
@@ -1263,7 +1263,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   /**
    * Determine the actual types of an array of types in this feature after it
    * was inherited by heir. The types may change on the way due to formal
-   * generics being replaced by actual generic arguments on the way.
+   * generics being replaced by type arguments on the way.
    *
    * Due to open generics, even the number of types may change through
    * inheritance.
@@ -1303,7 +1303,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   /**
    * Determine the actual types of an array of types in this feature after it
    * was inherited by heirType.  The types may change on the way due to formal generics being
-   * replaced by actual generic arguments on the way.
+   * replaced by type arguments on the way.
    *
    * Unlike @link{handDown(List,AbstractFeature)}, this also takes into account
    * the outer types.

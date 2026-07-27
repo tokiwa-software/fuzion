@@ -36,7 +36,7 @@ import dev.flang.util.List;
 
 
 /**
- * A NormalType is a LibraryType that is not a type parameter.
+ * A NormalType is a LibraryType that is based on a constructor feature.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -48,7 +48,7 @@ class NormalType extends LibraryType
 
 
   /**
-   * For a type that is not a generic argument, this is the feature the type is
+   * For a type that is not a parametric type, this is the feature the type is
    * based on.
    */
   AbstractFeature _feature;
@@ -61,7 +61,7 @@ class NormalType extends LibraryType
 
 
   /**
-   * For a type that is not a generic argument, this is the list of actual
+   * For a type that is not a parametric type, this is the list of actual
    * generics.
    */
   List<AbstractType> _typeArguments;

@@ -76,7 +76,7 @@ public abstract class AbstractCall extends Expr
   /*-----------------------------  methods  -----------------------------*/
 
   /**
-   * The type parameters used for calling {@code calledFeature}, never null.
+   * The type arguments used for calling {@code calledFeature}, never null.
    *
    * The default implementations returns an empty list.
    */

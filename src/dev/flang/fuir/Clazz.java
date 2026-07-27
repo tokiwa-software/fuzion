@@ -58,7 +58,7 @@ import dev.flang.util.YesNo;
 
 
 /**
- * Clazz represents a runtime type, i.e., a Type with actual generic arguments.
+ * Clazz represents a runtime type, i.e., a Type with type arguments.
  *
  * It is fully described by the type in _type
  * (and _select in case it represents a field of an open generic type).
@@ -123,10 +123,10 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * Cached result of choiceGenerics(), only used if isChoice() and
+   * Cached result of choiceArguments(), only used if isChoice() and
    * !isChoiceOfOnlyRefs().
    */
-  private List<Clazz> _choiceGenerics;
+  private List<Clazz> _choiceArguments;
 
 
   /**
@@ -363,7 +363,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   void init(int id)
   {
     _id = id;
-    _choiceGenerics = determineChoiceGenerics();
+    _choiceArguments = determineChoiceGenerics();
     var vas = feature().valueArguments();
     if (vas.size() == 0 || isBoxed())
       {
@@ -877,7 +877,7 @@ class Clazz extends ANY implements Comparable<Clazz>
           _layouting = LayoutStatus.During;
           if (isChoice())
             {
-              for (Clazz c : choiceGenerics())
+              for (Clazz c : choiceArguments())
                 {
                   if (result == null && c.isValue())
                     {
@@ -1509,7 +1509,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     if (isChoice())
       {
         result = new List<>();
-        for (var t : typeArguments(feature().choiceGenerics(), new List<>()))
+        for (var t : typeArguments(feature().choiceArguments(), new List<>()))
           {
             result.add(_fuir.newClazz(t));
           }
@@ -1529,12 +1529,12 @@ class Clazz extends ANY implements Comparable<Clazz>
    * @return the actual clazzes of this choice clazz, in the order they appear
    * as actual generics.
    */
-  List<Clazz> choiceGenerics()
+  List<Clazz> choiceArguments()
   {
     if (PRECONDITIONS) require
       (isChoice());
 
-    return _choiceGenerics;
+    return _choiceArguments;
   }
 
 

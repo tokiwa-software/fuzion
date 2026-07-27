@@ -90,9 +90,9 @@ public class ResolvedNormalType extends ResolvedType
    *
    * @param t the original type
    *
-   * @param ta the actual generic arguments that replace t.generics (resolved)
+   * @param ta the type arguments that replace t.generics (resolved)
    *
-   * @param uta the actual generic arguments that replace t.generics (unresolved)
+   * @param uta the type arguments that replace t.generics (unresolved)
    *
    * @param o the actual outer type, or null, that replaces t.outer
    */
@@ -109,7 +109,7 @@ public class ResolvedNormalType extends ResolvedType
   /**
    * Instantiate a new ResolvedNormalType.
    *
-   * @param ta the actual generic arguments (resolved)
+   * @param ta the type arguments (resolved)
    *
    * @param o
    *
@@ -125,9 +125,9 @@ public class ResolvedNormalType extends ResolvedType
   /**
    * Constructor
    *
-   * @param ta the actual generic arguments (resolved)
+   * @param ta the type arguments (resolved)
    *
-   * @param uta the actual generic arguments (unresolved)
+   * @param uta the type arguments (unresolved)
    *
    * @param o
    *
@@ -431,7 +431,7 @@ public class ResolvedNormalType extends ResolvedType
           }
         if (isChoice())
           {
-            for (var g : choiceGenerics(Context.NONE))
+            for (var g : choiceArguments(Context.NONE))
               {
                 g.usedFeatures(s);
               }

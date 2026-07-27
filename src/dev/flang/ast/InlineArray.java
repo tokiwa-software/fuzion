@@ -362,7 +362,7 @@ public class InlineArray extends ExprWithPos
         var r = InlineArray.this.type();
 
         if (POSTCONDITIONS) ensure
-          (!r.isParametric(),
+          (!r.dependsOnSubstitution(),
            !r.containsThisType());
 
         return r;

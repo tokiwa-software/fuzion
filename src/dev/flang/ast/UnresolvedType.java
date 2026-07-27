@@ -190,7 +190,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
    *
    * @param n
    *
-   * @param g the actual generic arguments
+   * @param g the type arguments
    *
    * @param o
    *

@@ -82,7 +82,7 @@ public class Tag extends Expr
        taggedType.isChoice(),
        Errors.any()
         || taggedType
-            .choiceGenerics()
+            .choiceArguments()
             .stream()
             .filter(cg -> cg.isAssignableFromWithoutTagging(value.type()).yes())
             .count() == 1);
@@ -90,7 +90,7 @@ public class Tag extends Expr
     this._value = value;
     this._taggedType = taggedType;
     this._tagNum = (int)_taggedType
-      .choiceGenerics()
+      .choiceArguments()
       .stream()
       .takeWhile(cg -> cg.isAssignableFromWithoutTagging(value.type()).no())
       .count();

@@ -169,7 +169,7 @@ public class Interpreter extends FUIRContext
 
   /**
    * From a value val of type valueClazz which is in
-   * choiceClazz.choiceGenerics_, create a new value of type choiceClazz
+   * choiceClazz.choiceArguments_, create a new value of type choiceClazz
    * consisting of val and the choice tag.
    *
    * @param choiceClazz the choice clazz the result should have

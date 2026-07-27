@@ -871,7 +871,7 @@ public class GeneratingFUIR extends FUIR
   Clazz type2clazz(AbstractType thiz)
   {
     if (PRECONDITIONS) require
-      (Errors.any() || !thiz.isParametric(),
+      (Errors.any() || !thiz.dependsOnSubstitution(),
        !thiz.isThisType());
 
     var result = _clazzesForTypes.get(thiz);
@@ -1163,7 +1163,7 @@ public class GeneratingFUIR extends FUIR
     var c = id2clazz(cl);
     return switch (c.feature().kind())
       {
-      case Choice -> c.choiceGenerics().size();
+      case Choice -> c.choiceArguments().size();
       default     -> -1;
       };
   }
@@ -1188,7 +1188,7 @@ public class GeneratingFUIR extends FUIR
        i >= 0 && i < clazzChoiceCount(cl));
 
     var cc = id2clazz(cl);
-    var cg = cc.choiceGenerics().get(i);
+    var cg = cc.choiceArguments().get(i);
     var res = cg.isRef()     ||
               cg.isInstantiatedChoice() ? cg
                                         : id2clazz(clazz(SpecialClazzes.c_void));
@@ -2030,7 +2030,7 @@ public class GeneratingFUIR extends FUIR
    */
   private boolean isConst(InlineArray ia)
   {
-    return !ia.type().isParametric()
+    return !ia.type().dependsOnSubstitution()
       && ia.type().containsThisType()
       // some backends have special handling for array void.
       && !ia.elementType().isVoid()
@@ -2989,7 +2989,7 @@ public class GeneratingFUIR extends FUIR
     int nt = f != null ? 1 : ts.size();
     var resultL = new List<Integer>();
     int tag = 0;
-    for (var cg : m.subject().type().choiceGenerics())
+    for (var cg : m.subject().type().choiceArguments())
       {
         for (int tix = 0; tix < nt; tix++)
           {

@@ -111,7 +111,7 @@ public class Call extends AbstractCall
   List<AbstractType> _splitOffTypeArguments;
 
   /**
-   * actual generic arguments, set by parser
+   * type arguments, set by parser
    */
   /*final*/ List<AbstractType> _typeArguments; // NYI: Make this final again when resolveTypes can replace a call
   @Override public List<AbstractType> typeArguments()
@@ -1315,7 +1315,7 @@ public class Call extends AbstractCall
    * Helper function for resolveTypes to determine the static result type of
    * this call.
    *
-   * In particular, this replaces formal generic types by actual generics
+   * In particular, this replaces type parameters by type arguments
    * provided to this call and it replaces select calls to fields of open
    * generic type by calls to the actual fields.
    *
@@ -2015,7 +2015,7 @@ public class Call extends AbstractCall
                       feat 0 "hello"
                       ```
                     */
-                    if (t.isParametric())
+                    if (t.dependsOnSubstitution())
                       {
                         var actualType = typeFromActual(res, context, actual, false);
                         if (t.isParametricType())
@@ -2320,9 +2320,9 @@ public class Call extends AbstractCall
              */
 
             var directlyAssignable = formalType
-              .choiceGenerics(context)
+              .choiceArguments(context)
               .stream()
-              .filter(x -> !x.isParametric())
+              .filter(x -> !x.dependsOnSubstitution())
               .anyMatch(x -> x.isAssignableFromWithoutBoxing(actualType, context).yes());
 
             if (!directlyAssignable)
@@ -2330,9 +2330,9 @@ public class Call extends AbstractCall
                 // if actualType is `Branch String`
                 // we only consider `Branch T` and not `T`.
                 var matchingFeature = formalType
-                  .choiceGenerics(context)
+                  .choiceArguments(context)
                   .stream()
-                  .filter(x -> x.isParametric()
+                  .filter(x -> x.dependsOnSubstitution()
                            && !x.isParametricType()
                            && !actualType.isParametricType()
                            && x.feature() == actualType.feature())
@@ -2343,7 +2343,7 @@ public class Call extends AbstractCall
                   }
                 if (matchingFeature.size() == 0)
                   {
-                    for (var ct : formalType.choiceGenerics(context))
+                    for (var ct : formalType.choiceArguments(context))
                       {
                         inferTypeArgument(res, context, ct, actualType, pos, conflict, foundAt);
                       }

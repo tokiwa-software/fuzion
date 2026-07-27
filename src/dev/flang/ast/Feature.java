@@ -1176,7 +1176,7 @@ public class Feature extends AbstractFeature
    */
   boolean isChoiceAfterTypesResolved()
   {
-    return choiceGenerics() != null;
+    return choiceArguments() != null;
   }
 
   @Override
@@ -1891,7 +1891,7 @@ A ((Choice)) declaration must not contain a result type.
         AstErrors.choiceMustNotContainFields(_pos, choiceFields);
       }
 
-    for (var t : choiceGenerics())
+    for (var t : choiceArguments())
       {
         if (CHECKS) check
           (Errors.any() || t != null);
@@ -2427,7 +2427,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
     if (PRECONDITIONS) require
       (ta.isFreeType());
 
-    // A call to generics() has the side effects of setting _typeArguments,
+    // A call to typeParameters() has the side effects of setting _typeArguments,
     // _arguments
     var ignore = typeParameters();
 

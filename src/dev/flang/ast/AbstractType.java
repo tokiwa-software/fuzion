@@ -61,7 +61,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   /**
    * Cached result of dependsOnGenerics().
    */
-  private YesNo _dependsOnGenerics = YesNo.dontKnow;
+  private YesNo _dependsOnSubstitution = YesNo.dontKnow;
 
 
   // flag to disable applyTypePar caching, for debugging only
@@ -367,13 +367,13 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param context the source code context where this Type is used
    */
-  List<AbstractType> choiceGenerics(Context context)
+  List<AbstractType> choiceArguments(Context context)
   {
     if (PRECONDITIONS) require
       (this instanceof ResolvedType,
        isChoice());
 
-    var g = feature().choiceGenerics();
+    var g = feature().choiceArguments();
     return
       isThisType()
       ? g
@@ -385,9 +385,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * For a resolved type, check if it is a choice type and if so, return the
    * list of choices.
    */
-  public List<AbstractType> choiceGenerics()
+  public List<AbstractType> choiceArguments()
   {
-    return choiceGenerics(Context.NONE);
+    return choiceArguments(Context.NONE);
   }
 
 
@@ -661,7 +661,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       (isChoice());
 
     boolean result = false;
-    for (var t : choiceGenerics(context))
+    for (var t : choiceArguments(context))
       {
         if (CHECKS) check
           (Errors.any() || t != null);
@@ -722,7 +722,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
              */
             case RefType, ValueType -> {
               yield actual.feature() == feature() &&
-                genericsAssignable(actual, context) &&
+                typeArgumentsAssignable(actual, context) &&
                 // NYI: BUG: isThisType logic certainly wrong...
                 (isThisType() || outer() == null && actual.outer() == null || outer().isAssignableFromDirectly(actual.outer()).yes())
               ||
@@ -778,7 +778,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * call's target or actual type parameters. Also this is used to for error
    * messages that require the source position of the call.
    */
-  private boolean genericsAssignable(AbstractType actual, Context context)
+  private boolean typeArgumentsAssignable(AbstractType actual, Context context)
   {
     if (PRECONDITIONS) require
       (!this.isParametricType(),
@@ -818,28 +818,28 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * Replace generic types used in given List of types by the actual generic arguments
+   * Replace type parameter types used in given List of types by the type arguments
    * given as typeArguments.
    *
-   * @param f the feature the generics belong to.
+   * @param f the feature the type parameters belong to.
    *
-   * @param genericsToReplace a list of possibly generic types
+   * @param typeParameterTypes a list of possibly generic types
    *
-   * @param typeArguments the actual generics that should replace the
-   * formal generics found in genericsToReplace.
+   * @param typeArguments the type arguments that should replace the
+   * type parameters.
    *
-   * @return a new list of types with all formal generic arguments from this
+   * @return a new list of types with all type parameters
    * replaced by the corresponding typeArguments entry.
    */
   private static List<AbstractType> applyTypePars(AbstractFeature f,
-                                                  List<AbstractType> genericsToReplace,
+                                                  List<AbstractType> typeParameterTypes,
                                                   List<AbstractType> typeArguments)
   {
     if (PRECONDITIONS) require
       (Errors.any() ||
        f.typeParameters().sizeMatches(typeArguments));
 
-    return genericsToReplace.flatMap
+    return typeParameterTypes.flatMap
       (t ->
        { // This is eventually called from `applyTypeParsMaybeOpen`, so we
          // cannot replace the following code by a call to
@@ -895,22 +895,22 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * Replace formal generics from this type's feature in given list by the
-   * actual generic arguments of this type.
+   * Replace typeParameterTypes from this type's feature in given list by the
+   * type arguments of this type.
    *
-   * @param genericsToReplace a list of possibly generic types
+   * @param typeParameterTypes a list of possibly generic types
    *
    * @return a new list of types with all formal generic arguments from
    * feature() replaced by the corresponding generics entry of this type.
    */
-  public List<AbstractType> replaceTypeArguments(List<AbstractType> genericsToReplace)
+  public List<AbstractType> replaceTypeArguments(List<AbstractType> typeParameterTypes)
   {
     if (PRECONDITIONS) require
       (isNormalType(),
        Errors.any() ||
        feature().typeParameters().sizeMatches(typeArguments()));
 
-    return applyTypePars(feature(), genericsToReplace, typeArguments());
+    return applyTypePars(feature(), typeParameterTypes, typeArguments());
   }
 
 
@@ -932,7 +932,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
             if (CHECKS) check
               (Errors.any() || t != null);
             if (t != null &&
-                t.isParametric())
+                t.dependsOnSubstitution())
               {
                 result = true;
               }
@@ -943,12 +943,12 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * Does this type (or its outer type) depend on generics. If not, applyTypePars()
+   * Does this type (or its outer type) depend on substitution? If not, applyTypePars()
    * will not need to do anything on this.
    */
-  public boolean isParametric()
+  public boolean dependsOnSubstitution()
   {
-    YesNo result = _dependsOnGenerics;
+    YesNo result = _dependsOnSubstitution;
     if (result == YesNo.dontKnow)
       {
         if (isParametricType())
@@ -969,18 +969,18 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                     if (CHECKS) check
                       (Errors.any() || t != null);
                     if (t != null &&
-                        t.isParametric())
+                        t.dependsOnSubstitution())
                       {
                         result = YesNo.yes;
                       }
                   }
               }
-            if (outer() != null && outer().isParametric())
+            if (outer() != null && outer().dependsOnSubstitution())
               {
                 result = YesNo.yes;
               }
           }
-        _dependsOnGenerics = result;
+        _dependsOnSubstitution = result;
       }
     return result == YesNo.yes;
   }
@@ -1041,7 +1041,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
      * is used to alleviate this a bit, but this is probably not sufficient!
      */
     var result = this;
-    if (isParametric())
+    if (dependsOnSubstitution())
       {
         var effectiveTargetType = tt.selfOrConstraint(Context.NONE);
         result = switch(effectiveTargetType.kind())
@@ -1395,7 +1395,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   {
     if (isChoice())
       {
-        var g = choiceGenerics(context);
+        var g = choiceArguments(context);
         if (CHECKS) check
           (Errors.any() || !isRef());
 
@@ -2736,7 +2736,7 @@ there is no common super type of the two types (Types.t_ERROR)
   Stream<AbstractType> choices(Context context)
   {
     return isChoice()
-      ? choiceGenerics(context)
+      ? choiceArguments(context)
         .stream()
         .flatMap(cg -> cg.choices(context))
       : Stream.of(this);
