@@ -293,7 +293,7 @@ public class SourceModule extends Module implements SrcModule
        feature.outer().isUniverse());
     return new AbstractCall() {
       @Override public SourcePosition pos() { return SourcePosition.notAvailable; }
-      @Override public List<AbstractType> actualTypeParameters() { return NO_GENERICS; }
+      @Override public List<AbstractType> typeArguments() { return NO_TYPE_ARGUMENTS; }
       @Override public AbstractFeature calledFeature() { return feature; }
       @Override public Expr target() { return Universe.instance; }
       @Override public AbstractType type() { return calledFeature().resultType(); }
@@ -1648,7 +1648,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
                         // we must replace `option A` by `option B`, i.e.,
                         // replace original's type parameters by redefinition's:
                         //
-                        t -> t.applyTypePars(original, redefinition.genericsAsActuals()));
+                        t -> t.applyTypePars(original, redefinition.typeParametersAsArguments()));
   }
 
 

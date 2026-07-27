@@ -301,7 +301,7 @@ public class Completion
           {
             return " ${" + (index + 1) + ":" + argument.baseName() + "}";
           }
-        return getFunArgument((index + 1) * 100, argument.resultType().generics());
+        return getFunArgument((index + 1) * 100, argument.resultType().typeArguments());
       })
       .collect(Collectors.joining());
   }
@@ -334,7 +334,7 @@ public class Completion
   {
     if (arg.isFunctionType(null))
       {
-        return getFunArgument(offset * 100, arg.generics());
+        return getFunArgument(offset * 100, arg.typeArguments());
       }
     return "${" + (offset + x) + ":" + TypeTool.baseName(arg) + "}";
   }

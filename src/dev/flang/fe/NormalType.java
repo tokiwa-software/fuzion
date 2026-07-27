@@ -64,7 +64,7 @@ class NormalType extends LibraryType
    * For a type that is not a generic argument, this is the list of actual
    * generics.
    */
-  List<AbstractType> _generics;
+  List<AbstractType> _typeArguments;
 
 
   AbstractType _outer;
@@ -80,19 +80,19 @@ class NormalType extends LibraryType
              int at,
              AbstractFeature feature,
              TypeKind typeKind,
-             List<AbstractType> generics,
+             List<AbstractType> typeArguments,
              AbstractType outer)
   {
     super(mod, at);
 
     if (PRECONDITIONS) require
       (typeKind == TypeKind.RefType || typeKind == TypeKind.ValueType,
-       generics.stream().allMatch(g -> g instanceof ResolvedType));
+       typeArguments.stream().allMatch(g -> g instanceof ResolvedType));
 
     this._feature = feature;
     this._typeKind = typeKind;
-    this._generics = generics;
-    this._generics.freeze();
+    this._typeArguments = typeArguments;
+    this._typeArguments.freeze();
     this._outer = outer;
   }
 
@@ -111,7 +111,7 @@ class NormalType extends LibraryType
     return switch (kind())
       {
       case ValueType -> this;
-      case RefType   -> new NormalType(_libModule, _at, _feature, TypeKind.ValueType, generics(), outer());
+      case RefType   -> new NormalType(_libModule, _at, _feature, TypeKind.ValueType, typeArguments(), outer());
       default        -> throw new Error("unexpected kind "+kind()+" for NormalType");
       };
   }
@@ -131,7 +131,7 @@ class NormalType extends LibraryType
    * and outer type.
    */
   @Override
-  public AbstractType replaceGenericsAndOuter(List<AbstractType> g2, AbstractType o2)
+  public AbstractType replaceTypeArgumentsAndOuter(List<AbstractType> g2, AbstractType o2)
   {
     return new NormalType(_libModule, _at, _feature, _typeKind, g2, o2);
   }
@@ -155,9 +155,9 @@ class NormalType extends LibraryType
    * For a normal type, this is the list of actual type parameters given to the type.
    */
   @Override
-  public List<AbstractType> generics()
+  public List<AbstractType> typeArguments()
   {
-    return _generics;
+    return _typeArguments;
   }
 
 

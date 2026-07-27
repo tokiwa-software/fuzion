@@ -229,7 +229,7 @@ public class Intrinsics extends ANY
         });
     put("concur.atomic.racy_accesses_supported",  (executor, innerClazz) -> args ->
         {
-          var t = executor.fuir().clazzActualGeneric(executor.fuir().clazzOuterClazz(innerClazz), 0);
+          var t = executor.fuir().clazzTypeArgument(executor.fuir().clazzOuterClazz(innerClazz), 0);
           return new boolValue
             (executor.fuir().clazzIsRef(t)                            ||
              (t == executor.fuir().clazz(SpecialClazzes.c_i8  )) ||
@@ -314,7 +314,7 @@ public class Intrinsics extends ANY
         {
           String in = executor.fuir().clazzOriginalName(innerClazz);
           var statique = in.equals("fuzion.jvm.get_static_field0");
-          int resultClazz = executor.fuir().clazzActualGeneric(innerClazz, 0);
+          int resultClazz = executor.fuir().clazzTypeArgument(innerClazz, 0);
           return args ->
             {
               String clazz = !statique ? null : (String) ((JavaRef) args.get(1))._javaRef;
@@ -409,7 +409,7 @@ public class Intrinsics extends ANY
         });
     put("fuzion.jvm.primitive_to_java_object", (executor, innerClazz) -> args ->
         {
-          var res =  switch (executor.fuir().getSpecialClazz(executor.fuir().clazzActualGeneric(innerClazz, 0)))
+          var res =  switch (executor.fuir().getSpecialClazz(executor.fuir().clazzTypeArgument(innerClazz, 0)))
           {
             case c_bool -> Boolean  .valueOf(args.get(1).boolValue());
             case c_f32  -> Float    .valueOf(args.get(1).f32Value());
@@ -419,13 +419,13 @@ public class Intrinsics extends ANY
             case c_i64  -> Long     .valueOf(args.get(1).i64Value());
             case c_i8   -> Byte     .valueOf((byte)args.get(1).i8Value());
             case c_u16  -> Character.valueOf((char)args.get(1).u16Value());
-            default -> throw new Error("NYI: BUG: primitive_to_java_object not implemented for " + executor.fuir().clazzName(executor.fuir().clazzActualGeneric(innerClazz, 0)));
+            default -> throw new Error("NYI: BUG: primitive_to_java_object not implemented for " + executor.fuir().clazzName(executor.fuir().clazzTypeArgument(innerClazz, 0)));
           };
           return new JavaRef(res);
         });
     put("fuzion.sys.type.alloc", (executor, innerClazz) -> args ->
         {
-          var et = executor.fuir().clazzActualGeneric(innerClazz, 0); // element type
+          var et = executor.fuir().clazzTypeArgument(innerClazz, 0); // element type
           return ArrayData.alloc(executor.fuir().clazzResultClazz(innerClazz),
                                  /* size */ args.get(1).i32Value(),
                                  executor.fuir(),
@@ -433,7 +433,7 @@ public class Intrinsics extends ANY
         });
     put("fuzion.sys.type.getel", (executor, innerClazz) -> args ->
         {
-          var et = executor.fuir().clazzActualGeneric(innerClazz, 0); // element type
+          var et = executor.fuir().clazzTypeArgument(innerClazz, 0); // element type
           return ((ArrayData)args.get(1)).get(
                                    /* index */ args.get(2).i32Value(),
                                    executor.fuir(),
@@ -441,7 +441,7 @@ public class Intrinsics extends ANY
         });
     put("fuzion.sys.type.setel", (executor, innerClazz) -> args ->
         {
-          var et = executor.fuir().clazzActualGeneric(innerClazz, 0); // element type
+          var et = executor.fuir().clazzTypeArgument(innerClazz, 0); // element type
           ((ArrayData)args.get(1)).set(
                               /* index */ args.get(2).i32Value(),
                               /* value */ args.get(3),
@@ -829,8 +829,8 @@ public class Intrinsics extends ANY
               effects.put(ecl, ev);
 
               // the callbacks to Fuzion for the code, fallback and finally:
-              var call     = fuir.lookupCall(fuir.clazzActualGeneric(innerClazz, 0));
-              var call_def = fuir.lookupCall(fuir.clazzActualGeneric(innerClazz, 1));
+              var call     = fuir.lookupCall(fuir.clazzTypeArgument(innerClazz, 0));
+              var call_def = fuir.lookupCall(fuir.clazzTypeArgument(innerClazz, 1));
               var finallie = fuir.lookupStaticFinally(ecl);
 
               Abort aborted = null;

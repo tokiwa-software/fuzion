@@ -120,16 +120,16 @@ public class OptimizedFUIR extends GeneratingFUIR {
 
 
   /**
-   * the actual generics for clazz {@code cl}
+   * the type arguments for clazz {@code cl}
    */
-  private int[] clazzActualGenerics(int cl)
+  private int[] clazzTypeArguments(int cl)
   {
     var cc = id2clazz(cl);
-    var generics = cc.actualTypeParameters();
-    var result = new int[generics.length];
+    var typeArguments = cc.typeArguments();
+    var result = new int[typeArguments.length];
     for (int gix = 0; gix < result.length; gix++)
       {
-        result[gix] = generics[gix]._id;
+        result[gix] = typeArguments[gix]._id;
       }
     return result;
   }
@@ -200,7 +200,7 @@ public class OptimizedFUIR extends GeneratingFUIR {
                 needsCode ? clazzCode(cl) : NO_SITE,
                 clazzResultField(cl),
                 clazzOriginalName(cl),
-                clazzActualGenerics(cl),
+                clazzTypeArguments(cl),
                 lookupCall(cl),
                 lookupStaticFinally(cl),
                 isRoutine ? lifeTime(cl) : null,

@@ -33,14 +33,14 @@ import dev.flang.util.SourcePosition;
 
 
 /**
- * FormalGenerics represents a list for formal generics argument.
+ * TypeParameters represents a list of type parameters.
  *
  * e.g. For {@code Function(public R type, public A type...) ref is}
  * the formal generics are {@code R} and {@code A}. (With {@code A} being an open type parameter.)
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class FormalGenerics extends ANY
+public class TypeParameters extends ANY
 {
 
 
@@ -61,7 +61,7 @@ public class FormalGenerics extends ANY
    *
    * @param af the features for which this is the generics.
    */
-  public FormalGenerics(AbstractFeature af)
+  public TypeParameters(AbstractFeature af)
   {
     _feature = af;
   }
@@ -85,14 +85,14 @@ public class FormalGenerics extends ANY
    * the formal generics list might be open, i.e, the last argument can be
    * repeated zero or more times.
    *
-   * @param actualGenerics the list of actual generics.
+   * @param typeArguments the list of actual generics.
    *
    * @return true iff the number of actual arguments fits with the number of
    * expected arguments.
    */
-  public boolean sizeMatches(List<AbstractType> actualGenerics)
+  public boolean sizeMatches(List<AbstractType> typeArguments)
   {
-    return sizeMatches(actualGenerics.size());
+    return sizeMatches(typeArguments.size());
   }
 
 
@@ -116,10 +116,10 @@ public class FormalGenerics extends ANY
 
 
   /**
-   * Check if the number of actualGenerics match this FormalGenerics. If not,
+   * Check if the number of typeArguments match this FormalGenerics. If not,
    * create a compiler error.
    *
-   * @param actualGenerics the actual generics to check
+   * @param typeArguments the actual generics to check
    *
    * @param pos the source code position at which the error should be reported
    *
@@ -129,21 +129,21 @@ public class FormalGenerics extends ANY
    * @param detail2 optional extra lines of detail message giving further
    * information, like {@code Calling feature: xyz.f\n" or "Type: Stack<bool,int>\n}.
    *
-   * @return true iff size and type of actualGenerics does match
+   * @return true iff size and type of typeArguments does match
    */
-  public boolean errorIfSizeDoesNotMatch(List<AbstractType> actualGenerics,
+  public boolean errorIfSizeDoesNotMatch(List<AbstractType> typeArguments,
                                          SourcePosition pos,
                                          String detail1,
                                          String detail2)
   {
     if (PRECONDITIONS) require
-      (Errors.any() || !actualGenerics.contains(Types.t_ERROR));
+      (Errors.any() || !typeArguments.contains(Types.t_ERROR));
 
-    var result = sizeMatches(actualGenerics) || actualGenerics.contains(Types.t_ERROR);
+    var result = sizeMatches(typeArguments) || typeArguments.contains(Types.t_ERROR);
     if (!result)
       {
         AstErrors.wrongNumberOfTypeArguments(this,
-                                             actualGenerics,
+                                             typeArguments,
                                              pos,
                                              detail1,
                                              detail2);
@@ -153,8 +153,8 @@ public class FormalGenerics extends ANY
 
 
   /**
-   * Number of generic arguments expected as a text to be used in error messages
-   * about wrong number of actual generic arguments.
+   * Number of type arguments expected as a text to be used in error messages
+   * about wrong number of actual type arguments.
    *
    * @return
    */
@@ -163,12 +163,12 @@ public class FormalGenerics extends ANY
     int sz = isOpen() ? _feature.typeArguments().size() - 1
                       : _feature.typeArguments().size();
     return
-      isOpen()    && (sz == 0) ? "any number of generic arguments"
-      :  isOpen() && (sz == 1) ? "at least one generic argument"
-      :  isOpen() && (sz >  1) ? "at least " + sz + " generic arguments"
-      : !isOpen() && (sz == 0) ? "no generic arguments"
-      : !isOpen() && (sz == 1) ? "one generic argument"
-      :                          "" + sz + " generic arguments" ;
+      isOpen()    && (sz == 0) ? "any number of type arguments"
+      :  isOpen() && (sz == 1) ? "at least one type argument"
+      :  isOpen() && (sz >  1) ? "at least " + sz + " type arguments"
+      : !isOpen() && (sz == 0) ? "no type arguments"
+      : !isOpen() && (sz == 1) ? "one type argument"
+      :                          "" + sz + " type arguments" ;
   }
 
 

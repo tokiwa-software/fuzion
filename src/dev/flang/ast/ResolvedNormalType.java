@@ -56,8 +56,8 @@ public class ResolvedNormalType extends ResolvedType
   /**
    * For a normal type, this is the list of actual type parameters given to the type.
    */
-  final List<AbstractType> _generics;
-  public final List<AbstractType> generics() { return _generics; }
+  final List<AbstractType> _typeArguments;
+  public final List<AbstractType> typeArguments() { return _typeArguments; }
 
 
   /**
@@ -66,8 +66,8 @@ public class ResolvedNormalType extends ResolvedType
    * not available, e.g., when the type was inferred or was loaded from a module
    * file.  The list might be shorter than generics().
    */
-  private final List<AbstractType> _unresolvedGenerics;
-  public final List<AbstractType> unresolvedGenerics() { return _unresolvedGenerics; }
+  private final List<AbstractType> _unresolvedTypeArguments;
+  public final List<AbstractType> unresolvedTypeArguments() { return _unresolvedTypeArguments; }
 
 
   /**
@@ -90,44 +90,44 @@ public class ResolvedNormalType extends ResolvedType
    *
    * @param t the original type
    *
-   * @param g the actual generic arguments that replace t.generics (resolved)
+   * @param ta the actual generic arguments that replace t.generics (resolved)
    *
-   * @param ug the actual generic arguments that replace t.generics (unresolved)
+   * @param uta the actual generic arguments that replace t.generics (unresolved)
    *
    * @param o the actual outer type, or null, that replaces t.outer
    */
-  public static ResolvedType create(AbstractType t, List<AbstractType> g, List<AbstractType> ug, AbstractType o)
+  public static ResolvedType create(AbstractType t, List<AbstractType> ta, List<AbstractType> uta, AbstractType o)
   {
     if (PRECONDITIONS) require
-      ( t.feature().generics().sizeMatches(g),
+      ( t.feature().typeParameters().sizeMatches(ta),
         t == Types.t_ERROR || (t.outer() == null) == (o == null));
 
-    return create(g, ug, o, t.feature(), t.kind());
+    return create(ta, uta, o, t.feature(), t.kind());
   }
 
 
   /**
    * Instantiate a new ResolvedNormalType.
    *
-   * @param g the actual generic arguments (resolved)
+   * @param ta the actual generic arguments (resolved)
    *
    * @param o
    *
    * @param f if this type corresponds to a feature, then this is the
    * feature, else null.
    */
-  public static ResolvedType create(List<AbstractType> g, AbstractType o, AbstractFeature f)
+  public static ResolvedType create(List<AbstractType> ta, AbstractType o, AbstractFeature f)
   {
-    return create(g, Call.NO_GENERICS, o, f, f.defaultTypeKind());
+    return create(ta, Call.NO_TYPE_ARGUMENTS, o, f, f.defaultTypeKind());
   }
 
 
   /**
    * Constructor
    *
-   * @param g the actual generic arguments (resolved)
+   * @param ta the actual generic arguments (resolved)
    *
-   * @param ug the actual generic arguments (unresolved)
+   * @param uta the actual generic arguments (unresolved)
    *
    * @param o
    *
@@ -137,18 +137,18 @@ public class ResolvedNormalType extends ResolvedType
    * @param typeKind true iff this type should be a ref type, otherwise it will be a
    * value type.
    */
-  protected ResolvedNormalType(List<AbstractType> g,
-                               List<AbstractType> ug,
+  protected ResolvedNormalType(List<AbstractType> ta,
+                               List<AbstractType> uta,
                                AbstractType o,
                                AbstractFeature f,
                                TypeKind typeKind)
   {
     if (PRECONDITIONS) require
-      (Errors.any() || f == null || f.generics().sizeMatches(g == null ? UnresolvedType.NONE : g),
+      (Errors.any() || f == null || f.typeParameters().sizeMatches(ta == null ? UnresolvedType.NONE : ta),
        typeKind == TypeKind.ValueType || typeKind == TypeKind.RefType);
 
-    this._generics = g == null || g.isEmpty() ? UnresolvedType.NONE : g.freeze();
-    this._unresolvedGenerics = ((ug == null) || ug.isEmpty()) ? UnresolvedType.NONE : ug;
+    this._typeArguments = ta == null || ta.isEmpty() ? UnresolvedType.NONE : ta.freeze();
+    this._unresolvedTypeArguments = ((uta == null) || uta.isEmpty()) ? UnresolvedType.NONE : uta;
 
     if (o == null && f != null)
       {
@@ -165,9 +165,9 @@ public class ResolvedNormalType extends ResolvedType
 
     if (POSTCONDITIONS) ensure
       (_feature == null /* artificial built in type */
-       || feature().generics().sizeMatches(generics())
-       || generics().isEmpty() /* e.g. an incomplete type in a match case */,
-        generics().stream().allMatch(x -> !x.isCotypeType()),
+       || feature().typeParameters().sizeMatches(typeArguments())
+       || typeArguments().isEmpty() /* e.g. an incomplete type in a match case */,
+        typeArguments().stream().allMatch(x -> !x.isCotypeType()),
         // the outer of a cotype must be a parametric type or a cotype
         o == null || o.backingFeature().isUniverse() || _feature == null || !_feature.isCotype() || o.isParametricType() || o.isCotypeType());
   }
@@ -175,15 +175,15 @@ public class ResolvedNormalType extends ResolvedType
   /**
    * Instantiate a new ResolvedNormalType.
    */
-  public static ResolvedType create(List<AbstractType> g,
-                                    List<AbstractType> ug,
+  public static ResolvedType create(List<AbstractType> ta,
+                                    List<AbstractType> uta,
                                     AbstractType o,
                                     AbstractFeature f,
                                     TypeKind typeKind)
   {
-    return f == Types.f_ERROR || g.contains(Types.t_ERROR)
+    return f == Types.f_ERROR || ta.contains(Types.t_ERROR)
       ? Types.t_ERROR
-      : new ResolvedNormalType(g, ug, o, f, typeKind);
+      : new ResolvedNormalType(ta, uta, o, f, typeKind);
   }
 
 
@@ -196,7 +196,7 @@ public class ResolvedNormalType extends ResolvedType
       (Types.resolved == null
          || !original.isVoid(),
        typeKind == TypeKind.ValueType || typeKind == TypeKind.RefType);
-    return new ResolvedNormalType(original._generics, original._unresolvedGenerics, original._outer, original._feature, original._typeKind);
+    return new ResolvedNormalType(original._typeArguments, original._unresolvedTypeArguments, original._outer, original._feature, original._typeKind);
   }
 
 
@@ -205,15 +205,15 @@ public class ResolvedNormalType extends ResolvedType
    *
    * @param feature the feature that is defined in universe
    *
-   * @param generics the generics of the type
+   * @param typeArguments the generics of the type
    *
    */
-  public static AbstractType create(AbstractFeature feature, List<AbstractType> generics)
+  public static AbstractType create(AbstractFeature feature, List<AbstractType> typeArguments)
   {
     if (PRECONDITIONS) require
       (feature.outer().isUniverse());
 
-    return create(generics, null, feature);
+    return create(typeArguments, null, feature);
   }
 
 
@@ -242,8 +242,8 @@ public class ResolvedNormalType extends ResolvedType
       }
     else
       {
-        result = ResolvedNormalType.create(t.generics(),
-                                           t.unresolvedGenerics(),
+        result = ResolvedNormalType.create(t.typeArguments(),
+                                           t.unresolvedTypeArguments(),
                                            o,
                                            t.feature(),
                                            t.kind());
@@ -310,7 +310,7 @@ public class ResolvedNormalType extends ResolvedType
     return switch (kind())
       {
       case ValueType -> this;
-      case RefType   -> create(generics(), Call.NO_GENERICS, outer(), feature(), TypeKind.ValueType);
+      case RefType   -> create(typeArguments(), Call.NO_TYPE_ARGUMENTS, outer(), feature(), TypeKind.ValueType);
       default        -> throw new Error("unexpected kind "+kind()+" for ResolvedNormalType");
     };
   }
@@ -329,9 +329,9 @@ public class ResolvedNormalType extends ResolvedType
    * and outer type.
    */
   @Override
-  public AbstractType replaceGenericsAndOuter(List<AbstractType> g2, AbstractType o2)
+  public AbstractType replaceTypeArgumentsAndOuter(List<AbstractType> g2, AbstractType o2)
   {
-    return ResolvedNormalType.create(this, g2, unresolvedGenerics(), o2);
+    return ResolvedNormalType.create(this, g2, unresolvedTypeArguments(), o2);
   }
 
 
@@ -351,11 +351,11 @@ public class ResolvedNormalType extends ResolvedType
     var result = this;
     if (!isArtificialType())
       {
-        var g = _generics;
-        if (!_generics.isEmpty())
+        var g = _typeArguments;
+        if (!_typeArguments.isEmpty())
           {
             g = new List<>();
-            for (var og : _generics)
+            for (var og : _typeArguments)
               {
                 var gc = (og instanceof ResolvedNormalType gt)
                   ? gt.clone(originalOuterFeature)
@@ -368,7 +368,7 @@ public class ResolvedNormalType extends ResolvedType
           ? ot.clone(originalOuterFeature)
           : _outer;
 
-        result = new ResolvedNormalType(g, _unresolvedGenerics, o, _feature, _typeKind)
+        result = new ResolvedNormalType(g, _unresolvedTypeArguments, o, _feature, _typeKind)
           {
             AbstractType _resolved = null;
 
@@ -381,7 +381,7 @@ public class ResolvedNormalType extends ResolvedType
             {
               if (_resolved == null)
                 {
-                  _resolved = UnresolvedType.finishResolve(res, context, this, declarationPos(), feature(), _generics, unresolvedGenerics(), outer(), kind(), false, false);
+                  _resolved = UnresolvedType.finishResolve(res, context, this, declarationPos(), feature(), _typeArguments, unresolvedTypeArguments(), outer(), kind(), false, false);
                 }
               return _resolved;
             }
@@ -425,7 +425,7 @@ public class ResolvedNormalType extends ResolvedType
     var f = feature();
     if (s.add(f))
       {
-        for (var g : generics())
+        for (var g : typeArguments())
           {
             g.usedFeatures(s);
           }

@@ -184,7 +184,7 @@ public class GeneratingFUIR extends FUIR
          for (var f : openTypeFields(currentClazz))
            {
              var t = f.resultClazz()._type;
-             var ta = currentClazz.actualTypeParameters()[1];
+             var ta = currentClazz.typeArguments()[1];
              var apply = ta.lookup(new FeatureAndActuals(Types.resolved.f_typed_applicator_apply,
                                                          new List<>(t)),
                                    FuzionConstants.NO_SELECT,
@@ -219,7 +219,7 @@ public class GeneratingFUIR extends FUIR
                  @Override public SourcePosition     pos()                  { return call.pos(); }
                  @Override public Expr               target()               { return aa; }
                  @Override public AbstractFeature    calledFeature()        { return apply.feature(); }
-                 @Override public List<AbstractType> actualTypeParameters() { return new List<>(t); }
+                 @Override public List<AbstractType> typeArguments() { return new List<>(t); }
                  @Override public List<Expr>         actuals()              { return new List<>(fe, field); }
                  @Override public AbstractType       type()                 { return fe.type(); }
                };
@@ -237,7 +237,7 @@ public class GeneratingFUIR extends FUIR
          for (var f : openTypeFields(currentClazz))
            {
              var t = f.resultClazz()._type;
-             var ta = currentClazz.actualTypeParameters()[1];
+             var ta = currentClazz.typeArguments()[1];
              var apply = ta.lookup(new FeatureAndActuals(Types.resolved.f_typed_zipper_apply,
                                                          new List<>(t)),
                                    FuzionConstants.NO_SELECT,
@@ -287,7 +287,7 @@ public class GeneratingFUIR extends FUIR
                  @Override public SourcePosition     pos()                  { return call.pos(); }
                  @Override public Expr               target()               { return zz; }
                  @Override public AbstractFeature    calledFeature()        { return apply.feature(); }
-                 @Override public List<AbstractType> actualTypeParameters() { return new List<>(t); }
+                 @Override public List<AbstractType> typeArguments() { return new List<>(t); }
                  @Override public List<Expr>         actuals()              { return new List<>(fe, field, other_field); }
                  @Override public AbstractType       type()                 { return fe.type(); }
                };
@@ -370,7 +370,7 @@ public class GeneratingFUIR extends FUIR
     var aa = call.actuals().get(1);
     for (var t : types)
       {
-        var ta = currentClazz.actualTypeParameters()[1];
+        var ta = currentClazz.typeArguments()[1];
         var apply = ta.lookup(new FeatureAndActuals(Types.resolved.f_type_applicator_apply,
                                                     new List<>(t)),
                               FuzionConstants.NO_SELECT,
@@ -381,7 +381,7 @@ public class GeneratingFUIR extends FUIR
             @Override public SourcePosition     pos()                  { return call.pos(); }
             @Override public Expr               target()               { return aa; }
             @Override public AbstractFeature    calledFeature()        { return apply.feature(); }
-            @Override public List<AbstractType> actualTypeParameters() { return new List<>(t); }
+            @Override public List<AbstractType> typeArguments() { return new List<>(t); }
             @Override public List<Expr>         actuals()              { return new List<>(fe); }
             @Override public AbstractType       type()                 { return fe.type(); }
           };
@@ -791,8 +791,8 @@ public class GeneratingFUIR extends FUIR
         var tclazz = clazz(c.target(), outerClazz, inh);
         if (!tclazz.isVoidType())
           {
-            var at = AbstractFeature.handDownListThroughInheritsCalls(c.actualTypeParameters(), inh);
-            var typePars = outerClazz.actualGenerics(at, inh);
+            var at = AbstractFeature.handDownListThroughInheritsCalls(c.typeArguments(), inh);
+            var typePars = outerClazz.typeArguments(at, inh);
             result = tclazz.lookupCall(c, typePars).resultClazz();
           }
         else
@@ -871,7 +871,7 @@ public class GeneratingFUIR extends FUIR
   Clazz type2clazz(AbstractType thiz)
   {
     if (PRECONDITIONS) require
-      (Errors.any() || !thiz.dependsOnGenerics(),
+      (Errors.any() || !thiz.isParametric(),
        !thiz.isThisType());
 
     var result = _clazzesForTypes.get(thiz);
@@ -961,7 +961,7 @@ public class GeneratingFUIR extends FUIR
 
     var c = id2clazz(cl);
     var res = c.feature().baseName();
-    res = res + c._type.generics()
+    res = res + c._type.typeArguments()
       .toString(" ", " ", "", t -> t.toStringWrapped(false));
     return res;
   }
@@ -2030,7 +2030,7 @@ public class GeneratingFUIR extends FUIR
    */
   private boolean isConst(InlineArray ia)
   {
-    return !ia.type().dependsOnGenerics()
+    return !ia.type().isParametric()
       && ia.type().containsThisType()
       // some backends have special handling for array void.
       && !ia.elementType().isVoid()
@@ -2105,10 +2105,10 @@ public class GeneratingFUIR extends FUIR
    * @return id of cl's actual generic parameter #gix
    */
   @Override
-  public int clazzActualGeneric(int cl, int gix)
+  public int clazzTypeArgument(int cl, int gix)
   {
     var cc = id2clazz(cl);
-    return cc.actualTypeParameters()[gix]._id;
+    return cc.typeArguments()[gix]._id;
   }
 
 
@@ -2487,20 +2487,20 @@ public class GeneratingFUIR extends FUIR
     var cf      = c.calledFeature();
     var dynamic = c.isDynamic() && tclazz.isRef();
     var needsCode = !dynamic || explicitTarget != null;
-    var typePars = outerClazz.actualGenerics(c.actualTypeParameters(), inh);
+    var typePars = outerClazz.typeArguments(c.typeArguments(), inh);
     if (!tclazz.isVoidType())
       {
         innerClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars), c.select(), c.isInheritanceCall());
         if (c.calledFeature() == Types.resolved.f_Type_infix_colon)
           {
-            var T = innerClazz.actualTypeParameters()[0];
-            if (!T._type.constraintAssignableFrom(tclazz._type.generics().get(0))
+            var T = innerClazz.typeArguments()[0];
+            if (!T._type.constraintAssignableFrom(tclazz._type.typeArguments().get(0))
             // NYI: CLEANUP: need to detect pre condition feature properly!
              && outerClazz.feature().featureName().isInternal())
               {
-                FuirErrors.unmetTypeContraint(c.pos(), tclazz._type.generics().get(0), T);
+                FuirErrors.unmetTypeContraint(c.pos(), tclazz._type.typeArguments().get(0), T);
               }
-            cf = T._type.constraintAssignableFrom(tclazz._type.generics().get(0))
+            cf = T._type.constraintAssignableFrom(tclazz._type.typeArguments().get(0))
               ? Types.resolved.f_Type_infix_colon_true
               : Types.resolved.f_Type_infix_colon_false;
             innerClazz = tclazz.lookup(new FeatureAndActuals(cf, typePars), FuzionConstants.NO_SELECT, c.isInheritanceCall());
@@ -3047,10 +3047,10 @@ public class GeneratingFUIR extends FUIR
             var outer = id2clazz(clazzAt(s));
             var innerClazz = calledInner(sc, outer, null, _inh.get(s - SITE_BASE));
             var tclazz = innerClazz._outer;
-            var T = innerClazz.actualTypeParameters()[0];
+            var T = innerClazz.typeArguments()[0];
             var pos = cf == Types.resolved.f_Type_infix_colon_true ||
               cf == Types.resolved.f_Type_infix_colon  &&
-              T._type.constraintAssignableFrom(tclazz._type.generics().get(0));
+              T._type.constraintAssignableFrom(tclazz._type.typeArguments().get(0));
             var tf = pos ? Types.resolved.f_TRUE : Types.resolved.f_FALSE;
             if (!c.types().stream().anyMatch(x->x.compareTo(tf.selfType())==0))
               {

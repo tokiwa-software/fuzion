@@ -294,7 +294,7 @@ public class Case extends AbstractCase
     List<AbstractType> matches = new List<>();
     int i = 0;
     t = t.resolve(res, context);
-    var inferGenerics = !t.isParametricType() && (t.isThisType() || t.generics().isEmpty()) && !t.feature().typeArguments().isEmpty();
+    var inferGenerics = !t.isParametricType() && (t.isThisType() || t.typeArguments().isEmpty()) && !t.feature().typeArguments().isEmpty();
     var hasErrors = t.containsError();
     check
       (!hasErrors || Errors.any());

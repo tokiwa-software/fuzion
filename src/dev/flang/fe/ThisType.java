@@ -48,9 +48,9 @@ class ThisType extends LibraryType {
   }
 
   @Override
-  public List<AbstractType> generics()
+  public List<AbstractType> typeArguments()
   {
-    throw new UnsupportedOperationException("Unimplemented method 'generics'");
+    throw new UnsupportedOperationException("Unimplemented method 'typeArguments'");
   }
 
   @Override

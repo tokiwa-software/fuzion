@@ -155,7 +155,7 @@ public class AstErrors extends ANY
       }
     return sl.toString();
   }
-  static String s(FormalGenerics fg)
+  static String s(TypeParameters fg)
   {
     return st(fg.toString());
   }
@@ -641,11 +641,11 @@ public class AstErrors extends ANY
   }
 
   /**
-   * Report that the given actualGenerics does not match the number of formal generics.
+   * Report that the given typeArguments does not match the number of formal generics.
    *
    * @param fg the formal generics
    *
-   * @param actualGenerics the actual generics
+   * @param typeArguments the actual generics
    *
    * @param pos the source code position at which the error should be reported
    *
@@ -655,11 +655,11 @@ public class AstErrors extends ANY
    * @param detail2 optional extra lines of detail message giving further
    * information, like "Calling feature: xyz.f\n" or "Type: Stack bool int\n".
    */
-  static void wrongNumberOfTypeArguments(FormalGenerics fg,
-                                            List<AbstractType> actualGenerics,
-                                            SourcePosition pos,
-                                            String detail1,
-                                            String detail2)
+  static void wrongNumberOfTypeArguments(TypeParameters fg,
+                                         List<AbstractType> typeArguments,
+                                         SourcePosition pos,
+                                         String detail1,
+                                         String detail2)
   {
     // suppress errors in cotypes unless we did not find the original error (in
     // the original feature):
@@ -670,7 +670,7 @@ public class AstErrors extends ANY
               "Wrong number of actual type parameters in " + detail1 + ":\n" +
               detail2 +
               "expected " + fg.sizeText() + (fg._feature.typeArguments().isEmpty() ? "" : " for " + s(fg)) + "\n" +
-              "found " + (actualGenerics.size() == 0 ? "none" : actualGenerics.size() + ": " + s(actualGenerics)  ) + ".\n");
+              "found " + (typeArguments.size() == 0 ? "none" : typeArguments.size() + ": " + s(typeArguments)  ) + ".\n");
       }
   }
 
@@ -824,8 +824,8 @@ public class AstErrors extends ANY
           "Wrong number of type parameters in redefined feature",
           "In " + s(redefinedFeature) + " that redefines " + s(originalFeature) + " " +
           "type parameter count is " + redefinedFeature.typeArguments().size() + " while it should be " + originalFeature.typeArguments().size() + ".\n" +
-          "Original type parameters: "  + s(originalFeature .generics()) + "\n" +
-          "redefined type parameters: " + s(redefinedFeature.generics()) + "\n" +
+          "Original type parameters: "  + s(originalFeature .typeParameters()) + "\n" +
+          "redefined type parameters: " + s(redefinedFeature.typeParameters()) + "\n" +
           "Original feature declared at " + originalFeature.pos().show());
   }
 
@@ -1909,14 +1909,14 @@ public class AstErrors extends ANY
       }
   }
 
-  static void failedToInferActualGeneric(SourcePosition pos, AbstractFeature cf, List<AbstractFeature> missing)
+  static void failedToInferTypeArgument(SourcePosition pos, AbstractFeature cf, List<AbstractFeature> missing)
   {
     if (!any() || (cf != Types.f_ERROR && !missing.isEmpty()))
       {
         error(pos,
               "Failed to infer actual type parameters",  // NYI: give more detail here on type parameters and value arguments
               "In call to " + s(cf) + ", no actual type parameters are given and inference of the type parameters failed.\n" +
-              "Expected type parameters: " + s(cf.generics()) + "\n"+
+              "Expected type parameters: " + s(cf.typeParameters()) + "\n"+
               "Type inference failed for " + StringHelpers.singularOrPlural(missing.size(), "type parameter") + " " + slg(missing) + "\n");
       }
   }

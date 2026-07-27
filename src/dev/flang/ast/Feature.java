@@ -1133,7 +1133,7 @@ public class Feature extends AbstractFeature
               {
                 if (p instanceof Call cp)
                   {
-                    cp._generics = new List<AbstractType>(Types.t_ERROR);
+                    cp._typeArguments = new List<AbstractType>(Types.t_ERROR);
                   }
               }
           }
@@ -2427,12 +2427,12 @@ A pre-condition of a feature that does not redefine an inherited feature must st
     if (PRECONDITIONS) require
       (ta.isFreeType());
 
-    // A call to generics() has the side effects of setting _generics,
+    // A call to generics() has the side effects of setting _typeArguments,
     // _arguments
-    var ignore = generics();
+    var ignore = typeParameters();
 
     // Now we patch the new type parameter ta into _arguments,
-    // and _generics:
+    // and _typeArguments:
     var a = _arguments;
     _arguments = new List<>(a);
     var tas = typeArguments();

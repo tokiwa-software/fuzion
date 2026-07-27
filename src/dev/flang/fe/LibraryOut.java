@@ -614,12 +614,12 @@ class LibraryOut extends ANY
           }
         else
           {
-            _data.writeInt(t.isNormalType() ? t.generics().size() : 0);
+            _data.writeInt(t.isNormalType() ? t.typeArguments().size() : 0);
             _data.writeOffset(t.feature());
             _data.writeByte(t.kind().num);
             if (t.isNormalType())
               {
-                for (var gt : t.generics())
+                for (var gt : t.typeArguments())
                   {
                     type(gt);
                   }
@@ -833,20 +833,20 @@ class LibraryOut extends ANY
           {
             _data.writeInt(c.actuals().size());
           }
-        if (cf.generics().isOpen())
+        if (cf.typeParameters().isOpen())
           {
-            n = c.actualTypeParameters().size();
+            n = c.typeArguments().size();
             _data.writeInt(n);
           }
         else
           {
             n = cf.typeArguments().size();
             if (CHECKS) check
-              (c.actualTypeParameters().size() == n);
+              (c.typeArguments().size() == n);
           }
         for (int i = 0; i < n; i++)
           {
-            type(c.actualTypeParameters().get(i));
+            type(c.typeArguments().get(i));
           }
         if (CHECKS) check
           (cf.resultType().isOpenGeneric() == (c.select() >= 0));

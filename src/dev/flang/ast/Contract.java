@@ -381,7 +381,7 @@ public class Contract extends ANY
       }
     return new Call(p,
                     t,
-                    outer.genericsAsActuals(),
+                    outer.typeParametersAsArguments(),
                     args,
                     f.preFeature())
       .resolveTypes(res, context);
@@ -422,7 +422,7 @@ public class Contract extends ANY
       }
     return new Call(p,
                     t,
-                    outer.genericsAsActuals(),
+                    outer.typeParametersAsArguments(),
                     args,
                     f.preBoolFeature())
       .resolveTypes(res, context);
@@ -455,7 +455,7 @@ public class Contract extends ANY
     var t = This.thiz(res, p, preAndCallOuter.context(), preAndCallOuter.outer());
     return new Call(p,
                     t,
-                    preAndCallOuter.genericsAsActuals(),
+                    preAndCallOuter.typeParametersAsArguments(),
                     args,
                     f)
       {
@@ -536,7 +536,7 @@ public class Contract extends ANY
       }
     var callPostCondition = new Call(p,
                                      t,
-                                     origouter.isConstructor() ? new List<>() : in.genericsAsActuals(),
+                                     origouter.isConstructor() ? new List<>() : in.typeParametersAsArguments(),
                                      args,
                                      origouter.postFeature());
     callPostCondition = callPostCondition.resolveTypes(res, in.context());

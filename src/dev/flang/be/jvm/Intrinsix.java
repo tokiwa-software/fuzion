@@ -254,8 +254,8 @@ public class Intrinsix extends ANY implements ClassFileConstants
     put("fuzion.jvm.primitive_to_java_object",
         (jvm, si, cc, tvalue, args) ->
         {
-          var java_type = jvm._fuir.javaDescriptor(jvm._fuir.clazzActualGeneric(cc, 0));
-          var java_Type = jvm._fuir.javaReferenceName(jvm._fuir.clazzActualGeneric(cc, 0));
+          var java_type = jvm._fuir.javaDescriptor(jvm._fuir.clazzTypeArgument(cc, 0));
+          var java_Type = jvm._fuir.javaReferenceName(jvm._fuir.clazzTypeArgument(cc, 0));
 
           var res = args
             .get(0)
@@ -290,7 +290,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
     put("fuzion.jvm.array_to_java_object0",
         (jvm, si, cc, tvalue, args) ->
         {
-          var et = jvm._types.javaType(jvm._fuir.clazzActualGeneric(cc, 0)); // possibly resultType
+          var et = jvm._types.javaType(jvm._fuir.clazzTypeArgument(cc, 0)); // possibly resultType
           var data = jvm._fuir.clazzArg(jvm._fuir.clazzArgClazz(cc,0), 0);
           var res = args.get(0)
             .andThen(jvm.getfield(data))
@@ -301,7 +301,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
     put("fuzion.jvm.array_length",
         (jvm, si, cc, tvalue, args) ->
         {
-          var et = jvm._types.javaType(jvm._fuir.clazzActualGeneric(cc, 0)); // possibly resultType
+          var et = jvm._types.javaType(jvm._fuir.clazzTypeArgument(cc, 0)); // possibly resultType
           var res = args.get(0)
             .andThen(Expr.checkcast(et.isPrimitive() ? et.array() : ClassFileConstants.JAVA_LANG_OBJECT.array()))
             .andThen(Expr.ARRAYLENGTH);
@@ -311,7 +311,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
     put("fuzion.jvm.array_get",
         (jvm, si, cc, tvalue, args) ->
         {
-          var et = jvm._types.javaType(jvm._fuir.clazzActualGeneric(cc, 0)); // possibly resultType
+          var et = jvm._types.javaType(jvm._fuir.clazzTypeArgument(cc, 0)); // possibly resultType
           var res = args.get(0)
             .andThen(Expr.checkcast(et.isPrimitive() ? et.array() : ClassFileConstants.JAVA_LANG_OBJECT.array()))
             .andThen(args.get(1))
@@ -319,10 +319,10 @@ public class Intrinsix extends ANY implements ClassFileConstants
           if (!et.isPrimitive())
             {
               res = res
-                .andThen(jvm.new0(jvm._fuir.clazzActualGeneric(cc, 0)))                               // result, rc0
+                .andThen(jvm.new0(jvm._fuir.clazzTypeArgument(cc, 0)))                               // result, rc0
                 .andThen(Expr.DUP_X1)                                                                 // rc0, result, rc0
                 .andThen(Expr.SWAP)                                                                   // rc0, rc0, result
-                .andThen(jvm.putfield(jvm._fuir.lookupJavaRef(jvm._fuir.clazzActualGeneric(cc, 0)))); // rc0
+                .andThen(jvm.putfield(jvm._fuir.lookupJavaRef(jvm._fuir.clazzTypeArgument(cc, 0)))); // rc0
             }
           return new Pair<>(res, Expr.UNIT);
         });
@@ -669,7 +669,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
         (jvm, si, cc, tvalue, args) ->
         {
           var in = jvm._fuir.clazzOriginalName(cc);
-          var et = jvm._fuir.clazzActualGeneric(cc, 0); // element type
+          var et = jvm._fuir.clazzTypeArgument(cc, 0); // element type
           var jt = jvm._types.resultType(et);
           var val = Expr.UNIT;
           var code = Expr.UNIT;
@@ -742,8 +742,8 @@ public class Intrinsix extends ANY implements ClassFileConstants
         {
           var ecl = jvm._fuir.effectTypeFromIntrinsic(cc);
           var eid = jvm.effectId(ecl);
-          var call     = jvm._fuir.lookupCall(jvm._fuir.clazzActualGeneric(cc, 0));
-          var call_def = jvm._fuir.lookupCall(jvm._fuir.clazzActualGeneric(cc, 1));
+          var call     = jvm._fuir.lookupCall(jvm._fuir.clazzTypeArgument(cc, 0));
+          var call_def = jvm._fuir.lookupCall(jvm._fuir.clazzTypeArgument(cc, 1));
           var finallie = jvm._fuir.lookupStaticFinally(ecl);
           var ejt = jvm._types.resultType(ecl);
           var unit_effect = ejt == ClassFileConstants.PrimitiveType.type_void;
@@ -911,7 +911,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
     put("fuzion.sys.thread.spawn0",
         (jvm, si, cc, tvalue, args) ->
         {
-          var oc = jvm._fuir.clazzActualGeneric(cc, 0);
+          var oc = jvm._fuir.clazzTypeArgument(cc, 0);
           var call = jvm._fuir.lookupCall(oc);
           var call_t = jvm._types.javaType(call);
           if (call_t instanceof ClassType call_ct)
@@ -1063,7 +1063,7 @@ public class Intrinsix extends ANY implements ClassFileConstants
       {
         return new Pair<>
           (
-            Expr.classconst(jvm._types.javaType(jvm._fuir.clazzActualGeneric(cc, 0)))
+            Expr.classconst(jvm._types.javaType(jvm._fuir.clazzTypeArgument(cc, 0)))
                 .andThen(Expr
                   .invokeStatic(
                     Names.RUNTIME_CLASS,

@@ -59,7 +59,7 @@ public class FreeType extends UnresolvedType
   {
     super(pos,
           name,
-          Call.NO_GENERICS, null, Optional.empty());
+          Call.NO_TYPE_ARGUMENTS, null, Optional.empty());
 
     this._constraint = constraint;
   }

@@ -169,9 +169,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * The formal generic arguments of this feature, cached result of generics()
+   * The type parameters of this feature, cached result of typeParameters()
    */
-  private FormalGenerics _generics;
+  private TypeParameters _typeParameters;
 
 
   /**
@@ -558,15 +558,15 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * Obtain the effective name of this feature when actualGenerics are the
+   * Obtain the effective name of this feature when typeArguments are the
    * actual generics of its outer() feature.
    */
-  private FeatureName effectiveName(Resolution res, List<AbstractType> actualGenerics)
+  private FeatureName effectiveName(Resolution res, List<AbstractType> typeArguments)
   {
     var result = featureName();
     if (hasOpenGenericsArgList(res))
       {
-        var argCount = arguments().size() + actualGenerics.size() - outer().typeArguments().size();
+        var argCount = arguments().size() + typeArguments.size() - outer().typeArguments().size();
         if (CHECKS) check
           (Errors.any() || argCount >= 0);
         if (argCount < 0)
@@ -632,7 +632,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
     if (isBaseChoice())
       {
-        result = genericsAsActuals();
+        result = typeParametersAsArguments();
       }
     else
       {
@@ -896,7 +896,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       : target instanceof AbstractCall ac && !ac.isCallToOuterRef() && ! ac.calledFeature().isField()
       ? ac.cotypeInheritanceCall(res, that)
       : o.cotypeInheritanceCall(p, new List<>(o.selfType(),
-                                              o.genericsAsActuals().map(that::rebaseTypeForCotype)),
+                                              o.typeParametersAsArguments().map(that::rebaseTypeForCotype)),
                                 res, that, null);
 
     var tf = res.cotype(this);
@@ -949,7 +949,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
         // errors (building base.fum). Apparently, there is some code that
         // re-uses these without proper freezing/cloning.  A solution would be
         // to change `List.map` to always clone the original List.
-        i.actualTypeParameters().freeze();
+        i.typeArguments().freeze();
       }
     var tl = typeArguments().map2(ta -> (AbstractType) new ParsedType(pos(), ta.baseName()));
     return t.applyTypePars(this, tl)
@@ -1056,7 +1056,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       (state().atLeast(State.FINDING_DECLARATIONS));
 
     var o = isUniverse() || outer().isUniverse() ? null : outer().selfType();
-    var g = genericsAsActuals();
+    var g = typeParametersAsArguments();
     var result = ResolvedNormalType.create(g, o, this);
 
     if (POSTCONDITIONS) ensure
@@ -1064,7 +1064,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
        Errors.any() || result.isRef() == isRef(),
        // does not hold if feature is declared repeatedly
        Errors.any() || result.feature() == this,
-       result.feature().generics().sizeMatches(result.generics()));
+       result.feature().typeParameters().sizeMatches(result.typeArguments()));
 
     return result;
   }
@@ -1253,7 +1253,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     if (f.outer() == p.calledFeature())
       {
         // NYI: BUG: This might be incorrect in case p.actualTypeParameters() is inferred but not set yet.
-        fn = f.effectiveName(res, p.actualTypeParameters());
+        fn = f.effectiveName(res, p.typeArguments());
       }
 
     return fn;
@@ -1491,7 +1491,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
              ? t
              : t.applyTypePars(c.target().type()))
           // then apply type pars using the call
-          .applyTypeParsMaybeOpen(c.calledFeature(), c.actualTypeParameters(), select)
+          .applyTypeParsMaybeOpen(c.calledFeature(), c.typeArguments(), select)
         );
   }
 
@@ -1777,15 +1777,15 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * The formal generic arguments of this feature
+   * The type parameters of this feature
    */
-  public FormalGenerics generics()
+  public TypeParameters typeParameters()
   {
-    if (_generics == null)
+    if (_typeParameters == null)
       {
-        _generics = new FormalGenerics(this);
+        _typeParameters = new TypeParameters(this);
       }
-    return _generics;
+    return _typeParameters;
   }
 
 
@@ -1795,14 +1795,14 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    *
    * @return actual generics that match these formal generics.
    */
-  private List<AbstractType> _genericsAsActuals = null;
-  public List<AbstractType> genericsAsActuals()
+  private List<AbstractType> _typeParametersAsArguments = null;
+  public List<AbstractType> typeParametersAsArguments()
   {
-    if (_genericsAsActuals == null)
+    if (_typeParametersAsArguments == null)
       {
-        _genericsAsActuals = typeArguments().map2(x -> x.asParametricType()).freeze();
+        _typeParametersAsArguments = typeArguments().map2(x -> x.asParametricType()).freeze();
       }
-    return _genericsAsActuals;
+    return _typeParametersAsArguments;
   }
 
 
@@ -2065,7 +2065,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   {
     if (PRECONDITIONS) require
       (Errors.any() || !isOpenTypeParameter(),
-       Errors.any() || outer().generics().sizeMatches(actuals),
+       Errors.any() || outer().typeParameters().sizeMatches(actuals),
        isTypeParameter());
 
     int i = typeParameterIndex();
@@ -2092,12 +2092,12 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   {
     if (PRECONDITIONS) require
       (isOpenTypeParameter(),
-       outer().generics().sizeMatches(actuals));
+       outer().typeParameters().sizeMatches(actuals));
 
     if (CHECKS) check
       (outer().typeArguments().getLast() == this);
 
-    return outer().generics().sizeMatches(actuals)
+    return outer().typeParameters().sizeMatches(actuals)
       ? new List<>(actuals.subList(outer().typeArguments().size()-1, actuals.size()).iterator())
       : new List<AbstractType>(Types.t_ERROR);
   }

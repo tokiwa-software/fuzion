@@ -236,9 +236,9 @@ public class InlineArray extends ExprWithPos
 
     // NYI: UNDER DEVELOPMENT: see issue: #1817
     if (Types.resolved.f_array.inheritsFrom(t.feature()) &&
-        t.generics().size() == 1)
+        t.typeArguments().size() == 1)
       {
-        return t.generics().get(0);
+        return t.typeArguments().get(0);
       }
     else
       {
@@ -362,7 +362,7 @@ public class InlineArray extends ExprWithPos
         var r = InlineArray.this.type();
 
         if (POSTCONDITIONS) ensure
-          (!r.dependsOnGenerics(),
+          (!r.isParametric(),
            !r.containsThisType());
 
         return r;
