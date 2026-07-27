@@ -59,7 +59,7 @@ Formal type parameter declared in --CURDIR--/generics_negative.fz:107:18:
 -------^^^^^^^^
 Wrong number of actual type parameters in type:
 Type: Function
-expected at least one generic argument for 'R, A...'
+expected at least one type argument for 'R, A...'
 found none.
 
 
@@ -68,7 +68,7 @@ found none.
 ------^
 Wrong number of actual type parameters in type:
 Type: g
-expected 3 generic arguments for 'A, B, C'
+expected 3 type arguments for 'A, B, C'
 found none.
 
 
@@ -77,7 +77,7 @@ found none.
 ------^
 Wrong number of actual type parameters in type:
 Type: g i32
-expected 3 generic arguments for 'A, B, C'
+expected 3 type arguments for 'A, B, C'
 found 1: 'i32'.
 
 
@@ -86,7 +86,7 @@ found 1: 'i32'.
 ------^
 Wrong number of actual type parameters in type:
 Type: g i32 i32
-expected 3 generic arguments for 'A, B, C'
+expected 3 type arguments for 'A, B, C'
 found 2: 'i32, i32'.
 
 
@@ -95,7 +95,7 @@ found 2: 'i32, i32'.
 ------^
 Wrong number of actual type parameters in type:
 Type: g i32 i32 i32 i32
-expected 3 generic arguments for 'A, B, C'
+expected 3 type arguments for 'A, B, C'
 found 4: 'i32, i32, i32, i32'.
 
 

@@ -4,7 +4,7 @@
 -------------^^^^^
 Wrong number of actual type parameters in type:
 Type: float T
-expected no generic arguments
+expected no type arguments
 found 1: 'T'.
 
 one error.
