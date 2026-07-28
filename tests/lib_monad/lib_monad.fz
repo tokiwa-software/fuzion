@@ -56,17 +56,8 @@ wrap(T type : integer, val T) : monad T is
     "wrapped: " + val + " " + T.name
 
 
-say (wrap 42)
-say ((wrap i32).return 42)
-say ((wrap 42) >>= (x -> wrap x))
-say ((wrap 42).infix >>=~ i64 (wrap i64) (x -> wrap x.as_i64))
-
-# NYI: BUG:
-#
-# Incompatible type parameter
-# say ((wrap 42).join (wrap (wrap i32)) (wrap (wrap 42)))
-#
-# formal type parameter 'MMA' with constraint 'monad (wrap wrap.T) (wrap (wrap i32))'
-# actual type parameter 'wrap (wrap i32)'
-#
-# say ((wrap 42).join (wrap (wrap 42)))
+say <| wrap 42
+say <| wrap i32 .return 42
+say <| (wrap 42) >>= (x -> wrap x)
+say <| wrap 42 .infix >>=~ i64 (wrap i64) (x -> wrap x.as_i64)
+say <| wrap 42 .join (wrap 42)
