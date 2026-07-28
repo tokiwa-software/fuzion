@@ -423,9 +423,15 @@ void * fzE_thread_create(void *(*code)(void *),
 
 /**
  * Join with a running thread.
+ *
+ * returns:
+ * 0 = success
+ * 1 = deadlock
+ * 2 = invalid operation of some kind
+ * 3 = not a valid thread id
+ *
  */
-// NYI: UNDER DEVELOPMENT:  add return value
-void fzE_thread_join(void * thrd);
+int fzE_thread_join(void * thrd);
 
 /*
  * Set the scheduling policy and priority of a running thread.

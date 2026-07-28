@@ -494,7 +494,7 @@ public class Intrinsics extends ANY
                 }
             }
           while (!result);
-          return Value.UNIT;
+          return new i32Value(0);
         });
     put("fuzion.sys.thread.set_policy", (executor, innerClazz) -> args ->
         {

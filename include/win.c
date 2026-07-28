@@ -723,9 +723,11 @@ void * fzE_thread_create(void *(*code)(void *),
 /**
 * Join with a running thread.
 */
-void fzE_thread_join(void * thrd) {
+int fzE_thread_join(void * thrd) {
+  // NYI: BUG: error handling!
   WaitForSingleObject((HANDLE)thrd, INFINITE);
   CloseHandle((HANDLE)thrd);
+  return 0;
 }
 
 
