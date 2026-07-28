@@ -139,7 +139,7 @@ public enum Commands
           var text = System.lineSeparator()
             + m.subject()
               .type()
-              .choiceArguments()
+              .choiceTypes()
               .stream()
               .filter(cg -> !m.cases().stream().anyMatch(c -> c.field() == null || c.field().resultType().isAssignableFromDirectly(cg).yes()))
               .map(t -> indent + CaseConverter.toSnakeCase(TypeTool.baseName(t)) + " " + TypeTool.label(t) + " =>")

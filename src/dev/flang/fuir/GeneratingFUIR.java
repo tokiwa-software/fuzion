@@ -1163,7 +1163,7 @@ public class GeneratingFUIR extends FUIR
     var c = id2clazz(cl);
     return switch (c.feature().kind())
       {
-      case Choice -> c.choiceArguments().size();
+      case Choice -> c.choiceTypes().size();
       default     -> -1;
       };
   }
@@ -1188,7 +1188,7 @@ public class GeneratingFUIR extends FUIR
        i >= 0 && i < clazzChoiceCount(cl));
 
     var cc = id2clazz(cl);
-    var cg = cc.choiceArguments().get(i);
+    var cg = cc.choiceTypes().get(i);
     var res = cg.isRef()     ||
               cg.isInstantiatedChoice() ? cg
                                         : id2clazz(clazz(SpecialClazzes.c_void));
@@ -2989,7 +2989,7 @@ public class GeneratingFUIR extends FUIR
     int nt = f != null ? 1 : ts.size();
     var resultL = new List<Integer>();
     int tag = 0;
-    for (var cg : m.subject().type().choiceArguments())
+    for (var cg : m.subject().type().choiceTypes())
       {
         for (int tix = 0; tix < nt; tix++)
           {

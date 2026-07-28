@@ -623,7 +623,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * @return null if this is not a choice feature, the actual generic
    * parameters, i.e, the actual choice types, otherwise.
    */
-  public List<AbstractType> choiceArguments()
+  public List<AbstractType> choiceTypes()
   {
     if (PRECONDITIONS) require
       (state().atLeast(State.RESOLVED_DECLARATIONS));
@@ -645,7 +645,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
             var pf = p.calledFeature();
             if (pf.isChoice())
               { // we need to do a hand down to get the actual choice generics
-                result = pf.handDown(pf.choiceArguments(), this);
+                result = pf.handDown(pf.choiceTypes(), this);
               }
           }
       }

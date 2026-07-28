@@ -882,7 +882,7 @@ public class AstErrors extends ANY
 
   }
 
-  static void repeatedMatch(SourcePosition pos, SourcePosition[] earlierPos, AbstractType typeOrNull, List<AbstractType> choiceArguments)
+  static void repeatedMatch(SourcePosition pos, SourcePosition[] earlierPos, AbstractType typeOrNull, List<AbstractType> choiceTypes)
   {
     StringBuilder earlierPosString = new StringBuilder();
     TreeSet<SourcePosition> processed = new TreeSet<>();
@@ -902,35 +902,35 @@ public class AstErrors extends ANY
           skw("case") + " clause matches type that had been matched already.",
           caseMatches(typeOrNull) +
           "Originally matched at " + earlierPosString + ".\n" +
-          subjectTypes(choiceArguments));
+          subjectTypes(choiceTypes));
   }
 
-  static void repeatedMatch(SourcePosition pos, SourcePosition earlierPos, AbstractType t, List<AbstractType> choiceArguments)
+  static void repeatedMatch(SourcePosition pos, SourcePosition earlierPos, AbstractType t, List<AbstractType> choiceTypes)
   {
-    repeatedMatch(pos, new SourcePosition[] { earlierPos }, t, choiceArguments);
+    repeatedMatch(pos, new SourcePosition[] { earlierPos }, t, choiceTypes);
   }
 
 
-  static void matchCaseDoesNotMatchAny(SourcePosition pos, AbstractType typeOrNull, List<AbstractType> choiceArguments)
+  static void matchCaseDoesNotMatchAny(SourcePosition pos, AbstractType typeOrNull, List<AbstractType> choiceTypes)
   {
     error(pos,
           skw("case") + " clause in " + skw("match") + " expression does not match any type of the subject.",
           caseMatches(typeOrNull) +
-          subjectTypes(choiceArguments));
+          subjectTypes(choiceTypes));
   }
 
-  static void matchCaseMatchesSeveral(SourcePosition pos, AbstractType t, List<AbstractType> choiceArguments, List<AbstractType> matches)
+  static void matchCaseMatchesSeveral(SourcePosition pos, AbstractType t, List<AbstractType> choiceTypes, List<AbstractType> matches)
   {
     error(pos,
           skw("case") + " clause in " + skw("match") + " expression matches several types of the subject",
           caseMatches(t) +
-          subjectTypes(choiceArguments) +
+          subjectTypes(choiceTypes) +
           "matches are " + typeListConjunction(matches));
   }
 
-  static void missingMatches(SourcePosition pos, List<AbstractType> choiceArguments, List<AbstractType> missingMatches)
+  static void missingMatches(SourcePosition pos, List<AbstractType> choiceTypes, List<AbstractType> missingMatches)
   {
-    if (choiceArguments.size() == missingMatches.size())
+    if (choiceTypes.size() == missingMatches.size())
       {
         error(pos,
               skw("match") + " expression requires at least one case",
@@ -944,7 +944,7 @@ public class AstErrors extends ANY
               skw("match") + " expression does not cover all of the subject's types",
               "Missing " + StringHelpers.plural(n,"case") +
               " for "    + StringHelpers.plural(n,"type") + ": " + typeListConjunction(missingMatches) + "\n" +
-              subjectTypes(choiceArguments));
+              subjectTypes(choiceTypes));
       }
   }
 
@@ -974,11 +974,11 @@ public class AstErrors extends ANY
     return "Case matches " + typeOrAnyType(typeOrNull) + ".\n";
   }
 
-  private static String subjectTypes(List<AbstractType> choiceArguments)
+  private static String subjectTypes(List<AbstractType> choiceTypes)
   {
-    return choiceArguments.isEmpty()
+    return choiceTypes.isEmpty()
       ? "Subject type is an empty choice type that cannot match any case.\n"
-      : "Subject type is one of " + typeListAlternatives(choiceArguments) + ".\n";
+      : "Subject type is one of " + typeListAlternatives(choiceTypes) + ".\n";
   }
 
   public static void internallyReferencedFeatureNotUnique(SourcePosition pos, String qname, Collection<AbstractFeature> set)
@@ -2112,10 +2112,10 @@ public class AstErrors extends ANY
   {
     if (!any() || (frmlT        != Types.t_ERROR &&
                    value.type() != Types.t_ERROR &&
-                   !frmlT.choiceArguments(Context.NONE).stream().anyMatch(x -> x==Types.t_ERROR)))
+                   !frmlT.choiceTypes(Context.NONE).stream().anyMatch(x -> x==Types.t_ERROR)))
       {
         error(value.pos(),
-              "Ambiguous assignment to " + s(frmlT) + " from " + s(value.type()), s(value.type()) + " is assignable to " + frmlT.choiceArguments(Context.NONE).stream()
+              "Ambiguous assignment to " + s(frmlT) + " from " + s(value.type()), s(value.type()) + " is assignable to " + frmlT.choiceTypes(Context.NONE).stream()
               .filter(cg -> cg.isAssignableFromWithoutBoxing(value.type(), Context.NONE).yes())
               .map(cg -> s(cg))
               .collect(Collectors.joining(", "))

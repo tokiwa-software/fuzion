@@ -2320,7 +2320,7 @@ public class Call extends AbstractCall
              */
 
             var directlyAssignable = formalType
-              .choiceArguments(context)
+              .choiceTypes(context)
               .stream()
               .filter(x -> !x.dependsOnSubstitution())
               .anyMatch(x -> x.isAssignableFromWithoutBoxing(actualType, context).yes());
@@ -2330,7 +2330,7 @@ public class Call extends AbstractCall
                 // if actualType is `Branch String`
                 // we only consider `Branch T` and not `T`.
                 var matchingFeature = formalType
-                  .choiceArguments(context)
+                  .choiceTypes(context)
                   .stream()
                   .filter(x -> x.dependsOnSubstitution()
                            && !x.isParametricType()
@@ -2343,7 +2343,7 @@ public class Call extends AbstractCall
                   }
                 if (matchingFeature.size() == 0)
                   {
-                    for (var ct : formalType.choiceArguments(context))
+                    for (var ct : formalType.choiceTypes(context))
                       {
                         inferTypeArgument(res, context, ct, actualType, pos, conflict, foundAt);
                       }

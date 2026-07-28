@@ -1176,7 +1176,7 @@ public class Feature extends AbstractFeature
    */
   boolean isChoiceAfterTypesResolved()
   {
-    return choiceArguments() != null;
+    return choiceTypes() != null;
   }
 
   @Override
@@ -1891,7 +1891,7 @@ A ((Choice)) declaration must not contain a result type.
         AstErrors.choiceMustNotContainFields(_pos, choiceFields);
       }
 
-    for (var t : choiceArguments())
+    for (var t : choiceTypes())
       {
         if (CHECKS) check
           (Errors.any() || t != null);

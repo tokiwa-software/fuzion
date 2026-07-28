@@ -431,7 +431,7 @@ public class ResolvedNormalType extends ResolvedType
           }
         if (isChoice())
           {
-            for (var g : choiceArguments(Context.NONE))
+            for (var g : choiceTypes(Context.NONE))
               {
                 g.usedFeatures(s);
               }

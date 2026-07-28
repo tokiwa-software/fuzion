@@ -367,13 +367,13 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @param context the source code context where this Type is used
    */
-  List<AbstractType> choiceArguments(Context context)
+  List<AbstractType> choiceTypes(Context context)
   {
     if (PRECONDITIONS) require
       (this instanceof ResolvedType,
        isChoice());
 
-    var g = feature().choiceArguments();
+    var g = feature().choiceTypes();
     return
       isThisType()
       ? g
@@ -385,9 +385,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * For a resolved type, check if it is a choice type and if so, return the
    * list of choices.
    */
-  public List<AbstractType> choiceArguments()
+  public List<AbstractType> choiceTypes()
   {
-    return choiceArguments(Context.NONE);
+    return choiceTypes(Context.NONE);
   }
 
 
@@ -661,7 +661,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       (isChoice());
 
     boolean result = false;
-    for (var t : choiceArguments(context))
+    for (var t : choiceTypes(context))
       {
         if (CHECKS) check
           (Errors.any() || t != null);
@@ -1395,7 +1395,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   {
     if (isChoice())
       {
-        var g = choiceArguments(context);
+        var g = choiceTypes(context);
         if (CHECKS) check
           (Errors.any() || !isRef());
 
@@ -2736,7 +2736,7 @@ there is no common super type of the two types (Types.t_ERROR)
   Stream<AbstractType> choices(Context context)
   {
     return isChoice()
-      ? choiceArguments(context)
+      ? choiceTypes(context)
         .stream()
         .flatMap(cg -> cg.choices(context))
       : Stream.of(this);

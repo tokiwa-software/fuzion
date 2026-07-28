@@ -212,7 +212,7 @@ public class Case extends AbstractCase
    * Resolve types in this case.  Produce an error in case it does not match any
    * of the subject's types or if it matches several of the subject's types.
    *
-   * @param cArgs the choiceArguments of the match's subject's type
+   * @param cArgs the choiceTypes of the match's subject's type
    *
    * @param context the source code context where this Case is used
    *
@@ -280,7 +280,7 @@ public class Case extends AbstractCase
    *
    * @param t the type within this case we are resolving
    *
-   * @param cArgs the choiceArguments of the match's subject's type
+   * @param cArgs the choiceTypes of the match's subject's type
    *
    * @param context the source code context where this Case is used
    *

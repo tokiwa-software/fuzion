@@ -171,7 +171,7 @@ public class Match extends AbstractMatch
       }
     if (st != null && st.isChoice() && Types.resolved.t_void != st)
       {
-        var cgs = st.choiceArguments(context);
+        var cgs = st.choiceTypes(context);
         for (var i = 0; i < cgs.size(); i++)
           {
             var n = cgs.get(i);
