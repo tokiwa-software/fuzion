@@ -47,4 +47,5 @@ is
 
     # wait for all threads to finish
     thrds.read.for_each t->
-      t.join
+      # NYI: UNDER DEVELOPMENT: register failures somewhere
+      _ := t.join

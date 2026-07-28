@@ -584,16 +584,29 @@ void * fzE_thread_create(void *(*code)(void *),
 /**
  * Join with a running thread.
  */
-void fzE_thread_join(void * thrd)
+int fzE_thread_join(void * thrd)
 {
-  // NYI: BUG: return error code on failure
+  int ret = 0;
 #ifdef GC_THREADS
-  int ret = GC_pthread_join((pthread_t)thrd, NULL);
+  ret = GC_pthread_join((pthread_t)thrd, NULL);
   assert (ret == 0);
 #else
-  int ret = pthread_join((pthread_t)thrd, NULL);
+  ret = pthread_join((pthread_t)thrd, NULL);
   assert (ret == 0);
 #endif
+  switch (ret)
+    {
+      case 0:
+        return 0;
+      case EDEADLK:
+        return 1;
+      case EINVAL:
+        return 2;
+      case ESRCH:
+        return 3;
+      default:
+        assert(false);
+    }
 }
 
 
