@@ -2561,7 +2561,20 @@ A pre-condition of a feature that does not redefine an inherited feature must st
           {
             // FORWARD_CYCLIC should be returned only once.
             // We then want to return t_ERROR.
-            _resultType = result == Types.t_FORWARD_CYCLIC ? Types.t_ERROR : result;
+            if (result == Types.t_FORWARD_CYCLIC)
+              {
+                // might be a consequential error
+                // so we only emit if there are no errors yet.
+                if (!Errors.any())
+                  {
+                    AstErrors.forwardTypeInference(_pos, this);
+                  }
+                _resultType = Types.t_ERROR;
+              }
+            else
+              {
+                _resultType = result;
+              }
 
             if (result.isOpenGeneric())
               {
