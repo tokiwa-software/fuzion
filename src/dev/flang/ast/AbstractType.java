@@ -430,7 +430,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       }
     else if (isNormalType())
       {
-        for (var t: generics())
+        for (var t: typeArguments())
           {
             result = result || t == null || t.containsArtificialType();
           }
