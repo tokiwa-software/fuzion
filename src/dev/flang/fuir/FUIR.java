@@ -450,7 +450,7 @@ public abstract class FUIR extends IR
    *
    * @param cl a clazz id
    *
-   * @return id of cl's result field or NO_CLAZZ if cl has no result field (NYI:
+   * @return id of cl's result field or NO_CLAZZ if cl has no result field (NYI: LABEL_MISSING:
    * or a result field that contains no data)
    */
   public abstract int clazzResultField(int cl);
@@ -1310,7 +1310,7 @@ public abstract class FUIR extends IR
    * Helper routine for codeIndex to recursively find the index of expression
    * {@code n} before expression at {@code ix} where {@code n == -delta} and {@code delta < 0}.
    *
-   * NYI: Performance: This requires time {@code O(codeSize(c))}, so using this
+   * NYI: LABEL_MISSING: Performance: This requires time {@code O(codeSize(c))}, so using this
    * quickly results in quadratic performance!
    *
    * @param si a site, our current position we are checking
@@ -1343,7 +1343,7 @@ public abstract class FUIR extends IR
 
   /**
    * Helper routine to go back in the code jumping over the whole previous
-   * expression. Say you have the code  -- NYI: This example is confusing and probably wrong --
+   * expression. Say you have the code  -- NYI: LABEL_MISSING: This example is confusing and probably wrong --
    *
    *   0: const 1
    *   1: current

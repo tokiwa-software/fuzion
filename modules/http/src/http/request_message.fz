@@ -37,7 +37,7 @@ module:public request_message(
   public redef header container.Map String String,
   # body of the request
   public redef body io.Read_Handler) : Message
-# pre debug: has_field "Host"  # NYI: how to handle case insensitivity?
+# pre debug: has_field "Host"  # NYI: LABEL_MISSING: how to handle case insensitivity?
 is
 
   # request line of the message

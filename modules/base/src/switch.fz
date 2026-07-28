@@ -26,7 +26,7 @@
 # e.g.    option  (something/nil)
 #      or outcome (something/error)
 #
-public switch(A type, B type /* NYI: B should be open generic */)
+public switch(A type, B type /* NYI: LABEL_MISSING: B should be open generic */)
   : choice A B,
     monad A switch.this,
     Sequence A,

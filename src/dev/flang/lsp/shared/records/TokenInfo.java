@@ -257,7 +257,7 @@ public class TokenInfo extends ANY
     return line().equals(previousToken.line());
   }
 
-  // NYI
+  // NYI: LABEL_MISSING
   private Integer modifiers()
   {
     switch (_token)

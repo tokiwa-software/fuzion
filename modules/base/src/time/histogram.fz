@@ -198,7 +198,7 @@ is
 
   u64.log2
   post
-    debug: true || (val != 0: (u64 1 << result.as_u64) >= val > (u64 1 << result.as_u64-1)) # NYI: incorrect for val=1 / result=0
+    debug: true || (val != 0: (u64 1 << result.as_u64) >= val > (u64 1 << result.as_u64-1)) # NYI: LABEL_MISSING: incorrect for val=1 / result=0
     debug: (val =  0: result = -1)
   =>
     (val = 0) ? -1 : (val.highest_one_bit-1).ones_count

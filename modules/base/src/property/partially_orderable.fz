@@ -27,12 +27,12 @@
 # features inheriting from partially_orderable define a partial order of their
 # values
 #
-# NYI: the compiler should check that features inheriting from this are
+# NYI: LABEL_MISSING: the compiler should check that features inheriting from this are
 # actually immutable.
 #
 public partially_orderable : property.equatable
 
-/* NYI: quantor intrinsics not supported yet:
+/* NYI: LABEL_MISSING: quantor intrinsics not supported yet:
 
   inv
     analysis: quantor.for_all  T     fun(a       T) => (a <= b),                # reflexivity

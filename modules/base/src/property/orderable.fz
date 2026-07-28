@@ -28,12 +28,12 @@
 #
 # features inheriting from orderable define a total order of their values
 #
-# NYI: the compiler should check that features inheriting from this are
+# NYI: LABEL_MISSING: the compiler should check that features inheriting from this are
 # actually immutable.
 #
 public orderable : property.partially_orderable
 
-/* NYI: quantor intrinsics not supported yet:
+/* NYI: LABEL_MISSING: quantor intrinsics not supported yet:
 
   inv
     analysis: quantor.for_all2 T T fun(a, b T) => a <= b || b <= a,

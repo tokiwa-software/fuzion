@@ -48,7 +48,7 @@ is
   # does nothing for UDP etc.
   # blocks until connection is established
   #
-  # NYI: accept that returns a Future and does not block
+  # NYI: LABEL_MISSING: accept that returns a Future and does not block
   #
   public accept outcome net.connection =>
     fuzion.sys.net.accept sock

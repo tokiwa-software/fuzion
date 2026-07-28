@@ -1272,7 +1272,7 @@ public class AstErrors extends ANY
           "Found several possible " + operation + " targets within the current feature at " +
           (outerLevels.size() == 1 ? "the same outer level " : "different levels of outer features:\n") +
           featuresAndOuterList(targets) +
-          (outerLevels.size() == 1 ? "To solve this, you may rename one of these features." /* NYI: check if this case could actually happen,
+          (outerLevels.size() == 1 ? "To solve this, you may rename one of these features." /* NYI: LABEL_MISSING: check if this case could actually happen,
                                                                                              * maybe recommend to call without type inference
                                                                                              * for type parameters?
                                                                                              */
@@ -1597,7 +1597,7 @@ public class AstErrors extends ANY
     error(pos,
           "Actual type parameters to choice type must be disjoint types",
           "The following types have overlapping values:\n" +
-          s(t1) + /* " at " + t1.pos().show() + */ "\n" +  // NYI: use pos before Types were interned!
+          s(t1) + /* " at " + t1.pos().show() + */ "\n" +  // NYI: LABEL_MISSING: use pos before Types were interned!
           s(t2) + /* " at " + t2.pos().show() + */ "\n");
   }
 
@@ -1850,7 +1850,7 @@ public class AstErrors extends ANY
 
   static void forwardTypeInference(SourcePosition pos, AbstractFeature cf)
   {
-    // NYI: It would be nice to output the whole cycle here as part of the detail message
+    // NYI: LABEL_MISSING: It would be nice to output the whole cycle here as part of the detail message
     if (!any() || !(cf instanceof Feature cff && cff.impl() == Impl.ERROR))
       {
         error(pos,
@@ -1922,7 +1922,7 @@ public class AstErrors extends ANY
     if (!any() || (cf != Types.f_ERROR && !missing.isEmpty()))
       {
         error(pos,
-              "Failed to infer actual type parameters",  // NYI: give more detail here on type parameters and value arguments
+              "Failed to infer actual type parameters",  // NYI: LABEL_MISSING: give more detail here on type parameters and value arguments
               "In call to " + s(cf) + ", no actual type parameters are given and inference of the type parameters failed.\n" +
               "Expected type parameters: " + s(cf.generics()) + "\n"+
               "Type inference failed for " + StringHelpers.singularOrPlural(missing.size(), "type parameter") + " " + slg(missing) + "\n");
@@ -2228,7 +2228,7 @@ public class AstErrors extends ANY
   }
 
 
-  // NYI: UNDER DEVELOPMENT see #2559
+  // NYI: LABEL_MISSING: UNDER DEVELOPMENT see #2559
   public static void declarationsInLazy(String what, Expr lazy, List<Feature> declarations)
   {
     if (!any())

@@ -90,7 +90,7 @@ public class QueryAST extends ANY
           .calledFeature()
           .resultType();
       })
-      // NYI:
+      // NYI: LABEL_MISSING:
       // .map(at -> at.selfOrConstraint())
       .map(at -> at.feature())
       .filter(f -> !FeatureTool.isInternal(f) || f.baseName().endsWith("#type"))

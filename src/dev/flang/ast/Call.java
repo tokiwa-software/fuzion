@@ -113,7 +113,7 @@ public class Call extends AbstractCall
   /**
    * actual generic arguments, set by parser
    */
-  /*final*/ List<AbstractType> _generics; // NYI: Make this final again when resolveTypes can replace a call
+  /*final*/ List<AbstractType> _generics; // NYI: LABEL_MISSING: Make this final again when resolveTypes can replace a call
   public List<AbstractType> actualTypeParameters()
   {
     var res = _generics;
@@ -128,7 +128,7 @@ public class Call extends AbstractCall
               }
           }
       }
-    // res.freeze();  -- NYI: res.freeze not possible here since Function.propagateTypeAndInferResult performs gs.set
+    // res.freeze();  -- NYI: LABEL_MISSING: res.freeze not possible here since Function.propagateTypeAndInferResult performs gs.set
 
     if (POSTCONDITIONS) ensure
       (res != null);
@@ -1264,7 +1264,7 @@ public class Call extends AbstractCall
    * sugar allows an implicit call to {@code Function.call}, i.e., {@code f.g 3 5} is
    * a short form of {@code f.g.call 3 5}.
    *
-   * NYI: we could also permit {@code (f.g x y) 3 5} as a short form for {@code (f.g x
+   * NYI: LABEL_MISSING: we could also permit {@code (f.g x y) 3 5} as a short form for {@code (f.g x
    * y).call 3 5{@code  in case }g} takes arguments.  But this might be too confusing
    * and it would require a change in the grammar.
    *
@@ -2780,7 +2780,7 @@ public class Call extends AbstractCall
   private Call resolveTypesSuccessResult(Resolution res, Context context)
   {
     Call result = this;
-    // NYI: Separate pass? This currently does not work if type was inferred
+    // NYI: LABEL_MISSING: Separate pass? This currently does not work if type was inferred
     var t = typeForInferencing();
     if (t != null && t != Types.t_ERROR)
       {
@@ -3068,9 +3068,9 @@ public class Call extends AbstractCall
    * Syntactic sugar resolution: This does the following:<p>
    *
    *  - convert boolean operations {@code &&}, {@code ||} and {@code :} into if-expressions
-   *  - convert repeated boolean operations ! into identity   // NYI
-   *  - perform constant propagation for basic algebraic ops  // NYI
-   *  - simplify boolean algebra via K-Map and/or Quine–McCluskey // NYI
+   *  - convert repeated boolean operations ! into identity   // NYI: LABEL_MISSING
+   *  - perform constant propagation for basic algebraic ops  // NYI: LABEL_MISSING
+   *  - simplify boolean algebra via K-Map and/or Quine–McCluskey // NYI: LABEL_MISSING
    *  - replace calls to intrinsics that return compile time constants
    *
    * @param res the resolution instance.

@@ -52,7 +52,7 @@ module:public Type ref is
   # inside and outside of constant strings: $x and "$x" will produce the
   # same string.
   #
-  # NYI: Redefinition allows the type feature to be distinguished from its normal counterpart, see #3913
+  # NYI: LABEL_MISSING: Redefinition allows the type feature to be distinguished from its normal counterpart, see #3913
   #
   public redef prefix $ String => Type.this.as_string
 

@@ -64,7 +64,7 @@ public class Interpreter extends FUIRContext
    * This is the main entry point of the interpreter and starts
    * the execution of the main clazz.
    *
-   *  param args -- NYI: command line args not supported yet
+   *  param args -- NYI: LABEL_MISSING: command line args not supported yet
    */
   public void run()
   {
@@ -188,7 +188,7 @@ public class Interpreter extends FUIRContext
       (fuir().clazzIsChoice(choiceClazz));
 
     var result  = new Instance(choiceClazz);
-    LValue slot = result.at(choiceClazz, 0); // NYI: needed? just result?
+    LValue slot = result.at(choiceClazz, 0); // NYI: LABEL_MISSING: needed? just result?
     setChoiceField(choiceClazz,
                    choiceClazz,
                    slot,
@@ -211,7 +211,7 @@ public class Interpreter extends FUIRContext
    * @param allowUninitializedRefField When boxing a partially initialized value
    * (this), some fields may not be initialized yet.
    *
-   * NYI: Once static analysis detects use of uninitialized data, boxing this
+   * NYI: LABEL_MISSING: Once static analysis detects use of uninitialized data, boxing this
    * data should be disallowed.
    *
    * @return the value that was loaded from the field, of type LValue for
@@ -491,7 +491,7 @@ public class Interpreter extends FUIRContext
        v != null || fuir().clazzIsChoice(thiz) ||
        v instanceof LValue    ||
        v instanceof Instance  ||
-       v instanceof i8Value   ||  // NYI: what about u8/u16/..
+       v instanceof i8Value   ||  // NYI: LABEL_MISSING: what about u8/u16/..
        v instanceof i16Value  ||
        v instanceof i32Value  ||
        v instanceof i64Value  ||

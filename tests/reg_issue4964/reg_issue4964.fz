@@ -36,9 +36,9 @@ reg_issue4964 =>
     addfoo2 := _ : String is
       public redef utf8 Sequence u8 => "foo".utf8 ++ bar2.utf8  # should flag an error: inconsistent indentation
 
-    # NYI: there are several succeeding errors caused by the broken indentation, if possible they should be avoided
+    # NYI: LABEL_MISSING: there are several succeeding errors caused by the broken indentation, if possible they should be avoided
     #      by improving the by improving heuristic on parsing the remaining code in the file
 
-    say addfoo2       # NYI: does flag "inconsistent indentation" and "not found" errors that should be avoided
+    say addfoo2       # NYI: LABEL_MISSING: does flag "inconsistent indentation" and "not found" errors that should be avoided
 
-  some_local_feature  # NYI: does flag "inconsistent indentation" and "not found" errors that should be avoided
+  some_local_feature  # NYI: LABEL_MISSING: does flag "inconsistent indentation" and "not found" errors that should be avoided

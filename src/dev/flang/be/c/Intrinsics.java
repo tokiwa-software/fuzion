@@ -272,7 +272,7 @@ public class Intrinsics extends ANY
                                                                              A1.castTo("char *")}),
                    CExpr.exit(1)));
 
-        /* NYI: The C standard does not guarantee wrap-around semantics for signed types, need
+        /* NYI: LABEL_MISSING: The C standard does not guarantee wrap-around semantics for signed types, need
          * to check if this is the case for the C compilers used for Fuzion.
          */
     put("i8.prefix -°"         , (c,cl,outer,in) -> castToUnsignedForArithmetic(c, CExpr.int8const (0), outer, '-', SpecialClazzes.c_u8 , SpecialClazzes.c_i8 ).ret());
@@ -933,7 +933,7 @@ public class Intrinsics extends ANY
     put("concur.sync.cnd_destroy",   (c,cl,outer,in) -> CExpr.call("fzE_cnd_destroy",   new List<>(A0)));
     put("native_string_length", (c,cl,outer,in) -> CExpr.call("strlen",   new List<>(A0.castTo("void *"))).ret());
     // essentially a NOP in c-backend
-    put("native_array", (c,cl,outer,in) -> A0.castTo("void *" /* NYI: should be cast to array with element type cl._dfa._fuir.clazzActualGeneric(cl._cc, 0) */).ret());
+    put("native_array", (c,cl,outer,in) -> A0.castTo("void *" /* NYI: LABEL_MISSING: should be cast to array with element type cl._dfa._fuir.clazzActualGeneric(cl._cc, 0) */).ret());
   }
 
 
@@ -1034,7 +1034,7 @@ public class Intrinsics extends ANY
         Errors.warning(msg);
         result = CStmnt.seq(CExpr.call("fprintf",
                                         new List<>(new CIdent("stderr"),
-                                                  CExpr.string("*** error: NYI: %s\n"),
+                                                  CExpr.string("*** error: NYI: LABEL_MISSING: %s\n"),
                                                   CExpr.string(msg))),
                             CExpr.call("exit", new List<>(CExpr.int32const(1))));
       }

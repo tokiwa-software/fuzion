@@ -381,7 +381,7 @@ public class CNames extends ANY
   /**
    * Mangle an arbitrary unicode string into a legal C identifier.
    *
-   * NYI: This might produce a string longer than a legal C identifier name,
+   * NYI: LABEL_MISSING: This might produce a string longer than a legal C identifier name,
    * which seems to be 31 according to
    * https://stackoverflow.com/questions/2352209/max-identifier-length
    *

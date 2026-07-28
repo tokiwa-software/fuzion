@@ -125,7 +125,7 @@ public bool : choice false_ true_, property.equatable, property.hashable, java_p
       true
 
 
-  # ternary ? : -- NYI: This will be replaced by a more powerful match syntax
+  # ternary ? : -- NYI: LABEL_MISSING: This will be replaced by a more powerful match syntax
   #
   public ternary ? : (T type, a, b Lazy T) T =>
     if bool.this

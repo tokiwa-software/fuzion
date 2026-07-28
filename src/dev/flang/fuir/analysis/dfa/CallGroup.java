@@ -70,7 +70,7 @@ public class CallGroup extends ANY implements Comparable<CallGroup>
     var k1 = dfa._fuir.clazzId2num(cl);
     var k2 = tvalue._id;
     var k3 = dfa.siteSensitive(cl) ? DFA.siteIndex(site) : 0;
-    var k4 = 0; // NYI: 10 unused bits still available in the hash code.
+    var k4 = 0; // NYI: LABEL_MISSING: 10 unused bits still available in the hash code.
     if (CHECKS) check
       (k1 >= 0,
        k2 >= 0,

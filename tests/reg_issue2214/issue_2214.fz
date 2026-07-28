@@ -45,7 +45,7 @@ scenario1 =>
 scenario1
 
 /*
-# NYI: A variant of screnario2 using Sequence.
+# NYI: LABEL_MISSING: A variant of screnario2 using Sequence.
 #
 #
 scenario3 =>
@@ -68,7 +68,7 @@ scenario3 =>
         s + (if (i < n) sieve i+1 ap else "")
       sieve 2 nil
 
-    say "Primes using bitset"; say "$(primes6 100)"  # NYI: only 100 since this is currently very inefficient
+    say "Primes using bitset"; say "$(primes6 100)"  # NYI: LABEL_MISSING: only 100 since this is currently very inefficient
 
   _ := primes
 

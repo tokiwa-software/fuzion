@@ -144,7 +144,7 @@ pre
   debug: capacity >= 0
 =>
   if capacity > 0 then
-    # NYI: UNDER DEVELOPMENT use `container.Ring_Buffer`
+    # NYI: UNDER DEVELOPMENT: use `container.Ring_Buffer`
     Channel T
   else
     Unbuffered_Channel (channel_mutate T) T

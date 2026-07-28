@@ -37,7 +37,7 @@
 # - https://learn.microsoft.com/en-us/windows/win32/winsock/complete-server-code
 # - https://learn.microsoft.com/en-us/windows/win32/winsock/complete-client-code
 #
-# NYI: use error codes coming from backend
+# NYI: LABEL_MISSING: use error codes coming from backend
 #
 module net is
 
@@ -50,7 +50,7 @@ module net is
     else if fzE_bind sockfd family socket_type protocol (fuzion.sys.c_string host) (fuzion.sys.c_string $port) = 0
       sockfd
     else
-      _ := fzE_socket_close sockfd # NYI: register potential failure somewhere...
+      _ := fzE_socket_close sockfd # NYI: LABEL_MISSING: register potential failure somewhere...
       error "net.bind failed (host=$host, port=$port)" fzE_last_error
 
 
@@ -71,7 +71,7 @@ module net is
     else if fzE_connect sockfd family socket_type protocol (fuzion.sys.c_string host) (fuzion.sys.c_string $port) = 0
       sockfd
     else
-      _ := fzE_socket_close sockfd # NYI: register potential failure somewhere...
+      _ := fzE_socket_close sockfd # NYI: LABEL_MISSING: register potential failure somewhere...
       error "net.connect failed (host=$host, port=$port)" fzE_last_error
 
 

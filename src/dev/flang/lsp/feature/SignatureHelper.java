@@ -100,7 +100,7 @@ public class SignatureHelper extends ANY
 
   private static SignatureHelp getSignatureHelp(AbstractCall call, AbstractFeature featureOfCall)
   {
-    var consideredCallTargets_declaredOrInherited = ParserTool.declaredFeatures(featureOfCall); // NYI: what about inherited features?
+    var consideredCallTargets_declaredOrInherited = ParserTool.declaredFeatures(featureOfCall); // NYI: LABEL_MISSING: what about inherited features?
     var consideredCallTargets_outerFeatures =
       FeatureTool.outerFeatures(featureOfCall).flatMap(f -> ParserTool.declaredFeatures(f));
 

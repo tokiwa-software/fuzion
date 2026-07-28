@@ -22,7 +22,7 @@
 # -----------------------------------------------------------------------
 
 # test violation of loop variants
-# NYI: turn this into a simple_and_negative test once stacktraces look nicer and can be printed in try catch
+# NYI: LABEL_MISSING: turn this into a simple_and_negative test once stacktraces look nicer and can be printed in try catch
 #
 loop_variant_2 =>
 

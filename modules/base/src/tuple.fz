@@ -106,7 +106,7 @@
 #
 #     a0 := a
 #
-# NYI: A single tuple 'tuple A' is currently not assignment compatible with
+# NYI: LABEL_MISSING: A single tuple 'tuple A' is currently not assignment compatible with
 # type 'A', which would make handling of general tuples easier.
 #
 # tuples and destructuring can be used to swap two elements or create a

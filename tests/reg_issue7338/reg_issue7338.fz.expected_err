@@ -1,7 +1,7 @@
 
---CURDIR--/reg_issue7338.fz:26:58: error 1: No line break may occur at this position
-  say o?       # NYI postfix ? operator not supported yet
----------------------------------------------------------^
+--CURDIR--/reg_issue7338.fz:26:74: error 1: No line break may occur at this position
+  say o?       # NYI: LABEL_MISSING: postfix ? operator not supported yet
+-------------------------------------------------------------------------^
 This code is part of an expression that must reside within a single line.
 While parsing: term, parse stack: term, opExpr, operatorExpr (twice), actualSpace, actualSpaces, actualArgs, call, call0, callOrFeatOrThis, term, opExpr, operatorExpr, expr, exprs, block (twice), implRout, routOrField, feature, expr, exprs, block (twice), unit
 To solve this, enclose the expression in parentheses '(' and ')'.

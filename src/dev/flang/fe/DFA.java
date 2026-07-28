@@ -142,7 +142,7 @@ public class DFA extends ANY
                 break;
               }
           }
-        // NYI
+        // NYI: LABEL_MISSING
         break;
       default:
         break;

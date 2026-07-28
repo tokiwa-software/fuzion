@@ -43,7 +43,7 @@ Computable_Future(
   # the code of the future
   task ()->T) ref : concur.Future T is
 
-  cnd := concur.sync.condition.new.or_panic # NYI: error handling
+  cnd := concur.sync.condition.new.or_panic # NYI: LABEL_MISSING: error handling
 
   compute_result := concur.atomic (option T) .new nil
 

@@ -320,7 +320,7 @@ public abstract class Value extends FUIRContext
   protected Object toNative()
   {
     Thread.dumpStack();
-    Errors.fatal("NYI: toNative " + this.toString());
+    Errors.fatal("NYI: LABEL_MISSING: toNative " + this.toString());
     return null;
   }
 

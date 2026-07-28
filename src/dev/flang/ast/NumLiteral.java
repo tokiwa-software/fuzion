@@ -60,12 +60,12 @@ public class NumLiteral extends Constant
     ct_u16 (false, 2),
     ct_u32 (false, 4),
     ct_u64 (false, 8),
-    // ct_f16 (11, 5),   -- NYI: support for f16
+    // ct_f16 (11, 5),   -- NYI: LABEL_MISSING: support for f16
     ct_f32 (24, 8),
     ct_f64 (53, 11),
     ct_numeric(false, 4);
-    // ct_f128 (113, 15),   -- NYI: support for f128
-    // ct_f256 (237, 19),   -- NYI: support for f256
+    // ct_f128 (113, 15),   -- NYI: LABEL_MISSING: support for f128
+    // ct_f256 (237, 19),   -- NYI: LABEL_MISSING: support for f256
 
     /**
      * bytes in memory occupied by this type
@@ -568,7 +568,7 @@ public class NumLiteral extends Constant
         e2 = e2 + eBias + ct._mBits -1;
         if (e2 >= eSpecial)  // exponent too large
           {
-            // NYI: Determination of max float value is a little clumsy:
+            // NYI: LABEL_MISSING: Determination of max float value is a little clumsy:
             var mmax = B1.shiftLeft(ct._mBits).subtract(B1);
             var bmax = mmax.shiftLeft(eSpecial-eBias-ct._mBits);
             var ndigits = 0;
@@ -593,7 +593,7 @@ public class NumLiteral extends Constant
             e2 = 0;
             if (m.signum() == 0)
               {
-                // NYI: Determination of min float value is a little clumsy:
+                // NYI: LABEL_MISSING: Determination of min float value is a little clumsy:
                 var minE2 = -eBias-ct._mBits+2;
                 var b5min  = B5 .pow(-minE2).toString();
                 var b10min = B10.pow(-minE2).toString();

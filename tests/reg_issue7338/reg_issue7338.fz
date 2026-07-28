@@ -23,7 +23,7 @@
 
 
 print_if_present(s String, o option i32) option unit =>
-  say o?       # NYI postfix ? operator not supported yet
+  say o?       # NYI: LABEL_MISSING: postfix ? operator not supported yet
 
 v := 10000
 _ := print_if_present "v = "  (v)

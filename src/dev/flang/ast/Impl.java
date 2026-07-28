@@ -274,12 +274,12 @@ public class Impl extends ANY
           }
         else if (rt instanceof FunctionReturnType)
           {
-            // NYI: function declaration using `is` should be forbidden
+            // NYI: LABEL_MISSING: function declaration using `is` should be forbidden
             //
             //   f type is ...
             //   f type { ... }
             //
-            // AstErrors.illegalResultTypeInConstructorDeclaration(f);  -- NYI
+            // AstErrors.illegalResultTypeInConstructorDeclaration(f);  -- NYI: LABEL_MISSING
           }
         break;
       }
@@ -425,7 +425,7 @@ public class Impl extends ANY
       {
         switch (outer.kind())
           {
-          case Field             -> {} // Errors.fatal("NYI: UNDER DEVELOPMENT #3092 postcondition for field not supported yet");
+          case Field             -> {} // Errors.fatal("NYI: LABEL_MISSING: UNDER DEVELOPMENT #3092 postcondition for field not supported yet");
           case TypeParameter     ,
                OpenTypeParameter -> { if (!Errors.any()) { Errors.fatal("postcondition for type parameter should not exist for " + outer.pos().show()); } }
           case Function, Constructor, RefConstructor ->
@@ -434,8 +434,8 @@ public class Impl extends ANY
               this._expr = new Block(new List<>(this._expr, callPostCondition));
             }
           case Abstract          -> {} // ok, must be checked by redefinitions
-          case Intrinsic         -> {} // Errors.fatal("NYI: UNDER DEVELOPMENT #3105 postcondition for intrinsic");
-          case Native            -> {} // Errors.fatal("NYI: UNDER DEVELOPMENT #3105 postcondition for native");
+          case Intrinsic         -> {} // Errors.fatal("NYI: LABEL_MISSING: UNDER DEVELOPMENT #3105 postcondition for intrinsic");
+          case Native            -> {} // Errors.fatal("NYI: LABEL_MISSING: UNDER DEVELOPMENT #3105 postcondition for native");
           }
       }
   }

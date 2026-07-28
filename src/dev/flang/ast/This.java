@@ -243,7 +243,7 @@ public class This extends ExprWithPos
       }
     else
       {
-        /* NYI: Ugly special handling: In case this has been created as part of
+        /* NYI: LABEL_MISSING: Ugly special handling: In case this has been created as part of
          * an inherits call, _cur is outer.outer() since this call is done
          * before outer is set up.
          */

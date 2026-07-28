@@ -26,9 +26,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.mir;
 
-import dev.flang.ast.AbstractAssign;  // NYI: Remove dependency!
-import dev.flang.ast.AbstractCall;  // NYI: Remove dependency!
-import dev.flang.ast.AbstractFeature;  // NYI: Remove dependency!
+import dev.flang.ast.AbstractAssign;  // NYI: LABEL_MISSING: Remove dependency!
+import dev.flang.ast.AbstractCall;  // NYI: LABEL_MISSING: Remove dependency!
+import dev.flang.ast.AbstractFeature;  // NYI: LABEL_MISSING: Remove dependency!
 
 import dev.flang.ir.IR;
 
@@ -127,7 +127,7 @@ public class MIR extends IR
   private List<Object> prolog(AbstractFeature f)
   {
     List<Object> code = new List<>();
-    // NYI: MIR.prolog
+    // NYI: LABEL_MISSING: MIR.prolog
     /* code used in FUIR.java:
     var vcc = cc.asValue();
     var or = vcc.outerRef();
@@ -156,7 +156,7 @@ public class MIR extends IR
     for (var p: ff.inherits())
       {
         /*
-NYI: Any side-effects in p.target or p.actuals() will be executed twice, once for
+NYI: LABEL_MISSING: Any side-effects in p.target or p.actuals() will be executed twice, once for
      the precondition and once for the inlined call! See this example:
 
 hw25 is
@@ -179,7 +179,7 @@ hw25 is
         */
 
         toStack(code, p.target());
-        /* NYI: initialize outer ref
+        /* NYI: LABEL_MISSING: initialize outer ref
         var pf = p.calledFeature();
         var or = cc._inner.get(pf.outerRef_);
         if (or != null && !or.resultClazz().isUnitType())
@@ -203,7 +203,7 @@ hw25 is
             toStack(code, a);
             code.add(ExprKind.Current);
             // Field clazz means assign value to that field
-            // NYI: code.add((Clazz) cc.getRuntimeData(p._parentCallArgFieldIds + i));
+            // NYI: LABEL_MISSING: code.add((Clazz) cc.getRuntimeData(p._parentCallArgFieldIds + i));
           }
         addCode(code, p.calledFeature());
       }
@@ -363,7 +363,7 @@ hw25 is
       (0 <= i && i < featureDeclaredCount(f));
 
     var ff = _featureIds.get(f);
-    // NYI: Quadratic performance in case we iterate over all declared features.
+    // NYI: LABEL_MISSING: Quadratic performance in case we iterate over all declared features.
     for (var df : _module.declaredFeatures(ff).values())
       {
         if (i == 0)

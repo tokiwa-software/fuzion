@@ -1979,7 +1979,7 @@ public abstract class Expr extends ByteCode
         public void buildStackMapTable(StackMapTable smt, Stack<VerificationType> stack,
           List<VerificationType> locals)
         {
-          // NYI: cleanup remove once the
+          // NYI: LABEL_MISSING: cleanup remove once the
           // backend does not generate redundant
           // checkcasts anymore.
           isRedundant = type().vti().compareTo(stack.peek()) == 0;

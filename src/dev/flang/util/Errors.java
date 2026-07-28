@@ -410,7 +410,7 @@ public class Errors extends ANY
    */
   public static void error(Id id, SourcePosition pos, String msg, String detail)
   {
-    // NYI: id is currently ignored
+    // NYI: LABEL_MISSING: id is currently ignored
     error(pos, msg, detail);
   }
 

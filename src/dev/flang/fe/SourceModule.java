@@ -394,7 +394,7 @@ Fuzion source files may have an arbitrary file name ending with the file name ex
    */
   void loadInnerFeatures(AbstractFeature f)
   {
-    if (!f._loadedInner)  /* NYI: restrict this to f.isVisibleFrom(this) or similar */
+    if (!f._loadedInner)  /* NYI: LABEL_MISSING: restrict this to f.isVisibleFrom(this) or similar */
       {
         f._loadedInner = true;
         for (var root : _sourceDirs)
@@ -630,7 +630,7 @@ part of the (((inner features))) declarations of the corresponding
       }
     for (var a : inner.arguments())
       {
-        findDeclarations((Feature) a, inner); // NYI: Cast!
+        findDeclarations((Feature) a, inner); // NYI: LABEL_MISSING: Cast!
       }
     inner.addResultField(_res);
 
@@ -882,7 +882,7 @@ part of the (((inner features))) declarations of the corresponding
    *
    * @param f the declared or inherited feature.
    */
-  // NYI: merge addToDeclaredOrInheritedFeatures and addDeclaredOrInherited
+  // NYI: LABEL_MISSING: merge addToDeclaredOrInheritedFeatures and addDeclaredOrInherited
   private void addToDeclaredOrInheritedFeatures(AbstractFeature outer, AbstractFeature f)
   {
     var fn = f.featureName();
@@ -969,7 +969,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
           }
       }
     var doi = declaredOrInheritedFeatures(outer);
-    doi.remove(fn);  // NYI: remove only those features that are redefined by f!
+    doi.remove(fn);  // NYI: LABEL_MISSING: remove only those features that are redefined by f!
     add(doi, fn, f);
   }
 
@@ -995,7 +995,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
     var existing = df.get(fn);
     if (existing != null)
       {
-        // NYI: need to check that the scopes ef and f are declared in are disjunct
+        // NYI: LABEL_MISSING: need to check that the scopes ef and f are declared in are disjunct
         if (existing instanceof Feature ef && ef._declaredInScope != null && f._declaredInScope != null
            || visibilityPreventsConflict(f, existing) || Feature.isAbstractAndFixedPair(f, existing))
           {
@@ -1218,7 +1218,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
               {
                 if ((use == null || (hidden != featureVisible(use.pos()._sourceFile, v))) &&
                     !(use instanceof Call c && !c.isInheritanceCall() && v.isChoice()) &&
-                    (use == null || /* NYI: do we have to evaluate inScope for all possible outers? */ inScope(use, v)))
+                    (use == null || /* NYI: LABEL_MISSING: do we have to evaluate inScope for all possible outers? */ inScope(use, v)))
                   {
                     result.add(new FeatureAndOuter(v, curOuter, inner));
                   }
@@ -1656,7 +1656,7 @@ A post-condition of a feature that does not redefine an inherited feature must s
    * Check types of given Feature. This mainly checks that all redefinitions of
    * f are compatible with f.
    *
-   * NYI: Better perform the check the other way around: check that f matches
+   * NYI: LABEL_MISSING: Better perform the check the other way around: check that f matches
    * the types of all features that f redefines.
    */
   public void checkTypes(Feature f)
@@ -2096,14 +2096,14 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
                 var isInherited1 = outer != f1.outer();
                 var isInherited2 = outer != f2.outer();
 
-                // NYI: take visibility into account!!!
+                // NYI: LABEL_MISSING: take visibility into account!!!
                 if (isInherited1 && isInherited2)
-                  { // NYI: Should be ok if existing or f is abstract.
+                  { // NYI: LABEL_MISSING: Should be ok if existing or f is abstract.
                     AstErrors.repeatedInheritanceCannotBeResolved(outer.pos(), outer, fn, f1, f2);
                   }
                 else
                   {
-                    // NYI: if (!isInherited && !sameModule(f, outer))
+                    // NYI: LABEL_MISSING: if (!isInherited && !sameModule(f, outer))
                     if (!Feature.isAbstractAndFixedPair(f1, f2))
                       {
                         AstErrors.duplicateFeatureDeclaration(f1, f2);

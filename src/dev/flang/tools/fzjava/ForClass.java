@@ -752,7 +752,7 @@ class ForClass extends ANY
         res.append(res.length() == 0 ? "(" : ", ");
         var mp = FeatureWriter.mangledCleanName(p.getName());
         String mt;
-        if (t.isArray() && !t.getComponentType().isArray() /* NYI: nested arrays */)
+        if (t.isArray() && !t.getComponentType().isArray() /* NYI: LABEL_MISSING: nested arrays */)
           {
             var et = plainResultType(t.getComponentType());
             mt = (et == null) ? null : "Sequence " + et;

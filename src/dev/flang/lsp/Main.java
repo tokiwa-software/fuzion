@@ -100,7 +100,7 @@ public class Main extends ANY
       }
     else if (hasArg(args, "-pipe"))
       {
-        // NYI
+        // NYI: LABEL_MISSING
         printUsageAndExit();
       }
     else if (hasArg(args, "-socket"))
@@ -181,7 +181,7 @@ public class Main extends ANY
             return buildLauncher(server, socket.getInputStream(), socket.getOutputStream());
           }
       default:
-        IO.SYS_OUT.print("NYI: " + Config.transport());
+        IO.SYS_OUT.print("NYI: LABEL_MISSING: " + Config.transport());
         ErrorHandling.writeStackTrace();
         return null;
       }

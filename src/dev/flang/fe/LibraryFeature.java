@@ -724,7 +724,7 @@ public class LibraryFeature extends AbstractFeature
                   var fts = ts;
                   var lc = new AbstractCase(null)
                     {
-                      public SourcePosition pos() { return LibraryModule.DUMMY_POS; /* NYI: Need proper position */ }
+                      public SourcePosition pos() { return LibraryModule.DUMMY_POS; /* NYI: LABEL_MISSING: Need proper position */ }
                       public AbstractFeature field() { return cf; }
                       public List<AbstractType> types() { return fts; }
                       public AbstractBlock code() { return (AbstractBlock) cc; }

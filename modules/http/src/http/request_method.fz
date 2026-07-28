@@ -47,7 +47,7 @@ public options is
 public trace is
 
 # HTTP request method PATCH
-public patch is # NYI: is this part of HTTP 1.1
+public patch is # NYI: LABEL_MISSING: is this part of HTTP 1.1
 
 # HTTP request method
 public request_method : choice http.get http.head http.post_r http.put http.delete

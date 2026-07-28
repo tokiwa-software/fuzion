@@ -34,7 +34,7 @@ public read_request(
     cause(s String) void =>
       (flow.exception unit).env.cause (error s)
 
-    # NYI: must parse header as superset of ASCII
+    # NYI: LABEL_MISSING: must parse header as superset of ASCII
     # https://datatracker.ietf.org/doc/html/rfc9112#section-2.2-2
 
     # GET /images/logo.png HTTP/1.1

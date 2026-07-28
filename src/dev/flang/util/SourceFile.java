@@ -731,10 +731,10 @@ The end of a source code line is marked by one of the code points LF 0x000a, VT 
     // the Supplementary Ideographic Plane, 20000..2FFFF
     // the Tertiary Ideographic Plane, 30000..3FFFF
 
-    // NYI: UNDER DEVELOPMENT
+    // NYI: LABEL_MISSING: UNDER DEVELOPMENT
     // could be made faster (binary search?)
 
-    // NYI: UNDER DEVELOPMENT
+    // NYI: LABEL_MISSING: UNDER DEVELOPMENT
     // We would need to evaluate list
     // http://www.unicode.org/Public/UNIDATA/EastAsianWidth.txt
     // to be more correct.
