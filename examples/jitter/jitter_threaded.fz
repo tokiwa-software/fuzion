@@ -267,9 +267,9 @@ jitter_threaded =>
         sample_ch <- (period, marker, marker, true)
 
       _ := match flow.exception jitter_too_high .on ()->
-           for p := period_default, p.times 0.5
-           while p.as_duration >= time.duration.ms 1 do
-             run_for_period p
+            for p := period_default, time.duration.ns (p.nanos / 2)
+            while p >= time.duration.ms 1 do
+              run_for_period p
         e error => say "jitter test stopped: $e"
         unit    => unit
       unit
