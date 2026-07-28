@@ -21,13 +21,13 @@
 #
 # -----------------------------------------------------------------------
 
-wrap(T type : integer, val T) : monad T (wrap T) is
+wrap(T type : integer, val T) : monad T is
 
   # monadic operator within the same monad
   #
   # Apply f to elements of type A and re-wrap them in this monad.
   #
-  public redef infix >>= (f T -> wrap T) wrap T =>
+  public fixed redef infix >>= (f T -> wrap T) wrap T =>
     f val
 
 
@@ -35,20 +35,20 @@ wrap(T type : integer, val T) : monad T (wrap T) is
   #
   # Apply f to elements of type A and wrap them in MB.
   #
-  public redef infix >>=~ (B type, MB type : monad B MB, f T -> MB) MB =>
+  public fixed redef infix >>=~ (B type, MB type : monad B, f T -> MB) MB =>
     f val
 
 
   # join operator
   #
-  public redef join(MMA type : monad (wrap T) MMA, a MMA) (wrap T) =>
+  public fixed redef join(a wrap T) (wrap T) =>
     a.infix >>=~ T (wrap T) x->
-      wrap x.val+val
+      wrap x+val
 
 
   # return function
   #
-  public redef type.return (a T) (wrap T) =>
+  public fixed redef type.return (a T) (wrap T) =>
     wrap a
 
 
