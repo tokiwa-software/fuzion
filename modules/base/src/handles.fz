@@ -75,7 +75,7 @@ private:public handles(
 
   # `plain` monad or effect to be `inst`alled or `repl`aced by new value?
   mode oneway_monad_mode.val
-  ) : oneway_monad X (handles T X) mode
+  ) : oneway_monad X mode
 is
 
   # number of handles created

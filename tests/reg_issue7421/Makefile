@@ -17,21 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test reg_issue1518
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-reg_issue1518 =>
-
-  # this causes errors, but it should NOT cause a syntax error
-
-    c (T type) is
-      b (f T -> unit) unit => abstract
-
-    a : c a is
-      redef b (f a.this -> unit) unit =>
-        f a.this.x
-
-      type.x a.this => a
-
-    a.b (x -> say x)
+override NAME = reg_issue7421
+include ../simple.mk
