@@ -216,12 +216,70 @@ jitter_threaded =>
       nil =>
         unit
 
+  # run jitter test using realtime.Scheduler.env.submit
+  test_scheduler_jitter(sample_ch concur.Channel (tuple time.duration time.instant time.instant bool))
+  =>
+      jitter_too_high is
+
+      payload =>
+        for
+          i := 0, i+1
+          s := i, s +° i
+        while i < 1000
+        else
+          if s = s +° 1
+            say "$s (never called)"
+
+      run_for_period(period time.duration)
+      =>
+        start := time.Nano.env.read + start_delay
+        end := start + test_duration
+
+        # atomic for next expected release
+        next_rel := concur.atomic time.instant .new start
+
+        # task to be submitted to the scheduler
+        task_code =>
+          actual := time.Nano.env.read
+          if actual <= end
+            expected := next_rel.read
+            next_rel.write (expected + period)
+            sample_ch <- (period, actual, expected, false)
+            if actual >= expected + period
+              (flow.exception jitter_too_high).env.cause <| error "release time jitter exceeded period"
+            payload
+            finish := time.Nano.env.read
+            if finish >= expected + period
+              err := error "*** overrun: run started at {actual-expected} and took {finish-actual}, which is larger than period $period"
+              (flow.exception jitter_too_high).env.cause err
+
+        # submit the periodic task to the scheduler
+        t := realtime.task time.duration task_code period
+        realtime.Scheduler.env.submit t
+
+        # wait until test duration ends
+        now := time.Nano.env.read
+        if end > now
+          time.Nano.env.sleep (end - now)
+
+        # send end-of-period marker
+        marker := time.Nano.env.read
+        sample_ch <- (period, marker, marker, true)
+
+      _ := match flow.exception jitter_too_high .on ()->
+           for p := period_default, p.times 0.5
+           while p.as_duration >= time.duration.ms 1 do
+             run_for_period p
+        e error => say "jitter test stopped: $e"
+        unit    => unit
+      unit
+
   say "Starting jitter test using task_pool..."
   result_ch := concur.Channel (tuple time.duration time.instant time.instant bool)
 
   # NYI: There is no priority or affinity support in the API at the moment, so we just run the jitter_worker in a separate thread.
   jitter_worker =>
-    test_jitter time.Nano time.Nano result_ch
+    test_scheduler_jitter result_ch
     result_ch.close
 
   jitter_task := realtime.task time.frequency jitter_worker (time.frequency 0 (time.duration.ms 1))
