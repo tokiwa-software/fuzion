@@ -1564,14 +1564,6 @@ public class AstErrors extends ANY
           "To solve this, change the type provided, e.g. to the unconstrained " + st("type") + ".\n");
   }
 
-  public static void constraintMustNotBeChoice(AbstractFeature typeParameter)
-  {
-    error(typeParameter.pos(),
-          "Constraint for type parameter must not be a choice type",
-          "Affected type parameter: " + s(typeParameter) + "\n" +
-          "constraint: " + s(typeParameter.constraint()) + "\n");
-  }
-
   static void loopElseBlockRequiresWhileOrIterator(SourcePosition pos, Expr elseBlock)
   {
     error(pos, "Loop without while condition must not have an else block",

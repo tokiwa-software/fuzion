@@ -48,7 +48,7 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
   # predefined write handler for writing to
   # standard in of the process
   #
-  std_in_write_handler => write_handler std_in
+  std_in_writer(LM type : mutate) => writer LM std_in
 
 
   # get a name for the given descriptor
@@ -81,8 +81,8 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
 
   # write bytes to standard in
   #
-  write_handler (desc i64) : io.Write_Handler is
-    public redef write (bytes Sequence u8) outcome unit =>
+  writer (LM type: mutate, desc i64) : (io.buffered LM).Writer is
+    public redef writer (bytes Sequence u8) outcome unit =>
       for tbw := bytes.as_array, tbw.drop res .as_array
           res := fzE_pipe_write desc tbw.internal_array.data tbw.count .as_i64
       while res >= 0 && res != tbw.length
@@ -129,7 +129,7 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
 
 
   public with_in(T type, LM type : mutate, f () -> T) outcome T =>
-    (io.buffered LM).writer std_in_write_handler ! f
+    (io.buffered LM).Writer.instate _ (std_in_writer LM) f
 
 
   # write string to stdin of child process

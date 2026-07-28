@@ -32,11 +32,11 @@ public my_mut : mutate is
 foo is
   m : my_mut is
   m ! ()->
-    say <| (m.arr path).empty
+    say <| (m.arr io.path).empty
 
   a(M type : m, mm M) =>
     mm ! ()->
-      say <| (M.arr path).empty
+      say <| (M.arr io.path).empty
   a m
 
 foo2 : foo is

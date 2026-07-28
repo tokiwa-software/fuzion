@@ -919,7 +919,7 @@ public class Intrinsics extends ANY
         var tmp = new CIdent("tmp");
         var rc = c._fuir.clazzResultClazz(cl);
         return CStmnt.seq(
-          CStmnt.decl("void *", tmp, CExpr.call("fzE_cnd_init",      new List<>())),
+          CStmnt.decl("void *", tmp, CExpr.call("fzE_cnd_init",      new List<>(A1))),
           CStmnt.iff(tmp.eq(CNames.NULL),
             c.returnOutcome(c._fuir.clazzChoice(rc, 1), c.error(c._fuir.clazzChoice(rc, 1), c.boxedConstString("An error occurred initializing the condition variable.")), rc, 1),
             c.returnOutcome(c._fuir.clazzChoice(rc, 0), tmp, rc , 0)
@@ -930,6 +930,7 @@ public class Intrinsics extends ANY
     put("concur.sync.cnd_signal",    (c,cl,outer,in) -> CExpr.call("fzE_cnd_signal",    new List<>(A0)));
     put("concur.sync.cnd_broadcast", (c,cl,outer,in) -> CExpr.call("fzE_cnd_broadcast", new List<>(A0)));
     put("concur.sync.cnd_wait",      (c,cl,outer,in) -> CExpr.call("fzE_cnd_wait",      new List<>(A0, A1)));
+    put("concur.sync.cnd_timedwait", (c,cl,outer,in) -> CExpr.call("fzE_cnd_timedwait", new List<>(A0, A1, A2)));
     put("concur.sync.cnd_destroy",   (c,cl,outer,in) -> CExpr.call("fzE_cnd_destroy",   new List<>(A0)));
     put("native_string_length", (c,cl,outer,in) -> CExpr.call("strlen",   new List<>(A0.castTo("void *"))).ret());
     // essentially a NOP in c-backend

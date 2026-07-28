@@ -1,2 +1,2 @@
-instance[foo2.m.arr path]
-instance[foo2.m.arr path]
+instance[foo2.m.arr io.path]
+instance[foo2.m.arr io.path]

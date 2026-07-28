@@ -23,9 +23,9 @@
 #
 # -----------------------------------------------------------------------
 
-# blocking_mutate -- a variant of mutate that may be shared between threads
+# blocking_mutate_using_clock -- a multi-thread variant mutate using a given Clock
 #
-# This mutate ensure exclusive access to shared memory via using locks and
+# This mutate ensures exclusive access to shared memory via using locks and
 # blocking.
 #
 # Accidental race accesses are not permitted by this mutate, i.e., accessing
@@ -33,12 +33,14 @@
 # are not permitted unless we are in code run via
 # `blocking_mutate.this.exclusive`.
 #
-public blocking_mutate : mutate is
+# For timeouts, this uses the given clock effect.
+#
+public blocking_mutate_using_clock(C type : time.Clock) : mutate is
 
   # mutex to be used for synchronization
   #
   mtx := concur.sync.mutex.new.or_else
-            (panic "`concur.sync.mutex.new` failed to create mutex for `concur.blocking_mutate`")
+            (panic "`concur.sync.mutex.new` failed to create mutex for `$(concur.blocking_mutate_using_clock.this.type)`")
 
 
   # Threads that are currently blocked in `wait`
@@ -50,15 +52,15 @@ public blocking_mutate : mutate is
   # This is usually `nil`, unless we are in an exclusive section.
   #
   # Note that from the point of view of a thread `T1` the value of
-  # `blocking_mutate.this.env.exclusive_thread` may be `nil` while this
-  # value for another thread `T2` may be equal to `T2` since this is a value
-  # type feature and setting this in one thread usually has no effect on
+  # `blocking_mutate_using_clock.this.env.exclusive_thread` may be `nil` while
+  # this value for another thread `T2` may be equal to `T2` since this is a
+  # value type feature and setting this in one thread usually has no effect on
   # the value seen in other threads.
   #
   # There is one exception, though: If a new thread `T3` is spawned off
   # from `T1` in an exclusive section, then `T3` will receive a copy of
-  # `T1`'s `blocking_mutate.this.env` where `exclusive_thread` is `T1`. Apart
-  # from this case, `exclusive_thread` should always be either `nil` or, if
+  # `T1`'s `blocking_mutate_using_clock.this.env` where `exclusive_thread` is `T1`.
+  # Apart from this case, `exclusive_thread` should always be either `nil` or, if
   # in an exclusive section, the `concur.Threads.env.current`.
   #
   module redef exclusive_thread option concur.Thread := nil
@@ -77,14 +79,14 @@ public blocking_mutate : mutate is
       # we must synchronize first:
       mtx.synchronized ()->
         set exclusive_thread := me
-        blocking_mutate.this.replace
+        blocking_mutate_using_clock.this.replace
 
         res := code()
 
         wakeup_next_in_waiting_list
 
         set exclusive_thread := nil
-        blocking_mutate.this.replace
+        blocking_mutate_using_clock.this.replace
 
         res
 
@@ -126,13 +128,83 @@ public blocking_mutate : mutate is
       set exclusive_thread := concur.Threads.env.current
 
 
+  # Perform a wait or exclusive_when with a given timeout
+  #
+  # This allows perform `wait` or `exclusive_when` with a timeout as follows:
+  #
+  #     mutate_type.env.exclusive ()->
+  #       if mutate_type.env.timeout t
+  #                         .wait condition
+  #       then
+  #         # condition was met before timeout
+  #       else
+  #         # timeout occured before condition became true
+  #
+  # or
+  #
+  #       match mutate_type.env.timeout t
+  #                            .exclusive_when condition ()->
+  #                              # condition was met before timeout
+  #         nil => # timeout occured before condition became true
+  #         r T => # r was returned by code passed ot `exclusive_when`.
+  #
+  public timeout(deadline time.duration | time.instant)
+  is
+
+    # convert relative duration to absolute instant:
+    timeout := match deadline
+      d time.duration => C.env.read + d
+      i time.instant  => i
+
+    # wait for the given condition to become true by a mutation of the underlying data.
+    #
+    public wait(F type: ()->bool, condition F) bool
+    pre
+      safety: is_exclusive
+    post
+      debug: (result: condition())
+    =>
+      while !condition() do
+        wakeup_next_in_waiting_list
+        wokeup := concur.Threads.env.current.park_until C _ timeout condition ()->
+          waiting.add concur.Threads.env.current
+          _ := mtx.unlock  # NYI: result ignored
+        _   := mtx.lock    # NYI: result ignored,
+        set exclusive_thread := concur.Threads.env.current
+      until !wokeup  # -- timeout
+        false
+      else
+        true
+
+    # exclusively wait for the given condition to hold and then perform given code with
+    # exclusive access to the mutable values created with this instance of `mutate`.
+    #
+    # In case of a timeout, the result will be nil. Otherwise, the result of running `code()`
+    # will be wrapped in an option and returned.
+    #
+    public exclusive_when(R type,
+                          O type: ()->bool,
+                          F type: ()->R,
+                          condition O,
+                          code F
+                          ) option R
+    pre
+      safety: is_this_mutate_instated_and_usable
+    =>
+      blocking_mutate_using_clock.this.env.exclusive ()->
+        if timeout.this.wait condition
+          option code()
+        else
+          nil
+
+
   # is instance `mutate.this` instated for type `mutate.this` and, if `mutate.this` does
   # not support use in several threads, check we are running in the thread `mutate.this`
   # was created in?
   #
   public redef is_this_mutate_instated_and_usable bool
   =>
-    blocking_mutate.this.get_if_instated >>? (x -> id = x.id)
+    blocking_mutate_using_clock.this.get_if_instated >>? (x -> id = x.id)
 
 
   # cleanup feature to destroy mutex and other resources associated with this
@@ -144,3 +216,16 @@ public blocking_mutate : mutate is
   public redef finally unit
   =>
     mtx.destroy
+
+
+# blocking_mutate -- a multi-thread variant mutate using time.Monotonic
+#
+# This mutates ensure exclusive access to shared memory via using locks and
+# blocking.
+#
+# Accidental race accesses are not permitted by this mutate, i.e., accessing
+# mutable elements, e.g. via `get` or `put` on a mutable var `mutate.new T`,
+# are not permitted unless we are in code run via
+# `blocking_mutate.this.exclusive`.
+#
+public blocking_mutate : blocking_mutate_using_clock time.Monotonic is

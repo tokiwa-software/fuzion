@@ -1,0 +1,49 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue7425
+#
+# -----------------------------------------------------------------------
+
+# count number of symmetric numbers in given interval
+count_sym(iv interval i32) =>
+  iv.count (i -> ($i).utf8 = ($i).utf8.reverse)
+
+max := 10000
+njobs := 10
+
+res := concur.channel i32              # results channel
+
+# create njobs disjoint intervals 1..1000, 1001..2000, etc.
+jobs := (0..njobs).map       j->j*max/njobs
+                  .map_pairs a,b->a+1..b
+
+threads := jobs.map j->
+      concur.Threads.env.spawn ()->
+        r := count_sym j
+        res <- r           # push result to `res` channel
+    .as_array         # store in array to ensure threads get spawned
+
+for cnt := 0, cnt + v             # sum values
+    _ in jobs                     # for all jobs
+    v := (<-res).or_panic         # get and unwrap next value
+else
+  say "$cnt symmetric numbers found in 1..$max"
+
+threads.for_each (.join)  # wait for all threads to terminate

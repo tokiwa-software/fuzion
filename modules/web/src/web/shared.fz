@@ -55,10 +55,10 @@ module read_reponse(LM type : mutate) ! LM =>
 # write the request
 #
 module write_request(LM type : mutate, rm http.request_message) ! LM =>
-  (io.buffered LM).writer.env
+  (io.buffered LM).Writer.env
     .write (rm.bytes i32.max)
     .bind _->
-      (io.buffered LM).writer.env.flush
+      (io.buffered LM).Writer.env.flush
 
 
 module parsed_url(module use_https bool, module host String, module port option u16, module target option String) is

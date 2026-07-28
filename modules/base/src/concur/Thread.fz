@@ -76,7 +76,7 @@ is
     pre
       safety: 0 ≤ priority0 ≤ 99
   =>
-    cond.synchronized (outcome unit) ()->
+    mtx.synchronized (outcome unit) _ ()->
       p :=
         match policy0
           concur.scheduling_policy.sched_other => 0
@@ -103,7 +103,7 @@ is
       concur.scheduling_policy.val
       i32
   =>
-    cond.synchronized ()->
+    mtx.synchronized ()->
       (policy, priority)
 
 
@@ -111,7 +111,7 @@ is
   #
   public set_affinity(cores array u64) outcome unit
   =>
-    cond.synchronized (outcome unit) ()->
+    mtx.synchronized (outcome unit) _ ()->
       e := fuzion.sys.thread.set_affinity thrd cores
       if e = 0
         unit
@@ -126,19 +126,28 @@ is
     a.id = b.id
 
 
+  # mutex used to make accesses to this thread exclusive.
+  #
+  mtx := sync.mutex (A0_park_mutex).env.mtx
+
+
   # private condition variable for this thread, used to put this
-  # thread in park mode.
+  # thread in park mode using the given clock for timeouts
   #
-  cond := concur.sync.condition.new.or_else (panic "failed to create condition variable")
-
-  # is this thread parked?
-  #
-  # this is modified only in `park` and `unpark` while protected by `cond`.
-  #
-  parked := false
+  cond(C type : time.Clock) => (A1_park_condition C).env.cond
 
 
-  # park this thread atomically after storing `condition` in `park_condition` and
+  # is this thread parked? This is an option of a tuple containing the condition
+  # variable and a Nullary function that checks the condition that must hold for
+  # the thread to be unparked.
+  #
+  # All read- and write accesses to this are protected by the mutex used to park
+  # this thread, e.g., `blocking_mutate.mtx`.
+  #
+  parked_on := option (concur.sync.condition, ()->bool) nil
+
+
+  # park this thread atomically after storing `condition` as `park_condition` and
   # executing `code`.
   #
   # The idea is that `code` may release a mutex in a way that ensures that this thread
@@ -146,22 +155,73 @@ is
   #
   module park(F type : ()->unit, condition ()->bool, code F)
   =>
-    cond.synchronized ()->
+    # NYI: UNDER DEVELOPMENT: We are locking both `mtx` and `c` here. This is redundant
+    # since `cond C` is based on `mtx`.  However, this does not seem to be the case for the
+    # Java backend, I run into deadlocks in the C backend and the preconditions in
+    # `condition` do not work if the remove `c.synchronized`.
+    #
+    mtx.lock
+    c := cond time.Monotonic # using condition var for monotonic clock here, but time is not needed
+    c.synchronized ()->
       code()
-      set park_condition_var := condition
-      set parked := true
-      while parked   # perform this in a while to catch spurious wakeups
-        cond.wait
+      set parked_on := (c, condition)
+      mtx.unlock
+      while parked_on??   # perform this in a while to catch spurious wakeups
+        c.wait
+
+
+  # park this thread atomically after storing `condition` as `park_condition` and
+  # executing `code`.
+  #
+  # The idea is that `code` may release a mutex in a way that ensures that this thread
+  # is parked before it is released.
+  #
+  # Return early from park in case timeout was reached.
+  #
+  # result is `true`  if this returns due to a call to `unpark`, it is `false` if there
+  # was no timeout.
+  #
+  module park_until(C type : time.Clock,
+                    F type : ()->unit,
+                    timeout   time.instant,
+                    condition ()->bool,
+                    code      F) bool =>
+    # NYI: UNDER DEVELOPMENT: We are locking both `mtx` and `c` here. This is redundant
+    # since `cond C` is based on `mtx`.  However, this does not seem to be the case for the
+    # Java backend, I run into deadlocks in the C backend and the preconditions in
+    # `condition` do not work if the remove `c.synchronized`.
+    #
+    mtx.lock
+    c := cond C
+    c.synchronized ()->
+      code()
+      set parked_on := (c, condition)
+      mtx.unlock
+      while C.env.read < timeout   # while timeout not reached
+        c.wait timeout
+      until !(parked_on??)                # perform unpark was called
+        true        # unpark was used to wake us up
+      else
+        false       # timed out
 
 
   # unpark this thread if it is parked.
   #
-  module unpark()
+  module unpark
   =>
-    cond.synchronized ()->
-      if parked
-        set parked := false
-        cond.signal
+    # NYI: UNDER DEVELOPMENT: We are locking both `mtx` and `c` here. This is redundant
+    # since `cond C` is based on `mtx`.  However, this does not seem to be the case for the
+    # Java backend, I run into deadlocks in the C backend and the preconditions in
+    # `condition` do not work if the remove `c.synchronized`.
+    #
+    mtx.lock
+    if parked_on??
+      c := parked_on.or_panic.0
+      c.synchronized ()->            # this is redundant for C backend, but required for Java where mtx adiffer
+        parked_on.for_each x->x.0.signal
+        set parked_on := nil
+        mtx.unlock
+        c.signal
 
 
   # threads that are parked may use these link fields to form a `Thread_List` of
@@ -172,22 +232,15 @@ is
   module next Thread := Thread.this
 
 
-  # for a parked `thread.this`, this holds a condition that must hold for the
-  # thread to be unparked.  All read- and write accesses to this are protected
-  # by `cond.synchronized`.
-  #
-  park_condition_var ()->bool := ()->true
-
-
   # for a parked `thread.this`, the condition that must hold for the thread to
-  # be unparked.
+  # be unparked, e.g., `blocking_mutate.mtx`.
   #
-  # This will synchronize the read of `park_condition_var` using
-  # `cond.synchronized`.
+  # This must be called while synchronized on the mutex that caused this to park.
   #
-  module park_condition ()->bool =>
-    cond.synchronized ()->
-      park_condition_var
+  module park_condition ()->bool
+  =>
+    mtx.synchronized ()->
+      parked_on.or_panic.1
 
 
   # String representation of thread
@@ -198,3 +251,51 @@ is
   public redef as_string String
   =>
     "Thread#$id"
+
+
+# a thread-local effect that contains a  mutex for this thread used for park conditions
+#
+# NYI: CLEANUP: This could be just a field in thread as follows
+#
+#    mtx := concur.sync.mtx_init.or_else (panic "failed to create mutex")
+#
+# but there is currently no easy way to access this field while `concur.Threads.env.current`
+# cannot be used becuse `concur.Threads` is not yet instated.
+#
+# NYI: BUG: #7400 This must be instated before `concur.Threads`. Currently, the order
+# is sorted by dependency, but alphabetically, so we add prefix 'A_' as a workaround.
+#
+module A0_park_mutex : thread_local_effect is
+
+  mtx_var := concur.sync.mtx_init.or_else (panic "failed to create mutex")
+  mtx =>
+    mtx_var
+
+
+  public redef fixed instance_for_new_thread A0_park_mutex
+  =>
+    A0_park_mutex
+
+  public redef fixed type.default_value option concur.A0_park_mutex =>
+    concur.A0_park_mutex
+
+
+# a thread-local effect that produces a condition var for given Clock for each thread
+#
+# NYI: BUG: #7400 This must be instated before `concur.Threads`. Currently, the order
+# is not be dependency, but alphabetically, so we add prefix 'A_' as a workaround.
+#
+module A1_park_condition(C type : time.Clock) ref : thread_local_effect is
+
+  cond_var := (concur.sync.condition.new C A0_park_mutex.mtx).or_else (panic "failed to create condition variable")
+  cond =>
+    cond_var
+
+
+  public redef fixed instance_for_new_thread A1_park_condition C
+  =>
+    A1_park_condition C
+
+
+  public redef fixed type.default_value option (concur.A1_park_condition C) =>
+    concur.A1_park_condition C

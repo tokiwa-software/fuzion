@@ -33,9 +33,9 @@ public Move ref : effect is
   #
   public move(
        # the old (relative or absolute) file name, using platform specific path separators
-       old path,
+       old io.path,
        # the new (relative or absolute) file name, using platform specific path separators
-       new path) outcome unit =>
+       new io.path) outcome unit =>
     abstract
 
 
@@ -46,7 +46,7 @@ public Move ref : effect is
   public redef fixed type.default_value option io.file.Move
   =>
     _ : io.file.Move is
-      public redef move(old, new path) outcome unit =>
+      public redef move(old, new io.path) outcome unit =>
         fuzion.sys.fileio.move old new
 
 
@@ -58,7 +58,7 @@ public Move ref : effect is
 #
 public move(
      # the old (relative or absolute) file name, using platform specific path separators
-     old path,
+     old io.path,
      # the new (relative or absolute) file name, using platform specific path separators
-     new path) outcome unit ! io.file.Move =>
+     new io.path) outcome unit ! io.file.Move =>
   io.file.Move.env.move old new

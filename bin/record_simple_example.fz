@@ -66,9 +66,9 @@ Sequence.execute(
   match os.process.start seq.first.or_panic (seq.drop 1) envir_vars
     e error => panic "failed executing $(Sequence.this), error is $e"
     p os.process =>
-      feed option path :=
+      feed option io.path :=
         if feed_stdin
-          path.of "$file.stdin"
+          io.path.of "$file.stdin"
         else
           nil
       tokiwa.record_process p Sequence.this.as_string nil feed
@@ -111,7 +111,7 @@ res :=
     c := "$fz_run -XmaxErrors=-1 -c $(envir.Vars.env["FUZION_C_BACKEND_OPTIONS"].or_default "") -o=testbin $file".execute true
     if (c.exit_code = 0)
       e := "./testbin".execute
-      _ := io.file.delete (path.of "testbin")
+      _ := io.file.delete (io.path.of "testbin")
       tokiwa.process_result c.out+e.out c.err+e.err e.exit_code
     else
       c
@@ -129,10 +129,10 @@ if type_ != "effect"
     else
       "_$type_"
 
-  io.write (path.of "$file.expected_out$sfx") res.out .or_panic
+  io.write (io.path.of "$file.expected_out$sfx") res.out .or_panic
   cur_dir := os.cwd.or_panic.as_string
-  io.write (path.of "$file.expected_err$sfx") (res.err.replace cur_dir "--CURDIR--") .or_panic
+  io.write (io.path.of "$file.expected_err$sfx") (res.err.replace cur_dir "--CURDIR--") .or_panic
 else
-  io.write (path.of "$file.effect") ((res.out.lines.filter (l -> !l.is_empty)).sort.as_string "\n")+"\n" .or_panic
+  io.write (io.path.of "$file.effect") ((res.out.lines.filter (l -> !l.is_empty)).sort.as_string "\n")+"\n" .or_panic
 
 say "RECORDED $file"

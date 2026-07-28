@@ -156,22 +156,22 @@ public class Lexer extends SourceFile
                    //   x is $'   in
                    // '"""
                    //   x is $x."""'
-    t_stringQB,    // '"a+b is {' in "a+b is {a+b}."
+    t_stringQB,    // '"a+b is $(' in "a+b is $(a+b)."
                    // OR multiline string
                    // '"""
-                   //   a+b is {' in
+                   //   a+b is $(' in
                    // '"""
-                   //   a+b is {a+b}."""'
+                   //   a+b is $(a+b)."""'
     t_StringDQ,    // '+-*"'      in "abc$x+-*"
                    //     ^--- fat quotations (""") instead of single
                    //          quotation if part of multiline string
     t_StringDD,    // '+-*$'      in "abc$x+-*$x.".
-    t_StringDB,    // '+-*{'      in "abc$x+-*{a+b}."
+    t_StringDB,    // '+-*$('     in "abc$x+-*$(a+b)."
     t_stringPQ,    // ')+-*"'     in "abc$(x)+-*"
                    //      ^--- fat quotations (""") instead of single
                    //           quotation if part of multiline string
     t_stringPD,    // ')+-*$'     in "abc$(x)+-*$x.".
-    t_stringPB,    // ')+-*{'     in "abc$(x)+-*$(a+b)."
+    t_stringPB,    // ')+-*$('    in "abc$(x)+-*$(a+b)."
     t_this("this"),
     t_env("env"),
     t_check("check"),
@@ -2949,7 +2949,7 @@ PIPE        : "|"
   private enum StringState
   {
     IDENT_EXPECTED,   // parsing an identifier in a string as in "xyz is $xyz."
-    EXPR_EXPECTED,    // parsing an expression in a string as in "expr is {q.f(fun f(x i32) -> { x * 5 })}."
+    EXPR_EXPECTED,    // parsing an expression in a string as in "expr is $(q.f(fun f(x i32) -> { x * 5 }))."
     CONTINUED,        // parsing the string following an identifier in a string as in "abc+$x-def" when parsing -def"
   }
 
@@ -2961,7 +2961,7 @@ PIPE        : "|"
   {
     QUOTE,   // A string starting with '"' or '"""' as in "normal string...
     DOLLAR,  // Following '$<id>' as " dollar string..." in "previous $ident dollar string...
-    PAREN;   // Following '{<expr>}' as " rbrace string..." in "previous {a+b} rbrace string...
+    PAREN;   // Following '$(<expr>)' as " rparen string..." in "previous $(a+b) rparen string...
 
     /**
      * Get the partial string token for a string starting with this and ending with end.
@@ -2984,7 +2984,7 @@ PIPE        : "|"
 
   /**
    * For a given string token, return if that string starts with {@code "} or follows
-   * an embedded {@code $<id>} or {@code {<expr>}}.
+   * an embedded {@code $<id>} or {@code $(<expr>)}.
    */
   StringEnd beginning(Token t)
   {
@@ -3010,7 +3010,7 @@ PIPE        : "|"
 
   /**
    * For a given string token, return if that string ends with {@code "} or with an
-   * embedded {@code $<id>} or {@code {<expr>}}.
+   * embedded {@code $<id>} or {@code $(<expr>)}.
    */
   StringEnd end(Token t)
   {
@@ -3041,7 +3041,7 @@ PIPE        : "|"
   {
     /**
      * The original string that started with {@code "}, i.e., disregarding any partial
-     * strings following {@code $<id>} or {@code {<expr>}}.  Used for proper error messages.
+     * strings following {@code $<id>} or {@code $(<expr>)}.  Used for proper error messages.
      */
     final int _stringStart;
 
@@ -3536,7 +3536,7 @@ PIPE        : "|"
 
   /**
    * Is the given token a constant string that is started, i.e., it is not
-   * preceded by an embedded identifier {@code $id} or expression {@code {expr}}.
+   * preceded by an embedded identifier {@code $id} or expression {@code $(expr)}.
    *
    * @param t a token
    *
@@ -3550,7 +3550,7 @@ PIPE        : "|"
 
   /**
    * Is the given token a constant string that is completed, i.e., it is not
-   * followed by an embedded identifier {@code $id} or expression {@code {expr}}.
+   * followed by an embedded identifier {@code $id} or expression {@code $(expr)}.
    *
    * @param t a token
    *
@@ -3579,7 +3579,7 @@ PIPE        : "|"
 
   /**
    * Is the given token a constant string that is following an embedded
-   * identifier or expression, i.e., any of the t_stringD* or t_stringB*
+   * identifier or expression, i.e., any of the t_stringD* or t_stringP*
    * variants of constant strings.
    *
    * @param t a token

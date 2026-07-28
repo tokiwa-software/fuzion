@@ -87,6 +87,25 @@ static_assert(SIGALRM == 14, "signal definition different than expected");
 static_assert(SIGTERM == 15, "signal definition different than expected");
 static_assert(sizeof(pthread_t) <= sizeof(void *), "pthread_t must be smaller or equal to pointer size");
 
+
+/**
+ *   - 0 for CLOCK_REALTIME (which is not a real-time clock, but wallclock time)
+ *   - 1 for CLOCK_MONOTONIC (which does not jump for leap seconds are when system time is changed)
+ */
+clockid_t get_clock_id(int clock)
+{
+  switch(clock)
+    {
+      case 0:
+        return CLOCK_REALTIME;
+      case 1:
+        return CLOCK_MONOTONIC;
+      default:
+        assert(false);
+        return -1;
+    }
+}
+
 // returns the latest error number of
 // the current thread
 int64_t fzE_last_error(void){
@@ -406,14 +425,14 @@ int fzE_munmap(void * mapped_address, const int file_size){
 
 
 /**
- * returns a monotonically increasing timestamp.
+ * @return the time of the given posix clock
  */
-uint64_t fzE_nanotime()
+uint64_t fzE_posix_time(int clockid)
 {
   struct timespec result;
-  if (clock_gettime(CLOCK_MONOTONIC,&result)!=0)
+  if (clock_gettime(get_clock_id(clockid), &result)!=0)
   {
-    fprintf(stderr,"*** clock_gettime failed\012");
+    fprintf(stderr,"*** clock_gettime failed for clockid %d \012", clockid);
     exit(EXIT_FAILURE);
   }
   return result.tv_sec*1000000000ULL+result.tv_nsec;
@@ -535,8 +554,10 @@ void * fzE_thread_create(void *(*code)(void *),
   struct sched_param default_schedparam;
   default_schedparam.sched_priority = 0;
 
-  assert (pthread_attr_setschedparam(&attr, &default_schedparam) == 0);
-  assert (pthread_attr_setschedpolicy(&attr, SCHED_OTHER) == 0);
+  int schedparamres = pthread_attr_setschedparam(&attr, &default_schedparam);
+  assert(schedparamres == 0);
+  int schedpolicyres = pthread_attr_setschedpolicy(&attr, SCHED_OTHER);
+  assert(schedpolicyres == 0);
 
 #ifdef GC_THREADS
   int res = GC_pthread_create(&pt,NULL,code,args);
@@ -900,9 +921,39 @@ void fzE_mtx_destroy(void * mtx) {
   fzE_free(mtx);
 }
 
-void * fzE_cnd_init() {
+/**
+ * initialize a condition
+ *
+ * @param clock the clock to be used:
+ *
+ *   - 0 for CLOCK_REALTIME (which is not a real-time clock, but wallclock time)
+ *   - 1 for CLOCK_MONOTONIC (which does not jump for leap seconds are when system time is changed)
+ *
+ * NYI: support for other values defined in
+ * /use/include/x86_64-linux-gnu/bits/time.h for CPU-time, coarse time etc.
+ *
+ * @return NULL on error or pointer to condition
+ *         NOTE: eventually needs to be destroyed via fzE_cnd_destroy.
+ */
+void * fzE_cnd_init(int clock)
+{
   pthread_cond_t *cnd = (pthread_cond_t *)fzE_malloc_safe(sizeof(pthread_cond_t));
-  return pthread_cond_init(cnd, NULL) == 0 ? (void *)cnd : NULL;
+  pthread_condattr_t attr;
+  void * res = NULL;
+  if (pthread_condattr_init(&attr) == 0) // may return ENOMEM
+    {
+// NYI: BUG: pthread_condattr_setclock not available on macOS
+#ifndef __APPLE__
+      if (pthread_condattr_setclock(&attr, get_clock_id(clock)) == 0) // may return EINVAL in case clock not supported
+#endif
+        {
+          if (pthread_cond_init(cnd, &attr) == 0) // may return EAGAIN or ENOMEM
+            {
+              res = (void *)cnd;
+            }
+        }
+    }
+  return res;
 }
 
 void fzE_cnd_signal(void * cnd) {
@@ -915,6 +966,20 @@ void fzE_cnd_broadcast(void * cnd) {
 
 void fzE_cnd_wait(void * cnd, void * mtx) {
   pthread_cond_wait((pthread_cond_t *)cnd, (pthread_mutex_t *)mtx);
+}
+
+void fzE_cnd_timedwait(void * cnd, void * mtx, int64_t time_ns)
+{
+  int64_t  s  =                   time_ns / 1000000000;
+  long     ns = (long) (time_ns - s       * 1000000000);
+  const struct timespec abstime = { s, ns };
+  // NYI: BUG: we need sth. like this on macOS:
+  // #ifdef __APPLE__
+  //     pthread_cond_timedwait_relative_np(cond, mutex, &relative);
+  // #else
+  //     pthread_cond_timedwait(cond, mutex, &absolute_monotonic);
+  // #endif
+  pthread_cond_timedwait((pthread_cond_t *)cnd, (pthread_mutex_t *)mtx, &abstime);
 }
 
 void fzE_cnd_destroy(void * cnd) {

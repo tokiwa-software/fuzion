@@ -34,6 +34,9 @@ import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
 import java.util.TreeMap;
+
+import java.util.concurrent.TimeUnit;
+
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -65,6 +68,16 @@ public class Intrinsics extends ANY
   }
 
 
+  /*-----------------------------  records  -----------------------------*/
+
+
+  /**
+   * A JvmCondition, we try to mimic a pthread condition connected to a clock
+   * with given clockid_t.
+   */
+  record JvmCondition(Condition cnd, int clockid) { }
+
+
   /*------------------------------  enums  ------------------------------*/
 
 
@@ -89,6 +102,11 @@ public class Intrinsics extends ANY
 
 
   static final TreeMap<String, IntrinsicCode> _intrinsics_ = new TreeMap<>();
+
+  /* NYI: UNDER DEVELOPMENT: Constants to be kept in sync with `modules/baser/src/posix.fz`, should be automated.
+   */
+  static final int CLOCK_REALTIME  = 0;
+  static final int CLOCK_MONOTONIC = 1;
 
   /*----------------------------  variables  ----------------------------*/
 
@@ -698,12 +716,15 @@ public class Intrinsics extends ANY
     put("concur.sync.cnd_init", (executor, innerClazz) -> args -> {
       var resultClazz = executor.fuir().clazzResultClazz(innerClazz);
       return JavaInterface.javaObjectToInstance(
-        ((ReentrantLock) ((JavaRef) args.get(1))._javaRef).newCondition(), resultClazz);
+        new JvmCondition(((ReentrantLock) ((JavaRef) args.get(1))._javaRef).newCondition(),
+                         args.get(2).i32Value()),
+        resultClazz);
     });
     put("concur.sync.cnd_signal", (executor, innerClazz) -> args -> {
       try
         {
-          ((Condition) ((JavaRef) args.get(1))._javaRef).signal();
+          var jc = (JvmCondition) ((JavaRef) args.get(1))._javaRef;
+          jc.cnd.signal();
         }
       catch (Exception e)
         {
@@ -714,7 +735,8 @@ public class Intrinsics extends ANY
     put("concur.sync.cnd_broadcast", (executor, innerClazz) -> args -> {
       try
         {
-          ((Condition) ((JavaRef) args.get(1))._javaRef).signalAll();
+          var jc = (JvmCondition) ((JavaRef) args.get(1))._javaRef;
+          jc.cnd.signalAll();
         }
       catch (Exception e)
         {
@@ -725,7 +747,27 @@ public class Intrinsics extends ANY
     put("concur.sync.cnd_wait", (executor, innerClazz) -> args -> {
       try
         {
-          ((Condition) ((JavaRef) args.get(1))._javaRef).await();
+          var jc = (JvmCondition) ((JavaRef) args.get(1))._javaRef;
+          jc.cnd.await();
+        }
+      catch (Exception e)
+        {
+          Errors.fatal(e);
+        }
+      return Value.UNIT;
+    });
+    put("concur.sync.cnd_timedwait", (executor, innerClazz) -> args -> {
+      try
+        {
+          var jc = (JvmCondition) ((JavaRef) args.get(1))._javaRef;
+          var timeout = args.get(3).i64Value();
+          var ns = switch (jc.clockid)
+            {
+            case CLOCK_REALTIME  -> timeout - System.currentTimeMillis() * 1000000L;
+            case CLOCK_MONOTONIC -> timeout - System.nanoTime();
+            default              -> { Errors.fatal("JVM backend unexpected POSIX clockid "+jc.clockid); throw new Error(); }
+            };
+          jc.cnd.await(ns, TimeUnit.NANOSECONDS);
         }
       catch (Exception e)
         {

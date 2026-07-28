@@ -61,8 +61,8 @@ sockets_thread_pool_test is
               res := "received: $(rr.as_string)\n\n"
 
               w =>
-                match (io.buffered mutate).writer.env.write res
-                  unit => (io.buffered mutate).writer.env.flush
+                match (io.buffered mutate).Writer.env.write res
+                  unit => (io.buffered mutate).Writer.env.flush
                   e error => e
 
               match w
@@ -110,8 +110,8 @@ sockets_thread_pool_test is
               + "Client: $(sockets_thread_pool_test.client.this.num)\n\n")
 
             w =>
-              _ := (io.buffered mutate).writer.env.write req
-              _ := (io.buffered mutate).writer.env.flush
+              _ := (io.buffered mutate).Writer.env.write req
+              _ := (io.buffered mutate).Writer.env.flush
 
             str := "$protocol/$family-client $(sockets_thread_pool_test.client.this.num), write to $host => $(w)"
 
