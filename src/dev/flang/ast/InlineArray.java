@@ -208,12 +208,12 @@ public class InlineArray extends ExprWithPos
   @Override
   Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
   {
-    var bt = t.isNormalType() && Types.resolved.f_array.inheritsFrom(t.feature()) && t.feature().typeArguments().size()==1
+    var arrayType = t.isNormalType() && Types.resolved.f_array.inheritsFrom(t.feature()) && t.feature().typeArguments().size()==1
       ? t.feature()
       : Types.resolved.f_array;
     // if expected type is choice, examine if there is exactly one
     // array in choice generics, if so use this for further type propagation.
-    t = t.findInChoice(cg -> !cg.isParametricType() && cg.feature() == bt, context);
+    t = t.findInChoice(cg -> !cg.isParametricType() && cg.feature() == arrayType, context);
 
     var elementType = elementType(t);
     if (elementType != Types.t_ERROR
@@ -225,8 +225,8 @@ public class InlineArray extends ExprWithPos
           {
             li.set(li.next().propagateExpectedType(res, context, elementType, null));
           }
-        _type = bt.resultType()
-                  .applyTypePars(bt, new List<>(elementType));
+        _type = arrayType.resultType()
+                  .applyTypePars(arrayType, new List<>(elementType));
       }
     return this;
   }
