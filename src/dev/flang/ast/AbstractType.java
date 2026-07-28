@@ -392,7 +392,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * Check if this or any of its generic arguments is Types.t_ERROR.
+   * Check if this or any of its generic arguments is or contains Types.t_ERROR.
    */
   public boolean containsError()
   {
@@ -414,6 +414,27 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     if (POSTCONDITIONS) ensure
       (!result || Errors.any());
 
+    return result;
+  }
+
+
+  /**
+   * Check if this or any of its generic arguments contains an artificial type.
+   */
+  public boolean containsArtificialType()
+  {
+    boolean result = false;
+    if (isArtificialType())
+      {
+        result = true;
+      }
+    else if (isNormalType())
+      {
+        for (var t: generics())
+          {
+            result = result || t == null || t.containsArtificialType();
+          }
+      }
     return result;
   }
 
