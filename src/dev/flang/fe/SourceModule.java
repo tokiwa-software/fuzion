@@ -1971,7 +1971,7 @@ A feature that is a constructor, choice or a type parameter may not redefine an 
    */
   private void checkLegalTypeVisibility(Feature f)
   {
-    if (!f.definesType() && f.visibility().definesTypeVisibility())
+    if (!f.definesType() && !f.isTypeParameter() && f.visibility().definesTypeVisibility())
       {
         AstErrors.illegalTypeVisibilityModifier(f);
       }

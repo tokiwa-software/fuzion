@@ -108,7 +108,9 @@ public class Feature extends AbstractFeature
   public Visi visibility()
   {
     return _visibility == Visi.UNSPECIFIED
-      ? Visi.PRIV
+      ? (isTypeParameter()
+          ? outer().visibility().typeVisibility()
+          : Visi.PRIV)
       : _visibility;
   }
 
