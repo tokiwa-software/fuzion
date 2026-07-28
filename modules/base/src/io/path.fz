@@ -22,16 +22,13 @@
 # -----------------------------------------------------------------------
 
 
-# NYI: CLEANUP: where to move this os/io?
-
-
 # a feature denoting a path/file in the filesystem
 #
-# instantiate via path.of, e.g.
+# instantiate via io.path.of, e.g.
 #
-#     path.of "/some/path"
+#     io.path.of "/some/path"
 # or
-#     path.of ["some", "path"] true
+#     io.path.of ["some", "path"] true
 #
 private:public path(public names array String, public is_absolute bool) : property.orderable, property.hashable
   pre debug: !names.contains "."
@@ -45,15 +42,21 @@ is
 
   # is this the root
   #
-  public fixed is_root    bool => path.this = path.root
+  public fixed is_root    bool =>
+    # NYI: ENHANCEMENT: path.this = path.root
+    (io.path names is_absolute) = path.root
 
   # is this a relative path representing "current directory"
   #
-  public fixed is_current bool => path.this = path.current_dir
+  public fixed is_current bool =>
+    # NYI: ENHANCEMENT: path.this = path.root
+    (io.path names is_absolute) = path.current_dir
 
   # is this a relative path representing "parent directory"
   #
-  public fixed is_parent  bool => path.this = path.parent_dir
+  public fixed is_parent  bool =>
+    # NYI: ENHANCEMENT: path.this = path.root
+    (io.path names is_absolute) = path.parent_dir
 
   # is this a path with just one segment, i.e. not containing a path separator when normalized
   #
@@ -65,13 +68,15 @@ is
 
   # does this path end with other
   #
-  public fixed ends_with(other path) bool =>
+  public fixed ends_with(other io.path) bool =>
     (other.segments_count < segments_count && other.is_relative && names.reverse.starts_with other.names.reverse) ||
-      path.this = other
+      # NYI: ENHANCEMENT: should probably work in fixed features:
+      # path.this = other
+      (io.path names is_absolute) = other
 
   # does this path contain other
   #
-  public contains(other path) bool =>
+  public contains(other io.path) bool =>
     other.is_relative && (names.find other.names ? i32 => true | * => false) || starts_with other
 
 
@@ -79,38 +84,38 @@ is
   #
   # e.g.
   #
-  #     path.of "/tmp/folder" .resolve "file"
+  #     io.path.of "/tmp/folder" .resolve "file"
   #
   # effectively returns
   #
-  #     path.of "/tmp/folder/file"
+  #     io.path.of "/tmp/folder/file"
   #
   # resolving an absolute path returns that path unmodified
   #
-  public resolve(o path|String) path =>
-    p := o ? p1 path => p1 | s String => path.of s
+  public resolve(o io.path|String) io.path =>
+    p := o ? p1 io.path => p1 | s String => io.path.of s
 
-    p.is_absolute ? p : path.of names++p.names is_absolute
+    p.is_absolute ? p : io.path.of names++p.names is_absolute
 
 
   # get subpath starting from (inclusive)
   #
   # e.g.
-  #     path.of "/tmp/folder/file" .subpath 1 = path.of "folder/file"
+  #     io.path.of "/tmp/folder/file" .subpath 1 = io.path.of "folder/file"
   #
-  public subpath(from i32) path =>
+  public subpath(from i32) io.path =>
     subpath from segments_count
 
 
   # get subpath from (inclusive) to (exclusive)
   #
   # e.g.
-  #     path.of "/tmp/folder/file" .subpath 0 2 = path.of "/tmp/folder"
+  #     io.path.of "/tmp/folder/file" .subpath 0 2 = io.path.of "/tmp/folder"
   #
-  public subpath(from, to i32) path =>
+  public subpath(from, to i32) io.path =>
     sp := names
       .slice from to
-    path.of sp (is_absolute && from=0)
+    io.path.of sp (is_absolute && from=0)
 
 
   # Full file name or name of the last directory
@@ -143,27 +148,27 @@ is
   # if folder is root folder or .
   # nil is returned
   #
-  public parent option path => parent 1
+  public parent option io.path => parent 1
 
   # go up n levels, i.e. call parent n times
   #
-  public parent(n i32) option path
+  public parent(n i32) option io.path
     pre debug: n >= 0
   =>
     if names.is_empty && is_absolute && n>0
       nil
     else
-      path.of names++[".."]*n is_absolute
+      io.path.of names++[".."]*n is_absolute
 
 
   # relativize path `p` based on this path.
   #
   # e.g. "/tmp/folder".relativize "/tmp/folder/file" will return "file"
   #
-  public relativize(p path) path
-    pre debug: p.starts_with (path.of names is_absolute)
+  public relativize(p io.path) io.path
+    pre debug: p.starts_with (io.path.of names is_absolute)
   =>
-    path.of (p.names.drop names.count) false
+    io.path.of (p.names.drop names.count) false
 
 
   # checks if this path starts with path `p`
@@ -171,9 +176,9 @@ is
   # both this and path p must either be absolute or relative
   # for this to return true.
   #
-  # e.g. (path.of "/tmp/file").starts_with (path.of "/tmp") = true
+  # e.g. (io.path.of "/tmp/file").starts_with (io.path.of "/tmp") = true
   #
-  public starts_with(p path) bool =>
+  public starts_with(p io.path) bool =>
     is_absolute = p.is_absolute &&
       p.names.count <= names.count &&
       (names.take p.names.count) = p.names
@@ -182,11 +187,11 @@ is
   # relative paths are resolved against the current working
   # directory (`os.cwd`); absolute paths are returned unchanged
   #
-  public as_absolute outcome path
+  public as_absolute outcome io.path
   =>
-    is_absolute ? outcome (path names is_absolute)
+    is_absolute ? outcome (io.path names is_absolute)
                 : os.cwd.bind c->
-                    c.resolve (path names is_absolute)
+                    c.resolve (io.path names is_absolute)
 
 
   # String representation of this path
@@ -210,7 +215,7 @@ is
 
   # define order for paths
   #
-  public redef fixed type.lteq(a, b path) bool =>
+  public redef fixed type.lteq(a, b io.path) bool =>
     if a.is_absolute != b.is_absolute
       b.is_absolute
     else
@@ -223,7 +228,7 @@ is
   #
   #   (T.equality a b) : (T.hash_code a = T.hash_code b)
   #
-  public redef fixed type.hash_code(a path) u64 =>
+  public redef fixed type.hash_code(a io.path) u64 =>
     xxh_next
       (hash a.is_absolute)
       ((array String).hash_code a.names)
@@ -233,12 +238,12 @@ is
   # if paths starts with / it is considered to be
   # absolute rather than relative.
   #
-  public type.of(str String) path
+  public type.of(str String) io.path
     pre debug: !str.starts_with "/../"
         debug: str != "/.."
   =>
     t := str.trim
-    path.of (t.split "/") (t.starts_with "/")
+    io.path.of (t.split "/") (t.starts_with "/")
 
 
   # the path separator that is used
@@ -254,9 +259,9 @@ is
   #
   # e.g.
   #
-  #     path.of ["tmp", "some_file"] true
+  #     io.path.of ["tmp", "some_file"] true
   #
-  public type.of(seq Sequence String, is_absolute bool) path
+  public type.of(seq Sequence String, is_absolute bool) io.path
     pre debug: seq ∀ s->
           !(s.contains "/" || s.contains "\0")
         debug: !is_absolute || (seq.first "") != ".."
@@ -277,22 +282,22 @@ is
           # no double dots encountered previously,
           # we need to include this element in the final path
           (r.0, [t]++r.1)
-    path ([".."]*dotdot ++ names).as_array is_absolute
+    io.path ([".."]*dotdot ++ names).as_array is_absolute
 
 
   # the root path "/"
   #
-  public type.root path => path [] true
+  public type.root io.path => io.path [] true
 
   # the current directory path "."
   #
-  public type.current_dir path => path [] false
+  public type.current_dir io.path => io.path [] false
 
   # the parent directory path ".."
   #
-  public type.parent_dir path => path.of ".."
+  public type.parent_dir io.path => io.path.of ".."
 
 
 # used in path.separator
 #
-separator_cache(val codepoint) is
+universe.separator_cache(val codepoint) is

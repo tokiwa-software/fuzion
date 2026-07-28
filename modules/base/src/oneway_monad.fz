@@ -37,8 +37,6 @@ public oneway_monad(
   # effect.
   A type,
 
-  OMA type : oneway_monad.this,
-
   # `plain` monad or effect to be `inst`alled or `repl`aced by new value?
   #
   # if `repl`, `replace` will be called. If `inst`, this has to be
@@ -46,7 +44,7 @@ public oneway_monad(
   # which is not needed if used as an explicit monad.
   #
   mode oneway_monad_mode.val
-  ) : monad A OMA, effect
+  ) : monad A oneway_monad.this, effect
 is
 
   match mode

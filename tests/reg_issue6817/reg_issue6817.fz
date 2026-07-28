@@ -23,7 +23,7 @@
 
 reg_issue6817 =>
 
-  # the type of the or_else is T that is constrainted with bool
+  # the type of the or_else is T that is constrained with bool
   # but it is not possible and should not be possible to assign false
   # which is of type bool
 

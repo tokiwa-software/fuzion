@@ -121,14 +121,14 @@ priority_queue_benchmark =>
       say "average"
       enq_hist.for_each szh->(sz,h := szh; say "$(sz.as_string.pad_left 9): $(h.average.as_string_pad)")
       say "\naverage / log_2"
-      enq_hist.for_each szh->(sz,h := szh; say "$(sz.as_string.pad_left 9): $(h.average.times (f64.one / (sz.as_f64.log 2)) .as_string_pad)")
+      enq_hist.for_each szh->(sz,h := szh; say "$(sz.as_string.pad_left 9): $(h.average.scale (f64.one / (sz.as_f64.log 2)) .as_string_pad)")
       enq_hist.for_each szh->(_ ,h := szh; say h)
 
       say "\n\nDEQUEUE:\n"
       say "average"
       deq_hist.for_each szh->(sz,h := szh; say "$(sz.as_string.pad_left 9): $(h.average.as_string_pad)")
       say "\naverage / log_2"
-      deq_hist.for_each szh->(sz,h := szh; say "$(sz.as_string.pad_left 9): $(h.average.times (f64.one / (sz.as_f64.log 2)) .as_string_pad)")
+      deq_hist.for_each szh->(sz,h := szh; say "$(sz.as_string.pad_left 9): $(h.average.scale (f64.one / (sz.as_f64.log 2)) .as_string_pad)")
       deq_hist.for_each szh->(_ ,h := szh; say h)
 
 
@@ -208,7 +208,7 @@ priority_queue_benchmark =>
           hist_mk_heap.add (time.stopwatch ()->(q := container.Binary_Heap_Queue m T .from elements; _:=q))
 
       say """
-          $(hist_mk_heap.average.times (1.0 / elements.length.as_f64) .as_string_pad) \
+          $(hist_mk_heap.average.scale (1.0 / elements.length.as_f64) .as_string_pad) \
           per element for $(elements.length.as_string.pad_left (test_lengths.last.or_panic.as_string.byte_count)) \
           $elem_desc elements. Total time was $(hist_mk_heap.average.as_string_pad)"""
 

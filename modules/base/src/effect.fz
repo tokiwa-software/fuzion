@@ -410,3 +410,13 @@ instate_helper(# result type
       set res := def cur_e
 
 
+# effect that has a different instance when used in different threads
+#
+public thread_local_effect : effect is
+
+  public instance_for_new_thread thread_local_effect.this
+  =>
+    thread_local_effect.this
+
+# effect that is only used in one thread and never teleported
+public local_effect : effect is

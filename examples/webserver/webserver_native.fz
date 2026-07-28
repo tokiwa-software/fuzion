@@ -56,7 +56,7 @@ webserver_native is
           * =>
 
         send200(data String) =>
-          _ := (io.buffered mutate).writer.env
+          _ := (io.buffered mutate).Writer.env
             .write """
               HTTP/1.1 200 OK
               Connection: close
@@ -66,7 +66,7 @@ webserver_native is
 
               $(data)
             """.utf8.as_array
-          (io.buffered mutate).writer.env.flush
+          (io.buffered mutate).Writer.env.flush
 
         _ := send200 "<html>Hello Fuzion $n!</html>"
 

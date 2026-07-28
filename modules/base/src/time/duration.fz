@@ -122,7 +122,9 @@ is
 
   # this duration multiplied by factor f
   #
-  public times(f f64) time.duration
+  # NYI: HACK: only works for results < ~292.3 years due to usage of `.as_i64`
+  #
+  public scale(f f64) time.duration
   =>
     time.duration (nanos.as_f64 * f).as_i64.as_u64
 

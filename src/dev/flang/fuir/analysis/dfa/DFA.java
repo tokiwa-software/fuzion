@@ -2591,6 +2591,13 @@ public class DFA extends ANY
         cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 1));
         return Value.UNIT;
       });
+    put("concur.sync.cnd_timedwait"         , cl ->
+      {
+        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
+        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 1));
+        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 2));
+        return Value.UNIT;
+      });
     put("concur.sync.cnd_destroy"           , cl ->
       {
         cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));

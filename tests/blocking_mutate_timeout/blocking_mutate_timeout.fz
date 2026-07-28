@@ -1,0 +1,127 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test blocking_mutate_timeout
+#
+# -----------------------------------------------------------------------
+
+# A test that uses different Clocks to wait for a timeout using concur.blocking_mutate.
+# Both, relative and absolute timeouts are tested.
+#
+blocking_mutate_timeout =>
+
+  detailed_output => envir.Args.env.drop 1 .map (="debug") .first .or_else false
+
+  say_debug(s Any) =>
+    if detailed_output
+      say s
+
+  bm : concur.blocking_mutate is
+  wc : concur.blocking_mutate_using_clock time.Wallclock is
+  mc : concur.blocking_mutate_using_clock time.Monotonic is
+
+  test_relative(BM type : concur.blocking_mutate_using_clock C, C type : time.Clock, name String)
+  =>
+    running := BM.env.new "init"
+    counter := BM.env.new u64 0
+
+    t_start := C.env.read
+
+    t1 := concur.Threads.env.spawn ()->
+      BM.env.exclusive_when ()->running="start" ()->
+        running <- "run"
+
+      while BM.env.exclusive ()->
+        counter <- counter +^ 1
+        running="run"
+      do
+
+    delay => time.duration.s 1
+
+    BM.env.exclusive ()->
+      running <- "start"
+      BM.env.wait ()->running="run"
+      res := BM.env.timeout delay
+                   .wait ()->false
+      check !res   # condition `false` is never `true`, we return due to a timeout
+      running <- "done"
+
+      t_end := C.env.read
+      actual_delay := t_end - t_start
+
+      say       "$name relative timeout: got timeout"
+      say_debug (actual_delay >= delay ? "   PASS   : delay $actual_delay > $delay"
+                                       : "** FAIL **: delay $actual_delay < $delay")
+      say_debug (counter > 0           ? "   PASS   : counter was incremented to $counter"
+                                       : "** FAIL **: counter made no progree")
+
+    t1.join
+
+
+  test_absolute(BM type : concur.blocking_mutate_using_clock C, C type : time.Clock, name String)
+  =>
+    running := BM.env.new "init"
+    counter := BM.env.new u64 0
+
+    t1 := concur.Threads.env.spawn ()->
+      BM.env.exclusive_when ()->running="start" ()->
+        running <- "run"
+
+      while BM.env.exclusive ()->
+        counter <- counter +^ 1
+        running="run"
+      do
+
+    abs_timeout := C.env.read + time.duration.s 1
+
+    BM.env.exclusive ()->
+      running <- "start"
+      BM.env.wait ()->running="run"
+      res := BM.env.timeout abs_timeout
+                   .wait ()->false
+      check !res   # condition `false` is never `true`, we return due to a timeout
+      running <- "done"
+
+      t_end := C.env.read
+
+      say       "$name absolute timeout: got timeout"
+      say_debug (t_end > abs_timeout ? "   PASS   : end $(t_end.as_string time.time_unit.ms) > timeout $(abs_timeout.as_string time.time_unit.ms)"
+                                     : "** FAIL **: end $(t_end.as_string time.time_unit.ms) < timeout $(abs_timeout.as_string time.time_unit.ms)")
+      say_debug (counter > 0         ? "   PASS   : counter was incremented to $counter"
+                                     : "** FAIL **: counter made no progree")
+
+    t1.join
+
+
+  # test using default blocking_mutate (based on time.Monotonic)
+  #
+  bm ! (test_relative bm time.Monotonic "default blocking_mutate")
+  bm ! (test_absolute bm time.Monotonic "default blocking_mutate")
+
+
+  # test using blocking_mutate_using_block time.Wallclock
+  #
+  wc ! (test_relative wc time.Wallclock "blocking_mutate using time.Wallclock")
+  wc ! (test_absolute wc time.Wallclock "blocking_mutate using time.Wallclock")
+
+
+  # test using blocking_mutate_using_block time.Monotonic
+  #
+  mc ! (test_relative mc time.Monotonic "blocking_mutate using time.Monotonic")
+  mc ! (test_absolute mc time.Monotonic "blocking_mutate using time.Monotonic")

@@ -448,10 +448,11 @@ int fzE_munmap(void * mapped_address, const int file_size){
 
 
 /**
- * returns a monotonically increasing timestamp.
+ * @return the time of the given posix clock
  */
-uint64_t fzE_nanotime()
+uint64_t fzE_posix_time(int clockid)
 {
+  // NYI: BUG: clockid currently ignored
   static LARGE_INTEGER frequency = {0};
   if (frequency.QuadPart == 0) {
       if (!QueryPerformanceFrequency(&frequency)) {
@@ -475,11 +476,11 @@ uint64_t fzE_nanotime()
  */
 void fzE_nanosleep(uint64_t n)
 {
-  uint64_t start = fzE_nanotime();
+  uint64_t start = fzE_posix_time(-1);
   uint64_t end = start + n;
 
-  while (fzE_nanotime() < end) {
-    uint64_t remaining_ns = end - fzE_nanotime();
+  while (fzE_posix_time(-1) < end) {
+    uint64_t remaining_ns = end - fzE_posix_time(-1);
     if (remaining_ns > 1000000ULL) {
       Sleep((DWORD)(remaining_ns / 1000000ULL));
     } else if (remaining_ns > 0) {
@@ -1080,7 +1081,22 @@ void fzE_mtx_destroy(void *mtx) {
   fzE_free(mtx);
 }
 
-void * fzE_cnd_init() {
+/**
+ * initialize a condition
+ *
+ * @param clock the clock to be used:
+ *
+ *   - 0 for CLOCK_REALTIME (which is not a real-time clock, but wallclock time)
+ *   - 1 for CLOCK_MONOTONIC (which does not jump for leap seconds are when system time is changed)
+ *
+ * NYI: support for other values defined in
+ * /use/include/x86_64-linux-gnu/bits/time.h for CPU-time, coarse time etc.
+ *
+ * @return NULL on error or pointer to condition
+ *         NOTE: eventually needs to be destroyed via fzE_cnd_destroy.
+ */
+void * fzE_cnd_init(int clock) {
+  // NYI: UNDER DEVELOPMENT: clock is ignored for condition variable
   CONDITION_VARIABLE *cnd = (CONDITION_VARIABLE *)fzE_malloc_safe(sizeof(CONDITION_VARIABLE));
   InitializeConditionVariable(cnd);
   return (void *)cnd;

@@ -23,9 +23,9 @@
 
 mod_nom_parser_xml =>
 
-  mastodon_rss => io.slurp (path.of "mastodon.xml") .or_panic
+  mastodon_rss => io.slurp (io.path.of "mastodon.xml") .or_panic
 
-  bsky_rss => io.slurp (path.of "bsky.xml") .or_panic
+  bsky_rss => io.slurp (io.path.of "bsky.xml") .or_panic
 
   xml_parser := nom.parsers.xml
 
