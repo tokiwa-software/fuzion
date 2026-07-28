@@ -94,25 +94,25 @@ is
 
   # update a child node and return a new container_node
   update(pos u32, node branch CTK CTV, g uid) =>
-    container_node bmp (array.put pos.as_i32 node) g
+    container_node bmp (array.put pos node) g
 
   # add a child node and return a new container_node
   put(sn singleton_node CTK CTV, pos, flag u32, g uid) =>
-    container_node (bmp | flag) (array.insert pos.as_i32 sn).as_array g
+    container_node (bmp | flag) (array.insert pos sn).as_array g
 
   # remove a child node and return a new container_node
   remove(pos, flag u32, g uid)
     pre
-      debug: array.indices.contains pos.as_i64
+      debug: (array.indices u32).contains pos
     post
       debug: array.length = result.array.length + 1
   =>
     # NYI: UNDER DEVELOPMENT: delete/remove should be in stdlib
-    tmp := array.take pos.as_i32 ++ array.drop (pos + 1).as_i32
+    tmp := array.take pos ++ array.drop (pos + 1)
     container_node (bmp ^ flag) tmp.as_array g
 
   # get item at pos in this container node
-  index [] (pos i32) branch CTK CTV =>
+  index [] (I type: integer, pos I) branch CTK CTV =>
     array[pos]
 
   public redef as_string String => "container_node[gen=$gen]($(array.as_string ", "))"
@@ -481,7 +481,7 @@ is
         cn container_node =>
           flag, pos := flagpos hash lev cn.bmp
           if (cn.bmp & flag) != 0
-            match cn[pos.as_i32]
+            match cn[pos]
               inode Indirection_Node =>
                 if inode = i
                   match (gcas_read i).data
@@ -504,7 +504,7 @@ is
   # Main_Node -> list_node -> singleton_nodes
   # or recurse
   # Main_Node -> container_node -> Indirection_Node -> dual x y
-  dual(x, y singleton_node CTK CTV, lev u32, gen uid) =>
+  dual(x, y singleton_node CTK CTV, lev u32, gen uid) Main_Node CTK CTV =>
     d choice (container_node CTK CTV) (tomb_node CTK CTV) (list_node CTK CTV) =>
       # NYI: UNDER DEVELOPMENT: why 35??
       if lev < 35
@@ -512,8 +512,7 @@ is
         yidx := ((hash0 (hash y.k)) >> lev) & 0x1f
         bmp := (u32 1 << xidx) | (u32 1 << yidx)
         if xidx = yidx
-          # NYI: BUG: type inference
-          sub_node := indirection_node CTK CTV (dual x y (lev + width) gen) gen
+          sub_node := indirection_node (dual x y (lev + width) gen) gen
           container_node bmp [sub_node] gen
         else
           if (xidx < yidx)
@@ -549,7 +548,7 @@ is
         if (cn.bmp & flag) = 0
           not_found
         else
-          match cn[pos.as_i32]
+          match cn[pos]
             sin Indirection_Node =>
               if read_only || gen = sin.gen
                 lookup sin k (lev + width) i gen
@@ -588,7 +587,7 @@ is
           ncn := (if cn.gen = i.gen then cn else renew cn i.gen).put (singleton_node k v) pos flag i.gen
           gcas i m ncn
         else
-          match cn[pos.as_i32]
+          match cn[pos]
             ci Indirection_Node =>
               if ci.gen = gen
                 put ci k v lev+width i gen
@@ -630,7 +629,7 @@ is
         if (cn.bmp & flag) = 0
           not_found
         else
-          res choice restart not_found CTV := match cn[pos.as_i32]
+          res choice restart not_found CTV := match cn[pos]
             sin Indirection_Node =>
               if sin.gen = gen
                 remove sin k (lev + width) i gen
