@@ -72,25 +72,25 @@ public state(
 
   # `plain` monad or effect to be `inst`alled or `repl`aced by new value?
   mode oneway_monad_mode.val
-  ) : oneway_monad T (state T S) mode
+  ) : oneway_monad T mode
 is
 
   # monadic operator
   #
-  public redef infix >>= (f T -> state T S) state T S => state.this.bind f
+  public fixed redef infix >>= (f T -> state T S) state T S => state.this.bind f
 
 
   # monadic operator
   #
   # Same as non-generic >>=, but also maps to a different type B.
   #
-  public bind (B type, f T -> state B S) state B S =>
+  public fixed bind (B type, f T -> state B S) state B S =>
     f val
 
 
   # return function
   #
-  public return (a T) state T S => state a get mode.next
+  public fixed return (a T) state T S => state a get mode.next
 
 
   # map this using f

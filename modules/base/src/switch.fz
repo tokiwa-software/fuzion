@@ -28,7 +28,7 @@
 #
 public switch(A type, B type /* NYI: B should be open generic */)
   : choice A B,
-    monad A switch.this,
+    monad A,
     Sequence A,
     property.equatable
 is

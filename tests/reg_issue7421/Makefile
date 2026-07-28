@@ -17,23 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test type_inference_flat_map
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-type_inference_flat_map =>
-
-  Sequence.flat_flat_map(B type, f T -> Sequence (Sequence B)) =>
-    map (x->f x)
-
-  res0 := [1].flat_flat_map x->[[x]]
-  res1 => [1].flat_flat_map x->[[x]]
-
-  say <| type_of res0
-  say <| type_of res1
-
-  res := [1].flat_flat_map x->
-    y Sequence (Sequence i32) := [[x]]
-    y
-
-  say res
+override NAME = reg_issue7421
+include ../simple.mk
