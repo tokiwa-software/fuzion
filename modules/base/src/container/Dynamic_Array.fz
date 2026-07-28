@@ -133,7 +133,7 @@ is
 
       # NYI: UNDER DEVELOPMENT: is shrinking to exactly min length important? E.g. array with 10 initial elements an min_length of 8
 
-      if may_shrink && len ≤ data.length/4 && data.length ≥ Dynamic_Array.this.type.min_length*2
+      if may_shrink && len ≤ data.length/4 && data.length ≥ Dynamic_Array.this.min_length*2
         new_data := LM.array T .empty data.length/2
         for i in indices do
           new_data[i] := data[i]
