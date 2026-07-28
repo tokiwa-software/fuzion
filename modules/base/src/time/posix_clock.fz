@@ -35,7 +35,7 @@ module:public posix_clock : time.Clock is
   #
   public redef read time.instant
   =>
-    ns => match posix_clock.this.type.posix_id
+    ns => match posix_clock.this.posix_id
             clockid posix.clockid_t => fzE_posix_time clockid.val
             *                       => panic "$(posix_clock.this.type) is not a posix clock"
     time.instant ns
