@@ -26,4 +26,5 @@
 #
 public task(P type : time.period,
             module code Function unit,
-            module period P) is
+            module period P,
+            module last_start option time.instant) is
