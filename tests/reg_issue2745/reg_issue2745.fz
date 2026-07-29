@@ -22,5 +22,4 @@
 # -----------------------------------------------------------------------
 
 reg_issue2745 =>
-  fuzion.jvm.use ()->
-    say (fuzion.jvm.env.array_to_java_object ["1","2","3"])
+  say (fuzion.jvm.env.array_to_java_object ["1","2","3"])

@@ -22,5 +22,4 @@
 # -----------------------------------------------------------------------
 
 reg_issue2740 =>
-  fuzion.jvm.use ()->
-    Java.java.nio.file.Path.of "not a valid file" []
+  Java.java.nio.file.Path.of "not a valid file" []

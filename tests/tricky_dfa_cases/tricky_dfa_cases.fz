@@ -155,5 +155,4 @@ test5(s String) =>
 test5 "a"
 
 # call `test5` without the need for `fuzion.jvm` effect
-fuzion.jvm.use ()->
-  test5 Java.java.lang.__jString.new
+test5 Java.java.lang.__jString.new

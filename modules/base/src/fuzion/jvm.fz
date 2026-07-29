@@ -31,27 +31,6 @@ private:public jvm : effect is
   module is_null0(java_ref Java_Ref) bool => intrinsic
 
 
-  # shorthand to for jvm with no additional class path
-  #
-  public type.use(T type, code ()->T) T =>
-    fuzion.jvm.use _ [] code
-
-
-  # - start jvm (or use an existing jvm)
-  # - instate effect `fuzion.jvm`
-  # - run code on the jvm
-  # - destroy jvm (if jvm had to be started)
-  #
-  public type.use(T type, option_strings array String, code ()->T) T =>
-    fuzion.jvm ! ()->
-      # NYI: UNDER DEVELOPMENT: return error code
-      res := fuzion.jvm.env.create_jvm (option_strings.map (str -> fuzion.sys.c_string str)).as_array.internal_array.data option_strings.count
-      if res != 0
-        panic "JVM failed to start, error code $(res)"
-      else
-        code.call
-
-
   # cleanup the started jvm
   #
   public redef finally unit =>
@@ -311,3 +290,30 @@ private:public jvm : effect is
   public bool  .as_java_object fuzion.java.Java_Object ! fuzion.jvm => fuzion.jvm.env.bool_to_java_object bool.this
   public String.as_java_object fuzion.java.Java_Object ! fuzion.jvm => fuzion.jvm.env.string_to_java_object String.this
   public array .as_java_object fuzion.java.Java_Object ! fuzion.jvm => fuzion.jvm.env.array_to_java_object array.this
+
+
+  # default implementation of fuzion.jvm-effect
+  #
+  # this will get instated automatically at startup
+  #
+  public redef fixed type.default_value option fuzion.jvm =>
+      res := fuzion.jvm.env.create_jvm (id (array (Array u8)) []).internal_array.data 0
+      if res != 0
+        panic "JVM failed to start, error code $(res)"
+      else
+        fuzion.jvm
+
+
+  # - start jvm (or use an existing jvm)
+  # - instate effect `fuzion.jvm`
+  # - run code on the jvm
+  # - destroy jvm (if jvm had to be started)
+  #
+  public type.use(T type, option_strings array String, code ()->T) T =>
+    fuzion.jvm ! ()->
+      # NYI: UNDER DEVELOPMENT: return error code
+      res := fuzion.jvm.env.create_jvm (option_strings.map (str -> fuzion.sys.c_string str)).as_array.internal_array.data option_strings.count
+      if res != 0
+        panic "JVM failed to start, error code $(res)"
+      else
+        code.call
