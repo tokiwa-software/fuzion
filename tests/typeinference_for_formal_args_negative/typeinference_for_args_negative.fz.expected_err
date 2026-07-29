@@ -134,9 +134,9 @@ actual is value of type 'i32' at --CURDIR--/typeinference_for_args_negative.fz:4
 actual is value of type 'f64' at --CURDIR--/typeinference_for_args_negative.fz:48:23:
   say (a4 "10.as_f64" 3.14)
 ----------------------^^^^
-actual is value of type 'bool' at --CURDIR--/typeinference_for_args_negative.fz:49:32:
+actual is value of type 'bool' at --CURDIR--/typeinference_for_args_negative.fz:49:23:
   say (a4 "1.1"       " world!"=" monde!")
--------------------------------^
+----------------------^^^^^^^^^^^^^^^^^^^
 
 
 --CURDIR--/typeinference_for_args_negative.fz:80:9: error 14: Could not find called feature
