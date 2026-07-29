@@ -85,7 +85,8 @@ public tokiwa is
               lm ! ()->
                 (p.with_in unit lm ()->
                   (io.buffered lm).Writer.env.write (io.slurp stdin_file).or_panic .or_panic).or_panic
-        _ := p.close_in
+
+        p.close_in.or_else (say "closing in of $p failed")
 
         match p.wait (timeout.or_default time.duration.max)
           e error =>
