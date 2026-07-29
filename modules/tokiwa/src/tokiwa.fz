@@ -89,7 +89,9 @@ public tokiwa is
 
         match p.wait (timeout.or_default time.duration.max)
           e error =>
-            _ := p.kill
+            p.close_out.or_else (say "closing out of $p failed")
+            p.close_err.or_else (say "closing err of $p failed")
+            p.kill     .or_else (say "sending kill signal to $p failed")
             process_result "" "failed waiting for $cmd, error is: $e" 1
           ec u32 => process_result fout.get ferr.get ec)
       .or_panic
