@@ -714,14 +714,3 @@ is
 
     lock_free.Map (concur.atomic (lock_free.root_node CTK CTV) .new initial_root_node) false
 
-
-  # lock_free.Map.from_entries -- routine to initialize a ctrie from a sequence of key value tuples
-  #
-  # This feature creates an instance of a ctrie.
-  #
-  # example: lock_free.Map.from_entries [(key1, value1), (key2, value2)]
-  #
-  public type.from_entries(kvs Sequence (tuple CTK CTV)) lock_free.Map CTK CTV =>
-    m := (lock_free.Map CTK CTV).empty
-    kvs.for_each (kv -> m.put kv.0 kv.1)
-    m
