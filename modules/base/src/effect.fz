@@ -134,6 +134,8 @@ public effect is
         match T.default_value
           v T => T.instate_at_singularity0 v
           nil =>
+            fuzion.sys.fatal_fault "default effects" "$(T.name).type.default_value returned nil, expected a proper value."
+
 
 
   # If this effect may be instated automatically at application start (during the
