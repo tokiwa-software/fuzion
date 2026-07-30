@@ -720,7 +720,7 @@ is
 
   # insert element v at position at
   #
-  public insert(at i32, v T) Sequence T
+  public insert(I type: integer, at I, v T) Sequence T
   pre
     debug: at ≥ 0
   =>

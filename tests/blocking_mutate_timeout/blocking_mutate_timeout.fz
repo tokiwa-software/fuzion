@@ -71,7 +71,7 @@ blocking_mutate_timeout =>
       say_debug (counter > 0           ? "   PASS   : counter was incremented to $counter"
                                        : "** FAIL **: counter made no progree")
 
-    t1.join
+    t1.join.or_panic
 
 
   test_absolute(BM type : concur.blocking_mutate_using_clock C, C type : time.Clock, name String)
@@ -106,7 +106,7 @@ blocking_mutate_timeout =>
       say_debug (counter > 0         ? "   PASS   : counter was incremented to $counter"
                                      : "** FAIL **: counter made no progree")
 
-    t1.join
+    t1.join.or_panic
 
 
   # test using default blocking_mutate (based on time.Monotonic)

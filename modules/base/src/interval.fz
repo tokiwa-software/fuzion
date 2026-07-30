@@ -44,7 +44,7 @@ public interval(T type : integer,
                 # range of legal values for T.
                 public through option T,
 
-                # the distance between to elements
+                # the distance between two elements
                 public step T)
 
   : container.Set T

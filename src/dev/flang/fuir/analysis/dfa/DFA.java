@@ -2128,7 +2128,7 @@ public class DFA extends ANY
           var ignore = cl._dfa.newCall(cl, call, NO_SITE, cl._args.get(0).value(), new List<>(), null /* new environment */, cl);
           return genericResult(cl);
         });
-    put("fuzion.sys.thread.join0"        , cl -> Value.UNIT);
+    put("fuzion.sys.thread.join0"        , cl -> genericNumResult(cl));
     put("fuzion.sys.thread.set_policy"   , cl -> genericNumResult(cl));
     put("fuzion.sys.thread.set_affinity0", cl -> genericNumResult(cl));
 

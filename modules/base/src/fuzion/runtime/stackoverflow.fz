@@ -30,7 +30,7 @@ private:public stackoverflow (
 is
 
 
-  # default implementation of fuzion.runtime.stackoveflow
+  # default implementation of fuzion.runtime.stackoverflow
   #
   # this will get instated automatically at startup
   #

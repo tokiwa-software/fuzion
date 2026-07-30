@@ -78,7 +78,9 @@ public Threads ref : effect is
   # join all child threads
   #
   public redef finally unit =>
-    children.for_each (.join)
+    children.for_each c->
+      # NYI: UNDER DEVELOPMENT: register failures somewhere
+      _ := c.join
 
 
   # default implementation of threads

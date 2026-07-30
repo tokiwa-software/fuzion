@@ -2367,9 +2367,9 @@ A pre-condition of a feature that does not redefine an inherited feature must st
    *
    * @param context the source code context where this feature declaration is done
    *
-   * @param rss1 the visitor to resolve syntax sugar 1, used to visit recursively.
+   * @param v the visitor to resolve syntax sugar 1, used to visit recursively.
    */
-  Expr resolveSyntacticSugar1(Resolution res, Context context, FeatureVisitor rss1)
+  Expr resolveSyntacticSugar1(Resolution res, Context context, FeatureVisitor v)
   {
     var outer = context.outerFeature();
 
@@ -2404,7 +2404,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
           {
             /* add assignment of initial value: */
             AbstractAssign ass = new Assign(res, _pos, this, _impl.expr(), context);
-            ass = ass.visit(rss1, outer);
+            ass = ass.visit(v, outer);
             result = new Block(new List<>(this, ass));
           }
       }

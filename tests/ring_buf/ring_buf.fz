@@ -74,7 +74,7 @@ ring_buf =>
           else
             say "*** FAILED! $m"
 
-    t1.join
+    t1.join.or_panic
 
     say <| "t0: expecting H       got: " + rb.take               # take on one element       [H]       -> []
     fuzion.runtime.fault
@@ -134,7 +134,7 @@ ring_buf =>
           else
             say "*** FAILED! $m"
 
-    ta.join
+    ta.join.or_panic
 
 
   # test blocking_mutate that can be used in several threads:
@@ -176,7 +176,7 @@ ring_buf =>
         .catch m->
           say "*** FAILED! $m"
 
-    t2.join
+    t2.join.or_panic
 
     # Now try to poll from yet another thread
     t3 := concur.Threads.env.spawn ()->
@@ -198,7 +198,7 @@ ring_buf =>
     rn := rb.poll                               # poll on one element       [N]       -> []
     rnl := rb.poll                              # poll on empty ring buffer []        -> []
 
-    t3.join
+    t3.join.or_panic
 
     # output results after `t3.join` to avoid races with `t3` during output:
     expect "t0" "M"     (rm                )    # poll on one/two elems     [M]/[M,N] -> []/[N]
@@ -230,7 +230,7 @@ ring_buf =>
     ru := rb.take               # blocking take from ring_buffer [U?,..]    -> []
     rn2:= rb.poll               # poll on empty ring buffer      []         -> []
 
-    t4.join
+    t4.join.or_panic
 
     # output results after `t4.join` to avoid races with `t3` during output:
     expect "t0" "O"     (ro           )    # blocking take from ring_buffer [O?,P?,Q?] -> [P?,Q?]
@@ -282,7 +282,7 @@ ring_buf =>
           .catch m->
             say "*** FAILED! $m"
 
-    tb.join
+    tb.join.or_panic
 
     # now test using three consumer threads t5, t6, t7 that are fed by one
     # producer thread (current thread):
@@ -320,9 +320,9 @@ ring_buf =>
     rb.put "QUIT"
     rb.put "QUIT"
 
-    t5.join
-    t6.join
-    t7.join
+    t5.join.or_panic
+    t6.join.or_panic
+    t7.join.or_panic
 
 
   # NYI: UNDER DEVELOPMENT: More tests to be added with blocking operations!

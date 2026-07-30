@@ -34,9 +34,9 @@ is
   public redef submit(P type : time.period, t realtime.task P) unit ! atomic_access =>
 
     nt := concur.Threads.env.spawn ()->
+      actual_last := t.last_start.or_default (time.instant u64.max)
       now := time.Nano.env.read
-      end_of_time := time.instant u64.max
-      _ := time.Nano.env.run_periodic now t.period end_of_time t.code
+      _ := time.Nano.env.run_periodic now t.period actual_last t.code
 
     thrds.write (list nt thrds)
 
@@ -47,4 +47,5 @@ is
 
     # wait for all threads to finish
     thrds.read.for_each t->
-      t.join
+      # NYI: UNDER DEVELOPMENT: register failures somewhere
+      _ := t.join

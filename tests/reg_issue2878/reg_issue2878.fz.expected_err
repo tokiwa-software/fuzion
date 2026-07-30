@@ -6,9 +6,9 @@ Feature not found: 's' (no arguments)
 Target feature: 'reg_issue2878'
 In call: 's'
 Lambda operator is part of infix operator here:
---CURDIR--/reg_issue2878.fz:28:6:
+--CURDIR--/reg_issue2878.fz:28:5:
   a s->!s.is_empty # does not work: ->! is parsed as operator
------^^^
+----^^^^^^^^^^^^^^
 To solve this, put the lambda in parentheses and add a space after '->'.
 
 one error.

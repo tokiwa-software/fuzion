@@ -17,31 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test reg_issue7128
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-elements := mutate.array i32 .from_Sequence 0..10
-
-children(i i64) tuple (option i64) (option i64) =>
-  left  option i64 := (i*2+1) < elements.length ? (i*2+1) : nil
-  right option i64 := (i*2+2) < elements.length ? (i*2+2) : nil
-  (left, right)
-
-lvl(i i64) Sequence String =>
-  str := elements[_,i].as_string
-
-  c := children i
-  sub_l := c.0.bind lvl
-  sub_r := c.1.bind lvl
-
-  if sub_l.is_nil then [str]
-  else
-
-    sub_r_new := (sub_r.or_else [$" "," "," "]) ++ [$""].cycle
-
-    [str] ++ (sub_l.ok ? [" ┌─┴$(sub_r.ok ? "─┐ " : " ")"] : [])
-          ++ (sub_l.ok ? sub_l.or_panic.zip sub_r_new (s1,s2)->("$(s1) $(s2)") : [])
-
-
-say <| lvl 0 .as_string "\n"
+override NAME = reg_issue7464
+include ../simple.mk

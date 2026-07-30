@@ -1,10 +1,10 @@
 
---CURDIR--/reg_issue5263.fz:39:23: error 1: Different count of arguments needed when calling feature
+--CURDIR--/reg_issue5263.fz:39:11: error 1: Different count of arguments needed when calling feature
   say |<| .byte_count |<| "hi"  # 1. should flag an error
-----------------------^^^
+----------^^^^^^^^^^^^^^^^^^^^
 Feature not found: 'infix/infix_right |<|' (3 arguments)
 Target feature: 'reg_issue5263'
-In call: '|<|'
+In call: '.byte_count |<| "hi"'
 This call was created automatically by partial application. To solve this, you might want to use an explicit lambda expression of the form '( a0 -> ..code using a0..)'.
 
 

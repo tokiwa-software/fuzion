@@ -46,4 +46,4 @@ for cnt := 0, cnt + v             # sum values
 else
   say "$cnt symmetric numbers found in 1..$max"
 
-threads.for_each (.join)  # wait for all threads to terminate
+threads.for_each (.join.or_panic)  # wait for all threads to terminate

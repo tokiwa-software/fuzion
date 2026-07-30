@@ -38,8 +38,8 @@ lib_concur_sync =>
           say "Thread sending signal"
           cnd.signal
 
-      a.join
-      b.join
+      a.join.or_panic
+      b.join.or_panic
 
     check cnd_res.ok
 
@@ -60,8 +60,8 @@ lib_concur_sync =>
           say "Thread sending broadcast"
           cnd.broadcast
 
-      a.join
-      b.join
+      a.join.or_panic
+      b.join.or_panic
 
     check cnd_res.ok
 

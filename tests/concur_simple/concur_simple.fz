@@ -50,8 +50,8 @@ concur_simple =>
   thread_2 := concur.Threads.env.spawn (()->count "\\" (d.ms 40) t2)
   thread_3 := concur.Threads.env.spawn (()->count "."  (d.ms 60) t3)
 
-  thread_1.join
-  thread_2.join
-  thread_3.join
+  thread_1.join.or_panic
+  thread_2.join.or_panic
+  thread_3.join.or_panic
 
   say ""

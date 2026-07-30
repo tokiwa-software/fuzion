@@ -130,4 +130,4 @@ reg_issue7166 =>
         .catch e->
           say (thread_safe ? ", expected no error, got $e -- failed" : " got $e -- ok")
 
-    t.join
+    t.join.or_panic
