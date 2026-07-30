@@ -122,10 +122,18 @@ public class C extends ANY
 
 
     /**
-     * no operation, like comment, but without giving any comment.
+     * drop a value, but process its side-effect.
+     *
+     * @param v an expression that calculates a value that is not needed, but
+     * where the calculation might have side-effects (like performing a call) that
+     * we do need.
+     *
+     * @param type clazz id for the type of the value
+     *
+     * @return code to perform the side effects of v and ignoring the produced value.
      */
     @Override
-    public CStmnt nop()
+    public CStmnt drop(CExpr v, int type)
     {
       return CStmnt.EMPTY;
     }

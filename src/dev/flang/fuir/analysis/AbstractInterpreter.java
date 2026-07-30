@@ -97,29 +97,17 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
     public abstract RESULT comment(String s);
 
     /**
-     * no operation, like comment, but without giving any comment.
-     */
-    public abstract RESULT nop();
-
-    /**
      * drop a value, but process its side-effect.
      *
      * @param v an expression that calculates a value that is not needed, but
      * where the calculation might have side-effects (like performing a call) that
      * we do need.
      *
-     * For backends that do not perform any side-effects in RESULT, this does
-     * not need to be redefined, the default implementation is nop() which is
-     * fine in this case.
-     *
      * @param type clazz id for the type of the value
      *
      * @return code to perform the side effects of v and ignoring the produced value.
      */
-    public RESULT drop(VALUE v, int type)
-    {
-      return nop(); // NYI: UNDER DEVELOPMENT: should be implemented by BEs.
-    }
+    public abstract RESULT drop(VALUE v, int type);
 
     /**
      * Perform an assignment val to field f in instance rt
@@ -632,10 +620,6 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
           var constCl = _fuir.constClazz(s);
           var d = _fuir.constData(s);
           var r = _processor.constData(s, constCl, d);
-
-          if (CHECKS) check
-            // check that constant creation has no side effects.
-            (r.v1() == _processor.nop());
 
           push(stack, constCl, r.v0());
           res = r.v1();

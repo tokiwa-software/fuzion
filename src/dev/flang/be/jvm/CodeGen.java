@@ -173,16 +173,6 @@ class CodeGen
 
 
   /**
-   * no operation, like comment, but without giving any comment.
-   */
-  @Override
-  public Expr nop()
-  {
-    return Expr.UNIT;
-  }
-
-
-  /**
    * drop a value, but process its side-effect.
    *
    * @param v an expression that calculates a value that is not needed, but

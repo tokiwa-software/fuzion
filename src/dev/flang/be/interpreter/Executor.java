@@ -202,7 +202,7 @@ public class Executor extends ProcessExpression<Value, Object>
   }
 
   @Override
-  public Object nop()
+  public Object drop(Value v, int type)
   {
     return null;
   }
