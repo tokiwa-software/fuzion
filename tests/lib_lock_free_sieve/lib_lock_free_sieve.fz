@@ -23,11 +23,16 @@
 
 lib_lock_free_sieve =>
 
-  cache0 := lock_free.Sieve_Cache String i32 3
-  say (cache0.access "A" ()->1)
-  say (cache0.access "B" ()->2)
-  say (cache0.access "C" ()->3)
-  say (cache0.access "A" ()->4)
-  say (cache0.access "D" ()->5)
-  say (cache0.access "C" ()->6)
-  say cache0
+  test(MM type : container.Mutable_Map String (lock_free.Node String i32)) =>
+    cache0 := lock_free.Sieve_Cache String i32 MM 3
+    say (cache0.access "A" ()->1)
+    say (cache0.access "B" ()->2)
+    say (cache0.access "C" ()->3)
+    say (cache0.access "A" ()->4)
+    say (cache0.access "D" ()->5)
+    say (cache0.access "C" ()->6)
+    say cache0
+
+  test (lock_free.Map String (lock_free.Node String i32))
+  test (container.Mutable_Hash_Map mutate String (lock_free.Node String i32))
+  test (container.mutable_tree_map mutate String (lock_free.Node String i32))
