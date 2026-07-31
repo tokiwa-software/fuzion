@@ -57,7 +57,7 @@ is
   #
   # this will get instated automatically at startup
   #
-  public redef fixed type.default_value option fuzion.runtime.fault =>
+  public redef fixed type.default_value fuzion.runtime.fault =>
     new kind_and_msg->
       kind, msg := kind_and_msg
       fuzion.sys.fatal_fault kind msg

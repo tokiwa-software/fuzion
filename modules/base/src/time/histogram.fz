@@ -445,4 +445,4 @@ is
   #
   # this will get instated automatically at startup
   #
-  public redef fixed type.default_value option time.histogram_mutate => time.histogram_mutate
+  public redef fixed type.default_value time.histogram_mutate => time.histogram_mutate

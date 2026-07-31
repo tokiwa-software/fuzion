@@ -33,7 +33,7 @@ is
   #
   # this will get instated automatically at startup
   #
-  public redef fixed type.default_value option Unique_Id =>
+  public redef fixed type.default_value Unique_Id =>
     _ : Unique_Id is
       public redef get uid => uid fzE_unique_id
 

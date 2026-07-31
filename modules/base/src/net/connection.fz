@@ -79,5 +79,5 @@ module:public connection(desc i32) is
   public in_thread_pool(T type, TP type : concur.thread_pool, LM type : mutate, fn ()->T) concur.Future (outcome T)
   =>
     TP.env.submit (outcome T) ()->
-      LM.default_value.or_panic ! ()->
+      LM.default_value ! ()->
         with T LM fn

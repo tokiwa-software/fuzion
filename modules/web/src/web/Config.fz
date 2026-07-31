@@ -37,6 +37,6 @@ public Config ref : effect is
   #
   # this will get instated automatically at startup
   #
-  public redef fixed type.default_value option web.Config
+  public redef fixed type.default_value web.Config
   =>
     web.Config

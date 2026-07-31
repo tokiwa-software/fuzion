@@ -38,6 +38,4 @@ fuzion_runtime_deinit =>
   #           basically we need a way to order default effects
   effect_types.type_foldf unit T,e->
     if T : effect then
-      match T.default_value
-        T => T.env.finally
-        nil =>
+      T.env.finally

@@ -41,7 +41,7 @@ public Provide ref : effect is
     #
     # this will get instated automatically at startup
     #
-    public redef fixed type.default_value option internationalization.Provide =>
+    public redef fixed type.default_value internationalization.Provide =>
         l := envir.Vars.env["LANG"].or_default ""
 
         p internationalization.Provide :=

@@ -60,6 +60,6 @@ public Vars ref : effect is
   #
   # this will get instated automatically at startup
   #
-  public redef fixed type.default_value option envir.Vars =>
+  public redef fixed type.default_value envir.Vars =>
     _ : envir.Vars is
       public redef get(v String) option String => fuzion.sys.env_vars.get v

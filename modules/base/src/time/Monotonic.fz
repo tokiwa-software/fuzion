@@ -38,6 +38,6 @@ public Monotonic ref : posix_clock is
 
   # default implementation of time.Nano.
   #
-  public redef fixed type.default_value option time.Monotonic
+  public redef fixed type.default_value time.Monotonic
   =>
     time.Monotonic

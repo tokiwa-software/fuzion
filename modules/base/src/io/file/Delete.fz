@@ -40,7 +40,7 @@ public Delete ref : effect is
   #
   # this will get instated automatically at startup
   #
-  public redef fixed type.default_value option io.file.Delete
+  public redef fixed type.default_value io.file.Delete
   =>
     _ : io.file.Delete is
       public redef delete(path io.path) outcome unit =>

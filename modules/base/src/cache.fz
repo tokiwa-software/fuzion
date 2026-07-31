@@ -77,7 +77,7 @@ cached_item(T type, val option T) : effect is
   #
   # this will get instated automatically at startup
   #
-  public redef fixed type.default_value option (cached_item T) =>
+  public redef fixed type.default_value cached_item T =>
     cached_item T nil
 
   # effect operation to get a cached value or calculate it in case
