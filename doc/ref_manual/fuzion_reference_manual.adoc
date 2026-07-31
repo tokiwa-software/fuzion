@@ -570,13 +570,43 @@ a xref:fuzion_function[function], a xref:fuzion_field[field], a xref:fuzion_choi
 a xref:fuzion_typeparameter[type parameter], an xref:fuzion_abstract[abstract feature],
 an xref:fuzion_intrinsic[intrinsic], a xref:fuzion_native[native feature],
 or the xref:universe[universe].  Every feature except the xref:universe[universe] is declared within
-an xref:outer_feature[outer feature].
+an xref:outer_feature[outer feature]. Every feature except for xref:fuzion_typeparameter[type parameters] may define a xref:visibility[visibility]. The default xref:visibility[visibility] is private.
 
 [#fuzion_call]
 ((Feature Call)):: A _feature call_ is an expression in Fuzion code that calls a
 xref:call_destination[destination] xref:fuzion_feature[feature] on a given xref:fuzion_target[target] giving zero
 or more xref:fuzion_actual[actual arguments].  An example is `t.f a b` that calls
 a feature with xref:feature_name[name] `f,2` on target `t` giving two xref:fuzion_actual[actual arguments] `a` and `b`.
+
+[#visibility]
+((Visibility))::
+
+The visibility of a feature defines from where this feature can be called.
+
+[cols="1,1,1,1", options="header"]
+|===
+|Visibility Modifier |Current file |Current module |Other module
+
+|`private` or _(none)_
+|✅ Yes
+|❌ No
+|❌ No
+
+|`module`
+|✅ Yes
+|✅ Yes
+|❌ No
+
+|`public`
+|✅ Yes
+|✅ Yes
+|✅ Yes
+|===
+
+Furthermore it is possible to control the visibility of the type a feature defines separately.
+This is done by first stating the access-visibility colon the type-visibility. These are the possible visibilities
+in this case: `private:module`, `private:public`, `module:public`.
+
 
 [#feature_name]
 ((Feature Name)):: A _feature name_ is the combination of an identifier and an integer xref:fuzion_argument[argument] count.
