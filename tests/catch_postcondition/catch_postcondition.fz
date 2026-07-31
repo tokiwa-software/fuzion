@@ -39,7 +39,7 @@ catch_postcondition is
     =>
       x +^ x
 
-    yak "trying $T... "
+    yap "trying $T... "
     for v := T.one, double v
         i in 0..50
     else
@@ -275,7 +275,7 @@ catch_postcondition is
     r := fuzion.runtime.fault.try ()->
            option tries[c].call
          .catch s->
-           say "*** failed: {s.0} {s.1} ***"
+           say "*** failed: $(s.0) $(s.1) ***"
            nil
   until r??
     say r

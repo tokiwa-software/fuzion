@@ -63,8 +63,8 @@ public class FeErrors extends AstErrors
   {
     var g = m.generics();
     error(m.pos(),
-          "Main feature must not have type arguments",
-          "Main feature has " + StringHelpers.singularOrPlural(m.typeArguments().size(),"type argument") + " " + g + ", but should have no arguments to be used as main feature in an application\n" +
+          "Main feature must not have type parameters",
+          "Main feature has " + StringHelpers.singularOrPlural(m.typeArguments().size(),"type parameter") + " " + g + ", but should have no arguments to be used as main feature in an application\n" +
           "To solve this, remove the arguments from feature " + s(m) + "\n");
   }
 
@@ -101,7 +101,7 @@ public class FeErrors extends AstErrors
     var afn = sqn(mir.featureAsString(af));
     error(pos, "Field may not have been initialized",
           "Some execution paths to the use of field " + afn + " must "+
-          "assign a value to this field. \n"+
+          "assign a value to this field.\n"+
           "Uninitialized field: " + afn + "\n"+
           "To solve this, make sure a value is assigned to the field before it is used and "+
           "there are no calls to features that end up reading this field before it is "+

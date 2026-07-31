@@ -113,7 +113,7 @@ public class Completion
           .token();
         // NYI: UNDER DEVELOPMENT: do not offer completion for number
         if (tokenBeforeDot == Token.t_StringDQ ||
-            tokenBeforeDot == Token.t_stringBQ ||
+            tokenBeforeDot == Token.t_stringPQ ||
             tokenBeforeDot == Token.t_stringQQ ||
             tokenBeforeDot == Token.t_numliteral)
           {
@@ -154,7 +154,7 @@ public class Completion
               Token.t_rparen,
               Token.t_stringQQ,
               Token.t_StringDQ,
-              Token.t_stringBQ
+              Token.t_stringPQ
           };
         var set = Util.arrayToSet(validTokens);
         if (set.contains(tokenBeforeTriggerCharacter))
@@ -176,7 +176,7 @@ public class Completion
                 var types = QueryAST
                   .featuresInScope(pos)
                   .filter(af -> af.isConstructor() || af.isChoice())
-                  .filter(af -> !af.featureName().baseName().contains(" "))
+                  .filter(af -> !af.baseName().contains(" "))
                   // NYI: UNDER DEVELOPMENT: consider generics
                   .map(af -> TypeTool.baseName(af.selfType()))
                   .distinct()
@@ -201,7 +201,7 @@ public class Completion
 
 
   /**
-   * completion item for keyword `type`
+   * completion item for keyword {@code type}
    * @return
    */
   private static Stream<CompletionItem> completionItemType()
@@ -210,7 +210,7 @@ public class Completion
   }
 
   /**
-   * completion item for keyword `this`
+   * completion item for keyword {@code this}
    * @return
    */
   private static Stream<CompletionItem> completionItemThis()
@@ -299,7 +299,7 @@ public class Completion
         var argument = arguments.get(index);
         if (true || !argument.resultType().isLambdaTargetButNotLazy(null)) // NYI: Support for lambda target
           {
-            return " ${" + (index + 1) + ":" + argument.featureName().baseName() + "}";
+            return " ${" + (index + 1) + ":" + argument.baseName() + "}";
           }
         return getFunArgument((index + 1) * 100, argument.resultType().generics());
       })

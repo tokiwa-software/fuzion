@@ -21,7 +21,7 @@
 #
 # -----------------------------------------------------------------------
 
-# This exmaple contains code that resulted in fz command crashing with a failing
+# This example contains code that resulted in fz command crashing with a failing
 # require condition (or null pointer in case checkds were not enabled).
 #
 # The problem was a call to a field `o.v` that is declared of a type parameter that is set

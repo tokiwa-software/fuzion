@@ -191,8 +191,9 @@ module fzE_is_valid_mapped_memory(mm Mapped_Memory) bool =>
 module fzE_munmap(address Mapped_Memory, size i64) i32 => native
 
 
-# no guarantee can be given for precision nor resolution
-module fzE_nanotime u64 => native
+# read the current value of the given POSIX clockid
+#
+module fzE_posix_time(clockid i32) u64 => native
 
 
 # no guarantee can be given for precision nor resolution
@@ -248,9 +249,21 @@ module fzE_process_create(
   res Array i64) i32 => native
 
 
-# wait for process to exit
+# check the process status, does not wait for process to finish
 #
-module fzE_process_wait(process i64) i64 => native
+# result
+#   >=0 : the process exit code
+#   -1  : process is still running
+#   -2  : an error occurred when calling waitpid, check errno
+#  <-100: Unix systems only: process was terminated by a signal
+#         -100-SIG, e.g., -109 for 9 (SIGKILL)
+#
+module fzE_process_poll(process i64) i64 => native
+
+
+# returns error code on error or zero on success
+#
+module fzE_pipe_create(pipefd Array i64) i32 => native
 
 
 # returns -1 on error, 0 on end_of_file, number of read bytes otherwise.
@@ -286,7 +299,7 @@ module fzE_pipe_close(
 # after opening the source represented by the path parameter
 #
 module fzE_file_open(
-              # a Fuzion Pointer represention the path for the source to be opened
+              # a Fuzion Pointer representation the path for the source to be opened
               path Array u8,
               # open_results[error number] as a Fuzion Pointer
               open_results Array i64,
@@ -439,3 +452,15 @@ module fzE_mmap_offset_multiple i64 => native
 
 
 module fzE_cwd(buf Array u8, size i64) i32 => native
+
+
+# wrapper around DTRACE_PROBE macro if the target supports this.
+#
+# NYI: UNDER DEVELOPMENT: Actual argument passing mechanism is
+# work-in-progress.
+#
+module fzE_dtrace_probe(# color id to display msg with
+                        col u8,
+
+                        # the message to display, as C string
+                        msg Array u8) unit => native

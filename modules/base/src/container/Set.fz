@@ -39,7 +39,7 @@ is
   # number of entries in this set.  May be undefined, i.e., a range of
   # floating point numbers or an infinite set.
   #
-  public size_option option i32 => nil
+  public size_option option i64 => nil
 
 
   # does this set contain the given value?
@@ -172,20 +172,14 @@ is
     if is_empty
       "∅"
     else
-      ("\{"
+      ("{"
        + (as_list.map (.as_string)).fold(String.concat ";")
        + "}")
 
 
   # equality
   #
-  # NYI: BUG: #4676 this could be
-  # public redef type.equality(a, b Set.this)
-  #
-  public fixed redef type.equality(a, b container.Set E) bool
-  pre else
-    debug: a.finite.is_yes_or_unknown
-    debug: b.finite.is_yes_or_unknown
+  public fixed redef type.equality(a, b Set.this) bool
   =>
     # NYI: a bit expensive
     (a ∪ b).size_option.or_panic = a.size_option.or_panic

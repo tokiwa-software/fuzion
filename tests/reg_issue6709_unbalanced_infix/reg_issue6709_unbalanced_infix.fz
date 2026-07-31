@@ -62,19 +62,19 @@ reg_6709_unbalanced_infix =>
     else
       s
 
-  # from tests/reg_issue2242/reg_issue2242.fz‎
+  # from tests/reg_issue2242/reg_issue2242.fz
   from_tests_reg_issue2242 =>
     low => 42
     high => 67
     for j in low..(high- 1) do    # 7. should flag an error: unbalanced infix `-`
       say j
 
-  # from ‎tests/reg_issue3678/reg_issue3678.fz‎
+  # from tests/reg_issue3678/reg_issue3678.fz
   from_tests_reg_issue3678 =>
     x3 => 42 |> .as_string|> say  # 8. should flag an error: unbalanced infix `|>`
     x4 => 42 |>(.as_string)|> say # 9.+10. 2x should flag an error: unbalanced infix `|>`
 
-  # from ‎tests/reg_issue5252/reg_issue5252.fz‎
+  # from tests/reg_issue5252/reg_issue5252.fz
   from_test_reg_issue5252 =>
     i32.infix --(_) => -val
     say (123.0+ 456)              # 11. should flag an error: unbalanced infix `+`
@@ -82,7 +82,7 @@ reg_6709_unbalanced_infix =>
     say (a- b)                    # 13. should flag an error: unbalanced infix `-`
     say (a-- b)                   # 14. should flag an error: unbalanced infix `--`
 
-  # from ‎tests/visibility/visibility.fz‎
+  # from tests/visibility/visibility.fz
   from_tests_visibility =>
     x1 := 1.0
     x2 := 3.0;
@@ -90,11 +90,11 @@ reg_6709_unbalanced_infix =>
     chck ($x2="6"|| $x1="6")      # 15. should flag an error: unbalanced infix `||`
 
 
-  # from ‎modules/base/src/time/histogram.fz‎
+  # from modules/base/src/time/histogram.fz
   from_base_time_histogram =>
     ignore_last_buffer => [1,2,3]
-    ignore_last_buffer_index := mut.new 42
-    ignore_last_buffer_index <- (ignore_last_buffer_index.get = 0 ? ignore_last_buffer.length
+    ignore_last_buffer_index := mutate.env.new 42
+    ignore_last_buffer_index <- (ignore_last_buffer_index.get = 0 ? ignore_last_buffer.length.as_i32
                                                                   : ignore_last_buffer_index.get)- 1     # 16. should flag an error: unbalanced infix `-`
 
     (" average |" +

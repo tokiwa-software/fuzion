@@ -985,7 +985,7 @@ public ryū(public T type : float) is
     # convert output to string
     output_as_string(output i64, output_length i64) String =>
       for o := output_as_string.this.output, o / 10
-          s := "{o % 10}", "{o % 10}$s"
+          s := "$(o % 10)", "$(o % 10)$s"
           _ in (i64 1)..(output_as_string.this.output_length-1)
       do
       else
@@ -996,22 +996,22 @@ public ryū(public T type : float) is
       for str0 := "** internal error **", str
           idx in i64 1 .. output_length
           output0 := output, output0 / 10
-          str := "{output0 % 10}", "{output0 % 10}" + (if idx = output_length then "." else "") + str
+          str := "$(output0 % 10)", "$(output0 % 10)" + (if idx = output_length then "." else "") + str
       else
-        "{str0}E{exponent}"
+        "$(str0)E$(exponent)"
 
     # the float as a decimal string
     full =>
       if exponent < 0
-        "0.{"0" * -(exponent+1).as_i32}{output_as_string output output_length}"
+        "0.$("0" * -{exponent+1}.as_i32)$(output_as_string output output_length)"
       else if exponent + 1 >= output_length
-        "{output_as_string output output_length}{"0" * (exponent+1-output_length).as_i32}.0"
+        "$(output_as_string output output_length)$("0" * {exponent+1-output_length}.as_i32).0"
       else
         for str0 := "** internal error **", str
             idx in i64 0 .. output_length
             is_dot_pos := false, output_length - idx - 1 = exponent
             output0 := output, if is_dot_pos then output0 else output0 / 10
-            str := "{output0 % 10}", (if is_dot_pos then "." else "{output0 % 10}") + str
+            str := "$(output0 % 10)", (if is_dot_pos then "." else "$(output0 % 10)") + str
         else
           str0
 

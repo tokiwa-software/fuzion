@@ -1,0 +1,63 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue4505
+#
+# -----------------------------------------------------------------------
+/*
+
+The performance for a sequence of 2000 is 15s
+```
+> time ~/fuzion/clean/fuzion/build/bin/fz -e 'say (["1"," "].cycle.take 1000 .as_string "" .split " ").count'
+501
+
+real	0m6,232s
+user	0m15,430s
+sys	0m0,653s
+```
+while the performance for 4000 elements almost quadruples to 57s:
+```
+ > time ~/fuzion/clean/fuzion/build/bin/fz -e 'say (["1"," "].cycle.take 2000 .as_string "" .split " ").count'
+1001
+
+real	0m38,676s
+user	0m57,146s
+sys	0m1,348s
+```
+another µ-benchmark for this
+```
+ > time ./build/bin/fz -e 'say ((("1 1"*10000).split " " .map _->1) |> (x->sum x))'
+10001
+
+real	0m7,476s
+user	0m21,208s
+sys	0m0,678s
+ > time ./build/bin/fz -e 'say ((("1 1"*20000).split " " .map _->1) |> (x->sum x))'
+20001
+
+real	0m23,933s
+user	0m40,594s
+sys	0m0,995s
+```
+
+*/
+
+reg_issue4505 =>
+
+  say (["1"," "].cycle.take 10000 .as_string "" .split " ").count

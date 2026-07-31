@@ -22,7 +22,7 @@
 # -----------------------------------------------------------------------
 
 test is
-match exception test .on ()->
-    (exception test).env.cause (error "bla")
+match flow.exception test .on ()->
+    (flow.exception test).env.cause (error "bla")
   e error => say $e
   void    => # will not happen

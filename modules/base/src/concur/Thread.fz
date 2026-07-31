@@ -1,0 +1,310 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature concur.thread
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# type for a spawned thread
+#
+module:public Thread(thrd Internal_Thread,
+
+                     # NYI: CLEANUP: use thread id
+                     id uid
+                     ) ref
+  : property.equatable
+is
+
+  joined := concur.atomic trit .new trit.no
+
+  policy concur.scheduling_policy.val
+  :=
+     concur.scheduling_policy.sched_other
+
+
+  priority i32 := 0
+
+  # wait for this thread to finish execution
+  #
+  public join outcome unit ! atomic_access =>
+    if joined.compare_and_set trit.no trit.unknown
+      r := fuzion.sys.thread.join0 thrd
+      joined.write trit.yes
+      if r = 0
+        unit
+      else if r = 1
+        error "A deadlock was detected."
+      else if r = 2
+        error "Another thread is already waiting to join with this thread or thread is not a joinable thread."
+      else if r = 3
+        error "No thread with the ID thread could be found."
+
+    else
+      # NYI: UNDER DEVELOPMENT:
+      # better busy loop
+      while joined.read.is_no_or_unknown
+
+    # NYI: UNDER DEVELOPMENT:
+    # should we send message to the thread that spawned this
+    # thread that it can remove its list of running threads?
+
+
+  # set the scheduling policy and priority of this thread
+  #
+  # policy offers a choice between various options provided
+  # by the operating system.
+  #
+  # reset_on_fork specifies whether to inherit the scheduling
+  # policy on a fork(2) (when it is not set) or not (when it
+  # is set).
+  #
+  # priority only applies to some scheduling policies and is
+  # currently limited to a value between 0 and 99.
+  #
+  public set_policy(policy0 concur.scheduling_policy.val,
+                    reset_on_fork bool,
+                    priority0 i32) outcome unit
+    pre
+      safety: 0 ≤ priority0 ≤ 99
+  =>
+    mtx.synchronized (outcome unit) _ ()->
+      p :=
+        match policy0
+          concur.scheduling_policy.sched_other => 0
+          concur.scheduling_policy.sched_fifo => 1
+          concur.scheduling_policy.sched_rr => 2
+      p2 :=
+        if reset_on_fork
+          p | 0x40000000
+        else
+          p
+      e := fuzion.sys.thread.set_policy thrd p2 priority0
+      if e = 0
+        set policy := policy0
+        set priority := priority0
+        unit
+      else
+        error "fzE_thread_setschedparam error $(e)"
+
+
+  # get the current scheduling policy and priority of this thread
+  #
+  public get_policy
+    tuple
+      concur.scheduling_policy.val
+      i32
+  =>
+    mtx.synchronized ()->
+      (policy, priority)
+
+
+  # pin a thread to the CPUs given by cores
+  #
+  public set_affinity(cores array u64) outcome unit
+  =>
+    mtx.synchronized (outcome unit) _ ()->
+      e := fuzion.sys.thread.set_affinity thrd cores
+      if e = 0
+        unit
+      else
+        error "fzE_thread_setaffinity error $(e)"
+
+
+  # equality
+  #
+  public fixed redef type.equality(a, b Thread.this) bool
+  =>
+    a.id = b.id
+
+
+  # mutex used to make accesses to this thread exclusive.
+  #
+  mtx := sync.mutex (A0_park_mutex).env.mtx
+
+
+  # private condition variable for this thread, used to put this
+  # thread in park mode using the given clock for timeouts
+  #
+  cond(C type : time.Clock) => (A1_park_condition C).env.cond
+
+
+  # is this thread parked? This is an option of a tuple containing the condition
+  # variable and a Nullary function that checks the condition that must hold for
+  # the thread to be unparked.
+  #
+  # All read- and write accesses to this are protected by the mutex used to park
+  # this thread, e.g., `blocking_mutate.mtx`.
+  #
+  parked_on := option (concur.sync.condition, ()->bool) nil
+
+
+  # park this thread atomically after storing `condition` as `park_condition` and
+  # executing `code`.
+  #
+  # The idea is that `code` may release a mutex in a way that ensures that this thread
+  # is parked before it is released.
+  #
+  module park(F type : ()->unit, condition ()->bool, code F)
+  =>
+    # NYI: UNDER DEVELOPMENT: We are locking both `mtx` and `c` here. This is redundant
+    # since `cond C` is based on `mtx`.  However, this does not seem to be the case for the
+    # Java backend, I run into deadlocks in the C backend and the preconditions in
+    # `condition` do not work if the remove `c.synchronized`.
+    #
+    mtx.lock
+    c := cond time.Monotonic # using condition var for monotonic clock here, but time is not needed
+    c.synchronized ()->
+      code()
+      set parked_on := (c, condition)
+      mtx.unlock
+      while parked_on??   # perform this in a while to catch spurious wakeups
+        c.wait
+
+
+  # park this thread atomically after storing `condition` as `park_condition` and
+  # executing `code`.
+  #
+  # The idea is that `code` may release a mutex in a way that ensures that this thread
+  # is parked before it is released.
+  #
+  # Return early from park in case timeout was reached.
+  #
+  # result is `true`  if this returns due to a call to `unpark`, it is `false` if there
+  # was no timeout.
+  #
+  module park_until(C type : time.Clock,
+                    F type : ()->unit,
+                    timeout   time.instant,
+                    condition ()->bool,
+                    code      F) bool =>
+    # NYI: UNDER DEVELOPMENT: We are locking both `mtx` and `c` here. This is redundant
+    # since `cond C` is based on `mtx`.  However, this does not seem to be the case for the
+    # Java backend, I run into deadlocks in the C backend and the preconditions in
+    # `condition` do not work if the remove `c.synchronized`.
+    #
+    mtx.lock
+    c := cond C
+    c.synchronized ()->
+      code()
+      set parked_on := (c, condition)
+      mtx.unlock
+      while C.env.read < timeout   # while timeout not reached
+        c.wait timeout
+      until !(parked_on??)                # perform unpark was called
+        true        # unpark was used to wake us up
+      else
+        false       # timed out
+
+
+  # unpark this thread if it is parked.
+  #
+  module unpark
+  =>
+    # NYI: UNDER DEVELOPMENT: We are locking both `mtx` and `c` here. This is redundant
+    # since `cond C` is based on `mtx`.  However, this does not seem to be the case for the
+    # Java backend, I run into deadlocks in the C backend and the preconditions in
+    # `condition` do not work if the remove `c.synchronized`.
+    #
+    mtx.lock
+    if parked_on??
+      c := parked_on.or_panic.0
+      c.synchronized ()->            # this is redundant for C backend, but required for Java where mtx adiffer
+        parked_on.for_each x->x.0.signal
+        set parked_on := nil
+        mtx.unlock
+        c.signal
+
+
+  # threads that are parked may use these link fields to form a `Thread_List` of
+  # parked threads.  Since a thread can never be parked more than once, these links
+  # can be used exclusively by the mechanism using park.
+  #
+  module prev Thread := Thread.this
+  module next Thread := Thread.this
+
+
+  # for a parked `thread.this`, the condition that must hold for the thread to
+  # be unparked, e.g., `blocking_mutate.mtx`.
+  #
+  # This must be called while synchronized on the mutex that caused this to park.
+  #
+  module park_condition ()->bool
+  =>
+    mtx.synchronized ()->
+      parked_on.or_panic.1
+
+
+  # String representation of thread
+  #
+  # NYI: we should provide some support for thread names. Currently, this is usind the
+  # thread id.
+  #
+  public redef as_string String
+  =>
+    "Thread#$id"
+
+
+# a thread-local effect that contains a  mutex for this thread used for park conditions
+#
+# NYI: CLEANUP: This could be just a field in thread as follows
+#
+#    mtx := concur.sync.mtx_init.or_else (panic "failed to create mutex")
+#
+# but there is currently no easy way to access this field while `concur.Threads.env.current`
+# cannot be used becuse `concur.Threads` is not yet instated.
+#
+# NYI: BUG: #7400 This must be instated before `concur.Threads`. Currently, the order
+# is sorted by dependency, but alphabetically, so we add prefix 'A_' as a workaround.
+#
+module A0_park_mutex : thread_local_effect is
+
+  mtx_var := concur.sync.mtx_init.or_else (panic "failed to create mutex")
+  mtx =>
+    mtx_var
+
+
+  public redef fixed instance_for_new_thread A0_park_mutex
+  =>
+    A0_park_mutex
+
+  public redef fixed type.default_value option concur.A0_park_mutex =>
+    concur.A0_park_mutex
+
+
+# a thread-local effect that produces a condition var for given Clock for each thread
+#
+# NYI: BUG: #7400 This must be instated before `concur.Threads`. Currently, the order
+# is not be dependency, but alphabetically, so we add prefix 'A_' as a workaround.
+#
+module A1_park_condition(C type : time.Clock) ref : thread_local_effect is
+
+  cond_var := (concur.sync.condition.new C A0_park_mutex.mtx).or_else (panic "failed to create condition variable")
+  cond =>
+    cond_var
+
+
+  public redef fixed instance_for_new_thread A1_park_condition C
+  =>
+    A1_park_condition C
+
+
+  public redef fixed type.default_value option (concur.A1_park_condition C) =>
+    concur.A1_park_condition C

@@ -41,7 +41,7 @@ module:public request_message(
 is
 
   # request line of the message
-  public request_line String => "$method $target {version_str version_major version_minor}" + crlf
+  public request_line String => "$method $target $(version_str version_major version_minor)" + crlf
 
   public redef start_line String => request_line
 

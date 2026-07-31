@@ -25,6 +25,25 @@
 #
 public Sending_Channel(T type) ref is
 
-  public infix <- (to T) bool => abstract
+  # send a value to this Channel.
+  #
+  # The channel must be open. Sending a value to a closed channel will cause a panic,
+  # either immediately or if it closed while we block on a full channel.
+  #
+  # In case the Channel is full, the attempt to send data will block until the Channel
+  # is no longer full or closed.
+  #
+  public infix <- (to T) unit
+  pre
+    (safety : !is_closed) || panic "send to closed Channel $T"
+  =>
+    abstract
 
-  public close unit => abstract
+
+  public close unit
+  post
+    debug: is_closed
+  =>
+    abstract
+
+  public is_closed bool => abstract

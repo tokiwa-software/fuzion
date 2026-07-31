@@ -28,7 +28,7 @@
 #
 public switch(A type, B type /* NYI: B should be open generic */)
   : choice A B,
-    monad A switch.this,
+    monad A,
     Sequence A,
     property.equatable
 is
@@ -146,33 +146,29 @@ is
 
   # return function
   #
-  # NYI: BUG:
-  #
-  # ./build/modules/base/src/switch.fz:180:21: error 1: Wrong result type in redefined feature
-  #   public redef type.return (a A) => a
-  #
-  # In 'switch.type.return' that redefines 'monad.type.return'
-  # result type is       : 'switch.type.A'
-  # result type should be: 'switch.this switch.type.A switch.type.B' (from 'monad.type.MA')
-  #
-  #
-  # public redef type.return (a A) switch.this => a
+  public redef fixed type.return (a A) switch A B => a
 
 
   # get A or cause an `exception T`
   #
-  public or_cause(T type, e B->error) A =>
+  public or_cause(T type, e B->error) A ! flow.exception T =>
     match switch.this
       a A => a
-      b B => (exception T).env.cause (e b)
+      b B => (flow.exception T).env.cause (e b)
 
 
   # get A or panic with `B.as_string`
   #
   public or_panic A =>
+    or_panic b->"'switch.or_panic' called on '$(switch.this.type.name)' that is '$b'"
+
+
+  # get A or panic with result of `msg`
+  #
+  public or_panic(msg B->String) A =>
     match switch.this
       a A => a
-      b B => panic $b
+      b B => panic (msg b)
 
 
   # fold this choice to new type `C`.

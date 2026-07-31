@@ -29,11 +29,11 @@ package dev.flang.ast;
 
 /**
  * For specifying the kind of a type.
- * May be one of "GenericArgument", "ValueType", "RefType" or "ThisType".
+ * May be one of "ParametricType", "ValueType", "RefType" or "ThisType".
  */
 public enum TypeKind {
 
-  GenericArgument(0x00),
+  ParametricType(0x00),
   ValueType(0x01),
   RefType(0x02),
   ThisType(0x03);
@@ -47,7 +47,7 @@ public enum TypeKind {
   public static TypeKind fromInt(int num)
   {
     return switch (num) {
-      case 0x00 -> TypeKind.GenericArgument;
+      case 0x00 -> TypeKind.ParametricType;
       case 0x01 -> TypeKind.ValueType;
       case 0x02 -> TypeKind.RefType;
       case 0x03 -> TypeKind.ThisType;

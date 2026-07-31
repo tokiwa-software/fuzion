@@ -28,7 +28,7 @@ reg_issue6824 =>
 
   test1(x T) =>
     if T : my_choice
-      say "$T is my_choice {type_of x} $x"
+      say "$T is my_choice $(type_of x) $x"
     else
       say "$T is not my_choice"
 
@@ -43,7 +43,7 @@ reg_issue6824 =>
 
   test2(x T) =>
     if T : my_type
-      say "$T is my_type {type_of x} $x"
+      say "$T is my_type $(type_of x) $x"
     else
       say "$T is not not my_type"
 

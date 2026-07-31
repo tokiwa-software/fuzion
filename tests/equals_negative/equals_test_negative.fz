@@ -30,24 +30,24 @@ equals_test_negative is
   ok1 := equals_test_ok 42
   ok2 := equals_test_ok 42
 
-  say "equals ok1 ok2 is {equals ok1 ok2}"
+  say "equals ok1 ok2 is $(equals ok1 ok2)"
 
   # negative tests should fail:
 
   a1 := equals_test_a 42
   a2 := equals_test_a 42
 
-  say "equals a1 a2 is {equals a1 a2}"      # 1. should flag an error: equals_test_a does not implement equality
+  say "equals a1 a2 is $(equals a1 a2)"      # 1. should flag an error: equals_test_a does not implement equality
 
   b1 := equals_test_b 42
   b2 := equals_test_b 42
 
-  say "b1.infix = b2 is {b1 = b2}"          # 2. should flag an error: equals_test_b does not implement equality
+  say "b1.infix = b2 is $(b1 = b2)"          # 2. should flag an error: equals_test_b does not implement equality
 
   c1 := equals_test_c 42
   c2 := equals_test_c 42
 
-  say "c1 = c2 is {c1 = c2}"                # 3. should flag an error: equals_test_c does not implement equality
+  say "c1 = c2 is $(c1 = c2)"                # 3. should flag an error: equals_test_c does not implement equality
 
 # control test that should pass
 equals_test_ok(x i32) : property.equatable is

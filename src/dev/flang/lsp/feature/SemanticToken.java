@@ -69,7 +69,7 @@ public class SemanticToken extends ANY
       .flatMap(t -> {
         switch (t.token())
           {
-          case t_stringBQ :    // '}+-*"' in "abc{x}+-*"
+          case t_stringPQ :    // '}+-*"' in "abc{x}+-*"
             return Stream.of(
               new TokenInfo(t.start(),
                 LexerTool.goRight(t.start()),
@@ -91,8 +91,8 @@ public class SemanticToken extends ANY
                   t.end().column() - 1),
                 t.end(),
                 t.text().substring(Util.charCount(t.text()) - 1, Util.charCount(t.text())), Token.t_op));
-          case t_stringBD :    // '}+-*$' in "abc{x}+-*$x.".
-          case t_stringBB :    // '}+-*{' in "abc{x}+-*{a+b}."
+          case t_stringPD :    // '}+-*$' in "abc{x}+-*$x.".
+          case t_stringPB :    // '}+-*{' in "abc{x}+-*{a+b}."
             return Stream.of(
               new TokenInfo(t.start(), LexerTool.goRight(t.start()), "}",
                 Token.t_op),

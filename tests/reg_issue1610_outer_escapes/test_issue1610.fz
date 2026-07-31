@@ -31,7 +31,7 @@ test_issue1610 =>
   case1_tmp =>
 
     # f contains a temporary variable that holds an instance of `a` and this instance
-    # is kept alive longer than `f.this` by returing an instance of `a.g`
+    # is kept alive longer than `f.this` by returning an instance of `a.g`
 
     f =>
       (a 1234567890).g
@@ -40,7 +40,7 @@ test_issue1610 =>
       g is
         v => e
 
-    say "case 1: {if $f.v = "1234567890" "PASS" else "FAIL"}"
+    say "case 1: $(if $f.v = "1234567890" "PASS" else "FAIL")"
 
   case1_tmp
 
@@ -48,7 +48,7 @@ test_issue1610 =>
   case2_field =>
 
     # f contains a field `x` that holds an instance of `a` and this instance
-    # is kept alive longer than `f.this` by returing an instance of `a.g`
+    # is kept alive longer than `f.this` by returning an instance of `a.g`
 
     f =>
       x := (a 1234567890)
@@ -58,7 +58,7 @@ test_issue1610 =>
       g is
         v => e
 
-    say "case 2: {if $f.v = "1234567890" "PASS" else "FAIL"}"
+    say "case 2: $(if $f.v = "1234567890" "PASS" else "FAIL")"
 
   case2_field
 
@@ -66,7 +66,7 @@ test_issue1610 =>
   case3_field_tmp =>
 
     # f contains a temporary variable that contains a field that holds an instance of `a`
-    # and this instance is kept alive longer than `f.this` by returing an instance
+    # and this instance is kept alive longer than `f.this` by returning an instance
     # of `a.g`
 
     y(T, U, V type, t T, u U, v V) is
@@ -78,7 +78,7 @@ test_issue1610 =>
       g is
         v => e
 
-    say "case 3: {if $f.v = "1234567890" "PASS" else "FAIL"}"
+    say "case 3: $(if $f.v = "1234567890" "PASS" else "FAIL")"
 
   case3_field_tmp
 
@@ -86,7 +86,7 @@ test_issue1610 =>
   case4_field_field =>
 
     # f contains a field `x` that itself contains a field that holds an instance of `a`
-    # and this instance is kept alive longer than `f.this` by returing an instance
+    # and this instance is kept alive longer than `f.this` by returning an instance
     # of `a.g`
 
     y(T, U, V type, t T, u U, v V) is
@@ -99,7 +99,7 @@ test_issue1610 =>
       g is
         v => e
 
-    say "case 4: {if $f.v = "1234567890" "PASS" else "FAIL"}"
+    say "case 4: $(if $f.v = "1234567890" "PASS" else "FAIL")"
 
   case4_field_field
 
@@ -109,7 +109,7 @@ test_issue1610 =>
     # same as case1 but `a.g` is returned as a ref
     #
     # f contains a temporary variable that holds an instance of `a` and this instance
-    # is kept alive longer than `f.this` by returing an instance of `a.g`
+    # is kept alive longer than `f.this` by returning an instance of `a.g`
 
     r ref is
       v u64 => abstract
@@ -121,7 +121,7 @@ test_issue1610 =>
       g : r is
         redef v => e
 
-    say "case 1ref: {if $f.v = "1234567890" "PASS" else "FAIL"}"
+    say "case 1ref: $(if $f.v = "1234567890" "PASS" else "FAIL")"
 
   case1ref_tmp
 
@@ -131,7 +131,7 @@ test_issue1610 =>
     # same as case2 but `a.g` is returned as a ref
     #
     # f contains a field `x` that holds an instance of `a` and this instance
-    # is kept alive longer than `f.this` by returing an instance of `a.g`
+    # is kept alive longer than `f.this` by returning an instance of `a.g`
 
     r ref is
       v u64 => abstract
@@ -144,7 +144,7 @@ test_issue1610 =>
       g : r is
         redef v => e
 
-    say "case 2ref: {if $f.v = "1234567890" "PASS" else "FAIL"}"
+    say "case 2ref: $(if $f.v = "1234567890" "PASS" else "FAIL")"
 
   case2ref_field
 
@@ -154,7 +154,7 @@ test_issue1610 =>
     # same as case3 but `a.g` is returned as a ref
     #
     # f contains a temporary variable that contains a field that holds an instance of `a`
-    # and this instance is kept alive longer than `f.this` by returing an instance
+    # and this instance is kept alive longer than `f.this` by returning an instance
     # of `a.g`
 
     y(T, U, V type, t T, u U, v V) is
@@ -169,7 +169,7 @@ test_issue1610 =>
       g : r is
         redef v => e
 
-    say "case 3ref: {if $f.v = "1234567890" "PASS" else "FAIL"}"
+    say "case 3ref: $(if $f.v = "1234567890" "PASS" else "FAIL")"
 
   case3ref_field_tmp
 
@@ -179,7 +179,7 @@ test_issue1610 =>
     # same as case4 but `a.g` is returned as a ref
     #
     # f contains a field `x` that itself contains a field that holds an instance of `a`
-    # and this instance is kept alive longer than `f.this` by returing an instance
+    # and this instance is kept alive longer than `f.this` by returning an instance
     # of `a.g`
 
     y(T, U, V type, t T, u U, v V) is
@@ -195,7 +195,7 @@ test_issue1610 =>
       g : r is
         redef v => e
 
-    say "case 4ref: {if $f.v = "1234567890" "PASS" else "FAIL"}"
+    say "case 4ref: $(if $f.v = "1234567890" "PASS" else "FAIL")"
 
   case4ref_field_field
 
@@ -205,7 +205,7 @@ test_issue1610 =>
     # same as case1 but result is stored in a mutable field
     #
     # f contains a temporary variable that holds an instance of `a` and this instance
-    # is kept alive longer than `f.this` by returing an instance of `a.g`
+    # is kept alive longer than `f.this` by returning an instance of `a.g`
 
     m := mut (option a.g) nil
 
@@ -217,7 +217,7 @@ test_issue1610 =>
         v => e
 
     f
-    say "case 1mut: {if $m.get.or_panic.v = "1234567890" "PASS" else "FAIL"}"
+    say "case 1mut: $(if $m.get.or_panic.v = "1234567890" "PASS" else "FAIL")"
 
   case1mut_tmp
 
@@ -227,7 +227,7 @@ test_issue1610 =>
     # same as case2 but result is stored in a mutable field
     #
     # f contains a field `x` that holds an instance of `a` and this instance
-    # is kept alive longer than `f.this` by returing an instance of `a.g`
+    # is kept alive longer than `f.this` by returning an instance of `a.g`
 
     m := mut (option a.g) nil
 
@@ -240,7 +240,7 @@ test_issue1610 =>
         v => e
 
     f
-    say "case 2mut: {if $m.get.or_panic.v = "1234567890" "PASS" else "FAIL"}"
+    say "case 2mut: $(if $m.get.or_panic.v = "1234567890" "PASS" else "FAIL")"
 
   case2mut_field
 
@@ -250,7 +250,7 @@ test_issue1610 =>
     # same as case3 but result is stored in a mutable field
     #
     # f contains a temporary variable that contains a field that holds an instance of `a`
-    # and this instance is kept alive longer than `f.this` by returing an instance
+    # and this instance is kept alive longer than `f.this` by returning an instance
     # of `a.g`
 
     m := mut (option a.g) nil
@@ -265,7 +265,7 @@ test_issue1610 =>
         v => e
 
     f
-    say "case 3mut: {if $m.get.or_panic.v = "1234567890" "PASS" else "FAIL"}"
+    say "case 3mut: $(if $m.get.or_panic.v = "1234567890" "PASS" else "FAIL")"
 
   case3mut_field_tmp
 
@@ -275,7 +275,7 @@ test_issue1610 =>
     # same as case4 but result is stored in a mutable field
     #
     # f contains a field `x` that itself contains a field that holds an instance of `a`
-    # and this instance is kept alive longer than `f.this` by returing an instance
+    # and this instance is kept alive longer than `f.this` by returning an instance
     # of `a.g`
 
     m := mut (option a.g) nil
@@ -291,7 +291,7 @@ test_issue1610 =>
         v => e
 
     f
-    say "case 4mut: {if $m.get.or_panic.v = "1234567890" "PASS" else "FAIL"}"
+    say "case 4mut: $(if $m.get.or_panic.v = "1234567890" "PASS" else "FAIL")"
 
   case4mut_field_field
 
@@ -301,7 +301,7 @@ test_issue1610 =>
     # same as case1 but result is stored as a ref in a mutable field
     #
     # f contains a temporary variable that holds an instance of `a` and this instance
-    # is kept alive longer than `f.this` by returing an instance of `a.g`
+    # is kept alive longer than `f.this` by returning an instance of `a.g`
 
     m := mut (option r) nil
 
@@ -316,7 +316,7 @@ test_issue1610 =>
         redef v => e
 
     f
-    say "case 1mut_ref: {if $m.get.or_panic.v = "1234567890" "PASS" else "FAIL"}"
+    say "case 1mut_ref: $(if $m.get.or_panic.v = "1234567890" "PASS" else "FAIL")"
 
   case1mut_ref_tmp
 
@@ -326,7 +326,7 @@ test_issue1610 =>
     # same as case2 but result is stored as a ref in a mutable field
     #
     # f contains a field `x` that holds an instance of `a` and this instance
-    # is kept alive longer than `f.this` by returing an instance of `a.g`
+    # is kept alive longer than `f.this` by returning an instance of `a.g`
 
     m := mut (option r) nil
 
@@ -342,7 +342,7 @@ test_issue1610 =>
         redef v => e
 
     f
-    say "case 2mut_ref: {if $m.get.or_panic.v = "1234567890" "PASS" else "FAIL"}"
+    say "case 2mut_ref: $(if $m.get.or_panic.v = "1234567890" "PASS" else "FAIL")"
 
   case2mut_ref_field
 
@@ -352,7 +352,7 @@ test_issue1610 =>
     # same as case3 but result is stored as a ref in a mutable field
     #
     # f contains a temporary variable that contains a field that holds an instance of `a`
-    # and this instance is kept alive longer than `f.this` by returing an instance
+    # and this instance is kept alive longer than `f.this` by returning an instance
     # of `a.g`
 
     m := mut (option r) nil
@@ -370,7 +370,7 @@ test_issue1610 =>
         redef v => e
 
     f
-    say "case 3mut_ref: {if $m.get.or_panic.v = "1234567890" "PASS" else "FAIL"}"
+    say "case 3mut_ref: $(if $m.get.or_panic.v = "1234567890" "PASS" else "FAIL")"
 
   case3mut_ref_field_tmp
 
@@ -380,7 +380,7 @@ test_issue1610 =>
     # same as case4 but result is stored as a ref in a mutable field
     #
     # f contains a field `x` that itself contains a field that holds an instance of `a`
-    # and this instance is kept alive longer than `f.this` by returing an instance
+    # and this instance is kept alive longer than `f.this` by returning an instance
     # of `a.g`
 
     m := mut (option r) nil
@@ -399,7 +399,7 @@ test_issue1610 =>
         redef v => e
 
     f
-    say "case 4mut_ref: {if $m.get.or_panic.v = "1234567890" "PASS" else "FAIL"}"
+    say "case 4mut_ref: $(if $m.get.or_panic.v = "1234567890" "PASS" else "FAIL")"
 
   case4mut_ref_field_field
 
@@ -418,7 +418,7 @@ test_issue1610 =>
       g is
         v => e
 
-    say "case inh1: {if $f.v = "1234567890" "PASS" else "FAIL"}"
+    say "case inh1: $(if $f.v = "1234567890" "PASS" else "FAIL")"
 
   case_inh1
 
@@ -437,7 +437,7 @@ test_issue1610 =>
       g is
         v => e
 
-    say "case inh2_field: {if $f.v = "1234567890" "PASS" else "FAIL"}"
+    say "case inh2_field: $(if $f.v = "1234567890" "PASS" else "FAIL")"
 
   case_inh2_field
 

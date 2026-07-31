@@ -52,4 +52,4 @@ pythagorean_triple is
       c := v .abs² / f
     while c < cₘₐₓ
       if real.gcd imag = 1  # filter duplicates
-        say "{a}² + {b}² = {c}² = {a*a} + {b*b} = {c*c}"
+        say "$(a)² + $(b)² = $(c)² = $(a*a) + $(b*b) = $(c*c)"

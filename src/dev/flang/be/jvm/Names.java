@@ -271,8 +271,7 @@ public class Names extends ANY implements ClassFileConstants
    * Get the data for the resource Runtime.CLASS_NAME_TO_FUZION_CLAZZ_NAME that
    * holds a map from Java class names to human readable fuzion class names.
    *
-   * The resource consists of lines separated by "\n" that consist of `java_name
-   * + "\" + fuzion_clazz_name`.
+    * The resource consists of lines separated by "\n" that consist of {@code java_name + "\" + fuzion_clazz_name}.
    */
   String methodNameToFuzionClazzNames()
   {
@@ -286,7 +285,7 @@ public class Names extends ANY implements ClassFileConstants
             result
               .append(j)
               .append("\t")
-              .append(_fuir.clazzAsStringHuman(cl))
+              .append(_fuir.clazzNameHuman(cl))
               .append("\n");
           }
       }
@@ -411,7 +410,7 @@ public class Names extends ANY implements ClassFileConstants
               res = nres;
             }
           _cache.set(num, res);
-          Profiler.addMangledName(res, _fuir.clazzAsStringHuman(cl));
+          Profiler.addMangledName(res, _fuir.clazzNameHuman(cl));
           if (_existing != null)
             {
               _existing.put(res, 1);

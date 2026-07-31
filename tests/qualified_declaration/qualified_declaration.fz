@@ -37,8 +37,8 @@ qualified_declaration is
 
   (1..10).for_each i->
                say ("$i " +
-                    "{x.y.z.f1(i)} " +
-                    "{x.y.z.f2(i)} " +
-                    "{x.y.z.f3(i)} " +
-                    "{x.y.z.f4(i)} " +
-                    "{x.y.z.f5(i)}")
+                    "$(x.y.z.f1(i)) " +
+                    "$(x.y.z.f2(i)) " +
+                    "$(x.y.z.f3(i)) " +
+                    "$(x.y.z.f4(i)) " +
+                    "$(x.y.z.f5(i))")

@@ -48,7 +48,7 @@ sqlite3_exec(F type : Function i32 Native_Ref i32 Native_Ref Native_Ref, db Nati
 #
 #     _ := (sqlite.open "test.db").bind unit db->
 #       db.query "select * from table_name;" res->
-#         say (res.map t->"{t.0} => {t.1}")
+#         say (res.map t->"$(t.0) => $(t.1)")
 #         0
 #
 # run:

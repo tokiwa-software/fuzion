@@ -6,8 +6,8 @@ Tests from lib_io_file/fileiotest.fz using unicode:
 🧪/📄 exists: false
 🧪/📄 was created
 🧪/📄 exists: true
-stat resolve=true : 🧪/📄 size is 25
-stat resolve=false: 🧪/📄 size is 25
+stat resolve=true : 🧪/📄 size is 25 B
+stat resolve=false: 🧪/📄 size is 25 B
 0
 unit
 1
@@ -28,7 +28,7 @@ file content is: 👋🏢🧑‍💻☯️
 Tests from lib_io_dir/lib_io_dir.fz using unicode:
 
 unit
---error: an error occurred while creating the following directory: "⚗️🧫"--
+an error occurred while creating the following directory: "⚗️🧫"
 --error: no more directory entries--
 1️⃣📜
 2️⃣🗒️

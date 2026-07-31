@@ -74,8 +74,7 @@ public class MIR extends IR
   public MIR(AbstractFeature universe, AbstractFeature main, MirModule module)
   {
     _universe = universe;
-    var pac = main.preAndCallFeature();
-    _main = pac != null ? pac : main;
+    _main = main;
     _module = module;
   }
 
@@ -268,7 +267,7 @@ hw25 is
   {
     return f == -1
       ? "-- no feature --"
-      : _featureIds.get(f).qualifiedName();
+      : _featureIds.get(f).qualifiedNameHuman();
   }
 
 

@@ -4,19 +4,19 @@ x i32 := [1,2].fold1 a,b->x
 --------------------------^
 Callchain that lead to this point:
 
-call 'λ.call#2' at {base.fum}/list.fz:239:41:
+call '(λa,b->x).call#2' at {base.fum}/list.fz:292:41:
               | c Cons => c.tail.foldf (f e c.head) f
 ----------------------------------------^
-call '(list i32).foldf#3 i32' at {base.fum}/list.fz:230:27:
+call '(list i32).foldf#3 i32' at {base.fum}/list.fz:283:27:
               | c Cons => c.tail.foldf c.head f
 --------------------------^^^^^^^^^^^^^^^^^^^^^
-call '(list i32).fold1#1' at {base.fum}/list.fz:228:16:
+call '(list i32).fold1#1' at {base.fum}/list.fz:281:16:
   public redef fold1 (f (A,A)->A) A =>
 ---------------^^^^^
-call '(list i32).precall fold1' at {base.fum}/Sequence.fz:433:5:
+call '(list i32).precall fold1' at {base.fum}/Sequence.fz:597:5:
     as_list.fold1 f
 ----^^^^^^^^^^^^^^^
-call '(array i32).fold1#1' at {base.fum}/Sequence.fz:430:3:
+call '(array i32).fold1#1' at {base.fum}/Sequence.fz:594:3:
   pre
 --^^^
     debug: !is_empty

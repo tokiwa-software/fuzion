@@ -79,11 +79,11 @@ public class Interpreter extends FUIRContext
       }
     catch (StackOverflowError e)
       {
-        Errors.fatal("*** " + e + "\n" + Executor.callStack(_fuir));
+        Errors.fatal("*** " + e + "\n" + Executor.callStack());
       }
     catch (RuntimeException | Error e)
       {
-        Errors.error("*** " + e + "\n" + Executor.callStack(_fuir));
+        Errors.error("*** " + e + "\n" + Executor.callStack());
         throw e;
       }
   }
@@ -147,11 +147,7 @@ public class Interpreter extends FUIRContext
     // if fclazz == FUIR.NO_CLAZZ
     // this likely means field was never read
     // during DFA phase.
-    if (fclazz != FUIR.NO_CLAZZ
-      // NYI: UNDER DEVELOPMENT remove once:
-      // Layout.get(staticClazz).size() == 0 <=> isUnitType(staticClazz)
-      && Layout.get(staticClazz).size() != 0
-        )
+    if (fclazz != FUIR.NO_CLAZZ)
       {
         LValue slot = fieldSlot(thiz, staticClazz, fclazz, curValue);
         setFieldSlot(thiz, fclazz, slot, v);
@@ -432,8 +428,9 @@ public class Interpreter extends FUIRContext
     var clazz = staticClazz;
     if (fuir().clazzIsRef(staticClazz))
       {
-        curValue = (curValue instanceof LValue lv) ? loadRefField(thiz, lv, false)
-                                                   : curValue;
+        curValue = curValue instanceof LValue lv
+          ? loadRefField(thiz, lv, false)
+          : curValue;
         clazz = ((ValueWithClazz) curValue).clazz();
       }
     if (fuir().clazzIsBoxed(staticClazz))
@@ -442,15 +439,6 @@ public class Interpreter extends FUIRContext
         curValue = ((Boxed)curValue)._contents;
       }
     int off = Layout.get(clazz).offset(thiz);
-
-    // NYI: UNDER DEVELOPMENT:
-    // if (CHECKS) check
-    //   (Layout.get(clazz).size() != 0);
-
-    // NYI: check if this is a can be enabled or removed:
-    //
-    //  check
-    //    (staticClazz.isAssignableFrom(clazz));
     return curValue.at(fclazz, off);
   }
 

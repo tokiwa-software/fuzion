@@ -34,9 +34,9 @@ Selected variant: '1'
 Type of called feature: 'i32'
 
 
---CURDIR--/select_clause_negative.fz:28:8: error 6: Could not find called feature
+--CURDIR--/select_clause_negative.fz:28:7: error 6: Could not find called feature
   say a.-1      # should flag an error:
--------^^
+------^^^^
 Feature not found: 'infix/infix_right .-' (one argument)
 Target feature: 'tuple'
 In call: 'a.-1'

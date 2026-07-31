@@ -165,7 +165,7 @@ is
   => option.this >>= v -> other >>= w -> v *? w
 
 
-  # exponentation operator
+  # exponentiation operator
   #
   public infix **?(other option T) option T
   pre

@@ -29,12 +29,12 @@ ex_nested_options is
       say "PASSED: $exp = $act"
     else
       say "FAILED: $exp /= $act"
-      _ := set_exit_code 1
+      _ := Exit.env.set_exit_code 1
 
   test(T type, v option T) =>
     match v
-      x T   => "{T.name}: T $x"
-      n nil => "{T.name}: nil $n"
+      x T   => "$(T.name): T $x"
+      n nil => "$(T.name): nil $n"
 
   chk "i32: nil --nil--" (test i32 nil)
   chk "i32: T 42" (test i32 42)
@@ -92,4 +92,4 @@ ex_nested_options is
   chk "option (option String): T foo"      (test sooo)
   chk "option (option String): T --nil--" (test sooon)
 
-  exit
+  Exit.env.exit

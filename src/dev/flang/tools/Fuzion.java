@@ -815,7 +815,7 @@ public class Fuzion extends Tool
                            stdBe + std +
                            (b.takesApplicationArgs() ? "[--] " : "") +
                            "(<main> | <srcfile>.fz | - | (-e|-execute) <code>) " +
-                           (b.takesApplicationArgs() ? "[<list of arbitrary arguments for envir.args effect>] " : "");
+                           (b.takesApplicationArgs() ? "[<list of arbitrary arguments for envir.Args effect>] " : "");
       }
   }
 

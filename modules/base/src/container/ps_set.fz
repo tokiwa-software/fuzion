@@ -99,7 +99,7 @@ is
   # number of entries in this set.  May be undefined, i.e., a range of
   # floating point numbers or an infinite set.
   #
-  public redef size_option option i32 => psm.size
+  public redef size_option option i64 => psm.size
 
 
   # does this set contain the given value?

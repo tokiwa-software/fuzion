@@ -297,6 +297,7 @@ public class Impl extends ANY
    */
   public void visit(FeatureVisitor v, AbstractFeature outer)
   {
+    v.action(this);
     if (isRoutineLike())
       {
         this._expr = this._expr.visit(v, outer);
@@ -309,7 +310,6 @@ public class Impl extends ANY
         //
         // this.visitCode(v, outer.outer());
       }
-    v.action(this);
   }
 
 
@@ -377,23 +377,12 @@ public class Impl extends ANY
       {
         _expr = _expr.propagateExpectedType(res, context, context.outerFeature().resultType(), null);
       }
+    else if (context.outerFeature().isConstructor())
+      {
+        _expr = _expr.propagateExpectedType(res, context, Types.resolved.t_unit, null);
+      }
   }
 
-
-  /**
-   * Inform the expression of this implementation that its expected type is {@code t}.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
-   * @param context the source code context where this Expr is used
-   *
-   * @param t the expected type.
-   */
-  void propagateExpectedType(Resolution res, Context context, AbstractType t)
-  {
-    _expr = _expr.propagateExpectedType(res, context, t, null);
-  }
 
 
   /**
@@ -642,14 +631,27 @@ public class Impl extends ANY
           // may not be resolved yet.
           // see #348 for an example.
           var fo = f.outer();
-          if (res != null && t == null && (fo.isUniverse() || !fo.state().atLeast(State.RESOLVING_TYPES)))
+          if (res != null && t == null && (fo.isUniverse() || !fo.state().atLeast(State.RESOLVED_TYPES)))
             {
               f.visit(res.resolveTypesFully(fo), fo);
               t  = _expr.typeForInferencing();
             }
           if (t == null && urgent)
             {
-              t = _expr.type();  // produce _expr's error if we really need the type and can't get it
+              // for a field definition that is a lambda
+              // we do not call type() since this would
+              // possibly give us t_FORWARD_CYCLIC
+              if (_expr instanceof Function fun && !fun._names.isEmpty())
+                {
+                  t = Types.t_ERROR;
+                  // suppress any further errors in the lambda
+                  fun.setDefunct();
+                  AstErrors.noTypeInferenceFromLambda(_expr.pos());
+                }
+              else
+                {
+                  t = _expr.type();  // produce _expr's error if we really need the type and can't get it
+                }
             }
           yield t;
         }
@@ -723,16 +725,18 @@ public class Impl extends ANY
 
 
   /**
-   * Add initial call to the expression of
+   * Add surrounding calls to the expression of
    * this implementation.
    */
-  public void addInitialCall(AbstractCall ac)
+  public void addCalls(AbstractCall start, AbstractCall end)
   {
     if (PRECONDITIONS) require
-      (ac.type().compareTo(Types.resolved.t_unit) == 0);
+      (start.type().compareTo(Types.resolved.t_unit) == 0,
+       end.type().compareTo(Types.resolved.t_unit) == 0);
 
-    _expr = new Block(new List<>(ac, _expr));
+    _expr = new Block(new List<>(start, _expr, end));
   }
+
 
 }
 

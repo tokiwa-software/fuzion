@@ -24,7 +24,7 @@
 test_issue1561 =>
   read_line option String =>
 
-    (exception unit String ()->
+    (flow.exception unit String ()->
       _ : String is
         public redef utf8 Sequence u8 =>
           (list u8).empty

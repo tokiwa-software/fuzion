@@ -1,0 +1,82 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature effect_wormhole
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+
+# effect_wormhole opens a wormhole through which all the instated effects in the current
+# environment may be transferred to the effect environment of another threads.
+#
+public effect_wormhole is
+
+  # the environment at the entry point of this wormhole, i.e., the
+  # environment the effects are taken from
+  #
+  effect_values := effect_types.type_foldf (Sequence container.Typed_Value).empty T,e->
+      (if      T : local_effect then nil
+       else if T : effect       then T.get_if_instated
+                                else nil              ).bind    (v -> e ++ [container.typed_value T v])
+                                                       .or_else e
+
+
+  # teleport the effects from the environment this wormhole was created in
+  # to the current environment and execute given code.
+  #
+  public teleport(R type, code ()->R) R
+  =>
+    Old_EV ref is
+      re_instate unit => abstract
+
+    old_ev(T type : effect) : Old_EV is
+      v := if T.is_instated then option T.env
+                            else nil
+      redef re_instate =>
+        match v
+          ev T => T.set0 ev
+          nil  => T.remove0
+
+    # get original effect values
+    original_values :=
+      effect_values.reduce (Sequence Old_EV).empty e,a->
+                            a.apply_to (Sequence Old_EV) T,_,v->
+                              if T : effect then
+                                e ++ [old_ev T]
+                              else
+                                compile_time_panic
+
+    # teleport effect values
+    effect_values.for_each (.apply_to unit T,_,v->
+                              if      T : local_effect        then panic "local effect should have been filtered out when wormhole was created"
+                              else if T : thread_local_effect then T.set0 (v.instance_for_new_thread)
+                              else if T : effect              then T.set0 v
+                              else
+                                compile_time_panic
+                           )
+
+    # run code using teleported effect environment
+    res := code()
+
+    # restore original effect values
+    original_values.for_each (.re_instate)
+
+    res

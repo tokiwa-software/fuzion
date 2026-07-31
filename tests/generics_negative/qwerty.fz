@@ -34,5 +34,5 @@ module qwerty(T type) is
       say "ASDFG"
 
       module hjkl(x T) is
-        yak x
+        yap x
         say "HJKL"

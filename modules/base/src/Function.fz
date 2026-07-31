@@ -58,5 +58,5 @@ public Function(public R type,
 #
 #     curry(x A.0) R->A.1... is x,a... -> call x a...
 #
-# where A.1... is the tail of type argument A (might be empty), and A.0 is the first element,
+# where A.1... is the tail of type parameter A (might be empty), and A.0 is the first element,
 # void (or unit?) if it does not exist.

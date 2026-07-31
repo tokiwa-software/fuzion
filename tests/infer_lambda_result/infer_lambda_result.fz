@@ -35,7 +35,7 @@ infer_lambda_result =>
 
     y => x ()->3.14
 
-    say "{type_of y .name}: $y"
+    say "$(type_of y .name): $y"
 
   # next, the inferred type is the argument to an option
   #
@@ -46,10 +46,10 @@ infer_lambda_result =>
 
     y => x ()->(u8 42)
 
-    say "{type_of y .name}: $y"
+    say "$(type_of y .name): $y"
 
   # next, we use our own lambda target which has the result type
-  # as the first type paramater
+  # as the first type parameter
   #
   case3 =>
 
@@ -58,7 +58,7 @@ infer_lambda_result =>
 
     y => x _,_->(i128 1 1)
 
-    say "{type_of y .name}: $y"
+    say "$(type_of y .name): $y"
 
   # now, the same but the result type is the third type parameter
   #
@@ -69,7 +69,7 @@ infer_lambda_result =>
 
     y => x _,_->(u16 65535)
 
-    say "{type_of y .name}: $y"
+    say "$(type_of y .name): $y"
 
 
   # and, the same but adding more type parameters to the function
@@ -82,7 +82,7 @@ infer_lambda_result =>
 
     y => x true unit [3,4] _,_->(u32 4000000000)
 
-    say "{type_of y .name}: $y"
+    say "$(type_of y .name): $y"
 
   case1
   case2

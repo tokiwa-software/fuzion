@@ -41,14 +41,22 @@ REF_MANUAL_SOURCES = $(wildcard $(FZ_SRC)/doc/ref_manual/*.adoc) \
                      $(JAVA_FILES_UTIL) \
                      $(JAVA_FILES_PARSER) \
                      $(JAVA_FILES_FE)
+
 REF_MANUAL_PDF     = $(BUILD_DIR)/doc/reference_manual/fuzion_reference_manual.pdf
 REF_MANUAL_HTML    = $(BUILD_DIR)/doc/reference_manual/html/index.html
+
+REALTIME_MANUAL_SOURCE  = $(FZ_SRC)/doc/ref_manual/realtime_manual.adoc
+REALTIME_MANUAL_SOURCES = $(REF_MANUAL_SOURCES)
+REALTIME_MANUAL_PDF     = $(BUILD_DIR)/doc/realtime_manual/realtime_manual.pdf
+REALTIME_MANUAL_HTML    = $(BUILD_DIR)/doc/realtime_manual/html/index.html
 
 DOCUMENTATION = \
 	$(DOC_FILES_FUMFILE) \
 	$(DOC_DESIGN_JVM)    \
 	$(REF_MANUAL_PDF)    \
 	$(REF_MANUAL_HTML)   \
+	$(REALTIME_MANUAL_PDF) \
+	$(REALTIME_MANUAL_HTML) \
 	$(DOC_JAVA)          \
 	$(BUILD_DIR)/apidocs/index.html
 
@@ -59,6 +67,14 @@ $(REF_MANUAL_PDF): $(REF_MANUAL_SOURCES) $(BUILD_DIR)/generated/doc/fum_file.ado
 $(REF_MANUAL_HTML): $(REF_MANUAL_SOURCES) $(BUILD_DIR)/generated/doc/fum_file.adoc $(FUZION_EBNF)
 	mkdir -p $(@D)
 	asciidoctor --failure-level=WARN $(REF_MANUAL_ATTRIBUTES) --out-file=$@ $(REF_MANUAL_SOURCE)
+
+$(REALTIME_MANUAL_PDF): $(REALTIME_MANUAL_SOURCES) $(BUILD_DIR)/generated/doc/fum_file.adoc $(FUZION_EBNF)
+	mkdir -p $(@D)
+	asciidoctor-pdf --failure-level=WARN $(REF_MANUAL_ATTRIBUTES) --out-file $@ $(REALTIME_MANUAL_SOURCE)
+
+$(REALTIME_MANUAL_HTML): $(REALTIME_MANUAL_SOURCES) $(BUILD_DIR)/generated/doc/fum_file.adoc $(FUZION_EBNF)
+	mkdir -p $(@D)
+	asciidoctor --failure-level=WARN $(REF_MANUAL_ATTRIBUTES) --out-file=$@ $(REALTIME_MANUAL_SOURCE)
 
 .phony: doc
 doc: $(DOCUMENTATION)
@@ -84,8 +100,10 @@ REF_MANUAL_ATTRIBUTES = \
 $(DOC_JAVA): $(JAVA_FILE_UTIL_VERSION) $(JAVA_FILE_FUIR_ANALYSIS_ABSTRACT_INTERPRETER2)
 	javadoc --release $(JAVA_VERSION) --enable-preview -d $(dir $(DOC_JAVA)) $(JAVA_FILES_FOR_JAVA_DOC)
 
-$(BUILD_DIR)/generated/doc/unicode_version.adoc:
-	mkdir -p $(@D)
+$(BUILD_DIR)/generated/doc:
+	mkdir -p $@
+
+$(BUILD_DIR)/generated/doc/unicode_version.adoc: $(BUILD_DIR)/generated/doc
 	cd $(FZ_SRC) && git log modules/base/src/encodings/unicode/data.fz  | grep --extended-regexp "^Date:" | head | sed "s-Date:   -:UNICODE_VERSION: -g" | head -n1 > $(realpath $(@D))/unicode_version.adoc
 
 $(BUILD_DIR)/generated/doc/codepoints_white_space.adoc: $(CLASS_FILES_PARSER)

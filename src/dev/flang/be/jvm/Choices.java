@@ -211,18 +211,15 @@ public class Choices extends ANY implements ClassFileConstants
    */
   boolean overlappingRefs(int c1, int c2)
   {
-    if (_fuir.clazzIsRef(c1) && _fuir.clazzIsRef(c2))
+    var h1 = _fuir.clazzInstantiatedHeirs(c1);
+    var h2 = _fuir.clazzInstantiatedHeirs(c2);
+    for (var i1 : h1)
       {
-        var h1 = _fuir.clazzInstantiatedHeirs(c1);
-        var h2 = _fuir.clazzInstantiatedHeirs(c2);
-        for (var i1 : h1)
+        for (var i2 : h2)
           {
-            for (var i2 : h2)
+            if (i1 == i2)
               {
-                if (i1 == i2)
-                  {
-                    return true;
-                  }
+                return true;
               }
           }
       }
@@ -281,19 +278,16 @@ public class Choices extends ANY implements ClassFileConstants
               for (var tagNum = 0; tagNum < nc; tagNum++)
                 {
                   var tc = _fuir.clazzChoice(cl, tagNum);
-                  if (_fuir.clazzIsRef(tc))
+                  for (var h : _fuir.clazzInstantiatedHeirs(tc))
                     {
-                      for (var h : _fuir.clazzInstantiatedHeirs(tc))
-                        {
-                          var hcf = _types.classFile(h);
-                          hcf.addImplements(ci._name);
+                      var hcf = _types.classFile(h);
+                      hcf.addImplements(ci._name);
 
-                          var bc_tag = Expr.iconst(tagNum)
-                            .andThen(Expr.IRETURN);
-                          var code_tag = hcf.codeAttribute(gtn + "in interface for "+_fuir.clazzAsString(cl),
-                                                           bc_tag, new List<>(), ClassFile.StackMapTable.empty(hcf, new List<>(VerificationType.UninitializedThis), bc_tag));
-                          hcf.method(ACC_PUBLIC, gtn, "()I", new List<>(code_tag));
-                        }
+                      var bc_tag = Expr.iconst(tagNum)
+                        .andThen(Expr.IRETURN);
+                      var code_tag = hcf.codeAttribute(gtn + "in interface for "+_fuir.clazzName(cl),
+                                                        bc_tag, new List<>(), ClassFile.StackMapTable.empty(hcf, new List<>(VerificationType.UninitializedThis), bc_tag));
+                      hcf.method(ACC_PUBLIC, gtn, "()I", new List<>(code_tag));
                     }
                 }
 
@@ -332,7 +326,7 @@ public class Choices extends ANY implements ClassFileConstants
                 .andThen(Expr.RETURN);
               var initLocals = Types.addToLocals(new List<>(), ut);
               initLocals.add(VerificationType.Integer);
-              var code_init = cf.codeAttribute("<init> in class for " + _fuir.clazzAsString(cl),
+              var code_init = cf.codeAttribute("<init> in class for " + _fuir.clazzName(cl),
                                                bc_init, new List<>(), ClassFile.StackMapTable.empty(cf, initLocals, bc_init));
               cf.method(ACC_PUBLIC, "<init>", "(I)V", new List<>(code_init));
 
@@ -341,7 +335,7 @@ public class Choices extends ANY implements ClassFileConstants
                                        Names.TAG_NAME,
                                        PrimitiveType.type_int))
                 .andThen(Expr.IRETURN);
-              var code_tag = cf.codeAttribute(gtn + "in class for " + _fuir.clazzAsString(cl),
+              var code_tag = cf.codeAttribute(gtn + "in class for " + _fuir.clazzName(cl),
                                               bc_tag, new List<>(), ClassFile.StackMapTable.empty(cf, Types.addToLocals(new List<>(), ut), bc_tag));
               cf.method(ACC_PUBLIC, gtn, "()I", new List<>(code_tag));
 
@@ -446,7 +440,7 @@ public class Choices extends ANY implements ClassFileConstants
       {
       case voidlike:
         {
-          Errors.fatal("JVM backend match called for void-like choice type " + _fuir.clazzAsString(subjClazz) + " when compiling " + _fuir.siteAsString(s));
+          Errors.fatal("JVM backend match called for void-like choice type " + _fuir.clazzName(subjClazz) + " when compiling " + _fuir.siteAsString(s));
           throw new Error(); // never executed, just to keep javac from complaining.
         }
       case unitlike:
@@ -712,7 +706,7 @@ public class Choices extends ANY implements ClassFileConstants
       {
       case voidlike:
         {
-          throw new Error("JVM backend tag called for voidlike choice type" + _fuir.clazzAsString(newcl) + " when compiling " + _fuir.siteAsString(s));
+          throw new Error("JVM backend tag called for voidlike choice type" + _fuir.clazzName(newcl) + " when compiling " + _fuir.siteAsString(s));
         }
       case unitlike:
         {

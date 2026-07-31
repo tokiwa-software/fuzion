@@ -40,12 +40,16 @@ jobs:
       contents: write  # for ncipollo/release-action to create a release
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v2.6.0
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
     - name: install dependencies
       run: |
         sudo apt-get update
         sudo apt-get install openjdk-25-jdk-headless libgc1 libgc-dev ruby-asciidoctor-pdf antlr4 asciidoc-base
+
+        # for DTRACE_PROBE
+        sudo apt-get install systemtap-sdt-dev
+
         echo "JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64" >> $GITHUB_ENV
         echo "/usr/lib/jvm/java-25-openjdk-amd64/bin" >> $GITHUB_PATH
 
@@ -56,10 +60,11 @@ jobs:
       id: getversion
       run: echo "version=$(cat version.txt)" >> $GITHUB_OUTPUT
 
-    - uses: ncipollo/release-action@b7eabc95ff50cbeeedec83973935c8f306dfcd0b # v1.20.0
+    - uses: ncipollo/release-action@339a81892b84b4eeb0f6e744e4574d79d0d9b8dd # v1.21.0
       with:
         artifacts: "fuzion_${{ steps.getversion.outputs.version }}.tar.gz"
         tag: "v${{ steps.getversion.outputs.version }}"
         prerelease: false
         generateReleaseNotes: false
+        immutableCreate: true
         token: ${{ secrets.GITHUB_TOKEN }}

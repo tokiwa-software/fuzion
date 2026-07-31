@@ -27,7 +27,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.tools.docs;
 
 import dev.flang.ast.AbstractFeature;
-import dev.flang.ast.Types;
 import dev.flang.ast.Visi;
 import dev.flang.util.ANY;
 
@@ -60,26 +59,6 @@ public class Util extends ANY
     return af.visibility() == Visi.PRIVPUB
         || af.visibility() == Visi.MODPUB
         || af.visibility() == Visi.PUB;
-  }
-
-
-  static enum Kind {
-    RefConstructor,
-    ValConstructor,
-    Type,
-    Cotype,
-    Other;
-
-    static Kind classify(AbstractFeature af) {
-      return
-      // NYI: does not treat features that `Type` inherits but does not redefine as type features, see #3716
-        (af.outer() != null && af.outer().isCotype() ||
-        (af.outer().compareTo(Types.resolved.f_Type) == 0)                    ? Kind.Cotype
-        : !af.definesType()                                                   ? Kind.Other
-        : af.isChoice() || af.visibility().eraseTypeVisibility() != Visi.PUB  ? Kind.Type
-        : af.isRef()                                                          ? Kind.RefConstructor
-                                                                              : Kind.ValConstructor);
-    }
   }
 
 }

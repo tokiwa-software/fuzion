@@ -29,6 +29,7 @@ package dev.flang.fe;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
+import dev.flang.ast.ResolvedType;
 import dev.flang.ast.TypeKind;
 
 import dev.flang.util.List;
@@ -85,7 +86,8 @@ class NormalType extends LibraryType
     super(mod, at);
 
     if (PRECONDITIONS) require
-      (typeKind == TypeKind.RefType || typeKind == TypeKind.ValueType);
+      (typeKind == TypeKind.RefType || typeKind == TypeKind.ValueType,
+       generics.stream().allMatch(g -> g instanceof ResolvedType));
 
     this._feature = feature;
     this._typeKind = typeKind;
@@ -99,7 +101,7 @@ class NormalType extends LibraryType
 
 
   /**
-   * `this` as a value.
+   * {@code this} as a value.
    *
    * Requires that at isNormalType().
    */
@@ -140,7 +142,7 @@ class NormalType extends LibraryType
    *
    * @return the underlying feature.
    *
-   * @throws Error if this is not resolved or isGenericArgument().
+   * @throws Error if this is not resolved or isParametricType().
    */
   @Override
   protected AbstractFeature backingFeature()
@@ -160,7 +162,7 @@ class NormalType extends LibraryType
 
 
   /**
-   * The mode of the type: GenericArgument, ThisType, RefType or ValueType.
+   * The mode of the type: ParametricType, ThisType, RefType or ValueType.
    */
   @Override
   public TypeKind kind()

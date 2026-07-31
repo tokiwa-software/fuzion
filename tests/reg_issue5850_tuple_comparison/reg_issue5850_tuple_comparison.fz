@@ -64,13 +64,13 @@ reg_issue5850_tuple_comparison =>
   say tuples.count
 
   say ""
-  say "check if tuples is sorted (expecting `false`): {tuples.is_sorted}"
+  say "check if tuples is sorted (expecting `false`): $(tuples.is_sorted)"
 
   say ""
   say "creating map from tuples to their indices:"
   map1 := c.ordered_map tuples tuples.indices
   say map1
-  say "map1 sorted (expecting `true`): {map1.sorted_entries.map (.key) .is_sorted}"
+  say "map1 sorted (expecting `true`): $(map1.sorted_entries.map (.key) .is_sorted)"
 
   say ""
   say "show sorted keys from map, should be sorted:"
@@ -82,7 +82,7 @@ reg_issue5850_tuple_comparison =>
 
   say ""
   say "while keys from sorted entries now have a different order than tuples:"
-  say "map1 keys equals original tuples (expecting `false`): {map1.sorted_entries.map (.key) .zip tuples (=) .fold bool.all}"
+  say "map1 keys equals original tuples (expecting `false`): $(map1.sorted_entries.map (.key) .zip tuples (=) .fold bool.all)"
 
   say ""
   say "now, creating a map inverting values and keys, i.e., sorted by the original indices"
@@ -92,8 +92,8 @@ reg_issue5850_tuple_comparison =>
   say ""
   say "printing the sorted values"
   say (map2.sorted_entries .map (.val))
-  say "map2 sorted (expecting `false`): {map2.sorted_entries.map (.val) .is_sorted}"
-  say "map2 values equals original tuples (expecting `true`): {map2.sorted_entries.map (.val) .zip tuples (=) .fold bool.all}"
+  say "map2 sorted (expecting `false`): $(map2.sorted_entries.map (.val) .is_sorted)"
+  say "map2 values equals original tuples (expecting `true`): $(map2.sorted_entries.map (.val) .zip tuples (=) .fold bool.all)"
 
   say ""
   say "hash table: from tuples to their indices"
@@ -104,4 +104,4 @@ reg_issue5850_tuple_comparison =>
       vbin := hm[t].or_else "0"
       v := vbin.parse_i32_binary.or_else -1
   do
-    say "get $t from hm is $v expected $i {v=i ? "OK" : "***FAIL***"}"
+    say "get $t from hm is $v expected $i $(v=i ? "OK" : "***FAIL***")"

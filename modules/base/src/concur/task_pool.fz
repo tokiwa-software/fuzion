@@ -1,0 +1,51 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature concur.task_pool
+#
+# -----------------------------------------------------------------------
+
+# simple, dynamically sized task runner
+#
+public task_pool : realtime.Scheduler
+is
+
+  thrds := concur.atomic (list concur.Thread) .new nil
+
+
+  # submit a task to the thread pool
+  #
+  public redef submit(P type : time.period, t realtime.task P) unit ! atomic_access =>
+
+    nt := concur.Threads.env.spawn ()->
+      actual_last := t.last_start.or_default (time.instant u64.max)
+      now := time.Nano.env.read
+      _ := time.Nano.env.run_periodic now t.period actual_last t.code
+
+    thrds.write (list nt thrds)
+
+
+  # stop accepting tasks and wait for remaining tasks to finish
+  #
+  public redef finally unit ! atomic_access =>
+
+    # wait for all threads to finish
+    thrds.read.for_each t->
+      # NYI: UNDER DEVELOPMENT: register failures somewhere
+      _ := t.join

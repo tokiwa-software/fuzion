@@ -1,4 +1,4 @@
 ===  Test: write to stdin of process (new)  ===
-0
+unit
 Hello, World!
 

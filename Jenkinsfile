@@ -1,5 +1,10 @@
 pipeline {
   agent any
+
+  options {
+    timeout(time: 30, unit: 'MINUTES')
+  }
+
   environment {
     IMAGE_NAME   = "tokiwa-software/fuzion:${env.BRANCH_NAME}"
     DOCS_DEPLOY_HOST  = "fuzion-lang.dev"

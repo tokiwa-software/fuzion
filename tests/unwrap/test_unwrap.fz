@@ -23,13 +23,13 @@
 
 test_unwrap =>
 
-  a := mut.new 3
+  a := mutate.env.new 3
   b := concur.atomic i32 .new 5
 
   say2(v i32) => say v
 
-  (exception (option i32)).on ()->
-    (exception (outcome i32)).on ()->
+  (flow.exception (option i32)).on ()->
+    (flow.exception (outcome i32)).on ()->
       say a
       say b
 

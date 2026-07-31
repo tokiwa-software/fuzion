@@ -71,7 +71,7 @@ ryu_test =>
       for is_scientific in [true, false] do
         for rounding_mode in [("conservative", r.rounding_conservative), ("even", r.rounding_even)] do
           rm_name, rm := rounding_mode
-          say "{if is_scientific then "scientific" else "full"}, rounding mode $rm_name: {r.as_string num0 is_scientific rm}"
+          say "$(if is_scientific then "scientific" else "full"), rounding mode $rm_name: $(r.as_string num0 is_scientific rm)"
       say "--"
 
 
@@ -109,7 +109,7 @@ ryu_test =>
       for is_scientific in [true, false] do
         for rounding_mode in [("conservative", r.rounding_conservative), ("even", r.rounding_even)] do
           rm_name, rm := rounding_mode
-          say "{if is_scientific then "scientific" else "full"}, rounding mode $rm_name: {r.as_string num0 is_scientific rm}"
+          say "$(if is_scientific then "scientific" else "full"), rounding mode $rm_name: $(r.as_string num0 is_scientific rm)"
       say "--"
 
 

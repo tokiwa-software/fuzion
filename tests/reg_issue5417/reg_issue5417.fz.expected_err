@@ -4,7 +4,7 @@
 --------------^^
 For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
 Type that is ambiguous: 'ex'
-Possible features that match this type: 
+Possible features that match this type:
 'ex.ex.ex' defined at --CURDIR--/reg_issue5417.fz:28:5:
     ex is
 ----^^
@@ -23,7 +23,7 @@ To solve this, rename these features such that each one has a unique name.
 --------------^^^^^
 For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.
 Type that is ambiguous: 'ex'
-Possible features that match this type: 
+Possible features that match this type:
 'ex.ex.ex' defined at --CURDIR--/reg_issue5417.fz:28:5:
     ex is
 ----^^

@@ -45,7 +45,7 @@ public sodium is
 
     lm ! ()->
 
-      out := lm.array u8 .new password_hash_length 0
+      out := lm.array u8 .new password_hash_length _->0
       passwd := lm.array u8 .from_Sequence password.utf8
 
       sodium.sodium_init

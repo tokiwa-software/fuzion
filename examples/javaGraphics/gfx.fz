@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# gfx is a minimalistic example that shows how Java's
+# gfx is a minimalist example that shows how Java's
 # java.awt graphics can be called from Fuzion code.
 #
 # See Makefile for how to start fuzion to run this example.
@@ -98,14 +98,14 @@ is
     c3 := java.awt.Color.new_III 130 106 175
 
 
-    G2D (g0 Java.java.awt.Graphics, tx, ty, rot f64) ref is  # NYI: UNDER DEVELOPMENT: #167: 'ref' due to lack of 'like this'
+    G2D (g0 Java.java.awt.Graphics, tx, ty, rot f64) is
 
       rotate (d f64) => G2D g0 tx ty rot+d
 
-      three_times(draw (G2D, Java.java.awt.Color) -> T) =>
-        _ := draw  G2D.this                      c1
-        _ := draw (G2D.this.rotate -2.0*f64.π/3) c2
-        _ := draw (G2D.this.rotate -4.0*f64.π/3) c3
+      fixed three_times(draw (G2D, Java.java.awt.Color) -> unit) =>
+        draw  G2D.this                      c1
+        draw (G2D.this.rotate -2.0*f64.π/3) c2
+        draw (G2D.this.rotate -4.0*f64.π/3) c3
 
       # Draw a filled arc of color c, center at (x,y), radius r, starting at angle
       # start and extending of len degrees.
@@ -172,9 +172,9 @@ is
             _ := java.lang.Thread.sleep_J 200
             _ := (G2D f.getGraphics 400 400 0).draw_logo
 
-          timeout := ((envir.args.nth 1).or_else "50000").parse_i64.or_default 0
+          timeout := ((envir.Args.env.nth 1).or_else "50000").parse_i64.or_default 0
           _ := java.lang.Thread.sleep_J timeout
           f.setVisible false
 
     gfx_
-    exit 0   # explicitly exit since JVM would otherwise keep us alive
+    Exit.env.exit 0   # explicitly exit since JVM would otherwise keep us alive

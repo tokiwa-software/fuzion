@@ -131,11 +131,11 @@ public class StringHelpers extends ANY
 
 
   /**
-   * Create a string representation for a type argument count.
+   * Create a string representation for a type parameter count.
    *
-   * @param count the number of type arguments
+   * @param count the number of type parameters
    *
-   * @return a string like "no type arguments", "one type argument", "2 type
+   * @return a string like "no type parameters", "one type parameter", "2 type
    * arguments"
    */
   public static String typeParametersString(int count)

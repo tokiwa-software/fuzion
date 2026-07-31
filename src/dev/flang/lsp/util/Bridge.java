@@ -103,7 +103,7 @@ public class Bridge extends ANY
       {
         return SymbolKind.Enum;
       }
-    if (feature.isBuiltInPrimitive() && "bool".equals(feature.featureName().baseName()))
+    if (feature.isBuiltInPrimitive() && "bool".equals(feature.baseName()))
       {
         return SymbolKind.Boolean;
       }

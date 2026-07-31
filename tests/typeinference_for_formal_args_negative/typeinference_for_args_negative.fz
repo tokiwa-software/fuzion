@@ -44,7 +44,7 @@ typeinference_for_args_negative is
   say (a3 1.1         " world!")
 
   say (a4 "hello"     " world!")
-  say (a4 "1.0"       " world!".byte_length)
+  say (a4 "1.0"       " world!".byte_count)
   say (a4 "10.as_f64" 3.14)
   say (a4 "1.1"       " world!"=" monde!")
 

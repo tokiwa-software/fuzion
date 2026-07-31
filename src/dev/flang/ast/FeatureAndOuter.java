@@ -180,14 +180,12 @@ public class FeatureAndOuter extends ANY
       {
         var f = fo._feature;
         var fn = f.featureName();
+        // NYI: CLEANUP: hack due to featureName not being updated on free types
+        fn = (f instanceof Feature ff)
+          ? FeatureName.get(fn.baseName(), fn.argCount() + ff.freeTypesCount())
+          : fn;
         if (isExact.test(fn))  /* an exact match, so use it: */
           {
-            if (CHECKS) check
-              (Errors.any() ||
-               !match ||
-               fn.argCount() == 0 /* we might have several exact matches for fields */ ||
-               found.get(0)._outer != fo._outer /* we might have several exact matches at different outer levels */
-               );
             if (!match)
               {
                 found = new List<>();
@@ -264,9 +262,9 @@ public class FeatureAndOuter extends ANY
   public String toString()
   {
     return
-      "[" + _feature.qualifiedName() +
-      " found in " + _outer.qualifiedName() + ", " +
-      (_nextInner == null ? "no next inner" : "next inner " + _nextInner.qualifiedName()) + ", " +
+      "[" + _feature.qualifiedNameHuman() +
+      " found in " + _outer.qualifiedNameHuman() + ", " +
+      (_nextInner == null ? "no next inner" : "next inner " + _nextInner.qualifiedNameHuman()) + ", " +
       (isNextInnerFixed() ? "fixed" : "not fixed") + "]";
   }
 

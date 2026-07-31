@@ -194,7 +194,7 @@ is
     concat : container.typed_applicator String is
       public redef apply(V type, e String, v V) String => e="" ? $v : "$e, $v"
 
-    "({values.typed_foldf "" concat})"
+    "($(values.typed_foldf "" concat))"
 
 
 # helper feature for `tuple.type.equality` to compare elements in a tuple

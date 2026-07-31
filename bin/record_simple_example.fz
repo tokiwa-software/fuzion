@@ -1,8 +1,36 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of record_simple_example script
+#
+# -----------------------------------------------------------------------
+
+
 ########### Extensions ###############
+
+# used for protecting spaces when splitting command string
+#
+protected_space := codepoint codepoint.utf8_encoded_in_four_bytes.as_list.last.or_panic
 
 # envir vars as map
 #
-envir_vars := container.map_of ((envir.vars.map_of [
+envir_vars := container.map_of ((envir.Vars.env.map_of [
     "PATH",
     "LANG",
     "JAVA_HOME",
@@ -30,49 +58,67 @@ envir_vars := container.map_of ((envir.vars.map_of [
 
 # execute this Sequence of process+args
 #
-Sequence.prefix ! =>
-  seq := map x->x.as_string
+Sequence.execute(
+  # feed .stdin file to executed process?
+  feed_stdin bool
+) =>
+  seq := map (.as_string)
   match os.process.start seq.first.or_panic (seq.drop 1) envir_vars
-    e error => panic "failed executing {Sequence.this}, error is $e"
-    p os.process => tokiwa.record_process p Sequence.this.as_string nil nil
-
+    e error => panic "failed executing $(Sequence.this), error is $e"
+    p os.process =>
+      feed option io.path :=
+        if feed_stdin
+          io.path.of "$file.stdin"
+        else
+          nil
+      tokiwa.record_process p Sequence.this.as_string nil feed
 
 # execute this string by splitting at all whitespaces
 #
-String.prefix !! =>
-  !split
+String.execute(
+  # feed .stdin file to executed process?
+  feed_stdin bool
+) =>
+  split_if (=" ")
+    .map (.replace protected_space " ")
+    .execute feed_stdin
+
+# execute this string by splitting at all whitespaces
+#
+String.execute =>
+  String.this.execute false
 
 
 ####### record_simple_example ########
 
 
-if envir.args.count != 4
+if envir.Args.env.count != 4
   say """
       Usage  : record_simple_example <any|jvm|c|int|effect> <fz+args> <test.fz>
       Example: record_simple_example jvm "build/bin/fz -modules=nom" /tests/hello/HelloWorld.fz
       """
-  exit 1
+  Exit.env.exit 1
 
 
-type_ := envir.args[1]
-fz_run   := envir.args[2] # NYI: UNDER DEVELOPMENT: code should be same as check_simple_example.fz
-file     := envir.args[3]
+type_    := envir.Args.env[1]
+fz_run   := envir.Args.env[2] # NYI: UNDER DEVELOPMENT: code should be same as check_simple_example.fz
+file     := envir.Args.env[3]
 
 res :=
   if type_ = "jvm" || type_ = "any"
-    !!"$fz_run -XmaxErrors=-1 -jvm {envir.vars["FUZION_JVM_BACKEND_OPTIONS"].or_default ""} $file"
+    "$fz_run -XmaxErrors=-1 -jvm $(envir.Vars.env["FUZION_JVM_BACKEND_OPTIONS"].or_default "") $file".execute true
   else if type_ = "c"
-    c := !!"$fz_run -XmaxErrors=-1 -c {envir.vars["FUZION_C_BACKEND_OPTIONS"].or_default ""} -o=testbin $file"
+    c := "$fz_run -XmaxErrors=-1 -c $(envir.Vars.env["FUZION_C_BACKEND_OPTIONS"].or_default "") -o=testbin $file".execute true
     if (c.exit_code = 0)
-      e := !!"./testbin"
-      _ := io.file.delete (path.of "testbin")
+      e := "./testbin".execute
+      _ := io.file.delete (io.path.of "testbin")
       tokiwa.process_result c.out+e.out c.err+e.err e.exit_code
     else
       c
   else if type_ = "int"
-    !!"$fz_run -XmaxErrors=-1 -interpreter $file"
+    "$fz_run -XmaxErrors=-1 -interpreter $file".execute true
   else if type_ = "effect"
-    !!"$fz_run -XmaxErrors=-1 -effects $file"
+    "$fz_run -XmaxErrors=-1 -effects $file".execute
   else
     panic "not supported"
 
@@ -83,10 +129,10 @@ if type_ != "effect"
     else
       "_$type_"
 
-  io.write (path.of "$file.expected_out$sfx") res.out .or_panic
+  io.write (io.path.of "$file.expected_out$sfx") res.out .or_panic
   cur_dir := os.cwd.or_panic.as_string
-  io.write (path.of "$file.expected_err$sfx") (res.err.replace cur_dir "--CURDIR--") .or_panic
+  io.write (io.path.of "$file.expected_err$sfx") (res.err.replace cur_dir "--CURDIR--") .or_panic
 else
-  io.write (path.of "$file.effect") ((res.out.lines.filter (l -> !l.is_empty)).sort.as_string "\n")+"\n" .or_panic
+  io.write (io.path.of "$file.effect") ((res.out.lines.filter (l -> !l.is_empty)).sort.as_string "\n")+"\n" .or_panic
 
 say "RECORDED $file"

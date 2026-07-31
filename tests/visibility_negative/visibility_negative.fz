@@ -31,14 +31,14 @@ visibility_negative is
       say "PASSED: $msg"
     else
       say "FAILED: $msg"
-      _ := set_exit_code 1
+      _ := Exit.env.set_exit_code 1
 
   chck (a,b i32, msg String) unit =>
     if a = b
       say "PASSED: $msg"
     else
       say "FAILED: expected $b got $a"
-      _ := set_exit_code 1
+      _ := Exit.env.set_exit_code 1
 
   visi1 =>
     a1 is
@@ -647,4 +647,4 @@ visibility_negative is
    say c  # 328. should flag an error: feature not visible
   visiA
 
-  exit
+  Exit.env.exit

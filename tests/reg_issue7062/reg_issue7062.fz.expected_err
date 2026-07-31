@@ -1,0 +1,13 @@
+
+--CURDIR--/reg_issue7062.fz:31:1: error 1: Repeated inheritance of conflicting features
+d : a, c is
+^
+Feature 'd' inherits feature 'as_string' (no arguments) repeatedly: 'a.as_string' defined at --CURDIR--/reg_issue7062.fz:25:16:
+  public redef as_string String => "a"
+---------------^^^^^^^^^
+and 'c.as_string' defined at --CURDIR--/reg_issue7062.fz:29:16:
+  public redef as_string String => "c"
+---------------^^^^^^^^^
+To solve this, you could add a redefinition of 'as_string' to 'd'.
+
+one error.

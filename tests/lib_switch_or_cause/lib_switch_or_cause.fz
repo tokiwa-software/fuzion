@@ -23,7 +23,7 @@
 
 lib_switch_or_cause =>
 
-  res := exception unit _ ()->
+  res := flow.exception unit _ ()->
     "GET 200 ..."
       .split
       .nth 1
@@ -33,7 +33,7 @@ lib_switch_or_cause =>
 
   say res
 
-  res2 := exception unit _ ()->
+  res2 := flow.exception unit _ ()->
     "GET200.."
       .split
       .nth 1
@@ -43,7 +43,7 @@ lib_switch_or_cause =>
 
   say res2
 
-  res3 := exception unit _ ()->
+  res3 := flow.exception unit _ ()->
     "GET ME .."
       .split
       .nth 1

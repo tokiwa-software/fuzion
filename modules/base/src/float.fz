@@ -66,6 +66,7 @@ public float : numeric is
   #
   # NYI: PERFORMANCE: this could be made faster, see here:
   # https://cs.opensource.google/go/go/+/refs/tags/go1.18.1:src/math/floor.go;l=79
+  #
   public round float.this =>
     if float.this < float.this.zero
       -(-float.this).round
@@ -75,7 +76,15 @@ public float : numeric is
       (float.this + float.this.one/float.this.two).floor
 
 
+  # convert this float to a string with a fixed number of digits after the decimal point.
+  # NYI: ENHANCEMENT: In the future, this should be replaced by a version of as_string with more formatting options,
+  # as described here : https://github.com/tokiwa-software/fuzion/pull/7152#issuecomment-4613267795
+  #
+  public as_string_decimals(fraction_digits i32) String => abstract
+
+
   # floor: the greatest integer lower or equal to this
+  #
   public floor float.this =>
     if fract < float.this.zero
       float.this - fract - float.this.one
@@ -84,6 +93,7 @@ public float : numeric is
 
 
   # ceiling: the smallest integer greater or equal to this
+  #
   public ceil float.this =>
     if fract ≤ float.this.zero
       float.this - fract
@@ -102,6 +112,7 @@ public float : numeric is
 
 
   # the amount of bits that are used to encode the mantissa
+  #
   public type.mantissa_bits i32 => significand_bits - 1
 
 
@@ -116,6 +127,7 @@ public float : numeric is
 
 
   # the normalized mantissa of this float
+  #
   public mantissa u64 => abstract
 
 

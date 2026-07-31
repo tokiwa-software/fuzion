@@ -28,23 +28,32 @@ module:public array (
        public T type,
 
        # contents of the array
-       module data fuzion.sys.internal_array T,
+       module data fuzion.sys.internal_array T
 
-       # length of the array to create
-       public redef length i64,
-
-       _ unit
-
-      ) : container.Mutable_Array T mutate.this, mutable_element
-pre
-  safety: (length ≥ 0) && (length ≤ data.length.as_i64)
+      ) : container.Buffer T mutate.this, mutable_element
 is
+
+
+  # A mutable array might be inaccessible if we are running in a thread that is
+  # not permitted by the underlying mutate instance to access its mutable elements
+  # at this point. See `blocking_mutate` and `mutate.exclusive`.
+  #
+  public redef is_accessible bool
+  =>
+    is_exclusive
+
+
+  # length of this array
+  #
+  public redef length i64 => data.length.as_i64
+
 
   # get element at given index i
   #
   public redef index [ ] (I type : integer, i I) T
   =>
-    data[i]
+    check_and_replace
+    data[i.as_i64]
 
 
   # set element at given index i to given value o
@@ -53,36 +62,6 @@ is
   =>
     check_and_replace
     data[i.as_i32] := o
-
-
-  # add an element at the end of this array
-  #
-  public redef add (o T) unit
-  =>
-    check_and_replace
-    d := if (data.length.as_i64 > length) data
-         else
-           new_data := fuzion.sys.internal_array_init T (max 8 data.length*2)
-           for i in indices do
-             new_data[i.as_i32] := data[i]
-           new_data
-    d[length.as_i32] := o
-    set data := d
-    set length := length+1
-
-
-  # create immutable array of length len from this
-  #
-  public as_array(len i32) universe.array T
-    pre debug: len <= length.as_i32
-  =>
-    array len (i -> data[i])
-
-
-  # create immutable array from this
-  #
-  public redef as_array universe.array T =>
-    array length.as_i32 (i -> data[i])
 
 
   # create a list from this array
@@ -99,20 +78,23 @@ is
   #
   public type.new
    (
+    I type : integer,
+
     # length of the array to create
-    length i64,
+    length I,
 
     # initial value for elements
-    init T
+    init I->T
 
    ) mutate.this.array T
   =>
     data := fuzion.sys.internal_array_init T length.as_i32
 
-    for x in data.indices do
-      data[x] := init
+    for x := I.zero, x+1
+    while x < length
+    do data[x.as_i32] := init x
 
-    mutate.this.env.array data length unit
+    mutate.this.env.array T data
 
 
   # initialize one-dimensional mutable array from a Sequence
@@ -121,25 +103,25 @@ is
   =>
     ab := s.as_array_backed
 
-    length := ab.count
+    length := ab.count.as_i64
 
-    data := fuzion.sys.internal_array_init T length
+    data := fuzion.sys.internal_array_init T length.as_i32
 
     for x in data.indices do
       data[x] := s[x]
 
-    mutate.this.env.array data length.as_i64 unit
+    mutate.this.env.array T data
 
 
-  # initialize an empty mutable array of type T
+  # create an uninitialized mutate.array, for use in container.Dynamic_Array
   #
-  public type.empty mutate.this.array T =>
-    mutate.this.env.array (fuzion.sys.internal_array_init T 0) 0 unit
+  module type.empty(I type : integer, len I) mutate.this.array T =>
+    mutate.this.env.array T (fuzion.sys.internal_array_init T len.as_i32)
 
 
 # convenience feature for creating a new array,
 # in some cases even with type inference
 #
-public new_array (T type, length i64, init T) mutate.this.array T
+public new_array (T type, I type : integer, length I, init I->T) mutate.this.array T
 =>
-  (mutate.this.array T).new length init
+  mutate.this.array T .new length init

@@ -22,4 +22,5 @@
 # -----------------------------------------------------------------------
 
 override NAME = fuzion_runtime_stackoverflow
+FUZION_JAVA_STACK_SIZE = 1m
 include ../simple.mk

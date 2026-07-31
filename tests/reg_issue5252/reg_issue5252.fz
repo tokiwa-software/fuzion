@@ -71,7 +71,7 @@ reg_issue5252 =>
   say (j.call 123)         # prints `24`
   say (j 456)              # prints `357`
 
-  k(kf i32->i32) => say "k: {kf 123}"
+  k(kf i32->i32) => say "k: $(kf 123)"
   k -999                   # print `-876`
 
   # test cases from issue #5252

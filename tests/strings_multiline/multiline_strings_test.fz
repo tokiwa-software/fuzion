@@ -45,31 +45,31 @@ multiline_strings_test is
   say """
     hell😀\sw😀rld\s!
 
-     {   world   }\s
+     $(   world   )\s
     """
 
 
   # nested multiline string
   say """
-    hell😀 {
+    hell😀 $(
 if true
   """
-{world}"""
+$(world)"""
 else
   "?"
-    }"""
+    )"""
 
 
   # nested multiline string using braces and dollar interpolation
   say """
-    hell😀 {
+    hell😀 $(
 if true
   """
-{"""
-  $world"""}"""
+$("""
+  $world""")"""
 else
   "?"
-    }"""
+    )"""
 
 
   # multiline string containing " and ""

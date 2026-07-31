@@ -37,9 +37,9 @@ mandelbrotexample is
     for _ in 1..height; y in steps y_start y_step do
       for _ in 1..width; x in steps x_start x_step do
         if is_in_mandelbrot_set (num.complex x y) 50 (num.complex 0.0 0.0)
-          yak "#"
+          yap "#"
         else
-          yak " "
+          yap " "
       say ""
 
   mandelbrot_image 1 -0.05 -2 0.0315 40 80

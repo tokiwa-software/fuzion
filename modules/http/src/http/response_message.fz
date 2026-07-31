@@ -46,7 +46,7 @@ is
 
   # the status line of the response message
   public status_line String =>
-    "{version_str version_major version_minor} $status_code $reason_phrase$crlf"
+    "$(version_str version_major version_minor) $status_code $reason_phrase$crlf"
 
 
   public type.new(

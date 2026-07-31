@@ -35,4 +35,4 @@ sequence_group_map_reduce =>
   say <| values.group_map_reduce String i32 classify (_->1) (+)
 
   # group characters by category and add underscores around each character
-  say <| values.group_map String String classify (x->"_{x}_")
+  say <| values.group_map String String classify (x->"_$(x)_")

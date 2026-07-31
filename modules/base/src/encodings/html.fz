@@ -94,7 +94,7 @@ public html is
           m[b]
             .bind (.utf8)
             .or_else [b]
-        |> String.type.from
+        |> String.from
 
     if replace_spaces
       repl map_of_escapings_full

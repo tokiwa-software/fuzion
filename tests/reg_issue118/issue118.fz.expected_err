@@ -4,16 +4,16 @@
 --^
 Feature 'issue118.a.type' instantiated at <source position not available>:
 
-inherits or declares abstract feature 'numeric.type.zero' declared at {base.fum}/numeric.fz:196:15:
+inherits or declares abstract feature 'numeric.type.zero' declared at {base.fum}/numeric.fz:185:15:
   public type.zero numeric.this => abstract
 --------------^^^^
-which is called at {base.fum}/numeric.fz:208:24:
+which is called at {base.fum}/numeric.fz:199:24:
     if      v = 0 then zero
 -----------------------^^^^
-and abstract feature 'numeric.type.one' declared at {base.fum}/numeric.fz:201:15:
+and abstract feature 'numeric.type.one' declared at {base.fum}/numeric.fz:190:15:
   public type.one  numeric.this => abstract
 --------------^^^
-which is called at {base.fum}/numeric.fz:209:24:
+which is called at {base.fum}/numeric.fz:200:24:
     else if v = 1 then one
 -----------------------^^^
 without providing an implementation
@@ -35,8 +35,8 @@ call 'issue118.a.as_string' at {base.fum}/io/print_effect.fz:36:12:
     print (s.as_string + (codepoint 10))
 -----------^^^^^^^^^^^
 call 'io.default_out.println#1' at {base.fum}/say.fz:31:36:
-public say(s Any) unit ! io.Out => io.out.println s
------------------------------------^^^^^^^^^^^^^^^^
+public say(s Any) unit ! io.Out => io.Out.env.println s
+-----------------------------------^^^^^^^^^^^^^^^^^^^^
 call 'say#1' at --CURDIR--/issue118.fz:56:3:
   say a
 --^^^^^

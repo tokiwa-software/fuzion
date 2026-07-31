@@ -27,10 +27,25 @@
 #
 # This is a `ref` feature such that code that requires an arbitrary `Clock`
 # effect could be written in a way that permits its execution using different
-# actual `Clock` implementations like `time.nano` that provides high
+# actual `Clock` implementations like `time.Nano` that provides high
 # precision with low accuracy or a different clock that provides higher accuracy.
 #
 public Clock ref : effect is
+
+
+  # in case this clock corresponds to a POSIX 1003.1 clock, give that clock's id.
+  #
+  # This might be `nil` for `Clock`s that do not correspond to a POSIX clock.
+  #
+  # NYI: BUG: 7400: would be nicer to have this as a normal feature, not
+  # a type feature, and then call it via Clock.env.posix_id.  This currently
+  # fails to verify that the default effect is instated, because effect dependencies
+  # are not checked for the order in the big bang singularity.
+  #
+  public type.posix_id option posix.clockid_t
+  =>
+    nil
+
 
   # read the time of this clock
   #
@@ -64,17 +79,12 @@ public Clock ref : effect is
   public sleep(d time.duration) unit => abstract
 
 
-  # install default effect time using default_nano_time
+  # default implementation of Clock using default_nano_time.
   #
-  type.install_default =>
-    time.Clock.default (time.nano nano.default_nano_time)
-
-  # shorthand for accessing time.Clock.env effect in current environment
+  # this will get instated automatically at startup
   #
-  public type.clock Clock.this =>
-    if !Clock.this.is_instated
-      Clock.this.install_default
-    Clock.this.env
+  public redef fixed type.default_value option time.Clock =>
+    Nano.default_value.bind (x -> id time.Clock x)
 
 
   # run the given code once at the provided instant within the current thread
@@ -102,24 +112,24 @@ public Clock ref : effect is
   #
   # return the number of times the `code` was run.
   #
-  public run_periodic(P type : time.Period,
+  public run_periodic(P type : time.period,
                       first time.instant,
-                      period P,
+                      p P,
                       last time.instant,
                       code ()->unit) u64
   pre
-    debug: period.is_infinity || period.as_duration > time.duration.ns 0
+    debug: p.is_infinity || p.as_duration > time.duration.ns 0
   post
-    debug: ((last >= first): result <= ((last - first) / period.as_duration) + 1)
+    debug: ((last >= first): result <= ((last - first) / p.as_duration) + 1)
     debug: ((last <  first): result = 0)
   =>
     for
       cnt := u64 0, cnt + 1
       just_now := read
-      next1 := first + period * cnt
-      skipped := if just_now > next1 then (just_now - next1) / period.as_duration + 1
+      next1 := first + p * cnt
+      skipped := if just_now > next1 then (just_now - next1) / p.as_duration + 1
                                      else 0
-      next := first + period * (cnt + skipped)
+      next := first + p * (cnt + skipped)
     while next <= last
       sleep_until next just_now
       code()

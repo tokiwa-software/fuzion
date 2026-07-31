@@ -61,7 +61,7 @@ public class CallTool extends ANY
    */
   public static boolean isFixLikeCall(AbstractCall c)
   {
-    return c.calledFeature().featureName().baseName().contains(" ");
+    return c.calledFeature().baseName().contains(" ");
   }
 
   /**

@@ -28,5 +28,5 @@ test(f ()->unit) =>
   f()
 
 test e
-test (yak "hello, "; say "world!")
-e => (yak "hello, "; say "world!")
+test (yap "hello, "; say "world!")
+e => (yap "hello, "; say "world!")

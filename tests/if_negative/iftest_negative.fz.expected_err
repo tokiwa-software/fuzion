@@ -25,23 +25,33 @@ Actual type is 'i32'
 
 --CURDIR--/iftest_negative.fz:58:5: error 5: Incompatible types in assignment
     if b # 5. should flag an error: Incompatible types in assignment
-----^
+----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      "Hello"
+------^^^^^^^
 assignment to field : 'iftest_negative.routine_negative.result'
 expected formal type: 'String'
 actual type found   : 'unit'
 assignable to       : 'unit'
-for value assigned  : ''
+for value assigned  : 
+if b # 5. should flag an error: Incompatible types in assignment
+      "Hello"
+
 To solve this, you could change the type of the target 'iftest_negative.routine_negative.result' to 'unit' or convert the type of the assigned value to 'String'.
 
 
 --CURDIR--/iftest_negative.fz:63:5: error 6: Incompatible types in assignment
     if b # 6. should flag an error: Incompatible types in branches of if expression
-----^
+----^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      "Hello"
+------^^^^^^^
 assignment to field : 'iftest_negative.function1.result'
 expected formal type: 'String'
 actual type found   : 'unit'
 assignable to       : 'unit'
-for value assigned  : ''
+for value assigned  : 
+if b # 6. should flag an error: Incompatible types in branches of if expression
+      "Hello"
+
 To solve this, you could change the type of the target 'iftest_negative.function1.result' to 'unit' or convert the type of the assigned value to 'String'.
 
 6 errors.

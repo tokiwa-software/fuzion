@@ -1,0 +1,25 @@
+
+--CURDIR--/reg_issue4428.fz:25:3: error 1: Illegal '.this' type: '(λ()-> a is x => a a.x).call.this'
+f ()->
+--^^^^
+  a is
+--^^^^
+    x => a
+----^^^^^^
+  a.x
+--^^^
+To solve this, either
+  - move the code inside of the feature the type refers to
+or
+  - change the type to a legal '.this' type.
+
+
+--CURDIR--/reg_issue4428.fz:25:1: error 2: Illegal '.this' type: '(λ()-> a is x => a a.x).call.this'
+f ()->
+^
+To solve this, either
+  - move the code inside of the feature the type refers to
+or
+  - change the type to a legal '.this' type.
+
+2 errors.

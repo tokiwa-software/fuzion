@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import dev.flang.util.ANY;
 import dev.flang.util.FuzionConstants;
@@ -210,21 +211,25 @@ public class Loop extends ANY
   private final SourcePosition _elsePos;
 
 
-  /*----------------------------  variables  ----------------------------*/
+  /**
+   * the sourceposition position of the loop
+   */
+  private final SourcePosition _pos;
 
 
   /**
    * Success block or null.
    */
-  private Block _successBlock;
+  private final Block _successBlock;
 
 
   /**
-   * Else block or null if not present. Parsed twice since we might need the code twice.
+   * Else block or null if not present. Parsed three times since we might need the code three times.
    */
-  private Expr _elseBlock0;
-  private Expr _elseBlock1;
-  private Expr _elseBlock2;
+  private final Expr _elseBlock;
+
+
+  /*----------------------------  variables  ----------------------------*/
 
 
   /**
@@ -232,6 +237,13 @@ public class Loop extends ANY
    * routines, the first for the prolog, the other for the rest of the loop.
    */
   private Feature[] _loopElse;
+
+
+  /**
+   * Has there been an error found in the loops code?
+   * This is used for displaying/supressing loop specific error messages.
+   */
+  private boolean _defunct = false;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -283,29 +295,30 @@ public class Loop extends ANY
        sb == null || untilCond != null,
        eb0 == null || eb0 instanceof Block || eb0 instanceof Match);
 
+    _pos       = pos;
     _elsePos   = ePos;
     _indexVars = iv;
     _nextValues = nv;
     block = Block.newIfNull(block);
     _successBlock = sb;
-    _elseBlock0 = eb0;
-    _elseBlock1 = eb1;
-    _elseBlock2 = eb2;
     var loopName = FuzionConstants.REC_LOOP_PREFIX +  _id_++ ;
     _rawLoopName = loopName;
-    if (!iterates() && whileCond == null && _elseBlock0 != null)
+    var iterates = iterates();
+    if (!iterates && whileCond == null && eb0 != null)
       {
-        AstErrors.loopElseBlockRequiresWhileOrIterator(pos, _elseBlock0);
+        AstErrors.loopElseBlockRequiresWhileOrIterator(pos, eb0);
       }
 
     // if there are no iterates then else block may access every loop var.
     // if there are iterates we move else block to feature and
     // insert it later, see `addIterators()`.
-    if (_elseBlock0 != null && iterates())
+    if (eb0 != null && iterates)
       {
-        moveElseBlockToRoutine();
-        _elseBlock0 = new Block(new List<>(_loopElse[1], callLoopElse(1)));
+        moveElseBlockToRoutine(eb0, eb1, eb2);
       }
+    _elseBlock = eb0 != null && iterates
+      ? new Block(new List<>(_loopElse[1], callLoopElse(1)))
+      : eb0;
 
     var prologBlock = new List<Expr>();
     var nextItBlock = new List<Expr>();
@@ -329,12 +342,12 @@ public class Loop extends ANY
                _successBlock == null
                  ? new Block() { public SourcePosition pos() { return new SourceRange(pos._sourceFile, pos.bytePos(), _elsePos.byteEndPos()); }; }
                  : Block.fromExpr(_successBlock),
-               new Block(nextItBlock), false);
+               new Block(nextItBlock), AbstractMatch.Kind.Until);
 
     block._expressions.add(nextIteration);
     if (whileCond != null)
       {
-        block = Block.fromExpr(Match.createIf(whileCond.pos(), whileCond, block, _elseBlock0, false));
+        block = Block.fromExpr(Match.createIf(whileCond.pos(), whileCond, block, _elseBlock, AbstractMatch.Kind.While));
       }
     if (inv != null)
       {
@@ -476,10 +489,13 @@ public class Loop extends ANY
         {
           var setExplicitResultType =
              ((Block)outer.code()).resultExpression() == _impl ||
-             outer.featureName().baseName().startsWith(FuzionConstants.REC_LOOP_PREFIX);
+             outer.baseName().startsWith(FuzionConstants.REC_LOOP_PREFIX);
           if (((Feature)outer).returnType() instanceof FunctionReturnType frt && setExplicitResultType)
             {
-              this.setFunctionReturnType(frt.functionReturnType());
+              if (Loop.this.producesResult())
+                {
+                  setFunctionReturnType(frt.functionReturnType());
+                }
               if (_loopElse != null)
                 {
                   for (int i = 0; i < _loopElse.length; i++)
@@ -494,8 +510,7 @@ public class Loop extends ANY
     var initialCall = new Call(pos, null, loopName, initialActuals);
     prologSuccessBlock.add(initialCall);
 
-    _impl           = new Block(new List<>(loop, prologBlock));
-    _impl._newScope = true;
+    _impl           = new Block(true, new List<>(loop, prologBlock));
   }
 
 
@@ -514,6 +529,17 @@ public class Loop extends ANY
     return _impl;
   }
 
+
+  /**
+   * Does this loop potentially yield a result?
+   * @return
+   */
+  private boolean producesResult()
+  {
+    return _successBlock != null || _elseBlock != null;
+  }
+
+
   /**
    * Creates code for the given loop variant expression
    *
@@ -525,7 +551,7 @@ public class Loop extends ANY
     var f = new Call(p, "fuzion");
     var r = new Call(p, f, "runtime");
     var e = new Call(p, r, "variantcondition_fault", new List<>(new StrConst(p, p.sourceText())));
-    return Match.createIf(p, variantExpr, new Block(), e, false);
+    return Match.createIf(p, variantExpr, new Block(), e, AbstractMatch.Kind.Contract);
   }
 
 
@@ -546,7 +572,7 @@ public class Loop extends ANY
   /**
    * Create code that moves the else block into dedicated routines.
    */
-  private void moveElseBlockToRoutine()
+  private void moveElseBlockToRoutine(Expr eb0, Expr eb1, Expr eb2)
   {
     _loopElse = new Feature[3];
     for (int ei=0; ei<3; ei++)
@@ -560,7 +586,7 @@ public class Loop extends ANY
                                     new List<>(),
                                     Function.NO_CALLS,
                                     Contract.EMPTY_CONTRACT,
-                                    new Impl(_elsePos, ei == 0 ? _elseBlock0 : (ei == 1 ? _elseBlock1 : _elseBlock2), Impl.Kind.RoutineDef));
+                                    new Impl(_elsePos, ei == 0 ? eb0 : (ei == 1 ? eb1 : eb2), Impl.Kind.RoutineDef));
       }
   }
 
@@ -581,7 +607,7 @@ public class Loop extends ANY
                          (_loopElse != null);
 
     return new Call(_elsePos,
-                    _loopElse[elseNum].featureName().baseName());
+                    _loopElse[elseNum].baseName());
   }
 
 
@@ -611,15 +637,15 @@ public class Loop extends ANY
           (f.impl()._kind != Impl.Kind.FieldIter);
 
         var p = f.pos();
-        var ia = new Call(p, FuzionConstants.ITER_ARG_PREFIX_INIT + f.featureName().baseName());
-        var na = new Call(p, FuzionConstants.ITER_ARG_PREFIX_NEXT + f.featureName().baseName());
+        var ia = new Call(p, FuzionConstants.ITER_ARG_PREFIX_INIT + f.baseName());
+        var na = new Call(p, FuzionConstants.ITER_ARG_PREFIX_NEXT + f.baseName());
         var type = (f.impl()._kind == Impl.Kind.FieldDef)
           ? null        // index var with type inference from initial actual
           : _indexVars.get(i).returnType().functionReturnType();
         var arg = new Feature(p,
                               Visi.PRIV,
                               type,
-                              f.featureName().baseName(),
+                              f.baseName(),
                               type != null ? Impl.FIELD
                                            : new Impl(Impl.Kind.FieldActual));
         arg._isIndexVarUpdatedByLoop = true;
@@ -666,8 +692,32 @@ public class Loop extends ANY
       @Override
       public Expr action(Function f)
       {
-        f.expr().visit(this, null);
+        // we must not replace calls to the lambda args
+        // this will raise ambiguity errors later
+        var n = new TreeSet<>(names);
+        n.removeAll(f._names.stream().map(x -> x._name).collect(Collectors.toSet()));
+        f.expr().visit(prefixVisitor(n, prefix), null);
         return super.action(f);
+      }
+
+      @Override
+      public Expr action(Feature f, AbstractFeature outer)
+      {
+        var expr = f.impl().expr();
+        if (expr != null)
+          {
+            // we must not replace calls to the
+            // feature itself or any of its args
+            // this will raise ambiguity errors later
+            var n = new TreeSet<>(names);
+            n.remove(f.baseName());
+            for (var arg : f.arguments())
+              {
+                n.remove(arg.baseName());
+              }
+            expr.visit(prefixVisitor(n, prefix), f);
+          }
+        return super.action(f, outer);
       }
     };
   }
@@ -725,10 +775,25 @@ public class Loop extends ANY
             List<Expr> nextIt2 = new List<>();
             Case match1c = new Case(p, consType, listName + "cons", new Block(prolog2));
             Case match1n = new Case(p, nilType, listName + "nil", (_loopElse != null) ? Block.fromExpr(callLoopElse(0)) : Block.newIfNull(null));
-            Match match1 = new Match(p, new Call(p, listName), new List<AbstractCase>(match1c, match1n));
+            Match match1 = new Match(p, new Call(p, listName), new List<AbstractCase>(match1c, match1n))
+            {
+              @Override
+              void showIncomptiableTypesError()
+              {
+                _defunct = true;
+                AstErrors.loopResultsInTwoIncompatibleTypes(_pos, this);
+              }
+            };
             Case match2c = new Case(p, consType, listName + "cons", new Block(nextIt2));
             Case match2n = new Case(p, nilType, listName + "nil", (_loopElse != null) ? Block.fromExpr(callLoopElse(2)) : Block.newIfNull(null));
-            Match match2 = new Match(p, new Call(p, listName + "arg"), new List<AbstractCase>(match2c, match2n));
+            Match match2 = new Match(p, new Call(p, listName + "arg"), new List<AbstractCase>(match2c, match2n))
+              {
+                @Override
+                Match assignToField(Resolution res, Context context, Feature r)
+                {
+                  return _defunct ? this : super.assignToField(res, context, r);
+                }
+              };
             prologBlock.add(match1);
             nextItBlock.add(match2);
             prologBlock = prolog2;
@@ -744,7 +809,7 @@ public class Loop extends ANY
         f._isIndexVarUpdatedByLoop = true;
         n._isIndexVarUpdatedByLoop = true;
 
-        names.add(f.featureName().baseName());
+        names.add(f.baseName());
         prologBlock.add(createInternalIterArgFeature(f, FuzionConstants.ITER_ARG_PREFIX_INIT));
         nextItBlock.add(createInternalIterArgFeature(n, FuzionConstants.ITER_ARG_PREFIX_NEXT));
       }
@@ -770,7 +835,7 @@ public class Loop extends ANY
   private Feature createInternalIterArgFeature(Feature f, String prefix)
   {
     var f1 = new Feature(f.visibility(), f.modifiers(), f.returnType(),
-      new List<>(new ParsedName(f.pos(), prefix + f.featureName().baseName())),
+      new List<>(new ParsedName(f.pos(), prefix + f.baseName())),
       new List<>(), new List<>(),
       Contract.EMPTY_CONTRACT, f.impl(), null);
     f1._isLoopIterator = f._isLoopIterator;

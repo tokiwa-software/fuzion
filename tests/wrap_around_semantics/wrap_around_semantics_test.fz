@@ -29,13 +29,13 @@ wrap_around_semantics_test is
       say "PASSED: $msg"
     else
       say "FAILED: $msg"
-      _ := set_exit_code 1
+      _ := Exit.env.set_exit_code 1
 
 
   test_unsigned (T type : num.wrap_around) =>
-    chck (T.max +° (T.from_u32 7) = (T.from_u32 6)) "{T.name}.max + 7 = 6"
-    chck (T.zero -° (T.from_u32 7) = T.max - (T.from_u32 6)) "0 - 7 = {T.name}.max - 6"
-    chck (T.max *° T.max = (T.from_u32 1)) "{T.name}.max * {T.name}.max = 1"
+    chck (T.max +° (T.from_u32 7) = (T.from_u32 6)) "$(T.name).max + 7 = 6"
+    chck (T.zero -° (T.from_u32 7) = T.max - (T.from_u32 6)) "0 - 7 = $(T.name).max - 6"
+    chck (T.max *° T.max = (T.from_u32 1)) "$(T.name).max * $(T.name).max = 1"
 
   test_unsigned u8
   test_unsigned u16
@@ -44,9 +44,9 @@ wrap_around_semantics_test is
   test_unsigned u128
 
   test_signed (T type : num.wrap_around) =>
-    chck (T.max +° (T.from_u32 7) = T.min + (T.from_u32 6)) "{T.name}.max + 7 = {T.name}.min + 6"
-    chck (T.min -° (T.from_u32 7) = T.max - (T.from_u32 6)) "{T.name}.min - 7 = {T.name}.max - 6"
-    chck (T.max *° T.max = (T.from_u32 1)) "{T.name}.max * {T.name}.max = 1"
+    chck (T.max +° (T.from_u32 7) = T.min + (T.from_u32 6)) "$(T.name).max + 7 = $(T.name).min + 6"
+    chck (T.min -° (T.from_u32 7) = T.max - (T.from_u32 6)) "$(T.name).min - 7 = $(T.name).max - 6"
+    chck (T.max *° T.max = (T.from_u32 1)) "$(T.name).max * $(T.name).max = 1"
 
   test_signed i8
   test_signed i16
@@ -54,4 +54,4 @@ wrap_around_semantics_test is
   test_signed i64
   test_signed i128
 
-  exit
+  Exit.env.exit

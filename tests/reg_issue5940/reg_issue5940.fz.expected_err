@@ -1,0 +1,25 @@
+
+--CURDIR--/reg_issue5940.fz:35:13: error 1: Failed to infer actual type parameters
+_ := a (u32 1) 1
+------------^
+In call to 'Lazy', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: 'T'
+Type inference failed for one type parameter 'T'
+
+
+--CURDIR--/reg_issue5940.fz:35:16: error 2: Failed to infer actual type parameters
+_ := a (u32 1) 1
+---------------^
+In call to 'Lazy', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: 'T'
+Type inference failed for one type parameter 'T'
+
+
+--CURDIR--/reg_issue5940.fz:35:6: error 3: Failed to infer actual type parameters
+_ := a (u32 1) 1
+-----^
+In call to 'a', no actual type parameters are given and inference of the type parameters failed.
+Expected type parameters: 'T'
+Type inference failed for one type parameter 'T'
+
+3 errors.

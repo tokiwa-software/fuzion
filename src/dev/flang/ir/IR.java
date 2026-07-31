@@ -178,10 +178,7 @@ public abstract class IR extends ANY
   protected int addCode(List<Object> code)
   {
     var result = _allCode.size() + SITE_BASE;
-    for (var c : code)
-      {
-        _allCode.add(c);
-      }
+    _allCode.addAll(code);
     _allCode.add(null);
     return result;
   }
@@ -390,7 +387,7 @@ public abstract class IR extends ANY
      */
     // NYI: ugly special case: currently needed for code like
     // because isAssignableFrom does not return yes without correct Context...
-    else if (t.isGenericArgument() && frmlT.isRef())
+    else if (t.isParametricType() && frmlT.isRef())
       {
         var rt = expr.needsBoxing(frmlT);
         if (rt != null)
@@ -402,7 +399,7 @@ public abstract class IR extends ANY
     if (POSTCONDITIONS) ensure
       (Errors.any()
         || t.isVoid()
-        || frmlT.isGenericArgument()
+        || frmlT.isParametricType()
         || frmlT.isThisType()
         || result.needsBoxing(frmlT) == null
         || frmlT.isAssignableFrom(t).no());

@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import static dev.flang.util.FuzionConstants.NO_SELECT;
+
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -123,7 +125,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * Result of `handDown(Resolution, AbstractType[], AbstractFeature) in case of
+   * Result of {@code handDown(Resolution, AbstractType[], AbstractFeature)} in case of
    * failure due to previous errors.
    */
   public static final List<AbstractType> HAND_DOWN_FAILED = new List<AbstractType>().freeze();
@@ -274,7 +276,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * All arguments of this feature. This includes type arguments.
+   * All arguments of this feature. This includes type parameters.
    */
   public abstract List<AbstractFeature> arguments();
 
@@ -421,33 +423,118 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
+   * returns internal base name of this feature. @see FeatureName.baseName().
+   *
+   * @return base name of this feature.
+   */
+  public String baseName()
+  {
+    return featureName().baseName();
+  }
+
+
+  /**
+   * returns human-readable base name of this feature. @see FeatureName.baseNameHuman(AbstractFeature).
+   *
+   * @return the human readable base name of this feature.
+   */
+  public String baseNameHuman()
+  {
+    var result = featureName().baseNameHuman();
+    if (result == FuzionConstants.HUMAN_READABLE_LAMBDA_NAME)
+      {
+        var code = result + pos().sourceText().split("#")[0].trim();
+        var dotdotdot = "";
+        code = code.replaceAll("\n", " ");
+        while (code.indexOf("  ") >= 0)
+          {
+            code = code.replaceAll("  "," ");
+          }
+        var nl = code.indexOf("\n");
+        if (nl >= 0)
+          {
+            code = code.substring(0, nl);
+            dotdotdot = "...";
+          }
+        if (code.length() > 40)
+          {
+            code = code.substring(0, 39);
+            dotdotdot = "...";
+          }
+        result = "(" + code + dotdotdot + ")";
+      }
+    return result;
+  }
+
+
+  /**
    * returns the qualified name of this feature, relative to feature context, without any special handling for type features.
    * If context is null the full qualified name to universe is returned.
    *
    * @param context the feature to which the name should be relative to, universe if null
-   * @return the qualified name, e.g. "fuzion.std.out.println" or "abc.#type.def.#type.THIS#TYPE"
+   *
+   * @param human true to replace internal names by human readable text. This
+   * should never be true for internal symbols or generated code.
+   *
+   * @return the qualified name, e.g. "some_feature.#FUN124.call.result",
+   * "xyz.#preandcall_xyz_pqr#bla", etc. iff human==false, or
+   * "some_feature.(λx->x+1)call.result", "xyz.precall bla", etc. otherwise)
    */
-  private String qualifiedName0(AbstractFeature context)
+  private String qualifiedName0(AbstractFeature context, boolean human)
   {
-    var n = featureName().baseNameHuman();
+    var n = human ? baseNameHuman(): baseName();
     return
       !state().atLeast(State.FINDING_DECLARATIONS) ||
       isUniverse()                                 ||
       outer() == null                              ||
       outer().isUniverse()                         ||
       (context != null && outer().equals(context))     ? n
-                                                       : outer().qualifiedName() + "." + n;
+                                                       : outer().qualifiedName(human) + "." + n;
   }
 
 
   /**
    * qualifiedName returns the qualified name of this feature
    *
-   * @return the qualified name, e.g. "fuzion.std.out.println" or "abc.def.this.type" or "abc.def.type".
+   * @param human true to replace internal names by human readable text. This
+   * should never be true for internal symbols or generated code.
+   *
+   * @return the qualified name, e.g. "some_feature.#FUN124.call.result",
+   * "xyz.#preandcall_xyz_pqr#bla", etc. iff human==false, or
+   * "some_feature.(λx->x+1)call.result", "xyz.precall bla", etc. otherwise)
+   */
+  public String qualifiedName(boolean human)
+  {
+    return qualifiedName(null, human);
+  }
+
+
+  /**
+   * qualifiedName returns the qualified name of this feature, leaving
+   * internal auto-generated names untouched.  This is not ideal for user
+   * output, but required for any internal use of these names in generated code.
+   *
+   * @return the qualified name, e.g. "some_feature.#FUN124.call.result" or
+   * "xyz.#preandcall_xyz_pqr#bla", etc.
    */
   public String qualifiedName()
   {
-    return qualifiedName(null);
+    return qualifiedName(false);
+  }
+
+
+  /**
+   * qualifiedNameHuman returns the qualified name of this feature with internal
+   * names replaced by human readable text.
+   *
+   * This should never be used for internal symbols or generated code.
+   *
+   * @return the qualified name, e.g. "some_feature.(λx->x+1)call.result" or
+   * "xyz.precall bla", etc.
+   */
+  public String qualifiedNameHuman()
+  {
+    return qualifiedName(true);
   }
 
 
@@ -455,21 +542,26 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * qualifiedName returns the qualified name of this feature, relative to feature context (if context is not null)
    *
    * @param context the feature to which the name should be relative to, universe if null
-   * @return the qualified name, e.g. "fuzion.std.out.println" or "abc.def.this.type" or "abc.def.type".
+   *
+   * @param human true to replace internal names by human readable text. This
+   * should never be true for internal symbols or generated code.
+   *
+   * @return the qualified name, e.g. "some_feature.#FUN124.call.result" or
+   * "xyz.#preandcall_xyz_pqr#bla", etc.
    */
-  String qualifiedName(AbstractFeature context)
+  String qualifiedName(AbstractFeature context, boolean human)
   {
     var tfo = state().atLeast(State.FINDING_DECLARATIONS) && outer() != null && outer().isCotype() ? outer().cotypeOrigin() : null;
     return
-      isCoTypesThisType()
+      isCoTypesRelayTypeParameter()
         /* special type parameter used for this.type in type features */
-        ? (tfo != null ? tfo.qualifiedName(context) : "null")
+        ? (tfo != null ? tfo.qualifiedName(context, human) : "null")
           + ".this.type"
         : isCotype() && cotypeOrigin() != null
           /* cotype: use original name and add ".type": */
-          ? cotypeOrigin().qualifiedName(context) + ".type"
+          ? cotypeOrigin().qualifiedName(context, human) + ".type"
           /* a normal feature name */
-          : qualifiedName0(context);
+          : qualifiedName0(context, human);
   }
 
 
@@ -617,7 +709,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
                       {
                         t = a.resultType();
                       }
-                    result = result || t.isGenericArgument() && t.genericArgument() == g;
+                    result = result || t.isParametricType() && t.typeParameter() == g;
                   }
               }
           }
@@ -631,7 +723,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * Check if this feature's argument list contains value arguments of an open
    * type parameter of this feature.
    *
-   * Note that in contrast to `hasOpenGenericsArgList()`, this does not consider
+   * Note that in contrast to {@code hasOpenGenericsArgList()}, this does not consider
    * arguments whose type is an open type from an outer feature.
    *
    * @param res resolution used before type resolution is done to resolve
@@ -660,7 +752,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
               {
                 t = a.resultType();
               }
-            return t.isGenericArgument() && t.genericArgument() == g;
+            return t.isParametricType() && t.typeParameter() == g;
           })
          );
   }
@@ -689,7 +781,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * require
    *   (isTypeParameter());
    */
-  public abstract AbstractType asGenericType();
+  public abstract AbstractType asParametricType();
 
 
   /**
@@ -773,15 +865,15 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    */
   public boolean isTypeFeature()
   {
-    // NYI: BUG: wrongly returns false for features that a cotype inherits from Type but which are implemented in Any i.e. its outer feature is Any
-    return outer() != null && (outer().isCotype() || outer().compareTo(Types.resolved.f_Type) == 0);
+    // NYI: BUG: wrongly returns false for features that a cotype inherits from Type but which are implemented in Any i.e. its outer feature is Any, see #3913
+    return outer() != null && (outer().isCotype() || Types.resolved != null && outer().compareTo(Types.resolved.f_Type) == 0);
   }
 
 
   /**
-   * Is this the 'THIS_TYPE' type parameter in a cotype?
+   * Is this the 'RELAY_TYPE' type parameter in a cotype?
    */
-  public boolean isCoTypesThisType()
+  public boolean isCoTypesRelayTypeParameter()
   {
     return outer() != null
       && outer().isCotype()
@@ -840,7 +932,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
       {
         if (!first)
           {
-            tl.add(ta.asGenericType());
+            tl.add(ta.asParametricType());
           }
         first = false;
       }
@@ -867,7 +959,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
         // to change `List.map` to always clone the original List.
         i.actualTypeParameters().freeze();
       }
-    var tl = typeArguments().map2(ta -> (AbstractType) new ParsedType(pos(), ta.featureName().baseName()));
+    var tl = typeArguments().map2(ta -> (AbstractType) new ParsedType(pos(), ta.baseName()));
     return t.applyTypePars(this, tl)
             .clone(this);
   }
@@ -920,15 +1012,15 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * Return `ValuesAsOpenType` feature corresponding to this open type parameter.
+   * Return {@code ValuesAsOpenType} feature corresponding to this open type parameter.
    * An instance of this feature is returned as the result of a call to a field whose
-   * type is an open type parameter auch as `tuple.values`.
+   * type is an open type parameter auch as {@code tuple.values}.
    */
   public abstract AbstractFeature valuesAsOpenTypeFeature();
 
 
   /**
-   * Does this feature come with a corresponding `ValuesAsOpenType` feature, i.e., the
+   * Does this feature come with a corresponding {@code ValuesAsOpenType} feature, i.e., the
    * result that is produced when calling a field whose type is an open type
    * parameter and not selecting one specific variant.
    */
@@ -939,9 +1031,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * Return `Open_Types` feature corresponding to this open type parameter.
+   * Return {@code Open_Types} feature corresponding to this open type parameter.
    * An instance of this feature is returned as the result of a call to a field whose
-   * type is an open type parameter auch as `tuple.values`.
+   * type is an open type parameter auch as {@code tuple.values}.
    *
    * In case this feature is part of the currently compiled module and does not have an
    * open types feature yet, add one.
@@ -953,9 +1045,9 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * Return `Open_Types` feature corresponding to this open type parameter.
+   * Return {@code Open_Types} feature corresponding to this open type parameter.
    * An instance of this feature is returned as the result of a call to a field whose
-   * type is an open type parameter auch as `tuple.values`.
+   * type is an open type parameter auch as {@code tuple.values}.
    */
   public abstract AbstractFeature openTypesFeature();
 
@@ -1056,17 +1148,17 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     return !isUniverse()
       && outer() != null
       && outer().isUniverse()
-      && (   FuzionConstants.I8_NAME  .equals(featureName().baseName())
-          || FuzionConstants.I16_NAME .equals(featureName().baseName())
-          || FuzionConstants.I32_NAME .equals(featureName().baseName())
-          || FuzionConstants.I64_NAME .equals(featureName().baseName())
-          || FuzionConstants.U8_NAME  .equals(featureName().baseName())
-          || FuzionConstants.U16_NAME .equals(featureName().baseName())
-          || FuzionConstants.U32_NAME .equals(featureName().baseName())
-          || FuzionConstants.U64_NAME .equals(featureName().baseName())
-          || FuzionConstants.F32_NAME .equals(featureName().baseName())
-          || FuzionConstants.F64_NAME .equals(featureName().baseName())
-          || "bool".equals(featureName().baseName()));
+      && (   FuzionConstants.I8_NAME  .equals(baseName())
+          || FuzionConstants.I16_NAME .equals(baseName())
+          || FuzionConstants.I32_NAME .equals(baseName())
+          || FuzionConstants.I64_NAME .equals(baseName())
+          || FuzionConstants.U8_NAME  .equals(baseName())
+          || FuzionConstants.U16_NAME .equals(baseName())
+          || FuzionConstants.U32_NAME .equals(baseName())
+          || FuzionConstants.U64_NAME .equals(baseName())
+          || FuzionConstants.F32_NAME .equals(baseName())
+          || FuzionConstants.F64_NAME .equals(baseName())
+          || "bool".equals(baseName()));
   }
 
 
@@ -1168,7 +1260,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
     if (f.outer() == p.calledFeature())
       {
-        // NYI: This might be incorrect in case p.actualTypeParameters() is inferred but not set yet.
+        // NYI: BUG: This might be incorrect in case p.actualTypeParameters() is inferred but not set yet.
         fn = f.effectiveName(res, p.actualTypeParameters());
       }
 
@@ -1239,16 +1331,16 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
                                         AbstractType heirType)
   {
     var result = l;
-    heirType = heirType.selfOrConstraint(Context.NONE);
-    var heir = heirType.feature();
-    if (heir.inheritsFrom(this))
+    var effectiveHeirType = heirType.selfOrConstraint(Context.NONE);
+    var effectiveHeir = effectiveHeirType.feature();
+    if (effectiveHeir.inheritsFrom(this))
       {
-        result = handDown(result, heir);
+        result = handDown(result, effectiveHeir);
       }
-    heirType = heirType.isThisType() ? null : heirType.outer();
-    if (heirType != null && outer() != null)
+    var effectiveHeirTypeOuter = effectiveHeirType.isThisType() ? null : effectiveHeirType.outer();
+    if (effectiveHeirTypeOuter != null && outer() != null)
       {
-        result = outer().handDownListToType(result, heirType);
+        result = outer().handDownListToType(result, effectiveHeirTypeOuter);
       }
     return result;
   }
@@ -1351,13 +1443,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
        Errors.any() || !t.isOpenGeneric() || (select >= 0),
        inh != null);
 
-    // NYI: CLEANUP: wold be good to base this on handDownListThroughInheritsCalls.
-    for (AbstractCall c : inh)
-      {
-        t = t.applyTypePars(c.calledFeature(),
-                            c.actualTypeParameters(), select);
-      }
-    return t;
+    return handDownListThroughInheritsCalls(new List<>(t), inh, select).get(0);
   }
 
 
@@ -1365,11 +1451,25 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
    * Variant of handDownThroughInheritsCalls that operates on a list of types
    * and support open type parameters.
    *
-   * @param l the lsit of types to be handed down.
+   * @param l the list of types to be handed down.
    *
    * @param inh the inheritance chain along which types should be handed down.
    */
   public static List<AbstractType> handDownListThroughInheritsCalls(List<AbstractType> l, List<AbstractCall> inh)
+  {
+    return handDownListThroughInheritsCalls(l, inh, NO_SELECT);
+  }
+
+
+  /**
+   * Variant of handDownThroughInheritsCalls that operates on a list of types
+   * and support open type parameters.
+   *
+   * @param l the list of types to be handed down.
+   *
+   * @param inh the inheritance chain along which types should be handed down.
+   */
+  public static List<AbstractType> handDownListThroughInheritsCalls(List<AbstractType> l, List<AbstractCall> inh, int select)
   {
     if (PRECONDITIONS) require
       (l != null,
@@ -1377,20 +1477,30 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
     for (AbstractCall c : inh)
       {
-        var cf = c.calledFeature();
-        var actualTypes = c.actualTypeParameters();
-        if (true)
-          {
-            l = l.flatMap(t -> t.isOpenGeneric() && t.genericArgument().outer() == cf
-                               ? t.genericArgument().replaceOpen(actualTypes)
-                               : new List<>(t.applyTypePars(cf, actualTypes)));
-          }
-        else
-          { // NYI: CLEANUP: This simpler code does not work for reg_issue5895, need to check why:
-            l = l.flatMap(t -> t.applyTypeParsMaybeOpen(cf, actualTypes));
-          }
+        l = handDownListThroughInheritsCall(l, select, c);
       }
     return l;
+  }
+
+
+  /**
+   * Hand down l in the inheritance call c
+   *
+   * @param l the list of types to be handed down.
+   *
+   * @param c the inheritance call where l is supposed to be handed down
+   */
+  private static List<AbstractType> handDownListThroughInheritsCall(List<AbstractType> l, int select, AbstractCall c)
+  {
+    return l
+      .flatMap(t ->
+          // first, apply type pars using target type
+          (t.isOpenGeneric() || c.target().typeForInferencing() == null
+             ? t
+             : t.applyTypePars(c.target().type()))
+          // then apply type pars using the call
+          .applyTypeParsMaybeOpen(c.calledFeature(), c.actualTypeParameters(), select)
+        );
   }
 
 
@@ -1617,7 +1727,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
 
   /**
-   * Is this feature an argument of its outer feature, but not a type argument?
+   * Is this feature an argument of its outer feature, but not a type parameter?
    */
   boolean isValueArgument()
   {
@@ -1698,14 +1808,14 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
   {
     if (_genericsAsActuals == null)
       {
-        _genericsAsActuals = typeArguments().map2(x -> x.asGenericType()).freeze();
+        _genericsAsActuals = typeArguments().map2(x -> x.asParametricType()).freeze();
       }
     return _genericsAsActuals;
   }
 
 
   /**
-   * Return the index of this type parameter within the type arguments of its
+   * Return the index of this type parameter within the type parameters of its
    * outer feature.
    *
    * @return the index such that formalGenerics.get(result)) this
@@ -1839,7 +1949,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
     return (visibility() + " " +
       FuzionConstants.modifierToString(modifiers()) +
       (isCotype() ? "type." : "") +
-      featureName().baseNameHuman() +
+      baseNameHuman() +
       (arguments().isEmpty() ? "" : "("+arguments()+")") + " " +
       (state().atLeast(State.TYPES_INFERENCED) ? resultType() : "#unknown") + " " +
       (inherits().isEmpty() ? "" : ": " + inherits() + " ") +
@@ -1874,7 +1984,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
         .allMatch(rt ->
              Types.resolved.numericTypes.contains(rt)
              || Types.resolved.legalNativeResultTypes.contains(rt)
-             || !rt.isGenericArgument() && rt.feature().mayBeNativeValue());
+             || !rt.isParametricType() && rt.feature().mayBeNativeValue());
   }
 
   /**
@@ -1916,7 +2026,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
   /**
    * constraint returns the constraint type of this type parameter, Any if no
-   * constraint was set.  This ignores any context constraints like `pre T : numeric`
+   * constraint was set.  This ignores any context constraints like {@code pre T : numeric}
    *
    * @return the constraint.
    */
@@ -2022,7 +2132,7 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
 
     var result = this;
     var o = outer();
-    if (!isThisTypeInCotype() && o.isCotype())
+    if (!isCoTypesRelayTypeParameter() && o.isCotype())
       {
         result = o.cotypeOrigin().typeArguments().get(typeParameterIndex()-1);
       }
@@ -2049,23 +2159,6 @@ public abstract class AbstractFeature extends Expr implements Comparable<Abstrac
         result = o.cotype().typeArguments().get(typeParameterIndex()+1);
       }
     return result;
-  }
-
-
-  /**
-   * For a feature {@code f(A, B type)} the corresponding type feature has an implicit
-   * THIS#TYPE type parameter: {@code f.type(THIS#TYPE, A, B type)}.
-   *
-   * This checks if this Generic is this implicit type parameter.
-   */
-  boolean isThisTypeInCotype()
-  {
-    if (PRECONDITIONS) require
-      (isTypeParameter());
-
-    return state().atLeast(State.FINDING_DECLARATIONS)
-      && outer().isCotype()
-      && typeParameterIndex() == 0;
   }
 
 

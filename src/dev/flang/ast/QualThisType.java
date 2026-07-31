@@ -65,7 +65,7 @@ public class QualThisType extends UnresolvedType
 
   /**
    * resolve this type, i.e., find or create the corresponding instance of
-   * ResolvedType of this and all outer types and type arguments this depends on.
+   * ResolvedType of this and all outer types and type parameters this depends on.
    *
    * @param res this is called during type resolution, res gives the resolution
    * instance.
@@ -88,13 +88,13 @@ public class QualThisType extends UnresolvedType
 
     // The following code is
     // for resolving fully qualified this-types.
-    if (!tolerant && _qual.size() > 1)
+    if (_qual.size() > 1)
       {
         var found = new List<FeatureAndOuter>();
         var cur = context.outerFeature();
         do
           {
-            var fo = res._module.lookupType(pos(), cur, _name, false, false, true);
+            var fo = res._module.lookupType(pos(), cur, _name, false, tolerant, true);
             if (fo != null &&
                 fo._feature
                   .qualifiedName()
@@ -112,7 +112,7 @@ public class QualThisType extends UnresolvedType
           {
             _resolved = found.getLast()._feature.thisType();
           }
-        else if (!found.isEmpty())
+        else if (!found.isEmpty() && !tolerant)
           {
             AstErrors.ambiguousType(pos(), _name, found.map2(x -> x._feature));
             _resolved = Types.t_ERROR;

@@ -205,6 +205,35 @@ public f64(public val f64) : float, java_primitive is
     (num.ryū f64).as_string val
 
 
+  # convert this to a string with a fixed number of digits after the decimal point.
+  # If the given values are unusable, the result is the same as `as_string`.
+  # Overflows are technically possible, but floats become inaccurate long before that.
+  #
+  public redef as_string_decimals(fraction_digits i32) String =>
+    if is_NaN || val.abs = f64.positive_infinity || fraction_digits <= 0
+      f64.this.as_string
+    else
+      scale := 10.0 ** fraction_digits.as_f64
+
+      rounded_scaled :=
+        if val >= 0.0
+          ((val * scale) + 0.5).as_i64_lax
+        else
+          ((val * scale) - 0.5).as_i64_lax
+
+      rounded := rounded_scaled.as_f64 / scale
+
+      s String := (num.ryū f64).as_string rounded false (num.ryū f64).rounding_conservative
+      match s.find "."
+        i i32 =>
+          digits := s.substring i+1
+          if digits.byte_count > fraction_digits
+            "$(s.substring 0 i).$(digits.substring 0 fraction_digits)"
+          else
+            "$(s.substring 0 i).$(digits.pad "0" fraction_digits)"
+        nil => s
+
+
   # -----------------------------------------------------------------------
   #
   # type features:

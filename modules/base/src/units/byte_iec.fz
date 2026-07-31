@@ -26,7 +26,7 @@
 # Uses base 2 prefixes defined by the International Electrotechnical Commission (IEC),
 # e.g. 1024 Byte = 1 kibibyte.
 #
-public byte_iec(
+private:public byte_iec(
             # the next smaller unit, like kibibyte is smaller than mebibyte, if it exists
             public smaller Lazy (option byte_iec),
 
@@ -44,7 +44,7 @@ public byte_iec(
 
   # byte unit
   #
-  public type.b   units.byte_iec => units.byte_iec nil kib 1.as_u128            "B"   "byte"
+  public type.b   units.byte_iec => units.byte_iec nil kib 1.as_u128              "B"   "byte"
 
   # kibibyte unit
   #

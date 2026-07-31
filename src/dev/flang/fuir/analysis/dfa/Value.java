@@ -318,7 +318,7 @@ public class Value extends Val
    */
   public void setField(DFA dfa, int field, Value v)
   {
-    throw new Error("Value.setField for '"+dfa._fuir.clazzAsString(field)+"' called on class " +
+    throw new Error("Value.setField for '"+dfa._fuir.clazzName(field)+"' called on class " +
                     this + " (" + getClass() + "), expected " + Instance.class);
   }
 
@@ -368,8 +368,8 @@ public class Value extends Val
     var rt = dfa._fuir.clazzResultClazz(field);
     if (!dfa._fuir.clazzIsUnitType(rt) && !Errors.any())
       {
-        throw new Error("Value.readField '"+dfa._fuir.clazzAsString(field)+"' called on class " + this + " (" + getClass() + "), expected " + Instance.class +
-                        " field type " + dfa._fuir.clazzAsString(rt) + " in "+this);
+        throw new Error("Value.readField '"+dfa._fuir.clazzName(field)+"' called on class " + this + " (" + getClass() + "), expected " + Instance.class +
+                        " field type " + dfa._fuir.clazzName(rt) + " in "+this);
       }
     return Value.UNIT;
   }

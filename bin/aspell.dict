@@ -535,9 +535,8 @@ fzP
 fzT
 fzTag
 fzThrd
-genericArgument
 genericsToReplace
-GenericType
+ParametricType
 getAll
 getchar
 getClass
@@ -687,7 +686,7 @@ isExpr
 isFiel
 isField
 isFrozen
-isGenericArgument
+isParametricType
 isI
 isInstantiated
 isIntrinsc
@@ -1307,7 +1306,7 @@ checkIndentation
 clangVersion
 cloneValue
 codePointIndentation
-constraintMustNotBeGenericArgument
+constraintMustNotBeParametricType
 curPos
 datagram
 debugLevel

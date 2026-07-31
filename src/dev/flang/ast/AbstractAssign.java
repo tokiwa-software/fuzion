@@ -20,7 +20,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class Assign
+ * Source of class AbstractAssign
  *
  *---------------------------------------------------------------------*/
 
@@ -281,7 +281,7 @@ public abstract class AbstractAssign extends Expr
    */
   public String toString()
   {
-    return toString(_assignedField.featureName().baseNameHuman());
+    return toString(_assignedField.baseNameHuman());
   }
 
 

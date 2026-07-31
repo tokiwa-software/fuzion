@@ -49,9 +49,9 @@ originally declared at --CURDIR--/tuple_negative.fz:184:3:
 To solve this, consider renaming one of these two features, e.g., as 't15a3ʼ' (using a unicode modifier letter apostrophe 'ʼ' U+02BC) or adding an additional argument (e.g. '_ unit' for an ignored unit argument used only to disambiguate these two).
 
 
---CURDIR--/tuple_negative.fz:72:60: error 6: Use of selector requires call to either a feature whose type is an open type parameter or a feature with an inner feature whose type is an open type parameter
-  one9           :=          (42); p "one9 is {one9.values.0}" #  8. should flag an error, (expr) is not a tuple, one9 is an i32
------------------------------------------------------------^
+--CURDIR--/tuple_negative.fz:72:61: error 6: Use of selector requires call to either a feature whose type is an open type parameter or a feature with an inner feature whose type is an open type parameter
+  one9           :=          (42); p "one9 is $(one9.values.0)" #  8. should flag an error, (expr) is not a tuple, one9 is an i32
+------------------------------------------------------------^
 Selected variant: '0'
 Type of called feature: 'i32'
 
@@ -69,7 +69,7 @@ For the formal argument 'tuple_negative.t10.i32' the type can only be derived if
 
 
 --CURDIR--/tuple_negative.fz:69:3: error 9: Incompatible types in assignment
-  one3 tuple i32 :=           (42); p "one3 is {one3.values.0}" #  4. should flag an error, (expr) is not a tuple
+  one3 tuple i32 :=           (42); p "one3 is $(one3.values.0)" #  4. should flag an error, (expr) is not a tuple
 --^^^^
 assignment to field : 'tuple_negative.one3'
 expected formal type: 'tuple i32'

@@ -30,7 +30,7 @@ typeinference is
     s := if b
            "PASSED: "
          else
-           _ := set_exit_code 1
+           _ := Exit.env.set_exit_code 1
            "FAILED: "
     say (s + msg)
 
@@ -71,7 +71,7 @@ typeinference is
   r := typeInferencingFromMatch1.f typeInferencingFromMatch1.A
   r2 := r ? i i32 => i=3 | * => false
   chck r2 "typeInferencingFromMatch1 A"
-  # chck ((typeInferencingFromMatch1.f(typeInferencingFromMatch1.A) ? i i32 => i=3 | * => false),"typeInferencingFromMatch1 A")  # NYI: BUG: require-condition, does not work yet
+  chck (typeInferencingFromMatch1.f(typeInferencingFromMatch1.A) ? i i32 => i=3 | * => false) "typeInferencingFromMatch1 A"
   r3 := typeInferencingFromMatch1.f typeInferencingFromMatch1.D
   r4 := match r3 { b bool => { b = false }; i32, String,typeInferencingFromMatch1.E => false }
   chck r4 "typeInferencingFromMatch1 D"
@@ -94,4 +94,4 @@ typeinference is
             e E => e
         )
 
-  exit
+  Exit.env.exit

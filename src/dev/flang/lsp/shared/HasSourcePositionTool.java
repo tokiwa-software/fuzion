@@ -20,7 +20,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class HasSourcepositionTool
+ * Source of class HasSourcePositionTool
  *
  *---------------------------------------------------------------------*/
 
@@ -61,11 +61,11 @@ public class HasSourcePositionTool
               {
                 return "called feature unknown";
               }
-            return c.calledFeature().qualifiedName();
+            return c.calledFeature().qualifiedNameHuman();
           }
         if (item instanceof Assign a)
           {
-            return a._assignedField.qualifiedName();
+            return a._assignedField.qualifiedNameHuman();
           }
         if (item instanceof AbstractFeature af)
           {

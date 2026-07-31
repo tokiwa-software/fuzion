@@ -28,7 +28,7 @@ test(T, U type, t T, u U) is
       U : Sequence Q
   is
 
-test.constraint.show => say t.codepoint_length
+test.constraint.show => say t.codepoint_count
                         say u.count
 
 test "㋡" [1,2,3]

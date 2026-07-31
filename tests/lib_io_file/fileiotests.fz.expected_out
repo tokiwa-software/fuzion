@@ -4,8 +4,8 @@ testdir_😀 exists: true
 testdir_😀/testfile_😀 exists: false
 testdir_😀/testfile_😀 was created
 testdir_😀/testfile_😀 exists: true
-stat resolve=true : testdir_😀/testfile_😀 size is 16
-stat resolve=false: testdir_😀/testfile_😀 size is 16
+stat resolve=true : testdir_😀/testfile_😀 size is 16 B
+stat resolve=false: testdir_😀/testfile_😀 size is 16 B
 0
 unit
 1

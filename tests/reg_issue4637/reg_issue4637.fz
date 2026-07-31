@@ -47,7 +47,7 @@ test_map =>
 
   # incrementally create maps with up to 10 items with shared internal arrays
   #
-  # thse will be used below to create divering maps
+  # thse will be used below to create diverging maps
   #
   m1          := e         .put 1 "一"
   m12         := m1        .put 2 "二"

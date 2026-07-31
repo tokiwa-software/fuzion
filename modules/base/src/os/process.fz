@@ -48,19 +48,28 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
   # predefined write handler for writing to
   # standard in of the process
   #
-  std_in_write_handler => write_handler std_in
+  std_in_writer(LM type : mutate) => writer LM std_in
+
+
+  # get a name for the given descriptor
+  #
+  desc_name(desc i64) =>
+    if      desc = std_in  then "stdin"
+    else if desc = std_out then "stdout"
+    else if desc = std_err then "stderr"
+    else "file_descriptor#$desc"
 
 
   # read bytes from standard out
   #
   read_handler(desc i64) : io.Read_Handler is
     public redef read(max_count i32) choice (Sequence u8) io.end_of_file error =>
-      arr := array u8 pipe_buffer_size i->0
+      arr := array u8 _ pipe_buffer_size _->0
       res := fzE_pipe_read desc arr.internal_array.data arr.count
       if res = -1
         # NYI: UNDER DEVELOPMENT: register failures
         _ := fzE_pipe_close desc
-        error "error reading from stdout."
+        error "reading from $(desc_name desc) of process $(pid)" fzE_last_error
       else if res = 0
         # NYI: UNDER DEVELOPMENT: register failures
         _ := fzE_pipe_close desc
@@ -72,12 +81,16 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
 
   # write bytes to standard in
   #
-  write_handler (desc i64) : io.Write_Handler is
-    public redef write (bytes Sequence u8) outcome unit =>
-      if fzE_pipe_write desc bytes.as_array.internal_array.data bytes.count = -1
-        error "error while writing"
+  writer (LM type: mutate, desc i64) : (io.buffered LM).Writer is
+    public redef writer (bytes Sequence u8) outcome unit =>
+      for tbw := bytes.as_array, tbw.drop res .as_array
+          res := fzE_pipe_write desc tbw.internal_array.data tbw.count .as_i64
+      while res >= 0 && res != tbw.length
       else
-        unit
+        if res < 0
+          error "writing to $(desc_name desc) of process $(pid). Tried writing $(tbw.count) bytes." fzE_last_error
+        else
+          unit
 
 
   # write bytes to stdin of child process
@@ -98,7 +111,7 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
         arr := t.as_array
         bw := fzE_pipe_write desc arr.internal_array.data arr.count
         if bw = -1
-          abort (outcome i32) (error "error while writing. wrote $r bytes already.")
+          abort (outcome i32) (error "writing to $(desc_name desc) of process $(pid). Wrote $r bytes already." fzE_last_error)
         else
           r+bw
 
@@ -116,7 +129,7 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
 
 
   public with_in(T type, LM type : mutate, f () -> T) outcome T =>
-    (io.buffered LM).writer std_in_write_handler ! f
+    (io.buffered LM).Writer.instate _ (std_in_writer LM) f
 
 
   # write string to stdin of child process
@@ -127,7 +140,7 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
 
   # pipe this processes output to new process
   #
-  public infix | (process_and_args Sequence String) outcome os.process ! os.processes
+  public infix | (process_and_args Sequence String) outcome os.process ! os.Process
   pre
     process_and_args ∀ .is_ascii
     !process_and_args[0].contains_whitespace
@@ -138,13 +151,12 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
       # NYI: UNDER DEVELOPMENT: this works only when pipes buffer is large enough for
       # what is being written/read to/from pipes
       # thread to pipe from one process to other
-      _ := concur.threads.spawn ()->
-        _ :=
-          for p1rb := std_out_read_handler.read pipe_buffer_size
-          while
-            match p1rb
-              s Sequence => (write_bytes p.std_in s).ok
-              * => false
+      _ := concur.Threads.env.spawn ()->
+        for p1rb := std_out_read_handler.read pipe_buffer_size
+        while
+          match p1rb
+            s Sequence => (write_bytes p.std_in s).ok
+            * => false
 
         # NYI: UNDER DEVELOPMENT: error handling
         _ := fzE_pipe_close p.std_in
@@ -158,43 +170,76 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
   #
   public close_in outcome unit =>
     if fzE_pipe_close std_in != 0
-      error "closing standard in was not successful, error code: $fzE_last_error"
+      error "closing $(desc_name std_in) of process $(pid)" fzE_last_error
+
+
+  # close standard output of this process
+  #
+  public close_out outcome unit =>
+    if fzE_pipe_close std_out != 0
+      error "closing $(desc_name std_out) of process $(pid)" fzE_last_error
+
+
+  # close standard error of this process
+  #
+  public close_err outcome unit =>
+    if fzE_pipe_close std_err != 0
+      error "closing $(desc_name std_err) of process $(pid)" fzE_last_error
 
 
   # wait for this process
   #
-  public wait outcome u32 ! time.nano, os.processes =>
+  public wait outcome u32 ! time.Nano, os.Process =>
     wait time.duration.max
 
 
   # wait for this process
   #
-  public wait(timeout time.duration) outcome u32 ! time.nano, os.processes =>
-    # NYI: process should be ref?
-    os.processes.wait (os.process pid std_in std_out std_err name args) timeout
+  public wait(timeout time.duration) outcome u32 ! time.Nano, os.Process
+  =>
+    # NYI: UNDER DEVELOPMENT:
+    # with fixed this should be possible:
+    # os.Process.env.wait process.this timeout
+    os.Process.env.wait (os.process pid std_in std_out std_err name args) timeout
 
 
   # send signal to process
   #
-  public send_signal(sig signal) outcome unit =>
-    fzE_send_signal pid sig.as_i32 = 0 ? unit : error "error sending signal to process $pid: $fzE_last_error"
+  public send_signal(sig os.signal) outcome unit =>
+    # NYI: UNDER DEVELOPMENT:
+    # with fixed this should be possible:
+    # os.Process.env.send_signal process.this sig
+    os.Process.env.send_signal (os.process pid std_in std_out std_err name args) sig
+
+
+  # send kill signal to process
+  #
+  public kill outcome unit =>
+    send_signal os.signals.kill
+
+
+  # send terminate signal to process
+  #
+  public terminate outcome unit =>
+    send_signal os.signals.terminate
 
 
   # start a process with name, arguments and environment variables
   #
-  public type.start(n String, args Sequence String, env_vars container.Map String String) outcome os.process ! os.processes =>
-    os.processes.start n args env_vars
+  public type.start(n String, args Sequence String, env_vars container.Map String String) outcome os.process ! os.Process
+  =>
+    os.Process.env.start n args env_vars
 
 
   # start a process with name and arguments
   #
-  public type.start(n String, args Sequence String) outcome os.process ! os.processes =>
+  public type.start(n String, args Sequence String) outcome os.process ! os.Process =>
     start n args (container.ps_map String String).empty
 
 
   # start a process with name and no arguments
   #
-  public type.start(n String) outcome os.process ! os.processes =>
+  public type.start(n String) outcome os.process ! os.Process =>
     start n []
 
 
@@ -211,10 +256,10 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
 
   # this process as a human readable String
   #
-  public redef as_string String ! time.nano, os.processes =>
+  public redef as_string String ! time.Nano, os.Process =>
     match wait time.duration.zero
-      error  => "$name {String.join args " "} (running, PID: $pid)"
-      ec u32 => "$name {String.join args " "} (exited with exit code: $ec)"
+      error  => "$name $(String.join args " ") (running, PID: $pid)"
+      ec u32 => "$name $(String.join args " ") (exited with exit code: $ec)"
 
 
   # NYI: UNDER DEVELOPMENT:

@@ -25,6 +25,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *---------------------------------------------------------------------*/
 
 #define _POSIX_C_SOURCE 200809L
+#ifdef __linux__
+#define _GNU_SOURCE
+#endif
 
 #ifdef GC_THREADS
 #define GC_DONT_INCLUDE_WINDOWS_H
@@ -57,6 +60,15 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include <assert.h>
 #include <dirent.h>
 #include <pthread.h>
+#ifdef __linux__
+#include <sched.h>    // CPU_SET
+#if defined(__has_include)
+#  if __has_include(<sys/sdt.h>)
+#    include <sys/sdt.h>  // dtrace_probe
+#    define HAVE_SYS_SDT_H 1
+#  endif
+#endif
+#endif
 
 #include "fz.h"
 
@@ -73,25 +85,31 @@ static_assert(SIGSEGV == 11, "signal definition different than expected");
 static_assert(SIGPIPE == 13, "signal definition different than expected");
 static_assert(SIGALRM == 14, "signal definition different than expected");
 static_assert(SIGTERM == 15, "signal definition different than expected");
+static_assert(sizeof(pthread_t) <= sizeof(void *), "pthread_t must be smaller or equal to pointer size");
 
 
-// thread local to hold the last
-// error that occurred in fuzion runtime.
-_Thread_local int64_t last_error = 0;
-
+/**
+ *   - 0 for CLOCK_REALTIME (which is not a real-time clock, but wallclock time)
+ *   - 1 for CLOCK_MONOTONIC (which does not jump for leap seconds are when system time is changed)
+ */
+clockid_t get_clock_id(int clock)
+{
+  switch(clock)
+    {
+      case 0:
+        return CLOCK_REALTIME;
+      case 1:
+        return CLOCK_MONOTONIC;
+      default:
+        assert(false);
+        return -1;
+    }
+}
 
 // returns the latest error number of
 // the current thread
 int64_t fzE_last_error(void){
-  return last_error;
-}
-
-// helper to set last_error
-// if return value of some function is -1.
-int set_last_error(int ret_val)
-{
-  last_error = ret_val == -1 ? errno : 0;
-  return ret_val;
+  return errno;
 }
 
 // zero memory
@@ -132,7 +150,6 @@ int fzE_dir_read(intptr_t * dir, int8_t * result) {
          (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0));
 
   if ( entry == NULL ) {
-    last_error = errno;
     return errno == 0
       // end reached
       ? 0
@@ -149,7 +166,7 @@ int fzE_dir_read(intptr_t * dir, int8_t * result) {
 
 
 int fzE_dir_close(intptr_t * dir) {
-  return set_last_error(closedir((DIR *)dir));
+  return closedir((DIR *)dir);
 }
 
 
@@ -209,7 +226,7 @@ int fzE_get_protocol(int protocol)
 // close a socket descriptor
 int fzE_socket_close(int sockfd)
 {
-  return set_last_error(close(sockfd));
+  return close(sockfd);
 }
 
 
@@ -220,7 +237,7 @@ int fzE_socket(int family, int type, int protocol){
   // make sure no fork is done while we open socket
   fzE_lock();
 
-  int sockfd = set_last_error(socket(fzE_get_family(family), fzE_get_socket_type(type), fzE_get_protocol(protocol)));
+  int sockfd = socket(fzE_get_family(family), fzE_get_socket_type(type), fzE_get_protocol(protocol));
   if (sockfd != -1)
   {
     fcntl(sockfd, F_SETFD, FD_CLOEXEC);
@@ -257,7 +274,7 @@ int fzE_bind(int sockfd, int family, int socktype, int protocol, char * host, ch
   {
     return -1;
   }
-  int bind_res = set_last_error(bind(sockfd, addr_info->ai_addr, (int)addr_info->ai_addrlen));
+  int bind_res = bind(sockfd, addr_info->ai_addr, (int)addr_info->ai_addrlen);
 
   if(bind_res == -1)
   {
@@ -271,14 +288,14 @@ int fzE_bind(int sockfd, int family, int socktype, int protocol, char * host, ch
 // set the given socket to listening
 // backlog = queuelength of pending connections
 int fzE_listen(int sockfd, int backlog){
-  return set_last_error(listen(sockfd, backlog));
+  return listen(sockfd, backlog);
 }
 
 
 // accept a new connection
 // blocks if socket is blocking
 int fzE_accept(int sockfd){
-  return set_last_error(accept(sockfd, NULL, NULL));
+  return accept(sockfd, NULL, NULL);
 }
 
 
@@ -306,7 +323,7 @@ int fzE_get_peer_address(int sockfd, void * buf) {
   struct sockaddr_storage peeraddr;
   fzE_mem_zero_secure(&peeraddr, sizeof(peeraddr));
   socklen_t peeraddrlen = sizeof(peeraddr);
-  if (set_last_error(getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen)) == 0) {
+  if (getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen) == 0) {
     if (peeraddr.ss_family == AF_INET) {
       fzE_memcpy(buf, &(((struct sockaddr_in *)&peeraddr)->sin_addr.s_addr), 4);
       return 4;
@@ -328,7 +345,7 @@ unsigned short fzE_get_peer_port(int sockfd) {
   struct sockaddr_storage peeraddr;
   fzE_mem_zero_secure(&peeraddr, sizeof(peeraddr));
   socklen_t peeraddrlen = sizeof(peeraddr);
-  if (set_last_error(getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen)) == 0) {
+  if (getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen) == 0) {
     if (peeraddr.ss_family == AF_INET) {
       return ntohs(((struct sockaddr_in *)&peeraddr)->sin_port);
     } else if (peeraddr.ss_family == AF_INET6) {
@@ -343,23 +360,23 @@ unsigned short fzE_get_peer_port(int sockfd) {
 // into buf. may block if socket is  set to blocking.
 // return -1 on error or number of bytes read
 int fzE_socket_read(int sockfd, void * buf, size_t count){
-  return set_last_error(recvfrom( sockfd, buf, count, 0, NULL, NULL));
+  return recvfrom( sockfd, buf, count, 0, NULL, NULL);
 }
 
 
 // write buf to sockfd
 // may block if socket is set to blocking.
-// return error code or zero on success
+// return -1 or number of bytes written on success
 int fzE_socket_write(int sockfd, const void * buf, size_t count){
-  return set_last_error(sendto( sockfd, buf, count, 0, NULL, 0));
+  return sendto( sockfd, buf, count, 0, NULL, 0);
 }
 
 
 // returns -1 on error, size of file in bytes otherwise
 long fzE_get_file_size(void * file) {
   // store current pos
-  long cur_pos = set_last_error(ftell((FILE *)file));
-  if(cur_pos == -1 || set_last_error(fseek((FILE *)file, 0, SEEK_END)) == -1){
+  long cur_pos = ftell((FILE *)file);
+  if(cur_pos == -1 || fseek((FILE *)file, 0, SEEK_END) == -1){
     return -1;
   }
 
@@ -385,7 +402,6 @@ long fzE_get_file_size(void * file) {
 void * fzE_mmap(void * file, uint64_t offset, size_t size) {
 
   if ((unsigned long)fzE_get_file_size((FILE *)file) < (offset + size)){
-    // NYI: UNDER DEVELOPMENT: set_last_error();
     return NULL;
   }
 
@@ -395,7 +411,6 @@ void * fzE_mmap(void * file, uint64_t offset, size_t size) {
 
   void * mapped_address = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, file_descriptor, offset);
   if (mapped_address == MAP_FAILED) {
-    set_last_error(-1);
     return NULL;
   }
   return mapped_address;
@@ -405,19 +420,19 @@ void * fzE_mmap(void * file, uint64_t offset, size_t size) {
 // unmap an address that was previously mapped by fzE_mmap
 // -1 error, 0 success
 int fzE_munmap(void * mapped_address, const int file_size){
-  return set_last_error(munmap(mapped_address, file_size));
+  return munmap(mapped_address, file_size);
 }
 
 
 /**
- * returns a monotonically increasing timestamp.
+ * @return the time of the given posix clock
  */
-uint64_t fzE_nanotime()
+uint64_t fzE_posix_time(int clockid)
 {
   struct timespec result;
-  if (clock_gettime(CLOCK_MONOTONIC,&result)!=0)
+  if (clock_gettime(get_clock_id(clockid), &result)!=0)
   {
-    fprintf(stderr,"*** clock_gettime failed\012");
+    fprintf(stderr,"*** clock_gettime failed for clockid %d \012", clockid);
     exit(EXIT_FAILURE);
   }
   return result.tv_sec*1000000000ULL+result.tv_nsec;
@@ -441,9 +456,7 @@ int fzE_rm(char * path)
 {
   return unlink(path) == 0
     ? 0
-    : set_last_error(rmdir(path)) == 0
-    ? 0
-    : -1;
+    : rmdir(path);
 }
 
 
@@ -453,7 +466,7 @@ int fzE_rm(char * path)
 int fzE_stat(const char *pathname, int64_t * metadata)
 {
   struct stat statbuf;
-  int result = set_last_error(stat(pathname,&statbuf));
+  int result = stat(pathname,&statbuf);
   if (result == 0)
   {
     metadata[0] = statbuf.st_size;
@@ -476,7 +489,7 @@ int fzE_stat(const char *pathname, int64_t * metadata)
 int fzE_lstat(const char *pathname, int64_t * metadata)
 {
   struct stat statbuf;
-  int result = set_last_error(lstat(pathname,&statbuf));
+  int result = lstat(pathname,&statbuf);
   if (result == 0)
   {
     metadata[0] = statbuf.st_size;
@@ -513,6 +526,14 @@ void fzE_init()
 #endif
 }
 
+/**
+ * Get pointer to current thread.
+ */
+void * fzE_thread_current()
+{
+  return (void *)pthread_self();
+}
+
 
 /**
  * Start a new thread, returns a pointer to the thread.
@@ -520,35 +541,124 @@ void fzE_init()
 void * fzE_thread_create(void *(*code)(void *),
                           void *restrict args)
 {
-  pthread_t * pt = fzE_malloc_safe(sizeof(pthread_t));
+  pthread_t pt = (pthread_t){0};
+  pthread_attr_t attr;
+
+  int s = pthread_attr_init(&attr);
+  if (s != 0)
+  {
+    fprintf(stderr,"*** pthread_attr_init failed with return code %d\012",s);
+    exit(EXIT_FAILURE);
+  }
+
+  struct sched_param default_schedparam;
+  default_schedparam.sched_priority = 0;
+
+  int schedparamres = pthread_attr_setschedparam(&attr, &default_schedparam);
+  assert(schedparamres == 0);
+  int schedpolicyres = pthread_attr_setschedpolicy(&attr, SCHED_OTHER);
+  assert(schedpolicyres == 0);
+
 #ifdef GC_THREADS
-  int res = GC_pthread_create(pt,NULL,code,args);
+  int res = GC_pthread_create(&pt,NULL,code,args);
 #else
-  int res = pthread_create(pt,NULL,code,args);
+  int res = pthread_create(&pt,NULL,code,args);
 #endif
-  if (res!=0)
+  if (res != 0)
   {
     fprintf(stderr,"*** pthread_create failed with return code %d\012",res);
     exit(EXIT_FAILURE);
   }
-  return pt;
+
+  s = pthread_attr_destroy(&attr);
+  if (s != 0)
+  {
+    fprintf(stderr,"*** pthread_attr_destroy failed with return code %d\012",s);
+    exit(EXIT_FAILURE);
+  }
+
+  return (void *)pt;
 }
 
 
 /**
  * Join with a running thread.
  */
-void fzE_thread_join(void * thrd)
+int fzE_thread_join(void * thrd)
 {
-  // NYI: BUG: return error code on failure
+  int ret = 0;
 #ifdef GC_THREADS
-  int ret = GC_pthread_join(*(pthread_t *)thrd, NULL);
+  ret = GC_pthread_join((pthread_t)thrd, NULL);
   assert (ret == 0);
 #else
-  int ret = pthread_join(*(pthread_t *)thrd, NULL);
+  ret = pthread_join((pthread_t)thrd, NULL);
   assert (ret == 0);
 #endif
-  fzE_free(thrd);
+  switch (ret)
+    {
+      case 0:
+        return 0;
+      case EDEADLK:
+        return 1;
+      case EINVAL:
+        return 2;
+      case ESRCH:
+        return 3;
+      default:
+        assert(false);
+    }
+}
+
+
+/*
+ * Convert internal policy number to system policy number.
+ */
+int fzE_thread_setschedparam_convert_policy(int policy)
+{
+  switch (policy)
+    {
+      case 0:
+        return SCHED_OTHER;
+      case 1:
+        return SCHED_FIFO;
+      case 2:
+        return SCHED_RR;
+      default:
+        assert(false);
+    }
+}
+
+
+/*
+ * Set the scheduling policy and priority of a running thread.
+ */
+int fzE_thread_setschedparam(void * thrd, int policy, int priority)
+{
+  struct sched_param param;
+  param.sched_priority = priority;
+  int ret = pthread_setschedparam((pthread_t)thrd, fzE_thread_setschedparam_convert_policy(policy), &param);
+  return ret;
+}
+
+
+/*
+ * Set the scheduling CPU affinity of a running thread.
+ */
+int fzE_thread_setaffinity(void * thrd, const void * cores, int length)
+{
+#ifdef __linux__
+  cpu_set_t cpuset;
+  CPU_ZERO(&cpuset);
+
+  for (int i = 0; i < length; i++)
+    {
+      CPU_SET(((uint64_t *)cores)[i], &cpuset);
+    }
+
+  return pthread_setaffinity_np((pthread_t)thrd, sizeof(cpu_set_t), &cpuset);
+#else
+  return 38;
+#endif
 }
 
 
@@ -598,17 +708,17 @@ int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLe
   int stdOut[2];
   int stdErr[2];
   int ret = 0;
-  if (set_last_error(pipe(stdIn)) == -1)
+  if (pipe(stdIn) == -1)
   {
     ret = -1;
   }
-  if (ret == 0 && set_last_error(pipe(stdOut)) == -1)
+  if (ret == 0 && pipe(stdOut) == -1)
   {
     close(stdIn[0]);
     close(stdIn[1]);
     ret = -1;
   }
-  if (ret == 0 && set_last_error(pipe(stdErr)) == -1)
+  if (ret == 0 && pipe(stdErr) == -1)
   {
     close(stdIn[0]);
     close(stdIn[1]);
@@ -616,7 +726,7 @@ int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLe
     close(stdOut[1]);
     ret = -1;
   }
-  if (set_last_error(ret) == 0)
+  if (ret == 0)
   {
     fcntl(stdIn[1], F_SETFD, FD_CLOEXEC);
     fcntl(stdOut[0], F_SETFD, FD_CLOEXEC);
@@ -658,7 +768,6 @@ int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLe
 
     if(s != 0)
     {
-      last_error = s;
       close(stdIn[0]);
       close(stdIn[1]);
       close(stdOut[0]);
@@ -682,39 +791,83 @@ int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLe
 }
 
 
-// wait for process to finish
-// returns exit code or -1 on wait-failure.
-int64_t fzE_process_wait(int64_t p){
+// check the status of process p, does not wait for process to finish
+//
+// result
+//   >=0 : the process exit code
+//   -1  : process is still running
+//   -2  : an error occurred when calling waitpid, check errno
+//  <-100: process was terminated by a signal
+//         -100-SIG, e.g., -109 for 9 (SIGKILL)
+int64_t fzE_process_poll(int64_t p){
 
   assert(p>0);
 
   int status;
-  int ret = waitpid(p, &status, WNOHANG);
+  pid_t ret = waitpid(p, &status, WNOHANG);
 
-  return ret > 0 && WIFEXITED(status)
-    // man waitpid: "This macro should be employed only if WIFEXITED returned true."
-    ? WEXITSTATUS(status)
-    : -1;
+  int res = 0;
+
+  if (ret == 0) {
+      // Child is still running.
+      res = -1;
+  }
+  else if (ret == -1) {
+      // Error. Check errno.
+      res = -2;
+  }
+  else if (WIFEXITED(status)) {
+      // process exited
+      res = WEXITSTATUS(status);
+  }
+  else if (WIFSIGNALED(status)) {
+      // process was terminated by a signal
+      res = -100 - WTERMSIG(status);
+  }
+  else {
+    assert(false);
+  }
+  return res;
+}
+
+
+// open a new pipe
+//
+int fzE_pipe_create(int64_t * fds)
+{
+  int pipefd[2];
+
+  if (pipe(pipefd) == -1)
+  {
+    return errno;
+  }
+  else
+  {
+    fds[0] = (int64_t) pipefd[0];
+    fds[1] = (int64_t) pipefd[1];
+  }
+
+  return 0;
 }
 
 
 // returns -1 on error, 0 on pipe exhausted/closed
 // otherwise the number of bytes read
 int fzE_pipe_read(int64_t desc, char * buf, size_t nbytes){
-  return set_last_error(read((int) desc, buf, nbytes));
+  return read((int) desc, buf, nbytes);
 }
 
 
-// return -1 on error, the number of written bytes otherwise
+// return -1 on error, thenumber of written bytes otherwise
 int fzE_pipe_write(int64_t desc, char * buf, size_t nbytes){
-  return set_last_error(write((int) desc, buf, nbytes));
+  return write((int) desc, buf, nbytes);
 }
 
 
 // return -1 on error, 0 on success
 int fzE_pipe_close(int64_t desc){
 // NYI: UNDER DEVELOPMENT: do we need to flush?
-  return set_last_error(close((int) desc));
+  return close((int) desc);
 }
 
 
@@ -781,21 +934,65 @@ void fzE_mtx_destroy(void * mtx) {
   fzE_free(mtx);
 }
 
-void * fzE_cnd_init() {
+/**
+ * initialize a condition
+ *
+ * @param clock the clock to be used:
+ *
+ *   - 0 for CLOCK_REALTIME (which is not a real-time clock, but wallclock time)
+ *   - 1 for CLOCK_MONOTONIC (which does not jump for leap seconds are when system time is changed)
+ *
+ * NYI: support for other values defined in
+ * /use/include/x86_64-linux-gnu/bits/time.h for CPU-time, coarse time etc.
+ *
+ * @return NULL on error or pointer to condition
+ *         NOTE: eventually needs to be destroyed via fzE_cnd_destroy.
+ */
+void * fzE_cnd_init(int clock)
+{
   pthread_cond_t *cnd = (pthread_cond_t *)fzE_malloc_safe(sizeof(pthread_cond_t));
-  return pthread_cond_init(cnd, NULL) == 0 ? (void *)cnd : NULL;
+  pthread_condattr_t attr;
+  void * res = NULL;
+  if (pthread_condattr_init(&attr) == 0) // may return ENOMEM
+    {
+// NYI: BUG: pthread_condattr_setclock not available on macOS
+#ifndef __APPLE__
+      if (pthread_condattr_setclock(&attr, get_clock_id(clock)) == 0) // may return EINVAL in case clock not supported
+#endif
+        {
+          if (pthread_cond_init(cnd, &attr) == 0) // may return EAGAIN or ENOMEM
+            {
+              res = (void *)cnd;
+            }
+        }
+    }
+  return res;
 }
 
-int32_t fzE_cnd_signal(void * cnd) {
-  return pthread_cond_signal((pthread_cond_t *)cnd) == 0 ? 0 : -1;
+void fzE_cnd_signal(void * cnd) {
+  pthread_cond_signal((pthread_cond_t *)cnd);
 }
 
-int32_t fzE_cnd_broadcast(void * cnd) {
-  return pthread_cond_broadcast((pthread_cond_t *)cnd) == 0 ? 0 : -1;
+void fzE_cnd_broadcast(void * cnd) {
+  pthread_cond_broadcast((pthread_cond_t *)cnd);
 }
 
-int32_t fzE_cnd_wait(void * cnd, void * mtx) {
-  return pthread_cond_wait((pthread_cond_t *)cnd, (pthread_mutex_t *)mtx) == 0 ? 0 : -1;
+void fzE_cnd_wait(void * cnd, void * mtx) {
+  pthread_cond_wait((pthread_cond_t *)cnd, (pthread_mutex_t *)mtx);
+}
+
+void fzE_cnd_timedwait(void * cnd, void * mtx, int64_t time_ns)
+{
+  int64_t  s  =                   time_ns / 1000000000;
+  long     ns = (long) (time_ns - s       * 1000000000);
+  const struct timespec abstime = { s, ns };
+  // NYI: BUG: we need sth. like this on macOS:
+  // #ifdef __APPLE__
+  //     pthread_cond_timedwait_relative_np(cond, mutex, &relative);
+  // #else
+  //     pthread_cond_timedwait(cond, mutex, &absolute_monotonic);
+  // #endif
+  pthread_cond_timedwait((pthread_cond_t *)cnd, (pthread_mutex_t *)mtx, &abstime);
 }
 
 void fzE_cnd_destroy(void * cnd) {
@@ -806,17 +1003,49 @@ void fzE_cnd_destroy(void * cnd) {
 
 int32_t fzE_file_read(void * file, void * buf, int32_t size)
 {
+  int32_t result = -1; // ERROR, unless we succeed
   struct pollfd fds;
   fds.fd = fileno(file);
   fds.events = POLLIN;
 
-  while(poll(&fds, 1, -1) == 0);
+  int res;
+  do
+    {
+      res = poll(&fds, 1, -1);
+    }
+  while (res == 0 ||                  // timeout, should never happen, retry just in case
+         (res < 0 && errno == EINTR)  // we got interrupted, so retry
+         );
 
-  size_t result = fread(buf, 1, size, (FILE*)file);
+  if (res > 0)
+    {
+      size_t fread_result;
+      do
+        {
+          fread_result = fread(buf, 1, size, (FILE*)file);
+          // man pages of fread say:
+          //
+          //    If an error occurs, or the end of the file is reached, the return value is a
+          //    short item count (or zero).
+          //
+          // so we cannot use fread_result to detect an error. Instead, it says
+          //
+          //    fread() does not distinguish between end-of-file and error, and callers must
+          //    use feof(3) and ferror(3) to determine which occurred.
+          //
+          // So let's do that:
+          //
+          // We might get fread_result > 0 combined with an error like EAGAIN.  In this case, we
+          // return fread_result and not indicate an error by returning -1.
+        }
+      while (fread_result == 0 && !feof((FILE*)file) && (ferror((FILE*)file) && errno == EAGAIN));  // if we got no data and no EOF, then repeat.
+      if (!ferror((FILE*)file) || errno == EAGAIN)
+        {
+          result = fread_result;
+        }
+    }
 
-  return result >= 0
-    ? result
-    : -1; // ERROR
+  return result;
 }
 
 
@@ -916,4 +1145,70 @@ int fzE_cwd(void * buf, size_t size)
 int fzE_isnan(double d)
 {
   return isnan(d);
+}
+
+/**
+ * wrapper around DTRACE_PROBE
+ */
+void fzE_dtrace_probe(char col, const char* msg)
+{
+#ifdef HAVE_SYS_SDT_H
+  // we currently use DTRACE_PROBE5(fuzion, probe, col, a0, a1, a2, a3) where
+  //
+  // col is a char representing the color
+  //
+  // a0,a1,a2,a3 each have 8 chars from the msg, with the first characters using the lower bits, i.e,
+  // a0@0..7 is msg[0], a0@1..15 is msg[1], etc.
+  //
+  #define N 4
+  uint64_t args[N];
+  int i = 0;
+  int j = 0;
+  for (i = 0; i<N; i++)
+    {
+      args[i] = 0;
+    }
+  i = 0;
+  char c;
+  do
+    {
+      c = *(msg++);
+      args[i] = args[i] | ((((uint64_t) c) << (8*j)));
+      j = j + 1;
+      if (j == 8)
+        {
+          i = i + 1;
+          j = 0;
+        }
+    }
+  while (i < N && c);
+
+  /*  we have do disable '-Wgnu-zero-variadic-macro-arguments', otherwise we get
+
+/home/runner/work/fuzion/fuzion/build/include/posix.c:1049:3: error: must specify at least one argument for '...' parameter of variadic macro [-Werror,-Wgnu-zero-variadic-macro-arguments]
+ 1049 |   DTRACE_PROBE5(fuzion, probe, col, args[0], args[1], args[2], args[3]);
+      |   ^
+/usr/include/x86_64-linux-gnu/sys/sdt.h:492:3: note: expanded from macro 'DTRACE_PROBE5'
+  492 |   STAP_PROBE5(provider,probe,parm1,parm2,parm3,parm4,parm5)
+      |   ^
+/usr/include/x86_64-linux-gnu/sys/sdt.h:378:3: note: expanded from macro 'STAP_PROBE5'
+  378 |   _SDT_PROBE(provider, name, 5, (arg1, arg2, arg3, arg4, arg5))
+      |   ^
+/usr/include/x86_64-linux-gnu/sys/sdt.h:78:75: note: expanded from macro '_SDT_PROBE'
+   78 |     __asm__ __volatile__ (_SDT_ASM_BODY(provider, name, _SDT_ASM_ARGS, (n)) \
+      |                                                                           ^
+/usr/include/x86_64-linux-gnu/sys/sdt.h:283:9: note: macro '_SDT_ASM_BODY' defined here
+  283 | #define _SDT_ASM_BODY(provider, name, pack_args, args, ...)                   \
+      |         ^
+1 error generated.
+  */
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wgnu-zero-variadic-macro-arguments"
+
+  DTRACE_PROBE5(fuzion, probe, col, args[0], args[1], args[2], args[3]);
+
+#pragma clang diagnostic pop
+
+  #undef N
+#endif
 }

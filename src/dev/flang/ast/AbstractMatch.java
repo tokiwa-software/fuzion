@@ -47,16 +47,22 @@ public abstract class AbstractMatch extends ExprWithPos
    * where this match came from.
    * used only for better error messages.
    */
-  enum Kind { Plain, If, Contract }
+  enum Kind { Plain, If, Contract, Until, While }
 
 
   /*----------------------------  variables  ----------------------------*/
 
 
   /**
-   * Static type of this match or null if none. Set during resolveTypes().
+   * Static type of this match or null if none.
+   * Cache for type().
+   *
+   * This will only be:
+   * - void, for a match known to never return
+   * - unit, for a match that may return (and whose result is assigned to some field)
+   *
    */
-  AbstractType _type;
+  private AbstractType _type;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -126,7 +132,7 @@ public abstract class AbstractMatch extends ExprWithPos
         _type = cases()
           .map2(x -> x.code().type())
           .stream()
-          .reduce(Types.resolved.t_void, (a,b) -> a.union(b, Context.NONE));
+          .reduce(Types.resolved.t_void, (a,b) -> a.commonSupertype(b, Context.NONE));
         if (CHECKS) require
           (_type.isVoid() || _type.compareTo(Types.resolved.t_unit) == 0);
       }
@@ -145,39 +151,64 @@ public abstract class AbstractMatch extends ExprWithPos
 
 
   /**
+   * Some Expressions do not produce a result, e.g., a Block
+   * whose last expression is not an expression that produces a result.
+   */
+  @Override public boolean producesResult()
+  {
+    return false;
+  }
+
+
+  /**
    * checks the subject type of this match.
    */
   void checkTypes(Context context)
   {
     var st = subject().type();
-    if (st.isGenericArgument())
+    if (st.isParametricType())
       {
         AstErrors.matchSubjectMustNotBeTypeParameter(subject().pos(), st);
       }
 
     if (CHECKS) check
-      (Errors.any() || st != Types.t_ERROR);
+      (Errors.any() || st != Types.t_ERROR,
+       Errors.any() || !producesResult());
 
     if (st != Types.t_ERROR)
       {
-        if (kind() == Kind.Plain)
-          {
+        switch (kind()) {
+          case Plain:
             if (!st.isChoice())
               {
                 AstErrors.matchSubjectMustBeChoice(subject().pos(), st);
               }
-          }
-        else if (Types.resolved.t_bool.asThis().isAssignableFromWithoutBoxing(st, context).no())
-          {
-            if (kind() == Kind.Contract)
+            break;
+          case Contract:
+            if (Types.resolved.t_bool.asThis().isAssignableFromWithoutBoxing(st, context).no())
               {
                 AstErrors.contractExpressionMustResultInBool(subject());
               }
-            else
+            break;
+          case If:
+            if (Types.resolved.t_bool.asThis().isAssignableFromWithoutBoxing(st, context).no())
               {
                 AstErrors.ifConditionMustBeBool(subject());
               }
-          }
+            break;
+          case While:
+            if (Types.resolved.t_bool.asThis().isAssignableFromWithoutBoxing(st, context).no())
+              {
+                AstErrors.whileConditionMustBeBool(subject());
+              }
+            break;
+          case Until:
+            if (Types.resolved.t_bool.asThis().isAssignableFromWithoutBoxing(st, context).no())
+              {
+                AstErrors.untilConditionMustBeBool(subject());
+              }
+            break;
+        }
       }
   }
 

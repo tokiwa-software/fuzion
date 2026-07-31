@@ -2,18 +2,15 @@
 error 1: FATAL FAULT `*** panic ***`: bah
 Call stack:
 fuzion.sys.fatal_fault#2 at {base.fum}/fuzion/sys.fz:55
-fuzion.type.runtime.type.fault.type.install_default.λ.call#1 at {base.fum}/fuzion/runtime/fault.fz:43
-fuzion.runtime.fault.cause#1 at {base.fum}/eff/fallible.fz:35
-panic.type.install_default.λ.call#1 at {base.fum}/panic.fz:36
-panic.cause#1 at {base.fum}/eff/fallible.fz:35
-panic#1 at {base.fum}/panic.fz:56
+[..]
+panic#1 at {base.fum}/panic.fz:59
 p at --CURDIR--/reg_issue2304.fz:24
-λ.call#1 at --CURDIR--/reg_issue2304.fz:25
-(list i32).filter_list#1.λ.call#1 at {base.fum}/list.fz:509
-(list i32).drop_while_list#1 at {base.fum}/list.fz:488
-(list i32).filter_list#1 at {base.fum}/list.fz:509
-(list i32).filter#1 at {base.fum}/list.fz:500
-(array i32).filter#1 at {base.fum}/Sequence.fz:184
+(λx->p).call#1 at --CURDIR--/reg_issue2304.fz:25
+((list i32).filter_list#2 (Unary bool i32)).(λ(a -> !(p a))).call#1 at {base.fum}/list.fz:564
+(list i32).drop_while_list#2 ((list i32).filter_list#2 (Unary bool i32)).(λ(a -> !(p a))) at {base.fum}/list.fz:543
+(list i32).filter_list#2 (Unary bool i32) at {base.fum}/list.fz:564
+(list i32).filter#1 at {base.fum}/list.fz:555
+(array i32).filter#1 at {base.fum}/Sequence.fz:294
 universe at --builtin--:25
 
 *** fatal errors encountered, stopping.

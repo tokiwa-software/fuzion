@@ -9,14 +9,13 @@ test =>
 
   (1..4)
     .map (_)->
-      concur.threads.spawn ()->
+      concur.Threads.env.spawn ()->
         for i in 1..100 do
           s.push i
           p := s.pop
           while !(count p.or_panic)
     .as_array
-    .for_each t->
-      t.join
+    .for_each (.join.or_panic)
 
   # n*(n+1)/2  * 4
   # 100*101 / 2 * 4 = 20200

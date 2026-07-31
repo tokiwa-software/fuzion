@@ -25,7 +25,7 @@
 
 # Regression test for issue #7: https://github.com/tokiwa-software/fuzion/issues/7
 #
-# A simple negative test using incompatible actual type argument
+# A simple negative test using incompatible actual type parameter
 #
 checkGenericConstraint is
 

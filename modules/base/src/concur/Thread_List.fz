@@ -1,0 +1,101 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature concur.Thread_List
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# Thread_List -- A list of threads that are parked, linked via `thread.next`/`prev`.
+#
+# This is currently a simple cyclic list. It might make sense to sort this by
+# priority or other metrics.
+#
+module Thread_List ref is
+
+
+  # set `prev` and `next` to the given values `p` and `n` while this thread
+  # is parked.
+  #
+  fixed Thread.setpn(p, n Thread) unit =>
+    set prev := p
+    set next := n
+
+
+  # the first (oldest) entry in this list
+  #
+  module first option Thread := nil
+
+  # add new entry to this list
+  #
+  module add(t Thread) unit
+  pre
+    debug: t.next = t && t.prev = t   # links are unused
+  =>
+    match first
+      f Thread =>
+        # add `t` before `f` in existing list
+        p := f.prev
+        t.setpn f.prev f
+        p.setpn p.prev t
+        f.setpn t f.next
+      nil =>
+        # add `t` as first entry in this list
+        set first := t
+        t.setpn t t
+
+  # remove first thread from this list
+  #
+  # result is `nil` if list is empty
+  #
+  module remove option Thread
+  =>
+    first >>= (t -> remove t; t)
+
+  # remove the given thread `t` from this list
+  #
+  # `t` must be in this list
+  #
+  module remove(t Thread) unit =>
+    p := t.prev
+    n := t.next
+    if p = t
+      # `t` is the only thread in this list, so now it will be empty:
+      set first := nil
+    else
+      # note that for p=n, i.e., only one element left after `t` was removed,
+      # we could do
+      #
+      #   if p = n
+      #     p.setpn p p
+      #   else
+      #     ...
+      #
+      # but the following, general code for >1 elements has the same effect:
+
+      # link p and n directly:
+      n.setpn p      n.next
+      p.setpn p.prev n
+
+      # set first to next element if it was removed
+      if t = first
+        set first := n
+
+      t.setpn t t

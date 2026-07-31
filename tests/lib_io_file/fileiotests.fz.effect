@@ -1,6 +1,7 @@
-fileiotests.f.delete
-fileiotests.f.move
-fileiotests.f.stat
+cached_item (num.ryū f64).step_3#7.pow5_inv_split_cache_key
+cached_item (num.ryū f64).step_3#7.pow5_split_cache_key
+concur.A0_park_mutex
+concur.Threads
 fuzion.runtime.check_fault
 fuzion.runtime.contract_fault
 fuzion.runtime.fault
@@ -10,5 +11,9 @@ fuzion.runtime.stackoverflow
 io.Buffer_Size
 io.Err
 io.Out
-io.dir.make
+io.dir.Make
+io.file.Delete
+io.file.L_Stat
+io.file.Move
+io.file.Stat
 panic

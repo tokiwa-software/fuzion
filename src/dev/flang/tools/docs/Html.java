@@ -164,7 +164,7 @@ public class Html extends ANY
   private String anchorType(AbstractFeature af, AbstractFeature context, AbstractFeature relativeTo)
   {
     var at = af.resultType();
-    if (at.isGenericArgument())
+    if (at.isParametricType())
       {
         return htmlEncodeNbsp(at.toString(false, context))
                + (at.isOpenGeneric() ? "..." : "");
@@ -202,7 +202,7 @@ public class Html extends ANY
    */
   private String typePrfx(AbstractFeature af)
   {
-    // NYI: does not treat features that `Type` inherits but does not redefine as type features, see #3716
+    // NYI: BUG: does not show features that `Type` inherits but does not redefine as type features, see #3913
     return af.outer() != null && (af.outer().isCotype() || af.outer().compareTo(Types.resolved.f_Type) == 0) && !af.isCotype() ? "<span class=\"fd-keyword\">type</span>." : "";
   }
 
@@ -236,7 +236,7 @@ public class Html extends ANY
             + inherited(af, relativeTo)
             + (signatureWithArrow(af) ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" => ") + "</div>" + anchorType(af, af, relativeTo)
                : af.isConstructor()   ? "<div class='fd-keyword'>" + htmlEncodeNbsp(" is") + "</div>"
-               : af.isField()         ? "&nbsp;" + anchorType(af, outer, relativeTo) //+ "_af:" + af.featureName().baseName() + "_out:" + (outer != null ? outer.featureName().baseName() : "_out=null")
+               : af.isField()         ? "&nbsp;" + anchorType(af, outer, relativeTo) //+ "_af:" + af.baseName() + "_out:" + (outer != null ? outer.baseName() : "_out=null")
                                       : "")
             + annotateUnitType(af)
             + annotateInherited(af, outer)
@@ -307,7 +307,7 @@ public class Html extends ANY
   {
     return (af == null || outer == null || af.outer() == outer
                // type features have their own chain of parents internally, avoid annotation in this case
-            || af.outer().featureName().baseNameHuman().equals(outer.featureName().baseNameHuman()));
+            || af.outer().baseNameHuman().equals(outer.baseNameHuman()));
   }
 
 
@@ -475,7 +475,7 @@ public class Html extends ANY
       .stream()
       .map(f -> """
         <li><a href="$1">$2</a></li>$3
-      """.replace("$1", featureRelativeURL(f, relativeTo)).replace("$2", htmlEncodeNbsp(f.qualifiedName())).replace("$3", redefines0(f, relativeTo)))
+      """.replace("$1", featureRelativeURL(f, relativeTo)).replace("$2", htmlEncodeNbsp(f.qualifiedNameHuman())).replace("$3", redefines0(f, relativeTo)))
       .collect(Collectors.joining(System.lineSeparator()));
   }
 
@@ -525,7 +525,7 @@ public class Html extends ANY
       }
 
     var normalFunctions = allFunctions.stream().filter(f->!f.isTypeFeature()).collect(Collectors.toCollection(TreeSet::new));
-    var typeFunctions   = allFunctions.stream().filter(f->f.isTypeFeature()).collect(Collectors.toCollection(TreeSet::new));
+    var typeFeatures    = allFunctions.stream().filter(f->f.isTypeFeature()).collect(Collectors.toCollection(TreeSet::new));
 
     // Choice Types
     var choices = map.getOrDefault(AbstractFeature.Kind.Choice, new TreeSet<AbstractFeature>());
@@ -544,7 +544,7 @@ public class Html extends ANY
         universeFunctions.addAll(allUniverseFeat.getOrDefault(AbstractFeature.Kind.Intrinsic, new TreeSet<AbstractFeature>()));
         universeFunctions.addAll(allUniverseFeat.getOrDefault(AbstractFeature.Kind.Native, new TreeSet<AbstractFeature>()));
 
-        // only keep features that have a matching type argument with a type other than Any
+        // only keep features that have a matching type parameter with a type other than Any
         universeFunctions.removeIf(
           af->af.typeArguments().isEmpty()
           || af.typeArguments().stream().noneMatch(typeParam->typeParam.constraint().compareTo(Types.resolved.t_Any ) != 0
@@ -556,7 +556,7 @@ public class Html extends ANY
          + mainSection0("Constructors",                 null,         normalConstructors, outer, true)
          + mainSection0("Type Constructors",            null,         typeConstructors,   outer, true)
          + mainSection0("Functions",                    null,         normalFunctions,    outer, true)
-         + mainSection0("Type Functions",               null,         typeFunctions,      outer, true)
+         + mainSection0("Type Features",                null,         typeFeatures,       outer, true)
          + mainSection0("Choice Types",                 null,         choices,            outer, true)
          + mainSection0("Applicable universe features", univFuncDesc, universeFunctions,  outer, true);
   }
@@ -586,7 +586,7 @@ public class Html extends ANY
         features = features
                     // filter out features of other modules which do not need to be shown for this module
                     .filter(af -> (af instanceof LibraryFeature lf ? lf.showInMod(lm) : false))
-                    .sorted((af1, af2) -> af1.featureName().baseName().compareToIgnoreCase(af2.featureName().baseName()));
+                    .sorted((af1, af2) -> af1.baseName().compareToIgnoreCase(af2.baseName()));
       }
 
     var content = features.map(af ->
@@ -656,14 +656,14 @@ public class Html extends ANY
                 + "</pre></div>")
       .collect(Collectors.joining());
 
-    return res.isBlank() ? "" : "<details close><summary><span class=fd-contract-title>" + contractType + "</span></summary>" + res + "</details>";
+    return res.isBlank() ? "" : "<details class=\"cursor-pointer\" open><summary><span class=fd-contract-title>" + contractType + "</span></summary>" + res + "</details>";
   }
 
   /**
    * Does text start with keyword, ignoring whitespaces at the beginning
    *
    * NYI: OPTIMIZATION: This is a poor way to determine if a feature with a pre-/postcondition defines one itself or only
-   *                    inherits one. If a precondition is inherited but not defined `.preFeature().sourceText()`
+   *                    inherits one. If a precondition is inherited but not defined {@code .preFeature().sourceText()}
    *                    returns the source code of the feature itself, and not an empty string.
    *                    So there seems to be no simple and good way to do this at the moment.
    *
@@ -736,7 +736,7 @@ public class Html extends ANY
                   : c.startsWith("<details open>")
                   ? Stream.of(c)
                   : Stream.of(
-                    "<details open><summary>Comment of <span class=fd-fname>" +
+                    "<details class=\"cursor-pointer\" open><summary>Comment of <span class=fd-fname>" +
                     relativeAnchor(r, af.outer())
                     + "</span></summary>" + c + "</details>"
                   );
@@ -744,12 +744,12 @@ public class Html extends ANY
             )
             .collect(Collectors.joining());
           }
-        say_err("Warning: No comment found for " + af.qualifiedName());
+        say_err("Warning: No comment found for " + af.qualifiedNameHuman());
       }
 
     Collections.reverse(commentLines);
 
-    var result = Html.processComment(af.qualifiedName() + af.featureName().argCount() + "_", commentLines
+    var result = Html.processComment(af.qualifiedNameHuman() + af.featureName().argCount() + "_", commentLines
       .stream()
       .map(l -> l.trim())
       .map(l -> l
@@ -793,7 +793,7 @@ public class Html extends ANY
    */
   private String htmlEncodedBasename(AbstractFeature af)
   {
-    return htmlEncodeNbsp(af.featureName().baseNameHuman());
+    return htmlEncodeNbsp(af.baseNameHuman());
   }
 
 
@@ -805,7 +805,7 @@ public class Html extends ANY
    */
   private String htmlEncodedQualifiedName(AbstractFeature af)
   {
-    return htmlEncodeNbsp(af.qualifiedName());
+    return htmlEncodeNbsp(af.qualifiedNameHuman());
   }
 
 
@@ -958,7 +958,7 @@ public class Html extends ANY
 
   /**
    * get full html with doctype, head and body
-   * @param qualifiedName
+   * @param qualifiedNameHuman()
    * @param bareHtml
    * @return
    */
@@ -993,7 +993,7 @@ public class Html extends ANY
    */
   private static String htmlID(AbstractFeature f)
   {
-    return urlEncode(f.qualifiedName() + "_" + f.arguments().size());
+    return urlEncode(f.qualifiedNameHuman() + "_" + f.arguments().size());
   }
 
 
@@ -1225,7 +1225,7 @@ public class Html extends ANY
         var innerFeatures = lm.declaredFeaturesShallow(f).values().stream()
                               .filter(ft -> ft.definesType()
                                             && ft.visibility().typeVisibility() == Visi.PUB)
-                              .sorted(Comparator.comparing(ft -> ft.featureName().baseName(), String.CASE_INSENSITIVE_ORDER))
+                              .sorted(Comparator.comparing(ft -> ft.baseName(), String.CASE_INSENSITIVE_ORDER))
                               .collect(Collectors.toList());
 
         // addition to the tree structure prefix for current feature: universe / normal element / last element
@@ -1368,7 +1368,7 @@ public class Html extends ANY
 
     return config.bare()
       ? bareHtml
-      : fullHtml(lm.name() + "." + af.qualifiedName(), bareHtml);
+      : fullHtml(lm.name() + "." + af.qualifiedNameHuman(), bareHtml);
   }
 
   /**

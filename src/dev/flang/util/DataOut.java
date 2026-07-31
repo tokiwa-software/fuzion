@@ -216,7 +216,6 @@ public class DataOut extends ANY
       {
         _data[p+i] = a[i];
       }
-    _pos = p + l;
   }
 
 

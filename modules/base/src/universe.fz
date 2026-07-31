@@ -22,9 +22,11 @@
 # -----------------------------------------------------------------------
 
 
-# universe is the mother and father of all features. As such it is the outermost feature.
+# universe is implicit outer space of all features. In the hierarchy of nested
+# features, it is the outermost feature.
 #
-# Universe can not be called but you can use it in a call as part of a full qualifier, e.g.:
+# The universe can not be called but you can use it in a call as part of a full
+# qualifier, e.g.:
 #
 #     universe.say "hello"
 #

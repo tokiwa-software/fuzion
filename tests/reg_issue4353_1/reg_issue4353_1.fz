@@ -25,7 +25,7 @@ Sequence.unzip3(A type)
 pre
   T : tuple A
 =>
-  map x->x.values.0
+  map (.values.0)
 say ([tuple 42].unzip3 String)
 
 

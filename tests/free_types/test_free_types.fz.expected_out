@@ -1,5 +1,5 @@
 a: Type of 'i32' 42
-a: Type of 'String' fourty two
+a: Type of 'String' forty two
 a: Type of 'i32' 84
 b: Type of 'f64' 47.11
 b: Type of 'String' hello

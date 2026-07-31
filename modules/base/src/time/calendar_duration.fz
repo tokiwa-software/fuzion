@@ -101,37 +101,37 @@ is
       with_time_prefix (x String) =>
         if !time_prefix.get
           time_prefix <- true
-          "{s.get}T{x}"
+          "$(s.get)T$(x)"
         else
-          "{s.get}{x}"
+          "$(s.get)$(x)"
 
       if years > 0
-        s <- "{s.get}{years}Y"
+        s <- "$(s.get)$(years)Y"
         is_positive <- true
 
       if months > 0
-        s <- "{s.get}{months}M"
+        s <- "$(s.get)$(months)M"
         is_positive <- true
 
       if days > 0
-        s <- "{s.get}{days}D"
+        s <- "$(s.get)$(days)D"
         is_positive <- true
 
       if hours > 0
-        s <- with_time_prefix "{hours}H"
+        s <- with_time_prefix "$(hours)H"
         is_positive <- true
 
       if minutes > 0
-        s <- with_time_prefix "{minutes}M"
+        s <- with_time_prefix "$(minutes)M"
         is_positive <- true
 
       if (seconds > 0 || !is_positive.get) && nanos = 0
-        s <- with_time_prefix "{seconds}S"
+        s <- with_time_prefix "$(seconds)S"
       else if nanos != 0
         combined := seconds * 1E9 + nanos
         newsecs := combined / 1E9
         newnanos := combined % 1E9
-        s <- with_time_prefix "{newsecs}.{newnanos.as_string 9 10}S"
+        s <- with_time_prefix "$(newsecs).$(newnanos.as_string 9 10)S"
 
       s.get
 

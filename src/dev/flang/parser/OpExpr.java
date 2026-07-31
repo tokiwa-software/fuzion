@@ -28,7 +28,6 @@ package dev.flang.parser;
 
 import java.util.ArrayList;
 
-import dev.flang.ast.AstErrors;
 import dev.flang.ast.Call;
 import dev.flang.ast.Expr;
 import dev.flang.ast.NumLiteral;
@@ -38,6 +37,7 @@ import dev.flang.ast.ParsedName;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
 /**
@@ -68,24 +68,24 @@ class OpExpr extends ANY
    * table of precedences
    */
   private final Precedence[] precedences = {
-    new Precedence(16,        "@"  ),
-    new Precedence(15,        "^"  ),
-    new Precedence(14, 5, 14, "!"  ),
-    new Precedence(13,        "~"  ),
-    new Precedence(12,        "⁄"  ),
-    new Precedence(11,        "*/%⊛⊗⊘⦸⊝⊚⊙⦾⦿⨸⨁⨂⨷"),
-    new Precedence(10,        "+-⊕⊖" ),
-    new Precedence( 9,        "."  ),
-    new Precedence( 8,        "#"  ),
-    new Precedence(14, 7, 14, "$"  ),
-    new Precedence( 6,        ""   ),
-    new Precedence( 5,        "<>=⧁⧀⊜⩹⩺⩻⩼⩽⩾⩿⪀⪁⪂⪃⪄⪅⪆⪇⪈⪉⪊⪋⪌⪍⪎⪏⪐⪑⪒⪓⪔⪕⪖⪗⪘⪙⪚⪛⪜⪝⪞⪟⪠⪡⪢⪤⪥⪦⪧⪨⪩⪪⪫⪬⪭⪮⪯⪰⪱⪲⪴⪵⪶⪷⪸⪹⪺⪻⪼⫷⫸⫹⫺≟≤≥"),
-    new Precedence( 4,        "&"  ),
-    new Precedence( 3,        "|⦶⦷"),
-    new Precedence( 2,        "∀"  ),
-    new Precedence( 1,        "∃"  ),
-    // all other operators: 0
-    new Precedence( -1,       ":" ),
+    new Precedence(17,        "@"  ),
+    new Precedence(16,        "^"  ),
+    new Precedence(15, 6, 15, "!"  ),
+    new Precedence(14,        "~"  ),
+    new Precedence(13,        "⁄"  ),
+    new Precedence(12,        "*/%⊛⊗⊘⦸⊝⊚⊙⦾⦿⨸⨁⨂⨷"),
+    new Precedence(11,        "+-⊕⊖" ),
+    new Precedence(10,        "."  ),
+    new Precedence( 9,        "#"  ),
+    new Precedence(15, 8, 15, "$"  ),
+    new Precedence( 7,        ""   ),
+    new Precedence( 6,        "<>=⧁⧀⊜⩹⩺⩻⩼⩽⩾⩿⪀⪁⪂⪃⪄⪅⪆⪇⪈⪉⪊⪋⪌⪍⪎⪏⪐⪑⪒⪓⪔⪕⪖⪗⪘⪙⪚⪛⪜⪝⪞⪟⪠⪡⪢⪤⪥⪦⪧⪨⪩⪪⪫⪬⪭⪮⪯⪰⪱⪲⪴⪵⪶⪷⪸⪹⪺⪻⪼⫷⫸⫹⫺≟≤≥"),
+    new Precedence( 5,        "&"  ),
+    new Precedence( 4,        "|⦶⦷"),
+    new Precedence( 3,        "∀"  ),
+    new Precedence( 2,        "∃"  ),
+    // all other operators: 1
+    new Precedence( 0,        ":"  ),
   };
 
 
@@ -212,14 +212,14 @@ class OpExpr extends ANY
                 var p = op._pos;
                 Errors.error(p,
                              "Syntax error: infix operator "+Errors.code(op._text)+" appears to be "+(op._whiteSpaceAfter ? "postfix" : "prefix")+" operator.",
-                             "Whitespace "+(op._whiteSpaceBefore?"before":"after")+ " this operator suggests that \n" +
-                             "it was not intended as an infix operator. \n"+
+                             "Whitespace "+(op._whiteSpaceBefore?"before":"after")+ " this operator suggests that\n" +
+                             "it was not intended as an infix operator.\n"+
                              "To fix this, you may try to insert white space "+(op._whiteSpaceBefore?"after":"before")+" the operator at "+
                              (op._whiteSpaceAfter ? p.startPos()
                                                   : p.endPos()).show() + "\n" +
                              "Parse stack: " + Parser.parseStack());
               }
-            Expr e = new ParsedOperatorCall(e1, new ParsedName(op._pos, FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + op._text), pmax, e2);
+            Expr e = new ParsedOperatorCall(e1, new ParsedName(SourcePosition.range(new List<>(e1, e2)), FuzionConstants.INFIX_RIGHT_OR_LEFT_OPERATOR_PREFIX + op._text), pmax, e2);
             _els.remove(max+1);
             _els.remove(max);
             _els.set(max-1, e);
@@ -234,34 +234,16 @@ class OpExpr extends ANY
             _els.remove(max+1);
             _els.set(max, e);
           }
-        else if (isExpr(max-1))
+        else
           { // postfix op:
             Expr e1 = expr(max-1);
             Expr e = new ParsedOperatorCall( e1, new ParsedName(op._pos, FuzionConstants.POSTFIX_OPERATOR_PREFIX + op._text), pmax);
             _els.remove(max);
             _els.set(max-1, e);
           }
-        else
-          {
-            AstErrors.multipleOperatorsFound(
-              posOf(_els.getFirst())
-                .rangeTo(posOf(_els.getLast()).byteEndPos()));
-            return Call.ERROR;
-          }
       }
     //    show();
     return expr(0);
-  }
-
-
-  /**
-   * get SourcePosition of Operator or Expr
-   */
-  private SourcePosition posOf(Object obj)
-  {
-    return obj instanceof Operator o
-      ? o._pos
-      : ((Expr)obj).pos();
   }
 
 
@@ -383,7 +365,7 @@ class OpExpr extends ANY
             ? (kind == Kind.prefix ? precedences[i].prefix :
                kind == Kind.infix  ? precedences[i].infix :
                /* Kind.postfix */    precedences[i].postfix )
-            : 0);
+            : 1);
   }
 
 

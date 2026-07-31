@@ -25,7 +25,7 @@
 
 # i128 -- 128-bit signed integer values
 #
-public i128(public hi i64, public lo u64) : num.wrap_around, has_interval is
+public i128(public hi i64, public lo u64) : num.wrap_around, property.interval is
 
   # overflow checking
 
