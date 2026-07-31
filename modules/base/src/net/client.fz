@@ -33,7 +33,7 @@
 #         .bind c->
 #           c.with _ mutate ()->
 #             say net.channel.env.get_peer_address
-#             say <| (io.buffered mutate).writer.env.write [0,1,2]
+#             say <| (io.buffered mutate).Writer.env.write [0,1,2]
 #
 # Blocks until connection is established.
 # NYI: UNDER DEVELOPMENT: blocking / none blocking

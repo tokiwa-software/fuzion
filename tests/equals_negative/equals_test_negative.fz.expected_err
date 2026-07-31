@@ -6,16 +6,16 @@ formal type parameter 'T : property.equatable'
 actual type parameter 'equals_test_a'
 
 
---CURDIR--/equals_test_negative.fz:45:30: error 2: Incompatible type parameter
+--CURDIR--/equals_test_negative.fz:45:27: error 2: Incompatible type parameter
   say "b1.infix = b2 is $(b1 = b2)"          # 2. should flag an error: equals_test_b does not implement equality
------------------------------^
+--------------------------^^^^^^^
 formal type parameter 'T : property.equatable'
 actual type parameter 'equals_test_b'
 
 
---CURDIR--/equals_test_negative.fz:50:24: error 3: Incompatible type parameter
+--CURDIR--/equals_test_negative.fz:50:21: error 3: Incompatible type parameter
   say "c1 = c2 is $(c1 = c2)"                # 3. should flag an error: equals_test_c does not implement equality
------------------------^
+--------------------^^^^^^^
 formal type parameter 'T : property.equatable'
 actual type parameter 'equals_test_c'
 

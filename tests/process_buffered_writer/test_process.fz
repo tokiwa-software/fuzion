@@ -36,7 +36,7 @@ process_buffered_writer =>
       lm : mutate is
       _ := lm ! ()->
         _ := p.with_in unit lm ()->
-          _ := (io.buffered lm).writer.env.write "Hello, World!\n"
+          _ := (io.buffered lm).Writer.env.write "Hello, World!\n"
         # closing input so cat knows we are done and must write to standard out
         say p.close_in
         _ := p.with_out unit lm ()->

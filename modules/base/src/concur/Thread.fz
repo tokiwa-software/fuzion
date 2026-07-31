@@ -44,10 +44,19 @@ is
 
   # wait for this thread to finish execution
   #
-  public join unit ! atomic_access =>
+  public join outcome unit ! atomic_access =>
     if joined.compare_and_set trit.no trit.unknown
-      fuzion.sys.thread.join0 thrd
+      r := fuzion.sys.thread.join0 thrd
       joined.write trit.yes
+      if r = 0
+        unit
+      else if r = 1
+        error "A deadlock was detected."
+      else if r = 2
+        error "Another thread is already waiting to join with this thread or thread is not a joinable thread."
+      else if r = 3
+        error "No thread with the ID thread could be found."
+
     else
       # NYI: UNDER DEVELOPMENT:
       # better busy loop

@@ -42,14 +42,7 @@ private:public pipe : effect is
   public used concur.atomic bool := concur.atomic bool .new false
 
 
-  # write bytes to a write end
-  #
-  write_handler (desc i64) : io.Write_Handler is
-    public redef write (bytes Sequence u8) outcome unit =>
-      if fzE_pipe_write desc bytes.as_array.internal_array.data bytes.count = -1
-        error "failed writing to $(desc)" fzE_last_error
-      else
-        unit
+
 
 
   # read bytes from a read end
@@ -81,7 +74,16 @@ private:public pipe : effect is
       used.write true
       read_desc, write_desc := (pipefd[0], pipefd[1])
 
-      match (io.buffered LM).writer (write_handler write_desc) ! w
+      # write bytes to a write end
+      #
+      writer : (io.buffered LM).Writer is
+        public redef writer (bytes Sequence u8) outcome unit =>
+          if fzE_pipe_write write_desc bytes.as_array.internal_array.data bytes.count = -1
+            error "failed writing to $(write_desc)" fzE_last_error
+          else
+            unit
+
+      match (io.buffered LM).Writer.instate writer w
         unit =>
           _ := fzE_pipe_close write_desc
           r read_desc

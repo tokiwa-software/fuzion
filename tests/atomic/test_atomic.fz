@@ -193,8 +193,8 @@ test_atomic is
         s2.write s
       )
 
-    thrd1.join
-    thrd2.join
+    thrd1.join.or_panic
+    thrd2.join.or_panic
 
     chck s1.read>=0 true
     chck s1.read=(a1.read & 0x7fff_ffff) true

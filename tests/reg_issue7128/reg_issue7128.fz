@@ -38,10 +38,6 @@ lvl(i i64) Sequence String =>
   if sub_l.is_nil then [str]
   else
 
-    # This works
-    # sub_r_new := sub_r.or_else [$" "," "," "] .as_list.concat_list [$""].cycle.as_list
-
-    # NYI: BUG: This seems to not terminate
     sub_r_new := (sub_r.or_else [$" "," "," "]) ++ [$""].cycle
 
     [str] ++ (sub_l.ok ? [" ┌─┴$(sub_r.ok ? "─┐ " : " ")"] : [])

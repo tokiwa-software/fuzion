@@ -41,3 +41,4 @@ reg_issue6882 =>
 
           # NYI: CLEANUP: needed due to #6895
           .join
+          .or_panic

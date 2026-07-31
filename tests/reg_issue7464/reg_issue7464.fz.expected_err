@@ -1,0 +1,11 @@
+
+--CURDIR--/reg_issue7464.fz:30:3: error 1: 'match' subject type must be a choice type
+  say <| arr
+--^^^^^^^^^^
+    .nth 0
+----^^^^^^
+    .or_panic ? i32 => "32" | i64 => "64"
+----^^^^^^^^^
+Matched type: 'unit', which is not a choice type
+
+one error.

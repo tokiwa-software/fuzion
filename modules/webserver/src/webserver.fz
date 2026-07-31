@@ -30,6 +30,11 @@ public Webserver(/*NYI: UNDER DEVELOPMENT: custom thread pool TP type : concur.t
   public shutdown unit =>
     is_running.write false
 
+  # NYI: UNDER DEVELOPMENT:
+    # ws_thread.join.or_panic
+  # ws_thread := concur.Threads.env.spawn ()->
+
+
   _ := concur.Threads.env.spawn ()->
 
     # start a thread pool
@@ -55,11 +60,11 @@ public Webserver(/*NYI: UNDER DEVELOPMENT: custom thread pool TP type : concur.t
                 # send response
                 #
                 match (io.buffered mutate)
-                    .writer.env
+                    .Writer.env
                     .write (response.bytes i32.max)
                   e error => log "writing response failed: $(e)"
                   unit =>
-                    flush_ok := (io.buffered mutate).writer.env.flush
+                    flush_ok := (io.buffered mutate).Writer.env.flush
                     if flush_ok!!
                       log "flushing response failed: $(flush_ok.err)"
 

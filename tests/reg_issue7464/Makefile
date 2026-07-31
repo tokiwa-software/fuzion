@@ -17,14 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature Write_Handler
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-public Write_Handler ref is
-
-  # write bytes b
-  #
-  public write(b Sequence u8) outcome unit
-  pre b.finite.is_yes
-  => abstract
+override NAME = reg_issue7464
+include ../simple.mk

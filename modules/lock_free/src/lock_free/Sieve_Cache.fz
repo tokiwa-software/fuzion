@@ -22,7 +22,7 @@
 # -----------------------------------------------------------------------
 
 
-Node(K type, V type, pair (K,V), visited concur.atomic bool, prev concur.atomic (option (lock_free.Node K V)), next concur.atomic (option (lock_free.Node K V))) ref is
+private:public Node(K type, V type, pair (K,V), visited concur.atomic bool, prev concur.atomic (option (lock_free.Node K V)), next concur.atomic (option (lock_free.Node K V))) ref is
   public redef as_string String => "($(pair.0),$(pair.1))"
 
 
@@ -40,10 +40,9 @@ Node(K type, V type, pair (K,V), visited concur.atomic bool, prev concur.atomic 
 #     say <| cache0.access "D" ()->5    # => 5
 #     say <| cache0.access "C" ()->6    # => 3
 #
-public Sieve_Cache(K type : property.hashable, V type, public capacity i32) ref is
+public Sieve_Cache(K type : property.hashable, V type, MM type : container.Mutable_Map K (lock_free.Node K V), public capacity i32) ref is
 
-  # NYI: map implementation agnostic
-  cache := lock_free.Map K (lock_free.Node K V) .empty
+  cache := MM .empty
 
   # Using atomic here to be able to read and write in a
   # multi threaded environment.

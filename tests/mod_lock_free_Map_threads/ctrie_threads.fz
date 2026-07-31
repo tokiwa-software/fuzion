@@ -33,7 +33,7 @@ ctrie_threads is
     (array num_threads t->
       concur.Threads.env.spawn ()->
         code t
-      ).for_each t->t.join
+      ).for_each (.join.or_panic)
 
 
   test1 =>

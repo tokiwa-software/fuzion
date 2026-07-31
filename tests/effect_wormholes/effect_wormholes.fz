@@ -58,6 +58,7 @@ effect_wormholes =>
               _ := wh0.teleport ()->
                 io.Out.env.println "04 - using level 1 teleported default io.Out in spawned thread!"
             .join
+            .or_panic
 
       io.Out.instate out_B ()->
         io.Out.env.println "05 - using level 2 instated   out_B          in main    thread!"
@@ -67,6 +68,7 @@ effect_wormholes =>
                 whAm.or_panic.teleport ()->
                   io.Out.env.println "07 - using level 1 teleported out_A          in spawned thread!"
               .join
+              .or_panic
       io.Out.env.println "08 - using level 1 instated   out_A          in main    thread!"
 
     whA := whAm.or_panic

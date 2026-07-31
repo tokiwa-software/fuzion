@@ -373,11 +373,6 @@ bool fzE_bitwise_compare_float(float f1, float f2);
 bool fzE_bitwise_compare_double(double d1, double d2);
 
 /**
- * @return a monotonically increasing timestamp.
- */
-uint64_t fzE_nanotime(void);
-
-/**
  * @return the time of the given posix clock
  */
 uint64_t fzE_posix_time(int clockid);
@@ -428,9 +423,15 @@ void * fzE_thread_create(void *(*code)(void *),
 
 /**
  * Join with a running thread.
+ *
+ * returns:
+ * 0 = success
+ * 1 = deadlock
+ * 2 = invalid operation of some kind
+ * 3 = not a valid thread id
+ *
  */
-// NYI: UNDER DEVELOPMENT:  add return value
-void fzE_thread_join(void * thrd);
+int fzE_thread_join(void * thrd);
 
 /*
  * Set the scheduling policy and priority of a running thread.

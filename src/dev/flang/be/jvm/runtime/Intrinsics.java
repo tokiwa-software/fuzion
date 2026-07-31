@@ -211,7 +211,7 @@ public class Intrinsics extends ANY
     return System.getenv(Runtime.utf8ByteArrayDataToString((byte[]) s)) != null;
   }
 
-  public static void fuzion_sys_thread_join0(Object thread)
+  public static int fuzion_sys_thread_join0(Object thread)
   {
     var result = false;
     do
@@ -227,6 +227,7 @@ public class Intrinsics extends ANY
           }
       }
     while (!result);
+    return 0;
   }
 
   public static int fuzion_sys_thread_set_policy(Object thread, int policy, int priority)

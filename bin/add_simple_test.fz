@@ -30,7 +30,7 @@ add_simple_test =>
   lm : mutate is
   lm ! ()->
 
-    _ := (io.stdin.reader lm).instate_self unit ()->
+    io.stdin.reader lm ! ()->
       match (io.buffered lm).read_line
         test String =>
 
@@ -82,8 +82,8 @@ add_simple_test =>
             say "$test already exists."
             Exit.env.exit 1
 
-          _ := io.dir.make (io.path.of "tests/$test")
-          _ := io.write (io.path.of "tests/$test/$test.fz") (header test)+(test_body test)
-          _ := io.write (io.path.of "tests/$test/Makefile") (header "Makefile")+(makefile_body test)
+          io.dir.make (io.path.of "tests/$test") .or_else (say "mkdir tests/$test failed, does it exist already?")
+          io.write (io.path.of "tests/$test/$test.fz") (header test)+(test_body test) .or_panic
+          io.write (io.path.of "tests/$test/Makefile") (header "Makefile")+(makefile_body test) .or_panic
 
         io.end_of_file => Exit.env.exit 1

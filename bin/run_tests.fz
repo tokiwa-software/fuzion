@@ -65,8 +65,8 @@ String.infix | (seq Sequence String) =>
         _ := p.with_in unit lm ()->
           # NYI: ambiguous result type:
           # _ := write_to lm
-          _ := (io.buffered lm).writer.env.write String.this
-          _ := (io.buffered lm).writer.env.flush
+          _ := (io.buffered lm).Writer.env.write String.this
+          _ := (io.buffered lm).Writer.env.flush
           _ := p.close_in
         tokiwa.record_process p seq.as_string max_test_time nil
 
@@ -185,10 +185,10 @@ main =>
 
 
   elapsed_time_total := time.stopwatch ()->
-    _ := concur.thread_pool thread_count ()->
+    r := concur.thread_pool thread_count ()->
       for t in tests do
         check concur.thread_pool.env.submit (run_single_test t)
-
+    r.or_panic
 
   results_content := (io.slurp results)
     .or_panic

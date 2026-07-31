@@ -60,5 +60,7 @@ is
   public infix *(n u64) time.duration
   pre
     debug: !is_infinity || n=0
+  post
+    debug: (n=0: result.nanos=0)
   =>
     abstract

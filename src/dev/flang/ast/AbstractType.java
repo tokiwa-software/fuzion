@@ -392,7 +392,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * Check if this or any of its generic arguments is Types.t_ERROR.
+   * Check if this or any of its generic arguments is or contains Types.t_ERROR.
    */
   public boolean containsError()
   {
@@ -414,6 +414,27 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     if (POSTCONDITIONS) ensure
       (!result || Errors.any());
 
+    return result;
+  }
+
+
+  /**
+   * Check if this or any of its generic arguments contains an artificial type.
+   */
+  public boolean containsArtificialType()
+  {
+    boolean result = false;
+    if (isArtificialType())
+      {
+        result = true;
+      }
+    else if (isNormalType())
+      {
+        for (var t: generics())
+          {
+            result = result || t == null || t.containsArtificialType();
+          }
+      }
     return result;
   }
 
@@ -702,7 +723,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
              * this: 'T : property.orderable'
              * actual: 'I : integer'
              */
-            case ParametricType -> constraintAssignableFrom(context, actual.typeParameter().constraint(context));
+            case ParametricType -> !isThisType() && constraintAssignableFrom(context, actual.typeParameter().constraint(context));
             /**
              * e.g.:
              *
@@ -877,7 +898,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
-   * Convenience wrapper for applyTypeParsmaybeOpen for a given target type
+   * Convenience wrapper for applyTypeParsMaybeOpen for a given target type
    * t. If t is a plain type, apply t's feature and type parameters to this.
    *
    * @param t the type describing the feature and actual type parameters to applay.
@@ -2630,7 +2651,11 @@ there is no common super type of the two types (Types.t_ERROR)
             a.checkChoice(p, context);
             if (!c.isParametricType() && // See AstErrors.constraintMustNotBeParametricType,
                                           // will be checked in SourceModule.checkTypes(Feature)
-                !c.constraintAssignableFrom(context, a))
+                !c.constraintAssignableFrom(context, a) &&
+                // NYI: CLEANUP: probably not a good place for this logic, move to constraintAssignableFrom?
+                (!a.isParametricType() ||
+                 f != a.typeParameter())
+                )
               {
                 if (!f.isCoTypesRelayTypeParameter())
                   {

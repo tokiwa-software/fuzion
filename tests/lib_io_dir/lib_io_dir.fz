@@ -32,8 +32,8 @@ lib_io_dir =>
   _ := io.file.delete path
   say (io.dir.make path)
   say (io.dir.make path).err.msg
-  _ := io.file.use unit file1 io.file.mode.write (()-> (io.buffered io.file.file_mutate).writer.env.write "")
-  _ := io.file.use unit file2 io.file.mode.write (()-> (io.buffered io.file.file_mutate).writer.env.write "")
+  _ := io.file.use unit file1 io.file.mode.write (()-> (io.buffered io.file.file_mutate).Writer.env.write "")
+  _ := io.file.use unit file2 io.file.mode.write (()-> (io.buffered io.file.file_mutate).Writer.env.write "")
 
   res := io.dir.use (Sequence String) path ()->
     array 3 _->io.dir.Read.env.next.as_string
