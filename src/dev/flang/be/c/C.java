@@ -43,6 +43,7 @@ import dev.flang.fuir.FUIR;
 import dev.flang.fuir.SpecialClazzes;
 import dev.flang.fuir.analysis.AbstractInterpreter;
 import dev.flang.fuir.analysis.TailCall;
+import dev.flang.fuir.analysis.dfa.Val;
 import dev.flang.ir.IR.FeatureKind;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -126,6 +127,27 @@ public class C extends ANY
      */
     @Override
     public CStmnt nop()
+    {
+      return CStmnt.EMPTY;
+    }
+
+
+    /**
+     * drop a value, but process its side-effect.
+     *
+     * @param v an expression that calculates a value that is not needed, but
+     * where the calculation might have side-effects (like performing a call) that
+     * we do need.
+     *
+     * For backends that do not perform any side-effects in RESULT, this does
+     * not need to be redefined, the default implementation is nop() which is
+     * fine in this case.
+     *
+     * @param type clazz id for the type of the value
+     *
+     * @return code to perform the side effects of v and ignoring the produced value.
+     */
+    @Override public CStmnt drop(CExpr v, int type)
     {
       return CStmnt.EMPTY;
     }

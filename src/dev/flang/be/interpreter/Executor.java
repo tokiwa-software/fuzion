@@ -208,6 +208,12 @@ public class Executor extends ProcessExpression<Value, Object>
   }
 
   @Override
+  public Object drop(Value v, int type)
+  {
+    return null;
+  }
+
+  @Override
   public Object assignStatic(int s, int f, Value tvalue, Value val)
   {
     Interpreter.setField(f, _fuir.clazzAt(s), tvalue, val);
