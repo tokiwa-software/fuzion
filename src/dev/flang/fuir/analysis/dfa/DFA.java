@@ -2279,12 +2279,11 @@ public class DFA extends ANY
           var ev = cl.useAndGetEffect(cl.site(), ecl, false);
           if (cl._dfa._real)
             {
-              if (ev != null      /* NYI: needed? */ &&
-                  cl._env != null /* NYI: needed? */ )
-                {
-                  cl._env.aborted(ecl);
-                }
-              //              cl._dfa._preEffectsAborted.add(ecl);  // NYI: why here as well ?
+              if (CHECKS) check
+                (Errors.any() || ev != null);
+
+              cl._env.aborted(ecl);
+              // cl._dfa._preEffectsAborted.add(ecl);  // NYI: why here as well ?
             }
           else
             {
