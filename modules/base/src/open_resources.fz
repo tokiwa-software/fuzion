@@ -1,0 +1,60 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature open_resources
+#
+# -----------------------------------------------------------------------
+
+private:public open_resources (R type : resource, public resources container.Set R) : effect is
+
+
+  module register_usage(r R) unit =>
+    if debug
+      if !resources.contains r
+        fuzion.runtime.fault.env.cause ("open_resources.register_usage", "resource already closed or owned by another thread.")
+      replace
+
+
+  module close(r R) outcome unit
+    pre debug: resources.contains r
+  =>
+    open_resources (resources ∖ container.set_of_ordered R [r])
+      .replace
+    r.close_automatically
+
+
+  module open (r R) unit
+    pre debug: !resources.contains r
+  =>
+    open_resources (resources ∪ container.set_of_ordered R [r])
+      .replace
+
+
+  public redef fixed type.default_value option (open_resources R) =>
+    open_resources (container.set_of_ordered R [])
+
+
+  public redef finally unit =>
+    resources
+      .sort_by property.reverse_order
+      .for_each r->
+        # NYI: UNDER DEVELOPMENT: register failures somewhere
+        _ := r.close_automatically
+
+
