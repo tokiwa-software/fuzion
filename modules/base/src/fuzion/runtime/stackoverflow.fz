@@ -34,7 +34,7 @@ is
   #
   # this will get instated automatically at startup
   #
-  public redef fixed type.default_value option fuzion.runtime.stackoverflow =>
+  public redef fixed type.default_value fuzion.runtime.stackoverflow =>
     fuzion.runtime.stackoverflow msg->
       fuzion.runtime.fault.env.cause ("stackoverflow", msg)
 

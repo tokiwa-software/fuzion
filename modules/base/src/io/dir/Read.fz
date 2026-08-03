@@ -38,7 +38,7 @@ public Read ref : effect is
 
   # the default directory reading operation reading the next entry via fuzion.sys.fileio.read_dir
   #
-  public redef fixed type.default_value option io.dir.Read ! io.dir.open =>
+  public redef fixed type.default_value io.dir.Read ! io.dir.open =>
     _ : io.dir.Read is
       public redef next outcome io.path =>
         internal_array := fuzion.sys.internal_array_init u8 os.max_path_length

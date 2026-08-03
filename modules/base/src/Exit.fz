@@ -49,7 +49,7 @@ public Exit ref : effect is
   #
   # this will get instated automatically at startup
   #
-  public redef fixed type.default_value option Exit =>
+  public redef fixed type.default_value Exit =>
     _ : Exit is
 
       # mutable value of the current exit code set

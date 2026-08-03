@@ -31,7 +31,7 @@ public Out ref : print_effect is
   # default implementation of this effect that will get instated
   # automatically at startup
   #
-  public redef fixed type.default_value option io.Out => io.default_out
+  public redef fixed type.default_value io.Out => io.default_out
 
 
   # implementation of io.Out that just

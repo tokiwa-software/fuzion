@@ -45,7 +45,7 @@ public now (p () -> time.date_time) : effect is
   # NYI: UNDER DEVELOPMENT: since Fuzion does not properly support datetimes with
   # timezones, these results need to be handled with care.
   #
-  public redef fixed type.default_value option time.now =>
+  public redef fixed type.default_value time.now =>
     time.now ()->
       a := fuzion.sys.internal_array_init i32 7
       fzE_date_time a.data

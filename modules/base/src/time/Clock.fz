@@ -83,8 +83,8 @@ public Clock ref : effect is
   #
   # this will get instated automatically at startup
   #
-  public redef fixed type.default_value option time.Clock =>
-    Nano.default_value.bind (x -> id time.Clock x)
+  public redef fixed type.default_value time.Clock =>
+    Nano.default_value
 
 
   # run the given code once at the provided instant within the current thread

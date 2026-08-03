@@ -37,7 +37,7 @@ public Args ref : Sequence String, effect is
   #
   # this will get instated automatically at startup
   #
-  public redef fixed type.default_value option envir.Args =>
+  public redef fixed type.default_value envir.Args =>
     _ : envir.Args is
       public redef as_list list String =>
         # default uses fuzion.sys.args

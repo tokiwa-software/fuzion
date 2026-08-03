@@ -87,7 +87,7 @@ public Threads ref : effect is
   #
   # this will get instated automatically at startup
   #
-  public redef fixed type.default_value option concur.Threads
+  public redef fixed type.default_value concur.Threads
   =>
     initial := concur.Thread fuzion.sys.thread.current (uid 0)
     default [] initial

@@ -31,7 +31,7 @@ public Err ref : print_effect is
   # default implementation of this effect that will get instated
   # automatically at startup
   #
-  public redef fixed type.default_value option io.Err => io.default_err
+  public redef fixed type.default_value io.Err => io.default_err
 
 
   # implementation of io.Err that just

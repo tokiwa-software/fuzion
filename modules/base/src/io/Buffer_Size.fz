@@ -39,7 +39,7 @@ public Buffer_Size ref : effect is
   #
   # this will get instated automatically at startup
   #
-  public redef fixed type.default_value option io.Buffer_Size => io.Buffer_Size
+  public redef fixed type.default_value io.Buffer_Size => io.Buffer_Size
 
 
 # get the current buffer size from effect Buffer_Size

@@ -41,6 +41,6 @@ public Wallclock ref : posix_clock is
 
   # default implementation of time.Wallclock.
   #
-  public redef fixed type.default_value option time.Wallclock
+  public redef fixed type.default_value time.Wallclock
   =>
     time.Wallclock
