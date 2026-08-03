@@ -2748,7 +2748,7 @@ loopEpilog  : "until" exprInLine thenPart elseBlockOpt
         var hasWhile = skip(true, Token.t_while  ); var w   = hasWhile            ? exprInLine()   : null;
         var hasDo    = skip(true, Token.t_do     ); var b   = hasWhile || hasDo   ? block()        : null;
         var hasUntil = skip(true, Token.t_until  ); var u   = hasUntil            ? exprInLine()   : null;
-                                                    var ub  = hasUntil            ? thenPart(true) : null;
+                                                    var ub  = hasUntil            ? thenPart() : null;
                                                     var ePos = tokenSourcePos();
                                                     var els1= fork().elseBlockOpt(surroundingIf, null, null, pos);
                                                     var els2= fork().elseBlockOpt(surroundingIf, null, null, pos);
@@ -2933,7 +2933,7 @@ ifexpr      : "if" exprInLine thenPart elseBlockOpt
         if (nestedIf && l == line()) {semiState(SemiState.ERROR);}
 
         var thn = current(true) == Token.t_then ? tokenSourcePos() : null;
-        var b = thenPart(false);
+        var b = thenPart();
 
         // reset if new line
         if (nestedIf && l != line()) {semiState(SemiState.CONTINUE);}
@@ -2981,13 +2981,10 @@ thenPart    : "then" block
             |        block
             ;
    */
-  Block thenPart(/* NYI: ClEANUP: remove this argument, a `null` result is used only in Loop to create a default result which is being removed */
-                 boolean nullIfNothing)
+  Block thenPart()
   {
-    var p = tokenPos();
     skip(true, Token.t_then);
-    var result = block();
-    return nullIfNothing && p == tokenPos() ? null : result;
+    return block();
   }
 
 

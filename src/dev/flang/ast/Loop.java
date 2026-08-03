@@ -339,7 +339,7 @@ public class Loop extends ANY
       ? new Block(nextItBlock)
       : Match.createIf(untilCond.pos(),
                untilCond,
-               _successBlock == null
+               _successBlock == null || _successBlock._expressions.isEmpty()
                  ? new Block() { public SourcePosition pos() { return new SourceRange(pos._sourceFile, pos.bytePos(), _elsePos.byteEndPos()); }; }
                  : Block.fromExpr(_successBlock),
                new Block(nextItBlock), AbstractMatch.Kind.Until);
@@ -536,7 +536,7 @@ public class Loop extends ANY
    */
   private boolean producesResult()
   {
-    return _successBlock != null || _elseBlock != null;
+    return (_successBlock != null && !_successBlock._expressions.isEmpty()) || _elseBlock != null;
   }
 
 
