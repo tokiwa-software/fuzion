@@ -1133,7 +1133,7 @@ public class Feature extends AbstractFeature
               {
                 if (p instanceof Call cp)
                   {
-                    cp._generics = new List<AbstractType>(Types.t_ERROR);
+                    cp._typeArguments = new List<AbstractType>(Types.t_ERROR);
                   }
               }
           }
@@ -1176,7 +1176,7 @@ public class Feature extends AbstractFeature
    */
   boolean isChoiceAfterTypesResolved()
   {
-    return choiceGenerics() != null;
+    return choiceTypes() != null;
   }
 
   @Override
@@ -1891,7 +1891,7 @@ A ((Choice)) declaration must not contain a result type.
         AstErrors.choiceMustNotContainFields(_pos, choiceFields);
       }
 
-    for (var t : choiceGenerics())
+    for (var t : choiceTypes())
       {
         if (CHECKS) check
           (Errors.any() || t != null);
@@ -2427,12 +2427,12 @@ A pre-condition of a feature that does not redefine an inherited feature must st
     if (PRECONDITIONS) require
       (ta.isFreeType());
 
-    // A call to generics() has the side effects of setting _generics,
+    // A call to typeParameters() has the side effects of setting _typeArguments,
     // _arguments
-    var ignore = generics();
+    var ignore = typeParameters();
 
     // Now we patch the new type parameter ta into _arguments,
-    // and _generics:
+    // and _typeArguments:
     var a = _arguments;
     _arguments = new List<>(a);
     var tas = typeArguments();

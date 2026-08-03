@@ -212,7 +212,7 @@ public class Case extends AbstractCase
    * Resolve types in this case.  Produce an error in case it does not match any
    * of the subject's types or if it matches several of the subject's types.
    *
-   * @param cgs the choiceGenerics of the match's subject's type
+   * @param cArgs the choiceTypes of the match's subject's type
    *
    * @param context the source code context where this Case is used
    *
@@ -223,13 +223,13 @@ public class Case extends AbstractCase
    * @return true iff all types could be resolved, false if any type resolution
    * failed and the type was set to Types.t_ERROR.
    */
-  boolean resolveType(Resolution res, List<AbstractType> cgs, Context context, SourcePosition[] matched)
+  boolean resolveType(Resolution res, List<AbstractType> cArgs, Context context, SourcePosition[] matched)
   {
     boolean result = true;
     if (_field != null)  // matching 'x type'
       {
         var t = _field.returnType().functionReturnType(true);
-        var rt = resolveType(res, t, cgs, context, matched);
+        var rt = resolveType(res, t, cArgs, context, matched);
         _field._returnType = new FunctionReturnType(rt);
         result &= rt != Types.t_ERROR;
       }
@@ -239,7 +239,7 @@ public class Case extends AbstractCase
         while (ti.hasNext())
           {
             var t = ti.next();
-            var rt = resolveType(res, t, cgs, context, matched);
+            var rt = resolveType(res, t, cArgs, context, matched);
             ti.set(rt);
             result &= rt != Types.t_ERROR;
           }
@@ -248,7 +248,7 @@ public class Case extends AbstractCase
       {
         _types = new List<>();
         int i = 0;
-        for (var cg : cgs)
+        for (var cg : cArgs)
           {
             if (matched[i] == null)
               {
@@ -259,13 +259,13 @@ public class Case extends AbstractCase
           }
         if (_types.isEmpty())
           {
-            if (cgs.isEmpty())
+            if (cArgs.isEmpty())
               {
-                AstErrors.matchCaseDoesNotMatchAny(pos(), null, cgs);
+                AstErrors.matchCaseDoesNotMatchAny(pos(), null, cArgs);
               }
             else
               {
-                AstErrors.repeatedMatch(pos(), matched, null, cgs);
+                AstErrors.repeatedMatch(pos(), matched, null, cArgs);
               }
           }
       }
@@ -280,7 +280,7 @@ public class Case extends AbstractCase
    *
    * @param t the type within this case we are resolving
    *
-   * @param cgs the choiceGenerics of the match's subject's type
+   * @param cArgs the choiceTypes of the match's subject's type
    *
    * @param context the source code context where this Case is used
    *
@@ -288,17 +288,17 @@ public class Case extends AbstractCase
    * that have already been found.  This is updated and used to report an error
    * in case there are repeated matches.
    */
-  private AbstractType resolveType(Resolution res, AbstractType t, List<AbstractType> cgs, Context context, SourcePosition[] matched)
+  private AbstractType resolveType(Resolution res, AbstractType t, List<AbstractType> cArgs, Context context, SourcePosition[] matched)
   {
     var original_t = t;
     List<AbstractType> matches = new List<>();
     int i = 0;
     t = t.resolve(res, context);
-    var inferGenerics = !t.isParametricType() && (t.isThisType() || t.generics().isEmpty()) && !t.feature().typeArguments().isEmpty();
+    var inferGenerics = !t.isParametricType() && (t.isThisType() || t.typeArguments().isEmpty()) && !t.feature().typeArguments().isEmpty();
     var hasErrors = t.containsError();
     check
       (!hasErrors || Errors.any());
-    for (var cg : cgs)
+    for (var cg : cArgs)
       {
         if (CHECKS) check
           (Errors.any() || cg != null);
@@ -313,7 +313,7 @@ public class Case extends AbstractCase
             matches.add(cg);
             if (matched[i] != null && !hasErrors)
               {
-                AstErrors.repeatedMatch(pos(), matched[i], t, cgs);
+                AstErrors.repeatedMatch(pos(), matched[i], t, cArgs);
               }
             matched[i] = pos();
           }
@@ -323,13 +323,13 @@ public class Case extends AbstractCase
       {
         if (!hasErrors)
           {
-            AstErrors.matchCaseDoesNotMatchAny(pos(), original_t, cgs);
+            AstErrors.matchCaseDoesNotMatchAny(pos(), original_t, cArgs);
           }
         t = Types.t_ERROR;
       }
     else if (!hasErrors && matches.size() != 1)
       {
-        AstErrors.matchCaseMatchesSeveral(pos(), original_t, cgs, matches);
+        AstErrors.matchCaseMatchesSeveral(pos(), original_t, cArgs, matches);
       }
 
     return t;

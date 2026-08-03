@@ -824,7 +824,7 @@ public abstract class FUIR extends IR
    *
    * @return id of cl's actual generic parameter #gix
    */
-  public abstract int clazzActualGeneric(int cl, int gix);
+  public abstract int clazzTypeArgument(int cl, int gix);
 
 
   /*---------------------  analysis results  ---------------------*/
@@ -1459,7 +1459,7 @@ public abstract class FUIR extends IR
     if (PRECONDITIONS) require
       (isEffectIntrinsic(cl));
 
-    return clazzActualGeneric(clazzOuterClazz(cl), 0);
+    return clazzTypeArgument(clazzOuterClazz(cl), 0);
   }
 
 
@@ -1478,7 +1478,7 @@ public abstract class FUIR extends IR
     if (PRECONDITIONS) require
       (clazzIsArray(constCl));
 
-    return this.clazzActualGeneric(constCl, 0);
+    return this.clazzTypeArgument(constCl, 0);
   }
 
 

@@ -388,8 +388,8 @@ public class Function extends AbstractLambda
 
             // inherits clause for wrapper feature: Function<R,A,B,C,...>
             _inheritsCall = (Call)targetCalls(res, context, t);
-            _inheritsCall._generics = t.generics();
-            _inheritsCall._generics.freeze();
+            _inheritsCall._typeArguments = t.typeArguments();
+            _inheritsCall._typeArguments.freeze();
             List<Expr> expressions = new List<Expr>(feature);
             String wrapperName = FuzionConstants.LAMBDA_PREFIX + id++;
             _wrapper = new Feature(pos(),
@@ -415,13 +415,13 @@ public class Function extends AbstractLambda
                 if (g != null && !_inheritsCall.isDefunct())
                   {
                     int idx = g.typeParameterIndex();
-                    _inheritsCall._generics = _inheritsCall._generics.setOrClone(idx, result);
+                    _inheritsCall._typeArguments = _inheritsCall._typeArguments.setOrClone(idx, result);
                     _inheritsCall.notifyInferred();
                   }
               }
 
             _call = new Call(pos(), new Current(pos(), context.outerFeature()), _wrapper);
-            if (_inheritsCall._generics.stream().allMatch(at -> at != Types.t_UNDEFINED))
+            if (_inheritsCall._typeArguments.stream().allMatch(at -> at != Types.t_UNDEFINED))
               {
                 _call = _call.resolveTypes(res, context);
               }
@@ -500,12 +500,12 @@ public class Function extends AbstractLambda
         if (frmlRt.isChoice()
             // NYI: UNDER DEVELOPMENT: We may want to go further here and support more than
             // one missing undefined
-            && frmlRt.choiceGenerics().stream().filter(x -> x == Types.t_UNDEFINED).count() == 1)
+            && frmlRt.choiceTypes().stream().filter(x -> x == Types.t_UNDEFINED).count() == 1)
           {
             if (frmlRt.feature() != lmbdRt.selfOrConstraint(res, context).feature())
               {
-                result = frmlRt.applyToGenericsAndOuter(x -> x == Types.t_UNDEFINED ? lmbdRt: x);
-                if (result.isChoice() && result.choiceGenerics().stream().filter(x -> x == Types.t_UNDEFINED).count() == 0)
+                result = frmlRt.applyToTypeArgumentsAndOuter(x -> x == Types.t_UNDEFINED ? lmbdRt: x);
+                if (result.isChoice() && result.choiceTypes().stream().filter(x -> x == Types.t_UNDEFINED).count() == 0)
                   {
                     _feature.setRefinedResultType(res, context, result);
                   }
@@ -515,7 +515,7 @@ public class Function extends AbstractLambda
                  && lmbdRt.feature() != frmlRt.feature()
                  && lmbdRt.feature().inheritsFrom(frmlRt.feature()))
           {
-            result = ResolvedNormalType.create(lmbdRt.generics(), frmlRt.outer(), frmlRt.feature());
+            result = ResolvedNormalType.create(lmbdRt.typeArguments(), frmlRt.outer(), frmlRt.feature());
             _feature.setRefinedResultType(res, context, result);
           }
       }

@@ -49,10 +49,10 @@ public class TypeTool extends ANY
       {
         return baseName(type);
       }
-    if (type.isNormalType() && type.generics() != UnresolvedType.NONE)
+    if (type.isNormalType() && type.typeArguments() != UnresolvedType.NONE)
       {
         return labelNoErrorOrUndefined(type) + " "
-          + type.generics().stream().map(g -> Util.addParens(label(g))).collect(Collectors.joining(" "));
+          + type.typeArguments().stream().map(g -> Util.addParens(label(g))).collect(Collectors.joining(" "));
       }
     return labelNoErrorOrUndefined(type);
   }

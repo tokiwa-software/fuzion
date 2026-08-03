@@ -145,8 +145,8 @@ public class Html extends ANY
             var f = c.calledFeature();
             return "<a class='fd-feature fd-inherited' href='$1'>".replace("$1", featureRelativeURL(f, relativeTo))
               + htmlEncodedBasename(f)
-              + (c.actualTypeParameters().size() > 0 ? "&nbsp;" : "")
-              + c.actualTypeParameters().stream()
+              + (c.typeArguments().size() > 0 ? "&nbsp;" : "")
+              + c.typeArguments().stream()
                  .map(at -> htmlEncodeNbsp(at.toString(false, af)))
                  .collect(Collectors.joining(", ")) + "</a>";
           })
@@ -1168,7 +1168,7 @@ public class Html extends ANY
 
   private String typeArgAsString(AbstractFeature f, AbstractFeature relativeTo)
   {
-    if (f.constraint().dependsOnGenerics())
+    if (f.constraint().dependsOnSubstitution())
       {
         return "<div class='fd-keyword'>type</div>"
                + (f.isOpenTypeParameter() ? "..." : "")

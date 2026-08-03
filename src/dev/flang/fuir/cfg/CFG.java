@@ -397,7 +397,7 @@ public class CFG extends ANY
     put("effect.type.instate_at_singularity0", (cfg, cl) -> { } );
     put(FuzionConstants.EFFECT_INSTATE_NAME , (cfg, cl) ->
         {
-          var oc  = cfg._fuir.clazzActualGeneric(cl, 1);
+          var oc  = cfg._fuir.clazzTypeArgument(cl, 1);
           var call = cfg._fuir.lookupCall(oc);
           if (cfg._fuir.clazzNeedsCode(call))
             {

@@ -70,7 +70,7 @@ public class Select extends Call {
    */
   public Select(SourcePosition pos, Expr target, String name, int select, boolean allowValueArgumentAccess, int totalNames)
   {
-    super(pos, target, name, select, NO_GENERICS, Expr.NO_EXPRS, null);
+    super(pos, target, name, select, NO_TYPE_ARGUMENTS, Expr.NO_EXPRS, null);
 
     if (PRECONDITIONS) require
       (select >= 0,
@@ -175,7 +175,7 @@ public class Select extends Call {
           {
             _currentlyResolving = _calledFeature.resultTypeIfPresentUrgent(res, true).isOpenGeneric()
               // explicit
-              ? new Call(pos(), _target, _name, select(), Call.NO_GENERICS, NO_EXPRS, null)
+              ? new Call(pos(), _target, _name, select(), Call.NO_TYPE_ARGUMENTS, NO_EXPRS, null)
               // implicit
               : resolveImplicit(res, context, getResultType(res, context, true));
           }
@@ -221,20 +221,20 @@ public class Select extends Call {
       {
         if (_name == null)
           {
-            result = new Call(pos(), _target, f.baseName(), select(), Call.NO_GENERICS, NO_EXPRS, null);
+            result = new Call(pos(), _target, f.baseName(), select(), Call.NO_TYPE_ARGUMENTS, NO_EXPRS, null);
           }
         else
           {
-            var selectTarget = new Call(pos(), _target, _name, FuzionConstants.NO_SELECT, Call.NO_GENERICS, NO_EXPRS, null);
-            result = new Call(pos(), selectTarget, f.baseName(), select(), Call.NO_GENERICS, NO_EXPRS, null)
+            var selectTarget = new Call(pos(), _target, _name, FuzionConstants.NO_SELECT, Call.NO_TYPE_ARGUMENTS, NO_EXPRS, null);
+            result = new Call(pos(), selectTarget, f.baseName(), select(), Call.NO_TYPE_ARGUMENTS, NO_EXPRS, null)
             {
               @Override
               void checkTypes(Resolution res, Context context)
               {
                 super.checkTypes(res, context);
-                if (_totalNames >= 0 && _totalNames < target().type().generics().size())
+                if (_totalNames >= 0 && _totalNames < target().type().typeArguments().size())
                   {
-                    AstErrors.nonExhaustiveDestructuring(Select.this.pos(), target().type().generics().size(), _totalNames);
+                    AstErrors.nonExhaustiveDestructuring(Select.this.pos(), target().type().typeArguments().size(), _totalNames);
                   }
               }
             };
@@ -246,8 +246,8 @@ public class Select extends Call {
 
         if (select() < va && _totalNames == va)
           {
-            var selectTarget = new Call(pos(), _target, _name, FuzionConstants.NO_SELECT, Call.NO_GENERICS, NO_EXPRS, null);
-            result = new Call(pos(), selectTarget, at.feature().valueArguments().get(select()).baseName(), FuzionConstants.NO_SELECT, Call.NO_GENERICS, NO_EXPRS, null);
+            var selectTarget = new Call(pos(), _target, _name, FuzionConstants.NO_SELECT, Call.NO_TYPE_ARGUMENTS, NO_EXPRS, null);
+            result = new Call(pos(), selectTarget, at.feature().valueArguments().get(select()).baseName(), FuzionConstants.NO_SELECT, Call.NO_TYPE_ARGUMENTS, NO_EXPRS, null);
           }
         else
           {

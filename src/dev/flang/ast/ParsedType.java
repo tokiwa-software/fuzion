@@ -68,11 +68,11 @@ public class ParsedType extends UnresolvedType
    *
    * @param name the name of the type
    *
-   * @param generics list of type parameters
+   * @param typeArguments list of type arguments
    */
-  public ParsedType(HasSourcePosition pos, String name, List<AbstractType> generics)
+  public ParsedType(HasSourcePosition pos, String name, List<AbstractType> typeArguments)
   {
-    super(pos, name, generics, null);
+    super(pos, name, typeArguments, null);
   }
 
 
@@ -83,13 +83,13 @@ public class ParsedType extends UnresolvedType
    *
    * @param name the name of the type
    *
-   * @param generics list of type parameters
+   * @param typeArguments list of type parameters
    *
    * @param outer outer type or null if unqualified.
    */
-  public ParsedType(HasSourcePosition pos, String name, List<AbstractType> generics, AbstractType outer)
+  public ParsedType(HasSourcePosition pos, String name, List<AbstractType> typeArguments, AbstractType outer)
   {
-    super(pos, name, generics, outer);
+    super(pos, name, typeArguments, outer);
   }
 
 
@@ -100,13 +100,13 @@ public class ParsedType extends UnresolvedType
    *
    * @param name the name of the type
    *
-   * @param generics list of type parameters
+   * @param typeArguments list of type parameters
    *
    * @param outer outer type or null if unqualified.
    */
-  ParsedType(HasSourcePosition pos, String name, List<AbstractType> generics, AbstractType outer, Optional<TypeKind> rov)
+  ParsedType(HasSourcePosition pos, String name, List<AbstractType> typeArguments, AbstractType outer, Optional<TypeKind> rov)
   {
-    super(pos, name, generics, outer, rov);
+    super(pos, name, typeArguments, outer, rov);
   }
 
 
@@ -162,7 +162,7 @@ public class ParsedType extends UnresolvedType
   {
     return
       outer() == null      &&
-      generics().isEmpty() &&
+      typeArguments().isEmpty() &&
       _typeKind.isEmpty();
   }
 

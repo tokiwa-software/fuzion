@@ -58,7 +58,7 @@ import dev.flang.util.YesNo;
 
 
 /**
- * Clazz represents a runtime type, i.e., a Type with actual generic arguments.
+ * Clazz represents a runtime type, i.e., a Type with type arguments.
  *
  * It is fully described by the type in _type
  * (and _select in case it represents a field of an open generic type).
@@ -123,10 +123,10 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * Cached result of choiceGenerics(), only used if isChoice() and
+   * Cached result of choiceTypes(), only used if isChoice() and
    * !isChoiceOfOnlyRefs().
    */
-  private List<Clazz> _choiceGenerics;
+  private List<Clazz> _choiceTypes;
 
 
   /**
@@ -146,7 +146,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Cached actual type parameters of this clazz
    */
-  Clazz[] _actualTypeParameters = NO_CLAZZES;
+  Clazz[] _typeArguments = NO_CLAZZES;
 
 
   /**
@@ -322,7 +322,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     _code = IR.NO_SITE;
     _outer = normalizeOuter(type, outer);
     _type = _outer != null
-      ? type.replaceGenericsAndOuter(type.generics(), _outer._type)
+      ? type.replaceTypeArgumentsAndOuter(type.typeArguments(), _outer._type)
       : type;
 
     if (_type.feature().isFixed() &&
@@ -363,7 +363,7 @@ class Clazz extends ANY implements Comparable<Clazz>
   void init(int id)
   {
     _id = id;
-    _choiceGenerics = determineChoiceGenerics();
+    _choiceTypes = determineChoiceGenerics();
     var vas = feature().valueArguments();
     if (vas.size() == 0 || isBoxed())
       {
@@ -374,10 +374,10 @@ class Clazz extends ANY implements Comparable<Clazz>
         _argumentFields = actualFields(feature().valueArguments());
       }
 
-    var gs = _type.generics();
+    var gs = _type.typeArguments();
     if (!gs.isEmpty())
       {
-        _actualTypeParameters = new Clazz[gs.size()];
+        _typeArguments = new Clazz[gs.size()];
         for (int i = 0; i < gs.size(); i++)
           {
             var gi = gs.get(i);
@@ -393,7 +393,7 @@ class Clazz extends ANY implements Comparable<Clazz>
 
                 gi = gi.feature().isRef() ? gi.asRef() : gi.asValue();
                 }
-            _actualTypeParameters[i] = _fuir.type2clazz(gi);
+            _typeArguments[i] = _fuir.type2clazz(gi);
           }
       }
 
@@ -492,7 +492,7 @@ class Clazz extends ANY implements Comparable<Clazz>
         // the correct t0.outer() within this clazz. see #5653 for an example
         var t1 = t0.outer().isRef()
           ? t0
-          : t0.replaceGenericsAndOuter(t0.generics(), _type.actualType(t0.outer().asThis()));
+          : t0.replaceTypeArgumentsAndOuter(t0.typeArguments(), _type.actualType(t0.outer().asThis()));
         return normalize2(f.handDownAndApply(t1, _type));
       }
   }
@@ -640,7 +640,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       {
         t = findOuter(t, inh)._type;
       }
-    return t.applyToGenericsAndOuter(g -> replaceThisType(g, inh));
+    return t.applyToTypeArgumentsAndOuter(g -> replaceThisType(g, inh));
   }
 
 
@@ -669,9 +669,9 @@ class Clazz extends ANY implements Comparable<Clazz>
       feature().isCotype() &&
       // NYI: UNDER DEVELOPMENT: can this logic be simplified?
          (t.isParametricType() && t.typeParameter().outer().isCotype() ||
-         !t.isParametricType() && t.feature() == _type.generics().get(0).actualType(t).feature()))
+         !t.isParametricType() && t.feature() == _type.typeArguments().get(0).actualType(t).feature()))
       {
-        t = _type.generics().get(0).actualType(t);
+        t = _type.typeArguments().get(0).actualType(t);
       }
     else if (_outer != null)
       {
@@ -684,17 +684,17 @@ class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Convert the given generics to the actual generics of this class.
    *
-   * @param generics a list of generic arguments that might itself consist of
+   * @param typeArgs a list of generic arguments that might itself consist of
    * formal generics
    * @param inh
    *
    * @return The list of actual generics after replacing the generics of this
    * class or its outer classes.
    */
-  List<AbstractType> actualGenerics(List<AbstractType> generics, List<AbstractCall> inh)
+  List<AbstractType> typeArguments(List<AbstractType> typeArgs, List<AbstractCall> inh)
   {
-    var new_generics = AbstractFeature.handDownListThroughInheritsCalls(generics, inh);
-    var result = this._type.replaceGenerics(new_generics);
+    var newTypeArgs = AbstractFeature.handDownListThroughInheritsCalls(typeArgs, inh);
+    var result = this._type.replaceTypeArguments(newTypeArgs);
 
     // Replace any {@code a.this.type} actual generics by the actual outer clazz:
     result = result.map(t->replaceThisType(t, inh));
@@ -703,7 +703,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       {
         // Need to find inheritance chain from outer!
         var chain = _outer.feature().findInheritanceChain(feature().outer());
-        result = _outer.actualGenerics(result, chain);
+        result = _outer.typeArguments(result, chain);
       }
     return result;
   }
@@ -877,7 +877,7 @@ class Clazz extends ANY implements Comparable<Clazz>
           _layouting = LayoutStatus.During;
           if (isChoice())
             {
-              for (Clazz c : choiceGenerics())
+              for (Clazz c : choiceTypes())
                 {
                   if (result == null && c.isValue())
                     {
@@ -1295,7 +1295,7 @@ class Clazz extends ANY implements Comparable<Clazz>
           }
 
         var skip = cotypeType;
-        for (var g : actualTypeParameters())
+        for (var g : typeArguments())
           {
             if (!skip) // skip first generic 'RELAY#TYPE' for types of cotype features.
               {
@@ -1478,12 +1478,12 @@ class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * The actual type parameters of this clazz. E.g. for {@code list i32} this returns
+   * The type arguments of this clazz. E.g. for {@code list i32} this returns
    * {@code [ i32 ]}.
    */
-  Clazz[] actualTypeParameters()
+  Clazz[] typeArguments()
   {
-    return _actualTypeParameters;
+    return _typeArguments;
   }
 
 
@@ -1509,7 +1509,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     if (isChoice())
       {
         result = new List<>();
-        for (var t : actualGenerics(feature().choiceGenerics(), new List<>()))
+        for (var t : typeArguments(feature().choiceTypes(), new List<>()))
           {
             result.add(_fuir.newClazz(t));
           }
@@ -1529,12 +1529,12 @@ class Clazz extends ANY implements Comparable<Clazz>
    * @return the actual clazzes of this choice clazz, in the order they appear
    * as actual generics.
    */
-  List<Clazz> choiceGenerics()
+  List<Clazz> choiceTypes()
   {
     if (PRECONDITIONS) require
       (isChoice());
 
-    return _choiceGenerics;
+    return _choiceTypes;
   }
 
 
@@ -1712,7 +1712,7 @@ class Clazz extends ANY implements Comparable<Clazz>
         else if (f  == Types.resolved.f_type_as_value                          ||
                  of == Types.resolved.f_type_as_value && f == of.resultField()   )
           {
-            var ag = (f == Types.resolved.f_type_as_value ? this : o).actualTypeParameters();
+            var ag = (f == Types.resolved.f_type_as_value ? this : o).typeArguments();
             result = ag[0].typeClazz();
           }
         else
@@ -1738,7 +1738,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     if (PRECONDITIONS) require
       (feature().isCotype());
 
-    return _type.generics().get(0).toString(true);
+    return _type.typeArguments().get(0).toString(true);
   }
 
 
@@ -1765,12 +1765,12 @@ class Clazz extends ANY implements Comparable<Clazz>
 
         var oc = _outer;
         var tclazz  = _fuir.clazz(call.target(), oc, inh);
-        var typePars = actualGenerics(call.actualTypeParameters(), new List<>() /* NYI: UNDER DEVELOPMENT: correct? */);
+        var typePars = typeArguments(call.typeArguments(), new List<>() /* NYI: UNDER DEVELOPMENT: correct? */);
         check(call.isInheritanceCall());
         o = tclazz.lookupCall(call, typePars);
       }
     var ix = f.typeParameterIndex();
-    var oag = o.actualTypeParameters();
+    var oag = o.typeArguments();
     return inh == null || ix < 0 || ix >= oag.length ? _fuir.error()
                                                      : oag[ix];
   }
@@ -1885,7 +1885,7 @@ class Clazz extends ANY implements Comparable<Clazz>
     var res = _fuir.type2clazz(t);
     if (res.feature().isCotype())
       {
-        var ac = handDown(res._type.generics().get(0), inh);
+        var ac = handDown(res._type.typeArguments().get(0), inh);
         res = ac.typeClazz();
       }
     if (err.size() > 0)
@@ -2000,7 +2000,7 @@ class Clazz extends ANY implements Comparable<Clazz>
       }
     else if (feature() == declaredIn)
       {
-        types = ft.typeParameter().replaceOpen(_type.generics());
+        types = ft.typeParameter().replaceOpen(_type.typeArguments());
       }
     else if (_outer != null)
       {

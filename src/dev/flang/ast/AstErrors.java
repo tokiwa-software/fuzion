@@ -155,7 +155,7 @@ public class AstErrors extends ANY
       }
     return sl.toString();
   }
-  static String s(FormalGenerics fg)
+  static String s(TypeParameters fg)
   {
     return st(fg.toString());
   }
@@ -641,11 +641,11 @@ public class AstErrors extends ANY
   }
 
   /**
-   * Report that the given actualGenerics does not match the number of formal generics.
+   * Report that the given typeArguments does not match the number of formal generics.
    *
    * @param fg the formal generics
    *
-   * @param actualGenerics the actual generics
+   * @param typeArguments the actual generics
    *
    * @param pos the source code position at which the error should be reported
    *
@@ -655,11 +655,11 @@ public class AstErrors extends ANY
    * @param detail2 optional extra lines of detail message giving further
    * information, like "Calling feature: xyz.f\n" or "Type: Stack bool int\n".
    */
-  static void wrongNumberOfTypeArguments(FormalGenerics fg,
-                                            List<AbstractType> actualGenerics,
-                                            SourcePosition pos,
-                                            String detail1,
-                                            String detail2)
+  static void wrongNumberOfTypeArguments(TypeParameters fg,
+                                         List<AbstractType> typeArguments,
+                                         SourcePosition pos,
+                                         String detail1,
+                                         String detail2)
   {
     // suppress errors in cotypes unless we did not find the original error (in
     // the original feature):
@@ -670,7 +670,7 @@ public class AstErrors extends ANY
               "Wrong number of actual type parameters in " + detail1 + ":\n" +
               detail2 +
               "expected " + fg.sizeText() + (fg._feature.typeArguments().isEmpty() ? "" : " for " + s(fg)) + "\n" +
-              "found " + (actualGenerics.size() == 0 ? "none" : actualGenerics.size() + ": " + s(actualGenerics)  ) + ".\n");
+              "found " + (typeArguments.size() == 0 ? "none" : typeArguments.size() + ": " + s(typeArguments)  ) + ".\n");
       }
   }
 
@@ -824,8 +824,8 @@ public class AstErrors extends ANY
           "Wrong number of type parameters in redefined feature",
           "In " + s(redefinedFeature) + " that redefines " + s(originalFeature) + " " +
           "type parameter count is " + redefinedFeature.typeArguments().size() + " while it should be " + originalFeature.typeArguments().size() + ".\n" +
-          "Original type parameters: "  + s(originalFeature .generics()) + "\n" +
-          "redefined type parameters: " + s(redefinedFeature.generics()) + "\n" +
+          "Original type parameters: "  + s(originalFeature .typeParameters()) + "\n" +
+          "redefined type parameters: " + s(redefinedFeature.typeParameters()) + "\n" +
           "Original feature declared at " + originalFeature.pos().show());
   }
 
@@ -882,7 +882,7 @@ public class AstErrors extends ANY
 
   }
 
-  static void repeatedMatch(SourcePosition pos, SourcePosition[] earlierPos, AbstractType typeOrNull, List<AbstractType> choiceGenerics)
+  static void repeatedMatch(SourcePosition pos, SourcePosition[] earlierPos, AbstractType typeOrNull, List<AbstractType> choiceTypes)
   {
     StringBuilder earlierPosString = new StringBuilder();
     TreeSet<SourcePosition> processed = new TreeSet<>();
@@ -902,35 +902,35 @@ public class AstErrors extends ANY
           skw("case") + " clause matches type that had been matched already.",
           caseMatches(typeOrNull) +
           "Originally matched at " + earlierPosString + ".\n" +
-          subjectTypes(choiceGenerics));
+          subjectTypes(choiceTypes));
   }
 
-  static void repeatedMatch(SourcePosition pos, SourcePosition earlierPos, AbstractType t, List<AbstractType> choiceGenerics)
+  static void repeatedMatch(SourcePosition pos, SourcePosition earlierPos, AbstractType t, List<AbstractType> choiceTypes)
   {
-    repeatedMatch(pos, new SourcePosition[] { earlierPos }, t, choiceGenerics);
+    repeatedMatch(pos, new SourcePosition[] { earlierPos }, t, choiceTypes);
   }
 
 
-  static void matchCaseDoesNotMatchAny(SourcePosition pos, AbstractType typeOrNull, List<AbstractType> choiceGenerics)
+  static void matchCaseDoesNotMatchAny(SourcePosition pos, AbstractType typeOrNull, List<AbstractType> choiceTypes)
   {
     error(pos,
           skw("case") + " clause in " + skw("match") + " expression does not match any type of the subject.",
           caseMatches(typeOrNull) +
-          subjectTypes(choiceGenerics));
+          subjectTypes(choiceTypes));
   }
 
-  static void matchCaseMatchesSeveral(SourcePosition pos, AbstractType t, List<AbstractType> choiceGenerics, List<AbstractType> matches)
+  static void matchCaseMatchesSeveral(SourcePosition pos, AbstractType t, List<AbstractType> choiceTypes, List<AbstractType> matches)
   {
     error(pos,
           skw("case") + " clause in " + skw("match") + " expression matches several types of the subject",
           caseMatches(t) +
-          subjectTypes(choiceGenerics) +
+          subjectTypes(choiceTypes) +
           "matches are " + typeListConjunction(matches));
   }
 
-  static void missingMatches(SourcePosition pos, List<AbstractType> choiceGenerics, List<AbstractType> missingMatches)
+  static void missingMatches(SourcePosition pos, List<AbstractType> choiceTypes, List<AbstractType> missingMatches)
   {
-    if (choiceGenerics.size() == missingMatches.size())
+    if (choiceTypes.size() == missingMatches.size())
       {
         error(pos,
               skw("match") + " expression requires at least one case",
@@ -944,7 +944,7 @@ public class AstErrors extends ANY
               skw("match") + " expression does not cover all of the subject's types",
               "Missing " + StringHelpers.plural(n,"case") +
               " for "    + StringHelpers.plural(n,"type") + ": " + typeListConjunction(missingMatches) + "\n" +
-              subjectTypes(choiceGenerics));
+              subjectTypes(choiceTypes));
       }
   }
 
@@ -974,11 +974,11 @@ public class AstErrors extends ANY
     return "Case matches " + typeOrAnyType(typeOrNull) + ".\n";
   }
 
-  private static String subjectTypes(List<AbstractType> choiceGenerics)
+  private static String subjectTypes(List<AbstractType> choiceTypes)
   {
-    return choiceGenerics.isEmpty()
+    return choiceTypes.isEmpty()
       ? "Subject type is an empty choice type that cannot match any case.\n"
-      : "Subject type is one of " + typeListAlternatives(choiceGenerics) + ".\n";
+      : "Subject type is one of " + typeListAlternatives(choiceTypes) + ".\n";
   }
 
   public static void internallyReferencedFeatureNotUnique(SourcePosition pos, String qname, Collection<AbstractFeature> set)
@@ -1593,12 +1593,12 @@ public class AstErrors extends ANY
           s(t2) + /* " at " + t2.pos().show() + */ "\n");
   }
 
-  static void illegalUseOfOpenFormalGeneric(SourcePosition pos, AbstractFeature generic)
+  static void illegalUseOfOpenFormalGeneric(SourcePosition pos, AbstractFeature tp)
   {
     error(pos,
           "Illegal use of open formal type parameter type",
           "Open formal type parameter type is permitted only as the type of an argument.  If the argument and the formal type parameter are part of the same argument list, the argument must be the last argument.\n" +
-          "Open formal argument: " + sbnf(generic) );
+          "Open formal argument: " + sbnf(tp) );
   }
 
   static void integerConstantOutOfLegalRange(SourcePosition pos, String constant, AbstractType t, String from, String to)
@@ -1909,14 +1909,14 @@ public class AstErrors extends ANY
       }
   }
 
-  static void failedToInferActualGeneric(SourcePosition pos, AbstractFeature cf, List<AbstractFeature> missing)
+  static void failedToInferTypeArgument(SourcePosition pos, AbstractFeature cf, List<AbstractFeature> missing)
   {
     if (!any() || (cf != Types.f_ERROR && !missing.isEmpty()))
       {
         error(pos,
               "Failed to infer actual type parameters",  // NYI: give more detail here on type parameters and value arguments
               "In call to " + s(cf) + ", no actual type parameters are given and inference of the type parameters failed.\n" +
-              "Expected type parameters: " + s(cf.generics()) + "\n"+
+              "Expected type parameters: " + s(cf.typeParameters()) + "\n"+
               "Type inference failed for " + StringHelpers.singularOrPlural(missing.size(), "type parameter") + " " + slg(missing) + "\n");
       }
   }
@@ -2112,10 +2112,10 @@ public class AstErrors extends ANY
   {
     if (!any() || (frmlT        != Types.t_ERROR &&
                    value.type() != Types.t_ERROR &&
-                   !frmlT.choiceGenerics(Context.NONE).stream().anyMatch(x -> x==Types.t_ERROR)))
+                   !frmlT.choiceTypes(Context.NONE).stream().anyMatch(x -> x==Types.t_ERROR)))
       {
         error(value.pos(),
-              "Ambiguous assignment to " + s(frmlT) + " from " + s(value.type()), s(value.type()) + " is assignable to " + frmlT.choiceGenerics(Context.NONE).stream()
+              "Ambiguous assignment to " + s(frmlT) + " from " + s(value.type()), s(value.type()) + " is assignable to " + frmlT.choiceTypes(Context.NONE).stream()
               .filter(cg -> cg.isAssignableFromWithoutBoxing(value.type(), Context.NONE).yes())
               .map(cg -> s(cg))
               .collect(Collectors.joining(", "))

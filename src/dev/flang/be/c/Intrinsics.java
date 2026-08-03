@@ -457,20 +457,20 @@ public class Intrinsics extends ANY
 
     put("fuzion.sys.type.alloc", (c,cl,outer,in) ->
         {
-          var gc = c._fuir.clazzActualGeneric(cl, 0);
+          var gc = c._fuir.clazzTypeArgument(cl, 0);
           return CExpr.call(c.malloc(),
                             new List<>(CExpr.sizeOfType(c._types.clazz(gc)).mul(A0))).ret();
         });
     put("fuzion.sys.type.setel", (c,cl,outer,in) ->
         {
-          var gc = c._fuir.clazzActualGeneric(cl, 0);
+          var gc = c._fuir.clazzTypeArgument(cl, 0);
           return c._fuir.hasData(gc)
             ? A0.castTo(c._types.clazz(gc) + "*").index(A1).assign(A2)
             : CStmnt.EMPTY;
         });
     put("fuzion.sys.type.getel", (c,cl,outer,in) ->
         {
-          var gc = c._fuir.clazzActualGeneric(cl, 0);
+          var gc = c._fuir.clazzTypeArgument(cl, 0);
           return c._fuir.hasData(gc)
             ? A0.castTo(c._types.clazz(gc) + "*").index(A1).ret()
             : CStmnt.EMPTY;
@@ -502,7 +502,7 @@ public class Intrinsics extends ANY
         });
      put("fuzion.sys.thread.spawn0", (c,cl,outer,in) ->
         {
-          var oc = c._fuir.clazzActualGeneric(cl, 0);
+          var oc = c._fuir.clazzTypeArgument(cl, 0);
           var call = c._fuir.lookupCall(oc);
           if (c._fuir.clazzNeedsCode(call))
             {
@@ -569,8 +569,8 @@ public class Intrinsics extends ANY
 
               case FuzionConstants.EFFECT_INSTATE_NAME ->
                 {
-                  var call     = c._fuir.lookupCall(c._fuir.clazzActualGeneric(cl, 0));
-                  var call_def = c._fuir.lookupCall(c._fuir.clazzActualGeneric(cl, 1));
+                  var call     = c._fuir.lookupCall(c._fuir.clazzTypeArgument(cl, 0));
+                  var call_def = c._fuir.lookupCall(c._fuir.clazzTypeArgument(cl, 1));
                   var finallie = c._fuir.lookupStaticFinally(ecl);
                   if (c._fuir.clazzNeedsCode(call))
                     {
@@ -701,7 +701,7 @@ public class Intrinsics extends ANY
           var internalArray = c._fuir.clazzArgClazz(cl, 0);
           var data   = c._fuir.clazzArg(internalArray, 0);
           var length = c._fuir.clazzArg(internalArray, 1);
-          var elementType = c._fuir.clazzActualGeneric(internalArray, 0);
+          var elementType = c._fuir.clazzTypeArgument(internalArray, 0);
           var elements = c._names.newTemp();
           return CExpr
                 .call("fzE_array_to_java_object0",
@@ -841,7 +841,7 @@ public class Intrinsics extends ANY
           else
             {
               var rc  = c._fuir.clazzResultClazz(cl);
-              var pt = c._fuir.clazzActualGeneric(cl, 0);
+              var pt = c._fuir.clazzTypeArgument(cl, 0);
               return
                 CExpr
                   .call("fzE_" + c._fuir.clazzBaseName(pt) + "_to_java_object",
