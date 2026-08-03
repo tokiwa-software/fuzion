@@ -732,11 +732,7 @@ is
 
   # monoid of lists with infix concatenation operation.
   #
-  # NYI: Name should be `concat_monoid`, we use `list_concat_monoid`
-  # to avoid clash with inherited `Sequence.concat_monoid`. Maybe
-  # the inherited one should be renamed once renaming is supported.
-  #
-  public type.list_concat_monoid Monoid (list A) =>
+  public fixed type.concat_monoid Monoid (list A) =>
 
     _ : Monoid (list A) is
 
