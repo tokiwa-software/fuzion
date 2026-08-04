@@ -1934,7 +1934,7 @@ klammer     : LPAREN block RPAREN
           }
         else if (forked_t.size() != 1)
           {
-            res = new ParsedCall(null, new ParsedName(tokenSourceRange(), "tuple"), tuple());
+            res = new ParsedCall(Universe.instance, new ParsedName(tokenSourceRange(), "tuple"), tuple());
           }
         else
           {
