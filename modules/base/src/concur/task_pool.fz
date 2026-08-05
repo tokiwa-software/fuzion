@@ -23,10 +23,14 @@
 
 # simple, dynamically sized task runner
 #
-public task_pool : realtime.Scheduler
+public task_pool (
+  # effect used to mutate the list of threads started by this runner
+  #
+  M type : mutate
+) : realtime.Scheduler
 is
 
-  thrds := concur.atomic (list concur.Thread) .new nil
+  thrds := M.env.new (list concur.Thread) nil
 
 
   # submit a task to the thread pool
@@ -38,7 +42,8 @@ is
       now := time.Nano.env.read
       _ := time.Nano.env.run_periodic now t.period actual_last t.code
 
-    thrds.write (list nt thrds)
+    M.env.exclusive ()->
+      thrds <- list nt thrds
 
 
   # stop accepting tasks and wait for remaining tasks to finish
@@ -46,6 +51,7 @@ is
   public redef finally unit ! atomic_access =>
 
     # wait for all threads to finish
-    thrds.read.for_each t->
-      # NYI: UNDER DEVELOPMENT: register failures somewhere
-      _ := t.join
+    M.env.exclusive ()->
+      thrds.for_each t->
+        # NYI: UNDER DEVELOPMENT: register failures somewhere
+        _ := t.join
