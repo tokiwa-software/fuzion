@@ -230,52 +230,50 @@ jitter_threaded =>
           if s = s +° 1
             say "$s (never called)"
 
-      # Create and instate a blocking_mutate effect for the entire period loop.
+      # Define a local blocking_mutate effect
       bm : concur.blocking_mutate is
 
+      run_for_period(period time.duration)
+      =>
+        start := time.Nano.env.read + start_delay
+        end := start + test_duration
+
+        # Mutable cell for expected release time.
+        cell := bm.env.new start
+
+        task_code =>
+          actual := time.Nano.env.read
+          if actual <= end
+            # Atomically get current expected and set the next one.
+            exp_old_new := bm.env.exclusive ()->
+              old := cell.get
+              new := old + period
+              cell <- new
+              (old, new)
+            expected := exp_old_new.0
+            new_expected := exp_old_new.1
+
+            sample_ch <- (period, actual, expected, false)
+            if actual >= new_expected
+              (flow.exception jitter_too_high).env.cause <| error "release time jitter exceeded period"
+            payload
+            finish := time.Nano.env.read
+            if finish >= new_expected
+              err := error "*** overrun: run started at {actual-expected} and took {finish-actual}, which is larger than period $period"
+              (flow.exception jitter_too_high).env.cause err
+
+        t := realtime.task time.duration task_code period (option end)
+        realtime.Scheduler.env.submit t
+
+        now := time.Nano.env.read
+        if end > now
+          time.Nano.env.sleep (end - now)
+
+        marker := time.Nano.env.read
+        sample_ch <- (period, marker, marker, true)
+
+      # Instate the effect around the period loop
       bm ! ()->
-        run_for_period(period time.duration)
-        =>
-          start := time.Nano.env.read + start_delay
-          end := start + test_duration
-
-          # Mutable cell for expected release time.
-          cell := bm.env.new start
-
-          task_code =>
-            actual := time.Nano.env.read
-            if actual <= end
-              # Atomically get the current expected time and set the next one.
-              exp_old_new := bm.env.exclusive ()->
-                old := cell.get
-                new := old + period
-                cell <- new
-                (old, new)
-              expected := exp_old_new.0
-              new_expected := exp_old_new.1
-
-              sample_ch <- (period, actual, expected, false)
-              if actual >= new_expected
-                (flow.exception jitter_too_high).env.cause <| error "release time jitter exceeded period"
-              payload
-              finish := time.Nano.env.read
-              if finish >= new_expected
-                err := error "*** overrun: run started at {actual-expected} and took {finish-actual}, which is larger than period $period"
-                (flow.exception jitter_too_high).env.cause err
-
-          # submit the periodic task to the scheduler, with last_start = end
-          t := realtime.task time.duration task_code period (option end)
-          realtime.Scheduler.env.submit t
-
-          # wait until test duration ends
-          now := time.Nano.env.read
-          if end > now
-            time.Nano.env.sleep (end - now)
-
-          # send end-of-period marker
-          marker := time.Nano.env.read
-          sample_ch <- (period, marker, marker, true)
-
         _ := match flow.exception jitter_too_high .on ()->
               for p := period_default, time.duration.ns (p.nanos / 2)
               while p >= time.duration.ms 1 do
