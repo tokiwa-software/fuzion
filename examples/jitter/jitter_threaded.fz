@@ -230,16 +230,18 @@ jitter_threaded =>
           if s = s +° 1
             say "$s (never called)"
 
-      run_for_period(period time.duration)
-      =>
-        start := time.Nano.env.read + start_delay
-        end := start + test_duration
+      # Create and instate a blocking_mutate effect for the entire period loop.
+      bm := concur.blocking_mutate
 
-        # Instate the blocking_mutate effect so that the spawned task inherits it.
-        concur.blocking_mutate.instate concur.blocking_mutate ()->
+      bm ! ()->
+        run_for_period(period time.duration)
+        =>
+          start := time.Nano.env.read + start_delay
+          end := start + test_duration
+
+          # Mutable cell for expected release time.
           cell := concur.blocking_mutate.env.new start
 
-          # task to be submitted to the scheduler
           task_code =>
             actual := time.Nano.env.read
             if actual <= end
@@ -247,7 +249,7 @@ jitter_threaded =>
               exp_old_new := concur.blocking_mutate.env.exclusive ()->
                 old := cell.get
                 new := old + period
-                cell.put new
+                cell <- new
                 (old, new)
               expected := exp_old_new.0
               new_expected := exp_old_new.1
@@ -274,12 +276,13 @@ jitter_threaded =>
           marker := time.Nano.env.read
           sample_ch <- (period, marker, marker, true)
 
-      _ := match flow.exception jitter_too_high .on ()->
-            for p := period_default, time.duration.ns (p.nanos / 2)
-            while p >= time.duration.ms 1 do
-              run_for_period p
-        e error => say "jitter test stopped: $e"
-        unit    => unit
+        _ := match flow.exception jitter_too_high .on ()->
+              for p := period_default, time.duration.ns (p.nanos / 2)
+              while p >= time.duration.ms 1 do
+                run_for_period p
+          e error => say "jitter test stopped: $e"
+          unit    => unit
+
       unit
 
   say "Starting jitter test using task_pool..."
