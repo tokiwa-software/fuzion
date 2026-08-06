@@ -231,7 +231,7 @@ jitter_threaded =>
             say "$s (never called)"
 
       # Create and instate a blocking_mutate effect for the entire period loop.
-      bm := concur.blocking_mutate
+      bm : concur.blocking_mutate is
 
       bm ! ()->
         run_for_period(period time.duration)
@@ -240,13 +240,13 @@ jitter_threaded =>
           end := start + test_duration
 
           # Mutable cell for expected release time.
-          cell := concur.blocking_mutate.env.new start
+          cell := bm.env.new start
 
           task_code =>
             actual := time.Nano.env.read
             if actual <= end
               # Atomically get the current expected time and set the next one.
-              exp_old_new := concur.blocking_mutate.env.exclusive ()->
+              exp_old_new := bm.env.exclusive ()->
                 old := cell.get
                 new := old + period
                 cell <- new
