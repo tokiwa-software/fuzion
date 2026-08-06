@@ -45,7 +45,7 @@ sockets_thread_pool_test is
     accept =>
       (net.server.env.accept.bind c->
         sc := c.in_thread_pool unit concur.thread_pool mutate ()->
-          chan => net.channel.env
+          chan => net.endpoint.env
 
           say_silent "$protocol/$family-server, accepted connection"
           say_silent chan.get_peer_address
@@ -103,7 +103,7 @@ sockets_thread_pool_test is
 
         res := c.in_thread_pool String concur.thread_pool mutate ()->
 
-            chan => net.channel.env
+            chan => net.endpoint.env
 
             req := ("GET / HTTP\n"
               + "Host: $host\n"

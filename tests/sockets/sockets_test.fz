@@ -45,7 +45,7 @@ sockets_test is
     accept =>
       (net.server.env.accept.bind c->
         c.with unit lm ()->
-          chan => net.channel.env
+          chan => net.endpoint.env
 
           say_silent "$protocol/$family-server, accepted connection"
           say_silent chan.get_peer_address
@@ -101,7 +101,7 @@ sockets_test is
 
         res := c.with String lm ()->
 
-            chan => net.channel.env
+            chan => net.endpoint.env
 
             req := ("GET / HTTP\n"
               + "Host: $host\n"
