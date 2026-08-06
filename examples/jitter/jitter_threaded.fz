@@ -235,27 +235,31 @@ jitter_threaded =>
         start := time.Nano.env.read + start_delay
         end := start + test_duration
 
-        # state effect to hold the next expected release time
-        next_release(t time.instant) is
-
-        _ := state (next_release start) ! ()->
+        # Instate the blocking_mutate effect so that the spawned task inherits it.
+        concur.blocking_mutate.instate concur.blocking_mutate ()->
+          cell := concur.blocking_mutate.env.new start
 
           # task to be submitted to the scheduler
           task_code =>
             actual := time.Nano.env.read
-            expected_rel := state_get next_release .t
-            sample_ch <- (period, actual, expected_rel, false)
+            if actual <= end
+              # Atomically get the current expected time and set the next one.
+              exp_old_new := concur.blocking_mutate.env.exclusive ()->
+                old := cell.get
+                new := old + period
+                cell.put new
+                (old, new)
+              expected := exp_old_new.0
+              new_expected := exp_old_new.1
 
-            # advance expected release time
-            next_rel := state_modify next_release (x -> next_release x.t+period) .get.t
-            if actual >= next_rel
-              (flow.exception jitter_too_high).env.cause <| error "release time jitter exceeded period"
-
-            payload
-            finish := time.Nano.env.read
-            if finish >= next_rel
-              err := error "*** overrun: run started at {actual-expected_rel} and took {finish-actual}, which is larger than period $period"
-              (flow.exception jitter_too_high).env.cause err
+              sample_ch <- (period, actual, expected, false)
+              if actual >= new_expected
+                (flow.exception jitter_too_high).env.cause <| error "release time jitter exceeded period"
+              payload
+              finish := time.Nano.env.read
+              if finish >= new_expected
+                err := error "*** overrun: run started at {actual-expected} and took {finish-actual}, which is larger than period $period"
+                (flow.exception jitter_too_high).env.cause err
 
           # submit the periodic task to the scheduler, with last_start = end
           t := realtime.task time.duration task_code period (option end)
