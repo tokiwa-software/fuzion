@@ -17,43 +17,17 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion feature stack
+#  Source code of Fuzion test reg_issue7495
 #
 # -----------------------------------------------------------------------
 
-# lock-free stack using compare_and_set
-# invented by R. Kent Treiber
-#
-public stack(T type) : container.Stack T is
+reg_issue7495 =>
+  tuple(A type...,
+        values A...) : property.orderable, property.hashable is
 
-  Item(data T, next option Item) ref is
-
-  top := concur.atomic (option Item) .new nil
+    public redef as_string String =>
+      "blabla new tuple"
 
 
-  # push an element to the stack
-  #
-  public redef push (e T) unit =>
-    for o := top.read
-        n := Item e o
-    while !top.compare_and_set o n
-
-
-  # pop an element from the stack
-  #
-  public redef pop option T =>
-
-    next (x option Item) =>
-      x.bind n->n.next
-
-    for o := top.read
-        n := next o
-    while !o.is_nil && !top.compare_and_set o n
-    else
-      o.bind node->node.data
-
-
-  # peek at the top element from the stack
-  #
-  public redef peek option T =>
-    top.read.bind node->node.data
+  x := (1, 2, 3, 4)
+  say x

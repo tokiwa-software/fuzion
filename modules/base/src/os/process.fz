@@ -173,6 +173,20 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
       error "closing $(desc_name std_in) of process $(pid)" fzE_last_error
 
 
+  # close standard output of this process
+  #
+  public close_out outcome unit =>
+    if fzE_pipe_close std_out != 0
+      error "closing $(desc_name std_out) of process $(pid)" fzE_last_error
+
+
+  # close standard error of this process
+  #
+  public close_err outcome unit =>
+    if fzE_pipe_close std_err != 0
+      error "closing $(desc_name std_err) of process $(pid)" fzE_last_error
+
+
   # wait for this process
   #
   public wait outcome u32 ! time.Nano, os.Process =>

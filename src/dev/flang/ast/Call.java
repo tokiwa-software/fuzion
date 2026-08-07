@@ -843,16 +843,6 @@ public class Call extends AbstractCall
     if (PRECONDITIONS) require
       (Errors.any());
 
-    setToErrorState0();
-  }
-
-
-  /**
-   * same as setToErrorState but without
-   * the requirement that there are any errors.
-   */
-  private void setToErrorState0()
-  {
     if (!Types._options.isLanguageServer())
       {
         setDefunct();

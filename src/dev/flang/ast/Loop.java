@@ -339,7 +339,7 @@ public class Loop extends ANY
       ? new Block(nextItBlock)
       : Match.createIf(untilCond.pos(),
                untilCond,
-               _successBlock == null
+               _successBlock == null || _successBlock._expressions.isEmpty()
                  ? new Block() { public SourcePosition pos() { return new SourceRange(pos._sourceFile, pos.bytePos(), _elsePos.byteEndPos()); }; }
                  : Block.fromExpr(_successBlock),
                new Block(nextItBlock), AbstractMatch.Kind.Until);
@@ -355,7 +355,7 @@ public class Loop extends ANY
       }
     if (variant != null)
       {
-        var i64one = new ParsedCall(new ParsedCall(new ParsedName(SourcePosition.builtIn, "i64")), new ParsedName(SourcePosition.builtIn, "one"));
+        var i64one = new ParsedCall(new ParsedCall(Universe.instance, new ParsedName(SourcePosition.builtIn, "i64")), new ParsedName(SourcePosition.builtIn, "one"));
         var i64minusOne = new ParsedOperatorCall(i64one, new ParsedName(SourcePosition.builtIn, FuzionConstants.PREFIX_OPERATOR_PREFIX + "-"), 10);
 
         // wrap variant expression to add type check for later phase
@@ -458,7 +458,7 @@ public class Loop extends ANY
         );
 
         // initial value for previous variant is set to i64.max, therefore variant defined by user is internally decremented by one
-        initialActuals.add(new ParsedCall(new ParsedCall(new ParsedName(SourcePosition.builtIn, "i64")), new ParsedName(SourcePosition.builtIn, "max")));
+        initialActuals.add(new ParsedCall(new ParsedCall(Universe.instance, new ParsedName(SourcePosition.builtIn, "i64")), new ParsedName(SourcePosition.builtIn, "max")));
 
         // add current variant value
         nextActuals.add(varCurVal);
@@ -536,7 +536,7 @@ public class Loop extends ANY
    */
   private boolean producesResult()
   {
-    return _successBlock != null || _elseBlock != null;
+    return (_successBlock != null && !_successBlock._expressions.isEmpty()) || _elseBlock != null;
   }
 
 

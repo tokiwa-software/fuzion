@@ -8,7 +8,7 @@ In call: 'id'
 To solve this, you might change the actual number of arguments to match the feature 'id' (one type parameter T, one value argument x) at {base.fum}/id.fz:31:8:
 public id(T type, x T) T => x
 -------^^
-To call 'id', you must provide 2 arguments. The type parameters may be omitted or `_` may be used in place of a type parameter if they can be inferred from the value arguments..
+To call 'id', you must provide 2 arguments. The type parameters may be omitted or `_` may be used in place of a type parameter if they can be inferred from the value arguments.
 
 
 one error.

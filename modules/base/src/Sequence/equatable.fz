@@ -197,26 +197,26 @@ module split0(s Sequence T, limit option u32, split_after bool) Sequence (Sequen
             n u32 => n > 0
     debug: is_array_backed
     debug: s.is_array_backed
-  =>
-    match find s
-      nil     =>
-        [Sequence.this]
-      i i32 =>
-        head Sequence T => take (if split_after then i + s.count else i)
+=>
 
-        tail Sequence (Sequence T) =>
+  accum_result (split_of Sequence (Sequence T), rest Sequence T) is
 
-          rest => drop i+s.count
-
-          match limit
-            nil => rest.split0 s nil split_after
-            n u32 =>
-              if n > 1
-                rest.split0 s (n - 1) split_after
-              else
-                [rest]
-
-        [head] ++ tail
+  l := limit.or_else u32.max
+  for
+    idx option i32 := i32.min, ar.rest.find s
+    ar := accum_result (Sequence (Sequence T) .empty) Sequence.this, {
+      match idx
+        nil =>
+          accum_result ar.split_of ar.rest
+        i i32 =>
+          accum_result
+            (ar.split_of ++ [ar.rest.take (if split_after then i + s.count else i)])
+            (ar.rest.drop i+s.count)
+    }
+    c := u32 0, c+1
+  while idx.ok && c<l
+  else
+    ar.split_of ++ [ar.rest]
 
 
 # filter out consecutive duplicate elements.
