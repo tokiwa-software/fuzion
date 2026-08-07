@@ -131,8 +131,8 @@ jitter_threaded =>
 
       _ := match flow.exception jitter_too_high .on ()->
 
-            for p := period_default, time.duration.ns (p.nanos / 2)
-            while p >= time.duration.ms 1 do
+            for p := period_default, p.scale 0.5
+            while p.as_duration >= time.duration.ms 1 do
               run_for_period p
 
         e error => say "jitter test stopped: $e"
@@ -207,12 +207,13 @@ jitter_threaded =>
 
   # incrementally consume records from the worker task: as soon as a period's
   # done_flag arrives, print its histograms right away.
-  consume_and_display(acc acc_state) unit
+  consume_and_display(acc acc_state,
+                      ch concur.Channel (tuple time.duration time.instant time.instant bool)) unit
   =>
-    match result_ch.next
+    match ch.next
       rec tuple =>
         acc2 := fold_record acc rec.0 rec.1 rec.2 rec.3
-        consume_and_display acc2
+        consume_and_display acc2 ch
       nil =>
         unit
 
@@ -230,56 +231,55 @@ jitter_threaded =>
           if s = s +° 1
             say "$s (never called)"
 
-      # Define a local blocking_mutate effect
-      bm : concur.blocking_mutate is
-
       run_for_period(period time.duration)
       =>
         start := time.Nano.env.read + start_delay
         end := start + test_duration
 
-        # Mutable cell for expected release time.
-        cell := bm.env.new start
+        # Atomic counter for expected release time.
+        next_exp := concur.atomic time.instant .new start
 
+        # Task that will be submitted once and then loops manually.
         task_code =>
           actual := time.Nano.env.read
+          # If we are already past the end, do nothing.
           if actual <= end
-            # Atomically get current expected and set the next one.
-            exp_old_new := bm.env.exclusive ()->
-              old := cell.get
-              new := old + period
-              cell <- new
-              (old, new)
-            expected := exp_old_new.0
-            new_expected := exp_old_new.1
-
-            sample_ch <- (period, actual, expected, false)
-            if actual >= new_expected
+            # Compute expected time for this run.
+            exp := next_exp.read
+            # Advance expected time for the next run.
+            next_exp.write (exp + period)
+            sample_ch <- (period, actual, exp, false)
+            if actual >= exp + period
               (flow.exception jitter_too_high).env.cause <| error "release time jitter exceeded period"
             payload
             finish := time.Nano.env.read
-            if finish >= new_expected
-              err := error "*** overrun: run started at {actual-expected} and took {finish-actual}, which is larger than period $period"
+            if finish >= exp + period
+              err := error "*** overrun: run started at {actual-exp} and took {finish-actual}, which is larger than period $period"
               (flow.exception jitter_too_high).env.cause err
-
+            # Schedule the next run by sleeping until the next expected time.
+            sleep_until := next_exp.read
+            if sleep_until <= end
+              time.Nano.env.sleep (sleep_until - time.Nano.env.read)
+              # Recursively call itself (the task will run again).
+              task_code
         t := realtime.task time.duration task_code period (option end)
         realtime.Scheduler.env.submit t
 
-        now := time.Nano.env.read
-        if end > now
-          time.Nano.env.sleep (end - now)
+        # Wait until the test duration ends.
+        now2 := time.Nano.env.read
+        if end > now2
+          time.Nano.env.sleep (end - now2)
 
+        # Send end-of-period marker.
         marker := time.Nano.env.read
         sample_ch <- (period, marker, marker, true)
 
-      # Instate the effect around the period loop
-      bm ! ()->
-        _ := match flow.exception jitter_too_high .on ()->
-              for p := period_default, time.duration.ns (p.nanos / 2)
-              while p >= time.duration.ms 1 do
-                run_for_period p
-          e error => say "jitter test stopped: $e"
-          unit    => unit
+      _ := match flow.exception jitter_too_high .on ()->
+            for p := period_default, time.duration.ns (p.nanos / 2)
+            while p >= time.duration.ms 1 do
+              run_for_period p
+        e error => say "jitter test stopped: $e"
+        unit    => unit
 
       unit
 
@@ -293,11 +293,12 @@ jitter_threaded =>
 
   jitter_task := realtime.task time.frequency jitter_worker (time.frequency 0 (time.duration.ms 1)) nil
 
+  # Instate blocking_mutate for the task_pool constructor.
   concur.blocking_mutate ! ()->
     realtime.Scheduler.instate (concur.task_pool concur.blocking_mutate) ()->
       _ := realtime.Scheduler.env.submit jitter_task
       say "received samples"
-      consume_and_display empty_acc
+      consume_and_display empty_acc result_ch
       say "Task-pool worker completed."
       Exit.env.exit 1
 
