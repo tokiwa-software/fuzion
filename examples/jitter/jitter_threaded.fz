@@ -293,12 +293,13 @@ jitter_threaded =>
 
   jitter_task := realtime.task time.frequency jitter_worker (time.frequency 0 (time.duration.ms 1)) nil
 
-  realtime.Scheduler.instate concur.task_pool ()->
-    _ := realtime.Scheduler.env.submit jitter_task
-    say "received samples"
-    consume_and_display empty_acc
-    say "Task-pool worker completed."
-    Exit.env.exit 1
+  concur.blocking_mutate ! ()->
+    realtime.Scheduler.instate (concur.task_pool concur.blocking_mutate) ()->
+      _ := realtime.Scheduler.env.submit jitter_task
+      say "received samples"
+      consume_and_display empty_acc
+      say "Task-pool worker completed."
+      Exit.env.exit 1
 
 
 # How to run with high priority :
