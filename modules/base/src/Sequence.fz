@@ -1336,11 +1336,3 @@ is
   # Sequence.
   #
   public type.AS_STRING_NON_FINITE_MAX_ELEMENTS i32 => 10
-
-
-
-# helper features for knuth morris pratt algorithm
-#
-# NYI: UNDER DEVELOPMENT: move to Sequence/equatable once we can do universe.find_lm
-module find_lm : mutate is
-module Node(T type, module top Sequence T, module next once find_lm (option (Node T)), module rest option (Node T)) ref is
