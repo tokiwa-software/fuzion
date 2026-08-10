@@ -12,4 +12,5 @@ io.Out
 io.dir.Make
 io.dir.Read
 io.file.Delete
+once_mutate
 panic
