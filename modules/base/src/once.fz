@@ -23,7 +23,9 @@
 
 # mutate that is used by the once feature
 #
-once_mutate : mutate is
+# NYI: UNDER DEVELOPMENT: use normal mutate that is not teleported to other threads
+#
+once_mutate : racy_mutate is
   public redef fixed type.default_value option once_mutate =>
     once_mutate
 
