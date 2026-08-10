@@ -24,9 +24,11 @@
 reg_issue6263 =>
 
   LM : mutate is
-  input := LM ! ()->io.stdin.reader LM ! ()->io.buffered LM
-    .read_lines
-    .filter !=""
+  input := LM ! ()->
+    io.buffered lm .Reader.instate (io.stdin.reader LM) ()->
+      io.buffered LM
+        .read_lines
+        .filter !=""
 
   data := input.map action
   action(s String) =>
