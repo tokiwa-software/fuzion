@@ -55,7 +55,7 @@ lib_time_date_time =>
   say  "$(a) - $(one_hour_15min_30s) = $(a - one_hour_15min_30s)"
   check a + one_hour_15min_30s = time.date_time 2024 1 30 11 45 42 100000000
   check a - one_hour_15min_30s = time.date_time 2024 1 30 9 14 42 100000000
-  _ := (fuzion.runtime.pre_fault
+  (fuzion.runtime.pre_fault
     .try ()->
       test := time.date_time 2280 12 31 23 59 59 0
       say "limit test = $(test - one_hour_15min_30s)"

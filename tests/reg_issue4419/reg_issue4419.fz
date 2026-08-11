@@ -23,4 +23,4 @@
 
 m(s) => unit
 _ => m (id (Sequence i32) [])
-_ := m [1]
+m [1]

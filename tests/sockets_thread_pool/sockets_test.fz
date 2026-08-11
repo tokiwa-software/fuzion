@@ -181,7 +181,7 @@ sockets_thread_pool_test is
     for p in protocols do
       _ := concur.Threads.env.spawn ()->
         _ := concur.thread_pool 3 ()->
-          _ := server f p
+          server f p
 
   for f in families do
     for p in protocols do
