@@ -835,10 +835,7 @@ int64_t fzE_process_poll(int64_t p){
 //
 int fzE_hostname(char *buf, size_t nbytes)
 {
-    if (buf == NULL || nbytes == 0) {
-        errno = EINVAL;
-        return -1;
-    }
+    assert (buf != NULL && nbytes != 0);
 
     if (gethostname(buf, nbytes) != 0) {
         return -1;
