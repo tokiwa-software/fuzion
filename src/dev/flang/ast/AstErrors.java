@@ -2675,6 +2675,13 @@ public class AstErrors extends ANY
       i.stream().map(ic -> ic.pos().showInSource()).collect(Collectors.joining("\nand\n\n")));
   }
 
+  public static void unitResultExplicitlyIgnored(SourcePosition range)
+  {
+    error(range, "A " + st("unit") + " result must not be ignored explicitly.",
+      "If the result is expected to be " + st("unit") + " and you intend to ignore it, remove " + ss("_ :=") + "."
+      + "\nOtherwise, this may indicate that the code does not work as intended.");
+  }
+
 }
 
 /* end of file */
