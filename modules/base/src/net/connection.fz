@@ -37,10 +37,7 @@ module:public connection(desc i32) is
   =>
 
     reader =>
-      # helper feature to create a read handler
-      # for a given descriptor
-      #
-      read_handler : io.Read_Handler is
+      _ : io.buffered LM .Reader is
         public redef read(max_count i32) choice (Sequence u8) io.end_of_file error =>
           match fuzion.sys.net.read desc max_count.as_i64
             s Sequence =>
@@ -49,11 +46,10 @@ module:public connection(desc i32) is
               else
                 s
             e error => e
-      (io.buffered LM)
-        .reader read_handler
+
 
     writer =>
-      _ : (io.buffered LM).Writer is
+      _ : io.buffered LM .Writer is
         public redef writer(data Sequence u8) outcome unit =>
           fuzion.sys.net.write desc data.as_array
 
@@ -65,9 +61,8 @@ module:public connection(desc i32) is
     # NYI: CLEANUP: can we still have fluent
     # interface here?
     (io.buffered LM).Writer.instate writer ()->
-      reader
-        .and T _ channel_
-        .call fn
+      (io.buffered LM).Reader.instate reader ()->
+        channel_ ! fn
 
 
 

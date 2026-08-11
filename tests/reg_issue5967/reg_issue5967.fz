@@ -27,12 +27,13 @@ reg_issue5967 =>
 
   lines =>
     LM : mutate is
-    o := LM ! ()->(io.stdin.reader LM) ! ()->
-      for
-        li Sequence String := [], li ++ [l]
-        l := io.buffered LM .read_line ? str String => str | * => ""
-      while l != ""  else
-        li
+    o := LM ! ()->
+      io.buffered LM .Reader.instate (io.stdin.reader LM) ()->
+        for
+          li Sequence String := [], li ++ [l]
+          l := io.buffered LM .read_line ? str String => str | * => ""
+        while l != ""  else
+          li
     o.as_array
 
   scheme(ls) is

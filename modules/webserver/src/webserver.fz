@@ -111,4 +111,4 @@ public except(log String->unit) : Middleware is
                 500
                 [("server", "FuzionWebServer v0.0.0"),
                  ("Content-Length", $"0")]
-                io.Read_Handler.empty
+                (io.buffered mutate .Reader.type.empty)
