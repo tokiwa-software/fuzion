@@ -485,7 +485,7 @@ int64_t fzE_process_poll(int64_t p);
 
 /**
  * get the hostname
- * @return -1 error, length of hostname on success
+ * @return -1 on error, length of hostname on success
  */
 int fzE_hostname(char *buf, size_t nbytes);
 
