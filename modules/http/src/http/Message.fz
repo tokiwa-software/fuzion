@@ -75,12 +75,12 @@ public Message ref is
     b := match body max_body_bytes
       s Sequence => s
       * => []
-    (start_line + header_as_canonical_string + crlf).utf8 ++ b
+    (start_line + header_as_canonical_string.unwrap + crlf).utf8 ++ b
 
 
   # String representation of the message header
   #
-  public redef as_string String => start_line + header_as_canonical_string + crlf
+  public redef as_string String => start_line + header_as_canonical_string.unwrap + crlf
 
 
   # String representation of the whole message, i.e. header and body
@@ -126,9 +126,7 @@ public Message ref is
   # Host: www.example.com
   # User-Agent: Mozilla/5.0
   #
-  # NYI: PERFORMANCE: compute this only once
-  #
-  header_as_canonical_string =>
+  header_as_canonical_string := once ()->
     header
       .items
       .map kv->
