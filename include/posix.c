@@ -831,6 +831,23 @@ int64_t fzE_process_poll(int64_t p){
 }
 
 
+// returns -1 on error or length of the hostname otherwise
+//
+int fzE_hostname(char *buf, size_t nbytes)
+{
+    assert (buf != NULL && nbytes != 0);
+
+    if (gethostname(buf, nbytes) != 0) {
+        return -1;
+    }
+
+    // Ensure null termination in case the hostname was truncated
+    buf[nbytes - 1] = '\0';
+
+    return (int)strnlen(buf, nbytes);
+}
+
+
 // open a new pipe
 //
 int fzE_pipe_create(int64_t * fds)
