@@ -8,7 +8,7 @@ Scorecard](https://api.securityscorecards.dev/projects/github.com/tokiwa-softwar
 [![interpreter](https://github.com/tokiwa-software/fuzion/actions/workflows/interpreter.yml/badge.svg)](https://github.com/tokiwa-software/fuzion/actions/workflows/interpreter.yml)
 
 
-## A language with a focus on simplicity, safety and correctness.
+## A language with a focus on simplicity, safety, and correctness.
 
 > Please note that this language is work in progress.
 
@@ -284,7 +284,7 @@ Full example:
 
 ### Record a test
 
-This works the same as running a test but specifing a different make target.
+This works the same as running a test but specifying a different make target.
 
 - record
 - record_jvm

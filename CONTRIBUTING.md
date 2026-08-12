@@ -21,8 +21,8 @@ All types of contributions are encouraged and valued. See the [Table of Contents
   - [Suggesting Enhancements](#suggesting-enhancements)
 - [Styleguides](#styleguides)
   - [Source Code](#source-code)
+    - [Work-in-Progress code markers](#work-in-progress-code-markers)
   - [Commit Messages](#commit-messages)
-- [Join The Project Team](#join-the-project-team)
 
 
 ## Code of Conduct
@@ -67,7 +67,7 @@ Depending on how large the project is, you may want to outsource the questioning
 > ### Legal Notice <!-- omit in toc -->
 > When contributing to this project, you must agree that you have authored 100% of the content, that you have the necessary rights to the content and that the content you contribute may be provided under the project license.
 > A checkbox to agree to the [Tokiwa Software Fuzion Contributor Agreement](https://github.com/tokiwa-software/fuzion/blob/main/CONTRIBUTOR_LICENSE_AGREEMENT.md) will automatically be added to the text describing your pull request. You will have to accept this agreement.
-> Please make sure that your identity is known to the the Fuzion team.  In case you prefer to use an anonymous account for your contribution, make sure your identity is known to the Fuzion team by sending an email to <info@tokiwa.software>.
+> Please make sure that your identity is known to the Fuzion team. In case you prefer to use an anonymous account for your contribution, make sure your identity is known to the Fuzion team by sending an email to <info@tokiwa.software>.
 
 ### Reporting Bugs
 
@@ -79,7 +79,7 @@ A good bug report shouldn't leave others needing to chase you up for more inform
 - Make sure that you are using the latest version.
 - Determine if your bug is really a bug and not an error on your side e.g. using incompatible environment components/versions (Make sure that you have read the [documentation](https://fuzion-lang.dev). If you are looking for support, you might want to check [this section](#i-have-a-question)).
 - To see if other users have experienced (and potentially already solved) the same issue you are having, check if there is not already a bug report existing for your bug or error in the [bug tracker](https://github.com/tokiwa-software/fuzion/issues?q=label%3Abug).
-- Also make sure to search the internet (including Stack Overflow) to see if users outside of the GitHub community have discussed the issue.
+- Also make sure to search the internet (including Stack Overflow) to see if users outside the GitHub community have discussed the issue.
 - Collect information about the bug:
   - Stack trace (Traceback)
   - OS, Platform and Version (Windows, Linux, macOS, x86, ARM)
@@ -90,7 +90,7 @@ A good bug report shouldn't leave others needing to chase you up for more inform
 <!-- omit in toc -->
 #### How Do I Submit a Good Bug Report?
 
-> You must never report security related issues, vulnerabilities or bugs including sensitive information to the issue tracker, or elsewhere in public. Instead sensitive bugs must be sent by email to <info@tokiwa.software>.
+> You must never report security related issues, vulnerabilities, or bugs including sensitive information to the issue tracker, or elsewhere in public. Instead, sensitive bugs must be sent by email to <info@tokiwa.software>.
 <!-- You may add a PGP key to allow the messages to be sent encrypted as well. -->
 
 We use GitHub issues to track bugs and errors. If you run into an issue with the project:
@@ -158,9 +158,9 @@ that optional braces `{`/`}` in statements should never be omitted.
 
 Code that requires additional work or that may profit from a future enhancements
 should be marked with a comment starting `NYI:` followed by a category, if
-applicable an issue id, and an explanation on what should or could be done to
+applicable an issue ID, and an explanation on what should or could be done to
 improve the code.  For bugs, hacks or otherwise important required work in code
-sections that are otherwise stable, an issue should be created in github.
+sections that are otherwise stable, an issue should be created in GitHub.
 
 The available categories are
 
@@ -168,7 +168,7 @@ The available categories are
 - _BUG_ -- the code is incorrect and needs to be fixed
 - _ENHANCEMENT_ -- the code can be improved (preferably use _OPTIMIZATION_ or _CLEANUP_ if applicable) or new functionality added
 - _OPTIMIZATION_ -- the code could be made more efficient
-- _CLEANUP_ -- the codes’s maintainability could be improved
+- _CLEANUP_ -- the code's maintainability could be improved
 - _FUTURE PROBLEM_ -- the code works but might need to be changed in the future, e.g., to support an expected change in the OS, CPU architecture, external libraries, etc.
 - _UNDER DEVELOPMENT_ -- the code is being worked on
 - _COMMENT_ -- the code needs better documentation

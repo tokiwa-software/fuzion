@@ -133,7 +133,7 @@ is
     get % exclusive_bound  # NYI: This implementation is bad if exclusive_bound is big
 
 
-  # default implementation of random
+  # default implementation of Random
   #
   # this will get instated automatically at startup
   #

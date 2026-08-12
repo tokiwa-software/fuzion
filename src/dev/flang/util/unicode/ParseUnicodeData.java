@@ -366,7 +366,7 @@ public class ParseUnicodeData extends ANY
    */
   private void printFuzion()
   {
-    // NYI: PERFORMANCE: see: https://doc.rust-lang.org/src/core/unicode/unicode_data.rs.html
+    // NYI: OPTIMIZATION: see: https://doc.rust-lang.org/src/core/unicode/unicode_data.rs.html
     // NYI: UNDER DEVELOPMENT: special casings: https://www.unicode.org/Public/UCD/latest/ucd/SpecialCasing.txt
 
     var lTable = _codepoints
