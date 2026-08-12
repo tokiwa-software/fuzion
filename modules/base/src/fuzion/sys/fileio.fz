@@ -40,7 +40,7 @@ module fileio is
     if res = -1
       error "failed reading" fzE_last_error
     else if res = 0
-      (id (Sequence u8) [])
+      id (Sequence u8) []
     else
       # NYI: UNDER DEVELOPMENT: could realloc internal_array
       arr.as_array.slice 0 res
