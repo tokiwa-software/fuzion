@@ -858,7 +858,7 @@ int fzE_pipe_read(int64_t desc, char * buf, size_t nbytes){
 }
 
 
-// return -1 on error, thenumber of written bytes otherwise
+// return -1 on error, the number of written bytes otherwise
 int fzE_pipe_write(int64_t desc, char * buf, size_t nbytes){
   return write((int) desc, buf, nbytes);
 }
