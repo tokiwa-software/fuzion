@@ -93,29 +93,6 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
           unit
 
 
-  # write bytes to stdin of child process
-  #
-  public write_bytes (bytes Sequence u8) outcome i32
-  =>
-    write_bytes std_in bytes
-
-
-  # helper function
-  #
-  write_bytes (desc i64, bytes Sequence u8) outcome i32
-  pre debug: bytes.count > 0
-  =>
-    bytes
-      .chunk pipe_buffer_size
-      .reduce_or_error 0 (r, t)->
-        arr := t.as_array
-        bw := fzE_pipe_write desc arr.internal_array.data arr.count
-        if bw = -1
-          abort (outcome i32) (error "writing to $(desc_name desc) of process $(pid). Wrote $r bytes already." fzE_last_error)
-        else
-          r+bw
-
-
   # install buffered reader for reading from stdout of process
   # and run `f`.
   public with_out(T type, LM type : mutate, f () -> outcome T) outcome T =>
@@ -130,12 +107,6 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
 
   public with_in(T type, LM type : mutate, f () -> T) outcome T =>
     (io.buffered LM).Writer.instate _ (std_in_writer LM) f
-
-
-  # write string to stdin of child process
-  #
-  public write_string (s String) outcome i32 =>
-    write_bytes s.utf8
 
 
   # pipe this processes output to new process
@@ -155,8 +126,14 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
         for p1rb := std_out_read_handler.read pipe_buffer_size
         while
           match p1rb
-            s Sequence => (write_bytes p.std_in s).ok
-            * => false
+            s Sequence =>
+              lm : mutate is
+              lm ! ()->
+                _ := p.with_in unit lm ()->
+                  _ := (io.buffered lm).Writer.env.write s
+                true
+            io.end_of_file => false
+            e error => panic e
 
         # NYI: UNDER DEVELOPMENT: error handling
         _ := fzE_pipe_close p.std_in

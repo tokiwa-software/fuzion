@@ -141,13 +141,9 @@ public abstract_array
   #     for i in arr.indices do
   #       say arr[i]
   #
-  public indices(I type: property.interval) interval I => I.zero..(I.from_u32 length.as_u32)-1
-
-
-  # indices as i64 interval
   #
-  public indices interval i64 => indices i64
-
+  public indices interval i64 =>
+    (i64 0) .. length-1
 
 
   # get the contents of this array at the given index

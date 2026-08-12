@@ -123,11 +123,6 @@ public Mutable_Map(public K type : property.equatable, public V type) ref is
   public type.empty Mutable_Map.this => abstract
 
 
-/*
-
-  NYI: BUG?: To solve this, you could change the type of the target 'k' to 'container.Mutable_Map.type.K' or convert the type of the assigned value to 'container.Mutable_Map.K'.
-
-
   # from_entries -- routine to initialize a Mutable_Map from
   # a sequence of key value tuples
   #
@@ -137,4 +132,3 @@ public Mutable_Map(public K type : property.equatable, public V type) ref is
       m.put kv.0 kv.1
     m
 
-*/

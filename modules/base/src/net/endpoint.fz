@@ -17,25 +17,14 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature net.channel
+#  Source code of Fuzion standard library feature net.endpoint
 #
 # -----------------------------------------------------------------------
 
 
-# a channel encapsulates an open network resource
-# that can be read from and written to.
-# channels are usually installed by a successfully connected client
-# or a by a newly accepted server connection.
+# an endpoint provides access to the peers address and port
 #
-# Note that even though UDP is a connection-less protocol its
-# usage in fuzion does not differ from TCP except for the following
-# caveats.
-# 1) Reading a Datagram with a buffer not large enough to hold
-# all data will lead to the rest of the datagram being dropped.
-# 2) writing to a channel installed by `server.accept` will result in an error.
-# 3) reading from a channel installed by `client ...` will block indefinitely.
-#
-module:public channel(desc i32) : effect
+module:public endpoint(desc i32) : effect
 is
 
 

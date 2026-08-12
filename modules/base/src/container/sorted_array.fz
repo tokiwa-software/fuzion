@@ -96,7 +96,7 @@ is
           # index in current pair of heaps
           hi := i & (heap_size*2-1)
           # reset h1 in case we start new pair of heaps
-          h1 <- (if (hi = 0) 0 else h1)
+          h1 <- if hi = 0 then 0 else h1
           # index within second heap
           h2 := hi - h1
 
