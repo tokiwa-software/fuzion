@@ -39,7 +39,7 @@ module:public response_message(
   # the header fields
   public redef header container.Map String String,
   # the body of the response
-  public redef body io.Read_Handler) : Message
+  public redef body i32 -> choice (Sequence u8) io.end_of_file error) : Message
 is
   # the start line of the message, for a response this is also called status line
   public redef start_line String => status_line
@@ -63,7 +63,7 @@ is
     # the header fields
     header Sequence (String,String),
     # the body of the response
-    body io.Read_Handler) http.response_message
+    body i32 -> choice (Sequence u8) io.end_of_file error) http.response_message
   =>
     http.response_message req version_major version_minor status_code reason_phrase (as_header_map header) body
 
@@ -81,7 +81,7 @@ is
     # the header fields
     header Sequence (String,String),
     # the body of the response
-    body io.Read_Handler) http.response_message
+    body i32 -> choice (Sequence u8) io.end_of_file error) http.response_message
     pre
       debug: http.reason_phrases[status_code].ok
   =>

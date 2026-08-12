@@ -36,13 +36,13 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
   # predefined read handler for reading from
   # standard out of the process
   #
-  std_out_read_handler => read_handler std_out
+  std_out_reader(LM type : mutate) => reader LM std_out
 
 
   # predefined read handler for reading from
   # standard err of the process
   #
-  std_err_read_handler => read_handler std_err
+  std_err_reader(LM type : mutate) => reader LM std_err
 
 
   # predefined write handler for writing to
@@ -62,8 +62,28 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
 
   # read bytes from standard out
   #
-  read_handler(desc i64) : io.Read_Handler is
+  reader (LM type: mutate, desc i64) : (io.buffered LM).Reader is
     public redef read(max_count i32) choice (Sequence u8) io.end_of_file error =>
+      arr := array u8 _ pipe_buffer_size _->0
+      res := fzE_pipe_read desc arr.internal_array.data arr.count
+      if res = -1
+        # NYI: UNDER DEVELOPMENT: register failures
+        _ := fzE_pipe_close desc
+        error "reading from $(desc_name desc) of process $(pid)" fzE_last_error
+      else if res = 0
+        # NYI: UNDER DEVELOPMENT: register failures
+        _ := fzE_pipe_close desc
+        io.end_of_file
+      else
+        arr
+          .slice 0 res
+
+
+  # read bytes from standard out
+  # NYI: CLEANUP: remove this
+  #
+  read_handler(desc i64) is
+    public read(max_count i32) choice (Sequence u8) io.end_of_file error =>
       arr := array u8 _ pipe_buffer_size _->0
       res := fzE_pipe_read desc arr.internal_array.data arr.count
       if res = -1
@@ -96,17 +116,17 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
   # install buffered reader for reading from stdout of process
   # and run `f`.
   public with_out(T type, LM type : mutate, f () -> outcome T) outcome T =>
-    (io.buffered LM).reader (std_out_read_handler) ! f
+    (io.buffered LM).Reader.instate (std_out_reader LM) f
 
 
   # install buffered reader for reading from stdout of process
   # and run `f`.
   public with_err(T type, LM type : mutate, f () -> outcome T) outcome T =>
-    (io.buffered LM).reader (std_err_read_handler) ! f
+    (io.buffered LM).Reader.instate (std_err_reader LM) f
 
 
   public with_in(T type, LM type : mutate, f () -> T) outcome T =>
-    (io.buffered LM).Writer.instate _ (std_in_writer LM) f
+    (io.buffered LM).Writer.instate (std_in_writer LM) f
 
 
   # pipe this processes output to new process
@@ -123,7 +143,7 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
       # what is being written/read to/from pipes
       # thread to pipe from one process to other
       _ := concur.Threads.env.spawn ()->
-        for p1rb := std_out_read_handler.read pipe_buffer_size
+        for p1rb := (read_handler std_out).read pipe_buffer_size
         while
           match p1rb
             s Sequence =>
