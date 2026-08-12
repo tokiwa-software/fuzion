@@ -954,6 +954,23 @@ int64_t fzE_process_poll(int64_t p){
 }
 
 
+// returns -1 on error or length of the hostname otherwise
+//
+int fzE_hostname(char *buf, size_t nbytes)
+{
+    if (buf == NULL || nbytes == 0)
+        return -1;
+
+    if (gethostname(buf, (int)nbytes) == SOCKET_ERROR) {
+        return -1;
+    }
+
+    buf[nbytes - 1] = '\0';
+
+    return (int)strnlen(buf, nbytes);
+}
+
+
 // always return 38, pipe creation not yet implemented
 //
 // NYI: ENHANCEMENT: support pipe creation on Windows
