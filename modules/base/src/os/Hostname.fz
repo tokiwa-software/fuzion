@@ -28,11 +28,23 @@ public Hostname ref : effect is
 
   # get the hostname
   #
-  public get outcome String =>
-    arr := array u8 _ 256 _->0
-    len := fzE_hostname arr.internal_array.data arr.count
+  public get outcome String => abstract
 
-    if len < 0
-      error "hostname failed" fzE_last_error
-    else
-      String.from_bytes (arr.slice 0 len)
+  # default implementation of os.Hostname
+  #
+  # this will get instated automatically at startup
+  #
+  public redef fixed type.default_value option os.Hostname =>
+    _ : os.Hostname is
+
+      # get the hostname
+      #
+      public redef get outcome String =>
+
+        arr := array u8 _ 256 _->0
+        len := fzE_hostname arr.internal_array.data arr.count
+
+        if len < 0
+          error "hostname failed" fzE_last_error
+        else
+          String.from_bytes (arr.slice 0 len)
