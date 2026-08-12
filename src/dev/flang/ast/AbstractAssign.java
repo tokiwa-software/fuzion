@@ -247,7 +247,7 @@ public abstract class AbstractAssign extends Expr
             _value.checkAmbiguousAssignmentToChoice(frmlT);
           }
 
-        if (f.featureName().baseNameHuman().equals("_")
+        if (f instanceof Feature ff && ff.isNamelessField()
             && frmlT.compareTo(Types.resolved.t_unit) == 0)
           {
             AstErrors.unitResultExplicitlyIgnored(f.pos());
