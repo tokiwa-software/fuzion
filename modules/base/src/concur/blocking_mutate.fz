@@ -123,8 +123,8 @@ public blocking_mutate_using_clock(C type : time.Clock) : mutate is
       wakeup_next_in_waiting_list
       concur.Threads.env.current.park condition ()->
         waiting.add concur.Threads.env.current
-        _ := mtx.unlock  # NYI: result ignored
-      _ := mtx.lock    # NYI: result ignored,
+        mtx.unlock  # NYI: result ignored
+      mtx.lock    # NYI: result ignored,
       set exclusive_thread := concur.Threads.env.current
 
 
@@ -168,8 +168,8 @@ public blocking_mutate_using_clock(C type : time.Clock) : mutate is
         wakeup_next_in_waiting_list
         wokeup := concur.Threads.env.current.park_until C _ timeout condition ()->
           waiting.add concur.Threads.env.current
-          _ := mtx.unlock  # NYI: result ignored
-        _   := mtx.lock    # NYI: result ignored,
+          mtx.unlock  # NYI: result ignored
+        mtx.lock    # NYI: result ignored,
         set exclusive_thread := concur.Threads.env.current
       until !wokeup  # -- timeout
         false

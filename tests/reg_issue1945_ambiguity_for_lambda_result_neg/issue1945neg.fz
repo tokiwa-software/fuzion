@@ -48,7 +48,7 @@ ambiguous_declaration is
   j () -> i32 => () -> 4716
   k () (() ->         # we (currently) need explicit arg list `()` to help parser
         i32  ) => () -> 4717
-  _ := (l () ->
+  (l () ->
           i32 => () -> 4718)   # illegal, no LF allowed after -> in function result
 
   say i.call

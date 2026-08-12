@@ -409,6 +409,11 @@ public class Feature extends AbstractFeature
    */
   private boolean _isUsed = false;
 
+  /**
+   * is this a nameless feature where {@code _} is used as the name
+   */
+  private boolean _isNameless = false;
+
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -813,6 +818,7 @@ public class Feature extends AbstractFeature
         // NYI: Check that this feature is allowed to have this name, i.e., it
         // is declared in a Destructure expression.
         n = FuzionConstants.UNDERSCORE_PREFIX + underscoreId++;
+        _isNameless = true;
       }
     this._qname     = qname;
     this._arguments = a;
@@ -2893,6 +2899,14 @@ A pre-condition of a feature that does not redefine an inherited feature must st
     this._returnType = new FunctionReturnType(frt);
   };
 
+  
+  /**
+   * is this feature a field that is nameless i.e. declared using {@code _ :=}
+   */
+  public boolean isNamelessField()
+  {
+    return _isNameless && kind() == Kind.Field;
+  }
 
 }
 

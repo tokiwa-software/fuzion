@@ -259,9 +259,9 @@ Declared at {base.fum}/Function.fz:35:10:
 ---------^^^^
 
 
---CURDIR--/generics_negative.fz:93:11: error 27: Wrong number of actual value arguments in call
-  _ := r1.call 7              # 15. should flag an error, wrong number of arguments
-----------^^^^
+--CURDIR--/generics_negative.fz:93:6: error 27: Wrong number of actual value arguments in call
+  r1.call 7              # 15. should flag an error, wrong number of arguments
+-----^^^^
 Number of actual value arguments is 1, while call expects no value arguments.
 Actual value arguments: '7'
 Called feature: 'Function.call'
@@ -271,9 +271,9 @@ Declared at {base.fum}/Function.fz:35:10:
 ---------^^^^
 
 
---CURDIR--/generics_negative.fz:95:8: error 28: Wrong number of actual value arguments in call
-  _ := r1 7                   # 16. should flag an error, wrong number of arguments
--------^^
+--CURDIR--/generics_negative.fz:95:3: error 28: Wrong number of actual value arguments in call
+  r1 7                   # 16. should flag an error, wrong number of arguments
+--^^
 Number of actual value arguments is 1, while call expects no value arguments.
 Actual value arguments: '7'
 Called feature: 'Function.call'
@@ -283,9 +283,9 @@ Declared at {base.fum}/Function.fz:35:10:
 ---------^^^^
 
 
---CURDIR--/generics_negative.fz:98:11: error 29: Wrong number of actual value arguments in call
-  _ := r2.call()              # 17. should flag an error, wrong number of arguments
-----------^^^^
+--CURDIR--/generics_negative.fz:98:6: error 29: Wrong number of actual value arguments in call
+  r2.call()              # 17. should flag an error, wrong number of arguments
+-----^^^^
 Number of actual value arguments is 0, while call expects 2 value arguments.
 Actual value arguments: --none--
 Called feature: 'Function.call'
@@ -295,9 +295,9 @@ Declared at {base.fum}/Function.fz:35:10:
 ---------^^^^
 
 
---CURDIR--/generics_negative.fz:99:11: error 30: Wrong number of actual value arguments in call
-  _ := r2.call 3              # 18. should flag an error, wrong number of arguments
-----------^^^^
+--CURDIR--/generics_negative.fz:99:6: error 30: Wrong number of actual value arguments in call
+  r2.call 3              # 18. should flag an error, wrong number of arguments
+-----^^^^
 Number of actual value arguments is 1, while call expects 2 value arguments.
 Actual value arguments: '3'
 Called feature: 'Function.call'
@@ -307,9 +307,9 @@ Declared at {base.fum}/Function.fz:35:10:
 ---------^^^^
 
 
---CURDIR--/generics_negative.fz:101:11: error 31: Wrong number of actual value arguments in call
-  _ := r2.call 3 false 7      # 19. should flag an error, wrong number of arguments
-----------^^^^
+--CURDIR--/generics_negative.fz:101:6: error 31: Wrong number of actual value arguments in call
+  r2.call 3 false 7      # 19. should flag an error, wrong number of arguments
+-----^^^^
 Number of actual value arguments is 3, while call expects 2 value arguments.
 Actual value arguments: '3', 'false', '7'
 Called feature: 'Function.call'
@@ -319,9 +319,9 @@ Declared at {base.fum}/Function.fz:35:10:
 ---------^^^^
 
 
---CURDIR--/generics_negative.fz:102:8: error 32: Wrong number of actual value arguments in call
-  _ := r2()                   # 20. should flag an error, wrong number of arguments
--------^^
+--CURDIR--/generics_negative.fz:102:3: error 32: Wrong number of actual value arguments in call
+  r2()                   # 20. should flag an error, wrong number of arguments
+--^^
 Number of actual value arguments is 0, while call expects 2 value arguments.
 Actual value arguments: --none--
 Called feature: 'Function.call'
@@ -331,9 +331,9 @@ Declared at {base.fum}/Function.fz:35:10:
 ---------^^^^
 
 
---CURDIR--/generics_negative.fz:103:8: error 33: Wrong number of actual value arguments in call
-  _ := r2 3                   # 21. should flag an error, wrong number of arguments
--------^^
+--CURDIR--/generics_negative.fz:103:3: error 33: Wrong number of actual value arguments in call
+  r2 3                   # 21. should flag an error, wrong number of arguments
+--^^
 Number of actual value arguments is 1, while call expects 2 value arguments.
 Actual value arguments: '3'
 Called feature: 'Function.call'
@@ -343,9 +343,9 @@ Declared at {base.fum}/Function.fz:35:10:
 ---------^^^^
 
 
---CURDIR--/generics_negative.fz:105:8: error 34: Wrong number of actual value arguments in call
-  _ := r2 3 false 7           # 22. should flag an error, wrong number of arguments
--------^^
+--CURDIR--/generics_negative.fz:105:3: error 34: Wrong number of actual value arguments in call
+  r2 3 false 7           # 22. should flag an error, wrong number of arguments
+--^^
 Number of actual value arguments is 3, while call expects 2 value arguments.
 Actual value arguments: '3', 'false', '7'
 Called feature: 'Function.call'

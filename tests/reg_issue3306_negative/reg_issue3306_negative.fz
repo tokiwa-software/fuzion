@@ -37,7 +37,7 @@ reg_issue3306 is
       say (f universe.q)
 
   case_B is
-    f(x ()->unit) => _ := x.call
+    f(x ()->unit) => x.call
     a is
       q => say "a.q"
       say (f a.this.q)

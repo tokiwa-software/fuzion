@@ -43,14 +43,14 @@ process_utf8 =>
 
   test "unicode argument" ()->
     (os.process.start "echo" ["👋🌏️‼️"]).bind p->
-      _ := lm ! ()->
+      lm ! ()->
         _ := p.with_out unit lm ()->
           say ((io.buffered lm).read_string 1E9).or_panic
       check p.wait.or_panic=0
 
   test "unicode environment variable 1" ()->
     (os.process.start "printenv" ["TESTVAR"] (container.ordered_map ["TESTVAR"] ["👨‍💻☯️"])).bind p->
-      _ := lm ! ()->
+      lm ! ()->
         _ := p.with_out unit lm ()->
           say ((io.buffered lm).read_string 1E9).or_panic
       check p.wait.or_panic=0
@@ -58,7 +58,7 @@ process_utf8 =>
   test "unicode environment variable 2" ()->
     (fuzion.runtime.pre_fault.try ()->
       (os.process.start "printenv" ["äöü"] (container.ordered_map ["äöü"] ["👨‍💻☯️"])).bind p->
-        _ := lm ! ()->
+        lm ! ()->
           _ := p.with_out unit lm ()->
             say ((io.buffered lm).read_string 1E9).or_panic
         check p.wait.or_panic=0)
@@ -67,7 +67,7 @@ process_utf8 =>
   test "unicode in executable name" ()->
     # on windows PATH needs to be set, because exe needs to load some dll
     (os.process.start "./😀" [] (container.ordered_map ["PATH"] [envir.Vars.env["PATH"].or_panic])).bind p->
-      _ := lm ! ()->
+      lm ! ()->
         _ := p.with_out unit lm ()->
           say ((io.buffered lm).read_string 1E9).or_panic
       check p.wait.or_panic=0

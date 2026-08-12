@@ -465,7 +465,7 @@ is
   clean(nd option (Indirection_Node CTK CTV), lev u32) =>
     _ := nd.bind i->
       m := gcas_read i
-      _ := match m.data
+      match m.data
         c container_node =>
           _ := gcas i m (compress c lev i.gen)
         * =>
@@ -713,4 +713,3 @@ is
       lock_free.indirection_node (lock_free.Main_Node (lock_free.container_node CTK CTV 0 [] initial_gen) nil) initial_gen
 
     lock_free.Map (concur.atomic (lock_free.root_node CTK CTV) .new initial_root_node) false
-

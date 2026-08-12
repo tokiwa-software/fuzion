@@ -176,7 +176,7 @@ sockets_test is
     for p in protocols do
       _ := concur.Threads.env.spawn ()->
         lm ! ()->
-          _ := server f p
+          server f p
 
   for f in families do
     for p in protocols do
