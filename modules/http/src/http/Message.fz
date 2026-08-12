@@ -124,7 +124,7 @@ public Message ref is
   # Host: www.example.com
   # User-Agent: Mozilla/5.0
   #
-  header_as_canonical_string := once mutate _ ()->
+  header_as_canonical_string := once ()->
     header
       .items
       .map kv->
