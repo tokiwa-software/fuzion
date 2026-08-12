@@ -10,4 +10,5 @@ io.Buffer_Size
 io.Err
 io.Out
 io.file.Delete
+once_mutate
 panic

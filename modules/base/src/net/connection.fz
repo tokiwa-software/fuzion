@@ -31,7 +31,7 @@ module:public connection(desc i32) is
     fuzion.sys.net.close desc
 
 
-  # this installs reader, writer and channel for the given connection
+  # this installs reader, writer and endpoint for the given connection
   #
   public with(T type, LM type : mutate, fn ()->T) T
   =>
@@ -58,21 +58,21 @@ module:public connection(desc i32) is
           fuzion.sys.net.write desc data.as_array
 
 
-    channel_ =>
+    endpoint_ =>
       net
-        .channel desc
+        .endpoint desc
 
     # NYI: CLEANUP: can we still have fluent
     # interface here?
     (io.buffered LM).Writer.instate writer ()->
       reader
-        .and T _ channel_
+        .and T _ endpoint_
         .call fn
 
 
 
 
-  # this installs reader, writer and channel for the given connection
+  # this installs reader, writer and endpoint for the given connection
   #
   # NYI: DOCUMENTATION: see tests/sockets_thread_pool for now
   #
