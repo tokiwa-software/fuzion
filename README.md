@@ -64,7 +64,7 @@ hello_world is
     # read someone's name from standard input
     #
     get_name =>
-      (io.stdin.reader lm) ! ()->
+      io.buffered lm .Reader.instate (io.stdin.reader lm) ()->
         (io.buffered lm).read_line ? str String => str | io.end_of_file => ""
 
     # greet someone with the name given
