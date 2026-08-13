@@ -63,7 +63,7 @@ illegal_assignment is
   bi := B
   ci Q.C := C  # 1. should flag an error: illegal assignment
   aa Q.A := bi # 2. should flag an error: illegal assignment
-  _ := bi.x
+  bi.x
   _ := ci.x
   _ := aa.x
   set aa := ci # 3. should flag an error: illegal assignment
@@ -85,8 +85,8 @@ illegal_assignment is
   _ := di.xc
   set bi := di  # 7. should flag an error: illegal assignment
   set ci := di  # 8. should flag an error: illegal assignment
-  _ := bi.x
-  _ := bi.xb
+  bi.x
+  bi.xb
   _ := ci.x
   _ := ci.xc
   set aa := ei  # 9. should flag an error: illegal assignment

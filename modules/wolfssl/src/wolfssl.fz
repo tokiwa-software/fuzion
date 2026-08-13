@@ -41,9 +41,9 @@ public wolfssl(T type, LM type : mutate, LM2 type: mutate, code ()->T) T ! LM, L
 
 
   c.wolfSSL_CTX_SetIORecv ctx (ssl, buf, sz, ctx)->
-    match (io.buffered LM).reader.env.read
+    match (io.buffered LM).Reader.env.read
       s Sequence =>
-        (io.buffered LM).reader.env.discard sz
+        (io.buffered LM).Reader.env.discard sz
         x := (min sz s.count)
         lm ! ()->
           _ := memcpy buf (lm.array u8 .from_Sequence s) x.as_i64
@@ -62,10 +62,10 @@ public wolfssl(T type, LM type : mutate, LM2 type: mutate, code ()->T) T ! LM, L
   check !(ffi.is_null ssl)
 
 
-  wolf_ssl_read_handler : io.Read_Handler is
+  wolf_ssl_reader : (io.buffered LM2).Reader is
 
     public redef read(max_count i32) choice (Sequence u8) io.end_of_file error =>
-      read choice (Sequence u8) io.end_of_file error =>
+      x choice (Sequence u8) io.end_of_file error =>
         arr := lm.array u8 .new max_count _->0
         res := c.wolfSSL_read ssl arr max_count
         if res = -1
@@ -74,7 +74,7 @@ public wolfssl(T type, LM type : mutate, LM2 type: mutate, code ()->T) T ! LM, L
           io.end_of_file
         else
           arr.as_array res
-      lm ! read
+      lm ! x
 
 
   wolf_ssl_writer : (io.buffered LM2).Writer is
@@ -87,8 +87,8 @@ public wolfssl(T type, LM type : mutate, LM2 type: mutate, code ()->T) T ! LM, L
       lm ! write
 
 
-  r := ((io.buffered LM2).reader wolf_ssl_read_handler) ! ()->
-    (io.buffered LM2).Writer.instate wolf_ssl_writer code
+  r := (io.buffered LM2).Reader.instate wolf_ssl_reader ()->
+         (io.buffered LM2).Writer.instate wolf_ssl_writer code
 
 
   c.wolfSSL_free ssl

@@ -85,5 +85,5 @@ reg_issue197 =>
       (a2 u8 123).bb codepoint (u8 255,"a",option (u8 128),["b"].cycle.take 3)
 
   q2 : a2 bool true is
-  _ := q2.bb unit (false,unit,option true,id (Sequence unit) (unit : nil))
+  q2.bb unit (false,unit,option true,id (Sequence unit) (unit : nil))
   (a2 f32 3.14).bb i64 (f32 3.14,i64 1E12,option (f32 0.1),[i64 1E14].cycle.take 3)

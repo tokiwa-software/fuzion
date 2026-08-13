@@ -34,7 +34,7 @@ process_buffered_writer =>
   test "write to stdin of process (new)" ()->
     (os.process.start "cat").bind p->
       lm : mutate is
-      _ := lm ! ()->
+      lm ! ()->
         _ := p.with_in unit lm ()->
           _ := (io.buffered lm).Writer.env.write "Hello, World!\n"
         # closing input so cat knows we are done and must write to standard out

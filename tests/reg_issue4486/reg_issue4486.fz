@@ -35,7 +35,7 @@ reg_issue4486 =>
 
   # Read handler for stdin
   #
-  read_handler(arg String) : io.Read_Handler is
+  reader(arg String) : io.buffered lm .Reader is
     already_returned := mut false
     public redef read(max_count i32) choice (Sequence u8) io.end_of_file error =>
       if !already_returned.get
@@ -52,7 +52,7 @@ reg_issue4486 =>
 
     lm ! ()->
       b := io.buffered lm
-      b.reader (read_handler input) ! ()->
+      io.buffered lm .Reader.instate (reader input) ()->
         for l := b.read_line
             i in 1..
         while l??
@@ -62,7 +62,7 @@ reg_issue4486 =>
 
     lm ! ()->
       b := io.buffered lm
-      b.reader (read_handler input) ! ()->
+      io.buffered lm .Reader.instate (reader input) ()->
         for l in b.read_lines
             i in 1..
         do

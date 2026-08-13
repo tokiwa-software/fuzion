@@ -104,7 +104,7 @@ jitter_threaded =>
         # time for next release used by state effect
         next_release(t time.instant) is
 
-        _ := state (next_release start) ! ()->
+        state (next_release start) ! ()->
 
           # run test; run_one_release will send raw records for every release
           _ := C.env.run_periodic start period end run_one_release
@@ -133,7 +133,7 @@ jitter_threaded =>
               err := error "*** overrun: run started at {actual_release-expected_rel}  and took {actual_finish-actual_release}, which is larger than period $period"
               (flow.exception jitter_too_high).env.cause err
 
-      _ := match flow.exception jitter_too_high .on ()->
+      match flow.exception jitter_too_high .on ()->
 
            for p := period_default, p.scale 0.5
            while p.as_duration >= time.duration.ms 1 do
@@ -217,7 +217,7 @@ jitter_threaded =>
                          (cyc_d : acc.cyc_acc)
 
     # if we're tracking a different period that never got its done_flag, flush it first
-    _ := match acc.cur_period
+    match acc.cur_period
            nil => unit
            p time.duration =>
              if !same_period then print_period_histograms p acc.per_acc acc.cyc_acc
