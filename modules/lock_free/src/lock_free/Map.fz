@@ -465,7 +465,7 @@ is
   clean(nd option (Indirection_Node CTK CTV), lev u32) =>
     _ := nd.bind i->
       m := gcas_read i
-      _ := match m.data
+      match m.data
         c container_node =>
           _ := gcas i m (compress c lev i.gen)
         * =>
@@ -713,15 +713,3 @@ is
       lock_free.indirection_node (lock_free.Main_Node (lock_free.container_node CTK CTV 0 [] initial_gen) nil) initial_gen
 
     lock_free.Map (concur.atomic (lock_free.root_node CTK CTV) .new initial_root_node) false
-
-
-  # lock_free.Map.from_entries -- routine to initialize a ctrie from a sequence of key value tuples
-  #
-  # This feature creates an instance of a ctrie.
-  #
-  # example: lock_free.Map.from_entries [(key1, value1), (key2, value2)]
-  #
-  public type.from_entries(kvs Sequence (tuple CTK CTV)) lock_free.Map CTK CTV =>
-    m := (lock_free.Map CTK CTV).empty
-    kvs.for_each (kv -> m.put kv.0 kv.1)
-    m

@@ -831,6 +831,23 @@ int64_t fzE_process_poll(int64_t p){
 }
 
 
+// returns -1 on error or length of the hostname otherwise
+//
+int fzE_hostname(char *buf, size_t nbytes)
+{
+    assert (buf != NULL && nbytes != 0);
+
+    if (gethostname(buf, nbytes) != 0) {
+        return -1;
+    }
+
+    // Ensure null termination in case the hostname was truncated
+    buf[nbytes - 1] = '\0';
+
+    return (int)strnlen(buf, nbytes);
+}
+
+
 // open a new pipe
 //
 int fzE_pipe_create(int64_t * fds)
@@ -858,7 +875,7 @@ int fzE_pipe_read(int64_t desc, char * buf, size_t nbytes){
 }
 
 
-// return -1 on error, thenumber of written bytes otherwise
+// return -1 on error, the number of written bytes otherwise
 int fzE_pipe_write(int64_t desc, char * buf, size_t nbytes){
   return write((int) desc, buf, nbytes);
 }
@@ -1041,6 +1058,7 @@ int32_t fzE_file_read(void * file, void * buf, int32_t size)
       while (fread_result == 0 && !feof((FILE*)file) && (ferror((FILE*)file) && errno == EAGAIN));  // if we got no data and no EOF, then repeat.
       if (!ferror((FILE*)file) || errno == EAGAIN)
         {
+          assert ( fread_result > 0 || feof((FILE*)file) );
           result = fread_result;
         }
     }

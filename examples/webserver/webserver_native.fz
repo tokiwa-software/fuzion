@@ -48,7 +48,7 @@ webserver_native is
 
   accept_connection(n i32) =>
     net.server.env.accept.bind c->
-      _ := c.with unit mutate ()->
+      c.with unit mutate ()->
         say "accepted connection:"
 
         match (io.buffered mutate).read_line

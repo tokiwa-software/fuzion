@@ -45,11 +45,11 @@ sockets_test is
     accept =>
       (net.server.env.accept.bind c->
         c.with unit lm ()->
-          chan => net.channel.env
+          endp => net.endpoint.env
 
           say_silent "$protocol/$family-server, accepted connection"
-          say_silent chan.get_peer_address
-          say_silent chan.get_peer_port
+          say_silent endp.get_peer_address
+          say_silent endp.get_peer_port
 
           rr := (io.buffered lm).read_line_while (s -> !s.is_empty)
 
@@ -100,8 +100,6 @@ sockets_test is
       c net.connection =>
 
         res := c.with String lm ()->
-
-            chan => net.channel.env
 
             req := ("GET / HTTP\n"
               + "Host: $host\n"
@@ -178,7 +176,7 @@ sockets_test is
     for p in protocols do
       _ := concur.Threads.env.spawn ()->
         lm ! ()->
-          _ := server f p
+          server f p
 
   for f in families do
     for p in protocols do

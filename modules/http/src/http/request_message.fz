@@ -36,7 +36,7 @@ module:public request_message(
   # the header fields
   public redef header container.Map String String,
   # body of the request
-  public redef body io.Read_Handler) : Message
+  public redef body i32 -> choice (Sequence u8) io.end_of_file error) : Message
 # pre debug: has_field "Host"  # NYI: how to handle case insensitivity?
 is
 
@@ -57,7 +57,7 @@ is
     # the header fields
     header Sequence (String,String),
     # body of the request
-    body io.Read_Handler) http.request_message
+    body i32 -> choice (Sequence u8) io.end_of_file error) http.request_message
   =>
     http.request_message method target version_major version_minor (as_header_map header) body
 
@@ -76,4 +76,4 @@ is
     # the header fields
     header Sequence (String,String)) http.request_message
   =>
-    http.request_message method target version_major version_minor (as_header_map header) io.Read_Handler.empty
+    http.request_message method target version_major version_minor (as_header_map header) (io.buffered mutate).Reader.type.empty

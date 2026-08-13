@@ -17,29 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature once
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# mutate that is used by the once feature
-#
-# NYI: UNDER DEVELOPMENT: use normal mutate that is not teleported to other threads
-#
-once_mutate : racy_mutate is
-  public redef fixed type.default_value option once_mutate =>
-    once_mutate
-
-
-# executes `f` only the first time when
-# calling `get` caching its result.
-#
-public once(T type, f Lazy T) : auto_unwrap T once_mutate is
-
-  cache := once_mutate.env.new (option T) nil
-
-  # get the result of `f`
-  #
-  public redef unwrap T ! once_mutate =>
-    if cache.get.is_nil
-      cache <- f()
-    cache.get.or_panic
+override NAME = reg_issue7494
+include ../simple.mk

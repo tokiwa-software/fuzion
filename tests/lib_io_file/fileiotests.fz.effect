@@ -16,4 +16,5 @@ io.file.Delete
 io.file.L_Stat
 io.file.Move
 io.file.Stat
+once_mutate
 panic

@@ -45,7 +45,7 @@ public reg_issue6566_typepar_in_parent is
 
     m(v N) is
     s : m unit is
-    b(o s) => _ := o.v
+    b(o s) => o.v
     ignore s
     b s
 

@@ -74,7 +74,7 @@ scenario2 is
     _ := F.sum.e
 
 run_scenario2 =>
-  _ := scenario2.fs scenario2.b
+  scenario2.fs scenario2.b
 
 run_scenario2
 
