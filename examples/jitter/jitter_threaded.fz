@@ -283,9 +283,11 @@ jitter_threaded =>
 
       # Instate the blocking_mutate effect around the period loop
       bm ! ()->
-        for p := period_default, p.scale 0.5
-        while p.as_duration >= time.duration.ms 1 do
+        for p := period_default, p.scale 0.5 do
           run_for_period p
+        #for p := period_default, p.scale 0.5
+        #while p.as_duration >= time.duration.ms 1 do
+          #run_for_period p
 
       unit
 
