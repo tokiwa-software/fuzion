@@ -64,6 +64,10 @@ jitter_threaded =>
   show_log_csv => false
 
 
+  # Single local blocking_mutate instance for the task pool.
+  m : concur.blocking_mutate is
+
+
   # run jitter test using C.clock.run_periodic
   # the worker streams raw per-release records to `sample_ch`; the caller groups
   # them into per-period tuples and builds histograms.
@@ -228,7 +232,7 @@ jitter_threaded =>
           if s = s +° 1
             say "$s (never called)"
 
-      # Define a local blocking_mutate effect
+      # Define a local blocking_mutate effect for the scheduler test.
       bm : concur.blocking_mutate is
 
       run_for_period(period time.duration)
@@ -248,7 +252,7 @@ jitter_threaded =>
         task_code =>
           actual := time.Nano.env.read
           if actual <= end
-            # Atomically read current expected and set next one (exclusive block)
+            # Atomically read current expected and set next one (exclusive block on bm)
             exp_old_new := bm.env.exclusive ()->
               old := cell.get
               new := old + period
@@ -281,7 +285,7 @@ jitter_threaded =>
         marker := time.Nano.env.read
         sample_ch <- (period, marker, marker, true)
 
-      # Instate the blocking_mutate effect around the period loop
+      # Instate bm around the period loop.
       bm ! ()->
         for p := period_default, p.scale 0.5 do
           run_for_period p
@@ -300,15 +304,13 @@ jitter_threaded =>
 
   jitter_task := realtime.task time.frequency jitter_worker (time.frequency 0 (time.duration.ms 1)) nil
 
-  # Instate blocking_mutate for the task_pool constructor (internal use)
-  concur.blocking_mutate ! ()->
-    realtime.Scheduler.instate (concur.task_pool concur.blocking_mutate) ()->
+  # Instate m for the task_pool constructor.
+  m ! ()->
+    realtime.Scheduler.instate (concur.task_pool m) ()->
       realtime.Scheduler.env.submit jitter_task
       say "received samples"
       consume_and_display empty_acc
       say "Task-pool worker completed."
-      Exit.env.exit 1
-
 
 # How to run with high priority :
 # FUZION_HOME=build bash bin/fz -c examples/jitter/jitter.fz
