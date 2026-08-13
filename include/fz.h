@@ -554,7 +554,7 @@ void * fzE_file_open(char * file_name, int64_t * open_results, file_open_mode mo
  *
  * @param size the size of buf in bytes
  *
- * @return amounts of bytes read, or negative number on error
+ * @return amounts of bytes read, zero on end_of_file, or negative number on error
  */
 int32_t fzE_file_read(void * file, void * buf, int32_t size);
 
