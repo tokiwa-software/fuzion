@@ -156,5 +156,10 @@ public tokiwa is
             p.close_err.or_panic
             p.kill     .or_else (say "sending kill signal to $p failed")
             process_result "" "failed waiting for $cmd, error is: $e" 1
-          ec u32 => process_result fout.get ferr.get ec)
+          ec u32 =>
+            o := fout.get
+            e := ferr.get
+            p.close_out.or_panic
+            p.close_err.or_panic
+            process_result o e ec)
       .or_panic

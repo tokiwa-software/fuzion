@@ -164,12 +164,16 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
 
   # close standard output of this process
   #
+  # NYI: CLEANUP: should this better be done automatically by runtime?
+  #
   public close_out outcome unit =>
     if fzE_pipe_close std_out != 0
       error "closing $(desc_name std_out) of process $(pid)" fzE_last_error
 
 
   # close standard error of this process
+  #
+  # NYI: CLEANUP: should this better be done automatically by runtime?
   #
   public close_err outcome unit =>
     if fzE_pipe_close std_err != 0
