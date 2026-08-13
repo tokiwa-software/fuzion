@@ -883,8 +883,13 @@ int fzE_pipe_write(int64_t desc, char * buf, size_t nbytes){
 
 // return -1 on error, 0 on success
 int fzE_pipe_close(int64_t desc){
-// NYI: UNDER DEVELOPMENT: do we need to flush?
-  return close((int) desc);
+
+  // flush before closing
+  int sres = fsync((int) desc);
+  int cres = close((int) desc);
+  return sres == 0 && cres == 0
+    ? 0
+    : -1;
 }
 
 
