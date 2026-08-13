@@ -1058,7 +1058,7 @@ int32_t fzE_file_read(void * file, void * buf, int32_t size)
       while (fread_result == 0 && !feof((FILE*)file) && (ferror((FILE*)file) && errno == EAGAIN));  // if we got no data and no EOF, then repeat.
       if (!ferror((FILE*)file) || errno == EAGAIN)
         {
-          assert ( errno != EAGAIN || fread_result > 0 );
+          assert ( fread_result > 0 || feof((FILE*)file) );
           result = fread_result;
         }
     }
