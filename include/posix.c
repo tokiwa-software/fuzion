@@ -883,7 +883,15 @@ int fzE_pipe_write(int64_t desc, char * buf, size_t nbytes){
 
 // return -1 on error, 0 on success
 int fzE_pipe_close(int64_t desc){
-// NYI: UNDER DEVELOPMENT: do we need to flush?
+
+  // NYI: UNDER DEVELOPMENT: we may want to relax this in the future?
+  // assert there is nothing left to flush
+  int nbytes = 0;
+  if (ioctl((int) desc, TIOCINQ, &nbytes) == 0)
+    assert(nbytes == 0);
+  if (ioctl((int) desc, TIOCOUTQ, &nbytes) == 0)
+    assert(nbytes == 0);
+
   return close((int) desc);
 }
 
