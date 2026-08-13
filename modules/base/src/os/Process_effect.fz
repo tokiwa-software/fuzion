@@ -117,6 +117,7 @@ public Process ref : effect is
             time.Nano.env.sleep (min timeout-elapsed_time polling_time)
           else
             if r >= 0
+              # NYI: UNDER DEVELOPMENT: it is kind of arbitrary to remove process from running processes in this case...
               _ := running_processes.update (container.Set os.process)->(container.Set os.process) rp->
                 rp ∖ (container.set_of_ordered [p])
               outcome r.as_u32
@@ -150,6 +151,7 @@ public Process ref : effect is
         running_processes.for_each p->
           # NYI: UNDER DEVELOPMENT: register failures
           _ := p.wait
+          _ := fzE_pipe_close p.std_in
           _ := fzE_pipe_close p.std_out
           _ := fzE_pipe_close p.std_err
 
