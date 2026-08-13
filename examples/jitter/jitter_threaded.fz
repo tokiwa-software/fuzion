@@ -103,7 +103,7 @@ jitter_threaded =>
         state (next_release start) ! ()->
 
           # run test; run_one_release will send raw records for every release
-          _ := C.env.run_periodic start period end run_one_release
+          C.env.run_periodic start period end run_one_release
 
           # indicate end-of-period to receiver (use current time as marker)
           marker := TIMER.env.read
@@ -131,9 +131,9 @@ jitter_threaded =>
 
       match flow.exception jitter_too_high .on ()->
 
-            for p := period_default, p.scale 0.5
-            while p.as_duration >= time.duration.ms 1 do
-              run_for_period p
+           for p := period_default, p.scale 0.5
+           while p.as_duration >= time.duration.ms 1 do
+             run_for_period p
 
         e error => say "jitter test stopped: $e"
         unit    => unit
@@ -195,9 +195,9 @@ jitter_threaded =>
 
     # if we're tracking a different period that never got its done_flag, flush it first
     match acc.cur_period
-           nil => unit
-           p time.duration =>
-             if !same_period then print_period_histograms p acc.per_acc acc.cyc_acc
+      nil => unit
+      p time.duration =>
+        if !same_period then print_period_histograms p acc.per_acc acc.cyc_acc
 
     if done_flag
       print_period_histograms period per_acc2 cyc_acc2
@@ -219,7 +219,6 @@ jitter_threaded =>
   # run jitter test using realtime.Scheduler.env.submit
   test_scheduler_jitter(sample_ch concur.Channel (tuple time.duration time.instant time.instant bool))
   =>
-      # This test uses blocking_mutate (like ring_buf) but does NOT use flow.exception.
       payload =>
         for
           i := 0, i+1
@@ -229,7 +228,7 @@ jitter_threaded =>
           if s = s +° 1
             say "$s (never called)"
 
-      # Define a local blocking_mutate effect (exactly as in ring_buf)
+      # Define a local blocking_mutate effect
       bm : concur.blocking_mutate is
 
       run_for_period(period time.duration)
@@ -237,7 +236,7 @@ jitter_threaded =>
         start := time.Nano.env.read + start_delay
         end := start + test_duration
 
-        # Mutable cell for expected release time (created under bm effect)
+        # Mutable cell for expected release time
         cell := bm.env.new start
 
         # Sleep until the first release time to align the scheduler's start.
@@ -282,7 +281,7 @@ jitter_threaded =>
         marker := time.Nano.env.read
         sample_ch <- (period, marker, marker, true)
 
-      # Instate the blocking_mutate effect around the period loop (ring_buf style)
+      # Instate the blocking_mutate effect around the period loop
       bm ! ()->
         for p := period_default, p.scale 0.5
         while p.as_duration >= time.duration.ms 1 do
@@ -302,7 +301,7 @@ jitter_threaded =>
   # Instate blocking_mutate for the task_pool constructor (internal use)
   concur.blocking_mutate ! ()->
     realtime.Scheduler.instate (concur.task_pool concur.blocking_mutate) ()->
-      _ := realtime.Scheduler.env.submit jitter_task
+      realtime.Scheduler.env.submit jitter_task
       say "received samples"
       consume_and_display empty_acc
       say "Task-pool worker completed."
