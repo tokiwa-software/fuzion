@@ -67,12 +67,8 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
       arr := array u8 _ pipe_buffer_size _->0
       res := fzE_pipe_read desc arr.internal_array.data arr.count
       if res = -1
-        # NYI: UNDER DEVELOPMENT: register failures
-        _ := fzE_pipe_close desc
         error "reading from $(desc_name desc) of process $(pid)" fzE_last_error
       else if res = 0
-        # NYI: UNDER DEVELOPMENT: register failures
-        _ := fzE_pipe_close desc
         io.end_of_file
       else
         arr
@@ -87,12 +83,8 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
       arr := array u8 _ pipe_buffer_size _->0
       res := fzE_pipe_read desc arr.internal_array.data arr.count
       if res = -1
-        # NYI: UNDER DEVELOPMENT: register failures
-        _ := fzE_pipe_close desc
         error "reading from $(desc_name desc) of process $(pid)" fzE_last_error
       else if res = 0
-        # NYI: UNDER DEVELOPMENT: register failures
-        _ := fzE_pipe_close desc
         io.end_of_file
       else
         arr
