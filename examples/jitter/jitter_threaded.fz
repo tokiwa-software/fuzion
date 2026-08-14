@@ -209,6 +209,44 @@ jitter_threaded =>
     else
       acc_state (option period) per_acc2 cyc_acc2 (option actual)
 
+  # fold record for scheduler test: period_delta = (actual - expected) + period
+  fold_record_scheduler(acc acc_state,
+                         period time.duration,
+                         actual time.instant,
+                         expected time.instant,
+                         done_flag bool)
+                         acc_state
+  =>
+    # Compute safe absolute difference
+    diff := if actual >= expected then actual - expected else expected - actual
+    # Center around period: add if late, subtract if early
+    period_delta := if actual >= expected then period + diff else period - diff
+
+    same_period := match acc.cur_period
+                     nil => false
+                     p time.duration => p = period
+
+    per_acc2 := if same_period then (period_delta : acc.per_acc)
+                else (period_delta : (list time.duration).empty)
+
+    cyc_acc2 := if !same_period then (list time.duration).empty
+                else match acc.prev_actual
+                       nil => acc.cyc_acc
+                       prev time.instant =>
+                         cyc_d := (actual >= prev ? actual - prev : prev - actual)
+                         (cyc_d : acc.cyc_acc)
+
+    match acc.cur_period
+      nil => unit
+      p time.duration =>
+        if !same_period then print_period_histograms p acc.per_acc acc.cyc_acc
+
+    if done_flag
+      print_period_histograms period per_acc2 cyc_acc2
+      empty_acc
+    else
+      acc_state (option period) per_acc2 cyc_acc2 (option actual)
+
   # incrementally consume records from the worker task: as soon as a period's
   # done_flag arrives, print its histograms right away.
   consume_and_display(acc acc_state) unit
@@ -217,6 +255,16 @@ jitter_threaded =>
       rec tuple =>
         acc2 := fold_record acc rec.0 rec.1 rec.2 rec.3
         consume_and_display acc2
+      nil =>
+        unit
+
+  # consumer for scheduler test
+  consume_and_display_scheduler(acc acc_state) unit
+  =>
+    match result_ch.next
+      rec tuple =>
+        acc2 := fold_record_scheduler acc rec.0 rec.1 rec.2 rec.3
+        consume_and_display_scheduler acc2
       nil =>
         unit
 
@@ -309,7 +357,7 @@ jitter_threaded =>
     realtime.Scheduler.instate (concur.task_pool m) ()->
       realtime.Scheduler.env.submit jitter_task
       say "received samples"
-      consume_and_display empty_acc
+      consume_and_display_scheduler empty_acc
       say "Task-pool worker completed."
 
 # How to run with high priority :
