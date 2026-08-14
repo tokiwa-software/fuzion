@@ -64,13 +64,13 @@ hello_world is
     # read someone's name from standard input
     #
     get_name =>
-      (io.stdin.reader lm) ! ()->
+      io.buffered lm .Reader.instate (io.stdin.reader lm) ()->
         (io.buffered lm).read_line ? str String => str | io.end_of_file => ""
 
     # greet someone with the name given
     #
     greet(name String) is
-      say "Hello, {name}!"
+      say "Hello, $(name)!"
 
     # greet the user
     #
@@ -79,7 +79,7 @@ hello_world is
     # you can access any feature - even argument features of other features
     # from outside
     #
-    say "How are you, {x.name}?"
+    say "How are you, $(x.name)?"
 ```
 
 This `hello_world` example demonstrates one important concept in Fuzion quite
