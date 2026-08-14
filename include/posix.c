@@ -1036,31 +1036,10 @@ int32_t fzE_file_read(void * file, void * buf, int32_t size)
 
   if (res > 0)
     {
-      size_t fread_result;
-      do
-        {
-          fread_result = fread(buf, 1, size, (FILE*)file);
-          // man pages of fread say:
-          //
-          //    If an error occurs, or the end of the file is reached, the return value is a
-          //    short item count (or zero).
-          //
-          // so we cannot use fread_result to detect an error. Instead, it says
-          //
-          //    fread() does not distinguish between end-of-file and error, and callers must
-          //    use feof(3) and ferror(3) to determine which occurred.
-          //
-          // So let's do that:
-          //
-          // We might get fread_result > 0 combined with an error like EAGAIN.  In this case, we
-          // return fread_result and not indicate an error by returning -1.
-        }
-      while (fread_result == 0 && !feof((FILE*)file) && (ferror((FILE*)file) && errno == EAGAIN));  // if we got no data and no EOF, then repeat.
-      if (!ferror((FILE*)file) || errno == EAGAIN)
-        {
-          assert ( fread_result > 0 || feof((FILE*)file) );
-          result = fread_result;
-        }
+      do {
+        result = read(fileno(file), buf, (size_t)size);
+        assert( errno != EAGAIN );
+      } while (result < 0 && errno == EINTR);
     }
 
   return result;

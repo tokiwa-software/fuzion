@@ -548,6 +548,8 @@ typedef enum file_open_mode {
 void * fzE_file_open(char * file_name, int64_t * open_results, file_open_mode mode);
 
 /**
+ * NYI: UNDER DEVELOPMENT: for file set to non-blocking this currently blocks until data available
+ *
  * @param file the pointer to the file
  *
  * @param buf pointer to a byte array
