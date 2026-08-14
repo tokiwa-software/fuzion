@@ -75,6 +75,4 @@ public exception(T type,
 public exception_or_panic(T type,
                           R type,
                           f ()->R) R =>
-  match (exception T).on f
-    e error => panic $e
-    r R => r
+  (exception T).on f .or_panic
