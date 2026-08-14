@@ -25,25 +25,28 @@ reg_issue2380 is
 
   mi : mutate is
   input := mi ! ()->
-      (io.buffered lm .Reader.instate (io.stdin.reader mi) ()->(io.buffered mi).read_lines).filter !=""
-                                                              .map (.codepoints)
-  area := (array2 String).new input.count input[0].count i,j->input[i][j]
+    io.buffered mi .Reader.instate (io.stdin.reader mi) ()->
+        (io.buffered mi)
+          .read_lines
+          .filter !=""
+          .map (.codepoints)
+  area := (array2 String).new _ input.count input[0].count i,j->input[i][j]
 
   part1 =>
     lm : mutate is
     lm ! ()->
-      visited := lm.array i32 .new lm area.length.as_i64 0
+      visited := lm.array i32 .new _ area.length.as_i64 (_->0)
       r => 1
       l => 2
       u => 4
       d => 8
-      ix(x,y) => (y+x*area.length1).as_i64
+      ix(x,y) => (y+x*area.length1.as_i32).as_i64
       trace(x,y,w) =>
-        if ((x ∈ area.indices0) &&
-            (y ∈ area.indices1) &&
+        if ((x.as_i64 ∈ area.indices0) &&
+            (y.as_i64 ∈ area.indices1) &&
             (visited[ix x y] & d) = 0) then
           visited[ix x y] := visited[ix x y] | d
-          c := area[y,x]
+          c := area[_,y,x]
           if  w = r  &&  c = "."              then trace x+1 y   w
           if  w = l  &&  c = "."              then trace x-1 y   w
           if  w = u  &&  c = "."              then trace x   y-1 w
