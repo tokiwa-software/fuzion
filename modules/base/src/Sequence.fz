@@ -1318,7 +1318,7 @@ is
 
   # monoid of Sequences with infix concatenation operation.
   #
-  public type.concat_monoid Monoid (Sequence T) =>
+  public fixed type.concat_monoid Monoid (Sequence T) /* NYI: UNDER DEVELOPMENT: better: Sequence.this */ =>
 
     _ : Monoid (Sequence T) is
 
