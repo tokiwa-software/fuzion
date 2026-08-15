@@ -67,7 +67,7 @@ public abstract class LibraryCall extends AbstractCall
   private final AbstractType _type;
   private final Expr _target;
   private final List<Expr> _actuals;
-  private final List<AbstractType> _generics;
+  private final List<AbstractType> _typeArguments;
   private final AbstractFeature _calledFeature;
   private final int _select;
 
@@ -103,7 +103,7 @@ public abstract class LibraryCall extends AbstractCall
       }
     Collections.reverse(actuals);
     _actuals = actuals;
-    _generics = g;
+    _typeArguments = g;
     g.freeze();
     Expr target = null;
     var feat = lib.callCalledFeature(index);
@@ -125,7 +125,7 @@ public abstract class LibraryCall extends AbstractCall
   /*-----------------------------  methods  -----------------------------*/
 
 
-  @Override public List<AbstractType> actualTypeParameters() { return _generics; }
+  @Override public List<AbstractType> typeArguments() { return _typeArguments; }
   @Override public AbstractFeature calledFeature() { return _calledFeature; }
   @Override public Expr target() { return _target; }
   @Override public List<Expr> actuals() { return _actuals; }

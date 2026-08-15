@@ -80,9 +80,9 @@ class ThisType extends ResolvedType {
    * Requires that this is resolved and isNormalType().
    */
   @Override
-  public List<AbstractType> generics()
+  public List<AbstractType> typeArguments()
   {
-    throw new UnsupportedOperationException("Unimplemented method 'generics'");
+    throw new UnsupportedOperationException("Unimplemented method 'typeArguments'");
   }
 
 

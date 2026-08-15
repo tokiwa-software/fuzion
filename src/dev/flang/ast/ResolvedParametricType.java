@@ -45,20 +45,20 @@ class ResolvedParametricType extends ResolvedType
 
 
   /**
-   * The underlying generic:
+   * The underlying typeParameter:
    */
-  AbstractFeature _generic;
+  AbstractFeature _typeParameter;
 
 
   /*--------------------------  constructors  ---------------------------*/
 
 
   /**
-   * Constructor for a generic type that might be boxed.
+   * Constructor for a parametric type that might be boxed.
    */
-  ResolvedParametricType(AbstractFeature generic)
+  ResolvedParametricType(AbstractFeature typeParameter)
   {
-    this._generic = generic;
+    this._typeParameter = typeParameter;
   }
 
 
@@ -68,7 +68,7 @@ class ResolvedParametricType extends ResolvedType
   /**
    * For a normal type, this is the list of actual type parameters given to the type.
    */
-  public List<AbstractType> generics()
+  public List<AbstractType> typeArguments()
   {
     if (CHECKS) check
       (Errors.any());
@@ -78,14 +78,13 @@ class ResolvedParametricType extends ResolvedType
 
 
   /**
-   * typeParameter gives the Generic instance of a type defined by a generic
-   * argument.
+   * The feature backing the type.
    *
-   * @return the Generic instance, never null.
+   * @return the type parameter, never null.
    */
   public AbstractFeature backingFeature()
   {
-    return _generic;
+    return _typeParameter;
   }
 
 

@@ -70,19 +70,19 @@ public abstract class AbstractCall extends Expr
    * generics ({@code a.b(x,y)}) from a call with an empty actual generics list
    * ({@code a.b<>(x,y)}).
    */
-  public static final List<AbstractType> NO_GENERICS = new List<AbstractType>().freeze();
+  public static final List<AbstractType> NO_TYPE_ARGUMENTS = new List<AbstractType>().freeze();
 
 
   /*-----------------------------  methods  -----------------------------*/
 
   /**
-   * The type parameters used for calling {@code calledFeature}, never null.
+   * The type arguments used for calling {@code calledFeature}, never null.
    *
    * The default implementations returns an empty list.
    */
-  public List<AbstractType> actualTypeParameters()
+  public List<AbstractType> typeArguments()
   {
-    return NO_GENERICS;
+    return NO_TYPE_ARGUMENTS;
   }
 
 
@@ -236,23 +236,23 @@ public abstract class AbstractCall extends Expr
     var typeParameters = new List<AbstractType>(selfType);
     if (this instanceof Call cpc && cpc.needsToInferTypeParametersFromArgs())
       {
-        typeParameters.addAll(actualTypeParameters());
+        typeParameters.addAll(typeArguments());
         cpc.whenInferredTypeParameters(() ->
           {
             if (CHECKS) check
-              (Errors.any() || actualTypeParameters().stream().allMatch(atp -> !atp.containsUndefined()));
+              (Errors.any() || typeArguments().stream().allMatch(atp -> !atp.containsUndefined()));
             if (CHECKS) check
               (Errors.any() || !typeParameters.isFrozen());
             if (!typeParameters.isFrozen())
               {
                 typeParameters.removeTail(1);
-                typeParameters.addAll(actualTypeParameters().map(that::rebaseTypeForCotype));
+                typeParameters.addAll(typeArguments().map(that::rebaseTypeForCotype));
               }
           });
       }
     else
       {
-        typeParameters.addAll(actualTypeParameters().map(that::rebaseTypeForCotype));
+        typeParameters.addAll(typeArguments().map(that::rebaseTypeForCotype));
       }
 
     return calledFeature().cotypeInheritanceCall(pos(), typeParameters, res, that, target());
@@ -318,7 +318,7 @@ public abstract class AbstractCall extends Expr
     var t2 = t1 == Types.t_ERROR                           ? t1 : replace_type_parameter_used_for_relay_type_in_cotype(t1, target());
     var t3 = t2 == Types.t_ERROR                           ? t2 : adjustThisTypeForTarget(context, t2, calledFeature(), target().type(), foundRef);  // NYI: CLEANUP: try to use handDownAndApply
     var t4 = t3 == Types.t_ERROR                           ? t3 : t3.applyTypePars(target().type());
-    var t5 = t4 == Types.t_ERROR                           ? t4 : t4.applyTypePars(calledFeature(), actualTypeParameters());
+    var t5 = t4 == Types.t_ERROR                           ? t4 : t4.applyTypePars(calledFeature(), typeArguments());
 
     if (POSTCONDITIONS) ensure
       (t5 != null);
@@ -453,7 +453,7 @@ public abstract class AbstractCall extends Expr
   {
     var f = ft.typeParameter().outer();
     return
-      calledFeature() == f ? ft.applyTypeParsMaybeOpen(f, actualTypeParameters(), NO_SELECT)
+      calledFeature() == f ? ft.applyTypeParsMaybeOpen(f, typeArguments(), NO_SELECT)
                            : openGenericsFor(res, context, ft, target().type());
   }
 
@@ -573,7 +573,7 @@ public abstract class AbstractCall extends Expr
             ? ""
             : StringHelpers.wrapInParentheses(target().toString()) + ".")
       + (this instanceof Call c && !c.calledFeatureKnown() ? c._name : calledFeature().baseNameHuman())
-      + actualTypeParameters().toString(" ", " ", "", t -> (t == null ? "--null--" : t.toStringWrapped(true)))
+      + typeArguments().toString(" ", " ", "", t -> (t == null ? "--null--" : t.toStringWrapped(true)))
       + actuals()             .toString(" ", " ", "", e -> (e == null ? "--null--" : e.toStringWrapped()))
       + (select() < 0        ? "" : " ." + select());
   }

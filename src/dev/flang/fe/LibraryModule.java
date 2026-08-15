@@ -536,15 +536,15 @@ public class LibraryModule extends Module implements MirModule
             if (CHECKS) check
               (k >= 0);
             var feature = libraryFeature(cotype(at));
-            var generics = UnresolvedType.NONE;
+            var typeArguments = UnresolvedType.NONE;
             if (k > 0)
               {
-                var i = typeActualGenericsPos(at);
-                generics = new List<AbstractType>();
+                var i = typeArgumentsPos(at);
+                typeArguments = new List<AbstractType>();
                 var gi = 0;
                 while (gi < k)
                   {
-                    generics.add(type(i));
+                    typeArguments.add(type(i));
                     i = typeNextPos(i);
                     gi++;
                   }
@@ -553,7 +553,7 @@ public class LibraryModule extends Module implements MirModule
             var tk = TypeKind.fromInt(typeValRefOrThis(at));
             result = tk == TypeKind.ThisType
               ? new ThisType(this, at, feature)
-              : new NormalType(this, at, feature, tk, generics, outer);
+              : new NormalType(this, at, feature, tk, typeArguments, outer);
           }
         _libraryTypes.put(at, result);
       }
@@ -1466,7 +1466,7 @@ Type
 
     return data().get(typeValRefOrThisPos(at));
   }
-  int typeActualGenericsPos(int at)
+  int typeArgumentsPos(int at)
   {
     if (PRECONDITIONS) require
       (typeKind(at) >= 0);
@@ -1479,7 +1479,7 @@ Type
       (typeKind(at) >= 0);
 
     var k = typeKind(at);
-    at = typeActualGenericsPos(at);
+    at = typeArgumentsPos(at);
     int n = k;
     for (var i = 0; i<n; i++)
       {
@@ -1936,7 +1936,7 @@ Call
     if (PRECONDITIONS) require
       (expressionKindRaw(at-1) ==  MirExprKind.Call.ordinal()         ||
        expressionKindRaw(at-9) == (MirExprKind.Call.ordinal() | 0x80)    ,
-       libraryFeature(callCalledFeature(at)).generics().isOpen());
+       libraryFeature(callCalledFeature(at)).typeParameters().isOpen());
 
     return data().getInt(callNumTypeParametersPos(at));
   }
@@ -1947,7 +1947,7 @@ Call
       expressionKindRaw(at-9) == (MirExprKind.Call.ordinal() | 0x80)     );
 
     var f = libraryFeature(callCalledFeature(at));
-    return f.generics().isOpen()
+    return f.typeParameters().isOpen()
       ? callNumTypeParametersRaw(at)
       : f.typeArguments().size();
   }
@@ -1958,7 +1958,7 @@ Call
       expressionKindRaw(at-9) == (MirExprKind.Call.ordinal() | 0x80)     );
 
     return callNumTypeParametersPos(at) +
-      (libraryFeature(callCalledFeature(at)).generics().isOpen() ? 4 : 0);
+      (libraryFeature(callCalledFeature(at)).typeParameters().isOpen() ? 4 : 0);
   }
   int callSelectPos(int at)
   {

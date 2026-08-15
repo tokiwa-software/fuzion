@@ -53,7 +53,7 @@ public record ClazzRecord(
   int clazzCode,
   int clazzResultField,
   String clazzOriginalName,
-  int[] clazzActualGenerics,
+  int[] clazzTypeArguments,
   int lookupCall,
   int lookupStaticFinally,
   LifeTime lifeTime,

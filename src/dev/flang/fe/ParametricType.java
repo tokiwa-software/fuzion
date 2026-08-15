@@ -50,7 +50,7 @@ class ParametricType extends LibraryType
   /**
    * The underlying generic:
    */
-  AbstractFeature _generic;
+  AbstractFeature _typeParameter;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -59,11 +59,11 @@ class ParametricType extends LibraryType
   /**
    * Constructor for a generic type that might be boxed.
    */
-  ParametricType(LibraryModule mod, int at, AbstractFeature generic)
+  ParametricType(LibraryModule mod, int at, AbstractFeature tp)
   {
     super(mod, at);
 
-    this._generic = generic;
+    this._typeParameter = tp;
   }
 
 
@@ -73,7 +73,7 @@ class ParametricType extends LibraryType
   /**
    * For a normal type, this is the list of actual type parameters given to the type.
    */
-  public List<AbstractType> generics()
+  public List<AbstractType> typeArguments()
   {
     if (CHECKS) check
       (Errors.any());
@@ -91,7 +91,7 @@ class ParametricType extends LibraryType
   @Override
   protected AbstractFeature backingFeature()
   {
-    return _generic;
+    return _typeParameter;
   }
 
 

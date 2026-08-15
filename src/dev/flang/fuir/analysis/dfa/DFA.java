@@ -2095,7 +2095,7 @@ public class DFA extends ANY
 
     put("fuzion.sys.type.alloc"          , cl ->
         {
-          var ec = fuir(cl).clazzActualGeneric(cl.calledClazz(), 0);
+          var ec = fuir(cl).clazzTypeArgument(cl.calledClazz(), 0);
           return cl._dfa.newSysArray(null, ec); // NYI: get length from args
         });
     put("fuzion.sys.type.setel"          , cl ->
@@ -2138,7 +2138,7 @@ public class DFA extends ANY
         });
     put("fuzion.sys.thread.spawn0"       , cl ->
         {
-          var oc = fuir(cl).clazzActualGeneric(cl.calledClazz(), 0);
+          var oc = fuir(cl).clazzTypeArgument(cl.calledClazz(), 0);
           var call = fuir(cl).lookupCall(oc);
 
           if (CHECKS) check
@@ -2214,7 +2214,7 @@ public class DFA extends ANY
           var fuir = fuir(cl);
           var ecl      = fuir.effectTypeFromIntrinsic(cl.calledClazz());
 
-          var call     = fuir.lookupCall(fuir.clazzActualGeneric(cl.calledClazz(), 0));
+          var call     = fuir.lookupCall(fuir.clazzTypeArgument(cl.calledClazz(), 0));
           var finallie = fuir.lookupStaticFinally(ecl);
 
           var a0 = cl._args.get(0).value();  // new effect value e
@@ -2259,7 +2259,7 @@ public class DFA extends ANY
             // cl._dfa._preEffectsAborted.contains(ecl) ||
             (cl._dfa._real ? newEnv != null && newEnv.isAborted(ecl)
                            : cl._dfa._preEffectsAborted.contains(ecl));
-          var call_def = fuir.lookupCall(fuir.clazzActualGeneric(cl.calledClazz(), 1), aborted);
+          var call_def = fuir.lookupCall(fuir.clazzTypeArgument(cl.calledClazz(), 1), aborted);
           if (aborted)
             { // default result, only if abort is ever called
               var def = cl._dfa.newCall(cl, call_def, NO_SITE, a2, new List<>(ev), cl._env, cl);
@@ -2560,7 +2560,7 @@ public class DFA extends ANY
     put("concur.sync.mtx_init"              , cl ->
       {
         var rc = fuir(cl).clazzResultClazz(cl.calledClazz());
-        var ag = fuir(cl).clazzActualGeneric(rc, 0);
+        var ag = fuir(cl).clazzTypeArgument(rc, 0);
         return outcome(cl._dfa,
                        cl,
                        rc,
@@ -2590,7 +2590,7 @@ public class DFA extends ANY
       {
         cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
         var rc = fuir(cl).clazzResultClazz(cl.calledClazz());
-        var ag = fuir(cl).clazzActualGeneric(rc, 0);
+        var ag = fuir(cl).clazzTypeArgument(rc, 0);
         return outcome(cl._dfa,
                        cl,
                        rc,
@@ -2633,7 +2633,7 @@ public class DFA extends ANY
       {
         cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
         cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 1));
-        return cl._dfa.newSysArray(null, cl._dfa._fuir.clazzActualGeneric(cl.calledClazz(), 0));
+        return cl._dfa.newSysArray(null, cl._dfa._fuir.clazzTypeArgument(cl.calledClazz(), 0));
       });
   }
 

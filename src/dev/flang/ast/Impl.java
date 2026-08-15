@@ -436,6 +436,7 @@ public class Impl extends ANY
           case Abstract          -> {} // ok, must be checked by redefinitions
           case Intrinsic         -> {} // Errors.fatal("NYI: UNDER DEVELOPMENT #3105 postcondition for intrinsic");
           case Native            -> {} // Errors.fatal("NYI: UNDER DEVELOPMENT #3105 postcondition for native");
+          case Choice            -> {} // ok, AstErrors.choiceMustNotInheritContract
           }
       }
   }

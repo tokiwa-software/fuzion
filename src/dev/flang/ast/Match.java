@@ -171,7 +171,7 @@ public class Match extends AbstractMatch
       }
     if (st != null && st.isChoice() && Types.resolved.t_void != st)
       {
-        var cgs = st.choiceGenerics(context);
+        var cgs = st.choiceTypes(context);
         for (var i = 0; i < cgs.size(); i++)
           {
             var n = cgs.get(i);
@@ -257,7 +257,7 @@ public class Match extends AbstractMatch
   @Override
   Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
   {
-    _type = t.isLazyType() ? t.generics().get(0) : t;
+    _type = t.isLazyType() ? t.typeArguments().get(0) : t;
     for (var ac: cases())
       {
         var c = (Case) ac;

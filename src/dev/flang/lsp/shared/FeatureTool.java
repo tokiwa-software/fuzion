@@ -420,7 +420,7 @@ public class FeatureTool extends ANY
   private static boolean featureIsChoiceMember(AbstractType at, AbstractFeature af)
   {
     return at.isChoice()
-      && at.choiceGenerics()
+      && at.choiceTypes()
         .stream()
         .map(t -> t.feature().selfType())
         .anyMatch(t -> t.equals(af.selfType()));
