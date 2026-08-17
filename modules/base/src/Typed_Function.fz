@@ -30,8 +30,8 @@
 #
 # This is used, e.g., as an argument to `Any.dynamic_apply`.
 #
-public Typed_Function(public R type,
-                      public A type...) ref is
+public Typed_Function(R type,
+                      A type...) ref is
 
 
   # call this function for type `T` on arguments `a...` and `v`.

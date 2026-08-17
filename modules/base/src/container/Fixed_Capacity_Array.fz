@@ -32,11 +32,11 @@ module:public Fixed_Capacity_Array(
 
   # the mutate effect
   #
-  public LM type : mutate,
+  LM type : mutate,
 
   # element type
   #
-  public T type,
+  T type,
 
   # contents of the array
   #

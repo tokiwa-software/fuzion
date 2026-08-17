@@ -42,7 +42,7 @@
 #
 #
 #
-public list(public A type)
+public list(A type)
   : choice nil (Cons A (list A)),
     Sequence A
 is

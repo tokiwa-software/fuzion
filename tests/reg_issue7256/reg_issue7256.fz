@@ -23,9 +23,9 @@
 
 public my_mut : mutate is
 
-  public abstract_a (public T type) ref is
+  public abstract_a (T type) ref is
 
-  public arr (public T type) ref : abstract_a T is
+  public arr (T type) ref : abstract_a T is
     public type.empty abstract_a T =>
       my_mut.this.env.arr T
 

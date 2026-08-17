@@ -23,7 +23,7 @@
 
 # Mutable_Map -- an abstract mutable map from keys K to values V
 #
-public Mutable_Map(public K type : property.equatable, public V type) ref is
+public Mutable_Map(K type : property.equatable, V type) ref is
 
   # number of entries in this map
   #

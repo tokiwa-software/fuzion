@@ -867,7 +867,8 @@ argType     : type
                                     var n = argNames();
                                     AbstractType t;
                                     Impl i;
-                                    if (current() == Token.t_type)
+                                    var isTypePar = current() == Token.t_type;
+                                    if (isTypePar)
                                       {
                                         i = typeType();
                                         t = skipColon() ? type()
@@ -890,9 +891,17 @@ argType     : type
                                       }
                                     for (var s : n)
                                       {
-                                        result.add(new Feature(s._pos, forPreOrPostCondition ? Visi.PRIV : v, m, t, s._name, Contract.EMPTY_CONTRACT,
-                                                               i == null ? new Impl(s._pos, null, Impl.Kind.FieldActual)
-                                                                         : i));
+                                        result.add(
+                                          new Feature(
+                                            s._pos,
+                                            forPreOrPostCondition && !isTypePar ? Visi.PRIV : v,
+                                            m,
+                                            t,
+                                            s._name,
+                                            Contract.EMPTY_CONTRACT,
+                                            i == null ? new Impl(s._pos, null, Impl.Kind.FieldActual): i
+                                          )
+                                        );
                                       }
                                   }
                                 while (skipComma());

@@ -31,7 +31,7 @@
 # three index parameters.
 #
 private:public array3(
-       public T type,
+       T type,
        public length0, length1, length2 i64,
        module redef internal_array fuzion.sys.internal_array T,
        _ unit,

@@ -62,7 +62,7 @@
 public state(
 
   # types of contained and the state value
-  public T, S type,
+  T, S type,
 
   # the contained value
   public val T,

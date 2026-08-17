@@ -24,9 +24,9 @@
 
 # mutable_tree_map -- a mutable map using an AVL tree
 #
-private:public mutable_tree_map(public LM  type : mutate,
-                                public KEY type : property.orderable,
-                                public VAL type                      ) : container.Mutable_Map KEY VAL
+private:public mutable_tree_map(LM  type : mutate,
+                                KEY type : property.orderable,
+                                VAL type                      ) : container.Mutable_Map KEY VAL
 is
 
 

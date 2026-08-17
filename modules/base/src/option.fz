@@ -27,7 +27,7 @@
 #
 # option represents an optional value of type T
 #
-public option(public T type)
+public option(T type)
   : switch T nil,
     property.orderable,
     property.hashable
