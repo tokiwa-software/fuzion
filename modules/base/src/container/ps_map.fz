@@ -242,7 +242,9 @@ O(n log n).
     as_key_array.map (k -> (k, ps_map.this[k].or_panic))
 
 
-  public min_max(F type : Function PK PK i64 i64, minmax F) option PK =>
+  # parametric helper feature to get min/max key in this map
+  #
+  min_max(F type : Function PK PK i64 i64, minmax F) option PK =>
     m (m PK, at i64, sz i64, tail i64) PK =>
       if sz = 0
         m
