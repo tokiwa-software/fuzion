@@ -36,7 +36,7 @@ public Make ref : effect is
   #
   # this will get instated automatically at startup
   #
-  public redef fixed type.default_value option io.dir.Make
+  public redef fixed type.default_value io.dir.Make
   =>
     _ : io.dir.Make is
       public redef mkdir(path io.path) outcome unit =>

@@ -209,4 +209,4 @@ is
   #
   # this will get instated automatically at startup
   #
-  public redef fixed type.default_value option (memoized_effect M K V) => memoized_effect M K V
+  public redef fixed type.default_value memoized_effect M K V => memoized_effect M K V

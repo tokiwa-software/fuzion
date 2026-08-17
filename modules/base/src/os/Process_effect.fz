@@ -52,7 +52,7 @@ public Process ref : effect is
   #
   # this will get instated automatically at startup
   #
-  public redef fixed type.default_value option os.Process =>
+  public redef fixed type.default_value os.Process =>
 
     # this needs to be a ref since it contains an atomic field
     #

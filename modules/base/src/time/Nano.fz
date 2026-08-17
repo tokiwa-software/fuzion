@@ -49,7 +49,7 @@ public Nano ref : time.Clock is
 
   # default implementation of time.Nano.
   #
-  public redef fixed type.default_value option time.Nano =>
+  public redef fixed type.default_value time.Nano =>
     _ : time.Nano is
 
       # no guarantee can be given for precision nor resolution

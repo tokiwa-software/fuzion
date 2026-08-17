@@ -35,7 +35,7 @@ is
   #
   # this will get instated automatically at startup
   #
-  public redef fixed type.default_value option fuzion.runtime.variant_fault =>
+  public redef fixed type.default_value fuzion.runtime.variant_fault =>
     fuzion.runtime.variant_fault msg->
       fuzion.runtime.contract_fault.env.cause ("variant", msg)
 

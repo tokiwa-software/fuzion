@@ -137,7 +137,7 @@ is
   #
   # this will get instated automatically at startup
   #
-  public redef fixed type.default_value option Random =>
+  public redef fixed type.default_value Random =>
     simple_random.default
 
 
@@ -192,7 +192,7 @@ simple_random(seed1 u64, seed2 u64) : Random is
     # NYI: BUG: should be : match envir.Vars.env[random_seed_env_var]
     # but we need to be able to define order of default effects for this to work
     #
-    match envir.Vars.default_value.or_panic.get random_seed_env_var
+    match envir.Vars.default_value.get random_seed_env_var
      s String =>
        match s.parse_u64
          seed u64 => simple_random seed 98765432109876543

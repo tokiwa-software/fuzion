@@ -42,7 +42,7 @@ public Stat ref : effect is
   #
   # this will get instated automatically at startup
   #
-  public redef fixed type.default_value option io.file.Stat =>
+  public redef fixed type.default_value io.file.Stat =>
     _ : io.file.Stat is
 
       public redef stats(path io.path) outcome io.file.meta_data =>

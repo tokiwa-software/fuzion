@@ -285,7 +285,7 @@ module A0_park_mutex : thread_local_effect is
   =>
     A0_park_mutex
 
-  public redef fixed type.default_value option concur.A0_park_mutex =>
+  public redef fixed type.default_value concur.A0_park_mutex =>
     concur.A0_park_mutex
 
 
@@ -306,5 +306,5 @@ module A1_park_condition(C type : time.Clock) ref : thread_local_effect is
     A1_park_condition C
 
 
-  public redef fixed type.default_value option (concur.A1_park_condition C) =>
+  public redef fixed type.default_value concur.A1_park_condition C =>
     concur.A1_park_condition C
