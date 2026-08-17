@@ -107,7 +107,16 @@ private:public pipe : effect is
         unit # ignore
 
 
-module pipe_reader (LM type: mutate, desc i64, error_msg String) : (io.buffered LM).Reader is
+# implementation of a Reader effect to
+# allow reading from a pipe
+#
+module pipe_reader (
+  # the mutate that is used internally by the Reader
+  LM type: mutate,
+  # the descriptor of the pipe
+  desc i64,
+  # the error message to display on read failure
+  error_msg String) : (io.buffered LM).Reader is
 
   # how many bytes are read at a time
   pipe_buffer_size := io.buffer_size.as_i32
@@ -127,7 +136,17 @@ module pipe_reader (LM type: mutate, desc i64, error_msg String) : (io.buffered 
       arr.slice 0 res
 
 
-module pipe_writer (LM type: mutate, desc i64, error_msg String) : (io.buffered LM).Writer is
+# implementation of a Writer effect to
+# allow writing to a pipe
+#
+module pipe_writer (
+  # the mutate that is used internally by the Reader
+  LM type: mutate,
+  # the descriptor of the pipe
+  desc i64,
+  # the error message to display on write failure
+  error_msg String
+) : (io.buffered LM).Writer is
 
   public redef writer (bytes Sequence u8) outcome unit =>
     for tbw := bytes.as_array, tbw.drop res .as_array
