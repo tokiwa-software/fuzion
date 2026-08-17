@@ -253,9 +253,7 @@ private:public jvm : effect is
   module java_string_to_string(java_ref Java_Ref) String => intrinsic
 
 
-  primitive_to_java_object(T type, v T) Java_Ref
-    pre
-      T : java_primitive
+  primitive_to_java_object(T type : java_primitive, v T) Java_Ref
   => intrinsic
 
 

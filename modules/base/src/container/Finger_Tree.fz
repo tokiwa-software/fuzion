@@ -110,9 +110,7 @@ empty(T type) : container.Finger_Tree T is
       nil            => single T seq
       ft Finger_Tree => ft
   public redef append (seq Sequence T) container.Finger_Tree T =>
-    match seq.as_finger_tree
-      nil            => single T seq
-      ft Finger_Tree => ft
+    prepend seq
   public redef index [ ] (I type : integer, i I) T => panic "illegal unless debug turned off"
   module redef as_finger_tree option (container.Finger_Tree T) => container.empty T
   redef merge(ft container.Finger_Tree T) container.Finger_Tree T => ft

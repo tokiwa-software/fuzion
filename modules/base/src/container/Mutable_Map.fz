@@ -128,6 +128,8 @@ public Mutable_Map(public K type : property.equatable, public V type) ref is
   #
   public type.from_entries(kvs Sequence (tuple K V)) Mutable_Map.this =>
     m := empty
+    # NYI: BUG: does not work
+    # m.put_all kvs
     for kv in kvs do
       m.put kv.0 kv.1
     m
