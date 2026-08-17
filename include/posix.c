@@ -1030,16 +1030,17 @@ int32_t fzE_file_read(void * file, void * buf, int32_t size)
     {
       res = poll(&fds, 1, -1);
     }
-  while (res == 0 ||                  // timeout, should never happen, retry just in case
-         (res < 0 && errno == EINTR)  // we got interrupted, so retry
-         );
+  while ( res == 0 ||                   // timeout, should never happen, retry just in case
+         (res < 0 && errno == EINTR));  // we got interrupted, so retry
 
   if (res > 0)
     {
-      do {
-        result = read(fileno(file), buf, (size_t)size);
-        assert( errno != EAGAIN );
-      } while (result < 0 && errno == EINTR);
+      do
+        {
+          result = read(fileno(file), buf, (size_t)size);
+          assert( errno != EAGAIN );
+        }
+      while (result < 0 && errno == EINTR);
     }
 
   return result;
