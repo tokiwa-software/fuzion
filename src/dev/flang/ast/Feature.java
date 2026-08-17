@@ -104,7 +104,7 @@ public class Feature extends AbstractFeature
   /**
    * The visibility of this feature
    */
-  private Visi _visibility;
+  private final Visi _visibility;
   public Visi visibility()
   {
     return _visibility == Visi.UNSPECIFIED
@@ -120,22 +120,6 @@ public class Feature extends AbstractFeature
   {
     return _visibility != Visi.UNSPECIFIED;
   }
-
-
-  /**
-   * This is used for feature defined using {@code choice of}
-   * to set same visibility for choice elements as for choice in Parser.
-   *
-   * @param v
-   */
-  public void setVisibility(Visi v)
-  {
-    if (PRECONDITIONS) require
-      (_visibility == Visi.UNSPECIFIED);
-
-    _visibility = v;
-  }
-
 
   /**
    * the modifiers of this feature
@@ -2899,7 +2883,7 @@ A pre-condition of a feature that does not redefine an inherited feature must st
     this._returnType = new FunctionReturnType(frt);
   };
 
-  
+
   /**
    * is this feature a field that is nameless i.e. declared using {@code _ :=}
    */
