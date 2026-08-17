@@ -56,7 +56,7 @@ public class OptimizedFUIR extends GeneratingFUIR {
   }
 
   // passthrough methods that DFA overrides
-  @Override public LifeTime lifeTime(int cl) {  return _original.lifeTime(cl); }
+  @Override public LifeTime lifeTime(int cl) { return _original.lifeTime(cl); }
   @Override public boolean doesResultEscape(int s) { return _original.doesResultEscape(s); }
   @Override public boolean alwaysResultsInVoid(int s){ return _original.alwaysResultsInVoid(s); }
   @Override public int[] matchCaseTags(int s, int cix){ return _original.matchCaseTags(s, cix); }
@@ -64,6 +64,57 @@ public class OptimizedFUIR extends GeneratingFUIR {
   @Override public boolean clazzIsUnitType(int cl){ return _original.clazzIsUnitType(cl); }
   @Override public int clazzOuterRef(int cl){  return _original.clazzOuterRef(cl); }
   @Override public int accessedClazz(int s){ return _original.accessedClazz(s); }
+
+  @Override
+  public ExprKind codeAt(int s)
+  {
+    // NYI: BUG: logic due to bug in c backend:  s == NO_SITE && s == -1
+    return s == NO_SITE || s == -1
+      ? ExprKind.Comment
+      : isUnitLikeConstructor(s)
+      ? ExprKind.Comment
+      : _original.codeAt(s);
+  }
+
+
+  @Override
+  public boolean clazzNeedsCode(int cl)
+  {
+    return super.clazzNeedsCode(cl) && !isUnitLikeConstructorClazz(cl);
+  }
+
+
+  private boolean isUnitLikeConstructorClazz(int cl)
+  {
+    return clazzIsUnitType(cl) &&
+      isConstructor(cl) &&
+      clazzOuterRef(cl) == NO_CLAZZ &&
+      // no side effects
+      !withinCode(clazzCode0(cl));
+  }
+
+
+  private boolean isUnitLikeConstructor(int s)
+  {
+    return
+      _original.codeAt(s) == ExprKind.Call &&
+      accessedClazz(s) != NO_CLAZZ &&
+      isUnitLikeConstructorClazz(accessedClazz(s))
+    ||
+      _original.codeAt(s) == ExprKind.Pop &&
+      isUnitLikeConstructor(s-1);
+  }
+
+
+  @Override
+  public String comment(int s)
+  {
+    return _original.codeAt(s) == ExprKind.Call
+      ? "Call is a NOP, eliminated:" + clazzAsStringHuman(accessedClazz(s))
+      : _original.codeAt(s) == ExprKind.Pop
+      ? "Call of Pop is a NOP, eliminated."
+      : comment(s);
+  }
 
 
   /*----------------------  serializing FUIR  ----------------------*/
