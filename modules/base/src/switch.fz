@@ -70,6 +70,18 @@ is
                 | B   => default
 
 
+  public map_success(RA type, R type : switch RA B, F type : A -> R, f F) R =>
+    match switch.this
+      a A => f a
+      b B => b
+
+
+  public map_error(RB type, R type : switch A RB, F type : B -> R, f F) R =>
+    match switch.this
+      a A => a
+      b B => f b
+
+
   # synonym for infix >>=
   #
   public and_then (f A -> switch.this) switch.this =>
