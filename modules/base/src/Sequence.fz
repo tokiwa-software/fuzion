@@ -1304,6 +1304,15 @@ is
   */
 
 
+  # create a Sequence where type T is boxed as V
+  # this is useful e.g. in code like:
+  #
+  #      codepoints
+  #        .box String
+  #        .fold String.concat
+  #
+  public box(V type : T) Sequence V =>
+    map V x->x
 
 
   # create an empty Sequence

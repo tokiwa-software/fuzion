@@ -410,7 +410,7 @@ public String ref : property.equatable, property.hashable, property.orderable is
   =>
     codepoints
       .slice from to
-      .map String c->c  # NYI: this should maybe not be needed since codepoint is a string
+      .box String
       .fold String.concat
 
 
