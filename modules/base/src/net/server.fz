@@ -111,7 +111,9 @@ is
           net.protocol.tcp =>
             listen_res := fzE_listen sd backlog
             if listen_res != 0
-              _ := fuzion.sys.net.close sd # NYI: BUG: register potential failure
+              match fuzion.sys.net.close sd
+                unit =>
+                e error => Runtime_Failure.env.register_failure (error "net.server.type.start failed closing socket $e")
               error "listening on socket failed" listen_res.as_i64
             else
               sd
