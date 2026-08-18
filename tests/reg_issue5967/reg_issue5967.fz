@@ -39,22 +39,22 @@ reg_issue5967 =>
   scheme(ls) is
     cp := ls.map (.codepoints)
     a := array2 cp.count cp[0].count i,j->cp[i][j]
-    w => a.length1.as_i32
-    h => a.length0.as_i32
-    at(l,c i32) =>
+    w => a.length1
+    h => a.length0
+    at(l,c i64) =>
       if 0 <= l < h && 0 <= c < w then a[_,l,c] else "."
 
-    number(l, c i32) is
-      len := (0.. .filter (x -> !(at l c+x).is_ascii_digit)).first.or_panic
-      ok bool := (-1..1) ∃ y -> (-1..len) ∃ x -> (at l+y c+x) .is_symbol
-      val i32 := ls[l].substring c c+len
+    number(l, c i64) is
+      len := (i64.zero.. .filter (x -> !(at l c+x).is_ascii_digit)).first.or_panic
+      ok bool := ((i64 -1)..1) ∃ y -> ((i64 -1)..len) ∃ x -> (at l+y c+x) .is_symbol
+      val i32 := ls[l].substring c.as_i32 (c+len).as_i32
                       .parse_i32.or_panic
 
     numbers =>
       a.index_pairs.flat_map number ij->
         i,j := ij
-        (!(at i.as_i32 j.as_i32-1).is_ascii_digit &&
-          (at i.as_i32 j.as_i32  ).is_ascii_digit   ).as_option number (number i.as_i32 j.as_i32)
+        (!(at i j-1).is_ascii_digit &&
+          (at i j  ).is_ascii_digit   ).as_option number (number i j)
 
     parts =>
       numbers.map (x -> if x.ok then x.val else 0)
