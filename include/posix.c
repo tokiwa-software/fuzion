@@ -85,6 +85,7 @@ static_assert(SIGSEGV == 11, "signal definition different than expected");
 static_assert(SIGPIPE == 13, "signal definition different than expected");
 static_assert(SIGALRM == 14, "signal definition different than expected");
 static_assert(SIGTERM == 15, "signal definition different than expected");
+static_assert(EWOULDBLOCK == EAGAIN, "EWOULDBLOCK != EAGAIN, failed assumption of fzE_file_read implementation");
 static_assert(sizeof(pthread_t) <= sizeof(void *), "pthread_t must be smaller or equal to pointer size");
 
 
