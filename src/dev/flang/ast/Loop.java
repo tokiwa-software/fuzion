@@ -488,8 +488,7 @@ public class Loop extends ANY
         private void propagateResultType(AbstractFeature outer)
         {
           var setExplicitResultType =
-             ((Block)outer.code()).resultExpression() == _impl ||
-             outer.baseName().startsWith(FuzionConstants.REC_LOOP_PREFIX);
+             ((Block)outer.code()).resultExpression() == _impl;
           if (((Feature)outer).returnType() instanceof FunctionReturnType frt && setExplicitResultType)
             {
               if (Loop.this.producesResult())
