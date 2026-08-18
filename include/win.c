@@ -971,7 +971,7 @@ int fzE_hostname(char *buf, size_t nbytes)
 }
 
 
-// always return 38, pipe creation not yet implemented
+// open a new pipe
 //
 int fzE_pipe_create(int64_t *fds)
 {
@@ -988,7 +988,9 @@ int fzE_pipe_create(int64_t *fds)
     fds[1] = (int64_t) hWrite;
     return 0;
   }
-  return -1;
+  DWORD le = GetLastError();
+  assert(le > 0)
+  return (int)le;
 }
 
 // returns -1 on error, 0 on pipe exhausted/closed
