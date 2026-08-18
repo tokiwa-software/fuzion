@@ -590,10 +590,8 @@ int fzE_thread_join(void * thrd)
   int ret = 0;
 #ifdef GC_THREADS
   ret = GC_pthread_join((pthread_t)thrd, NULL);
-  assert (ret == 0);
 #else
   ret = pthread_join((pthread_t)thrd, NULL);
-  assert (ret == 0);
 #endif
   switch (ret)
     {

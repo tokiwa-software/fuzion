@@ -724,10 +724,28 @@ void * fzE_thread_create(void *(*code)(void *),
 * Join with a running thread.
 */
 int fzE_thread_join(void * thrd) {
-  // NYI: BUG: error handling!
-  WaitForSingleObject((HANDLE)thrd, INFINITE);
+  DWORD result = WaitForSingleObject((HANDLE)thrd, INFINITE);
   CloseHandle((HANDLE)thrd);
-  return 0;
+  switch (result)
+    {
+      case WAIT_OBJECT_0:
+        return 0;
+      case WAIT_ABANDONED:
+        return 1;
+      case WAIT_TIMEOUT:
+        return 2;
+      case WAIT_FAILED:
+        {
+          DWORD err = GetLastError();
+          if (err == ERROR_INVALID_HANDLE)
+            {
+              return 3;
+            }
+          return 2;
+        }
+      default:
+        assert(false);
+    }
 }
 
 
