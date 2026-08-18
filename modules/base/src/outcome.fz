@@ -49,7 +49,7 @@
 # compatible to  'outcome data IO_Error Permission_Error', so everything
 # is fine.
 #
-public outcome(public T type)
+public outcome(T type)
   : switch T error,
     property.equatable
 is

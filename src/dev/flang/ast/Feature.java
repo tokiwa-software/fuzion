@@ -33,7 +33,6 @@ import java.util.LinkedList;
 import java.util.ListIterator;
 import java.util.Optional;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
@@ -108,7 +107,7 @@ public class Feature extends AbstractFeature
   public Visi visibility()
   {
     return _visibility == Visi.UNSPECIFIED
-      ? Visi.PRIV
+      ? (isTypeParameter() ? Visi.PUB : Visi.PRIV)
       : _visibility;
   }
 
@@ -776,15 +775,15 @@ public class Feature extends AbstractFeature
    * @param p the implementation (feature body etc).
    */
   Feature(SourcePosition pos,
-                 Visi v,
-                 int m,
-                 ReturnType r,
-                 List<String> qname,
-                 List<AbstractFeature> a,
-                 List<AbstractCall> i,
-                 Contract c,
-                 Impl p,
-                 List<AbstractType> effects) // NYI: UNDER DEVELOPMENT: effects
+          Visi v,
+          int m,
+          ReturnType r,
+          List<String> qname,
+          List<AbstractFeature> a,
+          List<AbstractCall> i,
+          Contract c,
+          Impl p,
+          List<AbstractType> effects) // NYI: UNDER DEVELOPMENT: effects
   {
     if (PRECONDITIONS) require
       (pos != null,
@@ -837,6 +836,10 @@ public class Feature extends AbstractFeature
               .collect(Collectors.toSet());
         // NYI: UNDER DEVELOPMENT: report pos of arguments not pos of feature
         AstErrors.argumentNamesNotDistinct(this, duplicateNames);
+      }
+    if (isVisibilitySpecified() && isTypeParameter())
+      {
+        AstErrors.typeParameterMustNotDefineTypeVisibility(this);
       }
   }
 

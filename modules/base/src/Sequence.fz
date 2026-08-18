@@ -33,7 +33,7 @@
 #
 # Heirs of Sequence must implement 'as_list'.
 #
-public Sequence(public T type) ref
+public Sequence(T type) ref
   : property.countable,
     property.orderable,
     property.hashable

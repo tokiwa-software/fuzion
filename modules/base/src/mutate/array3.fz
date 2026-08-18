@@ -25,7 +25,7 @@
 #
 module:public array3 (
        # element type
-       public T type,
+       T type,
 
        # length of each dimension
        public redef length0 i64,

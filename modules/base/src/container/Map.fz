@@ -25,7 +25,7 @@
 
 # Map -- an abstract map from keys K to values V
 #
-public Map(public K type : property.equatable, public V type) ref is
+public Map(K type : property.equatable, V type) ref is
 
   # number of entries in this map
   #

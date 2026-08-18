@@ -2679,7 +2679,16 @@ public class AstErrors extends ANY
   {
     error(range, "A result of type " + st("unit") + " must not be ignored explicitly.",
       "Remove " + ss("_ :=") + " to fix this error.");
-    }
+  }
+
+  public static void typeParameterMustNotDefineTypeVisibility(Feature f)
+  {
+    error(
+      f.pos(),
+      "Setting the visibility is not allowed for a type parameter.",
+      "A type parameters visibility is always public. To fix this, remove the visibility modifier."
+    );
+  }
 
 }
 

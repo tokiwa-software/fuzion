@@ -25,7 +25,7 @@
 #
 module:public array (
        # element type
-       public T type,
+       T type,
 
        # contents of the array
        module data fuzion.sys.internal_array T
