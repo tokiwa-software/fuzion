@@ -84,12 +84,10 @@ choice_constraints =>
   say <| (id (option String) nil).test (option String) nil
 
 
-  # NYI: BUG: Type 'A' was not found, no corresponding feature nor formal type parameter exists
+  switch.test2(X type : switch.this, x X) =>
+    match x
+      a A => say a
+      b B => say b
 
-  # switch.test2(X type : switch.this, x X) =>
-  #   match x
-  #     a A => say a
-  #     b B => say b
-
-  # (id (option String) nil).test2 (option String) nil
+  (id (option String) nil).test2 (option String) nil
 
