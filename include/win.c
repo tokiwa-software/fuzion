@@ -745,6 +745,7 @@ int fzE_thread_join(void * thrd) {
         }
       default:
         assert(false);
+        return -1;
     }
 }
 
