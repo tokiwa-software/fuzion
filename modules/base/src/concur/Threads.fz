@@ -79,8 +79,10 @@ public Threads ref : effect is
   #
   public redef finally unit =>
     children.for_each c->
-      # NYI: UNDER DEVELOPMENT: register failures somewhere
-      _ := c.join
+      match c.join
+        unit =>
+        e error =>
+          Runtime_Failure.env.register_failure (error "Threads effect failed joining thread $c, got $e")
 
 
   # default implementation of threads

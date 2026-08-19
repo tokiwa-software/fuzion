@@ -50,8 +50,10 @@ module net is
     else if fzE_bind sockfd family socket_type protocol (fuzion.sys.c_string host) (fuzion.sys.c_string $port) = 0
       sockfd
     else
-      _ := fzE_socket_close sockfd # NYI: register potential failure somewhere...
-      error "net.bind failed (host=$host, port=$port)" fzE_last_error
+      res := error "net.bind failed (host=$host, port=$port)" fzE_last_error
+      if fzE_socket_close sockfd != 0
+        Runtime_Failure.env.register_failure (error "In fuzion.sys.net.bind, failed closing socket, error code $(fzE_last_error)")
+      res
 
 
   # accept a new connection for given socket descriptor, wrapper for accept native.
@@ -71,8 +73,10 @@ module net is
     else if fzE_connect sockfd family socket_type protocol (fuzion.sys.c_string host) (fuzion.sys.c_string $port) = 0
       sockfd
     else
-      _ := fzE_socket_close sockfd # NYI: register potential failure somewhere...
-      error "net.connect failed (host=$host, port=$port)" fzE_last_error
+      res := error "net.connect failed (host=$host, port=$port)" fzE_last_error
+      if fzE_socket_close sockfd != 0
+        Runtime_Failure.env.register_failure (error "In fuzion.sys.net.connect, failed closing socket, error code $(fzE_last_error)")
+      res
 
 
   # read a maximum of max_bytes from descriptor, wrapper for read native
