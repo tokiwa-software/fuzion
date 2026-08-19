@@ -853,17 +853,27 @@ int fzE_pipe_create(int64_t * fds)
 {
   int pipefd[2];
 
-  if (pipe(pipefd) == -1)
+  // make sure no fork is done while we open pipes
+  fzE_lock();
+
+  int res = pipe(pipefd);
+
+  if (res == 0)
   {
-    return errno;
-  }
-  else
-  {
+    int readCloseExec = fcntl(pipefd[0], F_SETFD, FD_CLOEXEC);
+    int writeCloseExec = fcntl(pipefd[1], F_SETFD, FD_CLOEXEC);
+    assert(readCloseExec == 0);
+    assert(writeCloseExec == 0);
+
     fds[0] = (int64_t) pipefd[0];
     fds[1] = (int64_t) pipefd[1];
   }
 
-  return 0;
+  fzE_unlock();
+
+  return res == 0
+    ? 0
+    : errno;
 }
 
 
