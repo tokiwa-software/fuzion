@@ -990,13 +990,26 @@ int fzE_hostname(char *buf, size_t nbytes)
 }
 
 
-// always return 38, pipe creation not yet implemented
-//
-// NYI: ENHANCEMENT: support pipe creation on Windows
+// open a new pipe
 //
 int fzE_pipe_create(int64_t *fds)
 {
-  return 38; // ENOSYS on Linux
+  HANDLE hRead, hWrite;
+
+  SECURITY_ATTRIBUTES saAttr = {
+    .nLength = sizeof(SECURITY_ATTRIBUTES),
+    .bInheritHandle = FALSE,
+    .lpSecurityDescriptor = NULL
+  };
+
+  if (CreatePipe(&hRead, &hWrite, &saAttr, 0)) {
+    fds[0] = (int64_t) hRead;
+    fds[1] = (int64_t) hWrite;
+    return 0;
+  }
+  DWORD le = GetLastError();
+  assert(le > 0)
+  return (int)le;
 }
 
 // returns -1 on error, 0 on pipe exhausted/closed
