@@ -122,7 +122,7 @@ public ip_address (val u128) : property.equatable is
       # NYI: BUG: this is a hack, write a proper parser
       # NYI: CLEANUP: move this code into from_string_v6
       match sv6.index_of ""
-        i i32 =>
+        i i64 =>
           f, b := sv6.split_at i
           amount_of_padding_zeros := 8 - f.count - b.count
           check amount_of_padding_zeros > 0

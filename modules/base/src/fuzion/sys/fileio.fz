@@ -33,9 +33,8 @@ module fileio is
   # has been reached.
   #
   module read(fd File_Descriptor, n u64) outcome (Sequence u8) =>
-    len := n.as_i32
-    arr := fuzion.sys.internal_array_init u8 len
-    res := fzE_file_read fd arr.data len
+    arr := fuzion.sys.internal_array_init u8 n.as_i64
+    res := fzE_file_read fd arr.data n.as_i32
 
     if res = -1
       error "failed reading" fzE_last_error
@@ -117,9 +116,9 @@ module fileio is
               # a Fuzion Object representing the path for the source to be opened
               path io.path,
               # a flag to specify the open method (Read: 0, Write: 1, Append: 2)
-              flag i32) outcome File_Descriptor =>
+              flag i64) outcome File_Descriptor =>
     open_results := fuzion.sys.internal_array_init i64 1  # [error number]
-    res := fzE_file_open (fuzion.sys.c_string $path) open_results.data flag
+    res := fzE_file_open (fuzion.sys.c_string $path) open_results.data flag.as_i32
     if open_results[0] = 0
       res
     else

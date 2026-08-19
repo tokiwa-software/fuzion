@@ -138,7 +138,7 @@ public integer : numeric is
   # the first character.  Extend with leading "0" until the length is at
   # least len
   #
-  public as_string(len i32, base u32) String
+  public as_string(len i64, base u32) String
     pre
       debug: 1 < base ≤ 36
     post
@@ -164,7 +164,7 @@ public integer : numeric is
 
   # create binary representation with given number of digits.
   #
-  public bin(len i32) String => integer.this.as_string len 2
+  public bin(len i64) String => integer.this.as_string len 2
 
 
   # create octal representation
@@ -174,7 +174,7 @@ public integer : numeric is
 
   # create octal representation with given number of digits.
   #
-  public oct(len i32) String => integer.this.as_string len 8
+  public oct(len i64) String => integer.this.as_string len 8
 
 
   # create decimal representation
@@ -184,7 +184,7 @@ public integer : numeric is
 
   # create decimal representation with given number of digits.
   #
-  public dec(len i32) String => integer.this.as_string len 10
+  public dec(len i64) String => integer.this.as_string len 10
 
 
   # create hexadecimal representation
@@ -194,7 +194,7 @@ public integer : numeric is
 
   # create hexadecimal representation with given number of digits.
   #
-  public hex(len i32) String => integer.this.as_string len 16
+  public hex(len i64) String => integer.this.as_string len 16
 
 
   # the least significant byte of this integer

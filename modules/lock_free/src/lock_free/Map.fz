@@ -661,7 +661,7 @@ is
 
 
   # the size of the ctrie
-  public redef size i32 =>
+  public redef size i64 =>
     items.count
 
 

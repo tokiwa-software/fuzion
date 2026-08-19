@@ -135,7 +135,7 @@ is
   #
   table array time.duration :=
     match max_recorded
-      mr time.duration => n := num_buckets.as_i32
+      mr time.duration => n := num_buckets
                           array n i->
                             if i<(n-1) then mr.scale ((i+1).as_f64 / (num_buckets.as_f64-1))
                                        else time.duration.max
@@ -143,7 +143,7 @@ is
 
   check
     debug: table.length = num_buckets
-    debug: table[num_buckets.as_i32-1] = time.duration.max
+    debug: table[num_buckets-1] = time.duration.max
 
 
   # table of durations for logarithmic histogram
@@ -155,7 +155,7 @@ is
     step := 1.65  # step factor determined via trial and error
     (1.0 :: *step).map f->(time.duration.ns 1 .scale f)
                   .dedup     # some lower values might be duplicates like 1ns*1.65=1ns
-                  .take num_buckets.as_i32-1
+                  .take num_buckets-1
                   .concat [time.duration.max]
                   .as_array
 

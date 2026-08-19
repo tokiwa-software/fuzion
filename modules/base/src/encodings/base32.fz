@@ -54,7 +54,7 @@ is
     # extract 8 quintets from 40 bits (of an u64)
     enc40(n u64) =>
       array u8 _ 8 i->
-        j := ((n >> (35-i.as_i32*5).as_u64) & 31).as_i64
+        j := ((n >> (35-i*5).as_u64) & 31).as_i64
         alphabet[j]
 
     for

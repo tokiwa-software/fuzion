@@ -86,7 +86,7 @@ is
       safety: 0 ≤ priority0 ≤ 99
   =>
     mtx.synchronized (outcome unit) _ ()->
-      p :=
+      p i32 :=
         match policy0
           concur.scheduling_policy.sched_other => 0
           concur.scheduling_policy.sched_fifo => 1

@@ -179,10 +179,10 @@ is
       safety: length.fits_in_i64
   =>
 
-    internal := fuzion.sys.internal_array_init T length.as_i32
+    internal := fuzion.sys.internal_array_init T length.as_i64
     for x := I.zero, x+1
     while x < length do
-      internal[x.as_i32] := init x
+      internal[x.as_i64] := init x
 
     array T internal unit unit unit unit
 

@@ -83,7 +83,7 @@ module net is
   # may block if descriptor is set to blocking.
   #
   module read(descriptor i32, max_bytes i64) outcome (Sequence u8) =>
-    buff := fuzion.sys.internal_array_init u8 max_bytes.as_i32
+    buff := fuzion.sys.internal_array_init u8 max_bytes
     res := fzE_socket_read descriptor buff.data max_bytes
     if res >= 0
       buff.as_array.take res

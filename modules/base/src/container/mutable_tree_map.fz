@@ -42,8 +42,8 @@ is
 
   # returns the size of the map, i.e. the number of elements it contains
   #
-  public redef size i32 =>
-    fold i32 0 ((i, _) -> i + 1)
+  public redef size i64 =>
+    fold i64 0 ((i, _) -> i + 1)
 
 
   # get a sequence of all key/value pairs in this map

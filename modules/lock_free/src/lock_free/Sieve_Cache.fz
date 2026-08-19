@@ -40,7 +40,7 @@ private:public Node(K type, V type, pair (K,V), visited concur.atomic bool, prev
 #     say <| cache0.access "D" ()->5    # => 5
 #     say <| cache0.access "C" ()->6    # => 3
 #
-public Sieve_Cache(K type : property.hashable, V type, MM type : container.Mutable_Map K (lock_free.Node K V), public capacity i32) ref is
+public Sieve_Cache(K type : property.hashable, V type, MM type : container.Mutable_Map K (lock_free.Node K V), public capacity i64) ref is
 
   cache := MM .empty
 

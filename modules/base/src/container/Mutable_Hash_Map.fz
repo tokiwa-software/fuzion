@@ -45,24 +45,24 @@ module:public Mutable_Hash_Map(
 
         # initial size, also the size of the hash map will not decrease below this
         #
-        min_size i32,
+        min_size i64,
 
         # lower boundary at which the size of the internal array is decreased
         #
-        lower_load_factor num.fraction i32,
+        lower_load_factor num.fraction i64,
 
         # upper boundary at which the size of the internal array is increased
         #
-        upper_load_factor num.fraction i32,
+        upper_load_factor num.fraction i64,
 
         # factor by which the allocated_size is increased if load reaches upper_load_factor
         #
-        resize_factor num.fraction i32) ref : container.Mutable_Map HK V
+        resize_factor num.fraction i64) ref : container.Mutable_Map HK V
 pre
   debug: min_size > 0
-  debug: (num.fraction i32).zero < lower_load_factor < upper_load_factor
-  debug: lower_load_factor < upper_load_factor < (num.fraction i32).one
-  debug: resize_factor >= (num.fraction i32).two
+  debug: (num.fraction i64).zero < lower_load_factor < upper_load_factor
+  debug: lower_load_factor < upper_load_factor < (num.fraction i64).one
+  debug: resize_factor >= (num.fraction i64).two
 
 is
 
@@ -124,7 +124,7 @@ is
 
   # change size of internal allocation to new_alloc_size
   #
-  change_allocated_size(new_alloc_size i32)
+  change_allocated_size(new_alloc_size i64)
     pre
       debug: size <= ((num.fraction new_alloc_size 1) * upper_load_factor).ceil
       debug: max size min_size >= ((num.fraction new_alloc_size 1) * lower_load_factor).floor
@@ -171,7 +171,7 @@ is
 
   # number of entries in this map
   #
-  public redef size i32 =>
+  public redef size i64 =>
     LM.env.exclusive ()->
       load.get
 
