@@ -283,13 +283,13 @@ jitter_threaded =>
       # Define a local blocking_mutate effect for the scheduler test.
       bm : concur.blocking_mutate is
 
-      run_for_period(period time.duration) bool
+      run_for_period(period time.duration) option String
       =>
         start := time.Nano.env.read + start_delay
         end := start + test_duration
 
-        # Atomic flag to signal overrun
-        overrun := concur.atomic bool .new false
+        # Atomic flag to signal overrun and store error reason
+        error_cell := concur.atomic (option String) .new nil
 
         # Mutable cell for expected release time
         cell := bm.env.new start
@@ -302,7 +302,7 @@ jitter_threaded =>
         # Task that runs periodically by sleeping and recursing.
         task_code =>
           actual := time.Nano.env.read
-          if actual <= end && !overrun.read
+          if actual <= end && error_cell.read = nil
             # Atomically read current expected and set next one (exclusive block on bm)
             exp_old_new := bm.env.exclusive ()->
               old := cell.get
@@ -314,17 +314,18 @@ jitter_threaded =>
 
             sample_ch <- (period, actual, expected, false)
 
-            # Check for overrun (jitter exceeds period)
+            # Check for jitter exceeded period
             if actual >= new_expected
-              overrun.write true
+              diff := actual - new_expected
+              error_cell.write (option "Jitter exceeded period: actual release was $diff late (period $period)")
             else
               payload
               finish := time.Nano.env.read
               if finish >= new_expected
-                overrun.write true
-
-              # Schedule next run only if no overrun
-              if !overrun.read
+                diff := finish - new_expected
+                error_cell.write (option "Overrun: payload exceeded next release by $diff (period $period)")
+              else
+                # Schedule next run only if no error
                 sleep_until := new_expected
                 if sleep_until <= end
                   now3 := time.Nano.env.read
@@ -341,19 +342,21 @@ jitter_threaded =>
         if end > now2
           time.Nano.env.sleep (end - now2)
 
-        overrun.read
+        # Return any error that occurred
+        error_cell.read
 
       # Instate bm around the period loop.
       bm ! ()->
-        # Use an atomic mutable cell to hold the current period.
         cur_cell := concur.atomic time.duration .new period_default
         while cur_cell.read.as_duration > time.duration.ns 0
           cur := cur_cell.read
-          if run_for_period cur
-            say "Overrun detected at period $cur, stopping."
-            Exit.env.exit 1
-          next_period := cur.scale 0.5
-          cur_cell.write next_period
+          match run_for_period cur
+            nil => # OK, continue
+              next_period := cur.scale 0.5
+              cur_cell.write next_period
+            err_msg String =>
+              say "Test stopped: $err_msg"
+              Exit.env.exit 1
 
       unit
 
