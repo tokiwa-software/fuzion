@@ -283,10 +283,13 @@ jitter_threaded =>
       # Define a local blocking_mutate effect for the scheduler test.
       bm : concur.blocking_mutate is
 
-      run_for_period(period time.duration)
+      run_for_period(period time.duration) bool
       =>
         start := time.Nano.env.read + start_delay
         end := start + test_duration
+
+        # Atomic flag to signal overrun
+        overrun := concur.atomic bool .new false
 
         # Mutable cell for expected release time
         cell := bm.env.new start
@@ -299,7 +302,7 @@ jitter_threaded =>
         # Task that runs periodically by sleeping and recursing.
         task_code =>
           actual := time.Nano.env.read
-          if actual <= end
+          if actual <= end && !overrun.read
             # Atomically read current expected and set next one (exclusive block on bm)
             exp_old_new := bm.env.exclusive ()->
               old := cell.get
@@ -310,18 +313,27 @@ jitter_threaded =>
             new_expected := exp_old_new.1
 
             sample_ch <- (period, actual, expected, false)
-            payload
 
+            # Check for overrun (jitter exceeds period)
+            if actual >= new_expected
+              overrun.write true
+            else
+              payload
+              finish := time.Nano.env.read
+              if finish >= new_expected
+                overrun.write true
 
-            # Schedule next run
-            sleep_until := new_expected
-            if sleep_until <= end
-              now3 := time.Nano.env.read
-              if sleep_until > now3
-                time.Nano.env.sleep (sleep_until - now3)
-              task_code
+              # Schedule next run only if no overrun
+              if !overrun.read
+                sleep_until := new_expected
+                if sleep_until <= end
+                  now3 := time.Nano.env.read
+                  if sleep_until > now3
+                    time.Nano.env.sleep (sleep_until - now3)
+                  task_code
 
-        t := realtime.task time.duration task_code period (option end)
+        # Submit the task with infinite period so it runs only once.
+        t := realtime.task time.frequency task_code (time.frequency 0 (time.duration.ms 1)) (option end)
         realtime.Scheduler.env.submit t
 
         # Wait until test duration ends
@@ -329,17 +341,19 @@ jitter_threaded =>
         if end > now2
           time.Nano.env.sleep (end - now2)
 
-        # Send end-of-period marker
-        marker := time.Nano.env.read
-        sample_ch <- (period, marker, marker, true)
+        overrun.read
 
       # Instate bm around the period loop.
       bm ! ()->
-        for p := period_default, p.scale 0.5 do
-          run_for_period p
-        #for p := period_default, p.scale 0.5
-        #while p.as_duration >= time.duration.ms 1 do
-          #run_for_period p
+        # Use an atomic mutable cell to hold the current period.
+        cur_cell := concur.atomic time.duration .new period_default
+        while cur_cell.read.as_duration > time.duration.ns 0
+          cur := cur_cell.read
+          if run_for_period cur
+            say "Overrun detected at period $cur, stopping."
+            Exit.env.exit 1
+          next_period := cur.scale 0.5
+          cur_cell.write next_period
 
       unit
 
