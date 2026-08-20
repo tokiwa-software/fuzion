@@ -61,7 +61,7 @@
 #
 public state(
 
-  # types of contained and the state value
+  # types of the contained value and the state
   T, S type,
 
   # the contained value
@@ -111,10 +111,7 @@ is
     state val new mode.next
 
 
-  # converts option to a string
-  #
-  # returns the result of $T for an option containing an instance
-  # of T, alternatively returns $nil for an option that is nil.
+  # converts state to a string
   #
   public redef as_string String =>
     "$val ($get)"

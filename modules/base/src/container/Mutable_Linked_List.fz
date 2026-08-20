@@ -24,7 +24,7 @@
 # a type for mutable singly linked lists
 #
 # On call to `Mutable_Linked_List LM T data` creates a minimal list consisting
-# of only one single element. To create larger rings, you can either call
+# of only one single element. To create larger lists, you can either call
 # `append` to add single cells, or `concat` to concatenate two lists.
 #
 private:public Mutable_Linked_List(# mutate effect to be used to create mutable variables

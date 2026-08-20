@@ -17,7 +17,7 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion example jitter
+#  Source code of Fuzion example jitter_threaded
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
@@ -91,7 +91,7 @@ jitter_threaded =>
           s := i, s +° i
         while i < 1000
         else
-          if s = s +° 1   # make sure the compiler does not optimize this aways
+          if s = s +° 1   # make sure the compiler does not optimize this away
             say "$s (never called)"
 
       # perform jitter test for given period: collect raw samples
@@ -244,6 +244,6 @@ jitter_threaded =>
   say "Dedicated thread completed."
 
 # How to run with high priority :
-# FUZION_HOME=build bash bin/fz -c examples/jitter/jitter.fz
-# sudo setcap cap_sys_nice=ep ./jitter
-# ./jitter
+# FUZION_HOME=build bash bin/fz -c examples/jitter/jitter_threaded.fz
+# sudo setcap cap_sys_nice=ep ./jitter_threaded
+# ./jitter_threaded
