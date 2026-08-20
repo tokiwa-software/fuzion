@@ -967,9 +967,17 @@ int64_t fzE_process_poll(int64_t p){
         return -1;
     }
 
-    // Process has exited.
-    CloseHandle((HANDLE)p);
     return (int64_t)status;
+}
+
+/**
+ * close process handle, free memory
+ */
+int fzE_process_close(int64_t p)
+{
+  return CloseHandle((HANDLE)p)
+    ? 0
+    : 1;
 }
 
 
