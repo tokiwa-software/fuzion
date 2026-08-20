@@ -1008,7 +1008,7 @@ int fzE_pipe_create(int64_t *fds)
     return 0;
   }
   DWORD le = GetLastError();
-  assert(le > 0)
+  assert(le > 0);
   return (int)le;
 }
 

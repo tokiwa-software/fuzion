@@ -98,7 +98,9 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
               lm : mutate is
               lm ! ()->
                 _ := p.with_in unit lm ()->
-                  _ := (io.buffered lm).Writer.env.write s
+                  match (io.buffered lm).Writer.env.write s
+                    unit =>
+                    e error => Runtime_Failure.env.register_failure e
                 true
             io.end_of_file => false
             e error => panic e

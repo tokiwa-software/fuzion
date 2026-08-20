@@ -30,6 +30,8 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 0 * * 1-5' # monday through friday
+  pull_request:
+    types: [labeled]
 
 
 env:
@@ -43,6 +45,7 @@ env:
 jobs:
   run_tests:
     name: windows run tests
+    if: ${{ github.event_name != 'pull_request' || (github.event_name == 'pull_request' && github.event.action == 'labeled' && github.event.label.name == 'extra tests') }}
     runs-on: windows-latest
     defaults:
       run:

@@ -704,6 +704,16 @@ is
   # #       sp.as_persistent_map
 
 
+  # create an immutable copy of this mutable map
+  #
+  public fixed redef as_map container.Map CTK CTV =>
+    s := snapshot true
+    _ : container.Map CTK CTV is
+      public redef size i64 => s.size.as_i64
+      public redef index [] (k CTK) option CTV => s[k]
+      public redef items Sequence (tuple CTK CTV) => s.items
+
+
   # initialize a new ctrie
   public fixed redef type.empty lock_free.Map CTK CTV =>
 
