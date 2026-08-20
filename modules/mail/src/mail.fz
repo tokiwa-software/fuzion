@@ -71,15 +71,9 @@ public mail is
       MAIL FROM:<$from>
       """.replace "\n" "\r\n"
 
-    rcpt_to =>
-      match bcc
-        nil => """
-          RCPT TO:<$to>
-          """.replace "\n" "\r\n"
-        m String => """
-          RCPT TO:<$to>
-          RCPT TO:<$m>
-          """.replace "\n" "\r\n"
+    rcpt_to (addr String) => """
+      RCPT TO:<$addr>
+      """.replace "\n" "\r\n"
 
     data => """
       DATA
@@ -149,9 +143,16 @@ public mail is
 
       read_or_cause "250" "MAIL FROM" mail_from
 
-      write_or_cause ssl_lm rcpt_to
- 
-      read_or_cause "250" "RCPT TO" rcpt_to
+      write_or_cause ssl_lm (rcpt_to to)
+
+      read_or_cause "250" "RCPT TO" (rcpt_to to)
+
+      match bcc
+        nil => # ignore
+        bcc_addr String =>
+          write_or_cause ssl_lm (rcpt_to bcc_addr)
+
+          read_or_cause "250" "RCPT TO" (rcpt_to bcc_addr)
 
       write_or_cause ssl_lm data
 
