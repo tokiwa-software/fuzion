@@ -188,7 +188,7 @@ is
   # Return early from park in case timeout was reached.
   #
   # result is `true`  if this returns due to a call to `unpark`, it is `false` if there
-  # was no timeout.
+  # was a timeout.
   #
   module park_until(C type : time.Clock,
                     F type : ()->unit,
