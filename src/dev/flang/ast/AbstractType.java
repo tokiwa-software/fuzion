@@ -667,6 +667,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       {
         result = YesNo.yes;
       }
+    if (result.no() && target_type.isParametricType() && target_type.typeParameter().constraint(context).isChoice() && !actual_type.isChoice())
+      {
+        result = target_type.typeParameter().constraint(context).isAssignableFrom(actual_type);
+      }
     return result;
   }
 
