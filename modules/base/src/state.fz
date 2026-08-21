@@ -61,8 +61,11 @@
 #
 public state(
 
-  # types of the contained value and the state
-  T, S type,
+  # type of the contained value
+  T,
+
+  # type of the contained the state
+  S type,
 
   # the contained value
   public val T,
