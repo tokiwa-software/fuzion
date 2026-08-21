@@ -67,7 +67,7 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
     (io.buffered LM).Reader.instate (std_out_reader LM) f
 
 
-  # install buffered reader for reading from stdout of process
+  # install buffered reader for reading from stderr of process
   # and run `f`.
   public with_err(T type, LM type : mutate, f () -> outcome T) outcome T =>
     (io.buffered LM).Reader.instate (std_err_reader LM) f

@@ -62,7 +62,7 @@ public Threads ref : effect is
   # This is intended for use in, e.g., thread pools that are used to perform
   # tasks that may require different effects.
   #
-  public spawn_without_inherited_effects(# code to run in the new thread without an new, empty effect environment
+  public spawn_without_inherited_effects(# code to run in the new thread without a new, empty effect environment
                                          code ()->unit
                                         ) concur.Thread
   => abstract
@@ -100,7 +100,7 @@ universe.default(
   public redef current concur.Thread) : concur.Threads is
 
   # spawn a new thread, teleporting the current effect environment
-  # the new thread.
+  # to the new thread.
   #
   # This is to be used in environments where code interacts with data
   # shared with the current thread, e.g., mutable variables that where
@@ -124,7 +124,7 @@ universe.default(
   # This is intended for use in, e.g., thread pools that are used to perform
   # tasks that may require different effects.
   #
-  public redef spawn_without_inherited_effects(# code ot run int he new thread without an new, empty effect environment
+  public redef spawn_without_inherited_effects(# code to run in the new thread without a new, empty effect environment
                                                 code ()->unit
                                                ) concur.Thread
   =>
@@ -138,7 +138,7 @@ universe.default(
   spawn_without_inherited_effects(# NYI: CLEANUP: remove this argument and use system thread id
                                   tid uid,
 
-                                  # code ot run int he new thread without an new, empty effect environment
+                                  # code to run in the new thread without a new, empty effect environment
                                   code ()->unit
                                  ) concur.Thread =>
     st := spawn tid code

@@ -33,7 +33,7 @@ public thread_pool(R type, size i32, code ()->R) outcome R =>
 
 
 # concrete implementation of concur.Future
-# meant to run on a thread thread_pool
+# meant to run on a thread_pool
 #
 Computable_Future(
   # result type of the computation

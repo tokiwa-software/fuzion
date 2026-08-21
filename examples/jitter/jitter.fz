@@ -90,7 +90,7 @@ jitter =>
         s := i, s +° i
       while i < 1000
       else
-        if s = s +° 1   # make sure the compiler does not optimize this aways
+        if s = s +° 1   # make sure the compiler does not optimize this away
           say "$s (never called)"
 
     # perform jitter test for given period
