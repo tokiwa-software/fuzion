@@ -22,10 +22,10 @@ fuzion.runtime.pre_fault.cause#1: {base.fum}/flow/fallible.fz:35:6:
 fuzion.runtime.precondition_fault#1: {base.fum}/fuzion/runtime/pre_fault.fz:56:3:
   fuzion.runtime.pre_fault.env.cause msg
 --^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(m.new i32).pre get: {base.fum}/mutate.fz:176:9:
+(m.new i64).pre get: {base.fum}/mutate.fz:176:9:
         safety: !open || is_exclusive
 --------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-(m.new i32).precall get: {base.fum}/mutate.fz:175:7:
+(m.new i64).precall get: {base.fum}/mutate.fz:175:7:
       pre
 ------^^^
         safety: !open || is_exclusive

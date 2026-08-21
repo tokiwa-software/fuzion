@@ -35,15 +35,15 @@ reg_issue2380 is
   part1 =>
     lm : mutate is
     lm ! ()->
-      visited := lm.array i32 .new _ area.length.as_i64 (_->0)
+      visited := lm.array i64 .new _ area.length (_->0)
       r => 1
       l => 2
       u => 4
       d => 8
-      ix(x,y) => (y+x*area.length1.as_i32).as_i64
+      ix(x,y) => (y+x*area.length1)
       trace(x,y,w) =>
-        if ((x.as_i64 ∈ area.indices0) &&
-            (y.as_i64 ∈ area.indices1) &&
+        if ((x ∈ area.indices0) &&
+            (y ∈ area.indices1) &&
             (visited[ix x y] & d) = 0) then
           visited[ix x y] := visited[ix x y] | d
           c := area[_,y,x]
