@@ -100,7 +100,7 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
                 _ := p.with_in unit lm ()->
                   match (io.buffered lm).Writer.env.write s
                     unit =>
-                    e error => Runtime_Failure.env.register_failure e
+                    e error => Ignored_Failure.env.register_failure e
                 true
             io.end_of_file => false
             e error => panic e

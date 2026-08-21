@@ -1,0 +1,72 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature Ignored_Failure
+#
+# -----------------------------------------------------------------------
+
+
+# effect to register any unexpected failures happening at runtime
+# that can not easily reported by the API.as_string
+# One example is errors happening in an `effect.finally`.
+#
+# By default this just prints the error to stderr
+#
+public Ignored_Failure ref : effect is
+
+  # may be called to register any unhandled failures
+  #
+  public register_failure(e error) unit => abstract
+
+
+  # the default implementation prints any
+  # registered errors to stderr
+  #
+  public redef fixed type.default_value option Ignored_Failure =>
+    _ : Ignored_Failure is
+      public redef register_failure(e error) unit =>
+        io.Err.env.println e
+
+
+  # Implementation of Ignored_Failure to
+  # suppress any output of registered failures
+  #
+  # Use it like this:
+  #
+  #     Ignored_Failure.instate Ignored_Failure.suppress ()->
+  #       your_code...
+  #
+  public type.suppress Ignored_Failure =>
+    _ : Ignored_Failure is
+      public redef register_failure(e error) unit =>
+
+
+  # Implementation of Ignored_Failure to
+  # emit a runtime fault for every registered failure.
+  #
+  # Use it like this:
+  #
+  #     Ignored_Failure.instate Ignored_Failure.fault ()->
+  #       your_code...
+  #
+  public type.fault Ignored_Failure =>
+    _ : Ignored_Failure is
+      public redef register_failure(e error) unit =>
+        fuzion.runtime.fault.env.cause ("Ignored_Failure", e.msg)
+
