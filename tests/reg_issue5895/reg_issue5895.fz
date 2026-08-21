@@ -166,13 +166,13 @@ reg_issue5895 =>
 
   chk "f0 [] nil, --nil-- []"                (typepar1 open).g0
   chk "f1 [] unit, [] unit"                  (typepar1 open).g1
-  chk "f2 [] f64, i32, [] 3.14 314"          (typepar1 open).g2
-  chk "f3 [] i32, i32, [i32] [] 1 2 [i32 3]" (typepar1 open).g3
+  chk "f2 [] f64, i64, [] 3.14 314"          (typepar1 open).g2
+  chk "f3 [] i64, i64, [i64] [] 1 2 [i64 3]" (typepar1 open).g3
 
   chk "r1.f0 nil, --nil--"                (typepar1 redef1).g0
   chk "r1.f1 unit, unit"                  (typepar1 redef1).g1
-  chk "r1.f2 f64, i32, 3.14 314"          (typepar1 redef1).g2
-  chk "r1.f3 i32, i32, [i32] 1 2 [i32 3]" (typepar1 redef1).g3
+  chk "r1.f2 f64, i64, 3.14 314"          (typepar1 redef1).g2
+  chk "r1.f3 i64, i64, [i64] 1 2 [i64 3]" (typepar1 redef1).g3
 
   typepar2(O type : open i8,
            o O)
@@ -184,8 +184,8 @@ reg_issue5895 =>
 
   chk "r2.f0 nil, --nil-- -12"                (typepar2 redef2).g0
   chk "r2.f1 unit, -12 unit"                  (typepar2 redef2).g1
-  chk "r2.f2 f64, i32, -12 3.14 314"          (typepar2 redef2).g2
-  chk "r2.f3 i32, i32, [i32] -12 1 2 [i32 3]" (typepar2 redef2).g3
+  chk "r2.f2 f64, i64, -12 3.14 314"          (typepar2 redef2).g2
+  chk "r2.f3 i64, i64, [i64] -12 1 2 [i64 3]" (typepar2 redef2).g3
 
   typepar3(O type : open i8 nil,
            o O)
@@ -197,8 +197,8 @@ reg_issue5895 =>
 
   chk "r3.f0 unit, unit -12 --nil--"                                      (typepar3 redef3).g0
   chk "r3.f1 unit, -12 --nil-- unit"                                      (typepar3 redef3).g1
-  chk "r3.f2 f64, i32, -12 --nil-- 3.14 314"                              (typepar3 redef3).g2
-  chk "r3.f3 i32, i32, [i32, u8, u8] -12 --nil-- 1 2 [i32 3, u8 3, u8 4]" (typepar3 redef3).g3
+  chk "r3.f2 f64, i64, -12 --nil-- 3.14 314"                              (typepar3 redef3).g2
+  chk "r3.f3 i64, i64, [i64, u8, u8] -12 --nil-- 1 2 [i64 3, u8 3, u8 4]" (typepar3 redef3).g3
 
   typepar4(O type : open codepoint codepoint,
            o O)
@@ -212,16 +212,16 @@ reg_issue5895 =>
 
   chk "f0 [codepoint, codepoint] nil, --nil-- [codepoint x, codepoint y]"                (typepar4 occ).g0
   chk "f1 [codepoint, codepoint] unit, [codepoint x, codepoint y] unit"                  (typepar4 occ).g1
-  chk "f2 [codepoint, codepoint] f64, i32, [codepoint x, codepoint y] 3.14 314"          (typepar4 occ).g2
-  chk "f3 [codepoint, codepoint] i32, i32, [i32] [codepoint x, codepoint y] 1 2 [i32 3]" (typepar4 occ).g3
+  chk "f2 [codepoint, codepoint] f64, i64, [codepoint x, codepoint y] 3.14 314"          (typepar4 occ).g2
+  chk "f3 [codepoint, codepoint] i64, i64, [i64] [codepoint x, codepoint y] 1 2 [i64 3]" (typepar4 occ).g3
 
   # regression test from #5961
   fo(O type ...) is
     call(v O...) =>
 
   fo0 : fo is
-  fo1 : fo i32 is
-  fo2 : fo i32 i32 is
+  fo1 : fo i64 is
+  fo2 : fo i64 i64 is
 
   q0(F type : fo0, f F) => f.call
   q1(F type : fo1, f F) => f.call 42
@@ -235,7 +235,7 @@ reg_issue5895 =>
   fc(C type) is
     call(v C) =>
 
-  fc1 : fc i32 is
+  fc1 : fc i64 is
 
   qc(F type : fc1, f F) => f.call 42
 
@@ -249,7 +249,7 @@ aos is
 ss is
   public redef as_string String => "ss"
 
-# short instead of `num.fraction i32`
+# short instead of `num.fraction i64`
 nf is
   public redef as_string String => "nf"
 

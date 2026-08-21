@@ -66,31 +66,21 @@ PASS: r2.f3 f64, aos, [bool, nf] -12 1.2 aos [bool true, nf nf]
 PASS: r3.f3 f64, aos, [bool, nf] -12 --nil-- 1.2 aos [bool true, nf nf]
 PASS: f0 [] nil, --nil-- []
 PASS: f1 [] unit, [] unit
-FAIL: got f2 [] f64, i64, [] 3.14 314
-      exp f2 [] f64, i32, [] 3.14 314
-FAIL: got f3 [] i64, i64, [i64] [] 1 2 [i64 3]
-      exp f3 [] i32, i32, [i32] [] 1 2 [i32 3]
+PASS: f2 [] f64, i64, [] 3.14 314
+PASS: f3 [] i64, i64, [i64] [] 1 2 [i64 3]
 PASS: r1.f0 nil, --nil--
 PASS: r1.f1 unit, unit
-FAIL: got r1.f2 f64, i64, 3.14 314
-      exp r1.f2 f64, i32, 3.14 314
-FAIL: got r1.f3 i64, i64, [i64] 1 2 [i64 3]
-      exp r1.f3 i32, i32, [i32] 1 2 [i32 3]
+PASS: r1.f2 f64, i64, 3.14 314
+PASS: r1.f3 i64, i64, [i64] 1 2 [i64 3]
 PASS: r2.f0 nil, --nil-- -12
 PASS: r2.f1 unit, -12 unit
-FAIL: got r2.f2 f64, i64, -12 3.14 314
-      exp r2.f2 f64, i32, -12 3.14 314
-FAIL: got r2.f3 i64, i64, [i64] -12 1 2 [i64 3]
-      exp r2.f3 i32, i32, [i32] -12 1 2 [i32 3]
+PASS: r2.f2 f64, i64, -12 3.14 314
+PASS: r2.f3 i64, i64, [i64] -12 1 2 [i64 3]
 PASS: r3.f0 unit, unit -12 --nil--
 PASS: r3.f1 unit, -12 --nil-- unit
-FAIL: got r3.f2 f64, i64, -12 --nil-- 3.14 314
-      exp r3.f2 f64, i32, -12 --nil-- 3.14 314
-FAIL: got r3.f3 i64, i64, [i64, u8, u8] -12 --nil-- 1 2 [i64 3, u8 3, u8 4]
-      exp r3.f3 i32, i32, [i32, u8, u8] -12 --nil-- 1 2 [i32 3, u8 3, u8 4]
+PASS: r3.f2 f64, i64, -12 --nil-- 3.14 314
+PASS: r3.f3 i64, i64, [i64, u8, u8] -12 --nil-- 1 2 [i64 3, u8 3, u8 4]
 PASS: f0 [codepoint, codepoint] nil, --nil-- [codepoint x, codepoint y]
 PASS: f1 [codepoint, codepoint] unit, [codepoint x, codepoint y] unit
-FAIL: got f2 [codepoint, codepoint] f64, i64, [codepoint x, codepoint y] 3.14 314
-      exp f2 [codepoint, codepoint] f64, i32, [codepoint x, codepoint y] 3.14 314
-FAIL: got f3 [codepoint, codepoint] i64, i64, [i64] [codepoint x, codepoint y] 1 2 [i64 3]
-      exp f3 [codepoint, codepoint] i32, i32, [i32] [codepoint x, codepoint y] 1 2 [i32 3]
+PASS: f2 [codepoint, codepoint] f64, i64, [codepoint x, codepoint y] 3.14 314
+PASS: f3 [codepoint, codepoint] i64, i64, [i64] [codepoint x, codepoint y] 1 2 [i64 3]
