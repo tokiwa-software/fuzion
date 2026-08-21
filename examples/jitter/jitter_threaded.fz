@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# jitter -- demo measuring periodic task jitter using time.histogram
+# jitter_threaded -- demo measuring periodic task jitter using time.histogram
 #
 # See Makefile for how to start fuzion to run this example.
 #
