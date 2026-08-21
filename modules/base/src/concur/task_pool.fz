@@ -40,7 +40,7 @@ is
     nt := concur.Threads.env.spawn ()->
       actual_last := t.last_start.or_default (time.instant u64.max)
       now := time.Nano.env.read
-      _ := time.Nano.env.run_periodic now t.period actual_last t.code
+      time.Nano.env.run_periodic now t.period actual_last t.code
 
     M.env.exclusive ()->
       thrds <- list nt thrds
