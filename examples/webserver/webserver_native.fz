@@ -46,7 +46,7 @@ webserver_native is
     while (accept_connection n).ok
 
 
-  accept_connection(n i32) =>
+  accept_connection(n i64) =>
     net.server.env.accept.bind c->
       c.with unit mutate ()->
         say "accepted connection:"
