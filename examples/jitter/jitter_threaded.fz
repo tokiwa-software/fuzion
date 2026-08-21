@@ -288,7 +288,7 @@ jitter_threaded =>
         start := time.Nano.env.read + start_delay
         end := start + test_duration
 
-        # Atomic flag to signal overrun and store error reason
+        # Atomic cell for error; use compare-and-set to avoid races.
         error_cell := concur.atomic (option String) .new nil
 
         # Mutable cell for expected release time
@@ -302,6 +302,7 @@ jitter_threaded =>
         # Task that runs periodically by sleeping and recursing.
         task_code =>
           actual := time.Nano.env.read
+          # Only proceed if no error has been recorded yet (read is atomic).
           if actual <= end && error_cell.read = nil
             # Atomically read current expected and set next one (exclusive block on bm)
             exp_old_new := bm.env.exclusive ()->
@@ -317,21 +318,31 @@ jitter_threaded =>
             # Check for jitter exceeded period
             if actual >= new_expected
               diff := actual - new_expected
-              error_cell.write (option "Jitter exceeded period: actual release was $diff late (period $period)")
+              msg := "Jitter exceeded period: actual release was $diff late (period $period)"
+              # Atomically set error only if it's still nil.
+              done := false
+              while !done
+                if error_cell.compare_and_set nil (option msg)
+                  done := true
             else
               payload
               finish := time.Nano.env.read
               if finish >= new_expected
                 diff := finish - new_expected
-                error_cell.write (option "Overrun: payload exceeded next release by $diff (period $period)")
+                msg := "Overrun: payload exceeded next release by $diff (period $period)"
+                done := false
+                while !done
+                  if error_cell.compare_and_set nil (option msg)
+                    done := true
               else
-                # Schedule next run only if no error
-                sleep_until := new_expected
-                if sleep_until <= end
-                  now3 := time.Nano.env.read
-                  if sleep_until > now3
-                    time.Nano.env.sleep (sleep_until - now3)
-                  task_code
+                # Schedule next run only if no error (check again, may have been set by another thread)
+                if error_cell.read = nil
+                  sleep_until := new_expected
+                  if sleep_until <= end
+                    now3 := time.Nano.env.read
+                    if sleep_until > now3
+                      time.Nano.env.sleep (sleep_until - now3)
+                    task_code
 
         # Submit the task with infinite period so it runs only once.
         t := realtime.task time.frequency task_code (time.frequency 0 (time.duration.ms 1)) (option end)
