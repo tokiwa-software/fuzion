@@ -148,7 +148,7 @@ is
     for j := 0, j+1
     while j < data.count
     do
-      ia[i.as_i32+j] := data[j]
+      ia[i.as_i64+j] := data[j]
 
 
 
@@ -201,7 +201,7 @@ deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.ha
 
 
   public redef index [ ] (I type : integer, i I) T =>
-    n := i.as_i32
+    n := i.as_i64
     if n < lft.count
       lft[n]
     else if n < lft.count+ft.count
@@ -263,7 +263,7 @@ is
   f2cnt := if finger.count < 3 then i64.zero else finger[2].count.as_i64
   f3cnt := if finger.count < 4 then i64.zero else finger[3].count.as_i64
   cnt   := f0cnt + f1cnt + f2cnt + f3cnt
-  public redef count i32 => cnt.as_i32
+  public redef count i64 => cnt.as_i64
 
 
   # new hand without the first finger
@@ -316,7 +316,7 @@ is
 
   # index access to the element in this hand
   #
-  public index [ ] (n i32) T =>
+  public index [ ] (n i64) T =>
     m := n.as_i64
     if m >= cnt
       panic "illegal unless debug turned off"
@@ -340,7 +340,7 @@ is
         nil =>
           for j := 0, j+1
           while j < f.count do
-            ia[s.as_i32+j] := f[j]
+            ia[s.as_i64+j] := f[j]
         ft Finger_Tree =>
           ft.fill_internal_array ia s
 

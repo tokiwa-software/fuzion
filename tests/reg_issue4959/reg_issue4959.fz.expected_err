@@ -33,19 +33,19 @@ Selected variant 'hay8.1'
 Type of called feature: 'void'
 
 
---CURDIR--/reg_issue4959.fz:43:11: error 6: Expression produces result of type 'tuple i32 unit' but result is not used.
+--CURDIR--/reg_issue4959.fz:43:11: error 6: Expression produces result of type 'tuple i64 unit' but result is not used.
   hay6 => (42,unit); say (hay6 .0)  # 1. should flag an error
 ----------^
 To solve this, use the result, explicitly ignore the result '_ := <expression>' or change 'tuple' from constructor to routine by replacing 'is' by '=>'.
 
 
---CURDIR--/reg_issue4959.fz:45:11: error 7: Expression produces result of type 'tuple i32 unit' but result is not used.
+--CURDIR--/reg_issue4959.fz:45:11: error 7: Expression produces result of type 'tuple i64 unit' but result is not used.
   hay7 => (42,unit); hay7 .1        # 2. should flag an error
 ----------^
 To solve this, use the result, explicitly ignore the result '_ := <expression>' or change 'tuple' from constructor to routine by replacing 'is' by '=>'.
 
 
---CURDIR--/reg_issue4959.fz:47:11: error 8: Expression produces result of type 'tuple i32 unit' but result is not used.
+--CURDIR--/reg_issue4959.fz:47:11: error 8: Expression produces result of type 'tuple i64 unit' but result is not used.
   hay8 => (42,unit); hay8.1         # 3. should flag an error
 ----------^
 To solve this, use the result, explicitly ignore the result '_ := <expression>' or change 'tuple' from constructor to routine by replacing 'is' by '=>'.

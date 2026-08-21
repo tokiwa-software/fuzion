@@ -113,7 +113,7 @@ public u8(public val u8) : num.wrap_around, property.interval is
 
   # count the number of trailing zeros in this integer.
   #
-  public trailing_zeros i32 =>
+  public trailing_zeros i64 =>
     v , s  := (val, 0)
     v1, s1 := if (v  & 0xf) != 0 then (v , s ) else (v  >> 4, s  + 4)
     v2, s2 := if (v1 &   3) != 0 then (v1, s1) else (v1 >> 2, s1 + 2)
@@ -124,8 +124,8 @@ public u8(public val u8) : num.wrap_around, property.interval is
   # count the number of 1 bits in the binary representation of this
   # integer.
   #
-  public redef ones_count i32 =>
-    v := val.as_i32
+  public redef ones_count i64 =>
+    v := val.as_i64
     m  := v  & 0xaa; v1 := v  - m  + (m >> 1)
     m1 := v1 & 0xcc; v2 := v1 - m1 + (m1 >> 2)
     m2 := v2 & 0xf0; v3 := v2 - m2 + (m2 >> 4)

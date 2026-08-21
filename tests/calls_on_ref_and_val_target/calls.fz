@@ -209,7 +209,7 @@ calls is
 
     ron ref is
       f String => abstract
-      cnt mutate.new i32 => abstract
+      cnt mutate.new i64 => abstract
 
     on : ron is
       redef cnt := mut 0

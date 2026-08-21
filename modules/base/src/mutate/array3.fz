@@ -64,7 +64,7 @@ is
   #
   public redef set [ ] (I type : integer, i0, i1, i2 I, o T) unit =>
     check_and_replace
-    data[(((i0.as_i64 * length1) + i1.as_i64) * length2.as_i64 + i2.as_i64).as_i32] := o
+    data[((i0.as_i64 * length1) + i1.as_i64) * length2.as_i64 + i2.as_i64] := o
 
 
   # create immutable array from this
@@ -125,12 +125,12 @@ is
    ) mutate.this.array3 T
   =>
 
-    data := fuzion.sys.internal_array_init T (length0 * length1 * length2).as_i32
+    data := fuzion.sys.internal_array_init T (length0 * length1 * length2)
 
     for i0 in (i64 0)..length0-1 do
       for i1 in (i64 0)..length1-1 do
         for i2 in (i64 0)..length2-1 do
-          data[(((i0 * length1) + i1) * length2 + i2).as_i32] := init
+          data[((i0 * length1) + i1) * length2 + i2] := init
 
     mutate.this.env.array3 length0 length1 length2 data unit
 

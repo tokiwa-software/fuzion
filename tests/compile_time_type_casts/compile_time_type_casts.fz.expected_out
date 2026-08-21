@@ -25,7 +25,7 @@ partial: codepoint len 7
 before eval of lazy String
 lazy String Fuzion!
 before eval of lazy num
-lazy Type of 'i32' 7
+lazy Type of 'i64' 7
 matched String 'Fuzion!' type Type of 'String' len 7
 String 'Fuzion!' type Type of 'String' len 7
 String 'F' type Type of 'codepoint'
@@ -36,7 +36,7 @@ partial: codepoint len 1
 before eval of lazy String
 lazy String F
 before eval of lazy num
-lazy Type of 'i32' 1
+lazy Type of 'i64' 1
 matched String 'F' type Type of 'codepoint' len 1
 String 'F' type Type of 'codepoint' len 1
 bool true Type of 'bool' false

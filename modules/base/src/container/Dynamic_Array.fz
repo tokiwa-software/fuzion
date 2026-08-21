@@ -72,7 +72,7 @@ is
   #
   public redef set [ ] (I type : integer, i I, o T) unit
   =>
-    data[i.as_i32] := o
+    data[i] := o
 
 
   # can another element be added to the end of this Dynamic_Array?
@@ -109,7 +109,7 @@ is
            panic "'$(Dynamic_Array.this.type.name)' can not grow, exceeded capacity of $(data.length) elements"
 
 
-    d[len.as_i32] := o
+    d[len.unwrap] := o
     data <- d
     len  <- len+1
 

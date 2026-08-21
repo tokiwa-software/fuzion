@@ -73,8 +73,8 @@ call_open_type_parameter =>
   #
   case4 =>
     x(O type...) =>
-      count_numeric : container.type_applicator (i32,i32) is
-        public redef apply(T type, e (i32,i32)) (i32,i32) =>
+      count_numeric : container.type_applicator (i64,i64) is
+        public redef apply(T type, e (i64,i64)) (i64,i64) =>
           if      T : numeric then (e.0+1, e.1)
           else if T : String  then (e.0  , e.1+1)
           else                     e
@@ -104,8 +104,8 @@ call_open_type_parameter =>
       q => say "a.q: $A $B"
       q
 
-    say "case5: i32 [bool unit]"
-    a i32 bool unit
+    say "case5: i64 [bool unit]"
+    a i64 bool unit
     say "case5: u32 [f32]"
     a u32 f32
     say "case5: u8 []"
@@ -139,19 +139,19 @@ call_open_type_parameter =>
           y Open_Types := B
           say "$y $(type_of y)  ——boxed `Open_Types` value"
 
-    b : a i32 unit bool is
+    b : a i64 unit bool is
 
     say ""
     say "case6: a.r.s.t.u []"
     _ := a
     say ""
-    say "case6: a.r.s.t.u [String codepoint bool unit (Sequence (i32,f64))]"
-    _ := a String codepoint bool unit (Sequence (i32,f64))
+    say "case6: a.r.s.t.u [String codepoint bool unit (Sequence (i64,f64))]"
+    _ := a String codepoint bool unit (Sequence (i64,f64))
     say ""
     say "case6: a.f.g [u32 bool unit]"
     (a u32 bool unit).f.g
     say ""
-    say "case6: b.f.g [i32 unit bool]"
+    say "case6: b.f.g [i64 unit bool]"
     b.f.g
 
   say "----"

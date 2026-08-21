@@ -55,9 +55,9 @@ public stdin is
   public reader (LM type : mutate) : (buffered LM).Reader is
     # implementation of read for reading from stdin
     #
-    public redef read(max_count i32) choice (Sequence u8) io.end_of_file error =>
+    public redef read(max_count i64) choice (Sequence u8) io.end_of_file error =>
       arr := fuzion.sys.internal_array_init u8 max_count
-      v := fzE_file_read fzE_file_stdin arr.data max_count
+      v := fzE_file_read fzE_file_stdin arr.data max_count.as_i32
       if v = -1
         error "an error occurred while reading stdin"
       else if v = 0

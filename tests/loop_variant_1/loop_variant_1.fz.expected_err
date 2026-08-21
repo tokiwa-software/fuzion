@@ -19,15 +19,9 @@ In call: 'foo'
 Type of loop variant must be 'i64', but found variant of type 'f64'
 
 
---CURDIR--/loop_variant_1.fz:53:13: error 4: Loop variant must be of type 'i64'
-    variant (n-i)    # 4. should flag an error: wrong type of variant
-------------^^^^^
-Type of loop variant must be 'i64', but found variant of type 'i32'
-
-
---CURDIR--/loop_variant_1.fz:60:13: error 5: Loop variant must be of type 'i64'
+--CURDIR--/loop_variant_1.fz:60:13: error 4: Loop variant must be of type 'i64'
     variant true     # 5. should flag an error: wrong type of variant
 ------------^^^^
 Type of loop variant must be 'i64', but found variant of type 'bool'
 
-5 errors.
+4 errors.

@@ -86,8 +86,8 @@ public sqlite(db Native_Ref) : Database is
 
     cb_wrapper : Function i32 Native_Ref i32 Native_Ref Native_Ref is
       public redef call(_ Native_Ref, len i32, column_text Native_Ref, column_name Native_Ref) i32 =>
-        column_texts := ffi.from_native_array Native_Ref column_text len
-        column_names := ffi.from_native_array Native_Ref column_name len
+        column_texts := ffi.from_native_array Native_Ref column_text len.as_i64
+        column_names := ffi.from_native_array Native_Ref column_name len.as_i64
         data := (column_names.map ffi.from_native_string)
           .zip (column_texts.map ffi.from_native_string) x,y->(x,y)
 

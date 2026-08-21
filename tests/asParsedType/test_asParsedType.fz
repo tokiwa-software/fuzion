@@ -156,7 +156,7 @@ say "EXP: y Type of 'bool'"
 y true
 say ""
 
-say "EXP: y Type of 'i32'"
+say "EXP: y Type of 'i64'"
 y true?1:2
 say ""
 
