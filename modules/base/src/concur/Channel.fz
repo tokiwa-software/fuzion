@@ -73,7 +73,7 @@ public Channel(T type/*, buf_size i32*/) ref : Iterator T, Sending_Channel T, Re
   # NYI: CLEANUP: Since this is a duplicate of `prefix <-`, we could
   # remove it.
   #
-  public redef next option T ! atomic_access =>
+  public redef next option T ! concur.atomic_access =>
     bq.dequeue
 
 
