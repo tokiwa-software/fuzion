@@ -62,7 +62,7 @@
 public state(
 
   # type of the contained value
-  T,
+  T type,
 
   # type of the contained the state
   S type,
