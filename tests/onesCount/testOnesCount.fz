@@ -44,10 +44,10 @@ testOnesCount is
   show 2
   show 3
   show 4
-  show (-1).cast_to_u32.as_u64
-  show (-2).cast_to_u32.as_u64
-  show (-1).as_i64.cast_to_u64
-  show (-2).as_i64.cast_to_u64
+  show (-1).cast_to_u64
+  show (-2).cast_to_u64
+  show (-1).cast_to_u64
+  show (-2).cast_to_u64
   show 0x_ffffffff_ffffffff
   show 0x_55555555_55555555
   show 0x_aaaaaaaa_aaaaaaaa

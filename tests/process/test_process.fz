@@ -28,7 +28,7 @@ test_process =>
 
 
   # create string of given byte size
-  get_str(byte_size i32) =>
+  get_str(byte_size i64) =>
     _ : String is
       public redef utf8 Sequence u8 =>
         (1..byte_size)
