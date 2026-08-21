@@ -77,7 +77,7 @@ module:public process(public pid i64, module std_in, std_out, std_err i64, name 
     (io.buffered LM).Writer.instate (std_in_writer LM) f
 
 
-  # pipe this process's output to new process
+  # pipe this processes output to new process
   #
   public infix | (process_and_args Sequence String) outcome os.process ! os.Process
   pre

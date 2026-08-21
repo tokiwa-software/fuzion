@@ -188,7 +188,7 @@ public float : numeric is
   public tanh float.this => abstract
 
 
-  # area hyperbolic
+  # inverse hyperbolic
 
   public asinh float.this =>
     # ln(x+sqrt(x^2+1))

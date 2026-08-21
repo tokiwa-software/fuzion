@@ -111,7 +111,7 @@ is
     state val new mode.next
 
 
-  # converts state to a string
+  # create a string representation of the state
   #
   public redef as_string String =>
     "$val ($get)"
