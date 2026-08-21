@@ -40,7 +40,7 @@ sum 9 is 23456000
 PASSED: take(5).sum l9
 sum 10 is 123450000
 PASSED: take(5).sum lA
-String list 1 is 
+String list 1 is
 PASSED: concat sl1
 String list 2 is dog.
 PASSED: concat sl2
@@ -81,30 +81,30 @@ PASSED: l9.fold produc mod 11
 product mod 11 is 1
 PASSED: lA.fold produc mod 11
 product_saturating 1 is 1
-PASSED: l1.fold i32.product_saturating
+PASSED: l1.fold i64.product_saturating
 product_saturating 2 is 9
-PASSED: l2.fold i32.product_saturating
+PASSED: l2.fold i64.product_saturating
 product_saturating 3 is 720
-PASSED: l3.fold i32.product_saturating
+PASSED: l3.fold i64.product_saturating
 product_saturating 4 is 504000
-PASSED: l4.fold i32.product_saturating
-product_saturating 5 is 2147483647
-PASSED: l5.fold i32.product_saturating
-product_saturating 6 is 2147483647
-PASSED: l6.fold i32.product_saturating
-product_saturating 7 is 2147483647
-PASSED: l7.fold i32.product_saturating
-product_saturating 8 is 2147483647
-PASSED: l8.fold i32.product_saturating
-product_saturating 9 is 2147483647
-PASSED: l9.fold i32.product_saturating
-product_saturating 10 is 2147483647
-PASSED: lA.fold i32.product_saturating
+PASSED: l4.fold i64.product_saturating
+product_saturating 5 is 3024000000
+PASSED: l5.fold i64.product_saturating
+product_saturating 6 is 151200000000000
+PASSED: l6.fold i64.product_saturating
+product_saturating 7 is 9223372036854775807
+PASSED: l7.fold i64.product_saturating
+product_saturating 8 is 9223372036854775807
+PASSED: l8.fold i64.product_saturating
+product_saturating 9 is 9223372036854775807
+PASSED: l9.fold i64.product_saturating
+product_saturating 10 is 9223372036854775807
+PASSED: lA.fold i64.product_saturating
 product 1 is 1
-PASSED: l1.fold i32.product
+PASSED: l1.fold i64.product
 product 2 is 9
-PASSED: l2.fold i32.product
+PASSED: l2.fold i64.product
 product 3 is 720
-PASSED: l3.fold i32.product
+PASSED: l3.fold i64.product
 product 4 is 504000
-PASSED: l4.fold i32.product
+PASSED: l4.fold i64.product

@@ -156,8 +156,8 @@ say "EXP: y Type of 'bool'"
 y true
 say ""
 
-say "EXP: y Type of 'i32'"
-y true?1.as_i32:2.as_i32
+say "EXP: y Type of 'i64'"
+y true?1:2
 say ""
 
 say "EXP: y Type of 'codepoint'"
