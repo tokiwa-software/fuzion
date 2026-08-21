@@ -47,7 +47,7 @@ is
   internal_array.freeze
 
 
-  # equality of two arrays2 is true iff `a` and `b` have the same dimensions and for all
+  # equality of two array3s is true iff `a` and `b` have the same dimensions and for all
   # `i in indices0`, `j in indices1` and `k in indices 2` we have `a[i][j][k] = b[i][j][k]`.
   #
   # For performance, this will compare the length of the arrays first.
@@ -87,8 +87,8 @@ is
   #
   # This will result in a compile-time `panic` in case T : property.hashable does not hold.
   #
-  # The algorithm used here is a variation of (XXXHash)[https://xxhash.com] as used in
-  # (Python's tuple)[https://github.com/python/cpython/blob/849a80ec412c36bbca5d400a7db5645b8cf54f1f/Objects/tupleobject.c#L305]:
+  # The algorithm used here is a variation of [XXXHash](https://xxhash.com) as used in
+  # [Python's tuple](https://github.com/python/cpython/blob/849a80ec412c36bbca5d400a7db5645b8cf54f1f/Objects/tupleobject.c#L305):
   #
   #   we start with a constant `hash_prime1`
   #   for each value:

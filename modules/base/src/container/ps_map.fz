@@ -131,6 +131,8 @@ O(n log n).
 
   # add mapping from k to v
   #
+  # panics if k already exists in this map
+  #
   public fixed redef put (k PK, v V) ps_map PK V =>
     if has k
       panic "NYI: ps_map currently does not handle updates for existing key"
@@ -236,7 +238,7 @@ O(n log n).
     array PK _ size i->re[i]
 
 
-  # get an array of all key/value pairs in this map
+  # get a sequence of all key/value pairs in this map
   #
   public redef items Sequence (tuple PK V) =>
     as_key_array.map (k -> (k, ps_map.this[k].or_panic))

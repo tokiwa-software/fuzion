@@ -155,6 +155,6 @@ public Process ref : effect is
           _ := fzE_pipe_close p.std_out
           _ := fzE_pipe_close p.std_err
           if fzE_process_close p.pid != 0
-            Runtime_Failure.env.register_failure (error "process could not be close successfully: $p")
+            Ignored_Failure.env.register_failure (error "process could not be close successfully: $p")
 
     universe.P_ref
