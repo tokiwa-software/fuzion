@@ -319,25 +319,15 @@ jitter_threaded =>
             if actual >= new_expected
               diff := actual - new_expected
               msg := "Jitter exceeded period: actual release was $diff late (period $period)"
-              # Atomically set error only if it's still nil.
-              done := false
-              while !done
-                if error_cell.compare_and_set nil (option msg)
-                  done := true
-                else
-                  done := true
+              # Attempt to set error; ignore if already set.
+              _ := error_cell.compare_and_set nil (option msg)
             else
               payload
               finish := time.Nano.env.read
               if finish >= new_expected
                 diff := finish - new_expected
                 msg := "Overrun: payload exceeded next release by $diff (period $period)"
-                done := false
-                while !done
-                  if error_cell.compare_and_set nil (option msg)
-                    done := true
-                  else
-                    done := true
+                _ := error_cell.compare_and_set nil (option msg)
               else
                 # Schedule next run only if no error (check again, may have been set by another thread)
                 if error_cell.read = nil
