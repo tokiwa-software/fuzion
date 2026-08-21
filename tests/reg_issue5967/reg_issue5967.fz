@@ -47,8 +47,8 @@ reg_issue5967 =>
     number(l, c i64) is
       len := (i64.zero.. .filter (x -> !(at l c+x).is_ascii_digit)).first.or_panic
       ok bool := ((i64 -1)..1) ∃ y -> ((i64 -1)..len) ∃ x -> (at l+y c+x) .is_symbol
-      val i32 := ls[l].substring c.as_i32 (c+len).as_i32
-                      .parse_i32.or_panic
+      val i64 := ls[l].substring c (c+len)
+                      .parse_i64.or_panic
 
     numbers =>
       a.index_pairs.flat_map number ij->
@@ -58,7 +58,7 @@ reg_issue5967 =>
 
     parts =>
       numbers.map (x -> if x.ok then x.val else 0)
-             .fold i32.type.sum
+             .fold i64.type.sum
 
   s := scheme lines
   p := s.parts

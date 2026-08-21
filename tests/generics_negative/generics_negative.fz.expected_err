@@ -361,10 +361,10 @@ Declared at {base.fum}/Function.fz:35:10:
 Actual type for argument #1 'a' does not match expected type.
 In call to          : 'Function.call'
 expected formal type: 'bool'
-actual type found   : 'i32'
-assignable to       : 'i32'
+actual type found   : 'i64'
+assignable to       : 'i64'
 for value assigned  : '3'
-To solve this, you could change the type of the target 'a' to 'i32' or convert the type of the assigned value to 'bool'.
+To solve this, you could change the type of the target 'a' to 'i64' or convert the type of the assigned value to 'bool'.
 
 
 --CURDIR--/generics_negative.fz:118:5: error 36: Incompatible types in assignment
@@ -384,10 +384,10 @@ To solve this, you could change the type of the target 'generics_negative.openge
 Actual type for argument #1 'a' does not match expected type.
 In call to          : 'Function.call'
 expected formal type: 'bool'
-actual type found   : 'i32'
-assignable to       : 'i32'
+actual type found   : 'i64'
+assignable to       : 'i64'
 for value assigned  : '3'
-To solve this, you could change the type of the target 'a' to 'i32' or convert the type of the assigned value to 'bool'.
+To solve this, you could change the type of the target 'a' to 'i64' or convert the type of the assigned value to 'bool'.
 
 
 --CURDIR--/generics_negative.fz:121:5: error 38: Incompatible types in assignment
@@ -419,10 +419,10 @@ To solve this, you could change the type of the target 'a' to 'bool' or convert 
 Actual type for argument #2 does not match expected type.
 In call to          : 'Function.call'
 expected formal type: 'bool'
-actual type found   : 'i32'
-assignable to       : 'i32'
+actual type found   : 'i64'
+assignable to       : 'i64'
 for value assigned  : '3'
-To solve this, you could change the type of the target 'argument #2' to 'i32' or convert the type of the assigned value to 'bool'.
+To solve this, you could change the type of the target 'argument #2' to 'i64' or convert the type of the assigned value to 'bool'.
 
 
 --CURDIR--/generics_negative.fz:126:8: error 41: Wrong number of actual value arguments in call
@@ -467,10 +467,10 @@ To solve this, you could change the type of the target 'a' to 'bool' or convert 
 Actual type for argument #2 does not match expected type.
 In call to          : 'Function.call'
 expected formal type: 'bool'
-actual type found   : 'i32'
-assignable to       : 'i32'
+actual type found   : 'i64'
+assignable to       : 'i64'
 for value assigned  : '3'
-To solve this, you could change the type of the target 'argument #2' to 'i32' or convert the type of the assigned value to 'bool'.
+To solve this, you could change the type of the target 'argument #2' to 'i64' or convert the type of the assigned value to 'bool'.
 
 
 --CURDIR--/generics_negative.fz:131:5: error 45: Wrong number of actual value arguments in call
@@ -543,10 +543,10 @@ To solve this, you could change the type of the target 'a0' to 'String' or conve
 Actual type for argument #2 'a1' does not match expected type.
 In call to          : 'generics_negative.opengenerics12.G.f'
 expected formal type: 'bool'
-actual type found   : 'i32'
-assignable to       : 'i32'
+actual type found   : 'i64'
+assignable to       : 'i64'
 for value assigned  : '3'
-To solve this, you could change the type of the target 'a1' to 'i32' or convert the type of the assigned value to 'bool'.
+To solve this, you could change the type of the target 'a1' to 'i64' or convert the type of the assigned value to 'bool'.
 
 
 --CURDIR--/generics_negative.fz:181:17: error 51: Incompatible types when passing argument in a call
@@ -579,10 +579,10 @@ To solve this, you could change the type of the target 'a' to 'String' or conver
 Actual type for argument #2 does not match expected type.
 In call to          : 'generics_negative.opengenerics12.F.f'
 expected formal type: 'bool'
-actual type found   : 'i32'
-assignable to       : 'i32'
+actual type found   : 'i64'
+assignable to       : 'i64'
 for value assigned  : '10'
-To solve this, you could change the type of the target 'argument #2' to 'i32' or convert the type of the assigned value to 'bool'.
+To solve this, you could change the type of the target 'argument #2' to 'i64' or convert the type of the assigned value to 'bool'.
 
 
 --CURDIR--/generics_negative.fz:186:17: error 54: Incompatible types when passing argument in a call

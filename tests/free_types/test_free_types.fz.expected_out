@@ -1,6 +1,6 @@
-a: Type of 'i32' 42
+a: Type of 'i64' 42
 a: Type of 'String' forty two
-a: Type of 'i32' 84
+a: Type of 'i64' 84
 b: Type of 'f64' 47.11
 b: Type of 'String' hello
 c1: Type of 'f64' 3.14 2.18
@@ -21,7 +21,7 @@ g: Type of 'String' Type of 'i32'
 g: B 42
 g: Type of 'String' Type of 'u8'
 g: A fourty two
-h: Type of 'i32' Type of 'String' 42 Hello
+h: Type of 'i64' Type of 'String' 42 Hello
 x1: [1, 4, 6, 4, 1]
 x3: [1, 4, 6, 4, 1]
 [eins = 1, zwei = 2, drei = 3]
