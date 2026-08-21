@@ -324,6 +324,8 @@ jitter_threaded =>
               while !done
                 if error_cell.compare_and_set nil (option msg)
                   done := true
+                else
+                  done := true
             else
               payload
               finish := time.Nano.env.read
@@ -333,6 +335,8 @@ jitter_threaded =>
                 done := false
                 while !done
                   if error_cell.compare_and_set nil (option msg)
+                    done := true
+                  else
                     done := true
               else
                 # Schedule next run only if no error (check again, may have been set by another thread)
