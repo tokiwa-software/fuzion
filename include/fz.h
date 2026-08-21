@@ -484,7 +484,15 @@ int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLe
 int64_t fzE_process_poll(int64_t p);
 
 /**
+ * close process handle, free memory
+ *
+ * @return -1 error, 0 success
+ */
+int fzE_process_close(int64_t p);
+
+/**
  * get the hostname
+ *
  * @return -1 on error, length of hostname on success
  */
 int fzE_hostname(char *buf, size_t nbytes);

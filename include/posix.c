@@ -789,6 +789,15 @@ int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLe
   return ret;
 }
 
+/**
+ * close process handle, free memory
+ */
+int fzE_process_close(int64_t p)
+{
+  // nothing to be done
+  return 0;
+}
+
 
 // check the status of process p, does not wait for process to finish
 //
