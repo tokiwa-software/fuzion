@@ -52,7 +52,7 @@ module:public connections(active container.Set i32) : effect is
     active
       .for_each desc->
         match fuzion.sys.net.close desc
-          e error => Runtime_Failure.env.register_failure e
+          e error => Ignored_Failure.env.register_failure e
           unit =>
 
 

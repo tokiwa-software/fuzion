@@ -74,7 +74,7 @@ module:public open(fd File_Descriptor,
   #
   public redef finally unit =>
     match fuzion.sys.fileio.close fd
-      e error => Runtime_Failure.env.register_failure e
+      e error => Ignored_Failure.env.register_failure e
       unit =>
 
 
