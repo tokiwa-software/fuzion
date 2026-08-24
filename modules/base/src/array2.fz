@@ -33,7 +33,7 @@
 private:public array2(
        T type,
        public length0, length1 i64,
-       public base array T,
+       module base array T,
        _ unit,
        _ unit) : property.hashable
   pre
