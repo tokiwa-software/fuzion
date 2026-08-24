@@ -1025,6 +1025,26 @@ int fzE_pipe_create(int64_t *fds)
 int fzE_pipe_read(int64_t desc, char * buf, size_t nbytes){
   DWORD bytesRead;
   if (!ReadFile((HANDLE)desc, buf, nbytes, &bytesRead, NULL)){
+    DWORD err = GetLastError();
+
+    if (err != ERROR_BROKEN_PIPE)
+    {
+      char *msg = NULL;
+      FormatMessageA(
+          FORMAT_MESSAGE_ALLOCATE_BUFFER |
+          FORMAT_MESSAGE_FROM_SYSTEM |
+          FORMAT_MESSAGE_IGNORE_INSERTS,
+          NULL,
+          err,
+          0,
+          (LPSTR)&msg,
+          0,
+          NULL
+      );
+
+      printf("Error %lu: %s\n", err, msg ? msg : "Unknown error");
+    }
+
     return GetLastError() == ERROR_BROKEN_PIPE
       ? 0
       : -1;
