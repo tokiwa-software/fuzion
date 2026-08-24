@@ -136,6 +136,22 @@ is
         nil
 
 
+  # reverse the order of the elements in this interval
+  #
+  # Performance: O(1)
+  #
+  # The i-th element is `last - i*step`, which works for positive and
+  # negative `step` without requiring negation, so it also works for
+  # unsigned `T`.
+  #
+  public redef reverse Sequence T
+  =>
+    match last
+      l T =>
+        n := size.as_i32
+        (0 .. n-1).map (i -> l - (T.from_u32 i.as_u32)*step)
+      nil =>
+        (Sequence T).empty
   # does this interval contain the given value?
   #
   public redef contains(e T) bool =>
