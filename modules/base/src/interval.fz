@@ -97,6 +97,45 @@ is
         T.from_u32 as_list.count.as_u32
 
 
+  # get the first element of this interval
+  #
+  # Performance: O(1)
+  #
+  public redef first option T
+  =>
+    match through
+      thru T =>
+        if from = thru then
+          from
+        else if step.sign = (from ⋄ thru).sign then
+          nil
+        else
+          from
+      nil =>
+        from
+
+
+  # get the last element of this interval
+  #
+  # Performance: O(1)
+  #
+  # In case through is nil, this interval has no last element, so the
+  # result is nil.
+  #
+  public redef last option T
+  =>
+    match through
+      thru T =>
+        if from = thru then
+          from
+        else if step.sign = (from ⋄ thru).sign then
+          nil
+        else
+          from + (((thru - from) / step) * step)
+      nil =>
+        nil
+
+
   # does this interval contain the given value?
   #
   public redef contains(e T) bool =>
