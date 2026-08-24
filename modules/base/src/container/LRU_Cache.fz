@@ -137,12 +137,14 @@ private:public LRU_Cache(
   # remove value for given key from the cache,
   # returns the value if the key existed
   #
-  public remove(key K) option V => # NYI: maybe call this invalidate?
+  public remove(key K) option V =>
     LM.env.exclusive ()->
       map.get key .bind i->{
         res := values[i].or_panic
-        # values[i] := nil # NYI: necessary to overwrite removed entries, e.g. for privacy?
-        # keys[i]   := nil # NYI: necessary to overwrite removed entries, e.g. for privacy?
+        if safety
+          # should not be accessible externally, but ensure the deleted key/value is no longer retained
+          values[i] := nil
+          keys[i]   := nil
 
         # link_first updates mru, so removing it is the only other case where it changes
         # lru is always updated in unlink (which is used in del) so not needed here
@@ -238,14 +240,17 @@ private:public LRU_Cache(
     set_prev succ pred
     if i = mru.get then mru <- succ
     if i = lru.get then lru <- pred
-    nxtprv[i] := (i64 -1, i64 -1) # NYI: OPTIMIZATION: not really necessary, but might help to catch errors early
+    if debug
+      # checked in precondition of link_first, so requires same debug level there
+      nxtprv[i] := (i64 -1, i64 -1)
 
 
   # make element at index i the first element, it must already be unlinked
   #
   link_first(i i64) unit
     pre debug : 0 <= i < capacity
-        debug : (next i = -1 || next i = free.get) && prev i = -1 # make sure it was unlinked
+        # make sure it was unlinked (requires same debug level in unlink)
+        debug : (next i = -1 || next i = free.get) && prev i = -1
     post debug : mru = i
          debug : prev i = -1
   =>
