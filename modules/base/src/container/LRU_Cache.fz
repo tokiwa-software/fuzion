@@ -141,17 +141,21 @@ private:public LRU_Cache(
     LM.env.exclusive ()->
       map.get key .bind i->{
         res := values[i].or_panic
+
+        # link_first updates mru, so removing it is the only other case where it changes
+        # lru is always updated in unlink (which is used in del) so not needed here
+        if i = mru.get then mru <- next i
+
+        del i
+        _size <- _size-1
+
         if safety
           # should not be accessible externally, but ensure the deleted key/value is no longer retained
           values[i] := nil
           keys[i]   := nil
 
-        # link_first updates mru, so removing it is the only other case where it changes
-        # lru is always updated in unlink (which is used in del) so not needed here
-        if i = mru.get then mru <- next i
-        del i
-        _size <- _size-1
-        res}
+        res
+      }
 
 
   # get a string representation of this cache
