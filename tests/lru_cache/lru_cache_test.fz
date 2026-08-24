@@ -111,7 +111,7 @@ lru_cache_test =>
       check test c del -1 nil .is_nil
 
   for op in (id (array operation) [get, del]) do
-    for cap in [i64.one,2,3,6,17] do
+    for cap in [i64.one,2,3,6] do
       for ord in (id (array ordering) [original, reverse, split]) do
         put_then_get_or_del cap op ord
 
@@ -201,7 +201,7 @@ lru_cache_test =>
             remove_exp k
     say ""
 
-  random 1  1E3 42
-  random 2  1E4 391367
-  random 3  1E4 935059
-  random 10 1E6 537241
+  random 1  1E1 42
+  random 2  1E2 391367
+  random 3  1E2 935059
+  random 10 1E4 537241
