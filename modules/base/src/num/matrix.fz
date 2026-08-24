@@ -67,8 +67,8 @@ is
   #
   public fixed redef type.equality(a, b num.matrix M) bool =>
     for
-      x in a.e
-      y in b.e
+      x in a.e.base
+      y in b.e.base
     until x != y
       false
     else
