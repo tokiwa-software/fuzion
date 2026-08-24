@@ -303,8 +303,8 @@ private:public LRU_Cache(
   =>
     # NYI: OPTIMIZATION: should Mutable_Hash_Map provide an option to set minimum size to avoid reallocation when filling the cache?
     m  := Mutable_Hash_Map LM K i64 .empty
-    ks := LM.env.new_array (option K) i64 capacity.as_i64 (_->nil) # NYI: array index type required here for lambda type inference
-    vs := LM.env.new_array (option V) i64 capacity.as_i64 (_->nil) # NYI: array index type required here for lambda type inference
+    ks := LM.env.new_array (option K) i64 capacity.as_i64 (_->nil)
+    vs := LM.env.new_array (option V) i64 capacity.as_i64 (_->nil)
     # initialize the free list
     np := LM.env.new_array (i64, i64) i64 capacity.as_i64 (i->(i+1, i64 -1))
     # no free element after the last index (at initialization)
