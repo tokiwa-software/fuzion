@@ -34,10 +34,10 @@ select_clause =>
     yy
 
   o is
-    q(c i32) unit =>
+    q(c i64) unit =>
 
   yy is
-    h(a, b i32) tuple (tuple nil o) =>
+    h(a, b i64) tuple (tuple nil o) =>
       tuple (nil, o)
 
 
@@ -48,7 +48,7 @@ select_clause =>
     .q c
 
   x is
-    y(n i32) tuple (tuple unit unit) =>
+    y(n i64) tuple (tuple unit unit) =>
       tuple (unit, unit)
 
   x.y 42 .0 .1 |> say

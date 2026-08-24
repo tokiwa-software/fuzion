@@ -43,4 +43,4 @@ reg_issue5243 =>
   say (1..10 ∀ %%2)
   say (1..10 ∀ .is_even)
 
-  i32.is_even => val %% 2
+  i64.is_even => val %% 2

@@ -22,13 +22,13 @@
 # -----------------------------------------------------------------------
 
 # count number of symmetric numbers in given interval
-count_sym(iv interval i32) =>
+count_sym(iv interval i64) =>
   iv.count (i -> ($i).utf8 = ($i).utf8.reverse)
 
 max := 10000
 njobs := 10
 
-res := concur.channel i32              # results channel
+res := concur.channel i64              # results channel
 
 # create njobs disjoint intervals 1..1000, 1001..2000, etc.
 jobs := (0..njobs).map       j->j*max/njobs

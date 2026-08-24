@@ -27,7 +27,7 @@ To solve this, do either of the following
 
 
 --CURDIR--/unused_fields_error.fz:54:7: error 4: Unused, non public field 'i'
-      i i32    => "'i' is a i32"
+      i i64    => "'i' is a i64"
 ------^
 To solve this, do either of the following
   - use the field

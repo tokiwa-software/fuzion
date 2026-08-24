@@ -8,10 +8,10 @@ To solve this, change the type provided, e.g. to the unconstrained 'type'.
 
 
 --CURDIR--/reg_issues4992_5001_negative.fz:82:9: error 2: Incompatible type parameter
-      X.i (tuple i32 bool)  # 2. should flag an error: wrong number of type parameters
+      X.i (tuple i64 bool)  # 2. should flag an error: wrong number of type parameters
 --------^
-formal type parameter 'U : tuple i32'
-actual type parameter 'tuple i32 bool'
+formal type parameter 'U : tuple i64'
+actual type parameter 'tuple i64 bool'
 
 
 --CURDIR--/reg_issues4992_5001_negative.fz:97:9: error 3: Incompatible type parameter
@@ -22,16 +22,16 @@ actual type parameter 'tuple unit true_'
 
 
 --CURDIR--/reg_issues4992_5001_negative.fz:150:9: error 4: Incompatible type parameter
-      X.i (tuple i32 i32 i32) (42,43,44)  # 4. should flag an error: wrong type parameter `tuple i32 i32 i32` instead of `tuple Any unit f32`
+      X.i (tuple i64 i64 i64) (42,43,44)  # 4. should flag an error: wrong type parameter `tuple i64 i64 i64` instead of `tuple Any unit f32`
 --------^
 formal type parameter 'U : tuple reg_issues4992_5000.case6.x.type.A reg_issues4992_5000.case6.x.type.B reg_issues4992_5000.case6.x.type.C' with constraint 'tuple Any unit f32'
-actual type parameter 'tuple i32 i32 i32'
+actual type parameter 'tuple i64 i64 i64'
 
 
 --CURDIR--/reg_issues4992_5001_negative.fz:162:13: error 5: Incompatible type parameter
-    (x f32).i (box i32)  # 5. should flag an error: wrong type parameter `box i32` instead of `box f32`
+    (x f32).i (box i64)  # 5. should flag an error: wrong type parameter `box i64` instead of `box f32`
 ------------^
 formal type parameter 'U : reg_issues4992_5000.case7.this.box reg_issues4992_5000.case7.x.type.A' with constraint 'reg_issues4992_5000.case7.this.box f32'
-actual type parameter 'reg_issues4992_5000.case7.this.box i32'
+actual type parameter 'reg_issues4992_5000.case7.this.box i64'
 
 5 errors.

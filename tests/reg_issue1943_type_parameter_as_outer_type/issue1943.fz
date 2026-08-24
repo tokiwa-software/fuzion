@@ -42,7 +42,7 @@ test_outer_as_type_parameter is
   test z z.y
 
   # here the code in an example from the Fuzion presentation at TyDe'23
-  count(n (M : mutate).new i32,
+  count(n (M : mutate).new i64,
         l Sequence T) ! M =>
     l.for_each x->
       n <- n.get + 1
@@ -52,6 +52,6 @@ test_outer_as_type_parameter is
   mm ! ()->
     {
       cnt := mm.env.new 100
-      cnt1 := count mm i32 cnt [1,2,3]
+      cnt1 := count mm i64 cnt [1,2,3]
       say cnt1
     }
