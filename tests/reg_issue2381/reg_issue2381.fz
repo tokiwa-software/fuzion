@@ -35,7 +35,7 @@ reg_issue2381 is
   part1 =>
     lm : mutate is
     lm ! ()->
-      visited := lm.array i32 .new _ area.length.as_i64 (_->0)
+      visited := lm.array i32 .new _ area.base.length.as_i64 (_->0)
       r => 1
       l => 2
       u => 4
