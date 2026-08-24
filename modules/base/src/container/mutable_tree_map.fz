@@ -35,7 +35,7 @@ is
   # mutable because this might change, for example when the key stored at the root
   # is removed.
   #
-  # if this map is entry, this is nil
+  # if this map is empty, this is nil
   #
   root := LM.env.new (option Entry) nil
 

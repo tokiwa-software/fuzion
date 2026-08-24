@@ -490,8 +490,11 @@ is
     pre
       debug: n >= 0
   =>
-    if n <= 0 || is_empty then (Sequence T).empty
-                          else Sequence.this ++ Sequence.this * (n-1)
+    for i   := n                , i-1
+        res := Sequence T .empty, res ++ Sequence.this
+    while i > 0
+    else
+      res
 
 
   # create a lazy list of all the tails of this Sequence, including the complete Sequence

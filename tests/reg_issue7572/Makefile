@@ -17,42 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature io.file.mapped_buffer
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-
-# mapped buffer gives access to the memory region a file is mapped
-# to via `mmap`.
-#
-module:public mapped_buffer
-  (# internal pointer to the mapped memory
-    memory Mapped_Memory,
-
-    # the length of this buffer
-    public redef length i64
-  )
-  : container.Buffer u8 mapped_buffer.this, mutate is
-
-
-  # get byte at given index i
-  #
-  public redef index [ ] (I type : integer, i I) u8
-  =>
-    replace
-    fzE_mapped_buffer_get memory i.as_i64
-
-
-  # set byte at given index i to given value o
-  #
-  public redef set [ ] (I type : integer, i I, o u8) unit
-  =>
-    replace
-    fzE_mapped_buffer_set memory i.as_i64 o
-
-
-  # cleanup
-  #
-  public redef finally unit =>
-    if fzE_munmap memory length != 0
-      Ignored_Failure.env.register_failure (error "io.file.mapped_buffer.finally: unmapping memory failed" fzE_last_error)
+override NAME = reg_issue7572
+include ../simple.mk

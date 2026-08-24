@@ -17,13 +17,13 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion example jitter
+#  Source code of Fuzion example jitter_threaded
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# jitter -- demo measuring periodic task jitter using time.histogram
+# jitter_threaded -- demo measuring periodic task jitter using time.histogram
 #
 # See Makefile for how to start fuzion to run this example.
 #
@@ -63,9 +63,9 @@ jitter_threaded =>
   #
   show_log_csv => false
 
-  # Try to enable CPU affinity and optionally real-time scheduling.
-  #
-  enable_rt := true
+
+  # Single local blocking_mutate instance for the task pool.
+  m : concur.blocking_mutate is
 
 
   # run jitter test using C.clock.run_periodic
@@ -91,7 +91,7 @@ jitter_threaded =>
           s := i, s +° i
         while i < 1000
         else
-          if s = s +° 1   # make sure the compiler does not optimize this aways
+          if s = s +° 1   # make sure the compiler does not optimize this away
             say "$s (never called)"
 
       # perform jitter test for given period: collect raw samples
@@ -107,7 +107,7 @@ jitter_threaded =>
         state (next_release start) ! ()->
 
           # run test; run_one_release will send raw records for every release
-          _ := C.env.run_periodic start period end run_one_release
+          C.env.run_periodic start period end run_one_release
 
           # indicate end-of-period to receiver (use current time as marker)
           marker := TIMER.env.read
@@ -143,25 +143,6 @@ jitter_threaded =>
         unit    => unit
 
       unit
-
-  say "Starting jitter test on dedicated thread..."
-  result_ch := concur.Channel (tuple time.duration time.instant time.instant bool)
-  thrd := concur.Threads.env.spawn ()->
-    test_jitter time.Nano time.Nano result_ch
-    result_ch.close
-
-  # affinity: pin the worker thread to CPU 0 (best-effort)
-  match thrd.set_affinity ([0.as_u64].as_array)
-    unit => say "Worker thread pinned to CPU 0"
-    e error => say "Worker thread affinity setup failed: $e"
-
-  # Attempt to set SCHED_FIFO.
-  if enable_rt
-    match thrd.set_policy(concur.scheduling_policy.sched_fifo, false, 99)
-      unit => say "Worker thread configured for SCHED_FIFO priority 99"
-      e error =>
-        say "Worker thread priority setup failed: $e"
-        say "(Hint: run with sudo or use setcap cap_sys_nice=ep ./jitter)"
 
   # print histograms for one completed period immediately
   print_period_histograms(period time.duration,
@@ -218,9 +199,9 @@ jitter_threaded =>
 
     # if we're tracking a different period that never got its done_flag, flush it first
     match acc.cur_period
-           nil => unit
-           p time.duration =>
-             if !same_period then print_period_histograms p acc.per_acc acc.cyc_acc
+      nil => unit
+      p time.duration =>
+        if !same_period then print_period_histograms p acc.per_acc acc.cyc_acc
 
     if done_flag
       print_period_histograms period per_acc2 cyc_acc2
@@ -228,7 +209,45 @@ jitter_threaded =>
     else
       acc_state (option period) per_acc2 cyc_acc2 (option actual)
 
-  # incrementally consume records from the worker thread: as soon as a period's
+  # fold record for scheduler test: period_delta = (actual - expected) + period
+  fold_record_scheduler(acc acc_state,
+                         period time.duration,
+                         actual time.instant,
+                         expected time.instant,
+                         done_flag bool)
+                         acc_state
+  =>
+    # Compute safe absolute difference
+    diff := if actual >= expected then actual - expected else expected - actual
+    # Center around period: add if late, subtract if early
+    period_delta := if actual >= expected then period + diff else period - diff
+
+    same_period := match acc.cur_period
+                     nil => false
+                     p time.duration => p = period
+
+    per_acc2 := if same_period then (period_delta : acc.per_acc)
+                else (period_delta : (list time.duration).empty)
+
+    cyc_acc2 := if !same_period then (list time.duration).empty
+                else match acc.prev_actual
+                       nil => acc.cyc_acc
+                       prev time.instant =>
+                         cyc_d := (actual >= prev ? actual - prev : prev - actual)
+                         (cyc_d : acc.cyc_acc)
+
+    match acc.cur_period
+      nil => unit
+      p time.duration =>
+        if !same_period then print_period_histograms p acc.per_acc acc.cyc_acc
+
+    if done_flag
+      print_period_histograms period per_acc2 cyc_acc2
+      empty_acc
+    else
+      acc_state (option period) per_acc2 cyc_acc2 (option actual)
+
+  # incrementally consume records from the worker task: as soon as a period's
   # done_flag arrives, print its histograms right away.
   consume_and_display(acc acc_state) unit
   =>
@@ -239,11 +258,131 @@ jitter_threaded =>
       nil =>
         unit
 
-  say "received samples"
-  consume_and_display empty_acc
-  say "Dedicated thread completed."
+  # consumer for scheduler test
+  consume_and_display_scheduler(acc acc_state) unit
+  =>
+    match result_ch.next
+      rec tuple =>
+        acc2 := fold_record_scheduler acc rec.0 rec.1 rec.2 rec.3
+        consume_and_display_scheduler acc2
+      nil =>
+        unit
+
+  # run jitter test using realtime.Scheduler.env.submit
+  test_scheduler_jitter(sample_ch concur.Channel (tuple time.duration time.instant time.instant bool))
+  =>
+      payload =>
+        for
+          i := 0, i+1
+          s := i, s +° i
+        while i < 1000
+        else
+          if s = s +° 1
+            say "$s (never called)"
+
+      # Define a local blocking_mutate effect for the scheduler test.
+      bm : concur.blocking_mutate is
+
+      run_for_period(period time.duration) option String
+      =>
+        start := time.Nano.env.read + start_delay
+        end := start + test_duration
+
+        # Atomic cell for error; use compare-and-set to avoid races.
+        error_cell := concur.atomic (option String) .new nil
+
+        # Mutable cell for expected release time
+        cell := bm.env.new start
+
+        # Sleep until the first release time to align the scheduler's start.
+        now := time.Nano.env.read
+        if start > now
+          time.Nano.env.sleep (start - now)
+
+        # Task that runs periodically by sleeping and recursing.
+        task_code =>
+          actual := time.Nano.env.read
+          # Only proceed if no error has been recorded yet (read is atomic).
+          if actual <= end && error_cell.read = nil
+            # Atomically read current expected and set next one (exclusive block on bm)
+            exp_old_new := bm.env.exclusive ()->
+              old := cell.get
+              new := old + period
+              cell <- new
+              (old, new)
+            expected := exp_old_new.0
+            new_expected := exp_old_new.1
+
+            sample_ch <- (period, actual, expected, false)
+
+            # Check for jitter exceeded period
+            if actual >= new_expected
+              diff := actual - new_expected
+              msg := "Jitter exceeded period: actual release was $diff late (period $period)"
+              # Attempt to set error; ignore if already set.
+              _ := error_cell.compare_and_set nil (option msg)
+            else
+              payload
+              finish := time.Nano.env.read
+              if finish >= new_expected
+                diff := finish - new_expected
+                msg := "Overrun: payload exceeded next release by $diff (period $period)"
+                _ := error_cell.compare_and_set nil (option msg)
+              else
+                # Schedule next run only if no error (check again, may have been set by another thread)
+                if error_cell.read = nil
+                  sleep_until := new_expected
+                  if sleep_until <= end
+                    now3 := time.Nano.env.read
+                    if sleep_until > now3
+                      time.Nano.env.sleep (sleep_until - now3)
+                    task_code
+
+        # Submit the task with infinite period so it runs only once.
+        t := realtime.task time.frequency task_code (time.frequency 0 (time.duration.ms 1)) (option end)
+        realtime.Scheduler.env.submit t
+
+        # Wait until test duration ends
+        now2 := time.Nano.env.read
+        if end > now2
+          time.Nano.env.sleep (end - now2)
+
+        # Return any error that occurred
+        error_cell.read
+
+      # Instate bm around the period loop.
+      bm ! ()->
+        cur_cell := concur.atomic time.duration .new period_default
+        while cur_cell.read.as_duration > time.duration.ns 0
+          cur := cur_cell.read
+          match run_for_period cur
+            nil => # OK, continue
+              next_period := cur.scale 0.5
+              cur_cell.write next_period
+            err_msg String =>
+              say "Test stopped: $err_msg"
+              Exit.env.exit 1
+
+      unit
+
+  say "Starting jitter test using task_pool..."
+  result_ch := concur.Channel (tuple time.duration time.instant time.instant bool)
+
+  jitter_worker =>
+    test_scheduler_jitter result_ch
+    result_ch.close
+
+  jitter_task := realtime.task time.frequency jitter_worker (time.frequency 0 (time.duration.ms 1)) nil
+
+  # Instate m for the task_pool constructor.
+  m ! ()->
+    realtime.Scheduler.instate (concur.task_pool m) ()->
+      realtime.Scheduler.env.submit jitter_task
+      say "received samples"
+      consume_and_display_scheduler empty_acc
+      say "Task-pool worker completed."
 
 # How to run with high priority :
-# FUZION_HOME=build bash bin/fz -c examples/jitter/jitter.fz
-# sudo setcap cap_sys_nice=ep ./jitter
-# ./jitter
+# FUZION_HOME=build bash bin/fz -c examples/jitter/jitter_threaded.fz
+# sudo setcap cap_sys_nice=ep ./jitter_threaded
+# ./jitter_threaded

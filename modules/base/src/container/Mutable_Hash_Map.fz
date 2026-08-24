@@ -240,7 +240,7 @@ is
       return_val
 
 
-  # get a list of all key/value pairs in this map
+  # get a sequence of all key/value pairs in this map
   #
   public redef items Sequence (tuple HK V) =>
     LM.env.exclusive ()->

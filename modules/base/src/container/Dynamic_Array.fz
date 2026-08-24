@@ -114,7 +114,7 @@ is
     len  <- len+1
 
 
-  # iteratively add all element at the end of this Dynamic_Array
+  # iteratively add all elements at the end of this Dynamic_Array
   #
   public add_all (s Sequence T) unit =>
     for e in s do add e

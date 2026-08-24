@@ -17,21 +17,10 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature Runtime_Failure
+#  Source code of Fuzion test reg_issue7572
 #
 # -----------------------------------------------------------------------
 
+reg_issue7572 =>
 
-# effect to register any failures happening at runtime.
-#
-# By default this just prints the error to stderr
-#
-public Runtime_Failure ref : effect is
-
-  public register_failure(e error) unit => abstract
-
-  public redef fixed type.default_value option Runtime_Failure =>
-    _ : Runtime_Failure is
-      public redef register_failure(e error) unit =>
-        io.Err.env.println e
-
+  say (("A"*1E6).utf8.take 3)

@@ -90,7 +90,7 @@ jitter =>
         s := i, s +° i
       while i < 1000
       else
-        if s = s +° 1   # make sure the compiler does not optimize this aways
+        if s = s +° 1   # make sure the compiler does not optimize this away
           say "$s (never called)"
 
     # perform jitter test for given period
@@ -112,7 +112,7 @@ jitter =>
         h2 := time.histogram.new "cycle jitter $period, log count / log time"     nil    nil      1 0
 
         # run test
-        _ := C.env.run_periodic start period end run_one_release
+        C.env.run_periodic start period end run_one_release
 
         # output results
         say terminal.clear_line

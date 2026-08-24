@@ -71,15 +71,9 @@ public mail is
       MAIL FROM:<$from>
       """.replace "\n" "\r\n"
 
-    rcpt_to =>
-      match bcc
-        nil => """
-          RCPT TO:<$to>
-          """.replace "\n" "\r\n"
-        m String => """
-          RCPT TO:<$to>
-          RCPT TO:<$m>
-          """.replace "\n" "\r\n"
+    rcpt_to (addr String) => """
+      RCPT TO:<$addr>
+      """.replace "\n" "\r\n"
 
     data => """
       DATA
@@ -128,10 +122,10 @@ public mail is
     # read a line, check if it starts with `expected`
     # otherwise cause an exception using $where in the error string
     #
-    read_or_cause(expected, where String) unit =>
+    read_or_cause(expected, where, wrote String) unit =>
       l := (io.buffered ssl_lm).read_line ? s String => s | io.end_of_file => ""
       if !l.starts_with expected
-        (flow.exception unit).env.cause <| error "expected $expected after sending $where, got $l"
+        (flow.exception unit).env.cause <| error "expected $expected after sending $where, got $l, data: $wrote"
 
 
     # do the get request
@@ -147,23 +141,32 @@ public mail is
 
       write_or_cause ssl_lm mail_from
 
-      read_or_cause "250" "MAIL FROM"
+      read_or_cause "250" "MAIL FROM" mail_from
 
-      write_or_cause ssl_lm rcpt_to
+      write_or_cause ssl_lm (rcpt_to to)
 
-      read_or_cause "250" "RCPT TO"
+      read_or_cause "250" "RCPT TO" (rcpt_to to)
+
+      match bcc
+        nil => # ignore
+        bcc_addr String =>
+          write_or_cause ssl_lm (rcpt_to bcc_addr)
+
+          read_or_cause "250" "RCPT TO" (rcpt_to bcc_addr)
 
       write_or_cause ssl_lm data
 
-      read_or_cause "354" "DATA"
+      read_or_cause "354" "DATA" data
+
+      check debug: mail_data.ends_with "\r\n.\r\n"
 
       write_or_cause ssl_lm mail_data
 
-      read_or_cause "250" "the mails data"
+      read_or_cause "250" "the mails data" mail_data
 
       write_or_cause ssl_lm quit
 
-      read_or_cause "221" "QUIT"
+      read_or_cause "221" "QUIT" quit
 
 
     # connect and setup ssl
