@@ -112,7 +112,7 @@ jitter =>
         h2 := time.histogram.new "cycle jitter $period, log count / log time"     nil    nil      1 0
 
         # run test
-        _ := C.env.run_periodic start period end run_one_release
+        C.env.run_periodic start period end run_one_release
 
         # output results
         say terminal.clear_line
