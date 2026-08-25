@@ -105,9 +105,7 @@ is
   =>
     match through
       thru T =>
-        if from = thru then
-          from
-        else if step.sign = (from ⋄ thru).sign then
+        if from != thru && step.sign = (from ⋄ thru).sign then
           nil
         else
           from
@@ -131,7 +129,7 @@ is
         else if step.sign = (from ⋄ thru).sign then
           nil
         else
-          from + (((thru - from) / step) * step)
+          thru-(thru-from)%step
       nil =>
         nil
 
@@ -152,6 +150,8 @@ is
         (0 .. n-1).map (i -> l - (T.from_u32 i.as_u32)*step)
       nil =>
         (Sequence T).empty
+
+
   # does this interval contain the given value?
   #
   public redef contains(e T) bool =>
