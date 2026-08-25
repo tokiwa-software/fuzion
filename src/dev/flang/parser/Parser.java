@@ -891,17 +891,20 @@ argType     : type
                                       }
                                     for (var s : n)
                                       {
-                                        result.add(
-                                          new Feature(
-                                            s._pos,
-                                            forPreOrPostCondition && !isTypePar ? Visi.PRIV : v,
-                                            m,
-                                            t,
-                                            s._name,
-                                            Contract.EMPTY_CONTRACT,
-                                            i == null ? new Impl(s._pos, null, Impl.Kind.FieldActual): i
-                                          )
-                                        );
+                                        if (s != ParsedName.ERROR_NAME)
+                                          {
+                                            result.add(
+                                              new Feature(
+                                                  s._pos,
+                                                  forPreOrPostCondition && !isTypePar ? Visi.PRIV : v,
+                                                  m,
+                                                  t,
+                                                  s._name,
+                                                  Contract.EMPTY_CONTRACT,
+                                                  i == null ? new Impl(s._pos, null, Impl.Kind.FieldActual): i
+                                              )
+                                            );
+                                          }
                                       }
                                   }
                                 while (skipComma());
