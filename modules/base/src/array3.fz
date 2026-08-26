@@ -31,11 +31,14 @@
 # three index parameters.
 #
 private:public array3(
-       T type,
-       public length0, length1, length2 i64,
-       module base array T,
-       _ unit,
-       _ unit)
+      T type,
+      public length0, length1, length2 i64,
+
+      # the underlying one dimensional array
+      #
+      public base array T,
+      _ unit,
+      _ unit)
  : property.hashable
   pre
     safety: length0 ≥ 0

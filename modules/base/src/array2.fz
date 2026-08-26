@@ -31,11 +31,14 @@
 # two index parameters.
 #
 private:public array2(
-       T type,
-       public length0, length1 i64,
-       module base array T,
-       _ unit,
-       _ unit) : property.hashable
+      T type,
+      public length0, length1 i64,
+
+      # the underlying one dimensional array
+      #
+      public base array T,
+      _ unit,
+      _ unit) : property.hashable
   pre
     safety: length0 ≥ 0
     safety: length1 ≥ 0
@@ -139,7 +142,6 @@ is
         .map (i -> "  " + (base.slice i*length1 (i+1)*length1))
         .fold (String.concat ","+ascii.lf_str)
     "[$(ascii.lf_str)$c$(ascii.lf_str)]"
-
 
 
   # get a list of tuples indices and elements in this array
