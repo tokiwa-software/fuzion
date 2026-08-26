@@ -142,14 +142,16 @@ is
   # negative `step` without requiring negation, so it also works for
   # unsigned `T`.
   #
-  public redef reverse Sequence T
+  public  reverse_interval interval T 
+  pre
+    safety: T.zero -! step
+    debug: through.exists && first.exists
   =>
     match last
       l T =>
-        n := size.as_i32
-        (0 .. n-1).map (i -> l - (T.from_u32 i.as_u32)*step)
+        interval l first -step
       nil =>
-        (Sequence T).empty
+        interval T.zero T.zero T.zero
 
 
   # does this interval contain the given value?
