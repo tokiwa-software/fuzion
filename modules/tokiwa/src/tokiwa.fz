@@ -131,10 +131,10 @@ public tokiwa is
     (concur.thread_pool 2 ()->
         fout := concur.thread_pool.env.submit _ ()->
           lm ! ()->
-            p.with_out String lm (() -> (io.buffered lm).read_fully.bind String.from) .or_panic
+            p.with_out String lm (() -> (io.buffered lm).read_fully.bind String.from)
         ferr := concur.thread_pool.env.submit _ ()->
           lm ! ()->
-            p.with_err String lm (() -> (io.buffered lm).read_fully.bind String.from) .or_panic
+            p.with_err String lm (() -> (io.buffered lm).read_fully.bind String.from)
 
         match feed_stdin
           nil =>
@@ -157,5 +157,5 @@ public tokiwa is
             e := ferr.get
             p.close_out.or_panic
             p.close_err.or_panic
-            process_result o e ec)
+            process_result $o $e ec)
       .or_panic
