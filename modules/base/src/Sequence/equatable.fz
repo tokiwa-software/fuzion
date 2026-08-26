@@ -112,12 +112,6 @@ public find(pattern Sequence T) option i32
   fold_until init 0
 
 
-# NYI: BUG: Node could be in Sequence?
-# but currently gives confusing error in a few places:
-#
-# Case matches type 'Sequence.this.Node'.
-# Subject type is one of '(option Sequence.this.Node).Node' or 'nil'.
-
 # helper features for knuth morris pratt algorithm
 #
 universe.Node(T type, top Sequence T, next once (option (Node T)), rest option (Node T)) ref is
