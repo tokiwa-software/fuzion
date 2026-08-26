@@ -27,7 +27,7 @@
 # in the case of an IPv4 address, this is the canonical mapping of that
 # address to an IPv6 address.
 #
-public ip_address (val u128) : property.equatable, property.orderable is
+public ip_address (val u128) : property.orderable is
 
   # is the stored IP address an IPv4 or IPv6 address?
   #
