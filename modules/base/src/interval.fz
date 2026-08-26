@@ -142,9 +142,9 @@ is
   # negative `step` without requiring negation, so it also works for
   # unsigned `T`.
   #
-  public  reverse_interval interval T 
+  public reverse_interval interval T 
   pre
-    safety: T.zero -! step
+    safety: T.zero -! step # We must be able to negate `step`, so `T` must be signed
     debug: through.exists && first.exists
   =>
     match last

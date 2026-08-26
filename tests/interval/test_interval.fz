@@ -38,6 +38,11 @@ test_interval is
           $(x.size)
         else
           "∞"
+      ) first $(x.first) last $(x.last) reverse $(
+        if x.through.exists && x.first.exists && (i32.zero -! x.step) then
+          $(x.reverse_interval)
+        else
+          "n/a"
       ) IN $(
         for
           s := "", s+" "+i;
