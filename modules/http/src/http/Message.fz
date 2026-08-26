@@ -52,7 +52,7 @@ public Message ref is
 
   # get the body of the message as a String
   #
-  public body_as_string String =>
+  public body_as_string outcome String =>
     lm : mutate is
     lm ! ()->
       r : io.buffered lm .Reader is
@@ -60,8 +60,7 @@ public Message ref is
           body max_count
 
       io.buffered lm .Reader.instate r ()->
-        _ : String is
-          public redef utf8 Sequence u8 := (io.buffered lm).read_fully
+        (io.buffered lm).read_fully.bind String.from
 
 
   # the whole message as a sequence of bytes

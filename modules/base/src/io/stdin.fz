@@ -72,7 +72,7 @@ public stdin is
     lm : mutate is
     lm ! ()->
       (buffered lm).Reader.instate (reader lm) ()->
-        (buffered lm).read_fully
+        (buffered lm).read_fully.or_panic
 
   # read all of stdin in an array of String using
   # io.buffered.read_lines.
@@ -81,7 +81,7 @@ public stdin is
     lm : mutate is
     lm ! ()->
       (buffered lm).Reader.instate (reader lm) ()->
-        (buffered lm).read_lines
+        (buffered lm).read_lines.or_panic
 
   # read all of stdin in a single String using
   # String.from_bytes on the result of read_fully.

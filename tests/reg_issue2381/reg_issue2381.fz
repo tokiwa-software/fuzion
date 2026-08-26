@@ -28,6 +28,7 @@ reg_issue2381 is
     io.buffered mi .Reader.instate (io.stdin.reader mi) ()->
       io.buffered mi
         .read_lines
+        .or_panic
         .filter !=""
         .map (.codepoints)
   area := (array2 String).new _ input.count input[0].count i,j->input[i][j]
