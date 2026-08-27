@@ -21,57 +21,34 @@
 #
 # -----------------------------------------------------------------------
 
-# abstract feature as interface for the list nodes
+# a list node
 #
-private L_Node(
+L_Node(
   # mutate effect to be used manipulate pointers and stored element
   #
   LM type : mutate,
 
   # type of the element stored in the node
   #
-  T type
-) ref is
+  T type,
 
   # the previous list node
   #
-  prev LM.new (option (L_Node LM T)) => abstract
+  prev LM.new (option (L_Node LM T)),
 
   # the next list node
   #
-  next LM.new (option (L_Node LM T)) => abstract
+  next LM.new (option (L_Node LM T)),
 
   # the element stored in this list node
   #
-  val T => panic ""
+  val option T
 
-  # is this node the sentinel?
+) ref is
+
+  # is this node the special node marking start/end of the list
   #
-  is_sentinel => false
-
-
-# normal list nodes, storing an element
-#
-private Element(
-  LM type : mutate,
-  T type,
-  redef prev LM.new (option (L_Node LM T)),
-  redef next LM.new (option (L_Node LM T)),
-  redef val T
-) ref : L_Node LM T is
-
-
-# special node marking start/end of the list
-#
-private Sentinel(
-  LM type : mutate,
-  T type,
-  redef prev LM.new (option (L_Node LM T)),
-  redef next LM.new (option (L_Node LM T))
-) ref : L_Node LM T
-is
-  redef is_sentinel => true
-
+  is_sentinel bool => val.is_nil
 
 
 # Doubly_Linked_List - a simple mutable doubly linked list
@@ -89,10 +66,10 @@ private:public Doubly_Linked_List(
 
 ) ref is #: Sequence T is
 
-  
+
   # list is linked in a circle, sentinel marks start/end
   #
-  sentinel := Sentinel LM T (LM.env.new (option (L_Node LM T)) nil) (LM.env.new (option (L_Node LM T)) nil)
+  sentinel := L_Node LM T (LM.env.new (option (L_Node LM T)) nil) (LM.env.new (option (L_Node LM T)) nil) nil
   sentinel.prev <- sentinel
   sentinel.next <- sentinel
 
@@ -115,11 +92,11 @@ private:public Doubly_Linked_List(
   public add_first(elem T) unit =>
     LM.env.exclusive ()->
       old_first := sentinel.next.or_panic
-      e := Element LM
-                   T
-                   (LM.env.new (option (L_Node LM T)) sentinel)
-                   (LM.env.new (option (L_Node LM T)) old_first)
-                   elem
+      e := L_Node LM
+                  T
+                  (LM.env.new (option (L_Node LM T)) sentinel)
+                  (LM.env.new (option (L_Node LM T)) old_first)
+                  elem
       old_first.prev <- e
       sentinel.next  <- e
       len <- len+1
@@ -132,11 +109,11 @@ private:public Doubly_Linked_List(
   public add_last(elem T) unit =>
     LM.env.exclusive ()->
       old_last := sentinel.prev.or_panic
-      e := Element LM
-                   T
-                   (LM.env.new (option (L_Node LM T)) old_last)
-                   (LM.env.new (option (L_Node LM T)) sentinel)
-                   elem
+      e := L_Node LM
+                  T
+                  (LM.env.new (option (L_Node LM T)) old_last)
+                  (LM.env.new (option (L_Node LM T)) sentinel)
+                  elem
       old_last.next <- e
       sentinel.prev <- e
       len <- len+1
@@ -175,7 +152,7 @@ private:public Doubly_Linked_List(
   public remove_first_match(f T->bool) option T =>
     LM.env.exclusive (option T) _ ()->
       for e := sentinel.next.or_panic, e.next.or_panic
-      until e.is_sentinel || f e.val
+      until e.is_sentinel || f e.val.or_panic
         if e.is_sentinel then nil
         else
           remove e
@@ -197,7 +174,7 @@ private:public Doubly_Linked_List(
   public as_list list T =>
     LM.env.exclusive ()->
       as_list_from(node L_Node LM T) list T =>
-        node.is_sentinel ? nil : cons T (list T) node.val (as_list_from node.next.or_panic)
+        node.is_sentinel ? nil : cons T (list T) node.val.or_panic (as_list_from node.next.or_panic)
       as_list_from sentinel.next.or_panic
 
 
