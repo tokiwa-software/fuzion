@@ -31,11 +31,24 @@
 # three index parameters.
 #
 private:public array3(
-       T type,
-       public length0, length1, length2 i64,
-       module base array T,
-       _ unit,
-       _ unit)
+      T type,
+      public length0, length1, length2 i64,
+
+      # the underlying one dimensional array
+      #
+      # multidimensional indices are mapped to one dimensional indices as follows:
+      #
+      # [x,y,z] -> [(x * length1 + y) * length2 + z]
+      #
+      # resulting in the order:
+      #
+      # arr[0,0,0], arr[0,0,1], arr[0,0,2], ...,
+      # arr[0,1,0], arr[0,1,1], arr[0,1,2], ...,
+      # arr[1,0,0], arr[1,0,1], arr[1,0,2], ...
+      #
+      public base array T,
+      _ unit,
+      _ unit)
  : property.hashable
   pre
     safety: length0 ≥ 0

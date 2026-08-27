@@ -86,7 +86,7 @@ cx_string_to_string(cx_str CXString) =>
   res
 
 
-lm : mutate is
+lm : racy_mutate is
 
 
 # clang -- unit feature to group clang related features
@@ -170,10 +170,10 @@ public clang is
 
         ck := clang_getCursorKind crsr
 
+        n := cx_string_to_string (clang_getCursorSpelling crsr)
+
         if ck = CXCursor_FunctionDecl
 
-          func_name := clang_getCursorSpelling crsr
-          fn := "$(cx_string_to_string func_name)"
 
           return_type := clang_getCanonicalType (clang_getCursorResultType crsr)
           return_type_spelling := clang_getTypeSpelling return_type
@@ -193,46 +193,37 @@ public clang is
 
               res
 
-          cb (clang.function_decl fn args.as_array rt)
+          cb (clang.function_decl n args.as_array rt)
 
         else if ck = CXCursor_StructDecl
-
-          name := clang_getCursorSpelling crsr
-          n := "$(cx_string_to_string name)"
           if !n.contains_whitespace
             cb (clang.struct_decl n (get_fields crsr))
 
         else if ck = CXCursor_UnionDecl
-
-          name := clang_getCursorSpelling crsr
-          n := "$(cx_string_to_string name)"
           if !n.contains_whitespace
             cb (clang.union_decl n (get_fields crsr))
 
         else if ck = CXCursor_EnumDecl
-
-          name := clang_getCursorSpelling crsr
-          n := "$(cx_string_to_string name)"
           if !n.contains_whitespace
             cb (clang.enum_decl n)
 
 
         CXChildVisit_Continue
 
+    lm.instate_self (outcome unit) ()->
 
-    ci := clang_createIndex 0 0
+      ci := clang_createIndex 0 0
 
-    check !(ffi.is_null ci)
+      check !(ffi.is_null ci)
 
-    tu := lm ! ()->
-      clang_parseTranslationUnit ci (header_file.as_c_string lm) ((lm.array Native_Ref).from_Sequence (Sequence Native_Ref .empty)) 0 ffi.null 0 0
+      tu := clang_parseTranslationUnit ci (header_file.as_c_string lm) ((lm.array Native_Ref).from_Sequence (Sequence Native_Ref .empty)) 0 ffi.null 0 0
 
-    if ffi.is_null tu
-      error "failed to open header file: $header_file"
-    else
-      cursor := clang_getTranslationUnitCursor tu
+      if ffi.is_null tu
+        error "failed to open header file: $header_file"
+      else
+        cursor := clang_getTranslationUnitCursor tu
 
-      _ := clang_visitChildren cursor visitor ffi.null
+        _ := clang_visitChildren cursor visitor ffi.null
 
-      clang_disposeTranslationUnit tu
-      clang_disposeIndex ci
+        clang_disposeTranslationUnit tu
+        clang_disposeIndex ci

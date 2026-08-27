@@ -17,47 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature time.precision
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# precision -- unit feature to group time precision related features
-#
-public precision is
-
-  # unit feature denoting precision to the year
-  #
-  public year is
-
-  # unit feature denoting precision to the month
-  #
-  public month is
-
-  # unit feature denoting precision to the day
-  #
-  public day is
-
-  # unit feature denoting precision to the hour
-  #
-  public hour is
-
-  # unit feature denoting precision to the minute
-  #
-  public minute is
-
-  # unit feature denoting precision to the second
-  #
-  public second is
-
-  # unit feature denoting precision to the millisecond
-  #
-  public milli_second is
-
-  # unit feature denoting precision to the nanosecond
-  #
-  public nano_second is
-
-
-  # precision level
-  #
-  public val : choice year month day hour minute second milli_second nano_second is
+override NAME = reg_issue7599
+include ../simple.mk
