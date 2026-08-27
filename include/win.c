@@ -1035,11 +1035,12 @@ int fzE_pipe_read(int64_t desc, char * buf, size_t nbytes){
 
 // return -1 on error, the number of written bytes otherwise
 int fzE_pipe_write(int64_t desc, char * buf, size_t nbytes){
+  // NYI: UNDER DEVELOPMENT: fix me async IO
   DWORD bytesWritten;
-  if (!WriteFile((HANDLE)desc, buf, nbytes, &bytesWritten, NULL)){
-    return -1;
-  }
-  return bytesWritten;
+  BOOL result = WriteFile((HANDLE)desc, buf, nbytes, &bytesWritten, NULL);
+  return result || GetLastError() == ERROR_IO_PENDING
+    ? (int)bytesWritten
+    : -1;
 }
 
 
@@ -1242,10 +1243,11 @@ void fzE_date_time(int32_t * result)
 
 int32_t fzE_file_write(void * file, void * buf, int32_t size)
 {
-  DWORD written = 0;
-  BOOL result = WriteFile((HANDLE)file, buf, (DWORD)size, &written, NULL);
-  return result
-    ? (int32_t)written
+  // NYI: UNDER DEVELOPMENT: fix me async IO
+  DWORD bytesWritten;
+  BOOL result = WriteFile((HANDLE)file, buf, (DWORD)size, &bytesWritten, NULL);
+  return result || GetLastError() == ERROR_IO_PENDING
+    ? (int32_t)bytesWritten
     : -1;
 }
 
