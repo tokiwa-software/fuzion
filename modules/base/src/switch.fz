@@ -104,6 +104,10 @@ is
 
 
 
+  public otherwise(f B -> A) A =>
+    match switch.this
+      a A => a
+      b B => f b
   # converts switch into a list of either a single element in case
   # switch.this.exists or `nil` otherwise
   #
