@@ -377,7 +377,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     return
       isThisType()
       ? g
-      : replaceGenerics(g).map(t -> t.replace_this_type_by_actual_outer(this, context));
+      : replaceGenerics(g).map(t -> t.replace_this_type_by_actual_outer(outer(), context));
   }
 
 
