@@ -64,7 +64,7 @@ private:public Doubly_Linked_List(
   #
   T type
 
-) ref ! LM is #: Sequence T is
+) ref ! LM is
 
 
   # list is linked in a circle, sentinel marks start/end
@@ -202,7 +202,7 @@ private:public Doubly_Linked_List(
 
   # does this list contain elem?
   #
-  public contains(elem T) bool ! LM 
+  public contains(elem T) bool ! LM
     pre T : property.equatable
   =>
     LM.env.exclusive ()->
