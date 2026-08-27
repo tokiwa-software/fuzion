@@ -86,7 +86,7 @@ cx_string_to_string(cx_str CXString) =>
   res
 
 
-lm : mutate is
+lm : racy_mutate is
 
 
 # clang -- unit feature to group clang related features
@@ -219,20 +219,20 @@ public clang is
 
         CXChildVisit_Continue
 
+    lm.instate_self (outcome unit) ()->
 
-    ci := clang_createIndex 0 0
+      ci := clang_createIndex 0 0
 
-    check !(ffi.is_null ci)
+      check !(ffi.is_null ci)
 
-    tu := lm ! ()->
-      clang_parseTranslationUnit ci (header_file.as_c_string lm) ((lm.array Native_Ref).from_Sequence (Sequence Native_Ref .empty)) 0 ffi.null 0 0
+      tu := clang_parseTranslationUnit ci (header_file.as_c_string lm) ((lm.array Native_Ref).from_Sequence (Sequence Native_Ref .empty)) 0 ffi.null 0 0
 
-    if ffi.is_null tu
-      error "failed to open header file: $header_file"
-    else
-      cursor := clang_getTranslationUnitCursor tu
+      if ffi.is_null tu
+        error "failed to open header file: $header_file"
+      else
+        cursor := clang_getTranslationUnitCursor tu
 
-      _ := clang_visitChildren cursor visitor ffi.null
+        _ := clang_visitChildren cursor visitor ffi.null
 
-      clang_disposeTranslationUnit tu
-      clang_disposeIndex ci
+        clang_disposeTranslationUnit tu
+        clang_disposeIndex ci
