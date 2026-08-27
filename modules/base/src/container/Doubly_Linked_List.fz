@@ -171,7 +171,7 @@ private:public Doubly_Linked_List(
 
   # this list as a immutable list
   #
-  public as_list list T =>
+  public as_array array T ! LM =>
     LM.env.exclusive ()->
       as_list_from(node L_Node LM T) list T =>
         node.is_sentinel ? nil : cons T (list T) node.val.or_panic (as_list_from node.next.or_panic)
