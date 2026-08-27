@@ -1,0 +1,110 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test doubly_linked_list_test
+#
+# -----------------------------------------------------------------------
+
+doubly_linked_list_test =>
+
+  m : mutate is
+  m ! ()->
+
+    l := container.Doubly_Linked_List m i32 .empty
+
+    test_add_frst(e i32) unit =>
+      l.add_first e
+      say """
+        add first $e    count=$(l.count) contains($e)=$(l.contains e)
+        $l
+        $(l.as_list.as_string)
+        """
+
+    test_add_last(e i32) unit =>
+      l.add_last e
+      say """
+        add last $e     count=$(l.count) contains($e)=$(l.contains e)
+        $l
+        $(l.as_list.as_string)
+        """
+
+    test_rem_frst_mtch(f i32->bool) =>
+      say """
+        remove_first_match=$(l.remove_first_match f) count=$(l.count)
+        $l
+        $(l.as_list.as_string)
+        """
+
+    test_rem_frst =>
+      e := l.remove_first
+      say """
+        remove_first=$e count=$(l.count) $(e ? i i32 => "contains($i)=$(l.contains i)" | * => "")
+        $l
+        $(l.as_list.as_string)
+        """
+
+    test_rem_last =>
+      e := l.remove_last
+      say """
+        remove_last=$e count=$(l.count) $(e ? i i32 => "contains($i)=$(l.contains i)" | * => "")
+        $l
+        $(l.as_list.as_string)
+        """
+
+
+
+    say """
+      create         count=$(l.count) contains(1)=$(l.contains 1)
+      $l
+      $(l.as_list.as_string)
+      """
+
+    test_add_frst 2
+
+    test_add_last 3
+
+    test_add_frst 5
+
+    test_add_frst 1
+
+    test_add_last 4
+
+    test_add_last 5
+
+    test_rem_frst_mtch %%5
+
+    test_rem_frst_mtch %%9
+
+    test_add_frst 1
+
+    test_rem_frst
+
+    test_rem_last
+
+    test_rem_frst_mtch =3
+
+    test_rem_frst_mtch =2
+
+    test_rem_last
+
+    test_rem_last
+
+    test_rem_frst
+
+    test_rem_last
