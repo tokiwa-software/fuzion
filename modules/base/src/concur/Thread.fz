@@ -188,7 +188,7 @@ is
   # Return early from park in case timeout was reached.
   #
   # result is `true`  if this returns due to a call to `unpark`, it is `false` if there
-  # was no timeout.
+  # was a timeout.
   #
   module park_until(C type : time.Clock,
                     F type : ()->unit,
@@ -226,7 +226,7 @@ is
     mtx.lock
     if parked_on??
       c := parked_on.or_panic.0
-      c.synchronized ()->            # this is redundant for C backend, but required for Java where mtx adiffer
+      c.synchronized ()->            # this is redundant for C backend, but required for Java where mtx differ
         parked_on.for_each x->x.0.signal
         set parked_on := nil
         mtx.unlock
@@ -254,7 +254,7 @@ is
 
   # String representation of thread
   #
-  # NYI: we should provide some support for thread names. Currently, this is usind the
+  # NYI: we should provide some support for thread names. Currently, this is using the
   # thread id.
   #
   public redef as_string String

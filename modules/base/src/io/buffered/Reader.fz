@@ -178,8 +178,9 @@ pre debug: n >= 0
     v
 
   for
-    is_eof                 := Reader.env.read  ? outcome => true | Sequence => false
-    next_bytes Sequence u8 := (Reader.env.read ? outcome => []   | s Sequence => s), rest ++ (Reader.env.read ? outcome => [] | s Sequence => s)
+    cur := Reader.env.read
+    is_eof                 := cur ? outcome => true | Sequence => false
+    next_bytes Sequence u8 := (cur ? outcome => []   | s Sequence => s), rest ++ (cur ? outcome => [] | s Sequence => s)
     next_codepoints        := take_valid_codepoints next_bytes n, take_valid_codepoints next_bytes n-codepoint_count
     # if we did not use any bytes and `next_bytes` contains not enough bytes for a codepoint potentially,
     # we trigger a `discard` and remember what we read so far via `rest`.

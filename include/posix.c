@@ -85,6 +85,7 @@ static_assert(SIGSEGV == 11, "signal definition different than expected");
 static_assert(SIGPIPE == 13, "signal definition different than expected");
 static_assert(SIGALRM == 14, "signal definition different than expected");
 static_assert(SIGTERM == 15, "signal definition different than expected");
+static_assert(EWOULDBLOCK == EAGAIN, "EWOULDBLOCK != EAGAIN, failed assumption of fzE_file_read implementation");
 static_assert(sizeof(pthread_t) <= sizeof(void *), "pthread_t must be smaller or equal to pointer size");
 
 
@@ -589,10 +590,8 @@ int fzE_thread_join(void * thrd)
   int ret = 0;
 #ifdef GC_THREADS
   ret = GC_pthread_join((pthread_t)thrd, NULL);
-  assert (ret == 0);
 #else
   ret = pthread_join((pthread_t)thrd, NULL);
-  assert (ret == 0);
 #endif
   switch (ret)
     {
@@ -790,6 +789,15 @@ int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLe
   return ret;
 }
 
+/**
+ * close process handle, free memory
+ */
+int fzE_process_close(int64_t p)
+{
+  // nothing to be done
+  return 0;
+}
+
 
 // check the status of process p, does not wait for process to finish
 //
@@ -883,7 +891,6 @@ int fzE_pipe_write(int64_t desc, char * buf, size_t nbytes){
 
 // return -1 on error, 0 on success
 int fzE_pipe_close(int64_t desc){
-// NYI: UNDER DEVELOPMENT: do we need to flush?
   return close((int) desc);
 }
 

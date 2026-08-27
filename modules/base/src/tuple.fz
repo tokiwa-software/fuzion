@@ -105,7 +105,7 @@
 #     a, b := (b, a)
 #     o, t, a, n := (n, a, t, o)
 #
-public tuple(public A type...,
+public tuple(A type...,
              public values A...
              ) : property.orderable,
                  property.hashable

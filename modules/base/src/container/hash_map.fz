@@ -26,8 +26,8 @@
 # hash_map -- an immutable hash map from keys HK to values V
 #
 public hash_map(
-        public HK type : property.hashable,
-        public V  type,
+        HK type : property.hashable,
+        V  type,
         ks Sequence HK,
         vs Sequence V) : container.Map HK V
   pre
@@ -198,7 +198,7 @@ is
     retrieve (at h)
 
 
-  # get a list of all key/value pairs in this map
+  # get a sequence of all key/value pairs in this map
   #
   public redef items Sequence (tuple HK V) =>
     contents

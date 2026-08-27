@@ -23,7 +23,7 @@
 
 # Mutable_Map -- an abstract mutable map from keys K to values V
 #
-public Mutable_Map(public K type : property.equatable, public V type) ref is
+public Mutable_Map(K type : property.equatable, V type) ref is
 
   # number of entries in this map
   #
@@ -128,6 +128,8 @@ public Mutable_Map(public K type : property.equatable, public V type) ref is
   #
   public type.from_entries(kvs Sequence (tuple K V)) Mutable_Map.this =>
     m := empty
+    # NYI: BUG: does not work
+    # m.put_all kvs
     for kv in kvs do
       m.put kv.0 kv.1
     m

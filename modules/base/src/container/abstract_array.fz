@@ -31,7 +31,7 @@
 public abstract_array
   (
    # element type
-   public T type
+   T type
   ) : Sequence T is
 
 
@@ -85,7 +85,7 @@ public abstract_array
   public redef is_valid_index(I type : integer, i I) bool => i64.zero ≤ i.as_i64 < length
 
 
-  # create a list that consists of the elements of this Sequence except the first
+  # create a sequence that consists of the elements of this Sequence except the first
   # n elements
   #
   # For arrays, this has performance in O(1).

@@ -33,7 +33,7 @@ public thread_pool(R type, size i32, code ()->R) outcome R =>
 
 
 # concrete implementation of concur.Future
-# meant to run on a thread thread_pool
+# meant to run on a thread_pool
 #
 Computable_Future(
   # result type of the computation
@@ -116,5 +116,7 @@ is
 
     # wait for all threads to finish
     thrds.for_each t->
-      # NYI: UNDER DEVELOPMENT: register failures somewhere
-      _ := t.join
+      match t.join
+        unit =>
+        e error =>
+          Ignored_Failure.env.register_failure (error "thread_pool failed joining thread $t, got $e")

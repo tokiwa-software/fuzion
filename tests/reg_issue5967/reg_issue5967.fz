@@ -41,13 +41,13 @@ reg_issue5967 =>
     a := array2 cp.count cp[0].count i,j->cp[i][j]
     w => a.length1
     h => a.length0
-    at(l,c i32) =>
+    at(l,c i64) =>
       if 0 <= l < h && 0 <= c < w then a[_,l,c] else "."
 
-    number(l, c i32) is
-      len := (0.. .filter (x -> !(at l c+x).is_ascii_digit)).first.or_panic
-      ok bool := (-1..1) ∃ y -> (-1..len) ∃ x -> (at l+y c+x) .is_symbol
-      val i32 := ls[l].substring c c+len
+    number(l, c i64) is
+      len := (i64.zero.. .filter (x -> !(at l c+x).is_ascii_digit)).first.or_panic
+      ok bool := ((i64 -1)..1) ∃ y -> ((i64 -1)..len) ∃ x -> (at l+y c+x) .is_symbol
+      val i32 := ls[l].substring c.as_i32 (c+len).as_i32
                       .parse_i32.or_panic
 
     numbers =>

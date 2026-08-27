@@ -30,6 +30,8 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 0 * * 1-5' # monday through friday
+  pull_request:
+    types: [labeled]
 
 
 env:
@@ -43,6 +45,7 @@ env:
 jobs:
   run_tests:
     name: windows run tests
+    if: ${{ github.event_name != 'pull_request' || (github.event_name == 'pull_request' && github.event.action == 'labeled' && github.event.label.name == 'extra tests') }}
     runs-on: windows-latest
     defaults:
       run:
@@ -58,12 +61,11 @@ jobs:
           install: >-
             make
             git
-            mingw-w64-ucrt-x86_64-clang
             diffutils
             patch
-            libsqlite
-            libsqlite-devel
+            mingw-w64-ucrt-x86_64-clang
             mingw-w64-ucrt-x86_64-libsodium
+            mingw-w64-ucrt-x86_64-sqlite3
             mingw-w64-ucrt-x86_64-wolfssl
 
 
@@ -77,7 +79,7 @@ jobs:
       - name: create dll links
         run: |
           ln -s  /ucrt64/bin/libclang.dll /ucrt64/bin/clang.dll
-          ln -s  /usr/bin/msys-sqlite3-0.dll /ucrt64/bin/sqlite3.dll
+          ln -s  /ucrt64/bin/libsqlite3-0.dll /ucrt64/bin/sqlite3.dll
           ln -s  /ucrt64/bin/libsodium-26.dll /ucrt64/bin/sodium.dll
           ln -s  /ucrt64/bin/libwolfssl-45.dll /ucrt64/bin/wolfssl.dll
 

@@ -30,7 +30,7 @@
 #
 public Ring_Buffer(
   # the type of elements stored in this buffer
-  public T type,
+  T type,
 
   # effect used to modify this buffer
   #

@@ -42,7 +42,7 @@
 private:public expanding_array
   (
    # element type
-   public T type,
+   T type,
 
    # the array containing the actual data
    data fuzion.sys.internal_array (container.slot T),

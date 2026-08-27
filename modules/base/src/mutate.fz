@@ -157,7 +157,7 @@ public mutate : linear_effect is
   # 'mutate' effect in the current environment
   #
   public new (
-    public T type,
+    T type,
 
     # initial value, will be updated by 'put' or 'infix <-'.
     mutable_value T

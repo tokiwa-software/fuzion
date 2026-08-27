@@ -22,7 +22,7 @@
 # -----------------------------------------------------------------------
 
 
-# a condition is synchronization primitive
+# a condition is a synchronization primitive
 # that allows threads to signal and wait for one another.
 #
 private:public condition(mtx concur.sync.mutex, cnd Condition) is

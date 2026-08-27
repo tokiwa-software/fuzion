@@ -25,4 +25,4 @@
 #
 # T is the result type of the function, U1 and U2 are the argument types of the function
 #
-public Binary(public T, U1 type, U2 type) ref : Function T U1 U2 is
+public Binary(T, U1 type, U2 type) ref : Function T U1 U2 is

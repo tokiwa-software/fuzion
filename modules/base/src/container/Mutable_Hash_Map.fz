@@ -33,15 +33,15 @@
 module:public Mutable_Hash_Map(
         # the mutate effect
         #
-        public LM type : mutate,
+        LM type : mutate,
 
         # type of the keys
         #
-        public HK type : property.hashable,
+        HK type : property.hashable,
 
         # type of the values
         #
-        public V  type,
+        V  type,
 
         # initial size, also the size of the hash map will not decrease below this
         #
@@ -240,7 +240,7 @@ is
       return_val
 
 
-  # get a list of all key/value pairs in this map
+  # get a sequence of all key/value pairs in this map
   #
   public redef items Sequence (tuple HK V) =>
     LM.env.exclusive ()->

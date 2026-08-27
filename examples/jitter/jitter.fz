@@ -90,7 +90,7 @@ jitter =>
         s := i, s +° i
       while i < 1000
       else
-        if s = s +° 1   # make sure the compiler does not optimize this aways
+        if s = s +° 1   # make sure the compiler does not optimize this away
           say "$s (never called)"
 
     # perform jitter test for given period
@@ -112,7 +112,7 @@ jitter =>
         h2 := time.histogram.new "cycle jitter $period, log count / log time"     nil    nil      1 0
 
         # run test
-        _ := C.env.run_periodic start period end run_one_release
+        C.env.run_periodic start period end run_one_release
 
         # output results
         say terminal.clear_line
@@ -130,6 +130,7 @@ jitter =>
           actual_release := TIMER.env.read
           h .add_instant actual_release
           h2.add_instant actual_release
+          expected_rel := state_get next_release .t
           next_rel     := state_modify next_release (x -> next_release x.t+period) .get.t
           if actual_release >= next_rel
             (flow.exception jitter_too_high).env.cause <| error "release time jitter exceeded period"
@@ -137,7 +138,7 @@ jitter =>
           payload
           actual_finish := TIMER.env.read
           if actual_finish >= next_rel
-            e := error "*** overrun: run started at {actual_release-(state_get next_release .t)}  and took {actual_finish-actual_release}, which is larger than period $period"
+            e := error "*** overrun: run started at $(actual_release-expected_rel) and took $(actual_finish-actual_release), which is larger than period $period"
             (flow.exception jitter_too_high).env.cause e
 
     match flow.exception jitter_too_high .on ()->

@@ -31,12 +31,25 @@
 # three index parameters.
 #
 private:public array3(
-       public T type,
-       public length0, length1, length2 i64,
-       module redef internal_array fuzion.sys.internal_array T,
-       _ unit,
-       _ unit)
- : array T internal_array unit unit unit unit
+      T type,
+      public length0, length1, length2 i64,
+
+      # the underlying one dimensional array
+      #
+      # multidimensional indices are mapped to one dimensional indices as follows:
+      #
+      # [x,y,z] -> [(x * length1 + y) * length2 + z]
+      #
+      # resulting in the order:
+      #
+      # arr[0,0,0], arr[0,0,1], arr[0,0,2], ...,
+      # arr[0,1,0], arr[0,1,1], arr[0,1,2], ...,
+      # arr[1,0,0], arr[1,0,1], arr[1,0,2], ...
+      #
+      public base array T,
+      _ unit,
+      _ unit)
+ : property.hashable
   pre
     safety: length0 ≥ 0
     safety: length1 ≥ 0
@@ -44,10 +57,8 @@ private:public array3(
     safety: length0 *? length1 *? length2 >=? 0
 is
 
-  internal_array.freeze
 
-
-  # equality of two arrays2 is true iff `a` and `b` have the same dimensions and for all
+  # equality of two array3s is true iff `a` and `b` have the same dimensions and for all
   # `i in indices0`, `j in indices1` and `k in indices 2` we have `a[i][j][k] = b[i][j][k]`.
   #
   # For performance, this will compare the length of the arrays first.
@@ -61,8 +72,8 @@ is
       (a.length0 = b.length0 &&
        a.length1 = b.length1 &&
        a.length2 = b.length2 &&
-       (for ae in a
-            be in b
+       (for ae in a.base
+            be in b.base
         until ae != be
           false
         else
@@ -75,7 +86,7 @@ is
   #
   # There is no natural total ordering for three-dimensional arrays
   #
-  public redef fixed type.lteq(a, b array3 T) bool =>
+  public fixed type.lteq(a, b array3 T) bool =>
     compile_time_panic # no natural total ordering for three-dimensional arrays
 
 
@@ -87,8 +98,8 @@ is
   #
   # This will result in a compile-time `panic` in case T : property.hashable does not hold.
   #
-  # The algorithm used here is a variation of (XXXHash)[https://xxhash.com] as used in
-  # (Python's tuple)[https://github.com/python/cpython/blob/849a80ec412c36bbca5d400a7db5645b8cf54f1f/Objects/tupleobject.c#L305]:
+  # The algorithm used here is a variation of [XXXHash](https://xxhash.com) as used in
+  # [Python's tuple](https://github.com/python/cpython/blob/849a80ec412c36bbca5d400a7db5645b8cf54f1f/Objects/tupleobject.c#L305):
   #
   #   we start with a constant `hash_prime1`
   #   for each value:
@@ -105,7 +116,7 @@ is
                 # include dimensions so reshaped arrays with identical elements hash differently
                 (a.length0.as_u64 << 32 | a.length1.as_u64))
               a.length2.as_u64
-      a.map (T.hash_code)
+      a.base.map (T.hash_code)
        .foldf h0 xxh_next
     else
       compile_time_panic  # array is not hashable since element type is not
@@ -132,7 +143,7 @@ is
       safety: i64.zero ≤ i1.as_i64 < length1
       safety: i64.zero ≤ i2.as_i64 < length2
   =>
-    array3.this[(i0.as_i64 * length1 + i1.as_i64) * length2 + i2.as_i64]
+    array3.this.base[(i0.as_i64 * length1 + i1.as_i64) * length2 + i2.as_i64]
 
 
   # create a string representation of this array including all the string
@@ -150,7 +161,7 @@ is
     dim_2(i i64, j i64) =>
       from := (i * length1 + j) * length2
       to := from + length2
-      "    " + slice from to
+      "    " + base.slice from to
 
     ("[" + ascii.lf_str
       + indices0
@@ -162,7 +173,7 @@ is
   # get a list of tuples indices and elements in this array
   #
   public enumerate3 list (i64, i64, i64, T) =>
-    if length = 0 then nil else enumerate_cons 0 0 0
+    if base.length = 0 then nil else enumerate_cons 0 0 0
 
 
   # create a cons cell for a list of tuples of this array's indices and elements
@@ -203,14 +214,9 @@ is
       debug : length2.fits_in_i64
   =>
 
-    internal_array := fuzion.sys.internal_array_init T length0.as_i32*length1.as_i32*length2.as_i32
-    for i1 := I.zero, i1+1 while i1 < length0
-      for i2 := I.zero, i2+1 while i2 < length1
-        for i3 := I.zero, i3+1 while i3 < length2
-          internal_array[(i1.as_i32 * length1.as_i32 + i2.as_i32) * length2.as_i32 + i3.as_i32] := init i1 i2 i3
+    base := array T I length0*length1*length2 (i->init (i/(length1*length2)) ((i/length2) % length1) (i%length2))
 
-
-    array3 T length0.as_i64 length1.as_i64 length2.as_i64 internal_array unit unit
+    array3 T length0.as_i64 length1.as_i64 length2.as_i64 base unit unit
 
 
 

@@ -96,7 +96,7 @@ is
       B   => f()
 
 
-  # unwraps an switch if it exists, returns default value otherwise.
+  # unwraps a switch if it exists, returns default value otherwise.
   #
   public or_else(default Lazy A) A =>
     switch.this ? v A => v
@@ -199,7 +199,7 @@ is
 
   # equality implementation
   #
-  # result is only true if both x and y or
+  # result is only true if both x and y are
   # of choice type A and x.A = y.A
   #
   public redef fixed type.equality(x, y switch A B) bool

@@ -23,10 +23,10 @@
 
 reg_issue6263 =>
 
-  LM : mutate is
-  input := LM ! ()->
-    io.buffered lm .Reader.instate (io.stdin.reader LM) ()->
-      io.buffered LM
+  lm : mutate is
+  input := lm ! ()->
+    io.buffered lm .Reader.instate (io.stdin.reader lm) ()->
+      io.buffered lm
         .read_lines
         .filter !=""
 
@@ -41,10 +41,9 @@ reg_issue6263 =>
   dy := [-1,+1,0,0]
 
   part1 =>
-    lm : mutate is
     lm.instate_self i32 ()->
       cell(n lm.new String) ref is
-      area := array2 cell 1000 1000 _,_->(cell (lm.env.new $"."))
+      area := array2 1000 1000 _,_->(cell (lm.env.new $"."))
       say "start: "
       for px := 500, nx
           py := 500, ny

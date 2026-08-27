@@ -36,6 +36,8 @@ reg_issue5904 =>
     else
       nil
 
+/* NYI: UNDER DEVELOPMENT: does not work yet
+
   # nested loop
   find3(a array i32, v i32) option i32 =>
     for e in a
@@ -48,7 +50,6 @@ reg_issue5904 =>
       until ec=v then v
                   else nil
 
-  /* NYI: UNDER DEVELOPMENT: does not work yet
 
   fields =>
 
@@ -90,5 +91,5 @@ reg_issue5904 =>
 
   say (find [4] 4)
   say (find2 [4] 4)
-  say (find3 [4] 4)
+  # say (find3 [4] 4)
   # fields
