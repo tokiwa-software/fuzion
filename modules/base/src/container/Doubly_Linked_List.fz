@@ -64,7 +64,7 @@ private:public Doubly_Linked_List(
   #
   T type
 
-) ref is #: Sequence T is
+) ref ! LM is #: Sequence T is
 
 
   # list is linked in a circle, sentinel marks start/end
@@ -81,7 +81,7 @@ private:public Doubly_Linked_List(
 
   # is this list empty?
   #
-  public is_empty bool
+  public is_empty bool ! LM
     post debug : !result ^ sentinel.prev.or_panic.is_sentinel
   =>
     LM.env.exclusive ()->sentinel.next.or_panic.is_sentinel
@@ -89,7 +89,7 @@ private:public Doubly_Linked_List(
 
   # add an element to the front of the list
   #
-  public add_first(elem T) unit =>
+  public add_first(elem T) unit ! LM =>
     LM.env.exclusive ()->
       old_first := sentinel.next.or_panic
       e := L_Node LM
@@ -106,7 +106,7 @@ private:public Doubly_Linked_List(
 
   # add an element at the back of the list
   #
-  public add_last(elem T) unit =>
+  public add_last(elem T) unit ! LM =>
     LM.env.exclusive ()->
       old_last := sentinel.prev.or_panic
       e := L_Node LM
@@ -123,7 +123,7 @@ private:public Doubly_Linked_List(
 
   # remove the first element, if there is one, and return it
   #
-  public remove_first option T =>
+  public remove_first option T ! LM =>
     LM.env.exclusive (option T) _ ()->
       if is_empty then nil
       else
@@ -136,7 +136,7 @@ private:public Doubly_Linked_List(
 
   # remove the last element, if there is one, and return it
   #
-  public remove_last option T =>
+  public remove_last option T ! LM =>
     LM.env.exclusive (option T) _ ()->
       if is_empty then nil
       else
@@ -149,7 +149,7 @@ private:public Doubly_Linked_List(
 
   # remove the first element that matches the given predicate
   #
-  public remove_first_match(f T->bool) option T =>
+  public remove_first_match(f T->bool) option T ! LM =>
     LM.env.exclusive (option T) _ ()->
       for e := sentinel.next.or_panic, e.next.or_panic
       until e.is_sentinel || f e.val.or_panic
@@ -169,18 +169,18 @@ private:public Doubly_Linked_List(
     len <- len-1
 
 
-  # this list as a immutable list
+  # this list as an immutable array
   #
   public as_array array T ! LM =>
     LM.env.exclusive ()->
       as_list_from(node L_Node LM T) list T =>
         node.is_sentinel ? nil : cons T (list T) node.val.or_panic (as_list_from node.next.or_panic)
-      as_list_from sentinel.next.or_panic
+      as_list_from sentinel.next.or_panic .as_array
 
 
   # return a string representation of this list
   #
-  public redef as_string String =>
+  public redef as_string String ! LM =>
     LM.env.exclusive ()->
       "[$(
         if is_empty then ""
@@ -197,12 +197,12 @@ private:public Doubly_Linked_List(
   #
   # O(1) operation, as length is saved separately
   #
-  public count i64 => LM.env.exclusive ()->len
+  public count i64 ! LM => LM.env.exclusive ()->len
 
 
   # does this list contain elem?
   #
-  public contains(elem T) bool
+  public contains(elem T) bool ! LM 
     pre T : property.equatable
   =>
     LM.env.exclusive ()->
@@ -216,6 +216,6 @@ private:public Doubly_Linked_List(
 
   # create a new, empty Doubly_Linked_List
   #
-  public fixed type.empty container.Doubly_Linked_List LM T =>
+  public fixed type.empty container.Doubly_Linked_List LM T ! LM =>
     LM.env.exclusive (container.Doubly_Linked_List LM T) _ ()->
       container.Doubly_Linked_List LM T
