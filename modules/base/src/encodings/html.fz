@@ -102,7 +102,56 @@ public html is
       repl map_of_escapings
 
 
+  # decode html encoded string back to original
+  #
+  # mapping (the inverse of encode):
+  #
+  # "&nbsp;" => " "
+  # "&amp;"  => "&"
+  # "&lt;"   => "<"
+  # "&gt;"   => ">"
+  # "&quot;" => "\""
+  # "&#39;"  => "'"
+  # "&#x2F;" => "/"
+  #
+  # Numeric entities of the form "&#<decimal>;" and "&#x<hex>;"
+  # (e.g. "&#39;" or "&#x2F;") are decoded using the same base maps.
+  #
   public decode(str String) String =>
-    # NYI: UNDER DEVELOPMENT:
-    compile_time_panic
+    bytes := str.utf8.as_array_backed
+
+    # map entity name (without the surrounding '&' and ';') to the byte
+    # it encodes; nil if the entity is unknown
+    #
+    decode_entity(e String) option u8 =>
+      if e = "amp"   then "&".val.as_u8
+      else if e = "lt"  then "<".val.as_u8
+      else if e = "gt"  then ">".val.as_u8
+      else if e = "quot" then "\"".val.as_u8
+      else if e = "#39"  then "'".val.as_u8
+      else if e = "#x2F" || e = "#x2f" then "/".val.as_u8
+      else if e = "nbsp" then " ".val.as_u8
+      else nil
+
+    # decode recursively, accumulating the result byte sequence
+    #
+    dec(res Sequence u8, i i32) Sequence u8 =>
+      if i >= bytes.count
+        res
+      else if bytes[i] = "&".val.as_u8
+        # look for the terminating ';' starting at i+1
+        match (bytes.drop (i+1)).index_of ";".val.as_u8
+          nil =>
+            dec (res ++ [bytes[i]]) i+1
+          semi i32 =>
+            s := i + 1 + semi
+            entity := String.from (bytes.slice (i+1) s)
+            match decode_entity entity
+              nil   => dec (res ++ [bytes[i]]) i+1
+              b u8  => dec (res ++ [b]) (s+1)
+
+      else
+        dec (res ++ [bytes[i]]) i+1
+
+    String.from (dec [] 0)
 
