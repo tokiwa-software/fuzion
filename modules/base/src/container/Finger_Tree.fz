@@ -129,7 +129,7 @@ single(T type, data Sequence T) : container.Finger_Tree T
   pre
     debug 2 : data.as_finger_tree.is_nil
 is
-  public redef length i64 => data.count.as_i64
+  public redef length i64 => data.count
   public redef prepend(seq Sequence T) container.Finger_Tree T =>
     deep (container.hand [seq]) (empty T) (container.hand [data])
   public redef append (seq Sequence T) container.Finger_Tree T =>
@@ -148,7 +148,7 @@ is
     for j := 0, j+1
     while j < data.count
     do
-      ia[i.as_i64+j] := data[j]
+      ia[i+j] := data[j]
 
 
 
@@ -174,7 +174,7 @@ deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.ha
   cnt := lft.count + ft.count + rght.count
 
 
-  public redef length i64 => cnt.as_i64
+  public redef length i64 => cnt
 
 
   public redef prepend(seq Sequence T) container.Finger_Tree T =>
@@ -231,13 +231,13 @@ deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.ha
           .append s.data
       d deep =>
         # NYI: BUG: triggers ugly case in DFA: deep lft (ft.merge ([rght.finger, seq, d.lft.finger].flat_map id) d.ft) d.rght
-        x := array rght.finger.count.as_i64+seq.count.as_i64+d.lft.finger.count.as_i64 i->
-          if i.as_i64 < rght.finger.count.as_i64
+        x := array rght.finger.count+seq.count+d.lft.finger.count i->
+          if i < rght.finger.count
             rght.finger[i]
-          else if i.as_i64 < rght.finger.count.as_i64+seq.count.as_i64
-            seq[i-rght.finger.count.as_i64]
+          else if i < rght.finger.count+seq.count
+            seq[i-rght.finger.count]
           else
-            d.lft.finger[i-rght.finger.count.as_i64-seq.count.as_i64]
+            d.lft.finger[i-rght.finger.count-seq.count]
         deep lft (ft.merge x d.ft) d.rght
 
 
@@ -247,8 +247,8 @@ deep(T type, lft container.hand T, ft container.Finger_Tree T, rght container.ha
 
   redef fill_internal_array(ia fuzion.sys.internal_array T, i i64) unit =>
     lft.fill_internal_array ia i
-    ft.fill_internal_array ia i+lft.count.as_i64
-    rght.fill_internal_array ia i+lft.count.as_i64+ft.count.as_i64
+    ft.fill_internal_array ia i+lft.count
+    rght.fill_internal_array ia i+lft.count+ft.count
 
 
 # this is called digit in the paper
@@ -258,12 +258,12 @@ hand(T type, finger Sequence (Sequence T)) : property.countable
     debug 2 : 1 <= finger.count <= 4
     debug 2 : finger.is_array_backed
 is
-  f0cnt := finger[0].count.as_i64
-  f1cnt := if finger.count < 2 then i64.zero else finger[1].count.as_i64
-  f2cnt := if finger.count < 3 then i64.zero else finger[2].count.as_i64
-  f3cnt := if finger.count < 4 then i64.zero else finger[3].count.as_i64
+  f0cnt := finger[0].count
+  f1cnt := if finger.count < 2 then i64.zero else finger[1].count
+  f2cnt := if finger.count < 3 then i64.zero else finger[2].count
+  f3cnt := if finger.count < 4 then i64.zero else finger[3].count
   cnt   := f0cnt + f1cnt + f2cnt + f3cnt
-  public redef count i64 => cnt.as_i64
+  public redef count i64 => cnt
 
 
   # new hand without the first finger
@@ -316,8 +316,7 @@ is
 
   # index access to the element in this hand
   #
-  public index [ ] (n i64) T =>
-    m := n.as_i64
+  public index [ ] (m i64) T =>
     if m >= cnt
       panic "illegal unless debug turned off"
     else if m < f0cnt
@@ -340,7 +339,7 @@ is
         nil =>
           for j := 0, j+1
           while j < f.count do
-            ia[s.as_i64+j] := f[j]
+            ia[s+j] := f[j]
         ft Finger_Tree =>
           ft.fill_internal_array ia s
 
