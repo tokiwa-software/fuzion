@@ -52,7 +52,7 @@ is
   public postfix ?? bool => exists
 
 
-  # shorthand postfix operator for '!exists'
+  # shorthand postfix operator for 'or_panic'
   #
   public postfix ! A ! panic => or_panic
 
