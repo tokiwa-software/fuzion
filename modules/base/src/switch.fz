@@ -54,7 +54,7 @@ is
 
   # shorthand postfix operator for '!exists'
   #
-  public postfix !! bool => !exists
+  public postfix ! A ! panic => or_panic
 
 
   # shorthand prefix operator for '!exists'
@@ -103,7 +103,7 @@ is
                 |   B => default
 
 
-                 
+
   # value of a switch, or, if this switch contains a `B`, the
   # result of `f` applied to that `B`.
   #
