@@ -82,7 +82,7 @@ public abstract_array
   #
   # Unlike for general Sequences, this performs in O(1).
   #
-  public redef is_valid_index(I type : integer, i I) bool => i64.zero ≤ i.as_i64 < length
+  public redef is_valid_index(I type : integer, i I) bool => 0 ≤ i.as_i64 < length
 
 
   # create a sequence that consists of the elements of this Sequence except the first
@@ -221,7 +221,7 @@ public abstract_array
   #
   array_cons(I type : integer, a A : container.abstract_array T, i, to I)
     pre
-      debug: i64.zero ≤ i.as_i64 < to.as_i64 ≤ a.length
+      debug: 0 ≤ i.as_i64 < to.as_i64 ≤ a.length
   =>
     (list T).of_finite a[i] (a.slice i+1 to).as_list
 
@@ -252,7 +252,7 @@ public abstract_array
   #
   public fold (i i64, s T, m Monoid T) T
     pre
-      debug: i64.zero ≤ i.as_i64 ≤ length
+      debug: 0 ≤ i.as_i64 ≤ length
   =>
     if i.as_i64 = length
       s

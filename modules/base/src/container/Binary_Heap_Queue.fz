@@ -313,7 +313,7 @@ module:public Binary_Heap_Queue(
     # b long_node_name
     #
     lvl(i i64) Sequence String
-      pre debug 5 : i64.zero <= i < elements.length
+      pre debug 5 : 0 <= i < elements.length
     =>
       str := elements[_,i].as_string
       str_len := {l := str.codepoint_count; l%%2 ? l+1 : l}

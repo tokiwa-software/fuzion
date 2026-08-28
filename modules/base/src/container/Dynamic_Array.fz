@@ -168,7 +168,7 @@ is
    pre safety: length > 0
   =>
     d := Dynamic_Array.this.empty length
-    for i in i64.zero..(length-1) do
+    for i in 0..(length-1) do
       d.add (init i)
     d
 

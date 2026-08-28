@@ -120,7 +120,7 @@ is
   # check if argument is a valid index in this array.
   #
   public redef is_valid_index(I type : integer, i I) bool =>
-    i.fits_in_i64 && i64.zero ≤ i.as_i64 < length
+    i.fits_in_i64 && 0 ≤ i.as_i64 < length
 
 
   # get the contents of this array at the given index

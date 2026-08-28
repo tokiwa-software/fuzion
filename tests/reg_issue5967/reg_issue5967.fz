@@ -45,7 +45,7 @@ reg_issue5967 =>
       if 0 <= l < h && 0 <= c < w then a[_,l,c] else "."
 
     number(l, c i64) is
-      len := (i64.zero.. .filter (x -> !(at l c+x).is_ascii_digit)).first.or_panic
+      len := (0.. .filter (x -> !(at l c+x).is_ascii_digit)).first.or_panic
       ok bool := ((i64 -1)..1) ∃ y -> ((i64 -1)..len) ∃ x -> (at l+y c+x) .is_symbol
       val i64 := ls[l].substring c (c+len)
                       .parse_i64.or_panic

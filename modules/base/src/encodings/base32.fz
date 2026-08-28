@@ -71,7 +71,7 @@ is
       if bit_len = 0
         res
       else
-        block_len := bit_len/5 + (bit_len%%5 ? i64.zero : i64.one)  # number of characters in last block
+        block_len := bit_len/5 + (bit_len%%5 ? 0 : 1)  # number of characters in last block
         res ++ (enc40 (last_n<<((u64 40)-bit_len.as_u64))).slice 0 block_len ++ (array u8 _ (8.as_i64-block_len) _->61)
 
 
@@ -105,7 +105,7 @@ is
     # determine size of padding, i.e. number of '=' (61 in ASCII) at the end
     pad_size i64 :=
       for
-        pad_len := i64.zero, pad_len + (d[i] = 61 ? 1.as_i64 : 0.as_i64)
+        pad_len := 0, pad_len + (d[i] = 61 ? 1.as_i64 : 0.as_i64)
         i in (d.indices.reverse)
         _ in 1..6                             # padding can not be longer than 6
       while d[i] = 61
@@ -152,7 +152,7 @@ is
 
     for
       res := (Sequence u8).empty, res ++ bytes  # contains the decoded data at the end
-      nxt := i64.zero, nxt + 8
+      nxt := 0, nxt + 8
       last_err := false, is_err
       qnt_last := (Sequence (outcome u64)).empty, quintets
 

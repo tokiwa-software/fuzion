@@ -69,7 +69,7 @@ lru_cache_test =>
     op_order ordering) unit
   =>
     evictions i64 := 3
-    start := i64.one
+    start := 1
     end   := (cap+evictions)
     half  := end/2
     elems := start..end
@@ -87,7 +87,7 @@ lru_cache_test =>
       say "$c\n"
 
       for e in elems
-          i in i64.zero..
+          i in 0..
       do
         check (i != 0) ^ c.is_empty
         check (i < cap && c.size = i) || (i >= cap && c.size = cap)
@@ -111,7 +111,7 @@ lru_cache_test =>
       check test c del -1 nil .is_nil
 
   for op in (id (array operation) [get, del]) do
-    for cap in [i64.one,2,3,6] do
+    for cap in [1,2,3,6] do
       for ord in (id (array ordering) [original, reverse, split]) do
         put_then_get_or_del cap op ord
 

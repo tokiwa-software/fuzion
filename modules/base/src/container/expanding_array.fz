@@ -154,12 +154,12 @@ is
     new_length := length + n
     data0 := realloc (capacity >= new_length ? capacity : new_length.highest_one_bit*2)
     for
-      i in i64.zero..(n-1)
+      i in 0..(n-1)
     do
       data0[(length+i).as_i32] := container.reserved
     (expanding T data0 length n).instate_self filler
     for
-      i in i64.zero..(n-1)
+      i in 0..(n-1)
     do
       match data0[length+i]
         container.reserved => panic "container.expanding_array.expand $n filler did not init element at $(length+i) (=$length+$i)"
@@ -336,7 +336,7 @@ is
   #
   public has(I type : integer, i I) bool
     pre
-      safety: i64.zero <= i.as_i64 < length+n
+      safety: 0 <= i.as_i64 < length+n
   =>
     if i.as_i64 < length
       true
@@ -353,7 +353,7 @@ is
   #
   public get(I type : integer, i I) T
     pre
-      safety: i64.zero <= i.as_i64 < length+n
+      safety: 0 <= i.as_i64 < length+n
       debug: has i
   =>
     replace
@@ -364,7 +364,7 @@ is
   #
   public index [](I type : integer, i I) T
     pre
-      safety: i64.zero <= i.as_i64 < length+n
+      safety: 0 <= i.as_i64 < length+n
       debug: has i.as_i32
   =>
     get i.as_i32

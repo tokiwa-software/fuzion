@@ -148,7 +148,7 @@ O(n log n).
   fixed put (kv (tuple PK V)) ps_map PK V =>
     nsize := size + 1
     ndata, nfill := if (nsize & size) = 0
-                    then ((container.expanding_array (PK,V)).empty (data.capacity * 2 + (nsize+1) / 2).as_i64, i64.zero)
+                    then ((container.expanding_array (PK,V)).empty (data.capacity * 2 + (nsize+1) / 2).as_i64, 0)
                     else (data, fill)
     nsz := (1 << (size+1).trailing_zeros).as_i64
 
@@ -223,9 +223,9 @@ O(n log n).
         if sz ≤ size
           if (size & sz) != 0
             for
-              i in i64.zero..
-              i1 := i64.zero, if (use1) i1+1 else i1
-              i2 := i64.zero, if (use1) i2   else i2+1
+              i in 0..
+              i1 := 0, if (use1) i1+1 else i1
+              i2 := 0, if (use1) i2   else i2+1
               use1 := i1 < sz && ((i2 ≥ rsz) || (data[ole + i1].0 < a[size-rsz+i2]))
             while i < sz+rsz
               a[size-rsz-sz + i1 + i2] := if (use1) data[ole + i1].0 else a[size-rsz+i2]

@@ -259,9 +259,9 @@ hand(T type, finger Sequence (Sequence T)) : property.countable
     debug 2 : finger.is_array_backed
 is
   f0cnt := finger[0].count
-  f1cnt := if finger.count < 2 then i64.zero else finger[1].count
-  f2cnt := if finger.count < 3 then i64.zero else finger[2].count
-  f3cnt := if finger.count < 4 then i64.zero else finger[3].count
+  f1cnt := if finger.count < 2 then 0 else finger[1].count
+  f2cnt := if finger.count < 3 then 0 else finger[2].count
+  f3cnt := if finger.count < 4 then 0 else finger[3].count
   cnt   := f0cnt + f1cnt + f2cnt + f3cnt
   public redef count i64 => cnt
 
