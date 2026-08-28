@@ -160,7 +160,7 @@ public wrap_around : integer is
 
   # would exponentiation 'this ** other' cause an overflow?
   #
-  public overflow_on_exp(other wrap_around.this) bool => (wrap_around.this **? other)!!
+  public overflow_on_exp(other wrap_around.this) bool => !(wrap_around.this **? other)
 
 
   # exponentiation with saturating semantics

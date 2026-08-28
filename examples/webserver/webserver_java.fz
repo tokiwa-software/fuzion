@@ -121,7 +121,7 @@ webserver_java is
                                       + "Content-Type: text/html\n"
                                       + "\n"
                                       + data)
-                    if ok!!
+                    if !ok
                       say "#### "+ok.err
 
 
