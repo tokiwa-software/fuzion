@@ -4,12 +4,12 @@ Call stack:
 fuzion.sys.fatal_fault#2 at {base.fum}/fuzion/sys.fz:55
 [..]
 fuzion.runtime.precondition_fault#1 at {base.fum}/fuzion/runtime/pre_fault.fz:56
-i64.pre infix + at {base.fum}/numeric.fz:48
-i64.precall infix + at {base.fum}/numeric.fz:47
-i64.type.sum.anonymous.infix ∙#2 at {base.fum}/numeric.fz:222
-i64.type.sum.anonymous.op#2 at {base.fum}/Monoid.fz:60
-(list i64).fold#2 at {base.fum}/list.fz:274
-(interval i64).fold#1 at {base.fum}/Sequence.fz:611
+i32.pre infix + at {base.fum}/numeric.fz:48
+i32.precall infix + at {base.fum}/numeric.fz:47
+i32.type.sum.anonymous.infix ∙#2 at {base.fum}/numeric.fz:222
+i32.type.sum.anonymous.op#2 at {base.fum}/Monoid.fz:60
+(list i32).fold#2 at {base.fum}/list.fz:274
+(interval i32).fold#1 at {base.fum}/Sequence.fz:614
 reg_issue2325 at --CURDIR--/reg_issue2325.fz:25
 
 *** fatal errors encountered, stopping.

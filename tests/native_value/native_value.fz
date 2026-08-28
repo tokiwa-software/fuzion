@@ -23,47 +23,47 @@
 
 # value types / structs
 
-CXCursor(kind i64 /*cursor_kind*/, xdata i64, data1, data2, data3 Native_Ref) is
-CXString(data Native_Ref, private_flags u32, padding i64 /* NYI: UNDER DEVELOPMENT: padding set manually */) is
-CXType(kind i64 /*type_kind*/, padding i64 /* NYI: UNDER DEVELOPMENT: padding set manually */, data1, data2 Native_Ref) is
+CXCursor(kind i32 /*cursor_kind*/, xdata i32, data1, data2, data3 Native_Ref) is
+CXString(data Native_Ref, private_flags u32, padding i32 /* NYI: UNDER DEVELOPMENT: padding set manually */) is
+CXType(kind i32 /*type_kind*/, padding i32 /* NYI: UNDER DEVELOPMENT: padding set manually */, data1, data2 Native_Ref) is
 
 # clang native api definitions
 
-clang_createIndex(excludeDeclarationsFromPCH, displayDiagnostics i64) Native_Ref => native
+clang_createIndex(excludeDeclarationsFromPCH, displayDiagnostics i32) Native_Ref => native
 clang_disposeIndex(idx Native_Ref) unit => native
 clang_parseTranslationUnit(
   idx Native_Ref,
   source_filename mutate.array u8,
   command_line_args mutate.array Native_Ref,
-  num_command_line_args i64,
+  num_command_line_args i32,
   unsaved_files Native_Ref,
   num_unsaved_files u32,
   options u32
 ) Native_Ref => native
 clang_getTranslationUnitCursor(translation_unit Native_Ref) CXCursor => native
-clang_visitChildren(CX_CURSOR_VISITOR type : Function i64 CXCursor Native_Ref Native_Ref,
+clang_visitChildren(CX_CURSOR_VISITOR type : Function i32 CXCursor Native_Ref Native_Ref,
                     cursor CXCursor,
                     visitor CX_CURSOR_VISITOR,
                     client_data Native_Ref) u32 => native
-clang_getCursorKind(cursor CXCursor) i64 => native
+clang_getCursorKind(cursor CXCursor) i32 => native
 clang_getCursorSpelling(cursor CXCursor) CXString => native
 clang_getCursorResultType(cursor CXCursor) CXType => native
 clang_getTypeSpelling(t CXType) CXString => native
 clang_disposeString(str CXString) unit => native
-clang_Cursor_getNumArguments(cursor CXCursor) i64 => native
-clang_Cursor_getArgument(cursor CXCursor, idx i64) CXCursor => native
+clang_Cursor_getNumArguments(cursor CXCursor) i32 => native
+clang_Cursor_getArgument(cursor CXCursor, idx i32) CXCursor => native
 clang_getCursorType(cursor CXCursor) CXType => native
 clang_disposeTranslationUnit(tu Native_Ref) unit => native
 clang_getCString(string CXString) Native_Ref => native
 clang_equalCursors(cx1, cx2 CXCursor) u32 => native
 clang_getNullCursor CXCursor => native
-clang_Cursor_isNull(crsr CXCursor) i64 => native
+clang_Cursor_isNull(crsr CXCursor) i32 => native
 
 # clang constants definitions
 
-public CXChildVisit_Recurse i64 := 2
-public CXChildVisit_Continue i64 := 1
-public CXCursor_FunctionDecl i64 := 8
+public CXChildVisit_Recurse i32 := 2
+public CXChildVisit_Continue i32 := 1
+public CXCursor_FunctionDecl i32 := 8
 
 # helpers
 
@@ -97,8 +97,8 @@ to_fuzion_type(c_type String) =>
 
 ex =>
 
-  visitor : Function i64 CXCursor Native_Ref Native_Ref is
-    public redef call(crsr CXCursor, parent Native_Ref, client_data Native_Ref) i64 =>
+  visitor : Function i32 CXCursor Native_Ref Native_Ref is
+    public redef call(crsr CXCursor, parent Native_Ref, client_data Native_Ref) i32 =>
 
       check clang_equalCursors crsr clang_getNullCursor = 0
 
@@ -114,7 +114,7 @@ ex =>
         if num_args > 0
           yap "("
 
-        for i in 0..num_args-1 do
+        for i in (i32 0)..num_args-1 do
           arg := clang_Cursor_getArgument crsr i
           arg_name := clang_getCursorSpelling arg
           arg_type := clang_getCursorType arg

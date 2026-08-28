@@ -67,7 +67,7 @@ inheritance is
   ei.x
   ei.xb
   ei.xc
-  say "Calling redefed multiple from non-redefed static "
+  say "Calling redefed multiple from non-redefed static"
   set di := ei
   di.x
   di.xb
