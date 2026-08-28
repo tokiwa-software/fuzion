@@ -332,13 +332,13 @@ public effect is
 
   # does this effect support abort?
   #
-  # Redefining this to return `false` helps to detect unexpected calls to
+  # Helps detecting unexpected calls to
   # `abort` at runtime and ensure that the static analysis finds that the
   # code executed with this effect will always return normally and produce
   # a result. This is used, e.g, in `mutate` to avoid static analysis
   # reporting `panic` as an effect of the use of a local mutate instance.
   #
-  public abortable bool => true
+  public abortable bool => false
 
 
   # --------------------  resource cleanup  --------------------
