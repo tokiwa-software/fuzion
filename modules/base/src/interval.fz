@@ -24,29 +24,31 @@
 # -----------------------------------------------------------------------
 
 
-# An interval `from..through` that includes `from`, `from+step`, `from+step+step`,
-# etc. up to and including `through`.
+# A `from..through` interval with a given `step`.
 #
-# In case step is positive (negative), the first value larger (smaller) than
-# through will not be included.
+# Generates a sequence by repeatedly adding `step` to `from`.
+# Stops before passing `through` (exceeding it for `step > 0`, falling below for `step < 0`).
 #
-# In case `step.sign = (from ⋄ through).sign`, this `Set` is empty, e.g.,
-# `interval 1 2 -1` and `interval 2 1 1` are both empty.
+# Empty if `step` points away from `through`:
+#     interval 1 2 -1     # empty: steps down, but through is up
+#     interval 2 1 1      # empty: steps up, but through is down
+#     interval 1 7 3      # 1, 4, 7
+#     interval 1 8 3      # 1, 4, 7  (10 would exceed through)
+#     interval 7 1 -3     # 7, 4, 1
+#
+# If `through` is `nil`, the interval is unbounded and limited only by type `T` range.
 #
 public interval(T type : integer,
 
-                # the first element of this Set when used as a Sequence
+                # Start value. Included unless the interval is empty.
                 public from T,
 
-                # upper/lower bound for elements in this Set
-                #
-                # in case this is nil, there is no bound except for the
-                # range of legal values for T.
+                # Inclusive bound. Included only if reachable via `from + n * step`.
+                # `nil` means unbounded.
                 public through option T,
 
-                # the distance between two elements
+                # Step size. Positive increments; negative decrements.
                 public step T)
-
   : container.Set T
 
 pre
@@ -54,20 +56,30 @@ pre
 is
 
 
-  # Create an new interval with `step` multiplied by `step_factor`.
+  # Creates a new interval with the `step` multiplied by `step_factor`.
+  # `from` and `through` remain unchanged.
   #
-  # This is typically applied to an interval with implicit `step` of one,
-  # e.g., in `2..10:2` will create "{2,4,6,8,10}".
+  # Since it returns an interval, `infix :` can be chained (factors multiply):
+  #     2..10        # {2,4,6,8,10} (implicit step 1 -> new step 2)
+  #     (2..12:2):3  # {2,8}        (step becomes 1 * 2 * 3 = 6)
+  #
+  # A negative `step_factor` reverses the direction. It usually makes the
+  # interval empty because `from` and `through` do not change:
+  #     2..10: -2     # empty: step points away from `through`
   #
   public infix : (step_factor T) interval T
   pre
-    debug: ((step_factor.sign = 0): through=from)  # step cannot be zero unless from=through
+    debug: ((step_factor.sign = 0): through=from) # `step_factor` cannot be zero unless `from == through`, because a zero step would never reach `through`.
     safety: (step *? step_factor).exists
   =>
     interval from through step*step_factor
 
 
-  # list representation of values in this interval
+  # the values of this interval as a list, in order
+  #
+  # Empty if `step` leads from `through`.
+  # Otherwise, from `from`, advancing by `step`
+  # until `through` is reached or `T` overflows.
   #
   public redef as_list list T =>
     if (through ? nil => false
@@ -97,28 +109,9 @@ is
         T.from_u32 as_list.count.as_u32
 
 
-  # get the first element of this interval
+  # the last element of this interval, `nil` if there is none
   #
   # Performance: O(1)
-  #
-  public redef first option T
-  =>
-    match through
-      thru T =>
-        if from != thru && step.sign = (from ⋄ thru).sign then
-          nil
-        else
-          from
-      nil =>
-        from
-
-
-  # get the last element of this interval
-  #
-  # Performance: O(1)
-  #
-  # In case through is nil, this interval has no last element, so the
-  # result is nil.
   #
   public redef last option T
   =>
@@ -136,15 +129,13 @@ is
 
   # reverse the order of the elements in this interval
   #
+  # `T` must be signed, since `step` is negated.
+  #
   # Performance: O(1)
   #
-  # The i-th element is `last - i*step`, which works for positive and
-  # negative `step` without requiring negation, so it also works for
-  # unsigned `T`.
-  #
-  public reverse_interval interval T 
+  public reverse_interval interval T
   pre
-    safety: T.zero -! step # We must be able to negate `step`, so `T` must be signed
+    safety: T.zero -! step
     debug: through.exists && first.exists
   =>
     match last
