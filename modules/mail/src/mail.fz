@@ -189,4 +189,4 @@ public mail is
                   if ok != "220 OK"
                     (flow.exception unit).env.cause (error "Expected 220 OK, got $(ok)")
 
-                wolfssl _ net_lm ssl_lm write_request
+                wolfssl _ net_lm ssl_lm host write_request

@@ -17,29 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test lib_switch
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-lib_switch =>
-
-  a option i32 := 4
-  b option i32 := nil
-
-  say (a.and_then x->x+5)
-  say (b.and_then x->x+5)
-  say (a.or ()->5)
-  say (b.or ()->5)
-
-  say (a.otherwise _->5)
-  say (b.otherwise _->5)
-
-  c outcome i32 := 4
-  d outcome i32 := error "oops"
-  say (c.otherwise (_ -> -1))
-  say (d.otherwise (_ -> -1))
-
-  # A = unit: the motivating case, also checks partial application
-  handler(e error) unit => say "handled: $e"
-  u outcome unit := error "cleanup failed"
-  u.otherwise handler
+override NAME = doubly_linked_list_test
+include ../simple.mk

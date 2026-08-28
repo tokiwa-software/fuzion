@@ -135,7 +135,7 @@ module do_request(family net.family.val,
         c.with _ net_lm ()->
           if use_https
             ssl_lm ! ()->
-              wolfssl _ net_lm ssl_lm ((write_request ssl_lm rm).bind _->(read_reponse ssl_lm))
+              wolfssl _ net_lm ssl_lm host ((write_request ssl_lm rm).bind _->(read_reponse ssl_lm))
           else
             (write_request net_lm rm).bind _->(read_reponse net_lm)
 
