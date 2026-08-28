@@ -1024,12 +1024,17 @@ int fzE_pipe_create(int64_t *fds)
 // otherwise the number of bytes read
 int fzE_pipe_read(int64_t desc, char * buf, size_t nbytes){
   DWORD bytesRead;
-  if (!ReadFile((HANDLE)desc, buf, nbytes, &bytesRead, NULL)){
-    return GetLastError() == ERROR_BROKEN_PIPE
-      ? 0
-      : -1;
-  }
-  return bytesRead;
+  BOOL result;
+  do
+    {
+      result = ReadFile((HANDLE)desc, buf, nbytes, &bytesRead, NULL);
+    }
+  // NYI: UNDER DEVELOPMENT: no busy looping
+  while(!result && GetLastError() == ERROR_IO_PENDING);
+
+  return result
+    ? bytesRead
+    : (GetLastError() == ERROR_BROKEN_PIPE ? 0 : -1);
 }
 
 
@@ -1202,10 +1207,16 @@ void fzE_cnd_destroy(void *cnd) {
 
 int32_t fzE_file_read(void * file, void * buf, int32_t size)
 {
-  DWORD bytesRead = 0;
-  BOOL success = ReadFile(file, buf, (DWORD)size, &bytesRead, NULL);
+  DWORD bytesRead;
+  BOOL result;
+  do
+    {
+      result = ReadFile(file, buf, (DWORD)size, &bytesRead, NULL);
+    }
+  // NYI: UNDER DEVELOPMENT: no busy looping
+  while(!result && GetLastError() == ERROR_IO_PENDING);
 
-  return success
+  return result
     ? (int32_t)bytesRead
     : (GetLastError() == ERROR_BROKEN_PIPE ? 0 : -1);
 }
