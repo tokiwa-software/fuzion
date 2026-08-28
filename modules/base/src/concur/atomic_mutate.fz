@@ -1,0 +1,114 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature atomic_mutate
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# atomic_mutate -- a multi-thread variant of mutate using atomic operations
+#
+# This mutate ensures exclusive access to shared memory via lock-free atomic
+# operations like compare-and-swap.
+#
+# Accidental racy accesses are not permitted by this mutate, i.e., accessing
+# mutable elements, e.g, via `get` or `put` on a mutable var
+# `atomic_mutate.this.env.new T`, are not permitted.
+#
+public atomic_mutate : mutate is
+
+
+  # thread that currently has exclusive access to this atomic_mutate.
+  #
+  # This is always `nil`, atomic_mutate does not give exclusive access.
+  #
+  module redef exclusive_thread option concur.Thread => nil
+
+
+  # Does this mutate support `exclusive` and `exclusive_when`?
+  #
+  # This is the case for `mutate` (since this supports only a single thread), and
+  # `concur.blocking_mutate` / `concur.blocking_mutate_using_clock` (since these
+  # support synchronization using a lock).
+  #
+  # This is not the case for `concur.atomic_mutate`.
+  #
+  public redef supports_exclusive bool
+  =>
+    false
+
+
+  # perform given code with exclusive access to the mutable values created with
+  # this instance of `mutate`.
+  #
+  public redef exclusive(R type, F type: ()->R, code F) R
+  =>
+    compile_time_panic   # exclusive access not supported by atomic_mutate
+
+
+  # is instance `mutate.this` instated for type `mutate.this` and, if `mutate.this` does
+  # not support use in several threads, check we are running in the thread `mutate.this`
+  # was created in?
+  #
+  public redef is_this_mutate_instated_and_usable bool
+  =>
+    atomic_mutate.this.get_if_instated >>? (x -> id = x.id)
+
+
+  # Perform a read fence, i.e., enforce ordering between the previous and the next
+  # read operations: make sure that no previous read will be swapped with the any
+  # following read operation.
+  #
+  # Different kinds of mutate will redefine this to make different to ensure the
+  # correct order
+  #
+  #   - for a thread-local `mutate`, this is a nop since re-ordering that would
+  #     break thread-local consistency is forbidden on all
+  #
+  #   - for a `concur.blocking_mutate`/`concur.blocking_mutate_using_clock`, this is
+  #     a nop since we expect all read and writes to be done in an exclusive
+  #     section.
+  #
+  #   - for a `atomic_mutate`, this will emit an actual memory barrier
+  #
+  public redef read_fence unit
+  =>
+    intrinsic
+
+
+  # Perform a write fence, i.e., enforce ordering between the previous and the next
+  # write operations: make sure that no previous write will be swapped with the any
+  # following write operation.
+  #
+  # Different kinds of mutate will redefine this to make different to ensure the
+  # correct order
+  #
+  #   - for a thread-local `mutate`, this is a nop since re-ordering that would
+  #     break thread-local consistency is forbidden on all
+  #
+  #   - for a `concur.blocking_mutate`/`concur.blocking_mutate_using_clock`, this is
+  #     a nop since we expect all read and writes to be done in an exclusive
+  #     section.
+  #
+  #   - for a `atomic_mutate`, this will emit an actual memory barrier
+  #
+  public redef write_fence unit
+  =>
+    intrinsic

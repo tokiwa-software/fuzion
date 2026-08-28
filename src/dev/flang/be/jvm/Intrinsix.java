@@ -228,6 +228,58 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(val, Expr.UNIT);
         });
 
+    put("mutate.new.compare_and_swap0",
+        (jvm, si, cc, tvalue, args) ->
+        {
+          var ac = jvm._fuir.clazzOuterClazz(cc);
+          var v = jvm._fuir.lookupMutableValue(ac);
+          var rc  = jvm._fuir.clazzResultClazz(v);
+          var tt = tvalue.type();
+          var jt = jvm._types.resultType(rc);
+          int tslot  = jvm.allocLocal(si, 1);                  // local var slot for target
+          int nvslot = jvm.allocLocal(si, jt.stackSlots());    // local var slot for arg(1), new value, not casted
+          int vslot  = jvm.allocLocal(si, jt.stackSlots());    // local var slot for old value, not casted.
+
+          Expr pos, neg, oldv;
+          if (jvm._fuir.clazzOriginalName(cc).equals("mutate.new.compare_and_set0"))
+            { // compare_and_set: return true or false
+              pos = Expr.iconst(1);            // 1
+              neg = Expr.iconst(0);            // 0
+              oldv = Expr.UNIT;
+            }
+          else
+            { // compare_and_swap: return old value
+              pos = Expr.UNIT;
+              neg = Expr.UNIT;
+              oldv = jt.load(vslot);
+            }
+
+          Expr val =
+            locked(
+                   // preparation: store target in tslot, arg1 in nvslot and value field in vslot
+                   tvalue                                   // target       -> tslot
+                   .andThen(Expr.astore(tslot, tt.vti()))   //
+                   .andThen(args.get(1))                    // new value    -> nslot
+                   .andThen(jt.store(nvslot))               //
+                   .andThen(tt.load(tslot))                 // target.value -> vslot
+                   .andThen(jvm.getfield(v))                //
+                   .andThen(jt.store(vslot))                //
+                   // actual comparison:
+                   .andThen(jvm.compareValues(si,
+                                              args.get(0),
+                                              jt.load(vslot),
+                                              rc))              // cmp_result
+                   // conditional assignment code and result
+                   .andThen(Expr.branch(O_ifne,                         // -
+                                        tt.load(tslot)                  // tv
+                                        .andThen(jt.load(nvslot))       // tv nv
+                                        .andThen(jvm.putfield(v))       // -
+                                        .andThen(pos),                  // - --or-- 1
+                                        neg))                           // - --or-- 0
+                   .andThen(oldv));                                     // v --or-- 0/1
+          return new Pair<>(val, Expr.UNIT);
+        });
+
     put("debug",
         (jvm, si, cc, tvalue, args) ->
         {

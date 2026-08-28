@@ -327,6 +327,25 @@ public class LibraryFuir extends FUIR {
 
 
   @Override
+  public int lookupMutableValue(int cl)
+  {
+    if (PRECONDITIONS) require
+      (cl >= firstClazz(),
+       cl <= lastClazz());
+
+    for (int index = 0; index < clazzFieldCount(cl); index++)
+      {
+        if (clazzBaseName(clazzField(cl, index)).compareTo("val") == 0)
+          {
+            return clazzField(cl, index);
+          }
+      }
+    Errors.fatal("'val' field not found in '"+clazzNameHuman(cl)+"'!");
+    return NO_CLAZZ;
+  }
+
+
+  @Override
   public int lookupCause(int ecl)
   {
     return _clazzes[clazzId2num(ecl)].lookupCause();

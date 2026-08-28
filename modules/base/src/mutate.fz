@@ -177,6 +177,40 @@ public mutate : linear_effect is
     =>
       if open
         check_and_replace
+      read_fence
+      get_racy_internal   # we are closed (immutable) or exclusive, so this is not racy
+
+
+    # read the current value of this mutable value without any synchronization.
+    #
+    # The read might be reordered resulting in an outdated or even an out-of-thin-air
+    # result.
+    #
+    # This will use the effect `racy mutate.this` such that static analysis
+    # of effects will detect and report code that uses racy accesses to mutable
+    # variables.
+    #
+    public get_racy T ! racy mutate.this
+    =>
+      if mutate.this.type : concur.blocking_mutate_using_clock0
+        (racy mutate.this).env.register
+      else if mutate.this.type : concur.atomic_mutate
+        (racy mutate.this).env.register
+
+      get_racy_internal
+
+
+    # read the current value of this mutable value without any synchronization.
+    #
+    # The read might be reordered resulting in an outdated or even an out-of-thin-air
+    # result.
+    #
+    # This is the internal variant of `get_racy`, the only difference is that this
+    # will not depend on the `racy` effect.  It is assumed that internal
+    # uses of `get_racy_internal` are correct and effecively not racy.
+    #
+    module get_racy_internal T ! mutate.this
+    =>
       mutable_value
 
 
@@ -186,6 +220,7 @@ public mutate : linear_effect is
     pre
       safety: !open
     =>
+      read_fence
       mutable_value
 
 
@@ -199,9 +234,57 @@ public mutate : linear_effect is
       to T) unit
       ! mutate.this
     pre
-      safety: open
+      safety: open && is_exclusive
     =>
       check_and_replace
+      put_racy_internal to   # we are closed (immutable) or exclusive, so this is not racy
+      write_fence
+
+
+    # update mutable field with new value without any synchronization.
+    #
+    # The write might be reordered resulting in the new value becoming visible
+    # to other thread earlier or later.
+    #
+    # This will use the effect `racy mutate.this` such that static analysis
+    # of effects will detect and report code that uses racy accesses to mutable
+    # variables.
+    #
+    public put_racy
+      (
+        # the new value to be stored with 'h'
+        to T
+      ) unit
+      ! racy mutate.this
+    pre
+      safety: open
+    =>
+      if mutate.this.type : concur.blocking_mutate_using_clock0
+        (racy mutate.this).env.register
+      else if mutate.this.type : concur.atomic_mutate
+        (racy mutate.this).env.register
+
+      put_racy_internal to
+
+
+    # update mutable field with new value without any synchronization.
+    #
+    # The write might be reordered resulting in the new value becoming visible
+    # to other thread earlier or later.
+    #
+    # This is the internal variant of `put_racy`, the only difference is that this
+    # will not depend on the `racy` effect.  It is assumed that internal
+    # uses of `put_racy_internal` are correct and effecively not racy.
+    #
+    module put_racy_internal
+      (
+        # the new value to be stored with 'h'
+        to T
+      )
+      ! racy mutate.this
+    pre
+      safety: open
+    =>
       set mutable_value := to
 
 
@@ -210,14 +293,97 @@ public mutate : linear_effect is
     public infix <- (to T) unit => put to
 
 
+    # compare the value of this mutable field with an `expected` value. If it is equal,
+    # replace the value by with the `modified` value.
+    #
+    # Independently of whether the value was replaced, return the original value. I.e.,
+    # the value was replaced iff `result = e`.
+    #
+    # Check that the mutate effect this was created with is still
+    # instated in the current environment.
+    #
+    # Different kinds of mutate will make different efforts for synchronizatiion:
+    #
+    #   - for a thread-local `mutate`, this can be used only by the thread that instated
+    #     the `mutate`, no synchronization will be performed.
+    #
+    #   - for a `concur.blocking_mutate`/`concur.blocking_mutate_using_clock`, this will
+    #     use `exclusive` to ensure atomicity
+    #
+    #   - for a `atomic_mutate`, this will use an atomic compare-and-set operation.
+    #
+    public compare_and_swap  # NYI: Making this `fixed` results in an internal error that seems unjustified
+      (
+        # the expected value
+        expected T,
+
+        # the modified value to be stored
+        modified T
+      ) T
+      ! mutate.this
+    pre
+      T : property.equatable
+      safety: open
+    =>
+      if supports_exclusive
+        exclusive ()->
+          check_and_replace
+          old := val
+          if old = expected
+            put modified
+          old
+      else
+        # panic "NYI: $(mutate.this).new.compare_and_swap)"  # NYI: UNDER DEVELOPMENT
+        compare_and_swap0 expected modified
+
+
+    # intrinsic to perform a bit-wise comparison of the value contained in this atomic
+    # and `expected`.  In case both values are equal, replace this value with `new_value`.
+    #
+    # returns the old value, independent of whether the old value is bit-wise
+    # equal to `expected` or not.
+    #
+    compare_and_swap0(expected, new_value T) T => intrinsic
+
+
     # update mutable field using a function of the old value
     #
-    public update (
-      # function calculating the new value from the old value
-      f T->T
-      ) unit
+    # Different kinds of mutate will make different efforts for synchronizatiion:
+    #
+    #   - for a thread-local `mutate`, this can be used only by the thread that instated
+    #     the `mutate`, no synchronization will be performed.
+    #
+    #   - for a `concur.blocking_mutate`/`concur.blocking_mutate_using_clock`, this will
+    #     use `exclusive` to ensure atomicity
+    #
+    #   - for a `atomic_mutate`, this will use a loop that perofroms `compare_and_swap`
+    #     repeatedly until the update was successful.
+    #
+    public update
+      (
+        # function type, permits specialization of calls for each function
+        F type : T->T,
+
+        # function calculating the new value from the old value
+        f F
+      ) T
+    pre
+      T : property.equatable  # strictly required only for `concur.atomic_mutate`
+      safety: open
     =>
-      put (f get)
+      if supports_exclusive
+        exclusive ()->
+          v := f get
+          put v
+          v
+      else if mutate.this.type : concur.atomic_mutate
+        do
+          old := get_racy_internal
+          nju := f old
+        until old = compare_and_swap old nju
+          old
+      else
+        panic "NYI: $(mutate.this).new.update"  # NYI: UNDER DEVELOPMENT
 
 
     # creates a copy of the mutable field
@@ -250,11 +416,25 @@ public mutate : linear_effect is
     is_exclusive
 
 
+  # Does this mutate support `exclusive` and `exclusive_when`?
+  #
+  # This is the case for `mutate` (since this supports only a single thread), and
+  # `concur.blocking_mutate` / `concur.blocking_mutate_using_clock` (since these
+  # support synchronization using a lock).
+  #
+  # This is not the case for `concur.atomic_mutate`.
+  #
+  public supports_exclusive bool
+  =>
+    true
+
+
   # perform given code with exclusive access to the mutable values created with
   # this instance of `mutate`.
   #
   public exclusive(R type, F type: ()->R, code F) R
   pre
+    safety: supports_exclusive
     safety: is_this_mutate_instated_and_usable
   =>
     code()
@@ -285,11 +465,54 @@ public mutate : linear_effect is
                         code F
                         ) R
   pre
+    safety: supports_exclusive
     safety: is_this_mutate_instated_and_usable
   =>
     mutate.this.env.exclusive ()->
       mutate.this.env.wait condition
       code()
+
+
+  # Perform a read fence, i.e., enforce ordering between the previous and the next
+  # read operations: make sure that no previous read will be swapped with the any
+  # following read operation.
+  #
+  # Different kinds of mutate will redefine this to make different to ensure the
+  # correct order
+  #
+  #   - for a thread-local `mutate`, this is a nop since re-ordering that would
+  #     break thread-local consistency is forbidden on all
+  #
+  #   - for a `concur.blocking_mutate`/`concur.blocking_mutate_using_clock`, this is
+  #     a nop since we expect all read and writes to be done in an exclusive
+  #     section.
+  #
+  #   - for a `atomic_mutate`, this will emit an actual memory barrier
+  #
+  public read_fence unit
+  =>
+    # no code needed except for the redefinition in `atomic_mutate`
+
+
+  # Perform a write fence, i.e., enforce ordering between the previous and the next
+  # write operations: make sure that no previous write will be swapped with the any
+  # following write operation.
+  #
+  # Different kinds of mutate will redefine this to make different to ensure the
+  # correct order
+  #
+  #   - for a thread-local `mutate`, this is a nop since re-ordering that would
+  #     break thread-local consistency is forbidden on all
+  #
+  #   - for a `concur.blocking_mutate`/`concur.blocking_mutate_using_clock`, this is
+  #     a nop since we expect all read and writes to be done in an exclusive
+  #     section.
+  #
+  #   - for a `atomic_mutate`, this will emit an actual memory barrier
+  #
+  public write_fence unit
+  =>
+    # no code needed except for the redefinition in `atomic_mutate`
 
 
   # default implementation of mutate
@@ -305,3 +528,21 @@ public mutate : linear_effect is
 public mut(T type, v T) mutate.new T ! mutate
 =>
   mutate.env.new v
+
+
+public racy(M type : mutate) : effect is
+
+  # dummy operation to register a racy access.
+  #
+  # This is used by all racy accesses such that static analysis of effects finds code
+  # that performs racy accesses.
+  #
+  public register unit =>
+
+
+  # default implementation of racy
+  #
+  # this will get instated automatically at startup
+  #
+  public redef fixed type.default_value option (racy M) =>
+    racy M
