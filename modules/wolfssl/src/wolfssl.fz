@@ -130,7 +130,7 @@ public wolfssl(T type, LM type : mutate, LM2 type: mutate, host String, code ()-
         else if res < 0
           error "error writing to ssl connection ($res)"
         else
-          check debug: res=b.count
+          check debug: res=b.count.as_i32
       lm ! write
 
 
