@@ -33,7 +33,7 @@ public ip_address (val u128) : property.orderable is
   #
   public version ip_version =>
     ipv4_prefix_netmask := u128 0x0000_0000_0000_0000 0x0000_ffff_0000_0000
-    if (val & ipv4_prefix_netmask) = (ipv4_prefix_netmask & ipv4_prefix_netmask)
+    if (val & ipv4_prefix_netmask) = ipv4_prefix_netmask
       family.ipv4
     else
       family.ipv6
