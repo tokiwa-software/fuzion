@@ -881,7 +881,7 @@ int fzE_pipe_create(int64_t * fds)
 int fzE_pipe_read(int64_t desc, char * buf, size_t nbytes){
   errno = 0;
   ssize_t result = read((int) desc, buf, nbytes);
-  // NYI: UNDER DEVELOPMENT: this assertion will probably sometime fail
+  // NYI: UNDER DEVELOPMENT: this assertion will probably fail some time
   assert(result > 0 || (errno != EAGAIN && errno != EWOULDBLOCK));
   return result;
 }
