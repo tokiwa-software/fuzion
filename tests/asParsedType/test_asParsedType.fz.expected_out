@@ -76,8 +76,8 @@ GOT: y Type of 'String'
 EXP: y Type of 'bool'
 GOT: y Type of 'bool'
 
-EXP: y Type of 'i32'
-GOT: y Type of 'i32'
+EXP: y Type of 'i64'
+GOT: y Type of 'i64'
 
 EXP: y Type of 'codepoint'
 GOT: y Type of 'codepoint'

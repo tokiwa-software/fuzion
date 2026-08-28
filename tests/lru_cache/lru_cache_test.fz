@@ -150,7 +150,7 @@ lru_cache_test =>
   random(capacity i64, steps i32, seed u64) unit =>
 
     key_range := capacity.as_i32 * 2
-    val_range := 100
+    val_range := i32 100
 
     Random.simple seed ()->
       m : mutate is
@@ -177,7 +177,7 @@ lru_cache_test =>
           exp_ord <- [k] ++ exp_ord
           evict_exp
 
-        for i in 0..steps
+        for i in (i32 0)..steps
             op := Random.env.next_i32 3
             k  := Random.env.next_i32 key_range
         do

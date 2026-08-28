@@ -1,7 +1,7 @@
 
-/home/artur/Desktop/fuzion-pr7571/tests/reg_issue4419/reg_issue4419.fz:25:8: error 1: Incompatible types when passing argument in a call
+--CURDIR--/reg_issue4419.fz:25:8: error 1: Incompatible types when passing argument in a call
 _ => m (id (Sequence i64) [])
-
+-------^^^^^^^^^^^^^^^^^^^^^^
 Actual type for argument #1 's' does not match expected type.
 In call to          : 'm'
 expected formal type: 'array i64'

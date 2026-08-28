@@ -33,7 +33,7 @@ visibility_negative is
       say "FAILED: $msg"
       _ := Exit.env.set_exit_code 1
 
-  chck (a,b i32, msg String) unit =>
+  chck (a,b i64, msg String) unit =>
     if a = b
       say "PASSED: $msg"
     else
@@ -43,7 +43,7 @@ visibility_negative is
   visi1 =>
     a1 is
       b1 is
-        c1(b bool) i32 =>
+        c1(b bool) i64 =>
           if b { _ := a1; _ := a2; _ := b1; _ := b2; _ := c1 false; _ := c2 false; unit }
           c3 #  1. should flag an error: feature not found / not visible
           c4 #  2. should flag an error: feature not found / not visible
@@ -52,7 +52,7 @@ visibility_negative is
           c6 #  5. should flag an error: feature not found / not visible
           11
 
-        c2(b bool) i32 =>
+        c2(b bool) i64 =>
           if b { _ := a1; _ := a2; _ := b1; _ := b2; _ := c1 false; _ := c2 false; unit}
           c3 #  6. should flag an error: feature not found / not visible
           c4 #  7. should flag an error: feature not found / not visible
@@ -62,7 +62,7 @@ visibility_negative is
           22
 
       b2 is
-        c3(b bool) i32 =>
+        c3(b bool) i64 =>
           if b { _ := a1; _ := a2; _ := b1; _ := b2; _ := c3 false; _ := c4 false; unit}
           c1 # 11. should flag an error: feature not found / not visible
           c2 # 12. should flag an error: feature not found / not visible
@@ -71,7 +71,7 @@ visibility_negative is
           c6 # 15. should flag an error: feature not found / not visible
           33
 
-        c4(b bool) i32 =>
+        c4(b bool) i64 =>
           if b { _ := a1; _ := a2; _ := b1; _ := b2; _ := c3 false; _ := c4 false; unit}
           c1 # 16. should flag an error: feature not found / not visible
           c2 # 17. should flag an error: feature not found / not visible
@@ -82,7 +82,7 @@ visibility_negative is
 
     a2 is
       b3 is
-        c5(b bool) i32 =>
+        c5(b bool) i64 =>
           if b { _ := a1; _ := a2; _ := b3; _ := c5 false; _ := c6 false; unit}
           c1 # 21. should flag an error: feature not found / not visible
           c2 # 22. should flag an error: feature not found / not visible
@@ -92,7 +92,7 @@ visibility_negative is
           b2 # 26. should flag an error: feature not found / not visible
           55
 
-        c6(b bool) i32 =>
+        c6(b bool) i64 =>
           if b { _ := a1; _ := a2; _ := b3; _ := c5 false; _ := c6 false; unit}
           c1 # 27. should flag an error: feature not found / not visible
           c2 # 28. should flag an error: feature not found / not visible
@@ -112,7 +112,7 @@ visibility_negative is
   visi2 =>
     count := 0
     expr => set count := count + 11; count
-    use(i i32) =>
+    use(i i64) =>
 
     a1 is
       f1 := expr
@@ -545,7 +545,7 @@ visibility_negative is
   visi8 false
 
   visi9 =>
-    a i32 => 3
+    a i64 => 3
     for
       ixtest1  := ix1     # 281. should flag an error: feature not visible
       ixtest2a := 0, ix1  # ok

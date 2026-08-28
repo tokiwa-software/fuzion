@@ -66,8 +66,8 @@ Was defined as loop index variable at --CURDIR--/looptest_negative.fz:101:7:
 
 
 --CURDIR--/looptest_negative.fz:42:11: error 7: Incompatible types in branches of if expression
-    while ix < data.length.as_i64
-----------^^^^^^^^^^^^^^^^^^^^^^^
+    while ix < data.length
+----------^^^^^^^^^^^^^^^^
 Incompatible result types in different branches:
 block returns value of type 'i64' at --CURDIR--/looptest_negative.fz:45:7:
       3333              #  1.a should flag an error: incompatible result types i64 vs. String
@@ -78,8 +78,8 @@ block returns value of type 'String' at --CURDIR--/looptest_negative.fz:47:7:
 
 
 --CURDIR--/looptest_negative.fz:53:11: error 8: Incompatible types in branches of if expression
-    while ix < data.length.as_i64
-----------^^^^^^^^^^^^^^^^^^^^^^^
+    while ix < data.length
+----------^^^^^^^^^^^^^^^^
 Incompatible result types in different branches:
 block returns value of type 'i64' at --CURDIR--/looptest_negative.fz:56:7:
       ix                #  2.a should flag an error: incompatible result types i64 vs. String

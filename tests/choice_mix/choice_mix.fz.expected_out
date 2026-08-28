@@ -1,19 +1,19 @@
-a: show_a i64:
-b: show_b  bool:
-c: show_c  string:
-d: show_d  Nil:
-e: show_e  MyRef:
-a: show00 i64:
-b: show00 bool:
-c: show00 string:
-d: show00 Nil:
-e: show00 MyRef:
-a: show0  i64:
-b: show0  bool:
-c: show0  string:
-d: show0  Nil:
-e: show0  MyRef:
-show_a : show_a i64:
+a: show_a i64:    
+b: show_b  bool:   
+c: show_c  string: 
+d: show_d  Nil:    
+e: show_e  MyRef:  
+a: show00 i64:    
+b: show00 bool:   
+c: show00 string: 
+d: show00 Nil:    
+e: show00 MyRef:  
+a: show0  i64:    
+b: show0  bool:   
+c: show0  string: 
+d: show0  Nil:    
+e: show0  MyRef:  
+show_a : show_a i64:    
 show_v : show_v i64:    3
 show_i : show_a has 'i'
 show a: show   i64:    3
@@ -21,7 +21,7 @@ show b: show   bool:   true
 show c: show   string: string
 show d: show   Nil:    instance[choice_mix.Nil]
 -------------
-show_a : show_a bool:
+show_a : show_a bool:   
 show_v : show_v bool:   true
 show_i : show_a has no 'i'
 show a: show   bool:   true
@@ -29,7 +29,7 @@ show b: show   string: string
 show c: show   Nil:    instance[choice_mix.Nil]
 show d: show   MyRef:  instance[choice_mix.MyRef]
 -------------
-show_a : show_a string:
+show_a : show_a string: 
 show_v : show_v string: string
 show_i : show_a has 'i'
 show a: show   string: string
@@ -37,7 +37,7 @@ show b: show   Nil:    instance[choice_mix.Nil]
 show c: show   MyRef:  instance[choice_mix.MyRef]
 show d: show   i64:    3
 -------------
-show_a : show_a Nil:
+show_a : show_a Nil:    
 show_v : show_v Nil:    instance[choice_mix.Nil]
 show_i : show_a has 'i'
 show a: show   Nil:    instance[choice_mix.Nil]
@@ -45,7 +45,7 @@ show b: show   MyRef:  instance[choice_mix.MyRef]
 show c: show   i64:    3
 show d: show   bool:   true
 -------------
-show_a : show_a MyRef:
+show_a : show_a MyRef:  
 show_v : show_v MyRef:  instance[choice_mix.MyRef]
 show_i : show_a has no 'i'
 show a: show   MyRef:  instance[choice_mix.MyRef]
@@ -53,7 +53,7 @@ show b: show   i64:    3
 show c: show   bool:   true
 show d: show   string: string
 -------------
-show_a : show_a i64:
+show_a : show_a i64:    
 show_v : show_v i64:    3
 show_i : show_a has 'i'
 show a: show   i64:    3

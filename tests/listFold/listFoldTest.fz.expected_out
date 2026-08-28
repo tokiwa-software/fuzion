@@ -40,7 +40,7 @@ sum 9 is 23456000
 PASSED: take(5).sum l9
 sum 10 is 123450000
 PASSED: take(5).sum lA
-String list 1 is
+String list 1 is 
 PASSED: concat sl1
 String list 2 is dog.
 PASSED: concat sl2
