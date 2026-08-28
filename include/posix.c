@@ -879,13 +879,22 @@ int fzE_pipe_create(int64_t * fds)
 // returns -1 on error, 0 on pipe exhausted/closed
 // otherwise the number of bytes read
 int fzE_pipe_read(int64_t desc, char * buf, size_t nbytes){
-  return read((int) desc, buf, nbytes);
+  errno = 0;
+  ssize_t result = read((int) desc, buf, nbytes);
+  // NYI: UNDER DEVELOPMENT: this assertion will probably fail some time
+  assert(result > 0 || (errno != EAGAIN && errno != EWOULDBLOCK));
+  return result;
 }
 
 
 // return -1 on error, the number of written bytes otherwise
 int fzE_pipe_write(int64_t desc, char * buf, size_t nbytes){
-  return write((int) desc, buf, nbytes);
+  errno = 0;
+  ssize_t result = write((int) desc, buf, nbytes);
+
+  return result >= 0
+    ? (int32_t)result
+    : (errno == EAGAIN || errno == EWOULDBLOCK ? 0 : -1);
 }
 
 
