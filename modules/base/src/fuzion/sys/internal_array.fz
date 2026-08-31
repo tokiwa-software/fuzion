@@ -32,7 +32,7 @@ module internal_array_init(T type, length i64) =>
 
 # fuzion.sys.internal_array_init -- one-dimensional low-level array
 #
-module internal_array(T type, module data Array T, module length i32 /* NYI: CLEANUP: change this to i64, backends need to be changed */ ) is
+module internal_array(T type, module data Array T, module length i32 /* NYI: CLEANUP: change this to i64, backends need to be changed, see #7250 */ ) is
 
 
   # make sure that this internal array will no longer be modified.  This is just for
