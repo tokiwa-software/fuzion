@@ -192,10 +192,7 @@ public mutate : linear_effect is
     #
     public get_racy T ! racy mutate.this
     =>
-      if mutate.this.type : concur.blocking_mutate_using_clock0
-        (racy mutate.this).env.register
-      else if mutate.this.type : concur.atomic_mutate
-        (racy mutate.this).env.register
+      racy mutate.this .env.register
 
       get_racy_internal
 
@@ -259,10 +256,7 @@ public mutate : linear_effect is
     pre
       safety: open
     =>
-      if mutate.this.type : concur.blocking_mutate_using_clock0
-        (racy mutate.this).env.register
-      else if mutate.this.type : concur.atomic_mutate
-        (racy mutate.this).env.register
+      racy mutate.this .env.register
 
       put_racy_internal to
 
