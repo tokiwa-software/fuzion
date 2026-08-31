@@ -47,7 +47,7 @@ test_interval is
         for
           s := "", s+" "+i;
           i in x;
-          limit in 0..9  # make sure we do not run forever in case of open interval
+          limit in 0..10  # make sure we do not run forever in case of open interval
         else
           s
       )"
