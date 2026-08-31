@@ -12,11 +12,11 @@ For the formal argument 'typeinference_for_args_negative.scenario5.m2.y' the typ
 
 
 --CURDIR--/typeinference_for_args_negative.fz:59:26: error 3: Could not find called feature
-      t(p Sequence T) => test "scenario4: type of m2.y is " $T "Type of 'void'"
+      t(p Sequence T) => test "scenario4: type of m2.y is " $T "void"
 -------------------------^^^^
 Feature not found: 'test' (3 arguments)
 Target feature: 'typeinference_for_args_negative.scenario4.f.t'
-In call: 'test "scenario4: type of m2.y is " $T "Type of 'void'"'
+In call: 'test "scenario4: type of m2.y is " $T "void"'
 
 
 --CURDIR--/typeinference_for_args_negative.fz:32:6: error 4: Type inference from actual arguments failed since no actual call was found
@@ -140,10 +140,10 @@ actual is value of type 'bool' at --CURDIR--/typeinference_for_args_negative.fz:
 
 
 --CURDIR--/typeinference_for_args_negative.fz:80:9: error 14: Could not find called feature
-        test "scenario4: type of m2.y is " $T "Type of 'void'"
+        test "scenario4: type of m2.y is " $T "void"
 --------^^^^
 Feature not found: 'test' (3 arguments)
 Target feature: 'typeinference_for_args_negative.scenario5.f.t'
-In call: 'test "scenario4: type of m2.y is " $T "Type of 'void'"'
+In call: 'test "scenario4: type of m2.y is " $T "void"'
 
 14 errors.

@@ -191,16 +191,16 @@ genericstest is
     z(T type) : y (list   T) is show_tz => $T
 
     a0 := z u64
-    chck (a0.show_tp = "Type of '" + "array (option (list u64))" + "'") "(z u64).show_tp should be 'array (option (list u64))'"
-    chck (a0.show_tx = "Type of '" +        "option (list u64)"  + "'") "(z u64).show_tx should be 'option (list u64)'"
-    chck (a0.show_ty = "Type of '" +                "list u64"   + "'") "(z u64).show_ty should be 'list u64'"
-    chck (a0.show_tz = "Type of '" +                     "u64"   + "'") "(z u64).show_ty should be 'u64'"
+    chck (a0.show_tp = "array (option (list u64))") "(z u64).show_tp should be array (option (list u64))"
+    chck (a0.show_tx =        "option (list u64)" ) "(z u64).show_tx should be option (list u64)"
+    chck (a0.show_ty =                "list u64"  ) "(z u64).show_ty should be list u64"
+    chck (a0.show_tz =                     "u64"  ) "(z u64).show_ty should be u64"
 
     b := z String
-    chck (b.show_tp = "Type of '" + "array (option (list String))" + "'") "(z String).show_tp should be 'array (option (list String))'"
-    chck (b.show_tx = "Type of '" +        "option (list String)"  + "'") "(z String).show_tx should be 'option (list String)'"
-    chck (b.show_ty = "Type of '" +                "list String"   + "'") "(z String).show_ty should be 'list String'"
-    chck (b.show_tz = "Type of '" +                     "String"   + "'") "(z String).show_ty should be 'String'"
+    chck (b.show_tp = "array (option (list String))") "(z String).show_tp should be array (option (list String))"
+    chck (b.show_tx =        "option (list String)" ) "(z String).show_tx should be option (list String)"
+    chck (b.show_ty =                "list String"  ) "(z String).show_ty should be list String"
+    chck (b.show_tz =                     "String"  ) "(z String).show_ty should be String"
 
     # base line test with different type parameter names
     #
@@ -210,16 +210,16 @@ genericstest is
     z1(TZ type) : y1 (list   TZ) is show_tz => $TZ  # note that TP, TX, TY are not visible here
 
     a1 := z1 i8
-    chck (a1.show_tp = "Type of '" + "array (option (list i8))" + "'") "(z i8).show_tp should be 'array (option (list i8))'"
-    chck (a1.show_tx = "Type of '" +        "option (list i8)"  + "'") "(z i8).show_tx should be 'option (list i8)'"
-    chck (a1.show_ty = "Type of '" +                "list i8"   + "'") "(z i8).show_ty should be 'list i8'"
-    chck (a1.show_tz = "Type of '" +                     "i8"   + "'") "(z i8).show_ty should be 'i8'"
+    chck (a1.show_tp = "array (option (list i8))") "(z i8).show_tp should be array (option (list i8))"
+    chck (a1.show_tx =        "option (list i8)" ) "(z i8).show_tx should be option (list i8)"
+    chck (a1.show_ty =                "list i8"  ) "(z i8).show_ty should be list i8"
+    chck (a1.show_tz =                     "i8"  ) "(z i8).show_ty should be i8"
 
     b1 := z1 codepoint
-    chck (b1.show_tp = "Type of '" + "array (option (list codepoint))" + "'") "(z codepoint).show_tp should be 'array (option (list codepoint))'"
-    chck (b1.show_tx = "Type of '" +        "option (list codepoint)"  + "'") "(z codepoint).show_tx should be 'option (list codepoint)'"
-    chck (b1.show_ty = "Type of '" +                "list codepoint"   + "'") "(z codepoint).show_ty should be 'list codepoint'"
-    chck (b1.show_tz = "Type of '" +                     "codepoint"   + "'") "(z codepoint).show_ty should be 'codepoint'"
+    chck (b1.show_tp = "array (option (list codepoint))") "(z codepoint).show_tp should be array (option (list codepoint))"
+    chck (b1.show_tx =        "option (list codepoint)" ) "(z codepoint).show_tx should be option (list codepoint)"
+    chck (b1.show_ty =                "list codepoint"  ) "(z codepoint).show_ty should be list codepoint"
+    chck (b1.show_tz =                     "codepoint"  ) "(z codepoint).show_ty should be codepoint"
 
 
     # check that type parameter if used in child's arg list is not used, but a free type:

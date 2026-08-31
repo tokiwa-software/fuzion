@@ -23,8 +23,8 @@
 
 # used to result in
 #
-#     Type of 'i32'
-#     Type of 'unit'
+#     i32
+#     unit
 #
 
 x := { 3 }

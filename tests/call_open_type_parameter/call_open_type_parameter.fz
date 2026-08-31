@@ -32,7 +32,7 @@ call_open_type_parameter =>
       say O
       say (type_of O)
 
-    say "case1: expecing 'i32 unit f64' and `Type of '...#Open_Types<n>'`"
+    say "case1: expecing 'i32 unit f64' and `...#Open_Types<n>`"
     x i32 unit f64
 
   say "----"
@@ -47,7 +47,7 @@ call_open_type_parameter =>
       say o
       say (type_of o)
 
-    say "case2: expecing 'i32 unit f64' and `Type of '...#Open_Types<n>'`"
+    say "case2: expecing 'i32 unit f64' and `...#Open_Types<n>`"
     x i32 unit f64
 
   say "----"
@@ -61,7 +61,7 @@ call_open_type_parameter =>
       say A
       say (type_of A)
 
-    say "case3: expecing 'Type of 'u16'' and `Type of 'Type'`"
+    say "case3: expecing 'u16'' and `Type of 'Type`"
     x u16
 
   say "----"
