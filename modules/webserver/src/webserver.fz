@@ -65,7 +65,7 @@ public Webserver(/*NYI: UNDER DEVELOPMENT: custom thread pool TP type : concur.t
                   e error => log "writing response failed: $(e)"
                   unit =>
                     flush_ok := (io.buffered mutate).Writer.env.flush
-                    if flush_ok!!
+                    if !flush_ok
                       log "flushing response failed: $(flush_ok.err)"
 
             accept_res.or_else ()->

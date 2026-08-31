@@ -30,3 +30,16 @@ lib_switch =>
   say (b.and_then x->x+5)
   say (a.or ()->5)
   say (b.or ()->5)
+
+  say (a.otherwise _->5)
+  say (b.otherwise _->5)
+
+  c outcome i32 := 4
+  d outcome i32 := error "oops"
+  say (c.otherwise (_ -> -1))
+  say (d.otherwise (_ -> -1))
+
+  # A = unit: the motivating case, also checks partial application
+  handler(e error) unit => say "handled: $e"
+  u outcome unit := error "cleanup failed"
+  u.otherwise handler

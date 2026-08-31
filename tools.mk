@@ -37,11 +37,6 @@ show_readme:
 show_release_notes:
 	grip -b release_notes.md
 
-# do spell checking of comments and strings in java source code.
-.PHONY: spellcheck
-spellcheck:
-	bin/spell_check_java.sh
-
 .PHONY: lint-java
 lint-java:
 	$(JAVAC) -Xlint --class-path $(CLASSES_DIR) -d $(CLASSES_DIR) \
@@ -131,4 +126,5 @@ regenerated_header_files:
 	$(FZ) -jvm -modules=clang -JLibraries=clang ./bin/fzextract.fz /usr/include/wolfssl/ssl.h > modules/wolfssl/src/native.fz
 	$(FZ) -jvm -modules=clang -JLibraries=clang ./bin/fzextract.fz /usr/include/sqlite3.h > modules/sqlite/src/native.fz
 # NYI: ENHANCEMENT: do not assume clang 19 and debian location
+	C_INCLUDE_PATH="/usr/lib/llvm-19/include:$(C_INCLUDE_PATH)" $(FZ) -jvm -modules=clang -JLibraries=clang ./bin/fzextract.fz /usr/lib/llvm-19/include/clang-c/Index.h > modules/clang/src/native.fz
 	$(FZ) -jvm -modules=clang -JLibraries=clang ./bin/fzextract.fz /usr/lib/llvm-19/include/clang-c/Index.h > modules/clang/src/native.fz

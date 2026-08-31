@@ -31,10 +31,8 @@
 # objects, instead only the values in the pointer array need to be updated when
 # an element is accessed.
 #
-# Accessing takes constant time while operations to insert, or remove take
-# amortized constant time due to the use of a hash map.
-# If elements are never manually removed from the cache, no amortized runtimes
-# should occur once the cache is filled.
+# Get, put and remove operations take amortized constant time due to the
+# use of a hash map.
 #
 private:public LRU_Cache(
 
@@ -310,13 +308,14 @@ private:public LRU_Cache(
   public type.new(I type : integer, capacity I) container.LRU_Cache LM K V
     pre safety : 0 < capacity
   =>
-    # NYI: OPTIMIZATION: should Mutable_Hash_Map provide an option to set minimum size to avoid reallocation when filling the cache?
-    m  := Mutable_Hash_Map LM K i64 .empty
-    ks := LM.env.new_array (option K) i64 capacity.as_i64 (_->nil)
-    vs := LM.env.new_array (option V) i64 capacity.as_i64 (_->nil)
-    # initialize the free list
-    np := LM.env.new_array (i64, i64) i64 capacity.as_i64 (i->(i+1, i64 -1))
-    # no free element after the last index (at initialization)
-    np[capacity.as_i64-1] := (i64 -1, i64 -1)
+    LM.env.exclusive ()->
+      # NYI: OPTIMIZATION: should Mutable_Hash_Map provide an option to set minimum size to avoid reallocation when filling the cache?
+      m  := Mutable_Hash_Map LM K i64 .empty
+      ks := LM.env.new_array (option K) i64 capacity.as_i64 (_->nil)
+      vs := LM.env.new_array (option V) i64 capacity.as_i64 (_->nil)
+      # initialize the free list
+      np := LM.env.new_array (i64, i64) i64 capacity.as_i64 (i->(i+1, i64 -1))
+      # no free element after the last index (at initialization)
+      np[capacity.as_i64-1] := (i64 -1, i64 -1)
 
-    container.LRU_Cache LM K V m ks vs np
+      container.LRU_Cache LM K V m ks vs np

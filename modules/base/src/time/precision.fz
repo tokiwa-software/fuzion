@@ -21,15 +21,43 @@
 #
 # -----------------------------------------------------------------------
 
-# NYI: UNDER DEVELOPMENT: naming!
+# precision -- unit feature to group time precision related features
+#
+public precision is
 
-public pyear is
-public pmonth is
-public pday is
-public phour is
-public pminute is
-public psecond is
-public pmilli_second is
-public pnano_second is
+  # unit feature denoting precision to the year
+  #
+  public year is
 
-public precision : choice pyear pmonth pday phour pminute psecond pmilli_second pnano_second is
+  # unit feature denoting precision to the month
+  #
+  public month is
+
+  # unit feature denoting precision to the day
+  #
+  public day is
+
+  # unit feature denoting precision to the hour
+  #
+  public hour is
+
+  # unit feature denoting precision to the minute
+  #
+  public minute is
+
+  # unit feature denoting precision to the second
+  #
+  public second is
+
+  # unit feature denoting precision to the millisecond
+  #
+  public milli_second is
+
+  # unit feature denoting precision to the nanosecond
+  #
+  public nano_second is
+
+
+  # precision level
+  #
+  public val : choice year month day hour minute second milli_second nano_second is
