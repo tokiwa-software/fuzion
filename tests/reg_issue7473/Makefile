@@ -17,18 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test reg_issue3110
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-# used to result in
-#
-#     i32
-#     unit
-#
-
-x := { 3 }
-y := { a => {3}; a }
-
-say (type_of x)
-say (type_of y)
+override NAME = reg_issue7473
+include ../simple.mk

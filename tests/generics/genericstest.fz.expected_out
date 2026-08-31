@@ -31,22 +31,22 @@ PASSED: f only called with first and last element equal
 PASSED: f only called with a1 true
 PASSED: f only called with first and last element equal
 PASSED: f only called with a1 true
-PASSED: (z u64).show_tp should be 'array (option (list u64))'
-PASSED: (z u64).show_tx should be 'option (list u64)'
-PASSED: (z u64).show_ty should be 'list u64'
-PASSED: (z u64).show_ty should be 'u64'
-PASSED: (z String).show_tp should be 'array (option (list String))'
-PASSED: (z String).show_tx should be 'option (list String)'
-PASSED: (z String).show_ty should be 'list String'
-PASSED: (z String).show_ty should be 'String'
-PASSED: (z i8).show_tp should be 'array (option (list i8))'
-PASSED: (z i8).show_tx should be 'option (list i8)'
-PASSED: (z i8).show_ty should be 'list i8'
-PASSED: (z i8).show_ty should be 'i8'
-PASSED: (z codepoint).show_tp should be 'array (option (list codepoint))'
-PASSED: (z codepoint).show_tx should be 'option (list codepoint)'
-PASSED: (z codepoint).show_ty should be 'list codepoint'
-PASSED: (z codepoint).show_ty should be 'codepoint'
+PASSED: (z u64).show_tp should be array (option (list u64))
+PASSED: (z u64).show_tx should be option (list u64)
+PASSED: (z u64).show_ty should be list u64
+PASSED: (z u64).show_ty should be u64
+PASSED: (z String).show_tp should be array (option (list String))
+PASSED: (z String).show_tx should be option (list String)
+PASSED: (z String).show_ty should be list String
+PASSED: (z String).show_ty should be String
+PASSED: (z i8).show_tp should be array (option (list i8))
+PASSED: (z i8).show_tx should be option (list i8)
+PASSED: (z i8).show_ty should be list i8
+PASSED: (z i8).show_ty should be i8
+PASSED: (z codepoint).show_tp should be array (option (list codepoint))
+PASSED: (z codepoint).show_tx should be option (list codepoint)
+PASSED: (z codepoint).show_ty should be list codepoint
+PASSED: (z codepoint).show_ty should be codepoint
 PASSED: PARENT_TYPE_PARAMETER is not inherited, but a free type!
 PASSED: BLABLA is a free type
 PASSED: PARENT_TYPE_PARAMETER is not inherited, but a free type!
