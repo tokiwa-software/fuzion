@@ -240,7 +240,13 @@ int fzE_socket_close(int sockfd)
 // initialize a new socket for given
 // family, socket_type, protocol
 int fzE_socket(int family, int type, int protocol){
-  return socket(fzE_get_family(family), fzE_get_socket_type(type), fzE_get_protocol(protocol));
+  fzE_lock();
+
+  int sockfd = socket(fzE_get_family(family), fzE_get_socket_type(type), fzE_get_protocol(protocol));
+
+  fzE_unlock();
+
+  return sockfd;
 }
 
 
@@ -850,6 +856,7 @@ wchar_t *build_unicode_environment_block(char *env[], size_t envLen) {
 
 int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen, int64_t *result) {
 
+  fzE_lock();
   // Programmatically controlling which handles are inherited by new processes in Win32
   // https://devblogs.microsoft.com/oldnewthing/20111216-00/?p=8873
 
@@ -866,6 +873,7 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
   if (!CreatePipe(&hStdinRead, &hStdinWrite, &saAttr, 0) ||
       !CreatePipe(&hStdoutRead, &hStdoutWrite, &saAttr, 0) ||
       !CreatePipe(&hStderrRead, &hStderrWrite, &saAttr, 0)) {
+      fzE_unlock();
       return -1;
   }
 
@@ -890,6 +898,7 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
   free(app);
   if (spw == 0) {
     last_error = ERROR_FILE_NOT_FOUND;
+    fzE_unlock();
     return -1;
   }
 
@@ -898,6 +907,7 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
 
   if (!args_w) {
     last_error = ERROR_INVALID_NAME;
+    fzE_unlock();
     return -1;
   }
 
@@ -931,6 +941,7 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
 
   if (!success) {
     last_error = GetLastError();
+    fzE_unlock();
     return -1;
   }
 
@@ -941,6 +952,7 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
   result[2] = (int64_t)hStdoutRead;
   result[3] = (int64_t)hStderrRead;
 
+  fzE_unlock();
   return 0;
 }
 
@@ -1002,6 +1014,7 @@ int fzE_hostname(char *buf, size_t nbytes)
 //
 int fzE_pipe_create(int64_t *fds)
 {
+  fzE_lock();
   HANDLE hRead, hWrite;
 
   SECURITY_ATTRIBUTES saAttr = {
@@ -1013,10 +1026,12 @@ int fzE_pipe_create(int64_t *fds)
   if (CreatePipe(&hRead, &hWrite, &saAttr, 0)) {
     fds[0] = (int64_t) hRead;
     fds[1] = (int64_t) hWrite;
+    fzE_unlock();
     return 0;
   }
   DWORD le = GetLastError();
   assert(le > 0);
+  fzE_unlock();
   return (int)le;
 }
 
@@ -1056,6 +1071,8 @@ void * fzE_file_open(char * file_name, int64_t * open_results, file_open_mode mo
 {
   assert(mode >= 0 && mode <= 2);
 
+  fzE_lock();
+
   SECURITY_ATTRIBUTES sa = {0};
   sa.nLength = sizeof(SECURITY_ATTRIBUTES);
   sa.bInheritHandle = FALSE;
@@ -1089,23 +1106,27 @@ void * fzE_file_open(char * file_name, int64_t * open_results, file_open_mode mo
       if (!SetFilePointerEx(hFile, zero, NULL, FILE_BEGIN)) {
         open_results[0] = (int64_t)GetLastError();
         CloseHandle(hFile);
+        fzE_unlock();
         return NULL;
       }
 
       if (!SetEndOfFile(hFile)) {
         open_results[0] = (int64_t)GetLastError();
         CloseHandle(hFile);
+        fzE_unlock();
         return NULL;
       }
     }
     else if (mode == FZ_FILE_MODE_APPEND && !SetFilePointerEx(hFile, zero, &new_pos, FILE_END)) {
       open_results[0] = (int64_t)GetLastError();
       CloseHandle(hFile);
+      fzE_unlock();
       return NULL;
     }
 
   }
 
+  fzE_unlock();
   return (void *)hFile;
 }
 
