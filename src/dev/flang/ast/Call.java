@@ -2011,7 +2011,7 @@ public class Call extends AbstractCall
                         if (t.isParametricType())
                           {
                             res.resolveTypes(g);
-                            var c = adjustType(res, context, g.constraint(), null);  // constraint with actual generics replaced, see #7415
+                            var c = adjustTypeForTarget(res, context, g.constraint(), null);  // constraint with actual generics replaced, see #7415
                             if (actualType != null)
                               { /* infer via constraint of type parameter:
                                  *

@@ -296,6 +296,47 @@ public abstract class AbstractCall extends Expr
 
 
   /**
+   * Take the given argument, result or constraint type `t` and adjust it
+   * according to the target of this call.
+   *
+   * This is used during type inference of type parameters in this call, so the
+   * type parameters given in this call cannot be applied yet.
+   *
+   * @param res this is called during type resolution, res gives the resolution
+   * instance.
+   *
+   * @param context the source code context where this Call is used
+   *
+   * @param t the type to adjust
+   *
+   * @param foundRef a consumer that will be called for all the this-types found
+   * together with the ref type they are replaced with.  May be null.  This will
+   * be used to check for AstErrors.illegalOuterRefTypeInCall.
+   *
+   */
+  protected AbstractType adjustTypeForTarget(Resolution res,
+                                             Context context,
+                                             AbstractType t,
+                                             BiConsumer<AbstractType, AbstractType> foundRef)
+  {
+    var t0 = calledFeature() == Types.f_ERROR ? Types.t_ERROR : t;
+    var t1 = t0 == Types.t_ERROR              ? Types.t_ERROR : calledFeature().outer().handDownToType(t0, target().type().selfOrConstraint(context));
+    var t2 = t1 == Types.t_ERROR              ? Types.t_ERROR : replace_type_parameter_used_for_relay_type_in_cotype(t1, target());
+    var t3 = t2 == Types.t_ERROR              ? Types.t_ERROR : adjustThisTypeForTarget(context, t2, calledFeature(), target().type(), foundRef);  // NYI: CLEANUP: try to use handDownAndApply
+    var t4 = t3 == Types.t_ERROR              ? Types.t_ERROR : t3.applyTypePars(target().type());
+
+    if (POSTCONDITIONS) ensure
+      (t4 != null);
+
+    return t4;
+  }
+
+
+  /**
+   * Take the given argument, result or constraint type `t` and adjust it
+   * according to the target of this call and the actual type parameters given
+   * in this call.
+   *
    * @param res this is called during type resolution, res gives the resolution
    * instance.
    *
@@ -313,17 +354,13 @@ public abstract class AbstractCall extends Expr
                                     AbstractType t,
                                     BiConsumer<AbstractType, AbstractType> foundRef)
   {
-    var t0 = calledFeature() == Types.f_ERROR ? Types.t_ERROR : t;
-    var t1 = t0 == Types.t_ERROR                           ? t0 : calledFeature().outer().handDownToType(t0, target().type().selfOrConstraint(context));
-    var t2 = t1 == Types.t_ERROR                           ? t1 : replace_type_parameter_used_for_relay_type_in_cotype(t1, target());
-    var t3 = t2 == Types.t_ERROR                           ? t2 : adjustThisTypeForTarget(context, t2, calledFeature(), target().type(), foundRef);  // NYI: CLEANUP: try to use handDownAndApply
-    var t4 = t3 == Types.t_ERROR                           ? t3 : t3.applyTypePars(target().type());
-    var t5 = t4 == Types.t_ERROR                           ? t4 : t4.applyTypePars(calledFeature(), actualTypeParameters());
+    var t0 = t  == Types.t_ERROR ? Types.t_ERROR : adjustTypeForTarget(res, context, t, foundRef);
+    var t1 = t0 == Types.t_ERROR ? Types.t_ERROR : t0.applyTypePars(calledFeature(), actualTypeParameters());
 
     if (POSTCONDITIONS) ensure
-      (t5 != null);
+      (t1 != null);
 
-    return t5;
+    return t1;
   }
 
 
