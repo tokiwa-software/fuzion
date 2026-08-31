@@ -109,7 +109,7 @@ is
            panic "'$(Dynamic_Array.this.type.name)' can not grow, exceeded capacity of $(data.length) elements"
 
 
-    d[len.unwrap] := o
+    d[length] := o
     data <- d
     len  <- len+1
 
