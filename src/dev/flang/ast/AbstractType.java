@@ -712,13 +712,23 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @param context the source code context where this Type is used
    *
    * @param actual the actual type.
+   *
+   * @param assignableTo if non-null, this will collect all constraint types
+   * that `actual` is assignable to. Use for error messages.
    */
-  private boolean constraintAssignableFrom(Context context, AbstractType actual)
+  private boolean constraintAssignableFrom(Context context,
+                                           AbstractType actual,
+                                           Set<AbstractType> assignableTo)
   {
     if (PRECONDITIONS) require
       (this  .isParametricType() || this  .feature() != null || Errors.any(),
        actual.isParametricType() || actual.feature() != null || Errors.any(),
        Errors.any() || this != Types.t_ERROR && actual != Types.t_ERROR);
+
+    if (assignableTo != null)
+      {
+        assignableTo.add(actual);
+      }
 
     var result = containsError()                   ||
       actual.containsError()                       ||
@@ -736,7 +746,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
              * this: 'T : property.orderable'
              * actual: 'I : integer'
              */
-            case ParametricType -> !isThisType() && constraintAssignableFrom(context, actual.typeParameter().constraint(context));
+          case ParametricType -> !isThisType() && constraintAssignableFrom(context, actual.typeParameter().constraint(context), assignableTo);
             /**
              * e.g.:
              *
@@ -746,7 +756,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
             case ThisType -> {
               yield actual.feature() == feature()
               ||
-                constraintAssignableViaInherits(context, actual);
+                constraintAssignableViaInherits(context, actual, assignableTo);
             }
             /**
              * e.g.:
@@ -760,7 +770,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                 // NYI: BUG: isThisType logic certainly wrong...
                 (isThisType() || outer() == null && actual.outer() == null || outer().isAssignableFromDirectly(actual.outer()).yes())
               ||
-                constraintAssignableViaInherits(context, actual);
+                constraintAssignableViaInherits(context, actual, assignableTo);
             }
           };
       }
@@ -775,13 +785,18 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * @param context the source code context where this Type is used
    *
    * @param actual the actual type.
+   *
+   * @param assignableTo if non-null, this will collect all constraint types
+   * that `actual` is assignable to. Use for error messages.
    */
-  private boolean constraintAssignableViaInherits(Context context, AbstractType actual)
+  private boolean constraintAssignableViaInherits(Context context,
+                                                  AbstractType actual,
+                                                  Set<AbstractType> assignableTo)
   {
     return actual.feature().inherits().stream().anyMatch(p ->
       {
         var pa = actual.actualType(p.type());
-        return pa!=actual && constraintAssignableFrom(context, pa);
+        return pa!=actual && constraintAssignableFrom(context, pa, assignableTo);
       }
     );
   }
@@ -795,7 +810,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    */
   public boolean constraintAssignableFrom(AbstractType actual)
   {
-    return constraintAssignableFrom(Context.NONE, actual);
+    return constraintAssignableFrom(Context.NONE, actual, null);
   }
 
 
@@ -839,7 +854,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                                       // for now just prevent infinite recursion
                                       gt.compareTo(this) != 0
                                       &&
-                                      !gt.constraintAssignableFrom(context, og);
+                                      !gt.constraintAssignableFrom(context, og, null);
               case ValueType, RefType, ThisType -> g.compareTo(og) != 0;
             }
           )
@@ -2664,7 +2679,7 @@ there is no common super type of the two types (Types.t_ERROR)
             a.checkChoice(p, context);
             if (!c.isParametricType() && // See AstErrors.constraintMustNotBeParametricType,
                                           // will be checked in SourceModule.checkTypes(Feature)
-                !c.constraintAssignableFrom(context, a) &&
+                !c.constraintAssignableFrom(context, a, null) &&
                 // NYI: CLEANUP: probably not a good place for this logic, move to constraintAssignableFrom?
                 (!a.isParametricType() ||
                  f != a.typeParameter())
@@ -2672,7 +2687,9 @@ there is no common super type of the two types (Types.t_ERROR)
               {
                 if (!f.isCoTypesRelayTypeParameter())
                   {
-                    AstErrors.incompatibleActualGeneric(p, f, c, a);
+                    var assignableTo = new TreeSet<AbstractType>();
+                    var ignore = c.constraintAssignableFrom(context, a, assignableTo);
+                    AstErrors.incompatibleActualGeneric(p, f, c, a, assignableTo);
                     result = false;
                   }
               }

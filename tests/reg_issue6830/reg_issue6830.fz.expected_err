@@ -34,5 +34,7 @@ To solve this, change constraint of type parameter to 'reg_issue6830.part2.this.
 --------^
 formal type parameter '_ : reg_issue6830.part2.this.storage String' with constraint '_.storage String'
 actual type parameter 'reg_issue6830.part2.this.storage String'
+assignable to constraint: 'reg_issue6830.part2.this.storage String',
+                          'Any'
 
 3 errors.
