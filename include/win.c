@@ -859,7 +859,7 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
 
   SECURITY_ATTRIBUTES saAttr = {
       .nLength = sizeof(SECURITY_ATTRIBUTES),
-      .bInheritHandle = TRUE,
+      .bInheritHandle = FALSE,
       .lpSecurityDescriptor = NULL
   };
 
@@ -868,10 +868,6 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
       !CreatePipe(&hStderrRead, &hStderrWrite, &saAttr, 0)) {
       return -1;
   }
-
-  SetHandleInformation(hStdinWrite, HANDLE_FLAG_INHERIT, 0);
-  SetHandleInformation(hStdoutRead, HANDLE_FLAG_INHERIT, 0);
-  SetHandleInformation(hStderrRead, HANDLE_FLAG_INHERIT, 0);
 
   // we resolve app path manually, because we
   // want to pass empty env where PATH is not set
@@ -902,25 +898,46 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
   }
 
   PROCESS_INFORMATION pi;
-  STARTUPINFOW si = {0};
-  si.cb = sizeof(STARTUPINFOW);
-  si.dwFlags |= STARTF_USESTDHANDLES;
-  si.hStdInput = hStdinRead;
-  si.hStdOutput = hStdoutWrite;
-  si.hStdError = hStderrWrite;
+  STARTUPINFOEXW si = {0};
+  si.StartupInfo.cb = sizeof(STARTUPINFOEXW);
+  si.StartupInfo.dwFlags |= STARTF_USESTDHANDLES;
+  si.StartupInfo.hStdInput = hStdinRead;
+  si.StartupInfo.hStdOutput = hStdoutWrite;
+  si.StartupInfo.hStdError = hStderrWrite;
+
+  SIZE_T attrListSize = 0;
+  InitializeProcThreadAttributeList(NULL, 1, 0, &attrListSize);
+  LPPROC_THREAD_ATTRIBUTE_LIST attrList = (LPPROC_THREAD_ATTRIBUTE_LIST)malloc(attrListSize);
+  InitializeProcThreadAttributeList(attrList, 1, 0, &attrListSize);
+
+  HANDLE inheritableHandles[] = { hStdinRead, hStdoutWrite, hStderrWrite };
+  UpdateProcThreadAttribute(
+    attrList,
+    0,
+    PROC_THREAD_ATTRIBUTE_HANDLE_LIST,
+    inheritableHandles,
+    sizeof(inheritableHandles),
+    NULL,
+    NULL
+  );
+
+  si.lpAttributeList = attrList;
 
   BOOL success = CreateProcessW(
     resolvedPath,
     args_w,
     NULL,
     NULL,
-    TRUE,
-    CREATE_UNICODE_ENVIRONMENT,
+    FALSE,
+    EXTENDED_STARTUPINFO_PRESENT | CREATE_UNICODE_ENVIRONMENT,
     envBlock,
     NULL,
-    &si,
+    (STARTUPINFOW *)&si,
     &pi
   );
+
+  DeleteProcThreadAttributeList(attrList);
+  free(attrList);
 
   CloseHandle(hStdinRead);
   CloseHandle(hStdoutWrite);
