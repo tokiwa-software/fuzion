@@ -30,19 +30,19 @@ reg_issue5569 =>
   # the original example from #5569:
   #
   #   - the result type of t.e.r is `t.this.i`
-  #   - so the result type of `E.c.r` for `E`=`t.e` must be `t.i`
+  #   - so the result type of `E.this.env.r` for `E`=`t.e` must be `t.i`
   #
   t is
     e : effect is
       r => i
       type.c => e.this.env
     i is
-  u(E type : t.e) => _ := E.c.r
+  u(E type : t.e) => _ := E.this.env.r
   t.e ! (u t.e)
 
   # the original example change to output the type
   v(E type : t.e) =>
-    E.c.r |> type_of |> say
+    E.this.env.r |> type_of |> say
 
   yap "expecting t.i : "; t.e ! (v t.e)
 
@@ -64,8 +64,8 @@ reg_issue5569 =>
   t.e.q => j
 
   w(E type : t.e) =>
-    x := E.c.r
-    y := E.c.q
+    x := E.this.env.r
+    y := E.this.env.q
     say "$(type_of x) $(type_of y)"
 
   yap "expecting t.i /t.e.j  : "; t.e   ! w t.e
@@ -81,8 +81,8 @@ reg_issue5569 =>
   t.e.q2() option (array j) => option [j]
 
   w2(E type : t.e) =>
-    x := E.c.r2
-    y := E.c.q2
+    x := E.this.env.r2
+    y := E.this.env.q2
     say "$(type_of x) $(type_of y)"
 
   yap "expecting option (array t.i /t.e.j  ): "; t.e   ! w2 t.e
@@ -100,8 +100,8 @@ reg_issue5569 =>
 /* NYI: BUG: The following does not work yet, the type of `y` is `t.e.this` and not `t.this`:
 
   w3(E type : t.e) =>
-    x := E.c.ee
-    y := E.c.tt
+    x := E.this.env.ee
+    y := E.this.env.tt
     _ := x.j
     _ := y.i
     say "$(type_of x) $(type_of y)"
@@ -118,7 +118,7 @@ reg_issue5569 =>
   e3 : t.e is
 
   w4(E type : t.e) =>
-    y := E.c.tt
+    y := E.this.env.tt
     say (type_of y)
     say y
 
