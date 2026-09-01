@@ -89,6 +89,18 @@ static_assert(EWOULDBLOCK == EAGAIN, "EWOULDBLOCK != EAGAIN, failed assumption o
 static_assert(sizeof(pthread_t) <= sizeof(void *), "pthread_t must be smaller or equal to pointer size");
 
 
+/*
+ * Retry a system call that may be interrupted by a signal
+ * until it is no longer interrupted with EINTR.
+ */
+#define FZ_RETRY_ON_EINTR(var, call)                     \
+  do {                                                   \
+    (var) = (call);                                      \
+    while ((var) == -1 && errno == EINTR)                \
+      (var) = (call);                                    \
+  } while (0)
+
+
 /**
  *   - 0 for CLOCK_REALTIME (which is not a real-time clock, but wallclock time)
  *   - 1 for CLOCK_MONOTONIC (which does not jump for leap seconds are when system time is changed)
@@ -227,7 +239,9 @@ int fzE_get_protocol(int protocol)
 // close a socket descriptor
 int fzE_socket_close(int sockfd)
 {
-  return close(sockfd);
+  int _r;
+  FZ_RETRY_ON_EINTR(_r, close(sockfd));
+  return _r;
 }
 
 
@@ -296,7 +310,9 @@ int fzE_listen(int sockfd, int backlog){
 // accept a new connection
 // blocks if socket is blocking
 int fzE_accept(int sockfd){
-  return accept(sockfd, NULL, NULL);
+  int _r;
+  FZ_RETRY_ON_EINTR(_r, accept(sockfd, NULL, NULL));
+  return _r;
 }
 
 
@@ -309,7 +325,8 @@ int fzE_connect(int sockfd, int family, int socktype, int protocol, char * host,
   {
     return -1;
   }
-  int con_res = connect(sockfd, addr_info->ai_addr, addr_info->ai_addrlen);
+  int con_res;
+  FZ_RETRY_ON_EINTR(con_res, connect(sockfd, addr_info->ai_addr, addr_info->ai_addrlen));
   freeaddrinfo(addr_info);
   return con_res;
 }
@@ -324,7 +341,9 @@ int fzE_get_peer_address(int sockfd, void * buf) {
   struct sockaddr_storage peeraddr;
   fzE_mem_zero_secure(&peeraddr, sizeof(peeraddr));
   socklen_t peeraddrlen = sizeof(peeraddr);
-  if (getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen) == 0) {
+  int _r;
+  FZ_RETRY_ON_EINTR(_r, getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen));
+  if (_r == 0) {
     if (peeraddr.ss_family == AF_INET) {
       fzE_memcpy(buf, &(((struct sockaddr_in *)&peeraddr)->sin_addr.s_addr), 4);
       return 4;
@@ -346,7 +365,9 @@ unsigned short fzE_get_peer_port(int sockfd) {
   struct sockaddr_storage peeraddr;
   fzE_mem_zero_secure(&peeraddr, sizeof(peeraddr));
   socklen_t peeraddrlen = sizeof(peeraddr);
-  if (getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen) == 0) {
+  int _r;
+  FZ_RETRY_ON_EINTR(_r, getpeername(sockfd, (struct sockaddr *)&peeraddr, &peeraddrlen));
+  if (_r == 0) {
     if (peeraddr.ss_family == AF_INET) {
       return ntohs(((struct sockaddr_in *)&peeraddr)->sin_port);
     } else if (peeraddr.ss_family == AF_INET6) {
@@ -361,7 +382,9 @@ unsigned short fzE_get_peer_port(int sockfd) {
 // into buf. may block if socket is  set to blocking.
 // return -1 on error or number of bytes read
 int fzE_socket_read(int sockfd, void * buf, size_t count){
-  return recvfrom( sockfd, buf, count, 0, NULL, NULL);
+  int _r;
+  FZ_RETRY_ON_EINTR(_r, recvfrom(sockfd, buf, count, 0, NULL, NULL));
+  return _r;
 }
 
 
@@ -369,7 +392,9 @@ int fzE_socket_read(int sockfd, void * buf, size_t count){
 // may block if socket is set to blocking.
 // return -1 or number of bytes written on success
 int fzE_socket_write(int sockfd, const void * buf, size_t count){
-  return sendto( sockfd, buf, count, 0, NULL, 0);
+  int _r;
+  FZ_RETRY_ON_EINTR(_r, sendto(sockfd, buf, count, 0, NULL, 0));
+  return _r;
 }
 
 
@@ -707,23 +732,33 @@ int fzE_process_create(char * args[], size_t argsLen, char * env[], size_t envLe
   int stdOut[2];
   int stdErr[2];
   int ret = 0;
-  if (pipe(stdIn) == -1)
+  int _r;
+  FZ_RETRY_ON_EINTR(_r, pipe(stdIn));
+  if (_r == -1)
   {
     ret = -1;
   }
-  if (ret == 0 && pipe(stdOut) == -1)
+  if (ret == 0)
   {
-    close(stdIn[0]);
-    close(stdIn[1]);
-    ret = -1;
+    FZ_RETRY_ON_EINTR(_r, pipe(stdOut));
+    if (_r == -1)
+    {
+      close(stdIn[0]);
+      close(stdIn[1]);
+      ret = -1;
+    }
   }
-  if (ret == 0 && pipe(stdErr) == -1)
+  if (ret == 0)
   {
-    close(stdIn[0]);
-    close(stdIn[1]);
-    close(stdOut[0]);
-    close(stdOut[1]);
-    ret = -1;
+    FZ_RETRY_ON_EINTR(_r, pipe(stdErr));
+    if (_r == -1)
+    {
+      close(stdIn[0]);
+      close(stdIn[1]);
+      close(stdOut[0]);
+      close(stdOut[1]);
+      ret = -1;
+    }
   }
   if (ret == 0)
   {
@@ -812,7 +847,8 @@ int64_t fzE_process_poll(int64_t p){
   assert(p>0);
 
   int status;
-  pid_t ret = waitpid(p, &status, WNOHANG);
+  pid_t ret;
+  FZ_RETRY_ON_EINTR(ret, waitpid(p, &status, WNOHANG));
 
   int res = 0;
 
@@ -862,7 +898,9 @@ int fzE_pipe_create(int64_t * fds)
 {
   int pipefd[2];
 
-  if (pipe(pipefd) == -1)
+  int _r;
+  FZ_RETRY_ON_EINTR(_r, pipe(pipefd));
+  if (_r == -1)
   {
     return errno;
   }
@@ -880,7 +918,8 @@ int fzE_pipe_create(int64_t * fds)
 // otherwise the number of bytes read
 int fzE_pipe_read(int64_t desc, char * buf, size_t nbytes){
   errno = 0;
-  ssize_t result = read((int) desc, buf, nbytes);
+  ssize_t result;
+  FZ_RETRY_ON_EINTR(result, read((int) desc, buf, nbytes));
   // NYI: UNDER DEVELOPMENT: this assertion will probably fail some time
   assert(result > 0 || (errno != EAGAIN && errno != EWOULDBLOCK));
   return result;
@@ -890,7 +929,8 @@ int fzE_pipe_read(int64_t desc, char * buf, size_t nbytes){
 // return -1 on error, the number of written bytes otherwise
 int fzE_pipe_write(int64_t desc, char * buf, size_t nbytes){
   errno = 0;
-  ssize_t result = write((int) desc, buf, nbytes);
+  ssize_t result;
+  FZ_RETRY_ON_EINTR(result, write((int) desc, buf, nbytes));
 
   return result >= 0
     ? (int32_t)result
@@ -900,7 +940,9 @@ int fzE_pipe_write(int64_t desc, char * buf, size_t nbytes){
 
 // return -1 on error, 0 on success
 int fzE_pipe_close(int64_t desc){
-  return close((int) desc);
+  int _r;
+  FZ_RETRY_ON_EINTR(_r, close((int) desc));
+  return _r;
 }
 
 
@@ -1051,12 +1093,7 @@ int32_t fzE_file_read(void * file, void * buf, int32_t size)
 
   if (res > 0)
     {
-      do
-        {
-          result = read(fileno(file), buf, (size_t)size);
-          assert( errno != EAGAIN );
-        }
-      while (result < 0 && errno == EINTR);
+      FZ_RETRY_ON_EINTR(result, read(fileno(file), buf, (size_t)size));
     }
 
   return result;
@@ -1096,13 +1133,8 @@ int32_t fzE_file_write(void * file, void * buf, int32_t size)
 {
   errno = 0;
   ssize_t result;
-  do
-  {
-    result = write(fileno(file), buf, size);
-  }
-  while (result == -1 && errno == EINTR);
-
-  return errno == EAGAIN || errno == EWOULDBLOCK
+  FZ_RETRY_ON_EINTR(result, write(fileno(file), buf, size));
+  return result == -1 && (errno == EAGAIN || errno == EWOULDBLOCK)
     ? 0
     : result;
 }
