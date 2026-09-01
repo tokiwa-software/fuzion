@@ -1093,12 +1093,7 @@ int32_t fzE_file_read(void * file, void * buf, int32_t size)
 
   if (res > 0)
     {
-      do
-        {
-          result = read(fileno(file), buf, (size_t)size);
-          assert( errno != EAGAIN );
-        }
-      while (result < 0 && errno == EINTR);
+      FZ_RETRY_ON_EINTR(result, read(fileno(file), buf, (size_t)size));
     }
 
   return result;
