@@ -22,7 +22,7 @@
 # -----------------------------------------------------------------------
 
 reg_issue2231 is
-  a := mut ()->i32 ()->0
+  a := mut ()->i64 ()->0
   ef : effect is
     public redef abortable bool => true
     inner := 7

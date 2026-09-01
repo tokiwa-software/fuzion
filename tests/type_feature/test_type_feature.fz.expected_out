@@ -1,6 +1,6 @@
-T:Type of 'i32' U:Type of 'bool'
-T:Type of 'array String' U:Type of 'array (array bool)'
-T:Type of 'bool' U:Type of 'list f64'
+T:i32 U:bool
+T:array String U:array (array bool)
+T:bool U:list f64
 false
 true
 false

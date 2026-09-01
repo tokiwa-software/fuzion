@@ -6,8 +6,8 @@ fuzion.sys.fatal_fault#2 at {base.fum}/fuzion/sys.fz:55
 fuzion.runtime.precondition_fault#1 at {base.fum}/fuzion/runtime/pre_fault.fz:56
 i8.pre infix + at {base.fum}/num/wrap_around.fz:87
 i8.precall infix + at {base.fum}/num/wrap_around.fz:86
-(list i32).count_n_i8#1 at --CURDIR--/reg_issue3178.fz:35
-(list i32).count_i8 at --CURDIR--/reg_issue3178.fz:27
+(list i64).count_n_i8#1 at --CURDIR--/reg_issue3178.fz:35
+(list i64).count_i8 at --CURDIR--/reg_issue3178.fz:27
 universe at --builtin--:39
 
 *** fatal errors encountered, stopping.

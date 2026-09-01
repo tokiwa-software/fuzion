@@ -26,14 +26,14 @@ dynamic_array_test =>
   m : mutate is
   m ! ()->
 
-    da := container.Dynamic_Array m i32 .empty
+    da := container.Dynamic_Array m i64 .empty
 
     check da.can_add
     check da.max_capacity.is_nil
 
     for i in 1..10 do
       da.add i
-      check da.length = i.as_i64
+      check da.length = i
 
     da.add_all 11..20
     check da.length = 20
@@ -43,4 +43,4 @@ dynamic_array_test =>
 
     for i in (1..20).reverse do
       check da.remove_last = i*2
-      check da.length = i.as_i64-1
+      check da.length = i-1

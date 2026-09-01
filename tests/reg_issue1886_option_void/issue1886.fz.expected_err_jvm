@@ -3,7 +3,7 @@ error 1: FATAL FAULT `*** panic ***`: test
 Call stack:
 fuzion.sys.fatal_fault#2 at {base.fum}/fuzion/sys.fz:55
 [..]
-panic#1 at {base.fum}/panic.fz:59
+panic#1 at {base.fum}/panic.fz:53
 test_option_void at --CURDIR--/issue1886.fz:44
 
 *** fatal errors encountered, stopping.

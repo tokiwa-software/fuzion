@@ -1,6 +1,6 @@
 
 --CURDIR--/issue1945neg.fz:52:11: error 1: Inconsistent indentation
-          i32 => () -> 4718)   # illegal, no LF allowed after -> in function result
+          i64 => () -> 4718)   # illegal, no LF allowed after -> in function result
 ----------^
 Indentation reference point is --CURDIR--/issue1945neg.fz:51:4:
   (l () ->

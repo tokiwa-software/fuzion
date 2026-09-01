@@ -41,21 +41,21 @@ public json_value : choice String f64 bool nil (Sequence json_value) (container.
   #
   # this is useful to avoid deep match nesting
   #
-  public access (keys Sequence (choice i32 String)) option json_value =>
+  public access (keys Sequence (choice i64 String)) option json_value =>
     match json_value.this
       m container.Map =>
         match keys.first
           nil => json_value.this
-          c choice i32 String =>
+          c choice i64 String =>
             match c
-              i32 => nil # have map got i32
+              i64 => nil # have map got i64
               s String => m[s].bind (.access keys.as_list.tail)
       seq Sequence =>
         match keys.first
           nil => json_value.this
-          c choice i32 String =>
+          c choice i64 String =>
             match c
-              i i32 => seq.nth i .bind (.access keys.as_list.tail)
+              i i64 => seq.nth i .bind (.access keys.as_list.tail)
               String => nil
       * => json_value.this
 

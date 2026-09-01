@@ -33,7 +33,7 @@ public Reader ref : effect is
     # post
     #   debug: buf_size > 0
     #   debug: buf_size % os.page_size.as_i32 = 0
-  := io.buffer_size.as_i32
+  := io.buffer_size
 
 
   # buffer backing this reader
@@ -46,7 +46,7 @@ public Reader ref : effect is
   #
   # returns either an array of the bytes read, end_of_file or an error
   #
-  public read(max_count i32) choice (Sequence u8) io.end_of_file error
+  public read(max_count i64) choice (Sequence u8) io.end_of_file error
     post debug: (result ? s Sequence => s.count<=max_count | * => true)
          debug 10 : (result ? s Sequence => s.is_array_backed | * => true)
   => abstract
@@ -54,13 +54,13 @@ public Reader ref : effect is
 
   # read handler that only ever returns end_of_file
   #
-  public type.empty i32 -> choice (Sequence u8) io.end_of_file error =>
+  public type.empty i64 -> choice (Sequence u8) io.end_of_file error =>
     _ -> io.end_of_file
 
 
   # create a read handler from a Sequence of bytes
   #
-  type.from_array_backed_u8(arr Sequence u8) i32 -> choice (Sequence u8) io.end_of_file error =>
+  type.from_array_backed_u8(arr Sequence u8) i64 -> choice (Sequence u8) io.end_of_file error =>
 
     # the current position in the array
     #
@@ -79,7 +79,7 @@ public Reader ref : effect is
   # create a read handler from data
   # where data may bytes or a String
   #
-  public type.from(data choice (Sequence u8) String) i32 -> choice (Sequence u8) io.end_of_file error =>
+  public type.from(data choice (Sequence u8) String) i64 -> choice (Sequence u8) io.end_of_file error =>
     match data
       bytes Sequence u8 => Reader.this.type.from_array_backed_u8 bytes.as_array_backed
       str String => Reader.this.type.from_array_backed_u8 str.utf8.as_array_backed
@@ -107,7 +107,7 @@ public Reader ref : effect is
 
   # discard n items from buffer
   #
-  public discard(n i32) unit
+  public discard(n i64) unit
     pre
       debug: n >= 0
   =>
@@ -123,7 +123,7 @@ public Reader ref : effect is
 
 # read n bytes using the currently installed byte reader effect
 #
-public read_bytes(n i32) outcome (Sequence u8) ! Reader
+public read_bytes(n i64) outcome (Sequence u8) ! Reader
   post debug: {
     match result
       error => true
@@ -161,11 +161,11 @@ public read_bytes(n i32) outcome (Sequence u8) ! Reader
 # read string, up to n codepoints or until end of file
 # requires `buffered.reader` effect to be installed.
 #
-public read_string(n i32) outcome String ! Reader
+public read_string(n i64) outcome String ! Reader
 pre debug: n >= 0
 =>
 
-  take_valid_codepoints(a Sequence u8, max i32) =>
+  take_valid_codepoints(a Sequence u8, max i64) =>
     v := String.from_bytes a
       .codepoints_and_errors
       .take_while (.ok)
@@ -173,7 +173,7 @@ pre debug: n >= 0
       .map String (.or_panic)
       .as_array
 
-    bytes_used := v.map (.as_string.byte_count) .fold i32.sum
+    bytes_used := v.map (.as_string.byte_count) .fold i64.sum
     Reader.env.discard bytes_used
     v
 
@@ -225,7 +225,7 @@ public read_delimiter (delim u8, strip_cr bool) switch String io.end_of_file ! R
                 res.add b
 
           match s.index_of delim
-            i i32 =>
+            i i64 =>
               add_to_res (s.slice 0 i)
               Reader.env.discard i+1
               false
@@ -252,7 +252,7 @@ public read_line switch String io.end_of_file ! Reader =>
 # like memory-mapped access.
 #
 public read_fully Sequence u8 ! Reader =>
-  read_bytes i32.max
+  read_bytes i64.max
     # NYI: UNDER DEVELOPMENT: error handling
     .or_panic
 

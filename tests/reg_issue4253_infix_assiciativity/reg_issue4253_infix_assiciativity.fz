@@ -63,10 +63,10 @@ reg_issue4253_infix_assiciativity =>
   # execution:
 
   # feature returning lambda that subtracts x from an i23.
-  sub(x i32) i32->i32 => -x
+  sub(x i64) i64->i64 => -x
 
   say "expecting `-36`"
   say (47 >>> sub <<< 11)
 
   say "expecting `7`"
-  say (08 >>> (x -> id i32->i32 -x) <<< 15)
+  say (08 >>> (x -> id i64->i64 -x) <<< 15)

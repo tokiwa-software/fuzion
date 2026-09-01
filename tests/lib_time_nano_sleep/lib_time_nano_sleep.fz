@@ -17,11 +17,18 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test Makefile
-#
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Source code of Fuzion test lib_time_nano_sleep
 #
 # -----------------------------------------------------------------------
 
-override NAME = stringtest
-include ../simple.mk
+# This tests checks that sleep does not silently break and does essentially nothing
+
+lib_time_nano_sleep =>
+
+  dur := time.duration.s 1
+
+  s := time.Nano.env.read
+  time.Nano.env.sleep dur
+  e := time.Nano.env.read
+
+  check e-s >= dur

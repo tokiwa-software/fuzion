@@ -3,7 +3,7 @@
 for i := 3, true do   # 1. should flag an error: incompatible types of actual arguments
 ----^
 For the formal argument 'loop.i' the following incompatible actual arguments where found for type inference:
-actual is value of type 'i32' at --CURDIR--/reg_issue7626.fz:24:10:
+actual is value of type 'i64' at --CURDIR--/reg_issue7626.fz:24:10:
 for i := 3, true do   # 1. should flag an error: incompatible types of actual arguments
 ---------^
 actual is value of type 'bool' at --CURDIR--/reg_issue7626.fz:24:13:

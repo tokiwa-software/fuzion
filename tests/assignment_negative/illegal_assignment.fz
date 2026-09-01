@@ -78,7 +78,7 @@ illegal_assignment is
   _ := ei.x
   _ := ei.xb
   _ := ei.xc
-  say "Calling redefed multiple from non-redefed static "
+  say "Calling redefed multiple from non-redefed static"
   set di := ei  # 6. should flag an error: illegal assignment
   _ := di.x
   _ := di.xb

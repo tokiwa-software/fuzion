@@ -1,15 +1,15 @@
 original test:
 tests using 0, 1 and 2 actual types passed to open type:
 []
-[Type of 'unit']
-[Type of 'unit', Type of 'i32']
+[unit]
+[unit, i32]
 
 ------
 
 tests using one plain type parameter and 0, 1 and 2 actual types passed to open type:
 []
-Type of 'bool' [Type of 'unit']
-Type of 'void' [Type of 'unit', Type of 'i32']
+bool [unit]
+void [unit, i32]
 
 ------
 

@@ -34,7 +34,7 @@ is
     # post
     #   debug: buf_size > 0
     #   debug: buf_size % os.page_size.as_i32 = 0
-  := io.buffer_size.as_i32
+  := io.buffer_size
 
 
   # circular buffer backing this writer
@@ -98,15 +98,15 @@ is
 
   # recursive helper for write_detailed
   #
-  write_detailed (data Sequence u8, written i32) write_result =>
+  write_detailed (data Sequence u8, written i64) write_result =>
     # still fits into buffer, no need to flush yet
-    if buffer.unused.as_i32 >= data.count
+    if buffer.unused >= data.count
       data.for_each b->
         res := buffer.add b
         check debug: res
       write_result written unit
     else
-      bfrd := buffer.count.as_i32
+      bfrd := buffer.count
       match flush
         e error => write_result written e
         unit =>
@@ -117,7 +117,7 @@ is
 
 # helper type for write result
 #
-private:public write_result(public bytes_written i32, public error outcome unit) is
+private:public write_result(public bytes_written i64, public error outcome unit) is
 
 
   # was writing successful?

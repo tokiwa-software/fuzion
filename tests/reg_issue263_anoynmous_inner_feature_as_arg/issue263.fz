@@ -26,7 +26,7 @@
 issue263 is
 
   say ([1,2,3].fold (
-    _ : Monoid i32 is
-      public redef infix ∙ (a, b i32) i32 => a*b
-      public redef e i32 => 1
+    _ : Monoid i64 is
+      public redef infix ∙ (a, b i64) i64 => a*b
+      public redef e i64 => 1
     ))

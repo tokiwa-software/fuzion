@@ -4,6 +4,10 @@
 -------^^^^^
 formal type parameter 'T : property.equatable'
 actual type parameter 'reg_issue3362.this.c'
+assignable to constraint: 'choice',
+                          'void',
+                          'reg_issue3362.this.c',
+                          'Any'
 
 
 --CURDIR--/reg_issue3362.fz:49:16: error 2: Incompatible type parameter
@@ -11,5 +15,9 @@ actual type parameter 'reg_issue3362.this.c'
 ---------------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 formal type parameter 'T : property.equatable'
 actual type parameter 'reg_issue3362.this.my_c'
+assignable to constraint: 'choice',
+                          'void',
+                          'reg_issue3362.this.my_c',
+                          'Any'
 
 2 errors.

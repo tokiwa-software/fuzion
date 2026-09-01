@@ -5,3 +5,13 @@ PASSED: {if...}
 PASSED: {if...}
 PASSED: nested {}
 PASSED: find(substring, from)
+hell😀hell😀hell😀
+true
+false
+true
+false
+true
+10
+[0, 1, 2]
+hell😀
+"abcd"

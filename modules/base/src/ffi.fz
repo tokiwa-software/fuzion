@@ -49,8 +49,8 @@ public ffi is
 
   # create an array from a Pointer and a length
   #
-  public from_native_array(T type, x Native_Ref, len i32) array T =>
-    array _ (fuzion.sys.internal_array T (native_array T x len) len) unit unit unit unit
+  public from_native_array(T type, x Native_Ref, len i64) array T =>
+    array _ (fuzion.sys.internal_array T (native_array T x len.as_i32) len.as_i32) unit unit unit unit
 
 
 native_string_length(x Native_Ref) i32 => intrinsic
