@@ -39,7 +39,7 @@ public error (
   #
   public error_code option i64
 
-  ) : property.equatable
+  ) : property.orderable
 
 is
 
@@ -55,10 +55,13 @@ is
       .or_else "error: $msg"
 
 
-  # equality
+  # compare two errors
   #
-  public fixed redef type.equality(x, y error) bool =>
-    x.msg = y.msg && x.error_code = y.error_code
+  public fixed redef type.lteq(x, y error) bool =>
+    if x.error_code = y.error_code
+      String.lteq x.msg y.msg
+    else
+      option i64 .lteq x.error_code y.error_code
 
 
 public error(msg String) error =>
