@@ -90,8 +90,8 @@ test_local_mutate is
       say (fuzion.runtime.pre_fault.try   neg_test3
                                    .catch caught_msg)
 
-      say (panic.try   neg_test4
-                .catch caught_msg)
+      say (fuzion.runtime.pre_fault.try   neg_test4
+                                   .catch caught_msg)
 
       neg_test4 =>
         s := m ! ()->count2
@@ -100,8 +100,8 @@ test_local_mutate is
           say s
         "** failed, did not panic **"
 
-      say (panic.try   neg_test5
-                .catch caught_msg)
+      say (fuzion.runtime.pre_fault.try   neg_test5
+                                   .catch caught_msg)
 
       neg_test5 =>
         q =>
