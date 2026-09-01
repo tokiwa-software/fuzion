@@ -3169,7 +3169,7 @@ PIPE        : "|"
     private Token iterateCodePoints(StringBuilder sb)
     {
       var t = Token.t_undefined;
-      var pos = startOfStringContent();
+      var pos = startOfStringContent(sb);
 
       var escaped = false;
       while (t == Token.t_undefined)
@@ -3319,7 +3319,7 @@ PIPE        : "|"
      * NYI: CLEANUP: don't set multiLineIndentation here... but in constructor
      * @return
      */
-    private Optional<Integer> startOfStringContent()
+    private Optional<Integer> startOfStringContent(StringBuilder sb)
     {
       var pos = _pos;
       if (atMultiLineStringDelimiter(getPos(pos) - 1) && _multiLineIndentation.isEmpty())
@@ -3333,9 +3333,14 @@ PIPE        : "|"
             {
               Errors.unterminatedString(sourcePos(), Lexer.this.sourcePos(_stringStart));
             }
-          if (lineNum(getPos(pos)) != lineNum(_stringStart) + 1)
+          if (lineNum(getPos(pos)) == lineNum(_stringStart))
             {
               Errors.expectedIndentedStringInFirstLineAfterFatQuotation(sourcePos(_stringStart), sourcePos(getPos(pos)));
+            }
+          var empty_lines = lineNum(getPos(pos)) - (lineNum(_stringStart) + 1);
+          if (sb != null && empty_lines > 0)
+            {
+              sb.append("\n".repeat(empty_lines));
             }
           _multiLineIndentation = Optional.of(column(pos));
         }
