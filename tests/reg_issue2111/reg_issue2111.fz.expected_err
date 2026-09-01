@@ -4,5 +4,9 @@
 --^^^^
 formal type parameter 'T : property.equatable'
 actual type parameter 'test.this.my_switch'
+assignable to constraint: 'choice',
+                          'void',
+                          'test.this.my_switch',
+                          'Any'
 
 one error.

@@ -4,5 +4,8 @@
 --^^
 formal type parameter 'F : scenario1.this.a F' with constraint 'scenario1.this.a scenario1.this.b'
 actual type parameter 'scenario1.this.b'
+assignable to constraint: 'scenario1.this.a bool',
+                          'scenario1.this.b',
+                          'Any'
 
 one error.

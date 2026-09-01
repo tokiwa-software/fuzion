@@ -26,4 +26,4 @@ created l3
 assigned to l3a
 *** using lazy l3 ***
 used l3 and assigned result to l3b
-using l3b: 32168 Type of 'i32'
+using l3b: 32168 i32

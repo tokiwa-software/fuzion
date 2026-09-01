@@ -253,14 +253,14 @@ run_scenario7 =>
   # Finally, we create instances from all the examples and call `a`, which calls `abs` for
   # all of them:
   #
-  x1 := scenario7.q .a; say (type_of x1)   # Type of 'q'
-  x2 := scenario7.r .a; say (type_of x2)   # Type of 'q'
-  x3 := scenario7.s .a; say (type_of x3)   # Type of 'q'
-  x4 := scenario7.t .a; say (type_of x4)   # Type of 'q'
-  x5 := scenario7.v1.a; say (type_of x5)   # Type of 'q2'  (inherited through p.W -> u1.A -> q2)
-  x6 := scenario7.v2.a; say (type_of x6)   # Type of 'q3'  (inherited through p.W -> u1.A -> q3)
-  x7 := scenario7.w1.a; say (type_of x7)   # Type of 'q3'  (inherited through p.W -> u2.B -> q3)
-  x8 := scenario7.w2.a; say (type_of x8)   # Type of 'q2'  (inherited through p.W -> u2.B -> q2)
+  x1 := scenario7.q .a; say (type_of x1)   # q
+  x2 := scenario7.r .a; say (type_of x2)   # q
+  x3 := scenario7.s .a; say (type_of x3)   # q
+  x4 := scenario7.t .a; say (type_of x4)   # q
+  x5 := scenario7.v1.a; say (type_of x5)   # q2  (inherited through p.W -> u1.A -> q2)
+  x6 := scenario7.v2.a; say (type_of x6)   # q3  (inherited through p.W -> u1.A -> q3)
+  x7 := scenario7.w1.a; say (type_of x7)   # q3  (inherited through p.W -> u2.B -> q3)
+  x8 := scenario7.w2.a; say (type_of x8)   # q2  (inherited through p.W -> u2.B -> q2)
 
 run_scenario7
 
