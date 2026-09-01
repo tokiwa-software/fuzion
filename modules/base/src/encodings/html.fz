@@ -123,14 +123,14 @@ public html is
     # map entity name (without the surrounding '&' and ';') to the byte
     # it encodes; nil if the entity is unknown
     #
-    decode_entity(e String) option u8 =>
-      if e = "amp"   then "&".val.as_u8
-      else if e = "lt"  then "<".val.as_u8
-      else if e = "gt"  then ">".val.as_u8
-      else if e = "quot" then "\"".val.as_u8
-      else if e = "#39"  then "'".val.as_u8
-      else if e = "#x2F" || e = "#x2f" then "/".val.as_u8
-      else if e = "nbsp" then " ".val.as_u8
+    decode_entity(e String) option codepoint =>
+      if e = "amp"   then "&"
+      else if e = "lt"  then "<"
+      else if e = "gt"  then ">"
+      else if e = "quot" then "\""
+      else if e = "nbsp" then " "
+      else if e.starts_with "#x" then e.substring 2 .parse_u32_hex.bind codepoint .as_option
+      else if e.starts_with "#"  then e.substring 1 .parse_u32    .bind codepoint .as_option
       else nil
 
     # decode recursively, accumulating the result byte sequence
@@ -147,8 +147,8 @@ public html is
             s := i + 1 + semi
             entity := String.from (bytes.slice (i+1) s)
             match decode_entity entity
-              nil   => dec (res ++ [bytes[i]]) i+1
-              b u8  => dec (res ++ [b]) (s+1)
+              nil         => dec (res ++ [bytes[i]]) i+1
+              c codepoint => dec (res ++ c.utf8) (s+1)
 
       else
         dec (res ++ [bytes[i]]) i+1
