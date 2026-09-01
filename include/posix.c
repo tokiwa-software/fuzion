@@ -1115,11 +1115,16 @@ void fzE_date_time(int32_t * result)
 int32_t fzE_file_write(void * file, void * buf, int32_t size)
 {
   errno = 0;
-  size_t result = fwrite(buf, 1, size, (FILE*)file);
+  ssize_t result;
+  do
+  {
+    result = write(fileno(file), buf, size);
+  }
+  while (result == -1 && errno == EINTR);
 
-  return result >= 0
-    ? (int32_t)result
-    : (errno == EAGAIN || errno == EWOULDBLOCK ? 0 : -1);
+  return errno == EAGAIN || errno == EWOULDBLOCK
+    ? 0
+    : result;
 }
 
 int32_t fzE_file_move(const char *oldpath, const char *newpath)
