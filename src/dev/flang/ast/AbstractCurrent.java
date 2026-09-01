@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import dev.flang.util.FuzionConstants;
 
 /**
  * AbstractCurrent is an expression that returns the current object
@@ -57,7 +58,8 @@ public abstract class AbstractCurrent extends Expr
   {
     if (PRECONDITIONS) require
       (t != null,
-       Types.resolved == null || !t.isVoid());
+       Types.resolved == null || !t.isVoid(),
+       t.isThisType() || t.feature().isUniverse());
 
     this._type = t;
   }
@@ -117,7 +119,12 @@ public abstract class AbstractCurrent extends Expr
   Expr resolveTypes(Resolution res, Context context)
   {
     var of = _type.feature();
-    return of == Types.f_ERROR || of == context.outerFeature()
+
+    // NYI: BUG: when code is moved current should be replaced already...
+    // if (CHECKS) check
+    //   (of == context.outerFeature() || context.outerFeature().baseName().equals(FuzionConstants.OPERATION_CALL));
+
+    return of == Types.f_ERROR || of == context.outerFeature() || !context.outerFeature().baseName().equals(FuzionConstants.OPERATION_CALL)
       ? this
       : This.thiz(res, pos(), context, of);
   }
