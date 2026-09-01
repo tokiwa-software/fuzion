@@ -275,22 +275,58 @@ public class Intrinsics extends ANY
           return Value.UNIT;
         });
 
+    put("mutate.new.atomic_access_supported",  (executor, innerClazz) -> args ->
+        {
+          var nc = executor.fuir().clazzOuterClazz(innerClazz);
+          var t = executor.fuir().clazzActualGeneric(nc, 0);
+          return new boolValue
+            (executor.fuir().clazzIsRef(t)                            ||
+             (t == executor.fuir().clazz(SpecialClazzes.c_i8  )) ||
+             (t == executor.fuir().clazz(SpecialClazzes.c_i16 )) ||
+             (t == executor.fuir().clazz(SpecialClazzes.c_i32 )) ||
+             (t == executor.fuir().clazz(SpecialClazzes.c_i64 )) ||
+             (t == executor.fuir().clazz(SpecialClazzes.c_u8  )) ||
+             (t == executor.fuir().clazz(SpecialClazzes.c_u16 )) ||
+             (t == executor.fuir().clazz(SpecialClazzes.c_u32 )) ||
+             (t == executor.fuir().clazz(SpecialClazzes.c_u64 )) ||
+             (t == executor.fuir().clazz(SpecialClazzes.c_f32 )) ||
+             (t == executor.fuir().clazz(SpecialClazzes.c_f64 )) ||
+             (t == executor.fuir().clazz(SpecialClazzes.c_bool)));
+        });
+
     put("mutate.new.compare_and_swap0",  (executor, innerClazz) -> args ->
         {
-          var a = executor.fuir().clazzOuterClazz(innerClazz);
-          var f = executor.fuir().lookupMutableValue(a);
+          var nc = executor.fuir().clazzOuterClazz(innerClazz);
+          var f = executor.fuir().lookupMutableValue(nc);
           var thiz      = args.get(0);
           var expected  = args.get(1);
           var new_value = args.get(2);
           synchronized (LOCK_FOR_ATOMIC)
             {
-              var res = Interpreter.getField(f, a, thiz, false); // NYI: HACK: We must clone this!
-              if (Interpreter.compareField(f, a, thiz, expected))
+              var res = Interpreter.getField(f, nc, thiz, false); // NYI: HACK: We must clone this!
+              if (Interpreter.compareField(f, nc, thiz, expected))
                 {
                   res = expected;   // NYI: HACK: workaround since res was not cloned
-                  Interpreter.setField(f, a, thiz, new_value);
+                  Interpreter.setField(f, nc, thiz, new_value);
                 }
               return res;
+            }
+        });
+    put("mutate.new.compare_and_set0",  (executor, innerClazz) -> args ->
+        {
+          var nc = executor.fuir().clazzOuterClazz(innerClazz);
+          var f = executor.fuir().lookupMutableValue(nc);
+          var thiz      = args.get(0);
+          var expected  = args.get(1);
+          var new_value = args.get(2);
+          synchronized (LOCK_FOR_ATOMIC)
+            {
+              if (Interpreter.compareField(f, nc, thiz, expected))
+                {
+                  Interpreter.setField(f, nc, thiz, new_value);
+                  return new boolValue(true);
+                }
+              return new boolValue(false);
             }
         });
 

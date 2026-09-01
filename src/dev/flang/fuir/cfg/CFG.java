@@ -216,7 +216,9 @@ public class CFG extends ANY
     put("concur.util.load_fence"          , (cfg, cl) -> { } );
     put("concur.util.store_fence"         , (cfg, cl) -> { } );
 
+    put("mutate.new.compare_and_set0"    , (cfg, cl) -> { } );
     put("mutate.new.compare_and_swap0"   , (cfg, cl) -> { } );
+    put("mutate.new.atomic_access_supported", (cfg, cl) -> { } );
     put("concur.atomic_mutate.read_fence", (cfg, cl) -> { } );
     put("concur.atomic_mutate.write_fence",(cfg, cl) -> { } );
 

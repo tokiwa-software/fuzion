@@ -228,11 +228,34 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(val, Expr.UNIT);
         });
 
-    put("mutate.new.compare_and_swap0",
+    put("mutate.new.atomic_access_supported",
         (jvm, si, cc, tvalue, args) ->
         {
-          var ac = jvm._fuir.clazzOuterClazz(cc);
-          var v = jvm._fuir.lookupMutableValue(ac);
+          var nc = jvm._fuir.clazzOuterClazz(cc);
+          var rc  = jvm._fuir.clazzActualGeneric(nc, 0);
+          var r =
+            jvm._fuir.clazzIsRef(rc) ||
+            jvm._fuir.clazzIs(rc, SpecialClazzes.c_i8  ) ||
+            jvm._fuir.clazzIs(rc, SpecialClazzes.c_i16 ) ||
+            jvm._fuir.clazzIs(rc, SpecialClazzes.c_i32 ) ||
+            jvm._fuir.clazzIs(rc, SpecialClazzes.c_i64 ) ||
+            jvm._fuir.clazzIs(rc, SpecialClazzes.c_u8  ) ||
+            jvm._fuir.clazzIs(rc, SpecialClazzes.c_u16 ) ||
+            jvm._fuir.clazzIs(rc, SpecialClazzes.c_u32 ) ||
+            jvm._fuir.clazzIs(rc, SpecialClazzes.c_u64 ) ||
+            jvm._fuir.clazzIs(rc, SpecialClazzes.c_f32 ) ||
+            jvm._fuir.clazzIs(rc, SpecialClazzes.c_f64 ) ||
+            jvm._fuir.clazzIs(rc, SpecialClazzes.c_bool) ||
+            jvm._fuir.clazzIsUnitType(rc);
+          return new Pair<>(Expr.iconst(r ? 1 : 0), Expr.UNIT);
+        });
+
+    put("mutate.new.compare_and_set0",
+        "mutate.new.compare_and_swap0",
+        (jvm, si, cc, tvalue, args) ->
+        {
+          var nc = jvm._fuir.clazzOuterClazz(cc);
+          var v = jvm._fuir.lookupMutableValue(nc);
           var rc  = jvm._fuir.clazzResultClazz(v);
           var tt = tvalue.type();
           var jt = jvm._types.resultType(rc);

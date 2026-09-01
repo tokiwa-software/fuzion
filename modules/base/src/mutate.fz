@@ -187,6 +187,8 @@ public mutate : linear_effect is
     # variables.
     #
     public get_racy T ! racy mutate.this
+    pre
+      atomic_access_supported
     =>
       racy mutate.this .env.register
 
@@ -251,6 +253,7 @@ public mutate : linear_effect is
       ! racy mutate.this
     pre
       safety: open
+      atomic_access_supported
     =>
       racy mutate.this .env.register
 
@@ -287,7 +290,17 @@ public mutate : linear_effect is
     # replace the value by with the `modified` value.
     #
     # Independently of whether the value was replaced, return the original value. I.e.,
-    # the value was replaced iff `result = e`.
+    # the value was replaced iff `result` is bitwise equal to `e`.
+    #
+    # Note that bitwise equality may differ from equality defined by
+    # `property.equatable.type.equality`. In particular, e.g., for `f64`, we have
+    # `0.0 = -0.0` while both values differ when compared bit by bit.
+    #
+    # For a reference type `T`, this operation will compare the internal representation
+    # of the reference value, not the referenced value. In particular, this means that
+    # references that are typically equals like `id String "Hello!"` and
+    # `id String "Hello" + "!"` may be represented by distinct `String` reference
+    # values.
     #
     # Check that the mutate effect this was created with is still
     # instated in the current environment.
@@ -312,19 +325,86 @@ public mutate : linear_effect is
       ) T
       ! mutate.this
     pre
-      T : property.equatable
+      T : property.equatable   # NYI: UNDER DEVELOPMENT: remove!
       safety: open
+      atomic_access_supported
     =>
       if supports_exclusive
         exclusive ()->
           check_and_replace
           old := val
-          if old = expected
+          if old = expected    # NYI: UNDER DEVELOPMENT: use bitwise comparison!
             put modified
           old
       else
-        # panic "NYI: $(mutate.this).new.compare_and_swap)"  # NYI: UNDER DEVELOPMENT
+        mutate.this.env.replace
         compare_and_swap0 expected modified
+
+
+    # compare the value of this mutable field with an `expected` value. If it is equal,
+    # replace the value by with the `modified` value.
+    #
+    # If the value was replaced, return true, otherwise return false,
+    #
+    # Note that bitwise equality may differ from equality defined by
+    # `property.equatable.type.equality`. In particular, e.g., for `f64`, we have
+    # `0.0 = -0.0` while both values differ when compared bit by bit.
+    #
+    # For a reference type `T`, this operation will compare the internal representation
+    # of the reference value, not the referenced value. In particular, this means that
+    # references that are typically equals like `id String "Hello!"` and
+    # `id String "Hello" + "!"` may be represented by distinct `String` reference
+    # values.
+    #
+    # Check that the mutate effect this was created with is still
+    # instated in the current environment.
+    #
+    # Different kinds of mutate will make different efforts for synchronizatiion:
+    #
+    #   - for a thread-local `mutate`, this can be used only by the thread that instated
+    #     the `mutate`, no synchronization will be performed.
+    #
+    #   - for a `concur.blocking_mutate`/`concur.blocking_mutate_using_clock`, this will
+    #     use `exclusive` to ensure atomicity
+    #
+    #   - for a `atomic_mutate`, this will use an atomic compare-and-set operation.
+    #
+    public compare_and_set  # NYI: Making this `fixed` results in an internal error that seems unjustified
+      (
+        # the expected value
+        expected T,
+
+        # the modified value to be stored
+        modified T
+      ) bool
+      ! mutate.this
+    pre
+      T : property.equatable   # NYI: UNDER DEVELOPMENT: remove!
+      safety: open
+      atomic_access_supported
+    =>
+      if supports_exclusive
+        exclusive ()->
+          check_and_replace
+          old := val
+          if old = expected    # NYI: UNDER DEVELOPMENT: use bitwise comparison!
+            put modified
+            true
+          else
+            false
+      else
+        mutate.this.env.replace
+        compare_and_set0 expected modified
+
+
+    # Does the current system permit racy accesses to the value of type T
+    # stored in this atomic?
+    #
+    # This is typically true for ref values and for small primitive types
+    # such as `i32`, `f64`, etc. while this is typically not the case for
+    # more complex types such as `point(x,y i64)`.
+    #
+    public atomic_access_supported bool => intrinsic
 
 
     # intrinsic to perform a bit-wise comparison of the value contained in this atomic
@@ -334,6 +414,14 @@ public mutate : linear_effect is
     # equal to `expected` or not.
     #
     compare_and_swap0(expected, new_value T) T => intrinsic
+
+
+    # intrinsic to perform a bit-wise comparison of the value contained in this atomic
+    # and `expected`.  In case both values are equal, replace this value with `new_value`.
+    #
+    # returns true, if successful
+    #
+    module compare_and_set0(expected, new_value T) bool => intrinsic
 
 
     # update mutable field using a function of the old value

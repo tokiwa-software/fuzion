@@ -1856,25 +1856,6 @@ public class DFA extends ANY
           return res;
         });
 
-    put("mutate.new.compare_and_swap0",  cl ->
-        {
-          var v = fuir(cl).lookupMutableValue(fuir(cl).clazzOuterClazz(cl.calledClazz()));
-
-          if (CHECKS) check
-            (fuir(cl).clazzNeedsCode(v));
-
-          var mutable   = cl.target();
-          var expected  = cl._args.get(0);
-          var new_value = cl._args.get(1).value();
-          var res = mutable.callField(cl._dfa, v, cl.site(), cl);
-
-          cl._dfa.markReadRecursively(v);
-
-          // NYI: we could make compare_and_swap more accurate and call setField only if res contains expected, need bit-wise comparison
-          mutable.setField(cl._dfa, v, new_value);
-          return res;
-        });
-
     put("concur.atomic.compare_and_set0",  cl ->
         {
           var v = fuir(cl).lookupAtomicValue(fuir(cl).clazzOuterClazz(cl.calledClazz()));
@@ -1922,6 +1903,50 @@ public class DFA extends ANY
           var new_value = cl._args.get(0).value();
           atomic.setField(cl._dfa, v, new_value);
           return Value.UNIT;
+        });
+
+    put("mutate.new.atomic_access_supported",  cl ->
+        {
+          // NYI: atomic_access_supported could return true or false depending on the backend's behavior.
+          return cl._dfa.bool();
+        });
+
+    put("mutate.new.compare_and_set0",  cl ->
+        {
+          var v = fuir(cl).lookupMutableValue(fuir(cl).clazzOuterClazz(cl.calledClazz()));
+
+          if (CHECKS) check
+            (fuir(cl).clazzNeedsCode(v));
+
+          var atomic    = cl.target();
+          var expected  = cl._args.get(0);
+          var new_value = cl._args.get(1).value();
+          var ignore = atomic.callField(cl._dfa, v, cl.site(), cl);
+
+          cl._dfa.markReadRecursively(v);
+
+          // NYI: we could make compare_and_set more accurate and call setField only if res contains expected, need bit-wise comparison
+          atomic.setField(cl._dfa, v, new_value);
+          return cl._dfa.bool();
+        });
+
+    put("mutate.new.compare_and_swap0",  cl ->
+        {
+          var v = fuir(cl).lookupMutableValue(fuir(cl).clazzOuterClazz(cl.calledClazz()));
+
+          if (CHECKS) check
+            (fuir(cl).clazzNeedsCode(v));
+
+          var mutable   = cl.target();
+          var expected  = cl._args.get(0);
+          var new_value = cl._args.get(1).value();
+          var res = mutable.callField(cl._dfa, v, cl.site(), cl);
+
+          cl._dfa.markReadRecursively(v);
+
+          // NYI: we could make compare_and_swap more accurate and call setField only if res contains expected, need bit-wise comparison
+          mutable.setField(cl._dfa, v, new_value);
+          return res;
         });
 
     put("concur.atomic_mutate.read_fence",  cl ->
