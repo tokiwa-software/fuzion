@@ -52,4 +52,25 @@ stringstest is
 
   chck ("abcdefabcdefabcdef".find "abcdef" 11 = 12) "find(substring, from)"
 
+  say ("hell😀" * 3)
+
+  say "".is_empty
+  say "notEmpty".is_empty
+
+  say ("hell😀"="hell😀")
+  say ("hell😀"="again")
+
+
+  match "13".parse_integer i32 10
+    n i32 => say n=13
+    error => say "FAIL"
+
+  say 10
+  say [0,1,2]
+
+  say (String.from "hell😀".codepoints)
+
+  say "abcd".quoted
+
+
   Exit.env.exit
