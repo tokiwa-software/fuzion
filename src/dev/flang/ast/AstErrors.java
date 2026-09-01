@@ -1930,16 +1930,32 @@ public class AstErrors extends ANY
           "Declared at " + cf.pos().show());
   }
 
-  static void incompatibleActualGeneric(SourcePosition pos, AbstractFeature f, AbstractType constraint, AbstractType g)
+  static void incompatibleActualGeneric(SourcePosition pos,
+                                        AbstractFeature f,
+                                        AbstractType constraint,
+                                        AbstractType g,
+                                        Set<AbstractType> assignableTo)
   {
-    if (g != Types.t_UNDEFINED || !any())
+    var errorOrUndefinedFound = g.containsUndefined();
+    var assignableToSB = new StringBuilder();
+    for (var ts : assignableTo)
+      {
+        errorOrUndefinedFound |= ts.containsUndefined();
+        assignableToSB
+          .append(assignableToSB.length() == 0
+                  ?    "assignable to constraint: "
+                  : ",\n                          ")
+          .append(st(ts.toString(true)));
+      }
+    if (!any() || !errorOrUndefinedFound)
       {
         error(pos,
               "Incompatible type parameter",
               "formal type parameter " + sc(f)
                 + (f.constraint().compareTo(constraint)==0 ? "" : " with constraint " + s(constraint))
                 + "\n" +
-              "actual type parameter " + s(g) + "\n");
+              "actual type parameter " + s(g) + "\n" +
+              assignableToSB + (assignableToSB.length() > 0 ? "\n" : ""));
       }
   }
 
