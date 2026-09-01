@@ -17,19 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test reg_issue6921
+#  Source code of Fuzion test Makefile
 #
 # -----------------------------------------------------------------------
 
-a(T type) is
-  b T => abstract
-  type.new(F type: i32->T, f F) a T=> a T
-  public transpose a T => (a T).new _ i->b
-
-a1 : a i32 is
-  redef b => 42
-a2 : a String is
-  redef b => "fuzion"
-
-a1 .transpose |> type_of |> say
-a2 .transpose |> type_of |> say
+override NAME = reg_issue7415
+include ../simple.mk
