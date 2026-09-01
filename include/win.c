@@ -859,7 +859,7 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
 
   SECURITY_ATTRIBUTES saAttr = {
       .nLength = sizeof(SECURITY_ATTRIBUTES),
-      .bInheritHandle = FALSE,
+      .bInheritHandle = TRUE,
       .lpSecurityDescriptor = NULL
   };
 
@@ -928,7 +928,7 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
     args_w,
     NULL,
     NULL,
-    TRUE,
+    FALSE,
     EXTENDED_STARTUPINFO_PRESENT | CREATE_UNICODE_ENVIRONMENT,
     envBlock,
     NULL,
