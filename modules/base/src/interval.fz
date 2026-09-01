@@ -174,8 +174,8 @@ is
   # `e` must lie within the bounds and be reachable from `from` by whole
   #
   public redef contains(e T) bool =>
-    if      step.sign > 0 then from <= e <= through.or_else e && (e %  step = from %  step)
-    else if step.sign < 0 then from >= e >= through.or_else e && (e % -step = from % -step)
+    if      step.sign > 0 then from <= e <= through.or_else e && (e - from) %  step = T.zero
+    else if step.sign < 0 then from >= e >= through.or_else e && (e - from) % -step = T.zero
     else                       from =  e
 
 
