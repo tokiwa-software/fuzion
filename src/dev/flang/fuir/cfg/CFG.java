@@ -216,6 +216,10 @@ public class CFG extends ANY
     put("concur.util.load_fence"          , (cfg, cl) -> { } );
     put("concur.util.store_fence"         , (cfg, cl) -> { } );
 
+    put("mutate.new.compare_and_swap0"   , (cfg, cl) -> { } );
+    put("concur.atomic_mutate.read_fence", (cfg, cl) -> { } );
+    put("concur.atomic_mutate.write_fence",(cfg, cl) -> { } );
+
     put("safety"                         , (cfg, cl) -> { } );
     put("debug"                          , (cfg, cl) -> { } );
     put("debug_level"                    , (cfg, cl) -> { } );
