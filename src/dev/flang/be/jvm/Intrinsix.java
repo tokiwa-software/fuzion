@@ -280,6 +280,14 @@ public class Intrinsix extends ANY implements ClassFileConstants
           return new Pair<>(val, Expr.UNIT);
         });
 
+    put("concur.atomic_mutate.read_fence",
+        "concur.atomic_mutate.write_fence",
+        (jvm, si, cc, tvalue, args) ->
+        {
+          return new Pair<>(Expr.UNIT,
+                            locked(Expr.UNIT));
+        });
+
     put("debug",
         (jvm, si, cc, tvalue, args) ->
         {
