@@ -4,6 +4,8 @@
 ------------------^
 formal type parameter 'E : property.equatable'
 actual type parameter 'issue309.this.a'
+assignable to constraint: 'issue309.this.a',
+                          'Any'
 
 
 --CURDIR--/issue309.fz:31:27: error 2: Incompatible type parameter
@@ -11,6 +13,8 @@ actual type parameter 'issue309.this.a'
 --------------------------^
 formal type parameter 'E : property.equatable'
 actual type parameter 'T'
+assignable to constraint: 'T',
+                          'Any'
 
 
 --CURDIR--/issue309.fz:34:7: error 3: Incompatible type parameter
@@ -18,5 +22,7 @@ actual type parameter 'T'
 ------^
 formal type parameter 'T : property.equatable'
 actual type parameter 'issue309.this.a'
+assignable to constraint: 'issue309.this.a',
+                          'Any'
 
 3 errors.

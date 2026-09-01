@@ -1,0 +1,93 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue7415
+#
+# -----------------------------------------------------------------------
+
+# This tests type propagate from actual type parameter of outer feature to an inferred lambda type
+#
+reg_issue7415 =>
+
+  # ----------------------------------------------------------------------
+
+  # the original example fro #7415
+
+  x(T type) is
+    y(f T->T) =>
+    z(F type : T->T, f F) =>
+
+  x i64 .y +3   # works
+  x i64 .z +3   # fails
+
+  # ----------------------------------------------------------------------
+
+  # more and more complex tests using several outer features, several args and different
+  # kinds of partial application or lambdas:
+
+  v(S type : property.hashable,
+    s S)
+  is
+
+    x(T type : property.orderable,
+      t T)
+    is
+
+      # standard unary function argument
+      p(f T->T)
+      =>
+        f t |> say
+
+      # unary function argument that specializes feature
+      q(F type : T->T, f F)
+      =>
+        f t |> say
+
+      # standard binary function argument
+      r(f (S,T)->S)
+      =>
+        f s t |> say
+
+      # binary function argument that specializes feature
+      s(F type : (S,T)->S, f F)
+      =>
+        f s t |> say
+
+  v String "test" .x i64 67 .p +3
+  v String "test" .x i64 67 .p x->x+3
+  v String "test" .x i64 67 .p _->3
+
+  v String "test" .x i64 67 .q +3
+  v String "test" .x i64 67 .q x->x+3
+  v String "test" .x i64 67 .q _->3
+
+  v String "test" .x i64 67 .r s,i->"42"
+  v String "test" .x i64 67 .r (+)
+  v String "test" .x i64 67 .r s,i->s+3
+  v String "test" .x i64 67 .r _,_->"A"
+  v String "test" .x i64 67 .r s,_->s+s
+  v String "test" .x i64 67 .r _,i->"$i$i"
+
+  v String "test" .x i64 67 .s s,i->"42"
+  v String "test" .x i64 67 .s (+)
+  v String "test" .x i64 67 .s (String,i64)->String (+)
+  v String "test" .x i64 67 .s s,i->s+3
+  v String "test" .x i64 67 .s _,_->"A"
+  v String "test" .x i64 67 .s s,_->s+s
+  v String "test" .x i64 67 .s _,i->"$i$i"

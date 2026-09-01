@@ -40,6 +40,8 @@ To solve this, you could change the type of the target 'v' to 'compile_time_type
 --^^
 formal type parameter 'T : compile_time_type_casts_negative.this.A'
 actual type parameter 'compile_time_type_casts_negative.this.B'
+assignable to constraint: 'Any',
+                          'compile_time_type_casts_negative.this.B'
 
 
 --CURDIR--/compile_time_type_casts_negative.fz:108:3: error 5: Incompatible type parameter
@@ -47,6 +49,8 @@ actual type parameter 'compile_time_type_casts_negative.this.B'
 --^^
 formal type parameter 'T : compile_time_type_casts_negative.this.A'
 actual type parameter 'compile_time_type_casts_negative.this.C'
+assignable to constraint: 'Any',
+                          'compile_time_type_casts_negative.this.C'
 
 
 --CURDIR--/compile_time_type_casts_negative.fz:109:3: error 6: Incompatible type parameter
@@ -54,6 +58,10 @@ actual type parameter 'compile_time_type_casts_negative.this.C'
 --^^
 formal type parameter 'T : compile_time_type_casts_negative.this.A'
 actual type parameter 'compile_time_type_casts_negative.this.bc'
+assignable to constraint: 'compile_time_type_casts_negative.this.bc',
+                          'Any',
+                          'compile_time_type_casts_negative.this.B',
+                          'compile_time_type_casts_negative.this.C'
 
 
 --CURDIR--/compile_time_type_casts_negative.fz:67:12: error 7: Incompatible types when passing argument in a call
@@ -157,5 +165,7 @@ To solve this, you could change the type of the target 'v' to 'T' or convert the
 ------------------^^
 formal type parameter 'T : compile_time_type_casts_negative.this.A'
 actual type parameter 'U'
+assignable to constraint: 'U',
+                          'Any'
 
 15 errors.
