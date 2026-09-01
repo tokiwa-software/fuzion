@@ -135,7 +135,7 @@ public html is
 
     # decode recursively, accumulating the result byte sequence
     #
-    dec(res Sequence u8, i i32) Sequence u8 =>
+    dec(res Sequence u8, i i64) Sequence u8 =>
       if i >= bytes.count
         res
       else if bytes[i] = "&".val.as_u8
@@ -143,7 +143,7 @@ public html is
         match (bytes.drop (i+1)).index_of ";".val.as_u8
           nil =>
             dec (res ++ [bytes[i]]) i+1
-          semi i32 =>
+          semi i64 =>
             s := i + 1 + semi
             entity := String.from (bytes.slice (i+1) s)
             match decode_entity entity
