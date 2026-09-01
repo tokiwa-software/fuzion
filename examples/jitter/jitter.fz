@@ -28,7 +28,7 @@
 # See Makefile for how to start fuzion to run this example.
 #
 # NYI: UNDER DEVELOPMENT: Currently, this supports only one single test using
-# `time.nano.run_periodic`.  Once we have support for periodic tasks run by dedicated
+# `time.Nano.run_periodic`.  Once we have support for periodic tasks run by dedicated
 # threads, we should add jitter tests for those.
 #
 jitter =>
@@ -78,7 +78,7 @@ jitter =>
               TIMER type : time.Clock)
   =>
 
-    # type used to identify exception to stop in case jitter is too high
+    # type used to identify flow.exception to stop in case jitter is too high
     #
     jitter_too_high is
 
@@ -90,7 +90,7 @@ jitter =>
         s := i, s +° i
       while i < 1000
       else
-        if s = s +° 1   # make sure the compiler does not optimize this aways
+        if s = s +° 1   # make sure the compiler does not optimize this away
           say "$s (never called)"
 
     # perform jitter test for given period
@@ -98,22 +98,21 @@ jitter =>
     run_for_period(period time.duration)
     =>
 
-      start := C.clock.read + start_delay
+      start := C.env.read + start_delay
       end := start + test_duration
-      yak "testing period $period for $test_duration..."
+      say "testing period $period for $test_duration..."
 
       # time for next release used by state effect
       next_release(t time.instant) is
 
-      # NYI: BUG: #5634: use `infix !` in this example once #5634 is fixed
-      state _ _ (next_release start) ()->
+      state (next_release start) ! ()->
 
         # record jitter using linear and log histograms
         h  := time.histogram.new "period jitter $period, log count / linear time" period period*2 1 0
         h2 := time.histogram.new "cycle jitter $period, log count / log time"     nil    nil      1 0
 
         # run test
-        _ := C.clock.run_periodic start period end run_one_release
+        C.env.run_periodic start period end run_one_release
 
         # output results
         say terminal.clear_line
@@ -125,30 +124,29 @@ jitter =>
 
         # run one single release: record the actual release and run the payload
         #
-        # in case of a late release or a overrun into the next release time, cause `exception jitter_too_high`
+        # in case of a late release or a overrun into the next release time, cause `flow.exception jitter_too_high`
         #
-        run_one_release ! exception jitter_too_high =>
-          actual_release := TIMER.clock.read
+        run_one_release ! flow.exception jitter_too_high =>
+          actual_release := TIMER.env.read
           h .add_instant actual_release
           h2.add_instant actual_release
           expected_rel := state_get next_release .t
           next_rel     := state_modify next_release (x -> next_release x.t+period) .get.t
           if actual_release >= next_rel
-            (exception jitter_too_high).env.cause <| error "release time jitter exceeded period"
+            (flow.exception jitter_too_high).env.cause <| error "release time jitter exceeded period"
 
           payload
-          actual_finish := TIMER.clock.read
+          actual_finish := TIMER.env.read
           if actual_finish >= next_rel
-            e := error "*** overrun: run started at {actual_release-expected_rel}  and took {actual_finish-actual_release}, which is larger than period $period"
-            (exception jitter_too_high).env.cause e
+            e := error "*** overrun: run started at $(actual_release-expected_rel) and took $(actual_finish-actual_release), which is larger than period $period"
+            (flow.exception jitter_too_high).env.cause e
 
-    match exception jitter_too_high .on ()->
+    match flow.exception jitter_too_high .on ()->
 
-         for p := period_default, p.times 0.5 do
+         for p := period_default, p.scale 0.5 do
            run_for_period p
 
       e error => say $e
       void    => # will not happen
 
-  time.nano ! ()->
-    test_jitter time.nano time.nano
+  test_jitter time.Nano time.Nano

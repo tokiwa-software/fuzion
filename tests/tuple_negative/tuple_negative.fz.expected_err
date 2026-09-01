@@ -24,7 +24,7 @@ To solve this, consider renaming one of these two features, e.g., as 't12f1ʼ' (
 --^^^^^
 Feature that was declared repeatedly: 'tuple_negative.t15a1'
 originally declared at --CURDIR--/tuple_negative.fz:183:3:
-  t15a1 i32 := 42;
+  t15a1 i64 := 42;
 --^^^^^
 To solve this, consider renaming one of these two features, e.g., as 't15a1ʼ' (using a unicode modifier letter apostrophe 'ʼ' U+02BC) or adding an additional argument (e.g. '_ unit' for an ignored unit argument used only to disambiguate these two).
 
@@ -44,39 +44,39 @@ To solve this, consider renaming one of these two features, e.g., as 't15a2ʼ' (
 ------^^^^^
 Feature that was declared repeatedly: 'tuple_negative.t15a3'
 originally declared at --CURDIR--/tuple_negative.fz:184:3:
-  t15a3 i32 := 42;
+  t15a3 i64 := 42;
 --^^^^^
 To solve this, consider renaming one of these two features, e.g., as 't15a3ʼ' (using a unicode modifier letter apostrophe 'ʼ' U+02BC) or adding an additional argument (e.g. '_ unit' for an ignored unit argument used only to disambiguate these two).
 
 
---CURDIR--/tuple_negative.fz:72:60: error 6: Use of selector requires call to either a feature whose type is an open type parameter or a feature with an inner feature whose type is an open type parameter
-  one9           :=          (42); p "one9 is {one9.values.0}" #  8. should flag an error, (expr) is not a tuple, one9 is an i32
------------------------------------------------------------^
+--CURDIR--/tuple_negative.fz:72:61: error 6: Use of selector requires call to either a feature whose type is an open type parameter or a feature with an inner feature whose type is an open type parameter
+  one9           :=          (42); p "one9 is $(one9.values.0)" #  8. should flag an error, (expr) is not a tuple, one9 is an i64
+------------------------------------------------------------^
 Selected variant: '0'
-Type of called feature: 'i32'
+Type of called feature: 'i64'
 
 
 --CURDIR--/tuple_negative.fz:102:13: error 7: Type inference from actual arguments failed since no actual call was found
-  t10 (i32, bool) => (3, false) # 15. should flag an error, no syntactic sugar for tuple types
+  t10 (i64, bool) => (3, false) # 15. should flag an error, no syntactic sugar for tuple types
 ------------^^^^
 For the formal argument 'tuple_negative.t10.bool' the type can only be derived if there is a call to 'tuple_negative.t10'.
 
 
 --CURDIR--/tuple_negative.fz:102:8: error 8: Type inference from actual arguments failed since no actual call was found
-  t10 (i32, bool) => (3, false) # 15. should flag an error, no syntactic sugar for tuple types
+  t10 (i64, bool) => (3, false) # 15. should flag an error, no syntactic sugar for tuple types
 -------^^^
-For the formal argument 'tuple_negative.t10.i32' the type can only be derived if there is a call to 'tuple_negative.t10'.
+For the formal argument 'tuple_negative.t10.i64' the type can only be derived if there is a call to 'tuple_negative.t10'.
 
 
 --CURDIR--/tuple_negative.fz:69:3: error 9: Incompatible types in assignment
-  one3 tuple i32 :=           (42); p "one3 is {one3.values.0}" #  4. should flag an error, (expr) is not a tuple
+  one3 tuple i64 :=           (42); p "one3 is $(one3.values.0)" #  4. should flag an error, (expr) is not a tuple
 --^^^^
 assignment to field : 'tuple_negative.one3'
-expected formal type: 'tuple i32'
-actual type found   : 'i32'
-assignable to       : 'i32'
+expected formal type: 'tuple i64'
+actual type found   : 'i64'
+assignable to       : 'i64'
 for value assigned  : '(42)'
-To solve this, you could change the type of the target 'tuple_negative.one3' to 'i32' or convert the type of the assigned value to 'tuple i32'.
+To solve this, you could change the type of the target 'tuple_negative.one3' to 'i64' or convert the type of the assigned value to 'tuple i64'.
 
 
 --CURDIR--/tuple_negative.fz:70:3: error 10: Incompatible types in assignment
@@ -84,12 +84,12 @@ To solve this, you could change the type of the target 'tuple_negative.one3' to 
 --^^^^
 assignment to field : 'tuple_negative.one5'
 expected formal type: 'tuple'
-actual type found   : 'tuple i32'
-assignable to       : 'tuple i32'
+actual type found   : 'tuple i64'
+assignable to       : 'tuple i64'
 for value assigned  : 'tuple     42'
 To solve this you could:
   • make  'tuple' a reference by adding the 'ref' keyword, so all its heirs can be used in place of it,
-  • change the type of the target 'tuple_negative.one5' to 'tuple i32', or
+  • change the type of the target 'tuple_negative.one5' to 'tuple i64', or
   • convert the type of the assigned value to 'tuple'.
 
 
@@ -98,10 +98,10 @@ To solve this you could:
 --^^^^
 assignment to field : 'tuple_negative.one6'
 expected formal type: 'tuple'
-actual type found   : 'i32'
-assignable to       : 'i32'
+actual type found   : 'i64'
+assignable to       : 'i64'
 for value assigned  : '(42)'
-To solve this, you could change the type of the target 'tuple_negative.one6' to 'i32' or convert the type of the assigned value to 'tuple'.
+To solve this, you could change the type of the target 'tuple_negative.one6' to 'i64' or convert the type of the assigned value to 'tuple'.
 
 
 --CURDIR--/tuple_negative.fz:82:3: error 12: Incompatible types in assignment
@@ -109,12 +109,12 @@ To solve this, you could change the type of the target 'tuple_negative.one6' to 
 --^^^^
 assignment to field : 'tuple_negative.two5'
 expected formal type: 'tuple'
-actual type found   : 'tuple i32 i32'
-assignable to       : 'tuple i32 i32'
+actual type found   : 'tuple i64 i64'
+assignable to       : 'tuple i64 i64'
 for value assigned  : 'tuple         4  2'
 To solve this you could:
   • make  'tuple' a reference by adding the 'ref' keyword, so all its heirs can be used in place of it,
-  • change the type of the target 'tuple_negative.two5' to 'tuple i32 i32', or
+  • change the type of the target 'tuple_negative.two5' to 'tuple i64 i64', or
   • convert the type of the assigned value to 'tuple'.
 
 
@@ -123,12 +123,12 @@ To solve this you could:
 --^^^^
 assignment to field : 'tuple_negative.two6'
 expected formal type: 'tuple'
-actual type found   : 'tuple i32 i32'
-assignable to       : 'tuple i32 i32'
+actual type found   : 'tuple i64 i64'
+assignable to       : 'tuple i64 i64'
 for value assigned  : '(4, 2)'
 To solve this you could:
   • make  'tuple' a reference by adding the 'ref' keyword, so all its heirs can be used in place of it,
-  • change the type of the target 'tuple_negative.two6' to 'tuple i32 i32', or
+  • change the type of the target 'tuple_negative.two6' to 'tuple i64 i64', or
   • convert the type of the assigned value to 'tuple'.
 
 13 errors.

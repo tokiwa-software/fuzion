@@ -28,11 +28,11 @@ process_utf8 =>
 
 
   # create string of given byte size
-  get_str(byte_size i32) =>
+  get_str(byte_size i64) =>
     _ : String is
       public redef utf8 Sequence u8 =>
         (1..byte_size)
-          .map u8 (x -> codepoint.type.zero_char)
+          .map u8 (x -> "0".as_u8)
 
 
   test(str String, f () -> outcome unit) =>
@@ -43,34 +43,31 @@ process_utf8 =>
 
   test "unicode argument" ()->
     (os.process.start "echo" ["👋🌏️‼️"]).bind p->
-      _ := lm ! ()->
+      lm ! ()->
         _ := p.with_out unit lm ()->
-          say ((io.buffered lm).read_string 1E9).val
-      check p.wait.val=0
+          say ((io.buffered lm).read_string 1E9).or_panic
+      check p.wait.or_panic=0
 
   test "unicode environment variable 1" ()->
     (os.process.start "printenv" ["TESTVAR"] (container.ordered_map ["TESTVAR"] ["👨‍💻☯️"])).bind p->
-      _ := lm ! ()->
+      lm ! ()->
         _ := p.with_out unit lm ()->
-          say ((io.buffered lm).read_string 1E9).val
-      check p.wait.val=0
+          say ((io.buffered lm).read_string 1E9).or_panic
+      check p.wait.or_panic=0
 
-    /* NYI: BUG: #5095 this should trigger failing precondition
   test "unicode environment variable 2" ()->
     (fuzion.runtime.pre_fault.try ()->
       (os.process.start "printenv" ["äöü"] (container.ordered_map ["äöü"] ["👨‍💻☯️"])).bind p->
-        _ := lm ! ()->
+        lm ! ()->
           _ := p.with_out unit lm ()->
-            say ((io.buffered lm).read_string 1E9).val
-        check p.wait.val=0)
+            say ((io.buffered lm).read_string 1E9).or_panic
+        check p.wait.or_panic=0)
       .catch msg->
         say msg
-    */
-
   test "unicode in executable name" ()->
     # on windows PATH needs to be set, because exe needs to load some dll
-    (os.process.start "./😀" [] (container.ordered_map ["PATH"] [envir.vars["PATH"].val])).bind p->
-      _ := lm ! ()->
+    (os.process.start "./😀" [] (container.ordered_map ["PATH"] [envir.Vars.env["PATH"].or_panic])).bind p->
+      lm ! ()->
         _ := p.with_out unit lm ()->
-          say ((io.buffered lm).read_string 1E9).val
-      check p.wait.val=0
+          say ((io.buffered lm).read_string 1E9).or_panic
+      check p.wait.or_panic=0

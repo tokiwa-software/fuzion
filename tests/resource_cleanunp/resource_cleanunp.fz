@@ -27,7 +27,7 @@ resource_cleanunp =>
 
   # effect that maintains a Sequence of opened resources and
   # provides a operations to open a new resource and return
-  # a status including the resouce count
+  # a status including the resource count
   #
   e(# effect state: opened resources
     opened Sequence String,
@@ -37,6 +37,8 @@ resource_cleanunp =>
     )
     : effect
   is
+
+    public redef abortable bool => true
 
     open(s String) =>
       say "open: $s"
@@ -48,7 +50,7 @@ resource_cleanunp =>
 
     fixed stop => e.type.abort (e opened "stopped")
 
-    status => "$state: {opened.count} opened"
+    status => "$state: $(opened.count) opened"
 
   # create new empty `e`
   #
@@ -57,7 +59,7 @@ resource_cleanunp =>
   # default operation used to produce result in case of stop
   def(v e) =>
     say "run default"
-    "got interrupted! {v.status}"
+    "got interrupted! $(v.status)"
 
 
   # -----------------------------------------------------------------------
@@ -68,7 +70,7 @@ resource_cleanunp =>
     e.env.open "A"
     e.env.open "B"
     e.env.open "C"
-    "finished normally, {e.env.status}"
+    "finished normally, $(e.env.status)"
 
   say "--------------------------- open / close / finish normal"
   say <| e.instate String e test1 def
@@ -91,19 +93,19 @@ resource_cleanunp =>
 
   # -----------------------------------------------------------------------
 
-  # now, open two resouces P, Q and then throw `exc`
+  # now, open two resources P, Q and then throw `exc`
 
-  # our exception
+  # our flow.exception
   exc is
 
   test3 =>
     e.env.open "P"
     e.env.open "Q"
     say "throw!"
-    (exception exc).env.cause (error "throw!")
+    (flow.exception exc).env.cause (error "throw!")
 
   say "--------------------------- open / throw / close / error"
-  say <| exception exc unit ()->
+  say <| flow.exception exc unit ()->
     r := e.instate String e test3 def
     say "*** unreachable *** $r"
 
@@ -117,7 +119,7 @@ resource_cleanunp =>
     e.env.open "J"
     say (e.instate String e test1 def)
     e.env.open "K"
-    "finished normally, {e.env.status}"
+    "finished normally, $(e.env.status)"
 
   say "--------------------------- open I J / open A B C / close C B A / open K / close K J I / finish normal"
   say <| e.instate String e test4 def
@@ -132,10 +134,10 @@ resource_cleanunp =>
     e.env.open "M"
     say (e.instate String e test3 def)
     e.env.open "N"
-    "finished normally, {e.env.status}"
+    "finished normally, $(e.env.status)"
 
   say "--------------------------- open L M / open P Q / throw / close Q P / close M L / error"
 
-  say <| exception exc unit ()->
+  say <| flow.exception exc unit ()->
     r := e.instate String e test5 def
     say "*** unreachable *** $r"

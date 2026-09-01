@@ -142,11 +142,11 @@ public class FormalGenerics extends ANY
     var result = sizeMatches(actualGenerics) || actualGenerics.contains(Types.t_ERROR);
     if (!result)
       {
-        AstErrors.wrongNumberOfGenericArguments(this,
-                                                actualGenerics,
-                                                pos,
-                                                detail1,
-                                                detail2);
+        AstErrors.wrongNumberOfTypeArguments(this,
+                                             actualGenerics,
+                                             pos,
+                                             detail1,
+                                             detail2);
       }
     return result;
   }
@@ -181,7 +181,7 @@ public class FormalGenerics extends ANY
   {
     return !isOpen() && _feature.typeArguments().isEmpty()
       ? ""
-      : _feature.typeArguments().map2(f -> f.featureName().baseNameHuman()) + (isOpen() ? "..." : "");
+      : _feature.typeArguments().map2(f -> f.baseNameHuman()) + (isOpen() ? "..." : "");
   }
 
 }

@@ -30,7 +30,12 @@ public Webserver(/*NYI: UNDER DEVELOPMENT: custom thread pool TP type : concur.t
   public shutdown unit =>
     is_running.write false
 
-  _ := concur.threads.spawn ()->
+  # NYI: UNDER DEVELOPMENT:
+    # ws_thread.join.or_panic
+  # ws_thread := concur.Threads.env.spawn ()->
+
+
+  _ := concur.Threads.env.spawn ()->
 
     # start a thread pool
     # NYI: UNDER DEVELOPMENT: thread_pool size should be determined programmatically
@@ -46,34 +51,32 @@ public Webserver(/*NYI: UNDER DEVELOPMENT: custom thread pool TP type : concur.t
           while is_running.read do
             accept_res := net.server.env.accept.bind unit conn->
 
-              lm : mutate is
-
-              _ := conn.in_thread_pool unit concur.thread_pool lm lm ()->
+              _ := conn.in_thread_pool unit concur.thread_pool mutate ()->
 
                 # compute response
                 #
-                response := h.call (http.read_request lm).get
+                response := h.call (http.read_request mutate).or_panic
 
                 # send response
                 #
-                match (io.buffered lm)
-                    .writer.env
-                    .write (response.bytes i32.max)
-                  e error => log "writing response failed: {e}"
+                match (io.buffered mutate)
+                    .Writer.env
+                    .write (response.bytes i64.max)
+                  e error => log "writing response failed: $(e)"
                   unit =>
-                    flush_ok := (io.buffered lm).writer.env.flush
-                    if flush_ok!!
-                      log "flushing response failed: {flush_ok.err}"
+                    flush_ok := (io.buffered mutate).Writer.env.flush
+                    if !flush_ok
+                      log "flushing response failed: $(flush_ok.err)"
 
             accept_res.or_else ()->
-              log "failed accepting connection {accept_res}"
+              log "failed accepting connection $(accept_res)"
 
 
       match res
         e error => log "failure starting the webserver: $e"
         unit =>
 
-    check tp_res.ok
+    tp_res.or_panic
 
 
 
@@ -101,11 +104,11 @@ public except(log String->unit) : Middleware is
           .try ()->
             h r
           .catch  e->
-            log e.as_string
+            log $e
             http
               .response_message
               .new
                 500
                 [("server", "FuzionWebServer v0.0.0"),
                  ("Content-Length", $"0")]
-                io.Read_Handler.empty
+                (io.buffered mutate .Reader.type.empty)

@@ -28,18 +28,18 @@ package dev.flang.ir;
 
 import java.util.stream.Collectors;
 
-import dev.flang.ast.AbstractAssign; // NYI: remove dependency
-import dev.flang.ast.AbstractBlock; // NYI: remove dependency
-import dev.flang.ast.AbstractCall; // NYI: remove dependency
-import dev.flang.ast.Constant; // NYI: remove dependency
-import dev.flang.ast.AbstractCurrent; // NYI: remove dependency
-import dev.flang.ast.AbstractMatch; // NYI: remove dependency
+import dev.flang.ast.AbstractAssign; // NYI: CLEANUP: remove dependency
+import dev.flang.ast.AbstractBlock; // NYI: CLEANUP: remove dependency
+import dev.flang.ast.AbstractCall; // NYI: CLEANUP: remove dependency
+import dev.flang.ast.Constant; // NYI: CLEANUP: remove dependency
+import dev.flang.ast.AbstractCurrent; // NYI: CLEANUP: remove dependency
+import dev.flang.ast.AbstractMatch; // NYI: CLEANUP: remove dependency
 import dev.flang.ast.AbstractType;
-import dev.flang.ast.Expr; // NYI: remove dependency
-import dev.flang.ast.InlineArray; // NYI: remove dependency
-import dev.flang.ast.NumLiteral; // NYI: remove dependency
+import dev.flang.ast.Expr; // NYI: CLEANUP: remove dependency
+import dev.flang.ast.InlineArray; // NYI: CLEANUP: remove dependency
+import dev.flang.ast.NumLiteral; // NYI: CLEANUP: remove dependency
 import dev.flang.ast.Types;
-import dev.flang.ast.Universe; // NYI: remove dependency
+import dev.flang.ast.Universe; // NYI: CLEANUP: remove dependency
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -178,10 +178,7 @@ public abstract class IR extends ANY
   protected int addCode(List<Object> code)
   {
     var result = _allCode.size() + SITE_BASE;
-    for (var c : code)
-      {
-        _allCode.add(c);
-      }
+    _allCode.addAll(code);
     _allCode.add(null);
     return result;
   }
@@ -390,7 +387,7 @@ public abstract class IR extends ANY
      */
     // NYI: ugly special case: currently needed for code like
     // because isAssignableFrom does not return yes without correct Context...
-    else if (t.isGenericArgument() && frmlT.isRef())
+    else if (t.isParametricType() && frmlT.isRef())
       {
         var rt = expr.needsBoxing(frmlT);
         if (rt != null)
@@ -402,7 +399,7 @@ public abstract class IR extends ANY
     if (POSTCONDITIONS) ensure
       (Errors.any()
         || t.isVoid()
-        || frmlT.isGenericArgument()
+        || frmlT.isParametricType()
         || frmlT.isThisType()
         || result.needsBoxing(frmlT) == null
         || frmlT.isAssignableFrom(t).no());

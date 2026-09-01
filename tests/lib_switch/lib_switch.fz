@@ -31,13 +31,15 @@ lib_switch =>
   say (a.or ()->5)
   say (b.or ()->5)
 
-  /* NYI: BUG: check-condition: #5729
+  say (a.otherwise _->5)
+  say (b.otherwise _->5)
 
-  Y ref is
+  c outcome i32 := 4
+  d outcome i32 := error "oops"
+  say (c.otherwise (_ -> -1))
+  say (d.otherwise (_ -> -1))
 
-    c option Y.this := Y.this
-    say (c.and_then x->Y.this)
-
-  _ := Y
-
-  */
+  # A = unit: the motivating case, also checks partial application
+  handler(e error) unit => say "handled: $e"
+  u outcome unit := error "cleanup failed"
+  u.otherwise handler

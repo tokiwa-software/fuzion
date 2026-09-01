@@ -1,0 +1,159 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature os.pipe
+#
+# -----------------------------------------------------------------------
+
+
+# effect for creating pipes
+#
+private:public pipe : effect is
+
+  # the underlying pipe's file descriptors
+  #
+  pipefd array i64 := [0, 0]
+
+
+  # create the pipe
+  #
+  check debug: pipefd.count = 2
+  status := fzE_pipe_create pipefd.internal_array.data
+
+
+  # has this pipe been used already?
+  #
+  public used concur.atomic bool := concur.atomic bool .new false
+
+
+  # with writer for one pipe
+  #
+  with_writer(T type, LM type : mutate, w () -> outcome unit, r i64 -> T) outcome T ! concur.atomic_access
+  pre
+    debug: !used.read
+  =>
+    if status != 0
+      error "creating pipe" status.as_i64
+    else
+      used.write true
+      read_desc, write_desc := (pipefd[0], pipefd[1])
+
+      match (io.buffered LM).Writer.instate (pipe_writer LM write_desc "writing in $(pipe.this.type.name)") w
+        unit =>
+          _ := fzE_pipe_close write_desc
+          r read_desc
+        e error => e
+
+
+  # instate a pipe for writing and run code
+  #
+  public type.for_writing(T type, LM type : mutate, w () -> outcome unit, r i64 -> T) outcome T =>
+    os.pipe ! ()->
+      os.pipe.env.with_writer T LM w r
+
+
+  # with reader for one pipe
+  #
+  with_reader(T type, LM type : mutate, r () -> outcome unit, w i64 -> T) outcome T ! concur.atomic_access
+  pre
+    debug: !used.read
+  =>
+    if status != 0
+      error "creating pipe" status.as_i64
+    else
+      used.write true
+      read_desc, write_desc := (pipefd[0], pipefd[1])
+
+      match (io.buffered LM).Reader.instate (pipe_reader LM read_desc "reading in $(pipe.this.type.name)") r
+        unit =>
+          # NYI: UDNER DEVELOPMENT: this explicit closing
+          # should probably be removed
+          _ := fzE_pipe_close read_desc
+          w write_desc
+        e error => e
+
+
+  # instate a pipe for reading and run code
+  #
+  public type.for_reading(T type, LM type : mutate, r () -> outcome unit, w i64 -> T) outcome T =>
+    os.pipe ! ()->
+      os.pipe.env.with_reader T LM r w
+
+
+  # close all remaining pipes
+  #
+  public redef finally unit =>
+    for fd in pipefd
+    do
+      if fd != 0
+        _ := fzE_pipe_close fd
+      else
+        unit # ignore
+
+
+# implementation of a Reader effect to
+# allow reading from a pipe
+#
+module pipe_reader (
+  # the mutate that is used internally by the Reader
+  LM type: mutate,
+  # the descriptor of the pipe
+  desc i64,
+  # the error message to display on read failure
+  error_msg String) : (io.buffered LM).Reader is
+
+  # how many bytes are read at a time
+  pipe_buffer_size := io.buffer_size.as_i32
+
+  # POSIX.1 requires PIPE_BUF to be at least 512 bytes
+  # NYI: UNDER DEVELOPMENT: post conditions for fields not supported yet
+  check debug : pipe_buffer_size >= 512
+
+  public redef read (max_count i64) choice (Sequence u8) io.end_of_file error =>
+    arr := array u8 _ pipe_buffer_size _->0
+    res := fzE_pipe_read desc arr.internal_array.data arr.count.as_i32
+    if res = -1
+      error "$error_msg." fzE_last_error
+    else if res = 0
+      io.end_of_file
+    else
+      arr.slice 0 res
+
+
+# implementation of a Writer effect to
+# allow writing to a pipe
+#
+module pipe_writer (
+  # the mutate that is used internally by the Reader
+  LM type: mutate,
+  # the descriptor of the pipe
+  desc i64,
+  # the error message to display on write failure
+  error_msg String
+) : (io.buffered LM).Writer is
+
+  public redef writer (bytes Sequence u8) outcome unit =>
+    for tbw := bytes.as_array, tbw.drop res .as_array
+        res := fzE_pipe_write desc tbw.internal_array.data tbw.count.as_i32 .as_i64
+    while res >= 0 && res != tbw.length
+    else
+      if res < 0
+        error "$error_msg. Tried writing $(tbw.count) bytes." fzE_last_error
+      else
+        unit

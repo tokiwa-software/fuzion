@@ -23,7 +23,7 @@
 
 # A stack implementation using local mutation
 #
-public stack(LM type : mutate, T type) : Stack T is
+public stack(LM type : mutate, T type) : container.Stack T is
 
   Element(data T, next option Element) ref is
     public as_sequence Sequence T =>

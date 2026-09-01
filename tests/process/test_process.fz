@@ -28,11 +28,11 @@ test_process =>
 
 
   # create string of given byte size
-  get_str(byte_size i32) =>
+  get_str(byte_size i64) =>
     _ : String is
       public redef utf8 Sequence u8 =>
         (1..byte_size)
-          .map u8 (x -> codepoint.type.zero_char)
+          .map u8 (x -> "0".as_u8)
 
 
   test(str String, f () -> outcome unit) =>
@@ -45,30 +45,31 @@ test_process =>
 
   test "write to stdin of process" ()->
     (os.process.start "cat").bind p->
-      _ := p.write_string "Hello from the other side."
-      # closing input so cat knows we are done and must write to standard out
-      say p.wait
-      _ := lm ! ()->
+      lm ! ()->
+        _ := p.with_in unit lm ()->
+          _ := (io.buffered lm).Writer.env.write "Hello from the other side."
+        # closing input so cat knows we are done and must write to standard out
+        say p.close_in
         _ := p.with_out unit lm ()->
-          say ((io.buffered lm).read_string 1E9).val
+          say ((io.buffered lm).read_string 1E9).or_panic
 
 
 
   test "read stdout of process" ()->
     (os.process.start "echo" ["eecchhoo"]).bind p->
-      _ := lm ! ()->
+      lm ! ()->
         _ := p.with_out unit lm ()->
-          say ((io.buffered lm).read_string 1E9).val
+          say ((io.buffered lm).read_string 1E9).or_panic
 
 
 
   test "pass environment variable" ()->
     (os.process.start "printenv" [] (container.map_of [("MYENVVAR", "content")])).bind p->
-      _ := lm ! ()->
+      lm ! ()->
         _ := p.with_out unit lm ()->
           out := ((io.buffered lm).read_string 1E9)
-            .val
-            .split "\n"
+            .or_panic
+            .lines
             # for some reason on windows/msys these are included, even though we want empty env...
             .filter (l -> !(l.starts_with "HOME=" || l.starts_with "TERM="))
           say (String.join out)
@@ -78,18 +79,18 @@ test_process =>
   test "feed output of process 1 to process 2" ()->
     (os.process.start "echo" ["'feed me to cat'"]).bind p->
       (p | ["cat"]).bind p2->
-        _ := lm ! ()->
+        lm ! ()->
           _ := p2.with_out unit lm ()->
-            say ((io.buffered lm).read_string 1E9).val
+            say ((io.buffered lm).read_string 1E9).or_panic
 
 
 
   test "1kb argument, piped to another process" ()->
     (os.process.start "echo" ["-n", (get_str 1E3)]).bind p->
       (p | ["cat"]).bind p2->
-        _ := lm ! ()->
+        lm ! ()->
           _ := p2.with_out unit lm ()->
-            say ((io.buffered lm).read_string 1E9).val.byte_length
+            say ((io.buffered lm).read_string 1E9).or_panic.byte_count
           say p2.wait
 
 
@@ -98,10 +99,10 @@ test_process =>
   test "100kb argument, piped to another process" ()->
     (os.process.start "echo" ["-n", (get_str 1E5)]).bind p->
       (p | ["cat"]).bind p2->
-        say p2.read_string.val.byte_length
-        say "exit code: {p2.wait}"
+        say p2.read_string.or_panic.byte_count
+        say "Exit.env.exit code: $(p2.wait)"
         # execute wait twice:
-        say "exit code: {p2.wait}"
+        say "Exit.env.exit code: $(p2.wait)"
 
 
 
@@ -109,8 +110,8 @@ test_process =>
   test "10mb write to stdin, piped to another process"
   p := os.process.start ["cat"]
     p := spawned
-    concur.threads.spawn ()->
-      time.nano.sleep (time.duration.s 1)
+    concur.Threads.env.spawn ()->
+      time.Nano.env.sleep (time.duration.s 1)
       say "start reading"
       while
         match p.read_bytes 100
@@ -119,9 +120,9 @@ test_process =>
 
     # NYI: UNDER DEVELOPMENT: write should block here?
     say (p.write_bytes (get_str 1E7).utf8)
-    say "exit code: {p.wait}"
+    say "Env.exit.exit code: $(p.wait)"
   */
 
 
   test "start process that does not exist" ()->
-    (os.process.start "ohQue1AheiPu4aaw").bind _->
+    say (os.process.start "ohQue1AheiPu4aaw").err.msg

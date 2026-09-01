@@ -65,8 +65,8 @@ sqlite_database(db Native_Ref) : Database is
         # passed through:
         say str
 
-        ct := ffi.from_native_array Native_Ref column_text len
-        cn := ffi.from_native_array Native_Ref column_name len
+        ct := ffi.from_native_array Native_Ref column_text len.as_i64
+        cn := ffi.from_native_array Native_Ref column_name len.as_i64
 
         data => (cn.map (t -> ffi.from_native_string t))
           .zip (ct.map (t -> ffi.from_native_string t)) x,y->(x,y)
@@ -92,10 +92,7 @@ sqlite_database(db Native_Ref) : Database is
     else
       error "could not open database"
 
-# NYI: CLEANUP: support local mutates
-_ := mut
-
 _ := (sqlite_database.open "test.db").bind unit db->
   db.query "select * from table_name;" res->
-    say (res.map t->"{t.0} => {t.1}")
+    say (res.map t->"$(t.0) => $(t.1)")
     0

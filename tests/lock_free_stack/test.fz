@@ -1,25 +1,22 @@
 test =>
 
-  s := lock_free.stack i32
+  s := lock_free.stack i64
 
-  cnt := concur.atomic i32 .new 0
-  count(n i32) =>
+  cnt := concur.atomic i64 .new 0
+  count(n i64) =>
     c := cnt.read
     cnt.compare_and_set c c+n
 
   (1..4)
     .map (_)->
-      concur.threads.spawn ()->
+      concur.Threads.env.spawn ()->
         for i in 1..100 do
           s.push i
           p := s.pop
-          while !(count p.get)
+          while !(count p.or_panic)
     .as_array
-    .for_each t->
-      t.join
+    .for_each (.join.or_panic)
 
   # n*(n+1)/2  * 4
   # 100*101 / 2 * 4 = 20200
   say cnt.read
-
-

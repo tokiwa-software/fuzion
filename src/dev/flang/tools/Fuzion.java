@@ -375,7 +375,7 @@ public class Fuzion extends Tool
     /**
      * backend to dump the IR of the main clazz to stdout
      *
-     * NYI: make this dump all clazzes or give some way to control what clazzes should be dumped.
+     * NYI: UNDER DEVELOPMENT: make this dump all clazzes or give some way to control what clazzes should be dumped.
      */
     dumpFUIR   ("-XdumpFUIR")
     {
@@ -815,7 +815,7 @@ public class Fuzion extends Tool
                            stdBe + std +
                            (b.takesApplicationArgs() ? "[--] " : "") +
                            "(<main> | <srcfile>.fz | - | (-e|-execute) <code>) " +
-                           (b.takesApplicationArgs() ? "[<list of arbitrary arguments for envir.args effect>] " : "");
+                           (b.takesApplicationArgs() ? "[<list of arbitrary arguments for envir.Args effect>] " : "");
       }
   }
 

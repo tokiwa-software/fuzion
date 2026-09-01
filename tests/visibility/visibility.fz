@@ -31,42 +31,42 @@ visibility is
       say "PASSED: $msg"
     else
       say "FAILED: $msg"
-      _ := set_exit_code 1
+      _ := Exit.env.set_exit_code 1
 
-  chck (a,b i32, msg String) unit =>
+  chck (a,b i64, msg String) unit =>
     if a = b
       say "PASSED: $msg"
     else
       say "FAILED: expected $b got $a"
-      _ := set_exit_code 1
+      _ := Exit.env.set_exit_code 1
 
   visi1 =>
     a1 is
       b1 is
-        c1(b bool) i32 =>
+        c1(b bool) i64 =>
           if b { _:=a1; _:=a2; _:=b1; _:=b2; _:=c1 false; _:=c2 false }
           11
 
-        c2(b bool) i32 =>
+        c2(b bool) i64 =>
           if b { _:=a1; _:=a2; _:=b1; _:=b2; _:=c1 false; _:=c2 false }
           22
 
       b2 is
-        c3(b bool) i32 =>
+        c3(b bool) i64 =>
           if b { _:=a1; _:=a2; _:=b1; _:=b2; _:=c3 false; _:=c4 false }
           33
 
-        c4(b bool) i32 =>
+        c4(b bool) i64 =>
           if b { _:=a1; _:=a2; _:=b1; _:=b2; _:=c3 false; _:=c4 false }
           44
 
     a2 is
       b3 is
-        c5(b bool) i32 =>
+        c5(b bool) i64 =>
           if b { _:=a1; _:=a2; _:=b3; _:=c5 false; _:=c6 false }
           55
 
-        c6(b bool) i32 =>
+        c6(b bool) i64 =>
           if b { _:=a1; _:=a2; _:=b3; _:=c5 false; _:=c6 false }
           66
 
@@ -254,10 +254,10 @@ visibility is
   visi5
 
   visi6 =>
-    x0 := 2;         chck $x0="2"                                     "x := 2"
-    x1 := x0.as_f64; chck ($x1="2.0" || $x1="2")                      "x := x.as_f64"
-    x2 := x1 * 3.14; chck ($x2="6.28"|| $x1="6.28000000000000024869") "x := x * 3.14"
-    x3 := x2.as_i32; chck $x3="6"                                     "x := x.as_i32"
+    x0 := 2;         chck $x0="2"                                      "x := 2"
+    x1 := x0.as_f64; chck ($x1="2.0"  || $x1="2")                      "x := x.as_f64"
+    x2 := x1 * 3.14; chck ($x2="6.28" || $x1="6.28000000000000024869") "x := x * 3.14"
+    x3 := x2.as_i64; chck $x3="6"                                      "x := x.as_i64"
   visi6
 
   visi7 =>
@@ -296,7 +296,7 @@ visibility is
   visi8 false
 
   visi9 =>
-    a i32 => 3
+    a i64 => 3
     for
       ix1 := a, ix1 + a                  # can make unqualified call to a, ix1 ..
       ix2 := 3 * ix1 + a, a + ix2 + ix1  # can make unqualified call to a, ix1, ix2 ..
@@ -314,9 +314,9 @@ visibility is
   visi9
 
   visiB =>
-    rgb  (r,g,b   i32) is
-    rgba (r,g,b,a i32) is
-    cmyk (c,m,y,k i32) is
+    rgb  (r,g,b   i64) is
+    rgba (r,g,b,a i64) is
+    cmyk (c,m,y,k i64) is
 
     red(color rgb | rgba | cmyk) =>
       match color
@@ -339,4 +339,4 @@ visibility is
   ring(r ring) is
     last ring := r.last
 
-  exit
+  Exit.env.exit

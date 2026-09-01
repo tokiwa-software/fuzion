@@ -167,7 +167,7 @@ public class Types extends ANY implements ClassFileConstants
               .andThen(vt.load(0))
               .andThen(Expr.invokeSpecial(cn, "<init>", sig))
               .andThen(rt.return0());
-            var code_box = cf.codeAttribute(Names.BOX_METHOD_NAME + " in " + _fuir.clazzAsString(cl), bc_box, new List<>(), ClassFile.StackMapTable.empty(cf, addToLocals(new List<>(), vt), bc_box));
+            var code_box = cf.codeAttribute(Names.BOX_METHOD_NAME + " in " + _fuir.clazzName(cl), bc_box, new List<>(), ClassFile.StackMapTable.empty(cf, addToLocals(new List<>(), vt), bc_box));
             cf.method(ACC_PUBLIC | ACC_STATIC,
                       Names.BOX_METHOD_NAME,
                       boxSignature(cl),
@@ -177,7 +177,7 @@ public class Types extends ANY implements ClassFileConstants
           .andThen(Expr.invokeSpecial(cf._super,"<init>","()V"))
           .andThen(cod)
           .andThen(Expr.RETURN);
-        var code_init = cf.codeAttribute("<init> in " + _fuir.clazzAsString(cl), bc_init, new List<>(), ClassFile.StackMapTable.empty(cf, initLocals, bc_init));
+        var code_init = cf.codeAttribute("<init> in " + _fuir.clazzName(cl), bc_init, new List<>(), ClassFile.StackMapTable.empty(cf, initLocals, bc_init));
 
         cf.method(ACC_PUBLIC, "<init>", sig, new List<>(code_init));
 
@@ -188,7 +188,7 @@ public class Types extends ANY implements ClassFileConstants
             var bc_run = invokeStatic(maincl, -1)
               .drop()
               .andThen(Expr.RETURN);
-            var code_run = cf.codeAttribute(Names.MAIN_RUN + " in " + _fuir.clazzAsString(cl), bc_run, new List<>(), ClassFile.StackMapTable.empty(cf, new List<>(VerificationType.UninitializedThis), bc_run));
+            var code_run = cf.codeAttribute(Names.MAIN_RUN + " in " + _fuir.clazzName(cl), bc_run, new List<>(), ClassFile.StackMapTable.empty(cf, new List<>(VerificationType.UninitializedThis), bc_run));
             cf.method(ACC_PUBLIC, Names.MAIN_RUN, "()V", new List<>(code_run));
 
             var bc_main =
@@ -199,7 +199,7 @@ public class Types extends ANY implements ClassFileConstants
               .andThen(Expr.invokeSpecial(cn, "<init>", "()V"))
               .andThen(Expr.invokeStatic(Names.RUNTIME_CLASS, Names.RUNTIME_RUN, "(" + new ClassType(Names.MAIN_INTERFACE).argDescriptor() + ")V", PrimitiveType.type_void))
               .andThen(Expr.RETURN);
-            var code_main = cf.codeAttribute("main in " + _fuir.clazzAsString(cl), bc_main, new List<>(), ClassFile.StackMapTable.empty(cf, new List<>(JAVA_LANG_STRING.array().vti()), bc_main));
+            var code_main = cf.codeAttribute("main in " + _fuir.clazzName(cl), bc_main, new List<>(), ClassFile.StackMapTable.empty(cf, new List<>(JAVA_LANG_STRING.array().vti()), bc_main));
             cf.method(ACC_STATIC | ACC_PUBLIC, "main", "([Ljava/lang/String;)V", new List<>(code_main));
           }
       }
@@ -269,16 +269,13 @@ public class Types extends ANY implements ClassFileConstants
   {
     var i = new ClassFile(_opt, _names.javaInterface(cl), "java/lang/Object", true, _fuir.clazzSrcFile(cl));
     _interfaceFiles.put(cl, i);
-    if (!_fuir.clazzIsChoice(cl))
+    var hs = _fuir.clazzInstantiatedHeirs(cl);
+    for (var h : hs)
       {
-        var hs = _fuir.clazzInstantiatedHeirs(cl);
-        for (var h : hs)
+        var c = classFile(h);
+        if (c != null)
           {
-            var c = classFile(h);
-            if (c != null)
-              {
-                c.addImplements(i._name);
-              }
+            c.addImplements(i._name);
           }
       }
   }
@@ -372,7 +369,7 @@ public class Types extends ANY implements ClassFileConstants
            c_Java_Ref,
            c_Mapped_Memory,
            c_Native_Ref,
-           c_Thread -> JAVA_LANG_OBJECT;
+           c_Internal_Thread -> JAVA_LANG_OBJECT;
       default        ->
         {
           if (cl == _fuir.clazzUniverse()                        ||
@@ -412,7 +409,7 @@ public class Types extends ANY implements ClassFileConstants
    */
   JavaType resultType(int cl)
   {
-    if (_fuir.clazzIsRef(cl) && hasRealHeirs(cl))
+    if (hasRealHeirs(cl))
       {
         return interfaceFile(cl).classType();
       }

@@ -26,8 +26,8 @@
 # hash_map -- an immutable hash map from keys HK to values V
 #
 public hash_map(
-        public HK type : property.hashable,
-        public V  type,
+        HK type : property.hashable,
+        V  type,
         ks Sequence HK,
         vs Sequence V) : container.Map HK V
   pre
@@ -42,7 +42,7 @@ is
 
   # number of entries in this map
   #
-  public redef size i32 := ks.count
+  public redef size i64 := ks.count.as_i64
 
 
   # size of allocated contents array, allows for some empty slots
@@ -98,7 +98,7 @@ is
     post
       # NYI: OPTIMIZATION: this post-conditions causes sever performance degradation in the example from #5885, need to check why.
       #
-      # debug: result.min.get > (hash_map HK V).max_size
+      # debug: result.min.or_panic > (hash_map HK V).max_size
   =>
     cached_primes(p array u64) is
     (cache cached_primes ()->
@@ -136,7 +136,7 @@ is
              234844915899376649,
              859627742854685113]
       check
-        debug: ps.min.get > (hash_map HK V).max_size
+        debug: ps.min.or_panic > (hash_map HK V).max_size
       cached_primes ps
     ).p
 
@@ -147,7 +147,7 @@ is
   #
   contents := mi ! ()->
     mcontents := mi.array (option (tuple HK V))
-                   .new allocated_size.as_i64 nil
+                   .new _ allocated_size _->nil
     for
       k in ks
       v in vs
@@ -198,18 +198,12 @@ is
     retrieve (at h)
 
 
-  # get a list of all key/value pairs in this map
+  # get a sequence of all key/value pairs in this map
   #
   public redef items Sequence (tuple HK V) =>
     contents
-      .filter o->o??
-      .map (o -> o.or_else (panic "filter failed"))
-
-
-  # NYI: implement this when #4642 is done
-  # create a mutable map from this
-  #
-  # public redef as_mutable_map container.Mutable_Map PK V =>
+      .filter (??)
+      .map (.or_else (panic "filter failed"))
 
 
   # empty -- convenience routine to create an empty instance of hash_map

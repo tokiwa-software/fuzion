@@ -1,0 +1,13 @@
+
+--CURDIR--/reg_issue4055.fz:24:13: error 1: Incompatible types when passing argument in a call
+[1].zip [2] unit
+------------^^^^
+Actual type for argument #2 'f' does not match expected type.
+In call to          : 'Sequence.zip'
+expected formal type: 'Binary V T U'
+actual type found   : 'unit'
+assignable to       : 'unit'
+for value assigned  : 'unit'
+To solve this, you could change the type of the target 'f' to 'unit' or convert the type of the assigned value to 'Binary V T U'.
+
+one error.

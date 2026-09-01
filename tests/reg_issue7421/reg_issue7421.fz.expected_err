@@ -1,0 +1,9 @@
+
+--CURDIR--/reg_issue7421.fz:26:5: error 1: Incompatible type parameter
+    b E
+----^
+formal type parameter 'E : e.this'
+actual type parameter 'E'
+assignable to constraint: 'E'
+
+one error.

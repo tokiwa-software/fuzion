@@ -28,12 +28,12 @@
 # use `concur.thread_pool.env.submit` to
 # submit a task to the thread_pool.
 #
-public thread_pool(R type, size i32, code ()->R) outcome R =>
+public thread_pool(R type, size i64, code ()->R) outcome R =>
   (thread_pool size) ! code
 
 
 # concrete implementation of concur.Future
-# meant to run on a thread thread_pool
+# meant to run on a thread_pool
 #
 Computable_Future(
   # result type of the computation
@@ -43,7 +43,7 @@ Computable_Future(
   # the code of the future
   task ()->T) ref : concur.Future T is
 
-  cnd := concur.sync.condition.new.val # NYI: error handling
+  cnd := concur.sync.condition.new.or_panic # NYI: error handling
 
   compute_result := concur.atomic (option T) .new nil
 
@@ -51,16 +51,16 @@ Computable_Future(
     cr := task.call
     cnd.synchronized ()->
       compute_result.write cr
-      check cnd.broadcast
+      cnd.broadcast
 
   public redef is_done bool  ! atomic_access => compute_result.read.exists
 
   public redef get T ! atomic_access =>
     cnd.synchronized ()->
       if !is_done
-        check cnd.wait
+        cnd.wait
 
-    compute_result.read.val
+    compute_result.read.or_panic
 
   public redef and_then(T2 type, new_task T->T2) concur.Future T2 ! atomic_access, TP =>
     TP.env.submit T2 ()->(new_task get)
@@ -69,17 +69,17 @@ Computable_Future(
 
 # simple, fixed size thread pool
 #
-private:public thread_pool(size i32) : effect
+private:public thread_pool(size i64) : effect
 pre debug: size > 0
 is
 
   bq := Blocking_Queue ()->unit
 
   thrds := array size _->
-      concur.threads.spawn ()->
+      concur.Threads.env.spawn ()->
         for x := bq.dequeue
         while x.exists
-          x.val.call
+          x.or_panic.call
 
 
   # submit a task to the thread pool
@@ -116,4 +116,7 @@ is
 
     # wait for all threads to finish
     thrds.for_each t->
-      t.join
+      match t.join
+        unit =>
+        e error =>
+          Ignored_Failure.env.register_failure (error "thread_pool failed joining thread $t, got $e")

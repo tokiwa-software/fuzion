@@ -45,31 +45,31 @@ multiline_strings_test is
   say """
     hell😀\sw😀rld\s!
 
-     {   world   }\s
+     $(   world   )\s
     """
 
 
   # nested multiline string
   say """
-    hell😀 {
+    hell😀 $(
 if true
   """
-{world}"""
+$(world)"""
 else
   "?"
-    }"""
+    )"""
 
 
   # nested multiline string using braces and dollar interpolation
   say """
-    hell😀 {
+    hell😀 $(
 if true
   """
-{"""
-  $world"""}"""
+$("""
+  $world""")"""
 else
   "?"
-    }"""
+    )"""
 
 
   # multiline string containing " and ""
@@ -83,3 +83,38 @@ else
   say """
     hello \
     world"""
+
+
+  say "---"
+
+  say """
+      Multiline string,
+        first line
+          is indentation reference,
+      no trailing empty line."""
+
+  say "---"
+
+  # less indentation than code starting multiline string
+  say """
+Multiline string
+followed by empty line.
+"""
+
+  say "---"
+
+  # multiline string indented way further than code starting it
+  say """
+
+
+                Multiline string
+                with two leading empty lines."""
+
+  say "---"
+
+  # spaces in the first line of the multiline string are important here
+  say """
+                
+  Leading whitespace-only lines are treated as empty"""
+
+  say "---"

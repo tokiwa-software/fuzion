@@ -30,7 +30,7 @@ add_simple_test =>
   lm : mutate is
   lm ! ()->
 
-    _ := (io.stdin.reader lm).instate_self unit ()->
+    io.buffered lm .Reader.instate (io.stdin.reader lm) ()->
       match (io.buffered lm).read_line
         test String =>
 
@@ -54,7 +54,7 @@ add_simple_test =>
             #
             #  Tokiwa Software GmbH, Germany
             #
-            #  Source code of Fuzion test {name}
+            #  Source code of Fuzion test $(name)
             #
             # -----------------------------------------------------------------------
 
@@ -62,28 +62,28 @@ add_simple_test =>
 
           makefile_body(name String) =>
             """
-            override NAME = {name}
+            override NAME = $(name)
             include ../simple.mk
             """
 
           test_body(name String) =>
             """
-            {name} =>
+            $(name) =>
 
             """
 
           if test.contains_whitespace
             say "name contains whitespace"
-            exit 1
+            Exit.env.exit 1
           if test.contains "/" || test.contains "\\"
             say "name contains slash"
-            exit 1
-          if io.file.exists (path.of "tests/$test")
+            Exit.env.exit 1
+          if io.file.exists (io.path.of "tests/$test")
             say "$test already exists."
-            exit 1
+            Exit.env.exit 1
 
-          _ := io.dir.make (path.of "tests/$test")
-          _ := io.write (path.of "tests/$test/$test.fz") (header test)+(test_body test)
-          _ := io.write (path.of "tests/$test/Makefile") (header "Makefile")+(makefile_body test)
+          io.dir.make (io.path.of "tests/$test") .or_else (say "mkdir tests/$test failed, does it exist already?")
+          io.write (io.path.of "tests/$test/$test.fz") (header test)+(test_body test) .or_panic
+          io.write (io.path.of "tests/$test/Makefile") (header "Makefile")+(makefile_body test) .or_panic
 
-        io.end_of_file => exit 1
+        io.end_of_file => Exit.env.exit 1

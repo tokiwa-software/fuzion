@@ -1,0 +1,7 @@
+
+--CURDIR--/reg_issue5416.fz:26:7: error 1: Non-exhaustive destructuring is forbidden.
+  a,b := (1,2,3)
+------^
+Expected 3 variable names but found 2
+
+one error.

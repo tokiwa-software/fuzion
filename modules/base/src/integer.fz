@@ -138,11 +138,11 @@ public integer : numeric is
   # the first character.  Extend with leading "0" until the length is at
   # least len
   #
-  public as_string(len i32, base u32) String
+  public as_string(len i64, base u32) String
     pre
       debug: 1 < base ≤ 36
     post
-      debug: result.byte_length ≥ len
+      debug: result.byte_count ≥ len
   =>
     # create number
     n := integer.this.as_string base
@@ -151,7 +151,7 @@ public integer : numeric is
     sgn, digits := if (integer.this.sign < 0) ($"-", String.from_bytes (n.utf8.drop 1)) else ("", n)
 
     # create required additional zeros
-    zeros := "0" * (max 0 (len - n.byte_length))
+    zeros := "0" * (max 0 (len - n.byte_count))
 
     # put it all together
     sgn + zeros + digits
@@ -164,7 +164,7 @@ public integer : numeric is
 
   # create binary representation with given number of digits.
   #
-  public bin(len i32) String => integer.this.as_string len 2
+  public bin(len i64) String => integer.this.as_string len 2
 
 
   # create octal representation
@@ -174,7 +174,7 @@ public integer : numeric is
 
   # create octal representation with given number of digits.
   #
-  public oct(len i32) String => integer.this.as_string len 8
+  public oct(len i64) String => integer.this.as_string len 8
 
 
   # create decimal representation
@@ -184,7 +184,7 @@ public integer : numeric is
 
   # create decimal representation with given number of digits.
   #
-  public dec(len i32) String => integer.this.as_string len 10
+  public dec(len i64) String => integer.this.as_string len 10
 
 
   # create hexadecimal representation
@@ -194,9 +194,54 @@ public integer : numeric is
 
   # create hexadecimal representation with given number of digits.
   #
-  public hex(len i32) String => integer.this.as_string len 16
+  public hex(len i64) String => integer.this.as_string len 16
 
 
   # the least significant byte of this integer
   #
   public low8bits u8 => abstract
+
+
+  public fits_in_i8 bool => false
+  public fits_in_i16 bool => false
+  public fits_in_i32 bool => false
+  public fits_in_i64 bool => false
+  public fits_in_i128 bool => false
+  public fits_in_u8 bool => false
+  public fits_in_u16 bool => false
+  public fits_in_u32 bool => false
+  public fits_in_u64 bool => false
+  public fits_in_u128 bool => false
+
+
+  public as_i8 i8
+    pre debug: fits_in_i8
+  => abstract
+  public as_i16 i16
+    pre debug: fits_in_i16
+  => abstract
+  public as_i32 i32
+    pre debug: fits_in_i32
+  => abstract
+  public as_i64 i64
+    pre debug: fits_in_i64
+  => abstract
+  public as_i128 i128
+    pre debug: fits_in_i128
+  => abstract
+  # this numeric value as an u8
+  public as_u8 u8
+    pre debug: fits_in_u8
+  => abstract
+  public as_u16 u16
+    pre debug: fits_in_u16
+  => abstract
+  public as_u32 u32
+    pre debug: fits_in_u32
+  => abstract
+  public as_u64 u64
+    pre debug: fits_in_u64
+  => abstract
+  public as_u128 u128
+    pre debug: fits_in_u128
+  => abstract

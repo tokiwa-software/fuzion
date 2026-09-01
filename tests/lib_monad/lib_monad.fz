@@ -21,13 +21,13 @@
 #
 # -----------------------------------------------------------------------
 
-wrap(T type : integer, val T) : monad T (wrap T) is
+wrap(T type : integer, val T) : monad T is
 
   # monadic operator within the same monad
   #
   # Apply f to elements of type A and re-wrap them in this monad.
   #
-  public redef infix >>= (f T -> wrap T) wrap T =>
+  public fixed redef infix >>= (f T -> wrap T) wrap T =>
     f val
 
 
@@ -35,20 +35,20 @@ wrap(T type : integer, val T) : monad T (wrap T) is
   #
   # Apply f to elements of type A and wrap them in MB.
   #
-  public redef infix >>=~ (B type, MB type : monad B MB, f T -> MB) MB =>
+  public fixed redef infix >>=~ (B type, MB type : monad B, f T -> MB) MB =>
     f val
 
 
   # join operator
   #
-  public redef join(MMA type : monad (wrap T) MMA, a MMA) (wrap T) =>
+  public fixed redef join(a wrap T) (wrap T) =>
     a.infix >>=~ T (wrap T) x->
-      wrap x.val+val
+      wrap x+val
 
 
   # return function
   #
-  public redef type.return (a T) (wrap T) =>
+  public fixed redef type.return (a T) (wrap T) =>
     wrap a
 
 
@@ -56,17 +56,8 @@ wrap(T type : integer, val T) : monad T (wrap T) is
     "wrapped: " + val + " " + T.name
 
 
-say (wrap 42)
-say ((wrap i32).return 42)
-say ((wrap 42) >>= (x -> wrap x))
-say ((wrap 42).infix >>=~ i64 (wrap i64) (x -> wrap x.as_i64))
-
-# NYI: BUG:
-#
-# Incompatible type parameter
-# say ((wrap 42).join (wrap (wrap i32)) (wrap (wrap 42)))
-#
-# formal type parameter 'MMA' with constraint 'monad (wrap wrap.T) (wrap (wrap i32))'
-# actual type parameter 'wrap (wrap i32)'
-#
-# say ((wrap 42).join (wrap (wrap 42)))
+say <| wrap 42
+say <| wrap i64 .return 42
+say <| (wrap 42) >>= (x -> wrap x)
+say <| wrap 42 .infix >>=~ i32 (wrap i32) (x -> wrap x.as_i32)
+say <| wrap 42 .join (wrap 42)

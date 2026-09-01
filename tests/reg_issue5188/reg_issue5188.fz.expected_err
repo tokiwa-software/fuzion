@@ -1,7 +1,7 @@
 
---CURDIR--/reg_issue5188.fz:26:26: error 1: Failed to infer actual type parameters
+--CURDIR--/reg_issue5188.fz:26:20: error 1: Failed to infer actual type parameters
 _ := r.bind (x -> (true) ? x : error "")
--------------------------^
+-------------------^^^^^^^^^^^^^^^^^
 In call to 'bool.ternary ? :', no actual type parameters are given and inference of the type parameters failed.
 Expected type parameters: 'T'
 Type inference failed for one type parameter 'T'

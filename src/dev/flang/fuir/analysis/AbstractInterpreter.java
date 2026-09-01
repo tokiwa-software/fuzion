@@ -116,10 +116,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
      *
      * @return code to perform the side effects of v and ignoring the produced value.
      */
-    public RESULT drop(VALUE v, int type)
-    {
-      return nop(); // NYI: UNDER DEVELOPMENT: should be implemented by BEs.
-    }
+    public abstract RESULT drop(VALUE v, int type);
 
     /**
      * Perform an assignment val to field f in instance rt
@@ -545,7 +542,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
   {
     if (DEBUG != null)
       {
-        var n = _fuir.clazzAsString(_fuir.clazzAt(s));
+        var n = _fuir.clazzName(_fuir.clazzAt(s));
         if (n.matches(DEBUG) || n.equals(DEBUG))
           {
             say("process "+_fuir.siteAsString(s) + ":\t"+_fuir.codeAtAsString(s)+" stack is "+stack);
@@ -689,7 +686,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
 
     if (DEBUG_AFTER &&
         DEBUG != null &&
-        _fuir.clazzAsString(_fuir.clazzAt(s)).matches(DEBUG))
+        _fuir.clazzName(_fuir.clazzAt(s)).matches(DEBUG))
       {
         say("process done: "+_fuir.siteAsString(s) + ":\t"+_fuir.codeAtAsString(s)+" stack is "+stack+" RES "+res);
       }

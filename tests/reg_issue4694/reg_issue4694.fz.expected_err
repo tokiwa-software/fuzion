@@ -4,7 +4,7 @@
 -------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Lambda expression has 2 arguments while the target type expects one argument.
 Arguments of lambda expression: 'x', 'y'
-Expected function type: Unary --UNDEFINED-- i32
-To solve this, remove one argument from the list 'x', 'y' before the '->' of the lambda expression.
+Expected function type: Unary --UNDEFINED-- i64
+To solve this, remove one argument from the list 'x,y' before the '->' of the lambda expression.
 
 one error.

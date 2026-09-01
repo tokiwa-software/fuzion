@@ -34,7 +34,7 @@ import dev.flang.util.ANY;
  *
  *   f(v T) =>
  *      if      T : String then
- *        say "String of {v.codepoint_length} codepoints"
+ *        say "String of {v.codepoint_count} codepoints"
  *      else if T : integer then
  *        say "integer, neg is {-v}"
  *
@@ -112,7 +112,7 @@ abstract class Context extends ANY
 
         @Override String localToString()
         {
-          return f.qualifiedName() + " at " + f.pos().show();
+          return f.qualifiedNameHuman() + " at " + f.pos().show();
         }
 
         @Override
@@ -142,12 +142,12 @@ abstract class Context extends ANY
                               .typeArguments()
                               .stream()
                               .filter(y ->
-                                  y.outer().origin() == rpt.genericArgument().outer().origin() &&
-                                  y.featureName().baseName().toString().equals(rpt.genericArgument().featureName().baseName())
+                                  y.outer().origin() == rpt.typeParameter().outer().origin() &&
+                                  y.baseName().toString().equals(rpt.typeParameter().baseName())
                                 )
                               .findFirst()
                               .get()
-                              .asGenericType()
+                              .asParametricType()
                             : x);
                     }
                 }
@@ -241,16 +241,20 @@ abstract class Context extends ANY
 
   /**
    * Test if f1 and f2 are equal or clones of each other,
-   * that where create via Contract.argsSupplier
+   * that were create via Contract.argsSupplier
    */
   protected boolean isClone(AbstractFeature f1, AbstractFeature f2)
   {
     return f1 == f2 ||
-      f2.featureName().baseName().compareTo(f1.featureName().baseName()) == 0 &&
+      f2.baseName().compareTo(f1.baseName()) == 0 &&
       (f2.outer().preFeature() == f1.outer() ||
         f2.outer().preBoolFeature() == f1.outer() ||
+        f2.outer().preAndCallFeature() == f1.outer() ||
+        f2.outer().postFeature() == f1.outer() ||
         f2.outer() == f1.outer().preFeature() ||
-        f2.outer() == f1.outer().preBoolFeature());
+        f2.outer() == f1.outer().preBoolFeature() ||
+        f2.outer() == f1.outer().preAndCallFeature() ||
+        f2.outer() == f1.outer().postFeature());
   }
 
 

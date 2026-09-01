@@ -19,31 +19,45 @@
 #
 #  Source code of Fuzion standard library feature time.date_time
 #
-#  Author: Michael Lill (michael.lill@tokiwa.software)
+#  Authors:
+#  - Michael Lill (michael.lill@tokiwa.software)
+#  - Yann Glady (yann.glady@tokiwa.software)
 #
 # -----------------------------------------------------------------------
+
 
 # Represents a date and a time in the Gregorian calendar, without any specification of
 # a time zone or reference point.
 #
-public date_time(public year, month, day, hour, minute, second, nano_second i32) : property.orderable
+
+
+public date_time(public year, month, day, hour, minute, second i64, nano_second_ i64) : property.orderable
 pre
   debug: 1 ≤ month ≤ 12
   debug: is_valid_date year month day
   debug: 0 ≤ hour ≤ 23
   debug: 0 ≤ minute ≤ 59
   debug: 0 ≤ second ≤ 60 # possible leap seconds
-  debug: 0 ≤ nano_second ≤ 1E9
+  debug: 0 ≤ nano_second_ ≤ 1E9
 is
 
   # the millisecond of this datetime
   #
-  public milli_second i32
-  post
-    debug: result ≥ 0 & result ≤ 999
+  public milli_second i64
+    post
+      debug: result ≥ 0 & result < 1E3
   =>
-    # NYI: BUG: wrong! we should then not expose nano_second
-    nano_second / 1E6
+    nano_second_ / 1E6
+
+
+  # the nanosecond of this datetime
+  #
+  public nano_second i64
+    post
+      debug: result ≥ 0 & result < 1E6
+  =>
+    nano_second_ % 1E6
+
 
 
   year_as_string => year.as_string 4 10
@@ -53,7 +67,7 @@ is
   minute_as_string => minute.as_string 2 10
   second_as_string => second.as_string 2 10
   milli_second_as_string => milli_second.as_string 3 10
-  nano_second_as_string => nano_second.as_string 9 10
+  nano_second_as_string => nano_second.as_string 6 10
 
 
   # ISO 8601 string for this datetime
@@ -68,31 +82,51 @@ is
   # ISO 8601 string for this datetime
   # example: 2018-09-14T23:59:59.079
   #
-  public as_string(p time.precision) String =>
+  public as_string(p time.precision.val) String =>
     match p
-      time.pyear         =>  "$year_as_string"
-      time.pmonth        =>  "$year_as_string-$month_as_string"
-      time.pday          =>  "$year_as_string-$month_as_string-$day_as_string"
-      time.phour         => ("$year_as_string-$month_as_string-$day_as_string" +
+      time.precision.year         =>  "$year_as_string"
+      time.precision.month        =>  "$year_as_string-$month_as_string"
+      time.precision.day          =>  "$year_as_string-$month_as_string-$day_as_string"
+      time.precision.hour         => ("$year_as_string-$month_as_string-$day_as_string" +
                               "T$hour_as_string")
-      time.pminute       => ("$year_as_string-$month_as_string-$day_as_string" +
+      time.precision.minute       => ("$year_as_string-$month_as_string-$day_as_string" +
                               "T$hour_as_string:$minute_as_string")
-      time.psecond       => ("$year_as_string-$month_as_string-$day_as_string" +
+      time.precision.second       => ("$year_as_string-$month_as_string-$day_as_string" +
                               "T$hour_as_string:$minute_as_string:$second_as_string")
-      time.pmilli_second => ("$year_as_string-$month_as_string-$day_as_string" +
+      time.precision.milli_second => ("$year_as_string-$month_as_string-$day_as_string" +
                               "T$hour_as_string:$minute_as_string:$second_as_string.$milli_second_as_string")
-      time.pnano_second  => ("$year_as_string-$month_as_string-$day_as_string" +
-                              "T$hour_as_string:$minute_as_string:$second_as_string.$nano_second_as_string")
+      time.precision.nano_second  => ("$year_as_string-$month_as_string-$day_as_string" +
+                              "T$hour_as_string:$minute_as_string:$second_as_string.$milli_second_as_string$nano_second_as_string")
 
 
-  # # NYI
-  # infix + (other time.duration) date_time is
+  # internal helper: total nanoseconds since unix epoch
+  #
+  nanos i64
+  =>
+    unix_time_stamp_i64 * 1000000000 + nano_second_.as_i64
 
-  # infix - (other date_time) time.duration is
-  # infix - (other time.duration) date_time is
 
-  # as_string(f date_time_format, local/time_zone) String is
-  # ...
+  # add a duration to this date time
+  #
+  public fixed infix + (other time.duration) date_time
+  =>
+    total_nanos := nanos + other.nanos.as_i64
+    seconds := total_nanos / 1E9
+    new_nano := total_nanos % 1E9
+    base := time.date_time.from_seconds_i64 seconds
+    date_time base.year base.month base.day base.hour base.minute base.second new_nano
+
+
+  # subtract a duration from this date time
+  #
+  public fixed infix - (other time.duration) date_time
+  =>
+    total_nanos := nanos - other.nanos.as_i64
+    seconds := total_nanos / 1E9
+    new_nano := total_nanos % 1E9
+    base := time.date_time.from_seconds_i64 seconds
+    date_time base.year base.month base.day base.hour base.minute base.second new_nano
+
 
 
   # returns an array containing the year, the day in the year, hour, minute,
@@ -100,7 +134,7 @@ is
   #
   # internal helper feature
   #
-  args_in_order => [year, month, day, hour, minute, second, nano_second]
+  args_in_order => [year, month, day, hour, minute, second, nano_second_]
 
 
   # 0 = Sunday, 1 = Monday, etc.
@@ -108,7 +142,7 @@ is
   # source: https://c-faq.com/misc/zeller.html
   # original code by: Tomohiko Sakamoto
   #
-  public day_of_week i32 =>
+  public day_of_week i64 =>
     t := [0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4]
     y := year - (if month < 3 then 1 else 0)
     (y + y/4 - y/100 + y/400 + t[month-1] + day) % 7
@@ -136,12 +170,32 @@ is
     days.as_u64*86400 + time_seconds.as_u64
 
 
+  # convert to unix time stamp (i64 version for dates before 1970)
+  #
+  public unix_time_stamp_i64 i64
+    pre debug: time.supported_year year
+  =>
+    leap_days =>
+      ((year-1) / 4) - ((year-1) / 100) + ((year-1) / 400) - ((1969 / 4) - (1969 / 100) + (1969 / 400))
+
+    day_of_year =>
+      for res := day-1, res + days_in_month year m
+          m in 1..(month-1)
+      else
+        res
+
+    days => 365*(year-1970)+leap_days+day_of_year
+
+    time_seconds => hour*3600 + minute*60 + second
+
+    days.as_i64*86400 + time_seconds.as_i64
+
+
   # create a date_time from given seconds since 1970-01-01T00:00:00
   #
   # NOTE: this does not adjust for leap seconds
   #
   public type.from_seconds(n u64) time.date_time
-    pre debug    : n < 3E11 # this restriction is arbitrary (year 11476)
     post analysis: result >= (time.date_time 1970 1 1 0 0 0 0)
   =>
     year, r0 :=
@@ -167,14 +221,75 @@ is
     seconds_in_minute := u64 60
     minute, second := (r3 / seconds_in_minute, r3 % seconds_in_minute)
 
-    time.date_time year month day.as_i32 hour.as_i32 minute.as_i32 second.as_i32 0
+    time.date_time year month day.as_i64 hour.as_i64 minute.as_i64 second.as_i64 0
+
+
+  # create a date_time from given seconds since 1970-01-01T00:00:00 (i64 version for negative values, i.e. dates before 1970)
+  #
+  public type.from_seconds_i64(n i64) time.date_time
+  =>
+    seconds_in_day i64 := 86400
+    total_seconds := n
+    days_since_1970 := total_seconds / seconds_in_day # number of days since 1970-01-01 (can be negative for dates before 1970)
+    leftover_seconds := total_seconds % seconds_in_day # leftover seconds after previous calculation
+    # add one day if leftover_seconds is negative,
+    # because in that case we are actually in the previous day
+    days := days_since_1970 - (if leftover_seconds < 0 then 1 else 0)
+    # add 24 hours to leftover_seconds if it is negative, to get a value in the range of 0..86399 representing the time of day
+    time_seconds := leftover_seconds + (if leftover_seconds < 0 then seconds_in_day else 0)
+
+    year, month, day :=
+      if days >= 0 # after 1970
+        y, rest_days :=
+          for rest := days, rest - days_in_year.as_i64
+              yy := 1970, yy+1
+              leap := time.is_leap_year yy
+              days_in_year := 365 + (leap ? 1 : 0)
+          while rest >= days_in_year.as_i64
+          else
+            (yy, rest)
+
+        m, r1 :=
+          for rest := rest_days, rest - days_in_month.as_i64
+              mm := 1, mm+1
+              days_in_month := time.days_in_month y mm
+          while rest >= days_in_month.as_i64
+          else
+            (mm, rest)
+
+        (y, m, r1.as_i64 + 1)
+      else # before 1970, calculate backwards
+        for rest := -days, rest - days_in_year.as_i64
+            yy := 1969, yy-1
+            leap := time.is_leap_year yy
+            days_in_year := 365 + (leap ? 1 : 0)
+        while rest > days_in_year.as_i64
+        else
+          for remaining := rest, remaining - days_in_month.as_i64
+              mm := 12, mm-1
+              days_in_month := time.days_in_month yy mm
+          while remaining > days_in_month.as_i64
+          else
+            # for dates before 1970, the day is calculated as the number of days in the month minus the leftover days,
+            # because we calculated backwards
+            days_in_month_local := time.days_in_month yy mm
+            (yy, mm, days_in_month_local.as_i64 - remaining.as_i64 + 1)
+
+
+
+    hour := (time_seconds / 3600).as_i64
+    r3 := time_seconds % 3600
+    minute := (r3 / 60).as_i64
+    second := (r3 % 60).as_i64
+
+    time.date_time year month day hour minute second 0
 
 
 
   # defines an equality relation for date time
   #
   public redef type.equality(a, b date_time.this) bool =>
-    a.nano_second = b.nano_second &
+    a.nano_second_ = b.nano_second_ &
      a.year = b.year &
      a.month = b.month &
      a.day = b.day &
@@ -199,36 +314,41 @@ is
 
     ternary_compare.is_yes_or_unknown
 
+public fixed supported_year(y i64) bool =>
+  # Dates too far away from the unix epoch (1970-01-01) would cause an overflow in the unix_time_stamp calculation,
+  # which is currently implemented using a 64-bit integer counting nanoseconds since the epoch.
+  1650 <= y <= 2260
+
 
 # is the given year a leap year?
 #
-is_leap_year(year i32) =>
+is_leap_year(year i64) =>
   (year % 4 = 0 & year % 100 != 0) |
     ((year % 100 = 0) & (year % 400 = 0))
 
 
 # how many days does february have in the given year?
 #
-days_in_february(year i32) =>
+days_in_february(year i64) =>
   if is_leap_year year then 29 else 28
 
 
 # the days in the months of the year
 # starting at january, february, ..., december
 #
-days_in_months(year i32) =>
+days_in_months(year i64) =>
   [31, days_in_february year, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 
 
 # how many days does a given month of a given year have
 #
-days_in_month(year, month i32) =>
+days_in_month(year, month i64) =>
   (days_in_months year)[month - 1]
 
 
 # is the given date valid?
 #
-public is_valid_date(year, month, day i32) bool
+public is_valid_date(year, month, day i64) bool
   pre
     debug: 1 ≤ month ≤ 12
 =>

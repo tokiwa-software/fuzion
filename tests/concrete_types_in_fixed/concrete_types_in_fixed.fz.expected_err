@@ -1,0 +1,19 @@
+
+--CURDIR--/concrete_types_in_fixed.fz:31:15: error 1: Use the concrete type not the this-type in a fixed feature.
+  redef fixed outer b.this => abstract
+--------------^^^^^
+For increased consistency and easier comprehensibility, use 'b' instead of 'b.this'
+
+
+--CURDIR--/concrete_types_in_fixed.fz:32:24: error 2: Use the concrete type not the this-type in a fixed feature.
+  redef fixed with_arg(_ b.this) unit => abstract
+-----------------------^
+For increased consistency and easier comprehensibility, use 'b' instead of 'b.this'
+
+
+--CURDIR--/concrete_types_in_fixed.fz:33:15: error 3: Use the concrete type not the this-type in a fixed feature.
+  redef fixed res_d b.this.d => abstract
+--------------^^^^^
+For increased consistency and easier comprehensibility, use 'b' instead of 'b.this'
+
+3 errors.

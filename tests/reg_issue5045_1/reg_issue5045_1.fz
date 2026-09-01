@@ -1,0 +1,46 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue5045_1
+#
+# -----------------------------------------------------------------------
+
+Cs ref is
+  tail l => abstract
+
+S ref is
+  al l => abstract
+  red =>
+    say "hi"
+    match al
+      nil    =>
+      c Cs => c.tail.red
+
+l : choice nil Cs, S is
+  redef al => l.this
+
+l1 l :=
+  id l (_ : Cs is
+          public redef tail l := nil)
+s1 S => l1
+l2 S =>
+  id l (_ : Cs is
+          public redef tail l := l1)
+
+l2.red

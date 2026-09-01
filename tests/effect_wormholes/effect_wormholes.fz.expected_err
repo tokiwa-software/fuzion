@@ -1,0 +1,12 @@
+02 - using level 1 instated   out_A          in main    thread! -- out_A on io.err
+03 - using inherited          out_A          in spawned thread! -- out_A on io.err
+05 - using level 2 instated   out_B          in main    thread! -- out_B on io.err
+06 - using inherited          out_B          in spawned thread! -- out_B on io.err
+07 - using level 1 teleported out_A          in spawned thread! -- out_A on io.err
+08 - using level 1 instated   out_A          in main    thread! -- out_A on io.err
+10 - using level 1 teleported out_A          in main    thread! -- out_A on io.err
+11 - using level 1 teleported out_B          in main    thread! -- out_B on io.err
+13 - using level 1 teleported out_B          in main    thread! -- out_B on io.err
+14 - using level 2 teleported out_A          in main    thread! -- out_A on io.err
+16 - using level 2 teleported out_A          in main    thread! -- out_A on io.err
+17 - using level 1 teleported out_B          in main    thread! -- out_B on io.err

@@ -1,0 +1,25 @@
+
+--CURDIR--/reg_issue6783.fz:24:7: error 1: Illegal use of 'fixed' modifier.
+fixed a is
+------^
+'fixed' fixed is only allowed on function features not in universe.
+
+
+--CURDIR--/reg_issue6783.fz:26:7: error 2: Illegal use of 'fixed' modifier.
+fixed _ := 3
+------^
+'fixed' fixed is only allowed on function features not in universe.
+
+
+--CURDIR--/reg_issue6783.fz:28:7: error 3: Illegal use of 'fixed' modifier.
+fixed b : choice i32 is
+------^
+'fixed' fixed is only allowed on function features not in universe.
+
+
+--CURDIR--/reg_issue6783.fz:30:7: error 4: Illegal use of 'fixed' modifier.
+fixed c(T type) =>
+------^
+'fixed' fixed is only allowed on function features not in universe.
+
+4 errors.

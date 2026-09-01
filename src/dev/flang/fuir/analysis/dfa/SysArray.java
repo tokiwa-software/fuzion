@@ -126,7 +126,7 @@ public class SysArray extends Value
    */
   public String toString()
   {
-    return "--sys array of type " + _dfa._fuir.clazzAsString(_elementClazz) + "--";
+    return "--sys array of type " + _dfa._fuir.clazzName(_elementClazz) + "--";
   }
 
 

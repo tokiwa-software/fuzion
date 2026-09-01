@@ -41,11 +41,6 @@ public error (
 
   ) : property.equatable
 
-pre
-  # enforce no linefeed at end of message
-  #
-  debug 2 : !msg.ends_with "\n"
-
 is
 
 
@@ -56,8 +51,8 @@ is
   public redef as_string String =>
     error_code
       .bind x->
-        "error(code=$x): $msg"
-      .or_else "error: $msg"
+        "--error(code=$x): $msg--"
+      .or_else "--error: $msg--"
 
 
   # equality

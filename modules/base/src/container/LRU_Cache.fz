@@ -1,0 +1,321 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature LRU_Cache
+#
+# -----------------------------------------------------------------------
+
+# LRU_Cache - a mutable cache applying least recently used eviction strategy
+#
+# It is implemented using a hash map for index lookup and an implicit linked
+# list that stores elements in order from most to least recently used.
+#
+# The linked list structure is implemented using arrays for keys, values and
+# previous/next pointers. This avoids creation and deletion of list node
+# objects, instead only the values in the pointer array need to be updated when
+# an element is accessed.
+#
+# Get, put and remove operations take amortized constant time due to the
+# use of a hash map.
+#
+private:public LRU_Cache(
+
+  # mutate effect to be used to create mutable variables
+  #
+  LM type : mutate,
+
+  # type of the keys to the values in the cache
+  #
+  K type : property.hashable,
+
+  # type of values stored in the cache
+  V type,
+
+  # maps keys to the array index where the value is stored
+  #
+  map Mutable_Hash_Map LM K i64,
+
+  # key to the stored cache content
+  #
+  keys LM.array (option K),
+
+  # the actual content of the cache
+  #
+  values LM.array (option V),
+
+  # indices to the previous and next elements as tuple (next, prev)
+  #
+  nxtprv LM.array (tuple i64 i64)
+
+  ) ref
+    pre debug : keys.length = values.length = nxtprv.length
+  is
+
+
+  # the most recently used element
+  #
+  mru  := LM.env.new i64 -1
+
+  # the least recently used element
+  #
+  lru  := LM.env.new i64 -1
+
+  # the number of elements currently in the cache
+  #
+  # It is
+  # * increased iff a free index is obtained without evicting an element
+  # * decreased iff an element is explicitly removed (by the user)
+  #
+  _size := LM.env.new i64  0
+
+  # the head of the list of free elements
+  #
+  # free elements are stored using the elements next pointers
+  #
+  free := LM.env.new i64  0
+
+
+  # the capacity of the cache,
+  # i.e. the maximum number of elements it can hold at the same time
+  #
+  public capacity i64 => nxtprv.length
+
+
+  # the number of elements currently in the cache
+  #
+  public size i64
+    post debug : 0 <= result <= capacity
+  => LM.env.exclusive ()->_size
+
+
+  # is this cache currently empty, i.e. not storing any elements?
+  #
+  public is_empty bool => size = 0
+
+
+  # add or update value for given key
+  #
+  public put(key K, value V) unit =>
+    LM.env.exclusive ()->
+      match map.get key
+        i i64 => values[i] := value
+                 move_first i
+        nil   => i := get_free
+                 map.put key i
+                 keys[i] := key
+                 values[i] := value
+                 link_first i
+
+
+  # get value for given key
+  #
+  public get(key K) option V =>
+    LM.env.exclusive ()->
+      map.get key .bind i->(
+        move_first i
+        values[i].or_panic)
+
+
+  # remove value for given key from the cache,
+  # returns the value if the key existed
+  #
+  public remove(key K) option V =>
+    LM.env.exclusive ()->
+      map.get key .bind i->{
+        res := values[i].or_panic
+
+        # link_first updates mru, so removing it is the only other case where it changes
+        # lru is always updated in unlink (which is used in del) so not needed here
+        if i = mru.get then mru <- next i
+
+        del i
+        _size <- _size-1
+
+        if safety
+          # should not be accessible externally, but ensure the deleted key/value is no longer retained
+          values[i] := nil
+          keys[i]   := nil
+
+        res
+      }
+
+
+  # get a string representation of this cache
+  # showing key value pairs in order from most to least recently accessed
+  #
+  public redef as_string String =>
+    LM.env.exclusive ()->
+      "[$(
+        if is_empty then ""
+        else
+          for
+            i i64 := mru, next i
+            s := "$(keys[i])=>$(values[i])", "$s, $(keys[i])=>$(values[i])"
+          until next i = -1
+            s
+        )]"
+
+
+  # get the the index of the next element
+  #
+  next(i i64) i64
+    pre debug : 0 <= i < capacity
+  => nxtprv[i].0
+
+
+  # get the index of the previous element
+  #
+  prev(i i64) i64
+    pre debug : 0 <= i < capacity
+  => nxtprv[i].1
+
+
+  # update the successor of the given index i
+  #
+  set_next(i i64, new_next i64)
+    pre debug : -1 <= i < capacity
+        debug : -1 <= new_next < capacity
+  =>
+    if i != -1
+      nxtprv[i] := (new_next, prev i)
+
+
+  # update the predecessor of the given index i
+  #
+  set_prev(i i64, new_prev i64)
+    pre debug : -1 <= i < capacity
+        debug : -1 <= new_prev < capacity
+  =>
+    if i != -1
+      nxtprv[i] := (next i, new_prev)
+
+
+  # mark an element as accessed by moving it to the front of the (virtual) list
+  #
+  move_first(i i64) unit
+    pre debug : 0 <= i < capacity
+    post debug : mru = i
+         debug : prev i = -1
+  =>
+    unlink i
+    link_first i
+
+
+  # evict the least recently used element,
+  # i.e. remove it from the (virtual) list
+  #
+  evict_lru
+    pre  debug : free  = -1
+    post debug : free != -1
+  =>
+    new_lru := prev lru
+    del lru
+    lru <- new_lru
+
+
+  # unlink the element at index i from the virtual list
+  # i.e. connect its predecessor and successor
+  #
+  unlink(i i64) unit
+    pre debug : 0 <= i < capacity
+  =>
+    pred := prev i
+    succ := next i
+
+    set_next pred succ
+    set_prev succ pred
+    if i = mru.get then mru <- succ
+    if i = lru.get then lru <- pred
+    if debug
+      # checked in precondition of link_first, so requires same debug level there
+      nxtprv[i] := (i64 -1, i64 -1)
+
+
+  # make element at index i the first element, it must already be unlinked
+  #
+  link_first(i i64) unit
+    pre debug : 0 <= i < capacity
+        # make sure it was unlinked (requires same debug level in unlink)
+        debug : (next i = -1 || next i = free.get) && prev i = -1
+    post debug : mru = i
+         debug : prev i = -1
+  =>
+    old_mru := mru.get
+    mru <- i
+    set_next mru old_mru
+    set_prev mru -1
+    if old_mru = -1 # first element added to an empty cache
+      lru <- i      # is the least recently used
+    else
+      set_prev old_mru mru
+
+
+  # get an index for a new element, either a free index or by evicting lru
+  #
+  get_free i64
+    post debug : -1 < result < capacity
+  =>
+    if size < capacity
+    then _size <- _size+1
+    else evict_lru
+
+    res := free
+    free <- next free
+    res
+
+
+  # add and empty index to the free list
+  #
+  add_free(i i64) unit
+    pre debug : 0 <= i < capacity
+  =>
+    old_free := free
+    free <- i
+    set_next free old_free
+
+
+  # delete the element at index i from the map and the (virtual) list
+  #
+  del(i i64) unit
+    pre debug : 0 <= i < capacity
+  =>
+    _ := map.remove keys[i].or_panic
+            .or_panic _->"trying to remove an element where the key does not exist in the map" # should not happen
+    unlink i
+    add_free i
+
+
+
+
+  # create an empty LRU cache with the given capacity
+  #
+  public type.new(I type : integer, capacity I) container.LRU_Cache LM K V
+    pre safety : 0 < capacity
+  =>
+    LM.env.exclusive ()->
+      # NYI: OPTIMIZATION: should Mutable_Hash_Map provide an option to set minimum size to avoid reallocation when filling the cache?
+      m  := Mutable_Hash_Map LM K i64 .empty
+      ks := LM.env.new_array (option K) i64 capacity.as_i64 (_->nil)
+      vs := LM.env.new_array (option V) i64 capacity.as_i64 (_->nil)
+      # initialize the free list
+      np := LM.env.new_array (i64, i64) i64 capacity.as_i64 (i->(i+1, i64 -1))
+      # no free element after the last index (at initialization)
+      np[capacity.as_i64-1] := (i64 -1, i64 -1)
+
+      container.LRU_Cache LM K V m ks vs np

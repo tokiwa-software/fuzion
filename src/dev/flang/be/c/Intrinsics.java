@@ -262,7 +262,11 @@ public class Intrinsics extends ANY
             .boxedConstString(str, CExpr.call("strlen",new List<>(str)))
             .ret();
         });
-    put("fuzion.std.exit"      , (c,cl,outer,in) -> CExpr.call("exit", new List<>(A0)));
+    /*
+     * Why this is locked, from man 3 exit:
+     * The exit() function uses a global variable that is not protected, so it is not thread-safe.
+     */
+    put("fuzion.std.exit"      , (c,cl,outer,in) -> locked(CExpr.call("exit", new List<>(A0))));
     put("fuzion.sys.fatal_fault0"      , (c,cl,outer,in) ->
         CStmnt.seq(CExpr.fprintfstderr("*** failed %s: `%s`\n", new CExpr[] {A0.castTo("char *"),
                                                                              A1.castTo("char *")}),
@@ -451,22 +455,6 @@ public class Intrinsics extends ANY
     put("f32.cast_to_u32"      , (c,cl,outer,in) -> outer.adrOf().castTo("fzT_1u32*").deref().ret());
     put("f64.cast_to_u64"      , (c,cl,outer,in) -> outer.adrOf().castTo("fzT_1u64*").deref().ret());
 
-    /* The C standard library follows the convention that floating-point numbers x × 2exp have 0.5 ≤ x < 1,
-     * while the IEEE 754 standard text uses the convention 1 ≤ x < 2.
-     * This convention in C is not just used for DBL_MAX_EXP, but also for functions such as frexp.
-     * source: https://github.com/rust-lang/rust/issues/88734
-     */
-    put("f32.type.min_exp"     , (c,cl,outer,in) -> CExpr.ident("FLT_MIN_EXP").sub(new CIdent("1")).ret());
-    put("f32.type.max_exp"     , (c,cl,outer,in) -> CExpr.ident("FLT_MAX_EXP").sub(new CIdent("1")).ret());
-    put("f32.type.min_positive", (c,cl,outer,in) -> CExpr.ident("FLT_MIN").ret());
-    put("f32.type.max"         , (c,cl,outer,in) -> CExpr.ident("FLT_MAX").ret());
-    put("f32.type.epsilon"     , (c,cl,outer,in) -> CExpr.ident("FLT_EPSILON").ret());
-    put("f64.type.min_exp"     , (c,cl,outer,in) -> CExpr.ident("DBL_MIN_EXP").sub(new CIdent("1")).ret());
-    put("f64.type.max_exp"     , (c,cl,outer,in) -> CExpr.ident("DBL_MAX_EXP").sub(new CIdent("1")).ret());
-    put("f64.type.min_positive", (c,cl,outer,in) -> CExpr.ident("DBL_MIN").ret());
-    put("f64.type.max"         , (c,cl,outer,in) -> CExpr.ident("DBL_MAX").ret());
-    put("f64.type.epsilon"     , (c,cl,outer,in) -> CExpr.ident("DBL_EPSILON").ret());
-
     put("fuzion.sys.type.alloc", (c,cl,outer,in) ->
         {
           var gc = c._fuir.clazzActualGeneric(cl, 0);
@@ -508,6 +496,10 @@ public class Intrinsics extends ANY
                             str.assign(CExpr.call("getenv",new List<>(A0.castTo("char*")))),
                             c.boxedConstString(str, CExpr.call("strlen",new List<>(str))).ret());
         });
+     put("fuzion.sys.thread.current", (c,cl,outer,in) ->
+        {
+          return CExpr.call("fzE_thread_current", new List<>()).ret();
+        });
      put("fuzion.sys.thread.spawn0", (c,cl,outer,in) ->
         {
           var oc = c._fuir.clazzActualGeneric(cl, 0);
@@ -531,15 +523,30 @@ public class Intrinsics extends ANY
             }
         });
     put("fuzion.sys.thread.join0", (c,cl,outer,in) ->
-    {
-      return CExpr.call("fzE_thread_join", new List<>(A0));
-    });
+        {
+          return CExpr.call("fzE_thread_join", new List<>(A0)).ret();
+        });
+    put("fuzion.sys.thread.set_policy", (c,cl,outer,in) ->
+        {
+          return CExpr.call("fzE_thread_setschedparam", new List<>(A0, A1, A2))
+                      .ret();
+        });
+    put("fuzion.sys.thread.set_affinity0", (c,cl,outer,in) ->
+        {
+          return CExpr.call("fzE_thread_setaffinity", new List<>(
+                        A0,
+                        A1.castTo("uint64_t *"),
+                        A2
+                      ))
+                      .ret();
+        });
 
-    put("effect.type.abort0"     ,
-        "effect.type.default0"   ,
-        FuzionConstants.EFFECT_INSTATE_NAME,
-        "effect.type.is_instated0",
-        "effect.type.replace0"   , (c,cl,outer,in) ->
+    put("effect.type.abort0"                 ,
+        "effect.type.instate_at_singularity0",
+        FuzionConstants.EFFECT_INSTATE_NAME  ,
+        "effect.type.is_instated0"           ,
+        "effect.type.set0"                   ,
+        "effect.type.remove0"                , (c,cl,outer,in) ->
         {
           var ecl = c._fuir.effectTypeFromIntrinsic(cl);
           var eid = c._fuir.clazzId2num(ecl) + 1; // must be != 0 since setjmp uses 0 for the normal return case, so we add `1`:
@@ -554,10 +561,12 @@ public class Intrinsics extends ANY
               case "effect.type.abort0"        ->
                 CStmnt.seq(CStmnt.iff(evi, CExpr.call("longjmp",new List<>(evj.deref(), CExpr.int32const(eid)))),
                            CExpr.fprintfstderr("*** abort called for effect `%s` that is not instated!\n",
-                                               CExpr.string(c._fuir.clazzAsString(ecl))),
+                                               CExpr.string(c._fuir.clazzName(ecl))),
                            CExpr.exit(1));
-              case "effect.type.default0"     -> CStmnt.iff(evi.not(), CStmnt.seq(effect_is_unit_type ? CExpr.UNIT : ev.assign(e),
-                                                                                  evi.assign(CIdent.TRUE )));
+              case "effect.type.instate_at_singularity0" ->
+                CStmnt.iff(evi.not(), CStmnt.seq(effect_is_unit_type ? CExpr.UNIT : ev.assign(e),
+                                                 evi.assign(CIdent.TRUE)                         ));
+
               case FuzionConstants.EFFECT_INSTATE_NAME ->
                 {
                   var call     = c._fuir.lookupCall(c._fuir.clazzActualGeneric(cl, 0));
@@ -621,12 +630,14 @@ public class Intrinsics extends ANY
                   else
                     {
                       yield CStmnt.seq(CExpr.fprintfstderr("*** C backend no code for class '%s'\n",
-                                                           CExpr.string(c._fuir.clazzAsString(call))),
+                                                           CExpr.string(c._fuir.clazzName(call))),
                                        CExpr.call("exit", new List<>(CExpr.int32const(1))));
                     }
                 }
               case "effect.type.is_instated0" -> CStmnt.seq(CStmnt.iff(evi, c._names.FZ_TRUE.ret()), c._names.FZ_FALSE.ret());
-              case "effect.type.replace0"     -> c._fuir.clazzIsUnitType(ecl) ? CExpr.UNIT : ev.assign(e);
+              case "effect.type.set0"         -> CStmnt.seq(evi.assign(CIdent.TRUE),
+                                                            c._fuir.clazzIsUnitType(ecl) ? CExpr.UNIT : ev.assign(e));
+              case "effect.type.remove0"      -> evi.assign(CIdent.FALSE);
               default -> throw new Error("unexpected intrinsic '" + in + "'.");
               };
         });
@@ -637,7 +648,7 @@ public class Intrinsics extends ANY
         {
           var ecl = c._fuir.clazzResultClazz(cl); // type
           var o = CStmnt.seq(CExpr.fprintfstderr("*** effect `%s` not present in current environment\n",
-                                                CExpr.string(c._fuir.clazzAsString(ecl))),
+                                                CExpr.string(c._fuir.clazzName(ecl))),
                             CExpr.exit(1));
           if (Arrays.binarySearch(c._effectClazzes, ecl) >= 0)
             {
@@ -659,7 +670,7 @@ public class Intrinsics extends ANY
           ? noJava
           : CExpr
              .call("fzE_java_object_is_null",
-                   new List<CExpr>(A0.castTo("jobject")))
+                   new List<>(A0.castTo("jobject")))
              .cond(c._names.FZ_TRUE, c._names.FZ_FALSE)
              .ret()
        );
@@ -672,7 +683,7 @@ public class Intrinsics extends ANY
         {
           return c.returnJavaObject(c._fuir.clazzResultClazz(cl), CExpr
             .call("fzE_array_get",
-              new List<CExpr>(
+              new List<>(
                 A0.castTo("jarray"),
                 A1,
                 A2.castTo("char *"))),
@@ -694,7 +705,7 @@ public class Intrinsics extends ANY
           var elements = c._names.newTemp();
           return CExpr
                 .call("fzE_array_to_java_object0",
-                  new List<CExpr>(
+                  new List<>(
                     A0.field(c._names.fieldName(length)),
                     c._fuir.getSpecialClazz(
                       elementType) == SpecialClazzes.c_NOT_FOUND
@@ -761,7 +772,7 @@ public class Intrinsics extends ANY
             .seq(c.returnJavaObject(c._fuir.clazzResultClazz(cl),
               CExpr
                 .call("fzE_call_c0",
-                  new List<CExpr>(
+                  new List<>(
                     A0.castTo("jstring"),
                     A1.castTo("jstring"),
                     A2.field(c._names.fieldName(data)).castTo("jvalue *"))), true));
@@ -792,7 +803,7 @@ public class Intrinsics extends ANY
               // not inherit Java_Object or Java_String
               c.returnJavaObject(c._fuir.clazzResultClazz(cl), CExpr
                 .call("fzE_call_s0",
-                  new List<CExpr>(
+                  new List<>(
                     A0.castTo("jstring"),
                     A1.castTo("jstring"),
                     A2.castTo("jstring"),
@@ -812,7 +823,7 @@ public class Intrinsics extends ANY
             .seq(
               c.returnJavaObject(c._fuir.clazzResultClazz(cl), CExpr
                 .call("fzE_call_v0",
-                  new List<CExpr>(
+                  new List<>(
                     A0.castTo("jstring"),
                     A1.castTo("jstring"),
                     A2.castTo("jstring"),
@@ -834,7 +845,7 @@ public class Intrinsics extends ANY
               return
                 CExpr
                   .call("fzE_" + c._fuir.clazzBaseName(pt) + "_to_java_object",
-                        new List<CExpr>(c._fuir.clazzIs(pt, SpecialClazzes.c_bool) ? A0.field(CNames.TAG_NAME) : A0))
+                        new List<>(c._fuir.clazzIs(pt, SpecialClazzes.c_bool) ? A0.field(CNames.TAG_NAME) : A0))
                   .field(new CIdent("l"))
                   .castTo(c._types.clazz(rc))
                   .ret();
@@ -852,7 +863,7 @@ public class Intrinsics extends ANY
               var tmp = new CIdent("tmp");
               return CStmnt.seq(
                 CStmnt.decl("const char *", tmp),
-                tmp.assign(CExpr.call("fzE_java_string_to_utf8_bytes", new List<CExpr>(A0.castTo("jstring")))),
+                tmp.assign(CExpr.call("fzE_java_string_to_utf8_bytes", new List<>(A0.castTo("jstring")))),
                 c.boxedConstString(tmp, CExpr.call("strlen",new List<>(tmp)))
                   .ret());
             }
@@ -865,7 +876,7 @@ public class Intrinsics extends ANY
           return C.JAVA_HOME == null
             ? noJava
             : CExpr
-                .call("fzE_string_to_java_object", new List<CExpr>(
+                .call("fzE_string_to_java_object", new List<>(
                   A0.field(c._names.fieldName(data)),
                   A0.field(c._names.fieldName(length))
                   ))
@@ -908,7 +919,7 @@ public class Intrinsics extends ANY
         var tmp = new CIdent("tmp");
         var rc = c._fuir.clazzResultClazz(cl);
         return CStmnt.seq(
-          CStmnt.decl("void *", tmp, CExpr.call("fzE_cnd_init",      new List<>())),
+          CStmnt.decl("void *", tmp, CExpr.call("fzE_cnd_init",      new List<>(A1))),
           CStmnt.iff(tmp.eq(CNames.NULL),
             c.returnOutcome(c._fuir.clazzChoice(rc, 1), c.error(c._fuir.clazzChoice(rc, 1), c.boxedConstString("An error occurred initializing the condition variable.")), rc, 1),
             c.returnOutcome(c._fuir.clazzChoice(rc, 0), tmp, rc , 0)
@@ -916,9 +927,10 @@ public class Intrinsics extends ANY
         );
       }
     );
-    put("concur.sync.cnd_signal",    (c,cl,outer,in) -> CStmnt.iff(CExpr.call("fzE_cnd_signal",    new List<>(A0)).eq(new CIdent("0")), c._names.FZ_TRUE.ret(), c._names.FZ_FALSE.ret()));
-    put("concur.sync.cnd_broadcast", (c,cl,outer,in) -> CStmnt.iff(CExpr.call("fzE_cnd_broadcast", new List<>(A0)).eq(new CIdent("0")), c._names.FZ_TRUE.ret(), c._names.FZ_FALSE.ret()));
-    put("concur.sync.cnd_wait",      (c,cl,outer,in) -> CStmnt.iff(CExpr.call("fzE_cnd_wait",      new List<>(A0, A1)).eq(new CIdent("0")), c._names.FZ_TRUE.ret(), c._names.FZ_FALSE.ret()));
+    put("concur.sync.cnd_signal",    (c,cl,outer,in) -> CExpr.call("fzE_cnd_signal",    new List<>(A0)));
+    put("concur.sync.cnd_broadcast", (c,cl,outer,in) -> CExpr.call("fzE_cnd_broadcast", new List<>(A0)));
+    put("concur.sync.cnd_wait",      (c,cl,outer,in) -> CExpr.call("fzE_cnd_wait",      new List<>(A0, A1)));
+    put("concur.sync.cnd_timedwait", (c,cl,outer,in) -> CExpr.call("fzE_cnd_timedwait", new List<>(A0, A1, A2)));
     put("concur.sync.cnd_destroy",   (c,cl,outer,in) -> CExpr.call("fzE_cnd_destroy",   new List<>(A0)));
     put("native_string_length", (c,cl,outer,in) -> CExpr.call("strlen",   new List<>(A0.castTo("void *"))).ret());
     // essentially a NOP in c-backend
@@ -967,6 +979,7 @@ public class Intrinsics extends ANY
   private static void put(String n1, String n2, String n3, IntrinsicCode c) { put(n1, c); put(n2, c); put(n3, c); }
   private static void put(String n1, String n2, String n3, String n4, IntrinsicCode c) { put(n1, c); put(n2, c); put(n3, c); put(n4, c); }
   private static void put(String n1, String n2, String n3, String n4, String n5, IntrinsicCode c) { put(n1, c); put(n2, c); put(n3, c); put(n4, c); put(n5, c); }
+  private static void put(String n1, String n2, String n3, String n4, String n5, String n6, IntrinsicCode c) { put(n1, c); put(n2, c); put(n3, c); put(n4, c); put(n5, c); put(n6, c); }
 
 
   /**

@@ -1,0 +1,95 @@
+// This file is part of the Fuzion language implementation.
+//
+// The Fuzion language implementation is free software: you can redistribute it
+// and/or modify it under the terms of the GNU General Public License as published
+// by the Free Software Foundation, version 3 of the License.
+//
+// The Fuzion language implementation is distributed in the hope that it will be
+// useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+// License for more details.
+//
+// You should have received a copy of the GNU General Public License along with The
+// Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+//
+//
+//
+// -----------------------------------------------------------------------
+//
+//  Tokiwa Software GmbH, Germany
+//
+//  ASCIIdoc source of the Fuzion Realtime Manual
+//
+// -----------------------------------------------------------------------
+
+= Fuzion Realtime
+The Fuzion Team <info@tokiwa.software>
+include::../../version.txt[]
+:title-logo-image: image:../../assets/logo.svg[top=5%,align=center,pdfwidth=1.5cm]
+:doctype: book
+:description: Fuzion Realtime Manual
+:sectanchors:
+:url-repo: https://github.com/tokiwa-software/fuzion/
+:sectnums:
+:icons: font
+:toc: macro
+
+toc::[]
+
+== About this Document
+This document explains Fuzion's realtime systems.
+
+== Glossary
+
+[#jitter]
+((Jitter)):: The deviation between when an event is expected to occur and when it actually occurs. For example, if a periodic task is expected to be released every 10 ms at times
+0 ms, 10 ms, 20 ms, 30 ms, ...
+but is actually released at
+0 ms, 11 ms, 19 ms, 32 ms, ...
+then the release jitter is
+0 ms, +1 ms, -1 ms, +2 ms, ...
+respectively.
+
+A realtime system with low jitter produces events close to their expected times. A system with high jitter produces events with larger timing deviations.
+
+[#task]
+((Task)):: A unit of work that can be scheduled and executed in a realtime system.
+
+[#event]
+((Event)):: An occurrence that happens at a specific time in a realtime system.
+
+[#period]
+((Period)):: The intended time interval between successive releases of a task. For example, a task configured to run every 10 ms has a period of 10 ms. If the first release occurs at time 0 ms, subsequent releases are expected at : 10 ms, 20 ms, 30 ms, ...
+The period is a scheduling property describing how often an activity should occur.
+
+[#periodic_task]
+((Periodic Task)):: A task that is executed at regular intervals, defined by its period.
+
+[#sporadic_task]
+((Sporadic Task)):: A task that is executed irregularly, with a minimum inter-arrival time between executions.
+
+[#deadline]
+((Deadline)):: The latest time by which a task must complete its execution to be considered successful.
+
+[#response_time]
+((Response Time)):: The time taken from the release of a task to its completion.
+
+[#cycle]
+((Cycle)):: Observes the spacing between two consecutive events in a realtime system, irrespective of schedule.
+
+[#precision]
+((Precision)):: The smallest time difference that a measurement system can reliably distinguish. Higher precision allows smaller variations in timing to be measured accurately. Precision depends on factors such as the resolution of the clock used, the frequency at which timestamps are sampled, and the overhead of the measurement mechanism.
+
+[#affinity]
+((Affinity)):: Restriction binding a thread to specific CPU cores.
+
+[#fifo_scheduling]
+((FIFO Scheduling)):: A scheduling policy in which runnable tasks of the same priority execute in the order they became ready to run.
+Under Linux SCHED_FIFO, a running task continues executing until it blocks, yields, or is preempted by a higher-priority task. Among tasks with equal priority, execution follows first-in-first-out ordering.
+
+[#priority_scheduling]
+((Priority Scheduling)):: A scheduling approach in which tasks are assigned priorities, and higher-priority tasks are preferred over lower-priority tasks.
+When multiple runnable tasks have the same priority, an additional policy determines their ordering. For example, Linux SCHED_FIFO uses first-in-first-out ordering among tasks of equal priority, while still allowing higher-priority tasks to preempt lower-priority ones.
+
+[#observer]
+((Observer)):: The measurement mechanism that records the times at which events occur in order to analyze their timing properties. An observer may consist of instrumentation code, tracing facilities, or profiling tools that collect timestamps and compare them with expected execution times. The observer itself does not influence the schedule; it only measures it.

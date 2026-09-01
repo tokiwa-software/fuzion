@@ -200,16 +200,6 @@ public class Intrinsics extends ANY
   public static long    f64_as_i64_lax              (double a          ) { return (long)          (      a); }
   public static float   f64_as_f32                  (double a          ) { return (float)         (      a); }
   public static long    f64_cast_to_u64             (double a          ) { return Double.doubleToLongBits(a); }
-  public static float   f32_type_epsilon            (                  ) { return Math.ulp  ((float)  1); }
-  public static float   f32_type_max                (                  ) { return Float.MAX_VALUE;                }
-  public static int     f32_type_max_exp            (                  ) { return Float.MAX_EXPONENT;             }
-  public static float   f32_type_min_positive       (                  ) { return Float.MIN_NORMAL;               }
-  public static int     f32_type_min_exp            (                  ) { return Float.MIN_EXPONENT;             }
-  public static double  f64_type_epsilon            (                  ) { return         Math.ulp  ((double) 1); }
-  public static double  f64_type_max                (                  ) { return Double.MAX_VALUE;               }
-  public static int     f64_type_max_exp            (                  ) { return Double.MAX_EXPONENT;            }
-  public static double  f64_type_min_positive       (                  ) { return Double.MIN_NORMAL;              }
-  public static int     f64_type_min_exp            (                  ) { return Double.MIN_EXPONENT;            }
 
   public static void fuzion_std_exit (int code)
   {
@@ -221,7 +211,7 @@ public class Intrinsics extends ANY
     return System.getenv(Runtime.utf8ByteArrayDataToString((byte[]) s)) != null;
   }
 
-  public static void fuzion_sys_thread_join0(Object thread)
+  public static int fuzion_sys_thread_join0(Object thread)
   {
     var result = false;
     do
@@ -237,6 +227,17 @@ public class Intrinsics extends ANY
           }
       }
     while (!result);
+    return 0;
+  }
+
+  public static int fuzion_sys_thread_set_policy(Object thread, int policy, int priority)
+  {
+    return 38 /* ENOSYS - Function not implemented */;
+  }
+
+  public static int fuzion_sys_thread_set_affinity0(Object thread, Object cores, int cores_len)
+  {
+    return 38 /* ENOSYS - Function not implemented */;
   }
 
 }

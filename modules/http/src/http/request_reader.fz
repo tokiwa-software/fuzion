@@ -29,10 +29,10 @@ public read_request(
   LM type: mutate) outcome request_message
 =>
 
-  exception unit _ ()->
+  flow.exception unit _ ()->
 
     cause(s String) void =>
-      (exception unit).env.cause (error s)
+      (flow.exception unit).env.cause (error s)
 
     # NYI: must parse header as superset of ASCII
     # https://datatracker.ietf.org/doc/html/rfc9112#section-2.2-2
@@ -60,7 +60,7 @@ public read_request(
 
     target := rl[1]
 
-    if !rl[2].starts_with "HTTP/" then cause "unsupported protocol {rl[2]}"
+    if !rl[2].starts_with "HTTP/" then cause "unsupported protocol $(rl[2])"
 
     major, minor := parse_http_version rl[2]
 

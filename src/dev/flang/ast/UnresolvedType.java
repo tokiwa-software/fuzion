@@ -208,7 +208,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
     this._generics = (((g == null) || g.isEmpty()) ? NONE : g).freeze();
     this._outer    = o;
     this._typeKind = typeKind;
-    // to make caching of _isGenericArgument work
+    // to make caching of _isParametricType work
     // we call constructor after _typeKind is set
     super();
   }
@@ -260,7 +260,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
     this._pos               = original._pos;
     this._typeKind          = Optional.of(typeKind);
-    // to make caching of _isGenericArgument work
+    // to make caching of _isParametricType work
     // we call constructor after _typeKind is set
     super();
     this._name              = original._name;
@@ -282,7 +282,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
   {
     this._pos               = original._pos;
     this._typeKind          = original._typeKind;
-    // to make caching of _isGenericArgument work
+    // to make caching of _isParametricType work
     // we call constructor after _typeKind is set
     super();
     this._name              = original._name;
@@ -370,7 +370,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
   @Override
   public String toString(boolean humanReadable, AbstractFeature context)
   {
-    return toString();
+    return humanReadable && _name.startsWith(FuzionConstants.INTERNAL_NAME_SYMBOL) ? "_" : toString();
   }
 
 
@@ -417,7 +417,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
   /**
    * resolve this type, i.e., find or create the corresponding instance of
-   * ResolvedType of this and all outer types and type arguments this depends on.
+   * ResolvedType of this and all outer types and type parameters this depends on.
    *
    * @param res this is called during type resolution, res gives the resolution
    * instance.
@@ -433,7 +433,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
   /**
    * resolve this type, i.e., find or create the corresponding instance of
-   * ResolvedType of this and all outer types and type arguments this depends on.
+   * ResolvedType of this and all outer types and type parameters this depends on.
    *
    * @param res this is called during type resolution, res gives the resolution
    * instance.
@@ -478,7 +478,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
           {
             var inCotype = of != originalOuterFeature(of);
             var mayBeFreeType = mayBeFreeType() && outer.isValueArgument();
-            var traverseOuter = outer() == null && _name != FuzionConstants.COTYPE_THIS_TYPE;
+            var traverseOuter = outer() == null && _name != FuzionConstants.COTYPE_RELAY_TYPE;
             var fo = res._module.lookupType(pos(), of, _name, traverseOuter,
                                             tolerant                                /* ignore ambiguous */,
                                             tolerant || mayBeFreeType || inCotype   /* ignore not found */);
@@ -524,18 +524,18 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
                           {
                             if (!tolerant)
                               {
-                                AstErrors.formalGenericWithGenericArgs(pos(), this, f);
+                                AstErrors.formalGenericWithTypeParameters(pos(), this, f);
                                 _resolved = Types.t_ERROR;
                               }
                           }
                         else
                           {
-                            var gt = f.asGenericType();
+                            var gt = f.asParametricType();
                             if (gt.isOpenGeneric() && !isValidUseOfOpenType(context, f))
                               {
                                 if (!tolerant)
                                   {
-                                    AstErrors.illegalUseOfOpenFormalGeneric(pos(), gt.genericArgument());
+                                    AstErrors.illegalUseOfOpenFormalGeneric(pos(), gt.typeParameter());
                                     _resolved = Types.t_ERROR;
                                   }
                               }
@@ -585,8 +585,8 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
   }
 
   /**
-   * After it was found that `this` resolves as the open type parameter `otp` in
-   * the `context`, check if this is a legal use of an open type parameter.
+   * After it was found that {@code this} resolves as the open type parameter {@code otp} in
+   * the {@code context}, check if this is a legal use of an open type parameter.
    *
    * Check if this is the last argument of a feature and t is its return type.
    * This is needed during type resolution since this is the only place where an
@@ -758,7 +758,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
       {
         if (isMatchingCotype(o))
           {
-            result = o.typeArguments().get(0).asGenericType();
+            result = o.typeArguments().get(0).asParametricType();
             o = null;
           }
         else
@@ -779,7 +779,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
   private boolean isMatchingCotype(AbstractFeature outerfeat)
   {
     return outerfeat.isCotype() &&
-      (_name + "." + FuzionConstants.TYPE_NAME).equals(outerfeat.featureName().baseName()) &&
+      (_name + "." + FuzionConstants.TYPE_NAME).equals(outerfeat.baseName()) &&
       (_outer == null                                   ||
        (_outer instanceof UnresolvedType ot                   &&
         !ot.isThisType()                            &&
@@ -875,7 +875,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
       (outer.isValueArgument());
 
     var tp = new Feature(pos(),
-                         outer.visibility(),
+                         Visi.UNSPECIFIED,
                          0,
                          freeTypeConstraint().resolve(res, context),
                          _name,
@@ -890,7 +890,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
       };
     var g = outer.outer().addTypeParameter(res, tp);
     tp.scheduleForResolution(res);
-    return g.asGenericType();
+    return g.asParametricType();
   }
 
 
@@ -923,7 +923,7 @@ public abstract class UnresolvedType extends AbstractType implements HasSourcePo
 
 
   /**
-   * The mode of the type: ThisType, RefType or ValueType.
+   * The mode of the type: ParametricType, ThisType, RefType or ValueType.
    */
   @Override
   public TypeKind kind()

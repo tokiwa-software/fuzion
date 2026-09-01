@@ -114,12 +114,18 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   color: #795e26;
 }
 
+.fd-fname{
+  font-family: 'Fira Mono', monospace;
+  color: #795e26;
+  font-weight: 600;
+}
+
 .fd-type{
   color: #1b5a6c;
   font-style: italic;
 }
 
-.fd-comment{
+.fd-comment, .fd-contract{
   padding: 1em;
 }
 
@@ -134,12 +140,18 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   border: 2px outset rgba(0,0,0,0.1);
 }
 
+.fd-comment details, .fd-contract details{
+  margin: 0em;
+  margin-bottom: 1em;
+}
+
 .fd details p{
   margin-top: 1em;
 }
 
 .fd summary{
   list-style-position: outside;
+  background-color: rgba(0,0,0,0.02);
 }
 
 .fd-anchor-sign{
@@ -209,15 +221,24 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
   justify-content: center;
   align-items: center;
 }
-.fd-parent a{
+.fd-contract a, .fd-comment a, .fd-parent a{
   color: unset;
 }
-.fd-parent a:hover{
+.fd-contract a:hover, .fd-comment a:hover, .fd-parent a:hover{
   color: #795e26;
 }
 
-.fz-code, .fd-feature, .fd-keyword, .fd-type {
+.fd-contract-title, .fz-code, .fd-feature, .fd-keyword, .fd-type {
   font-family: 'Fira Mono', monospace;
+}
+
+.fd-contract-title {
+  font-family: 'Fira Mono', monospace;
+  font-weight: bold;
+}
+
+.fd-contract {
+  font-family: 'Fira';
 }
 
 /* Version hash at the bottom of api docs */

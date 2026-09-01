@@ -27,11 +27,16 @@
 #
 # A Cons is a ref to a cell that contains a head and a tail
 #
-public Cons(public A, B type) ref is
+public Cons(A, B type) ref is
 
   public head A => abstract
 
   public tail B => abstract
+
+  # returns whether the data structure this Cons
+  # cell defines is finite, infinite or unknown
+  #
+  public finite trit => trit.unknown
 
 
 # cons -- feature used to define simple, non-lazy Cons cells

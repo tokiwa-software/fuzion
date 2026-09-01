@@ -1,7 +1,7 @@
 
---CURDIR--/test_this_type_negative.fz:57:17: error 1: Incompatible types when passing argument in a call
+--CURDIR--/test_this_type_negative.fz:57:16: error 1: Incompatible types when passing argument in a call
   _ := xa1.op0 (xb "xb")   # 3. should flag an error: incompatible type
-----------------^^
+---------------^^^^^^^^^
 Actual type for argument #1 'v' does not match expected type.
 In call to          : 'test_this_type_negative.xa.op0'
 expected formal type: 'test_this_type_negative.this.xa'

@@ -42,62 +42,62 @@ test_asParsedType_negative is
   y(T type, v T) => say "GOT: y $T"
 
 
-  # ------  tests using actual type arguments  ------
+  # ------  tests using actual type parameters  ------
 
 
-  say "EXP: x Type of 'i32'"
+  say "EXP: x i32"
   x i32
   say ""
 
-  say "EXP: x Type of 'a'"
+  say "EXP: x a"
   x a
   say ""
 
-  say "EXP: x Type of 'a.b'"
+  say "EXP: x a.b"
   x a.b
   say ""
 
-  say "EXP: x Type of 'tuple a.b a i32'"
+  say "EXP: x tuple a.b a i32"
   x (a.b, a, i32)
   say ""
 
-  say "EXP: x Type of 'choice a.b a i32'"
+  say "EXP: x choice a.b a i32"
   x (a.b | a | i32)
   say ""
 
-  say "EXP: x Type of 'Unary String i32'"
+  say "EXP: x Unary String i32"
   x i32->String
   x (i32->String)
   say ""
 
-  say "EXP: x Type of 'Unary String a'"
+  say "EXP: x Unary String a"
   x a->String
   x (a->String)
   say ""
 
-  say "EXP: x Type of 'Unary a.b a'"
+  say "EXP: x Unary a.b a"
   x a->a.b
   x (a->a.b)
   say ""
 
-  say "EXP: x Type of 'Unary a a.b'"
+  say "EXP: x Unary a a.b"
   x a.b->a
   x (a.b->a)
   say ""
 
-  say "EXP: x Type of 'Function String i32 u64'"
+  say "EXP: x Function String i32 u64"
   x (i32,u64)->String
   x (i32,u64)->
     String
   say ""
 
-  say "EXP: x Type of 'Function String (Sequence u64) a.b'"
+  say "EXP: x Function String (Sequence u64) a.b"
   x ((Sequence u64, a.b) -> String)
   x ((Sequence u64, a.b) ->
     String)
   say ""
 
-  say "EXP: x Type of 'choice a.b i32 (Unary (choice i32 Any) String)'"
+  say "EXP: x choice a.b i32 (Unary (choice i32 Any) String)"
   x a.b|i32|String->i32|Any
   x a.b|i32|String->
     i32|Any
@@ -106,19 +106,19 @@ test_asParsedType_negative is
     i32|Any)
   say ""
 
-  say "EXP: x Type of 'Unary (choice i32 Any) (choice a.b i32 String)'"
+  say "EXP: x Unary (choice i32 Any) (choice a.b i32 String)"
   x (a.b|i32|String)->i32|Any
   x (a.b|i32|String)->
     i32|Any
   say ""
 
-  say "EXP: x Type of 'choice (Unary i32 (choice a.b i32 String)) Any'"
+  say "EXP: x choice (Unary i32 (choice a.b i32 String)) Any"
   x ((a.b|i32|String)->i32)|String
   x ((a.b|i32|String)->
           i32)|String
   say ""
 
-  say "EXP: x Type of 'tuple'"
+  say "EXP: x tuple"
   x ()
   x (())
   x ((()))
@@ -155,59 +155,59 @@ test_asParsedType_negative is
 
   f Function String (Sequence u64) a.b => (p,q)->"hi"
 
-  say "EXP: y Type of 'Function String (Sequence u64) a.b'"
+  say "EXP: y Function String (Sequence u64) a.b"
   y f
   say ""
 
-  say "EXP: y Type of 'tuple (option unit) a.b'"
+  say "EXP: y tuple (option unit) a.b"
   y (option unit, a.b)
   say ""
 
-  say "EXP: y Type of 'f64'"
+  say "EXP: y f64"
   y 3.14
   say ""
 
-  say "EXP: y Type of 'String'"
+  say "EXP: y String"
   y "hello"
   say ""
 
-  say "EXP: y Type of 'bool'"
+  say "EXP: y bool"
   y true
   say ""
 
-  say "EXP: y Type of 'i32'"
+  say "EXP: y i32"
   y true?1:2
   say ""
 
-  say "EXP: y Type of 'codepoint'"
+  say "EXP: y codepoint"
   y (3=4 ? true_  => "a"
          | false_ => "b")
   say ""
 
-  say "EXP: y Type of 'codepoint'"
+  say "EXP: y codepoint"
   y (match 3=4
        true_  => "a"
        false_ => "b")
   say ""
 
-  say "EXP: y Type of 'codepoint'"
+  say "EXP: y codepoint"
   y (if 3=4 then "a" else "b")
   say ""
 
-  say "EXP: y Type of 'io.Out'"
+  say "EXP: y io.Out"
   y (io.Out.env)
   say ""
 
-  say "EXP: y Type of 'Type'"
+  say "EXP: y Type"
   y (io.Out.type)
   say ""
 
   t2 := (u8 3, f32 4, i64 5)
 
-  say "EXP: y Type of 'u8'"
+  say "EXP: y u8"
   y t2.values.0
   say ""
 
-  say "EXP: y Type of 'i64'"
+  say "EXP: y i64"
   y t2.values.2
   say ""

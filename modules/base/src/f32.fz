@@ -96,12 +96,12 @@ public f32(public val f32) : float, java_primitive is
   # number of bits used for mantissa,
   # including leading '1' that is not actually stored
   #
-  public redef type.significand_bits i32 => 24
+  public redef type.significand_bits i64 => 24
 
 
   # number of bits used for exponent
   #
-  public redef type.exponent_bits i32 => 8
+  public redef type.exponent_bits i64 => 8
 
 
   # mask for the bits that encode the mantissa
@@ -114,15 +114,15 @@ public f32(public val f32) : float, java_primitive is
 
 
   # the exponent bias (the zero offset of the exponent)
-  public type.exponent_bias i32 => 127
+  public type.exponent_bias i64 => 127
 
 
   # the biased exponent
-  public redef exponent_biased i32 => ((cast_to_u32 >> f32.mantissa_bits.as_u32) & f32.exponent_mask).as_i32
+  public redef exponent_biased i64 => ((cast_to_u32 >> f32.mantissa_bits.as_u32) & f32.exponent_mask).as_i64
 
 
   # the normalized exponent
-  public redef exponent i32 =>
+  public redef exponent i64 =>
     if exponent_biased = 0
       1 - f32.exponent_bias
     else
@@ -197,6 +197,35 @@ public f32(public val f32) : float, java_primitive is
     (num.ryū f32).as_string val
 
 
+  # convert this to a string with a fixed number of digits after the decimal point.
+  # If the given values are unusable, the result is the same as `as_string`.
+  # Overflows are technically possible, but floats become inaccurate long before that.
+  #
+  public redef as_string_decimals(fraction_digits i64) String =>
+    if is_NaN || val.abs = f32.positive_infinity || fraction_digits <= 0
+      f32.this.as_string
+    else
+      scale := 10.0 ** fraction_digits.as_f64
+
+      rounded_scaled :=
+        if val.as_f64 >= 0.0
+          ((val.as_f64 * scale) + 0.5).as_i64_lax
+        else
+          ((val.as_f64 * scale) - 0.5).as_i64_lax
+
+      rounded := rounded_scaled.as_f64 / scale
+
+      s String := (num.ryū f32).as_string rounded.as_f32 false (num.ryū f32).rounding_even
+      match s.find "."
+        i i64 =>
+          digits := s.substring i+1
+          if digits.byte_count > fraction_digits
+            "$(s.substring 0 i).$(digits.substring 0 fraction_digits)"
+          else
+            "$(s.substring 0 i).$(digits.pad "0" fraction_digits)"
+        nil => s
+
+
   # -----------------------------------------------------------------------
   #
   # type features:
@@ -212,7 +241,7 @@ public f32(public val f32) : float, java_primitive is
   public fixed redef type.one  f32 => 1
 
 
-  public fixed redef type.bytes i32 => 4
+  public fixed redef type.bytes i64 => 4
 
 
   public fixed redef type.ℇ f32 => f32 2.7182818284590452354
@@ -225,11 +254,11 @@ public f32(public val f32) : float, java_primitive is
     val.as_f32
 
 
-  public fixed redef type.min_exp i32 => intrinsic
-  public fixed redef type.max_exp i32 => intrinsic
-  public fixed redef type.min_positive f32 => intrinsic
-  public fixed redef type.max f32 => intrinsic
-  public fixed redef type.epsilon f32 => intrinsic
+  public fixed redef type.min_exp i64 => -126
+  public fixed redef type.max_exp i64 => +127
+  public fixed redef type.min_positive f32 => 1.0P-126
+  public fixed redef type.max f32 => 3.4028234664E38
+  public fixed redef type.epsilon f32 => 1.0P-23
 
 
   # atan(y/x) with a few special cases

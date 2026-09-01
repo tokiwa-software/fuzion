@@ -276,7 +276,7 @@ is
   #
   public as_string_pad String =>
     val, unt := as_string_help unit_iec_for_as_string
-    "{val.pad_left 4} {unt.pad 3}"
+    "$(val.pad_left 4) $(unt.pad 3)"
 
 
   # Output fo as_string_si padded for nice alignment in a table, e.g.
@@ -286,7 +286,7 @@ is
   #
   public as_string_si_pad String =>
     val, unt := as_string_help unit_si_for_as_string
-    "{val.pad_left 4} {unt.pad 2}"
+    "$(val.pad_left 4) $(unt.pad 2)"
 
 
   # Create a string representation of this units.data_size using the given unit
@@ -304,7 +304,7 @@ is
   #
   public as_string_pad(iec_or_si_unit choice units.byte_iec units.byte_si) String =>
     val, unt := as_string_help iec_or_si_unit
-    "{val.pad_left 4} {unt.pad 3}"
+    "$(val.pad_left 4) $(unt.pad 3)"
 
   # Helper feature for as_string, returns unpadded strings for value and unit
   #
@@ -321,7 +321,7 @@ is
                   # to prevent rounding that would display a value larger than the actual size.
                   #
                   # NYI: CLEANUP: use float formatting once available: <10 two decimals, >=10 one decimal
-                  ((bytes / smaller_bytes.val).as_f64 / factor).as_string.pad "0" 4 .substring 0 4
+                  ((bytes / smaller_bytes.or_panic).as_f64 / factor).as_string.pad "0" 4 .substring 0 4
 
     (n, u_short_name)
 
@@ -331,10 +331,10 @@ is
   #
   public unit_iec_for_as_string units.byte_iec =>
     for
-      x := units.byte_iec.b, nx.get
+      x := units.byte_iec.b, nx.or_panic
       nx := x.larger
     while nx >>? (u -> bytes / u.in_bytes >= 1024.as_u128)
-    else nx >>? (u -> bytes / u.in_bytes > 0.as_u128) ? nx.val : x
+    else nx >>? (u -> bytes / u.in_bytes > 0.as_u128) ? nx.or_panic : x
 
 
   # Determines the si prefixed unit to use for as_string,
@@ -342,15 +342,15 @@ is
   #
   public unit_si_for_as_string units.byte_si =>
     for
-      x := units.byte_si.b, nx.get
+      x := units.byte_si.b, nx.or_panic
       nx := x.larger
     while nx >>? (u -> bytes / u.in_bytes >= 1E3.as_u128)
-    else nx >>? (u -> bytes / u.in_bytes > 0.as_u128) ? nx.val : x
+    else nx >>? (u -> bytes / u.in_bytes > 0.as_u128) ? nx.or_panic : x
 
   # total order
   #
   public fixed redef type.lteq(a, b units.data_size) bool =>
-    u128.type.lteq a.bytes b.bytes
+    u128.lteq a.bytes b.bytes
 
 
   # create hash code from a units.data_size
@@ -447,7 +447,7 @@ is
 
   # create units.data_size of n bytes
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: UNDER_DEVELOPMENT: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.b (n u64) units.data_size
   pre
@@ -456,7 +456,7 @@ is
 
   # create units.data_size of n kibibytes (1024**1 bytes)
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: UNDER_DEVELOPMENT: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.kib (n u64) units.data_size
   pre
@@ -465,7 +465,7 @@ is
 
   # create units.data_size of n mebibytes (1024**2 bytes)
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: UNDER_DEVELOPMENT: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.mib (n u64) units.data_size
   pre
@@ -474,7 +474,7 @@ is
 
   # create units.data_size of n gibibytes (1024**3 bytes)
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: UNDER_DEVELOPMENT: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.gib (n u64) units.data_size
   pre
@@ -483,7 +483,7 @@ is
 
   # create units.data_size of n tebibytes (1024**4 bytes)
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: UNDER_DEVELOPMENT: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.tib (n u64) units.data_size
   pre
@@ -492,7 +492,7 @@ is
 
   # create units.data_size of n pebibytes (1024**5 bytes)
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: UNDER_DEVELOPMENT: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.pib (n u64) units.data_size
   pre
@@ -501,7 +501,7 @@ is
 
   # create units.data_size of n exbibytes (1024**6 bytes)
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: UNDER_DEVELOPMENT: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.eib (n u64) units.data_size
   pre
@@ -510,7 +510,7 @@ is
 
   # create units.data_size of n zebibytes (1024**7 bytes)
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: UNDER_DEVELOPMENT: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.zib (n u64) units.data_size
   pre
@@ -519,7 +519,7 @@ is
 
   # create units.data_size of n yobibytes (1024**8 bytes)
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: UNDER_DEVELOPMENT: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.yib (n u64) units.data_size
   pre
@@ -528,7 +528,7 @@ is
 
   # create units.data_size of n robibytes (1024**9 bytes)
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: UNDER_DEVELOPMENT: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.rib (n u64) units.data_size
   pre
@@ -537,7 +537,7 @@ is
 
   # create units.data_size of n quebibytes (1024**10 bytes)
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: UNDER_DEVELOPMENT: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.qib (n u64) units.data_size
   pre
@@ -547,7 +547,7 @@ is
 
   # create units.data_size of n kilobytes (10**3 bytes)
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: UNDER_DEVELOPMENT: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.kb (n u64) units.data_size
   pre
@@ -556,7 +556,7 @@ is
 
   # create units.data_size of n megabytes (10**6 bytes)
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: UNDER_DEVELOPMENT: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.mb (n u64) units.data_size
   pre
@@ -565,7 +565,7 @@ is
 
   # create units.data_size of n gigabytes (10**9 bytes)
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: UNDER_DEVELOPMENT: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.gb (n u64) units.data_size
   pre
@@ -574,7 +574,7 @@ is
 
   # create units.data_size of n terabytes (10**12 bytes)
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: UNDER_DEVELOPMENT: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.tb (n u64) units.data_size
   pre
@@ -583,7 +583,7 @@ is
 
   # create units.data_size of n petabytes (10**15 bytes)
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: UNDER_DEVELOPMENT: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.pb (n u64) units.data_size
   pre
@@ -592,7 +592,7 @@ is
 
   # create units.data_size of n exabytes (10**18 bytes)
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: UNDER_DEVELOPMENT: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.eb (n u64) units.data_size
   pre
@@ -601,7 +601,7 @@ is
 
   # create units.data_size of n zettabytes (10**21 bytes)
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: UNDER_DEVELOPMENT: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.zb (n u64) units.data_size
   pre
@@ -610,7 +610,7 @@ is
 
   # create units.data_size of n yottabytes (10**24 bytes)
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: UNDER_DEVELOPMENT: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.yb (n u64) units.data_size
   pre
@@ -619,7 +619,7 @@ is
 
   # create units.data_size of n ronnabytes (10**27 bytes)
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: UNDER_DEVELOPMENT: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.rb (n u64) units.data_size
   pre
@@ -628,7 +628,7 @@ is
 
   # create units.data_size of n quettabytes (10**30 bytes)
   #
-  # NYI: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
+  # NYI: UNDER_DEVELOPMENT: Turn this into a 'postfix' call, see https://fuzion-lang.dev/design/postfix_calls
   #
   public type.qb (n u64) units.data_size
   pre

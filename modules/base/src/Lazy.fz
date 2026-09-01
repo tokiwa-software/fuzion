@@ -31,17 +31,17 @@
 # `4+5>10` will never be executed:
 #     true || 4+5>10
 #
-public Lazy(public T type) ref : Nullary T,
+public Lazy(T type) ref : Nullary T,
 # Read here how lazy compuations form a monad: https://blog.ploeh.dk/2022/05/30/the-lazy-monad/
 # NYI: UNDER DEVELOPMENT: add example where monad is useful #5057
-                                 monad T (Lazy T) is
+                                 monad T is
 
 
   # monadic operator within the same monad
   #
   # Apply f to elements of type A and re-wrap them in this monad.
   #
-  public redef infix >>= (f T -> Lazy T) Lazy T =>
+  public fixed redef infix >>= (f T -> Lazy T) Lazy T =>
     _ : Lazy T is
       public redef call T =>
         (f Lazy.this.call).call
@@ -49,6 +49,6 @@ public Lazy(public T type) ref : Nullary T,
 
   # return function
   #
-  public redef type.return (a T) Lazy T =>
+  public fixed redef type.return (a T) Lazy T =>
     _ : Lazy T is
       public redef call T => a

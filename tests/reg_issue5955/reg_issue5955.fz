@@ -1,0 +1,58 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test reg_issue5955
+#
+# -----------------------------------------------------------------------
+
+
+aa
+  (
+   T type
+  ) : Sequence T is
+
+
+  # create a list from this array
+  #
+  public redef as_list list T => slice.as_list
+
+
+  public slice Sequence T
+  =>
+    as aa.this
+
+
+  # create a cons cell for a list of this array starting at the given
+  # index `i` and up to `to`
+  #
+  array_cons(a A : aa T) : Cons T (list T)
+  is
+    public redef head T => a[0]
+    public redef tail list T => a.slice.as_list
+
+
+as(T type, X type : aa T, data X) : aa T is
+
+  #
+  public redef as_list list T =>
+    array_cons as.this
+
+
+
+say (aa String).slice

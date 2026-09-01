@@ -107,31 +107,31 @@ ex =>
         return_type := clang_getCursorResultType crsr
         return_type_spelling := clang_getTypeSpelling return_type
 
-        yak "{cx_string_to_string func_name}"
+        yap "$(cx_string_to_string func_name)"
 
         num_args := clang_Cursor_getNumArguments crsr
 
         if num_args > 0
-          yak "("
+          yap "("
 
-        for i in 0..num_args-1 do
+        for i in (i32 0)..num_args-1 do
           arg := clang_Cursor_getArgument crsr i
           arg_name := clang_getCursorSpelling arg
           arg_type := clang_getCursorType arg
           arg_type_spelling := clang_getTypeSpelling arg_type
 
           if i!=0
-            yak ", "
+            yap ", "
 
-          yak "{cx_string_to_string arg_name} {to_fuzion_type (cx_string_to_string arg_type_spelling)}"
+          yap "$(cx_string_to_string arg_name) $(to_fuzion_type (cx_string_to_string arg_type_spelling))"
 
           clang_disposeString arg_name
           clang_disposeString arg_type_spelling
 
         if num_args > 0
-          yak ")"
+          yap ")"
 
-        say " {to_fuzion_type (cx_string_to_string return_type_spelling)} => native"
+        say " $(to_fuzion_type (cx_string_to_string return_type_spelling)) => native"
 
         clang_disposeString func_name
         clang_disposeString return_type_spelling
@@ -139,37 +139,13 @@ ex =>
 
       CXChildVisit_Continue
 
-  idx := clang_createIndex 0 0
+  ci := clang_createIndex 0 0
 
-  check !(ffi.is_null idx)
+  check !(ffi.is_null ci)
 
   header_file := "./fz.h"
 
-
-  # NYI: DFA mark value arg fields as read/written
-  cxc := CXCursor 0 0 ffi.null ffi.null ffi.null
-  cxs := CXString ffi.null 0 0
-  cxt := CXType 0 0 ffi.null ffi.null
-  _ := cxc.kind
-  _ := cxc.xdata
-  _ := cxc.data1
-  _ := cxc.data2
-  _ := cxc.data3
-  _ := cxs.data
-  _ := cxs.private_flags
-  _ := cxs.padding
-  _ := cxt.kind
-  _ := cxt.padding
-  _ := cxt.data1
-  _ := cxt.data2
-
-
-  # fzE_to_native(arr mutate.array u8) Native_Ref => native
-  # args := ["-I/usr/include"]
-  #   .map (arg -> fzE_to_native (arg.as_c_string mutate))
-  #   .as_array
-
-  tu := clang_parseTranslationUnit idx (header_file.as_c_string mutate) (mutate.array Native_Ref).empty 0 ffi.null 0 0
+  tu := clang_parseTranslationUnit ci (header_file.as_c_string mutate) (mutate.array Native_Ref .from_Sequence (Sequence Native_Ref .empty)) 0 ffi.null 0 0
 
   check !(ffi.is_null tu)
 
@@ -178,10 +154,6 @@ ex =>
   _ := clang_visitChildren cursor visitor ffi.null
 
   clang_disposeTranslationUnit tu
-  clang_disposeIndex idx
-
-
-# NYI: CLEANUP: support local mutates
-_ := mut
+  clang_disposeIndex ci
 
 ex

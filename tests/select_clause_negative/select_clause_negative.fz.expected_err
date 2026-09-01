@@ -17,26 +17,26 @@ While parsing: name, parse stack: name (twice), call, dotCall, callTail, call, c
 In call to 'tuple.values'
 Selected variant 'values.5'
 Number of actual type parameters: 2
-Actual type parameters: 'i32, i32'
+Actual type parameters: 'i64, i64'
 
 
 --CURDIR--/select_clause_negative.fz:36:9: error 4: Use of selector requires call to either a feature whose type is an open type parameter or a feature with an inner feature whose type is an open type parameter
   say a.1.1     # should flag an error: Use of selector requires call to either a feature whose type is an open type parameter ...
 --------^^^
 Selected variant: '1'
-Type of called feature: 'i32'
+Type of called feature: 'i64'
 
 
 --CURDIR--/select_clause_negative.fz:38:9: error 5: Use of selector requires call to either a feature whose type is an open type parameter or a feature with an inner feature whose type is an open type parameter
   say a.1.1.1   # should flag an error: Use of selector requires call to either a feature whose type is an open type parameter ...
 --------^^^
 Selected variant: '1'
-Type of called feature: 'i32'
+Type of called feature: 'i64'
 
 
---CURDIR--/select_clause_negative.fz:28:8: error 6: Could not find called feature
+--CURDIR--/select_clause_negative.fz:28:7: error 6: Could not find called feature
   say a.-1      # should flag an error:
--------^^
+------^^^^
 Feature not found: 'infix/infix_right .-' (one argument)
 Target feature: 'tuple'
 In call: 'a.-1'

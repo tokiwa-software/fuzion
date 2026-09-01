@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import java.util.Comparator;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -171,6 +172,16 @@ public abstract class Expr extends ANY implements HasSourcePosition
 
 
   /**
+   * typeForInferencing variant that may return the constraint
+   * of the type based on the provided context
+   */
+  AbstractType typeForInferencing(Context context)
+  {
+    return typeForInferencing();
+  }
+
+
+  /**
    * typeForUnion returns the type of this expression or null if the type is
    * still unknown, i.e., before or during type resolution.  This is redefined
    * by sub-classes of Expr to provide type information.
@@ -204,13 +215,13 @@ public abstract class Expr extends ANY implements HasSourcePosition
     // Union of the types of the expressions
     // that are sure about their types.
     var foundType = false;
-    for (var e : exprs)
+    for (var e : choicesAndRefsFirstSorting(exprs, e->e.typeForUnion()))
       {
         var et = e.typeForUnion();
         if (et != null)
           {
             foundType = true;
-            t = t.union(et, context);
+            t = t.commonSupertype(et, context);
           }
       }
 
@@ -227,13 +238,13 @@ public abstract class Expr extends ANY implements HasSourcePosition
     // Union of the types of the expressions
     AbstractType result = Types.resolved.t_void;
     foundType = false;
-    for (var e : exprs)
+    for (var e : choicesAndRefsFirstSorting(exprs, e->e.typeForInferencing()))
       {
         var et = e.typeForInferencing();
         if (et != null)
           {
             foundType = true;
-            result = result.union(et, context);
+            result = result.commonSupertype(et, context);
           }
       }
 
@@ -241,13 +252,13 @@ public abstract class Expr extends ANY implements HasSourcePosition
     // In case we have not found any type yet, but we need one, force a type
     if (urgent && !foundType)
       {
-        for (var e : exprs)
+        for (var e : choicesAndRefsFirstSorting(exprs, e->e.type()))
           {
             var et = e.type();
             if (et != null)
               {
                 foundType = true;
-                result = result.union(et, context);
+                result = result.commonSupertype(et, context);
               }
           }
       }
@@ -259,6 +270,36 @@ public abstract class Expr extends ANY implements HasSourcePosition
        !urgent || !exprs.isEmpty() || result == Types.resolved.t_void);
 
     return result;
+  }
+
+
+  /**
+   * Sort the expressions by type, choices first, then refs, then all others.
+   *
+   * @param exprs the expressions to sort
+   *
+   * @param keyExtractor  the function to get the type from the expression
+   */
+  private static List<Expr> choicesAndRefsFirstSorting(List<Expr> exprs, java.util.function.Function<Expr, AbstractType> keyExtractor)
+  {
+    return exprs.stream()
+      .sorted(
+        Comparator.comparing(keyExtractor,
+          (t1,t2) -> t1 == null
+            ? +1
+            : t2 == null
+            ? -1
+            : t1.isChoice()
+            ? -1
+            : t2.isChoice()
+            ? +1
+            : t1.isRef()
+            ? -1
+            : t2.isRef()
+            ? +1
+            : 0)
+      )
+      .collect(List.collector());
   }
 
 
@@ -337,7 +378,10 @@ public abstract class Expr extends ANY implements HasSourcePosition
    */
   Expr assignToField(Resolution res, Context context, Feature r)
   {
-    return new Assign(res, pos(), r, this, context);
+    var result = new Assign(res, pos(), r, this, context);
+    result.wrapValueInLazy(res, context);
+    result.unwrapValue  (res, context);
+    return result;
   }
 
 
@@ -654,13 +698,40 @@ public abstract class Expr extends ANY implements HasSourcePosition
     return this != Call.ERROR && t != Types.t_ERROR
       && expectedType.isAssignableFromWithoutBoxing(t, context).no()
       && expectedType.compareTo(Types.resolved.t_Any) != 0
-      && !t.isGenericArgument()
+      && !t.isParametricType()
       && allInherited(t.feature())
           .stream()
           .anyMatch(c ->
             c.calledFeature().equals(Types.resolved.f_auto_unwrap)
             && !c.actualTypeParameters().isEmpty()
                     && expectedType.isAssignableFromWithoutBoxing(c.actualTypeParameters().get(0).applyTypePars(t), context).yes())
+      ? new ParsedCall(this, new ParsedName(pos(), FuzionConstants.UNWRAP)).resolveTypes(res, context)
+      : this;
+  }
+
+
+  /**
+   * Do automatic unwrapping of features inheriting {@code unwrap}
+   * if unwrapped type is a choice.
+   *
+   * @param res the resolution instance
+   *
+   * @param context the source code context where this Expr is used
+   *
+   * @return the unwrapped expression
+   */
+  Expr unwrapChoice(Resolution res, Context context)
+  {
+    var t = type();
+    return this != Call.ERROR && t != Types.t_ERROR
+      && !t.isChoice()
+      && !t.isParametricType()
+      && allInherited(t.feature())
+          .stream()
+          .anyMatch(c ->
+            c.calledFeature().equals(Types.resolved.f_auto_unwrap)
+            && !c.actualTypeParameters().isEmpty()
+                    && c.actualTypeParameters().get(0).applyTypePars(t).isChoice())
       ? new ParsedCall(this, new ParsedName(pos(), FuzionConstants.UNWRAP)).resolveTypes(res, context)
       : this;
   }
@@ -707,7 +778,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
 
   /**
    * Source text for this Expr. This is used in error message: It takes the
-   * source code at `sourceRange()`. Only for artificial expressions, this should
+   * source code at {@code sourceRange()}. Only for artificial expressions, this should
    * probably be redefined to create more useful text.
    */
   public String sourceText()
@@ -717,7 +788,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
 
 
   /**
-   * Is this expression a call to `type_as_value`?
+   * Is this expression a call to {@code type_as_value}?
    */
   boolean isTypeAsValueCall()
   {
@@ -761,7 +832,7 @@ public abstract class Expr extends ANY implements HasSourcePosition
       {
         return null;
       }
-    else if (frmlT.isRef() || frmlT.isGenericArgument() || frmlT.isThisType() && !frmlT.isChoice())
+    else if (frmlT.isRef() || frmlT.isParametricType() || frmlT.isThisType() && !frmlT.isChoice())
       {
         /* Boxing needed when we assign to generic argument (so it
          * could be a ref) or frmlT is this type and the underlying feature is by

@@ -47,11 +47,13 @@ module net is
     sockfd := fzE_socket family socket_type protocol
     if sockfd = -1
       error "net.connect failed creating socket" fzE_last_error
-    else if fzE_bind sockfd family socket_type protocol (fuzion.sys.c_string host) (fuzion.sys.c_string port.as_string) = 0
+    else if fzE_bind sockfd family socket_type protocol (fuzion.sys.c_string host) (fuzion.sys.c_string $port) = 0
       sockfd
     else
-      _ := fzE_socket_close sockfd # NYI: register potential failure somewhere...
-      error "net.bind failed (host=$host, port=$port)" fzE_last_error
+      res := error "net.bind failed (host=$host, port=$port)" fzE_last_error
+      if fzE_socket_close sockfd != 0
+        Ignored_Failure.env.register_failure (error "In fuzion.sys.net.bind, failed closing socket, error code $(fzE_last_error)")
+      res
 
 
   # accept a new connection for given socket descriptor, wrapper for accept native.
@@ -68,18 +70,20 @@ module net is
     sockfd := fzE_socket family socket_type protocol
     if sockfd = -1
       error "net.connect failed creating socket" fzE_last_error
-    else if fzE_connect sockfd family socket_type protocol (fuzion.sys.c_string host) (fuzion.sys.c_string port.as_string) = 0
+    else if fzE_connect sockfd family socket_type protocol (fuzion.sys.c_string host) (fuzion.sys.c_string $port) = 0
       sockfd
     else
-      _ := fzE_socket_close sockfd # NYI: register potential failure somewhere...
-      error "net.connect failed (host=$host, port=$port)" fzE_last_error
+      res := error "net.connect failed (host=$host, port=$port)" fzE_last_error
+      if fzE_socket_close sockfd != 0
+        Ignored_Failure.env.register_failure (error "In fuzion.sys.net.connect, failed closing socket, error code $(fzE_last_error)")
+      res
 
 
   # read a maximum of max_bytes from descriptor, wrapper for read native
   # may block if descriptor is set to blocking.
   #
   module read(descriptor i32, max_bytes i64) outcome (Sequence u8) =>
-    buff := fuzion.sys.internal_array_init u8 max_bytes.as_i32
+    buff := fuzion.sys.internal_array_init u8 max_bytes
     res := fzE_socket_read descriptor buff.data max_bytes
     if res >= 0
       buff.as_array.take res
@@ -91,20 +95,26 @@ module net is
   # may block if descriptor is set to blocking.
   #
   module write(descriptor i32, data array u8) outcome unit =>
-    res := fzE_socket_write descriptor data.internal_array.data data.length.as_i64
-    if res = -1 then error "error writing to socket" fzE_last_error else unit
+    for tbw := data, tbw.drop res .as_array
+        res := fzE_socket_write descriptor tbw.internal_array.data tbw.length.as_i64 .as_i64
+    while res >= 0 && res != tbw.length
+    else
+      if res < 0
+        error "error writing to socket" fzE_last_error
+      else
+        unit
 
 
   # close socket descriptor
   module close(sd i32) outcome unit =>
     res := fzE_socket_close sd
-    if res = -1 then error "error: $res" else unit
+    if res = -1 then error "error: $res" fzE_last_error else unit
 
 
   # set descriptor to blocking / none blocking mode.
   module set_blocking(sd i32, blocking bool) outcome unit =>
     res := if blocking then fzE_set_blocking sd 0 else fzE_set_blocking sd 1
-    if res = 0 then unit else error "error setting socket to {blocking ? "blocking" : "nonblocking"} mode" fzE_last_error
+    if res = 0 then unit else error "error setting socket to $(blocking ? "blocking" : "nonblocking") mode" fzE_last_error
 
 
   # get a socket's peer's ip address

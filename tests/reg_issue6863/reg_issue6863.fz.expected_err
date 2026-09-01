@@ -1,0 +1,9 @@
+
+--CURDIR--/reg_issue6863.fz:24:12: error 1: Could not find called feature
+_ := tuple xyz
+-----------^^^
+Feature not found: 'xyz' (no arguments)
+Target feature: 'universe'
+In call: 'xyz'
+
+one error.

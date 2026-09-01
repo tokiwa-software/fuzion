@@ -1,10 +1,15 @@
+Ignored_Failure
+concur.A0_park_mutex
+concur.Threads
 fuzion.runtime.check_fault
 fuzion.runtime.contract_fault
 fuzion.runtime.fault
 fuzion.runtime.post_fault
 fuzion.runtime.pre_fault
+fuzion.runtime.stackoverflow
 io.Buffer_Size
 io.Err
 io.Out
-io.file.delete
+io.file.Delete
+once_mutate
 panic

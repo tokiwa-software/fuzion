@@ -55,6 +55,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 #include "fz.h"
 
 static_assert(sizeof(L'\0') == 2, "wide char, unexpected bytes");
+static_assert(_WIN32_WINNT >= 0x0600, "rt: win, expected Windows Vista or greater.");
 
 
 /**
@@ -89,8 +90,6 @@ int64_t fzE_last_error(void){
     ? GetLastError()
     : last_error;
 }
-
-// NYI: UNDER DEVELOPMENT: missing set_last_error, see posix.c
 
 // make directory, return zero on success
 int fzE_mkdir(const char *pathname){
@@ -374,11 +373,10 @@ int fzE_socket_read(int sockfd, void * buf, size_t count){
 
 // write buf to sockfd
 // may block if socket is set to blocking.
-// return error code or zero on success
+// -1 or number of bytes written on success
 int fzE_socket_write(int sockfd, const void * buf, size_t count){
-return ( sendto( sockfd, buf, count, 0, NULL, 0 ) == -1 )
-  ? fzE_net_error()
-  : 0;
+  // NYI: setlast error missing: fzE_net_error
+  return sendto( sockfd, buf, count, 0, NULL, 0 );
 }
 
 
@@ -450,10 +448,11 @@ int fzE_munmap(void * mapped_address, const int file_size){
 
 
 /**
- * returns a monotonically increasing timestamp.
+ * @return the time of the given posix clock
  */
-uint64_t fzE_nanotime()
+uint64_t fzE_posix_time(int clockid)
 {
+  // NYI: BUG: clockid currently ignored
   static LARGE_INTEGER frequency = {0};
   if (frequency.QuadPart == 0) {
       if (!QueryPerformanceFrequency(&frequency)) {
@@ -477,11 +476,11 @@ uint64_t fzE_nanotime()
  */
 void fzE_nanosleep(uint64_t n)
 {
-  uint64_t start = fzE_nanotime();
+  uint64_t start = fzE_posix_time(-1);
   uint64_t end = start + n;
 
-  while (fzE_nanotime() < end) {
-    uint64_t remaining_ns = end - fzE_nanotime();
+  while (fzE_posix_time(-1) < end) {
+    uint64_t remaining_ns = end - fzE_posix_time(-1);
     if (remaining_ns > 1000000ULL) {
       Sleep((DWORD)(remaining_ns / 1000000ULL));
     } else if (remaining_ns > 0) {
@@ -583,7 +582,69 @@ int fzE_stat(const char *pathname, int64_t * metadata)
  */
 int fzE_lstat(const char *pathname, int64_t * metadata)
 {
-  return fzE_stat(pathname, metadata);
+  int result = -1;
+
+  BY_HANDLE_FILE_INFORMATION fileInfo;
+
+  SECURITY_ATTRIBUTES sa = {0};
+  sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+  sa.bInheritHandle = FALSE;
+  sa.lpSecurityDescriptor = NULL;
+
+  wchar_t* wideStr = utf8_to_wide_str(pathname);
+
+  HANDLE hFile = CreateFileW(
+      wideStr,
+      GENERIC_READ,
+      FILE_SHARE_READ,
+      &sa,
+      OPEN_EXISTING,
+      FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS,
+      NULL
+  );
+
+  free(wideStr);
+
+  if (hFile != INVALID_HANDLE_VALUE && GetFileInformationByHandle(hFile, &fileInfo)) {
+    LARGE_INTEGER fileSize;
+    fileSize.HighPart = fileInfo.nFileSizeHigh;
+    fileSize.LowPart = fileInfo.nFileSizeLow;
+
+    ULARGE_INTEGER lat;
+    lat.LowPart =  fileInfo.ftLastAccessTime.dwLowDateTime;
+    lat.HighPart = fileInfo.ftLastAccessTime.dwHighDateTime;
+
+    ULARGE_INTEGER lwt;
+    lwt.LowPart =  fileInfo.ftLastWriteTime.dwLowDateTime;
+    lwt.HighPart = fileInfo.ftLastWriteTime.dwHighDateTime;
+
+    ULARGE_INTEGER ct;
+    ct.LowPart =  fileInfo.ftCreationTime.dwLowDateTime;
+    ct.HighPart = fileInfo.ftCreationTime.dwHighDateTime;
+
+    metadata[0] = fileSize.QuadPart;
+    metadata[1] = win_time_to_unix_time(lat.QuadPart); /* Time of last access */
+    metadata[2] = win_time_to_unix_time(lwt.QuadPart); /* Time of last modification */
+    metadata[3] = win_time_to_unix_time(ct.QuadPart);  /* Time of last status change */
+    metadata[4] = (fileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? 0 : 1;
+    metadata[5] = (fileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? 1 : 0;
+    metadata[6] = 0; /* NYI: UNDER DEVELOPMENT: is link  */
+    metadata[7] = 0; /* NYI: UNDER DEVELOPMENT: uid  */
+    metadata[8] = 0; /* NYI: UNDER DEVELOPMENT: gid  */
+
+    result = 0;
+  }
+  else {
+    metadata[0] = (int64_t)GetLastError();
+    metadata[1] = 0LL;
+    metadata[2] = 0LL;
+    metadata[3] = 0LL;
+    result = -1;
+  }
+
+  CloseHandle(hFile);
+
+  return result;
 }
 
 CRITICAL_SECTION fzE_global_mutex;
@@ -626,6 +687,16 @@ unsigned int __stdcall trampoline_wrapper(void* raw_arg) {
   return 0;
 }
 
+
+/**
+ * Get pointer to current thread.
+ */
+void * fzE_thread_current()
+{
+  return GetCurrentThread();
+}
+
+
 /**
  * Start a new thread, returns a pointer to the thread.
  */
@@ -652,9 +723,48 @@ void * fzE_thread_create(void *(*code)(void *),
 /**
 * Join with a running thread.
 */
-void fzE_thread_join(void * thrd) {
-  WaitForSingleObject((HANDLE)thrd, INFINITE);
+int fzE_thread_join(void * thrd) {
+  DWORD result = WaitForSingleObject((HANDLE)thrd, INFINITE);
   CloseHandle((HANDLE)thrd);
+  switch (result)
+    {
+      case WAIT_OBJECT_0:
+        return 0;
+      case WAIT_ABANDONED:
+        return 1;
+      case WAIT_TIMEOUT:
+        return 2;
+      case WAIT_FAILED:
+        {
+          DWORD err = GetLastError();
+          if (err == ERROR_INVALID_HANDLE)
+            {
+              return 3;
+            }
+          return 2;
+        }
+      default:
+        assert(false);
+        return -1;
+    }
+}
+
+
+/*
+ * Set the scheduling policy and priority of a running thread.
+ */
+int fzE_thread_setschedparam(void * thrd, int policy, int priority)
+{
+  return 38; // ENOSYS - Function not implemented
+}
+
+
+/*
+ * Set the scheduling CPU affinity of a running thread.
+ */
+int fzE_thread_setaffinity(void * thrd, const void * cores, int length)
+{
+  return 38;
 }
 
 
@@ -835,22 +945,80 @@ int fzE_process_create(char *args[], size_t argsLen, char *env[], size_t envLen,
 }
 
 
-// wait for process to finish
-// returns exit code or -1 on wait-failure.
-int64_t fzE_process_wait(int64_t p){
-  DWORD status = 0;
-  if (GetExitCodeProcess((HANDLE)p, &status)){
-    if (status == STILL_ACTIVE){
-      return -1;
+// check the status of process p, does not wait for process to finish
+//
+// result
+//   >=0 : the process exit code (including exception/termination codes)
+//   -1  : process is still running
+//   -2  : an error occurred when calling waitpid, check errno
+int64_t fzE_process_poll(int64_t p){
+
+    assert(p != 0);
+
+    DWORD status;
+
+    if (!GetExitCodeProcess((HANDLE)p, &status)) {
+        // Error calling GetExitCodeProcess()
+        return -2;
     }
-    else {
-      CloseHandle((HANDLE)p);
-      return (int64_t)status;
+
+    if (status == STILL_ACTIVE) {
+        // Process is still running.
+        return -1;
     }
-  }
-  return 255;
+
+    return (int64_t)status;
 }
 
+/**
+ * close process handle, free memory
+ */
+int fzE_process_close(int64_t p)
+{
+  return CloseHandle((HANDLE)p)
+    ? 0
+    : 1;
+}
+
+
+// returns -1 on error or length of the hostname otherwise
+//
+int fzE_hostname(char *buf, size_t nbytes)
+{
+    if (buf == NULL || nbytes == 0)
+        return -1;
+
+    if (gethostname(buf, (int)nbytes) == SOCKET_ERROR) {
+        return -1;
+    }
+
+    buf[nbytes - 1] = '\0';
+
+    return (int)strnlen(buf, nbytes);
+}
+
+
+// open a new pipe
+//
+int fzE_pipe_create(int64_t *fds)
+{
+  HANDLE hRead, hWrite;
+
+  SECURITY_ATTRIBUTES saAttr = {
+    .nLength = sizeof(SECURITY_ATTRIBUTES),
+    .bInheritHandle = FALSE,
+    .lpSecurityDescriptor = NULL
+  };
+
+  if (CreatePipe(&hRead, &hWrite, &saAttr, 0)) {
+    fds[0] = (int64_t) hRead;
+    fds[1] = (int64_t) hWrite;
+    return 0;
+  }
+  DWORD le = GetLastError();
+  assert(le > 0);
+  return (int)le;
+}
 
 // returns -1 on error, 0 on pipe exhausted/closed
 // otherwise the number of bytes read
@@ -877,7 +1045,6 @@ int fzE_pipe_write(int64_t desc, char * buf, size_t nbytes){
 
 // return -1 on error, 0 on success
 int fzE_pipe_close(int64_t desc){
-// NYI: UNDER DEVELOPMENT: do we need to flush?
   return CloseHandle((HANDLE)desc)
     ? 0
     : -1;
@@ -912,14 +1079,31 @@ void * fzE_file_open(char * file_name, int64_t * open_results, file_open_mode mo
     ? (int64_t)GetLastError()
     : 0;
 
-  if (hFile != INVALID_HANDLE_VALUE && mode == FZ_FILE_MODE_APPEND)
+  // align to posix api
+  // mode=write, truncate file
+  // mode=append, set file pointer to end of file
+  if (hFile != INVALID_HANDLE_VALUE)
   {
     LARGE_INTEGER zero = {0}, new_pos = {0};
-    if (!SetFilePointerEx(hFile, zero, &new_pos, FILE_END)) {
+    if(mode == FZ_FILE_MODE_WRITE) {
+      if (!SetFilePointerEx(hFile, zero, NULL, FILE_BEGIN)) {
+        open_results[0] = (int64_t)GetLastError();
+        CloseHandle(hFile);
+        return NULL;
+      }
+
+      if (!SetEndOfFile(hFile)) {
+        open_results[0] = (int64_t)GetLastError();
+        CloseHandle(hFile);
+        return NULL;
+      }
+    }
+    else if (mode == FZ_FILE_MODE_APPEND && !SetFilePointerEx(hFile, zero, &new_pos, FILE_END)) {
       open_results[0] = (int64_t)GetLastError();
       CloseHandle(hFile);
       return NULL;
     }
+
   }
 
   return (void *)hFile;
@@ -928,7 +1112,11 @@ void * fzE_file_open(char * file_name, int64_t * open_results, file_open_mode mo
 
 void * fzE_mtx_init() {
   CRITICAL_SECTION *mtx = (CRITICAL_SECTION *)fzE_malloc_safe(sizeof(CRITICAL_SECTION));
-  InitializeCriticalSection(mtx);
+  if (!InitializeCriticalSectionEx(mtx, 0, 0))
+  {
+    fzE_free(mtx);
+    return NULL;
+  }
   return (void *)mtx;
 }
 
@@ -951,29 +1139,58 @@ void fzE_mtx_destroy(void *mtx) {
   fzE_free(mtx);
 }
 
-void * fzE_cnd_init() {
+/**
+ * initialize a condition
+ *
+ * @param clock the clock to be used:
+ *
+ *   - 0 for CLOCK_REALTIME (which is not a real-time clock, but wallclock time)
+ *   - 1 for CLOCK_MONOTONIC (which does not jump for leap seconds are when system time is changed)
+ *
+ * NYI: support for other values defined in
+ * /use/include/x86_64-linux-gnu/bits/time.h for CPU-time, coarse time etc.
+ *
+ * @return NULL on error or pointer to condition
+ *         NOTE: eventually needs to be destroyed via fzE_cnd_destroy.
+ */
+void * fzE_cnd_init(int clock) {
+  // NYI: UNDER DEVELOPMENT: clock is ignored for condition variable
   CONDITION_VARIABLE *cnd = (CONDITION_VARIABLE *)fzE_malloc_safe(sizeof(CONDITION_VARIABLE));
   InitializeConditionVariable(cnd);
   return (void *)cnd;
 }
 
-int32_t fzE_cnd_signal(void *cnd) {
+void fzE_cnd_signal(void *cnd) {
   WakeConditionVariable((CONDITION_VARIABLE *)cnd);
-  return 0;
 }
 
-int32_t fzE_cnd_broadcast(void *cnd) {
+void fzE_cnd_broadcast(void *cnd) {
   WakeAllConditionVariable((CONDITION_VARIABLE *)cnd);
-  return 0;
 }
 
-int32_t fzE_cnd_wait(void *cnd, void *mtx) {
-  return SleepConditionVariableCS(
+void fzE_cnd_wait(void *cnd, void *mtx) {
+  BOOL ok = SleepConditionVariableCS(
       (CONDITION_VARIABLE *)cnd,
       (CRITICAL_SECTION *)mtx,
-      INFINITE)
-    ? 0
-    : -1;
+      INFINITE);
+  if (!ok)
+    {
+      fprintf(stderr, "*** SleepConditionVariableCS failed\n");
+      exit(EXIT_FAILURE);
+    }
+}
+
+void fzE_cnd_timedwait(void *cnd, void *mtx, int64_t time_ns) {
+  DWORD ms = (DWORD)(time_ns / 1000000);
+  BOOL ok = SleepConditionVariableCS(
+      (CONDITION_VARIABLE *)cnd,
+      (CRITICAL_SECTION *)mtx,
+      ms);
+  if (!ok && GetLastError() != ERROR_TIMEOUT)
+    {
+      fprintf(stderr, "*** SleepConditionVariableCS failed\n");
+      exit(EXIT_FAILURE);
+    }
 }
 
 void fzE_cnd_destroy(void *cnd) {
@@ -987,11 +1204,9 @@ int32_t fzE_file_read(void * file, void * buf, int32_t size)
   DWORD bytesRead = 0;
   BOOL success = ReadFile(file, buf, (DWORD)size, &bytesRead, NULL);
 
-  return success && bytesRead != 0
+  return success
     ? (int32_t)bytesRead
-    : GetLastError() == ERROR_BROKEN_PIPE
-    ? -1 // EOF
-    : -2; // ERROR
+    : (GetLastError() == ERROR_BROKEN_PIPE ? 0 : -1);
 }
 
 
@@ -1114,14 +1329,38 @@ int64_t fzE_mmap_offset_multiple(void)
   return (int64_t)(uint64_t)sys_info.dwAllocationGranularity;
 }
 
+// convert C:\path\file to /c/path/file
+//
+int as_posix_style_path(void * buf, size_t size)
+{
+  // turn C: into /C
+  ((char * )buf)[1] = ((char * )buf)[0];
+  ((char * )buf)[0] = '/';
+  for (char *p = buf; *p; ++p) {
+    if (*p == '\\') {
+      *p = '/';
+    }
+  }
+  return 0;
+}
+
 int fzE_cwd(void * buf, size_t size)
 {
   return _getcwd(buf, size) == NULL
     ? -1
-    : 0;
+    : as_posix_style_path(buf, size);
 }
 
 int fzE_isnan(double d)
 {
   return _isnan(d);
+}
+
+
+/**
+ * wrapper around DTRACE_PROBE
+ */
+void fzE_dtrace_probe(char col, const char* msg)
+{
+  // NYI: UNDER DEVELOPMENT: No support for DTRACE_PROBE for windows yet
 }

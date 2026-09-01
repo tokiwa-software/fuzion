@@ -46,8 +46,8 @@ public family is
 
     public redef as_string String =>
       match val.this
-        i4 ipv4  => i4.as_string
-        i6 ipv6  => i6.as_string
+        i4 ipv4  => $i4
+        i6 ipv6  => $i6
 
 
   # convenience feature to get the localhost address of a family

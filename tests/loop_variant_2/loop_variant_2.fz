@@ -43,7 +43,7 @@ loop_variant_2 =>
     for i in (0..n)
     variant (n-i).as_i64 # ok
     do
-      say "i=$i var={n-i}"
+      say "i=$i var=$(n-i)"
   test test_1 1
 
 
@@ -51,7 +51,7 @@ loop_variant_2 =>
     for i in (0..n)
     variant (n-1-i).as_i64 # 1. should flag an error: variant violated in last iteration
     do
-      say "i=$i var={n-1-i}"
+      say "i=$i var=$(n-1-i)"
   test test_2 2
 
 

@@ -42,11 +42,11 @@ test_fib2 =>
   fib0 := fib (u64 1) (u64 1)
 
   # create fibonacci as a Unary function
-  fib := fib0[]
+  fib := Unary u64 i64 .of x->fib0[x]
 
   # use `fib`
   for i in 0..50 do
-    say "$i:{fib i}"
+    say "$i:$(fib i)"
 
 test_fib1
 test_fib2

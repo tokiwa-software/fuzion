@@ -24,7 +24,6 @@
 
 # write `a`.as_string to file `f`
 #
-public write(p path, a Any) outcome unit =>
-  # NYI: BUG: currently appends to file
+public write(p io.path, a Any) outcome unit =>
   use p mode.write ()->
-    writer.write a.as_string.utf8
+    (io.buffered file_mutate).Writer.env.write $a

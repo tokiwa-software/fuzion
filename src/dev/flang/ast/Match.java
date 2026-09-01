@@ -65,6 +65,12 @@ public class Match extends AbstractMatch
 
 
   /**
+   * Static type of this match or null if none. Set by propgateExpectedType.
+   */
+  private AbstractType _type;
+
+
+  /**
    * The subject under investigation here.
    */
   Expr _subject;
@@ -121,7 +127,7 @@ public class Match extends AbstractMatch
    *
    * @return this.
    */
-  public Match visit(FeatureVisitor v, AbstractFeature outer)
+  public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     var os = _subject;
     var ns = _subject.visit(v, outer);
@@ -130,12 +136,15 @@ public class Match extends AbstractMatch
       // while okay for it to change after a visit
       (os == _subject);
     _subject = ns;
-    v.action(this);
+    var atf = _assignedToField;
+    var result  = v.action(this);
+    if (CHECKS) check
+      (!atf || result == this);
     for (var c: cases())
       {
         c.visit(v, this, outer);
       }
-    return this;
+    return result;
   }
 
 
@@ -148,8 +157,15 @@ public class Match extends AbstractMatch
    */
   void resolveTypes(Resolution res, Context context)
   {
-    var st = _subject.typeForInferencing();
-    if (st != null && st != Types.t_ERROR && !st.isGenericArgument())
+    var st = _subject.typeForInferencing(context);
+
+    if (st != null && !st.isChoice())
+      {
+        _subject = _subject.unwrapChoice(res, context);
+        st = _subject.typeForInferencing();
+      }
+
+    if (st != null && st != Types.t_ERROR && !st.isParametricType())
       {
         res.resolveTypes(st.feature());
       }
@@ -241,11 +257,13 @@ public class Match extends AbstractMatch
   @Override
   Expr propagateExpectedType(Resolution res, Context context, AbstractType t, Supplier<String> from)
   {
-    // NYI: CLEANUP: there should be another mechanism, for
-    // adding missing result fields instead of misusing
-    // `propagateExpectedType`.
-    //
-    return addFieldForResult(res, context, t);
+    _type = t.isLazyType() ? t.generics().get(0) : t;
+    for (var ac: cases())
+      {
+        var c = (Case) ac;
+        c._code = c._code.propagateExpectedType(res, context, t, from);
+      }
+    return this;
   }
 
 
@@ -257,41 +275,27 @@ public class Match extends AbstractMatch
    *
    * @param context the source code context where this assignment is used
    *
-   * @param t the type to use for the result field
    */
-  private Expr addFieldForResult(Resolution res, Context context, AbstractType t)
+  private Expr addFieldForResult(Resolution res, Context context)
   {
-    Expr result = this;
-    if (!t.isVoid())
-      {
-        var pos = pos();
-        Feature r = new Feature(res,
-                                pos,
-                                Visi.PRIV,
-                                t,
-                                FuzionConstants.EXPRESSION_RESULT_PREFIX + (_id_++),
-                                context.outerFeature());
-        res.resolveTypes(r);
-        result = new Block(new List<>(assignToField(res, context, r),
-                                      new Call(pos, new Current(pos, context.outerFeature()), r).resolveTypes(res, context)));
-      }
-    return result;
+    var pos = pos();
+    Feature r = new Feature(res,
+                            pos,
+                            Visi.PRIV,
+                            type(),
+                            FuzionConstants.EXPRESSION_RESULT_PREFIX + (_id_++),
+                            context.outerFeature());
+
+    res.resolveTypes(r);
+
+    return new Block(
+      new List<>(
+        assignToField(res, context, r),
+        new Call(pos, new Current(pos, context.outerFeature()), r)
+          .resolveTypes(res, context)
+      ));
   }
 
-
-  /**
-   * This will trigger addFieldForResult in some cases, e.g.:
-   * `match (if true then true else true) * =>`
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
-   * @param context the source code context where this Expr is used
-   */
-  void addFieldsForSubject(Resolution res, Context context)
-  {
-    _subject = subject().propagateExpectedType(res, context, subject().type(), null);
-  }
 
 
   /**
@@ -357,14 +361,24 @@ public class Match extends AbstractMatch
     var result = Expr.union(new List<>(casesForType()), Context.NONE, urgent);
     if (result == Types.t_ERROR)
       {
-        new IncompatibleResultsOnBranches
-          (pos(),
-           "Incompatible types in " +
-           (kind() == Kind.Plain ? "cases of match" : "branches of if") +
-           " expression",
-           casesForType());
+        showIncomptiableTypesError();
       }
     return result;
+  }
+
+
+  /**
+   * show error that incompatible types
+   * have been found in the cases.
+   */
+  void showIncomptiableTypesError()
+  {
+    new IncompatibleResultsOnBranches
+      (pos(),
+       "Incompatible types in " +
+       (kind() == Kind.Plain ? "cases of match" : "branches of if") +
+       " expression",
+       casesForType());
   }
 
 
@@ -411,7 +425,7 @@ public class Match extends AbstractMatch
 
 
   /**
-   * create an if expr,
+   * create an if expr
    *
    * @param pos the source position of the if
    *
@@ -421,13 +435,14 @@ public class Match extends AbstractMatch
    *
    * @param elseB else block, may be null
    *
-   * @param fromContract is this an if generated from a contract? (for error messages)
+   * @param kind the kind of the if (Contract, If, Until, While)
    */
-  public static Expr createIf(SourcePosition pos, Expr c, Expr b, Expr elseB, boolean fromContract)
+  static Expr createIf(SourcePosition pos, Expr c, Expr b, Expr elseB, Kind kind)
   {
     if (PRECONDITIONS) require
       (c != null,
-       b != null);
+       b != null,
+       kind != Kind.Plain);
 
     /**
      * If there is no else / elseif, create a default else
@@ -467,10 +482,51 @@ public class Match extends AbstractMatch
             }
           });
 
-    var result = new Match(pos, c, cases)
+    return new Match(pos, c, cases)
       {
-        @Override Kind kind() { return fromContract ? Kind.Contract : Kind.If; }
+        @Override Kind kind() { return kind; }
       };
+  }
+
+
+  /**
+   * create an if expr
+   *
+   * @param pos the source position of the if
+   *
+   * @param c then condition
+   *
+   * @param b the "true"-block, must not be null
+   *
+   * @param elseB else block, may be null
+   */
+  public static Expr createIf(SourcePosition pos, Expr c, Expr b, Expr elseB)
+  {
+    return createIf(pos, c, b, elseB, Kind.If);
+  }
+
+
+  /**
+   * For matches that have not been assigned to a result field
+   * we create a new result field, assign the cases results to this field
+   * and replace this match by a call to this field.
+   *
+   * @param res this is called during type resolution, res gives the resolution
+   * instance.
+   *
+   * @param context the source code context where this assignment is used
+   */
+  public Expr resolveSyntacticSugar2(Resolution res, Context context)
+  {
+    var result = producesResult() && subject().type() != Types.t_ERROR && type() != Types.resolved.t_void
+      ? addFieldForResult(res, context)
+      : this;
+
+    // reset type to prevent giving out
+    // a - potentially wrong - propagated type
+    // in checkTypes phase.
+    _type = null;
+
     return result;
   }
 
@@ -489,5 +545,6 @@ public class Match extends AbstractMatch
       }
     return sb.toString();
   }
+
 
 }

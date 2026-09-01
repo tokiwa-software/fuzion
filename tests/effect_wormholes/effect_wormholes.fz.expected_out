@@ -1,0 +1,6 @@
+01 - using                    default io.Out in main    thread!
+04 - using level 1 teleported default io.Out in spawned thread!
+09 - using level 1 teleported default io.Out in main    thread!
+12 - using level 2 teleported default io.Out in main    thread!
+15 - using level 3 teleported default io.Out in main    thread!
+18 - using default                    io.Out in main    thread!

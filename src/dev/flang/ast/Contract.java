@@ -153,7 +153,7 @@ public class Contract extends ANY
     _hasPostThen = hasThen;
     _declared_preconditions   = r1 == null || r1.isEmpty() ? NO_COND : r1;
     _declared_preconditions2  = r2 == null || r2.isEmpty() ? NO_COND : r2;
-    _declared_postconditions = e == null || e.isEmpty() ? NO_COND : e;
+    _declared_postconditions  = e == null  ||  e.isEmpty() ? NO_COND : e;
     _argsSupplier = args;
   }
 
@@ -172,7 +172,7 @@ public class Contract extends ANY
     var c = f.contract();
     if (c._preConditionFeatureName == null)
       {
-        c._preConditionFeatureName = FuzionConstants.PRECONDITION_FEATURE_PREFIX + "_" + f.outer().qualifiedName().replace('.', '_') + "#" + f.featureName().baseName();
+        c._preConditionFeatureName = FuzionConstants.PRECONDITION_FEATURE_PREFIX + "_" + f.outer().qualifiedName().replace('.', '_') + "#" + f.baseName();
       }
     return c._preConditionFeatureName;
   }
@@ -189,7 +189,7 @@ public class Contract extends ANY
     var c = f.contract();
     if (c._preBoolConditionFeatureName == null)
       {
-        c._preBoolConditionFeatureName = FuzionConstants.PREBOOLCONDITION_FEATURE_PREFIX + "_" + f.outer().qualifiedName().replace('.', '_') + "#" + f.featureName().baseName();
+        c._preBoolConditionFeatureName = FuzionConstants.PREBOOLCONDITION_FEATURE_PREFIX + "_" + f.outer().qualifiedName().replace('.', '_') + "#" + f.baseName();
       }
     return c._preBoolConditionFeatureName;
   }
@@ -206,7 +206,7 @@ public class Contract extends ANY
     var c = f.contract();
     if (c._preConditionAndCallFeatureName == null)
       {
-        c._preConditionAndCallFeatureName = FuzionConstants.PREANDCALLCONDITION_FEATURE_PREFIX + "_" + f.outer().qualifiedName().replace('.', '_') + "#" + f.featureName().baseName();
+        c._preConditionAndCallFeatureName = FuzionConstants.PREANDCALLCONDITION_FEATURE_PREFIX + "_" + f.outer().qualifiedName().replace('.', '_') + "#" + f.baseName();
       }
     return c._preConditionAndCallFeatureName;
   }
@@ -223,7 +223,7 @@ public class Contract extends ANY
     var c = f.contract();
     if (c._postConditionFeatureName == null)
       {
-        c._postConditionFeatureName = FuzionConstants.POSTCONDITION_FEATURE_PREFIX + "_" + f.outer().qualifiedName().replace('.', '_') + "#" + f.featureName().baseName();
+        c._postConditionFeatureName = FuzionConstants.POSTCONDITION_FEATURE_PREFIX + "_" + f.outer().qualifiedName().replace('.', '_') + "#" + f.baseName();
       }
     return c._postConditionFeatureName;
   }
@@ -481,8 +481,11 @@ public class Contract extends ANY
     var oc = outer.contract();
     var p = oc._hasPost != null ? oc._hasPost : outer.pos();
     List<Expr> args = new List<>();
-    // NYI: CLEANUP: use outer.kind() and switch
-    if (!outer.isConstructor())
+    if (outer.isConstructor())
+      {
+        args.add(new Current(p, outer));
+      }
+    else
       {
         for (var a : outer.valueArguments())
           {
@@ -492,18 +495,14 @@ public class Contract extends ANY
             ca = ca.resolveTypes(res, context);
             args.add(ca);
           }
-      }
-    if (outer.hasResultField())
-      {
-        var c2 = new Call(p,
-                          new Current(p, outer),
-                          outer.resultField());
-        c2 = c2.resolveTypes(res, context);
-        args.add(c2);
-      }
-    else if (outer.isConstructor())
-      {
-        args.add(new Current(p, outer));
+        if (outer.hasResultField())
+          {
+            var c2 = new Call(p,
+                              new Current(p, outer),
+                              outer.resultField());
+            c2 = c2.resolveTypes(res, context);
+            args.add(c2);
+          }
       }
     return callPostCondition(res, outer, context, args);
   }
@@ -577,7 +576,7 @@ public class Contract extends ANY
    *
    * @param preBool true to create pre bool feature, false for pre feature.
    */
-  static void addPreFeature(Resolution res, Feature f, Context context, boolean preBool)
+  static void addPreFeature(Resolution res, Feature f, boolean preBool)
   {
     var fc = f.contract();
     var name = preBool ? preBoolConditionsFeatureName(f)
@@ -621,7 +620,7 @@ public class Contract extends ANY
                          cond,
                          new Block(),
                          pc(p, FuzionConstants.FUZION_RUNTIME_PRECONDITION_FAULT, new List<>(new StrConst(p, p.sourceText()))),
-                         true));
+                         AbstractMatch.Kind.Contract));
           }
       }
     if (cc != null)
@@ -713,7 +712,7 @@ public class Contract extends ANY
                                        cc,
                                        new Block(),
                                        new Block(new_code),
-                                       false));
+                                       AbstractMatch.Kind.If));
       }
     code._expressions = new_code;
     var e = res.resolveType(code, pF.context());
@@ -972,11 +971,11 @@ all of their redefinition to `true`. +
 
         if (f._preBoolFeature == null)
           {
-            addPreFeature(res, f, context, true);
+            addPreFeature(res, f, true);
           }
         if (f._preFeature == null)
           {
-            addPreFeature(res, f, context, false);
+            addPreFeature(res, f, false);
           }
 
         if (!f.isConstructor())
@@ -1028,8 +1027,10 @@ all of their redefinition to `true`. +
         var resultField = new Feature(pos,
                                       Visi.PRIV,
                                       f.isConstructor()
-                                      ? f.thisType()
-                                      : f.resultType(), // NYI: replace type parameter of f by type parameters of _postFeature!
+                                        ? f.thisType()
+                                        // we will later replace type parameters of f
+                                        // by type parameters of f post
+                                        : f.resultTypeIfPresentUrgent(res, true),
                                       FuzionConstants.RESULT_NAME)
           {
             public boolean isResultField() { return true; }
@@ -1043,7 +1044,7 @@ all of their redefinition to `true`. +
                            c.cond(),
                            new Block(),
                            pc(p, FuzionConstants.FUZION_RUNTIME_POSTCONDITION_FAULT, new List<>(new StrConst(p, p.sourceText()))),
-                           false));
+                           AbstractMatch.Kind.If));
           }
         var code = new Block(l);
         var pF = new Feature(pos,
@@ -1067,6 +1068,10 @@ all of their redefinition to `true`. +
           };
         res._module.findDeclarations(pF, f.isConstructor() ? f :  f.outer());
         res.resolveDeclarations(pF);
+        if (!f.isConstructor())
+          {
+            resultField.setRefinedResultType(res, context, f.resultType().replaceTypeParameters(pF));
+          }
         res.resolveTypes(pF);
         f._postFeature = pF;
 
@@ -1090,7 +1095,10 @@ The conditions of a post-condition are checked at run-time in sequential source-
                                       new Current(pos, pF),
                                       a);
                     ca = ca.resolveTypes(res, pF.context());
-                    args2.add(ca);
+                    if (!ca.calledFeature().isTypeParameter())
+                      {
+                        args2.add(ca);
+                      }
                   }
                 var inhpost = callPostCondition(res, inh, pF.context(), args2);
                 inhpost = inhpost.resolveTypes(res, pF.context());
@@ -1140,9 +1148,21 @@ The conditions of a post-condition are checked at run-time in sequential source-
         var f = new Call(p, "fuzion");
         var r = new Call(p, f, "runtime");
         var e = new Call(p, r, fault, new List<>(new StrConst(p, p.sourceText())));
-        l.add(Match.createIf(p, c.cond(), new Block(), e, false));
+        l.add(Match.createIf(p, c.cond(), new Block(), e, AbstractMatch.Kind.If));
       }
     return new Block(l);
+  }
+
+
+  /**
+   * Is this a contract without any conditions?
+   */
+  public boolean isEmpty()
+  {
+    return _hasPre == null &&
+      _hasPost == null &&
+      _hasPreElse == null &&
+      _hasPostThen == null;
   }
 
 

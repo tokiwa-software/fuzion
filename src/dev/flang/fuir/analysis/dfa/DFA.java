@@ -162,6 +162,27 @@ public class DFA extends ANY
 
 
     /**
+     * drop a value, but process its side-effect.
+     *
+     * @param v an expression that calculates a value that is not needed, but
+     * where the calculation might have side-effects (like performing a call) that
+     * we do need.
+     *
+     * For backends that do not perform any side-effects in RESULT, this does
+     * not need to be redefined, the default implementation is nop() which is
+     * fine in this case.
+     *
+     * @param type clazz id for the type of the value
+     *
+     * @return code to perform the side effects of v and ignoring the produced value.
+     */
+    @Override
+    public void drop(Val v, int type)
+    {
+    }
+
+
+    /**
      * Perform an assignment val to field f in instance rt
      *
      * @param s site of the expression causing this assignment
@@ -341,7 +362,7 @@ public class DFA extends ANY
               if (_reportResults && _options.verbose(9))
                 {
                   say("DFA for "+_fuir.siteAsString(s) + ": "+_fuir.codeAtAsString(s)+": " +
-                                     tvalue + ".set("+_fuir.clazzAsString(cc)+") := " + args.get(0));
+                                     tvalue + ".set("+_fuir.clazzName(cc)+") := " + args.get(0));
                 }
               var v = args.get(0);
               tvalue.value().setField(DFA.this, cc, v.value());
@@ -375,7 +396,7 @@ public class DFA extends ANY
         {
         case Abstract :
           Errors.error("Call to abstract feature encountered.",
-                       "Found call to  " + _fuir.clazzAsString(cc));
+                       "Found call to  " + _fuir.clazzName(cc));
           break;
         case Routine  :
         case Intrinsic:
@@ -413,7 +434,7 @@ public class DFA extends ANY
             if (_reportResults && _options.verbose(9))
               {
                 say("DFA for "+_fuir.siteAsString(s) + ": "+_fuir.codeAtAsString(s)+": " +
-                                   tvalue + ".get(" + _fuir.clazzAsString(cc) + ") => " + res);
+                                   tvalue + ".get(" + _fuir.clazzName(cc) + ") => " + res);
               }
             break;
           }
@@ -493,7 +514,7 @@ public class DFA extends ANY
             else
               {
                 Errors.error("Unsupported constant in DFA analysis.",
-                             "DFA cannot handle constant of clazz '" + _fuir.clazzAsString(constCl) + "' ");
+                             "DFA cannot handle constant of clazz '" + _fuir.clazzName(constCl) + "' ");
                 yield null;
               }
           }
@@ -789,7 +810,7 @@ public class DFA extends ANY
   /**
    * Should instance of certain clazzes be joined into a single Instance for
    * performance?  This is used to avoid large number of instances of, e.g.,
-   * `array u8` where tracking the individual instances gives no benefit.
+   * {@code array u8} where tracking the individual instances gives no benefit.
    *
    * To disable, use fz with
    *
@@ -1021,14 +1042,6 @@ public class DFA extends ANY
    * effects that are ever aborted.
    */
   TreeSet<Integer> _preEffectsAborted = new TreeSet<>();
-
-
-  /**
-   * All fields that are ever written.  These will be needed even if they are
-   * never read unless the assignments are actually removed (which is currently
-   * not the case).
-   */
-  BitSet _writtenFields = new BitSet();
 
 
   /**
@@ -1287,7 +1300,12 @@ public class DFA extends ANY
         public int accessedClazz(int s)
         {
           return codeAt(s) == ExprKind.Assign &&
-            (clazzIsUnitType(assignedType(s)) || clazzIsUnitType(accessTargetClazz(s)))
+            (
+              clazzIsUnitType(assignedType(s)) ||
+              clazzIsUnitType(accessTargetClazz(s)) ||
+              super.accessedClazz(s) == NO_CLAZZ ||
+              clazzIsUnitType(clazzResultClazz(super.accessedClazz(s)))
+            )
             ? NO_CLAZZ
             : super.accessedClazz(s);
         }
@@ -1359,7 +1377,7 @@ public class DFA extends ANY
                            realIter,
                            _calls.size(),
                            _numUniqueValues,
-                           _fuir.clazzAsString(_fuir.mainClazz()));
+                           _fuir.clazzName(_fuir.mainClazz()));
       }
   }
 
@@ -1403,13 +1421,36 @@ public class DFA extends ANY
 
         if (cnt == 1)
           {
-            newCall(null,
-                    _fuir.mainClazz(),
-                    NO_SITE,
-                    Value.UNIT,
-                    new List<>(),
-                    null /* env */,
-                    Context._MAIN_ENTRY_POINT_);
+            var m =
+              newCall(null,
+                      _fuir.mainClazz(),
+                      NO_SITE,
+                      Value.UNIT,
+                      new List<>(),
+                      null /* env */,
+                      Context._MAIN_ENTRY_POINT_);
+
+            // stackoverflow may happen at any time during execution.
+            // hence we simulate one once at the start of the program.
+            // NYI: UNDER DEVELOPMENT: comment from
+            // @fridi:
+            // this may fail since the control flow to
+            // StackOverflow.cause may happen, depending
+            // on how it is implemented in the backend,
+            // at any call or even at the first memory
+            // access to a stack allocated value.
+            // So, a more sophisticated DFA might produce a
+            // wrong result caused by the assumption that this only happens here.
+            var soc = _fuir.clazz(SpecialClazzes.c_stackoverflow_cause);
+            var socRes =
+              newCall(null,
+                      soc,
+                      NO_SITE,
+                      Value.UNIT,
+                      new List<>(newConstString(null, Context._MAIN_ENTRY_POINT_)),
+                      null,
+                      Context._MAIN_ENTRY_POINT_).result(m);
+            check (socRes == null);
           }
         iteration();
       }
@@ -1485,8 +1526,8 @@ public class DFA extends ANY
           .filter(c -> counts.get(c) > total / 500)
           .forEach(c ->
                    {
-                     System.out.println("Call count "+counts.get(c)+"/"+total+" for "+_fuir.clazzAsString(c)+" "+(_fuir.clazzIsUnitType(c)?"UNIT":""));
-                     if (_fuir.clazzAsString(c).equals(SHOW_CALLS))
+                     System.out.println("Call count "+counts.get(c)+"/"+total+" for "+_fuir.clazzName(c)+" "+(_fuir.clazzIsUnitType(c)?"UNIT":""));
+                     if (_fuir.clazzName(c).equals(SHOW_CALLS))
                        {
                          var i = 0;
                          Call prev = null;
@@ -1529,8 +1570,8 @@ public class DFA extends ANY
           .filter(c -> counts.get(c) > total / 5000)
           .forEach(c ->
                    {
-                     System.out.println("Value count "+counts.get(c)+"/"+total+" for "+_fuir.clazzAsString(c));
-                     if (_fuir.clazzAsString(c).equals(SHOW_VALUES))
+                     System.out.println("Value count "+counts.get(c)+"/"+total+" for "+_fuir.clazzName(c));
+                     if (_fuir.clazzName(c).equals(SHOW_VALUES))
                        {
                          var i = 0;
                          for (var v : _uniqueValues)
@@ -1654,39 +1695,6 @@ public class DFA extends ANY
 
 
   /**
-   * Flag to detect and stop (endless) recursion within NYIintrinsicMissing.
-   */
-  static boolean _recursion_in_NYIintrinsicMissing = false;
-
-
-  /**
-   * Report that intrinsic 'cl' is missing and return Value.UNDEFINED.
-   */
-  static Value NYIintrinsicMissing(Call cl)
-  {
-    if (true || cl._dfa._reportResults)
-      {
-        var name = fuir(cl).clazzOriginalName(cl.calledClazz());
-
-        // NYI: Proper error handling.
-        Errors.error("NYI: Support for intrinsic '" + name + "' missing");
-
-        // cl.showWhy(sb) may try to print result values that depend on
-        // intrinsics, so we risk running into an endless recursion here:
-        if (!_recursion_in_NYIintrinsicMissing)
-          {
-            _recursion_in_NYIintrinsicMissing = true;
-            var sb = new StringBuilder();
-            var ignore = cl.showWhy(sb);
-            say_err(sb);
-            _recursion_in_NYIintrinsicMissing = false;
-          }
-      }
-    return Value.UNDEFINED;
-  }
-
-
-  /**
    * Set of clazzes whose instance may escape the call to the clazz's routine.
    */
   TreeSet<Integer> _escapes = new TreeSet<>();
@@ -1709,7 +1717,7 @@ public class DFA extends ANY
   {
     if (_escapes.add(cc))
       {
-        wasChanged(() -> "Escapes: " + _fuir.clazzAsString(cc));
+        wasChanged(() -> "Escapes: " + _fuir.clazzName(cc));
       }
   }
 
@@ -2072,19 +2080,10 @@ public class DFA extends ANY
     put("f32.cast_to_u32"                , cl -> genericNumResult(cl) );
     put("f64.cast_to_u64"                , cl -> genericNumResult(cl) );
 
-    put("f32.type.min_exp"               , cl -> genericNumResult(cl) );
-    put("f32.type.max_exp"               , cl -> genericNumResult(cl) );
-    put("f32.type.min_positive"          , cl -> genericNumResult(cl) );
-    put("f32.type.max"                   , cl -> genericNumResult(cl) );
-    put("f32.type.epsilon"               , cl -> genericNumResult(cl) );
-    put("f64.type.min_exp"               , cl -> genericNumResult(cl) );
-    put("f64.type.max_exp"               , cl -> genericNumResult(cl) );
-    put("f64.type.min_positive"          , cl -> genericNumResult(cl) );
-    put("f64.type.max"                   , cl -> genericNumResult(cl) );
-    put("f64.type.epsilon"               , cl -> genericNumResult(cl) );
     put("effect.type.from_env"           , cl ->
     {
       var ecl = fuir(cl).clazzResultClazz(cl.calledClazz());
+      fuir(cl).recordEffectUsage(ecl);
       return cl.useAndGetEffect(cl.site(), ecl, false);
     });
     put("effect.type.unsafe_from_env"    , cl ->
@@ -2133,6 +2132,10 @@ public class DFA extends ANY
                                          , cl -> Value.UNIT);
     put("fuzion.sys.env_vars.has0"       , cl -> cl._dfa.bool() );
     put("fuzion.sys.env_vars.get0"       , cl -> cl._dfa.newConstString(null, cl) );
+    put("fuzion.sys.thread.current"      , cl ->
+        {
+          return genericResult(cl);
+        });
     put("fuzion.sys.thread.spawn0"       , cl ->
         {
           var oc = fuir(cl).clazzActualGeneric(cl.calledClazz(), 0);
@@ -2146,9 +2149,11 @@ public class DFA extends ANY
           var ignore = cl._dfa.newCall(cl, call, NO_SITE, cl._args.get(0).value(), new List<>(), null /* new environment */, cl);
           return genericResult(cl);
         });
-    put("fuzion.sys.thread.join0"        , cl -> Value.UNIT);
+    put("fuzion.sys.thread.join0"        , cl -> genericNumResult(cl));
+    put("fuzion.sys.thread.set_policy"   , cl -> genericNumResult(cl));
+    put("fuzion.sys.thread.set_affinity0", cl -> genericNumResult(cl));
 
-    put("effect.type.replace0"              , cl ->
+    put("effect.type.set0"               , cl ->
         {
           var ecl = fuir(cl).effectTypeFromIntrinsic(cl.calledClazz());
           var new_e = cl._args.get(0).value();
@@ -2165,13 +2170,20 @@ public class DFA extends ANY
               if (oev != ev)
                 {
                   cl._dfa._preEffectValues.put(ecl, ev);
-                  cl._dfa.wasChanged(() -> "effect.type.replace0 called: " + fuir(cl).clazzAsString(cl.calledClazz()));
+                  cl._dfa.wasChanged(() -> "effect.type.set0 called: " + fuir(cl).clazzName(cl.calledClazz()));
                 }
             }
 
           return Value.UNIT;
         });
-    put("effect.type.default0"              , cl ->
+    put("effect.type.remove0"              , cl ->
+        {
+          var ecl = fuir(cl).effectTypeFromIntrinsic(cl.calledClazz());
+          // NYI: UNDER DEVELOPMENT: do we need to change the enviornment?
+          // cl.removeEffect(ecl);
+          return Value.UNIT;
+        });
+    put("effect.type.instate_at_singularity0", cl ->
         {
           var ecl = fuir(cl).effectTypeFromIntrinsic(cl.calledClazz());
           var new_e = cl._args.get(0).value();
@@ -2182,7 +2194,7 @@ public class DFA extends ANY
                 {
                   cl._dfa._defaultEffects.put(ecl, new_e);
                   cl._dfa._defaultEffectContexts.put(ecl, cl);
-                  cl._dfa.wasChanged(() -> "effect.default called: " + fuir(cl).clazzAsString(cl.calledClazz()));
+                  cl._dfa.wasChanged(() -> "effect.instate_at_singularity0 called: " + fuir(cl).clazzName(cl.calledClazz()));
                 }
             }
           else
@@ -2192,7 +2204,7 @@ public class DFA extends ANY
               if (oev != ev)
                 {
                   cl._dfa._preEffectValues.put(ecl, ev);
-                  cl._dfa.wasChanged(() -> "effect.default called: " + fuir(cl).clazzAsString(cl.calledClazz()));
+                  cl._dfa.wasChanged(() -> "effect.instate_at_singularity0 called: " + fuir(cl).clazzName(cl.calledClazz()));
                 }
             }
           return Value.UNIT;
@@ -2219,17 +2231,6 @@ public class DFA extends ANY
                                     cl);
           var result = cll.result(cl);
 
-          if(fuir.getSpecialClazz(ecl) == SpecialClazzes.c_fuzion_runtime_stackoverflow)
-            {
-              // we need to simulate call to stackoverflow.cause
-              var cause = fuir.lookupCause(ecl);
-              var def = cl._dfa.newCall(cl, cause, NO_SITE, a0, new List<>(cl._dfa.newConstString(null, cl)), cl._env, cl);
-              var res = def.result(cl);
-              result = result != null && res != null
-                ? result.value().join(cl._dfa, res.value(), fuir(cl).clazzResultClazz(cl.calledClazz()))
-                : result;
-            }
-
           Value ev;
           if (cl._dfa._real)
             {
@@ -2249,7 +2250,7 @@ public class DFA extends ANY
               if (oev != ev)
                 {
                   cl._dfa._preEffectValues.put(ecl, ev);
-                  cl._dfa.wasChanged(() -> EFFECT_INSTATE_NAME + " called: " + fuir(cl).clazzAsString(cl.calledClazz()));
+                  cl._dfa.wasChanged(() -> EFFECT_INSTATE_NAME + " called: " + fuir(cl).clazzName(cl.calledClazz()));
                 }
             }
           var aborted =
@@ -2598,18 +2599,25 @@ public class DFA extends ANY
     put("concur.sync.cnd_signal"            , cl ->
       {
         cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
-        return cl._dfa.bool();
+        return Value.UNIT;
       });
     put("concur.sync.cnd_broadcast"         , cl ->
       {
         cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
-        return cl._dfa.bool();
+        return Value.UNIT;
       });
     put("concur.sync.cnd_wait"              , cl ->
       {
         cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
         cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 1));
-        return cl._dfa.bool();
+        return Value.UNIT;
+      });
+    put("concur.sync.cnd_timedwait"         , cl ->
+      {
+        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 0));
+        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 1));
+        cl._dfa.readField(fuir(cl).clazzArg(cl.calledClazz(), 2));
+        return Value.UNIT;
       });
     put("concur.sync.cnd_destroy"           , cl ->
       {
@@ -2644,7 +2652,7 @@ public class DFA extends ANY
             if (old_e == null || Value.compare(old_e, new_e) != 0)
               {
                 _defaultEffects.put(ecl, new_e);
-                wasChanged(() -> "effect.replace called: " + _fuir.clazzAsString(ecl));
+                wasChanged(() -> "effect.replace called: " + _fuir.clazzName(ecl));
               }
           }
       }
@@ -2743,7 +2751,7 @@ public class DFA extends ANY
         if (onlyOneInstance(cl))
           {
             var ni = new Instance(this, cl, site, context);
-            wasChanged(() -> "DFA: new instance " + _fuir.clazzAsString(cl));
+            wasChanged(() -> "DFA: new instance " + _fuir.clazzName(cl));
             makeUnique(ni);
             ao = ni;
           }
@@ -2789,7 +2797,7 @@ public class DFA extends ANY
         if (r == null)
           {
             var ni = new Instance(this, cl, site, context);
-            wasChanged(() -> "DFA: new instance " + _fuir.clazzAsString(cl));
+            wasChanged(() -> "DFA: new instance " + _fuir.clazzName(cl));
             clazzm.put(k, ni);
             makeUnique(ni);
             r = ni;
@@ -2812,7 +2820,7 @@ public class DFA extends ANY
     if (!_readFields.get(fnum))
       {
         _readFields.set(fnum);
-        wasChanged(() -> "DFA: read field " + _fuir.clazzAsString(field));
+        wasChanged(() -> "DFA: read field " + _fuir.clazzName(field));
         _fuir.doesNeedCode(field);
       }
     var cl = _fuir.clazzAsValue(_fuir.clazzOuterClazz(field));
@@ -3020,7 +3028,7 @@ public class DFA extends ANY
   /**
    * Should instance of given clazz be joined into a single Instance for
    * performance?  This is used to avoid large number of instances of, e.g.,
-   * `array u8` where tracking the individual instances gives no benefit.
+   * {@code array u8} where tracking the individual instances gives no benefit.
    */
   boolean onlyOneInstance(int clazz)
   {
@@ -3030,7 +3038,7 @@ public class DFA extends ANY
       //
       //   b := !_fuir.clazzIsChoice(clazz) && !_fuir.clazzIsRef(clazz);
       //
-      switch (_fuir.clazzAsString(clazz))
+      switch (_fuir.clazzName(clazz))
       {
       case
         "list u8",

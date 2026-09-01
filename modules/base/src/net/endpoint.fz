@@ -1,0 +1,39 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature net.endpoint
+#
+# -----------------------------------------------------------------------
+
+
+# an endpoint provides access to the peers address and port
+#
+module:public endpoint(desc i32) : effect
+is
+
+
+  # get the peer's ip address (tcp)
+  public get_peer_address outcome net.ip_address =>
+    fuzion.sys.net.get_peer_address desc
+      .bind net.ip_address.type.from_sequence
+
+
+  # get the peer's port (tcp)
+  public get_peer_port outcome u16 =>
+    fzE_get_peer_port desc

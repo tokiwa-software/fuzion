@@ -251,14 +251,25 @@ public class This extends ExprWithPos
         getOuter = new Current(pos(), cur);
         while (f != Types.f_ERROR && cur != f && !cur.isUniverse())
           {
-            var or = cur.outerRef();
-            if (CHECKS) check
-              (Errors.any() || (or != null));
-            if (or != null)
+            // we did not find `f` yet and cur.isCotype
+            // so we set getOuter to `f.this.type`
+            // see #5563 for an example where this is needed.
+            if (cur.isCotype())
               {
-                getOuter = new Call(pos(), getOuter, or).resolveTypes(res, context);
+                getOuter = Call.typeAsValue(pos(), f.cotypeOrigin().thisType());
+                cur = f;
               }
-            cur = cur.outer();
+            else
+              {
+                var or = cur.outerRef();
+                if (CHECKS) check
+                  (Errors.any() || (or != null));
+                if (or != null)
+                  {
+                    getOuter = new Call(pos(), getOuter, or).resolveTypes(res, context);
+                  }
+                cur = cur.outer();
+              }
           }
       }
 
@@ -292,7 +303,7 @@ public class This extends ExprWithPos
     var d = 0;                                    // d           is 9
     while (o.outer() != null)
       {
-        var b = o.featureName().baseName();
+        var b = o.baseName();
         if (all.containsKey(b))
           {
             ambig.add(b);
@@ -316,7 +327,7 @@ public class This extends ExprWithPos
             var d2 = 0;
             while (p >= 0 && o2.outer() != null)
               {
-                var b = o2.featureName().baseName();
+                var b = o2.baseName();
                 if (d2 == q)
                   {
                     result = o2;
@@ -338,7 +349,7 @@ public class This extends ExprWithPos
         var o2 = outer;                  // go backwards from outer to fill ol and list.
         while (o2.outer() != null)
           {
-            var b = o2.featureName().baseName();
+            var b = o2.baseName();
             ol.add("this");
             ol = ol.map(n -> b + "." + n);   // prefix all entries with o2's base name
             if (!ambig.contains(b))
@@ -372,7 +383,7 @@ public class This extends ExprWithPos
       }
     else if (_feature != null)
       {
-        return _feature.qualifiedName() + ".this";
+        return _feature.qualifiedNameHuman() + ".this";
       }
     else
       {

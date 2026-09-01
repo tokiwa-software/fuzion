@@ -44,7 +44,7 @@ typeinference_for_args_negative is
   say (a3 1.1         " world!")
 
   say (a4 "hello"     " world!")
-  say (a4 "1.0"       " world!".byte_length)
+  say (a4 "1.0"       " world!".byte_count)
   say (a4 "10.as_f64" 3.14)
   say (a4 "1.1"       " world!"=" monde!")
 
@@ -55,8 +55,8 @@ typeinference_for_args_negative is
 
     f(fa option m2) =>
       _ := [1,2,3].map x->(m1 $x)
-      q => fa.get.y
-      t(p Sequence T) => test "scenario4: type of m2.y is " $T "Type of 'void'"
+      q => fa.or_panic.y
+      t(p Sequence T) => test "scenario4: type of m2.y is " $T "void"
       t ((1..0).map x->q)
 
     m1(x) is
@@ -75,9 +75,9 @@ typeinference_for_args_negative is
   scenario5 =>
 
     f(fa option m2) =>
-      q => fa.get.y
+      q => fa.or_panic.y
       t(p Sequence T) =>
-        test "scenario4: type of m2.y is " $T "Type of 'void'"
+        test "scenario4: type of m2.y is " $T "void"
         _ := [1,2,3].map x->(m1 $x)
       t ((1..0).map x->q)
 

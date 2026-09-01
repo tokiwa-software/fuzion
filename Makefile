@@ -31,7 +31,7 @@ JAVAC = javac $(LINT) -encoding UTF8 --release $(JAVA_VERSION)
 FZ_SRC = $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 SRC = $(FZ_SRC)/src
 BUILD_DIR = ./build
-FZ = $(BUILD_DIR)/bin/fz
+FZ = $(abspath $(BUILD_DIR)/bin/fz)
 FZJAVA = $(BUILD_DIR)/bin/fzjava
 CLASSES_DIR = $(BUILD_DIR)/classes
 CLASSES_DIR_LOGO = $(BUILD_DIR)/classes_logo
@@ -127,6 +127,8 @@ FUZION_FILES_RT       = $(shell find $(FZ_SRC_INCLUDE))
 FZ_SRC_EXAMPLES       = $(FZ_SRC)/examples
 FUZION_FILES_EXAMPLES = $(shell find $(FZ_SRC_EXAMPLES))
 
+FUZION_RUNTIME_VERSION    = $(BUILD_DIR)/modules/base/src/fuzion/runtime/version.fz
+FUZION_RUNTIME_VERSION_IN =    $(FZ_SRC)/modules/base/src/fuzion/runtime/version.fz.in
 MOD_BASE              = $(BUILD_DIR)/modules/base.fum
 MOD_TERMINAL          = $(BUILD_DIR)/modules/terminal.fum
 MOD_LOCK_FREE         = $(BUILD_DIR)/modules/lock_free.fum
@@ -142,6 +144,7 @@ MOD_MAIL              = $(BUILD_DIR)/modules/mail.fum
 MOD_WEB               = $(BUILD_DIR)/modules/web.fum
 MOD_SODIUM            = $(BUILD_DIR)/modules/sodium.fum
 MOD_CRYPTO            = $(BUILD_DIR)/modules/crypto.fum
+MOD_TOKIWA            = $(BUILD_DIR)/modules/tokiwa.fum
 MOD_WEBSERVER         = $(BUILD_DIR)/modules/webserver.fum
 
 MOD_FZ_CMD_DIR = $(BUILD_DIR)/modules/fz_cmd
@@ -212,6 +215,7 @@ FZ_MODULES = \
 			$(MOD_WEB) \
 			$(MOD_SODIUM) \
 			$(MOD_CRYPTO) \
+			$(MOD_TOKIWA) \
 			$(MOD_WEBSERVER)
 
 C_FILES = $(shell find $(FZ_SRC) \( -path ./build -o -path ./.git \) -prune -o -name '*.c' -print)
@@ -253,20 +257,24 @@ $(BUILD_DIR)/%.md: $(FZ_SRC)/%.md
 
 $(FUZION_EBNF): $(FUZION_BASE) $(FZ_SRC)/bin/ebnf.fz
 	mkdir -p $(@D)
-	$(FZ) $(FZ_SRC)/bin/ebnf.fz $(JAVA_FILES_PARSER) > $@
+	$(FZ) -modules=tokiwa $(FZ_SRC)/bin/ebnf.fz $(JAVA_FILES_PARSER) > $@
+
+ifeq ($(FUZION_REPRODUCIBLE_BUILD),true)
+SED_DATE_AND_BUILTBY = "s^@@DATE@@^^g;s^@@BUILTBY@@^^g"
+else
+SED_DATE_AND_BUILTBY = "s^@@DATE@@^`date +%Y-%m-%d\ %H:%M:%S`^g;s^@@BUILTBY@@^`printf $(USER)@; hostname`^g"
+endif
+
+PROCESS_VERSION_IN := \
+            sed "s^@@VERSION@@^$(VERSION)^g" \
+          | sed "s^@@JAVA_VERSION@@^$(JAVA_VERSION)^g" \
+          | sed "s^@@REPO_PATH@@^$(dir $(abspath $(lastword $(MAKEFILE_LIST))))^g" \
+          | sed "s^@@GIT_HASH@@^`cd $(FZ_SRC); printf \`git rev-parse HEAD\` \`git diff-index --quiet HEAD -- || echo with local changes\``^g" \
+          | sed $(SED_DATE_AND_BUILTBY)
 
 $(JAVA_FILE_UTIL_VERSION): $(FZ_SRC)/version.txt $(JAVA_FILE_UTIL_VERSION_IN)
 	mkdir -p $(@D)
-	cat $(JAVA_FILE_UTIL_VERSION_IN) \
-          | sed "s^@@VERSION@@^$(VERSION)^g" \
-          | sed "s^@@JAVA_VERSION@@^$(JAVA_VERSION)^g" \
-          | sed "s^@@REPO_PATH@@^$(dir $(abspath $(lastword $(MAKEFILE_LIST))))^g" \
-          | sed "s^@@GIT_HASH@@^`cd $(FZ_SRC); printf \`git rev-parse HEAD\` \`git diff-index --quiet HEAD -- || echo with local changes\``^g" >$@
-ifeq ($(FUZION_REPRODUCIBLE_BUILD),true)
-	sed -i "s^@@DATE@@^^g;s^@@BUILTBY@@^^g" $@
-else
-	sed -i "s^@@DATE@@^`date +%Y-%m-%d\ %H:%M:%S`^g;s^@@BUILTBY@@^`printf $(USER)@; hostname`^g" $@
-endif
+	cat $(JAVA_FILE_UTIL_VERSION_IN) | $(PROCESS_VERSION_IN) >$@
 
 $(CLASS_FILES_UTIL): $(JAVA_FILES_UTIL)
 	mkdir -p $(CLASSES_DIR)
@@ -419,10 +427,11 @@ $(FZ): $(FZ_SRC)/bin/fz | $(CLASS_FILES_TOOLS)
 	cp -rf $(FZ_SRC)/bin/fz $@
 	chmod +x $@
 
-$(MOD_BASE): $(FZ) $(shell find $(FZ_SRC)/modules/base/src -name "*.fz")
+$(MOD_BASE): $(FZ) $(shell find $(FZ_SRC)/modules/base/src -name "*.fz") $(FUZION_RUNTIME_VERSION_IN)
 	rm -rf $(@D)/base
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC)/modules/base $(@D)
+	cat $(FUZION_RUNTIME_VERSION_IN) | $(PROCESS_VERSION_IN) >$(FUZION_RUNTIME_VERSION)
 	$(FZ) -sourceDirs=$(BUILD_DIR)/modules/base/src -XloadBaseModule=off -saveModule=$@ -XenableSetKeyword
 	$(FZ) -XXcheckIntrinsics
 
@@ -513,6 +522,12 @@ $(MOD_CRYPTO): $(MOD_SODIUM) $(FZ) $(shell find $(FZ_SRC)/modules/crypto/src -na
 	cp -rf $(FZ_SRC)/modules/crypto $(@D)
 	$(FZ) -modules=sodium -sourceDirs=$(BUILD_DIR)/modules/crypto/src -saveModule=$@
 
+$(MOD_TOKIWA): $(MOD_WEB) $(FZ) $(shell find $(FZ_SRC)/modules/tokiwa/src -name "*.fz")
+	rm -rf $(@D)/tokiwa
+	mkdir -p $(@D)
+	cp -rf $(FZ_SRC)/modules/tokiwa $(@D)
+	$(FZ) -modules=web -sourceDirs=$(BUILD_DIR)/modules/tokiwa/src -saveModule=$@
+
 $(MOD_WEBSERVER): $(MOD_HTTP) $(FZ) $(shell find $(FZ_SRC)/modules/webserver/src -name "*.fz")
 	rm -rf $(@D)/webserver
 	mkdir -p $(@D)
@@ -525,11 +540,11 @@ $(FZJAVA): $(FZ_SRC)/bin/fzjava | $(CLASS_FILES_TOOLS_FZJAVA)
 	chmod +x $@
 
 $(BUILD_DIR)/bin/check_simple_example: $(FZ_SRC)/bin/check_simple_example.fz | $(FUZION_BASE) $(MOD_TERMINAL)
-	$(FZ) -modules=terminal -c -o=$@ $(FZ_SRC)/bin/check_simple_example.fz
+	$(FZ) -debug=0 -modules=terminal,tokiwa -c -o=$@ $(FZ_SRC)/bin/check_simple_example.fz
 	@echo " + $@"
 
 $(BUILD_DIR)/bin/record_simple_example: $(FZ_SRC)/bin/record_simple_example.fz | $(FUZION_BASE) $(MOD_TERMINAL)
-	$(FZ) -modules=terminal -c -o=$@ $(FZ_SRC)/bin/record_simple_example.fz
+	$(FZ) -debug=0 -modules=terminal,tokiwa -c -o=$@ $(FZ_SRC)/bin/record_simple_example.fz
 	@echo " + $@"
 
 $(BUILD_DIR)/tests: $(FUZION_FILES_TESTS) $(BUILD_DIR)/include $(BUILD_DIR)/bin/check_simple_example $(BUILD_DIR)/bin/record_simple_example
@@ -575,7 +590,7 @@ logo: $(BUILD_DIR)/assets/logo.svg $(BUILD_DIR)/assets/logo_bleed.svg $(BUILD_DI
 	cp $^ $(FZ_SRC)/assets/
 
 $(BUILD_DIR)/bin/run_tests: $(FZ) $(FZ_MODULES) $(FZ_SRC)/bin/run_tests.fz
-	$(FZ) -modules=lock_free,web -c -CLink=wolfssl -CInclude="wolfssl/options.h wolfssl/ssl.h" $(FZ_SRC)/bin/run_tests.fz -o=$@
+	$(FZ) -debug=0 -modules=lock_free,tokiwa -c -CLink=wolfssl -CInclude="wolfssl/options.h wolfssl/ssl.h" $(FZ_SRC)/bin/run_tests.fz -o=$@
 
 # phony target to run Fuzion tests and report number of failures
 .PHONY: run_tests
@@ -586,30 +601,25 @@ TEST_DEPENDENCIES = $(FZ_MODULES) $(MOD_JAVA_BASE) $(MOD_FZ_CMD) $(BUILD_DIR)/te
 # phony target to run Fuzion tests using effects and report number of failures
 .PHONY .SILENT: run_tests_effect
 run_tests_effect: $(FZ) $(TEST_DEPENDENCIES)
-	printf "testing effects: "
 	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) effect
 
 # phony target to run Fuzion tests using interpreter and report number of failures
 .PHONY .SILENT: run_tests_int
 run_tests_int: $(FZ_INT) $(TEST_DEPENDENCIES)
-	printf "testing interpreter: "
 	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) int
 
 # phony target to run Fuzion tests using c backend and report number of failures
 .PHONY .SILENT: run_tests_c
 run_tests_c: $(FZ_C) $(TEST_DEPENDENCIES)
-	printf "testing C backend: "; \
 	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) c
 
 # phony target to run Fuzion tests using jvm backend and report number of failures
 .PHONY .SILENT: run_tests_jvm
 run_tests_jvm: $(FZ_JVM) $(TEST_DEPENDENCIES)
-	printf "testing JVM backend: "; \
 	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) jvm
 
 .PHONY .SILENT: run_tests_fuir
 run_tests_fuir: $(TEST_DEPENDENCIES)
-	printf "testing FUIR backend: "; \
 	$(BUILD_DIR)/bin/run_tests $(BUILD_DIR) fuir
 
 .PHONY .SILENT: run_tests_jar_build
@@ -641,7 +651,7 @@ release: clean all
 	rm -f fuzion_$(VERSION).tar.gz
 	tar cfz fuzion_$(VERSION).tar.gz --transform s/^build/fuzion_$(VERSION)/ build
 
-SYNTAX_CHECK_MODULES = terminal,clang,lock_free,java.base,java.datatransfer,java.xml,java.desktop,web,http,wolfssl
+SYNTAX_CHECK_MODULES = terminal,clang,lock_free,java.base,java.datatransfer,java.xml,java.desktop,web,http,wolfssl,tokiwa
 # target to do a syntax check of fz files.
 # currently only code in bin/ and examples/ are checked.
 .PHONY: syntaxcheck
@@ -663,6 +673,14 @@ rerecord_simple_tests:
 .PHONY: rerecord_effects
 rerecord_effects:
 	for file in tests/*/ ; do if [ "$$(find "$$file" -maxdepth 1 -type f -name "*.effect" -print -quit)" ]; then make record_effect -C build/"$$file"/; fi done
+	rsync -a --include='*/' --include='*.effect' --exclude='*' build/tests/ tests/
+
+.PHONY: rerecord_expected_err
+rerecord_expected_err:
+	for file in tests/*/ ; do if [ "$$(find "$$file" -maxdepth 1 -type f -name "*.expected_err" -size +0 -print -quit)" ]; then make record -C build/"$$file"/; fi done
+	for file in tests/*/ ; do if [ "$$(find "$$file" -maxdepth 1 -type f -name "*.expected_err_jvm" -size +0 -print -quit)" ]; then make record_jvm -C build/"$$file"/; fi done
+	for file in tests/*/ ; do if [ "$$(find "$$file" -maxdepth 1 -type f -name "*.expected_err_c" -size +0 -print -quit)" ]; then make record_c -C build/"$$file"/; fi done
+	for file in tests/*/ ; do if [ "$$(find "$$file" -maxdepth 1 -type f -name "*.expected_err_int" -size +0 -print -quit)" ]; then make record_int -C build/"$$file"/; fi done
 	rsync -a --include='*/' --include='*.effect' --exclude='*' build/tests/ tests/
 
 $(MOD_FZ_CMD_DIR).jmod: $(FUZION_BASE)

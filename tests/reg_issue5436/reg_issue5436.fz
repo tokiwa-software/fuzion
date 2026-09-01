@@ -33,7 +33,7 @@
 test1.q
 test1(A type...) is
   q => g r
-  g (B type) unit => say "in {type_of g.this}"
+  g (B type) unit => say "in $(type_of g.this)"
   r is
 
 
@@ -42,7 +42,7 @@ test1(A type...) is
 (test1a unit).q
 test1a(A type...) is
   q => g r
-  g (B type) unit => say "in {type_of g.this}"
+  g (B type) unit => say "in $(type_of g.this)"
   r is
 
 
@@ -51,7 +51,7 @@ test1a(A type...) is
 (test1b unit nil false_ Any String bool).q
 test1b(A type...) is
   q => g r
-  g (B type) unit => say "in {type_of g.this}"
+  g (B type) unit => say "in $(type_of g.this)"
   r is
 
 
@@ -60,7 +60,7 @@ test1b(A type...) is
 test2
 test2(A type...) =>
   f q
-  f(X type) unit => say "in {type_of f.this}"
+  f(X type) unit => say "in $(type_of f.this)"
   q is
 
 # the second test from #5436, but using a non empty list of actual generics
@@ -68,7 +68,7 @@ test2(A type...) =>
 test2a unit
 test2a(A type...) =>
   f q
-  f(X type) unit => say "in {type_of f.this}"
+  f(X type) unit => say "in $(type_of f.this)"
   q is
 
 # the second test from #5436, but using a long list of actual generics
@@ -76,5 +76,5 @@ test2a(A type...) =>
 test2b (Sequence (option (array u8))) bool String (Lazy i32->(num.complex f32))
 test2b(A type...) =>
   f q
-  f(X type) unit => say "in {type_of f.this}"
+  f(X type) unit => say "in $(type_of f.this)"
   q is

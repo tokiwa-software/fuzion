@@ -1,0 +1,12 @@
+
+--CURDIR--/reg_issue5955.fz:54:5: error 1: Incompatible types in assignment
+    array_cons as.this
+----^^^^^^^^^^
+assignment to field : 'as.as_list.result'
+expected formal type: 'list T'
+actual type found   : 'as.this.array_cons as.this'
+assignable to       : 'as.this.array_cons as.this'
+for value assigned  : 'array_cons as.this'
+To solve this, you could change the type of the target 'as.as_list.result' to 'as.this.array_cons as.this' or convert the type of the assigned value to 'list T'.
+
+one error.

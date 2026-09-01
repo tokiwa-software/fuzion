@@ -60,7 +60,7 @@ public class ANY
 
 
   /**
-   * Property to set the command name, i.e. the result of {@code envir.args[0]}.
+   * Property to set the command name, i.e. the result of {@code envir.Args[0]}.
    */
   public static final String FUZION_COMMAND_PROPERTY = "fuzion.command";
 

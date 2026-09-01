@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir.analysis.dfa;
 
+import static dev.flang.ir.IR.NO_CLAZZ;
+
 import java.util.TreeMap;
 
 import dev.flang.ir.IR;
@@ -156,7 +158,8 @@ public class Instance extends Value
   public void setField(DFA dfa, int field, Value v)
   {
     if (PRECONDITIONS) require
-      (v != null);
+      (v != null,
+       Errors.any() || v._clazz == NO_CLAZZ || dfa._fuir.clazzIsRef(v._clazz) || dfa._fuir.clazzResultClazz(field) == v._clazz);
 
     var oldv = _fields.get(field);
     if (oldv != null)
@@ -172,7 +175,6 @@ public class Instance extends Value
           }
         _fields.put(field, v);
       }
-    dfa._writtenFields.set(field);
   }
 
 
@@ -193,8 +195,8 @@ public class Instance extends Value
         if (!Errors.any())
           {
             DfaErrors.readingUninitializedField(site == IR.NO_SITE ? null : dfa._fuir.sitePos(site),
-                                                dfa._fuir.clazzAsString(field),
-                                                dfa._fuir.clazzAsString(_clazz),
+                                                dfa._fuir.clazzName(field),
+                                                dfa._fuir.clazzName(_clazz),
                                                 why);
           }
       }
@@ -212,7 +214,7 @@ public class Instance extends Value
    */
   public String toString()
   {
-    return _dfa._fuir.clazzAsString(_clazz) + "@" + _dfa._fuir.sitePos(_site);
+    return _dfa._fuir.clazzName(_clazz) + "@" + _dfa._fuir.sitePos(_site);
   }
 
 }

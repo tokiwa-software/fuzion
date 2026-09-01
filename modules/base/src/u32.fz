@@ -25,7 +25,7 @@
 
 # u32 -- 32-bit unsigned integer values
 #
-public u32(public val u32) : num.wrap_around, has_interval is
+public u32(public val u32) : num.wrap_around, property.interval is
 
   # overflow checking
 
@@ -70,39 +70,35 @@ public u32(public val u32) : num.wrap_around, has_interval is
   # does this u32 fit into an u8?
   #
   public fixed redef fits_in_u8 bool  => val ≤ u8.max.as_u32
+  public fixed redef fits_in_u16 bool => val ≤ u16.max.as_u32
+  public fixed redef fits_in_u32 bool => true
+  public fixed redef fits_in_u64 bool => true
+  public fixed redef fits_in_u128 bool => true
+  public fixed redef fits_in_i8 bool => val ≤ i8.max.as_u32
+  public fixed redef fits_in_i16 bool => val ≤ i16.max.as_u32
+  public fixed redef fits_in_i32 bool => val ≤ i32.max.as_u32
+  public fixed redef fits_in_i64 bool => true
+  public fixed redef fits_in_i128 bool => true
 
 
   # this u32 as an i8
-  public as_i8 i8
-    pre
-      debug: val ≤ i8.max.as_u32
-    =>
-      cast_to_i32.as_i8
+  public redef as_i8 i8 => cast_to_i32.as_i8
 
 
   # this u32 as an i16
-  public as_i16 i16
-    pre
-      debug: val ≤ i16.max.as_u32
-    =>
-      cast_to_i32.as_i16
+  public redef as_i16 i16 => cast_to_i32.as_i16
 
 
   # this u32 as an i32
-  public as_i32 i32
-    pre
-      debug: val ≤ i32.max.as_u32
-    =>
-      cast_to_i32
+  public redef as_i32 i32 => cast_to_i32
 
 
   # this u32 as an i64
-  public as_i64 i64 => intrinsic
+  public redef as_i64 i64 => intrinsic
 
 
   # this u32 as an i128
-  public as_i128 i128 =>
-    as_u64.as_i128
+  public redef as_i128 i128 => as_u64.as_i128
 
 
   # this u32 as an u8
@@ -110,23 +106,15 @@ public u32(public val u32) : num.wrap_around, has_interval is
 
 
   # this u32 as an u16
-  public as_u16 u16
-    pre
-      debug: val ≤ u16.max.as_u32
-    =>
-      cast_to_i32.as_u16
+  public redef as_u16 u16 => cast_to_i32.as_u16
 
 
   # this u32 as an u64
-  public as_u64 u64
-    =>
-      val.as_i64.as_u64
+  public redef as_u64 u64 => val.as_i64.as_u64
 
 
   # this u32 as an u128
-  public as_u128 u128
-    =>
-      u128 0 as_u64
+  public redef as_u128 u128 => u128 0 as_u64
 
 
   # this u32 as an int
@@ -182,7 +170,7 @@ public u32(public val u32) : num.wrap_around, has_interval is
 
   # count the number of trailing zeros in this integer.
   #
-  public trailing_zeros i32 =>
+  public trailing_zeros i64 =>
     v, s := (val, 0)
     v1, s1 := if ((v  &     0xffff) != 0) (v , s ) else (v  >> 16, s  + 16)
     v2, s2 := if ((v1 &       0xff) != 0) (v1, s1) else (v1 >>  8, s1 +  8)
@@ -195,12 +183,12 @@ public u32(public val u32) : num.wrap_around, has_interval is
   # count the number of 1 bits in the binary representation of this
   # integer.
   #
-  public redef ones_count i32 =>
+  public redef ones_count i64 =>
     v := val;
     m  := v  & 0xaaaaaaaa; v1 := v  - m  + (m  >> 1)
     m1 := v1 & 0xcccccccc; v2 := v1 - m1 + (m1 >> 2)
     m2 := v2 & 0xf0f0f0f0; v3 := v2 - m2 + (m2 >> 4)
-    (v3 *° 0x01010101 >> 24).as_i32
+    (v3 *° 0x01010101 >> 24).as_i64
 
 
   # -----------------------------------------------------------------------

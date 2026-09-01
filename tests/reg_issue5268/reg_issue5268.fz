@@ -40,20 +40,20 @@ reg_issue5268 =>
   s1 (unit, f64, String)->bool => *2      # 6. should flag an error: 3 actual args, expected 1
   t  (unit, f64, String)->bool := *2      # 7. should flag an error: 3 actual args, expected 1
   t1 (unit, f64, String)->bool := *2      # 8. should flag an error: 3 actual args, expected 1
-  u  (i32)->bool => %%2                   # should work
-  u1 (i32)->bool => %%2                   # should work
-  v  (i32)->bool := %%2                   # should work
-  v1 (i32)->bool := %%2                   # should work
-  i32.prefix ! => val ^ 0x5555_5555
-  w  ()->i32 => !0x5555_aaaa              # should work
-  w1 ()->i32 => !0x5555_aaaa              # should work
-  x  ()->i32 := !0x5555_aaaa              # should work
-  x1 ()->i32 := !0x5555_aaaa              # should work
-  i32.prefix !?!(a unit, b f64, c String) => ($a).byte_length ^ b.exponent ^ c.codepoint_length ^ val
-  y  (unit,f64,String)->i32 => !?!4711    # should work
-  y1 (unit,f64,String)->i32 => !?!4711    # should work
-  z  (unit,f64,String)->i32 := !?!4711    # should work
-  z1 (unit,f64,String)->i32 := !?!4711    # should work
+  u  (i64)->bool => %%2                   # should work
+  u1 (i64)->bool => %%2                   # should work
+  v  (i64)->bool := %%2                   # should work
+  v1 (i64)->bool := %%2                   # should work
+  i64.prefix ! => val ^ 0x5555_5555
+  w  ()->i64 => !0x5555_aaaa              # should work
+  w1 ()->i64 => !0x5555_aaaa              # should work
+  x  ()->i64 := !0x5555_aaaa              # should work
+  x1 ()->i64 := !0x5555_aaaa              # should work
+  i64.prefix !?!(a unit, b f64, c String) => ($a).byte_count ^ b.exponent ^ c.codepoint_count ^ val
+  y  (unit,f64,String)->i64 => !?!4711    # should work
+  y1 (unit,f64,String)->i64 => !?!4711    # should work
+  z  (unit,f64,String)->i64 := !?!4711    # should work
+  z1 (unit,f64,String)->i64 := !?!4711    # should work
 
   # call the test cases
   #

@@ -1,0 +1,10 @@
+
+--CURDIR--/reg_issue2966.fz:30:3: error 1: Choice must not inherit from feature with contract.
+  c : a, choice i32 String is
+--^
+The feature that 'reg_issue2966.c' inherits that has a contract:
+'reg_issue2966.a' defined at --CURDIR--/reg_issue2966.fz:26:3:
+  a
+--^
+
+one error.

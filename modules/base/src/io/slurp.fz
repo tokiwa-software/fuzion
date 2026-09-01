@@ -27,5 +27,5 @@
 #
 # NYI: UNDER DEVELOPMENT: support more options than path
 #
-public slurp(p path) outcome String =>
+public slurp(p io.path) outcome String =>
   io.file.read p

@@ -40,7 +40,7 @@ test_this1 =>
 
   i : n is
 
-  _ := i.l
+  i.l
 
 test_this1
 
@@ -59,7 +59,7 @@ test_this2 =>
 
   i : n is
 
-  _ := n.l
+  n.l
 
 test_this2
 
@@ -83,7 +83,7 @@ test_this3 is
       else
         u
 
-    public redef as_string String => "num0.this {to_u32_loop} 'as_string'"
+    public redef as_string String => "num0.this $(to_u32_loop) 'as_string'"
 
   intM5(v u8) : num0 is
     fixed redef type.zero => test_this3.intM5 0
@@ -114,7 +114,7 @@ test_this4 is
       else
         u
 
-    public redef as_string String => "num0.this {to_u32_loop} 'as_string'"
+    public redef as_string String => "num0.this $(to_u32_loop) 'as_string'"
 
 
   intM5(v u8) : num0 is
@@ -141,7 +141,7 @@ test_cov is
       x := n.this
       _ := x.p n.this
 
-    public redef as_string String => "{f}"
+    public redef as_string String => "$(f)"
 
   i(is_zero bool) : n is
     fixed redef p(other i) => other
@@ -182,7 +182,7 @@ test_cov2 is
       x := n.this
       _ := x.p n.this
 
-    public redef as_string String => "{f}"
+    public redef as_string String => "$(f)"
 
   i(is_zero bool) : n is
     fixed redef p(other i) => other
@@ -206,7 +206,7 @@ test_cov2a0 is
   i(is_zero bool) : n is
     fixed redef p(other i) => other
 
-_ := (test_cov2a0.i false).f
+(test_cov2a0.i false).f
 
 
 
@@ -222,7 +222,7 @@ test_cov3 =>
 
   _ := b
 
-_ := test_cov3
+test_cov3
 
 
 # example from #904, modified to call g
@@ -236,7 +236,7 @@ test_cov3a =>
   b : a is
   b.g
 
-_ := test_cov3a
+test_cov3a
 
 
 # example from #905
@@ -253,7 +253,7 @@ test_cov4 =>
 
   _ := b
 
-_ := test_cov4
+test_cov4
 
 
 # example from #905 with a and b containing data, so not unit types

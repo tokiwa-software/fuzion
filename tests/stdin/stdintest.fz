@@ -27,9 +27,9 @@ stdintest =>
 
   lm : mutate is
   lm ! ()->
-    (io.stdin.reader lm) ! ()->
+    io.buffered lm .Reader.instate (io.stdin.reader lm) ()->
 
-      read(n i32) => (io.buffered lm).read_string n
+      read(n i64) => (io.buffered lm).read_string n
       read_line => (io.buffered lm).read_line ? str String => str | io.end_of_file => ""
 
       a := read 1
@@ -62,4 +62,4 @@ stdintest =>
       # when stdin is empty, read_line should return an empty string
       say "nothing: '$read_line'."
       # now at end_of_file.
-      say "nothing: '{read 1}'."
+      say "nothing: '$(read 1)'."

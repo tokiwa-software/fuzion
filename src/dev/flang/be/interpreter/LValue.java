@@ -67,8 +67,8 @@ public class LValue extends ValueWithClazz
     if (PRECONDITIONS) require
       (cont != null,
        fuir().clazzIsUnitType(c) || off >= 0,
-       fuir().clazzIsUnitType(c) || off < Layout.get(cont._clazz).size(),
-       fuir().clazzIsUnitType(c) || off < cont.refs.length);
+       fuir().clazzIsUnitType(c) || Layout.get(cont._clazz).size() == 0 || off < Layout.get(cont._clazz).size(),
+       fuir().clazzIsUnitType(c) || Layout.get(cont._clazz).size() == 0 || off < cont.refs.length);
 
     this.container = cont;
     this.offset = off;
@@ -333,7 +333,7 @@ public class LValue extends ValueWithClazz
    */
   public String toString()
   {
-    return "lvalue[" + container + "@" + offset + "(" + fuir().clazzAsString(_clazz) + ")]" +
+    return "lvalue[" + container + "@" + offset + "(" + fuir().clazzName(_clazz) + ")]" +
       (_clazz == fuir().clazz(SpecialClazzes.c_i8  ) ? " (" + i8Value()   + ")" :
        _clazz == fuir().clazz(SpecialClazzes.c_u8  ) ? " (" + u8Value()   + ")" :
        _clazz == fuir().clazz(SpecialClazzes.c_i16 ) ? " (" + i16Value()  + ")" :

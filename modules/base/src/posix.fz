@@ -1,0 +1,57 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature posix
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# posix -- collection of features corresponding to POSIX IEEE Std 1003.1 standard
+#
+#
+public posix is
+
+
+  # a clock identifier
+  #
+  public clockid is
+
+
+  # the wall clock (NOTE: This is usually not useful for real-time code)
+  #
+  public clock_realtime  : clockid is
+
+
+  # the monotonic clock
+  #
+  public clock_monotonic : clockid is
+
+
+  # The posix clocks that are currently supported
+  #
+  public clockid_t : choice clock_realtime clock_monotonic is
+
+    # the native value used for this clock
+    #
+    public val i32
+    =>
+      match clockid_t.this
+        clock_realtime  => 0
+        clock_monotonic => 1

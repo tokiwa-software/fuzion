@@ -1,1 +1,6 @@
-StackOverflow
+java.lang.StackOverflowError
+(stackoverflow, java.lang.StackOverflowError)
+called finally
+java.lang.StackOverflowError
+called finally
+(stackoverflow, java.lang.StackOverflowError)

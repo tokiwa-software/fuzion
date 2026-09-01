@@ -31,7 +31,7 @@ import java.nio.ByteBuffer;
 import java.util.TreeSet;
 import java.util.TreeMap;
 
-import java.security.SecureRandom;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 import dev.flang.ast.AbstractAssign;
@@ -111,7 +111,7 @@ class LibraryOut extends ANY
    *   +        +--------+---------------+-----------------------------------------------+
    *   |        | 1      | Name          | module name                                   |
    *   +        +--------+---------------+-----------------------------------------------+
-   *   |        | 1      | u128          | module version                                |
+   *   |        | 1      | u128          | module hash                                   |
    *   +        +--------+---------------+-----------------------------------------------+
    *   |        | 1      | int           | number of modules this module depends on n    |
    *   +        +--------+---------------+-----------------------------------------------+
@@ -131,52 +131,40 @@ class LibraryOut extends ANY
     _data = null;
 
     // now that we know the referenced modules, we start over:
-    var v = version();
-    if (v != null)
+    _data = new FixUps();
+    _data.writeBytes(FuzionConstants.MIR_FILE_MAGIC);
+    _data.writeString(name);
+    var hashOffset = _data.offset();
+    _data.writeBytes(new byte[32]);
+    _data.writeInt(rm.size());
+    for (var m : rm)
       {
-        _data = new FixUps();
-        _data.writeBytes(FuzionConstants.MIR_FILE_MAGIC);
-        _data.writeString(name);
-        _data.writeBytes(v);
-        _data.writeInt(rm.size());
-        for (var m : rm)
-          {
-            moduleRef(m);
-          }
-        allDeclFeatures(sm);
-        sourceFiles();
-        _data.fixUps(this);
-        sm._options.verbosePrintln(2, "" +
-                                   _data.featureCount() + " features " +
-                                   _data.typeCount() + " types and " +
-                                   _sourceFiles.size() + " source files included in fum file.");
+        moduleRef(m);
       }
+    allDeclFeatures(sm);
+    sourceFiles();
+    _data.fixUps(this);
+    MessageDigest md;
+    try
+      {
+        md = MessageDigest.getInstance("SHA3-256");
+        byte[] digest = md.digest(_data.buffer().array());
+        check(digest.length == 32);
+        _data.writeAt(hashOffset, digest);
+      }
+    catch (NoSuchAlgorithmException e)
+      {
+        Errors.fatal("SHA3-256 missing?");
+      }
+
+    sm._options.verbosePrintln(2, "" +
+                                _data.featureCount() + " features " +
+                                _data.typeCount() + " types and " +
+                                _sourceFiles.size() + " source files included in fum file.");
   }
 
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * Create a version number of this module file.  Currently, the version is
-   * just a cryptographically strong random number.
-   */
-  byte[] version()
-  {
-    var alg = "DRBG"; // or "SHA1PRNG"? NYI: Choose best algorithm here!
-    try
-      {
-        var result = new byte[16];
-        var r = SecureRandom.getInstance(alg);
-        r.nextBytes(result);
-        return result;
-      }
-    catch (NoSuchAlgorithmException e)
-      {
-        Errors.error("failed to produce secure random using algorithm '" + alg + "': " + e);
-        return null;
-      }
-  }
 
 
   /**
@@ -472,7 +460,7 @@ class LibraryOut extends ANY
       {
         k = k | FuzionConstants.MIR_FILE_KIND_IS_COTYPE;
       }
-    if ((f.modifiers() & FuzionConstants.MODIFIER_FIXED) != 0)
+    if (f.isFixed())
       {
         k = k | FuzionConstants.MIR_FILE_KIND_IS_FIXED;
       }
@@ -612,17 +600,17 @@ class LibraryOut extends ANY
         _data.writeInt(-2);     // NYI: optimization: maybe write just one integer, e.g., -index-2
         _data.writeInt(off);
       }
-    else if (!t.isGenericArgument() && t.feature().isUniverse())
+    else if (!t.isParametricType() && t.feature().isUniverse())
       {
         _data.writeInt(-3);
       }
     else
       {
         _data.addOffset(t, _data.offset());
-        if (t.isGenericArgument())
+        if (t.isParametricType())
           {
             _data.writeInt(-1);
-            _data.writeOffset(t.genericArgument());
+            _data.writeOffset(t.typeParameter());
           }
         else
           {
@@ -636,7 +624,8 @@ class LibraryOut extends ANY
                     type(gt);
                   }
               }
-            type(t.outer());
+            // NYI: CLEANUP: do not write outer for this types.
+            type(t.isThisType() ? Types.resolved.universe.selfType() : t.outer());
           }
       }
   }
@@ -984,7 +973,7 @@ class LibraryOut extends ANY
   String fileName(SourceFile sf)
   {
     var sp = _sourceModule._options.sourcePaths();
-    var sd = sp.length == 1 ? sp[0] : null;
+    var sd = sp.length == 1 ? sp[0].normalize() : null;
     var sfp = sf._fileName;
     if (sd != null && sfp.startsWith(sd))
       {

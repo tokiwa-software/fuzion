@@ -56,7 +56,7 @@ test_postcondition is
       say "PASS: $order"
     else
       say "FAIL: EXPECTED $expected GOT $order"
-      _ := set_exit_code 1
+      _ := Exit.env.set_exit_code 1
     order <- ""
 
 
@@ -199,13 +199,13 @@ test_postcondition is
         ok "original $result"
         { io.Out.env.println "hi"; true }
         { v := post_accessing_result.this; true }
-        { [1,result,2].fold i32.sum > 3 }
-        { fn i32->i32 := *result; fn 3 > 120 }
+        { [1,result,2].fold i64.sum > 3 }
+        { fn i64->i64 := *result; fn 3 > 120 }
         result > 23
     =>
       42
 
-    public g i32
+    public g i64
     => 420
 
   post_accessing_result_child : post_accessing_result is
@@ -217,7 +217,7 @@ test_postcondition is
     =>
       4711
 
-    public redef g i32
+    public redef g i64
       post then
         ok "redef g $result"
         { io.Out.env.println "ho"; true }
@@ -225,7 +225,7 @@ test_postcondition is
     => 69
 
   post_accessing_result_child2 : post_accessing_result_child is
-    redef f i32
+    redef f i64
       post then
         ok "redef2 $result"
         { io.Out.env.println "hi"; true }
@@ -233,7 +233,7 @@ test_postcondition is
     =>
       4716
 
-    public redef g i32
+    public redef g i64
       post then
         ok "redef g $result"
         { io.Out.env.println "he"; true }
@@ -241,13 +241,13 @@ test_postcondition is
     => 42069
 
   post_accessing_result_child3 : post_accessing_result is
-    redef f i32
+    redef f i64
       post then
     =>
       32168
 
   post_accessing_result_child4 : post_accessing_result is
-    redef f i32
+    redef f i64
     =>
       112
 
@@ -261,7 +261,7 @@ test_postcondition is
   _ := post_accessing_result_child4.f
 
 
-  # ------ accesssing postconditions in a module
+  # ------ accessing postconditions in a module
 
   _ := mod.post_accessing_result.f
   _ := mod.post_accessing_result.g
@@ -273,7 +273,7 @@ test_postcondition is
   _ := mod.post_accessing_result_child4.f
 
   inh_module1 : mod.post_accessing_result is
-    public redef f i32
+    public redef f i64
       post then
         ok "redef $result"
     =>
@@ -283,9 +283,9 @@ test_postcondition is
     # redefining non-argument field is not allowed
     # redef n := 64
     # redefining a routine as a field is allowed
-    public redef m i32 := 64
-    public redef r i32 => 128
-    public redef f i32
+    public redef m i64 := 64
+    public redef r i64 => 128
+    public redef f i64
       post then
         ok "redef $result"
     =>
@@ -294,6 +294,6 @@ test_postcondition is
   _ := inh_module1.f
   _ := inh_module2.f
 
-  exit
+  Exit.env.exit
 
 _ := test_postcondition

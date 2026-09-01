@@ -64,7 +64,7 @@ all: jvm c int
 
 fuir: $(FUZION_DEPENDENCIES)
 	rm -f *.fuir
-	printf 'FUIR %s ' "$(NAME)" && $(ENV) dev_flang_tools_serializeFUIR=true $(FUZION_RUN) -noBackend $(FILE) 2>err.txt && echo "\033[32;1mPASSED\033[0m." || echo "\033[31;1m*** FAILED\033[0m." && (RC=$$? && cat err.txt && exit $$RC)
+	@printf 'FUIR %s ' "$(FILE)" && $(ENV) dev_flang_tools_serializeFUIR=true $(FUZION_RUN) -noBackend $(FILE) 2>err.txt && printf "\033[32;1mPASSED\033[0m.\n" || printf "\033[31;1m*** FAILED\033[0m.\n" && (RC=$$? && cat err.txt && exit $$RC)
 
 int: $(FUZION_DEPENDENCIES)
 	$(ENV) ../../bin/check_simple_example int "$(FUZION_RUN)" $(FILE) || exit 1
@@ -73,7 +73,7 @@ jvm: $(FUZION_DEPENDENCIES)
 	$(ENV) ../../bin/check_simple_example jvm "$(FUZION_RUN)" $(FILE) || exit 1
 
 c: $(FUZION_DEPENDENCIES)
-	$(ENV) ../../bin/check_simple_example c "$(FUZION_RUN)" $(FILE) || exit 1
+	$(ENV) ../../bin/check_simple_example  c  "$(FUZION_RUN)" $(FILE) || exit 1
 
 effect: $(FUZION_DEPENDENCIES)
 	$(ENV) ../../bin/check_simple_example effect "$(FUZION_RUN)" $(FILE) || exit 1
@@ -88,7 +88,7 @@ record_jvm: $(FUZION_DEPENDENCIES)
 	$(ENV) ../../bin/record_simple_example jvm "$(FUZION_RUN)" $(FILE)
 
 record_c: $(FUZION_DEPENDENCIES)
-	$(ENV) ../../bin/record_simple_example c "$(FUZION_RUN)" $(FILE)
+	$(ENV) ../../bin/record_simple_example  c  "$(FUZION_RUN)" $(FILE)
 
 record_effect: $(FUZION_DEPENDENCIES)
 	$(ENV) ../../bin/record_simple_example effect "$(FUZION_RUN)" $(FILE)

@@ -1,0 +1,292 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature io.buffered.reader
+#
+# -----------------------------------------------------------------------
+
+
+# buffered.reader effect allows buffered reading
+#
+# note: anything in the buffer when effect is uninstalled will be discarded.
+#
+public Reader ref : effect is
+
+  buf_size
+    # NYI: UNDER DEVELOPMENT: does not work yet, post condition for field
+    # post
+    #   debug: buf_size > 0
+    #   debug: buf_size % os.page_size.as_i32 = 0
+  := io.buffer_size
+
+
+  # buffer backing this reader
+  #
+  buffer := LM.env.new (Sequence u8) []
+
+
+
+  # read up to count bytes
+  #
+  # returns either an array of the bytes read, end_of_file or an error
+  #
+  public read(max_count i64) choice (Sequence u8) io.end_of_file error
+    post debug: (result ? s Sequence => s.count<=max_count | * => true)
+         debug 10 : (result ? s Sequence => s.is_array_backed | * => true)
+  => abstract
+
+
+  # read handler that only ever returns end_of_file
+  #
+  public type.empty i64 -> choice (Sequence u8) io.end_of_file error =>
+    _ -> io.end_of_file
+
+
+  # create a read handler from a Sequence of bytes
+  #
+  type.from_array_backed_u8(arr Sequence u8) i64 -> choice (Sequence u8) io.end_of_file error =>
+
+    # the current position in the array
+    #
+    pos := LM.env.new 0
+
+    max_count ->
+      p := pos.get
+      if p >= arr.count
+        io.end_of_file
+      else
+        pos <- p + max_count
+        arr.drop p .take max_count
+
+
+
+  # create a read handler from data
+  # where data may bytes or a String
+  #
+  public type.from(data choice (Sequence u8) String) i64 -> choice (Sequence u8) io.end_of_file error =>
+    match data
+      bytes Sequence u8 => Reader.this.type.from_array_backed_u8 bytes.as_array_backed
+      str String => Reader.this.type.from_array_backed_u8 str.utf8.as_array_backed
+
+
+  # read returns the current buffer or end of file.
+  # in case the buffer is empty it fills the buffer
+  # before returning it.
+  #
+  public read switch (Sequence u8) (outcome io.end_of_file)
+    post
+      debug: (result ? outcome => true | s Sequence => s.is_array_backed)
+  =>
+    if buffer.is_empty
+      match read buf_size
+        s Sequence =>
+          buffer <- s
+          buffer
+        io.end_of_file =>
+          io.end_of_file
+        e error => e
+    else
+      buffer
+
+
+  # discard n items from buffer
+  #
+  public discard(n i64) unit
+    pre
+      debug: n >= 0
+  =>
+    buffer <- buffer.drop (min n buffer.count)
+
+
+  # discard complete buffer
+  #
+  public discard unit
+  =>
+    buffer <- []
+
+
+# read n bytes using the currently installed byte reader effect
+#
+public read_bytes(n i64) outcome (Sequence u8) ! Reader
+  post debug: {
+    match result
+      error => true
+      s Sequence u8 => s.count <= n
+  }
+=>
+
+  for res Sequence u8 := container.Finger_Tree u8 .empty,
+            {
+              match r
+                o outcome => res
+                s Sequence =>
+                  a := s.take n-res.count
+                  check debug: a.is_array_backed
+                  Reader.env.discard a.count
+                  res ++ a
+            }
+  while res.count < n
+    r := Reader.env.read
+  until
+    match r
+      outcome => true
+      Sequence => false
+  then
+    match r
+      o outcome =>
+        match o
+          io.end_of_file => res
+          e error => e
+      Sequence => panic "unexpected"
+  else
+    res
+
+
+# read string, up to n codepoints or until end of file
+# requires `buffered.reader` effect to be installed.
+#
+public read_string(n i64) outcome String ! Reader
+pre debug: n >= 0
+=>
+
+  take_valid_codepoints(a Sequence u8, max i64) =>
+    v := String.from_bytes a
+      .codepoints_and_errors
+      .take_while (.ok)
+      .take max
+      .map String (.or_panic)
+      .as_array
+
+    bytes_used := v.map (.as_string.byte_count) .fold i64.sum
+    Reader.env.discard bytes_used
+    v
+
+  for
+    cur := Reader.env.read
+    is_eof                 := cur ? outcome => true | Sequence => false
+    next_bytes Sequence u8 := (cur ? outcome => []   | s Sequence => s), rest ++ (cur ? outcome => [] | s Sequence => s)
+    next_codepoints        := take_valid_codepoints next_bytes n, take_valid_codepoints next_bytes n-codepoint_count
+    # if we did not use any bytes and `next_bytes` contains not enough bytes for a codepoint potentially,
+    # we trigger a `discard` and remember what we read so far via `rest`.
+    # this is necessary e.g. for stdin where we read one byte at a time.
+    rest Sequence u8       := if n>0 && next_codepoints.is_empty && next_bytes.count < 4 then Reader.env.discard; next_bytes else []
+    codepoint_count        := next_codepoints.count, codepoint_count+next_codepoints.count
+    res Sequence String    := next_codepoints, res ++ next_codepoints
+  while !is_eof && codepoint_count < n
+  else
+    if is_eof && res.is_empty
+      error "-- end of file --"
+    else
+      String.join res
+
+
+# use the currently installed byte reader effect
+# to read until the specified delimiter byte occurs
+# if specified, strips carriage return bytes before
+# the delimiter before returning the read data
+#
+public read_delimiter (delim u8, strip_cr bool) switch String io.end_of_file ! Reader =>
+
+  if Reader.env.read ? outcome => true | * => false
+    io.end_of_file
+  else
+    res := container.Dynamic_Array LM u8 .empty
+
+    while
+      match Reader.env.read
+        outcome =>
+          false
+        s Sequence =>
+
+          # trailing carriage returns are dropped
+          add_to_res(a0 Sequence u8) unit =>
+            if !a0.is_empty
+              a1 := if strip_cr && a0.last = encodings.ascii.cr
+                      (a0.slice 0 a0.count-1)
+                    else
+                      a0
+              for b in a1 do
+                res.add b
+
+          match s.index_of delim
+            i i64 =>
+              add_to_res (s.slice 0 i)
+              Reader.env.discard i+1
+              false
+            nil =>
+              add_to_res s
+              Reader.env.discard
+              true
+
+    String.from_bytes res.as_array
+
+
+# use the currently installed byte reader effect
+# to read until a line feed occurs.
+# returns the line
+#
+public read_line switch String io.end_of_file ! Reader =>
+  read_delimiter encodings.ascii.lf true
+
+
+# Read input fully into an array of bytes until end_of_file or error is reached
+#
+# NOTE: if input is longer than `array.max_length` you
+# may need to call this several times or use another api
+# like memory-mapped access.
+#
+public read_fully Sequence u8 ! Reader =>
+  read_bytes i64.max
+    # NYI: UNDER DEVELOPMENT: error handling
+    .or_panic
+
+
+# Read input fully and split it at the given delimiter. If specified, delete
+# any trailing carriage returns (ASCII 13) from the resulting strings.
+#
+public read_delimiter_full(delim String, strip_cr bool) array String ! Reader =>
+  str := String.from_bytes read_fully
+  if str.byte_count > 0
+    (str.ends_with "\n" ? str.substring 0 str.byte_count-1 : str)
+      .split delim
+      .map (s -> if strip_cr && s.ends_with "\r" then s.substring 0 s.byte_count-1 else s)
+      .as_array
+  else
+    []
+
+# Read input fully and split it at linefeed (ASCII 10) characters. Delete
+# any trailing carriage returns (ASCII 13) from the resulting strings.
+#
+public read_lines array String ! Reader =>
+  read_delimiter_full "\n" true
+
+
+# Read input line by line calling `f` for each line until `f` returns false
+# or end_of_file is reached.
+#
+public read_line_while(f String -> bool) String ! Reader =>
+  for s := "",  s + "\n" + match rl
+                             s1 String => s1
+                             io.end_of_file => panic "unreachable code path"
+      rl := read_line
+  while match rl
+          str String => f str
+          io.end_of_file => false
+  else
+    s

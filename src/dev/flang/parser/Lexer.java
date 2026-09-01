@@ -156,22 +156,22 @@ public class Lexer extends SourceFile
                    //   x is $'   in
                    // '"""
                    //   x is $x."""'
-    t_stringQB,    // '"a+b is {' in "a+b is {a+b}."
+    t_stringQB,    // '"a+b is $(' in "a+b is $(a+b)."
                    // OR multiline string
                    // '"""
-                   //   a+b is {' in
+                   //   a+b is $(' in
                    // '"""
-                   //   a+b is {a+b}."""'
+                   //   a+b is $(a+b)."""'
     t_StringDQ,    // '+-*"'      in "abc$x+-*"
                    //     ^--- fat quotations (""") instead of single
                    //          quotation if part of multiline string
     t_StringDD,    // '+-*$'      in "abc$x+-*$x.".
-    t_StringDB,    // '+-*{'      in "abc$x+-*{a+b}."
-    t_stringBQ,    // '}+-*"'     in "abc{x}+-*"
+    t_StringDB,    // '+-*$('     in "abc$x+-*$(a+b)."
+    t_stringPQ,    // ')+-*"'     in "abc$(x)+-*"
                    //      ^--- fat quotations (""") instead of single
                    //           quotation if part of multiline string
-    t_stringBD,    // '}+-*$'     in "abc{x}+-*$x.".
-    t_stringBB,    // '}+-*{'     in "abc{x}+-*{a+b}."
+    t_stringPD,    // ')+-*$'     in "abc$(x)+-*$x.".
+    t_stringPB,    // ')+-*$('    in "abc$(x)+-*$(a+b)."
     t_this("this"),
     t_env("env"),
     t_check("check"),
@@ -308,33 +308,32 @@ public class Lexer extends SourceFile
         }
       else
         {
-          switch (this)
-            {
-            case t_op                : result = "operator"                                   ; break;
-            case t_comma             : result = "comma ','"                                  ; break;
-            case t_period            : result = "period '.'"                                 ; break;
-            case t_lparen            : result = "left parenthesis '('"                       ; break;
-            case t_rparen            : result = "right parenthesis ')'"                      ; break;
-            case t_lbrace            : result = "left curly brace '{'"                       ; break;
-            case t_rbrace            : result = "right curly brace '}'"                      ; break;
-            case t_lbracket          : result = "left bracket '['"                           ; break;
-            case t_rbracket          : result = "right bracket ']'"                          ; break;
-            case t_semicolon         : result = "semicolon ';'"                              ; break;
-            case t_question          : result = "question mark '?'"                          ; break;
-            case t_numliteral        : result = "numeric literal"                            ; break;
-            case t_ident             : result = "identifier"                                 ; break;
-            case t_stringQQ          : result = "string constant"                            ; break;
-            case t_stringQD          : result = "string constant ending in $"                ; break;
-            case t_stringQB          : result = "string constant ending in {"                ; break;
-            case t_StringDQ          : result = "string constant after $<id>"                ; break;
-            case t_StringDD          : result = "string constant after $<id> ending in $"    ; break;
-            case t_StringDB          : result = "string constant after $<id> ending in {"    ; break;
-            case t_stringBQ          : result = "string constant after {<expr>}"             ; break;
-            case t_stringBD          : result = "string constant after {<expr>} ending in $" ; break;
-            case t_stringBB          : result = "string constant after {<expr>} ending in {" ; break;
-            case t_eof               : result = "end-of-file"                                ; break;
-            default                  : result = super.toString()                             ; break;
-            }
+          result = switch (this) {
+              case t_op         -> "operator";
+              case t_comma      -> "comma ','";
+              case t_period     -> "period '.'";
+              case t_lparen     -> "left parenthesis '('";
+              case t_rparen     -> "right parenthesis ')'";
+              case t_lbrace     -> "left curly brace '{'";
+              case t_rbrace     -> "right curly brace '}'";
+              case t_lbracket   -> "left bracket '['";
+              case t_rbracket   -> "right bracket ']'";
+              case t_semicolon  -> "semicolon ';'";
+              case t_question   -> "question mark '?'";
+              case t_numliteral -> "numeric literal";
+              case t_ident      -> "identifier";
+              case t_stringQQ   -> "string constant";
+              case t_stringQD   -> "string constant ending in $";
+              case t_stringQB   -> "string constant ending in $(";
+              case t_StringDQ   -> "string constant after $<id>";
+              case t_StringDD   -> "string constant after $<id> ending in $";
+              case t_StringDB   -> "string constant after $<id> ending in $(";
+              case t_stringPQ   -> "string constant after $(<expr>)";
+              case t_stringPD   -> "string constant after $(<expr>) ending in $";
+              case t_stringPB   -> "string constant after $(<expr>) ending in $(";
+              case t_eof        -> "end-of-file";
+              default           -> super.toString();
+          };
         }
       return result;
     }
@@ -673,15 +672,15 @@ public class Lexer extends SourceFile
 
 
   /**
-   * In case there is a surrounding `if` statement, this gives the start position. This is used
-   * to detect ambiguous `else` statements.
+   * In case there is a surrounding {@code if} statement, this gives the start position. This is used
+   * to detect ambiguous {@code else} statements.
    */
   private SourcePosition _surroundingIf = null;
 
 
   /**
    * In case there is a surrounding loop statement, this gives the start position. This is used
-   * to detect ambiguous `else` statements.
+   * to detect ambiguous {@code else} statements.
    */
   private SourcePosition _surroundingLoop = null;
 
@@ -962,7 +961,7 @@ public class Lexer extends SourceFile
 
 
   /**
-   * Remember that we are parsing in `if` statement. This will be reset
+   * Remember that we are parsing in {@code if} statement. This will be reset
    * automatically on relaxLineAndSpaceLimit.
    */
   SourcePosition surroundingIf(SourcePosition pos)
@@ -975,7 +974,7 @@ public class Lexer extends SourceFile
 
 
   /**
-   * The `if` statement that we are currently parsing.
+   * The {@code if} statement that we are currently parsing.
    */
   SourcePosition surroundingIf()
   {
@@ -2110,14 +2109,9 @@ PLUSMINUS   : "+"
      */
     BigInteger mantissaValue()
     {
-      if (_hasError)
-        {
-          return BigInteger.valueOf(0);
-        }
-      else
-        {
-          return _mantissa.absValue();
-        }
+      return _hasError
+        ? BigInteger.valueOf(0)
+        : _mantissa.absValue();
     }
 
     /**
@@ -2630,10 +2624,10 @@ Fuzion xref:input_source[input sources] must match the Fuzion grammar defined in
                                                                       sourcePos(_minIndentStartPos),
                                                                       detail);
       case t_lineLimit        -> Errors.lineBreakNotAllowedHere (sourcePos(lineEndPos(_sameLine)), detail);
-      case t_spaceOrSemiLimit -> Errors.whiteSpaceNotAllowedHere(sourcePos(tokenPos()), detail);
-      case t_commaLimit       -> Errors.commaNotAllowedHere     (sourcePos(tokenPos()), detail);
-      case t_colonLimit       -> Errors.colonPartOfTernary      (sourcePos(tokenPos()), detail);
-      case t_barLimit         -> Errors.barPartOfCase           (sourcePos(tokenPos()), detail);
+      case t_spaceOrSemiLimit -> Errors.whiteSpaceNotAllowedHere(tokenSourceRange(), detail);
+      case t_commaLimit       -> Errors.commaNotAllowedHere     (tokenSourceRange(), detail);
+      case t_colonLimit       -> Errors.colonPartOfTernary      (tokenSourceRange(), detail);
+      case t_barLimit         -> Errors.barPartOfCase           (tokenSourceRange(), detail);
       case t_ambiguousSemi    -> Errors.ambiguousSemicolon(sourcePos(pos));
       default                 -> Errors.syntax(sourcePos(pos), expected, currentAsString(), detail);
       }
@@ -2955,7 +2949,7 @@ PIPE        : "|"
   private enum StringState
   {
     IDENT_EXPECTED,   // parsing an identifier in a string as in "xyz is $xyz."
-    EXPR_EXPECTED,    // parsing an expression in a string as in "expr is {q.f(fun f(x i32) -> { x * 5 })}."
+    EXPR_EXPECTED,    // parsing an expression in a string as in "expr is $(q.f(fun f(x i32) -> { x * 5 }))."
     CONTINUED,        // parsing the string following an identifier in a string as in "abc+$x-def" when parsing -def"
   }
 
@@ -2967,7 +2961,7 @@ PIPE        : "|"
   {
     QUOTE,   // A string starting with '"' or '"""' as in "normal string...
     DOLLAR,  // Following '$<id>' as " dollar string..." in "previous $ident dollar string...
-    BRACE;   // Following '{<expr>}' as " rbrace string..." in "previous {a+b} rbrace string...
+    PAREN;   // Following '$(<expr>)' as " rparen string..." in "previous $(a+b) rparen string...
 
     /**
      * Get the partial string token for a string starting with this and ending with end.
@@ -2976,13 +2970,13 @@ PIPE        : "|"
     {
       if      (this == StringEnd.QUOTE  && end == StringEnd.QUOTE ) { return Token.t_stringQQ; }
       else if (this == StringEnd.QUOTE  && end == StringEnd.DOLLAR) { return Token.t_stringQD; }
-      else if (this == StringEnd.QUOTE  && end == StringEnd.BRACE ) { return Token.t_stringQB; }
+      else if (this == StringEnd.QUOTE  && end == StringEnd.PAREN ) { return Token.t_stringQB; }
       else if (this == StringEnd.DOLLAR && end == StringEnd.QUOTE ) { return Token.t_StringDQ; }
       else if (this == StringEnd.DOLLAR && end == StringEnd.DOLLAR) { return Token.t_StringDD; }
-      else if (this == StringEnd.DOLLAR && end == StringEnd.BRACE ) { return Token.t_StringDB; }
-      else if (this == StringEnd.BRACE  && end == StringEnd.QUOTE ) { return Token.t_stringBQ; }
-      else if (this == StringEnd.BRACE  && end == StringEnd.DOLLAR) { return Token.t_stringBD; }
-      else if (this == StringEnd.BRACE  && end == StringEnd.BRACE ) { return Token.t_stringBB; }
+      else if (this == StringEnd.DOLLAR && end == StringEnd.PAREN ) { return Token.t_StringDB; }
+      else if (this == StringEnd.PAREN  && end == StringEnd.QUOTE ) { return Token.t_stringPQ; }
+      else if (this == StringEnd.PAREN  && end == StringEnd.DOLLAR) { return Token.t_stringPD; }
+      else if (this == StringEnd.PAREN  && end == StringEnd.PAREN ) { return Token.t_stringPB; }
       throw new Error("impossible StringEnd.token combination "+this+" and "+end);
     }
   }
@@ -2990,7 +2984,7 @@ PIPE        : "|"
 
   /**
    * For a given string token, return if that string starts with {@code "} or follows
-   * an embedded {@code $<id>} or {@code {<expr>}}.
+   * an embedded {@code $<id>} or {@code $(<expr>)}.
    */
   StringEnd beginning(Token t)
   {
@@ -3005,9 +2999,9 @@ PIPE        : "|"
       case t_StringDQ:
       case t_StringDD:
       case t_StringDB: return StringEnd.DOLLAR;
-      case t_stringBQ:
-      case t_stringBD:
-      case t_stringBB: return StringEnd.BRACE;
+      case t_stringPQ:
+      case t_stringPD:
+      case t_stringPB: return StringEnd.PAREN;
       default        : throw new Error();
 
       }
@@ -3016,7 +3010,7 @@ PIPE        : "|"
 
   /**
    * For a given string token, return if that string ends with {@code "} or with an
-   * embedded {@code $<id>} or {@code {<expr>}}.
+   * embedded {@code $<id>} or {@code $(<expr>)}.
    */
   StringEnd end(Token t)
   {
@@ -3027,13 +3021,13 @@ PIPE        : "|"
       {
       case t_stringQQ:
       case t_StringDQ:
-      case t_stringBQ: return StringEnd.QUOTE;
+      case t_stringPQ: return StringEnd.QUOTE;
       case t_stringQD:
       case t_StringDD:
-      case t_stringBD: return StringEnd.DOLLAR;
+      case t_stringPD: return StringEnd.DOLLAR;
       case t_stringQB:
       case t_StringDB:
-      case t_stringBB: return StringEnd.BRACE;
+      case t_stringPB: return StringEnd.PAREN;
       default        : throw new Error();
 
       }
@@ -3047,7 +3041,7 @@ PIPE        : "|"
   {
     /**
      * The original string that started with {@code "}, i.e., disregarding any partial
-     * strings following {@code $<id>} or {@code {<expr>}}.  Used for proper error messages.
+     * strings following {@code $<id>} or {@code $(<expr>)}.  Used for proper error messages.
      */
     final int _stringStart;
 
@@ -3058,7 +3052,7 @@ PIPE        : "|"
      */
     final Optional<Integer> _pos;
 
-    int _braceCount;
+    int _parensCount = 0;
 
     /**
      * In case of nested string lexers, this is the outer lexer.
@@ -3066,7 +3060,7 @@ PIPE        : "|"
     StringLexer _outer;
 
     /**
-     * One of t_stringQQ. t_stringQD or t_stringQB to identify the
+     * One of QUOTE, DOLLAR or BRACE to identify the
      * beginning of this partial string.
      */
     StringEnd _beginning;
@@ -3091,8 +3085,6 @@ PIPE        : "|"
         { '\"', '\"' },  // "  0x22
         { '$',  '$'  },  // $  0x24
         { '\\', '\\' },  // \  0x5c
-        { '{',  '{'  },  // {  0x7b
-        { '}',  '}'  },  // }  0x7d
         { '\n', -1   },
         { '\r', -1   },
         { '0', '\0'  },  // NUL 0x00
@@ -3152,7 +3144,7 @@ PIPE        : "|"
 
       this._stringStart = original._stringStart;
       this._pos = original._pos;
-      this._braceCount = original._braceCount;
+      this._parensCount = original._parensCount;
       this._beginning = original._beginning;
       this._state = original._state;
       this._outer = original._outer == null ? null : new StringLexer(original._outer);
@@ -3177,7 +3169,7 @@ PIPE        : "|"
     private Token iterateCodePoints(StringBuilder sb)
     {
       var t = Token.t_undefined;
-      var pos = startOfStringContent();
+      var pos = startOfStringContent(sb);
 
       var escaped = false;
       while (t == Token.t_undefined)
@@ -3236,8 +3228,10 @@ PIPE        : "|"
                 {
                   t = _beginning.token(StringEnd.QUOTE);
                 }
-              else if (p == '$') { t = _beginning.token(StringEnd.DOLLAR); }
-              else if (p == '{') { t = _beginning.token(StringEnd.BRACE);  }
+              else if (p == '$')
+                {
+                  t = _beginning.token(StringEnd.DOLLAR);
+                }
               else if (!skipped(pos))
                 {
                   c = p;
@@ -3253,6 +3247,12 @@ PIPE        : "|"
                 }
               pos = advance(pos, 1);
               p = raw(pos);
+              if (isString(t) && end(t)==StringEnd.DOLLAR && p == '(')
+                {
+                  t = _beginning.token(StringEnd.PAREN);
+                  pos = advance(pos, 1);
+                  p = raw(pos);
+                }
             }
           if (c >= 0 && sb != null)
             {
@@ -3319,7 +3319,7 @@ PIPE        : "|"
      * NYI: CLEANUP: don't set multiLineIndentation here... but in constructor
      * @return
      */
-    private Optional<Integer> startOfStringContent()
+    private Optional<Integer> startOfStringContent(StringBuilder sb)
     {
       var pos = _pos;
       if (atMultiLineStringDelimiter(getPos(pos) - 1) && _multiLineIndentation.isEmpty())
@@ -3333,9 +3333,14 @@ PIPE        : "|"
             {
               Errors.unterminatedString(sourcePos(), Lexer.this.sourcePos(_stringStart));
             }
-          if (lineNum(getPos(pos)) != lineNum(_stringStart) + 1)
+          if (lineNum(getPos(pos)) == lineNum(_stringStart))
             {
               Errors.expectedIndentedStringInFirstLineAfterFatQuotation(sourcePos(_stringStart), sourcePos(getPos(pos)));
+            }
+          var empty_lines = lineNum(getPos(pos)) - (lineNum(_stringStart) + 1);
+          if (sb != null && empty_lines > 0)
+            {
+              sb.append("\n".repeat(empty_lines));
             }
           _multiLineIndentation = Optional.of(column(pos));
         }
@@ -3441,16 +3446,18 @@ PIPE        : "|"
         case EXPR_EXPECTED:
           switch (kind(p))
             {
-            case K_LBRACE:
-              _braceCount++;
+            case K_LPAREN:
+              _parensCount++;
               return Token.t_undefined;
-            case K_RBRACE:
-              _braceCount--;
-              if (_stringLexer._braceCount > 0)
+            case K_RPAREN:
+              if (_parensCount > 0)
                 {
-                  return Token.t_rbrace;
+                  _parensCount--;
+                  // we (stringlexer) took note of the bracecount,
+                  // let normal lexer continue.
+                  return Token.t_undefined;
                 }
-              _beginning = StringEnd.BRACE;
+              _beginning = StringEnd.PAREN;
               break;
             default:
               return Token.t_undefined;
@@ -3491,11 +3498,13 @@ PIPE        : "|"
           // push this onto the stack of string lexers:
           _outer = _stringLexer;
           _stringLexer = this;
+          if (CHECKS) check
+            (_stringLexer._parensCount >= 0);
           switch (end(t))
             {
             case DOLLAR -> _state = StringState.IDENT_EXPECTED;
-            case BRACE -> _state = StringState.EXPR_EXPECTED;
-            default -> throw new Error("default:");
+            case PAREN  -> _state = StringState.EXPR_EXPECTED;
+            default     -> throw new Error("default:");
             }
         }
       return t;
@@ -3522,9 +3531,9 @@ PIPE        : "|"
       case t_StringDQ:
       case t_StringDD:
       case t_StringDB:
-      case t_stringBQ:
-      case t_stringBD:
-      case t_stringBB: return true;
+      case t_stringPQ:
+      case t_stringPD:
+      case t_stringPB: return true;
       default        : return false;
       }
   }
@@ -3532,7 +3541,7 @@ PIPE        : "|"
 
   /**
    * Is the given token a constant string that is started, i.e., it is not
-   * preceded by an embedded identifier {@code $id} or expression {@code {expr}}.
+   * preceded by an embedded identifier {@code $id} or expression {@code $(expr)}.
    *
    * @param t a token
    *
@@ -3546,7 +3555,7 @@ PIPE        : "|"
 
   /**
    * Is the given token a constant string that is completed, i.e., it is not
-   * followed by an embedded identifier {@code $id} or expression {@code {expr}}.
+   * followed by an embedded identifier {@code $id} or expression {@code $(expr)}.
    *
    * @param t a token
    *
@@ -3575,7 +3584,7 @@ PIPE        : "|"
 
   /**
    * Is the given token a constant string that is following an embedded
-   * identifier or expression, i.e., any of the t_stringD* or t_stringB*
+   * identifier or expression, i.e., any of the t_stringD* or t_stringP*
    * variants of constant strings.
    *
    * @param t a token

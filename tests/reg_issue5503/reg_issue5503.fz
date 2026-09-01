@@ -29,7 +29,7 @@ reg_issue5503 =>
   a is
     f(X type) =>
 
-  # the orginal example from #5503
+  # the original example from #5503
   #
   b : a is
     redef f(x Any) =>   # 1. should flag an error: no type parameters, expecting 1

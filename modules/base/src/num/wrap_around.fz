@@ -160,7 +160,7 @@ public wrap_around : integer is
 
   # would exponentiation 'this ** other' cause an overflow?
   #
-  public overflow_on_exp(other wrap_around.this) bool => (wrap_around.this **? other)!!
+  public overflow_on_exp(other wrap_around.this) bool => !(wrap_around.this **? other)
 
 
   # exponentiation with saturating semantics
@@ -186,14 +186,14 @@ public wrap_around : integer is
   # count the number of 1 bits in the binary representation of this
   # integer.
   #
-  public ones_count i32 => abstract
+  public ones_count i64 => abstract
 
 
   # this integer as an array of bytes (little endian)
   public as_bytes array u8 =>
     bs := wrap_around.this.byte_size
-    array bs idx->
-      shift wrap_around.this := wrap_around.this.from_u32 (bs.as_u32-idx.as_u32-1)*8
+    array bs i->
+      shift wrap_around.this := wrap_around.this.from_u32 (bs.as_u32-i.as_u32-1)*8
       (wrap_around.this>>shift).low8bits
 
 
@@ -203,7 +203,7 @@ public wrap_around : integer is
 
 
   # how many bytes does this integer use?
-  public type.byte_size i32 =>
+  public type.byte_size i64 =>
     all_bits_set.ones_count / 8
 
 

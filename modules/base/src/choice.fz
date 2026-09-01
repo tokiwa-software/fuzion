@@ -43,7 +43,7 @@
 # with actual generics.
 #
 # A field of choice type can be assigned a value of the same choice type
-# or of any of the actual generic type arguments provided to the choice
+# or of any of the actual generic type parameters provided to the choice
 # feature.
 #
 # Two choice types choice A B and choice B A that differ only in the order
@@ -103,4 +103,4 @@
 # A choice type with no actual generic arguments is isomorphic to 'void', i.e, it
 # is a type that has an empty set of possible values.
 #
-public choice(public CHOICE_ELEMENT_TYPE type...) is
+public choice(CHOICE_ELEMENT_TYPE type...) is

@@ -36,20 +36,18 @@
 #
 #      # then, create an instate an instance of `state` with initial value `23`
 #      #
-#      state demo unit (demo 23) ()->
+#      state (demo 23) ! ()->
 #
 #        # now, we can access the value using `state_get demo`
 #        # or, to unwrap it `state_get demo .contents`
 #        #
-#        say "state value is {state_get demo .contents}"
+#        say "state value is $(state_get demo .contents)"
 #
 #        # we can now modify the value, e.g, doubling it via
 #        #
 #        new_demo := state_modify demo (x -> demo x.contents*2)
-#        say "state value is {new_demo.get.contents}"
-#        say "state value is {state_get demo .contents}"
-#
-# NYI: BUG: #5634: use `infix !` in this example once #5634 is fixed
+#        say "state value is $(new_demo.get.contents)"
+#        say "state value is $(state_get demo .contents)"
 #
 # note that access to the state value is possible in any code executed while the state
 # is instated, also, e.g., in lambdas that are passed to a call and then called
@@ -63,8 +61,11 @@
 #
 public state(
 
-  # types of contained and the state value
-  public T, S type,
+  # type of the contained value
+  T type,
+
+  # type of the contained the state
+  S type,
 
   # the contained value
   public val T,
@@ -74,25 +75,25 @@ public state(
 
   # `plain` monad or effect to be `inst`alled or `repl`aced by new value?
   mode oneway_monad_mode.val
-  ) : oneway_monad T (state T S) mode
+  ) : oneway_monad T mode
 is
 
   # monadic operator
   #
-  public redef infix >>= (f T -> state T S) state T S => state.this.bind f
+  public fixed redef infix >>= (f T -> state T S) state T S => state.this.bind f
 
 
   # monadic operator
   #
   # Same as non-generic >>=, but also maps to a different type B.
   #
-  public bind (B type, f T -> state B S) state B S =>
+  public fixed bind (B type, f T -> state B S) state B S =>
     f val
 
 
   # return function
   #
-  public return (a T) state T S => state a get mode.next
+  public fixed return (a T) state T S => state a get mode.next
 
 
   # map this using f
@@ -113,10 +114,7 @@ is
     state val new mode.next
 
 
-  # converts option to a string
-  #
-  # returns the result of $T for an option containing an instance
-  # of T, alternatively returns $nil for an option that is nil.
+  # create a string representation of the state
   #
   public redef as_string String =>
     "$val ($get)"
@@ -125,7 +123,7 @@ is
 # state with 1 argument is short hand for a state containing unit and
 # initial_value
 #
-public state(S type, initial_value S) state unit S => state unit initial_value oneway_monad_mode.plain
+public state(S type, initial_value S) state unit S => state unit initial_value oneway_monad_mode.inst
 
 
 # install new state monad for type S and run r within that state monad
@@ -134,25 +132,20 @@ public state(S type, initial_value S) state unit S => state unit initial_value o
 #
 public state(S, R type, initial_value S, r ()->R) R =>
   res option R := nil
-  (state unit S) <- (state unit S unit initial_value oneway_monad_mode.inst) ! (()->set res := r.call)
-  res.get
-
-
-# shorthand for accessing state monad for given type in current environment
-#
-public state_of(S type) state unit S => (state unit S).env
+  (state unit S).instate _ (state unit S unit initial_value oneway_monad_mode.inst) (()->set res := r.call)
+  res.or_panic
 
 
 # shorthand for getting state monad for given type in current environment
 #
-public state_get(S type) S => (state_of S).get
+public state_get(S type) S => (state unit S).env.get
 
 
 # shorthand for modifying state monad for given type in current environment
 #
-public state_modify(S type, f S->S) state unit S => (state_of S).modify f
+public state_modify(S type, f S->S) state unit S => (state unit S).env.modify f
 
 
 # shorthand for setting state monad for given type in current environment
 #
-public state_put(S type, new S) state unit S => (state_of S).put new
+public state_put(S type, new S) state unit S => (state unit S).env.put new

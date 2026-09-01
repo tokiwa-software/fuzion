@@ -1,0 +1,87 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature Exit
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# Exit -- effect that terminates a computation in exit
+#
+public Exit ref : effect is
+
+  # exit with a code argument calls exit.exit code, i.e., it uses the
+  # current exit effect to exit with the given message.
+  #
+  public exit(code u8) void => abstract
+
+
+  # exit with the currently stored exit code
+  #
+  public exit void => abstract
+
+
+  # change the currently stored exit code
+  #
+  public set_exit_code(code u8) outcome unit
+    pre debug: code ≤ 127
+  => abstract
+
+
+  # default implementation of exit
+  #
+  # this will get instated automatically at startup
+  #
+  public redef fixed type.default_value option Exit =>
+    _ : Exit is
+
+      # mutable value of the current exit code set
+      #
+      exit_code := concur.atomic u8 .new 0
+
+
+      # exit with the given code
+      #
+      public redef exit(code u8) void =>
+        fuzion.std.exit code.as_i32
+
+
+      # exit with the stored code
+      #
+      public redef exit void => exit exit_code
+
+
+      # set the stored exit code
+      #
+      public redef set_exit_code(code u8) outcome unit
+        post then
+          debug: exit_code = code
+        =>
+          if exit_code = 0
+            exit_code.write code
+          else
+            error "exit code is already set"
+
+
+  # exit program when leaving the effect
+  #
+  public redef finally unit =>
+    exit
+

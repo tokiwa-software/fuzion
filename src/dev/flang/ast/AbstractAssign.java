@@ -20,7 +20,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class Assign
+ * Source of class AbstractAssign
  *
  *---------------------------------------------------------------------*/
 
@@ -247,6 +247,11 @@ public abstract class AbstractAssign extends Expr
             _value.checkAmbiguousAssignmentToChoice(frmlT);
           }
 
+        if (f instanceof Feature ff && ff.isNamelessField()
+            && frmlT.compareTo(Types.resolved.t_unit) == 0)
+          {
+            AstErrors.unitResultExplicitlyIgnored(f.pos());
+          }
 
         if (CHECKS) check
           (Errors.any() || res._module.lookupFeature(this._target.type().feature(), f.featureName()) == f);
@@ -281,7 +286,7 @@ public abstract class AbstractAssign extends Expr
    */
   public String toString()
   {
-    return toString(_assignedField.featureName().baseNameHuman());
+    return toString(_assignedField.baseNameHuman());
   }
 
 

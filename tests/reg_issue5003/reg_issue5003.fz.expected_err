@@ -4,5 +4,7 @@
 ------^
 formal type parameter 'T : reg_issue5003.this.A'
 actual type parameter 'reg_issue5003.this.C'
+assignable to constraint: 'reg_issue5003.this.C',
+                          'Any'
 
 one error.

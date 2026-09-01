@@ -23,9 +23,9 @@
 #
 # -----------------------------------------------------------------------
 
-# time.frequncy -- a child of Period that is defined by a frequency per duration
+# time.frequency -- a child of period that is defined by a frequency per duration
 #
-# This provices abstract features that define a period of time and that
+# This provides abstract features that define a period of time and that
 # permit multiplications with large integers avoiding drift.
 #
 # An example is a frequency of 60Hz that can be specified as
@@ -37,12 +37,12 @@
 # of 17ms (a whole period) in 10 days. Such inaccuracy can result in catastrophic failure, see
 # (The Patriot Missile Failure)[https://www-users.cse.umn.edu/~arnold/disasters/patriot.html].
 #
-public frequency(# the frequence per base
+public frequency(# the frequency per base
                  f u64,
 
                  # the base duration
                  base time.duration)
-                 : Period
+                 : time.period
 is
 
 
@@ -58,20 +58,33 @@ is
     time.duration (base.nanos / f)
 
 
+  # this frequency in Hertz (1/s)
+  #
+  # Note that this might be inaccurate,
+  # due to floating point arithmethic.
+  #
+  public as_hz f64 =>
+    f.as_f64 * 1E9 / base.nanos.as_f64
+
+
   # this frequency multiplied by factor n
   #
   # NYI: UNDER DEVELOPMENT: #5801: rename as `divide_by` or similar since `infix *` is inappropriate for a frequency.
   #
   public redef infix *(n u64) time.duration
   =>
-    ns := base.nanos.as_u128
-    nn := n         .as_u128
-    ff := f         .as_u128
-    time.duration (ns * nn / ff).as_u64
+    if n = 0
+      # by API definition
+      time.duration.zero
+    else
+      ns := base.nanos.as_u128
+      nn := n         .as_u128
+      ff := f         .as_u128
+      time.duration (ns * nn / ff).as_u64
 
 
   # create a string representation of this frequency
   #
   public redef as_string String
   =>
-    "$f/{base.as_string}"
+    "$f/$base"

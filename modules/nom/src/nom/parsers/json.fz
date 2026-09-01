@@ -34,28 +34,28 @@ public json_value : choice String f64 bool nil (Sequence json_value) (container.
       b bool => $b
       nil => "null"
       seq Sequence => $seq
-      m container.Map => "\{$m}"
+      m container.Map => "{$m}"
 
 
   # access feature to access deeply nested maps and sequences
   #
-  # this is useful to avoid match hell
+  # this is useful to avoid deep match nesting
   #
-  public access (keys Sequence (choice i32 String)) option json_value =>
+  public access (keys Sequence (choice i64 String)) option json_value =>
     match json_value.this
       m container.Map =>
         match keys.first
           nil => json_value.this
-          c choice i32 String =>
+          c choice i64 String =>
             match c
-              i32 => nil # have map got i32
-              s String => m[s].bind x->(x.access keys.as_list.tail)
+              i64 => nil # have map got i64
+              s String => m[s].bind (.access keys.as_list.tail)
       seq Sequence =>
         match keys.first
           nil => json_value.this
-          c choice i32 String =>
+          c choice i64 String =>
             match c
-              i i32 => seq.nth i .bind x->(x.access keys.as_list.tail)
+              i i64 => seq.nth i .bind (.access keys.as_list.tail)
               String => nil
       * => json_value.this
 
@@ -80,7 +80,7 @@ public json Parser String (Sequence codepoint) json_value =>
     parser_hex_unicode =>
       preceded (tag "\\") (take_while_m_n codepoint 4 4 is_hex_digit)
         .map (Sequence codepoint) d->
-          v, _ := d.reduce (u32 0, u32 4) (r, c -> _, exp := r; (c.parse_u32_hex.val * 10**exp, exp-1))
+          v, _ := d.reduce (u32 0, u32 4) (r, c -> _, exp := r; (c.parse_u32_hex.or_panic * 10**exp, exp-1))
           [(codepoint v)]
 
     parse_and_map(t, r String) =>
@@ -127,7 +127,7 @@ public json Parser String (Sequence codepoint) json_value =>
     parser_whole := alt [tag "0", parser_digits]
       .map f64 (x -> (String.from x)
                         .parse_u64
-                        .val 1
+                        .or_default 1
                         .as_f64)
 
     parser_fraction := many_m_n 0 1 (preceded (tag ".") parser_digits)
@@ -137,7 +137,7 @@ public json Parser String (Sequence codepoint) json_value =>
           v Sequence =>
             (String.from v)
               .parse_u64
-              .val 0
+              .or_default 0
               .as_f64 / (10.0*x.count.as_f64)
 
     parser_sign := many_m_n 0 1 (alt [tag "+", tag "-"])
@@ -163,23 +163,23 @@ public json Parser String (Sequence codepoint) json_value =>
 
   # parser for true
   parser_true :=
-    (tag "true").map json_value (x -> true)
+    (tag "true").map json_value (_ -> true)
 
 
   # parser for false
   parser_false :=
-    (tag "false").map json_value (x -> false)
+    (tag "false").map json_value (_ -> false)
 
 
   # parser for null
   parser_null :=
-    (tag "null").map json_value (x -> nil)
+    (tag "null").map json_value (_ -> nil)
 
 
   # parser for json array
   parser_array =>
     parser_no_values :=
-      whitespace0.map (Sequence json_value) (x -> (list json_value).empty)
+      whitespace0.map (Sequence json_value) (_ -> (list json_value).empty)
 
     parser_comma_sep_value :=
       separated_list1 (Sequence codepoint) json_value (Sequence codepoint) (tag ",") ()->parser_json_value_delimited
@@ -199,7 +199,7 @@ public json Parser String (Sequence codepoint) json_value =>
     parser_key_values =>
       separated_list1 (tag ",") ()->parser_key_value
 
-    delimited (tag "\{") (alt [parser_key_values, parser_no_key_values]) (tag "}")
+    delimited (tag "{") (alt [parser_key_values, parser_no_key_values]) (tag "}")
       .map json_value (x -> container.map_of x.as_array)
 
 

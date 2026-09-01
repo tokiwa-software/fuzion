@@ -37,8 +37,8 @@ inference_choice_generics =>
 
   print(t tree String) unit =>
     match t
-      nil      => yak "."
-      s String => yak s
+      nil      => yap "."
+      s String => yap s
       b Branch => print b.left; print b.right
 
   print tree

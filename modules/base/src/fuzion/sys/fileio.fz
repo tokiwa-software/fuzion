@@ -25,7 +25,6 @@
 
 # fuzion.sys.fileio -- fileio presents basic features to handle File I/O operations
 #
-
 module fileio is
 
   # reads n bytes of a file opened as fd
@@ -34,14 +33,13 @@ module fileio is
   # has been reached.
   #
   module read(fd File_Descriptor, n u64) outcome (Sequence u8) =>
-    len := n.as_i32
-    arr := fuzion.sys.internal_array_init u8 len
-    res := fzE_file_read fd arr.data len
+    arr := fuzion.sys.internal_array_init u8 n.as_i64
+    res := fzE_file_read fd arr.data n.as_i32
 
-    if res < -1
-      error "failed reading" res.as_i64
-    else if res < 0
-      (id (Sequence u8) [])
+    if res = -1
+      error "failed reading" fzE_last_error
+    else if res = 0
+      id (Sequence u8) []
     else
       # NYI: UNDER DEVELOPMENT: could realloc internal_array
       arr.as_array.slice 0 res
@@ -52,10 +50,15 @@ module fileio is
   # this might overwrite parts or all of an existing file.
   #
   module write(fd File_Descriptor, content array u8) outcome unit =>
-    res := fzE_file_write fd content.internal_array.data content.length
+    for tbw := content, tbw.drop res .as_array
+        res := fzE_file_write fd tbw.internal_array.data tbw.length.as_i32 .as_i64
+    while res >= 0 && res != tbw.length
+    else
+      if res < 0
+        error "writing to file" fzE_last_error
+      else
+        unit
 
-    if res < 0
-      error "failed writing" res.as_i64
 
 
   # wrapper for fzE_file_flush
@@ -64,7 +67,7 @@ module fileio is
     if fzE_file_flush fd = 0
       unit
     else
-      error "error when flushing"
+      error "error when flushing" fzE_last_error
 
 
   # deletes the file/dir found in the path
@@ -73,10 +76,10 @@ module fileio is
   #
   module delete(
                 # the (relative or absolute) file name, using platform specific path separators
-                path path) outcome unit =>
-    arr := fuzion.sys.c_string $path
+                path io.path) outcome unit =>
+    arr := fuzion.sys.c_string path.as_platform_string
     if fzE_rm arr != 0
-      error "an error occurred while performing the delete operation on the following file/dir: \"$path\""
+      error "an error occurred while performing the delete operation on the following file/dir: \"$path\"" fzE_last_error
 
 
   #  moves file/dir from an old path to a the new path
@@ -85,13 +88,13 @@ module fileio is
   #
   module move(
               # the old (relative or absolute) file name, using platform specific path separators
-              old path,
+              old io.path,
               # the new (relative or absolute) file name, using platform specific path separators
-              new path) outcome unit =>
-    arr0 := fuzion.sys.c_string $old
-    arr1 := fuzion.sys.c_string $new
+              new io.path) outcome unit =>
+    arr0 := fuzion.sys.c_string old.as_platform_string
+    arr1 := fuzion.sys.c_string new.as_platform_string
     if fzE_file_move arr0 arr1 != 0
-      error "an error occurred while performing the following move operation: \"$old\" --> \"$new\""
+      error "an error occurred while performing the following move operation: \"$old\" --> \"$new\"" fzE_last_error
 
 
   # creates a directory using the specified path
@@ -99,10 +102,10 @@ module fileio is
   #
   module create_dir(
                     # the (relative or absolute) dir name, using platform specific path separators
-                    path path) outcome unit =>
-    arr := fuzion.sys.c_string $path
+                    path io.path) outcome unit =>
+    arr := fuzion.sys.c_string path.as_platform_string
     if fzE_mkdir arr != 0
-      error "an error occurred while creating the following directory: \"$path\""
+      error "an error occurred while creating the following directory: \"$path\"" fzE_last_error
 
 
   # Opens an IO source using a Fuzion Pointer as path and flag to represent the opening method (Read: 0, Write: 1, Append: 2)
@@ -111,11 +114,11 @@ module fileio is
   #
   module open(
               # a Fuzion Object representing the path for the source to be opened
-              path path,
+              path io.path,
               # a flag to specify the open method (Read: 0, Write: 1, Append: 2)
-              flag i32) outcome File_Descriptor =>
+              flag i64) outcome File_Descriptor =>
     open_results := fuzion.sys.internal_array_init i64 1  # [error number]
-    res := fzE_file_open (fuzion.sys.c_string $path) open_results.data flag
+    res := fzE_file_open (fuzion.sys.c_string $path) open_results.data flag.as_i32
     if open_results[0] = 0
       res
     else
@@ -128,9 +131,8 @@ module fileio is
   module close(
                # file descriptor
                fd File_Descriptor) outcome unit =>
-    closing_result := fzE_file_close fd
-    if closing_result != 0
-      error "failed closing file" closing_result.as_i64
+    if fzE_file_close fd != 0
+      error "failed closing file" fzE_last_error
 
 
   # seek offset in the stream represented by fd
@@ -142,9 +144,8 @@ module fileio is
               fd File_Descriptor,
               # the offset to seek from the beginning of this file
               offset i64) outcome unit =>
-    res := fzE_file_seek fd offset
-    if res = -1
-      error "failed seeking file" res.as_i64
+    if fzE_file_seek fd offset = -1
+      error "failed seeking file" fzE_last_error
 
 
   # returns the current file-pointer offset as an outcome i64,
@@ -156,7 +157,7 @@ module fileio is
                        fd File_Descriptor) outcome i64 =>
     res := fzE_file_position fd
     if res = -1
-      error "failed getting position in file" res
+      error "failed getting position in file" fzE_last_error
     else
       res
 
@@ -166,9 +167,9 @@ module fileio is
   # returns an integer that is intended to be used as an opaque reference
   # to the opened directory, or an error if one was encountered.
   #
-  module open_dir(path path) outcome Directory_Descriptor =>
+  module open_dir(path io.path) outcome Directory_Descriptor =>
     open_results := fuzion.sys.internal_array_init i64 1  # [error number]
-    res := fzE_opendir (fuzion.sys.c_string $path) open_results.data
+    res := fzE_opendir (fuzion.sys.c_string path.as_platform_string) open_results.data
     if open_results[0] = 0
       res
     else

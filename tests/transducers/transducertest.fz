@@ -31,25 +31,25 @@ transducertest is
       say "PASSED: $msg"
     else
       say "FAILED: $msg"
-      _ := set_exit_code 1
+      _ := Exit.env.set_exit_code 1
 
-  td1 := (transducer (Sequence i32) i32 human).type
+  td1 := (transducer (Sequence i64) i64 human).type
 
   xf_filter := td1.filter (x -> x > 3)
   r0 := (1..5).into xf_filter
   chck (r0 = [4, 5])                            "filter transducer"
 
 
-  td2 := (transducer (Sequence bool) bool i32).type
+  td2 := (transducer (Sequence bool) bool i64).type
   xf_map := td2.map (x -> x > 3)
   r1 := (1..5).into xf_map
   chck (r1 = [false, false, false, true, true]) "map transducer"
 
 
-  human(age i32) is
-  ages := td1.map (x -> x.age)
+  human(age i64) is
+  ages := td1.map (.age)
   gt_ten := td1.filter (x -> x > 10)
   r2 := [human 4, human 12, human 30].into (ages ∘ gt_ten)
   chck (r2 = [12, 30])                          "compose transducers"
 
-  exit
+  Exit.env.exit

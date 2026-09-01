@@ -49,7 +49,7 @@
 # compatible to  'outcome data IO_Error Permission_Error', so everything
 # is fine.
 #
-public outcome(public T type)
+public outcome(T type)
   : switch T error,
     property.equatable
 is
@@ -66,7 +66,7 @@ is
   #
   public err error
     pre
-      safety: outcome.this!!
+      safety: !outcome.this
   =>
     outcome.this ? T       => panic "outcome.err called on successful outcome. Enable `safety` to obtain a precondition failure for debugging."
                  | e error => e
@@ -78,8 +78,8 @@ is
   # "--$e--" for e error.
   #
   public redef as_string String =>
-    outcome.this ? v T     => v.as_string
-                 | e error => "--$e--"
+    outcome.this ? v T     => $v
+                 | e error => $e
 
 
   # monadic operator

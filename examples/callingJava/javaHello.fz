@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# javaHello is a minimalistic example that shows how Java's
+# javaHello is a minimalist example that shows how Java's
 # java.lang.System.out.println can be called from Fuzion code.
 #
 # See Makefile for how to start fuzion to run this example.
@@ -60,12 +60,12 @@ is
 
     # let's work a bit with Java:
     #
-    javaString := java.lang.__jString.new "Hello Java 🌍!"                          # create Java string, type Java.java.lang.String
-  #  javaBytes  := javaString.getBytes java.nio.charset.StandardCharsets.UTF__8   # get its UTF8 bytes, type is fuzion.java.Array i8
+    javaString := java.lang.__jString.new "Hello Java 🌍!"                       # create Java string, type Java.java.lang.String
+  #  javaBytes  := javaString.getBytes java.nio.charset.StandardCharsets.UTF__8  # get its UTF8 bytes, type is fuzion.java.Array i8
     javaBytes  := javaString.getBytes "UTF8"                                     # get its UTF8 bytes, type is fuzion.java.Array i8
     match javaBytes
       err error => say err
       bytes fuzion.java.Array =>
-        say "string has {bytes.count} bytes: $bytes"
-        javaString2 := java.lang.__jString.new bytes 6 bytes.count-6                # create Java string from bytes subset,
+        say "string has $(bytes.count) bytes: $bytes"
+        javaString2 := java.lang.__jString.new bytes 6 (bytes.count-6).as_i32    # create Java string from bytes subset,
         say "Hello "+javaString2                                                 # append Java string to Fuzion string and print it

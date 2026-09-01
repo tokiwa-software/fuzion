@@ -24,7 +24,7 @@
 reg_issue2280 is
 
   lm : mutate is
-  _ := lm ! ()->((io.stdin.reader lm).instate_self u32 ()->
+  _ := lm ! ()->((io.buffered lm).Reader.instate (io.stdin.reader lm) ()->
     for
 
       t := u32 0, s
@@ -41,8 +41,8 @@ reg_issue2280 is
       first := l2.first.or_else (u32 0)
       #      last  :=  l2.is_empty ? 0 : l2.last        # NYI: does not work since ? : is not lazy on its arguments!
 
-      last  :=  {if l2.is_empty then u32 0 else l2.last.get}
-      # NYI: why this assymmetry between head returning option and last returning the element or panicking?
+      last  :=  {if l2.is_empty then u32 0 else l2.last.or_panic}
+      # NYI: why this asymmetry between head returning option and last returning the element or panicking?
       # NYI: would be nice if `u32` would be inferred and not needed explicitly here!
       # NYI: can we get rid of the `{`/`}`
 

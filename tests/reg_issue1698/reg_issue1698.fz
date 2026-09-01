@@ -22,7 +22,7 @@
 # -----------------------------------------------------------------------
 
 reg_issue1698 is
-  x := exception unit void ()->
-    t := (exception unit).env
+  x := flow.exception unit void ()->
+    t := (flow.exception unit).env
     t.cause (error "a")
   say x

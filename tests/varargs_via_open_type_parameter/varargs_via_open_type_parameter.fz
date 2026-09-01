@@ -31,7 +31,7 @@ varargs_via_open_type_parameter =>
   test(A type ..., a A...) =>
 
     # to print, this uses just `$a`, i.e., `a.as_string` that will use the inherited
-    # `(Sequence containter.Typed_Value).as_string`.
+    # `(Sequence container.Typed_Value).as_string`.
     #
     # Efficiency-wise, this is not very satisfactory since all values will be boxed
     # as heap allocated ref instances.
@@ -40,7 +40,7 @@ varargs_via_open_type_parameter =>
 
     # The type of `a` is a compiler generated internal feature
     #
-    say "type is {type_of a .name}"
+    say "type is $(type_of a .name)"
 
   test 3.14 42 true [1,2,3]
 
@@ -53,17 +53,17 @@ varargs_via_open_type_parameter =>
 
   # printf that replaces %0/%1/... by a.0/a.1/...
   #
-  # this implementation uses a lokal instance of `typed_applicator`
+  # this implementation uses a local instance of `typed_applicator`
   #
   printf1(A type ..., s String, a A...) =>
 
-    doit : container.typed_applicator (String, i32) is
+    doit : container.typed_applicator (String, i64) is
 
-      public redef apply(T type, e (String, i32), v T) (String, i32)
+      public redef apply(T type, e (String, i64), v T) (String, i64)
       =>
         vs := if      T : numeric then "(number: $v)"
               else if T : String  then "\"$v\""
-              else                     "(*** unknown type `{T.name}` ***)"
+              else                     "(*** unknown type `$(T.name)` ***)"
         (e.0.replace "%"+e.1 vs, e.1+1)
 
     say (a.typed_foldf (s, 0) doit .0)
@@ -71,17 +71,17 @@ varargs_via_open_type_parameter =>
 
   # printf that replaces %0/%1/... by a.0/a.1/...
   #
-  # this implementation uses a lokal instance of `typed_fold`
+  # this implementation uses a local instance of `typed_fold`
   #
   printf2(A type ..., s String, a A...) =>
 
     doit : container.typed_fold (s, 0) a is
 
-      public redef apply(T type, e (String, i32), v T) (String, i32)
+      public redef apply(T type, e (String, i64), v T) (String, i64)
       =>
         vs := if      T : numeric then "(number: $v)"
               else if T : String  then "\"$v\""
-              else                     "(*** unknown type `{T.name}` ***)"
+              else                     "(*** unknown type `$(T.name)` ***)"
         (e.0.replace "%"+e.1 vs, e.1+1)
 
     say doit.res.0
@@ -93,11 +93,11 @@ varargs_via_open_type_parameter =>
   #
   printf3(A type ..., s String, a A...) : container.typed_fold (s, 0) a
   =>
-    public redef apply(T type, e (String, i32), v T) (String, i32)
+    public redef apply(T type, e (String, i64), v T) (String, i64)
     =>
       vs := if      T : numeric then "(number: $v)"
             else if T : String  then "\"$v\""
-            else                     "(*** unknown type `{T.name}` ***)"
+            else                     "(*** unknown type `$(T.name)` ***)"
       (e.0.replace "%"+e.1 vs, e.1+1)
 
     say res.0
@@ -109,10 +109,10 @@ varargs_via_open_type_parameter =>
   # lambda type parameter
   #
   printf4(A type ..., s String, a A...) =>
-    say <| a.typed_foldf (String, i32) _ (s, 0) T,e,v->
+    say <| a.typed_foldf (String, i64) _ (s, 0) T,e,v->
               vs := if      T : numeric then "(number: $v)"
                     else if T : String  then "\"$v\""
-                    else                     "(*** unknown type `{T.name}` ***)"
+                    else                     "(*** unknown type `$(T.name)` ***)"
               (e.0.replace "%"+e.1 vs, e.1+1)
             .0
 
@@ -126,7 +126,7 @@ varargs_via_open_type_parameter =>
     say <| a.typed_foldf (s, 0) T,e,v->
               vs := if      T : numeric then "(number: $v)"
                     else if T : String  then "\"$v\""
-                    else                     "(*** unknown type `{T.name}` ***)"
+                    else                     "(*** unknown type `$(T.name)` ***)"
               (e.0.replace "%"+e.1 vs, e.1+1)
             .0
 
@@ -145,7 +145,7 @@ varargs_via_open_type_parameter =>
   #
   printn1(A type ..., a A...) : container.typed_fold 1 a
   =>
-    public redef apply(T type, n i32, v T) i32
+    public redef apply(T type, n i64, v T) i64
     =>
       say "$n: $v"
       n + 1
@@ -156,7 +156,7 @@ varargs_via_open_type_parameter =>
   #
   printn2(A type ..., a A...)
   =>
-    ignore <| a.typed_foldf i32 _ 1 T,n,v->
+    ignore <| a.typed_foldf i64 _ 1 T,n,v->
       say "$n: $v"
       n + 1
 

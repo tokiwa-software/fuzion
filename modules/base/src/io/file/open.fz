@@ -25,22 +25,24 @@
 # effect for manipulating open files
 #
 module:public open(fd File_Descriptor,
-                   public file_name path) : effect is
+                   public file_name io.path) : effect is
 
 
-  # install seek effect an run code
+  # install Seek effect for type `io.file.this.Seek`
+  # and run `code`
   #
   public seek(R type, code ()->R) outcome R =>
 
-    hndlr :=
-      _ : Seek_Handler is
-        public redef seek(offset i64) outcome unit =>
-          fuzion.sys.fileio.seek fd offset
+    sk : Seek is
+      public redef seek(offset i64) outcome unit =>
+        Seek.replace sk.this
+        fuzion.sys.fileio.seek fd offset
 
-        public redef file_position outcome i64 =>
-          fuzion.sys.fileio.file_position fd
+      public redef file_position outcome i64 =>
+        Seek.replace sk.this
+        fuzion.sys.fileio.file_position fd
 
-    file.this.seek hndlr ! code
+    Seek.instate sk code
 
 
   # install mmap effect an run code
@@ -55,13 +57,15 @@ module:public open(fd File_Descriptor,
   #         io.file.mapped_buffer.env[99] := 42
   #
   public mmap(R type, offset i64, size i64, code ()->R) outcome R
-    pre safety: offset % os.mmap_offset_multiple = 0
+    pre
+      safety: offset % os.mmap_offset_multiple = 0
+      safety: size > 0
   =>
 
     mapped_memory := fzE_mmap fd offset size
 
     if fzE_is_valid_mapped_memory mapped_memory
-      error "mmap failed, error code: {fzE_last_error}"
+      error "mmap failed, error code: $(fzE_last_error)"
     else
       (mapped_buffer mapped_memory size) ! code
 
@@ -70,7 +74,7 @@ module:public open(fd File_Descriptor,
   #
   public redef finally unit =>
     match fuzion.sys.fileio.close fd
-      e error => fuzion.runtime.fault.cause ("io.file.open.finally", "closing file failed:  {e}")
+      e error => Ignored_Failure.env.register_failure e
       unit =>
 
 

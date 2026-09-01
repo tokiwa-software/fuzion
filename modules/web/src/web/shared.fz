@@ -19,7 +19,7 @@
 #
 # -----------------------------------------------------------------------
 
-# this lm is used for the raw netwok connection
+# this lm is used for the raw network connection
 #
 net_lm : mutate is
 
@@ -39,12 +39,12 @@ module read_reponse(LM type : mutate) ! LM =>
       if resp.status_code >= 400
         msg :=
           if body.is_blank
-            "{resp.status_code} {resp.reason_phrase}"
+            "$(resp.status_code) $(resp.reason_phrase)"
           else
             """
-            {resp.status_code} {resp.reason_phrase}
+            $(resp.status_code) $(resp.reason_phrase)
 
-            {body}
+            $(body)
             """
         error msg
       else
@@ -55,10 +55,10 @@ module read_reponse(LM type : mutate) ! LM =>
 # write the request
 #
 module write_request(LM type : mutate, rm http.request_message) ! LM =>
-  (io.buffered LM).writer.env
-    .write (rm.bytes i32.max)
+  (io.buffered LM).Writer.env
+    .write (rm.bytes i64.max)
     .bind _->
-      (io.buffered LM).writer.env.flush
+      (io.buffered LM).Writer.env.flush
 
 
 module parsed_url(module use_https bool, module host String, module port option u16, module target option String) is
@@ -80,7 +80,6 @@ module parsed_url(module use_https bool, module host String, module port option 
 # (false, "tokiwa.software", 8080, "index")
 #
 # NYI: BUG: parse [host]:port format correctly bracketed ipv6
-# NYI: BUG: no port bounds check <= 65535 before casting
 # NYI: BUG: ignores userinfo: user:pass@host
 #
 module parse_url(url String) outcome web.parsed_url
@@ -88,14 +87,14 @@ module parse_url(url String) outcome web.parsed_url
     debug: !url.contains_whitespace
 =>
   is_https      := url.starts_with "https"
-  schema_length := "http{is_https ? "s" : ""}://".byte_length
+  schema_length := "http$(is_https ? "s" : "")://".byte_count
 
   # extract host, port (optional) and target (optional) from url
   #
   match {
           tpl := url
             .find "/" schema_length
-            .bind (idx -> url.split_at_byte idx)
+            .bind (i -> url.split_at_byte i)
             .bind (t -> (t.0, id (option String) t.1))
             # no target specified
             .or_else (url, id (option String) nil)
@@ -103,13 +102,17 @@ module parse_url(url String) outcome web.parsed_url
           host_and_port := tpl.0.substring schema_length
           host_and_port_seq := host_and_port.split ":" .as_array
           if host_and_port_seq.length > 2
-            id (outcome (tuple String (option u16) (option String))) (error "invalid host+port {host_and_port}")
+            id (outcome (tuple String (option u16) (option String))) (error "invalid host+port $(host_and_port)")
           else
             match host_and_port_seq.nth 1
               p_str String =>
                 match p_str.parse_u32
                   e error => e
-                  p u32 => (host_and_port_seq[0], id (option u16) p.as_u16, tpl.1)
+                  p u32 =>
+                    if p.fits_in_u16
+                      (host_and_port_seq[0], id (option u16) p.as_u16, tpl.1)
+                    else
+                      error "Port number invalid, should fit in 16 bits: $p_str"
               # no port specified
               nil => (host_and_port_seq[0], id (option u16) nil, tpl.1)
         }
@@ -132,7 +135,7 @@ module do_request(family net.family.val,
         c.with _ net_lm ()->
           if use_https
             ssl_lm ! ()->
-              wolfssl _ net_lm ssl_lm ((write_request ssl_lm rm).bind _->(read_reponse ssl_lm))
+              wolfssl _ net_lm ssl_lm host ((write_request ssl_lm rm).bind _->(read_reponse ssl_lm))
           else
             (write_request net_lm rm).bind _->(read_reponse net_lm)
 

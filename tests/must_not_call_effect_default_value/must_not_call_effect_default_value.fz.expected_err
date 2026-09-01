@@ -1,0 +1,7 @@
+
+--CURDIR--/must_not_call_effect_default_value.fz:25:14: error 1: Must not call '<effect>.default_value'.
+  say io.Out.default_value
+-------------^^^^^^^^^^^^^
+'<effect>.default_value' is called automatically on big bang singularity.
+
+one error.

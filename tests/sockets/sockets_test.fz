@@ -31,10 +31,9 @@ sockets_test is
                                     (u16 0),
                                     (u16 0)]
 
-  set_server_port(idx i32, new u16) =>
-    _ :=
-      for r := servers.read
-      while !(servers.compare_and_set r (r.put idx new))
+  set_server_port(i i64, new u16) =>
+    for r := servers.read
+    while !(servers.compare_and_set r (r.put i new))
 
 
   # server handles one connection at a time
@@ -46,24 +45,24 @@ sockets_test is
     accept =>
       (net.server.env.accept.bind c->
         c.with unit lm ()->
-          chan => net.channel.env
+          endp => net.endpoint.env
 
           say_silent "$protocol/$family-server, accepted connection"
-          say_silent chan.get_peer_address
-          say_silent chan.get_peer_port
+          say_silent endp.get_peer_address
+          say_silent endp.get_peer_port
 
           rr := (io.buffered lm).read_line_while (s -> !s.is_empty)
 
-          say_silent "$protocol/$family-server, read lines: >{rr}<"
+          say_silent "$protocol/$family-server, read lines: >$(rr)<"
 
           match protocol
             net.protocol.tcp =>
 
-              res := "received: {rr.as_string}\n\n"
+              res := "received: $(rr.as_string)\n\n"
 
               w =>
-                match (io.buffered lm).writer.env.write res.utf8.as_array
-                  unit => (io.buffered lm).writer.env.flush
+                match (io.buffered lm).Writer.env.write res
+                  unit => (io.buffered lm).Writer.env.flush
                   e error => e
 
               match w
@@ -93,33 +92,31 @@ sockets_test is
 
   # client
   #
-  client(family net.family.val, protocol net.protocol.val, host String, port u16, num i32) =>
+  client(family net.family.val, protocol net.protocol.val, host String, port u16, num i64) =>
 
     match net.client family protocol host port
       error =>
-        say "$protocol/$family-client {sockets_test.client.this.num}, $host: error establishing connection"
+        say "$protocol/$family-client $(sockets_test.client.this.num), $host: error establishing connection"
       c net.connection =>
 
         res := c.with String lm ()->
 
-            chan => net.channel.env
-
             req := ("GET / HTTP\n"
               + "Host: $host\n"
-              + "Client: {sockets_test.client.this.num}\n\n")
+              + "Client: $(sockets_test.client.this.num)\n\n")
 
             w =>
-              _ := (io.buffered lm).writer.env.write req.utf8.as_array
-              _ := (io.buffered lm).writer.env.flush
+              _ := (io.buffered lm).Writer.env.write req
+              _ := (io.buffered lm).Writer.env.flush
 
-            str := "$protocol/$family-client {sockets_test.client.this.num}, write to $host => {w}"
+            str := "$protocol/$family-client $(sockets_test.client.this.num), write to $host => $(w)"
 
             match protocol
               net.protocol.tcp =>
 
                 rr := (io.buffered lm).read_line_while (s -> !s.is_empty)
 
-                str + "\n" + "$protocol/$family-client {sockets_test.client.this.num}, read lines from  $host: >{rr}<"
+                str + "\n" + "$protocol/$family-client $(sockets_test.client.this.num), read lines from  $host: >$(rr)<"
 
               # for UDP reading would block indefinitely
               net.protocol.udp =>
@@ -169,7 +166,6 @@ sockets_test is
 
   port(f net.family.val, p net.protocol.val) =>
     while servers.read[server_ident f p] = 0
-      time.nano.sleep (time.duration.s 1)
     servers.read[server_ident f p]
 
 ########### Tests ################
@@ -178,9 +174,9 @@ sockets_test is
   protocols array net.protocol.val := [net.protocol.tcp, net.protocol.udp]
   for f in families do
     for p in protocols do
-      _ := concur.threads.spawn ()->
+      _ := concur.Threads.env.spawn ()->
         lm ! ()->
-          _ := server f p
+          server f p
 
   for f in families do
     for p in protocols do
@@ -191,4 +187,4 @@ sockets_test is
         lm ! ()->
           client f p (net.family.localhost f) (port f p) i
 
-  exit 0
+  Exit.env.exit 0

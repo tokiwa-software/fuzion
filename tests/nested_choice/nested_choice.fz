@@ -26,10 +26,10 @@ nested_choice =>
   issue492 =>
 
     simple =>
-      the_choice : choice i32 f64 is
+      the_choice : choice i64 f64 is
         public redef as_string String =>
           match the_choice.this
-            n i32 => $n
+            n i64 => $n
             f f64 => $f
 
       map_res : choice the_choice String is
@@ -38,7 +38,7 @@ nested_choice =>
             t the_choice => $t
             s String => s
 
-      map (n i32) map_res =>
+      map (n i64) map_res =>
         n
 
       say (map 2)
@@ -48,10 +48,10 @@ nested_choice =>
     assign_choice_to_nested_choice =>
       bool_or_u64 : choice u64 bool is
 
-      tripel_nested_choice : choice i32 bool_or_u64 is
+      tripel_nested_choice : choice i64 bool_or_u64 is
         public redef as_string String =>
           match tripel_nested_choice.this
-            i i32 => $i
+            i i64 => $i
             b1 bool_or_u64 =>
               match b1
                 u u64 => $u
@@ -61,7 +61,7 @@ nested_choice =>
       bool_or_num_bool bool_or_u64 := false
       bool_or_num_num bool_or_u64 := u64 9
       b tripel_nested_choice := true
-      n4 tripel_nested_choice := i32 -1
+      n4 tripel_nested_choice := i64 -1
       n8 tripel_nested_choice := u64 1
       c1 tripel_nested_choice := bool_or_num_bool
       c2 tripel_nested_choice := bool_or_num_num
@@ -110,10 +110,10 @@ nested_choice =>
 
 
     mix_ref_and_non_ref =>
-      choice_mixed : choice i32 (choice String u64) is
+      choice_mixed : choice i64 (choice String u64) is
         public redef as_string String =>
           match choice_mixed.this
-            n i32 => $n
+            n i64 => $n
             c1 choice String u64 =>
               match c1
                 str String => $str
@@ -190,7 +190,7 @@ nested_choice =>
               nil  => "inner nil"
               unit => "unit"
 
-    # the following flags an error, ambigous assignment to choice
+    # the following flags an error, ambiguous assignment to choice
     # tested in choice_negative, nested_choice_negative
     # c my_choice2 := nil
     d my_choice2 := "st"

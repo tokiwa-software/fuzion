@@ -30,8 +30,8 @@ c2 array unit := [unit,unit]
 c3 := [unit,unit]
 d1 array void   := []    # not sure if type propagation works here
 d2 array choice := []    # not sure if type propagation works here
-d3 := array void   0 (_ -> panic "*** not reached ***")
-d4 := array choice 0 (_ -> panic "*** not reached ***")
+d3 := array void   _ 0 (_ -> panic "*** not reached ***")
+d4 := array choice _ 0 (_ -> panic "*** not reached ***")
 say b1
 say b2
 say b3

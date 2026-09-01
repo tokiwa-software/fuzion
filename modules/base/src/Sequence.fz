@@ -33,7 +33,7 @@
 #
 # Heirs of Sequence must implement 'as_list'.
 #
-public Sequence(public T type) ref
+public Sequence(T type) ref
   : property.countable,
     property.orderable,
     property.hashable
@@ -83,7 +83,7 @@ is
        .filter (.is_unequal)
        .first
        .or_else (count_order a b)
-       .is_less_or_equal
+       .is_less_than_or_equal
     else
       compile_time_panic  # Sequence is not orderable since element type is not
 
@@ -161,7 +161,10 @@ is
 
   # is this Sequence empty?
   #
-  public is_empty bool => as_list.is_empty
+  public is_empty bool
+    post debug : !finite.is_no || result = false
+  =>
+    finite.is_no ? false : as_list.is_empty
 
 
   # count the number of elements in this Sequence.  Note that this typically
@@ -169,15 +172,15 @@ is
   #
   # For Sequences that are not array backed, this might require time in O(count).
   #
-  public redef count i32
-  => (map i32 (_ -> 1)).fold i32.sum
+  public redef count i64
+  => (map _->1).fold i64.sum
 
 
   # count the number of elements in this Sequence that match the
   # given predicate. Note that this typically
   # runs forever if executed on an endless Sequence.
   #
-  public count(f T->bool) i32 =>
+  public count(f T->bool) i64 =>
     (filter f).count
 
 
@@ -191,7 +194,7 @@ is
   #
   public first(default T) T
   =>
-    first.val default
+    first.or_default default
 
 
   # get the last element of this Sequence
@@ -207,14 +210,14 @@ is
   #
   public last(default T) T
   =>
-    last.val default
+    last.or_default default
 
 
   # collect the contents of this Sequence into an array
   #
   public as_array array T =>
     if is_array_backed
-      array count (i -> Sequence.this[i])
+      array count.as_i64 (i -> Sequence.this[i])
     else
       as_list.as_array
 
@@ -256,7 +259,11 @@ is
   #       .peek say
   #       .drop_while <10
   #
-  public peek (f T -> unit) Sequence T =>
+  public peek (f T -> unit) Sequence T
+    post
+      debug: finite = result.finite
+      debug: finite.is_no_or_unknown || count = result.count
+  =>
     map x->
       f x
       x
@@ -279,7 +286,12 @@ is
   # filter elements using predicate f
   # values for which f is false are dropped
   #
-  public filter   (f T -> bool) Sequence T => as_list.filter f
+  public filter   (f T -> bool) Sequence T
+    # NYI: BUG: count >= result.count sometimes recursive
+    # post
+      # NYI: BUG: debug: finite = result.finite
+      # NYI: BUG: debug: finite.is_no_or_unknown || count >= result.count
+  => as_list.filter f
 
 
   # check if predicate f holds for all elements
@@ -297,7 +309,7 @@ is
   #
   # NOTE: for negative n an empty Sequence is returned
   #
-  public take (n i32) Sequence T
+  public take (I type : integer, n I) Sequence T
     # NYI: BUG: breaks tail call optimization
     # post debug: n>0 || result.is_empty
   => as_list.take n
@@ -305,7 +317,13 @@ is
 
   # reverse the order of the elements in this Sequence
   #
-  public reverse Sequence T => as_list.reverse_list
+  public reverse Sequence T
+    pre
+      debug: finite.is_yes_or_unknown
+    post
+      debug: finite = result.finite
+      debug: count = result.count
+  => as_list.reverse_list
 
 
   # create a Sequence that consists of the elements of this Sequence except the first
@@ -315,7 +333,7 @@ is
   #
   # NOTE: for negative n the Sequence is returned as is
   #
-  public drop (n i32) Sequence T
+  public drop (I type : integer, n I) Sequence T
     # NYI: BUG: breaks tail call optimization
     # post debug: n>0 || count=result.count
   => as_list.drop n
@@ -323,17 +341,20 @@ is
 
   # get a function that, given an index, returns the element at that index
   #
-  public index [] () idx -> T => n -> Sequence.this[n]
+  public index [] () integer -> T => n -> Sequence.this[n]
 
 
   # create a slice from this Sequence that consists of the elements starting at index
   # from (including) up to index to (excluding).
   #
-  public slice(from, to i32) Sequence T
+  public slice(I type : integer, from, to I) Sequence T
     pre
       debug : from ≥ 0
       debug : to = 0 || (if is_array_backed || debug_level > 1 then is_valid_index to-1 else true)
       debug : from <= to
+    post
+      debug: result.finite.is_yes_or_unknown
+      debug: result.count = (to-from).as_i64
   =>
     drop from
       .take to-from
@@ -352,9 +373,9 @@ is
   #
   #    at first result of condition function
   #
-  public split_at(c i32 | T->bool) tuple (Sequence T) (Sequence T) =>
+  public split_at(c i64 | T->bool) tuple (Sequence T) (Sequence T) =>
     match c
-      at i32 => ((take at), (drop at))
+      at i64 => ((take at), (drop at))
       cond T->bool =>
         split_at (first_index_of cond)
 
@@ -365,7 +386,7 @@ is
   #
   # NYI: UNDER DEVELOPMENT: do we want this public?
   #
-  first_index_of(cond T->bool) i32
+  first_index_of(F type: T->bool, cond F) i64
   =>
     for i:=0, i+1
         el in Sequence.this
@@ -381,7 +402,7 @@ is
       analysis: result ∀ p
       analysis: {
         n := nth result.count
-        !n || !(p n.get)
+        !n || !(p n.or_panic)
       }
   => as_list.take_while p
 
@@ -393,7 +414,7 @@ is
       analysis: result ∀ (x -> !(p x))
       analysis: {
         n := nth result.count
-        !n || p n.get
+        !n || p n.or_panic
       }
   => as_list.drop_while p
 
@@ -424,27 +445,22 @@ is
   # in `O(n²)` performance for the concatenations.
   #
   public concat (s Sequence T) Sequence T =>
-    c1 :=   finite.is_yes ? count   : -1
-    c2 := s.finite.is_yes ? s.count : -1
-    if c1 = 0
+    if is_empty
       s
-    else if c2 = 0
+    #
+    # if this sequence is infinite,
+    # no need to concat s
+    #
+    else if s.is_empty || finite.is_no
       Sequence.this
     #
-    # c1 < c2 to avoid poor (quadratic) performance
-    # if a small sequence is added in front of a
-    # larger one repeatedly as in this code:
+    # if s is infinite we use list concat
+    # otherwise we would hang forever
     #
-    #     for
-    #       s := (Sequence i32).empty, [i].concat s
-    #       i in 1..n
-    #     else
-    #       say s
-    #
-    else if c1 < 0 || c2 < 0 || c1 < c2 then
+    else if s.finite.is_no
       as_list.concat_list s.as_list
     else
-      container.expanding_array T .empty c1+c2
+      container.Finger_Tree T .empty
         .concat Sequence.this
         .concat s
 
@@ -463,17 +479,22 @@ is
   # create a Sequence that repeats the current Sequence indefinitely.  In case 'Sequence.this'
   # is empty, returns 'nil'
   #
-  public cycle Sequence T => as_list.cycle
+  public cycle Sequence T
+   post debug: is_empty.as_trit = result.finite
+  => as_list.cycle
 
 
   # create a Sequence that repeats the current Sequence `n` times.
   #
-  public infix *(n i32) Sequence T
+  public infix *(n i64) Sequence T
     pre
       debug: n >= 0
   =>
-    if n <= 0 || is_empty then (Sequence T).empty
-                          else Sequence.this ++ Sequence.this * (n-1)
+    for i   := n                , i-1
+        res := Sequence T .empty, res ++ Sequence.this
+    while i > 0
+    else
+      res
 
 
   # create a lazy list of all the tails of this Sequence, including the complete Sequence
@@ -510,7 +531,7 @@ is
   # NOTE: In case this Sequence is not finite, this will attempt to create an
   # infinitely long string resulting in failure due to resource exhaustion.
   #
-  public as_string_all String => "[{as_string ", "}]"
+  public as_string_all String => "[$(as_string ", ")]"
 
 
   # create a string representation of this Sequence including all the string
@@ -524,7 +545,7 @@ is
 
   # call 'as_string' on the elements
   #
-  public as_strings Sequence String => map c->c.as_string
+  public as_strings Sequence String => map ($)
 
 
   # map the Sequence to a new Sequence applying function f to all elements
@@ -532,7 +553,12 @@ is
   # This performs a lazy mapping, f is called only when the elements
   # in the resulting list are accessed.
   #
-  public map(B type, f T->B) Sequence B =>
+  public map(B type, f T->B) Sequence B
+    # NYI: BUG: count = result.count sometimes recursive
+    # post
+      # NYI: BUG: debug: finite = result.finite
+      # NYI: BUG: debug: finite.is_no_or_unknown || count = result.count
+  =>
     as_list.map_to_list f
 
 
@@ -697,16 +723,17 @@ is
 
   # insert element v at position at
   #
-  public insert(at i32, v T) Sequence T
+  public insert(I type: integer, at I, v T) Sequence T
   pre
     debug: at ≥ 0
   =>
     take at ++ [v] ++ drop at
 
 
-  # sort this Sequence using the order defined by less_or_equal
+  # sort this Sequence using `by` to map elements to an orderable type.
   #
-  public sort_by(less_or_equal (T, T) -> bool) container.sorted_array T => container.sorted_array Sequence.this less_or_equal
+  public sort_by(O type : property.orderable, by T->O) container.sorted_array T =>
+    container.sorted_array Sequence.this ((a,b)->(by a) <= (by b))
 
 
   # create a new Sequence from the result of applying 'f' to the
@@ -787,7 +814,7 @@ is
   #
   # Complexity: if Sequence is array backed O(1) otherwise O(n)
   #
-  public nth(n i32) option T
+  public nth(n i64) option T
     pre
       debug: n ≥ 0
   =>
@@ -802,38 +829,38 @@ is
   # Note that this may have a performance in O(i) unless this
   # Sequence is_array_backed.
   #
-  public is_valid_index(i idx) bool =>
-    (0 ≤ i.as_i32 && (if is_array_backed then i.as_i32 ≤ count
-                                         else !(drop i.as_i32).is_empty))
+  public is_valid_index(I type : integer, i I) bool =>
+    (0 ≤ i && (if is_array_backed then i.as_i64 ≤ count
+                                  else !(drop i).is_empty))
 
 
   # the nth element in the sequence, must exist
   #
-  public index [] (i idx) T
+  public index [] (I type : integer, i I) T
     pre
       debug: is_valid_index i
   =>
-    (nth i.as_i32).get
+    (nth i.as_i64).or_panic
 
 
   # adds the corresponding index to
   # every element in the sequence
   #
-  public indexed Sequence (tuple i32 T) =>
+  public indexed Sequence (tuple i64 T) =>
     indexed 0
 
 
   # adds an index to every element
   # in the sequence starting at start_idx
   #
-  public indexed(I type : has_interval, start_idx I) Sequence (tuple I T) =>
+  public indexed(I type : property.interval, start_idx I) Sequence (tuple I T) =>
     zip (start_idx..) (a,b -> (b, a))
 
 
   # chop this Sequence into chunks of `chunk_size`.
   # the last chunk may be smaller than `chunk_size`.
   #
-  public chunk(chunk_size i32) Sequence (Sequence T)
+  public chunk(chunk_size i64) Sequence (Sequence T)
   pre debug: chunk_size > 0
   =>
     if is_empty
@@ -976,7 +1003,7 @@ is
                                     nil => nil
                                 nil => nil
                             nil => nil
-    r.val
+    r.or_panic
 
 
   # convert a Sequence's head into a 4-tuple.
@@ -1006,7 +1033,7 @@ is
                                        nil => nil
                                    nil => nil
                                nil => nil
-    r.val
+    r.or_panic
 
 
   # convert a Sequence's head into a 5-tuple.
@@ -1039,7 +1066,7 @@ is
                                           nil => nil
                                       nil => nil
                                   nil => nil
-    r.val
+    r.or_panic
 
 
   # convert a Sequence's head into a 6-tuple.
@@ -1075,16 +1102,16 @@ is
                                              nil => nil
                                          nil => nil
                                      nil => nil
-    r.val
+    r.or_panic
 
 
   # convert this Sequence to an ordered map
   # via mapping all elements to key value pairs
   #
   public as_ordered_map(KEY type : property.orderable,
-                          VALUE type,
-                          mapper T -> (KEY,VALUE)
-                          ) container.ordered_map KEY VALUE
+                        VALUE type,
+                        mapper T -> (KEY,VALUE)
+                        ) container.ordered_map KEY VALUE
   =>
 
     keys, values :=
@@ -1117,7 +1144,7 @@ is
   # `(0..5).sliding 3`
   # =>  `[[0, 1, 2], [1, 2, 3], [2, 3, 4], [3, 4, 5]]`
   #
-  public sliding (size i32) Sequence (Sequence T) =>
+  public sliding (size i64) Sequence (Sequence T) =>
     sliding size 1
 
 
@@ -1131,7 +1158,7 @@ is
   # `(0..9).sliding 3 2`
   # => `[[0, 1, 2], [2, 3, 4], [4, 5, 6], [6, 7, 8]]`
   #
-  public sliding (size i32, step i32) Sequence (Sequence T)
+  public sliding (size i64, step i64) Sequence (Sequence T)
     pre
       debug: size > 0
       debug: step > 0
@@ -1211,7 +1238,7 @@ is
   #
   #     classify (c codepoint) String => c.is_ascii_letter ? "letter" : c.is_ascii_digit ? "digit" : "other"
   #
-  #     values.group_map String String classify (x->"_{x}_")
+  #     values.group_map String String classify (x->"_$(x)_")
   #
   # => {(digit => [_1_, _4_]), (letter => [_A_, _b_, _X_]), (other => [_?_])}
   #
@@ -1311,12 +1338,4 @@ is
   # Maximum number of elements shown for on a call to `as_string` for a non-finite
   # Sequence.
   #
-  public type.AS_STRING_NON_FINITE_MAX_ELEMENTS i32 => 10
-
-
-
-# helper features for knuth morris pratt algorithm
-#
-# NYI: UNDER DEVELOPMENT: move to Sequence/equatable once we can do universe.find_lm
-module find_lm : mutate is
-module Node(T type, module top Sequence T, module next once find_lm (option (Node T)), module rest option (Node T)) ref is
+  public type.AS_STRING_NON_FINITE_MAX_ELEMENTS i64 => 10

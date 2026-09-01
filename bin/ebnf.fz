@@ -29,59 +29,6 @@ main =>
 
   ########### Extensions ###############
 
-  # execute this Sequence of process+args
-  # return what we read from stdout as the result
-  #
-  Sequence.prefix ! String =>
-
-    lm : mutate is
-
-    lm ! ()->
-      seq := map x->x.as_string
-      match os.process.start seq.first.val (seq.drop 1)
-        e error => panic "failed executing {Sequence.this}, error is $e"
-        p os.process =>
-          res :=
-            match p.with_out String lm (()->String.from (io.buffered lm).read_fully)
-              e error => panic "failed reading stdout from {Sequence.this}, error is: $e"
-              s String => s.trim_end
-          err :=
-            match p.with_err String lm (()->String.from (io.buffered lm).read_fully)
-              e error => panic "failed reading stderr from {Sequence.this}, error is: $e"
-              s String => s.trim_end
-          ec := p.wait.val 1
-          if ec != 0
-            panic "error $ec when executing $seq, stderr: $err"
-          res
-
-
-  # feed this string to a new process
-  # return what we read from stdout as the result
-  #
-  String.infix | (seq Sequence String) String =>
-
-    lm : mutate is
-
-    lm ! ()->
-      match os.process.start seq.first.val (seq.drop 1)
-        e error => panic "failed executing $seq, error is $e"
-        p os.process =>
-          _ := p.with_in unit lm ()->
-            _ := (io.buffered lm).writer.env.write String.this.utf8
-            _ := (io.buffered lm).writer.env.flush
-            _ := p.wait # close stdin
-          match p.with_out String lm (()->String.from (io.buffered lm).read_fully)
-            e error => panic "failed reading stdout from $seq, error is: $e"
-            s String => s
-
-
-  # execute this string by splitting at all whitespaces
-  # return what we read from stdout as the result
-  #
-  String.prefix !! String =>
-    !split
-
-
   # check if exe is installed by trying
   # to execute it once
   #
@@ -92,19 +39,19 @@ main =>
   ########### EBNF ###############
 
   if !(is_installed "antlr" || is_installed "antlr4")
-    io.err.println "not generating ebnf due to missing dependency antlr"
-    exit 0
+    io.Err.env.println "not generating ebnf due to missing dependency antlr"
+    Exit.env.exit 0
   else
     new_line := "\n"
 
-    if envir.args.count < 2
+    if envir.Args.env.count < 2
       panic "expecting at least one file name argument"
 
     # header
     ebnf_header := "grammar Fuzion;$new_line$new_line"
 
-    ebnf := envir.args.drop 1
-      .map (s->path.of s)
+    ebnf := envir.Args.env.drop 1
+      .map (s->io.path.of s)
       .map src->
         if !io.file.exists src
           panic "file not found '$src'."
@@ -125,7 +72,7 @@ main =>
           for
               res Sequence String := [], new_res # source without asciidoc comments
               in_asciidoc bool := false, new_in_asciidoc
-              l in src_lines.ok ? src_lines.val : []
+              l in src_lines.ok ? src_lines.or_panic : []
           do
             new_res, new_in_asciidoc :=
               if in_asciidoc || l.trim.starts_with "// tag::"
@@ -179,10 +126,10 @@ main =>
     say ebnf
 
     # test grammar with antlr4
-    tmp := !!"mktemp --directory"
-    _ := !!"mkdir $tmp/fuzion_grammar"
-    _ := io.write (path.of "$tmp/fuzion_grammar/Fuzion.g4") ebnf
+    tmp := "mktemp --directory".execute.or_panic.out_or_panic.trim_end (id (Unary bool codepoint) (="\n"))
+    "mkdir $tmp/fuzion_grammar".execute.or_panic.panic_on_error
+    _ := io.write (io.path.of "$tmp/fuzion_grammar/Fuzion.g4") ebnf
     antlr := if (os.process.start "antlr4").bind u32 p->p.wait = 0 then "antlr4" else "antlr"
     # NYI: UNDER DEVELOPMENT: add option -Werror
-    _ := !!"$antlr -long-messages -o $tmp/fuzion_grammar $tmp/fuzion_grammar/Fuzion.g4"
-    _ := !!"rm -Rf $tmp"
+    "$antlr -long-messages -o $tmp/fuzion_grammar $tmp/fuzion_grammar/Fuzion.g4".execute.or_panic.panic_on_error
+    "rm -Rf $tmp".execute.or_panic.panic_on_error
