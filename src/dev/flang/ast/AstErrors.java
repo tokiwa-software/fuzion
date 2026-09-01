@@ -2706,6 +2706,16 @@ public class AstErrors extends ANY
     );
   }
 
+  public static void effectFeaturesMustBeCalledViaEnv(Call call)
+  {
+    error(
+      call.pos(),
+      "Effect features must be called via " + skw("env") + ".",
+      "To solve this, insert " + skw("env")  + " before the call " +
+      "to retrieve the current value of the effect from the environment."
+    );
+  }
+
 }
 
 /* end of file */
