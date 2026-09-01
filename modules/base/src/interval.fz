@@ -32,9 +32,13 @@
 # Empty if `step` points away from `through`:
 #     interval 1 2 -1     # empty: steps down, but through is up
 #     interval 2 1 1      # empty: steps up, but through is down
+#
 #     interval 1 7 3      # 1, 4, 7
 #     interval 1 8 3      # 1, 4, 7  (10 would exceed through)
 #     interval 7 1 -3     # 7, 4, 1
+#
+# A zero `step` is only allowed when `from = through`; such an interval
+# contains the single element `from`:
 #     interval 5 5 0      # 5
 #
 # If `through` is `nil`, the interval is unbounded and limited only by type `T` range.
@@ -88,7 +92,7 @@ is
   #
   public redef as_list list T =>
     if (through ? nil    => false
-                | thru T => from != thru && step.sign = (from ⋄ thru).sign)
+                | thru T => from != thru && step.sign = (from ⋄ thru).sign) then
       nil
     else
       tail => if step.sign = 0
@@ -101,7 +105,10 @@ is
 
   # get the number of elements in this interval
   #
-  # Performance O(1) in case  through.exists, otherwise O(result)
+  # Performance O(1).
+  #
+  # NOTE: diverges if `through` is `nil` —
+  # use `size_option`, which returns `nil` for unbounded intervals.
   #
   public size T
   =>
@@ -115,6 +122,7 @@ is
           (thru - from) / step + T.one
       nil =>
         T.from_u32 as_list.count.as_u32
+
 
   # get the first element of this interval
   #
@@ -132,6 +140,7 @@ is
           from
       nil =>
         from
+
 
   # the last element of this interval, `nil` if there is none
   #
@@ -153,6 +162,72 @@ is
         nil
 
 
+  # the n-th element of this interval, `nil` if out of range
+  #
+  # For `step = 0` only index 0 exists: every index would otherwise
+  # yield `from`.
+  #
+  # Performance: O(1)
+  #
+  public redef nth(n i32) option T
+  =>
+    if n < 0 || (n > 0 && step.sign = 0) then
+      nil
+    else
+      (step *? T.from_u32 n.as_u32)
+        >>= (off -> from +? off)
+        >>= (e   -> if contains e then e
+                    else nil)
+
+
+  # number of elements as `i64`, `nil` if unbounded
+  #
+  # Enables the inherited `Set.finite` and `Set.type.equality`, which are
+  # built on `size_option` and panic without it.
+  #
+  public redef size_option option i64
+  =>
+    # NYI: for `T` wider than `i64` the result may overflow.
+    through.exists ? size.as_i64 : nil
+
+
+  # index of `e` in this interval, `nil` if not contained
+  #
+  # Inverse of `nth`: for a valid index `i`, `index_of` of the `i`-th
+  # element returns `i`.
+  #
+  # Performance: O(1), unlike the inherited O(n) search.
+  #
+  public redef index_of(e T) option i32
+  =>
+    if !contains e then
+      nil
+    else if step.sign = 0 then
+      0 # single-element interval: avoid division by zero
+    else
+      ((e - from) / step).as_i32
+
+
+  # two intervals are equal if they contain the same elements,
+  # regardless of how `through` and `step` are stated:
+  # `interval 1 8 3 = interval 1 7 3` and `2..10:2 = interval 2 10 2`.
+  #
+  # Performance: O(1)
+  #
+  # NOTE: two intervals with the same elements in opposite order are not
+  # equal, e.g. `1..10 ≠ 10..1:-1` — an `interval` compares as an ordered
+  # sequence, not as an unordered set.
+  #
+  public fixed redef type.equality(a, b interval T) bool
+  =>
+    if a.is_empty || b.is_empty then
+      a.is_empty = b.is_empty
+    else
+      a.from = b.from
+        && a.last = b.last
+        && (a.from = a.last || a.step = b.step)
+
+
   # reverse the order of the elements in this interval
   #
   # Performance: O(1)
@@ -166,12 +241,12 @@ is
       l T =>
         interval l first -step
       nil =>
-        interval T.one T.zero T.one # empty interval
+        interval T.one T.zero T.one # any empty interval; from/step are irrelevant
 
 
   # does this interval contain the given value?
   #
-  # `e` must lie within the bounds and be reachable from `from` by whole
+  # `e` must lie within the bounds and be reachable from `from` by whole steps
   #
   public redef contains(e T) bool =>
     if      step.sign > 0 then from <= e <= through.or_else e && (e - from) %  step = T.zero
@@ -199,4 +274,4 @@ is
   # count diverge.
   #
   public redef finite trit =>
-    if through.exists then trit.yes else trit.no
+    through.exists ? trit.yes : trit.no
