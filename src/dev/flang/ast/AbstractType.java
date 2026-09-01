@@ -374,8 +374,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
        isChoice());
 
     var g = feature().choiceGenerics();
-    return
-      isThisType()
+    return g == null // might be null on previous errors, see #1587
+      ? AbstractCall.NO_GENERICS
+      : isThisType()
       ? g
       : replaceGenerics(g).map(t -> t.replace_this_type_by_actual_outer(outer(), context));
   }
@@ -886,7 +887,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   {
     if (PRECONDITIONS) require
       (Errors.any() ||
-       f.generics().sizeMatches(actualGenerics));
+       f.generics().sizeMatches(actualGenerics),
+       genericsToReplace != null);
 
     return genericsToReplace.flatMap
       (t ->
@@ -957,7 +959,8 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     if (PRECONDITIONS) require
       (isNormalType(),
        Errors.any() ||
-       feature().generics().sizeMatches(generics()));
+       feature().generics().sizeMatches(generics()),
+       genericsToReplace != null);
 
     return applyTypePars(feature(), genericsToReplace, generics());
   }
