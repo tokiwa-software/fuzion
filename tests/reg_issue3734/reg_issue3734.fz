@@ -32,6 +32,7 @@ reg_issue3734 =>
 
   # the original code from #3734
   e : effect is
+    public redef abortable bool => true
     stop => e.type.abort e
 
   codea1 => "hi"

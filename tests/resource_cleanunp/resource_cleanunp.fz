@@ -38,6 +38,8 @@ resource_cleanunp =>
     : effect
   is
 
+    public redef abortable bool => true
+
     open(s String) =>
       say "open: $s"
       (e ([s] ++ opened) state).replace

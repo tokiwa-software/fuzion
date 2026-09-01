@@ -95,6 +95,8 @@ main =>
   build_dir := io.path.of envir.Args.env[1]
   target := envir.Args.env[2]
 
+  say ""
+  say_section "start testing $target"
 
   # source: https://stackoverflow.com/questions/45181115/portable-way-to-find-the-number-of-processors-cpus-in-a-shell-script
   # first, try third arg then try a few executables, if everything fails use default value
@@ -187,7 +189,7 @@ main =>
   say h
 
   if failed + produced_error > 0
-    say_section "Failed tests"
+    say_section "Failed tests using $target backend"
 
     failed_tests := results_content.filter (.ends_with "failed")
 
@@ -231,7 +233,7 @@ main =>
     .take num_slowest
     .for_each (td -> say "$(td.1.as_string_pad) $(td.0)")
 
-  say_section "$target done"
+  say ""
 
   match envir.Vars.env.get "INFLUXDB_TOKEN"
     nil => say "INFLUXDB_TOKEN not set, not sending to influxdb."

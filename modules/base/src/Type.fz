@@ -41,9 +41,9 @@ module:public Type ref is
 
   # string representation of this type to be used for debugging.
   #
-  # result has the form "Type of '<name>'", but this might change in the future
+  # result has the form "<name>", but this might change in the future
   #
-  public redef as_string String => "Type of '$name'"
+  public redef as_string String => name
 
 
   # convenience prefix operator to create a string from a value.

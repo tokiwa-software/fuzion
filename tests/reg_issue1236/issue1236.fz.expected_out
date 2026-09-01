@@ -1,20 +1,20 @@
-xt is Type of 'test1.hello'
-h.dynamic_type: Type of 'test1.hello'
-Type of 'test2.a'
+xt is test1.hello
+h.dynamic_type: test1.hello
+test2.a
 c
-a: Type of 'test2.a'
-Type of 'test2.a'
-b: Type of 'test2.a.b'
-c: Type of 'test2.c'
-Type of 'test3.a'
-Type of 'test3.a.b'
-Type of 'test3.c'
-Type of 'test4.a'
-Type of 'test4.a.b'
-Type of 'test4.c'
-Type of '(test5.l u8).as'
-Type of '(test6.l u8).as'
-Type of 'test6.i3.dd.as'
-Type of 'const_string'
-Type of 'const_string'
-Type of 'list i64'
+a: test2.a
+test2.a
+b: test2.a.b
+c: test2.c
+test3.a
+test3.a.b
+test3.c
+test4.a
+test4.a.b
+test4.c
+(test5.l u8).as
+(test6.l u8).as
+test6.i3.dd.as
+const_string
+const_string
+list i64

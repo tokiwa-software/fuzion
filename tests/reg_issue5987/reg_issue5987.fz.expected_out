@@ -1,7 +1,7 @@
-Type of 'Unary i32 i32' 43
-Type of 'Unary i32 i32' -42
-Type of 'Unary i32 i32' 43
-Type of 'reg_issue5987.(λx->x+1)' 43
-Type of 'reg_issue5987.(λ(-))' -42
-Type of 'reg_issue5987.(λ+1)' 43
-Type of 'i64' Type of 'array i64' [32]
+Unary i32 i32 43
+Unary i32 i32 -42
+Unary i32 i32 43
+reg_issue5987.(λx->x+1) 43
+reg_issue5987.(λ(-)) -42
+reg_issue5987.(λ+1) 43
+i64 array i64 [32]

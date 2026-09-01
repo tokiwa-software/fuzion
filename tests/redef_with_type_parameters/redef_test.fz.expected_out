@@ -1,14 +1,14 @@
-x: Type of 'i64'
-x: Type of 'String'
-y: Type of 'f64'
-y: Type of 'option bool'
-x: Type of 'array String' Type of 'String'
-x: Type of 'list String' Type of 'String'
-y: Type of 'list String' Type of 'String'
-x: Type of 'array f32' Type of 'f32'
-x: Type of 'list f32' Type of 'f32'
-y: Type of 'list f32' Type of 'f32'
-x: Type of 'i64' Type of 'Sequence i64'
-y: Type of 'f64' Type of 'Sequence f64'
-x: Type of 'i64' 43
-y: Type of 'f64' 3.14
+x: i64
+x: String
+y: f64
+y: option bool
+x: array String String
+x: list String String
+y: list String String
+x: array f32 f32
+x: list f32 f32
+y: list f32 f32
+x: i64 Sequence i64
+y: f64 Sequence f64
+x: i64 43
+y: f64 3.14

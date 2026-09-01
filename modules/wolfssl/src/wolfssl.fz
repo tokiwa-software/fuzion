@@ -28,7 +28,7 @@ lm : mutate is
 # NYI: UNDER DEVELOPMENT: these are unsupported by fzextract
 #
 memcpy(dest Native_Ref, src lm.array u8, sz i64) Native_Ref => native
-wolfSSL_X509_verify_cert_error_string(err i64) Native_Ref => native
+wolfSSL_ERR_reason_error_string(err u64) Native_Ref => native
 wolfSSL_CTX_UseSNI(ctx Native_Ref, _type u8, data lm.array u8, size u16) i32 => native
 
 ssl_success => i32 1
@@ -71,7 +71,7 @@ public wolfssl(T type, LM type : mutate, LM2 type: mutate, host String, code ()-
         # depth := c.wolfSSL_X509_STORE_CTX_get_error_depth store_ctx
         err := (c lm).wolfSSL_X509_STORE_CTX_get_error store_ctx
         depth := (c lm).wolfSSL_X509_STORE_CTX_get_error_depth store_ctx
-        io.Err.env.println "$(ffi.from_native_string (wolfSSL_X509_verify_cert_error_string err.as_i64)) (error code $err, chain depth $depth)"
+        io.Err.env.println "$(ffi.from_native_string (wolfSSL_ERR_reason_error_string err.as_u64)) (error code $err, chain depth $depth)"
       preverify_ok
 
   c.wolfSSL_CTX_set_verify ctx wolfssl_verify_default lmbda

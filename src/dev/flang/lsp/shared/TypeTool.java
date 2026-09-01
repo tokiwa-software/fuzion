@@ -27,70 +27,17 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.lsp.shared;
 
-import java.util.stream.Collectors;
-
 import dev.flang.ast.AbstractType;
-import dev.flang.ast.Types;
-import dev.flang.ast.UnresolvedType;
 import dev.flang.util.ANY;
 
 public class TypeTool extends ANY
 {
-  /**
-   * human readable label for type
-   * @param type
-   * @return
-   */
-  public static String label(AbstractType type)
-  {
-
-    if (containsError(type)
-      || type.containsUndefined())
-      {
-        return baseName(type);
-      }
-    if (type.isNormalType() && type.generics() != UnresolvedType.NONE)
-      {
-        return labelNoErrorOrUndefined(type) + " "
-          + type.generics().stream().map(g -> Util.addParens(label(g))).collect(Collectors.joining(" "));
-      }
-    return labelNoErrorOrUndefined(type);
-  }
 
   // NYI: UNDER DEVELOPMENT: DUCKTAPE! ensure condition sometimes fails on containsError()
   // unable to reproduce unfortunately
   public static boolean containsError(AbstractType type)
   {
     return ErrorHandling.resultOrDefault(() -> type.containsError(), true);
-  }
-
-
-  private static String labelNoErrorOrUndefined(AbstractType type)
-  {
-    if (PRECONDITIONS)
-      require(!containsError(type), !type.containsUndefined());
-
-    if (type.isParametricType())
-      {
-        return baseName(type) + (type.isRef() ? " (boxed)": "");
-      }
-    else if (type.outer() != null)
-      {
-        return (type.isRef() && (type.feature() == null || !type.feature().isRef()) ? "ref "
-                    : !type.isRef() && type.feature() != null && type.feature().isRef() ? "value "
-                    : "")
-          + (type.feature() == null
-                                          ? baseName(type)
-                                          : type.feature().baseName());
-      }
-    else if (type.feature() == null || type.feature() == Types.f_ERROR)
-      {
-        return baseName(type);
-      }
-    else
-      {
-        return type.feature().baseName();
-      }
   }
 
 

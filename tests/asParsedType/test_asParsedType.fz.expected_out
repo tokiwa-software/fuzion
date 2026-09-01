@@ -1,102 +1,102 @@
-EXP: x Type of 'i32'
-GOT: x Type of 'i32'
+EXP: x i32
+GOT: x i32
 
-EXP: x Type of 'a'
-GOT: x Type of 'a'
+EXP: x a
+GOT: x a
 
-EXP: x Type of 'a.b'
-GOT: x Type of 'a.b'
+EXP: x a.b
+GOT: x a.b
 
-EXP: x Type of 'tuple a.b a i32'
-GOT: x Type of 'tuple a.b a i32'
+EXP: x tuple a.b a i32
+GOT: x tuple a.b a i32
 
-EXP: x Type of 'choice a.b a i32'
-GOT: x Type of 'choice a.b a i32'
+EXP: x choice a.b a i32
+GOT: x choice a.b a i32
 
-EXP: x Type of 'Unary String i32'
-GOT: x Type of 'Unary String i32'
-GOT: x Type of 'Unary String i32'
+EXP: x Unary String i32
+GOT: x Unary String i32
+GOT: x Unary String i32
 
-EXP: x Type of 'Unary String a'
-GOT: x Type of 'Unary String a'
-GOT: x Type of 'Unary String a'
+EXP: x Unary String a
+GOT: x Unary String a
+GOT: x Unary String a
 
-EXP: x Type of 'Unary a.b a'
-GOT: x Type of 'Unary a.b a'
-GOT: x Type of 'Unary a.b a'
+EXP: x Unary a.b a
+GOT: x Unary a.b a
+GOT: x Unary a.b a
 
-EXP: x Type of 'Unary a a.b'
-GOT: x Type of 'Unary a a.b'
-GOT: x Type of 'Unary a a.b'
+EXP: x Unary a a.b
+GOT: x Unary a a.b
+GOT: x Unary a a.b
 
-EXP: x Type of 'Function String i32 u64'
-GOT: x Type of 'Binary String i32 u64'
-GOT: x Type of 'Binary String i32 u64'
+EXP: x Function String i32 u64
+GOT: x Binary String i32 u64
+GOT: x Binary String i32 u64
 
-EXP: x Type of 'Function String (Sequence u64) a.b'
-GOT: x Type of 'Binary String (Sequence u64) a.b'
-GOT: x Type of 'Binary String (Sequence u64) a.b'
+EXP: x Function String (Sequence u64) a.b
+GOT: x Binary String (Sequence u64) a.b
+GOT: x Binary String (Sequence u64) a.b
 
-EXP: x Type of 'choice a.b i32 (Unary (choice i32 A) String)'
-GOT: x Type of 'choice a.b i32 (Unary (choice i32 A) String)'
-GOT: x Type of 'choice a.b i32 (Unary (choice i32 A) String)'
-GOT: x Type of 'choice a.b i32 (Unary (choice i32 A) String)'
-GOT: x Type of 'choice a.b i32 (Unary (choice i32 A) String)'
+EXP: x choice a.b i32 (Unary (choice i32 A) String)
+GOT: x choice a.b i32 (Unary (choice i32 A) String)
+GOT: x choice a.b i32 (Unary (choice i32 A) String)
+GOT: x choice a.b i32 (Unary (choice i32 A) String)
+GOT: x choice a.b i32 (Unary (choice i32 A) String)
 
-EXP: x Type of 'Unary (choice i32 A) (choice a.b i32 String)'
-GOT: x Type of 'Unary (choice i32 A) (choice a.b i32 String)'
-GOT: x Type of 'Unary (choice i32 A) (choice a.b i32 String)'
+EXP: x Unary (choice i32 A) (choice a.b i32 String)
+GOT: x Unary (choice i32 A) (choice a.b i32 String)
+GOT: x Unary (choice i32 A) (choice a.b i32 String)
 
-EXP: x Type of 'choice (Unary i32 (choice a.b i32 String)) A'
-GOT: x Type of 'choice (Unary i32 (choice a.b i32 String)) A'
-GOT: x Type of 'choice (Unary i32 (choice a.b i32 String)) A'
+EXP: x choice (Unary i32 (choice a.b i32 String)) A
+GOT: x choice (Unary i32 (choice a.b i32 String)) A
+GOT: x choice (Unary i32 (choice a.b i32 String)) A
 
-EXP: x Type of 'tuple'
-GOT: x Type of 'tuple'
-GOT: x Type of 'tuple'
-GOT: x Type of 'tuple'
-GOT: x Type of 'tuple'
-GOT: x Type of 'tuple'
-GOT: x Type of 'tuple'
-GOT: x Type of 'tuple'
-GOT: x Type of 'tuple'
+EXP: x tuple
+GOT: x tuple
+GOT: x tuple
+GOT: x tuple
+GOT: x tuple
+GOT: x tuple
+GOT: x tuple
+GOT: x tuple
+GOT: x tuple
 
-EXP: y Type of 'Function String (Sequence u64) a.b'
-GOT: y Type of 'Function String (Sequence u64) a.b'
+EXP: y Function String (Sequence u64) a.b
+GOT: y Function String (Sequence u64) a.b
 
-EXP: y Type of 'tuple (option unit) a.b'
-GOT: y Type of 'tuple (option unit) a.b'
+EXP: y tuple (option unit) a.b
+GOT: y tuple (option unit) a.b
 
-EXP: y Type of 'f64'
-GOT: y Type of 'f64'
+EXP: y f64
+GOT: y f64
 
-EXP: y Type of 'String'
-GOT: y Type of 'String'
+EXP: y String
+GOT: y String
 
-EXP: y Type of 'bool'
-GOT: y Type of 'bool'
+EXP: y bool
+GOT: y bool
 
-EXP: y Type of 'i64'
-GOT: y Type of 'i64'
+EXP: y i64
+GOT: y i64
 
-EXP: y Type of 'codepoint'
-GOT: y Type of 'codepoint'
+EXP: y codepoint
+GOT: y codepoint
 
-EXP: y Type of 'codepoint'
-GOT: y Type of 'codepoint'
+EXP: y codepoint
+GOT: y codepoint
 
-EXP: y Type of 'codepoint'
-GOT: y Type of 'codepoint'
+EXP: y codepoint
+GOT: y codepoint
 
-EXP: y Type of 'io.Out'
-GOT: y Type of 'io.Out'
+EXP: y io.Out
+GOT: y io.Out
 
-EXP: y Type of 'Type'
-GOT: y Type of 'Type'
+EXP: y Type
+GOT: y Type
 
-EXP: y Type of 'u8'
-GOT: y Type of 'u8'
+EXP: y u8
+GOT: y u8
 
-EXP: y Type of 'i64'
-GOT: y Type of 'i64'
+EXP: y i64
+GOT: y i64
 

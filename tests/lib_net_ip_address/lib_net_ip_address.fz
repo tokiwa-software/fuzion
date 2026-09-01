@@ -1,0 +1,30 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test lib_net_ip_address
+#
+# -----------------------------------------------------------------------
+
+lib_net_ip_address =>
+
+  ipv4_addr := "192.168.2.1"
+  ipv6_addr := "2001:0db8:85a3:0000:0000:8a2e:0370:7334"
+
+  for addr in [ipv4_addr, ipv6_addr] do
+    check net.ip_address.from_string addr .as_string = addr
