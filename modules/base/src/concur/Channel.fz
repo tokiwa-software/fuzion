@@ -161,7 +161,7 @@ universe.channel_mutate(T type) : concur.blocking_mutate is
 
   # default instance.
   #
-  public redef fixed type.default_value option (channel_mutate T)
+  public redef fixed type.default_value channel_mutate T
   =>
     channel_mutate T
 

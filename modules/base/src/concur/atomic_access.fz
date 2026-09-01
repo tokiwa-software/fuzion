@@ -33,5 +33,5 @@ private:module atomic_access : effect is
   #
   # this will get instated automatically at startup
   #
-  public redef fixed type.default_value option concur.atomic_access =>
+  public redef fixed type.default_value concur.atomic_access =>
     concur.atomic_access  /* NYI: `concur.` could be added automatically by front end */

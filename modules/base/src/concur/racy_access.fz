@@ -32,5 +32,5 @@ private:module racy_access : effect is
   #
   # this will get instated automatically at startup
   #
-  public redef fixed type.default_value option concur.racy_access =>
+  public redef fixed type.default_value concur.racy_access =>
     concur.racy_access  /* NYI: `concur.` could be added automatically by front end */

@@ -35,7 +35,7 @@ is
   # default implementation of this effect that will get instated
   # automatically at startup
   #
-  public redef fixed type.default_value option panic =>
+  public redef fixed type.default_value panic =>
     (panic (msg->fuzion.runtime.fault.env.cause ("*** panic ***", msg)) unit)
 
 

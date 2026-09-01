@@ -131,16 +131,14 @@ public effect is
   =>
     effect_types.type_foldf unit T,e->
       if T : effect then
-        match T.default_value
-          v T => T.instate_at_singularity0 v
-          nil =>
+        T.instate_at_singularity0 T.default_value
 
 
   # If this effect may be instated automatically at application start (during the
   # effect big bang singularity), this should be redefined to return the
   # corresponding effect value
   #
-  public type.default_value option effect.this => nil
+  public type.default_value effect.this => abstract
 
 
   # --------------------  effect instation  --------------------
