@@ -58,7 +58,7 @@ public Process ref : effect is
     #
     universe.P_ref ref : os.Process is
 
-      running_processes := concur.atomic (container.Set os.process) .new (container.ps_set os.process).empty
+      # running_processes := concur.atomic (container.Set os.process) .new (container.ps_set os.process).empty
 
       # start process with option to pass environment variables
       #
@@ -87,8 +87,8 @@ public Process ref : effect is
           error "creating process $n" fzE_last_error
         else
           res := os.process res_data[0] res_data[1] res_data[2] res_data[3] n args
-          _ := running_processes.update (container.Set os.process)->(container.Set os.process) rp->
-            rp ∪ (container.set_of_ordered [res])
+          # _ := running_processes.update (container.Set os.process)->(container.Set os.process) rp->
+          #   rp ∪ (container.set_of_ordered [res])
           res
 
 
@@ -98,9 +98,9 @@ public Process ref : effect is
       #
       public redef wait(p os.process, timeout time.duration) outcome u32
       =>
-        if !running_processes.contains p
-          error "process not in set of running processes."
-        else
+        # if !running_processes.contains p
+        #   error "process not in set of running processes."
+        # else
           start := time.Nano.env.read
 
           # the maximum poll time for process exit
@@ -117,9 +117,9 @@ public Process ref : effect is
             time.Nano.env.sleep (min timeout-elapsed_time polling_time)
           else
             if r >= 0
-              # NYI: UNDER DEVELOPMENT: it is kind of arbitrary to remove process from running processes in this case...
-              _ := running_processes.update (container.Set os.process)->(container.Set os.process) rp->
-                rp ∖ (container.set_of_ordered [p])
+              # # NYI: UNDER DEVELOPMENT: it is kind of arbitrary to remove process from running processes in this case...
+              # _ := running_processes.update (container.Set os.process)->(container.Set os.process) rp->
+              #   rp ∖ (container.set_of_ordered [p])
               outcome r.as_u32
             else
               if r = -1 && elapsed_time > timeout
@@ -141,20 +141,20 @@ public Process ref : effect is
       # the processes that were registered
       # in this effect as a string
       #
-      public redef as_string String =>
-        $running_processes.read
+      # public redef as_string String =>
+      #   $running_processes.read
 
 
       # cleanup effect
       #
       public redef finally unit =>
-        running_processes.for_each p->
-          # NYI: UNDER DEVELOPMENT: register failures
-          _ := p.wait
-          _ := fzE_pipe_close p.std_in
-          _ := fzE_pipe_close p.std_out
-          _ := fzE_pipe_close p.std_err
-          if fzE_process_close p.pid != 0
-            Ignored_Failure.env.register_failure (error "process could not be close successfully: $p")
+        # running_processes.for_each p->
+        #   # NYI: UNDER DEVELOPMENT: register failures
+        #   _ := p.wait
+        #   _ := fzE_pipe_close p.std_in
+        #   _ := fzE_pipe_close p.std_out
+        #   _ := fzE_pipe_close p.std_err
+        #   if fzE_process_close p.pid != 0
+        #     Ignored_Failure.env.register_failure (error "process could not be close successfully: $p")
 
     universe.P_ref
